@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>메디마케팅 - 병원마케팅 전문 대행사</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Noto Sans KR', sans-serif; }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, #0A1628 0%, #1A3A6B 55%, #1e40af 100%);
+  }
+  .gradient-ai {
+    background: linear-gradient(135deg, #0A1628 0%, #0e4f7a 50%, #0891b2 100%);
+  }
+  .gradient-cta {
+    background: linear-gradient(90deg, #2563EB 0%, #1D4ED8 100%);
+  }
+  .gradient-badge {
+    background: linear-gradient(90deg, #06B6D4, #2563EB);
+  }
+  .text-gradient {
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card-hover {
+    transition: all 0.25s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  }
+  .nav-link {
+    position: relative;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 2px;
+    background: #2563EB;
+    transition: width 0.2s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  .dropdown { display: none; }
+  .dropdown-parent:hover .dropdown { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); }
+    70%  { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+    100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+  }
+  .animate-fadeup { animation: fadeUp 0.7s ease forwards; }
+  .animate-fadeup-delay { animation: fadeUp 0.7s ease 0.2s forwards; opacity: 0; }
+  .animate-fadeup-delay2 { animation: fadeUp 0.7s ease 0.4s forwards; opacity: 0; }
+  .btn-pulse { animation: pulse-ring 2.5s infinite; }
+
+  .section-fade { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
+  .section-fade.visible { opacity: 1; transform: translateY(0); }
+
+  .tag-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+  }
+
+  .specialty-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .specialty-card:hover {
+    border-color: #2563EB;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.12);
+    transform: translateY(-4px);
+  }
+
+  .package-card {
+    border-radius: 20px;
+    padding: 32px 28px;
+    transition: all 0.2s ease;
+  }
+  .package-card.featured {
+    background: linear-gradient(145deg, #1e3a8a, #1d4ed8);
+    color: white;
+    transform: scale(1.04);
+    box-shadow: 0 24px 48px rgba(37,99,235,0.35);
+  }
+
+  .process-line::after {
+    content: '';
+    position: absolute;
+    top: 28px; left: 100%;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, #2563EB, #e5e7eb);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+</style>
+</head>
+<body class="bg-white text-gray-900 overflow-x-hidden">
+
+<!-- ============================
+  NAVIGATION
+============================= -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg gradient-cta flex items-center justify-center">
+        <span class="text-white font-bold text-sm">M</span>
+      </div>
+      <span class="font-bold text-xl text-gray-900">메디<span class="text-blue-600">마케팅</span></span>
+    </a>
+
+    <!-- Desktop Menu -->
+    <div class="hidden lg:flex items-center gap-8">
+      <div class="dropdown-parent relative">
+        <button class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center gap-1 py-2">
+          병원마케팅 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="dropdown absolute top-full left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2">
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">치과마케팅</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">피부과마케팅</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">정형외과마케팅</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">한의원마케팅</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">성형외과마케팅</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">내과마케팅</a>
+        </div>
+      </div>
+      <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600 py-2">온라인마케팅</a>
+      <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600 py-2">홈페이지 제작</a>
+      <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600 py-2">블로그</a>
+      <div class="dropdown-parent relative">
+        <button class="nav-link text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center gap-1 py-2">
+          AI마케팅
+          <span class="ml-1 px-1.5 py-0.5 text-xs bg-cyan-100 text-cyan-700 rounded font-bold">NEW</span>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="dropdown absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2">
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">GEO 최적화</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">AEO 최적화</a>
+          <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">SEO 최적화</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="hidden lg:flex items-center gap-3">
+      <a href="#contact" class="text-sm font-medium text-gray-600 hover:text-blue-600">문의하기</a>
+      <a href="#contact" class="btn-pulse px-5 py-2.5 gradient-cta text-white text-sm font-semibold rounded-lg hover:opacity-90 transition">
+        무료 상담 신청
+      </a>
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button class="lg:hidden p-2 rounded-lg hover:bg-gray-100">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+
+<!-- ============================
+  HERO SECTION
+============================= -->
+<section class="gradient-hero min-h-screen flex items-center pt-16 overflow-hidden relative">
+  <!-- Background decoration -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl"></div>
+    <div class="absolute top-1/2 -left-20 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl"></div>
+    <div class="absolute bottom-20 right-1/4 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl"></div>
+    <!-- Grid pattern -->
+    <div class="absolute inset-0" style="background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px;"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-20 relative z-10">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <!-- Left Content -->
+      <div>
+        <div class="animate-fadeup">
+          <span class="tag-badge gradient-badge text-white mb-6">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            AI 시대 병원마케팅 선도
+          </span>
+        </div>
+
+        <h1 class="animate-fadeup-delay text-4xl lg:text-6xl font-black text-white leading-tight mb-6">
+          병원 매출을<br>
+          올리는 가장<br>
+          <span class="text-gradient">확실한 방법</span>
+        </h1>
+
+        <p class="animate-fadeup-delay2 text-lg text-blue-200 mb-10 leading-relaxed max-w-lg">
+          SEO·GEO·AEO 통합 전략으로 ChatGPT, 네이버, 구글 모든 채널에서<br>
+          경쟁 병원보다 먼저 노출되세요.
+        </p>
+
+        <div class="animate-fadeup-delay2 flex flex-wrap gap-4">
+          <a href="#contact" class="px-8 py-4 gradient-cta text-white font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-blue-500/30 text-base">
+            무료 상담 신청하기 →
+          </a>
+          <a href="#services" class="px-8 py-4 bg-white/10 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition text-base backdrop-blur-sm">
+            서비스 보기
+          </a>
+        </div>
+
+        <!-- Trust badges -->
+        <div class="mt-12 flex flex-wrap gap-6">
+          <div class="flex items-center gap-2 text-blue-200">
+            <svg class="w-5 h-5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span class="text-sm font-medium">계약 후 2주 내 착수</span>
+          </div>
+          <div class="flex items-center gap-2 text-blue-200">
+            <svg class="w-5 h-5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span class="text-sm font-medium">전담 마케터 1:1 배정</span>
+          </div>
+          <div class="flex items-center gap-2 text-blue-200">
+            <svg class="w-5 h-5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span class="text-sm font-medium">월간 성과 리포트 제공</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Stats Card -->
+      <div class="hidden lg:block relative">
+        <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8">
+          <p class="text-blue-200 text-sm font-medium mb-6">📊 파트너 병원 평균 성과 (최근 12개월)</p>
+          <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-white/10 rounded-xl p-5">
+              <div class="text-3xl font-black text-white mb-1">+347%</div>
+              <div class="text-blue-200 text-sm">오가닉 트래픽 증가</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-5">
+              <div class="text-3xl font-black text-white mb-1">+218%</div>
+              <div class="text-blue-200 text-sm">신규 환자 예약 증가</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-5">
+              <div class="text-3xl font-black text-cyan-300 mb-1">1위</div>
+              <div class="text-blue-200 text-sm">네이버 지역 검색 순위</div>
+            </div>
+            <div class="bg-white/10 rounded-xl p-5">
+              <div class="text-3xl font-black text-white mb-1">89%</div>
+              <div class="text-blue-200 text-sm">고객 재계약률</div>
+            </div>
+          </div>
+          <!-- AI 노출 예시 -->
+          <div class="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-5 h-5 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
+                <span class="text-white text-xs font-bold">AI</span>
+              </div>
+              <span class="text-cyan-300 text-xs font-semibold">ChatGPT 검색 결과 노출 예시</span>
+            </div>
+            <p class="text-white/80 text-xs leading-relaxed">
+              "서울 강남구 피부과 추천"을 물어보면 AI가 먼저 추천하는 병원 — <span class="text-cyan-300 font-semibold">GEO 최적화된 병원만 노출됩니다.</span>
+            </p>
+          </div>
+        </div>
+        <!-- Floating badge -->
+        <div class="absolute -top-4 -right-4 bg-amber-400 text-amber-900 font-bold text-sm px-4 py-2 rounded-full shadow-lg">
+          🏆 2024 우수 대행사
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom wave -->
+  <div class="absolute bottom-0 left-0 right-0">
+    <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 60L1440 60L1440 20C1200 60 960 0 720 20C480 40 240 0 0 20L0 60Z" fill="white"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ============================
+  STATS SECTION
+============================= -->
+<section class="py-16 bg-white section-fade">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+      <div>
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 mb-2">500<span class="text-2xl">+</span></div>
+        <div class="text-gray-500 text-sm font-medium">누적 파트너 병원</div>
+      </div>
+      <div>
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 mb-2">8<span class="text-2xl">년</span></div>
+        <div class="text-gray-500 text-sm font-medium">병원마케팅 전문 운영</div>
+      </div>
+      <div>
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 mb-2">92<span class="text-2xl">%</span></div>
+        <div class="text-gray-500 text-sm font-medium">목표 달성률</div>
+      </div>
+      <div>
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 mb-2">1위</div>
+        <div class="text-gray-500 text-sm font-medium">GEO·AEO 병원 적용</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  SERVICES SECTION
+============================= -->
+<section id="services" class="py-24 bg-gray-50 section-fade">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="inline-block px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">서비스 소개</span>
+      <h2 class="text-3xl lg:text-4xl font-black text-gray-900 mb-4">병원 성장을 위한<br>통합 마케팅 솔루션</h2>
+      <p class="text-gray-500 text-lg max-w-2xl mx-auto">광고부터 AI 최적화까지, 하나의 파트너로 모든 것을 해결하세요</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Card 1 -->
+      <div class="specialty-card card-hover bg-white group">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition">
+          <svg class="w-6 h-6 text-blue-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">병원마케팅</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">치과·피부과·정형외과 등 8개 병과별 맞춤 마케팅 전략</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-md font-medium">치과</span>
+          <span class="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-md font-medium">피부과</span>
+          <span class="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-md font-medium">정형외과</span>
+          <span class="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-md font-medium">+5</span>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="specialty-card card-hover bg-white group">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-purple-600 transition">
+          <svg class="w-6 h-6 text-purple-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">온라인마케팅</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">네이버 파워링크부터 SNS, 언론홍보까지 10개 채널 통합 운영</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-md font-medium">파워링크</span>
+          <span class="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-md font-medium">인스타그램</span>
+          <span class="px-2 py-1 bg-purple-50 text-purple-600 text-xs rounded-md font-medium">언론</span>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="specialty-card card-hover bg-white group">
+        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-emerald-600 transition">
+          <svg class="w-6 h-6 text-emerald-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">홈페이지 제작</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">예약·진료일정·네이버 연동 포함 병원 특화 홈페이지 + SEO 패키지</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-md font-medium">반응형</span>
+          <span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-md font-medium">SEO포함</span>
+          <span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-md font-medium">예약연동</span>
+        </div>
+      </div>
+
+      <!-- Card 4 — AI -->
+      <div class="specialty-card card-hover bg-gradient-to-br from-slate-900 to-blue-900 group border-0">
+        <div class="w-12 h-12 bg-cyan-400/20 rounded-xl flex items-center justify-center mb-5">
+          <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="text-lg font-bold text-white">AI마케팅</h3>
+          <span class="px-2 py-0.5 bg-cyan-400/20 text-cyan-300 text-xs rounded-full font-bold border border-cyan-400/30">NEW</span>
+        </div>
+        <p class="text-blue-200 text-sm leading-relaxed mb-4">ChatGPT·Perplexity·Gemini AI 검색에 병원이 노출되는 GEO·AEO 전략</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-2 py-1 bg-cyan-400/20 text-cyan-300 text-xs rounded-md font-medium border border-cyan-400/20">GEO</span>
+          <span class="px-2 py-1 bg-cyan-400/20 text-cyan-300 text-xs rounded-md font-medium border border-cyan-400/20">AEO</span>
+          <span class="px-2 py-1 bg-cyan-400/20 text-cyan-300 text-xs rounded-md font-medium border border-cyan-400/20">SEO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  AI MARKETING HIGHLIGHT
+============================= -->
+<section class="py-24 gradient-ai relative overflow-hidden section-fade">
+  <div class="absolute inset-0" style="background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 32px 32px;"></div>
+  <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl"></div>
+
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div>
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-400/20 border border-cyan-400/30 text-cyan-300 rounded-full text-sm font-semibold mb-6">
+          <span class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+          AI 검색 시대의 새로운 기회
+        </span>
+        <h2 class="text-3xl lg:text-5xl font-black text-white mb-6 leading-tight">
+          경쟁 병원보다<br>
+          <span class="text-gradient">AI에 먼저</span><br>
+          노출되세요
+        </h2>
+        <p class="text-blue-200 text-lg mb-8 leading-relaxed">
+          2025년부터 환자들이 병원을 찾는 방식이 바뀌었습니다.<br>
+          네이버 검색 대신 ChatGPT, Perplexity에 직접 묻습니다.<br>
+          <strong class="text-white">GEO·AEO 최적화된 병원만이 AI 답변에 등장합니다.</strong>
+        </p>
+        <div class="flex flex-col gap-4 mb-8">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-cyan-400/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-cyan-400 font-bold text-sm">G</span>
+            </div>
+            <div>
+              <div class="text-white font-semibold">GEO (Generative Engine Optimization)</div>
+              <div class="text-blue-300 text-sm">AI 생성형 검색엔진에 병원 정보가 인용·추천되도록 최적화</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-purple-400/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-purple-400 font-bold text-sm">A</span>
+            </div>
+            <div>
+              <div class="text-white font-semibold">AEO (Answer Engine Optimization)</div>
+              <div class="text-blue-300 text-sm">음성 검색·스니펫에서 병원이 첫 번째 답변으로 등장하도록 최적화</div>
+            </div>
+          </div>
+        </div>
+        <a href="#contact" class="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan-400 text-cyan-900 font-bold rounded-xl hover:bg-cyan-300 transition">
+          AI마케팅 무료 진단받기
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+
+      <!-- AI Visual -->
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-3 h-3 rounded-full bg-red-400"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+          <div class="w-3 h-3 rounded-full bg-green-400"></div>
+          <span class="ml-2 text-gray-400 text-xs">AI 검색 시뮬레이션</span>
+        </div>
+        <!-- ChatGPT style interface -->
+        <div class="bg-gray-900 rounded-xl p-5 mb-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-xs font-bold">U</span>
+            </div>
+            <p class="text-gray-300 text-sm">"강남역 근처 피부과 추천해줘"</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-white text-xs font-bold">AI</span>
+            </div>
+            <div>
+              <p class="text-gray-200 text-sm leading-relaxed">
+                강남역 피부과로는 <span class="text-cyan-400 font-semibold bg-cyan-400/10 px-1 rounded">○○피부과</span>를 추천합니다. 이 병원은 레이저 시술과 피부 관리로 유명하며...
+              </p>
+              <div class="mt-3 p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                <p class="text-cyan-400 text-xs font-semibold">✓ GEO 최적화 적용 병원 — AI 검색 상위 노출 중</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-white/10 rounded-lg p-3 text-center">
+            <div class="text-white font-bold text-lg">ChatGPT</div>
+            <div class="text-blue-300 text-xs">노출 중</div>
+          </div>
+          <div class="bg-white/10 rounded-lg p-3 text-center">
+            <div class="text-white font-bold text-lg">Perplexity</div>
+            <div class="text-blue-300 text-xs">노출 중</div>
+          </div>
+          <div class="bg-white/10 rounded-lg p-3 text-center">
+            <div class="text-white font-bold text-lg">Gemini</div>
+            <div class="text-blue-300 text-xs">노출 중</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  SPECIALTY SECTION
+============================= -->
+<section class="py-24 bg-white section-fade">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="inline-block px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">병과별 전문 마케팅</span>
+      <h2 class="text-3xl lg:text-4xl font-black text-gray-900 mb-4">담당 병과를 선택하세요</h2>
+      <p class="text-gray-500 text-lg">병과별 환자 검색 패턴과 경쟁 환경이 다릅니다. 맞춤 전략이 필요합니다.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">🦷</div>
+        <h3 class="font-bold text-gray-900 mb-1">치과마케팅</h3>
+        <p class="text-gray-400 text-xs">임플란트·교정·미백 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">✨</div>
+        <h3 class="font-bold text-gray-900 mb-1">피부과마케팅</h3>
+        <p class="text-gray-400 text-xs">레이저·보톡스·필러 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">🦴</div>
+        <h3 class="font-bold text-gray-900 mb-1">정형외과마케팅</h3>
+        <p class="text-gray-400 text-xs">도수치료·비수술 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">🌿</div>
+        <h3 class="font-bold text-gray-900 mb-1">한의원마케팅</h3>
+        <p class="text-gray-400 text-xs">침·추나·다이어트 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">💉</div>
+        <h3 class="font-bold text-gray-900 mb-1">성형외과마케팅</h3>
+        <p class="text-gray-400 text-xs">쌍꺼풀·코·윤곽 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">🫀</div>
+        <h3 class="font-bold text-gray-900 mb-1">내과마케팅</h3>
+        <p class="text-gray-400 text-xs">건강검진·만성질환 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">👁</div>
+        <h3 class="font-bold text-gray-900 mb-1">안과마케팅</h3>
+        <p class="text-gray-400 text-xs">라식·라섹·백내장 특화</p>
+      </div>
+      <div class="specialty-card text-center group">
+        <div class="text-3xl mb-3">🔬</div>
+        <h3 class="font-bold text-gray-900 mb-1">의료기기마케팅</h3>
+        <p class="text-gray-400 text-xs">B2B 병원 대상 특화</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  PRICING SECTION
+============================= -->
+<section class="py-24 bg-gray-50 section-fade">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="inline-block px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">홈페이지 제작 패키지</span>
+      <h2 class="text-3xl lg:text-4xl font-black text-gray-900 mb-4">투명한 가격, 확실한 성과</h2>
+      <p class="text-gray-500 text-lg">모든 패키지에 반응형·병원 특화 기능이 기본 포함됩니다</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 items-start">
+      <!-- Basic -->
+      <div class="package-card bg-white border border-gray-200">
+        <div class="text-sm font-semibold text-gray-500 mb-2">기본형</div>
+        <div class="text-4xl font-black text-gray-900 mb-1">290<span class="text-lg text-gray-500">만원~</span></div>
+        <p class="text-gray-400 text-sm mb-6">소규모 의원·개원 초기</p>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 반응형 홈페이지 (5페이지)</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 진료 안내 · 예약 폼</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 네이버 플레이스 연동</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 기본 SEO 설정</li>
+          <li class="flex items-center gap-2 text-sm text-gray-400"><span>–</span> AEO/GEO 최적화</li>
+          <li class="flex items-center gap-2 text-sm text-gray-400"><span>–</span> 콘텐츠 발행</li>
+        </ul>
+        <a href="#contact" class="block w-full text-center py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-xl hover:bg-blue-600 hover:text-white transition">
+          상담 신청
+        </a>
+      </div>
+
+      <!-- Standard — Featured -->
+      <div class="package-card featured relative">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-amber-400 text-amber-900 text-xs font-bold rounded-full">
+          🔥 가장 인기
+        </div>
+        <div class="text-sm font-semibold text-blue-300 mb-2">중급형 + SEO + AEO + GEO</div>
+        <div class="text-4xl font-black text-white mb-1">590<span class="text-lg text-blue-300">만원~</span></div>
+        <p class="text-blue-200 text-sm mb-6">성장 중인 병원 · 경쟁 심화 지역</p>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-sm text-white"><span class="text-cyan-400">✓</span> 반응형 홈페이지 (10페이지)</li>
+          <li class="flex items-center gap-2 text-sm text-white"><span class="text-cyan-400">✓</span> 예약·진료일정 시스템</li>
+          <li class="flex items-center gap-2 text-sm text-white"><span class="text-cyan-400">✓</span> 네이버·카카오 연동</li>
+          <li class="flex items-center gap-2 text-sm text-white"><span class="text-cyan-400">✓</span> SEO 풀 최적화</li>
+          <li class="flex items-center gap-2 text-sm text-white"><span class="text-cyan-400">✓</span> GEO·AEO 최적화 (키워드 2개)</li>
+          <li class="flex items-center gap-2 text-sm text-white"><span class="text-cyan-400">✓</span> 월 콘텐츠 발행 8건</li>
+        </ul>
+        <a href="#contact" class="block w-full text-center py-3 bg-cyan-400 text-cyan-900 font-bold rounded-xl hover:bg-cyan-300 transition">
+          상담 신청하기 →
+        </a>
+      </div>
+
+      <!-- Premium -->
+      <div class="package-card bg-white border border-gray-200">
+        <div class="text-sm font-semibold text-gray-500 mb-2">고급형 풀 패키지</div>
+        <div class="text-4xl font-black text-gray-900 mb-1">990<span class="text-lg text-gray-500">만원~</span></div>
+        <p class="text-gray-400 text-sm mb-6">대형 병원 · 브랜딩 필요</p>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 고급형 커스텀 디자인</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 과별 상세 페이지 무제한</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 전체 채널 연동</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> SEO + GEO + AEO (키워드 4개)</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 월 콘텐츠 발행 16건</li>
+          <li class="flex items-center gap-2 text-sm text-gray-700"><span class="text-green-500">✓</span> 전담 마케터 + 월간 전략회의</li>
+        </ul>
+        <a href="#contact" class="block w-full text-center py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-xl hover:bg-blue-600 hover:text-white transition">
+          상담 신청
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  CASE STUDY SECTION
+============================= -->
+<section class="py-24 bg-white section-fade">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <span class="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">성공 사례</span>
+      <h2 class="text-3xl lg:text-4xl font-black text-gray-900 mb-4">실제 파트너 병원의 성과</h2>
+      <p class="text-gray-500 text-lg">숫자가 증명하는 결과입니다</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-7 card-hover border border-blue-100">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+            <span class="text-white font-bold text-sm">치</span>
+          </div>
+          <div>
+            <div class="font-bold text-gray-900">서울 강남 ○○치과</div>
+            <div class="text-gray-400 text-xs">임플란트 전문</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div>
+            <div class="text-2xl font-black text-blue-600">+420%</div>
+            <div class="text-xs text-gray-500">네이버 트래픽</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-blue-600">+280%</div>
+            <div class="text-xs text-gray-500">신규 상담 건수</div>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed">"임플란트 키워드로 ChatGPT에서도 추천되기 시작했습니다. GEO 효과를 직접 체감했어요."</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-7 card-hover border border-purple-100">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center">
+            <span class="text-white font-bold text-sm">피</span>
+          </div>
+          <div>
+            <div class="font-bold text-gray-900">부산 해운대 ○○피부과</div>
+            <div class="text-gray-400 text-xs">레이저·보톡스 전문</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div>
+            <div class="text-2xl font-black text-purple-600">1위</div>
+            <div class="text-xs text-gray-500">부산 피부과 검색</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-purple-600">+195%</div>
+            <div class="text-xs text-gray-500">예약 건수</div>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed">"블로그 운영 6개월 만에 네이버 1위를 달성했습니다. 이제 광고비를 절반으로 줄였어요."</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl p-7 card-hover border border-emerald-100">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
+            <span class="text-white font-bold text-sm">정</span>
+          </div>
+          <div>
+            <div class="font-bold text-gray-900">인천 ○○정형외과</div>
+            <div class="text-gray-400 text-xs">도수치료 전문</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div>
+            <div class="text-2xl font-black text-emerald-600">+312%</div>
+            <div class="text-xs text-gray-500">오가닉 유입</div>
+          </div>
+          <div>
+            <div class="text-2xl font-black text-emerald-600">3배</div>
+            <div class="text-xs text-gray-500">월 매출 증가</div>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed">"홈페이지 제작부터 SEO까지 원스톱으로 진행해서 정말 편리했습니다."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  CONTACT FORM SECTION
+============================= -->
+<section id="contact" class="py-24 bg-gray-900 section-fade">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid lg:grid-cols-2 gap-16 items-start">
+      <!-- Left -->
+      <div>
+        <span class="inline-block px-4 py-1.5 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-full text-sm font-semibold mb-6">무료 상담 신청</span>
+        <h2 class="text-3xl lg:text-4xl font-black text-white mb-6 leading-tight">
+          지금 바로 시작하세요<br>
+          <span class="text-blue-400">무료 진단은 24시간</span><br>
+          안에 연락드립니다
+        </h2>
+        <div class="space-y-5">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <div class="text-white font-semibold">무료 마케팅 현황 진단</div>
+              <div class="text-gray-400 text-sm">현재 병원 온라인 마케팅 상태 분석 리포트 제공</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <div class="text-white font-semibold">경쟁 병원 분석 포함</div>
+              <div class="text-gray-400 text-sm">지역 내 경쟁 병원 키워드·SEO 현황 비교 제공</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <div class="text-white font-semibold">맞춤 전략 제안서 제공</div>
+              <div class="text-gray-400 text-sm">병원 상황에 맞는 마케팅 로드맵 무료 제안</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="bg-white rounded-2xl p-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">무료 상담 신청서</h3>
+        <form class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">병원명 <span class="text-red-500">*</span></label>
+              <input type="text" placeholder="○○의원" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">담당자명 <span class="text-red-500">*</span></label>
+              <input type="text" placeholder="홍길동" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">연락처 <span class="text-red-500">*</span></label>
+            <input type="tel" placeholder="010-0000-0000" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">관심 서비스 <span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-2 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                <input type="checkbox" class="text-blue-600 rounded"> <span class="text-sm text-gray-700">병원마케팅</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                <input type="checkbox" class="text-blue-600 rounded"> <span class="text-sm text-gray-700">홈페이지 제작</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                <input type="checkbox" class="text-blue-600 rounded"> <span class="text-sm text-gray-700">SEO/GEO/AEO</span>
+              </label>
+              <label class="flex items-center gap-2 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                <input type="checkbox" class="text-blue-600 rounded"> <span class="text-sm text-gray-700">SNS 관리</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">문의 내용</label>
+            <textarea rows="3" placeholder="궁금한 점이나 현재 상황을 간단히 적어주세요" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none"></textarea>
+          </div>
+          <label class="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 text-blue-600 rounded">
+            <span class="text-xs text-gray-500">개인정보 수집·이용에 동의합니다. 수집된 정보는 상담 목적으로만 활용됩니다. <span class="text-blue-600 underline">개인정보처리방침</span></span>
+          </label>
+          <button type="submit" class="w-full py-4 gradient-cta text-white font-bold rounded-xl hover:opacity-90 transition text-base shadow-lg shadow-blue-500/30">
+            무료 상담 신청하기 →
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================
+  FOOTER
+============================= -->
+<footer class="bg-gray-950 text-gray-400 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+      <!-- Brand -->
+      <div class="col-span-2 md:col-span-1">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-lg gradient-cta flex items-center justify-center">
+            <span class="text-white font-bold text-sm">M</span>
+          </div>
+          <span class="font-bold text-lg text-white">메디마케팅</span>
+        </div>
+        <p class="text-sm leading-relaxed mb-4">병원 성장을 위한 AI 기반 통합 마케팅 파트너</p>
+        <div class="flex gap-3">
+          <a href="#" class="w-8 h-8 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="#" class="w-8 h-8 bg-gray-800 hover:bg-pink-600 rounded-lg flex items-center justify-center transition">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" class="w-8 h-8 bg-gray-800 hover:bg-red-600 rounded-lg flex items-center justify-center transition">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4 text-sm">병원마케팅</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">치과마케팅</a></li>
+          <li><a href="#" class="hover:text-white transition">피부과마케팅</a></li>
+          <li><a href="#" class="hover:text-white transition">정형외과마케팅</a></li>
+          <li><a href="#" class="hover:text-white transition">한의원마케팅</a></li>
+          <li><a href="#" class="hover:text-white transition">성형외과마케팅</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4 text-sm">온라인마케팅</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">파워링크</a></li>
+          <li><a href="#" class="hover:text-white transition">브랜드검색광고</a></li>
+          <li><a href="#" class="hover:text-white transition">인스타그램</a></li>
+          <li><a href="#" class="hover:text-white transition">당근마켓</a></li>
+          <li><a href="#" class="hover:text-white transition">언론홍보</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4 text-sm">홈페이지 제작</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">기본형</a></li>
+          <li><a href="#" class="hover:text-white transition">중급형</a></li>
+          <li><a href="#" class="hover:text-white transition">고급형</a></li>
+          <li><a href="#" class="hover:text-white transition">SEO 패키지</a></li>
+          <li><a href="#" class="hover:text-white transition">반응형/적응형</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4 text-sm">AI마케팅</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-white transition">GEO 최적화</a></li>
+          <li><a href="#" class="hover:text-white transition">AEO 최적화</a></li>
+          <li><a href="#" class="hover:text-white transition">SEO 최적화</a></li>
+          <li><a href="#" class="hover:text-white transition">콘텐츠 SEO</a></li>
+          <li><a href="#" class="hover:text-white transition">테크니컬 SEO</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-800 pt-8">
+      <div class="flex flex-col md:flex-row justify-between items-start gap-4">
+        <div class="text-xs space-y-1">
+          <p>회사명: (주)메디마케팅 | 대표자: 홍길동 | 사업자등록번호: 000-00-00000</p>
+          <p>주소: 서울특별시 강남구 테헤란로 000, 00층 | 대표전화: 02-0000-0000</p>
+          <p class="text-gray-600">
+            자료 출처:
+            <a href="https://health.kdca.go.kr/healthinfo/" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
+              질병관리청 국가건강정보포털
+            </a>
+          </p>
+        </div>
+        <div class="flex gap-4 text-xs">
+          <a href="#" class="hover:text-white transition">개인정보처리방침</a>
+          <a href="#" class="hover:text-white transition">이용약관</a>
+          <a href="#" class="hover:text-white transition">자료실</a>
+        </div>
+      </div>
+      <p class="text-xs text-gray-600 mt-4">© 2024 메디마케팅. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+<!-- Scroll animation script -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.section-fade').forEach(el => observer.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+</body>
+</html>
