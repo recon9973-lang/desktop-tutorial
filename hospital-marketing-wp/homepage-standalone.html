@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>메디마케팅 — AI 시대 병원마케팅 전문 대행사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;color:#111827;line-height:1.6;background:#fff}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+
+/* ===== DESIGN TOKENS ===== */
+:root{
+  --primary:#2563EB;
+  --primary-dark:#1D4ED8;
+  --primary-light:#EFF6FF;
+  --navy:#0A1628;
+  --navy-mid:#1A3A6B;
+  --accent:#06B6D4;
+  --success:#10B981;
+  --warning:#F59E0B;
+  --gray-50:#F9FAFB;
+  --gray-100:#F3F4F6;
+  --gray-200:#E5E7EB;
+  --gray-400:#9CA3AF;
+  --gray-500:#6B7280;
+  --gray-600:#4B5563;
+  --gray-700:#374151;
+  --gray-900:#111827;
+  --white:#fff;
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:20px;
+  --radius-xl:28px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.1);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+  --transition:all .25s ease;
+}
+
+/* ===== LAYOUT ===== */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.section{padding:100px 0}
+.section-sm{padding:60px 0}
+.section-gray{background:var(--gray-50)}
+.section-dark{background:var(--navy)}
+
+/* ===== TYPOGRAPHY ===== */
+.text-gradient{background:linear-gradient(135deg,#60A5FA,#34D399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.section-header{text-align:center;margin-bottom:56px}
+.section-header h2{font-size:2.25rem;font-weight:800;color:var(--navy);margin-bottom:16px;line-height:1.25}
+.section-dark .section-header h2{color:#fff}
+.section-header p{font-size:1.0625rem;color:var(--gray-500);max-width:600px;margin:0 auto}
+
+/* ===== BADGE ===== */
+.section-badge{display:inline-block;padding:6px 14px;border-radius:24px;font-size:.75rem;font-weight:700;letter-spacing:.08em;margin-bottom:16px;border:1.5px solid}
+.badge-blue{background:#EFF6FF;color:var(--primary);border-color:#BFDBFE}
+.badge-orange{background:#FFF7ED;color:#EA580C;border-color:#FED7AA}
+.badge-green{background:#ECFDF5;color:#059669;border-color:#A7F3D0}
+.badge-navy{background:#EFF6FF;color:var(--navy-mid);border-color:#BFDBFE}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:var(--radius-md);font-size:.9375rem;font-weight:700;cursor:pointer;border:none;transition:var(--transition)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-outline{background:transparent;color:var(--navy);border:2px solid var(--gray-200)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+
+/* ===== HEADER ===== */
+.site-header{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0;background:transparent;transition:background .3s,box-shadow .3s}
+.site-header.scrolled{background:rgba(255,255,255,.97);box-shadow:0 1px 12px rgba(0,0,0,.08)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+.site-logo{font-size:1.375rem;font-weight:900;color:var(--white);letter-spacing:-.01em;transition:color .3s}
+.site-header.scrolled .site-logo{color:var(--navy)}
+.site-logo span{color:#60A5FA}
+.site-header.scrolled .site-logo span{color:var(--primary)}
+
+/* GNB */
+.gnb ul{display:flex;gap:4px;align-items:center}
+.gnb>ul>li{position:relative}
+.gnb>ul>li>a{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:.9rem;font-weight:600;color:rgba(255,255,255,.9);transition:var(--transition);white-space:nowrap}
+.site-header.scrolled .gnb>ul>li>a{color:var(--gray-700)}
+.gnb>ul>li>a:hover{background:rgba(255,255,255,.15);color:#fff}
+.site-header.scrolled .gnb>ul>li>a:hover{background:var(--gray-100);color:var(--primary)}
+.chevron{width:14px;height:14px;transition:transform .2s}
+.gnb>ul>li:hover .chevron{transform:rotate(180deg)}
+
+/* Dropdown */
+.dropdown{display:none;position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--gray-100);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:20px;min-width:240px;z-index:200}
+.gnb>ul>li:hover .dropdown{display:block}
+.dropdown-grid{display:flex;flex-direction:column;gap:4px}
+.dropdown-col-header{font-size:.7rem;font-weight:700;color:var(--gray-400);letter-spacing:.08em;text-transform:uppercase;padding:8px 4px 4px;margin-top:4px}
+.dropdown-col-header:first-child{margin-top:0}
+.dropdown-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:.875rem;color:var(--gray-700);font-weight:500;transition:var(--transition)}
+.dropdown-link:hover{background:var(--primary-light);color:var(--primary)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gray-300);flex-shrink:0;transition:var(--transition)}
+.dropdown-link:hover .dot{background:var(--primary)}
+
+/* Header CTA */
+.header-cta{display:flex;align-items:center;gap:12px}
+.header-cta .btn-primary{padding:10px 20px;font-size:.875rem}
+
+/* Mobile toggle */
+.mobile-toggle{display:none;flex-direction:column;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:6px;justify-content:center;align-items:center}
+.mobile-toggle span{display:block;width:22px;height:2px;background:var(--white);border-radius:2px;transition:var(--transition)}
+.site-header.scrolled .mobile-toggle span{background:var(--navy)}
+.mobile-toggle.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.mobile-toggle.active span:nth-child(2){opacity:0}
+.mobile-toggle.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* Mobile nav */
+.mobile-nav{display:none;position:fixed;top:72px;left:0;right:0;bottom:0;background:#fff;overflow-y:auto;z-index:999;transform:translateX(100%);transition:transform .3s ease}
+.mobile-nav.open{transform:none}
+.mobile-nav ul{padding:16px 0 40px}
+.mobile-nav-item>a{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;font-weight:600;color:var(--gray-900);border-bottom:1px solid var(--gray-100)}
+.mobile-sub{display:none;padding:8px 0 8px 40px;background:var(--gray-50)}
+.mobile-nav-item.open .mobile-sub{display:block}
+.mobile-sub li a{display:block;padding:10px 16px;font-size:.875rem;color:var(--gray-600)}
+
+/* ===== HERO ===== */
+.hero{position:relative;background:linear-gradient(135deg,var(--navy) 0%,#1A3A6B 50%,#0F2A50 100%);padding:160px 0 100px;overflow:hidden;min-height:100vh;display:flex;align-items:center}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(37,99,235,.25) 0%,transparent 70%)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:24px;font-size:.8125rem;font-weight:600;color:rgba(255,255,255,.9);margin-bottom:24px;backdrop-filter:blur(4px)}
+.hero h1{font-size:3.25rem;font-weight:900;color:#fff;line-height:1.15;margin-bottom:24px;letter-spacing:-.02em}
+.hero-sub{font-size:1.125rem;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:36px;max-width:560px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px}
+.hero-ctas .btn-outline{color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.3)}
+.hero-ctas .btn-outline:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.1)}
+.hero-stats{display:flex;gap:32px;padding-top:32px;border-top:1px solid rgba(255,255,255,.15);flex-wrap:wrap}
+.hero-stat-item{}
+.hero-stat-num{font-size:1.625rem;font-weight:800;color:#fff}
+.hero-stat-label{font-size:.75rem;color:rgba(255,255,255,.6);margin-top:2px}
+.hero-wave{position:absolute;bottom:-1px;left:0;right:0;width:100%;height:60px}
+
+/* ===== STATS BAR ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden;border:1px solid var(--gray-100)}
+.stat-item{padding:32px 28px;text-align:center;border-right:1px solid var(--gray-100)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:2rem;font-weight:800;color:var(--primary);margin-bottom:6px}
+.stat-label{font-size:.8125rem;color:var(--gray-500);line-height:1.4}
+
+/* ===== COMPARISON ===== */
+.comparison-block{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px;margin:0 auto}
+.comparison-col{padding:36px;border-radius:var(--radius-lg);border:2px solid}
+.comparison-col.bad,.comparison-col:first-child{background:#FFF5F5;border-color:#FCA5A5}
+.comparison-col.good,.comparison-col:last-child{background:#F0FDF4;border-color:#86EFAC}
+.comparison-col h3{font-size:1.125rem;font-weight:700;color:var(--gray-900);margin-bottom:20px}
+.comparison-list{display:flex;flex-direction:column;gap:10px}
+.comparison-list li{display:flex;align-items:flex-start;gap:10px;font-size:.875rem;color:var(--gray-700)}
+.comparison-list .icon{flex-shrink:0;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+.comparison-col:first-child .icon{background:#FCA5A5;color:#991B1B}
+.comparison-col:last-child .icon{background:#86EFAC;color:#14532D}
+.comparison-time{margin-top:20px;padding:10px 16px;background:rgba(0,0,0,.05);border-radius:8px;font-size:.8rem;font-weight:600;color:var(--gray-600)}
+
+/* ===== STEPS ===== */
+.steps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.step-card{background:#fff;border:1.5px solid var(--gray-100);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;position:relative;transition:var(--transition)}
+.step-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-4px)}
+.step-num{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.step-title{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:8px}
+.step-desc{font-size:.8125rem;color:var(--gray-500);line-height:1.5}
+
+/* ===== SERVICES ===== */
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.service-card{background:#fff;border:1.5px solid var(--gray-100);border-radius:var(--radius-lg);padding:32px 28px;transition:var(--transition)}
+.service-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-4px)}
+.service-icon{font-size:2.25rem;margin-bottom:16px}
+.service-card h3{font-size:1.0625rem;font-weight:700;color:var(--navy);margin-bottom:10px}
+.service-card p{font-size:.875rem;color:var(--gray-500);line-height:1.6;margin-bottom:16px}
+.link-more{font-size:.875rem;font-weight:700;color:var(--primary)}
+.link-more:hover{text-decoration:underline}
+
+/* ===== SPECIALTY ===== */
+.specialty-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.specialty-card{background:#fff;border:1.5px solid var(--gray-100);border-radius:var(--radius-lg);padding:28px 16px;text-align:center;transition:var(--transition);display:block}
+.specialty-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-4px)}
+.specialty-card .icon{font-size:2.25rem;margin-bottom:12px}
+.specialty-card .name{font-size:.875rem;font-weight:700;color:var(--navy)}
+
+/* ===== CASES ===== */
+.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.case-card{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--gray-100);transition:var(--transition)}
+.case-card:hover{box-shadow:var(--shadow-md);transform:translateY(-4px)}
+.case-body{padding:28px}
+.case-tag{display:inline-block;padding:4px 10px;background:var(--primary-light);color:var(--primary);border-radius:24px;font-size:.75rem;font-weight:700;margin-bottom:12px}
+.case-body h3{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.4}
+.case-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-100)}
+.case-metric-num{font-size:1.375rem;font-weight:800;color:var(--primary)}
+.case-metric-label{font-size:.75rem;color:var(--gray-500);margin-top:2px}
+
+/* ===== WIKI/POST GRID ===== */
+.post-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.post-card{background:#fff;border:1px solid var(--gray-100);border-radius:var(--radius-lg);overflow:hidden;transition:var(--transition);display:block}
+.post-card:hover{box-shadow:var(--shadow-md);transform:translateY(-4px)}
+.post-thumb{height:160px;overflow:hidden;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:3rem}
+.post-thumb img{width:100%;height:100%;object-fit:cover}
+.post-body{padding:20px 22px 24px}
+.post-cat{font-size:.7rem;font-weight:700;color:var(--primary);letter-spacing:.06em;text-transform:uppercase}
+.post-title{font-size:1rem;font-weight:700;color:var(--navy);margin:8px 0 8px;line-height:1.4}
+.post-excerpt{font-size:.8125rem;color:var(--gray-500);line-height:1.6;margin-bottom:12px}
+.post-meta{font-size:.75rem;color:var(--gray-400)}
+
+/* ===== CONTACT FORM ===== */
+.contact-form-wrap{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-xl);padding:40px;backdrop-filter:blur(8px)}
+.contact-form-wrap h3{color:#fff;font-size:1.25rem;font-weight:700;margin-bottom:28px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:.8125rem;font-weight:600;color:rgba(255,255,255,.8);margin-bottom:6px}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 16px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--radius-md);font-family:inherit;font-size:.9rem;color:#fff;transition:var(--transition)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:rgba(255,255,255,.35)}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);background:rgba(255,255,255,.1)}
+.form-group textarea{resize:vertical;min-height:80px}
+.req{color:#F87171}
+.service-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.service-check-label{display:flex;align-items:center;gap:8px;font-size:.8125rem;color:rgba(255,255,255,.75);cursor:pointer;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.12);transition:var(--transition)}
+.service-check-label:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25)}
+.service-check-label input{accent-color:var(--primary)}
+.privacy-check{display:flex;align-items:flex-start;gap:8px;font-size:.8rem;color:rgba(255,255,255,.55);margin-bottom:20px;cursor:pointer;line-height:1.5}
+.privacy-check a{color:rgba(255,255,255,.75);text-decoration:underline}
+.form-submit{width:100%;padding:16px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-md);font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition)}
+.form-submit:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 8px 20px rgba(37,99,235,.4)}
+
+/* ===== FOOTER ===== */
+.site-footer{background:var(--navy);padding:64px 0 0;color:rgba(255,255,255,.7)}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.08)}
+.footer-brand .logo{font-size:1.375rem;font-weight:900;color:#fff;margin-bottom:16px}
+.footer-brand .logo span{color:#60A5FA}
+.footer-brand p{font-size:.8125rem;line-height:1.7;margin-bottom:20px}
+.footer-sns{display:flex;gap:12px}
+.footer-sns a{width:36px;height:36px;background:rgba(255,255,255,.08);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:var(--transition)}
+.footer-sns a:hover{background:rgba(255,255,255,.15)}
+.footer-col h4{font-size:.875rem;font-weight:700;color:#fff;margin-bottom:16px}
+.footer-col ul li{margin-bottom:8px}
+.footer-col ul li a{font-size:.8125rem;color:rgba(255,255,255,.6);transition:var(--transition)}
+.footer-col ul li a:hover{color:#fff}
+.footer-bottom{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 0;font-size:.8125rem}
+.footer-bottom p{margin-bottom:4px}
+.footer-biz{color:rgba(255,255,255,.4);font-size:.75rem;line-height:1.7;margin-top:6px}
+.footer-links{display:flex;gap:16px}
+.footer-links a{color:rgba(255,255,255,.5);font-size:.8125rem;transition:var(--transition)}
+.footer-links a:hover{color:#fff}
+
+/* ===== ANIMATIONS ===== */
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.fade-up.visible{opacity:1;transform:none}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .steps-grid{grid-template-columns:repeat(3,1fr)}
+  .specialty-grid{grid-template-columns:repeat(3,1fr)}
+  .gnb,.header-cta .btn-primary{display:none}
+  .mobile-toggle{display:flex}
+  .mobile-nav{display:block}
+  .hero h1{font-size:2.5rem}
+}
+@media(max-width:768px){
+  .section{padding:70px 0}
+  .hero{padding:140px 0 80px}
+  .hero h1{font-size:2rem}
+  .hero-sub{font-size:1rem}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-item{border-right:none;border-bottom:1px solid var(--gray-100)}
+  .comparison-block{grid-template-columns:1fr}
+  .services-grid{grid-template-columns:1fr 1fr}
+  .cases-grid{grid-template-columns:1fr}
+  .post-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .quick-nav-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;gap:12px}
+  .hero-stats{gap:20px}
+  .section-header h2{font-size:1.75rem}
+  [style*="grid-template-columns:1fr 1fr"]{display:block!important}
+  [style*="grid-template-columns:repeat(3,1fr)"]{display:block!important}
+}
+@media(max-width:480px){
+  .steps-grid{grid-template-columns:1fr}
+  .specialty-grid{grid-template-columns:repeat(2,1fr)}
+  .services-grid{grid-template-columns:1fr}
+  .hero h1{font-size:1.75rem}
+  .section-badge{font-size:.7rem}
+  .service-checks{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header" id="site-header" role="banner">
+  <div class="container header-inner">
+    <a href="/" class="site-logo" aria-label="메디마케팅 홈">메디<span>마케팅</span></a>
+
+    <nav class="gnb" role="navigation" aria-label="메인 메뉴">
+      <ul>
+        <li>
+          <a href="/services/">서비스
+            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </a>
+          <div class="dropdown">
+            <div class="dropdown-grid">
+              <span class="dropdown-col-header">SEO · AEO · GEO</span>
+              <a class="dropdown-link" href="/services/geo/"><span class="dot"></span>GEO 서비스</a>
+              <a class="dropdown-link" href="/services/aeo/"><span class="dot"></span>AEO 서비스</a>
+              <a class="dropdown-link" href="/services/seo/"><span class="dot"></span>SEO 서비스</a>
+              <span class="dropdown-col-header">병원마케팅</span>
+              <a class="dropdown-link" href="/services/hospital-marketing/"><span class="dot"></span>병원마케팅 광고</a>
+              <a class="dropdown-link" href="/services/website/"><span class="dot"></span>홈페이지 제작</a>
+              <a class="dropdown-link" href="/services/sns/"><span class="dot"></span>SNS 관리</a>
+            </div>
+          </div>
+        </li>
+        <li>
+          <a href="/specialty/">병과별
+            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </a>
+          <div class="dropdown">
+            <div class="dropdown-grid">
+              <span class="dropdown-col-header">진료과별 마케팅</span>
+              <a class="dropdown-link" href="/specialty/plastic-surgery/"><span class="dot"></span>성형외과</a>
+              <a class="dropdown-link" href="/specialty/dermatology/"><span class="dot"></span>피부과</a>
+              <a class="dropdown-link" href="/specialty/dental/"><span class="dot"></span>치과</a>
+              <a class="dropdown-link" href="/specialty/orthopedic/"><span class="dot"></span>정형외과</a>
+              <a class="dropdown-link" href="/specialty/oriental/"><span class="dot"></span>한의원</a>
+              <a class="dropdown-link" href="/specialty/obesity/"><span class="dot"></span>비만클리닉</a>
+            </div>
+          </div>
+        </li>
+        <li>
+          <a href="/wiki/">위키
+            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </a>
+          <div class="dropdown">
+            <div class="dropdown-grid">
+              <span class="dropdown-col-header">인기 위키</span>
+              <a class="dropdown-link" href="/wiki/geo/"><span class="dot"></span>GEO란?</a>
+              <a class="dropdown-link" href="/wiki/hospital-seo/"><span class="dot"></span>병원 SEO 완벽가이드</a>
+              <a class="dropdown-link" href="/wiki/aeo/"><span class="dot"></span>AEO란?</a>
+              <a class="dropdown-link" href="/wiki/naver-marketing/"><span class="dot"></span>네이버 병원마케팅</a>
+              <span class="dropdown-col-header">최신 위키</span>
+              <a class="dropdown-link" href="/wiki/llms-txt/"><span class="dot"></span>llms.txt 가이드</a>
+              <a class="dropdown-link" href="/wiki/" style="font-weight:700;color:#2563EB"><span class="dot"></span>전체 위키 보기 →</a>
+            </div>
+          </div>
+        </li>
+        <li><a href="/cases/">성과사례</a></li>
+        <li>
+          <a href="/tools/">무료 도구
+            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </a>
+          <div class="dropdown">
+            <div class="dropdown-grid">
+              <span class="dropdown-col-header">무료 진단 도구</span>
+              <a class="dropdown-link" href="/tools/seo-check/"><span class="dot"></span>SEO 점수 체크</a>
+              <a class="dropdown-link" href="/tools/geo-check/"><span class="dot"></span>GEO 엔티티 체크</a>
+              <a class="dropdown-link" href="/tools/keyword-research/"><span class="dot"></span>키워드 분석</a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="header-cta">
+      <a href="/contact/" class="btn btn-primary">무료 상담 신청</a>
+      <button class="mobile-toggle" id="mobile-toggle" aria-label="메뉴 열기" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- 모바일 메뉴 -->
+<nav class="mobile-nav" id="mobile-nav" aria-hidden="true">
+  <ul>
+    <li class="mobile-nav-item">
+      <a href="#" class="mobile-sub-toggle">서비스 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+      <ul class="mobile-sub">
+        <li><a href="/services/geo/">GEO 서비스</a></li>
+        <li><a href="/services/aeo/">AEO 서비스</a></li>
+        <li><a href="/services/seo/">SEO 서비스</a></li>
+        <li><a href="/services/hospital-marketing/">병원마케팅 광고</a></li>
+        <li><a href="/services/website/">홈페이지 제작</a></li>
+      </ul>
+    </li>
+    <li class="mobile-nav-item">
+      <a href="#" class="mobile-sub-toggle">병과별 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></a>
+      <ul class="mobile-sub">
+        <li><a href="/specialty/plastic-surgery/">성형외과</a></li>
+        <li><a href="/specialty/dermatology/">피부과</a></li>
+        <li><a href="/specialty/dental/">치과</a></li>
+        <li><a href="/specialty/orthopedic/">정형외과</a></li>
+        <li><a href="/specialty/oriental/">한의원</a></li>
+        <li><a href="/specialty/obesity/">비만클리닉</a></li>
+      </ul>
+    </li>
+    <li class="mobile-nav-item"><a href="/cases/">성과사례</a></li>
+    <li class="mobile-nav-item"><a href="/wiki/">위키</a></li>
+    <li style="padding:16px 24px">
+      <a href="/contact/" class="btn btn-primary" style="width:100%;justify-content:center">무료 상담 신청</a>
+    </li>
+  </ul>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-content fade-up">
+      <div class="hero-badge">🏥 AI 시대 병원마케팅 전문</div>
+      <h1>AI 검색에 직접 인용되는<br><span class="text-gradient">병원마케팅 전문 대행사</span></h1>
+      <p class="hero-sub">
+        광고비 95%가 낭비되는 구조를 끊고,<br>
+        SEO·AEO·GEO 통합 전략으로 ChatGPT·Perplexity·네이버AI에<br>
+        당신의 병원이 직접 인용되도록 만듭니다.
+      </p>
+      <div class="hero-ctas">
+        <a href="/contact/" class="btn btn-primary">무료 마케팅 진단 받기 →</a>
+        <a href="/services/" class="btn btn-outline">서비스 알아보기</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat-item"><div class="hero-stat-num">200+</div><div class="hero-stat-label">협력 병원</div></div>
+        <div class="hero-stat-item"><div class="hero-stat-num">350%</div><div class="hero-stat-label">평균 트래픽 증가</div></div>
+        <div class="hero-stat-item"><div class="hero-stat-num">5년+</div><div class="hero-stat-label">전문 운영</div></div>
+        <div class="hero-stat-item"><div class="hero-stat-num">15%</div><div class="hero-stat-label">AI 트래픽 비중</div></div>
+      </div>
+    </div>
+  </div>
+  <svg class="hero-wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+    <path fill="#ffffff" d="M0,40 C360,80 1080,0 1440,40 L1440,60 L0,60 Z"/>
+  </svg>
+</section>
+
+<!-- ===== STATS BAR ===== -->
+<section class="section-sm" style="background:#fff">
+  <div class="container">
+    <div class="stats-grid fade-up">
+      <div class="stat-item"><div class="stat-num">15%</div><div class="stat-label">병원 업종 AI 트래픽 비중 (2026)</div></div>
+      <div class="stat-item"><div class="stat-num">30%↓</div><div class="stat-label">구글 AI Overview 도입 후 클릭률 감소</div></div>
+      <div class="stat-item"><div class="stat-num">2억+</div><div class="stat-label">ChatGPT 월간 활성 사용자</div></div>
+      <div class="stat-item"><div class="stat-num">95%</div><div class="stat-label">기존 광고비 구조적 낭비율</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROBLEM (비교 패턴) ===== -->
+<section class="section section-gray">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="section-badge badge-orange">CORE PROBLEM</span>
+      <h2>광고비 95%가 낭비되는<br>구조적 이유</h2>
+      <p>AI가 직접 답변하는 시대, 클릭 없이 결정이 이루어집니다</p>
+    </div>
+    <div class="comparison-block fade-up">
+      <div class="comparison-col bad">
+        <h3>❌ 기존 병원마케팅 방식</h3>
+        <ul class="comparison-list">
+          <li><span class="icon">✗</span>네이버 파워링크 CPC 의존</li>
+          <li><span class="icon">✗</span>클릭 단가 지속 상승 (월 300만원+)</li>
+          <li><span class="icon">✗</span>AI 검색에서 클릭 자체가 사라짐</li>
+          <li><span class="icon">✗</span>광고 중단 = 트래픽 즉시 0</li>
+          <li><span class="icon">✗</span>콘텐츠 자산이 남지 않음</li>
+          <li><span class="icon">✗</span>AI 답변 소스로 인용 불가</li>
+        </ul>
+        <div class="comparison-time">⏱ 지속 비용: 월 300~500만원</div>
+      </div>
+      <div class="comparison-col good">
+        <h3>✅ SEO·AEO·GEO 통합 전략</h3>
+        <ul class="comparison-list">
+          <li><span class="icon">✓</span>AI 검색에서 무료로 직접 인용</li>
+          <li><span class="icon">✓</span>콘텐츠가 영구 자산으로 누적</li>
+          <li><span class="icon">✓</span>ChatGPT·Perplexity 답변 소스화</li>
+          <li><span class="icon">✓</span>광고 없이 지속적 트래픽 유입</li>
+          <li><span class="icon">✓</span>병원 전문성·신뢰도 자동 강화</li>
+          <li><span class="icon">✓</span>한 번 구축하면 반영구적 작동</li>
+        </ul>
+        <div class="comparison-time">⚡ 초기 투자 후 지속 효과</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SEO → AEO → GEO ===== -->
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="section-badge badge-blue">FRAMEWORK</span>
+      <h2>SEO · AEO · GEO<br>3단계 진화</h2>
+      <p style="color:rgba(255,255,255,.7)">발견 → 채택 → 인용. 세 전략을 동시에 구현할 때 최대 효과</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px" class="fade-up">
+
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px">
+        <span style="font-size:.75rem;font-weight:700;color:#60A5FA;letter-spacing:.1em">2010~ 발견</span>
+        <h3 style="font-size:2rem;color:#fff;margin:8px 0 16px">SEO</h3>
+        <p style="color:rgba(255,255,255,.7);font-size:.875rem;margin-bottom:20px">검색엔진 결과 페이지(SERP)에서 상위 노출되도록 키워드·링크·콘텐츠를 최적화합니다.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#60A5FA">✓</span>키워드 최적화</li>
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#60A5FA">✓</span>테크니컬 SEO</li>
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#60A5FA">✓</span>백링크 구축</li>
+        </ul>
+      </div>
+
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px">
+        <span style="font-size:.75rem;font-weight:700;color:#34D399;letter-spacing:.1em">2020~ 채택</span>
+        <h3 style="font-size:2rem;color:#fff;margin:8px 0 16px">AEO</h3>
+        <p style="color:rgba(255,255,255,.7);font-size:.875rem;margin-bottom:20px">답변 엔진(People Also Ask·Featured Snippet)이 신뢰 출처로 채택하도록 구조·권위를 최적화합니다.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#34D399">✓</span>FAQ 구조화</li>
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#34D399">✓</span>역피라미드 구조</li>
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#34D399">✓</span>음성검색 최적화</li>
+        </ul>
+      </div>
+
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px">
+        <span style="font-size:.75rem;font-weight:700;color:#22D3EE;letter-spacing:.1em">2024~ 인용</span>
+        <h3 style="font-size:2rem;color:#fff;margin:8px 0 16px">GEO</h3>
+        <p style="color:rgba(255,255,255,.7);font-size:.875rem;margin-bottom:20px">생성형 AI 답변 안에 병원 브랜드가 인용 출처로 등장하도록 콘텐츠 구조·스키마·신뢰 신호를 최적화합니다.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#22D3EE">✓</span>llms.txt 설정</li>
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#22D3EE">✓</span>Schema 자동화</li>
+          <li style="font-size:.8rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center"><span style="color:#22D3EE">✓</span>AI 크롤러 허용</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5-STEP PROCESS ===== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="section-badge badge-blue">PROCESS OVERVIEW</span>
+      <h2>병원마케팅 5-Step 프로세스</h2>
+      <p>진단부터 AI 인용까지, 체계적인 프로세스로 실행합니다</p>
+    </div>
+    <div class="steps-grid fade-up">
+      <div class="step-card"><div class="step-num">01</div><div class="step-title">현황 진단</div><div class="step-desc">병원 마케팅 현황 분석 리포트 제공</div></div>
+      <div class="step-card"><div class="step-num">02</div><div class="step-title">키워드 전략</div><div class="step-desc">검색 의도·경쟁사 키워드 맵 수립</div></div>
+      <div class="step-card"><div class="step-num">03</div><div class="step-title">콘텐츠 설계</div><div class="step-desc">SEO·AEO·GEO 최적화 콘텐츠 제작</div></div>
+      <div class="step-card"><div class="step-num">04</div><div class="step-title">기술 최적화</div><div class="step-desc">테크니컬 SEO·Schema·llms.txt</div></div>
+      <div class="step-card"><div class="step-num">05</div><div class="step-title">성과 측정</div><div class="step-desc">KPI 추적·GEO Score·월간 리포트</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section class="section section-gray">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="section-badge badge-blue">SERVICES</span>
+      <h2>병원마케팅 전문 서비스</h2>
+      <p>병원 업종에 특화된 SEO·AEO·GEO 통합 서비스를 제공합니다</p>
+    </div>
+    <div class="services-grid fade-up">
+      <div class="service-card"><div class="service-icon">🔍</div><h3>SEO 서비스</h3><p>구글·네이버 검색 상위 노출. 테크니컬 SEO, 콘텐츠 최적화, 로컬 SEO 통합 제공.</p><a href="/services/seo/" class="link-more">자세히 보기 →</a></div>
+      <div class="service-card"><div class="service-icon">🤖</div><h3>GEO 서비스</h3><p>ChatGPT·Perplexity·Gemini 답변에 병원이 인용되도록 최적화합니다.</p><a href="/services/geo/" class="link-more">자세히 보기 →</a></div>
+      <div class="service-card"><div class="service-icon">🎤</div><h3>AEO 서비스</h3><p>음성검색·네이버 AI 답변에 채택되는 FAQ 구조화 콘텐츠 전략.</p><a href="/services/aeo/" class="link-more">자세히 보기 →</a></div>
+      <div class="service-card"><div class="service-icon">🏥</div><h3>병원마케팅 광고</h3><p>의료법 준수 네이버·구글 광고 대행. 낭비 없는 타겟 광고 운영.</p><a href="/services/hospital-marketing/" class="link-more">자세히 보기 →</a></div>
+      <div class="service-card"><div class="service-icon">💻</div><h3>홈페이지 제작</h3><p>GEO·AEO·SEO가 내장된 병원 홈페이지 제작. 워드프레스 기반.</p><a href="/services/website/" class="link-more">자세히 보기 →</a></div>
+      <div class="service-card"><div class="service-icon">📱</div><h3>SNS·블로그 운영</h3><p>인스타그램·블로그 전문 운영. AI 콘텐츠 + 전문가 검수.</p><a href="/services/sns/" class="link-more">자세히 보기 →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SPECIALTY ===== -->
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="section-badge badge-green">BY SPECIALTY</span>
+      <h2>병과별 전문 마케팅</h2>
+      <p>진료과 특성에 맞는 맞춤형 SEO·GEO 전략</p>
+    </div>
+    <div class="specialty-grid fade-up">
+      <a href="/specialty/plastic-surgery/" class="specialty-card"><div class="icon">💉</div><div class="name">성형외과</div></a>
+      <a href="/specialty/dermatology/" class="specialty-card"><div class="icon">✨</div><div class="name">피부과</div></a>
+      <a href="/specialty/dental/" class="specialty-card"><div class="icon">🦷</div><div class="name">치과</div></a>
+      <a href="/specialty/orthopedic/" class="specialty-card"><div class="icon">🦴</div><div class="name">정형외과</div></a>
+      <a href="/specialty/oriental/" class="specialty-card"><div class="icon">🌿</div><div class="name">한의원</div></a>
+      <a href="/specialty/obesity/" class="specialty-card"><div class="icon">⚖️</div><div class="name">비만클리닉</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CASE STUDIES ===== -->
+<section class="section section-gray">
+  <div class="container">
+    <div class="section-header fade-up">
+      <span class="section-badge badge-green">TRACK RECORD</span>
+      <h2>실제 성과 사례</h2>
+      <p>숫자로 증명하는 병원마케팅 성과</p>
+    </div>
+    <div class="cases-grid fade-up">
+      <div class="case-card"><div class="case-body"><span class="case-tag">성형외과</span><h3>강남 성형외과 클리닉</h3><p style="font-size:.875rem;color:#6B7280">네이버 블로그+SEO 통합 운영으로 월 상담 300% 증가</p><div class="case-metrics"><div><div class="case-metric-num">트래픽 350%↑</div><div class="case-metric-label">6개월 성과</div></div><div><div class="case-metric-num">상담신청 3배</div><div class="case-metric-label">전환율 개선</div></div></div></div></div>
+      <div class="case-card"><div class="case-body"><span class="case-tag">피부과</span><h3>분당 피부과 의원</h3><p style="font-size:.875rem;color:#6B7280">GEO 최적화 후 ChatGPT 인용 달성, AI 트래픽 유입 시작</p><div class="case-metrics"><div><div class="case-metric-num">AI인용 15건/월</div><div class="case-metric-label">GEO 성과</div></div><div><div class="case-metric-num">신규환자 2.1배</div><div class="case-metric-label">내원 증가</div></div></div></div></div>
+      <div class="case-card"><div class="case-body"><span class="case-tag">치과</span><h3>홍대 치과</h3><p style="font-size:.875rem;color:#6B7280">SEO 6개월 운영 후 "홍대 치과 추천" 1위 달성</p><div class="case-metrics"><div><div class="case-metric-num">검색순위 1위</div><div class="case-metric-label">목표 키워드</div></div><div><div class="case-metric-num">클릭률 280%↑</div><div class="case-metric-label">CTR 개선</div></div></div></div></div>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+      <a href="/cases/" class="btn btn-primary">전체 사례 보기 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA + CONTACT FORM ===== -->
+<section class="section section-dark" id="contact">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start">
+
+      <div class="fade-up">
+        <span class="section-badge badge-blue">무료 상담 신청</span>
+        <h2 style="color:#fff;margin-bottom:20px;font-size:2rem;font-weight:800;line-height:1.3">지금 바로 시작하세요<br><span class="text-gradient">무료 진단은 24시간</span><br>안에 연락드립니다</h2>
+        <ul style="list-style:none;margin-top:32px">
+          <li style="display:flex;gap:16px;align-items:flex-start;margin-bottom:24px">
+            <span style="width:44px;height:44px;background:rgba(37,99,235,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">✅</span>
+            <div><div style="color:#fff;font-weight:700;margin-bottom:4px">무료 마케팅 현황 진단</div><div style="color:rgba(255,255,255,.6);font-size:.875rem">현재 병원 온라인 마케팅 상태 분석 리포트 제공</div></div>
+          </li>
+          <li style="display:flex;gap:16px;align-items:flex-start;margin-bottom:24px">
+            <span style="width:44px;height:44px;background:rgba(37,99,235,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">✅</span>
+            <div><div style="color:#fff;font-weight:700;margin-bottom:4px">경쟁 병원 분석 포함</div><div style="color:rgba(255,255,255,.6);font-size:.875rem">지역 내 경쟁 병원 키워드·SEO 현황 비교</div></div>
+          </li>
+          <li style="display:flex;gap:16px;align-items:flex-start;margin-bottom:24px">
+            <span style="width:44px;height:44px;background:rgba(37,99,235,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">✅</span>
+            <div><div style="color:#fff;font-weight:700;margin-bottom:4px">맞춤 전략 제안서 제공</div><div style="color:rgba(255,255,255,.6);font-size:.875rem">병원 상황에 맞는 마케팅 로드맵 무료 제안</div></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="fade-up">
+        <div class="contact-form-wrap">
+          <h3>무료 상담 신청서</h3>
+          <form id="contact-form">
+            <div class="form-row">
+              <div class="form-group"><label>병원명 <span class="req">*</span></label><input type="text" name="hospital_name" placeholder="○○의원" required></div>
+              <div class="form-group"><label>담당자명 <span class="req">*</span></label><input type="text" name="person_name" placeholder="홍길동" required></div>
+            </div>
+            <div class="form-group"><label>연락처 <span class="req">*</span></label><input type="tel" name="contact" placeholder="010-0000-0000" required></div>
+            <div class="form-group">
+              <label>관심 서비스 <span class="req">*</span></label>
+              <div class="service-checks">
+                <label class="service-check-label"><input type="checkbox" name="services[]" value="GEO 서비스"> GEO 서비스</label>
+                <label class="service-check-label"><input type="checkbox" name="services[]" value="SEO 서비스"> SEO 서비스</label>
+                <label class="service-check-label"><input type="checkbox" name="services[]" value="AEO 서비스"> AEO 서비스</label>
+                <label class="service-check-label"><input type="checkbox" name="services[]" value="홈페이지 제작"> 홈페이지 제작</label>
+                <label class="service-check-label"><input type="checkbox" name="services[]" value="병원마케팅 광고"> 병원마케팅 광고</label>
+                <label class="service-check-label"><input type="checkbox" name="services[]" value="SNS·블로그"> SNS·블로그</label>
+              </div>
+            </div>
+            <div class="form-group"><label>문의 내용</label><textarea name="message" rows="3" placeholder="현재 상황이나 궁금한 점을 간단히 적어주세요"></textarea></div>
+            <label class="privacy-check"><input type="checkbox" required> 개인정보 수집·이용에 동의합니다. 수집된 정보는 상담 목적으로만 활용됩니다. <a href="/privacy/">개인정보처리방침</a></label>
+            <button type="submit" class="form-submit">무료 상담 신청하기 →</button>
+          </form>
+          <div id="form-success" style="display:none;text-align:center;padding:40px 0;color:#fff">
+            <div style="font-size:3rem;margin-bottom:16px">🎉</div>
+            <h3 style="color:#fff">신청 완료!</h3>
+            <p style="color:rgba(255,255,255,.7)">24시간 안에 담당자가 연락드립니다.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">메디<span>마케팅</span></div>
+        <p>AI 시대 병원마케팅의 새로운 기준.<br>SEO·AEO·GEO 통합 전략으로<br>광고 없이 환자를 모읍니다.</p>
+        <div class="footer-sns">
+          <a href="#" aria-label="블로그">📝</a>
+          <a href="#" aria-label="유튜브">▶</a>
+          <a href="#" aria-label="인스타그램">📷</a>
+          <a href="#" aria-label="카카오톡">💬</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>서비스</h4>
+        <ul>
+          <li><a href="/services/geo/">GEO 서비스</a></li>
+          <li><a href="/services/aeo/">AEO 서비스</a></li>
+          <li><a href="/services/seo/">SEO 서비스</a></li>
+          <li><a href="/services/hospital-marketing/">병원마케팅 광고</a></li>
+          <li><a href="/services/website/">홈페이지 제작</a></li>
+          <li><a href="/services/sns/">SNS 관리</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>위키</h4>
+        <ul>
+          <li><a href="/wiki/geo/">GEO란?</a></li>
+          <li><a href="/wiki/aeo/">AEO란?</a></li>
+          <li><a href="/wiki/hospital-seo/">병원 SEO 가이드</a></li>
+          <li><a href="/wiki/naver-marketing/">네이버 마케팅</a></li>
+          <li><a href="/wiki/llms-txt/">llms.txt 가이드</a></li>
+          <li><a href="/wiki/">전체 위키 →</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>회사</h4>
+        <ul>
+          <li><a href="/about/">회사 소개</a></li>
+          <li><a href="/cases/">성과 사례</a></li>
+          <li><a href="/blog/">블로그</a></li>
+          <li><a href="/tools/">무료 도구</a></li>
+          <li><a href="/contact/">상담 신청</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>
+        <p style="color:rgba(255,255,255,.5)">© 2026 메디마케팅. All rights reserved.</p>
+        <p class="footer-biz">사업자등록번호: 000-00-00000 &nbsp;|&nbsp; 대표: 홍길동 &nbsp;|&nbsp; 서울특별시 강남구<br>통신판매업신고번호: 제2024-서울강남-0000호</p>
+      </div>
+      <div class="footer-links">
+        <a href="/privacy/">개인정보처리방침</a>
+        <a href="/terms/">이용약관</a>
+        <a href="/sitemap/">사이트맵</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function(){
+  'use strict';
+
+  /* Header scroll */
+  var header = document.getElementById('site-header');
+  if(header){
+    var onScroll = function(){ header.classList.toggle('scrolled', window.scrollY > 60); };
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+  }
+
+  /* Mobile nav */
+  var toggle = document.getElementById('mobile-toggle');
+  var mNav   = document.getElementById('mobile-nav');
+  if(toggle && mNav){
+    toggle.addEventListener('click', function(){
+      var open = mNav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open);
+      toggle.classList.toggle('active', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    });
+    mNav.querySelectorAll('.mobile-sub-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        btn.closest('.mobile-nav-item').classList.toggle('open');
+      });
+    });
+  }
+
+  /* Scroll reveal */
+  var revealEls = document.querySelectorAll('.fade-up');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    },{threshold:0.1});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('visible'); });
+  }
+
+  /* Smooth scroll */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var target = document.getElementById(a.getAttribute('href').slice(1));
+      if(!target) return;
+      e.preventDefault();
+      window.scrollTo({top: target.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+    });
+  });
+
+  /* Contact form */
+  var form = document.getElementById('contact-form');
+  var success = document.getElementById('form-success');
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var btn = form.querySelector('[type=submit]');
+      btn.disabled = true;
+      btn.textContent = '전송 중...';
+      /* WordPress AJAX or demo mode */
+      setTimeout(function(){
+        if(form && success){
+          form.style.display = 'none';
+          success.style.display = 'block';
+        }
+        btn.disabled = false;
+        btn.textContent = '무료 상담 신청하기 →';
+      }, 1200);
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
