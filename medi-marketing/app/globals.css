@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Noto Sans KR", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+html { scroll-behavior: smooth; }
+* { box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+
+.text-gradient {
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 2px;
+  background: #2563EB;
+  transition: width 0.2s ease;
+}
+.nav-link:hover::after { width: 100%; }
+
+.card-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+
+.section-fade { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.section-fade.visible { opacity: 1; transform: translateY(0); }
+
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
+.btn-pulse { animation: pulseRing 2.5s infinite; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-hero-1 { animation: fadeUp 0.7s ease 0.1s both; }
+.animate-hero-2 { animation: fadeUp 0.7s ease 0.3s both; }
+.animate-hero-3 { animation: fadeUp 0.7s ease 0.5s both; }
