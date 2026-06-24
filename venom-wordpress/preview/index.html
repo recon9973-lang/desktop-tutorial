@@ -100,6 +100,7 @@ body{padding-top:38px}
   text-decoration:none;transition:.15s;letter-spacing:0}
 .main-nav>li>a:hover{color:var(--p);background:var(--soft)}
 .darr{width:13px;height:13px;stroke:currentColor;stroke-width:1.8;fill:none;transition:transform .2s}
+.nav-new{display:inline-block;font-size:10px;font-weight:700;color:#0ea5e9;background:#e0f2fe;border-radius:4px;padding:1px 5px;margin:0 2px;letter-spacing:.03em;vertical-align:middle}
 .dropdown{display:none;position:absolute;top:100%;left:0;
   min-width:196px;background:#fff;border:1px solid var(--border);
   border-radius:var(--r12);box-shadow:var(--s2);padding:6px;z-index:300;
@@ -582,30 +583,20 @@ body{padding-top:38px}
           <a href="#" onclick="ld('dental');return false">의료기기마케팅</a>
         </div>
       </li>
+      <li><a href="#" onclick="sp('services');return false">온라인마케팅</a></li>
+      <li><a href="#" onclick="sp('hospital');return false">홈페이지 제작</a></li>
+      <li><a href="#" onclick="sp('blog');return false">블로그</a></li>
       <li>
-        <a href="#" onclick="return false">AI마케팅 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+        <a href="#" onclick="return false">AI마케팅 <span class="nav-new">NEW</span> <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
         <div class="dropdown">
           <a href="#" onclick="ld('geo');return false">GEO — 생성AI 최적화</a>
           <a href="#" onclick="ld('aeo');return false">AEO — 답변엔진 최적화</a>
           <a href="#" onclick="ld('seo');return false">SEO — 검색엔진 최적화</a>
         </div>
       </li>
-      <li>
-        <a href="#" onclick="return false">병원홈페이지 제작 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
-        <div class="dropdown">
-          <a href="#" onclick="sp('hospital');return false">기본형 — 990만원</a>
-          <a href="#" onclick="sp('hospital');return false">중급형 — 1,490만원</a>
-          <a href="#" onclick="sp('hospital');return false">고급형 — 2,490만원~</a>
-        </div>
-      </li>
-      <li><a href="#" onclick="sp('blog');return false">블로그</a></li>
     </ul></nav>
     <div class="header-actions">
-      <a href="tel:16614142" class="phone-link">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.64A2 2 0 012 .82h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        1661-4142
-      </a>
-      <a href="#" href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p btn-sm">💬 카카오 무료 상담</a>
+      <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p btn-sm">무료 상담 신청</a>
     </div>
   </div>
 </header>
