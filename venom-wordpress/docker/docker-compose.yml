@@ -1,0 +1,73 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: venomroot
+      MYSQL_DATABASE: venom_wp
+      MYSQL_USER: venom
+      MYSQL_PASSWORD: venom2024
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - venom_net
+
+  wordpress:
+    image: wordpress:6.5-php8.3-apache
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: venom
+      WORDPRESS_DB_PASSWORD: venom2024
+      WORDPRESS_DB_NAME: venom_wp
+      WORDPRESS_TABLE_PREFIX: vn_
+      WORDPRESS_DEBUG: "true"
+    volumes:
+      - wp_data:/var/www/html
+      - ../theme/venom-theme:/var/www/html/wp-content/themes/venom-theme
+      - ../plugins:/var/www/html/wp-content/plugins/venom-plugins
+    networks:
+      - venom_net
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: venom
+      PMA_PASSWORD: venom2024
+    networks:
+      - venom_net
+
+  wp-cli:
+    image: wordpress:cli-php8.3
+    depends_on:
+      - db
+      - wordpress
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: venom
+      WORDPRESS_DB_PASSWORD: venom2024
+      WORDPRESS_DB_NAME: venom_wp
+    volumes:
+      - wp_data:/var/www/html
+      - ../theme/venom-theme:/var/www/html/wp-content/themes/venom-theme
+    networks:
+      - venom_net
+    entrypoint: ["wp", "--allow-root"]
+
+volumes:
+  db_data:
+  wp_data:
+
+networks:
+  venom_net:
