@@ -1913,7 +1913,7 @@ function switchTool(id){
 }
 function toolReady(type){}
 
-var _PSI_KEY='AIzaSyAkfm3uQgyYEbu_gw9ptingYqFktZwjPLk';
+var _PSI_PROXY='/api/psi-proxy';
 
 function runSEO(){
   var url=document.getElementById('seo-url').value.trim();
@@ -1928,11 +1928,7 @@ function runSEO(){
   el.style.display='block';
   el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">'+spinIcon+' Google PageSpeed Insights로 실제 분석 중...<br><small style="margin-top:8px;display:block">보통 10~20초 소요됩니다</small></div>';
 
-  var apiUrl='https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
-    +'?url='+encodeURIComponent(url)
-    +'&key='+_PSI_KEY
-    +'&strategy=mobile'
-    +'&category=seo&category=performance&category=best-practices&category=accessibility';
+  var apiUrl=_PSI_PROXY+'?url='+encodeURIComponent(url);
 
   fetch(apiUrl)
     .then(function(r){
