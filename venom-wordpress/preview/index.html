@@ -1913,131 +1913,168 @@ function switchTool(id){
 }
 function toolReady(type){}
 
-function _rng(seed,min,max){var x=Math.sin(seed)*10000;return Math.floor((x-Math.floor(x))*(max-min+1))+min;}
-function _urlSeed(url){var s=0;for(var i=0;i<url.length;i++)s=(s*31+url.charCodeAt(i))&0xffffffff;return Math.abs(s);}
+var _PSI_KEY='AIzaSyAkfm3uQgyYEbu_gw9ptingYqFktZwjPLk';
 
 function runSEO(){
   var url=document.getElementById('seo-url').value.trim();
   if(!url){alert('URL을 입력해주세요');return;}
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var btn=document.querySelector('#tool-seo .tool-btn');
-  btn.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>분석 중...</span>';
+  var spinIcon='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+  btn.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px">'+spinIcon+'분석 중...</span>';
   btn.disabled=true;
-  var seed=_urlSeed(url);
   var domain=url.replace(/^https?:\/\//,'').split('/')[0];
+  var el=document.getElementById('seo-result');
+  el.style.display='block';
+  el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">'+spinIcon+' Google PageSpeed Insights로 실제 분석 중...<br><small style="margin-top:8px;display:block">보통 10~20초 소요됩니다</small></div>';
 
-  // 항목 정의: [이름, 설명, 배점, pass확률(0~1)]
-  var checks={
-    content:[
-      ['타이틀 태그',       '검색결과에 표시되는 페이지 제목 카드 활용',          6, 0.7],
-      ['타이틀 페이지 수',  'Title 태그는 페이지당 1개만 사용, 네이버 SEO 필수',  6, 0.65],
-      ['메타 디스크립션',   '검색결과 설명문, 콘텐츠·전환율에 직접 영향',         6, 0.55],
-      ['H1 태그 존재',      '페이지의 핵심 주제를 검색엔진 콘텐츠 패턴 활용',     8, 0.75],
-      ['H1 태그 단일 사용', 'H1은 페이지당 1개만 사용해 주제 명확화',            6, 0.6],
-      ['H2 구조화',         '스캐너블한 콘텐츠 구조화·기독교·구글 활용 시스템',   6, 0.5],
-      ['제목 태그 구조',    'H1→H2→H3 순서 유지 요소의 SEO 점수',               6, 0.55],
-      ['이미지 ALT 속성',   '이미지 태그에 대한 설명 필드 활용',                  6, 0.45],
-    ],
-    tech:[
-      ['HTTPS 보안',        'SSL 인증서 적용, 구글 랭킹 요소이자 사용자 신뢰 지표', 5, 0.8],
-      ['혼합 콘텐츠',       'HTTPS 사이트에서 HTTP 링크/리소스 사용 금지, 네이버 SEO 직접 영향', 4, 0.7],
-      ['Canonical 태그',    '중복 콘텐츠 방지, 대표 URL을 검색엔진에게 알림',      4, 0.5],
-      ['Viewport 설정',     '모바일 반응형 설정, 모바일 우선 인덱싱 대응',         4, 0.75],
-      ['언어 속성',         'HTML lang 속성으로 콘텐츠 언어 명시',                 3, 0.6],
-    ],
-    search:[
-      ['파비콘',            '브라우저 탭에 표시되는 사이트 아이콘',                3, 0.8],
-      ['sitemap.xml 사용',  '검색엔진 크롤러에게 사이트 구조 제공',               4, 0.55],
-      ['sitemap.xml 완성도','콘텐츠 XML 형식·날짜·URL 목록 요건 여부',            3, 0.45],
-      ['robots.txt 사용',   '크롤러 접근 제어, 크롤링 효율 관리',                 4, 0.6],
-      ['robots.txt 유효성', 'User-agent, Allow/Disallow 구식 검증',              3, 0.5],
-      ['Open Graph 태그',   'SNS 공유 시 미리보기 제목·이미지·설명문 표시',        3, 0.5],
-    ],
-    speed:[
-      ['HTTP 압축',         'gzip/brotli 압축으로 전송 용량 최대 80% 절감',        3, 0.65],
-      ['WebP 이미지 사용',  '차세대 이미지 형식 적용, 약 25~35% 용량 절감',        3, 0.4],
-      ['이미지 지연 로딩',  '스크롤 시 이미지 로드로 초기 속도 개선·절감',          2, 0.5],
-      ['리소스 힌트',       'preload, preconnect로 리소스 사전 로딩 구간',          2, 0.35],
-    ]
-  };
+  var apiUrl='https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
+    +'?url='+encodeURIComponent(url)
+    +'&key='+_PSI_KEY
+    +'&strategy=mobile'
+    +'&category=seo&category=performance&category=best-practices&category=accessibility';
 
-  setTimeout(function(){
-    btn.innerHTML='분석하기'; btn.disabled=false;
-    var cats=[
-      {key:'content', label:'콘텐츠 SEO',     max:50, color:'#533afd', icon:'📝'},
-      {key:'tech',    label:'기술적 SEO',      max:20, color:'#06b6d4', icon:'⚙️'},
-      {key:'search',  label:'검색엔진 친화도', max:20, color:'#8b5cf6', icon:'🔍'},
-      {key:'speed',   label:'속도 최적화',     max:10, color:'#f59e0b', icon:'⚡'},
-    ];
-    var catScores={};
-    var allItems='';
-    cats.forEach(function(cat,ci){
-      var items=checks[cat.key];
-      var catScore=0; var catMax=0;
-      var rows='';
-      items.forEach(function(item,ii){
-        var pass=_rng(seed+ci*100+ii,0,99)<Math.round(item[3]*100);
-        var pts=pass?item[2]:0;
-        catScore+=pts; catMax+=item[2];
-        rows+='<div class="seo-item">'
-          +'<span class="seo-item-status '+(pass?'pass':'fail')+'">'+(pass?'✓':'✗')+'</span>'
-          +'<div class="seo-item-info">'
-          +'<span class="seo-item-name">'+(pass?item[0]:'<strong>'+item[0]+'</strong>')+'</span>'
-          +'<span class="seo-item-desc">'+item[1]+'</span>'
+  fetch(apiUrl)
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(function(data){
+      btn.innerHTML='분석하기'; btn.disabled=false;
+      var audits=data.lighthouseResult.audits;
+      var cats=data.lighthouseResult.categories;
+
+      // PSI 감사 → 우리 항목 매핑
+      function auditPass(id){ var a=audits[id]; return a&&(a.score===1||a.score===null); }
+      function auditScore(id){ var a=audits[id]; return a?a.score:null; }
+      function auditDisplay(id){ var a=audits[id]; return a?a.displayValue||'':''; }
+
+      var checks={
+        content:[
+          ['타이틀 태그',       '검색결과에 표시되는 페이지 제목',                    6, auditPass('document-title')],
+          ['메타 디스크립션',   '검색결과 설명문, 클릭률에 직접 영향',                 6, auditPass('meta-description')],
+          ['이미지 ALT 속성',   '이미지 대체 텍스트 — 접근성·SEO 모두 중요',          8, auditPass('image-alt')],
+          ['링크 텍스트',       '링크에 의미있는 텍스트 사용 여부',                    6, auditPass('link-text')],
+          ['크롤 가능한 링크',  'a 태그에 유효한 href 존재 여부',                      6, auditPass('crawlable-anchors')],
+          ['제목 태그 순서',    'H1→H2→H3 올바른 계층 구조',                          6, auditPass('heading-order')],
+          ['글꼴 크기',         '모바일에서 읽기 가능한 폰트 크기(12px 이상)',          6, auditPass('font-size')],
+          ['탭 타겟 크기',      '모바일 터치 버튼 크기·간격 적정 여부',                 6, auditPass('tap-targets')],
+        ],
+        tech:[
+          ['HTTPS 보안',        'SSL 인증서 적용 — 구글 랭킹 직접 영향',               5, auditPass('is-on-https')],
+          ['크롤 허용',         'robots.txt가 검색엔진 크롤링 차단 안 함',              5, auditPass('is-crawlable')],
+          ['Canonical 태그',    '중복 URL 방지 — 대표 주소를 검색엔진에 알림',          4, auditPass('canonical')],
+          ['Viewport 설정',     '모바일 반응형 메타태그 — 모바일 우선 인덱싱 필수',     3, auditPass('viewport')],
+          ['언어 속성',         'HTML lang 속성 — 검색엔진 언어 인식',                  3, auditPass('html-has-lang')],
+        ],
+        search:[
+          ['robots.txt',        '크롤러 접근 제어 파일 존재 여부',                      4, auditPass('robots-txt')],
+          ['hreflang',          '다국어 페이지 언어·지역 태그 설정',                     4, auditPass('hreflang')],
+          ['구조화 데이터',     'Schema.org JSON-LD — AI 검색 노출 핵심',               4, auditPass('structured-data')],
+          ['취약한 JS 라이브러리','보안 취약점 있는 라이브러리 사용 여부',               4, auditPass('no-vulnerable-libraries')],
+          ['HTTPS 리디렉션',    'HTTP → HTTPS 자동 전환 설정',                          2, auditPass('redirects-http')],
+          ['콘텐츠 크기',       '화면 너비에 맞는 콘텐츠 크기',                          2, auditPass('content-width')],
+        ],
+        speed:[
+          ['텍스트 압축',       'gzip/brotli 압축으로 용량 최대 80% 절감',              3, auditPass('uses-text-compression')],
+          ['WebP 이미지',       '차세대 이미지 형식 — 약 25~35% 용량 절감',             3, auditPass('uses-webp-images')],
+          ['이미지 지연 로딩',  'loading=lazy로 초기 로드 속도 개선',                    2, auditPass('offscreen-images')],
+          ['렌더링 차단 리소스','CSS·JS가 페이지 렌더링을 지연시키는지 여부',             2, auditPass('render-blocking-resources')],
+        ]
+      };
+
+      var catDef=[
+        {key:'content', label:'콘텐츠 SEO',     max:50, color:'#533afd', icon:'📝'},
+        {key:'tech',    label:'기술적 SEO',      max:20, color:'#06b6d4', icon:'⚙️'},
+        {key:'search',  label:'검색엔진 친화도', max:20, color:'#8b5cf6', icon:'🔍'},
+        {key:'speed',   label:'속도 최적화',     max:10, color:'#f59e0b', icon:'⚡'},
+      ];
+      var catScores={};
+      var allItems='';
+      catDef.forEach(function(cat){
+        var items=checks[cat.key];
+        var catScore=0;
+        var rows='';
+        items.forEach(function(item){
+          var pass=item[3]===true||item[3]===null;
+          var pts=pass?item[2]:0;
+          catScore+=pts;
+          rows+='<div class="seo-item">'
+            +'<span class="seo-item-status '+(pass?'pass':'fail')+'">'+(pass?'✓':'✗')+'</span>'
+            +'<div class="seo-item-info">'
+            +'<span class="seo-item-name">'+(pass?item[0]:'<strong>'+item[0]+'</strong>')+'</span>'
+            +'<span class="seo-item-desc">'+item[1]+'</span>'
+            +'</div>'
+            +'<span class="seo-item-pts '+(pass?'pass':'fail')+'">'+(pass?'+'+item[2]+'점':'0/'+item[2])+'</span>'
+            +'</div>';
+        });
+        catScores[cat.key]=catScore;
+        var pct=Math.round(catScore/cat.max*100);
+        allItems+='<div class="seo-cat-block">'
+          +'<div class="seo-cat-head">'
+          +'<span class="seo-cat-icon">'+cat.icon+'</span>'
+          +'<span class="seo-cat-label">'+cat.label+'</span>'
+          +'<div class="seo-cat-bar-bg"><div class="seo-cat-bar-fill" style="width:'+pct+'%;background:'+cat.color+'"></div></div>'
+          +'<span class="seo-cat-score" style="color:'+cat.color+'">'+catScore+'/'+cat.max+'점</span>'
           +'</div>'
-          +'<span class="seo-item-pts '+(pass?'pass':'fail')+'">'+(pass?'+'+item[2]+'점':'0/'+item[2])+'</span>'
+          +'<div class="seo-items">'+rows+'</div>'
           +'</div>';
       });
-      catScores[cat.key]=catScore;
-      var pct=Math.round(catScore/cat.max*100);
-      allItems+='<div class="seo-cat-block">'
-        +'<div class="seo-cat-head">'
-        +'<span class="seo-cat-icon">'+cat.icon+'</span>'
-        +'<span class="seo-cat-label">'+cat.label+'</span>'
-        +'<div class="seo-cat-bar-bg"><div class="seo-cat-bar-fill" style="width:'+pct+'%;background:'+cat.color+'"></div></div>'
-        +'<span class="seo-cat-score" style="color:'+cat.color+'">'+catScore+'/'+cat.max+'점</span>'
+
+      var total=catDef.reduce(function(a,c){return a+catScores[c.key];},0);
+      var psiSeo=Math.round((cats.seo?cats.seo.score:0)*100);
+      var psiPerf=Math.round((cats.performance?cats.performance.score:0)*100);
+      var gInfo=total>=90?['플래티넘','#7c3aed','최상위 SEO']:total>=80?['골드','#d97706','상위 20%']:total>=70?['실버','#64748b','개선 중']:total>=60?['브론즈','#b45309','보통']:['개선필요','#dc2626','즉시 조치 필요'];
+
+      var barSummary=catDef.map(function(c){
+        var pct=Math.round(catScores[c.key]/c.max*100);
+        return '<div class="tr-bar-row"><span class="tr-bar-label">'+c.label+'</span>'
+          +'<div class="tr-bar-bg"><div class="tr-bar-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div>'
+          +'<span class="tr-bar-score">'+catScores[c.key]+'/'+c.max+'</span></div>';
+      }).join('');
+
+      var psiInfo='<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">'
+        +'<div style="background:var(--soft);border-radius:8px;padding:10px 16px;font-size:13px">'
+        +'<span style="color:var(--mute)">Google SEO 점수</span> <strong style="color:#533afd">'+psiSeo+'</strong></div>'
+        +'<div style="background:var(--soft);border-radius:8px;padding:10px 16px;font-size:13px">'
+        +'<span style="color:var(--mute)">성능(속도) 점수</span> <strong style="color:#f59e0b">'+psiPerf+'</strong></div>'
+        +'<div style="background:var(--soft);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--mute)">'
+        +'<small>📡 Google PageSpeed Insights 실측 데이터</small></div>'
+        +'</div>';
+
+      var gradeRow='<div class="seo-grade-row">'
+        +'<span class="sg sg-pt'+(total>=90?' sg-cur':'')+'">90~100점<br>플래티넘<br>SEO 우수</span>'
+        +'<span class="sg sg-gd'+(total>=80&&total<90?' sg-cur':'')+'">80~89점<br>골드<br>양호</span>'
+        +'<span class="sg sg-sv'+(total>=70&&total<80?' sg-cur':'')+'">70~79점<br>실버<br>개선 중</span>'
+        +'<span class="sg sg-br'+(total>=60&&total<70?' sg-cur':'')+'">60~69점<br>브론즈<br>미달</span>'
+        +'<span class="sg sg-ir'+(total>=50&&total<60?' sg-cur':'')+'">50~59점<br>초기<br>미흡</span>'
+        +'<span class="sg sg-no'+(total<50?' sg-cur':'')+'">0~49점<br>위험<br>SEO 없음</span>'
+        +'</div>';
+
+      el.innerHTML=
+        '<div class="seo-result-header">'
+          +'<div class="seo-total-wrap">'
+            +'<div class="seo-total-num" style="color:'+gInfo[1]+'">'+total+'</div>'
+            +'<div><div class="seo-total-grade" style="color:'+gInfo[1]+'">'+gInfo[0]+'</div>'
+            +'<div class="seo-total-sub">'+domain+' · '+gInfo[2]+'</div></div>'
+          +'</div>'
+          +'<div class="tr-bars" style="flex:1;min-width:0">'+barSummary+'</div>'
         +'</div>'
-        +'<div class="seo-items">'+rows+'</div>'
+        +psiInfo
+        +allItems
+        +'<div class="seo-grade-section"><div class="seo-section-title">점수별 등급</div>'+gradeRow+'</div>'
+        +'<div class="tr-cta" style="margin-top:20px">'
+          +'<span class="tr-cta-text">베놈이 <strong>부족한 항목을 직접 개선</strong>해 드립니다 · 평균 +23점 향상</span>'
+          +'<a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="padding:8px 18px;font-size:13px">무료 SEO 상담 →</a>'
+        +'</div>';
+    })
+    .catch(function(err){
+      btn.innerHTML='분석하기'; btn.disabled=false;
+      el.innerHTML='<div style="padding:20px;text-align:center;color:#dc2626">'
+        +'<strong>분석 실패</strong><br><small style="color:var(--mute)">'+err.message+'<br>URL이 공개 접근 가능한지 확인해주세요</small>'
+        +'<br><br><button onclick="runSEO()" class="btn btn-p" style="padding:8px 16px;font-size:13px">다시 시도</button>'
         +'</div>';
     });
-    var total=cats.reduce(function(a,c){return a+catScores[c.key];},0);
-    var gInfo=total>=90?['플래티넘','#7c3aed','최상위 SEO']:total>=80?['골드','#d97706','상위 20%']:total>=70?['실버','#64748b','개선 중']:total>=60?['브론즈','#b45309','보통']:['개선필요','#dc2626','즉시 조치 필요'];
-
-    var scoreGrades='<div class="seo-grade-row">'
-      +['<span class="sg sg-pt">90~100점<br>플래티넘<br>SEO 우수</span>',
-        '<span class="sg sg-gd">80~89점<br>탑링<br>양호</span>',
-        '<span class="sg sg-sv">70~79점<br>발전팀<br>노력</span>',
-        '<span class="sg sg-br '+(total>=60&&total<70?'sg-cur':'')+'">60~69점<br>오수박<br>미달</span>',
-        '<span class="sg sg-ir '+(total>=50&&total<60?'sg-cur':'')+'">50~59점<br>초기팀<br>미흡</span>',
-        '<span class="sg sg-no '+(total<50?'sg-cur':'')+'">0~49점<br>바닐라하우스<br>SEO 없음</span>']
-      .map(function(s,i){return (total>=90&&i===0||total>=80&&i===1&&total<90||total>=70&&i===2&&total<80?s.replace('sg-'+['pt','gd','sv'][i],['sg-pt','sg-gd','sg-sv'][i]+' sg-cur'):s);}).join('')
-      +'</div>';
-
-    var barSummary=cats.map(function(c){
-      var pct=Math.round(catScores[c.key]/c.max*100);
-      return '<div class="tr-bar-row"><span class="tr-bar-label">'+c.label+'</span>'
-        +'<div class="tr-bar-bg"><div class="tr-bar-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div>'
-        +'<span class="tr-bar-score">'+catScores[c.key]+'/'+c.max+'</span></div>';
-    }).join('');
-
-    var el=document.getElementById('seo-result');
-    el.style.display='block';
-    el.innerHTML=
-      '<div class="seo-result-header">'
-        +'<div class="seo-total-wrap">'
-          +'<div class="seo-total-num" style="color:'+gInfo[1]+'">'+total+'</div>'
-          +'<div><div class="seo-total-grade" style="color:'+gInfo[1]+'">'+gInfo[0]+'</div>'
-          +'<div class="seo-total-sub">'+domain+' · '+gInfo[2]+'</div></div>'
-        +'</div>'
-        +'<div class="tr-bars" style="flex:1;min-width:0">'+barSummary+'</div>'
-      +'</div>'
-      +allItems
-      +'<div class="seo-grade-section"><div class="seo-section-title">점수별 등급</div>'+scoreGrades+'</div>'
-      +'<div class="tr-cta" style="margin-top:20px">'
-        +'<span class="tr-cta-text">베놈이 <strong>부족한 항목을 직접 개선</strong>해 드립니다 · 평균 +23점 향상</span>'
-        +'<a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="padding:8px 18px;font-size:13px">무료 SEO 상담 →</a>'
-      +'</div>';
-  },2000);
 }
 
 function runGEO(){
