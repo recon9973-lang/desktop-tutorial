@@ -20,7 +20,8 @@ module.exports = function handler(req, res) {
 
   const timestamp = Date.now().toString();
   const message = timestamp + '.' + accessLicense;
-  const hmac = crypto.createHmac('sha256', secretKey);
+  const keyBuffer = Buffer.from(secretKey, 'base64');
+  const hmac = crypto.createHmac('sha256', keyBuffer);
   hmac.update(message, 'utf8');
   const signature = hmac.digest('base64');
 
@@ -51,6 +52,7 @@ module.exports = function handler(req, res) {
         data._debug_key_len = secretKey.length;
         data._debug_key_prefix = secretKey.slice(0,4);
         data._debug_key_suffix = secretKey.slice(-8);
+        data._debug_keybuf_len = keyBuffer.length;
         data._debug_license_len = accessLicense.length;
         data._debug_license_suffix = accessLicense.slice(-8);
         data._debug_customer = customerId;
