@@ -20,8 +20,8 @@ module.exports = function handler(req, res) {
 
   const timestamp = Date.now().toString();
   const message = timestamp + '.' + accessLicense;
-  const hmac = crypto.createHmac('sha256', Buffer.from(secretKey, 'base64'));
-  hmac.update(message);
+  const hmac = crypto.createHmac('sha256', secretKey);
+  hmac.update(message, 'utf8');
   const signature = hmac.digest('base64');
 
   const hints = [keyword, keyword + ' 비용', keyword + ' 후기', keyword + ' 잘하는곳', keyword + ' 추천'];
