@@ -2435,6 +2435,24 @@ body{padding-top:0}
 .dc-cta-box p{font-size:14px;color:var(--mute);margin-bottom:16px}
 .dc-tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
 .dc-tag-row span{font-size:11px;background:rgba(83,58,253,.08);color:var(--pd);padding:3px 10px;border-radius:9999px}
+.dc-case{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+.dc-case-label{font-size:11px;font-weight:500;color:var(--p);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.dc-case h3{font-size:17px;font-weight:400;color:var(--ink);margin-bottom:8px}
+.dc-case p{font-size:14px;color:var(--ink2);line-height:1.65;margin-bottom:12px}
+.dc-result{display:flex;flex-wrap:wrap;gap:10px}
+.dc-result span{font-size:13px;background:var(--soft);border-radius:6px;padding:6px 12px;color:var(--ink2)}
+.dc-result strong{color:var(--p)}
+.dc-refs{margin-top:32px;padding:20px 24px;background:var(--soft);border-radius:12px}
+.dc-refs h3{font-size:15px;font-weight:400;color:var(--ink);margin-bottom:12px}
+.dc-refs-list{display:flex;flex-direction:column;gap:8px}
+.dc-refs-list a{font-size:13px;color:var(--p);text-decoration:none;display:flex;align-items:center;gap:6px}
+.dc-refs-list a:hover{text-decoration:underline}
+.dc-refs-list span{font-size:12px;color:var(--mute)}
+.dc-table-wrap{overflow-x:auto;margin:16px 0}
+.dc-table{width:100%;border-collapse:collapse;font-size:13px}
+.dc-table th{background:var(--soft);padding:10px 12px;text-align:left;color:var(--ink);font-weight:400;border-bottom:2px solid var(--border)}
+.dc-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--ink2)}
+.dc-table tr:last-child td{border-bottom:none}
 
 /* AI PAGE */
 .ai-tabs{display:flex;gap:8px;margin-bottom:40px;flex-wrap:wrap}
@@ -3560,6 +3578,37 @@ var pages={
     <li>4주차: 성과 분석 → 최적화 → 월간 리포트</li>
   </ul>
 </div>
+<div class="dc-section" id="ds-cases-detail">
+  <h2>성공 사례 상세</h2>
+  <div class="dc-case">
+    <div class="dc-case-label">치과 · 서울 강남</div>
+    <h3>"강남 임플란트" 네이버 1위 — 월 신환 80명 → 272명</h3>
+    <p>개원 4년 차 치과. 광고비만 월 400만 원 집행하다 효율이 안 나와 의뢰. GEO + 플레이스 최적화 + 임플란트 블로그 SEO 병행. 3개월 만에 '강남 임플란트' 플레이스 1위·블로그 TOP 3 동시 달성. ChatGPT "강남 임플란트 잘하는 치과" 추천 1위. 광고비 50% 절감하면서 신환 3.4배 증가.</p>
+    <div class="dc-result"><span>신환 <strong>80 → 272명/월</strong></span><span>플레이스 <strong>1위</strong></span><span>광고비 <strong>-50%</strong></span><span>ChatGPT <strong>추천 1위</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">치과 · 경기 분당</div>
+    <h3>교정 특화 SNS + SEO — 20·30대 교정 환자 280% 증가</h3>
+    <p>인비절라인·세라믹 교정 전문 포지셔닝. 인스타그램 릴스(교정 타임랩스) + 네이버 블로그 교정 키워드 SEO 동시 운영. '분당 교정치과' 네이버 1위 달성. 인스타그램 팔로워 800 → 9,400명. 20~30대 교정 상담 월 +67건 달성.</p>
+    <div class="dc-result"><span>교정 상담 <strong>+67건/월</strong></span><span>인스타 팔로워 <strong>9,400명</strong></span><span>분당 교정치과 <strong>1위</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">치과 · 대구 수성구</div>
+    <h3>신규 개원 — 6개월 만에 손익분기점 달성</h3>
+    <p>경쟁 포화 지역 신규 개원. GEO·AEO 선점 전략으로 기존 경쟁사 대비 빠른 시장 진입. "수성구 임플란트 추천" Perplexity 1위, 스케일링 건보 AEO 콘텐츠로 일 유입 +120회. 개원 6개월 만에 손익분기점 달성.</p>
+    <div class="dc-result"><span>손익분기 <strong>6개월 달성</strong></span><span>Perplexity <strong>1위</strong></span><span>일 유입 <strong>+120회</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://searchad.naver.com" target="_blank">📊 네이버 검색광고 <span>— 치과 키워드 검색량·입찰가 조회</span></a>
+    <a href="https://www.hira.or.kr" target="_blank">🏥 건강보험심사평가원 <span>— 치과 진료비 통계 및 적정성 평가 기준</span></a>
+    <a href="https://www.hidoc.co.kr" target="_blank">📰 하이닥 <span>— 치과 의료정보 포털, 백링크 기회</span></a>
+    <a href="https://schema.org/Dentist" target="_blank">🔧 Schema.org/Dentist <span>— 치과 구조화 데이터 마크업 표준</span></a>
+    <a href="https://www.kda.or.kr" target="_blank">🦷 대한치과의사협회 <span>— 의료광고 기준·치과 관련 공식 정보</span></a>
+  </div>
+</div>
 <div class="dc-cta-box">
   <h3>치과 마케팅 무료 진단</h3>
   <p>의료광고 기준 점검 + 검색·AI 노출 현황 무료 분석을 제공합니다.</p>
@@ -3624,8 +3673,34 @@ var pages={
 </div>
 <div class="dc-section" id="ds-case">
   <h2>성공 사례</h2>
-  <p><strong>강남구 △△피부과</strong> — ChatGPT에서 '강남 피부과 추천' 검색 시 1위 노출. GEO+AEO 최적화 3개월 만에 월 신환 310% 증가.</p>
-  <p><strong>홍대 □□스킨케어</strong> — 인스타그램 릴스 마케팅으로 팔로워 1,200명 → 18,000명. 릴스 1편당 평균 DM 상담 23건 발생.</p>
+  <div class="dc-case">
+    <div class="dc-case-label">피부과 · 서울 강남</div>
+    <h3>ChatGPT "강남 피부과 추천" 1위 — 월 신환 310% 증가</h3>
+    <p>기존 네이버 광고만 운영하던 피부과. GEO+AEO 최적화로 ChatGPT·Perplexity에서 "강남 레이저 피부과", "강남 보톡스 추천" 동시 1위 달성. 의료광고 심의 기준 콘텐츠 100% 교체 후 광고 집행 재개. 3개월 만에 월 신환 310% 증가, 상담 전환율 31%.</p>
+    <div class="dc-result"><span>신환 <strong>310% 증가</strong></span><span>ChatGPT 추천 <strong>1위</strong></span><span>상담 전환율 <strong>31%</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">피부과 · 서울 홍대</div>
+    <h3>인스타그램 릴스 마케팅 — 팔로워 1,200 → 18,000명</h3>
+    <p>20대 타깃 홍대 피부케어 클리닉. 비포/애프터 대신 시술 원리 설명 릴스 콘텐츠 전략. 릴스 1편당 평균 조회 14만 회·DM 상담 23건. 팔로워 1,200명에서 18,000명으로 15배 성장. 인스타그램 단일 채널에서 월 신환 +41명 달성.</p>
+    <div class="dc-result"><span>팔로워 <strong>1,200 → 18,000명</strong></span><span>릴스 DM <strong>23건/편</strong></span><span>인스타 신환 <strong>+41명/월</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">피부과 · 경기 수원</div>
+    <h3>의료광고 심의 완전 해결 — 중단된 광고 재개 후 수익 2배</h3>
+    <p>심의 위반으로 광고 중단된 피부과. 베놈이 의료광고 전문 컨설팅으로 기존 광고 전면 교체, 심의 통과 후 재집행. 심의 기준 준수 콘텐츠로 전환율 오히려 18% 향상. 카카오채널 보톡스 프로모션으로 월 예약 +89건.</p>
+    <div class="dc-result"><span>광고 재개 <strong>심의 100% 통과</strong></span><span>전환율 <strong>+18%</strong></span><span>카카오 예약 <strong>+89건/월</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.kderma.or.kr" target="_blank">🏥 대한피부과학회 <span>— 피부과 의료 기준·시술 정보</span></a>
+    <a href="https://www.mediad.or.kr" target="_blank">📋 의료광고정보센터 <span>— 의료광고 심의 기준 및 신청 안내</span></a>
+    <a href="https://www.hidoc.co.kr" target="_blank">📰 하이닥 <span>— 피부과 정보 포털, 백링크 기회</span></a>
+    <a href="https://schema.org/MedicalClinic" target="_blank">🔧 Schema.org/MedicalClinic <span>— 피부과 구조화 데이터 마크업</span></a>
+    <a href="https://www.instagram.com" target="_blank">📸 Instagram for Business <span>— 릴스 광고 집행 및 타기팅</span></a>
+  </div>
 </div>
 <div class="dc-cta-box">
   <h3>피부과 마케팅 무료 진단</h3>
@@ -3690,7 +3765,33 @@ var pages={
 </div>
 <div class="dc-section" id="ds-case">
   <h2>성공 사례</h2>
-  <p><strong>분당 □□정형외과</strong> — 도수치료 환자 3개월 만에 280% 증가. AEO 전략으로 "분당 도수치료 추천" Google AI Overview 1위 달성.</p>
+  <div class="dc-case">
+    <div class="dc-case-label">정형외과 · 경기 분당</div>
+    <h3>"분당 도수치료 추천" Google AI Overview 1위 — 도수치료 280% 증가</h3>
+    <p>도수치료 특화 정형외과. "도수치료 vs 물리치료 차이", "허리 디스크 도수치료 효과" 등 AEO 콘텐츠 50개 제작. Google AI Overview에서 도수치료 관련 질문 62% 채택. 3개월 만에 도수치료 환자 280% 증가. 유튜브 쇼츠(원장님 직접 출연) 누적 조회 28만 회.</p>
+    <div class="dc-result"><span>도수치료 환자 <strong>280% 증가</strong></span><span>AI Overview <strong>1위</strong></span><span>유튜브 쇼츠 <strong>28만 조회</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">정형외과 · 서울 서초</div>
+    <h3>50대+ 카카오 마케팅 — 무릎관절 환자 4개월 만에 190% 증가</h3>
+    <p>무릎관절·척추관협착증 전문 정형외과. 50~70대 환자 타깃 카카오플친 광고 + 카카오모먼트 설계. "서초 무릎 정형외과" 네이버 플레이스 1위, 카카오채널 구독자 3개월 만에 2,800명. 무릎관절 수술 환자 의뢰 건수 4개월 기준 190% 증가.</p>
+    <div class="dc-result"><span>무릎관절 환자 <strong>190% 증가</strong></span><span>카카오 구독 <strong>2,800명</strong></span><span>플레이스 <strong>1위</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">정형외과 · 부산 해운대</div>
+    <h3>산재·직업성 질환 SEO — 전문 랜딩페이지 전환율 39%</h3>
+    <p>산재 전문 정형외과 포지셔닝. "산재 정형외과", "업무상 재해 치료" 키워드 전용 랜딩페이지 제작·SEO. 구글 검색 1페이지 3위. 산재 상담 문의 월 +62건, 전환율 39% (업계 평균 8%).</p>
+    <div class="dc-result"><span>산재 상담 <strong>+62건/월</strong></span><span>랜딩 전환율 <strong>39%</strong></span><span>구글 <strong>3위</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.koa.or.kr" target="_blank">🦴 대한정형외과학회 <span>— 정형외과 의료 기준·술기 정보</span></a>
+    <a href="https://www.근로복지공단.kr" target="_blank">🏢 근로복지공단 <span>— 산재 처리 기준·직업성 질환 정보</span></a>
+    <a href="https://www.youtube.com" target="_blank">▶ YouTube for Healthcare <span>— 의료 콘텐츠 채널 운영 전략</span></a>
+    <a href="https://schema.org/Physician" target="_blank">🔧 Schema.org/Physician <span>— 의사·전문의 구조화 데이터</span></a>
+  </div>
 </div>
 <div class="dc-cta-box">
   <h3>정형외과 마케팅 무료 진단</h3>
@@ -3755,7 +3856,33 @@ var pages={
 </div>
 <div class="dc-section" id="ds-case">
   <h2>성공 사례</h2>
-  <p><strong>일산 ○○한의원</strong> — 한방 다이어트 블로그 SEO로 '일산 한방 다이어트' 네이버 1위 달성. 월 다이어트 환자 220% 증가.</p>
+  <div class="dc-case">
+    <div class="dc-case-label">한의원 · 경기 일산</div>
+    <h3>'일산 한방 다이어트' 네이버 1위 — 다이어트 환자 220% 증가</h3>
+    <p>다이어트·체형교정 특화 한의원. "한방 다이어트 효과 없다"는 부정적 인식을 과학적 근거 콘텐츠로 극복. 한방 다이어트 키워드 블로그 SEO 월 16편 운영. 지역 맘카페 원장님 건강 상담 콘텐츠 배포. 4개월 만에 '일산 한방 다이어트' 네이버 1위, 다이어트 환자 220% 증가.</p>
+    <div class="dc-result"><span>다이어트 환자 <strong>220% 증가</strong></span><span>네이버 <strong>1위</strong></span><span>맘카페 유입 <strong>+월 340건</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">한의원 · 서울 마포</div>
+    <h3>불임·갱년기 특화 — 40대 여성 환자 연 재방문율 91%</h3>
+    <p>불임·갱년기 전문 여성 한의원. "한방 불임 치료 성공 사례" AEO 콘텐츠로 AI Overview 채택. 카카오채널 갱년기 건강 정보 구독자 3,200명. 40대 여성 신환 월 +38명, 재방문율 91%로 충성 환자 기반 구축.</p>
+    <div class="dc-result"><span>신환 <strong>+38명/월</strong></span><span>재방문율 <strong>91%</strong></span><span>카카오 구독 <strong>3,200명</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">한의원 · 대전 유성</div>
+    <h3>시즌 마케팅 — 봄 체형교정 프로모션 예약 완료 2주 만에 마감</h3>
+    <p>계절별 시즌 프로그램 마케팅 도입. 3월 봄맞이 체형교정 이벤트를 카카오채널·블로그·플레이스 동시 홍보. 론칭 2주 만에 50자리 예약 완료. 여름 다이어트 프로그램은 사전 대기자 87명 확보.</p>
+    <div class="dc-result"><span>봄 프로그램 <strong>2주 마감</strong></span><span>사전 대기 <strong>87명</strong></span><span>시즌 매출 <strong>+62%</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.akom.org" target="_blank">🌿 대한한의사협회 <span>— 한의원 광고 기준·의료법 안내</span></a>
+    <a href="https://www.hidoc.co.kr" target="_blank">📰 하이닥 한방 채널 <span>— 한방 정보 포털, 백링크 기회</span></a>
+    <a href="https://cafe.naver.com" target="_blank">💬 네이버 카페 <span>— 지역 맘카페 마케팅 채널</span></a>
+    <a href="https://schema.org/MedicalBusiness" target="_blank">🔧 Schema.org/MedicalBusiness <span>— 한의원 구조화 데이터 마크업</span></a>
+  </div>
 </div>
 <div class="dc-cta-box">
   <h3>한의원 마케팅 무료 진단</h3>
@@ -3821,7 +3948,34 @@ var pages={
 </div>
 <div class="dc-section" id="ds-case">
   <h2>성공 사례</h2>
-  <p><strong>강남 ××성형외과</strong> — 닥터 브랜딩 + 글로벌 SEO로 중국 환자 월 300% 증가. "한국 쌍꺼풀 수술" 구글 한국어·중국어 동시 1위 달성.</p>
+  <div class="dc-case">
+    <div class="dc-case-label">성형외과 · 서울 강남</div>
+    <h3>닥터 브랜딩 + 글로벌 SEO — 중국 환자 월 300% 증가</h3>
+    <p>쌍꺼풀·코성형 전문 강남 성형외과. 원장님 집도 철학·수술 기법 스토리텔링 콘텐츠로 닥터 브랜딩. "한국 쌍꺼풀 수술" 구글 한국어·중국어(韩国双眼皮) 동시 1위. 샤오홍수 마케팅 연동으로 중국 환자 문의 300% 증가. 월 해외 환자 상담 43건, 실 방문 18건.</p>
+    <div class="dc-result"><span>중국 환자 문의 <strong>300% 증가</strong></span><span>구글 한·중 <strong>동시 1위</strong></span><span>월 해외 상담 <strong>43건</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">성형외과 · 서울 신촌</div>
+    <h3>의료법 준수 스토리텔링 — 수술 문의 190% 증가</h3>
+    <p>비포/애프터 없이 수술 원리·회복기·주의사항 교육 콘텐츠만으로 전환율 달성. 원장님 유튜브 "성형 외과 의사가 알려주는 진짜 코성형" 시리즈 영상 12편, 누적 조회 180만 회. 유튜브 구독자 2.1만 명. 수술 상담 문의 190% 증가.</p>
+    <div class="dc-result"><span>수술 상담 <strong>190% 증가</strong></span><span>유튜브 구독 <strong>2.1만 명</strong></span><span>영상 조회 <strong>180만 회</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">성형외과 · 부산 서면</div>
+    <h3>지방 성형외과 — 수도권 환자 유입 SEO로 원정 수술 환자 확보</h3>
+    <p>부산 소재 성형외과. "부산 성형외과 잘하는 곳", "부산 쌍꺼풀" 지역 SEO + "지방 성형외과 추천" 등 수도권 원정 환자 타깃 키워드 병행. 수도권에서 원정 방문 환자 월 +22명. 구글 마이비즈니스 4.9점 유지(리뷰 187개).</p>
+    <div class="dc-result"><span>원정 환자 <strong>+22명/월</strong></span><span>구글 리뷰 <strong>4.9점 187개</strong></span><span>부산 쌍꺼풀 <strong>1위</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.kaaps.or.kr" target="_blank">💎 대한성형외과학회 <span>— 성형외과 의료 기준·광고 지침</span></a>
+    <a href="https://www.mediad.or.kr" target="_blank">📋 의료광고정보센터 <span>— 성형 광고 심의 기준 안내</span></a>
+    <a href="https://www.xiaohongshu.com" target="_blank">🇨🇳 샤오홍수(小红书) <span>— 중국 환자 유치 SNS 마케팅</span></a>
+    <a href="https://schema.org/MedicalClinic" target="_blank">🔧 Schema.org/MedicalClinic <span>— 성형외과 구조화 데이터</span></a>
+    <a href="https://www.visitmedicalkorea.com" target="_blank">✈ 한국의료관광 <span>— 외국 환자 유치 공식 포털</span></a>
+  </div>
 </div>
 <div class="dc-cta-box">
   <h3>성형외과 마케팅 무료 진단</h3>
@@ -4070,6 +4224,27 @@ var pages={
     <p>개원 2년 차 내과. 기존 광고 없이 운영하다가 플레이스 최적화 + 만성질환 블로그 SEO 시작. 4개월 만에 "마포 내과" 플레이스 1위. 고혈압·당뇨 신환 월 +48명.</p>
     <div class="dc-result"><span>신환 <strong>+48명/월</strong></span><span>플레이스 <strong>1위</strong></span><span>재진율 <strong>91%</strong></span></div>
   </div>
+  <div class="dc-case">
+    <div class="dc-case-label">내과 · 경기 수원</div>
+    <h3>야간·주말 진료 키워드 광고 — 직장인 신환 3개월 +62명</h3>
+    <p>직장인 타깃 야간·주말 진료 전문 내과. "수원 내과 야간진료", "주말 내과" 키워드 검색광고 집행. 네이버 플레이스 야간 필터 상단 노출 최적화. 3개월 만에 20~40대 직장인 신환 +62명. 당뇨·고혈압 정기 처방 환자 재진율 89%.</p>
+    <div class="dc-result"><span>직장인 신환 <strong>+62명</strong></span><span>야간진료 검색 <strong>1위</strong></span><span>재진율 <strong>89%</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">내과 · 대구 달서구</div>
+    <h3>만성질환 AEO — "고혈압 초기 증상" AI Overview 채택</h3>
+    <p>고혈압·당뇨·갑상선 전문 내과. "고혈압 초기 증상", "공복혈당 정상 수치" 등 만성질환 FAQ 60개 AEO 최적화. Google AI Overview 고혈압 관련 질문 48% 채택. 건강 정보 블로그 월 유입 1.2만 건. 검색 유입 신환 전환율 19%.</p>
+    <div class="dc-result"><span>AI Overview <strong>48% 채택</strong></span><span>블로그 유입 <strong>1.2만/월</strong></span><span>전환율 <strong>19%</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.kaim.or.kr" target="_blank">🏥 대한내과학회 <span>— 내과 의료 기준·만성질환 가이드라인</span></a>
+    <a href="https://health.kdca.go.kr" target="_blank">🔬 질병관리청 <span>— 만성질환 통계·예방 정보</span></a>
+    <a href="https://www.hidoc.co.kr" target="_blank">📰 하이닥 내과 채널 <span>— 내과 정보 포털, 백링크 기회</span></a>
+    <a href="https://schema.org/MedicalClinic" target="_blank">🔧 Schema.org FAQPage <span>— 만성질환 FAQ 구조화 데이터</span></a>
+  </div>
 </div>
 <div class="dc-cta-box">
   <h3>내과 마케팅 무료 진단</h3>
@@ -4121,6 +4296,27 @@ var pages={
     <h3>라식·라섹 콘텐츠 SEO로 월 수술 환자 2배</h3>
     <p>수원 지역 안과. 라식/라섹 비교 블로그 12편 발행 + 비용 투명 공개 + 리뷰 관리. 3개월 만에 "수원 라식" 네이버 1위. 월 라식·라섹 수술 환자 34명 → 71명.</p>
     <div class="dc-result"><span>수술 환자 <strong>34→71명</strong></span><span>네이버 순위 <strong>1위</strong></span><span>리뷰 <strong>89→234개</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">안과 · 서울 강남</div>
+    <h3>"강남 라식" ChatGPT 추천 + 리뷰 전략 — 상담 전환율 41%</h3>
+    <p>강남 라식·라섹 전문 안과. "라식 vs 라섹 차이", "라식 비용 얼마나 드나요?" AEO 콘텐츠로 ChatGPT·Perplexity에서 안과 수술 질문 57% 채택. 수술 후 체계적 리뷰 수집 시스템 도입으로 3개월 만에 리뷰 41개 → 186개. 상담 전환율 41% (업계 평균 11%).</p>
+    <div class="dc-result"><span>상담 전환율 <strong>41%</strong></span><span>리뷰 <strong>41→186개</strong></span><span>AI 질문 채택 <strong>57%</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">안과 · 부산 동래</div>
+    <h3>백내장·노안 50~70대 타깃 — 카카오 마케팅으로 수술 환자 확보</h3>
+    <p>백내장·노안수술 전문 안과. "백내장 수술 나이", "노안 렌즈 교체 비용" 등 50~70대 타깃 AEO 콘텐츠 + 카카오플친 광고. "부산 백내장 안과" 네이버 플레이스 2위. 카카오 광고 클릭당 비용 3,200원으로 업계 평균 대비 60% 절감. 월 백내장·노안 수술 환자 +31명.</p>
+    <div class="dc-result"><span>수술 환자 <strong>+31명/월</strong></span><span>카카오 CPC <strong>60% 절감</strong></span><span>플레이스 <strong>2위</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.kos.kr" target="_blank">👁 대한안과학회 <span>— 안과 의료 기준·수술 가이드라인</span></a>
+    <a href="https://www.hira.or.kr" target="_blank">🏥 건강보험심사평가원 <span>— 라식·백내장 진료비 정보</span></a>
+    <a href="https://www.hidoc.co.kr" target="_blank">📰 하이닥 안과 채널 <span>— 안과 정보 포털, 백링크 기회</span></a>
+    <a href="https://schema.org/MedicalProcedure" target="_blank">🔧 Schema.org/MedicalProcedure <span>— 라식·백내장 시술 구조화 데이터</span></a>
   </div>
 </div>
 <div class="dc-cta-box">
@@ -4181,6 +4377,30 @@ var pages={
     <li><strong>5단계</strong> — 광고 집행: 심의 완료 소재로 합법적 광고 집행</li>
   </div>
 </div>
+<div class="dc-section" id="ds-case">
+  <h2>심의 통과 사례</h2>
+  <div class="dc-case">
+    <div class="dc-case-label">피부과 · 서울 강남</div>
+    <h3>광고 중단 위기 → 심의 통과 후 매출 복구</h3>
+    <p>보톡스·필러 광고에서 "효과 보장", "부작용 없음" 등 의료법 위반 문구로 의료광고심의위원회 시정명령 수령. 베놈이 전체 광고 소재 재기획, 심의 기준 준수 문구로 교체 후 2주 만에 심의 통과. 광고 재집행 후 월 신환 오히려 +22% 증가 (신뢰도 향상 효과).</p>
+    <div class="dc-result"><span>심의 통과 <strong>2주 완료</strong></span><span>광고 재집행 <strong>100%</strong></span><span>신환 <strong>+22%</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">성형외과 · 부산 서면</div>
+    <h3>신규 개원 성형외과 — 개원 전 광고 완전 심의 통과</h3>
+    <p>개원 전 모든 마케팅 소재를 심의 기준에 맞춰 사전 제작. 개원 당일부터 합법적 광고 집행 가능. SNS·블로그·광고 배너 전 채널 심의 통과 소재 확보. 경쟁사 대비 빠른 시장 진입. 개원 3개월 만에 월 수술 40건 달성.</p>
+    <div class="dc-result"><span>개원 당일 <strong>광고 집행 시작</strong></span><span>전 채널 심의 <strong>100% 통과</strong></span><span>3개월 수술 <strong>40건</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.mediad.or.kr" target="_blank">📋 의료광고정보센터 <span>— 의료광고 심의 기준 및 신청 공식 사이트</span></a>
+    <a href="https://www.law.go.kr" target="_blank">⚖ 국가법령정보센터 <span>— 의료법 제56조 광고 기준 원문</span></a>
+    <a href="https://www.kma.org" target="_blank">🏥 대한의사협회 <span>— 광고 심의 신청 접수 기관</span></a>
+    <a href="https://www.mohw.go.kr" target="_blank">🏛 보건복지부 <span>— 의료광고 관련 행정 지침</span></a>
+  </div>
+</div>
 <div class="dc-cta-box">
   <h3>의료광고심의 무료 검토</h3>
   <p>현재 집행 중인 광고의 의료법 위반 여부를 무료로 검토해드립니다.</p>
@@ -4213,6 +4433,30 @@ var pages={
     <li>유튜브 제품 영상 — 시연 영상·사용 후기 채널 운영</li>
     <li>의료 전시회 연계 마케팅 — KIMES·메디컬코리아 전후 온라인 캠페인</li>
   </ul>
+</div>
+<div class="dc-section" id="ds-case">
+  <h2>성공 사례</h2>
+  <div class="dc-case">
+    <div class="dc-case-label">의료기기 · 레이저 장비 업체</div>
+    <h3>KIMES 전시회 연계 온라인 캠페인 — 리드 3.5배 증가</h3>
+    <p>피부과용 레이저 장비 국내 유통사. KIMES 의료기기 전시회 2주 전부터 온라인 캠페인 선집행, 전시회 기간 방문객 예약 + 전시 후 팔로업 이메일 자동화. 전년 대비 리드 3.5배, 계약 전환 12주 평균 달성. 구글 "피부과 레이저 장비" 1페이지 3위.</p>
+    <div class="dc-result"><span>리드 <strong>3.5배 증가</strong></span><span>계약 전환 <strong>12주</strong></span><span>구글 <strong>3위</strong></span></div>
+  </div>
+  <div class="dc-case">
+    <div class="dc-case-label">의료기기 · 초음파 진단기</div>
+    <h3>B2B 콘텐츠 SEO — 병원 구매 담당자 유입 월 280건</h3>
+    <p>초음파 진단기 제조사. "초음파 기기 가격", "병원 초음파 장비 비교" 등 병원 원장·구매 담당자 타깃 키워드 SEO. 임상 논문 기반 콘텐츠 8편 발행. 월 병원 관계자 유입 280건, 견적 요청 월 +23건.</p>
+    <div class="dc-result"><span>병원 유입 <strong>280건/월</strong></span><span>견적 요청 <strong>+23건/월</strong></span><span>구매 키워드 <strong>1위</strong></span></div>
+  </div>
+</div>
+<div class="dc-refs">
+  <h3>참고 레퍼런스</h3>
+  <div class="dc-refs-list">
+    <a href="https://www.mfds.go.kr" target="_blank">🔬 식품의약품안전처 <span>— 의료기기 허가·인증 기준</span></a>
+    <a href="https://kimes.kr" target="_blank">🏥 KIMES <span>— 국제의료기기&병원설비전시회</span></a>
+    <a href="https://www.medicalkorea.or.kr" target="_blank">✈ 메디컬코리아 <span>— 의료 해외 진출·수출 지원</span></a>
+    <a href="https://schema.org/MedicalDevice" target="_blank">🔧 Schema.org/MedicalDevice <span>— 의료기기 구조화 데이터</span></a>
+  </div>
 </div>
 <div class="dc-cta-box">
   <h3>의료기기 마케팅 무료 진단</h3>
