@@ -1219,6 +1219,38 @@ body{padding-top:0}
     {"@type":"Question","name":"병원 GEO 최적화 비용은 얼마인가요?","acceptedAnswer":{"@type":"Answer","text":"베놈의 병원 GEO 최적화 서비스는 월 150만원부터 시작합니다. 초기 구조화 데이터 세팅 + 월간 AI 인용 모니터링 + 콘텐츠 최적화가 포함됩니다."}}
   ]}
   </script>
+
+<!-- HowTo Schema: 임플란트 시술 과정 -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"임플란트 시술 과정 완전 가이드","description":"임플란트 식립부터 보철 완성까지 7단계 시술 과정을 설명합니다.","totalTime":"P6M","step":[
+  {"@type":"HowToStep","position":1,"name":"초진 상담 및 CT 촬영","text":"구강 상태 확인, 뼈 두께·높이 측정, 전신 건강 상태 평가를 통해 임플란트 가능 여부를 판단합니다."},
+  {"@type":"HowToStep","position":2,"name":"발치 및 뼈 이식 (필요 시)","text":"잔존 치아 발치 후 뼈 부족 시 골이식재를 채워 4~6개월 치유 기간을 갖습니다."},
+  {"@type":"HowToStep","position":3,"name":"임플란트 픽스처 식립","text":"국소마취 후 잇몸을 절개해 티타늄 픽스처를 턱뼈에 심습니다. 시술 시간은 30~60분입니다."},
+  {"@type":"HowToStep","position":4,"name":"골유착 기간","text":"픽스처와 뼈가 단단히 결합되는 골유착 기간 2~6개월이 필요합니다."},
+  {"@type":"HowToStep","position":5,"name":"2차 수술 및 힐링어버트먼트","text":"잇몸을 열어 어버트먼트를 연결하고 잇몸 형태를 잡습니다."},
+  {"@type":"HowToStep","position":6,"name":"보철 제작 및 장착","text":"치아 모양·색상을 본뜨고 지르코니아·금속 보철을 맞춤 제작해 장착합니다."},
+  {"@type":"HowToStep","position":7,"name":"정기 검진 및 유지 관리","text":"6개월마다 방문해 나사 풀림·잇몸 상태를 점검합니다. 올바른 관리 시 10년 이상 사용 가능합니다."}
+]}
+</script>
+
+<!-- HowTo Schema: 피부과 레이저 시술 준비 방법 -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"피부과 레이저 시술 전후 주의사항","description":"피부과 레이저 시술 전 준비부터 회복까지 단계별 주의사항 안내","totalTime":"P14D","step":[
+  {"@type":"HowToStep","position":1,"name":"시술 전 1주일 — 자외선 차단","text":"강한 자외선 노출을 피하고 SPF 50+ 선크림을 매일 바릅니다. 비타민A 계열 레티놀 제품 사용을 중단합니다."},
+  {"@type":"HowToStep","position":2,"name":"시술 당일 — 세안 및 화장 금지","text":"시술 4시간 전부터 메이크업, 향수, 로션 사용을 금지합니다. 세안 후 깨끗한 피부 상태로 내원합니다."},
+  {"@type":"HowToStep","position":3,"name":"시술 직후 — 냉찜질 및 재생 크림","text":"홍조·열감 완화를 위해 시술 직후 냉찜질을 10~15분 적용합니다. 병원 처방 재생 크림을 즉시 바릅니다."},
+  {"@type":"HowToStep","position":4,"name":"시술 후 1~3일 — 세안 주의","text":"미지근한 물로 가볍게 세안하고 수건으로 세게 닦지 않습니다. 땀을 많이 흘리는 운동은 피합니다."},
+  {"@type":"HowToStep","position":5,"name":"시술 후 1~2주 — 자외선 차단 필수","text":"시술 부위가 자외선에 노출되면 색소침착이 발생할 수 있습니다. 외출 시 반드시 선크림+양산+모자를 착용합니다."}
+]}
+</script>
+
+<!-- BreadcrumbList Schema (동적으로 업데이트됨) -->
+<script id="bc-schema" type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+  {"@type":"ListItem","position":1,"name":"홈","item":"https://desktop-tutorial-chi-peach.vercel.app/"}
+]}
+</script>
+
   <section class="mesh" style="padding:90px 0 70px">
     <div class="container">
       <div class="section-badge">GEO — Generative Engine Optimization</div>
@@ -4080,6 +4112,16 @@ function addBlogPostFromAdmin(data){
   }
 }
 
+// ── BreadcrumbList Schema 동적 업데이트 ──
+var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅'};
+var catLabels={dental:'치과마케팅',implant:'임플란트마케팅',ortho_dental:'교정마케팅',skin:'피부과마케팅',ortho:'정형외과마케팅',oriental:'한의원마케팅',plastic:'성형외과마케팅',naegwa:'내과마케팅',angwa:'안과마케팅',shimui:'의료광고심의',medical_device:'의료기기마케팅'};
+var BASE_URL='https://desktop-tutorial-chi-peach.vercel.app/';
+function updateBreadcrumb(items){
+  var el=document.getElementById('bc-schema');if(!el)return;
+  var list=items.map(function(it,i){return '{"@type":"ListItem","position":'+(i+1)+',"name":"'+it[0]+'","item":"'+it[1]+'"}';});
+  el.textContent='{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":['+list.join(',')+']}';
+}
+
 // ── 페이지 전환 ──
 function sp(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -4089,6 +4131,10 @@ function sp(id){
     a.classList.toggle('active',a.dataset.pg===id);
   });
   if(id==='detail')ld(currentCat||'dental');
+  // BreadcrumbList 업데이트
+  var label=pageLabels[id]||id;
+  if(id==='home'){updateBreadcrumb([['홈',BASE_URL]]);}
+  else{updateBreadcrumb([['홈',BASE_URL],[label,BASE_URL+'#'+id]]);}
 }
 
 // ── 카테고리별 상세 콘텐츠 ──
@@ -5863,6 +5909,25 @@ function ld(cat){
   var navEl=document.getElementById('nav-'+cat);
   if(navEl)navEl.classList.add('snav-active');
   window.scrollTo({top:0,behavior:'smooth'});
+  // BreadcrumbList 업데이트
+  var catLabel=catLabels[cat]||cat;
+  updateBreadcrumb([['홈',BASE_URL],['병원마케팅',BASE_URL+'#hosp_mkt'],[catLabel,BASE_URL+'#'+cat]]);
+  // 관련 서비스 내부 링크 주입
+  var relatedMap={
+    dental:['implant','ortho_dental','skin'],implant:['dental','ortho_dental','shimui'],ortho_dental:['dental','implant','skin'],
+    skin:['plastic','oriental','angwa'],ortho:['naegwa','oriental','medical_device'],oriental:['naegwa','ortho','skin'],
+    plastic:['skin','shimui','angwa'],naegwa:['ortho','oriental','medical_device'],angwa:['skin','plastic','shimui'],
+    shimui:['dental','skin','plastic'],medical_device:['ortho','naegwa','shimui']
+  };
+  var related=relatedMap[cat]||[];
+  if(related.length){
+    var relHtml='<div class="dc-section" style="border-top:2px solid var(--border);margin-top:40px;padding-top:32px"><h3 style="font-size:18px;font-weight:600;color:var(--ink);margin-bottom:16px">관련 마케팅 서비스</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">';
+    related.forEach(function(r){
+      relHtml+='<a href="#" onclick="ld(\''+r+'\');return false" style="display:block;padding:14px 16px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r8);color:var(--p);font-weight:600;font-size:14px;transition:all .2s" onmouseover="this.style.background=\'var(--p)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'var(--soft)\';this.style.color=\'var(--p)\'">'+catLabels[r]+' →</a>';
+    });
+    relHtml+='</div></div>';
+    document.getElementById('detail-content').insertAdjacentHTML('beforeend',relHtml);
+  }
 }
 
 function tocClick(el,id){
