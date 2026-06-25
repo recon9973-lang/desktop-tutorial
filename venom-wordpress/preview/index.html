@@ -557,7 +557,7 @@ body{padding-top:0}
 <header class="site-header">
   <div class="container">
     <a href="#" onclick="sp('home');return false" class="logo">
-      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo.png" alt="병원마케팅 베놈" style="height:52px;width:auto;display:block">
+      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo.png" alt="병원마케팅 베놈" style="height:64px;width:auto;display:block">
     </a>
     <nav><ul class="main-nav">
       <li>
@@ -1886,6 +1886,37 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .hero h1{ font-size: 40px !important; }
   .cta-inner h2{ font-size: 32px !important; }
   .section{ padding: 72px 0 !important; }
+  /* 헤더 모바일 */
+  .main-nav{display:none!important}
+  .site-header .container{padding:0 16px}
+  .header-actions .btn{font-size:12px!important;padding:8px 14px!important}
+  /* 히어로 모바일 */
+  .hero{padding:60px 0 40px!important;text-align:center!important}
+  .hero h1{font-size:34px!important;letter-spacing:-0.03em!important}
+  .hero-sub{font-size:15px!important;margin:0 auto 24px!important}
+  .hero-cta{flex-direction:column;align-items:center;gap:10px!important}
+  .hero-cta .btn{width:100%;max-width:280px;justify-content:center}
+  /* 스탯 바 모바일 */
+  .stat-bar-inner{flex-wrap:wrap;gap:0}
+  .stat-bar-item{flex:0 0 50%;max-width:50%;padding:24px 16px}
+  .sb-div{display:none}
+  .sb-num{font-size:32px}
+  /* 도구 섹션 모바일 */
+  .tool-tabs{flex-wrap:wrap;gap:6px}
+  .tool-tab{font-size:12px!important;padding:8px 12px!important}
+  /* 섹션 헤드 */
+  .sec-hd h2,.section-head h2{font-size:26px!important}
+  .container{padding:0 16px!important}
+  /* 서비스 카드 */
+  .service-grid{grid-template-columns:1fr!important}
+  /* 슬라이더 네비 */
+  .hs-prev,.hs-next{width:36px;height:36px}
+  /* 통계 */
+  .hero-stats{flex-wrap:wrap;gap:20px!important;justify-content:center}
+}
+@media(max-width:480px){
+  .hero h1{font-size:28px!important}
+  .stat-bar-item{flex:0 0 100%;max-width:100%}
 }
 </style>
 <script>
