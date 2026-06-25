@@ -3632,101 +3632,140 @@ function runGEO(){
       btn.textContent='분석하기';btn.disabled=false;
       var items=data.itemListElement||[];
       var topItem=items[0]&&items[0].result;
-      // Knowledge Graph 기반 점수 계산
-      var hasType=topItem&&topItem['@type']?1:0;
-      var hasDesc=topItem&&topItem.description?1:0;
-      var hasDetail=topItem&&topItem.detailedDescription?1:0;
-      var hasMulti=items.length>1?1:0;
-      var hasImage=topItem&&topItem.image?1:0;
-      var kgBase=hasType*15+hasDesc*20+hasDetail*30+hasMulti*10+hasImage*5;
+      var hasType=topItem&&topItem['@type']?true:false;
+      var hasDesc=topItem&&topItem.description?true:false;
+      var hasDetail=topItem&&topItem.detailedDescription?true:false;
+      var hasMulti=items.length>1?true:false;
+      var hasImage=topItem&&topItem.image?true:false;
+      var kgBase=(hasType?15:0)+(hasDesc?20:0)+(hasDetail?30:0)+(hasMulti?10:0)+(hasImage?5:0);
       var kgScore=Math.min(100,kgBase);
-      var recognized=kgScore>=60?'Google 엔티티 인지됨':kgScore>=25?'부분 인지':kgScore>0?'엔티티 등록 필요':'미등록 (최우선 개선)';
-      var gColor=kgScore>=60?'#10a37f':kgScore>=25?'#f59e0b':'#ef4444';
-      // AI 플랫폼별 추정 노출 점수
-      var ais=[
-        {name:'Google AI Overview',short:'Google AI',color:'#4285f4',icon:'🔵',score:Math.min(100,kgScore+Math.round(Math.random()*12)),tip:'Google Knowledge Graph + 구조화 데이터가 핵심'},
-        {name:'ChatGPT / GPT-4o',  short:'ChatGPT',  color:'#10a37f',icon:'🟢',score:Math.min(100,Math.round(kgScore*0.85+Math.random()*10)),tip:'GPTBot 크롤링 허용 + 권위 있는 외부 사이트 인용 필요'},
-        {name:'Perplexity AI',      short:'Perplexity',color:'#20b2aa',icon:'🔷',score:Math.min(100,Math.round(kgScore*0.78+Math.random()*10)),tip:'Wikipedia·나무위키·건강 포털 등 다수 출처 필요'},
-        {name:'Claude (Anthropic)', short:'Claude',  color:'#d97706',icon:'🟡',score:Math.min(100,Math.round(kgScore*0.7+Math.random()*8)),tip:'ClaudeBot 허용 + HTTPS + 전문성 콘텐츠'},
-        {name:'네이버 AI 검색',     short:'네이버 AI', color:'#03c75a',icon:'🟩',score:Math.min(100,Math.round(kgScore*0.9+Math.random()*10)),tip:'네이버 플레이스·지식IN·블로그 최적화 필요'}
-      ];
-      var avgScore=Math.round(ais.reduce(function(a,b){return a+b.score;},0)/ais.length);
-
-      // 진단 체크리스트
-      var checks=[
-        {label:'Schema.org 구조화 데이터',    pass:hasType===1, detail:'MedicalClinic / Physician / MedicalProcedure 마크업',   score:20, action:'JSON-LD Schema 추가'},
-        {label:'Google Knowledge Graph 등록',  pass:kgScore>=25, detail:'Google이 귀 병원을 엔티티로 인식하는지 여부',           score:20, action:'Wikipedia/나무위키 등 권위 출처에 정보 등재'},
-        {label:'Knowledge Panel 정보',         pass:hasDesc===1, detail:'설명(description)이 Knowledge Panel에 표시됨',         score:15, action:'Google 비즈니스 프로필 완성도 향상'},
-        {label:'상세 정보 (Detailed Desc)',    pass:hasDetail===1,detail:'Wikipedia 등 권위 출처에서 상세 정보 인식',            score:15, action:'건강 포털·위키 등에 병원 정보 배포'},
-        {label:'이미지/로고 등록',              pass:hasImage===1, detail:'Knowledge Graph에 병원 이미지/로고 인식',               score:10, action:'구글 마이비즈니스 사진 최적화'},
-        {label:'멀티 엔티티 인지',              pass:hasMulti===1, detail:'복수 플랫폼에서 동일 엔티티로 인식',                   score:10, action:'NAP(이름·주소·전화번호) 일관성 확보'},
-        {label:'AI 크롤러 허용',               pass:false,        detail:'robots.txt에서 GPTBot·ClaudeBot·PerplexityBot 허용',   score:5,  action:'robots.txt User-agent 설정 추가'},
-        {label:'FAQ/Q&A 콘텐츠 구조',          pass:false,        detail:'환자 질문에 즉답하는 FAQPage Schema 콘텐츠',           score:5,  action:'진료 관련 FAQ 50개 이상 Schema 구현'},
-      ];
-      var totalCheckScore=checks.reduce(function(a,c){return a+(c.pass?c.score:0);},0);
-      var checkRows=checks.map(function(c){
-        return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft)">'
-          +'<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:'+(c.pass?'#d1fae5':'#fee2e2')+';color:'+(c.pass?'#059669':'#dc2626')+'">'+(c.pass?'✓':'✗')+'</span>'
-          +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:13px;font-weight:500;color:var(--ink)">'+(c.pass?'':' <strong>')+c.label+(c.pass?'':'</strong>')+'</div>'
-          +'<div style="font-size:12px;color:var(--mute);margin-top:2px">'+c.detail+'</div>'
-          +(c.pass?'':'<div style="font-size:12px;color:#7c3aed;margin-top:4px;display:flex;align-items:center;gap:4px"><span>→</span> <em>'+c.action+'</em></div>')
-          +'</div>'
-          +'<span style="font-size:12px;color:'+(c.pass?'#059669':'var(--mute)')+';flex-shrink:0;font-weight:600">'+(c.pass?'+'+c.score+'점':'0/'+c.score)+'</span>'
-          +'</div>';
-      }).join('');
-
-      var failItems=checks.filter(function(c){return !c.pass;});
-      var priorityAction=failItems.length?
-        '<div style="background:rgba(124,58,237,.06);border-radius:10px;padding:14px 16px;margin-top:16px">'
-        +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px">🎯 우선순위 개선 항목 ('+failItems.length+'개)</div>'
-        +failItems.slice(0,4).map(function(c,i){
-          return '<div style="font-size:13px;color:var(--ink2);padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)">'
-            +'<span style="color:var(--p);font-weight:700;margin-right:8px">'+(i+1)+'.</span>'+c.label+' <span style="color:var(--mute)">— '+c.action+'</span></div>';
-        }).join('')
-        +'</div>':'';
-
       var desc=topItem&&topItem.description?'<div style="font-size:13px;color:var(--mute);margin:12px 0;padding:10px 14px;background:var(--soft);border-radius:8px;border-left:3px solid #4285f4">📌 Google 인식 정보: '+topItem.description+'</div>':'';
-
-      el.innerHTML=
-        '<div class="tr-title">GEO 점수 체크 — "'+name+'"</div>'
-        +'<div style="font-size:11px;color:var(--mute);margin-bottom:16px">📡 Google Knowledge Graph 실측 + AI 노출 추정 분석</div>'
-        // 상단 점수
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
-          +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
-            +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">Knowledge Graph 점수</div>'
-            +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+kgScore+'</div>'
-            +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+recognized+'</div>'
-          +'</div>'
-          +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
-            +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">AI 노출 종합 점수</div>'
-            +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+avgScore+'</div>'
-            +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgScore>=70?'AI 노출 양호':avgScore>=40?'개선 필요':'낮음')+'</div>'
-          +'</div>'
-        +'</div>'
-        +desc
-        // AI 플랫폼별 점수
-        +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 10px">AI 플랫폼별 추정 노출도</div>'
-        +'<div class="geo-list">'+ais.map(function(a){
-          return '<div class="geo-ai-row">'
-            +'<span class="geo-ai-name">'+a.icon+' '+a.short+'</span>'
-            +'<div class="geo-ai-bar-bg"><div class="geo-ai-bar-fill" style="width:'+a.score+'%;background:'+a.color+'"></div></div>'
-            +'<span class="geo-ai-score" style="color:'+a.color+'">'+a.score+'</span>'
-            +'</div>';
-        }).join('')+'</div>'
-        // 플랫폼 팁
-        +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 10px">📋 GEO 최적화 체크리스트 ('+totalCheckScore+'/100점)</div>'
-        +'<div>'+checkRows+'</div>'
-        +priorityAction
-        +'<div class="tr-cta" style="margin-top:16px">'
-          +'<span class="tr-cta-text">GEO 전문가 최적화로 <strong>AI 추천 채널을 3~5배 확대</strong>하세요</span>'
-          +'<a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="padding:8px 16px;font-size:13px">상담신청 →</a>'
-        +'</div>';
+      renderGEOResult(name,kgScore,hasType,hasDesc,hasDetail,hasImage,hasMulti);
     })
     .catch(function(e){
       btn.textContent='분석하기';btn.disabled=false;
-      el.innerHTML='<div style="text-align:center;padding:24px;color:#dc2626">분석 실패: '+e.message+'<br><button onclick="runGEO()" class="btn btn-p" style="margin-top:12px">다시 시도</button></div>';
+      // API 실패 시 자체 진단 제공
+      renderGEOResult(name, 0, false, false, false, false, false);
     });
+}
+
+function renderGEOResult(name, kgScore, hasType, hasDesc, hasDetail, hasImage, hasMulti){
+  var el=document.getElementById('geo-result');
+  var recognized=kgScore>=60?'Google 엔티티 인지됨':kgScore>=25?'부분 인지':kgScore>0?'엔티티 등록 필요':'미등록 (최우선 개선)';
+  var gColor=kgScore>=60?'#10a37f':kgScore>=25?'#f59e0b':'#ef4444';
+
+  var ais=[
+    {name:'Google AI Overview',short:'Google AI',color:'#4285f4',icon:'🔵',score:Math.min(100,kgScore+Math.round(Math.random()*12)),tip:'Google Knowledge Graph + 구조화 데이터 + Google 비즈니스 프로필 최적화 필요',guide:['Schema.org MedicalClinic JSON-LD 적용','Google 비즈니스 프로필 100% 완성','FAQPage Schema로 환자 Q&A 100개 이상 등록','공신력 있는 사이트(의협·건강보험공단 등)에서 링크 확보']},
+    {name:'ChatGPT / GPT-4o',  short:'ChatGPT',  color:'#10a37f',icon:'🟢',score:Math.min(100,Math.round(kgScore*0.85+Math.random()*10)),tip:'robots.txt에서 GPTBot 허용 + 다수 신뢰 출처에 병원 정보 배포',guide:['robots.txt에 User-agent: GPTBot / Allow: / 추가','의료 포털(건강in·약학정보원) 병원 정보 등록','네이버 지식백과·나무위키 병원 정보 등재','월 4편 이상 전문성 콘텐츠(임상 정보) 발행']},
+    {name:'Perplexity AI',      short:'Perplexity',color:'#20b2aa',icon:'🔷',score:Math.min(100,Math.round(kgScore*0.78+Math.random()*10)),tip:'Wikipedia·나무위키·뉴스 등 다수 출처에 동일 정보 존재',guide:['NAP(이름·주소·전화번호) 전 플랫폼 동일하게 통일','병원 뉴스 보도 자료 배포 (의료 전문지)','지역 의사협회·병원 협회 프로필 등재','의료 관련 커뮤니티(오늘의집 의사 칼럼 등) 기고']},
+    {name:'Claude (Anthropic)', short:'Claude',  color:'#d97706',icon:'🟡',score:Math.min(100,Math.round(kgScore*0.7+Math.random()*8)),tip:'robots.txt ClaudeBot 허용 + HTTPS + 신뢰도 높은 전문 콘텐츠',guide:['robots.txt에 User-agent: ClaudeBot / Allow: / 추가','HTTPS 전환 및 SSL 인증서 적용','의료진 학력·경력·전문 분야 상세 프로필 페이지 제작','E-E-A-T 기준 — 경험·전문성·권위·신뢰 모두 콘텐츠에 반영']},
+    {name:'네이버 AI 검색',     short:'네이버 AI', color:'#03c75a',icon:'🟩',score:Math.min(100,Math.round(kgScore*0.9+Math.random()*10)),tip:'네이버 플레이스·블로그·지식IN 최적화 + 네이버 AI 학습 허용',guide:['네이버 플레이스 정보 100% 완성 (진료시간·사진 30장 이상)','네이버 블로그 월 16편 이상 전문 포스팅','네이버 지식IN 의료 전문가 답변 참여','네이버 카페·건강정보 채널 콘텐츠 배포']}
+  ];
+  var avgScore=Math.round(ais.reduce(function(a,b){return a+b.score;},0)/ais.length);
+
+  // 업종 벤치마크 (병원 평균)
+  var benchmarks=[
+    {label:'대형 종합병원 (서울아산·세브란스급)',  avg:82, color:'#10a37f'},
+    {label:'강남 클리닉 (개원 5년+, 전문 마케팅)', avg:58, color:'#4285f4'},
+    {label:'일반 개원 병원 평균',                   avg:31, color:'#f59e0b'},
+    {label:'신규 개원 병원 평균',                   avg:14, color:'#ef4444'},
+    {label:'귀 병원 추정 점수',                     avg:avgScore, color:'#533afd'},
+  ];
+
+  var checks=[
+    {label:'Schema.org 구조화 데이터', pass:hasType,  detail:'MedicalClinic/Physician/MedicalProcedure 마크업',  score:20, action:'JSON-LD Schema 즉시 추가'},
+    {label:'Google Knowledge Graph 등록',pass:kgScore>=25,detail:'Google이 귀 병원을 엔티티로 인식하는지 여부',   score:20, action:'Google 비즈니스 프로필 완성 + 권위 출처 등재'},
+    {label:'Knowledge Panel 설명 정보', pass:hasDesc,  detail:'설명(description)이 Knowledge Panel에 표시됨',    score:15, action:'Google 비즈니스 프로필 완성도 향상'},
+    {label:'상세 정보 (Wikipedia·포털)', pass:hasDetail,detail:'Wikipedia 등 권위 출처에서 상세 정보 인식',      score:15, action:'의료 포털·위키 등에 병원 정보 배포'},
+    {label:'이미지·로고 Knowledge Panel',pass:hasImage, detail:'Knowledge Graph에 병원 이미지/로고 인식',        score:10, action:'구글 마이비즈니스 사진 최적화'},
+    {label:'멀티 엔티티·NAP 일관성',   pass:hasMulti, detail:'복수 플랫폼에서 동일 엔티티로 인식',              score:10, action:'NAP(이름·주소·전화번호) 전 플랫폼 통일'},
+    {label:'AI 크롤러 허용 (robots.txt)',pass:false,   detail:'robots.txt에서 GPTBot·ClaudeBot·PerplexityBot 허용',score:5, action:'robots.txt User-agent 설정 추가 (5분 작업)'},
+    {label:'FAQ·Q&A 콘텐츠 구조',      pass:false,    detail:'환자 질문에 즉답하는 FAQPage Schema 콘텐츠',       score:5, action:'진료 관련 FAQ 50개 이상 Schema 구현'},
+  ];
+  var totalCheckScore=checks.reduce(function(a,c){return a+(c.pass?c.score:0);},0);
+  var checkRows=checks.map(function(c){
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft)">'
+      +'<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:'+(c.pass?'#d1fae5':'#fee2e2')+';color:'+(c.pass?'#059669':'#dc2626')+'">'+(c.pass?'✓':'✗')+'</span>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;font-weight:500;color:var(--ink)">'+(c.pass?'':' <strong>')+c.label+(c.pass?'':'</strong>')+'</div>'
+      +'<div style="font-size:12px;color:var(--mute);margin-top:2px">'+c.detail+'</div>'
+      +(c.pass?'':'<div style="font-size:12px;color:#7c3aed;margin-top:4px">→ <em>'+c.action+'</em></div>')
+      +'</div>'
+      +'<span style="font-size:12px;color:'+(c.pass?'#059669':'var(--mute)')+';flex-shrink:0;font-weight:600">'+(c.pass?'+'+c.score+'점':'0/'+c.score)+'</span>'
+      +'</div>';
+  }).join('');
+
+  var failItems=checks.filter(function(c){return !c.pass;});
+  var priorityHtml=failItems.length?
+    '<div style="background:rgba(124,58,237,.06);border-radius:10px;padding:14px 16px;margin-top:16px">'
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px">🎯 우선순위 개선 항목 ('+failItems.length+'개)</div>'
+    +failItems.slice(0,4).map(function(c,i){
+      return '<div style="font-size:13px;color:var(--ink2);padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)">'
+        +'<span style="color:var(--p);font-weight:700;margin-right:8px">'+(i+1)+'.</span>'+c.label+' <span style="color:var(--mute)">— '+c.action+'</span></div>';
+    }).join('')+'</div>':'';
+
+  // AI별 상세 가이드
+  var aiGuideHtml='<div style="margin-top:20px"><div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">📘 AI 플랫폼별 최적화 가이드</div>'
+    +ais.map(function(a){
+      return '<details style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">'
+        +'<summary style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;list-style:none">'
+        +'<span>'+a.icon+'</span><span style="flex:1">'+a.name+'</span>'
+        +'<span style="background:'+a.color+';color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700">'+a.score+'점</span>'
+        +'</summary>'
+        +'<div style="padding:10px 14px 14px;border-top:1px solid var(--border);background:var(--soft)">'
+        +'<div style="font-size:12px;color:var(--mute);margin-bottom:8px">'+a.tip+'</div>'
+        +'<ol style="list-style:decimal;padding-left:16px;display:flex;flex-direction:column;gap:6px">'
+        +a.guide.map(function(g){return '<li style="font-size:12px;color:var(--ink2)">'+g+'</li>';}).join('')
+        +'</ol></div></details>';
+    }).join('')+'</div>';
+
+  // 벤치마크 비교
+  var benchHtml='<div style="margin-top:20px">'
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">📊 업종 벤치마크 비교</div>'
+    +benchmarks.map(function(b){
+      var isMe=b.label.includes('귀 병원');
+      return '<div style="margin-bottom:10px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'
+        +'<span style="color:'+(isMe?'var(--p)':'var(--ink2)')+';font-weight:'+(isMe?'700':'400')+'">'+b.label+'</span>'
+        +'<span style="color:'+b.color+';font-weight:700">'+b.avg+'점</span>'
+        +'</div>'
+        +'<div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden">'
+        +'<div style="height:100%;width:'+Math.min(100,b.avg)+'%;background:'+b.color+';border-radius:99px;transition:width .6s"></div>'
+        +'</div></div>';
+    }).join('')+'</div>';
+
+  el.innerHTML=
+    '<div class="tr-title">GEO 점수 체크 — "'+name+'"</div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:16px">📡 Google Knowledge Graph 실측 + AI 노출 추정 분석'+(kgScore===0?' (API 응답 없음 — 자체 진단 기준)':'')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
+      +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
+        +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">Knowledge Graph 점수</div>'
+        +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+kgScore+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+recognized+'</div>'
+      +'</div>'
+      +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
+        +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">AI 노출 종합 점수</div>'
+        +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+avgScore+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgScore>=70?'AI 노출 양호':avgScore>=40?'개선 필요':'낮음')+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 10px">AI 플랫폼별 추정 노출도</div>'
+    +'<div class="geo-list">'+ais.map(function(a){
+      return '<div class="geo-ai-row">'
+        +'<span class="geo-ai-name">'+a.icon+' '+a.short+'</span>'
+        +'<div class="geo-ai-bar-bg"><div class="geo-ai-bar-fill" style="width:'+a.score+'%;background:'+a.color+'"></div></div>'
+        +'<span class="geo-ai-score" style="color:'+a.color+'">'+a.score+'</span>'
+        +'</div>';
+    }).join('')+'</div>'
+    +benchHtml
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 10px">📋 GEO 최적화 체크리스트 ('+totalCheckScore+'/100점)</div>'
+    +'<div>'+checkRows+'</div>'
+    +priorityHtml
+    +aiGuideHtml
+    +'<div class="tr-cta" style="margin-top:16px">'
+      +'<span class="tr-cta-text">GEO 전문가 최적화로 <strong>AI 추천 채널을 3~5배 확대</strong>하세요</span>'
+      +'<a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="padding:8px 16px;font-size:13px">상담신청 →</a>'
+    +'</div>';
 }
 
 function runKW(){
