@@ -48,6 +48,9 @@ module.exports = function handler(req, res) {
       try {
         var data = JSON.parse(body);
         data._debug_status = r.statusCode;
+        data._debug_key_len = secretKey.length;
+        data._debug_license_prefix = accessLicense.slice(0,8);
+        data._debug_customer = customerId;
         res.status(r.statusCode).json(data);
       } catch(e) {
         res.status(500).json({ error: 'Parse error', raw: body.slice(0, 500) });
