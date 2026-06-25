@@ -19,7 +19,7 @@ module.exports = function handler(req, res) {
   }
 
   const timestamp = Date.now().toString();
-  const message = timestamp + '.' + accessLicense;
+  const message = accessLicense + '.' + timestamp;
   const hmac = crypto.createHmac('sha256', secretKey);
   hmac.update(message);
   const signature = hmac.digest('base64');
