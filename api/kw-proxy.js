@@ -52,6 +52,7 @@ module.exports = function handler(req, res) {
         data._debug_license_len = accessLicense.length;
         data._debug_license_suffix = accessLicense.slice(-8);
         data._debug_customer = customerId;
+        data._debug_msg_prefix = (timestamp + '.' + accessLicense).slice(0,20);
         res.status(r.statusCode).json(data);
       } catch(e) {
         res.status(500).json({ error: 'Parse error', raw: body.slice(0, 500) });
