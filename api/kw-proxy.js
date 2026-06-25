@@ -49,6 +49,7 @@ module.exports = function handler(req, res) {
         var data = JSON.parse(body);
         data._debug_status = r.statusCode;
         data._debug_key_len = secretKey.length;
+        data._debug_key_prefix = secretKey.slice(0,4);
         data._debug_license_len = accessLicense.length;
         data._debug_license_suffix = accessLicense.slice(-8);
         data._debug_customer = customerId;
