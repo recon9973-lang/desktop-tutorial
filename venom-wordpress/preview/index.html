@@ -1382,6 +1382,12 @@ body{padding-top:0}
 .dc-cta-box p{font-size:14px;color:var(--mute);margin-bottom:16px}
 .dc-tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
 .dc-tag-row span{font-size:11px;background:rgba(83,58,253,.08);color:var(--pd);padding:3px 10px;border-radius:9999px}
+.dc-table-wrap{overflow-x:auto;margin:16px 0}
+.dc-table{width:100%;border-collapse:collapse;font-size:14px}
+.dc-table th{background:var(--soft);color:var(--ink);font-weight:500;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
+.dc-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--ink2);line-height:1.5}
+.dc-table tr:last-child td{border-bottom:none}
+.dc-table tr:hover td{background:rgba(83,58,253,.03)}
 
 /* AI PAGE */
 .ai-tabs{display:flex;gap:8px;margin-bottom:40px;flex-wrap:wrap}
@@ -2213,135 +2219,321 @@ var currentCat='dental';
 var pages={
   dental:{
     title:'치과 마케팅',
-    sub:'임플란트·교정·스케일링·네이버 플레이스 상위노출 전문 전략. 지역 기반 신환 유입을 극대화합니다.',
-    toc:[['overview','서비스 개요'],['strategy','핵심 전략'],['kpi','성과 지표'],['case','성공 사례'],['process','진행 프로세스']],
-    kws:['임플란트마케팅','교정마케팅','치과SEO','네이버플레이스','치과블로그','GEO최적화'],
+    sub:'의료광고 규정 준수 + 검색엔진 + AI 답변까지. 임플란트·교정·치과 전문 신환 유입 전략.',
+    toc:[['why','어려워진 이유'],['conditions','필수 조건 5가지'],['implant','임플란트 마케팅'],['orthodontic','교정 마케팅'],['pros-cons','장단점 비교'],['faq','FAQ'],['model','베놈 3단계 모델']],
+    kws:['치과마케팅','임플란트마케팅','교정마케팅','치과SEO','의료광고준수','AI답변노출'],
     html:`
 <div class="dc-hero">
-  <div class="dc-tag-row"><span>치과</span><span>임플란트</span><span>교정</span><span>네이버플레이스</span></div>
+  <div class="dc-tag-row"><span>치과마케팅</span><span>임플란트</span><span>교정</span><span>AI검색최적화</span></div>
   <h1>치과 마케팅</h1>
-  <p class="dc-sub">임플란트·교정·스케일링·네이버 플레이스 상위노출 전문 전략. 지역 기반 신환 유입을 극대화합니다.</p>
+  <p class="dc-sub">의료광고 기준을 지키면서 검색엔진과 AI 답변 모두에서 신뢰받는 치과로 선택되도록 설계하는 마케팅 전략입니다.</p>
 </div>
 <div class="dc-kpi">
   <div class="dc-kpi-card"><div class="dc-kpi-num">340%</div><div class="dc-kpi-label">평균 신환 증가율</div></div>
-  <div class="dc-kpi-card"><div class="dc-kpi-num">1위</div><div class="dc-kpi-label">네이버 플레이스 달성</div></div>
+  <div class="dc-kpi-card"><div class="dc-kpi-num">AI</div><div class="dc-kpi-label">답변 노출 최적화</div></div>
   <div class="dc-kpi-card"><div class="dc-kpi-num">6개월</div><div class="dc-kpi-label">평균 성과 발현 기간</div></div>
 </div>
-<div class="dc-section" id="ds-overview">
-  <h2>서비스 개요</h2>
-  <p>치과 마케팅은 지역 기반 검색 최적화가 핵심입니다. '강남 임플란트', '분당 교정치과' 등 지역+시술 키워드로 상위노출을 달성하고, 네이버 플레이스·블로그·GEO를 연동해 신환 유입 채널을 다각화합니다.</p>
-  <h3>주요 서비스</h3>
+
+<div class="dc-section" id="ds-why">
+  <h2>치과마케팅이 예전보다 어려워진 이유</h2>
+  <p>치과마케팅은 더 이상 "블로그 많이 쓰기"나 "광고비 많이 쓰기"만으로 해결되지 않습니다. 환자는 임플란트, 교정, 충치치료, 사랑니 발치, 라미네이트 같은 진료를 검색한 뒤 가격·위치·의료진·진료 방식·후기·예약 편의성까지 함께 비교합니다.</p>
+  <p>문제는 치과가 의료기관이라는 점입니다. 의료법상 환자의 치료경험담, 거짓·과장 내용, 다른 의료기관과의 비교, 비방, 소비자가 치료 효과를 오인할 우려가 있는 표현 등이 제한됩니다.</p>
+  <p>또 하나의 변화는 <strong>AI 검색</strong>입니다. 2026년 기준 환자는 "강남 임플란트 잘하는 치과"를 검색하는 데서 끝나지 않고, "임플란트 치과 고를 때 뭘 봐야 해?", "과잉진료 없는 치과 기준은?"처럼 AI에게 비교 질문을 던집니다. <a href="#" onclick="ld('geo');return false" style="color:var(--p);font-weight:500">GEO 최적화</a>와 <a href="#" onclick="ld('aeo');return false" style="color:var(--p);font-weight:500">AEO 답변엔진 최적화</a>가 함께 필요한 이유입니다.</p>
+</div>
+
+<div class="dc-section" id="ds-conditions">
+  <h2>원장님은 모르는 치과마케팅 필수 조건 5가지</h2>
+
+  <h3>1. 의료광고 기준을 모르면 노출보다 리스크가 먼저 커집니다</h3>
+  <p>특히 임플란트, 교정, 심미치료처럼 환자의 기대치가 큰 진료는 광고 문구가 쉽게 과장될 수 있습니다. 보건복지부는 대가성 후기나 치료 예후 광고가 의료법상 금지되는 치료경험담 광고에 해당할 수 있다고 안내합니다.</p>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>위험한 표현</th><th>대체 가능한 정보성 표현</th></tr></thead>
+    <tbody>
+      <tr><td>임플란트 성공 보장</td><td>개인의 구강 상태에 따라 치료 계획은 달라질 수 있습니다</td></tr>
+      <tr><td>통증 없는 치료</td><td>통증 부담을 줄이기 위한 진료 절차를 안내합니다</td></tr>
+      <tr><td>지역 1위 치과</td><td>의료진 경력, 진료 분야, 장비, 상담 절차를 설명합니다</td></tr>
+      <tr><td>전후사진으로 증명</td><td>진료 과정과 주의사항을 중심으로 안내합니다</td></tr>
+      <tr><td>후기 인증</td><td>내원 전 확인할 사항과 치료 흐름을 설명합니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2. 치과 콘텐츠는 '진료명'보다 '환자의 질문'으로 시작해야 합니다</h3>
+  <p>환자는 "임플란트 종류"보다 "임플란트가 꼭 필요한가요?", "교정은 몇 살까지 가능한가요?", "사랑니 꼭 뽑아야 하나요?"처럼 질문형으로 검색합니다. 좋은 치과 콘텐츠 구조는 다음과 같습니다.</p>
   <ul class="dc-list">
-    <li>네이버 플레이스 최적화 — 플레이스 상위노출·리뷰 관리·사진 최적화</li>
-    <li>블로그 SEO — 월 20편, 임플란트·교정·스케일링 키워드 중심</li>
-    <li>검색광고 — 네이버·구글 키워드 광고 최적화 운영</li>
-    <li>GEO 최적화 — ChatGPT·Perplexity에서 치과 추천 상위 노출</li>
-    <li>SNS 마케팅 — 인스타그램·카카오채널 운영</li>
+    <li>환자가 느끼는 증상 또는 고민</li>
+    <li>치과에서 확인하는 검사 항목</li>
+    <li>가능한 치료 방향</li>
+    <li>치료 전후 주의사항</li>
+    <li>예약 전 확인해야 할 정보</li>
   </ul>
+
+  <h3>3. 검색엔진 노출만 보지 말고 AI 답변 노출까지 점검해야 합니다</h3>
+  <p>2026년 기준 치과마케팅에서 중요한 질문은 이것입니다: <em>"우리 치과는 검색엔진에는 노출되지만, AI 답변에도 노출되고 있는가?"</em></p>
+  <p>AI 답변에 인용되기 쉬운 콘텐츠 조건은 → <a href="#" onclick="ld('aeo');return false" style="color:var(--p);font-weight:500">AEO 최적화 전략 보기</a></p>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>조건</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td>질문형 제목</td><td>환자가 실제로 묻는 문장과 유사해야 함</td></tr>
+      <tr><td>즉답형 첫 문장</td><td>첫 문장에서 핵심 답을 제시해야 함</td></tr>
+      <tr><td>근거 있는 설명</td><td>공식 자료, 법령, 의료광고 기준 등 출처 필요</td></tr>
+      <tr><td>구조화된 표</td><td>AI가 내용을 요약하기 쉬움</td></tr>
+      <tr><td>전문성 표현</td><td>의료진, 진료 과정, 검사 기준 등 구체 정보 필요</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>4. 지역 검색과 지도 정보가 실제 내원 전환을 좌우합니다</h3>
+  <p>치과는 생활권 업종입니다. 지도·홈페이지·블로그·플레이스 정보에 치과명·주소·진료시간·전화번호·대표 진료 분야·주차 가능 여부·예약 방법·의료진 소개가 반드시 일치해야 합니다. 정보가 채널마다 다르면 환자는 신뢰를 잃습니다.</p>
+
+  <h3>5. 조회수가 아니라 예약 가능성을 성과 지표로 봐야 합니다</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>지표</th><th>확인해야 할 의미</th></tr></thead>
+    <tbody>
+      <tr><td>지역 키워드 노출</td><td>내원 가능한 환자에게 보이는가</td></tr>
+      <tr><td>전화 클릭</td><td>예약 의도가 발생했는가</td></tr>
+      <tr><td>지도 길찾기</td><td>실제 방문 가능성이 있는가</td></tr>
+      <tr><td>콘텐츠 체류시간</td><td>환자가 충분히 읽고 있는가</td></tr>
+      <tr><td>AI 답변 언급</td><td>질문형 검색에서 브랜드가 인용되는가</td></tr>
+    </tbody>
+  </table></div>
 </div>
-<div class="dc-section" id="ds-strategy">
-  <h2>핵심 전략</h2>
-  <h3>1. 지역 키워드 트리플 점령</h3>
-  <p>'강남 임플란트'를 네이버 블로그·플레이스·광고 세 채널에서 동시에 상위노출해 경쟁사가 뚫기 어려운 검색 독점 구조를 만듭니다.</p>
-  <h3>2. GEO 치과 특화 최적화</h3>
-  <p>Schema.org DentalClinic 마크업과 AI 친화적 콘텐츠 구조로 ChatGPT·Perplexity에서 지역 치과 추천 시 상위에 노출됩니다. AI 검색 전환율은 일반 검색 대비 2.3배 높습니다.</p>
-  <h3>3. 신뢰 기반 리뷰 전략</h3>
-  <p>네이버 플레이스·구글 리뷰를 전략적으로 관리해 별점 4.8+ 유지. 리뷰가 100개 이상이면 신환 전환율이 47% 향상됩니다.</p>
+
+<div class="dc-section" id="ds-implant">
+  <h2>임플란트 마케팅</h2>
+  <p>임플란트는 치과 진료 중에서도 환자의 검색량과 비교 행동이 매우 강한 분야입니다. 환자는 "임플란트 비용", "임플란트 통증", "임플란트 잘하는 치과"를 비교하며 결정합니다.</p>
+
+  <h3>임플란트 광고 위험 표현 vs 대체 표현</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>위험 표현</th><th>대체 표현</th></tr></thead>
+    <tbody>
+      <tr><td>무통 임플란트</td><td>통증 부담을 줄이기 위한 진료 과정을 안내합니다</td></tr>
+      <tr><td>평생 쓰는 임플란트</td><td>사후관리와 정기검진이 수명에 영향을 줄 수 있습니다</td></tr>
+      <tr><td>최저가 임플란트</td><td>비용은 구강 상태와 치료 범위에 따라 달라질 수 있습니다</td></tr>
+      <tr><td>성공 보장</td><td>개인의 잇몸뼈, 전신질환, 관리 상태에 따라 결과가 다릅니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>임플란트 환자 콘텐츠 방향</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>환자 질문</th><th>콘텐츠 방향</th></tr></thead>
+    <tbody>
+      <tr><td>임플란트 꼭 해야 하나요?</td><td>자연치 보존 가능성, 잇몸뼈 상태, 검사 기준 설명</td></tr>
+      <tr><td>임플란트 비용은 왜 다른가요?</td><td>재료, 뼈이식 여부, 보철 종류, 사후관리 차이 설명</td></tr>
+      <tr><td>많이 아픈가요?</td><td>마취, 수술 과정, 개인별 통증 차이 안내</td></tr>
+      <tr><td>오래 쓸 수 있나요?</td><td>구강위생, 정기검진, 잇몸 상태 중요성 설명</td></tr>
+    </tbody>
+  </table></div>
+  <p>임플란트 마케팅도 <a href="#" onclick="ld('geo');return false" style="color:var(--p);font-weight:500">GEO 생성AI 최적화</a>와 연동하면 "임플란트 치과 고르는 법"처럼 AI에게 비교 질문을 하는 환자에게 노출됩니다.</p>
 </div>
-<div class="dc-section" id="ds-kpi">
-  <h2>성과 지표</h2>
-  <ul class="dc-list">
-    <li>월 신환 평균 300% 증가 (6개월 기준)</li>
-    <li>임플란트 키워드 네이버 1위 달성률 87%</li>
-    <li>상담 전환율 평균 23% (업계 평균 8%)</li>
-    <li>1인당 환자 획득 비용(CAC) 40% 절감</li>
-  </ul>
+
+<div class="dc-section" id="ds-orthodontic">
+  <h2>교정 마케팅</h2>
+  <p>교정마케팅은 치료 기간이 길고 비용 부담이 크며, 환자가 장치 선택·발치 여부·통증·유지장치까지 꼼꼼하게 비교하는 분야입니다.</p>
+
+  <h3>교정 환자 콘텐츠 설계</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>환자 유형</th><th>추천 콘텐츠 주제</th></tr></thead>
+    <tbody>
+      <tr><td>성인 교정</td><td>직장인 교정, 치료 기간, 심미성, 내원 주기</td></tr>
+      <tr><td>청소년 교정</td><td>성장기 교정, 발치 여부, 부모가 확인할 점</td></tr>
+      <tr><td>투명교정 관심자</td><td>착용 시간, 가능한 케이스, 관리법</td></tr>
+      <tr><td>돌출입 고민</td><td>발치 여부, 안모 변화, 정밀 진단</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>교정 광고 주의 표현</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>위험 표현</th><th>대체 표현</th></tr></thead>
+    <tbody>
+      <tr><td>무조건 비발치 교정</td><td>개인의 치열·공간·안모 상태에 따라 치료 계획은 달라질 수 있습니다</td></tr>
+      <tr><td>통증 없는 교정</td><td>통증 부담을 줄이기 위한 상담과 관리 방법을 안내합니다</td></tr>
+      <tr><td>최저가 교정</td><td>비용은 장치 종류와 치료 범위에 따라 달라질 수 있습니다</td></tr>
+      <tr><td>전후사진 보장</td><td>치료 결과는 개인 상태와 협조도에 따라 차이가 있습니다</td></tr>
+    </tbody>
+  </table></div>
 </div>
-<div class="dc-section" id="ds-case">
-  <h2>성공 사례</h2>
-  <p><strong>강남 ○○치과</strong> — 월 신환 340% 증가. '강남 임플란트' 네이버 1위 달성 후 3개월 만에 월 신환 80명 → 272명. GEO 최적화로 ChatGPT 추천 1위 달성.</p>
-  <p><strong>분당 △△치과</strong> — 교정 환자 특화. 인비절라인·세라믹 교정 키워드 상위노출 + 인스타그램 광고 연동으로 20~30대 교정 환자 280% 증가.</p>
+
+<div class="dc-section" id="ds-pros-cons">
+  <h2>치과마케팅 장단점 비교</h2>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>방식</th><th>장점</th><th>단점</th></tr></thead>
+    <tbody>
+      <tr><td>블로그마케팅</td><td>정보성 콘텐츠로 신뢰 형성</td><td>꾸준한 발행 필요</td></tr>
+      <tr><td>검색광고</td><td>빠른 노출 가능</td><td>경쟁 키워드는 비용 부담 큼</td></tr>
+      <tr><td>홈페이지 SEO</td><td>장기 자산화 가능</td><td>초기 구조 설계가 중요</td></tr>
+      <tr><td>지도/플레이스</td><td>지역 환자 유입에 강함</td><td>정보 관리와 리뷰 대응 필요</td></tr>
+      <tr><td><a href="#" onclick="ld('geo');return false" style="color:var(--p)">AI 검색 최적화</a></td><td>미래 검색 환경 대응 가능</td><td>즉각적인 순위 확인이 어려움</td></tr>
+    </tbody>
+  </table></div>
 </div>
-<div class="dc-section" id="ds-process">
-  <h2>진행 프로세스</h2>
-  <ul class="dc-list">
-    <li>1주차: 현황 감사 → 키워드 분석 → 경쟁사 리서치</li>
-    <li>2주차: 플레이스 최적화 + 블로그 세팅 + GEO 구조 설계</li>
-    <li>3주차: 광고 집행 + 콘텐츠 배포 시작</li>
-    <li>4주차: 성과 분석 → 최적화 → 월간 리포트</li>
-  </ul>
+
+<div class="dc-section" id="ds-faq">
+  <h2>자주 묻는 질문 (FAQ)</h2>
+  <h3>Q. 치과마케팅에서 후기를 활용해도 되나요?</h3>
+  <p>일반 만족도 수준의 표현은 가능할 수 있지만, 대가성 후기나 구체적 치료 경험·예후를 광고에 활용하면 치료경험담 광고로 문제 될 수 있습니다.</p>
+  <h3>Q. AI 답변 노출은 기존 SEO와 다른가요?</h3>
+  <p>완전히 다르지는 않습니다. 다만 질문형 구조, 출처, 명확한 답변성이 더 중요해졌습니다. 자세한 내용은 <a href="#" onclick="ld('aeo');return false" style="color:var(--p);font-weight:500">AEO 최적화</a> 페이지를 확인하세요.</p>
+  <h3>Q. 임플란트 광고에서 가장 조심할 표현은?</h3>
+  <p>"성공 보장", "평생 사용", "무통", "최저가", "1위"처럼 결과를 단정하거나 환자를 오인시킬 수 있는 표현입니다.</p>
+  <h3>Q. 신규 치과는 무엇부터 해야 하나요?</h3>
+  <p>홈페이지 기본 구조, 지도 정보, 의료진 소개, 대표 진료 콘텐츠, 전화 연결 동선을 먼저 정리해야 합니다.</p>
+  <h3>Q. 블로그만 운영해도 충분한가요?</h3>
+  <p>부족합니다. 블로그는 유입 채널이고, 홈페이지와 지도는 신뢰와 예약 전환 채널입니다. 세 채널이 함께 움직여야 합니다. <a href="#" onclick="ld('seo');return false" style="color:var(--p)">SEO 기술 최적화</a>도 함께 설계하세요.</p>
+</div>
+
+<div class="dc-section" id="ds-model">
+  <h2>베놈이 제안하는 치과마케팅 3단계 모델</h2>
+  <h3>1단계: 신뢰 기반 구축</h3>
+  <p>의료진 소개, 진료 철학, 장비, 진료 과정, 진료시간, 위치를 명확히 정리합니다. 환자는 광고 문구보다 "이 치과가 내 상황을 제대로 설명해주는가"를 봅니다.</p>
+  <h3>2단계: 검색·AI 콘텐츠 설계</h3>
+  <p>베놈만의 <a href="#" onclick="ld('geo');return false" style="color:var(--p)">GEO</a>·<a href="#" onclick="ld('aeo');return false" style="color:var(--p)">AEO</a> 솔루션으로 검색엔진 최적화와 AI 답변 노출을 동시에 설계합니다. "임플란트 비용", "교정 기간", "사랑니 발치 통증"처럼 환자가 실제로 묻는 질문을 AI가 인용하는 콘텐츠로 만듭니다.</p>
+  <h3>3단계: 예약 전환 최적화</h3>
+  <p>콘텐츠 하단에는 전화번호, 예약 방법, 진료시간, 주차 정보, 내원 전 준비사항이 자연스럽게 이어져야 합니다. 이 동선이 없으면 검색 노출은 되어도 매출로 연결되지 않습니다.</p>
+  <p style="margin-top:12px">👉 <a href="#" onclick="ld('skin');return false" style="color:var(--p)">피부과 마케팅</a> · <a href="#" onclick="ld('oriental');return false" style="color:var(--p)">한의원 마케팅</a> · <a href="#" onclick="ld('ortho');return false" style="color:var(--p)">정형외과 마케팅</a>도 함께 확인하세요.</p>
 </div>
 <div class="dc-cta-box">
   <h3>치과 마케팅 무료 진단</h3>
-  <p>현재 치과 마케팅을 무료로 분석하고 맞춤 전략을 제안해 드립니다.</p>
-  <a href="#" href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p">💬 카카오로 무료 상담 →</a>
+  <p>의료광고 기준 점검 + 검색·AI 노출 현황 무료 분석을 제공합니다.</p>
+  <a href="#" onclick="sp('contact');return false" class="btn btn-p">무료 상담 신청 →</a>
 </div>`
   },
   skin:{
     title:'피부과 마케팅',
-    sub:'레이저·보톡스·필러·피부관리 시술 특화 마케팅. 인스타그램 광고와 의료광고심의 전문 대응.',
-    toc:[['overview','서비스 개요'],['strategy','핵심 전략'],['law','의료광고심의'],['kpi','성과 지표'],['case','성공 사례']],
-    kws:['피부과마케팅','보톡스광고','레이저마케팅','인스타그램피부과','의료광고심의','필러마케팅'],
+    sub:'의료광고 기준 준수 + SEO + AI 답변 노출. 여드름·기미·리프팅·보톡스·레이저 피부과 전문 마케팅.',
+    toc:[['why','어려워진 이유'],['strategy','필수 전략 5가지'],['ai-search','AI 답변 노출'],['pros-cons','장단점 비교'],['faq','FAQ'],['model','베놈 3단계 모델']],
+    kws:['피부과마케팅','보톡스광고','레이저마케팅','피부과SEO','의료광고준수','AI답변노출'],
     html:`
 <div class="dc-hero">
-  <div class="dc-tag-row"><span>피부과</span><span>보톡스</span><span>레이저</span><span>인스타그램</span></div>
+  <div class="dc-tag-row"><span>피부과마케팅</span><span>보톡스</span><span>레이저</span><span>AI검색최적화</span></div>
   <h1>피부과 마케팅</h1>
-  <p class="dc-sub">레이저·보톡스·필러·피부관리 시술 특화 마케팅. 인스타그램 광고와 의료광고심의 전문 대응으로 안전하고 효과적인 마케팅을 실현합니다.</p>
+  <p class="dc-sub">의료광고 기준을 지키면서 검색엔진과 AI 답변에서 신뢰할 수 있는 피부과로 선택되도록 만드는 전략입니다.</p>
 </div>
 <div class="dc-kpi">
   <div class="dc-kpi-card"><div class="dc-kpi-num">280%</div><div class="dc-kpi-label">평균 신환 증가율</div></div>
-  <div class="dc-kpi-card"><div class="dc-kpi-num">100%</div><div class="dc-kpi-label">의료광고심의 통과율</div></div>
-  <div class="dc-kpi-card"><div class="dc-kpi-num">3배</div><div class="dc-kpi-label">인스타그램 전환율</div></div>
+  <div class="dc-kpi-card"><div class="dc-kpi-num">AI</div><div class="dc-kpi-label">답변 노출 최적화</div></div>
+  <div class="dc-kpi-card"><div class="dc-kpi-num">3개월</div><div class="dc-kpi-label">성과 발현 기간</div></div>
 </div>
-<div class="dc-section" id="ds-overview">
-  <h2>서비스 개요</h2>
-  <p>피부과 마케팅은 비주얼 중심 SNS와 의료법 준수가 핵심입니다. 보톡스·필러·레이저 시술의 효과를 의료광고 심의 기준에 맞게 표현하고, 인스타그램·틱톡·유튜브 쇼츠를 활용해 20~40대 여성 환자를 집중 유입합니다.</p>
-  <h3>주요 서비스</h3>
-  <ul class="dc-list">
-    <li>의료광고심의 대행 — 심의 기준 콘텐츠 작성 + 심의 신청 대행</li>
-    <li>인스타그램 광고 — 시술별 타깃 광고·릴스 콘텐츠 제작</li>
-    <li>네이버 블로그 SEO — 레이저·보톡스·필러 키워드 최적화</li>
-    <li>카카오채널 마케팅 — 시술 프로모션·예약 유도</li>
-    <li>GEO 피부과 특화 — AI 검색에서 시술 추천 상위 노출</li>
-  </ul>
+
+<div class="dc-section" id="ds-why">
+  <h2>피부과마케팅이 어려워진 이유</h2>
+  <p>피부과마케팅은 병원 마케팅 중에서도 경쟁 강도가 높은 분야입니다. 환자는 여드름, 색소, 기미, 리프팅, 보톡스, 필러, 레이저, 흉터 치료처럼 구체적인 시술명과 고민을 함께 검색합니다.</p>
+  <p>하지만 피부과는 의료기관입니다. 일반 뷰티 업종처럼 "무조건 개선", "즉각 효과", "통증 없음", "최저가 이벤트"를 강조하면 의료광고 리스크가 커질 수 있습니다. 보건복지부는 2024년 온라인 의료광고 모니터링에서 위법 의료광고 366건을 적발했으며, 치료경험담 광고·가격 할인 광고·거짓과장 광고가 주요 유형이었습니다.</p>
 </div>
+
 <div class="dc-section" id="ds-strategy">
-  <h2>핵심 전략</h2>
-  <h3>1. 비포/애프터 대체 콘텐츠 전략</h3>
-  <p>의료법상 비포/애프터 사진은 제한됩니다. 베놈은 시술 과정·원리 설명·환자 경험담(심의 기준 준수)으로 전환율 높은 콘텐츠를 제작합니다.</p>
-  <h3>2. 인스타그램 퍼널 설계</h3>
-  <p>인식(릴스) → 관심(피드 교육 콘텐츠) → 전환(DM 상담 → 예약)의 3단계 퍼널을 설계해 팔로워를 환자로 전환합니다.</p>
-  <h3>3. GEO 시술 특화 최적화</h3>
-  <p>'강남 보톡스 잘하는 피부과', '역삼 레이저 추천' 등 AI 검색 쿼리에 맞춘 구조화 콘텐츠로 Perplexity·ChatGPT 추천을 독점합니다.</p>
-</div>
-<div class="dc-section" id="ds-law">
-  <h2>의료광고심의 전문 대응</h2>
-  <p>피부과 마케팅의 최대 걸림돌인 의료광고 심의를 베놈이 완벽 대응합니다.</p>
+  <h2>피부과마케팅 필수 전략 5가지</h2>
+
+  <h3>1. 의료광고 기준을 먼저 점검해야 합니다</h3>
+  <p>피부과는 시술 전후 변화가 시각적으로 드러나는 분야라 전후사진, 후기, 이벤트, 가격 문구를 많이 사용합니다. 그러나 의료법 제56조는 치료경험담, 거짓·과장 광고, 소비자가 치료 효과를 오인할 우려가 있는 광고를 제한합니다.</p>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>위험 표현</th><th>대체 표현</th></tr></thead>
+    <tbody>
+      <tr><td>한 번에 잡티 제거</td><td>색소의 깊이와 피부 상태에 따라 치료 계획이 달라질 수 있습니다</td></tr>
+      <tr><td>무통 리프팅</td><td>통증 부담을 줄이기 위한 상담과 관리 방법을 안내합니다</td></tr>
+      <tr><td>최저가 보톡스</td><td>비용은 부위와 용량, 진료 범위에 따라 달라질 수 있습니다</td></tr>
+      <tr><td>후기 인증 피부과</td><td>진료 과정, 주의사항, 상담 기준을 중심으로 안내합니다</td></tr>
+      <tr><td>100% 효과</td><td>개인의 피부 상태와 생활 습관에 따라 결과는 다를 수 있습니다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2. 키워드는 '시술명'보다 '피부 고민'에서 시작해야 합니다</h3>
+  <p>피부과 환자는 시술명을 정확히 모르는 경우가 많습니다. "피코토닝"보다 "기미가 다시 올라와요", "인모드"보다 "턱선 처짐이 고민이에요"처럼 고민 중심으로 검색합니다. 따라서 피부과 SEO 콘텐츠 구조는 다음과 같습니다.</p>
   <ul class="dc-list">
-    <li>의료법 56조 준수 콘텐츠 기획 및 작성</li>
-    <li>의료광고심의위원회 심의 신청 대행</li>
-    <li>심의 통과 후 광고 집행 (100% 통과율 보장)</li>
-    <li>분기별 광고 내용 모니터링 및 업데이트</li>
+    <li>환자가 느끼는 피부 고민</li>
+    <li>원인과 악화 요인</li>
+    <li>피부과에서 확인하는 진단 기준</li>
+    <li>가능한 시술 방향</li>
+    <li>시술 전후 주의사항</li>
+    <li>예약 전 확인해야 할 정보</li>
   </ul>
+  <p>자세한 SEO 구조 설계는 <a href="#" onclick="ld('seo');return false" style="color:var(--p);font-weight:500">SEO 기술 최적화</a> 페이지를 참고하세요.</p>
+
+  <h3>3. 검색엔진 노출만으로는 부족합니다</h3>
+  <p><em>"우리 피부과는 검색엔진에는 노출되지만, AI 답변에도 노출되고 있는가?"</em></p>
+  <p>네이버는 2026년 4월 AI탭 베타를 출시하며 대화형 AI 검색을 확대했습니다. 피부과도 "블로그 상위노출"만 볼 것이 아니라, AI가 요약하기 쉬운 구조의 콘텐츠를 준비해야 합니다. → <a href="#" onclick="ld('geo');return false" style="color:var(--p);font-weight:500">GEO 최적화 전략 보기</a></p>
+
+  <h3>4. 지역 검색과 지도 정보가 상담 전환을 좌우합니다</h3>
+  <p>환자는 "강남 피부과", "홍대 여드름 피부과", "부산 리프팅 피부과"처럼 위치와 시술 목적을 함께 검색합니다. 홈페이지·블로그·지도·플레이스에 병원명·주소·대표번호·진료시간·예약 방법·주차 정보가 일치해야 합니다.</p>
+
+  <h3>5. 조회수가 아니라 상담 전환율을 봐야 합니다</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>지표</th><th>확인해야 할 의미</th></tr></thead>
+    <tbody>
+      <tr><td>지역 키워드 노출</td><td>실제 내원 가능한 환자에게 보이는가</td></tr>
+      <tr><td>시술별 콘텐츠 체류시간</td><td>환자가 충분히 비교하고 있는가</td></tr>
+      <tr><td>전화 클릭</td><td>상담 의도가 생겼는가</td></tr>
+      <tr><td>예약 버튼 클릭</td><td>전환 동선이 작동하는가</td></tr>
+      <tr><td>AI 답변 언급</td><td>AI 검색에서 신뢰 정보로 인용되는가</td></tr>
+    </tbody>
+  </table></div>
 </div>
-<div class="dc-section" id="ds-kpi">
-  <h2>성과 지표</h2>
+
+<div class="dc-section" id="ds-ai-search">
+  <h2>검색엔진에는 노출되지만, AI 답변에도 노출되고 있는가?</h2>
+  <p>피부과 SEO는 이제 "상위노출"만으로 충분하지 않습니다. 환자는 검색 결과를 클릭하기 전에 AI 요약 답변을 먼저 보고 어떤 병원을 선택할지 기준을 잡습니다. "기미 레이저 어떻게 골라야 하나요?", "보톡스와 필러 차이는?", "여드름 흉터 치료 전 주의할 점은?" 같은 질문형 검색은 AI 답변으로 요약될 가능성이 큽니다.</p>
+  <p>피부과가 AI 답변 노출을 준비하려면 다음 5가지 원칙이 필요합니다.</p>
   <ul class="dc-list">
-    <li>월 신환 평균 280% 증가 (3개월 기준)</li>
-    <li>인스타그램 팔로워 월 2,000명+ 증가</li>
-    <li>보톡스·필러 키워드 네이버 1위 달성률 79%</li>
-    <li>의료광고 심의 통과율 100%</li>
+    <li>한 문단에 하나의 질문만 답한다</li>
+    <li>시술명보다 피부 고민을 먼저 설명한다</li>
+    <li>개인차와 부작용 가능성을 명확히 안내한다</li>
+    <li>표, 단계, 체크리스트를 적극 활용한다</li>
+    <li>병원 홍보보다 환자가 판단할 기준을 제공한다</li>
   </ul>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>조건</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td>질문형 제목</td><td>"기미 레이저 몇 번 받아야 하나요?"처럼 실제 질문 반영</td></tr>
+      <tr><td>즉답형 첫 문장</td><td>첫 문장에서 핵심 답변 제시</td></tr>
+      <tr><td>구조화된 표</td><td>시술 대상, 주의사항, 차이를 표로 정리</td></tr>
+      <tr><td>공식 출처</td><td>의료광고 기준, 법령, 공공기관 자료 활용</td></tr>
+      <tr><td>과장 배제</td><td>효과 보장·후기 중심 표현 최소화</td></tr>
+    </tbody>
+  </table></div>
+  <p>→ <a href="#" onclick="ld('aeo');return false" style="color:var(--p);font-weight:500">AEO 답변엔진 최적화 전략 자세히 보기</a></p>
 </div>
-<div class="dc-section" id="ds-case">
-  <h2>성공 사례</h2>
-  <p><strong>강남구 △△피부과</strong> — ChatGPT에서 '강남 피부과 추천' 검색 시 1위 노출. GEO+AEO 최적화 3개월 만에 월 신환 310% 증가.</p>
-  <p><strong>홍대 □□스킨케어</strong> — 인스타그램 릴스 마케팅으로 팔로워 1,200명 → 18,000명. 릴스 1편당 평균 DM 상담 23건 발생.</p>
+
+<div class="dc-section" id="ds-pros-cons">
+  <h2>피부과마케팅 장단점 비교</h2>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>방식</th><th>장점</th><th>단점</th></tr></thead>
+    <tbody>
+      <tr><td>검색광고</td><td>빠른 노출 가능</td><td>경쟁 키워드는 비용 부담이 큼</td></tr>
+      <tr><td>블로그마케팅</td><td>피부 고민별 정보 제공에 유리</td><td>지속적인 콘텐츠 관리 필요</td></tr>
+      <tr><td>홈페이지 <a href="#" onclick="ld('seo');return false" style="color:var(--p)">SEO</a></td><td>장기적인 브랜드 자산화 가능</td><td>초기 구조 설계가 중요</td></tr>
+      <tr><td>지도/플레이스</td><td>지역 환자 유입에 강함</td><td>정보 불일치 시 신뢰 하락</td></tr>
+      <tr><td>SNS 광고</td><td>시각적 콘텐츠 확산에 유리</td><td>의료광고 표현 리스크가 큼</td></tr>
+      <tr><td><a href="#" onclick="ld('geo');return false" style="color:var(--p)">AI 검색 최적화</a></td><td>미래 검색 환경 대응 가능</td><td>성과 측정 기준이 아직 복합적</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="dc-section" id="ds-faq">
+  <h2>자주 묻는 질문 (FAQ)</h2>
+  <h3>Q. 피부과 전후사진을 광고에 사용해도 되나요?</h3>
+  <p>사용 자체보다 환자가 치료 효과를 오인할 수 있는 편집, 과장, 결과 보장 표현, 심의 여부가 문제 될 수 있습니다.</p>
+  <h3>Q. 피부과 후기를 마케팅에 활용해도 되나요?</h3>
+  <p>구체적인 치료 경험, 시술 결과, 예후를 강조하는 후기는 치료경험담 광고로 문제 될 수 있습니다.</p>
+  <h3>Q. 피부과 이벤트 광고는 가능한가요?</h3>
+  <p>비급여 진료비 할인·면제 광고는 소비자 오인 가능성이 있어 주의해야 합니다. 가격만 강조하기보다 대상, 조건, 진료 범위를 명확히 안내해야 합니다.</p>
+  <h3>Q. AI 검색 최적화는 기존 SEO와 다른가요?</h3>
+  <p>기반은 같습니다. 다만 질문형 구조, 즉답형 문장, 표, 신뢰 출처가 더 중요해졌습니다. → <a href="#" onclick="ld('aeo');return false" style="color:var(--p)">AEO 최적화</a> 참고</p>
+  <h3>Q. 피부과 블로그마케팅만 해도 충분한가요?</h3>
+  <p>부족합니다. 블로그는 유입 채널이고, 홈페이지·지도·예약 동선은 상담 전환 채널입니다.</p>
+</div>
+
+<div class="dc-section" id="ds-model">
+  <h2>베놈의 피부과마케팅 3단계 모델</h2>
+  <h3>1단계: 신뢰 설계</h3>
+  <p>의료진 소개, 진료 철학, 시술 전 상담 기준, 부작용 안내, 사후관리 정보를 정리합니다. 피부과 환자는 가격보다 "내 피부 상태를 제대로 진단해줄 수 있는가"를 봅니다.</p>
+  <h3>2단계: 검색·AI 콘텐츠 설계</h3>
+  <p>"기미 레이저 전 확인할 점", "여드름 흉터 치료가 어려운 이유", "보톡스와 필러 차이"처럼 환자가 실제로 묻는 질문을 콘텐츠로 만듭니다. <a href="#" onclick="ld('geo');return false" style="color:var(--p)">GEO</a>·<a href="#" onclick="ld('aeo');return false" style="color:var(--p)">AEO</a> 구조로 AI 답변 인용 가능성을 높입니다.</p>
+  <h3>3단계: 상담 전환 설계</h3>
+  <p>콘텐츠 하단에는 전화번호, 예약 버튼, 진료시간, 위치, 주차, 상담 절차가 자연스럽게 이어져야 합니다.</p>
+  <p style="margin-top:12px">👉 <a href="#" onclick="ld('dental');return false" style="color:var(--p)">치과 마케팅</a> · <a href="#" onclick="ld('oriental');return false" style="color:var(--p)">한의원 마케팅</a> · <a href="#" onclick="ld('plastic');return false" style="color:var(--p)">성형외과 마케팅</a>도 함께 확인하세요.</p>
 </div>
 <div class="dc-cta-box">
   <h3>피부과 마케팅 무료 진단</h3>
-  <p>의료광고심의 무료 컨설팅 + 마케팅 전략 제안</p>
-  <a href="#" href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p">💬 카카오로 무료 상담 →</a>
+  <p>의료광고 기준 점검 + AI 검색 노출 현황 무료 분석을 제공합니다.</p>
+  <a href="#" onclick="sp('contact');return false" class="btn btn-p">무료 상담 신청 →</a>
 </div>`
   },
   ortho:{
@@ -2411,67 +2603,117 @@ var pages={
   },
   oriental:{
     title:'한의원 마케팅',
-    sub:'다이어트·체형교정·한약·불임·갱년기 특화. 신뢰 기반 콘텐츠와 지역 마케팅으로 충성 환자를 확보합니다.',
-    toc:[['overview','서비스 개요'],['strategy','핵심 전략'],['content','콘텐츠 전략'],['kpi','성과 지표'],['case','성공 사례']],
-    kws:['한의원마케팅','한방다이어트광고','체형교정마케팅','한약마케팅','한의원SEO','한방불임마케팅'],
+    sub:'의료광고 규정 준수 + 지역 검색 + AI 답변 노출. 교통사고·다이어트·추나·한약 한의원 전문 마케팅.',
+    toc:[['why','어려운 이유'],['conditions','필수 조건 5가지'],['pros-cons','장단점 비교'],['faq','FAQ'],['model','베놈 3단계 모델']],
+    kws:['한의원마케팅','한의원광고','한의원SEO','교통사고한의원','추나요법마케팅','AI답변노출'],
     html:`
 <div class="dc-hero">
-  <div class="dc-tag-row"><span>한의원</span><span>다이어트</span><span>체형교정</span><span>한약</span></div>
+  <div class="dc-tag-row"><span>한의원마케팅</span><span>교통사고</span><span>추나요법</span><span>AI검색최적화</span></div>
   <h1>한의원 마케팅</h1>
-  <p class="dc-sub">다이어트·체형교정·한약·불임·갱년기 특화. 신뢰 기반 콘텐츠와 지역 마케팅으로 충성 환자를 확보합니다.</p>
+  <p class="dc-sub">의료광고 규정을 지키면서 환자가 검색·비교·예약까지 안심하고 이동하도록 설계하는 신뢰 구축 전략입니다.</p>
 </div>
 <div class="dc-kpi">
   <div class="dc-kpi-card"><div class="dc-kpi-num">220%</div><div class="dc-kpi-label">평균 신환 증가율</div></div>
-  <div class="dc-kpi-card"><div class="dc-kpi-num">1위</div><div class="dc-kpi-label">지역 한의원 검색 순위</div></div>
+  <div class="dc-kpi-card"><div class="dc-kpi-num">AI</div><div class="dc-kpi-label">답변 노출 최적화</div></div>
   <div class="dc-kpi-card"><div class="dc-kpi-num">85%</div><div class="dc-kpi-label">재방문율</div></div>
 </div>
-<div class="dc-section" id="ds-overview">
-  <h2>서비스 개요</h2>
-  <p>한의원 마케팅은 '신뢰'가 핵심입니다. 한방 치료에 대한 과학적 설명과 실제 치료 사례를 중심으로 콘텐츠를 구성하고, 지역 커뮤니티와 블로그를 통해 입소문을 만들어냅니다.</p>
-  <h3>주요 서비스</h3>
+
+<div class="dc-section" id="ds-why">
+  <h2>한의원마케팅이 어려운 이유</h2>
+  <p>한의원은 일반 업종처럼 "효과 보장", "후기 중심", "타 병원보다 우수" 같은 방식으로 홍보하기 어렵습니다. 의료법상 환자의 치료경험담, 거짓·과장 광고, 다른 의료인과의 비교 광고, 비방 광고 등은 금지될 수 있기 때문입니다.</p>
+  <p>또한 한의원은 지역 기반 업종입니다. 환자는 보통 "동네명 + 한의원", "교통사고 한의원", "다이어트 한의원", "추나요법 한의원"처럼 문제 중심으로 검색합니다. 따라서 한의원마케팅은 광고 노출보다 검색 의도에 맞는 정보 설계가 먼저입니다.</p>
+</div>
+
+<div class="dc-section" id="ds-conditions">
+  <h2>원장님은 모르는 한의원마케팅 필수 조건 5가지</h2>
+
+  <h3>1. 의료광고 심의 기준을 먼저 확인해야 합니다</h3>
+  <p>한의원마케팅의 첫 번째 조건은 "어디에 노출할까"가 아니라 "무엇을 말할 수 있는가"입니다. 의료법 제56조는 의료광고에서 치료경험담, 거짓 내용, 비교 광고, 비방 광고 등을 제한하고 있습니다.</p>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>위험 표현</th><th>대체 표현</th></tr></thead>
+    <tbody>
+      <tr><td>반드시 좋아집니다</td><td>진료 후 개인 상태에 따라 경과가 다를 수 있습니다</td></tr>
+      <tr><td>후기 인증</td><td>진료 과정, 검사 기준, 내원 전 확인사항 안내</td></tr>
+      <tr><td>지역 1위</td><td>진료 철학, 의료진 약력, 장비·시설 정보</td></tr>
+      <tr><td>타 한의원보다 우수</td><td>본원의 진료 범위와 상담 절차 설명</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>2. 질환별 콘텐츠는 '증상-원인-진료 과정' 순서로 작성해야 합니다</h3>
+  <p>환자는 한의학 이론보다 "내 증상이 왜 생겼고, 한의원에서는 무엇을 확인하는지"를 알고 싶어 합니다. 블로그나 홈페이지 콘텐츠는 다음 3단계로 구성해야 합니다.</p>
   <ul class="dc-list">
-    <li>네이버 블로그 SEO — 다이어트·체형교정·한약 키워드 월 16편</li>
-    <li>카페 마케팅 — 지역 맘카페·건강 카페 콘텐츠 배포</li>
-    <li>구글 마이비즈니스 최적화 — 지역 검색 상위노출</li>
-    <li>카카오 브랜드 채널 — 건강 정보 + 프로모션 운영</li>
-    <li>GEO 한의원 특화 — AI 추천 한의원 상위 노출</li>
+    <li>증상 설명: 허리통증, 목통증, 교통사고 후유증, 소화불량 등</li>
+    <li>진료 전 확인사항: 통증 위치, 발생 시점, 악화 요인, 기존 치료 이력</li>
+    <li>한의원 진료 흐름: 문진, 검사, 상담, 치료 계획 안내</li>
   </ul>
-</div>
-<div class="dc-section" id="ds-strategy">
-  <h2>핵심 전략</h2>
-  <h3>1. 한방 과학화 콘텐츠 전략</h3>
-  <p>한방 치료에 회의적인 환자를 설득하는 과학적 근거 콘텐츠를 제작합니다. 논문 인용, 임상 데이터, 한방-양방 비교 분석으로 신뢰를 구축합니다.</p>
-  <h3>2. 지역 커뮤니티 입소문 전략</h3>
-  <p>지역 맘카페·당근마켓·지역 카페에서 한의원 원장님의 건강 상담 콘텐츠로 자연스러운 인지도를 높이고 지역 입소문을 만듭니다.</p>
-  <h3>3. 시즌 프로그램 마케팅</h3>
-  <p>봄 체형교정, 여름 다이어트, 가을 보약, 겨울 불임·갱년기 등 계절별 특화 프로그램을 시즌 마케팅으로 집중 홍보합니다.</p>
-</div>
-<div class="dc-section" id="ds-content">
-  <h2>콘텐츠 전략</h2>
+
+  <h3>3. 지역 검색 최적화가 필수입니다</h3>
+  <p>한의원은 대부분 생활권 기반으로 선택됩니다. 환자는 먼 지역의 유명한 한의원보다 "오늘 갈 수 있는 가까운 한의원"을 먼저 찾습니다. 홈페이지·블로그·플레이스 정보에는 진료과목·위치·진료시간·주차·야간진료 여부·예약 방법이 정확히 정리되어야 합니다.</p>
+  <p>지역 <a href="#" onclick="ld('seo');return false" style="color:var(--p);font-weight:500">SEO 기술 최적화</a>와 <a href="#" onclick="ld('geo');return false" style="color:var(--p);font-weight:500">GEO AI 검색 최적화</a>를 함께 설계하는 것이 효과적입니다.</p>
+
+  <h3>4. 광고보다 전환(CVR) 동선이 먼저입니다</h3>
+  <p>많은 한의원이 광고 클릭 수는 늘었는데 예약은 늘지 않는 문제를 겪습니다. 전환 동선은 다음처럼 단순해야 합니다.</p>
   <ul class="dc-list">
-    <li>한방 다이어트: "양약과 다른 한방 다이어트의 3가지 장점" 시리즈</li>
-    <li>체형교정: "O다리·X다리 교정, 한의원에서 가능한가?" FAQ 콘텐츠</li>
-    <li>불임·갱년기: "40대 여성의 한방 불임 치료 성공 사례" 신뢰 콘텐츠</li>
-    <li>보약: "아이 성장 보약, 효과 있나요?" AEO 최적화 콘텐츠</li>
+    <li>증상 콘텐츠 확인 → 진료 가능 범위 확인</li>
+    <li>위치·진료시간 확인 → 전화 또는 온라인 상담 연결</li>
+    <li>내원 전 준비사항 안내</li>
   </ul>
+
+  <h3>5. 성과 측정 기준을 '노출'이 아니라 '예약 가능성'으로 봐야 합니다</h3>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>지표</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td>지역 키워드 노출</td><td>생활권 환자에게 보이는가</td></tr>
+      <tr><td>콘텐츠 체류시간</td><td>환자가 내용을 충분히 읽는가</td></tr>
+      <tr><td>전화 클릭</td><td>예약 의도가 생겼는가</td></tr>
+      <tr><td>플레이스 길찾기</td><td>실제 내원 가능성이 있는가</td></tr>
+      <tr><td>재방문 검색</td><td>브랜드 신뢰가 쌓였는가</td></tr>
+    </tbody>
+  </table></div>
 </div>
-<div class="dc-section" id="ds-kpi">
-  <h2>성과 지표</h2>
-  <ul class="dc-list">
-    <li>월 신환 평균 220% 증가 (5개월 기준)</li>
-    <li>지역 '한의원' 검색 1위 달성률 75%</li>
-    <li>카카오 채널 월 구독자 500명+ 증가</li>
-    <li>재방문율 85% (업계 평균 60%)</li>
-  </ul>
+
+<div class="dc-section" id="ds-pros-cons">
+  <h2>한의원마케팅 장단점 비교</h2>
+  <div class="dc-table-wrap"><table class="dc-table">
+    <thead><tr><th>구분</th><th>장점</th><th>단점</th></tr></thead>
+    <tbody>
+      <tr><td>블로그</td><td>정보성 콘텐츠로 신뢰 형성</td><td>꾸준한 작성 필요</td></tr>
+      <tr><td>검색광고</td><td>빠른 노출 가능</td><td>광고비 경쟁 심화</td></tr>
+      <tr><td>플레이스</td><td>지역 환자 유입에 강함</td><td>리뷰·정보 관리 필요</td></tr>
+      <tr><td>홈페이지 <a href="#" onclick="ld('seo');return false" style="color:var(--p)">SEO</a></td><td>전문성 전달에 유리</td><td>초기 구조 설계 중요</td></tr>
+      <tr><td><a href="#" onclick="ld('geo');return false" style="color:var(--p)">AI 검색 최적화</a></td><td>장기 자산화 가능</td><td>단기 성과 확인이 어려움</td></tr>
+    </tbody>
+  </table></div>
 </div>
-<div class="dc-section" id="ds-case">
-  <h2>성공 사례</h2>
-  <p><strong>일산 ○○한의원</strong> — 한방 다이어트 블로그 SEO로 '일산 한방 다이어트' 네이버 1위 달성. 월 다이어트 환자 220% 증가.</p>
+
+<div class="dc-section" id="ds-faq">
+  <h2>자주 묻는 질문 (FAQ)</h2>
+  <h3>Q. 한의원마케팅에서 후기를 사용해도 되나요?</h3>
+  <p>환자가 자발적으로 남긴 일반 만족도 표현은 가능할 수 있지만, 대가성 후기나 구체적인 치료 경험·예후를 광고에 활용하면 의료법 위반 소지가 있습니다.</p>
+  <h3>Q. 블로그마케팅만 해도 환자 유입이 되나요?</h3>
+  <p>가능하지만 블로그만으로는 부족합니다. 플레이스·홈페이지·전화 연결·예약 동선까지 함께 설계해야 합니다. 최근에는 <a href="#" onclick="ld('geo');return false" style="color:var(--p)">GEO AI 답변 노출</a>도 반영이 되어야 합니다.</p>
+  <h3>Q. 한의원 광고에서 가장 위험한 표현은?</h3>
+  <p>"완치", "보장", "1위", "최고", "후기 인증", "타 병원보다 우수"처럼 치료 효과를 단정하거나 비교하는 표현입니다.</p>
+  <h3>Q. 신규 개원 한의원은 무엇부터 해야 하나요?</h3>
+  <p>지역 키워드 정리, 홈페이지 기본 정보 구축, 플레이스 세팅, 질환별 콘텐츠 10개 이상 확보가 우선입니다.</p>
+  <h3>Q. 교통사고 한의원마케팅은 따로 해야 하나요?</h3>
+  <p>네. 교통사고 환자는 진료비·보험·내원 절차·후유증 관리 등 궁금한 점이 다르므로 별도 콘텐츠가 필요합니다.</p>
+</div>
+
+<div class="dc-section" id="ds-model">
+  <h2>베놈이 보는 한의원마케팅 3단계 모델</h2>
+  <h3>1단계: 신뢰 설계</h3>
+  <p>의료진 소개, 진료 철학, 진료 과정, 위치, 진료시간을 홈페이지·플레이스·카카오채널 등 이용 가능한 채널에 명확히 정리합니다.</p>
+  <h3>2단계: 검색 설계</h3>
+  <p>지역명·증상명·진료 항목을 조합해 콘텐츠를 만듭니다. "강남 교통사고 한의원", "목통증 한의원", "추나요법 한의원"처럼 실제 검색어에 맞춰야 합니다. <a href="#" onclick="ld('aeo');return false" style="color:var(--p)">AEO 답변엔진 최적화</a>로 AI 답변 인용 가능성을 높입니다.</p>
+  <h3>3단계: 전환 설계</h3>
+  <p>콘텐츠 하단에는 전화·상담·플레이스·예약 방법이 자연스럽게 이어져야 합니다.</p>
+  <p style="margin-top:12px">👉 <a href="#" onclick="ld('dental');return false" style="color:var(--p)">치과 마케팅</a> · <a href="#" onclick="ld('skin');return false" style="color:var(--p)">피부과 마케팅</a> · <a href="#" onclick="ld('ortho');return false" style="color:var(--p)">정형외과 마케팅</a>도 함께 확인하세요.</p>
 </div>
 <div class="dc-cta-box">
   <h3>한의원 마케팅 무료 진단</h3>
-  <p>지역 커뮤니티 + GEO 마케팅 무료 컨설팅</p>
-  <a href="#" href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p">💬 카카오로 무료 상담 →</a>
+  <p>지역 검색 + AI 답변 노출 현황 무료 분석을 제공합니다.</p>
+  <a href="#" onclick="sp('contact');return false" class="btn btn-p">무료 상담 신청 →</a>
 </div>`
   },
   plastic:{
