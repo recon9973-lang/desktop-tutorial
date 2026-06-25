@@ -1,11 +1,12 @@
-import crypto from 'crypto';
+const https = require('https');
+const crypto = require('crypto');
 
-export default async function handler(req, res) {
+module.exports = function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  const { keyword } = req.query;
+  const keyword = req.query.keyword;
   if (!keyword) { res.status(400).json({ error: 'keyword parameter required' }); return; }
 
   const customerId = process.env.NAVER_CUSTOMER_ID;
@@ -19,26 +20,38 @@ export default async function handler(req, res) {
 
   const timestamp = Date.now().toString();
   const hmac = crypto.createHmac('sha256', secretKey);
-  hmac.update(`${timestamp}.${accessLicense}`);
+  hmac.update(timestamp + '.' + accessLicense);
   const signature = hmac.digest('base64');
 
-  // 연관 키워드 5개 생성
-  const hints = [keyword, `${keyword} 비용`, `${keyword} 후기`, `${keyword} 잘하는곳`, `${keyword} 추천`];
-  const apiUrl = `https://api.searchad.naver.com/keywordstool?hintKeywords=${hints.map(encodeURIComponent).join(',')}&showDetail=1`;
+  const hints = [keyword, keyword + ' 비용', keyword + ' 후기', keyword + ' 잘하는곳', keyword + ' 추천'];
+  const hintParam = hints.map(encodeURIComponent).join(',');
+  const apiPath = '/keywordstool?hintKeywords=' + hintParam + '&showDetail=1';
 
-  try {
-    const r = await fetch(apiUrl, {
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'X-Timestamp': timestamp,
-        'X-API-KEY': accessLicense,
-        'X-Customer': customerId,
-        'X-Signature': signature,
+  const options = {
+    hostname: 'api.searchad.naver.com',
+    path: apiPath,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-Timestamp': timestamp,
+      'X-API-KEY': accessLicense,
+      'X-Customer': customerId,
+      'X-Signature': signature
+    }
+  };
+
+  https.get(options, function(r) {
+    var body = '';
+    r.on('data', function(chunk) { body += chunk; });
+    r.on('end', function() {
+      try {
+        var data = JSON.parse(body);
+        res.status(r.statusCode).json(data);
+      } catch(e) {
+        res.status(500).json({ error: 'Parse error', raw: body.slice(0, 300) });
       }
     });
-    const data = await r.json();
-    res.status(r.status).json(data);
-  } catch (e) {
+  }).on('error', function(e) {
     res.status(500).json({ error: e.message });
-  }
-}
+  });
+};
