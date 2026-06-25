@@ -357,12 +357,8 @@ a{color:var(--p);text-decoration:none}
           </div>
           <table class="data-table">
             <thead><tr><th>제목</th><th>카테고리</th><th>상태</th><th>조회수</th><th>발행일</th><th>작업</th></tr></thead>
-            <tbody>
-              <tr><td>ChatGPT에 병원이 추천되는 3가지 방법</td><td>GEO/AI</td><td><span class="badge badge-green">발행</span></td><td>842</td><td>2025.06.18</td><td><button class="btn btn-outline btn-sm" onclick="editPost()">수정</button></td></tr>
-              <tr><td>의료광고 금지 표현 완벽 정리 2025</td><td>SEO</td><td><span class="badge badge-green">발행</span></td><td>624</td><td>2025.06.12</td><td><button class="btn btn-outline btn-sm" onclick="editPost()">수정</button></td></tr>
-              <tr><td>네이버 플레이스 1위 달성 전략</td><td>온라인마케팅</td><td><span class="badge badge-yellow">초안</span></td><td>—</td><td>미발행</td><td><button class="btn btn-outline btn-sm" onclick="editPost()">수정</button></td></tr>
-              <tr><td>임플란트 마케팅 가이드 — SEO·AEO 완전판</td><td>치과</td><td><span class="badge badge-green">발행</span></td><td>318</td><td>2025.06.05</td><td><button class="btn btn-outline btn-sm" onclick="editPost()">수정</button></td></tr>
-              <tr><td>피부과 인스타그램 운영 — 의료광고 기준 안에서</td><td>피부과</td><td><span class="badge badge-green">발행</span></td><td>271</td><td>2025.05.28</td><td><button class="btn btn-outline btn-sm" onclick="editPost()">수정</button></td></tr>
+            <tbody id="posts-list-body">
+              <tr><td colspan="6" style="text-align:center;color:var(--mute);padding:24px">로딩 중...</td></tr>
             </tbody>
           </table>
         </div>
@@ -742,7 +738,44 @@ function generateAI(){
 }
 
 // ── PUBLISH ──
-function saveDraft(){toast('초안이 저장되었습니다.')}
+// ── BLOG LOCALSTORAGE ──
+var BLOG_KEY='venom_blog_posts';
+function getBlogPosts(){try{return JSON.parse(localStorage.getItem(BLOG_KEY)||'[]');}catch(e){return[];}}
+function saveBlogPosts(posts){localStorage.setItem(BLOG_KEY,JSON.stringify(posts));}
+function getPostForm(status){
+  return {
+    id:'post_'+Date.now(),
+    title:document.getElementById('post-title').value,
+    cat:document.getElementById('post-cat').value,
+    seoTitle:document.getElementById('post-seo-title').value,
+    keywords:document.getElementById('post-keywords').value,
+    meta:document.getElementById('post-meta').value,
+    content:document.getElementById('post-editor').value,
+    status:status,
+    views:0,
+    date:new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\. /g,'.').replace('.','')
+  };
+}
+function clearPostForm(){
+  ['post-title','post-seo-title','post-keywords','post-meta','post-editor'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('post-cat').selectedIndex=0;
+  editingPostId=null;
+}
+var editingPostId=null;
+function saveDraft(){
+  var title=document.getElementById('post-title').value;
+  if(!title){toast('제목을 입력해주세요.');return;}
+  var posts=getBlogPosts();
+  var post=getPostForm('초안');
+  if(editingPostId){
+    var idx=posts.findIndex(function(p){return p.id===editingPostId;});
+    if(idx>-1){post.id=editingPostId;posts[idx]=post;}
+  }else{posts.unshift(post);}
+  saveBlogPosts(posts);
+  renderPostList();
+  toast('초안이 저장되었습니다.');
+  clearPostForm();
+}
 function publishPost(){
   var title=document.getElementById('post-title').value;
   if(!title){toast('제목을 입력해주세요.');return;}
@@ -752,11 +785,52 @@ function publishPost(){
 }
 function confirmPublish(){
   closeModal('modal-publish');
+  var posts=getBlogPosts();
+  var post=getPostForm('발행');
+  if(editingPostId){
+    var idx=posts.findIndex(function(p){return p.id===editingPostId;});
+    if(idx>-1){post.id=editingPostId;posts[idx]=post;}
+  }else{posts.unshift(post);}
+  saveBlogPosts(posts);
+  renderPostList();
   toast('포스팅이 발행되었습니다! ✅');
-  document.getElementById('post-title').value='';
-  document.getElementById('post-editor').value='';
+  clearPostForm();
+  switchTab(document.querySelector('[onclick*="tab-posts"]'),'tab-posts');
+}
+function renderPostList(){
+  var posts=getBlogPosts();
+  var tbody=document.getElementById('posts-list-body');
+  if(!tbody)return;
+  if(posts.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--mute);padding:24px">작성된 포스팅이 없습니다.</td></tr>';return;}
+  tbody.innerHTML=posts.map(function(p){
+    var badgeClass=p.status==='발행'?'badge-green':'badge-yellow';
+    return '<tr><td>'+p.title+'</td><td>'+p.cat+'</td><td><span class="badge '+badgeClass+'">'+p.status+'</span></td><td>'+(p.views||'—')+'</td><td>'+(p.date||'—')+'</td><td><button class="btn btn-outline btn-sm" onclick="editPostById(\''+p.id+'\')">수정</button> <button class="btn btn-outline btn-sm" style="color:#dc2626" onclick="deletePost(\''+p.id+'\')">삭제</button></td></tr>';
+  }).join('');
+}
+function editPostById(id){
+  var posts=getBlogPosts();
+  var post=posts.find(function(p){return p.id===id;});
+  if(!post)return;
+  editingPostId=id;
+  document.getElementById('post-title').value=post.title||'';
+  document.getElementById('post-cat').value=post.cat||'GEO/AI';
+  document.getElementById('post-seo-title').value=post.seoTitle||'';
+  document.getElementById('post-keywords').value=post.keywords||'';
+  document.getElementById('post-meta').value=post.meta||'';
+  document.getElementById('post-editor').value=post.content||'';
+  switchTab(document.querySelector('[onclick*="tab-write"]'),'tab-write');
+  toast('수정 모드입니다. 내용을 변경 후 발행하세요.');
+}
+function deletePost(id){
+  if(!confirm('이 포스팅을 삭제하시겠습니까?'))return;
+  var posts=getBlogPosts().filter(function(p){return p.id!==id;});
+  saveBlogPosts(posts);
+  renderPostList();
+  toast('삭제되었습니다.');
 }
 function editPost(){toast('수정 모드 진입 (연동 준비 중)')}
+// 초기 렌더링
+document.addEventListener('DOMContentLoaded',function(){renderPostList();});
 
 // ── OTHER ──
 function logout(){if(confirm('로그아웃 하시겠습니까?'))window.location.href='index.html';}
