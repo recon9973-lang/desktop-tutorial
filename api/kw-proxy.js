@@ -19,7 +19,7 @@ module.exports = function handler(req, res) {
   }
 
   const timestamp = Date.now().toString();
-  const message = timestamp + '.' + accessLicense + '.' + customerId;
+  const message = timestamp + '.' + accessLicense;
   const hmac = crypto.createHmac('sha256', secretKey);
   hmac.update(message, 'utf8');
   const signature = hmac.digest('base64');
@@ -54,7 +54,6 @@ module.exports = function handler(req, res) {
         data._debug_license_len = accessLicense.length;
         data._debug_license_suffix = accessLicense.slice(-8);
         data._debug_customer = customerId;
-        data._debug_customer_used = '1337286';
         data._debug_msg_prefix = (timestamp + '.' + accessLicense).slice(0,20);
         res.status(r.statusCode).json(data);
       } catch(e) {
