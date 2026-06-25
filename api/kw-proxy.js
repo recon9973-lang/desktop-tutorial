@@ -19,7 +19,7 @@ module.exports = function handler(req, res) {
   }
 
   const timestamp = Date.now().toString();
-  const message = timestamp + '.' + accessLicense;
+  const message = timestamp + '.' + accessLicense + '.' + customerId;
   const hmac = crypto.createHmac('sha256', secretKey);
   hmac.update(message, 'utf8');
   const signature = hmac.digest('base64');
@@ -36,7 +36,7 @@ module.exports = function handler(req, res) {
       'Content-Type': 'application/json; charset=UTF-8',
       'X-Timestamp': timestamp,
       'X-API-KEY': accessLicense,
-      'X-Customer': '1337286',
+      'X-Customer': customerId,
       'X-Signature': signature
     }
   };
