@@ -50,7 +50,7 @@ module.exports = function handler(req, res) {
         data._debug_status = r.statusCode;
         data._debug_key_len = secretKey.length;
         data._debug_license_len = accessLicense.length;
-        data._debug_license_prefix = accessLicense.slice(0,12);
+        data._debug_license_suffix = accessLicense.slice(-8);
         data._debug_customer = customerId;
         res.status(r.statusCode).json(data);
       } catch(e) {
