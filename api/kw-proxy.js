@@ -46,9 +46,10 @@ module.exports = function handler(req, res) {
     r.on('end', function() {
       try {
         var data = JSON.parse(body);
+        data._debug_status = r.statusCode;
         res.status(r.statusCode).json(data);
       } catch(e) {
-        res.status(500).json({ error: 'Parse error', raw: body.slice(0, 300) });
+        res.status(500).json({ error: 'Parse error', raw: body.slice(0, 500) });
       }
     });
   }).on('error', function(e) {

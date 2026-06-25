@@ -2150,7 +2150,7 @@ function runKW(){
       if(data.error){throw new Error(data.error);}
       var keywords=data.keywordList||[];
       if(!keywords.length){
-        el.innerHTML='<div style="padding:24px;text-align:center;color:var(--mute)">검색 결과가 없습니다.</div>';return;
+        el.innerHTML='<div style="padding:24px;text-align:center;color:var(--mute)">검색 결과가 없습니다.<br><small style="font-size:11px;word-break:break-all">API 응답: '+JSON.stringify(data).slice(0,300)+'</small></div>';return;
       }
       var compLabel=function(v){return v<0.1?'낮음':v<0.3?'보통':v<0.6?'높음':'매우높음';};
       var compColor={'낮음':'#10b981','보통':'#f59e0b','높음':'#ef4444','매우높음':'#7c3aed'};
