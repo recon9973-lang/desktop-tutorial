@@ -1,31 +1,31 @@
-import https from 'https';
+const https = require('https');
 
-export default async function handler(req, res) {
+module.exports = function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  const { query } = req.query;
+  const query = req.query.query;
   if (!query) { res.status(400).json({ error: 'query parameter required' }); return; }
 
   const key = process.env.PSI_KEY;
   if (!key) { res.status(500).json({ error: 'PSI_KEY not configured' }); return; }
 
-  const apiPath = `/v1/entities:search?query=${encodeURIComponent(query)}&key=${key}&limit=5&languages=ko&languages=en`;
+  const apiPath = '/v1/entities:search?query=' + encodeURIComponent(query)
+    + '&key=' + key + '&limit=5&languages=ko&languages=en';
 
-  try {
-    const data = await new Promise((resolve, reject) => {
-      https.get(`https://kgsearch.googleapis.com${apiPath}`, (r) => {
-        let body = '';
-        r.on('data', chunk => body += chunk);
-        r.on('end', () => {
-          try { resolve({ status: r.statusCode, data: JSON.parse(body) }); }
-          catch(e) { reject(new Error('JSON parse error')); }
-        });
-      }).on('error', reject);
+  https.get('https://kgsearch.googleapis.com' + apiPath, function(r) {
+    var body = '';
+    r.on('data', function(chunk) { body += chunk; });
+    r.on('end', function() {
+      try {
+        var data = JSON.parse(body);
+        res.status(r.statusCode).json(data);
+      } catch(e) {
+        res.status(500).json({ error: 'Parse error' });
+      }
     });
-    res.status(data.status).json(data.data);
-  } catch (e) {
+  }).on('error', function(e) {
     res.status(500).json({ error: e.message });
-  }
-}
+  });
+};
