@@ -74,10 +74,10 @@ body{padding-top:0}
   display:inline-block;letter-spacing:.01em}
 
 /* ── HEADER ── */
-.site-header{position:sticky;top:38px;z-index:200;height:var(--header);
+.site-header{position:sticky;top:0;z-index:200;height:var(--header);
   background:rgba(255,255,255,.96);backdrop-filter:blur(16px) saturate(180%);
   border-bottom:1px solid var(--border);box-shadow:var(--s1)}
-.site-header .container{display:flex;align-items:center;height:100%;gap:0}
+.site-header .container{display:flex;align-items:center;height:100%;gap:0;position:relative}
 .logo{display:flex;align-items:center;gap:10px;font-size:16.5px;font-weight:400;
   color:var(--ink);text-decoration:none;flex-shrink:0;letter-spacing:-.02em;
   font-feature-settings:"ss01"}
@@ -85,7 +85,7 @@ body{padding-top:0}
 .logo-icon{width:30px;height:30px;background:var(--p);border-radius:7px;
   display:flex;align-items:center;justify-content:center}
 .logo-icon svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.main-nav{display:flex;align-items:center;gap:2px;flex:1;margin-left:28px}
+.main-nav{display:flex;align-items:center;gap:2px;position:absolute;left:50%;transform:translateX(-50%)}
 .main-nav>li{position:relative}
 .main-nav>li>a{display:flex;align-items:center;gap:3px;padding:7px 11px;
   border-radius:var(--r4);font-size:14px;font-weight:300;color:var(--ink2);
@@ -1207,7 +1207,7 @@ body{padding-top:0}
 </div>
 
 </main>
-<button id="btt" onclick="scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로">↑</button>
+<button id="btt" onclick="document.documentElement.scrollTop=0;document.body.scrollTop=0;window.scrollTo({top:0,behavior:'smooth'});" aria-label="맨 위로">↑</button>
 <div id="toast"></div>
 <style>
 /* ── 추가 컴포넌트 스타일 ── */
