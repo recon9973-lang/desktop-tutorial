@@ -9,9 +9,9 @@ module.exports = function handler(req, res) {
   const keyword = req.query.keyword;
   if (!keyword) { res.status(400).json({ error: 'keyword parameter required' }); return; }
 
-  const customerId = process.env.NAVER_CUSTOMER_ID;
-  const accessLicense = process.env.NAVER_ACCESS_LICENSE;
-  const secretKey = process.env.NAVER_SECRET_KEY;
+  const customerId = (process.env.NAVER_CUSTOMER_ID || '').trim();
+  const accessLicense = (process.env.NAVER_ACCESS_LICENSE || '').trim();
+  const secretKey = (process.env.NAVER_SECRET_KEY || '').trim();
 
   if (!customerId || !accessLicense || !secretKey) {
     res.status(500).json({ error: 'Naver API credentials not configured' });
@@ -20,7 +20,7 @@ module.exports = function handler(req, res) {
 
   const timestamp = Date.now().toString();
   const message = timestamp + '.' + accessLicense;
-  const hmac = crypto.createHmac('sha256', Buffer.from(secretKey, 'base64'));
+  const hmac = crypto.createHmac('sha256', secretKey);
   hmac.update(message);
   const signature = hmac.digest('base64');
 
