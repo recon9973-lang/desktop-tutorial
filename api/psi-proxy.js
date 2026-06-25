@@ -1,3 +1,5 @@
+import https from 'https';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -9,12 +11,20 @@ export default async function handler(req, res) {
   const key = process.env.PSI_KEY;
   if (!key) { res.status(500).json({ error: 'PSI_KEY not configured' }); return; }
 
-  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${key}&strategy=mobile&category=seo&category=performance&category=best-practices&category=accessibility`;
+  const apiPath = `/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${key}&strategy=mobile&category=seo&category=performance&category=best-practices&category=accessibility`;
 
   try {
-    const r = await fetch(apiUrl);
-    const data = await r.json();
-    res.status(r.status).json(data);
+    const data = await new Promise((resolve, reject) => {
+      https.get(`https://www.googleapis.com${apiPath}`, (r) => {
+        let body = '';
+        r.on('data', chunk => body += chunk);
+        r.on('end', () => {
+          try { resolve({ status: r.statusCode, data: JSON.parse(body) }); }
+          catch(e) { reject(new Error('JSON parse error: ' + body.slice(0, 200))); }
+        });
+      }).on('error', reject);
+    });
+    res.status(data.status).json(data.data);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
