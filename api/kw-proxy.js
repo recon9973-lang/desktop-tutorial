@@ -36,7 +36,7 @@ module.exports = function handler(req, res) {
       'Content-Type': 'application/json; charset=UTF-8',
       'X-Timestamp': timestamp,
       'X-API-KEY': accessLicense,
-      'X-Customer': customerId,
+      'X-Customer': '1337286',
       'X-Signature': signature
     }
   };
@@ -54,6 +54,7 @@ module.exports = function handler(req, res) {
         data._debug_license_len = accessLicense.length;
         data._debug_license_suffix = accessLicense.slice(-8);
         data._debug_customer = customerId;
+        data._debug_customer_used = '1337286';
         data._debug_msg_prefix = (timestamp + '.' + accessLicense).slice(0,20);
         res.status(r.statusCode).json(data);
       } catch(e) {
