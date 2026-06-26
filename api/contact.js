@@ -4,7 +4,15 @@ const { URL } = require('url');
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-HBP1brRB3LduHBm75cbZBHV5PKN1BoOIdWeh19c3tFc9GsvQa3Z6cuWQkOiI7ApIHg/exec';
 
-// GET 쿼리 파라미터로 전송 → Apps Script doGet(e)의 e.parameter로 수신
+function getRawBody(req) {
+  return new Promise(function(resolve, reject) {
+    var data = '';
+    req.on('data', function(chunk) { data += chunk; });
+    req.on('end', function() { resolve(data); });
+    req.on('error', reject);
+  });
+}
+
 function sendGet(urlStr, payload, redirects) {
   return new Promise(function(resolve, reject) {
     if (redirects > 6) { resolve({ result: 'ok' }); return; }
@@ -28,7 +36,7 @@ function getUrl(urlStr, redirects) {
       path: parsed.pathname + parsed.search,
       method: 'GET',
       headers: { 'User-Agent': 'Mozilla/5.0' },
-      timeout: 15000
+      timeout: 25000
     };
     var req = lib.request(options, function(res) {
       var data = '';
@@ -40,7 +48,7 @@ function getUrl(urlStr, redirects) {
           return getUrl(next, redirects + 1).then(resolve).catch(reject);
         }
         try { resolve(JSON.parse(data)); }
-        catch(e) { resolve({ result: 'ok' }); }
+        catch(e) { resolve({ result: 'ok', raw: data.slice(0, 200) }); }
       });
     });
     req.on('error', reject);
@@ -58,12 +66,18 @@ module.exports = async function handler(req, res) {
 
   try {
     var body = req.body;
-    if (typeof body === 'string') { try { body = JSON.parse(body); } catch(e) {} }
+    // Vercel may not auto-parse; read raw stream if needed
     if (!body || typeof body !== 'object') {
-      res.status(400).json({ error: 'Invalid body' }); return;
+      var raw = typeof body === 'string' ? body : await getRawBody(req);
+      try { body = JSON.parse(raw); } catch(e) { body = {}; }
     }
+
+    var keys = Object.keys(body || {});
+    if (keys.length === 0) {
+      res.status(400).json({ error: 'Empty body' }); return;
+    }
+
     var result = await sendGet(APPS_SCRIPT_URL, body, 0);
-    // Apps Script가 {result:'ok'} 반환하면 성공, 아니면 ok로 간주
     res.status(200).json({ result: 'ok', raw: result });
   } catch(e) {
     res.status(500).json({ error: e.message });
