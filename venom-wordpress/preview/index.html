@@ -5535,7 +5535,7 @@ function openBlogPost(id, pushState) {
     relSidebar.innerHTML = relIds.map(function(rid){
       var rp = blogPosts[rid];
       if (!rp) return '';
-      return '<a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="display:block;padding:10px 0;border-bottom:1px solid var(--border);color:var(--ink);line-height:1.4"><span style="font-size:11px;color:var(--p);font-weight:600;display:block;margin-bottom:3px">'+rp.cat+'</span><span style="font-size:13px">'+rp.title+'</span></a>';
+      return '<a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="display:block;padding:14px 16px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r8);color:var(--ink);margin-bottom:8px;text-decoration:none"><div style="font-size:14px;font-weight:600;line-height:1.5;margin-bottom:6px">'+rp.title+'</div><div style="font-size:12px;color:var(--mute)">'+rp.cat+' · '+rp.date+'</div></a>';
     }).join('');
   }
 
