@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>베놈 자연한의원 — 자연주의 따뜻한형 샘플</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',sans-serif;background:#faf8f4;color:#2d2a1e}
+a{text-decoration:none;color:inherit}
+/* HEADER */
+.hd{background:#fff;border-bottom:1px solid #e8e2d4;height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+.hd-inner{max-width:1140px;margin:0 auto;padding:0 32px;display:flex;align-items:center;width:100%;gap:40px}
+.hd-logo{display:flex;align-items:center;gap:12px}
+.hd-logo-icon{width:40px;height:40px;background:#2d5a27;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hd-logo-text{font-size:18px;font-weight:700;color:#2d5a27;letter-spacing:-.02em}
+.hd-logo-sub{font-size:11px;color:#86815a;font-weight:400;margin-top:1px}
+.hd-nav{display:flex;gap:28px;margin-left:auto}
+.hd-nav a{color:#5a5640;font-size:14px;font-weight:400;transition:.15s}
+.hd-nav a:hover{color:#2d5a27}
+.hd-cta{background:#2d5a27;color:#fff;padding:10px 22px;border-radius:40px;font-size:13px;font-weight:600;margin-left:16px}
+/* HERO */
+.hero{background:linear-gradient(160deg,#e8f0e4 0%,#d4e8cc 40%,#c8e0be 100%);padding:100px 32px;display:flex;align-items:center;min-height:80vh}
+.hero-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;width:100%}
+.hero-badge{display:inline-block;background:rgba(45,90,39,.1);color:#2d5a27;font-size:11px;letter-spacing:.1em;padding:6px 14px;border-radius:40px;margin-bottom:24px;font-weight:600}
+.hero h1{font-size:52px;font-weight:300;color:#1a3d17;letter-spacing:-.04em;line-height:1.2;margin-bottom:20px}
+.hero h1 strong{font-weight:700;color:#2d5a27}
+.hero p{font-size:16px;color:#5a5640;line-height:1.9;margin-bottom:36px;font-weight:300}
+.btn-green{background:#2d5a27;color:#fff;padding:14px 32px;border-radius:40px;font-size:15px;font-weight:600;display:inline-block;margin-right:12px}
+.btn-ghost{border:1.5px solid #2d5a27;color:#2d5a27;padding:14px 32px;border-radius:40px;font-size:15px;font-weight:400;display:inline-block}
+.hero-img{background:linear-gradient(135deg,#2d5a27,#4a8c3f);border-radius:24px;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;font-size:80px}
+/* PHILOSOPHY */
+.philosophy{padding:100px 32px;text-align:center;background:#fff}
+.philosophy-inner{max-width:800px;margin:0 auto}
+.sec-label{font-size:11px;letter-spacing:.12em;color:#86815a;font-weight:600;margin-bottom:16px}
+.sec-title{font-size:40px;font-weight:300;color:#1a3d17;letter-spacing:-.03em;margin-bottom:16px}
+.sec-title strong{font-weight:700;color:#2d5a27}
+.sec-desc{font-size:16px;color:#5a5640;line-height:1.9;font-weight:300}
+.phil-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:64px;text-align:left}
+.phil-item{padding:32px;background:#faf8f4;border-radius:16px;border-left:3px solid #2d5a27}
+.phil-icon{font-size:32px;margin-bottom:16px}
+.phil-t{font-size:17px;font-weight:700;color:#1a3d17;margin-bottom:8px}
+.phil-d{font-size:14px;color:#5a5640;line-height:1.7;font-weight:300}
+/* TREATMENTS */
+.treats{padding:100px 32px;max-width:1140px;margin:0 auto}
+.treat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:56px}
+.treat-card{background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e8e2d4;display:grid;grid-template-columns:100px 1fr}
+.treat-img{background:linear-gradient(135deg,#2d5a27,#4a8c3f);display:flex;align-items:center;justify-content:center;font-size:40px}
+.treat-body{padding:28px}
+.treat-tag{font-size:11px;color:#2d5a27;font-weight:600;letter-spacing:.08em;margin-bottom:8px}
+.treat-name{font-size:18px;font-weight:700;color:#1a3d17;margin-bottom:8px}
+.treat-desc{font-size:13px;color:#5a5640;line-height:1.7;font-weight:300}
+/* DOCTOR */
+.doctor{background:#2d5a27;padding:100px 32px;color:#fff}
+.doctor-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:300px 1fr;gap:80px;align-items:center}
+.doc-img{background:rgba(255,255,255,.1);border-radius:24px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:80px}
+.doc-label{font-size:11px;letter-spacing:.12em;color:rgba(255,255,255,.5);margin-bottom:20px}
+.doc-name{font-size:40px;font-weight:300;color:#fff;margin-bottom:4px}
+.doc-name strong{font-weight:700}
+.doc-title{font-size:16px;color:rgba(255,255,255,.6);margin-bottom:32px}
+.doc-quote{font-size:18px;color:rgba(255,255,255,.85);line-height:1.8;font-weight:300;border-left:3px solid rgba(255,255,255,.3);padding-left:24px;margin-bottom:32px;font-style:italic}
+.doc-careers{display:flex;flex-direction:column;gap:8px}
+.doc-career{font-size:14px;color:rgba(255,255,255,.55);font-weight:300}
+.doc-career::before{content:'∘ ';color:rgba(255,255,255,.3)}
+/* REVIEW */
+.reviews{padding:100px 32px;background:#faf8f4}
+.reviews-inner{max-width:1140px;margin:0 auto}
+.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px}
+.review-card{background:#fff;border-radius:16px;padding:32px;border:1px solid #e8e2d4}
+.review-stars{color:#f59e0b;font-size:14px;margin-bottom:16px}
+.review-text{font-size:14px;color:#5a5640;line-height:1.8;font-weight:300;margin-bottom:20px}
+.review-meta{font-size:12px;color:#86815a;font-weight:500}
+/* FOOTER */
+footer{background:#1a3d17;padding:60px 32px;color:rgba(255,255,255,.4);font-size:13px}
+footer .fi{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+footer strong{color:rgba(255,255,255,.8);display:block;margin-bottom:12px;font-size:16px}
+footer p{line-height:1.8}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-inner">
+    <div class="hd-logo">
+      <div class="hd-logo-icon">🌿</div>
+      <div><div class="hd-logo-text">베놈 자연한의원</div><div class="hd-logo-sub">자연의 힘으로 치료합니다</div></div>
+    </div>
+    <nav class="hd-nav">
+      <a href="#">진료안내</a>
+      <a href="#">원장소개</a>
+      <a href="#">치료철학</a>
+      <a href="#">오시는길</a>
+    </nav>
+    <a class="hd-cta" href="#">예약하기</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">NATURAL ORIENTAL MEDICINE</div>
+      <h1>자연의 치유력으로<br><strong>건강을 되찾다</strong></h1>
+      <p>20년 한의학 임상 경험을 바탕으로<br>몸 전체의 균형을 회복하는<br>근본적인 치료를 제공합니다.</p>
+      <a class="btn-green" href="#">진료 예약하기</a>
+      <a class="btn-ghost" href="#">치료 프로그램 보기</a>
+    </div>
+    <div class="hero-img">🌿</div>
+  </div>
+</section>
+
+<section class="philosophy">
+  <div class="philosophy-inner">
+    <div class="sec-label">OUR PHILOSOPHY</div>
+    <div class="sec-title">치료 <strong>철학</strong></div>
+    <div class="sec-desc">한의학은 단순히 증상을 없애는 것이 아닙니다.<br>몸과 마음, 환경의 균형을 찾아 스스로 치유할 수 있도록 돕는 의학입니다.</div>
+    <div class="phil-grid">
+      <div class="phil-item"><div class="phil-icon">⚖️</div><div class="phil-t">균형 (Balance)</div><div class="phil-d">오장육부의 기혈 순환을 바로잡아 몸의 자연스러운 균형 상태를 회복합니다.</div></div>
+      <div class="phil-item"><div class="phil-icon">🌱</div><div class="phil-t">자연 (Natural)</div><div class="phil-d">자연에서 얻은 순수한 약재만을 사용합니다. 부작용 최소화, 효과 최대화.</div></div>
+      <div class="phil-item"><div class="phil-icon">🧘</div><div class="phil-t">전인 (Holistic)</div><div class="phil-d">몸과 마음을 함께 치료합니다. 생활습관 교정부터 심리적 안정까지 함께.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="treats">
+  <div class="sec-label">TREATMENTS</div>
+  <div class="sec-title">주요 <strong>치료 프로그램</strong></div>
+  <div class="treat-grid">
+    <div class="treat-card"><div class="treat-img">🔥</div><div class="treat-body"><div class="treat-tag">통증 치료</div><div class="treat-name">디스크 · 관절 치료</div><div class="treat-desc">추나요법·침·약침 병행으로 디스크, 무릎 관절염, 오십견을 근본적으로 치료합니다.</div></div></div>
+    <div class="treat-card"><div class="treat-img">😰</div><div class="treat-body"><div class="treat-tag">면역 · 피로</div><div class="treat-name">만성 피로 · 면역 강화</div><div class="treat-desc">기혈 보충 한약 처방으로 만성 피로를 개선하고 면역력을 높입니다.</div></div></div>
+    <div class="treat-card"><div class="treat-img">🌸</div><div class="treat-body"><div class="treat-tag">여성 건강</div><div class="treat-name">갱년기 · 생리 불순</div><div class="treat-desc">여성 호르몬 균형을 맞추는 한약 처방으로 갱년기 증상과 생리 관련 불편함을 개선합니다.</div></div></div>
+    <div class="treat-card"><div class="treat-img">😤</div><div class="treat-body"><div class="treat-tag">소화 · 비만</div><div class="treat-name">소화기 · 체중 관리</div><div class="treat-desc">비위 기능을 회복하는 한방 치료와 체질별 다이어트 한약으로 건강한 체중을 만들어드립니다.</div></div></div>
+  </div>
+</section>
+
+<section class="doctor">
+  <div class="doctor-inner">
+    <div class="doc-img">👨‍⚕️</div>
+    <div>
+      <div class="doc-label">DOCTOR STORY</div>
+      <div class="doc-name">원장 <strong>김베놈</strong></div>
+      <div class="doc-title">한의학 박사 · 대한한의사협회 정회원</div>
+      <div class="doc-quote">"20년 전 어머니의 관절염을 고치지 못했던 아픔이 저를 한의학으로 이끌었습니다. 그때부터 저는 약이 아닌 몸 자체를 치료하는 법을 연구했습니다."</div>
+      <div class="doc-careers">
+        <span class="doc-career">경희대학교 한의과대학 졸업</span>
+        <span class="doc-career">경희대학교 한의학 박사</span>
+        <span class="doc-career">前 강남 대형 한의원 수석 원장</span>
+        <span class="doc-career">대한침구의학회 정회원</span>
+        <span class="doc-career">SCI 한의학 논문 8편 발표</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="reviews">
+  <div class="reviews-inner">
+    <div class="sec-label" style="text-align:center">PATIENT REVIEWS</div>
+    <div class="sec-title" style="text-align:center">환자 <strong>후기</strong></div>
+    <div class="review-grid">
+      <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"10년 된 허리 디스크가 3개월 치료 후 일상생활이 가능해졌습니다. 수술 대신 한방 치료를 선택하길 잘했습니다."</div><div class="review-meta">정형외과 치료 환자 · 40대 남성</div></div>
+      <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"갱년기 증상으로 너무 힘들었는데 한약 복용 2개월 만에 안면홍조와 불면증이 크게 개선되었어요."</div><div class="review-meta">갱년기 치료 환자 · 50대 여성</div></div>
+      <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"항상 피곤하고 소화가 안됐는데 체질 맞춤 한약 처방 후 몸이 완전히 달라진 것을 느낍니다."</div><div class="review-meta">만성피로 치료 환자 · 30대 직장인</div></div>
+    </div>
+    <div style="background:#e8f0e4;border-radius:12px;padding:16px 24px;margin-top:24px;font-size:12px;color:#5a7854;text-align:center">
+      ※ 위 후기는 실제 환자 동의를 받아 게시되었으며, 치료 효과는 개인에 따라 다를 수 있습니다. 의료광고 심의 완료.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fi">
+    <div>
+      <strong>베놈 자연한의원</strong>
+      <p>서울특별시 마포구 월드컵북로 789<br>대표전화: 02-4567-8901<br>진료시간: 평일 09:00~18:00 / 토요일 09:00~13:00</p>
+    </div>
+    <div>
+      <strong>안내</strong>
+      <p>이 페이지는 베놈 마케팅의 홈페이지 제작 샘플입니다.<br>© 2025 베놈자연한의원. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

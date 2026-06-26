@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>베놈 뷰티클리닉 — 프리미엄형 샘플</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',sans-serif;background:#0a0a0f;color:#e8e0f0}
+a{text-decoration:none;color:inherit}
+/* HEADER */
+.hd{background:rgba(10,10,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+.hd-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;width:100%;gap:48px}
+.hd-logo{font-size:22px;font-weight:700;letter-spacing:.1em;color:#fff}
+.hd-logo span{background:linear-gradient(90deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hd-nav{display:flex;gap:32px;margin-left:auto}
+.hd-nav a{color:rgba(255,255,255,.5);font-size:13px;letter-spacing:.05em;font-weight:300;transition:.2s}
+.hd-nav a:hover{color:#c084fc}
+.hd-cta{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:10px 24px;border-radius:40px;font-size:13px;font-weight:600;letter-spacing:.03em;margin-left:32px}
+/* HERO */
+.hero{min-height:90vh;background:linear-gradient(160deg,#0a0a0f 0%,#120a24 40%,#0f0818 100%);display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 32px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.25) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+.hero-content{position:relative;z-index:1}
+.hero-badge{display:inline-block;border:1px solid rgba(192,132,252,.4);color:#c084fc;font-size:11px;letter-spacing:.15em;padding:6px 16px;border-radius:40px;margin-bottom:32px;font-weight:500}
+.hero h1{font-size:64px;font-weight:200;letter-spacing:-.03em;line-height:1.1;margin-bottom:24px;color:#fff}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#c084fc,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:600}
+.hero p{font-size:17px;color:rgba(255,255,255,.45);line-height:1.8;margin-bottom:48px;font-weight:300}
+.hero-btns{display:flex;gap:16px;justify-content:center}
+.btn-p{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:16px 40px;border-radius:40px;font-size:15px;font-weight:600}
+.btn-g{border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:16px 40px;border-radius:40px;font-size:15px;font-weight:300}
+/* TREATMENTS */
+.treats{padding:100px 32px;max-width:1200px;margin:0 auto}
+.sec-label{font-size:11px;letter-spacing:.15em;color:#c084fc;font-weight:600;margin-bottom:16px}
+.sec-title{font-size:40px;font-weight:200;color:#fff;letter-spacing:-.03em;margin-bottom:8px}
+.sec-title strong{font-weight:700}
+.sec-sub{font-size:15px;color:rgba(255,255,255,.35);margin-bottom:56px;font-weight:300}
+.treat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.05)}
+.treat-card{background:#0a0a0f;padding:40px 32px;position:relative;overflow:hidden;transition:.3s;cursor:pointer}
+.treat-card:hover{background:#120a24}
+.treat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#4f46e5);opacity:0;transition:.3s}
+.treat-card:hover::after{opacity:1}
+.treat-num{font-size:11px;color:rgba(192,132,252,.4);letter-spacing:.1em;margin-bottom:20px}
+.treat-name{font-size:22px;font-weight:600;color:#fff;margin-bottom:12px}
+.treat-desc{font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;font-weight:300}
+/* BEFORE AFTER NOTE */
+.ba-note{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:20px 28px;margin:60px auto;max-width:700px;text-align:center;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7}
+/* GALLERY */
+.gallery{padding:80px 32px;background:rgba(255,255,255,.02)}
+.gallery-inner{max-width:1200px;margin:0 auto}
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:48px}
+.gallery-item{aspect-ratio:3/4;border-radius:12px;overflow:hidden;position:relative}
+.gallery-item:first-child{grid-row:span 2;aspect-ratio:auto}
+.gi-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px}
+.gi-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);display:flex;align-items:flex-end;padding:20px}
+.gi-label{font-size:13px;color:#fff;font-weight:500}
+/* PROMISE */
+.promise{padding:100px 32px;max-width:1200px;margin:0 auto}
+.promise-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:56px}
+.promise-item{border-top:1px solid rgba(255,255,255,.08);padding-top:28px}
+.promise-num{font-size:40px;font-weight:700;background:linear-gradient(135deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.promise-t{font-size:16px;font-weight:600;color:#fff;margin-bottom:8px}
+.promise-d{font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;font-weight:300}
+/* FOOTER */
+footer{border-top:1px solid rgba(255,255,255,.06);padding:48px 32px;text-align:center}
+footer p{font-size:12px;color:rgba(255,255,255,.2);line-height:1.8}
+footer strong{color:rgba(255,255,255,.5);display:block;margin-bottom:8px;font-size:14px;letter-spacing:.05em}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-inner">
+    <div class="hd-logo">VENOM <span>BEAUTY</span></div>
+    <nav class="hd-nav">
+      <a href="#">시술안내</a>
+      <a href="#">의료진</a>
+      <a href="#">클리닉소개</a>
+      <a href="#">예약</a>
+    </nav>
+    <a class="hd-cta" href="#">상담 예약</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">PREMIUM BEAUTY CLINIC</div>
+    <h1>당신만의<br><em>아름다움</em>을<br>완성합니다</h1>
+    <p>최첨단 레이저와 검증된 시술로<br>자연스러운 아름다움을 선사합니다</p>
+    <div class="hero-btns">
+      <a class="btn-p" href="#">무료 상담 예약</a>
+      <a class="btn-g" href="#">시술 안내 보기</a>
+    </div>
+  </div>
+</section>
+
+<section class="treats">
+  <div class="sec-label">TREATMENTS</div>
+  <div class="sec-title">전문 시술 <strong>안내</strong></div>
+  <div class="sec-sub">의학적으로 검증된 안전한 시술만을 제공합니다</div>
+  <div class="treat-grid">
+    <div class="treat-card"><div class="treat-num">01</div><div class="treat-name">피부 레이저</div><div class="treat-desc">IPL·프락셀·CO2 레이저로 잡티, 모공, 피부결을 개선합니다. 개인 피부 타입 분석 후 맞춤 시술.</div></div>
+    <div class="treat-card"><div class="treat-num">02</div><div class="treat-name">피부 탄력</div><div class="treat-desc">울쎄라·써마지·리프팅 시술로 처진 피부를 개선하고 V라인을 만들어드립니다.</div></div>
+    <div class="treat-card"><div class="treat-num">03</div><div class="treat-name">필러 · 보톡스</div><div class="treat-desc">식약처 인증 제품만 사용. 자연스러운 볼륨과 주름 개선으로 생기있는 얼굴을 완성합니다.</div></div>
+    <div class="treat-card"><div class="treat-num">04</div><div class="treat-name">피부 미백</div><div class="treat-desc">멜라닌 색소 분해 레이저와 미백 트리트먼트 병행으로 맑고 균일한 피부톤을 만듭니다.</div></div>
+    <div class="treat-card"><div class="treat-num">05</div><div class="treat-name">모발 케어</div><div class="treat-desc">두피 분석부터 탈모 예방, 발모 레이저까지 체계적인 모발 건강 관리를 제공합니다.</div></div>
+    <div class="treat-card"><div class="treat-num">06</div><div class="treat-name">바디 케어</div><div class="treat-desc">지방 분해 레이저, 체형 교정, 튼살 개선 시술로 전신 라인을 완성합니다.</div></div>
+  </div>
+  <div class="ba-note">
+    ⚠️ 의료광고 심의 안내 · 본 클리닉은 의료법을 준수하며 시술 전후 비교 사진을 사용하지 않습니다.<br>
+    모든 시술 정보는 교육 목적으로만 제공되며 개인차가 있습니다.
+  </div>
+</section>
+
+<section class="gallery">
+  <div class="gallery-inner">
+    <div class="sec-label">CLINIC SPACE</div>
+    <div class="sec-title">클리닉 <strong>공간</strong></div>
+    <div class="gallery-grid">
+      <div class="gallery-item" style="background:linear-gradient(135deg,#1a0a2e,#2d1b69)"><div class="gi-bg">🏥</div><div class="gi-overlay"><span class="gi-label">메인 로비</span></div></div>
+      <div class="gallery-item" style="background:linear-gradient(135deg,#120a24,#3b0764)"><div class="gi-bg">✨</div><div class="gi-overlay"><span class="gi-label">레이저 룸</span></div></div>
+      <div class="gallery-item" style="background:linear-gradient(135deg,#0a0a1f,#1e1b4b)"><div class="gi-bg">💆</div><div class="gi-overlay"><span class="gi-label">VIP 상담실</span></div></div>
+      <div class="gallery-item" style="background:linear-gradient(135deg,#0f0a20,#312e81)"><div class="gi-bg">🛋️</div><div class="gi-overlay"><span class="gi-label">대기 공간</span></div></div>
+      <div class="gallery-item" style="background:linear-gradient(135deg,#140a24,#4c1d95)"><div class="gi-bg">⚗️</div><div class="gi-overlay"><span class="gi-label">시술실</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="promise">
+  <div class="sec-label">OUR PROMISE</div>
+  <div class="sec-title">베놈 뷰티의 <strong>약속</strong></div>
+  <div class="promise-grid">
+    <div class="promise-item"><div class="promise-num">01</div><div class="promise-t">1:1 맞춤 진단</div><div class="promise-d">모든 시술 전 피부 분석 장비로 개인 맞춤 진단 후 시술 계획 수립</div></div>
+    <div class="promise-item"><div class="promise-num">02</div><div class="promise-t">식약처 인증 제품</div><div class="promise-d">국내외 식약처 허가 제품만 사용. 성분과 안전성을 투명하게 공개</div></div>
+    <div class="promise-item"><div class="promise-num">03</div><div class="promise-t">의료법 완전 준수</div><div class="promise-d">의료광고 심의 완료. 과장 광고 없이 정확한 정보만 제공</div></div>
+    <div class="promise-item"><div class="promise-num">04</div><div class="promise-t">사후 케어 보장</div><div class="promise-d">시술 후 1개월 무료 관리. 트러블 발생 시 즉시 대응 체계</div></div>
+  </div>
+</section>
+
+<footer>
+  <p><strong>VENOM BEAUTY CLINIC</strong>
+  서울특별시 강남구 압구정로 456 | 대표전화: 02-9876-5432<br>
+  © 2025 베놈뷰티클리닉. | 이 페이지는 베놈 마케팅의 홈페이지 제작 샘플입니다.</p>
+</footer>
+</body>
+</html>
