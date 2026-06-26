@@ -1757,19 +1757,20 @@ body{padding-top:0}
       <div class="contact-grid">
         <div class="contact-form-wrap">
           <h3 style="margin-bottom:24px">상담 신청서</h3>
-          <form class="contact-form" onsubmit="submitForm(event)">
+          <form class="contact-form" id="contact-form" onsubmit="submitForm(event)">
             <div class="form-row">
-              <div class="form-group"><label>병원명 <span class="req">*</span></label><input type="text" placeholder="예: 강남베놈치과의원" required></div>
-              <div class="form-group"><label>진료과목 <span class="req">*</span></label><select required><option value="">선택하세요</option><option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>기타</option></select></div>
+              <div class="form-group"><label>병원명 <span class="req">*</span></label><input type="text" name="hospital" placeholder="예: 강남베놈치과의원" required></div>
+              <div class="form-group"><label>진료과목 <span class="req">*</span></label><select name="specialty" required><option value="">선택하세요</option><option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>기타</option></select></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label>담당자명 <span class="req">*</span></label><input type="text" placeholder="원장님 또는 담당자 성함" required></div>
-              <div class="form-group"><label>연락처 <span class="req">*</span></label><input type="tel" placeholder="010-0000-0000" required></div>
+              <div class="form-group"><label>담당자명 <span class="req">*</span></label><input type="text" name="contact_name" placeholder="원장님 또는 담당자 성함" required></div>
+              <div class="form-group"><label>연락처 <span class="req">*</span></label><input type="tel" name="phone" placeholder="010-0000-0000" required></div>
             </div>
-            <div class="form-group"><label>월 마케팅 예산</label><select><option>100만원 미만</option><option>100~300만원</option><option>300~500만원</option><option>500~1,000만원</option><option>1,000만원 이상</option></select></div>
-            <div class="form-group"><label>필요한 마케팅</label><div class="check-group"><label class="check-item"><input type="checkbox"> 네이버 광고/블로그</label><label class="check-item"><input type="checkbox"> 인스타그램/SNS</label><label class="check-item"><input type="checkbox"> GEO (AI 검색)</label><label class="check-item"><input type="checkbox"> 병원 홈페이지</label><label class="check-item"><input type="checkbox"> 유튜브</label></div></div>
-            <div class="form-group"><label>문의 내용</label><textarea rows="4" placeholder="현재 마케팅 고민이나 목표를 자유롭게 적어주세요."></textarea></div>
-            <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="width:100%;justify-content:center;font-size:16px;padding:14px">💬 카카오상담</a>
+            <div class="form-group"><label>월 마케팅 예산</label><select name="budget"><option>100만원 미만</option><option>100~300만원</option><option>300~500만원</option><option>500~1,000만원</option><option>1,000만원 이상</option></select></div>
+            <div class="form-group"><label>필요한 마케팅</label><div class="check-group"><label class="check-item"><input type="checkbox" name="marketing" value="네이버 광고/블로그"> 네이버 광고/블로그</label><label class="check-item"><input type="checkbox" name="marketing" value="인스타그램/SNS"> 인스타그램/SNS</label><label class="check-item"><input type="checkbox" name="marketing" value="GEO(AI검색)"> GEO (AI 검색)</label><label class="check-item"><input type="checkbox" name="marketing" value="병원 홈페이지"> 병원 홈페이지</label><label class="check-item"><input type="checkbox" name="marketing" value="유튜브"> 유튜브</label></div></div>
+            <div class="form-group"><label>문의 내용</label><textarea name="message" rows="4" placeholder="현재 마케팅 고민이나 목표를 자유롭게 적어주세요."></textarea></div>
+            <div id="form-status" style="display:none;padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:12px"></div>
+            <button type="submit" id="form-submit-btn" class="btn btn-p" style="width:100%;justify-content:center;font-size:16px;padding:14px">💬 상담 신청하기</button>
             <p style="text-align:center;font-size:12px;color:var(--mute);margin-top:12px">개인정보는 상담 목적으로만 사용됩니다.</p>
           </form>
         </div>
@@ -6202,10 +6203,69 @@ function filterBlog(cat){
 }
 
 // ── 폼 제출 ──
+// Apps Script 웹훅 URL을 아래에 입력하세요 (배포 후 받은 URL)
+var FORM_WEBHOOK_URL = '';
+
 function submitForm(e){
   e.preventDefault();
-  showToast('✓ 상담 신청이 완료되었습니다. 24시간 내 연락드립니다.');
-  e.target.reset();
+  var form = e.target;
+  var btn = document.getElementById('form-submit-btn');
+  var status = document.getElementById('form-status');
+
+  // 체크박스 값 수집
+  var checked = Array.from(form.querySelectorAll('input[name="marketing"]:checked')).map(function(el){return el.value;});
+
+  var data = {
+    hospital: form.hospital.value,
+    specialty: form.specialty.value,
+    contact_name: form.contact_name.value,
+    phone: form.phone.value,
+    budget: form.budget.value,
+    marketing: checked.join(', '),
+    message: form.message.value
+  };
+
+  // 웹훅 URL 미설정 시 안내
+  if(!FORM_WEBHOOK_URL){
+    status.style.display='block';
+    status.style.background='#fef9c3';
+    status.style.color='#854d0e';
+    status.style.border='1px solid #fde047';
+    status.innerHTML='⚠️ <strong>Apps Script 웹훅 URL이 설정되지 않았습니다.</strong><br>관리자에게 문의하거나 직접 <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" style="color:var(--p)">카카오톡</a>으로 상담하세요.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ 전송 중...';
+  status.style.display='none';
+
+  fetch(FORM_WEBHOOK_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(res){
+    if(res.result === 'ok'){
+      status.style.display='block';
+      status.style.background='#f0fdf4';
+      status.style.color='#15803d';
+      status.style.border='1px solid #86efac';
+      status.innerHTML='✅ <strong>상담 신청이 완료되었습니다!</strong><br>담당 컨설턴트가 24시간 이내 연락드립니다.';
+      form.reset();
+      btn.textContent='💬 상담 신청하기';
+      btn.disabled=false;
+    } else { throw new Error('서버 오류'); }
+  })
+  .catch(function(){
+    status.style.display='block';
+    status.style.background='#fef2f2';
+    status.style.color='#dc2626';
+    status.style.border='1px solid #fca5a5';
+    status.innerHTML='❌ 전송 중 오류가 발생했습니다. <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" style="color:var(--p)">카카오톡</a>으로 직접 문의해 주세요.';
+    btn.textContent='💬 상담 신청하기';
+    btn.disabled=false;
+  });
 }
 
 function showToast(msg){
