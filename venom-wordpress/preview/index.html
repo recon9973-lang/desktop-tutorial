@@ -1159,6 +1159,40 @@ body{padding-top:0}
       </div>
     </aside>
   </div>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
+          <div class="footer-sns"><a href="javascript:void(0)">블로그</a><a href="https://www.instagram.com/venom_markepick" target="_blank">인스타그램</a><a href="javascript:void(0)">유튜브</a></div>
+        </div>
+        <div class="footer-col">
+          <h5>서비스</h5>
+          <a href="javascript:void(0)" onclick="ld('dental')">치과 마케팅</a><a href="javascript:void(0)" onclick="ld('skin')">피부과 마케팅</a>
+          <a href="javascript:void(0)" onclick="ld('ortho')">정형외과 마케팅</a><a href="javascript:void(0)" onclick="ld('oriental')">한의원 마케팅</a>
+          <a href="javascript:void(0)" onclick="ld('plastic')">성형외과 마케팅</a>
+        </div>
+        <div class="footer-col">
+          <h5>AI 마케팅</h5>
+          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
+          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+        </div>
+        <div class="footer-col">
+          <h5>회사 정보</h5>
+          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
+          <a href="javascript:void(0)" onclick="sp('about')">연혁 & 팀</a>
+          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
+          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
+          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 병원마케팅 베놈(주식회사 베놈). All rights reserved.</span>
+        <span>사업자등록번호: 291-86-02777 | 대표: 김보형 | 대구광역시 수성구 용학로25길54, 4층 | 1661-4142</span>
+      </div>
+    </div>
+  </footer>
 </div>
 
 <!-- PAGE: AI 마케팅 -->
@@ -5194,6 +5228,51 @@ function sp(id, pushState){
   else{updateBreadcrumb([['홈',BASE_URL],[label,BASE_URL+'#'+id]]);}
 }
 
+function searchByKeyword(kw) {
+  var results = [];
+  Object.keys(blogPosts).forEach(function(id) {
+    var post = blogPosts[id];
+    if (post.tags && post.tags.some(function(t){ return t === kw || t.indexOf(kw) !== -1 || kw.indexOf(t) !== -1; })) {
+      results.push({ id: id, post: post });
+    }
+  });
+
+  var html = '<div style="padding:20px 0"><h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:16px">"' + kw + '" 관련 글 ' + results.length + '편</h3>';
+  if (results.length === 0) {
+    html += '<p style="font-size:13px;color:var(--mute)">관련 글이 없습니다.</p>';
+  } else {
+    html += '<div style="display:flex;flex-direction:column;gap:10px">';
+    results.forEach(function(r) {
+      html += '<a href="javascript:void(0)" onclick="openBlogPost(\'' + r.id + '\')" style="display:block;padding:12px 14px;background:var(--soft);border-radius:8px;border:1px solid var(--border);color:var(--ink);font-size:13px;font-weight:500;line-height:1.4">' + r.post.title + '<span style="display:block;font-size:11px;color:var(--mute);font-weight:400;margin-top:4px">' + r.post.cat + ' · ' + r.post.date + '</span></a>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  var kwEl = document.getElementById('toc-keywords');
+  kwEl.innerHTML = html;
+  kwEl.insertAdjacentHTML('afterbegin', '<button onclick="restoreKeywords()" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px">← 키워드 목록으로</button>');
+}
+
+function openBlogPost(id) {
+  var post = blogPosts[id];
+  if (!post) return;
+  sp('blog-post');
+  var el = document.getElementById('blog-post-content');
+  if (el) el.innerHTML = post.html || '<p>내용 없음</p>';
+  var titleEl = document.getElementById('blog-post-title');
+  if (titleEl) titleEl.textContent = post.title;
+}
+
+function restoreKeywords() {
+  if (currentCat) {
+    var d = pages[currentCat];
+    if (d) {
+      document.getElementById('toc-keywords').innerHTML = '<div class="toc-kw-tags">' + d.kws.map(function(k){ return '<span onclick="searchByKeyword(\'' + k + '\')" style="cursor:pointer">' + k + '</span>'; }).join('') + '</div>';
+    }
+  }
+}
+
 // ── 카테고리별 상세 콘텐츠 ──
 var currentCat='dental';
 var pages={
@@ -7004,7 +7083,7 @@ function ld(cat, pushState){
   var toc=d.toc.map(function(t){return '<li><a href="#ds-'+t[0]+'" onclick="tocClick(this,\'ds-'+t[0]+'\');return false">'+t[1]+'</a></li>';}).join('');
   document.getElementById('toc-list').innerHTML=toc;
   // 키워드 주입
-  document.getElementById('toc-keywords').innerHTML='<div class="toc-kw-tags">'+d.kws.map(function(k){return '<span>'+k+'</span>';}).join('')+'</div>';
+  document.getElementById('toc-keywords').innerHTML='<div class="toc-kw-tags">'+d.kws.map(function(k){return '<span onclick="searchByKeyword(\''+k+'\')" style="cursor:pointer">'+k+'</span>';}).join('')+'</div>';
   // 사이드바 활성
   document.querySelectorAll('.sidebar-nav a').forEach(function(a){a.classList.remove('snav-active');});
   var navEl=document.getElementById('nav-'+cat);
