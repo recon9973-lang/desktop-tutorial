@@ -641,9 +641,68 @@ body{padding-top:0}
     </div>
     <div class="header-actions">
       <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p btn-sm">💬 상담신청</a>
+      <button class="mob-menu-btn" id="mobMenuBtn" onclick="toggleMobMenu()" aria-label="메뉴 열기">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<!-- 모바일 메뉴 오버레이 -->
+<div class="mob-menu-overlay" id="mobMenuOverlay" onclick="closeMobMenu()"></div>
+<div class="mob-menu" id="mobMenu">
+  <div class="mob-menu-head">
+    <a href="#" onclick="sp('home');closeMobMenu();return false" class="logo">
+      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:22px;width:auto;display:block">
+    </a>
+    <button class="mob-close-btn" onclick="closeMobMenu()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <nav class="mob-nav">
+    <div class="mob-nav-group">
+      <button class="mob-nav-item mob-has-sub" onclick="toggleMobSub(this)">
+        병원마케팅
+        <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="mob-sub">
+        <a href="#" onclick="ld('dental');closeMobMenu();return false">치과마케팅</a>
+        <a href="#" onclick="ld('skin');closeMobMenu();return false">피부과마케팅</a>
+        <a href="#" onclick="ld('ortho');closeMobMenu();return false">정형외과마케팅</a>
+        <a href="#" onclick="ld('oriental');closeMobMenu();return false">한의원마케팅</a>
+        <a href="#" onclick="ld('plastic');closeMobMenu();return false">성형외과마케팅</a>
+        <a href="#" onclick="ld('naegwa');closeMobMenu();return false">내과마케팅</a>
+        <a href="#" onclick="ld('angwa');closeMobMenu();return false">안과마케팅</a>
+        <a href="#" onclick="ld('shimui');closeMobMenu();return false">의료광고심의</a>
+        <a href="#" onclick="ld('medical_device');closeMobMenu();return false">의료기기마케팅</a>
+      </div>
+    </div>
+    <div class="mob-nav-group">
+      <button class="mob-nav-item mob-has-sub" onclick="toggleMobSub(this)">
+        AI마케팅 <span class="nav-new">NEW</span>
+        <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="mob-sub">
+        <a href="#" onclick="sp('geo');closeMobMenu();return false">GEO — 생성AI 최적화</a>
+        <a href="#" onclick="sp('aeo');closeMobMenu();return false">AEO — 답변엔진 최적화</a>
+        <a href="#" onclick="sp('seo');closeMobMenu();return false">SEO — 검색엔진 최적화</a>
+      </div>
+    </div>
+    <div class="mob-nav-group">
+      <a href="#" onclick="sp('services');closeMobMenu();return false" class="mob-nav-item">온라인마케팅</a>
+    </div>
+    <div class="mob-nav-group">
+      <a href="#" onclick="sp('blog');closeMobMenu();return false" class="mob-nav-item">블로그</a>
+    </div>
+    <div class="mob-nav-group">
+      <a href="#" onclick="sp('hospital');closeMobMenu();return false" class="mob-nav-item">홈페이지 제작</a>
+    </div>
+  </nav>
+  <div class="mob-menu-footer">
+    <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="width:100%;justify-content:center;padding:14px">💬 카카오 상담신청</a>
+    <a href="#" onclick="sp('seo');closeMobMenu();return false" class="mob-cta-ghost">📊 SEO 점수 체크 →</a>
+  </div>
+</div>
 
 <!-- ===== MAIN ===== -->
 <main id="main">
@@ -3807,6 +3866,50 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   font-size: 15px !important;
 }
 
+/* ── 모바일 햄버거 버튼 ── */
+.mob-menu-btn{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;
+  width:40px;height:40px;background:none;border:none;cursor:pointer;padding:4px;border-radius:8px;
+  transition:.2s;flex-shrink:0}
+.mob-menu-btn:hover{background:var(--soft)}
+.mob-menu-btn span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:.3s}
+.mob-menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.mob-menu-btn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.mob-menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ── 모바일 메뉴 오버레이 ── */
+.mob-menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;
+  backdrop-filter:blur(2px);opacity:0;transition:opacity .3s}
+.mob-menu-overlay.open{display:block;opacity:1}
+.mob-menu{position:fixed;top:0;right:0;width:min(360px,92vw);height:100dvh;height:100vh;
+  background:#fff;z-index:301;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 40px rgba(0,0,0,.15)}
+.mob-menu.open{transform:translateX(0)}
+.mob-menu-head{display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:60px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mob-close-btn{width:36px;height:36px;border:none;background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--ink);
+  transition:.2s}
+.mob-close-btn:hover{background:var(--soft)}
+.mob-nav{flex:1;overflow-y:auto;padding:8px 0}
+.mob-nav-group{border-bottom:1px solid var(--soft)}
+.mob-nav-item{display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:16px 24px;font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.02em;
+  background:none;border:none;cursor:pointer;text-decoration:none;text-align:left;
+  transition:.15s}
+.mob-nav-item:hover{color:var(--p);background:var(--soft)}
+.mob-darr{width:18px;height:18px;flex-shrink:0;transition:transform .25s}
+.mob-has-sub.active .mob-darr{transform:rotate(180deg)}
+.mob-sub{display:none;background:#fafafa;padding:4px 0 8px}
+.mob-sub.open{display:block}
+.mob-sub a{display:block;padding:11px 24px 11px 36px;font-size:14px;font-weight:400;
+  color:var(--ink2);text-decoration:none;transition:.12s;letter-spacing:0}
+.mob-sub a:hover{color:var(--p);background:rgba(83,58,253,.06)}
+.mob-menu-footer{padding:20px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.mob-cta-ghost{display:block;text-align:center;padding:12px;font-size:14px;font-weight:600;
+  color:var(--p);border:1.5px solid var(--p);border-radius:var(--rpill);text-decoration:none;transition:.2s}
+.mob-cta-ghost:hover{background:var(--p);color:#fff}
+
 /* 모바일 추가 */
 @media(max-width:768px){
   .mesh{ padding: 80px 0 60px !important; }
@@ -3815,7 +3918,9 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .section{ padding: 72px 0 !important; }
   /* 헤더 모바일 */
   .main-nav{display:none!important}
+  .mob-menu-btn{display:flex}
   .site-header .container{padding:0 16px}
+  .header-actions{gap:4px}
   .header-actions .btn{font-size:12px!important;padding:8px 14px!important}
   /* 히어로 모바일 */
   .hero{padding:60px 0 40px!important;text-align:center!important}
@@ -3823,11 +3928,12 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .hero-sub{font-size:15px!important;margin:0 auto 24px!important}
   .hero-cta{flex-direction:column;align-items:center;gap:10px!important}
   .hero-cta .btn{width:100%;max-width:280px;justify-content:center}
-  /* 스탯 바 모바일 */
-  .stat-bar-inner{flex-wrap:wrap;gap:0}
-  .stat-bar-item{flex:0 0 50%;max-width:50%;padding:24px 16px}
-  .sb-div{display:none}
-  .sb-num{font-size:32px}
+  /* 스탯 바 모바일 — 4개 모두 가로 유지 */
+  .stat-bar-inner{flex-wrap:nowrap;gap:0;overflow-x:auto}
+  .stat-bar-item{flex:1 1 0;min-width:0;padding:20px 8px}
+  .sb-div{display:block;height:36px;width:1px}
+  .sb-num{font-size:26px}
+  .sb-label{font-size:10px}
   /* 도구 섹션 모바일 */
   .tool-tabs{flex-wrap:wrap;gap:6px}
   .tool-tab{font-size:12px!important;padding:8px 12px!important}
@@ -3843,7 +3949,9 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 }
 @media(max-width:480px){
   .hero h1{font-size:28px!important}
-  .stat-bar-item{flex:0 0 100%;max-width:100%}
+  .stat-bar-item{flex:1 1 0;min-width:0}
+  .sb-num{font-size:22px}
+  .sb-label{font-size:9px}
 }
 </style>
 <script>
@@ -6902,6 +7010,44 @@ window.addEventListener('popstate',function(e){
     setTimeout(animateCounters, 300);
   }
 })();
+</script>
+<script>
+// ── 모바일 메뉴 ──
+function toggleMobMenu(){
+  var menu=document.getElementById('mobMenu');
+  var overlay=document.getElementById('mobMenuOverlay');
+  var btn=document.getElementById('mobMenuBtn');
+  var isOpen=menu.classList.contains('open');
+  if(isOpen){ closeMobMenu(); }
+  else {
+    menu.classList.add('open');
+    overlay.classList.add('open');
+    btn.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+}
+function closeMobMenu(){
+  var menu=document.getElementById('mobMenu');
+  var overlay=document.getElementById('mobMenuOverlay');
+  var btn=document.getElementById('mobMenuBtn');
+  menu.classList.remove('open');
+  overlay.classList.remove('open');
+  btn.classList.remove('open');
+  document.body.style.overflow='';
+}
+function toggleMobSub(btn){
+  var sub=btn.nextElementSibling;
+  var isOpen=sub.classList.contains('open');
+  // 다른 열린 서브메뉴 닫기
+  document.querySelectorAll('.mob-sub.open').forEach(function(s){ s.classList.remove('open'); });
+  document.querySelectorAll('.mob-has-sub.active').forEach(function(b){ b.classList.remove('active'); });
+  if(!isOpen){
+    sub.classList.add('open');
+    btn.classList.add('active');
+  }
+}
+// ESC 키로 닫기
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMenu(); });
 </script>
 </body>
 </html>
