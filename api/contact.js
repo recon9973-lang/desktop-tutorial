@@ -5,7 +5,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
   if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
-  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-HBP1brRB3LduHBm75cbZBHV5PKN1BoOIdWeh19c3tFc9GsvQa3Z6cuWQkOiI7ApIHg/exec';
+  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZYLKxO6hMOvy0UBQf-rj1mBukpY3d0BETght9KdXn1cbpCvxNAO39_4mBwaQ4wIEzgA/exec';
 
   try {
     // Vercel auto-parses JSON body; fallback to raw read
