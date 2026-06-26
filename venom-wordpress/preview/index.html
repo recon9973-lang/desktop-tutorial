@@ -3296,22 +3296,65 @@ body{padding-top:0}
 
 <!-- PAGE: 블로그 포스트 상세 -->
 <div id="pg-blog-post" class="page">
-  <div style="background:var(--soft);padding:20px 0;border-bottom:1px solid var(--border)">
-    <div class="container" style="max-width:800px">
+  <div style="background:var(--soft);padding:14px 0;border-bottom:1px solid var(--border)">
+    <div class="container">
       <button onclick="sp('blog')" style="background:none;border:none;cursor:pointer;color:var(--mute);font-size:14px;display:flex;align-items:center;gap:6px">← 블로그 목록으로</button>
     </div>
   </div>
-  <section class="section">
-    <div class="container" style="max-width:800px">
+  <div class="three-col">
+    <aside class="col-left">
+      <div class="sidebar-sticky">
+        <div class="sidebar-section">
+          <div class="sidebar-title">블로그 카테고리</div>
+          <ul class="sidebar-nav">
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('all')">📋 전체 글</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('GEO/AI')">🤖 GEO/AEO</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('SEO')">🔍 SEO</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('치과')">🦷 치과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('피부과')">✨ 피부과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('한의원')">🌿 한의원</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('정형외과')">🦴 정형외과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('성형외과')">💎 성형외과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('내과')">🩺 내과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('안과')">👁 안과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('의료광고심의')">📋 의료광고심의</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('지역마케팅')">📍 지역마케팅</a></li>
+          </ul>
+        </div>
+        <div class="sidebar-section" id="blog-post-recent">
+          <div class="sidebar-title">최근 글</div>
+          <ul class="sidebar-nav" id="blog-recent-list"></ul>
+        </div>
+        <div class="sidebar-cta">
+          <p>마케팅 전문 상담</p>
+          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
+        </div>
+      </div>
+    </aside>
+    <article class="col-center" style="min-width:0;padding-top:24px">
       <div id="blog-post-content" style="line-height:1.8;color:var(--ink2)"></div>
-    </div>
-  </section>
-  <section class="section bg-soft">
-    <div class="container" style="max-width:800px">
-      <h3 style="font-size:18px;font-weight:600;margin-bottom:20px">관련 포스팅</h3>
-      <div id="blog-related" style="display:grid;grid-template-columns:1fr 1fr;gap:16px"></div>
-    </div>
-  </section>
+      <div style="margin-top:48px;padding-top:32px;border-top:2px solid var(--border)">
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:20px">관련 포스팅</h3>
+        <div id="blog-related" style="display:grid;grid-template-columns:1fr 1fr;gap:16px"></div>
+      </div>
+    </article>
+    <aside class="col-right">
+      <div class="toc-sticky">
+        <div class="toc-title" id="blog-post-cat-label">카테고리</div>
+        <div class="toc-keywords">
+          <div class="toc-kw-title">태그</div>
+          <div id="blog-post-tags" class="toc-kw-tags"></div>
+        </div>
+        <div style="margin-top:20px">
+          <div class="toc-kw-title">공유하기</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--soft);border-radius:6px;border:1px solid var(--border)">💬 카카오 상담</a>
+            <a href="javascript:void(0)" onclick="sp('contact')" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--soft);border-radius:6px;border:1px solid var(--border)">📋 상담신청서</a>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
   <section class="cta-section"><div class="container"><div class="cta-inner"><h2>우리 병원도 AI 검색에 노출되고 싶으신가요?</h2><p>베놈의 GEO·AEO·SEO 전략으로 AI 시대를 선점하세요.</p><a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a></div></div></section>
   <footer class="footer">
     <div class="container">
@@ -5402,10 +5445,37 @@ function openBlogPost(id) {
   var post = blogPosts[id];
   if (!post) return;
   sp('blog-post');
+  // 본문
   var el = document.getElementById('blog-post-content');
   if (el) el.innerHTML = post.html || '<p>내용 없음</p>';
-  var titleEl = document.getElementById('blog-post-title');
-  if (titleEl) titleEl.textContent = post.title;
+  // 오른쪽 사이드바: 카테고리 + 태그
+  var catLabel = document.getElementById('blog-post-cat-label');
+  if (catLabel) catLabel.textContent = post.cat || '블로그';
+  var tagsEl = document.getElementById('blog-post-tags');
+  if (tagsEl) {
+    tagsEl.innerHTML = (post.tags || []).map(function(t){
+      return '<span onclick="searchByKeyword(\''+t+'\')" style="cursor:pointer">'+t+'</span>';
+    }).join('');
+  }
+  // 관련 포스팅
+  var relEl = document.getElementById('blog-related');
+  if (relEl) {
+    var relIds = post.related || [];
+    relEl.innerHTML = relIds.map(function(rid){
+      var rp = blogPosts[rid];
+      if (!rp) return '';
+      return '<a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="display:block;padding:14px 16px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r8);color:var(--ink)"><div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:4px">'+rp.cat+'</div><div style="font-size:14px;font-weight:600;line-height:1.4">'+rp.title+'</div><div style="font-size:12px;color:var(--mute);margin-top:6px">'+rp.date+' · '+rp.readTime+'</div></a>';
+    }).join('');
+  }
+  // 왼쪽 사이드바: 최근 글 (최신 5편)
+  var recentList = document.getElementById('blog-recent-list');
+  if (recentList) {
+    var allIds = Object.keys(blogPosts).slice(0, 5);
+    recentList.innerHTML = allIds.map(function(rid){
+      var rp = blogPosts[rid];
+      return '<li><a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="'+(rid===id?'color:var(--p);font-weight:600':'')+'">'+rp.title+'</a></li>';
+    }).join('');
+  }
 }
 
 function restoreKeywords() {
