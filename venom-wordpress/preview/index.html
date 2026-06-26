@@ -5461,8 +5461,10 @@ function openBlogPost(id, pushState) {
         post.tags.map(function(t){ return '<span class="dc-tag" onclick="searchByKeyword(\''+t+'\')" style="cursor:pointer">#'+t+'</span>'; }).join('') +
         '</div>';
     }
-    // HTML 문자열에서 h2/h3 추출 → id 주입 → TOC 빌드 (DOM 방식보다 안정적)
-    var rawHtml = injectInternalLinks(post.html || '<p>내용 없음</p>');
+    var rawHtml = post.html || '<p>내용 없음</p>';
+    try { rawHtml = injectInternalLinks(rawHtml); } catch(e) {}
+
+    // h2/h3 추출 → id 주입 → TOC 빌드
     var tocEntries = [];
     var tocIdx = 0;
     var processedHtml = rawHtml.replace(/<(h[23])([^>]*)>([\s\S]*?)<\/h[23]>/gi, function(match, tag, attrs, text) {
@@ -5541,10 +5543,17 @@ function injectInternalLinks(html) {
     { kw: '병원 마케팅', fn: "sp('hospital')" },
     { kw: '병원마케팅', fn: "sp('hospital')" }
   ];
-  // 각 키워드 첫 등장만 링크 처리 (태그 안은 건너뜀)
+  // 태그 안은 건너뛰고 텍스트 노드에서만 첫 등장 키워드 링크 처리
+  // lookbehind 없이 (<tag>|keyword) 패턴으로 처리
   linkMap.forEach(function(item) {
-    var re = new RegExp('(?<!["\'=>])(' + item.kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![^<]*>)', '');
-    html = html.replace(re, '<a href="javascript:void(0)" onclick="'+item.fn+'" style="color:var(--p);text-decoration:underline;text-underline-offset:2px;font-weight:600">$1</a>');
+    var escaped = item.kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var replaced = false;
+    html = html.replace(new RegExp('(<[^>]+>|' + escaped + ')', 'g'), function(m) {
+      if (m.charAt(0) === '<') return m;
+      if (replaced) return m;
+      replaced = true;
+      return '<a href="javascript:void(0)" onclick="' + item.fn + '" style="color:var(--p);text-decoration:underline;text-underline-offset:2px;font-weight:600">' + m + '</a>';
+    });
   });
   return html;
 }
