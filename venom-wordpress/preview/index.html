@@ -7087,7 +7087,7 @@ function submitForm(e){
   btn.textContent = '⏳ 전송 중...';
   status.style.display='none';
 
-  fetch(FORM_WEBHOOK_URL, {
+  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/contact', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(data)
