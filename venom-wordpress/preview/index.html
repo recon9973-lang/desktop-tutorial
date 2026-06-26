@@ -3348,6 +3348,10 @@ body{padding-top:0}
           <div id="blog-post-tags" class="toc-kw-tags"></div>
         </div>
         <div style="margin-top:20px">
+          <div class="toc-kw-title">관련 글</div>
+          <div id="blog-post-related-sidebar" style="display:flex;flex-direction:column;gap:0;margin-top:8px"></div>
+        </div>
+        <div style="margin-top:20px">
           <div class="toc-kw-title">공유하기</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
             <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--soft);border-radius:6px;border:1px solid var(--border)">💬 카카오 상담</a>
@@ -5516,14 +5520,22 @@ function openBlogPost(id, pushState) {
     }).join('');
   }
 
-  // 관련 포스팅
+  // 관련 포스팅 (본문 하단 + 우측 사이드바)
+  var relIds = post.related || [];
   var relEl = document.getElementById('blog-related');
   if (relEl) {
-    var relIds = post.related || [];
     relEl.innerHTML = relIds.map(function(rid){
       var rp = blogPosts[rid];
       if (!rp) return '';
       return '<a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="display:block;padding:14px 16px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r8);color:var(--ink)"><div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:4px">'+rp.cat+'</div><div style="font-size:14px;font-weight:600;line-height:1.4">'+rp.title+'</div><div style="font-size:12px;color:var(--mute);margin-top:6px">'+rp.date+' · '+rp.readTime+'</div></a>';
+    }).join('');
+  }
+  var relSidebar = document.getElementById('blog-post-related-sidebar');
+  if (relSidebar) {
+    relSidebar.innerHTML = relIds.map(function(rid){
+      var rp = blogPosts[rid];
+      if (!rp) return '';
+      return '<a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="display:block;padding:10px 0;border-bottom:1px solid var(--border);color:var(--ink);line-height:1.4"><span style="font-size:11px;color:var(--p);font-weight:600;display:block;margin-bottom:3px">'+rp.cat+'</span><span style="font-size:13px">'+rp.title+'</span></a>';
     }).join('');
   }
 
@@ -7384,7 +7396,6 @@ function ld(cat, pushState){
   currentCat=cat;
   if(document.getElementById('pg-detail').classList.contains('active')===false){
     sp('detail', false);
-    return;
   }
   if(pushState!==false) history.pushState({page:'detail',cat:cat},'','#'+cat);
   var d=pages[cat];if(!d)return;
