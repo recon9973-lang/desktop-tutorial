@@ -3340,9 +3340,10 @@ body{padding-top:0}
     </article>
     <aside class="col-right">
       <div class="toc-sticky">
-        <div class="toc-title" id="blog-post-cat-label">카테고리</div>
-        <ul class="toc-list" id="blog-post-toc-list"></ul>
-        <div class="toc-keywords" style="margin-top:16px">
+        <div id="blog-post-cat-label" style="font-size:11px;font-weight:600;color:var(--p);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px"></div>
+        <div class="toc-title">목차</div>
+        <ul class="toc-list" id="blog-post-toc-list"><li style="color:var(--mute);font-size:13px">목차 없음</li></ul>
+        <div class="toc-keywords" style="margin-top:20px">
           <div class="toc-kw-title">관련 키워드</div>
           <div id="blog-post-tags" class="toc-kw-tags"></div>
         </div>
@@ -5476,14 +5477,14 @@ function openBlogPost(id) {
         });
         tocList.innerHTML = tocHtml;
       } else {
-        tocList.innerHTML = '';
+        tocList.innerHTML = '<li style="color:var(--mute);font-size:13px">목차 없음</li>';
       }
     }
   }
 
-  // 오른쪽 사이드바: 카테고리 + 키워드 태그
+  // 오른쪽 사이드바: 카테고리 라벨
   var catLabel = document.getElementById('blog-post-cat-label');
-  if (catLabel) catLabel.textContent = post.cat || '블로그';
+  if (catLabel) catLabel.textContent = post.cat || '';
   var tagsEl = document.getElementById('blog-post-tags');
   if (tagsEl) {
     tagsEl.innerHTML = (post.tags || []).map(function(t){
