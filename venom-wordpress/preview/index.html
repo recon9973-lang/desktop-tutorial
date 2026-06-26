@@ -774,7 +774,7 @@ body{padding-top:0}
       <!-- GEO 엔티티 점수 -->
       <div id="tool-geo" class="tool-panel">
         <div class="tool-input-wrap">
-          <input type="text" id="geo-name" class="tool-input" placeholder="병원명 또는 브랜드명 입력 (예: 강남베놈치과)" oninput="toolReady('geo')">
+          <input type="text" id="geo-name" class="tool-input" placeholder="병원명 또는 브랜드명 입력 (예: 강남베놈치과)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
           <button class="tool-btn" onclick="runGEO()">분석하기</button>
         </div>
         <p class="tool-hint">ChatGPT·Perplexity·Google AI에서 귀 병원의 엔티티 인지도를 진단합니다</p>
@@ -784,7 +784,7 @@ body{padding-top:0}
       <!-- 네이버 키워드 검색량 -->
       <div id="tool-kw" class="tool-panel">
         <div class="tool-input-wrap">
-          <input type="text" id="kw-input" class="tool-input" placeholder="키워드 입력 (예: 강남 임플란트)" oninput="toolReady('kw')">
+          <input type="text" id="kw-input" class="tool-input" placeholder="키워드 입력 (예: 강남 임플란트)" oninput="toolReady('kw')" onkeydown="if(event.key==='Enter')runKW()">
           <button class="tool-btn" onclick="runKW()">검색량 조회</button>
         </div>
         <p class="tool-hint">월간 검색량·경쟁도·예상 광고비를 분석합니다</p>
@@ -4333,7 +4333,8 @@ function updateBreadcrumb(items){
 }
 
 // ── 페이지 전환 ──
-function sp(id){
+function sp(id, pushState){
+  if(pushState!==false) history.pushState({page:id},'','#'+id);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   var pg=document.getElementById('pg-'+id);
   if(pg){pg.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
@@ -6143,11 +6144,12 @@ var pages={
 };
 
 // ── 상세 페이지 로드 ──
-function ld(cat){
+function ld(cat, pushState){
   currentCat=cat;
   if(document.getElementById('pg-detail').classList.contains('active')===false){
-    sp('detail');
+    sp('detail', false);
   }
+  if(pushState!==false) history.pushState({page:'detail',cat:cat},'','#'+cat);
   var d=pages[cat];if(!d)return;
   // 콘텐츠 주입
   document.getElementById('detail-content').innerHTML=d.html;
@@ -6326,6 +6328,26 @@ document.getElementById('sample-modal').addEventListener('click',function(e){
   if(e.target===this)closeSample();
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSample();});
+
+// ── 뒤로가기 / 앞으로가기 지원 ──
+window.addEventListener('popstate',function(e){
+  var st=e.state;
+  if(!st){sp('home',false);return;}
+  if(st.page==='detail'&&st.cat){currentCat=st.cat;sp('detail',false);ld(st.cat,false);}
+  else{sp(st.page,false);}
+});
+
+// ── 초기 URL 해시 복원 ──
+(function(){
+  var hash=location.hash.replace('#','');
+  var cats=Object.keys(pages||{});
+  if(hash&&hash!=='home'){
+    if(cats.indexOf(hash)>=0){sp('detail',false);ld(hash,false);history.replaceState({page:'detail',cat:hash},'','#'+hash);}
+    else{sp(hash,false);history.replaceState({page:hash},'','#'+hash);}
+  } else {
+    history.replaceState({page:'home'},'','#home');
+  }
+})();
 </script>
 </body>
 </html>
