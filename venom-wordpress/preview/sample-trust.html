@@ -149,12 +149,41 @@ footer strong{color:rgba(255,255,255,.8);display:block;margin-bottom:12px;font-s
   </div>
 </section>
 
-<footer>
-  <div class="fi">
-    <strong>서울베놈병원</strong>
-    서울특별시 강남구 테헤란로 123 | 대표전화: 02-1234-5678 | 이메일: info@venom-hospital.kr<br>
-    © 2025 서울베놈병원. All rights reserved. | 이 페이지는 베놈 마케팅의 홈페이지 제작 샘플입니다.
+<footer class="venom-footer">
+  <div class="vf-inner">
+    <div class="vf-brand">
+      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:40px;width:auto;display:block;filter:brightness(0) invert(1)">
+      <p>AI 시대 병원 마케팅의 새로운 기준<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시</p>
+    </div>
+    <div class="vf-links">
+      <strong>베놈 서비스</strong>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#dental">치과 마케팅</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#skin">피부과 마케팅</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#geo">GEO 최적화</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#contact">상담신청</a>
+    </div>
+    <div class="vf-contact">
+      <strong>문의</strong>
+      <a href="tel:16614142">1661-4142</a>
+      <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank">카카오 채널 상담</a>
+      <p style="margin-top:8px;font-size:11px;opacity:.5">대구광역시 수성구 용학로25길54, 4층<br>사업자등록번호: 291-86-02777</p>
+    </div>
+  </div>
+  <div class="vf-bottom">
+    <span>이 페이지는 <strong>병원마케팅 베놈</strong>의 홈페이지 제작 샘플입니다.</span>
+    <span>© 2025 주식회사 베놈. All rights reserved.</span>
   </div>
 </footer>
+<style>
+.venom-footer{background:#111;color:#aaa;padding:48px 0 24px;font-size:13px;margin-top:0}
+.vf-inner{max-width:960px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+.vf-brand p{margin-top:12px;line-height:1.7;font-size:12px;opacity:.7}
+.vf-links,.vf-contact{display:flex;flex-direction:column;gap:6px}
+.vf-links strong,.vf-contact strong{color:#fff;font-size:12px;margin-bottom:4px}
+.vf-links a,.vf-contact a{color:#888;text-decoration:none;font-size:12px;transition:color .2s}
+.vf-links a:hover,.vf-contact a:hover{color:#fff}
+.vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
+@media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
+</style>
 </body>
 </html>
