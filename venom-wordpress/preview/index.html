@@ -5458,24 +5458,26 @@ function openBlogPost(id) {
         post.tags.map(function(t){ return '<span class="dc-tag" onclick="searchByKeyword(\''+t+'\')" style="cursor:pointer">#'+t+'</span>'; }).join('') +
         '</div>';
     }
-    // 글 내용 내부링크 삽입
-    var html = injectInternalLinks(post.html || '<p>내용 없음</p>');
-    el.innerHTML = tagRow + html;
+    // HTML 문자열에서 h2/h3 추출 → id 주입 → TOC 빌드 (DOM 방식보다 안정적)
+    var rawHtml = injectInternalLinks(post.html || '<p>내용 없음</p>');
+    var tocEntries = [];
+    var tocIdx = 0;
+    var processedHtml = rawHtml.replace(/<(h[23])(\s[^>]*)?>([^<]*(?:<(?!\/h[23])[^<]*)*)<\/h[23]>/gi, function(match, tag, attrs, text) {
+      var anchorId = 'bh-' + (tocIdx++);
+      var cleanText = text.replace(/<[^>]+>/g, '').trim();
+      tocEntries.push({ id: anchorId, text: cleanText, tag: tag.toLowerCase() });
+      return '<' + tag + ' id="' + anchorId + '"' + (attrs || '') + '>' + text + '</' + tag + '>';
+    });
+    el.innerHTML = tagRow + processedHtml;
 
-    // 목차 빌드 (렌더링 후 h2/h3 추출)
+    // TOC 렌더링
     var tocList = document.getElementById('blog-post-toc-list');
     if (tocList) {
-      var headings = el.querySelectorAll('h2, h3');
-      if (headings.length) {
-        var tocHtml = '';
-        var idx = 0;
-        headings.forEach(function(h) {
-          var anchorId = 'bh-' + (idx++);
-          h.id = anchorId;
-          var isH3 = h.tagName === 'H3';
-          tocHtml += '<li' + (isH3 ? ' style="padding-left:12px;font-size:12px"' : '') + '><a href="javascript:void(0)" onclick="document.getElementById(\''+anchorId+'\').scrollIntoView({behavior:\'smooth\'})">'+h.textContent+'</a></li>';
-        });
-        tocList.innerHTML = tocHtml;
+      if (tocEntries.length) {
+        tocList.innerHTML = tocEntries.map(function(e) {
+          var indent = e.tag === 'h3' ? ' style="padding-left:12px;font-size:12px"' : '';
+          return '<li' + indent + '><a href="javascript:void(0)" onclick="document.getElementById(\''+e.id+'\').scrollIntoView({behavior:\'smooth\'})">' + e.text + '</a></li>';
+        }).join('');
       } else {
         tocList.innerHTML = '<li style="color:var(--mute);font-size:13px">목차 없음</li>';
       }
