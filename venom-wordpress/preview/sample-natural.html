@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>베놈 자연한의원 — 자연주의 따뜻한형 샘플</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{--green:#2d6a4f;--light:#f0faf5;--font:'Noto Serif KR','Apple SD Gothic Neo',serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);color:#333;line-height:1.7}
+a{text-decoration:none;color:inherit}
+
+.site-header{background:#fff;border-bottom:1px solid #e0e0e0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:18px;font-weight:700;color:var(--green)}
+.tel{font-size:14px;color:#555}
+
+.hero{background:linear-gradient(160deg,#1b4332 0%,#2d6a4f 50%,#40916c 100%);color:#fff;padding:100px 24px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-content{position:relative;z-index:1}
+.hero-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#d8f3dc;font-size:12px;padding:6px 18px;border-radius:50px;margin-bottom:24px;letter-spacing:.5px}
+.hero h1{font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.25;margin-bottom:20px}
+.hero h1 em{color:#95d5b2;font-style:normal}
+.hero p{font-size:clamp(15px,2vw,18px);opacity:.85;max-width:560px;margin:0 auto 36px}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-main{background:#fff;color:var(--green);padding:15px 36px;border-radius:50px;font-weight:700;font-size:15px;transition:.25s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.btn-sub{background:transparent;border:2px solid rgba(255,255,255,.5);color:#fff;padding:15px 36px;border-radius:50px;font-weight:600;font-size:15px}
+.hero-trust{display:flex;gap:24px;justify-content:center;margin-top:48px;flex-wrap:wrap}
+.trust-item{text-align:center}
+.trust-num{font-size:28px;font-weight:800;color:#95d5b2}
+.trust-label{font-size:11px;opacity:.7;margin-top:2px}
+
+.values{background:var(--light);padding:72px 24px}
+.values-inner{max-width:960px;margin:0 auto}
+.section-label{text-align:center;font-size:12px;letter-spacing:2px;color:var(--green);text-transform:uppercase;margin-bottom:12px}
+.section-title{text-align:center;font-size:clamp(22px,3vw,34px);font-weight:800;margin-bottom:8px;color:#1b4332}
+.section-desc{text-align:center;color:#666;margin-bottom:52px;font-size:15px}
+.val-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+@media(max-width:640px){.val-grid{grid-template-columns:1fr}}
+.val-card{background:#fff;border-radius:20px;padding:32px 24px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.val-icon{width:64px;height:64px;background:var(--light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px}
+.val-card h3{font-size:17px;font-weight:700;color:#1b4332;margin-bottom:8px}
+.val-card p{font-size:13px;color:#666;line-height:1.8}
+
+.treatments{padding:72px 24px;max-width:960px;margin:0 auto}
+.treat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+@media(max-width:640px){.treat-grid{grid-template-columns:1fr}}
+.treat-card{border-radius:20px;overflow:hidden;border:1px solid #e8f5e9}
+.treat-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:56px;background:linear-gradient(135deg,#d8f3dc,#b7e4c7)}
+.treat-body{padding:24px}
+.treat-body h3{font-size:17px;font-weight:700;color:#1b4332;margin-bottom:8px}
+.treat-body p{font-size:13px;color:#555;line-height:1.8}
+.treat-tag{display:inline-block;background:var(--light);color:var(--green);font-size:11px;padding:4px 10px;border-radius:50px;margin-top:12px;margin-right:4px}
+
+.story{background:#1b4332;color:#fff;padding:72px 24px}
+.story-inner{max-width:760px;margin:0 auto;text-align:center}
+.story h2{font-size:clamp(22px,3vw,32px);font-weight:800;margin-bottom:24px;line-height:1.4}
+.story p{font-size:15px;opacity:.8;line-height:1.9;margin-bottom:16px}
+.story-sig{margin-top:32px;font-size:14px;opacity:.6}
+
+.reviews{background:var(--light);padding:72px 24px}
+.reviews-inner{max-width:960px;margin:0 auto}
+.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:640px){.review-grid{grid-template-columns:1fr}}
+.review-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.stars{color:#40916c;font-size:16px;margin-bottom:12px}
+.review-text{font-size:13px;color:#444;line-height:1.8;margin-bottom:12px}
+.reviewer{font-size:11px;color:#999}
+
+.faq{padding:72px 24px;max-width:760px;margin:0 auto}
+.faq-item{border:1px solid #e8f5e9;border-radius:12px;margin-bottom:12px;overflow:hidden}
+.faq-q{padding:18px 24px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;color:#1b4332;cursor:pointer}
+.faq-q span{color:var(--green);font-size:20px;font-weight:300}
+.faq-a{padding:0 24px 18px;font-size:14px;color:#555;line-height:1.8}
+
+.cta{background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;padding:80px 24px;text-align:center}
+.cta h2{font-size:clamp(22px,3vw,34px);font-weight:800;margin-bottom:12px}
+.cta p{opacity:.85;margin-bottom:32px;font-size:16px}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.cta-btn-w{background:#fff;color:var(--green);padding:16px 36px;border-radius:50px;font-weight:700;font-size:15px}
+.cta-btn-o{border:2px solid rgba(255,255,255,.5);color:#fff;padding:16px 36px;border-radius:50px;font-weight:600;font-size:15px}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">🌿 자연한의원</div>
+  <div class="tel">02-9876-5432</div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">자연주의 전통 한의학</div>
+    <h1>자연이 답이다<br><em>자연한의원</em></h1>
+    <p>화학 없이, 자연 차도가 만들어내는 회복<br>응역·로덕·안구하는 전당 한의학</p>
+    <div class="hero-btns">
+      <a class="btn-main" href="#">무료 체질 검진</a>
+      <a class="btn-sub" href="tel:0298765432">☎ 전화 상담</a>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-item"><div class="trust-num">8,000+</div><div class="trust-label">누적 환자</div></div>
+      <div class="trust-item"><div class="trust-num">20년</div><div class="trust-label">한의학 경력</div></div>
+      <div class="trust-item"><div class="trust-num">98%</div><div class="trust-label">환자 만족도</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="values">
+  <div class="values-inner">
+    <div class="section-label">Our Philosophy</div>
+    <div class="section-title">자연한의원의 3대 철학</div>
+    <div class="section-desc">코에 있는 자연 치유력을 깨운다</div>
+    <div class="val-grid">
+      <div class="val-card"><div class="val-icon">🌱</div><h3>자연 치유</h3><p>화학 첨가물 없이 신체 고유의 자연 치유력을 극대화하는 한의학 의학을 구현합니다.</p></div>
+      <div class="val-card"><div class="val-icon">🧘</div><h3>체질 개선</h3><p>학쓰 수서침으로 맞춤형 체질 개선, 장기적 면역력 강화와 재발 예방을 집중합니다.</p></div>
+      <div class="val-card"><div class="val-icon">🌺</div><h3>심신 통합</h3><p>머리와 신체는 하나입니다. 심리적 안정과 신체 건강을 동시에 다룙니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="treatments">
+  <div class="section-label">Treatments</div>
+  <div class="section-title">주요 진료분야</div>
+  <div class="section-desc"></div>
+  <div class="treat-grid">
+    <div class="treat-card"><div class="treat-img">🌿</div><div class="treat-body"><h3>응역 / 수역 치료</h3><p>면역력 저하로 인한 만성 피로, 잘 거려지 는 감기, 소화 기능 저하 등 응역계 주요 질환을 전당 한약으로 치료합니다.</p><span class="treat-tag">피로개선</span><span class="treat-tag">면역증강</span></div></div>
+    <div class="treat-card"><div class="treat-img">🦴</div><div class="treat-body"><h3>소화기 한의실라</h3><p>만성 소화장애, 모장 잠마침, 역류성 식도염의 근본 원인을 한의학적으로 접근합니다.</p><span class="treat-tag">소화개선</span><span class="treat-tag">역류성식도염</span></div></div>
+    <div class="treat-card"><div class="treat-img">💪</div><div class="treat-body"><h3>답성통증 / 근돌격통</h3><p>반복되는 등통, 무뉆 얼깨, 딩당거림, 답성통증에 첾and정 침, 추나력영양제로 치료합니다.</p><span class="treat-tag">등통개선</span><span class="treat-tag">리음찬침</span></div></div>
+    <div class="treat-card"><div class="treat-img">👶</div><div class="treat-body"><h3>여성 한의학</h3><p>생리통, 냉증, 불임, 산후체질 개선 등 여성 특뱄 상태를 체질 개선 관점에서 접근합니다.</p><span class="treat-tag">생리통</span><span class="treat-tag">폐경증상</span></div></div>
+  </div>
+</section>
+
+<div class="story">
+  <div class="story-inner">
+    <h2>"약에 의존하지 않는<br>나의 몸을 만들고 싶다"</h2>
+    <p>자연한의원은 20년의 임상 경험에서 느낌 것을 진료에 담았습니다.<br>영양 정화와 침치료만으로 증상이 사라지는 경험,<br>그 저력에 수많은 환자들이 우리를 다시 찾습니다.</p>
+    <div class="story-sig">원장 이자연 · 동국대 한의학과 졸업 · 한의학 박사</div>
+  </div>
+</div>
+
+<section class="reviews">
+  <div class="reviews-inner">
+    <div class="section-label">Reviews</div>
+    <div class="section-title">실제 환자 후기</div>
+    <div class="section-desc"></div>
+    <div class="review-grid">
+      <div class="review-card"><div class="stars">♥♥♥♥♥</div><p class="review-text">"소화가 안 되어 4년을 고생했는데 3개월 만에 정말 달라졌어요. 습관이나 식정도 같이 수술해줘서 지속이 가능했어요."</p><div class="reviewer">40대 주부</div></div>
+      <div class="review-card"><div class="stars">♥♥♥♥♥</div><p class="review-text">"피로가 만성이라 약을 염던 중이었는데, 침으로만 2달만에 훨씬 달라졌어요. 지금은 약 안 먹어도 착습니다."</p><div class="reviewer">30대 직장인</div></div>
+      <div class="review-card"><div class="stars">♥♥♥♥♥</div><p class="review-text">"생리통이 심해서 왔는데, 달마다 약을 먹어야 했던 생리가 이제는 거의 정상으로 돌아왔어요."</p><div class="reviewer">20대 직장인</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="section-title">자주 묻는 질문</div>
+  <div style="margin-bottom:32px"></div>
+  <div class="faq-item"><div class="faq-q">한약을 먹으면 다른 약과 같이 먹어도 되나요? <span>+</span></div><div class="faq-a">한약과 양약의 상호작용이 있을 수 있어 상담 시 복용 중인 약을 반드시 알려주세요. 대부분의 경우 조정 후 병행 복용이 가능합니다.</div></div>
+  <div class="faq-item"><div class="faq-q">체험한의학과 할수 있나요? <span>+</span></div><div class="faq-a">동국대, 경희대, 원광대, 대전인재대, 족보 등 한의학전문대학원 졸업 한의사만 진료가 가능합니다.</div></div>
+  <div class="faq-item"><div class="faq-q">체질개선에 얼마나 걸리나요? <span>+</span></div><div class="faq-a">개인에 따라 다르다만 보통 3~6개월 기준으로 지속적인 식생활 교정과 함께 진행하는 것을 권장합니다.</div></div>
+</section>
+
+<div class="cta">
+  <h2>오늘, 맨좀 <strong>체질 검진</strong> 받으세요</h2>
+  <p>전화 또는 온라인으로 예약 후 내원하시면 대기 없이 진료합니다</p>
+  <div class="cta-btns">
+    <a class="cta-btn-w" href="#">온라인 예약</a>
+    <a class="cta-btn-o" href="tel:0298765432">☎ 02-9876-5432</a>
+  </div>
+</div>
+
+<footer class="venom-footer">
+  <div class="vf-inner">
+    <div class="vf-brand">
+      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:40px;width:auto;display:block;filter:brightness(0) invert(1)">
+      <p>AI 시대 병원 마케팅의 새로운 기준<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시</p>
+    </div>
+    <div class="vf-links">
+      <strong>베놈 서비스</strong>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#dental">치과 마케팅</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#skin">피부과 마케팅</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#geo">GEO 최적화</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#contact">상담신청</a>
+    </div>
+    <div class="vf-contact">
+      <strong>문의</strong>
+      <a href="tel:16614142">1661-4142</a>
+      <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank">카카오 채널 상담</a>
+      <p style="margin-top:8px;font-size:11px;opacity:.5">대구광역시 수성구 용학로25길54, 4층<br>사업자등록번호: 291-86-02777</p>
+    </div>
+  </div>
+  <div class="vf-bottom">
+    <span>이 페이지는 <strong>병원마케팅 베놈</strong>의 홈페이지 제작 샘플입니다.</span>
+    <span>© 2025 주식회사 베놈. All rights reserved.</span>
+  </div>
+</footer>
+<style>
+.venom-footer{background:#111;color:#aaa;padding:48px 0 24px;font-size:13px;margin-top:0}
+.vf-inner{max-width:960px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+.vf-brand p{margin-top:12px;line-height:1.7;font-size:12px;opacity:.7}
+.vf-links,.vf-contact{display:flex;flex-direction:column;gap:6px}
+.vf-links strong,.vf-contact strong{color:#fff;font-size:12px;margin-bottom:4px}
+.vf-links a,.vf-contact a{color:#888;text-decoration:none;font-size:12px;transition:color .2s}
+.vf-links a:hover,.vf-contact a:hover{color:#fff}
+.vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
+@media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
+</style>
+</body>
+</html>

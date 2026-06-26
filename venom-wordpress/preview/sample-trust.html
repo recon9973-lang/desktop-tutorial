@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>서울베놈병원 — 대형병원 신뢰형 샘플</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',sans-serif;color:#0d253d;background:#fff}
+a{text-decoration:none;color:inherit}
+/* HEADER */
+.hd{background:#1e3a5f;height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+.hd-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:48px;width:100%}
+.hd-logo{color:#fff;font-size:20px;font-weight:700;letter-spacing:-.03em}
+.hd-logo span{color:#60a5fa}
+.hd-nav{display:flex;gap:32px}
+.hd-nav a{color:rgba(255,255,255,.75);font-size:14px;font-weight:400;transition:.15s}
+.hd-nav a:hover{color:#fff}
+.hd-cta{margin-left:auto;background:#2563eb;color:#fff;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600}
+/* HERO */
+.hero{background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 60%,#2563eb 100%);padding:100px 32px;text-align:center;color:#fff}
+.hero h1{font-size:52px;font-weight:300;letter-spacing:-.04em;line-height:1.2;margin-bottom:20px}
+.hero h1 strong{font-weight:700;color:#93c5fd}
+.hero p{font-size:18px;color:rgba(255,255,255,.75);margin-bottom:40px;line-height:1.7}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-w{background:#fff;color:#1e3a5f;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600}
+.btn-o{border:2px solid rgba(255,255,255,.5);color:#fff;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:400}
+/* STATS */
+.stats{background:#f8fafc;padding:48px 32px}
+.stats-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.stat{text-align:center;padding:24px;border-right:1px solid #e2e8f0}
+.stat:last-child{border:none}
+.stat-n{font-size:40px;font-weight:700;color:#1e40af;letter-spacing:-.03em}
+.stat-l{font-size:13px;color:#64748b;margin-top:6px}
+/* DEPTS */
+.depts{padding:80px 32px;max-width:1200px;margin:0 auto}
+.sec-title{font-size:32px;font-weight:700;color:#0d253d;letter-spacing:-.03em;margin-bottom:8px}
+.sec-sub{font-size:16px;color:#64748b;margin-bottom:48px}
+.dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.dept-card{background:#f8fafc;border-radius:12px;padding:24px 16px;text-align:center;border:1px solid #e2e8f0;transition:.2s;cursor:pointer}
+.dept-card:hover{background:#eff6ff;border-color:#93c5fd;transform:translateY(-2px)}
+.dept-icon{font-size:36px;margin-bottom:12px}
+.dept-name{font-size:14px;font-weight:600;color:#1e3a5f}
+/* DOCTORS */
+.doctors{background:#1e3a5f;padding:80px 32px;color:#fff}
+.doctors-inner{max-width:1200px;margin:0 auto}
+.doctors h2{font-size:32px;font-weight:700;color:#fff;margin-bottom:8px}
+.doctors p{color:rgba(255,255,255,.6);margin-bottom:48px}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px}
+.doc-card{background:rgba(255,255,255,.07);border-radius:12px;padding:28px 20px;border:1px solid rgba(255,255,255,.1)}
+.doc-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.doc-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.doc-spec{font-size:13px;color:#93c5fd;margin-bottom:8px}
+.doc-career{font-size:12px;color:rgba(255,255,255,.5);line-height:1.6}
+/* NOTICE */
+.notice{padding:80px 32px;max-width:1200px;margin:0 auto}
+.notice h2{font-size:32px;font-weight:700;margin-bottom:48px}
+.notice-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.notice-list{display:flex;flex-direction:column;gap:0}
+.notice-item{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #e2e8f0;align-items:center}
+.notice-badge{font-size:11px;font-weight:700;background:#eff6ff;color:#2563eb;padding:3px 8px;border-radius:4px;white-space:nowrap}
+.notice-title{font-size:14px;color:#0d253d;flex:1}
+.notice-date{font-size:12px;color:#94a3b8;white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-inner">
+    <div class="hd-logo">서울<span>베놈</span>병원</div>
+    <nav class="hd-nav">
+      <a href="#">진료안내</a>
+      <a href="#">의료진</a>
+      <a href="#">건강검진</a>
+      <a href="#">병원소개</a>
+      <a href="#">공지사항</a>
+    </nav>
+    <a class="hd-cta" href="#">예약하기</a>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>환자 중심의 의료,<br><strong>신뢰로 완성합니다</strong></h1>
+  <p>20년 이상의 임상 경험과 최신 의료 장비로<br>최고 수준의 진료를 제공합니다.</p>
+  <div class="hero-btns">
+    <a class="btn-w" href="#">진료 예약하기</a>
+    <a class="btn-o" href="#">진료과 안내</a>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-n">32+</div><div class="stat-l">진료과목</div></div>
+    <div class="stat"><div class="stat-n">180+</div><div class="stat-l">전문의</div></div>
+    <div class="stat"><div class="stat-n">25년</div><div class="stat-l">진료 역사</div></div>
+    <div class="stat"><div class="stat-n">98%</div><div class="stat-l">환자 만족도</div></div>
+  </div>
+</section>
+
+<section class="depts">
+  <div class="sec-title">진료과 안내</div>
+  <div class="sec-sub">환자분의 증상에 맞는 진료과를 선택하세요</div>
+  <div class="dept-grid">
+    <div class="dept-card"><div class="dept-icon">🫀</div><div class="dept-name">심장내과</div></div>
+    <div class="dept-card"><div class="dept-icon">🧠</div><div class="dept-name">신경외과</div></div>
+    <div class="dept-card"><div class="dept-icon">🦷</div><div class="dept-name">치과</div></div>
+    <div class="dept-card"><div class="dept-icon">👁</div><div class="dept-name">안과</div></div>
+    <div class="dept-card"><div class="dept-icon">🦴</div><div class="dept-name">정형외과</div></div>
+    <div class="dept-card"><div class="dept-icon">🩺</div><div class="dept-name">내과</div></div>
+    <div class="dept-card"><div class="dept-icon">🧬</div><div class="dept-name">피부과</div></div>
+    <div class="dept-card"><div class="dept-icon">🤰</div><div class="dept-name">산부인과</div></div>
+  </div>
+</section>
+
+<section class="doctors">
+  <div class="doctors-inner">
+    <h2>의료진 소개</h2>
+    <p>각 분야 최고의 전문의가 함께합니다</p>
+    <div class="doc-grid">
+      <div class="doc-card"><div class="doc-avatar">👨‍⚕️</div><div class="doc-name">김베놈 교수</div><div class="doc-spec">심장내과 전문의</div><div class="doc-career">서울대학교 의과대학 졸업<br>前 서울대병원 심장내과<br>대한심장학회 정회원</div></div>
+      <div class="doc-card"><div class="doc-avatar">👩‍⚕️</div><div class="doc-name">이마케팅 과장</div><div class="doc-spec">신경외과 전문의</div><div class="doc-career">연세대학교 의과대학 졸업<br>前 세브란스병원 신경외과<br>뇌혁관 수술 1,200+ 케이스</div></div>
+      <div class="doc-card"><div class="doc-avatar">👨‍⚕️</div><div class="doc-name">박전문 원장</div><div class="doc-spec">정형외과 전문의</div><div class="doc-career">고려대학교 의과대학 졸업<br>관절경 수술 전문<br>대한정형외과학회 이사</div></div>
+      <div class="doc-card"><div class="doc-avatar">👩‍⚕️</div><div class="doc-name">최치료 부장</div><div class="doc-spec">피부과 전문의</div><div class="doc-career">성균관대 의과대학 졸업<br>피부재생·레이저 전문<br>SCI 논문 12편</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="notice">
+  <h2>공지사항 · 건강정보</h2>
+  <div class="notice-grid">
+    <div class="notice-list">
+      <div style="font-size:15px;font-weight:600;margin-bottom:16px">📢 공지사항</div>
+      <div class="notice-item"><span class="notice-badge">공지</span><span class="notice-title">2025년 추석 연휴 진료 안내</span><span class="notice-date">2025.09.10</span></div>
+      <div class="notice-item"><span class="notice-badge">공지</span><span class="notice-title">건강검진 예약 시스템 개편 안내</span><span class="notice-date">2025.08.20</span></div>
+      <div class="notice-item"><span class="notice-badge">소식</span><span class="notice-title">심장내과 로봇수술 시스템 도입</span><span class="notice-date">2025.07.15</span></div>
+      <div class="notice-item"><span class="notice-badge">소식</span><span class="notice-title">MRI 장비 업그레이드 완료</span><span class="notice-date">2025.06.01</span></div>
+    </div>
+    <div class="notice-list">
+      <div style="font-size:15px;font-weight:600;margin-bottom:16px">💊 건강정보</div>
+      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">여름철 열사병 예방과 응급 대처법</span><span class="notice-date">2025.07.01</span></div>
+      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">무뉆 관절염, 수술 없이 치료하는 방법</span><span class="notice-date">2025.06.20</span></div>
+      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">당높 환자의 발 건강 관리 가이드</span><span class="notice-date">2025.06.05</span></div>
+      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">심장 건강을 지키는 생활습관 7가지</span><span class="notice-date">2025.05.18</span></div>
+    </div>
+  </div>
+</section>
+
+<footer class="venom-footer">
+  <div class="vf-inner">
+    <div class="vf-brand">
+      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:40px;width:auto;display:block;filter:brightness(0) invert(1)">
+      <p>AI 시대 병원 마케팅의 새로운 기준<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시</p>
+    </div>
+    <div class="vf-links">
+      <strong>베놈 서비스</strong>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#dental">치과 마케팅</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#skin">피부과 마케팅</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#geo">GEO 최적화</a>
+      <a href="https://desktop-tutorial-chi-peach.vercel.app/#contact">상담신청</a>
+    </div>
+    <div class="vf-contact">
+      <strong>문의</strong>
+      <a href="tel:16614142">1661-4142</a>
+      <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank">카카오 채널 상담</a>
+      <p style="margin-top:8px;font-size:11px;opacity:.5">대구광역시 수성구 용학로25길54, 4층<br>사업자등록번호: 291-86-02777</p>
+    </div>
+  </div>
+  <div class="vf-bottom">
+    <span>이 페이지는 <strong>병원마케팅 베놈</strong>의 홈페이지 제작 샘플입니다.</span>
+    <span>© 2025 주식회사 베놈. All rights reserved.</span>
+  </div>
+</footer>
+<style>
+.venom-footer{background:#111;color:#aaa;padding:48px 0 24px;font-size:13px;margin-top:0}
+.vf-inner{max-width:960px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+.vf-brand p{margin-top:12px;line-height:1.7;font-size:12px;opacity:.7}
+.vf-links,.vf-contact{display:flex;flex-direction:column;gap:6px}
+.vf-links strong,.vf-contact strong{color:#fff;font-size:12px;margin-bottom:4px}
+.vf-links a,.vf-contact a{color:#888;text-decoration:none;font-size:12px;transition:color .2s}
+.vf-links a:hover,.vf-contact a:hover{color:#fff}
+.vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
+@media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
+</style>
+</body>
+</html>

@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 대시보드 — 병원마케팅 베놈</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#533afd;--pd:#4434d4;--bd:#1c1e54;
+  --ink:#0d253d;--ink2:#273951;--mute:#64748d;
+  --soft:#f6f9fc;--border:#e3e8ee;--white:#fff;
+  --r8:8px;--r12:12px;--r16:16px;
+  --s1:rgba(0,55,112,.08) 0 1px 3px;
+  --s2:rgba(0,55,112,.08) 0 8px 24px,rgba(0,55,112,.04) 0 2px 6px;
+  --sidebar:240px;
+}
+html{font-size:16px}
+body{font-family:'Pretendard',sans-serif;background:#f0f2f5;color:var(--ink);display:flex;min-height:100vh}
+a{color:var(--p);text-decoration:none}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--bd);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.sidebar-logo .logo-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+.nav-section{padding:20px 12px 8px;font-size:10px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r8);margin:1px 8px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;transition:all .15s}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:var(--p)}
+.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* ── MAIN ── */
+.main-wrap{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:60px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:600;color:var(--ink)}
+.topbar-actions{display:flex;align-items:center;gap:12px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600}
+.content{padding:28px;flex:1}
+
+/* ── CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--r12);padding:20px;box-shadow:var(--s1);border:1px solid var(--border)}
+.stat-label{font-size:12px;color:var(--mute);font-weight:500;margin-bottom:8px}
+.stat-val{font-size:28px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.stat-change{font-size:12px;margin-top:4px}
+.stat-change.up{color:#16a34a}.stat-change.down{color:#dc2626}
+.stat-icon{float:right;font-size:28px;margin-top:-4px}
+
+.card{background:#fff;border-radius:var(--r12);padding:24px;box-shadow:var(--s1);border:1px solid var(--border);margin-bottom:20px}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:600;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r8);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pd)}
+.btn-outline{background:#fff;color:var(--ink);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--p);color:var(--p)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-danger{background:#dc2626;color:#fff}.btn-danger:hover{background:#b91c1c}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:var(--soft);color:var(--mute);font-weight:500;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
+.data-table td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--ink2)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(83,58,253,.02)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600}
+.badge-green{background:#f0fdf4;color:#16a34a}
+.badge-yellow{background:#fefce8;color:#ca8a04}
+.badge-red{background:#fef2f2;color:#dc2626}
+.badge-blue{background:#eff6ff;color:#2563eb}
+
+/* ── CHART (pure CSS bars) ── */
+.chart-wrap{height:180px;display:flex;align-items:flex-end;gap:8px;padding-bottom:24px;position:relative}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;background:var(--p);transition:height .4s;min-height:4px;opacity:.85}
+.chart-bar:hover{opacity:1}
+.chart-label{font-size:10px;color:var(--mute);margin-top:6px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:24px}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--mute);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--p);border-bottom-color:var(--p)}
+
+/* ── FORM ── */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(83,58,253,.08)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ── EDITOR ── */
+.editor-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border:1px solid var(--border);border-bottom:none;border-radius:var(--r8) var(--r8) 0 0;background:var(--soft)}
+.editor-toolbar button{padding:5px 10px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:12px;cursor:pointer;color:var(--ink)}
+.editor-toolbar button:hover{background:var(--p);color:#fff;border-color:var(--p)}
+#post-editor{width:100%;min-height:360px;padding:16px;border:1px solid var(--border);border-radius:0 0 var(--r8) var(--r8);font-size:14px;font-family:inherit;line-height:1.7;resize:vertical;outline:none}
+#post-editor:focus{border-color:var(--p)}
+
+/* ── KEYWORD TABLE ── */
+.kw-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:0}
+.kw-head{font-size:11px;color:var(--mute);font-weight:600;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--soft)}
+.kw-cell{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink2);display:flex;align-items:center}
+
+/* ── VISITOR LOG ── */
+.log-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:13px}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:32px;height:32px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.log-detail{flex:1}
+.log-path{font-weight:500;color:var(--ink);margin-bottom:2px}
+.log-meta{color:var(--mute);font-size:11px}
+.log-badge{margin-left:auto;flex-shrink:0}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:12px 20px;border-radius:var(--r12);font-size:13px;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:var(--r16);padding:28px;width:90%;max-width:640px;max-height:90vh;overflow-y:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--mute)}
+
+/* ── SECTION VISIBILITY ── */
+.admin-section{display:none}
+.admin-section.active{display:block}
+
+/* ── PAGE CARDS ── */
+.page-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.page-card{background:var(--soft);border-radius:var(--r12);padding:20px;border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.page-card:hover{border-color:var(--p);box-shadow:var(--s2)}
+.page-card-icon{font-size:28px;margin-bottom:12px}
+.page-card-name{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.page-card-url{font-size:11px;color:var(--mute)}
+
+/* ── SEO score ── */
+.seo-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px}
+.seo-bar-fill{height:100%;border-radius:4px;transition:width .6s}
+
+/* responsive */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:transform .2s}
+  .sidebar.open{transform:translateX(0)}
+  .main-wrap{margin-left:0}
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">⚡ 베놈 관리자</div>
+    <div class="logo-sub">병원마케팅 베놈 Admin</div>
+  </div>
+  <div class="nav-section">대시보드</div>
+  <div class="nav-item active" onclick="showSection('dashboard')"><span class="nav-icon">📊</span>대시보드</div>
+  <div class="nav-section">콘텐츠</div>
+  <div class="nav-item" onclick="showSection('blog')"><span class="nav-icon">✍️</span>블로그 포스팅</div>
+  <div class="nav-item" onclick="showSection('pages')"><span class="nav-icon">📄</span>페이지 관리</div>
+  <div class="nav-item" onclick="showSection('media')"><span class="nav-icon">🖼️</span>미디어 라이브러리</div>
+  <div class="nav-section">마케팅 분석</div>
+  <div class="nav-item" onclick="showSection('visitors')"><span class="nav-icon">👥</span>방문자 분석</div>
+  <div class="nav-item" onclick="showSection('keywords')"><span class="nav-icon">🔍</span>키워드 현황</div>
+  <div class="nav-item" onclick="showSection('sources')"><span class="nav-icon">📡</span>유입 출처</div>
+  <div class="nav-item" onclick="showSection('seo')"><span class="nav-icon">⚙️</span>SEO 점수</div>
+  <div class="nav-section">보고서</div>
+  <div class="nav-item" onclick="showSection('reports')"><span class="nav-icon">📈</span>마케팅 리포트</div>
+  <div class="nav-item" onclick="showSection('cardnews')"><span class="nav-icon">🗞️</span>데일리 카드뉴스</div>
+  <div class="nav-section">설정</div>
+  <div class="nav-item" onclick="showSection('settings')"><span class="nav-icon">⚙️</span>사이트 설정</div>
+  <div class="nav-item" onclick="showSection('users')"><span class="nav-icon">👤</span>계정 관리</div>
+  <div class="sidebar-bottom">
+    <div class="nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon">🌐</span>사이트 보기</div>
+    <div class="nav-item" onclick="logout()"><span class="nav-icon">🚪</span>로그아웃</div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main-wrap">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none;background:none;border:none;cursor:pointer;font-size:20px" id="menu-btn">☰</button>
+      <div class="topbar-title" id="topbar-title">대시보드</div>
+    </div>
+    <div class="topbar-actions">
+      <span style="font-size:12px;color:var(--mute)" id="last-updated">마지막 업데이트: 방금 전</span>
+      <button class="btn btn-p btn-sm" onclick="showSection('blog')">+ 새 포스팅</button>
+      <div class="avatar">관</div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ══ 대시보드 ══ -->
+    <div id="section-dashboard" class="admin-section active">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">오늘 방문자</div>
+          <div class="stat-val" id="stat-visitors">248</div>
+          <div class="stat-change up">↑ 12% 전일 대비</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-label">페이지뷰</div>
+          <div class="stat-val" id="stat-pv">1,024</div>
+          <div class="stat-change up">↑ 8% 전일 대비</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💬</div>
+          <div class="stat-label">상담 신청</div>
+          <div class="stat-val" id="stat-leads">14</div>
+          <div class="stat-change up">↑ 3건 전일 대비</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-label">키워드 순위 1위</div>
+          <div class="stat-val" id="stat-kw">7</div>
+          <div class="stat-change up">↑ 2개 상승</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <!-- 주간 방문자 차트 -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📊 주간 방문자 추이</div>
+            <select class="btn btn-outline btn-sm" onchange="updateChart(this.value)">
+              <option>최근 7일</option><option>최근 30일</option>
+            </select>
+          </div>
+          <div class="chart-wrap" id="chart">
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:45%"></div><div class="chart-label">월</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:60%"></div><div class="chart-label">화</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:38%"></div><div class="chart-label">수</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:72%"></div><div class="chart-label">목</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:88%"></div><div class="chart-label">금</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:52%;opacity:.5"></div><div class="chart-label">토</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:30%;opacity:.5"></div><div class="chart-label">일</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mute);padding-top:8px;border-top:1px solid var(--border)">
+            <span>총 방문자 <strong style="color:var(--ink)">1,842</strong></span>
+            <span>신규 <strong style="color:var(--p)">68%</strong></span>
+            <span>재방문 <strong style="color:var(--ink)">32%</strong></span>
+          </div>
+        </div>
+
+        <!-- 유입 채널 -->
+        <div class="card">
+          <div class="card-head"><div class="card-title">📡 유입 채널 분포</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>네이버 검색</span><span style="font-weight:600;color:var(--ink)">38%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:38%;background:#03c75a"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>직접 유입</span><span style="font-weight:600;color:var(--ink)">22%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:22%;background:var(--p)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>카카오톡</span><span style="font-weight:600;color:var(--ink)">18%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:18%;background:#ffcd00"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>구글 검색</span><span style="font-weight:600;color:var(--ink)">12%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:12%;background:#ea4335"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>인스타그램</span><span style="font-weight:600;color:var(--ink)">7%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:7%;background:#e1306c"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>기타</span><span style="font-weight:600;color:var(--ink)">3%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:3%;background:var(--mute)"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 최근 블로그 & 인기 키워드 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:0">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">✍️ 최근 포스팅</div>
+            <button class="btn btn-p btn-sm" onclick="showSection('blog')">+ 작성</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>제목</th><th>상태</th><th>조회</th></tr></thead>
+            <tbody id="recent-posts">
+              <tr><td>ChatGPT에 병원이 추천되는 3가지 방법</td><td><span class="badge badge-green">발행</span></td><td>842</td></tr>
+              <tr><td>의료광고 금지 표현 완벽 정리 2025</td><td><span class="badge badge-green">발행</span></td><td>624</td></tr>
+              <tr><td>네이버 플레이스 1위 달성 전략</td><td><span class="badge badge-yellow">초안</span></td><td>—</td></tr>
+              <tr><td>임플란트 마케팅 가이드</td><td><span class="badge badge-green">발행</span></td><td>318</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">🔍 인기 검색 키워드 TOP 10</div></div>
+          <div id="kw-list" style="display:flex;flex-direction:column;gap:6px">
+            <div class="kw-row"><div class="kw-head">키워드</div><div class="kw-head">방문</div><div class="kw-head">순위</div><div class="kw-head">변동</div></div>
+            <div class="kw-row"><div class="kw-cell">치과마케팅</div><div class="kw-cell">142</div><div class="kw-cell">3위</div><div class="kw-cell" style="color:#16a34a">↑2</div></div>
+            <div class="kw-row"><div class="kw-cell">피부과마케팅</div><div class="kw-cell">98</div><div class="kw-cell">5위</div><div class="kw-cell" style="color:#16a34a">↑1</div></div>
+            <div class="kw-row"><div class="kw-cell">병원마케팅</div><div class="kw-cell">87</div><div class="kw-cell">8위</div><div class="kw-cell" style="color:var(--mute)">—</div></div>
+            <div class="kw-row"><div class="kw-cell">GEO최적화</div><div class="kw-cell">64</div><div class="kw-cell">1위</div><div class="kw-cell" style="color:#16a34a">↑4</div></div>
+            <div class="kw-row"><div class="kw-cell">한의원마케팅</div><div class="kw-cell">52</div><div class="kw-cell">6위</div><div class="kw-cell" style="color:#dc2626">↓1</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 블로그 포스팅 ══ -->
+    <div id="section-blog" class="admin-section">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'tab-write')">✍️ 새 포스팅 작성</div>
+        <div class="tab" onclick="switchTab(this,'tab-posts')">📋 포스팅 목록</div>
+      </div>
+
+      <div id="tab-write">
+        <div class="card">
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group"><label>포스팅 제목 <span style="color:#dc2626">*</span></label><input type="text" id="post-title" placeholder="예: 임플란트 치과 고르는 기준 5가지"></div>
+            <div class="form-group"><label>카테고리</label><select id="post-cat"><option>GEO/AI</option><option>SEO</option><option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>온라인마케팅</option><option>전략</option></select></div>
+          </div>
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group"><label>SEO 타이틀 (60자 이내)</label><input type="text" id="post-seo-title" placeholder="검색엔진에 표시될 제목"></div>
+            <div class="form-group"><label>대표 키워드</label><input type="text" id="post-keywords" placeholder="쉼표로 구분: 임플란트마케팅, 치과SEO"></div>
+          </div>
+          <div class="form-group"><label>메타 설명 (160자 이내)</label><input type="text" id="post-meta" placeholder="검색 결과에 표시될 설명 문장"></div>
+          <div class="form-group"><label>본문 <span style="color:#dc2626">*</span></label>
+            <div class="editor-toolbar">
+              <button onclick="fmt('bold')"><b>B</b></button>
+              <button onclick="fmt('italic')"><i>I</i></button>
+              <button onclick="fmtH(2)">H2</button>
+              <button onclick="fmtH(3)">H3</button>
+              <button onclick="insertList()">목록</button>
+              <button onclick="insertTable()">표</button>
+              <button onclick="insertFaq()">FAQ</button>
+              <button onclick="insertCta()">CTA박스</button>
+              <button onclick="aiWrite()">🤖 AI 초안</button>
+            </div>
+            <textarea id="post-editor" placeholder="포스팅 내용을 입력하세요. HTML 태그도 사용 가능합니다."></textarea>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <button class="btn btn-outline" onclick="saveDraft()">초안 저장</button>
+            <button class="btn btn-p" onclick="publishPost()">발행하기</button>
+          </div>
+        </div>
+
+        <!-- AI 초안 생성 패널 -->
+        <div class="card" id="ai-draft-panel" style="display:none">
+          <div class="card-head"><div class="card-title">🤖 AI 초안 생성</div><button class="btn btn-outline btn-sm" onclick="document.getElementById('ai-draft-panel').style.display='none'">닫기</button></div>
+          <div class="form-group"><label>블로그 주제 또는 키워드</label><input type="text" id="ai-topic" placeholder="예: 임플란트 치과 마케팅 전략 2025"></div>
+          <div class="form-row">
+            <div class="form-group"><label>타겟 독자</label><select id="ai-target"><option>병원 원장</option><option>마케팅 담당자</option><option>예비 환자</option></select></div>
+            <div class="form-group"><label>글 길이</label><select id="ai-length"><option>짧게 (500자)</option><option>보통 (1,000자)</option><option>상세 (2,000자+)</option></select></div>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:flex-end">
+            <button class="btn btn-p" onclick="generateAI()">초안 생성</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-posts" style="display:none">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">전체 포스팅 <span style="font-size:13px;color:var(--mute);font-weight:400">(14개)</span></div>
+            <div style="display:flex;gap:8px">
+              <input type="text" placeholder="검색..." style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;width:200px">
+              <select class="btn btn-outline btn-sm"><option>전체 상태</option><option>발행</option><option>초안</option></select>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>제목</th><th>카테고리</th><th>상태</th><th>조회수</th><th>발행일</th><th>작업</th></tr></thead>
+            <tbody id="posts-list-body">
+              <tr><td colspan="6" style="text-align:center;color:var(--mute);padding:24px">로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 페이지 관리 ══ -->
+    <div id="section-pages" class="admin-section">
+      <div class="card">
+        <div class="card-head"><div class="card-title">페이지 관리</div></div>
+        <div class="page-card-grid">
+          <div class="page-card" onclick="toast('홈 페이지 편집 모드 준비 중')"><div class="page-card-icon">🏠</div><div class="page-card-name">홈</div><div class="page-card-url">/</div></div>
+          <div class="page-card" onclick="toast('병원마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">🏥</div><div class="page-card-name">병원마케팅</div><div class="page-card-url">/hospital-marketing</div></div>
+          <div class="page-card" onclick="toast('AI마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">🤖</div><div class="page-card-name">AI마케팅</div><div class="page-card-url">/ai-marketing</div></div>
+          <div class="page-card" onclick="toast('온라인마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">📱</div><div class="page-card-name">온라인마케팅</div><div class="page-card-url">/online-marketing</div></div>
+          <div class="page-card" onclick="toast('홈페이지 제작 페이지 편집 모드 준비 중')"><div class="page-card-icon">🌐</div><div class="page-card-name">홈페이지 제작</div><div class="page-card-url">/hospital-website</div></div>
+          <div class="page-card" onclick="toast('상담신청 페이지 편집 모드 준비 중')"><div class="page-card-icon">💬</div><div class="page-card-name">상담신청</div><div class="page-card-url">/contact</div></div>
+          <div class="page-card" onclick="toast('치과마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">🦷</div><div class="page-card-name">치과마케팅</div><div class="page-card-url">/dental-marketing</div></div>
+          <div class="page-card" onclick="toast('피부과마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">✨</div><div class="page-card-name">피부과마케팅</div><div class="page-card-url">/skin-marketing</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 방문자 분석 ══ -->
+    <div id="section-visitors" class="admin-section">
+      <!-- 상단 KPI -->
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">오늘 방문자</div>
+          <div class="stat-val" id="v-today">248</div>
+          <div class="stat-change up" id="v-today-chg">↑ 12% 전일 대비</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-label">이번 주 방문자</div>
+          <div class="stat-val" id="v-week">1,842</div>
+          <div class="stat-change up">↑ 18% 전주 대비</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-label">평균 체류 시간</div>
+          <div class="stat-val" id="v-duration">3:24</div>
+          <div class="stat-change up">↑ 0:22 개선</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💬</div>
+          <div class="stat-label">오늘 상담 신청</div>
+          <div class="stat-val" id="v-leads">14</div>
+          <div class="stat-change up">↑ 3건 전일 대비</div>
+        </div>
+      </div>
+
+      <!-- 방문자 추이 차트 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head">
+          <div class="card-title">📊 방문자 추이 (최근 30일)</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:12px;color:var(--mute)">자동 갱신</span>
+            <span class="badge badge-green">● Live</span>
+          </div>
+        </div>
+        <div id="v-chart-30" style="height:160px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative"></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mute);padding-top:8px;border-top:1px solid var(--border)">
+          <span id="v-month-total">월 방문자 <strong style="color:var(--ink)">7,248</strong></span>
+          <span>신규 <strong style="color:var(--p)">68%</strong></span>
+          <span>재방문 <strong style="color:var(--ink)">32%</strong></span>
+          <span>전환율 <strong style="color:#16a34a">2.6%</strong></span>
+        </div>
+      </div>
+
+      <!-- 실시간 로그 + 채널 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">👁️ 실시간 방문 로그</div>
+            <span class="badge badge-green" id="realtime-badge">● 실시간</span>
+          </div>
+          <div id="visitor-log" style="max-height:280px;overflow-y:auto"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📡 유입 채널 분포</div></div>
+          <div id="v-channel-bars" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+
+      <!-- 인기 페이지 + 지역 + 디바이스 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">🏆 인기 페이지 TOP 5</div>
+          <div id="v-top-pages" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">🗺️ 지역별 방문</div>
+          <div id="v-regions" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">📱 디바이스</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>📱 모바일</span><span id="d-mobile">68%</span></div><div class="seo-bar"><div class="seo-bar-fill" id="d-mobile-bar" style="width:68%;background:var(--p)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>💻 데스크톱</span><span id="d-desktop">28%</span></div><div class="seo-bar"><div class="seo-bar-fill" id="d-desktop-bar" style="width:28%;background:var(--bd)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>📟 태블릿</span><span id="d-tablet">4%</span></div><div class="seo-bar"><div class="seo-bar-fill" id="d-tablet-bar" style="width:4%;background:var(--mute)"></div></div></div>
+          </div>
+          <div style="margin-top:20px">
+            <div class="card-title" style="margin-bottom:12px;font-size:13px">⏰ 시간대별 방문</div>
+            <div id="v-hourly" style="height:80px;display:flex;align-items:flex-end;gap:2px"></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:4px"><span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>23시</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 전환 퍼널 -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">🎯 상담 전환 퍼널</div><span style="font-size:12px;color:var(--mute)">이번 주 기준</span></div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative">
+          <div style="text-align:center;padding:16px 8px">
+            <div style="font-size:24px;font-weight:700;color:var(--p)">1,842</div>
+            <div style="font-size:11px;color:var(--mute);margin-top:4px">방문자</div>
+            <div style="height:4px;background:var(--p);margin-top:12px;border-radius:2px"></div>
+          </div>
+          <div style="text-align:center;padding:16px 8px">
+            <div style="font-size:24px;font-weight:700;color:#4285f4">924</div>
+            <div style="font-size:11px;color:var(--mute);margin-top:4px">페이지 탐색</div>
+            <div style="height:4px;background:#4285f4;margin-top:12px;border-radius:2px"></div>
+            <div style="font-size:10px;color:var(--mute);margin-top:4px">50.2%</div>
+          </div>
+          <div style="text-align:center;padding:16px 8px">
+            <div style="font-size:24px;font-weight:700;color:#10a37f">312</div>
+            <div style="font-size:11px;color:var(--mute);margin-top:4px">상담 페이지 클릭</div>
+            <div style="height:4px;background:#10a37f;margin-top:12px;border-radius:2px"></div>
+            <div style="font-size:10px;color:var(--mute);margin-top:4px">33.8%</div>
+          </div>
+          <div style="text-align:center;padding:16px 8px">
+            <div style="font-size:24px;font-weight:700;color:#f59e0b">96</div>
+            <div style="font-size:11px;color:var(--mute);margin-top:4px">카카오 채널 클릭</div>
+            <div style="height:4px;background:#f59e0b;margin-top:12px;border-radius:2px"></div>
+            <div style="font-size:10px;color:var(--mute);margin-top:4px">30.8%</div>
+          </div>
+          <div style="text-align:center;padding:16px 8px">
+            <div style="font-size:24px;font-weight:700;color:#16a34a">48</div>
+            <div style="font-size:11px;color:var(--mute);margin-top:4px">상담 신청 완료</div>
+            <div style="height:4px;background:#16a34a;margin-top:12px;border-radius:2px"></div>
+            <div style="font-size:10px;color:#16a34a;font-weight:700;margin-top:4px">전환율 2.6%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 키워드 현황 ══ -->
+    <div id="section-keywords" class="admin-section">
+
+      <!-- KPI 요약 -->
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">추적 키워드</div><div class="stat-val" id="kw-count">12</div><div class="stat-change up">↑ 3개 추가됨</div></div>
+        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">TOP 3 키워드</div><div class="stat-val" id="kw-top3">4</div><div class="stat-change up">↑ 1 전주 대비</div></div>
+        <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">월 노출량 합계</div><div class="stat-val" id="kw-impression">14,850</div><div class="stat-change up">↑ 18%</div></div>
+        <div class="stat-card"><div class="stat-icon">💡</div><div class="stat-label">평균 클릭률</div><div class="stat-val" id="kw-ctr">4.2%</div><div class="stat-change up">↑ 0.6%p</div></div>
+      </div>
+
+      <!-- 키워드 검색량 조회 도구 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head">
+          <div class="card-title">🔎 키워드 검색량 조회</div>
+          <span class="badge badge-yellow" id="kw-api-badge">⚠ 시뮬레이션 모드</span>
+        </div>
+        <p style="font-size:13px;color:var(--mute);margin-bottom:16px">키워드를 입력하면 월 검색량·경쟁도·CPC를 분석합니다. 실제 데이터는 네이버 검색광고 API 연동 후 자동 전환됩니다.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <input id="kw-input" type="text" placeholder="예: 치과 임플란트 마케팅, 피부과 SNS 광고" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:14px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')lookupKeyword()">
+          <button class="btn btn-p" onclick="lookupKeyword()">🔍 조회</button>
+          <button class="btn btn-outline" onclick="addToTracking()">+ 추적 추가</button>
+        </div>
+        <div id="kw-result-wrap" style="display:none">
+          <div id="kw-result-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+          <div class="card" style="margin:0;padding:16px;background:var(--soft);border:none">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--ink)">📊 관련 키워드 추천</div>
+            <div id="kw-related" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          </div>
+        </div>
+        <div id="kw-loading" style="display:none;text-align:center;padding:24px;color:var(--mute)">
+          <div style="font-size:24px;margin-bottom:8px">⏳</div>
+          <div style="font-size:14px">검색량 분석 중...</div>
+        </div>
+      </div>
+
+      <!-- 추적 키워드 현황 테이블 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📋 추적 키워드 현황</div>
+          <div style="display:flex;gap:8px">
+            <select id="kw-filter" class="btn btn-outline btn-sm" onchange="renderKeywordTable()">
+              <option value="all">전체</option><option value="top">TOP 10 이내</option><option value="up">순위 상승</option><option value="down">순위 하락</option>
+            </select>
+            <button class="btn btn-p btn-sm" onclick="runKeywordUpdate()">🔄 순위 갱신</button>
+          </div>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>키워드</th><th>카테고리</th><th>네이버 순위</th><th>구글 순위</th><th>월 검색량</th><th>경쟁도</th><th>전주 대비</th><th>유입수</th><th></th></tr></thead>
+          <tbody id="kw-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 유입 출처 ══ -->
+    <div id="section-sources" class="admin-section">
+      <div class="card">
+        <div class="card-head"><div class="card-title">📡 유입 출처 상세</div></div>
+        <table class="data-table">
+          <thead><tr><th>출처</th><th>방문자</th><th>비율</th><th>전환</th><th>이탈률</th></tr></thead>
+          <tbody>
+            <tr><td>🟢 네이버 검색</td><td>699</td><td>38%</td><td>12%</td><td>42%</td></tr>
+            <tr><td>⚫ 직접 유입</td><td>405</td><td>22%</td><td>18%</td><td>28%</td></tr>
+            <tr><td>🟡 카카오톡</td><td>331</td><td>18%</td><td>22%</td><td>35%</td></tr>
+            <tr><td>🔴 구글 검색</td><td>221</td><td>12%</td><td>9%</td><td>48%</td></tr>
+            <tr><td>🔴 인스타그램</td><td>129</td><td>7%</td><td>6%</td><td>54%</td></tr>
+            <tr><td>🔵 기타</td><td>57</td><td>3%</td><td>4%</td><td>62%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SEO 점수 ══ -->
+    <div id="section-seo" class="admin-section">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
+        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#16a34a">94</div><div class="stat-label" style="text-align:center">종합 SEO 점수</div></div>
+        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:var(--p)">98</div><div class="stat-label" style="text-align:center">기술 SEO</div></div>
+        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#f59e0b">88</div><div class="stat-label" style="text-align:center">콘텐츠 SEO</div></div>
+        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#06b6d4">91</div><div class="stat-label" style="text-align:center">로컬 SEO</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">SEO 항목별 점검</div><button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔄 재점검</button></div>
+        <table class="data-table">
+          <thead><tr><th>항목</th><th>설명</th><th>상태</th><th>점수</th></tr></thead>
+          <tbody>
+            <tr><td>메타 title</td><td>60자 이내, 핵심 키워드 포함</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
+            <tr><td>메타 description</td><td>160자 이내, 전환 유도 문구</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
+            <tr><td>Schema.org 구조화 데이터</td><td>LocalBusiness + MedicalBusiness</td><td><span class="badge badge-green">통과</span></td><td>15/15</td></tr>
+            <tr><td>OG 태그 (소셜 공유)</td><td>og:title, og:description, og:image</td><td><span class="badge badge-yellow">부분</span></td><td>6/10</td></tr>
+            <tr><td>Canonical URL</td><td>중복 콘텐츠 방지</td><td><span class="badge badge-green">통과</span></td><td>5/5</td></tr>
+            <tr><td>H1 태그</td><td>페이지당 1개, 핵심 키워드 포함</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
+            <tr><td>이미지 alt 텍스트</td><td>모든 이미지에 alt 속성 필요</td><td><span class="badge badge-red">미흡</span></td><td>4/10</td></tr>
+            <tr><td>robots.txt</td><td>AI 크롤러 허용 여부</td><td><span class="badge badge-yellow">부분</span></td><td>3/5</td></tr>
+            <tr><td>Core Web Vitals</td><td>LCP, FID, CLS 기준치 이내</td><td><span class="badge badge-green">통과</span></td><td>15/15</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 마케팅 리포트 ══ -->
+    <div id="section-reports" class="admin-section">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📈 월간 마케팅 성과 리포트</div>
+          <div style="display:flex;gap:8px">
+            <select class="btn btn-outline btn-sm"><option>2025년 6월</option><option>2025년 5월</option><option>2025년 4월</option></select>
+            <button class="btn btn-p btn-sm" onclick="downloadReport()">📥 PDF 다운로드</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+          <div style="background:var(--soft);border-radius:var(--r12);padding:20px;text-align:center"><div style="font-size:28px;font-weight:700;color:var(--p)">1,842</div><div style="font-size:13px;color:var(--mute);margin-top:4px">월 방문자</div><div style="font-size:12px;color:#16a34a;margin-top:4px">전월 +18%</div></div>
+          <div style="background:var(--soft);border-radius:var(--r12);padding:20px;text-align:center"><div style="font-size:28px;font-weight:700;color:var(--p)">48</div><div style="font-size:13px;color:var(--mute);margin-top:4px">상담 신청</div><div style="font-size:12px;color:#16a34a;margin-top:4px">전월 +24%</div></div>
+          <div style="background:var(--soft);border-radius:var(--r12);padding:20px;text-align:center"><div style="font-size:28px;font-weight:700;color:var(--p)">2.6%</div><div style="font-size:13px;color:var(--mute);margin-top:4px">전환율</div><div style="font-size:12px;color:#16a34a;margin-top:4px">업계 평균 0.8%</div></div>
+        </div>
+        <div style="background:var(--soft);border-radius:var(--r12);padding:20px">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px">이달의 주요 성과</h4>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+            <li style="font-size:13px;color:var(--ink2)">✅ GEO최적화 키워드 네이버 1위 달성</li>
+            <li style="font-size:13px;color:var(--ink2)">✅ 블로그 유기 트래픽 전월 대비 +32%</li>
+            <li style="font-size:13px;color:var(--ink2)">✅ 카카오채널 구독자 200명 증가</li>
+            <li style="font-size:13px;color:var(--ink2)">⚠️ 구글 이미지 alt 태그 개선 필요</li>
+            <li style="font-size:13px;color:var(--ink2)">⚠️ OG image 태그 설정 미완료</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 데일리 카드뉴스 ══ -->
+    <div id="section-cardnews" class="admin-section">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🗞️ 데일리 마케팅 리포트 카드뉴스</div>
+          <button class="btn btn-p btn-sm" onclick="generateCardnews()">🤖 오늘 카드뉴스 생성</button>
+        </div>
+        <div style="background:rgba(83,58,253,.04);border:1px solid rgba(83,58,253,.2);border-radius:var(--r12);padding:16px;margin-bottom:20px;font-size:13px;color:var(--ink2)">
+          💡 매일 오전 9시 최신 병원 마케팅 트렌드를 수집하여 카드뉴스 형식으로 자동 생성합니다. 생성된 카드뉴스는 인스타그램·블로그에 바로 업로드할 수 있습니다.
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px" id="cardnews-grid">
+          <!-- 오늘 카드뉴스 -->
+          <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1)">
+            <div style="background:linear-gradient(135deg,var(--p),var(--bd));padding:24px;color:#fff;aspect-ratio:1">
+              <div style="font-size:10px;font-weight:600;letter-spacing:.1em;opacity:.7;margin-bottom:8px">TODAY'S REPORT · 2025.06.25</div>
+              <div style="font-size:20px;font-weight:700;line-height:1.3;margin-bottom:12px">ChatGPT에서<br>병원이 추천되는<br>3가지 조건</div>
+              <div style="font-size:12px;opacity:.8">병원마케팅 베놈 데일리 인사이트</div>
+            </div>
+            <div style="padding:16px;background:#fff">
+              <div style="font-size:12px;color:var(--mute);margin-bottom:8px">2025.06.25</div>
+              <p style="font-size:13px;color:var(--ink2);line-height:1.6">Schema.org 구조화 데이터 적용, AI 친화적 콘텐츠 구조, 권위 사이트 인용 — 이 세 가지를 갖춘 병원이 ChatGPT 답변에 포함됩니다.</p>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-p btn-sm" onclick="toast('인스타그램 업로드 준비 완료!')">📤 인스타 업로드</button>
+                <button class="btn btn-outline btn-sm" onclick="toast('이미지 저장 완료!')">💾 저장</button>
+              </div>
+            </div>
+          </div>
+          <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1)">
+            <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:24px;color:#fff;aspect-ratio:1">
+              <div style="font-size:10px;font-weight:600;letter-spacing:.1em;opacity:.7;margin-bottom:8px">MARKETING TIP · 2025.06.24</div>
+              <div style="font-size:20px;font-weight:700;line-height:1.3;margin-bottom:12px">의료광고에서<br>절대 쓰면 안 되는<br>표현 TOP 5</div>
+              <div style="font-size:12px;opacity:.8">병원마케팅 베놈 데일리 인사이트</div>
+            </div>
+            <div style="padding:16px;background:#fff">
+              <div style="font-size:12px;color:var(--mute);margin-bottom:8px">2025.06.24</div>
+              <p style="font-size:13px;color:var(--ink2);line-height:1.6">의료법 위반 표현을 미리 알면 광고 심의에서 걸리지 않습니다. 성공 보장·치료 후기·지역 1위 등 금지 표현을 정리했습니다.</p>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-p btn-sm" onclick="toast('인스타그램 업로드 준비 완료!')">📤 인스타 업로드</button>
+                <button class="btn btn-outline btn-sm" onclick="toast('이미지 저장 완료!')">💾 저장</button>
+              </div>
+            </div>
+          </div>
+          <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);opacity:.6">
+            <div style="background:#e2e8f0;padding:24px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+              <div style="font-size:48px">📅</div>
+              <div style="font-size:14px;color:var(--mute);font-weight:500">내일 카드뉴스</div>
+              <div style="font-size:12px;color:var(--mute)">매일 오전 9시 자동 생성</div>
+            </div>
+            <div style="padding:16px;background:#fff">
+              <div style="font-size:12px;color:var(--mute)">2025.06.26 · 예정</div>
+              <div style="font-size:13px;color:var(--mute);margin-top:8px">자동 생성 예정</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 설정 ══ -->
+    <div id="section-settings" class="admin-section">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-head"><div class="card-title">⚙️ SEO 기본 설정</div></div>
+          <div class="form-group"><label>사이트 타이틀</label><input type="text" value="병원마케팅 베놈 — 대한민국 No.1 병원 전문 마케팅 에이전시"></div>
+          <div class="form-group"><label>메타 설명</label><textarea rows="3">치과·피부과·정형외과·한의원·성형외과 병원 전문 마케팅 에이전시. GEO·AEO·SEO 삼중 최적화로 AI 검색부터 네이버까지.</textarea></div>
+          <div class="form-group"><label>핵심 키워드</label><input type="text" value="병원마케팅,치과마케팅,GEO최적화,AEO최적화,의료SEO"></div>
+          <div class="form-group"><label>Canonical URL</label><input type="text" value="https://desktop-tutorial-chi-peach.vercel.app/"></div>
+          <button class="btn btn-p" onclick="toast('SEO 설정이 저장되었습니다.')">저장</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📞 연락처 설정</div></div>
+          <div class="form-group"><label>대표 전화</label><input type="text" value="1661-4142"></div>
+          <div class="form-group"><label>카카오 채널</label><input type="text" value="https://pf.kakao.com/_jxjxdcxj"></div>
+          <div class="form-group"><label>이메일</label><input type="text" value="venom@venom.co.kr"></div>
+          <div class="form-group"><label>주소</label><input type="text" value="서울시 강남구 테헤란로"></div>
+          <div class="form-group"><label>API 키 (네이버 검색광고)</label><input type="password" value="••••••••••••••••••••••••••••••••"></div>
+          <button class="btn btn-p" onclick="toast('연락처 설정이 저장되었습니다.')">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 계정 관리 ══ -->
+    <div id="section-users" class="admin-section">
+      <div class="card">
+        <div class="card-head"><div class="card-title">👤 계정 관리</div><button class="btn btn-p btn-sm" onclick="toast('계정 추가 기능 준비 중')">+ 계정 추가</button></div>
+        <table class="data-table">
+          <thead><tr><th>이름</th><th>이메일</th><th>권한</th><th>최근 로그인</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr><td>관리자</td><td>admin@venom.co.kr</td><td><span class="badge badge-blue">최고관리자</span></td><td>방금 전</td><td><span class="badge badge-green">활성</span></td></tr>
+            <tr><td>마케팅 담당자</td><td>marketing@venom.co.kr</td><td><span class="badge badge-green">편집자</span></td><td>오늘 14:30</td><td><span class="badge badge-green">활성</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 미디어 라이브러리 ══ -->
+    <div id="section-media" class="admin-section">
+      <div class="card">
+        <div class="card-head"><div class="card-title">🖼️ 미디어 라이브러리</div><button class="btn btn-p btn-sm" onclick="toast('파일 업로드 준비 중')">+ 파일 업로드</button></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
+          <div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;cursor:pointer" onclick="toast('이미지 선택됨')">
+            <div style="height:100px;background:linear-gradient(135deg,var(--p),var(--bd));display:flex;align-items:center;justify-content:center;font-size:32px">🏥</div>
+            <div style="padding:8px;font-size:11px;color:var(--mute)">hospital-hero.jpg</div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;cursor:pointer" onclick="toast('이미지 선택됨')">
+            <div style="height:100px;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;font-size:32px">🦷</div>
+            <div style="padding:8px;font-size:11px;color:var(--mute)">dental-main.jpg</div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;cursor:pointer" onclick="toast('이미지 선택됨')">
+            <div style="height:100px;background:linear-gradient(135deg,#064e3b,#10b981);display:flex;align-items:center;justify-content:center;font-size:32px">✨</div>
+            <div style="padding:8px;font-size:11px;color:var(--mute)">skin-banner.jpg</div>
+          </div>
+          <div style="border:2px dashed var(--border);border-radius:var(--r8);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:130px;cursor:pointer;color:var(--mute)" onclick="toast('파일 업로드 클릭')">
+            <div style="font-size:28px">+</div>
+            <div style="font-size:12px">업로드</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── MODALS ── -->
+<div class="modal-bg" id="modal-publish">
+  <div class="modal">
+    <div class="modal-head"><h3>포스팅 발행 확인</h3><button class="modal-close" onclick="closeModal('modal-publish')">×</button></div>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:20px">아래 내용으로 포스팅을 발행하시겠습니까?</p>
+    <div style="background:var(--soft);border-radius:var(--r8);padding:16px;margin-bottom:20px">
+      <div style="font-size:14px;font-weight:600;color:var(--ink)" id="modal-post-title">—</div>
+      <div style="font-size:12px;color:var(--mute);margin-top:4px" id="modal-post-meta">—</div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal('modal-publish')">취소</button>
+      <button class="btn btn-p" onclick="confirmPublish()">발행하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+// ── SECTION ROUTING ──
+var sections=['dashboard','blog','pages','visitors','keywords','sources','seo','reports','cardnews','settings','users','media'];
+var titles={dashboard:'대시보드',blog:'블로그 포스팅',pages:'페이지 관리',visitors:'방문자 분석',keywords:'키워드 현황',sources:'유입 출처',seo:'SEO 점수',reports:'마케팅 리포트',cardnews:'데일리 카드뉴스',settings:'사이트 설정',users:'계정 관리',media:'미디어 라이브러리'};
+function showSection(id){
+  sections.forEach(function(s){
+    var el=document.getElementById('section-'+s);
+    if(el)el.classList.toggle('active',s===id);
+  });
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    n.classList.remove('active');
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── TABS ──
+function switchTab(tabEl,tabId){
+  tabEl.closest('.card,div').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tabEl.classList.add('active');
+  ['tab-write','tab-posts'].forEach(id=>{
+    var el=document.getElementById(id);
+    if(el)el.style.display=id===tabId?'block':'none';
+  });
+}
+
+// ── TOAST ──
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── MODALS ──
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+// ── EDITOR ──
+function fmt(cmd){document.getElementById('post-editor').focus();document.execCommand(cmd)}
+function fmtH(n){
+  var ta=document.getElementById('post-editor');
+  var sel=window.getSelection().toString();
+  var txt='\n<h'+n+'>'+(sel||'제목')+'</h'+n+'>\n';
+  ta.value+=txt;
+}
+function insertList(){
+  document.getElementById('post-editor').value+='\n<ul>\n  <li>항목 1</li>\n  <li>항목 2</li>\n  <li>항목 3</li>\n</ul>\n';
+}
+function insertTable(){
+  document.getElementById('post-editor').value+='\n<table class="dc-table">\n  <thead><tr><th>제목1</th><th>제목2</th></tr></thead>\n  <tbody>\n    <tr><td>내용1</td><td>내용2</td></tr>\n  </tbody>\n</table>\n';
+}
+function insertFaq(){
+  document.getElementById('post-editor').value+='\n<h3>자주 묻는 질문</h3>\n<p><strong>Q. 질문을 입력하세요?</strong></p>\n<p>A. 답변을 입력하세요.</p>\n';
+}
+function insertCta(){
+  document.getElementById('post-editor').value+='\n<div class="dc-cta-box">\n  <h3>CTA 제목</h3>\n  <p>설명 문구</p>\n  <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p">💬 카카오상담</a>\n</div>\n';
+}
+function aiWrite(){
+  document.getElementById('ai-draft-panel').style.display='block';
+  document.getElementById('ai-draft-panel').scrollIntoView({behavior:'smooth'});
+}
+function generateAI(){
+  var topic=document.getElementById('ai-topic').value||'병원 마케팅 전략';
+  toast('AI 초안 생성 중... (실제 배포 시 AI API 연동)');
+  setTimeout(function(){
+    document.getElementById('post-editor').value='<h2>'+topic+'</h2>\n\n<p>이 글은 AI가 생성한 초안입니다. 실제 배포 시 OpenAI·Claude API 연동을 통해 자동으로 콘텐츠가 생성됩니다.</p>\n\n<h3>핵심 포인트</h3>\n<ul>\n  <li>첫 번째 핵심 내용</li>\n  <li>두 번째 핵심 내용</li>\n  <li>세 번째 핵심 내용</li>\n</ul>\n\n<h3>자주 묻는 질문</h3>\n<p><strong>Q. 관련 질문?</strong></p>\n<p>A. 전문적인 답변 내용.</p>';
+    toast('AI 초안이 생성되었습니다. 내용을 확인하고 수정하세요.');
+    document.getElementById('ai-draft-panel').style.display='none';
+  },1500);
+}
+
+// ── PUBLISH ──
+// ── BLOG LOCALSTORAGE ──
+var BLOG_KEY='venom_blog_posts';
+function getBlogPosts(){try{return JSON.parse(localStorage.getItem(BLOG_KEY)||'[]');}catch(e){return[];}}
+function saveBlogPosts(posts){localStorage.setItem(BLOG_KEY,JSON.stringify(posts));}
+function getPostForm(status){
+  return {
+    id:'post_'+Date.now(),
+    title:document.getElementById('post-title').value,
+    cat:document.getElementById('post-cat').value,
+    seoTitle:document.getElementById('post-seo-title').value,
+    keywords:document.getElementById('post-keywords').value,
+    meta:document.getElementById('post-meta').value,
+    content:document.getElementById('post-editor').value,
+    status:status,
+    views:0,
+    date:new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\. /g,'.').replace('.','')
+  };
+}
+function clearPostForm(){
+  ['post-title','post-seo-title','post-keywords','post-meta','post-editor'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('post-cat').selectedIndex=0;
+  editingPostId=null;
+}
+var editingPostId=null;
+function saveDraft(){
+  var title=document.getElementById('post-title').value;
+  if(!title){toast('제목을 입력해주세요.');return;}
+  var posts=getBlogPosts();
+  var post=getPostForm('초안');
+  if(editingPostId){
+    var idx=posts.findIndex(function(p){return p.id===editingPostId;});
+    if(idx>-1){post.id=editingPostId;posts[idx]=post;}
+  }else{posts.unshift(post);}
+  saveBlogPosts(posts);
+  renderPostList();
+  toast('초안이 저장되었습니다.');
+  clearPostForm();
+}
+function publishPost(){
+  var title=document.getElementById('post-title').value;
+  if(!title){toast('제목을 입력해주세요.');return;}
+  document.getElementById('modal-post-title').textContent=title;
+  document.getElementById('modal-post-meta').textContent=document.getElementById('post-meta').value||'메타 설명 없음';
+  document.getElementById('modal-publish').classList.add('open');
+}
+function confirmPublish(){
+  closeModal('modal-publish');
+  var posts=getBlogPosts();
+  var post=getPostForm('발행');
+  if(editingPostId){
+    var idx=posts.findIndex(function(p){return p.id===editingPostId;});
+    if(idx>-1){post.id=editingPostId;posts[idx]=post;}
+  }else{posts.unshift(post);}
+  saveBlogPosts(posts);
+  renderPostList();
+  toast('포스팅이 발행되었습니다! ✅');
+  clearPostForm();
+  switchTab(document.querySelector('[onclick*="tab-posts"]'),'tab-posts');
+}
+function renderPostList(){
+  var posts=getBlogPosts();
+  var tbody=document.getElementById('posts-list-body');
+  if(!tbody)return;
+  if(posts.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--mute);padding:24px">작성된 포스팅이 없습니다.</td></tr>';return;}
+  tbody.innerHTML=posts.map(function(p){
+    var badgeClass=p.status==='발행'?'badge-green':'badge-yellow';
+    return '<tr><td>'+p.title+'</td><td>'+p.cat+'</td><td><span class="badge '+badgeClass+'">'+p.status+'</span></td><td>'+(p.views||'—')+'</td><td>'+(p.date||'—')+'</td><td><button class="btn btn-outline btn-sm" onclick="editPostById(\''+p.id+'\')">수정</button> <button class="btn btn-outline btn-sm" style="color:#dc2626" onclick="deletePost(\''+p.id+'\')">삭제</button></td></tr>';
+  }).join('');
+}
+function editPostById(id){
+  var posts=getBlogPosts();
+  var post=posts.find(function(p){return p.id===id;});
+  if(!post)return;
+  editingPostId=id;
+  document.getElementById('post-title').value=post.title||'';
+  document.getElementById('post-cat').value=post.cat||'GEO/AI';
+  document.getElementById('post-seo-title').value=post.seoTitle||'';
+  document.getElementById('post-keywords').value=post.keywords||'';
+  document.getElementById('post-meta').value=post.meta||'';
+  document.getElementById('post-editor').value=post.content||'';
+  switchTab(document.querySelector('[onclick*="tab-write"]'),'tab-write');
+  toast('수정 모드입니다. 내용을 변경 후 발행하세요.');
+}
+function deletePost(id){
+  if(!confirm('이 포스팅을 삭제하시겠습니까?'))return;
+  var posts=getBlogPosts().filter(function(p){return p.id!==id;});
+  saveBlogPosts(posts);
+  renderPostList();
+  toast('삭제되었습니다.');
+}
+function editPost(){toast('수정 모드 진입 (연동 준비 중)')}
+// 초기 렌더링
+document.addEventListener('DOMContentLoaded',function(){renderPostList();renderKeywordTable();});
+
+// ── OTHER ──
+function logout(){if(confirm('로그아웃 하시겠습니까?'))window.location.href='index.html';}
+function updateChart(v){toast(v+' 데이터 로딩 중')}
+// ── KEYWORD TOOL ──
+var kwDatabase={
+  '치과마케팅':{pc:1820,mo:2400,comp:0.78,cpc:2100,cat:'치과',naver:3,google:8,chg:2,visits:142},
+  '임플란트마케팅':{pc:980,mo:1340,comp:0.81,cpc:3200,cat:'치과',naver:5,google:11,chg:1,visits:98},
+  '피부과마케팅':{pc:1240,mo:1900,comp:0.71,cpc:1800,cat:'피부과',naver:5,google:12,chg:1,visits:98},
+  '병원마케팅':{pc:3100,mo:4800,comp:0.92,cpc:4500,cat:'종합',naver:8,google:15,chg:0,visits:87},
+  '한의원마케팅':{pc:780,mo:1200,comp:0.65,cpc:1400,cat:'한의원',naver:6,google:18,chg:-1,visits:52},
+  'GEO최적화':{pc:210,mo:480,comp:0.28,cpc:900,cat:'SEO',naver:1,google:3,chg:4,visits:64},
+  'AEO최적화':{pc:140,mo:290,comp:0.22,cpc:750,cat:'SEO',naver:2,google:5,chg:2,visits:38},
+  'SEO최적화':{pc:2400,mo:3900,comp:0.88,cpc:3800,cat:'SEO',naver:14,google:22,chg:-2,visits:31},
+  '성형외과마케팅':{pc:620,mo:980,comp:0.74,cpc:2600,cat:'성형외과',naver:11,google:24,chg:0,visits:29},
+  '정형외과마케팅':{pc:490,mo:820,comp:0.61,cpc:1600,cat:'정형외과',naver:7,google:16,chg:1,visits:44},
+  '안과마케팅':{pc:380,mo:640,comp:0.58,cpc:1900,cat:'안과',naver:9,google:19,chg:0,visits:27},
+  '의료광고심의':{pc:270,mo:510,comp:0.34,cpc:1100,cat:'심의',naver:4,google:9,chg:3,visits:56}
+};
+var kwRelated={
+  '치과마케팅':['치과 네이버플레이스','치과 블로그 SEO','임플란트 광고','치과 SNS 마케팅'],
+  '피부과마케팅':['피부과 보톡스 광고','레이저 마케팅','피부과 인스타','피부과 블로그'],
+  '병원마케팅':['병원 SEO','의원 마케팅','의료 광고','병원 네이버 광고'],
+  default:['병원마케팅','네이버 SEO','블로그 마케팅','의료광고','콘텐츠 마케팅']
+};
+var kwTracking=Object.keys(kwDatabase);
+
+function compLabel(v){return v>=0.8?'<span class="badge badge-red">높음</span>':v>=0.5?'<span class="badge badge-yellow">중간</span>':'<span class="badge badge-green">낮음</span>';}
+function chgLabel(v){return v>0?'<span style="color:#16a34a">↑'+v+'</span>':v<0?'<span style="color:#dc2626">↓'+Math.abs(v)+'</span>':'<span style="color:var(--mute)">—</span>';}
+
+function renderKeywordTable(){
+  var filter=document.getElementById('kw-filter')?document.getElementById('kw-filter').value:'all';
+  var body=document.getElementById('kw-table-body');
+  if(!body)return;
+  var rows=kwTracking.filter(function(k){
+    var d=kwDatabase[k];if(!d)return false;
+    if(filter==='top')return d.naver<=10||d.google<=10;
+    if(filter==='up')return d.chg>0;
+    if(filter==='down')return d.chg<0;
+    return true;
+  });
+  body.innerHTML=rows.map(function(k){
+    var d=kwDatabase[k];
+    return '<tr><td><strong>'+k+'</strong></td><td><span class="badge badge-blue" style="font-size:10px">'+d.cat+'</span></td><td>'+(d.naver<=3?'<strong style="color:var(--p)">':'')+d.naver+'위'+(d.naver<=3?'</strong>':'')+'</td><td>'+d.google+'위</td><td><strong>'+(d.pc+d.mo).toLocaleString()+'</strong><span style="font-size:11px;color:var(--mute)"> (PC:'+d.pc.toLocaleString()+'/MO:'+d.mo.toLocaleString()+')</span></td><td>'+compLabel(d.comp)+'</td><td>'+chgLabel(d.chg)+'</td><td>'+d.visits+'</td><td><button class="btn btn-outline btn-sm" style="font-size:11px" onclick="removeFromTracking(\''+k+'\')">삭제</button></td></tr>';
+  }).join('');
+  document.getElementById('kw-count').textContent=kwTracking.length;
+  var top3=kwTracking.filter(function(k){var d=kwDatabase[k];return d&&(d.naver<=3||d.google<=3);}).length;
+  document.getElementById('kw-top3').textContent=top3;
+}
+
+function lookupKeyword(){
+  var raw=document.getElementById('kw-input').value.trim();
+  if(!raw)return toast('키워드를 입력하세요.');
+  var kws=raw.split(/[,，\s]+/).map(function(s){return s.trim();}).filter(Boolean).slice(0,5);
+  document.getElementById('kw-loading').style.display='block';
+  document.getElementById('kw-result-wrap').style.display='none';
+  setTimeout(function(){
+    document.getElementById('kw-loading').style.display='none';
+    document.getElementById('kw-result-wrap').style.display='block';
+    var cards=kws.map(function(kw){
+      var d=kwDatabase[kw];
+      var pc=d?d.pc:Math.round(100+Math.random()*3000);
+      var mo=d?d.mo:Math.round(pc*1.3+Math.random()*500);
+      var comp=d?d.comp:Math.round(30+Math.random()*60)/100;
+      var cpc=d?d.cpc:Math.round(800+Math.random()*3000);
+      return '<div style="background:var(--soft);border-radius:var(--r12);padding:16px;border:1px solid var(--border)">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">'+kw+'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:6px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">PC 월 검색</span><strong>'+pc.toLocaleString()+'</strong></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">모바일 월 검색</span><strong>'+mo.toLocaleString()+'</strong></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">합계</span><strong style="color:var(--p)">'+(pc+mo).toLocaleString()+'</strong></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px;padding-top:8px;border-top:1px solid var(--border)"><span style="color:var(--mute)">경쟁도</span>'+compLabel(comp)+'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">예상 CPC</span><strong>₩'+cpc.toLocaleString()+'</strong></div>'
+        +'</div></div>';
+    });
+    document.getElementById('kw-result-cards').innerHTML=cards.join('');
+    var mainKw=kws[0];
+    var rels=(kwRelated[mainKw]||kwRelated.default).concat(kws.slice(1).map(function(k){return k+' 마케팅';}));
+    document.getElementById('kw-related').innerHTML=rels.map(function(r){
+      return '<span onclick="document.getElementById(\'kw-input\').value=\''+r+'\';lookupKeyword()" style="cursor:pointer;padding:5px 12px;background:#fff;border:1px solid var(--border);border-radius:9999px;font-size:12px;color:var(--p);transition:all .15s" onmouseover="this.style.background=\'var(--p)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'#fff\';this.style.color=\'var(--p)\'">'+r+'</span>';
+    }).join('');
+  },900);
+}
+
+function addToTracking(){
+  var raw=document.getElementById('kw-input').value.trim();
+  if(!raw)return toast('먼저 키워드를 입력하세요.');
+  var kws=raw.split(/[,，\s]+/).map(function(s){return s.trim();}).filter(Boolean);
+  var added=0;
+  kws.forEach(function(kw){
+    if(!kwTracking.includes(kw)){kwTracking.push(kw);added++;}
+    if(!kwDatabase[kw]){kwDatabase[kw]={pc:Math.round(200+Math.random()*2000),mo:Math.round(300+Math.random()*3000),comp:Math.round(30+Math.random()*60)/100,cpc:Math.round(800+Math.random()*3000),cat:'기타',naver:Math.round(5+Math.random()*45),google:Math.round(8+Math.random()*60),chg:0,visits:0};}
+  });
+  if(added>0){renderKeywordTable();toast(added+'개 키워드가 추적 목록에 추가되었습니다.');}
+  else toast('이미 추적 중인 키워드입니다.');
+}
+
+function removeFromTracking(kw){
+  kwTracking=kwTracking.filter(function(k){return k!==kw;});
+  renderKeywordTable();
+  toast('"'+kw+'" 키워드 추적이 해제되었습니다.');
+}
+
+function runKeywordUpdate(){
+  toast('키워드 순위 갱신 중...');
+  setTimeout(function(){
+    kwTracking.forEach(function(k){
+      var d=kwDatabase[k];if(!d)return;
+      d.chg=Math.round(-2+Math.random()*4);
+      d.naver=Math.max(1,d.naver-d.chg);
+    });
+    renderKeywordTable();
+    toast('✅ 순위 갱신 완료 (시뮬레이션)');
+  },1200);
+}
+function runSeoAudit(){toast('SEO 재점검 중...')}
+function downloadReport(){toast('PDF 생성 중... (실제 배포 시 자동 생성)')}
+function generateCardnews(){toast('오늘 카드뉴스 생성 중... (AI API 연동 필요)')}
+
+// ── VISITOR STATS INIT ──
+(function initVisitorStats(){
+  // 30-day bar chart
+  var chart=document.getElementById('v-chart-30');
+  if(chart){
+    var data=[182,204,176,221,198,215,189,243,267,231,288,254,301,278,312,289,334,298,321,267,345,312,289,367,341,358,312,378,356,248];
+    var max=Math.max.apply(null,data);
+    var today=new Date();
+    data.forEach(function(v,i){
+      var pct=Math.round(v/max*100);
+      var d=new Date(today);d.setDate(today.getDate()-29+i);
+      var label=(d.getMonth()+1)+'/'+(d.getDate());
+      var isToday=(i===29);
+      var bar=document.createElement('div');
+      bar.title=label+': '+v+'명';
+      bar.style.cssText='flex:1;background:'+(isToday?'var(--p)':'var(--bd)')+(isToday?'':' opacity:.55')+';border-radius:3px 3px 0 0;height:'+pct+'%;min-height:4px;transition:opacity .2s;cursor:default;position:relative';
+      if(!isToday)bar.style.opacity='0.45';
+      else bar.style.opacity='1';
+      chart.appendChild(bar);
+    });
+  }
+
+  // Channel bars
+  var ch=document.getElementById('v-channel-bars');
+  if(ch){
+    var channels=[
+      {name:'네이버 검색',icon:'🔍',pct:42,color:'#03c75a'},
+      {name:'직접 유입',icon:'🏠',pct:21,color:'var(--p)'},
+      {name:'카카오톡',icon:'💬',pct:16,color:'#fee500'},
+      {name:'구글',icon:'🌐',pct:12,color:'#4285f4'},
+      {name:'인스타그램',icon:'✨',pct:6,color:'#e1306c'},
+      {name:'기타',icon:'📌',pct:3,color:'var(--mute)'},
+    ];
+    ch.innerHTML=channels.map(function(c){
+      return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+c.icon+' '+c.name+'</span><span style="font-weight:600">'+c.pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+c.pct+'%;background:'+c.color+'"></div></div></div>';
+    }).join('');
+  }
+
+  // Top pages
+  var tp=document.getElementById('v-top-pages');
+  if(tp){
+    var pages=[
+      {name:'/치과마케팅',v:412},{name:'/임플란트마케팅',v:334},{name:'/피부과마케팅',v:289},
+      {name:'/GEO-최적화',v:241},{name:'/contact',v:198}
+    ];
+    var maxV=pages[0].v;
+    tp.innerHTML=pages.map(function(p,i){
+      return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--p);font-weight:600">'+(i+1)+'.</span> <span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span><span style="color:var(--mute)">'+p.v+'</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+Math.round(p.v/maxV*100)+'%;background:var(--p)"></div></div></div>';
+    }).join('');
+  }
+
+  // Regions
+  var rg=document.getElementById('v-regions');
+  if(rg){
+    var regions=[
+      {name:'서울',pct:38},{name:'경기',pct:24},{name:'부산',pct:9},
+      {name:'인천',pct:7},{name:'대구',pct:6},{name:'기타',pct:16}
+    ];
+    rg.innerHTML=regions.map(function(r){
+      return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+r.name+'</span><span style="color:var(--mute)">'+r.pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+r.pct+'%;background:var(--bd)"></div></div></div>';
+    }).join('');
+  }
+
+  // Hourly chart
+  var hourly=document.getElementById('v-hourly');
+  if(hourly){
+    var hours=[2,1,1,1,2,4,8,14,21,28,32,34,36,30,27,24,29,35,38,34,28,20,12,6];
+    var maxH=Math.max.apply(null,hours);
+    hourly.innerHTML=hours.map(function(v,i){
+      var pct=Math.round(v/maxH*100);
+      var isPeak=(i>=9&&i<=20);
+      return '<div style="flex:1;background:'+(isPeak?'var(--p)':'var(--bd)')+';opacity:'+(isPeak?'0.8':'0.35')+';border-radius:2px 2px 0 0;height:'+pct+'%;min-height:2px" title="'+i+'시: '+v+'명"></div>';
+    }).join('');
+  }
+})();
+
+// ── REALTIME SIMULATION ──
+var logMessages=[
+  {icon:'🔍',bg:'#eff6ff',path:'/치과마케팅',meta:'네이버 검색 · 치과마케팅 · 강남구',badge:'신규',bc:'badge-blue'},
+  {icon:'💬',bg:'#f0fdf4',path:'/contact → 상담신청',meta:'카카오톡 · 송파구',badge:'전환',bc:'badge-green'},
+  {icon:'🤖',bg:'#fff7ed',path:'/GEO-최적화',meta:'구글 검색 · GEO 병원 · 서초구',badge:'신규',bc:'badge-blue'},
+  {icon:'✨',bg:'#f5f3ff',path:'/피부과마케팅',meta:'인스타그램 · 마포구',badge:'재방문',bc:'badge-blue'},
+];
+var logIdx=0;
+setInterval(function(){
+  var log=logMessages[logIdx%logMessages.length];
+  var container=document.getElementById('visitor-log');
+  if(!container)return;
+  var div=document.createElement('div');
+  div.className='log-item';
+  div.innerHTML='<div class="log-icon" style="background:'+log.bg+'">'+log.icon+'</div><div class="log-detail"><div class="log-path">'+log.path+'</div><div class="log-meta">'+log.meta+' · 방금 전</div></div><div class="log-badge"><span class="badge '+log.bc+'">'+log.badge+'</span></div>';
+  container.insertBefore(div,container.firstChild);
+  if(container.children.length>8)container.removeChild(container.lastChild);
+  logIdx++;
+  // update stat
+  var sv=document.getElementById('stat-visitors');
+  if(sv)sv.textContent=parseInt(sv.textContent.replace(',',''))+1;
+},8000);
+
+// ── RESPONSIVE ──
+if(window.innerWidth<900)document.getElementById('menu-btn').style.display='block';
+window.addEventListener('resize',function(){
+  document.getElementById('menu-btn').style.display=window.innerWidth<900?'block':'none';
+});
+
+// ── LAST UPDATED ──
+setInterval(function(){
+  var el=document.getElementById('last-updated');
+  if(el)el.textContent='마지막 업데이트: 방금 전';
+},30000);
+</script>
+</body>
+</html>
