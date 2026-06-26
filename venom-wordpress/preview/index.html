@@ -726,22 +726,22 @@ body{padding-top:0}
   <div class="stat-bar">
     <div class="stat-bar-inner">
       <div class="stat-bar-item">
-        <span class="sb-num">300<span style="font-size:22px;font-weight:700">%</span></span>
+        <span class="sb-num"><span class="count-up" data-target="300" data-suffix="%">0</span><span style="font-size:22px;font-weight:700" class="count-suffix">%</span></span>
         <span class="sb-label">평균 신환 증가율</span>
       </div>
       <div class="sb-div"></div>
       <div class="stat-bar-item">
-        <span class="sb-num">900<span style="font-size:22px;font-weight:700">+</span></span>
+        <span class="sb-num"><span class="count-up" data-target="900" data-suffix="+">0</span><span style="font-size:22px;font-weight:700" class="count-suffix">+</span></span>
         <span class="sb-label">병원 운영 사례</span>
       </div>
       <div class="sb-div"></div>
       <div class="stat-bar-item">
-        <span class="sb-num">98<span style="font-size:22px;font-weight:700">%</span></span>
+        <span class="sb-num"><span class="count-up" data-target="98" data-suffix="%">0</span><span style="font-size:22px;font-weight:700" class="count-suffix">%</span></span>
         <span class="sb-label">재계약률</span>
       </div>
       <div class="sb-div"></div>
       <div class="stat-bar-item">
-        <span class="sb-num">7<span style="font-size:22px;font-weight:700">년</span></span>
+        <span class="sb-num"><span class="count-up" data-target="7" data-suffix="년">0</span><span style="font-size:22px;font-weight:700" class="count-suffix">년</span></span>
         <span class="sb-label">병원마케팅 전문</span>
       </div>
     </div>
@@ -6783,6 +6783,46 @@ window.addEventListener('popstate',function(e){
     else{sp(hash,false);history.replaceState({page:hash},'','#'+hash);}
   } else {
     history.replaceState({page:'home'},'','#home');
+  }
+})();
+</script>
+<script>
+// ── 카운터 애니메이션 ──────────────────────────────────────
+(function(){
+  function animateCounters(){
+    var els=document.querySelectorAll('.count-up');
+    els.forEach(function(el){
+      if(el.dataset.done) return;
+      el.dataset.done='1';
+      var target=parseInt(el.dataset.target,10);
+      var duration=1800;
+      var startTime=null;
+      // easeOutExpo
+      function ease(t){ return t===1?1:1-Math.pow(2,-10*t); }
+      function step(ts){
+        if(!startTime) startTime=ts;
+        var progress=Math.min((ts-startTime)/duration,1);
+        el.textContent=Math.floor(ease(progress)*target);
+        if(progress<1) requestAnimationFrame(step);
+        else el.textContent=target;
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // IntersectionObserver로 stat-bar가 화면에 들어올 때 실행
+  var bar=document.querySelector('.stat-bar');
+  if(bar && 'IntersectionObserver' in window){
+    var obs=new IntersectionObserver(function(entries){
+      if(entries[0].isIntersecting){
+        animateCounters();
+        obs.disconnect();
+      }
+    },{threshold:0.3});
+    obs.observe(bar);
+  } else if(bar){
+    // 폴백: 페이지 로드 후 즉시 실행
+    setTimeout(animateCounters, 300);
   }
 })();
 </script>
