@@ -5446,6 +5446,7 @@ function openBlogPost(id) {
   var post = blogPosts[id];
   if (!post) return;
   sp('blog-post');
+  sessionStorage.setItem('lastBlogPostId', id);
 
   // 해시태그 행 + 본문
   var el = document.getElementById('blog-post-content');
@@ -7555,6 +7556,12 @@ window.addEventListener('popstate',function(e){
   var cats=Object.keys(pages||{});
   if(hash&&hash!=='home'){
     if(cats.indexOf(hash)>=0){sp('detail',false);ld(hash,false);history.replaceState({page:'detail',cat:hash},'','#'+hash);}
+    else if(hash==='blog-post'){
+      // 새로고침 시 마지막 블로그 포스트 복원
+      var lastPost=sessionStorage.getItem('lastBlogPostId');
+      if(lastPost&&blogPosts[lastPost]){openBlogPost(lastPost);}
+      else{sp('blog',false);history.replaceState({page:'blog'},'','#blog');}
+    }
     else{sp(hash,false);history.replaceState({page:hash},'','#'+hash);}
   } else {
     history.replaceState({page:'home'},'','#home');
