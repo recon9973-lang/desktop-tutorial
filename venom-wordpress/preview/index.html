@@ -5443,11 +5443,14 @@ function searchByKeyword(kw) {
   kwEl.insertAdjacentHTML('afterbegin', '<button onclick="restoreKeywords()" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px">← 키워드 목록으로</button>');
 }
 
-function openBlogPost(id) {
+function openBlogPost(id, pushState) {
   var post = blogPosts[id];
   if (!post) return;
-  sp('blog-post');
-  sessionStorage.setItem('lastBlogPostId', id);
+  if(pushState!==false) history.pushState({page:'blog-post',postId:id},'','#blog-post/'+id);
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  var pg=document.getElementById('pg-blog-post');
+  if(pg){pg.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+  document.querySelectorAll('.preview-bar a').forEach(a=>{a.classList.toggle('active',a.dataset.pg==='blog-post');});
 
   // 해시태그 행 + 본문
   var el = document.getElementById('blog-post-content');
@@ -5462,11 +5465,11 @@ function openBlogPost(id) {
     var rawHtml = injectInternalLinks(post.html || '<p>내용 없음</p>');
     var tocEntries = [];
     var tocIdx = 0;
-    var processedHtml = rawHtml.replace(/<(h[23])(\s[^>]*)?>([^<]*(?:<(?!\/h[23])[^<]*)*)<\/h[23]>/gi, function(match, tag, attrs, text) {
+    var processedHtml = rawHtml.replace(/<(h[23])([^>]*)>([\s\S]*?)<\/h[23]>/gi, function(match, tag, attrs, text) {
       var anchorId = 'bh-' + (tocIdx++);
       var cleanText = text.replace(/<[^>]+>/g, '').trim();
       tocEntries.push({ id: anchorId, text: cleanText, tag: tag.toLowerCase() });
-      return '<' + tag + ' id="' + anchorId + '"' + (attrs || '') + '>' + text + '</' + tag + '>';
+      return '<' + tag + ' id="' + anchorId + '"' + attrs + '>' + text + '</' + tag + '>';
     });
     el.innerHTML = tagRow + processedHtml;
 
@@ -7550,6 +7553,7 @@ window.addEventListener('popstate',function(e){
     return;
   }
   if(st.page==='detail'&&st.cat){currentCat=st.cat;sp('detail',false);ld(st.cat,false);}
+  else if(st.page==='blog-post'&&st.postId){openBlogPost(st.postId,false);}
   else if(st.page){sp(st.page,false);}
 });
 
@@ -7559,10 +7563,10 @@ window.addEventListener('popstate',function(e){
   var cats=Object.keys(pages||{});
   if(hash&&hash!=='home'){
     if(cats.indexOf(hash)>=0){sp('detail',false);ld(hash,false);history.replaceState({page:'detail',cat:hash},'','#'+hash);}
-    else if(hash==='blog-post'){
-      // 새로고침 시 마지막 블로그 포스트 복원
-      var lastPost=sessionStorage.getItem('lastBlogPostId');
-      if(lastPost&&blogPosts[lastPost]){openBlogPost(lastPost);}
+    else if(hash.indexOf('blog-post')===0){
+      // #blog-post/postId 형태로 포스트 복원
+      var postId=hash.split('/')[1]||'';
+      if(postId&&blogPosts[postId]){openBlogPost(postId,false);}
       else{sp('blog',false);history.replaceState({page:'blog'},'','#blog');}
     }
     else{sp(hash,false);history.replaceState({page:hash},'','#'+hash);}
