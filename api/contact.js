@@ -2,7 +2,7 @@ const https = require('https');
 const http = require('http');
 const { URL } = require('url');
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMWTZpBagyFVg73mH7mreWWU4FsXH1N3RIImS6Aidn35SL_2psU31jVN0nTxHU3086Og/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-HBP1brRB3LduHBm75cbZBHV5PKN1BoOIdWeh19c3tFc9GsvQa3Z6cuWQkOiI7ApIHg/exec';
 
 // POST body → Apps Script, 리다이렉트는 GET으로 follow
 function sendPost(urlStr, payload, redirects) {
