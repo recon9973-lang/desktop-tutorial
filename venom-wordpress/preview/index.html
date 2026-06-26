@@ -3953,6 +3953,108 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .sb-num{font-size:22px}
   .sb-label{font-size:9px}
 }
+
+/* ══════════════════════════════════════════
+   모바일 전역 여백·그리드 정렬
+   인라인 style 속성 오버라이드 포함
+══════════════════════════════════════════ */
+@media(max-width:768px){
+
+  /* 페이지 콘텐츠 내부 여백 */
+  .page-content{padding:20px 16px!important}
+
+  /* 섹션 상하 여백 */
+  .section,.section-wrap{padding:56px 0!important}
+  .mesh{padding:64px 0 48px!important}
+
+  /* ── 인라인 2단 그리드 → 1단 ── */
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"]{
+    grid-template-columns:1fr!important;
+  }
+
+  /* ── 인라인 3단 그리드 → 1단 ── */
+  [style*="grid-template-columns:repeat(3,1fr)"],
+  [style*="grid-template-columns: repeat(3, 1fr)"]{
+    grid-template-columns:1fr!important;
+  }
+
+  /* ── 인라인 4단 그리드 → 2단 ── */
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns: repeat(4, 1fr)"]{
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  /* ── 큰 gap 축소 ── */
+  [style*="gap:48px"]{gap:20px!important}
+  [style*="gap:40px"]{gap:18px!important}
+  [style*="gap:36px"]{gap:16px!important}
+  [style*="gap:32px"]{gap:16px!important}
+
+  /* ── 카드·박스 큰 패딩 축소 ── */
+  [style*="padding:32px"]{padding:20px 16px!important}
+  [style*="padding:28px"]{padding:18px 14px!important}
+  [style*="padding:40px"]{padding:24px 16px!important}
+  [style*="padding:44px 52px"]{padding:20px 16px!important}
+
+  /* ── 히어로 큰 폰트 ── */
+  [style*="font-size:52px"]{font-size:32px!important;letter-spacing:-0.03em!important}
+  [style*="font-size:48px"]{font-size:30px!important;letter-spacing:-0.03em!important}
+  [style*="font-size:46px"]{font-size:28px!important;letter-spacing:-0.03em!important}
+  [style*="font-size:40px"]:not(.sb-num){font-size:26px!important}
+  [style*="font-size:36px"]:not(.sb-num){font-size:24px!important}
+
+  /* ── max-width 제한 요소 전체 폭 허용 ── */
+  [style*="max-width:900px"],
+  [style*="max-width:800px"],
+  [style*="max-width:700px"]{
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+
+  /* ── 이미지·모크업 오버플로 방지 ── */
+  .mockup,.ai-mockup,.phone-mockup{
+    max-width:100%!important;
+    width:100%!important;
+  }
+
+  /* ── 내부 레이아웃 (detail 3단 등) ── */
+  .inner-layout{grid-template-columns:1fr!important}
+  .sidebar-left,.sidebar-right{display:none!important}
+
+  /* ── 블로그 그리드 ── */
+  .blog-grid{grid-template-columns:1fr!important}
+
+  /* ── 가격표 ── */
+  .price-grid,.pricing-grid,.hp-pkgs{grid-template-columns:1fr!important}
+
+  /* ── 테스티모니얼 ── */
+  .testi-grid{grid-template-columns:1fr!important}
+
+  /* ── 푸터 그리드 ── */
+  .footer-grid{grid-template-columns:1fr!important;gap:32px!important}
+  .footer-col h5{margin-top:0}
+
+  /* ── CTA 버튼 전체폭 ── */
+  .cta-band .btn,.cta-inner .btn{width:100%;justify-content:center}
+  .cta-inner{text-align:center}
+
+  /* ── 미리보기 탭 바 ── */
+  .preview-bar{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+}
+
+@media(max-width:480px){
+  /* 4단 → 1단으로 추가 축소 */
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns: repeat(4, 1fr)"]{
+    grid-template-columns:1fr!important;
+  }
+  /* 3단 auto-fill도 1단으로 */
+  [style*="minmax(260px"],[style*="minmax(280px"],[style*="minmax(300px"]{
+    grid-template-columns:1fr!important;
+  }
+}
 </style>
 <script>
 // ── 무료 진단 도구 ──
