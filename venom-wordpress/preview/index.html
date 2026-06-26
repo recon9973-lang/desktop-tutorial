@@ -6872,6 +6872,7 @@ function ld(cat, pushState){
   currentCat=cat;
   if(document.getElementById('pg-detail').classList.contains('active')===false){
     sp('detail', false);
+    return;
   }
   if(pushState!==false) history.pushState({page:'detail',cat:cat},'','#'+cat);
   var d=pages[cat];if(!d)return;
