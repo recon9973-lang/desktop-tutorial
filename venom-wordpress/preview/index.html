@@ -4006,6 +4006,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 
   /* ── max-width 제한 요소 전체 폭 허용 ── */
   [style*="max-width:900px"],
+  [style*="max-width:860px"],
   [style*="max-width:800px"],
   [style*="max-width:700px"]{
     max-width:100%!important;
@@ -4123,8 +4124,26 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 
   /* ── 문의하기 폼 ── */
   .contact-grid{grid-template-columns:1fr!important;gap:24px!important}
-  .contact-form-wrap{padding:24px 16px!important;border-radius:12px!important}
+  .contact-form-wrap{padding:20px 16px!important;border-radius:12px!important}
+  .contact-form-wrap h3{font-size:18px!important;margin-bottom:16px!important}
   .contact-info{padding:20px 16px!important;border-radius:12px!important}
+  .contact-info h3{font-size:18px!important;margin-bottom:14px!important}
+  /* 폼 행 2단 → 1단 */
+  .form-row{grid-template-columns:1fr!important;gap:0!important}
+  /* 입력 필드 크기 */
+  .form-group input,.form-group select,.form-group textarea{
+    font-size:16px!important;padding:12px 14px!important;border-radius:8px!important
+  }
+  /* 체크박스 그룹 */
+  .check-group{gap:6px 12px!important}
+  .check-item{font-size:14px!important}
+  /* 연락처 뱃지 */
+  .contact-badge{padding:14px!important}
+  .contact-badge-num{font-size:22px!important}
+  /* 상담신청 페이지 히어로 */
+  #pg-contact .section h1,[style*="마케팅 상담신청"]{font-size:28px!important;line-height:1.3!important}
+  /* 제출 버튼 */
+  #form-submit-btn{font-size:15px!important;padding:14px!important}
 
   /* ── AI 페이지 패널 ── */
   .ai-panel-grid{grid-template-columns:1fr!important}
