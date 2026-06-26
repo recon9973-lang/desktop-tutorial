@@ -5404,7 +5404,7 @@ function sp(id, pushState){
   document.querySelectorAll('.preview-bar a').forEach(a=>{
     a.classList.toggle('active',a.dataset.pg===id);
   });
-  if(id==='detail')ld(currentCat||'dental');
+  if(id==='detail'&&pushState!==false)ld(currentCat||'dental');
   // AI 서브페이지 사이드바 활성 표시
   ['geo-snav','aeo-snav','seo-snav'].forEach(function(sid){
     var el=document.getElementById(sid);if(el)el.classList.remove('snav-active');
