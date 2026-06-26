@@ -3308,16 +3308,16 @@ body{padding-top:0}
           <div class="sidebar-title">블로그 카테고리</div>
           <ul class="sidebar-nav">
             <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('all')">📋 전체 글</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('GEO/AI')">🤖 GEO/AEO</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('SEO')">🔍 SEO</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('치과')">🦷 치과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('피부과')">✨ 피부과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('한의원')">🌿 한의원</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('정형외과')">🦴 정형외과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('성형외과')">💎 성형외과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('내과')">🩺 내과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('안과')">👁 안과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('의료광고심의')">📋 의료광고심의</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('geo')">🤖 GEO/AEO</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('seo')">🔍 SEO</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('dental')">🦷 치과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('skin')">✨ 피부과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('oriental')">🌿 한의원</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('ortho')">🦴 정형외과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('plastic')">💎 성형외과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('naegwa')">🩺 내과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('angwa')">👁 안과</a></li>
+            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('shimui')">📋 의료광고심의</a></li>
             <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('지역마케팅')">📍 지역마케팅</a></li>
           </ul>
         </div>
@@ -5438,9 +5438,24 @@ function searchByKeyword(kw) {
   }
   html += '</div>';
 
+  // toc-keywords가 있으면 AI 서브페이지, 없으면 블로그 포스트 페이지
   var kwEl = document.getElementById('toc-keywords');
-  kwEl.innerHTML = html;
-  kwEl.insertAdjacentHTML('afterbegin', '<button onclick="restoreKeywords()" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px">← 키워드 목록으로</button>');
+  if (kwEl) {
+    kwEl.innerHTML = html;
+    kwEl.insertAdjacentHTML('afterbegin', '<button onclick="restoreKeywords()" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px">← 키워드 목록으로</button>');
+  } else {
+    // 블로그 포스트: 우측 사이드바에 결과 표시
+    var tagsEl = document.getElementById('blog-post-tags');
+    if (tagsEl) {
+      var existingResult = document.getElementById('kw-search-result');
+      if (existingResult) existingResult.remove();
+      var resultDiv = document.createElement('div');
+      resultDiv.id = 'kw-search-result';
+      resultDiv.style.cssText = 'margin-top:16px;border-top:1px solid var(--border);padding-top:12px;font-size:13px';
+      resultDiv.innerHTML = '<button onclick="document.getElementById(\'kw-search-result\').remove()" style="font-size:11px;color:var(--p);background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px;display:block">← 닫기</button>' + html;
+      tagsEl.closest('.toc-keywords').appendChild(resultDiv);
+    }
+  }
 }
 
 function openBlogPost(id, pushState) {
@@ -5480,7 +5495,7 @@ function openBlogPost(id, pushState) {
         var anchorId = 'bh-' + (idx++);
         h.id = anchorId;
         var isH3 = h.tagName === 'H3';
-        tocHtml += '<li' + (isH3 ? ' style="padding-left:12px;font-size:12px"' : '') + '><a href="javascript:void(0)" onclick="document.getElementById(\'' + anchorId + '\').scrollIntoView({behavior:\'smooth\'})">' + h.textContent + '</a></li>';
+        tocHtml += '<li' + (isH3 ? ' style="padding-left:12px;font-size:12px"' : '') + '><a href="javascript:void(0)" onclick="var _e=document.getElementById(\'' + anchorId + '\');window.scrollTo({top:_e.getBoundingClientRect().top+window.scrollY-80,behavior:\'smooth\'})">' + h.textContent + '</a></li>';
       });
       tocList.innerHTML = tocHtml;
     }, 100);
@@ -7420,7 +7435,13 @@ function switchAI(id){
 // ── 블로그 필터 ──
 function filterBlog(cat){
   document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
-  event.target.classList.add('active');
+  // filter-btn 중 해당 cat에 맞는 버튼 활성화 (사이드바 링크 클릭 시에도 동기화)
+  document.querySelectorAll('.filter-btn').forEach(function(b){
+    var btnCat = b.getAttribute('onclick') ? b.getAttribute('onclick').replace(/filterBlog\('([^']+)'\)/,'$1').match(/filterBlog\('([^']+)'\)/)?.[1] : null;
+    // onclick 속성에서 cat 추출
+    var m = b.getAttribute('onclick') && b.getAttribute('onclick').match(/filterBlog\('([^']+)'\)/);
+    if(m && m[1]===cat) b.classList.add('active');
+  });
   document.querySelectorAll('.blog-card').forEach(function(c){
     if(cat==='all'||c.dataset.cat===cat){c.style.display='';}else{c.style.display='none';}
   });
