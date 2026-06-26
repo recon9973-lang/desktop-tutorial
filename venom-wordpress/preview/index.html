@@ -1767,7 +1767,7 @@ body{padding-top:0}
               <div class="form-group"><label>연락처 <span class="req">*</span></label><input type="tel" name="phone" placeholder="010-0000-0000" required></div>
             </div>
             <div class="form-group"><label>월 마케팅 예산</label><select name="budget"><option>100만원 미만</option><option>100~300만원</option><option>300~500만원</option><option>500~1,000만원</option><option>1,000만원 이상</option></select></div>
-            <div class="form-group"><label>필요한 마케팅</label><div class="check-group"><label class="check-item"><input type="checkbox" name="marketing" value="네이버 광고/블로그"> 네이버 광고/블로그</label><label class="check-item"><input type="checkbox" name="marketing" value="인스타그램/SNS"> 인스타그램/SNS</label><label class="check-item"><input type="checkbox" name="marketing" value="GEO(AI검색)"> GEO (AI 검색)</label><label class="check-item"><input type="checkbox" name="marketing" value="병원 홈페이지"> 병원 홈페이지</label><label class="check-item"><input type="checkbox" name="marketing" value="유튜브"> 유튜브</label></div></div>
+            <div class="form-group"><label>필요한 마케팅</label><div class="check-group"><label class="check-item"><input type="checkbox" name="marketing" value="네이버 광고/블로그"> 네이버 광고/블로그</label><label class="check-item"><input type="checkbox" name="marketing" value="인스타그램/SNS"> 인스타그램/SNS</label><label class="check-item"><input type="checkbox" name="marketing" value="GEO(AI검색)"> GEO (AI 검색)</label><label class="check-item"><input type="checkbox" name="marketing" value="병원 홈페이지"> 병원 홈페이지</label><label class="check-item"><input type="checkbox" name="marketing" value="파워링크"> 파워링크</label><label class="check-item"><input type="checkbox" name="marketing" value="기타" id="chk-other" onchange="document.getElementById('marketing-other-wrap').style.display=this.checked?'block':'none'"> 기타</label></div><div id="marketing-other-wrap" style="display:none;margin-top:8px"><input type="text" name="marketing_other" placeholder="기타 마케팅 내용을 입력해 주세요" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none"></div></div>
             <div class="form-group"><label>문의 내용</label><textarea name="message" rows="4" placeholder="현재 마케팅 고민이나 목표를 자유롭게 적어주세요."></textarea></div>
             <div id="form-status" style="display:none;padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:12px"></div>
             <button type="submit" id="form-submit-btn" class="btn btn-p" style="width:100%;justify-content:center;font-size:16px;padding:14px">💬 상담 신청하기</button>
@@ -6213,7 +6213,11 @@ function submitForm(e){
   var status = document.getElementById('form-status');
 
   // 체크박스 값 수집
-  var checked = Array.from(form.querySelectorAll('input[name="marketing"]:checked')).map(function(el){return el.value;});
+  var checked = Array.from(form.querySelectorAll('input[name="marketing"]:checked')).map(function(el){
+    if(el.value==='기타' && form.marketing_other && form.marketing_other.value.trim())
+      return '기타('+form.marketing_other.value.trim()+')';
+    return el.value;
+  });
 
   var data = {
     hospital: form.hospital.value,
