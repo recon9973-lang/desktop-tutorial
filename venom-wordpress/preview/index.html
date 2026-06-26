@@ -3341,8 +3341,9 @@ body{padding-top:0}
     <aside class="col-right">
       <div class="toc-sticky">
         <div class="toc-title" id="blog-post-cat-label">카테고리</div>
-        <div class="toc-keywords">
-          <div class="toc-kw-title">태그</div>
+        <ul class="toc-list" id="blog-post-toc-list"></ul>
+        <div class="toc-keywords" style="margin-top:16px">
+          <div class="toc-kw-title">관련 키워드</div>
           <div id="blog-post-tags" class="toc-kw-tags"></div>
         </div>
         <div style="margin-top:20px">
@@ -5445,10 +5446,41 @@ function openBlogPost(id) {
   var post = blogPosts[id];
   if (!post) return;
   sp('blog-post');
-  // 본문
+
+  // 해시태그 행 + 본문
   var el = document.getElementById('blog-post-content');
-  if (el) el.innerHTML = post.html || '<p>내용 없음</p>';
-  // 오른쪽 사이드바: 카테고리 + 태그
+  if (el) {
+    var tagRow = '';
+    if (post.tags && post.tags.length) {
+      tagRow = '<div class="dc-tag-row" style="margin-bottom:20px">' +
+        post.tags.map(function(t){ return '<span class="dc-tag" onclick="searchByKeyword(\''+t+'\')" style="cursor:pointer">#'+t+'</span>'; }).join('') +
+        '</div>';
+    }
+    // 글 내용 내부링크 삽입
+    var html = injectInternalLinks(post.html || '<p>내용 없음</p>');
+    el.innerHTML = tagRow + html;
+
+    // 목차 빌드 (렌더링 후 h2/h3 추출)
+    var tocList = document.getElementById('blog-post-toc-list');
+    if (tocList) {
+      var headings = el.querySelectorAll('h2, h3');
+      if (headings.length) {
+        var tocHtml = '';
+        var idx = 0;
+        headings.forEach(function(h) {
+          var anchorId = 'bh-' + (idx++);
+          h.id = anchorId;
+          var isH3 = h.tagName === 'H3';
+          tocHtml += '<li' + (isH3 ? ' style="padding-left:12px;font-size:12px"' : '') + '><a href="javascript:void(0)" onclick="document.getElementById(\''+anchorId+'\').scrollIntoView({behavior:\'smooth\'})">'+h.textContent+'</a></li>';
+        });
+        tocList.innerHTML = tocHtml;
+      } else {
+        tocList.innerHTML = '';
+      }
+    }
+  }
+
+  // 오른쪽 사이드바: 카테고리 + 키워드 태그
   var catLabel = document.getElementById('blog-post-cat-label');
   if (catLabel) catLabel.textContent = post.cat || '블로그';
   var tagsEl = document.getElementById('blog-post-tags');
@@ -5457,6 +5489,7 @@ function openBlogPost(id) {
       return '<span onclick="searchByKeyword(\''+t+'\')" style="cursor:pointer">'+t+'</span>';
     }).join('');
   }
+
   // 관련 포스팅
   var relEl = document.getElementById('blog-related');
   if (relEl) {
@@ -5467,6 +5500,7 @@ function openBlogPost(id) {
       return '<a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="display:block;padding:14px 16px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r8);color:var(--ink)"><div style="font-size:12px;color:var(--p);font-weight:600;margin-bottom:4px">'+rp.cat+'</div><div style="font-size:14px;font-weight:600;line-height:1.4">'+rp.title+'</div><div style="font-size:12px;color:var(--mute);margin-top:6px">'+rp.date+' · '+rp.readTime+'</div></a>';
     }).join('');
   }
+
   // 왼쪽 사이드바: 최근 글 (최신 5편)
   var recentList = document.getElementById('blog-recent-list');
   if (recentList) {
@@ -5476,6 +5510,36 @@ function openBlogPost(id) {
       return '<li><a href="javascript:void(0)" onclick="openBlogPost(\''+rid+'\')" style="'+(rid===id?'color:var(--p);font-weight:600':'')+'">'+rp.title+'</a></li>';
     }).join('');
   }
+}
+
+// 블로그 글 내용 내부링크 자동 삽입
+function injectInternalLinks(html) {
+  var linkMap = [
+    { kw: 'GEO 최적화', fn: "sp('geo')" },
+    { kw: 'GEO최적화', fn: "sp('geo')" },
+    { kw: 'AEO 최적화', fn: "sp('aeo')" },
+    { kw: 'AEO최적화', fn: "sp('aeo')" },
+    { kw: 'SEO 최적화', fn: "sp('seo')" },
+    { kw: 'SEO최적화', fn: "sp('seo')" },
+    { kw: '치과 마케팅', fn: "ld('dental')" },
+    { kw: '치과마케팅', fn: "ld('dental')" },
+    { kw: '피부과 마케팅', fn: "ld('skin')" },
+    { kw: '피부과마케팅', fn: "ld('skin')" },
+    { kw: '한의원 마케팅', fn: "ld('oriental')" },
+    { kw: '한의원마케팅', fn: "ld('oriental')" },
+    { kw: '정형외과 마케팅', fn: "ld('ortho')" },
+    { kw: '정형외과마케팅', fn: "ld('ortho')" },
+    { kw: '성형외과 마케팅', fn: "ld('plastic')" },
+    { kw: '성형외과마케팅', fn: "ld('plastic')" },
+    { kw: '병원 마케팅', fn: "sp('hospital')" },
+    { kw: '병원마케팅', fn: "sp('hospital')" }
+  ];
+  // 각 키워드 첫 등장만 링크 처리 (태그 안은 건너뜀)
+  linkMap.forEach(function(item) {
+    var re = new RegExp('(?<!["\'=>])(' + item.kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![^<]*>)', '');
+    html = html.replace(re, '<a href="javascript:void(0)" onclick="'+item.fn+'" style="color:var(--p);text-decoration:underline;text-underline-offset:2px;font-weight:600">$1</a>');
+  });
+  return html;
 }
 
 function restoreKeywords() {
