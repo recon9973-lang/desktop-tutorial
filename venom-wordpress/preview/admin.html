@@ -509,24 +509,54 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ 키워드 현황 ══ -->
     <div id="section-keywords" class="admin-section">
+
+      <!-- KPI 요약 -->
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">추적 키워드</div><div class="stat-val" id="kw-count">12</div><div class="stat-change up">↑ 3개 추가됨</div></div>
+        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">TOP 3 키워드</div><div class="stat-val" id="kw-top3">4</div><div class="stat-change up">↑ 1 전주 대비</div></div>
+        <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">월 노출량 합계</div><div class="stat-val" id="kw-impression">14,850</div><div class="stat-change up">↑ 18%</div></div>
+        <div class="stat-card"><div class="stat-icon">💡</div><div class="stat-label">평균 클릭률</div><div class="stat-val" id="kw-ctr">4.2%</div><div class="stat-change up">↑ 0.6%p</div></div>
+      </div>
+
+      <!-- 키워드 검색량 조회 도구 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head">
+          <div class="card-title">🔎 키워드 검색량 조회</div>
+          <span class="badge badge-yellow" id="kw-api-badge">⚠ 시뮬레이션 모드</span>
+        </div>
+        <p style="font-size:13px;color:var(--mute);margin-bottom:16px">키워드를 입력하면 월 검색량·경쟁도·CPC를 분석합니다. 실제 데이터는 네이버 검색광고 API 연동 후 자동 전환됩니다.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <input id="kw-input" type="text" placeholder="예: 치과 임플란트 마케팅, 피부과 SNS 광고" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:14px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')lookupKeyword()">
+          <button class="btn btn-p" onclick="lookupKeyword()">🔍 조회</button>
+          <button class="btn btn-outline" onclick="addToTracking()">+ 추적 추가</button>
+        </div>
+        <div id="kw-result-wrap" style="display:none">
+          <div id="kw-result-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+          <div class="card" style="margin:0;padding:16px;background:var(--soft);border:none">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--ink)">📊 관련 키워드 추천</div>
+            <div id="kw-related" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          </div>
+        </div>
+        <div id="kw-loading" style="display:none;text-align:center;padding:24px;color:var(--mute)">
+          <div style="font-size:24px;margin-bottom:8px">⏳</div>
+          <div style="font-size:14px">검색량 분석 중...</div>
+        </div>
+      </div>
+
+      <!-- 추적 키워드 현황 테이블 -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">🔍 키워드 순위 현황</div>
+          <div class="card-title">📋 추적 키워드 현황</div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-p btn-sm" onclick="runKeywordUpdate()">🔄 순위 새로고침</button>
+            <select id="kw-filter" class="btn btn-outline btn-sm" onchange="renderKeywordTable()">
+              <option value="all">전체</option><option value="top">TOP 10 이내</option><option value="up">순위 상승</option><option value="down">순위 하락</option>
+            </select>
+            <button class="btn btn-p btn-sm" onclick="runKeywordUpdate()">🔄 순위 갱신</button>
           </div>
         </div>
         <table class="data-table">
-          <thead><tr><th>키워드</th><th>네이버 순위</th><th>구글 순위</th><th>월 검색량</th><th>전주 대비</th><th>유입수</th></tr></thead>
-          <tbody>
-            <tr><td><strong>치과마케팅</strong></td><td>3위</td><td>8위</td><td>2,400</td><td><span style="color:#16a34a">↑2</span></td><td>142</td></tr>
-            <tr><td><strong>GEO최적화</strong></td><td>1위</td><td>3위</td><td>480</td><td><span style="color:#16a34a">↑4</span></td><td>64</td></tr>
-            <tr><td><strong>피부과마케팅</strong></td><td>5위</td><td>12위</td><td>1,900</td><td><span style="color:#16a34a">↑1</span></td><td>98</td></tr>
-            <tr><td><strong>병원마케팅</strong></td><td>8위</td><td>15위</td><td>4,800</td><td><span style="color:var(--mute)">—</span></td><td>87</td></tr>
-            <tr><td><strong>한의원마케팅</strong></td><td>6위</td><td>18위</td><td>1,200</td><td><span style="color:#dc2626">↓1</span></td><td>52</td></tr>
-            <tr><td><strong>AEO최적화</strong></td><td>2위</td><td>5위</td><td>290</td><td><span style="color:#16a34a">↑2</span></td><td>38</td></tr>
-            <tr><td><strong>성형외과마케팅</strong></td><td>11위</td><td>24위</td><td>980</td><td><span style="color:var(--mute)">—</span></td><td>29</td></tr>
-          </tbody>
+          <thead><tr><th>키워드</th><th>카테고리</th><th>네이버 순위</th><th>구글 순위</th><th>월 검색량</th><th>경쟁도</th><th>전주 대비</th><th>유입수</th><th></th></tr></thead>
+          <tbody id="kw-table-body"></tbody>
         </table>
       </div>
     </div>
@@ -911,12 +941,122 @@ function deletePost(id){
 }
 function editPost(){toast('수정 모드 진입 (연동 준비 중)')}
 // 초기 렌더링
-document.addEventListener('DOMContentLoaded',function(){renderPostList();});
+document.addEventListener('DOMContentLoaded',function(){renderPostList();renderKeywordTable();});
 
 // ── OTHER ──
 function logout(){if(confirm('로그아웃 하시겠습니까?'))window.location.href='index.html';}
 function updateChart(v){toast(v+' 데이터 로딩 중')}
-function runKeywordUpdate(){toast('키워드 순위 갱신 중... (네이버 API 연동 필요)')}
+// ── KEYWORD TOOL ──
+var kwDatabase={
+  '치과마케팅':{pc:1820,mo:2400,comp:0.78,cpc:2100,cat:'치과',naver:3,google:8,chg:2,visits:142},
+  '임플란트마케팅':{pc:980,mo:1340,comp:0.81,cpc:3200,cat:'치과',naver:5,google:11,chg:1,visits:98},
+  '피부과마케팅':{pc:1240,mo:1900,comp:0.71,cpc:1800,cat:'피부과',naver:5,google:12,chg:1,visits:98},
+  '병원마케팅':{pc:3100,mo:4800,comp:0.92,cpc:4500,cat:'종합',naver:8,google:15,chg:0,visits:87},
+  '한의원마케팅':{pc:780,mo:1200,comp:0.65,cpc:1400,cat:'한의원',naver:6,google:18,chg:-1,visits:52},
+  'GEO최적화':{pc:210,mo:480,comp:0.28,cpc:900,cat:'SEO',naver:1,google:3,chg:4,visits:64},
+  'AEO최적화':{pc:140,mo:290,comp:0.22,cpc:750,cat:'SEO',naver:2,google:5,chg:2,visits:38},
+  'SEO최적화':{pc:2400,mo:3900,comp:0.88,cpc:3800,cat:'SEO',naver:14,google:22,chg:-2,visits:31},
+  '성형외과마케팅':{pc:620,mo:980,comp:0.74,cpc:2600,cat:'성형외과',naver:11,google:24,chg:0,visits:29},
+  '정형외과마케팅':{pc:490,mo:820,comp:0.61,cpc:1600,cat:'정형외과',naver:7,google:16,chg:1,visits:44},
+  '안과마케팅':{pc:380,mo:640,comp:0.58,cpc:1900,cat:'안과',naver:9,google:19,chg:0,visits:27},
+  '의료광고심의':{pc:270,mo:510,comp:0.34,cpc:1100,cat:'심의',naver:4,google:9,chg:3,visits:56}
+};
+var kwRelated={
+  '치과마케팅':['치과 네이버플레이스','치과 블로그 SEO','임플란트 광고','치과 SNS 마케팅'],
+  '피부과마케팅':['피부과 보톡스 광고','레이저 마케팅','피부과 인스타','피부과 블로그'],
+  '병원마케팅':['병원 SEO','의원 마케팅','의료 광고','병원 네이버 광고'],
+  default:['병원마케팅','네이버 SEO','블로그 마케팅','의료광고','콘텐츠 마케팅']
+};
+var kwTracking=Object.keys(kwDatabase);
+
+function compLabel(v){return v>=0.8?'<span class="badge badge-red">높음</span>':v>=0.5?'<span class="badge badge-yellow">중간</span>':'<span class="badge badge-green">낮음</span>';}
+function chgLabel(v){return v>0?'<span style="color:#16a34a">↑'+v+'</span>':v<0?'<span style="color:#dc2626">↓'+Math.abs(v)+'</span>':'<span style="color:var(--mute)">—</span>';}
+
+function renderKeywordTable(){
+  var filter=document.getElementById('kw-filter')?document.getElementById('kw-filter').value:'all';
+  var body=document.getElementById('kw-table-body');
+  if(!body)return;
+  var rows=kwTracking.filter(function(k){
+    var d=kwDatabase[k];if(!d)return false;
+    if(filter==='top')return d.naver<=10||d.google<=10;
+    if(filter==='up')return d.chg>0;
+    if(filter==='down')return d.chg<0;
+    return true;
+  });
+  body.innerHTML=rows.map(function(k){
+    var d=kwDatabase[k];
+    return '<tr><td><strong>'+k+'</strong></td><td><span class="badge badge-blue" style="font-size:10px">'+d.cat+'</span></td><td>'+(d.naver<=3?'<strong style="color:var(--p)">':'')+d.naver+'위'+(d.naver<=3?'</strong>':'')+'</td><td>'+d.google+'위</td><td><strong>'+(d.pc+d.mo).toLocaleString()+'</strong><span style="font-size:11px;color:var(--mute)"> (PC:'+d.pc.toLocaleString()+'/MO:'+d.mo.toLocaleString()+')</span></td><td>'+compLabel(d.comp)+'</td><td>'+chgLabel(d.chg)+'</td><td>'+d.visits+'</td><td><button class="btn btn-outline btn-sm" style="font-size:11px" onclick="removeFromTracking(\''+k+'\')">삭제</button></td></tr>';
+  }).join('');
+  document.getElementById('kw-count').textContent=kwTracking.length;
+  var top3=kwTracking.filter(function(k){var d=kwDatabase[k];return d&&(d.naver<=3||d.google<=3);}).length;
+  document.getElementById('kw-top3').textContent=top3;
+}
+
+function lookupKeyword(){
+  var raw=document.getElementById('kw-input').value.trim();
+  if(!raw)return toast('키워드를 입력하세요.');
+  var kws=raw.split(/[,，\s]+/).map(function(s){return s.trim();}).filter(Boolean).slice(0,5);
+  document.getElementById('kw-loading').style.display='block';
+  document.getElementById('kw-result-wrap').style.display='none';
+  setTimeout(function(){
+    document.getElementById('kw-loading').style.display='none';
+    document.getElementById('kw-result-wrap').style.display='block';
+    var cards=kws.map(function(kw){
+      var d=kwDatabase[kw];
+      var pc=d?d.pc:Math.round(100+Math.random()*3000);
+      var mo=d?d.mo:Math.round(pc*1.3+Math.random()*500);
+      var comp=d?d.comp:Math.round(30+Math.random()*60)/100;
+      var cpc=d?d.cpc:Math.round(800+Math.random()*3000);
+      return '<div style="background:var(--soft);border-radius:var(--r12);padding:16px;border:1px solid var(--border)">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">'+kw+'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:6px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">PC 월 검색</span><strong>'+pc.toLocaleString()+'</strong></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">모바일 월 검색</span><strong>'+mo.toLocaleString()+'</strong></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">합계</span><strong style="color:var(--p)">'+(pc+mo).toLocaleString()+'</strong></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px;padding-top:8px;border-top:1px solid var(--border)"><span style="color:var(--mute)">경쟁도</span>'+compLabel(comp)+'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">예상 CPC</span><strong>₩'+cpc.toLocaleString()+'</strong></div>'
+        +'</div></div>';
+    });
+    document.getElementById('kw-result-cards').innerHTML=cards.join('');
+    var mainKw=kws[0];
+    var rels=(kwRelated[mainKw]||kwRelated.default).concat(kws.slice(1).map(function(k){return k+' 마케팅';}));
+    document.getElementById('kw-related').innerHTML=rels.map(function(r){
+      return '<span onclick="document.getElementById(\'kw-input\').value=\''+r+'\';lookupKeyword()" style="cursor:pointer;padding:5px 12px;background:#fff;border:1px solid var(--border);border-radius:9999px;font-size:12px;color:var(--p);transition:all .15s" onmouseover="this.style.background=\'var(--p)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'#fff\';this.style.color=\'var(--p)\'">'+r+'</span>';
+    }).join('');
+  },900);
+}
+
+function addToTracking(){
+  var raw=document.getElementById('kw-input').value.trim();
+  if(!raw)return toast('먼저 키워드를 입력하세요.');
+  var kws=raw.split(/[,，\s]+/).map(function(s){return s.trim();}).filter(Boolean);
+  var added=0;
+  kws.forEach(function(kw){
+    if(!kwTracking.includes(kw)){kwTracking.push(kw);added++;}
+    if(!kwDatabase[kw]){kwDatabase[kw]={pc:Math.round(200+Math.random()*2000),mo:Math.round(300+Math.random()*3000),comp:Math.round(30+Math.random()*60)/100,cpc:Math.round(800+Math.random()*3000),cat:'기타',naver:Math.round(5+Math.random()*45),google:Math.round(8+Math.random()*60),chg:0,visits:0};}
+  });
+  if(added>0){renderKeywordTable();toast(added+'개 키워드가 추적 목록에 추가되었습니다.');}
+  else toast('이미 추적 중인 키워드입니다.');
+}
+
+function removeFromTracking(kw){
+  kwTracking=kwTracking.filter(function(k){return k!==kw;});
+  renderKeywordTable();
+  toast('"'+kw+'" 키워드 추적이 해제되었습니다.');
+}
+
+function runKeywordUpdate(){
+  toast('키워드 순위 갱신 중...');
+  setTimeout(function(){
+    kwTracking.forEach(function(k){
+      var d=kwDatabase[k];if(!d)return;
+      d.chg=Math.round(-2+Math.random()*4);
+      d.naver=Math.max(1,d.naver-d.chg);
+    });
+    renderKeywordTable();
+    toast('✅ 순위 갱신 완료 (시뮬레이션)');
+  },1200);
+}
 function runSeoAudit(){toast('SEO 재점검 중...')}
 function downloadReport(){toast('PDF 생성 중... (실제 배포 시 자동 생성)')}
 function generateCardnews(){toast('오늘 카드뉴스 생성 중... (AI API 연동 필요)')}
