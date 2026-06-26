@@ -641,9 +641,68 @@ body{padding-top:0}
     </div>
     <div class="header-actions">
       <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p btn-sm">💬 상담신청</a>
+      <button class="mob-menu-btn" id="mobMenuBtn" onclick="toggleMobMenu()" aria-label="메뉴 열기">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<!-- 모바일 메뉴 오버레이 -->
+<div class="mob-menu-overlay" id="mobMenuOverlay" onclick="closeMobMenu()"></div>
+<div class="mob-menu" id="mobMenu">
+  <div class="mob-menu-head">
+    <a href="#" onclick="sp('home');closeMobMenu();return false" class="logo">
+      <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:22px;width:auto;display:block">
+    </a>
+    <button class="mob-close-btn" onclick="closeMobMenu()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <nav class="mob-nav">
+    <div class="mob-nav-group">
+      <button class="mob-nav-item mob-has-sub" onclick="toggleMobSub(this)">
+        병원마케팅
+        <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="mob-sub">
+        <a href="#" onclick="ld('dental');closeMobMenu();return false">치과마케팅</a>
+        <a href="#" onclick="ld('skin');closeMobMenu();return false">피부과마케팅</a>
+        <a href="#" onclick="ld('ortho');closeMobMenu();return false">정형외과마케팅</a>
+        <a href="#" onclick="ld('oriental');closeMobMenu();return false">한의원마케팅</a>
+        <a href="#" onclick="ld('plastic');closeMobMenu();return false">성형외과마케팅</a>
+        <a href="#" onclick="ld('naegwa');closeMobMenu();return false">내과마케팅</a>
+        <a href="#" onclick="ld('angwa');closeMobMenu();return false">안과마케팅</a>
+        <a href="#" onclick="ld('shimui');closeMobMenu();return false">의료광고심의</a>
+        <a href="#" onclick="ld('medical_device');closeMobMenu();return false">의료기기마케팅</a>
+      </div>
+    </div>
+    <div class="mob-nav-group">
+      <button class="mob-nav-item mob-has-sub" onclick="toggleMobSub(this)">
+        AI마케팅 <span class="nav-new">NEW</span>
+        <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="mob-sub">
+        <a href="#" onclick="sp('geo');closeMobMenu();return false">GEO — 생성AI 최적화</a>
+        <a href="#" onclick="sp('aeo');closeMobMenu();return false">AEO — 답변엔진 최적화</a>
+        <a href="#" onclick="sp('seo');closeMobMenu();return false">SEO — 검색엔진 최적화</a>
+      </div>
+    </div>
+    <div class="mob-nav-group">
+      <a href="#" onclick="sp('services');closeMobMenu();return false" class="mob-nav-item">온라인마케팅</a>
+    </div>
+    <div class="mob-nav-group">
+      <a href="#" onclick="sp('blog');closeMobMenu();return false" class="mob-nav-item">블로그</a>
+    </div>
+    <div class="mob-nav-group">
+      <a href="#" onclick="sp('hospital');closeMobMenu();return false" class="mob-nav-item">홈페이지 제작</a>
+    </div>
+  </nav>
+  <div class="mob-menu-footer">
+    <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p" style="width:100%;justify-content:center;padding:14px">💬 카카오 상담신청</a>
+    <a href="#" onclick="sp('seo');closeMobMenu();return false" class="mob-cta-ghost">📊 SEO 점수 체크 →</a>
+  </div>
+</div>
 
 <!-- ===== MAIN ===== -->
 <main id="main">
@@ -774,10 +833,10 @@ body{padding-top:0}
       <!-- GEO 엔티티 점수 -->
       <div id="tool-geo" class="tool-panel">
         <div class="tool-input-wrap">
-          <input type="text" id="geo-name" class="tool-input" placeholder="병원명 또는 브랜드명 입력 (예: 강남베놈치과)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
+          <input type="url" id="geo-url" class="tool-input" placeholder="병원 홈페이지 URL 입력 (예: https://venomad.co.kr)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
           <button class="tool-btn" onclick="runGEO()">분석하기</button>
         </div>
-        <p class="tool-hint">ChatGPT·Perplexity·Google AI에서 귀 병원의 엔티티 인지도를 진단합니다</p>
+        <p class="tool-hint">ChatGPT·Perplexity·Google AI에서 귀 병원 사이트의 GEO 최적화 신호를 진단합니다</p>
         <div id="geo-result" class="tool-result" style="display:none"></div>
       </div>
 
@@ -3807,6 +3866,50 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   font-size: 15px !important;
 }
 
+/* ── 모바일 햄버거 버튼 ── */
+.mob-menu-btn{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;
+  width:40px;height:40px;background:none;border:none;cursor:pointer;padding:4px;border-radius:8px;
+  transition:.2s;flex-shrink:0}
+.mob-menu-btn:hover{background:var(--soft)}
+.mob-menu-btn span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:.3s}
+.mob-menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.mob-menu-btn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.mob-menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ── 모바일 메뉴 오버레이 ── */
+.mob-menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;
+  backdrop-filter:blur(2px);opacity:0;transition:opacity .3s}
+.mob-menu-overlay.open{display:block;opacity:1}
+.mob-menu{position:fixed;top:0;right:0;width:min(360px,92vw);height:100dvh;height:100vh;
+  background:#fff;z-index:301;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 40px rgba(0,0,0,.15)}
+.mob-menu.open{transform:translateX(0)}
+.mob-menu-head{display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:60px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mob-close-btn{width:36px;height:36px;border:none;background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--ink);
+  transition:.2s}
+.mob-close-btn:hover{background:var(--soft)}
+.mob-nav{flex:1;overflow-y:auto;padding:8px 0}
+.mob-nav-group{border-bottom:1px solid var(--soft)}
+.mob-nav-item{display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:16px 24px;font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.02em;
+  background:none;border:none;cursor:pointer;text-decoration:none;text-align:left;
+  transition:.15s}
+.mob-nav-item:hover{color:var(--p);background:var(--soft)}
+.mob-darr{width:18px;height:18px;flex-shrink:0;transition:transform .25s}
+.mob-has-sub.active .mob-darr{transform:rotate(180deg)}
+.mob-sub{display:none;background:#fafafa;padding:4px 0 8px}
+.mob-sub.open{display:block}
+.mob-sub a{display:block;padding:11px 24px 11px 36px;font-size:14px;font-weight:400;
+  color:var(--ink2);text-decoration:none;transition:.12s;letter-spacing:0}
+.mob-sub a:hover{color:var(--p);background:rgba(83,58,253,.06)}
+.mob-menu-footer{padding:20px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.mob-cta-ghost{display:block;text-align:center;padding:12px;font-size:14px;font-weight:600;
+  color:var(--p);border:1.5px solid var(--p);border-radius:var(--rpill);text-decoration:none;transition:.2s}
+.mob-cta-ghost:hover{background:var(--p);color:#fff}
+
 /* 모바일 추가 */
 @media(max-width:768px){
   .mesh{ padding: 80px 0 60px !important; }
@@ -3815,7 +3918,9 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .section{ padding: 72px 0 !important; }
   /* 헤더 모바일 */
   .main-nav{display:none!important}
+  .mob-menu-btn{display:flex}
   .site-header .container{padding:0 16px}
+  .header-actions{gap:4px}
   .header-actions .btn{font-size:12px!important;padding:8px 14px!important}
   /* 히어로 모바일 */
   .hero{padding:60px 0 40px!important;text-align:center!important}
@@ -3823,11 +3928,12 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .hero-sub{font-size:15px!important;margin:0 auto 24px!important}
   .hero-cta{flex-direction:column;align-items:center;gap:10px!important}
   .hero-cta .btn{width:100%;max-width:280px;justify-content:center}
-  /* 스탯 바 모바일 */
-  .stat-bar-inner{flex-wrap:wrap;gap:0}
-  .stat-bar-item{flex:0 0 50%;max-width:50%;padding:24px 16px}
-  .sb-div{display:none}
-  .sb-num{font-size:32px}
+  /* 스탯 바 모바일 — 4개 모두 가로 유지 */
+  .stat-bar-inner{flex-wrap:nowrap;gap:0;overflow-x:auto}
+  .stat-bar-item{flex:1 1 0;min-width:0;padding:20px 8px}
+  .sb-div{display:block;height:36px;width:1px}
+  .sb-num{font-size:26px}
+  .sb-label{font-size:10px}
   /* 도구 섹션 모바일 */
   .tool-tabs{flex-wrap:wrap;gap:6px}
   .tool-tab{font-size:12px!important;padding:8px 12px!important}
@@ -3843,7 +3949,9 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 }
 @media(max-width:480px){
   .hero h1{font-size:28px!important}
-  .stat-bar-item{flex:0 0 100%;max-width:100%}
+  .stat-bar-item{flex:1 1 0;min-width:0}
+  .sb-num{font-size:22px}
+  .sb-label{font-size:9px}
 }
 </style>
 <script>
@@ -4059,76 +4167,152 @@ function runSEO(){
 }
 
 function runGEO(){
-  var name=document.getElementById('geo-name').value.trim();
-  if(!name){alert('병원명을 입력해주세요');return;}
+  var rawUrl=document.getElementById('geo-url').value.trim();
+  if(!rawUrl){alert('URL을 입력해주세요');return;}
+  if(!rawUrl.startsWith('http')) rawUrl='https://'+rawUrl;
   var btn=document.querySelector('#tool-geo .tool-btn');
   btn.textContent='분석 중...';btn.disabled=true;
   var el=document.getElementById('geo-result');
   el.style.display='block';
-  el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">Google Knowledge Graph에서 엔티티 분석 중...<br><small style="display:block;margin-top:8px">약 5~10초 소요</small></div>';
+  el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">페이지 GEO 신호 분석 중...<br><small style="display:block;margin-top:8px">약 5~15초 소요</small></div>';
 
-  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/geo-proxy?query='+encodeURIComponent(name))
+  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/geo-url-proxy?url='+encodeURIComponent(rawUrl))
     .then(function(r){return r.json();})
     .then(function(data){
       btn.textContent='분석하기';btn.disabled=false;
-      var items=data.itemListElement||[];
-      var topItem=items[0]&&items[0].result;
-      var hasType=topItem&&topItem['@type']?true:false;
-      var hasDesc=topItem&&topItem.description?true:false;
-      var hasDetail=topItem&&topItem.detailedDescription?true:false;
-      var hasMulti=items.length>1?true:false;
-      var hasImage=topItem&&topItem.image?true:false;
-      var kgBase=(hasType?15:0)+(hasDesc?20:0)+(hasDetail?30:0)+(hasMulti?10:0)+(hasImage?5:0);
-      var kgScore=Math.min(100,kgBase);
-      var desc=topItem&&topItem.description?'<div style="font-size:13px;color:var(--mute);margin:12px 0;padding:10px 14px;background:var(--soft);border-radius:8px;border-left:3px solid #4285f4">📌 Google 인식 정보: '+topItem.description+'</div>':'';
-      renderGEOResult(name,kgScore,hasType,hasDesc,hasDetail,hasImage,hasMulti);
+      var html=data.html||'';
+      var robots=data.robots||'';
+      var isHttps=data.isHttps||rawUrl.startsWith('https://');
+
+      var hasSchemaOrg=/application\/ld\+json/i.test(html);
+      var schemaTypes=[];
+      var ldJsonMatches=html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)||[];
+      ldJsonMatches.forEach(function(block){
+        try{
+          var inner=block.replace(/<script[^>]*>/i,'').replace(/<\/script>/i,'');
+          var obj=JSON.parse(inner);
+          var arr=Array.isArray(obj)?obj:(obj['@graph']?obj['@graph']:[obj]);
+          arr.forEach(function(o){ if(o&&o['@type']) schemaTypes.push([].concat(o['@type']).join(',')); });
+        }catch(e){}
+      });
+      var hasMedicalSchema=schemaTypes.some(function(t){return /Medical|Clinic|Hospital|Physician|Dentist|Doctor/i.test(t);});
+      var hasFaqSchema=schemaTypes.some(function(t){return /FAQ/i.test(t);});
+      var hasOrgSchema=schemaTypes.some(function(t){return /Organization|LocalBusiness/i.test(t);});
+      var hasReviewSchema=schemaTypes.some(function(t){return /Review|Rating/i.test(t);});
+      var hasMetaDesc=/<meta[^>]+name=["']description["'][^>]+content=["'][^"']{20,}/i.test(html)||/<meta[^>]+content=["'][^"']{20,}["'][^>]+name=["']description["']/i.test(html);
+      var hasOgTags=/<meta[^>]+property=["']og:/i.test(html);
+      var hasCanonical=/<link[^>]+rel=["']canonical["']/i.test(html);
+      var hasH1=/<h1[\s>]/i.test(html);
+      var hasStructuredPhone=/\d{2,4}-\d{3,4}-\d{4}/.test(html);
+      var hasAddress=/주소|서울|부산|대구|인천|광주|대전|울산|세종/.test(html);
+      var hasSocialLinks=/facebook\.com|instagram\.com|blog\.naver|youtube\.com|pf\.kakao/i.test(html);
+
+      var robotsLower=robots.toLowerCase();
+      function checkRobotsAllow(txt, bot){
+        if(!txt) return false;
+        var lines=txt.split('\n');
+        var inBlock=false; var blocked=false;
+        for(var i=0;i<lines.length;i++){
+          var line=lines[i].trim();
+          if(line.toLowerCase().startsWith('user-agent:')){
+            var agent=line.replace(/user-agent:/i,'').trim().toLowerCase();
+            inBlock=(agent==='*'||agent===bot.toLowerCase());
+          }
+          if(inBlock){
+            if(line.toLowerCase().startsWith('disallow:')&&line.replace(/disallow:/i,'').trim()==='/') blocked=true;
+          }
+        }
+        return !blocked;
+      }
+      var allowsGptBot=checkRobotsAllow(robotsLower,'gptbot');
+      var allowsClaudeBot=checkRobotsAllow(robotsLower,'claudebot');
+      var allowsPerplexityBot=checkRobotsAllow(robotsLower,'perplexitybot');
+      var allowsAppleBot=checkRobotsAllow(robotsLower,'applebot');
+      var aiBotsAllowed=(allowsGptBot?1:0)+(allowsClaudeBot?1:0)+(allowsPerplexityBot?1:0)+(allowsAppleBot?1:0);
+
+      renderGEOResult(rawUrl,{
+        isHttps:isHttps,
+        hasMedicalSchema:hasMedicalSchema, hasFaqSchema:hasFaqSchema, hasOrgSchema:hasOrgSchema,
+        hasSchemaOrg:hasSchemaOrg, schemaTypes:schemaTypes,
+        hasMetaDesc:hasMetaDesc, hasOgTags:hasOgTags, hasCanonical:hasCanonical,
+        hasH1:hasH1, hasStructuredPhone:hasStructuredPhone, hasAddress:hasAddress,
+        hasSocialLinks:hasSocialLinks, hasReviewSchema:hasReviewSchema,
+        allowsGptBot:allowsGptBot, allowsClaudeBot:allowsClaudeBot,
+        allowsPerplexityBot:allowsPerplexityBot, allowsAppleBot:allowsAppleBot,
+        aiBotsAllowed:aiBotsAllowed
+      });
     })
     .catch(function(e){
       btn.textContent='분석하기';btn.disabled=false;
-      // API 실패 시 자체 진단 제공
-      renderGEOResult(name, 0, false, false, false, false, false);
+      el.innerHTML='<div style="color:#ef4444;padding:16px">분석 실패: '+e.message+'<br><small>URL이 올바른지, 해당 사이트가 접근 가능한지 확인해주세요</small></div>';
     });
 }
 
-function renderGEOResult(name, kgScore, hasType, hasDesc, hasDetail, hasImage, hasMulti){
+function renderGEOResult(url, sig){
   var el=document.getElementById('geo-result');
-  var recognized=kgScore>=60?'Google 엔티티 인지됨':kgScore>=25?'부분 인지':kgScore>0?'엔티티 등록 필요':'미등록 (최우선 개선)';
-  var gColor=kgScore>=60?'#10a37f':kgScore>=25?'#f59e0b':'#ef4444';
+  var displayUrl=url.replace(/^https?:\/\//,'').replace(/\/$/,'');
 
-  var ais=[
-    {name:'Google AI Overview',short:'Google AI',color:'#4285f4',icon:'🔵',score:Math.min(100,kgScore+Math.round(Math.random()*12)),tip:'Google Knowledge Graph + 구조화 데이터 + Google 비즈니스 프로필 최적화 필요',guide:['Schema.org MedicalClinic JSON-LD 적용','Google 비즈니스 프로필 100% 완성','FAQPage Schema로 환자 Q&A 100개 이상 등록','공신력 있는 사이트(의협·건강보험공단 등)에서 링크 확보']},
-    {name:'ChatGPT / GPT-4o',  short:'ChatGPT',  color:'#10a37f',icon:'🟢',score:Math.min(100,Math.round(kgScore*0.85+Math.random()*10)),tip:'robots.txt에서 GPTBot 허용 + 다수 신뢰 출처에 병원 정보 배포',guide:['robots.txt에 User-agent: GPTBot / Allow: / 추가','의료 포털(건강in·약학정보원) 병원 정보 등록','네이버 지식백과·나무위키 병원 정보 등재','월 4편 이상 전문성 콘텐츠(임상 정보) 발행']},
-    {name:'Perplexity AI',      short:'Perplexity',color:'#20b2aa',icon:'🔷',score:Math.min(100,Math.round(kgScore*0.78+Math.random()*10)),tip:'Wikipedia·나무위키·뉴스 등 다수 출처에 동일 정보 존재',guide:['NAP(이름·주소·전화번호) 전 플랫폼 동일하게 통일','병원 뉴스 보도 자료 배포 (의료 전문지)','지역 의사협회·병원 협회 프로필 등재','의료 관련 커뮤니티(오늘의집 의사 칼럼 등) 기고']},
-    {name:'Claude (Anthropic)', short:'Claude',  color:'#d97706',icon:'🟡',score:Math.min(100,Math.round(kgScore*0.7+Math.random()*8)),tip:'robots.txt ClaudeBot 허용 + HTTPS + 신뢰도 높은 전문 콘텐츠',guide:['robots.txt에 User-agent: ClaudeBot / Allow: / 추가','HTTPS 전환 및 SSL 인증서 적용','의료진 학력·경력·전문 분야 상세 프로필 페이지 제작','E-E-A-T 기준 — 경험·전문성·권위·신뢰 모두 콘텐츠에 반영']},
-    {name:'네이버 AI 검색',     short:'네이버 AI', color:'#03c75a',icon:'🟩',score:Math.min(100,Math.round(kgScore*0.9+Math.random()*10)),tip:'네이버 플레이스·블로그·지식IN 최적화 + 네이버 AI 학습 허용',guide:['네이버 플레이스 정보 100% 완성 (진료시간·사진 30장 이상)','네이버 블로그 월 16편 이상 전문 포스팅','네이버 지식IN 의료 전문가 답변 참여','네이버 카페·건강정보 채널 콘텐츠 배포']}
+  // Score calculation
+  var checks=[
+    {label:'HTTPS 보안 연결',                  pass:sig.isHttps,          score:10, detail:'AI 크롤러는 HTTPS 사이트만 신뢰 수집함',                    action:'SSL 인증서 즉시 적용'},
+    {label:'의료 Schema.org 구조화 데이터',     pass:sig.hasMedicalSchema, score:20, detail:'MedicalClinic/Physician/Dentist JSON-LD 마크업',            action:'JSON-LD Schema 즉시 추가 (5분 적용 가능)'},
+    {label:'FAQ 스키마 (FAQPage)',              pass:sig.hasFaqSchema,     score:10, detail:'환자 Q&A 구조화 데이터로 AI 답변 채택률 ↑',                action:'FAQPage Schema로 환자 질문 50개 이상 등록'},
+    {label:'조직·지역비즈니스 Schema',          pass:sig.hasOrgSchema,     score:8,  detail:'Organization/LocalBusiness JSON-LD로 NAP 구조화',          action:'LocalBusiness Schema에 이름·주소·전화 추가'},
+    {label:'리뷰·평점 Schema',                  pass:sig.hasReviewSchema,  score:7,  detail:'AggregateRating Schema로 AI에 신뢰 점수 전달',             action:'Review Schema + 실제 후기 연동'},
+    {label:'메타 디스크립션',                   pass:sig.hasMetaDesc,      score:8,  detail:'20자 이상 설명 태그 (AI 스니펫 채택 필수)',                action:'150자 이내 핵심 진료 정보 중심 설명 작성'},
+    {label:'OG (Open Graph) 태그',              pass:sig.hasOgTags,        score:5,  detail:'소셜·AI 미리보기 메타데이터',                              action:'og:title / og:description / og:image 추가'},
+    {label:'캐노니컬 태그',                      pass:sig.hasCanonical,     score:5,  detail:'중복 URL 방지, AI 정규 페이지 인식',                       action:'<link rel="canonical"> 헤드에 추가'},
+    {label:'H1 헤딩 구조',                       pass:sig.hasH1,            score:5,  detail:'페이지 주제를 AI에 명확히 전달하는 헤딩 계층',            action:'진료과목·병원명 포함 H1 1개 필수'},
+    {label:'전화번호 구조화',                    pass:sig.hasStructuredPhone,score:5, detail:'페이지 내 전화번호 노출 (NAP 일관성)',                     action:'전화번호 HTML에 명시적 텍스트로 삽입'},
+    {label:'주소 정보 노출',                     pass:sig.hasAddress,       score:5,  detail:'페이지에 병원 소재 지역명 포함',                           action:'주소·지역명 footer 또는 본문에 텍스트로 삽입'},
+    {label:'SNS·외부 채널 연결',                pass:sig.hasSocialLinks,   score:4,  detail:'다중 채널 언급으로 NAP 확장 인식',                         action:'네이버 블로그·인스타그램·카카오 채널 링크 추가'},
+    {label:'GPTBot 크롤 허용 (robots.txt)',     pass:sig.allowsGptBot,     score:4,  detail:'ChatGPT 학습 크롤러 접근 허용 여부',                       action:'robots.txt: User-agent: GPTBot / Allow: /'},
+    {label:'ClaudeBot 크롤 허용 (robots.txt)', pass:sig.allowsClaudeBot,  score:2,  detail:'Claude AI 크롤러 접근 허용 여부',                          action:'robots.txt: User-agent: ClaudeBot / Allow: /'},
+    {label:'PerplexityBot 허용 (robots.txt)',  pass:sig.allowsPerplexityBot,score:2, detail:'Perplexity AI 크롤러 접근 허용 여부',                     action:'robots.txt: User-agent: PerplexityBot / Allow: /'},
   ];
-  var avgScore=Math.round(ais.reduce(function(a,b){return a+b.score;},0)/ais.length);
+  var totalScore=checks.reduce(function(a,c){return a+(c.pass?c.score:0);},0);
+  var maxScore=checks.reduce(function(a,c){return a+c.score;},0);
+  var gColor=totalScore>=70?'#10a37f':totalScore>=40?'#f59e0b':'#ef4444';
+  var scoreLabel=totalScore>=70?'GEO 최적화 양호':totalScore>=40?'개선 필요':'최적화 시급';
 
-  // 업종 벤치마크 (병원 평균)
+  // AI 플랫폼별 추정 노출도 (URL 시그널 기반)
+  var ais=[
+    {name:'Google AI Overview',short:'Google AI',  color:'#4285f4',icon:'🔵',
+     score:Math.min(100,Math.round(totalScore*0.85+(sig.hasMedicalSchema?10:0)+(sig.hasFaqSchema?5:0))),
+     tip:'Google Knowledge Graph + 구조화 데이터 + Google 비즈니스 프로필 최적화 필요',
+     guide:['Schema.org MedicalClinic JSON-LD 적용','Google 비즈니스 프로필 100% 완성','FAQPage Schema로 환자 Q&A 100개 이상 등록','공신력 있는 사이트(의협·건강보험공단 등)에서 링크 확보']},
+    {name:'ChatGPT / GPT-4o',  short:'ChatGPT',   color:'#10a37f',icon:'🟢',
+     score:Math.min(100,Math.round(totalScore*0.78+(sig.allowsGptBot?8:0)+(sig.hasMedicalSchema?7:0))),
+     tip:'robots.txt에서 GPTBot 허용 + 다수 신뢰 출처에 병원 정보 배포',
+     guide:['robots.txt에 User-agent: GPTBot / Allow: / 추가','의료 포털(건강in·약학정보원) 병원 정보 등록','네이버 지식백과·나무위키 병원 정보 등재','월 4편 이상 전문성 콘텐츠(임상 정보) 발행']},
+    {name:'Perplexity AI',      short:'Perplexity',color:'#20b2aa',icon:'🔷',
+     score:Math.min(100,Math.round(totalScore*0.72+(sig.allowsPerplexityBot?8:0)+(sig.hasOgTags?5:0))),
+     tip:'Wikipedia·나무위키·뉴스 등 다수 출처에 동일 정보 존재',
+     guide:['NAP(이름·주소·전화번호) 전 플랫폼 동일하게 통일','병원 뉴스 보도 자료 배포 (의료 전문지)','지역 의사협회·병원 협회 프로필 등재','의료 관련 커뮤니티(오늘의집 의사 칼럼 등) 기고']},
+    {name:'Claude (Anthropic)', short:'Claude',   color:'#d97706',icon:'🟡',
+     score:Math.min(100,Math.round(totalScore*0.68+(sig.allowsClaudeBot?8:0)+(sig.isHttps?5:0))),
+     tip:'robots.txt ClaudeBot 허용 + HTTPS + 신뢰도 높은 전문 콘텐츠',
+     guide:['robots.txt에 User-agent: ClaudeBot / Allow: / 추가','HTTPS 전환 및 SSL 인증서 적용','의료진 학력·경력·전문 분야 상세 프로필 페이지 제작','E-E-A-T 기준 — 경험·전문성·권위·신뢰 모두 콘텐츠에 반영']},
+    {name:'네이버 AI 검색',     short:'네이버 AI', color:'#03c75a',icon:'🟩',
+     score:Math.min(100,Math.round(totalScore*0.9+(sig.hasSocialLinks?5:0)+(sig.hasMetaDesc?3:0))),
+     tip:'네이버 플레이스·블로그·지식IN 최적화 + 네이버 AI 학습 허용',
+     guide:['네이버 플레이스 정보 100% 완성 (진료시간·사진 30장 이상)','네이버 블로그 월 16편 이상 전문 포스팅','네이버 지식IN 의료 전문가 답변 참여','네이버 카페·건강정보 채널 콘텐츠 배포']}
+  ];
+  var avgAiScore=Math.round(ais.reduce(function(a,b){return a+b.score;},0)/ais.length);
+
   var benchmarks=[
     {label:'대형 종합병원 (서울아산·세브란스급)',  avg:82, color:'#10a37f'},
     {label:'강남 클리닉 (개원 5년+, 전문 마케팅)', avg:58, color:'#4285f4'},
     {label:'일반 개원 병원 평균',                   avg:31, color:'#f59e0b'},
     {label:'신규 개원 병원 평균',                   avg:14, color:'#ef4444'},
-    {label:'귀 병원 추정 점수',                     avg:avgScore, color:'#533afd'},
+    {label:'귀 병원 ('+displayUrl+')',               avg:totalScore, color:'#533afd'},
   ];
 
-  var checks=[
-    {label:'Schema.org 구조화 데이터', pass:hasType,  detail:'MedicalClinic/Physician/MedicalProcedure 마크업',  score:20, action:'JSON-LD Schema 즉시 추가'},
-    {label:'Google Knowledge Graph 등록',pass:kgScore>=25,detail:'Google이 귀 병원을 엔티티로 인식하는지 여부',   score:20, action:'Google 비즈니스 프로필 완성 + 권위 출처 등재'},
-    {label:'Knowledge Panel 설명 정보', pass:hasDesc,  detail:'설명(description)이 Knowledge Panel에 표시됨',    score:15, action:'Google 비즈니스 프로필 완성도 향상'},
-    {label:'상세 정보 (Wikipedia·포털)', pass:hasDetail,detail:'Wikipedia 등 권위 출처에서 상세 정보 인식',      score:15, action:'의료 포털·위키 등에 병원 정보 배포'},
-    {label:'이미지·로고 Knowledge Panel',pass:hasImage, detail:'Knowledge Graph에 병원 이미지/로고 인식',        score:10, action:'구글 마이비즈니스 사진 최적화'},
-    {label:'멀티 엔티티·NAP 일관성',   pass:hasMulti, detail:'복수 플랫폼에서 동일 엔티티로 인식',              score:10, action:'NAP(이름·주소·전화번호) 전 플랫폼 통일'},
-    {label:'AI 크롤러 허용 (robots.txt)',pass:false,   detail:'robots.txt에서 GPTBot·ClaudeBot·PerplexityBot 허용',score:5, action:'robots.txt User-agent 설정 추가 (5분 작업)'},
-    {label:'FAQ·Q&A 콘텐츠 구조',      pass:false,    detail:'환자 질문에 즉답하는 FAQPage Schema 콘텐츠',       score:5, action:'진료 관련 FAQ 50개 이상 Schema 구현'},
-  ];
-  var totalCheckScore=checks.reduce(function(a,c){return a+(c.pass?c.score:0);},0);
   var checkRows=checks.map(function(c){
     return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft)">'
       +'<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:'+(c.pass?'#d1fae5':'#fee2e2')+';color:'+(c.pass?'#059669':'#dc2626')+'">'+(c.pass?'✓':'✗')+'</span>'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:13px;font-weight:500;color:var(--ink)">'+(c.pass?'':' <strong>')+c.label+(c.pass?'':'</strong>')+'</div>'
+      +'<div style="font-size:13px;font-weight:'+(c.pass?'400':'600')+';color:var(--ink)">'+c.label+'</div>'
       +'<div style="font-size:12px;color:var(--mute);margin-top:2px">'+c.detail+'</div>'
       +(c.pass?'':'<div style="font-size:12px;color:#7c3aed;margin-top:4px">→ <em>'+c.action+'</em></div>')
       +'</div>'
@@ -4145,7 +4329,8 @@ function renderGEOResult(name, kgScore, hasType, hasDesc, hasDetail, hasImage, h
         +'<span style="color:var(--p);font-weight:700;margin-right:8px">'+(i+1)+'.</span>'+c.label+' <span style="color:var(--mute)">— '+c.action+'</span></div>';
     }).join('')+'</div>':'';
 
-  // AI별 상세 가이드
+  var schemaHtml=sig.schemaTypes.length?'<div style="font-size:11px;color:var(--mute);margin-top:6px">발견된 Schema: '+sig.schemaTypes.join(', ')+'</div>':'';
+
   var aiGuideHtml='<div style="margin-top:20px"><div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">📘 AI 플랫폼별 최적화 가이드</div>'
     +ais.map(function(a){
       return '<details style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">'
@@ -4160,7 +4345,6 @@ function renderGEOResult(name, kgScore, hasType, hasDesc, hasDetail, hasImage, h
         +'</ol></div></details>';
     }).join('')+'</div>';
 
-  // 벤치마크 비교
   var benchHtml='<div style="margin-top:20px">'
     +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">📊 업종 벤치마크 비교</div>'
     +benchmarks.map(function(b){
@@ -4176,18 +4360,19 @@ function renderGEOResult(name, kgScore, hasType, hasDesc, hasDetail, hasImage, h
     }).join('')+'</div>';
 
   el.innerHTML=
-    '<div class="tr-title">GEO 점수 체크 — "'+name+'"</div>'
-    +'<div style="font-size:11px;color:var(--mute);margin-bottom:16px">📡 Google Knowledge Graph 실측 + AI 노출 추정 분석'+(kgScore===0?' (API 응답 없음 — 자체 진단 기준)':'')+'</div>'
+    '<div class="tr-title">GEO 점수 체크 — '+displayUrl+'</div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:16px">🔍 URL 페이지 실측 GEO 신호 분석 (Schema·robots.txt·메타태그·구조 등 '+checks.length+'개 항목)</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
       +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
-        +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">Knowledge Graph 점수</div>'
-        +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+kgScore+'</div>'
-        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+recognized+'</div>'
+        +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">GEO 최적화 점수</div>'
+        +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+totalScore+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+scoreLabel+'</div>'
+        +schemaHtml
       +'</div>'
       +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
         +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">AI 노출 종합 점수</div>'
-        +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+avgScore+'</div>'
-        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgScore>=70?'AI 노출 양호':avgScore>=40?'개선 필요':'낮음')+'</div>'
+        +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+avgAiScore+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgAiScore>=70?'AI 노출 양호':avgAiScore>=40?'개선 필요':'낮음')+'</div>'
       +'</div>'
     +'</div>'
     +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 10px">AI 플랫폼별 추정 노출도</div>'
@@ -4199,7 +4384,7 @@ function renderGEOResult(name, kgScore, hasType, hasDesc, hasDetail, hasImage, h
         +'</div>';
     }).join('')+'</div>'
     +benchHtml
-    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 10px">📋 GEO 최적화 체크리스트 ('+totalCheckScore+'/100점)</div>'
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 10px">📋 GEO 최적화 체크리스트 ('+totalScore+'/'+maxScore+'점)</div>'
     +'<div>'+checkRows+'</div>'
     +priorityHtml
     +aiGuideHtml
@@ -6825,6 +7010,44 @@ window.addEventListener('popstate',function(e){
     setTimeout(animateCounters, 300);
   }
 })();
+</script>
+<script>
+// ── 모바일 메뉴 ──
+function toggleMobMenu(){
+  var menu=document.getElementById('mobMenu');
+  var overlay=document.getElementById('mobMenuOverlay');
+  var btn=document.getElementById('mobMenuBtn');
+  var isOpen=menu.classList.contains('open');
+  if(isOpen){ closeMobMenu(); }
+  else {
+    menu.classList.add('open');
+    overlay.classList.add('open');
+    btn.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+}
+function closeMobMenu(){
+  var menu=document.getElementById('mobMenu');
+  var overlay=document.getElementById('mobMenuOverlay');
+  var btn=document.getElementById('mobMenuBtn');
+  menu.classList.remove('open');
+  overlay.classList.remove('open');
+  btn.classList.remove('open');
+  document.body.style.overflow='';
+}
+function toggleMobSub(btn){
+  var sub=btn.nextElementSibling;
+  var isOpen=sub.classList.contains('open');
+  // 다른 열린 서브메뉴 닫기
+  document.querySelectorAll('.mob-sub.open').forEach(function(s){ s.classList.remove('open'); });
+  document.querySelectorAll('.mob-has-sub.active').forEach(function(b){ b.classList.remove('active'); });
+  if(!isOpen){
+    sub.classList.add('open');
+    btn.classList.add('active');
+  }
+}
+// ESC 키로 닫기
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMenu(); });
 </script>
 </body>
 </html>
