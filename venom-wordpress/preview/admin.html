@@ -869,23 +869,11 @@ a{color:var(--p);text-decoration:none}
         <div class="card-head">
           <div class="card-title">🤖 AI 글 미리보기 생성</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-          <div>
-            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">카테고리</label>
-            <select id="ap-prev-cat" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
-              <option value="geo">GEO/AI마케팅</option>
-              <option value="seo">SEO마케팅</option>
-              <option value="dental">치과마케팅</option>
-              <option value="skin">피부과마케팅</option>
-              <option value="oriental">한의원마케팅</option>
-              <option value="ortho">정형외과마케팅</option>
-              <option value="plastic">성형외과마케팅</option>
-              <option value="naegwa">내과마케팅</option>
-              <option value="angwa">안과마케팅</option>
-              <option value="shimui">의료광고심의</option>
-              <option value="geo_local">지역마케팅</option>
-            </select>
-          </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:8px">카테고리 선택 <span style="color:var(--mute);font-weight:400">(하나 선택)</span></label>
+          <div id="ap-prev-cat-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
           <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">키워드</label>
             <input type="text" id="ap-prev-kw" placeholder="예: 강남 치과 GEO 마케팅" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
@@ -1961,6 +1949,7 @@ var AP_CATS = [
   {id:'geo_local',label:'지역마케팅'},
 ];
 var _apSelectedCats = [];
+var _apPrevCat = 'geo';
 
 function apRenderCatChips() {
   var wrap = document.getElementById('ap-cat-chips');
@@ -1979,6 +1968,23 @@ function apToggleCat(id) {
   if (idx > -1) _apSelectedCats.splice(idx, 1);
   else _apSelectedCats.push(id);
   apRenderCatChips();
+}
+
+function apRenderPrevCatChips() {
+  var wrap = document.getElementById('ap-prev-cat-chips');
+  if (!wrap) return;
+  wrap.innerHTML = AP_CATS.map(function(c) {
+    var on = _apPrevCat === c.id;
+    return '<button type="button" onclick="apSelectPrevCat(\''+c.id+'\')" style="'
+      +'padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid '
+      +(on?'var(--primary)':'var(--border)')+';background:'+(on?'var(--primary)':'var(--soft)')+';color:'
+      +(on?'#fff':'var(--mute)')+';transition:all .15s">'+c.label+'</button>';
+  }).join('');
+}
+
+function apSelectPrevCat(id) {
+  _apPrevCat = id;
+  apRenderPrevCatChips();
 }
 
 function apApplySettings(s) {
@@ -2038,7 +2044,7 @@ async function apSaveSettings() {
 
 // AI 미리보기 생성
 async function apGeneratePreview(saveFlag) {
-  const cat = document.getElementById('ap-prev-cat').value;
+  const cat = _apPrevCat;
   const kw = document.getElementById('ap-prev-kw').value.trim();
   const region = document.getElementById('ap-prev-region').value.trim();
 
@@ -2349,6 +2355,7 @@ async function apRunNow() {
 
 function initAutoPost() {
   apRenderCatChips();
+  apRenderPrevCatChips();
   // secret 상태 표시
   const saved = localStorage.getItem('venom-admin-secret');
   if (saved) {
