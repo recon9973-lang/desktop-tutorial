@@ -5688,7 +5688,11 @@ var ADMIN_CAT_BG={
 function _cleanBroken(s) {
   return (s == null ? '' : String(s))
     .replace(/�+/g, '')
-    .replace(/<{2,3}\s*(TITLE|SEO|META|KEYWORDS|HTML|END)\s*>{2,3}/gi, '');
+    .replace(/<{2,3}\s*(TITLE|SEO|META|KEYWORDS|HTML|END)\s*>{2,3}/gi, '')
+    // 가짜 전화번호 제거 (기존 발행글도 화면에서 안 보이게)
+    .replace(/(전화|연락처|문의전화|상담전화|대표번호|고객센터|Tel\.?|TEL\.?)\s*[:：]?\s*(?:\+?82[-\s]?)?(?:0\d{1,2}|01\d)[-\s.]?\d{3,4}[-\s.]?\d{4}/g, '카카오 상담')
+    .replace(/(?:\+?82[-\s]?)?0\d{1,2}[-\s.]\d{3,4}[-\s.]\d{4}/g, '')
+    .replace(/\b1[5-9]\d{2}[-\s.]?\d{4}\b/g, '');
 }
 
 function _registerBlogPost(p) {
