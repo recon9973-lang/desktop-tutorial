@@ -376,7 +376,7 @@ a{color:var(--p);text-decoration:none}
       <div id="tab-posts" style="display:none">
         <div class="card">
           <div class="card-head">
-            <div class="card-title">전체 포스팅 <span style="font-size:13px;color:var(--mute);font-weight:400">(14개)</span></div>
+            <div class="card-title">전체 포스팅 <span style="font-size:13px;color:var(--mute);font-weight:400" id="post-total-count">(0개)</span></div>
             <div style="display:flex;gap:8px">
               <input type="text" placeholder="검색..." style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;width:200px">
               <select class="btn btn-outline btn-sm"><option>전체 상태</option><option>발행</option><option>초안</option></select>
@@ -961,6 +961,7 @@ function saveDraft(){
   }else{posts.unshift(post);}
   saveBlogPosts(posts);
   renderPostList();
+  updateDashboard();
   toast('초안이 저장되었습니다.');
   clearPostForm();
 }
@@ -981,6 +982,7 @@ function confirmPublish(){
   }else{posts.unshift(post);}
   saveBlogPosts(posts);
   renderPostList();
+  updateDashboard();
   toast('포스팅이 발행되었습니다! ✅');
   clearPostForm();
   switchTab(document.querySelector('[onclick*="tab-posts"]'),'tab-posts');
@@ -988,11 +990,14 @@ function confirmPublish(){
 function renderPostList(){
   var posts=getBlogPosts();
   var tbody=document.getElementById('posts-list-body');
+  var countEl=document.getElementById('post-total-count');
+  if(countEl)countEl.textContent='('+posts.length+'개)';
   if(!tbody)return;
   if(posts.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--mute);padding:24px">작성된 포스팅이 없습니다.</td></tr>';return;}
   tbody.innerHTML=posts.map(function(p){
     var badgeClass=p.status==='발행'?'badge-green':'badge-yellow';
-    return '<tr><td>'+p.title+'</td><td>'+p.cat+'</td><td><span class="badge '+badgeClass+'">'+p.status+'</span></td><td>'+(p.views||'—')+'</td><td>'+(p.date||'—')+'</td><td><button class="btn btn-outline btn-sm" onclick="editPostById(\''+p.id+'\')">수정</button> <button class="btn btn-outline btn-sm" style="color:#dc2626" onclick="deletePost(\''+p.id+'\')">삭제</button></td></tr>';
+    var catLabel=CAT_LABEL_MAP[p.cat]||p.cat;
+    return '<tr><td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.title+'</td><td>'+catLabel+'</td><td><span class="badge '+badgeClass+'">'+p.status+'</span></td><td>'+(p.views||'—')+'</td><td>'+(p.date||'—')+'</td><td><button class="btn btn-outline btn-sm" onclick="editPostById(\''+p.id+'\')">수정</button> <button class="btn btn-outline btn-sm" style="color:#dc2626" onclick="deletePost(\''+p.id+'\')">삭제</button></td></tr>';
   }).join('');
 }
 function editPostById(id){
@@ -1014,11 +1019,66 @@ function deletePost(id){
   var posts=getBlogPosts().filter(function(p){return p.id!==id;});
   saveBlogPosts(posts);
   renderPostList();
+  updateDashboard();
   toast('삭제되었습니다.');
 }
 function editPost(){toast('수정 모드 진입 (연동 준비 중)')}
+
+// ── 대시보드 실데이터 반영 ──
+var CAT_LABEL_MAP={geo:'GEO/AI',seo:'SEO',dental:'치과',skin:'피부과',oriental:'한의원',ortho:'정형외과',plastic:'성형외과',naegwa:'내과',angwa:'안과',shimui:'의료광고심의','지역마케팅':'지역마케팅'};
+
+function updateDashboard(){
+  var posts=getBlogPosts();
+  var published=posts.filter(function(p){return p.status==='발행';});
+  var drafts=posts.filter(function(p){return p.status==='초안';});
+
+  // 대시보드 포스팅 수
+  var statEl=document.getElementById('stat-posts');
+  if(statEl)statEl.textContent=published.length;
+
+  // 포스팅 목록 카운트
+  var countEl=document.querySelector('#section-blog .card-title span');
+  if(countEl)countEl.textContent='('+posts.length+'개)';
+
+  // 대시보드 최근 포스팅 테이블
+  var tbody=document.getElementById('recent-posts');
+  if(tbody){
+    if(posts.length===0){
+      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--mute);padding:16px">작성된 포스팅이 없습니다</td></tr>';
+    }else{
+      tbody.innerHTML=posts.slice(0,5).map(function(p){
+        var badge=p.status==='발행'?'<span class="badge badge-green">발행</span>':'<span class="badge badge-yellow">초안</span>';
+        return '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.title+'</td><td>'+badge+'</td><td>'+(p.views||'—')+'</td></tr>';
+      }).join('');
+    }
+  }
+}
+
+// 포스팅 수 stat 카드 추가 (없으면 3번째 카드 재활용)
+function ensurePostStatCard(){
+  var el=document.getElementById('stat-posts');
+  if(!el){
+    var cards=document.querySelectorAll('.stat-card');
+    if(cards[2]){
+      var valEl=cards[2].querySelector('.stat-val');
+      if(valEl){valEl.id='stat-posts';}
+      var labelEl=cards[2].querySelector('.stat-label');
+      if(labelEl)labelEl.textContent='발행 포스팅';
+      var changeEl=cards[2].querySelector('.stat-change');
+      if(changeEl)changeEl.textContent='총 '+getBlogPosts().length+'개 (초안 포함)';
+      var iconEl=cards[2].querySelector('.stat-icon');
+      if(iconEl)iconEl.textContent='✍️';
+    }
+  }
+}
+
 // 초기 렌더링
-document.addEventListener('DOMContentLoaded',function(){renderPostList();renderKeywordTable();});
+document.addEventListener('DOMContentLoaded',function(){
+  renderPostList();
+  renderKeywordTable();
+  ensurePostStatCard();
+  updateDashboard();
+});
 
 // ── OTHER ──
 function logout(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem('venom-admin-auth');window.location.href='admin-login.html';}}
