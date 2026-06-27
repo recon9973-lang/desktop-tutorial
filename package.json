@@ -4,5 +4,12 @@
   "private": true,
   "engines": {
     "node": ">=18"
+  },
+  "scripts": {
+    "convert-webp": "node scripts/convert-to-webp.js",
+    "build": "node scripts/convert-to-webp.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.4"
   }
 }
