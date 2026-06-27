@@ -13,7 +13,6 @@
 })();
 </script>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -38,7 +37,7 @@ a{color:var(--p);text-decoration:none}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r8);margin:1px 8px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;transition:all .15s}
 .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff}
 .nav-item.active{background:var(--p)}
-.nav-icon{flex-shrink:0;width:18px;height:18px;display:inline-block;vertical-align:middle}
+.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
 .sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,.08)}
 
 /* ── MAIN ── */
@@ -182,28 +181,28 @@ a{color:var(--p);text-decoration:none}
     <div class="logo-sub">병원마케팅 베놈 Admin</div>
   </div>
   <div class="nav-section">대시보드</div>
-  <div class="nav-item active" onclick="showSection('dashboard')"><i data-lucide="bar-chart-2" class="nav-icon"></i>대시보드</div>
+  <div class="nav-item active" onclick="showSection('dashboard')"><span class="nav-icon">📊</span>대시보드</div>
   <div class="nav-section">콘텐츠</div>
-  <div class="nav-item" onclick="showSection('blog')"><i data-lucide="pen-line" class="nav-icon"></i>블로그 포스팅</div>
-  <div class="nav-item" onclick="showSection('pages')"><i data-lucide="file-text" class="nav-icon"></i>페이지 관리</div>
-  <div class="nav-item" onclick="showSection('media')"><i data-lucide="image" class="nav-icon"></i>미디어 라이브러리</div>
+  <div class="nav-item" onclick="showSection('blog')"><span class="nav-icon">✍️</span>블로그 포스팅</div>
+  <div class="nav-item" onclick="showSection('pages')"><span class="nav-icon">📄</span>페이지 관리</div>
+  <div class="nav-item" onclick="showSection('media')"><span class="nav-icon">🖼️</span>미디어 라이브러리</div>
   <div class="nav-section">마케팅 분석</div>
-  <div class="nav-item" onclick="showSection('visitors')"><i data-lucide="users" class="nav-icon"></i>방문자 분석</div>
-  <div class="nav-item" onclick="showSection('keywords')"><i data-lucide="search" class="nav-icon"></i>키워드 현황</div>
-  <div class="nav-item" onclick="showSection('sources')"><i data-lucide="share-2" class="nav-icon"></i>유입 출처</div>
-  <div class="nav-item" onclick="showSection('seo')"><i data-lucide="sliders" class="nav-icon"></i>SEO 점수</div>
+  <div class="nav-item" onclick="showSection('visitors')"><span class="nav-icon">👥</span>방문자 분석</div>
+  <div class="nav-item" onclick="showSection('keywords')"><span class="nav-icon">🔍</span>키워드 현황</div>
+  <div class="nav-item" onclick="showSection('sources')"><span class="nav-icon">📡</span>유입 출처</div>
+  <div class="nav-item" onclick="showSection('seo')"><span class="nav-icon">⚙️</span>SEO 점수</div>
   <div class="nav-section">보고서</div>
-  <div class="nav-item" onclick="showSection('reports')"><i data-lucide="trending-up" class="nav-icon"></i>마케팅 리포트</div>
-  <div class="nav-item" onclick="showSection('cardnews')"><i data-lucide="layout-grid" class="nav-icon"></i>데일리 카드뉴스</div>
+  <div class="nav-item" onclick="showSection('reports')"><span class="nav-icon">📈</span>마케팅 리포트</div>
+  <div class="nav-item" onclick="showSection('cardnews')"><span class="nav-icon">🗞️</span>데일리 카드뉴스</div>
   <div class="nav-section">사이트 관리</div>
-  <div class="nav-item" onclick="showSection('autopost')"><i data-lucide="bot" class="nav-icon"></i>AI 자동 포스팅</div>
-  <div class="nav-item" onclick="showSection('logos')"><i data-lucide="award" class="nav-icon"></i>레퍼런스 로고</div>
+  <div class="nav-item" onclick="showSection('autopost')"><span class="nav-icon">🤖</span>AI 자동 포스팅</div>
+  <div class="nav-item" onclick="showSection('logos')"><span class="nav-icon">🏆</span>레퍼런스 로고</div>
   <div class="nav-section">설정</div>
-  <div class="nav-item" onclick="showSection('settings')"><i data-lucide="settings" class="nav-icon"></i>사이트 설정</div>
-  <div class="nav-item" onclick="showSection('users')"><i data-lucide="user" class="nav-icon"></i>계정 관리</div>
+  <div class="nav-item" onclick="showSection('settings')"><span class="nav-icon">⚙️</span>사이트 설정</div>
+  <div class="nav-item" onclick="showSection('users')"><span class="nav-icon">👤</span>계정 관리</div>
   <div class="sidebar-bottom">
-    <div class="nav-item" onclick="window.open('index.html','_blank')"><i data-lucide="globe" class="nav-icon"></i>사이트 보기</div>
-    <div class="nav-item" onclick="logout()"><i data-lucide="log-out" class="nav-icon"></i>로그아웃</div>
+    <div class="nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon">🌐</span>사이트 보기</div>
+    <div class="nav-item" onclick="logout()"><span class="nav-icon">🚪</span>로그아웃</div>
   </div>
 </aside>
 
@@ -227,25 +226,25 @@ a{color:var(--p);text-decoration:none}
     <div id="section-dashboard" class="admin-section active">
       <div class="stat-grid">
         <div class="stat-card">
-          <div class="stat-icon"><i data-lucide="users" style="width:28px;height:28px"></i></div>
+          <div class="stat-icon">👥</div>
           <div class="stat-label">오늘 방문자</div>
           <div class="stat-val" id="stat-visitors">248</div>
           <div class="stat-change up">↑ 12% 전일 대비</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon"><i data-lucide="eye" style="width:28px;height:28px"></i></div>
+          <div class="stat-icon">📄</div>
           <div class="stat-label">페이지뷰</div>
           <div class="stat-val" id="stat-pv">1,024</div>
           <div class="stat-change up">↑ 8% 전일 대비</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon"><i data-lucide="message-circle" style="width:28px;height:28px"></i></div>
+          <div class="stat-icon">💬</div>
           <div class="stat-label">상담 신청</div>
           <div class="stat-val" id="stat-leads">14</div>
           <div class="stat-change up">↑ 3건 전일 대비</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon"><i data-lucide="search" style="width:28px;height:28px"></i></div>
+          <div class="stat-icon">🔍</div>
           <div class="stat-label">키워드 순위 1위</div>
           <div class="stat-val" id="stat-kw">7</div>
           <div class="stat-change up">↑ 2개 상승</div>
@@ -859,25 +858,17 @@ a{color:var(--p);text-decoration:none}
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-          <div style="grid-column:1/-1">
+          <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">자동 발행 사용</label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
               <input type="checkbox" id="ap-enabled" style="width:18px;height:18px;accent-color:var(--p)">
-              <span style="font-size:13px">활성화 (스케줄 기간에 매일 자동 발행)</span>
+              <span style="font-size:13px">활성화</span>
             </label>
           </div>
-
-          <!-- 발행 스케줄 -->
-          <div style="grid-column:1/-1">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <label style="font-size:12px;color:var(--mute)">📅 발행 스케줄 (기간별 설정)</label>
-              <button class="btn btn-outline btn-sm" onclick="apAddSchedule()">+ 스케줄 추가</button>
-            </div>
-            <div id="ap-schedules-list" style="display:flex;flex-direction:column;gap:10px">
-              <div style="text-align:center;padding:20px;color:var(--mute);font-size:13px;border:1px dashed var(--border);border-radius:var(--r8)">스케줄이 없습니다. 위의 버튼으로 추가하세요.</div>
-            </div>
+          <div>
+            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">하루 발행 수량</label>
+            <input type="number" id="ap-daily-count" min="1" max="5" value="1" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
           </div>
-
           <div style="grid-column:1/-1">
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:8px">카테고리 선택 <span style="font-weight:400">(선택된 항목의 × 클릭 시 해제)</span></label>
             <div id="ap-cat-chips" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--r8);background:var(--soft);min-height:52px"></div>
@@ -904,43 +895,6 @@ a{color:var(--p);text-decoration:none}
           </div>
         </div>
         <div id="ap-settings-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:var(--r8);font-size:13px"></div>
-      </div>
-
-      <!-- 토큰 사용량 그래프 -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-head">
-          <div class="card-title">📊 토큰 사용량 (최근 30일)</div>
-          <button class="btn btn-outline btn-sm" onclick="apLoadUsageStats()">새로고침</button>
-        </div>
-        <!-- 요약 -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px" id="ap-usage-summary">
-          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
-            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">총 포스팅</div>
-            <div id="ap-stat-posts" style="font-size:20px;font-weight:700;color:var(--p)">—</div>
-          </div>
-          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
-            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">총 토큰</div>
-            <div id="ap-stat-tokens" style="font-size:20px;font-weight:700;color:var(--p)">—</div>
-          </div>
-          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
-            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">이미지 생성</div>
-            <div id="ap-stat-images" style="font-size:20px;font-weight:700;color:var(--p)">—</div>
-          </div>
-          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
-            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">예상 비용</div>
-            <div id="ap-stat-cost" style="font-size:20px;font-weight:700;color:#4ade80">—</div>
-          </div>
-        </div>
-        <!-- 바 차트 -->
-        <div style="margin-bottom:8px;font-size:11px;color:var(--mute)">일별 토큰 사용량</div>
-        <div id="ap-token-chart" style="height:120px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
-          <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:12px;color:var(--mute);padding:8px">데이터를 불러오는 중...</div>
-        </div>
-        <!-- 비용 차트 -->
-        <div style="margin-bottom:8px;margin-top:16px;font-size:11px;color:var(--mute)">일별 예상 비용 (USD)</div>
-        <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
-        </div>
-        <div style="font-size:11px;color:var(--mute);margin-top:8px">* gpt-4o-mini: 입력 $0.15/1M · 출력 $0.60/1M | DALL-E 3 (1024×1024 standard): $0.04/장</div>
       </div>
 
       <!-- 글 미리보기 생성 -->
@@ -1097,7 +1051,7 @@ function insertFaq(){
   document.getElementById('post-editor').value+='\n<h3>자주 묻는 질문</h3>\n<p><strong>Q. 질문을 입력하세요?</strong></p>\n<p>A. 답변을 입력하세요.</p>\n';
 }
 function insertCta(){
-  document.getElementById('post-editor').value+='\n<div class="dc-cta-box">\n  <h3>CTA 제목</h3>\n  <p>설명 문구</p>\n  <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p">💬 카카오상담</a>\n</div>\n';
+  document.getElementById('post-editor').value+='\n<div class="dc-cta-box">\n  <h3>CTA 제목</h3>\n  <p>설명 문구</p>\n  <a href="https://pf.kakao.com/_jxjxdcxj" target="_blank" class="btn btn-p">💬 카카오상담</a>\n</div>\n';
 }
 function aiWrite(){
   document.getElementById('ai-draft-panel').style.display='block';
@@ -1262,7 +1216,6 @@ function ensurePostStatCard(){
 
 // 초기 렌더링
 document.addEventListener('DOMContentLoaded',function(){
-  if(window.lucide)lucide.createIcons();
   renderPostList();
   renderKeywordTable();
   ensurePostStatCard();
@@ -1534,8 +1487,8 @@ var DEFAULT_SETTINGS={
   keywords:'병원마케팅,치과마케팅,GEO최적화,AEO최적화,의료SEO',
   url:'https://desktop-tutorial-chi-peach.vercel.app/',
   phone:'1661-4142',
-  kakao:'https://pf.kakao.com/_jxjxdcxj/chat',
-  email:'venomad@naver.com',
+  kakao:'https://pf.kakao.com/_jxjxdcxj',
+  email:'venom@venom.co.kr',
   address:'서울시 강남구 테헤란로',
   company:'주식회사 베놈'
 };
@@ -2188,55 +2141,10 @@ function apSelectPrevCat(id) {
   apRenderPrevCatChips();
 }
 
-// ── 스케줄 관리 ──
-var _apSchedules = [];
-
-function apRenderSchedules() {
-  var wrap = document.getElementById('ap-schedules-list');
-  if (!wrap) return;
-  if (!_apSchedules.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mute);font-size:13px;border:1px dashed var(--border);border-radius:var(--r8)">스케줄이 없습니다. 위의 버튼으로 추가하세요.</div>';
-    return;
-  }
-  wrap.innerHTML = _apSchedules.map(function(s, i) {
-    return '<div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:center;padding:12px 16px;background:var(--soft);border-radius:var(--r8);border:1px solid var(--border)">'
-      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">시작일</div>'
-      + '<input type="date" value="'+s.from+'" onchange="_apSchedules['+i+'].from=this.value" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
-      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">종료일</div>'
-      + '<input type="date" value="'+s.to+'" onchange="_apSchedules['+i+'].to=this.value" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
-      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">하루 발행 수</div>'
-      + '<input type="number" min="1" value="'+s.dailyCount+'" onchange="_apSchedules['+i+'].dailyCount=parseInt(this.value)||1" style="width:80px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
-      + '<div style="padding-top:18px"><button onclick="apRemoveSchedule('+i+')" style="padding:8px 12px;border:1px solid #f87171;border-radius:6px;background:transparent;color:#f87171;cursor:pointer;font-size:13px">삭제</button></div>'
-      + '</div>';
-  }).join('');
-}
-
-function apAddSchedule() {
-  var today = new Date().toISOString().slice(0, 10);
-  var nextMonth = new Date();
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-  var next = nextMonth.toISOString().slice(0, 10);
-  _apSchedules.push({ from: today, to: next, dailyCount: 1 });
-  apRenderSchedules();
-}
-
-function apRemoveSchedule(i) {
-  _apSchedules.splice(i, 1);
-  apRenderSchedules();
-}
-
 function apApplySettings(s) {
   if (!s) return;
   document.getElementById('ap-enabled').checked = !!s.enabled;
-  // schedules
-  _apSchedules = Array.isArray(s.schedules) ? s.schedules.map(function(x){return Object.assign({},x);}) : [];
-  // 레거시 dailyCount → schedules 변환
-  if (!_apSchedules.length && s.dailyCount) {
-    var today = new Date().toISOString().slice(0, 10);
-    var end = new Date(); end.setMonth(end.getMonth()+1);
-    _apSchedules = [{ from: today, to: end.toISOString().slice(0,10), dailyCount: s.dailyCount }];
-  }
-  apRenderSchedules();
+  document.getElementById('ap-daily-count').value = s.dailyCount || 1;
   _apSelectedCats = (s.categories || []).slice();
   apRenderCatChips();
   document.getElementById('ap-regions').value = (s.regions || []).join(',');
@@ -2250,7 +2158,7 @@ function apApplySettings(s) {
 async function apSaveSettings() {
   const settings = {
     enabled: document.getElementById('ap-enabled').checked,
-    schedules: _apSchedules.slice(),
+    dailyCount: parseInt(document.getElementById('ap-daily-count').value) || 1,
     categories: _apSelectedCats.slice(),
     regions: document.getElementById('ap-regions').value.split(',').map(s=>s.trim()).filter(Boolean),
     keywords: document.getElementById('ap-keywords').value.split('\n').map(s=>s.trim()).filter(Boolean),
@@ -2544,13 +2452,7 @@ async function apRunNow() {
 
   // 설정에서 발행 수량·카테고리·키워드 읽기
   const settings = JSON.parse(localStorage.getItem('venom-autopost-settings') || '{}');
-  // 오늘 날짜에 해당하는 스케줄 찾기
-  const todayStr = new Date().toISOString().slice(0, 10);
-  let count = parseInt(settings.dailyCount) || 1;
-  if (Array.isArray(settings.schedules) && settings.schedules.length) {
-    const active = settings.schedules.find(s => s.from <= todayStr && s.to >= todayStr);
-    count = active ? (parseInt(active.dailyCount) || 1) : 1;
-  }
+  const count = Math.min(parseInt(settings.dailyCount) || 1, 5);
   const cats = (settings.categories || ['geo']);
   const keywords = (settings.keywords || ['병원마케팅']);
   const regions = (settings.regions || []);
@@ -2605,52 +2507,6 @@ async function apRunNow() {
   apLoadPosts();
 }
 
-// ── 토큰 사용량 차트 ──
-async function apLoadUsageStats() {
-  try {
-    const r = await fetch(apApiBase() + '/api/usage-stats', { headers: apHeaders() });
-    if (!r.ok) return;
-    const data = await r.json();
-    if (!data.ok) return;
-
-    // 요약 수치
-    const t = data.totals;
-    const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-    setEl('ap-stat-posts',  t.posts);
-    setEl('ap-stat-tokens', t.totalTokens ? (t.totalTokens / 1000).toFixed(1) + 'K' : '0');
-    setEl('ap-stat-images', t.images);
-    setEl('ap-stat-cost',   '$' + t.costUsd.toFixed(3));
-
-    // 토큰 바 차트
-    const days = data.days;
-    const maxTokens = Math.max(...days.map(d => d.totalTokens), 1);
-    const maxCost   = Math.max(...days.map(d => d.costUsd), 0.001);
-
-    function makeChart(containerId, values, maxVal, color, labelFn) {
-      const wrap = document.getElementById(containerId);
-      if (!wrap) return;
-      const total = values.length;
-      wrap.innerHTML = values.map(function(d, i) {
-        const pct = Math.max((values[i] / maxVal) * 100, d > 0 ? 4 : 0);
-        const showLabel = (i % 7 === 0) || i === total - 1;
-        const dateLabel = d.date ? d.date.slice(5) : '';
-        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;position:relative">'
-          + '<div title="' + labelFn(d) + '" style="width:100%;border-radius:3px 3px 0 0;background:' + color + ';height:' + pct + '%;min-height:' + (values[i] > 0 ? '4px' : '0') + ';opacity:.85;transition:height .4s;cursor:default"></div>'
-          + (showLabel ? '<div style="position:absolute;bottom:-18px;font-size:9px;color:var(--mute);white-space:nowrap">' + dateLabel + '</div>' : '')
-          + '</div>';
-      }).join('');
-    }
-
-    makeChart('ap-token-chart', days.map(d => d.totalTokens), maxTokens, '#4f46e5',
-      d => d.date + ': ' + d.totalTokens.toLocaleString() + ' tokens (' + d.posts + '건)');
-    makeChart('ap-cost-chart',  days.map(d => d.costUsd),    maxCost,   '#4ade80',
-      d => d.date + ': $' + d.costUsd.toFixed(4) + ' (이미지 ' + d.images + '장)');
-
-  } catch(e) {
-    console.warn('[usage-stats]', e);
-  }
-}
-
 function initAutoPost() {
   apRenderCatChips();
   apRenderPrevCatChips();
@@ -2666,7 +2522,6 @@ function initAutoPost() {
   }
   apLoadSettings();
   apLoadPosts();
-  apLoadUsageStats();
 }
 
 // ── LAST UPDATED ──

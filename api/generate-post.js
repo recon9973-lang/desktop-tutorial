@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
     if (withImage && post.imagePrompt) {
       try {
         // 이미지 1장 (필수)
-        const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0);
+        const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0, post.title);
         if (img1) {
           images.push(img1);
           // 이미지 삽입: 본문 첫 번째 <h2> 앞에 헤더 이미지 추가
@@ -54,12 +54,12 @@ module.exports = async function handler(req, res) {
 
     post.images = images.map(i => i.url);
 
-    // 3. 저장 요청 시 GitHub에 저장 (자동 수정 후 검증 통과 시)
+    // 3. 저장 요청 시 GitHub에 저장
     if (save && post.validation.pass) {
       post.status = 'draft';
       try {
         await savePost(post);
-        await appendLog({ action: 'generate', id: post.id, title: post.title, category, keyword, autoFixed: post.autoFixed });
+        await appendLog({ action: 'generate', id: post.id, title: post.title, category, keyword });
       } catch (storeErr) {
         post._storeError = storeErr.message;
       }
