@@ -9,9 +9,10 @@ const TOKEN  = process.env.GITHUB_TOKEN;
 const PATH   = 'venom-wordpress/preview/content/posting-settings.json';
 
 const DEFAULT = {
-  enabled: false, dailyCount: 1,
+  enabled: false,
+  schedules: [],
   categories: ['geo'], keywords: ['병원 GEO마케팅', 'AI 병원마케팅'],
-  regions: ['서울', '강남'], extra: '', schedule: '0 9 * * *',
+  regions: ['서울', '강남'], extra: '',
 };
 
 function ghGet(filePath) {

@@ -6,12 +6,31 @@ const { savePost, appendLog } = require('../lib/github-store');
 
 const DEFAULT_SETTINGS = {
   enabled: false,
-  dailyCount: 1,
+  schedules: [],
   categories: ['geo'],
   keywords: ['병원 GEO마케팅'],
   regions: [],
   extra: '',
 };
+
+// 오늘 날짜(KST)에 해당하는 스케줄 찾기
+function getTodayCount(settings) {
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  const todayStr = today.toISOString().slice(0, 10);
+
+  // schedules 배열 방식
+  if (Array.isArray(settings.schedules) && settings.schedules.length) {
+    for (const s of settings.schedules) {
+      if (s.from && s.to && todayStr >= s.from && todayStr <= s.to) {
+        return Math.max(1, parseInt(s.dailyCount) || 1);
+      }
+    }
+    return 0; // 오늘에 해당하는 스케줄 없으면 발행 안 함
+  }
+
+  // 레거시: dailyCount 단일 값
+  return Math.max(1, parseInt(settings.dailyCount) || 1);
+}
 
 function authCheck(req) {
   const secret = process.env.CRON_SECRET;
@@ -44,7 +63,10 @@ module.exports = async function handler(req, res) {
   }
 
   const results = [];
-  const count = Math.min(settings.dailyCount || 1, 5);
+  const count = getTodayCount(settings);
+  if (count === 0) {
+    return res.status(200).json({ ok: true, skipped: true, reason: '오늘은 발행 스케줄이 없습니다.' });
+  }
 
   for (let i = 0; i < count; i++) {
     const cats = settings.categories || ['geo'];
@@ -73,18 +95,25 @@ module.exports = async function handler(req, res) {
         console.warn('[cron] 이미지 생성 실패(무시):', imgErr.message);
       }
 
+      const logBase = {
+        id: post.id,
+        title: post.title,
+        tokenUsage: post.tokenUsage || null,
+        imageGenerated: !!(post.images && post.images.length),
+      };
+
       if (post.validation.pass) {
         // 검증 통과 (자동 수정 포함) → 즉시 발행
         post.status = 'published';
         await savePost(post);
         const action = post.autoFixed ? 'cron-publish-fixed' : 'cron-publish';
-        await appendLog({ action, id: post.id, title: post.title, autoFixed: post.autoFixed });
+        await appendLog({ action, ...logBase, autoFixed: post.autoFixed });
         results.push({ ok: true, id: post.id, title: post.title, autoFixed: post.autoFixed });
       } else {
         // 자동 수정 후에도 금지어 잔존 → 검수 대기
         post.status = 'review';
         await savePost(post);
-        await appendLog({ action: 'cron-review', id: post.id, title: post.title, forbidden: post.validation.forbidden });
+        await appendLog({ action: 'cron-review', ...logBase, forbidden: post.validation.forbidden });
         results.push({ ok: false, id: post.id, title: post.title, reason: '의료광고 검수 필요', forbidden: post.validation.forbidden });
       }
     } catch (e) {
