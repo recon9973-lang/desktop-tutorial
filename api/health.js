@@ -28,6 +28,59 @@ function httpGet({ hostname, path, headers, timeout = 15000 }) {
   });
 }
 
+function httpPost({ hostname, path, headers, body, timeout = 18000 }) {
+  return new Promise((resolve) => {
+    const payload = JSON.stringify(body);
+    const req = https.request({ hostname, path, method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, (res) => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        const text = Buffer.concat(chunks).toString('utf8');
+        let json = null; try { json = JSON.parse(text); } catch {}
+        resolve({ status: res.statusCode, json, text });
+      });
+    });
+    req.on('error', (e) => resolve({ status: 0, error: e.message }));
+    req.setTimeout(timeout, () => { req.destroy(); resolve({ status: 0, error: 'timeout' }); });
+    req.write(payload); req.end();
+  });
+}
+
+// 이미지 생성 정밀 진단: 접근 가능한 이미지 모델 목록 + 실제 생성 시도 후 OpenAI의 정확한 에러 수집
+async function probeImage() {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return { error: 'OPENAI_API_KEY 미설정' };
+  const auth = { 'Authorization': `Bearer ${key}` };
+
+  // 1) 키가 접근 가능한 이미지 관련 모델 목록
+  const models = await httpGet({ hostname: 'api.openai.com', path: '/v1/models', headers: auth });
+  let imageModels = [];
+  if (models.status === 200 && models.json && Array.isArray(models.json.data)) {
+    imageModels = models.json.data.map(m => m.id).filter(id => /dall-e|gpt-image|image/.test(id)).sort();
+  }
+
+  // 2) 설정된 이미지 모델로 실제 1장 생성 시도 → 정확한 에러/성공 확인
+  const model = process.env.OPENAI_IMAGE_MODEL || 'dall-e-3';
+  const gen = await httpPost({
+    hostname: 'api.openai.com', path: '/v1/images/generations', headers: auth,
+    body: { model, prompt: 'a plain white square, minimal test', n: 1, size: '1024x1024' },
+  });
+  let test;
+  if (gen.status === 200 && gen.json && gen.json.data) {
+    test = { ok: true, status: 200, note: '이미지 생성 성공 — 이미지 기능 정상 동작 가능' };
+  } else {
+    const err = gen.json && gen.json.error ? gen.json.error : {};
+    test = {
+      ok: false, status: gen.status,
+      errorType: err.type || null, errorCode: err.code || null,
+      message: err.message || gen.error || gen.text?.slice(0, 300) || '알 수 없음',
+    };
+  }
+
+  return { testedModel: model, accessibleImageModels: imageModels, testGeneration: test };
+}
+
 async function checkOpenAI() {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return { present: false, ok: false, reason: 'OPENAI_API_KEY 미설정' };
@@ -80,6 +133,13 @@ module.exports = async function handler(req, res) {
     hasAdminSecret: !!process.env.ADMIN_SECRET,
     time: new Date().toISOString(),
   };
+
+  // 이미지 정밀 진단(?check=image): 실제 생성 시도로 OpenAI의 정확한 사유 확인
+  const wantImage = (req.query && req.query.check === 'image') || /[?&]check=image/.test(req.url || '');
+  if (wantImage) {
+    const image = await probeImage();
+    return res.status(200).json({ ...base, image });
+  }
 
   // 전체 점검 요청이 아니면 기본 정보만 (외부 API 호출 없음)
   const full = (req.query && (req.query.check === 'full' || req.query.full === '1'))
