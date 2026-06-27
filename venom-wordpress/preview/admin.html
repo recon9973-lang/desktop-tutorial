@@ -843,6 +843,14 @@ a{color:var(--p);text-decoration:none}
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">추가 지시사항 (AI에게 전달할 특별 요구)</label>
             <textarea id="ap-extra" rows="2" placeholder="베놈 에이전시 실전 사례 언급, 구체적 수치 포함, FAQ 7개 이상" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none;resize:vertical"></textarea>
           </div>
+          <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">🔑 API 인증 토큰 (Vercel 환경변수 ADMIN_SECRET 값)</label>
+            <div style="display:flex;gap:8px">
+              <input type="password" id="ap-secret-input" placeholder="ADMIN_SECRET 값 입력" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+              <button class="btn btn-outline btn-sm" onclick="apSaveSecret()">저장</button>
+            </div>
+            <div style="font-size:11px;color:var(--mute);margin-top:4px" id="ap-secret-status"></div>
+          </div>
         </div>
         <div id="ap-settings-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:var(--r8);font-size:13px"></div>
       </div>
@@ -2185,7 +2193,27 @@ function apDeletePost(id) {
   apLoadPosts();
 }
 
+function apSaveSecret() {
+  const val = document.getElementById('ap-secret-input').value.trim();
+  if (!val) { showToast('토큰을 입력해주세요.'); return; }
+  AP_ADMIN_SECRET = val;
+  localStorage.setItem('venom-admin-secret', val);
+  document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 이제 API 호출에 사용됩니다.';
+  document.getElementById('ap-secret-input').value = '';
+  showToast('API 토큰 저장 완료');
+}
+
 function initAutoPost() {
+  // secret 상태 표시
+  const saved = localStorage.getItem('venom-admin-secret');
+  if (saved) {
+    AP_ADMIN_SECRET = saved;
+    const el = document.getElementById('ap-secret-status');
+    if (el) el.textContent = '✅ 저장된 토큰 있음';
+  } else {
+    const el = document.getElementById('ap-secret-status');
+    if (el) el.style.color = '#f87171', el.textContent = '⚠️ 토큰 미입력 — API 호출 시 인증 오류 발생';
+  }
   apLoadSettings();
   apLoadPosts();
 }
