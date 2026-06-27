@@ -1,8 +1,12 @@
 {
   "outputDirectory": "venom-wordpress/preview",
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/:path*" }
-  ],
+  "functions": {
+    "api/generate-post.js": { "maxDuration": 60 },
+    "api/cron-daily-posts.js": { "maxDuration": 60 },
+    "api/posting-settings.js": { "maxDuration": 15 },
+    "api/publish-post.js": { "maxDuration": 15 },
+    "api/validate-medical-ad.js": { "maxDuration": 10 }
+  },
   "crons": [
     {
       "path": "/api/cron-daily-posts",
