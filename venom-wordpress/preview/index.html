@@ -7726,12 +7726,27 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // ── LOGO MARQUEE ──
 (function(){
-  var DEFAULT_LOGOS=[{url:'/content/images/sec06_client_logo_01.png',name:'클라이언트 레퍼런스1'},{url:'/content/images/sec06_client_logo02.png',name:'클라이언트 레퍼런스2'}];
-  function getLogos(){try{var s=localStorage.getItem('venom-logos');return s?JSON.parse(s):null;}catch(e){return null;}}
+  var DEFAULT_LOGOS=[
+    {url:'/content/images/sec06_client_logo_01.png',name:'클라이언트 레퍼런스1'},
+    {url:'/content/images/sec06_client_logo02.png',name:'클라이언트 레퍼런스2'}
+  ];
+  // 구버전 venomad.com URL이 localStorage에 남아있으면 제거
+  var OLD_URLS=['https://www.venomad.com/images/sec06_client_logo.png'];
+  function cleanOldLogos(){
+    try{
+      var s=localStorage.getItem('venom-logos');
+      if(!s)return;
+      var arr=JSON.parse(s);
+      var cleaned=arr.filter(function(l){return OLD_URLS.indexOf(l.url)===-1;});
+      if(cleaned.length!==arr.length)localStorage.setItem('venom-logos',JSON.stringify(cleaned));
+    }catch(e){}
+  }
+  function getLogos(){try{var s=localStorage.getItem('venom-logos');var a=s?JSON.parse(s):null;return(a&&a.length)?a:null;}catch(e){return null;}}
   function renderMarquee(){
     var track=document.getElementById('logo-marquee-track');
     var section=document.getElementById('logo-marquee-section');
     if(!track||!section)return;
+    cleanOldLogos();
     var logos=getLogos()||DEFAULT_LOGOS;
     if(logos.length===0){section.style.display='none';return;}
     section.style.display='';
