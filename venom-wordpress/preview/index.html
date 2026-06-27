@@ -406,6 +406,16 @@ body{padding-top:0}
 .speakable{background:var(--soft);border-left:3px solid var(--p);padding:18px 22px;
   border-radius:0 var(--r8) var(--r8) 0;font-size:15.5px;font-weight:300;
   color:var(--ink2);line-height:1.8;margin-bottom:28px}
+/* logo marquee banner */
+.logo-marquee-section{background:#10123a;padding:18px 0;overflow:hidden}
+.logo-marquee-inner{display:flex;align-items:center;gap:0;overflow:hidden;position:relative}
+.logo-marquee-inner::before,.logo-marquee-inner::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none}
+.logo-marquee-inner::before{left:0;background:linear-gradient(to right,#10123a,transparent)}
+.logo-marquee-inner::after{right:0;background:linear-gradient(to left,#10123a,transparent)}
+.logo-marquee-track{display:flex;align-items:center;gap:48px;animation:logoMarquee 24s linear infinite;white-space:nowrap;will-change:transform}
+.logo-marquee-track img{height:34px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.6;flex-shrink:0;transition:opacity .2s}
+.logo-marquee-track img:hover{opacity:1}
+@keyframes logoMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 /* stat-bar — tnum for numbers */
 .stat-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
   margin:28px 0;padding:24px;background:var(--soft);border-radius:var(--r12)}
@@ -780,6 +790,13 @@ body{padding-top:0}
       </div>
     </div>
   </section>
+
+  <!-- 레퍼런스 로고 롤링 배너 -->
+  <div class="logo-marquee-section" id="logo-marquee-section">
+    <div class="logo-marquee-inner">
+      <div class="logo-marquee-track" id="logo-marquee-track"></div>
+    </div>
+  </div>
 
   <!-- 스탯 바 -->
   <div class="stat-bar">
@@ -7509,6 +7526,24 @@ document.addEventListener('DOMContentLoaded',function(){
     if(window.scrollY>300)btt.classList.add('show');else btt.classList.remove('show');
   });
 });
+
+// ── LOGO MARQUEE ──
+(function(){
+  var DEFAULT_LOGOS=[{url:'https://www.venomad.com/images/sec06_client_logo.png',name:'레퍼런스'}];
+  function getLogos(){try{var s=localStorage.getItem('venom-logos');return s?JSON.parse(s):null;}catch(e){return null;}}
+  function renderMarquee(){
+    var track=document.getElementById('logo-marquee-track');
+    var section=document.getElementById('logo-marquee-section');
+    if(!track||!section)return;
+    var logos=getLogos()||DEFAULT_LOGOS;
+    if(logos.length===0){section.style.display='none';return;}
+    section.style.display='';
+    var imgs=logos.map(function(l){return '<img src="'+l.url+'" alt="'+l.name+'" loading="lazy">';}).join('');
+    track.innerHTML=imgs+imgs;
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',renderMarquee);}
+  else{renderMarquee();}
+})();
 </script>
 
 <!-- 샘플 홈페이지 모달 -->
