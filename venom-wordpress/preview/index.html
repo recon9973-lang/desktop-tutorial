@@ -4433,6 +4433,12 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   color:var(--p);border:1.5px solid var(--p);border-radius:var(--rpill);text-decoration:none;transition:.2s}
 .mob-cta-ghost:hover{background:var(--p);color:#fff}
 
+/* 데스크톱(769px↑)에서는 모바일 메뉴/오버레이/햄버거를 항상 숨김 —
+   좁은 창에서 연 뒤 넓혀도 드로어가 남지 않도록 보장 */
+@media(min-width:769px){
+  .mob-menu, .mob-menu-overlay, .mob-menu-btn{ display:none !important; }
+}
+
 /* 모바일 추가 */
 @media(max-width:768px){
   .mesh{ padding: 80px 0 60px !important; }
@@ -8300,6 +8306,13 @@ function closeMobMenu(){
   btn.classList.remove('open');
   document.body.style.overflow='';
 }
+// 데스크톱 폭으로 넓어지면 열려있던 모바일 메뉴를 닫고 스크롤 잠금 해제(잔류 상태 방지)
+window.addEventListener('resize',function(){
+  if(window.innerWidth>768){
+    var m=document.getElementById('mobMenu');
+    if(m&&m.classList.contains('open')) closeMobMenu();
+  }
+});
 function toggleMobSub(btn){
   var sub=btn.nextElementSibling;
   var isOpen=sub.classList.contains('open');
