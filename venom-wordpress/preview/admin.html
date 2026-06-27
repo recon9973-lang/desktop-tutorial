@@ -785,6 +785,16 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ── 자동 포스팅 섹션 ── -->
     <div id="section-autopost" class="admin-section">
+      <!-- 지금 실행 버튼 -->
+      <div class="card" style="margin-bottom:20px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px">🚀 지금 바로 자동 발행 실행</div>
+          <div style="font-size:13px;color:var(--mute)">설정된 수량만큼 AI 포스트를 즉시 생성하고 발행합니다. (매일 자정 자동 실행과 동일)</div>
+        </div>
+        <button class="btn btn-p" id="ap-run-now-btn" onclick="apRunNow()" style="font-size:14px;padding:12px 24px;white-space:nowrap">▶ 지금 실행</button>
+      </div>
+      <div id="ap-run-result" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:var(--r8);font-size:13px;line-height:1.7"></div>
+
       <!-- 상태 카드 -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px">
         <div class="card" style="padding:18px">
@@ -2214,6 +2224,70 @@ function apSaveSecret() {
   document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 이제 API 호출에 사용됩니다.';
   document.getElementById('ap-secret-input').value = '';
   toast('API 토큰 저장 완료');
+}
+
+async function apRunNow() {
+  const btn = document.getElementById('ap-run-now-btn');
+  const resultEl = document.getElementById('ap-run-result');
+  btn.disabled = true;
+  btn.textContent = '⏳ 실행 중...';
+  resultEl.style.display = 'none';
+
+  // 설정에서 발행 수량·카테고리·키워드 읽기
+  const settings = JSON.parse(localStorage.getItem('venom-autopost-settings') || '{}');
+  const count = Math.min(parseInt(settings.dailyCount) || 1, 5);
+  const cats = (settings.categories || ['geo']);
+  const keywords = (settings.keywords || ['병원마케팅']);
+  const regions = (settings.regions || []);
+  const extra = settings.extra || '';
+
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    const category = cats[i % cats.length];
+    const keyword = keywords[i % keywords.length];
+    const region = regions.length ? regions[i % regions.length] : '';
+    btn.textContent = `⏳ ${i+1}/${count} 생성 중...`;
+    try {
+      const r = await fetch(apApiBase() + '/api/generate-post', {
+        method: 'POST', headers: apHeaders(),
+        body: JSON.stringify({ category, keyword, region, extra, save: false })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || r.status);
+      const post = data.post;
+      // 발행 처리 (localStorage)
+      const posts = JSON.parse(localStorage.getItem('venom_blog_posts') || '[]');
+      post.status = post.validation.pass ? '발행' : '검수대기';
+      const idx = posts.findIndex(p => p.id === post.id);
+      const blogPost = {
+        id: post.id, title: post.title, cat: post.cat,
+        seoTitle: post.seoTitle, keywords: post.keywords,
+        meta: post.metaDesc, content: post.html,
+        status: post.status, views: 0, date: post.date
+      };
+      if (idx >= 0) posts[idx] = blogPost; else posts.unshift(blogPost);
+      localStorage.setItem('venom_blog_posts', JSON.stringify(posts));
+      results.push({ ok: post.validation.pass, title: post.title, status: post.status, forbidden: post.validation.forbidden });
+    } catch(e) {
+      results.push({ ok: false, title: `${category} / ${keyword}`, error: e.message });
+    }
+  }
+
+  // 결과 표시
+  const allOk = results.every(r => r.ok);
+  resultEl.style.background = allOk ? '#14532d' : '#3d1a1a';
+  resultEl.style.color = allOk ? '#4ade80' : '#f87171';
+  resultEl.innerHTML = `<strong>${allOk ? '✅' : '⚠️'} ${count}개 실행 완료</strong><br>` +
+    results.map((r, i) => {
+      if (r.error) return `${i+1}. ❌ ${r.title} — ${r.error}`;
+      if (!r.ok) return `${i+1}. ⚠️ 검수 대기: ${r.title} (금지어: ${r.forbidden.join(', ')})`;
+      return `${i+1}. ✅ 발행: ${r.title}`;
+    }).join('<br>');
+  resultEl.style.display = 'block';
+
+  btn.disabled = false;
+  btn.textContent = '▶ 지금 실행';
+  apLoadPosts();
 }
 
 function initAutoPost() {
