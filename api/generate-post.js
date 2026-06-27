@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
     if (withImage && post.imagePrompt) {
       try {
         // 이미지 1장 (필수)
-        const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0);
+        const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0, post.title);
         if (img1) {
           images.push(img1);
           // 이미지 삽입: 본문 첫 번째 <h2> 앞에 헤더 이미지 추가
