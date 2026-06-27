@@ -61,10 +61,11 @@ async function probeImage() {
   }
 
   // 2) 설정된 이미지 모델로 실제 1장 생성 시도 → 정확한 에러/성공 확인
-  const model = process.env.OPENAI_IMAGE_MODEL || 'dall-e-3';
+  const model = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
+  const genBody = { model, prompt: 'a plain white square, minimal test', n: 1, size: '1024x1024' };
+  if (/^dall-e/.test(model)) genBody.response_format = 'b64_json'; else genBody.quality = 'medium';
   const gen = await httpPost({
-    hostname: 'api.openai.com', path: '/v1/images/generations', headers: auth,
-    body: { model, prompt: 'a plain white square, minimal test', n: 1, size: '1024x1024' },
+    hostname: 'api.openai.com', path: '/v1/images/generations', headers: auth, body: genBody,
   });
   let test;
   if (gen.status === 200 && gen.json && gen.json.data) {
@@ -90,12 +91,14 @@ async function checkOpenAI() {
   });
   if (r.status === 200 && r.json && Array.isArray(r.json.data)) {
     const ids = r.json.data.map(m => m.id);
-    const hasDallE = ids.some(id => /dall-e-3/.test(id));
+    const configured = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
+    const hasImage = ids.includes(configured) || ids.some(id => /gpt-image|dall-e-3/.test(id));
     const hasText = ids.some(id => /gpt-4o-mini|gpt-4o|gpt-4/.test(id));
     return {
       present: true, ok: true, keyValid: true,
-      dalle3Access: hasDallE, textModelAccess: hasText,
-      reason: hasDallE ? '정상' : 'DALL-E 3 접근 권한 없음 — OpenAI 결제/이미지 권한 확인 필요',
+      imageModelAccess: hasImage, dalle3Access: hasImage, // dalle3Access는 하위호환 별칭
+      textModelAccess: hasText, configuredImageModel: configured,
+      reason: hasImage ? '정상' : '사용 가능한 이미지 모델 없음 — OpenAI 결제/모델 권한 확인 필요',
     };
   }
   const msg = r.json && r.json.error ? r.json.error.message : (r.error || `HTTP ${r.status}`);
@@ -158,7 +161,7 @@ module.exports = async function handler(req, res) {
 
   const [openai, github] = await Promise.all([checkOpenAI(), checkGitHub()]);
 
-  const imageReady = !!(openai.dalle3Access && github.canPush);
+  const imageReady = !!(openai.imageModelAccess && github.canPush);
   const textReady  = !!(openai.textModelAccess || openai.keyValid);
 
   return res.status(200).json({
@@ -167,7 +170,7 @@ module.exports = async function handler(req, res) {
     verdict: {
       textGeneration: textReady ? '가능' : '불가 — ' + (openai.reason || ''),
       imageGeneration: imageReady ? '가능' : '불가 — ' + [
-        !openai.dalle3Access ? 'OpenAI: ' + (openai.reason || 'DALL-E 접근 불가') : '',
+        !openai.imageModelAccess ? 'OpenAI: ' + (openai.reason || '이미지 모델 접근 불가') : '',
         !github.canPush ? 'GitHub: ' + (github.reason || '쓰기 불가') : '',
       ].filter(Boolean).join(' / '),
     },
