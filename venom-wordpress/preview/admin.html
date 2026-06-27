@@ -13,6 +13,7 @@
 })();
 </script>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -37,7 +38,7 @@ a{color:var(--p);text-decoration:none}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r8);margin:1px 8px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;transition:all .15s}
 .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff}
 .nav-item.active{background:var(--p)}
-.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.nav-icon{flex-shrink:0;width:18px;height:18px;display:inline-block;vertical-align:middle}
 .sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid rgba(255,255,255,.08)}
 
 /* ── MAIN ── */
@@ -181,28 +182,28 @@ a{color:var(--p);text-decoration:none}
     <div class="logo-sub">병원마케팅 베놈 Admin</div>
   </div>
   <div class="nav-section">대시보드</div>
-  <div class="nav-item active" onclick="showSection('dashboard')"><span class="nav-icon">📊</span>대시보드</div>
+  <div class="nav-item active" onclick="showSection('dashboard')"><i data-lucide="bar-chart-2" class="nav-icon"></i>대시보드</div>
   <div class="nav-section">콘텐츠</div>
-  <div class="nav-item" onclick="showSection('blog')"><span class="nav-icon">✍️</span>블로그 포스팅</div>
-  <div class="nav-item" onclick="showSection('pages')"><span class="nav-icon">📄</span>페이지 관리</div>
-  <div class="nav-item" onclick="showSection('media')"><span class="nav-icon">🖼️</span>미디어 라이브러리</div>
+  <div class="nav-item" onclick="showSection('blog')"><i data-lucide="pen-line" class="nav-icon"></i>블로그 포스팅</div>
+  <div class="nav-item" onclick="showSection('pages')"><i data-lucide="file-text" class="nav-icon"></i>페이지 관리</div>
+  <div class="nav-item" onclick="showSection('media')"><i data-lucide="image" class="nav-icon"></i>미디어 라이브러리</div>
   <div class="nav-section">마케팅 분석</div>
-  <div class="nav-item" onclick="showSection('visitors')"><span class="nav-icon">👥</span>방문자 분석</div>
-  <div class="nav-item" onclick="showSection('keywords')"><span class="nav-icon">🔍</span>키워드 현황</div>
-  <div class="nav-item" onclick="showSection('sources')"><span class="nav-icon">📡</span>유입 출처</div>
-  <div class="nav-item" onclick="showSection('seo')"><span class="nav-icon">⚙️</span>SEO 점수</div>
+  <div class="nav-item" onclick="showSection('visitors')"><i data-lucide="users" class="nav-icon"></i>방문자 분석</div>
+  <div class="nav-item" onclick="showSection('keywords')"><i data-lucide="search" class="nav-icon"></i>키워드 현황</div>
+  <div class="nav-item" onclick="showSection('sources')"><i data-lucide="share-2" class="nav-icon"></i>유입 출처</div>
+  <div class="nav-item" onclick="showSection('seo')"><i data-lucide="sliders" class="nav-icon"></i>SEO 점수</div>
   <div class="nav-section">보고서</div>
-  <div class="nav-item" onclick="showSection('reports')"><span class="nav-icon">📈</span>마케팅 리포트</div>
-  <div class="nav-item" onclick="showSection('cardnews')"><span class="nav-icon">🗞️</span>데일리 카드뉴스</div>
+  <div class="nav-item" onclick="showSection('reports')"><i data-lucide="trending-up" class="nav-icon"></i>마케팅 리포트</div>
+  <div class="nav-item" onclick="showSection('cardnews')"><i data-lucide="layout-grid" class="nav-icon"></i>데일리 카드뉴스</div>
   <div class="nav-section">사이트 관리</div>
-  <div class="nav-item" onclick="showSection('autopost')"><span class="nav-icon">🤖</span>AI 자동 포스팅</div>
-  <div class="nav-item" onclick="showSection('logos')"><span class="nav-icon">🏆</span>레퍼런스 로고</div>
+  <div class="nav-item" onclick="showSection('autopost')"><i data-lucide="bot" class="nav-icon"></i>AI 자동 포스팅</div>
+  <div class="nav-item" onclick="showSection('logos')"><i data-lucide="award" class="nav-icon"></i>레퍼런스 로고</div>
   <div class="nav-section">설정</div>
-  <div class="nav-item" onclick="showSection('settings')"><span class="nav-icon">⚙️</span>사이트 설정</div>
-  <div class="nav-item" onclick="showSection('users')"><span class="nav-icon">👤</span>계정 관리</div>
+  <div class="nav-item" onclick="showSection('settings')"><i data-lucide="settings" class="nav-icon"></i>사이트 설정</div>
+  <div class="nav-item" onclick="showSection('users')"><i data-lucide="user" class="nav-icon"></i>계정 관리</div>
   <div class="sidebar-bottom">
-    <div class="nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon">🌐</span>사이트 보기</div>
-    <div class="nav-item" onclick="logout()"><span class="nav-icon">🚪</span>로그아웃</div>
+    <div class="nav-item" onclick="window.open('index.html','_blank')"><i data-lucide="globe" class="nav-icon"></i>사이트 보기</div>
+    <div class="nav-item" onclick="logout()"><i data-lucide="log-out" class="nav-icon"></i>로그아웃</div>
   </div>
 </aside>
 
@@ -226,25 +227,25 @@ a{color:var(--p);text-decoration:none}
     <div id="section-dashboard" class="admin-section active">
       <div class="stat-grid">
         <div class="stat-card">
-          <div class="stat-icon">👥</div>
+          <div class="stat-icon"><i data-lucide="users" style="width:28px;height:28px"></i></div>
           <div class="stat-label">오늘 방문자</div>
           <div class="stat-val" id="stat-visitors">248</div>
           <div class="stat-change up">↑ 12% 전일 대비</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📄</div>
+          <div class="stat-icon"><i data-lucide="eye" style="width:28px;height:28px"></i></div>
           <div class="stat-label">페이지뷰</div>
           <div class="stat-val" id="stat-pv">1,024</div>
           <div class="stat-change up">↑ 8% 전일 대비</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">💬</div>
+          <div class="stat-icon"><i data-lucide="message-circle" style="width:28px;height:28px"></i></div>
           <div class="stat-label">상담 신청</div>
           <div class="stat-val" id="stat-leads">14</div>
           <div class="stat-change up">↑ 3건 전일 대비</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">🔍</div>
+          <div class="stat-icon"><i data-lucide="search" style="width:28px;height:28px"></i></div>
           <div class="stat-label">키워드 순위 1위</div>
           <div class="stat-val" id="stat-kw">7</div>
           <div class="stat-change up">↑ 2개 상승</div>
@@ -1261,6 +1262,7 @@ function ensurePostStatCard(){
 
 // 초기 렌더링
 document.addEventListener('DOMContentLoaded',function(){
+  if(window.lucide)lucide.createIcons();
   renderPostList();
   renderKeywordTable();
   ensurePostStatCard();
