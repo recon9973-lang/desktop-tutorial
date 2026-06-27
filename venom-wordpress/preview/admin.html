@@ -707,22 +707,37 @@ a{color:var(--p);text-decoration:none}
         <!-- 추가 폼 -->
         <div class="logo-add-box">
           <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:16px">+ 새 로고 추가</div>
-          <div class="form-row">
-            <div class="form-group" style="margin-bottom:0">
-              <label>거래처명</label>
-              <input type="text" id="logo-name-input" placeholder="예: 강남베스트치과">
-            </div>
-            <div class="form-group" style="margin-bottom:0">
-              <label>이미지 URL</label>
-              <input type="text" id="logo-url-input" placeholder="https://..." oninput="previewLogo()">
-            </div>
+          <!-- 로고 파일 업로드 -->
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button id="logo-tab-file" class="btn btn-p" onclick="logoTabSwitch('file')" style="font-size:12px;padding:7px 16px">📁 파일 업로드 (WebP 자동변환)</button>
+            <button id="logo-tab-url" class="btn btn-outline" onclick="logoTabSwitch('url')" style="font-size:12px;padding:7px 16px">🔗 URL 입력</button>
           </div>
-          <div class="logo-preview-wrap" id="logo-preview-wrap" style="margin-top:12px">
-            <span style="font-size:12px;color:var(--mute)">이미지 URL을 입력하면 미리보기가 표시됩니다</span>
+          <div id="logo-upload-panel">
+            <div id="logo-drop-zone" onclick="document.getElementById('logo-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='#4f46e5'" ondragleave="this.style.borderColor='var(--border)'" ondrop="logoHandleDrop(event)" style="border:2px dashed var(--border);border-radius:var(--r8);padding:24px;text-align:center;cursor:pointer;background:var(--soft);transition:border-color .2s;margin-bottom:12px">
+              <div style="font-size:24px;margin-bottom:6px">🏆</div>
+              <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px">로고 파일을 드래그하거나 클릭</div>
+              <div style="font-size:12px;color:var(--mute)">WebP로 자동 변환됩니다 (투명 배경 지원)</div>
+              <input type="file" id="logo-file-input" accept="image/*" style="display:none" onchange="logoHandleFile(this.files[0])">
+            </div>
+            <div id="logo-file-preview" style="display:none"></div>
           </div>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <button class="btn btn-p" onclick="addLogo()">추가하기</button>
-            <button class="btn btn-outline" onclick="document.getElementById('logo-url-input').value='https://www.venomad.com/images/sec06_client_logo.png';previewLogo()">기본 이미지 불러오기</button>
+          <div id="logo-url-panel" style="display:none">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0">
+                <label>거래처명</label>
+                <input type="text" id="logo-name-input" placeholder="예: 강남베스트치과">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label>이미지 URL</label>
+                <input type="text" id="logo-url-input" placeholder="https://..." oninput="previewLogo()">
+              </div>
+            </div>
+            <div class="logo-preview-wrap" id="logo-preview-wrap" style="margin-top:12px">
+              <span style="font-size:12px;color:var(--mute)">이미지 URL을 입력하면 미리보기가 표시됩니다</span>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button class="btn btn-p" onclick="addLogo()">추가하기</button>
+            </div>
           </div>
         </div>
 
@@ -774,10 +789,28 @@ a{color:var(--p);text-decoration:none}
     <div id="section-media" class="admin-section">
       <div class="card">
         <div class="card-head"><div class="card-title">🖼️ 미디어 라이브러리 <span id="media-count" style="font-size:13px;color:var(--mute);font-weight:400"></span></div></div>
-        <div style="display:flex;gap:10px;margin-bottom:20px">
-          <input type="text" id="media-url-input" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
-          <input type="text" id="media-name-input" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
-          <button class="btn btn-p" onclick="addMedia()">+ 추가</button>
+        <!-- 파일 업로드 탭 -->
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button id="media-tab-file" class="btn btn-p" onclick="mediaTabSwitch('file')" style="font-size:12px;padding:7px 16px">📁 파일 업로드 (WebP 자동변환)</button>
+          <button id="media-tab-url" class="btn btn-outline" onclick="mediaTabSwitch('url')" style="font-size:12px;padding:7px 16px">🔗 URL 입력</button>
+        </div>
+        <!-- 파일 업로드 UI -->
+        <div id="media-upload-panel">
+          <div id="media-drop-zone" onclick="document.getElementById('media-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='#4f46e5'" ondragleave="this.style.borderColor='var(--border)'" ondrop="mediaHandleDrop(event)" style="border:2px dashed var(--border);border-radius:var(--r12);padding:32px;text-align:center;cursor:pointer;background:var(--soft);transition:border-color .2s;margin-bottom:12px">
+            <div style="font-size:32px;margin-bottom:8px">🖼️</div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">이미지 파일을 드래그하거나 클릭하세요</div>
+            <div style="font-size:12px;color:var(--mute)">PNG, JPG, GIF, WebP 등 — 자동으로 WebP로 변환됩니다</div>
+            <input type="file" id="media-file-input" accept="image/*" multiple style="display:none" onchange="mediaHandleFiles(this.files)">
+          </div>
+          <div id="media-convert-preview" style="display:none;margin-bottom:12px"></div>
+        </div>
+        <!-- URL 입력 UI -->
+        <div id="media-url-panel" style="display:none">
+          <div style="display:flex;gap:10px;margin-bottom:12px">
+            <input type="text" id="media-url-input" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
+            <input type="text" id="media-name-input" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
+            <button class="btn btn-p" onclick="addMedia()">+ 추가</button>
+          </div>
         </div>
         <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px"></div>
       </div>
@@ -1557,9 +1590,104 @@ function deleteUser(id){
 }
 
 // ══════════════════════════════════════
+// ── WebP 변환 공통 유틸 ──
+// ══════════════════════════════════════
+function convertToWebP(file, quality){
+  return new Promise(function(resolve, reject){
+    var reader=new FileReader();
+    reader.onerror=function(){reject(new Error('파일 읽기 실패'));};
+    reader.onload=function(e){
+      var img=new Image();
+      img.onerror=function(){reject(new Error('이미지 로드 실패'));};
+      img.onload=function(){
+        var canvas=document.createElement('canvas');
+        canvas.width=img.width;
+        canvas.height=img.height;
+        canvas.getContext('2d').drawImage(img,0,0);
+        canvas.toBlob(function(blob){
+          if(!blob){reject(new Error('WebP 변환 실패'));return;}
+          var webpFile=new File([blob], file.name.replace(/\.[^.]+$/,'')+'.webp', {type:'image/webp'});
+          var dataUrl=canvas.toDataURL('image/webp', quality||0.88);
+          resolve({blob:blob, file:webpFile, dataUrl:dataUrl, width:img.width, height:img.height});
+        },'image/webp', quality||0.88);
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function bytesLabel(n){if(n<1024)return n+'B';if(n<1048576)return Math.round(n/1024)+'KB';return(n/1048576).toFixed(1)+'MB';}
+
+// ══════════════════════════════════════
 // ── 미디어 라이브러리 ──
 // ══════════════════════════════════════
 var MEDIA_KEY='venom-media';
+var _mediaPendingWebP=[];
+
+function mediaTabSwitch(tab){
+  document.getElementById('media-upload-panel').style.display=tab==='file'?'':'none';
+  document.getElementById('media-url-panel').style.display=tab==='url'?'':'none';
+  document.getElementById('media-tab-file').className='btn '+(tab==='file'?'btn-p':'btn-outline');
+  document.getElementById('media-tab-url').className='btn '+(tab==='url'?'btn-p':'btn-outline');
+}
+
+function mediaHandleDrop(e){
+  e.preventDefault();
+  document.getElementById('media-drop-zone').style.borderColor='var(--border)';
+  mediaHandleFiles(e.dataTransfer.files);
+}
+
+function mediaHandleFiles(files){
+  if(!files||!files.length)return;
+  var preview=document.getElementById('media-convert-preview');
+  preview.style.display='';
+  preview.innerHTML='<div style="font-size:13px;color:var(--mute);margin-bottom:8px">변환 중...</div>';
+  _mediaPendingWebP=[];
+  var promises=Array.from(files).map(function(f){
+    return convertToWebP(f,0.88).then(function(result){
+      _mediaPendingWebP.push({file:f, result:result, name:f.name.replace(/\.[^.]+$/,'')+'.webp'});
+    }).catch(function(err){
+      _mediaPendingWebP.push({file:f, error:err.message});
+    });
+  });
+  Promise.all(promises).then(function(){
+    var html='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px">';
+    _mediaPendingWebP.forEach(function(item,i){
+      if(item.error){
+        html+='<div style="font-size:12px;color:#dc2626">'+item.file.name+': '+item.error+'</div>';
+      } else {
+        html+='<div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;width:120px">'
+          +'<img src="'+item.result.dataUrl+'" style="width:100%;height:80px;object-fit:contain;background:#f9fafb;display:block">'
+          +'<div style="padding:6px;font-size:10px;color:var(--mute);text-overflow:ellipsis;overflow:hidden;white-space:nowrap">'+item.name+'</div>'
+          +'<div style="padding:0 6px 6px;font-size:10px;color:#16a34a">WebP '+bytesLabel(item.result.blob.size)+'</div>'
+          +'</div>';
+      }
+    });
+    html+='</div>';
+    var ok=_mediaPendingWebP.filter(function(x){return !x.error;}).length;
+    if(ok>0){
+      html+='<button class="btn btn-p" onclick="mediaSaveWebP()" style="font-size:13px">✓ '+ok+'개 미디어에 저장</button>';
+    }
+    preview.innerHTML=html;
+  });
+}
+
+function mediaSaveWebP(){
+  var saved=0;
+  var media=getMedia();
+  _mediaPendingWebP.forEach(function(item){
+    if(item.error)return;
+    media.unshift({id:Date.now()+Math.random(),url:item.result.dataUrl,name:item.name,ts:new Date().toLocaleDateString('ko-KR')});
+    saved++;
+  });
+  localStorage.setItem(MEDIA_KEY,JSON.stringify(media));
+  document.getElementById('media-convert-preview').style.display='none';
+  document.getElementById('media-file-input').value='';
+  _mediaPendingWebP=[];
+  renderMedia();
+  toast(saved+'개 이미지가 WebP로 변환되어 저장되었습니다 ✓');
+}
+
 function getMedia(){try{return JSON.parse(localStorage.getItem(MEDIA_KEY)||'[]');}catch(e){return[];}}
 function addMedia(){
   var url=document.getElementById('media-url-input').value.trim();
@@ -2404,9 +2532,57 @@ setInterval(function(){
 
 // ── LOGO MANAGER ──
 var LOGO_KEY='venom-logos';
+var _logoPendingWebP=null;
 
 function getLogos(){
   try{return JSON.parse(localStorage.getItem(LOGO_KEY)||'[]');}catch(e){return[];}
+}
+
+function logoTabSwitch(tab){
+  document.getElementById('logo-upload-panel').style.display=tab==='file'?'':'none';
+  document.getElementById('logo-url-panel').style.display=tab==='url'?'':'none';
+  document.getElementById('logo-tab-file').className='btn '+(tab==='file'?'btn-p':'btn-outline');
+  document.getElementById('logo-tab-url').className='btn '+(tab==='url'?'btn-p':'btn-outline');
+}
+
+function logoHandleDrop(e){
+  e.preventDefault();
+  document.getElementById('logo-drop-zone').style.borderColor='var(--border)';
+  if(e.dataTransfer.files[0])logoHandleFile(e.dataTransfer.files[0]);
+}
+
+function logoHandleFile(file){
+  if(!file)return;
+  var fpDiv=document.getElementById('logo-file-preview');
+  fpDiv.style.display='';
+  fpDiv.innerHTML='<div style="font-size:12px;color:var(--mute)">변환 중...</div>';
+  convertToWebP(file,0.92).then(function(result){
+    _logoPendingWebP={result:result, name:file.name.replace(/\.[^.]+$/,'')+'.webp'};
+    fpDiv.innerHTML='<div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:var(--r8);background:var(--soft)">'
+      +'<img src="'+result.dataUrl+'" style="height:60px;max-width:200px;object-fit:contain;background:transparent">'
+      +'<div style="flex:1">'
+      +'<div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px">'+_logoPendingWebP.name+'</div>'
+      +'<div style="font-size:11px;color:var(--mute);margin-bottom:8px">WebP '+bytesLabel(result.blob.size)+' · '+result.width+'×'+result.height+'px</div>'
+      +'<input type="text" id="logo-file-name-input" placeholder="거래처명 (선택)" value="" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r8);font-size:12px;font-family:inherit;outline:none;margin-bottom:8px">'
+      +'<button class="btn btn-p" onclick="logoSaveWebP()" style="font-size:12px;padding:7px 16px">✓ 로고로 저장</button>'
+      +'</div></div>';
+  }).catch(function(err){
+    fpDiv.innerHTML='<div style="font-size:12px;color:#dc2626">변환 실패: '+err.message+'</div>';
+  });
+}
+
+function logoSaveWebP(){
+  if(!_logoPendingWebP)return;
+  var nameEl=document.getElementById('logo-file-name-input');
+  var name=nameEl?nameEl.value.trim()||'거래처':'거래처';
+  var logos=getLogos();
+  logos.push({id:Date.now(),name:name,url:_logoPendingWebP.result.dataUrl});
+  localStorage.setItem(LOGO_KEY,JSON.stringify(logos));
+  _logoPendingWebP=null;
+  document.getElementById('logo-file-preview').style.display='none';
+  document.getElementById('logo-file-input').value='';
+  renderLogoGrid();
+  toast('로고가 WebP로 변환되어 추가되었습니다 ✓');
 }
 
 function previewLogo(){
