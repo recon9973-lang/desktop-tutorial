@@ -366,9 +366,10 @@ body{padding-top:0}
 .footer-links a{font-size:12px;font-weight:300;color:rgba(255,255,255,.3);text-decoration:none}
 .footer-links a:hover{color:rgba(255,255,255,.65)}
 .footer-sns{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
-.footer-sns a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);transition:.2s;flex-shrink:0}
-.footer-sns a:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
-.footer-sns a svg{width:16px;height:16px;fill:#fff;display:block}
+.footer-sns a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:rgba(83,58,253,.1);transition:.2s;flex-shrink:0}
+.footer-sns a:hover{background:var(--p);transform:translateY(-2px)}
+.footer-sns a:hover svg{fill:#fff}
+.footer-sns a svg{width:16px;height:16px;fill:var(--p);display:block}
 
 /* ── 3-COLUMN INNER LAYOUT ── */
 .inner-layout{display:grid;grid-template-columns:var(--lw) 1fr var(--rw);min-height:70vh}
