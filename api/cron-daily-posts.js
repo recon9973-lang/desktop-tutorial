@@ -57,15 +57,18 @@ module.exports = async function handler(req, res) {
     try {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
       if (post.validation.pass) {
+        // 검증 통과 (자동 수정 포함) → 즉시 발행
         post.status = 'published';
         await savePost(post);
-        await appendLog({ action: 'cron-publish', id: post.id, title: post.title });
-        results.push({ ok: true, id: post.id, title: post.title });
+        const action = post.autoFixed ? 'cron-publish-fixed' : 'cron-publish';
+        await appendLog({ action, id: post.id, title: post.title, autoFixed: post.autoFixed });
+        results.push({ ok: true, id: post.id, title: post.title, autoFixed: post.autoFixed });
       } else {
+        // 자동 수정 후에도 금지어 잔존 → 검수 대기
         post.status = 'review';
         await savePost(post);
         await appendLog({ action: 'cron-review', id: post.id, title: post.title, forbidden: post.validation.forbidden });
-        results.push({ ok: false, id: post.id, title: post.title, reason: '의료광고 검수 실패', forbidden: post.validation.forbidden });
+        results.push({ ok: false, id: post.id, title: post.title, reason: '의료광고 검수 필요', forbidden: post.validation.forbidden });
       }
     } catch (e) {
       results.push({ ok: false, error: e.message, category, keyword });

@@ -54,12 +54,12 @@ module.exports = async function handler(req, res) {
 
     post.images = images.map(i => i.url);
 
-    // 3. 저장 요청 시 GitHub에 저장
+    // 3. 저장 요청 시 GitHub에 저장 (자동 수정 후 검증 통과 시)
     if (save && post.validation.pass) {
       post.status = 'draft';
       try {
         await savePost(post);
-        await appendLog({ action: 'generate', id: post.id, title: post.title, category, keyword });
+        await appendLog({ action: 'generate', id: post.id, title: post.title, category, keyword, autoFixed: post.autoFixed });
       } catch (storeErr) {
         post._storeError = storeErr.message;
       }
