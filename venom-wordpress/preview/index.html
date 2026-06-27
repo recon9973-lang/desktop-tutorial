@@ -4702,7 +4702,7 @@ function switchTool(id){
 }
 function toolReady(type){}
 
-var _PSI_PROXY='https://desktop-tutorial-chi-peach.vercel.app/api/psi-proxy';
+var _PSI_PROXY='https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=psi';
 
 function runSEO(){
   var url=document.getElementById('seo-url').value.trim();
@@ -4719,7 +4719,7 @@ function runSEO(){
 
   var nonce=Date.now();
   var apiUrl=_PSI_PROXY
-    +'?url='+encodeURIComponent(url)
+    +'&url='+encodeURIComponent(url)
     +'&strategy=mobile'
     +'&category=performance&category=accessibility&category=best-practices&category=seo'
     +'&nonce='+nonce;
@@ -4913,7 +4913,7 @@ function runGEO(){
   el.style.display='block';
   el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">페이지 GEO 신호 분석 중...<br><small style="display:block;margin-top:8px">약 5~15초 소요</small></div>';
 
-  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/geo-url-proxy?url='+encodeURIComponent(rawUrl))
+  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=fetch&url='+encodeURIComponent(rawUrl))
     .then(function(r){return r.json();})
     .then(function(data){
       btn.textContent='분석하기';btn.disabled=false;
@@ -5140,7 +5140,7 @@ function runKW(){
   el.style.display='block';
   el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">네이버 검색광고 API에서 실검색량 조회 중...<br><small style="display:block;margin-top:8px">약 3~5초 소요</small></div>';
 
-  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/kw-proxy?keyword='+encodeURIComponent(kw))
+  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=keyword&keyword='+encodeURIComponent(kw))
     .then(function(r){return r.json();})
     .then(function(data){
       btn.textContent='검색량 조회';btn.disabled=false;
