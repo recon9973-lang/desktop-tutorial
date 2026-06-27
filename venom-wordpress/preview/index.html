@@ -5447,6 +5447,55 @@ function loadAdminPosts(){
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadAdminPosts);}
 else{loadAdminPosts();}
 
+// ── 방문자 추적 ──
+(function(){
+  var VISIT_KEY='venom-visits';
+  var MAX_LOGS=500;
+  function getDevice(){
+    var ua=navigator.userAgent;
+    if(/Mobi|Android|iPhone|iPad/i.test(ua)){return /iPad/i.test(ua)?'tablet':'mobile';}
+    return 'desktop';
+  }
+  function getSource(){
+    var ref=document.referrer;
+    if(!ref)return 'direct';
+    try{
+      var h=new URL(ref).hostname.replace('www.','');
+      if(/google/.test(h))return 'google';
+      if(/naver/.test(h))return 'naver';
+      if(/kakao|daum/.test(h))return 'kakao';
+      if(/instagram/.test(h))return 'instagram';
+      if(/facebook|fb\.com/.test(h))return 'facebook';
+      if(/youtube/.test(h))return 'youtube';
+      if(/t\.co|twitter/.test(h))return 'twitter';
+      return h||'referral';
+    }catch(e){return 'referral';}
+  }
+  function getPage(){
+    var hash=(location.hash||'#home').replace('#','');
+    return hash||'home';
+  }
+  function recordVisit(){
+    var logs;
+    try{logs=JSON.parse(localStorage.getItem(VISIT_KEY)||'[]');}catch(e){logs=[];}
+    var entry={
+      ts:Date.now(),
+      date:new Date().toISOString().slice(0,10),
+      device:getDevice(),
+      source:getSource(),
+      page:getPage(),
+      ua:navigator.userAgent.slice(0,80)
+    };
+    logs.push(entry);
+    if(logs.length>MAX_LOGS)logs=logs.slice(logs.length-MAX_LOGS);
+    try{localStorage.setItem(VISIT_KEY,JSON.stringify(logs));}catch(e){}
+  }
+  // 페이지 로드 시 기록
+  recordVisit();
+  // 해시 변경(SPA 내비게이션) 시 기록
+  window.addEventListener('hashchange',function(){recordVisit();});
+})();
+
 // ── BreadcrumbList Schema 동적 업데이트 ──
 var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅'};
 var catLabels={dental:'치과마케팅',implant:'임플란트마케팅',ortho_dental:'교정마케팅',skin:'피부과마케팅',ortho:'정형외과마케팅',oriental:'한의원마케팅',plastic:'성형외과마케팅',naegwa:'내과마케팅',angwa:'안과마케팅',shimui:'의료광고심의',medical_device:'의료기기마케팅'};
