@@ -835,6 +835,149 @@ body{padding-top:0}
     </div>
   </div>
 
+  <!-- 🆕 병원 마케팅 자가진단 위젯 -->
+  <section class="section vd-section">
+    <style>
+      .vd-section{background:var(--soft)}
+      .vd-head{text-align:center;max-width:640px;margin:0 auto 28px}
+      .vd-head h2{font-size:34px;font-weight:300;letter-spacing:-.8px;color:var(--ink);margin-bottom:12px}
+      .vd-head h2 em{font-style:normal;color:var(--p)}
+      .vd-head p{font-size:15px;color:var(--mute);line-height:1.6}
+      .vd-card{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px 26px;box-shadow:rgba(0,55,112,.05) 0 8px 30px}
+      .vd-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+      .vd-input{flex:1;min-width:140px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--soft);outline:none}
+      .vd-input:focus{border-color:var(--p)}
+      .vd-area-label{font-size:12px;font-weight:700;color:var(--p);letter-spacing:.02em;margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--soft)}
+      .vd-area-label:first-of-type{border-top:none;padding-top:0}
+      .vd-q{padding:10px 0}
+      .vd-q-text{font-size:14px;font-weight:500;color:var(--ink2);line-height:1.5}
+      .vd-opts{display:flex;gap:8px;margin-top:10px}
+      .vd-opt{flex:1;padding:9px 0;border:1px solid var(--border);background:#fff;border-radius:8px;font-size:13px;font-weight:600;color:var(--mute);cursor:pointer;transition:.15s}
+      .vd-opt:hover{border-color:var(--p);color:var(--p)}
+      .vd-opt.sel{background:var(--p);border-color:var(--p);color:#fff}
+      .vd-submit,.vd-restart{width:100%;margin-top:22px;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+      .vd-submit{background:var(--p);color:#fff}
+      .vd-submit:hover{opacity:.92}
+      .vd-restart{background:var(--soft);color:var(--ink2);border:1px solid var(--border)}
+      .vd-note{font-size:11px;color:var(--mute);margin-top:14px;line-height:1.6;text-align:center}
+      .vd-result{text-align:center}
+      .vd-result-head{font-size:14px;color:var(--mute);margin-bottom:6px}
+      .vd-score{font-size:64px;font-weight:700;line-height:1}
+      .vd-score span{font-size:22px;color:var(--mute);font-weight:400}
+      .vd-grade{display:inline-block;color:#fff;font-size:14px;font-weight:700;padding:5px 18px;border-radius:9999px;margin:14px 0 8px}
+      .vd-grade-desc{font-size:14px;color:var(--ink2);line-height:1.6;max-width:520px;margin:0 auto 24px}
+      .vd-bars{text-align:left;margin:0 auto 22px;max-width:560px}
+      .vd-bar-row{margin-bottom:14px}
+      .vd-bar-top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+      .vd-bar{height:8px;background:var(--soft);border-radius:9999px;overflow:hidden}
+      .vd-bar-fill{height:100%;border-radius:9999px;transition:width .5s ease}
+      .vd-cta-box{background:linear-gradient(135deg,var(--p),var(--bd));border-radius:14px;padding:26px 22px;margin:8px 0 16px}
+      .vd-cta-t{color:#fff;font-size:18px;font-weight:700;margin-bottom:8px}
+      .vd-cta-d{color:rgba(255,255,255,.85);font-size:13px;line-height:1.6;margin-bottom:16px}
+      @media(max-width:600px){.vd-head h2{font-size:26px}.vd-score{font-size:52px}.vd-card{padding:22px 16px}}
+    </style>
+    <div class="container">
+      <div class="vd-head">
+        <div class="section-badge">1분 자가진단</div>
+        <h2>우리 병원, <em>AI·검색</em>에서 몇 점일까요?</h2>
+        <p>진료과·지역과 13개 항목으로 GEO/SEO 준비도를 점수로 확인하세요. 점수는 실제 노출·전환 요인 기준으로 산정됩니다.</p>
+      </div>
+      <div class="vd-card" id="vd-card"></div>
+    </div>
+    <script>
+    (function(){
+      var VD_AREAS=[
+        {k:'local',n:'네이버 플레이스·로컬',max:25},
+        {k:'geo',n:'GEO/AEO · AI검색',max:25},
+        {k:'seo',n:'SEO·콘텐츠',max:20},
+        {k:'trust',n:'신뢰·전문성(E-E-A-T)',max:15},
+        {k:'conv',n:'상담 전환 동선',max:15}
+      ];
+      var VD_Q=[
+        {a:'local',t:'네이버 플레이스에 진료시간·전화·길찾기·주차 정보가 모두 채워져 있다',p:10},
+        {a:'local',t:'병원·장비·시술 사진이 10장 이상 등록돼 있다',p:8},
+        {a:'local',t:'최근 1개월 내 리뷰 응대나 소식(블로그)이 업데이트됐다',p:7},
+        {a:'geo',t:'홈페이지/블로그에 FAQ(질문–답변) 구조가 있다',p:8},
+        {a:'geo',t:'병원 정보에 구조화 데이터(Schema.org)가 적용돼 있다',p:9},
+        {a:'geo',t:'ChatGPT·Perplexity에 "지역+진료과 잘하는 병원" 물으면 우리 병원이 나온다',p:8},
+        {a:'seo',t:'핵심 진료 키워드로 네이버/구글 검색 시 1페이지에 노출된다',p:8},
+        {a:'seo',t:'블로그·콘텐츠를 월 4편 이상 꾸준히 발행한다',p:6},
+        {a:'seo',t:'홈페이지가 모바일에서 3초 이내로 빠르게 열린다',p:6},
+        {a:'trust',t:'원장 약력·전문의 자격·경력이 명확히 노출돼 있다',p:8},
+        {a:'trust',t:'실제 진료 후기·사례가 (의료광고법 범위에서) 정리돼 있다',p:7},
+        {a:'conv',t:'상담·예약이 1~2클릭에 연결된다(카카오·전화·예약)',p:8},
+        {a:'conv',t:'유입 후 상담 전환을 측정·관리하고 있다',p:7}
+      ];
+      var VD_OPTS=[{l:'예',v:1},{l:'부분',v:0.5},{l:'아니오',v:0}];
+      var ans={};
+      function gEl(id){return document.getElementById(id);}
+      function areaName(k){for(var i=0;i<VD_AREAS.length;i++)if(VD_AREAS[i].k===k)return VD_AREAS[i].n;return k;}
+      function renderForm(){
+        var card=gEl('vd-card'); if(!card)return;
+        var h='<div class="vd-row">'
+          +'<select id="vd-cat" class="vd-input"><option value="">진료과 선택</option>'
+          +['치과','피부과','정형외과','한의원','성형외과','내과','안과','기타'].map(function(c){return '<option>'+c+'</option>';}).join('')
+          +'</select><input id="vd-region" class="vd-input" placeholder="지역 (예: 대전 유성구)"></div>';
+        var cur='';
+        VD_Q.forEach(function(q,i){
+          if(q.a!==cur){cur=q.a;h+='<div class="vd-area-label">'+areaName(q.a)+'</div>';}
+          h+='<div class="vd-q"><div class="vd-q-text">'+(i+1)+'. '+q.t+'</div><div class="vd-opts">'
+            +VD_OPTS.map(function(o){return '<button type="button" class="vd-opt" data-q="'+i+'" data-v="'+o.v+'">'+o.l+'</button>';}).join('')
+            +'</div></div>';
+        });
+        h+='<button type="button" class="vd-submit" id="vd-submit">결과 보기</button>'
+          +'<div class="vd-note">※ 자가점검 기반 추정 지표입니다. 정밀 진단은 베놈이 실제 데이터로 무료 제공합니다.</div>';
+        card.innerHTML=h;
+        Array.prototype.forEach.call(card.querySelectorAll('.vd-opt'),function(b){
+          b.addEventListener('click',function(){
+            var qi=b.getAttribute('data-q'); ans[qi]=parseFloat(b.getAttribute('data-v'));
+            Array.prototype.forEach.call(card.querySelectorAll('.vd-opt[data-q="'+qi+'"]'),function(x){x.classList.remove('sel');});
+            b.classList.add('sel');
+          });
+        });
+        gEl('vd-submit').addEventListener('click',compute);
+      }
+      function compute(){
+        if(Object.keys(ans).length<VD_Q.length){alert('모든 항목을 선택해 주세요. ('+Object.keys(ans).length+'/'+VD_Q.length+')');return;}
+        var as={},am={}; VD_AREAS.forEach(function(a){as[a.k]=0;am[a.k]=a.max;});
+        VD_Q.forEach(function(q,i){as[q.a]+=q.p*(ans[i]||0);});
+        var total=0; VD_AREAS.forEach(function(a){total+=as[a.k];}); total=Math.round(total);
+        renderResult(total,as,am);
+      }
+      function gradeOf(t){
+        if(t>=80)return{g:'우수',c:'#16a34a',d:'AI·지역검색 선점 단계입니다. 유지·고도화로 경쟁 병원과 격차를 벌리세요.'};
+        if(t>=60)return{g:'양호',c:'#2563eb',d:'기반은 갖췄습니다. 몇 가지만 보완하면 상위권 진입이 가능합니다.'};
+        if(t>=40)return{g:'주의',c:'#f59e0b',d:'핵심 요소가 빠져 있습니다. 경쟁 병원에 노출을 내주고 있을 가능성이 높습니다.'};
+        return{g:'위험',c:'#dc2626',d:'AI·지역검색에서 사실상 보이지 않는 상태입니다. 시급한 정비가 필요합니다.'};
+      }
+      function renderResult(total,as,am){
+        var card=gEl('vd-card'); var gr=gradeOf(total);
+        var cat=gEl('vd-cat')?gEl('vd-cat').value:''; var region=gEl('vd-region')?gEl('vd-region').value.trim():'';
+        var head=(region?region+' ':'')+(cat?cat+' ':'')+'병원의 AI·검색 준비도';
+        var h='<div class="vd-result"><div class="vd-result-head">'+head+'</div>'
+          +'<div class="vd-score" style="color:'+gr.c+'">'+total+'<span>/100</span></div>'
+          +'<div class="vd-grade" style="background:'+gr.c+'">'+gr.g+'</div>'
+          +'<div class="vd-grade-desc">'+gr.d+'</div><div class="vd-bars">';
+        VD_AREAS.forEach(function(a){
+          var s=Math.round(as[a.k]),m=am[a.k],r=m?s/m:0;
+          var tag=r>=0.8?'강점':(r>=0.5?'보통':'취약');
+          var tc=r>=0.8?'#16a34a':(r>=0.5?'#f59e0b':'#dc2626');
+          h+='<div class="vd-bar-row"><div class="vd-bar-top"><span>'+a.n+'</span><span style="color:'+tc+'">'+tag+' '+s+'/'+m+'</span></div>'
+            +'<div class="vd-bar"><div class="vd-bar-fill" style="width:'+Math.round(r*100)+'%;background:'+tc+'"></div></div></div>';
+        });
+        h+='</div><div class="vd-cta-box"><div class="vd-cta-t">정밀 진단 리포트, 베놈이 무료로 보내드립니다</div>'
+          +'<div class="vd-cta-d">실제 노출 데이터·경쟁 분석까지 포함한 맞춤 진단을 받아보세요.</div>'
+          +'<a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 무료 정밀진단 신청</a></div>'
+          +'<button type="button" class="vd-restart" id="vd-restart">다시 진단하기</button>'
+          +'<div class="vd-note">※ 점수는 네이버 플레이스 완성도, Schema·FAQ 구조화, Google E-E-A-T, Core Web Vitals(속도), 전환 동선 등 검증된 노출·전환 요인을 기준으로 산정한 자가점검 추정 지표입니다.</div></div>';
+        card.innerHTML=h;
+        gEl('vd-restart').addEventListener('click',function(){ans={};renderForm();card.scrollIntoView({behavior:'smooth',block:'start'});});
+      }
+      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderForm);else renderForm();
+    })();
+    </script>
+  </section>
+
   <!-- 무료 진단 도구 섹션 -->
   <section class="tool-section">
     <div class="container">
