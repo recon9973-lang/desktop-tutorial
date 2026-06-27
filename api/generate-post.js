@@ -54,8 +54,8 @@ module.exports = async function handler(req, res) {
 
     post.images = images.map(i => i.url);
 
-    // 3. 저장 요청 시 GitHub에 저장
-    if (save && post.validation.pass) {
+    // 3. 저장 요청 시 GitHub에 저장 (의료광고 검증 + 콘텐츠 오류 검수 통과 시에만)
+    if (save && post.publishable) {
       post.status = 'draft';
       try {
         await savePost(post);

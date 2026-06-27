@@ -81,17 +81,33 @@ module.exports = async function handler(req, res) {
     try {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
 
-      // 이미지 1장 생성 후 본문 상단에 삽입
+      // 이미지 1~2장 생성: 1번째=본문 최상단 히어로, 2번째=첫 h2 뒤 본문 삽입
       try {
-        const img = await generateAndSaveImage(post.imagePrompt, post.id, 0);
-        if (img) {
-          post.images = [img.url];
-          const heroImg = `<figure style="margin:0 0 32px;border-radius:12px;overflow:hidden">`
-            + `<img src="${img.url}" alt="${post.title}" style="width:100%;height:auto;display:block" loading="lazy">`
-            + `<figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">© 병원마케팅 베놈</figcaption>`
-            + `</figure>`;
-          post.html = heroImg + post.html;
+        const imgUrls = [];
+        const fig = (url, cap) => `<figure style="margin:24px 0 32px;border-radius:12px;overflow:hidden">`
+          + `<img src="${url}" alt="${post.title}" style="width:100%;height:auto;display:block" loading="lazy">`
+          + `<figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">${cap}</figcaption>`
+          + `</figure>`;
+
+        const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0, post.title);
+        if (img1 && img1.url) {
+          imgUrls.push(img1.url);
+          post.html = fig(img1.url, '© 병원마케팅 베놈') + post.html;
         }
+
+        // 2번째 이미지(베스트 에포트) — 실패해도 무시
+        const img2 = await generateAndSaveImage(post.imagePrompt, post.id, 1, post.title);
+        if (img2 && img2.url) {
+          imgUrls.push(img2.url);
+          const second = fig(img2.url, '병원마케팅 베놈 — 데이터 기반 전략');
+          // 첫 번째 </h2> 뒤에 삽입, 없으면 본문 끝에 추가
+          const h2End = post.html.indexOf('</h2>');
+          post.html = h2End > -1
+            ? post.html.slice(0, h2End + 5) + second + post.html.slice(h2End + 5)
+            : post.html + second;
+        }
+
+        if (imgUrls.length) post.images = imgUrls;
       } catch (imgErr) {
         console.warn('[cron] 이미지 생성 실패(무시):', imgErr.message);
       }
@@ -103,19 +119,28 @@ module.exports = async function handler(req, res) {
         imageGenerated: !!(post.images && post.images.length),
       };
 
-      if (post.validation.pass) {
-        // 검증 통과 (자동 수정 포함) → 즉시 발행
+      if (post.publishable) {
+        // 의료광고 검증 통과 + 콘텐츠 오류 없음 → 즉시 발행
         post.status = 'published';
         await savePost(post);
         const action = post.autoFixed ? 'cron-publish-fixed' : 'cron-publish';
         await appendLog({ action, ...logBase, autoFixed: post.autoFixed });
         results.push({ ok: true, id: post.id, title: post.title, autoFixed: post.autoFixed });
       } else {
-        // 자동 수정 후에도 금지어 잔존 → 검수 대기
+        // 금지어 잔존 또는 콘텐츠 오류(깨짐·잘림 등) → 검수 대기
         post.status = 'review';
         await savePost(post);
-        await appendLog({ action: 'cron-review', ...logBase, forbidden: post.validation.forbidden });
-        results.push({ ok: false, id: post.id, title: post.title, reason: '의료광고 검수 필요', forbidden: post.validation.forbidden });
+        const reason = !post.validation.pass ? '의료광고 검수 필요' : '콘텐츠 오류 검수 필요';
+        await appendLog({
+          action: 'cron-review', ...logBase,
+          forbidden: post.validation.forbidden,
+          contentErrors: (post.contentErrors || []).map(e => e.msg),
+        });
+        results.push({
+          ok: false, id: post.id, title: post.title, reason,
+          forbidden: post.validation.forbidden,
+          contentErrors: (post.contentErrors || []).map(e => e.msg),
+        });
       }
     } catch (e) {
       results.push({ ok: false, error: e.message, category, keyword });

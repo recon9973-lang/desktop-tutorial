@@ -3587,6 +3587,27 @@ body{padding-top:0}
       </div>
     </aside>
     <article class="col-center" style="min-width:0;padding-top:24px">
+      <style>
+        /* 자동 생성 글 가독성 — 평문 태그(인라인 스타일 없는) 문단·제목 간격.
+           수기 작성 글은 인라인 style이 우선하므로 영향 없음. */
+        #blog-post-content { font-size:16.5px; }
+        #blog-post-content > p,
+        #blog-post-content li { line-height:1.9; }
+        #blog-post-content p:not([style]) { margin:0 0 20px; }
+        #blog-post-content h2:not([style]) { font-size:23px; font-weight:700; color:var(--ink); margin:44px 0 18px; padding-bottom:10px; border-bottom:2px solid var(--soft); line-height:1.4; }
+        #blog-post-content h3:not([style]) { font-size:19px; font-weight:600; color:var(--ink); margin:34px 0 14px; line-height:1.45; }
+        #blog-post-content h4:not([style]) { font-size:17px; font-weight:600; color:var(--ink); margin:26px 0 12px; }
+        #blog-post-content ul:not([style]),
+        #blog-post-content ol:not([style]) { margin:18px 0 24px; padding-left:22px; }
+        #blog-post-content li:not([style]) { margin:0 0 10px; }
+        #blog-post-content table:not([style]) { width:100%; border-collapse:collapse; margin:24px 0; font-size:14.5px; }
+        #blog-post-content table:not([style]) th,
+        #blog-post-content table:not([style]) td { border:1px solid var(--border); padding:11px 14px; text-align:left; }
+        #blog-post-content table:not([style]) th { background:var(--soft); font-weight:600; }
+        #blog-post-content figure:not([style]) { margin:24px 0 32px; }
+        #blog-post-content img { max-width:100%; height:auto; }
+        #blog-post-content blockquote:not([style]) { margin:24px 0; padding:16px 20px; border-left:4px solid var(--p); background:rgba(83,58,253,.05); border-radius:0 8px 8px 0; }
+      </style>
       <div id="blog-post-content" style="line-height:1.8;color:var(--ink2)"></div>
       <div style="margin-top:48px;padding-top:32px;border-top:2px solid var(--border)">
         <h3 style="font-size:18px;font-weight:600;margin-bottom:20px">관련 포스팅</h3>
@@ -5656,7 +5677,21 @@ var ADMIN_CAT_BG={
   '지역마케팅':'linear-gradient(135deg,#0ea5e9,#0284c7)'
 };
 
+// 이전 인코딩 버그로 깨진 글자(�)·구분자 잔존을 표시 단계에서 제거(안전망).
+// 근본 원인은 서버 측에서 수정됨 — 신규 글은 깨지지 않음. 이미 깨진 글은 재생성 권장.
+function _cleanBroken(s) {
+  return (s == null ? '' : String(s))
+    .replace(/�+/g, '')
+    .replace(/<{2,3}\s*(TITLE|SEO|META|KEYWORDS|HTML|END)\s*>{2,3}/gi, '');
+}
+
 function _registerBlogPost(p) {
+  // 깨짐 정리 후 등록
+  p = Object.assign({}, p, {
+    title: _cleanBroken(p.title),
+    meta: _cleanBroken(p.meta),
+    content: _cleanBroken(p.content),
+  });
   // blogPosts 상세 뷰 객체 등록
   var label = ADMIN_CAT_LABEL[p.cat] || BLOG_CAT_LABEL[p.cat] || p.cat;
   var tags = Array.isArray(p.tags) ? p.tags : (p.keywords||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
@@ -5684,7 +5719,7 @@ function loadAdminPosts(){
         id: p.id, cat: p.cat, date: p.date,
         readTime: Math.max(1,Math.round((p.content||'').replace(/<[^>]+>/g,'').length/500))+'분',
         tags: tags, bgStyle: ADMIN_CAT_BG[p.cat]||'linear-gradient(135deg,var(--p),var(--bd))',
-        title: p.title, excerpt: (p.meta||(p.content||'').replace(/<[^>]+>/g,'')).slice(0,90)
+        title: _cleanBroken(p.title), excerpt: _cleanBroken((p.meta||(p.content||'').replace(/<[^>]+>/g,'')).slice(0,90))
       });
       existingIds.add(p.id);
     }
@@ -5726,7 +5761,7 @@ else{loadAdminPosts();}
               id:p.id, cat:p.cat, date:p.date,
               readTime:Math.max(1,Math.round((p.content||'').replace(/<[^>]+>/g,'').length/500))+'분',
               tags:tags, bgStyle:ADMIN_CAT_BG[p.cat]||'linear-gradient(135deg,var(--p),var(--bd))',
-              title:p.title, excerpt:(p.meta||(p.content||'').replace(/<[^>]+>/g,'')).slice(0,90)
+              title:_cleanBroken(p.title), excerpt:_cleanBroken((p.meta||(p.content||'').replace(/<[^>]+>/g,'')).slice(0,90))
             });
           }
         });
@@ -5872,6 +5907,28 @@ function searchByKeyword(kw) {
   }
 }
 
+// 관련 포스팅 자동 선정 — 글에 related가 비어있으면 같은 카테고리 > 태그 겹침 > 최신 순으로 채움
+function getRelated(id) {
+  var post = blogPosts[id];
+  if (!post) return [];
+  if (post.related && post.related.length) return post.related.slice(0, 3);
+  var ids = Object.keys(blogPosts).filter(function(rid){ return rid !== id; });
+  var out = [];
+  // 1) 같은 카테고리
+  ids.forEach(function(rid){ if (blogPosts[rid].cat === post.cat) out.push(rid); });
+  // 2) 태그 겹침
+  if (out.length < 3) {
+    var ptags = post.tags || [];
+    ids.forEach(function(rid){
+      if (out.indexOf(rid) > -1) return;
+      if ((blogPosts[rid].tags || []).some(function(t){ return ptags.indexOf(t) > -1; })) out.push(rid);
+    });
+  }
+  // 3) 최신 글로 보충
+  if (out.length < 3) ids.forEach(function(rid){ if (out.indexOf(rid) < 0) out.push(rid); });
+  return out.slice(0, 3);
+}
+
 function openBlogPost(id, pushState) {
   var post = blogPosts[id];
   if (!post) return;
@@ -5925,8 +5982,8 @@ function openBlogPost(id, pushState) {
     }).join('');
   }
 
-  // 관련 포스팅 (본문 하단 + 우측 사이드바)
-  var relIds = post.related || [];
+  // 관련 포스팅 (본문 하단 + 우측 사이드바) — 비어있으면 자동 선정
+  var relIds = getRelated(id);
   var relEl = document.getElementById('blog-related');
   if (relEl) {
     relEl.innerHTML = relIds.map(function(rid){
@@ -5977,8 +6034,15 @@ function injectInternalLinks(html) {
     { kw: '병원 마케팅', fn: "sp('hospital')" },
     { kw: '병원마케팅', fn: "sp('hospital')" }
   ];
-  // 태그 안은 건너뛰고 텍스트 노드에서만 첫 등장 키워드 링크 처리
-  // lookbehind 없이 (<tag>|keyword) 패턴으로 처리
+  // 보호 영역(JSON-LD 스크립트·스타일·기존 링크·제목 h1)은 치환에서 제외 →
+  // 플레이스홀더로 잠시 빼두고, 본문 텍스트에서만 키워드 링크 처리 후 복원.
+  var protectedBlocks = [];
+  var Z = String.fromCharCode(0);
+  html = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<a\b[\s\S]*?<\/a>|<h1\b[\s\S]*?<\/h1>/gi, function(m) {
+    protectedBlocks.push(m);
+    return Z + (protectedBlocks.length - 1) + Z;
+  });
+  // 태그 안은 건너뛰고 텍스트에서만 첫 등장 키워드 1회 링크 처리
   linkMap.forEach(function(item) {
     var escaped = item.kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     var replaced = false;
@@ -5989,6 +6053,8 @@ function injectInternalLinks(html) {
       return '<a href="javascript:void(0)" onclick="' + item.fn + '" style="color:var(--p);text-decoration:underline;text-underline-offset:2px;font-weight:600">' + m + '</a>';
     });
   });
+  // 보호 영역 복원
+  html = html.replace(new RegExp(Z+'(\\d+)'+Z, 'g'), function(_, i) { return protectedBlocks[+i]; });
   return html;
 }
 
