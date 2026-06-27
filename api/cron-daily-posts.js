@@ -1,6 +1,7 @@
 'use strict';
 
 const { generatePost } = require('../lib/post-generator');
+const { generateAndSaveImage } = require('../lib/image-generator');
 const { savePost, appendLog } = require('../lib/github-store');
 
 const DEFAULT_SETTINGS = {
@@ -56,6 +57,22 @@ module.exports = async function handler(req, res) {
 
     try {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
+
+      // 이미지 1장 생성 후 본문 상단에 삽입
+      try {
+        const img = await generateAndSaveImage(post.imagePrompt, post.id, 0);
+        if (img) {
+          post.images = [img.url];
+          const heroImg = `<figure style="margin:0 0 32px;border-radius:12px;overflow:hidden">`
+            + `<img src="${img.url}" alt="${post.title}" style="width:100%;height:auto;display:block" loading="lazy">`
+            + `<figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">© 병원마케팅 베놈</figcaption>`
+            + `</figure>`;
+          post.html = heroImg + post.html;
+        }
+      } catch (imgErr) {
+        console.warn('[cron] 이미지 생성 실패(무시):', imgErr.message);
+      }
+
       if (post.validation.pass) {
         // 검증 통과 (자동 수정 포함) → 즉시 발행
         post.status = 'published';
