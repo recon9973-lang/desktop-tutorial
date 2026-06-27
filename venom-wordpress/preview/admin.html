@@ -824,8 +824,12 @@ a{color:var(--p);text-decoration:none}
           <div style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px">🚀 지금 바로 자동 발행 실행</div>
           <div style="font-size:13px;color:var(--mute)">설정된 수량만큼 AI 포스트를 즉시 생성하고 발행합니다. (매일 자정 자동 실행과 동일)</div>
         </div>
-        <button class="btn btn-p" id="ap-run-now-btn" onclick="apRunNow()" style="font-size:14px;padding:12px 24px;white-space:nowrap">▶ 지금 실행</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" id="ap-diag-btn" onclick="apRunDiag()" style="font-size:13px;padding:12px 18px;white-space:nowrap">🔍 시스템 점검</button>
+          <button class="btn btn-p" id="ap-run-now-btn" onclick="apRunNow()" style="font-size:14px;padding:12px 24px;white-space:nowrap">▶ 지금 실행</button>
+        </div>
       </div>
+      <div id="ap-diag-result" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:var(--r8);font-size:13px;line-height:1.8;background:var(--soft);border:1px solid var(--border)"></div>
       <div id="ap-run-result" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:var(--r8);font-size:13px;line-height:1.7"></div>
 
       <!-- 상태 카드 -->
@@ -2451,6 +2455,42 @@ function apSaveSecret() {
   document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 이제 API 호출에 사용됩니다.';
   document.getElementById('ap-secret-input').value = '';
   toast('API 토큰 저장 완료');
+}
+
+// 시스템 종합 점검 — 키/권한/DALL-E/GitHub 쓰기 실제 테스트
+async function apRunDiag() {
+  const btn = document.getElementById('ap-diag-btn');
+  const box = document.getElementById('ap-diag-result');
+  btn.disabled = true; btn.textContent = '⏳ 점검 중...';
+  box.style.display = 'block';
+  box.innerHTML = '시스템 점검 중...';
+  try {
+    const r = await fetch(apApiBase() + '/api/diag', { headers: apHeaders() });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    const yn = (b) => b ? '<span style="color:#16a34a">✅</span>' : '<span style="color:#dc2626">❌</span>';
+    const row = (label, ok, detail) => '<div>' + yn(ok) + ' <strong>' + label + '</strong>' + (detail ? ' — <span style="color:var(--mute)">' + detail + '</span>' : '') + '</div>';
+    let h = '<div style="font-weight:700;margin-bottom:8px">🔍 시스템 점검 결과</div>';
+    h += row('OPENAI_API_KEY 설정', d.env.OPENAI_API_KEY);
+    h += row('GITHUB_TOKEN 설정', d.env.GITHUB_TOKEN);
+    h += row('ADMIN_SECRET 설정', d.env.ADMIN_SECRET);
+    h += row('CRON_SECRET 설정(자동발행 스케줄)', d.env.CRON_SECRET);
+    h += '<hr style="border:none;border-top:1px solid var(--border);margin:8px 0">';
+    h += row('OpenAI 키 유효', !!d.openai.keyValid, d.openai.reason);
+    h += row('DALL-E 3 이미지 접근', !!d.openai.dalle3Access, d.openai.dalle3Access ? '' : 'OpenAI 결제/이미지 권한 필요');
+    h += row('GitHub 토큰 유효', !!d.github.tokenValid, d.github.repo || '');
+    h += row('GitHub 쓰기 권한', !!d.github.canPush, d.github.canPush ? '' : 'Contents: write 권한 필요');
+    h += '<hr style="border:none;border-top:1px solid var(--border);margin:8px 0">';
+    const okText = d.verdict.textGeneration === '가능';
+    const okImg = d.verdict.imageGeneration === '가능';
+    h += '<div style="margin-top:4px">' + yn(okText) + ' <strong>글 생성</strong>: ' + d.verdict.textGeneration + '</div>';
+    h += '<div>' + yn(okImg) + ' <strong>이미지 생성</strong>: ' + d.verdict.imageGeneration + '</div>';
+    box.innerHTML = h;
+  } catch (e) {
+    box.innerHTML = '<div style="color:#dc2626">❌ 점검 실패: ' + e.message + '</div>'
+      + '<div style="color:var(--mute);margin-top:6px;font-size:12px">API 인증 토큰(ADMIN_SECRET)이 올바른지, /api/diag가 배포됐는지 확인하세요.</div>';
+  }
+  btn.disabled = false; btn.textContent = '🔍 시스템 점검';
 }
 
 async function apRunNow() {
