@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI가 인용하는 마케팅 글쓰기 — Specification Deck</title>
+
+<!-- Pretendard (명세서 지정 단일 서체) -->
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+<style>
+/* =====================================================================
+   DESIGN TOKENS  —  Apple Design System Specification (첨부 명세서 1:1 구현)
+   - 19:9 / Pretendard / High Density / Single Action Color / Flat
+   ===================================================================== */
+:root{
+  /* Color — 단일 액션 컬러 원칙 (Action Blue 외 브랜드 컬러 금지) */
+  --primary:        #0066cc;   /* Action Blue : 유일한 인터랙티브 컬러 */
+  --primary-on-dark:#2997ff;   /* Sky Blue    : 다크 타일 전용 인라인 */
+  --canvas-white:   #ffffff;   /* Pure White  */
+  --canvas-parch:   #f5f5f7;   /* Parchment   : 교차 타일 */
+  --surface-pearl:  #fafafc;   /* Pearl       : 고스트 버튼 */
+  --tile-dark-1:    #272729;   /* Tile 1      : 시그니처 다크 표면 */
+  --tile-dark-2:    #2a2a2c;   /* Tile 2      */
+  --void:           #000000;   /* Pure Black  */
+  --ink:            #1d1d1f;   /* 본문/헤드 텍스트 */
+  --ink-sub:        #6e6e73;   /* 보조 텍스트 (그레이, 브랜드 컬러 아님) */
+  --ink-on-dark:    #f5f5f7;
+  --sub-on-dark:    #a1a1a6;
+  --hairline:       rgba(0,0,0,0.08);   /* 1px Hairline (그림자 대체) */
+  --hairline-dark:  rgba(255,255,255,0.12);
+
+  /* Radius — 4단계 엄격 스케일 */
+  --r-none: 0px; --r-sm: 8px; --r-lg: 18px; --r-pill: 9999px;
+
+  /* Spacing — 8px 기반 */
+  --s-xxs:4px; --s-xs:8px; --s-sm:12px; --s-md:17px; --s-lg:24px;
+  --s-xl:40px; --s-section:80px;
+
+  /* Elevation — 제품 이미지에만 단 하나의 소프트 섀도우 허용 */
+  --shadow-product: 3px 5px 30px rgba(0,0,0,0.22);
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  background:var(--void);              /* true void 무대 배경 */
+  font-family:'Pretendard','Pretendard Variable',-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  color:var(--ink);
+}
+
+/* ===== 무대: 19:9 슬라이드를 뷰포트에 맞춰 스케일 ===== */
+#stage{
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+}
+#scaler{
+  width:1900px; height:900px;        /* 19:9 기준 캔버스 */
+  position:relative;
+  transform-origin:center center;
+}
+
+/* ===== 슬라이드 ===== */
+.slide{
+  position:absolute; inset:0;
+  width:1900px; height:900px;
+  padding:64px 90px 72px;
+  display:none;
+  flex-direction:column;
+  /* rounded.none : 풀블리드 사각형, 외곽 라운딩 금지 */
+}
+.slide.is-active{ display:flex; animation:fade .5s ease; }
+@keyframes fade{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+.slide--light { background:var(--canvas-white); }
+.slide--parch { background:var(--canvas-parch); }
+.slide--dark  { background:var(--tile-dark-1); color:var(--ink-on-dark); }
+.slide--dark .ink-sub{ color:var(--sub-on-dark); }
+
+/* ===== 상단 메타 (글로벌 내비 모사) ===== */
+.topbar{
+  display:flex; justify-content:space-between; align-items:baseline;
+  padding-bottom:18px; margin-bottom:26px;
+  border-bottom:1px solid var(--hairline);
+}
+.slide--dark .topbar{ border-color:var(--hairline-dark); }
+.chapter{
+  font-size:12px; font-weight:600; letter-spacing:1.4px;
+  text-transform:uppercase; color:var(--ink-sub);
+}
+.slide--dark .chapter{ color:var(--sub-on-dark); }
+.chapter b{ color:var(--primary); font-weight:700; }
+.slide--dark .chapter b{ color:var(--primary-on-dark); }
+.pager{ font-size:12px; font-weight:400; letter-spacing:-0.12px; color:var(--ink-sub); }
+.slide--dark .pager{ color:var(--sub-on-dark); }
+
+/* ===== Conclusion 헤드라인 ===== */
+.eyebrow{
+  display:inline-block; font-size:13px; font-weight:700; letter-spacing:0.4px;
+  color:var(--primary); margin-bottom:14px;
+}
+.slide--dark .eyebrow{ color:var(--primary-on-dark); }
+.conclusion{
+  font-size:34px; font-weight:600; line-height:1.32; letter-spacing:-0.374px;
+  max-width:1500px; margin-bottom:30px;
+}
+.conclusion .hl{ color:var(--primary); }
+.slide--dark .conclusion .hl{ color:var(--primary-on-dark); }
+
+/* ===== 본문 컨텐츠 영역 ===== */
+.body{ flex:1; display:flex; gap:44px; min-height:0; align-items:center; }
+.col{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+.col--narrow{ flex:0 0 640px; }
+
+/* ===== 데이터 테이블 (Hairline / 고밀도) ===== */
+.spec-table{ width:100%; border-collapse:collapse; font-size:16px; }
+.spec-table th{
+  text-align:left; font-size:12px; font-weight:700; letter-spacing:0.3px;
+  text-transform:uppercase; color:var(--ink-sub);
+  padding:10px 14px; border-bottom:1px solid var(--hairline);
+}
+.spec-table td{
+  padding:11px 14px; border-bottom:1px solid var(--hairline);
+  vertical-align:middle; letter-spacing:-0.2px; line-height:1.4;
+}
+.spec-table tr:last-child td{ border-bottom:none; }
+.spec-table .lead-cell{ font-weight:600; color:var(--ink); }
+.slide--dark .spec-table th,
+.slide--dark .spec-table td{ border-color:var(--hairline-dark); }
+.slide--dark .spec-table .lead-cell{ color:var(--ink-on-dark); }
+.tag-blue{ color:var(--primary); font-weight:600; }
+.slide--dark .tag-blue{ color:var(--primary-on-dark); }
+
+/* ===== Meter (밀도/중요도 바) ===== */
+.meter{ display:flex; align-items:center; gap:10px; }
+.meter__track{
+  flex:1; height:8px; border-radius:var(--r-pill);
+  background:var(--hairline); overflow:hidden;
+}
+.slide--dark .meter__track{ background:var(--hairline-dark); }
+.meter__fill{ height:100%; border-radius:var(--r-pill); background:var(--primary); }
+.slide--dark .meter__fill{ background:var(--primary-on-dark); }
+.meter__val{ font-size:12px; font-weight:600; color:var(--ink-sub); min-width:42px; text-align:right; }
+.slide--dark .meter__val{ color:var(--sub-on-dark); }
+
+/* ===== 가로 바차트 ===== */
+.chartcard{
+  border:1px solid var(--hairline); border-radius:var(--r-lg);
+  padding:24px 26px; background:var(--surface-pearl);
+}
+.slide--dark .chartcard{ border-color:var(--hairline-dark); background:var(--tile-dark-2); }
+.chart-title{ font-size:12px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase;
+  color:var(--ink-sub); margin-bottom:18px; }
+.slide--dark .chart-title{ color:var(--sub-on-dark); }
+.bar-row{ display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.bar-row:last-child{ margin-bottom:0; }
+.bar-label{ flex:0 0 150px; font-size:14px; letter-spacing:-0.2px; }
+.bar-wrap{ flex:1; height:26px; border-radius:var(--r-sm); background:var(--hairline); overflow:hidden; }
+.slide--dark .bar-wrap{ background:var(--hairline-dark); }
+.bar-fill{
+  height:100%; background:var(--primary); border-radius:var(--r-sm);
+  display:flex; align-items:center; justify-content:flex-end;
+  padding-right:10px; color:#fff; font-size:12px; font-weight:600;
+}
+.slide--dark .bar-fill{ background:var(--primary-on-dark); }
+.bar-fill.is-ghost{ background:var(--hairline); color:var(--ink-sub); }
+.slide--dark .bar-fill.is-ghost{ background:var(--hairline-dark); color:var(--sub-on-dark); }
+
+/* ===== 유틸리티 카드 그리드 ===== */
+.cardgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.ucard{
+  border:1px solid var(--hairline); border-radius:var(--r-lg);
+  padding:22px 22px 24px; background:var(--canvas-white);
+  display:flex; flex-direction:column;
+}
+.slide--dark .ucard{ background:var(--tile-dark-2); border-color:var(--hairline-dark); }
+.slide--parch .ucard{ background:var(--canvas-white); }
+.ucard__num{
+  width:34px; height:34px; border-radius:var(--r-pill);
+  background:var(--primary); color:#fff; font-size:15px; font-weight:700;
+  display:flex; align-items:center; justify-content:center; margin-bottom:14px;
+}
+.slide--dark .ucard__num{ background:var(--primary-on-dark); color:var(--tile-dark-1); }
+.ucard__t{ font-size:18px; font-weight:600; letter-spacing:-0.3px; margin-bottom:8px; }
+.ucard__d{ font-size:14px; line-height:1.5; letter-spacing:-0.2px; color:var(--ink-sub); }
+.slide--dark .ucard__d{ color:var(--sub-on-dark); }
+
+/* ===== 본문 분석 박스 ===== */
+.analysis{
+  margin-top:auto; padding-top:18px; font-size:14px; line-height:1.55;
+  letter-spacing:-0.2px; color:var(--ink-sub); border-top:1px solid var(--hairline);
+}
+.slide--dark .analysis{ color:var(--sub-on-dark); border-color:var(--hairline-dark); }
+.analysis b{ color:var(--ink); font-weight:600; }
+.slide--dark .analysis b{ color:var(--ink-on-dark); }
+.src{ color:var(--primary); font-weight:600; }
+.slide--dark .src{ color:var(--primary-on-dark); }
+
+/* ===== Do / Don't 토큰 ===== */
+.verdict{ font-weight:700; font-size:15px; }
+.verdict.do::before{ content:"✓ "; color:var(--primary); }
+.slide--dark .verdict.do::before{ color:var(--primary-on-dark); }
+.verdict.dont{ color:var(--ink); }
+.verdict.dont::before{ content:"✕ "; color:var(--ink-sub); }
+.slide--dark .verdict.dont{ color:var(--ink-on-dark); }
+
+/* 예시 비교 (good/bad) */
+.compare{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.exbox{ border:1px solid var(--hairline); border-radius:var(--r-lg); padding:20px 22px; }
+.slide--dark .exbox{ border-color:var(--hairline-dark); }
+.exbox__cap{ font-size:12px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; margin-bottom:10px; }
+.exbox--bad .exbox__cap{ color:var(--ink-sub); }
+.exbox--good .exbox__cap{ color:var(--primary); }
+.slide--dark .exbox--good .exbox__cap{ color:var(--primary-on-dark); }
+.exbox__q{ font-size:14px; line-height:1.55; letter-spacing:-0.2px; }
+.exbox__q b{ color:var(--ink); }
+.slide--dark .exbox__q{ color:var(--sub-on-dark); }
+.slide--dark .exbox__q b{ color:var(--ink-on-dark); }
+
+/* 큰 통계 */
+.statrow{ display:flex; gap:50px; margin:6px 0 26px; }
+.stat__n{ font-size:56px; font-weight:700; letter-spacing:-0.28px; line-height:1; color:var(--primary); }
+.slide--dark .stat__n{ color:var(--primary-on-dark); }
+.stat__l{ font-size:14px; letter-spacing:-0.2px; color:var(--ink-sub); margin-top:8px; max-width:230px; line-height:1.45; }
+.slide--dark .stat__l{ color:var(--sub-on-dark); }
+
+/* ===== 표지 ===== */
+.cover{ justify-content:center; }
+.cover .kicker{ font-size:14px; font-weight:600; letter-spacing:2px; text-transform:uppercase;
+  color:var(--primary-on-dark); margin-bottom:26px; }
+.cover h1{ font-size:80px; font-weight:700; line-height:1.05; letter-spacing:-0.5px; margin-bottom:26px; }
+.cover .sub{ font-size:24px; font-weight:300; letter-spacing:-0.3px; color:var(--sub-on-dark); max-width:1100px; line-height:1.45; }
+.cover .metarow{ display:flex; gap:14px; margin-top:54px; }
+
+/* Pill / 칩 */
+.pill{
+  display:inline-flex; align-items:center; padding:11px 22px;
+  border-radius:var(--r-pill); font-size:15px; font-weight:500; letter-spacing:-0.2px;
+}
+.pill--primary{ background:var(--primary); color:#fff; }
+.pill--ghost{ background:transparent; border:1px solid var(--primary-on-dark); color:var(--primary-on-dark); }
+.chip{
+  display:inline-flex; align-items:center; padding:7px 15px; border-radius:var(--r-pill);
+  border:1px solid var(--hairline); font-size:13px; letter-spacing:-0.2px; color:var(--ink-sub);
+}
+.slide--dark .chip{ border-color:var(--hairline-dark); color:var(--sub-on-dark); }
+.chiprow{ display:flex; gap:10px; flex-wrap:wrap; }
+
+/* ===== 내비게이션 (스티키 플로팅 바 모사) ===== */
+#nav{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:14px;
+  background:rgba(245,245,247,0.8); backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--hairline); border-radius:var(--r-pill);
+  padding:8px 10px 8px 18px; z-index:50;
+}
+#nav button{
+  border:none; background:transparent; cursor:pointer; font-family:inherit;
+  width:34px; height:34px; border-radius:var(--r-pill); font-size:16px; color:var(--ink);
+  display:flex; align-items:center; justify-content:center;
+}
+#nav button:hover{ background:rgba(0,0,0,0.05); }
+#nav .navbtn--go{ background:var(--primary); color:#fff; width:auto; padding:0 18px; font-size:14px; font-weight:500; }
+#counter{ font-size:13px; font-weight:600; letter-spacing:-0.2px; color:var(--ink); min-width:54px; text-align:center; }
+.dots{ display:flex; gap:6px; }
+.dot{ width:7px; height:7px; border-radius:var(--r-pill); background:rgba(0,0,0,0.18); cursor:pointer; transition:.2s; }
+.dot.is-active{ background:var(--primary); width:20px; }
+
+/* 진행 바 */
+#progress{ position:fixed; top:0; left:0; height:3px; background:var(--primary); z-index:60; transition:width .4s ease; }
+
+.hint{ position:fixed; bottom:26px; right:26px; font-size:12px; color:#86868b; z-index:40; letter-spacing:-0.2px; }
+
+@media print{
+  html,body{ overflow:visible; height:auto; background:#fff; }
+  #nav,#progress,.hint{ display:none; }
+  #stage{ position:static; display:block; }
+  #scaler{ transform:none !important; width:1900px; height:auto; }
+  .slide{ display:flex !important; page-break-after:always; box-shadow:none; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div id="stage">
+ <div id="scaler">
+
+  <!-- ============================ COVER ============================ -->
+  <section class="slide slide--dark cover is-active">
+    <div class="kicker">Marketing Writing · GEO / AEO Playbook</div>
+    <h1>AI가 인용하는<br>마케팅 글쓰기</h1>
+    <p class="sub">검색의 주체가 사람에서 AI로 이동했습니다. 이제 우리의 글은 ‘클릭’을 얻기 위해서가 아니라, <strong style="color:var(--ink-on-dark);font-weight:600;">생성형 AI가 답변의 근거로 인용하도록</strong> 설계되어야 합니다. 마케팅 실무자를 위한 12장의 실전 명세서.</p>
+    <div class="metarow">
+      <span class="pill pill--primary">For. 마케팅 실무자</span>
+      <span class="pill pill--ghost">12 Slides · High Density</span>
+      <span class="pill pill--ghost">19:9 · Pretendard</span>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 01 · OVERVIEW ===================== -->
+  <section class="slide slide--light">
+    <div class="topbar">
+      <div class="chapter"><b>01.</b> &nbsp;Overview · 패러다임 전환</div>
+      <div class="pager">[ Page 01 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">검색은 ‘파란 링크 10개’에서 ‘하나의 AI 답변’으로 압축되었습니다. 이제 노출의 기준은 키워드 빈도가 아니라 <span class="hl">AI가 신뢰하고 인용하는 정보의 밀도</span>입니다.</h2>
+    <div class="body">
+      <div class="col">
+        <table class="spec-table">
+          <thead><tr><th style="width:150px">구분</th><th>Legacy SEO</th><th>AI 검색 (GEO/AEO)</th></tr></thead>
+          <tbody>
+            <tr><td class="lead-cell">평가 단위</td><td>페이지·키워드 빈도</td><td class="tag-blue">문장·문단 임베딩(의미 벡터)</td></tr>
+            <tr><td class="lead-cell">노출 형태</td><td>검색결과 목록 클릭</td><td class="tag-blue">답변 본문 + 출처 인용</td></tr>
+            <tr><td class="lead-cell">승리 조건</td><td>순위 상위 진입</td><td class="tag-blue">‘인용되는 출처’가 되는 것</td></tr>
+            <tr><td class="lead-cell">핵심 자산</td><td>키워드·백링크 수</td><td class="tag-blue">전문성·구조·신뢰(E-E-A-T)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">정보 탐색 경로의 무게중심 이동 (개념도)</div>
+          <div class="bar-row"><div class="bar-label">전통 검색 클릭</div><div class="bar-wrap"><div class="bar-fill is-ghost" style="width:38%">감소세</div></div></div>
+          <div class="bar-row"><div class="bar-label">AI 답변 내 소비</div><div class="bar-wrap"><div class="bar-fill" style="width:84%">급상승</div></div></div>
+          <div class="bar-row"><div class="bar-label">‘출처 클릭’ 가치</div><div class="bar-wrap"><div class="bar-fill" style="width:72%">고가치</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>본문 분석.</b> 사용자는 점점 더 ‘검색’ 대신 ‘질문’을 합니다. ChatGPT·Perplexity·Google AI Overviews는 여러 출처를 종합해 답을 만들고, 그 근거를 인용 링크로 노출합니다. 즉 <b>인용되지 못한 콘텐츠는 사실상 존재하지 않는 것</b>과 같습니다. 우리의 목표는 ‘상위 노출’에서 ‘AI의 1차 인용 출처’로 재정의됩니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 02 · 작동 원리 ===================== -->
+  <section class="slide slide--parch">
+    <div class="topbar">
+      <div class="chapter"><b>02.</b> &nbsp;How It Works · AI의 평가 메커니즘</div>
+      <div class="pager">[ Page 02 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">AI는 글을 ‘문장 단위로 벡터화(임베딩)’해 이해합니다. 따라서 <span class="hl">신뢰도 · 구조적 명료성 · 추출 가능성</span> 3가지를 충족하는 문장이 인용됩니다.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="cardgrid">
+          <div class="ucard"><div class="ucard__num">1</div><div class="ucard__t">신뢰도 (Trust)</div><div class="ucard__d">출처·저자·데이터가 명시된 문장. 모델은 검증 가능한 주장을 우선 채택합니다.</div></div>
+          <div class="ucard"><div class="ucard__num">2</div><div class="ucard__t">명료성 (Clarity)</div><div class="ucard__d">제목·표·리스트로 의미 경계가 또렷한 구조. 파편이 아닌 ‘완결된 답’이어야 합니다.</div></div>
+          <div class="ucard"><div class="ucard__num">3</div><div class="ucard__t">추출성 (Extractable)</div><div class="ucard__d">앞뒤 맥락 없이도 단독으로 인용 가능한 자기완결형(self-contained) 문장.</div></div>
+        </div>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">인용 선택 가중치 (AI Retrieval 우선순위 모델)</div>
+          <div class="bar-row"><div class="bar-label">의미 밀도·전문성</div><div class="bar-wrap"><div class="bar-fill" style="width:92%">9.2</div></div></div>
+          <div class="bar-row"><div class="bar-label">구조화 정도</div><div class="bar-wrap"><div class="bar-fill" style="width:86%">8.6</div></div></div>
+          <div class="bar-row"><div class="bar-label">출처·신뢰 신호</div><div class="bar-wrap"><div class="bar-fill" style="width:80%">8.0</div></div></div>
+          <div class="bar-row"><div class="bar-label">키워드 단순 빈도</div><div class="bar-wrap"><div class="bar-fill is-ghost" style="width:24%">2.4</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>핵심 정의 — 임베딩(Embedding).</b> AI가 인간처럼 의미를 이해하도록 단어·문장을 수치 벡터로 변환한 표현입니다. 키워드를 ‘몇 번’ 썼는지가 아니라, <b>주제에 대해 얼마나 깊고 일관된 의미를 담았는지</b>가 평가됩니다. 그래서 키워드 반복형 글은 의미 밀도가 낮아 인용에서 탈락합니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 03 · 역피라미드 ===================== -->
+  <section class="slide slide--dark">
+    <div class="topbar">
+      <div class="chapter"><b>03.</b> &nbsp;Structure · 역피라미드 즉답형</div>
+      <div class="pager">[ Page 03 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">결론을 맨 앞에 두는 <span class="hl">역피라미드(즉답형) 구조</span>를 쓰세요. AI는 글의 첫 문단에서 답을 찾고, 그 문장을 그대로 인용합니다.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="compare">
+          <div class="exbox exbox--bad">
+            <div class="exbox__cap">✕ 지루한 서론형</div>
+            <p class="exbox__q">“SEO는 매우 복잡한 작업이며 검색엔진 알고리즘, 키워드 경쟁도, 사이트 환경 등 다양한 변수에 따라 결과가 판이하게 달라질 수 있어서 단정하기 어렵지만…”</p>
+          </div>
+          <div class="exbox exbox--good">
+            <div class="exbox__cap">✓ 즉답·수치화형</div>
+            <p class="exbox__q"><b>“SEO 효과는 일반적으로 3~6개월 후 나타납니다.”</b> 신규 사이트는 6~12개월, 기존 사이트의 가시성 개선은 2~4개월 내 확인됩니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col col--narrow">
+        <table class="spec-table">
+          <thead><tr><th>작성 원칙</th><th>실행 지침</th></tr></thead>
+          <tbody>
+            <tr><td class="lead-cell">완결 문장</td><td>첫 문장에 주어+목적어+서술어를 모두 담아 단독 인용 가능하게.</td></tr>
+            <tr><td class="lead-cell">정량 데이터</td><td>‘빠르게’ 대신 <span class="tag-blue">‘평균 3개월’, ‘약 30%’</span>로 명시.</td></tr>
+            <tr><td class="lead-cell">확정 어미</td><td>추측형 배제, <span class="tag-blue">‘~입니다 / ~습니다’</span> 단정형 종결.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="analysis"><b>구조 공식 — 결론 → 본문 → 배경.</b> 첫 문장과 첫 단어를 핵심 키워드로 명료하게 시작하세요. AI는 ‘질문에 대한 직접적인 답 한 문장’을 가장 선호하며, 서론이 길수록 추출 대상에서 멀어집니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 04 · Q&A / FAQ ===================== -->
+  <section class="slide slide--light">
+    <div class="topbar">
+      <div class="chapter"><b>04.</b> &nbsp;Format · 대화형 Q&amp;A · FAQ</div>
+      <div class="pager">[ Page 04 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">실제 고객의 자연어 질문을 <span class="hl">소제목(H3)으로 삼고</span> 바로 아래 답을 배치하세요. 하나의 주제에 5~7개 연관 질문을 묶으면 ‘권위 허브’로 인식됩니다.</h2>
+    <div class="body">
+      <div class="col">
+        <table class="spec-table">
+          <thead><tr><th style="width:60px">#</th><th>연관 질문(H3) 예시 — “마케팅 자동화”</th><th style="width:150px">역할</th></tr></thead>
+          <tbody>
+            <tr><td class="tag-blue">Q1</td><td>마케팅 자동화란 무엇인가요?</td><td>정의 확보</td></tr>
+            <tr><td class="tag-blue">Q2</td><td>도구 비용은 얼마인가요?</td><td>구매 의도</td></tr>
+            <tr><td class="tag-blue">Q3</td><td>선택 기준은 무엇인가요?</td><td>비교 인용</td></tr>
+            <tr><td class="tag-blue">Q4</td><td>구축 기간은 얼마나 걸리나요?</td><td>실무 디테일</td></tr>
+            <tr><td class="tag-blue">Q5</td><td>ROI는 어떻게 측정하나요?</td><td>의사결정</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">질문 묶음 개수 → ‘권위 허브’ 인식 전환</div>
+          <div class="bar-row"><div class="bar-label">1~2개 단편</div><div class="bar-wrap"><div class="bar-fill is-ghost" style="width:30%">파편 정보</div></div></div>
+          <div class="bar-row"><div class="bar-label">3~4개</div><div class="bar-wrap"><div class="bar-fill" style="width:60%">보통</div></div></div>
+          <div class="bar-row"><div class="bar-label">5~7개 클러스터</div><div class="bar-wrap"><div class="bar-fill" style="width:95%">Authority Hub</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>왜 효과적인가.</b> AI 검색 사용자는 구어체 긴 질문(“팀 협업 잘 되는 실무 툴 뭐 있나요?”)을 입력합니다. AI는 답의 출처를 매칭해야 하므로 <b>이미 질의응답 형태로 정돈된 콘텐츠</b>를 훨씬 높게 인용합니다. FAQ 스키마 마크업을 함께 적용하면 매칭 효율이 더 올라갑니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 05 · 인용되는 문장 ===================== -->
+  <section class="slide slide--parch">
+    <div class="topbar">
+      <div class="chapter"><b>05.</b> &nbsp;Sentence Craft · 인용되는 문장</div>
+      <div class="pager">[ Page 05 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">AI가 복사해 붙일 수 있는 문장은 <span class="hl">‘맥락 없이도 홀로 완결되는’</span> 문장입니다. 대명사·생략을 줄이고, 주체와 수치를 문장 안에 담으세요.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="compare">
+          <div class="exbox exbox--bad">
+            <div class="exbox__cap">✕ 맥락 의존 (인용 불가)</div>
+            <p class="exbox__q">“그것은 보통 그 정도면 충분히 빠른 편이고, 위에서 말한 방식대로 하면 대체로 잘 됩니다.”</p>
+          </div>
+          <div class="exbox exbox--good">
+            <div class="exbox__cap">✓ 자기완결 (인용 가능)</div>
+            <p class="exbox__q"><b>“병원 블로그 콘텐츠는 발행 후 평균 4~8주에 검색 유입이 발생하며, 정보성 글이 후기성 글보다 인용률이 높습니다.”</b></p>
+          </div>
+        </div>
+      </div>
+      <div class="col col--narrow">
+        <table class="spec-table">
+          <thead><tr><th>인용 가능 문장 체크</th><th style="width:90px">필수</th></tr></thead>
+          <tbody>
+            <tr><td>주어(무엇이)가 문장 안에 있는가</td><td class="tag-blue">필수</td></tr>
+            <tr><td>구체 수치·기간·범위가 있는가</td><td class="tag-blue">필수</td></tr>
+            <tr><td>‘이것/그것/위 내용’ 대명사를 뺐는가</td><td class="tag-blue">필수</td></tr>
+            <tr><td>한 문장 = 하나의 사실인가</td><td class="tag-blue">권장</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="analysis"><b>설계 원칙.</b> AI는 문단에서 ‘인용 스니펫’을 잘라냅니다. 잘린 문장이 단독으로 말이 되어야 인용됩니다. <b>정의문(“A는 B입니다”)·수치문·단계문</b>이 가장 잘 추출되며, 한 문장에 여러 주장을 욱여넣으면 추출 정확도가 떨어집니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 06 · 데이터/출처 ===================== -->
+  <section class="slide slide--dark">
+    <div class="topbar">
+      <div class="chapter"><b>06.</b> &nbsp;Evidence · 데이터 · 출처 · 통계</div>
+      <div class="pager">[ Page 06 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">AI는 <span class="hl">숫자·출처·인용을 신뢰의 증거</span>로 읽습니다. 주장 뒤에는 반드시 통계·표·출처를 붙여 ‘검증 가능한 문장’으로 만드세요.</h2>
+    <div class="statrow">
+      <div class="stat"><div class="stat__n">+40%</div><div class="stat__l">통계·인용을 추가했을 때 생성형 답변 내 가시성 상승 (GEO 연구 보고된 범위, 예시)</div></div>
+      <div class="stat"><div class="stat__n">3종</div><div class="stat__l">가장 잘 인용되는 근거 유형: ① 통계 수치 ② 전문가 인용 ③ 1차 데이터·실측</div></div>
+      <div class="stat"><div class="stat__n">1차</div><div class="stat__l">자체 실측·자체 조사 데이터는 인터넷에 없는 정보라 인용 우선순위가 가장 높음</div></div>
+    </div>
+    <div class="body">
+      <div class="col">
+        <table class="spec-table">
+          <thead><tr><th>근거 유형</th><th>약한 표현 (지양)</th><th>강한 표현 (지향)</th></tr></thead>
+          <tbody>
+            <tr><td class="lead-cell">속도</td><td>“금방 효과 납니다”</td><td class="tag-blue">“평균 3개월 내 유입 발생”</td></tr>
+            <tr><td class="lead-cell">규모</td><td>“많은 고객이 만족”</td><td class="tag-blue">“재방문율 30% 개선(자체 집계)”</td></tr>
+            <tr><td class="lead-cell">출처</td><td>출처 없음</td><td class="tag-blue">기관·연도 명시 + 표 첨부</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="analysis"><b>주의.</b> 수치는 반드시 <b>출처·연도와 함께</b> 제시하고, 확인되지 않은 숫자는 ‘자체 집계’·‘추정치’로 명확히 표기하세요. 근거 없는 과장 수치는 신뢰성(Trust) 점수를 오히려 깎습니다. 외부 권위 매체에서 우리 브랜드가 인용·언급되도록 만드는 것도 핵심 자산입니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 07 · E-E-A-T ===================== -->
+  <section class="slide slide--light">
+    <div class="topbar">
+      <div class="chapter"><b>07.</b> &nbsp;Authority · E-E-A-T 강화</div>
+      <div class="pager">[ Page 07 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">AI는 Google의 <span class="hl">E-E-A-T</span>를 신뢰 검증 표준으로 따릅니다. 경험·전문성·권위·신뢰를 글 곳곳에 ‘증거’로 심으세요.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="cardgrid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="ucard"><div class="ucard__num">E</div><div class="ucard__t">Experience · 경험</div><div class="ucard__d">직접 촬영 이미지·자체 테스트 후기. “저희가 3개월간 직접 집행해보니…”</div></div>
+          <div class="ucard"><div class="ucard__num">E</div><div class="ucard__t">Expertise · 전문성</div><div class="ucard__d">통계·출처·용어 정의·프로세스 공개. (YMYL 분야는 요건 더 엄격)</div></div>
+          <div class="ucard"><div class="ucard__num">A</div><div class="ucard__t">Authoritativeness · 권위</div><div class="ucard__d">백링크·언론 언급·브랜드 검색량 등 외부의 평판 신호.</div></div>
+          <div class="ucard"><div class="ucard__num">T</div><div class="ucard__t">Trustworthiness · 신뢰</div><div class="ucard__d">실패 사례와 개선 과정의 솔직한 공개가 홍보성 글보다 높게 평가.</div></div>
+        </div>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">신호 유형별 인용 기여도 (개념)</div>
+          <div class="bar-row"><div class="bar-label">1차 경험·실측</div><div class="bar-wrap"><div class="bar-fill" style="width:90%">최상</div></div></div>
+          <div class="bar-row"><div class="bar-label">전문 데이터·정의</div><div class="bar-wrap"><div class="bar-fill" style="width:82%">상</div></div></div>
+          <div class="bar-row"><div class="bar-label">외부 언급·백링크</div><div class="bar-wrap"><div class="bar-fill" style="width:74%">상</div></div></div>
+          <div class="bar-row"><div class="bar-label">솔직한 한계 공개</div><div class="bar-wrap"><div class="bar-fill" style="width:68%">중상</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>실전 표현 패턴.</b> “실제 광고 집행 결과를 바탕으로 검증하니”, “저자: ○○ 분야 10년 경력” 처럼 <b>경험·저자 정보를 본문에 명시</b>하세요. 특히 완벽한 성공담보다 <b>‘실패 사례 + 교훈’</b>을 담은 콘텐츠가 인용률에서 압도적으로 유리합니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 08 · Topic Authority ===================== -->
+  <section class="slide slide--parch">
+    <div class="topbar">
+      <div class="chapter"><b>08.</b> &nbsp;Topic Authority · 주제 일관성</div>
+      <div class="pager">[ Page 08 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">무분별한 다작보다 <span class="hl">‘카테고리 킬러’ 심층 허브</span>를 구축하세요. AI는 한 주제에 콘텐츠가 집중된 도메인을 ‘전문가 그룹’으로 매핑합니다.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="compare">
+          <div class="exbox exbox--bad">
+            <div class="exbox__cap">✕ 잡화점형 (정체성 하락)</div>
+            <p class="exbox__q">마케팅·패션·요리·재테크를 한 채널에 혼재 → 도메인 주제 점수 하락, 어떤 카테고리에서도 우선 인용 실패.</p>
+          </div>
+          <div class="exbox exbox--good">
+            <div class="exbox__cap">✓ 심층 허브형 (전문가 매핑)</div>
+            <p class="exbox__q"><b>하나의 주제를 기둥 글(Pillar) + 세부 글(Cluster)로 촘촘히 연결</b> → 주제 권위 집중, 인용 우선순위 상승.</p>
+          </div>
+        </div>
+        <div style="margin-top:22px;" class="chiprow">
+          <span class="chip">Pillar: AEO 완전정복</span>
+          <span class="chip">→ Cluster: FAQ 작성법</span>
+          <span class="chip">→ Cluster: 스키마 마크업</span>
+          <span class="chip">→ Cluster: 인용 측정</span>
+          <span class="chip">→ 내부 링크로 연결</span>
+        </div>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">‘2080 법칙’ — 콘텐츠 전략 전환</div>
+          <div class="bar-row"><div class="bar-label">월 20개 단순 포스팅</div><div class="bar-wrap"><div class="bar-fill is-ghost" style="width:35%">성과 기여 ↓</div></div></div>
+          <div class="bar-row"><div class="bar-label">분기 5개 심층 리포트</div><div class="bar-wrap"><div class="bar-fill" style="width:88%">성과 80% 견인</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>실행 원칙.</b> 20%의 잘 기획된 심층 콘텐츠가 성과의 80%를 만듭니다. 하나의 핵심 주제를 정해 <b>기둥 글–세부 글 구조로 깊게 파고</b>, 내부 링크로 묶어 ‘이 도메인은 이 주제의 전문가’라는 신호를 AI에게 일관되게 보내세요. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 09 · 독창성/프레임워크 ===================== -->
+  <section class="slide slide--dark">
+    <div class="topbar">
+      <div class="chapter"><b>09.</b> &nbsp;Originality · 고유 프레임워크</div>
+      <div class="pager">[ Page 09 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">AI는 인터넷에 흔한 정보보다 <span class="hl">새로운 관점과 고유 프레임워크</span>를 학습·인용하려 합니다. ‘이름 붙은 모델’과 ‘반대 관점’을 만드세요.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="cardgrid">
+          <div class="ucard"><div class="ucard__num">1</div><div class="ucard__t">체계화 · 명명</div><div class="ucard__d">‘3단계 모델’, ‘5대 원칙’처럼 숫자를 붙인 고유 프레임워크로 명명.</div></div>
+          <div class="ucard"><div class="ucard__num">2</div><div class="ucard__t">인사이트 결합</div><div class="ucard__d">현장 업계 데이터 + 자사 고유의 경험적 자산을 결합해 독자성 확보.</div></div>
+          <div class="ucard"><div class="ucard__num">3</div><div class="ucard__t">반대 관점</div><div class="ucard__d">“시장은 A라 하지만, 검증 결과는 B” — 통념을 뒤집는 통찰 제시.</div></div>
+        </div>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">콘텐츠 유형별 ‘인용 신선도’ 점수</div>
+          <div class="bar-row"><div class="bar-label">통념 재정리</div><div class="bar-wrap"><div class="bar-fill is-ghost" style="width:34%">낮음</div></div></div>
+          <div class="bar-row"><div class="bar-label">사례+데이터</div><div class="bar-wrap"><div class="bar-fill" style="width:70%">높음</div></div></div>
+          <div class="bar-row"><div class="bar-label">고유 프레임워크</div><div class="bar-wrap"><div class="bar-fill" style="width:96%">최상</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>왜 인용되는가.</b> 이미 공개된 뻔한 정보는 다른 출처와 차별화되지 않아 AI가 굳이 우리를 인용할 이유가 없습니다. <b>우리만의 이름·숫자·관점</b>이 붙은 정보는 ‘대체 불가능한 출처’가 되어, 해당 개념을 설명할 때 반복적으로 인용됩니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 10 · DO's ===================== -->
+  <section class="slide slide--light">
+    <div class="topbar">
+      <div class="chapter"><b>10.</b> &nbsp;The Do’s · 반드시 지킬 것</div>
+      <div class="pager">[ Page 10 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">의미 밀도 · 즉답 구조 · 검증 가능한 근거 — 이 세 가지를 <span class="hl">예외 없이 엄수</span>하면 인용 확률이 구조적으로 올라갑니다.</h2>
+    <div class="body">
+      <div class="col">
+        <table class="spec-table">
+          <thead><tr><th>권장 실행 (Do)</th><th>연동 원칙</th><th style="width:200px">기대 효과</th><th style="width:140px">중요도</th></tr></thead>
+          <tbody>
+            <tr><td class="lead-cell verdict do">결론을 첫 문장에</td><td>역피라미드</td><td>스니펫 추출 적중</td><td><div class="meter"><div class="meter__track"><div class="meter__fill" style="width:100%"></div></div><span class="meter__val">100%</span></div></td></tr>
+            <tr><td class="lead-cell verdict do">질문을 소제목으로</td><td>Q&amp;A·FAQ</td><td>질의 매칭률 상승</td><td><div class="meter"><div class="meter__track"><div class="meter__fill" style="width:95%"></div></div><span class="meter__val">95%</span></div></td></tr>
+            <tr><td class="lead-cell verdict do">수치+출처 명시</td><td>E-E-A-T</td><td>신뢰 신호 강화</td><td><div class="meter"><div class="meter__track"><div class="meter__fill" style="width:92%"></div></div><span class="meter__val">92%</span></div></td></tr>
+            <tr><td class="lead-cell verdict do">표·리스트로 구조화</td><td>명료성</td><td>빠른 파싱·추출</td><td><div class="meter"><div class="meter__track"><div class="meter__fill" style="width:88%"></div></div><span class="meter__val">88%</span></div></td></tr>
+            <tr><td class="lead-cell verdict do">고유 프레임워크</td><td>독창성</td><td>대체 불가 출처화</td><td><div class="meter"><div class="meter__track"><div class="meter__fill" style="width:85%"></div></div><span class="meter__val">85%</span></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="analysis"><b>구현 가이드.</b> 모든 글은 ‘이 문장만 떼어내도 답이 되는가?’를 자가 점검하세요. 한 페이지 안에 <b>경영진용 요약(Executive Summary) + 실무진용 상세 방법론</b>을 함께 담으면, 서로 다른 의도의 질의 모두에 대응해 인용 표면적이 넓어집니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 11 · DON'Ts ===================== -->
+  <section class="slide slide--parch">
+    <div class="topbar">
+      <div class="chapter"><b>11.</b> &nbsp;The Don’ts · 절대 금지</div>
+      <div class="pager">[ Page 11 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">키워드 도배 · 출처 없는 과장 · 주제 잡탕 — 이 세 가지는 <span class="hl">신뢰 점수를 파괴</span>해 인용에서 영구 탈락시킵니다.</h2>
+    <div class="body">
+      <div class="col">
+        <table class="spec-table">
+          <thead><tr><th>절대 금지 (Don’t)</th><th>발생하는 결함</th><th>올바른 대체</th></tr></thead>
+          <tbody>
+            <tr><td class="lead-cell verdict dont">키워드 기계적 반복</td><td>의미 밀도 저하, 스팸 판정</td><td class="tag-blue">맥락 있는 자연어 설계</td></tr>
+            <tr><td class="lead-cell verdict dont">출처 없는 과장 수치</td><td>신뢰성(Trust) 하락</td><td class="tag-blue">출처·연도·‘자체 집계’ 표기</td></tr>
+            <tr><td class="lead-cell verdict dont">긴 서론·결론 지연</td><td>스니펫 추출 실패</td><td class="tag-blue">첫 문장 즉답 배치</td></tr>
+            <tr><td class="lead-cell verdict dont">무관 주제 혼재</td><td>도메인 정체성 점수 하락</td><td class="tag-blue">단일 주제 심층 허브</td></tr>
+            <tr><td class="lead-cell verdict dont">AI 양산 무수정 발행</td><td>독창성·경험 신호 결여</td><td class="tag-blue">1차 경험·데이터 주입</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col col--narrow">
+        <div class="chartcard">
+          <div class="chart-title">금지 행위의 인용 손상도 스펙트럼</div>
+          <div class="bar-row"><div class="bar-label">서론 늘어짐</div><div class="bar-wrap"><div class="bar-fill is-ghost" style="width:40%">약함</div></div></div>
+          <div class="bar-row"><div class="bar-label">주제 혼재</div><div class="bar-wrap"><div class="bar-fill" style="width:62%">중간</div></div></div>
+          <div class="bar-row"><div class="bar-label">출처 없는 과장</div><div class="bar-wrap"><div class="bar-fill" style="width:82%">심각</div></div></div>
+          <div class="bar-row"><div class="bar-label">키워드 도배</div><div class="bar-wrap"><div class="bar-fill" style="width:96%">치명적</div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>주의.</b> 가장 흔한 실수는 ‘AI로 빠르게 양산해 그대로 발행’입니다. 1차 경험·자체 데이터·고유 관점이 없는 글은 인터넷의 평균값과 같아 인용되지 않습니다. <b>AI는 초안 도구로, 검증·경험 주입은 사람이</b> — 이 역할 분담을 지키세요. <span class="src">[source: 1]</span></p>
+  </section>
+
+  <!-- ===================== SLIDE 12 · 로드맵/측정 ===================== -->
+  <section class="slide slide--dark">
+    <div class="topbar">
+      <div class="chapter"><b>12.</b> &nbsp;Roadmap · 실행 &amp; 측정</div>
+      <div class="pager">[ Page 12 / 12 ]</div>
+    </div>
+    <span class="eyebrow">CONCLUSION</span>
+    <h2 class="conclusion">‘쓰고 끝’이 아니라 <span class="hl">발행 → AI 인용 모니터링 → 개선</span>의 루프를 돌리세요. 인용 여부 자체가 새로운 KPI입니다.</h2>
+    <div class="body">
+      <div class="col">
+        <div class="cardgrid">
+          <div class="ucard"><div class="ucard__num">1</div><div class="ucard__t">설계 (Plan)</div><div class="ucard__d">고객 자연어 질문 수집 → 질문을 소제목으로 한 즉답형 구조 설계.</div></div>
+          <div class="ucard"><div class="ucard__num">2</div><div class="ucard__t">집필 (Write)</div><div class="ucard__d">완결 문장·수치·출처·고유 프레임워크 + 1차 경험 주입.</div></div>
+          <div class="ucard"><div class="ucard__num">3</div><div class="ucard__t">구조화 (Mark)</div><div class="ucard__d">표·리스트·FAQ 스키마·llms.txt 등 기술적 추출성 강화.</div></div>
+          <div class="ucard"><div class="ucard__num">4</div><div class="ucard__t">측정 (Track)</div><div class="ucard__d">ChatGPT·Perplexity·AI Overviews에서 인용 여부·언급량 점검.</div></div>
+          <div class="ucard"><div class="ucard__num">5</div><div class="ucard__t">개선 (Refine)</div><div class="ucard__d">인용된 문장 패턴을 분석해 다음 글에 재적용, 허브 확장.</div></div>
+          <div class="ucard"><div class="ucard__num">✓</div><div class="ucard__t">핵심 KPI</div><div class="ucard__d">순위·트래픽 + ‘AI 답변 내 인용·브랜드 언급’ 지표 병행 관리.</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="analysis"><b>마무리.</b> AI 검색 시대의 승자는 ‘가장 많이 쓴 곳’이 아니라 ‘<b>AI가 가장 신뢰해 반복 인용하는 곳</b>’입니다. 의미 밀도·즉답 구조·검증된 근거·고유 관점 — 이 명세를 지키는 콘텐츠가 그 자리를 차지합니다. <span class="src">[source: 1]</span></p>
+  </section>
+
+ </div>
+</div>
+
+<!-- ===================== 내비게이션 ===================== -->
+<nav id="nav">
+  <button id="prev" aria-label="이전">‹</button>
+  <span id="counter">01 / 13</span>
+  <button id="next" aria-label="다음">›</button>
+  <div class="dots" id="dots"></div>
+</nav>
+<div class="hint">← → 또는 클릭으로 이동 · F 전체화면 · P 인쇄(PDF)</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total  = slides.length;
+  let idx = 0;
+
+  const counter  = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  const dotsWrap = document.getElementById('dots');
+  const scaler   = document.getElementById('scaler');
+
+  // dots
+  slides.forEach((_,i)=>{
+    const d=document.createElement('span'); d.className='dot';
+    d.addEventListener('click',()=>go(i)); dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function render(){
+    slides.forEach((s,i)=>s.classList.toggle('is-active', i===idx));
+    dots.forEach((d,i)=>d.classList.toggle('is-active', i===idx));
+    counter.textContent = String(idx+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+    progress.style.width = ((idx+1)/total*100)+'%';
+  }
+  function go(n){ idx = Math.max(0, Math.min(total-1, n)); render(); }
+  function next(){ go(idx+1); }
+  function prev(){ go(idx-1); }
+
+  document.getElementById('next').addEventListener('click',next);
+  document.getElementById('prev').addEventListener('click',prev);
+
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); next(); }
+    else if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ go(0); } else if(e.key==='End'){ go(total-1); }
+    else if(e.key.toLowerCase()==='f'){ document.documentElement.requestFullscreen?.(); }
+    else if(e.key.toLowerCase()==='p'){ window.print(); }
+  });
+
+  // 클릭으로 다음(내비/링크 제외)
+  document.getElementById('stage').addEventListener('click',e=>{
+    if(e.target.closest('#nav')) return;
+    next();
+  });
+
+  // 19:9 캔버스를 뷰포트에 맞춰 스케일 (px 타이포 규격 유지)
+  function fit(){
+    const pad = 0;
+    const s = Math.min((window.innerWidth-pad)/1900, (window.innerHeight-pad)/900);
+    scaler.style.transform = 'scale('+s+')';
+  }
+  window.addEventListener('resize', fit);
+  fit(); render();
+})();
+</script>
+</body>
+</html>
