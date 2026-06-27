@@ -90,7 +90,11 @@ module.exports = async function handler(req, res) {
           + `<figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">${cap}</figcaption>`
           + `</figure>`;
 
-        const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0, post.title);
+        // 1·2번째 이미지를 병렬 생성(타임아웃 여유 확보) — 서로 다른 파일명이라 충돌 없음
+        const [img1, img2] = await Promise.all([
+          generateAndSaveImage(post.imagePrompt, post.id, 0, post.title),
+          generateAndSaveImage(post.imagePrompt, post.id, 1, post.title),
+        ]);
         if (img1 && img1.url) {
           imgUrls.push(img1.url);
           post.html = fig(img1.url, '© 병원마케팅 베놈') + post.html;
@@ -99,7 +103,6 @@ module.exports = async function handler(req, res) {
         }
 
         // 2번째 이미지(베스트 에포트) — 실패해도 무시
-        const img2 = await generateAndSaveImage(post.imagePrompt, post.id, 1, post.title);
         if (img2 && img2.url) {
           imgUrls.push(img2.url);
           const second = fig(img2.url, '병원마케팅 베놈 — 데이터 기반 전략');
