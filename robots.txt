@@ -20,4 +20,17 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+User-agent: CCBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
 Sitemap: https://desktop-tutorial-chi-peach.vercel.app/sitemap.xml
+LLMs: https://desktop-tutorial-chi-peach.vercel.app/llms.txt

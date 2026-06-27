@@ -2,7 +2,8 @@
 
 const { generatePost } = require('../lib/post-generator');
 const { generateAndSaveImage } = require('../lib/image-generator');
-const { savePost, appendLog } = require('../lib/github-store');
+const { savePost, appendLog, getPosts } = require('../lib/github-store');
+const { updateSitemap } = require('../lib/sitemap-builder');
 
 const DEFAULT_SETTINGS = {
   enabled: false,
@@ -119,6 +120,14 @@ module.exports = async function handler(req, res) {
     } catch (e) {
       results.push({ ok: false, error: e.message, category, keyword });
     }
+  }
+
+  // 사이트맵 자동 갱신
+  try {
+    const { posts: allPosts } = await getPosts();
+    await updateSitemap(allPosts);
+  } catch (e) {
+    console.warn('[cron] sitemap 갱신 실패(무시):', e.message);
   }
 
   return res.status(200).json({ ok: true, ran: count, results });
