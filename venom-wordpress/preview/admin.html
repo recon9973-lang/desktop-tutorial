@@ -836,10 +836,9 @@ a{color:var(--p);text-decoration:none}
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">하루 발행 수량</label>
             <input type="number" id="ap-daily-count" min="1" max="5" value="1" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
           </div>
-          <div>
-            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">카테고리 (쉼표 구분)</label>
-            <input type="text" id="ap-categories" placeholder="geo,seo,dental,skin" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
-            <div style="font-size:11px;color:var(--mute);margin-top:4px">geo · seo · dental · skin · oriental · ortho · plastic · naegwa · angwa · shimui · geo_local</div>
+          <div style="grid-column:1/-1">
+            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:8px">카테고리 선택 <span style="color:var(--mute);font-weight:400">(클릭으로 추가/제거)</span></label>
+            <div id="ap-cat-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
           </div>
           <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">지역 키워드 (쉼표 구분)</label>
@@ -1947,11 +1946,47 @@ async function apLoadSettings() {
   }
 }
 
+// 카테고리 칩 목록
+var AP_CATS = [
+  {id:'geo',     label:'GEO/AI마케팅'},
+  {id:'seo',     label:'SEO마케팅'},
+  {id:'dental',  label:'치과마케팅'},
+  {id:'skin',    label:'피부과마케팅'},
+  {id:'oriental',label:'한의원마케팅'},
+  {id:'ortho',   label:'정형외과마케팅'},
+  {id:'plastic', label:'성형외과마케팅'},
+  {id:'naegwa',  label:'내과마케팅'},
+  {id:'angwa',   label:'안과마케팅'},
+  {id:'shimui',  label:'의료광고심의'},
+  {id:'geo_local',label:'지역마케팅'},
+];
+var _apSelectedCats = [];
+
+function apRenderCatChips() {
+  var wrap = document.getElementById('ap-cat-chips');
+  if (!wrap) return;
+  wrap.innerHTML = AP_CATS.map(function(c) {
+    var on = _apSelectedCats.indexOf(c.id) > -1;
+    return '<button type="button" onclick="apToggleCat(\''+c.id+'\')" style="'
+      +'padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid '
+      +(on?'var(--primary)':'var(--border)')+';background:'+(on?'var(--primary)':'var(--soft)')+';color:'
+      +(on?'#fff':'var(--mute)')+';transition:all .15s">'+c.label+'</button>';
+  }).join('');
+}
+
+function apToggleCat(id) {
+  var idx = _apSelectedCats.indexOf(id);
+  if (idx > -1) _apSelectedCats.splice(idx, 1);
+  else _apSelectedCats.push(id);
+  apRenderCatChips();
+}
+
 function apApplySettings(s) {
   if (!s) return;
   document.getElementById('ap-enabled').checked = !!s.enabled;
   document.getElementById('ap-daily-count').value = s.dailyCount || 1;
-  document.getElementById('ap-categories').value = (s.categories || []).join(',');
+  _apSelectedCats = (s.categories || []).slice();
+  apRenderCatChips();
   document.getElementById('ap-regions').value = (s.regions || []).join(',');
   document.getElementById('ap-keywords').value = (s.keywords || []).join('\n');
   document.getElementById('ap-extra').value = s.extra || '';
@@ -1964,7 +1999,7 @@ async function apSaveSettings() {
   const settings = {
     enabled: document.getElementById('ap-enabled').checked,
     dailyCount: parseInt(document.getElementById('ap-daily-count').value) || 1,
-    categories: document.getElementById('ap-categories').value.split(',').map(s=>s.trim()).filter(Boolean),
+    categories: _apSelectedCats.slice(),
     regions: document.getElementById('ap-regions').value.split(',').map(s=>s.trim()).filter(Boolean),
     keywords: document.getElementById('ap-keywords').value.split('\n').map(s=>s.trim()).filter(Boolean),
     extra: document.getElementById('ap-extra').value.trim()
@@ -2313,6 +2348,7 @@ async function apRunNow() {
 }
 
 function initAutoPost() {
+  apRenderCatChips();
   // secret 상태 표시
   const saved = localStorage.getItem('venom-admin-secret');
   if (saved) {
