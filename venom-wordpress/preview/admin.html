@@ -395,17 +395,8 @@ a{color:var(--p);text-decoration:none}
     <!-- ══ 페이지 관리 ══ -->
     <div id="section-pages" class="admin-section">
       <div class="card">
-        <div class="card-head"><div class="card-title">페이지 관리</div></div>
-        <div class="page-card-grid">
-          <div class="page-card" onclick="toast('홈 페이지 편집 모드 준비 중')"><div class="page-card-icon">🏠</div><div class="page-card-name">홈</div><div class="page-card-url">/</div></div>
-          <div class="page-card" onclick="toast('병원마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">🏥</div><div class="page-card-name">병원마케팅</div><div class="page-card-url">/hospital-marketing</div></div>
-          <div class="page-card" onclick="toast('AI마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">🤖</div><div class="page-card-name">AI마케팅</div><div class="page-card-url">/ai-marketing</div></div>
-          <div class="page-card" onclick="toast('온라인마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">📱</div><div class="page-card-name">온라인마케팅</div><div class="page-card-url">/online-marketing</div></div>
-          <div class="page-card" onclick="toast('홈페이지 제작 페이지 편집 모드 준비 중')"><div class="page-card-icon">🌐</div><div class="page-card-name">홈페이지 제작</div><div class="page-card-url">/hospital-website</div></div>
-          <div class="page-card" onclick="toast('상담신청 페이지 편집 모드 준비 중')"><div class="page-card-icon">💬</div><div class="page-card-name">상담신청</div><div class="page-card-url">/contact</div></div>
-          <div class="page-card" onclick="toast('치과마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">🦷</div><div class="page-card-name">치과마케팅</div><div class="page-card-url">/dental-marketing</div></div>
-          <div class="page-card" onclick="toast('피부과마케팅 페이지 편집 모드 준비 중')"><div class="page-card-icon">✨</div><div class="page-card-name">피부과마케팅</div><div class="page-card-url">/skin-marketing</div></div>
-        </div>
+        <div class="card-head"><div class="card-title">📄 페이지 관리</div><a href="index.html" target="_blank" class="btn btn-outline btn-sm">🌐 사이트 미리보기</a></div>
+        <div id="pages-grid" class="page-card-grid"></div>
       </div>
     </div>
 
@@ -635,29 +626,15 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ 마케팅 리포트 ══ -->
     <div id="section-reports" class="admin-section">
-      <div class="card">
+      <div class="card" id="report-card">
         <div class="card-head">
-          <div class="card-title">📈 월간 마케팅 성과 리포트</div>
+          <div class="card-title">📈 마케팅 성과 리포트</div>
           <div style="display:flex;gap:8px">
-            <select class="btn btn-outline btn-sm"><option>2025년 6월</option><option>2025년 5월</option><option>2025년 4월</option></select>
-            <button class="btn btn-p btn-sm" onclick="downloadReport()">📥 PDF 다운로드</button>
+            <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄 / PDF</button>
+            <button class="btn btn-p btn-sm" onclick="copyReport()">📋 텍스트 복사</button>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
-          <div style="background:var(--soft);border-radius:var(--r12);padding:20px;text-align:center"><div style="font-size:28px;font-weight:700;color:var(--p)">1,842</div><div style="font-size:13px;color:var(--mute);margin-top:4px">월 방문자</div><div style="font-size:12px;color:#16a34a;margin-top:4px">전월 +18%</div></div>
-          <div style="background:var(--soft);border-radius:var(--r12);padding:20px;text-align:center"><div style="font-size:28px;font-weight:700;color:var(--p)">48</div><div style="font-size:13px;color:var(--mute);margin-top:4px">상담 신청</div><div style="font-size:12px;color:#16a34a;margin-top:4px">전월 +24%</div></div>
-          <div style="background:var(--soft);border-radius:var(--r12);padding:20px;text-align:center"><div style="font-size:28px;font-weight:700;color:var(--p)">2.6%</div><div style="font-size:13px;color:var(--mute);margin-top:4px">전환율</div><div style="font-size:12px;color:#16a34a;margin-top:4px">업계 평균 0.8%</div></div>
-        </div>
-        <div style="background:var(--soft);border-radius:var(--r12);padding:20px">
-          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px">이달의 주요 성과</h4>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
-            <li style="font-size:13px;color:var(--ink2)">✅ GEO최적화 키워드 네이버 1위 달성</li>
-            <li style="font-size:13px;color:var(--ink2)">✅ 블로그 유기 트래픽 전월 대비 +32%</li>
-            <li style="font-size:13px;color:var(--ink2)">✅ 카카오채널 구독자 200명 증가</li>
-            <li style="font-size:13px;color:var(--ink2)">⚠️ 구글 이미지 alt 태그 개선 필요</li>
-            <li style="font-size:13px;color:var(--ink2)">⚠️ OG image 태그 설정 미완료</li>
-          </ul>
-        </div>
+        <div id="report-body"></div>
       </div>
     </div>
 
@@ -665,56 +642,32 @@ a{color:var(--p);text-decoration:none}
     <div id="section-cardnews" class="admin-section">
       <div class="card">
         <div class="card-head">
-          <div class="card-title">🗞️ 데일리 마케팅 리포트 카드뉴스</div>
-          <button class="btn btn-p btn-sm" onclick="generateCardnews()">🤖 오늘 카드뉴스 생성</button>
+          <div class="card-title">🗞️ 카드뉴스 관리</div>
+          <button class="btn btn-p btn-sm" onclick="openCardForm()">+ 카드뉴스 작성</button>
         </div>
-        <div style="background:rgba(83,58,253,.04);border:1px solid rgba(83,58,253,.2);border-radius:var(--r12);padding:16px;margin-bottom:20px;font-size:13px;color:var(--ink2)">
-          💡 매일 오전 9시 최신 병원 마케팅 트렌드를 수집하여 카드뉴스 형식으로 자동 생성합니다. 생성된 카드뉴스는 인스타그램·블로그에 바로 업로드할 수 있습니다.
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px" id="cardnews-grid">
-          <!-- 오늘 카드뉴스 -->
-          <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1)">
-            <div style="background:linear-gradient(135deg,var(--p),var(--bd));padding:24px;color:#fff;aspect-ratio:1">
-              <div style="font-size:10px;font-weight:600;letter-spacing:.1em;opacity:.7;margin-bottom:8px">TODAY'S REPORT · 2025.06.25</div>
-              <div style="font-size:20px;font-weight:700;line-height:1.3;margin-bottom:12px">ChatGPT에서<br>병원이 추천되는<br>3가지 조건</div>
-              <div style="font-size:12px;opacity:.8">병원마케팅 베놈 데일리 인사이트</div>
-            </div>
-            <div style="padding:16px;background:#fff">
-              <div style="font-size:12px;color:var(--mute);margin-bottom:8px">2025.06.25</div>
-              <p style="font-size:13px;color:var(--ink2);line-height:1.6">Schema.org 구조화 데이터 적용, AI 친화적 콘텐츠 구조, 권위 사이트 인용 — 이 세 가지를 갖춘 병원이 ChatGPT 답변에 포함됩니다.</p>
-              <div style="display:flex;gap:8px;margin-top:12px">
-                <button class="btn btn-p btn-sm" onclick="toast('인스타그램 업로드 준비 완료!')">📤 인스타 업로드</button>
-                <button class="btn btn-outline btn-sm" onclick="toast('이미지 저장 완료!')">💾 저장</button>
-              </div>
+        <!-- 작성 폼 -->
+        <div id="card-form" style="display:none;background:var(--soft);border-radius:var(--r12);padding:20px;margin-bottom:20px">
+          <div class="form-row" style="margin-bottom:12px">
+            <div class="form-group" style="margin-bottom:0"><label>제목</label><input type="text" id="cn-title" placeholder="카드뉴스 제목"></div>
+            <div class="form-group" style="margin-bottom:0"><label>배경 색상</label>
+              <select id="cn-bg">
+                <option value="linear-gradient(135deg,#533afd,#9f6ef9)">보라 (기본)</option>
+                <option value="linear-gradient(135deg,#1e3a5f,#2563eb)">파랑</option>
+                <option value="linear-gradient(135deg,#064e3b,#10b981)">초록</option>
+                <option value="linear-gradient(135deg,#7c0000,#dc2626)">빨강</option>
+                <option value="linear-gradient(135deg,#78350f,#f59e0b)">주황</option>
+                <option value="linear-gradient(135deg,#1e293b,#475569)">다크</option>
+              </select>
             </div>
           </div>
-          <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1)">
-            <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:24px;color:#fff;aspect-ratio:1">
-              <div style="font-size:10px;font-weight:600;letter-spacing:.1em;opacity:.7;margin-bottom:8px">MARKETING TIP · 2025.06.24</div>
-              <div style="font-size:20px;font-weight:700;line-height:1.3;margin-bottom:12px">의료광고에서<br>절대 쓰면 안 되는<br>표현 TOP 5</div>
-              <div style="font-size:12px;opacity:.8">병원마케팅 베놈 데일리 인사이트</div>
-            </div>
-            <div style="padding:16px;background:#fff">
-              <div style="font-size:12px;color:var(--mute);margin-bottom:8px">2025.06.24</div>
-              <p style="font-size:13px;color:var(--ink2);line-height:1.6">의료법 위반 표현을 미리 알면 광고 심의에서 걸리지 않습니다. 성공 보장·치료 후기·지역 1위 등 금지 표현을 정리했습니다.</p>
-              <div style="display:flex;gap:8px;margin-top:12px">
-                <button class="btn btn-p btn-sm" onclick="toast('인스타그램 업로드 준비 완료!')">📤 인스타 업로드</button>
-                <button class="btn btn-outline btn-sm" onclick="toast('이미지 저장 완료!')">💾 저장</button>
-              </div>
-            </div>
-          </div>
-          <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);opacity:.6">
-            <div style="background:#e2e8f0;padding:24px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
-              <div style="font-size:48px">📅</div>
-              <div style="font-size:14px;color:var(--mute);font-weight:500">내일 카드뉴스</div>
-              <div style="font-size:12px;color:var(--mute)">매일 오전 9시 자동 생성</div>
-            </div>
-            <div style="padding:16px;background:#fff">
-              <div style="font-size:12px;color:var(--mute)">2025.06.26 · 예정</div>
-              <div style="font-size:13px;color:var(--mute);margin-top:8px">자동 생성 예정</div>
-            </div>
+          <div class="form-group" style="margin-bottom:12px"><label>본문 내용</label><textarea id="cn-body" rows="3" placeholder="카드에 들어갈 주요 내용 (2-3줄 권장)"></textarea></div>
+          <div class="form-group" style="margin-bottom:12px"><label>하단 설명</label><input type="text" id="cn-desc" placeholder="보충 설명 한 줄"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-outline" onclick="document.getElementById('card-form').style.display='none'">취소</button>
+            <button class="btn btn-p" onclick="saveCard()">저장</button>
           </div>
         </div>
+        <div id="cardnews-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px"></div>
       </div>
     </div>
 
@@ -723,20 +676,20 @@ a{color:var(--p);text-decoration:none}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
         <div class="card">
           <div class="card-head"><div class="card-title">⚙️ SEO 기본 설정</div></div>
-          <div class="form-group"><label>사이트 타이틀</label><input type="text" value="병원마케팅 베놈 — 대한민국 No.1 병원 전문 마케팅 에이전시"></div>
-          <div class="form-group"><label>메타 설명</label><textarea rows="3">치과·피부과·정형외과·한의원·성형외과 병원 전문 마케팅 에이전시. GEO·AEO·SEO 삼중 최적화로 AI 검색부터 네이버까지.</textarea></div>
-          <div class="form-group"><label>핵심 키워드</label><input type="text" value="병원마케팅,치과마케팅,GEO최적화,AEO최적화,의료SEO"></div>
-          <div class="form-group"><label>Canonical URL</label><input type="text" value="https://desktop-tutorial-chi-peach.vercel.app/"></div>
-          <button class="btn btn-p" onclick="toast('SEO 설정이 저장되었습니다.')">저장</button>
+          <div class="form-group"><label>사이트 타이틀</label><input type="text" id="s-title" placeholder="사이트 타이틀"></div>
+          <div class="form-group"><label>메타 설명</label><textarea rows="3" id="s-meta" placeholder="메타 설명 (160자 이내)"></textarea></div>
+          <div class="form-group"><label>핵심 키워드</label><input type="text" id="s-keywords" placeholder="쉼표로 구분"></div>
+          <div class="form-group"><label>사이트 URL</label><input type="text" id="s-url" placeholder="https://"></div>
+          <button class="btn btn-p" onclick="saveSettings()">💾 저장</button>
         </div>
         <div class="card">
           <div class="card-head"><div class="card-title">📞 연락처 설정</div></div>
-          <div class="form-group"><label>대표 전화</label><input type="text" value="1661-4142"></div>
-          <div class="form-group"><label>카카오 채널</label><input type="text" value="https://pf.kakao.com/_jxjxdcxj"></div>
-          <div class="form-group"><label>이메일</label><input type="text" value="venom@venom.co.kr"></div>
-          <div class="form-group"><label>주소</label><input type="text" value="서울시 강남구 테헤란로"></div>
-          <div class="form-group"><label>API 키 (네이버 검색광고)</label><input type="password" value="••••••••••••••••••••••••••••••••"></div>
-          <button class="btn btn-p" onclick="toast('연락처 설정이 저장되었습니다.')">저장</button>
+          <div class="form-group"><label>대표 전화</label><input type="text" id="s-phone" placeholder="000-0000-0000"></div>
+          <div class="form-group"><label>카카오 채널 URL</label><input type="text" id="s-kakao" placeholder="https://pf.kakao.com/..."></div>
+          <div class="form-group"><label>이메일</label><input type="text" id="s-email" placeholder="info@example.com"></div>
+          <div class="form-group"><label>주소</label><input type="text" id="s-address" placeholder="서울시 ..."></div>
+          <div class="form-group"><label>회사명</label><input type="text" id="s-company" placeholder="주식회사 베놈"></div>
+          <button class="btn btn-p" onclick="saveSettings()">💾 저장</button>
         </div>
       </div>
     </div>
@@ -793,39 +746,39 @@ a{color:var(--p);text-decoration:none}
 
     <div id="section-users" class="admin-section">
       <div class="card">
-        <div class="card-head"><div class="card-title">👤 계정 관리</div><button class="btn btn-p btn-sm" onclick="toast('계정 추가 기능 준비 중')">+ 계정 추가</button></div>
+        <div class="card-head"><div class="card-title">👤 계정 관리</div><button class="btn btn-p btn-sm" onclick="openUserForm()">+ 계정 추가</button></div>
         <table class="data-table">
-          <thead><tr><th>이름</th><th>이메일</th><th>권한</th><th>최근 로그인</th><th>상태</th></tr></thead>
-          <tbody>
-            <tr><td>관리자</td><td>admin@venom.co.kr</td><td><span class="badge badge-blue">최고관리자</span></td><td>방금 전</td><td><span class="badge badge-green">활성</span></td></tr>
-            <tr><td>마케팅 담당자</td><td>marketing@venom.co.kr</td><td><span class="badge badge-green">편집자</span></td><td>오늘 14:30</td><td><span class="badge badge-green">활성</span></td></tr>
-          </tbody>
+          <thead><tr><th>아이디</th><th>이름</th><th>권한</th><th>비밀번호</th><th>작업</th></tr></thead>
+          <tbody id="users-tbody"></tbody>
         </table>
+      </div>
+      <div class="card" id="user-form-card" style="display:none;margin-top:16px">
+        <div class="card-head"><div class="card-title" id="user-form-title">계정 추가</div><button class="btn btn-outline btn-sm" onclick="closeUserForm()">닫기</button></div>
+        <div class="form-row">
+          <div class="form-group"><label>아이디 <span style="color:#dc2626">*</span></label><input type="text" id="u-id" placeholder="영문/숫자"></div>
+          <div class="form-group"><label>이름</label><input type="text" id="u-name" placeholder="홍길동"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>비밀번호 <span style="color:#dc2626">*</span></label><input type="password" id="u-pw" placeholder="비밀번호 입력"></div>
+          <div class="form-group"><label>권한</label><select id="u-role"><option value="admin">최고관리자</option><option value="editor">편집자</option><option value="viewer">조회자</option></select></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-outline" onclick="closeUserForm()">취소</button>
+          <button class="btn btn-p" onclick="saveUser()">저장</button>
+        </div>
       </div>
     </div>
 
     <!-- ══ 미디어 라이브러리 ══ -->
     <div id="section-media" class="admin-section">
       <div class="card">
-        <div class="card-head"><div class="card-title">🖼️ 미디어 라이브러리</div><button class="btn btn-p btn-sm" onclick="toast('파일 업로드 준비 중')">+ 파일 업로드</button></div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
-          <div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;cursor:pointer" onclick="toast('이미지 선택됨')">
-            <div style="height:100px;background:linear-gradient(135deg,var(--p),var(--bd));display:flex;align-items:center;justify-content:center;font-size:32px">🏥</div>
-            <div style="padding:8px;font-size:11px;color:var(--mute)">hospital-hero.jpg</div>
-          </div>
-          <div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;cursor:pointer" onclick="toast('이미지 선택됨')">
-            <div style="height:100px;background:linear-gradient(135deg,#1e3a5f,#2563eb);display:flex;align-items:center;justify-content:center;font-size:32px">🦷</div>
-            <div style="padding:8px;font-size:11px;color:var(--mute)">dental-main.jpg</div>
-          </div>
-          <div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;cursor:pointer" onclick="toast('이미지 선택됨')">
-            <div style="height:100px;background:linear-gradient(135deg,#064e3b,#10b981);display:flex;align-items:center;justify-content:center;font-size:32px">✨</div>
-            <div style="padding:8px;font-size:11px;color:var(--mute)">skin-banner.jpg</div>
-          </div>
-          <div style="border:2px dashed var(--border);border-radius:var(--r8);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:130px;cursor:pointer;color:var(--mute)" onclick="toast('파일 업로드 클릭')">
-            <div style="font-size:28px">+</div>
-            <div style="font-size:12px">업로드</div>
-          </div>
+        <div class="card-head"><div class="card-title">🖼️ 미디어 라이브러리 <span id="media-count" style="font-size:13px;color:var(--mute);font-weight:400"></span></div></div>
+        <div style="display:flex;gap:10px;margin-bottom:20px">
+          <input type="text" id="media-url-input" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
+          <input type="text" id="media-name-input" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
+          <button class="btn btn-p" onclick="addMedia()">+ 추가</button>
         </div>
+        <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px"></div>
       </div>
     </div>
 
@@ -868,6 +821,15 @@ function showSection(id){
   document.getElementById('sidebar').classList.remove('open');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='logos')initLogoSection();
+  if(id==='visitors')initVisitors();
+  if(id==='sources')initSources();
+  if(id==='seo')runSeoAudit();
+  if(id==='reports')initReports();
+  if(id==='cardnews')initCardnews();
+  if(id==='settings')loadSettings();
+  if(id==='users')renderUsers();
+  if(id==='media')renderMedia();
+  if(id==='pages')initPages();
 }
 
 // ── TABS ──
@@ -1302,6 +1264,483 @@ if(window.innerWidth<900)document.getElementById('menu-btn').style.display='bloc
 window.addEventListener('resize',function(){
   document.getElementById('menu-btn').style.display=window.innerWidth<900?'block':'none';
 });
+
+// ══════════════════════════════════════
+// ── 페이지 관리 ──
+// ══════════════════════════════════════
+var PAGE_LIST=[
+  {icon:'🏠',name:'홈',hash:'home',desc:'메인 홈페이지'},
+  {icon:'🤖',name:'AI마케팅',hash:'ai',desc:'AI·GEO·AEO 서비스'},
+  {icon:'🏥',name:'병원마케팅',hash:'hosp_mkt',desc:'병원마케팅 서비스'},
+  {icon:'📱',name:'온라인마케팅',hash:'services',desc:'SNS·광고 서비스'},
+  {icon:'🌐',name:'홈페이지 제작',hash:'hospital',desc:'병원 홈페이지 제작'},
+  {icon:'✍️',name:'블로그',hash:'blog',desc:'블로그 & 인사이트'},
+  {icon:'💬',name:'상담신청',hash:'contact',desc:'문의 상담 폼'},
+  {icon:'🦷',name:'치과마케팅',hash:'detail/dental',desc:'치과 전문 페이지'},
+  {icon:'✨',name:'피부과마케팅',hash:'detail/skin',desc:'피부과 전문 페이지'},
+  {icon:'🌿',name:'한의원마케팅',hash:'detail/oriental',desc:'한의원 전문 페이지'},
+  {icon:'🦴',name:'정형외과마케팅',hash:'detail/ortho',desc:'정형외과 전문 페이지'},
+];
+function initPages(){
+  var grid=document.getElementById('pages-grid');
+  if(!grid)return;
+  grid.innerHTML=PAGE_LIST.map(function(p){
+    var url='index.html#'+p.hash;
+    return '<div class="page-card" style="cursor:pointer" onclick="window.open(\''+url+'\',\'_blank\')">'
+      +'<div class="page-card-icon">'+p.icon+'</div>'
+      +'<div class="page-card-name">'+p.name+'</div>'
+      +'<div class="page-card-url" style="font-size:10px;color:var(--mute)">'+p.desc+'</div>'
+      +'<div style="display:flex;gap:6px;margin-top:10px">'
+      +'<a href="'+url+'" target="_blank" class="btn btn-p btn-sm" onclick="event.stopPropagation()" style="font-size:11px;padding:4px 8px">미리보기</a>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// ── 사이트 설정 ──
+// ══════════════════════════════════════
+var SETTINGS_KEY='venom-settings';
+var DEFAULT_SETTINGS={
+  title:'병원마케팅 베놈 — 대한민국 No.1 병원 전문 마케팅 에이전시',
+  meta:'치과·피부과·정형외과·한의원·성형외과 병원 전문 마케팅 에이전시. GEO·AEO·SEO 삼중 최적화.',
+  keywords:'병원마케팅,치과마케팅,GEO최적화,AEO최적화,의료SEO',
+  url:'https://desktop-tutorial-chi-peach.vercel.app/',
+  phone:'1661-4142',
+  kakao:'https://pf.kakao.com/_jxjxdcxj',
+  email:'venom@venom.co.kr',
+  address:'서울시 강남구 테헤란로',
+  company:'주식회사 베놈'
+};
+function getSettings(){try{return Object.assign({},DEFAULT_SETTINGS,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));}catch(e){return DEFAULT_SETTINGS;}}
+function loadSettings(){
+  var s=getSettings();
+  ['title','meta','keywords','url','phone','kakao','email','address','company'].forEach(function(k){
+    var el=document.getElementById('s-'+k);
+    if(el)el.value=s[k]||'';
+  });
+}
+function saveSettings(){
+  var s={};
+  ['title','meta','keywords','url','phone','kakao','email','address','company'].forEach(function(k){
+    var el=document.getElementById('s-'+k);
+    if(el)s[k]=el.value;
+  });
+  localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));
+  toast('설정이 저장되었습니다 ✓');
+}
+
+// ══════════════════════════════════════
+// ── 계정 관리 ──
+// ══════════════════════════════════════
+var USERS_KEY='venom-users';
+var DEFAULT_USERS=[
+  {id:'venom',name:'베놈 관리자',pw:'venom2024!',role:'admin'},
+  {id:'admin',name:'관리자',pw:'admin2024!',role:'admin'}
+];
+var editingUserId=null;
+function getUsers(){
+  try{var u=JSON.parse(localStorage.getItem(USERS_KEY));return u&&u.length?u:DEFAULT_USERS;}
+  catch(e){return DEFAULT_USERS;}
+}
+function saveUsersStore(arr){localStorage.setItem(USERS_KEY,JSON.stringify(arr));}
+function renderUsers(){
+  var users=getUsers();
+  var tbody=document.getElementById('users-tbody');
+  if(!tbody)return;
+  var roleLabel={admin:'최고관리자',editor:'편집자',viewer:'조회자'};
+  var roleBadge={admin:'badge-blue',editor:'badge-green',viewer:'badge-yellow'};
+  tbody.innerHTML=users.map(function(u){
+    return '<tr><td><strong>'+u.id+'</strong></td><td>'+u.name+'</td>'
+      +'<td><span class="badge '+roleBadge[u.role]+'">'+roleLabel[u.role]+'</span></td>'
+      +'<td><span style="color:var(--mute)">••••••••</span></td>'
+      +'<td><button class="btn btn-outline btn-sm" onclick="editUser(\''+u.id+'\')">수정</button>'
+      +' <button class="btn btn-outline btn-sm" style="color:#dc2626" onclick="deleteUser(\''+u.id+'\')">삭제</button></td></tr>';
+  }).join('');
+}
+function openUserForm(id){
+  editingUserId=id||null;
+  var card=document.getElementById('user-form-card');
+  card.style.display='block';
+  document.getElementById('user-form-title').textContent=id?'계정 수정':'계정 추가';
+  if(id){
+    var u=getUsers().find(function(x){return x.id===id;});
+    if(u){
+      document.getElementById('u-id').value=u.id;
+      document.getElementById('u-id').disabled=true;
+      document.getElementById('u-name').value=u.name;
+      document.getElementById('u-pw').value='';
+      document.getElementById('u-role').value=u.role;
+    }
+  }else{
+    ['u-id','u-name','u-pw'].forEach(function(i){document.getElementById(i).value='';});
+    document.getElementById('u-id').disabled=false;
+    document.getElementById('u-role').selectedIndex=0;
+  }
+  card.scrollIntoView({behavior:'smooth'});
+}
+function editUser(id){openUserForm(id);}
+function closeUserForm(){document.getElementById('user-form-card').style.display='none';editingUserId=null;document.getElementById('u-id').disabled=false;}
+function saveUser(){
+  var id=document.getElementById('u-id').value.trim();
+  var name=document.getElementById('u-name').value.trim();
+  var pw=document.getElementById('u-pw').value;
+  var role=document.getElementById('u-role').value;
+  if(!id){toast('아이디를 입력해주세요','warn');return;}
+  var users=getUsers();
+  if(editingUserId){
+    var idx=users.findIndex(function(u){return u.id===editingUserId;});
+    if(idx>-1){users[idx].name=name||users[idx].name;users[idx].role=role;if(pw)users[idx].pw=pw;}
+  }else{
+    if(users.find(function(u){return u.id===id;})){toast('이미 존재하는 아이디입니다');return;}
+    if(!pw){toast('비밀번호를 입력해주세요');return;}
+    users.push({id:id,name:name||id,pw:pw,role:role});
+  }
+  saveUsersStore(users);
+  renderUsers();
+  closeUserForm();
+  toast('계정이 저장되었습니다 ✓');
+}
+function deleteUser(id){
+  if(!confirm(id+' 계정을 삭제할까요?'))return;
+  var users=getUsers().filter(function(u){return u.id!==id;});
+  saveUsersStore(users);
+  renderUsers();
+  toast('삭제되었습니다');
+}
+
+// ══════════════════════════════════════
+// ── 미디어 라이브러리 ──
+// ══════════════════════════════════════
+var MEDIA_KEY='venom-media';
+function getMedia(){try{return JSON.parse(localStorage.getItem(MEDIA_KEY)||'[]');}catch(e){return[];}}
+function addMedia(){
+  var url=document.getElementById('media-url-input').value.trim();
+  var name=document.getElementById('media-name-input').value.trim()||url.split('/').pop()||'이미지';
+  if(!url){toast('URL을 입력해주세요');return;}
+  var media=getMedia();
+  media.unshift({id:Date.now(),url:url,name:name,ts:new Date().toLocaleDateString('ko-KR')});
+  localStorage.setItem(MEDIA_KEY,JSON.stringify(media));
+  document.getElementById('media-url-input').value='';
+  document.getElementById('media-name-input').value='';
+  renderMedia();
+  toast('미디어가 추가되었습니다 ✓');
+}
+function deleteMedia(id){
+  var media=getMedia().filter(function(m){return m.id!==id;});
+  localStorage.setItem(MEDIA_KEY,JSON.stringify(media));
+  renderMedia();
+}
+function renderMedia(){
+  var media=getMedia();
+  var grid=document.getElementById('media-grid');
+  var count=document.getElementById('media-count');
+  if(count)count.textContent='('+media.length+'개)';
+  if(!grid)return;
+  var addBox='<div style="border:2px dashed var(--border);border-radius:var(--r8);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:130px;cursor:pointer;color:var(--mute)" onclick="document.getElementById(\'media-url-input\').focus()"><div style="font-size:28px">+</div><div style="font-size:12px">URL 추가</div></div>';
+  if(media.length===0){grid.innerHTML=addBox;return;}
+  grid.innerHTML=media.map(function(m){
+    return '<div style="border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;position:relative">'
+      +'<img src="'+m.url+'" style="width:100%;height:100px;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'
+      +'<div style="display:none;height:100px;background:var(--soft);align-items:center;justify-content:center;font-size:28px">🖼️</div>'
+      +'<div style="padding:8px">'
+      +'<div style="font-size:11px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+m.name+'</div>'
+      +'<div style="font-size:10px;color:var(--mute);margin-top:2px">'+m.ts+'</div>'
+      +'</div>'
+      +'<button onclick="deleteMedia('+m.id+')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center">✕</button>'
+      +'<button onclick="copyToClipboard(\''+m.url+'\')" style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:10px">복사</button>'
+      +'</div>';
+  }).join('')+addBox;
+}
+function copyToClipboard(text){navigator.clipboard.writeText(text).then(function(){toast('URL이 복사되었습니다 ✓');});}
+
+// ══════════════════════════════════════
+// ── 방문자 분석 ──
+// ══════════════════════════════════════
+var VISIT_KEY='venom-visits';
+function getVisits(){try{return JSON.parse(localStorage.getItem(VISIT_KEY)||'[]');}catch(e){return[];}}
+function initVisitors(){
+  var visits=getVisits();
+  var now=new Date();
+  var todayStr=now.toLocaleDateString('ko-KR');
+  var todayVisits=visits.filter(function(v){return v.date===todayStr;});
+  var weekAgo=new Date(now-7*864e5);
+  var weekVisits=visits.filter(function(v){return new Date(v.ts)>=weekAgo;});
+
+  var setEl=function(id,val){var e=document.getElementById(id);if(e)e.textContent=val;};
+  setEl('v-today',todayVisits.length||0);
+  setEl('v-week',weekVisits.length||0);
+  setEl('v-leads','—');
+
+  // 30일 차트
+  var chart=document.getElementById('v-chart-30');
+  if(chart){
+    var days=[];
+    for(var i=29;i>=0;i--){
+      var d=new Date(now-i*864e5);
+      var ds=d.toLocaleDateString('ko-KR');
+      days.push({label:(d.getMonth()+1)+'/'+(d.getDate()),count:visits.filter(function(v){return v.date===ds;}).length});
+    }
+    var maxV=Math.max(1,Math.max.apply(null,days.map(function(d){return d.count;})));
+    chart.innerHTML=days.map(function(d,i){
+      var h=Math.max(4,Math.round(d.count/maxV*100));
+      return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:default" title="'+d.label+': '+d.count+'명">'
+        +'<div style="width:100%;background:var(--p);border-radius:2px 2px 0 0;height:'+h+'%;min-height:4px;opacity:'+(i>=25?1:.6)+';transition:height .3s"></div>'
+        +(i%5===0?'<div style="font-size:8px;color:var(--mute);white-space:nowrap">'+d.label+'</div>':'<div style="height:12px"></div>')
+        +'</div>';
+    }).join('');
+    var totalMonth=visits.filter(function(v){var d=new Date(v.ts);return d>=new Date(now.getFullYear(),now.getMonth(),1);}).length;
+    var monthEl=document.getElementById('v-month-total');
+    if(monthEl)monthEl.innerHTML='월 방문자 <strong style="color:var(--ink)">'+totalMonth+'</strong>';
+  }
+
+  // 실시간 로그
+  var log=document.getElementById('visitor-log');
+  if(log){
+    var recent=visits.slice(-20).reverse();
+    if(recent.length===0){log.innerHTML='<div style="text-align:center;padding:32px;color:var(--mute);font-size:13px">방문 기록이 없습니다<br><small>메인 사이트 방문 시 자동 기록됩니다</small></div>';return;}
+    log.innerHTML=recent.map(function(v){
+      return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--soft);font-size:12px">'
+        +'<span style="color:var(--mute)">'+new Date(v.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'</span>'
+        +'<span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+v.page+'</span>'
+        +'<span style="color:var(--mute)">'+v.device+'</span>'
+        +'</div>';
+    }).join('');
+  }
+
+  // 디바이스 분포
+  var mobile=visits.filter(function(v){return v.device==='모바일';}).length;
+  var desktop=visits.filter(function(v){return v.device==='데스크톱';}).length;
+  var tablet=visits.filter(function(v){return v.device==='태블릿';}).length;
+  var total=visits.length||1;
+  var mp=Math.round(mobile/total*100),dp=Math.round(desktop/total*100),tp=100-mp-dp;
+  ['mobile','desktop','tablet'].forEach(function(k,i){
+    var pct=[mp,dp,tp][i];
+    var el=document.getElementById('d-'+k);
+    var bar=document.getElementById('d-'+k+'-bar');
+    if(el)el.textContent=pct+'%';
+    if(bar)bar.style.width=pct+'%';
+  });
+
+  // 채널 분포
+  var ch=document.getElementById('v-channel-bars');
+  if(ch){
+    var sources={};
+    visits.forEach(function(v){sources[v.source||'직접']=((sources[v.source||'직접'])||0)+1;});
+    var sorted=Object.keys(sources).sort(function(a,b){return sources[b]-sources[a];});
+    var colors={'네이버':'#03c75a','구글':'#4285f4','직접':' var(--p)','카카오':'#ffcd00','인스타':'#e1306c'};
+    ch.innerHTML=sorted.slice(0,6).map(function(s){
+      var pct=Math.round(sources[s]/total*100);
+      return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+s+'</span><span style="font-weight:600">'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:'+(colors[s]||'var(--p)')+'"></div></div></div>';
+    }).join('');
+    if(sorted.length===0)ch.innerHTML='<div style="text-align:center;color:var(--mute);font-size:13px;padding:20px">데이터 없음</div>';
+  }
+}
+
+// ══════════════════════════════════════
+// ── 유입 출처 ──
+// ══════════════════════════════════════
+function initSources(){
+  var visits=getVisits();
+  var tbody=document.querySelector('#section-sources tbody');
+  if(!tbody)return;
+  if(visits.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:24px">방문 기록 없음 — 메인 사이트 방문 시 자동 집계됩니다</td></tr>';
+    return;
+  }
+  var sources={};
+  visits.forEach(function(v){
+    var s=v.source||'직접';
+    if(!sources[s])sources[s]={count:0};
+    sources[s].count++;
+  });
+  var total=visits.length;
+  var rows=Object.keys(sources).sort(function(a,b){return sources[b].count-sources[a].count;});
+  var icons={'네이버':'🟢','구글':'🔴','직접':'⚫','카카오':'🟡','인스타':'🔴'};
+  tbody.innerHTML=rows.map(function(s){
+    var pct=Math.round(sources[s].count/total*100);
+    return '<tr><td>'+(icons[s]||'🔵')+' '+s+'</td><td>'+sources[s].count+'</td><td>'+pct+'%</td><td>—</td><td>—</td></tr>';
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// ── SEO 점수 ──
+// ══════════════════════════════════════
+function runSeoAudit(){
+  var tbody=document.querySelector('#section-seo table tbody');
+  if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">⏳ 분석 중...</td></tr>';
+  fetch('index.html?nocache='+Date.now()).then(function(r){return r.text();}).then(function(html){
+    var parser=new DOMParser();
+    var doc=parser.parseFromString(html,'text/html');
+    var checks=[
+      {name:'메타 title',desc:'60자 이내, 핵심 키워드 포함',
+        test:function(){var t=doc.querySelector('title');return t&&t.textContent.length>0&&t.textContent.length<=70;},score:10},
+      {name:'메타 description',desc:'160자 이내 설명',
+        test:function(){var m=doc.querySelector('meta[name="description"]');return m&&m.content&&m.content.length<=160;},score:10},
+      {name:'H1 태그',desc:'페이지당 1개',
+        test:function(){return doc.querySelectorAll('h1').length>=1;},score:10},
+      {name:'Schema.org 구조화 데이터',desc:'LocalBusiness, MedicalBusiness',
+        test:function(){return html.includes('schema.org')&&(html.includes('MedicalBusiness')||html.includes('LocalBusiness'));},score:15},
+      {name:'OG 태그',desc:'og:title, og:description, og:image',
+        test:function(){return doc.querySelector('meta[property="og:title"]')&&doc.querySelector('meta[property="og:description"]');},score:10},
+      {name:'Canonical URL',desc:'중복 콘텐츠 방지',
+        test:function(){return !!doc.querySelector('link[rel="canonical"]');},score:5},
+      {name:'robots.txt AI 크롤러',desc:'GPTBot, ClaudeBot, PerplexityBot 허용',
+        test:function(){return html.includes('GPTBot')||html.includes('ClaudeBot');},
+        asyncTest:function(){return fetch('robots.txt').then(function(r){return r.text();}).then(function(t){return t.includes('GPTBot');});},score:5},
+      {name:'이미지 alt 텍스트',desc:'모든 img에 alt 속성',
+        test:function(){var imgs=doc.querySelectorAll('img');var noAlt=Array.from(imgs).filter(function(i){return!i.alt;});return noAlt.length===0;},score:10},
+      {name:'뷰포트 메타태그',desc:'모바일 최적화',
+        test:function(){return !!doc.querySelector('meta[name="viewport"]');},score:5},
+      {name:'lang 속성',desc:'html lang 속성 설정',
+        test:function(){return !!doc.querySelector('html[lang]');},score:5},
+    ];
+    var results=checks.map(function(c){
+      var ok;
+      try{ok=c.test();}catch(e){ok=false;}
+      return {name:c.name,desc:c.desc,ok:ok,score:c.score};
+    });
+    var total=results.reduce(function(s,r){return s+r.score;},0);
+    var earned=results.reduce(function(s,r){return s+(r.ok?r.score:Math.floor(r.score*.4));},0);
+    var pct=Math.round(earned/total*100);
+    // 상단 점수 카드 업데이트
+    var scoreCards=document.querySelectorAll('#section-seo .stat-card');
+    if(scoreCards[0]){scoreCards[0].querySelector('div').textContent=pct;}
+    if(tbody){
+      tbody.innerHTML=results.map(function(r){
+        var badge=r.ok?'<span class="badge badge-green">통과</span>':'<span class="badge badge-red">미흡</span>';
+        var sc=r.ok?r.score:Math.floor(r.score*.4);
+        return '<tr><td>'+r.name+'</td><td>'+r.desc+'</td><td>'+badge+'</td><td>'+sc+'/'+r.score+'</td></tr>';
+      }).join('');
+    }
+  }).catch(function(){
+    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">로컬 환경에서는 분석 불가 — 배포 후 사용 가능</td></tr>';
+  });
+}
+
+// ══════════════════════════════════════
+// ── 마케팅 리포트 ──
+// ══════════════════════════════════════
+function initReports(){
+  var posts=getBlogPosts();
+  var logos=getLogos();
+  var visits=getVisits();
+  var settings=getSettings();
+  var now=new Date();
+  var monthStr=now.getFullYear()+'년 '+(now.getMonth()+1)+'월';
+  var published=posts.filter(function(p){return p.status==='발행';});
+  var drafts=posts.filter(function(p){return p.status==='초안';});
+  var monthVisits=visits.filter(function(v){return new Date(v.ts)>=new Date(now.getFullYear(),now.getMonth(),1);});
+  var body=document.getElementById('report-body');
+  if(!body)return;
+  body.innerHTML='<div style="padding:24px 0">'
+    +'<h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:4px">'+monthStr+' 마케팅 성과 리포트</h2>'
+    +'<p style="color:var(--mute);font-size:13px;margin-bottom:24px">작성일: '+now.toLocaleDateString('ko-KR')+' · '+settings.company+'</p>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">'
+    +statBox('월 방문자',monthVisits.length,'명','')
+    +statBox('발행 포스팅',published.length,'개','')
+    +statBox('초안',drafts.length,'개','')
+    +statBox('레퍼런스 로고',logos.length,'개','')
+    +'</div>'
+    +'<div style="background:var(--soft);border-radius:var(--r12);padding:20px;margin-bottom:20px">'
+    +'<h3 style="font-size:15px;font-weight:600;margin-bottom:12px">✍️ 이달 발행 포스팅</h3>'
+    +(published.length?'<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:8px">제목</th><th style="text-align:left;padding:8px">카테고리</th><th style="text-align:left;padding:8px">발행일</th></tr></thead><tbody>'
+      +published.map(function(p){return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px">'+p.title+'</td><td style="padding:8px">'+(CAT_LABEL_MAP[p.cat]||p.cat)+'</td><td style="padding:8px">'+p.date+'</td></tr>';}).join('')
+      +'</tbody></table>':'<p style="color:var(--mute);font-size:13px">발행된 포스팅이 없습니다.</p>')
+    +'</div>'
+    +'<div style="background:var(--soft);border-radius:var(--r12);padding:20px">'
+    +'<h3 style="font-size:15px;font-weight:600;margin-bottom:12px">📋 다음 달 액션 플랜</h3>'
+    +'<ul style="list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--ink2)">'
+    +(drafts.length?'<li>📝 초안 '+drafts.length+'건 발행 예정</li>':'')
+    +'<li>🔍 신규 블로그 포스팅 작성 및 SEO 최적화</li>'
+    +'<li>🏆 레퍼런스 로고 업데이트</li>'
+    +'<li>📊 방문자 분석 기반 콘텐츠 전략 수립</li>'
+    +'</ul>'
+    +'</div>'
+    +'</div>';
+}
+function statBox(label,val,unit,change){
+  return '<div style="background:var(--soft);border-radius:var(--r12);padding:16px;text-align:center">'
+    +'<div style="font-size:28px;font-weight:700;color:var(--p)">'+val+'<span style="font-size:14px">'+unit+'</span></div>'
+    +'<div style="font-size:12px;color:var(--mute);margin-top:4px">'+label+'</div>'
+    +(change?'<div style="font-size:11px;color:#16a34a;margin-top:2px">'+change+'</div>':'')
+    +'</div>';
+}
+function copyReport(){
+  var body=document.getElementById('report-body');
+  if(!body)return;
+  var text=body.innerText||body.textContent;
+  navigator.clipboard.writeText(text).then(function(){toast('리포트가 클립보드에 복사되었습니다 ✓');});
+}
+
+// ══════════════════════════════════════
+// ── 카드뉴스 ──
+// ══════════════════════════════════════
+var CARD_KEY='venom-cardnews';
+function getCards(){try{return JSON.parse(localStorage.getItem(CARD_KEY)||'[]');}catch(e){return[];}}
+function openCardForm(){document.getElementById('card-form').style.display='block';['cn-title','cn-body','cn-desc'].forEach(function(id){document.getElementById(id).value='';});}
+function saveCard(){
+  var title=document.getElementById('cn-title').value.trim();
+  var body=document.getElementById('cn-body').value.trim();
+  var desc=document.getElementById('cn-desc').value.trim();
+  var bg=document.getElementById('cn-bg').value;
+  if(!title||!body){toast('제목과 내용을 입력해주세요');return;}
+  var cards=getCards();
+  var now=new Date();
+  cards.unshift({id:Date.now(),title:title,body:body,desc:desc,bg:bg,date:now.toLocaleDateString('ko-KR')});
+  localStorage.setItem(CARD_KEY,JSON.stringify(cards));
+  document.getElementById('card-form').style.display='none';
+  renderCards();
+  toast('카드뉴스가 저장되었습니다 ✓');
+}
+function deleteCard(id){
+  var cards=getCards().filter(function(c){return c.id!==id;});
+  localStorage.setItem(CARD_KEY,JSON.stringify(cards));
+  renderCards();
+}
+function printCard(id){
+  var cards=getCards();
+  var card=cards.find(function(c){return c.id===id;});
+  if(!card)return;
+  var win=window.open('','_blank','width=600,height=700');
+  win.document.write('<html><head><title>카드뉴스</title><style>body{margin:0;font-family:sans-serif}@media print{body{margin:0}}</style></head><body>'
+    +'<div style="width:540px;margin:20px auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.15)">'
+    +'<div style="background:'+card.bg+';padding:40px 32px;color:#fff;min-height:280px;display:flex;flex-direction:column;justify-content:space-between">'
+    +'<div style="font-size:11px;font-weight:600;letter-spacing:.1em;opacity:.7">'+card.date+' · 병원마케팅 베놈</div>'
+    +'<div style="font-size:26px;font-weight:700;line-height:1.35;margin:20px 0">'+card.title+'</div>'
+    +'<div style="font-size:13px;opacity:.8">'+card.body.replace(/\n/g,'<br>')+'</div>'
+    +'</div>'
+    +'<div style="padding:20px 32px;background:#fff">'
+    +'<p style="font-size:14px;color:#444;line-height:1.7">'+card.desc+'</p>'
+    +'<p style="font-size:12px;color:#aaa;margin-top:16px">병원마케팅 베놈 · venomad.com</p>'
+    +'</div></div></body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},300);
+}
+function renderCards(){
+  var cards=getCards();
+  var grid=document.getElementById('cardnews-grid');
+  if(!grid)return;
+  if(cards.length===0){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--mute);font-size:13px">작성된 카드뉴스가 없습니다. 위 버튼으로 추가하세요.</div>';
+    return;
+  }
+  grid.innerHTML=cards.map(function(c){
+    return '<div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1)">'
+      +'<div style="background:'+c.bg+';padding:24px;color:#fff;min-height:160px;display:flex;flex-direction:column;justify-content:space-between">'
+      +'<div style="font-size:10px;font-weight:600;letter-spacing:.1em;opacity:.7">'+c.date+'</div>'
+      +'<div style="font-size:17px;font-weight:700;line-height:1.35;margin:12px 0">'+c.title+'</div>'
+      +'<div style="font-size:12px;opacity:.8">'+c.body.replace(/\n/g,'<br>').slice(0,80)+'</div>'
+      +'</div>'
+      +'<div style="padding:14px">'
+      +'<p style="font-size:12px;color:var(--ink2);margin-bottom:10px;line-height:1.5">'+c.desc+'</p>'
+      +'<div style="display:flex;gap:6px">'
+      +'<button class="btn btn-p btn-sm" onclick="printCard('+c.id+')">🖨️ 인쇄</button>'
+      +'<button class="btn btn-outline btn-sm" style="color:#dc2626" onclick="deleteCard('+c.id+')">삭제</button>'
+      +'</div></div></div>';
+  }).join('');
+}
+function initCardnews(){renderCards();}
 
 // ── LAST UPDATED ──
 setInterval(function(){
