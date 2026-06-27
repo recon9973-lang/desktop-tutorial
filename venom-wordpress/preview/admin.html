@@ -2167,24 +2167,46 @@ async function apLoadPosts() {
   listEl.innerHTML = merged.map(p => {
     const catColor = AP_CAT_COLOR[p.cat] || '#7c6cff';
     const catLabel = AP_CAT_LABEL[p.cat] || p.cat || '';
-    const statusColor = p.status === '발행' || p.status === 'published' ? '#4ade80' :
-                        p.status === '임시저장' || p.status === 'draft' ? '#94a3b8' : '#f59e0b';
+    const isPublished = p.status === '발행' || p.status === 'published';
+    const isReview = p.status === '검수대기' || p.status === 'review';
+    const statusColor = isPublished ? '#4ade80' : isReview ? '#f59e0b' : '#94a3b8';
     const statusLabel = p.status === 'published' ? '발행' : p.status === 'draft' ? '임시저장' : p.status;
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);gap:12px">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-size:10px;background:${catColor}22;color:${catColor};padding:2px 8px;border-radius:999px;font-weight:600;white-space:nowrap">${catLabel}</span>
-          <span style="font-size:10px;color:${statusColor};font-weight:600">${statusLabel}</span>
+    // 검수 사유 (저장된 경우)
+    const reviewNote = isReview && p.reviewNote ? `<div style="font-size:11px;color:#f59e0b;margin-top:4px">⚠️ 감지된 표현: ${p.reviewNote}</div>` :
+                       isReview ? `<div style="font-size:11px;color:#f59e0b;margin-top:4px">⚠️ 의료광고 위험 표현 감지 — 내용 확인 후 발행 여부 결정</div>` : '';
+    return `<div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:10px;background:${catColor}22;color:${catColor};padding:2px 8px;border-radius:999px;font-weight:600;white-space:nowrap">${catLabel}</span>
+            <span style="font-size:10px;color:${statusColor};font-weight:600">${statusLabel}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.title}</div>
+          <div style="font-size:11px;color:var(--mute);margin-top:2px">${p.date || ''}</div>
+          ${reviewNote}
         </div>
-        <div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title}</div>
-        <div style="font-size:11px;color:var(--mute);margin-top:2px">${p.date || ''}</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn btn-outline btn-sm" onclick="apViewPost('${p.id}')">내용 보기</button>
+          ${!isPublished ? `<button class="btn btn-p btn-sm" onclick="apPublishFromList('${p.id}')">발행</button>` : `<button class="btn btn-outline btn-sm" onclick="apUnpublishFromList('${p.id}')">내리기</button>`}
+          <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:#f87171" onclick="apDeletePost('${p.id}')">삭제</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
-        ${p.status !== '발행' && p.status !== 'published' ? `<button class="btn btn-p btn-sm" onclick="apPublishFromList('${p.id}')">발행</button>` : `<button class="btn btn-outline btn-sm" onclick="apUnpublishFromList('${p.id}')">내리기</button>`}
-        <button class="btn btn-outline btn-sm" style="color:#f87171;border-color:#f87171" onclick="apDeletePost('${p.id}')">삭제</button>
-      </div>
+      <!-- 내용 펼치기 영역 -->
+      <div id="ap-view-${p.id}" style="display:none;margin-top:14px;background:var(--soft);border-radius:var(--r8);padding:16px;font-size:13px;line-height:1.8;color:var(--ink);max-height:360px;overflow-y:auto"></div>
     </div>`;
   }).join('');
+}
+
+function apViewPost(id) {
+  const el = document.getElementById('ap-view-' + id);
+  if (!el) return;
+  if (el.style.display !== 'none') { el.style.display = 'none'; return; }
+  const posts = JSON.parse(localStorage.getItem('venom_blog_posts') || '[]');
+  const p = posts.find(x => x.id === id);
+  if (!p) return;
+  el.innerHTML = (p.meta ? `<blockquote style="border-left:3px solid var(--p);padding-left:12px;color:var(--mute);margin-bottom:16px;font-style:italic">${p.meta}</blockquote>` : '')
+    + (p.content || '<em>내용 없음</em>');
+  el.style.display = 'block';
 }
 
 function apPublishFromList(id) {
