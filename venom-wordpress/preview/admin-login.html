@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>베놈 관리자 로그인</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;background:#0d0f2b;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.wrap{width:100%;max-width:400px}
+.logo-area{text-align:center;margin-bottom:36px}
+.logo-area .logo-mark{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1}
+.logo-area .logo-mark em{font-style:normal;color:#7c6cff}
+.logo-area .logo-sub{font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;letter-spacing:.02em}
+.card{background:#1a1d3a;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:36px 32px}
+.card-title{font-size:18px;font-weight:600;color:#fff;margin-bottom:24px;text-align:center}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:12px;color:rgba(255,255,255,.45);margin-bottom:6px;letter-spacing:.02em}
+input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 16px;font-size:14px;color:#fff;outline:none;transition:border-color .2s}
+input::placeholder{color:rgba(255,255,255,.25)}
+input:focus{border-color:#7c6cff;background:rgba(124,108,255,.08)}
+.btn-login{width:100%;background:linear-gradient(135deg,#5a4de0,#7c6cff);border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;margin-top:8px;transition:opacity .2s,transform .1s}
+.btn-login:hover{opacity:.9}
+.btn-login:active{transform:scale(.98)}
+.error-msg{display:none;background:#3d1a1a;border:1px solid #7f2c2c;border-radius:8px;padding:10px 14px;font-size:13px;color:#f87171;margin-top:12px;text-align:center}
+.footer-note{text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,.2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-area">
+    <div class="logo-mark">⚡ <em>VENOM</em></div>
+    <div class="logo-sub">병원마케팅 베놈 Admin</div>
+  </div>
+  <div class="card">
+    <div class="card-title">관리자 로그인</div>
+    <div class="form-group">
+      <label>아이디</label>
+      <input type="text" id="inp-id" placeholder="아이디를 입력하세요" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('inp-pw').focus()">
+    </div>
+    <div class="form-group">
+      <label>비밀번호</label>
+      <input type="password" id="inp-pw" placeholder="비밀번호를 입력하세요" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">로그인</button>
+    <div class="error-msg" id="error-msg">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+  </div>
+  <div class="footer-note">주식회사 베놈 · 관리자 전용 페이지</div>
+</div>
+
+<script>
+var CREDENTIALS=[
+  {id:'venom',pw:'venom2024!'},
+  {id:'admin',pw:'admin2024!'}
+];
+var SESSION_KEY='venom-admin-auth';
+
+function doLogin(){
+  var id=document.getElementById('inp-id').value.trim();
+  var pw=document.getElementById('inp-pw').value;
+  var ok=CREDENTIALS.some(function(c){return c.id===id&&c.pw===pw;});
+  if(ok){
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({id:id,ts:Date.now()}));
+    var redirect=new URLSearchParams(location.search).get('redirect')||'admin.html';
+    location.href=redirect;
+  }else{
+    document.getElementById('error-msg').style.display='block';
+    document.getElementById('inp-pw').value='';
+    document.getElementById('inp-pw').focus();
+  }
+}
+
+// 이미 로그인 상태면 바로 이동
+if(sessionStorage.getItem(SESSION_KEY)){
+  location.href='admin.html';
+}
+</script>
+</body>
+</html>

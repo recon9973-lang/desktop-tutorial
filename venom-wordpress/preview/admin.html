@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관리자 대시보드 — 병원마케팅 베놈</title>
 <meta name="robots" content="noindex, nofollow">
+<script>
+(function(){
+  if(!sessionStorage.getItem('venom-admin-auth')){
+    location.replace('admin-login.html?redirect=admin.html');
+  }
+})();
+</script>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1014,7 +1021,7 @@ function editPost(){toast('수정 모드 진입 (연동 준비 중)')}
 document.addEventListener('DOMContentLoaded',function(){renderPostList();renderKeywordTable();});
 
 // ── OTHER ──
-function logout(){if(confirm('로그아웃 하시겠습니까?'))window.location.href='index.html';}
+function logout(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem('venom-admin-auth');window.location.href='admin-login.html';}}
 function updateChart(v){toast(v+' 데이터 로딩 중')}
 // ── KEYWORD TOOL ──
 var kwDatabase={
