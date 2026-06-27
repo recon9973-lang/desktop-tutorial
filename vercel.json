@@ -3,7 +3,7 @@
   "functions": {
     "api/generate-post.js": { "maxDuration": 120 },
     "api/cron-daily-posts.js": { "maxDuration": 120 },
-    "api/diag.js": { "maxDuration": 20 },
+    "api/health.js": { "maxDuration": 20 },
     "api/posting-settings.js": { "maxDuration": 15 },
     "api/publish-post.js": { "maxDuration": 15 },
     "api/validate-medical-ad.js": { "maxDuration": 10 }

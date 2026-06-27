@@ -2465,7 +2465,7 @@ async function apRunDiag() {
   box.style.display = 'block';
   box.innerHTML = '시스템 점검 중...';
   try {
-    const r = await fetch(apApiBase() + '/api/diag', { headers: apHeaders() });
+    const r = await fetch(apApiBase() + '/api/health?check=full', { headers: apHeaders() });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
     const yn = (b) => b ? '<span style="color:#16a34a">✅</span>' : '<span style="color:#dc2626">❌</span>';
@@ -2488,7 +2488,7 @@ async function apRunDiag() {
     box.innerHTML = h;
   } catch (e) {
     box.innerHTML = '<div style="color:#dc2626">❌ 점검 실패: ' + e.message + '</div>'
-      + '<div style="color:var(--mute);margin-top:6px;font-size:12px">API 인증 토큰(ADMIN_SECRET)이 올바른지, /api/diag가 배포됐는지 확인하세요.</div>';
+      + '<div style="color:var(--mute);margin-top:6px;font-size:12px">API 인증 토큰(ADMIN_SECRET)이 올바른지, /api/health 가 배포됐는지 확인하세요.</div>';
   }
   btn.disabled = false; btn.textContent = '🔍 시스템 점검';
 }
