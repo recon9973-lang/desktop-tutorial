@@ -1993,7 +1993,7 @@ async function apGeneratePreview(saveFlag) {
   const kw = document.getElementById('ap-prev-kw').value.trim();
   const region = document.getElementById('ap-prev-region').value.trim();
 
-  if (!kw) { showToast('키워드를 입력해주세요.'); return; }
+  if (!kw) { toast('키워드를 입력해주세요.'); return; }
 
   document.getElementById('ap-preview-area').style.display = 'none';
   document.getElementById('ap-gen-loading').style.display = 'block';
@@ -2038,7 +2038,7 @@ async function apGeneratePreview(saveFlag) {
     document.getElementById('ap-gen-loading').style.display = 'none';
     document.getElementById('ap-preview-area').style.display = 'block';
 
-    if (saveFlag) showToast('임시저장 완료');
+    if (saveFlag) toast('임시저장 완료');
   } catch(e) {
     document.getElementById('ap-gen-loading').style.display = 'none';
     // 오류를 화면에 크게 표시
@@ -2091,7 +2091,7 @@ async function apPublishPreview() {
     });
   } catch(e) {}
 
-  showToast('✅ 발행 완료! 메인 사이트에 반영됩니다.');
+  toast('✅ 발행 완료! 메인 사이트에 반영됩니다.');
   document.getElementById('ap-preview-area').style.display = 'none';
   _apCurrentPost = null;
   apLoadPosts();
@@ -2111,7 +2111,7 @@ function apDraftPreview() {
   if (idx >= 0) posts[idx] = blogPost;
   else posts.unshift(blogPost);
   localStorage.setItem('venom_blog_posts', JSON.stringify(posts));
-  showToast('📝 임시저장 완료');
+  toast('📝 임시저장 완료');
   document.getElementById('ap-preview-area').style.display = 'none';
   _apCurrentPost = null;
   apLoadPosts();
@@ -2179,7 +2179,7 @@ function apPublishFromList(id) {
   if (!p) return;
   p.status = '발행';
   localStorage.setItem('venom_blog_posts', JSON.stringify(posts));
-  showToast('✅ 발행 완료');
+  toast('✅ 발행 완료');
   apLoadPosts();
 }
 
@@ -2189,7 +2189,7 @@ function apUnpublishFromList(id) {
   if (!p) return;
   p.status = '임시저장';
   localStorage.setItem('venom_blog_posts', JSON.stringify(posts));
-  showToast('내려졌습니다');
+  toast('내려졌습니다');
   apLoadPosts();
 }
 
@@ -2198,18 +2198,18 @@ function apDeletePost(id) {
   const posts = JSON.parse(localStorage.getItem('venom_blog_posts') || '[]');
   const filtered = posts.filter(p => p.id !== id);
   localStorage.setItem('venom_blog_posts', JSON.stringify(filtered));
-  showToast('삭제 완료');
+  toast('삭제 완료');
   apLoadPosts();
 }
 
 function apSaveSecret() {
   const val = document.getElementById('ap-secret-input').value.trim();
-  if (!val) { showToast('토큰을 입력해주세요.'); return; }
+  if (!val) { toast('토큰을 입력해주세요.'); return; }
   AP_ADMIN_SECRET = val;
   localStorage.setItem('venom-admin-secret', val);
   document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 이제 API 호출에 사용됩니다.';
   document.getElementById('ap-secret-input').value = '';
-  showToast('API 토큰 저장 완료');
+  toast('API 토큰 저장 완료');
 }
 
 function initAutoPost() {
