@@ -1,0 +1,9 @@
+{
+  "enabled": false,
+  "dailyCount": 1,
+  "categories": ["geo"],
+  "keywords": ["병원 GEO마케팅", "AI 병원마케팅"],
+  "regions": ["서울", "강남"],
+  "extra": "",
+  "schedule": "0 9 * * *"
+}

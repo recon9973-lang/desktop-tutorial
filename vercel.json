@@ -3,6 +3,12 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" }
   ],
+  "crons": [
+    {
+      "path": "/api/cron-daily-posts",
+      "schedule": "0 0 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/index.html",
@@ -13,6 +19,12 @@
     },
     {
       "source": "/",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/content/:path*",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]

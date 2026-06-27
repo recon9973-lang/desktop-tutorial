@@ -5443,9 +5443,71 @@ function loadAdminPosts(){
   });
 }
 
-// 페이지 로드 시 관리자 포스팅 병합
+// 페이지 로드 시 관리자 포스팅 병합 (localStorage)
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadAdminPosts);}
 else{loadAdminPosts();}
+
+// GitHub 저장 AI 포스트 로드 (content/blog-posts.json)
+(function loadServerPosts(){
+  fetch('/content/blog-posts.json?_='+Date.now())
+    .then(function(r){return r.ok?r.json():[];})
+    .then(function(posts){
+      if(!Array.isArray(posts)||!posts.length)return;
+      // localStorage와 병합 (중복 id 제거)
+      var stored;
+      try{stored=JSON.parse(localStorage.getItem('venom_blog_posts')||'[]');}catch(e){stored=[];}
+      var ids=new Set(stored.map(function(p){return p.id;}));
+      var toAdd=posts.filter(function(p){return !ids.has(p.id);});
+      if(!toAdd.length)return;
+      var converted=toAdd.map(function(p){
+        return {
+          id:p.id, title:p.title, cat:p.cat,
+          seoTitle:p.seoTitle||p.title, keywords:p.keywords||'',
+          meta:p.metaDesc||p.meta||'', content:p.html||'',
+          status:p.status==='published'?'발행':'임시저장',
+          views:p.views||0, date:p.date||''
+        };
+      });
+      var merged=stored.concat(converted);
+      try{localStorage.setItem('venom_blog_posts',JSON.stringify(merged));}catch(e){}
+      // 발행된 것만 화면에 추가
+      var publishedNew=converted.filter(function(p){return p.status==='발행';});
+      if(publishedNew.length){
+        // loadAdminPosts 로직 재실행 (발행된 신규 포스트만)
+        var grid=document.getElementById('blog-grid');
+        publishedNew.forEach(function(p){
+          var label=ADMIN_CAT_LABEL[p.cat]||p.cat;
+          var bg=ADMIN_CAT_BG[p.cat]||'linear-gradient(135deg,var(--p),var(--bd))';
+          var tags=(p.keywords||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+          var excerpt=(p.meta||p.content.replace(/<[^>]+>/g,'')).slice(0,90);
+          blogPosts[p.id]={
+            title:p.title, cat:label, date:p.date,
+            readTime:Math.max(1,Math.round(p.content.replace(/<[^>]+>/g,'').length/500))+'분',
+            tags:tags, related:[],
+            html:'<div style="margin-bottom:32px"><span style="background:rgba(83,58,253,.1);color:var(--p);padding:4px 12px;border-radius:9999px;font-size:12px;font-weight:600">'+label+'</span><span style="color:var(--mute);font-size:13px;margin-left:12px">'+p.date+'</span></div>'
+              +'<h1 style="font-size:32px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin-bottom:24px;line-height:1.3">'+p.title+'</h1>'
+              +(p.meta?'<p style="font-size:16px;color:var(--ink2);border-left:3px solid var(--p);padding-left:16px;margin-bottom:32px">'+p.meta+'</p>':'')
+              +p.content
+          };
+          if(grid&&!document.querySelector('[data-post-id="'+p.id+'"]')){
+            var art=document.createElement('article');
+            art.className='blog-card';
+            art.dataset.cat=p.cat;
+            art.dataset.postId=p.id;
+            art.style.cursor='pointer';
+            art.setAttribute('onclick',"openBlogPost('"+p.id+"')");
+            art.innerHTML='<div class="blog-img" style="background:'+bg+'"><span class="blog-cat-badge">'+label+'</span></div>'
+              +'<div class="blog-body"><div class="post-meta">'+p.date+'</div>'
+              +'<h3>'+p.title+'</h3><p>'+excerpt+'</p>'
+              +(tags.length?'<div class="blog-tags">'+tags.slice(0,3).map(function(t){return'<span>'+t+'</span>';}).join('')+'</div>':'')
+              +'</div>';
+            grid.insertBefore(art,grid.firstChild);
+          }
+        });
+      }
+    })
+    .catch(function(){/* 정적 파일 없으면 조용히 무시 */});
+})();
 
 // ── 방문자 추적 ──
 (function(){
