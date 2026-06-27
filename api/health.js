@@ -137,16 +137,26 @@ module.exports = async function handler(req, res) {
     time: new Date().toISOString(),
   };
 
-  // 이미지 정밀 진단(?check=image): 실제 생성 시도로 OpenAI의 정확한 사유 확인
   const wantImage = (req.query && req.query.check === 'image') || /[?&]check=image/.test(req.url || '');
+  const full = (req.query && (req.query.check === 'full' || req.query.full === '1'))
+    || /[?&](check=full|full=1)/.test(req.url || '');
+
+  // 심층 점검(full/image)은 외부 API 호출(비용 발생)이므로 ADMIN_SECRET 설정 시 인증 요구.
+  // 미설정이면 기존처럼 허용(초기 진단 편의). 설정되면 관리자 토큰 필요.
+  if ((wantImage || full) && process.env.ADMIN_SECRET) {
+    const auth = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
+    if (auth !== process.env.ADMIN_SECRET) {
+      return res.status(401).json({ ...base, error: '심층 점검은 인증 필요(ADMIN_SECRET)' });
+    }
+  }
+
+  // 이미지 정밀 진단(?check=image): 실제 생성 시도로 OpenAI의 정확한 사유 확인
   if (wantImage) {
     const image = await probeImage();
     return res.status(200).json({ ...base, image });
   }
 
   // 전체 점검 요청이 아니면 기본 정보만 (외부 API 호출 없음)
-  const full = (req.query && (req.query.check === 'full' || req.query.full === '1'))
-    || /[?&](check=full|full=1)/.test(req.url || '');
   if (!full) return res.status(200).json(base);
 
   const env = {
