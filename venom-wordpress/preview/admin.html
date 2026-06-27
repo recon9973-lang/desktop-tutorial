@@ -332,7 +332,7 @@ a{color:var(--p);text-decoration:none}
         <div class="card">
           <div class="form-row" style="margin-bottom:16px">
             <div class="form-group"><label>포스팅 제목 <span style="color:#dc2626">*</span></label><input type="text" id="post-title" placeholder="예: 임플란트 치과 고르는 기준 5가지"></div>
-            <div class="form-group"><label>카테고리</label><select id="post-cat"><option>GEO/AI</option><option>SEO</option><option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>온라인마케팅</option><option>전략</option></select></div>
+            <div class="form-group"><label>카테고리</label><select id="post-cat"><option value="geo">GEO/AI</option><option value="seo">SEO</option><option value="dental">치과</option><option value="skin">피부과</option><option value="oriental">한의원</option><option value="ortho">정형외과</option><option value="plastic">성형외과</option><option value="naegwa">내과</option><option value="angwa">안과</option><option value="shimui">의료광고심의</option><option value="지역마케팅">지역마케팅</option></select></div>
           </div>
           <div class="form-row" style="margin-bottom:16px">
             <div class="form-group"><label>SEO 타이틀 (60자 이내)</label><input type="text" id="post-seo-title" placeholder="검색엔진에 표시될 제목"></div>
@@ -1001,7 +1001,7 @@ function editPostById(id){
   if(!post)return;
   editingPostId=id;
   document.getElementById('post-title').value=post.title||'';
-  document.getElementById('post-cat').value=post.cat||'GEO/AI';
+  document.getElementById('post-cat').value=post.cat||'geo';
   document.getElementById('post-seo-title').value=post.seoTitle||'';
   document.getElementById('post-keywords').value=post.keywords||'';
   document.getElementById('post-meta').value=post.meta||'';
