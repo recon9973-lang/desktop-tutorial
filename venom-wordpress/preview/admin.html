@@ -2041,7 +2041,16 @@ async function apGeneratePreview(saveFlag) {
     if (saveFlag) showToast('임시저장 완료');
   } catch(e) {
     document.getElementById('ap-gen-loading').style.display = 'none';
-    showToast('오류: ' + e.message);
+    // 오류를 화면에 크게 표시
+    var errBox = document.getElementById('ap-error-box');
+    if (!errBox) {
+      errBox = document.createElement('div');
+      errBox.id = 'ap-error-box';
+      document.getElementById('ap-gen-loading').parentNode.insertBefore(errBox, document.getElementById('ap-gen-loading').nextSibling);
+    }
+    errBox.style.cssText = 'display:block;background:#3d1a1a;border:1px solid #7f2c2c;border-radius:10px;padding:16px;margin-top:12px;font-size:13px;color:#f87171;line-height:1.6';
+    errBox.innerHTML = '❌ <strong>오류 발생</strong><br>' + e.message
+      + '<br><br><span style="color:rgba(255,255,255,.5);font-size:12px">브라우저 F12 → Network 탭에서 /api/generate-post 응답을 확인하세요.</span>';
   }
 
   document.getElementById('ap-gen-btn').disabled = false;
