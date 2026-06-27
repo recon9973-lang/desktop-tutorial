@@ -2244,6 +2244,16 @@ async function apGeneratePreview(saveFlag) {
     document.getElementById('ap-prev-keywords').textContent = post.keywords;
     document.getElementById('ap-prev-body').innerHTML = post.html;
 
+    // 이미지 생성 상태 표시 (실패 시 사유를 그대로 노출 → 원인 진단)
+    if (post.imageStatus && post.imageStatus !== 'ok') {
+      const note = post.imageStatus === 'skipped'
+        ? '🖼️ 이미지 생성 건너뜀'
+        : '🖼️ 이미지 생성 실패: ' + post.imageStatus;
+      vBar.innerHTML += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.15);color:#fbbf24;font-size:12px">' + note + '</div>';
+    } else if (post.imageStatus === 'ok') {
+      vBar.innerHTML += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.15);color:#4ade80;font-size:12px">🖼️ 이미지 생성 완료 (배포 반영까지 1~2분 소요)</div>';
+    }
+
     document.getElementById('ap-gen-loading').style.display = 'none';
     document.getElementById('ap-preview-area').style.display = 'block';
 

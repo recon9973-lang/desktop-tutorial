@@ -32,27 +32,31 @@ module.exports = async function handler(req, res) {
     // 1. 글 생성
     const post = await generatePost({ category, keyword, region, extra });
 
-    // 2. 이미지 생성 (글 생성 성공 후 병렬로 1~2장)
+    // 2. 이미지 생성 (글 생성 성공 후) — 실패 사유를 응답에 담아 화면에 표시
     const images = [];
+    let imageError = null;
     if (withImage && post.imagePrompt) {
       try {
-        // 이미지 1장 (필수)
         const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0, post.title);
-        if (img1) {
-          images.push(img1);
-          // 이미지 삽입: 본문 첫 번째 <h2> 앞에 헤더 이미지 추가
+        if (img1 && img1.url) {
+          images.push(img1.url);
           const heroImg = `<figure style="margin:0 0 32px;border-radius:12px;overflow:hidden">
   <img src="${img1.url}" alt="${post.title}" style="width:100%;height:auto;display:block" loading="lazy">
   <figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">© 병원마케팅 베놈</figcaption>
 </figure>`;
           post.html = heroImg + post.html;
+        } else {
+          imageError = (img1 && img1.error) || '알 수 없는 이미지 생성 오류';
+          console.warn('[generate-post] 이미지 생성 실패:', imageError);
         }
       } catch (imgErr) {
-        console.warn('[generate-post] 이미지 생성 실패(무시):', imgErr.message);
+        imageError = imgErr.message;
+        console.warn('[generate-post] 이미지 생성 예외:', imgErr.message);
       }
     }
 
-    post.images = images.map(i => i.url);
+    post.images = images;
+    post.imageStatus = images.length ? 'ok' : (imageError || 'skipped');
 
     // 3. 저장 요청 시 GitHub에 저장 (의료광고 검증 + 콘텐츠 오류 검수 통과 시에만)
     if (save && post.publishable) {

@@ -82,6 +82,7 @@ module.exports = async function handler(req, res) {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
 
       // 이미지 1~2장 생성: 1번째=본문 최상단 히어로, 2번째=첫 h2 뒤 본문 삽입
+      let imageError = null;
       try {
         const imgUrls = [];
         const fig = (url, cap) => `<figure style="margin:24px 0 32px;border-radius:12px;overflow:hidden">`
@@ -93,6 +94,8 @@ module.exports = async function handler(req, res) {
         if (img1 && img1.url) {
           imgUrls.push(img1.url);
           post.html = fig(img1.url, '© 병원마케팅 베놈') + post.html;
+        } else if (img1 && img1.error) {
+          imageError = img1.error;
         }
 
         // 2번째 이미지(베스트 에포트) — 실패해도 무시
@@ -109,14 +112,17 @@ module.exports = async function handler(req, res) {
 
         if (imgUrls.length) post.images = imgUrls;
       } catch (imgErr) {
-        console.warn('[cron] 이미지 생성 실패(무시):', imgErr.message);
+        imageError = imgErr.message;
+        console.warn('[cron] 이미지 생성 예외:', imgErr.message);
       }
+      if (imageError) console.warn('[cron] 이미지 생성 실패:', imageError);
 
       const logBase = {
         id: post.id,
         title: post.title,
         tokenUsage: post.tokenUsage || null,
         imageGenerated: !!(post.images && post.images.length),
+        imageError: imageError || undefined,
       };
 
       if (post.publishable) {
