@@ -131,10 +131,12 @@ module.exports = async function handler(req, res) {
 
   const base = {
     ok: true,
-    ver: 'phase1-public-2026-06-28m', // 배포 반영 확인용 마커(이 값이 보이면 최신 코드 라이브)
+    ver: 'phase2-analytics-2026-06-28n', // 배포 반영 확인용 마커(이 값이 보이면 최신 코드 라이브)
     hasOpenAI: !!process.env.OPENAI_API_KEY,
     hasGitHub: !!process.env.GITHUB_TOKEN,
     hasAdminSecret: !!process.env.ADMIN_SECRET,
+    hasKV: !!((process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) && (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN)),
+    hasNaverAd: !!(process.env.NAVER_AD_API_KEY && process.env.NAVER_AD_SECRET && process.env.NAVER_AD_CUSTOMER_ID),
     time: new Date().toISOString(),
   };
 

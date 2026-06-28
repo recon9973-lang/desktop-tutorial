@@ -1260,6 +1260,15 @@ function updateDashboard(){
       }).join('');
     }
   }
+
+  // 대시보드 상단 KPI — 서버 자체 분석 실데이터 반영(미연동이면 기존 값 유지)
+  if(typeof getServerAnalytics==='function'){
+    getServerAnalytics(function(srv){
+      if(!(srv&&srv.configured))return;
+      _setT('stat-visitors',_nfmt(srv.today.visitors));
+      _setT('stat-pv',_nfmt(srv.today.pageviews));
+    });
+  }
 }
 
 // 포스팅 수 stat 카드 추가 (없으면 3번째 카드 재활용)
@@ -1341,34 +1350,75 @@ function lookupKeyword(){
   var raw=document.getElementById('kw-input').value.trim();
   if(!raw)return toast('키워드를 입력하세요.');
   var kws=raw.split(/[,，\s]+/).map(function(s){return s.trim();}).filter(Boolean).slice(0,5);
+  var badge=document.getElementById('kw-api-badge');
   document.getElementById('kw-loading').style.display='block';
   document.getElementById('kw-result-wrap').style.display='none';
-  setTimeout(function(){
-    document.getElementById('kw-loading').style.display='none';
-    document.getElementById('kw-result-wrap').style.display='block';
-    var cards=kws.map(function(kw){
-      var d=kwDatabase[kw];
-      var pc=d?d.pc:Math.round(100+Math.random()*3000);
-      var mo=d?d.mo:Math.round(pc*1.3+Math.random()*500);
-      var comp=d?d.comp:Math.round(30+Math.random()*60)/100;
-      var cpc=d?d.cpc:Math.round(800+Math.random()*3000);
-      return '<div style="background:var(--soft);border-radius:var(--r12);padding:16px;border:1px solid var(--border)">'
-        +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">'+kw+'</div>'
-        +'<div style="display:flex;flex-direction:column;gap:6px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">PC 월 검색</span><strong>'+pc.toLocaleString()+'</strong></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">모바일 월 검색</span><strong>'+mo.toLocaleString()+'</strong></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">합계</span><strong style="color:var(--p)">'+(pc+mo).toLocaleString()+'</strong></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px;padding-top:8px;border-top:1px solid var(--border)"><span style="color:var(--mute)">경쟁도</span>'+compLabel(comp)+'</div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">예상 CPC</span><strong>₩'+cpc.toLocaleString()+'</strong></div>'
-        +'</div></div>';
+  fetch('/api/insights?type=keywordtool&q='+encodeURIComponent(kws.join(',')))
+    .then(function(r){return r.json().then(function(j){return {status:r.status,j:j};},function(){return {status:r.status,j:null};});})
+    .then(function(res){
+      document.getElementById('kw-loading').style.display='none';
+      document.getElementById('kw-result-wrap').style.display='block';
+      if(res.status===200&&res.j&&res.j.keywords&&res.j.keywords.length){
+        if(badge){badge.className='badge badge-green';badge.textContent='● 네이버 실데이터';}
+        renderKeywordResults(res.j.keywords);
+      }else{
+        if(badge){badge.className='badge badge-yellow';badge.textContent='⚠ 시뮬레이션 모드(API 미연동)';}
+        lookupKeywordSim(kws);
+      }
+    })
+    .catch(function(){
+      document.getElementById('kw-loading').style.display='none';
+      document.getElementById('kw-result-wrap').style.display='block';
+      if(badge){badge.className='badge badge-yellow';badge.textContent='⚠ 시뮬레이션 모드';}
+      lookupKeywordSim(kws);
     });
-    document.getElementById('kw-result-cards').innerHTML=cards.join('');
-    var mainKw=kws[0];
-    var rels=(kwRelated[mainKw]||kwRelated.default).concat(kws.slice(1).map(function(k){return k+' 마케팅';}));
-    document.getElementById('kw-related').innerHTML=rels.map(function(r){
-      return '<span onclick="document.getElementById(\'kw-input\').value=\''+r+'\';lookupKeyword()" style="cursor:pointer;padding:5px 12px;background:#fff;border:1px solid var(--border);border-radius:9999px;font-size:12px;color:var(--p);transition:all .15s" onmouseover="this.style.background=\'var(--p)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'#fff\';this.style.color=\'var(--p)\'">'+r+'</span>';
-    }).join('');
-  },900);
+}
+
+// 네이버 검색광고 실데이터 렌더
+function renderKeywordResults(list){
+  var top=list.slice(0,4);
+  document.getElementById('kw-result-cards').innerHTML=top.map(function(d){
+    return '<div style="background:var(--soft);border-radius:var(--r12);padding:16px;border:1px solid var(--border)">'
+      +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">'+d.keyword+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">PC 월 검색</span><strong>'+(d.pc||0).toLocaleString()+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">모바일 월 검색</span><strong>'+(d.mobile||0).toLocaleString()+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">합계</span><strong style="color:var(--p)">'+(d.monthlyVolume||0).toLocaleString()+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px;padding-top:8px;border-top:1px solid var(--border)"><span style="color:var(--mute)">경쟁도</span><strong>'+(d.competition||'-')+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">월 평균 클릭</span><strong>'+(d.avgClicks||0).toLocaleString()+'</strong></div>'
+      +'</div></div>';
+  }).join('');
+  var rel=list.slice(4,22);
+  document.getElementById('kw-related').innerHTML=rel.map(function(d){
+    var kw=(d.keyword||'').replace(/'/g,'');
+    return '<span onclick="document.getElementById(\'kw-input\').value=\''+kw+'\';lookupKeyword()" style="cursor:pointer;padding:5px 12px;background:#fff;border:1px solid var(--border);border-radius:9999px;font-size:12px;color:var(--p)" title="월 '+(d.monthlyVolume||0).toLocaleString()+'회 검색">'+kw+' <span style="color:var(--mute)">'+(d.monthlyVolume||0).toLocaleString()+'</span></span>';
+  }).join('')||'<span style="color:var(--mute);font-size:12px">관련 키워드 없음</span>';
+}
+
+// API 미연동 시 시뮬레이션 폴백
+function lookupKeywordSim(kws){
+  var cards=kws.map(function(kw){
+    var d=kwDatabase[kw];
+    var pc=d?d.pc:Math.round(100+Math.random()*3000);
+    var mo=d?d.mo:Math.round(pc*1.3+Math.random()*500);
+    var comp=d?d.comp:Math.round(30+Math.random()*60)/100;
+    var cpc=d?d.cpc:Math.round(800+Math.random()*3000);
+    return '<div style="background:var(--soft);border-radius:var(--r12);padding:16px;border:1px solid var(--border)">'
+      +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">'+kw+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">PC 월 검색</span><strong>'+pc.toLocaleString()+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">모바일 월 검색</span><strong>'+mo.toLocaleString()+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">합계</span><strong style="color:var(--p)">'+(pc+mo).toLocaleString()+'</strong></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:4px;padding-top:8px;border-top:1px solid var(--border)"><span style="color:var(--mute)">경쟁도</span>'+compLabel(comp)+'</div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--mute)">예상 CPC</span><strong>₩'+cpc.toLocaleString()+'</strong></div>'
+      +'</div></div>';
+  });
+  document.getElementById('kw-result-cards').innerHTML=cards.join('');
+  var mainKw=kws[0];
+  var rels=(kwRelated[mainKw]||kwRelated.default).concat(kws.slice(1).map(function(k){return k+' 마케팅';}));
+  document.getElementById('kw-related').innerHTML=rels.map(function(r){
+    return '<span onclick="document.getElementById(\'kw-input\').value=\''+r+'\';lookupKeyword()" style="cursor:pointer;padding:5px 12px;background:#fff;border:1px solid var(--border);border-radius:9999px;font-size:12px;color:var(--p);transition:all .15s" onmouseover="this.style.background=\'var(--p)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'#fff\';this.style.color=\'var(--p)\'">'+r+'</span>';
+  }).join('');
 }
 
 function addToTracking(){
@@ -1818,7 +1868,77 @@ function copyToClipboard(text){navigator.clipboard.writeText(text).then(function
 // ══════════════════════════════════════
 var VISIT_KEY='venom-visits';
 function getVisits(){try{return JSON.parse(localStorage.getItem(VISIT_KEY)||'[]');}catch(e){return[];}}
+
+// ── 서버 자체 분석(/api/analytics) — 60초 메모이즈 ──
+var _srvAnalytics=null,_srvAnalyticsAt=0;
+function getServerAnalytics(cb){
+  var now=Date.now();
+  if(_srvAnalytics&&(now-_srvAnalyticsAt)<60000){cb(_srvAnalytics);return;}
+  fetch('/api/analytics?_='+now).then(function(r){return r.ok?r.json():null;}).then(function(j){
+    _srvAnalytics=j;_srvAnalyticsAt=Date.now();cb(j);
+  }).catch(function(){cb(null);});
+}
+var CHANNEL_META={
+  direct:{label:'직접 유입',icon:'⚫',color:'var(--p)'},
+  naver:{label:'네이버 검색',icon:'🟢',color:'#03c75a'},
+  google:{label:'구글 검색',icon:'🔴',color:'#4285f4'},
+  daum:{label:'다음·카카오',icon:'🟡',color:'#ffcd00'},
+  instagram:{label:'인스타그램',icon:'🌸',color:'#e1306c'},
+  facebook:{label:'페이스북',icon:'🔵',color:'#1877f2'},
+  youtube:{label:'유튜브',icon:'▶️',color:'#ff0000'},
+  bing:{label:'빙',icon:'🟦',color:'#008373'},
+  other:{label:'기타',icon:'📌',color:'var(--mute)'}
+};
+function _setT(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function _nfmt(n){return (Number(n)||0).toLocaleString();}
+// 서버 미연동 안내 배너(섹션 상단)
+function analyticsBanner(section,configured){
+  var host=document.getElementById('section-'+section);if(!host)return;
+  var id='kvbanner-'+section;var ex=document.getElementById(id);
+  if(configured){if(ex)ex.remove();return;}
+  if(ex)return;
+  var b=document.createElement('div');b.id=id;
+  b.style.cssText='background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:var(--r8);padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.6';
+  b.innerHTML='⚠ <strong>실시간 전체 집계 미연동</strong> — 아래 숫자는 이 브라우저의 로컬 기록(데모)입니다. 모든 방문자를 합산하려면 Vercel KV(무료)를 연동하세요. (Vercel → Storage → KV 생성 시 KV_REST_API_URL·KV_REST_API_TOKEN 자동 주입)';
+  host.insertBefore(b,host.firstChild);
+}
+function renderChannelBars(el,channels){
+  if(!el)return;
+  var total=channels.reduce(function(a,c){return a+c.pageviews;},0)||1;
+  if(!channels.length){el.innerHTML='<div style="text-align:center;color:var(--mute);font-size:13px;padding:20px">아직 유입 데이터가 없습니다</div>';return;}
+  el.innerHTML=channels.map(function(c){
+    var m=CHANNEL_META[c.key]||CHANNEL_META.other;var pct=Math.round(c.pageviews/total*100);
+    return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+m.icon+' '+m.label+'</span><span style="font-weight:600">'+pct+'% <span style="color:var(--mute);font-weight:400">('+_nfmt(c.pageviews)+')</span></span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:'+m.color+'"></div></div></div>';
+  }).join('');
+}
+function render30Chart(chart,daily,key){
+  if(!chart)return;
+  var maxV=Math.max(1,Math.max.apply(null,daily.map(function(d){return d[key];})));
+  chart.innerHTML=daily.map(function(d,i){
+    var val=d[key];var h=Math.max(4,Math.round(val/maxV*100));var md=d.date.slice(5).replace('-','/');
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:default" title="'+md+': '+val+'">'
+      +'<div style="width:100%;background:var(--p);border-radius:2px 2px 0 0;height:'+h+'%;min-height:4px;opacity:'+(i>=25?1:.6)+';transition:height .3s"></div>'
+      +(i%5===0?'<div style="font-size:8px;color:var(--mute);white-space:nowrap">'+md+'</div>':'<div style="height:12px"></div>')
+      +'</div>';
+  }).join('');
+}
+
+// 서버 우선 — 로컬 렌더 후 서버 데이터로 핵심 지표 덮어쓰기
 function initVisitors(){
+  initVisitorsLocal();
+  getServerAnalytics(function(srv){
+    var configured=srv&&srv.configured;
+    analyticsBanner('visitors',configured);
+    if(!configured)return;
+    _setT('v-today',_nfmt(srv.today.visitors));
+    _setT('v-week',_nfmt(srv.week.visitors));
+    var monthEl=document.getElementById('v-month-total');
+    if(monthEl)monthEl.innerHTML='월 방문자 <strong style="color:var(--ink)">'+_nfmt(srv.month.visitors)+'</strong> · 페이지뷰 <strong style="color:var(--ink)">'+_nfmt(srv.month.pageviews)+'</strong>';
+    render30Chart(document.getElementById('v-chart-30'),srv.daily,'uv');
+    renderChannelBars(document.getElementById('v-channel-bars'),srv.channels);
+  });
+}
+function initVisitorsLocal(){
   var visits=getVisits();
   var now=new Date();
   var todayStr=now.toLocaleDateString('ko-KR');
@@ -1900,6 +2020,20 @@ function initVisitors(){
 // ── 유입 출처 ──
 // ══════════════════════════════════════
 function initSources(){
+  initSourcesLocal();
+  getServerAnalytics(function(srv){
+    if(!(srv&&srv.configured&&srv.channels))return;
+    var tbody=document.querySelector('#section-sources tbody');
+    if(!tbody)return;
+    var total=srv.channels.reduce(function(a,c){return a+c.pageviews;},0)||1;
+    if(!srv.channels.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:24px">아직 유입 데이터가 없습니다</td></tr>';return;}
+    tbody.innerHTML=srv.channels.map(function(c){
+      var m=CHANNEL_META[c.key]||CHANNEL_META.other;var pct=Math.round(c.pageviews/total*100);
+      return '<tr><td>'+m.icon+' '+m.label+'</td><td>'+_nfmt(c.pageviews)+'</td><td>'+pct+'%</td><td>—</td><td>—</td></tr>';
+    }).join('');
+  });
+}
+function initSourcesLocal(){
   var visits=getVisits();
   var tbody=document.querySelector('#section-sources tbody');
   if(!tbody)return;

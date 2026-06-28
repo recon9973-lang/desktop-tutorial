@@ -6372,6 +6372,17 @@ function secretAdminClick(){
     logs.push(entry);
     if(logs.length>MAX_LOGS)logs=logs.slice(logs.length-MAX_LOGS);
     try{localStorage.setItem(VISIT_KEY,JSON.stringify(logs));}catch(e){}
+    // 서버 집계 비콘(자체 분석 — KV 미설정이면 서버가 무시하므로 안전)
+    try{
+      var firstHit=!sessionStorage.getItem('venom-seen');
+      if(firstHit){try{sessionStorage.setItem('venom-seen','1');}catch(e){}}
+      var payload=JSON.stringify({path:location.pathname+(location.hash||''),ref:document.referrer||'',nv:firstHit?1:0});
+      if(navigator.sendBeacon){
+        navigator.sendBeacon('/api/analytics',new Blob([payload],{type:'application/json'}));
+      }else{
+        fetch('/api/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true}).catch(function(){});
+      }
+    }catch(e){}
   }
   // 페이지 로드 시 기록
   recordVisit();
