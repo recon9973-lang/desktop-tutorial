@@ -137,13 +137,15 @@ module.exports = async function handler(req, res) {
     time: new Date().toISOString(),
   };
 
-  const wantImage = (req.query && req.query.check === 'image') || /[?&]check=image/.test(req.url || '');
+  const wantImage = (req.query && req.query.check === 'image') || /[?&]check=image\b/.test(req.url || '');
+  // 전체 파이프라인 진단(생성→WASM변환→GitHub저장)을 실제로 1회 실행
+  const wantImageFull = (req.query && req.query.check === 'imagefull') || /[?&]check=imagefull\b/.test(req.url || '');
   const full = (req.query && (req.query.check === 'full' || req.query.full === '1'))
     || /[?&](check=full|full=1)/.test(req.url || '');
 
   // 심층 점검(full/image)은 외부 API 호출(비용 발생)이므로 ADMIN_SECRET 설정 시 인증 요구.
   // 미설정이면 기존처럼 허용(초기 진단 편의). 설정되면 관리자 토큰 필요.
-  if ((wantImage || full) && process.env.ADMIN_SECRET) {
+  if ((wantImage || wantImageFull || full) && process.env.ADMIN_SECRET) {
     const auth = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
     if (auth !== process.env.ADMIN_SECRET) {
       return res.status(401).json({ ...base, error: '심층 점검은 인증 필요(ADMIN_SECRET)' });
@@ -154,6 +156,24 @@ module.exports = async function handler(req, res) {
   if (wantImage) {
     const image = await probeImage();
     return res.status(200).json({ ...base, image });
+  }
+
+  // 전체 파이프라인 진단(?check=imagefull): 실제 코드(generateAndSaveImage)를 그대로 1회 실행.
+  // OpenAI 생성 → WASM WebP 변환 → GitHub 커밋까지 전 과정을 검증하고, 실패 시 정확한 단계/사유를 반환.
+  if (wantImageFull) {
+    const t0 = Date.now();
+    let out;
+    try {
+      const { generateAndSaveImage } = require('../lib/image-generator');
+      const r = await generateAndSaveImage(
+        'modern clean hospital reception area, pipeline diagnostic',
+        'diag_' + t0, 0, 'diag-pipeline-test');
+      out = { ...r, ms: Date.now() - t0,
+        verdict: r && r.url ? '성공 — 이 URL이 보이면 전체 파이프라인 정상' : '실패 — error 사유 확인' };
+    } catch (e) {
+      out = { url: null, error: '예외: ' + (e && e.message), stack: (e && e.stack || '').split('\n').slice(0,4).join(' | '), ms: Date.now() - t0 };
+    }
+    return res.status(200).json({ ...base, imageFull: out });
   }
 
   // 전체 점검 요청이 아니면 기본 정보만 (외부 API 호출 없음)
