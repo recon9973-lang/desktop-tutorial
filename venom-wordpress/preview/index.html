@@ -8820,7 +8820,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   };
   window.vnToggleLang=function(){ var cur='ko'; try{cur=localStorage.getItem('venom-lang')||'ko';}catch(e){} window.vnSetLang(cur==='en'?'ko':'en'); };
   window.vnRetranslate=function(){ var l='ko'; try{l=localStorage.getItem('venom-lang')||'ko';}catch(e){} if(l==='en')translateTree(); };
-  function init(){ var l=null; try{l=new URLSearchParams(location.search).get('lang');}catch(e){} if(!l){try{l=localStorage.getItem('venom-lang');}catch(e){}} if(l==='en')window.vnSetLang('en'); }
+  function init(){ try{localStorage.setItem('venom-lang','ko');}catch(e){} }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
