@@ -1260,6 +1260,114 @@ body{padding-top:0}
     </div>
   </section>
 
+  <!-- 🆕 스토리텔링 성과 사례 슬라이드 -->
+  <section class="section cs-section">
+    <style>
+      .cs-section{background:var(--soft)}
+      .cs-head{text-align:center;max-width:600px;margin:0 auto 30px}
+      .cs-head h2{font-size:34px;font-weight:300;letter-spacing:-.8px;color:var(--ink);margin-bottom:12px}
+      .cs-head h2 em{font-style:normal;color:var(--p)}
+      .cs-head p{font-size:15px;color:var(--mute)}
+      .cs-stage{max-width:680px;margin:0 auto;position:relative}
+      .cs-card{display:none;background:#fff;border:1px solid var(--border);border-radius:18px;padding:30px 28px;box-shadow:rgba(0,55,112,.05) 0 8px 30px;animation:csFade .4s ease}
+      .cs-card.active{display:block}
+      @keyframes csFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+      .cs-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
+      .cs-tag{background:rgba(83,58,253,.1);color:var(--p);font-size:12px;font-weight:600;padding:4px 12px;border-radius:9999px}
+      .cs-loc{font-size:13px;color:var(--mute);font-weight:500}
+      .cs-step{border-radius:12px;padding:16px 18px}
+      .cs-step-label{font-size:11px;font-weight:700;letter-spacing:.04em;margin-bottom:6px}
+      .cs-step-text{font-size:14px;line-height:1.6;color:var(--ink2)}
+      .cs-problem{background:#f8fafc;border:1px solid var(--border)}
+      .cs-problem .cs-step-label{color:#64748b}
+      .cs-solution{background:rgba(83,58,253,.05);border:1px solid rgba(83,58,253,.15)}
+      .cs-solution .cs-step-label{color:var(--p)}
+      .cs-result{background:#f0fdf4;border:1px solid #bbf7d0}
+      .cs-result .cs-step-label{color:#16a34a}
+      .cs-result-big{font-size:24px;font-weight:700;color:#16a34a;margin:2px 0 6px}
+      .cs-arrow{text-align:center;color:var(--border);font-size:18px;line-height:1;margin:6px 0}
+      .cs-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:24px}
+      .cs-arrow-btn{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:18px;color:var(--ink);transition:.2s;display:flex;align-items:center;justify-content:center}
+      .cs-arrow-btn:hover{border-color:var(--p);color:var(--p)}
+      .cs-dots{display:flex;gap:8px}
+      .cs-dot{width:8px;height:8px;border-radius:50%;background:var(--border);border:none;cursor:pointer;padding:0;transition:.2s}
+      .cs-dot.active{background:var(--p);width:22px;border-radius:9999px}
+      .cs-note{text-align:center;font-size:11px;color:var(--mute);margin-top:18px}
+      @media(max-width:600px){.cs-head h2{font-size:26px}.cs-card{padding:24px 18px}}
+    </style>
+    <div class="container">
+      <div class="cs-head">
+        <div class="section-badge">성과 사례</div>
+        <h2>이 병원들은 <em>어떻게</em> 달라졌을까요?</h2>
+        <p>문제 → 베놈의 해결 → 결과. 실제 집행 사례를 넘겨보세요.</p>
+      </div>
+      <div class="cs-stage">
+        <div class="cs-card active">
+          <div class="cs-card-head"><span class="cs-tag">치과 · 임플란트</span><span class="cs-loc">대전 A치과 (개원 4년차)</span></div>
+          <div class="cs-step cs-problem"><div class="cs-step-label">문제</div><div class="cs-step-text">광고비는 매달 나가는데 신환 문의는 정체. 네이버 플레이스 정보가 비어 있고 '대전 임플란트' 검색에서 보이지 않았습니다.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-solution"><div class="cs-step-label">베놈의 해결</div><div class="cs-step-text">플레이스 완성도 95% 정비 + 지역 키워드 블로그 주 2회 + 원장 전문성 콘텐츠로 신뢰 신호 강화.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-result"><div class="cs-step-label">결과 (3개월)</div><div class="cs-result-big">신환 문의 2.3배</div><div class="cs-step-text">'대전 임플란트' 플레이스 상위 3위권 진입, 광고 의존도 감소.</div></div>
+        </div>
+        <div class="cs-card">
+          <div class="cs-card-head"><span class="cs-tag">피부과</span><span class="cs-loc">부산 B피부과</span></div>
+          <div class="cs-step cs-problem"><div class="cs-step-label">문제</div><div class="cs-step-text">유료광고에만 의존해 광고를 멈추면 문의가 끊겼습니다. 자연 유입이 거의 없었습니다.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-solution"><div class="cs-step-label">베놈의 해결</div><div class="cs-step-text">시술별 정보형 콘텐츠 + FAQ 구조화(AEO)로 구글 AI 답변·검색 노출 기반 구축.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-result"><div class="cs-step-label">결과 (4개월)</div><div class="cs-result-big">자연 유입 180% 증가</div><div class="cs-step-text">구글 AI Overviews 노출, 광고비 의존도 하락.</div></div>
+        </div>
+        <div class="cs-card">
+          <div class="cs-card-head"><span class="cs-tag">정형외과 · 도수치료</span><span class="cs-loc">인천 C정형외과</span></div>
+          <div class="cs-step cs-problem"><div class="cs-step-label">문제</div><div class="cs-step-text">경쟁이 치열한 지역, 비급여 도수치료 신환을 어떻게 알릴지 막막했습니다.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-solution"><div class="cs-step-label">베놈의 해결</div><div class="cs-step-text">도수치료 과정 유튜브 쇼츠 + 단계별 블로그 시리즈 + 지역 SEO 집중.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-result"><div class="cs-step-label">결과 (5개월)</div><div class="cs-result-big">관련 매출 3배</div><div class="cs-step-text">'인천 도수치료' 블로그 1위, 플레이스 상위권 진입.</div></div>
+        </div>
+        <div class="cs-card">
+          <div class="cs-card-head"><span class="cs-tag">한의원 · 다이어트</span><span class="cs-loc">서울 D한의원</span></div>
+          <div class="cs-step cs-problem"><div class="cs-step-label">문제</div><div class="cs-step-text">계절 편차가 크고, 신환 유입 채널이 입소문에만 머물러 있었습니다.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-solution"><div class="cs-step-label">베놈의 해결</div><div class="cs-step-text">시즌 키워드 전략 + 다이어트·첩약 질문형(AEO) 콘텐츠로 검색 유입 다변화.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-result"><div class="cs-step-label">결과 (4개월)</div><div class="cs-result-big">신환 월 140% 증가</div><div class="cs-step-text">'다이어트 한의원' 검색 상위 노출, 비수기 편차 완화.</div></div>
+        </div>
+        <div class="cs-card">
+          <div class="cs-card-head"><span class="cs-tag">GEO · AI검색</span><span class="cs-loc">수도권 E병원</span></div>
+          <div class="cs-step cs-problem"><div class="cs-step-label">문제</div><div class="cs-step-text">ChatGPT·Perplexity에 "지역+진료과 추천"을 물어도 우리 병원이 전혀 나오지 않았습니다.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-solution"><div class="cs-step-label">베놈의 해결</div><div class="cs-step-text">Schema.org 마크업 + 엔티티 구축 + FAQ 구조화로 AI가 인용할 근거를 정비.</div></div>
+          <div class="cs-arrow">↓</div>
+          <div class="cs-step cs-result"><div class="cs-step-label">결과 (3개월)</div><div class="cs-result-big">AI 추천에 노출</div><div class="cs-step-text">ChatGPT·Perplexity의 지역 진료 추천 답변에 병원명이 인용되기 시작.</div></div>
+        </div>
+      </div>
+      <div class="cs-nav">
+        <button class="cs-arrow-btn" onclick="csNext(-1)" aria-label="이전">←</button>
+        <div class="cs-dots">
+          <button class="cs-dot active" onclick="csGo(0)" aria-label="1"></button>
+          <button class="cs-dot" onclick="csGo(1)" aria-label="2"></button>
+          <button class="cs-dot" onclick="csGo(2)" aria-label="3"></button>
+          <button class="cs-dot" onclick="csGo(3)" aria-label="4"></button>
+          <button class="cs-dot" onclick="csGo(4)" aria-label="5"></button>
+        </div>
+        <button class="cs-arrow-btn" onclick="csNext(1)" aria-label="다음">→</button>
+      </div>
+      <div class="cs-note">※ 실제 집행 사례 기반 · 병원 식별정보는 비공개 처리 · 성과는 병원 상황·시장 환경에 따라 달라질 수 있습니다.</div>
+    </div>
+    <script>
+      var _csIdx=0;
+      function csGo(i){
+        var cards=document.querySelectorAll('.cs-card'); if(!cards.length)return;
+        _csIdx=(i%cards.length+cards.length)%cards.length;
+        cards.forEach(function(c,j){c.classList.toggle('active',j===_csIdx);});
+        document.querySelectorAll('.cs-dot').forEach(function(d,j){d.classList.toggle('active',j===_csIdx);});
+      }
+      function csNext(step){csGo(_csIdx+step);}
+    </script>
+  </section>
+
   <section class="cta-section">
     <div class="container">
       <div class="cta-inner">
