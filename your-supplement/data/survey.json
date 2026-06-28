@@ -121,17 +121,18 @@
     {
       "id": "allergies",
       "title": "알레르기가 있나요?",
-      "subtitle": "해당 성분이 포함된 영양제는 추천에서 제외됩니다",
+      "subtitle": "영양제 원료에 포함될 수 있는 식품 알레르기만 표시돼요. (꽃가루·집먼지 진드기 등 호흡기 알레르기는 먹는 영양제와 무관해 제외했어요)",
       "type": "multi_chip",
       "maps_to": "user.allergies",
       "required": false,
       "none_option": { "value": "none", "label": "알레르기 없음" },
       "options": [
-        { "value": "milk",   "label": "우유 / 유제품", "icon": "🥛" },
-        { "value": "soy",    "label": "대두 / 콩",     "icon": "🫘" },
-        { "value": "peanut", "label": "땅콩",          "icon": "🥜" },
-        { "value": "fish",   "label": "생선 / 해산물", "icon": "🐟" },
-        { "value": "gluten", "label": "글루텐",        "icon": "🌾" }
+        { "value": "milk",      "label": "우유 / 유제품", "icon": "🥛", "hint": "락티움 등" },
+        { "value": "soy",       "label": "대두 / 콩",     "icon": "🫘", "hint": "대두레시틴 등" },
+        { "value": "peanut",    "label": "땅콩",          "icon": "🥜" },
+        { "value": "fish",      "label": "생선",          "icon": "🐟", "hint": "오메가3(어유) 등" },
+        { "value": "shellfish", "label": "갑각류 / 조개",  "icon": "🦐", "hint": "글루코사민 등" },
+        { "value": "gluten",    "label": "글루텐",        "icon": "🌾" }
       ]
     }
   ]

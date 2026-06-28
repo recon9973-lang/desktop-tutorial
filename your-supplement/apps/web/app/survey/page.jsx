@@ -30,19 +30,20 @@ const S = {
 function ChipGroup({ options, value, onChange, multi = false, noneOption }) {
   const selected = new Set(Array.isArray(value) ? value : value ? [value] : []);
 
-  const toggle = (v) => {
-    if (v === 'none') { onChange(multi ? [] : ''); return; }
+  // isNoneButton: 멀티선택의 "없음" 버튼(전체 해제)일 때만 true.
+  // 단일선택(생활습관)의 value:'none'은 정상 선택지이므로 일반 경로로 처리.
+  const toggle = (v, isNoneButton = false) => {
+    if (isNoneButton) { onChange([]); return; }
     if (!multi) { onChange(v === value ? '' : v); return; }
     const next = new Set(selected);
     next.has(v) ? next.delete(v) : next.add(v);
-    next.delete('none');
     onChange([...next]);
   };
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
       {noneOption && (
-        <button style={S.chip(selected.size === 0 || selected.has('none'))} onClick={() => toggle('none')}>
+        <button style={S.chip(selected.size === 0)} onClick={() => toggle(null, true)}>
           {noneOption.label}
         </button>
       )}
