@@ -6135,6 +6135,21 @@ var ADMIN_CAT_BG={
   '지역마케팅':'linear-gradient(135deg,#0ea5e9,#0284c7)'
 };
 
+// 이미지 송출 시 WebP 변환(저장은 JPG 유지). raw.githubusercontent 이미지 src를
+// 무료 이미지 CDN(wsrv.nl) WebP 송출로 치환 → Vercel 빌드와 무관, 옛 글까지 자동 적용.
+// 브라우저가 받는 실제 이미지는 WebP(SEO·로딩 속도↑), 원본은 GitHub에 JPG로 그대로 보존.
+function imgToWebp(html) {
+  if (!html) return html;
+  return String(html).replace(
+    /(<img\b[^>]*\bsrc=")(https:\/\/raw\.githubusercontent\.com\/[^"]+)(")/gi,
+    function(m, pre, url, post) {
+      // 이미 변환된 건 건너뜀
+      if (/wsrv\.nl/.test(url)) return m;
+      return pre + 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&output=webp&q=80' + post;
+    }
+  );
+}
+
 // 이전 인코딩 버그로 깨진 글자(�)·구분자 잔존을 표시 단계에서 제거(안전망).
 // 근본 원인은 서버 측에서 수정됨 — 신규 글은 깨지지 않음. 이미 깨진 글은 재생성 권장.
 function _cleanBroken(s) {
@@ -6411,6 +6426,7 @@ function openBlogPost(id, pushState) {
     }
     var rawHtml = post.html || '<p>내용 없음</p>';
     try { rawHtml = injectInternalLinks(rawHtml); } catch(e) {}
+    try { rawHtml = imgToWebp(rawHtml); } catch(e) {}
     el.innerHTML = tagRow + rawHtml;
 
     // TOC: DOM 렌더 후 h2/h3 추출 (setTimeout으로 파싱 완료 보장)
