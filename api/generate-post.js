@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'OPENAI_API_KEY 환경변수가 Vercel에 설정되지 않았습니다.' });
   }
 
-  const { category, keyword, region, extra, save, withImage = true } = req.body || {};
+  const { category, keyword, region, extra, save, publish, withImage = true } = req.body || {};
   if (!category || !keyword) {
     return res.status(400).json({ error: 'category, keyword 필수' });
   }
@@ -65,7 +65,7 @@ module.exports = async function handler(req, res) {
 
     // 3. 저장 요청 시 GitHub에 저장 (의료광고 검증 + 콘텐츠 오류 검수 통과 시에만)
     if (save && post.publishable) {
-      post.status = 'draft';
+      post.status = publish ? 'published' : 'draft';
       try {
         await savePost(post);
         await appendLog({

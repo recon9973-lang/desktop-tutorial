@@ -1,5 +1,8 @@
 {
   "outputDirectory": "venom-wordpress/preview",
+  "rewrites": [
+    { "source": "/blog/:slug*", "destination": "/index.html" }
+  ],
   "functions": {
     "api/generate-post.js": { "maxDuration": 120 },
     "api/cron-daily-posts.js": { "maxDuration": 120 },
