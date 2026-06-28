@@ -1,9 +1,22 @@
 {
   "enabled": false,
-  "dailyCount": 1,
-  "categories": ["geo"],
-  "keywords": ["병원 GEO마케팅", "AI 병원마케팅"],
-  "regions": ["서울", "강남"],
+  "schedules": [
+    {
+      "from": "2026-06-28",
+      "to": "2026-07-28",
+      "dailyCount": 1
+    }
+  ],
+  "categories": [
+    "geo_local",
+    "skin"
+  ],
+  "keywords": [
+    "병원마케팅"
+  ],
+  "regions": [
+    "부산"
+  ],
   "extra": "",
-  "schedule": "0 9 * * *"
+  "updatedAt": "2026-06-28T10:48:09.874Z"
 }
