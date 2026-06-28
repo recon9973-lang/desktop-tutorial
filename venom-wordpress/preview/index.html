@@ -6252,6 +6252,71 @@ else{loadAdminPosts();}
     .catch(function(){});
 })();
 
+// ── 공개 사이트: 서버 설정(메타·카카오 상담링크·연락처) 반영 ──
+// 관리자 → 사이트 설정에서 저장한 값(content/settings.json)을 홈페이지에 동적 적용.
+// 서버 값이 있을 때만 덮어쓰며, 없으면 기존 하드코딩 기본값 유지(안전).
+(function applyServerSettings(){
+  function setMeta(name, val, isProp){
+    var sel = isProp ? 'meta[property="'+name+'"]' : 'meta[name="'+name+'"]';
+    var el = document.querySelector(sel);
+    if(!el){ el=document.createElement('meta'); el.setAttribute(isProp?'property':'name', name); document.head.appendChild(el); }
+    el.setAttribute('content', val);
+  }
+  function applyKakao(){
+    var url = window.VENOM_KAKAO; if(!url) return;
+    var links = document.querySelectorAll('a[href*="pf.kakao.com"]');
+    for(var i=0;i<links.length;i++){
+      if(links[i].getAttribute('href')!==url) links[i].setAttribute('href', url);
+    }
+  }
+  function applyContact(s){
+    if(s.phone){
+      var tel='tel:'+String(s.phone).replace(/[^0-9+]/g,'');
+      document.querySelectorAll('a[href^="tel:"]').forEach(function(a){ a.setAttribute('href',tel); });
+    }
+    if(s.email){
+      document.querySelectorAll('a[href^="mailto:"]').forEach(function(a){ a.setAttribute('href','mailto:'+s.email); });
+    }
+  }
+  fetch('/api/store?type=settings&_='+Date.now())
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(res){
+      var s = res && res.data;
+      if(!s || typeof s!=='object') return;
+      window.VENOM_SETTINGS = s;
+
+      // 1) 메타/타이틀 — 블로그 글 페이지(/blog/…)는 openBlogPost가 별도 관리하므로 건드리지 않음
+      var onBlog = /^\/blog\//.test(location.pathname||'');
+      if(!onBlog){
+        if(s.title){ document.title=s.title; setMeta('og:title', s.title, true); }
+        if(s.meta){ setMeta('description', s.meta); setMeta('og:description', s.meta, true); }
+        if(s.keywords){ setMeta('keywords', s.keywords); }
+      }
+
+      // 2) 카카오 상담 링크 전체 치환(정적 + 동적 삽입분)
+      if(s.kakao){
+        var k=String(s.kakao).trim();
+        window.VENOM_KAKAO = /\/chat$/.test(k) ? k : k.replace(/\/+$/,'')+'/chat';
+      }
+
+      // 3) 연락처(tel/mailto) 반영
+      function applyAll(){ applyKakao(); applyContact(s); }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', applyAll);
+      else applyAll();
+
+      // 동적으로 추가되는 상담 버튼도 갱신(throttle)
+      if(window.VENOM_KAKAO && document.body){
+        var pending=false;
+        var mo=new MutationObserver(function(){
+          if(pending) return; pending=true;
+          setTimeout(function(){ pending=false; applyKakao(); }, 120);
+        });
+        try{ mo.observe(document.body,{childList:true,subtree:true}); }catch(e){}
+      }
+    })
+    .catch(function(){});
+})();
+
 // ── 비밀 관리자 버튼 ──
 var _secretClickCount=0,_secretTimer=null;
 function secretAdminClick(){
@@ -8661,16 +8726,29 @@ document.addEventListener('DOMContentLoaded',function(){
     }catch(e){}
   }
   function getLogos(){try{var s=localStorage.getItem('venom-logos');var a=s?JSON.parse(s):null;return(a&&a.length)?a:null;}catch(e){return null;}}
-  function renderMarquee(){
+  function paint(logos){
     var track=document.getElementById('logo-marquee-track');
     var section=document.getElementById('logo-marquee-section');
     if(!track||!section)return;
-    cleanOldLogos();
-    var logos=getLogos()||DEFAULT_LOGOS;
-    if(logos.length===0){section.style.display='none';return;}
+    if(!logos||logos.length===0){section.style.display='none';return;}
     section.style.display='';
-    var imgs=logos.map(function(l){return '<img src="'+l.url+'" alt="'+l.name+'" loading="lazy">';}).join('');
+    var imgs=logos.map(function(l){return '<img src="'+l.url+'" alt="'+(l.name||'')+'" loading="lazy">';}).join('');
     track.innerHTML=imgs+imgs;
+  }
+  function renderMarquee(){
+    cleanOldLogos();
+    // 우선 로컬/기본값으로 즉시 렌더 → 서버 값(content/logos.json) 도착 시 교체
+    paint(getLogos()||DEFAULT_LOGOS);
+    fetch('/api/store?type=logos&_='+Date.now())
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(res){
+        var arr=res&&res.data;
+        if(Array.isArray(arr)&&arr.length){
+          try{localStorage.setItem('venom-logos',JSON.stringify(arr));}catch(e){}
+          paint(arr);
+        }
+      })
+      .catch(function(){});
   }
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',renderMarquee);}
   else{renderMarquee();}
