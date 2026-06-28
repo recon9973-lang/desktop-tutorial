@@ -26,9 +26,14 @@ export default function RootLayout({ children }) {
           <a href="/" style={{ fontWeight: 700, fontSize: 18, color: 'var(--ink)', textDecoration: 'none', letterSpacing: -0.5 }}>
             🧬 당신의 영양제
           </a>
-          <a href="/survey" className="btn-primary" style={{ padding: '6px 20px', fontSize: 15 }}>
-            무료로 시작하기
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <a href="/nearby" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🗺️ 약국·병원 찾기
+            </a>
+            <a href="/survey" className="btn-primary" style={{ padding: '6px 20px', fontSize: 15 }}>
+              무료로 시작하기
+            </a>
+          </div>
         </nav>
 
         <main>{children}</main>
