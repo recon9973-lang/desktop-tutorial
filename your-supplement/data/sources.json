@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "purpose": "의약품·건강기능식품의 성분/효능/부작용/상호작용을 확인하는 공인 공식 출처 카탈로그. 추천 결과의 근거(citation) 연결 및 '근거 보기' 링크에 사용.",
+    "principle": "광고성 블로그·커뮤니티 대신 정부기관·공인기관 1차 출처만 사용한다.",
+    "evidence_tier": {
+      "3": "정부 규제기관 공식 DB (식약처, NIH ODS, NLM 등) — 최우선",
+      "2": "공인 비영리기관 (약학정보원 등)",
+      "quality_test": "민간 독립 검사기관 — 효능 근거가 아닌 '제품 품질·함량·오염' 검증용"
+    },
+    "search_routing": {
+      "처방약·약국 일반약": ["kpic", "mfds_nedrug"],
+      "국내 영양제 허가여부·부작용": ["mfds_foodsafety"],
+      "해외 직구 영양제 효능·과다복용": ["nih_ods", "medlineplus"],
+      "영양제 실제 함량·오염 검증": ["consumerlab", "labdoor"]
+    }
+  },
+  "sources": [
+    {
+      "id": "mfds_nedrug",
+      "name": "의약품안전나라",
+      "org": "식품의약품안전처(MFDS)",
+      "region": "KR",
+      "scope": "domestic_drug",
+      "evidence_tier": 3,
+      "url": "https://nedrug.mfds.go.kr",
+      "covers": ["성분명", "효능·효과", "용법·용량", "부작용", "임부 금기"],
+      "highlight": "'e약은요' 메뉴 — 소비자가 이해하기 쉬운 요약본 제공",
+      "use_for": "국내 정식 허가 전문/일반 의약품 표준 정보"
+    },
+    {
+      "id": "mfds_foodsafety",
+      "name": "식품안전나라",
+      "org": "식품의약품안전처(MFDS)",
+      "region": "KR",
+      "scope": "domestic_health_functional_food",
+      "evidence_tier": 3,
+      "url": "https://www.foodsafetykorea.go.kr",
+      "covers": ["기능성 성분 효능 범위", "하루 권장 섭취량", "섭취 시 주의사항"],
+      "highlight": "제품이 식약처 인증 '건강기능식품'인지 단순 '기타가공품'인지 구별 가능",
+      "use_for": "국내 영양제 허가 여부·기능성·부작용 확인"
+    },
+    {
+      "id": "kpic",
+      "name": "약학정보원 (KPIC)",
+      "org": "대한약사회",
+      "region": "KR",
+      "scope": "drug_identification_interaction",
+      "evidence_tier": 2,
+      "url": "https://www.health.kr",
+      "covers": ["의약품 식별(모양·색상·기호)", "성분별 약리작용", "복약지도서", "의약품 상호작용"],
+      "highlight": "약 모양/각인으로 검색 최적 · 같이 먹으면 안 되는 약 정보 체계적",
+      "use_for": "처방약 식별 + 약-약 상호작용 확인"
+    },
+    {
+      "id": "nih_ods",
+      "name": "NIH Office of Dietary Supplements (ODS)",
+      "org": "미국 국립보건원(NIH)",
+      "region": "US",
+      "scope": "dietary_supplement",
+      "evidence_tier": 3,
+      "url": "https://ods.od.nih.gov",
+      "covers": ["성분별 근거등급", "임상 효과", "상한섭취량(UL)·독성 기준"],
+      "highlight": "Consumer(소비자용)/Health Professional(전문가용) 이원화 · 세계 최고 권위",
+      "use_for": "해외 직구 영양제 성분의 객관적 효능·과다복용 기준"
+    },
+    {
+      "id": "medlineplus",
+      "name": "MedlinePlus",
+      "org": "미국 국립의학도서관(NLM)",
+      "region": "US",
+      "scope": "drug_and_supplement",
+      "evidence_tier": 3,
+      "url": "https://medlineplus.gov",
+      "covers": ["효능", "작용 범위", "약·음식 상호작용 위험"],
+      "highlight": "'Drugs & Supplements' 메뉴 · A-Z 색인으로 대중이 쉽게 검색",
+      "use_for": "약물·영양제 통합 정보 + 상호작용 위험 확인"
+    },
+    {
+      "id": "consumerlab",
+      "name": "ConsumerLab",
+      "org": "민간 독립 검사기관 (미국)",
+      "region": "US",
+      "scope": "supplement_quality_testing",
+      "evidence_tier": "quality_test",
+      "url": "https://www.consumerlab.com",
+      "covers": ["라벨 함량 실측", "중금속 오염 검사", "제품 순위"],
+      "highlight": "일부 상세 리포트 유료 · 순위/핵심 경고는 확인 가능",
+      "use_for": "영양제 실제 함량·품질 검증 (효능 근거 아님)"
+    },
+    {
+      "id": "labdoor",
+      "name": "Labdoor",
+      "org": "민간 독립 검사기관 (미국)",
+      "region": "US",
+      "scope": "supplement_quality_testing",
+      "evidence_tier": "quality_test",
+      "url": "https://labdoor.com",
+      "covers": ["성분 함량 실측", "오염도", "제품 점수·순위"],
+      "highlight": "직구족 사이에서 품질 지표로 통용",
+      "use_for": "영양제 실제 함량·품질 검증 (효능 근거 아님)"
+    }
+  ]
+}
