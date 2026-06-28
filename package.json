@@ -9,5 +9,9 @@
     "convert-webp": "node scripts/convert-to-webp.js",
     "build": "node scripts/convert-to-webp.js"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@jsquash/jpeg": "^1.6.0",
+    "@jsquash/webp": "^1.5.0",
+    "wasm-feature-detect": "^1.8.0"
+  }
 }
