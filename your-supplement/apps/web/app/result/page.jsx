@@ -11,11 +11,11 @@ async function fetchRecommendation(user) {
   // 데모: 정적 결과 반환
   return {
     recommended: [
-      { ingredient_id: 'vitamin_d',      name: '비타민D',         evidence_level: 3, score: 1.3,  duration_type: 'monitor',    functions: ['칼슘 흡수·뼈 형성에 필요', '면역 기능 유지'], warnings: [], best_price: { price: 12900, vendor: '네이버쇼핑', price_per_mg: 0.11 } },
-      { ingredient_id: 'vitamin_b_complex', name: '비타민B군',    evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['에너지 대사에 필요', '정상적 신경 기능'], warnings: [], best_price: { price: 18900, vendor: '쿠팡', price_per_mg: 0.19 } },
-      { ingredient_id: 'lutein',          name: '루테인',          evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['노화로 인한 눈 건강 유지에 도움'], warnings: [], best_price: { price: 15900, vendor: '아이허브', price_per_mg: 1.06 } },
-      { ingredient_id: 'magnesium',       name: '마그네슘',        evidence_level: 3, score: 0.7,  duration_type: 'continuous', functions: ['에너지 생성', '신경·근육 기능 유지'], warnings: [], best_price: { price: 14900, vendor: '네이버쇼핑', price_per_mg: 0.25 } },
-      { ingredient_id: 'omega3',          name: '오메가3',         evidence_level: 3, score: 0.51, duration_type: 'continuous', functions: ['혈중 중성지방 개선', '혈행 개선'], warnings: ['와파린 복용 중이면 의사·약사 상담 후 결정하세요.'], best_price: { price: 21900, vendor: '쿠팡', price_per_mg: 0.24 } },
+      { ingredient_id: 'vitamin_d',      name: '비타민D',         evidence_level: 3, score: 1.3,  duration_type: 'monitor',    functions: ['칼슘 흡수·뼈 형성에 필요', '면역 기능 유지'], warnings: [], best_price: { price: 12900, count: 90, per_day: 143, vendor: '네이버', product: '뉴트리원 비타민D 2000IU 90정' } },
+      { ingredient_id: 'vitamin_b_complex', name: '비타민B군',    evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['에너지 대사에 필요', '정상적 신경 기능'], warnings: [], best_price: { price: 18900, count: 60, per_day: 315, vendor: '쿠팡', product: '고려은단 비타민B 컴플렉스 60정' } },
+      { ingredient_id: 'lutein',          name: '루테인',          evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['노화로 인한 눈 건강 유지에 도움'], warnings: [], best_price: { price: 15900, count: 90, per_day: 177, vendor: '아이허브', product: 'NOW 루테인 10mg 90정' } },
+      { ingredient_id: 'magnesium',       name: '마그네슘',        evidence_level: 3, score: 0.7,  duration_type: 'continuous', functions: ['에너지 생성', '신경·근육 기능 유지'], warnings: [], best_price: { price: 14900, count: 120, per_day: 124, vendor: '네이버', product: '솔가 마그네슘 글리시네이트 120정' } },
+      { ingredient_id: 'omega3',          name: '오메가3',         evidence_level: 3, score: 0.51, duration_type: 'continuous', functions: ['혈중 중성지방 개선', '혈행 개선'], warnings: ['와파린 복용 중이면 의사·약사 상담 후 결정하세요.'], best_price: { price: 21900, count: 90, per_day: 243, vendor: '쿠팡', product: '닥터스베스트 알티지 오메가3 90정' } },
     ],
     not_recommended: [
       { name: '홍국', reason: '스타틴 복용 중 병용 금지' },
@@ -218,19 +218,26 @@ export default function ResultPage() {
                     </div>
                   )}
 
-                  {/* Best price */}
+                  {/* Best price — 하루당 가격으로 직관화 */}
                   {r.best_price && (
-                    <div style={{ background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '6px 12px', display: 'inline-flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
-                        최저 ₩{r.best_price.price.toLocaleString()}
-                      </span>
-                      <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>mg당 ₩{r.best_price.price_per_mg}</span>
+                    <div style={{ background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '10px 14px', marginTop: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>
+                          하루 약 {r.best_price.per_day.toLocaleString()}원
+                        </span>
+                        <span style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
+                          꼴 (₩{r.best_price.price.toLocaleString()} / {r.best_price.count}일분)
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 4 }}>
+                        📦 {r.best_price.product} · <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{r.best_price.vendor} 최저가</span>
+                      </p>
                     </div>
                   )}
 
-                  {/* 구매처 — 실제 클릭되는 링크 (새 탭) */}
+                  {/* 구매처 비교 — 실제 클릭되는 링크 (새 탭) */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginRight: 2 }}>구매처:</span>
+                    <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginRight: 2 }}>가격 비교:</span>
                     {buyLinks(r.name).map((b) => (
                       <a key={b.vendor} href={b.url} target="_blank" rel="noopener noreferrer"
                         style={{
