@@ -2352,7 +2352,7 @@ async function apGeneratePreview(saveFlag) {
     document.getElementById('ap-prev-seo-title').textContent = post.seoTitle;
     document.getElementById('ap-prev-meta').textContent = post.metaDesc;
     document.getElementById('ap-prev-keywords').textContent = post.keywords;
-    document.getElementById('ap-prev-body').innerHTML = post.html;
+    document.getElementById('ap-prev-body').innerHTML = imgToWebp(post.html);
 
     // 이미지 생성 상태 표시 (실패 시 사유를 그대로 노출 → 원인 진단)
     if (post.imageStatus && post.imageStatus !== 'ok') {
