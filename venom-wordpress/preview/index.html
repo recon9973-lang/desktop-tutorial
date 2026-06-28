@@ -662,6 +662,7 @@ body{padding-top:0}
         <li><a href="javascript:void(0)" onclick="sp('services')">온라인마케팅</a></li>
         <li><a href="javascript:void(0)" onclick="sp('blog')">블로그</a></li>
         <li><a href="javascript:void(0)" onclick="sp('hospital')">홈페이지 제작</a></li>
+        <li><a href="javascript:void(0)" onclick="sp('diagnose')">무료진단 <span class="nav-new">FREE</span></a></li>
       </ul></nav>
     </div>
     <div class="header-actions">
@@ -723,10 +724,13 @@ body{padding-top:0}
     <div class="mob-nav-group">
       <a href="javascript:void(0)" onclick="sp('hospital');closeMobMenu()" class="mob-nav-item">홈페이지 제작</a>
     </div>
+    <div class="mob-nav-group">
+      <a href="javascript:void(0)" onclick="sp('diagnose');closeMobMenu()" class="mob-nav-item">무료진단 <span class="nav-new">FREE</span></a>
+    </div>
   </nav>
   <div class="mob-menu-footer">
     <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p" style="width:100%;justify-content:center;padding:14px">💬 카카오 상담신청</a>
-    <a href="javascript:void(0)" onclick="sp('seo');closeMobMenu()" class="mob-cta-ghost">📊 SEO 점수 체크 →</a>
+    <a href="javascript:void(0)" onclick="sp('diagnose');switchTool('seo');closeMobMenu()" class="mob-cta-ghost">📊 SEO 점수 체크 →</a>
   </div>
 </div>
 
@@ -807,6 +811,42 @@ body{padding-top:0}
     </div>
   </section>
 
+  <!-- 🆕 메인 진입: 진료과 선택 → 종합 진단 센터 -->
+  <section class="home-diag-entry">
+    <style>
+      .home-diag-entry{background:linear-gradient(135deg,#eef2ff,#f5f7ff);padding:44px 0;border-bottom:1px solid var(--border)}
+      .hde-wrap{max-width:780px;margin:0 auto;text-align:center;padding:0 20px}
+      .hde-badge{display:inline-block;font-size:12px;font-weight:700;color:var(--p);background:rgba(0,55,112,.08);padding:5px 14px;border-radius:9999px;margin-bottom:14px}
+      .hde-wrap h2{font-size:30px;font-weight:300;letter-spacing:-.6px;color:var(--ink);margin-bottom:8px}
+      .hde-wrap h2 em{font-style:normal;color:var(--p);font-weight:600}
+      .hde-wrap > p{font-size:14px;color:var(--mute);margin-bottom:22px;line-height:1.6}
+      .hde-form{display:flex;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:12px;box-shadow:rgba(0,55,112,.08) 0 6px 24px;flex-wrap:wrap;align-items:center}
+      .hde-form select,.hde-form input{flex:1;min-width:150px;padding:13px 15px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--soft);outline:none}
+      .hde-form select:focus,.hde-form input:focus{border-color:var(--p)}
+      .hde-btn{flex:0 0 auto;padding:13px 26px;background:var(--p);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+      .hde-btn:hover{opacity:.92}
+      .hde-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:16px}
+      .hde-tag{font-size:11px;font-weight:600;color:var(--p);background:rgba(0,55,112,.06);padding:4px 11px;border-radius:9999px}
+      @media(max-width:600px){.hde-wrap h2{font-size:23px}.hde-btn{width:100%}}
+    </style>
+    <div class="hde-wrap">
+      <div class="hde-badge">1분 무료 자가진단</div>
+      <h2>우리 병원, <em>AI·검색</em>에서 몇 점일까요?</h2>
+      <p>진료과를 선택하면 <strong>13개 항목 자가진단</strong>과 <strong>6가지 검색 진단 도구</strong>를 한 곳에서 바로 사용할 수 있습니다.</p>
+      <div class="hde-form">
+        <select id="hde-cat" onchange="goDiagnose()" aria-label="진료과 선택">
+          <option value="">진료과 선택</option>
+          <option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>내과</option><option>안과</option><option>기타</option>
+        </select>
+        <input id="hde-region" placeholder="지역 (예: 대전 유성구)" onkeydown="if(event.key==='Enter')goDiagnose()">
+        <button class="hde-btn" onclick="goDiagnose()">무료 진단 시작 →</button>
+      </div>
+      <div class="hde-tags">
+        <span class="hde-tag">네이버 플레이스</span><span class="hde-tag">GEO/AEO</span><span class="hde-tag">SEO 점수</span><span class="hde-tag">키워드 검색량</span><span class="hde-tag">검색 트렌드</span><span class="hde-tag">AI 추천 노출</span>
+      </div>
+    </div>
+  </section>
+
   <!-- 레퍼런스 로고 롤링 배너 -->
   <div class="logo-marquee-section" id="logo-marquee-section">
     <div class="logo-marquee-inner">
@@ -839,274 +879,6 @@ body{padding-top:0}
     </div>
   </div>
 
-  <!-- 🆕 병원 마케팅 자가진단 위젯 -->
-  <section class="section vd-section">
-    <style>
-      .vd-section{background:var(--soft)}
-      .vd-head{text-align:center;max-width:640px;margin:0 auto 24px}
-      .vd-head h2{font-size:34px;font-weight:300;letter-spacing:-.8px;color:var(--ink);margin-bottom:12px}
-      .vd-head h2 em{font-style:normal;color:var(--p)}
-      .vd-head p{font-size:15px;color:var(--mute);line-height:1.6}
-      /* 트리거 버튼 */
-      .vd-launcher{display:flex;align-items:center;gap:16px;max-width:760px;margin:0 auto;width:100%;background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:18px 22px;cursor:pointer;font-family:inherit;text-align:left;box-shadow:rgba(0,55,112,.06) 0 4px 20px;transition:border-color .2s,box-shadow .2s}
-      .vd-launcher:hover{border-color:var(--p);box-shadow:rgba(0,55,112,.12) 0 6px 28px}
-      .vd-launcher.open{border-color:var(--p);border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-color:transparent;box-shadow:rgba(0,55,112,.08) 0 -4px 16px}
-      .vd-launcher-score{flex-shrink:0;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--bd));display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;line-height:1;letter-spacing:-.5px}
-      .vd-launcher-score sub{font-size:9px;font-weight:400;opacity:.8;line-height:1}
-      .vd-launcher-txt{flex:1;min-width:0}
-      .vd-launcher-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px}
-      .vd-launcher-sub{font-size:12px;color:var(--mute)}
-      .vd-launcher-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-      .vd-launcher-tag{font-size:11px;font-weight:600;color:var(--p);background:rgba(0,55,112,.07);padding:2px 8px;border-radius:9999px}
-      .vd-launcher-arrow{flex-shrink:0;font-size:18px;color:var(--mute);transition:transform .3s}
-      .vd-launcher.open .vd-launcher-arrow{transform:rotate(180deg);color:var(--p)}
-      /* 접힘/펼침 본체 */
-      .vd-body{max-width:760px;margin:0 auto;max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
-      .vd-body.open{max-height:4000px}
-      .vd-card{background:#fff;border:1.5px solid var(--p);border-top:none;border-radius:0 0 16px 16px;padding:28px 26px;box-shadow:rgba(0,55,112,.07) 0 12px 32px}
-      .vd-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-      .vd-input{flex:1;min-width:140px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--soft);outline:none}
-      .vd-input:focus{border-color:var(--p)}
-      .vd-area-label{font-size:12px;font-weight:700;color:var(--p);letter-spacing:.02em;margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--soft)}
-      .vd-area-label:first-of-type{border-top:none;padding-top:0}
-      .vd-q{padding:10px 0}
-      .vd-q-text{font-size:14px;font-weight:500;color:var(--ink2);line-height:1.5}
-      .vd-opts{display:flex;gap:8px;margin-top:10px}
-      .vd-opt{flex:1;padding:9px 0;border:1px solid var(--border);background:#fff;border-radius:8px;font-size:13px;font-weight:600;color:var(--mute);cursor:pointer;transition:.15s}
-      .vd-opt:hover{border-color:var(--p);color:var(--p)}
-      .vd-opt.sel{background:var(--p);border-color:var(--p);color:#fff}
-      .vd-submit,.vd-restart{width:100%;margin-top:22px;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
-      .vd-submit{background:var(--p);color:#fff}
-      .vd-submit:hover{opacity:.92}
-      .vd-restart{background:var(--soft);color:var(--ink2);border:1px solid var(--border)}
-      .vd-note{font-size:11px;color:var(--mute);margin-top:14px;line-height:1.6;text-align:center}
-      .vd-result{text-align:center}
-      .vd-result-head{font-size:14px;color:var(--mute);margin-bottom:6px}
-      .vd-score{font-size:64px;font-weight:700;line-height:1}
-      .vd-score span{font-size:22px;color:var(--mute);font-weight:400}
-      .vd-grade{display:inline-block;color:#fff;font-size:14px;font-weight:700;padding:5px 18px;border-radius:9999px;margin:14px 0 8px}
-      .vd-grade-desc{font-size:14px;color:var(--ink2);line-height:1.6;max-width:520px;margin:0 auto 24px}
-      .vd-bars{text-align:left;margin:0 auto 22px;max-width:560px}
-      .vd-bar-row{margin-bottom:14px}
-      .vd-bar-top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
-      .vd-bar{height:8px;background:var(--soft);border-radius:9999px;overflow:hidden}
-      .vd-bar-fill{height:100%;border-radius:9999px;transition:width .5s ease}
-      .vd-cta-box{background:linear-gradient(135deg,var(--p),var(--bd));border-radius:14px;padding:26px 22px;margin:8px 0 16px}
-      .vd-cta-t{color:#fff;font-size:18px;font-weight:700;margin-bottom:8px}
-      .vd-cta-d{color:rgba(255,255,255,.85);font-size:13px;line-height:1.6;margin-bottom:16px}
-      @media(max-width:600px){.vd-head h2{font-size:26px}.vd-score{font-size:52px}.vd-card{padding:22px 16px}.vd-launcher{padding:14px 16px;gap:12px}.vd-launcher-score{width:48px;height:48px;font-size:17px}.vd-launcher-tags{display:none}}
-    </style>
-    <div class="container">
-      <div class="vd-head">
-        <div class="section-badge">1분 자가진단</div>
-        <h2>우리 병원, <em>AI·검색</em>에서 몇 점일까요?</h2>
-        <p>진료과·지역과 13개 항목으로 GEO/SEO 준비도를 점수로 확인하세요. 점수는 실제 노출·전환 요인 기준으로 산정됩니다.</p>
-      </div>
-      <!-- 트리거(기본 닫힘) -->
-      <button class="vd-launcher" id="vd-launcher" onclick="vdToggle()" type="button" aria-expanded="false" aria-controls="vd-body">
-        <div class="vd-launcher-score">??<sub>/100</sub></div>
-        <div class="vd-launcher-txt">
-          <div class="vd-launcher-title">지금 내 병원 점수 확인하기</div>
-          <div class="vd-launcher-sub">1분 · 13개 항목 · 무료</div>
-          <div class="vd-launcher-tags">
-            <span class="vd-launcher-tag">네이버 플레이스</span>
-            <span class="vd-launcher-tag">GEO/AEO</span>
-            <span class="vd-launcher-tag">SEO</span>
-            <span class="vd-launcher-tag">E-E-A-T</span>
-            <span class="vd-launcher-tag">전환 동선</span>
-          </div>
-        </div>
-        <div class="vd-launcher-arrow">▼</div>
-      </button>
-      <!-- 접힘 본체 -->
-      <div class="vd-body" id="vd-body" role="region">
-        <div class="vd-card" id="vd-card"></div>
-      </div>
-    </div>
-    <script>
-    (function(){
-      var VD_AREAS=[
-        {k:'local',n:'네이버 플레이스·로컬',max:25},
-        {k:'geo',n:'GEO/AEO · AI검색',max:25},
-        {k:'seo',n:'SEO·콘텐츠',max:20},
-        {k:'trust',n:'신뢰·전문성(E-E-A-T)',max:15},
-        {k:'conv',n:'상담 전환 동선',max:15}
-      ];
-      var VD_Q=[
-        {a:'local',t:'네이버 플레이스에 진료시간·전화·길찾기·주차 정보가 모두 채워져 있다',p:10},
-        {a:'local',t:'병원·장비·시술 사진이 10장 이상 등록돼 있다',p:8},
-        {a:'local',t:'최근 1개월 내 리뷰 응대나 소식(블로그)이 업데이트됐다',p:7},
-        {a:'geo',t:'홈페이지/블로그에 FAQ(질문–답변) 구조가 있다',p:8},
-        {a:'geo',t:'병원 정보에 구조화 데이터(Schema.org)가 적용돼 있다',p:9},
-        {a:'geo',t:'ChatGPT·Perplexity에 "지역+진료과 잘하는 병원" 물으면 우리 병원이 나온다',p:8},
-        {a:'seo',t:'핵심 진료 키워드로 네이버/구글 검색 시 1페이지에 노출된다',p:8},
-        {a:'seo',t:'블로그·콘텐츠를 월 4편 이상 꾸준히 발행한다',p:6},
-        {a:'seo',t:'홈페이지가 모바일에서 3초 이내로 빠르게 열린다',p:6},
-        {a:'trust',t:'원장 약력·전문의 자격·경력이 명확히 노출돼 있다',p:8},
-        {a:'trust',t:'실제 진료 후기·사례가 (의료광고법 범위에서) 정리돼 있다',p:7},
-        {a:'conv',t:'상담·예약이 1~2클릭에 연결된다(카카오·전화·예약)',p:8},
-        {a:'conv',t:'유입 후 상담 전환을 측정·관리하고 있다',p:7}
-      ];
-      var VD_OPTS=[{l:'예',v:1},{l:'부분',v:0.5},{l:'아니오',v:0}];
-      var ans={};
-      function gEl(id){return document.getElementById(id);}
-      function areaName(k){for(var i=0;i<VD_AREAS.length;i++)if(VD_AREAS[i].k===k)return VD_AREAS[i].n;return k;}
-      function renderForm(){
-        var card=gEl('vd-card'); if(!card)return;
-        var h='<div class="vd-row">'
-          +'<select id="vd-cat" class="vd-input"><option value="">진료과 선택</option>'
-          +['치과','피부과','정형외과','한의원','성형외과','내과','안과','기타'].map(function(c){return '<option>'+c+'</option>';}).join('')
-          +'</select><input id="vd-region" class="vd-input" placeholder="지역 (예: 대전 유성구)"></div>';
-        var cur='';
-        VD_Q.forEach(function(q,i){
-          if(q.a!==cur){cur=q.a;h+='<div class="vd-area-label">'+areaName(q.a)+'</div>';}
-          h+='<div class="vd-q"><div class="vd-q-text">'+(i+1)+'. '+q.t+'</div><div class="vd-opts">'
-            +VD_OPTS.map(function(o){return '<button type="button" class="vd-opt" data-q="'+i+'" data-v="'+o.v+'">'+o.l+'</button>';}).join('')
-            +'</div></div>';
-        });
-        h+='<button type="button" class="vd-submit" id="vd-submit">결과 보기</button>'
-          +'<div class="vd-note">※ 자가점검 기반 추정 지표입니다. 정밀 진단은 베놈이 실제 데이터로 무료 제공합니다.</div>';
-        card.innerHTML=h;
-        Array.prototype.forEach.call(card.querySelectorAll('.vd-opt'),function(b){
-          b.addEventListener('click',function(){
-            var qi=b.getAttribute('data-q'); ans[qi]=parseFloat(b.getAttribute('data-v'));
-            Array.prototype.forEach.call(card.querySelectorAll('.vd-opt[data-q="'+qi+'"]'),function(x){x.classList.remove('sel');});
-            b.classList.add('sel');
-          });
-        });
-        gEl('vd-submit').addEventListener('click',compute);
-      }
-      function compute(){
-        if(Object.keys(ans).length<VD_Q.length){alert('모든 항목을 선택해 주세요. ('+Object.keys(ans).length+'/'+VD_Q.length+')');return;}
-        var as={},am={}; VD_AREAS.forEach(function(a){as[a.k]=0;am[a.k]=a.max;});
-        VD_Q.forEach(function(q,i){as[q.a]+=q.p*(ans[i]||0);});
-        var total=0; VD_AREAS.forEach(function(a){total+=as[a.k];}); total=Math.round(total);
-        renderResult(total,as,am);
-      }
-      function gradeOf(t){
-        if(t>=80)return{g:'우수',c:'#16a34a',d:'AI·지역검색 선점 단계입니다. 유지·고도화로 경쟁 병원과 격차를 벌리세요.'};
-        if(t>=60)return{g:'양호',c:'#2563eb',d:'기반은 갖췄습니다. 몇 가지만 보완하면 상위권 진입이 가능합니다.'};
-        if(t>=40)return{g:'주의',c:'#f59e0b',d:'핵심 요소가 빠져 있습니다. 경쟁 병원에 노출을 내주고 있을 가능성이 높습니다.'};
-        return{g:'위험',c:'#dc2626',d:'AI·지역검색에서 사실상 보이지 않는 상태입니다. 시급한 정비가 필요합니다.'};
-      }
-      function renderResult(total,as,am){
-        var card=gEl('vd-card'); var gr=gradeOf(total);
-        var cat=gEl('vd-cat')?gEl('vd-cat').value:''; var region=gEl('vd-region')?gEl('vd-region').value.trim():'';
-        var head=(region?region+' ':'')+(cat?cat+' ':'')+'병원의 AI·검색 준비도';
-        var h='<div class="vd-result"><div class="vd-result-head">'+head+'</div>'
-          +'<div class="vd-score" style="color:'+gr.c+'">'+total+'<span>/100</span></div>'
-          +'<div class="vd-grade" style="background:'+gr.c+'">'+gr.g+'</div>'
-          +'<div class="vd-grade-desc">'+gr.d+'</div><div class="vd-bars">';
-        VD_AREAS.forEach(function(a){
-          var s=Math.round(as[a.k]),m=am[a.k],r=m?s/m:0;
-          var tag=r>=0.8?'강점':(r>=0.5?'보통':'취약');
-          var tc=r>=0.8?'#16a34a':(r>=0.5?'#f59e0b':'#dc2626');
-          h+='<div class="vd-bar-row"><div class="vd-bar-top"><span>'+a.n+'</span><span style="color:'+tc+'">'+tag+' '+s+'/'+m+'</span></div>'
-            +'<div class="vd-bar"><div class="vd-bar-fill" style="width:'+Math.round(r*100)+'%;background:'+tc+'"></div></div></div>';
-        });
-        h+='</div><div class="vd-cta-box"><div class="vd-cta-t">정밀 진단 리포트, 베놈이 무료로 보내드립니다</div>'
-          +'<div class="vd-cta-d">실제 노출 데이터·경쟁 분석까지 포함한 맞춤 진단을 받아보세요.</div>'
-          +'<a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 무료 정밀진단 신청</a></div>'
-          +'<button type="button" class="vd-restart" id="vd-restart">다시 진단하기</button>'
-          +'<div class="vd-note">※ 점수는 네이버 플레이스 완성도, Schema·FAQ 구조화, Google E-E-A-T, Core Web Vitals(속도), 전환 동선 등 검증된 노출·전환 요인을 기준으로 산정한 자가점검 추정 지표입니다.</div></div>';
-        card.innerHTML=h;
-        // 트리거 버튼 점수 업데이트
-        var sc=gEl('vd-launcher'); if(sc){var s=sc.querySelector('.vd-launcher-score');if(s)s.innerHTML=total+'<sub>/100</sub>';}
-        gEl('vd-restart').addEventListener('click',function(){ans={};renderForm();});
-      }
-      window.vdToggle=function(){
-        var body=gEl('vd-body'),launcher=gEl('vd-launcher');
-        if(!body||!launcher)return;
-        var opening=!body.classList.contains('open');
-        body.classList.toggle('open',opening);
-        launcher.classList.toggle('open',opening);
-        launcher.setAttribute('aria-expanded',String(opening));
-        if(opening){setTimeout(function(){body.scrollIntoView({behavior:'smooth',block:'nearest'});},50);}
-      };
-      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderForm);else renderForm();
-    })();
-    </script>
-  </section>
-
-  <!-- 무료 진단 도구 섹션 -->
-  <section class="tool-section">
-    <div class="container">
-      <div class="tool-head">
-        <div class="section-badge">무료 진단 도구</div>
-        <h2>지금 바로 점수를 확인하세요</h2>
-        <p>SEO·GEO 엔티티·키워드 검색량을 무료로 진단합니다</p>
-      </div>
-      <div class="tool-tabs">
-        <button class="tool-tab active" onclick="switchTool('seo')">🔍 SEO 점수 체크</button>
-        <button class="tool-tab" onclick="switchTool('geo')">🤖 GEO 점수 체크</button>
-        <button class="tool-tab" onclick="switchTool('kw')">📊 키워드 검색량 체크</button>
-        <button class="tool-tab" onclick="switchTool('trend')">📈 검색 트렌드</button>
-        <button class="tool-tab" onclick="switchTool('aeo')">🤖 AI 추천 확인</button>
-        <button class="tool-tab" onclick="switchTool('expose')">🔎 노출·경쟁 진단</button>
-      </div>
-
-      <!-- SEO 점수 체크 -->
-      <div id="tool-seo" class="tool-panel active">
-        <div class="tool-input-wrap">
-          <input type="url" id="seo-url" class="tool-input" placeholder="https://병원홈페이지.com" oninput="toolReady('seo')">
-          <button class="tool-btn" onclick="runSEO()">분석하기</button>
-        </div>
-        <p class="tool-hint">도메인을 입력하면 SEO 100점 기준으로 진단합니다</p>
-        <div id="seo-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- GEO 엔티티 점수 -->
-      <div id="tool-geo" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="url" id="geo-url" class="tool-input" placeholder="병원 홈페이지 URL 입력 (예: https://venomad.co.kr)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
-          <button class="tool-btn" onclick="runGEO()">분석하기</button>
-        </div>
-        <p class="tool-hint">ChatGPT·Perplexity·Google AI에서 귀 병원 사이트의 GEO 최적화 신호를 진단합니다</p>
-        <div id="geo-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 네이버 키워드 검색량 -->
-      <div id="tool-kw" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="text" id="kw-input" class="tool-input" placeholder="키워드 입력 (예: 강남 임플란트)" oninput="toolReady('kw')" onkeydown="if(event.key==='Enter')runKW()">
-          <button class="tool-btn" onclick="runKW()">검색량 조회</button>
-        </div>
-        <p class="tool-hint">월간 검색량·경쟁도·예상 광고비를 분석합니다</p>
-        <div id="kw-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 📈 검색 트렌드 (네이버 데이터랩) -->
-      <div id="tool-trend" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="text" id="trend-input" class="tool-input" placeholder="키워드 입력 (쉼표로 최대 3개 비교: 임플란트, 교정, 라미네이트)" onkeydown="if(event.key==='Enter')runTrend()">
-          <button class="tool-btn" onclick="runTrend()">트렌드 보기</button>
-        </div>
-        <p class="tool-hint">최근 1년간 네이버 검색 트렌드를 비교합니다 (데이터랩 기준 상대지수)</p>
-        <div id="trend-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 🤖 AI 추천 확인 (Perplexity 웹검색) -->
-      <div id="tool-aeo" class="tool-panel">
-        <div class="tool-input-wrap" style="flex-wrap:wrap;gap:8px">
-          <input type="text" id="aeo-q" class="tool-input" placeholder="AI에게 물어볼 질문 (예: 대전 유성구 임플란트 잘하는 치과 추천)">
-          <input type="text" id="aeo-name" class="tool-input" placeholder="우리 병원명 (언급 여부 확인)">
-          <button class="tool-btn" onclick="runAeo()">AI에게 물어보기</button>
-        </div>
-        <p class="tool-hint">실제 AI 검색엔진에 질문해, 답변에 우리 병원이 언급되는지 확인합니다 (GEO/AEO 가시성)</p>
-        <div id="aeo-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 🔎 노출·경쟁 진단 (네이버 검색) -->
-      <div id="tool-expose" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="text" id="expose-q" class="tool-input" placeholder="키워드 입력 (예: 대전 임플란트)" onkeydown="if(event.key==='Enter')runExpose()">
-          <button class="tool-btn" onclick="runExpose()">진단하기</button>
-        </div>
-        <p class="tool-hint">해당 키워드의 블로그·웹 콘텐츠 경쟁량과 최근 발행 추이를 진단합니다</p>
-        <div id="expose-result" class="tool-result" style="display:none"></div>
-      </div>
-    </div>
-  </section>
 
   <section class="section">
     <div class="container">
@@ -1541,6 +1313,312 @@ body{padding-top:0}
       </div>
     </div>
   </footer>
+</div>
+
+
+<!-- PAGE: 종합 진단 센터 -->
+<div id="pg-diagnose" class="page">
+  <section class="diag-hub">
+    <style>
+      .diag-hub{background:var(--soft);padding:48px 0 8px}
+      .diag-hub-head{max-width:820px;margin:0 auto 8px;text-align:center;padding:0 20px}
+      .diag-hub-head h2{font-size:32px;font-weight:300;letter-spacing:-.6px;color:var(--ink);margin:10px 0 8px}
+      .diag-hub-head h2 em{font-style:normal;color:var(--p);font-weight:600}
+      .diag-hub-head > p{font-size:14px;color:var(--mute);line-height:1.6}
+      .diag-context{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-top:16px}
+      .diag-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--border);padding:7px 14px;border-radius:9999px}
+      .diag-chip b{color:var(--p)}
+      .diag-change{font-size:12px;font-weight:600;color:var(--mute);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit}
+      .diag-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:820px;margin:22px auto 0;padding:0 20px}
+      .diag-nav button{font-size:13px;font-weight:600;color:var(--ink2);background:#fff;border:1px solid var(--border);padding:9px 16px;border-radius:9999px;cursor:pointer;font-family:inherit;transition:.15s}
+      .diag-nav button:hover{border-color:var(--p);color:var(--p)}
+      @media(max-width:600px){.diag-hub-head h2{font-size:24px}.diag-hub{padding:32px 0 4px}}
+    </style>
+    <div class="diag-hub-head">
+      <div class="section-badge">종합 진단 센터</div>
+      <h2><span id="diag-cat-label">우리 병원</span> <em>AI·검색</em> 종합 진단</h2>
+      <p>13개 항목 자가진단과 6가지 실시간 검색 진단을 한 페이지에서. 선택한 진료과·지역이 그대로 유지됩니다.</p>
+      <div class="diag-context" id="diag-context"></div>
+      <div class="diag-nav">
+        <button onclick="diagJump('vd')">📋 13항목 자가진단</button>
+        <button onclick="diagJump('seo')">🔍 SEO 점수</button>
+        <button onclick="diagJump('geo')">🤖 GEO 점수</button>
+        <button onclick="diagJump('kw')">📊 키워드 검색량</button>
+        <button onclick="diagJump('trend')">📈 검색 트렌드</button>
+        <button onclick="diagJump('aeo')">🤖 AI 추천</button>
+        <button onclick="diagJump('expose')">🔎 노출·경쟁</button>
+      </div>
+    </div>
+  </section>
+  <!-- 🆕 병원 마케팅 자가진단 위젯 -->
+  <section class="section vd-section">
+    <style>
+      .vd-section{background:var(--soft)}
+      .vd-head{text-align:center;max-width:640px;margin:0 auto 24px}
+      .vd-head h2{font-size:34px;font-weight:300;letter-spacing:-.8px;color:var(--ink);margin-bottom:12px}
+      .vd-head h2 em{font-style:normal;color:var(--p)}
+      .vd-head p{font-size:15px;color:var(--mute);line-height:1.6}
+      /* 트리거 버튼 */
+      .vd-launcher{display:flex;align-items:center;gap:16px;max-width:760px;margin:0 auto;width:100%;background:#fff;border:1.5px solid var(--border);border-radius:16px;padding:18px 22px;cursor:pointer;font-family:inherit;text-align:left;box-shadow:rgba(0,55,112,.06) 0 4px 20px;transition:border-color .2s,box-shadow .2s}
+      .vd-launcher:hover{border-color:var(--p);box-shadow:rgba(0,55,112,.12) 0 6px 28px}
+      .vd-launcher.open{border-color:var(--p);border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-color:transparent;box-shadow:rgba(0,55,112,.08) 0 -4px 16px}
+      .vd-launcher-score{flex-shrink:0;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--bd));display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;line-height:1;letter-spacing:-.5px}
+      .vd-launcher-score sub{font-size:9px;font-weight:400;opacity:.8;line-height:1}
+      .vd-launcher-txt{flex:1;min-width:0}
+      .vd-launcher-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px}
+      .vd-launcher-sub{font-size:12px;color:var(--mute)}
+      .vd-launcher-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+      .vd-launcher-tag{font-size:11px;font-weight:600;color:var(--p);background:rgba(0,55,112,.07);padding:2px 8px;border-radius:9999px}
+      .vd-launcher-arrow{flex-shrink:0;font-size:18px;color:var(--mute);transition:transform .3s}
+      .vd-launcher.open .vd-launcher-arrow{transform:rotate(180deg);color:var(--p)}
+      /* 접힘/펼침 본체 */
+      .vd-body{max-width:760px;margin:0 auto;max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+      .vd-body.open{max-height:4000px}
+      .vd-card{background:#fff;border:1.5px solid var(--p);border-top:none;border-radius:0 0 16px 16px;padding:28px 26px;box-shadow:rgba(0,55,112,.07) 0 12px 32px}
+      .vd-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+      .vd-input{flex:1;min-width:140px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--soft);outline:none}
+      .vd-input:focus{border-color:var(--p)}
+      .vd-area-label{font-size:12px;font-weight:700;color:var(--p);letter-spacing:.02em;margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--soft)}
+      .vd-area-label:first-of-type{border-top:none;padding-top:0}
+      .vd-q{padding:10px 0}
+      .vd-q-text{font-size:14px;font-weight:500;color:var(--ink2);line-height:1.5}
+      .vd-opts{display:flex;gap:8px;margin-top:10px}
+      .vd-opt{flex:1;padding:9px 0;border:1px solid var(--border);background:#fff;border-radius:8px;font-size:13px;font-weight:600;color:var(--mute);cursor:pointer;transition:.15s}
+      .vd-opt:hover{border-color:var(--p);color:var(--p)}
+      .vd-opt.sel{background:var(--p);border-color:var(--p);color:#fff}
+      .vd-submit,.vd-restart{width:100%;margin-top:22px;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+      .vd-submit{background:var(--p);color:#fff}
+      .vd-submit:hover{opacity:.92}
+      .vd-restart{background:var(--soft);color:var(--ink2);border:1px solid var(--border)}
+      .vd-note{font-size:11px;color:var(--mute);margin-top:14px;line-height:1.6;text-align:center}
+      .vd-result{text-align:center}
+      .vd-result-head{font-size:14px;color:var(--mute);margin-bottom:6px}
+      .vd-score{font-size:64px;font-weight:700;line-height:1}
+      .vd-score span{font-size:22px;color:var(--mute);font-weight:400}
+      .vd-grade{display:inline-block;color:#fff;font-size:14px;font-weight:700;padding:5px 18px;border-radius:9999px;margin:14px 0 8px}
+      .vd-grade-desc{font-size:14px;color:var(--ink2);line-height:1.6;max-width:520px;margin:0 auto 24px}
+      .vd-bars{text-align:left;margin:0 auto 22px;max-width:560px}
+      .vd-bar-row{margin-bottom:14px}
+      .vd-bar-top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+      .vd-bar{height:8px;background:var(--soft);border-radius:9999px;overflow:hidden}
+      .vd-bar-fill{height:100%;border-radius:9999px;transition:width .5s ease}
+      .vd-cta-box{background:linear-gradient(135deg,var(--p),var(--bd));border-radius:14px;padding:26px 22px;margin:8px 0 16px}
+      .vd-cta-t{color:#fff;font-size:18px;font-weight:700;margin-bottom:8px}
+      .vd-cta-d{color:rgba(255,255,255,.85);font-size:13px;line-height:1.6;margin-bottom:16px}
+      @media(max-width:600px){.vd-head h2{font-size:26px}.vd-score{font-size:52px}.vd-card{padding:22px 16px}.vd-launcher{padding:14px 16px;gap:12px}.vd-launcher-score{width:48px;height:48px;font-size:17px}.vd-launcher-tags{display:none}}
+    </style>
+    <div class="container">
+      <div class="vd-head">
+        <div class="section-badge">1분 자가진단</div>
+        <h2>우리 병원, <em>AI·검색</em>에서 몇 점일까요?</h2>
+        <p>진료과·지역과 13개 항목으로 GEO/SEO 준비도를 점수로 확인하세요. 점수는 실제 노출·전환 요인 기준으로 산정됩니다.</p>
+      </div>
+      <!-- 트리거(기본 닫힘) -->
+      <button class="vd-launcher" id="vd-launcher" onclick="vdToggle()" type="button" aria-expanded="false" aria-controls="vd-body">
+        <div class="vd-launcher-score">??<sub>/100</sub></div>
+        <div class="vd-launcher-txt">
+          <div class="vd-launcher-title">지금 내 병원 점수 확인하기</div>
+          <div class="vd-launcher-sub">1분 · 13개 항목 · 무료</div>
+          <div class="vd-launcher-tags">
+            <span class="vd-launcher-tag">네이버 플레이스</span>
+            <span class="vd-launcher-tag">GEO/AEO</span>
+            <span class="vd-launcher-tag">SEO</span>
+            <span class="vd-launcher-tag">E-E-A-T</span>
+            <span class="vd-launcher-tag">전환 동선</span>
+          </div>
+        </div>
+        <div class="vd-launcher-arrow">▼</div>
+      </button>
+      <!-- 접힘 본체 -->
+      <div class="vd-body" id="vd-body" role="region">
+        <div class="vd-card" id="vd-card"></div>
+      </div>
+    </div>
+    <script>
+    (function(){
+      var VD_AREAS=[
+        {k:'local',n:'네이버 플레이스·로컬',max:25},
+        {k:'geo',n:'GEO/AEO · AI검색',max:25},
+        {k:'seo',n:'SEO·콘텐츠',max:20},
+        {k:'trust',n:'신뢰·전문성(E-E-A-T)',max:15},
+        {k:'conv',n:'상담 전환 동선',max:15}
+      ];
+      var VD_Q=[
+        {a:'local',t:'네이버 플레이스에 진료시간·전화·길찾기·주차 정보가 모두 채워져 있다',p:10},
+        {a:'local',t:'병원·장비·시술 사진이 10장 이상 등록돼 있다',p:8},
+        {a:'local',t:'최근 1개월 내 리뷰 응대나 소식(블로그)이 업데이트됐다',p:7},
+        {a:'geo',t:'홈페이지/블로그에 FAQ(질문–답변) 구조가 있다',p:8},
+        {a:'geo',t:'병원 정보에 구조화 데이터(Schema.org)가 적용돼 있다',p:9},
+        {a:'geo',t:'ChatGPT·Perplexity에 "지역+진료과 잘하는 병원" 물으면 우리 병원이 나온다',p:8},
+        {a:'seo',t:'핵심 진료 키워드로 네이버/구글 검색 시 1페이지에 노출된다',p:8},
+        {a:'seo',t:'블로그·콘텐츠를 월 4편 이상 꾸준히 발행한다',p:6},
+        {a:'seo',t:'홈페이지가 모바일에서 3초 이내로 빠르게 열린다',p:6},
+        {a:'trust',t:'원장 약력·전문의 자격·경력이 명확히 노출돼 있다',p:8},
+        {a:'trust',t:'실제 진료 후기·사례가 (의료광고법 범위에서) 정리돼 있다',p:7},
+        {a:'conv',t:'상담·예약이 1~2클릭에 연결된다(카카오·전화·예약)',p:8},
+        {a:'conv',t:'유입 후 상담 전환을 측정·관리하고 있다',p:7}
+      ];
+      var VD_OPTS=[{l:'예',v:1},{l:'부분',v:0.5},{l:'아니오',v:0}];
+      var ans={};
+      function gEl(id){return document.getElementById(id);}
+      function areaName(k){for(var i=0;i<VD_AREAS.length;i++)if(VD_AREAS[i].k===k)return VD_AREAS[i].n;return k;}
+      function renderForm(){
+        var card=gEl('vd-card'); if(!card)return;
+        var h='<div class="vd-row">'
+          +'<select id="vd-cat" class="vd-input"><option value="">진료과 선택</option>'
+          +['치과','피부과','정형외과','한의원','성형외과','내과','안과','기타'].map(function(c){return '<option>'+c+'</option>';}).join('')
+          +'</select><input id="vd-region" class="vd-input" placeholder="지역 (예: 대전 유성구)"></div>';
+        var cur='';
+        VD_Q.forEach(function(q,i){
+          if(q.a!==cur){cur=q.a;h+='<div class="vd-area-label">'+areaName(q.a)+'</div>';}
+          h+='<div class="vd-q"><div class="vd-q-text">'+(i+1)+'. '+q.t+'</div><div class="vd-opts">'
+            +VD_OPTS.map(function(o){return '<button type="button" class="vd-opt" data-q="'+i+'" data-v="'+o.v+'">'+o.l+'</button>';}).join('')
+            +'</div></div>';
+        });
+        h+='<button type="button" class="vd-submit" id="vd-submit">결과 보기</button>'
+          +'<div class="vd-note">※ 자가점검 기반 추정 지표입니다. 정밀 진단은 베놈이 실제 데이터로 무료 제공합니다.</div>';
+        card.innerHTML=h;
+        Array.prototype.forEach.call(card.querySelectorAll('.vd-opt'),function(b){
+          b.addEventListener('click',function(){
+            var qi=b.getAttribute('data-q'); ans[qi]=parseFloat(b.getAttribute('data-v'));
+            Array.prototype.forEach.call(card.querySelectorAll('.vd-opt[data-q="'+qi+'"]'),function(x){x.classList.remove('sel');});
+            b.classList.add('sel');
+          });
+        });
+        gEl('vd-submit').addEventListener('click',compute);
+      }
+      function compute(){
+        if(Object.keys(ans).length<VD_Q.length){alert('모든 항목을 선택해 주세요. ('+Object.keys(ans).length+'/'+VD_Q.length+')');return;}
+        var as={},am={}; VD_AREAS.forEach(function(a){as[a.k]=0;am[a.k]=a.max;});
+        VD_Q.forEach(function(q,i){as[q.a]+=q.p*(ans[i]||0);});
+        var total=0; VD_AREAS.forEach(function(a){total+=as[a.k];}); total=Math.round(total);
+        renderResult(total,as,am);
+      }
+      function gradeOf(t){
+        if(t>=80)return{g:'우수',c:'#16a34a',d:'AI·지역검색 선점 단계입니다. 유지·고도화로 경쟁 병원과 격차를 벌리세요.'};
+        if(t>=60)return{g:'양호',c:'#2563eb',d:'기반은 갖췄습니다. 몇 가지만 보완하면 상위권 진입이 가능합니다.'};
+        if(t>=40)return{g:'주의',c:'#f59e0b',d:'핵심 요소가 빠져 있습니다. 경쟁 병원에 노출을 내주고 있을 가능성이 높습니다.'};
+        return{g:'위험',c:'#dc2626',d:'AI·지역검색에서 사실상 보이지 않는 상태입니다. 시급한 정비가 필요합니다.'};
+      }
+      function renderResult(total,as,am){
+        var card=gEl('vd-card'); var gr=gradeOf(total);
+        var cat=gEl('vd-cat')?gEl('vd-cat').value:''; var region=gEl('vd-region')?gEl('vd-region').value.trim():'';
+        var head=(region?region+' ':'')+(cat?cat+' ':'')+'병원의 AI·검색 준비도';
+        var h='<div class="vd-result"><div class="vd-result-head">'+head+'</div>'
+          +'<div class="vd-score" style="color:'+gr.c+'">'+total+'<span>/100</span></div>'
+          +'<div class="vd-grade" style="background:'+gr.c+'">'+gr.g+'</div>'
+          +'<div class="vd-grade-desc">'+gr.d+'</div><div class="vd-bars">';
+        VD_AREAS.forEach(function(a){
+          var s=Math.round(as[a.k]),m=am[a.k],r=m?s/m:0;
+          var tag=r>=0.8?'강점':(r>=0.5?'보통':'취약');
+          var tc=r>=0.8?'#16a34a':(r>=0.5?'#f59e0b':'#dc2626');
+          h+='<div class="vd-bar-row"><div class="vd-bar-top"><span>'+a.n+'</span><span style="color:'+tc+'">'+tag+' '+s+'/'+m+'</span></div>'
+            +'<div class="vd-bar"><div class="vd-bar-fill" style="width:'+Math.round(r*100)+'%;background:'+tc+'"></div></div></div>';
+        });
+        h+='</div><div class="vd-cta-box"><div class="vd-cta-t">정밀 진단 리포트, 베놈이 무료로 보내드립니다</div>'
+          +'<div class="vd-cta-d">실제 노출 데이터·경쟁 분석까지 포함한 맞춤 진단을 받아보세요.</div>'
+          +'<a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 무료 정밀진단 신청</a></div>'
+          +'<button type="button" class="vd-restart" id="vd-restart">다시 진단하기</button>'
+          +'<div class="vd-note">※ 점수는 네이버 플레이스 완성도, Schema·FAQ 구조화, Google E-E-A-T, Core Web Vitals(속도), 전환 동선 등 검증된 노출·전환 요인을 기준으로 산정한 자가점검 추정 지표입니다.</div></div>';
+        card.innerHTML=h;
+        // 트리거 버튼 점수 업데이트
+        var sc=gEl('vd-launcher'); if(sc){var s=sc.querySelector('.vd-launcher-score');if(s)s.innerHTML=total+'<sub>/100</sub>';}
+        gEl('vd-restart').addEventListener('click',function(){ans={};renderForm();});
+      }
+      window.vdToggle=function(){
+        var body=gEl('vd-body'),launcher=gEl('vd-launcher');
+        if(!body||!launcher)return;
+        var opening=!body.classList.contains('open');
+        body.classList.toggle('open',opening);
+        launcher.classList.toggle('open',opening);
+        launcher.setAttribute('aria-expanded',String(opening));
+        if(opening){setTimeout(function(){body.scrollIntoView({behavior:'smooth',block:'nearest'});},50);}
+      };
+      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderForm);else renderForm();
+    })();
+    </script>
+  </section>
+
+  <!-- 무료 진단 도구 섹션 -->
+  <section class="tool-section">
+    <div class="container">
+      <div class="tool-head">
+        <div class="section-badge">무료 진단 도구</div>
+        <h2>지금 바로 점수를 확인하세요</h2>
+        <p>SEO·GEO 엔티티·키워드 검색량을 무료로 진단합니다</p>
+      </div>
+      <div class="tool-tabs">
+        <button class="tool-tab active" onclick="switchTool('seo')">🔍 SEO 점수 체크</button>
+        <button class="tool-tab" onclick="switchTool('geo')">🤖 GEO 점수 체크</button>
+        <button class="tool-tab" onclick="switchTool('kw')">📊 키워드 검색량 체크</button>
+        <button class="tool-tab" onclick="switchTool('trend')">📈 검색 트렌드</button>
+        <button class="tool-tab" onclick="switchTool('aeo')">🤖 AI 추천 확인</button>
+        <button class="tool-tab" onclick="switchTool('expose')">🔎 노출·경쟁 진단</button>
+      </div>
+
+      <!-- SEO 점수 체크 -->
+      <div id="tool-seo" class="tool-panel active">
+        <div class="tool-input-wrap">
+          <input type="url" id="seo-url" class="tool-input" placeholder="https://병원홈페이지.com" oninput="toolReady('seo')">
+          <button class="tool-btn" onclick="runSEO()">분석하기</button>
+        </div>
+        <p class="tool-hint">도메인을 입력하면 SEO 100점 기준으로 진단합니다</p>
+        <div id="seo-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- GEO 엔티티 점수 -->
+      <div id="tool-geo" class="tool-panel">
+        <div class="tool-input-wrap">
+          <input type="url" id="geo-url" class="tool-input" placeholder="병원 홈페이지 URL 입력 (예: https://venomad.co.kr)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
+          <button class="tool-btn" onclick="runGEO()">분석하기</button>
+        </div>
+        <p class="tool-hint">ChatGPT·Perplexity·Google AI에서 귀 병원 사이트의 GEO 최적화 신호를 진단합니다</p>
+        <div id="geo-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 네이버 키워드 검색량 -->
+      <div id="tool-kw" class="tool-panel">
+        <div class="tool-input-wrap">
+          <input type="text" id="kw-input" class="tool-input" placeholder="키워드 입력 (예: 강남 임플란트)" oninput="toolReady('kw')" onkeydown="if(event.key==='Enter')runKW()">
+          <button class="tool-btn" onclick="runKW()">검색량 조회</button>
+        </div>
+        <p class="tool-hint">월간 검색량·경쟁도·예상 광고비를 분석합니다</p>
+        <div id="kw-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 📈 검색 트렌드 (네이버 데이터랩) -->
+      <div id="tool-trend" class="tool-panel">
+        <div class="tool-input-wrap">
+          <input type="text" id="trend-input" class="tool-input" placeholder="키워드 입력 (쉼표로 최대 3개 비교: 임플란트, 교정, 라미네이트)" onkeydown="if(event.key==='Enter')runTrend()">
+          <button class="tool-btn" onclick="runTrend()">트렌드 보기</button>
+        </div>
+        <p class="tool-hint">최근 1년간 네이버 검색 트렌드를 비교합니다 (데이터랩 기준 상대지수)</p>
+        <div id="trend-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 🤖 AI 추천 확인 (Perplexity 웹검색) -->
+      <div id="tool-aeo" class="tool-panel">
+        <div class="tool-input-wrap" style="flex-wrap:wrap;gap:8px">
+          <input type="text" id="aeo-q" class="tool-input" placeholder="AI에게 물어볼 질문 (예: 대전 유성구 임플란트 잘하는 치과 추천)">
+          <input type="text" id="aeo-name" class="tool-input" placeholder="우리 병원명 (언급 여부 확인)">
+          <button class="tool-btn" onclick="runAeo()">AI에게 물어보기</button>
+        </div>
+        <p class="tool-hint">실제 AI 검색엔진에 질문해, 답변에 우리 병원이 언급되는지 확인합니다 (GEO/AEO 가시성)</p>
+        <div id="aeo-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 🔎 노출·경쟁 진단 (네이버 검색) -->
+      <div id="tool-expose" class="tool-panel">
+        <div class="tool-input-wrap">
+          <input type="text" id="expose-q" class="tool-input" placeholder="키워드 입력 (예: 대전 임플란트)" onkeydown="if(event.key==='Enter')runExpose()">
+          <button class="tool-btn" onclick="runExpose()">진단하기</button>
+        </div>
+        <p class="tool-hint">해당 키워드의 블로그·웹 콘텐츠 경쟁량과 최근 발행 추이를 진단합니다</p>
+        <div id="expose-result" class="tool-result" style="display:none"></div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <!-- PAGE: 상세 3단 -->
@@ -2294,7 +2372,7 @@ body{padding-top:0}
       <p style="font-size:18px;color:var(--ink2);max-width:640px;line-height:1.8">환자가 "강남 치과 임플란트"를 검색할 때 1위에 뜨는 병원이 되세요. 기술적 SEO부터 E-E-A-T 콘텐츠, 로컬 SEO까지 — 의료 특화 SEO 완전 패키지.</p>
       <div style="display:flex;gap:12px;margin-top:32px;flex-wrap:wrap">
         <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a>
-        <a href="javascript:void(0)" onclick="switchTool('seo');sp('ai')" class="btn btn-outline btn-lg">SEO 점수 체크 →</a>
+        <a href="javascript:void(0)" onclick="sp('diagnose');switchTool('seo')" class="btn btn-outline btn-lg">SEO 점수 체크 →</a>
       </div>
       <div style="display:flex;gap:32px;margin-top:48px;flex-wrap:wrap">
         <div><div style="font-size:36px;font-weight:700;color:#fff">1<span style="font-size:20px">위</span></div><div style="font-size:13px;color:rgba(255,255,255,.6)">네이버 치과 키워드 평균 달성 기간 5개월</div></div>
@@ -6391,9 +6469,58 @@ function secretAdminClick(){
 })();
 
 // ── BreadcrumbList Schema 동적 업데이트 ──
-var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅'};
+var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅',diagnose:'무료 진단'};
 var catLabels={dental:'치과마케팅',implant:'임플란트마케팅',ortho_dental:'교정마케팅',skin:'피부과마케팅',ortho:'정형외과마케팅',oriental:'한의원마케팅',plastic:'성형외과마케팅',naegwa:'내과마케팅',angwa:'안과마케팅',shimui:'의료광고심의',medical_device:'의료기기마케팅'};
 var BASE_URL='https://desktop-tutorial-chi-peach.vercel.app/';
+
+// ── 종합 진단 센터: 진료과/지역 상태 유지 + 진입/네비 ──
+var DIAG_STATE={cat:'',region:''};
+try{var _ds=JSON.parse(sessionStorage.getItem('venom-diag')||'null');if(_ds&&typeof _ds==='object'){DIAG_STATE.cat=_ds.cat||'';DIAG_STATE.region=_ds.region||'';}}catch(e){}
+function goDiagnose(cat,region){
+  var c=(cat!=null)?cat:(document.getElementById('hde-cat')?document.getElementById('hde-cat').value:'');
+  var r=(region!=null)?region:(document.getElementById('hde-region')?document.getElementById('hde-region').value.trim():'');
+  DIAG_STATE.cat=c||'';DIAG_STATE.region=r||'';
+  try{sessionStorage.setItem('venom-diag',JSON.stringify(DIAG_STATE));}catch(e){}
+  sp('diagnose');
+}
+function applyDiagState(){
+  var cat=DIAG_STATE.cat,region=DIAG_STATE.region;
+  var lab=document.getElementById('diag-cat-label');
+  if(lab)lab.textContent=cat?cat:'우리 병원';
+  var ctx=document.getElementById('diag-context');
+  if(ctx){
+    ctx.innerHTML='<span class="diag-chip">🏥 진료과 <b>'+(cat||'미선택')+'</b></span>'
+      +'<span class="diag-chip">📍 지역 <b>'+(region||'미입력')+'</b></span>'
+      +'<button class="diag-change" onclick="sp(\'home\')">메인에서 다시 선택</button>';
+  }
+  // 자가진단 펼치기 + 진료과·지역 미리채움
+  var body=document.getElementById('vd-body'),launcher=document.getElementById('vd-launcher');
+  if(body&&launcher&&!body.classList.contains('open')){
+    body.classList.add('open');launcher.classList.add('open');launcher.setAttribute('aria-expanded','true');
+  }
+  var vc=document.getElementById('vd-cat');if(vc&&cat)vc.value=cat;
+  var vr=document.getElementById('vd-region');if(vr&&region&&!vr.value)vr.value=region;
+  // 도구 입력 예시 자동 채움(비어 있을 때만)
+  var kwLabel=cat?((region?region+' ':'')+cat):(region||'');
+  var setVal=function(id,v){var e=document.getElementById(id);if(e&&!e.value&&v)e.value=v;};
+  if(kwLabel){
+    setVal('kw-input',kwLabel);
+    setVal('expose-q',kwLabel);
+    setVal('aeo-q',(region?region+' ':'')+(cat||'병원')+' 잘하는 곳 추천해줘');
+    setVal('trend-input',kwLabel);
+  }
+}
+function diagJump(t){
+  if(t==='vd'){
+    var body=document.getElementById('vd-body'),launcher=document.getElementById('vd-launcher');
+    if(body&&launcher&&!body.classList.contains('open')){body.classList.add('open');launcher.classList.add('open');launcher.setAttribute('aria-expanded','true');}
+    var el=document.querySelector('#pg-diagnose .vd-section');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+  if(typeof switchTool==='function')switchTool(t);
+  var ts=document.querySelector('#pg-diagnose .tool-section');if(ts)ts.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 function updateBreadcrumb(items){
   var el=document.getElementById('bc-schema');if(!el)return;
   var list=items.map(function(it,i){return '{"@type":"ListItem","position":'+(i+1)+',"name":"'+it[0]+'","item":"'+it[1]+'"}';});
@@ -6410,6 +6537,7 @@ function sp(id, pushState){
     a.classList.toggle('active',a.dataset.pg===id);
   });
   if(id==='detail'&&pushState!==false)ld(currentCat||'dental');
+  if(id==='diagnose')applyDiagState();
   // AI 서브페이지 사이드바 활성 표시
   ['geo-snav','aeo-snav','seo-snav'].forEach(function(sid){
     var el=document.getElementById(sid);if(el)el.classList.remove('snav-active');
