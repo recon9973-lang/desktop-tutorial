@@ -131,7 +131,7 @@ module.exports = async function handler(req, res) {
 
   const base = {
     ok: true,
-    ver: 'numbers-2026-06-28k', // 배포 반영 확인용 마커(이 값이 보이면 최신 코드 라이브)
+    ver: 'phase1-store-2026-06-28l', // 배포 반영 확인용 마커(이 값이 보이면 최신 코드 라이브)
     hasOpenAI: !!process.env.OPENAI_API_KEY,
     hasGitHub: !!process.env.GITHUB_TOKEN,
     hasAdminSecret: !!process.env.ADMIN_SECRET,
