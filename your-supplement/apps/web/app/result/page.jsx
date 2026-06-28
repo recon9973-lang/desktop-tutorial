@@ -28,6 +28,17 @@ async function fetchRecommendation(user) {
   };
 }
 
+// 주요 구매처 검색 링크 (API 키·제휴 없이도 바로 동작하는 딥링크)
+// 한국에서 영양제 구매가 많은 채널 순: 쿠팡 > 네이버쇼핑 > 아이허브(직구)
+function buyLinks(name) {
+  const q = encodeURIComponent(name);
+  return [
+    { vendor: '쿠팡',     url: `https://www.coupang.com/np/search?q=${q}`,                 color: '#ff4d4d' },
+    { vendor: '네이버',   url: `https://search.shopping.naver.com/search/all?query=${q}`,  color: '#03c75a' },
+    { vendor: '아이허브', url: `https://kr.iherb.com/search?kw=${q}`,                       color: '#4a9c2d' },
+  ];
+}
+
 function StarBadge({ level }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: 'rgba(245,184,0,0.1)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>
@@ -209,19 +220,27 @@ export default function ResultPage() {
 
                   {/* Best price */}
                   {r.best_price && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                      <div style={{ background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '6px 12px', display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
-                          최저 ₩{r.best_price.price.toLocaleString()}
-                        </span>
-                        <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>mg당 ₩{r.best_price.price_per_mg}</span>
-                        <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>via {r.best_price.vendor}</span>
-                      </div>
-                      <button style={{ background: 'none', border: '1px solid var(--hairline)', borderRadius: 'var(--r-full)', padding: '4px 12px', fontSize: 13, cursor: 'pointer', color: 'var(--ink-secondary)' }}>
-                        구매하기 →
-                      </button>
+                    <div style={{ background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '6px 12px', display: 'inline-flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
+                        최저 ₩{r.best_price.price.toLocaleString()}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'var(--ink-faint)' }}>mg당 ₩{r.best_price.price_per_mg}</span>
                     </div>
                   )}
+
+                  {/* 구매처 — 실제 클릭되는 링크 (새 탭) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginRight: 2 }}>구매처:</span>
+                    {buyLinks(r.name).map((b) => (
+                      <a key={b.vendor} href={b.url} target="_blank" rel="noopener noreferrer"
+                        style={{
+                          fontSize: 13, fontWeight: 600, color: b.color, textDecoration: 'none',
+                          border: `1px solid ${b.color}40`, borderRadius: 'var(--r-full)', padding: '4px 12px',
+                        }}>
+                        {b.vendor} →
+                      </a>
+                    ))}
+                  </div>
 
                   {/* Review box — 별점/의견 (근거와 분리) */}
                   <ReviewBox ingredientId={r.ingredient_id} />
