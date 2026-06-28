@@ -63,7 +63,11 @@ module.exports = async function handler(req, res) {
       post.status = 'draft';
       try {
         await savePost(post);
-        await appendLog({ action: 'generate', id: post.id, title: post.title, category, keyword });
+        await appendLog({
+          action: 'generate', id: post.id, title: post.title, category, keyword,
+          tokenUsage: post.tokenUsage || null,
+          imageGenerated: !!(post.images && post.images.length),
+        });
       } catch (storeErr) {
         post._storeError = storeErr.message;
       }

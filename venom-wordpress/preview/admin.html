@@ -164,11 +164,16 @@ a{color:var(--p);text-decoration:none}
 .seo-bar-fill{height:100%;border-radius:4px;transition:width .6s}
 
 /* responsive */
+/* 모바일 드로어 백드롭 + 햄버거: 데스크톱에선 숨김 */
+.menu-btn{display:none}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
 @media(max-width:900px){
-  .sidebar{transform:translateX(-100%);transition:transform .2s}
+  .sidebar{transform:translateX(-100%);transition:transform .2s;z-index:600}
   .sidebar.open{transform:translateX(0)}
   .main-wrap{margin-left:0}
   .stat-grid{grid-template-columns:1fr 1fr}
+  .menu-btn{display:inline-flex;align-items:center}
+  .sidebar-backdrop.show{display:block}
 }
 </style>
 </head>
@@ -206,11 +211,14 @@ a{color:var(--p);text-decoration:none}
   </div>
 </aside>
 
+<!-- 모바일 드로어 백드롭 -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
 <!-- ── MAIN ── -->
 <div class="main-wrap">
   <header class="topbar">
     <div style="display:flex;align-items:center;gap:12px">
-      <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none;background:none;border:none;cursor:pointer;font-size:20px" id="menu-btn">☰</button>
+      <button onclick="toggleSidebar()" class="menu-btn" id="menu-btn" aria-label="메뉴 열기/닫기" style="background:none;border:none;cursor:pointer;font-size:20px">☰</button>
       <div class="topbar-title" id="topbar-title">대시보드</div>
     </div>
     <div class="topbar-actions">
@@ -863,17 +871,25 @@ a{color:var(--p);text-decoration:none}
         </div>
         <div id="ap-settings-msg" style="display:none;margin:0 0 16px;padding:10px 14px;border-radius:var(--r8);font-size:13px"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-          <div>
+          <div style="grid-column:1/-1">
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">자동 발행 사용</label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
               <input type="checkbox" id="ap-enabled" style="width:18px;height:18px;accent-color:var(--p)">
-              <span style="font-size:13px">활성화</span>
+              <span style="font-size:13px">활성화 (스케줄 기간에 매일 자동 발행)</span>
             </label>
           </div>
-          <div>
-            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">하루 발행 수량</label>
-            <input type="number" id="ap-daily-count" min="1" max="5" value="1" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+
+          <!-- 발행 스케줄 (기간별) -->
+          <div style="grid-column:1/-1">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <label style="font-size:12px;color:var(--mute)">📅 발행 스케줄 (기간별 설정)</label>
+              <button class="btn btn-outline btn-sm" onclick="apAddSchedule()">+ 스케줄 추가</button>
+            </div>
+            <div id="ap-schedules-list" style="display:flex;flex-direction:column;gap:10px">
+              <div style="text-align:center;padding:20px;color:var(--mute);font-size:13px;border:1px dashed var(--border);border-radius:var(--r8)">스케줄이 없습니다. 위의 버튼으로 추가하세요.</div>
+            </div>
           </div>
+
           <div style="grid-column:1/-1">
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:8px">카테고리 선택 <span style="font-weight:400">(선택된 항목의 × 클릭 시 해제)</span></label>
             <div id="ap-cat-chips" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--r8);background:var(--soft);min-height:52px"></div>
@@ -899,6 +915,43 @@ a{color:var(--p);text-decoration:none}
             <div style="font-size:11px;color:var(--mute);margin-top:4px" id="ap-secret-status"></div>
           </div>
         </div>
+      </div>
+
+      <!-- 토큰 사용량 그래프 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head">
+          <div class="card-title">📊 토큰 사용량 (최근 30일)</div>
+          <button class="btn btn-outline btn-sm" onclick="apLoadUsageStats()">새로고침</button>
+        </div>
+        <!-- 요약 -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px" id="ap-usage-summary">
+          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
+            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">총 포스팅</div>
+            <div id="ap-stat-posts" style="font-size:20px;font-weight:700;color:var(--p)">—</div>
+          </div>
+          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
+            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">총 토큰</div>
+            <div id="ap-stat-tokens" style="font-size:20px;font-weight:700;color:var(--p)">—</div>
+          </div>
+          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
+            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">이미지 생성</div>
+            <div id="ap-stat-images" style="font-size:20px;font-weight:700;color:var(--p)">—</div>
+          </div>
+          <div style="background:var(--soft);border-radius:var(--r8);padding:14px">
+            <div style="font-size:11px;color:var(--mute);margin-bottom:4px">예상 비용</div>
+            <div id="ap-stat-cost" style="font-size:20px;font-weight:700;color:#4ade80">—</div>
+          </div>
+        </div>
+        <!-- 바 차트 -->
+        <div style="margin-bottom:8px;font-size:11px;color:var(--mute)">일별 토큰 사용량</div>
+        <div id="ap-token-chart" style="height:120px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
+          <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:12px;color:var(--mute);padding:8px">데이터를 불러오는 중...</div>
+        </div>
+        <!-- 비용 차트 -->
+        <div style="margin-bottom:8px;margin-top:16px;font-size:11px;color:var(--mute)">일별 예상 비용 (USD)</div>
+        <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
+        </div>
+        <div style="font-size:11px;color:var(--mute);margin-top:8px">* gpt-4o-mini: 입력 $0.15/1M · 출력 $0.60/1M | 이미지(gpt-image-1, 1024×1024): 장당 약 $0.04</div>
       </div>
 
       <!-- 글 미리보기 생성 -->
@@ -988,6 +1041,15 @@ a{color:var(--p);text-decoration:none}
 <div id="toast"></div>
 
 <script>
+// ── 모바일 드로어 토글 (백드롭 동기화) ──
+function toggleSidebar(force){
+  var sb=document.getElementById('sidebar'), bd=document.getElementById('sidebar-backdrop');
+  if(!sb)return;
+  var open = (typeof force==='boolean') ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open',open);
+  if(bd)bd.classList.toggle('show',open);
+}
+
 // ── SECTION ROUTING ──
 var sections=['dashboard','blog','pages','visitors','keywords','sources','seo','reports','cardnews','settings','users','media','autopost','logos'];
 var titles={dashboard:'대시보드',blog:'블로그 포스팅',pages:'페이지 관리',visitors:'방문자 분석',keywords:'키워드 현황',sources:'유입 출처',seo:'SEO 점수',reports:'마케팅 리포트',cardnews:'데일리 카드뉴스',settings:'사이트 설정',users:'계정 관리',media:'미디어 라이브러리',autopost:'AI 자동 포스팅',logos:'레퍼런스 로고'};
@@ -1001,7 +1063,7 @@ function showSection(id){
     if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');
   });
   document.getElementById('topbar-title').textContent=titles[id]||id;
-  document.getElementById('sidebar').classList.remove('open');
+  toggleSidebar(false);
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='logos')initLogoSection();
   if(id==='visitors')initVisitors();
@@ -2145,10 +2207,54 @@ function apSelectPrevCat(id) {
   apRenderPrevCatChips();
 }
 
+// ── 발행 스케줄 관리 (기간별) ──
+var _apSchedules = [];
+
+function apRenderSchedules() {
+  var wrap = document.getElementById('ap-schedules-list');
+  if (!wrap) return;
+  if (!_apSchedules.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mute);font-size:13px;border:1px dashed var(--border);border-radius:var(--r8)">스케줄이 없습니다. 위의 버튼으로 추가하세요.</div>';
+    return;
+  }
+  wrap.innerHTML = _apSchedules.map(function(s, i) {
+    return '<div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:center;padding:12px 16px;background:var(--soft);border-radius:var(--r8);border:1px solid var(--border)">'
+      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">시작일</div>'
+      + '<input type="date" value="'+s.from+'" onchange="_apSchedules['+i+'].from=this.value" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
+      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">종료일</div>'
+      + '<input type="date" value="'+s.to+'" onchange="_apSchedules['+i+'].to=this.value" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
+      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">하루 발행 수</div>'
+      + '<input type="number" min="1" value="'+s.dailyCount+'" onchange="_apSchedules['+i+'].dailyCount=parseInt(this.value)||1" style="width:80px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
+      + '<div style="padding-top:18px"><button onclick="apRemoveSchedule('+i+')" style="padding:8px 12px;border:1px solid #f87171;border-radius:6px;background:transparent;color:#f87171;cursor:pointer;font-size:13px">삭제</button></div>'
+      + '</div>';
+  }).join('');
+}
+
+function apAddSchedule() {
+  var today = new Date().toISOString().slice(0, 10);
+  var nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  var next = nextMonth.toISOString().slice(0, 10);
+  _apSchedules.push({ from: today, to: next, dailyCount: 1 });
+  apRenderSchedules();
+}
+
+function apRemoveSchedule(i) {
+  _apSchedules.splice(i, 1);
+  apRenderSchedules();
+}
+
 function apApplySettings(s) {
   if (!s) return;
   document.getElementById('ap-enabled').checked = !!s.enabled;
-  document.getElementById('ap-daily-count').value = s.dailyCount || 1;
+  // 기간별 스케줄 로드 (레거시 dailyCount 단일값 → 스케줄 1건으로 자동 변환)
+  _apSchedules = Array.isArray(s.schedules) ? s.schedules.map(function(x){return Object.assign({},x);}) : [];
+  if (!_apSchedules.length && s.dailyCount) {
+    var today = new Date().toISOString().slice(0, 10);
+    var end = new Date(); end.setMonth(end.getMonth()+1);
+    _apSchedules = [{ from: today, to: end.toISOString().slice(0,10), dailyCount: s.dailyCount }];
+  }
+  apRenderSchedules();
   _apSelectedCats = (s.categories || []).slice();
   apRenderCatChips();
   document.getElementById('ap-regions').value = (s.regions || []).join(',');
@@ -2162,7 +2268,7 @@ function apApplySettings(s) {
 async function apSaveSettings() {
   const settings = {
     enabled: document.getElementById('ap-enabled').checked,
-    dailyCount: parseInt(document.getElementById('ap-daily-count').value) || 1,
+    schedules: _apSchedules.slice(),
     categories: _apSelectedCats.slice(),
     regions: document.getElementById('ap-regions').value.split(',').map(s=>s.trim()).filter(Boolean),
     keywords: document.getElementById('ap-keywords').value.split('\n').map(s=>s.trim()).filter(Boolean),
@@ -2502,7 +2608,13 @@ async function apRunNow() {
 
   // 설정에서 발행 수량·카테고리·키워드 읽기
   const settings = JSON.parse(localStorage.getItem('venom-autopost-settings') || '{}');
-  const count = Math.min(parseInt(settings.dailyCount) || 1, 5);
+  // 오늘 날짜에 해당하는 스케줄의 하루 발행 수 사용(없으면 레거시 dailyCount, 그것도 없으면 1)
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let count = parseInt(settings.dailyCount) || 1;
+  if (Array.isArray(settings.schedules) && settings.schedules.length) {
+    const active = settings.schedules.find(s => s.from <= todayStr && s.to >= todayStr);
+    count = active ? (parseInt(active.dailyCount) || 1) : 1;
+  }
   const cats = (settings.categories || ['geo']);
   const keywords = (settings.keywords || ['병원마케팅']);
   const regions = (settings.regions || []);
@@ -2555,6 +2667,53 @@ async function apRunNow() {
   btn.disabled = false;
   btn.textContent = '▶ 지금 실행';
   apLoadPosts();
+  apLoadUsageStats();
+}
+
+// ── 토큰 사용량 차트 ──
+async function apLoadUsageStats() {
+  try {
+    const r = await fetch(apApiBase() + '/api/usage-stats', { headers: apHeaders() });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data.ok) return;
+
+    // 요약 수치
+    const t = data.totals;
+    const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setEl('ap-stat-posts',  t.posts);
+    setEl('ap-stat-tokens', t.totalTokens ? (t.totalTokens / 1000).toFixed(1) + 'K' : '0');
+    setEl('ap-stat-images', t.images);
+    setEl('ap-stat-cost',   '$' + t.costUsd.toFixed(3));
+
+    // 일별 데이터
+    const days = data.days;
+    const maxTokens = Math.max(...days.map(d => d.totalTokens), 1);
+    const maxCost   = Math.max(...days.map(d => d.costUsd), 0.001);
+
+    function makeChart(containerId, values, maxVal, color, labelFn) {
+      const wrap = document.getElementById(containerId);
+      if (!wrap) return;
+      const total = values.length;
+      wrap.innerHTML = days.map(function(d, i) {
+        const pct = Math.max((values[i] / maxVal) * 100, values[i] > 0 ? 4 : 0);
+        const showLabel = (i % 7 === 0) || i === total - 1;
+        const dateLabel = d.date ? d.date.slice(5) : '';
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;position:relative">'
+          + '<div title="' + labelFn(d) + '" style="width:100%;border-radius:3px 3px 0 0;background:' + color + ';height:' + pct + '%;min-height:' + (values[i] > 0 ? '4px' : '0') + ';opacity:.85;transition:height .4s;cursor:default"></div>'
+          + (showLabel ? '<div style="position:absolute;bottom:-18px;font-size:9px;color:var(--mute);white-space:nowrap">' + dateLabel + '</div>' : '')
+          + '</div>';
+      }).join('');
+    }
+
+    makeChart('ap-token-chart', days.map(d => d.totalTokens), maxTokens, '#4f46e5',
+      d => d.date + ': ' + d.totalTokens.toLocaleString() + ' tokens (' + d.posts + '건)');
+    makeChart('ap-cost-chart',  days.map(d => d.costUsd),    maxCost,   '#4ade80',
+      d => d.date + ': $' + d.costUsd.toFixed(4) + ' (이미지 ' + d.images + '장)');
+
+  } catch(e) {
+    console.warn('[usage-stats]', e);
+  }
 }
 
 function initAutoPost() {
@@ -2572,6 +2731,7 @@ function initAutoPost() {
   }
   apLoadSettings();
   apLoadPosts();
+  apLoadUsageStats();
 }
 
 // ── LAST UPDATED ──
