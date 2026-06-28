@@ -1073,7 +1073,7 @@ function showSection(id){
   if(id==='cardnews')initCardnews();
   if(id==='settings')loadSettings();
   if(id==='users')renderUsers();
-  if(id==='media')renderMedia();
+  if(id==='media')initMedia();
   if(id==='pages')initPages();
   if(id==='autopost')initAutoPost();
 }
@@ -1546,6 +1546,21 @@ function initPages(){
 // ══════════════════════════════════════
 // ── 사이트 설정 ──
 // ══════════════════════════════════════
+// ── 공용 서버 저장소 헬퍼 (localStorage → GitHub JSON 영속, 교차 기기 공유) ──
+// storeGet: 서버에서 받아 localStorage 캐시 갱신 후 반환(실패 시 localStorage 폴백)
+// storeSave: localStorage 즉시 반영 + 서버에 POST(영속)
+async function storeGet(type, key, def){
+  try{
+    var r=await fetch(apApiBase()+'/api/store?type='+type, {headers: apHeaders()});
+    if(r.ok){ var d=await r.json(); if(d && d.ok && d.data!==undefined){ try{localStorage.setItem(key, JSON.stringify(d.data));}catch(e){} return d.data; } }
+  }catch(e){}
+  try{ var v=JSON.parse(localStorage.getItem(key)||'null'); return v==null?def:v; }catch(e){ return def; }
+}
+async function storeSave(type, data, key){
+  try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
+  try{ await fetch(apApiBase()+'/api/store', {method:'POST', headers: apHeaders(), body: JSON.stringify({type, data})}); }catch(e){}
+}
+
 var SETTINGS_KEY='venom-settings';
 var DEFAULT_SETTINGS={
   title:'병원마케팅 베놈 — 대한민국 No.1 병원 전문 마케팅 에이전시',
@@ -1559,8 +1574,10 @@ var DEFAULT_SETTINGS={
   company:'주식회사 베놈'
 };
 function getSettings(){try{return Object.assign({},DEFAULT_SETTINGS,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));}catch(e){return DEFAULT_SETTINGS;}}
-function loadSettings(){
-  var s=getSettings();
+async function loadSettings(){
+  // 서버에서 최신 설정 받아 localStorage 갱신 후 폼 채움
+  var srv=await storeGet('settings', SETTINGS_KEY, {});
+  var s=Object.assign({},DEFAULT_SETTINGS, srv||{});
   ['title','meta','keywords','url','phone','kakao','email','address','company'].forEach(function(k){
     var el=document.getElementById('s-'+k);
     if(el)el.value=s[k]||'';
@@ -1572,8 +1589,8 @@ function saveSettings(){
     var el=document.getElementById('s-'+k);
     if(el)s[k]=el.value;
   });
-  localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));
-  toast('설정이 저장되었습니다 ✓');
+  storeSave('settings', s, SETTINGS_KEY);  // localStorage + 서버 영속
+  toast('설정이 저장되었습니다 ✓ (서버 반영)');
 }
 
 // ══════════════════════════════════════
@@ -1746,7 +1763,7 @@ function mediaSaveWebP(){
     media.unshift({id:Date.now()+Math.random(),url:item.result.dataUrl,name:item.name,ts:new Date().toLocaleDateString('ko-KR')});
     saved++;
   });
-  localStorage.setItem(MEDIA_KEY,JSON.stringify(media));
+  storeSave('media',media,MEDIA_KEY);
   document.getElementById('media-convert-preview').style.display='none';
   document.getElementById('media-file-input').value='';
   _mediaPendingWebP=[];
@@ -1761,7 +1778,7 @@ function addMedia(){
   if(!url){toast('URL을 입력해주세요');return;}
   var media=getMedia();
   media.unshift({id:Date.now(),url:url,name:name,ts:new Date().toLocaleDateString('ko-KR')});
-  localStorage.setItem(MEDIA_KEY,JSON.stringify(media));
+  storeSave('media',media,MEDIA_KEY);
   document.getElementById('media-url-input').value='';
   document.getElementById('media-name-input').value='';
   renderMedia();
@@ -1769,9 +1786,10 @@ function addMedia(){
 }
 function deleteMedia(id){
   var media=getMedia().filter(function(m){return m.id!==id;});
-  localStorage.setItem(MEDIA_KEY,JSON.stringify(media));
+  storeSave('media',media,MEDIA_KEY);
   renderMedia();
 }
+async function initMedia(){ await storeGet('media',MEDIA_KEY,[]); renderMedia(); }
 function renderMedia(){
   var media=getMedia();
   var grid=document.getElementById('media-grid');
@@ -2029,14 +2047,14 @@ function saveCard(){
   var cards=getCards();
   var now=new Date();
   cards.unshift({id:Date.now(),title:title,body:body,desc:desc,bg:bg,date:now.toLocaleDateString('ko-KR')});
-  localStorage.setItem(CARD_KEY,JSON.stringify(cards));
+  storeSave('cardnews',cards,CARD_KEY);
   document.getElementById('card-form').style.display='none';
   renderCards();
   toast('카드뉴스가 저장되었습니다 ✓');
 }
 function deleteCard(id){
   var cards=getCards().filter(function(c){return c.id!==id;});
-  localStorage.setItem(CARD_KEY,JSON.stringify(cards));
+  storeSave('cardnews',cards,CARD_KEY);
   renderCards();
 }
 function printCard(id){
@@ -2081,7 +2099,7 @@ function renderCards(){
       +'</div></div></div>';
   }).join('');
 }
-function initCardnews(){renderCards();}
+async function initCardnews(){await storeGet('cardnews',CARD_KEY,[]);renderCards();}
 
 // ── AI 자동 포스팅 ──
 var AP_ADMIN_SECRET = localStorage.getItem('venom-admin-secret') || '';
@@ -2800,7 +2818,7 @@ function logoSaveWebP(){
   var name=nameEl?nameEl.value.trim()||'거래처':'거래처';
   var logos=getLogos();
   logos.push({id:Date.now(),name:name,url:_logoPendingWebP.result.dataUrl});
-  localStorage.setItem(LOGO_KEY,JSON.stringify(logos));
+  storeSave('logos',logos,LOGO_KEY);
   _logoPendingWebP=null;
   document.getElementById('logo-file-preview').style.display='none';
   document.getElementById('logo-file-input').value='';
@@ -2822,7 +2840,7 @@ function addLogo(){
   if(!url){toast('이미지 URL을 입력해주세요','warn');return;}
   var logos=getLogos();
   logos.push({id:Date.now(),name:name||'거래처',url:url});
-  localStorage.setItem(LOGO_KEY,JSON.stringify(logos));
+  storeSave('logos',logos,LOGO_KEY);
   document.getElementById('logo-name-input').value='';
   document.getElementById('logo-url-input').value='';
   document.getElementById('logo-preview-wrap').innerHTML='<span style="font-size:12px;color:var(--mute)">이미지 URL을 입력하면 미리보기가 표시됩니다</span>';
@@ -2832,7 +2850,7 @@ function addLogo(){
 
 function deleteLogo(id){
   var logos=getLogos().filter(function(l){return l.id!==id;});
-  localStorage.setItem(LOGO_KEY,JSON.stringify(logos));
+  storeSave('logos',logos,LOGO_KEY);
   renderLogoGrid();
   toast('로고가 삭제되었습니다');
 }
@@ -2865,7 +2883,7 @@ function renderLogoGrid(){
 
 function saveLogos(){
   var logos=getLogos();
-  localStorage.setItem(LOGO_KEY,JSON.stringify(logos));
+  storeSave('logos',logos,LOGO_KEY);
   toast('저장되었습니다. 메인 홈페이지 롤링 배너에 반영됩니다 ✓');
 }
 
@@ -2875,7 +2893,7 @@ function resetLogos(){
   toast('초기화되었습니다');
 }
 
-function initLogoSection(){renderLogoGrid();}
+async function initLogoSection(){await storeGet('logos',LOGO_KEY,[]);renderLogoGrid();}
 </script>
 </body>
 </html>
