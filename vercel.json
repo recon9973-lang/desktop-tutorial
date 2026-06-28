@@ -1,5 +1,13 @@
 {
   "outputDirectory": "venom-wordpress/preview",
+  "images": {
+    "sizes": [640, 750, 828, 1080, 1200, 1920],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 86400,
+    "remotePatterns": [
+      { "protocol": "https", "hostname": "raw.githubusercontent.com" }
+    ]
+  },
   "functions": {
     "api/generate-post.js": { "maxDuration": 120 },
     "api/cron-daily-posts.js": { "maxDuration": 120 },
