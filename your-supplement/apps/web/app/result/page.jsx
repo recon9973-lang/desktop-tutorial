@@ -108,10 +108,32 @@ export default function ResultPage() {
   const [result, setResult] = useState(null);
   const [kakaoSent, setKakaoSent] = useState(false);
 
+  const [priceLive, setPriceLive] = useState(false);
+
   useEffect(() => {
     const raw = sessionStorage.getItem('survey_user');
     const user = raw ? JSON.parse(raw) : { concerns: ['fatigue', 'eye'], medications: [], allergies: [] };
-    fetchRecommendation(user).then(setResult);
+    fetchRecommendation(user).then(async (base) => {
+      setResult(base); // 먼저 샘플로 즉시 표시
+      // 네이버 API로 실제 최저가 교체 (키 있으면). 실패한 항목은 샘플 유지.
+      try {
+        const enriched = await Promise.all(
+          base.recommended.map(async (r) => {
+            try {
+              const res = await fetch(`/api/offers?ingredient_id=${r.ingredient_id}`);
+              const data = await res.json();
+              if (data.best) {
+                return { ...r, best_price: { ...data.best }, _live: true };
+              }
+            } catch {}
+            return r;
+          })
+        );
+        const anyLive = enriched.some((r) => r._live);
+        setResult({ ...base, recommended: enriched });
+        setPriceLive(anyLive);
+      } catch {}
+    });
   }, []);
 
   if (!result) return (
@@ -226,11 +248,19 @@ export default function ResultPage() {
                           하루 약 {r.best_price.per_day.toLocaleString()}원
                         </span>
                         <span style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
-                          꼴 (₩{r.best_price.price.toLocaleString()} / {r.best_price.count}일분)
+                          꼴 (₩{r.best_price.price.toLocaleString()} · {r.best_price.count}정)
                         </span>
+                        {r._live
+                          ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-green)', background: 'rgba(26,174,57,0.1)', borderRadius: 'var(--r-full)', padding: '1px 7px' }}>실시간</span>
+                          : <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-faint)', background: 'var(--hairline)', borderRadius: 'var(--r-full)', padding: '1px 7px' }}>예시</span>}
                       </div>
                       <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 4 }}>
-                        📦 {r.best_price.product} · <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{r.best_price.vendor} 최저가</span>
+                        📦 {r.best_price.link
+                          ? <a href={r.best_price.link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink-secondary)', textDecoration: 'underline' }}>{r.best_price.product}</a>
+                          : r.best_price.product}
+                        {' · '}
+                        <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{r.best_price.vendor} 최저가</span>
+                        {r.best_price.mall ? <span style={{ color: 'var(--ink-faint)' }}> ({r.best_price.mall})</span> : null}
                       </p>
                     </div>
                   )}

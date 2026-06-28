@@ -87,7 +87,8 @@ export default function SurveyPage() {
   const [answers, setAnswers] = useState({
     age_range: '', sex: '',
     concerns: [],
-    smoking: '', drinking: '', exercise: '',
+    // 생활습관 기본값: 비흡연 / 음주 거의 안 함 / 운동 거의 안 함
+    smoking: 'none', drinking: 'none', exercise: 'none',
     medications: [], allergies: [],
   });
 
