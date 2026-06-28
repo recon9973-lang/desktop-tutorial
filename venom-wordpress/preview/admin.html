@@ -2512,6 +2512,18 @@ async function apLoadPosts() {
   }).join('');
 }
 
+// 송출 시 WebP 변환(저장은 JPG 유지). 공개 사이트와 동일한 처리.
+function imgToWebp(html) {
+  if (!html) return html;
+  return String(html).replace(
+    /(<img\b[^>]*\bsrc=")(https:\/\/raw\.githubusercontent\.com\/[^"]+)(")/gi,
+    function(m, pre, url, post) {
+      if (/wsrv\.nl/.test(url)) return m;
+      return pre + 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&output=webp&q=80' + post;
+    }
+  );
+}
+
 function apViewPost(id) {
   const el = document.getElementById('ap-view-' + id);
   if (!el) return;
@@ -2520,7 +2532,7 @@ function apViewPost(id) {
   const p = posts.find(x => x.id === id);
   if (!p) return;
   el.innerHTML = (p.meta ? `<blockquote style="border-left:3px solid var(--p);padding-left:12px;color:var(--mute);margin-bottom:16px;font-style:italic">${p.meta}</blockquote>` : '')
-    + (p.content || '<em>내용 없음</em>');
+    + imgToWebp(p.content || '<em>내용 없음</em>');
   el.style.display = 'block';
 }
 
