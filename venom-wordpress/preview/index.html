@@ -6493,24 +6493,24 @@ function openBlogPost(id, pushState) {
 // 블로그 글 내용 내부링크 자동 삽입
 function injectInternalLinks(html) {
   var linkMap = [
-    { kw: 'GEO 최적화', fn: "sp('geo')" },
-    { kw: 'GEO최적화', fn: "sp('geo')" },
-    { kw: 'AEO 최적화', fn: "sp('aeo')" },
-    { kw: 'AEO최적화', fn: "sp('aeo')" },
-    { kw: 'SEO 최적화', fn: "sp('seo')" },
-    { kw: 'SEO최적화', fn: "sp('seo')" },
-    { kw: '치과 마케팅', fn: "ld('dental')" },
-    { kw: '치과마케팅', fn: "ld('dental')" },
-    { kw: '피부과 마케팅', fn: "ld('skin')" },
-    { kw: '피부과마케팅', fn: "ld('skin')" },
-    { kw: '한의원 마케팅', fn: "ld('oriental')" },
-    { kw: '한의원마케팅', fn: "ld('oriental')" },
-    { kw: '정형외과 마케팅', fn: "ld('ortho')" },
-    { kw: '정형외과마케팅', fn: "ld('ortho')" },
-    { kw: '성형외과 마케팅', fn: "ld('plastic')" },
-    { kw: '성형외과마케팅', fn: "ld('plastic')" },
-    { kw: '병원 마케팅', fn: "sp('hospital')" },
-    { kw: '병원마케팅', fn: "sp('hospital')" }
+    { kw: 'GEO 최적화', fn: "sp('geo')", href: '#geo' },
+    { kw: 'GEO최적화', fn: "sp('geo')", href: '#geo' },
+    { kw: 'AEO 최적화', fn: "sp('aeo')", href: '#aeo' },
+    { kw: 'AEO최적화', fn: "sp('aeo')", href: '#aeo' },
+    { kw: 'SEO 최적화', fn: "sp('seo')", href: '#seo' },
+    { kw: 'SEO최적화', fn: "sp('seo')", href: '#seo' },
+    { kw: '치과 마케팅', fn: "ld('dental')", href: '#detail' },
+    { kw: '치과마케팅', fn: "ld('dental')", href: '#detail' },
+    { kw: '피부과 마케팅', fn: "ld('skin')", href: '#detail' },
+    { kw: '피부과마케팅', fn: "ld('skin')", href: '#detail' },
+    { kw: '한의원 마케팅', fn: "ld('oriental')", href: '#detail' },
+    { kw: '한의원마케팅', fn: "ld('oriental')", href: '#detail' },
+    { kw: '정형외과 마케팅', fn: "ld('ortho')", href: '#detail' },
+    { kw: '정형외과마케팅', fn: "ld('ortho')", href: '#detail' },
+    { kw: '성형외과 마케팅', fn: "ld('plastic')", href: '#detail' },
+    { kw: '성형외과마케팅', fn: "ld('plastic')", href: '#detail' },
+    { kw: '병원 마케팅', fn: "sp('hospital')", href: '#hospital' },
+    { kw: '병원마케팅', fn: "sp('hospital')", href: '#hospital' }
   ];
   // 보호 영역(JSON-LD 스크립트·스타일·기존 링크·제목 h1)은 치환에서 제외 →
   // 플레이스홀더로 잠시 빼두고, 본문 텍스트에서만 키워드 링크 처리 후 복원.
@@ -6528,7 +6528,8 @@ function injectInternalLinks(html) {
       if (m.charAt(0) === '<') return m;
       if (replaced) return m;
       replaced = true;
-      return '<a href="javascript:void(0)" onclick="' + item.fn + '" style="color:var(--p);text-decoration:underline;text-underline-offset:2px;font-weight:600">' + m + '</a>';
+      // 실제 href(해시) 부여 → SEO 크롤러가 내부링크로 인식. onclick+return false로 SPA 내비도 유지.
+      return '<a href="' + item.href + '" onclick="' + item.fn + ';return false;" style="color:var(--p);text-decoration:underline;text-underline-offset:2px;font-weight:600">' + m + '</a>';
     });
   });
   // 보호 영역 복원
