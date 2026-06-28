@@ -166,7 +166,7 @@ module.exports = async function handler(req, res) {
     CRON_SECRET: !!process.env.CRON_SECRET,
     GITHUB_OWNER: OWNER, GITHUB_REPO: REPO, GITHUB_BRANCH: BRANCH,
     OPENAI_TEXT_MODEL: process.env.OPENAI_TEXT_MODEL || 'gpt-4o-mini(기본)',
-    OPENAI_IMAGE_MODEL: process.env.OPENAI_IMAGE_MODEL || 'dall-e-3(기본)',
+    OPENAI_IMAGE_MODEL: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1(기본)',
   };
 
   const [openai, github] = await Promise.all([checkOpenAI(), checkGitHub()]);

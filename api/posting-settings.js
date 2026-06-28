@@ -87,6 +87,12 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
+      // ADMIN_SECRET 설정 시 인증 요구 (무인증 설정 변경 차단)
+      const secret = process.env.ADMIN_SECRET;
+      if (secret) {
+        const auth = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
+        if (auth !== secret) return res.status(401).json({ error: '인증 필요(ADMIN_SECRET)' });
+      }
       const settings = { ...DEFAULT, ...(req.body || {}), updatedAt: new Date().toISOString() };
       const existing = await ghGet(PATH);
       const sha = existing ? existing.sha : undefined;

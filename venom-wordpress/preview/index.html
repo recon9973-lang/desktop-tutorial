@@ -375,8 +375,8 @@ body{padding-top:0}
 .inner-layout{display:grid;grid-template-columns:var(--lw) 1fr var(--rw);min-height:70vh}
 
 /* ── LEFT SIDEBAR ── */
-.sidebar-left{position:sticky;top:calc(38px + var(--header));
-  height:calc(100vh - 38px - var(--header));overflow-y:auto;
+.sidebar-left{position:static;
+  height:auto;
   border-right:1px solid var(--border);padding:28px 0;
   scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .sidebar-left::-webkit-scrollbar{width:3px}
@@ -456,8 +456,8 @@ body{padding-top:0}
 .breadcrumb .sep{color:var(--border)}
 
 /* ── RIGHT TOC ── */
-.sidebar-right{position:sticky;top:calc(38px + var(--header));
-  height:calc(100vh - 38px - var(--header));overflow-y:auto;
+.sidebar-right{position:static;
+  height:auto;
   border-left:1px solid var(--border);padding:28px 18px;scrollbar-width:none}
 .toc-title{font-size:10px;font-weight:400;text-transform:uppercase;
   letter-spacing:.1em;color:var(--mute2);margin-bottom:10px}
@@ -4173,7 +4173,7 @@ body{padding-top:0}
 .col-left{border-right:1px solid var(--border);padding:32px 0}
 .col-center{padding:40px 40px;min-width:0}
 .col-right{border-left:1px solid var(--border);padding:32px 0}
-.sidebar-sticky,.toc-sticky{position:sticky;top:calc(var(--header) + 38px + 20px);max-height:calc(100vh - var(--header) - 80px);overflow-y:auto;scrollbar-width:none;padding:0 20px}
+.sidebar-sticky,.toc-sticky{position:static;padding:0 20px}
 .sidebar-sticky::-webkit-scrollbar,.toc-sticky::-webkit-scrollbar{display:none}
 .sidebar-section{margin-bottom:24px}
 .sidebar-title{font-size:10px;font-weight:400;letter-spacing:.1px;color:var(--mute);text-transform:uppercase;margin-bottom:8px}
@@ -6067,24 +6067,6 @@ User-agent: GPTBot<br>Allow: /<br><br>User-agent: ClaudeBot<br>Allow: /<br><br>U
   shimui1:{title:'의료광고 심의 완전 가이드 — 사전심의 대상부터 통과 전략까지',cat:'의료광고심의',date:'2025.05.08',readTime:'10분',tags:['의료광고심의','의료법','광고규정','사전심의','합법광고'],related:['skin1','plastic1'],html:`<div style="margin-bottom:32px"><span style="background:rgba(83,58,253,.1);color:var(--p);padding:4px 12px;border-radius:9999px;font-size:12px;font-weight:600">의료광고심의</span><span style="color:var(--mute);font-size:13px;margin-left:12px">2025.05.08 · 10분 읽기</span></div><h1 style="font-size:32px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin-bottom:16px">의료광고 심의 완전 가이드 — 사전심의 대상부터 통과 전략까지</h1><p style="color:var(--ink2);border-left:3px solid var(--p);padding-left:16px;margin-bottom:24px">의료광고 사전심의는 의료법 제56조에 따라 특정 매체에 광고를 집행하기 전 반드시 받아야 합니다. 심의 없이 광고를 집행하면 최대 1년 의사 면허 정지 또는 300만원 이하 과태료가 부과됩니다.</p><h2 style="font-size:22px;font-weight:600;color:var(--ink);margin:24px 0 12px">사전심의 대상 매체</h2><ul style="color:var(--ink2);line-height:2;padding-left:20px"><li>인터넷 배너·팝업 광고 (포털·SNS 유료 광고)</li><li>유튜브 광고 (인스트림·디스커버리)</li><li>TV·라디오 광고</li><li>잡지·신문 광고 (온·오프라인)</li><li>옥외광고 (버스·지하철·빌보드)</li></ul><h2 style="font-size:22px;font-weight:600;color:var(--ink);margin:24px 0 12px">심의 불필요 매체 (단, 내용 규정 준수 필수)</h2><ul style="color:var(--ink2);line-height:2;padding-left:20px"><li>병원 공식 블로그·홈페이지 게시물</li><li>카카오 채널 메시지 (마케팅 동의 고객 대상)</li><li>네이버 플레이스 정보 (사실 기반)</li></ul><h2 style="font-size:22px;font-weight:600;color:var(--ink);margin:24px 0 12px">심의 통과를 위한 5가지 원칙</h2><p style="color:var(--ink2)"><strong>1. 객관적 사실만</strong>: "치료 효과 100%", "최고의 병원" 등 과장 표현 금지. 학회 인증·수술 건수 등 검증 가능한 수치만 사용.</p><p style="color:var(--ink2);margin-top:12px"><strong>2. 비교 광고 금지</strong>: 타 병원 대비 우월성을 암시하는 표현 불가.</p><p style="color:var(--ink2);margin-top:12px"><strong>3. 비포·애프터 금지</strong>: 성형·피부 시술 전후 비교 사진 사용 금지.</p><p style="color:var(--ink2);margin-top:12px"><strong>4. 환자 경험담 주의</strong>: 실명·동의 기반 경험담만 허용. 허위·과장 시 즉시 불합격.</p><p style="color:var(--ink2);margin-top:12px"><strong>5. 전문의 자격 표기</strong>: 광고에 의료인 성명·면허 번호 명시 필수.</p><div style="background:linear-gradient(135deg,var(--p),var(--bd));border-radius:var(--r12);padding:28px;text-align:center;margin-top:32px"><h3 style="color:#fff;font-size:20px;margin-bottom:8px">의료광고심의 대행 상담</h3><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p" style="background:#fff;color:var(--p)">💬 카카오상담</a></div>`}
 };
 
-function loadBlogPost(id){
-  var post=blogPosts[id];
-  if(!post)return;
-  var el=document.getElementById('blog-post-content');
-  if(el)el.innerHTML=post.html;
-  var rel=document.getElementById('blog-related');
-  if(rel){
-    rel.innerHTML=(post.related||[]).map(function(rid){
-      var r=blogPosts[rid];
-      if(!r)return '';
-      return '<div onclick="openBlogPost(\''+rid+'\')" style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:16px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow=\'var(--s2)\'" onmouseout="this.style.boxShadow=\'none\'">'
-        +'<div style="font-size:11px;color:var(--p);font-weight:600;margin-bottom:6px">'+r.cat+'</div>'
-        +'<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4">'+r.title+'</div>'
-        +'<div style="font-size:12px;color:var(--mute);margin-top:6px">'+r.date+'</div>'
-      +'</div>';
-    }).join('');
-  }
-}
 
 // ── 관리자 블로그 포스팅 연동 ──
 var ADMIN_CAT_LABEL={geo:'GEO/AI',seo:'SEO',dental:'치과',skin:'피부과',oriental:'한의원',ortho:'정형외과',plastic:'성형외과',naegwa:'내과',angwa:'안과',shimui:'의료광고심의','지역마케팅':'지역마케팅'};
@@ -8345,7 +8327,9 @@ function switchAI(id){
   document.querySelectorAll('.ai-tab').forEach(function(t){t.classList.remove('active');});
   var panel=document.getElementById('ai-'+id);
   if(panel)panel.classList.add('active');
-  event.target.classList.add('active');
+  // 전역 event 의존 제거(Firefox 호환) — id로 탭 매칭
+  var order=['geo','aeo','seo'],i=order.indexOf(id),btns=document.querySelectorAll('.ai-tab');
+  if(i>-1&&btns[i])btns[i].classList.add('active');
 }
 
 // ── 블로그 필터 ──

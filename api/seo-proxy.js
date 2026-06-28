@@ -14,15 +14,31 @@ const { URL } = require('url');
 // 단순 GET → JSON 패스스루 (entity, psi 공용)
 function getJson(fullUrl, res, withRaw) {
   https.get(fullUrl, function(r) {
-    var body = '';
-    r.on('data', function(c) { body += c; });
+    var chunks = [];
+    r.on('data', function(c) { chunks.push(c); });
     r.on('end', function() {
+      var body = Buffer.concat(chunks).toString('utf8');
       try { res.status(r.statusCode).json(JSON.parse(body)); }
       catch (e) {
         res.status(500).json(withRaw ? { error: 'Parse error', raw: body.slice(0, 300) } : { error: 'Parse error' });
       }
     });
   }).on('error', function(e) { res.status(500).json({ error: e.message }); });
+}
+
+// SSRF 방지: 내부/사설/링크로컬 호스트 차단
+function isBlockedHost(hostname) {
+  var h = (hostname || '').toLowerCase();
+  if (h === 'localhost' || h === '0.0.0.0' || h === '::1' || h.endsWith('.local') || h.endsWith('.internal')) return true;
+  var m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    var a = +m[1], b = +m[2];
+    if (a === 10 || a === 127 || a === 0) return true;
+    if (a === 169 && b === 254) return true;          // link-local / metadata
+    if (a === 172 && b >= 16 && b <= 31) return true; // private
+    if (a === 192 && b === 168) return true;          // private
+  }
+  return false;
 }
 
 // 리다이렉트 추적 URL fetch (fetch 타입용)
@@ -115,9 +131,10 @@ module.exports = async function handler(req, res) {
         'X-Customer': customerId, 'X-Signature': signature
       }
     }, function(r) {
-      var body = '';
-      r.on('data', function(c) { body += c; });
+      var chunks = [];
+      r.on('data', function(c) { chunks.push(c); });
       r.on('end', function() {
+        var body = Buffer.concat(chunks).toString('utf8');
         try { res.status(r.statusCode).json(JSON.parse(body)); }
         catch (e) { res.status(500).json({ error: 'Parse error', raw: body.slice(0, 500) }); }
       });
@@ -132,6 +149,9 @@ module.exports = async function handler(req, res) {
     try {
       var full = url.startsWith('http') ? url : 'https://' + url;
       var parsed = new URL(full);
+      if (!/^https?:$/.test(parsed.protocol) || isBlockedHost(parsed.hostname)) {
+        return res.status(400).json({ error: '허용되지 않는 주소입니다.' });
+      }
       var origin = parsed.protocol + '//' + parsed.host;
       var results = await Promise.allSettled([fetchUrl(full, 0), fetchUrl(origin + '/robots.txt', 0)]);
       var pageResult = results[0], robotsResult = results[1];

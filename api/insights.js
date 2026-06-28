@@ -71,8 +71,8 @@ async function search(req, res) {
     httpReq({ hostname: 'openapi.naver.com', path: `/v1/search/blog.json?query=${eq}&display=3&sort=date`, headers: naverHeaders() }),
     httpReq({ hostname: 'openapi.naver.com', path: `/v1/search/webkr.json?query=${eq}&display=1`, headers: naverHeaders() }),
   ]);
-  if (blog.status !== 200) {
-    return res.status(blog.status || 500).json({ error: (blog.json && blog.json.errorMessage) || blog.error || ('HTTP ' + blog.status) });
+  if (blog.status !== 200 || !blog.json) {
+    return res.status(blog.status && blog.status !== 200 ? blog.status : 502).json({ error: (blog.json && blog.json.errorMessage) || blog.error || '네이버 검색 응답 오류' });
   }
   return res.status(200).json({
     query: q,

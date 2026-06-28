@@ -1,6 +1,6 @@
 'use strict';
 
-const { getPosts, savePost, appendLog } = require('../lib/github-store');
+const { getPosts, savePost, appendLog, deletePost } = require('../lib/github-store');
 
 function authCheck(req) {
   const secret = process.env.ADMIN_SECRET;
@@ -27,14 +27,8 @@ module.exports = async function handler(req, res) {
     if (action === 'publish') post.status = 'published';
     else if (action === 'unpublish') post.status = 'draft';
     else if (action === 'delete') {
-      const filtered = posts.filter(p => p.id !== id);
-      const { savePost: _, ...store } = require('../lib/github-store');
-      // 전체 목록 저장
-      const { getPosts: gp } = require('../lib/github-store');
-      const { sha } = await gp();
-      const ghStore = require('../lib/github-store');
-      // 직접 posts 배열 저장
-      await require('../lib/github-store').savePost({ ...post, status: '__delete__' });
+      await deletePost(id);
+      await appendLog({ action: 'delete', id, title: post.title });
       return res.status(200).json({ ok: true, action: 'deleted' });
     }
 

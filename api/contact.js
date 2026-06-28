@@ -11,13 +11,13 @@ module.exports = async function handler(req, res) {
     // Vercel auto-parses JSON body; fallback to raw read
     var body = req.body;
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      var raw = '';
+      var _chunks = [];
       await new Promise(function(resolve, reject) {
-        req.on('data', function(c) { raw += c; });
+        req.on('data', function(c) { _chunks.push(c); });
         req.on('end', resolve);
         req.on('error', reject);
       });
-      try { body = JSON.parse(raw); } catch(e) { body = {}; }
+      try { body = JSON.parse(Buffer.concat(_chunks).toString('utf8')); } catch(e) { body = {}; }
     }
 
     if (!body || !body.hospital) {

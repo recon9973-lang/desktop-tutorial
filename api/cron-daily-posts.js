@@ -41,10 +41,11 @@ function authCheck(req) {
 
 async function loadSettings() {
   try {
-    const { default: fetch } = await import('node-fetch').catch(() => ({ default: null }));
-    if (!fetch) return DEFAULT_SETTINGS;
+    // Node 18+ Vercel 런타임의 전역 fetch 사용 (node-fetch 의존 제거 — 조용한 무력화 방지)
+    const f = (typeof fetch !== 'undefined') ? fetch : null;
+    if (!f) return DEFAULT_SETTINGS;
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-    const r = await fetch(`${baseUrl}/api/posting-settings`, {
+    const r = await f(`${baseUrl}/api/posting-settings`, {
       headers: { Authorization: `Bearer ${process.env.ADMIN_SECRET || ''}` },
     });
     if (r.ok) return await r.json();
