@@ -1,0 +1,114 @@
+/* Notion 디자인 토큰 — DESIGNnotion.md 기반 */
+:root {
+  /* Colors */
+  --primary:            #0075de;
+  --primary-active:     #005bab;
+  --secondary:          #213183;
+  --on-primary:         #ffffff;
+  --canvas:             #ffffff;
+  --canvas-soft:        #f6f5f4;
+  --surface:            #ffffff;
+  --ink:                #000000;
+  --ink-secondary:      #31302e;
+  --ink-muted:          #615d59;
+  --ink-faint:          #a39e98;
+  --hairline:           #e6e6e6;
+  --accent-sky:         #62aef0;
+  --accent-purple:      #d6b6f6;
+  --accent-pink:        #ff64c8;
+  --accent-orange:      #dd5b00;
+  --accent-teal:        #2a9d99;
+  --accent-green:       #1aae39;
+
+  /* Radius */
+  --r-xs:   4px;
+  --r-sm:   5px;
+  --r-md:   8px;
+  --r-lg:   12px;
+  --r-xl:   16px;
+  --r-full: 9999px;
+
+  /* Spacing */
+  --sp-xxs: 4px;
+  --sp-xs:  8px;
+  --sp-sm:  12px;
+  --sp-md:  16px;
+  --sp-lg:  24px;
+  --sp-xl:  28px;
+  --sp-xxl: 32px;
+
+  /* Shadow — barely-there layered (Notion Level-1) */
+  --shadow-soft:
+    rgba(0,0,0,0.01) 0 0.175px 1.041px,
+    rgba(0,0,0,0.02) 0 0.8px 2.925px,
+    rgba(0,0,0,0.027) 0 2.025px 7.847px,
+    rgba(0,0,0,0.04) 0 4px 18px;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: Inter, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--canvas-soft);
+}
+
+/* Typography helpers */
+.display-1 { font-size: 64px; font-weight: 700; line-height: 1.0;  letter-spacing: -2.125px; }
+.display-2 { font-size: 54px; font-weight: 700; line-height: 1.04; letter-spacing: -1.875px; }
+.heading-1 { font-size: 40px; font-weight: 700; line-height: 1.1;  letter-spacing: -1px; }
+.heading-2 { font-size: 26px; font-weight: 700; line-height: 1.23; letter-spacing: -0.625px; }
+.heading-3 { font-size: 22px; font-weight: 700; line-height: 1.27; letter-spacing: -0.25px; }
+.title     { font-size: 20px; font-weight: 600; line-height: 1.4;  letter-spacing: -0.125px; }
+.body-md   { font-size: 16px; font-weight: 400; line-height: 1.5;  letter-spacing: 0; }
+.body-sm   { font-size: 15px; font-weight: 400; line-height: 1.33; letter-spacing: 0; }
+.btn-text  { font-size: 16px; font-weight: 500; line-height: 1.5;  letter-spacing: 0; }
+.caption   { font-size: 14px; font-weight: 400; line-height: 1.43; letter-spacing: 0; }
+.eyebrow   { font-size: 12px; font-weight: 600; line-height: 1.33; letter-spacing: 0.125px; text-transform: uppercase; }
+
+/* Button — primary pill */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-xs);
+  background: var(--primary); color: var(--on-primary);
+  font-size: 16px; font-weight: 500; line-height: 1.5;
+  border: none; border-radius: var(--r-full);
+  padding: 10px var(--sp-xl); cursor: pointer; transition: background 0.15s, transform 0.1s;
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--primary-active); }
+.btn-primary:active { transform: scale(0.97); background: var(--primary-active); }
+
+/* Button — secondary pill */
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-xs);
+  background: var(--surface); color: var(--ink);
+  font-size: 16px; font-weight: 500; line-height: 1.5;
+  border: 1px solid var(--hairline); border-radius: var(--r-full);
+  padding: 10px var(--sp-xl); cursor: pointer; transition: box-shadow 0.15s;
+  box-shadow: var(--shadow-soft); text-decoration: none;
+}
+.btn-secondary:hover { box-shadow: var(--shadow-soft), 0 0 0 1px var(--hairline); }
+
+/* Badge pill */
+.badge {
+  display: inline-flex; align-items: center;
+  background: var(--surface); color: var(--primary);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.125px; text-transform: uppercase;
+  border-radius: var(--r-full); padding: 4px var(--sp-xs);
+  border: 1px solid var(--hairline);
+}
+
+/* Feature card */
+.card {
+  background: var(--surface); border-radius: var(--r-lg);
+  border: 1px solid var(--hairline); padding: var(--sp-lg);
+}
+.card-elevated {
+  background: var(--surface); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft); padding: var(--sp-lg);
+}

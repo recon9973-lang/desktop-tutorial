@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "note": "설문 문항 스키마. 각 step의 answers가 engine/recommend.js 입력(concerns/medications/allergies/profile)으로 매핑."
+  },
+  "steps": [
+    {
+      "id": "profile",
+      "title": "기본 정보",
+      "subtitle": "맞춤 추천을 위해 기본 정보를 알려주세요",
+      "type": "profile",
+      "fields": [
+        {
+          "id": "age_range",
+          "label": "나이대",
+          "type": "chip_single",
+          "required": true,
+          "options": [
+            { "value": "10s", "label": "10대" },
+            { "value": "20s", "label": "20대" },
+            { "value": "30s", "label": "30대" },
+            { "value": "40s", "label": "40대" },
+            { "value": "50s", "label": "50대" },
+            { "value": "60plus", "label": "60대 이상" }
+          ]
+        },
+        {
+          "id": "sex",
+          "label": "성별",
+          "type": "chip_single",
+          "required": true,
+          "options": [
+            { "value": "M", "label": "남성" },
+            { "value": "F", "label": "여성" },
+            { "value": "N", "label": "선택 안 함" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "concerns",
+      "title": "어떤 부분이 고민인가요?",
+      "subtitle": "해당되는 것을 모두 선택해주세요 (최대 3개 권장)",
+      "type": "multi_card",
+      "maps_to": "user.concerns",
+      "required": true,
+      "options": [
+        { "value": "fatigue",      "label": "피로 / 기력 저하",    "emoji": "😴", "hint": "만성 피로, 기운 없음" },
+        { "value": "sleep_stress", "label": "수면 / 스트레스",      "emoji": "🌙", "hint": "잠들기 어려움, 긴장 지속" },
+        { "value": "eye",          "label": "눈 피로 / 눈 건강",    "emoji": "👁️", "hint": "눈 침침함, 장시간 화면" },
+        { "value": "blood_lipid",  "label": "혈관 / 혈중 지질",     "emoji": "❤️", "hint": "중성지방, 콜레스테롤 관리" },
+        { "value": "bone_joint",   "label": "뼈 / 관절",            "emoji": "🦴", "hint": "관절 불편함, 골밀도" },
+        { "value": "immune",       "label": "면역력",                "emoji": "🛡️", "hint": "잦은 감기, 면역 저하" },
+        { "value": "gut",          "label": "장 건강 / 소화",        "emoji": "🦠", "hint": "변비, 불규칙한 소화" },
+        { "value": "liver",        "label": "간 건강",               "emoji": "🍺", "hint": "잦은 음주, 피로 회복" },
+        { "value": "anemia_women", "label": "빈혈 / 여성 건강",      "emoji": "🩸", "hint": "빈혈, 생리 불순, 임신 준비" },
+        { "value": "menopause",    "label": "갱년기",                "emoji": "🌡️", "hint": "갱년기 증상 관리" }
+      ]
+    },
+    {
+      "id": "lifestyle",
+      "title": "생활 습관을 알려주세요",
+      "subtitle": "더 정확한 추천을 위해 활용됩니다",
+      "type": "chip_group",
+      "fields": [
+        {
+          "id": "smoking",
+          "label": "흡연",
+          "type": "chip_single",
+          "maps_to": "user.lifestyle.smoking",
+          "note": "⚠️ 흡연자는 고용량 베타카로틴 주의",
+          "options": [
+            { "value": "none",    "label": "비흡연" },
+            { "value": "past",    "label": "과거 흡연" },
+            { "value": "current", "label": "현재 흡연" }
+          ]
+        },
+        {
+          "id": "drinking",
+          "label": "음주",
+          "type": "chip_single",
+          "maps_to": "user.lifestyle.drinking",
+          "note": "잦은 음주 시 간 건강 고민 추가 제안",
+          "options": [
+            { "value": "none",    "label": "거의 안 함" },
+            { "value": "social",  "label": "가끔 (주 1회 이하)" },
+            { "value": "regular", "label": "자주 (주 2회 이상)" }
+          ]
+        },
+        {
+          "id": "exercise",
+          "label": "운동",
+          "type": "chip_single",
+          "maps_to": "user.lifestyle.exercise",
+          "options": [
+            { "value": "none",    "label": "거의 안 함" },
+            { "value": "light",   "label": "가볍게 (주 1~2회)" },
+            { "value": "regular", "label": "규칙적으로 (주 3회+)" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "medications",
+      "title": "현재 복용 중인 약이 있나요?",
+      "subtitle": "영양제 상호작용 안전 확인에 사용됩니다 (없으면 건너뛰기)",
+      "type": "multi_chip",
+      "maps_to": "user.medications",
+      "required": false,
+      "none_option": { "value": "none", "label": "복용 중인 약 없음" },
+      "options": [
+        { "value": "warfarin",       "label": "와파린 (항응고제)",       "icon": "💊" },
+        { "value": "antiplatelet",   "label": "아스피린 / 항혈소판제",   "icon": "💊" },
+        { "value": "antihypertensive","label": "혈압약",                 "icon": "💊" },
+        { "value": "statin",         "label": "스타틴 (고지혈증약)",      "icon": "💊" },
+        { "value": "levothyroxine",  "label": "갑상선호르몬제",           "icon": "💊" },
+        { "value": "antibiotics",    "label": "항생제",                  "icon": "💊" },
+        { "value": "other",          "label": "기타 (전문의 상담 권장)",  "icon": "💊" }
+      ]
+    },
+    {
+      "id": "allergies",
+      "title": "알레르기가 있나요?",
+      "subtitle": "해당 성분이 포함된 영양제는 추천에서 제외됩니다",
+      "type": "multi_chip",
+      "maps_to": "user.allergies",
+      "required": false,
+      "none_option": { "value": "none", "label": "알레르기 없음" },
+      "options": [
+        { "value": "milk",   "label": "우유 / 유제품", "icon": "🥛" },
+        { "value": "soy",    "label": "대두 / 콩",     "icon": "🫘" },
+        { "value": "peanut", "label": "땅콩",          "icon": "🥜" },
+        { "value": "fish",   "label": "생선 / 해산물", "icon": "🐟" },
+        { "value": "gluten", "label": "글루텐",        "icon": "🌾" }
+      ]
+    }
+  ]
+}
