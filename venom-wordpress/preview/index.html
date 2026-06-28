@@ -9,6 +9,9 @@
 <meta name="robots" content="index, follow">
 <meta name="author" content="병원마케팅 베놈">
 <link rel="canonical" href="https://desktop-tutorial-chi-peach.vercel.app/">
+<link rel="alternate" hreflang="ko" href="https://desktop-tutorial-chi-peach.vercel.app/">
+<link rel="alternate" hreflang="en" href="https://desktop-tutorial-chi-peach.vercel.app/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://desktop-tutorial-chi-peach.vercel.app/">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="병원마케팅 베놈 — 대한민국 No.1 병원 전문 마케팅 에이전시">
@@ -662,6 +665,7 @@ body{padding-top:0}
       </ul></nav>
     </div>
     <div class="header-actions">
+      <button id="lang-toggle" class="lang-toggle" onclick="vnToggleLang()" aria-label="Language" title="Language">EN</button>
       <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-sm">💬 상담신청</a>
       <button class="mob-menu-btn" id="mobMenuBtn" onclick="toggleMobMenu()" aria-label="메뉴 열기">
         <span></span><span></span><span></span>
@@ -8740,6 +8744,65 @@ function toggleMobSub(btn){
 }
 // ESC 키로 닫기
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMenu(); });
+</script>
+<style>
+.lang-toggle{background:none;border:1.5px solid var(--border);color:var(--ink2);font-size:12px;font-weight:600;padding:6px 12px;border-radius:9999px;cursor:pointer;transition:.2s;white-space:nowrap}
+.lang-toggle:hover{border-color:var(--p);color:var(--p)}
+@media(max-width:768px){.lang-toggle{padding:6px 9px;font-size:11px}}
+</style>
+<script>
+// ── 다국어(i18n) — 텍스트노드 사전 기반 한/영 토글 (단일 SPA용) · 1차 사전 ──
+(function(){
+  var DICT={
+    // 내비게이션
+    '병원마케팅':'Hospital Marketing','AI마케팅':'AI Marketing','온라인마케팅':'Online Marketing','블로그':'Blog','홈페이지 제작':'Website Design',
+    '💬 상담신청':'💬 Contact','상담신청':'Contact','과목별':'By Specialty','서비스':'Services',
+    '치과마케팅':'Dental Marketing','피부과마케팅':'Dermatology Marketing','정형외과마케팅':'Orthopedic Marketing','한의원마케팅':'Korean Medicine Marketing','성형외과마케팅':'Plastic Surgery Marketing','내과마케팅':'Internal Medicine Marketing','안과마케팅':'Ophthalmology Marketing','의료광고심의':'Medical Ad Review','의료기기마케팅':'Medical Device Marketing',
+    'GEO — 생성AI 최적화':'GEO — Generative AI Optimization','AEO — 답변엔진 최적화':'AEO — Answer Engine Optimization','SEO — 검색엔진 최적화':'SEO — Search Engine Optimization',
+    // 히어로
+    'AI × 병원마케팅 전문 에이전시':'AI × Hospital Marketing Agency',
+    '네이버·카카오·구글 통합 운영':'Naver · Kakao · Google, unified',
+    '💬 카카오상담':'💬 KakaoTalk','💬 카카오 상담':'💬 KakaoTalk','AI 마케팅 알아보기':'Explore AI Marketing','서비스 살펴보기':'View Services','💬 카카오 상담신청':'💬 KakaoTalk Inquiry',
+    // 섹션 배지/제목
+    '무료 진단 도구':'Free Diagnostic Tools','지금 바로 점수를 확인하세요':'Check your score now','SEO·GEO 엔티티·키워드 검색량을 무료로 진단합니다':'Free diagnosis of SEO, GEO entity, and keyword volume',
+    '1분 자가진단':'1-Minute Self-Check','실행 로드맵':'Execution Roadmap','성과 사례':'Case Studies','Core Services':'Core Services',
+    // 도구 탭
+    '🔍 SEO 점수 체크':'🔍 SEO Score','🤖 GEO 점수 체크':'🤖 GEO Score','📊 키워드 검색량 체크':'📊 Keyword Volume','📈 검색 트렌드':'📈 Search Trends','🤖 AI 추천 확인':'🤖 AI Recommendation','🔎 노출·경쟁 진단':'🔎 Exposure & Competition',
+    '분석하기':'Analyze','검색량 조회':'Check Volume','결과 보기':'See Results','트렌드 보기':'Show Trends','AI에게 물어보기':'Ask AI','진단하기':'Diagnose','다시 진단하기':'Restart',
+    // 자가진단
+    '진료과 선택':'Select specialty','결과 보기':'See Results',
+    // 로드맵
+    'AI·검색에 노출되는':'Getting found on AI & Search','각 단계를 눌러 무엇을 어떻게 하는지 확인하세요.':'Tap each step to see what to do and how.',
+    '진단':'Diagnose','기반 정비':'Foundation','콘텐츠':'Content','AI·검색 노출':'AI & Search Visibility','측정·고도화':'Measure & Optimize',
+    '현재 노출 상태부터 정확히 파악':'Start by measuring your current visibility','검색·AI가 신뢰할 토대 만들기':'Build a foundation search & AI can trust','환자의 질문에 답하는 콘텐츠(AEO)':'Content that answers patient questions (AEO)','ChatGPT·구글 AI가 인용하게':'Get cited by ChatGPT & Google AI','데이터로 지속 개선':'Continuously improve with data',
+    '💬 우리 병원은 몇 단계? 무료 진단받기':'💬 Which stage are you at? Get a free diagnosis',
+    // 사례
+    '문제':'Problem','베놈의 해결':'VENOM Solution','이 병원들은':'How did these clinics','어떻게':'change?',
+    // 공통 CTA/푸터
+    'AI 검색 시대를 선점하세요':'Lead the AI search era','지금 시작하는 병원이 6개월 후 ChatGPT·구글·네이버를 독점합니다.':'Clinics that start now will dominate ChatGPT, Google, and Naver in 6 months.',
+    '마케팅 전문 상담':'Marketing consultation','최근 글':'Recent Posts','카테고리':'Categories','관련 포스팅':'Related Posts'
+  };
+  var applied=[];
+  function skip(p){var t=p.nodeName;return t==='SCRIPT'||t==='STYLE'||t==='TEXTAREA'||t==='CODE';}
+  function translateTree(){
+    var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null),nodes=[],n;
+    while(n=w.nextNode()){ if(n.parentNode&&!skip(n.parentNode)&&n.nodeValue.trim()) nodes.push(n); }
+    nodes.forEach(function(node){ var ko=node.nodeValue,key=ko.trim(); if(DICT[key]){ applied.push({node:node,ko:ko}); node.nodeValue=ko.replace(key,DICT[key]); } });
+    var inputs=document.querySelectorAll('input[placeholder],textarea[placeholder]');
+    Array.prototype.forEach.call(inputs,function(el){ var k=el.getAttribute('placeholder'); if(DICT[k]){ applied.push({el:el,ko:k}); el.setAttribute('placeholder',DICT[k]); } });
+  }
+  function restore(){ applied.forEach(function(a){ if(a.node)a.node.nodeValue=a.ko; else if(a.el)a.el.setAttribute('placeholder',a.ko); }); applied=[]; }
+  window.vnSetLang=function(lang){
+    restore();
+    if(lang==='en'){ translateTree(); document.documentElement.lang='en'; } else { document.documentElement.lang='ko'; }
+    var btn=document.getElementById('lang-toggle'); if(btn)btn.textContent=(lang==='en')?'한국어':'EN';
+    try{ localStorage.setItem('venom-lang',lang); }catch(e){}
+  };
+  window.vnToggleLang=function(){ var cur='ko'; try{cur=localStorage.getItem('venom-lang')||'ko';}catch(e){} window.vnSetLang(cur==='en'?'ko':'en'); };
+  window.vnRetranslate=function(){ var l='ko'; try{l=localStorage.getItem('venom-lang')||'ko';}catch(e){} if(l==='en')translateTree(); };
+  function init(){ var l=null; try{l=new URLSearchParams(location.search).get('lang');}catch(e){} if(!l){try{l=localStorage.getItem('venom-lang');}catch(e){}} if(l==='en')window.vnSetLang('en'); }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
 </script>
 </body>
 </html>
