@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "당신의 영양제",
+    "slug": "your-supplement",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#213183" },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yoursupplement.app"
+    },
+    "android": {
+      "package": "com.yoursupplement.app",
+      "adaptiveIcon": { "backgroundColor": "#213183" }
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-notifications", {
+        "icon": "./assets/icon.png",
+        "color": "#0075de"
+      }]
+    ],
+    "scheme": "yoursupplement"
+  }
+}
