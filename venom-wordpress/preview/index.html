@@ -990,6 +990,9 @@ body{padding-top:0}
         <button class="tool-tab active" onclick="switchTool('seo')">🔍 SEO 점수 체크</button>
         <button class="tool-tab" onclick="switchTool('geo')">🤖 GEO 점수 체크</button>
         <button class="tool-tab" onclick="switchTool('kw')">📊 키워드 검색량 체크</button>
+        <button class="tool-tab" onclick="switchTool('trend')">📈 검색 트렌드</button>
+        <button class="tool-tab" onclick="switchTool('aeo')">🤖 AI 추천 확인</button>
+        <button class="tool-tab" onclick="switchTool('expose')">🔎 노출·경쟁 진단</button>
       </div>
 
       <!-- SEO 점수 체크 -->
@@ -1020,6 +1023,37 @@ body{padding-top:0}
         </div>
         <p class="tool-hint">월간 검색량·경쟁도·예상 광고비를 분석합니다</p>
         <div id="kw-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 📈 검색 트렌드 (네이버 데이터랩) -->
+      <div id="tool-trend" class="tool-panel">
+        <div class="tool-input-wrap">
+          <input type="text" id="trend-input" class="tool-input" placeholder="키워드 입력 (쉼표로 최대 3개 비교: 임플란트, 교정, 라미네이트)" onkeydown="if(event.key==='Enter')runTrend()">
+          <button class="tool-btn" onclick="runTrend()">트렌드 보기</button>
+        </div>
+        <p class="tool-hint">최근 1년간 네이버 검색 트렌드를 비교합니다 (데이터랩 기준 상대지수)</p>
+        <div id="trend-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 🤖 AI 추천 확인 (Perplexity 웹검색) -->
+      <div id="tool-aeo" class="tool-panel">
+        <div class="tool-input-wrap" style="flex-wrap:wrap;gap:8px">
+          <input type="text" id="aeo-q" class="tool-input" placeholder="AI에게 물어볼 질문 (예: 대전 유성구 임플란트 잘하는 치과 추천)">
+          <input type="text" id="aeo-name" class="tool-input" placeholder="우리 병원명 (언급 여부 확인)">
+          <button class="tool-btn" onclick="runAeo()">AI에게 물어보기</button>
+        </div>
+        <p class="tool-hint">실제 AI 검색엔진에 질문해, 답변에 우리 병원이 언급되는지 확인합니다 (GEO/AEO 가시성)</p>
+        <div id="aeo-result" class="tool-result" style="display:none"></div>
+      </div>
+
+      <!-- 🔎 노출·경쟁 진단 (네이버 검색) -->
+      <div id="tool-expose" class="tool-panel">
+        <div class="tool-input-wrap">
+          <input type="text" id="expose-q" class="tool-input" placeholder="키워드 입력 (예: 대전 임플란트)" onkeydown="if(event.key==='Enter')runExpose()">
+          <button class="tool-btn" onclick="runExpose()">진단하기</button>
+        </div>
+        <p class="tool-hint">해당 키워드의 블로그·웹 콘텐츠 경쟁량과 최근 발행 추이를 진단합니다</p>
+        <div id="expose-result" class="tool-result" style="display:none"></div>
       </div>
     </div>
   </section>
@@ -4845,11 +4879,80 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 function switchTool(id){
   document.querySelectorAll('.tool-tab').forEach(function(t,i){t.classList.remove('active');});
   document.querySelectorAll('.tool-panel').forEach(function(p){p.classList.remove('active');});
-  var tabs=['seo','geo','kw'];
+  var tabs=['seo','geo','kw','trend','aeo','expose'];
   tabs.forEach(function(t,i){if(t===id)document.querySelectorAll('.tool-tab')[i].classList.add('active');});
   document.getElementById('tool-'+id).classList.add('active');
 }
 function toolReady(type){}
+
+// ── 인사이트 도구 (네이버 데이터랩/검색 + AI 추천) ──
+var _INSIGHTS='https://desktop-tutorial-chi-peach.vercel.app/api/insights';
+function _spin(t){return '<div style="text-align:center;padding:28px 0;color:var(--mute)">'+t+'</div>';}
+function _err(el,m){el.innerHTML='<div style="padding:16px;background:#fff5f5;border:1px solid #fed7d7;border-radius:10px;color:#c53030;font-size:13px">⚠️ '+m+'</div>';}
+
+function runTrend(){
+  var raw=document.getElementById('trend-input').value.trim();
+  if(!raw){alert('키워드를 입력해주세요');return;}
+  var kws=raw.split(',').map(function(s){return s.trim();}).filter(Boolean).slice(0,3);
+  var el=document.getElementById('trend-result');el.style.display='block';el.innerHTML=_spin('📈 네이버 검색 트렌드 분석 중...');
+  var qs=kws.map(function(k,i){return (i===0?'keyword=':'keyword'+(i+1)+'=')+encodeURIComponent(k);}).join('&');
+  fetch(_INSIGHTS+'?type=trend&'+qs).then(function(r){return r.json();}).then(function(d){
+    if(d.error){_err(el,d.error);return;}
+    var results=d.results||[];if(!results.length){_err(el,'데이터가 없습니다');return;}
+    var colors=['#533afd','#f96bee','#10b981'];
+    var html='<div style="font-weight:600;margin-bottom:14px">최근 1년 검색 트렌드 (상대지수)</div>';
+    results.forEach(function(g,gi){
+      var data=g.data||[];var max=Math.max.apply(null,data.map(function(x){return x.ratio;}).concat([1]));
+      var last=data.length?Math.round(data[data.length-1].ratio):0;
+      html+='<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px"><span style="color:'+colors[gi]+'">'+g.title+'</span><span style="color:var(--mute)">최근 지수 '+last+'</span></div>';
+      html+='<div style="display:flex;align-items:flex-end;gap:2px;height:60px">';
+      data.forEach(function(p){var h=Math.round(p.ratio/max*100);html+='<div title="'+p.period+': '+Math.round(p.ratio)+'" style="flex:1;height:'+h+'%;min-height:2px;background:'+colors[gi]+';opacity:.85;border-radius:2px 2px 0 0"></div>';});
+      html+='</div></div>';
+    });
+    html+='<div style="font-size:12px;color:var(--mute);margin-top:8px">출처: 네이버 데이터랩 · 기간 내 최고치=100 기준 상대값</div>';
+    html+='<div style="margin-top:16px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-sm">💬 이 트렌드로 우리 병원 전략 상담</a></div>';
+    el.innerHTML=html;
+  }).catch(function(e){_err(el,'요청 실패: '+e.message);});
+}
+
+function runExpose(){
+  var q=document.getElementById('expose-q').value.trim();
+  if(!q){alert('키워드를 입력해주세요');return;}
+  var el=document.getElementById('expose-result');el.style.display='block';el.innerHTML=_spin('🔎 노출·경쟁 진단 중...');
+  fetch(_INSIGHTS+'?type=search&query='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
+    if(d.error){_err(el,d.error);return;}
+    var comp=d.blogTotal>50000?'매우 높음':d.blogTotal>10000?'높음':d.blogTotal>2000?'보통':'낮음(기회)';
+    var cc=d.blogTotal>50000?'#dc2626':d.blogTotal>10000?'#f59e0b':d.blogTotal>2000?'#2563eb':'#16a34a';
+    var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">'
+      +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center"><div style="font-size:12px;color:var(--mute)">블로그 콘텐츠 경쟁량</div><div style="font-size:24px;font-weight:700;color:var(--p)">'+(d.blogTotal||0).toLocaleString()+'</div></div>'
+      +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center"><div style="font-size:12px;color:var(--mute)">경쟁 강도</div><div style="font-size:20px;font-weight:700;color:'+cc+'">'+comp+'</div></div></div>';
+    if(d.recent&&d.recent.length){
+      html+='<div style="font-size:13px;font-weight:600;margin-bottom:8px">최근 발행 콘텐츠</div>';
+      d.recent.forEach(function(it){var dt=it.date?it.date.replace(/(\d{4})(\d{2})(\d{2})/,'$1.$2.$3'):'';html+='<div style="font-size:13px;color:var(--ink2);padding:6px 0;border-bottom:1px solid var(--soft)">'+it.title+' <span style="color:var(--mute);font-size:11px">'+dt+'</span></div>';});
+    }
+    html+='<div style="margin-top:16px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-sm">💬 이 키워드 상위노출 전략 상담</a></div>';
+    el.innerHTML=html;
+  }).catch(function(e){_err(el,'요청 실패: '+e.message);});
+}
+
+function runAeo(){
+  var q=document.getElementById('aeo-q').value.trim();var name=document.getElementById('aeo-name').value.trim();
+  if(!q){alert('질문을 입력해주세요');return;}
+  var el=document.getElementById('aeo-result');el.style.display='block';el.innerHTML=_spin('🤖 실제 AI 검색엔진에 질문 중... (10~20초)');
+  fetch(_INSIGHTS+'?type=aeo&q='+encodeURIComponent(q)+(name?'&name='+encodeURIComponent(name):'')).then(function(r){return r.json();}).then(function(d){
+    if(d.error){_err(el,d.error);return;}
+    var html='';
+    if(d.mentioned!==null&&d.name){
+      var ok=d.mentioned;
+      html+='<div style="background:'+(ok?'#f0fdf4':'#fff5f5')+';border:1px solid '+(ok?'#bbf7d0':'#fecaca')+';border-radius:10px;padding:14px 16px;margin-bottom:14px;font-weight:600;color:'+(ok?'#16a34a':'#dc2626')+'">'
+        +(ok?'✅ AI 답변에 "'+d.name+'"이(가) 언급됐습니다!':'❌ AI 답변에 "'+d.name+'"은(는) 언급되지 않았습니다 — GEO/AEO 최적화가 필요합니다')+'</div>';
+    }
+    html+='<div style="font-size:13px;font-weight:600;margin-bottom:6px">AI 답변</div><div style="background:var(--soft);border-radius:10px;padding:16px;font-size:13px;line-height:1.7;color:var(--ink2);white-space:pre-wrap;max-height:300px;overflow-y:auto">'+(d.answer||'').replace(/</g,'&lt;')+'</div>';
+    if(d.citations&&d.citations.length){html+='<div style="font-size:11px;color:var(--mute);margin-top:8px">출처: '+d.citations.slice(0,3).map(function(u){return '<a href="'+u+'" target="_blank" rel="nofollow" style="color:var(--p)">'+u.replace(/^https?:\/\//,'').slice(0,30)+'…</a>';}).join(', ')+'</div>';}
+    html+='<div style="margin-top:16px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-sm">💬 AI 검색에 우리 병원 노출시키기</a></div>';
+    el.innerHTML=html;
+  }).catch(function(e){_err(el,'요청 실패: '+e.message);});
+}
 
 var _PSI_PROXY='https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=psi';
 
