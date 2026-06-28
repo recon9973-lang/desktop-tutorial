@@ -39,6 +39,15 @@ function buyLinks(name) {
   ];
 }
 
+// 공인 출처 (data/sources.json 요약) — "근거 기반" 정체성을 화면에 노출
+const EVIDENCE_SOURCES = [
+  { name: '식품안전나라', org: '식약처', url: 'https://www.foodsafetykorea.go.kr', tag: '국내 건기식' },
+  { name: '의약품안전나라', org: '식약처', url: 'https://nedrug.mfds.go.kr', tag: '국내 의약품' },
+  { name: '약학정보원', org: '대한약사회', url: 'https://www.health.kr', tag: '약 식별·상호작용' },
+  { name: 'NIH ODS', org: '미국 국립보건원', url: 'https://ods.od.nih.gov', tag: '성분 근거등급' },
+  { name: 'MedlinePlus', org: '미국 국립의학도서관', url: 'https://medlineplus.gov', tag: '약·영양제 상호작용' },
+];
+
 function StarBadge({ level }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: 'rgba(245,184,0,0.1)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>
@@ -324,6 +333,33 @@ export default function ResultPage() {
           }}>
             등록하기 →
           </button>
+        </div>
+
+        {/* 근거 출처 — "광고 아닌 근거 기반" 정체성 노출 */}
+        <div className="card" style={{ borderRadius: 'var(--r-xl)', marginTop: 28 }}>
+          <h3 className="title" style={{ marginBottom: 4 }}>📚 이 추천의 근거 출처</h3>
+          <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginBottom: 14 }}>
+            블로그·광고가 아닌 <strong>정부·공인기관 공식 데이터</strong>만 사용해요. 직접 확인해보세요.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {EVIDENCE_SOURCES.map((s) => (
+              <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '10px 14px',
+                  textDecoration: 'none', gap: 8,
+                }}>
+                <span>
+                  <strong style={{ fontSize: 14, color: 'var(--ink)' }}>{s.name}</strong>
+                  <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginLeft: 6 }}>{s.org}</span>
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(0,117,222,0.08)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{s.tag}</span>
+                  <span style={{ color: 'var(--primary)', fontSize: 14 }}>→</span>
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Disclaimer */}
