@@ -1,8 +1,8 @@
 {
   "outputDirectory": "venom-wordpress/preview",
   "functions": {
-    "api/generate-post.js": { "maxDuration": 120, "includeFiles": "node_modules/{@jsquash,wasm-feature-detect}/**" },
-    "api/cron-daily-posts.js": { "maxDuration": 120, "includeFiles": "node_modules/{@jsquash,wasm-feature-detect}/**" },
+    "api/generate-post.js": { "maxDuration": 120 },
+    "api/cron-daily-posts.js": { "maxDuration": 120 },
     "api/health.js": { "maxDuration": 20 },
     "api/insights.js": { "maxDuration": 30 },
     "api/posting-settings.js": { "maxDuration": 15 },
