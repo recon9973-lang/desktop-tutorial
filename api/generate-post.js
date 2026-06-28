@@ -40,8 +40,13 @@ module.exports = async function handler(req, res) {
         const img1 = await generateAndSaveImage(post.imagePrompt, post.id, 0, post.title);
         if (img1 && img1.url) {
           images.push(img1.url);
-          const heroImg = `<figure style="margin:0 0 32px;border-radius:12px;overflow:hidden">
-  <img src="${img1.url}" alt="${post.title}" style="width:100%;height:auto;display:block" loading="lazy">
+          // SEO용 alt(제목+키워드+브랜드, 속성 깨짐 방지 위해 큰따옴표 이스케이프)
+          const safe = (s) => String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+          const altText = `${safe(post.title)} | ${safe(keyword)} - 병원마케팅 베놈`;
+          const LOGO = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png';
+          const heroImg = `<figure style="position:relative;margin:0 0 32px;border-radius:12px;overflow:hidden">
+  <img src="${img1.url}" alt="${altText}" style="width:100%;height:auto;display:block" loading="lazy">
+  <img src="${LOGO}" alt="병원마케팅 베놈 로고" style="position:absolute;right:14px;bottom:36px;width:104px;height:auto;opacity:.95;filter:drop-shadow(0 2px 8px rgba(0,0,0,.45))">
   <figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">© 병원마케팅 베놈</figcaption>
 </figure>`;
           post.html = heroImg + post.html;
