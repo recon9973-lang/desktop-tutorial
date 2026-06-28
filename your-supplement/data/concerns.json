@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "note": "고민(concern) → 추천 성분 매핑. ingredient_ids는 추천 우선순위 순. 점수는 recommendation_rules.json + interactions.json와 결합해 최종 계산."
+  },
+  "concerns": [
+    {
+      "id": "fatigue",
+      "label": "피로 / 기력 저하",
+      "emoji": "😴",
+      "ingredients": ["vitamin_b_complex", "korean_ginseng", "magnesium", "coq10"]
+    },
+    {
+      "id": "sleep_stress",
+      "label": "수면 / 스트레스",
+      "emoji": "🌙",
+      "ingredients": ["lactium", "magnesium"]
+    },
+    {
+      "id": "eye",
+      "label": "눈 피로 / 눈 건강",
+      "emoji": "👁️",
+      "ingredients": ["lutein", "omega3"]
+    },
+    {
+      "id": "blood_lipid",
+      "label": "혈관 / 혈중 지질",
+      "emoji": "❤️",
+      "ingredients": ["omega3", "red_yeast_rice", "coq10"]
+    },
+    {
+      "id": "bone_joint",
+      "label": "뼈 / 관절",
+      "emoji": "🦴",
+      "ingredients": ["vitamin_d", "calcium", "msm", "magnesium"]
+    },
+    {
+      "id": "immune",
+      "label": "면역력",
+      "emoji": "🛡️",
+      "ingredients": ["vitamin_c", "zinc", "vitamin_d", "korean_ginseng"]
+    },
+    {
+      "id": "gut",
+      "label": "장 건강 / 소화",
+      "emoji": "🦠",
+      "ingredients": ["probiotics"]
+    },
+    {
+      "id": "liver",
+      "label": "간 건강 (음주·피로)",
+      "emoji": "🍺",
+      "ingredients": ["milk_thistle"]
+    },
+    {
+      "id": "anemia_women",
+      "label": "빈혈 / 여성 건강",
+      "emoji": "🩸",
+      "ingredients": ["iron", "folate", "vitamin_c"]
+    },
+    {
+      "id": "menopause",
+      "label": "갱년기",
+      "emoji": "🌡️",
+      "ingredients": ["korean_ginseng"]
+    }
+  ]
+}
