@@ -1,0 +1,17 @@
+# 환경변수 — 절대 커밋 금지 (API 키 포함)
+.env
+.env.local
+.env.*.local
+
+# 의존성
+node_modules/
+
+# 빌드 산출물
+apps/web/.next/
+apps/mobile/.expo/
+dist/
+build/
+
+# 로그·OS
+*.log
+.DS_Store
