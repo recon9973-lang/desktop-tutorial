@@ -86,8 +86,11 @@ module.exports = async function handler(req, res) {
       let imageError = null;
       try {
         const imgUrls = [];
-        const fig = (url, cap) => `<figure style="margin:24px 0 32px;border-radius:12px;overflow:hidden">`
-          + `<img src="${url}" alt="${post.title}" style="width:100%;height:auto;display:block" loading="lazy">`
+        const safe = (s) => String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        const LOGO = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png';
+        const fig = (url, cap, alt) => `<figure style="position:relative;margin:24px 0 32px;border-radius:12px;overflow:hidden">`
+          + `<img src="${url}" alt="${safe(alt || post.title)}" style="width:100%;height:auto;display:block" loading="lazy">`
+          + `<img src="${LOGO}" alt="병원마케팅 베놈 로고" style="position:absolute;right:14px;bottom:36px;width:104px;height:auto;opacity:.95;filter:drop-shadow(0 2px 8px rgba(0,0,0,.45))">`
           + `<figcaption style="font-size:12px;color:#888;text-align:center;padding:8px">${cap}</figcaption>`
           + `</figure>`;
 
@@ -98,7 +101,7 @@ module.exports = async function handler(req, res) {
         ]);
         if (img1 && img1.url) {
           imgUrls.push(img1.url);
-          post.html = fig(img1.url, '© 병원마케팅 베놈') + post.html;
+          post.html = fig(img1.url, '© 병원마케팅 베놈', `${post.title} | 병원마케팅 베놈`) + post.html;
         } else if (img1 && img1.error) {
           imageError = img1.error;
         }
@@ -106,7 +109,7 @@ module.exports = async function handler(req, res) {
         // 2번째 이미지(베스트 에포트) — 실패해도 무시
         if (img2 && img2.url) {
           imgUrls.push(img2.url);
-          const second = fig(img2.url, '병원마케팅 베놈 — 데이터 기반 전략');
+          const second = fig(img2.url, '병원마케팅 베놈 — 데이터 기반 전략', `${post.title} 데이터 분석 | 병원마케팅 베놈`);
           // 첫 번째 </h2> 뒤에 삽입, 없으면 본문 끝에 추가
           const h2End = post.html.indexOf('</h2>');
           post.html = h2End > -1
