@@ -1,5 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
+import KakaoMap from '../../components/KakaoMap';
+
+// 두 좌표 간 거리(m) — 하버사인
+function distanceM(a, b) {
+  if (!a || !b || !b.lat || !b.lng) return null;
+  const R = 6371000, toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(s)));
+}
+const fmtDist = (m) => (m == null ? null : m < 1000 ? `${m}m` : `${(m / 1000).toFixed(1)}km`);
 
 const TABS = [
   { id: 'pharmacy', label: '💊 문 연 약국', desc: '지금 영업 중인 약국' },
@@ -29,6 +40,17 @@ export default function NearbyPage() {
   const [tab, setTab] = useState('pharmacy');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [myLoc, setMyLoc] = useState(null);
+
+  // 내 위치 (localhost·https에서 동작). 거부/실패해도 목록은 그대로 표시.
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setMyLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { timeout: 8000 }
+    );
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -38,7 +60,10 @@ export default function NearbyPage() {
       .catch(() => setLoading(false));
   }, [tab]);
 
-  const current = TABS.find((t) => t.id === tab);
+  // 거리 계산 + 가까운 순 정렬 (내 위치 있을 때)
+  const items = (data?.items || [])
+    .map((it) => ({ ...it, _dist: distanceM(myLoc, it) }))
+    .sort((a, b) => (a._dist ?? Infinity) - (b._dist ?? Infinity));
 
   return (
     <div style={{ background: 'var(--canvas-soft)', minHeight: '100vh' }}>
@@ -72,9 +97,16 @@ export default function NearbyPage() {
 
       {/* List */}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '20px 24px 48px' }}>
+        {/* Map */}
+        <div style={{ marginBottom: 16 }}>
+          <KakaoMap items={items} myLocation={myLoc} />
+        </div>
+
         {/* Location note */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
-          <p style={{ fontSize: 14, color: 'var(--ink-muted)' }}>📍 서울 강남구 기준</p>
+          <p style={{ fontSize: 14, color: 'var(--ink-muted)' }}>
+            {myLoc ? '📍 내 위치에서 가까운 순' : '📍 서울 강남구 기준'}
+          </p>
           {data?.source === 'sample'
             ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-faint)', background: 'var(--hairline)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>샘플 데이터</span>
             : <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-green)', background: 'rgba(26,174,57,0.1)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>실시간 공공데이터</span>}
@@ -82,7 +114,7 @@ export default function NearbyPage() {
 
         {loading && <p style={{ textAlign: 'center', color: 'var(--ink-muted)', padding: 40 }}>불러오는 중...</p>}
 
-        {!loading && data?.items?.map((it, i) => {
+        {!loading && items.map((it, i) => {
           const st = openStatus(it);
           return (
             <div key={i} className="card" style={{ borderRadius: 'var(--r-xl)', marginBottom: 12 }}>
@@ -107,7 +139,10 @@ export default function NearbyPage() {
                       <span style={{ fontSize: 12, color: 'var(--ink-muted)', marginLeft: 6 }}>· 가용 병상 {it.beds}</span>
                     )}
                   </div>
-                  <p style={{ fontSize: 13, color: 'var(--ink-muted)' }}>📍 {it.addr}</p>
+                  <p style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
+                    📍 {it.addr}
+                    {it._dist != null && <span style={{ color: 'var(--primary)', fontWeight: 600 }}> · {fmtDist(it._dist)}</span>}
+                  </p>
                 </div>
               </div>
 
@@ -128,7 +163,7 @@ export default function NearbyPage() {
           );
         })}
 
-        {!loading && (!data?.items || data.items.length === 0) && (
+        {!loading && items.length === 0 && (
           <p style={{ textAlign: 'center', color: 'var(--ink-faint)', padding: 40 }}>표시할 곳이 없어요.</p>
         )}
 
