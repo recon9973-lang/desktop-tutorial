@@ -1,22 +1,27 @@
 {
-  "enabled": false,
+  "enabled": true,
   "schedules": [
     {
       "from": "2026-06-28",
       "to": "2026-07-28",
-      "dailyCount": 1
+      "dailyCount": 5
     }
   ],
   "categories": [
-    "angwa"
+    "geo_local"
   ],
   "keywords": [
-    "백내장",
-    "녹내장"
+    "병원마케팅",
+    "GEO",
+    "AI"
   ],
   "regions": [
-    "대구"
+    "대구",
+    "부산",
+    "인천",
+    "광주",
+    "대전"
   ],
   "extra": "",
-  "updatedAt": "2026-06-28T13:14:25.980Z"
+  "updatedAt": "2026-06-29T01:52:52.790Z"
 }
