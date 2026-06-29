@@ -170,7 +170,21 @@ function generate(specPath) {
   const { spec, blueprint, specialty, scale, options, seoFiles } = prepare(raw);
 
   const tpl = fs.readFileSync(path.join(ROOT, 'blueprints', spec.category, 'template.html'), 'utf8');
-  const html = render(tpl, spec);
+  let html = render(tpl, spec);
+
+  // 의료광고 검수 (medical_review 옵션)
+  let medReviewLine = '';
+  if (options.includes('medical_review')) {
+    const { runMedicalReview } = require('./options/medical-review');
+    const rv = runMedicalReview(html);
+    html = rv.html;
+    if (rv.fixed) {
+      const n = rv.report.before.forbidden.length;
+      medReviewLine = `  의료광고 검수  : ⚠ 금지어 ${n}개 자동 수정 완료`;
+    } else {
+      medReviewLine = '  의료광고 검수  : ✅ 이상 없음';
+    }
+  }
 
   const outDir = path.join(ROOT, 'output', spec.slug);
   fs.mkdirSync(outDir, { recursive: true });
@@ -186,6 +200,7 @@ function generate(specPath) {
   console.log(`  도메인   : ${spec.domain}`);
   console.log(`  페이지   : ${scale.pages.join(', ')}`);
   console.log(`  옵션 팩  : ${options.join(', ')}`);
+  if (medReviewLine) console.log(medReviewLine);
   console.log(`  출력 위치: auto-site-factory/output/${spec.slug}/`);
   console.log(`  생성 파일: index.html, ${Object.keys(seoFiles).join(', ')}`);
   console.log('────────────────────────────────\n');

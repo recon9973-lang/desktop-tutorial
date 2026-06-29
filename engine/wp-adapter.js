@@ -64,14 +64,26 @@ function buildScript(rawSpec) {
   L.push(`SITE_URL=$(${wp} site create --slug='${slug}' --title='${esc(spec.brand.name)}' --porcelain 2>/dev/null || ${wp} site list --field=url --url='${slug}')`);
   L.push(`SITE='${slug}'`);
   L.push('');
-  L.push('# 2) 브랜드 디자인 토큰 (대표색상) 저장');
-  L.push(`${wp} option update --url="$SITE" venom_primary '${esc(spec.brand.primary)}'`);
+  L.push('# 2) 브랜드 디자인 토큰 저장');
+  L.push(`${wp} option update --url="$SITE" venom_primary   '${esc(spec.brand.primary)}'`);
+  L.push(`${wp} option update --url="$SITE" venom_phone     '${esc(spec.brand.phone || '')}'`);
+  L.push(`${wp} option update --url="$SITE" venom_address   '${esc(spec.brand.address || '')}'`);
+  L.push(`${wp} option update --url="$SITE" venom_region    '${esc(spec.brand.region || '')}'`);
+  L.push(`${wp} option update --url="$SITE" venom_specialty '${esc(spec.clinic && spec.clinic.specialty || '')}'`);
+  L.push(`${wp} option update --url="$SITE" venom_keywords  '${esc((specialty.keywords || []).join(','))}'`);
   L.push(`${wp} option update --url="$SITE" blogdescription '${esc(spec.brand.tagline)}'`);
   L.push('');
-  L.push('# 3) 옵션 팩 플러그인 활성화');
+  L.push('# 3) 베놈 플러그인 설치 + 활성화');
+  // 플러그인 소스 경로 (Docker 마운트 기준: /app = 리포지토리 루트)
+  L.push('VENOM_PLUGINS_SRC="${VENOM_PLUGINS_SRC:-/app/venom-plugins}"');
+  L.push('WP_PLUGINS_DIR="${WP_PLUGINS_DIR:-/var/www/html/wp-content/plugins}"');
   const plugins = options.flatMap(o => OPTION_PLUGINS[o] || []);
+  // 필요한 플러그인만 복사 (멱등: 이미 있으면 덮어쓰기)
+  for (const plugin of plugins) {
+    L.push(`[ -d "$VENOM_PLUGINS_SRC/${plugin}" ] && cp -r "$VENOM_PLUGINS_SRC/${plugin}" "$WP_PLUGINS_DIR/" || true`);
+  }
   if (plugins.length) {
-    L.push(`${wp} plugin activate --url="$SITE" ${plugins.join(' ')} || true`);
+    L.push(`${wp} plugin activate --network ${plugins.join(' ')} || true`);
   }
   L.push('');
   L.push('# 4) 페이지 생성');
