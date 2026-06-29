@@ -1,0 +1,24 @@
+{
+  "category": "clinic",
+  "scale": "standard",
+  "domain": "seoul-smile.com",
+  "locale": ["ko"],
+  "brand": {
+    "name": "서울미소치과",
+    "tagline": "정직한 진료, 편안한 미소",
+    "primary": "#533afd",
+    "region": "서울 강남",
+    "phone": "02-1234-5678",
+    "address": "서울특별시 강남구 테헤란로 123, 4층",
+    "kakao": "https://pf.kakao.com/_example/chat"
+  },
+  "clinic": {
+    "specialty": "dental",
+    "doctors": [
+      { "name": "김치과 원장", "role": "치과 전문의 / 보철과", "desc": "임플란트·심미보철 20년 임상" },
+      { "name": "이교정 원장", "role": "교정과 전문의", "desc": "투명교정·성인교정 전문" },
+      { "name": "박구강 원장", "role": "구강외과 전문의", "desc": "사랑니·잇몸치료 전문" }
+    ]
+  },
+  "options": ["seo_pack", "medical_review", "blog_auto", "image_pack", "analytics"]
+}

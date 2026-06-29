@@ -1,0 +1,27 @@
+{
+  "category": "clinic",
+  "label": "병원·의료",
+  "description": "의료기관 전문 홈페이지. 의료광고심의 기반 신뢰형 구조.",
+  "defaultOptions": ["seo_pack", "medical_review", "blog_auto", "image_pack", "analytics"],
+  "specialties": {
+    "dental":   { "label": "치과",   "keywords": ["임플란트", "교정", "충치치료", "심미보철"] },
+    "skin":     { "label": "피부과", "keywords": ["여드름", "기미·색소", "보톡스", "필러", "레이저"] },
+    "ortho":    { "label": "정형외과", "keywords": ["도수치료", "관절", "척추", "물리치료"] },
+    "oriental": { "label": "한의원", "keywords": ["다이어트", "교통사고", "추나", "한약"] },
+    "plastic":  { "label": "성형외과", "keywords": ["눈", "코", "안면윤곽", "리프팅"] },
+    "naegwa":   { "label": "내과",   "keywords": ["건강검진", "내시경", "당뇨", "고혈압"] },
+    "angwa":    { "label": "안과",   "keywords": ["라식", "라섹", "백내장", "노안교정"] }
+  },
+  "scales": {
+    "lite":     { "label": "Lite",     "pages": ["home"] },
+    "standard": { "label": "Standard", "pages": ["home", "departments", "doctors", "reviews", "contact"] },
+    "pro":      { "label": "Pro",      "pages": ["home", "departments", "doctors", "reviews", "blog", "directions", "contact"] }
+  },
+  "sections": {
+    "home": ["hero", "trust", "departments", "doctors", "reviews", "faq", "cta"]
+  },
+  "compliance": {
+    "ruleset": "medical_ad",
+    "note": "의료광고법 준수 — 효과 보증·최상급 표현·환자 후기 단정 금지. medical_review 옵션이 발행 전 자동 검수."
+  }
+}
