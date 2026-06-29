@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698336039",
+    "title": "코성형 마케팅: 효과적인 시술과 주의사항 5가지",
+    "category": "plastic",
+    "keyword": "코성형",
+    "tokenUsage": {
+      "promptTokens": 2278,
+      "completionTokens": 1941,
+      "totalTokens": 4219,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:59:14.682Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698298949",
     "title": "코성형의 모든 것: 절차·부작용·주의사항 총정리",
     "category": "plastic",
