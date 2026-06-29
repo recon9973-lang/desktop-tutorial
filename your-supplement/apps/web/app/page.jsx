@@ -138,6 +138,45 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 지도 서비스 — 문 연 약국·응급실 찾기 */}
+      <section style={{ maxWidth: 900, margin: '80px auto', padding: '0 var(--sp-lg)' }}>
+        <div style={{
+          borderRadius: 'var(--r-xl)', overflow: 'hidden', border: '1px solid var(--hairline)',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        }}>
+          <div style={{ background: 'var(--secondary)', color: '#fff', padding: '40px 32px' }}>
+            <span className="badge" style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', marginBottom: 16, display: 'inline-flex' }}>
+              공공데이터 기반
+            </span>
+            <h2 style={{ fontSize: 30, fontWeight: 700, letterSpacing: -0.6, marginBottom: 12 }}>
+              🗺️ 문 연 약국·응급실 찾기
+            </h2>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)', marginBottom: 28 }}>
+              추천받은 영양제, 어디서 사죠? 지금 영업 중인 약국부터<br />
+              24시 응급실·야간 소아진료까지 지도에서 한 번에.
+            </p>
+            <Link href="/nearby" className="btn-primary" style={{ fontSize: 16, padding: '12px 28px', background: '#fff', color: 'var(--secondary)' }}>
+              지도에서 찾기 →
+            </Link>
+          </div>
+          <div style={{ background: 'var(--canvas)', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 16, justifyContent: 'center' }}>
+            {[
+              { emoji: '💊', title: '지금 문 연 약국', body: '영업 중·심야·공휴일 약국을 내 위치 가까운 순으로' },
+              { emoji: '🚨', title: '24시 응급실', body: '응급의료기관 위치와 연락처 · 전화·길찾기 바로가기' },
+              { emoji: '🌙', title: '야간 소아진료', body: '달빛어린이병원 등 밤에 여는 소아과' },
+            ].map((f) => (
+              <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>{f.emoji}</span>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--ink)' }}>{f.title}</p>
+                  <p style={{ fontSize: 13.5, color: 'var(--ink-muted)', marginTop: 2 }}>{f.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section style={{ textAlign: 'center', padding: '80px var(--sp-lg)' }}>
         <h2 className="heading-2" style={{ marginBottom: 12 }}>지금 바로 내 영양제를 찾아보세요</h2>

@@ -469,6 +469,26 @@ export default function ResultPage() {
           </button>
         </div>
 
+        {/* 살 약국 찾기 CTA — 추천 → 구매처(약국) 자연 연결 */}
+        <Link href="/nearby?type=pharmacy" style={{ textDecoration: 'none' }}>
+          <div className="card" style={{
+            borderRadius: 'var(--r-xl)', marginTop: 16, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
+          }}>
+            <div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>🗺️ 이 영양제, 가까운 약국에서 받기</h3>
+              <p style={{ fontSize: 14, color: 'var(--ink-muted)' }}>지금 문 연 약국 · 24시 응급실을 내 위치 기준으로</p>
+            </div>
+            <span style={{
+              background: 'var(--primary)', color: '#fff',
+              borderRadius: 'var(--r-full)', padding: '10px 24px',
+              fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap',
+            }}>
+              약국 찾기 →
+            </span>
+          </div>
+        </Link>
+
         {/* 근거 출처 — "광고 아닌 근거 기반" 정체성 노출 */}
         <div className="card" style={{ borderRadius: 'var(--r-xl)', marginTop: 28 }}>
           <h3 className="title" style={{ marginBottom: 4 }}>📚 이 추천의 근거 출처</h3>
