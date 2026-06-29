@@ -76,6 +76,48 @@ function buildReviews(reviews, specialty) {
   ).join('\n');
 }
 
+// 소상공인 메뉴·서비스 카드 --------------------------------------------------------
+function buildMenu(menu, specialty) {
+  const list = (menu && menu.length) ? menu
+    : specialty.keywords.slice(0, 4).map(k => ({ name: k, price: '', desc: `${specialty.label} 대표 메뉴·서비스` }));
+  return list.map(item => {
+    const priceHtml = item.price
+      ? `<div class="price">${item.price}<span>원</span></div>` : '';
+    return `<div class="card">` +
+      `<div class="ic">${String(item.name).trim().charAt(0)}</div>` +
+      `<h3>${item.name}</h3>${priceHtml}<p>${item.desc || ''}</p></div>`;
+  }).join('\n');
+}
+
+// 영업시간 테이블 ------------------------------------------------------------------
+function buildHours(hours) {
+  const list = (hours && hours.length) ? hours : [
+    { day: '평일', time: '09:00 – 18:00' },
+    { day: '주말·공휴일', time: '10:00 – 17:00' },
+    { day: '정기 휴무', time: '매주 월요일' },
+  ];
+  return list.map(h =>
+    `<div class="hour-row"><span class="day">${h.day}</span><span class="time">${h.time}</span></div>`
+  ).join('\n');
+}
+
+// 로컬 후기 (별점 포함) -------------------------------------------------------------
+function buildLocalReviews(reviews, specialty) {
+  const list = (reviews && reviews.length) ? reviews
+    : specialty.keywords.slice(0, 3).map((k, i) => ({
+        author: `고객 ${i + 1}`,
+        stars: 5,
+        body: `${k} 덕분에 정말 만족스러웠어요. 다음에도 꼭 다시 올게요.`,
+      }));
+  return list.map(r => {
+    const stars = '★'.repeat(Math.min(5, Math.max(1, r.stars || 5)));
+    return `<div class="review-card">` +
+      `<div class="stars">${stars}</div>` +
+      `<p class="body">${r.body}</p>` +
+      `<div class="author">— ${r.author || '익명 고객'}</div></div>`;
+  }).join('\n');
+}
+
 function buildTrust(stats) {
   const list = stats && stats.length ? stats : [
     { num: '20년+', lbl: '진료 경력' },
@@ -108,57 +150,91 @@ function buildFaq(faq, brand, specialty) {
 
 // --- prepare(): site-spec 을 풍부화하고 섹션/SEO/페이지 콘텐츠 생성 --------
 // 정적 생성기와 WP 어댑터가 공유하는 단일 진실 소스.
+// clinic / local 두 카테고리를 모두 지원한다.
 function prepare(spec) {
   const blueprint = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'blueprints', spec.category, 'blueprint.json'), 'utf8')
   );
-  const specialty = blueprint.specialties[spec.clinic?.specialty] || blueprint.specialties.dental;
-  const scale = blueprint.scales[spec.scale] || blueprint.scales.standard;
+
+  // 카테고리 범용: clinic → specialties, local → types
+  const subCatMap = blueprint.specialties || blueprint.types || {};
+  const subCatKey = spec.clinic?.specialty || spec.local?.type;
+  const specialty  = subCatMap[subCatKey] || Object.values(subCatMap)[0];
+
+  const scale   = blueprint.scales[spec.scale] || blueprint.scales.standard;
   const options = Array.from(new Set([...(blueprint.defaultOptions || []), ...(spec.options || [])]));
 
-  spec.lang = (spec.locale && spec.locale[0]) || 'ko';
+  spec.lang     = (spec.locale && spec.locale[0]) || 'ko';
   spec.specialty = specialty;
-  spec.slug = slugify(spec.domain || spec.brand.name);
-  spec.hero = spec.hero || {};
-  spec.hero.headline = spec.hero.headline ||
-    `${spec.brand.region} <b>${specialty.label}</b>,<br>믿을 수 있는 ${spec.brand.name}`;
-  spec.hero.sub = spec.hero.sub ||
-    `${specialty.keywords.slice(0, 3).join(' · ')} — 정확한 진단과 정직한 진료로 함께합니다.`;
-  spec.meta = {
-    description: `${spec.brand.region} ${specialty.label} ${spec.brand.name}. ${specialty.keywords.join(', ')} 진료. 상담 ${spec.brand.phone}.`,
-    keywords: [spec.brand.name, specialty.label, ...specialty.keywords].join(', '),
-  };
+  spec.slug      = slugify(spec.domain || spec.brand.name);
+  spec.hero      = spec.hero || {};
 
-  // 이미지: 고객 실사진(spec.images) > 진료과목 기본 스톡 > 자체 플레이스홀더.
-  // VENOM_LOCAL_PLACEHOLDERS=1 이면 외부 URL 무시(오프라인 미리보기/스크린샷용).
+  // 카테고리별 기본 헤드라인·서브카피
+  if (spec.category === 'clinic') {
+    spec.hero.headline = spec.hero.headline ||
+      `${spec.brand.region} <b>${specialty.label}</b>,<br>믿을 수 있는 ${spec.brand.name}`;
+    spec.hero.sub = spec.hero.sub ||
+      `${specialty.keywords.slice(0, 3).join(' · ')} — 정확한 진단과 정직한 진료로 함께합니다.`;
+    spec.meta = {
+      description: `${spec.brand.region} ${specialty.label} ${spec.brand.name}. ${specialty.keywords.join(', ')} 진료. 상담 ${spec.brand.phone}.`,
+      keywords: [spec.brand.name, specialty.label, ...specialty.keywords].join(', '),
+    };
+  } else {
+    spec.hero.headline = spec.hero.headline ||
+      `${spec.brand.region} <b>${specialty.label}</b>,<br>${spec.brand.name}`;
+    spec.hero.sub = spec.hero.sub ||
+      `${specialty.keywords.slice(0, 3).join(' · ')} — ${spec.brand.tagline || ''}`;
+    spec.meta = {
+      description: `${spec.brand.region} ${specialty.label} ${spec.brand.name}. ${specialty.keywords.join(', ')}. 문의 ${spec.brand.phone}.`,
+      keywords: [spec.brand.name, specialty.label, spec.brand.region, ...specialty.keywords].join(', '),
+    };
+    // 소상공인 전용 브랜드 필드 기본값
+    spec.brand.instagram   = spec.brand.instagram   || '';
+    spec.brand.naver_place = spec.brand.naver_place || '';
+  }
+
+  // 이미지: 고객 실사진(spec.images) > 업종 기본 스톡 > 자체 플레이스홀더.
+  // VENOM_LOCAL_PLACEHOLDERS=1 이면 외부 URL 무시(오프라인 미리보기용).
   const localOnly = process.env.VENOM_LOCAL_PLACEHOLDERS === '1';
   const stock = localOnly ? {} : (specialty.stock || {});
   spec.images = Object.assign({}, stock, spec.images || {});
   const ph = placeholderDataUri;
-  spec.images.intro = spec.images.intro || ph('병원 내부 전경');
-  // 히어로/CTA: 실사진이 있으면 그 사진을 배경으로, 없으면 브랜드 그라데이션(글자 가독성 확보).
+  spec.images.intro = spec.images.intro || ph(spec.category === 'clinic' ? '병원 내부 전경' : '매장 내부');
   if (spec.images.hero) {
     spec.images.heroBg = `url('${spec.images.hero}')`;
   } else {
-    spec.images.hero = '';
+    spec.images.hero   = '';
     spec.images.heroBg = `linear-gradient(135deg, var(--p), var(--bd))`;
   }
 
   const faq = buildFaq(spec.faq, spec.brand, specialty);
-  spec.sections = {
-    trust: buildTrust(spec.trust),
-    departments: buildDepartments(specialty),
-    doctors: buildDoctors(spec.clinic?.doctors, spec.images),
-    reviews: buildReviews(spec.reviews, specialty),
-    gallery: buildGallery(spec.images.gallery, ph),
-    faq: faq.html,
-    faqSchema: faq.schema,
-  };
+
+  if (spec.category === 'clinic') {
+    spec.sections = {
+      trust:       buildTrust(spec.trust),
+      departments: buildDepartments(specialty),
+      doctors:     buildDoctors(spec.clinic?.doctors, spec.images),
+      reviews:     buildReviews(spec.reviews, specialty),
+      gallery:     buildGallery(spec.images.gallery, ph),
+      faq:         faq.html,
+      faqSchema:   faq.schema,
+    };
+  } else {
+    spec.sections = {
+      trust:   buildTrust(spec.trust),
+      menu:    buildMenu(spec.local?.menu, specialty),
+      hours:   buildHours(spec.local?.hours),
+      reviews: buildLocalReviews(spec.reviews, specialty),
+      gallery: buildGallery(spec.images.gallery, ph),
+      faq:     faq.html,
+      faqSchema: faq.schema,
+    };
+  }
 
   const seoFiles = {
     'robots.txt': robotsTxt(spec.domain),
     'sitemap.xml': sitemapXml(spec.domain, scale.pages),
-    'llms.txt': llmsTxt(spec, specialty),
+    'llms.txt':    llmsTxt(spec, specialty),
   };
 
   return { spec, blueprint, specialty, scale, options, seoFiles };
