@@ -422,7 +422,7 @@ body{padding-top:0}
   border-radius:0 var(--r8) var(--r8) 0;font-size:15.5px;font-weight:300;
   color:var(--ink2);line-height:1.8;margin-bottom:28px}
 /* logo marquee banner */
-.logo-marquee-section{background:#10123a;padding:1px 0;overflow:hidden}
+.logo-marquee-section{background:#10123a;padding:8px 0;overflow:hidden}
 .logo-marquee-inner{display:flex;align-items:center;gap:0;overflow:hidden;position:relative}
 .logo-marquee-inner::before,.logo-marquee-inner::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none}
 .logo-marquee-inner::before{left:0;background:linear-gradient(to right,#10123a,transparent)}
@@ -430,7 +430,7 @@ body{padding-top:0}
 .logo-marquee-track{display:flex;align-items:center;animation:logoMarquee 24s linear infinite;white-space:nowrap;will-change:transform}
 /* 레퍼런스 로고 2배 확대(바 70px 유지). 간격은 gap 대신 각 이미지 margin-right로
    — 복제 경계까지 균일해야 translateX(-50%) 루프가 안 튐(끊김 방지). */
-.logo-marquee-track img{height:68px;width:auto;object-fit:contain;display:block;margin-right:48px;filter:brightness(0) invert(1);opacity:.6;flex-shrink:0;transition:opacity .2s}
+.logo-marquee-track img{height:54px;width:auto;object-fit:contain;display:block;margin-right:48px;filter:brightness(0) invert(1);opacity:.6;flex-shrink:0;transition:opacity .2s}
 .logo-marquee-track img:hover{opacity:1}
 @keyframes logoMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 /* stat-bar — tnum for numbers */
