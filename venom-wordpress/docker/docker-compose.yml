@@ -26,6 +26,15 @@ services:
       WORDPRESS_DB_NAME: venom_wp
       WORDPRESS_TABLE_PREFIX: vn_
       WORDPRESS_DEBUG: "true"
+      # 멀티사이트(서브디렉터리 네트워크) 활성화 — Site Factory 가 사이트를 찍어내는 모드
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ALLOW_MULTISITE', true);
+        define('MULTISITE', true);
+        define('SUBDOMAIN_INSTALL', false);
+        define('DOMAIN_CURRENT_SITE', 'localhost:8080');
+        define('PATH_CURRENT_SITE', '/');
+        define('SITE_ID_CURRENT_SITE', 1);
+        define('BLOG_ID_CURRENT_SITE', 1);
     volumes:
       - wp_data:/var/www/html
       - ../theme/venom-theme:/var/www/html/wp-content/themes/venom-theme

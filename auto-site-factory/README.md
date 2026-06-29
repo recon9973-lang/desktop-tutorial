@@ -47,8 +47,27 @@ node engine/generate.js samples/site-spec.example.json
 | ④ 다국어 | 자동번역 | 🔌 `lib/translate.js` 연결 예정 |
 | ⑥ 분석 | 방문 인사이트 | 🔌 `api/analytics.js` 연결 예정 |
 
-## 다음 단계 (2차)
+## 워드프레스 멀티사이트 배포 (2차 — 구현됨)
 
-- WP-CLI/REST 어댑터: 동일 `site-spec.json` → 워드프레스 멀티사이트에 실제 생성
-- 옵션 팩에 기존 `lib/*` 모듈 실제 연결
-- 소상공인(`local`) 블루프린트 추가
+같은 `site-spec.json`을 워드프레스 멀티사이트에 실제 사이트로 찍어낸다. (콘텐츠는 정적 출력과 동일 — `prepare()` 공유)
+
+```bash
+# 1) 멀티사이트 1회 초기화
+cd venom-wordpress/docker && ./multisite-setup.sh
+
+# 2) spec → 프로비저닝 스크립트 생성
+node auto-site-factory/engine/wp-adapter.js auto-site-factory/samples/site-spec.example.json --write
+#   → output/<slug>/provision.sh  (wp site create + 페이지 + 옵션팩 플러그인 + SEO)
+
+# 3) 멀티사이트에 실제 생성
+cd venom-wordpress/docker
+docker compose run --rm wp-cli bash < ../../auto-site-factory/output/<slug>/provision.sh
+```
+
+`provision.sh`가 하는 일: ① 네트워크에 새 사이트 생성 → ② 브랜드 색상/슬로건 저장 → ③ 옵션 팩 플러그인 활성화 → ④ 홈+서브 페이지 생성(콘텐츠 주입) → ⑤ SEO(robots/sitemap/llms.txt) 발행.
+
+## 다음 단계 (3차)
+
+- 옵션 팩 플러그인(`venom-seo`, `venom-autoblog` 등)에 기존 `lib/*` 모듈 실제 배선
+- 소상공인(`local`) 블루프린트 추가 — 두 번째 카테고리
+- 도메인 자동 매핑 + SSL + Cloudflare 캐시 연동
