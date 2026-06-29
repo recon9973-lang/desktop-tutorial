@@ -2,7 +2,8 @@
 
 const { generatePost } = require('../lib/post-generator');
 const { generateAndSaveImage } = require('../lib/image-generator');
-const { savePost, appendLog } = require('../lib/github-store');
+const { savePost, savePostEn, appendLog } = require('../lib/github-store');
+const { translatePostToEnglish } = require('../lib/translate');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -73,6 +74,16 @@ module.exports = async function handler(req, res) {
           tokenUsage: post.tokenUsage || null,
           imageGenerated: !!(post.images && post.images.length),
         });
+        // 방안 A: 발행 글은 영문 번역본도 생성·저장(실패해도 한글 발행엔 영향 없음)
+        if (publish) {
+          try {
+            const enPost = await translatePostToEnglish(post);
+            await savePostEn(enPost);
+            post._enSaved = true;
+          } catch (trErr) {
+            post._enError = trErr.message;
+          }
+        }
       } catch (storeErr) {
         post._storeError = storeErr.message;
       }

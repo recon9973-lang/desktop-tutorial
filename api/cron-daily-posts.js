@@ -2,7 +2,8 @@
 
 const { generatePost } = require('../lib/post-generator');
 const { generateAndSaveImage } = require('../lib/image-generator');
-const { savePost, appendLog, getPosts } = require('../lib/github-store');
+const { savePost, savePostEn, appendLog, getPosts } = require('../lib/github-store');
+const { translatePostToEnglish } = require('../lib/translate');
 const { updateSitemap } = require('../lib/sitemap-builder');
 
 const DEFAULT_SETTINGS = {
@@ -136,6 +137,13 @@ module.exports = async function handler(req, res) {
         // 의료광고 검증 통과 + 콘텐츠 오류 없음 → 즉시 발행
         post.status = 'published';
         await savePost(post);
+        // 방안 A: 발행 글의 영문 번역본도 생성·저장(실패해도 한글 발행엔 영향 없음)
+        try {
+          const enPost = await translatePostToEnglish(post);
+          await savePostEn(enPost);
+        } catch (trErr) {
+          await appendLog({ action: 'cron-en-fail', id: post.id, error: trErr.message });
+        }
         const action = post.autoFixed ? 'cron-publish-fixed' : 'cron-publish';
         await appendLog({ action, ...logBase, autoFixed: post.autoFixed });
         results.push({ ok: true, id: post.id, title: post.title, autoFixed: post.autoFixed });
