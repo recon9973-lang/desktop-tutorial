@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698039105",
+    "title": "부산 지역마케팅: GEO 최적화 5가지 전략",
+    "category": "geo_local",
+    "keyword": "GEO",
+    "tokenUsage": {
+      "promptTokens": 2272,
+      "completionTokens": 1911,
+      "totalTokens": 4183,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:54:16.472Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698000854",
     "title": "대구 병원마케팅: 지역 검색 최적화 5가지 전략",
     "category": "geo_local",
