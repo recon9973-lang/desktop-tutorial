@@ -5447,6 +5447,8 @@ function _renderFastSEO(data,url,domain,el){
   // 네이버 가이드: meta description도 head 내 1개. 다중이면 중복 경고
   var descCount=doc?doc.querySelectorAll('meta[name="description"],meta[name="Description"]').length:0;
   var hasViewport=!!metaByName('viewport');
+  // 파비콘(Google: 검색결과에 표시되는 사이트 아이콘) — link rel icon 계열 선언 여부
+  var hasFavicon=!!(doc&&doc.querySelector('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]'));
   var canonical=qa('link[rel="canonical"]','href');
   var lang=doc?(doc.documentElement.getAttribute('lang')||'').trim():'';
   var hasLd=/application\/ld\+json/i.test(html);
@@ -5545,14 +5547,25 @@ function _renderFastSEO(data,url,domain,el){
   var h1Note=h1Count===0?'H1 없음 — 페이지 대표 제목 추가 필요'
     :h1Count>1?('⚠ H1 '+h1Count+'개 발견 — 1개만 사용 권장(네이버)'):'대표 제목 1개 — 적정';
 
+  // ── 서술형 URL (Google URL 구조 가이드: 의미있는 단어, 임의 ID·세션ID·과다 파라미터 지양) ──
+  var urlPath='', urlSearch='';
+  try{var _u=new URL(url);urlPath=decodeURIComponent(_u.pathname);urlSearch=_u.search;}catch(e){urlPath='/';}
+  var hasSession=/[?&](sessionid|sid|phpsessid|jsessionid)=/i.test(urlSearch);
+  var isHome=(urlPath==='/'||urlPath==='');
+  var urlOk=(isHome&&!hasSession)
+    ||(/[a-z가-힣]{2,}/i.test(urlPath)&&!/\/\d{6,}(\/|$)/.test(urlPath)&&!/[0-9a-f]{16,}/i.test(urlPath)&&!hasSession);
+  var urlNote=hasSession?'세션ID 포함 — 쿠키 사용 권장(Google)'
+    :isHome?'홈 경로 — 적정'
+    :urlOk?'의미있는 단어 포함 — 적정':'임의 ID/숫자 경로 — 서술형 단어·하이픈(-) 권장';
+
   var checks={
     content:[
       ['제목(title) 태그',  '검색결과 제목 — '+titleNote,                      8,titlePass,'공통'],
       ['메타 디스크립션',   '검색결과 설명문 — '+descNote,                     8,descPass,'공통'],
-      ['H1 대표 제목',      h1Note,                                            6,h1Pass,'공통'],
-      ['헤딩 구조',         'H1→H2 논리적 계층 — 콘텐츠 구조화',               4,headOk,'Google'],
+      ['H1 대표 제목',      h1Note,                                            6,h1Pass,'네이버'],
       ['이미지 ALT 텍스트', '이미지 대체 텍스트 ('+imgDesc+')',               7,imgAltOk,'공통'],
       ['의미있는 링크 텍스트','서술형 앵커 — "여기 클릭" 류 지양',              5,linkTextOk,'Google'],
+      ['서술형 URL',        'URL에 의미있는 단어 — '+urlNote,                  4,urlOk,'Google'],
     ],
     tech:[
       ['HTTPS 보안 연결',   'SSL 적용 — Google·네이버 모두 신뢰 신호',         6,isHttps,'공통'],
@@ -5564,8 +5577,9 @@ function _renderFastSEO(data,url,domain,el){
     ],
     search:[
       ['구조화 데이터',     'Schema.org JSON-LD — 리치결과 노출',             7,hasLd,'Google'],
-      ['Open Graph 태그',   'og:title·og:description — 공유 미리보기',          7,ogOk,'네이버'],
-      ['sitemap.xml 선언',  'robots.txt에 Sitemap: 선언 — 수집 촉진',           5,hasSitemap,'공통'],
+      ['Open Graph 태그',   'og:title·og:description — 공유 미리보기',          6,ogOk,'네이버'],
+      ['sitemap.xml 선언',  'robots.txt에 Sitemap: 선언 — 수집 촉진',           4,hasSitemap,'공통'],
+      ['파비콘',            '검색결과에 표시되는 사이트 아이콘',                 2,hasFavicon,'Google'],
       ['robots.txt 존재',   '크롤러 수집 규칙 파일 제공',                       3,robotsTxtOk,'공통'],
     ],
     speed:[
@@ -5673,6 +5687,9 @@ function _renderFastSEO(data,url,domain,el){
       +'📚 평가 기준: <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=ko" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">Google SEO 시작 가이드</a>'
       +' · <a href="https://searchadvisor.naver.com/guide" target="_blank" rel="noopener" style="color:#03C75A;font-weight:700">네이버 서치어드바이저 가이드</a> 기반'
       +'<span style="margin-left:8px;white-space:nowrap"><span class="seo-src-badge" style="background:#4285F4">Google</span><span class="seo-src-badge" style="background:#03C75A">네이버</span><span class="seo-src-badge" style="background:#94a3b8">공통</span></span>'
+      +'<div style="margin-top:6px;font-size:10.5px;color:var(--mute2)">※ 본 진단은 공식 가이드에 근거한 참고용 분석입니다. 검색 순위는 보장하지 않으며, 1차 데이터는 '
+      +'<a href="https://search.google.com/search-console" target="_blank" rel="noopener" style="color:#4285F4;font-weight:600">Google Search Console</a>·'
+      +'<a href="https://searchadvisor.naver.com" target="_blank" rel="noopener" style="color:#03C75A;font-weight:600">네이버 서치어드바이저</a>에서 확인하세요.</div>'
     +'</div>'
     +allItems
     +'<div class="seo-grade-section"><div class="seo-section-title">점수별 등급</div>'+gradeRow+'</div>'
