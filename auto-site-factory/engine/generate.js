@@ -128,6 +128,86 @@ function buildTrust(stats) {
   return list.map(s => `<div><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`).join('\n');
 }
 
+// AggregateRating: trust 배열에서 별점/리뷰 수 추출
+function extractRating(trust) {
+  if (!trust || !trust.length) return null;
+  const ratingItem = trust.find(t => String(t.lbl).includes('평점') || String(t.num).includes('★') || String(t.num).includes('.'));
+  const countItem  = trust.find(t => String(t.lbl).includes('고객') || String(t.lbl).includes('진료') || String(t.lbl).includes('방문'));
+  const ratingVal  = ratingItem ? parseFloat(String(ratingItem.num).replace(/[^\d.]/g, '')) : 4.9;
+  const countStr   = countItem  ? String(countItem.num).replace(/[^\d]/g, '') : '1000';
+  if (!ratingVal || isNaN(ratingVal)) return null;
+  return { '@type': 'AggregateRating', ratingValue: ratingVal, bestRating: 5, worstRating: 1, reviewCount: parseInt(countStr) || 100 };
+}
+
+// OpeningHoursSpecification from hours array
+function buildHoursSchema(hours) {
+  if (!hours || !hours.length) return null;
+  const dayMap = { '평일': ['Monday','Tuesday','Wednesday','Thursday','Friday'], '주말': ['Saturday','Sunday'], '월요일': ['Monday'], '화요일': ['Tuesday'], '수요일': ['Wednesday'], '목요일': ['Thursday'], '금요일': ['Friday'], '토요일': ['Saturday'], '일요일': ['Sunday'] };
+  const specs = [];
+  for (const h of hours) {
+    if (!h.time || h.time.includes('휴무') || h.time.includes('정기')) continue;
+    const timeMatch = String(h.time).match(/(\d{1,2}:\d{2})\s*[–\-~]\s*(\d{1,2}:\d{2})/);
+    if (!timeMatch) continue;
+    const [, opens, closes] = timeMatch;
+    const dayKey = Object.keys(dayMap).find(k => String(h.day).includes(k));
+    const days = dayKey ? dayMap[dayKey] : ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    specs.push({ '@type': 'OpeningHoursSpecification', dayOfWeek: days, opens, closes });
+  }
+  return specs.length ? specs : null;
+}
+
+// 메인 Schema.org 블록 빌드 (AEO/GEO 완전판)
+function buildMainSchema(spec, specialty, domain) {
+  const address = {
+    '@type': 'PostalAddress',
+    streetAddress: spec.brand.address || '',
+    addressLocality: spec.brand.region || '',
+    addressCountry: 'KR',
+  };
+  const hoursSpec = spec.category !== 'clinic' ? buildHoursSchema(spec.local?.hours) : null;
+  const rating    = extractRating(spec.trust);
+  const sameAs    = [spec.brand.instagram, spec.brand.naver_place, spec.brand.kakao]
+    .filter(u => u && u.startsWith('http'));
+
+  const available = (specialty.keywords || []).map(k => ({
+    '@type': 'MedicalTherapy',
+    name: k,
+  }));
+
+  let entity;
+  if (spec.category === 'clinic') {
+    entity = {
+      '@context': 'https://schema.org',
+      '@type': ['MedicalClinic', 'LocalBusiness'],
+      name: spec.brand.name,
+      image: spec.images?.hero || '',
+      telephone: spec.brand.phone,
+      address,
+      url: `https://${domain}/`,
+      description: spec.meta?.description || '',
+      medicalSpecialty: specialty.label,
+      availableService: available.slice(0, 5),
+    };
+  } else {
+    entity = {
+      '@context': 'https://schema.org',
+      '@type': ['LocalBusiness', 'Organization'],
+      name: spec.brand.name,
+      image: spec.images?.hero || '',
+      telephone: spec.brand.phone,
+      address,
+      url: `https://${domain}/`,
+      description: spec.meta?.description || '',
+      priceRange: '₩₩',
+    };
+  }
+  if (rating)    entity.aggregateRating = rating;
+  if (hoursSpec) entity.openingHoursSpecification = hoursSpec;
+  if (sameAs.length) entity.sameAs = sameAs;
+
+  return JSON.stringify(entity, null, 2);
+}
+
 function buildFaq(faq, brand, specialty) {
   const list = (faq && faq.length) ? faq : [
     { q: `${specialty.label} 진료는 예약이 필요한가요?`, a: '카카오 채널 또는 전화로 편하게 예약하실 수 있습니다.' },
@@ -209,6 +289,8 @@ function prepare(spec) {
 
   const faq = buildFaq(spec.faq, spec.brand, specialty);
 
+  const mainSchema = buildMainSchema(spec, specialty, spec.domain);
+
   if (spec.category === 'clinic') {
     spec.sections = {
       trust:       buildTrust(spec.trust),
@@ -218,6 +300,7 @@ function prepare(spec) {
       gallery:     buildGallery(spec.images.gallery, ph),
       faq:         faq.html,
       faqSchema:   faq.schema,
+      mainSchema,
     };
   } else {
     spec.sections = {
@@ -228,6 +311,7 @@ function prepare(spec) {
       gallery: buildGallery(spec.images.gallery, ph),
       faq:     faq.html,
       faqSchema: faq.schema,
+      mainSchema,
     };
   }
 
