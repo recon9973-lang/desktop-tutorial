@@ -1413,7 +1413,12 @@ body{padding-top:0}
   <!-- 🆕 병원 마케팅 자가진단 위젯 -->
   <section class="section vd-section">
     <style>
-      .vd-section{background:var(--soft)}
+      .vd-section{background:#fff}
+      /* 깔끔한 STEP 섹션 라벨 — 반복되는 큰 헤더 대체(랜딩 톤) */
+      .diag-sec{text-align:center;max-width:640px;margin:0 auto 28px}
+      .diag-sec-no{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--p);background:var(--psub);padding:4px 12px;border-radius:9999px;margin-bottom:12px}
+      .diag-sec h3{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.4px;margin-bottom:8px}
+      .diag-sec p{font-size:14px;color:var(--mute);line-height:1.6}
       .vd-head{text-align:center;max-width:640px;margin:0 auto 24px}
       .vd-head h2{font-size:34px;font-weight:300;letter-spacing:-.8px;color:var(--ink);margin-bottom:12px}
       .vd-head h2 em{font-style:normal;color:var(--p)}
@@ -1468,10 +1473,10 @@ body{padding-top:0}
       @media(max-width:600px){.vd-head h2{font-size:26px}.vd-score{font-size:52px}.vd-card{padding:22px 16px}.vd-launcher{padding:14px 16px;gap:12px}.vd-launcher-score{width:48px;height:48px;font-size:17px}.vd-launcher-tags{display:none}}
     </style>
     <div class="container">
-      <div class="vd-head">
-        <div class="section-badge">1분 자가진단</div>
-        <h2>우리 병원, <em>AI·검색</em>에서 몇 점일까요?</h2>
-        <p>진료과·지역과 13개 항목으로 GEO/SEO 준비도를 점수로 확인하세요. 점수는 실제 노출·전환 요인 기준으로 산정됩니다.</p>
+      <div class="diag-sec">
+        <span class="diag-sec-no">STEP 1 · 자가진단</span>
+        <h3>📋 13개 항목 자가진단</h3>
+        <p>예·부분·아니오로 체크하면 GEO·SEO 준비도가 100점 만점 점수로 나옵니다.</p>
       </div>
       <!-- 트리거(기본 닫힘) -->
       <button class="vd-launcher" id="vd-launcher" onclick="vdToggle()" type="button" aria-expanded="false" aria-controls="vd-body">
@@ -1602,10 +1607,10 @@ body{padding-top:0}
   <!-- 무료 진단 도구 섹션 -->
   <section class="tool-section">
     <div class="container">
-      <div class="tool-head">
-        <div class="section-badge">무료 진단 도구</div>
-        <h2>지금 바로 점수를 확인하세요</h2>
-        <p>SEO·GEO 엔티티·키워드 검색량을 무료로 진단합니다</p>
+      <div class="diag-sec">
+        <span class="diag-sec-no">STEP 2 · 실시간 진단</span>
+        <h3>🔍 실시간 검색 진단 6종</h3>
+        <p>실제 데이터로 SEO·GEO·키워드·트렌드·AI 추천·노출 경쟁을 즉시 확인하세요.</p>
       </div>
       <div class="tool-tabs">
         <button class="tool-tab active" onclick="switchTool('seo')">🔍 SEO 점수 체크</button>
@@ -6565,11 +6570,7 @@ function applyDiagState(){
       +'<span class="diag-chip">📍 지역 <b>'+(region||'미입력')+'</b></span>'
       +'<button class="diag-change" onclick="sp(\'home\')">메인에서 다시 선택</button>';
   }
-  // 자가진단 펼치기 + 진료과·지역 미리채움
-  var body=document.getElementById('vd-body'),launcher=document.getElementById('vd-launcher');
-  if(body&&launcher&&!body.classList.contains('open')){
-    body.classList.add('open');launcher.classList.add('open');launcher.setAttribute('aria-expanded','true');
-  }
+  // 진료과·지역 미리채움(자가진단 폼은 깔끔하게 접힌 상태 유지 — 사용자가 런처 탭 시 펼침)
   var vc=document.getElementById('vd-cat');if(vc&&cat)vc.value=cat;
   var vr=document.getElementById('vd-region');if(vr&&region&&!vr.value)vr.value=region;
   // 도구 입력 예시 자동 채움(비어 있을 때만)
