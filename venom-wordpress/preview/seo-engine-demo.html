@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VENOM SEO Engine — 독립 데모</title>
+<style>
+  :root{--p:#533afd;--ink:#0f172a;--mute:#64748b;--border:#e3e8ee;--soft:#f6f9fc}
+  *{box-sizing:border-box}
+  body{font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;margin:0;
+    background:#f6f9fc;color:var(--ink);line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--mute);font-size:14px;margin-bottom:28px}
+  .bar{display:flex;gap:8px;margin-bottom:8px}
+  input{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px}
+  button{padding:12px 20px;border:0;border-radius:10px;background:var(--p);color:#fff;
+    font-size:14px;font-weight:700;cursor:pointer}
+  button:disabled{opacity:.6;cursor:default}
+  .hint{font-size:12px;color:var(--mute);margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;
+    box-shadow:rgba(0,55,112,.06) 0 4px 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .tr-cta{display:none}
+  code{background:var(--soft);padding:2px 6px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>VENOM SEO Engine <span style="font-size:13px;color:var(--mute);font-weight:400">독립 데모</span></h1>
+  <div class="sub">엔진 파일 하나(<code>assets/seo-engine.js</code>)만으로 동작합니다. Google·네이버 공식 가이드 기준.</div>
+  <div class="bar">
+    <input id="u" type="url" placeholder="https://example.com" value="https://example.com"
+      onkeydown="if(event.key==='Enter')run()">
+    <button id="b" onclick="run()">분석</button>
+  </div>
+  <div class="hint">※ 이 데모는 베놈 프록시(<code>/api/seo-proxy</code>)로 HTML을 수집합니다. 다른 프로젝트에선 원하는 방식으로 <code>html·robots</code>만 넘기면 됩니다.</div>
+  <div id="out" class="card" style="display:none"></div>
+</div>
+
+<script src="assets/seo-engine.js"></script>
+<script>
+var PROXY='https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy';
+var last=null;
+function loader(t){return '<div style="text-align:center;padding:40px 0;color:#64748b">'
+  +'<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#533afd" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'
+  +'<div style="margin-top:10px;font-weight:700">'+t+'…</div></div>';}
+function run(){
+  var url=document.getElementById('u').value.trim();
+  if(!url)return; if(!/^https?:\/\//i.test(url))url='https://'+url;
+  var b=document.getElementById('b'),out=document.getElementById('out');
+  b.disabled=true;out.style.display='block';out.innerHTML=loader('HTML 분석 중');
+  fetch(PROXY+'?type=fetch&url='+encodeURIComponent(url)+'&nonce='+Date.now())
+    .then(function(r){return r.json();}).then(function(d){
+      b.disabled=false;
+      var res=SEOEngine.analyze({url:url,html:d.html||'',robots:d.robots||'',isHttps:d.isHttps});
+      last=res;
+      out.innerHTML=SEOEngine.renderInfographic(res)
+        +'<div id="psi" style="margin-top:14px"><button onclick="psi()" style="width:100%">🔬 성능 정밀 분석 (PSI)</button></div>';
+    }).catch(function(e){b.disabled=false;out.innerHTML='<div style="color:#dc2626">분석 실패: '+e.message+'</div>';});
+}
+function psi(){
+  var url=document.getElementById('u').value.trim();if(!/^https?:\/\//i.test(url))url='https://'+url;
+  document.getElementById('psi').innerHTML=loader('PageSpeed 정밀 분석 중 (10~20초)');
+  fetch(PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now())
+    .then(function(r){return r.json();}).then(function(p){
+      var m=SEOEngine.mergePSI(last,p);
+      document.getElementById('out').innerHTML=SEOEngine.renderInfographic(m);
+    }).catch(function(e){document.getElementById('psi').innerHTML='<div style="color:#dc2626">실패: '+e.message+'</div>';});
+}
+</script>
+</body>
+</html>
