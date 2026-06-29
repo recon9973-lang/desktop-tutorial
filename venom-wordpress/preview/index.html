@@ -1612,74 +1612,64 @@ body{padding-top:0}
         <h3>🔍 실시간 검색 진단 6종</h3>
         <p>실제 데이터로 SEO·GEO·키워드·트렌드·AI 추천·노출 경쟁을 즉시 확인하세요.</p>
       </div>
-      <div class="tool-tabs">
-        <button class="tool-tab active" onclick="switchTool('seo')">🔍 SEO 점수 체크</button>
-        <button class="tool-tab" onclick="switchTool('geo')">🤖 GEO 점수 체크</button>
-        <button class="tool-tab" onclick="switchTool('kw')">📊 키워드 검색량 체크</button>
-        <button class="tool-tab" onclick="switchTool('trend')">📈 검색 트렌드</button>
-        <button class="tool-tab" onclick="switchTool('aeo')">🤖 AI 추천 확인</button>
-        <button class="tool-tab" onclick="switchTool('expose')">🔎 노출·경쟁 진단</button>
-      </div>
-
-      <!-- SEO 점수 체크 -->
-      <div id="tool-seo" class="tool-panel active">
-        <div class="tool-input-wrap">
-          <input type="url" id="seo-url" class="tool-input" placeholder="https://병원홈페이지.com" oninput="toolReady('seo')">
-          <button class="tool-btn" onclick="runSEO()">분석하기</button>
+      <div class="tool-grid">
+        <!-- SEO -->
+        <div class="tool-card" id="tool-seo">
+          <div class="tool-card-head"><span class="tool-card-ico">🔍</span><div><div class="tool-card-name">SEO 점수 체크</div><div class="tool-card-desc">홈페이지 SEO를 100점 기준으로 진단</div></div></div>
+          <div class="tool-input-wrap">
+            <input type="url" id="seo-url" class="tool-input" placeholder="https://병원홈페이지.com" oninput="toolReady('seo')" onkeydown="if(event.key==='Enter')runSEO()">
+            <button class="tool-btn" onclick="runSEO()">분석</button>
+          </div>
+          <div id="seo-result" class="tool-result" style="display:none"></div>
         </div>
-        <p class="tool-hint">도메인을 입력하면 SEO 100점 기준으로 진단합니다</p>
-        <div id="seo-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- GEO 엔티티 점수 -->
-      <div id="tool-geo" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="url" id="geo-url" class="tool-input" placeholder="병원 홈페이지 URL 입력 (예: https://venomad.co.kr)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
-          <button class="tool-btn" onclick="runGEO()">분석하기</button>
+        <!-- GEO -->
+        <div class="tool-card" id="tool-geo">
+          <div class="tool-card-head"><span class="tool-card-ico">🤖</span><div><div class="tool-card-name">GEO 점수 체크</div><div class="tool-card-desc">ChatGPT·Perplexity AI 노출 신호 진단</div></div></div>
+          <div class="tool-input-wrap">
+            <input type="url" id="geo-url" class="tool-input" placeholder="병원 홈페이지 URL (예: https://venomad.co.kr)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
+            <button class="tool-btn" onclick="runGEO()">분석</button>
+          </div>
+          <div id="geo-result" class="tool-result" style="display:none"></div>
         </div>
-        <p class="tool-hint">ChatGPT·Perplexity·Google AI에서 귀 병원 사이트의 GEO 최적화 신호를 진단합니다</p>
-        <div id="geo-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 네이버 키워드 검색량 -->
-      <div id="tool-kw" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="text" id="kw-input" class="tool-input" placeholder="키워드 입력 (예: 강남 임플란트)" oninput="toolReady('kw')" onkeydown="if(event.key==='Enter')runKW()">
-          <button class="tool-btn" onclick="runKW()">검색량 조회</button>
+        <!-- 키워드 검색량 -->
+        <div class="tool-card" id="tool-kw">
+          <div class="tool-card-head"><span class="tool-card-ico">📊</span><div><div class="tool-card-name">키워드 검색량</div><div class="tool-card-desc">월 검색량·경쟁도·예상 광고비</div></div></div>
+          <div class="tool-input-wrap">
+            <input type="text" id="kw-input" class="tool-input" placeholder="키워드 (예: 강남 임플란트)" oninput="toolReady('kw')" onkeydown="if(event.key==='Enter')runKW()">
+            <button class="tool-btn" onclick="runKW()">조회</button>
+          </div>
+          <div id="kw-result" class="tool-result" style="display:none"></div>
         </div>
-        <p class="tool-hint">월간 검색량·경쟁도·예상 광고비를 분석합니다</p>
-        <div id="kw-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 📈 검색 트렌드 (네이버 데이터랩) -->
-      <div id="tool-trend" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="text" id="trend-input" class="tool-input" placeholder="키워드 입력 (쉼표로 최대 3개 비교: 임플란트, 교정, 라미네이트)" onkeydown="if(event.key==='Enter')runTrend()">
-          <button class="tool-btn" onclick="runTrend()">트렌드 보기</button>
+        <!-- 검색 트렌드 -->
+        <div class="tool-card" id="tool-trend">
+          <div class="tool-card-head"><span class="tool-card-ico">📈</span><div><div class="tool-card-name">검색 트렌드</div><div class="tool-card-desc">최근 1년 네이버 검색 추이 비교</div></div></div>
+          <div class="tool-input-wrap">
+            <input type="text" id="trend-input" class="tool-input" placeholder="키워드(쉼표로 최대 3개: 임플란트, 교정)" onkeydown="if(event.key==='Enter')runTrend()">
+            <button class="tool-btn" onclick="runTrend()">트렌드</button>
+          </div>
+          <div id="trend-result" class="tool-result" style="display:none"></div>
         </div>
-        <p class="tool-hint">최근 1년간 네이버 검색 트렌드를 비교합니다 (데이터랩 기준 상대지수)</p>
-        <div id="trend-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 🤖 AI 추천 확인 (Perplexity 웹검색) -->
-      <div id="tool-aeo" class="tool-panel">
-        <div class="tool-input-wrap" style="flex-wrap:wrap;gap:8px">
-          <input type="text" id="aeo-q" class="tool-input" placeholder="AI에게 물어볼 질문 (예: 대전 유성구 임플란트 잘하는 치과 추천)">
-          <input type="text" id="aeo-name" class="tool-input" placeholder="우리 병원명 (언급 여부 확인)">
-          <button class="tool-btn" onclick="runAeo()">AI에게 물어보기</button>
+        <!-- AI 추천 확인 -->
+        <div class="tool-card" id="tool-aeo">
+          <div class="tool-card-head"><span class="tool-card-ico">🤖</span><div><div class="tool-card-name">AI 추천 확인</div><div class="tool-card-desc">AI 답변에 우리 병원 언급 여부 확인</div></div></div>
+          <div class="tool-aeo-fields">
+            <input type="text" id="aeo-q" class="tool-input tool-input-box" placeholder="질문 (예: 대전 유성구 임플란트 잘하는 치과)" onkeydown="if(event.key==='Enter')runAeo()">
+            <div class="tool-aeo-row">
+              <input type="text" id="aeo-name" class="tool-input tool-input-box" placeholder="우리 병원명" onkeydown="if(event.key==='Enter')runAeo()">
+              <button class="tool-btn tool-btn-round" onclick="runAeo()">물어보기</button>
+            </div>
+          </div>
+          <div id="aeo-result" class="tool-result" style="display:none"></div>
         </div>
-        <p class="tool-hint">실제 AI 검색엔진에 질문해, 답변에 우리 병원이 언급되는지 확인합니다 (GEO/AEO 가시성)</p>
-        <div id="aeo-result" class="tool-result" style="display:none"></div>
-      </div>
-
-      <!-- 🔎 노출·경쟁 진단 (네이버 검색) -->
-      <div id="tool-expose" class="tool-panel">
-        <div class="tool-input-wrap">
-          <input type="text" id="expose-q" class="tool-input" placeholder="키워드 입력 (예: 대전 임플란트)" onkeydown="if(event.key==='Enter')runExpose()">
-          <button class="tool-btn" onclick="runExpose()">진단하기</button>
+        <!-- 노출·경쟁 진단 -->
+        <div class="tool-card" id="tool-expose">
+          <div class="tool-card-head"><span class="tool-card-ico">🔎</span><div><div class="tool-card-name">노출·경쟁 진단</div><div class="tool-card-desc">키워드 블로그·웹 경쟁량·발행 추이</div></div></div>
+          <div class="tool-input-wrap">
+            <input type="text" id="expose-q" class="tool-input" placeholder="키워드 (예: 대전 임플란트)" onkeydown="if(event.key==='Enter')runExpose()">
+            <button class="tool-btn" onclick="runExpose()">진단</button>
+          </div>
+          <div id="expose-result" class="tool-result" style="display:none"></div>
         </div>
-        <p class="tool-hint">해당 키워드의 블로그·웹 콘텐츠 경쟁량과 최근 발행 추이를 진단합니다</p>
-        <div id="expose-result" class="tool-result" style="display:none"></div>
       </div>
     </div>
   </section>
@@ -4710,6 +4700,23 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   font-size:14px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;font-family:inherit}
 .tool-btn:hover{background:var(--pd)}
 .tool-hint{text-align:center;font-size:13px;color:var(--mute);margin-top:12px}
+/* 도구 카드 그리드 — 모든 검색창을 한눈에(랜딩 service-card 톤) */
+.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:920px;margin:0 auto}
+.tool-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:rgba(0,55,112,.08) 0 1px 3px;transition:.2s;scroll-margin-top:90px}
+.tool-card:hover{box-shadow:rgba(0,55,112,.12) 0 6px 22px}
+.tool-card-focus{border-color:var(--p)!important;box-shadow:0 0 0 3px rgba(83,58,253,.18)!important}
+.tool-card-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.tool-card-ico{font-size:20px;flex-shrink:0;width:42px;height:42px;border-radius:10px;background:var(--psub);display:flex;align-items:center;justify-content:center}
+.tool-card-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.tool-card-desc{font-size:12.5px;color:var(--mute);margin-top:2px;line-height:1.4}
+.tool-card .tool-result{margin-top:16px;padding:18px}
+.tool-aeo-fields{display:flex;flex-direction:column;gap:8px}
+.tool-aeo-row{display:flex;gap:8px}
+.tool-input-box{border:1.5px solid var(--border)!important;border-radius:10px;background:#fff;box-shadow:var(--s2);padding:13px 16px}
+.tool-input-box:focus{border-color:var(--p)!important;box-shadow:0 0 0 3px rgba(83,58,253,.12)}
+.tool-aeo-row .tool-input-box{flex:1}
+.tool-btn-round{border-radius:10px}
+@media(max-width:760px){.tool-grid{grid-template-columns:1fr}}
 .tool-result{margin-top:28px;background:#fff;border:1px solid var(--border);
   border-radius:var(--r12);padding:28px;box-shadow:var(--s1)}
 .tr-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:16px}
@@ -5255,12 +5262,15 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 </style>
 <script>
 // ── 무료 진단 도구 ──
+// 카드 그리드: 해당 도구 카드로 스크롤 + 강조 + 입력 포커스
 function switchTool(id){
-  document.querySelectorAll('.tool-tab').forEach(function(t,i){t.classList.remove('active');});
-  document.querySelectorAll('.tool-panel').forEach(function(p){p.classList.remove('active');});
-  var tabs=['seo','geo','kw','trend','aeo','expose'];
-  tabs.forEach(function(t,i){if(t===id)document.querySelectorAll('.tool-tab')[i].classList.add('active');});
-  document.getElementById('tool-'+id).classList.add('active');
+  var card=document.getElementById('tool-'+id);
+  if(!card)return;
+  try{card.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+  card.classList.add('tool-card-focus');
+  setTimeout(function(){card.classList.remove('tool-card-focus');},1500);
+  var inp=card.querySelector('.tool-input');
+  if(inp)setTimeout(function(){try{inp.focus({preventScroll:true});}catch(e){}},380);
 }
 function toolReady(type){}
 
@@ -6591,7 +6601,6 @@ function diagJump(t){
     return;
   }
   if(typeof switchTool==='function')switchTool(t);
-  var ts=document.querySelector('#pg-diagnose .tool-section');if(ts)ts.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function updateBreadcrumb(items){
