@@ -4440,16 +4440,20 @@ body{padding-top:0}
 .cta-section .btn-p{background:var(--p)}.cta-section .btn-ghost{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
 
 /* FOOTER */
-.footer{background:#fff;border-top:1px solid var(--border);padding:64px 0 32px}
+/* 다크 메가 푸터 — 상단 다크 CTA 섹션과 자연스럽게 이어짐 */
+.footer{background:var(--bd);border-top:0;padding:64px 0 32px;color:rgba(255,255,255,.55)}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-.footer-brand .logo{font-size:16px;font-weight:400;color:var(--ink);margin-bottom:12px}
-.footer-brand p{font-size:13px;color:var(--mute);line-height:1.7}
-.footer-sns{display:flex;gap:12px;margin-top:16px}
-.footer-sns a{font-size:12px;color:var(--mute)}.footer-sns a:hover{color:var(--p)}
-.footer-col h5{font-size:12px;font-weight:400;color:var(--ink);margin-bottom:16px;letter-spacing:.05em;text-transform:uppercase}
-.footer-col a{display:block;font-size:13px;color:var(--mute);margin-bottom:8px;transition:.15s}
-.footer-col a:hover{color:var(--p)}
-.footer-bottom{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--mute)}
+.footer-brand .logo{font-size:16px;font-weight:400;color:#fff;margin-bottom:12px}
+.footer-brand p{font-size:13px;color:rgba(255,255,255,.55);line-height:1.7}
+.footer-sns{display:flex;gap:14px;margin-top:18px;flex-wrap:wrap}
+.footer-sns a{font-size:12px;color:rgba(255,255,255,.5);transition:.15s}
+.footer-sns a:hover{color:#fff;transform:translateY(-2px)}
+.footer-sns a svg{width:17px;height:17px;fill:currentColor;display:block}
+.footer-col h5{font-size:12px;font-weight:400;color:#fff;margin-bottom:16px;letter-spacing:.05em;text-transform:uppercase}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.55);margin-bottom:8px;transition:.15s}
+.footer-col a:hover{color:var(--psub)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px;color:rgba(255,255,255,.45)}
+.footer-bottom a{color:rgba(255,255,255,.55)}.footer-bottom a:hover{color:#fff}
 
 /* THREE COL */
 .three-col{display:grid;grid-template-columns:var(--lw) 1fr var(--rw);min-height:calc(100vh - var(--header) - 38px);max-width:var(--mw);margin:0 auto;padding:0 24px;gap:0}
