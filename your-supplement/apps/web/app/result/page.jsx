@@ -2,9 +2,28 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import sourcesData from '../../data/sources.json';
+import evidenceData from '../../data/evidence.json';
 
 const DUR_LABEL = { continuous: '🟢 지속 복용', monitor: '🟡 3개월 후 점검', cyclic: '🔴 8주 후 점검' };
 const DUR_COLOR = { continuous: '#1aae39', monitor: '#dd5b00', cyclic: '#d63b3b' };
+
+// 성분별 근거 코퍼스(data/evidence.json) 조회 + 근거 강도 라벨/색상
+const EV = Object.fromEntries(evidenceData.evidence.map((e) => [e.ingredient_id, e]));
+const STRENGTH = {
+  established: { label: '확립된 근거', color: '#1aae39' },
+  moderate: { label: '중등도 근거', color: '#0075de' },
+  limited: { label: '제한적 근거', color: '#dd5b00' },
+  insufficient: { label: '근거 불충분', color: '#8a94a6' },
+};
+const STRENGTH_RANK = { established: 3, moderate: 2, limited: 1, insufficient: 0 };
+// 가장 강한 근거의 효능 1건을 대표로
+function topBenefit(ingredientId) {
+  const e = EV[ingredientId];
+  if (!e || !e.benefits?.length) return null;
+  return [...e.benefits].sort(
+    (a, b) => (STRENGTH_RANK[b.evidence_strength] ?? 0) - (STRENGTH_RANK[a.evidence_strength] ?? 0)
+  )[0];
+}
 
 // 출처 카탈로그(data/sources.json) → id 조회. 성분 evidence.sources[].type 를
 // 추적 가능한 1차 출처 링크로 연결한다.
@@ -290,7 +309,7 @@ export default function ResultPage() {
                   </p>
 
                   {/* 근거 — 추적 가능한 1차 출처 + 권장 섭취량 + 주의 */}
-                  {(r.evidence_sources?.length || r.daily_dose || r.cautions?.length) ? (
+                  {(r.evidence_sources?.length || r.daily_dose || r.cautions?.length || topBenefit(r.ingredient_id)) ? (
                   <div style={{ background: 'rgba(0,117,222,0.04)', border: '1px solid rgba(0,117,222,0.12)', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 13 }}>
                       <span style={{ fontWeight: 700, color: 'var(--ink-secondary)' }}>📋 근거</span>
@@ -306,9 +325,45 @@ export default function ResultPage() {
                         </span>
                       ))}
                     </div>
+
+                    {/* 검증된 효능 — 근거 코퍼스(evidence.json)의 최강 근거 1건 + 출처 */}
+                    {(() => {
+                      const tb = topBenefit(r.ingredient_id);
+                      if (!tb) return null;
+                      const st = STRENGTH[tb.evidence_strength] || STRENGTH.insufficient;
+                      return (
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: st.color, borderRadius: 'var(--r-full)', padding: '1px 8px' }}>
+                              {st.label}
+                            </span>
+                            <span style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>{tb.claim}</span>
+                          </div>
+                          {tb.citation?.url && (
+                            <a href={tb.citation.url} target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+                              {tb.citation.source} 근거 원문 →
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {(() => {
+                      const d = EV[r.ingredient_id]?.dosing;
+                      if (!d || (!d.rda_or_ai && !d.ul)) return null;
+                      return (
+                        <p style={{ fontSize: 12.5, color: 'var(--ink-muted)', marginTop: 6 }}>
+                          📐 {d.rda_or_ai && <span><strong>권장</strong> {d.rda_or_ai}</span>}
+                          {d.rda_or_ai && d.ul && ' · '}
+                          {d.ul && <span><strong>상한</strong> {d.ul}</span>}
+                        </p>
+                      );
+                    })()}
+
                     {r.daily_dose && (
                       <p style={{ fontSize: 13, color: 'var(--ink-secondary)', marginTop: 6 }}>
-                        💊 <strong>권장 섭취량</strong> {r.daily_dose}
+                        💊 <strong>제품 표기 용량</strong> {r.daily_dose}
                       </p>
                     )}
                     {r.cautions?.length > 0 && (
