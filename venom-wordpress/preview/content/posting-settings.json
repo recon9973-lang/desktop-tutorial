@@ -8,12 +8,18 @@
     }
   ],
   "categories": [
-    "plastic"
+    "geo"
   ],
   "keywords": [
-    "코성형"
+    "병원마케팅",
+    "SEO"
   ],
-  "regions": [],
+  "regions": [
+    "대전",
+    "대구",
+    "인천",
+    "부산"
+  ],
   "extra": "",
-  "updatedAt": "2026-06-29T01:57:56.761Z"
+  "updatedAt": "2026-06-29T17:39:53.293Z"
 }
