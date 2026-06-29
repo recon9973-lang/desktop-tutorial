@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782754904927",
+    "title": "대구 GEO/AEO 마케팅 전략 5가지, AI 활용의 원리",
+    "category": "geo",
+    "keyword": "SEO",
+    "tokenUsage": {
+      "promptTokens": 2312,
+      "completionTokens": 2032,
+      "totalTokens": 4344,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T17:42:04.930Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782754825810",
     "title": "대전 병원마케팅의 5가지 핵심 전략과 최신 기술",
     "category": "geo",
