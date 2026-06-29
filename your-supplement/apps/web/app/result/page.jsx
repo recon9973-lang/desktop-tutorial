@@ -159,7 +159,7 @@ export default function ResultPage() {
           근거 기반 맞춤 추천
         </span>
         <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: -0.75, marginBottom: 8 }}>
-          🧬 당신의 영양제
+          🧬 당신의영양제
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15 }}>
           모든 추천은 식약처 인정 근거 기반 · 후기·광고 미반영

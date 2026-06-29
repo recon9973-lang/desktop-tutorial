@@ -26,7 +26,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.canvasSoft },
         }}
       >
-        <Stack.Screen name="index" options={{ title: '당신의 영양제', headerShown: false }} />
+        <Stack.Screen name="index" options={{ title: '당신의영양제', headerShown: false }} />
         <Stack.Screen name="survey" options={{ title: '내 영양제 찾기', headerBackTitle: '' }} />
         <Stack.Screen name="result" options={{ title: '추천 결과', headerBackTitle: '' }} />
         <Stack.Screen name="my-supplements" options={{ title: '내 영양제', headerBackTitle: '' }} />

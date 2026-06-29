@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: '당신의 영양제 — 근거 기반 맞춤 추천',
+  title: '당신의영양제',
   description: '식약처·논문 근거로 내 몸에 맞는 영양제를 추천받고, 최저가와 복용 알람까지.',
 };
 
@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56,
         }}>
           <a href="/" style={{ fontWeight: 700, fontSize: 18, color: 'var(--ink)', textDecoration: 'none', letterSpacing: -0.5 }}>
-            🧬 당신의 영양제
+            🧬 당신의영양제
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <a href="/nearby" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
