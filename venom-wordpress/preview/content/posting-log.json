@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "action": "generate",
+    "id": "auto_1782698000854",
+    "title": "대구 병원마케팅: 지역 검색 최적화 5가지 전략",
+    "category": "geo_local",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2275,
+      "completionTokens": 1915,
+      "totalTokens": 4190,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:53:38.285Z"
+  }
+]
