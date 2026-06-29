@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698298949",
+    "title": "코성형의 모든 것: 절차·부작용·주의사항 총정리",
+    "category": "plastic",
+    "keyword": "코성형",
+    "tokenUsage": {
+      "promptTokens": 2278,
+      "completionTokens": 1880,
+      "totalTokens": 4158,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:58:34.895Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698153609",
     "title": "대전 GEO 마케팅 5가지 전략으로 지역 검색 최적화하기",
     "category": "geo_local",
