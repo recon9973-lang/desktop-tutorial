@@ -8949,8 +8949,12 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!track||!section)return;
     if(!logos||logos.length===0){section.style.display='none';return;}
     section.style.display='';
-    var imgs=logos.map(function(l){return '<img src="'+l.url+'" alt="'+(l.name||'')+'" loading="lazy">';}).join('');
-    track.innerHTML=imgs+imgs;
+    var unit=logos.map(function(l){return '<img src="'+l.url+'" alt="'+(l.name||'')+'" loading="lazy">';}).join('');
+    // 로고 수가 적어도(예: 2장) 트랙이 화면보다 넓도록 한 세트를 충분히 반복 →
+    // translateX(-50%) 무한루프가 빈틈·정지 없이 매끄럽게 돌게 함
+    var reps=Math.max(2,Math.ceil(10/logos.length));
+    var half=''; for(var i=0;i<reps;i++) half+=unit;
+    track.innerHTML=half+half;
   }
   function renderMarquee(){
     cleanOldLogos();
