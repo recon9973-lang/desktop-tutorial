@@ -54,11 +54,13 @@ function fetchUrl(urlStr, redirects) {
       path: parsed.pathname + parsed.search,
       method: 'GET',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; VenomGEOBot/1.0)',
-        'Accept': 'text/html,application/xhtml+xml,*/*',
-        'Accept-Language': 'ko,en;q=0.9'
+        // 실제 크롬 UA로 위장: 일부 호스팅/CMS가 미상 봇에 빈/축약 페이지를 주는 문제 방지
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Encoding': 'identity'
       },
-      timeout: 10000
+      timeout: 12000
     };
     var req = lib.request(options, function(res) {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
