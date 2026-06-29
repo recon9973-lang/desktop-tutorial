@@ -4748,6 +4748,10 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 .geo-ai-score{font-size:13px;font-weight:700;width:36px;text-align:right;flex-shrink:0}
 /* ── SEO 상세 결과 ── */
 @keyframes spin{to{transform:rotate(360deg)}}
+.seo-src-badge{display:inline-block;font-size:9px;font-weight:700;line-height:1.4;padding:1px 5px;
+  border-radius:4px;margin-left:5px;color:#fff;vertical-align:middle;letter-spacing:.02em}
+.seo-guide-ref{background:var(--soft);border:1px solid var(--border);border-radius:10px;
+  padding:9px 13px;margin-bottom:16px;font-size:11.5px;color:var(--mute);line-height:1.7}
 .seo-result-header{display:flex;gap:24px;align-items:flex-start;margin-bottom:24px;
   padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .seo-total-wrap{display:flex;align-items:center;gap:12px;flex-shrink:0}
@@ -5370,32 +5374,38 @@ function runSEO(){
     });
 }
 
-// robots.txt가 일반 크롤러(User-agent:*)의 루트 접근을 막는지 정확히 판정.
-// 특정 봇만 차단(User-agent: AhrefsBot 등)은 일반 SEO에 영향 없으므로 통과 처리.
-function _robotsAllowsAll(robots){
+// robots.txt 표준 파싱: 지정한 검색로봇(ua)이 루트('/') 접근이 허용되는지 판정.
+// 정확 매칭 그룹 우선, 없으면 User-agent:* 그룹 적용 (RFC 9309 동작).
+// Googlebot(Google)·Yeti(네이버) 등 봇별 차단까지 정확히 구분.
+function _robotsAllows(robots, ua){
   if(!robots||!robots.trim())return true; // robots.txt 없으면 전체 허용이 기본값
+  ua=(ua||'*').toLowerCase();
   var lines=robots.split(/\r?\n/);
-  var inStarGroup=false, sawStar=false, blocked=false;
+  var groups=[], cur=null, lastWasUA=false;
   for(var i=0;i<lines.length;i++){
     var line=lines[i].replace(/#.*$/,'').trim();
     if(!line)continue;
     var m=line.match(/^User-agent\s*:\s*(.+)$/i);
     if(m){
-      var ua=m[1].trim();
-      // 연속된 User-agent 줄은 같은 그룹 — '*'가 포함되면 해당 그룹 추적
-      inStarGroup=(ua==='*');
-      if(inStarGroup)sawStar=true;
+      if(!lastWasUA||!cur){cur={agents:[],rules:[]};groups.push(cur);}
+      cur.agents.push(m[1].trim().toLowerCase());
+      lastWasUA=true;
       continue;
     }
-    if(inStarGroup){
-      var d=line.match(/^Disallow\s*:\s*(.*)$/i);
-      if(d){
-        var path=d[1].trim();
-        if(path==='/')blocked=true;       // 전체 차단
-      }
-      var a=line.match(/^Allow\s*:\s*(.*)$/i);
-      if(a&&a[1].trim()==='/')blocked=false; // 명시적 전체 허용이 뒤에 오면 해제
-    }
+    lastWasUA=false;
+    if(!cur)continue;
+    var d=line.match(/^(Disallow|Allow)\s*:\s*(.*)$/i);
+    if(d)cur.rules.push({type:d[1].toLowerCase(),path:d[2].trim()});
+  }
+  function pick(name){
+    for(var g=0;g<groups.length;g++)if(groups[g].agents.indexOf(name)>=0)return groups[g];
+    return null;
+  }
+  var grp=pick(ua)||pick('*');
+  if(!grp)return true;
+  var blocked=false; // 마지막에 매칭된 '/' 규칙이 우선
+  for(var r=0;r<grp.rules.length;r++){
+    if(grp.rules[r].path==='/')blocked=(grp.rules[r].type==='disallow');
   }
   return !blocked;
 }
@@ -5464,8 +5474,10 @@ function _renderFastSEO(data,url,domain,el){
   var robotsMeta=(metaByName('robots')||metaByName('googlebot'));
   var notNoindex=!/noindex/i.test(robotsMeta);
   var robotsTxtOk=robots.trim().length>0;
-  // ── robots.txt 전체 차단 판정: User-agent:* 그룹에서만 Disallow:/ 확인 ──
-  var robotsTxtAllow=_robotsAllowsAll(robots);
+  // ── 검색로봇 수집 허용: Googlebot(Google)·Yeti(네이버) 모두 루트 접근 가능한지 ──
+  var crawlOk=_robotsAllows(robots,'Googlebot')&&_robotsAllows(robots,'Yeti')&&_robotsAllows(robots,'*');
+  // sitemap.xml 선언(robots.txt 내 Sitemap: 지시자) — Google·네이버 공통 권장
+  var hasSitemap=/^\s*sitemap\s*:/im.test(robots);
 
   // ── SPA/JS 렌더링 감지: 원본 HTML이 비어있고 스크립트만 많은 경우 ──
   var bodyText=doc&&doc.body?doc.body.textContent.replace(/\s+/g,' ').trim():'';
@@ -5489,42 +5501,68 @@ function _renderFastSEO(data,url,domain,el){
     return;
   }
 
+  // ── 의미있는 링크 텍스트 (Google: "여기 클릭" 류 지양, 서술형 앵커 권장) ──
+  var anchors=doc?Array.from(doc.querySelectorAll('a[href]')):[];
+  var realAnchors=anchors.filter(function(a){
+    var href=a.getAttribute('href')||'';
+    if(!href||href.charAt(0)==='#'||/^(javascript:|mailto:|tel:)/i.test(href))return false;
+    return true;
+  });
+  var genericRe=/^(여기|여기클릭|클릭|클릭하세요|더보기|자세히|자세히보기|바로가기|링크|이동|here|click|clickhere|readmore|more|link|go)$/i;
+  var badAnchors=realAnchors.filter(function(a){
+    if(a.querySelector('img'))return false; // 이미지 링크는 alt로 평가
+    var t=(a.textContent||'').replace(/\s+/g,'').trim();
+    if(!t)return true;                       // 텍스트 없는 링크
+    return genericRe.test(t)||/^https?:\/\//i.test(t); // 일반 문구·맨URL은 비서술형
+  });
+  var linkTextOk=realAnchors.length===0||(badAnchors.length/realAnchors.length)<=0.2;
+
+  // ── Open Graph (네이버 공유 미리보기 핵심: og:title + og:description) ──
+  var ogDesc=metaByProp('og:description');
+  var ogImage=metaByProp('og:image');
+  var ogOk=!!ogTitle&&!!ogDesc;
+
+  // ── 제목·디스크립션 권장 길이 (Google/네이버 가이드 기준) ──
+  var titleLen=title.length, descLen=metaDesc.length;
+  var titleNote='현재 '+titleLen+'자'+(titleLen<10?' · 너무 짧음(권장 10~60)':titleLen>60?' · 너무 김(권장 10~60)':' · 적정');
+  var descNote=descLen?('현재 '+descLen+'자'+(descLen<50?' · 너무 짧음(권장 50~160)':descLen>160?' · 너무 김(권장 50~160)':' · 적정')):'메타 디스크립션 없음';
+
   var checks={
     content:[
-      ['타이틀 태그',     '검색결과에 표시되는 페이지 제목',               7,!!title.trim()],
-      ['메타 디스크립션', '검색결과 설명문, 클릭률에 직접 영향',            8,!!metaDesc],
-      ['이미지 ALT 속성', '이미지 대체 텍스트 ('+imgDesc+')',             8,imgAltOk],
-      ['H1 태그',         '페이지 대표 제목 — 검색엔진 핵심 신호',          7,hasH1],
-      ['제목 태그 순서',  'H1→H2 올바른 계층 구조',                        6,headOk],
-      ['OG 태그',         'SNS 공유 미리보기 (og:title 설정)',              7,!!ogTitle],
-      ['콘텐츠 충실도',   '충분한 텍스트 콘텐츠 여부 (200자 이상)',          7,hasContent],
+      ['제목(title) 태그',  '검색결과 제목 — '+titleNote,                      8,!!title,'공통'],
+      ['메타 디스크립션',   '검색결과 설명문 — '+descNote,                     8,!!metaDesc,'공통'],
+      ['H1 대표 제목',      '페이지 핵심 주제를 알리는 대표 헤딩',              6,hasH1,'공통'],
+      ['헤딩 구조',         'H1→H2 논리적 계층 — 콘텐츠 구조화',               4,headOk,'Google'],
+      ['이미지 ALT 텍스트', '이미지 대체 텍스트 ('+imgDesc+')',               7,imgAltOk,'공통'],
+      ['의미있는 링크 텍스트','서술형 앵커 — "여기 클릭" 류 지양',              5,linkTextOk,'Google'],
     ],
     tech:[
-      ['HTTPS 보안',      'SSL 인증서 적용 — 구글 랭킹 직접 영향',          5,isHttps],
-      ['인덱싱 허용',     'meta robots noindex 미설정 확인',                 5,notNoindex],
-      ['Canonical 태그',  '중복 URL 방지 — 대표 주소 지정',                  4,!!canonical],
-      ['Viewport 설정',   '모바일 반응형 메타태그 — 모바일 우선 인덱싱 필수', 3,hasViewport],
-      ['언어 속성',       'HTML lang 속성 — 검색엔진 언어 인식',              3,!!lang],
+      ['HTTPS 보안 연결',   'SSL 적용 — Google·네이버 모두 신뢰 신호',         6,isHttps,'공통'],
+      ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함',          6,crawlOk,'공통'],
+      ['인덱싱 허용',       'meta robots noindex 미설정',                       5,notNoindex,'공통'],
+      ['Canonical 태그',    '중복 URL 정규화 — 대표 주소 지정',                5,!!canonical,'공통'],
+      ['Viewport(모바일)',  '모바일 반응형 메타 — 모바일 우선 인덱싱',          4,hasViewport,'공통'],
+      ['HTML lang 속성',    '페이지 언어 명시 — 검색엔진 언어 인식',            4,!!lang,'Google'],
     ],
     search:[
-      ['robots.txt',      '크롤러 접근 제어 파일 존재 여부',                  5,robotsTxtOk],
-      ['크롤링 허용',     'robots.txt 전체 차단(Disallow:/) 미설정',           5,robotsTxtAllow],
-      ['hreflang',        '다국어 페이지 언어·지역 태그 설정',                 4,hasHreflang],
-      ['구조화 데이터',   'Schema.org JSON-LD — AI 검색 노출 핵심',            6,hasLd],
+      ['구조화 데이터',     'Schema.org JSON-LD — 리치결과 노출',             7,hasLd,'Google'],
+      ['Open Graph 태그',   'og:title·og:description — 공유 미리보기',          7,ogOk,'네이버'],
+      ['sitemap.xml 선언',  'robots.txt에 Sitemap: 선언 — 수집 촉진',           5,hasSitemap,'공통'],
+      ['robots.txt 존재',   '크롤러 수집 규칙 파일 제공',                       3,robotsTxtOk,'공통'],
     ],
     speed:[
-      ['성능 점수',       'Google Lighthouse 성능 점수 (정밀 분석 시 측정)',    3,null],
-      ['텍스트 압축',     'gzip/brotli 압축 적용 여부',                         3,null],
-      ['이미지 최적화',   'WebP 형식·지연 로딩 적용 여부',                       2,null],
-      ['렌더링 최적화',   'CSS·JS 렌더링 차단 최소화',                           2,null],
+      ['성능 점수',       'Google Lighthouse 성능 점수 (정밀 분석 시 측정)',    3,null,'Google'],
+      ['텍스트 압축',     'gzip/brotli 압축 적용 여부',                         3,null,'Google'],
+      ['이미지 최적화',   'WebP 형식·지연 로딩 적용 여부',                       2,null,'Google'],
+      ['렌더링 최적화',   'CSS·JS 렌더링 차단 최소화',                           2,null,'Google'],
     ]
   };
 
   var catDef=[
-    {key:'content',label:'콘텐츠 SEO',    color:'#533afd',icon:'📝'},
-    {key:'tech',   label:'기술적 SEO',    color:'#06b6d4',icon:'⚙️'},
-    {key:'search', label:'검색엔진 친화도',color:'#8b5cf6',icon:'🔍'},
-    {key:'speed',  label:'속도 최적화',   color:'#f59e0b',icon:'⚡'},
+    {key:'content',label:'콘텐츠 & 메타',  color:'#533afd',icon:'📝'},
+    {key:'tech',   label:'기술·크롤링',    color:'#06b6d4',icon:'⚙️'},
+    {key:'search', label:'검색 노출 강화', color:'#8b5cf6',icon:'🔍'},
+    {key:'speed',  label:'속도 최적화',    color:'#f59e0b',icon:'⚡'},
   ];
   catDef.forEach(function(c){c.max=checks[c.key].reduce(function(s,i){return s+i[2];},0);});
 
@@ -5536,11 +5574,12 @@ function _renderFastSEO(data,url,domain,el){
     var catScore=0;
     var rows='';
     items.forEach(function(item){
+      var srcBadge=item[4]?'<span class="seo-src-badge" style="background:'+(item[4]==='Google'?'#4285F4':item[4]==='네이버'?'#03C75A':'#94a3b8')+'">'+item[4]+'</span>':'';
       if(item[3]===null){
         rows+='<div class="seo-item">'
           +'<span class="seo-item-status" style="background:#f3f4f6;color:#9ca3af;font-size:11px">?</span>'
           +'<div class="seo-item-info">'
-          +'<span class="seo-item-name" style="color:#9ca3af">'+item[0]+'</span>'
+          +'<span class="seo-item-name" style="color:#9ca3af">'+item[0]+srcBadge+'</span>'
           +'<span class="seo-item-desc">'+item[1]+'</span>'
           +'</div>'
           +'<span class="seo-item-pts" style="color:#9ca3af">—/'+item[2]+'</span>'
@@ -5552,7 +5591,7 @@ function _renderFastSEO(data,url,domain,el){
         rows+='<div class="seo-item">'
           +'<span class="seo-item-status '+(pass?'pass':'fail')+'">'+(pass?'✓':'✗')+'</span>'
           +'<div class="seo-item-info">'
-          +'<span class="seo-item-name">'+(pass?item[0]:'<strong>'+item[0]+'</strong>')+'</span>'
+          +'<span class="seo-item-name">'+(pass?item[0]:'<strong>'+item[0]+'</strong>')+srcBadge+'</span>'
           +'<span class="seo-item-desc">'+item[1]+'</span>'
           +'</div>'
           +'<span class="seo-item-pts '+(pass?'pass':'fail')+'">'+(pass?'+'+item[2]+'점':'0/'+item[2])+'</span>'
@@ -5611,6 +5650,11 @@ function _renderFastSEO(data,url,domain,el){
         +'<div id="seo-total-sub" class="seo-total-sub">'+domain+' · '+gInfo[2]+'<br><small style="color:#9ca3af;font-size:11px">기본 분석 완료 (90점 만점) · 속도 항목 별도</small></div></div>'
       +'</div>'
       +'<div class="tr-bars" style="flex:1;min-width:0">'+barSummary+'</div>'
+    +'</div>'
+    +'<div class="seo-guide-ref">'
+      +'📚 평가 기준: <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=ko" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">Google SEO 시작 가이드</a>'
+      +' · <a href="https://searchadvisor.naver.com/guide" target="_blank" rel="noopener" style="color:#03C75A;font-weight:700">네이버 서치어드바이저 가이드</a> 기반'
+      +'<span style="margin-left:8px;white-space:nowrap"><span class="seo-src-badge" style="background:#4285F4">Google</span><span class="seo-src-badge" style="background:#03C75A">네이버</span><span class="seo-src-badge" style="background:#94a3b8">공통</span></span>'
     +'</div>'
     +allItems
     +'<div class="seo-grade-section"><div class="seo-section-title">점수별 등급</div>'+gradeRow+'</div>'
