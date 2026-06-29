@@ -1,31 +1,31 @@
-/* Notion 디자인 토큰 — DESIGNnotion.md 기반 */
+/* 당신의영양제 디자인 토큰 — 내추럴 웰니스(그린) 앱 스타일 */
 :root {
-  /* Colors */
-  --primary:            #0075de;
-  --primary-active:     #005bab;
-  --secondary:          #213183;
+  /* Colors — fresh natural green, warm off-white canvas */
+  --primary:            #059669;   /* emerald 600 */
+  --primary-active:     #047857;   /* emerald 700 */
+  --secondary:          #0b3b2d;   /* deep forest — dark hero bands */
   --on-primary:         #ffffff;
   --canvas:             #ffffff;
-  --canvas-soft:        #f6f5f4;
+  --canvas-soft:        #f1f6f2;   /* mint-tinted off-white */
   --surface:            #ffffff;
-  --ink:                #000000;
-  --ink-secondary:      #31302e;
-  --ink-muted:          #615d59;
-  --ink-faint:          #a39e98;
-  --hairline:           #e6e6e6;
-  --accent-sky:         #62aef0;
-  --accent-purple:      #d6b6f6;
-  --accent-pink:        #ff64c8;
-  --accent-orange:      #dd5b00;
-  --accent-teal:        #2a9d99;
-  --accent-green:       #1aae39;
+  --ink:                #10231b;   /* near-black, slight green */
+  --ink-secondary:      #2b3b34;
+  --ink-muted:          #5c6b63;
+  --ink-faint:          #9aa8a0;
+  --hairline:           #e3eae5;
+  --accent-sky:         #6ee7b7;   /* mint highlight on dark bands */
+  --accent-purple:      #c4b5fd;
+  --accent-pink:        #fb7faf;
+  --accent-orange:      #d97706;
+  --accent-teal:        #0d9488;
+  --accent-green:       #16a34a;
 
-  /* Radius */
-  --r-xs:   4px;
-  --r-sm:   5px;
-  --r-md:   8px;
-  --r-lg:   12px;
-  --r-xl:   16px;
+  /* Radius — softer, app-like */
+  --r-xs:   6px;
+  --r-sm:   8px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-xl:   20px;
   --r-full: 9999px;
 
   /* Spacing */
@@ -50,7 +50,8 @@
 html { -webkit-font-smoothing: antialiased; }
 
 body {
-  font-family: Inter, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo",
+    "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans KR", sans-serif;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -94,13 +95,13 @@ body {
 }
 .btn-secondary:hover { box-shadow: var(--shadow-soft), 0 0 0 1px var(--hairline); }
 
-/* Badge pill */
+/* Badge pill — soft green fill (app-like) */
 .badge {
   display: inline-flex; align-items: center;
-  background: var(--surface); color: var(--primary);
-  font-size: 12px; font-weight: 600; letter-spacing: 0.125px; text-transform: uppercase;
-  border-radius: var(--r-full); padding: 4px var(--sp-xs);
-  border: 1px solid var(--hairline);
+  background: rgba(5,150,105,0.10); color: var(--primary-active);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1px;
+  border-radius: var(--r-full); padding: 4px 10px;
+  border: 1px solid rgba(5,150,105,0.18);
 }
 
 /* Feature card */

@@ -85,7 +85,7 @@ export default function NearbyPage() {
               style={{
                 flex: '1 1 0', minWidth: 130, padding: '12px 10px', borderRadius: 'var(--r-lg)',
                 border: active ? '2px solid var(--primary)' : '1.5px solid var(--hairline)',
-                background: active ? 'rgba(0,117,222,0.06)' : 'var(--surface)',
+                background: active ? 'rgba(5,150,105,0.08)' : 'var(--surface)',
                 cursor: 'pointer', textAlign: 'center',
               }}>
               <div style={{ fontSize: 15, fontWeight: 600, color: active ? 'var(--primary)' : 'var(--ink)' }}>{t.label}</div>
@@ -123,7 +123,7 @@ export default function NearbyPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                     <strong style={{ fontSize: 17 }}>{it.name}</strong>
                     {(it.tags || []).map((tag) => (
-                      <span key={tag} style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(0,117,222,0.08)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{tag}</span>
+                      <span key={tag} style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(5,150,105,0.10)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{tag}</span>
                     ))}
                   </div>
                   {/* 영업 상태 */}

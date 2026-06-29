@@ -10,10 +10,10 @@ const DUR_COLOR = { continuous: '#1aae39', monitor: '#dd5b00', cyclic: '#d63b3b'
 // 성분별 근거 코퍼스(data/evidence.json) 조회 + 근거 강도 라벨/색상
 const EV = Object.fromEntries(evidenceData.evidence.map((e) => [e.ingredient_id, e]));
 const STRENGTH = {
-  established: { label: '확립된 근거', color: '#1aae39' },
-  moderate: { label: '중등도 근거', color: '#0075de' },
-  limited: { label: '제한적 근거', color: '#dd5b00' },
-  insufficient: { label: '근거 불충분', color: '#8a94a6' },
+  established: { label: '확립된 근거', color: '#047857' },
+  moderate: { label: '중등도 근거', color: '#0d9488' },
+  limited: { label: '제한적 근거', color: '#d97706' },
+  insufficient: { label: '근거 불충분', color: '#6b7280' },
 };
 const STRENGTH_RANK = { established: 3, moderate: 2, limited: 1, insufficient: 0 };
 // 가장 강한 근거의 효능 1건을 대표로
@@ -265,7 +265,7 @@ export default function ResultPage() {
 
         {/* Interaction notes */}
         {result.interactions_note.length > 0 && (
-          <div style={{ background: 'rgba(0,117,222,0.05)', borderRadius: 'var(--r-lg)', border: '1px solid rgba(0,117,222,0.15)', padding: '16px 20px', marginBottom: 24 }}>
+          <div style={{ background: 'rgba(5,150,105,0.06)', borderRadius: 'var(--r-lg)', border: '1px solid rgba(5,150,105,0.18)', padding: '16px 20px', marginBottom: 24 }}>
             {result.interactions_note.map((n, i) => (
               <p key={i} style={{ fontSize: 14, color: 'var(--ink-secondary)', marginBottom: i < result.interactions_note.length - 1 ? 8 : 0 }}>{n}</p>
             ))}
@@ -310,7 +310,7 @@ export default function ResultPage() {
 
                   {/* 근거 — 추적 가능한 1차 출처 + 권장 섭취량 + 주의 */}
                   {(r.evidence_sources?.length || r.daily_dose || r.cautions?.length || topBenefit(r.ingredient_id)) ? (
-                  <div style={{ background: 'rgba(0,117,222,0.04)', border: '1px solid rgba(0,117,222,0.12)', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 8 }}>
+                  <div style={{ background: 'rgba(5,150,105,0.05)', border: '1px solid rgba(5,150,105,0.14)', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 13 }}>
                       <span style={{ fontWeight: 700, color: 'var(--ink-secondary)' }}>📋 근거</span>
                       {evidenceLinks(r.evidence_sources).map((e, ei) => (
@@ -508,7 +508,7 @@ export default function ResultPage() {
                   <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginLeft: 6 }}>{s.org}</span>
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(0,117,222,0.08)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{s.tag}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(5,150,105,0.10)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{s.tag}</span>
                   <span style={{ color: 'var(--primary)', fontSize: 14 }}>→</span>
                 </span>
               </a>
