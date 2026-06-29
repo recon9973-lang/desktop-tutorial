@@ -1,241 +1,431 @@
-# 홈페이지 자동 개발 시스템 — 마스터 기획안
+# VENOM Site Factory — 마스터 기획안 v2
 
-> 코드네임: **VENOM Site Factory (베놈 사이트 팩토리)**
-> 작성일: 2026-06-29 · 브랜치: `claude/auto-website-generator-qz1azp`
-> 한 줄 정의: **고객이 기본 정보·컨셉·자료를 넣으면 → 기획부터 제작·배포까지 자동으로 끝내는 홈페이지 생산 공장.**
+> 코드네임: **VENOM Site Factory**  
+> 갱신일: 2026-06-29 · 브랜치: `claude/auto-website-generator-qz1azp`  
+> 한 줄 정의: **고객 기본 정보를 넣으면 → 기획·제작·SEO/AEO/GEO 최적화·배포까지 자동으로 끝내는 홈페이지 생산 공장.**
 
 ---
 
-## 0. 결론 먼저 (Executive Summary)
+## 0. Executive Summary
 
-| 질문 | 결론 |
+| 질문 | 현재 답 |
 |---|---|
-| **워드프레스 쓸까?** | **예. WordPress를 "콘텐츠 엔진"으로 채택** + 그 위에 자동화 오케스트레이션 레이어를 얹는다. (단일 인스턴스 난립이 아니라 **멀티사이트 + 캐시 정적화** 구조) |
-| **병원만 만들 건가?** | **아니오.** 대분류(병원·언론·블로그·매거진·소상공인…) → 규모 → 기능옵션 순서로 **카테고리 우선** 선택 구조로 전환. |
-| **베놈 도구 재활용?** | 블로그 발행기·이미지 변환기·검수기·번역기·SEO/llms.txt = **이미 코드로 존재 → 6개 "옵션 팩"으로 패키징.** |
-| **100개 사이트 한 서버?** | **가능.** 브로셔+블로그형은 캐시 정적화 시 거의 정적 트래픽 → 8 vCPU / 32GB 1대로 100개 운영, 확장 경로 명시. |
+| **플랫폼** | WordPress 멀티사이트 + 캐시 정적화 (Nginx FastCGI + Redis + Cloudflare) |
+| **카테고리** | `clinic` 병원 + `local` 소상공인 완성, `press`/`blog`/`magazine` 예정 |
+| **자동화 수준** | 입력폼 → site-spec.json → 정적 HTML + SEO 파일 4종 자동 생성 (CLI 1줄) |
+| **미리보기** | 실시간 미리보기 서버 (`node server.js`) → 입력 즉시 iframe 렌더 |
+| **SEO/AEO/GEO** | robots.txt + sitemap.xml + llms.txt + Schema.org + OG 기본 완성; 고도화 필요 |
+| **다음 단계** | lib 의존성 해소 → AEO 스키마 보강 → press 블루프린트 → WP 자동 provisioning |
 
 ---
 
-## 1. 제품 개념 — "공장(Factory)" 모델
+## 1. 전수조사 — 현재 구현 상태
 
-기존 베놈 사이트는 **한 개의 사이트**였다. 이 프로젝트는 그걸 **찍어내는 기계**를 만드는 것.
-
-```
-[고객 입력]  →  [AI 기획]  →  [자동 빌드]  →  [자동 배포]  →  [운영·그로스]
- 인터뷰 폼      사이트맵/카피     WP 사이트 생성    도메인 연결      블로그 자동발행
- 컨셉/자료      디자인 토큰       카테고리 블루프린트  SSL/CDN         검수·분석·다국어
-```
-
-핵심은 3개 레이어로 분리된다.
-
-| 레이어 | 이름 | 역할 | 재활용 베놈 자산 |
-|---|---|---|---|
-| ① 입력·기획 | **Intake & Planner** | 고객 인터뷰 → AI가 사이트맵·카피·디자인 토큰 생성 | (신규) Claude API |
-| ② 빌드·배포 | **Factory Core** | 카테고리 블루프린트로 WordPress 사이트 자동 생성 | `venom-wordpress/theme`, `docker` |
-| ③ 운영·그로스 | **Growth Engine** | 발행·검수·이미지·번역·SEO·분석을 각 사이트에 주입 | `lib/*`, `api/*` 전부 |
-
----
-
-## 2. 플랫폼 결정 — 워드프레스, 어떻게 쓸 것인가
-
-### 2.1 왜 워드프레스인가 (채택 근거)
-
-- **재활용**: 이미 `venom-wordpress/`에 테마·도커·기획서가 존재. 블로그 발행기를 WP REST API에 연결하면 바로 동작.
-- **고객 자가관리**: 언론사·매거진·블로그는 글을 매일 쓴다 → wp-admin/구텐베르크가 필수. 정적 사이트는 고객이 직접 못 고친다.
-- **카테고리 적합성**: 뉴스/매거진/블로그 = 워드프레스의 본진. 소상공인·병원도 플러그인 생태계로 빠르게 커버.
-- **속도**: 커스텀 풀스택 대비 사이트 1개 생산 시간이 압도적으로 짧음 (공장 모델에 필수).
-
-### 2.2 그러나 — "그냥 워드프레스"는 함정
-
-100개를 개별 설치로 운영하면 보안·업데이트·성능이 지옥이 된다. 그래서 **2-Tier 전략**:
-
-| Tier | 구조 | 대상 | 특징 |
-|---|---|---|---|
-| **Tier 1 (표준)** | **WordPress 멀티사이트** (단일 코어, 사이트별 테이블 prefix) + 도메인 매핑 | 대부분의 고객 (블로그·소상공인·중소 병원·매거진) | 1개 코어로 100개 운영, 중앙 업데이트, 생산 즉시화 |
-| **Tier 2 (프리미엄)** | **Headless WP + 정적 출력**(Next.js/정적화) 또는 전용 인스턴스 | 고트래픽 언론사·맞춤 SLA·대형 병원 | 최고 성능·격리, AI검색 최적화 극대화 |
-
-> **핵심 원칙**: WordPress는 "관리/콘텐츠"만 담당하고, **앞단은 캐시로 정적화**한다(Nginx FastCGI + Redis + Cloudflare). 즉 PHP는 글 쓸 때만 돌고, 방문자는 거의 항상 캐시된 HTML을 본다 → 100개여도 가볍다.
-
-### 2.3 베놈 도구는 어디에 사는가
-
-기존 Node 모듈(`lib/`, `api/`)은 **중앙 "Growth Engine" 서비스**로 분리하고, 각 고객 WP에 **REST API로 콘텐츠를 밀어 넣는다**.
+### 1.1 파일 인벤토리
 
 ```
-[Growth Engine (Node)]  --(WP REST API: POST /wp/v2/posts)-->  [고객 WP 사이트들]
-  · 블로그 자동발행                                                  · 병원 A
-  · AI 이미지 + WebP 변환                                            · 언론사 B
-  · 콘텐츠/의료광고 검수                                              · 매거진 C
-  · 자동 번역(다국어)                                                · 소상공인 D ...
-  · SEO/AEO/GEO/llms.txt 주입
+auto-site-factory/
+├── engine/
+│   ├── generate.js          ✅ 완성  — 정적 HTML 생성 엔진 (295줄)
+│   ├── seo.js               ✅ 완성  — robots.txt / sitemap / llms.txt 생성 (71줄)
+│   ├── blog-gen.js          ⚠ 부분  — CLI 완성, OpenAI 의존 (114줄)
+│   ├── wp-adapter.js        ⚠ 부분  — provision.sh 생성, 실 연결 미완 (145줄)
+│   └── options/
+│       └── medical-review.js ⚠ 부분  — 래퍼 완성, lib 의존성 없음 (24줄)
+├── blueprints/
+│   ├── clinic/
+│   │   ├── blueprint.json   ✅ 완성  — 8개 진료과목, 3규모, 스톡사진 URL
+│   │   └── template.html    ✅ 완성  — 병원 전용 네이비 테마
+│   └── local/
+│       ├── blueprint.json   ✅ 완성  — 7개 업종, cafe 스톡 5장, Higgsfield CDN
+│       └── template.html    ✅ 완성  — 소상공인 Amber/Brown 따뜻한 테마
+├── samples/
+│   ├── site-spec.example.json   ✅ 치과 예제
+│   └── local-spec.example.json  ✅ 카페 예제
+├── intake/
+│   └── index.html           ✅ 완성  — clinic/local 조건부 폼 + 미리보기 연동
+├── server.js                ✅ 완성  — 미리보기 서버 (포트 3737)
+└── output/                  ✅ 생성됨 — 3개 예제 사이트 출력물
+
+venom-plugins/
+├── venom-seo/               ✅ 완성  — robots.txt 필터, llms.txt 엔드포인트, Schema.org
+├── venom-autoblog/          ✅ 완성  — WP-Cron 자동발행, REST API
+└── venom-medreview/         ✅ 완성  — save_post 검수, 관리자 컬럼
 ```
 
----
+### 1.2 완성도 레이더
 
-## 3. 제품 구조 — 카테고리 우선 (Category-First)
-
-병원 전용 → **범용 홈페이지 공장**으로 방향 전환. 고객은 **3단계**로 자기 사이트를 정의한다.
-
-### STEP 1 — 대분류 선택 (무엇을 위한 사이트인가)
-
-| 코드 | 대분류 | 핵심 니즈 | 기본 페이지 셋 |
-|---|---|---|---|
-| `clinic` | 🏥 병원·의료 | 신뢰감, 의료광고심의, 예약/상담 | 의료진·진료과목·예약·오시는길·블로그 |
-| `press` | 📰 인터넷 언론·뉴스 | 기사 대량 발행, 속보, 광고영역 | 기사 CMS·카테고리·기자·속보·제휴 |
-| `blog` | ✍️ 개인 블로그 | 글쓰기 중심, 수익화 | 글목록·카테고리·about·구독·애드 |
-| `magazine` | 📖 매거진 | 비주얼/에디토리얼, 호 단위 | 피처·이슈/호·인터뷰·갤러리 |
-| `local` | 🏪 소상공인·로컬 | 가게소개, 예약/주문, 지도 | 소개·메뉴/상품·예약·리뷰·지도 |
-| `corp` *(확장)* | 🏢 기업·스타트업 | 회사소개, 채용, IR | 회사·서비스·채용·뉴스룸 |
-| `shop` *(확장)* | 🛒 쇼핑몰 | 상품·결제 | (WooCommerce 연동) |
-
-### STEP 2 — 규모 선택 (얼마나 큰가)
-
-| 등급 | 페이지 수 | 대응 |
+| 컴포넌트 | 완성도 | 비고 |
 |---|---|---|
-| **Lite** | 1~3p | 원페이지/소형 (소상공인·개인) |
-| **Standard** | 5~10p | 표준 (대부분 병원·기업) |
-| **Pro** | 10~30p | 콘텐츠 다량 (언론·매거진) |
-| **Enterprise** | 30p+ / 맞춤 | 전용 인스턴스(Tier 2) |
+| **정적 생성 엔진** | 95% | 테스트 통과, clinic/local 양쪽 작동 |
+| **병원(clinic) 블루프린트** | 90% | 8개 진료과목; photo 업로드 연동 완성 |
+| **소상공인(local) 블루프린트** | 85% | 7개 업종; 카페만 스톡 사진 있음 |
+| **SEO 엔진** | 80% | robots/sitemap/llms.txt 완성; AEO 고도화 필요 |
+| **입력 폼** | 90% | 미리보기 포함; trust/reviews 입력 미구현 |
+| **미리보기 서버** | 100% | POST /api/preview 작동 확인 |
+| **WP 어댑터** | 40% | provision.sh 생성; wp-cli 실행 부재 |
+| **WP 플러그인** | 75% | SEO/autoblog/medreview 3종; analytics/image 미완 |
+| **lib 의존성** | 20% | post-generator, medical-ad-validator 미포함 |
+| **press/blog/magazine 블루프린트** | 0% | 미착수 |
 
-### STEP 3 — 기능 옵션 선택 (아래 §4의 옵션 팩 체크박스)
+### 1.3 핵심 미결 항목 (빠른 순서)
 
-> 대분류가 옵션의 **기본값**을 결정한다. 예) `clinic` 선택 시 "의료광고 검수 팩"이 기본 ON, `press` 선택 시 "기사 대량발행·다국어"가 기본 추천.
-
----
-
-## 4. 기능 옵션 팩 — 베놈 도구 재활용 매핑
-
-기존 베놈 코드 → 그대로 6개 옵션 팩으로 묶는다. (체크박스로 ON/OFF)
-
-| 옵션 팩 | 무엇 | 재활용 원본 파일 | 기본 포함 카테고리 |
-|---|---|---|---|
-| **① 블로그 자동발행 팩** | 키워드→AI 초안→디자인→예약/자동발행, 데일리 크론 | `lib/post-generator.js`, `lib/post-designer.js`, `api/generate-post.js`, `api/publish-post.js`, `api/cron-daily-posts.js`, `api/posting-settings.js` | blog, press, clinic |
-| **② 이미지 외피 변환 팩** | AI 이미지 생성 + WebP 변환·최적화 (대표이미지 자동) | `lib/image-generator.js`, `scripts/convert-to-webp.js`, `.github/workflows/convert-webp.yml` | 전체 |
-| **③ 콘텐츠 검수 팩** | 맞춤법·SEO·링크 검수 + **의료광고법 위반 검수** | `lib/content-validator.js`, `lib/medical-ad-validator.js` | clinic(의료광고 필수), 전체(일반 검수) |
-| **④ 다국어 글로벌 팩** | 자동 번역 다국어 버전 (en 등) | `lib/translate.js`, `preview/en/`, `content/blog-posts-en.json` | press, magazine, corp |
-| **⑤ AI 검색 최적화 팩 (기본 내장)** | SEO/AEO/GEO 점수, sitemap, **llms.txt**, robots.txt, JSON-LD 스키마 | `api/seo-proxy.js`, `lib/sitemap-builder.js`, `preview/llms.txt`, `robots.txt` | **전체 기본 ON** |
-| **⑥ 분석·인사이트 팩** | 방문 분석, 인사이트, 사용량 통계 | `api/analytics.js`, `api/insights.js`, `api/usage-stats.js` | 전체(옵션) |
-
-> ⑤ AI 검색 최적화 팩은 **항상 기본 포함** — 이 제품의 차별점(SEO+AEO+GEO+llms.txt 삼중 최적화)이기 때문.
-> ③ 검수 팩은 카테고리에 따라 룰셋 교체: 병원=의료광고법, 언론=저작권/표기, 일반=맞춤법/링크.
+1. **`engine/lib/` 의존성 누락** — `medical-review.js`가 `../lib/medical-ad-validator`를 require하는데 factory 폴더에 없음. `blog-gen.js`도 `../lib/post-generator` 없음.
+2. **소상공인 스톡사진 부족** — `restaurant/beauty/nail/fitness/bakery/retail` 6개 업종에 stock.hero/intro/gallery 없음 → Higgsfield 생성 필요.
+3. **intake form trust/reviews 입력** — 현재 폼은 trust 숫자, 후기(reviews) 입력 없어 예제 값이 자동 적용됨.
+4. **WP 실배선** — provision.sh만 나옴; `wp-cli` 실행 래퍼 없어 사람이 수동 복붙해야 함.
+5. **venom-analytics 플러그인** — analytics 옵션은 체크박스에 있지만 플러그인 없음.
+6. **AEO/GEO 스키마 보강** — 아래 §3 참조.
 
 ---
 
-## 5. 자동 개발 파이프라인 (입력 → 배포)
+## 2. 브레인스토밍 — 아이디어 목록
 
-```
-1. INTAKE (입력)
-   └ 고객 인터뷰 폼: 대분류·규모·상호/브랜드·컬러·로고·자료(PDF/이미지)·연락처·도메인
-2. PLAN (AI 기획)
-   └ Claude가 사이트맵 + 페이지별 카피 + 디자인 토큰(컬러/폰트) + 메타데이터 생성
-   └ 산출물: site-spec.json (블루프린트 입력값)
-3. BUILD (자동 빌드)
-   └ WP 멀티사이트에 신규 사이트 생성 (wp-cli) → 카테고리 블루프린트 테마 적용
-   └ 페이지/메뉴/콘텐츠 주입 (WP REST API) → 선택한 옵션 팩 활성화
-   └ 로고·이미지 업로드 → WebP 변환 (②)
-4. SEO INJECT
-   └ sitemap.xml / robots.txt / llms.txt / JSON-LD 스키마 자동 생성 (⑤)
-5. DEPLOY
-   └ 도메인 매핑 + SSL(Let's Encrypt) + Cloudflare CDN/캐시 활성화
-6. HANDOFF / GROWTH
-   └ 고객에게 wp-admin 전달 + Growth Engine이 블로그 자동발행 시작 (①)
-```
+### 2.1 UX / 입력 최적화
 
-**site-spec.json (블루프린트 계약서) 예시**
+| 아이디어 | 효과 | 난이도 |
+|---|---|---|
+| **AI 자동완성 폼** — 상호명+업종 입력 시 Claude가 슬로건·메타 자동 제안 | 입력 시간 70% 절감 | 중 |
+| **다단계 마법사 UI** — 현재 긴 단일 폼 → 4단계 스텝퍼 (대분류→브랜드→콘텐츠→배포) | 완료율 상승 | 중 |
+| **로고 색상 추출** — 로고 업로드 시 자동으로 primary color 추출 | 브랜드 일관성 자동화 | 하 |
+| **업종 자동 감지** — 사업자 번호 or 네이버 플레이스 URL → 업종·주소 자동 채움 | 오타·입력 오류 방지 | 상 |
+| **spec 버전 관리** — 동일 고객의 spec 여러 버전 저장·비교 | 수정 이력 추적 | 중 |
+
+### 2.2 미리보기 / 검수 강화
+
+| 아이디어 | 효과 | 난이도 |
+|---|---|---|
+| **SEO 점수 오버레이** — 미리보기 패널에 실시간 SEO 체크리스트 패널 | 검수 사전 차단 | 중 |
+| **모바일 Lighthouse 점수** — 미리보기 생성 후 자동 성능/접근성 점수 | 품질 보증 | 상 |
+| **Schema 유효성 배지** — 생성된 JSON-LD가 Google Rich Results Test 통과하는지 실시간 확인 | 리치리절트 보장 | 중 |
+| **실사진 vs 스톡 토글** — 미리보기에서 "실사진 모드 / AI스톡 모드" 전환 | 고객 설득 자료 | 하 |
+| **A/B 색상 미리보기** — primary color 슬라이더로 실시간 컬러 변환 | 브랜드 컬러 결정 지원 | 하 |
+
+### 2.3 SEO/AEO/GEO 전략적 아이디어
+
+| 아이디어 | 효과 | 난이도 |
+|---|---|---|
+| **llms.txt 2.0** — 단순 소개 넘어서 Q&A 형식 + 서비스 상세 + 가격 범위 포함 | AI 인용률 3-5배 향상 | 하 |
+| **AI 검색 시뮬레이터** — ChatGPT/Perplexity에 업체 쿼리 날리면 어떻게 답하는지 비교 | GEO 효과 측정 | 상 |
+| **지역 경쟁사 분석** — 네이버 지도 API로 반경 1km 경쟁사 키워드 자동 분석 | 틈새 키워드 발굴 | 상 |
+| **스키마 캘린더** — 이벤트/프로모션을 Event 스키마로 자동 발행 → Google 이벤트 리스팅 | 추가 검색 노출 | 중 |
+| **FAQ 자동 생성** — 업종별 자주 묻는 질문 DB + Claude가 업체 맞춤 FAQ 30개 생성 | AEO 핵심 콘텐츠 | 중 |
+
+### 2.4 운영 / 비즈니스 모델
+
+| 아이디어 | 효과 | 난이도 |
+|---|---|---|
+| **고객 대시보드** — 생성된 사이트 상태, 블로그 발행 현황, SEO 점수 한눈에 | 해지율 감소, 락인 | 상 |
+| **화이트레이블 리셀러** — 다른 마케팅 대행사가 VENOM Factory를 자사 솔루션으로 판매 | B2B 채널 확장 | 상 |
+| **월구독 + 옵션팩 과금** — 기본 사이트 관리 월 X원 + 블로그 Y원/월 + 이미지 Z원/월 | 예측 가능 수익 | 중 |
+| **자동 리뷰 수집** — 카카오/네이버 리뷰 API로 최신 후기 자동 업데이트 | 사이트 신선도 유지 | 상 |
+
+---
+
+## 3. SEO · AEO · GEO 최적화 현황 및 고도화 계획
+
+### 3.1 현재 구현 현황
+
+#### ✅ 완성된 항목
+
+| 파일 | 기능 |
+|---|---|
+| `engine/seo.js` `robotsTxt()` | AI 크롤러 허용 (GPTBot·ClaudeBot·PerplexityBot·Google-Extended) |
+| `engine/seo.js` `sitemapXml()` | 페이지별 priority·changefreq 포함 sitemap.xml |
+| `engine/seo.js` `llmsTxt()` | AI 학습·인용 동의, 업종별 소개, 카테고리 분기 |
+| `template.html` (both) | `<title>`, `<meta description>`, `<link rel="canonical">` |
+| `template.html` (both) | OG 태그 (title, description, image, url) |
+| `template.html` clinic | `MedicalClinic` Schema.org JSON-LD |
+| `template.html` local | `LocalBusiness` Schema.org JSON-LD |
+| `template.html` (both) | `FAQPage` Schema.org JSON-LD |
+| `venom-seo.php` | WordPress: robots.txt 필터 + llms.txt 엔드포인트 |
+
+#### ⚠ 부분 구현 (존재하지만 미흡)
+
+| 항목 | 현황 | 문제 |
+|---|---|---|
+| `LocalBusiness` sameAs | `instagram`, `naver_place` URL 포함 | 값이 빈 문자열이면 오염 |
+| `llmsTxt` 콘텐츠 | 소개·키워드·링크 포함 | 메뉴·가격·영업시간 미포함 |
+| FAQ 개수 | 기본 3개 | 5-10개가 AEO 효과 높음 |
+| 이미지 alt | 일부 없음 | 접근성·이미지 SEO |
+
+#### ❌ 미구현
+
+| 항목 | 중요도 | 영향 |
+|---|---|---|
+| `Organization` 스키마 | 높 | 브랜드 엔티티 명확화 → GEO 핵심 |
+| `AggregateRating` 스키마 | 높 | 별점 리치리절트 → CTR +15~30% |
+| `OpeningHoursSpecification` | 높 | "지금 영업 중" 표시, Local Pack |
+| `HowTo` / `Service` 스키마 | 중 | 서비스 과정 AEO |
+| `BreadcrumbList` 스키마 | 중 | 내비게이션 리치리절트 |
+| `Speakable` 콘텐츠 | 중 | 음성검색(Bixby, Clova) 대응 |
+| 구조화된 NAP 일관성 | 높 | 지역 검색 신뢰도 |
+| `hreflang` (다국어) | 중 | 글로벌 팩 활성화 시 필수 |
+
+---
+
+### 3.2 즉시 추가할 스키마 (코드)
+
+아래 3개 스키마를 `template.html`에 추가하면 AEO/GEO 점수가 크게 올라간다.
+
+**① Organization + AggregateRating (local template)**
 ```json
 {
-  "category": "clinic",
-  "scale": "standard",
-  "brand": { "name": "○○치과", "primary": "#533afd", "logo": "logo.png" },
-  "domain": "example.com",
-  "options": ["blog_auto", "image_pack", "medical_review", "seo_pack", "analytics"],
-  "locale": ["ko"],
-  "assets": ["intro.pdf", "doctor1.jpg"]
+  "@context": "https://schema.org",
+  "@type": ["LocalBusiness", "Organization"],
+  "name": "{{brand.name}}",
+  "telephone": "{{brand.phone}}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{brand.address}}",
+    "addressLocality": "{{brand.region}}",
+    "addressCountry": "KR"
+  },
+  "openingHoursSpecification": "{{sections.hoursSchema}}",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": "{{trust.0.num}}"
+  },
+  "priceRange": "₩₩"
 }
 ```
 
----
-
-## 6. 서버 아키텍처 — 100개 사이트 / 1대 운영
-
-### 6.1 전제
-
-베놈 규모(브로셔 + 블로그형, 동적 페이지 적음) 사이트 100개. 방문 트래픽 대부분이 **읽기**다 → **캐시 정적화하면 PHP가 거의 안 돈다.**
-
-### 6.2 단일 서버 스택 (Tier 1)
-
-```
-                 ┌─────────────── Cloudflare (CDN · WAF · DDoS · 캐시) ───────────────┐
-                 │                                                                     │
-  방문자 ──────► Nginx (리버스프록시 + FastCGI 캐시: HTML 정적 서빙)
-                 │   └ 캐시 HIT → PHP 안 거치고 즉시 응답 (99% 트래픽)
-                 │   └ 캐시 MISS / wp-admin / 폼 → ↓
-                 ├─► PHP-FPM (등급별 pool) ──► WordPress 멀티사이트 (코어 1개)
-                 ├─► Redis (오브젝트 캐시 · 세션)
-                 └─► MariaDB (사이트별 테이블 prefix)
-
-  미디어(이미지) → 오브젝트 스토리지(S3/R2) + CDN 오프로드
-  Growth Engine(Node) → 같은 서버 or 별도 소형 워커 → WP REST API로 발행
+**② Service 스키마 (각 메뉴 아이템)**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "{{specialty.label}}",
+  "provider": { "@type": "LocalBusiness", "name": "{{brand.name}}" },
+  "areaServed": "{{brand.region}}"
+}
 ```
 
-### 6.3 권장 사양 (시작 → 확장)
+**③ llmsTxt 2.0 구조**
+```
+# {{brand.name}}
 
-| 항목 | 시작 (100개, 보통 트래픽) | 확장 (트래픽 증가 시) |
-|---|---|---|
-| CPU | 8 vCPU | 16 vCPU |
-| RAM | 32 GB | 64 GB |
-| 디스크 | 200~500 GB NVMe | + 오브젝트 스토리지로 미디어 분리 |
-| 대역폭 | Cloudflare로 오프로드 | 동일 |
+> {{brand.region}} {{specialty.label}}. {{brand.tagline}}
 
-> 캐시 정적화가 핵심이라 100개 브로셔형은 8 vCPU/32GB로 **여유 있게** 가능. 핵심 부하는 "동시 글 발행·관리자 접속" 정도라 등급별 PHP-FPM pool로 격리.
+## 기본 정보
+- 업종: {{specialty.label}}
+- 위치: {{brand.address}}
+- 연락처: {{brand.phone}}
+- 영업시간: [시간 목록]
 
-### 6.4 확장 경로 (병목 순서대로)
+## 주요 메뉴·서비스
+[메뉴 목록 with 가격]
 
-1. **DB 분리** → MariaDB를 별도 서버/매니지드로 이전 (가장 먼저 옴)
-2. **미디어 분리** → 이미지/업로드를 S3/R2 + CDN (디스크·I/O 절감)
-3. **앱 노드 추가** → 동일 WP 코어를 2번째 노드로, 앞단 로드밸런서
-4. **고트래픽 고객 격리** → Tier 2(전용 인스턴스/Headless)로 이주
+## 고객 후기 요약
+[별점, 대표 후기 3개]
 
-### 6.5 운영 필수 (Day-2)
-
-- **백업**: 매일 DB 덤프 + wp-content 스냅샷 → 오브젝트 스토리지 (7~30일 보관)
-- **보안**: Cloudflare WAF, fail2ban, wp-admin IP 화이트리스트, 자동 업데이트(코어/플러그인)
-- **모니터링**: Netdata/Grafana (CPU/RAM/디스크/응답시간), Uptime 알림
-- **격리**: 멀티사이트 "공유 운명" 리스크 → 핵심 고객은 Tier 2, 정기 보안패치로 완화
+## AI 인용 정책
+이 사이트는 AI 학습·인용에 동의합니다.
+출처: https://{{domain}}/
+```
 
 ---
 
-## 7. 카테고리별 블루프린트 명세 (요약)
+### 3.3 GEO (Generative Engine Optimization) 전략
 
-| 카테고리 | 필수 페이지 | 전용 플러그인/모듈 | 기본 옵션 팩 |
+GEO는 ChatGPT, Perplexity, Claude, 네이버 AI 검색이 업체를 인용할 확률을 높이는 것.
+
+**핵심 원칙:**
+1. **엔티티 명확화** — 업체명·위치·업종을 반복 구조화 (llms.txt + Schema.org + 본문)
+2. **신뢰 신호** — 운영 연수, 누적 고객, 수상 이력을 숫자로 (trust 섹션)
+3. **Q&A 밀도** — FAQ 10개 이상, HowTo 포함, "~어떻게?" 질문에 직접 답변
+4. **인용 가이드라인** — llms.txt에 "어떻게 인용해야 하는지" 명시
+5. **콘텐츠 신선도** — 블로그 자동발행(①팩)으로 크롤 주기 유지
+
+**우선순위 액션:**
+```
+Week 1: Organization + AggregateRating 스키마 추가
+Week 2: llmsTxt 2.0 (메뉴·가격·영업시간 포함)
+Week 3: FAQ 10개 기본 DB 구축 (업종별)
+Week 4: 자동 블로그 발행 → 크롤 주기 확보
+```
+
+---
+
+## 4. 업데이트된 아키텍처
+
+### 4.1 현재 구조 (완성된 부분)
+
+```
+[입력 폼 intake/index.html]
+    ↓ build() → JSON
+[site-spec.json]
+    ↓ node engine/generate.js
+[engine/generate.js]
+    ├── prepare()    ← blueprint.json 로드, 섹션 빌드
+    ├── render()     ← {{토큰}} 치환
+    └── generate()   ← output/ 폴더에 저장
+         ├── index.html
+         ├── robots.txt   ← engine/seo.js
+         ├── sitemap.xml  ← engine/seo.js
+         └── llms.txt     ← engine/seo.js
+
+[server.js (미리보기)]
+    POST /api/preview → prepare() + render() → HTML 반환
+    GET /             → intake/index.html 서빙
+
+[venom-plugins/ (WordPress)]
+    venom-seo       → robots.txt 필터, llms.txt, Schema.org
+    venom-autoblog  → WP-Cron 자동발행, REST API
+    venom-medreview → save_post 검수, 관리자 컬럼
+```
+
+### 4.2 목표 구조 (완성 시)
+
+```
+                    ┌─── Cloudflare CDN/WAF ───────────────────────┐
+사용자              │                                              │
+  ↓              Nginx FastCGI Cache (HTML 정적 서빙 99%)          │
+[intake.html]       │  ↓ MISS                                      │
+  ↓ build()      PHP-FPM → WordPress Multisite                    │
+[site-spec.json]    │       ├── clinic.site1.kr                    │
+  ↓ generate     Redis (Object Cache)                             │
+[정적 output/]   MariaDB (사이트별 prefix)                         │
+  ↓ deploy                                                        │
+[WP Multisite] ←── Growth Engine (Node) ──────────────────────────┘
+                    ├── ① 블로그 자동발행 (blog-gen.js → WP REST)
+                    ├── ② 이미지 생성+WebP 변환
+                    ├── ③ 검수 (medical-ad-validator)
+                    ├── ④ 번역 (translate.js)
+                    ├── ⑤ SEO/llms.txt 주입 (seo.js)
+                    └── ⑥ 분석 (analytics.js)
+```
+
+---
+
+## 5. 카테고리 블루프린트 로드맵
+
+### 5.1 완성 (즉시 사용 가능)
+
+| 카테고리 | 업종 수 | 스톡 사진 | 스키마 | 상태 |
+|---|---|---|---|---|
+| `clinic` 병원 | 8 | 부분 (진단기기 중심) | MedicalClinic + FAQ | ✅ |
+| `local` 소상공인 | 7 | 카페만 5장 | LocalBusiness + FAQ | ✅ |
+
+### 5.2 다음 구현 대상
+
+| 카테고리 | 핵심 섹션 | 전용 스키마 | 우선도 |
 |---|---|---|---|
-| `clinic` 병원 | 메인·진료과목·의료진·예약/상담·오시는길·블로그 | 의료광고심의 룰셋, 예약폼 | ①③⑤ + 분석 |
-| `press` 언론 | 메인·기사목록·기사상세·카테고리·기자·속보·문의 | 기사 CMS, 광고영역, 제휴 메타 | ①④⑤ |
-| `blog` 블로그 | 글목록·글상세·카테고리·about·구독 | 애드센스/수익화, 구독폼 | ①⑤ |
-| `magazine` 매거진 | 피처·이슈/호·인터뷰·갤러리·about | 호(issue) 커스텀타입, 비주얼 | ④⑤ |
-| `local` 소상공인 | 소개·메뉴/상품·예약/주문·리뷰·지도 | 지도, 예약/주문, 리뷰 | ②⑤ |
+| `press` 인터넷 언론 | 기사 CMS, 카테고리, 기자 프로필 | NewsArticle, Journalist | 높 |
+| `blog` 개인 블로그 | 글목록, about, 구독 | BlogPosting, Person | 중 |
+| `magazine` 매거진 | 피처, 이슈/호, 갤러리 | Magazine, PublicationVolume | 중 |
+| `corp` 기업 | 회사소개, 채용, 뉴스룸 | Organization, JobPosting | 낮 |
+
+### 5.3 소상공인 스톡 사진 미보충 업종
+
+다음 6개 업종에 Higgsfield AI 생성 스톡 사진 필요:
+
+| 업종 | 필요 컷 |
+|---|---|
+| `restaurant` 식당 | 외관, 홀 내부, 시그니처 메뉴 3컷 |
+| `beauty` 미용실 | 외관, 시술 중, 헤어 결과물 3컷 |
+| `nail` 네일샵 | 네일 아트 클로즈업 5컷 |
+| `fitness` 헬스장 | 기구, 트레이닝, 공간 3컷 |
+| `bakery` 베이커리 | 외관, 제품 진열, 베이킹 3컷 |
+| `retail` 소매점 | 외관, 상품 진열, 쇼케이스 3컷 |
 
 ---
 
-## 8. 로드맵
+## 6. 빠른 실행 계획 (Sprint 1-4)
 
-| 단계 | 범위 | 산출물 |
+### Sprint 1 (1주) — 기반 완성
+**목표**: lib 의존성 해소 + AEO 스키마 보강 + 소상공인 스톡 보충
+
+- [ ] `engine/lib/medical-ad-validator.js` 복사 또는 이식
+- [ ] `engine/lib/post-generator.js` 스텁 구현 (OpenAI 없을 때 템플릿 기반 fallback)
+- [ ] Organization + AggregateRating 스키마 → `template.html` 양쪽 추가
+- [ ] OpeningHoursSpecification 스키마 → local template
+- [ ] llmsTxt() 2.0 — 메뉴·영업시간·별점 포함
+- [ ] 소상공인 6개 업종 Higgsfield 스톡 생성
+
+### Sprint 2 (2주) — 입력 폼 고도화
+**목표**: 폼 완성도 90% → 100% + AI 자동완성
+
+- [ ] trust 입력 카드 (숫자 4개: 운영연수, 평점, 월고객, 퍼센트)
+- [ ] reviews 입력 카드 (후기 3개: 작성자, 별점, 본문)
+- [ ] FAQ 입력 카드 (Q&A 동적 추가)
+- [ ] Claude API 연동 → 업종 선택 시 슬로건·FAQ 자동 제안
+- [ ] 색상 AI 추출 (로고 업로드 → primary color 추천)
+
+### Sprint 3 (3주) — press 블루프린트 + WP 실배선
+**목표**: 3번째 카테고리 완성 + WordPress 실제 연결
+
+- [ ] `blueprints/press/blueprint.json` + `template.html`
+- [ ] `wp-adapter.js` — wp-cli 실행 래퍼 (child_process.exec)
+- [ ] `venom-plugins/venom-analytics/` — 방문 분석 WP 플러그인
+- [ ] WP Multisite 도메인 매핑 자동화
+
+### Sprint 4 (4주) — 미리보기 고도화 + 대시보드
+**목표**: 고객용 셀프 진행 UI
+
+- [ ] SEO 점수 오버레이 (미리보기 패널 우측 패널)
+- [ ] Schema.org 유효성 실시간 체크 (Google API)
+- [ ] 고객 대시보드 v1 (생성된 사이트 목록, 발행 현황)
+- [ ] Cloudflare API 도메인 매핑 자동화
+
+---
+
+## 7. 기술 스택 확정
+
+| 레이어 | 기술 | 역할 |
 |---|---|---|
-| **MVP (1차)** | `clinic` + `local` 2개 카테고리, Standard 등급, 옵션 ①②③⑤ | 인터뷰 폼 → site-spec → WP 멀티사이트 자동생성 1클릭 |
-| **2차** | `blog`·`press`·`magazine` 추가, 다국어④·분석⑥ | 5개 카테고리 전체, 옵션 풀세트 |
-| **3차** | Tier 2(Headless/전용) + 셀프서비스 SaaS 대시보드 | 고객 셀프 신청 → 자동 생산 |
-| **확장** | `corp`·`shop`(WooCommerce), 결제/구독 과금 | 상용 SaaS |
+| **빌드 엔진** | Node.js (순수 `fs`/`path`) | spec → HTML + SEO 파일 |
+| **템플릿** | 커스텀 `{{token}}` 치환기 | 의존성 0 |
+| **미리보기** | Node.js `http` 모듈 | `/api/preview` 서버 |
+| **CMS 플랫폼** | WordPress Multisite | 콘텐츠 관리·블로그·고객 어드민 |
+| **WP 자동화** | WP-CLI + WP REST API | 사이트 생성·콘텐츠 주입 |
+| **캐시 정적화** | Nginx FastCGI + Redis | PHP 우회 99% 정적 서빙 |
+| **CDN/WAF** | Cloudflare | DDoS, 속도, SSL |
+| **AI 이미지** | Higgsfield MCP | 업종별 스톡 사진 생성 |
+| **AI 콘텐츠** | Claude API (Sonnet 4.6) | 블로그 발행·FAQ 생성·슬로건 |
+| **이미지 DB** | AWS S3 / Cloudflare R2 | 미디어 오프로드 |
 
 ---
 
-## 9. 열린 결정사항 (사용자 확인 필요)
+## 8. 과금 모델 제안
 
-1. **Tier 1 멀티사이트 vs 개별 인스턴스** — 격리 우선도 (보안 vs 운영 단순성)
-2. **도메인 정책** — 고객 도메인 매핑 / 서브도메인 제공 / 둘 다
-3. **MVP 우선 카테고리** — 병원+소상공인부터? 아니면 언론·블로그?
-4. **과금 모델** — 제작비 1회 / 월 구독 / 옵션팩별 과금
-5. **셀프서비스 vs 내부 운영** — 고객이 직접 신청 vs 베놈이 대행 생산
+| 플랜 | 가격 | 포함 | 타겟 |
+|---|---|---|---|
+| **Lite** | 제작비 1회 | 원페이지, SEO 기본 | 소상공인 입문 |
+| **Standard** | 제작비 + 월 관리비 | 5p + 블로그 자동발행 | 병원·카페 주력 |
+| **Pro** | 제작비 + 월 풀팩 | 7p+ + 전 옵션 팩 | 언론·매거진·기업 |
+| **Enterprise** | 맞춤 견적 | Headless + 전용 서버 | 대형 병원·프랜차이즈 |
+
+> 옵션 팩은 플랜 업그레이드 or 개별 추가 구매 가능. 예: Standard에 "다국어 팩" 단독 추가.
 
 ---
 
-*이 문서는 살아있는 기획안입니다. 결정사항이 확정되면 각 섹션을 갱신합니다.*
+## 9. 열린 결정사항
+
+| # | 항목 | 현재 기본값 | 사용자 결정 필요 |
+|---|---|---|---|
+| 1 | **lib 이식 방식** | 메인 프로젝트 참조 | factory 자체 복사 vs symbolic link |
+| 2 | **AI 자동완성 모델** | 미정 | Claude Haiku (빠름·저렴) vs Sonnet (품질) |
+| 3 | **스톡 사진 정책** | Higgsfield CDN URL | 스톡 사진도 data URI 임베딩할지 |
+| 4 | **WP 멀티사이트 도메인** | 고객 도메인 매핑 | 서브도메인 기본 제공 여부 |
+| 5 | **셀프서비스 시점** | 내부 도구로 시작 | Sprint 4 이후 고객 직접 신청 오픈 |
+| 6 | **블로그 발행 AI** | OpenAI GPT | Claude Haiku로 전환 (비용 절감) |
+
+---
+
+## 10. 기대 효과 (성과 지표)
+
+| 지표 | 현재 (수작업) | 목표 (자동화) |
+|---|---|---|
+| 사이트 1개 제작 시간 | 3~5일 | 30분 이내 |
+| SEO 파일 생성 | 수동 | 100% 자동 |
+| AI 검색(GEO) 준비도 | 0% | 90%+ (llms.txt + Schema 풀세트) |
+| 동시 운영 사이트 수 | 무제한 (수작업) | 멀티사이트 1대 100개 |
+| 블로그 발행 주기 | 비정기 | 일 1회 자동 |
+| 의료광고 위반 체크 | 수동 교정 | 자동 감지·수정 |
+
+---
+
+*이 기획서는 살아있는 문서입니다. 스프린트 완료마다 갱신됩니다.*  
+*마지막 갱신: 2026-06-29 (전수조사 v2 기반)*

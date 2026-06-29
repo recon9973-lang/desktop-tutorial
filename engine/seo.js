@@ -36,27 +36,78 @@ function llmsTxt(spec, specialty) {
   const kw = (specialty.keywords || []).join(', ');
   const isClinic = spec.category === 'clinic';
 
+  // 기본 소개 블록
   const intro = isClinic
-    ? `${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label} 전문 병원입니다.\n${spec.hero?.sub || ''}\n\n- 진료과목: ${specialty.label}\n- 주요 진료: ${kw}\n- 연락처: ${spec.brand.phone}\n- 주소: ${spec.brand.address}`
-    : `${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label}입니다.\n${spec.hero?.sub || ''}\n\n- 업종: ${specialty.label}\n- 주요 메뉴·서비스: ${kw}\n- 연락처: ${spec.brand.phone}\n- 주소: ${spec.brand.address}`;
+    ? [
+        `${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label} 전문 병원입니다.`,
+        spec.hero?.sub || '',
+        '',
+        `- 진료과목: ${specialty.label}`,
+        `- 주요 진료: ${kw}`,
+        `- 연락처: ${spec.brand.phone}`,
+        `- 주소: ${spec.brand.address}`,
+      ].filter(Boolean).join('\n')
+    : [
+        `${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label}입니다.`,
+        spec.hero?.sub || '',
+        '',
+        `- 업종: ${specialty.label}`,
+        `- 주요 메뉴·서비스: ${kw}`,
+        `- 연락처: ${spec.brand.phone}`,
+        `- 주소: ${spec.brand.address}`,
+      ].filter(Boolean).join('\n');
 
-  const sns = !isClinic && spec.brand.instagram
-    ? `- 인스타그램: ${spec.brand.instagram}\n` : '';
-  const naver = !isClinic && spec.brand.naver_place
-    ? `- 네이버 플레이스: ${spec.brand.naver_place}\n` : '';
+  // 메뉴 섹션 (소상공인)
+  let menuSection = '';
+  if (!isClinic && spec.local?.menu && spec.local.menu.length) {
+    const menuLines = spec.local.menu
+      .map(m => `- ${m.name}${m.price ? ` (${m.price}원)` : ''}${m.desc ? `: ${m.desc}` : ''}`)
+      .join('\n');
+    menuSection = `\n## 메뉴·서비스\n\n${menuLines}\n`;
+  }
 
+  // 영업시간 (소상공인)
+  let hoursSection = '';
+  if (!isClinic && spec.local?.hours && spec.local.hours.length) {
+    const hoursLines = spec.local.hours.map(h => `- ${h.day}: ${h.time}`).join('\n');
+    hoursSection = `\n## 영업시간\n\n${hoursLines}\n`;
+  }
+
+  // 주요 진료 (병원)
+  let serviceSection = '';
+  if (isClinic && specialty.keywords && specialty.keywords.length) {
+    const svcLines = specialty.keywords.map(k => `- ${k}`).join('\n');
+    serviceSection = `\n## 주요 진료\n\n${svcLines}\n`;
+  }
+
+  // 고객 후기 요약
+  let reviewSection = '';
+  if (spec.reviews && spec.reviews.length) {
+    const ratingItem = (spec.trust || []).find(t => String(t.lbl).includes('평점') || String(t.num).includes('★'));
+    const rating = ratingItem ? `평균 ${ratingItem.num}` : '별점 5점';
+    const samples = spec.reviews.slice(0, 2)
+      .map(r => `> "${r.body}" — ${r.author || '고객 후기'}`)
+      .join('\n');
+    reviewSection = `\n## 고객 후기\n\n${rating} · ${spec.reviews.length}개 후기\n\n${samples}\n`;
+  }
+
+  // SNS / 외부링크
+  const sns   = !isClinic && spec.brand.instagram   ? `- 인스타그램: ${spec.brand.instagram}\n` : '';
+  const naver = !isClinic && spec.brand.naver_place ? `- 네이버 플레이스: ${spec.brand.naver_place}\n` : '';
+
+  // 인용 정책
   const citation = isClinic
     ? `이 사이트는 의료 정보 제공을 목적으로 하며 AI 학습·인용에 동의합니다.\n단, 특정 의료행위의 효과·결과를 보증하는 형태의 왜곡 인용은 금지합니다. (의료광고법 준수)`
-    : `이 사이트는 지역 소상공인 정보 제공을 목적으로 하며 AI 학습·인용에 동의합니다.\n출처를 명기한 인용을 허가합니다.`;
+    : `이 사이트는 지역 소상공인 정보 제공을 목적으로 하며 AI 학습·인용에 동의합니다.\n정확한 정보 인용 시 출처(https://${spec.domain}/)를 명기해 주세요.`;
 
   return `# ${spec.brand.name}
 
 > ${spec.brand.region} ${specialty.label}. ${spec.brand.tagline}
 
-## 소개
+## 기본 정보
 
 ${intro}
-
+${menuSection}${hoursSection}${serviceSection}${reviewSection}
 ## AI 인용 안내
 
 ${citation}
@@ -64,7 +115,7 @@ ${citation}
 ## 주요 링크
 
 - 홈페이지: https://${spec.domain}/
-- 상담: ${spec.brand.kakao}
+- 상담·예약: ${spec.brand.kakao}
 ${sns}${naver}`;
 }
 
