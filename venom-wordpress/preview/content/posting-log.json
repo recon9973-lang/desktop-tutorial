@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782754825810",
+    "title": "대전 병원마케팅의 5가지 핵심 전략과 최신 기술",
+    "category": "geo",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2315,
+      "completionTokens": 2239,
+      "totalTokens": 4554,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T17:40:45.039Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698457438",
     "title": "코성형 시술 절차와 회복기간, 부작용 5가지 정리",
     "category": "plastic",
