@@ -19,7 +19,9 @@ a{text-decoration:none;color:inherit}
 .hd-nav a:hover{color:#fff}
 .hd-cta{margin-left:auto;background:#2563eb;color:#fff;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600}
 /* HERO */
-.hero{background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 60%,#2563eb 100%);padding:100px 32px;text-align:center;color:#fff}
+.hero{padding:100px 32px;text-align:center;color:#fff;position:relative;overflow:hidden;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1929}
+.hero-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;filter:brightness(.25);z-index:0}
+.hero>*:not(.hero-bg){position:relative;z-index:1}
 .hero h1{font-size:52px;font-weight:300;letter-spacing:-.04em;line-height:1.2;margin-bottom:20px}
 .hero h1 strong{font-weight:700;color:#93c5fd}
 .hero p{font-size:18px;color:rgba(255,255,255,.75);margin-bottom:40px;line-height:1.7}
@@ -49,7 +51,8 @@ a{text-decoration:none;color:inherit}
 .doctors p{color:rgba(255,255,255,.6);margin-bottom:48px}
 .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px}
 .doc-card{background:rgba(255,255,255,.07);border-radius:12px;padding:28px 20px;border:1px solid rgba(255,255,255,.1)}
-.doc-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.doc-avatar{width:88px;height:88px;border-radius:50%;overflow:hidden;margin:0 auto 16px;border:3px solid rgba(96,165,250,.3)}
+.doc-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top}
 .doc-name{font-size:16px;font-weight:700;margin-bottom:4px}
 .doc-spec{font-size:13px;color:#93c5fd;margin-bottom:8px}
 .doc-career{font-size:12px;color:rgba(255,255,255,.5);line-height:1.6}
@@ -80,6 +83,7 @@ a{text-decoration:none;color:inherit}
 </header>
 
 <section class="hero">
+  <div class="hero-bg"></div>
   <h1>환자 중심의 의료,<br><strong>신뢰로 완성합니다</strong></h1>
   <p>20년 이상의 임상 경험과 최신 의료 장비로<br>최고 수준의 진료를 제공합니다.</p>
   <div class="hero-btns">
@@ -117,10 +121,10 @@ a{text-decoration:none;color:inherit}
     <h2>의료진 소개</h2>
     <p>각 분야 최고의 전문의가 함께합니다</p>
     <div class="doc-grid">
-      <div class="doc-card"><div class="doc-avatar">👨‍⚕️</div><div class="doc-name">김베놈 교수</div><div class="doc-spec">심장내과 전문의</div><div class="doc-career">서울대학교 의과대학 졸업<br>前 서울대병원 심장내과<br>대한심장학회 정회원</div></div>
-      <div class="doc-card"><div class="doc-avatar">👩‍⚕️</div><div class="doc-name">이마케팅 과장</div><div class="doc-spec">신경외과 전문의</div><div class="doc-career">연세대학교 의과대학 졸업<br>前 세브란스병원 신경외과<br>뇌혁관 수술 1,200+ 케이스</div></div>
-      <div class="doc-card"><div class="doc-avatar">👨‍⚕️</div><div class="doc-name">박전문 원장</div><div class="doc-spec">정형외과 전문의</div><div class="doc-career">고려대학교 의과대학 졸업<br>관절경 수술 전문<br>대한정형외과학회 이사</div></div>
-      <div class="doc-card"><div class="doc-avatar">👩‍⚕️</div><div class="doc-name">최치료 부장</div><div class="doc-spec">피부과 전문의</div><div class="doc-career">성균관대 의과대학 졸업<br>피부재생·레이저 전문<br>SCI 논문 12편</div></div>
+      <div class="doc-card"><div class="doc-avatar"><img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=176&h=176&q=80" alt="의료진"></div><div class="doc-name">김베놈 교수</div><div class="doc-spec">심장내과 전문의</div><div class="doc-career">서울대학교 의과대학 졸업<br>前 서울대병원 심장내과<br>대한심장학회 정회원</div></div>
+      <div class="doc-card"><div class="doc-avatar"><img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=176&h=176&q=80" alt="의료진"></div><div class="doc-name">이마케팅 과장</div><div class="doc-spec">신경외과 전문의</div><div class="doc-career">연세대학교 의과대학 졸업<br>前 세브란스병원 신경외과<br>뇌혈관 수술 1,200+ 케이스</div></div>
+      <div class="doc-card"><div class="doc-avatar"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=176&h=176&q=80" alt="의료진"></div><div class="doc-name">박전문 원장</div><div class="doc-spec">정형외과 전문의</div><div class="doc-career">고려대학교 의과대학 졸업<br>관절경 수술 전문<br>대한정형외과학회 이사</div></div>
+      <div class="doc-card"><div class="doc-avatar"><img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=176&h=176&q=80" alt="의료진"></div><div class="doc-name">최치료 부장</div><div class="doc-spec">피부과 전문의</div><div class="doc-career">성균관대 의과대학 졸업<br>피부재생·레이저 전문<br>SCI 논문 12편</div></div>
     </div>
   </div>
 </section>

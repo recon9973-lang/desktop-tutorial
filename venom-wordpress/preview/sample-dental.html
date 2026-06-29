@@ -16,7 +16,9 @@ a{color:inherit;text-decoration:none}
 .header-tel strong{color:#e53e3e}
 
 /* Hero */
-.hero{background:linear-gradient(135deg,#1a73e8 0%,#0d47a1 100%);color:#fff;padding:80px 24px;text-align:center}
+.hero{color:#fff;padding:80px 24px;text-align:center;position:relative;overflow:hidden;min-height:500px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1f4e}
+.hero-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1606811841689-23dfddce3e66?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;filter:brightness(.28);z-index:0}
+.hero>*:not(.hero-bg){position:relative;z-index:1}
 .hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.3;margin-bottom:16px}
 .hero p{font-size:clamp(15px,2vw,18px);opacity:.85;max-width:600px;margin:0 auto 32px}
 .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
@@ -61,7 +63,8 @@ a{color:inherit;text-decoration:none}
 .doctor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 @media(max-width:640px){.doctor-grid{grid-template-columns:1fr}}
 .doctor-card{background:#f8f9fa;border-radius:16px;overflow:hidden}
-.doctor-img{height:200px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);display:flex;align-items:center;justify-content:center;font-size:64px}
+.doctor-img{height:220px;overflow:hidden;background:#e3f2fd}
+.doctor-img img{width:100%;height:100%;object-fit:cover;object-position:center top}
 .doctor-info{padding:20px}
 .doctor-info h3{font-size:16px;font-weight:700;margin-bottom:4px}
 .doctor-info .title{font-size:12px;color:#1a73e8;margin-bottom:8px}
@@ -101,6 +104,7 @@ a{color:inherit;text-decoration:none}
 </header>
 
 <section class="hero">
+  <div class="hero-bg"></div>
   <h1>임플란트·교정 전문<br><span style="color:#93c5fd">베놈치과의원</span></h1>
   <p>국내 최다 임플란트 시술 경험 15년.<br>당일 식립·무통 치료·평생 AS 보장.</p>
   <div class="hero-btns">
@@ -183,15 +187,15 @@ a{color:inherit;text-decoration:none}
   <div class="section-sub">15년 경력 임플란트 전문의 3인 체제</div>
   <div class="doctor-grid">
     <div class="doctor-card">
-      <div class="doctor-img">👨‍⚕️</div>
+      <div class="doctor-img"><img src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&h=440&q=80" alt="원장 사진"></div>
       <div class="doctor-info"><h3>김○○ 원장</h3><div class="title">임플란트 전문의 | 대표원장</div><p>연세대 치과대학 졸업<br>임플란트 시술 8,000케이스<br>대한임플란트학회 정회원</p></div>
     </div>
     <div class="doctor-card">
-      <div class="doctor-img">👩‍⚕️</div>
+      <div class="doctor-img"><img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=400&h=440&q=80" alt="원장 사진"></div>
       <div class="doctor-info"><h3>이○○ 원장</h3><div class="title">교정 전문의</div><p>서울대 치과대학 졸업<br>인비절라인 다이아몬드 인증<br>대한치과교정학회 정회원</p></div>
     </div>
     <div class="doctor-card">
-      <div class="doctor-img">👨‍⚕️</div>
+      <div class="doctor-img"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&h=440&q=80" alt="원장 사진"></div>
       <div class="doctor-info"><h3>박○○ 원장</h3><div class="title">보존과 전문의</div><p>경북대 치과대학 졸업<br>신경치료·보존 특화<br>대한보존학회 정회원</p></div>
     </div>
   </div>
