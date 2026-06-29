@@ -5403,11 +5403,16 @@ function _robotsAllows(robots, ua){
   }
   var grp=pick(ua)||pick('*');
   if(!grp)return true;
-  var blocked=false; // 마지막에 매칭된 '/' 규칙이 우선
+  // 루트(홈) 접근 판정 — Google spec: 충돌 시 least restrictive(Allow 우선).
+  // '/', '/*'는 루트 포함, '/$'는 루트만 허용/차단.
+  var allowRoot=false, disRoot=false;
   for(var r=0;r<grp.rules.length;r++){
-    if(grp.rules[r].path==='/')blocked=(grp.rules[r].type==='disallow');
+    var p=grp.rules[r].path;
+    if(p==='/'||p==='/*'||p==='/$'){
+      if(grp.rules[r].type==='allow')allowRoot=true; else disRoot=true;
+    }
   }
-  return !blocked;
+  return !(disRoot && !allowRoot);
 }
 
 function _renderFastSEO(data,url,domain,el){
