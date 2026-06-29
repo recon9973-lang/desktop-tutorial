@@ -7,8 +7,8 @@
  * 흐름:  site-spec.json + 카테고리 블루프린트  →  완성된 정적 사이트 폴더
  *        (index.html + robots.txt + sitemap.xml + llms.txt)
  *
- * 이 정적 출력은 즉시 미리보기 가능하며, 동일 site-spec을 WP-CLI/REST 어댑터에
- * 넘기면 멀티사이트에 그대로 생성된다(2차 작업).
+ * prepare() 는 정적 생성기와 WP 어댑터(wp-adapter.js)가 공유한다 —
+ * 동일한 site-spec 에서 동일한 콘텐츠가 정적/워드프레스 양쪽으로 나간다.
  */
 const fs = require('fs');
 const path = require('path');
@@ -81,22 +81,19 @@ function buildFaq(faq, brand, specialty) {
   return { html, schema };
 }
 
-// --- 메인 --------------------------------------------------------------------
-function generate(specPath) {
-  const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
-
+// --- prepare(): site-spec 을 풍부화하고 섹션/SEO/페이지 콘텐츠 생성 --------
+// 정적 생성기와 WP 어댑터가 공유하는 단일 진실 소스.
+function prepare(spec) {
   const blueprint = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'blueprints', spec.category, 'blueprint.json'), 'utf8')
   );
   const specialty = blueprint.specialties[spec.clinic?.specialty] || blueprint.specialties.dental;
   const scale = blueprint.scales[spec.scale] || blueprint.scales.standard;
-
-  // 옵션 = 블루프린트 기본값 + 고객 선택 (중복 제거)
   const options = Array.from(new Set([...(blueprint.defaultOptions || []), ...(spec.options || [])]));
 
-  // 파생 데이터
   spec.lang = (spec.locale && spec.locale[0]) || 'ko';
   spec.specialty = specialty;
+  spec.slug = slugify(spec.domain || spec.brand.name);
   spec.hero = spec.hero || {};
   spec.hero.headline = spec.hero.headline ||
     `${spec.brand.region} <b>${specialty.label}</b>,<br>믿을 수 있는 ${spec.brand.name}`;
@@ -117,29 +114,39 @@ function generate(specPath) {
     faqSchema: faq.schema,
   };
 
-  // 렌더
+  const seoFiles = {
+    'robots.txt': robotsTxt(spec.domain),
+    'sitemap.xml': sitemapXml(spec.domain, scale.pages),
+    'llms.txt': llmsTxt(spec, specialty),
+  };
+
+  return { spec, blueprint, specialty, scale, options, seoFiles };
+}
+
+// --- 정적 HTML 출력 ----------------------------------------------------------
+function generate(specPath) {
+  const raw = JSON.parse(fs.readFileSync(specPath, 'utf8'));
+  const { spec, blueprint, specialty, scale, options, seoFiles } = prepare(raw);
+
   const tpl = fs.readFileSync(path.join(ROOT, 'blueprints', spec.category, 'template.html'), 'utf8');
   const html = render(tpl, spec);
 
-  // 출력
-  const slug = slugify(spec.domain || spec.brand.name);
-  const outDir = path.join(ROOT, 'output', slug);
+  const outDir = path.join(ROOT, 'output', spec.slug);
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'index.html'), html);
-  fs.writeFileSync(path.join(outDir, 'robots.txt'), robotsTxt(spec.domain));
-  fs.writeFileSync(path.join(outDir, 'sitemap.xml'), sitemapXml(spec.domain, scale.pages));
-  fs.writeFileSync(path.join(outDir, 'llms.txt'), llmsTxt(spec, specialty));
+  for (const [name, content] of Object.entries(seoFiles)) {
+    fs.writeFileSync(path.join(outDir, name), content);
+  }
 
-  // 리포트
-  console.log('\n✅ 사이트 생성 완료');
+  console.log('\n✅ 사이트 생성 완료 (정적)');
   console.log('────────────────────────────────');
   console.log(`  브랜드   : ${spec.brand.name}`);
   console.log(`  카테고리 : ${blueprint.label} / ${specialty.label} (${scale.label})`);
   console.log(`  도메인   : ${spec.domain}`);
   console.log(`  페이지   : ${scale.pages.join(', ')}`);
   console.log(`  옵션 팩  : ${options.join(', ')}`);
-  console.log(`  출력 위치: auto-site-factory/output/${slug}/`);
-  console.log(`  생성 파일: index.html, robots.txt, sitemap.xml, llms.txt`);
+  console.log(`  출력 위치: auto-site-factory/output/${spec.slug}/`);
+  console.log(`  생성 파일: index.html, ${Object.keys(seoFiles).join(', ')}`);
   console.log('────────────────────────────────\n');
   return outDir;
 }
@@ -153,4 +160,4 @@ if (require.main === module) {
   generate(path.resolve(specArg));
 }
 
-module.exports = { generate, render };
+module.exports = { generate, prepare, render, slugify };
