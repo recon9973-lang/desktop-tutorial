@@ -5,27 +5,63 @@ import Link from 'next/link';
 const DUR_LABEL = { continuous: '🟢 지속 복용', monitor: '🟡 3개월 후 점검', cyclic: '🔴 8주 후 점검' };
 const DUR_COLOR = { continuous: '#1aae39', monitor: '#dd5b00', cyclic: '#d63b3b' };
 
-/* 서버에서 엔진 호출 대신, 클라이언트에서 API 호출 (실제 구현 시 /api/recommend) */
-async function fetchRecommendation(user) {
-  // TODO: 실제론 fetch('/api/recommend', { method:'POST', body: JSON.stringify(user) })
-  // 데모: 정적 결과 반환
+// 네이버 키가 없을 때 보여줄 성분별 예시 최저가(하루당 가격 직관화용).
+// 실시간 /api/offers 응답이 오면 _live=true 로 덮어쓴다.
+const SAMPLE_PRICE = {
+  vitamin_d:         { price: 12900, count: 90,  per_day: 143, vendor: '네이버',   product: '뉴트리원 비타민D 2000IU 90정' },
+  vitamin_b_complex: { price: 18900, count: 60,  per_day: 315, vendor: '쿠팡',     product: '고려은단 비타민B 컴플렉스 60정' },
+  lutein:            { price: 15900, count: 90,  per_day: 177, vendor: '아이허브', product: 'NOW 루테인 10mg 90정' },
+  magnesium:         { price: 14900, count: 120, per_day: 124, vendor: '네이버',   product: '솔가 마그네슘 글리시네이트 120정' },
+  omega3:            { price: 21900, count: 90,  per_day: 243, vendor: '쿠팡',     product: '닥터스베스트 알티지 오메가3 90정' },
+  vitamin_c:         { price: 11900, count: 120, per_day: 99,  vendor: '네이버',   product: '고려은단 비타민C 1000 120정' },
+  zinc:              { price: 9900,  count: 90,  per_day: 110, vendor: '아이허브', product: 'NOW 아연 글루콘산 100정' },
+  probiotics:        { price: 23900, count: 60,  per_day: 398, vendor: '쿠팡',     product: '락토핏 골드 유산균 60포' },
+};
+
+// /api/recommend 호출이 실패할 때만 쓰는 정적 폴백(데모).
+const STATIC_DEMO = {
+  recommended: [
+    { ingredient_id: 'vitamin_d',      name: '비타민D',      evidence_level: 3, score: 1.3,  duration_type: 'monitor',    functions: ['칼슘 흡수·뼈 형성에 필요', '면역 기능 유지'], warnings: [] },
+    { ingredient_id: 'vitamin_b_complex', name: '비타민B군', evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['에너지 대사에 필요', '정상적 신경 기능'], warnings: [] },
+    { ingredient_id: 'lutein',          name: '루테인',       evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['노화로 인한 눈 건강 유지에 도움'], warnings: [] },
+    { ingredient_id: 'magnesium',       name: '마그네슘',     evidence_level: 3, score: 0.7,  duration_type: 'continuous', functions: ['에너지 생성', '신경·근육 기능 유지'], warnings: [] },
+    { ingredient_id: 'omega3',          name: '오메가3',      evidence_level: 3, score: 0.51, duration_type: 'continuous', functions: ['혈중 중성지방 개선', '혈행 개선'], warnings: ['와파린 복용 중이면 의사·약사 상담 후 결정하세요.'] },
+  ],
+  not_recommended: [
+    { name: '홍국', reason: '스타틴 복용 중 병용 금지' },
+  ],
+  schedule: { morning: ['비타민D', '비타민B군', '루테인', '마그네슘'], evening: ['오메가3'] },
+  interactions_note: [
+    '🔗 비타민D + 마그네슘: 마그네슘이 비타민D 활성화에 관여 (함께 복용)',
+    '🔗 비타민D + 칼슘: 뼈 형성 시너지 (함께 복용)',
+  ],
+};
+
+// 추천 항목에 예시 최저가를 붙인다(있는 성분만). 실시간 가격이 오면 이후 덮어씀.
+function withSamplePrice(result) {
   return {
-    recommended: [
-      { ingredient_id: 'vitamin_d',      name: '비타민D',         evidence_level: 3, score: 1.3,  duration_type: 'monitor',    functions: ['칼슘 흡수·뼈 형성에 필요', '면역 기능 유지'], warnings: [], best_price: { price: 12900, count: 90, per_day: 143, vendor: '네이버', product: '뉴트리원 비타민D 2000IU 90정' } },
-      { ingredient_id: 'vitamin_b_complex', name: '비타민B군',    evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['에너지 대사에 필요', '정상적 신경 기능'], warnings: [], best_price: { price: 18900, count: 60, per_day: 315, vendor: '쿠팡', product: '고려은단 비타민B 컴플렉스 60정' } },
-      { ingredient_id: 'lutein',          name: '루테인',          evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['노화로 인한 눈 건강 유지에 도움'], warnings: [], best_price: { price: 15900, count: 90, per_day: 177, vendor: '아이허브', product: 'NOW 루테인 10mg 90정' } },
-      { ingredient_id: 'magnesium',       name: '마그네슘',        evidence_level: 3, score: 0.7,  duration_type: 'continuous', functions: ['에너지 생성', '신경·근육 기능 유지'], warnings: [], best_price: { price: 14900, count: 120, per_day: 124, vendor: '네이버', product: '솔가 마그네슘 글리시네이트 120정' } },
-      { ingredient_id: 'omega3',          name: '오메가3',         evidence_level: 3, score: 0.51, duration_type: 'continuous', functions: ['혈중 중성지방 개선', '혈행 개선'], warnings: ['와파린 복용 중이면 의사·약사 상담 후 결정하세요.'], best_price: { price: 21900, count: 90, per_day: 243, vendor: '쿠팡', product: '닥터스베스트 알티지 오메가3 90정' } },
-    ],
-    not_recommended: [
-      { name: '홍국', reason: '스타틴 복용 중 병용 금지' },
-    ],
-    schedule: { morning: ['비타민D', '비타민B군', '루테인', '마그네슘'], evening: ['오메가3'] },
-    interactions_note: [
-      '🔗 비타민D + 마그네슘: 마그네슘이 비타민D 활성화에 관여 (함께 복용)',
-      '🔗 비타민D + 칼슘: 뼈 형성 시너지 (함께 복용)',
-    ],
+    ...result,
+    recommended: result.recommended.map((r) =>
+      SAMPLE_PRICE[r.ingredient_id] ? { ...r, best_price: SAMPLE_PRICE[r.ingredient_id] } : r
+    ),
   };
+}
+
+// 실제 추천 엔진(/api/recommend) 호출 → 실패 시 정적 데모로 폴백.
+async function fetchRecommendation(user) {
+  try {
+    const res = await fetch('/api/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user),
+    });
+    if (!res.ok) throw new Error('recommend api ' + res.status);
+    const data = await res.json();
+    if (!data || !Array.isArray(data.recommended)) throw new Error('bad shape');
+    return withSamplePrice(data);
+  } catch (e) {
+    return withSamplePrice(STATIC_DEMO);
+  }
 }
 
 // 주요 구매처 검색 링크 (API 키·제휴 없이도 바로 동작하는 딥링크)
