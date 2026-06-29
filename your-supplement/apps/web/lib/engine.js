@@ -120,9 +120,12 @@ export function recommend(user) {
       ingredient_id: id,
       name: ing.name_ko,
       evidence_level: ing.evidence.level,
+      evidence_sources: ing.evidence.sources || [],
       duration_type: ing.duration_type,
       duration_note: ing.duration_note,
       functions: ing.functions,
+      daily_dose: ing.daily_dose,
+      cautions: ing.cautions || [],
       warnings: dc.warnings,
       _baseScore: score,
     });
