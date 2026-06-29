@@ -26,12 +26,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p)}
 .chip input{display:none}
 .chip span{display:inline-block;padding:9px 16px;border:1.5px solid var(--border);border-radius:9999px;cursor:pointer;font-size:14px;transition:.15s}
 .chip input:checked+span{background:var(--p);color:#fff;border-color:var(--p)}
+.chip input:disabled+span{opacity:.4;cursor:default}
 .opts label{display:flex;align-items:center;gap:10px;font-weight:500;background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0;cursor:pointer}
 .opts input{width:auto}
 .btn{background:var(--p);color:#fff;border:none;padding:15px 28px;border-radius:9999px;font-weight:700;font-size:16px;cursor:pointer;width:100%;margin-top:24px;transition:.2s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(83,58,253,.25)}
 pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:auto;font-size:13px;margin-top:18px;max-height:340px}
-.doctor-row{display:flex;gap:10px;margin-bottom:8px}
+.doctor-row{display:flex;gap:10px;margin-bottom:8px;align-items:center}
+.menu-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.hour-row-input{display:flex;gap:8px;margin-bottom:8px;align-items:center}
 .small{background:#eef0ff;color:var(--p);border:none;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer;font-size:13px}
 .cmd{background:#eef0ff;border-radius:10px;padding:14px;font-size:13px;margin-top:14px;font-family:monospace;color:var(--bd)}
 .img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -47,33 +50,52 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
 .drop .badge-n{position:absolute;top:6px;right:8px;background:var(--p);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;z-index:2}
 .filebtn{display:inline-flex;align-items:center;justify-content:center;width:42px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:16px;flex:none}
 .filebtn.has{border-color:var(--p);background:#eef0ff}
-.doctor-row{align-items:center}
+[data-show]{transition:.15s}
 </style>
 </head>
 <body>
 <header><div class="wrap"><h1>🏭 VENOM Site Factory</h1><p>고객정보 입력 — 직원용 내부 도구</p></div></header>
 <div class="wrap">
   <form id="f">
+
     <!-- 1. 대분류 -->
     <div class="card">
-      <h2><span class="n">1</span> 대분류 (어떤 사이트인가)</h2>
-      <p class="hint">현재 MVP는 병원·의료부터 지원합니다. (나머지는 순차 오픈)</p>
+      <h2><span class="n">1</span> 대분류</h2>
+      <p class="hint">카테고리를 선택하면 아래 항목이 바뀝니다.</p>
       <div class="chips">
-        <label class="chip"><input type="radio" name="category" value="clinic" checked><span>🏥 병원·의료</span></label>
-        <label class="chip"><input type="radio" name="category" value="local" disabled><span>🏪 소상공인 (준비중)</span></label>
+        <label class="chip"><input type="radio" name="category" value="clinic" checked onchange="switchCat('clinic')"><span>🏥 병원·의료</span></label>
+        <label class="chip"><input type="radio" name="category" value="local" onchange="switchCat('local')"><span>🏪 소상공인</span></label>
         <label class="chip"><input type="radio" name="category" value="press" disabled><span>📰 언론 (준비중)</span></label>
         <label class="chip"><input type="radio" name="category" value="blog" disabled><span>✍️ 블로그 (준비중)</span></label>
       </div>
-      <label>진료과목</label>
-      <select name="specialty">
-        <option value="dental">치과</option>
-        <option value="skin">피부과</option>
-        <option value="ortho">정형외과</option>
-        <option value="oriental">한의원</option>
-        <option value="plastic">성형외과</option>
-        <option value="naegwa">내과</option>
-        <option value="angwa">안과</option>
-      </select>
+
+      <!-- clinic: 진료과목 -->
+      <div data-show="clinic">
+        <label>진료과목</label>
+        <select name="specialty">
+          <option value="dental">치과</option>
+          <option value="skin">피부과</option>
+          <option value="ortho">정형외과</option>
+          <option value="oriental">한의원</option>
+          <option value="plastic">성형외과</option>
+          <option value="naegwa">내과</option>
+          <option value="angwa">안과</option>
+        </select>
+      </div>
+
+      <!-- local: 업종 -->
+      <div data-show="local" style="display:none">
+        <label>업종</label>
+        <select name="local_type">
+          <option value="cafe">카페·디저트</option>
+          <option value="restaurant">식당·음식점</option>
+          <option value="beauty">헤어·미용실</option>
+          <option value="nail">네일·속눈썹샵</option>
+          <option value="fitness">헬스·PT샵</option>
+          <option value="bakery">베이커리·케이크</option>
+          <option value="retail">소매·전문점</option>
+        </select>
+      </div>
     </div>
 
     <!-- 2. 규모 -->
@@ -90,7 +112,7 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
     <div class="card">
       <h2><span class="n">3</span> 브랜드 기본정보</h2>
       <div class="row">
-        <div><label>병원명</label><input name="name" value="서울미소치과" required></div>
+        <div><label id="lbl-name">상호명</label><input name="name" value="서울미소치과" required></div>
         <div><label>지역</label><input name="region" value="서울 강남"></div>
       </div>
       <label>슬로건</label><input name="tagline" value="정직한 진료, 편안한 미소">
@@ -101,33 +123,51 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
       <label>주소</label><input name="address" value="서울특별시 강남구 테헤란로 123, 4층">
       <label>카카오 상담 링크</label><input name="kakao" value="https://pf.kakao.com/_example/chat">
       <label>도메인</label><input name="domain" value="seoul-smile.com">
+
+      <!-- local 전용: SNS -->
+      <div data-show="local" style="display:none">
+        <label>인스타그램 URL</label><input name="instagram" placeholder="https://instagram.com/...">
+        <label>네이버 플레이스 URL</label><input name="naver_place" placeholder="https://map.naver.com/v5/entry/place/...">
+      </div>
     </div>
 
-    <!-- 4. 의료진 -->
-    <div class="card">
+    <!-- 4A. 의료진 (clinic) -->
+    <div class="card" data-show="clinic">
       <h2><span class="n">4</span> 의료진</h2>
       <p class="hint">비워두면 기본 1명으로 생성됩니다.</p>
       <div id="doctors"></div>
       <button type="button" class="small" onclick="addDoctor()">+ 의료진 추가</button>
     </div>
 
-    <!-- 5. 이미지 (실사진) -->
+    <!-- 4B. 메뉴·서비스 + 영업시간 (local) -->
+    <div class="card" data-show="local" style="display:none">
+      <h2><span class="n">4</span> 메뉴·서비스</h2>
+      <p class="hint">메뉴명·가격·설명을 입력하세요. 비우면 업종 기본값으로 자동 채워집니다.</p>
+      <div id="menu-list"></div>
+      <button type="button" class="small" onclick="addMenu()">+ 메뉴 추가</button>
+
+      <h2 style="margin-top:22px"><span class="n" style="background:#697386">⏰</span> 영업시간</h2>
+      <div id="hours-list"></div>
+      <button type="button" class="small" onclick="addHour()">+ 시간 추가</button>
+    </div>
+
+    <!-- 5. 이미지 -->
     <div class="card">
       <h2><span class="n">5</span> 이미지 (실사진)</h2>
-      <p class="hint">고객 실사진을 올리면 사이트에 그대로 들어갑니다. <b>비우면 진료과목 기본 스톡(AI 실사)</b>으로 자동 채워집니다.</p>
+      <p class="hint">업로드하면 사이트에 그대로 적용됩니다. <b>비우면 업종별 AI 스톡</b>으로 자동 채워집니다.</p>
       <div class="img-grid">
         <label class="drop" data-key="hero">
-          <span class="ico">🏥</span><b>병원 대표사진</b><small>히어로 배경 (가로형 권장)</small>
+          <span class="ico" id="ico-hero">🏠</span><b>대표 사진</b><small>히어로 배경 (가로형 권장)</small>
           <input type="file" accept="image/*" id="img-hero" hidden>
           <img class="prev" hidden>
         </label>
         <label class="drop" data-key="intro">
-          <span class="ico">🛋️</span><b>병원 내부 전경</b><small>소개 섹션</small>
+          <span class="ico">🛋️</span><b>내부 전경</b><small>소개 섹션</small>
           <input type="file" accept="image/*" id="img-intro" hidden>
           <img class="prev" hidden>
         </label>
         <label class="drop" data-key="gallery">
-          <span class="ico">🖼️</span><b>진료환경 갤러리</b><small>최대 3장 (다중 선택)</small>
+          <span class="ico">🖼️</span><b>갤러리 사진</b><small>최대 3장 (다중 선택)</small>
           <input type="file" accept="image/*" id="img-gallery" multiple hidden>
           <img class="prev" hidden>
         </label>
@@ -137,13 +177,13 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
     <!-- 6. 옵션 팩 -->
     <div class="card">
       <h2><span class="n">6</span> 기능 옵션 팩</h2>
-      <p class="hint">AI검색 최적화는 기본 포함입니다. 카테고리 기본값이 미리 체크돼 있습니다.</p>
+      <p class="hint">AI검색 최적화는 기본 포함. 카테고리에 따라 일부 항목이 달라집니다.</p>
       <div class="opts">
         <label><input type="checkbox" name="opt" value="seo_pack" checked disabled> ⑤ AI검색 최적화 (SEO/AEO/GEO/llms.txt) — 기본</label>
-        <label><input type="checkbox" name="opt" value="medical_review" checked> ③ 의료광고 검수 팩</label>
+        <label data-show="clinic"><input type="checkbox" name="opt" value="medical_review" checked> ③ 의료광고 검수 팩</label>
         <label><input type="checkbox" name="opt" value="blog_auto" checked> ① 블로그 자동발행 팩</label>
         <label><input type="checkbox" name="opt" value="image_pack" checked> ② 이미지 변환 팩</label>
-        <label><input type="checkbox" name="opt" value="translate" > ④ 다국어 글로벌 팩</label>
+        <label><input type="checkbox" name="opt" value="translate"> ④ 다국어 글로벌 팩</label>
         <label><input type="checkbox" name="opt" value="analytics" checked> ⑥ 분석·인사이트 팩</label>
       </div>
     </div>
@@ -157,103 +197,188 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
       <p class="hint">아래 JSON을 다운로드한 뒤 엔진에 넣으면 사이트가 자동 생성됩니다.</p>
       <pre id="json"></pre>
       <button type="button" class="small" onclick="download()">⬇️ JSON 다운로드</button>
-      <div class="cmd">node engine/generate.js &lt;다운로드한 파일&gt;.json</div>
+      <div class="cmd" id="cmd-hint">node engine/generate.js &lt;파일명&gt;.json</div>
     </div>
   </div>
 </div>
 
 <script>
-function addDoctor(d){
+/* ── 카테고리 전환 ──────────────────────────────────────────────── */
+function switchCat(cat) {
+  document.querySelectorAll('[data-show]').forEach(el => {
+    const target = el.dataset.show;
+    el.style.display = (target === cat || target === 'both') ? '' : 'none';
+  });
+  // 상호명 레이블
+  document.getElementById('lbl-name').textContent = cat === 'clinic' ? '병원명' : '상호명';
+  // 대표색상 기본값
+  const pc = document.querySelector('input[name=primary]');
+  if (cat === 'local' && pc.value === '#533afd') pc.value = '#c8844a';
+  if (cat === 'clinic' && pc.value === '#c8844a') pc.value = '#533afd';
+  // 도메인 힌트
+  const dom = document.querySelector('input[name=domain]');
+  if (cat === 'local' && dom.value === 'seoul-smile.com') dom.value = 'my-local-store.co.kr';
+  if (cat === 'clinic' && dom.value === 'my-local-store.co.kr') dom.value = 'seoul-smile.com';
+  // 슬로건 힌트
+  const tg = document.querySelector('input[name=tagline]');
+  if (cat === 'local' && tg.value === '정직한 진료, 편안한 미소') tg.value = '매일 정성껏 만드는 특별한 공간';
+  if (cat === 'clinic' && tg.value === '매일 정성껏 만드는 특별한 공간') tg.value = '정직한 진료, 편안한 미소';
+}
+
+/* ── 의료진 행 ───────────────────────────────────────────────────── */
+function addDoctor(d) {
   d = d || {name:'',role:'',desc:''};
   const div = document.createElement('div');
   div.className = 'doctor-row';
-  div.innerHTML = `<input placeholder="이름" value="${d.name}"><input placeholder="직책" value="${d.role}"><input placeholder="소개" value="${d.desc}">`
+  div.innerHTML = `<input placeholder="이름" value="${d.name}" style="flex:1">`
+    + `<input placeholder="직책" value="${d.role}" style="flex:1">`
+    + `<input placeholder="소개" value="${d.desc}" style="flex:2">`
     + `<label class="filebtn" title="의료진 사진">📷<input type="file" accept="image/*" class="doc-photo" hidden></label>`
     + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
   document.getElementById('doctors').appendChild(div);
 }
-addDoctor({name:'김치과 원장',role:'치과 전문의',desc:'임플란트 20년 임상'});
+addDoctor({name:'김치과 원장', role:'치과 전문의', desc:'임플란트 20년 임상'});
 
-// 파일 → data URI (자급자족 spec)
-function toDataURL(file){
+/* ── 메뉴 행 ─────────────────────────────────────────────────────── */
+function addMenu(m) {
+  m = m || {name:'', price:'', desc:''};
+  const div = document.createElement('div');
+  div.className = 'menu-row';
+  div.innerHTML = `<input placeholder="메뉴명" value="${m.name}" style="flex:2">`
+    + `<input placeholder="가격(숫자만)" value="${m.price}" style="flex:1">`
+    + `<input placeholder="간단 설명" value="${m.desc}" style="flex:3">`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('menu-list').appendChild(div);
+}
+// 초기 샘플 메뉴
+[
+  {name:'시그니처 음료', price:'6,500', desc:'대표 메뉴'},
+  {name:'수제 디저트',   price:'5,500', desc:'매일 직접 만드는 수제 디저트'},
+].forEach(addMenu);
+
+/* ── 영업시간 행 ─────────────────────────────────────────────────── */
+function addHour(h) {
+  h = h || {day:'', time:''};
+  const div = document.createElement('div');
+  div.className = 'hour-row-input';
+  div.innerHTML = `<input placeholder="요일 (예: 평일)" value="${h.day}" style="flex:1">`
+    + `<input placeholder="시간 (예: 09:00 – 22:00)" value="${h.time}" style="flex:2">`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('hours-list').appendChild(div);
+}
+[
+  {day:'평일', time:'09:00 – 22:00'},
+  {day:'주말·공휴일', time:'10:00 – 23:00'},
+  {day:'매주 월요일', time:'정기 휴무'},
+].forEach(addHour);
+
+/* ── 파일 → data URI ─────────────────────────────────────────────── */
+function toDataURL(file) {
   return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
 }
-// 업로드 미리보기
-function bindPreview(input){
-  input.addEventListener('change', async ()=>{
+function bindPreview(input) {
+  input.addEventListener('change', async () => {
     const drop = input.closest('.drop');
-    if(!input.files.length){ return; }
-    if(input.id==='img-gallery'){
+    if (!input.files.length) return;
+    if (input.id === 'img-gallery') {
       drop.classList.add('has');
-      const old = drop.querySelector('.badge-n'); if(old) old.remove();
-      const b=document.createElement('span'); b.className='badge-n'; b.textContent=Math.min(input.files.length,3)+'장'; drop.appendChild(b);
-      const prev=drop.querySelector('.prev'); prev.src=await toDataURL(input.files[0]); prev.hidden=false;
-    }else{
+      const old = drop.querySelector('.badge-n'); if (old) old.remove();
+      const b = document.createElement('span'); b.className='badge-n'; b.textContent=Math.min(input.files.length,3)+'장'; drop.appendChild(b);
+      const prev = drop.querySelector('.prev'); prev.src=await toDataURL(input.files[0]); prev.hidden=false;
+    } else {
       drop.classList.add('has');
-      const prev=drop.querySelector('.prev'); prev.src=await toDataURL(input.files[0]); prev.hidden=false;
+      const prev = drop.querySelector('.prev'); prev.src=await toDataURL(input.files[0]); prev.hidden=false;
     }
   });
 }
-['img-hero','img-intro','img-gallery'].forEach(id=>bindPreview(document.getElementById(id)));
-// 의료진 사진 버튼 표시
-document.addEventListener('change', e=>{
-  if(e.target.classList.contains('doc-photo')){
-    e.target.closest('.filebtn').classList.toggle('has', e.target.files.length>0);
-  }
+['img-hero','img-intro','img-gallery'].forEach(id => bindPreview(document.getElementById(id)));
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('doc-photo'))
+    e.target.closest('.filebtn').classList.toggle('has', e.target.files.length > 0);
 });
 
+/* ── spec 빌드 ───────────────────────────────────────────────────── */
 let lastSpec = null;
-async function build(){
+async function build() {
   const f = document.getElementById('f');
-  // 의료진 (+사진)
-  const rows = [...document.querySelectorAll('#doctors .doctor-row')];
-  const doctors = [];
-  for(const r of rows){
-    const ins = r.querySelectorAll('input');
-    if(!ins[0].value) continue;
-    const d = { name: ins[0].value, role: ins[1].value, desc: ins[2].value };
-    const pf = r.querySelector('.doc-photo');
-    if(pf && pf.files.length) d.photo = await toDataURL(pf.files[0]);
-    doctors.push(d);
-  }
-  const opts = [...document.querySelectorAll('input[name=opt]:checked')].map(c=>c.value);
-  if(!opts.includes('seo_pack')) opts.unshift('seo_pack');
+  const category = f.category.value;
+  const opts = [...document.querySelectorAll('input[name=opt]:checked')].map(c => c.value);
+  if (!opts.includes('seo_pack')) opts.unshift('seo_pack');
 
   // 이미지
   const images = {};
   const hero = document.getElementById('img-hero').files[0];
   const intro = document.getElementById('img-intro').files[0];
   const gal = [...document.getElementById('img-gallery').files].slice(0,3);
-  if(hero) images.hero = await toDataURL(hero);
-  if(intro) images.intro = await toDataURL(intro);
-  if(gal.length) images.gallery = await Promise.all(gal.map(toDataURL));
+  if (hero)  images.hero    = await toDataURL(hero);
+  if (intro) images.intro   = await toDataURL(intro);
+  if (gal.length) images.gallery = await Promise.all(gal.map(toDataURL));
+
+  const brand = {
+    name: f.name.value, tagline: f.tagline.value, primary: f.primary.value,
+    region: f.region.value, phone: f.phone.value,
+    address: f.address.value, kakao: f.kakao.value,
+  };
 
   const spec = {
-    category: f.category.value,
+    category,
     scale: f.scale.value,
     domain: f.domain.value,
     locale: opts.includes('translate') ? ['ko','en'] : ['ko'],
-    brand: {
-      name: f.name.value, tagline: f.tagline.value, primary: f.primary.value,
-      region: f.region.value, phone: f.phone.value, address: f.address.value, kakao: f.kakao.value
-    },
-    clinic: { specialty: f.specialty.value, doctors },
-    options: opts
+    brand,
+    options: opts,
   };
-  if(Object.keys(images).length) spec.images = images;
+
+  if (category === 'clinic') {
+    // 의료진
+    const rows = [...document.querySelectorAll('#doctors .doctor-row')];
+    const doctors = [];
+    for (const r of rows) {
+      const ins = r.querySelectorAll('input');
+      if (!ins[0].value) continue;
+      const d = { name: ins[0].value, role: ins[1].value, desc: ins[2].value };
+      const pf = r.querySelector('.doc-photo');
+      if (pf && pf.files.length) d.photo = await toDataURL(pf.files[0]);
+      doctors.push(d);
+    }
+    spec.clinic = { specialty: f.specialty.value, doctors };
+
+  } else if (category === 'local') {
+    brand.instagram    = f.instagram?.value    || '';
+    brand.naver_place  = f.naver_place?.value  || '';
+
+    // 메뉴
+    const menu = [...document.querySelectorAll('#menu-list .menu-row')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return { name: ins[0].value, price: ins[1].value, desc: ins[2].value };
+    }).filter(m => m.name);
+
+    // 영업시간
+    const hours = [...document.querySelectorAll('#hours-list .hour-row-input')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return { day: ins[0].value, time: ins[1].value };
+    }).filter(h => h.day);
+
+    spec.local = { type: f.local_type.value, hours, menu };
+  }
+
+  if (Object.keys(images).length) spec.images = images;
   lastSpec = spec;
 
-  // 사진은 길어서 JSON 미리보기에선 […data uri…] 로 축약 표시
-  const shown = JSON.stringify(spec, (k,v)=> (typeof v==='string'&&v.startsWith('data:'))?`[…업로드 이미지 ${Math.round(v.length/1024)}KB…]`:v, 2);
+  // 미리보기: data URI 축약
+  const shown = JSON.stringify(spec, (k,v) =>
+    (typeof v === 'string' && v.startsWith('data:'))
+      ? `[…업로드 이미지 ${Math.round(v.length/1024)}KB…]` : v, 2);
   document.getElementById('json').textContent = shown;
   document.getElementById('result').style.display = 'block';
   document.getElementById('result').scrollIntoView({behavior:'smooth'});
 }
-function download(){
-  const blob = new Blob([JSON.stringify(lastSpec,null,2)],{type:'application/json'});
+
+function download() {
+  const blob = new Blob([JSON.stringify(lastSpec,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = (lastSpec.domain||'site-spec').replace(/[^\w]/g,'-')+'.json';
+  a.download = (lastSpec.domain || 'site-spec').replace(/[^\w]/g,'-') + '.json';
   a.click();
 }
 </script>

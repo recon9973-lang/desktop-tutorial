@@ -1,0 +1,43 @@
+{
+  "category": "local",
+  "scale": "standard",
+  "domain": "happy-roastery.co.kr",
+  "locale": ["ko"],
+  "brand": {
+    "name": "해피로스터리",
+    "tagline": "직접 로스팅한 원두로 만드는 특별한 한 잔",
+    "primary": "#c8844a",
+    "region": "서울 마포",
+    "phone": "02-333-7788",
+    "address": "서울특별시 마포구 독막로 7길 12, 1층",
+    "kakao": "https://pf.kakao.com/_example/chat",
+    "instagram": "https://instagram.com/happyroastery",
+    "naver_place": "https://map.naver.com/v5/entry/place/12345678"
+  },
+  "local": {
+    "type": "cafe",
+    "hours": [
+      { "day": "평일", "time": "09:00 – 22:00" },
+      { "day": "주말·공휴일", "time": "10:00 – 23:00" },
+      { "day": "매주 월요일", "time": "정기 휴무" }
+    ],
+    "menu": [
+      { "name": "시그니처 라떼", "price": "6,500", "desc": "직접 로스팅한 원두와 제주 우유의 만남" },
+      { "name": "수제 크로플", "price": "5,500", "desc": "바삭하고 촉촉한 크로플, 연유·크림 선택" },
+      { "name": "딸기 케이크", "price": "7,800", "desc": "매일 직접 만드는 제철 딸기 케이크" },
+      { "name": "아이스 아메리카노", "price": "4,500", "desc": "싱글 오리진 원두, 기본에 충실한 아메리카노" }
+    ]
+  },
+  "trust": [
+    { "num": "8년+", "lbl": "로컬 카페 운영" },
+    { "num": "4.9★", "lbl": "네이버 평점" },
+    { "num": "월 3,000+", "lbl": "방문 고객" },
+    { "num": "100%", "lbl": "직접 로스팅" }
+  ],
+  "reviews": [
+    { "author": "김민지 님", "stars": 5, "body": "시그니처 라떼가 정말 맛있어요! 원두향이 진하고 부드러워서 매주 찾아오게 됩니다." },
+    { "author": "이준호 님", "stars": 5, "body": "크로플이 진짜 바삭바삭해요. 커피랑 같이 먹으면 딱이에요. 사장님도 친절하세요." },
+    { "author": "박소현 님", "stars": 5, "body": "마포에서 이런 카페를 찾았다니! 공간도 넓고 조용해서 작업하기 좋아요. 단골됩니다." }
+  ],
+  "options": ["seo_pack", "blog_auto", "analytics"]
+}

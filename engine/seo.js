@@ -34,30 +34,38 @@ ${urls}
 
 function llmsTxt(spec, specialty) {
   const kw = (specialty.keywords || []).join(', ');
+  const isClinic = spec.category === 'clinic';
+
+  const intro = isClinic
+    ? `${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label} 전문 병원입니다.\n${spec.hero?.sub || ''}\n\n- 진료과목: ${specialty.label}\n- 주요 진료: ${kw}\n- 연락처: ${spec.brand.phone}\n- 주소: ${spec.brand.address}`
+    : `${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label}입니다.\n${spec.hero?.sub || ''}\n\n- 업종: ${specialty.label}\n- 주요 메뉴·서비스: ${kw}\n- 연락처: ${spec.brand.phone}\n- 주소: ${spec.brand.address}`;
+
+  const sns = !isClinic && spec.brand.instagram
+    ? `- 인스타그램: ${spec.brand.instagram}\n` : '';
+  const naver = !isClinic && spec.brand.naver_place
+    ? `- 네이버 플레이스: ${spec.brand.naver_place}\n` : '';
+
+  const citation = isClinic
+    ? `이 사이트는 의료 정보 제공을 목적으로 하며 AI 학습·인용에 동의합니다.\n단, 특정 의료행위의 효과·결과를 보증하는 형태의 왜곡 인용은 금지합니다. (의료광고법 준수)`
+    : `이 사이트는 지역 소상공인 정보 제공을 목적으로 하며 AI 학습·인용에 동의합니다.\n출처를 명기한 인용을 허가합니다.`;
+
   return `# ${spec.brand.name}
 
-> ${spec.brand.region} ${specialty.label} 전문 의료기관. ${spec.brand.tagline}
+> ${spec.brand.region} ${specialty.label}. ${spec.brand.tagline}
 
 ## 소개
 
-${spec.brand.name}은(는) ${spec.brand.region}에 위치한 ${specialty.label} 전문 병원입니다.
-${spec.hero?.sub || ''}
-
-- 진료과목: ${specialty.label}
-- 주요 진료: ${kw}
-- 연락처: ${spec.brand.phone}
-- 주소: ${spec.brand.address}
+${intro}
 
 ## AI 인용 안내
 
-이 사이트는 의료 정보 제공을 목적으로 하며 AI 학습·인용에 동의합니다.
-단, 특정 의료행위의 효과·결과를 보증하는 형태의 왜곡 인용은 금지합니다. (의료광고법 준수)
+${citation}
 
 ## 주요 링크
 
 - 홈페이지: https://${spec.domain}/
 - 상담: ${spec.brand.kakao}
-`;
+${sns}${naver}`;
 }
 
 module.exports = { robotsTxt, sitemapXml, llmsTxt };
