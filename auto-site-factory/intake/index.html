@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENOM Site Factory — 고객정보 입력 (직원용)</title>
+<style>
+:root{--p:#533afd;--bd:#1c1e54;--ink:#0d253d;--soft:#f6f9fc;--border:#e3e8ee;--muted:#697386}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Pretendard',-apple-system,sans-serif;color:var(--ink);background:var(--soft);line-height:1.6}
+.wrap{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+header{background:var(--bd);color:#fff;padding:28px 0}
+header .wrap{padding-top:0;padding-bottom:0}
+header h1{font-size:22px;font-weight:800}
+header p{opacity:.7;font-size:14px;margin-top:4px}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;margin-top:24px}
+.card h2{font-size:16px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card h2 .n{background:var(--p);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.card .hint{color:var(--muted);font-size:13px;margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p)}
+.row{display:flex;gap:14px}.row>div{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{flex:none}
+.chip input{display:none}
+.chip span{display:inline-block;padding:9px 16px;border:1.5px solid var(--border);border-radius:9999px;cursor:pointer;font-size:14px;transition:.15s}
+.chip input:checked+span{background:var(--p);color:#fff;border-color:var(--p)}
+.opts label{display:flex;align-items:center;gap:10px;font-weight:500;background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0;cursor:pointer}
+.opts input{width:auto}
+.btn{background:var(--p);color:#fff;border:none;padding:15px 28px;border-radius:9999px;font-weight:700;font-size:16px;cursor:pointer;width:100%;margin-top:24px;transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(83,58,253,.25)}
+pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:auto;font-size:13px;margin-top:18px;max-height:340px}
+.doctor-row{display:flex;gap:10px;margin-bottom:8px}
+.small{background:#eef0ff;color:var(--p);border:none;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer;font-size:13px}
+.cmd{background:#eef0ff;border-radius:10px;padding:14px;font-size:13px;margin-top:14px;font-family:monospace;color:var(--bd)}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>🏭 VENOM Site Factory</h1><p>고객정보 입력 — 직원용 내부 도구</p></div></header>
+<div class="wrap">
+  <form id="f">
+    <!-- 1. 대분류 -->
+    <div class="card">
+      <h2><span class="n">1</span> 대분류 (어떤 사이트인가)</h2>
+      <p class="hint">현재 MVP는 병원·의료부터 지원합니다. (나머지는 순차 오픈)</p>
+      <div class="chips">
+        <label class="chip"><input type="radio" name="category" value="clinic" checked><span>🏥 병원·의료</span></label>
+        <label class="chip"><input type="radio" name="category" value="local" disabled><span>🏪 소상공인 (준비중)</span></label>
+        <label class="chip"><input type="radio" name="category" value="press" disabled><span>📰 언론 (준비중)</span></label>
+        <label class="chip"><input type="radio" name="category" value="blog" disabled><span>✍️ 블로그 (준비중)</span></label>
+      </div>
+      <label>진료과목</label>
+      <select name="specialty">
+        <option value="dental">치과</option>
+        <option value="skin">피부과</option>
+        <option value="ortho">정형외과</option>
+        <option value="oriental">한의원</option>
+        <option value="plastic">성형외과</option>
+        <option value="naegwa">내과</option>
+        <option value="angwa">안과</option>
+      </select>
+    </div>
+
+    <!-- 2. 규모 -->
+    <div class="card">
+      <h2><span class="n">2</span> 규모</h2>
+      <div class="chips">
+        <label class="chip"><input type="radio" name="scale" value="lite"><span>Lite (1p)</span></label>
+        <label class="chip"><input type="radio" name="scale" value="standard" checked><span>Standard (5p)</span></label>
+        <label class="chip"><input type="radio" name="scale" value="pro"><span>Pro (7p+)</span></label>
+      </div>
+    </div>
+
+    <!-- 3. 브랜드 정보 -->
+    <div class="card">
+      <h2><span class="n">3</span> 브랜드 기본정보</h2>
+      <div class="row">
+        <div><label>병원명</label><input name="name" value="서울미소치과" required></div>
+        <div><label>지역</label><input name="region" value="서울 강남"></div>
+      </div>
+      <label>슬로건</label><input name="tagline" value="정직한 진료, 편안한 미소">
+      <div class="row">
+        <div><label>대표번호</label><input name="phone" value="02-1234-5678"></div>
+        <div><label>대표색상</label><input name="primary" type="color" value="#533afd" style="height:46px;padding:4px"></div>
+      </div>
+      <label>주소</label><input name="address" value="서울특별시 강남구 테헤란로 123, 4층">
+      <label>카카오 상담 링크</label><input name="kakao" value="https://pf.kakao.com/_example/chat">
+      <label>도메인</label><input name="domain" value="seoul-smile.com">
+    </div>
+
+    <!-- 4. 의료진 -->
+    <div class="card">
+      <h2><span class="n">4</span> 의료진</h2>
+      <p class="hint">비워두면 기본 1명으로 생성됩니다.</p>
+      <div id="doctors"></div>
+      <button type="button" class="small" onclick="addDoctor()">+ 의료진 추가</button>
+    </div>
+
+    <!-- 5. 옵션 팩 -->
+    <div class="card">
+      <h2><span class="n">5</span> 기능 옵션 팩</h2>
+      <p class="hint">AI검색 최적화는 기본 포함입니다. 카테고리 기본값이 미리 체크돼 있습니다.</p>
+      <div class="opts">
+        <label><input type="checkbox" name="opt" value="seo_pack" checked disabled> ⑤ AI검색 최적화 (SEO/AEO/GEO/llms.txt) — 기본</label>
+        <label><input type="checkbox" name="opt" value="medical_review" checked> ③ 의료광고 검수 팩</label>
+        <label><input type="checkbox" name="opt" value="blog_auto" checked> ① 블로그 자동발행 팩</label>
+        <label><input type="checkbox" name="opt" value="image_pack" checked> ② 이미지 변환 팩</label>
+        <label><input type="checkbox" name="opt" value="translate" > ④ 다국어 글로벌 팩</label>
+        <label><input type="checkbox" name="opt" value="analytics" checked> ⑥ 분석·인사이트 팩</label>
+      </div>
+    </div>
+
+    <button type="button" class="btn" onclick="build()">⚙️ site-spec.json 생성</button>
+  </form>
+
+  <div id="result" style="display:none">
+    <div class="card">
+      <h2>✅ 생성된 site-spec.json</h2>
+      <p class="hint">아래 JSON을 다운로드한 뒤 엔진에 넣으면 사이트가 자동 생성됩니다.</p>
+      <pre id="json"></pre>
+      <button type="button" class="small" onclick="download()">⬇️ JSON 다운로드</button>
+      <div class="cmd">node engine/generate.js &lt;다운로드한 파일&gt;.json</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function addDoctor(d){
+  d = d || {name:'',role:'',desc:''};
+  const div = document.createElement('div');
+  div.className = 'doctor-row';
+  div.innerHTML = `<input placeholder="이름" value="${d.name}"><input placeholder="직책" value="${d.role}"><input placeholder="소개" value="${d.desc}"><button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('doctors').appendChild(div);
+}
+addDoctor({name:'김치과 원장',role:'치과 전문의',desc:'임플란트 20년 임상'});
+
+let lastSpec = null;
+function build(){
+  const f = document.getElementById('f');
+  const doctors = [...document.querySelectorAll('#doctors .doctor-row')].map(r=>{
+    const i = r.querySelectorAll('input');
+    return {name:i[0].value, role:i[1].value, desc:i[2].value};
+  }).filter(d=>d.name);
+  const opts = [...document.querySelectorAll('input[name=opt]:checked')].map(c=>c.value);
+  if(!opts.includes('seo_pack')) opts.unshift('seo_pack');
+
+  const spec = {
+    category: f.category.value,
+    scale: f.scale.value,
+    domain: f.domain.value,
+    locale: opts.includes('translate') ? ['ko','en'] : ['ko'],
+    brand: {
+      name: f.name.value, tagline: f.tagline.value, primary: f.primary.value,
+      region: f.region.value, phone: f.phone.value, address: f.address.value, kakao: f.kakao.value
+    },
+    clinic: { specialty: f.specialty.value, doctors },
+    options: opts
+  };
+  lastSpec = spec;
+  document.getElementById('json').textContent = JSON.stringify(spec, null, 2);
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+function download(){
+  const blob = new Blob([JSON.stringify(lastSpec,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (lastSpec.domain||'site-spec').replace(/[^\w]/g,'-')+'.json';
+  a.click();
+}
+</script>
+</body>
+</html>
