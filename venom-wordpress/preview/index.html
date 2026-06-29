@@ -4610,6 +4610,13 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   text-align: center !important;
 }
 .hero-sub strong{ color: #fff !important; font-weight: 700 !important; }
+/* 다크 .mesh 서브페이지 히어로 가독성 보정:
+   서브페이지 제목은 .hero 클래스 없이 .mesh>.container 직속 h1이라
+   기존 ".hero h1 흰색" 규칙이 안 먹어, 색 미지정 첫 줄이 다크-온-다크로
+   숨던 문제를 수정(흰색). 부제(p)도 다크 배경에 맞춰 밝게. */
+.mesh > .container > h1{ color:#fff }
+.mesh > .container > p{ color:rgba(255,255,255,.72) !important }
+.mesh > .container > p strong{ color:#fff !important }
 .hero-cta .btn-p{ background: var(--p) !important; }
 .hero-cta .btn-ghost{
   background: rgba(255,255,255,.08) !important;
