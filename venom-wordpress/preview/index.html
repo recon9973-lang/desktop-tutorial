@@ -5441,13 +5441,19 @@ function _renderFastSEO(data,url,domain,el){
   }
 
   var title=qa('title').trim();
+  // 네이버 가이드: <title>은 페이지당 1개여야 함(2개 이상이면 검색로봇 혼란). head 내 title만 집계
+  var titleCount=doc?(doc.head?doc.head.querySelectorAll('title').length:doc.querySelectorAll('title').length):0;
   var metaDesc=metaByName('description');
+  // 네이버 가이드: meta description도 head 내 1개. 다중이면 중복 경고
+  var descCount=doc?doc.querySelectorAll('meta[name="description"],meta[name="Description"]').length:0;
   var hasViewport=!!metaByName('viewport');
   var canonical=qa('link[rel="canonical"]','href');
   var lang=doc?(doc.documentElement.getAttribute('lang')||'').trim():'';
   var hasLd=/application\/ld\+json/i.test(html);
   var hasHreflang=!!(doc&&doc.querySelector('link[rel="alternate"][hreflang]'));
   var ogTitle=metaByProp('og:title');
+  // 네이버 가이드: <H1>은 1개 권장(2개 이상이면 구조 이해 어려움)
+  var h1Count=doc?doc.querySelectorAll('h1').length:0;
 
   // ── 이미지 ALT: 속성이 아예 없는 경우만 누락으로 집계 ──
   // alt=""(장식용 정상 표기)·1px 추적픽셀·src 없는 이미지는 제외 → 타사와 동일 기준
@@ -5522,16 +5528,28 @@ function _renderFastSEO(data,url,domain,el){
   var ogImage=metaByProp('og:image');
   var ogOk=!!ogTitle&&!!ogDesc;
 
-  // ── 제목·디스크립션 권장 길이 (Google/네이버 가이드 기준) ──
+  // ── 제목·디스크립션 검사 (네이버 가이드: 존재·단일·고유·적정 길이) ──
   var titleLen=title.length, descLen=metaDesc.length;
-  var titleNote='현재 '+titleLen+'자'+(titleLen<10?' · 너무 짧음(권장 10~60)':titleLen>60?' · 너무 김(권장 10~60)':' · 적정');
-  var descNote=descLen?('현재 '+descLen+'자'+(descLen<50?' · 너무 짧음(권장 50~160)':descLen>160?' · 너무 김(권장 50~160)':' · 적정')):'메타 디스크립션 없음';
+  // 네이버 가이드 기준 제목 길이: 한글 기준 과도하게 길면 경고(검색결과 약 25~35자 노출)
+  var titleLenBad=titleLen>0&&(titleLen<10||titleLen>60);
+  var titlePass=!!title&&titleCount<=1&&!titleLenBad;
+  var titleNote=!title?'title 태그 없음 — 추가 필요'
+    :(titleCount>1?'⚠ title 태그 '+titleCount+'개 발견 — 페이지당 1개여야 함':
+      ('현재 '+titleLen+'자'+(titleLen<10?' · 너무 짧음(권장 10~60)':titleLen>60?' · 너무 김(권장 10~60, 검색결과 잘림)':' · 적정')));
+  var descPass=!!metaDesc&&descCount<=1;
+  var descNote=!metaDesc?'메타 디스크립션 없음 — 검색 스니펫에 직접 영향'
+    :(descCount>1?'⚠ description 태그 '+descCount+'개 — 페이지당 1개·고유하게':
+      ('현재 '+descLen+'자'+(descLen<50?' · 너무 짧음(권장 50~160)':descLen>160?' · 너무 김(권장 50~160)':' · 적정')));
+  // H1: 네이버 가이드 — 정확히 1개 권장(0개=없음, 2개+=구조 혼란)
+  var h1Pass=h1Count===1;
+  var h1Note=h1Count===0?'H1 없음 — 페이지 대표 제목 추가 필요'
+    :h1Count>1?('⚠ H1 '+h1Count+'개 발견 — 1개만 사용 권장(네이버)'):'대표 제목 1개 — 적정';
 
   var checks={
     content:[
-      ['제목(title) 태그',  '검색결과 제목 — '+titleNote,                      8,!!title,'공통'],
-      ['메타 디스크립션',   '검색결과 설명문 — '+descNote,                     8,!!metaDesc,'공통'],
-      ['H1 대표 제목',      '페이지 핵심 주제를 알리는 대표 헤딩',              6,hasH1,'공통'],
+      ['제목(title) 태그',  '검색결과 제목 — '+titleNote,                      8,titlePass,'공통'],
+      ['메타 디스크립션',   '검색결과 설명문 — '+descNote,                     8,descPass,'공통'],
+      ['H1 대표 제목',      h1Note,                                            6,h1Pass,'공통'],
       ['헤딩 구조',         'H1→H2 논리적 계층 — 콘텐츠 구조화',               4,headOk,'Google'],
       ['이미지 ALT 텍스트', '이미지 대체 텍스트 ('+imgDesc+')',               7,imgAltOk,'공통'],
       ['의미있는 링크 텍스트','서술형 앵커 — "여기 클릭" 류 지양',              5,linkTextOk,'Google'],
