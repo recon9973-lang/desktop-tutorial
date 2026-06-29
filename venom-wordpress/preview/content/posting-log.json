@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698079567",
+    "title": "인천 지역 마케팅: AI 활용한 5가지 전략",
+    "category": "geo_local",
+    "keyword": "AI",
+    "tokenUsage": {
+      "promptTokens": 2272,
+      "completionTokens": 2166,
+      "totalTokens": 4438,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:54:56.069Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698039105",
     "title": "부산 지역마케팅: GEO 최적화 5가지 전략",
     "category": "geo_local",
