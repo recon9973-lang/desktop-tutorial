@@ -14,6 +14,11 @@ const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST
 const CHANNELS = ['direct', 'naver', 'google', 'daum', 'instagram', 'facebook', 'youtube', 'bing', 'other'];
 const DAY_TTL = 60 * 60 * 24 * 120; // 일별 키 120일 보관
 
+// SEO 점수 리더보드 공개 방식: 'full'(그대로) | 'mask'(일부 가림) | 'curated'(노출 안 함)
+// 환경변수 LB_DISCLOSURE 로 무중단 전환 가능. 기본은 프라이버시 안전한 mask.
+const LB_DISCLOSURE = process.env.LB_DISCLOSURE || 'mask';
+const LB_TTL = 60 * 60 * 24 * 400; // 주간/월간 키 보관(약 13개월)
+
 // KST(한국시간) 기준 날짜 문자열 — 한국 사이트라 자정 경계를 KST로 맞춤
 function ymdKST(offsetDays) {
   const ms = Date.now() + 9 * 3600 * 1000 - (offsetDays || 0) * 86400000;
@@ -65,6 +70,62 @@ function channelOf(ref, selfHost) {
 
 function n(v) { const x = parseInt(v, 10); return isNaN(x) ? 0 : x; }
 function sum(arr) { return arr.reduce((a, b) => a + n(b), 0); }
+
+// ── SEO 점수 리더보드 ──────────────────────────────────────────
+function ymKST() { return ymdKST(0).slice(0, 7); } // YYYY-MM (KST)
+function isoWeekKST() {
+  const d = new Date(Date.now() + 9 * 3600 * 1000);
+  d.setUTCHours(0, 0, 0, 0);
+  const day = (d.getUTCDay() + 6) % 7;            // 월=0
+  d.setUTCDate(d.getUTCDate() - day + 3);          // 해당 주 목요일
+  const firstThu = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+  const week = 1 + Math.round(((d - firstThu) / 86400000 - 3 + ((firstThu.getUTCDay() + 6) % 7)) / 7);
+  return d.getUTCFullYear() + '-W' + ('0' + week).slice(-2);
+}
+function cleanDomain(s) {
+  let h = String(s || '').trim().toLowerCase();
+  h = h.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].split('?')[0].split(':')[0];
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(h) || h.length > 80) return '';
+  return h;
+}
+function maskDomain(h) { // aiops.ai.kr → ai***.kr
+  const parts = h.split('.');
+  const head = parts[0] || '';
+  return head.slice(0, 2) + '***.' + parts.slice(-1)[0];
+}
+function lbKey(period) {
+  return period === 'week' ? 'seo:lb:' + isoWeekKST()
+    : period === 'month' ? 'seo:lb:' + ymKST() : 'seo:lb:all';
+}
+
+async function recordScore(req, res) {
+  const b = req.body || {};
+  const domain = cleanDomain(b.domain);
+  const score = Math.max(0, Math.min(100, n(b.score)));
+  if (!domain || !score) return res.status(200).json({ ok: false, reason: 'invalid' });
+  if (!KV_URL || !KV_TOKEN) return res.status(200).json({ ok: false, configured: false });
+  const wk = lbKey('week'), mo = lbKey('month');
+  await kv([
+    ['ZADD', 'seo:lb:all', 'GT', score, domain],
+    ['ZADD', mo, 'GT', score, domain], ['EXPIRE', mo, LB_TTL],
+    ['ZADD', wk, 'GT', score, domain], ['EXPIRE', wk, LB_TTL],
+  ]);
+  return res.status(200).json({ ok: true });
+}
+
+async function topScores(req, res) {
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  if (LB_DISCLOSURE === 'curated') return res.status(200).json({ configured: true, mode: 'curated', items: [] });
+  if (!KV_URL || !KV_TOKEN) return res.status(200).json({ configured: false, items: [] });
+  const period = req.query.period === 'week' || req.query.period === 'month' ? req.query.period : 'all';
+  const r = await kv([['ZREVRANGE', lbKey(period), '0', '4', 'WITHSCORES']]);
+  const flat = (r && r.json && r.json[0] && r.json[0].result) || [];
+  const items = [];
+  for (let i = 0; i < flat.length; i += 2) {
+    items.push({ domain: LB_DISCLOSURE === 'mask' ? maskDomain(flat[i]) : flat[i], score: n(flat[i + 1]) });
+  }
+  return res.status(200).json({ configured: true, mode: LB_DISCLOSURE, period, items });
+}
 
 async function track(req, res) {
   const b = req.body || {};
@@ -134,8 +195,14 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   try {
-    if (req.method === 'POST') return await track(req, res);
-    if (req.method === 'GET') return await read(req, res);
+    if (req.method === 'POST') {
+      if (req.body && req.body.lb) return await recordScore(req, res); // SEO 점수 기록
+      return await track(req, res);
+    }
+    if (req.method === 'GET') {
+      if (req.query && req.query.lb === 'top') return await topScores(req, res); // 리더보드 조회
+      return await read(req, res);
+    }
     return res.status(405).json({ error: 'GET/POST only' });
   } catch (e) {
     return res.status(200).json({ ok: false, error: e.message });
