@@ -6205,9 +6205,9 @@ function loadAdminPosts(){
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadAdminPosts);}
 else{loadAdminPosts();}
 
-// Load GitHub-stored AI posts (content/blog-posts.json)
+// Load GitHub-stored AI posts — English version (content/blog-posts-en.json)
 (function loadServerPosts(){
-  fetch('/content/blog-posts.json?_='+Date.now())
+  fetch('/content/blog-posts-en.json?_='+Date.now())
     .then(function(r){return r.ok?r.json():[];})
     .then(function(posts){
       if(!Array.isArray(posts)||!posts.length)return;
