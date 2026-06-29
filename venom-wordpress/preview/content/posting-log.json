@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698457438",
+    "title": "코성형 시술 절차와 회복기간, 부작용 5가지 정리",
+    "category": "plastic",
+    "keyword": "코성형",
+    "tokenUsage": {
+      "promptTokens": 2278,
+      "completionTokens": 2098,
+      "totalTokens": 4376,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T02:01:13.031Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698414105",
     "title": "코성형 마케팅 전략 TOP 5 및 시술 정보",
     "category": "plastic",
