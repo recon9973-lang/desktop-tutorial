@@ -693,10 +693,12 @@ body{padding-top:0}
   </div>
   <nav class="mob-nav">
     <div class="mob-nav-group">
-      <button class="mob-nav-item mob-has-sub" onclick="toggleMobSub(this)">
-        병원마케팅
-        <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
+      <div class="mob-nav-row">
+        <a href="javascript:void(0)" class="mob-nav-item mob-nav-main" onclick="sp('hosp_mkt');closeMobMenu()">병원마케팅</a>
+        <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="병원마케팅 하위 메뉴 열기">
+          <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
       <div class="mob-sub">
         <a href="javascript:void(0)" onclick="ld('dental');closeMobMenu()">치과마케팅</a>
         <a href="javascript:void(0)" onclick="ld('skin');closeMobMenu()">피부과마케팅</a>
@@ -710,10 +712,12 @@ body{padding-top:0}
       </div>
     </div>
     <div class="mob-nav-group">
-      <button class="mob-nav-item mob-has-sub" onclick="toggleMobSub(this)">
-        AI마케팅 <span class="nav-new">NEW</span>
-        <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
+      <div class="mob-nav-row">
+        <a href="javascript:void(0)" class="mob-nav-item mob-nav-main" onclick="sp('ai');closeMobMenu()">AI마케팅 <span class="nav-new">NEW</span></a>
+        <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="AI마케팅 하위 메뉴 열기">
+          <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
       <div class="mob-sub">
         <a href="javascript:void(0)" onclick="sp('geo');closeMobMenu()">GEO — 생성AI 최적화</a>
         <a href="javascript:void(0)" onclick="sp('aeo');closeMobMenu()">AEO — 답변엔진 최적화</a>
@@ -4965,6 +4969,11 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 .mob-nav-item:hover{color:var(--p);background:var(--soft)}
 .mob-darr{width:18px;height:18px;flex-shrink:0;transition:transform .25s}
 .mob-has-sub.active .mob-darr{transform:rotate(180deg)}
+/* 카테고리 제목 = 메인페이지 이동(링크) + 화살표 = 하위메뉴 토글, 분리 탭영역 */
+.mob-nav-row{display:flex;align-items:stretch}
+.mob-nav-row .mob-nav-main{flex:1;justify-content:flex-start}
+.mob-sub-toggle{flex-shrink:0;display:flex;align-items:center;padding:0 22px;background:none;border:none;border-left:1px solid var(--soft);cursor:pointer;color:var(--ink)}
+.mob-sub-toggle:hover{background:var(--soft);color:var(--p)}
 .mob-sub{display:none;background:#fafafa;padding:4px 0 8px}
 .mob-sub.open{display:block}
 .mob-sub a{display:block;padding:11px 24px 11px 36px;font-size:14px;font-weight:400;
@@ -9114,7 +9123,9 @@ document.addEventListener('keydown',function(e){
   }
 });
 function toggleMobSub(btn){
-  var sub=btn.nextElementSibling;
+  var grp=btn.closest('.mob-nav-group');
+  var sub=grp?grp.querySelector('.mob-sub'):btn.nextElementSibling;
+  if(!sub)return;
   var isOpen=sub.classList.contains('open');
   // 다른 열린 서브메뉴 닫기
   document.querySelectorAll('.mob-sub.open').forEach(function(s){ s.classList.remove('open'); });
