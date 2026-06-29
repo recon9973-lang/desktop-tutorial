@@ -51,6 +51,26 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
 .filebtn{display:inline-flex;align-items:center;justify-content:center;width:42px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:16px;flex:none}
 .filebtn.has{border-color:var(--p);background:#eef0ff}
 [data-show]{transition:.15s}
+.btn-row{display:flex;gap:12px;margin-top:24px}
+.btn-row .btn{margin-top:0;flex:1}
+.btn-preview{background:#0d253d}
+.btn-preview:hover{box-shadow:0 12px 24px rgba(13,37,61,.3)}
+/* ── 미리보기 오버레이 ── */
+#preview-overlay{position:fixed;inset:0;z-index:1000;background:#0d1117;display:none;flex-direction:column}
+#preview-bar{display:flex;align-items:center;gap:10px;padding:10px 18px;background:#0d253d;color:#fff;flex:none}
+#preview-bar .title{font-weight:700;font-size:14px}
+#preview-bar .spacer{flex:1}
+.pv-btn{background:#fff2;color:#fff;border:1px solid #ffffff33;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.pv-btn:hover{background:#fff3}
+.pv-btn.active{background:var(--p);border-color:var(--p)}
+.pv-btn.close-btn{background:#e74c3c33;border-color:#e74c3c55;color:#ff6b6b}
+.pv-btn.close-btn:hover{background:#e74c3c}
+#preview-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden;background:#111}
+#preview-frame{border:none;border-radius:10px;box-shadow:0 20px 60px #000a;transition:width .3s,height .3s;background:#fff}
+#preview-spinner{color:#fff;font-family:sans-serif;font-size:15px;text-align:center;padding:40px}
+#preview-url-bar{display:flex;align-items:center;gap:8px;background:#1a1f2e;border-radius:8px;padding:6px 14px;max-width:480px;flex:1;cursor:default}
+#preview-url-bar .dot{width:10px;height:10px;border-radius:50%}
+#preview-url-bar .addr{flex:1;font-size:12px;color:#7ee787;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -188,8 +208,35 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
       </div>
     </div>
 
-    <button type="button" class="btn" onclick="build()">⚙️ site-spec.json 생성</button>
+    <div class="btn-row">
+      <button type="button" class="btn" onclick="build()">⚙️ spec 생성</button>
+      <button type="button" class="btn btn-preview" onclick="preview()">🔍 실시간 미리보기</button>
+    </div>
   </form>
+
+  <!-- 미리보기 오버레이 -->
+  <div id="preview-overlay">
+    <div id="preview-bar">
+      <span class="title">🔍 VENOM 미리보기</span>
+      <div id="preview-url-bar">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        <span class="addr" id="preview-domain">localhost:3737/preview</span>
+      </div>
+      <span class="spacer"></span>
+      <button class="pv-btn active" id="btn-desktop" onclick="setPreviewMode('desktop')">🖥️ 데스크탑</button>
+      <button class="pv-btn" id="btn-mobile" onclick="setPreviewMode('mobile')">📱 모바일</button>
+      <button class="pv-btn close-btn" onclick="closePreview()">✕ 닫기</button>
+    </div>
+    <div id="preview-stage">
+      <div id="preview-spinner" style="display:none">
+        <div style="font-size:36px;margin-bottom:16px">⏳</div>
+        <div>미리보기 생성 중...</div>
+      </div>
+      <iframe id="preview-frame" src="about:blank"></iframe>
+    </div>
+  </div>
 
   <div id="result" style="display:none">
     <div class="card">
@@ -381,6 +428,100 @@ function download() {
   a.download = (lastSpec.domain || 'site-spec').replace(/[^\w]/g,'-') + '.json';
   a.click();
 }
+
+/* ── 미리보기 ─────────────────────────────────────────────────────── */
+let previewMode = 'desktop';
+
+async function preview() {
+  await build();
+  if (!lastSpec) return;
+
+  const overlay  = document.getElementById('preview-overlay');
+  const frame    = document.getElementById('preview-frame');
+  const spinner  = document.getElementById('preview-spinner');
+  const domainEl = document.getElementById('preview-domain');
+
+  overlay.style.display = 'flex';
+  frame.style.display   = 'none';
+  spinner.style.display = 'block';
+  domainEl.textContent  = lastSpec.domain || 'preview';
+  setPreviewMode(previewMode, false);
+
+  try {
+    const resp = await fetch('/api/preview', {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify(lastSpec),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({error: resp.statusText}));
+      throw new Error(err.error || resp.statusText);
+    }
+    const html = await resp.text();
+    frame.srcdoc = html;
+    spinner.style.display = 'none';
+    frame.style.display   = '';
+  } catch (e) {
+    const isNoServer = e.message.includes('Failed to fetch') || e.message.includes('NetworkError');
+    frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;display:flex;align-items:center;justify-content:center;
+      min-height:100vh;font-family:'Pretendard','Inter',sans-serif;background:#f8f9fa">
+      <div style="text-align:center;padding:40px;max-width:480px">
+        <div style="font-size:56px;margin-bottom:20px">${isNoServer ? '🖥️' : '⚠️'}</div>
+        <h2 style="color:#1c1e54;margin-bottom:12px">${isNoServer ? '미리보기 서버가 필요합니다' : '미리보기 오류'}</h2>
+        <p style="color:#697386;line-height:1.7;margin-bottom:24px">
+          ${isNoServer
+            ? '미리보기 기능은 로컬 서버를 통해 동작합니다.<br>아래 명령어로 서버를 시작한 뒤<br>다시 미리보기 버튼을 눌러 주세요.'
+            : `오류: ${e.message}`
+          }
+        </p>
+        ${isNoServer ? `
+        <code style="display:block;background:#0d1117;color:#7ee787;padding:16px 24px;
+          border-radius:10px;font-size:14px;margin-bottom:16px;text-align:left">
+          node auto-site-factory/server.js
+        </code>
+        <p style="color:#aaa;font-size:13px">서버 시작 후 → <b>http://localhost:3737</b><br>에서 폼을 작성하면 미리보기가 활성화됩니다.</p>
+        ` : ''}
+      </div></body></html>`;
+    spinner.style.display = 'none';
+    frame.style.display   = '';
+  }
+}
+
+function setPreviewMode(mode, toggle=true) {
+  previewMode = mode;
+  const frame = document.getElementById('preview-frame');
+  const stage = document.getElementById('preview-stage');
+  const dBtn  = document.getElementById('btn-desktop');
+  const mBtn  = document.getElementById('btn-mobile');
+
+  if (mode === 'desktop') {
+    frame.style.width  = '100%';
+    frame.style.height = '100%';
+    stage.style.padding = '0';
+    frame.style.borderRadius = '0';
+    frame.style.boxShadow = 'none';
+    dBtn.classList.add('active');
+    mBtn.classList.remove('active');
+  } else {
+    frame.style.width  = '390px';
+    frame.style.height = '844px';
+    stage.style.padding = '20px';
+    frame.style.borderRadius = '32px';
+    frame.style.boxShadow = '0 30px 80px #0008';
+    mBtn.classList.add('active');
+    dBtn.classList.remove('active');
+  }
+}
+
+function closePreview() {
+  document.getElementById('preview-overlay').style.display = 'none';
+  document.getElementById('preview-frame').srcdoc = '';
+}
+
+// ESC 키로 미리보기 닫기
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePreview();
+});
 </script>
 </body>
 </html>
