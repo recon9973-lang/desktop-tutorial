@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698153609",
+    "title": "대전 GEO 마케팅 5가지 전략으로 지역 검색 최적화하기",
+    "category": "geo_local",
+    "keyword": "GEO",
+    "tokenUsage": {
+      "promptTokens": 2272,
+      "completionTokens": 1933,
+      "totalTokens": 4205,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:56:09.259Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698116253",
     "title": "광주 병원마케팅 성공을 위한 5가지 전략",
     "category": "geo_local",
