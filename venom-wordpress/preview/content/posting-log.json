@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698116253",
+    "title": "광주 병원마케팅 성공을 위한 5가지 전략",
+    "category": "geo_local",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2275,
+      "completionTokens": 1866,
+      "totalTokens": 4141,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T01:55:32.635Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698079567",
     "title": "인천 지역 마케팅: AI 활용한 5가지 전략",
     "category": "geo_local",
