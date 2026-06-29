@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782755053059",
+    "title": "부산의 GEO/AIO 마케팅: 병원 SEO 최적화 3단계",
+    "category": "geo",
+    "keyword": "SEO",
+    "tokenUsage": {
+      "promptTokens": 2312,
+      "completionTokens": 1759,
+      "totalTokens": 4071,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T17:44:32.690Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782754978874",
     "title": "인천 병원 마케팅의 5가지 핵심 전략과 성공 사례",
     "category": "geo",
