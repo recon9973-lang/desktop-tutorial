@@ -4,7 +4,16 @@
   "description": "의료기관 전문 홈페이지. 의료광고심의 기반 신뢰형 구조.",
   "defaultOptions": ["seo_pack", "medical_review", "blog_auto", "image_pack", "analytics"],
   "specialties": {
-    "dental":   { "label": "치과",   "keywords": ["임플란트", "교정", "충치치료", "심미보철"] },
+    "dental":   { "label": "치과",   "keywords": ["임플란트", "교정", "충치치료", "심미보철"],
+      "stock": {
+        "hero": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115134_a3cb724a-19dd-484c-ba57-0d495171bd4e.png",
+        "intro": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115151_9c1a2a95-e1f8-403c-ba88-1ce634d84077.png",
+        "gallery": [
+          "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115141_8aef89f6-3733-446f-bd9d-2d8451c7b972.png",
+          "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115151_9c1a2a95-e1f8-403c-ba88-1ce634d84077.png",
+          "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115134_a3cb724a-19dd-484c-ba57-0d495171bd4e.png"
+        ]
+      } },
     "skin":     { "label": "피부과", "keywords": ["여드름", "기미·색소", "보톡스", "필러", "레이저"] },
     "ortho":    { "label": "정형외과", "keywords": ["도수치료", "관절", "척추", "물리치료"] },
     "oriental": { "label": "한의원", "keywords": ["다이어트", "교통사고", "추나", "한약"] },

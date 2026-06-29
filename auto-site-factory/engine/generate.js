@@ -31,16 +31,41 @@ function slugify(s) {
 // --- 섹션 빌더 (반복 영역은 코드에서 HTML 생성) ---------------------------
 function buildDepartments(specialty) {
   return (specialty.keywords || []).map(k =>
-    `<div class="card"><h3>${k}</h3><p>${specialty.label} 전문 의료진의 ${k} 진료</p></div>`
+    `<div class="card"><div class="ic">${String(k).trim().charAt(0)}</div><h3>${k}</h3><p>${specialty.label} 전문 의료진의 ${k} 진료</p></div>`
   ).join('\n');
 }
 
-function buildDoctors(doctors) {
+function buildDoctors(doctors, img) {
   const list = (doctors && doctors.length) ? doctors
     : [{ name: '대표원장', role: '전문의', desc: '풍부한 임상 경험' }];
-  return list.map(d =>
-    `<div class="card"><h3>${d.name}</h3><p><b>${d.role || '전문의'}</b><br>${d.desc || ''}</p></div>`
+  return list.map(d => {
+    const visual = d.photo
+      ? `<img src="${d.photo}" alt="${d.name}">`
+      : `<div class="avatar">${String(d.name).trim().charAt(0)}</div>`;
+    return `<div class="doc"><div class="ph">${visual}</div>` +
+      `<div class="info"><h3>${d.name}</h3><div class="role">${d.role || '전문의'}</div><p>${d.desc || ''}</p></div></div>`;
+  }).join('\n');
+}
+
+// 진료 환경 갤러리 (실사 3컷). 캡션은 순서 기본값.
+function buildGallery(gallery, placeholder) {
+  const caps = ['진료실', '편안한 대기 공간', '리셉션'];
+  const imgs = [0, 1, 2].map(i => (gallery && gallery[i]) || placeholder(caps[i]));
+  return imgs.map((src, i) =>
+    `<figure><img src="${src}" alt="${caps[i]}"><figcaption>${caps[i]}</figcaption></figure>`
   ).join('\n');
+}
+
+// 외부 이미지가 없거나(샌드박스) 스톡 미지정 시 자체 SVG 플레이스홀더 — 자급자족 렌더.
+function placeholderDataUri(label) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'>` +
+    `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>` +
+    `<stop offset='0' stop-color='#dfe6ee'/><stop offset='1' stop-color='#c4d0dd'/></linearGradient></defs>` +
+    `<rect width='800' height='600' fill='url(#g)'/>` +
+    `<text x='400' y='290' font-family='sans-serif' font-size='54' fill='#8b9bad' text-anchor='middle'>📷</text>` +
+    `<text x='400' y='350' font-family='sans-serif' font-size='30' font-weight='700' fill='#6c7d90' text-anchor='middle'>${label}</text>` +
+    `<text x='400' y='392' font-family='sans-serif' font-size='19' fill='#8b9bad' text-anchor='middle'>실사진 영역 · 고객 사진으로 교체</text></svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
 
 function buildReviews(reviews, specialty) {
@@ -104,12 +129,28 @@ function prepare(spec) {
     keywords: [spec.brand.name, specialty.label, ...specialty.keywords].join(', '),
   };
 
+  // 이미지: 고객 실사진(spec.images) > 진료과목 기본 스톡 > 자체 플레이스홀더.
+  // VENOM_LOCAL_PLACEHOLDERS=1 이면 외부 URL 무시(오프라인 미리보기/스크린샷용).
+  const localOnly = process.env.VENOM_LOCAL_PLACEHOLDERS === '1';
+  const stock = localOnly ? {} : (specialty.stock || {});
+  spec.images = Object.assign({}, stock, spec.images || {});
+  const ph = placeholderDataUri;
+  spec.images.intro = spec.images.intro || ph('병원 내부 전경');
+  // 히어로/CTA: 실사진이 있으면 그 사진을 배경으로, 없으면 브랜드 그라데이션(글자 가독성 확보).
+  if (spec.images.hero) {
+    spec.images.heroBg = `url('${spec.images.hero}')`;
+  } else {
+    spec.images.hero = '';
+    spec.images.heroBg = `linear-gradient(135deg, var(--p), var(--bd))`;
+  }
+
   const faq = buildFaq(spec.faq, spec.brand, specialty);
   spec.sections = {
     trust: buildTrust(spec.trust),
     departments: buildDepartments(specialty),
-    doctors: buildDoctors(spec.clinic?.doctors),
+    doctors: buildDoctors(spec.clinic?.doctors, spec.images),
     reviews: buildReviews(spec.reviews, specialty),
+    gallery: buildGallery(spec.images.gallery, ph),
     faq: faq.html,
     faqSchema: faq.schema,
   };
