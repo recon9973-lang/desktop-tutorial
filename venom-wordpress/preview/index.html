@@ -5680,46 +5680,7 @@ function runSEO(){
     });
 }
 
-// robots.txt 표준 파싱: 지정한 검색로봇(ua)이 루트('/') 접근이 허용되는지 판정.
-// 정확 매칭 그룹 우선, 없으면 User-agent:* 그룹 적용 (RFC 9309 동작).
-// Googlebot(Google)·Yeti(네이버) 등 봇별 차단까지 정확히 구분.
-function _robotsAllows(robots, ua){
-  if(!robots||!robots.trim())return true; // robots.txt 없으면 전체 허용이 기본값
-  ua=(ua||'*').toLowerCase();
-  var lines=robots.split(/\r?\n/);
-  var groups=[], cur=null, lastWasUA=false;
-  for(var i=0;i<lines.length;i++){
-    var line=lines[i].replace(/#.*$/,'').trim();
-    if(!line)continue;
-    var m=line.match(/^User-agent\s*:\s*(.+)$/i);
-    if(m){
-      if(!lastWasUA||!cur){cur={agents:[],rules:[]};groups.push(cur);}
-      cur.agents.push(m[1].trim().toLowerCase());
-      lastWasUA=true;
-      continue;
-    }
-    lastWasUA=false;
-    if(!cur)continue;
-    var d=line.match(/^(Disallow|Allow)\s*:\s*(.*)$/i);
-    if(d)cur.rules.push({type:d[1].toLowerCase(),path:d[2].trim()});
-  }
-  function pick(name){
-    for(var g=0;g<groups.length;g++)if(groups[g].agents.indexOf(name)>=0)return groups[g];
-    return null;
-  }
-  var grp=pick(ua)||pick('*');
-  if(!grp)return true;
-  // 루트(홈) 접근 판정 — Google spec: 충돌 시 least restrictive(Allow 우선).
-  // '/', '/*'는 루트 포함, '/$'는 루트만 허용/차단.
-  var allowRoot=false, disRoot=false;
-  for(var r=0;r<grp.rules.length;r++){
-    var p=grp.rules[r].path;
-    if(p==='/'||p==='/*'||p==='/$'){
-      if(grp.rules[r].type==='allow')allowRoot=true; else disRoot=true;
-    }
-  }
-  return !(disRoot && !allowRoot);
-}
+// robots.txt 파싱은 seo-engine.js의 robotsAllows(RFC 9309)로 일원화 — 중복 로직 제거됨.
 
 var _seoLast=null;
 
