@@ -88,7 +88,7 @@
   --s2:rgba(0,55,112,.08) 0 8px 24px,rgba(0,55,112,.04) 0 2px 6px;
   --header:64px;--mw:1200px;--lw:228px;--rw:208px;
 }
-html{scroll-behavior:smooth;font-size:16px;word-break:keep-all;word-wrap:break-word;overflow-x:clip}
+html{scroll-behavior:smooth;font-size:16px;word-break:normal;overflow-wrap:break-word;overflow-x:clip}
 body{overflow-x:clip}
 body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',system-ui,-apple-system,sans-serif;
   font-weight:400;color:var(--ink);background:#fff;line-height:1.6;
@@ -612,6 +612,18 @@ body{padding-top:0}
   .hero{padding:60px 0 48px}
   .cta-band h2{font-size:28px}
 }
+</style>
+<style>
+/* ── English-version typography & dark-hero fixes ── */
+/* Relax CJK-tuned letter-spacing / line-height for Latin text */
+.hero h1{ line-height:1.14 !important; letter-spacing:-0.02em !important; }
+.ai-hero h1{ line-height:1.16 !important; letter-spacing:-0.02em !important; }
+h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
+/* Dark .mesh subpage hero: first title line had no color → invisible on dark.
+   Make bare h1 white + subtitle light (matches main hero tone). */
+.mesh > .container > h1{ color:#fff !important; }
+.mesh > .container > p{ color:rgba(255,255,255,.72) !important; }
+.mesh > .container > p strong{ color:#fff !important; }
 </style>
 </head>
 <body>
