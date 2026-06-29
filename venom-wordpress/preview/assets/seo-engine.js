@@ -256,11 +256,27 @@
     var hasPSI = !!psi;
     var total = hasPSI ? categories.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
     var max = hasPSI ? categories.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    // 다양한 집계 수치
+    var passed = 0, failed = 0, pending = 0, improvable = 0;
+    categories.forEach(function (c) {
+      c.items.forEach(function (it) {
+        if (it.pass === null) pending++;
+        else if (it.pass) passed++;
+        else { failed++; improvable += it.points; }
+      });
+    });
+    var rated = passed + failed;
+    var summary = {
+      passed: passed, failed: failed, pending: pending,
+      totalItems: passed + failed + pending,
+      passRate: rated ? Math.round(passed / rated * 100) : 0,
+      improvable: improvable
+    };
     return {
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
       categories: categories, baseTotal: baseTotal, baseMax: baseMax,
       total: total, max: max, hasPSI: hasPSI, psi: psi || null,
-      grade: gradeFor(total, max)
+      summary: summary, grade: gradeFor(total, max)
     };
   }
 
@@ -364,6 +380,29 @@
       }
     }
 
+    // 집계 수치 스트립
+    var sm = result.summary || { passed: 0, failed: 0, pending: 0, passRate: 0, improvable: 0 };
+    var stat = function (v, l, col) {
+      return '<div style="flex:1;min-width:84px;text-align:center;background:#f8fafc;border:1px solid #eef0f5;border-radius:10px;padding:10px 6px">' +
+        '<div style="font-size:20px;font-weight:800;color:' + col + '">' + v + '</div>' +
+        '<div style="font-size:11px;color:#64748b;margin-top:2px">' + l + '</div></div>';
+    };
+    var statsStrip = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
+      stat(sm.passed, '통과 항목', '#16a34a') + stat(sm.failed, '미흡 항목', '#dc2626') +
+      stat('+' + sm.improvable, '개선 시 점수', brand) + stat(sm.passRate + '%', '통과율', '#0ea5e9') + '</div>';
+    // 카테고리 요약 테이블
+    var tableRows = result.categories.map(function (c) {
+      var passN = c.items.filter(function (it) { return it.pass === true; }).length;
+      return '<tr><td style="padding:8px 10px;border-top:1px solid #eef0f5">' + c.icon + ' ' + esc(c.label) + '</td>' +
+        '<td style="padding:8px 10px;border-top:1px solid #eef0f5;text-align:center;color:' + (c.pending ? '#9ca3af' : c.color) + ';font-weight:700">' + (c.pending ? '정밀필요' : c.score + '/' + c.max) + '</td>' +
+        '<td style="padding:8px 10px;border-top:1px solid #eef0f5;text-align:center;color:#64748b">' + passN + '/' + c.items.length + '</td>' +
+        '<td style="padding:8px 10px;border-top:1px solid #eef0f5;text-align:center;color:#64748b">' + (c.pending ? '—' : c.pct + '%') + '</td></tr>';
+    }).join('');
+    var table = '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;border:1px solid #eef0f5;border-radius:10px;overflow:hidden">' +
+      '<thead><tr style="background:#f4f6fa;font-size:12px;color:#475569">' +
+      '<th style="padding:9px 10px;text-align:left">카테고리</th><th style="padding:9px 10px">점수</th><th style="padding:9px 10px">통과</th><th style="padding:9px 10px">비율</th></tr></thead>' +
+      '<tbody>' + tableRows + '</tbody></table>';
+
     return '<div class="seoeng" style="font-family:inherit;color:#0f172a">' +
       '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #e3e8ee;margin-bottom:18px">' +
         '<div style="flex-shrink:0;text-align:center">' + gauge +
@@ -374,8 +413,10 @@
             '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 속도는 정밀 분석(PSI) 시 측정됩니다 (기본 90점 만점)</div>' : '') +
         '</div>' +
       '</div>' +
+      statsStrip +
       psiBadges +
       '<div style="display:flex;gap:5px;margin:16px 0">' + scale + '</div>' +
+      table +
       renderItems(result) +
       '<div style="background:#f4f6fa;border:1px solid #e3e8ee;border-radius:10px;padding:9px 13px;margin-top:14px;font-size:11px;color:#64748b;line-height:1.7">' +
         '📚 평가 기준: <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=ko" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">Google SEO 가이드</a> · ' +
@@ -407,12 +448,51 @@
     }).join('');
   }
 
+  // ── PDF 리포트 (브라우저 인쇄 → PDF 저장, 의존성 0) ──
+  function buildReportHTML(result, opts) {
+    opts = opts || {};
+    var brand = opts.brand || '#533afd';
+    var title = opts.title || 'SEO 진단 리포트';
+    var dateStr = opts.date || '';
+    if (!dateStr && typeof Date !== 'undefined') {
+      var d = new Date();
+      dateStr = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    }
+    var body = renderInfographic(result, opts);
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8">' +
+      '<title>' + esc(title) + ' — ' + esc(result.domain) + '</title><style>' +
+      '@page{margin:12mm}' +
+      'body{font-family:\'Pretendard\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',system-ui,sans-serif;color:#0f172a;margin:0;padding:24px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.rpt-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid ' + brand + ';padding-bottom:14px;margin-bottom:22px}' +
+      '.rpt-brand{font-size:22px;font-weight:800;letter-spacing:-.02em}.rpt-brand b{color:' + brand + '}' +
+      '.rpt-meta{font-size:12px;color:#64748b;text-align:right;line-height:1.7}' +
+      '.seoeng table{page-break-inside:avoid}@media print{button{display:none!important}}' +
+      '</style></head><body>' +
+      '<div class="rpt-head"><div class="rpt-brand">' + esc(title) + ' <b>·</b></div>' +
+      '<div class="rpt-meta"><div><strong>' + esc(result.domain) + '</strong></div><div>진단일 ' + esc(dateStr) + '</div>' +
+      '<div>종합 ' + result.total + '/' + result.max + '점 · ' + esc(result.grade.label) + '</div></div></div>' +
+      body +
+      '<div style="margin-top:18px;font-size:11px;color:#94a3b8;text-align:center">Google SEO 시작 가이드 · 네이버 서치어드바이저 기준 · 참고용 분석(순위 보장 아님)</div>' +
+      '</body></html>';
+  }
+
+  function printReport(result, opts) {
+    var w = (typeof window !== 'undefined') ? window.open('', '_blank') : null;
+    if (!w) { if (typeof alert !== 'undefined') alert('팝업이 차단되었습니다. 허용 후 다시 시도해주세요.'); return false; }
+    w.document.write(buildReportHTML(result, opts));
+    w.document.close(); w.focus();
+    setTimeout(function () { try { w.print(); } catch (e) {} }, 500);
+    return true;
+  }
+
   return {
     version: VERSION,
     analyze: analyze,
     mergePSI: mergePSI,
     robotsAllows: robotsAllows,
     renderInfographic: renderInfographic,
+    buildReportHTML: buildReportHTML,
+    printReport: printReport,
     gradeFor: gradeFor
   };
 });

@@ -56,7 +56,8 @@ function run(){
       var res=SEOEngine.analyze({url:url,html:d.html||'',robots:d.robots||'',isHttps:d.isHttps});
       last=res;
       out.innerHTML=SEOEngine.renderInfographic(res)
-        +'<div id="psi" style="margin-top:14px"><button onclick="psi()" style="width:100%">🔬 성능 정밀 분석 (PSI)</button></div>';
+        +'<div id="psi" style="margin-top:14px"><button onclick="psi()" style="width:100%">🔬 성능 정밀 분석 (PSI)</button></div>'
+        +'<button onclick="SEOEngine.printReport(last,{title:\'SEO 진단 리포트\'})" style="width:100%;margin-top:10px;background:#fff;color:#533afd;border:1px solid #533afd">📄 PDF로 저장</button>';
     }).catch(function(e){b.disabled=false;out.innerHTML='<div style="color:#dc2626">분석 실패: '+e.message+'</div>';});
 }
 function psi(){
@@ -64,8 +65,9 @@ function psi(){
   document.getElementById('psi').innerHTML=loader('PageSpeed 정밀 분석 중 (10~20초)');
   fetch(PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now())
     .then(function(r){return r.json();}).then(function(p){
-      var m=SEOEngine.mergePSI(last,p);
-      document.getElementById('out').innerHTML=SEOEngine.renderInfographic(m);
+      var m=SEOEngine.mergePSI(last,p);last=m;
+      document.getElementById('out').innerHTML=SEOEngine.renderInfographic(m)
+        +'<button onclick="SEOEngine.printReport(last,{title:\'SEO 진단 리포트\'})" style="width:100%;margin-top:12px;background:#fff;color:#533afd;border:1px solid #533afd">📄 PDF로 저장</button>';
     }).catch(function(e){document.getElementById('psi').innerHTML='<div style="color:#dc2626">실패: '+e.message+'</div>';});
 }
 </script>

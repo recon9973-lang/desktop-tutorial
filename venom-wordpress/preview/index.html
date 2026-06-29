@@ -5474,6 +5474,13 @@ function _seoCTA(){
     +'<span class="tr-cta-text">베놈이 <strong>부족한 항목을 직접 개선</strong>해 드립니다 · 평균 +23점 향상</span>'
     +'<a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p" style="padding:8px 18px;font-size:13px">무료 SEO 상담 →</a></div>';
 }
+function _seoToolbar(){
+  return '<button onclick="seoPDF()" class="btn btn-s" style="width:100%;padding:11px;font-size:13px;border-radius:10px;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px">📄 진단 결과 PDF로 저장</button>';
+}
+function seoPDF(){
+  if(typeof SEOEngine==='undefined'||!_seoLast){alert('먼저 분석을 실행해주세요');return;}
+  SEOEngine.printReport(_seoLast,{brand:'#533afd',title:'SEO 진단 리포트'});
+}
 
 // 빠른 분석 결과 → SEOEngine 인포그래픽 렌더 (수치 + SVG 도넛/막대)
 function _renderSEO(data,url,domain,el){
@@ -5494,6 +5501,7 @@ function _renderSEO(data,url,domain,el){
   _seoLast=res;
   el.innerHTML=SEOEngine.renderInfographic(res)
     +'<div id="seo-psi-section" style="margin-top:14px"><button onclick="_runSEOPSI()" class="btn btn-p" style="width:100%;padding:11px;font-size:13px;border-radius:10px">🔬 성능 정밀 분석 실행 (PSI · 10~20초)</button></div>'
+    +_seoToolbar()
     +_seoCTA();
 }
 
@@ -5511,7 +5519,7 @@ function _runSEOPSI(){
       var base=_seoLast||SEOEngine.analyze({url:url,html:'',robots:'',isHttps:/^https/i.test(url)});
       var merged=SEOEngine.mergePSI(base,psi);
       _seoLast=merged;
-      document.getElementById('seo-result').innerHTML=SEOEngine.renderInfographic(merged)+_seoCTA();
+      document.getElementById('seo-result').innerHTML=SEOEngine.renderInfographic(merged)+_seoToolbar()+_seoCTA();
     })
     .catch(function(err){
       var s=document.getElementById('seo-psi-section');
