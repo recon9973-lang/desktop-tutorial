@@ -809,43 +809,51 @@ body{padding-top:0}
         <button class="hs-next" onclick="heroSlide(1)" aria-label="다음">&#8594;</button>
       </div>
     </div>
-  </section>
 
-  <!-- 🆕 메인 진입: 진료과 선택 → 종합 진단 센터 -->
-  <section class="home-diag-entry">
+    <!-- 🆕 히어로 통합: 진료과 선택 → 종합 진단 센터 (메인 비주얼 내) -->
     <style>
-      .home-diag-entry{background:linear-gradient(135deg,#eef2ff,#f5f7ff);padding:44px 0;border-bottom:1px solid var(--border)}
-      .hde-wrap{max-width:780px;margin:0 auto;text-align:center;padding:0 20px}
-      .hde-badge{display:inline-block;font-size:12px;font-weight:700;color:var(--p);background:rgba(0,55,112,.08);padding:5px 14px;border-radius:9999px;margin-bottom:14px}
-      .hde-wrap h2{font-size:30px;font-weight:300;letter-spacing:-.6px;color:var(--ink);margin-bottom:8px}
-      .hde-wrap h2 em{font-style:normal;color:var(--p);font-weight:600}
-      .hde-wrap > p{font-size:14px;color:var(--mute);margin-bottom:22px;line-height:1.6}
-      .hde-form{display:flex;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:12px;box-shadow:rgba(0,55,112,.08) 0 6px 24px;flex-wrap:wrap;align-items:center}
-      .hde-form select,.hde-form input{flex:1;min-width:150px;padding:13px 15px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--soft);outline:none}
-      .hde-form select:focus,.hde-form input:focus{border-color:var(--p)}
-      .hde-btn{flex:0 0 auto;padding:13px 26px;background:var(--p);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
-      .hde-btn:hover{opacity:.92}
-      .hde-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:16px}
-      .hde-tag{font-size:11px;font-weight:600;color:var(--p);background:rgba(0,55,112,.06);padding:4px 11px;border-radius:9999px}
-      @media(max-width:600px){.hde-wrap h2{font-size:23px}.hde-btn{width:100%}}
+      .hero-diag{padding:4px 0 64px;position:relative;z-index:5}
+      .hero-diag-card{max-width:900px;margin:0 auto;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:26px 26px 24px;backdrop-filter:blur(10px);box-shadow:0 16px 48px rgba(0,0,0,.28)}
+      .hero-diag-badge{display:inline-block;font-size:12px;font-weight:700;color:#a5b4fc;background:rgba(83,58,253,.25);border:1px solid rgba(83,58,253,.4);padding:5px 14px;border-radius:9999px;margin-bottom:12px}
+      .hero-diag-txt{text-align:center;margin-bottom:18px}
+      .hero-diag-txt h2{font-size:28px;font-weight:700;color:#fff;letter-spacing:-.6px;margin-bottom:8px;line-height:1.2}
+      .hero-diag-txt h2 span{background:linear-gradient(135deg,#a78bfa,#818cf8,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+      .hero-diag-txt p{font-size:14px;color:rgba(255,255,255,.72);line-height:1.6;max-width:580px;margin:0 auto}
+      .hero-diag-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+      .hero-diag-form select,.hero-diag-form input{flex:1;min-width:168px;padding:14px 16px;border:1px solid rgba(255,255,255,.22);border-radius:12px;font-size:14px;font-family:inherit;color:#fff;background:rgba(255,255,255,.1);outline:none}
+      .hero-diag-form select option{color:#1c1e54}
+      .hero-diag-form select:focus,.hero-diag-form input:focus{border-color:#a5b4fc;background:rgba(255,255,255,.17)}
+      .hero-diag-form input::placeholder{color:rgba(255,255,255,.5)}
+      .hero-diag-btn{flex:0 0 auto;padding:14px 30px;background:#fff;color:#1c1e54;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.15s}
+      .hero-diag-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+      .hero-diag-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:16px}
+      .hero-diag-tag{font-size:11px;font-weight:600;color:rgba(255,255,255,.82);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:4px 11px;border-radius:9999px}
+      @media(max-width:600px){.hero-diag-txt h2{font-size:22px}.hero-diag-btn{width:100%}.hero-diag{padding-bottom:44px}.hero-diag-card{padding:20px 16px}}
     </style>
-    <div class="hde-wrap">
-      <div class="hde-badge">1분 무료 자가진단</div>
-      <h2>우리 병원, <em>AI·검색</em>에서 몇 점일까요?</h2>
-      <p>진료과를 선택하면 <strong>13개 항목 자가진단</strong>과 <strong>6가지 검색 진단 도구</strong>를 한 곳에서 바로 사용할 수 있습니다.</p>
-      <div class="hde-form">
-        <select id="hde-cat" onchange="goDiagnose()" aria-label="진료과 선택">
-          <option value="">진료과 선택</option>
-          <option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>내과</option><option>안과</option><option>기타</option>
-        </select>
-        <input id="hde-region" placeholder="지역 (예: 대전 유성구)" onkeydown="if(event.key==='Enter')goDiagnose()">
-        <button class="hde-btn" onclick="goDiagnose()">무료 진단 시작 →</button>
-      </div>
-      <div class="hde-tags">
-        <span class="hde-tag">네이버 플레이스</span><span class="hde-tag">GEO/AEO</span><span class="hde-tag">SEO 점수</span><span class="hde-tag">키워드 검색량</span><span class="hde-tag">검색 트렌드</span><span class="hde-tag">AI 추천 노출</span>
+    <div class="hero-diag">
+      <div class="container">
+        <div class="hero-diag-card">
+          <div class="hero-diag-txt">
+            <div class="hero-diag-badge">1분 무료 자가진단</div>
+            <h2>우리 병원, <span>AI·검색</span>에서 몇 점일까요?</h2>
+            <p>진료과를 선택하면 <strong>13개 항목 자가진단</strong>과 <strong>6가지 검색 진단 도구</strong>를 한 곳에서 바로 사용할 수 있습니다.</p>
+          </div>
+          <div class="hero-diag-form">
+            <select id="hde-cat" onchange="goDiagnose()" aria-label="진료과 선택">
+              <option value="">진료과 선택</option>
+              <option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>내과</option><option>안과</option><option>기타</option>
+            </select>
+            <input id="hde-region" placeholder="지역 (예: 대전 유성구)" onkeydown="if(event.key==='Enter')goDiagnose()">
+            <button class="hero-diag-btn" onclick="goDiagnose()">무료 진단 시작 →</button>
+          </div>
+          <div class="hero-diag-tags">
+            <span class="hero-diag-tag">네이버 플레이스</span><span class="hero-diag-tag">GEO/AEO</span><span class="hero-diag-tag">SEO 점수</span><span class="hero-diag-tag">키워드 검색량</span><span class="hero-diag-tag">검색 트렌드</span><span class="hero-diag-tag">AI 추천 노출</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
+
 
   <!-- 레퍼런스 로고 롤링 배너 -->
   <div class="logo-marquee-section" id="logo-marquee-section">
