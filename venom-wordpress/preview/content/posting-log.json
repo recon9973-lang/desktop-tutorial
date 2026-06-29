@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782698414105",
+    "title": "코성형 마케팅 전략 TOP 5 및 시술 정보",
+    "category": "plastic",
+    "keyword": "코성형",
+    "tokenUsage": {
+      "promptTokens": 2278,
+      "completionTokens": 1865,
+      "totalTokens": 4143,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-29T02:00:30.543Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782698374836",
     "title": "코성형의 절차와 주의사항, 90% 만족도 분석",
     "category": "plastic",
