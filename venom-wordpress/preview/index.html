@@ -427,9 +427,10 @@ body{padding-top:0}
 .logo-marquee-inner::before,.logo-marquee-inner::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none}
 .logo-marquee-inner::before{left:0;background:linear-gradient(to right,#10123a,transparent)}
 .logo-marquee-inner::after{right:0;background:linear-gradient(to left,#10123a,transparent)}
-.logo-marquee-track{display:flex;align-items:center;gap:48px;animation:logoMarquee 24s linear infinite;white-space:nowrap;will-change:transform}
-/* 레퍼런스 로고 2배 확대(바 높이는 패딩 축소로 70px 그대로 유지) */
-.logo-marquee-track img{height:68px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.6;flex-shrink:0;transition:opacity .2s}
+.logo-marquee-track{display:flex;align-items:center;animation:logoMarquee 24s linear infinite;white-space:nowrap;will-change:transform}
+/* 레퍼런스 로고 2배 확대(바 70px 유지). 간격은 gap 대신 각 이미지 margin-right로
+   — 복제 경계까지 균일해야 translateX(-50%) 루프가 안 튐(끊김 방지). */
+.logo-marquee-track img{height:68px;width:auto;object-fit:contain;display:block;margin-right:48px;filter:brightness(0) invert(1);opacity:.6;flex-shrink:0;transition:opacity .2s}
 .logo-marquee-track img:hover{opacity:1}
 @keyframes logoMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 /* stat-bar — tnum for numbers */
@@ -8949,7 +8950,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!track||!section)return;
     if(!logos||logos.length===0){section.style.display='none';return;}
     section.style.display='';
-    var unit=logos.map(function(l){return '<img src="'+l.url+'" alt="'+(l.name||'')+'" loading="lazy">';}).join('');
+    var unit=logos.map(function(l){return '<img src="'+l.url+'" alt="'+(l.name||'')+'" decoding="async">';}).join('');
     // 로고 수가 적어도(예: 2장) 트랙이 화면보다 넓도록 한 세트를 충분히 반복 →
     // translateX(-50%) 무한루프가 빈틈·정지 없이 매끄럽게 돌게 함
     var reps=Math.max(2,Math.ceil(10/logos.length));
