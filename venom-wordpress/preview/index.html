@@ -2676,44 +2676,64 @@ body{padding-top:0}
 
   <section class="section bg-soft">
     <div class="container">
-      <div class="section-head"><div class="section-badge">Reference</div><h2>병원 홈페이지 레퍼런스 & 벤치마킹</h2><p>원장님이 참고할 수 있는 국내외 우수 병원 홈페이지 사례와 디자인 방향을 소개합니다.</p></div>
+      <div class="section-head"><div class="section-badge">Reference</div><h2>병원 홈페이지 제작 예시</h2><p>진료과별로 최적화된 5가지 예시를 직접 확인해 보세요. 각 카드의 등급 뱃지가 권장 패키지를 안내합니다.</p></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:32px">
-        <div onclick="openSample('sample-trust.html','서울베놈병원 — 대형병원 신뢰형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
-          <div style="height:140px;background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🏥<div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
+
+        <!-- 기본형: 내과·이비인후과 -->
+        <div onclick="openSample('sample-basic.html','베놈내과의원 — 내과·이비인후과 기본형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(13,148,136,.18)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#0d9488 0%,#059669 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🏥<div style="position:absolute;top:10px;left:12px;background:#059669;color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.04em">🟦 기본형 · 200만원</div><div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
           <div style="padding:20px">
-            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">대형병원 · 신뢰형</div>
-            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">서울아산병원 스타일</h4>
-            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">깔끔한 네이비 기조, 진료과·의료진·검진 정보 구조화. E-E-A-T 점수 최상위권 레퍼런스.</p>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">신뢰형</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">의료진 중심</span></div>
+            <div style="font-size:11px;font-weight:600;color:#0d9488;letter-spacing:.05em;margin-bottom:6px">내과 · 이비인후과 · 가정의학과</div>
+            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">소규모 의원 기본형</h4>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">5페이지 핵심 구성. 진료안내·의료진·시간·오시는 길·예약 문의. 네이버·카카오 예약 버튼 연동.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:#f0fdfa;color:#0d9488;padding:2px 8px;border-radius:var(--rpill);border:1px solid #ccfbf1">1인 의원</span><span style="font-size:11px;background:#f0fdfa;color:#0d9488;padding:2px 8px;border-radius:var(--rpill);border:1px solid #ccfbf1">5페이지</span></div>
           </div>
         </div>
-        <div onclick="openSample('sample-premium.html','베놈 뷰티클리닉 — 프리미엄형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
-          <div style="height:140px;background:linear-gradient(135deg,#1a1a2e 0%,#533afd 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">✨<div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
+
+        <!-- 중급형: 치과 -->
+        <div onclick="openSample('sample-dental.html','베놈치과 — 임플란트·교정 전문 중급형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#1e293b 0%,#0284c7 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🦷<div style="position:absolute;top:10px;left:12px;background:#0369a1;color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.04em">🟩 중급형 · 350만원</div><div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
           <div style="padding:20px">
-            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">피부과·성형 · 프리미엄형</div>
-            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">강남 뷰티클리닉 스타일</h4>
-            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">다크 배경, 고급스러운 폰트, 시술별 상세 페이지. 인스타그램 연동과 예약 CTA 중심.</p>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">프리미엄</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">예약 전환</span></div>
-          </div>
-        </div>
-        <div onclick="openSample('sample-natural.html','베놈 자연한의원 — 자연주의 따뜻한형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
-          <div style="height:140px;background:linear-gradient(135deg,#064e3b 0%,#10b981 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🌿<div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
-          <div style="padding:20px">
-            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">한의원·자연주의 · 따뜻한형</div>
-            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">자연주의 한의원 스타일</h4>
-            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">크림·그린 팔레트, 원장 스토리 강조, 치료 철학 중심 콘텐츠. 신뢰 기반 전환 구조.</p>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">따뜻한톤</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">스토리텔링</span></div>
-          </div>
-        </div>
-        <div onclick="openSample('sample-dental.html','베놈치과 — 임플란트 전문 SEO 특화형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
-          <div style="height:140px;background:linear-gradient(135deg,#1e293b 0%,#0284c7 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🦷<div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
-          <div style="padding:20px">
-            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">치과 · SEO 최적형</div>
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">치과 · 임플란트·교정</div>
             <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">임플란트 전문치과 스타일</h4>
-            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">진료별 상세 랜딩페이지, FAQ 구조화, 비용 투명 공개. 네이버 블로그 연동 SEO 특화.</p>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">진료별 상세 랜딩, FAQ 구조화, 비용 투명 공개. GEO·AEO·SEO 최적화 내장.</p>
             <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">SEO 특화</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">FAQ 중심</span></div>
           </div>
         </div>
+
+        <!-- 중급형: 한의원 -->
+        <div onclick="openSample('sample-natural.html','베놈 자연한의원 — 한의원 중급형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#064e3b 0%,#10b981 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🌿<div style="position:absolute;top:10px;left:12px;background:#065f46;color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.04em">🟩 중급형 · 350만원</div><div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
+          <div style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">한의원 · 소아·여성의학과</div>
+            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">자연주의 한의원 스타일</h4>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">크림·그린 팔레트, 원장 스토리 강조, 치료 철학 중심 콘텐츠. 신뢰 기반 전환 구조.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">따뜻한 톤</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">스토리텔링</span></div>
+          </div>
+        </div>
+
+        <!-- 고급형: 피부과·성형외과 -->
+        <div onclick="openSample('sample-premium.html','베놈 뷰티클리닉 — 피부과·성형 고급형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#1a1a2e 0%,#533afd 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">✨<div style="position:absolute;top:10px;left:12px;background:#4f46e5;color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.04em">🟪 고급형 · 500만원</div><div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
+          <div style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">피부과 · 성형외과 · 뷰티클리닉</div>
+            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">강남 뷰티클리닉 스타일</h4>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">다크 배경, 고급 폰트, 시술별 심화 페이지. AI 챗봇·인스타그램 연동·예약 전환 최적화.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">프리미엄</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">브랜드형</span></div>
+          </div>
+        </div>
+
+        <!-- 고급형: 대형·종합병원 -->
+        <div onclick="openSample('sample-trust.html','서울베놈병원 — 대형·종합병원 고급형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">🏛️<div style="position:absolute;top:10px;left:12px;background:#1d4ed8;color:#fff;font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;letter-spacing:.04em">🟪 고급형 · 500만원</div><div style="position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600">미리보기 →</div></div>
+          <div style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">대형병원 · 종합병원 · 내과·정형외과</div>
+            <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">대형병원 신뢰형 스타일</h4>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">네이비 기조, 진료과·의료진·검진 정보 구조화. E-E-A-T 최상위 + 다국어 지원.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">신뢰형</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">의료진 중심</span></div>
+          </div>
+        </div>
+
       </div>
       <div style="background:rgba(83,58,253,.06);border:1px solid rgba(83,58,253,.2);border-radius:var(--r12);padding:24px;margin-top:24px">
         <h4 style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:12px">💡 베놈이 제작하는 병원 홈페이지의 필수 요소</h4>
