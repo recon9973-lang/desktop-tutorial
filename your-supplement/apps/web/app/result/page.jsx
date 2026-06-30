@@ -557,6 +557,10 @@ export default function ResultPage() {
                         {b.vendor} →
                       </a>
                     ))}
+                    <Link href={`/products?ingredient_id=${r.ingredient_id}`}
+                      style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', border: '1px solid var(--hairline)', borderRadius: 'var(--r-full)', padding: '4px 12px' }}>
+                      🔎 시판 제품 보기
+                    </Link>
                   </div>
 
                   {/* Review box — 별점/의견 (근거와 분리) */}

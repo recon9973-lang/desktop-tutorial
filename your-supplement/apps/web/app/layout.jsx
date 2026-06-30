@@ -27,6 +27,9 @@ export default function RootLayout({ children }) {
             🧬 당신의영양제
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <a href="/products" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🔎 제품 찾기
+            </a>
             <a href="/my" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
               📋 내 루틴
             </a>
