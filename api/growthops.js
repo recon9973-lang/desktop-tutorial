@@ -16,8 +16,10 @@
 const store = require('../lib/github-store');
 const linker = require('../lib/internal-linker');
 const O = require('../lib/outreach');
+const TC = require('../lib/topic-cluster');
 
 const OUTREACH_PATH = 'venom-wordpress/preview/content/outreach.json';
+const CLUSTERS_PATH = 'venom-wordpress/preview/content/clusters.json';
 
 // KST 기준 YYYY-MM-DD
 function ymdKST() {
@@ -116,6 +118,58 @@ async function handleOutreach(req, res, action) {
   return res.status(405).json({ ok: false, error: 'GET/POST only' });
 }
 
+// ── M1: 토픽 클러스터 ──
+async function loadClusters() {
+  const f = await store.getJsonFile(CLUSTERS_PATH, { clusters: [] });
+  return (f.content && Array.isArray(f.content.clusters)) ? f.content : { clusters: [] };
+}
+
+async function handleCluster(req, res, action) {
+  if (req.method === 'GET') {
+    // list: 라이브 글을 빈칸에 매칭한 최신 상태 + 요약 반환
+    const obj = await loadClusters();
+    const { posts } = await store.getPosts();
+    const merged = TC.mergePostsIntoClusters(obj, posts);
+    return res.status(200).json({ ok: true, summary: TC.summary(merged), clusters: merged.clusters });
+  }
+
+  if (req.method === 'POST') {
+    if (!authOk(req)) return res.status(401).json({ ok: false, error: 'ADMIN_SECRET 필요' });
+    const body = await readBody(req);
+    const obj = await loadClusters();
+
+    if (action === 'build') {
+      const { category, region = '', pillar, size } = body;
+      if (!category || !pillar) return res.status(400).json({ ok: false, error: 'category, pillar 필수' });
+      let related = Array.isArray(body.related) ? body.related : [];
+      let questions = Array.isArray(body.questions) ? body.questions : [];
+      // 리서치 키워드 미제공 시 실데이터로 자동 수집(네트워크 실패해도 빌드는 진행)
+      if (!related.length && !questions.length) {
+        try {
+          const { researchKeywords } = require('../lib/keyword-research');
+          const r = await researchKeywords(pillar, { region });
+          related = r.related || []; questions = r.questions || [];
+        } catch (e) { /* 무시: 빈 클러스터로 생성 */ }
+      }
+      const cluster = TC.buildCluster({ category, region, pillar, related, questions, size: size || 6 });
+      const next = TC.upsertCluster(obj, cluster);
+      await store.saveJsonFile(CLUSTERS_PATH, next, `chore(growthops): build cluster ${cluster.id}`);
+      return res.status(200).json({ ok: true, cluster, summary: TC.summary(next) });
+    }
+
+    if (action === 'sync') {
+      const { posts } = await store.getPosts();
+      const merged = TC.mergePostsIntoClusters(obj, posts);
+      await store.saveJsonFile(CLUSTERS_PATH, merged, 'chore(growthops): sync clusters with posts');
+      return res.status(200).json({ ok: true, summary: TC.summary(merged), clusters: merged.clusters });
+    }
+
+    return res.status(400).json({ ok: false, error: '알 수 없는 action' });
+  }
+
+  return res.status(405).json({ ok: false, error: 'GET/POST only' });
+}
+
 // ── M3: 일별 스냅샷(cron) — KV 있으면 저장, 없으면 계산만 반환 ──
 async function handleSnapshot(req, res) {
   if (!authOk(req)) return res.status(401).json({ ok: false, error: 'ADMIN_SECRET 필요' });
@@ -154,6 +208,7 @@ module.exports = async function handler(req, res) {
   try {
     if (moduleName === 'linkhealth') return await handleLinkHealth(res);
     if (moduleName === 'outreach') return await handleOutreach(req, res, action);
+    if (moduleName === 'cluster') return await handleCluster(req, res, action);
     if (moduleName === 'snapshot') return await handleSnapshot(req, res);
     return res.status(400).json({ ok: false, error: '알 수 없는 module' });
   } catch (e) {

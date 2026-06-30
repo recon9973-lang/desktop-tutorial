@@ -2,9 +2,13 @@
 
 const { generatePost } = require('../lib/post-generator');
 const { generateAndSaveImage } = require('../lib/image-generator');
-const { savePost, savePostEn, appendLog, getPosts } = require('../lib/github-store');
+const { savePost, savePostEn, appendLog, getPosts, getJsonFile, saveJsonFile } = require('../lib/github-store');
 const { translatePostToEnglish } = require('../lib/translate');
 const { updateSitemap } = require('../lib/sitemap-builder');
+const TC = require('../lib/topic-cluster'); // M1: 토픽 클러스터(빈칸 우선 발행)
+const linker = require('../lib/internal-linker'); // M2: 관련글 자동주입(opt-in)
+
+const CLUSTERS_PATH = 'venom-wordpress/preview/content/clusters.json';
 
 const DEFAULT_SETTINGS = {
   enabled: false,
@@ -71,14 +75,29 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: true, reason: '오늘은 발행 스케줄이 없습니다.' });
   }
 
+  // M1 클러스터 모드(opt-in): clusters.json의 빈칸을 무작위 키워드보다 우선 채운다.
+  const clusterMode = settings.mode === 'cluster' || settings.clusterMode === true;
+  let clustersObj = null, clustersDirty = false;
+  if (clusterMode) {
+    try { clustersObj = (await getJsonFile(CLUSTERS_PATH, { clusters: [] })).content || { clusters: [] }; }
+    catch (e) { clustersObj = { clusters: [] }; }
+  }
+
   for (let i = 0; i < count; i++) {
     const cats = settings.categories || ['geo'];
     const keywords = settings.keywords || ['병원마케팅'];
     const regions = settings.regions || [];
 
-    const category = cats[i % cats.length];
-    const keyword = keywords[i % keywords.length];
-    const region = regions.length ? regions[i % regions.length] : '';
+    let category = cats[i % cats.length];
+    let keyword = keywords[i % keywords.length];
+    let region = regions.length ? regions[i % regions.length] : '';
+
+    // 클러스터 빈칸이 있으면 그 하위주제를 우선 발행(없으면 기존 로테이션 유지)
+    let clusterPick = null;
+    if (clusterMode && clustersObj) {
+      const gap = TC.nextGap(clustersObj);
+      if (gap) { category = gap.category; keyword = gap.kw; region = gap.region || region; clusterPick = gap; }
+    }
 
     try {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
@@ -135,6 +154,15 @@ module.exports = async function handler(req, res) {
 
       if (post.publishable) {
         // 의료광고 검증 통과 + 콘텐츠 오류 없음 → 즉시 발행
+        // M2(opt-in): 발행 전 관련글 내부링크 블록을 자연스럽게 주입(과최적화 방지 규칙 내장)
+        if (settings.autoInternalLinks) {
+          try {
+            const { posts: existing } = await getPosts();
+            const { suggestions } = linker.suggestLinks(existing.concat([post]), { perPost: 3 });
+            const mine = suggestions.find((s) => s.id === post.id);
+            if (mine && mine.links.length) post.html = linker.injectRelatedBlock(post.html, mine.links);
+          } catch (e) { console.warn('[cron] 내부링크 주입 실패(무시):', e.message); }
+        }
         post.status = 'published';
         await savePost(post);
         // 방안 A: 발행 글의 영문 번역본도 생성·저장(실패해도 한글 발행엔 영향 없음)
@@ -146,7 +174,12 @@ module.exports = async function handler(req, res) {
         }
         const action = post.autoFixed ? 'cron-publish-fixed' : 'cron-publish';
         await appendLog({ action, ...logBase, autoFixed: post.autoFixed });
-        results.push({ ok: true, id: post.id, title: post.title, autoFixed: post.autoFixed });
+        // 클러스터 모드: 발행된 글을 해당 하위주제 빈칸에 채움
+        if (clusterPick) {
+          clustersObj = TC.fillSubtopic(clustersObj, clusterPick.clusterId, clusterPick.kw, post.id);
+          clustersDirty = true;
+        }
+        results.push({ ok: true, id: post.id, title: post.title, autoFixed: post.autoFixed, cluster: clusterPick ? clusterPick.clusterId : undefined });
       } else {
         // 금지어 잔존 또는 콘텐츠 오류(깨짐·잘림 등) → 검수 대기
         post.status = 'review';
@@ -166,6 +199,12 @@ module.exports = async function handler(req, res) {
     } catch (e) {
       results.push({ ok: false, error: e.message, category, keyword });
     }
+  }
+
+  // 클러스터 변경 저장(빈칸 채움)
+  if (clusterMode && clustersDirty) {
+    try { await saveJsonFile(CLUSTERS_PATH, clustersObj, 'auto(growthops): 클러스터 빈칸 채움'); }
+    catch (e) { console.warn('[cron] 클러스터 저장 실패(무시):', e.message); }
   }
 
   // 사이트맵 자동 갱신

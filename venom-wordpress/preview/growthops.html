@@ -65,6 +65,7 @@
 <div class="wrap">
   <div class="tabs">
     <div class="tab on" data-t="monitor" onclick="tab('monitor')">SEO 모니터</div>
+    <div class="tab" data-t="cluster" onclick="tab('cluster')">토픽 클러스터</div>
     <div class="tab" data-t="outreach" onclick="tab('outreach')">아웃리치 CRM</div>
   </div>
 
@@ -83,6 +84,32 @@
       <h2>일별 추세 <button class="btn sm ghost" onclick="snapshot()">오늘 스냅샷 저장</button></h2>
       <p class="muted">스냅샷(고아 글 수·글당 평균 내부링크)의 시계열입니다.</p>
       <div id="trend"><div class="empty muted">아직 스냅샷이 없습니다. “오늘 스냅샷 저장”을 눌러 시작하세요.</div></div>
+    </div>
+  </section>
+
+  <!-- ───────── 토픽 클러스터 ───────── -->
+  <section id="t-cluster" class="hide">
+    <div class="card">
+      <h2>클러스터 완성도 <button class="btn sm ghost" onclick="syncCluster()">발행 글과 동기화</button></h2>
+      <p class="muted">필러-클러스터 구조로 글을 채울수록 검색 권위가 복리로 쌓입니다. 빈칸은 자동발행(클러스터 모드)이 우선 채웁니다.</p>
+      <div class="grid" id="cl-summary"><div class="empty">불러오는 중…</div></div>
+    </div>
+    <div class="card">
+      <h2>새 클러스터 설계</h2>
+      <p class="muted">필러 키워드를 넣으면 네이버·구글 연관/질문 키워드로 하위주제를 자동 구성합니다.</p>
+      <div class="row">
+        <div><label>진료과목(cat) *</label><input id="cb-cat" placeholder="예: dental / skin / geo"></div>
+        <div><label>지역</label><input id="cb-region" placeholder="예: 대구"></div>
+      </div>
+      <div class="row">
+        <div><label>필러 키워드 *</label><input id="cb-pillar" placeholder="예: 임플란트 마케팅"></div>
+        <div><label>하위주제 수</label><input id="cb-size" type="number" value="6" min="3" max="12"></div>
+      </div>
+      <button class="btn" onclick="buildCluster()">클러스터 생성</button>
+    </div>
+    <div class="card">
+      <h2>클러스터 목록</h2>
+      <div id="clusters"></div>
     </div>
   </section>
 
@@ -145,8 +172,11 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
 function tab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.t===name));
   document.getElementById('t-monitor').classList.toggle('hide', name!=='monitor');
+  document.getElementById('t-cluster').classList.toggle('hide', name!=='cluster');
   document.getElementById('t-outreach').classList.toggle('hide', name!=='outreach');
-  if(name==='monitor') loadMonitor(); else loadOutreach();
+  if(name==='monitor') loadMonitor();
+  else if(name==='cluster') loadCluster();
+  else loadOutreach();
 }
 
 // ── SEO 모니터 ──
@@ -198,6 +228,58 @@ async function snapshot(){
     if(!r.ok){ toast(r.error||'실패'); return; }
     toast('스냅샷 저장됨 ('+r.snapshot.date+')'); loadTrend();
   }catch(e){ toast('스냅샷 실패'); }
+}
+
+// ── 토픽 클러스터 ──
+async function loadCluster(){
+  try{
+    const r=await fetch(API+'?module=cluster&action=list').then(r=>r.json());
+    const s=r.summary||{};
+    document.getElementById('cl-summary').innerHTML=[
+      ['클러스터', s.clusters||0],['하위주제', s.totalSubtopics||0],
+      ['채워짐', s.filled||0],['완성도', ((s.completion||0)*100).toFixed(0)+'%'],
+    ].map(([l,n])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+    renderClusters(r.clusters||[]);
+  }catch(e){ toast('클러스터 로드 실패'); }
+}
+function renderClusters(list){
+  const el=document.getElementById('clusters');
+  if(!list.length){ el.innerHTML='<div class="empty">아직 클러스터가 없습니다. 위에서 설계하세요.</div>'; return; }
+  el.innerHTML=list.map(c=>{
+    const filled=c.subtopics.filter(s=>s.postId).length, tot=c.subtopics.length;
+    const pct=tot?Math.round(filled/tot*100):0;
+    const rows=c.subtopics.map(s=>`<tr><td>${s.postId?'✅':'⬜'}</td><td>${esc(s.kw)}</td><td class="muted">${s.postId?esc(s.postId):'빈칸'}</td></tr>`).join('');
+    return `<div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>${esc(c.pillar)}</b> <span class="muted">[${esc(c.category)}${c.region?' · '+esc(c.region):''}] ${filled}/${tot} (${pct}%)</span>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:4px;margin:6px 0 8px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--p)"></div></div>
+      <table>${rows}</table>
+    </div>`;
+  }).join('');
+}
+async function buildCluster(){
+  if(!SECRET){ toast('ADMIN_SECRET을 먼저 저장하세요'); return; }
+  const category=document.getElementById('cb-cat').value.trim();
+  const pillar=document.getElementById('cb-pillar').value.trim();
+  if(!category||!pillar){ toast('진료과목과 필러 키워드는 필수'); return; }
+  const body={category,region:document.getElementById('cb-region').value.trim(),pillar,size:+document.getElementById('cb-size').value||6};
+  toast('연관 키워드 수집 중…');
+  try{
+    const r=await fetch(API+'?module=cluster&action=build',{method:'POST',headers:authHeaders(),body:JSON.stringify(body)}).then(r=>r.json());
+    if(!r.ok){ toast(r.error||'실패'); return; }
+    toast('클러스터 생성됨 ('+r.cluster.subtopics.length+'개 하위주제)');
+    ['cb-pillar','cb-region'].forEach(id=>document.getElementById(id).value='');
+    loadCluster();
+  }catch(e){ toast('생성 실패'); }
+}
+async function syncCluster(){
+  if(!SECRET){ toast('ADMIN_SECRET 필요'); return; }
+  try{
+    const r=await fetch(API+'?module=cluster&action=sync',{method:'POST',headers:authHeaders()}).then(r=>r.json());
+    if(!r.ok){ toast(r.error||'실패'); return; }
+    toast('동기화 완료'); loadCluster();
+  }catch(e){ toast('동기화 실패'); }
 }
 
 // ── 아웃리치 CRM ──

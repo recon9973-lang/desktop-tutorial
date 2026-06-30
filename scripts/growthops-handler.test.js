@@ -87,6 +87,35 @@ async function test(name, fn) {
     assert.strictEqual(res._json.snapshot.posts, 2);
   });
 
+  await test('cluster build: 인증+related 제공 시 생성/저장', async () => {
+    process.env.ADMIN_SECRET = 'secret123';
+    const res = mockRes();
+    await handler(mockReq('POST', { module: 'cluster', action: 'build' },
+      { category: 'dental', region: '대구', pillar: '임플란트', related: ['임플란트 비용', '임플란트 가격'], questions: [] }, 'secret123'), res);
+    assert.strictEqual(res._status, 200);
+    assert.strictEqual(res._json.ok, true);
+    assert.ok(res._json.cluster.id.startsWith('cl_'));
+    assert.strictEqual(res._json.cluster.subtopics.length, 2);
+    delete process.env.ADMIN_SECRET;
+  });
+
+  await test('cluster list: posts 매칭 + 요약', async () => {
+    // mem.posts에 dental 글이 있으므로 빈칸이 채워질 수 있음
+    const res = mockRes();
+    await handler(mockReq('GET', { module: 'cluster', action: 'list' }), res);
+    assert.strictEqual(res._json.ok, true);
+    assert.ok(res._json.summary.clusters >= 1);
+    assert.ok('completion' in res._json.summary);
+  });
+
+  await test('cluster build: 인증 없으면 401', async () => {
+    process.env.ADMIN_SECRET = 'secret123';
+    const res = mockRes();
+    await handler(mockReq('POST', { module: 'cluster', action: 'build' }, { category: 'x', pillar: 'y', related: ['z'] }), res);
+    assert.strictEqual(res._status, 401);
+    delete process.env.ADMIN_SECRET;
+  });
+
   await test('알 수 없는 module: 400', async () => {
     const res = mockRes();
     await handler(mockReq('GET', { module: 'nope' }), res);
