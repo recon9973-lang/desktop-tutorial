@@ -196,6 +196,7 @@ a{color:var(--p);text-decoration:none}
   <div class="nav-item" onclick="showSection('keywords')"><span class="nav-icon">🔍</span>키워드 현황</div>
   <div class="nav-item" onclick="showSection('sources')"><span class="nav-icon">📡</span>유입 출처</div>
   <div class="nav-item" onclick="showSection('seo')"><span class="nav-icon">⚙️</span>SEO 점수</div>
+  <div class="nav-item" onclick="showSection('seomonitor')"><span class="nav-icon">📈</span>SEO 관리</div>
   <div class="nav-section">보고서</div>
   <div class="nav-item" onclick="showSection('reports')"><span class="nav-icon">📈</span>마케팅 리포트</div>
   <div class="nav-item" onclick="showSection('cardnews')"><span class="nav-icon">🗞️</span>데일리 카드뉴스</div>
@@ -633,6 +634,40 @@ a{color:var(--p);text-decoration:none}
       </div>
     </div>
 
+    <!-- ══ SEO 관리 (도메인 일일 모니터링) ══ -->
+    <div id="section-seomonitor" class="admin-section">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head">
+          <div class="card-title">📈 모니터링 도메인</div>
+          <button class="btn btn-outline btn-sm" onclick="smRunAll()">⏱ 지금 전체 측정</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <input id="sm-url" placeholder="example.com" style="flex:2;min-width:180px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+          <input id="sm-label" placeholder="라벨(병원명, 선택)" style="flex:1;min-width:120px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+          <button class="btn btn-p" onclick="smAddDomain()">+ 등록</button>
+        </div>
+        <div id="sm-domain-list"></div>
+        <div style="font-size:11px;color:var(--mute);margin-top:10px;line-height:1.7">
+          ⏱ 매일 <b>03:00(KST)</b> 자동 측정 · 화면의 SEO 점수 체크와 <b>동일 엔진</b>으로 채점(정적+PSI)<br>
+          🔑 등록·삭제·수동측정은 <b>ADMIN_SECRET</b> 인증 필요(AI 자동 포스팅 탭에서 토큰 저장)
+        </div>
+      </div>
+
+      <div class="card" id="sm-graph-card" style="margin-bottom:20px;display:none">
+        <div class="card-head">
+          <div class="card-title" id="sm-graph-title">일별 SEO 점수 추세</div>
+          <button class="btn btn-outline btn-sm" onclick="smMeasureOne()">⏱ 이 도메인 지금 측정</button>
+        </div>
+        <div id="sm-graph"></div>
+        <div id="sm-graph-empty" style="display:none;text-align:center;padding:30px;color:var(--mute);font-size:13px">측정 데이터가 아직 없습니다. "지금 측정"으로 첫 점수를 기록하세요.</div>
+      </div>
+
+      <div class="card" id="sm-report-card" style="display:none">
+        <div class="card-head"><div class="card-title" id="sm-report-title">날짜별 상세 리포트</div></div>
+        <div id="sm-report"></div>
+      </div>
+    </div>
+
     <!-- ══ 마케팅 리포트 ══ -->
     <div id="section-reports" class="admin-section">
       <div class="card" id="report-card">
@@ -1040,6 +1075,7 @@ a{color:var(--p);text-decoration:none}
 <!-- ── TOAST ── -->
 <div id="toast"></div>
 
+<script src="assets/seo-engine.js?v=1.4.0"></script>
 <script>
 // ── 모바일 드로어 토글 (백드롭 동기화) ──
 function toggleSidebar(force){
@@ -1051,8 +1087,8 @@ function toggleSidebar(force){
 }
 
 // ── SECTION ROUTING ──
-var sections=['dashboard','blog','pages','visitors','keywords','sources','seo','reports','cardnews','settings','users','media','autopost','logos'];
-var titles={dashboard:'대시보드',blog:'블로그 포스팅',pages:'페이지 관리',visitors:'방문자 분석',keywords:'키워드 현황',sources:'유입 출처',seo:'SEO 점수',reports:'마케팅 리포트',cardnews:'데일리 카드뉴스',settings:'사이트 설정',users:'계정 관리',media:'미디어 라이브러리',autopost:'AI 자동 포스팅',logos:'레퍼런스 로고'};
+var sections=['dashboard','blog','pages','visitors','keywords','sources','seo','seomonitor','reports','cardnews','settings','users','media','autopost','logos'];
+var titles={dashboard:'대시보드',blog:'블로그 포스팅',pages:'페이지 관리',visitors:'방문자 분석',keywords:'키워드 현황',sources:'유입 출처',seo:'SEO 점수',seomonitor:'SEO 관리',reports:'마케팅 리포트',cardnews:'데일리 카드뉴스',settings:'사이트 설정',users:'계정 관리',media:'미디어 라이브러리',autopost:'AI 자동 포스팅',logos:'레퍼런스 로고'};
 function showSection(id){
   sections.forEach(function(s){
     var el=document.getElementById('section-'+s);
@@ -1069,6 +1105,7 @@ function showSection(id){
   if(id==='visitors')initVisitors();
   if(id==='sources')initSources();
   if(id==='seo')runSeoAudit();
+  if(id==='seomonitor')initSeoMonitor();
   if(id==='reports')initReports();
   if(id==='cardnews')initCardnews();
   if(id==='settings')loadSettings();
@@ -3089,6 +3126,131 @@ function resetLogos(){
 }
 
 async function initLogoSection(){await storeGet('logos',LOGO_KEY,[]);renderLogoGrid();}
+
+// ══════════════════════════════════════
+// ── SEO 관리 (도메인 일일 모니터링) ──
+// ══════════════════════════════════════
+var SM_KEY='venom-seo-monitor';
+var smData={domains:[],history:{}};
+var smCurrent=null;
+
+function smNorm(d){ d=d||{}; if(!Array.isArray(d.domains))d.domains=[]; if(!d.history||typeof d.history!=='object')d.history={}; return d; }
+function smKey(u){ return String(u||'').replace(/^https?:\/\//i,'').replace(/\/.*$/,'').toLowerCase(); }
+function smEsc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function smColor(pct){ return pct>=90?'#16a34a':pct>=80?'#d97706':pct>=70?'#64748b':pct>=60?'#b45309':'#dc2626'; }
+function smLatest(key){ var h=smData.history[key]||[]; return h.length?h[h.length-1]:null; }
+function smCheckSecret(){ if(!AP_ADMIN_SECRET){ toast('먼저 AI 자동 포스팅 탭에서 ADMIN_SECRET 토큰을 저장하세요.'); return false; } return true; }
+
+async function initSeoMonitor(){
+  smData=smNorm(await storeGet('seomonitor',SM_KEY,{domains:[],history:{}}));
+  smRenderDomains();
+  if(smCurrent && smData.history[smCurrent]) smSelectDomain(smCurrent);
+  else { document.getElementById('sm-graph-card').style.display='none'; document.getElementById('sm-report-card').style.display='none'; }
+}
+
+function smRenderDomains(){
+  var el=document.getElementById('sm-domain-list');
+  if(!smData.domains.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--mute);font-size:13px;border:1px dashed var(--border);border-radius:var(--r8)">등록된 도메인이 없습니다. 위에서 도메인을 등록하세요.</div>'; return; }
+  el.innerHTML=smData.domains.map(function(d){
+    var key=smKey(d.url); var last=smLatest(key);
+    var badge=last?('<span style="font-weight:700;color:'+smColor(last.pct)+'">'+last.pct+'점</span> <span style="color:var(--mute);font-size:11px">'+last.date+'</span>'):'<span style="color:var(--mute);font-size:12px">미측정</span>';
+    var active=(smCurrent===key);
+    return '<div onclick="smSelectDomain(\''+key+'\')" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid '+(active?'var(--p)':'var(--border)')+';border-radius:var(--r8);margin-bottom:8px;cursor:pointer;background:'+(active?'rgba(83,58,253,.04)':'var(--soft)')+'">'
+      +'<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;color:var(--ink)">'+(d.label?smEsc(d.label)+' · ':'')+'<span style="color:var(--p)">'+smEsc(key)+'</span></div>'
+      +'<div style="font-size:12px;margin-top:2px">'+badge+'</div></div>'
+      +'<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();smRemoveDomain(\''+key+'\')">삭제</button></div>';
+  }).join('');
+}
+
+async function smAddDomain(){
+  if(!smCheckSecret())return;
+  var url=document.getElementById('sm-url').value.trim();
+  var label=document.getElementById('sm-label').value.trim();
+  if(!url){ toast('도메인을 입력하세요.'); return; }
+  var key=smKey(url);
+  if(!key||key.indexOf('.')<0){ toast('올바른 도메인이 아닙니다.'); return; }
+  if(smData.domains.some(function(d){return smKey(d.url)===key;})){ toast('이미 등록된 도메인입니다.'); return; }
+  smData.domains.push({url:key,label:label,addedAt:new Date().toISOString()});
+  await storeSave('seomonitor',smData,SM_KEY);
+  document.getElementById('sm-url').value=''; document.getElementById('sm-label').value='';
+  smRenderDomains(); toast('등록 완료 — "지금 측정"으로 첫 점수를 기록하세요.');
+}
+
+async function smRemoveDomain(key){
+  if(!smCheckSecret())return;
+  if(!confirm(key+' 도메인과 측정 기록을 삭제할까요?'))return;
+  smData.domains=smData.domains.filter(function(d){return smKey(d.url)!==key;});
+  delete smData.history[key];
+  if(smCurrent===key)smCurrent=null;
+  await storeSave('seomonitor',smData,SM_KEY);
+  smRenderDomains();
+  if(!smCurrent){ document.getElementById('sm-graph-card').style.display='none'; document.getElementById('sm-report-card').style.display='none'; }
+  toast('삭제 완료');
+}
+
+function smSelectDomain(key){
+  smCurrent=key; smRenderDomains();
+  document.getElementById('sm-graph-card').style.display='block';
+  document.getElementById('sm-graph-title').textContent=key+' · 일별 SEO 점수 추세';
+  var pts=(smData.history[key]||[]).slice();
+  if(!pts.length){ document.getElementById('sm-graph').innerHTML=''; document.getElementById('sm-graph-empty').style.display='block'; document.getElementById('sm-report-card').style.display='none'; return; }
+  document.getElementById('sm-graph-empty').style.display='none';
+  smRenderGraph(key,pts);
+  smShowReport(key,pts[pts.length-1].date);
+}
+
+function smRenderGraph(key,pts){
+  pts.sort(function(a,b){return a.date<b.date?-1:1;});
+  var W=720,H=240,padL=36,padR=14,padT=16,padB=34;
+  var iw=W-padL-padR, ih=H-padT-padB, n=pts.length;
+  var x=function(i){ return padL + (n<=1?iw/2:iw*i/(n-1)); };
+  var y=function(v){ return padT + ih*(1-Math.max(0,Math.min(100,v))/100); };
+  var grid=''; [0,25,50,75,100].forEach(function(g){ var yy=y(g); grid+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="#eef0f5" stroke-width="1"/><text x="'+(padL-6)+'" y="'+(yy+3)+'" text-anchor="end" font-size="9" fill="#94a3b8">'+g+'</text>'; });
+  var path=pts.map(function(p,i){ return (i?'L':'M')+x(i).toFixed(1)+' '+y(p.pct).toFixed(1); }).join(' ');
+  var dots=pts.map(function(p,i){ var c=smColor(p.pct);
+    return '<g style="cursor:pointer" onclick="smShowReport(\''+key+'\',\''+p.date+'\')">'
+      +'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.pct).toFixed(1)+'" r="10" fill="transparent"/>'
+      +'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.pct).toFixed(1)+'" r="4" fill="'+c+'"/>'
+      +'<title>'+p.date+' · '+p.pct+'점</title></g>'; }).join('');
+  var step=Math.max(1,Math.ceil(n/7)), labels='';
+  pts.forEach(function(p,i){ if(i%step===0||i===n-1){ labels+='<text x="'+x(i).toFixed(1)+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="9" fill="#94a3b8">'+p.date.slice(5)+'</text>'; } });
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;font-family:inherit">'+grid
+    +'<path d="'+path+'" fill="none" stroke="#533afd" stroke-width="2"/>'+dots+labels+'</svg>'
+    +'<div style="font-size:11px;color:var(--mute);text-align:center;margin-top:4px">점을 클릭하면 해당 날짜의 풀버전 리포트를 볼 수 있습니다</div>';
+  document.getElementById('sm-graph').innerHTML=svg;
+}
+
+function smShowReport(key,date){
+  var h=smData.history[key]||[], e=null;
+  for(var i=0;i<h.length;i++){ if(h[i].date===date){e=h[i];break;} }
+  var card=document.getElementById('sm-report-card'), box=document.getElementById('sm-report');
+  if(!e){ card.style.display='none'; return; }
+  card.style.display='block';
+  document.getElementById('sm-report-title').textContent=key+' · '+date+' 상세 리포트';
+  if(e.full && typeof SEOEngine!=='undefined'){
+    try{ box.innerHTML=SEOEngine.renderInfographic(e.full); return; }catch(err){}
+  }
+  var cats=(e.cats||[]).map(function(c){ return '<tr><td style="padding:8px 10px;border-top:1px solid var(--border)">'+smEsc(c.label)+'</td><td style="padding:8px 10px;border-top:1px solid var(--border);text-align:right;font-weight:700">'+(c.pending?'정밀필요':c.score+'/'+c.max)+'</td></tr>'; }).join('');
+  var psi=e.psi?('<div style="margin-top:10px;font-size:12px;color:var(--mute)">PSI — SEO '+e.psi.seo+' · 성능 '+e.psi.perf+' · 접근성 '+e.psi.accessibility+' · 권장사항 '+e.psi.bestPractices+'</div>'):'';
+  box.innerHTML='<div style="font-size:13px"><div style="font-size:28px;font-weight:800;color:'+smColor(e.pct)+'">'+e.pct+'점 <span style="font-size:14px;color:var(--mute)">('+e.total+'/'+e.max+' · '+smEsc(e.grade||'')+')</span></div>'
+    +'<table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:13px">'+cats+'</table>'+psi
+    +'<div style="font-size:11px;color:var(--mute);margin-top:10px">※ 이 날짜는 상세 항목 보관기간(최근 60일)을 지나 요약만 표시됩니다.</div></div>';
+}
+
+async function smMeasure(query){
+  if(!smCheckSecret())return false;
+  toast('측정 중... PSI 포함 10~30초 소요됩니다.');
+  try{
+    var r=await fetch(apApiBase()+'/api/cron-seo-monitor'+query,{headers:apHeaders()});
+    var d=await r.json();
+    if(!r.ok){ toast('측정 실패: '+(d.error||r.status)); return false; }
+    toast('측정 완료: '+(d.measured||0)+'건 ('+(d.engine||'')+')');
+    await initSeoMonitor();
+    return true;
+  }catch(e){ toast('측정 오류: '+e.message); return false; }
+}
+async function smMeasureOne(){ if(!smCurrent){toast('도메인을 먼저 선택하세요.');return;} await smMeasure('?domain='+encodeURIComponent(smCurrent)+'&force=1'); }
+async function smRunAll(){ if(!smData.domains.length){toast('등록된 도메인이 없습니다.');return;} await smMeasure('?force=1'); }
 </script>
 </body>
 </html>
