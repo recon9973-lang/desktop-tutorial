@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원고 스튜디오 · Manuscript Studio</title>
+<style>
+  :root{
+    --accent:#2f7d6b; --accent-soft:#e7f3f0; --ink:#1d2b29; --muted:#6b7d79;
+    --bg:#f6f8f7; --card:#ffffff; --line:#e4ebe9; --warn:#e8a33d; --bad:#d9534f; --good:#3aa07f;
+    --radius:18px; --shadow:0 6px 24px rgba(30,50,46,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  header.top{padding:26px 22px 14px;text-align:center}
+  header.top h1{margin:0;font-size:24px;letter-spacing:-.5px}
+  header.top .tag{color:var(--muted);font-size:14px;margin-top:4px}
+  .wrap{max-width:880px;margin:0 auto;padding:0 16px 80px}
+  /* stepper */
+  .stepper{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:16px 0 22px}
+  .stepper button{border:1px solid var(--line);background:var(--card);color:var(--muted);
+    padding:8px 12px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s;font-weight:600}
+  .stepper button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .stepper button.done{color:var(--accent);border-color:var(--accent)}
+  /* card */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:24px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:19px}
+  .card .sub{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+  .panel{display:none}
+  .panel.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  label.f{display:block;font-weight:600;font-size:13.5px;margin:14px 0 6px}
+  input[type=text],textarea,select{width:100%;padding:11px 13px;border:1px solid var(--line);
+    border-radius:12px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:90px;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:160px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;
+    font-size:13.5px;cursor:pointer;transition:.15s;font-weight:600;color:var(--ink)}
+  .chip.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 18px;
+    font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .btn.sm{padding:8px 12px;font-size:13px}
+  .nav{display:flex;justify-content:space-between;margin-top:8px;gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.grid2{grid-template-columns:1fr}}
+  .ideacard{border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s;background:#fff}
+  .ideacard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .ideacard.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .ideacard .t{font-weight:700;font-size:15px;margin-bottom:6px}
+  .ideacard .m{font-size:12.5px;color:var(--muted)}
+  .qpill{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;
+    padding:5px 11px;font-size:12.5px;margin:4px 4px 0 0;font-weight:600}
+  pre.prompt{white-space:pre-wrap;background:#0f1c1a;color:#d7e6e2;border-radius:14px;padding:16px;
+    font-size:12.5px;line-height:1.55;max-height:340px;overflow:auto;font-family:ui-monospace,Menlo,monospace}
+  .tonewrap .ex{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:14px;margin-top:10px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .light{display:flex;align-items:center;gap:14px;margin-top:14px}
+  .bulb{width:54px;height:54px;border-radius:50%;background:#ddd;transition:.2s;box-shadow:inset 0 0 0 4px rgba(0,0,0,.05)}
+  .bulb.green{background:var(--good);box-shadow:0 0 18px var(--good)}
+  .bulb.yellow{background:var(--warn);box-shadow:0 0 18px var(--warn)}
+  .bulb.red{background:var(--bad);box-shadow:0 0 18px var(--bad)}
+  mark.flag{background:#ffe2e0;color:var(--bad);border-radius:4px;padding:0 3px;font-weight:700}
+  .flagrow{font-size:13px;margin:6px 0;padding:8px 10px;background:#fff5f4;border-radius:10px;border:1px solid #ffd9d6}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:600;
+    transition:.25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .chartbox{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+  .chartcell{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;text-align:center}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .pbar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:0 0 18px}
+  .pbar>i{display:block;height:100%;background:var(--accent);width:0;transition:.3s}
+  .kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--accent);
+    background:var(--accent-soft);padding:4px 9px;border-radius:999px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>✍️ 원고 스튜디오</h1>
+  <div class="tag">분야·핵심·타겟만 넣으면 — 다정한 헬스케어 원고와 인포그래픽까지, 한 흐름으로</div>
+</header>
+
+<div class="wrap">
+  <div class="pbar"><i id="pbar"></i></div>
+  <div class="stepper" id="stepper"></div>
+
+  <!-- STEP 0 -->
+  <section class="panel active card" data-step="0">
+    <span class="kicker">STEP 0 · 시작</span>
+    <h2>무엇을, 어디에 쓸까요?</h2>
+    <div class="sub">기본 정보를 넣으면 이후 모든 단계가 여기에 맞춰집니다. 브랜드 색은 화면 전체에 실시간 반영돼요. 🎨</div>
+    <div class="row">
+      <div><label class="f">카테고리 <span class="hint">(베놈 엔진 연동)</span></label>
+        <select id="i_cat"></select></div>
+      <div><label class="f">핵심 키워드 <span style="color:var(--bad)">*</span></label><input type="text" id="i_core" placeholder="예: 거북목 도수치료, 무릎관절염, 건강검진"></div>
+    </div>
+    <div class="row">
+      <div><label class="f">지역 <span class="hint">(지역 SEO·선택)</span></label><input type="text" id="i_region" placeholder="예: 대전 둔산동, 강남"></div>
+      <div><label class="f">채널</label>
+        <select id="i_channel"><option>블로그</option><option>뉴스레터</option><option>홈페이지 칼럼</option><option>인스타 카드뉴스</option></select></div>
+      <div><label class="f">분량</label>
+        <select id="i_length"><option>1,200자</option><option selected>1,500자</option><option>2,000자</option></select></div>
+      <div style="max-width:110px"><label class="f">브랜드 색</label><input type="color" id="i_color" value="#2f7d6b" style="height:44px;padding:4px"></div>
+    </div>
+    <label class="f">추가 지시 <span class="hint">(엔진에 전달할 특이사항·선택)</span></label>
+    <input type="text" id="i_extra" placeholder="예: 비수술 치료 강조, 50대 타겟, 후기 톤 피하기">
+    <input type="hidden" id="i_field">
+    <div class="nav"><span></span><button class="btn" onclick="go(1)">다음 → 아이디어 스파크</button></div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel card" data-step="1">
+    <span class="kicker">STEP 1 · 브레인스토밍</span>
+    <h2>🪄 아이디어 스파크</h2>
+    <div class="sub">핵심 키워드로 '사람들이 진짜 검색할 질문'과 원고 주제 후보를 펼쳐봐요. 마음에 드는 주제 카드를 고르세요.</div>
+    <button class="btn ghost sm" onclick="spark()">✨ 아이디어 펼치기 (다시 누르면 새로 섞여요)</button>
+    <div id="questions" style="margin-top:14px"></div>
+    <div class="grid2" id="topics" style="margin-top:14px"></div>
+    <div class="nav"><button class="btn ghost" onclick="go(0)">← 이전</button><button class="btn" onclick="go(2)">다음 → 타겟 설정</button></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel card" data-step="2">
+    <span class="kicker">STEP 2 · 타겟 설정</span>
+    <h2>🎯 이 글은 누구를 위한 글인가요?</h2>
+    <div class="sub">타겟을 바꾸면 같은 주제도 전혀 다른 글이 됩니다. 고르면 페르소나가 자동으로 채워져요.</div>
+    <div class="chips" id="targetChips"></div>
+    <label class="f">타겟 한 줄 묘사 (자유 수정)</label>
+    <input type="text" id="t_detail" placeholder="예: 하루 8시간 앉아 일하는 30대 직장인">
+    <div id="persona" style="margin-top:14px"></div>
+    <div class="nav"><button class="btn ghost" onclick="go(1)">← 이전</button><button class="btn" onclick="go(3)">다음 → 톤 &amp; 프롬프트</button></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel card" data-step="3">
+    <span class="kicker">STEP 3 · 톤 &amp; 프롬프트</span>
+    <h2>🎚️ 톤 믹서 &amp; 올인원 프롬프트</h2>
+    <div class="sub">다정함과 전문성의 비율을 정하면 예시 문장이 실시간으로 바뀝니다. 완성된 프롬프트는 어떤 AI에 붙여넣어도 작동해요.</div>
+    <div class="tonewrap">
+      <label class="f">다정한 구어체 ←→ 신뢰의 문어체 : <span id="toneLbl" style="color:var(--accent)"></span></label>
+      <input type="range" id="tone" min="0" max="100" value="50" oninput="renderTone()">
+      <div class="ex" id="toneEx"></div>
+    </div>
+    <div style="margin:18px 0 8px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" onclick="copyPrompt()">📋 올인원 프롬프트 복사</button>
+      <button class="btn ghost" onclick="buildPrompt()">↻ 프롬프트 새로고침</button>
+    </div>
+    <pre class="prompt" id="promptOut"></pre>
+
+    <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🚀 베놈 엔진으로 실제 원고 생성 <span class="hint">(베놈 사이트와 동일 파이프라인)</span></h2>
+      <div class="sub">버튼 한 번으로 베놈 사이트 제작에 쓰인 그 엔진(<code>/api/generate-post</code>)을 호출합니다 — 10단 구조·의료광고 자동검증·인포그래픽·FAQ·이미지까지. <a href="#" onclick="toggleCfg();return false;">⚙️ 연결 설정</a></div>
+      <div id="cfg" style="display:none;background:var(--accent-soft);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div class="row">
+          <div><label class="f">API 주소</label><input type="text" id="cfg_url" placeholder="https://...vercel.app  (비우면 같은 도메인)"></div>
+          <div><label class="f">ADMIN_SECRET</label><input type="text" id="cfg_secret" placeholder="관리자 시크릿 (서버에 설정된 경우)"></div>
+        </div>
+        <label class="chip" style="margin-top:10px;display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="cfg_img" checked> 이미지 함께 생성</label>
+        <label class="chip" style="margin-top:10px;display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="cfg_save"> 생성 후 저장(draft)</label>
+        <button class="btn sm" style="margin-top:10px" onclick="saveCfg()">설정 저장</button>
+        <div class="hint">설정은 이 브라우저에만 저장돼요(localStorage). 키는 서버로만 전송됩니다.</div>
+      </div>
+      <button class="btn" id="genBtn" onclick="generateLive()">🪄 원고 생성하기</button>
+      <div id="genStatus" class="hint" style="margin-top:8px"></div>
+      <div id="genResult"></div>
+    </div>
+
+    <div id="historyWrap" style="margin-top:20px"></div>
+    <div class="nav"><button class="btn ghost" onclick="go(2)">← 이전</button><button class="btn" onclick="go(4)">다음 → 인포그래픽</button></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="panel card" data-step="4">
+    <span class="kicker">STEP 4 · 수치 시각화</span>
+    <h2>📊 숫자 → 인포그래픽</h2>
+    <div class="sub">본문 속 수치를 한눈에 들어오는 그림으로. 숫자와 라벨을 넣으면 즉시 SVG가 그려지고, 그대로 내려받을 수 있어요.</div>
+    <div class="row">
+      <div><label class="f">한눈 메시지 / 라벨</label><input type="text" id="c_label" placeholder="예: 직장인 10명 중 7명이 거북목 경험"></div>
+      <div style="max-width:120px"><label class="f">수치(%)</label><input type="text" id="c_val" placeholder="70"></div>
+      <div style="max-width:150px"><label class="f">유형</label>
+        <select id="c_type"><option value="donut">도넛(비율)</option><option value="bar">막대(비교)</option><option value="picto">픽토그램(10명중)</option></select></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" onclick="addChart()">＋ 인포그래픽 추가</button>
+      <span class="hint">⚠️ 의학 수치는 반드시 실제 출처를 확인하세요. 없는 숫자는 만들지 않습니다.</span>
+    </div>
+    <div class="chartbox" id="charts"></div>
+    <div class="nav"><button class="btn ghost" onclick="go(3)">← 이전</button><button class="btn" onclick="go(5)">다음 → 안전 검수</button></div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="panel card" data-step="5">
+    <span class="kicker">STEP 5 · 검수 &amp; 내보내기</span>
+    <h2>🚦 의료광고 안전등 &amp; 브리프</h2>
+    <div class="sub">초안을 붙여넣으면 의료광고법상 위험 표현을 즉시 잡아내고, 안전한 대체어를 제안합니다.</div>
+    <textarea id="checkText" placeholder="AI가 써준 원고를 여기에 붙여넣어 보세요..." oninput="checkAd()"></textarea>
+    <div class="light"><div class="bulb" id="bulb"></div><div id="lightMsg" style="font-weight:700">텍스트를 입력하면 검사합니다.</div></div>
+    <div id="flags"></div>
+    <div id="checkPreview" style="margin-top:14px"></div>
+    <div style="margin:20px 0 6px;border-top:1px solid var(--line);padding-top:18px">
+      <button class="btn" onclick="downloadBrief()">📥 전체 브리프(.md) 내려받기</button>
+      <button class="btn ghost" onclick="copyBrief()">📋 브리프 복사</button>
+    </div>
+    <div class="hint">브리프에는 입력값·선택 주제·타겟·페르소나·올인원 프롬프트·인포그래픽 사양이 한 파일로 담깁니다.</div>
+    <div class="nav"><button class="btn ghost" onclick="go(4)">← 이전</button><span></span></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ───────────── 상태 ───────────── */
+const S = { step:0, field:'', core:'', cat:'ortho', region:'', extra:'', channel:'블로그', length:'1,500자', color:'#2f7d6b',
+  topic:null, target:'직장인', detail:'', persona:null, tone:50, charts:[] };
+const STEPS = ['시작','아이디어','타겟','톤·프롬프트','인포그래픽','검수'];
+/* 베놈 엔진 카테고리 (lib/post-generator.js CAT_LABEL과 동일) */
+const CATS = {geo:'GEO/AI마케팅',seo:'SEO마케팅',dental:'치과',skin:'피부과',oriental:'한의원',
+  ortho:'정형외과',plastic:'성형외과',naegwa:'내과',angwa:'안과',shimui:'의료광고심의',geo_local:'지역마케팅'};
+
+/* ───────────── 유틸 ───────────── */
+const $ = id => document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function pick(arr,seed){return arr[Math.abs(seed)%arr.length];}
+function syncInputs(){S.core=$('i_core').value.trim();S.cat=$('i_cat').value;
+  S.region=$('i_region').value.trim();S.extra=$('i_extra').value.trim();S.field=CATS[S.cat]||'';
+  S.channel=$('i_channel').value;S.length=$('i_length').value;S.color=$('i_color').value;}
+
+/* ───────────── 스텝 네비 ───────────── */
+function renderStepper(){
+  $('stepper').innerHTML = STEPS.map((s,i)=>
+    `<button class="${i===S.step?'active':(i<S.step?'done':'')}" onclick="go(${i})">${i}. ${s}</button>`).join('');
+  $('pbar').style.width = (S.step/(STEPS.length-1)*100)+'%';
+}
+function go(n){
+  syncInputs();
+  if(n>=1 && !S.core){toast('먼저 STEP 0의 "핵심"을 입력해 주세요 🙂');return;}
+  S.step=n;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',+p.dataset.step===n));
+  renderStepper();
+  if(n===1 && !$('questions').innerHTML) spark();
+  if(n===2) renderTargets();
+  if(n===3){renderTone();buildPrompt();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ───────────── 브랜드 색 실시간 ───────────── */
+$('i_color').addEventListener('input',e=>{
+  const c=e.target.value;document.documentElement.style.setProperty('--accent',c);
+  document.documentElement.style.setProperty('--accent-soft',hexSoft(c));S.color=c;
+});
+function hexSoft(hex){const n=parseInt(hex.slice(1),16);const r=n>>16,g=(n>>8)&255,b=n&255;
+  return `rgba(${r},${g},${b},.12)`;}
+
+/* ───────────── STEP1 아이디어 스파크 ───────────── */
+let sparkSeed=7;
+function spark(){
+  syncInputs();
+  if(!S.core){toast('핵심 키워드를 먼저 입력해 주세요');return;}
+  sparkSeed=(sparkSeed*31+13)%9973;
+  const k=S.core;
+  const qTemplos=[
+    `${k}, 병원 꼭 가야 하나요?`,`${k} 초기 증상은 뭔가요?`,`${k} 집에서 관리하는 법 있을까요?`,
+    `${k} 방치하면 어떻게 되나요?`,`${k} 치료 기간은 얼마나 걸리나요?`,`${k} 비용은 어느 정도인가요?`,
+    `직장 다니면서 ${k} 관리할 수 있나요?`,`${k} 자가진단 방법이 있나요?`,`${k}에 좋은 생활습관은?`,
+    `${k}, 나이 들수록 심해지나요?`,`${k} 재발을 막으려면?`,`${k} 검사는 어떻게 하나요?`];
+  const qs=[];for(let i=0;i<6;i++)qs.push(pick(qTemplos,sparkSeed+i*7));
+  $('questions').innerHTML = `<div style="font-weight:700;font-size:13.5px;margin-bottom:6px">🔍 이런 걸 검색해요</div>`+
+    [...new Set(qs)].map(q=>`<span class="qpill">${esc(q)}</span>`).join('');
+
+  const angles=[
+    {p:'증상·불안 해소형',t:`혹시 나도 ${k}? 5초 자가체크`,who:'증상이 막 시작된 사람',num:'자가진단 항목 적중률 80%'},
+    {p:'정보·비교형',t:`${k}, 병원마다 다른 치료법 한눈 비교`,who:'똑똑하게 알아보는 사람',num:'치료법별 회복기간 비교'},
+    {p:'행동 유도형',t:`오늘부터 ${k} 줄이는 3분 루틴`,who:'바빠서 미루던 직장인',num:'하루 3분 × 4주 변화'},
+    {p:'스토리형',t:`${k}로 고생하던 OO님의 12주 기록`,who:'공감으로 움직이는 사람',num:'12주 통증지수 추이'},
+    {p:'예방형',t:`${k} 안 생기게 미리 챙기는 습관`,who:'아직 괜찮은 예방 관심층',num:'예방수칙 실천율 통계'}];
+  const sel = [];for(let i=0;i<4;i++)sel.push(angles[(sparkSeed+i)%angles.length]);
+  $('topics').innerHTML = [...new Map(sel.map(a=>[a.t,a])).values()].map((a,idx)=>
+    `<div class="ideacard ${S.topic&&S.topic.t===a.t?'sel':''}" onclick='selTopic(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
+       <div class="t">${esc(a.t)}</div>
+       <div class="m">🏷️ ${esc(a.p)} · 👤 ${esc(a.who)}<br>📊 ${esc(a.num)}</div></div>`).join('');
+}
+function selTopic(a){S.topic=a;spark();toast('주제 선택됨 ✔');}
+
+/* ───────────── STEP2 타겟 ───────────── */
+const TARGETS={
+  '직장인':{detail:'하루 8시간 앉아 일하는 30대 직장인',
+    pains:['바빠서 병원 갈 시간이 없다','증상이 일상에 자꾸 끼어든다','이게 큰 병일까 막연히 불안하다'],
+    qs:['일하면서도 관리할 수 있나요?','병원 한 번이면 끝나나요?','지금 안 가도 괜찮을까요?'],
+    action:'점심시간 10분, 가까운 곳에서 간단 체크 예약'},
+  '환자 본인':{detail:'이미 증상이 뚜렷해 진단·치료가 궁금한 분',
+    pains:['치료가 얼마나 걸릴지 모르겠다','재발이 두렵다','일상으로 돌아갈 수 있을까'],
+    qs:['치료법은 뭐가 있나요?','회복까지 얼마나 걸리나요?','재발을 막으려면?'],
+    action:'내 상태에 맞는 치료 계획 상담받기'},
+  '보호자·가족':{detail:'부모님/배우자를 걱정하는 가족',
+    pains:['대신 알아봐 드리고 싶다','어디부터 시작할지 모르겠다','괜히 겁만 줄까 조심스럽다'],
+    qs:['어떤 병원에 모셔야 하나요?','집에서 뭘 도와드릴 수 있나요?','지금 상태가 위험한가요?'],
+    action:'보호자가 함께 보는 체크리스트로 첫 진료 준비'},
+  '예방 관심층':{detail:'아직 증상은 없지만 미리 챙기려는 분',
+    pains:['지금 괜찮아도 나중이 걱정','뭘 해야 예방되는지 모른다','검진이 필요한지 헷갈린다'],
+    qs:['예방하려면 뭘 하나요?','검진은 언제 받나요?','생활습관만으로 충분한가요?'],
+    action:'나에게 맞는 예방수칙·검진주기 확인'}};
+function renderTargets(){
+  $('targetChips').innerHTML=Object.keys(TARGETS).map(t=>
+    `<div class="chip ${S.target===t?'sel':''}" onclick="selTarget('${t}')">${t}</div>`).join('');
+  selTarget(S.target,true);
+}
+function selTarget(t,keep){
+  S.target=t;const p=TARGETS[t];
+  if(!keep||!$('t_detail').value)$('t_detail').value=p.detail;
+  S.detail=$('t_detail').value;S.persona=p;
+  document.querySelectorAll('#targetChips .chip').forEach(c=>c.classList.toggle('sel',c.textContent===t));
+  $('persona').innerHTML=`
+    <div class="card" style="box-shadow:none;margin:0">
+      <div style="font-weight:700;margin-bottom:8px">👤 ${esc(t)} 페르소나</div>
+      <div class="m" style="font-size:13.5px"><b>지금 느끼는 불안</b><ul>${p.pains.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <b>진짜 궁금한 것</b><ul>${p.qs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <b>🎬 유도할 행동</b> · ${esc(p.action)}</div></div>`;
+}
+$('t_detail')?.addEventListener('input',e=>S.detail=e.target.value);
+
+/* ───────────── STEP3 톤 + 프롬프트 ───────────── */
+function renderTone(){
+  const v=+$('tone').value;S.tone=v;
+  let lbl,ex;
+  if(v<33){lbl='다정함 ↑ (말 거는 느낌)';ex='"요즘 목이 자주 뻐근하시죠? 저도 그 마음 잘 알아요. 오늘은 그 이유를 같이 찬찬히 살펴볼게요."';}
+  else if(v<67){lbl='균형 (공감+정보 반반)';ex='"요즘 목이 자주 뻐근하시죠? 거북목은 경추(목뼈) 정렬이 무너진 상태를 말합니다. 왜 생기는지 하나씩 짚어드릴게요."';}
+  else{lbl='전문성 ↑ (또박또박 정보)';ex='"거북목은 경추(목뼈) 정렬이 무너진 상태입니다. 장시간 좌식 근무가 주요 원인이며, 방치 시 만성 통증으로 이어집니다."';}
+  $('toneLbl').textContent=lbl;$('toneEx').innerHTML='🗣️ '+esc(ex);
+  buildPrompt();
+}
+function buildPrompt(){
+  syncInputs();
+  const topic=S.topic?S.topic.t:(S.core+' 관련 주제');
+  const num=S.topic?S.topic.num:'핵심 수치 1개';
+  const p=S.persona||TARGETS[S.target];
+  const toneLine = S.tone<33 ? '다정한 구어체 비중을 높여 따뜻하게'
+    : S.tone<67 ? '공감(구어체)과 정보(문어체)를 반반으로 균형 있게'
+    : '신뢰감 있는 문어체 비중을 높여 전문적으로';
+  const out=
+`너는 병원·헬스케어 콘텐츠를 집필하는 베테랑 에디터이자 다정한 작가야.
+아래 조건으로 원고를 완성해줘.
+
+[입력]
+- 분야: ${S.field||'(분야 입력)'}
+- 핵심 주제: ${S.core||'(핵심 입력)'}
+- 제목(가제): ${topic}
+- 타겟(누구를 위한 글): ${S.target} — ${S.detail||p.detail}
+- 채널: ${S.channel} / 분량: ${S.length}
+
+[타겟이 느끼는 불안] ${p.pains.join(' · ')}
+[타겟이 궁금한 것] ${p.qs.join(' · ')}
+[유도할 행동] ${p.action}
+
+[말투 규칙]
+- ${toneLine} 쓴다. (공감·말걸기=구어체 "~하시죠?/~거든요", 정보·통계·치료=문어체 "~입니다")
+- 독자를 아끼는 사람처럼 대하고, 겁주지 않고 안심시킨다.
+- 어려운 용어는 괄호로 쉽게 풀어준다. 모호한 수식어 대신 구체적 수치를 쓴다.
+- 한 문단 3~4줄. 과장·효능보장(완치 100% 등)·공포마케팅 금지(의료광고법 준수).
+
+[구조]
+1. 도입: 타겟의 일상 장면으로 공감하며 시작(구어체).
+2. 본문: 소제목은 독자가 검색할 질문형. 소제목 아래 '즉답' 먼저, 그다음 쉬운 설명.
+3. 수치 자리에는 [📊 그래프: ${num}] 마커만 남겨라(이미지는 따로 만든다).
+4. 마무리: 따뜻한 응원 + 오늘 할 수 있는 행동 1가지 + 부드러운 안내(CTA).
+5. 끝에 FAQ 5개(질문형 + 짧은 답).
+
+먼저 도입부와 첫 소제목까지만 써서 보여주고, 내가 "이어서" 하면 끝까지 완성해줘.`;
+  $('promptOut').textContent=out;
+  return out;
+}
+function copyPrompt(){navigator.clipboard.writeText(buildPrompt()).then(()=>toast('프롬프트 복사됨! 아무 AI에 붙여넣으세요 📋'));}
+
+/* ───────────── STEP4 인포그래픽 (라이브 SVG) ───────────── */
+function svgChart(type,val,label,color){
+  const v=Math.max(0,Math.min(100,parseFloat(val)||0));const W=240,H=200;
+  let inner='';
+  if(type==='donut'){
+    const r=64,c=2*Math.PI*r,off=c*(1-v/100);
+    inner=`<circle cx="120" cy="92" r="${r}" fill="none" stroke="#eef2f1" stroke-width="22"/>
+      <circle cx="120" cy="92" r="${r}" fill="none" stroke="${color}" stroke-width="22"
+        stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round" transform="rotate(-90 120 92)"/>
+      <text x="120" y="86" text-anchor="middle" font-size="34" font-weight="800" fill="${color}">${v}%</text>
+      <text x="120" y="108" text-anchor="middle" font-size="11" fill="#6b7d79">비율</text>`;
+  }else if(type==='bar'){
+    const bh=v/100*120;
+    inner=`<rect x="64" y="40" width="48" height="120" rx="8" fill="#eef2f1"/>
+      <rect x="64" y="${40+120-bh}" width="48" height="${bh}" rx="8" fill="${color}"/>
+      <rect x="140" y="60" width="48" height="100" rx="8" fill="#dfe7e5"/>
+      <text x="88" y="${30+120-bh}" text-anchor="middle" font-size="22" font-weight="800" fill="${color}">${v}%</text>
+      <text x="88" y="178" text-anchor="middle" font-size="11" fill="#6b7d79">우리</text>
+      <text x="164" y="178" text-anchor="middle" font-size="11" fill="#9aa">평균</text>`;
+  }else{ // pictogram 10명
+    const n=Math.round(v/10);let dots='';
+    for(let i=0;i<10;i++){const x=40+(i%5)*38,y=60+Math.floor(i/5)*60;
+      dots+=`<g transform="translate(${x},${y})"><circle cx="0" cy="0" r="9" fill="${i<n?color:'#e3e9e7'}"/>
+        <rect x="-8" y="10" width="16" height="20" rx="7" fill="${i<n?color:'#e3e9e7'}"/></g>`;}
+    inner=`${dots}<text x="120" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="${color}">10명 중 ${n}명</text>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <rect width="${W}" height="${H}" rx="14" fill="#fff"/>${inner}</svg>`;
+}
+function addChart(){
+  const label=$('c_label').value.trim(),val=$('c_val').value.trim(),type=$('c_type').value;
+  if(!label||val===''){toast('라벨과 수치를 입력해 주세요');return;}
+  S.charts.push({label,val,type});renderCharts();
+  $('c_label').value='';$('c_val').value='';
+}
+function renderCharts(){
+  $('charts').innerHTML=S.charts.map((c,i)=>{
+    const svg=svgChart(c.type,c.val,c.label,S.color);
+    return `<div class="chartcell">${svg}
+      <div style="font-size:12.5px;font-weight:700;max-width:240px;margin:8px auto 6px">${esc(c.label)}</div>
+      <button class="btn ghost sm" onclick="dlSvg(${i})">⬇ SVG</button>
+      <button class="btn ghost sm" onclick="rmChart(${i})">✕</button></div>`;}).join('')
+    || '<div class="hint">아직 추가된 인포그래픽이 없어요.</div>';
+}
+function rmChart(i){S.charts.splice(i,1);renderCharts();}
+function dlSvg(i){const c=S.charts[i];const blob=new Blob([svgChart(c.type,c.val,c.label,S.color)],{type:'image/svg+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`infographic-${i+1}.svg`;a.click();toast('SVG 내려받기 시작 ⬇');}
+
+/* ───────────── STEP5 의료광고 안전등 ───────────── */
+const FIXMAP=[['최고의','전문적인'],['최고','우수한'],['최상','우수한'],['최초','초기'],['유일','대표적'],
+['넘버원','선도적'],['1등','검증된'],['1위','신뢰할 수 있는'],['100% 효과','체계적인 효과'],['100%','체계적인'],
+['완치','증상 개선'],['완벽한 치료','체계적인 치료'],['완전히 낫','회복'],['치료 보장','치료 지원'],
+['효과 보장','효과 기대'],['반드시','대부분의 경우'],['무조건','일반적으로'],['절대','전반적으로'],
+['탁월한','전문적인'],['놀라운 효과','유의미한 효과'],['기적','주목할 변화'],['부작용 없','부작용을 최소화'],
+['부작용 전혀','부작용 관리'],['완전히 안전','안전을 최우선'],['통증 없이','통증을 최소화하며'],
+['마취 없이','편안한 환경에서'],['타 병원보다','전문적으로'],['경쟁 병원','타 의료기관'],['무료 시술','무료 상담'],
+['공짜','이벤트'],['경품','혜택'],['최저가','합리적인 가격'],['가격 보장','안정적인 가격'],['즉시 효과','효과 발현'],
+['의학적으로 증명','임상 근거에 따른'],['과학적으로 검증','전문적으로 검토된'],['강력 추천','적극 안내']]
+  .sort((a,b)=>b[0].length-a[0].length);
+function checkAd(){
+  const raw=$('checkText').value;const found=[];
+  FIXMAP.forEach(([bad,good])=>{if(raw.includes(bad))found.push([bad,good]);});
+  const seen=new Set();const uniq=found.filter(([b])=>{if(seen.has(b))return false;
+    for(const s of seen)if(s.includes(b))return false;seen.add(b);return true;});
+  const bulb=$('bulb');bulb.className='bulb';
+  if(!raw.trim()){$('lightMsg').textContent='텍스트를 입력하면 검사합니다.';$('flags').innerHTML='';$('checkPreview').innerHTML='';return;}
+  if(uniq.length===0){bulb.classList.add('green');$('lightMsg').innerHTML='🟢 안전 — 위험 표현이 발견되지 않았어요.';$('flags').innerHTML='';}
+  else{bulb.classList.add(uniq.length>=3?'red':'yellow');
+    $('lightMsg').innerHTML=(uniq.length>=3?'🔴':'🟡')+` 위험 표현 ${uniq.length}개 — 대체어를 확인하세요.`;
+    $('flags').innerHTML=uniq.map(([b,g])=>`<div class="flagrow">⚠️ <b>${esc(b)}</b> → 제안: <b style="color:var(--good)">${esc(g)}</b></div>`).join('');}
+  let prev=esc(raw);uniq.forEach(([b])=>{prev=prev.split(esc(b)).join(`<mark class="flag">${esc(b)}</mark>`);});
+  $('checkPreview').innerHTML=`<div class="hint">미리보기(위험어 강조):</div><div class="card" style="box-shadow:none;margin:6px 0 0;white-space:pre-wrap;font-size:13.5px">${prev}</div>`;
+}
+
+/* ───────────── 브리프 내보내기 ───────────── */
+function brief(){
+  syncInputs();const p=S.persona||TARGETS[S.target];
+  return `# 원고 브리프 — ${S.core||'(주제)'}\n
+## 1. 입력
+- 분야: ${S.field}
+- 핵심: ${S.core}
+- 채널/분량: ${S.channel} / ${S.length}
+- 브랜드색: ${S.color}
+
+## 2. 선택 주제
+- 제목(가제): ${S.topic?S.topic.t:'(미선택)'}
+- 수치 아이디어: ${S.topic?S.topic.num:'-'}
+
+## 3. 타겟 & 페르소나
+- 타겟: ${S.target} (${S.detail||p.detail})
+- 불안: ${p.pains.join(' / ')}
+- 궁금증: ${p.qs.join(' / ')}
+- 유도 행동: ${p.action}
+
+## 4. 톤
+- 설정: ${S.tone<33?'다정함↑':S.tone<67?'균형':'전문성↑'} (${S.tone}/100)
+
+## 5. 올인원 프롬프트
+\`\`\`
+${buildPrompt()}
+\`\`\`
+
+## 6. 인포그래픽 사양
+${S.charts.length?S.charts.map((c,i)=>`- #${i+1} [${c.type}] ${c.label} = ${c.val}%`).join('\n'):'- (없음)'}
+
+---
+_원고 스튜디오에서 생성 · 의학 수치는 실제 출처 확인 필수 · 의료광고법 준수_
+`;
+}
+function downloadBrief(){const blob=new Blob([brief()],{type:'text/markdown'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`brief-${(S.core||'manuscript').replace(/\s+/g,'-')}.md`;a.click();toast('브리프 .md 내려받기 ⬇');}
+function copyBrief(){navigator.clipboard.writeText(brief()).then(()=>toast('브리프 복사됨 📋'));}
+
+/* ───────────── 베놈 엔진 실생성 (실무 기능) ───────────── */
+function toggleCfg(){const c=$('cfg');c.style.display=c.style.display==='none'?'block':'none';}
+function loadCfg(){try{return JSON.parse(localStorage.getItem('vstudio_cfg')||'{}');}catch(e){return{};}}
+function saveCfg(){localStorage.setItem('vstudio_cfg',JSON.stringify(
+  {url:$('cfg_url').value.trim(),secret:$('cfg_secret').value.trim()}));toast('설정 저장됨 ⚙️');}
+function applyCfg(){const c=loadCfg();if(c.url)$('cfg_url').value=c.url;if(c.secret)$('cfg_secret').value=c.secret;}
+
+async function generateLive(){
+  syncInputs();
+  if(!S.core){toast('STEP 0의 핵심 키워드를 입력해 주세요');go(0);return;}
+  const cfg=loadCfg();
+  const url=(cfg.url||'').replace(/\/$/,'')+'/api/generate-post';
+  const p=S.persona||TARGETS[S.target];
+  // 타겟·톤은 구조화 필드로 전달(서버 tone-engine이 처리), 제목 방향만 extra로
+  const extra=[S.extra, S.topic?`제목 방향=${S.topic.t}`:''].filter(Boolean).join(' / ');
+  const body={category:S.cat,keyword:S.core,region:S.region,extra,
+    target:S.target, tone:S.tone, detail:S.detail||p.detail,
+    withImage:$('cfg_img').checked,save:$('cfg_save').checked};
+  const btn=$('genBtn');btn.disabled=true;btn.textContent='⏳ 생성 중... (최대 1~2분)';
+  $('genStatus').textContent='베놈 엔진(/api/generate-post) 호출 중...';
+  try{
+    const headers={'Content-Type':'application/json'};
+    if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.ok)throw new Error(data.error||('HTTP '+r.status));
+    renderResult(data.post);saveHistory(data.post);$('genStatus').textContent='✅ 생성 완료!';
+  }catch(e){
+    $('genStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">엔진 연결(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 위 '📋 올인원 프롬프트 복사'로 어떤 AI에서든 바로 생성할 수 있어요.</span>`;
+  }finally{btn.disabled=false;btn.textContent='🪄 원고 생성하기';}
+}
+function renderResult(post){
+  window.__lastHtml=(post.html||'').replace(/<script[\s\S]*?<\/script>/gi,'');
+  const imgs=(post.images||[]).map(u=>`<img src="${u}" style="max-width:100%;border-radius:10px;margin:8px 0">`).join('');
+  $('genResult').innerHTML=`<div class="card" style="box-shadow:none;margin-top:14px">
+    <div style="font-weight:800;font-size:16px">${esc(post.title||'')}</div>
+    <div class="hint" style="margin:6px 0">${post.publishable?'🟢 발행 가능(의료광고 검증 통과)':'🟡 검토 필요'} · 이미지 ${esc(post.imageStatus||'-')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <button class="btn sm" onclick="copyHtml()">📋 HTML 복사</button>
+      <button class="btn ghost sm" onclick="dlHtml()">⬇ HTML 다운로드</button>
+      <button class="btn ghost sm" onclick="pasteToCheck()">🚦 안전검수로 보내기</button></div>
+    <details><summary style="cursor:pointer;font-weight:700;font-size:13.5px">📑 SEO 메타 보기</summary>
+      <div class="hint" style="margin-top:6px"><b>메타설명:</b> ${esc(post.metaDesc||'')}<br><b>키워드:</b> ${esc(post.keywords||'')}</div></details>
+    ${imgs}
+    <div style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;max-height:420px;overflow:auto">${window.__lastHtml}</div></div>`;
+}
+function copyHtml(){navigator.clipboard.writeText(window.__lastHtml||'').then(()=>toast('HTML 복사됨 📋'));}
+function dlHtml(){const b=new Blob([window.__lastHtml||''],{type:'text/html'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=`post-${(S.core||'manuscript').replace(/\s+/g,'-')}.html`;a.click();toast('HTML 다운로드 ⬇');}
+function pasteToCheck(){$('checkText').value=(window.__lastHtml||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();go(5);checkAd();}
+
+function hist(){try{return JSON.parse(localStorage.getItem('vstudio_hist')||'[]');}catch(e){return[];}}
+function saveHistory(post){let h=hist();h.unshift({t:post.title,when:new Date().toLocaleString('ko-KR'),cat:S.cat});
+  localStorage.setItem('vstudio_hist',JSON.stringify(h.slice(0,8)));renderHistory();}
+function renderHistory(){const h=hist();$('historyWrap').innerHTML=h.length?
+  `<div class="hint" style="font-weight:700;margin-bottom:6px">🕘 최근 생성 기록</div>`+
+  h.map(x=>`<div class="flagrow" style="background:#fff;border-color:var(--line)">${esc(x.t||'(제목없음)')} <span class="hint">· ${esc(CATS[x.cat]||x.cat)} · ${esc(x.when)}</span></div>`).join(''):'';}
+
+/* ───────────── 초기화 ───────────── */
+$('i_cat').innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+$('i_cat').value='ortho';
+applyCfg();renderHistory();renderStepper();
+</script>
+</body>
+</html>
