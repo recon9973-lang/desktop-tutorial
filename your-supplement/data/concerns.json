@@ -1,68 +1,234 @@
 {
   "_meta": {
     "version": "0.1",
-    "note": "고민(concern) → 추천 성분 매핑. ingredient_ids는 추천 우선순위 순. 점수는 recommendation_rules.json + interactions.json와 결합해 최종 계산."
+    "note": "고민(concern) → 추천 성분 매핑. ingredient_ids는 추천 우선순위 순. 점수는 recommendation_rules.json + interactions.json와 결합해 최종 계산.",
+    "rationale_note": "ingredients 순서 = 해당 고민에 대한 근거 강도(확립>중등도>제한)로 정렬 → 엔진 rank_weight가 근거를 반영. rationale[id].evidence는 '그 고민' 기준 등급(성분 전체 최고치가 아님), why는 큐레이션 사유. 성분별 출처는 evidence.json 인용 참조."
   },
   "concerns": [
     {
       "id": "fatigue",
       "label": "피로 / 기력 저하",
       "emoji": "😴",
-      "ingredients": ["vitamin_b_complex", "korean_ginseng", "magnesium", "coq10"]
+      "ingredients": [
+        "vitamin_b_complex",
+        "magnesium",
+        "korean_ginseng",
+        "coq10"
+      ],
+      "rationale": {
+        "vitamin_b_complex": {
+          "evidence": "moderate",
+          "why": "에너지 대사 보조효소 — 결핍 시 피로, 식약처 에너지대사 기능"
+        },
+        "magnesium": {
+          "evidence": "moderate",
+          "why": "에너지 이용·근육/신경 기능, 결핍 시 피로감"
+        },
+        "korean_ginseng": {
+          "evidence": "limited",
+          "why": "피로 개선(식약처 인정) — RCT 결과 혼재"
+        },
+        "coq10": {
+          "evidence": "limited",
+          "why": "세포 에너지(ATP) 생성 보조 — 피로 효과 근거 제한적"
+        }
+      }
     },
     {
       "id": "sleep_stress",
       "label": "수면 / 스트레스",
       "emoji": "🌙",
-      "ingredients": ["lactium", "magnesium"]
+      "ingredients": [
+        "magnesium",
+        "lactium"
+      ],
+      "rationale": {
+        "magnesium": {
+          "evidence": "moderate",
+          "why": "신경 안정·이완, 수면의 질에 일부 RCT 근거"
+        },
+        "lactium": {
+          "evidence": "limited",
+          "why": "스트레스성 긴장 완화(식약처 개별인정) — 소규모 연구"
+        }
+      }
     },
     {
       "id": "eye",
       "label": "눈 피로 / 눈 건강",
       "emoji": "👁️",
-      "ingredients": ["lutein", "omega3"]
+      "ingredients": [
+        "lutein",
+        "omega3"
+      ],
+      "rationale": {
+        "lutein": {
+          "evidence": "moderate",
+          "why": "황반색소밀도 유지(식약처 인정, AREDS2 기반)"
+        },
+        "omega3": {
+          "evidence": "limited",
+          "why": "건성안 개선 — 근거 혼재(AMD 진행 예방엔 효과 없음)"
+        }
+      }
     },
     {
       "id": "blood_lipid",
       "label": "혈관 / 혈중 지질",
       "emoji": "❤️",
-      "ingredients": ["omega3", "red_yeast_rice", "coq10"]
+      "ingredients": [
+        "omega3",
+        "red_yeast_rice",
+        "coq10"
+      ],
+      "rationale": {
+        "omega3": {
+          "evidence": "established",
+          "why": "혈중 중성지질 저하(식약처 인정, 강한 근거)"
+        },
+        "red_yeast_rice": {
+          "evidence": "moderate",
+          "why": "모나콜린K로 콜레스테롤 개선 — 스타틴과 중복 주의"
+        },
+        "coq10": {
+          "evidence": "limited",
+          "why": "지질 자체보다 스타틴 근육증상 관련 — 직접 근거 제한"
+        }
+      }
     },
     {
       "id": "bone_joint",
       "label": "뼈 / 관절",
       "emoji": "🦴",
-      "ingredients": ["vitamin_d", "calcium", "msm", "magnesium"]
+      "ingredients": [
+        "vitamin_d",
+        "calcium",
+        "magnesium",
+        "msm"
+      ],
+      "rationale": {
+        "vitamin_d": {
+          "evidence": "established",
+          "why": "칼슘 흡수·뼈 형성에 필수(식약처/RDA)"
+        },
+        "calcium": {
+          "evidence": "established",
+          "why": "뼈·치아 형성(식약처/RDA)"
+        },
+        "magnesium": {
+          "evidence": "moderate",
+          "why": "뼈 기질·비타민D 대사 관여"
+        },
+        "msm": {
+          "evidence": "limited",
+          "why": "관절 통증 완화 — 일부 RCT(제한적)"
+        }
+      }
     },
     {
       "id": "immune",
       "label": "면역력",
       "emoji": "🛡️",
-      "ingredients": ["vitamin_c", "zinc", "vitamin_d", "korean_ginseng"]
+      "ingredients": [
+        "zinc",
+        "vitamin_d",
+        "vitamin_c",
+        "korean_ginseng"
+      ],
+      "rationale": {
+        "zinc": {
+          "evidence": "moderate",
+          "why": "면역세포 기능·감기 기간 단축 일부 근거(식약처 면역)"
+        },
+        "vitamin_d": {
+          "evidence": "moderate",
+          "why": "결핍 시 호흡기 감염 위험↑ — 보충효과 혼재"
+        },
+        "vitamin_c": {
+          "evidence": "limited",
+          "why": "항산화·면역(식약처) — 일반인 예방효과는 제한적"
+        },
+        "korean_ginseng": {
+          "evidence": "limited",
+          "why": "면역력 증진(식약처 인정) — 근거 보통"
+        }
+      }
     },
     {
       "id": "gut",
       "label": "장 건강 / 소화",
       "emoji": "🦠",
-      "ingredients": ["probiotics"]
+      "ingredients": [
+        "probiotics"
+      ],
+      "rationale": {
+        "probiotics": {
+          "evidence": "moderate",
+          "why": "배변활동·장내균총 개선(식약처 인정, 균주별 차이)"
+        }
+      }
     },
     {
       "id": "liver",
       "label": "간 건강 (음주·피로)",
       "emoji": "🍺",
-      "ingredients": ["milk_thistle"]
+      "ingredients": [
+        "milk_thistle"
+      ],
+      "rationale": {
+        "milk_thistle": {
+          "evidence": "limited",
+          "why": "실리마린 간 건강(식약처 인정) — RCT 결과 혼재"
+        }
+      }
     },
     {
       "id": "anemia_women",
       "label": "빈혈 / 여성 건강",
       "emoji": "🩸",
-      "ingredients": ["iron", "folate", "vitamin_c"]
+      "ingredients": [
+        "iron",
+        "folate",
+        "vitamin_c"
+      ],
+      "rationale": {
+        "iron": {
+          "evidence": "established",
+          "why": "철결핍성 빈혈 예방·치료(확립)"
+        },
+        "folate": {
+          "evidence": "established",
+          "why": "적혈구 생성·임신 신경관 발달(확립)"
+        },
+        "vitamin_c": {
+          "evidence": "moderate",
+          "why": "비헴철 흡수 촉진(보조 시너지)"
+        }
+      }
     },
     {
       "id": "menopause",
       "label": "갱년기",
       "emoji": "🌡️",
-      "ingredients": ["korean_ginseng"]
+      "ingredients": [
+        "korean_ginseng",
+        "calcium",
+        "vitamin_d"
+      ],
+      "rationale": {
+        "korean_ginseng": {
+          "evidence": "limited",
+          "why": "갱년기 여성 건강(식약처 인정) — 근거 보통"
+        },
+        "calcium": {
+          "evidence": "moderate",
+          "why": "폐경 후 골소실 예방 보조"
+        },
+        "vitamin_d": {
+          "evidence": "moderate",
+          "why": "폐경 후 뼈 건강·칼슘 흡수 보조"
+        }
+      }
     }
   ]
 }

@@ -96,6 +96,8 @@ for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const rl=rel(ids[i]
 return{recommended:rec,not_recommended:no,schedule:{morning:morning.map(nm),evening:evening.map(nm)},notes,slots:Object.fromEntries(rec.map(x=>[x.id,{m:morning.includes(x.id),e:evening.includes(x.id)}]))}}
 function topBenefit(id){const e=EV[id];if(!e||!e.benefits?.length)return null;const rk={established:3,moderate:2,limited:1,insufficient:0};return [...e.benefits].sort((a,b)=>(rk[b.evidence_strength]??0)-(rk[a.evidence_strength]??0))[0]}
 function concernLabels(id,cs){return cs.map(c=>concernById[c]).filter(c=>c&&c.ingredients.includes(id)).map(c=>c.label)}
+// 선택 고민 중 이 성분이 가장 강한 근거로 연결된 사유(근거 등급 포함)
+function concernWhy(id,cs){const rk={established:3,moderate:2,limited:1,insufficient:0};let best=null;for(const cid of cs){const c=concernById[cid];if(!c||!c.ingredients.includes(id))continue;const r=(c.rationale||{})[id];if(!r)continue;if(!best||(rk[r.evidence]??0)>(rk[best.evidence]??0))best={label:c.label,why:r.why,evidence:r.evidence}}return best}
 function realVal(v){return v&&v!=='출처 미확인'?v:null}
 // 권장량/상한 표시: 공식값 없으면 '미설정'으로 정직하게(없는 상한 지어내지 않음)
 function doseLine(d,mt){const m=mt||4;if(!d)return '';const r=realVal(d.rda_or_ai),u=realVal(d.ul);
@@ -164,8 +166,10 @@ function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[
  const dm=sel.medications.filter(m=>DATA.meds[m]);
  if(dm.length){h+='<div class="card"><b>🏛️ 식약처 DUR — 복용약 공식 확인</b>';dm.forEach(m=>{const v=DATA.meds[m];h+='<div style="margin-top:6px"><b style="font-size:13.5px">'+esc(v.label)+'</b> <a class="src" target="_blank" href="https://nedrug.mfds.go.kr/searchDrug?searchKeyword='+encodeURIComponent(v.dur_query)+'">식약처에서 확인 →</a></div>'});h+='<small>※ 계열 대표성분 기준. 정확한 병용금기는 의·약사와 확인.</small></div>'}
  h+='<h2>'+(cl.length?esc(cl.join(' · '))+' 고민에 맞춘 핵심 '+Math.min(3,res.recommended.length)+'가지':'핵심 추천')+'</h2>';
- res.recommended.slice(0,3).forEach((r,i)=>{const tb=topBenefit(r.id),st=tb?STRENGTH[tb.evidence_strength]:null,lbs=concernLabels(r.id,sel.concerns);
-  h+='<div class="card" style="display:flex;gap:12px;align-items:center"><span class="rank" style="background:'+(i===0?'var(--p)':'#cbd5cf')+'">'+(i+1)+'</span><div><div><b style="font-size:16px">'+esc(r.name)+'</b> '+(st?'<span class="tag" style="background:'+st[1]+'">'+st[0]+'</span>':'')+'</div><div class="muted">'+(lbs.length?'<b style="color:var(--pa)">'+esc(lbs.join('·'))+'</b>에 도움':esc(r.fns[0]))+'</div></div></div>'});
+ res.recommended.slice(0,3).forEach((r,i)=>{const tb=topBenefit(r.id),st=tb?STRENGTH[tb.evidence_strength]:null,lbs=concernLabels(r.id,sel.concerns),cw=concernWhy(r.id,sel.concerns),cst=cw?STRENGTH[cw.evidence]:null;
+  const reason=cw?'<b style="color:var(--pa)">'+esc(cw.label)+'</b> — '+esc(cw.why):(lbs.length?'<b style="color:var(--pa)">'+esc(lbs.join('·'))+'</b>에 도움':esc(r.fns[0]));
+  const headBadge=cst||st;
+  h+='<div class="card" style="display:flex;gap:12px;align-items:flex-start"><span class="rank" style="background:'+(i===0?'var(--p)':'#cbd5cf')+'">'+(i+1)+'</span><div><div><b style="font-size:16px">'+esc(r.name)+'</b> '+(headBadge?'<span class="tag" style="background:'+headBadge[1]+'">'+headBadge[0]+'</span>':'')+'</div><div class="muted">'+reason+'</div></div></div>'});
  h+='<div class="card"><b>📅 복용 스케줄</b><div class="muted" style="margin-top:6px">☀️ 아침: '+esc(res.schedule.morning.join(', ')||'없음')+'</div><div class="muted">🌙 저녁: '+esc(res.schedule.evening.join(', ')||'없음')+'</div></div>';
  if(syn.length){h+='<div class="ok">';syn.forEach(s=>h+='<div class="muted">'+esc(s)+'</div>');h+='</div>'}
  h+='<button class="btn" style="width:100%;margin:6px 0 18px" onclick="addRoutine()">📋 내 영양제에 추가하고 루틴 관리 →</button>';

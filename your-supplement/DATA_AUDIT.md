@@ -9,7 +9,7 @@
 | 구분 | 파일/소스 | 규모 | 출처·성격 | 신뢰 등급 |
 |---|---|---|---|---|
 | 성분 | `data/ingredients.json` | **17종** | 식약처 건강기능식품 기능성 인정 원료(전부 level 3) | 운영자 검수(초안) |
-| 고민→성분 | `data/concerns.json` | **10 고민** | 운영자 큐레이션 매핑 | 운영자 |
+| 고민→성분 | `data/concerns.json` | **10 고민·27 매핑** | **고민별 근거등급(`rationale`)+사유 부여, 순서=근거 강도** | 큐레이션(근거기반) |
 | 상호작용 | `data/interactions.json` | 시너지 **8**·길항 **6**·약물 21 | **전부 NIH ODS·NCCIH·FDA 인용(URL)** + 근거강도 표기 | 1차/공인 |
 | 점수규칙 | `data/recommendation_rules.json` | — | 자체 설계(근거가중·시너지·길항·약물경고) | 자체 로직 |
 | 출처 카탈로그 | `data/sources.json` | **16곳** (citable 11/참고 5) | 식약처·약학정보원·NIH·NCCIH·DBpia 등 | 1차/공인 |
@@ -28,6 +28,7 @@
 - **인용 출처 호스트(전부 미국 기관)**: `ods.od.nih.gov`(NIH ODS), `nccih.nih.gov`(NCCIH), `nei.nih.gov`(국립안연구소), `medlineplus.gov`, `ncbi.nlm.nih.gov`(PMC).
 - 근거 강도(`evidence_strength`) 표기: 확립 13 · 중등도 10 · 제한적 10 · 불충분 1 → **과장 없이 솔직**.
 - `data/interactions.json`: **성분 궁합(시너지 8·길항 6)도 전부 출처(NIH ODS)+근거강도(`evidence`) 부여** — 이전엔 출처 없던 항목 보강 완료. 엽산↔비타민B12 차폐는 시간 분리가 아닌 **`mode:'monitor'`(정기 점검)** 으로 정확히 분류(잘못된 복용시간 분리 방지).
+- `data/concerns.json`: **고민→성분 매핑에 고민별(concern-specific) 근거등급+사유(`rationale`) 부여, 성분 순서를 근거 강도로 재정렬** → 엔진 rank_weight가 근거를 반영(예: 면역에서 아연>비타민C, 피로에서 마그네슘>홍삼). 헤드라인 배지도 '성분 전체 최고'가 아닌 '그 고민' 등급으로 표기(비타민C=면역 제한적 등 과장 방지). 갱년기 매핑 1→3 보강.
 
 ---
 
