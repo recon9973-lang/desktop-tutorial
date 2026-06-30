@@ -255,7 +255,7 @@
 
     <div style="border-top:1px dashed var(--line);margin:24px 0 0;padding-top:18px">
       <h2 style="font-size:17px">🖼️ AI 대표 이미지 생성 <span class="hint">(DALL·E / gpt-image)</span></h2>
-      <div class="sub">원고에 어울리는 대표 이미지·일러스트를 AI로 만들어요. 프롬프트는 입력값에서 자동으로 초안이 잡힙니다. <a href="#" onclick="go(3);toggleCfg();return false;">⚙️ 엔진 연결 설정</a>(STEP3과 공유)</div>
+      <div class="sub">원고에 어울리는 대표 이미지·일러스트를 AI로 만들어요. 다운로드는 베놈 사이트와 동일한 <b>WebP(품질 85)</b>로 최적화됩니다. 프롬프트는 입력값에서 자동으로 초안이 잡혀요. <a href="#" onclick="go(3);toggleCfg();return false;">⚙️ 엔진 연결 설정</a>(STEP3과 공유)</div>
       <label class="f">이미지 프롬프트 <button class="btn ghost sm" style="float:right;padding:3px 9px" onclick="suggestImgPrompt()">↻ 자동 추천</button></label>
       <textarea id="img_prompt" placeholder="예: 목을 만지며 모니터를 보는 30대 직장인, 밝고 다정한 병원 진료실"></textarea>
       <div class="grid2" style="margin-top:6px">
@@ -599,6 +599,7 @@ function renderCharts(){
   $('charts').innerHTML=S.charts.map((c,i)=>`<div class="chartcell">${svgFor(c)}
      <div style="font-size:12.5px;font-weight:700;max-width:260px;margin:8px auto 6px">${esc(c.label||'')}</div>
      <button class="btn ghost sm" onclick="dlSvg(${i})">⬇ SVG</button>
+     <button class="btn ghost sm" onclick="dlWebp(${i})">⬇ WebP</button>
      <button class="btn ghost sm" onclick="dlPng(${i})">⬇ PNG</button>
      <button class="btn ghost sm" onclick="rmChart(${i})">✕</button></div>`).join('')
    ||'<div class="hint">아직 추가된 인포그래픽이 없어요. 유형을 고르고 데이터를 넣어보세요.</div>';
@@ -654,12 +655,17 @@ function svgFor(c){const col=S.color;
 }
 function dlSvg(i){const blob=new Blob([svgFor(S.charts[i])],{type:'image/svg+xml'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`infographic-${i+1}.svg`;a.click();toast('SVG 내려받기 ⬇');}
-function dlPng(i){const svg=svgFor(S.charts[i]);const img=new Image();
+function dlChartRaster(i,fmt){const svg=svgFor(S.charts[i]);const img=new Image();
   const url='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
+  const webp=fmt==='image/webp';
   img.onload=()=>{const sc=2,cv=document.createElement('canvas');cv.width=img.width*sc;cv.height=img.height*sc;
     const ctx=cv.getContext('2d');ctx.scale(sc,sc);ctx.drawImage(img,0,0);
-    cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`infographic-${i+1}.png`;a.click();toast('PNG 내려받기 ⬇');});};
-  img.onerror=()=>toast('PNG 변환 실패 — SVG로 받아보세요');img.src=url;}
+    cv.toBlob(b=>{if(!b){toast(webp?'WebP 미지원 — PNG로 받아보세요':'변환 실패');return;}
+      const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`infographic-${i+1}.${webp?'webp':'png'}`;a.click();
+      toast(`${webp?'WebP':'PNG'} 내려받기 ⬇ (${Math.round(b.size/1024)}KB)`);},fmt,webp?0.9:0.92);};
+  img.onerror=()=>toast('변환 실패 — SVG로 받아보세요');img.src=url;}
+function dlPng(i){dlChartRaster(i,'image/png');}
+function dlWebp(i){dlChartRaster(i,'image/webp');}
 
 /* ───────────── STEP4 AI 이미지 생성 ───────────── */
 const IMG_STYLES=[['photo','사진'],['illustration','일러스트'],['thumbnail','썸네일'],['card','카드뉴스'],['render3d','3D']];
@@ -683,15 +689,31 @@ async function genImage(){
     const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
     const data=await r.json().catch(()=>({}));
     if(!r.ok||!data.ok)throw new Error(data.error||('HTTP '+r.status));
-    window.__lastImg=data.dataUrl;
+    window.__lastImg=data.dataUrl;window.__lastMime=data.mime||'image/png';
     $('imgStatus').textContent='✅ 생성 완료! ('+(data.model||'')+')';
     $('imgResult').innerHTML=`<div style="margin-top:12px"><img src="${data.dataUrl}" style="max-width:100%;border-radius:14px;border:1px solid var(--line)">
-      <div style="margin-top:8px"><button class="btn sm" onclick="dlImg()">⬇ 이미지 다운로드</button></div></div>`;
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" onclick="dlImgWebp()">⬇ WebP 다운로드 <span class="hint" style="color:#cfe">(베놈 최적화)</span></button>
+        <button class="btn ghost sm" onclick="dlImgOrig()">⬇ 원본</button></div>
+      <div class="hint" id="imgSizeNote"></div></div>`;
   }catch(e){$('imgStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">이미지 엔진(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 '📋 프롬프트 복사'로 다른 이미지 AI에 붙여넣어 쓰세요.</span>`;
   }finally{btn.disabled=false;btn.textContent='🖼️ 이미지 생성하기';}
 }
-function dlImg(){if(!window.__lastImg)return;const a=document.createElement('a');a.href=window.__lastImg;
-  a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.png`;a.click();toast('이미지 다운로드 ⬇');}
+// 베놈 WebP 최적화(빌드 스크립트 sharp quality 85)와 동일하게, 브라우저 canvas로 WebP 변환(0.85)
+function toWebp(dataUrl,cb){const img=new Image();
+  img.onload=()=>{const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+    cv.getContext('2d').drawImage(img,0,0);cv.toBlob(b=>cb(b),'image/webp',0.85);};
+  img.onerror=()=>cb(null);img.src=dataUrl;}
+function dlImgWebp(){if(!window.__lastImg)return;
+  toWebp(window.__lastImg,b=>{
+    if(!b){toast('이 브라우저는 WebP 변환을 지원하지 않아요 — 원본으로 받습니다');return dlImgOrig();}
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.webp`;a.click();
+    const note=$('imgSizeNote');if(note)note.textContent=`💾 WebP ${Math.round(b.size/1024)}KB 저장 (베놈 사이트와 동일 포맷·품질 85)`;
+    toast('WebP 다운로드 ⬇');});}
+function dlImgOrig(){if(!window.__lastImg)return;const ext=(window.__lastMime||'').includes('png')?'png':'jpg';
+  const a=document.createElement('a');a.href=window.__lastImg;
+  a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.${ext}`;a.click();toast('원본 다운로드 ⬇');}
 
 /* ───────────── STEP5 안전등 + 품질점수 ───────────── */
 const FIXMAP=[['최고의','전문적인'],['최고','우수한'],['최상','우수한'],['최초','초기'],['유일','대표적'],
