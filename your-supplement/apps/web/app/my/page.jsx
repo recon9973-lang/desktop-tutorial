@@ -5,9 +5,19 @@ import {
   loadRoutine, saveRoutine, removeItem, toggleCheck,
   computeStreak, todayProgress, todayBySlot,
   setCheckin, getCheckin, recentCheckins, reviewDue,
+  setItemSupply, restockItem, depletion, restockingDue,
 } from '../../lib/routine';
 
 const SLOT_LABEL = { morning: '☀️ 아침', evening: '🌙 저녁' };
+// 재구매 검색 딥링크(키·제휴 없이 동작)
+function buyLinks(name) {
+  const q = encodeURIComponent(name);
+  return [
+    { v: '쿠팡', u: `https://www.coupang.com/np/search?q=${q}`, c: '#ff4d4d' },
+    { v: '네이버', u: `https://search.shopping.naver.com/search/all?query=${q}`, c: '#03c75a' },
+    { v: '아이허브', u: `https://kr.iherb.com/search?kw=${q}`, c: '#4a9c2d' },
+  ];
+}
 const DUR_REVIEW = { monitor: '🟡 3개월 점검형', cyclic: '🔴 주기형(8주)' };
 // 컨디션 5단계 (1 나쁨 → 5 좋음)
 const CONDITION = [
@@ -75,6 +85,7 @@ export default function MyRoutinePage() {
   const due = reviewDue(state);
   const checkinToday = getCheckin(state);
   const trend = recentCheckins(state, 14);
+  const restock = restockingDue(state);
 
   return (
     <div style={{ background: 'var(--canvas-soft)', minHeight: '100vh' }}>
@@ -120,6 +131,33 @@ export default function MyRoutinePage() {
                   </p>
                 ))}
                 <Link href="/survey" className="btn-primary" style={{ fontSize: 14, padding: '9px 22px', marginTop: 12 }}>다시 추천받기 →</Link>
+              </div>
+            )}
+
+            {/* P4: 재구매 임박 — 소진 7일 이하 */}
+            {restock.length > 0 && (
+              <div style={{ background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.2)', borderRadius: 'var(--r-xl)', padding: '16px 20px', marginBottom: 20 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--primary-active)', marginBottom: 10 }}>🛒 곧 떨어져요 — 재구매 준비</p>
+                {restock.map((it) => (
+                  <div key={it.id} style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--hairline)' }}>
+                    <p style={{ fontSize: 14, color: 'var(--ink-secondary)' }}>
+                      <strong>{it.name}</strong> — {it.daysLeft > 0 ? `약 ${it.daysLeft}일 남음` : '소진됨'}{' '}
+                      <span style={{ color: 'var(--ink-faint)' }}>(소진 ~{it.depleteKey.slice(5)})</span>
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                      {buyLinks(it.name).map((b) => (
+                        <a key={b.v} href={b.u} target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: 12.5, fontWeight: 600, color: b.c, textDecoration: 'none', border: `1px solid ${b.c}40`, borderRadius: 'var(--r-full)', padding: '4px 12px' }}>
+                          {b.v} →
+                        </a>
+                      ))}
+                      <button onClick={() => update(restockItem(state, it.id))}
+                        style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink-muted)', background: 'var(--canvas-soft)', border: 'none', borderRadius: 'var(--r-full)', padding: '5px 12px', cursor: 'pointer' }}>
+                        채웠어요 ↺
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -223,23 +261,44 @@ export default function MyRoutinePage() {
             {/* My supplements (manage) */}
             <h2 className="title" style={{ margin: '24px 0 12px' }}>내 영양제 ({state.items.length})</h2>
             <div className="card" style={{ borderRadius: 'var(--r-xl)' }}>
-              {state.items.map((it, i) => (
+              {state.items.map((it, i) => {
+                const dep = depletion(it);
+                return (
                 <div key={it.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                  padding: '10px 0', borderBottom: i < state.items.length - 1 ? '1px solid var(--hairline)' : 'none',
+                  padding: '12px 0', borderBottom: i < state.items.length - 1 ? '1px solid var(--hairline)' : 'none',
                 }}>
-                  <div>
-                    <strong style={{ fontSize: 15 }}>{it.name}</strong>
-                    <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginLeft: 8 }}>
-                      {it.slots.map((s) => SLOT_LABEL[s]).join(' · ')}
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div>
+                      <strong style={{ fontSize: 15 }}>{it.name}</strong>
+                      <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginLeft: 8 }}>
+                        {it.slots.map((s) => SLOT_LABEL[s]).join(' · ')}
+                      </span>
+                    </div>
+                    <button onClick={() => update(removeItem(state, it.id))}
+                      style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>
+                      삭제
+                    </button>
                   </div>
-                  <button onClick={() => update(removeItem(state, it.id))}
-                    style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>
-                    삭제
-                  </button>
+                  {/* 수량·1일 복용량 → 소진 예측 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap', fontSize: 13, color: 'var(--ink-muted)' }}>
+                    <span>남은</span>
+                    <input type="number" min="0" value={it.count ?? ''} placeholder="수량"
+                      onChange={(e) => update(setItemSupply(state, it.id, Number(e.target.value), it.dosePerDay || 1))}
+                      style={{ width: 64, border: '1px solid var(--hairline)', borderRadius: 'var(--r-sm)', padding: '5px 8px', fontSize: 13 }} />
+                    <span>정 · 1일</span>
+                    <input type="number" min="1" value={it.dosePerDay ?? ''} placeholder="1"
+                      onChange={(e) => update(setItemSupply(state, it.id, it.count || 0, Number(e.target.value)))}
+                      style={{ width: 52, border: '1px solid var(--hairline)', borderRadius: 'var(--r-sm)', padding: '5px 8px', fontSize: 13 }} />
+                    <span>정</span>
+                    {dep && (
+                      <span style={{ marginLeft: 6, fontWeight: 600, color: dep.daysLeft <= 7 ? 'var(--accent-orange)' : 'var(--primary-active)' }}>
+                        → {dep.daysLeft > 0 ? `약 ${dep.daysLeft}일 남음` : '소진됨'} (소진 ~{dep.depleteKey.slice(5)})
+                      </span>
+                    )}
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <p className="caption" style={{ color: 'var(--ink-faint)', textAlign: 'center', marginTop: 20, lineHeight: 1.6 }}>

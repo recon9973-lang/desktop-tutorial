@@ -155,6 +155,39 @@ export function reviewDue(state, todayKey = dateKey()) {
     .filter(Boolean);
 }
 
+// ── 재구매(소진 예측) ──
+export function addDaysKey(key, n) {
+  const d = parseKey(key); d.setDate(d.getDate() + n); return dateKey(d);
+}
+// 사용자가 입력한 남은 수량·1일 복용량 저장(지금 채운 것으로 보고 기준일 갱신)
+export function setItemSupply(state, id, count, dosePerDay) {
+  const items = state.items.map((it) =>
+    it.id === id
+      ? { ...it, count: count || null, dosePerDay: dosePerDay || 1, restockedAt: dateKey() }
+      : it);
+  return { ...state, items };
+}
+// "방금 새로 채웠다" — 카운트다운 리셋
+export function restockItem(state, id) {
+  const items = state.items.map((it) => (it.id === id ? { ...it, restockedAt: dateKey() } : it));
+  return { ...state, items };
+}
+// 남은 일수·소진 예정일 (수량·1일 복용량 입력된 경우만)
+export function depletion(item, todayKey = dateKey()) {
+  if (!item.count || !item.dosePerDay) return null;
+  const start = item.restockedAt || item.addedAt;
+  const daysSupply = Math.floor(item.count / item.dosePerDay);
+  const daysLeft = daysSupply - daysSince(start, todayKey);
+  return { daysLeft, daysSupply, depleteKey: addDaysKey(start, daysSupply) };
+}
+// 임박(threshold일 이하) 재구매 대상
+export function restockingDue(state, todayKey = dateKey(), threshold = 7) {
+  return state.items
+    .map((it) => { const d = depletion(it, todayKey); return d && d.daysLeft <= threshold ? { ...it, ...d } : null; })
+    .filter(Boolean)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+}
+
 // 슬롯별 오늘 할 일 [{ slot, items:[{id,name,checked}] }]
 export function todayBySlot(state, dk = dateKey()) {
   const slots = ['morning', 'evening'];
