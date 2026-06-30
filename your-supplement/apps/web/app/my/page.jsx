@@ -4,9 +4,20 @@ import Link from 'next/link';
 import {
   loadRoutine, saveRoutine, removeItem, toggleCheck,
   computeStreak, todayProgress, todayBySlot,
+  setCheckin, getCheckin, recentCheckins, reviewDue,
 } from '../../lib/routine';
 
 const SLOT_LABEL = { morning: '☀️ 아침', evening: '🌙 저녁' };
+const DUR_REVIEW = { monitor: '🟡 3개월 점검형', cyclic: '🔴 주기형(8주)' };
+// 컨디션 5단계 (1 나쁨 → 5 좋음)
+const CONDITION = [
+  { v: 1, e: '😣', c: '#d63b3b' },
+  { v: 2, e: '😕', c: '#d97706' },
+  { v: 3, e: '😐', c: '#9aa8a0' },
+  { v: 4, e: '🙂', c: '#0d9488' },
+  { v: 5, e: '😄', c: '#059669' },
+];
+const condColor = (v) => CONDITION.find((c) => c.v === v)?.c || 'var(--hairline)';
 
 export default function MyRoutinePage() {
   const [state, setState] = useState(null); // null = 로딩 중(SSR 안전)
@@ -61,6 +72,9 @@ export default function MyRoutinePage() {
   const { done, total } = todayProgress(state);
   const groups = todayBySlot(state);
   const empty = state.items.length === 0;
+  const due = reviewDue(state);
+  const checkinToday = getCheckin(state);
+  const trend = recentCheckins(state, 14);
 
   return (
     <div style={{ background: 'var(--canvas-soft)', minHeight: '100vh' }}>
@@ -96,6 +110,49 @@ export default function MyRoutinePage() {
           </div>
         ) : (
           <>
+            {/* P3: 점검 리마인드 — monitor/cyclic 경과 시 */}
+            {due.length > 0 && (
+              <div style={{ background: '#fff8f0', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 'var(--r-xl)', padding: '16px 20px', marginBottom: 20 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent-orange)', marginBottom: 8 }}>🔔 점검할 때가 됐어요</p>
+                {due.map((it) => (
+                  <p key={it.id} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 4 }}>
+                    <strong>{it.name}</strong> {DUR_REVIEW[it.duration_type]} · 복용 {it.sinceDays}일째 — 상태를 점검하고 지속 여부를 정하세요.
+                  </p>
+                ))}
+                <Link href="/survey" className="btn-primary" style={{ fontSize: 14, padding: '9px 22px', marginTop: 12 }}>다시 추천받기 →</Link>
+              </div>
+            )}
+
+            {/* P3: 오늘 컨디션 체크인 + 추세 */}
+            <div className="card" style={{ borderRadius: 'var(--r-xl)', marginBottom: 20 }}>
+              <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 10 }}>📊 오늘 컨디션은 어때요?</p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                {CONDITION.map((c) => (
+                  <button key={c.v} onClick={() => update(setCheckin(state, c.v))}
+                    style={{
+                      flex: 1, padding: '8px 0', borderRadius: 'var(--r-lg)', cursor: 'pointer',
+                      border: checkinToday === c.v ? `2px solid ${c.c}` : '1.5px solid var(--hairline)',
+                      background: checkinToday === c.v ? `${c.c}14` : 'var(--surface)',
+                      fontSize: 24,
+                    }}>{c.e}</button>
+                ))}
+              </div>
+              {/* 14일 추세 */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 56 }}>
+                {trend.map((d, i) => (
+                  <div key={d.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
+                    <div title={d.date} style={{
+                      height: d.score ? `${(d.score / 5) * 100}%` : '6px',
+                      background: d.score ? condColor(d.score) : 'var(--hairline)',
+                      borderRadius: 'var(--r-xs)', minHeight: 6,
+                      opacity: i === trend.length - 1 ? 1 : 0.85,
+                    }} />
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 11.5, color: 'var(--ink-faint)', marginTop: 6, textAlign: 'right' }}>최근 14일 컨디션 추세</p>
+            </div>
+
             {/* Reminder toggle */}
             <div className="card" style={{ borderRadius: 'var(--r-xl)', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
               <div>

@@ -212,7 +212,7 @@ export default function ResultPage() {
       const slots = [];
       if (morning.has(r.name)) slots.push('morning');
       if (evening.has(r.name)) slots.push('evening');
-      return { id: r.ingredient_id, name: r.name, slots: slots.length ? slots : ['morning'] };
+      return { id: r.ingredient_id, name: r.name, slots: slots.length ? slots : ['morning'], duration_type: r.duration_type };
     });
     saveRoutine(addItems(loadRoutine(), items));
     router.push('/my');

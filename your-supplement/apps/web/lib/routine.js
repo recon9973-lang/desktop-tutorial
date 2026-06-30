@@ -9,8 +9,21 @@ const KEY = 'ys-routine';
 const DEFAULT = () => ({
   items: [],
   checks: {},
+  checkins: {}, // { 'YYYY-MM-DD': 1..5 } 일일 컨디션
   reminders: { enabled: false, morning: '09:00', evening: '21:00' },
 });
+
+// 복용 유형별 재점검 권장 간격(일). continuous는 점검 없음.
+const REVIEW_DAYS = { monitor: 90, cyclic: 56 };
+
+function parseKey(k) {
+  const [y, m, d] = k.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+export function daysSince(fromKey, toKey = dateKey()) {
+  const ms = parseKey(toKey).getTime() - parseKey(fromKey).getTime();
+  return Math.floor(ms / 86400000);
+}
 
 export function dateKey(d = new Date()) {
   const y = d.getFullYear();
@@ -44,8 +57,9 @@ export function addItems(state, newItems) {
     if (ex) {
       ex.slots = [...new Set([...ex.slots, ...slots])];
       if (ni.name) ex.name = ni.name;
+      if (ni.duration_type) ex.duration_type = ni.duration_type;
     } else {
-      items.push({ id: ni.id, name: ni.name, slots, addedAt: dateKey() });
+      items.push({ id: ni.id, name: ni.name, slots, addedAt: dateKey(), duration_type: ni.duration_type || 'continuous' });
     }
   }
   return { ...state, items };
@@ -106,6 +120,39 @@ export function todayProgress(state, dk = dateKey()) {
     }
   }
   return { done, total };
+}
+
+// ── 컨디션 체크인 ──
+export function setCheckin(state, score, dk = dateKey()) {
+  const checkins = { ...(state.checkins || {}) };
+  if (checkins[dk] === score) delete checkins[dk]; else checkins[dk] = score;
+  return { ...state, checkins };
+}
+export function getCheckin(state, dk = dateKey()) {
+  return state.checkins?.[dk] ?? null;
+}
+// 최근 N일 [{ date, score|null }] (과거→오늘)
+export function recentCheckins(state, days = 14) {
+  const out = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = dateKey(d);
+    out.push({ date: k, score: state.checkins?.[k] ?? null });
+  }
+  return out;
+}
+
+// ── 재점검(점검 시기) ──
+// monitor(90일)/cyclic(56일) 경과 아이템을 점검 대상으로.
+export function reviewDue(state, todayKey = dateKey()) {
+  return state.items
+    .map((it) => {
+      const need = REVIEW_DAYS[it.duration_type];
+      if (!need) return null;
+      const since = daysSince(it.addedAt, todayKey);
+      return since >= need ? { ...it, sinceDays: since, needDays: need } : null;
+    })
+    .filter(Boolean);
 }
 
 // 슬롯별 오늘 할 일 [{ slot, items:[{id,name,checked}] }]
