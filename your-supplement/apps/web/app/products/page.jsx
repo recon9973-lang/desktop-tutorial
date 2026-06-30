@@ -89,7 +89,7 @@ function ProductsInner() {
                   </div>
                   {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', whiteSpace: 'nowrap' }}>라벨 →</a>}
                 </div>
-              ))) : <p style={{ fontSize: 14, color: 'var(--ink-faint)', padding: '8px 0' }}>표시할 제품이 없어요. 국내 검색을 이용해보세요.</p>}
+              ))) : <p style={{ fontSize: 14, color: 'var(--ink-faint)', padding: '8px 0', lineHeight: 1.6 }}>해외 DB(NIH DSLD)에서 못 찾았어요. 아래 <strong>🛒 국내에서 구매</strong>(네이버·쿠팡·식품안전나라)를 이용해보세요.</p>}
             </div>
 
             {/* 국내 식약처 품목(설정 시) */}

@@ -17,6 +17,24 @@ const DSLD_QUERY = {
   korean_ginseng: 'korean ginseng', msm: 'msm', lactium: 'lactium',
 };
 
+// 자유검색(한글) → DSLD 영문 검색어. DSLD는 영문 DB라 한글 그대로는 0건이므로,
+// 우리 17개 KB 밖의 인기 성분도 한글로 검색되게 매핑(키는 공백 제거·소문자).
+const KO_EN = {
+  '아르기닌': 'arginine', '엘아르기닌': 'l-arginine', '시트룰린': 'citrulline',
+  '콜라겐': 'collagen', '비오틴': 'biotin', '바이오틴': 'biotin',
+  '글루타민': 'glutamine', '크레아틴': 'creatine', '타우린': 'taurine',
+  '글루코사민': 'glucosamine', '콘드로이친': 'chondroitin', '쏘팔메토': 'saw palmetto',
+  '은행잎': 'ginkgo biloba', '강황': 'turmeric', '커큐민': 'curcumin', '보스웰리아': 'boswellia',
+  '스피루리나': 'spirulina', '클로렐라': 'chlorella', '멜라토닌': 'melatonin', '테아닌': 'l-theanine',
+  '셀레늄': 'selenium', '크롬': 'chromium', '망간': 'manganese', '구리': 'copper',
+  '비타민a': 'vitamin a', '비타민e': 'vitamin e', '비타민k': 'vitamin k', '비타민b': 'vitamin b complex',
+  '엽산': 'folate folic acid', '유산균': 'probiotic', '프리바이오틱스': 'prebiotic', '실리마린': 'silymarin',
+  '코큐텐': 'coenzyme q10', '코엔자임q10': 'coenzyme q10', '코엔자임큐텐': 'coenzyme q10', '인삼': 'ginseng',
+  '아연': 'zinc', '철분': 'iron', '칼슘': 'calcium', '마그네슘': 'magnesium',
+  '비타민d': 'vitamin d', '비타민c': 'vitamin c', '오메가3': 'omega-3 fish oil', '루테인': 'lutein',
+};
+const toDsldTerm = (q) => KO_EN[String(q).toLowerCase().replace(/\s+/g, '')] || q;
+
 // DSLD 미도달(샌드박스/오류) 시 보여줄 예시 해외 제품
 const SAMPLE_GLOBAL = {
   vitamin_d: [
@@ -110,9 +128,11 @@ export async function GET(request) {
     { vendor: '식품안전나라', url: 'https://various.foodsafetykorea.go.kr/nutrient/' },
   ];
 
+  // 성분칩이면 q가 이미 영문(DSLD_QUERY), 자유검색이면 한글→영문 매핑 적용
+  const dsldTerm = ing ? q : toDsldTerm(q);
   let global = { source: 'sample', products: sampleFor(ingredientId) };
   try {
-    const products = await searchDSLD(q);
+    const products = await searchDSLD(dsldTerm);
     if (products.length) global = { source: 'dsld', products };
   } catch (e) {
     global.reason = e.message;
