@@ -3,234 +3,519 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>베놈치과의원 — 임플란트·교정 전문</title>
+<title>스마일플러스치과의원 — 임플란트·교정 전문 치과</title>
+<meta name="description" content="스마일플러스치과의원 — 대학병원급 장비와 15년 이상 임상경력의 전문의가 직접 진료합니다. 임플란트·교정·심미치료 전문.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#1a1a1a;line-height:1.6}
 a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
 
-/* Header */
-.site-header{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-size:18px;font-weight:700;color:#1a73e8}
-.header-tel{font-size:14px;color:#555}
-.header-tel strong{color:#e53e3e}
+/* ─── Header ─── */
+.site-header{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 24px;height:66px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.logo{font-size:20px;font-weight:800;color:#1a73e8;letter-spacing:-.5px}
+.logo span{color:#1a1a1a}
+.header-right{display:flex;align-items:center;gap:24px}
+.header-nav{display:flex;gap:20px;font-size:14px;font-weight:500;color:#444}
+.header-nav a:hover{color:#1a73e8}
+.header-tel{font-size:15px;font-weight:700;color:#e53e3e;white-space:nowrap}
+.header-cta{background:#1a73e8;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;white-space:nowrap}
+@media(max-width:768px){.header-nav{display:none}.logo{font-size:17px}}
 
-/* Hero */
-.hero{color:#fff;padding:80px 24px;text-align:center;position:relative;overflow:hidden;min-height:500px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1f4e}
-.hero-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_14.jpg');background-size:cover;background-position:center;filter:brightness(.28);z-index:0}
+/* ─── Hero ─── */
+.hero{position:relative;min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:80px 24px 64px;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_14.jpg');background-size:cover;background-position:center top;filter:brightness(.22);z-index:0}
 .hero>*:not(.hero-bg){position:relative;z-index:1}
-.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.3;margin-bottom:16px}
-.hero p{font-size:clamp(15px,2vw,18px);opacity:.85;max-width:600px;margin:0 auto 32px}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn-w{background:#fff;color:#1a73e8;padding:14px 32px;border-radius:50px;font-weight:700;font-size:15px;transition:.2s}
-.btn-o{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);padding:14px 32px;border-radius:50px;font-weight:600;font-size:15px}
-.hero-badge{display:inline-flex;gap:16px;margin-top:40px;background:rgba(255,255,255,.1);padding:12px 24px;border-radius:50px;font-size:13px}
-.hero-badge span{opacity:.9}
+.hero-kicker{display:inline-block;background:rgba(26,115,232,.85);color:#fff;font-size:12px;font-weight:600;letter-spacing:.08em;padding:5px 16px;border-radius:20px;margin-bottom:20px;text-transform:uppercase}
+.hero h1{font-size:clamp(30px,5.5vw,54px);font-weight:800;line-height:1.25;margin-bottom:18px;letter-spacing:-.5px}
+.hero h1 em{color:#7eb8ff;font-style:normal}
+.hero p{font-size:clamp(15px,2vw,19px);opacity:.85;max-width:620px;margin:0 auto 36px;line-height:1.75}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:#1a73e8;color:#fff;padding:15px 36px;border-radius:50px;font-weight:700;font-size:15px;transition:.2s;border:2px solid #1a73e8}
+.btn-primary:hover{background:#1558b0;border-color:#1558b0}
+.btn-outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);padding:15px 36px;border-radius:50px;font-weight:600;font-size:15px;transition:.2s}
+.btn-outline:hover{background:rgba(255,255,255,.1)}
+.hero-badges{display:flex;gap:24px;margin-top:44px;justify-content:center;flex-wrap:wrap}
+.hero-badge-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);padding:9px 18px;border-radius:40px;font-size:13px;font-weight:500}
+.hero-badge-item .dot{width:7px;height:7px;border-radius:50%;background:#4fc3f7;flex-shrink:0}
 
-/* Stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e8e8e8}
-@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{background:#fff;padding:28px 16px;text-align:center}
-.stat-n{font-size:32px;font-weight:800;color:#1a73e8}
-.stat-l{font-size:12px;color:#888;margin-top:4px}
+/* ─── Stats ─── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#d0d7e3}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:#fff;padding:30px 16px;text-align:center}
+.stat-n{font-size:34px;font-weight:800;color:#1a73e8;line-height:1}
+.stat-n sup{font-size:18px;vertical-align:super}
+.stat-l{font-size:12px;color:#888;margin-top:6px;line-height:1.5}
 
-/* Section */
-.section{padding:64px 24px;max-width:960px;margin:0 auto}
-.section-title{font-size:clamp(22px,3vw,32px);font-weight:800;text-align:center;margin-bottom:8px}
-.section-sub{text-align:center;color:#666;margin-bottom:48px;font-size:15px}
+/* ─── Feature Split ─── */
+.feature-split{display:grid;grid-template-columns:1fr 1fr;min-height:500px}
+@media(max-width:768px){.feature-split{grid-template-columns:1fr}}
+.feature-split-img{overflow:hidden;min-height:360px}
+.feature-split-img img{width:100%;height:100%;object-fit:cover;display:block}
+.feature-split-text{padding:64px 56px;background:#f0f7ff;display:flex;flex-direction:column;justify-content:center}
+@media(max-width:768px){.feature-split-text{padding:40px 28px}}
+.split-kicker{font-size:12px;font-weight:700;color:#1a73e8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.feature-split-text h2{font-size:clamp(22px,3vw,30px);font-weight:800;line-height:1.35;margin-bottom:16px;letter-spacing:-.3px}
+.feature-split-text p{font-size:14px;color:#555;line-height:1.8;margin-bottom:24px}
+.feature-bullets{list-style:none;display:flex;flex-direction:column;gap:12px}
+.feature-bullets li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#333}
+.feature-bullets li::before{content:'✓';color:#1a73e8;font-weight:700;flex-shrink:0;margin-top:1px}
 
-/* Services */
-.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-@media(max-width:640px){.service-grid{grid-template-columns:1fr}}
-.service-card{border:1px solid #e8e8e8;border-radius:16px;padding:28px 24px;transition:.2s}
-.service-card:hover{border-color:#1a73e8;box-shadow:0 4px 20px rgba(26,115,232,.1)}
-.service-icon{font-size:36px;margin-bottom:12px}
-.service-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
-.service-card p{font-size:13px;color:#666;line-height:1.7}
-.service-price{margin-top:16px;font-size:13px;color:#1a73e8;font-weight:600}
+/* ─── Section ─── */
+.section{padding:72px 24px;max-width:960px;margin:0 auto}
+.section-title{font-size:clamp(22px,3.5vw,32px);font-weight:800;text-align:center;margin-bottom:10px;letter-spacing:-.3px}
+.section-sub{text-align:center;color:#666;margin-bottom:52px;font-size:15px;line-height:1.7}
+.section-sub strong{color:#1a73e8}
 
-/* Process */
-.process{background:#f8f9fa;padding:64px 24px}
-.process-inner{max-width:960px;margin:0 auto}
-.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:48px}
-@media(max-width:640px){.steps{grid-template-columns:1fr}}
-.step{text-align:center}
-.step-num{width:48px;height:48px;background:#1a73e8;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin:0 auto 12px}
-.step h4{font-size:14px;font-weight:700;margin-bottom:6px}
-.step p{font-size:12px;color:#666}
+/* ─── Service Cards (image-topped) ─── */
+.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:700px){.service-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.service-grid{grid-template-columns:1fr}}
+.service-card{border:1px solid #e8e8e8;border-radius:16px;overflow:hidden;transition:.2s;background:#fff}
+.service-card:hover{border-color:#1a73e8;box-shadow:0 8px 24px rgba(26,115,232,.15);transform:translateY(-3px)}
+.service-card-img{height:180px;overflow:hidden;position:relative}
+.service-card-img img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.service-card:hover .service-card-img img{transform:scale(1.05)}
+.service-card-img.grad{background:linear-gradient(135deg,#1a73e8,#0d47a1);display:flex;align-items:center;justify-content:center;font-size:48px}
+.service-card-body{padding:20px}
+.service-card-body h3{font-size:16px;font-weight:700;margin-bottom:8px;color:#1a1a1a}
+.service-card-body p{font-size:13px;color:#666;line-height:1.7}
+.service-price{margin-top:12px;font-size:13px;color:#1a73e8;font-weight:700}
+.service-tag{display:inline-block;background:#e8f0fe;color:#1a73e8;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-bottom:8px}
 
-/* Doctors */
+/* ─── Doctors ─── */
 .doctor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-@media(max-width:640px){.doctor-grid{grid-template-columns:1fr}}
-.doctor-card{background:#f8f9fa;border-radius:16px;overflow:hidden}
-.doctor-img{height:220px;overflow:hidden;background:#e3f2fd}
-.doctor-img img{width:100%;height:100%;object-fit:cover;object-position:center top}
+@media(max-width:700px){.doctor-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.doctor-grid{grid-template-columns:1fr}}
+.doctor-card{border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:.25s}
+.doctor-card:hover{box-shadow:0 8px 28px rgba(26,115,232,.15);transform:translateY(-4px)}
+.doctor-photo{height:280px;overflow:hidden;position:relative}
+.doctor-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:.4s}
+.doctor-card:hover .doctor-photo img{transform:scale(1.04)}
 .doctor-info{padding:20px}
-.doctor-info h3{font-size:16px;font-weight:700;margin-bottom:4px}
-.doctor-info .title{font-size:12px;color:#1a73e8;margin-bottom:8px}
-.doctor-info p{font-size:12px;color:#666;line-height:1.7}
+.doctor-name{font-size:17px;font-weight:800;margin-bottom:2px}
+.doctor-title{font-size:12px;color:#1a73e8;font-weight:600;margin-bottom:10px}
+.doctor-career{font-size:12px;color:#666;line-height:1.8}
+.doctor-career li{list-style:none;padding-left:12px;position:relative}
+.doctor-career li::before{content:'·';position:absolute;left:0;color:#1a73e8}
 
-/* Review */
+/* ─── Reviews ─── */
 .review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-@media(max-width:640px){.review-grid{grid-template-columns:1fr}}
-.review-card{background:#fff;border:1px solid #e8e8e8;border-radius:16px;padding:24px}
-.stars{color:#f59e0b;font-size:16px;margin-bottom:8px}
-.review-text{font-size:13px;color:#444;line-height:1.8;margin-bottom:12px}
-.reviewer{font-size:12px;color:#999}
+@media(max-width:700px){.review-grid{grid-template-columns:1fr}}
+.review-card{background:#f8fbff;border:1px solid #dce8fb;border-radius:14px;padding:24px}
+.review-stars{color:#f5a623;font-size:16px;margin-bottom:10px;letter-spacing:2px}
+.review-text{font-size:13px;color:#444;line-height:1.75;margin-bottom:14px}
+.review-author{font-size:12px;color:#888}
+.review-author strong{color:#333}
 
-/* FAQ */
-.faq{background:#f8f9fa;padding:64px 24px}
-.faq-inner{max-width:760px;margin:0 auto}
-.faq-sub{text-align:center;color:#666;margin-bottom:32px;font-size:15px}
-.faq-item{background:#fff;border-radius:12px;margin-bottom:12px;overflow:hidden}
-.faq-q{padding:18px 24px;font-weight:600;font-size:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-.faq-q span{color:#1a73e8;font-size:20px;font-weight:300}
-.faq-a{padding:0 24px 18px;font-size:14px;color:#555;line-height:1.8}
+/* ─── Gallery ─── */
+.gallery-section{background:#f4f8ff;padding:72px 24px}
+.gallery-inner{max-width:960px;margin:0 auto}
+.gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:0}
+@media(max-width:600px){.gallery-grid{grid-template-columns:1fr}}
+.gallery-card{border-radius:16px;overflow:hidden;position:relative;background:#000}
+.gallery-card img{width:100%;height:380px;object-fit:cover;opacity:.88;transition:.4s;display:block}
+.gallery-card:hover img{opacity:1;transform:scale(1.03)}
+.gallery-label{position:absolute;bottom:0;left:0;right:0;padding:24px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff}
+.gallery-label h4{font-size:16px;font-weight:700;margin-bottom:4px}
+.gallery-label p{font-size:12px;opacity:.8;line-height:1.6}
 
-/* CTA */
-.cta{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:80px 24px;text-align:center}
-.cta h2{font-size:clamp(24px,4vw,36px);font-weight:800;margin-bottom:12px}
-.cta p{font-size:16px;opacity:.85;margin-bottom:32px}
-.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.cta-btn-w{background:#fff;color:#1a73e8;padding:16px 36px;border-radius:50px;font-weight:700;font-size:15px}
-.cta-btn-o{background:transparent;border:2px solid rgba(255,255,255,.6);color:#fff;padding:16px 36px;border-radius:50px;font-weight:600;font-size:15px}
+/* ─── Notice ─── */
+.notice-band{background:#1a73e8;color:#fff;padding:20px 24px;text-align:center;font-size:14px;font-weight:500}
+.notice-band strong{font-size:15px}
+
+/* ─── CTA ─── */
+.cta-section{background:linear-gradient(135deg,#0d47a1,#1a73e8);color:#fff;text-align:center;padding:72px 24px}
+.cta-section h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:14px;letter-spacing:-.3px}
+.cta-section p{font-size:15px;opacity:.85;margin-bottom:36px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.75}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-white{background:#fff;color:#1a73e8;padding:15px 36px;border-radius:50px;font-weight:700;font-size:15px;transition:.2s}
+.btn-white:hover{background:#e8f0fe}
+.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);padding:15px 36px;border-radius:50px;font-weight:600;font-size:15px;transition:.2s}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+/* ─── Process ─── */
+.process-list{display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:step}
+@media(max-width:700px){.process-list{grid-template-columns:repeat(2,1fr)}}
+.process-item{text-align:center;padding:32px 20px;position:relative}
+.process-item:not(:last-child)::after{content:'';position:absolute;top:44px;right:-1px;width:2px;height:40px;background:#d0e4ff}
+@media(max-width:700px){.process-item:nth-child(2)::after,.process-item:nth-child(4)::after{display:none}}
+.process-num{width:52px;height:52px;border-radius:50%;background:#1a73e8;color:#fff;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 14px rgba(26,115,232,.35)}
+.process-item h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.process-item p{font-size:12px;color:#666;line-height:1.7}
+
+/* ─── FAQ ─── */
+.faq-list{display:flex;flex-direction:column;gap:12px}
+.faq-item{border:1px solid #e0eaf8;border-radius:12px;overflow:hidden}
+.faq-q{padding:18px 20px;font-size:14px;font-weight:600;color:#1a1a1a;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff}
+.faq-q::before{content:'Q';display:inline-flex;width:26px;height:26px;border-radius:50%;background:#1a73e8;color:#fff;font-size:12px;font-weight:800;align-items:center;justify-content:center;flex-shrink:0}
+.faq-a{padding:14px 20px 18px 56px;font-size:13px;color:#555;line-height:1.8;background:#f8fbff;border-top:1px solid #e0eaf8}
+
+/* ─── Map/Info ─── */
+.info-band{background:#f8fbff;border-top:1px solid #e0eaf8;border-bottom:1px solid #e0eaf8;padding:36px 24px}
+.info-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+@media(max-width:640px){.info-inner{grid-template-columns:1fr}}
+.info-item h4{font-size:13px;font-weight:700;color:#1a73e8;margin-bottom:8px}
+.info-item p{font-size:13px;color:#555;line-height:1.75}
+
+/* ─── Floating CTA ─── */
+.floating-cta{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.float-btn{display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:50px;font-size:13px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:.2s;white-space:nowrap}
+.float-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.float-kakao{background:#fee500;color:#1a1a1a}
+.float-tel{background:#1a73e8;color:#fff}
 </style>
 </head>
 <body>
 
+<!-- ═══ HEADER ═══ -->
 <header class="site-header">
-  <div class="logo">🦷 베놈치과의원</div>
-  <div class="header-tel">예약문의 <strong>02-1234-5678</strong></div>
+  <div class="logo">스마일플러스<span>치과</span></div>
+  <nav class="header-right">
+    <div class="header-nav">
+      <a href="#">임플란트</a>
+      <a href="#">교정</a>
+      <a href="#">심미치료</a>
+      <a href="#">의료진</a>
+      <a href="#">오시는길</a>
+    </div>
+    <a href="tel:031-000-0000" class="header-tel">031-000-0000</a>
+    <a href="#" class="header-cta">예약상담</a>
+  </nav>
 </header>
 
+<!-- ═══ HERO ═══ -->
 <section class="hero">
   <div class="hero-bg"></div>
-  <h1>임플란트·교정 전문<br><span style="color:#93c5fd">베놈치과의원</span></h1>
-  <p>국내 최다 임플란트 시술 경험 15년.<br>당일 식립·무통 치료·평생 AS 보장.</p>
+  <div class="hero-kicker">임플란트 · 교정 · 심미치료 전문</div>
+  <h1>당신의 미소를<br><em>가장 아름답게</em> 만드는 곳</h1>
+  <p>스마일플러스치과는 15년 이상의 임상 경력을 가진<br>전문의가 직접 진단하고 시술합니다.<br>대학병원급 장비와 환자 중심의 섬세한 진료를 약속드립니다.</p>
   <div class="hero-btns">
-    <a class="btn-w" href="#">무료 상담 예약</a>
-    <a class="btn-o" href="tel:0212345678">☎ 전화 예약</a>
+    <a href="tel:031-000-0000" class="btn-primary">📞 전화 예약하기</a>
+    <a href="#" class="btn-outline">카카오 채널 상담</a>
   </div>
-  <div class="hero-badge">
-    <span>✅ 임플란트 전문의 3인</span>
-    <span>✅ 당일 식립 가능</span>
-    <span>✅ 무통 마취 시스템</span>
+  <div class="hero-badges">
+    <div class="hero-badge-item"><span class="dot"></span>당일 즉시 임플란트 가능</div>
+    <div class="hero-badge-item"><span class="dot"></span>비급여 투명 고지</div>
+    <div class="hero-badge-item"><span class="dot"></span>야간·토요일 진료</div>
   </div>
 </section>
 
+<!-- ═══ STATS ═══ -->
 <div class="stats">
-  <div class="stat"><div class="stat-n">15,000+</div><div class="stat-l">누적 임플란트 시술</div></div>
-  <div class="stat"><div class="stat-n">15년</div><div class="stat-l">임플란트 전문 경력</div></div>
-  <div class="stat"><div class="stat-n">98%</div><div class="stat-l">환자 만족도</div></div>
-  <div class="stat"><div class="stat-n">4.9★</div><div class="stat-l">네이버 평점</div></div>
+  <div class="stat">
+    <div class="stat-n">15<sup>년+</sup></div>
+    <div class="stat-l">임플란트 전문의<br>임상 경력</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">8,200<sup>+</sup></div>
+    <div class="stat-l">임플란트 시술<br>누적 케이스</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">97<sup>%</sup></div>
+    <div class="stat-l">환자 재내원율<br>(2023년 기준)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">3<sup>명</sup></div>
+    <div class="stat-l">전문의 상주<br>全 진료 직접 담당</div>
+  </div>
 </div>
 
+<!-- ═══ FEATURE SPLIT: 치과 치료 전문관 ═══ -->
+<section class="feature-split">
+  <div class="feature-split-img">
+    <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_15.jpg" alt="임플란트 모델 상세 설명 장면">
+  </div>
+  <div class="feature-split-text">
+    <p class="split-kicker">치과 치료 전문관</p>
+    <h2>임플란트, 한 번 제대로<br>스마일플러스에서 해결하세요</h2>
+    <p>임플란트는 제조사 선택부터 식립 각도, 보철 마감까지 수십 가지 변수가 예후를 좌우합니다. 스마일플러스치과는 매 케이스마다 3D CT 분석과 디지털 계획 수립으로 최적의 결과를 이끌어냅니다.</p>
+    <ul class="feature-bullets">
+      <li>오스템·스트라우만 등 검증된 글로벌 임플란트 브랜드 사용</li>
+      <li>뼈 이식(골이식) 동반 케이스도 원스톱 처리</li>
+      <li>당일 즉시 임플란트 — 발치 후 같은 날 식립 가능</li>
+      <li>모든 케이스 10년 기능 보증 (조건 충족 시)</li>
+      <li>전신 질환·고령 환자도 개별 프로토콜 적용</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ SERVICES ═══ -->
 <section class="section">
-  <div class="section-title">임플란트 전문 서비스</div>
-  <div class="section-sub">환자 맞춤형 1:1 진료 시스템</div>
+  <h2 class="section-title">대표 진료 서비스</h2>
+  <p class="section-sub">스마일플러스치과의 핵심 치료 프로그램을 소개합니다.<br><strong>전문의가 직접</strong> 처음부터 끝까지 케어합니다.</p>
   <div class="service-grid">
+
+    <!-- Card 1: img_15.jpg -->
     <div class="service-card">
-      <div class="service-icon">🦷</div>
-      <h3>일반 임플란트</h3>
-      <p>검증된 3세대 임플란트 시스템 사용. 뼈 상태에 따른 맞춤 식립으로 20년 이상 사용 가능.</p>
-      <div class="service-price">660,000원~</div>
+      <div class="service-card-img">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_15.jpg" alt="임플란트 모델 설명">
+      </div>
+      <div class="service-card-body">
+        <span class="service-tag">인기 1위</span>
+        <h3>임플란트</h3>
+        <p>자연치아에 가장 가까운 기능과 심미성. 오스템·스트라우만 등 검증된 브랜드 사용. 3D CT 맞춤 계획으로 안전한 식립.</p>
+        <p class="service-price">상담 후 결정 (비급여 투명 고지)</p>
+      </div>
     </div>
+
+    <!-- Card 2: img_14.jpg -->
     <div class="service-card">
-      <div class="service-icon">⚡</div>
-      <h3>당일 즉시 임플란트</h3>
-      <p>발치 후 즉시 식립으로 치료기간 단축. CT 분석 후 당일 결정, 추가 내원 최소화.</p>
-      <div class="service-price">880,000원~</div>
+      <div class="service-card-img">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_14.jpg" alt="치과 즉시 임플란트 시술">
+      </div>
+      <div class="service-card-body">
+        <span class="service-tag">당일 가능</span>
+        <h3>당일 즉시임플란트</h3>
+        <p>발치와 식립을 한 번의 내원으로 해결. 치유 기간 단축, 입술 볼륨 유지. 적합 여부는 CT 분석 후 안내드립니다.</p>
+        <p class="service-price">당일 진료 예약 권장</p>
+      </div>
     </div>
+
+    <!-- Card 3: gradient -->
     <div class="service-card">
-      <div class="service-icon">🦴</div>
-      <h3>뼈이식 임플란트</h3>
-      <p>뼈 부족 환자도 OK. 자가골·합성골 사용, 임플란트와 동시 시술로 치료기간 최소화.</p>
-      <div class="service-price">1,100,000원~</div>
+      <div class="service-card-img grad">🦷</div>
+      <div class="service-card-body">
+        <h3>투명 교정 (클리어얼라이너)</h3>
+        <p>눈에 띄지 않는 투명 장치로 치아를 가지런하게. 인비절라인 공식 인증 시스템 적용. 직장인·성인 교정 환자 맞춤.</p>
+        <p class="service-price">1회 무료 교정 상담 가능</p>
+      </div>
     </div>
+
+    <!-- Card 4: gradient -->
     <div class="service-card">
-      <div class="service-icon">😊</div>
-      <h3>무치악(All-on-4)</h3>
-      <p>치아가 없는 분께 최적. 임플란트 4개로 완전한 틀니 고정. 당일 임시치아 장착.</p>
-      <div class="service-price">상담 후 결정</div>
+      <div class="service-card-img grad">✨</div>
+      <div class="service-card-body">
+        <h3>라미네이트·올세라믹</h3>
+        <p>앞니 형태·색상 교정을 빠르고 자연스럽게. 최소 삭제 라미네이트부터 전체 올세라믹 크라운까지 맞춤 제안.</p>
+        <p class="service-price">시뮬레이션 미리 확인 가능</p>
+      </div>
     </div>
+
+    <!-- Card 5: gradient -->
     <div class="service-card">
-      <div class="service-icon">😁</div>
-      <h3>투명교정(인비절라인)</h3>
-      <p>탈착 가능한 투명 교정장치. 티 안 나는 교정, 식사 제한 없음. 인비절라인 공식 인증의.</p>
-      <div class="service-price">350만원~</div>
+      <div class="service-card-img grad">🪥</div>
+      <div class="service-card-body">
+        <h3>스케일링·치주 치료</h3>
+        <p>잇몸 건강이 전신 건강의 시작. 정밀 초음파 스케일링과 치주낭 소파술로 염증을 근본부터 치료합니다.</p>
+        <p class="service-price">건강보험 적용 (연 1회)</p>
+      </div>
     </div>
+
+    <!-- Card 6: gradient -->
     <div class="service-card">
-      <div class="service-icon">💎</div>
-      <h3>세라믹 교정</h3>
-      <p>치아 색상의 세라믹 브라켓 사용. 금속 교정 대비 심미성 우수, 효과는 동일.</p>
-      <div class="service-price">250만원~</div>
+      <div class="service-card-img grad">💎</div>
+      <div class="service-card-body">
+        <h3>충치 치료·인레이</h3>
+        <p>레진·세라믹 인레이로 충치를 심미적이고 견고하게 수복. 신경 치료 필요 시 전문 보존과 의사가 직접 담당.</p>
+        <p class="service-price">검진 X-ray 포함 초진 상담</p>
+      </div>
     </div>
+
   </div>
 </section>
 
-<div class="process">
-  <div class="process-inner">
-    <div class="section-title">치료 과정</div>
-    <div class="section-sub">내원부터 완료까지 5단계</div>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><h4>초진 상담</h4><p>X-ray·CT 촬영 및 구강 검진</p></div>
-      <div class="step"><div class="step-num">2</div><h4>진단 계획</h4><p>전문의 1:1 치료 계획 수립</p></div>
-      <div class="step"><div class="step-num">3</div><h4>시술</h4><p>무통 마취 후 임플란트 식립</p></div>
-      <div class="step"><div class="step-num">4</div><h4>치유 기간</h4><p>골유착 (3~6개월)</p></div>
-      <div class="step"><div class="step-num">5</div><h4>보철 장착</h4><p>최종 크라운 장착 완료</p></div>
+<!-- ═══ PROCESS ═══ -->
+<div style="background:#f0f7ff;padding:64px 24px">
+  <div style="max-width:960px;margin:0 auto">
+    <h2 class="section-title" style="margin-bottom:10px">임플란트 진행 과정</h2>
+    <p class="section-sub">처음 내원부터 최종 보철 완성까지, <strong>투명하고 체계적으로</strong> 안내합니다</p>
+    <div class="process-list">
+      <div class="process-item">
+        <div class="process-num">1</div>
+        <h4>초진 상담 &amp; CT 촬영</h4>
+        <p>구강 전체 파노라마·3D CT 분석 후 맞춤 치료 계획 수립</p>
+      </div>
+      <div class="process-item">
+        <div class="process-num">2</div>
+        <h4>식립 수술</h4>
+        <p>국소마취 후 임플란트 픽스처 식립 (소요 약 30~60분)</p>
+      </div>
+      <div class="process-item">
+        <div class="process-num">3</div>
+        <h4>골유착 기간</h4>
+        <p>2~4개월 뼈와 임플란트가 단단히 결합되는 치유 기간</p>
+      </div>
+      <div class="process-item">
+        <div class="process-num">4</div>
+        <h4>최종 보철 장착</h4>
+        <p>세라믹 크라운 제작·장착 후 교합 조정 및 사용법 안내</p>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- ═══ DOCTORS ═══ -->
 <section class="section">
-  <div class="section-title">의료진 소개</div>
-  <div class="section-sub">15년 경력 임플란트 전문의 3인 체제</div>
+  <h2 class="section-title">의료진 소개</h2>
+  <p class="section-sub">모든 진료는 <strong>전문의가 직접</strong> 처음부터 끝까지 책임집니다</p>
   <div class="doctor-grid">
+
     <div class="doctor-card">
-      <div class="doctor-img"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_05.jpg" alt="원장 사진"></div>
-      <div class="doctor-info"><h3>김○○ 원장</h3><div class="title">임플란트 전문의 | 대표원장</div><p>연세대 치과대학 졸업<br>임플란트 시술 8,000케이스<br>대한임플란트학회 정회원</p></div>
+      <div class="doctor-photo">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_05.jpg" alt="대표원장 남성 의사 상담">
+      </div>
+      <div class="doctor-info">
+        <div class="doctor-name">김민준 원장</div>
+        <div class="doctor-title">대표원장 · 구강악안면외과 전문의</div>
+        <ul class="doctor-career">
+          <li>서울대학교 치과대학 졸업</li>
+          <li>연세세브란스병원 구강악안면외과 전공의 수료</li>
+          <li>대한임플란트학회 정회원 · 인증의</li>
+          <li>임플란트 시술 누적 5,000케이스 이상</li>
+          <li>전 삼성서울병원 치과 임상강사</li>
+        </ul>
+      </div>
     </div>
+
     <div class="doctor-card">
-      <div class="doctor-img"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_10.jpg" alt="원장 사진"></div>
-      <div class="doctor-info"><h3>이○○ 원장</h3><div class="title">교정 전문의</div><p>서울대 치과대학 졸업<br>인비절라인 다이아몬드 인증<br>대한치과교정학회 정회원</p></div>
+      <div class="doctor-photo">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_10.jpg" alt="교정과 여성 의사 포트레이트">
+      </div>
+      <div class="doctor-info">
+        <div class="doctor-name">이수연 원장</div>
+        <div class="doctor-title">교정과 전문의</div>
+        <ul class="doctor-career">
+          <li>연세대학교 치과대학 졸업</li>
+          <li>연세대 치과대학원 교정학 석사</li>
+          <li>대한치과교정학회 정회원 · 인증의</li>
+          <li>인비절라인 다이아몬드 공급자 인증</li>
+          <li>성인·청소년 교정 1,200케이스 이상</li>
+        </ul>
+      </div>
     </div>
+
     <div class="doctor-card">
-      <div class="doctor-img"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_06.jpg" alt="원장 사진"></div>
-      <div class="doctor-info"><h3>박○○ 원장</h3><div class="title">보존과 전문의</div><p>경북대 치과대학 졸업<br>신경치료·보존 특화<br>대한보존학회 정회원</p></div>
+      <div class="doctor-photo">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_06.jpg" alt="보존과 남성 의사 태블릿 활용">
+      </div>
+      <div class="doctor-info">
+        <div class="doctor-name">박지훈 원장</div>
+        <div class="doctor-title">보존과 전문의 · 디지털 진료 담당</div>
+        <ul class="doctor-career">
+          <li>경북대학교 치과대학 졸업</li>
+          <li>경북대 치과대학원 보존학 석사</li>
+          <li>대한치과보존학회 정회원</li>
+          <li>디지털 구강스캐너·CAD/CAM 보철 전문</li>
+          <li>신경치료 및 레진 심미수복 다수 케이스</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ NOTICE BAND ═══ -->
+<div class="notice-band">
+  <strong>🕐 진료 안내</strong> &nbsp;|&nbsp; 평일 09:00 ~ 20:00 &nbsp;·&nbsp; 토요일 09:00 ~ 17:00 &nbsp;·&nbsp; 점심시간 13:00 ~ 14:00 &nbsp;|&nbsp; <strong>일요일·공휴일 휴진</strong>
+</div>
+
+<!-- ═══ GALLERY: 임플란트 케이스 갤러리 ═══ -->
+<section class="gallery-section">
+  <div class="gallery-inner">
+    <h2 class="section-title" style="margin-bottom:10px">임플란트 케이스 갤러리</h2>
+    <p class="section-sub" style="margin-bottom:36px">실제 환자 케이스를 통해 스마일플러스치과의 치료 결과를 확인하세요<br>(모든 사진은 환자 동의 후 게재)</p>
+    <div class="gallery-grid">
+      <div class="gallery-card">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_14.jpg" alt="임플란트 시술 케이스 — 상악 전치부">
+        <div class="gallery-label">
+          <h4>상악 전치부 임플란트 + 크라운 수복</h4>
+          <p>50대 여성 / 외상성 발치 후 즉시 임플란트 적용<br>최종 보철 완성까지 총 10주 소요</p>
+        </div>
+      </div>
+      <div class="gallery-card">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_15.jpg" alt="임플란트 모델 케이스 설명">
+        <div class="gallery-label">
+          <h4>하악 구치부 다수 임플란트 + 골이식</h4>
+          <p>60대 남성 / 다수 결손 + 골흡수 케이스<br>골이식 선행 후 6개월 뒤 식립 완료</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- ═══ REVIEWS ═══ -->
 <section class="section">
-  <div class="section-title">실제 환자 후기</div>
-  <div class="section-sub">네이버 예약 실제 후기 기반</div>
+  <h2 class="section-title">환자 후기</h2>
+  <p class="section-sub">실제 내원 환자분들의 솔직한 이야기를 들어보세요</p>
   <div class="review-grid">
-    <div class="review-card"><div class="stars">★★★★★</div><p class="review-text">"임플란트가 이렇게 안 아플 수 있다는 게 놀라웠어요. 무통 마취가 진짜 무통이었고, 다음 날 바로 출근했습니다."</p><div class="reviewer">강남구 거주 50대 직장인</div></div>
-    <div class="review-card"><div class="stars">★★★★★</div><p class="review-text">"교정 1년 6개월 만에 완료. 투명교정이라 직장 동료들도 모를 정도였어요. 결과도 너무 만족스럽습니다."</p><div class="reviewer">서초구 거주 30대 직장인</div></div>
-    <div class="review-card"><div class="stars">★★★★★</div><p class="review-text">"당일 식립 해준다고 해서 반신반의했는데, 진짜 당일에 임플란트 심었어요. 3개월 후 보철까지 완료."</p><div class="reviewer">송파구 거주 40대</div></div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"임플란트가 무섭다는 생각에 몇 년을 미뤘는데, 원장님이 CT 보며 단계마다 설명해주셔서 안심하고 진행했습니다. 시술 중 거의 통증이 없었고 회복도 빠릅니다."</p>
+      <div class="review-author"><strong>이○희</strong> · 50대 · 임플란트 2개</div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"투명 교정 상담을 세 군데서 받았는데 이수연 원장님이 제일 꼼꼼하게 봐주셨어요. 6개월째 진행 중인데 치아가 눈에 띄게 달라졌습니다. 추천드려요."</p>
+      <div class="review-author"><strong>박○진</strong> · 30대 · 인비절라인 교정</div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"신경 치료 두려움 때문에 계속 미뤘는데 박지훈 원장님이 디지털 장비로 확인하면서 정확하게 해주셨어요. 직원분들도 친절하고 대기 안내도 잘 해줍니다."</p>
+      <div class="review-author"><strong>최○민</strong> · 40대 · 신경치료·크라운</div>
+    </div>
   </div>
 </section>
 
-<div class="faq">
-  <div class="faq-inner">
-    <div class="section-title">자주 묻는 질문</div>
-    <div class="faq-sub">임플란트에 대해 궁금하신 점을 확인하세요</div>
-    <div class="faq-item"><div class="faq-q">임플란트 시술 시간이 얼마나 걸리나요? <span>+</span></div><div class="faq-a">단순 임플란트의 경우 식립 자체는 30~60분 내외입니다. 뼈이식이 필요 없는 경우 내원 당일 식립이 가능하며, 뼈이식이 필요한 경우 치유 기간 3~6개월 후 식립합니다.</div></div>
-    <div class="faq-item"><div class="faq-q">임플란트 비용, 분할 납부 가능한가요? <span>+</span></div><div class="faq-a">카드 무이자 할부(최대 24개월) 및 의료 전용 할부 금융을 지원하고 있습니다. 상담 시 자세히 안내해 드립니다.</div></div>
-    <div class="faq-item"><div class="faq-q">임플란트 보험 적용이 되나요? <span>+</span></div><div class="faq-a">만 65세 이상 건강보험 적용 시 본인 부담 30%로 시술 가능합니다. 일부 민영 보험도 적용 가능하니 보험증서 지참 후 문의해 주세요.</div></div>
-    <div class="faq-item"><div class="faq-q">교정 중에 임플란트도 동시에 가능한가요? <span>+</span></div><div class="faq-a">케이스에 따라 교정과 임플란트 순서가 달라집니다. 교정 전문의와 임플란트 전문의가 함께 진단 후 최적의 순서를 계획해 드립니다.</div></div>
+<!-- ═══ FAQ ═══ -->
+<div style="background:#f8fbff;padding:64px 24px">
+  <div style="max-width:720px;margin:0 auto">
+    <h2 class="section-title" style="margin-bottom:10px">자주 묻는 질문</h2>
+    <p class="section-sub" style="margin-bottom:36px">임플란트·교정 관련 궁금하신 점을 모았습니다</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">임플란트 시술 후 언제부터 식사가 가능한가요?</div>
+        <div class="faq-a">수술 당일은 부드러운 죽·미음 위주로 드시고, 1~2주 후부터 일반 식사가 가능합니다. 최종 보철 장착 후에는 딱딱한 음식도 드실 수 있습니다. 개인차가 있으므로 내원 시 상세히 안내드립니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">당일 즉시 임플란트는 누구나 가능한가요?</div>
+        <div class="faq-a">발치 부위의 잔존골 양, 전신 건강 상태, 흡연 여부 등 다양한 요인에 따라 적합 여부가 결정됩니다. 3D CT 분석 후 정확한 판단이 필요하며, 가능 여부는 초진 상담에서 확인드립니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">투명 교정은 치료 기간이 얼마나 걸리나요?</div>
+        <div class="faq-a">치아 이동량과 케이스 복잡도에 따라 다르지만, 일반적으로 12~24개월이 소요됩니다. 경미한 부정교합의 경우 6~9개월 내 완료되는 경우도 있습니다. 첫 상담 시 3D 시뮬레이션으로 예상 결과를 미리 확인하실 수 있습니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">임플란트는 건강보험이 적용되나요?</div>
+        <div class="faq-a">만 65세 이상의 부분 무치악 환자에 한해 건강보험 혜택이 적용됩니다(평생 2개 한도). 그 외의 경우 비급여 항목이며, 정확한 비용은 초진 상담 후 투명하게 안내드립니다.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">초진 상담 비용이 따로 있나요?</div>
+        <div class="faq-a">스마일플러스치과는 초진 상담 및 파노라마 X-ray 촬영을 무료로 제공합니다. 3D CT가 필요한 경우 별도 비용이 발생할 수 있으며, 사전에 안내드립니다.</div>
+      </div>
+    </div>
   </div>
 </div>
 
-<section class="cta">
-  <h2>지금 바로 <strong>무료 상담</strong> 받아보세요</h2>
-  <p>CT 촬영 + 구강 검진 + 임플란트 상담 — 모두 무료<br>전화 또는 온라인으로 예약하시면 대기 없이 바로 진료합니다</p>
+<!-- ═══ INFO BAND ═══ -->
+<div class="info-band">
+  <div class="info-inner">
+    <div class="info-item">
+      <h4>📍 오시는 길</h4>
+      <p>경기도 성남시 분당구 정자동 000-00<br>정자역 3번 출구 도보 3분<br>주차 30분 무료 제공</p>
+    </div>
+    <div class="info-item">
+      <h4>🕐 진료 시간</h4>
+      <p>평일 09:00 ~ 20:00<br>토요일 09:00 ~ 17:00<br>일요일 · 공휴일 휴진</p>
+    </div>
+    <div class="info-item">
+      <h4>📞 예약 &amp; 문의</h4>
+      <p>전화: <strong>031-000-0000</strong><br>카카오 채널: @스마일플러스치과<br>온라인 예약 24시간 가능</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CTA SECTION ═══ -->
+<section class="cta-section">
+  <h2>지금 바로 무료 상담을 받아보세요</h2>
+  <p>임플란트, 교정, 심미치료 — 무엇이 고민이든<br>전문의가 직접 1:1로 상담해드립니다.<br>초진 X-ray 촬영 무료 제공.</p>
   <div class="cta-btns">
-    <a class="cta-btn-w" href="#">온라인 예약하기</a>
-    <a class="cta-btn-o" href="#">☎ 02-1234-5678 전화 예약</a>
+    <a href="tel:031-000-0000" class="btn-white">📞 전화로 예약하기</a>
+    <a href="#" class="btn-ghost">카카오 채널 상담</a>
   </div>
 </section>
 
+<!-- ═══ FOOTER ═══ -->
 <footer class="venom-footer">
   <div class="vf-inner">
     <div class="vf-brand">
@@ -267,5 +552,12 @@ a{color:inherit;text-decoration:none}
 .vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
 @media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
 </style>
+
+<!-- ═══ FLOATING CTA ═══ -->
+<div class="floating-cta">
+  <a href="#" class="float-btn float-kakao">💬 카카오 상담</a>
+  <a href="tel:031-000-0000" class="float-btn float-tel">📞 전화 예약</a>
+</div>
+
 </body>
 </html>
