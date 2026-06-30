@@ -11,7 +11,8 @@
       "insufficient": "근거 불충분"
     },
     "disclaimer": "질병의 진단·치료 목적이 아닌 정보 제공용. 수치(RDA/UL 등)는 검색 요약 기반 1차 초안이며 서비스 적용 전 각 citation.url 원문과 대조 검수 권장. 일부 항목은 '출처 미확인'으로 표기됨.",
-    "sources_catalog": "data/sources.json 참조"
+    "sources_catalog": "data/sources.json 참조",
+    "kr_primary_source": "국내 1차 출처(식약처 식품안전나라 기능성 인정 문구)는 검증 가능한 항목만 kr_source로 추가. 2026-06-29 기준 17종 중 3종 검증(lutein·probiotics·milk_thistle), 나머지는 고시 원문 미확인(자료 확보 시 보강)."
   },
   "evidence": [
     {
@@ -471,7 +472,14 @@
       "key_cautions": [
         "AREDS2 제형은 중기·후기 AMD 대상으로 연구됨; 초기 AMD 예방 효과는 입증되지 않음",
         "보충 전 안과적 평가 및 의료진 상담 권장"
-      ]
+      ],
+      "kr_source": {
+        "source": "식약처 식품안전나라",
+        "mfds_function": "노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음",
+        "url": "https://www.foodsafetykorea.go.kr/portal/healthyfoodlife/functionalityView.do?viewNo=14",
+        "verified": true,
+        "accessed": "2026-06-29"
+      }
     },
     {
       "ingredient_id": "probiotics",
@@ -539,7 +547,14 @@
         "면역저하자, 중증 환자, 미숙아는 감염 위험으로 주의 및 의료진 상담 필수",
         "흔한 부작용은 경미한 가스 등 위장 증상",
         "효과는 특정 균주에 한정되며 일반화하기 어려움"
-      ]
+      ],
+      "kr_source": {
+        "source": "식약처 식품안전나라",
+        "mfds_function": "유산균 증식 및 유해균 억제·배변활동 원활에 도움을 줄 수 있음(개별인정형은 식후 혈당 상승 억제·피부 보습 등 추가 인정)",
+        "url": "https://www.foodsafetykorea.go.kr/portal/board/board.do?menu_grp=MENU_NEW01&menu_no=2660",
+        "verified": true,
+        "accessed": "2026-06-29"
+      }
     },
     {
       "ingredient_id": "milk_thistle",
@@ -584,7 +599,14 @@
       "key_cautions": [
         "경구 복용 시 대체로 내약성 양호하나 복부팽만·메스꺼움·가스 등 소화기 증상 가능",
         "간 질환 치료를 자가 보충제로 대체하지 말 것"
-      ]
+      ],
+      "kr_source": {
+        "source": "식약처 식품안전나라",
+        "mfds_function": "간 건강에 도움을 줄 수 있음",
+        "url": "https://www.foodsafetykorea.go.kr/portal/healthyfoodlife/functionalityView.do?viewNo=13",
+        "verified": true,
+        "accessed": "2026-06-29"
+      }
     },
     {
       "ingredient_id": "iron",

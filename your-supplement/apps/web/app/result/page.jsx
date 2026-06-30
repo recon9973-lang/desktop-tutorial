@@ -451,6 +451,18 @@ export default function ResultPage() {
                       ))}
                     </div>
 
+                    {/* 🇰🇷 식약처 인정 기능성 문구(검증된 국내 1차 출처) */}
+                    {(() => {
+                      const kr = EV[r.ingredient_id]?.kr_source;
+                      if (!kr?.verified) return null;
+                      return (
+                        <p style={{ fontSize: 12.5, color: 'var(--ink-secondary)', marginTop: 6 }}>
+                          🇰🇷 <strong>식약처 인정</strong> “{kr.mfds_function}”
+                          {kr.url && <a href={kr.url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>원문 →</a>}
+                        </p>
+                      );
+                    })()}
+
                     {/* 검증된 효능 — 근거 코퍼스(evidence.json)의 최강 근거 1건 + 출처 */}
                     {(() => {
                       const tb = topBenefit(r.ingredient_id);
