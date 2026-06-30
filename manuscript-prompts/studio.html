@@ -252,6 +252,26 @@
       <span class="hint">⚠️ 의학 수치는 반드시 실제 출처를 확인하세요. 없는 숫자는 만들지 않습니다.</span>
     </div>
     <div class="chartbox" id="charts"></div>
+
+    <div style="border-top:1px dashed var(--line);margin:24px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🖼️ AI 대표 이미지 생성 <span class="hint">(DALL·E / gpt-image)</span></h2>
+      <div class="sub">원고에 어울리는 대표 이미지·일러스트를 AI로 만들어요. 프롬프트는 입력값에서 자동으로 초안이 잡힙니다. <a href="#" onclick="go(3);toggleCfg();return false;">⚙️ 엔진 연결 설정</a>(STEP3과 공유)</div>
+      <label class="f">이미지 프롬프트 <button class="btn ghost sm" style="float:right;padding:3px 9px" onclick="suggestImgPrompt()">↻ 자동 추천</button></label>
+      <textarea id="img_prompt" placeholder="예: 목을 만지며 모니터를 보는 30대 직장인, 밝고 다정한 병원 진료실"></textarea>
+      <div class="grid2" style="margin-top:6px">
+        <div><label class="f">스타일</label><div class="chips" id="imgStyleChips"></div></div>
+        <div><label class="f">비율</label><div class="chips" id="imgAspectChips"></div></div>
+      </div>
+      <input type="hidden" id="img_style" value="photo"><input type="hidden" id="img_aspect" value="square">
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="imgBtn" onclick="genImage()">🖼️ 이미지 생성하기</button>
+        <button class="btn ghost" onclick="copyImgPrompt()">📋 프롬프트 복사</button>
+      </div>
+      <div id="imgStatus" class="hint" style="margin-top:8px"></div>
+      <div id="imgResult"></div>
+      <div class="hint">💡 엔진 연결 없이도 프롬프트를 복사해 미드저니·DALL·E 등 어떤 이미지 AI에든 바로 쓸 수 있어요.</div>
+    </div>
+
     <div class="nav"><button class="btn ghost" onclick="go(3)">← 이전</button><button class="btn" onclick="go(5)">다음 → 안전 검수</button></div>
   </section>
 
@@ -312,7 +332,9 @@ function syncInputs(){
 /* ───────────── 칩 버튼 그룹 (선택 즉시 반응) ───────────── */
 function chipGroup(host,hidden,opts,onpick){
   const cur=$(hidden).value;
-  $(host).innerHTML=opts.map(o=>`<div class="chip ${o===cur?'sel':''}" data-v="${esc(o)}">${esc(o)}</div>`).join('');
+  // opts: ['a','b'] 또는 [['val','라벨'],...]
+  const norm=opts.map(o=>Array.isArray(o)?o:[o,o]);
+  $(host).innerHTML=norm.map(([v,l])=>`<div class="chip ${v===cur?'sel':''}" data-v="${esc(v)}">${esc(l)}</div>`).join('');
   $(host).querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
     $(hidden).value=c.dataset.v;
     $(host).querySelectorAll('.chip').forEach(x=>x.classList.toggle('sel',x===c));
@@ -362,7 +384,7 @@ function go(n){
   if(n===1 && !$('questions').innerHTML) spark();
   if(n===2) renderTargets();
   if(n===3){renderTone();buildPrompt();}
-  if(n===4) chartTypeUI();
+  if(n===4){chartTypeUI();if(!$('img_prompt').value.trim())suggestImgPrompt();}
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -639,6 +661,38 @@ function dlPng(i){const svg=svgFor(S.charts[i]);const img=new Image();
     cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`infographic-${i+1}.png`;a.click();toast('PNG 내려받기 ⬇');});};
   img.onerror=()=>toast('PNG 변환 실패 — SVG로 받아보세요');img.src=url;}
 
+/* ───────────── STEP4 AI 이미지 생성 ───────────── */
+const IMG_STYLES=[['photo','사진'],['illustration','일러스트'],['thumbnail','썸네일'],['card','카드뉴스'],['render3d','3D']];
+const IMG_ASPECTS=[['square','정사각 1:1'],['wide','가로 16:9'],['tall','세로 4:5']];
+function suggestImgPrompt(){
+  syncInputs();const p=S.persona||(typeof TARGETS!=='undefined'?TARGETS[S.target]:null);
+  const who=S.detail||(p&&p.detail)||'환자';const subj=S.topic?S.topic.t:S.core;
+  $('img_prompt').value=`${subj} 관련 장면 — 등장인물: ${who}${S.region?`, 배경: ${S.region}`:''}. 밝고 다정하며 신뢰감 있는 한국 병원 분위기`;
+  toast('프롬프트 초안을 추천했어요 ✨');
+}
+function copyImgPrompt(){const v=$('img_prompt').value.trim();if(!v){toast('프롬프트를 먼저 입력/추천하세요');return;}
+  navigator.clipboard.writeText(v).then(()=>toast('이미지 프롬프트 복사됨 📋'));}
+async function genImage(){
+  const prompt=$('img_prompt').value.trim();
+  if(!prompt){toast('이미지 프롬프트를 입력하거나 "↻ 자동 추천"을 눌러주세요');return;}
+  const cfg=loadCfg();const url=(cfg.url||'').replace(/\/$/,'')+'/api/generate-image';
+  const body={prompt,style:$('img_style').value,aspect:$('img_aspect').value};
+  const btn=$('imgBtn');btn.disabled=true;btn.textContent='⏳ 이미지 생성 중... (최대 1분)';
+  $('imgStatus').textContent='이미지 엔진(/api/generate-image) 호출 중...';
+  try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.ok)throw new Error(data.error||('HTTP '+r.status));
+    window.__lastImg=data.dataUrl;
+    $('imgStatus').textContent='✅ 생성 완료! ('+(data.model||'')+')';
+    $('imgResult').innerHTML=`<div style="margin-top:12px"><img src="${data.dataUrl}" style="max-width:100%;border-radius:14px;border:1px solid var(--line)">
+      <div style="margin-top:8px"><button class="btn sm" onclick="dlImg()">⬇ 이미지 다운로드</button></div></div>`;
+  }catch(e){$('imgStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">이미지 엔진(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 '📋 프롬프트 복사'로 다른 이미지 AI에 붙여넣어 쓰세요.</span>`;
+  }finally{btn.disabled=false;btn.textContent='🖼️ 이미지 생성하기';}
+}
+function dlImg(){if(!window.__lastImg)return;const a=document.createElement('a');a.href=window.__lastImg;
+  a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.png`;a.click();toast('이미지 다운로드 ⬇');}
+
 /* ───────────── STEP5 안전등 + 품질점수 ───────────── */
 const FIXMAP=[['최고의','전문적인'],['최고','우수한'],['최상','우수한'],['최초','초기'],['유일','대표적'],
 ['넘버원','선도적'],['1등','검증된'],['1위','신뢰할 수 있는'],['100% 효과','체계적인 효과'],['100%','체계적인'],
@@ -790,6 +844,8 @@ try{if(localStorage.getItem('vstudio_dark')==='1')toggleDark();}catch(e){}
 const restored=restoreState();
 // 이모지 칩(복원된 hidden 값 반영)
 chipGroup('emojiChips','i_emoji',['없음','적게','보통'],()=>{if(S.step===3)buildPrompt();});
+chipGroup('imgStyleChips','img_style',IMG_STYLES,null);
+chipGroup('imgAspectChips','img_aspect',IMG_ASPECTS,null);
 // 브랜드 색 테마 반영
 (function(){const c=$('i_color').value;document.documentElement.style.setProperty('--accent',c);
   document.documentElement.style.setProperty('--accent-soft',hexSoft(c));})();
