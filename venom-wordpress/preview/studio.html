@@ -340,6 +340,38 @@
       <button class="btn ghost" onclick="window.print()">🖨️ 인쇄/PDF</button>
     </div>
     <div class="hint">브리프에는 입력값·옵션·주제·타겟·페르소나·올인원 프롬프트·인포그래픽 사양이 한 파일로 담깁니다.</div>
+
+    <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🟢 WordPress 자동 임시저장 <span class="hint">(공식 API·합법)</span></h2>
+      <div class="sub">내 워드프레스에 <b>임시저장(draft)</b>으로 자동 등록합니다. 공식 Application Password를 쓰므로 약관 위반이 아니에요. 검토 후 워드프레스에서 발행하면 됩니다. <a href="#" onclick="toggleWp();return false;">⚙️ 워드프레스 연결</a></div>
+      <div id="wpcfg" style="display:none;background:var(--accent-soft);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div class="row">
+          <div><label class="f">사이트 URL</label><input type="text" id="wp_url" placeholder="https://myblog.com"></div>
+          <div><label class="f">사용자명</label><input type="text" id="wp_user" placeholder="admin"></div>
+        </div>
+        <label class="f">Application Password <span class="hint">(WP 관리자 → 사용자 → 프로필 → 응용프로그램 비밀번호)</span></label>
+        <input type="text" id="wp_pw" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx">
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn sm" onclick="saveWp()">연결 저장</button></div>
+        <div class="hint">⚠️ API 주소(STEP3 ⚙️)도 설정돼 있어야 합니다(브라우저→내 서버→워드프레스 경유). 키는 내 서버로만 전송돼요.</div>
+      </div>
+      <label class="f">제목</label><input type="text" id="wp_title" placeholder="(비우면 선택 주제 제목 사용)">
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="wpBtn" onclick="wpDraft()">📝 WordPress에 임시저장</button>
+        <span class="hint">본문은 베놈 엔진 생성 결과(있으면) 또는 위 검수창 내용을 사용합니다.</span>
+      </div>
+      <div id="wpStatus" class="hint" style="margin-top:8px"></div>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:18px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">📋 네이버·티스토리 붙여넣기용 내보내기 <span class="hint">(자동화 대신 안전)</span></h2>
+      <div class="sub">자동 등록은 약관 위반이라, 에디터에 <b>바로 붙는 서식 HTML</b>로 내보냅니다. 복사 → 에디터 붙여넣기 → 임시저장만 하면 끝(계정 리스크 0).</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="copyForBlog('naver')">📋 네이버용 복사</button>
+        <button class="btn ghost sm" onclick="copyForBlog('tistory')">📋 티스토리용(HTML) 복사</button>
+        <button class="btn ghost sm" onclick="copyTags()">🏷️ 태그 복사</button>
+      </div>
+    </div>
+
     <div class="nav"><button class="btn ghost" onclick="go(4)">← 이전</button><span></span></div>
   </section>
 </div>
@@ -1005,6 +1037,51 @@ function downloadBrief(){const b=new Blob([brief()],{type:'text/markdown'});cons
   a.href=URL.createObjectURL(b);a.download=`brief-${(S.core||'manuscript').replace(/\s+/g,'-')}.md`;a.click();toast('브리프 .md 내려받기 ⬇');}
 function copyBrief(){navigator.clipboard.writeText(brief()).then(()=>toast('브리프 복사됨 📋'));}
 
+/* ───────────── STEP5 WordPress 임시저장 / 블로그 내보내기 ───────────── */
+function toggleWp(){const c=$('wpcfg');c.style.display=c.style.display==='none'?'block':'none';}
+function loadWp(){try{return JSON.parse(localStorage.getItem('vstudio_wp')||'{}');}catch(e){return{};}}
+function saveWp(){localStorage.setItem('vstudio_wp',JSON.stringify({url:$('wp_url').value.trim(),user:$('wp_user').value.trim(),pw:$('wp_pw').value.trim()}));toast('워드프레스 연결 저장됨 ⚙️');}
+function applyWp(){const w=loadWp();if(w.url)$('wp_url').value=w.url;if(w.user)$('wp_user').value=w.user;if(w.pw)$('wp_pw').value=w.pw;}
+function getPostContent(){
+  syncInputs();let html=window.__lastHtml||'';
+  if(!html){const t=$('checkText').value.trim();
+    if(t)html=t.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('\n');}
+  const title=($('wp_title')&&$('wp_title').value.trim())||(S.topic&&S.topic.t)||S.core||'제목 없음';
+  return {title,html};
+}
+async function wpDraft(){
+  const wp=loadWp(),cfg=loadCfg();
+  if(!wp.url||!wp.user||!wp.pw){toast('먼저 ⚙️ 워드프레스 연결을 설정하세요');toggleWp();return;}
+  const {title,html}=getPostContent();
+  if(!html){toast('본문이 없어요 — 베놈 엔진으로 생성하거나 검수창에 붙여넣으세요');return;}
+  const api=(cfg.url||'').replace(/\/$/,'')+'/api/wp-draft';
+  const btn=$('wpBtn');btn.disabled=true;btn.textContent='⏳ 임시저장 중...';$('wpStatus').textContent='워드프레스에 임시저장 중...';
+  try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(api,{method:'POST',headers,body:JSON.stringify({siteUrl:wp.url,user:wp.user,appPassword:wp.pw,title,html,status:'draft'})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+    $('wpStatus').innerHTML=`✅ 임시저장 완료! <a href="${d.editLink}" target="_blank">워드프레스에서 편집하기 →</a>`;toast('WordPress 임시저장 완료 📝');
+  }catch(e){$('wpStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">사이트 URL·사용자명·앱 비밀번호와 STEP3의 API 주소를 확인하세요.</span>`;}
+  finally{btn.disabled=false;btn.textContent='📝 WordPress에 임시저장';}
+}
+async function copyRich(html){const plain=html.replace(/<[^>]+>/g,'');
+  try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([plain],{type:'text/plain'})})]);return true;}
+  catch(e){try{await navigator.clipboard.writeText(html);return true;}catch(e2){return false;}}}
+async function copyForBlog(platform){
+  const {html}=getPostContent();
+  if(!html){toast('본문이 없어요 — 생성하거나 검수창에 붙여넣으세요');return;}
+  if(platform==='tistory'){let ok=false;try{await navigator.clipboard.writeText(html);ok=true;}catch(e){}
+    toast(ok?'티스토리 HTML 복사됨 — 글쓰기 HTML 모드에 붙여넣기':'복사 실패');return;}
+  const ok=await copyRich(html);
+  toast(ok?'네이버용 복사됨 — 스마트에디터에 붙여넣기':'복사 실패');
+}
+function copyTags(){syncInputs();
+  const base=[S.core].concat((S.kw2||'').split(',')).map(s=>s.trim()).filter(Boolean);
+  const tags=[...new Set(base)].slice(0,10).map(t=>'#'+t.replace(/\s+/g,'')).join(' ');
+  if(!tags){toast('키워드가 없어요');return;}
+  navigator.clipboard.writeText(tags).then(()=>toast('태그 복사됨 🏷️'));
+}
+
 /* ───────────── 초기화 ───────────── */
 $('i_cat').innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
 $('i_cat').value='ortho';
@@ -1025,7 +1102,7 @@ syncInputs();
 // 입력 변경 시 자동 저장
 document.addEventListener('input',e=>{if(e.target&&e.target.id)saveState();});
 document.addEventListener('change',saveState);
-applyCfg();renderHistory();renderStepper();
+applyCfg();applyWp();renderHistory();renderStepper();
 if(restored)setTimeout(()=>toast('이전에 작성하던 내용을 불러왔어요 💾 (🗑 초기화로 새로 시작)'),400);
 </script>
 </body>
