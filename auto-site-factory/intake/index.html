@@ -194,9 +194,31 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
       </div>
     </div>
 
-    <!-- 6. 옵션 팩 -->
+    <!-- 6. 신뢰 지표 -->
     <div class="card">
-      <h2><span class="n">6</span> 기능 옵션 팩</h2>
+      <h2><span class="n">6</span> 신뢰 지표 <small style="font-weight:400;color:#697386;font-size:13px">비워두면 업종 기본값 자동 사용</small></h2>
+      <p class="hint">숫자 4개를 입력하세요. "운영 연수 / 평점 / 누적 고객 / 자랑 포인트" 순서 추천.</p>
+      <div id="trust-list"></div>
+      <button type="button" class="small" onclick="addTrust()">+ 지표 추가</button>
+    </div>
+
+    <!-- 7. 고객 후기 -->
+    <div class="card">
+      <h2><span class="n">7</span> 고객 후기 <small style="font-weight:400;color:#697386;font-size:13px">비워두면 샘플 사용</small></h2>
+      <div id="reviews-list"></div>
+      <button type="button" class="small" onclick="addReview()">+ 후기 추가</button>
+    </div>
+
+    <!-- 8. FAQ -->
+    <div class="card">
+      <h2><span class="n">8</span> FAQ <small style="font-weight:400;color:#697386;font-size:13px">비워두면 업종 기본 FAQ</small></h2>
+      <div id="faq-list"></div>
+      <button type="button" class="small" onclick="addFaq()">+ Q&amp;A 추가</button>
+    </div>
+
+    <!-- 9. 옵션 팩 -->
+    <div class="card">
+      <h2><span class="n">9</span> 기능 옵션 팩</h2>
       <p class="hint">AI검색 최적화는 기본 포함. 카테고리에 따라 일부 항목이 달라집니다.</p>
       <div class="opts">
         <label><input type="checkbox" name="opt" value="seo_pack" checked disabled> ⑤ AI검색 최적화 (SEO/AEO/GEO/llms.txt) — 기본</label>
@@ -319,6 +341,59 @@ function addHour(h) {
   {day:'매주 월요일', time:'정기 휴무'},
 ].forEach(addHour);
 
+/* ── 신뢰 지표 행 ────────────────────────────────────────────────── */
+function addTrust(t) {
+  t = t || {num:'', lbl:''};
+  const div = document.createElement('div');
+  div.className = 'trust-row';
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  div.innerHTML = `<input placeholder="숫자 (예: 8년+, 4.9★)" value="${t.num}" style="flex:1">`
+    + `<input placeholder="라벨 (예: 운영연수, 네이버 평점)" value="${t.lbl}" style="flex:2">`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('trust-list').appendChild(div);
+}
+[
+  {num:'10년+', lbl:'운영 경력'},
+  {num:'4.9★', lbl:'네이버 평점'},
+  {num:'1,000+', lbl:'누적 고객'},
+  {num:'100%', lbl:'직접 운영'},
+].forEach(addTrust);
+
+/* ── 고객 후기 행 ─────────────────────────────────────────────────── */
+function addReview(r) {
+  r = r || {author:'', stars:5, body:''};
+  const div = document.createElement('div');
+  div.className = 'review-input-row';
+  div.style.cssText = 'border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px';
+  div.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input placeholder="작성자 (예: 김민지 님)" value="${r.author}" style="flex:2">
+      <select style="flex:1;height:46px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px">
+        ${[5,4,3].map(s=>`<option value="${s}"${r.stars==s?' selected':''}>${'★'.repeat(s)} ${s}점</option>`).join('')}
+      </select>
+      <button type="button" class="small" onclick="this.closest('.review-input-row').remove()">×</button>
+    </div>
+    <textarea placeholder="후기 내용" rows="2" style="width:100%;resize:vertical;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:14px">${r.body}</textarea>`;
+  document.getElementById('reviews-list').appendChild(div);
+}
+[
+  {author:'고객 A님', stars:5, body:'정말 만족스러운 서비스였어요. 다음에도 꼭 다시 오겠습니다!'},
+  {author:'고객 B님', stars:5, body:'친절하고 전문적인 서비스에 감동 받았습니다. 강력 추천해요.'},
+].forEach(addReview);
+
+/* ── FAQ 행 ──────────────────────────────────────────────────────── */
+function addFaq(f) {
+  f = f || {q:'', a:''};
+  const div = document.createElement('div');
+  div.className = 'faq-input-row';
+  div.style.cssText = 'border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px';
+  div.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input placeholder="질문 (예: 예약이 필요한가요?)" value="${f.q}" style="flex:1">
+      <button type="button" class="small" onclick="this.closest('.faq-input-row').remove()">×</button>
+    </div>
+    <textarea placeholder="답변" rows="2" style="width:100%;resize:vertical;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:14px">${f.a}</textarea>`;
+  document.getElementById('faq-list').appendChild(div);
+}
+
 /* ── 파일 → data URI ─────────────────────────────────────────────── */
 function toDataURL(file) {
   return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
@@ -410,6 +485,30 @@ async function build() {
   }
 
   if (Object.keys(images).length) spec.images = images;
+
+  // 신뢰지표
+  const trust = [...document.querySelectorAll('#trust-list .trust-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { num: ins[0].value, lbl: ins[1].value };
+  }).filter(t => t.num);
+  if (trust.length) spec.trust = trust;
+
+  // 고객후기
+  const reviews = [...document.querySelectorAll('#reviews-list .review-input-row')].map(r => {
+    return {
+      author: r.querySelector('input').value,
+      stars:  +r.querySelector('select').value,
+      body:   r.querySelector('textarea').value,
+    };
+  }).filter(r => r.body);
+  if (reviews.length) spec.reviews = reviews;
+
+  // FAQ
+  const faq = [...document.querySelectorAll('#faq-list .faq-input-row')].map(r => {
+    return { q: r.querySelector('input').value, a: r.querySelector('textarea').value };
+  }).filter(f => f.q);
+  if (faq.length) spec.faq = faq;
+
   lastSpec = spec;
 
   // 미리보기: data URI 축약

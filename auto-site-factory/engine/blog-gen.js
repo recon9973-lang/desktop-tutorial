@@ -34,6 +34,17 @@ const SPEC_TO_CAT = {
   angwa:    'angwa',
 };
 
+// 소상공인 로컬 type → post-generator category 매핑
+const LOCAL_TYPE_TO_CAT = {
+  cafe:       'cafe',
+  restaurant: 'restaurant',
+  beauty:     'beauty',
+  nail:       'beauty',
+  fitness:    'fitness',
+  bakery:     'cafe',
+  retail:     'retail',
+};
+
 async function run(specPath, count) {
   if (!process.env.OPENAI_API_KEY) {
     console.log('[blog_auto] OPENAI_API_KEY 없음 — 건너뜁니다.');
@@ -51,8 +62,14 @@ async function run(specPath, count) {
   }
 
   const { spec, specialty } = prepare(raw);
-  const clinicSpecialty = raw.clinic && raw.clinic.specialty;
-  const category = SPEC_TO_CAT[clinicSpecialty] || 'geo';
+  let category;
+  if (raw.category === 'local') {
+    const localType = raw.local && raw.local.type;
+    category = LOCAL_TYPE_TO_CAT[localType] || 'local';
+  } else {
+    const clinicSpecialty = raw.clinic && raw.clinic.specialty;
+    category = SPEC_TO_CAT[clinicSpecialty] || 'geo';
+  }
   const region   = spec.brand && spec.brand.region ? spec.brand.region : '';
   const keywords = (specialty.keywords || []).slice(0, count);
 
