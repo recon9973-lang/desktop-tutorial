@@ -1,0 +1,162 @@
+'use strict';
+
+// ─────────────────────────────────────────────────────────────────────────
+// VENOM GrowthOps · 통합 서버리스 엔드포인트 (Vercel 12-함수 한도 절감)
+//   GET  /api/growthops?module=linkhealth          → 내부링크 헬스(M2/M3): 고아글·평균링크
+//   GET  /api/growthops?module=outreach&action=list → 아웃리치 연락처 목록(M4)
+//   GET  /api/growthops?module=outreach&action=remind → 오늘 할 일(리마인더)
+//   POST /api/growthops?module=outreach&action=upsert  body:{contact}
+//   POST /api/growthops?module=outreach&action=transition body:{id,to,note}
+//   POST /api/growthops?module=outreach&action=delete  body:{id}
+//   POST /api/growthops?module=snapshot               → 일별 SEO 스냅샷 저장(cron용)
+// 쓰기(POST)는 ADMIN_SECRET(Bearer) 필요. 읽기(GET)는 공개.
+// 기존 자산 재사용: github-store(영속화), internal-linker(M2), outreach(M4 로직).
+// ─────────────────────────────────────────────────────────────────────────
+
+const store = require('../lib/github-store');
+const linker = require('../lib/internal-linker');
+const O = require('../lib/outreach');
+
+const OUTREACH_PATH = 'venom-wordpress/preview/content/outreach.json';
+
+// KST 기준 YYYY-MM-DD
+function ymdKST() {
+  const ms = Date.now() + 9 * 3600 * 1000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+function setCors(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+function authOk(req) {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return true; // 시크릿 미설정 환경(로컬/초기)에서는 통과
+  const auth = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
+  return auth === secret;
+}
+
+async function readBody(req) {
+  if (req.body && typeof req.body === 'object') return req.body;
+  return await new Promise((resolve) => {
+    let raw = '';
+    req.on('data', (c) => (raw += c));
+    req.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch { resolve({}); } });
+    req.on('error', () => resolve({}));
+  });
+}
+
+async function loadOutreach() {
+  const f = await store.getJsonFile(OUTREACH_PATH, { contacts: [] });
+  const content = f.content && Array.isArray(f.content.contacts) ? f.content : { contacts: [] };
+  return content;
+}
+
+async function saveOutreach(content, message) {
+  await store.saveJsonFile(OUTREACH_PATH, content, message || 'chore(growthops): update outreach');
+}
+
+// ── M2/M3: 내부링크 헬스 ──
+async function handleLinkHealth(res) {
+  const { posts } = await store.getPosts();
+  let clusters = null;
+  try { clusters = (await store.getJsonFile('venom-wordpress/preview/content/clusters.json', null)).content; } catch {}
+  const r = linker.suggestLinks(posts, { perPost: 4, clusters });
+  return res.status(200).json({ ok: true, ...r.stats, orphans: r.orphans });
+}
+
+// ── M4: 아웃리치 ──
+async function handleOutreach(req, res, action) {
+  if (req.method === 'GET') {
+    const data = await loadOutreach();
+    if (action === 'remind') {
+      return res.status(200).json({ ok: true, today: ymdKST(), due: O.dueReminders(data.contacts, ymdKST()) });
+    }
+    // 기본: list (+요약)
+    return res.status(200).json({ ok: true, summary: O.summary(data.contacts), contacts: data.contacts });
+  }
+
+  if (req.method === 'POST') {
+    if (!authOk(req)) return res.status(401).json({ ok: false, error: 'ADMIN_SECRET 필요' });
+    const body = await readBody(req);
+    const data = await loadOutreach();
+
+    if (action === 'upsert') {
+      const v = O.validateContact(body.contact || body);
+      if (!v.ok) return res.status(400).json({ ok: false, errors: v.errors });
+      data.contacts = O.upsert(data.contacts, v.contact);
+      await saveOutreach(data, `chore(growthops): upsert outreach "${v.contact.name}"`);
+      return res.status(200).json({ ok: true, contact: v.contact });
+    }
+
+    if (action === 'transition') {
+      const { id, to, note } = body;
+      const c = data.contacts.find((x) => x.id === id);
+      if (!c) return res.status(404).json({ ok: false, error: '연락처 없음' });
+      const next = O.transition(c, to, note);
+      data.contacts = O.upsert(data.contacts, next);
+      await saveOutreach(data, `chore(growthops): ${id} → ${to}`);
+      return res.status(200).json({ ok: true, contact: next });
+    }
+
+    if (action === 'delete') {
+      const { id } = body;
+      const r = O.remove(data.contacts, id);
+      if (!r.removed) return res.status(404).json({ ok: false, error: '연락처 없음' });
+      data.contacts = r.contacts;
+      await saveOutreach(data, `chore(growthops): delete ${id}`);
+      return res.status(200).json({ ok: true });
+    }
+
+    return res.status(400).json({ ok: false, error: '알 수 없는 action' });
+  }
+
+  return res.status(405).json({ ok: false, error: 'GET/POST only' });
+}
+
+// ── M3: 일별 스냅샷(cron) — KV 있으면 저장, 없으면 계산만 반환 ──
+async function handleSnapshot(req, res) {
+  if (!authOk(req)) return res.status(401).json({ ok: false, error: 'ADMIN_SECRET 필요' });
+  const { posts } = await store.getPosts();
+  const link = linker.suggestLinks(posts, { perPost: 4 });
+  const snap = {
+    date: ymdKST(),
+    posts: link.stats.posts,
+    orphanCount: link.stats.orphanCount,
+    orphanRate: link.stats.orphanRate,
+    avgLinksPerPost: link.stats.avgLinksPerPost,
+  };
+  // 일별 스냅샷을 GitHub에 누적 저장(간단·견고, KV 불필요). 추세 그래프의 데이터 소스.
+  let stored = false;
+  try {
+    const path = 'venom-wordpress/preview/content/seo-snapshots.json';
+    const f = await store.getJsonFile(path, { snapshots: [] });
+    const arr = (f.content && f.content.snapshots) || [];
+    const i = arr.findIndex((s) => s.date === snap.date);
+    if (i >= 0) arr[i] = snap; else arr.unshift(snap);
+    if (arr.length > 400) arr.length = 400; // 약 13개월 보관
+    await store.saveJsonFile(path, { snapshots: arr }, `chore(growthops): snapshot ${snap.date}`);
+    stored = true;
+  } catch (e) { stored = false; }
+  return res.status(200).json({ ok: true, stored, snapshot: snap });
+}
+
+module.exports = async function handler(req, res) {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const q = req.query || {};
+  const moduleName = q.module || 'linkhealth';
+  const action = q.action || 'list';
+
+  try {
+    if (moduleName === 'linkhealth') return await handleLinkHealth(res);
+    if (moduleName === 'outreach') return await handleOutreach(req, res, action);
+    if (moduleName === 'snapshot') return await handleSnapshot(req, res);
+    return res.status(400).json({ ok: false, error: '알 수 없는 module' });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: String((e && e.message) || e) });
+  }
+};
