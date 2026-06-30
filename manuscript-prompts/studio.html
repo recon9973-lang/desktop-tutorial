@@ -155,6 +155,23 @@
     <div id="questions"></div>
     <div class="grid2" id="topics" style="margin-top:16px"></div>
     <div id="titleVariants"></div>
+
+    <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🔎 키워드 리서치 <span class="hint">(연관어·월 검색량)</span></h2>
+      <div class="sub">핵심 키워드의 연관 검색어·자주 묻는 질문·<b>실제 월 검색량</b>을 가져옵니다(네이버/구글). 키워드를 누르면 보조 키워드로 담겨요. <a href="#" onclick="go(3);toggleCfg();return false;">⚙️ 엔진 연결</a> 시 검색량까지 표시.</div>
+      <button class="btn ghost sm" onclick="researchKW()">🔎 연관 키워드 가져오기</button>
+      <div id="kwStatus" class="hint" style="margin-top:8px"></div>
+      <div id="kwResult"></div>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:18px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">✂️ 본문에서 키워드 추출</h2>
+      <div class="sub">원고·자료를 붙여넣으면 자주 나온 핵심어를 뽑아줍니다(브라우저에서 즉시, 검색 불필요).</div>
+      <textarea id="kwText" placeholder="분석할 글/자료를 붙여넣으세요..." style="min-height:80px"></textarea>
+      <button class="btn ghost sm" style="margin-top:8px" onclick="extractKW()">✂️ 키워드 추출</button>
+      <div id="kwExtract"></div>
+    </div>
+
     <div class="nav"><button class="btn ghost" onclick="go(0)">← 이전</button><button class="btn" onclick="go(2)">다음 → 타겟 설정</button></div>
   </section>
 
@@ -272,6 +289,29 @@
       <div class="hint">💡 엔진 연결 없이도 프롬프트를 복사해 미드저니·DALL·E 등 어떤 이미지 AI에든 바로 쓸 수 있어요.</div>
     </div>
 
+    <div style="border-top:1px dashed var(--line);margin:24px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">📰 카드뉴스 텍스트 입히기</h2>
+      <div class="sub">생성한 이미지나 직접 올린 사진에 제목·부제를 얹어 카드뉴스를 만들어요. 모두 브라우저에서 즉시 처리되고 WebP로 저장됩니다.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn ghost sm" onclick="cardUseGenerated()">🖼️ 생성 이미지 사용</button>
+        <label class="btn ghost sm" style="cursor:pointer">📁 이미지 업로드<input type="file" accept="image/*" style="display:none" onchange="cardUpload(this)"></label>
+      </div>
+      <input type="text" id="card_title" placeholder="제목 (예: 거북목, 이렇게 풀어요)" oninput="renderCard()">
+      <input type="text" id="card_sub" placeholder="부제 (예: 직장인 5분 루틴)" oninput="renderCard()" style="margin-top:8px">
+      <input type="text" id="card_cap" placeholder="하단 캡션 (예: 병원마케팅 베놈 · 카카오 상담)" oninput="renderCard()" style="margin-top:8px">
+      <div class="grid2" style="margin-top:10px">
+        <div><label class="f">텍스트 위치</label><div class="chips" id="cardPosChips"></div></div>
+        <div><label class="f">글자색 · 비율</label><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="chips" id="cardColorChips"></div><div class="chips" id="cardRatioChips"></div></div></div>
+      </div>
+      <input type="hidden" id="card_pos" value="bottom"><input type="hidden" id="card_color" value="light"><input type="hidden" id="card_ratio" value="1:1">
+      <label class="toggle" style="margin-top:10px"><input type="checkbox" id="card_scrim" checked onchange="renderCard()"> 가독성 배경(스크림)</label>
+      <div style="margin-top:12px;text-align:center"><canvas id="cardCanvas" style="max-width:100%;border-radius:14px;border:1px solid var(--line)"></canvas></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="dlCard('image/webp')">⬇ WebP 저장</button>
+        <button class="btn ghost" onclick="dlCard('image/png')">⬇ PNG 저장</button>
+      </div>
+    </div>
+
     <div class="nav"><button class="btn ghost" onclick="go(3)">← 이전</button><button class="btn" onclick="go(5)">다음 → 안전 검수</button></div>
   </section>
 
@@ -384,7 +424,7 @@ function go(n){
   if(n===1 && !$('questions').innerHTML) spark();
   if(n===2) renderTargets();
   if(n===3){renderTone();buildPrompt();}
-  if(n===4){chartTypeUI();if(!$('img_prompt').value.trim())suggestImgPrompt();}
+  if(n===4){chartTypeUI();if(!$('img_prompt').value.trim())suggestImgPrompt();renderCard();}
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -440,6 +480,67 @@ function renderTitleVariants(){
     `${S.region?S.region+' ':''}${k}, 후회 없는 선택 가이드`];
   $('titleVariants').innerHTML=`<div class="qgroup"><div class="gl" style="margin-top:14px">💡 제목 변형 (마음에 드는 걸 STEP3에서 씁니다)</div>
     ${[...new Set(vs)].map(t=>`<span class="qpill">${esc(t)}</span>`).join('')}</div>`;
+}
+
+/* ───────────── STEP1 키워드 리서치 / 추출 ───────────── */
+function addKw(word){
+  const cur=$('i_kw2').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(cur.map(s=>s.toLowerCase()).includes(word.toLowerCase())){toast('이미 담긴 키워드예요');return;}
+  cur.push(word);$('i_kw2').value=cur.join(', ');syncInputs();saveState();toast(`보조 키워드에 추가: ${word}`);
+}
+function kwOfflineCombos(){
+  const k=S.core;if(!k)return[];const r=S.region?S.region+' ':'';
+  const mods=['추천','비용','가격','후기','병원','방법','증상','원인','기간','효과','자가진단','운동','예방','보험','명의'];
+  return [...new Set(mods.map(m=>`${r}${k} ${m}`).concat([`${r}${k}`,`${k} vs`,`${k} 잘하는 곳`]))];
+}
+async function researchKW(){
+  syncInputs();
+  if(!S.core){toast('STEP 0의 핵심 키워드를 먼저 입력하세요');return;}
+  const cfg=loadCfg();const url=(cfg.url||'').replace(/\/$/,'')+'/api/keywords';
+  $('kwStatus').textContent='연관 키워드 조회 중...';
+  try{
+    const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify({keyword:S.core,region:S.region})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+    renderKW(d);$('kwStatus').textContent=`✅ 네이버 ${d.sources.naver||0} · 구글 ${d.sources.google||0} · 검색광고 ${d.sources.searchad||0}`;
+  }catch(e){
+    // 오프라인 폴백: 검색량 없이 후보 키워드만
+    const combos=kwOfflineCombos();
+    $('kwStatus').innerHTML=`⚠️ 엔진 미연결 — 후보 키워드만 표시(검색량 제외). <span class="hint">실제 검색량은 ⚙️ 엔진 연결 + 네이버 검색광고 키 설정 시.</span>`;
+    renderKW({related:combos,questions:[],volumes:[]});
+  }
+}
+function renderKW(d){
+  let html='';
+  if(d.volumes&&d.volumes.length){
+    const max=Math.max(...d.volumes.map(v=>v.volume));
+    html+=`<div class="qgroup"><div class="gl">📊 월 검색량 상위 <span class="hint">(네이버 검색광고)</span></div>`+
+      d.volumes.map(v=>`<div class="metric" style="cursor:pointer" onclick="addKw('${esc(v.keyword)}')">
+        <span>${esc(v.keyword)}</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;height:8px;width:${Math.max(8,Math.round(v.volume/max*120))}px;background:var(--accent);border-radius:4px"></span><b>${v.volume.toLocaleString()}</b></span></div>`).join('')+`</div>`;
+  }
+  if(d.related&&d.related.length)
+    html+=`<div class="qgroup"><div class="gl">🔗 연관 검색어 <span class="hint">(누르면 보조 키워드로 추가)</span></div>`+
+      d.related.map(k=>`<span class="qpill" style="cursor:pointer" onclick="addKw('${esc(k)}')">${esc(k)} ＋</span>`).join('')+`</div>`;
+  if(d.questions&&d.questions.length)
+    html+=`<div class="qgroup"><div class="gl">❓ 자주 묻는 질문</div>`+
+      d.questions.map(q=>`<span class="qpill">${esc(q)}</span>`).join('')+`</div>`;
+  $('kwResult').innerHTML=html||'<div class="hint">결과가 없어요.</div>';
+}
+const KW_STOP=new Set(['그리고','그러나','하지만','그래서','때문에','이런','저런','그런','합니다','입니다','있습니다','수','것','등','및','를','을','이','가','은','는','에','의','도','로','으로','에서','부터','까지','대한','위해','통해','경우','또한','더','very','the','and','for','with','that']);
+function extractKW(){
+  const raw=$('kwText').value;
+  if(raw.trim().length<10){toast('분석할 글을 조금 더 넣어주세요');return;}
+  const words=raw.toLowerCase().replace(/[^가-힣a-z0-9\s]/g,' ').split(/\s+/)
+    .map(w=>{if(/[가-힣]$/.test(w)&&w.length>=3){const s=w.replace(/(으로|에서|에게|까지|부터|에는|이라|라고|이|가|은|는|을|를|의|도|에|와|과|로|만|랑|보다|처럼)$/,'');if(s.length>=2)return s;}return w;})
+    .filter(w=>w.length>=2&&!KW_STOP.has(w));
+  const freq={};words.forEach(w=>freq[w]=(freq[w]||0)+1);
+  const top=Object.entries(freq).filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  if(!top.length){$('kwExtract').innerHTML='<div class="hint">2회 이상 반복된 키워드가 없어요.</div>';return;}
+  const max=top[0][1];
+  $('kwExtract').innerHTML=`<div class="qgroup"><div class="gl" style="margin-top:12px">📌 추출된 키워드 <span class="hint">(누르면 보조 키워드로 추가)</span></div>`+
+    top.map(([w,n])=>`<span class="qpill" style="cursor:pointer;opacity:${0.55+0.45*n/max}" onclick="addKw('${esc(w)}')">${esc(w)} ·${n} ＋</span>`).join('')+`</div>`;
 }
 
 /* ───────────── STEP2 타겟 ───────────── */
@@ -715,6 +816,52 @@ function dlImgOrig(){if(!window.__lastImg)return;const ext=(window.__lastMime||'
   const a=document.createElement('a');a.href=window.__lastImg;
   a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.${ext}`;a.click();toast('원본 다운로드 ⬇');}
 
+/* ───────────── STEP4 카드뉴스 텍스트 오버레이 (캔버스) ───────────── */
+let cardImg=null;
+function cardUseGenerated(){if(!window.__lastImg){toast('먼저 위에서 AI 이미지를 생성하거나 업로드하세요');return;}loadCardImg(window.__lastImg);}
+function cardUpload(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>loadCardImg(e.target.result);r.readAsDataURL(f);}
+function loadCardImg(src){const im=new Image();im.onload=()=>{cardImg=im;renderCard();toast('이미지 불러옴 — 텍스트를 입력하세요');};im.onerror=()=>toast('이미지 로드 실패');im.src=src;}
+function wrapByWidth(ctx,text,maxW){const out=[];let line='';for(const ch of [...text]){const t=line+ch;
+  if(ctx.measureText(t).width>maxW&&line){out.push(line);line=ch;}else line=t;}if(line)out.push(line);return out;}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function renderCard(){
+  const cv=$('cardCanvas');if(!cv)return;
+  const ratio=$('card_ratio').value;const W=1080,H=ratio==='4:5'?1350:1080;
+  cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+  ctx.fillStyle='#e9efed';ctx.fillRect(0,0,W,H);
+  if(cardImg){const ir=cardImg.width/cardImg.height,cr=W/H;let dw,dh,dx,dy;
+    if(ir>cr){dh=H;dw=H*ir;dx=(W-dw)/2;dy=0;}else{dw=W;dh=W/ir;dx=0;dy=(H-dh)/2;}
+    ctx.drawImage(cardImg,dx,dy,dw,dh);}
+  else{ctx.fillStyle='#cfd8d5';ctx.fillRect(0,0,W,H);ctx.fillStyle='#8a9a96';ctx.font='34px sans-serif';
+    ctx.textAlign='center';ctx.fillText('🖼️ 이미지를 선택하세요',W/2,H/2);ctx.textAlign='left';}
+  const title=$('card_title').value.trim(),sub=$('card_sub').value.trim(),cap=$('card_cap').value.trim();
+  const light=$('card_color').value==='light';const txt=light?'#ffffff':'#16201d';
+  const accent=S.color||'#2f7d6b';const margin=80,maxW=W-margin*2;
+  const tS=Math.round(W*0.075),sS=Math.round(W*0.042),cS=Math.round(W*0.030);
+  const fF='"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  const blocks=[];
+  if(title){ctx.font=`800 ${tS}px ${fF}`;wrapByWidth(ctx,title,maxW).forEach(l=>blocks.push({t:l,s:tS,w:'800'}));}
+  if(sub){ctx.font=`600 ${sS}px ${fF}`;wrapByWidth(ctx,sub,maxW).forEach(l=>blocks.push({t:l,s:sS,w:'600'}));}
+  const lh=b=>Math.round(b.s*1.30);
+  if(blocks.length){
+    const bh=blocks.reduce((a,b)=>a+lh(b),0)+20;
+    const pos=$('card_pos').value;
+    let y=pos==='top'?margin+70:pos==='center'?Math.round((H-bh)/2)+40:H-margin-bh-(cap?54:0);
+    if($('card_scrim').checked){ctx.fillStyle=light?'rgba(0,0,0,.42)':'rgba(255,255,255,.80)';
+      rrect(ctx,margin-34,y-58,maxW+68,bh+74,30);ctx.fill();}
+    ctx.fillStyle=accent;rrect(ctx,margin,y-34,120,12,6);ctx.fill();
+    let yy=y;blocks.forEach(b=>{ctx.font=`${b.w} ${b.s}px ${fF}`;ctx.fillStyle=txt;ctx.fillText(b.t,margin,yy+b.s*0.8);yy+=lh(b);});
+  }
+  if(cap){ctx.font=`600 ${cS}px ${fF}`;ctx.fillStyle=light?'rgba(255,255,255,.92)':'rgba(0,0,0,.72)';
+    ctx.fillText(cap,margin,H-58);}
+}
+function dlCard(fmt){const cv=$('cardCanvas');if(!cv||!cardImg){toast('먼저 이미지를 선택하세요');return;}
+  cv.toBlob(b=>{if(!b){toast('내보내기 실패 — PNG로 받아보세요');return;}const a=document.createElement('a');
+    a.href=URL.createObjectURL(b);a.download=`cardnews-${(S.core||'card').replace(/\s+/g,'-')}.${fmt==='image/webp'?'webp':'png'}`;a.click();
+    toast(`${fmt==='image/webp'?'WebP':'PNG'} 저장 ⬇ (${Math.round(b.size/1024)}KB)`);},fmt,0.9);}
+
 /* ───────────── STEP5 안전등 + 품질점수 ───────────── */
 const FIXMAP=[['최고의','전문적인'],['최고','우수한'],['최상','우수한'],['최초','초기'],['유일','대표적'],
 ['넘버원','선도적'],['1등','검증된'],['1위','신뢰할 수 있는'],['100% 효과','체계적인 효과'],['100%','체계적인'],
@@ -868,6 +1015,9 @@ const restored=restoreState();
 chipGroup('emojiChips','i_emoji',['없음','적게','보통'],()=>{if(S.step===3)buildPrompt();});
 chipGroup('imgStyleChips','img_style',IMG_STYLES,null);
 chipGroup('imgAspectChips','img_aspect',IMG_ASPECTS,null);
+chipGroup('cardPosChips','card_pos',[['top','상단'],['center','중앙'],['bottom','하단']],renderCard);
+chipGroup('cardColorChips','card_color',[['light','흰 글자'],['dark','검은 글자']],renderCard);
+chipGroup('cardRatioChips','card_ratio',[['1:1','정사각'],['4:5','세로']],renderCard);
 // 브랜드 색 테마 반영
 (function(){const c=$('i_color').value;document.documentElement.style.setProperty('--accent',c);
   document.documentElement.style.setProperty('--accent-soft',hexSoft(c));})();

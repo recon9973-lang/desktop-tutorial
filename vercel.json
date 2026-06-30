@@ -6,6 +6,7 @@
   "functions": {
     "api/generate-post.js": { "maxDuration": 120 },
     "api/generate-image.js": { "maxDuration": 90 },
+    "api/keywords.js": { "maxDuration": 25 },
     "api/cron-daily-posts.js": { "maxDuration": 120 },
     "api/health.js": { "maxDuration": 20 },
     "api/insights.js": { "maxDuration": 30 },
