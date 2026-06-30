@@ -4,21 +4,32 @@
 <style>
 :root{--p:#059669;--pa:#047857;--bd:#0b3b2d;--soft:#f1f6f2;--ink:#10231b;--mute:#5c6b63;--faint:#9aa8a0;--line:#e3eae5}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Pretendard,-apple-system,system-ui,sans-serif;background:var(--soft);color:var(--ink);line-height:1.6}
-.nav{background:#fff;border-bottom:1px solid var(--line);padding:0 16px;height:54px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:9}
-.nav b{font-size:17px;cursor:pointer}.nav a{margin-left:auto;font-size:14px;color:var(--mute);cursor:pointer;text-decoration:none}.nav a+a{margin-left:14px}
+body{font-family:Pretendard,-apple-system,system-ui,sans-serif;background:var(--soft);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+.nav{background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line);padding:0 16px;height:54px;display:flex;align-items:center;position:sticky;top:0;z-index:9;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav b{font-size:16.5px;cursor:pointer;letter-spacing:-.4px;white-space:nowrap;margin-right:18px;flex-shrink:0}
+.nav a{font-size:13.5px;color:var(--mute);cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0}.nav a+a{margin-left:15px}
 .nav a.on{color:var(--p);font-weight:700}
-.hero{background:var(--bd);color:#fff;padding:46px 24px;text-align:center}
-.hero h1{font-size:30px;letter-spacing:-.6px;margin-bottom:10px;line-height:1.2}.hero .sky{color:#6ee7b7}.hero p{color:rgba(255,255,255,.78);font-size:15px;margin-bottom:22px}
+.hero{background:linear-gradient(157deg,#0b3b2d 0%,#065f46 62%,#047857 100%);color:#fff;padding:52px 24px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-90px;right:-70px;width:240px;height:240px;background:radial-gradient(circle,rgba(110,231,183,.22),transparent 70%);pointer-events:none}
+.hero>*{position:relative}
+.hero h1{font-size:31px;letter-spacing:-.8px;margin-bottom:12px;line-height:1.25;font-weight:800}.hero .sky{color:#6ee7b7}.hero p{color:rgba(255,255,255,.82);font-size:15px;margin-bottom:22px}
+.hero .cta-note{color:rgba(255,255,255,.6);font-size:12.5px;margin-top:12px;margin-bottom:0}
+.trust{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14)}
+.trust div{font-size:12.5px;color:rgba(255,255,255,.85)}.trust b{display:block;color:#6ee7b7;font-size:16px;font-weight:800;letter-spacing:-.3px}
 .wrap{max-width:680px;margin:0 auto;padding:24px 16px 90px}
 .badge{display:inline-block;background:rgba(5,150,105,.1);color:var(--pa);font-weight:700;font-size:12px;border-radius:999px;padding:4px 12px;margin-bottom:12px}
-h2{font-size:19px;margin:22px 0 10px}.sub{color:var(--mute);font-size:14px;margin-bottom:14px}
+h2{font-size:19px;margin:22px 0 10px;letter-spacing:-.4px}.sub{color:var(--mute);font-size:14px;margin-bottom:14px}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;margin:0 8px 8px 0;cursor:pointer;font-size:14px;user-select:none;font-family:inherit}
 .chip.on{border:2px solid var(--p);background:rgba(5,150,105,.08);color:var(--p);font-weight:600}
 .btn{background:var(--p);color:#fff;border:none;border-radius:999px;padding:13px 30px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
 .btn:active{background:var(--pa)}.btn.w{background:#fff;color:var(--bd)}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px}
-.feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.feat .card{transition:transform .15s,box-shadow .15s,border-color .15s}
+.feat .card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(11,59,45,.08);border-color:rgba(5,150,105,.35)}
+.feat .card b{display:block;margin-top:6px;letter-spacing:-.3px}
+.feat .card .ic{font-size:26px;line-height:1}
 .tag{font-size:11px;font-weight:700;color:#fff;border-radius:999px;padding:1px 8px}
 .warn{background:#fff8f0;border:1px solid rgba(217,119,6,.3);border-radius:16px;padding:14px 18px;margin-bottom:16px}
 .ok{background:rgba(5,150,105,.06);border:1px solid rgba(5,150,105,.2);border-radius:16px;padding:14px 18px;margin-bottom:16px}
@@ -95,13 +106,17 @@ function nav(){['survey','analyze','prod','rank','dict','routine'].forEach(k=>{c
 function render(){nav();({home:home,survey:survey,result:resultView,routine:routineView,analyze:analyzeView,dict:dictView,rank:rankingView,prod:productView}[view]||home)();window.scrollTo(0,0)}
 // ---- views ----
 function home(){
- root.innerHTML='<div class="hero"><span class="badge" style="background:rgba(255,255,255,.12);color:#6ee7b7">식약처·NIH·논문 근거</span>'+
- '<h1>내 몸에 맞는 영양제,<br><span class="sky">근거로 찾아드립니다</span></h1><p>광고도 후기도 아닌 검증된 데이터로 추천</p>'+
- '<button class="btn w" onclick="go(\'survey\')">1분 설문 시작 →</button></div>'+
- '<div class="wrap"><h2>무엇을 할 수 있나요?</h2><div class="feat">'+
- [['🧬','근거 기반 추천','고민·식단·약·알레르기로 맞춤','survey'],['🧪','내 조합 분석','먹는 영양제 궁합·과다·충돌','analyze'],['🔎','제품 찾기','성분으로 시판 제품·구매처','prod'],['🏆','근거 랭킹','후기 아닌 근거로 본 성분 순위','rank'],['📖','성분 사전','17성분 효능·근거·용량','dict'],['📋','내 루틴','복용 체크·습관 관리','routine']].map(f=>'<div class="card" style="cursor:pointer" onclick="go(\''+f[3]+'\')"><div style="font-size:24px">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
+ root.innerHTML='<div class="hero"><span class="badge" style="background:rgba(255,255,255,.12);color:#6ee7b7">식약처 · NIH · 논문 근거</span>'+
+ '<h1>내 몸에 맞는 영양제,<br><span class="sky">근거로 찾아드립니다</span></h1><p>광고도 후기도 아닌, 출처가 명확한 데이터로만 추천해요</p>'+
+ '<button class="btn w" onclick="go(\'survey\')">1분 설문 시작 →</button>'+
+ '<p class="cta-note">가입 없이 바로 · 모든 추천에 근거 출처 표시</p>'+
+ '<div class="trust"><div><b>'+DATA.ingredients.length+'성분</b>권위기관 근거</div><div><b>0건</b>광고·협찬</div><div><b>100%</b>출처 명시</div></div>'+
+ '</div>'+
+ '<div class="wrap"><h2>무엇을 할 수 있나요?</h2><div class="sub">설문부터 조합 점검까지, 한 곳에서</div><div class="feat">'+
+ [['🧬','근거 기반 추천','고민·식단·약·알레르기로 맞춤','survey'],['🧪','내 조합 분석','먹는 영양제 궁합·과다·충돌','analyze'],['🔎','제품 찾기','성분으로 시판 제품·구매처','prod'],['🏆','근거 랭킹','후기 아닌 근거로 본 성분 순위','rank'],['📖','성분 사전',DATA.ingredients.length+'성분 효능·근거·용량','dict'],['📋','내 루틴','복용 체크·습관 관리','routine']].map(f=>'<div class="card" style="cursor:pointer" onclick="go(\''+f[3]+'\')"><div class="ic">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
  '</div>'+
  '<div class="card" style="margin-top:14px;background:rgba(5,150,105,.05);border-color:rgba(5,150,105,.2)"><b>🧪 내 조합 분석 — 필라이즈식 ‘중복·과다’ 분석의 근거 버전</b><div class="muted" style="margin-top:4px">지금 먹는 영양제를 고르면 길항·시너지·약물충돌·상한(UL) 주의·카테고리 중복까지 자동 점검</div><button class="btn" style="margin-top:12px" onclick="go(\'analyze\')">내 조합 분석하기 →</button></div>'+
+ '<div class="foot" style="margin-top:20px">⚠️ 질병의 진단·치료가 아닌 정보 제공 데모입니다. 복용 전 의사·약사 상담을 권장해요.<br>근거 출처: 식약처 식품안전나라 · NIH ODS · NCCIH · PubMed</div>'+
  '</div>'}
 function survey(){
  let h='<div class="wrap"><h2>기본 정보</h2><div class="sub">나이·성별에 맞춰 권장량·우선순위를 조정해요</div><div id="pa"></div><div id="px" style="margin-top:8px"></div>'+
@@ -235,7 +250,7 @@ function productView(){
  const pk=document.getElementById('pk');DATA.ingredients.forEach(i=>{const b=document.createElement('button');b.className='chip'+(prodSel===i.id?' on':'');b.textContent=i.name_ko;b.onclick=()=>{prodSel=i.id;productView()};pk.appendChild(b)});
  const po=document.getElementById('po');if(!prodSel){po.innerHTML='<div class="muted" style="margin-top:16px">성분을 선택하세요.</div>';return}
  const ing=byId[prodSel],q=encodeURIComponent(ing.name_ko),prods=SAMPLE_PRODUCTS[prodSel]||[];
- let o='<div style="display:flex;align-items:center;gap:8px;margin:8px 0 12px"><h2 style="margin:0">🌎 시판 제품 — '+esc(ing.name_ko)+'</h2><span class="tag" style="background:var(--hairline);color:var(--mute)">예시</span></div>';
+ let o='<div style="display:flex;align-items:center;gap:8px;margin:8px 0 12px"><h2 style="margin:0">🌎 시판 제품 — '+esc(ing.name_ko)+'</h2><span class="tag" style="background:#cbd5cf;color:#fff">예시</span></div>';
  if(prods.length){o+='<div class="card">'+prods.map((p,i)=>'<div style="padding:8px 0;'+(i?'border-top:1px solid var(--line)':'')+'"><b>'+esc(p[0])+'</b> <span class="muted">'+esc(p[1])+'</span></div>').join('')+'</div>';}
  else o+='<div class="muted" style="margin-bottom:12px">예시 제품이 준비 안 된 성분이에요. 아래 검색을 이용하세요.</div>';
  o+='<h2>🛒 국내에서 찾기</h2><div style="display:flex;gap:8px;flex-wrap:wrap">'+
