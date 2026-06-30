@@ -7057,11 +7057,22 @@ function openBlogPost(id, pushState) {
   if (!post) return;
   var url = blogUrl(post, id);
   if(pushState!==false) history.pushState({page:'blog-post',postId:id},'', url);
-  // SEO: 글마다 canonical·title·description 동적 갱신
+  // SEO: 글마다 canonical·title·description·OG 동적 갱신
   var fullUrl = (url.charAt(0)==='/') ? location.origin + url : location.origin + '/' + url;
   setCanonical(fullUrl);
   if(post.title) document.title = post.title + ' | 병원마케팅 베놈';
   var md=document.querySelector('meta[name="description"]'); if(md && post.meta) md.setAttribute('content', post.meta);
+  // Open Graph(소셜·AI 미리보기)도 글 기준으로 갱신
+  (function(){
+    function og(prop,val){ if(!val)return; var s='meta[property="'+prop+'"]',e=document.querySelector(s);
+      if(!e){e=document.createElement('meta');e.setAttribute('property',prop);document.head.appendChild(e);} e.setAttribute('content',val); }
+    var img=(post.images&&post.images[0])||post.image||post.thumb||'';
+    if(img && img.charAt(0)==='/') img=location.origin+img;
+    og('og:url',fullUrl); og('og:type','article');
+    if(post.title)og('og:title',post.title);
+    if(post.meta)og('og:description',post.meta);
+    if(img && /^https?:\/\//.test(img))og('og:image',img);
+  })();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   var pg=document.getElementById('pg-blog-post');
   if(pg){pg.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
