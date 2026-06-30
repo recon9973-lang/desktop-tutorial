@@ -22,10 +22,13 @@ GET  /api/growthops?module=linkhealth                  # 내부링크 헬스(고
 GET  /api/growthops?module=cluster&action=list         # 클러스터+완성도(발행글 매칭)
 POST /api/growthops?module=cluster&action=build        # body {category,region,pillar,size} (Bearer)
 POST /api/growthops?module=cluster&action=sync         # 발행글↔하위주제 재매칭        (Bearer)
+GET  /api/growthops?module=indexing                    # 발행물 인덱싱 준비도(슬러그·메타·이미지)
+GET  /api/growthops?module=cwv[&url=&strategy=]        # Core Web Vitals(PSI) 측정
 GET  /api/growthops?module=outreach&action=list        # 연락처+요약
 GET  /api/growthops?module=outreach&action=remind      # 오늘 할 일
 POST /api/growthops?module=outreach&action=upsert      # body {contact}    (Bearer ADMIN_SECRET)
 POST /api/growthops?module=outreach&action=transition  # body {id,to,note} (Bearer ADMIN_SECRET)
+POST /api/growthops?module=outreach&action=draft       # body {id} → 제안 메일 초안(OpenAI) (Bearer)
 POST /api/growthops?module=outreach&action=delete      # body {id}         (Bearer ADMIN_SECRET)
 POST /api/growthops?module=snapshot                    # 일별 스냅샷 저장   (Bearer ADMIN_SECRET)
 ```
@@ -82,7 +85,12 @@ Hobby 12개 한도. 현재 `api/`는 `growthops.js` 포함 **12/12**. 추가 함
 | `clusterAutoExpand: true` | 빈칸 소진 시 다음 필러로 새 클러스터 자동 설계 |
 | `clusterPillars: []` | 자동확장 필러 목록(없으면 `keywords` 사용) |
 
+## 진행 현황(2차)
+- ✅ 콘솔 추세 차트에 성능(CWV) 라인 추가(0~100 고정축, 90/50 기준선)
+- ✅ 아웃리치 제안 메일 초안 생성(`action=draft`, OpenAI 래퍼 재사용, 모달+복사)
+- ✅ 인덱싱 준비도(`module=indexing`) — 발행물 기반 추정
+
 ## 다음 단계(후속)
-- 콘솔 추세 차트에 CWV(성능 점수) 라인 추가
-- 아웃리치 제안 메일 초안 생성(기존 OpenAI 래퍼 재사용)
-- Search Console API 연동(실측 인덱싱·노출·클릭)
+- Search Console API 실측 연동(OAuth 서비스계정 → 색인·노출·클릭). 현재는 준비도 추정만 제공.
+- 아웃리치 초안 다국어(en) 옵션
+- 클러스터 자동확장에 검색량 가중 정렬

@@ -90,4 +90,18 @@ test('summary: 집계', () => {
   assert.strictEqual(s.byType.pr, 2);
 });
 
+test('buildOutreachPrompt: 유형 라벨 + 스팸/링크교환 금지 명시', () => {
+  const { contact } = O.validateContact({ name: '대구일보', type: 'pr', site: 'https://x.kr', notes: '의료 섹션' }, AT);
+  const p = O.buildOutreachPrompt(contact);
+  assert.ok(p.includes('대구일보'));
+  assert.ok(p.includes('보도자료')); // pr 라벨
+  assert.ok(p.includes('링크 구매/교환'));
+  assert.ok(p.includes('병원마케팅 베놈'));
+});
+
+test('buildOutreachPrompt: 알 수 없는 유형은 협업 제안으로 폴백', () => {
+  const p = O.buildOutreachPrompt({ name: 'A', type: 'zzz' });
+  assert.ok(p.includes('협업 제안'));
+});
+
 console.log(`\n${pass} passed`);

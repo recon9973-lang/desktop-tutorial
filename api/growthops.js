@@ -119,6 +119,23 @@ async function handleOutreach(req, res, action) {
       return res.status(200).json({ ok: true });
     }
 
+    if (action === 'draft') {
+      // 적법 제안 메일 초안 생성(OpenAI). 저장하지 않음.
+      const c = (body.id && data.contacts.find((x) => x.id === body.id)) || body.contact;
+      if (!c || !c.name) return res.status(400).json({ ok: false, error: '연락처(name) 필요' });
+      try {
+        const { chatComplete } = require('../lib/openai-client');
+        const out = await chatComplete(
+          '당신은 적법한 화이트햇 디지털 PR·아웃리치 전문가입니다. 링크 구매·교환·스팸을 절대 제안하지 않고, 가치 중심의 정중한 제안만 작성합니다.',
+          O.buildOutreachPrompt(c),
+          { max_tokens: 800, temperature: 0.6 }
+        );
+        return res.status(200).json({ ok: true, draft: out.text, usage: out.usage });
+      } catch (e) {
+        return res.status(500).json({ ok: false, error: String((e && e.message) || e) });
+      }
+    }
+
     return res.status(400).json({ ok: false, error: '알 수 없는 action' });
   }
 
@@ -175,6 +192,24 @@ async function handleCluster(req, res, action) {
   }
 
   return res.status(405).json({ ok: false, error: 'GET/POST only' });
+}
+
+// ── M3: 인덱싱 준비도(발행물 기반 추정) ──
+async function handleIndexing(res) {
+  const { posts } = await store.getPosts();
+  const pub = (posts || []).filter((p) => p && p.publishable !== false &&
+    (!p.status || !/draft|임시|hidden|trash|삭제|review|검수/i.test(p.status)));
+  const missingSlug = pub.filter((p) => !p.slug).length;
+  const noImage = pub.filter((p) => !(p.images && p.images.length) && !/<img/i.test(p.html || '')).length;
+  const noMeta = pub.filter((p) => !p.metaDesc).length;
+  const ready = pub.filter((p) => p.slug && p.metaDesc).length;
+  return res.status(200).json({
+    ok: true,
+    published: pub.length,
+    ready,
+    readiness: { missingSlug, noImage, noMeta },
+    note: '발행물 기반 인덱싱 준비도 추정입니다. 실측 색인/노출/클릭은 Search Console API 연동 시 제공됩니다.',
+  });
 }
 
 // ── M3: Core Web Vitals(PSI) ──
@@ -238,6 +273,7 @@ module.exports = async function handler(req, res) {
     if (moduleName === 'linkhealth') return await handleLinkHealth(res);
     if (moduleName === 'outreach') return await handleOutreach(req, res, action);
     if (moduleName === 'cluster') return await handleCluster(req, res, action);
+    if (moduleName === 'indexing') return await handleIndexing(res);
     if (moduleName === 'cwv') return await handleCwv(req, res);
     if (moduleName === 'snapshot') return await handleSnapshot(req, res);
     return res.status(400).json({ ok: false, error: '알 수 없는 module' });
