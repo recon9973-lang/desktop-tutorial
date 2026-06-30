@@ -3,152 +3,613 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>서울베놈병원 — 대형병원 신뢰형 샘플</title>
+<title>서울중앙종합병원 — 대형 종합병원 신뢰형 샘플</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Pretendard',sans-serif;color:#0d253d;background:#fff}
 a{text-decoration:none;color:inherit}
-/* HEADER */
-.hd{background:#1e3a5f;height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+
+/* ─── HEADER ─── */
+.hd{background:#1e3a5f;height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.35)}
 .hd-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:48px;width:100%}
-.hd-logo{color:#fff;font-size:20px;font-weight:700;letter-spacing:-.03em}
+.hd-logo{color:#fff;font-size:20px;font-weight:800;letter-spacing:-.04em;white-space:nowrap}
 .hd-logo span{color:#60a5fa}
 .hd-nav{display:flex;gap:32px}
-.hd-nav a{color:rgba(255,255,255,.75);font-size:14px;font-weight:400;transition:.15s}
+.hd-nav a{color:rgba(255,255,255,.72);font-size:14px;font-weight:400;transition:.15s;white-space:nowrap}
 .hd-nav a:hover{color:#fff}
-.hd-cta{margin-left:auto;background:#2563eb;color:#fff;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600}
-/* HERO */
-.hero{padding:100px 32px;text-align:center;color:#fff;position:relative;overflow:hidden;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a1929}
-.hero-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_01.jpg');background-size:cover;background-position:center;filter:brightness(.25);z-index:0}
-.hero>*:not(.hero-bg){position:relative;z-index:1}
-.hero h1{font-size:52px;font-weight:300;letter-spacing:-.04em;line-height:1.2;margin-bottom:20px}
-.hero h1 strong{font-weight:700;color:#93c5fd}
-.hero p{font-size:18px;color:rgba(255,255,255,.75);margin-bottom:40px;line-height:1.7}
+.hd-cta{margin-left:auto;background:#2563eb;color:#fff;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;white-space:nowrap;transition:.15s}
+.hd-cta:hover{background:#1d4ed8}
+
+/* ─── HERO ─── */
+.hero{position:relative;overflow:hidden;min-height:680px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 32px}
+.hero-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_01.jpg');background-size:cover;background-position:center 30%;filter:brightness(.18);z-index:0}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,18,40,.4) 0%,rgba(10,18,40,.1) 50%,rgba(10,18,40,.6) 100%);z-index:0}
+.hero>*:not(.hero-bg):not(.hero-grad){position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,.35);border:1px solid rgba(96,165,250,.45);color:#93c5fd;font-size:12px;font-weight:600;letter-spacing:.15em;padding:7px 18px;border-radius:40px;margin-bottom:28px}
+.hero-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:#60a5fa;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(36px,5.5vw,64px);font-weight:300;letter-spacing:-.04em;line-height:1.15;color:#fff;margin-bottom:24px}
+.hero h1 strong{font-weight:900;display:block;color:#fff}
+.hero h1 em{font-style:normal;color:#93c5fd}
+.hero-sub{font-size:clamp(15px,2vw,19px);color:rgba(255,255,255,.72);margin-bottom:12px;line-height:1.7;max-width:680px}
+.hero-tags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:44px}
+.hero-tag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);font-size:12px;padding:5px 14px;border-radius:20px}
 .hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
-.btn-w{background:#fff;color:#1e3a5f;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600}
-.btn-o{border:2px solid rgba(255,255,255,.5);color:#fff;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:400}
-/* STATS */
-.stats{background:#f8fafc;padding:48px 32px}
-.stats-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0}
-.stat{text-align:center;padding:24px;border-right:1px solid #e2e8f0}
+.btn-primary{background:#2563eb;color:#fff;padding:16px 36px;border-radius:10px;font-size:16px;font-weight:700;transition:.2s;border:2px solid #2563eb}
+.btn-primary:hover{background:#1d4ed8}
+.btn-ghost{background:transparent;color:#fff;padding:16px 36px;border-radius:10px;font-size:16px;font-weight:400;border:2px solid rgba(255,255,255,.4);transition:.2s}
+.btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.7)}
+
+/* ─── STATS BAR ─── */
+.stats{background:#0d1e35;padding:0 32px}
+.stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{text-align:center;padding:40px 16px;border-right:1px solid rgba(255,255,255,.08)}
 .stat:last-child{border:none}
-.stat-n{font-size:40px;font-weight:700;color:#1e40af;letter-spacing:-.03em}
-.stat-l{font-size:13px;color:#64748b;margin-top:6px}
-/* DEPTS */
-.depts{padding:80px 32px;max-width:1200px;margin:0 auto}
-.sec-title{font-size:32px;font-weight:700;color:#0d253d;letter-spacing:-.03em;margin-bottom:8px}
-.sec-sub{font-size:16px;color:#64748b;margin-bottom:48px}
-.dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
-.dept-card{background:#f8fafc;border-radius:12px;padding:24px 16px;text-align:center;border:1px solid #e2e8f0;transition:.2s;cursor:pointer}
-.dept-card:hover{background:#eff6ff;border-color:#93c5fd;transform:translateY(-2px)}
-.dept-icon{font-size:36px;margin-bottom:12px}
-.dept-name{font-size:14px;font-weight:600;color:#1e3a5f}
-/* DOCTORS */
-.doctors{background:#1e3a5f;padding:80px 32px;color:#fff}
+.stat-n{font-size:clamp(32px,3.5vw,46px);font-weight:800;color:#60a5fa;letter-spacing:-.04em;line-height:1}
+.stat-n sup{font-size:18px;font-weight:600}
+.stat-l{font-size:13px;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.5}
+
+/* ─── SECTION GENERIC ─── */
+.sec-label{font-size:11px;letter-spacing:.2em;color:#2563eb;font-weight:700;text-transform:uppercase;margin-bottom:12px}
+.sec-title{font-size:clamp(26px,3.5vw,38px);font-weight:800;color:#0d253d;letter-spacing:-.04em;margin-bottom:10px;line-height:1.25}
+.sec-sub{font-size:16px;color:#64748b;margin-bottom:48px;line-height:1.7}
+
+/* ─── DEPTS ─── */
+.depts{padding:88px 32px}
+.depts-inner{max-width:1200px;margin:0 auto}
+.dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;margin-bottom:40px}
+.dept-card{background:#f8fafc;border-radius:14px;padding:24px 16px 20px;text-align:center;border:1px solid #e8eef4;transition:.2s;cursor:pointer}
+.dept-card:hover{background:#eff6ff;border-color:#93c5fd;transform:translateY(-3px);box-shadow:0 8px 24px rgba(37,99,235,.12)}
+.dept-icon{font-size:34px;margin-bottom:10px;line-height:1}
+.dept-name{font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:4px}
+.dept-desc{font-size:11px;color:#94a3b8;line-height:1.4}
+
+/* ─── FEATURE SPLIT ─── */
+.feature-split{display:grid;grid-template-columns:1fr 1fr;min-height:480px}
+@media(max-width:768px){.feature-split{grid-template-columns:1fr}}
+.feature-text-side{padding:64px 56px;background:#1e3a5f;color:#fff;display:flex;flex-direction:column;justify-content:center}
+.feature-text-side h2{font-size:clamp(24px,3vw,36px);font-weight:800;margin-bottom:20px;line-height:1.3}
+.feature-text-side p{opacity:.85;font-size:15px;line-height:1.8;margin-bottom:24px}
+.feature-text-side ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+.feature-text-side li{display:flex;gap:10px;font-size:14px;opacity:.9}
+.feature-text-side li::before{content:'▸';color:#60a5fa;flex-shrink:0}
+.feature-img-side{position:relative;overflow:hidden}
+.feature-img-side img{width:100%;height:100%;object-fit:cover}
+
+/* ─── NOTICE STRIP ─── */
+.notice-strip{background:#2563eb;padding:20px 32px;text-align:center}
+.notice-strip p{color:#fff;font-size:14px;font-weight:500;opacity:.92;line-height:1.6}
+.notice-strip strong{font-weight:800}
+
+/* ─── TRUST INDICATORS ─── */
+.trust{padding:88px 32px;background:#f0f5fb}
+.trust-inner{max-width:1100px;margin:0 auto}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.trust-card{background:#fff;border-radius:16px;padding:36px 28px;border:1px solid #e2ecf8;text-align:center;position:relative;overflow:hidden;transition:.2s}
+.trust-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(30,58,95,.10)}
+.trust-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#1e3a5f,#2563eb)}
+.trust-icon{font-size:44px;margin-bottom:18px;display:block}
+.trust-num{font-size:clamp(28px,3vw,42px);font-weight:900;color:#1e3a5f;letter-spacing:-.04em;line-height:1;margin-bottom:6px}
+.trust-num span{font-size:18px;color:#2563eb}
+.trust-title{font-size:15px;font-weight:700;color:#0d253d;margin-bottom:8px}
+.trust-detail{font-size:12px;color:#64748b;line-height:1.65}
+
+/* ─── TEAM BANNER ─── */
+/* (inline styles used as specified) */
+
+/* ─── DOCTORS ─── */
+.doctors{background:#0d1e35;padding:88px 32px;color:#fff}
 .doctors-inner{max-width:1200px;margin:0 auto}
-.doctors h2{font-size:32px;font-weight:700;color:#fff;margin-bottom:8px}
-.doctors p{color:rgba(255,255,255,.6);margin-bottom:48px}
-.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px}
-.doc-card{background:rgba(255,255,255,.07);border-radius:12px;padding:28px 20px;border:1px solid rgba(255,255,255,.1)}
-.doc-avatar{width:88px;height:88px;border-radius:50%;overflow:hidden;margin:0 auto 16px;border:3px solid rgba(96,165,250,.3)}
+.doctors .sec-title{color:#fff}
+.doctors .sec-sub{color:rgba(255,255,255,.55)}
+.doc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.doc-card{background:rgba(255,255,255,.05);border-radius:16px;padding:32px 20px 28px;text-align:center;border:1px solid rgba(255,255,255,.08);transition:.2s}
+.doc-card:hover{background:rgba(37,99,235,.15);border-color:rgba(96,165,250,.3);transform:translateY(-4px)}
+.doc-avatar{width:120px;height:120px;border-radius:50%;overflow:hidden;margin:0 auto 16px;border:3px solid rgba(96,165,250,.4)}
 .doc-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top}
-.doc-name{font-size:16px;font-weight:700;margin-bottom:4px}
-.doc-spec{font-size:13px;color:#93c5fd;margin-bottom:8px}
-.doc-career{font-size:12px;color:rgba(255,255,255,.5);line-height:1.6}
-/* NOTICE */
-.notice{padding:80px 32px;max-width:1200px;margin:0 auto}
-.notice h2{font-size:32px;font-weight:700;margin-bottom:48px}
-.notice-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
-.notice-list{display:flex;flex-direction:column;gap:0}
-.notice-item{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #e2e8f0;align-items:center}
-.notice-badge{font-size:11px;font-weight:700;background:#eff6ff;color:#2563eb;padding:3px 8px;border-radius:4px;white-space:nowrap}
-.notice-title{font-size:14px;color:#0d253d;flex:1}
-.notice-date{font-size:12px;color:#94a3b8;white-space:nowrap}
+.doc-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:4px}
+.doc-title{font-size:12px;color:#60a5fa;font-weight:600;letter-spacing:.06em;margin-bottom:12px}
+.doc-spec{font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:16px}
+.doc-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.doc-tag{font-size:11px;background:rgba(96,165,250,.15);color:#93c5fd;padding:3px 10px;border-radius:12px;border:1px solid rgba(96,165,250,.25)}
+
+/* ─── AWARDS ─── */
+.awards{padding:80px 32px;background:#fff}
+.awards-inner{max-width:1100px;margin:0 auto}
+.award-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+.award-item{display:flex;align-items:flex-start;gap:16px;background:#f8fafc;border-radius:14px;padding:24px 20px;border:1px solid #e2e8f0;transition:.2s}
+.award-item:hover{border-color:#93c5fd;background:#eff6ff}
+.award-ic{font-size:32px;flex-shrink:0;margin-top:2px}
+.award-text strong{display:block;font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:4px}
+.award-text span{font-size:12px;color:#64748b;line-height:1.5}
+
+/* ─── TESTIMONIALS ─── */
+.testimonials{background:#1e3a5f;padding:88px 32px}
+.testimonials-inner{max-width:1100px;margin:0 auto}
+.testimonials .sec-label{color:#93c5fd}
+.testimonials .sec-title{color:#fff}
+.testimonials .sec-sub{color:rgba(255,255,255,.55)}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.testi-card{background:rgba(255,255,255,.07);border-radius:14px;padding:32px 28px;border:1px solid rgba(255,255,255,.1)}
+.testi-stars{color:#fbbf24;font-size:16px;margin-bottom:16px;letter-spacing:2px}
+.testi-text{font-size:14px;color:rgba(255,255,255,.8);line-height:1.8;margin-bottom:20px}
+.testi-author{display:flex;align-items:center;gap:12px;border-top:1px solid rgba(255,255,255,.1);padding-top:16px}
+.testi-avi{width:40px;height:40px;border-radius:50%;background:rgba(96,165,250,.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.testi-name{font-size:14px;font-weight:700;color:#fff}
+.testi-dept{font-size:11px;color:rgba(255,255,255,.45)}
+
+/* ─── CTA BANNER ─── */
+.cta-banner{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);padding:80px 32px;text-align:center;color:#fff}
+.cta-banner h2{font-size:clamp(28px,4vw,44px);font-weight:900;margin-bottom:16px;line-height:1.2}
+.cta-banner p{font-size:17px;opacity:.82;margin-bottom:40px;line-height:1.7}
+.cta-cols{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.cta-col{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:28px 36px;min-width:180px;text-align:center;transition:.2s}
+.cta-col:hover{background:rgba(255,255,255,.2)}
+.cta-col .ic{font-size:36px;margin-bottom:12px}
+.cta-col strong{display:block;font-size:15px;font-weight:700;margin-bottom:4px}
+.cta-col span{font-size:13px;opacity:.7}
+
+/* ─── MEDIA QUERIES ─── */
+@media(max-width:1024px){
+  .doc-grid{grid-template-columns:repeat(2,1fr)}
+  .trust-grid{grid-template-columns:repeat(2,1fr)}
+  .testi-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .hd-nav{display:none}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .stat{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+  .dept-grid{grid-template-columns:repeat(3,1fr)}
+  .doc-grid{grid-template-columns:repeat(2,1fr)}
+  .trust-grid{grid-template-columns:repeat(2,1fr)}
+  .testi-grid{grid-template-columns:1fr}
+  .feature-text-side{padding:48px 32px}
+  .award-list{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .dept-grid{grid-template-columns:repeat(2,1fr)}
+  .doc-grid{grid-template-columns:1fr}
+  .trust-grid{grid-template-columns:1fr}
+  .stats-inner{grid-template-columns:1fr}
+  .hero-btns{flex-direction:column;align-items:center}
+}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════ -->
 <header class="hd">
   <div class="hd-inner">
-    <div class="hd-logo">서울<span>베놈</span>병원</div>
+    <div class="hd-logo">서울중앙<span>종합병원</span></div>
     <nav class="hd-nav">
-      <a href="#">진료안내</a>
-      <a href="#">의료진</a>
-      <a href="#">건강검진</a>
-      <a href="#">병원소개</a>
-      <a href="#">공지사항</a>
+      <a href="#">진료과 안내</a>
+      <a href="#">의료진 소개</a>
+      <a href="#">건강검진센터</a>
+      <a href="#">응급의료센터</a>
+      <a href="#">외래예약</a>
     </nav>
-    <a class="hd-cta" href="#">예약하기</a>
+    <a href="tel:15991234" class="hd-cta">☎ 진료예약 1599-1234</a>
   </div>
 </header>
 
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
 <section class="hero">
   <div class="hero-bg"></div>
-  <h1>환자 중심의 의료,<br><strong>신뢰로 완성합니다</strong></h1>
-  <p>20년 이상의 임상 경험과 최신 의료 장비로<br>최고 수준의 진료를 제공합니다.</p>
+  <div class="hero-grad"></div>
+  <div class="hero-badge">JCI 국제의료기관 인증 병원</div>
+  <h1>
+    <strong>환자 중심의 <em>첨단 의료</em></strong>
+    대한민국 최고 수준의 종합병원
+  </h1>
+  <p class="hero-sub">2,400여 명의 전문의가 365일 환자 곁을 지킵니다.<br>최첨단 장비와 다학제 협진으로 정확한 진단과 최선의 치료를 약속합니다.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">국가 지정 권역응급의료센터</span>
+    <span class="hero-tag">중증외상센터 운영</span>
+    <span class="hero-tag">암 전문 치료 센터</span>
+    <span class="hero-tag">로봇수술 전문병원</span>
+    <span class="hero-tag">JCI 인증 3회 연속</span>
+  </div>
   <div class="hero-btns">
-    <a class="btn-w" href="#">진료 예약하기</a>
-    <a class="btn-o" href="#">진료과 안내</a>
+    <a href="#" class="btn-primary">외래 진료 예약</a>
+    <a href="#" class="btn-ghost">건강검진 안내 →</a>
   </div>
 </section>
 
-<section class="stats">
+<!-- ═══════════════════════════════════════════
+     STATS BAR
+═══════════════════════════════════════════ -->
+<div class="stats">
   <div class="stats-inner">
-    <div class="stat"><div class="stat-n">32+</div><div class="stat-l">진료과목</div></div>
-    <div class="stat"><div class="stat-n">180+</div><div class="stat-l">전문의</div></div>
-    <div class="stat"><div class="stat-n">25년</div><div class="stat-l">진료 역사</div></div>
-    <div class="stat"><div class="stat-n">98%</div><div class="stat-l">환자 만족도</div></div>
+    <div class="stat">
+      <div class="stat-n">2,400<sup>+</sup></div>
+      <div class="stat-l">전문의 · 의료 인력</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">1,850</div>
+      <div class="stat-l">병상 수 (국내 5위권)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">98<sup>%</sup></div>
+      <div class="stat-l">환자 만족도 (2024)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">40<sup>+</sup></div>
+      <div class="stat-l">전문 진료 센터</div>
+    </div>
   </div>
-</section>
+</div>
 
+<!-- ═══════════════════════════════════════════
+     FEATURE SPLIT — 최첨단 의료 시스템
+═══════════════════════════════════════════ -->
+<div class="feature-split">
+  <div class="feature-text-side">
+    <div style="font-size:11px;letter-spacing:.18em;color:#60a5fa;font-weight:700;text-transform:uppercase;margin-bottom:18px">Advanced Medical Technology</div>
+    <h2>최첨단 의료 시스템으로<br>정확하고 안전한 치료를</h2>
+    <p>서울중앙종합병원은 국내 최고 수준의 의료장비와 디지털 헬스케어 인프라를 구축하여, 오진 없는 정밀 진단과 합병증 최소화 수술을 실현합니다. 모든 장비는 연간 품질 인증을 거쳐 환자 안전을 최우선으로 운영됩니다.</p>
+    <ul>
+      <li>3.0T MRI · 256채널 CT · PET-CT 동시 보유 — 국내 최대 규모</li>
+      <li>다빈치 Xi 로봇수술 시스템 4대 운영, 연 3,200건 이상 수술</li>
+      <li>AI 기반 영상판독 시스템 도입 — 진단 정확도 99.2%</li>
+      <li>무균 수술실 24개 · 하이브리드 수술실 3개 상시 운영</li>
+      <li>스마트 ICU 시스템으로 24시간 실시간 환자 모니터링</li>
+    </ul>
+  </div>
+  <div class="feature-img-side" style="min-height:460px">
+    <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_09.jpg" alt="최첨단 의료장비 — 안과 정밀검사 시스템">
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DEPARTMENTS
+═══════════════════════════════════════════ -->
 <section class="depts">
-  <div class="sec-title">진료과 안내</div>
-  <div class="sec-sub">환자분의 증상에 맞는 진료과를 선택하세요</div>
-  <div class="dept-grid">
-    <div class="dept-card"><div class="dept-icon">🫀</div><div class="dept-name">심장내과</div></div>
-    <div class="dept-card"><div class="dept-icon">🧠</div><div class="dept-name">신경외과</div></div>
-    <div class="dept-card"><div class="dept-icon">🦷</div><div class="dept-name">치과</div></div>
-    <div class="dept-card"><div class="dept-icon">👁</div><div class="dept-name">안과</div></div>
-    <div class="dept-card"><div class="dept-icon">🦴</div><div class="dept-name">정형외과</div></div>
-    <div class="dept-card"><div class="dept-icon">🩺</div><div class="dept-name">내과</div></div>
-    <div class="dept-card"><div class="dept-icon">🧬</div><div class="dept-name">피부과</div></div>
-    <div class="dept-card"><div class="dept-icon">🤰</div><div class="dept-name">산부인과</div></div>
+  <div class="depts-inner">
+    <div class="sec-label">Departments</div>
+    <h2 class="sec-title">42개 전문 진료과 · 30개 특화 센터</h2>
+    <p class="sec-sub">각 분야 최고 전문의가 협진 체계를 통해 복합 질환까지 빈틈없이 치료합니다.</p>
+    <div class="dept-grid">
+      <div class="dept-card">
+        <div class="dept-icon">🫀</div>
+        <div class="dept-name">심장내과</div>
+        <div class="dept-desc">관상동맥 · 부정맥</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🧠</div>
+        <div class="dept-name">신경과</div>
+        <div class="dept-desc">뇌졸중 · 치매</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🦴</div>
+        <div class="dept-name">정형외과</div>
+        <div class="dept-desc">관절 · 척추 · 스포츠</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🏥</div>
+        <div class="dept-name">외과</div>
+        <div class="dept-desc">복강경 · 로봇수술</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🫁</div>
+        <div class="dept-name">호흡기내과</div>
+        <div class="dept-desc">폐암 · 천식 · COPD</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🔬</div>
+        <div class="dept-name">종양혈액내과</div>
+        <div class="dept-desc">암 · 혈액질환</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">👁️</div>
+        <div class="dept-name">안과</div>
+        <div class="dept-desc">망막 · 백내장 · 라식</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🦷</div>
+        <div class="dept-name">치과구강외과</div>
+        <div class="dept-desc">임플란트 · 악안면</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🤰</div>
+        <div class="dept-name">산부인과</div>
+        <div class="dept-desc">고위험 임신 · 부인암</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">👶</div>
+        <div class="dept-name">소아청소년과</div>
+        <div class="dept-desc">신생아 · 소아중환자</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">💉</div>
+        <div class="dept-name">마취통증의학과</div>
+        <div class="dept-desc">수술마취 · 통증클리닉</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-icon">🩻</div>
+        <div class="dept-name">영상의학과</div>
+        <div class="dept-desc">CT · MRI · 중재시술</div>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <a href="#" style="display:inline-flex;align-items:center;gap:8px;color:#2563eb;font-size:14px;font-weight:600;border:1.5px solid #2563eb;padding:12px 28px;border-radius:8px;transition:.2s">전체 진료과 보기 →</a>
+    </div>
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════
+     TRUST INDICATORS
+═══════════════════════════════════════════ -->
+<section class="trust">
+  <div class="trust-inner">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="sec-label" style="text-align:center">Why Choose Us</div>
+      <h2 class="sec-title" style="text-align:center">대한민국이 신뢰하는<br>서울중앙종합병원</h2>
+      <p class="sec-sub" style="text-align:center;margin-bottom:0">숫자로 증명하는 의료 수준, 환자가 직접 선택한 결과입니다.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <span class="trust-icon">🏅</span>
+        <div class="trust-num">3<span>회</span></div>
+        <div class="trust-title">JCI 국제의료기관 인증</div>
+        <div class="trust-detail">국제의료기관평가위원회(JCI)로부터 3회 연속 인증 획득. 전 세계 5% 미만 병원만 달성하는 최고 수준의 환자 안전 기준을 충족합니다.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">🏨</span>
+        <div class="trust-num">1,850<span>병상</span></div>
+        <div class="trust-title">국내 5위권 병상 규모</div>
+        <div class="trust-detail">중환자실 146병상, 응급전용 병상 80병상, 무균 격리실 32병상 포함. 중증 환자도 즉시 수용 가능한 대규모 의료 인프라를 갖추고 있습니다.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">👨‍⚕️</span>
+        <div class="trust-num">2,400<span>+</span></div>
+        <div class="trust-title">국내 최고 수준 의료진</div>
+        <div class="trust-detail">전문의 820명, 전공의 340명, 간호사 1,240명. 의대 교수급 전문의 비율 68% 이상으로 국내 최상위권 의료인력 구성을 자랑합니다.</div>
+      </div>
+      <div class="trust-card">
+        <span class="trust-icon">🌐</span>
+        <div class="trust-num">12<span>개국</span></div>
+        <div class="trust-title">국제진료센터 운영</div>
+        <div class="trust-detail">영어·중국어·러시아어·아랍어 등 12개 언어 통역 지원. 연간 외국인 환자 18,000명 이상을 진료하는 글로벌 의료 허브입니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     TEAM BANNER (img_02.jpg background)
+═══════════════════════════════════════════ -->
+<section class="team-banner" style="position:relative;overflow:hidden;min-height:300px;display:flex;align-items:center;justify-content:center">
+  <div style="position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_02.jpg');background-size:cover;background-position:center;filter:brightness(.15)"></div>
+  <div style="position:relative;z-index:1;text-align:center;color:#fff;padding:48px 24px">
+    <div style="font-size:12px;letter-spacing:.2em;opacity:.7;margin-bottom:16px">OUR MEDICAL TEAM</div>
+    <h2 style="font-size:clamp(28px,4vw,48px);font-weight:900;margin-bottom:16px">전문의 <em style="color:#93c5fd;font-style:normal">820명</em><br>전국 최고 수준 의료팀</h2>
+    <p style="opacity:.8;font-size:16px">내과·외과·신경과·정형외과·심장내과 전문의 상시 진료</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DOCTORS
+═══════════════════════════════════════════ -->
 <section class="doctors">
   <div class="doctors-inner">
-    <h2>의료진 소개</h2>
-    <p>각 분야 최고의 전문의가 함께합니다</p>
+    <div class="sec-label" style="color:#60a5fa">Medical Experts</div>
+    <h2 class="sec-title" style="color:#fff;margin-bottom:8px">분야별 대표 전문의</h2>
+    <p class="sec-sub" style="color:rgba(255,255,255,.5);margin-bottom:48px">대학병원 교수 출신 전문의가 직접 진료합니다. 일반 외래부터 수술까지 끝까지 책임집니다.</p>
     <div class="doc-grid">
-      <div class="doc-card"><div class="doc-avatar"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_02.jpg" alt="의료진"></div><div class="doc-name">김베놈 교수</div><div class="doc-spec">심장내과 전문의</div><div class="doc-career">서울대학교 의과대학 졸업<br>前 서울대병원 심장내과<br>대한심장학회 정회원</div></div>
-      <div class="doc-card"><div class="doc-avatar"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_10.jpg" alt="의료진"></div><div class="doc-name">이마케팅 과장</div><div class="doc-spec">신경외과 전문의</div><div class="doc-career">연세대학교 의과대학 졸업<br>前 세브란스병원 신경외과<br>뇌혈관 수술 1,200+ 케이스</div></div>
-      <div class="doc-card"><div class="doc-avatar"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_05.jpg" alt="의료진"></div><div class="doc-name">박전문 원장</div><div class="doc-spec">정형외과 전문의</div><div class="doc-career">고려대학교 의과대학 졸업<br>관절경 수술 전문<br>대한정형외과학회 이사</div></div>
-      <div class="doc-card"><div class="doc-avatar"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_07.jpg" alt="의료진"></div><div class="doc-name">최치료 부장</div><div class="doc-spec">피부과 전문의</div><div class="doc-career">성균관대 의과대학 졸업<br>피부재생·레이저 전문<br>SCI 논문 12편</div></div>
+
+      <!-- 의사 1 : 흉부외과 수석 — img_02.jpg 팀 사진 활용 -->
+      <div class="doc-card">
+        <div class="doc-avatar">
+          <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_02.jpg" alt="의료진 대표 이미지">
+        </div>
+        <div class="doc-name">김태준 교수</div>
+        <div class="doc-title">흉부외과 · 과장</div>
+        <div class="doc-spec">서울대 의대 졸업 / 분당서울대병원 전임의<br>심장이식·판막수술 2,800건 집도</div>
+        <div class="doc-tags">
+          <span class="doc-tag">심장이식</span>
+          <span class="doc-tag">관상동맥</span>
+          <span class="doc-tag">최소침습</span>
+        </div>
+      </div>
+
+      <!-- 의사 2 : 신경과 — img_10.jpg 여성 의사 -->
+      <div class="doc-card">
+        <div class="doc-avatar">
+          <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_10.jpg" alt="신경과 전문의">
+        </div>
+        <div class="doc-name">박지수 교수</div>
+        <div class="doc-title">신경과 · 뇌졸중센터장</div>
+        <div class="doc-spec">연세대 의대 졸업 / 세브란스병원 전임의<br>뇌졸중 급성기 치료 국내 최다 경험</div>
+        <div class="doc-tags">
+          <span class="doc-tag">뇌졸중</span>
+          <span class="doc-tag">뇌혈관</span>
+          <span class="doc-tag">치매</span>
+        </div>
+      </div>
+
+      <!-- 의사 3 : 정형외과 — img_05.jpg 남성 의사 -->
+      <div class="doc-card">
+        <div class="doc-avatar">
+          <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_05.jpg" alt="정형외과 전문의">
+        </div>
+        <div class="doc-name">이성민 교수</div>
+        <div class="doc-title">정형외과 · 관절센터장</div>
+        <div class="doc-spec">성균관대 의대 졸업 / 삼성서울병원 전임의<br>인공관절치환술 국내 연간 최다 수술</div>
+        <div class="doc-tags">
+          <span class="doc-tag">인공관절</span>
+          <span class="doc-tag">척추</span>
+          <span class="doc-tag">스포츠의학</span>
+        </div>
+      </div>
+
+      <!-- 의사 4 : 산부인과 — img_07.jpg 여성 의사 클립보드 -->
+      <div class="doc-card">
+        <div class="doc-avatar">
+          <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_07.jpg" alt="산부인과 전문의">
+        </div>
+        <div class="doc-name">최유미 교수</div>
+        <div class="doc-title">산부인과 · 부인암센터장</div>
+        <div class="doc-spec">고려대 의대 졸업 / 국립암센터 전임의<br>부인암 다학제 협진 프로그램 전국 확산</div>
+        <div class="doc-tags">
+          <span class="doc-tag">자궁경부암</span>
+          <span class="doc-tag">고위험임신</span>
+          <span class="doc-tag">복강경</span>
+        </div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:48px">
+      <a href="#" style="display:inline-flex;align-items:center;gap:8px;background:#2563eb;color:#fff;font-size:14px;font-weight:600;padding:14px 32px;border-radius:10px;transition:.2s">전체 의료진 보기 →</a>
     </div>
   </div>
 </section>
 
-<section class="notice">
-  <h2>공지사항 · 건강정보</h2>
-  <div class="notice-grid">
-    <div class="notice-list">
-      <div style="font-size:15px;font-weight:600;margin-bottom:16px">📢 공지사항</div>
-      <div class="notice-item"><span class="notice-badge">공지</span><span class="notice-title">2025년 추석 연휴 진료 안내</span><span class="notice-date">2025.09.10</span></div>
-      <div class="notice-item"><span class="notice-badge">공지</span><span class="notice-title">건강검진 예약 시스템 개편 안내</span><span class="notice-date">2025.08.20</span></div>
-      <div class="notice-item"><span class="notice-badge">소식</span><span class="notice-title">심장내과 로봇수술 시스템 도입</span><span class="notice-date">2025.07.15</span></div>
-      <div class="notice-item"><span class="notice-badge">소식</span><span class="notice-title">MRI 장비 업그레이드 완료</span><span class="notice-date">2025.06.01</span></div>
-    </div>
-    <div class="notice-list">
-      <div style="font-size:15px;font-weight:600;margin-bottom:16px">💊 건강정보</div>
-      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">여름철 열사병 예방과 응급 대처법</span><span class="notice-date">2025.07.01</span></div>
-      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">무뉆 관절염, 수술 없이 치료하는 방법</span><span class="notice-date">2025.06.20</span></div>
-      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">당높 환자의 발 건강 관리 가이드</span><span class="notice-date">2025.06.05</span></div>
-      <div class="notice-item"><span class="notice-badge" style="background:#f0fdf4;color:#16a34a">건강</span><span class="notice-title">심장 건강을 지키는 생활습관 7가지</span><span class="notice-date">2025.05.18</span></div>
+<!-- ═══════════════════════════════════════════
+     AWARDS & CERTIFICATIONS
+═══════════════════════════════════════════ -->
+<section class="awards">
+  <div class="awards-inner">
+    <div class="sec-label">Awards & Accreditations</div>
+    <h2 class="sec-title" style="margin-bottom:8px">대내외 공인 최고 병원</h2>
+    <p class="sec-sub">정부 인증부터 국제 평가까지, 객관적 지표로 증명된 의료 수준입니다.</p>
+    <div class="award-list">
+      <div class="award-item">
+        <div class="award-ic">🏅</div>
+        <div class="award-text">
+          <strong>JCI 국제의료기관 인증 (3회 연속)</strong>
+          <span>2018 · 2021 · 2024 인증 획득. 전 세계 5% 미만 병원만 보유한 국제 최고 인증.</span>
+        </div>
+      </div>
+      <div class="award-item">
+        <div class="award-ic">🏆</div>
+        <div class="award-text">
+          <strong>보건복지부 최우수 종합병원</strong>
+          <span>2023 의료기관 평가인증 전 부문 최우수 등급. 환자안전·감염관리 최고점 획득.</span>
+        </div>
+      </div>
+      <div class="award-item">
+        <div class="award-ic">🔬</div>
+        <div class="award-text">
+          <strong>국가지정 희귀질환 거점병원</strong>
+          <span>보건복지부 지정 희귀·난치 질환 7개 분야 거점기관. 전국 의뢰 환자 수용.</span>
+        </div>
+      </div>
+      <div class="award-item">
+        <div class="award-ic">🚑</div>
+        <div class="award-text">
+          <strong>권역응급의료센터 지정</strong>
+          <span>서울 동남권 유일 권역응급의료센터. 중증외상·심근경색·뇌졸중 24시간 대응.</span>
+        </div>
+      </div>
+      <div class="award-item">
+        <div class="award-ic">🤖</div>
+        <div class="award-text">
+          <strong>로봇수술 인증 센터</strong>
+          <span>다빈치 로봇수술 국내 최다 집도 기관 선정 (2022·2023 연속). 연 3,200건 이상.</span>
+        </div>
+      </div>
+      <div class="award-item">
+        <div class="award-ic">🌏</div>
+        <div class="award-text">
+          <strong>외국인환자 유치 최우수기관</strong>
+          <span>보건복지부 의료기관 해외환자 유치 최우수 A등급. 연 18,000명 이상 외국인 진료.</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════ -->
+<section class="testimonials">
+  <div class="testimonials-inner">
+    <div class="sec-label">Patient Reviews</div>
+    <h2 class="sec-title" style="color:#fff;margin-bottom:8px">환자가 직접 전하는 치료 경험</h2>
+    <p class="sec-sub" style="color:rgba(255,255,255,.5);margin-bottom:48px">서울중앙종합병원을 선택한 환자들의 실제 이야기입니다.</p>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"심장판막수술을 위해 전국 여러 병원을 알아봤는데, 서울중앙종합병원 김태준 교수님이 가장 신뢰가 갔습니다. 수술 전 충분한 설명, 수술 후 회복 과정 내내 의료진이 옆에 있어줘서 불안하지 않았습니다. 6개월이 지난 지금 완전히 정상 생활 중입니다."</div>
+        <div class="testi-author">
+          <div class="testi-avi">👨</div>
+          <div>
+            <div class="testi-name">이○수 (62세)</div>
+            <div class="testi-dept">흉부외과 심장판막수술 (2024. 03)</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"뇌졸중으로 쓰러진 후 골든타임 안에 이 병원 응급실로 왔습니다. 즉시 혈전용해술을 받았고, 합병증 없이 3주 만에 퇴원했어요. 박지수 교수님과 신경과 팀 전체가 정말 빠르고 정확하게 대처해주신 덕분입니다. 가족 모두 감사드립니다."</div>
+        <div class="testi-author">
+          <div class="testi-avi">👩</div>
+          <div>
+            <div class="testi-name">김○진 보호자</div>
+            <div class="testi-dept">신경과 뇌졸중 급성기 치료 (2024. 07)</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"양쪽 무릎 인공관절 수술을 이 병원에서 받았습니다. 수술 전 AI 맞춤 계획, 수술 당일 로봇 보조로 정밀하게 진행, 수술 다음날부터 물리치료 시작. 두 달 만에 등산을 다시 할 수 있게 됐습니다. 이 교수님, 정말 훌륭하십니다."</div>
+        <div class="testi-author">
+          <div class="testi-avi">👴</div>
+          <div>
+            <div class="testi-name">박○희 (71세)</div>
+            <div class="testi-dept">정형외과 양측 인공관절치환술 (2023. 11)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     NOTICE STRIP
+═══════════════════════════════════════════ -->
+<div class="notice-strip">
+  <p><strong>응급 상황 발생 시 즉시 연락하세요</strong> — 권역응급의료센터 24시간 직통 ☎ <strong>1599-1234 (내선 0)</strong> | 중증외상·심근경색·뇌졸중 골든타임 대응 전담팀 상시 대기</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CTA BANNER
+═══════════════════════════════════════════ -->
+<section class="cta-banner">
+  <h2>지금 바로 전문의와<br>상담 예약을 시작하세요</h2>
+  <p>외래 예약부터 건강검진, 입원 상담까지 — 모든 과정을 한 번에 안내해드립니다.<br>전화·온라인·카카오 채널 중 편한 방법을 선택하세요.</p>
+  <div class="cta-cols">
+    <div class="cta-col">
+      <div class="ic">📞</div>
+      <strong>전화 예약</strong>
+      <span>1599-1234<br>평일 08:00 – 17:30</span>
+    </div>
+    <div class="cta-col">
+      <div class="ic">💻</div>
+      <strong>온라인 예약</strong>
+      <span>24시간 실시간<br>외래 예약 가능</span>
+    </div>
+    <div class="cta-col">
+      <div class="ic">💬</div>
+      <strong>카카오 채널</strong>
+      <span>@서울중앙종합병원<br>채팅 상담 가능</span>
+    </div>
+    <div class="cta-col">
+      <div class="ic">🏥</div>
+      <strong>건강검진 예약</strong>
+      <span>종합·암검진<br>당일 결과 가능</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER (베놈 브랜드)
+═══════════════════════════════════════════ -->
 <footer class="venom-footer">
   <div class="vf-inner">
     <div class="vf-brand">
@@ -185,5 +646,6 @@ a{text-decoration:none;color:inherit}
 .vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
 @media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
 </style>
+
 </body>
 </html>
