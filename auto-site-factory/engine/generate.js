@@ -294,6 +294,7 @@ function prepare(spec) {
   if (spec.category === 'clinic') {
     spec.sections = {
       trust:       buildTrust(spec.trust),
+      hours:       buildHours(spec.clinic?.hours),
       departments: buildDepartments(specialty),
       doctors:     buildDoctors(spec.clinic?.doctors, spec.images),
       reviews:     buildReviews(spec.reviews, specialty),
