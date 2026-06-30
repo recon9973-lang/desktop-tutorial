@@ -24,14 +24,14 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'OPENAI_API_KEY 환경변수가 Vercel에 설정되지 않았습니다.' });
   }
 
-  const { category, keyword, region, extra, save, publish, withImage = true } = req.body || {};
+  const { category, keyword, region, extra, target, tone, detail, save, publish, withImage = true } = req.body || {};
   if (!category || !keyword) {
     return res.status(400).json({ error: 'category, keyword 필수' });
   }
 
   try {
-    // 1. 글 생성
-    const post = await generatePost({ category, keyword, region, extra });
+    // 1. 글 생성 (target/tone 있으면 원고작성 톤 레이어 적용)
+    const post = await generatePost({ category, keyword, region, extra, target, tone, detail });
 
     // 2. 이미지 생성 (글 생성 성공 후) — 실패 사유를 응답에 담아 화면에 표시
     const images = [];

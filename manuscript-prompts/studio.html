@@ -506,11 +506,10 @@ async function generateLive(){
   const cfg=loadCfg();
   const url=(cfg.url||'').replace(/\/$/,'')+'/api/generate-post';
   const p=S.persona||TARGETS[S.target];
-  const toneTxt=S.tone<33?'다정한 구어체 위주':S.tone<67?'구어체와 문어체 균형':'전문 문어체 위주';
-  const extra=[S.extra,`타겟=${S.target}(${S.detail||p.detail})`,
-    `말투=${toneTxt}: 공감은 구어체, 정보·통계·치료는 문어체. 겁주지 말고 안심시키기`,
-    S.topic?`제목 방향=${S.topic.t}`:''].filter(Boolean).join(' / ');
+  // 타겟·톤은 구조화 필드로 전달(서버 tone-engine이 처리), 제목 방향만 extra로
+  const extra=[S.extra, S.topic?`제목 방향=${S.topic.t}`:''].filter(Boolean).join(' / ');
   const body={category:S.cat,keyword:S.core,region:S.region,extra,
+    target:S.target, tone:S.tone, detail:S.detail||p.detail,
     withImage:$('cfg_img').checked,save:$('cfg_save').checked};
   const btn=$('genBtn');btn.disabled=true;btn.textContent='⏳ 생성 중... (최대 1~2분)';
   $('genStatus').textContent='베놈 엔진(/api/generate-post) 호출 중...';
