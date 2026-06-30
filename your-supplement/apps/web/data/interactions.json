@@ -7,133 +7,417 @@
       "separate_2h": "2시간 이상 간격",
       "separate_meal": "다른 끼니에 분리",
       "avoid": "병용 회피"
-    }
+    },
+    "drug_interactions_count": 21
   },
   "synergy": [
-    { "pair": ["iron", "vitamin_c"], "effect": "비타민C가 비헴철 흡수를 촉진", "timing": "together", "evidence_level": 3 },
-    { "pair": ["vitamin_d", "calcium"], "effect": "비타민D가 칼슘 흡수를 도와 뼈 형성에 시너지", "timing": "together", "evidence_level": 3 },
-    { "pair": ["vitamin_d", "magnesium"], "effect": "마그네슘이 비타민D 활성화(대사)에 관여", "timing": "together", "evidence_level": 2 },
-    { "pair": ["calcium", "vitamin_d", "magnesium"], "effect": "뼈 건강 통합 시너지(칼슘을 뼈로 유도)", "timing": "together", "evidence_level": 2 },
-    { "pair": ["probiotics", "vitamin_c"], "effect": "장 환경·면역 보조(약한 보완)", "timing": "together", "evidence_level": 1 }
+    {
+      "pair": [
+        "iron",
+        "vitamin_c"
+      ],
+      "effect": "비타민C가 비헴철 흡수를 촉진",
+      "timing": "together",
+      "evidence_level": 3
+    },
+    {
+      "pair": [
+        "vitamin_d",
+        "calcium"
+      ],
+      "effect": "비타민D가 칼슘 흡수를 도와 뼈 형성에 시너지",
+      "timing": "together",
+      "evidence_level": 3
+    },
+    {
+      "pair": [
+        "vitamin_d",
+        "magnesium"
+      ],
+      "effect": "마그네슘이 비타민D 활성화(대사)에 관여",
+      "timing": "together",
+      "evidence_level": 2
+    },
+    {
+      "pair": [
+        "calcium",
+        "vitamin_d",
+        "magnesium"
+      ],
+      "effect": "뼈 건강 통합 시너지(칼슘을 뼈로 유도)",
+      "timing": "together",
+      "evidence_level": 2
+    },
+    {
+      "pair": [
+        "probiotics",
+        "vitamin_c"
+      ],
+      "effect": "장 환경·면역 보조(약한 보완)",
+      "timing": "together",
+      "evidence_level": 1
+    }
   ],
   "antagonism": [
-    { "pair": ["calcium", "iron"], "problem": "흡수 경쟁으로 상호 흡수 저하", "timing": "separate_2h", "evidence_level": 3 },
-    { "pair": ["calcium", "zinc"], "problem": "고용량 칼슘이 아연 흡수 방해", "timing": "separate_meal", "evidence_level": 2 },
-    { "pair": ["iron", "zinc"], "problem": "동시 고용량 시 상호 흡수 저해", "timing": "separate_2h", "evidence_level": 2 },
-    { "pair": ["zinc", "copper_note"], "problem": "고용량 아연 장기 복용이 구리 결핍 유발(아연:구리 ≈ 8~15:1 권장)", "timing": "separate_meal", "evidence_level": 2 },
-    { "pair": ["calcium", "magnesium"], "problem": "과량 칼슘이 마그네슘 흡수 방해(칼슘:마그네슘 ≈ 2:1 권장)", "timing": "separate_meal", "evidence_level": 2 }
+    {
+      "pair": [
+        "calcium",
+        "iron"
+      ],
+      "problem": "흡수 경쟁으로 상호 흡수 저하",
+      "timing": "separate_2h",
+      "evidence_level": 3
+    },
+    {
+      "pair": [
+        "calcium",
+        "zinc"
+      ],
+      "problem": "고용량 칼슘이 아연 흡수 방해",
+      "timing": "separate_meal",
+      "evidence_level": 2
+    },
+    {
+      "pair": [
+        "iron",
+        "zinc"
+      ],
+      "problem": "동시 고용량 시 상호 흡수 저해",
+      "timing": "separate_2h",
+      "evidence_level": 2
+    },
+    {
+      "pair": [
+        "zinc",
+        "copper_note"
+      ],
+      "problem": "고용량 아연 장기 복용이 구리 결핍 유발(아연:구리 ≈ 8~15:1 권장)",
+      "timing": "separate_meal",
+      "evidence_level": 2
+    },
+    {
+      "pair": [
+        "calcium",
+        "magnesium"
+      ],
+      "problem": "과량 칼슘이 마그네슘 흡수 방해(칼슘:마그네슘 ≈ 2:1 권장)",
+      "timing": "separate_meal",
+      "evidence_level": 2
+    }
   ],
   "drug_interactions": [
     {
       "drug": "warfarin",
       "drug_label": "와파린(항응고제)",
-      "ingredients": ["omega3", "korean_ginseng", "coq10"],
+      "ingredients": [
+        "omega3",
+        "korean_ginseng",
+        "coq10"
+      ],
       "risk": "출혈 위험 증가 또는 약효 변화",
       "action": "warn",
       "message": "와파린 복용 중이면 해당 영양제는 의사·약사 상담 후 결정하세요.",
-      "source": { "name": "NIH ODS / NCCIH", "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS / NCCIH",
+        "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/"
+      }
     },
     {
       "drug": "statin",
       "drug_label": "스타틴(고지혈증약)",
-      "ingredients": ["red_yeast_rice"],
+      "ingredients": [
+        "red_yeast_rice"
+      ],
       "risk": "성분 중복(모나콜린K=로바스타틴 등가물)으로 근육·간 부작용 위험",
       "action": "exclude",
       "message": "스타틴 복용 중에는 홍국을 추천에서 제외합니다(병용 금지).",
-      "source": { "name": "NCCIH — Red Yeast Rice", "url": "https://www.nccih.nih.gov/health/red-yeast-rice" }
+      "source": {
+        "name": "NCCIH — Red Yeast Rice",
+        "url": "https://www.nccih.nih.gov/health/red-yeast-rice"
+      }
     },
     {
       "drug": "antihypertensive",
       "drug_label": "혈압약",
-      "ingredients": ["korean_ginseng", "coq10"],
+      "ingredients": [
+        "korean_ginseng",
+        "coq10"
+      ],
       "risk": "혈압 변동 가능",
       "action": "warn",
       "message": "혈압약 복용 중이면 혈압 변화를 모니터링하고 상담하세요.",
-      "source": { "name": "NCCIH — Asian Ginseng", "url": "https://www.nccih.nih.gov/health/asian-ginseng" }
+      "source": {
+        "name": "NCCIH — Asian Ginseng",
+        "url": "https://www.nccih.nih.gov/health/asian-ginseng"
+      }
     },
     {
       "drug": "levothyroxine",
       "drug_label": "갑상선호르몬제",
-      "ingredients": ["calcium", "iron"],
+      "ingredients": [
+        "calcium",
+        "iron",
+        "magnesium"
+      ],
       "risk": "갑상선약 흡수 저해",
       "action": "warn",
       "message": "갑상선약과 칼슘·철분은 최소 4시간 간격을 두세요.",
       "timing": "separate_2h",
-      "source": { "name": "NIH ODS — Iron", "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Iron",
+        "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/"
+      }
     },
     {
       "drug": "antibiotics",
       "drug_label": "항생제(퀴놀론·테트라사이클린 등)",
-      "ingredients": ["probiotics", "magnesium", "zinc", "iron", "calcium"],
+      "ingredients": [
+        "probiotics",
+        "magnesium",
+        "zinc",
+        "iron",
+        "calcium"
+      ],
       "risk": "유산균 사멸·미네랄과 흡수 저하",
       "action": "warn",
       "message": "항생제와 유산균·미네랄(칼슘·철·아연·마그네슘)은 2시간 이상 간격을 두세요.",
       "timing": "separate_2h",
-      "source": { "name": "NIH ODS — Magnesium", "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Magnesium",
+        "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/"
+      }
     },
     {
       "drug": "antiplatelet",
       "drug_label": "항혈소판제(아스피린 등)",
-      "ingredients": ["omega3"],
+      "ingredients": [
+        "omega3"
+      ],
       "risk": "출혈 경향 증가 가능",
       "action": "warn",
       "message": "항혈소판제 복용 중 고용량 오메가3는 상담하세요.",
-      "source": { "name": "NIH ODS — Omega-3", "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Omega-3",
+        "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/"
+      }
     },
     {
       "drug": "thiazide",
       "drug_label": "티아지드 이뇨제",
-      "ingredients": ["vitamin_d", "calcium"],
+      "ingredients": [
+        "vitamin_d",
+        "calcium"
+      ],
       "risk": "혈중 칼슘 과다(고칼슘혈증) 위험",
       "action": "warn",
       "message": "티아지드 이뇨제와 비타민D·칼슘 병용 시 혈중 칼슘이 과도하게 오를 수 있어요 — 상담하세요.",
-      "source": { "name": "NIH ODS — Vitamin D", "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Vitamin D",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/"
+      }
     },
     {
       "drug": "bisphosphonate",
       "drug_label": "골다공증약(비스포스포네이트)",
-      "ingredients": ["calcium", "magnesium"],
+      "ingredients": [
+        "calcium",
+        "magnesium"
+      ],
       "risk": "약물 흡수 저하",
       "action": "warn",
       "message": "비스포스포네이트와 칼슘·마그네슘은 최소 2시간(가능하면 더) 간격을 두세요.",
       "timing": "separate_2h",
-      "source": { "name": "NIH ODS — Magnesium", "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Magnesium",
+        "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/"
+      }
     },
     {
       "drug": "methotrexate",
       "drug_label": "메토트렉세이트(류마티스·항암)",
-      "ingredients": ["folate"],
+      "ingredients": [
+        "folate"
+      ],
       "risk": "항암 고용량 시 약효 방해 가능",
       "action": "warn",
       "message": "메토트렉세이트와 엽산은 용량·목적에 따라 영향이 달라요 — 반드시 의료진과 상담하세요.",
-      "source": { "name": "NIH ODS — Folate", "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Folate",
+        "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/"
+      }
     },
     {
       "drug": "anticonvulsant",
       "drug_label": "항경련제(뇌전증약)",
-      "ingredients": ["folate"],
+      "ingredients": [
+        "folate"
+      ],
       "risk": "상호 혈중농도 저하",
       "action": "warn",
       "message": "항경련제와 엽산은 서로의 혈중농도를 낮출 수 있어요 — 임의 병용 전 상담하세요.",
-      "source": { "name": "NIH ODS — Folate", "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Folate",
+        "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/"
+      }
     },
     {
       "drug": "ppi",
       "drug_label": "위산억제제(PPI)",
-      "ingredients": ["iron"],
+      "ingredients": [
+        "iron"
+      ],
       "risk": "위산 저하로 철 흡수 감소",
       "action": "warn",
       "message": "위산억제제(PPI)는 철분 흡수를 줄일 수 있어요 — 철 보충 반응이 더딜 수 있습니다.",
-      "source": { "name": "NIH ODS — Iron", "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/" }
+      "source": {
+        "name": "NIH ODS — Iron",
+        "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/"
+      }
     },
     {
       "drug": "antidiabetic",
       "drug_label": "당뇨약/인슐린",
-      "ingredients": ["coq10", "korean_ginseng"],
+      "ingredients": [
+        "coq10",
+        "korean_ginseng"
+      ],
       "risk": "혈당 변동 가능",
       "action": "warn",
       "message": "당뇨약·인슐린 복용 중 코엔자임Q10·홍삼은 혈당에 영향을 줄 수 있어요 — 혈당을 모니터링하세요.",
-      "source": { "name": "NCCIH — Asian Ginseng / CoQ10", "url": "https://www.nccih.nih.gov/health/asian-ginseng" }
+      "source": {
+        "name": "NCCIH — Asian Ginseng / CoQ10",
+        "url": "https://www.nccih.nih.gov/health/asian-ginseng"
+      }
+    },
+    {
+      "drug": "antidiabetic",
+      "drug_label": "당뇨약/인슐린",
+      "ingredients": [
+        "vitamin_b_complex"
+      ],
+      "risk": "메트포르민 장기 복용 시 비타민B12 흡수 감소 가능",
+      "action": "warn",
+      "message": "당뇨약(메트포르민) 장기 복용 시 비타민B12 수치가 낮아질 수 있습니다. 정기 검사·보충을 상담하세요.",
+      "source": {
+        "name": "NIH ODS — Vitamin B12",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "ppi",
+      "drug_label": "위산억제제(PPI)",
+      "ingredients": [
+        "magnesium"
+      ],
+      "risk": "PPI 장기(1년+) 복용 시 저마그네슘혈증 위험(FDA 안전성 경고)",
+      "action": "warn",
+      "message": "위산억제제(PPI)를 오래 복용하면 혈중 마그네슘이 낮아질 수 있습니다(FDA 경고). 증상·수치를 상담하세요.",
+      "source": {
+        "name": "NIH ODS — Magnesium (FDA hypomagnesemia)",
+        "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "ppi",
+      "drug_label": "위산억제제(PPI)",
+      "ingredients": [
+        "vitamin_b_complex"
+      ],
+      "risk": "위산 감소로 비타민B12 흡수 저하 가능",
+      "action": "warn",
+      "message": "위산억제제(PPI) 장기 복용 시 비타민B12 흡수가 줄 수 있습니다. 보충 여부를 상담하세요.",
+      "source": {
+        "name": "NIH ODS — Vitamin B12",
+        "url": "https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "loop_diuretic",
+      "drug_label": "루프 이뇨제",
+      "ingredients": [
+        "magnesium",
+        "calcium"
+      ],
+      "risk": "이뇨로 마그네슘·칼슘 배설 증가(결핍 가능)",
+      "action": "warn",
+      "message": "루프 이뇨제는 마그네슘·칼슘 배설을 늘려 결핍을 유발할 수 있습니다. 수치 모니터링을 상담하세요.",
+      "source": {
+        "name": "NIH ODS — Magnesium",
+        "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "corticosteroid",
+      "drug_label": "스테로이드(코르티코)",
+      "ingredients": [
+        "calcium",
+        "vitamin_d"
+      ],
+      "risk": "장기 스테로이드는 골소실 유발 — 칼슘·비타민D 보충 권장",
+      "action": "warn",
+      "message": "스테로이드를 장기 복용하면 뼈 손실 위험이 있어 칼슘·비타민D 보충이 권장됩니다. 용량을 상담하세요.",
+      "source": {
+        "name": "NIH ODS — Calcium",
+        "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "oral_contraceptive",
+      "drug_label": "경구피임약",
+      "ingredients": [
+        "folate",
+        "vitamin_b_complex"
+      ],
+      "risk": "경구피임약은 엽산·비타민B6/B12 수치를 낮출 수 있음",
+      "action": "warn",
+      "message": "경구피임약 복용 시 엽산·비타민B 수치가 낮아질 수 있습니다(임신 계획 시 엽산 보충 특히 중요).",
+      "source": {
+        "name": "NIH ODS — Folate",
+        "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "antidepressant",
+      "drug_label": "항우울제(MAOI 등)",
+      "ingredients": [
+        "korean_ginseng"
+      ],
+      "risk": "MAOI 등 일부 항우울제와 인삼 병용 시 두통·불안·조증 보고",
+      "action": "warn",
+      "message": "항우울제(특히 MAOI) 복용 중 인삼/홍삼은 상호작용이 보고됩니다. 병용 전 상담하세요.",
+      "source": {
+        "name": "NCCIH — Asian Ginseng",
+        "url": "https://www.nccih.nih.gov/health/asian-ginseng"
+      }
+    },
+    {
+      "drug": "immunosuppressant",
+      "drug_label": "면역억제제",
+      "ingredients": [
+        "probiotics",
+        "korean_ginseng"
+      ],
+      "risk": "면역저하자에서 프로바이오틱스 감염 위험·인삼의 면역자극이 약효 방해 가능",
+      "action": "warn",
+      "message": "면역억제제 복용 중에는 프로바이오틱스 감염 위험과 인삼의 면역자극 작용에 주의가 필요합니다. 반드시 상담하세요.",
+      "source": {
+        "name": "NIH ODS — Probiotics",
+        "url": "https://ods.od.nih.gov/factsheets/Probiotics-HealthProfessional/"
+      }
+    },
+    {
+      "drug": "digoxin",
+      "drug_label": "디곡신(강심제)",
+      "ingredients": [
+        "korean_ginseng"
+      ],
+      "risk": "인삼이 디곡신 혈중농도 측정·작용에 영향 가능",
+      "action": "warn",
+      "message": "디곡신(강심제) 복용 중 인삼/홍삼은 약물 농도에 영향을 줄 수 있습니다. 병용 전 상담하세요.",
+      "source": {
+        "name": "NCCIH — Asian Ginseng",
+        "url": "https://www.nccih.nih.gov/health/asian-ginseng"
+      }
     }
   ]
 }
