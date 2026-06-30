@@ -190,10 +190,12 @@ body{padding-top:0}
 .hs-dots{display:flex;gap:8px}
 .hs-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:.3s}
 .hs-dot.active{background:#fff;width:24px;border-radius:4px}
-.hs-prev,.hs-next{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+.hs-prev,.hs-next,.hs-toggle{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
   color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;
   font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s}
-.hs-prev:hover,.hs-next:hover{background:rgba(255,255,255,.3)}
+.hs-toggle{font-size:11px;letter-spacing:-1px}
+.hs-prev:hover,.hs-next:hover,.hs-toggle:hover{background:rgba(255,255,255,.3)}
+.hs-prev:focus-visible,.hs-next:focus-visible,.hs-toggle:focus-visible,.hs-dot:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ── HERO ── */
 .hero{padding:100px 0 80px;text-align:center;position:relative;overflow:hidden}
@@ -815,6 +817,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
           <span class="hs-dot" onclick="heroGoTo(3)"></span>
         </div>
         <button class="hs-next" onclick="heroSlide(1)" aria-label="Next">&#8594;</button>
+        <button class="hs-toggle" id="hs-toggle" onclick="heroToggle()" aria-pressed="false" aria-label="Pause slide autoplay">❚❚</button>
       </div>
     </div>
     <!-- Hero-integrated diagnosis center (within the main visual) -->
@@ -6014,25 +6017,58 @@ function runKW(){
 
 // ── Hero slider ──
 var _hsIdx=0,_hsTotal=4,_hsTimer=null;
+// KRDS carousel accessibility: hidden slides removed from focus/screen-reader, pause/play for autoplay.
+var _hsPaused=false;
 function heroGoTo(n){
   var slides=document.querySelectorAll('.hero-slide');
   var dots=document.querySelectorAll('.hs-dot');
   if(!slides.length)return;
   slides[_hsIdx].classList.remove('active');
-  dots[_hsIdx].classList.remove('active');
+  if(dots[_hsIdx])dots[_hsIdx].classList.remove('active');
   _hsIdx=(n+_hsTotal)%_hsTotal;
   slides[_hsIdx].classList.add('active');
-  dots[_hsIdx].classList.add('active');
+  if(dots[_hsIdx])dots[_hsIdx].classList.add('active');
+  for(var i=0;i<slides.length;i++){
+    var hidden=(i!==_hsIdx);
+    slides[i].setAttribute('aria-hidden',hidden?'true':'false');
+    var foci=slides[i].querySelectorAll('a,button,select,input,[tabindex]');
+    for(var k=0;k<foci.length;k++)foci[k].tabIndex=hidden?-1:0;
+    if(dots[i])dots[i].setAttribute('aria-selected',hidden?'false':'true');
+  }
 }
 function heroSlide(dir){heroGoTo(_hsIdx+dir);}
-function heroAutoPlay(){_hsTimer=setInterval(function(){heroSlide(1);},5000);}
-function heroStopPlay(){clearInterval(_hsTimer);}
+function heroAutoPlay(){ if(_hsPaused)return; heroStopPlay(); _hsTimer=setInterval(function(){heroSlide(1);},5000); }
+function heroStopPlay(){ clearInterval(_hsTimer); }
+function heroToggle(){
+  var btn=document.getElementById('hs-toggle');
+  _hsPaused=!_hsPaused;
+  if(_hsPaused)heroStopPlay(); else heroAutoPlay();
+  if(btn){
+    btn.setAttribute('aria-pressed',_hsPaused?'true':'false');
+    btn.setAttribute('aria-label',_hsPaused?'Play slide autoplay':'Pause slide autoplay');
+    btn.textContent=_hsPaused?'▶':'❚❚';
+  }
+}
+function heroInitA11y(){
+  var wrap=document.querySelector('.hero-slider-wrap');
+  if(wrap){ wrap.setAttribute('role','region'); wrap.setAttribute('aria-roledescription','carousel'); wrap.setAttribute('aria-label','Main banner'); }
+  var slides=document.querySelectorAll('.hero-slide');
+  for(var i=0;i<slides.length;i++){
+    slides[i].setAttribute('role','group');
+    slides[i].setAttribute('aria-roledescription','slide');
+    slides[i].setAttribute('aria-label',(i+1)+' of '+slides.length);
+  }
+  var dots=document.querySelectorAll('.hs-dot');
+  for(var d=0;d<dots.length;d++){ dots[d].setAttribute('role','button'); dots[d].setAttribute('tabindex','0'); dots[d].setAttribute('aria-label','Go to slide '+(d+1)); }
+}
 document.addEventListener('DOMContentLoaded',function(){
+  heroInitA11y();
+  heroGoTo(_hsIdx);
   heroAutoPlay();
   var wrap=document.querySelector('.hero-slider-wrap');
   if(wrap){
     wrap.addEventListener('mouseenter',heroStopPlay);
-    wrap.addEventListener('mouseleave',heroAutoPlay);
+    wrap.addEventListener('mouseleave',function(){ if(!_hsPaused)heroAutoPlay(); });
   }
 });
 
