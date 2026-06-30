@@ -130,7 +130,7 @@ withAction(actor, { permission, domainCheck, audit })(handler)
 
 | # | 규칙 | 상태 |
 |---|---|---|
-| 1 | 업무 **상태전이 허용표** 최종 확정 (V1 규칙 그대로 쓸지) | ❓ 대기 |
+| 1 | 업무 **상태전이 허용표** 최종 확정 (V1 규칙 그대로 쓸지) | ✅ 확정 = V1 transitionMap 그대로 (아래) |
 | 2 | **담당자 변경 시 업무 이관** | ✅ 확정 (아래) |
 | 3 | **거래처 비활성화** | ✅ 확정 (아래) |
 | 4 | **첨부 방식** (URL 링크 vs 업로드) | ✅ 확정 = 1차 URL 링크, 업로드는 보고서 스프린트 |
@@ -147,7 +147,20 @@ withAction(actor, { permission, domainCheck, audit })(handler)
 - 단 비활성화 화면에서 현재 상태를 **표시**: 미수금 여부 / 미완 업무 수 / 계약종료 여부.
 - → `deactivateClient`는 가드로 막지 않고, 확인 단계에서 위 정보를 보여주는 **경고/확인 방식**.
 
-### 대기 항목 (1개)
-- **#1 상태전이표**: V1 규칙 그대로 사용 여부 → ERP 코드 확보 후 V1 규칙 표를 보고 확정(착수 후 해당 작업 시점에 결정해도 무방).
+**#1 업무 상태전이 허용표 (V1 `src/domain/work.ts` transitionMap 그대로 채택 — 코드 확인 완료)**
 
-§1 공통 인프라부터 바로 착수 가능(별도 ERP 세션에서). 남은 미결은 #1 하나뿐.
+액션 5종으로만 상태 전이. `nextWorkStatus(status, action)` 외 직접 status 지정 불가.
+
+| 액션 | 허용 출발 상태 | 도착 상태 |
+|---|---|---|
+| `start` | 대기(NOT_STARTED), 보류(WAITING) | 진행중(IN_PROGRESS) |
+| `submit_for_review` | 진행중(IN_PROGRESS) | 검수필요(REVIEW_NEEDED) |
+| `approve` | 검수필요(REVIEW_NEEDED) | 완료(COMPLETED) |
+| `block` | 대기/진행중/보류/검수필요 | 차단(BLOCKED) |
+| `resume` | 차단(BLOCKED) | 진행중(IN_PROGRESS) |
+
+- 그 외 전이는 모두 거부(`ILLEGAL_TRANSITION`). 예: 대기→완료 직행 불가(검수 단계 필수).
+- `approve`로 완료 시 `completedAt` 세팅, `resume` 시 `completedAt` 해제 — 구현(`work.ts`)에 반영됨.
+- **⚠️ 발견된 갭(2차 검토 권장)**: 현재 V1 transitionMap에는 **"보류(WAITING)로 보내는 액션이 없음"** — WAITING은 도착 상태로 진입 경로가 없다. 보류 기능을 실제로 쓸 거면 `hold`(IN_PROGRESS→WAITING) 액션 추가 필요. 1차는 V1 그대로 두고, 필요 시 2차에 추가.
+
+모든 세부 규칙 확정 완료. §1 공통 인프라부터 바로 착수 가능(별도 ERP 세션에서).
