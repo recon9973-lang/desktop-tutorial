@@ -50,3 +50,31 @@
 ## 로컬 개발은 그대로 유지
 - 빠르게 실험하고 싶을 땐 기존 `npm run dev`(localhost:3000)도 계속 쓸 수 있어요.
 - 배포 URL = "남에게 보여주는 진짜 사이트", 로컬 = "내가 실험하는 곳".
+
+---
+
+## ✅ 배포 점검 결과 (2026-06-29)
+
+`npm run build` 통과(11페이지) + 프로덕션 서버 스모크 테스트 전부 정상:
+
+| 라우트 | 상태 | 비고 |
+|---|---|---|
+| `/` `/survey` `/result` `/nearby` `/my` | 200 | 홈·설문·결과·지도·내 루틴 |
+| `POST /api/recommend` | 200 | 추천 엔진(키 불필요) |
+| `GET /api/offers` | 200 | 키 없으면 예시 가격(NO_KEY) |
+| `GET /api/nearby` | 200 | 키 없으면 샘플 약국 |
+
+**키 없이도 전부 동작**하고, 키를 넣으면 실데이터로 바뀝니다(아래 표). 내 루틴(복용기록·체크인·소진예측)은 브라우저 `localStorage` 기반이라 서버·키 불필요.
+
+| 키 | 없을 때 | 넣으면 |
+|---|---|---|
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | 지도 자리에 안내, 목록은 정상 | /nearby 지도 임베드 |
+| `DATA_GO_KR_KEY` | 샘플 약국·응급실 | 실시간 공공데이터 |
+| `NAVER_CLIENT_ID/SECRET` | 예시 최저가 | 네이버쇼핑 실시간 최저가 |
+
+> 환경변수 템플릿: `apps/web/.env.example` 참고. 전부 **선택사항**.
+
+### ⚠️ 배포 전 확인할 것
+1. **브랜치**: 현재 최신 작업은 `claude/continue-session-96nt5z`. Vercel 프로젝트의 **Production Branch**를 이 브랜치로 두거나 `main`에 병합하세요. (이 저장소의 `main`에는 영양제 앱이 없음)
+2. **Root Directory**: `your-supplement/apps/web` (STEP 2 참고).
+3. 카카오맵 키를 쓰면 배포 URL을 카카오 플랫폼 도메인에 등록(STEP 5).
