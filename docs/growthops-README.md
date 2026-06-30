@@ -65,7 +65,24 @@ Hobby 12개 한도. 현재 `api/`는 `growthops.js` 포함 **12/12**. 추가 함
 - ✅ 관리자(`admin.html`) 사이드바 → `/growthops.html` 내비 링크
 - ✅ 콘솔 3탭(SEO 모니터·토픽 클러스터·아웃리치)
 
+## Core Web Vitals (M3)
+`PSI_KEY`(Google PageSpeed Insights)와 `GROWTHOPS_MONITOR_URLS`(쉼표구분 URL, 없으면 `SITE_URL`)를
+설정하면:
+- `GET /api/growthops?module=cwv[&url=...&strategy=mobile|desktop]` 로 즉시 측정
+- 일별 스냅샷(`module=snapshot`)에 핵심 URL 최대 3개의 성능·SEO·LCP·CLS가 함께 저장
+- 콘솔 SEO 모니터 탭의 "지금 측정(PSI)" 버튼으로 확인
+키 미설정 시에도 throw 없이 안전하게 빈 결과를 반환한다.
+
+## 자동발행 옵션 (posting-settings)
+관리자 → AI 자동 포스팅 → GrowthOps 옵션에서 토글:
+| 설정 키 | 의미 |
+|---|---|
+| `mode: 'cluster'` | 클러스터 빈칸 우선 발행 |
+| `autoInternalLinks: true` | 발행 직전 관련글 블록 자동주입 |
+| `clusterAutoExpand: true` | 빈칸 소진 시 다음 필러로 새 클러스터 자동 설계 |
+| `clusterPillars: []` | 자동확장 필러 목록(없으면 `keywords` 사용) |
+
 ## 다음 단계(후속)
-- M3 Core Web Vitals 추세를 `seo-proxy`의 PSI와 연결(시계열)
-- `posting-settings` 관리자 UI에 `mode:cluster`·`autoInternalLinks` 토글 노출
-- 클러스터 자동 확장(빈칸 소진 시 인접 필러 자동 설계)
+- 콘솔 추세 차트에 CWV(성능 점수) 라인 추가
+- 아웃리치 제안 메일 초안 생성(기존 OpenAI 래퍼 재사용)
+- Search Console API 연동(실측 인덱싱·노출·클릭)

@@ -909,6 +909,17 @@ a{color:var(--p);text-decoration:none}
             <textarea id="ap-extra" rows="2" placeholder="베놈 에이전시 실전 사례 언급, 구체적 수치 포함, FAQ 7개 이상" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none;resize:vertical"></textarea>
           </div>
           <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+            <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:10px">🚀 GrowthOps 옵션 (<a href="growthops.html" target="_blank" style="color:var(--p)">콘솔 열기</a>)</label>
+            <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;color:var(--ink);cursor:pointer">
+              <input type="checkbox" id="ap-cluster-mode" style="width:18px;height:18px;accent-color:var(--p)">
+              <span>토픽 클러스터 모드 — 무작위 키워드 대신 클러스터 <b>빈칸을 우선</b> 발행</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink);cursor:pointer">
+              <input type="checkbox" id="ap-auto-links" style="width:18px;height:18px;accent-color:var(--p)">
+              <span>관련글 내부링크 <b>자동 주입</b> — 발행 직전 본문에 "함께 보면 좋은 글" 추가</span>
+            </label>
+          </div>
+          <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">🔑 API 인증 토큰 (Vercel 환경변수 ADMIN_SECRET 값)</label>
             <div style="display:flex;gap:8px">
               <input type="password" id="ap-secret-input" placeholder="ADMIN_SECRET 값 입력" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
@@ -2414,6 +2425,8 @@ function apApplySettings(s) {
   document.getElementById('ap-regions').value = (s.regions || []).join(',');
   document.getElementById('ap-keywords').value = (s.keywords || []).join('\n');
   document.getElementById('ap-extra').value = s.extra || '';
+  var _cm = document.getElementById('ap-cluster-mode'); if (_cm) _cm.checked = (s.mode === 'cluster' || s.clusterMode === true);
+  var _al = document.getElementById('ap-auto-links'); if (_al) _al.checked = !!s.autoInternalLinks;
   document.getElementById('ap-status-badge').textContent = s.enabled ? '활성' : '비활성';
   document.getElementById('ap-status-badge').style.color = s.enabled ? '#4ade80' : '#f87171';
 }
@@ -2426,7 +2439,9 @@ async function apSaveSettings() {
     categories: _apSelectedCats.slice(),
     regions: document.getElementById('ap-regions').value.split(',').map(s=>s.trim()).filter(Boolean),
     keywords: document.getElementById('ap-keywords').value.split('\n').map(s=>s.trim()).filter(Boolean),
-    extra: document.getElementById('ap-extra').value.trim()
+    extra: document.getElementById('ap-extra').value.trim(),
+    mode: document.getElementById('ap-cluster-mode') && document.getElementById('ap-cluster-mode').checked ? 'cluster' : 'keyword',
+    autoInternalLinks: !!(document.getElementById('ap-auto-links') && document.getElementById('ap-auto-links').checked)
   };
   // localStorage에 항상 저장 (오프라인 폴백)
   localStorage.setItem('venom-autopost-settings', JSON.stringify(settings));

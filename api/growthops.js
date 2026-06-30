@@ -17,9 +17,16 @@ const store = require('../lib/github-store');
 const linker = require('../lib/internal-linker');
 const O = require('../lib/outreach');
 const TC = require('../lib/topic-cluster');
+const { fetchPsi } = require('../lib/psi');
 
 const OUTREACH_PATH = 'venom-wordpress/preview/content/outreach.json';
 const CLUSTERS_PATH = 'venom-wordpress/preview/content/clusters.json';
+
+// 모니터링 대상 핵심 URL(쉼표구분 env). 미설정이면 사이트 루트만.
+function monitorUrls() {
+  const raw = process.env.GROWTHOPS_MONITOR_URLS || process.env.SITE_URL || '';
+  return raw.split(',').map((s) => s.trim()).filter((s) => /^https?:\/\//.test(s)).slice(0, 5);
+}
 
 // KST 기준 YYYY-MM-DD
 function ymdKST() {
@@ -170,6 +177,17 @@ async function handleCluster(req, res, action) {
   return res.status(405).json({ ok: false, error: 'GET/POST only' });
 }
 
+// ── M3: Core Web Vitals(PSI) ──
+async function handleCwv(req, res) {
+  const q = req.query || {};
+  const urls = q.url ? [q.url] : monitorUrls();
+  if (!urls.length) return res.status(200).json({ ok: true, results: [], note: 'GROWTHOPS_MONITOR_URLS/SITE_URL 미설정 또는 url 파라미터 없음' });
+  const strategy = q.strategy === 'desktop' ? 'desktop' : 'mobile';
+  const results = [];
+  for (const u of urls.slice(0, 5)) results.push(await fetchPsi(u, { strategy })); // 순차(타임아웃 여유)
+  return res.status(200).json({ ok: true, strategy, results });
+}
+
 // ── M3: 일별 스냅샷(cron) — KV 있으면 저장, 없으면 계산만 반환 ──
 async function handleSnapshot(req, res) {
   if (!authOk(req)) return res.status(401).json({ ok: false, error: 'ADMIN_SECRET 필요' });
@@ -182,6 +200,17 @@ async function handleSnapshot(req, res) {
     orphanRate: link.stats.orphanRate,
     avgLinksPerPost: link.stats.avgLinksPerPost,
   };
+  // CWV(PSI) — PSI_KEY 있을 때만, 핵심 URL 최대 3개 순차 측정(타임아웃 여유)
+  if (process.env.PSI_KEY) {
+    try {
+      const cwv = [];
+      for (const u of monitorUrls().slice(0, 3)) {
+        const r = await fetchPsi(u, { strategy: 'mobile' });
+        if (r.ok) cwv.push({ url: r.url, performance: r.scores.performance, seo: r.scores.seo, lcpMs: r.lab.lcpMs, cls: r.lab.cls });
+      }
+      if (cwv.length) snap.cwv = cwv;
+    } catch (e) { /* 무시 */ }
+  }
   // 일별 스냅샷을 GitHub에 누적 저장(간단·견고, KV 불필요). 추세 그래프의 데이터 소스.
   let stored = false;
   try {
@@ -209,6 +238,7 @@ module.exports = async function handler(req, res) {
     if (moduleName === 'linkhealth') return await handleLinkHealth(res);
     if (moduleName === 'outreach') return await handleOutreach(req, res, action);
     if (moduleName === 'cluster') return await handleCluster(req, res, action);
+    if (moduleName === 'cwv') return await handleCwv(req, res);
     if (moduleName === 'snapshot') return await handleSnapshot(req, res);
     return res.status(400).json({ ok: false, error: '알 수 없는 module' });
   } catch (e) {

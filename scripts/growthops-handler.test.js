@@ -116,6 +116,24 @@ async function test(name, fn) {
     delete process.env.ADMIN_SECRET;
   });
 
+  await test('cwv: PSI_KEY/모니터URL 없으면 빈 결과로 안전 응답', async () => {
+    delete process.env.GROWTHOPS_MONITOR_URLS; delete process.env.SITE_URL;
+    const res = mockRes();
+    await handler(mockReq('GET', { module: 'cwv' }), res);
+    assert.strictEqual(res._status, 200);
+    assert.strictEqual(res._json.ok, true);
+    assert.deepStrictEqual(res._json.results, []);
+  });
+
+  await test('cwv: url 주어지면 PSI_KEY 없을 때 ok:false 결과', async () => {
+    delete process.env.PSI_KEY;
+    const res = mockRes();
+    await handler(mockReq('GET', { module: 'cwv', url: 'https://example.com/' }), res);
+    assert.strictEqual(res._json.ok, true);
+    assert.strictEqual(res._json.results[0].ok, false);
+    assert.match(res._json.results[0].reason, /PSI_KEY/);
+  });
+
   await test('알 수 없는 module: 400', async () => {
     const res = mockRes();
     await handler(mockReq('GET', { module: 'nope' }), res);

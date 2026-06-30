@@ -95,7 +95,24 @@ module.exports = async function handler(req, res) {
     // 클러스터 빈칸이 있으면 그 하위주제를 우선 발행(없으면 기존 로테이션 유지)
     let clusterPick = null;
     if (clusterMode && clustersObj) {
-      const gap = TC.nextGap(clustersObj);
+      let gap = TC.nextGap(clustersObj);
+      // 빈칸 소진 시 자동확장(opt-in): 다음 필러로 새 클러스터 설계
+      if (!gap && settings.clusterAutoExpand) {
+        try {
+          const { researchKeywords } = require('../lib/keyword-research');
+          const pillars = (settings.clusterPillars && settings.clusterPillars.length) ? settings.clusterPillars : keywords;
+          const pillar = pillars[i % pillars.length];
+          const cid = TC.slugId(category, region, pillar);
+          const exists = (clustersObj.clusters || []).some((c) => c.id === cid);
+          if (!exists) {
+            const r = await researchKeywords(pillar, { region });
+            const cluster = TC.buildCluster({ category, region, pillar, related: r.related, questions: r.questions, size: 6 });
+            clustersObj = TC.upsertCluster(clustersObj, cluster);
+            clustersDirty = true;
+            gap = TC.nextGap(clustersObj);
+          }
+        } catch (e) { console.warn('[cron] 클러스터 자동확장 실패(무시):', e.message); }
+      }
       if (gap) { category = gap.category; keyword = gap.kw; region = gap.region || region; clusterPick = gap; }
     }
 
