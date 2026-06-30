@@ -15,12 +15,13 @@ const TOKEN  = process.env.GITHUB_TOKEN;
 
 // 허용 type → 저장 경로 (화이트리스트: 임의 경로 쓰기 방지)
 const TYPES = {
-  settings: 'venom-wordpress/preview/content/settings.json',
-  logos:    'venom-wordpress/preview/content/logos.json',
-  media:    'venom-wordpress/preview/content/media.json',
-  cardnews: 'venom-wordpress/preview/content/cardnews.json',
+  settings:   'venom-wordpress/preview/content/settings.json',
+  logos:      'venom-wordpress/preview/content/logos.json',
+  media:      'venom-wordpress/preview/content/media.json',
+  cardnews:   'venom-wordpress/preview/content/cardnews.json',
+  seomonitor: 'venom-wordpress/preview/content/seo-monitor.json',
 };
-const DEFAULTS = { settings: {}, logos: [], media: [], cardnews: [] };
+const DEFAULTS = { settings: {}, logos: [], media: [], cardnews: [], seomonitor: { domains: [], history: {} } };
 
 function gh(method, filePath, body) {
   const payload = body ? JSON.stringify(body) : undefined;

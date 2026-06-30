@@ -5786,8 +5786,13 @@ function _runSEOPSI(){
   var sec=document.getElementById('seo-psi-section');
   if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','10~20초 소요');
   fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now())
-    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(psi){
+    .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
+    .then(function(resp){
+      // 프록시가 돌려준 실제 오류 메시지를 그대로 노출(원인 진단용). PSI 결과 없으면 실패 처리.
+      if(!resp.ok || (resp.j && resp.j.error) || !(resp.j && resp.j.lighthouseResult)){
+        throw new Error((resp.j && resp.j.error) ? resp.j.error : ('HTTP '+resp.status+' — PSI 응답 없음'));
+      }
+      var psi=resp.j;
       var base=_seoLast||SEOEngine.analyze({url:url,html:'',robots:'',isHttps:/^https/i.test(url)});
       var merged=SEOEngine.mergePSI(base,psi);
       _seoLast=merged;
@@ -5796,8 +5801,13 @@ function _runSEOPSI(){
     })
     .catch(function(err){
       var s=document.getElementById('seo-psi-section');
-      if(s)s.innerHTML='<div style="color:#dc2626;font-size:13px;padding:12px">정밀 분석 실패: '+err.message
-        +' &nbsp;<button onclick="_runSEOPSI()" class="btn btn-p" style="padding:6px 12px;font-size:12px">재시도</button></div>';
+      // PSI_KEY 미설정이 가장 흔한 원인 — 관리자에게 구체적 조치를 안내한다.
+      var hint = /PSI_KEY/i.test(err.message)
+        ? '<div style="margin-top:6px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;line-height:1.6">⚙️ <b>관리자 조치 필요</b>: Vercel 환경변수 <b>PSI_KEY</b>(Google PageSpeed Insights API 키)를 설정한 뒤 재배포하세요. 설정 전까지는 <b>정적 점수</b>만 표시됩니다(JS 렌더 항목 미반영).</div>'
+        : '';
+      if(s)s.innerHTML='<div style="font-size:13px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px">'
+        +'<span style="color:#dc2626;font-weight:700">정밀 분석(PSI) 실패:</span> <span style="color:#991b1b">'+err.message+'</span>'
+        +' &nbsp;<button onclick="_runSEOPSI()" class="btn btn-p" style="padding:6px 12px;font-size:12px">재시도</button>'+hint+'</div>';
     });
 }
 
