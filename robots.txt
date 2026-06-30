@@ -32,5 +32,5 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
-Sitemap: https://desktop-tutorial-chi-peach.vercel.app/sitemap.xml
-LLMs: https://desktop-tutorial-chi-peach.vercel.app/llms.txt
+Sitemap: https://venomad.com/sitemap.xml
+LLMs: https://venomad.com/llms.txt
