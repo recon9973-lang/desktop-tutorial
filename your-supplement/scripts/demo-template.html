@@ -1,0 +1,140 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>당신의영양제 — 데모</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--p:#059669;--pa:#047857;--bd:#0b3b2d;--soft:#f1f6f2;--ink:#10231b;--mute:#5c6b63;--faint:#9aa8a0;--line:#e3eae5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Pretendard,-apple-system,system-ui,sans-serif;background:var(--soft);color:var(--ink);line-height:1.6}
+.nav{background:#fff;border-bottom:1px solid var(--line);padding:0 16px;height:54px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:9}
+.nav b{font-size:17px;cursor:pointer}.nav a{margin-left:auto;font-size:14px;color:var(--mute);cursor:pointer;text-decoration:none}.nav a+a{margin-left:14px}
+.nav a.on{color:var(--p);font-weight:700}
+.hero{background:var(--bd);color:#fff;padding:46px 24px;text-align:center}
+.hero h1{font-size:30px;letter-spacing:-.6px;margin-bottom:10px;line-height:1.2}.hero .sky{color:#6ee7b7}.hero p{color:rgba(255,255,255,.78);font-size:15px;margin-bottom:22px}
+.wrap{max-width:680px;margin:0 auto;padding:24px 16px 90px}
+.badge{display:inline-block;background:rgba(5,150,105,.1);color:var(--pa);font-weight:700;font-size:12px;border-radius:999px;padding:4px 12px;margin-bottom:12px}
+h2{font-size:19px;margin:22px 0 10px}.sub{color:var(--mute);font-size:14px;margin-bottom:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;margin:0 8px 8px 0;cursor:pointer;font-size:14px;user-select:none;font-family:inherit}
+.chip.on{border:2px solid var(--p);background:rgba(5,150,105,.08);color:var(--p);font-weight:600}
+.btn{background:var(--p);color:#fff;border:none;border-radius:999px;padding:13px 30px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn:active{background:var(--pa)}.btn.w{background:#fff;color:var(--bd)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px}
+.feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.tag{font-size:11px;font-weight:700;color:#fff;border-radius:999px;padding:1px 8px}
+.warn{background:#fff8f0;border:1px solid rgba(217,119,6,.3);border-radius:16px;padding:14px 18px;margin-bottom:16px}
+.ok{background:rgba(5,150,105,.06);border:1px solid rgba(5,150,105,.2);border-radius:16px;padding:14px 18px;margin-bottom:16px}
+.rank{width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+.src{color:var(--p);font-weight:600;font-size:12.5px;text-decoration:none}
+.muted{color:var(--mute);font-size:13.5px}small{color:var(--faint)}
+.foot{color:var(--faint);font-size:12px;text-align:center;margin-top:24px;line-height:1.7}
+.chk{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.chk.on{border:1.5px solid var(--p);background:rgba(5,150,105,.06)}
+.dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+.dot.on{background:var(--p);border:none}
+.bar{height:8px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;margin-top:12px}.bar>div{height:100%;background:#6ee7b7;transition:width .3s}
+</style></head><body>
+<div class="nav"><b onclick="go('home')">🧬 당신의영양제</b>
+<a id="n-survey" onclick="go('survey')">설문</a><a id="n-routine" onclick="go('routine')">내 루틴</a></div>
+<div id="root"></div>
+<script>
+const DATA = __DATA__;
+const byId=Object.fromEntries(DATA.ingredients.map(i=>[i.id,i]));
+const concernById=Object.fromEntries(DATA.concerns.map(c=>[c.id,c]));
+const EV=Object.fromEntries(DATA.evidence.map(e=>[e.ingredient_id,e]));
+const I=DATA.interactions,R=DATA.rules;
+const STRENGTH={established:['확립된 근거','#047857'],moderate:['중등도 근거','#0d9488'],limited:['제한적 근거','#d97706'],insufficient:['근거 불충분','#6b7280']};
+const DUR_LABEL={continuous:'🟢 지속',monitor:'🟡 3개월 점검',cyclic:'🔴 8주 점검'};
+const SLOT={morning:'☀️ 아침',evening:'🌙 저녁'};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// ---- engine ----
+function ew(l){return R.scoring.evidence_weight[String(l)]??0.4}
+function fitFn(id,cs){const w=R.scoring.concern_fit.rank_weights;let b=0,m=0;for(const cid of cs){const c=concernById[cid];if(!c)continue;const k=c.ingredients.indexOf(id);if(k===-1)continue;m++;b=Math.max(b,w[k]??w[w.length-1])}return{fit:b,m}}
+function allergyHit(ing,al){const M={milk:['우유'],soy:['대두','콩'],peanut:['땅콩']};const t=(ing.cautions||[]).join(' ');return al.some(a=>(M[a]||[]).some(k=>t.includes(k)))}
+function drug(id,meds){const res={action:'ok',warnings:[],excl:null};for(const di of I.drug_interactions){if(!meds.includes(di.drug))continue;if(!di.ingredients.includes(id))continue;if(di.action==='exclude'){res.action='exclude';res.excl=di.message}else if(di.action==='warn'&&res.action!=='exclude'){res.action='warn';res.warnings.push(di.message)}}return res}
+function rel(a,b){const inp=e=>e.pair.includes(a)&&e.pair.includes(b);const s=I.synergy.find(inp);if(s)return{type:'synergy',...s};const t=I.antagonism.find(inp);if(t)return{type:'antagonism',...t};return null}
+function recommend(u){const cs=u.concerns||[],meds=u.medications||[],al=u.allergies||[];const rec=[],no=[];
+const cand=[...new Set(cs.flatMap(c=>concernById[c]?.ingredients||[]))];
+for(const id of cand){const ing=byId[id];if(!ing)continue;
+ if(allergyHit(ing,al)){no.push({name:ing.name_ko,reason:'알레르기 성분 포함'});continue}
+ const dc=drug(id,meds);if(dc.action==='exclude'){no.push({name:ing.name_ko,reason:dc.excl});continue}
+ const {fit:f,m}=fitFn(id,cs);const safe=dc.action==='warn'?R.scoring.safety_factor.drug_warn:R.scoring.safety_factor.default;
+ const ov=m>1?R.scoring.overlap_penalty.value*(m-1):0;let sc=ew(ing.evidence.level)*f*safe-ov;
+ rec.push({id,name:ing.name_ko,lvl:ing.evidence.level,dur:ing.duration_type,fns:ing.functions,dose:ing.daily_dose,cautions:ing.cautions||[],warnings:dc.warnings,_s:sc})}
+const bv=R.scoring.synergy_bonus.value;
+for(let i=0;i<rec.length;i++)for(let j=i+1;j<rec.length;j++)if(rel(rec[i].id,rec[j].id)?.type==='synergy'){rec[i]._s+=bv;rec[j]._s+=bv}
+rec.forEach(x=>x.score=Math.round(x._s*100)/100);rec.sort((a,b)=>b.score-a.score);
+const morning=[],evening=[];for(const x of rec){const cf=morning.some(m=>rel(m,x.id)?.type==='antagonism');(cf?evening:morning).push(x.id)}
+const nm=id=>byId[id]?.name_ko||id;const ids=rec.map(x=>x.id);const notes=[];
+for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const rl=rel(ids[i],ids[j]);if(!rl)continue;const a=byId[ids[i]].name_ko,b=byId[ids[j]].name_ko;notes.push(rl.type==='synergy'?'🔗 '+a+' + '+b+': '+rl.effect+' (함께 복용)':'⚠️ '+a+' ↔ '+b+': '+rl.problem+' ('+rl.timing+')')}
+return{recommended:rec,not_recommended:no,schedule:{morning:morning.map(nm),evening:evening.map(nm)},notes,slots:Object.fromEntries(rec.map(x=>[x.id,{m:morning.includes(x.id),e:evening.includes(x.id)}]))}}
+function topBenefit(id){const e=EV[id];if(!e||!e.benefits?.length)return null;const rk={established:3,moderate:2,limited:1,insufficient:0};return [...e.benefits].sort((a,b)=>(rk[b.evidence_strength]??0)-(rk[a.evidence_strength]??0))[0]}
+function concernLabels(id,cs){return cs.map(c=>concernById[c]).filter(c=>c&&c.ingredients.includes(id)).map(c=>c.label)}
+// ---- state ----
+let view='home',sel={concerns:[],medications:[],allergies:[]},result=null;
+let routine={items:[],checks:{}};
+const root=document.getElementById('root');
+function go(v){view=v;render()}
+function nav(){document.getElementById('n-survey').className=view==='survey'?'on':'';document.getElementById('n-routine').className=view==='routine'?'on':''}
+function render(){nav();({home:home,survey:survey,result:resultView,routine:routineView}[view]||home)();window.scrollTo(0,0)}
+// ---- views ----
+function home(){
+ root.innerHTML='<div class="hero"><span class="badge" style="background:rgba(255,255,255,.12);color:#6ee7b7">식약처·NIH·논문 근거</span>'+
+ '<h1>내 몸에 맞는 영양제,<br><span class="sky">근거로 찾아드립니다</span></h1><p>광고도 후기도 아닌 검증된 데이터로 추천</p>'+
+ '<button class="btn w" onclick="go(\'survey\')">1분 설문 시작 →</button></div>'+
+ '<div class="wrap"><h2>왜 다른가요?</h2><div class="feat">'+
+ [['⭐','근거 등급제','모든 추천에 출처·신뢰도'],['🔗','상호작용 엔진','성분·약물 충돌 자동 경고'],['⏱️','복용 기간 가이드','지속/점검/주기'],['📋','내 루틴','복용 체크·습관 관리']].map(f=>'<div class="card"><div style="font-size:24px">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
+ '</div></div>'}
+function survey(){
+ let h='<div class="wrap"><h2>어떤 고민이 있나요?</h2><div class="sub">여러 개 선택 가능 (필수)</div><div id="cc"></div>'+
+ '<h2>복용 중인 약이 있나요?</h2><div class="sub">안전 확인용 (없으면 건너뛰기)</div><div id="mm"></div>'+
+ '<h2>식품 알레르기가 있나요?</h2><div class="sub">영양제 원료 알레르기만</div><div id="aa"></div>'+
+ '<div style="margin-top:24px"><button class="btn" id="go2">추천 받기 →</button></div></div>';
+ root.innerHTML=h;
+ const cc=document.getElementById('cc');DATA.concerns.forEach(c=>{const b=document.createElement('button');b.className='chip'+(sel.concerns.includes(c.id)?' on':'');b.innerHTML=c.emoji+' '+esc(c.label);b.onclick=()=>{tog(sel.concerns,c.id);survey()};cc.appendChild(b)});
+ const mm=document.getElementById('mm');Object.entries(DATA.meds).forEach(([k,v])=>{const b=document.createElement('button');b.className='chip'+(sel.medications.includes(k)?' on':'');b.textContent='💊 '+v.label;b.onclick=()=>{tog(sel.medications,k);survey()};mm.appendChild(b)});
+ const aa=document.getElementById('aa');[['milk','🥛 우유/유제품'],['soy','🫘 대두/콩'],['peanut','🥜 땅콩'],['fish','🐟 생선']].forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(sel.allergies.includes(k)?' on':'');b.textContent=l;b.onclick=()=>{tog(sel.allergies,k);survey()};aa.appendChild(b)});
+ document.getElementById('go2').onclick=()=>{if(!sel.concerns.length){alert('고민을 1개 이상 선택하세요');return}result=recommend(sel);go('result')}}
+function tog(a,v){const i=a.indexOf(v);i>=0?a.splice(i,1):a.push(v)}
+function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[c]?.label).filter(Boolean);
+ const warns=res.recommended.flatMap(r=>r.warnings.map(w=>({n:r.name,w})));
+ const seps=res.notes.filter(n=>n.startsWith('⚠️')),syn=res.notes.filter(n=>n.startsWith('🔗'));
+ const hasSafe=warns.length||seps.length||res.not_recommended.length;
+ let h='<div class="wrap"><div style="margin:4px 0 10px"><button class="chip" onclick="go(\'survey\')">← 다시 선택</button></div>';
+ h+='<div class="'+(hasSafe?'warn':'ok')+'"><b style="color:'+(hasSafe?'#d97706':'#047857')+'">'+(hasSafe?'⚠️ 복용 전 먼저 확인하세요':'✅ 안전 확인 — 충돌하는 추천이 없어요')+'</b>';
+ res.not_recommended.forEach(n=>h+='<div class="muted" style="margin-top:6px">🚫 <b>'+esc(n.name)+'</b> 제외 — '+esc(n.reason)+'</div>');
+ warns.forEach(w=>h+='<div class="muted" style="margin-top:6px">⚠️ <b>'+esc(w.n)+'</b> — '+esc(w.w)+'</div>');
+ seps.forEach(s=>h+='<div class="muted" style="margin-top:6px">'+esc(s)+'</div>');h+='</div>';
+ const dm=sel.medications.filter(m=>DATA.meds[m]);
+ if(dm.length){h+='<div class="card"><b>🏛️ 식약처 DUR — 복용약 공식 확인</b>';dm.forEach(m=>{const v=DATA.meds[m];h+='<div style="margin-top:6px"><b style="font-size:13.5px">'+esc(v.label)+'</b> <a class="src" target="_blank" href="https://nedrug.mfds.go.kr/searchDrug?searchKeyword='+encodeURIComponent(v.dur_query)+'">식약처에서 확인 →</a></div>'});h+='<small>※ 계열 대표성분 기준. 정확한 병용금기는 의·약사와 확인.</small></div>'}
+ h+='<h2>'+(cl.length?esc(cl.join(' · '))+' 고민에 맞춘 핵심 '+Math.min(3,res.recommended.length)+'가지':'핵심 추천')+'</h2>';
+ res.recommended.slice(0,3).forEach((r,i)=>{const tb=topBenefit(r.id),st=tb?STRENGTH[tb.evidence_strength]:null,lbs=concernLabels(r.id,sel.concerns);
+  h+='<div class="card" style="display:flex;gap:12px;align-items:center"><span class="rank" style="background:'+(i===0?'var(--p)':'#cbd5cf')+'">'+(i+1)+'</span><div><div><b style="font-size:16px">'+esc(r.name)+'</b> '+(st?'<span class="tag" style="background:'+st[1]+'">'+st[0]+'</span>':'')+'</div><div class="muted">'+(lbs.length?'<b style="color:var(--pa)">'+esc(lbs.join('·'))+'</b>에 도움':esc(r.fns[0]))+'</div></div></div>'});
+ h+='<div class="card"><b>📅 복용 스케줄</b><div class="muted" style="margin-top:6px">☀️ 아침: '+esc(res.schedule.morning.join(', ')||'없음')+'</div><div class="muted">🌙 저녁: '+esc(res.schedule.evening.join(', ')||'없음')+'</div></div>';
+ if(syn.length){h+='<div class="ok">';syn.forEach(s=>h+='<div class="muted">'+esc(s)+'</div>');h+='</div>'}
+ h+='<button class="btn" style="width:100%;margin:6px 0 18px" onclick="addRoutine()">📋 내 영양제에 추가하고 루틴 관리 →</button>';
+ h+='<h2>✅ 추천 전체 ('+res.recommended.length+')</h2>';
+ res.recommended.forEach(r=>{const tb=topBenefit(r.id),st=tb?STRENGTH[tb.evidence_strength]:null,e=EV[r.id],kr=e&&e.kr_source;
+  h+='<div class="card"><div><b style="font-size:16px">'+esc(r.name)+'</b> <span class="tag" style="background:#f5b800">'+'⭐'.repeat(r.lvl)+'</span> <span style="font-size:12px;color:var(--mute)">'+DUR_LABEL[r.dur]+'</span></div>';
+  h+='<div class="muted" style="margin:4px 0">'+esc(r.fns.join(' · '))+'</div>';
+  if(kr&&kr.verified)h+='<div style="font-size:12.5px;margin-top:4px">🇰🇷 <b>식약처 인정</b> \\u201c'+esc(kr.mfds_function)+'\\u201d <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
+  if(tb)h+='<div style="margin-top:4px"><span class="tag" style="background:'+st[1]+'">'+st[0]+'</span> <span class="muted">'+esc(tb.claim)+'</span> '+(tb.citation&&tb.citation.url?'<a class="src" target="_blank" href="'+tb.citation.url+'">'+esc(tb.citation.source)+' 원문 →</a>':'')+'</div>';
+  if(e&&e.dosing&&(e.dosing.rda_or_ai||e.dosing.ul))h+='<div class="muted" style="font-size:12.5px;margin-top:4px">📐 '+(e.dosing.rda_or_ai?'권장 '+esc(e.dosing.rda_or_ai):'')+(e.dosing.rda_or_ai&&e.dosing.ul?' · ':'')+(e.dosing.ul?'상한 '+esc(e.dosing.ul):'')+'</div>';
+  if(r.dose)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">💊 제품 표기 '+esc(r.dose)+'</div>';
+  r.warnings.forEach(w=>h+='<div style="font-size:12.5px;color:#d97706;margin-top:4px">⚠️ '+esc(w)+'</div>');
+  if(r.cautions.length)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">주의: '+esc(r.cautions.join(' · '))+'</div>';
+  h+='</div>'});
+ h+='<div class="foot">⚠️ 질병의 진단·치료가 아닌 정보 제공 데모. 복용 전 의사·약사 상담 권장.<br>근거: 식약처 · NIH ODS · NCCIH · PubMed (실서비스는 DSLD·네이버·식약처 API 실시간)</div></div>';
+ root.innerHTML=h}
+function addRoutine(){if(!result)return;routine.items=result.recommended.map(r=>({id:r.id,name:r.name,slots:[result.slots[r.id].m?'morning':null,result.slots[r.id].e?'evening':null].filter(Boolean)})).map(x=>({...x,slots:x.slots.length?x.slots:['morning']}));routine.checks={};go('routine')}
+function ck(id,slot){const k=id+'|'+slot;routine.checks[k]=!routine.checks[k];routineView()}
+function routineView(){
+ if(!routine.items.length){root.innerHTML='<div class="wrap"><div class="card" style="text-align:center;padding:40px"><div style="font-size:40px">📦</div><b>아직 등록된 영양제가 없어요</b><div class="muted" style="margin:6px 0 16px">설문으로 추천받고 “내 영양제에 추가”를 눌러주세요</div><button class="btn" onclick="go(\'survey\')">1분 설문 시작 →</button></div></div>';return}
+ let total=0,done=0;const slots={morning:[],evening:[]};
+ routine.items.forEach(it=>it.slots.forEach(s=>{slots[s].push(it);total++;if(routine.checks[it.id+'|'+s])done++}));
+ const pct=total?Math.round(done/total*100):0;
+ let h='<div class="hero" style="padding:34px 24px"><span class="badge" style="background:rgba(255,255,255,.12);color:#6ee7b7">내 루틴</span><h1 style="font-size:24px">'+(done===total?'🎉 오늘 다 챙기셨어요!':'💊 오늘 '+done+'/'+total+' 완료')+'</h1><div class="bar" style="max-width:400px;margin:12px auto 0"><div style="width:'+pct+'%"></div></div></div><div class="wrap">';
+ ['morning','evening'].forEach(s=>{if(!slots[s].length)return;h+='<div class="card"><b>'+SLOT[s]+'</b><div style="margin-top:10px">';slots[s].forEach(it=>{const on=routine.checks[it.id+'|'+s];h+='<div class="chk'+(on?' on':'')+'" onclick="ck(\''+it.id+'\',\''+s+'\')"><span class="dot'+(on?' on':'')+'">'+(on?'✓':'')+'</span><span style="font-weight:600;'+(on?'text-decoration:line-through;color:var(--mute)':'')+'">'+esc(it.name)+'</span></div>'});h+='</div></div>'});
+ h+='<div class="card"><b>내 영양제 ('+routine.items.length+')</b>';routine.items.forEach(it=>h+='<div class="muted" style="padding:6px 0;border-top:1px solid var(--line)"><b style="color:var(--ink)">'+esc(it.name)+'</b> · '+it.slots.map(s=>SLOT[s]).join(' · ')+'</div>');h+='</div>';
+ h+='<div class="foot">데모: 체크는 이 화면 세션에서만 유지됩니다. 실서비스는 알림·연속복용일·재구매 예측까지 동작.</div></div>';
+ root.innerHTML=h}
+render();
+</script></body></html>
