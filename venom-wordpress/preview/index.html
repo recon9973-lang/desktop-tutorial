@@ -190,10 +190,12 @@ body{padding-top:0}
 .hs-dots{display:flex;gap:8px}
 .hs-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:.3s}
 .hs-dot.active{background:#fff;width:24px;border-radius:4px}
-.hs-prev,.hs-next{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+.hs-prev,.hs-next,.hs-toggle{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
   color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;
   font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s}
-.hs-prev:hover,.hs-next:hover{background:rgba(255,255,255,.3)}
+.hs-toggle{font-size:11px;letter-spacing:-1px}
+.hs-prev:hover,.hs-next:hover,.hs-toggle:hover{background:rgba(255,255,255,.3)}
+.hs-prev:focus-visible,.hs-next:focus-visible,.hs-toggle:focus-visible,.hs-dot:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ── HERO ── */
 .hero{padding:100px 0 80px;text-align:center;position:relative;overflow:hidden}
@@ -849,6 +851,7 @@ body{padding-top:0}
           <span class="hs-dot" onclick="heroGoTo(3)"></span>
         </div>
         <button class="hs-next" onclick="heroSlide(1)" aria-label="다음">&#8594;</button>
+        <button class="hs-toggle" id="hs-toggle" onclick="heroToggle()" aria-pressed="false" aria-label="슬라이드 자동전환 정지">❚❚</button>
       </div>
     </div>
 
@@ -1425,7 +1428,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -1875,7 +1878,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -2129,7 +2132,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -2387,7 +2390,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -2609,7 +2612,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -2865,7 +2868,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -2988,7 +2991,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -3076,7 +3079,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -3183,7 +3186,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -3460,7 +3463,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -3878,7 +3881,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -4131,7 +4134,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -4326,7 +4329,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -4461,7 +4464,7 @@ body{padding-top:0}
           <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
           <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
           <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
-          <a href="admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
+          <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -6143,25 +6146,58 @@ function runKW(){
 
 // ── 히어로 슬라이더 ──
 var _hsIdx=0,_hsTotal=4,_hsTimer=null;
+// KRDS 캐러셀 접근성: 가려진 슬라이드는 초점·스크린리더에서 제외, 자동회전 정지/재생 버튼 제공.
+var _hsPaused=false;
 function heroGoTo(n){
   var slides=document.querySelectorAll('.hero-slide');
   var dots=document.querySelectorAll('.hs-dot');
   if(!slides.length)return;
   slides[_hsIdx].classList.remove('active');
-  dots[_hsIdx].classList.remove('active');
+  if(dots[_hsIdx])dots[_hsIdx].classList.remove('active');
   _hsIdx=(n+_hsTotal)%_hsTotal;
   slides[_hsIdx].classList.add('active');
-  dots[_hsIdx].classList.add('active');
+  if(dots[_hsIdx])dots[_hsIdx].classList.add('active');
+  for(var i=0;i<slides.length;i++){
+    var hidden=(i!==_hsIdx);
+    slides[i].setAttribute('aria-hidden',hidden?'true':'false');
+    var foci=slides[i].querySelectorAll('a,button,select,input,[tabindex]');
+    for(var k=0;k<foci.length;k++)foci[k].tabIndex=hidden?-1:0;
+    if(dots[i])dots[i].setAttribute('aria-selected',hidden?'false':'true');
+  }
 }
 function heroSlide(dir){heroGoTo(_hsIdx+dir);}
-function heroAutoPlay(){_hsTimer=setInterval(function(){heroSlide(1);},5000);}
-function heroStopPlay(){clearInterval(_hsTimer);}
+function heroAutoPlay(){ if(_hsPaused)return; heroStopPlay(); _hsTimer=setInterval(function(){heroSlide(1);},5000); }
+function heroStopPlay(){ clearInterval(_hsTimer); }
+function heroToggle(){
+  var btn=document.getElementById('hs-toggle');
+  _hsPaused=!_hsPaused;
+  if(_hsPaused)heroStopPlay(); else heroAutoPlay();
+  if(btn){
+    btn.setAttribute('aria-pressed',_hsPaused?'true':'false');
+    btn.setAttribute('aria-label',_hsPaused?'슬라이드 자동전환 재생':'슬라이드 자동전환 정지');
+    btn.textContent=_hsPaused?'▶':'❚❚';
+  }
+}
+function heroInitA11y(){
+  var wrap=document.querySelector('.hero-slider-wrap');
+  if(wrap){ wrap.setAttribute('role','region'); wrap.setAttribute('aria-roledescription','캐러셀'); wrap.setAttribute('aria-label','메인 배너'); }
+  var slides=document.querySelectorAll('.hero-slide');
+  for(var i=0;i<slides.length;i++){
+    slides[i].setAttribute('role','group');
+    slides[i].setAttribute('aria-roledescription','슬라이드');
+    slides[i].setAttribute('aria-label',(i+1)+' / '+slides.length);
+  }
+  var dots=document.querySelectorAll('.hs-dot');
+  for(var d=0;d<dots.length;d++){ dots[d].setAttribute('role','button'); dots[d].setAttribute('tabindex','0'); dots[d].setAttribute('aria-label',(d+1)+'번 슬라이드로 이동'); }
+}
 document.addEventListener('DOMContentLoaded',function(){
+  heroInitA11y();
+  heroGoTo(_hsIdx);
   heroAutoPlay();
   var wrap=document.querySelector('.hero-slider-wrap');
   if(wrap){
     wrap.addEventListener('mouseenter',heroStopPlay);
-    wrap.addEventListener('mouseleave',heroAutoPlay);
+    wrap.addEventListener('mouseleave',function(){ if(!_hsPaused)heroAutoPlay(); });
   }
 });
 
@@ -6734,7 +6770,7 @@ function secretAdminClick(){
   clearTimeout(_secretTimer);
   if(_secretClickCount>=5){
     _secretClickCount=0;
-    window.location.href='admin-login.html';
+    window.location.href='/admin-login.html';
   }else{
     _secretTimer=setTimeout(function(){_secretClickCount=0;},2000);
   }
@@ -9078,6 +9114,43 @@ function _allBlogPosts() {
   return _dynBlogPosts.concat(STATIC_BLOG_POSTS);
 }
 
+// ── 검색 노출용 캐러셀(ItemList) 구조화 데이터 ──
+// 구글(요약페이지 ItemList)·네이버(캐러셀) 가이드 준수: 같은 도메인의 크롤 가능한
+// /blog/<슬러그> 상세 URL을 position 순으로 나열. 상세 페이지엔 Article·FAQPage 스키마 존재.
+// 네이버 캐러셀 썸네일용 절대 이미지 URL 포함(권장 1200×630).
+var _SITE_ORIGIN = 'https://desktop-tutorial-chi-peach.vercel.app';
+function _postOgImage(p) {
+  var img = (p.images && p.images[0]) || p.image || p.thumb || '';
+  if (img && /^https?:\/\//.test(img)) return img;
+  if (img && img.charAt(0) === '/') return _SITE_ORIGIN + img;
+  return _SITE_ORIGIN + '/venom-wordpress/preview/images/office.jpeg'; // 기본 OG(1200×630)
+}
+function _injectBlogCarouselSchema(visible) {
+  try {
+    var el = document.getElementById('blog-carousel-schema');
+    // 크롤 가능한 상세 URL(슬러그 보유)만 캐러셀 항목으로 — 구글 검증 통과 조건
+    var items = (visible || []).filter(function (p) { return p && p.slug; }).slice(0, 10);
+    if (items.length < 2) { if (el) el.remove(); return; }
+    var schema = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      'itemListOrder': 'https://schema.org/ItemListOrderDescending',
+      'numberOfItems': items.length,
+      'itemListElement': items.map(function (p, i) {
+        return {
+          '@type': 'ListItem',
+          'position': i + 1,
+          'url': _SITE_ORIGIN + '/blog/' + encodeURIComponent(p.slug),
+          'name': p.title || '',
+          'image': _postOgImage(p),
+        };
+      }),
+    };
+    if (!el) { el = document.createElement('script'); el.type = 'application/ld+json'; el.id = 'blog-carousel-schema'; document.head.appendChild(el); }
+    el.textContent = JSON.stringify(schema);
+  } catch (e) { /* 구조화 데이터 주입 실패는 페이지 동작에 영향 없음 */ }
+}
+
 function renderBlogGrid() {
   var grid = document.getElementById('blog-grid');
   var pgWrap = document.getElementById('blog-pagination');
@@ -9093,6 +9166,9 @@ function renderBlogGrid() {
   var page = filtered.slice(start, start + BLOG_PER_PAGE);
 
   grid.innerHTML = page.map(_buildBlogCard).join('');
+
+  // 검색 노출용 캐러셀(ItemList) 구조화 데이터 — 현재 페이지의 크롤 가능한 글 기준
+  _injectBlogCarouselSchema(page);
 
   // 페이지네이션 렌더링
   if (!pgWrap) return;
