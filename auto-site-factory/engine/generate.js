@@ -284,6 +284,17 @@ function prepare(spec) {
       description: `${spec.brand.region} ${specialty.label} ${spec.brand.name}. ${specialty.keywords.join(', ')} 진료. 상담 ${spec.brand.phone}.`,
       keywords: [spec.brand.name, specialty.label, ...specialty.keywords].join(', '),
     };
+  } else if (spec.category === 'press') {
+    spec.hero.headline = spec.hero.headline ||
+      `<b>${spec.brand.name}</b>,<br>${specialty.label}`;
+    spec.hero.sub = spec.hero.sub ||
+      `${specialty.keywords.slice(0, 3).join(' · ')} — ${spec.brand.tagline || '최신 소식을 전합니다'}`;
+    spec.meta = {
+      description: `${spec.brand.name} 공식 ${specialty.label}. ${specialty.keywords.join(', ')}. ${spec.brand.region}.`,
+      keywords: [spec.brand.name, specialty.label, ...specialty.keywords].join(', '),
+    };
+    spec.brand.naver_place = spec.brand.naver_place || '';
+    spec.brand.instagram   = spec.brand.instagram   || '';
   } else {
     spec.hero.headline = spec.hero.headline ||
       `${spec.brand.region} <b>${specialty.label}</b>,<br>${spec.brand.name}`;
@@ -326,6 +337,15 @@ function prepare(spec) {
       gallery:     buildGallery(spec.images.gallery, ph),
       faq:         faq.html,
       faqSchema:   faq.schema,
+      mainSchema,
+    };
+  } else if (spec.category === 'press') {
+    // press: menu 섹션을 기사 카드(article cards)로 재활용
+    spec.sections = {
+      trust:     buildTrust(spec.trust),
+      menu:      buildMenu(spec.local?.menu || spec.press?.articles, specialty),
+      faq:       faq.html,
+      faqSchema: faq.schema,
       mainSchema,
     };
   } else {

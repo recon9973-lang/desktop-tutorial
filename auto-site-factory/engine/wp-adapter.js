@@ -13,9 +13,10 @@
  *   docker compose run --rm wp-cli bash < output/<slug>/provision.sh
  * 로 실행하면 실제 사이트가 만들어진다.
  */
-const fs = require('fs');
-const path = require('path');
-const { prepare } = require('./generate');
+const fs           = require('fs');
+const path         = require('path');
+const { spawnSync } = require('child_process');
+const { prepare }  = require('./generate');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -110,9 +111,34 @@ function buildScript(rawSpec) {
   return { slug, script: L.join('\n') + '\n', spec, specialty, scale, options, plugins };
 }
 
-function run(specPath, write) {
+function run(specPath, write, exec) {
   const rawSpec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
   const { slug, script, spec, specialty, scale, options, plugins } = buildScript(rawSpec);
+
+  if (exec) {
+    // --exec: Docker Compose를 통해 wp-cli에 직접 파이핑 실행
+    console.log(`\n⚙️  WP 프로비저닝 실행 중: ${spec.brand.name} (${specialty.label})`);
+    console.log('────────────────────────────────');
+    const result = spawnSync(
+      'docker',
+      ['compose', 'run', '--rm', 'wp-cli', 'bash'],
+      { input: script, encoding: 'utf8', stdio: ['pipe', 'inherit', 'inherit'] }
+    );
+    if (result.error) {
+      console.error(`\n❌ Docker 실행 실패: ${result.error.message}`);
+      console.error('  Docker가 실행 중인지, docker-compose.yml이 있는지 확인하세요.');
+      process.exit(1);
+    }
+    if (result.status !== 0) {
+      console.error(`\n❌ 프로비저닝 실패 (exit code ${result.status})`);
+      console.error('  provision.sh 내용을 확인하려면 --write 플래그를 사용하세요.');
+      process.exit(result.status);
+    }
+    console.log(`\n✅ 프로비저닝 완료: ${spec.brand.name}`);
+    console.log(`   사이트 슬러그: ${slug}`);
+    console.log('────────────────────────────────\n');
+    return;
+  }
 
   if (write) {
     const outDir = path.join(ROOT, 'output', slug);
@@ -125,7 +151,8 @@ function run(specPath, write) {
     console.log(`  사이트   : 멀티사이트 slug = ${slug}`);
     console.log(`  플러그인 : ${plugins.join(', ') || '(없음)'}`);
     console.log(`  스크립트 : auto-site-factory/output/${slug}/provision.sh`);
-    console.log('  실행     : docker compose run --rm wp-cli bash < ' + `output/${slug}/provision.sh`);
+    console.log('  직접실행 : node engine/wp-adapter.js ' + specPath + ' --exec');
+    console.log('  수동실행 : docker compose run --rm wp-cli bash < ' + `output/${slug}/provision.sh`);
     console.log('────────────────────────────────\n');
   } else {
     console.log(script);
@@ -134,12 +161,16 @@ function run(specPath, write) {
 
 if (require.main === module) {
   const specArg = process.argv[2];
-  const write = process.argv.includes('--write');
+  const write   = process.argv.includes('--write');
+  const exec    = process.argv.includes('--exec');
   if (!specArg) {
-    console.error('사용법: node engine/wp-adapter.js <site-spec.json> [--write]');
+    console.error('사용법: node engine/wp-adapter.js <site-spec.json> [--write|--exec]');
+    console.error('  (인자 없음) : provision.sh 내용을 stdout에 출력');
+    console.error('  --write     : output/<slug>/provision.sh 파일로 저장');
+    console.error('  --exec      : Docker Compose를 통해 즉시 실행 (venom-wordpress 환경 필요)');
     process.exit(1);
   }
-  run(path.resolve(specArg), write);
+  run(path.resolve(specArg), write, exec);
 }
 
 module.exports = { buildScript };
