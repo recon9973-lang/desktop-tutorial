@@ -4,22 +4,18 @@
     {
       "from": "2026-06-28",
       "to": "2026-07-28",
-      "dailyCount": 5
+      "dailyCount": 1
     }
   ],
   "categories": [
-    "geo"
+    "seo"
   ],
   "keywords": [
-    "병원마케팅",
-    "SEO"
+    "베놈"
   ],
   "regions": [
-    "대전",
-    "대구",
-    "인천",
-    "부산"
+    "대전"
   ],
   "extra": "",
-  "updatedAt": "2026-06-29T17:39:53.293Z"
+  "updatedAt": "2026-06-30T08:58:00.399Z"
 }
