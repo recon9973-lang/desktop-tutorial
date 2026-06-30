@@ -123,8 +123,9 @@ export async function GET(request) {
   const nameKo = ing ? ing.name_ko : q;
   const qKo = encodeURIComponent(nameKo);
   const kr_search = [
-    { vendor: '네이버쇼핑', url: `https://search.shopping.naver.com/search/all?query=${qKo}` },
+    { vendor: '네이버쇼핑', url: `https://search.shopping.naver.com/search/all?query=${qKo}`, primary: true },
     { vendor: '쿠팡', url: `https://www.coupang.com/np/search?q=${qKo}` },
+    { vendor: '아이허브', url: `https://kr.iherb.com/search?kw=${qKo}` },
     { vendor: '식품안전나라', url: 'https://various.foodsafetykorea.go.kr/nutrient/' },
   ];
 

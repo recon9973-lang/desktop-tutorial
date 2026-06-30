@@ -71,25 +71,19 @@ function ProductsInner() {
 
         {data && !data.error && (
           <>
-            {/* 해외 시판 제품(DSLD) */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-              <h2 className="title">🌎 시판 제품 — {data.name_ko}</h2>
-              <span style={{ fontSize: 11, fontWeight: 600, borderRadius: 'var(--r-full)', padding: '2px 8px', ...(data.global?.source === 'dsld'
-                ? { color: 'var(--accent-green)', background: 'rgba(22,163,74,0.1)' }
-                : { color: 'var(--ink-faint)', background: 'var(--hairline)' }) }}>
-                {data.global?.source === 'dsld' ? 'NIH DSLD 실시간' : '예시(배포 시 실데이터)'}
-              </span>
-            </div>
-            <div className="card" style={{ borderRadius: 'var(--r-xl)', marginBottom: 24 }}>
-              {(data.global?.products || []).length ? (data.global.products.map((p, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 0', borderBottom: i < data.global.products.length - 1 ? '1px solid var(--hairline)' : 'none' }}>
-                  <div>
-                    <strong style={{ fontSize: 15 }}>{p.name}</strong>
-                    {p.brand && <span style={{ fontSize: 13, color: 'var(--ink-faint)', marginLeft: 8 }}>{p.brand}</span>}
-                  </div>
-                  {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', whiteSpace: 'nowrap' }}>라벨 →</a>}
-                </div>
-              ))) : <p style={{ fontSize: 14, color: 'var(--ink-faint)', padding: '8px 0', lineHeight: 1.6 }}>해외 DB(NIH DSLD)에서 못 찾았어요. 아래 <strong>🛒 국내에서 구매</strong>(네이버·쿠팡·식품안전나라)를 이용해보세요.</p>}
+            {/* 🛒 국내에서 찾기 — 항상 최상단(어떤 검색어든 동작) */}
+            <h2 className="title" style={{ marginBottom: 4 }}>🛒 {data.name_ko} 제품 보기</h2>
+            <p style={{ fontSize: 13, color: 'var(--ink-faint)', marginBottom: 12 }}>국내 쇼핑·해외직구·식약처에서 바로 찾기</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+              {(data.kr_search || []).map((k) => (
+                <a key={k.vendor} href={k.url} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 14, fontWeight: 600, textDecoration: 'none', borderRadius: 'var(--r-full)', padding: '10px 18px',
+                    ...(k.primary
+                      ? { background: 'var(--primary)', color: '#fff' }
+                      : { background: 'var(--surface)', color: 'var(--primary)', border: '1.5px solid var(--hairline)' }) }}>
+                  {k.vendor} →
+                </a>
+              ))}
             </div>
 
             {/* 국내 식약처 품목(설정 시) */}
@@ -143,16 +137,26 @@ function ProductsInner() {
               </div>
             )}
 
-            {/* 국내에서 찾기(쇼핑 딥링크) */}
-            <h2 className="title" style={{ marginBottom: 12 }}>🛒 국내에서 구매</h2>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-              {(data.kr_search || []).map((k) => (
-                <a key={k.vendor} href={k.url} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', border: '1px solid var(--hairline)', borderRadius: 'var(--r-full)', padding: '8px 16px' }}>
-                  {k.vendor} →
-                </a>
-              ))}
-            </div>
+            {/* 🌎 해외 시판 제품(NIH DSLD) — 실제 결과가 있을 때만 표시 */}
+            {data.global?.source === 'dsld' && data.global.products?.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                  <h2 className="title">🌎 해외 시판 제품 (참고)</h2>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-green)', background: 'rgba(22,163,74,0.1)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>NIH DSLD 실시간</span>
+                </div>
+                <div className="card" style={{ borderRadius: 'var(--r-xl)' }}>
+                  {data.global.products.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 0', borderBottom: i < data.global.products.length - 1 ? '1px solid var(--hairline)' : 'none' }}>
+                      <div>
+                        <strong style={{ fontSize: 15 }}>{p.name}</strong>
+                        {p.brand && <span style={{ fontSize: 13, color: 'var(--ink-faint)', marginLeft: 8 }}>{p.brand}</span>}
+                      </div>
+                      {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', whiteSpace: 'nowrap' }}>라벨 →</a>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {data.note && <p className="caption" style={{ color: 'var(--ink-faint)', lineHeight: 1.6 }}>{data.note}</p>}
           </>
         )}
