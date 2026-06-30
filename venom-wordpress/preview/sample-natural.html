@@ -3,173 +3,886 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>베놈 자연한의원 — 자연주의 따뜻한형 샘플</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>자연한의원 — 전통 한의학 전문 클리닉</title>
+<meta name="description" content="20년 임상 경험의 한의학 전문의가 맥진·침·한약으로 근본 치료합니다. 체질 개선부터 만성 통증, 소화기 질환, 여성 질환까지.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--green:#2d6a4f;--light:#f0faf5;--font:'Noto Serif KR','Apple SD Gothic Neo',serif}
+/* ─── Root & Reset ─── */
+:root{
+  --green:#2d6a4f;
+  --green-dark:#1b4332;
+  --green-mid:#40916c;
+  --green-soft:#52b788;
+  --light:#f0faf5;
+  --light2:#e8f5e9;
+  --serif:'Noto Serif KR','Apple SD Gothic Neo',Georgia,serif;
+  --sans:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);color:#333;line-height:1.7}
+html{scroll-behavior:smooth}
+body{font-family:var(--serif);color:#2a2a2a;line-height:1.7;background:#fff}
 a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
 
-.site-header{background:#fff;border-bottom:1px solid #e0e0e0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-size:18px;font-weight:700;color:var(--green)}
-.tel{font-size:14px;color:#555}
+/* ─── Header ─── */
+.site-header{
+  background:#fff;
+  border-bottom:1px solid #e4efe8;
+  padding:0 32px;
+  height:72px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 16px rgba(45,106,79,.07);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:20px;font-weight:900;color:var(--green);letter-spacing:-.5px;
+}
+.logo-mark{
+  width:36px;height:36px;
+  background:var(--green);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.logo-mark svg{width:20px;height:20px;fill:#fff}
+.nav{display:flex;align-items:center;gap:32px}
+.nav a{font-size:14px;color:#444;font-family:var(--sans);font-weight:500;transition:color .2s}
+.nav a:hover{color:var(--green)}
+.nav-cta{
+  background:var(--green);color:#fff;
+  padding:10px 22px;border-radius:50px;
+  font-size:13px;font-weight:700;font-family:var(--sans);
+  transition:background .2s;
+}
+.nav-cta:hover{background:var(--green-dark);color:#fff}
+@media(max-width:768px){
+  .nav{gap:16px}
+  .nav a.nav-link{display:none}
+  .site-header{padding:0 20px}
+}
 
-.hero{color:#fff;padding:100px 24px;text-align:center;position:relative;overflow:hidden;min-height:540px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d2b1e}
-.hero-photo{position:absolute;inset:0;background-image:url("https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_12.jpg");background-size:cover;background-position:center;filter:brightness(.28);z-index:0}
-.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-.hero-content{position:relative;z-index:1}
-.hero-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#d8f3dc;font-size:12px;padding:6px 18px;border-radius:50px;margin-bottom:24px;letter-spacing:.5px}
-.hero h1{font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.25;margin-bottom:20px}
-.hero h1 em{color:#95d5b2;font-style:normal}
-.hero p{font-size:clamp(15px,2vw,18px);opacity:.85;max-width:560px;margin:0 auto 36px}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn-main{background:#fff;color:var(--green);padding:15px 36px;border-radius:50px;font-weight:700;font-size:15px;transition:.25s;box-shadow:0 4px 20px rgba(0,0,0,.2)}
-.btn-sub{background:transparent;border:2px solid rgba(255,255,255,.5);color:#fff;padding:15px 36px;border-radius:50px;font-weight:600;font-size:15px}
-.hero-trust{display:flex;gap:24px;justify-content:center;margin-top:48px;flex-wrap:wrap}
-.trust-item{text-align:center}
-.trust-num{font-size:28px;font-weight:800;color:#95d5b2}
-.trust-label{font-size:11px;opacity:.7;margin-top:2px}
+/* ─── Hero ─── */
+.hero{
+  position:relative;
+  min-height:640px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;text-align:center;overflow:hidden;
+  background:#0a1f15;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background-image:url("https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_12.jpg");
+  background-size:cover;background-position:center 30%;
+  filter:brightness(.25);
+  z-index:0;
+}
+.hero-grain{
+  position:absolute;inset:0;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.4;pointer-events:none;
+}
+.hero-content{position:relative;z-index:2;max-width:800px;padding:80px 24px 80px}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.22);
+  color:#b7e4c7;
+  font-size:12px;font-family:var(--sans);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  padding:7px 20px;border-radius:50px;margin-bottom:28px;
+}
+.hero-dot{width:6px;height:6px;background:#74c69d;border-radius:50%;display:inline-block;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.hero h1{
+  font-size:clamp(30px,5.5vw,58px);
+  font-weight:900;line-height:1.2;
+  margin-bottom:22px;
+  letter-spacing:-1px;
+}
+.hero h1 .accent{color:#74c69d}
+.hero-sub{
+  font-size:clamp(15px,2vw,18px);
+  opacity:.82;max-width:520px;margin:0 auto 40px;
+  font-family:var(--sans);font-weight:400;line-height:1.8;
+}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-hero-main{
+  background:#fff;color:var(--green);
+  padding:16px 38px;border-radius:50px;
+  font-weight:700;font-size:15px;font-family:var(--sans);
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+  transition:transform .2s,box-shadow .2s;
+}
+.btn-hero-main:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.btn-hero-sub{
+  background:transparent;
+  border:2px solid rgba(255,255,255,.45);color:#fff;
+  padding:16px 38px;border-radius:50px;
+  font-weight:600;font-size:15px;font-family:var(--sans);
+  transition:border-color .2s,background .2s;
+}
+.btn-hero-sub:hover{border-color:rgba(255,255,255,.8);background:rgba(255,255,255,.08)}
+.hero-stats{
+  display:flex;gap:0;justify-content:center;
+  margin-top:60px;
+  border-top:1px solid rgba(255,255,255,.12);
+  padding-top:40px;
+}
+.hero-stat{
+  flex:1;max-width:160px;text-align:center;
+  padding:0 20px;
+  border-right:1px solid rgba(255,255,255,.1);
+}
+.hero-stat:last-child{border-right:none}
+.stat-num{font-size:clamp(24px,3vw,36px);font-weight:900;color:#74c69d;display:block;line-height:1}
+.stat-label{font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;font-family:var(--sans);letter-spacing:.5px}
+@media(max-width:480px){.hero-stats{gap:0;flex-wrap:wrap}.hero-stat{min-width:50%;border-right:none;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.1)}}
 
-.values{background:var(--light);padding:72px 24px}
-.values-inner{max-width:960px;margin:0 auto}
-.section-label{text-align:center;font-size:12px;letter-spacing:2px;color:var(--green);text-transform:uppercase;margin-bottom:12px}
-.section-title{text-align:center;font-size:clamp(22px,3vw,34px);font-weight:800;margin-bottom:8px;color:#1b4332}
-.section-desc{text-align:center;color:#666;margin-bottom:52px;font-size:15px}
-.val-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-@media(max-width:640px){.val-grid{grid-template-columns:1fr}}
-.val-card{background:#fff;border-radius:20px;padding:32px 24px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.val-icon{width:64px;height:64px;background:var(--light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px}
-.val-card h3{font-size:17px;font-weight:700;color:#1b4332;margin-bottom:8px}
-.val-card p{font-size:13px;color:#666;line-height:1.8}
+/* ─── Philosophy Strip ─── */
+.philosophy{background:var(--green-dark);padding:0}
+.phil-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(3,1fr);
+}
+.phil-item{
+  padding:40px 36px;
+  border-right:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:flex-start;gap:20px;
+}
+.phil-item:last-child{border-right:none}
+.phil-icon{
+  width:48px;height:48px;flex-shrink:0;
+  background:rgba(255,255,255,.1);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+}
+.phil-icon svg{width:24px;height:24px;fill:#74c69d}
+.phil-text h4{font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
+.phil-text p{font-size:12px;color:rgba(255,255,255,.6);line-height:1.8;font-family:var(--sans)}
+@media(max-width:768px){
+  .phil-inner{grid-template-columns:1fr}
+  .phil-item{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+  .phil-item:last-child{border-bottom:none}
+}
 
-.treatments{padding:72px 24px;max-width:960px;margin:0 auto}
-.treat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+/* ─── Values Section ─── */
+.values{background:var(--light);padding:88px 24px}
+.values-inner{max-width:1020px;margin:0 auto}
+.section-eyebrow{
+  text-align:center;font-size:11px;letter-spacing:2.5px;
+  color:var(--green-mid);text-transform:uppercase;
+  font-family:var(--sans);font-weight:700;margin-bottom:14px;
+}
+.section-title{
+  text-align:center;
+  font-size:clamp(24px,3.5vw,38px);
+  font-weight:900;color:var(--green-dark);
+  margin-bottom:12px;line-height:1.25;
+}
+.section-desc{
+  text-align:center;color:#666;
+  font-size:15px;font-family:var(--sans);
+  max-width:520px;margin:0 auto 56px;line-height:1.8;
+}
+.val-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+@media(max-width:768px){.val-grid{grid-template-columns:1fr;gap:16px}}
+.val-card{
+  background:#fff;border-radius:24px;
+  padding:40px 28px;text-align:center;
+  box-shadow:0 4px 24px rgba(45,106,79,.08);
+  border:1px solid #e4efe8;
+  transition:transform .25s,box-shadow .25s;
+}
+.val-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(45,106,79,.14)}
+.val-num{
+  font-size:11px;font-family:var(--sans);font-weight:700;
+  color:var(--green-soft);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:16px;
+}
+.val-icon-wrap{
+  width:72px;height:72px;
+  background:var(--light);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+}
+.val-icon-wrap svg{width:32px;height:32px;fill:var(--green)}
+.val-card h3{font-size:18px;font-weight:800;color:var(--green-dark);margin-bottom:10px}
+.val-card p{font-size:13px;color:#666;line-height:1.9;font-family:var(--sans)}
+
+/* ─── Feature Split: 진료 현장 ─── */
+.feature-split{
+  display:grid;grid-template-columns:1fr 1fr;
+  min-height:520px;
+}
+@media(max-width:768px){.feature-split{grid-template-columns:1fr}}
+.feature-split-img{
+  background-image:url("https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_11.jpg");
+  background-size:cover;
+  background-position:center;
+  min-height:420px;
+  position:relative;
+}
+.feature-split-img::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(27,67,50,.3),rgba(27,67,50,.05));
+}
+.feature-split-text{
+  padding:72px 64px;
+  display:flex;flex-direction:column;justify-content:center;
+  background:var(--light);
+}
+@media(max-width:900px){.feature-split-text{padding:56px 40px}}
+@media(max-width:768px){.feature-split-text{padding:56px 28px}}
+.split-label{
+  font-size:11px;font-family:var(--sans);font-weight:700;
+  color:var(--green-mid);letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.feature-split-text h2{
+  font-size:clamp(24px,3vw,36px);font-weight:900;
+  color:var(--green-dark);margin-bottom:20px;line-height:1.3;
+}
+.feature-split-text p{
+  font-size:14px;color:#555;line-height:1.95;font-family:var(--sans);
+  margin-bottom:14px;
+}
+.split-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.split-badge{
+  background:#fff;border:1px solid #c8e6d0;
+  color:var(--green);font-size:12px;font-family:var(--sans);font-weight:600;
+  padding:7px 16px;border-radius:50px;
+}
+
+/* ─── Treatments ─── */
+.treatments{padding:88px 24px;background:#fff}
+.treat-inner{max-width:1020px;margin:0 auto}
+.treat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
 @media(max-width:640px){.treat-grid{grid-template-columns:1fr}}
-.treat-card{border-radius:20px;overflow:hidden;border:1px solid #e8f5e9}
-.treat-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:56px;background:linear-gradient(135deg,#d8f3dc,#b7e4c7)}
-.treat-body{padding:24px}
-.treat-body h3{font-size:17px;font-weight:700;color:#1b4332;margin-bottom:8px}
-.treat-body p{font-size:13px;color:#555;line-height:1.8}
-.treat-tag{display:inline-block;background:var(--light);color:var(--green);font-size:11px;padding:4px 10px;border-radius:50px;margin-top:12px;margin-right:4px}
+.treat-card{
+  border-radius:24px;overflow:hidden;
+  border:1px solid #e8f5e9;
+  background:#fff;
+  box-shadow:0 2px 16px rgba(0,0,0,.05);
+  transition:transform .25s,box-shadow .25s;
+}
+.treat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(45,106,79,.12)}
+.treat-img{height:200px;overflow:hidden;position:relative}
+.treat-img img{width:100%;height:100%;object-fit:cover;object-position:center}
+.treat-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(27,67,50,.6),transparent)}
+.treat-img-gradient{
+  height:200px;overflow:hidden;position:relative;
+  background:linear-gradient(135deg,#2d6a4f,#40916c);
+  display:flex;align-items:center;justify-content:center;
+}
+.treat-img-gradient svg{width:64px;height:64px;fill:rgba(255,255,255,.25)}
+.treat-body{padding:28px 28px 24px}
+.treat-body h3{font-size:18px;font-weight:800;color:var(--green-dark);margin-bottom:10px}
+.treat-body p{font-size:13px;color:#555;line-height:1.9;font-family:var(--sans)}
+.treat-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.treat-tag{
+  background:var(--light);color:var(--green);
+  font-size:11px;font-family:var(--sans);font-weight:600;
+  padding:5px 12px;border-radius:50px;
+  border:1px solid #c8e6d0;
+}
 
-.story{background:#1b4332;color:#fff;padding:72px 24px}
-.story-inner{max-width:760px;margin:0 auto;text-align:center}
-.story h2{font-size:clamp(22px,3vw,32px);font-weight:800;margin-bottom:24px;line-height:1.4}
-.story p{font-size:15px;opacity:.8;line-height:1.9;margin-bottom:16px}
-.story-sig{margin-top:32px;font-size:14px;opacity:.6}
+/* ─── Doctor Section ─── */
+.doctor-section{background:var(--green-dark);padding:88px 24px;overflow:hidden}
+.doctor-inner{
+  max-width:1020px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;
+}
+@media(max-width:768px){.doctor-inner{grid-template-columns:1fr;gap:40px}}
+.doctor-photo-wrap{position:relative}
+.doctor-photo-frame{
+  border-radius:28px;overflow:hidden;
+  aspect-ratio:3/4;max-width:380px;
+  box-shadow:0 24px 64px rgba(0,0,0,.4);
+  position:relative;
+}
+.doctor-photo-frame img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.doctor-badge-float{
+  position:absolute;bottom:-16px;right:-16px;
+  background:#fff;border-radius:18px;
+  padding:16px 22px;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  text-align:center;min-width:120px;
+}
+.doctor-badge-num{font-size:26px;font-weight:900;color:var(--green);display:block;line-height:1}
+.doctor-badge-txt{font-size:11px;color:#666;font-family:var(--sans);margin-top:4px}
+.doctor-info{color:#fff}
+.doctor-info .split-label{color:#74c69d}
+.doctor-info h2{
+  font-size:clamp(26px,3.5vw,40px);font-weight:900;
+  margin-bottom:8px;line-height:1.2;
+}
+.doctor-info .doctor-title{
+  font-size:14px;color:#74c69d;font-family:var(--sans);
+  margin-bottom:28px;opacity:.9;letter-spacing:.3px;
+}
+.doctor-info p{
+  font-size:14px;color:rgba(255,255,255,.75);
+  line-height:1.9;font-family:var(--sans);margin-bottom:14px;
+}
+.doctor-creds{
+  display:flex;flex-direction:column;gap:10px;
+  margin-top:28px;
+}
+.doctor-cred{
+  display:flex;align-items:center;gap:12px;
+  font-size:13px;color:rgba(255,255,255,.8);font-family:var(--sans);
+}
+.doctor-cred::before{
+  content:'';width:6px;height:6px;
+  background:#74c69d;border-radius:50%;flex-shrink:0;
+}
+@media(max-width:768px){
+  .doctor-photo-frame{max-width:100%;aspect-ratio:4/3}
+  .doctor-badge-float{right:12px;bottom:12px}
+}
 
-.reviews{background:var(--light);padding:72px 24px}
-.reviews-inner{max-width:960px;margin:0 auto}
+/* ─── Story / Quote ─── */
+.story{background:#1b4332;color:#fff;padding:88px 24px;position:relative;overflow:hidden}
+.story::before{
+  content:'\201C';
+  position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+  font-size:400px;color:rgba(255,255,255,.03);
+  font-family:Georgia,serif;line-height:1;pointer-events:none;
+}
+.story-inner{max-width:800px;margin:0 auto;text-align:center;position:relative;z-index:1}
+.story-quote-mark{
+  font-size:64px;color:#74c69d;line-height:1;
+  margin-bottom:8px;font-family:Georgia,serif;
+}
+.story h2{
+  font-size:clamp(22px,3.5vw,36px);font-weight:800;
+  margin-bottom:28px;line-height:1.45;
+}
+.story h2 span{color:#74c69d}
+.story p{
+  font-size:15px;opacity:.8;line-height:2;
+  margin-bottom:16px;font-family:var(--sans);
+}
+.story-divider{
+  width:48px;height:2px;background:#74c69d;
+  margin:32px auto;opacity:.6;
+}
+.story-sig{
+  font-size:14px;opacity:.65;font-family:var(--sans);
+  display:flex;align-items:center;justify-content:center;gap:16px;
+}
+.story-sig::before,.story-sig::after{
+  content:'';width:32px;height:1px;background:rgba(255,255,255,.3);
+}
+
+/* ─── Reviews ─── */
+.reviews{background:var(--light);padding:88px 24px}
+.reviews-inner{max-width:1020px;margin:0 auto}
 .review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-@media(max-width:640px){.review-grid{grid-template-columns:1fr}}
-.review-card{background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.stars{color:#40916c;font-size:16px;margin-bottom:12px}
-.review-text{font-size:13px;color:#444;line-height:1.8;margin-bottom:12px}
-.reviewer{font-size:11px;color:#999}
+@media(max-width:768px){.review-grid{grid-template-columns:1fr}}
+.review-card{
+  background:#fff;border-radius:20px;padding:28px;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
+  border:1px solid #e4efe8;
+  display:flex;flex-direction:column;gap:12px;
+}
+.stars{display:flex;gap:3px}
+.stars span{color:#40916c;font-size:16px}
+.review-tag{
+  display:inline-block;background:var(--light);
+  color:var(--green);font-size:10px;font-family:var(--sans);font-weight:700;
+  padding:3px 10px;border-radius:50px;
+  border:1px solid #c8e6d0;margin-bottom:4px;
+}
+.review-text{font-size:13px;color:#444;line-height:1.85;font-family:var(--sans);flex:1}
+.reviewer{
+  font-size:12px;color:#999;font-family:var(--sans);
+  padding-top:12px;border-top:1px solid #f0f0f0;
+}
 
-.faq{padding:72px 24px;max-width:760px;margin:0 auto}
-.faq-item{border:1px solid #e8f5e9;border-radius:12px;margin-bottom:12px;overflow:hidden}
-.faq-q{padding:18px 24px;font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;color:#1b4332;cursor:pointer}
-.faq-q span{color:var(--green);font-size:20px;font-weight:300}
-.faq-a{padding:0 24px 18px;font-size:14px;color:#555;line-height:1.8}
+/* ─── FAQ ─── */
+.faq{padding:88px 24px;background:#fff}
+.faq-inner{max-width:780px;margin:0 auto}
+.faq-list{margin-top:48px;display:flex;flex-direction:column;gap:12px}
+.faq-item{
+  border:1px solid #e8f5e9;border-radius:16px;
+  overflow:hidden;background:#fff;
+  transition:box-shadow .2s;
+}
+.faq-item:hover{box-shadow:0 4px 20px rgba(45,106,79,.1)}
+.faq-q{
+  padding:20px 28px;font-weight:700;font-size:15px;
+  display:flex;justify-content:space-between;align-items:center;
+  color:var(--green-dark);cursor:pointer;
+  font-family:var(--sans);
+}
+.faq-q-icon{
+  width:28px;height:28px;background:var(--light);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-left:12px;
+  color:var(--green);font-size:18px;font-weight:300;line-height:1;
+}
+.faq-a{
+  padding:0 28px 20px;font-size:13px;
+  color:#555;line-height:1.9;font-family:var(--sans);
+  border-top:1px solid #f0f0f0;padding-top:16px;
+}
 
-.cta{background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;padding:80px 24px;text-align:center}
-.cta h2{font-size:clamp(22px,3vw,34px);font-weight:800;margin-bottom:12px}
-.cta p{opacity:.85;margin-bottom:32px;font-size:16px}
-.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.cta-btn-w{background:#fff;color:var(--green);padding:16px 36px;border-radius:50px;font-weight:700;font-size:15px}
-.cta-btn-o{border:2px solid rgba(255,255,255,.5);color:#fff;padding:16px 36px;border-radius:50px;font-weight:600;font-size:15px}
+/* ─── CTA ─── */
+.cta{
+  background:linear-gradient(135deg,#1b4332 0%,#2d6a4f 60%,#40916c 100%);
+  color:#fff;padding:100px 24px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta::before{
+  content:'';position:absolute;
+  top:-120px;right:-120px;
+  width:400px;height:400px;
+  background:rgba(255,255,255,.04);
+  border-radius:50%;
+}
+.cta::after{
+  content:'';position:absolute;
+  bottom:-80px;left:-80px;
+  width:280px;height:280px;
+  background:rgba(255,255,255,.03);
+  border-radius:50%;
+}
+.cta-inner{position:relative;z-index:1;max-width:680px;margin:0 auto}
+.cta-eyebrow{
+  display:inline-block;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:#b7e4c7;font-size:11px;font-family:var(--sans);font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  padding:7px 20px;border-radius:50px;margin-bottom:24px;
+}
+.cta h2{font-size:clamp(26px,4vw,44px);font-weight:900;margin-bottom:16px;line-height:1.25}
+.cta p{opacity:.85;margin-bottom:40px;font-size:16px;font-family:var(--sans);line-height:1.8}
+.cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-btn-w{
+  background:#fff;color:var(--green);
+  padding:18px 40px;border-radius:50px;
+  font-weight:700;font-size:15px;font-family:var(--sans);
+  box-shadow:0 8px 32px rgba(0,0,0,.2);
+  transition:transform .2s,box-shadow .2s;
+}
+.cta-btn-w:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.cta-btn-o{
+  border:2px solid rgba(255,255,255,.5);color:#fff;
+  padding:18px 40px;border-radius:50px;
+  font-weight:600;font-size:15px;font-family:var(--sans);
+  transition:border-color .2s,background .2s;
+}
+.cta-btn-o:hover{border-color:rgba(255,255,255,.85);background:rgba(255,255,255,.08)}
+.cta-note{
+  margin-top:24px;font-size:12px;opacity:.55;font-family:var(--sans);
+}
 </style>
 </head>
 <body>
 
+<!-- ─── HEADER ─── -->
 <header class="site-header">
-  <div class="logo">🌿 자연한의원</div>
-  <div class="tel">02-9876-5432</div>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+    </div>
+    자연한의원
+  </div>
+  <nav class="nav">
+    <a class="nav-link" href="#values">한의원 소개</a>
+    <a class="nav-link" href="#treatments">진료과목</a>
+    <a class="nav-link" href="#doctor">원장 소개</a>
+    <a class="nav-link" href="#reviews">환자 후기</a>
+    <a class="nav-cta" href="#cta">진료 예약</a>
+  </nav>
 </header>
 
+<!-- ─── HERO ─── -->
 <section class="hero">
-  <div class="hero-photo"></div>
+  <div class="hero-bg"></div>
+  <div class="hero-grain"></div>
   <div class="hero-content">
-    <div class="hero-badge">자연주의 전통 한의학</div>
-    <h1>자연이 답이다<br><em>자연한의원</em></h1>
-    <p>화학 없이, 자연 차도가 만들어내는 회복<br>응역·로덕·안구하는 전당 한의학</p>
+    <div class="hero-eyebrow">
+      <span class="hero-dot"></span>
+      전통 한의학 · 체질 맞춤 치료
+    </div>
+    <h1>
+      몸의 근본을 바로잡아<br>
+      <span class="accent">자연 치유력</span>을 깨웁니다
+    </h1>
+    <p class="hero-sub">
+      20년 임상 경험의 원장이 맥진으로 정확히 진단하고<br>
+      침·한약·추나로 증상이 아닌 원인부터 치료합니다
+    </p>
     <div class="hero-btns">
-      <a class="btn-main" href="#">무료 체질 검진</a>
-      <a class="btn-sub" href="tel:0298765432">☎ 전화 상담</a>
+      <a class="btn-hero-main" href="#cta">무료 체질 검진 예약</a>
+      <a class="btn-hero-sub" href="tel:0298765432">☎ 02-9876-5432</a>
     </div>
-    <div class="hero-trust">
-      <div class="trust-item"><div class="trust-num">8,000+</div><div class="trust-label">누적 환자</div></div>
-      <div class="trust-item"><div class="trust-num">20년</div><div class="trust-label">한의학 경력</div></div>
-      <div class="trust-item"><div class="trust-num">98%</div><div class="trust-label">환자 만족도</div></div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-num">9,200<span style="font-size:60%">+</span></span>
+        <div class="stat-label">누적 치료 환자</div>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-num">20년</span>
+        <div class="stat-label">임상 경력</div>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-num">97%</span>
+        <div class="stat-label">환자 만족도</div>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-num">4.9</span>
+        <div class="stat-label">네이버 평점</div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="values">
+<!-- ─── PHILOSOPHY STRIP ─── -->
+<div class="philosophy">
+  <div class="phil-inner">
+    <div class="phil-item">
+      <div class="phil-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.5 2 12s4.5 9 10 9 10-4 10-9-4.5-9-10-9zm-1 13v-3H8l4-7v3h3l-4 7z"/></svg>
+      </div>
+      <div class="phil-text">
+        <h4>근본 원인 치료</h4>
+        <p>증상만 억누르지 않습니다. 맥진과 체질 분석으로 발병 원인을 찾아 뿌리부터 치료합니다.</p>
+      </div>
+    </div>
+    <div class="phil-item">
+      <div class="phil-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg>
+      </div>
+      <div class="phil-text">
+        <h4>1:1 맞춤 진료</h4>
+        <p>같은 증상도 체질에 따라 처방이 다릅니다. 모든 환자에게 개별 맞춤 치료 계획을 수립합니다.</p>
+      </div>
+    </div>
+    <div class="phil-item">
+      <div class="phil-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21H5.71c.51-1.2 1.06-2.38 1.7-3.45C9.14 21.59 13.5 22 16 22c6 0 8-8 8-8-2 2-4 3-6 1-2-2-1-5-1-7z"/></svg>
+      </div>
+      <div class="phil-text">
+        <h4>자연 치유 중심</h4>
+        <p>화학 약제 의존을 최소화하고, 몸이 가진 자연 회복력을 극대화하는 치료를 지향합니다.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── VALUES ─── -->
+<section class="values" id="values">
   <div class="values-inner">
-    <div class="section-label">Our Philosophy</div>
-    <div class="section-title">자연한의원의 3대 철학</div>
-    <div class="section-desc">코에 있는 자연 치유력을 깨운다</div>
+    <div class="section-eyebrow">Our Philosophy</div>
+    <h2 class="section-title">자연한의원이 다른 이유</h2>
+    <p class="section-desc">전통 한의학의 깊은 지혜를 현대 임상에 적용하여<br>환자 한 분 한 분의 체질과 상태에 맞는 치료를 제공합니다</p>
     <div class="val-grid">
-      <div class="val-card"><div class="val-icon">🌱</div><h3>자연 치유</h3><p>화학 첨가물 없이 신체 고유의 자연 치유력을 극대화하는 한의학 의학을 구현합니다.</p></div>
-      <div class="val-card"><div class="val-icon">🧘</div><h3>체질 개선</h3><p>학쓰 수서침으로 맞춤형 체질 개선, 장기적 면역력 강화와 재발 예방을 집중합니다.</p></div>
-      <div class="val-card"><div class="val-icon">🌺</div><h3>심신 통합</h3><p>머리와 신체는 하나입니다. 심리적 안정과 신체 건강을 동시에 다룙니다.</p></div>
+      <div class="val-card">
+        <div class="val-num">01</div>
+        <div class="val-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M15.5 5H11L7 9l4 4-3 6 5-3 4 4 2-9 3-3-7-3zm-5 9l-2-2 2-2 2 2-2 2z"/></svg>
+        </div>
+        <h3>정밀 맥진 진단</h3>
+        <p>손목의 맥박 리듬과 강도를 통해 오장육부의 균형을 파악합니다. 20년 이상 연마한 맥진술로 숨겨진 불균형을 찾아냅니다.</p>
+      </div>
+      <div class="val-card">
+        <div class="val-num">02</div>
+        <div class="val-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <h3>개인 맞춤 한약 처방</h3>
+        <p>시중 완제 한약이 아닌, 환자의 체질과 증상에 따라 직접 배합한 탕약을 처방합니다. 약재 품질 검증에도 엄격한 기준을 적용합니다.</p>
+      </div>
+      <div class="val-card">
+        <div class="val-num">03</div>
+        <div class="val-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <h3>재발 방지 생활 교정</h3>
+        <p>치료 후 재발을 막기 위해 환자 개인의 식습관·수면·스트레스 패턴을 분석하고 생활 교정 프로그램을 함께 제공합니다.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="treatments">
-  <div class="section-label">Treatments</div>
-  <div class="section-title">주요 진료분야</div>
-  <div class="section-desc"></div>
-  <div class="treat-grid">
-    <div class="treat-card"><div class="treat-img">🌿</div><div class="treat-body"><h3>응역 / 수역 치료</h3><p>면역력 저하로 인한 만성 피로, 잘 거려지 는 감기, 소화 기능 저하 등 응역계 주요 질환을 전당 한약으로 치료합니다.</p><span class="treat-tag">피로개선</span><span class="treat-tag">면역증강</span></div></div>
-    <div class="treat-card"><div class="treat-img">🦴</div><div class="treat-body"><h3>소화기 한의실라</h3><p>만성 소화장애, 모장 잠마침, 역류성 식도염의 근본 원인을 한의학적으로 접근합니다.</p><span class="treat-tag">소화개선</span><span class="treat-tag">역류성식도염</span></div></div>
-    <div class="treat-card"><div class="treat-img">💪</div><div class="treat-body"><h3>답성통증 / 근돌격통</h3><p>반복되는 등통, 무뉆 얼깨, 딩당거림, 답성통증에 첾and정 침, 추나력영양제로 치료합니다.</p><span class="treat-tag">등통개선</span><span class="treat-tag">리음찬침</span></div></div>
-    <div class="treat-card"><div class="treat-img">👶</div><div class="treat-body"><h3>여성 한의학</h3><p>생리통, 냉증, 불임, 산후체질 개선 등 여성 특뱄 상태를 체질 개선 관점에서 접근합니다.</p><span class="treat-tag">생리통</span><span class="treat-tag">폐경증상</span></div></div>
+<!-- ─── SPLIT: 진료 현장 ─── -->
+<section class="feature-split" id="pulse">
+  <div class="feature-split-img" role="img" aria-label="맥진 진료 현장 — 한의사가 환자의 손목 맥을 짚고 있습니다"></div>
+  <div class="feature-split-text">
+    <div class="split-label">진료 현장</div>
+    <h2>손끝으로 읽어내는<br>몸의 언어, 맥진</h2>
+    <p>
+      맥진(脈診)은 수천 년의 역사를 지닌 한의학의 핵심 진단법입니다.
+      손목 요골동맥 위 세 부위 — 촌(寸), 관(關), 척(尺) — 의 맥박 리듬과
+      강도를 통해 폐·심장·간·비장·신장의 기능 상태를 파악합니다.
+    </p>
+    <p>
+      자연한의원 원장은 20년간 매일 맥진을 수행하며 쌓인
+      감각으로, CT나 혈액검사로는 드러나지 않는 미세한 기허(氣虛)와
+      어혈(瘀血)의 징후까지 읽어냅니다. 진단에서 처방까지
+      단 한 번의 진료로 완성되는 정밀함이 자연한의원의 자부심입니다.
+    </p>
+    <div class="split-badges">
+      <span class="split-badge">맥진 전문</span>
+      <span class="split-badge">28맥 분류 가능</span>
+      <span class="split-badge">오장육부 평가</span>
+      <span class="split-badge">기혈 순환 분석</span>
+    </div>
   </div>
 </section>
 
+<!-- ─── TREATMENTS ─── -->
+<section class="treatments" id="treatments">
+  <div class="treat-inner">
+    <div class="section-eyebrow">Treatments</div>
+    <h2 class="section-title">주요 진료 과목</h2>
+    <p class="section-desc">증상에 따른 단순 처방이 아닌, 체질과 원인을 파악하여 근본적으로 접근합니다</p>
+    <div class="treat-grid">
+
+      <!-- Card 1 — 맥진/한방진료 (with img_11.jpg) -->
+      <div class="treat-card">
+        <div class="treat-img">
+          <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_11.jpg"
+               alt="맥진 한방 진료 — 한의사가 환자의 맥을 짚고 있는 장면">
+          <div class="treat-img-overlay"></div>
+        </div>
+        <div class="treat-body">
+          <h3>맥진 · 한방 일반 진료</h3>
+          <p>초진 시 맥진과 복진(腹診)을 포함한 전통 진단으로 체질과 병인(病因)을 파악합니다. 만성 피로, 두통, 어지럼증, 불면 등 현대인에게 흔한 증상의 원인을 한의학적으로 규명하고 개인 맞춤 탕약을 처방합니다.</p>
+          <div class="treat-tags">
+            <span class="treat-tag">맥진 진단</span>
+            <span class="treat-tag">체질 분석</span>
+            <span class="treat-tag">탕약 처방</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 — 침구 치료 (gradient) -->
+      <div class="treat-card">
+        <div class="treat-img-gradient">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 5.6L10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5L17 19l2.5-1.4L22 19l-1.4-2.5L22 14zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5zm-7.63 5.29a1 1 0 00-1.41 0L1.29 18.96a1 1 0 000 1.41l2.34 2.34c.39.39 1.02.39 1.41 0L16.7 11.05a1 1 0 000-1.41l-2.33-2.35zm-1.03 5.49l-2.12-2.12 2.44-2.44 2.12 2.12-2.44 2.44z"/></svg>
+        </div>
+        <div class="treat-body">
+          <h3>침구 · 뜸 · 부항 치료</h3>
+          <p>경락(經絡)의 기혈 순환을 정상화하는 침 치료와 온열 자극으로 근육과 관절의 긴장을 풀고 면역력을 높입니다. 만성 요통, 어깨 결림, 무릎 통증, 목 디스크 초기 증상에 효과적입니다.</p>
+          <div class="treat-tags">
+            <span class="treat-tag">통증 완화</span>
+            <span class="treat-tag">경락 조절</span>
+            <span class="treat-tag">면역 강화</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 — 소화기 (gradient) -->
+      <div class="treat-card">
+        <div class="treat-img-gradient" style="background:linear-gradient(135deg,#40916c,#52b788)">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-2a2 2 0 00-2 2v2H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-2V4a2 2 0 00-2-2zm-2 2h2v2h-2V4zM4 8h16v12H4V8zm8 5a1 1 0 100-2 1 1 0 000 2zm-4 0a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
+        </div>
+        <div class="treat-body">
+          <h3>소화기 · 장(腸) 기능 회복</h3>
+          <p>위기(胃氣)를 보강하고 비장(脾臟)의 운화 기능을 회복시키는 한방 치료를 통해 만성 소화불량, 역류성 식도염, 과민성 대장증후군의 근본 원인을 해소합니다. 식이 지도와 병행하면 재발률이 현저히 낮아집니다.</p>
+          <div class="treat-tags">
+            <span class="treat-tag">소화 개선</span>
+            <span class="treat-tag">역류성 식도염</span>
+            <span class="treat-tag">장 기능 회복</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 — 여성 (gradient) -->
+      <div class="treat-card">
+        <div class="treat-img-gradient" style="background:linear-gradient(135deg,#1b4332,#2d6a4f)">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a4 4 0 110 8 4 4 0 010-8zm0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z"/></svg>
+        </div>
+        <div class="treat-body">
+          <h3>여성 · 갱년기 · 산후 한방</h3>
+          <p>생리통, 생리불순, 다낭성 난소증후군, 산후 체력 저하, 갱년기 열감·불면·감정 기복 등 여성 특유 증상을 체질 개선 관점에서 접근합니다. 호르몬 치료 부작용 없이 자연스러운 균형 회복을 돕습니다.</p>
+          <div class="treat-tags">
+            <span class="treat-tag">생리통</span>
+            <span class="treat-tag">갱년기 증상</span>
+            <span class="treat-tag">산후 조리</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── DOCTOR ─── -->
+<section class="doctor-section" id="doctor">
+  <div class="doctor-inner">
+    <div class="doctor-photo-wrap">
+      <div class="doctor-photo-frame">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_10.jpg"
+             alt="자연한의원 원장 이지연 한의사 — 전통 한의학 전문의">
+      </div>
+      <div class="doctor-badge-float">
+        <span class="doctor-badge-num">20년</span>
+        <div class="doctor-badge-txt">한의학 임상 경력</div>
+      </div>
+    </div>
+    <div class="doctor-info">
+      <div class="split-label">원장 소개</div>
+      <h2>이지연 원장</h2>
+      <div class="doctor-title">한의학 박사 · 대한한의사협회 정회원</div>
+      <p>
+        동국대학교 한의학과를 졸업하고 경희대학교 대학원에서 한의학 박사학위를 취득했습니다.
+        한방 내과 전문의 과정 이수 후 20년간 임상에 집중하며 소화기 한방과
+        여성 체질 개선 분야에서 깊은 전문성을 쌓았습니다.
+      </p>
+      <p>
+        "약에 의존하지 않고 내 몸이 스스로 낫는 경험"을 환자와 함께 나누는 것이 진료 철학입니다.
+        초진 시 평균 40분 이상을 할애해 환자의 생활 패턴과 체질을 꼼꼼히 파악한 후 처방합니다.
+      </p>
+      <div class="doctor-creds">
+        <div class="doctor-cred">동국대학교 한의학과 졸업 / 경희대학교 한의학 박사</div>
+        <div class="doctor-cred">대한한방내과학회 정회원</div>
+        <div class="doctor-cred">대한침구의학회 학술위원</div>
+        <div class="doctor-cred">대한한의사협회 인증 체질의학 전문가 과정 수료</div>
+        <div class="doctor-cred">전 서울대학교병원 한방협진센터 협진의</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STORY / QUOTE ─── -->
 <div class="story">
   <div class="story-inner">
-    <h2>"약에 의존하지 않는<br>나의 몸을 만들고 싶다"</h2>
-    <p>자연한의원은 20년의 임상 경험에서 느낌 것을 진료에 담았습니다.<br>영양 정화와 침치료만으로 증상이 사라지는 경험,<br>그 저력에 수많은 환자들이 우리를 다시 찾습니다.</p>
-    <div class="story-sig">원장 이자연 · 동국대 한의학과 졸업 · 한의학 박사</div>
+    <div class="story-quote-mark">"</div>
+    <h2>
+      약 없이도 나을 수 있는 몸,<br>
+      <span>그 가능성을 믿습니다</span>
+    </h2>
+    <p>
+      20년 동안 수천 명의 환자를 보며 확신하게 된 것이 있습니다.<br>
+      인체는 스스로 회복할 힘을 이미 가지고 있다는 것입니다.
+    </p>
+    <p>
+      한의학은 그 힘을 방해하는 요인을 제거하고,<br>
+      기혈이 흐를 수 있는 조건을 만들어주는 학문입니다.<br>
+      자연한의원은 그 믿음 하나로 지금까지 진료해왔습니다.
+    </p>
+    <div class="story-divider"></div>
+    <div class="story-sig">원장 이지연 · 한의학 박사 · 자연한의원</div>
   </div>
 </div>
 
-<section class="reviews">
+<!-- ─── REVIEWS ─── -->
+<section class="reviews" id="reviews">
   <div class="reviews-inner">
-    <div class="section-label">Reviews</div>
-    <div class="section-title">실제 환자 후기</div>
-    <div class="section-desc"></div>
+    <div class="section-eyebrow">Patient Reviews</div>
+    <h2 class="section-title">실제 환자 후기</h2>
+    <p class="section-desc">과장 없는 진짜 치료 경험을 전합니다</p>
     <div class="review-grid">
-      <div class="review-card"><div class="stars">♥♥♥♥♥</div><p class="review-text">"소화가 안 되어 4년을 고생했는데 3개월 만에 정말 달라졌어요. 습관이나 식정도 같이 수술해줘서 지속이 가능했어요."</p><div class="reviewer">40대 주부</div></div>
-      <div class="review-card"><div class="stars">♥♥♥♥♥</div><p class="review-text">"피로가 만성이라 약을 염던 중이었는데, 침으로만 2달만에 훨씬 달라졌어요. 지금은 약 안 먹어도 착습니다."</p><div class="reviewer">30대 직장인</div></div>
-      <div class="review-card"><div class="stars">♥♥♥♥♥</div><p class="review-text">"생리통이 심해서 왔는데, 달마다 약을 먹어야 했던 생리가 이제는 거의 정상으로 돌아왔어요."</p><div class="reviewer">20대 직장인</div></div>
+      <div class="review-card">
+        <div class="stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <div class="review-tag">소화기 · 역류성 식도염</div>
+        <p class="review-text">"3년 동안 역류성 식도염 약을 달고 살았어요. 위산 억제제를 끊으면 바로 증상이 재발했는데, 한의원에서 3개월 치료 후 지금은 약 없이 6개월째 멀쩡합니다. 식습관 교정도 같이 받아서 더 효과가 컸던 것 같아요."</p>
+        <div class="reviewer">40대 여성, 회사원 · 2024.11 내원</div>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <div class="review-tag">만성 피로 · 면역 저하</div>
+        <p class="review-text">"늘 피곤하고 감기를 달고 살았는데, 맥진 진단 후 비기허(脾氣虛) 체질이라는 걸 처음 알았어요. 두 달 탕약 복용 후 피로 개선이 확실했고, 이번 겨울은 감기 한 번 안 걸렸습니다. 원장님 설명이 정말 상세하셔요."</p>
+        <div class="reviewer">30대 남성, IT 개발자 · 2024.10 내원</div>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <div class="review-tag">생리통 · 생리불순</div>
+        <p class="review-text">"생리 때마다 진통제 없이는 못 버텼는데, 4개월 치료 후 통증이 거의 없어졌어요. 생리 주기도 28일로 안정됐고요. 산부인과에서도 특별한 이상 없다고만 했는데, 한의원에서 어혈과 냉증 원인을 찾아주셔서 정말 감사했어요."</p>
+        <div class="reviewer">20대 여성, 대학원생 · 2025.01 내원</div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="faq">
-  <div class="section-title">자주 묻는 질문</div>
-  <div style="margin-bottom:32px"></div>
-  <div class="faq-item"><div class="faq-q">한약을 먹으면 다른 약과 같이 먹어도 되나요? <span>+</span></div><div class="faq-a">한약과 양약의 상호작용이 있을 수 있어 상담 시 복용 중인 약을 반드시 알려주세요. 대부분의 경우 조정 후 병행 복용이 가능합니다.</div></div>
-  <div class="faq-item"><div class="faq-q">체험한의학과 할수 있나요? <span>+</span></div><div class="faq-a">동국대, 경희대, 원광대, 대전인재대, 족보 등 한의학전문대학원 졸업 한의사만 진료가 가능합니다.</div></div>
-  <div class="faq-item"><div class="faq-q">체질개선에 얼마나 걸리나요? <span>+</span></div><div class="faq-a">개인에 따라 다르다만 보통 3~6개월 기준으로 지속적인 식생활 교정과 함께 진행하는 것을 권장합니다.</div></div>
+<!-- ─── FAQ ─── -->
+<section class="faq" id="faq">
+  <div class="faq-inner">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">자주 묻는 질문</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">
+          한약과 양약을 동시에 복용해도 되나요?
+          <div class="faq-q-icon">+</div>
+        </div>
+        <div class="faq-a">
+          한약과 양약은 상호작용이 있을 수 있습니다. 초진 시 현재 복용 중인 모든 양약을 반드시 알려주세요.
+          대부분의 경우 복용 시간을 2시간 이상 간격을 두거나 한약 구성을 조정하면 병행이 가능합니다.
+          당뇨약, 항응고제, 갑상선약을 복용 중이신 분은 반드시 미리 말씀해 주세요.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          첫 진료 시 어떤 것을 준비해야 하나요?
+          <div class="faq-q-icon">+</div>
+        </div>
+        <div class="faq-a">
+          이전 검사 자료(혈액검사, CT, MRI, 초음파 등)가 있다면 지참해 주시면 진단에 도움이 됩니다.
+          현재 복용 중인 약 목록도 준비해 주세요. 초진은 맥진·문진 포함 40~50분 정도 소요되며,
+          원장이 체질과 생활 습관을 꼼꼼히 파악한 뒤 처방을 결정합니다.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          체질 개선에는 얼마나 시간이 걸리나요?
+          <div class="faq-q-icon">+</div>
+        </div>
+        <div class="faq-a">
+          증상의 종류와 이환 기간에 따라 다릅니다. 급성 통증은 1~4주, 만성 소화기 질환은 2~3개월,
+          체질 개선 및 면역력 강화는 3~6개월을 기준으로 합니다. 치료 중 생활 교정을 병행하면
+          치료 기간이 단축되고 재발률도 크게 낮아집니다.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          한방 치료는 건강보험이 적용되나요?
+          <div class="faq-q-icon">+</div>
+        </div>
+        <div class="faq-a">
+          침, 뜸, 부항, 추나(척추 관련) 치료는 건강보험이 적용됩니다.
+          탕약 처방과 한방 물리치료 일부는 비급여 항목으로 별도 비용이 발생합니다.
+          정확한 비용은 진료 전 데스크에서 안내드리며, 임신·장애인·의료급여 수급자에 대한 추가 할인도 있습니다.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">
+          어린이나 임산부도 한약을 복용할 수 있나요?
+          <div class="faq-q-icon">+</div>
+        </div>
+        <div class="faq-a">
+          소아(만 3세 이상)와 임산부 모두 체질과 상태에 따른 안전한 처방이 가능합니다.
+          임산부의 경우 임신 주수와 증상에 따라 금기 약재를 철저히 제외하고 안전한 약재만 선별합니다.
+          소아는 성인보다 약 용량을 조절하고 복용하기 쉬운 제형으로 처방합니다.
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<div class="cta">
-  <h2>오늘, 맨좀 <strong>체질 검진</strong> 받으세요</h2>
-  <p>전화 또는 온라인으로 예약 후 내원하시면 대기 없이 진료합니다</p>
-  <div class="cta-btns">
-    <a class="cta-btn-w" href="#">온라인 예약</a>
-    <a class="cta-btn-o" href="tel:0298765432">☎ 02-9876-5432</a>
+<!-- ─── CTA ─── -->
+<section class="cta" id="cta">
+  <div class="cta-inner">
+    <div class="cta-eyebrow">지금 바로 시작하세요</div>
+    <h2>오늘, 당신의 체질을<br>정확하게 알아보세요</h2>
+    <p>
+      전화 또는 온라인으로 예약 후 내원하시면<br>
+      대기 없이 원장이 직접 진료합니다
+    </p>
+    <div class="cta-btns">
+      <a class="cta-btn-w" href="#">온라인 예약하기</a>
+      <a class="cta-btn-o" href="tel:0298765432">☎ 02-9876-5432</a>
+    </div>
+    <p class="cta-note">진료시간 : 월~금 09:00–18:30 | 토 09:00–14:00 | 일·공휴일 휴진</p>
   </div>
-</div>
+</section>
 
+<!-- ─── FOOTER ─── -->
 <footer class="venom-footer">
   <div class="vf-inner">
     <div class="vf-brand">
@@ -206,5 +919,6 @@ a{text-decoration:none;color:inherit}
 .vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
 @media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
 </style>
+
 </body>
 </html>
