@@ -674,6 +674,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
         <li><a href="javascript:void(0)" onclick="sp('services')">Online Marketing</a></li>
         <li><a href="javascript:void(0)" onclick="sp('blog')">Blog</a></li>
         <li><a href="javascript:void(0)" onclick="sp('hospital')">Website Build</a></li>
+        <li><a href="/design-resources" target="_blank" rel="noopener">Design Resources</a></li>
       </ul></nav>
     </div>
     <div class="header-actions">
@@ -734,6 +735,9 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
     </div>
     <div class="mob-nav-group">
       <a href="javascript:void(0)" onclick="sp('hospital');closeMobMenu()" class="mob-nav-item">Website Build</a>
+    </div>
+    <div class="mob-nav-group">
+      <a href="/design-resources" target="_blank" rel="noopener" class="mob-nav-item">Design Resources</a>
     </div>
   </nav>
   <div class="mob-menu-footer">
@@ -8834,6 +8838,23 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   window.vnRetranslate=function(){ var l='ko'; try{l=localStorage.getItem('venom-lang')||'ko';}catch(e){} if(l==='en')translateTree(); };
   function init(){ window.vnSetLang('en'); }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- Design Resources footer link: inject a "Resources" column into every footer -->
+<script>
+(function(){
+  function addResourceCol(){
+    document.querySelectorAll('footer.footer .footer-grid').forEach(function(g){
+      if(g.querySelector('.footer-col--resources'))return;
+      var col=document.createElement('div');
+      col.className='footer-col footer-col--resources';
+      col.innerHTML='<h5>Resources</h5>'+
+        '<a href="/design-resources" target="_blank" rel="noopener">Design Resources</a>';
+      g.appendChild(col);
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addResourceCol);
+  else addResourceCol();
 })();
 </script>
 </body>
