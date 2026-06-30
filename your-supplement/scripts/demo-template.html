@@ -33,7 +33,7 @@ h2{font-size:19px;margin:22px 0 10px}.sub{color:var(--mute);font-size:14px;margi
 .bar{height:8px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;margin-top:12px}.bar>div{height:100%;background:#6ee7b7;transition:width .3s}
 </style></head><body>
 <div class="nav"><b onclick="go('home')">🧬 당신의영양제</b>
-<a id="n-survey" onclick="go('survey')">설문</a><a id="n-routine" onclick="go('routine')">내 루틴</a></div>
+<a id="n-survey" onclick="go('survey')">설문</a><a id="n-analyze" onclick="go('analyze')">조합분석</a><a id="n-dict" onclick="go('dict')">성분사전</a><a id="n-routine" onclick="go('routine')">내 루틴</a></div>
 <div id="root"></div>
 <script>
 const DATA = __DATA__;
@@ -71,18 +71,21 @@ function concernLabels(id,cs){return cs.map(c=>concernById[c]).filter(c=>c&&c.in
 // ---- state ----
 let view='home',sel={concerns:[],medications:[],allergies:[]},result=null;
 let routine={items:[],checks:{}};
+let stack=[],stackMeds=[],dictOpen=null;
 const root=document.getElementById('root');
 function go(v){view=v;render()}
-function nav(){document.getElementById('n-survey').className=view==='survey'?'on':'';document.getElementById('n-routine').className=view==='routine'?'on':''}
-function render(){nav();({home:home,survey:survey,result:resultView,routine:routineView}[view]||home)();window.scrollTo(0,0)}
+function nav(){['survey','analyze','dict','routine'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)el.className=view===k?'on':''})}
+function render(){nav();({home:home,survey:survey,result:resultView,routine:routineView,analyze:analyzeView,dict:dictView}[view]||home)();window.scrollTo(0,0)}
 // ---- views ----
 function home(){
  root.innerHTML='<div class="hero"><span class="badge" style="background:rgba(255,255,255,.12);color:#6ee7b7">식약처·NIH·논문 근거</span>'+
  '<h1>내 몸에 맞는 영양제,<br><span class="sky">근거로 찾아드립니다</span></h1><p>광고도 후기도 아닌 검증된 데이터로 추천</p>'+
  '<button class="btn w" onclick="go(\'survey\')">1분 설문 시작 →</button></div>'+
- '<div class="wrap"><h2>왜 다른가요?</h2><div class="feat">'+
- [['⭐','근거 등급제','모든 추천에 출처·신뢰도'],['🔗','상호작용 엔진','성분·약물 충돌 자동 경고'],['⏱️','복용 기간 가이드','지속/점검/주기'],['📋','내 루틴','복용 체크·습관 관리']].map(f=>'<div class="card"><div style="font-size:24px">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
- '</div></div>'}
+ '<div class="wrap"><h2>무엇을 할 수 있나요?</h2><div class="feat">'+
+ [['🧬','근거 기반 추천','고민·약·알레르기로 맞춤','survey'],['🧪','내 조합 분석','먹는 영양제 궁합·과다·충돌','analyze'],['📖','성분 사전','17성분 효능·근거·용량','dict'],['📋','내 루틴','복용 체크·습관 관리','routine']].map(f=>'<div class="card" style="cursor:pointer" onclick="go(\''+f[3]+'\')"><div style="font-size:24px">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
+ '</div>'+
+ '<div class="card" style="margin-top:14px;background:rgba(5,150,105,.05);border-color:rgba(5,150,105,.2)"><b>🧪 내 조합 분석 — 필라이즈식 ‘중복·과다’ 분석의 근거 버전</b><div class="muted" style="margin-top:4px">지금 먹는 영양제를 고르면 길항·시너지·약물충돌·상한(UL) 주의·카테고리 중복까지 자동 점검</div><button class="btn" style="margin-top:12px" onclick="go(\'analyze\')">내 조합 분석하기 →</button></div>'+
+ '</div>'}
 function survey(){
  let h='<div class="wrap"><h2>어떤 고민이 있나요?</h2><div class="sub">여러 개 선택 가능 (필수)</div><div id="cc"></div>'+
  '<h2>복용 중인 약이 있나요?</h2><div class="sub">안전 확인용 (없으면 건너뛰기)</div><div id="mm"></div>'+
@@ -115,7 +118,7 @@ function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[
  res.recommended.forEach(r=>{const tb=topBenefit(r.id),st=tb?STRENGTH[tb.evidence_strength]:null,e=EV[r.id],kr=e&&e.kr_source;
   h+='<div class="card"><div><b style="font-size:16px">'+esc(r.name)+'</b> <span class="tag" style="background:#f5b800">'+'⭐'.repeat(r.lvl)+'</span> <span style="font-size:12px;color:var(--mute)">'+DUR_LABEL[r.dur]+'</span></div>';
   h+='<div class="muted" style="margin:4px 0">'+esc(r.fns.join(' · '))+'</div>';
-  if(kr&&kr.verified)h+='<div style="font-size:12.5px;margin-top:4px">🇰🇷 <b>식약처 인정</b> \\u201c'+esc(kr.mfds_function)+'\\u201d <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
+  if(kr&&kr.verified)h+='<div style="font-size:12.5px;margin-top:4px">🇰🇷 <b>식약처 인정</b> “'+esc(kr.mfds_function)+'” <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
   if(tb)h+='<div style="margin-top:4px"><span class="tag" style="background:'+st[1]+'">'+st[0]+'</span> <span class="muted">'+esc(tb.claim)+'</span> '+(tb.citation&&tb.citation.url?'<a class="src" target="_blank" href="'+tb.citation.url+'">'+esc(tb.citation.source)+' 원문 →</a>':'')+'</div>';
   if(e&&e.dosing&&(e.dosing.rda_or_ai||e.dosing.ul))h+='<div class="muted" style="font-size:12.5px;margin-top:4px">📐 '+(e.dosing.rda_or_ai?'권장 '+esc(e.dosing.rda_or_ai):'')+(e.dosing.rda_or_ai&&e.dosing.ul?' · ':'')+(e.dosing.ul?'상한 '+esc(e.dosing.ul):'')+'</div>';
   if(r.dose)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">💊 제품 표기 '+esc(r.dose)+'</div>';
@@ -136,5 +139,53 @@ function routineView(){
  h+='<div class="card"><b>내 영양제 ('+routine.items.length+')</b>';routine.items.forEach(it=>h+='<div class="muted" style="padding:6px 0;border-top:1px solid var(--line)"><b style="color:var(--ink)">'+esc(it.name)+'</b> · '+it.slots.map(s=>SLOT[s]).join(' · ')+'</div>');h+='</div>';
  h+='<div class="foot">데모: 체크는 이 화면 세션에서만 유지됩니다. 실서비스는 알림·연속복용일·재구매 예측까지 동작.</div></div>';
  root.innerHTML=h}
+// ---- 🧪 내 조합 분석 ----
+function analyzeView(){
+ let h='<div class="wrap"><h2>🧪 내 조합 분석</h2><div class="sub">지금 먹는 영양제를 골라보세요 — 궁합·과다·약물충돌을 근거로 점검</div><div id="sk"></div>'+
+ '<h2 style="font-size:16px">복용 중인 약 (선택)</h2><div id="sm"></div><div id="out"></div></div>';
+ root.innerHTML=h;
+ const sk=document.getElementById('sk');DATA.ingredients.forEach(i=>{const b=document.createElement('button');b.className='chip'+(stack.includes(i.id)?' on':'');b.textContent=i.name_ko;b.onclick=()=>{tog(stack,i.id);analyzeView()};sk.appendChild(b)});
+ const sm=document.getElementById('sm');Object.entries(DATA.meds).forEach(([k,v])=>{const b=document.createElement('button');b.className='chip'+(stackMeds.includes(k)?' on':'');b.textContent='💊 '+v.label;b.onclick=()=>{tog(stackMeds,k);analyzeView()};sm.appendChild(b)});
+ const out=document.getElementById('out');
+ if(stack.length<1){out.innerHTML='<div class="muted" style="margin-top:16px">성분을 1개 이상 선택하면 분석이 나와요.</div>';return}
+ let o='<h2>분석 결과</h2>';
+ // 약물 충돌
+ const dconf=[];stack.forEach(id=>{const dc=drug(id,stackMeds);if(dc.action==='exclude')dconf.push('🚫 '+byId[id].name_ko+' — '+dc.excl);dc.warnings.forEach(w=>dconf.push('⚠️ '+byId[id].name_ko+' — '+w))});
+ // 길항/시너지
+ const ant=[],syn=[];for(let i=0;i<stack.length;i++)for(let j=i+1;j<stack.length;j++){const r=rel(stack[i],stack[j]);if(!r)continue;const a=byId[stack[i]].name_ko,b=byId[stack[j]].name_ko;if(r.type==='antagonism')ant.push('⚠️ '+a+' ↔ '+b+': '+r.problem+' ('+r.timing+')');else syn.push('🔗 '+a+' + '+b+': '+r.effect)}
+ // 상한(UL) 주의
+ const ul=stack.map(id=>{const e=EV[id];return e&&e.dosing&&e.dosing.ul&&e.dosing.ul!=='출처 미확인'?{n:byId[id].name_ko,ul:e.dosing.ul}:null}).filter(Boolean);
+ // 카테고리 중복
+ const cat={};stack.forEach(id=>{const c=byId[id].category||'기타';(cat[c]=cat[c]||[]).push(byId[id].name_ko)});
+ const dupCat=Object.entries(cat).filter(([,v])=>v.length>1);
+ const hasRisk=dconf.length||ant.length;
+ o+='<div class="'+(hasRisk?'warn':'ok')+'"><b style="color:'+(hasRisk?'#d97706':'#047857')+'">'+(hasRisk?'⚠️ 주의가 필요한 조합이 있어요':'✅ 큰 충돌은 없어요')+'</b>';
+ dconf.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+'</div>');
+ ant.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+' — 시간 분리 권장</div>');
+ o+='</div>';
+ if(syn.length){o+='<div class="ok"><b style="color:#047857">🔗 함께 먹으면 좋아요</b>';syn.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+'</div>');o+='</div>'}
+ if(ul.length){o+='<div class="card"><b>📐 상한(UL) 주의 — 여러 제품 합산 시 초과 주의</b>';ul.forEach(x=>o+='<div class="muted" style="margin-top:4px">'+esc(x.n)+': 상한 '+esc(x.ul)+'</div>');o+='</div>'}
+ if(dupCat.length){o+='<div class="card"><b>🧩 같은 계열 중복</b>';dupCat.forEach(([c,v])=>o+='<div class="muted" style="margin-top:4px">'+esc(c)+': '+esc(v.join(', '))+' — 성분 겹침 확인</div>');o+='</div>'}
+ o+='<div class="card"><b>📅 추천 복용 시간</b>';const m2=[],e2=[];stack.forEach(id=>{const cf=m2.some(x=>rel(x,id)?.type==='antagonism');(cf?e2:m2).push(id)});o+='<div class="muted" style="margin-top:6px">☀️ 아침: '+esc(m2.map(x=>byId[x].name_ko).join(', ')||'없음')+'</div><div class="muted">🌙 저녁: '+esc(e2.map(x=>byId[x].name_ko).join(', ')||'없음')+'</div></div>';
+ o+='<div class="foot">필라이즈 ‘중복·과다’ 분석을 근거(식약처·NIH UL·상호작용)로 재현한 데모. 실서비스는 제품 라벨(DSLD·식약처) 함량까지 합산 분석.</div>';
+ out.innerHTML=o}
+// ---- 📖 성분 사전 ----
+function dictView(){
+ let h='<div class="wrap"><h2>📖 성분 사전</h2><div class="sub">'+DATA.ingredients.length+'개 성분 · 효능·근거·용량·주의</div>';
+ DATA.ingredients.forEach(i=>{const e=EV[i.id],tb=topBenefit(i.id),st=tb?STRENGTH[tb.evidence_strength]:null,op=dictOpen===i.id,kr=e&&e.kr_source;
+  h+='<div class="card"><div onclick="dictTog(\''+i.id+'\')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><b style="font-size:16px">'+esc(i.name_ko)+'</b> <span class="tag" style="background:#f5b800">'+'⭐'.repeat(i.evidence.level)+'</span>'+(st?' <span class="tag" style="background:'+st[1]+'">'+st[0]+'</span>':'')+'<span style="margin-left:auto;color:var(--faint)">'+(op?'▴':'▾')+'</span></div>';
+  h+='<div class="muted" style="margin-top:4px">'+esc(i.functions.join(' · '))+'</div>';
+  if(op){
+   if(kr&&kr.verified)h+='<div style="font-size:12.5px;margin-top:8px">🇰🇷 <b>식약처 인정</b> “'+esc(kr.mfds_function)+'” <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
+   (e&&e.benefits||[]).forEach(b=>{const s2=STRENGTH[b.evidence_strength];h+='<div style="margin-top:6px"><span class="tag" style="background:'+s2[1]+'">'+s2[0]+'</span> <span class="muted">'+esc(b.claim)+'</span> '+(b.citation&&b.citation.url?'<a class="src" target="_blank" href="'+b.citation.url+'">'+esc(b.citation.source)+' →</a>':'')+'</div>'});
+   if(e&&e.dosing&&(e.dosing.rda_or_ai||e.dosing.ul))h+='<div class="muted" style="font-size:12.5px;margin-top:6px">📐 '+(e.dosing.rda_or_ai?'권장 '+esc(e.dosing.rda_or_ai):'')+(e.dosing.rda_or_ai&&e.dosing.ul?' · ':'')+(e.dosing.ul?'상한 '+esc(e.dosing.ul):'')+'</div>';
+   h+='<div class="muted" style="font-size:12.5px;margin-top:4px">💊 제품 표기 '+esc(i.daily_dose)+' · '+DUR_LABEL[i.duration_type]+'</div>';
+   if(i.cautions&&i.cautions.length)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">주의: '+esc(i.cautions.join(' · '))+'</div>';
+   h+='<button class="chip" style="margin-top:10px" onclick="addOne(\''+i.id+'\')">🧪 내 조합에 추가</button>';
+  }
+  h+='</div>'});
+ h+='</div>';root.innerHTML=h}
+function dictTog(id){dictOpen=dictOpen===id?null:id;dictView()}
+function addOne(id){if(!stack.includes(id))stack.push(id);go('analyze')}
 render();
 </script></body></html>
