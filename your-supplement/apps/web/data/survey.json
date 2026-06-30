@@ -112,8 +112,14 @@
         { "value": "warfarin",       "label": "와파린 (항응고제)",       "icon": "💊" },
         { "value": "antiplatelet",   "label": "아스피린 / 항혈소판제",   "icon": "💊" },
         { "value": "antihypertensive","label": "혈압약",                 "icon": "💊" },
+        { "value": "thiazide",       "label": "이뇨제 (티아지드)",        "icon": "💊" },
         { "value": "statin",         "label": "스타틴 (고지혈증약)",      "icon": "💊" },
         { "value": "levothyroxine",  "label": "갑상선호르몬제",           "icon": "💊" },
+        { "value": "antidiabetic",   "label": "당뇨약 / 인슐린",          "icon": "💊" },
+        { "value": "bisphosphonate", "label": "골다공증약",              "icon": "💊" },
+        { "value": "ppi",            "label": "위산억제제 (PPI)",         "icon": "💊" },
+        { "value": "anticonvulsant", "label": "항경련제 (뇌전증)",        "icon": "💊" },
+        { "value": "methotrexate",   "label": "메토트렉세이트",           "icon": "💊" },
         { "value": "antibiotics",    "label": "항생제",                  "icon": "💊" },
         { "value": "other",          "label": "기타 (전문의 상담 권장)",  "icon": "💊" }
       ]

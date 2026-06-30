@@ -255,7 +255,10 @@ export default function ResultPage() {
   const userConcerns = user?.concerns || [];
   const concernLabels = userConcerns.map((id) => CONCERN_BY_ID[id]?.label).filter(Boolean);
   const top3 = result.recommended.slice(0, 3);
-  const warns = result.recommended.flatMap((r) => (r.warnings || []).map((w) => ({ name: r.name, text: w })));
+  const warns = result.recommended.flatMap((r) => {
+    const ws = r.warning_sources || (r.warnings || []).map((t) => ({ text: t, source: null }));
+    return ws.map((w) => ({ name: r.name, text: w.text, src: w.source }));
+  });
   const separations = (result.interactions_note || []).filter((n) => n.startsWith('⚠️'));
   const synergies = (result.interactions_note || []).filter((n) => n.startsWith('🔗'));
   const excluded = result.not_recommended || [];
@@ -308,7 +311,12 @@ export default function ResultPage() {
             <p key={'x' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>🚫 <strong>{n.name}</strong> 제외 — {n.reason}</p>
           ))}
           {warns.map((w, i) => (
-            <p key={'w' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>⚠️ <strong>{w.name}</strong> — {w.text}</p>
+            <p key={'w' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>
+              ⚠️ <strong>{w.name}</strong> — {w.text}
+              {w.src?.url && (
+                <a href={w.src.url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>· {w.src.name} →</a>
+              )}
+            </p>
           ))}
           {separations.map((s, i) => (
             <p key={'s' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>{s} <span style={{ color: 'var(--ink-faint)' }}>— 시간 분리 권장</span></p>

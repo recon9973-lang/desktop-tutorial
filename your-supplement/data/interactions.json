@@ -30,15 +30,17 @@
       "ingredients": ["omega3", "korean_ginseng", "coq10"],
       "risk": "출혈 위험 증가 또는 약효 변화",
       "action": "warn",
-      "message": "와파린 복용 중이면 해당 영양제는 의사·약사 상담 후 결정하세요."
+      "message": "와파린 복용 중이면 해당 영양제는 의사·약사 상담 후 결정하세요.",
+      "source": { "name": "NIH ODS / NCCIH", "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/" }
     },
     {
       "drug": "statin",
       "drug_label": "스타틴(고지혈증약)",
       "ingredients": ["red_yeast_rice"],
-      "risk": "성분 중복(모나콜린K)으로 근육·간 부작용 위험",
+      "risk": "성분 중복(모나콜린K=로바스타틴 등가물)으로 근육·간 부작용 위험",
       "action": "exclude",
-      "message": "스타틴 복용 중에는 홍국을 추천에서 제외합니다(병용 금지)."
+      "message": "스타틴 복용 중에는 홍국을 추천에서 제외합니다(병용 금지).",
+      "source": { "name": "NCCIH — Red Yeast Rice", "url": "https://www.nccih.nih.gov/health/red-yeast-rice" }
     },
     {
       "drug": "antihypertensive",
@@ -46,7 +48,8 @@
       "ingredients": ["korean_ginseng", "coq10"],
       "risk": "혈압 변동 가능",
       "action": "warn",
-      "message": "혈압약 복용 중이면 혈압 변화를 모니터링하고 상담하세요."
+      "message": "혈압약 복용 중이면 혈압 변화를 모니터링하고 상담하세요.",
+      "source": { "name": "NCCIH — Asian Ginseng", "url": "https://www.nccih.nih.gov/health/asian-ginseng" }
     },
     {
       "drug": "levothyroxine",
@@ -55,16 +58,18 @@
       "risk": "갑상선약 흡수 저해",
       "action": "warn",
       "message": "갑상선약과 칼슘·철분은 최소 4시간 간격을 두세요.",
-      "timing": "separate_2h"
+      "timing": "separate_2h",
+      "source": { "name": "NIH ODS — Iron", "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/" }
     },
     {
       "drug": "antibiotics",
-      "drug_label": "항생제",
-      "ingredients": ["probiotics"],
-      "risk": "유산균 사멸로 효과 감소",
+      "drug_label": "항생제(퀴놀론·테트라사이클린 등)",
+      "ingredients": ["probiotics", "magnesium", "zinc", "iron", "calcium"],
+      "risk": "유산균 사멸·미네랄과 흡수 저하",
       "action": "warn",
-      "message": "항생제와 프로바이오틱스는 2시간 이상 간격을 두세요.",
-      "timing": "separate_2h"
+      "message": "항생제와 유산균·미네랄(칼슘·철·아연·마그네슘)은 2시간 이상 간격을 두세요.",
+      "timing": "separate_2h",
+      "source": { "name": "NIH ODS — Magnesium", "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/" }
     },
     {
       "drug": "antiplatelet",
@@ -72,7 +77,63 @@
       "ingredients": ["omega3"],
       "risk": "출혈 경향 증가 가능",
       "action": "warn",
-      "message": "항혈소판제 복용 중 고용량 오메가3는 상담하세요."
+      "message": "항혈소판제 복용 중 고용량 오메가3는 상담하세요.",
+      "source": { "name": "NIH ODS — Omega-3", "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/" }
+    },
+    {
+      "drug": "thiazide",
+      "drug_label": "티아지드 이뇨제",
+      "ingredients": ["vitamin_d", "calcium"],
+      "risk": "혈중 칼슘 과다(고칼슘혈증) 위험",
+      "action": "warn",
+      "message": "티아지드 이뇨제와 비타민D·칼슘 병용 시 혈중 칼슘이 과도하게 오를 수 있어요 — 상담하세요.",
+      "source": { "name": "NIH ODS — Vitamin D", "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/" }
+    },
+    {
+      "drug": "bisphosphonate",
+      "drug_label": "골다공증약(비스포스포네이트)",
+      "ingredients": ["calcium", "magnesium"],
+      "risk": "약물 흡수 저하",
+      "action": "warn",
+      "message": "비스포스포네이트와 칼슘·마그네슘은 최소 2시간(가능하면 더) 간격을 두세요.",
+      "timing": "separate_2h",
+      "source": { "name": "NIH ODS — Magnesium", "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/" }
+    },
+    {
+      "drug": "methotrexate",
+      "drug_label": "메토트렉세이트(류마티스·항암)",
+      "ingredients": ["folate"],
+      "risk": "항암 고용량 시 약효 방해 가능",
+      "action": "warn",
+      "message": "메토트렉세이트와 엽산은 용량·목적에 따라 영향이 달라요 — 반드시 의료진과 상담하세요.",
+      "source": { "name": "NIH ODS — Folate", "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/" }
+    },
+    {
+      "drug": "anticonvulsant",
+      "drug_label": "항경련제(뇌전증약)",
+      "ingredients": ["folate"],
+      "risk": "상호 혈중농도 저하",
+      "action": "warn",
+      "message": "항경련제와 엽산은 서로의 혈중농도를 낮출 수 있어요 — 임의 병용 전 상담하세요.",
+      "source": { "name": "NIH ODS — Folate", "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/" }
+    },
+    {
+      "drug": "ppi",
+      "drug_label": "위산억제제(PPI)",
+      "ingredients": ["iron"],
+      "risk": "위산 저하로 철 흡수 감소",
+      "action": "warn",
+      "message": "위산억제제(PPI)는 철분 흡수를 줄일 수 있어요 — 철 보충 반응이 더딜 수 있습니다.",
+      "source": { "name": "NIH ODS — Iron", "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/" }
+    },
+    {
+      "drug": "antidiabetic",
+      "drug_label": "당뇨약/인슐린",
+      "ingredients": ["coq10", "korean_ginseng"],
+      "risk": "혈당 변동 가능",
+      "action": "warn",
+      "message": "당뇨약·인슐린 복용 중 코엔자임Q10·홍삼은 혈당에 영향을 줄 수 있어요 — 혈당을 모니터링하세요.",
+      "source": { "name": "NCCIH — Asian Ginseng / CoQ10", "url": "https://www.nccih.nih.gov/health/asian-ginseng" }
     }
   ]
 }

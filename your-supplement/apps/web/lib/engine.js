@@ -42,7 +42,7 @@ function concernFit(ingredientId, userConcerns) {
 
 // 의약품 상호작용 → exclude / warn
 function drugCheck(ingredientId, medications) {
-  const result = { action: 'ok', warnings: [], excludeReason: null };
+  const result = { action: 'ok', warnings: [], warningSources: [], excludeReason: null };
   for (const di of interactions.drug_interactions) {
     if (!medications.includes(di.drug)) continue;
     if (!di.ingredients.includes(ingredientId)) continue;
@@ -52,6 +52,7 @@ function drugCheck(ingredientId, medications) {
     } else if (di.action === 'warn' && result.action !== 'exclude') {
       result.action = 'warn';
       result.warnings.push(di.message);
+      result.warningSources.push({ text: di.message, source: di.source || null });
     }
   }
   return result;
@@ -127,6 +128,7 @@ export function recommend(user) {
       daily_dose: ing.daily_dose,
       cautions: ing.cautions || [],
       warnings: dc.warnings,
+      warning_sources: dc.warningSources,
       _baseScore: score,
     });
   }
