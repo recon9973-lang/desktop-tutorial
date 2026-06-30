@@ -1,23 +1,46 @@
 {
   "_meta": {
-    "version": "0.2",
+    "version": "0.3",
     "purpose": "의약품·건강기능식품의 성분/효능/부작용/상호작용을 확인하는 공인 공식 출처 카탈로그. 추천 결과의 근거(citation) 연결 및 '근거 보기' 링크에 사용.",
     "principle": "효능·안전성 근거는 정부기관·공인기관 1차 출처(citable:true)만 사용한다. 민간 정보서비스·교육 콘텐츠(citable:false)는 사용자 참고용 보조 링크로만 노출하고 추천 점수·근거 인용에는 쓰지 않는다.",
     "evidence_tier": {
-      "3": "정부 규제기관 공식 DB (식약처, NIH ODS, NLM 등) — 최우선",
       "2": "공인 비영리기관·전문가단체 (약학정보원 등)",
+      "3": "정부 규제기관 공식 DB (식약처, NIH ODS, NLM 등) — 최우선",
       "research": "학술 논문 DB (DBpia, ScienceON 등) — 1차/2차 연구 원문",
       "quality_test": "민간 독립 검사기관 — 효능 근거가 아닌 '제품 품질·함량·오염' 검증용",
       "reference": "민간 영양제 정보 서비스·전문가 교육 콘텐츠 — 참고용(1차 근거 아님)"
     },
     "search_routing": {
-      "국내 건강기능식품 기능성·권장량": ["foodsafety_nutrient", "mfds_hff_data", "mfds_foodsafety"],
-      "처방약·약국 일반약 식별·상호작용": ["kpic", "mfds_nedrug", "mentalhealth_medi"],
-      "성분 심층 근거(약사 검토)": ["kpic_nutrient_review", "dbpia", "scienceon"],
-      "해외 직구 영양제 효능·과다복용": ["nih_ods", "medlineplus"],
-      "영양제 실제 함량·오염 검증": ["consumerlab", "labdoor"],
-      "사용자 참고(보조)": ["pillyze", "yak_al", "yakstory_yt"]
-    }
+      "국내 건강기능식품 기능성·권장량": [
+        "foodsafety_nutrient",
+        "mfds_hff_data",
+        "mfds_foodsafety"
+      ],
+      "처방약·약국 일반약 식별·상호작용": [
+        "kpic",
+        "mfds_nedrug",
+        "mentalhealth_medi"
+      ],
+      "성분 심층 근거(약사 검토)": [
+        "kpic_nutrient_review",
+        "dbpia",
+        "scienceon"
+      ],
+      "해외 직구 영양제 효능·과다복용": [
+        "nih_ods",
+        "medlineplus"
+      ],
+      "영양제 실제 함량·오염 검증": [
+        "consumerlab",
+        "labdoor"
+      ],
+      "사용자 참고(보조)": [
+        "pillyze",
+        "yak_al",
+        "yakstory_yt"
+      ]
+    },
+    "scope_note": "글로벌 권위 기구(WHO·Codex·EFSA·EMA·Cochrane·openFDA·NIH ODS/NCCIH/DSLD) + 국내(식약처·약학정보원) + 제품 라벨 DB(DSLD·LNHPD·식약처 품목). api.available=배포환경에서 연동 가능."
   },
   "sources": [
     {
@@ -29,7 +52,11 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://www.foodsafetykorea.go.kr",
-      "covers": ["기능성 성분 효능 범위", "하루 권장 섭취량", "섭취 시 주의사항"],
+      "covers": [
+        "기능성 성분 효능 범위",
+        "하루 권장 섭취량",
+        "섭취 시 주의사항"
+      ],
       "highlight": "제품이 식약처 인증 '건강기능식품'인지 단순 '기타가공품'인지 구별 가능",
       "use_for": "국내 영양제 허가 여부·기능성·부작용 확인"
     },
@@ -42,7 +69,11 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://various.foodsafetykorea.go.kr/nutrient/",
-      "covers": ["기능성 원료별 인정 기능성", "1일 섭취량", "제품 영양성분 비교"],
+      "covers": [
+        "기능성 원료별 인정 기능성",
+        "1일 섭취량",
+        "제품 영양성분 비교"
+      ],
       "highlight": "원료별 기능성 표시 문구의 1차 출처 · 제품 비교(compare)로 함량 대조 가능",
       "use_for": "건강기능식품 기능성 원료의 인정 기능성·권장 섭취량 원문 확인",
       "deep_links": {
@@ -58,7 +89,11 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://data.mfds.go.kr/hid/main/main.do",
-      "covers": ["건강기능식품 품목·원료 정보", "기능성 내용", "공공데이터(Open API) 제공"],
+      "covers": [
+        "건강기능식품 품목·원료 정보",
+        "기능성 내용",
+        "공공데이터(Open API) 제공"
+      ],
       "highlight": "기능성 원료/품목을 공공데이터로 제공 → 자동 검수·대조에 활용 가능",
       "use_for": "성분 기능성·용량 자동 대조 검수의 1차 데이터 소스"
     },
@@ -71,7 +106,13 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://nedrug.mfds.go.kr",
-      "covers": ["성분명", "효능·효과", "용법·용량", "부작용", "임부 금기"],
+      "covers": [
+        "성분명",
+        "효능·효과",
+        "용법·용량",
+        "부작용",
+        "임부 금기"
+      ],
       "highlight": "'e약은요' 메뉴 — 소비자가 이해하기 쉬운 요약본 제공",
       "use_for": "국내 정식 허가 전문/일반 의약품 표준 정보",
       "deep_links": {
@@ -87,7 +128,11 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://www.mentalhealth.go.kr/portal/rndrPage.do?jsp=portal/rndr/mediInfo&path=/portal/mediInfo/",
-      "covers": ["정신과 약물 정보", "복용 주의", "상호작용 참고"],
+      "covers": [
+        "정신과 약물 정보",
+        "복용 주의",
+        "상호작용 참고"
+      ],
       "highlight": "항우울제·수면제 등 복용 시 영양제 병용 주의 확인",
       "use_for": "정신과 약물 복용자의 영양제 병용 주의 근거"
     },
@@ -100,7 +145,12 @@
       "evidence_tier": 2,
       "citable": true,
       "url": "https://www.health.kr",
-      "covers": ["의약품 식별(모양·색상·기호)", "성분별 약리작용", "복약지도서", "의약품 상호작용"],
+      "covers": [
+        "의약품 식별(모양·색상·기호)",
+        "성분별 약리작용",
+        "복약지도서",
+        "의약품 상호작용"
+      ],
       "highlight": "약 모양/각인으로 검색 최적 · 같이 먹으면 안 되는 약 정보 체계적",
       "use_for": "처방약 식별 + 약-약/약-영양제 상호작용 확인"
     },
@@ -114,7 +164,10 @@
       "citable": true,
       "url": "https://common.health.kr/shared/healthkr/pharmreview/영양제.pdf",
       "format": "pdf",
-      "covers": ["성분별 효능·용량 약사 리뷰", "상호작용·주의사항 정리"],
+      "covers": [
+        "성분별 효능·용량 약사 리뷰",
+        "상호작용·주의사항 정리"
+      ],
       "highlight": "약사가 정리한 영양제 검토 자료 — 성분별 근거 요약의 핵심 참고 문서",
       "use_for": "성분별 효능·용량·주의사항의 심층 근거 인용"
     },
@@ -127,7 +180,10 @@
       "evidence_tier": "research",
       "citable": true,
       "url": "https://www.dbpia.co.kr/subject/subjectList?subjCode=NE03",
-      "covers": ["국내 의약학 학술논문", "임상·영양 연구"],
+      "covers": [
+        "국내 의약학 학술논문",
+        "임상·영양 연구"
+      ],
       "highlight": "의약학(NE03) 분야 국내 논문 검색 → 개별 성분 근거 원문 확보",
       "use_for": "성분 효능 주장에 대한 학술 원문 근거"
     },
@@ -140,7 +196,10 @@
       "evidence_tier": "research",
       "citable": true,
       "url": "https://scienceon.kisti.re.kr",
-      "covers": ["국내외 학술논문·보고서", "학위논문"],
+      "covers": [
+        "국내외 학술논문·보고서",
+        "학위논문"
+      ],
       "highlight": "국가 학술정보 통합 검색 — 무료 원문 다수",
       "use_for": "성분 근거 학술 원문·학위논문 확보",
       "deep_links": {
@@ -156,7 +215,11 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://ods.od.nih.gov",
-      "covers": ["성분별 근거등급", "임상 효과", "상한섭취량(UL)·독성 기준"],
+      "covers": [
+        "성분별 근거등급",
+        "임상 효과",
+        "상한섭취량(UL)·독성 기준"
+      ],
       "highlight": "Consumer(소비자용)/Health Professional(전문가용) 이원화 · 세계 최고 권위",
       "use_for": "해외 직구 영양제 성분의 객관적 효능·과다복용 기준"
     },
@@ -169,7 +232,11 @@
       "evidence_tier": 3,
       "citable": true,
       "url": "https://medlineplus.gov",
-      "covers": ["효능", "작용 범위", "약·음식 상호작용 위험"],
+      "covers": [
+        "효능",
+        "작용 범위",
+        "약·음식 상호작용 위험"
+      ],
       "highlight": "'Drugs & Supplements' 메뉴 · A-Z 색인으로 대중이 쉽게 검색",
       "use_for": "약물·영양제 통합 정보 + 상호작용 위험 확인"
     },
@@ -182,7 +249,11 @@
       "evidence_tier": "quality_test",
       "citable": false,
       "url": "https://www.consumerlab.com",
-      "covers": ["라벨 함량 실측", "중금속 오염 검사", "제품 순위"],
+      "covers": [
+        "라벨 함량 실측",
+        "중금속 오염 검사",
+        "제품 순위"
+      ],
       "highlight": "일부 상세 리포트 유료 · 순위/핵심 경고는 확인 가능",
       "use_for": "영양제 실제 함량·품질 검증 (효능 근거 아님)"
     },
@@ -195,7 +266,11 @@
       "evidence_tier": "quality_test",
       "citable": false,
       "url": "https://labdoor.com",
-      "covers": ["성분 함량 실측", "오염도", "제품 점수·순위"],
+      "covers": [
+        "성분 함량 실측",
+        "오염도",
+        "제품 점수·순위"
+      ],
       "highlight": "직구족 사이에서 품질 지표로 통용",
       "use_for": "영양제 실제 함량·품질 검증 (효능 근거 아님)"
     },
@@ -208,7 +283,10 @@
       "evidence_tier": "reference",
       "citable": false,
       "url": "https://www.pillyze.com/nutrients",
-      "covers": ["성분별 일반 정보", "제품 검색"],
+      "covers": [
+        "성분별 일반 정보",
+        "제품 검색"
+      ],
       "highlight": "대중 친화 UI 참고용 — 1차 근거로는 사용하지 않음",
       "use_for": "성분 정보 사용자 참고(보조) 링크"
     },
@@ -221,7 +299,9 @@
       "evidence_tier": "reference",
       "citable": false,
       "url": "https://www.yak-al.com/",
-      "covers": ["의약품 정보 참고"],
+      "covers": [
+        "의약품 정보 참고"
+      ],
       "highlight": "대중 참고용 — 1차 근거로는 사용하지 않음",
       "use_for": "사용자 참고(보조) 링크"
     },
@@ -234,9 +314,243 @@
       "evidence_tier": "reference",
       "citable": false,
       "url": "https://www.youtube.com/@yakstory119",
-      "covers": ["약사 관점 영양제·복약 교육 영상"],
+      "covers": [
+        "약사 관점 영양제·복약 교육 영상"
+      ],
       "highlight": "전문가 교육 콘텐츠 — 맥락 이해용 참고",
       "use_for": "사용자 교육·참고(보조) 링크"
+    },
+    {
+      "id": "who_monographs",
+      "name": "WHO 약용식물 모노그래프",
+      "org": "세계보건기구(WHO)",
+      "region": "GLOBAL",
+      "scope": "medicinal_plants",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.who.int/publications/i/item/9241545178",
+      "covers": [
+        "약용식물 품질·전통/임상 용도",
+        "안전성"
+      ],
+      "highlight": "WHO Monographs on Selected Medicinal Plants — 식물성 원료 국제 권위",
+      "use_for": "식물성(홍삼·밀크씨슬 등) 성분 근거",
+      "api": {
+        "available": false,
+        "url": null
+      }
+    },
+    {
+      "id": "codex",
+      "name": "Codex Alimentarius (FAO/WHO)",
+      "org": "FAO/WHO 국제식품규격",
+      "region": "GLOBAL",
+      "scope": "vitamin_mineral_standard",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.fao.org/fao-who-codexalimentarius/",
+      "covers": [
+        "비타민·미네랄 보충제 국제표준(CXG 55-2005)"
+      ],
+      "highlight": "국제 식품보충제 표준의 기준",
+      "use_for": "용량·표시 국제 기준 대조",
+      "api": {
+        "available": false,
+        "url": null
+      }
+    },
+    {
+      "id": "efsa",
+      "name": "EFSA 건강강조표시",
+      "org": "유럽식품안전청(EFSA)",
+      "region": "EU",
+      "scope": "health_claims",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.efsa.europa.eu/",
+      "covers": [
+        "건강강조표시 과학적 평가",
+        "EU 등록부"
+      ],
+      "highlight": "성분-효능 주장의 EU 과학평가(승인/거절)",
+      "use_for": "효능 주장 신뢰도 대조",
+      "api": {
+        "available": true,
+        "url": "https://ec.europa.eu/food/food-feed-portal/"
+      }
+    },
+    {
+      "id": "ema_hmpc",
+      "name": "EMA 약초 모노그래프(HMPC)",
+      "org": "유럽의약품청(EMA)",
+      "region": "EU",
+      "scope": "herbal_monograph",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.ema.europa.eu/en/human-regulatory-overview/herbal-medicinal-products",
+      "covers": [
+        "약초 안전성·효능 과학적 의견"
+      ],
+      "highlight": "유럽 약초 모노그래프(밀크씨슬·인삼 등)",
+      "use_for": "식물성 성분 효능·안전 근거",
+      "api": {
+        "available": false,
+        "url": null
+      }
+    },
+    {
+      "id": "cochrane",
+      "name": "Cochrane 체계적 고찰",
+      "org": "Cochrane",
+      "region": "GLOBAL",
+      "scope": "systematic_review",
+      "evidence_tier": "research",
+      "citable": true,
+      "url": "https://www.cochranelibrary.com/",
+      "covers": [
+        "메타분석·체계적 문헌고찰"
+      ],
+      "highlight": "최상위 근거(체계적 고찰), 발행 12개월 후 무료",
+      "use_for": "효능 근거 강도 판정",
+      "api": {
+        "available": false,
+        "url": null
+      }
+    },
+    {
+      "id": "openfda",
+      "name": "openFDA",
+      "org": "미국 식품의약국(FDA)",
+      "region": "US",
+      "scope": "adverse_events",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://open.fda.gov/",
+      "covers": [
+        "식이보충제 이상사례(CAERS)",
+        "의약품 라벨"
+      ],
+      "highlight": "부작용·이상사례 공공 API(JSON)",
+      "use_for": "안전성 신호 보강",
+      "api": {
+        "available": true,
+        "url": "https://api.fda.gov/food/event.json"
+      }
+    },
+    {
+      "id": "nih_dsld",
+      "name": "NIH DSLD 보충제 라벨 DB",
+      "org": "미국 국립보건원(NIH ODS)",
+      "region": "US",
+      "scope": "product_label",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://dsld.od.nih.gov/",
+      "covers": [
+        "미국 시판 보충제 라벨 20만건+",
+        "성분·함량·%DV·경고"
+      ],
+      "highlight": "'시판 모든 영양제(미국)' 제품 라벨 — 무료 API, CC0",
+      "use_for": "제품→성분 매핑(제품 레이어)",
+      "api": {
+        "available": true,
+        "url": "https://api.ods.od.nih.gov/dsld/v9/"
+      }
+    },
+    {
+      "id": "nccih",
+      "name": "NIH NCCIH (Herbs at a Glance)",
+      "org": "미국 국립보완통합보건센터",
+      "region": "US",
+      "scope": "botanicals",
+      "evidence_tier": 2,
+      "citable": true,
+      "url": "https://www.nccih.nih.gov/health/herbsataglance",
+      "covers": [
+        "약초·식물성 보충제 근거 fact sheet(~50종)"
+      ],
+      "highlight": "약초 근거 요약(홍삼·홍국·밀크씨슬 등)",
+      "use_for": "식물성 성분 근거",
+      "api": {
+        "available": false,
+        "url": null
+      }
+    },
+    {
+      "id": "health_canada_lnhpd",
+      "name": "Health Canada LNHPD",
+      "org": "캐나다 보건부",
+      "region": "CA",
+      "scope": "product_label",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://health-products.canada.ca/lnhpd-bdpsnh/",
+      "covers": [
+        "허가 천연건강제품 제품·성분"
+      ],
+      "highlight": "캐나다 허가 제품 DB — 무료 JSON/XML API",
+      "use_for": "제품→성분 매핑(글로벌 확장)",
+      "api": {
+        "available": true,
+        "url": "https://health-products.canada.ca/api/natural-licences/"
+      }
+    },
+    {
+      "id": "tga_artg",
+      "name": "TGA ARTG",
+      "org": "호주 의약품관리국(TGA)",
+      "region": "AU",
+      "scope": "product_register",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.tga.gov.au/resources/artg",
+      "covers": [
+        "호주 등록 치료용품(보완의약품 포함)"
+      ],
+      "highlight": "호주 등록부(CSV/Excel 내보내기)",
+      "use_for": "제품 등록 대조",
+      "api": {
+        "available": false,
+        "url": null
+      }
+    },
+    {
+      "id": "mfds_hff_products",
+      "name": "식약처 건강기능식품 품목정보(OpenAPI)",
+      "org": "식품의약품안전처(MFDS)",
+      "region": "KR",
+      "scope": "product_label",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.data.go.kr/data/15056760/openapi.do",
+      "covers": [
+        "국내 건기식 품목(업체·제품·기능성·섭취방법)"
+      ],
+      "highlight": "'시판 모든 영양제(국내)' 품목 OpenAPI — 무료 활용신청",
+      "use_for": "제품→성분 매핑(국내 제품 레이어)",
+      "api": {
+        "available": true,
+        "url": "https://www.data.go.kr/data/15056760/openapi.do"
+      }
+    },
+    {
+      "id": "mfds_ingredient_approval",
+      "name": "식약처 기능성 원료인정 현황(OpenAPI)",
+      "org": "식품의약품안전처(MFDS)",
+      "region": "KR",
+      "scope": "ingredient_approval",
+      "evidence_tier": 3,
+      "citable": true,
+      "url": "https://www.data.go.kr/data/15058359/openapi.do",
+      "covers": [
+        "건기식 기능성 원료 인정 현황"
+      ],
+      "highlight": "원료 인정 데이터(원료 매핑·검수)",
+      "use_for": "성분 기능성 자동 검수(D1·D2 보강)",
+      "api": {
+        "available": true,
+        "url": "https://www.data.go.kr/data/15058359/openapi.do"
+      }
     }
   ]
 }
