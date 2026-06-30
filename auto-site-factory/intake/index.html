@@ -1203,6 +1203,8 @@ function collectSpec() {
 /* ── spec 빌드 (이미지 포함 + UI 업데이트) ──────────────────────── */
 let lastSpec = null;
 async function build() {
+  const errs = validateInputs();
+  if (errs.length) { alert('입력 오류:\n\n' + errs.join('\n')); return; }
   const images = {};
   const hero = document.getElementById('img-hero').files[0];
   const intro = document.getElementById('img-intro').files[0];
@@ -1326,6 +1328,100 @@ function closePreview() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closePreview();
 });
+
+/* ── 입력 검증 ───────────────────────────────────────────────────── */
+function validateInputs() {
+  const f = document.getElementById('f');
+  const errors = [];
+
+  const name = f.name?.value.trim();
+  if (!name) errors.push('상호명(병원명)을 입력해 주세요.');
+
+  const domain = f.domain?.value.trim();
+  if (!domain) {
+    errors.push('도메인을 입력해 주세요. (예: my-clinic.com)');
+  } else if (!/^[\w-]+(\.[\w-]+)+$/.test(domain)) {
+    errors.push(`도메인 형식이 올바르지 않습니다: "${domain}" (예: my-clinic.com)`);
+  }
+
+  const phone = f.phone?.value.trim();
+  if (phone && !/^[\d\-\+\s()]{7,20}$/.test(phone)) {
+    errors.push(`전화번호 형식을 확인해 주세요: "${phone}"`);
+  }
+
+  const primary = f.primary?.value;
+  if (primary && !/^#[0-9a-fA-F]{3,8}$/.test(primary)) {
+    errors.push(`대표색상 형식이 올바르지 않습니다: "${primary}"`);
+  }
+
+  ['kakao', 'instagram', 'naver_place'].forEach(field => {
+    const el = f[field];
+    if (el && el.value.trim() && !el.value.trim().startsWith('http')) {
+      errors.push(`${field} 링크는 http(s)://로 시작해야 합니다.`);
+    }
+  });
+
+  return errors;
+}
+
+/* ── 폼 자동저장/복구 (localStorage) ────────────────────────────── */
+const LS_KEY = 'venom_form_v1';
+const SKIP_TYPES = new Set(['file', 'submit', 'button']);
+
+function saveFormToStorage() {
+  try {
+    const f = document.getElementById('f');
+    const data = {};
+    f.querySelectorAll('input,select,textarea').forEach(el => {
+      if (!el.name || SKIP_TYPES.has(el.type)) return;
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        data[el.name + '::' + el.value] = el.checked;
+      } else {
+        data[el.name + '::' + el.id] = el.value;
+      }
+    });
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  } catch (e) { /* private browsing or quota exceeded */ }
+}
+
+function restoreFormFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    const f = document.getElementById('f');
+    f.querySelectorAll('input,select,textarea').forEach(el => {
+      if (!el.name || SKIP_TYPES.has(el.type)) return;
+      const key = (el.type === 'checkbox' || el.type === 'radio')
+        ? el.name + '::' + el.value
+        : el.name + '::' + el.id;
+      if (!(key in data)) return;
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        el.checked = data[key];
+      } else {
+        el.value = data[key];
+      }
+    });
+    // 카테고리 전환 UI 동기화
+    const cat = f.category?.value;
+    if (cat) { switchCat(cat); f.category.value = cat; }
+    console.log('[VENOM] 이전 입력 복구 완료');
+  } catch (e) { /* 복구 실패는 조용히 무시 */ }
+}
+
+// 폼 입력 시 500ms 디바운스로 자동저장
+let _saveTimer = null;
+document.getElementById('f').addEventListener('input', () => {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveFormToStorage, 500);
+});
+document.getElementById('f').addEventListener('change', () => {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveFormToStorage, 500);
+});
+
+// 페이지 로드 시 복구
+restoreFormFromStorage();
 </script>
 </body>
 </html>
