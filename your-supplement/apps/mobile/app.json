@@ -6,20 +6,20 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": { "backgroundColor": "#213183" },
+    "splash": { "backgroundColor": "#0b3b2d" },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.yoursupplement.app"
     },
     "android": {
       "package": "com.yoursupplement.app",
-      "adaptiveIcon": { "backgroundColor": "#213183" }
+      "adaptiveIcon": { "backgroundColor": "#0b3b2d" }
     },
     "plugins": [
       "expo-router",
       ["expo-notifications", {
         "icon": "./assets/icon.png",
-        "color": "#0075de"
+        "color": "#059669"
       }]
     ],
     "scheme": "yoursupplement"

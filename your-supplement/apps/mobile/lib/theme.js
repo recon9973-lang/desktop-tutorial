@@ -1,31 +1,32 @@
-// Notion 디자인 토큰 — React Native 버전
-// DESIGNnotion.md 기반, CSS var → JS 상수로 변환
+// 당신의영양제 디자인 토큰 — React Native (웹 globals.css와 동일 팔레트)
+// 내추럴 웰니스 그린
 
 export const colors = {
-  primary:        '#0075de',
-  primaryActive:  '#005bab',
-  secondary:      '#213183',
+  primary:        '#059669',
+  primaryActive:  '#047857',
+  secondary:      '#0b3b2d',
   onPrimary:      '#ffffff',
   canvas:         '#ffffff',
-  canvasSoft:     '#f6f5f4',
+  canvasSoft:     '#f1f6f2',
   surface:        '#ffffff',
-  ink:            '#000000',
-  inkSecondary:   '#31302e',
-  inkMuted:       '#615d59',
-  inkFaint:       '#a39e98',
-  hairline:       '#e6e6e6',
-  accentGreen:    '#1aae39',
-  accentOrange:   '#dd5b00',
+  ink:            '#10231b',
+  inkSecondary:   '#2b3b34',
+  inkMuted:       '#5c6b63',
+  inkFaint:       '#9aa8a0',
+  hairline:       '#e3eae5',
+  accentMint:     '#6ee7b7',
+  accentGreen:    '#16a34a',
+  accentOrange:   '#d97706',
   accentRed:      '#d63b3b',
   kakaoYellow:    '#FEE500',
 };
 
 export const radius = {
-  xs:   4,
-  sm:   5,
-  md:   8,
-  lg:   12,
-  xl:   16,
+  xs:   6,
+  sm:   8,
+  md:   10,
+  lg:   14,
+  xl:   20,
   full: 9999,
 };
 
