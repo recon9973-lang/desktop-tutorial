@@ -53,6 +53,30 @@ async function searchDSLD(query) {
   }).filter((p) => p.name && p.name !== '(제품명 미상)');
 }
 
+// 식약처 건강기능식품 품목 OpenAPI (config-driven)
+// 정확한 오퍼레이션/파라미터는 data.go.kr 활용신청 후 명세에만 있으므로,
+// 전체 base URL을 MFDS_PRODUCT_API_URL 로 주입받아 표준 data.go.kr 형식으로 호출한다.
+//   예) MFDS_PRODUCT_API_URL=http://apis.data.go.kr/1471000/HtfsItemInfoService/getHtfsItem
+async function searchMFDS(nameKo) {
+  const base = process.env.MFDS_PRODUCT_API_URL;
+  const key = process.env.DATA_GO_KR_KEY;
+  if (!base || !key) return null; // 미설정 → 국내 쇼핑 딥링크로 폴백
+  const url = `${base}?serviceKey=${encodeURIComponent(key)}&type=json&numOfRows=10&pageNo=1&prdlstNm=${encodeURIComponent(nameKo)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('MFDS ' + res.status);
+  const data = await res.json();
+  const rows = data?.body?.items || data?.response?.body?.items?.item || data?.items || [];
+  const arr = Array.isArray(rows) ? rows : [rows];
+  return arr.map((r) => {
+    const s = r.item || r;
+    return {
+      name: s.PRDLST_NM || s.prdlstNm || s.PRODUCT || s.itemName || '(제품명 미상)',
+      brand: s.BSSH_NM || s.bsshNm || s.company || '',
+      no: s.PRDLST_REPORT_NO || s.prdlstReportNo || s.itemReportNo || null,
+    };
+  }).filter((p) => p.name && p.name !== '(제품명 미상)').slice(0, 10);
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const ingredientId = searchParams.get('ingredient_id');
@@ -77,12 +101,24 @@ export async function GET(request) {
     global.reason = e.message;
   }
 
+  // 국내 식약처 품목(설정 시) — 미설정/오류면 null → 쇼핑 딥링크로 안내
+  let kr_products = null;
+  try {
+    const mfds = await searchMFDS(nameKo);
+    if (mfds && mfds.length) kr_products = { source: 'mfds', products: mfds };
+  } catch (e) {
+    kr_products = { source: 'error', reason: e.message, products: [] };
+  }
+
   return Response.json({
     ingredient_id: ingredientId || null,
     name_ko: nameKo,
     query: q,
     global,        // 해외(DSLD) 실제 시판 제품
-    kr_search,     // 국내 제품 검색(쇼핑·식약처) — 품목 API는 키 연동 예정
-    note: '국내 식약처 건강기능식품 품목 OpenAPI 연동 예정(키 활용신청 후). 해외는 NIH DSLD 실시간.',
+    kr_products,   // 국내(식약처 품목) — MFDS_PRODUCT_API_URL 설정 시
+    kr_search,     // 국내 제품 검색 딥링크(쇼핑·식품안전나라)
+    note: kr_products
+      ? '국내는 식약처 품목 API, 해외는 NIH DSLD 실시간.'
+      : '국내 식약처 건강기능식품 품목 OpenAPI는 활용신청+MFDS_PRODUCT_API_URL 설정 후 동작. 해외는 NIH DSLD 실시간.',
   });
 }

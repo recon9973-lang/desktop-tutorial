@@ -10,16 +10,19 @@ function ProductsInner() {
   const [sel, setSel] = useState(params.get('ingredient_id') || '');
   const [q, setQ] = useState('');
   const [data, setData] = useState(null);
+  const [safety, setSafety] = useState(null);
   const [loading, setLoading] = useState(false);
 
   async function run(ingredientId, query) {
-    setLoading(true); setData(null);
+    setLoading(true); setData(null); setSafety(null);
     const qs = ingredientId ? `ingredient_id=${ingredientId}` : `q=${encodeURIComponent(query)}`;
     try {
       const res = await fetch(`/api/products?${qs}`);
       setData(await res.json());
     } catch { setData({ error: '검색 실패' }); }
     setLoading(false);
+    // 이상사례 신호(openFDA)는 비차단으로 뒤따라 로드
+    fetch(`/api/safety?${qs}`).then((r) => r.json()).then(setSafety).catch(() => {});
   }
 
   // 진입 시 ingredient_id 있으면 자동 검색
@@ -87,8 +90,40 @@ function ProductsInner() {
               ))) : <p style={{ fontSize: 14, color: 'var(--ink-faint)', padding: '8px 0' }}>표시할 제품이 없어요. 국내 검색을 이용해보세요.</p>}
             </div>
 
-            {/* 국내에서 찾기 */}
-            <h2 className="title" style={{ marginBottom: 12 }}>🇰🇷 국내에서 찾기</h2>
+            {/* 국내 식약처 품목(설정 시) */}
+            {data.kr_products?.products?.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                  <h2 className="title">🇰🇷 국내 건강기능식품</h2>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-green)', background: 'rgba(22,163,74,0.1)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>식약처 품목</span>
+                </div>
+                <div className="card" style={{ borderRadius: 'var(--r-xl)' }}>
+                  {data.kr_products.products.map((p, i) => (
+                    <div key={i} style={{ padding: '10px 0', borderBottom: i < data.kr_products.products.length - 1 ? '1px solid var(--hairline)' : 'none' }}>
+                      <strong style={{ fontSize: 15 }}>{p.name}</strong>
+                      {p.brand && <span style={{ fontSize: 13, color: 'var(--ink-faint)', marginLeft: 8 }}>{p.brand}</span>}
+                      {p.no && <span style={{ fontSize: 11, color: 'var(--ink-faint)', marginLeft: 8 }}>신고 {p.no}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 이상사례 신호(openFDA) */}
+            {safety?.source === 'openfda' && safety.total > 0 && (
+              <div style={{ background: '#fff8f0', border: '1px solid rgba(217,119,6,0.3)', borderRadius: 'var(--r-xl)', padding: '14px 18px', marginBottom: 24 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-orange)' }}>⚠️ FDA 이상사례 보고 {safety.total.toLocaleString()}건</p>
+                {safety.top_reactions?.length > 0 && (
+                  <p style={{ fontSize: 13, color: 'var(--ink-secondary)', marginTop: 6 }}>
+                    자주 보고된 증상: {safety.top_reactions.map((r) => r.term).slice(0, 5).join(', ')}
+                  </p>
+                )}
+                <p style={{ fontSize: 11.5, color: 'var(--ink-faint)', marginTop: 6 }}>{safety.disclaimer}</p>
+              </div>
+            )}
+
+            {/* 국내에서 찾기(쇼핑 딥링크) */}
+            <h2 className="title" style={{ marginBottom: 12 }}>🛒 국내에서 구매</h2>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
               {(data.kr_search || []).map((k) => (
                 <a key={k.vendor} href={k.url} target="_blank" rel="noopener noreferrer"
