@@ -4,7 +4,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import sourcesData from '../../data/sources.json';
 import evidenceData from '../../data/evidence.json';
+import concernsData from '../../data/concerns.json';
 import { loadRoutine, saveRoutine, addItems } from '../../lib/routine';
+
+// 고민(concern) 매핑 — "왜 나에게 이 성분인가" 설명용
+const CONCERN_BY_ID = Object.fromEntries(concernsData.concerns.map((c) => [c.id, c]));
+// 사용자가 선택한 고민 중 이 성분을 포함하는 고민 라벨들
+function concernLabelsFor(ingredientId, userConcerns = []) {
+  return userConcerns
+    .map((cid) => CONCERN_BY_ID[cid])
+    .filter((c) => c && c.ingredients.includes(ingredientId))
+    .map((c) => c.label);
+}
 
 const DUR_LABEL = { continuous: '🟢 지속 복용', monitor: '🟡 3개월 후 점검', cyclic: '🔴 8주 후 점검' };
 const DUR_COLOR = { continuous: '#1aae39', monitor: '#dd5b00', cyclic: '#d63b3b' };
@@ -186,7 +197,9 @@ function ReviewBox({ ingredientId }) {
 export default function ResultPage() {
   const router = useRouter();
   const [result, setResult] = useState(null);
+  const [user, setUser] = useState(null);
   const [kakaoSent, setKakaoSent] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   const [priceLive, setPriceLive] = useState(false);
 
@@ -208,6 +221,7 @@ export default function ResultPage() {
   useEffect(() => {
     const raw = sessionStorage.getItem('survey_user');
     const user = raw ? JSON.parse(raw) : { concerns: ['fatigue', 'eye'], medications: [], allergies: [] };
+    setUser(user);
     fetchRecommendation(user).then(async (base) => {
       setResult(base); // 먼저 샘플로 즉시 표시
       // 네이버 API로 실제 최저가 교체 (키 있으면). 실패한 항목은 샘플 유지.
@@ -236,6 +250,21 @@ export default function ResultPage() {
       <p className="title" style={{ color: 'var(--ink-muted)' }}>🧬 분석 중...</p>
     </div>
   );
+
+  // ── P2 요약/안전 계산 ──
+  const userConcerns = user?.concerns || [];
+  const concernLabels = userConcerns.map((id) => CONCERN_BY_ID[id]?.label).filter(Boolean);
+  const top3 = result.recommended.slice(0, 3);
+  const warns = result.recommended.flatMap((r) => (r.warnings || []).map((w) => ({ name: r.name, text: w })));
+  const separations = (result.interactions_note || []).filter((n) => n.startsWith('⚠️'));
+  const synergies = (result.interactions_note || []).filter((n) => n.startsWith('🔗'));
+  const excluded = result.not_recommended || [];
+  const hasSafety = warns.length || separations.length || excluded.length;
+  const lifestyle = user?.lifestyle || {};
+  const lifeNotes = [];
+  if (lifestyle.smoking && lifestyle.smoking !== 'none') lifeNotes.push('흡연 시 비타민C 소모가 커요 — 항산화 성분을 우선 고려하세요.');
+  if (lifestyle.drinking && lifestyle.drinking !== 'none') lifeNotes.push('음주가 잦다면 간 건강(밀크씨슬)도 함께 살펴보세요.');
+  const detailOpen = showDetail || result.recommended.length <= 3;
 
   return (
     <div style={{ background: 'var(--canvas-soft)', minHeight: '100vh' }}>
@@ -266,6 +295,67 @@ export default function ResultPage() {
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 24px' }}>
 
+        {/* P2: 안전 요약 — 불안 먼저 해소 */}
+        <div style={{
+          background: hasSafety ? '#fff8f0' : 'rgba(5,150,105,0.06)',
+          border: `1px solid ${hasSafety ? 'rgba(217,119,6,0.3)' : 'rgba(5,150,105,0.2)'}`,
+          borderRadius: 'var(--r-xl)', padding: '16px 20px', marginBottom: 16,
+        }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: hasSafety ? 'var(--accent-orange)' : 'var(--primary-active)', marginBottom: hasSafety ? 10 : 0 }}>
+            {hasSafety ? '⚠️ 복용 전 먼저 확인하세요' : '✅ 안전 확인 완료 — 충돌하는 추천이 없어요'}
+          </p>
+          {excluded.map((n, i) => (
+            <p key={'x' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>🚫 <strong>{n.name}</strong> 제외 — {n.reason}</p>
+          ))}
+          {warns.map((w, i) => (
+            <p key={'w' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>⚠️ <strong>{w.name}</strong> — {w.text}</p>
+          ))}
+          {separations.map((s, i) => (
+            <p key={'s' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>{s} <span style={{ color: 'var(--ink-faint)' }}>— 시간 분리 권장</span></p>
+          ))}
+        </div>
+
+        {/* P2: 개인화 핵심 요약 */}
+        <div style={{ marginBottom: 24 }}>
+          <h2 className="title" style={{ marginBottom: 4 }}>
+            {concernLabels.length ? `${concernLabels.join(' · ')} 고민에 맞춘 핵심 ${top3.length}가지` : `핵심 추천 ${top3.length}가지`}
+          </h2>
+          <p style={{ fontSize: 13.5, color: 'var(--ink-muted)', marginBottom: 14 }}>근거 등급이 높은 순으로 골랐어요. 자세한 근거·가격은 아래에서 볼 수 있어요.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {top3.map((r, i) => {
+              const labels = concernLabelsFor(r.ingredient_id, userConcerns);
+              const tb = topBenefit(r.ingredient_id);
+              const st = tb ? (STRENGTH[tb.evidence_strength] || STRENGTH.insufficient) : null;
+              return (
+                <div key={r.ingredient_id} className="card-elevated" style={{ borderRadius: 'var(--r-lg)', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 'var(--r-md)', flexShrink: 0,
+                    background: i === 0 ? 'var(--primary)' : 'var(--canvas-soft)',
+                    color: i === 0 ? '#fff' : 'var(--ink-muted)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14,
+                  }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <strong style={{ fontSize: 16 }}>{r.name}</strong>
+                      {st && <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: st.color, borderRadius: 'var(--r-full)', padding: '1px 8px' }}>{st.label}</span>}
+                    </div>
+                    <p style={{ fontSize: 13.5, color: 'var(--ink-muted)', marginTop: 3 }}>
+                      {labels.length ? <><strong style={{ color: 'var(--primary-active)' }}>{labels.join('·')}</strong>에 도움</> : (r.functions?.[0] || '')}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {lifeNotes.length > 0 && (
+            <div style={{ marginTop: 12, background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '10px 14px' }}>
+              {lifeNotes.map((n, i) => (
+                <p key={i} style={{ fontSize: 13, color: 'var(--ink-secondary)', marginTop: i ? 4 : 0 }}>💡 {n}</p>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Schedule box */}
         <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-xl)', border: '1px solid var(--hairline)', padding: '20px 24px', marginBottom: 24 }}>
           <h2 className="title" style={{ marginBottom: 16 }}>📅 오늘의 복용 스케줄</h2>
@@ -281,17 +371,26 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Interaction notes */}
-        {result.interactions_note.length > 0 && (
+        {/* Interaction notes — 시너지(함께 복용)만. 길항은 안전 요약으로 이동 */}
+        {synergies.length > 0 && (
           <div style={{ background: 'rgba(5,150,105,0.06)', borderRadius: 'var(--r-lg)', border: '1px solid rgba(5,150,105,0.18)', padding: '16px 20px', marginBottom: 24 }}>
-            {result.interactions_note.map((n, i) => (
-              <p key={i} style={{ fontSize: 14, color: 'var(--ink-secondary)', marginBottom: i < result.interactions_note.length - 1 ? 8 : 0 }}>{n}</p>
+            {synergies.map((n, i) => (
+              <p key={i} style={{ fontSize: 14, color: 'var(--ink-secondary)', marginBottom: i < synergies.length - 1 ? 8 : 0 }}>{n}</p>
             ))}
           </div>
         )}
 
-        {/* Recommended list */}
-        <h2 className="title" style={{ marginBottom: 16 }}>✅ 추천 영양제</h2>
+        {/* Recommended list — 상세(인지부하↓ 위해 접기 가능) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 8 }}>
+          <h2 className="title">✅ 추천 영양제 전체 ({result.recommended.length})</h2>
+          {result.recommended.length > 3 && (
+            <button onClick={() => setShowDetail((v) => !v)}
+              style={{ background: 'none', border: '1px solid var(--hairline)', borderRadius: 'var(--r-full)', padding: '6px 14px', fontSize: 13, fontWeight: 600, color: 'var(--ink-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {detailOpen ? '접기 ▴' : '자세히 보기 ▾'}
+            </button>
+          )}
+        </div>
+        {detailOpen && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
           {result.recommended.map((r, i) => (
             <div key={r.ingredient_id} className="card-elevated" style={{ borderRadius: 'var(--r-xl)' }}>
@@ -447,27 +546,9 @@ export default function ResultPage() {
             </div>
           ))}
         </div>
-
-        {/* Not recommended */}
-        {result.not_recommended.length > 0 && (
-          <div style={{ marginBottom: 28 }}>
-            <h2 className="title" style={{ marginBottom: 12 }}>❌ 당신껜 권하지 않아요</h2>
-            <div className="card" style={{ borderRadius: 'var(--r-xl)' }}>
-              {result.not_recommended.map((n, i) => (
-                <div key={n.name} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0',
-                  borderBottom: i < result.not_recommended.length - 1 ? '1px solid var(--hairline)' : 'none',
-                }}>
-                  <span style={{ fontSize: 20 }}>🚫</span>
-                  <div>
-                    <strong style={{ fontSize: 15 }}>{n.name}</strong>
-                    <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 2 }}>{n.reason}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
+
+        {/* 권하지 않음(제외)은 상단 안전 요약으로 통합 */}
 
         {/* Register my supplement CTA */}
         <div className="card" style={{
