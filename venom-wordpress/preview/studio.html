@@ -355,6 +355,10 @@
         <div class="hint">⚠️ API 주소(STEP3 ⚙️)도 설정돼 있어야 합니다(브라우저→내 서버→워드프레스 경유). 키는 내 서버로만 전송돼요.</div>
       </div>
       <label class="f">제목</label><input type="text" id="wp_title" placeholder="(비우면 선택 주제 제목 사용)">
+      <div class="grid2" style="margin-top:10px">
+        <div><label class="f">발행 모드</label><div class="chips" id="wpModeChips"></div><input type="hidden" id="wp_mode" value="draft"></div>
+        <div id="wpDateWrap" style="display:none"><label class="f">예약 일시</label><input type="datetime-local" id="wp_date"></div>
+      </div>
       <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <button class="btn" id="wpBtn" onclick="wpDraft()">📝 WordPress에 임시저장</button>
         <span class="hint">본문은 베놈 엔진 생성 결과(있으면) 또는 위 검수창 내용을 사용합니다.</span>
@@ -1049,20 +1053,29 @@ function getPostContent(){
   const title=($('wp_title')&&$('wp_title').value.trim())||(S.topic&&S.topic.t)||S.core||'제목 없음';
   return {title,html};
 }
+function wpModeChanged(){const m=$('wp_mode').value;
+  $('wpDateWrap').style.display=m==='future'?'block':'none';
+  $('wpBtn').textContent=m==='future'?'⏰ 예약 발행':m==='publish'?'🚀 즉시 발행':'📝 WordPress에 임시저장';}
 async function wpDraft(){
   const wp=loadWp(),cfg=loadCfg();
   if(!wp.url||!wp.user||!wp.pw){toast('먼저 ⚙️ 워드프레스 연결을 설정하세요');toggleWp();return;}
+  const mode=$('wp_mode').value,date=$('wp_date')?$('wp_date').value:'';
+  if(mode==='future'&&!date){toast('예약 일시를 선택하세요');return;}
+  if(mode==='publish'&&!confirm('지금 바로 공개 발행할까요? (임시저장이 아닙니다)'))return;
   const {title,html}=getPostContent();
   if(!html){toast('본문이 없어요 — 베놈 엔진으로 생성하거나 검수창에 붙여넣으세요');return;}
   const api=(cfg.url||'').replace(/\/$/,'')+'/api/wp-draft';
-  const btn=$('wpBtn');btn.disabled=true;btn.textContent='⏳ 임시저장 중...';$('wpStatus').textContent='워드프레스에 임시저장 중...';
+  const word=mode==='future'?'예약':mode==='publish'?'발행':'임시저장';
+  const btn=$('wpBtn');const lbl=btn.textContent;btn.disabled=true;btn.textContent='⏳ '+word+' 중...';$('wpStatus').textContent='워드프레스에 '+word+' 중...';
   try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
-    const r=await fetch(api,{method:'POST',headers,body:JSON.stringify({siteUrl:wp.url,user:wp.user,appPassword:wp.pw,title,html,status:'draft'})});
+    const r=await fetch(api,{method:'POST',headers,body:JSON.stringify({siteUrl:wp.url,user:wp.user,appPassword:wp.pw,title,html,status:mode,date:mode==='future'?date:''})});
     const d=await r.json().catch(()=>({}));
     if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
-    $('wpStatus').innerHTML=`✅ 임시저장 완료! <a href="${d.editLink}" target="_blank">워드프레스에서 편집하기 →</a>`;toast('WordPress 임시저장 완료 📝');
+    const done=d.status==='future'?'예약 완료':d.status==='publish'?'발행 완료':'임시저장 완료';
+    $('wpStatus').innerHTML=`✅ ${done}! <a href="${d.editLink}" target="_blank">워드프레스에서 보기/편집 →</a>`+(d.link?` · <a href="${d.link}" target="_blank">글 링크</a>`:'');
+    toast('WordPress '+done+' 📝');
   }catch(e){$('wpStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">사이트 URL·사용자명·앱 비밀번호와 STEP3의 API 주소를 확인하세요.</span>`;}
-  finally{btn.disabled=false;btn.textContent='📝 WordPress에 임시저장';}
+  finally{btn.disabled=false;btn.textContent=lbl;}
 }
 async function copyRich(html){const plain=html.replace(/<[^>]+>/g,'');
   try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([plain],{type:'text/plain'})})]);return true;}
@@ -1095,6 +1108,7 @@ chipGroup('imgAspectChips','img_aspect',IMG_ASPECTS,null);
 chipGroup('cardPosChips','card_pos',[['top','상단'],['center','중앙'],['bottom','하단']],renderCard);
 chipGroup('cardColorChips','card_color',[['light','흰 글자'],['dark','검은 글자']],renderCard);
 chipGroup('cardRatioChips','card_ratio',[['1:1','정사각'],['4:5','세로']],renderCard);
+chipGroup('wpModeChips','wp_mode',[['draft','임시저장'],['future','예약 발행'],['publish','즉시 발행']],wpModeChanged);
 // 브랜드 색 테마 반영
 (function(){const c=$('i_color').value;document.documentElement.style.setProperty('--accent',c);
   document.documentElement.style.setProperty('--accent-soft',hexSoft(c));})();
