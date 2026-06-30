@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1782809907761",
+    "title": "대전에서 SEO 마케팅 성공을 위한 5가지 전략",
+    "category": "seo",
+    "keyword": "베놈",
+    "tokenUsage": {
+      "promptTokens": 2484,
+      "completionTokens": 1730,
+      "totalTokens": 4214,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-06-30T08:58:47.070Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1782755129680",
     "title": "대전 병원마케팅의 GEO/AEO 활용과 AI 추천 원리",
     "category": "geo",
