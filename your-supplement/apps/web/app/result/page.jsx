@@ -5,7 +5,11 @@ import Link from 'next/link';
 import sourcesData from '../../data/sources.json';
 import evidenceData from '../../data/evidence.json';
 import concernsData from '../../data/concerns.json';
+import medDurMap from '../../data/med_dur_map.json';
 import { loadRoutine, saveRoutine, addItems } from '../../lib/routine';
+
+const MED_DUR = medDurMap.map;
+const nedrugSearch = (kw) => `https://nedrug.mfds.go.kr/searchDrug?searchKeyword=${encodeURIComponent(kw)}`;
 
 // 고민(concern) 매핑 — "왜 나에게 이 성분인가" 설명용
 const CONCERN_BY_ID = Object.fromEntries(concernsData.concerns.map((c) => [c.id, c]));
@@ -200,6 +204,7 @@ export default function ResultPage() {
   const [user, setUser] = useState(null);
   const [kakaoSent, setKakaoSent] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [durByMed, setDurByMed] = useState({});
 
   const [priceLive, setPriceLive] = useState(false);
 
@@ -244,6 +249,20 @@ export default function ResultPage() {
       } catch {}
     });
   }, []);
+
+  // 복용약 → 식약처 DUR 조회(설정 시 실데이터, 아니면 공식 링크로 폴백)
+  useEffect(() => {
+    const meds = (user?.medications || []).filter((m) => MED_DUR[m]);
+    meds.forEach(async (m) => {
+      try {
+        const res = await fetch(`/api/dur?q=${encodeURIComponent(MED_DUR[m].dur_query)}`);
+        const data = await res.json();
+        setDurByMed((prev) => ({ ...prev, [m]: data }));
+      } catch {
+        setDurByMed((prev) => ({ ...prev, [m]: { source: 'none' } }));
+      }
+    });
+  }, [user]);
 
   if (!result) return (
     <div style={{ textAlign: 'center', padding: '120px 24px' }}>
@@ -322,6 +341,34 @@ export default function ResultPage() {
             <p key={'s' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>{s} <span style={{ color: 'var(--ink-faint)' }}>— 시간 분리 권장</span></p>
           ))}
         </div>
+
+        {/* 식약처 DUR — 복용약 공식 확인 */}
+        {(user?.medications || []).some((m) => MED_DUR[m]) && (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-xl)', padding: '14px 18px', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>🏛️ 식약처 DUR — 복용약 공식 확인</p>
+            {(user.medications).filter((m) => MED_DUR[m]).map((m) => {
+              const info = MED_DUR[m];
+              const dur = durByMed[m];
+              const items = dur?.items || [];
+              return (
+                <div key={m} style={{ marginTop: 6 }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink-secondary)' }}>{info.label}</span>
+                  {items.length > 0 ? (
+                    items.slice(0, 3).map((it, i) => (
+                      <p key={i} style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 2 }}>· {it.against ? `${it.against} ` : ''}{it.reason || it.type}</p>
+                    ))
+                  ) : (
+                    <a href={nedrugSearch(info.dur_query)} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', marginLeft: 8 }}>
+                      식약처에서 ‘{info.dur_query}’ 확인 →
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+            <p style={{ fontSize: 11.5, color: 'var(--ink-faint)', marginTop: 8 }}>※ 계열 대표 성분 기준. 정확한 병용금기는 처방 의·약사와 확인하세요.</p>
+          </div>
+        )}
 
         {/* P2: 개인화 핵심 요약 */}
         <div style={{ marginBottom: 24 }}>

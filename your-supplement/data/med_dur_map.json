@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "purpose": "설문 복용약 코드 → 식약처 DUR 조회용 한글 약명(대표 성분) 매핑. /api/dur 조회·공식 확인 링크에 사용.",
+    "note": "혈압약·항생제 등 '계열'은 대표 성분 1종으로 매핑(완전치 않음). DUR 미설정 시 nedrug 검색 링크로 대체."
+  },
+  "map": {
+    "warfarin":        { "label": "와파린(항응고제)",      "dur_query": "와파린" },
+    "antiplatelet":    { "label": "아스피린/항혈소판제",   "dur_query": "아스피린" },
+    "antihypertensive":{ "label": "혈압약",                "dur_query": "암로디핀" },
+    "thiazide":        { "label": "티아지드 이뇨제",        "dur_query": "히드로클로로티아지드" },
+    "statin":          { "label": "스타틴(고지혈증약)",     "dur_query": "심바스타틴" },
+    "levothyroxine":   { "label": "갑상선호르몬제",         "dur_query": "레보티록신" },
+    "antidiabetic":    { "label": "당뇨약/인슐린",          "dur_query": "메트포르민" },
+    "bisphosphonate":  { "label": "골다공증약",            "dur_query": "알렌드론산" },
+    "ppi":             { "label": "위산억제제(PPI)",        "dur_query": "오메프라졸" },
+    "anticonvulsant":  { "label": "항경련제",              "dur_query": "페니토인" },
+    "methotrexate":    { "label": "메토트렉세이트",         "dur_query": "메토트렉세이트" }
+  }
+}
