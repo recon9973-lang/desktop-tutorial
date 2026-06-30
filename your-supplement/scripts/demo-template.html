@@ -33,7 +33,7 @@ h2{font-size:19px;margin:22px 0 10px}.sub{color:var(--mute);font-size:14px;margi
 .bar{height:8px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;margin-top:12px}.bar>div{height:100%;background:#6ee7b7;transition:width .3s}
 </style></head><body>
 <div class="nav"><b onclick="go('home')">🧬 당신의영양제</b>
-<a id="n-survey" onclick="go('survey')">설문</a><a id="n-analyze" onclick="go('analyze')">조합분석</a><a id="n-rank" onclick="go('rank')">랭킹</a><a id="n-dict" onclick="go('dict')">성분사전</a><a id="n-routine" onclick="go('routine')">내 루틴</a></div>
+<a id="n-survey" onclick="go('survey')">설문</a><a id="n-analyze" onclick="go('analyze')">조합분석</a><a id="n-prod" onclick="go('prod')">제품찾기</a><a id="n-rank" onclick="go('rank')">랭킹</a><a id="n-dict" onclick="go('dict')">성분사전</a><a id="n-routine" onclick="go('routine')">내 루틴</a></div>
 <div id="root"></div>
 <script>
 const DATA = __DATA__;
@@ -46,6 +46,19 @@ const DUR_LABEL={continuous:'🟢 지속',monitor:'🟡 3개월 점검',cyclic:'
 const SLOT={morning:'☀️ 아침',evening:'🌙 저녁'};
 const DIET_LABEL={general:'일반',pescatarian:'페스코',vegetarian:'베지테리언(유제품 허용)',vegan:'비건'};
 const DIET_X={general:[],pescatarian:[],vegetarian:['omega3'],vegan:['omega3','lactium']}; // 동물성 제외
+const AGE=[['20s','20대'],['30s','30대'],['40s','40대'],['50s','50대'],['60s','60대+']];
+const SEX=[['female','여성'],['male','남성']];
+// 데모용 예시 제품(실서비스는 DSLD 20만건·식약처 품목 실시간). 없으면 쇼핑 링크만.
+const SAMPLE_PRODUCTS={
+ vitamin_d:[['뉴트리원 비타민D 2000IU','뉴트리원'],['솔가 비타민D3 1000IU','솔가']],
+ omega3:[['알티지 오메가3','종근당건강'],['닥터스베스트 알티지','닥터스베스트']],
+ lutein:[['루테인 지아잔틴','뉴트리코어'],['NOW 루테인 10mg','NOW']],
+ magnesium:[['마그네슘 글리시네이트','솔가'],['고려은단 마그네슘','고려은단']],
+ probiotics:[['락토핏 골드','종근당건강'],['컬처렐 유산균','컬처렐']],
+ vitamin_c:[['고려은단 비타민C 1000','고려은단'],['에스터C','솔가']],
+ iron:[['훼라민 철분','일동제약'],['솔가 젠틀 아이언','솔가']],
+ calcium:[['칼슘마그네슘아연','뉴트리원'],['솔가 칼슘마그네슘','솔가']],
+};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // ---- engine ----
 function ew(l){return R.scoring.evidence_weight[String(l)]??0.4}
@@ -64,6 +77,7 @@ for(const id of cand){const ing=byId[id];if(!ing)continue;
  rec.push({id,name:ing.name_ko,lvl:ing.evidence.level,dur:ing.duration_type,fns:ing.functions,dose:ing.daily_dose,cautions:ing.cautions||[],warnings:dc.warnings,_s:sc})}
 const bv=R.scoring.synergy_bonus.value;
 for(let i=0;i<rec.length;i++)for(let j=i+1;j<rec.length;j++)if(rel(rec[i].id,rec[j].id)?.type==='synergy'){rec[i]._s+=bv;rec[j]._s+=bv}
+const pf=u.profile||{};rec.forEach(r=>{if(pf.sex==='female'&&(r.id==='iron'||r.id==='folate'))r._s+=0.12;if((pf.age==='50s'||pf.age==='60s')&&(r.id==='vitamin_d'||r.id==='calcium'))r._s+=0.12});
 rec.forEach(x=>x.score=Math.round(x._s*100)/100);rec.sort((a,b)=>b.score-a.score);
 const morning=[],evening=[];for(const x of rec){const cf=morning.some(m=>rel(m,x.id)?.type==='antagonism');(cf?evening:morning).push(x.id)}
 const nm=id=>byId[id]?.name_ko||id;const ids=rec.map(x=>x.id);const notes=[];
@@ -72,30 +86,33 @@ return{recommended:rec,not_recommended:no,schedule:{morning:morning.map(nm),even
 function topBenefit(id){const e=EV[id];if(!e||!e.benefits?.length)return null;const rk={established:3,moderate:2,limited:1,insufficient:0};return [...e.benefits].sort((a,b)=>(rk[b.evidence_strength]??0)-(rk[a.evidence_strength]??0))[0]}
 function concernLabels(id,cs){return cs.map(c=>concernById[c]).filter(c=>c&&c.ingredients.includes(id)).map(c=>c.label)}
 // ---- state ----
-let view='home',sel={concerns:[],medications:[],allergies:[],diet:'general'},result=null;
+let view='home',sel={concerns:[],medications:[],allergies:[],diet:'general',profile:{age:'',sex:''}},result=null;
 let routine={items:[],checks:{}};
-let stack=[],stackMeds=[],dictOpen=null;
+let stack=[],stackMeds=[],dictOpen=null,prodSel='';
 const root=document.getElementById('root');
 function go(v){view=v;render()}
-function nav(){['survey','analyze','rank','dict','routine'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)el.className=view===k?'on':''})}
-function render(){nav();({home:home,survey:survey,result:resultView,routine:routineView,analyze:analyzeView,dict:dictView,rank:rankingView}[view]||home)();window.scrollTo(0,0)}
+function nav(){['survey','analyze','prod','rank','dict','routine'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)el.className=view===k?'on':''})}
+function render(){nav();({home:home,survey:survey,result:resultView,routine:routineView,analyze:analyzeView,dict:dictView,rank:rankingView,prod:productView}[view]||home)();window.scrollTo(0,0)}
 // ---- views ----
 function home(){
  root.innerHTML='<div class="hero"><span class="badge" style="background:rgba(255,255,255,.12);color:#6ee7b7">식약처·NIH·논문 근거</span>'+
  '<h1>내 몸에 맞는 영양제,<br><span class="sky">근거로 찾아드립니다</span></h1><p>광고도 후기도 아닌 검증된 데이터로 추천</p>'+
  '<button class="btn w" onclick="go(\'survey\')">1분 설문 시작 →</button></div>'+
  '<div class="wrap"><h2>무엇을 할 수 있나요?</h2><div class="feat">'+
- [['🧬','근거 기반 추천','고민·식단·약·알레르기로 맞춤','survey'],['🧪','내 조합 분석','먹는 영양제 궁합·과다·충돌','analyze'],['🏆','근거 랭킹','후기 아닌 근거로 본 성분 순위','rank'],['📖','성분 사전','17성분 효능·근거·용량','dict'],['📋','내 루틴','복용 체크·습관 관리','routine']].map(f=>'<div class="card" style="cursor:pointer" onclick="go(\''+f[3]+'\')"><div style="font-size:24px">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
+ [['🧬','근거 기반 추천','고민·식단·약·알레르기로 맞춤','survey'],['🧪','내 조합 분석','먹는 영양제 궁합·과다·충돌','analyze'],['🔎','제품 찾기','성분으로 시판 제품·구매처','prod'],['🏆','근거 랭킹','후기 아닌 근거로 본 성분 순위','rank'],['📖','성분 사전','17성분 효능·근거·용량','dict'],['📋','내 루틴','복용 체크·습관 관리','routine']].map(f=>'<div class="card" style="cursor:pointer" onclick="go(\''+f[3]+'\')"><div style="font-size:24px">'+f[0]+'</div><b>'+f[1]+'</b><div class="muted">'+f[2]+'</div></div>').join('')+
  '</div>'+
  '<div class="card" style="margin-top:14px;background:rgba(5,150,105,.05);border-color:rgba(5,150,105,.2)"><b>🧪 내 조합 분석 — 필라이즈식 ‘중복·과다’ 분석의 근거 버전</b><div class="muted" style="margin-top:4px">지금 먹는 영양제를 고르면 길항·시너지·약물충돌·상한(UL) 주의·카테고리 중복까지 자동 점검</div><button class="btn" style="margin-top:12px" onclick="go(\'analyze\')">내 조합 분석하기 →</button></div>'+
  '</div>'}
 function survey(){
- let h='<div class="wrap"><h2>어떤 고민이 있나요?</h2><div class="sub">여러 개 선택 가능 (필수)</div><div id="cc"></div>'+
+ let h='<div class="wrap"><h2>기본 정보</h2><div class="sub">나이·성별에 맞춰 권장량·우선순위를 조정해요</div><div id="pa"></div><div id="px" style="margin-top:8px"></div>'+
+ '<h2>어떤 고민이 있나요?</h2><div class="sub">여러 개 선택 가능 (필수)</div><div id="cc"></div>'+
  '<h2>식단 유형은?</h2><div class="sub">동물성 원료(어유 오메가3·우유 락티움) 추천 제외에 사용</div><div id="dd"></div>'+
  '<h2>복용 중인 약이 있나요?</h2><div class="sub">안전 확인용 (없으면 건너뛰기)</div><div id="mm"></div>'+
  '<h2>식품 알레르기가 있나요?</h2><div class="sub">영양제 원료 알레르기만</div><div id="aa"></div>'+
  '<div style="margin-top:24px"><button class="btn" id="go2">추천 받기 →</button></div></div>';
  root.innerHTML=h;
+ const pa=document.getElementById('pa');AGE.forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(sel.profile.age===k?' on':'');b.textContent=l;b.onclick=()=>{sel.profile.age=k;survey()};pa.appendChild(b)});
+ const px=document.getElementById('px');SEX.forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(sel.profile.sex===k?' on':'');b.textContent=l;b.onclick=()=>{sel.profile.sex=k;survey()};px.appendChild(b)});
  const cc=document.getElementById('cc');DATA.concerns.forEach(c=>{const b=document.createElement('button');b.className='chip'+(sel.concerns.includes(c.id)?' on':'');b.innerHTML=c.emoji+' '+esc(c.label);b.onclick=()=>{tog(sel.concerns,c.id);survey()};cc.appendChild(b)});
  const dd=document.getElementById('dd');Object.entries(DIET_LABEL).forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(sel.diet===k?' on':'');b.textContent=l;b.onclick=()=>{sel.diet=k;survey()};dd.appendChild(b)});
  const mm=document.getElementById('mm');Object.entries(DATA.meds).forEach(([k,v])=>{const b=document.createElement('button');b.className='chip'+(sel.medications.includes(k)?' on':'');b.textContent='💊 '+v.label;b.onclick=()=>{tog(sel.medications,k);survey()};mm.appendChild(b)});
@@ -110,6 +127,10 @@ function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[
  const score=res.recommended.length?Math.round(strong/res.recommended.length*100):0;
  let h='<div class="wrap"><div style="margin:4px 0 10px"><button class="chip" onclick="go(\'survey\')">← 다시 선택</button></div>';
  h+='<div class="hero" style="border-radius:16px;padding:22px;margin-bottom:16px"><div style="font-size:13px;color:#6ee7b7;font-weight:700">이번 추천 근거 점수</div><div style="font-size:34px;font-weight:800;margin:2px 0">'+score+'<span style="font-size:18px">점</span></div><div class="bar" style="max-width:320px;margin:6px auto 0"><div style="width:'+score+'%"></div></div><div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:8px">추천 '+res.recommended.length+'종 중 '+strong+'종이 확립·중등도 근거 · 식단 '+DIET_LABEL[sel.diet]+'</div></div>';
+ const pf=sel.profile||{},pN=[];
+ if(pf.sex==='female')pN.push('여성: 철분·엽산 결핍이 흔해 우선 고려했어요.');
+ if(pf.age==='50s'||pf.age==='60s')pN.push('50대+: 비타민D·칼슘·B12 흡수가 줄어 보충 우선순위를 높였어요.');
+ if(pN.length)h+='<div class="card" style="background:rgba(5,150,105,.05);border-color:rgba(5,150,105,.2)"><b>🙋 '+[AGE.find(a=>a[0]===pf.age)?.[1],SEX.find(s=>s[0]===pf.sex)?.[1]].filter(Boolean).join(' · ')+'</b>'+pN.map(n=>'<div class="muted" style="margin-top:4px">💡 '+esc(n)+'</div>').join('')+'</div>';
  h+='<div class="'+(hasSafe?'warn':'ok')+'"><b style="color:'+(hasSafe?'#d97706':'#047857')+'">'+(hasSafe?'⚠️ 복용 전 먼저 확인하세요':'✅ 안전 확인 — 충돌하는 추천이 없어요')+'</b>';
  res.not_recommended.forEach(n=>h+='<div class="muted" style="margin-top:6px">🚫 <b>'+esc(n.name)+'</b> 제외 — '+esc(n.reason)+'</div>');
  warns.forEach(w=>h+='<div class="muted" style="margin-top:6px">⚠️ <b>'+esc(w.n)+'</b> — '+esc(w.w)+'</div>');
@@ -207,5 +228,21 @@ function rankingView(){
  h+='<div class="foot">⚠️ 이 랭킹은 <b>사용자 후기·판매량이 아니라</b> 식약처 인정등급과 활용 고민 수로 계산한 <b>근거 지표</b>입니다.</div></div>';
  root.innerHTML=h}
 function dictGo(id){dictOpen=id;go('dict')}
+// ---- 🔎 제품 찾기 ----
+function productView(){
+ let h='<div class="wrap"><h2>🔎 제품 찾기</h2><div class="sub">성분을 고르면 시판 제품 예시와 국내 구매처를 보여드려요</div><div id="pk"></div><div id="po"></div></div>';
+ root.innerHTML=h;
+ const pk=document.getElementById('pk');DATA.ingredients.forEach(i=>{const b=document.createElement('button');b.className='chip'+(prodSel===i.id?' on':'');b.textContent=i.name_ko;b.onclick=()=>{prodSel=i.id;productView()};pk.appendChild(b)});
+ const po=document.getElementById('po');if(!prodSel){po.innerHTML='<div class="muted" style="margin-top:16px">성분을 선택하세요.</div>';return}
+ const ing=byId[prodSel],q=encodeURIComponent(ing.name_ko),prods=SAMPLE_PRODUCTS[prodSel]||[];
+ let o='<div style="display:flex;align-items:center;gap:8px;margin:8px 0 12px"><h2 style="margin:0">🌎 시판 제품 — '+esc(ing.name_ko)+'</h2><span class="tag" style="background:var(--hairline);color:var(--mute)">예시</span></div>';
+ if(prods.length){o+='<div class="card">'+prods.map((p,i)=>'<div style="padding:8px 0;'+(i?'border-top:1px solid var(--line)':'')+'"><b>'+esc(p[0])+'</b> <span class="muted">'+esc(p[1])+'</span></div>').join('')+'</div>';}
+ else o+='<div class="muted" style="margin-bottom:12px">예시 제품이 준비 안 된 성분이에요. 아래 검색을 이용하세요.</div>';
+ o+='<h2>🛒 국내에서 찾기</h2><div style="display:flex;gap:8px;flex-wrap:wrap">'+
+  [['네이버쇼핑','https://search.shopping.naver.com/search/all?query='+q],['쿠팡','https://www.coupang.com/np/search?q='+q],['아이허브','https://kr.iherb.com/search?kw='+q],['식품안전나라','https://various.foodsafetykorea.go.kr/nutrient/']]
+  .map(v=>'<a class="chip" style="color:var(--p);font-weight:600" target="_blank" href="'+v[1]+'">'+v[0]+' →</a>').join('')+'</div>';
+ o+='<div style="margin-top:14px"><button class="chip" onclick="addOne(\''+prodSel+'\')">🧪 내 조합에 추가</button> <button class="chip" onclick="dictGo(\''+prodSel+'\')">📖 성분 근거 보기</button></div>';
+ o+='<div class="foot">예시 제품·브랜드는 데모용입니다. 실서비스는 NIH DSLD(20만건)·식약처 품목 OpenAPI로 실시간 검색.</div>';
+ po.innerHTML=o}
 render();
 </script></body></html>
