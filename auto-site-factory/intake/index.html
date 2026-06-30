@@ -982,15 +982,63 @@ async function aiFill() {
   }
 }
 
-/* ── spec 빌드 ───────────────────────────────────────────────────── */
-let lastSpec = null;
-async function build() {
+/* ── spec 수집 (이미지 제외, UI 업데이트 없음) ───────────────────── */
+function collectSpec() {
   const f = document.getElementById('f');
   const category = f.category.value;
   const opts = [...document.querySelectorAll('input[name=opt]:checked')].map(c => c.value);
   if (!opts.includes('seo_pack')) opts.unshift('seo_pack');
+  const brand = {
+    name: f.name.value, tagline: f.tagline.value, primary: f.primary.value,
+    region: f.region.value, phone: f.phone.value,
+    address: f.address.value, kakao: f.kakao.value,
+  };
+  const spec = {
+    category, scale: f.scale.value, domain: f.domain.value,
+    locale: opts.includes('translate') ? ['ko','en'] : ['ko'],
+    brand, options: opts,
+  };
+  if (category === 'clinic') {
+    const doctors = [...document.querySelectorAll('#doctors .doctor-row')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return ins[0].value ? { name: ins[0].value, role: ins[1].value, desc: ins[2].value } : null;
+    }).filter(Boolean);
+    spec.clinic = { specialty: f.specialty.value, doctors };
+  } else if (category === 'local') {
+    brand.instagram   = f.instagram?.value   || '';
+    brand.naver_place = f.naver_place?.value || '';
+    const menu = [...document.querySelectorAll('#menu-list .menu-row')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return { name: ins[0].value, price: ins[1].value, desc: ins[2].value };
+    }).filter(m => m.name);
+    const hours = [...document.querySelectorAll('#hours-list .hour-row-input')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return { day: ins[0].value, time: ins[1].value };
+    }).filter(h => h.day);
+    spec.local = { type: f.local_type.value, hours, menu };
+  }
+  const trust = [...document.querySelectorAll('#trust-list .trust-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { num: ins[0].value, lbl: ins[1].value };
+  }).filter(t => t.num);
+  if (trust.length) spec.trust = trust;
+  const reviews = [...document.querySelectorAll('#reviews-list .review-input-row')].map(r => ({
+    author: r.querySelector('input').value,
+    stars:  +r.querySelector('select').value,
+    body:   r.querySelector('textarea').value,
+  })).filter(r => r.body);
+  if (reviews.length) spec.reviews = reviews;
+  const faq = [...document.querySelectorAll('#faq-list .faq-input-row')].map(r => ({
+    q: r.querySelector('input').value,
+    a: r.querySelector('textarea').value,
+  })).filter(item => item.q);
+  if (faq.length) spec.faq = faq;
+  return spec;
+}
 
-  // 이미지
+/* ── spec 빌드 (이미지 포함 + UI 업데이트) ──────────────────────── */
+let lastSpec = null;
+async function build() {
   const images = {};
   const hero = document.getElementById('img-hero').files[0];
   const intro = document.getElementById('img-intro').files[0];
@@ -999,82 +1047,24 @@ async function build() {
   if (intro) images.intro   = await toDataURL(intro);
   if (gal.length) images.gallery = await Promise.all(gal.map(toDataURL));
 
-  const brand = {
-    name: f.name.value, tagline: f.tagline.value, primary: f.primary.value,
-    region: f.region.value, phone: f.phone.value,
-    address: f.address.value, kakao: f.kakao.value,
-  };
-
-  const spec = {
-    category,
-    scale: f.scale.value,
-    domain: f.domain.value,
-    locale: opts.includes('translate') ? ['ko','en'] : ['ko'],
-    brand,
-    options: opts,
-  };
-
+  const f = document.getElementById('f');
+  const category = f.category.value;
+  // 의료진 사진 (이미지가 있는 경우 별도 처리)
   if (category === 'clinic') {
-    // 의료진
     const rows = [...document.querySelectorAll('#doctors .doctor-row')];
-    const doctors = [];
     for (const r of rows) {
-      const ins = r.querySelectorAll('input');
-      if (!ins[0].value) continue;
-      const d = { name: ins[0].value, role: ins[1].value, desc: ins[2].value };
       const pf = r.querySelector('.doc-photo');
-      if (pf && pf.files.length) d.photo = await toDataURL(pf.files[0]);
-      doctors.push(d);
+      if (pf && pf.files.length) {
+        const ins = r.querySelectorAll('input');
+        if (!ins[0].value) continue;
+      }
     }
-    spec.clinic = { specialty: f.specialty.value, doctors };
-
-  } else if (category === 'local') {
-    brand.instagram    = f.instagram?.value    || '';
-    brand.naver_place  = f.naver_place?.value  || '';
-
-    // 메뉴
-    const menu = [...document.querySelectorAll('#menu-list .menu-row')].map(r => {
-      const ins = r.querySelectorAll('input');
-      return { name: ins[0].value, price: ins[1].value, desc: ins[2].value };
-    }).filter(m => m.name);
-
-    // 영업시간
-    const hours = [...document.querySelectorAll('#hours-list .hour-row-input')].map(r => {
-      const ins = r.querySelectorAll('input');
-      return { day: ins[0].value, time: ins[1].value };
-    }).filter(h => h.day);
-
-    spec.local = { type: f.local_type.value, hours, menu };
   }
 
+  const spec = collectSpec();
   if (Object.keys(images).length) spec.images = images;
-
-  // 신뢰지표
-  const trust = [...document.querySelectorAll('#trust-list .trust-row')].map(r => {
-    const ins = r.querySelectorAll('input');
-    return { num: ins[0].value, lbl: ins[1].value };
-  }).filter(t => t.num);
-  if (trust.length) spec.trust = trust;
-
-  // 고객후기
-  const reviews = [...document.querySelectorAll('#reviews-list .review-input-row')].map(r => {
-    return {
-      author: r.querySelector('input').value,
-      stars:  +r.querySelector('select').value,
-      body:   r.querySelector('textarea').value,
-    };
-  }).filter(r => r.body);
-  if (reviews.length) spec.reviews = reviews;
-
-  // FAQ
-  const faq = [...document.querySelectorAll('#faq-list .faq-input-row')].map(r => {
-    return { q: r.querySelector('input').value, a: r.querySelector('textarea').value };
-  }).filter(f => f.q);
-  if (faq.length) spec.faq = faq;
-
   lastSpec = spec;
 
-  // 미리보기: data URI 축약
   const shown = JSON.stringify(spec, (k,v) =>
     (typeof v === 'string' && v.startsWith('data:'))
       ? `[…업로드 이미지 ${Math.round(v.length/1024)}KB…]` : v, 2);
@@ -1082,6 +1072,22 @@ async function build() {
   document.getElementById('result').style.display = 'block';
   document.getElementById('result').scrollIntoView({behavior:'smooth'});
 }
+
+/* ── 실시간 미리보기 자동갱신 (미리보기 열려있을 때만) ────────────── */
+let _pvTimer = null;
+document.getElementById('f').addEventListener('input', () => {
+  const overlay = document.getElementById('preview-overlay');
+  if (overlay.style.display !== 'flex') return;
+  clearTimeout(_pvTimer);
+  _pvTimer = setTimeout(() => {
+    try {
+      const spec = collectSpec();
+      if (lastSpec && lastSpec.images) spec.images = lastSpec.images;
+      lastSpec = spec;
+      document.getElementById('preview-frame').srcdoc = clientRender(spec);
+    } catch (e) { /* 조용히 무시 */ }
+  }, 500);
+});
 
 function download() {
   const blob = new Blob([JSON.stringify(lastSpec,null,2)], {type:'application/json'});
