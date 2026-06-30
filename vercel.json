@@ -10,6 +10,7 @@
     "api/insights.js": { "maxDuration": 30 },
     "api/posting-settings.js": { "maxDuration": 15 },
     "api/publish-post.js": { "maxDuration": 15 },
+    "api/seo-proxy.js": { "maxDuration": 60 },
     "api/cron-seo-monitor.js": { "maxDuration": 300 }
   },
   "crons": [
