@@ -103,6 +103,7 @@
 <header class="top">
   <div class="topbtns">
     <button class="iconbtn" onclick="demo()">🎲 예시</button>
+    <button class="iconbtn" onclick="resetAll()">🗑 초기화</button>
     <button class="iconbtn" onclick="toggleDark()" id="darkBtn">🌙</button>
   </div>
   <h1>✍️ 원고 스튜디오</h1>
@@ -135,7 +136,7 @@
         <option>800자</option><option>1,200자</option><option selected>1,500자</option><option>2,000자</option><option>3,000자</option></select></div>
     </div>
     <div class="grid3">
-      <div><label class="f">이모지 사용</label><select id="i_emoji"><option>없음</option><option selected>적게</option><option>보통</option></select></div>
+      <div><label class="f">이모지 사용</label><div class="chips" id="emojiChips"></div><input type="hidden" id="i_emoji" value="적게"></div>
       <div><label class="f">CTA(행동 유도)</label><select id="i_cta">
         <option>카카오 상담</option><option>온라인 예약</option><option>방문 안내</option><option>뉴스레터 구독</option><option>자가진단 체크</option></select></div>
       <div><label class="f">브랜드 색</label><input type="color" id="i_color" value="#2f7d6b" style="height:44px;padding:4px"></div>
@@ -164,7 +165,7 @@
     <div class="sub">타겟을 바꾸면 같은 주제도 전혀 다른 글이 됩니다. 고르면 페르소나가 자동으로 채워지고, 직접 다듬을 수도 있어요.</div>
     <div class="chips" id="targetChips"></div>
     <div class="row" style="margin-top:6px">
-      <div><label class="f">연령대</label><select id="t_age"><option>해당 없음</option><option>20대</option><option selected>30대</option><option>40대</option><option>50대</option><option>60대+</option></select></div>
+      <div><label class="f">연령대</label><div class="chips" id="ageChips"></div><input type="hidden" id="t_age" value="30대"></div>
       <div><label class="f">타겟 한 줄 묘사</label><input type="text" id="t_detail" placeholder="예: 하루 8시간 앉아 일하는 30대 직장인"></div>
     </div>
     <div id="persona"></div>
@@ -200,6 +201,7 @@
       <button class="btn ghost" onclick="buildPrompt()">↻ 새로고침</button>
     </div>
     <pre class="prompt" id="promptOut"></pre>
+    <div class="hint" id="promptLen"></div>
 
     <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
       <h2 style="font-size:17px">🚀 베놈 엔진으로 실제 원고 생성 <span class="hint">(베놈 사이트와 동일 파이프라인)</span></h2>
@@ -307,6 +309,31 @@ function syncInputs(){
   S.color=$('i_color').value;S.extra=$('i_extra').value.trim();
 }
 
+/* ───────────── 칩 버튼 그룹 (선택 즉시 반응) ───────────── */
+function chipGroup(host,hidden,opts,onpick){
+  const cur=$(hidden).value;
+  $(host).innerHTML=opts.map(o=>`<div class="chip ${o===cur?'sel':''}" data-v="${esc(o)}">${esc(o)}</div>`).join('');
+  $(host).querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    $(hidden).value=c.dataset.v;
+    $(host).querySelectorAll('.chip').forEach(x=>x.classList.toggle('sel',x===c));
+    syncInputs();saveState();onpick&&onpick(c.dataset.v);}));
+}
+
+/* ───────────── 자동 저장 / 복원 / 초기화 (고도화) ───────────── */
+const SAVE_IDS=['i_cat','i_core','i_kw2','i_region','i_gtype','i_channel','i_length','i_emoji','i_cta','i_color','i_extra','t_detail','t_age','p_pains','p_qs','p_action','tone','o_story','o_verb'];
+const SAVE_CHK=['o_q','o_faq'];
+function saveState(){try{const o={v:{},c:{},topic:S.topic,target:S.target,charts:S.charts};
+  SAVE_IDS.forEach(id=>{const el=$(id);if(el)o.v[id]=el.value;});
+  SAVE_CHK.forEach(id=>{const el=$(id);if(el)o.c[id]=el.checked;});
+  localStorage.setItem('vstudio_state',JSON.stringify(o));}catch(e){}}
+function restoreState(){try{const o=JSON.parse(localStorage.getItem('vstudio_state')||'null');if(!o)return false;
+  SAVE_IDS.forEach(id=>{const el=$(id);if(el&&o.v[id]!=null)el.value=o.v[id];});
+  SAVE_CHK.forEach(id=>{const el=$(id);if(el&&o.c[id]!=null)el.checked=o.c[id];});
+  if(o.topic)S.topic=o.topic;if(o.target)S.target=o.target;if(Array.isArray(o.charts))S.charts=o.charts;
+  return !!(o.v&&o.v.i_core);}catch(e){return false;}}
+function resetAll(){if(!confirm('모든 입력을 지우고 새로 시작할까요?'))return;
+  try{localStorage.removeItem('vstudio_state');}catch(e){}location.reload();}
+
 /* ───────────── 다크모드 / 데모 ───────────── */
 function toggleDark(){S.dark=!document.body.classList.contains('dark');
   document.body.classList.toggle('dark',S.dark);$('darkBtn').textContent=S.dark?'☀️':'🌙';
@@ -381,7 +408,7 @@ function spark(){
        <div class="m">🏷️ ${esc(a.p)} · 👤 ${esc(a.who)} · 📝 ${esc(a.ty)}<br>📊 ${esc(a.num)}</div></div>`).join('');
   if(S.topic)renderTitleVariants();
 }
-function selTopic(a){S.topic=a;if(a.ty)$('i_gtype').value=a.ty;spark();renderTitleVariants();toast('주제 선택됨 ✔');}
+function selTopic(a){S.topic=a;if(a.ty)$('i_gtype').value=a.ty;spark();renderTitleVariants();saveState();toast('주제 선택됨 ✔');}
 function renderTitleVariants(){
   if(!S.topic){$('titleVariants').innerHTML='';return;}
   const k=S.core,base=S.topic.t;
@@ -422,6 +449,8 @@ const TARGETS={
 function renderTargets(){
   $('targetChips').innerHTML=Object.keys(TARGETS).map(t=>
     `<div class="chip ${S.target===t?'sel':''}" onclick="selTarget('${t}')">${t}</div>`).join('');
+  chipGroup('ageChips','t_age',['해당 없음','20대','30대','40대','50대','60대+'],v=>{
+    S.age=v;if(S.persona)drawPersona(S.custom?S.target+' (맞춤)':S.target,S.persona);});
   selTarget(S.target,true);
 }
 function selTarget(t,keep){
@@ -447,7 +476,6 @@ function applyCustomPersona(){
     action:$('p_action').value.trim()};
   S.persona=p;S.custom=p;S.detail=p.detail;drawPersona(S.target+' (맞춤)',p);toast('맞춤 페르소나 적용됨 ✔');
 }
-$('t_age')&&$('t_age').addEventListener('change',()=>{S.age=$('t_age').value;if(S.persona)drawPersona(S.target,S.persona);});
 $('t_detail')&&$('t_detail').addEventListener('input',e=>S.detail=e.target.value);
 
 /* ───────────── STEP3 톤 + 프롬프트 ───────────── */
@@ -508,7 +536,9 @@ function buildPrompt(){
   if(S.verb==='상세')lines.push('','※ 각 소제목마다 정량 데이터(퍼센트·기간·횟수)를 1개 이상 넣고, 신뢰할 수 있는 기관(보건복지부·학회 등) 유형을 1회 이상 언급해라(없는 통계·논문명은 지어내지 말 것).');
   lines.push('','먼저 도입부와 첫 소제목까지만 써서 보여주고, 내가 "이어서" 하면 끝까지 완성해줘.');
   const out=lines.join('\n');
-  $('promptOut').textContent=out;return out;
+  $('promptOut').textContent=out;
+  const lenEl=$('promptLen');if(lenEl)lenEl.textContent=`📏 프롬프트 ${out.length}자 · 예상 토큰 약 ${Math.round(out.length/2.2)}개`;
+  return out;
 }
 function copyPrompt(){navigator.clipboard.writeText(buildPrompt()).then(()=>toast('프롬프트 복사됨! 아무 AI에 붙여넣으세요 📋'));}
 function dlPrompt(){const b=new Blob([buildPrompt()],{type:'text/plain'});const a=document.createElement('a');
@@ -540,9 +570,9 @@ function addChart(){
   else{const val=$('c_val').value.trim();
     if(val===''){toast('수치를 입력해 주세요');return;}
     S.charts.push({type:t,label,val});}
-  renderCharts();$('c_label').value='';$('c_val').value='';$('c_multiv').value='';
+  renderCharts();saveState();$('c_label').value='';$('c_val').value='';$('c_multiv').value='';
 }
-function rmChart(i){S.charts.splice(i,1);renderCharts();}
+function rmChart(i){S.charts.splice(i,1);renderCharts();saveState();}
 function renderCharts(){
   $('charts').innerHTML=S.charts.map((c,i)=>`<div class="chartcell">${svgFor(c)}
      <div style="font-size:12.5px;font-weight:700;max-width:260px;margin:8px auto 6px">${esc(c.label||'')}</div>
@@ -756,7 +786,19 @@ function copyBrief(){navigator.clipboard.writeText(brief()).then(()=>toast('브�
 $('i_cat').innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
 $('i_cat').value='ortho';
 try{if(localStorage.getItem('vstudio_dark')==='1')toggleDark();}catch(e){}
+// 이전 작업 복원(있으면)
+const restored=restoreState();
+// 이모지 칩(복원된 hidden 값 반영)
+chipGroup('emojiChips','i_emoji',['없음','적게','보통'],()=>{if(S.step===3)buildPrompt();});
+// 브랜드 색 테마 반영
+(function(){const c=$('i_color').value;document.documentElement.style.setProperty('--accent',c);
+  document.documentElement.style.setProperty('--accent-soft',hexSoft(c));})();
+syncInputs();
+// 입력 변경 시 자동 저장
+document.addEventListener('input',e=>{if(e.target&&e.target.id)saveState();});
+document.addEventListener('change',saveState);
 applyCfg();renderHistory();renderStepper();
+if(restored)setTimeout(()=>toast('이전에 작성하던 내용을 불러왔어요 💾 (🗑 초기화로 새로 시작)'),400);
 </script>
 </body>
 </html>
