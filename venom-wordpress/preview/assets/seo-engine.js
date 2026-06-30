@@ -22,7 +22,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
 
   // ── robots.txt 표준 파서 (RFC 9309) ─────────────────────────────
   // 지정 UA(또는 *)가 루트('/') 접근 가능한지. 충돌 시 least-restrictive(Allow 우선).
@@ -185,11 +185,20 @@
     var isSPA = (bodyText.length < 150 && scriptCount >= 2 && !title && !h1Count) ||
       (doc && !!doc.querySelector('#root:empty,#app:empty,[data-reactroot]:empty'));
 
+    // 정적 페치로 평가 불가한 'JS 렌더링/봇 차단' 정황 — 메타·구조화데이터를 JS로 주입하거나
+    // 봇 차단(401/403)으로 빈 응답이 오면, 해당 신호를 '실패'가 아니라 '정밀필요(pending)'로 처리한다.
+    // (정적 HTML에 이미 있으면 그대로 통과 — 거짓 통과는 만들지 않음)
+    var renderSuspect = isSPA
+      || (scriptCount >= 4 && !hasLd && !ogOk)          // JS 다수인데 구조화데이터·OG 둘 다 정적엔 없음
+      || (titleCount === 0 && bodyText.length < 400);   // 제목 없고 본문 빈약 → 차단/미렌더 의심
+    // JS로 흔히 주입되는 신호: 정적에 있으면 pass, 없으면 renderSuspect일 때 pending(null), 아니면 fail
+    var jsItem = function (v) { return v === true ? true : (renderSuspect ? null : false); };
+
     var checks = {
       content: [
-        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 8, titlePass, '공통'],
-        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 8, descPass, '공통'],
-        ['H1 대표 제목', h1Note, 6, h1Pass, '네이버'],
+        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 8, jsItem(titlePass), '공통'],
+        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 8, jsItem(descPass), '공통'],
+        ['H1 대표 제목', h1Note, 6, jsItem(h1Pass), '네이버'],
         ['이미지 ALT 텍스트', '이미지 대체 텍스트 (' + imgDesc + ')', 7, imgAltOk, '공통'],
         ['의미있는 링크 텍스트', '서술형 앵커 — "여기 클릭" 류 지양', 5, linkTextOk, 'Google'],
         ['서술형 URL', 'URL에 의미있는 단어 — ' + urlNote, 4, urlOk, 'Google']
@@ -203,8 +212,8 @@
         ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 4, !!lang, 'Google']
       ],
       search: [
-        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출', 7, hasLd, 'Google'],
-        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기', 6, ogOk, '네이버'],
+        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출', 7, jsItem(hasLd), 'Google'],
+        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기', 6, jsItem(ogOk), '네이버'],
         ['sitemap.xml 선언', 'robots.txt에 Sitemap: 선언 — 수집 촉진', 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
         ['robots.txt 존재', '크롤러 수집 규칙 파일 제공', 3, robotsTxtOk, '공통']
@@ -217,7 +226,9 @@
       ]
     };
 
-    return buildResult(url, domain, isHttps, isSPA, checks, null);
+    var _res = buildResult(url, domain, isHttps, isSPA, checks, null);
+    _res.renderSuspect = renderSuspect;
+    return _res;
   }
 
   var CAT_DEF = [
@@ -411,6 +422,8 @@
         '<div style="flex:1;min-width:220px">' + bars +
           (result.categories.some(function (c) { return c.pending; }) && !result.psi ?
             '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 속도는 정밀 분석(PSI) 시 측정됩니다 (기본 90점 만점)</div>' : '') +
+          (result.renderSuspect && !result.psi ?
+            '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>정밀필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
         '</div>' +
       '</div>' +
       statsStrip +
