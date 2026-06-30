@@ -174,9 +174,51 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // ── GET /api/sites ────────────────────────────────────────────────────────
+  if (req.method === 'GET' && req.url === '/api/sites') {
+    try {
+      const outputDir = path.join(ROOT, 'output');
+      if (!fs.existsSync(outputDir)) {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify([]));
+      }
+      const sites = fs.readdirSync(outputDir)
+        .filter(d => fs.statSync(path.join(outputDir, d)).isDirectory())
+        .map(slug => {
+          const dir = path.join(outputDir, slug);
+          const manifestPath = path.join(dir, 'manifest.json');
+          if (fs.existsSync(manifestPath)) {
+            return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          }
+          // manifest 없는 구 버전: robots.txt에서 domain 추출
+          const robotsPath = path.join(dir, 'robots.txt');
+          let domain = slug.replace(/-/g, '.');
+          if (fs.existsSync(robotsPath)) {
+            const m = fs.readFileSync(robotsPath, 'utf8').match(/Sitemap: https:\/\/([^/]+)/);
+            if (m) domain = m[1];
+          }
+          const stat = fs.statSync(path.join(dir, 'index.html'));
+          return {
+            slug, domain, brandName: slug, category: 'unknown',
+            specialtyLabel: '', scale: '', options: [],
+            generatedAt: stat.mtime.toISOString(),
+            sizeBytes: stat.size,
+            hasBlog: fs.existsSync(path.join(dir, 'blog', 'index.json')),
+          };
+        })
+        .sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(sites));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ error: e.message }));
+    }
+  }
+
   // ── GET static ────────────────────────────────────────────────────────────
   let urlPath = req.url.split('?')[0];
   if (urlPath === '/') urlPath = '/intake/index.html';
+  if (urlPath === '/dashboard' || urlPath === '/dashboard/') urlPath = '/dashboard/index.html';
 
   serveFile(res, path.join(ROOT, urlPath));
 });

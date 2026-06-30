@@ -361,9 +361,37 @@ function prepare(spec) {
     };
   }
 
+  // BreadcrumbList 스키마
+  const breadcrumbSchema = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '홈', item: `https://${spec.domain}/` },
+      { '@type': 'ListItem', position: 2, name: specialty.label, item: `https://${spec.domain}/#${spec.category === 'clinic' ? 'departments' : 'menu'}` },
+    ],
+  }, null, 2);
+
+  if (spec.category === 'clinic') {
+    spec.sections.breadcrumbSchema = breadcrumbSchema;
+  } else if (spec.category === 'local') {
+    spec.sections.breadcrumbSchema = breadcrumbSchema;
+  }
+
+  // 이미지 URL만 추출 (data URI 제외 — sitemap에는 공개 URL만)
+  const publicImages = {};
+  if (spec.images) {
+    for (const [k, v] of Object.entries(spec.images)) {
+      if (typeof v === 'string' && v.startsWith('http')) publicImages[k] = v;
+      if (Array.isArray(v)) {
+        const publicArr = v.filter(u => typeof u === 'string' && u.startsWith('http'));
+        if (publicArr.length) publicImages[k] = publicArr;
+      }
+    }
+  }
+
   const seoFiles = {
     'robots.txt': robotsTxt(spec.domain),
-    'sitemap.xml': sitemapXml(spec.domain, scale.pages),
+    'sitemap.xml': sitemapXml(spec.domain, scale.pages, publicImages),
     'llms.txt':    llmsTxt(spec, specialty),
   };
 
@@ -403,6 +431,21 @@ function generate(specPath) {
   for (const [name, content] of Object.entries(seoFiles)) {
     fs.writeFileSync(path.join(outDir, name), content);
   }
+
+  // 대시보드용 manifest.json
+  const manifest = {
+    slug: spec.slug,
+    domain: spec.domain,
+    brandName: spec.brand.name,
+    category: spec.category,
+    specialtyLabel: specialty.label,
+    scale: scale.label,
+    options,
+    generatedAt: new Date().toISOString(),
+    sizeBytes: Buffer.byteLength(html),
+    hasBlog: fs.existsSync(path.join(outDir, 'blog', 'index.json')),
+  };
+  fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
   console.log('\n✅ 사이트 생성 완료 (정적)');
   console.log('────────────────────────────────');

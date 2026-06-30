@@ -20,13 +20,38 @@ Sitemap: https://${domain}/sitemap.xml
 `;
 }
 
-function sitemapXml(domain, pages) {
+function sitemapXml(domain, pages, images) {
+  const imageNs = images && Object.keys(images).length
+    ? '\n       xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"'
+    : '';
+
+  // home URL에 이미지 항목 추가
+  const imgEntries = images ? Object.entries(images)
+    .filter(([, v]) => v && typeof v === 'string' && v.startsWith('http'))
+    .map(([k, v]) => {
+      const titleMap = { hero: '대표 이미지', intro: '소개 이미지', gallery: '갤러리' };
+      return `    <image:image>\n      <image:loc>${v}</image:loc>\n      <image:title>${titleMap[k] || k}</image:title>\n    </image:image>`;
+    }) : [];
+
+  // gallery 배열도 처리
+  if (images?.gallery && Array.isArray(images.gallery)) {
+    images.gallery.forEach((url, i) => {
+      if (url && url.startsWith('http'))
+        imgEntries.push(`    <image:image>\n      <image:loc>${url}</image:loc>\n      <image:title>갤러리 ${i + 1}</image:title>\n    </image:image>`);
+    });
+  }
+
   const urls = pages.map(p => {
     const loc = p === 'home' ? `https://${domain}/` : `https://${domain}/#${p}`;
-    return `  <url><loc>${loc}</loc><changefreq>weekly</changefreq><priority>${p === 'home' ? '1.0' : '0.7'}</priority></url>`;
+    const pri = p === 'home' ? '1.0' : '0.7';
+    const imgBlock = p === 'home' && imgEntries.length
+      ? '\n' + imgEntries.join('\n')
+      : '';
+    return `  <url>\n    <loc>${loc}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${pri}</priority>${imgBlock}\n  </url>`;
   }).join('\n');
+
   return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${imageNs}>
 ${urls}
 </urlset>
 `;
