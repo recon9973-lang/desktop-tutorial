@@ -73,13 +73,20 @@
 ### 🟡 설정값 주입 시 즉시 동작 (config-driven)
 - **식약처 건강기능식품 품목** → `/api/products`의 `kr_products`. `MFDS_PRODUCT_API_URL`(활용신청 후 명세 URL) + `DATA_GO_KR_KEY` 설정 시 국내 제품 실데이터. 미설정 시 쇼핑 딥링크로 폴백. — **이번에 추가**
 
-### ⬜ 남은 것 — 각각 '사용자 작업' 또는 '데이터 파이프라인' 필요 (런타임 단순 fetch 아님)
-| API | 왜 아직 안 붙였나 |
-|-----|------------------|
-| 식약처 기능성 원료 인정(15058359) | 성분 KB **적재(배치)** 작업 — 런타임 API보다 데이터 빌드 스크립트가 맞음 |
-| 식약처 DUR(15059486) | 약-약 금기 모델 → 우리 약-영양제 모델로 **매핑 설계** 필요 |
-| EFSA / Health Canada LNHPD | 정확 리소스 경로는 각 포털 명세 확인 필요(추측 금지) → config-driven로 추가 가능 |
-| NIH ODS API / PubMed | 근거 코퍼스 **자동화 파이프라인**(현재는 큐레이션) |
-| 카카오 알림톡 | `KAKAO_API_KEY/SENDER_KEY`+승인 템플릿 필요(발송 인프라) |
+### 🟢 추가 연결 — 라우트/스크립트 코드 완료 (순서대로 진행)
+| API | 무엇 | 동작 조건 |
+|-----|------|----------|
+| **PubMed (NCBI E-utilities)** | `/api/evidence-search` 성분별 임상연구(RCT·메타분석) → products 화면 노출 | **키 불필요**(배포 시 동작, 샌드박스 차단) |
+| **식약처 DUR(15059486)** | `/api/dur` 병용금기 조회 | `MFDS_DUR_API_URL`+`DATA_GO_KR_KEY` |
+| **식약처 원료 인정(15058359)** | `scripts/sync-mfds-materials.mjs` 배치 적재 → `data/mfds_raw_materials.json` | `MFDS_MATERIAL_API_URL`+키 |
+| **Health Canada LNHPD** | `/api/products`의 `ca_products` | `LNHPD_API_URL` |
+| **카카오 알림톡** | `/api/kakao` 발송(추천/알림) | `ALIMTALK_API_URL`·`ALIMTALK_API_KEY`·`KAKAO_SENDER_KEY`·`KAKAO_TEMPLATE_*`(발신대행사) |
 
-> 원칙: **명세를 확인 못 한 엔드포인트는 추측해서 하드코딩하지 않는다.** 검증된 것(DSLD·openFDA)은 실제로, 명세 필요한 것(식약처 품목)은 config-driven로, 나머지는 작업 성격(배치/매핑/발송)에 맞게 분리.
+> 모든 신규 라우트는 **미설정/차단 시 graceful 폴백**(source:'none'/'unconfigured', 추측 하드코딩 없음). 명세 미확인 엔드포인트는 전부 **config-driven(env 주입)**.
+
+### ⬜ 의도적으로 코드 미작성
+| API | 이유 |
+|-----|------|
+| EFSA 건강강조표시 | 구조화 API 미확인(포털 조회 위주) → 필요 시 config-driven 추가 |
+| NIH ODS API | 근거는 이미 코퍼스로 큐레이션 — 자동화는 별도 파이프라인 |
+| WHO·Codex·EMA·NCCIH·Cochrane | API 없음(PDF) → 인용 출처로만(sources.json) |

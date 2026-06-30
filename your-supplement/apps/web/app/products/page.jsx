@@ -11,18 +11,20 @@ function ProductsInner() {
   const [q, setQ] = useState('');
   const [data, setData] = useState(null);
   const [safety, setSafety] = useState(null);
+  const [evidence, setEvidence] = useState(null);
   const [loading, setLoading] = useState(false);
 
   async function run(ingredientId, query) {
-    setLoading(true); setData(null); setSafety(null);
+    setLoading(true); setData(null); setSafety(null); setEvidence(null);
     const qs = ingredientId ? `ingredient_id=${ingredientId}` : `q=${encodeURIComponent(query)}`;
     try {
       const res = await fetch(`/api/products?${qs}`);
       setData(await res.json());
     } catch { setData({ error: '검색 실패' }); }
     setLoading(false);
-    // 이상사례 신호(openFDA)는 비차단으로 뒤따라 로드
+    // 이상사례(openFDA)·임상연구(PubMed)는 비차단으로 뒤따라 로드
     fetch(`/api/safety?${qs}`).then((r) => r.json()).then(setSafety).catch(() => {});
+    fetch(`/api/evidence-search?${qs}`).then((r) => r.json()).then(setEvidence).catch(() => {});
   }
 
   // 진입 시 ingredient_id 있으면 자동 검색
@@ -119,6 +121,25 @@ function ProductsInner() {
                   </p>
                 )}
                 <p style={{ fontSize: 11.5, color: 'var(--ink-faint)', marginTop: 6 }}>{safety.disclaimer}</p>
+              </div>
+            )}
+
+            {/* 관련 임상연구(PubMed) */}
+            {evidence?.source === 'pubmed' && evidence.articles?.length > 0 && (
+              <div style={{ marginBottom: 24 }}>
+                <h2 className="title" style={{ marginBottom: 12 }}>📚 관련 임상연구 (PubMed)</h2>
+                <div className="card" style={{ borderRadius: 'var(--r-xl)' }}>
+                  {evidence.articles.map((a, i) => (
+                    <a key={a.pmid} href={a.url} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'block', padding: '10px 0', borderBottom: i < evidence.articles.length - 1 ? '1px solid var(--hairline)' : 'none', textDecoration: 'none' }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{a.title}</p>
+                      <p style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 2 }}>{a.journal} {a.pubdate && `· ${a.pubdate}`} · PMID {a.pmid} →</p>
+                    </a>
+                  ))}
+                </div>
+                {evidence.total > evidence.articles.length && (
+                  <p style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 6 }}>총 {evidence.total.toLocaleString()}건 중 상위 {evidence.articles.length}건 (RCT·메타분석 우선)</p>
+                )}
               </div>
             )}
 

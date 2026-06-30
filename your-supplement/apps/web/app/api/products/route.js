@@ -77,6 +77,23 @@ async function searchMFDS(nameKo) {
   }).filter((p) => p.name && p.name !== '(제품명 미상)').slice(0, 10);
 }
 
+// Health Canada LNHPD (캐나다 허가 천연건강제품) — config-driven.
+// 정확한 리소스 경로는 포털 명세 확인 필요 → LNHPD_API_URL 주입 시 동작(키 불필요).
+async function searchLNHPD(term) {
+  const base = process.env.LNHPD_API_URL;
+  if (!base) return null;
+  const url = `${base}${base.includes('?') ? '&' : '?'}type=json&product_name=${encodeURIComponent(term)}`;
+  const res = await fetch(url, { headers: { accept: 'application/json' } });
+  if (!res.ok) throw new Error('LNHPD ' + res.status);
+  const data = await res.json();
+  const rows = Array.isArray(data) ? data : (data?.data || data?.results || []);
+  return rows.slice(0, 8).map((r) => ({
+    name: r.product_name || r.productName || r.licence_name || '(제품명 미상)',
+    brand: r.company_name || r.companyName || '',
+    url: r.lnhpd_id ? `https://health-products.canada.ca/lnhpd-bdpsnh/info.do?licence=${r.lnhpd_id}` : null,
+  })).filter((p) => p.name && p.name !== '(제품명 미상)');
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const ingredientId = searchParams.get('ingredient_id');
@@ -110,12 +127,22 @@ export async function GET(request) {
     kr_products = { source: 'error', reason: e.message, products: [] };
   }
 
+  // 캐나다 LNHPD(설정 시) — 글로벌 제품 확장
+  let ca_products = null;
+  try {
+    const ca = await searchLNHPD(q);
+    if (ca && ca.length) ca_products = { source: 'lnhpd', products: ca };
+  } catch (e) {
+    ca_products = { source: 'error', reason: e.message, products: [] };
+  }
+
   return Response.json({
     ingredient_id: ingredientId || null,
     name_ko: nameKo,
     query: q,
     global,        // 해외(DSLD) 실제 시판 제품
     kr_products,   // 국내(식약처 품목) — MFDS_PRODUCT_API_URL 설정 시
+    ca_products,   // 캐나다(LNHPD) — LNHPD_API_URL 설정 시
     kr_search,     // 국내 제품 검색 딥링크(쇼핑·식품안전나라)
     note: kr_products
       ? '국내는 식약처 품목 API, 해외는 NIH DSLD 실시간.'
