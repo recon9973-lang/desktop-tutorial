@@ -15,23 +15,50 @@ const DEFAULT_SETTINGS = {
   extra: '',
 };
 
-// 오늘 날짜(KST)에 해당하는 스케줄 찾기
-function getTodayCount(settings) {
-  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-  const todayStr = today.toISOString().slice(0, 10);
+// 오늘 날짜(KST) YYYY-MM-DD
+function kstDateStr() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })).toISOString().slice(0, 10);
+}
 
-  // schedules 배열 방식
+// 오늘(KST)에 해당하는 스케줄 객체 반환(없으면 null). 레거시 dailyCount도 흡수.
+function getTodaySchedule(settings) {
+  const todayStr = kstDateStr();
   if (Array.isArray(settings.schedules) && settings.schedules.length) {
     for (const s of settings.schedules) {
-      if (s.from && s.to && todayStr >= s.from && todayStr <= s.to) {
-        return Math.max(1, parseInt(s.dailyCount) || 1);
-      }
+      if (s.from && s.to && todayStr >= s.from && todayStr <= s.to) return s;
     }
-    return 0; // 오늘에 해당하는 스케줄 없으면 발행 안 함
+    return null;
   }
+  if (settings.dailyCount) return { dailyCount: parseInt(settings.dailyCount) || 1, timeMode: 'same', time: '09:00' };
+  return null;
+}
 
-  // 레거시: dailyCount 단일 값
-  return Math.max(1, parseInt(settings.dailyCount) || 1);
+function _pad2(n) { return String(n).padStart(2, '0'); }
+function _hmToMin(hm) { const a = String(hm || '09:00').split(':'); return (parseInt(a[0]) || 0) * 60 + (parseInt(a[1]) || 0); }
+function _minToHM(min) { min = ((min % 1440) + 1440) % 1440; return _pad2(Math.floor(min / 60)) + ':' + _pad2(min % 60); }
+
+// 발행 개수만큼 시각(HH:MM) 배열 산출 — same/random/individual
+function computePublishTimes(sched, count) {
+  const mode = (sched && sched.timeMode) || 'same';
+  const out = [];
+  if (mode === 'random') {
+    let a = _hmToMin(sched.randStart || '09:00'), b = _hmToMin(sched.randEnd || '18:00');
+    if (b < a) { const t = a; a = b; b = t; }
+    for (let i = 0; i < count; i++) out.push(_minToHM(a + Math.floor(Math.random() * (b - a + 1))));
+    out.sort();
+  } else if (mode === 'individual') {
+    const arr = Array.isArray(sched.times) ? sched.times : [];
+    for (let i = 0; i < count; i++) out.push(arr[i] || arr[arr.length - 1] || sched.time || '09:00');
+  } else { // same
+    const t = (sched && sched.time) || '09:00';
+    for (let i = 0; i < count; i++) out.push(t);
+  }
+  return out;
+}
+
+// 오늘(KST) 날짜 + HH:MM → UTC ISO 타임스탬프
+function kstPublishAtISO(hm) {
+  return new Date(`${kstDateStr()}T${hm}:00+09:00`).toISOString();
 }
 
 function authCheck(req) {
@@ -66,10 +93,12 @@ module.exports = async function handler(req, res) {
   }
 
   const results = [];
-  const count = getTodayCount(settings);
-  if (count === 0) {
+  const todaySched = getTodaySchedule(settings);
+  if (!todaySched) {
     return res.status(200).json({ ok: true, skipped: true, reason: '오늘은 발행 스케줄이 없습니다.' });
   }
+  const count = Math.max(1, parseInt(todaySched.dailyCount) || 1);
+  const publishTimes = computePublishTimes(todaySched, count); // ['09:00', ...] 길이 count
 
   for (let i = 0; i < count; i++) {
     const cats = settings.categories || ['geo'];
@@ -82,6 +111,13 @@ module.exports = async function handler(req, res) {
 
     try {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
+
+      // 발행 예약 시각(KST 기준) — 글마다 same/random/individual 모드로 배정.
+      // publishAt이 미래면 프론트(블로그 목록·사이트맵)에서 그 시각까지 노출 보류.
+      const publishAt = kstPublishAtISO(publishTimes[i] || '09:00');
+      post.publishAt = publishAt;
+      post.date = publishAt.slice(0, 10);
+      post.scheduledTime = publishTimes[i] || '09:00';
 
       // 이미지 1~2장 생성: 1번째=본문 최상단 히어로, 2번째=첫 h2 뒤 본문 삽입
       let imageError = null;

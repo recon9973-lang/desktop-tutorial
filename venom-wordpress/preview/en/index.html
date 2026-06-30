@@ -8804,7 +8804,10 @@ function _buildBlogCard(p) {
 
 function _allBlogPosts() {
   // Dynamic posts first (newest), static posts after
-  return _dynBlogPosts.concat(STATIC_BLOG_POSTS);
+  // Scheduled publishing: posts whose publishAt is in the future stay hidden until that time
+  var now = Date.now();
+  var live = _dynBlogPosts.filter(function(p){ return !p.publishAt || Date.parse(p.publishAt) <= now; });
+  return live.concat(STATIC_BLOG_POSTS);
 }
 
 function renderBlogGrid() {

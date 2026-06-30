@@ -2362,6 +2362,49 @@ function apSelectPrevCat(id) {
 // ── 발행 스케줄 관리 (기간별) ──
 var _apSchedules = [];
 
+var _AP_IN = 'width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none';
+
+// 발행 개수에 맞춰 개별 시간 배열 보정(부족하면 채우고 넘치면 자름)
+function apNormTimes(s) {
+  var n = Math.max(1, parseInt(s.dailyCount) || 1);
+  if (!Array.isArray(s.times)) s.times = [];
+  while (s.times.length < n) s.times.push(s.times.length ? s.times[s.times.length-1] : (s.time || '09:00'));
+  if (s.times.length > n) s.times = s.times.slice(0, n);
+  return s.times;
+}
+
+function apTimeBlock(s, i) {
+  var mode = s.timeMode || 'same';
+  var html = '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">'
+    + '<div style="font-size:11px;color:var(--mute);margin-bottom:6px">⏰ 발행 시간 방식</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+    + ['same|동일 시간','random|랜덤 시간','individual|개별 배정'].map(function(opt){
+        var v=opt.split('|')[0], label=opt.split('|')[1];
+        var on=(mode===v);
+        return '<button onclick="apSetTimeMode('+i+',\''+v+'\')" style="padding:6px 12px;border:1px solid '+(on?'var(--p)':'var(--border)')+';border-radius:6px;font-size:12px;cursor:pointer;background:'+(on?'var(--p)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+label+'</button>';
+      }).join('') + '</div>';
+
+  if (mode === 'same') {
+    html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--mute)">매일 이 시각에 전부 발행</span>'
+      + '<input type="time" value="'+(s.time||'09:00')+'" onchange="_apSchedules['+i+'].time=this.value" style="'+_AP_IN+';width:130px"></div>';
+  } else if (mode === 'random') {
+    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;color:var(--mute)">이 시간대 안에서 무작위 분산</span>'
+      + '<input type="time" value="'+(s.randStart||'09:00')+'" onchange="_apSchedules['+i+'].randStart=this.value" style="'+_AP_IN+';width:130px">'
+      + '<span style="color:var(--mute)">~</span>'
+      + '<input type="time" value="'+(s.randEnd||'18:00')+'" onchange="_apSchedules['+i+'].randEnd=this.value" style="'+_AP_IN+';width:130px"></div>';
+  } else { // individual
+    var times = apNormTimes(s);
+    html += '<div style="font-size:12px;color:var(--mute);margin-bottom:6px">각 글마다 발행 시각 ('+times.length+'개)</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + times.map(function(t, k){
+          return '<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;color:var(--mute)">'+(k+1)+'번째</span>'
+            + '<input type="time" value="'+t+'" onchange="apSetIndivTime('+i+','+k+',this.value)" style="'+_AP_IN+';width:115px"></div>';
+        }).join('') + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
 function apRenderSchedules() {
   var wrap = document.getElementById('ap-schedules-list');
   if (!wrap) return;
@@ -2370,16 +2413,34 @@ function apRenderSchedules() {
     return;
   }
   wrap.innerHTML = _apSchedules.map(function(s, i) {
-    return '<div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:center;padding:12px 16px;background:var(--soft);border-radius:var(--r8);border:1px solid var(--border)">'
+    return '<div style="padding:12px 16px;background:var(--soft);border-radius:var(--r8);border:1px solid var(--border)">'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end">'
       + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">시작일</div>'
-      + '<input type="date" value="'+s.from+'" onchange="_apSchedules['+i+'].from=this.value" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
+      + '<input type="date" value="'+s.from+'" onchange="_apSchedules['+i+'].from=this.value" style="'+_AP_IN+'"></div>'
       + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">종료일</div>'
-      + '<input type="date" value="'+s.to+'" onchange="_apSchedules['+i+'].to=this.value" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
+      + '<input type="date" value="'+s.to+'" onchange="_apSchedules['+i+'].to=this.value" style="'+_AP_IN+'"></div>'
       + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">하루 발행 수</div>'
-      + '<input type="number" min="1" value="'+s.dailyCount+'" onchange="_apSchedules['+i+'].dailyCount=parseInt(this.value)||1" style="width:80px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--ink);outline:none"></div>'
-      + '<div style="padding-top:18px"><button onclick="apRemoveSchedule('+i+')" style="padding:8px 12px;border:1px solid #f87171;border-radius:6px;background:transparent;color:#f87171;cursor:pointer;font-size:13px">삭제</button></div>'
+      + '<input type="number" min="1" value="'+s.dailyCount+'" onchange="apSetDailyCount('+i+',this.value)" style="'+_AP_IN+';width:80px"></div>'
+      + '<div><button onclick="apRemoveSchedule('+i+')" style="padding:8px 12px;border:1px solid #f87171;border-radius:6px;background:transparent;color:#f87171;cursor:pointer;font-size:13px">삭제</button></div>'
+      + '</div>'
+      + apTimeBlock(s, i)
       + '</div>';
   }).join('');
+}
+
+function apSetDailyCount(i, v) {
+  _apSchedules[i].dailyCount = Math.max(1, parseInt(v) || 1);
+  if ((_apSchedules[i].timeMode||'same') === 'individual') apNormTimes(_apSchedules[i]);
+  apRenderSchedules();
+}
+function apSetTimeMode(i, mode) {
+  _apSchedules[i].timeMode = mode;
+  if (mode === 'individual') apNormTimes(_apSchedules[i]);
+  apRenderSchedules();
+}
+function apSetIndivTime(i, k, v) {
+  apNormTimes(_apSchedules[i]);
+  _apSchedules[i].times[k] = v;
 }
 
 function apAddSchedule() {
@@ -2387,7 +2448,7 @@ function apAddSchedule() {
   var nextMonth = new Date();
   nextMonth.setMonth(nextMonth.getMonth() + 1);
   var next = nextMonth.toISOString().slice(0, 10);
-  _apSchedules.push({ from: today, to: next, dailyCount: 1 });
+  _apSchedules.push({ from: today, to: next, dailyCount: 1, timeMode: 'same', time: '09:00', randStart: '09:00', randEnd: '18:00', times: ['09:00'] });
   apRenderSchedules();
 }
 
