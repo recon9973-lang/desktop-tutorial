@@ -18,7 +18,7 @@
 3. 설정 화면에서 ⭐ **중요**:
    - **Root Directory**: `Edit` 눌러 → `your-supplement/apps/web` 선택
    - **Framework Preset**: `Next.js` (자동 감지됨)
-   - **Branch**: `claude/hospital-pharmacy-brainstorm-pdafsj` 선택
+   - **Branch**: `claude/continue-session-96nt5z` 선택
 
 ## STEP 3. 환경변수 입력 (Environment Variables)
 배포 화면의 **Environment Variables**에 아래를 추가 (Key / Value):
@@ -78,3 +78,23 @@
 1. **브랜치**: 현재 최신 작업은 `claude/continue-session-96nt5z`. Vercel 프로젝트의 **Production Branch**를 이 브랜치로 두거나 `main`에 병합하세요. (이 저장소의 `main`에는 영양제 앱이 없음)
 2. **Root Directory**: `your-supplement/apps/web` (STEP 2 참고).
 3. 카카오맵 키를 쓰면 배포 URL을 카카오 플랫폼 도메인에 등록(STEP 5).
+
+---
+
+## 🔧 현재 배포 상태 진단 (2026-06-30)
+
+Vercel은 **이미 이 저장소에 연동**되어 있습니다. 다만 프로젝트가 **2개** 생성돼 문제가 있습니다:
+
+| Vercel 프로젝트 | Root Directory | 상태 | 문제 |
+|---|---|---|---|
+| `desktop-tutorial` | (저장소 루트) | ✅ 배포됨 | ❌ **잘못된 폴더** — 영양제 앱은 `your-supplement/apps/web`인데 루트를 배포해 엉뚱한 내용이 뜸 |
+| `desktop-tutorial-g6q8` | `your-supplement/apps/web` | ❌ 실패 | **무료 플랜 하루 100회 배포 한도 초과** (중복 프로젝트가 매 푸시마다 배포를 2배 소모) |
+
+**즉, 설정이 올바른 프로젝트(g6q8)는 한도 때문에 못 떴고, 잘못된 프로젝트가 대신 떠 있는 상태입니다.**
+
+### ✅ 해결 방법 (대시보드에서, 한 번만)
+1. **중복 프로젝트 삭제** — Vercel → `desktop-tutorial`(Root=루트) 프로젝트 → Settings → 맨 아래 **Delete Project**. (올바른 `desktop-tutorial-g6q8`만 남김 → 배포 소모도 절반으로)
+2. **배포 한도 풀리면 재배포** — 무료 플랜 한도는 ~24시간 후 리셋. 리셋 후 `desktop-tutorial-g6q8` → **Deployments → 우측 ⋯ → Redeploy**. (급하면 Pro 업그레이드 시 한도 없음)
+3. (선택) 그 프로젝트 **Settings → Git → Production Branch**를 `claude/continue-session-96nt5z`로, **Root Directory**가 `your-supplement/apps/web`인지 확인.
+
+> 코드·빌드는 정상입니다(`next build` 17페이지 통과). 남은 건 위 **대시보드 클릭 2~3번**뿐.
