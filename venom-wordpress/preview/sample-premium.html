@@ -3,137 +3,340 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>베놈 뷰티클리닉 — 프리미엄형 샘플</title>
+<title>루미너스 피부과·뷰티클리닉 — 프리미엄 피부과 샘플</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Pretendard',sans-serif;background:#0a0a0f;color:#e8e0f0}
+body{font-family:'Pretendard',sans-serif;background:#0a0210;color:#e8e0f0}
 a{text-decoration:none;color:inherit}
-/* HEADER */
-.hd{background:rgba(10,10,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+img{display:block}
+
+/* ─── HEADER ─────────────────────────────────── */
+.hd{background:rgba(10,2,16,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);height:72px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
 .hd-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;width:100%;gap:48px}
-.hd-logo{font-size:22px;font-weight:700;letter-spacing:.1em;color:#fff}
-.hd-logo span{background:linear-gradient(90deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hd-nav{display:flex;gap:32px;margin-left:auto}
-.hd-nav a{color:rgba(255,255,255,.5);font-size:13px;letter-spacing:.05em;font-weight:300;transition:.2s}
+.hd-logo{font-size:20px;font-weight:700;letter-spacing:.06em;color:#fff;white-space:nowrap}
+.hd-logo span{background:linear-gradient(90deg,#c084fc,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hd-nav{display:flex;gap:28px;margin-left:auto}
+.hd-nav a{color:rgba(255,255,255,.45);font-size:13px;letter-spacing:.04em;font-weight:300;transition:.2s}
 .hd-nav a:hover{color:#c084fc}
-.hd-cta{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:10px 24px;border-radius:40px;font-size:13px;font-weight:600;letter-spacing:.03em;margin-left:32px}
-/* HERO */
-.hero{min-height:90vh;background:#0a0210;display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 32px;position:relative;overflow:hidden}
-.hero-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_03.jpg');background-size:cover;background-position:center;filter:brightness(.2);z-index:0}
-.hero::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.25) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);z-index:1}
-.hero-content{position:relative;z-index:1}
-.hero-badge{display:inline-block;border:1px solid rgba(192,132,252,.4);color:#c084fc;font-size:11px;letter-spacing:.15em;padding:6px 16px;border-radius:40px;margin-bottom:32px;font-weight:500}
-.hero h1{font-size:64px;font-weight:200;letter-spacing:-.03em;line-height:1.1;margin-bottom:24px;color:#fff}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,#c084fc,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:600}
-.hero p{font-size:17px;color:rgba(255,255,255,.45);line-height:1.8;margin-bottom:48px;font-weight:300}
-.hero-btns{display:flex;gap:16px;justify-content:center}
-.btn-p{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:16px 40px;border-radius:40px;font-size:15px;font-weight:600}
-.btn-g{border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:16px 40px;border-radius:40px;font-size:15px;font-weight:300}
-/* TREATMENTS */
-.treats{padding:100px 32px;max-width:1200px;margin:0 auto}
-.sec-label{font-size:11px;letter-spacing:.15em;color:#c084fc;font-weight:600;margin-bottom:16px}
-.sec-title{font-size:40px;font-weight:200;color:#fff;letter-spacing:-.03em;margin-bottom:8px}
+.hd-cta{background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;padding:10px 22px;border-radius:40px;font-size:13px;font-weight:600;letter-spacing:.03em;margin-left:28px;white-space:nowrap;transition:.2s}
+.hd-cta:hover{opacity:.85}
+
+/* ─── HERO ────────────────────────────────────── */
+.hero{position:relative;min-height:680px;display:flex;align-items:center;overflow:hidden;background:#0a0210}
+.hero-bg{position:absolute;inset:0;background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_03.jpg');background-size:cover;background-position:center top;z-index:0}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(10,2,16,.9) 45%,rgba(10,2,16,.3) 100%);z-index:1}
+.hero-content{position:relative;z-index:2;padding:80px 64px;max-width:600px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(192,132,252,.4);color:#c084fc;font-size:11px;letter-spacing:.15em;padding:6px 16px;border-radius:40px;margin-bottom:36px;font-weight:500}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#c084fc;flex-shrink:0}
+.hero h1{font-size:54px;font-weight:200;letter-spacing:-.03em;line-height:1.12;margin-bottom:20px;color:#fff}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#c084fc,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+.hero-sub{font-size:15px;color:rgba(255,255,255,.5);line-height:1.9;margin-bottom:16px;font-weight:300}
+.hero-detail{font-size:13px;color:rgba(255,255,255,.3);line-height:1.8;margin-bottom:48px;font-weight:300}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.btn-p{background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;padding:15px 36px;border-radius:40px;font-size:14px;font-weight:600;transition:.2s}
+.btn-p:hover{opacity:.85}
+.btn-g{border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);padding:15px 36px;border-radius:40px;font-size:14px;font-weight:300;transition:.2s}
+.btn-g:hover{border-color:rgba(192,132,252,.5);color:#c084fc}
+.hero-stats{display:flex;gap:40px;margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,.08)}
+.hero-stat span{display:block;font-size:32px;font-weight:700;color:#fbbf24;letter-spacing:-.03em}
+.hero-stat p{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.08em;margin-top:4px}
+
+@media(max-width:768px){
+  .hero-content{padding:60px 24px;max-width:100%}
+  .hero-overlay{background:rgba(10,2,16,.78)}
+  .hero h1{font-size:38px}
+  .hd-nav{display:none}
+}
+
+/* ─── SECTION LABELS ─────────────────────────── */
+.sec-label{font-size:11px;letter-spacing:.15em;color:#c084fc;font-weight:600;margin-bottom:12px;text-transform:uppercase}
+.sec-title{font-size:38px;font-weight:200;color:#fff;letter-spacing:-.03em;margin-bottom:8px;line-height:1.2}
 .sec-title strong{font-weight:700}
-.sec-sub{font-size:15px;color:rgba(255,255,255,.35);margin-bottom:56px;font-weight:300}
-.treat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.05)}
-.treat-card{background:#0a0a0f;padding:40px 32px;position:relative;overflow:hidden;transition:.3s;cursor:pointer}
-.treat-card:hover{background:#120a24}
-.treat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#4f46e5);opacity:0;transition:.3s}
-.treat-card:hover::after{opacity:1}
-.treat-num{font-size:11px;color:rgba(192,132,252,.4);letter-spacing:.1em;margin-bottom:20px}
-.treat-name{font-size:22px;font-weight:600;color:#fff;margin-bottom:12px}
-.treat-desc{font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;font-weight:300}
-/* BEFORE AFTER NOTE */
-.ba-note{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:20px 28px;margin:60px auto;max-width:700px;text-align:center;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7}
-/* GALLERY */
-.gallery{padding:80px 32px;background:rgba(255,255,255,.02)}
+.sec-sub{font-size:14px;color:rgba(255,255,255,.35);margin-bottom:52px;font-weight:300;line-height:1.8}
+
+/* ─── SERVICE CARDS ──────────────────────────── */
+.services{padding:100px 32px;background:#0a0210}
+.services-inner{max-width:1200px;margin:0 auto}
+.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.svc-card{background:linear-gradient(145deg,#100520,#1a0535);border:1px solid rgba(192,132,252,.12);border-radius:16px;padding:36px 28px;position:relative;overflow:hidden;transition:.3s;cursor:default}
+.svc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#c084fc,#fbbf24);opacity:0;transition:.3s}
+.svc-card:hover{border-color:rgba(192,132,252,.28);transform:translateY(-4px)}
+.svc-card:hover::before{opacity:1}
+.svc-icon{width:44px;height:44px;margin-bottom:24px;position:relative}
+/* Icon: 레이저 — diamond */
+.icon-laser{width:44px;height:44px;position:relative}
+.icon-laser::before{content:'';position:absolute;top:6px;left:6px;width:32px;height:32px;border:2px solid #c084fc;transform:rotate(45deg);border-radius:4px}
+.icon-laser::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:#fbbf24;border-radius:50%}
+/* Icon: 보톡스 — circle with lines */
+.icon-btx{width:44px;height:44px;position:relative}
+.icon-btx::before{content:'';position:absolute;top:4px;left:4px;width:36px;height:36px;border:2px solid #c084fc;border-radius:50%}
+.icon-btx::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:2px;background:#fbbf24;box-shadow:0 -6px 0 #fbbf24,0 6px 0 #fbbf24}
+/* Icon: 필러 — syringe silhouette via rectangle */
+.icon-filler{width:44px;height:44px;position:relative}
+.icon-filler::before{content:'';position:absolute;top:50%;left:6px;transform:translateY(-50%);width:26px;height:8px;border:2px solid #c084fc;border-radius:4px}
+.icon-filler::after{content:'';position:absolute;top:50%;left:32px;transform:translateY(-50%);width:8px;height:4px;background:#fbbf24;border-radius:0 2px 2px 0}
+/* Icon: 피부관리 — wave */
+.icon-care{width:44px;height:44px;position:relative}
+.icon-care::before{content:'';position:absolute;bottom:10px;left:4px;right:4px;height:2px;background:#c084fc;border-radius:2px;box-shadow:0 -8px 0 rgba(192,132,252,.4),0 -16px 0 rgba(192,132,252,.2)}
+.icon-care::after{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:14px;height:14px;border:2px solid #fbbf24;border-radius:50%}
+
+.svc-num{font-size:10px;color:rgba(192,132,252,.35);letter-spacing:.12em;margin-bottom:14px;font-weight:500}
+.svc-name{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:-.02em}
+.svc-desc{font-size:13px;color:rgba(255,255,255,.38);line-height:1.75;font-weight:300}
+.svc-tag{display:inline-block;margin-top:18px;font-size:11px;color:#c084fc;border:1px solid rgba(192,132,252,.3);padding:4px 12px;border-radius:20px;letter-spacing:.05em}
+
+@media(max-width:960px){.services-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.services-grid{grid-template-columns:1fr}}
+
+/* ─── DOCTOR SPLIT ───────────────────────────── */
+.doctor-split{display:grid;grid-template-columns:1fr 1fr;min-height:560px;background:#0a0210}
+.doctor-split-img{overflow:hidden}
+.doctor-split-img img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.doctor-split-info{padding:72px 56px;display:flex;flex-direction:column;justify-content:center;background:#100520;color:#fff}
+.doc-label{font-size:11px;letter-spacing:.15em;color:#fbbf24;font-weight:600;margin-bottom:20px;text-transform:uppercase}
+.doc-name{font-size:36px;font-weight:700;letter-spacing:-.02em;color:#fff;margin-bottom:6px}
+.doc-title{font-size:14px;color:rgba(192,132,252,.8);font-weight:400;margin-bottom:32px;letter-spacing:.04em}
+.doc-credentials{display:flex;flex-direction:column;gap:10px;margin-bottom:36px}
+.doc-cred{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;font-weight:300}
+.doc-cred::before{content:'';width:4px;height:4px;border-radius:50%;background:#c084fc;flex-shrink:0;margin-top:6px}
+.doc-quote{border-left:2px solid #fbbf24;padding:20px 24px;background:rgba(251,191,36,.06);border-radius:0 8px 8px 0;font-size:15px;color:rgba(255,255,255,.7);line-height:1.8;font-style:italic;font-weight:300;margin-top:8px}
+.doc-quote cite{display:block;margin-top:12px;font-size:12px;color:#fbbf24;font-style:normal;font-weight:600;letter-spacing:.08em}
+
+@media(max-width:768px){
+  .doctor-split{grid-template-columns:1fr}
+  .doctor-split-img{height:320px}
+  .doctor-split-info{padding:48px 28px}
+  .doc-name{font-size:28px}
+}
+
+/* ─── BEFORE AFTER ────────────────────────────── */
+.ba-section{padding:100px 32px;background:linear-gradient(180deg,#100520 0%,#0a0210 100%)}
+.ba-inner{max-width:1200px;margin:0 auto}
+.ba-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:0}
+.ba-card{background:linear-gradient(145deg,#110320,#1a0535);border:1px solid rgba(251,191,36,.1);border-radius:16px;padding:36px 28px;position:relative}
+.ba-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#fbbf24,transparent);border-radius:0 0 16px 16px}
+.ba-treatment{font-size:11px;letter-spacing:.12em;color:#fbbf24;font-weight:600;margin-bottom:16px;text-transform:uppercase}
+.ba-result{font-size:22px;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-.02em}
+.ba-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.75;font-weight:300}
+.ba-period{display:inline-flex;align-items:center;gap:6px;margin-top:20px;font-size:11px;color:rgba(192,132,252,.7);border:1px solid rgba(192,132,252,.2);padding:5px 12px;border-radius:20px}
+.ba-note{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);border-radius:10px;padding:16px 24px;margin-top:36px;font-size:12px;color:rgba(255,255,255,.3);line-height:1.7;text-align:center}
+
+@media(max-width:768px){.ba-grid{grid-template-columns:1fr}}
+@media(max-width:960px){.ba-grid{grid-template-columns:1fr 1fr}}
+
+/* ─── GALLERY ─────────────────────────────────── */
+.gallery{padding:80px 32px;background:#0a0210}
 .gallery-inner{max-width:1200px;margin:0 auto}
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:48px}
-.gallery-item{aspect-ratio:3/4;border-radius:12px;overflow:hidden;position:relative}
-.gallery-item:first-child{grid-row:span 2;aspect-ratio:auto}
-.gi-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:48px}
-.gi-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);display:flex;align-items:flex-end;padding:20px}
-.gi-label{font-size:13px;color:#fff;font-weight:500}
-/* PROMISE */
-.promise{padding:100px 32px;max-width:1200px;margin:0 auto}
-.promise-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:56px}
-.promise-item{border-top:1px solid rgba(255,255,255,.08);padding-top:28px}
-.promise-num{font-size:40px;font-weight:700;background:linear-gradient(135deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
-.promise-t{font-size:16px;font-weight:600;color:#fff;margin-bottom:8px}
-.promise-d{font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;font-weight:300}
+.gallery-grid{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:280px 280px;gap:8px;margin-top:0}
+.g-item{overflow:hidden;border-radius:8px;position:relative}
+.g-item img{width:100%;height:100%;object-fit:cover;transition:.5s}
+.g-item:hover img{transform:scale(1.04)}
+.g-item-tall{grid-row:1 / span 2}
+.g-item-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,2,16,.7) 0%,transparent 60%);opacity:0;transition:.3s}
+.g-item:hover .g-item-overlay{opacity:1}
+.g-label{position:absolute;bottom:16px;left:16px;font-size:12px;color:#fff;font-weight:500;letter-spacing:.05em;opacity:0;transition:.3s;z-index:1}
+.g-item:hover .g-label{opacity:1}
+
+@media(max-width:768px){
+  .gallery-grid{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px}
+  .g-item-tall{grid-row:auto}
+}
+
+/* ─── CTA STRIP ───────────────────────────────── */
+.cta-strip{background:linear-gradient(135deg,#1a0535,#0f0320);border-top:1px solid rgba(192,132,252,.1);border-bottom:1px solid rgba(192,132,252,.1);padding:72px 32px}
+.cta-inner{max-width:800px;margin:0 auto;text-align:center}
+.cta-inner .sec-label{justify-content:center;display:block;text-align:center}
+.cta-inner .sec-title{font-size:32px;margin-bottom:20px}
+.cta-inner .sec-sub{margin-bottom:36px;font-size:14px}
+.cta-inner .btn-p{display:inline-block;font-size:15px;padding:16px 44px}
+.cta-channels{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.cta-ch{font-size:12px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.1);padding:8px 20px;border-radius:40px;transition:.2s}
+.cta-ch:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 </style>
 </head>
 <body>
+
+<!-- HEADER -->
 <header class="hd">
   <div class="hd-inner">
-    <div class="hd-logo">VENOM <span>BEAUTY</span></div>
+    <div class="hd-logo">루미너스 <span>피부과</span></div>
     <nav class="hd-nav">
-      <a href="#">시술안내</a>
-      <a href="#">의료진</a>
-      <a href="#">클리닉소개</a>
-      <a href="#">예약</a>
+      <a href="#">진료안내</a>
+      <a href="#">시술 프로그램</a>
+      <a href="#">원장소개</a>
+      <a href="#">비포·애프터</a>
+      <a href="#">오시는길</a>
     </nav>
-    <a class="hd-cta" href="#">상담 예약</a>
+    <a href="#" class="hd-cta">상담 예약</a>
   </div>
 </header>
 
+<!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
   <div class="hero-content">
-    <div class="hero-badge">PREMIUM BEAUTY CLINIC</div>
-    <h1>당신만의<br><em>아름다움</em>을<br>완성합니다</h1>
-    <p>최첨단 레이저와 검증된 시술로<br>자연스러운 아름다움을 선사합니다</p>
+    <div class="hero-badge">LUMINOUS DERMATOLOGY &amp; BEAUTY CLINIC</div>
+    <h1>피부 본연의<br><em>빛</em>을 되찾다</h1>
+    <p class="hero-sub">의학적 근거 기반의 피부과 전문 시술로<br>지속 가능한 아름다움을 설계합니다.</p>
+    <p class="hero-detail">레이저 토닝 · 보톡스 · 리프팅 · 피부재생<br>1:1 맞춤 트리트먼트 플랜 제공</p>
     <div class="hero-btns">
-      <a class="btn-p" href="#">무료 상담 예약</a>
-      <a class="btn-g" href="#">시술 안내 보기</a>
+      <a href="#" class="btn-p">무료 상담 예약</a>
+      <a href="#" class="btn-g">시술 프로그램 보기</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><span>13년+</span><p>피부과 전문 임상</p></div>
+      <div class="hero-stat"><span>2.8만</span><p>누적 시술 건수</p></div>
+      <div class="hero-stat"><span>97%</span><p>고객 재방문율</p></div>
     </div>
   </div>
 </section>
 
-<section class="treats">
-  <div class="sec-label">TREATMENTS</div>
-  <div class="sec-title">전문 시술 <strong>안내</strong></div>
-  <div class="sec-sub">의학적으로 검증된 안전한 시술만을 제공합니다</div>
-  <div class="treat-grid">
-    <div class="treat-card"><div class="treat-num">01</div><div class="treat-name">피부 레이저</div><div class="treat-desc">IPL·프락셀·CO2 레이저로 잡티, 모공, 피부결을 개선합니다. 개인 피부 타입 분석 후 맞춤 시술.</div></div>
-    <div class="treat-card"><div class="treat-num">02</div><div class="treat-name">피부 탄력</div><div class="treat-desc">울쓰라·써마지·리프팅 시술로 처진 피부를 개선하고 V라인을 만들어드립니다.</div></div>
-    <div class="treat-card"><div class="treat-num">03</div><div class="treat-name">필러 · 보톡스</div><div class="treat-desc">식약체 인증 제품만 사용. 자연스러운 볼륨과 주름 개선으로 생기있는 얼굴을 완성합니다.</div></div>
-    <div class="treat-card"><div class="treat-num">04</div><div class="treat-name">피부 미백</div><div class="treat-desc">멜라닌 색소 분해 레이저와 미백 트리트먼트 병행으로 맑고 균일한 피부톤을 만듭니다.</div></div>
-    <div class="treat-card"><div class="treat-num">05</div><div class="treat-name">모발 케어</div><div class="treat-desc">두피 분석부터 탈모 예방, 발모 레이저까지 체계적인 모발 건강 관리를 제공합니다.</div></div>
-    <div class="treat-card"><div class="treat-num">06</div><div class="treat-name">바디 케어</div><div class="treat-desc">지방 분해 레이저, 체형 교정, 튼살 개선 시술로 전신 라인을 완성합니다.</div></div>
-  </div>
-  <div class="ba-note">
-    ⚠️ 의료광고 심의 안내 · 본 클리닉은 의료법을 준수하며 시술 전후 비교 사진을 사용하지 않습니다.<br>
-    모든 시술 정보는 교육 목적으로만 제공되며 개인차가 있습니다.
+<!-- SERVICE CARDS -->
+<section class="services">
+  <div class="services-inner">
+    <div class="sec-label">TREATMENT PROGRAMS</div>
+    <div class="sec-title">대표 <strong>시술 프로그램</strong></div>
+    <div class="sec-sub">피부과 전문의가 직접 설계하는 맞춤형 솔루션으로 피부 고민을 근본적으로 해결합니다.</div>
+    <div class="services-grid">
+      <div class="svc-card">
+        <div class="svc-icon icon-laser"></div>
+        <div class="svc-num">01</div>
+        <div class="svc-name">레이저 토닝</div>
+        <p class="svc-desc">색소 침착, 기미, 잡티를 다층 파장 레이저로 정밀 타겟팅합니다. 피부 톤 균일화와 광채 회복을 동시에 실현합니다.</p>
+        <span class="svc-tag">피코 레이저 · IPL</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon icon-btx"></div>
+        <div class="svc-num">02</div>
+        <div class="svc-name">보톡스 &amp; 리프팅</div>
+        <p class="svc-desc">주름 완화와 윤곽 교정을 전문의 정밀 주입 기법으로 자연스럽게 구현합니다. 표정의 생동감을 유지하는 섬세한 용량 설계.</p>
+        <span class="svc-tag">보툴리눔 · 실리프팅</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon icon-filler"></div>
+        <div class="svc-num">03</div>
+        <div class="svc-name">필러 &amp; 볼륨 케어</div>
+        <p class="svc-desc">HA 필러로 볼륨 손실 부위를 정교하게 채우고 얼굴 입체감을 복원합니다. 3D 윤곽 분석 후 개인별 디자인 설계를 제공합니다.</p>
+        <span class="svc-tag">HA 필러 · 콜라겐 부스터</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon icon-care"></div>
+        <div class="svc-num">04</div>
+        <div class="svc-name">피부 재생 관리</div>
+        <p class="svc-desc">진피층 재생을 촉진하는 MTS·LDM·물광주사 복합 프로그램으로 탄력 저하와 모공, 흉터 문제를 개선합니다.</p>
+        <span class="svc-tag">MTS · 물광 · LDM</span>
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- DOCTOR SPLIT -->
+<section class="doctor-split">
+  <div class="doctor-split-img">
+    <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_07.jpg" alt="원장 김서연 피부과 전문의">
+  </div>
+  <div class="doctor-split-info">
+    <div class="doc-label">MEET THE DIRECTOR</div>
+    <div class="doc-name">김서연 원장</div>
+    <div class="doc-title">피부과 전문의 · 루미너스 피부과·뷰티클리닉 대표원장</div>
+    <div class="doc-credentials">
+      <div class="doc-cred">연세대학교 의과대학 졸업 · 의학박사</div>
+      <div class="doc-cred">대한피부과학회 정회원 · 레이저성형연구회 학술위원</div>
+      <div class="doc-cred">美 ASDS 국제피부외과학회 정회원</div>
+      <div class="doc-cred">피코웨이 · 울쎄라 · 인모드 공인 트레이너</div>
+      <div class="doc-cred">전 세브란스병원 피부과 임상강사</div>
+    </div>
+    <blockquote class="doc-quote">
+      "아름다움은 피부 표면이 아닌 피부 건강에서 시작됩니다. 저는 단기 효과보다 장기적인 피부 구조의 회복을 설계합니다. 모든 시술 전 충분한 상담을 통해 고객 한 분 한 분의 피부 이야기를 먼저 듣겠습니다."
+      <cite>— 김서연 원장</cite>
+    </blockquote>
+  </div>
+</section>
+
+<!-- BEFORE / AFTER -->
+<section class="ba-section">
+  <div class="ba-inner">
+    <div class="sec-label">BEFORE &amp; AFTER</div>
+    <div class="sec-title">시술 전후 <strong>결과 사례</strong></div>
+    <div class="sec-sub">실제 환자분들의 동의 하에 수집된 임상 결과 데이터입니다. 개인차가 있을 수 있습니다.</div>
+    <div class="ba-grid">
+      <div class="ba-card">
+        <div class="ba-treatment">레이저 토닝 + 피코 프락셀</div>
+        <div class="ba-result">기미·색소 집중 개선</div>
+        <p class="ba-desc">광범위한 기미와 일광 흑자가 6회 복합 레이저 시술 후 현저히 옅어졌습니다. 피부 투명도와 균일한 톤이 회복되었으며 잔주름도 동시에 개선되었습니다.</p>
+        <div class="ba-period">시술 기간 : 3개월 / 6회</div>
+      </div>
+      <div class="ba-card">
+        <div class="ba-treatment">울쎄라 + 보톡스</div>
+        <div class="ba-result">얼굴 윤곽 리프팅</div>
+        <p class="ba-desc">중하안면 처짐과 팔자 주름, 이중턱 개선을 위한 복합 리프팅 프로그램. 시술 3개월 후 눈에 띄는 입체감 회복과 V라인 정돈 효과가 확인되었습니다.</p>
+        <div class="ba-period">시술 기간 : 1회 + 2주 간격 보톡스</div>
+      </div>
+      <div class="ba-card">
+        <div class="ba-treatment">MTS + LDM + 물광주사</div>
+        <div class="ba-result">모공·탄력 집중 케어</div>
+        <p class="ba-desc">넓어진 모공과 피지 분비 과다, 피부 탄력 저하를 복합 재생 프로그램으로 개선. 4회 후 모공 크기 감소 및 피부 결 개선이 확인되었습니다.</p>
+        <div class="ba-period">시술 기간 : 2개월 / 4회</div>
+      </div>
+    </div>
+    <div class="ba-note">시술 결과는 개인의 피부 상태 및 생활 습관에 따라 상이할 수 있습니다. 정확한 상담은 전문의 진료 후 결정됩니다. 의료광고심의번호 : 심의필</div>
+  </div>
+</section>
+
+<!-- GALLERY -->
 <section class="gallery">
   <div class="gallery-inner">
-    <div class="sec-label">CLINIC SPACE</div>
-    <div class="sec-title">클리닉 <strong>공간</strong></div>
+    <div class="sec-label">CLINIC GALLERY</div>
+    <div class="sec-title">클리닉 <strong>갤러리</strong></div>
+    <div class="sec-sub">청결하고 쾌적한 진료 환경과 최신 의료장비를 갖추고 있습니다.</div>
     <div class="gallery-grid">
-      <div class="gallery-item"><div class="gi-bg" style="background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_04.jpg');background-size:cover;background-position:center;height:100%"></div><div class="gi-overlay"><span class="gi-label">메인 로비</span></div></div>
-      <div class="gallery-item"><div class="gi-bg" style="background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_09.jpg');background-size:cover;background-position:center;height:100%"></div><div class="gi-overlay"><span class="gi-label">레이저 룸</span></div></div>
-      <div class="gallery-item"><div class="gi-bg" style="background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_08.jpg');background-size:cover;background-position:center;height:100%"></div><div class="gi-overlay"><span class="gi-label">VIP 상담실</span></div></div>
-      <div class="gallery-item"><div class="gi-bg" style="background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_06.jpg');background-size:cover;background-position:center;height:100%"></div><div class="gi-overlay"><span class="gi-label">대기 공간</span></div></div>
-      <div class="gallery-item"><div class="gi-bg" style="background-image:url('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_07.jpg');background-size:cover;background-position:center;height:100%"></div><div class="gi-overlay"><span class="gi-label">시술실</span></div></div>
+      <div class="g-item g-item-tall">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_04.jpg" alt="내원 고객 상담">
+        <div class="g-item-overlay"></div>
+        <span class="g-label">피부 상담 안내</span>
+      </div>
+      <div class="g-item">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_09.jpg" alt="의료장비">
+        <div class="g-item-overlay"></div>
+        <span class="g-label">최신 의료장비</span>
+      </div>
+      <div class="g-item">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_08.jpg" alt="처방 및 시술 준비">
+        <div class="g-item-overlay"></div>
+        <span class="g-label">정밀 처방 시스템</span>
+      </div>
+      <div class="g-item">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_06.jpg" alt="의료진 진료">
+        <div class="g-item-overlay"></div>
+        <span class="g-label">전문의 1:1 진료</span>
+      </div>
+      <div class="g-item">
+        <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude/hospital-website-examples-a904tj/venom-wordpress/preview/images/samples/img_07.jpg" alt="원장 진료">
+        <div class="g-item-overlay"></div>
+        <span class="g-label">원장 직접 시술</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="promise">
-  <div class="sec-label">OUR PROMISE</div>
-  <div class="sec-title">베놈 뷰티의 <strong>약속</strong></div>
-  <div class="promise-grid">
-    <div class="promise-item"><div class="promise-num">01</div><div class="promise-t">1:1 맞춤 진단</div><div class="promise-d">모든 시술 전 피부 분석 장비로 개인 맞춤 진단 후 시술 계획 수립</div></div>
-    <div class="promise-item"><div class="promise-num">02</div><div class="promise-t">식약체 인증 제품</div><div class="promise-d">국내외 식약체 허가 제품만 사용. 성분과 안전성을 투명하게 공개</div></div>
-    <div class="promise-item"><div class="promise-num">03</div><div class="promise-t">의료법 완전 준수</div><div class="promise-d">의료광고 심의 완료. 과장 광고 없이 정확한 정보만 제공</div></div>
-    <div class="promise-item"><div class="promise-num">04</div><div class="promise-t">사후 케어 보장</div><div class="promise-d">시술 후 1개월 무료 관리. 트러블 발생 시 즉시 대응 체계</div></div>
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <div class="cta-inner">
+    <div class="sec-label">예약 안내</div>
+    <div class="sec-title">지금 바로 <strong>무료 상담</strong>을 받아보세요</div>
+    <div class="sec-sub">전문의 직접 상담 · 시술 비용 사전 안내 · 부작용 설명 철저<br>당일 진료 가능 · 주차 편의 제공</div>
+    <a href="#" class="btn-p">온라인 예약하기</a>
+    <div class="cta-channels">
+      <a href="tel:0212341234" class="cta-ch">전화 상담 02-1234-1234</a>
+      <a href="#" class="cta-ch">카카오 채널 상담</a>
+      <a href="#" class="cta-ch">네이버 예약</a>
+    </div>
   </div>
 </section>
 
+<!-- FOOTER -->
 <footer class="venom-footer">
   <div class="vf-inner">
     <div class="vf-brand">
@@ -170,5 +373,6 @@ a{text-decoration:none;color:inherit}
 .vf-bottom{max-width:960px;margin:0 auto;padding:20px 24px 0;border-top:1px solid #222;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;opacity:.5}
 @media(max-width:640px){.vf-inner{grid-template-columns:1fr}.vf-bottom{flex-direction:column}}
 </style>
+
 </body>
 </html>
