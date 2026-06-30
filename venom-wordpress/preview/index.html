@@ -1462,7 +1462,10 @@ body{padding-top:0}
       .diag-nav button:hover{border-color:#a5b4fc;color:#fff;background:rgba(255,255,255,.13)}
       /* 우측 비주얼: 진단 스코어카드 목업(사이트 mockup 톤, 무가중 최적화) */
       .diag-hub-visual{position:relative}
-      .diag-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px;backdrop-filter:blur(10px);box-shadow:0 24px 60px rgba(0,0,0,.35)}
+      .diag-card{position:relative;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px;backdrop-filter:blur(10px);box-shadow:0 24px 60px rgba(0,0,0,.35)}
+      .diag-eg{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;color:rgba(255,255,255,.85);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:3px 9px;border-radius:9999px;letter-spacing:.02em}
+      .diag-score i{position:relative;z-index:1}
+      .diag-track i{transition:width .8s cubic-bezier(.4,0,.2,1)}
       .diag-card-top{display:flex;align-items:center;gap:16px;margin-bottom:18px}
       .diag-score{flex-shrink:0;width:78px;height:78px;border-radius:50%;background:conic-gradient(#6ee7b7 0% 87%,rgba(255,255,255,.12) 87% 100%);display:flex;align-items:center;justify-content:center;position:relative}
       .diag-score::after{content:'';position:absolute;inset:7px;border-radius:50%;background:#10193a}
@@ -1497,19 +1500,20 @@ body{padding-top:0}
       </div>
       <div class="diag-hub-visual" aria-hidden="true">
         <div class="diag-card">
+          <span class="diag-eg" id="diag-eg">예시</span>
           <div class="diag-card-top">
-            <div class="diag-score"><b>87<small>/100</small></b></div>
-            <div class="diag-card-ttl">AI·검색 종합 점수<strong>우리 병원 진단 리포트</strong></div>
+            <div class="diag-score" id="diag-score-circle"><b id="diag-score-num">87<small>/100</small></b></div>
+            <div class="diag-card-ttl">AI·검색 종합 점수<strong id="diag-card-strong">우리 병원 진단 리포트</strong></div>
           </div>
-          <div class="diag-brow"><span>네이버 플레이스</span><span class="tag" style="color:#6ee7b7">강점 23/25</span></div>
-          <div class="diag-track"><i style="width:92%;background:#6ee7b7"></i></div>
-          <div class="diag-brow"><span>GEO · AEO (AI검색)</span><span class="tag" style="color:#a5b4fc">양호 19/25</span></div>
-          <div class="diag-track"><i style="width:76%;background:#818cf8"></i></div>
-          <div class="diag-brow"><span>SEO · 콘텐츠</span><span class="tag" style="color:#fbbf24">보통 12/20</span></div>
-          <div class="diag-track"><i style="width:60%;background:#fbbf24"></i></div>
-          <div class="diag-brow"><span>신뢰·전문성(E-E-A-T)</span><span class="tag" style="color:#6ee7b7">강점 13/15</span></div>
-          <div class="diag-track"><i style="width:87%;background:#6ee7b7"></i></div>
-          <div class="diag-foot">📊 네이버 플레이스·Schema·E-E-A-T·전환 동선 등 검증 요인 기준 산정</div>
+          <div class="diag-brow"><span>네이버 플레이스</span><span class="tag" id="diag-tag-local" style="color:#6ee7b7">강점 23/25</span></div>
+          <div class="diag-track"><i id="diag-bar-local" style="width:92%;background:#6ee7b7"></i></div>
+          <div class="diag-brow"><span>GEO · AEO (AI검색)</span><span class="tag" id="diag-tag-geo" style="color:#a5b4fc">양호 19/25</span></div>
+          <div class="diag-track"><i id="diag-bar-geo" style="width:76%;background:#818cf8"></i></div>
+          <div class="diag-brow"><span>SEO · 콘텐츠</span><span class="tag" id="diag-tag-seo" style="color:#fbbf24">보통 12/20</span></div>
+          <div class="diag-track"><i id="diag-bar-seo" style="width:60%;background:#fbbf24"></i></div>
+          <div class="diag-brow"><span>신뢰·전문성(E-E-A-T)</span><span class="tag" id="diag-tag-trust" style="color:#6ee7b7">강점 13/15</span></div>
+          <div class="diag-track"><i id="diag-bar-trust" style="width:87%;background:#6ee7b7"></i></div>
+          <div class="diag-foot" id="diag-foot">📊 예시 리포트입니다 — 아래 STEP 1 자가진단을 완료하면 내 점수로 바뀝니다</div>
         </div>
       </div>
     </div>
@@ -1669,6 +1673,28 @@ body{padding-top:0}
         if(t>=40)return{g:'주의',c:'#f59e0b',d:'핵심 요소가 빠져 있습니다. 경쟁 병원에 노출을 내주고 있을 가능성이 높습니다.'};
         return{g:'위험',c:'#dc2626',d:'AI·지역검색에서 사실상 보이지 않는 상태입니다. 시급한 정비가 필요합니다.'};
       }
+      // 히어로 예시 스코어카드 → 내 실제 자가진단 결과로 동기화
+      function syncHeroCard(total,as,am){
+        var d=document;
+        var circle=d.getElementById('diag-score-circle');
+        if(circle)circle.style.background='conic-gradient(#6ee7b7 0% '+total+'%,rgba(255,255,255,.12) '+total+'% 100%)';
+        var num=d.getElementById('diag-score-num');
+        if(num)num.innerHTML=total+'<small>/100</small>';
+        function upd(k,tagId,barId){
+          var s=Math.round(as[k]||0),m=am[k]||1,r=m?s/m:0;
+          var c=r>=0.8?'#6ee7b7':(r>=0.5?'#fbbf24':'#f87171');
+          var tag=r>=0.8?'강점':(r>=0.5?'보통':'취약');
+          var t=d.getElementById(tagId); if(t){t.textContent=tag+' '+s+'/'+m;t.style.color=c;}
+          var b=d.getElementById(barId); if(b){b.style.width=Math.round(r*100)+'%';b.style.background=c;}
+        }
+        upd('local','diag-tag-local','diag-bar-local');
+        upd('geo','diag-tag-geo','diag-bar-geo');
+        upd('seo','diag-tag-seo','diag-bar-seo');
+        upd('trust','diag-tag-trust','diag-bar-trust');
+        var eg=d.getElementById('diag-eg'); if(eg)eg.style.display='none';
+        var strong=d.getElementById('diag-card-strong'); if(strong)strong.textContent='내 자가진단 결과';
+        var foot=d.getElementById('diag-foot'); if(foot)foot.textContent='✅ 내 자가진단 결과 · 정밀 진단은 베놈이 실제 데이터로 무료 제공';
+      }
       function renderResult(total,as,am){
         var card=gEl('vd-card'); var gr=gradeOf(total);
         var cat=gEl('vd-cat')?gEl('vd-cat').value:''; var region=gEl('vd-region')?gEl('vd-region').value.trim():'';
@@ -1692,6 +1718,8 @@ body{padding-top:0}
         card.innerHTML=h;
         // 트리거 버튼 점수 업데이트
         var sc=gEl('vd-launcher'); if(sc){var s=sc.querySelector('.vd-launcher-score');if(s)s.innerHTML=total+'<sub>/100</sub>';}
+        // 히어로 예시 스코어카드를 '내 실제 자가진단 결과'로 갱신
+        try{ syncHeroCard(total,as,am); }catch(e){}
         gEl('vd-restart').addEventListener('click',function(){ans={};renderForm();});
       }
       window.vdToggle=function(){
@@ -1775,6 +1803,38 @@ body{padding-top:0}
           </div>
           <div id="expose-result" class="tool-result" style="display:none"></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 · 종합 결과 & 상담 CTA -->
+  <section class="diag-close">
+    <style>
+      .diag-close{position:relative;overflow:hidden;padding:64px 0;
+        background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(83,58,253,.4) 0%,transparent 60%),linear-gradient(160deg,#1c1e54,#11122e)}
+      .diag-close-in{max-width:720px;margin:0 auto;padding:0 24px;text-align:center;position:relative}
+      .diag-close .ce{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;color:#a5b4fc;background:rgba(83,58,253,.28);border:1px solid rgba(83,58,253,.45);padding:5px 13px;border-radius:9999px;margin-bottom:14px}
+      .diag-close h3{font-size:28px;font-weight:800;letter-spacing:-.5px;color:#fff;line-height:1.25;margin:0 0 12px}
+      .diag-close h3 em{font-style:normal;background:linear-gradient(135deg,#a78bfa,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+      .diag-close p{font-size:15px;color:rgba(255,255,255,.72);line-height:1.7;margin:0 auto 26px;max-width:540px}
+      .diag-close-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+      .diag-close-pts{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+      .diag-close-pt{font-size:13px;color:rgba(255,255,255,.7)}
+      .diag-close-pt b{display:block;font-size:22px;font-weight:800;color:#fff;margin-bottom:2px}
+      @media(max-width:600px){.diag-close h3{font-size:22px}}
+    </style>
+    <div class="diag-close-in">
+      <span class="ce">STEP 3 · 정밀 진단</span>
+      <h3>자가진단으로 <em>약점</em>을 찾았다면,<br>이제 <em>실제 데이터</em>로 정밀 진단할 차례입니다</h3>
+      <p>위 자가진단·실시간 도구는 빠른 추정치입니다. 베놈이 실제 노출·경쟁·인용 데이터로 정밀 진단 리포트를 무료로 보내드리고, 부족한 항목까지 직접 개선해 드립니다.</p>
+      <div class="diag-close-row">
+        <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 무료 정밀진단 신청</a>
+        <a href="tel:16614142" class="btn btn-ghost btn-lg">📞 1661-4142</a>
+      </div>
+      <div class="diag-close-pts">
+        <div class="diag-close-pt"><b>24시간</b> 이내 리포트</div>
+        <div class="diag-close-pt"><b>100%</b> 무료 진단</div>
+        <div class="diag-close-pt"><b>+23점</b> 평균 개선</div>
       </div>
     </div>
   </section>
@@ -5620,46 +5680,7 @@ function runSEO(){
     });
 }
 
-// robots.txt 표준 파싱: 지정한 검색로봇(ua)이 루트('/') 접근이 허용되는지 판정.
-// 정확 매칭 그룹 우선, 없으면 User-agent:* 그룹 적용 (RFC 9309 동작).
-// Googlebot(Google)·Yeti(네이버) 등 봇별 차단까지 정확히 구분.
-function _robotsAllows(robots, ua){
-  if(!robots||!robots.trim())return true; // robots.txt 없으면 전체 허용이 기본값
-  ua=(ua||'*').toLowerCase();
-  var lines=robots.split(/\r?\n/);
-  var groups=[], cur=null, lastWasUA=false;
-  for(var i=0;i<lines.length;i++){
-    var line=lines[i].replace(/#.*$/,'').trim();
-    if(!line)continue;
-    var m=line.match(/^User-agent\s*:\s*(.+)$/i);
-    if(m){
-      if(!lastWasUA||!cur){cur={agents:[],rules:[]};groups.push(cur);}
-      cur.agents.push(m[1].trim().toLowerCase());
-      lastWasUA=true;
-      continue;
-    }
-    lastWasUA=false;
-    if(!cur)continue;
-    var d=line.match(/^(Disallow|Allow)\s*:\s*(.*)$/i);
-    if(d)cur.rules.push({type:d[1].toLowerCase(),path:d[2].trim()});
-  }
-  function pick(name){
-    for(var g=0;g<groups.length;g++)if(groups[g].agents.indexOf(name)>=0)return groups[g];
-    return null;
-  }
-  var grp=pick(ua)||pick('*');
-  if(!grp)return true;
-  // 루트(홈) 접근 판정 — Google spec: 충돌 시 least restrictive(Allow 우선).
-  // '/', '/*'는 루트 포함, '/$'는 루트만 허용/차단.
-  var allowRoot=false, disRoot=false;
-  for(var r=0;r<grp.rules.length;r++){
-    var p=grp.rules[r].path;
-    if(p==='/'||p==='/*'||p==='/$'){
-      if(grp.rules[r].type==='allow')allowRoot=true; else disRoot=true;
-    }
-  }
-  return !(disRoot && !allowRoot);
-}
+// robots.txt 파싱은 seo-engine.js의 robotsAllows(RFC 9309)로 일원화 — 중복 로직 제거됨.
 
 var _seoLast=null;
 
