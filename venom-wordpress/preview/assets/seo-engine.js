@@ -22,7 +22,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.2.0';
+  var VERSION = '1.4.0';
 
   // ── robots.txt 표준 파서 (RFC 9309) ─────────────────────────────
   // 지정 UA(또는 *)가 루트('/') 접근 가능한지. 충돌 시 least-restrictive(Allow 우선).
@@ -196,8 +196,8 @@
 
     var checks = {
       content: [
-        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 8, jsItem(titlePass), '공통'],
-        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 8, jsItem(descPass), '공통'],
+        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 10, jsItem(titlePass), '공통'],
+        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 10, jsItem(descPass), '공통'],
         ['H1 대표 제목', h1Note, 6, jsItem(h1Pass), '네이버'],
         ['이미지 ALT 텍스트', '이미지 대체 텍스트 (' + imgDesc + ')', 7, imgAltOk, '공통'],
         ['의미있는 링크 텍스트', '서술형 앵커 — "여기 클릭" 류 지양', 5, linkTextOk, 'Google'],
@@ -205,15 +205,17 @@
       ],
       tech: [
         ['HTTPS 보안 연결', 'SSL 적용 — Google·네이버 모두 신뢰 신호', 6, isHttps, '공통'],
-        ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함', 6, crawlOk, '공통'],
-        ['인덱싱 허용', 'meta robots noindex 미설정', 5, notNoindex, '공통'],
-        ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 5, !!canonical, '공통'],
+        ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함', 7, crawlOk, '공통'],
+        ['인덱싱 허용', 'meta robots noindex 미설정', 6, notNoindex, '공통'],
+        ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 6, !!canonical, '공통'],
         ['Viewport(모바일)', '모바일 반응형 메타 — 모바일 우선 인덱싱', 4, hasViewport, '공통'],
         ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 4, !!lang, 'Google']
       ],
+      // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. Google SEO 점수·경쟁사가
+      // 채점하지 않고 PSI(Lighthouse SEO)로도 검증 불가하므로 비중을 낮춘다(감점 완화).
       search: [
-        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출', 7, jsItem(hasLd), 'Google'],
-        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기', 6, jsItem(ogOk), '네이버'],
+        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출(보너스)', 3, jsItem(hasLd), 'Google'],
+        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 3, jsItem(ogOk), '네이버'],
         ['sitemap.xml 선언', 'robots.txt에 Sitemap: 선언 — 수집 촉진', 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
         ['robots.txt 존재', '크롤러 수집 규칙 파일 제공', 3, robotsTxtOk, '공통']
@@ -261,12 +263,18 @@
         pct: pending ? 0 : Math.round(score / max * 100), items: items
       };
     });
-    var scored = categories.filter(function (c) { return !c.pending; });
+    // 종합 SEO 점수는 속도(성능)를 제외한다 — Google SEO 점수·경쟁사(NXT)와 동일 기준.
+    // Google PSI도 SEO(검색최적화)와 성능(속도)을 별도 게이지로 분리하므로, 속도는 별도 표기한다.
+    var inHeadline = function (c) { return c.key !== 'speed'; };
+    var scored = categories.filter(function (c) { return !c.pending && inHeadline(c); });
     var baseTotal = scored.reduce(function (s, c) { return s + c.score; }, 0);
     var baseMax = scored.reduce(function (s, c) { return s + c.max; }, 0);
     var hasPSI = !!psi;
-    var total = hasPSI ? categories.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
-    var max = hasPSI ? categories.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    var headlineCats = categories.filter(inHeadline);
+    var total = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
+    var max = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    // 속도(성능)는 종합점수에서 분리해 별도 게이지로 노출(Google 성능 점수와 동일 위상)
+    var speedCat = categories.filter(function (c) { return c.key === 'speed'; })[0] || null;
     // 다양한 집계 수치
     var passed = 0, failed = 0, pending = 0, improvable = 0;
     categories.forEach(function (c) {
@@ -285,7 +293,7 @@
     };
     return {
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
-      categories: categories, baseTotal: baseTotal, baseMax: baseMax,
+      categories: categories, baseTotal: baseTotal, baseMax: baseMax, speedCat: speedCat,
       total: total, max: max, hasPSI: hasPSI, psi: psi || null,
       summary: summary, grade: gradeFor(total, max)
     };
@@ -379,7 +387,18 @@
     var brand = opts.brand || '#533afd';
     var g = result.grade;
     var gauge = donut(result.total, result.max, g.color, g.label);
-    var bars = result.categories.map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+    var bars = result.categories.filter(function (c) { return c.key !== 'speed'; })
+      .map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+    // 속도(성능)는 종합점수와 분리된 별도 게이지 — Google 성능 점수와 동일 위상
+    var sc = result.speedCat;
+    var speedGauge = '';
+    if (sc && !sc.pending) {
+      var sCol = sc.pct >= 70 ? '#16a34a' : sc.pct >= 40 ? '#d97706' : '#dc2626';
+      speedGauge = '<div style="flex-shrink:0;text-align:center">' +
+        donut(sc.score, sc.max, sCol, sc.pct + '%') +
+        '<div style="font-size:13px;font-weight:700;color:' + sCol + ';margin-top:2px">⚡ 속도(성능)</div>' +
+        '<div style="font-size:11px;color:#94a3b8">종합점수와 별도 · Google 기준</div></div>';
+    }
 
     // 등급 스케일
     var pct = result.max ? result.total / result.max : 0;
@@ -438,10 +457,11 @@
           '<div style="font-size:11px;color:#94a3b8">' + esc(result.domain) + ' · ' + esc(g.desc) + '</div></div>' +
         '<div style="flex:1;min-width:220px">' + bars +
           (result.categories.some(function (c) { return c.pending; }) && !result.psi ?
-            '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 속도는 정밀 분석(PSI) 시 측정됩니다 (기본 90점 만점)</div>' : '') +
+            '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 종합 SEO 점수는 속도(성능) 제외 — Google SEO 점수와 동일 기준. 속도는 정밀 분석(PSI) 시 별도 게이지로 측정됩니다</div>' : '') +
           (result.renderSuspect && !result.psi ?
             '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>정밀필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
         '</div>' +
+        speedGauge +
       '</div>' +
       statsStrip +
       psiBadges +
