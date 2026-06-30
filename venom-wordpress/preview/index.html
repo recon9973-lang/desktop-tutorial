@@ -9115,7 +9115,10 @@ function _buildBlogCard(p) {
 
 function _allBlogPosts() {
   // 동적 포스트를 앞에 (최신순), 정적은 뒤에
-  return _dynBlogPosts.concat(STATIC_BLOG_POSTS);
+  // 예약 발행: publishAt이 미래인 글은 그 시각 전까지 목록·캐러셀·사이트맵에서 숨김
+  var now = Date.now();
+  var live = _dynBlogPosts.filter(function(p){ return !p.publishAt || Date.parse(p.publishAt) <= now; });
+  return live.concat(STATIC_BLOG_POSTS);
 }
 
 // ── 검색 노출용 캐러셀(ItemList) 구조화 데이터 ──

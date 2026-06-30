@@ -1,0 +1,39 @@
+name: Scheduled Auto-Publish
+
+# 예약 시각에 실제 발행되도록 발행 엔드포인트를 자주 호출(폴링).
+# 엔드포인트는 멱등 — 도래했는데 아직 발행 안 된 슬롯만 그때그때 생성·업로드한다.
+# 필요한 GitHub Secret: CRON_SECRET (Vercel 환경변수 CRON_SECRET 값과 동일하게)
+# 선택 Repo Variable: PUBLISH_ENDPOINT (기본값: 운영 도메인의 /api/cron-daily-posts)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # 15분마다(UTC). 예약 시각 ±15분 내 발행
+  workflow_dispatch: {}       # 수동 실행 버튼
+
+concurrency:
+  group: auto-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger publish endpoint (publishes any due slots)
+        env:
+          ENDPOINT: ${{ vars.PUBLISH_ENDPOINT }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          URL="${ENDPOINT:-https://desktop-tutorial-chi-peach.vercel.app/api/cron-daily-posts}"
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET secret is not set in this repository (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          code=$(curl -sS --max-time 180 -o /tmp/resp.json -w "%{http_code}" \
+            -X POST "$URL" -H "Authorization: Bearer $CRON_SECRET")
+          echo "HTTP $code"
+          cat /tmp/resp.json 2>/dev/null || true
+          echo ""
+          if [ "$code" != "200" ]; then
+            echo "::warning::publish endpoint returned HTTP $code"
+          fi
