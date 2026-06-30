@@ -90,9 +90,9 @@ const bv=R.scoring.synergy_bonus.value;
 for(let i=0;i<rec.length;i++)for(let j=i+1;j<rec.length;j++)if(rel(rec[i].id,rec[j].id)?.type==='synergy'){rec[i]._s+=bv;rec[j]._s+=bv}
 const pf=u.profile||{};rec.forEach(r=>{if(pf.sex==='female'&&(r.id==='iron'||r.id==='folate'))r._s+=0.12;if((pf.age==='50s'||pf.age==='60s')&&(r.id==='vitamin_d'||r.id==='calcium'))r._s+=0.12});
 rec.forEach(x=>x.score=Math.round(x._s*100)/100);rec.sort((a,b)=>b.score-a.score);
-const morning=[],evening=[];for(const x of rec){const cf=morning.some(m=>rel(m,x.id)?.type==='antagonism');(cf?evening:morning).push(x.id)}
+const morning=[],evening=[];for(const x of rec){const cf=morning.some(m=>{const r=rel(m,x.id);return r?.type==='antagonism'&&r.mode!=='monitor'});(cf?evening:morning).push(x.id)}
 const nm=id=>byId[id]?.name_ko||id;const ids=rec.map(x=>x.id);const notes=[];
-for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const rl=rel(ids[i],ids[j]);if(!rl)continue;const a=byId[ids[i]].name_ko,b=byId[ids[j]].name_ko;notes.push(rl.type==='synergy'?'🔗 '+a+' + '+b+': '+rl.effect+' (함께 복용)':'⚠️ '+a+' ↔ '+b+': '+rl.problem+' ('+rl.timing+')')}
+for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const rl=rel(ids[i],ids[j]);if(!rl)continue;const a=byId[ids[i]].name_ko,b=byId[ids[j]].name_ko;notes.push(rl.type==='synergy'?'🔗 '+a+' + '+b+': '+rl.effect+' (함께 복용)':(rl.mode==='monitor'?'🩺 '+a+' ↔ '+b+': '+rl.problem+' — '+rl.timing:'⚠️ '+a+' ↔ '+b+': '+rl.problem+' ('+rl.timing+')'))}
 return{recommended:rec,not_recommended:no,schedule:{morning:morning.map(nm),evening:evening.map(nm)},notes,slots:Object.fromEntries(rec.map(x=>[x.id,{m:morning.includes(x.id),e:evening.includes(x.id)}]))}}
 function topBenefit(id){const e=EV[id];if(!e||!e.benefits?.length)return null;const rk={established:3,moderate:2,limited:1,insufficient:0};return [...e.benefits].sort((a,b)=>(rk[b.evidence_strength]??0)-(rk[a.evidence_strength]??0))[0]}
 function concernLabels(id,cs){return cs.map(c=>concernById[c]).filter(c=>c&&c.ingredients.includes(id)).map(c=>c.label)}
@@ -146,8 +146,8 @@ function survey(){
 function tog(a,v){const i=a.indexOf(v);i>=0?a.splice(i,1):a.push(v)}
 function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[c]?.label).filter(Boolean);
  const warns=res.recommended.flatMap(r=>r.warnings.map(w=>({n:r.name,w})));
- const seps=res.notes.filter(n=>n.startsWith('⚠️')),syn=res.notes.filter(n=>n.startsWith('🔗'));
- const hasSafe=warns.length||seps.length||res.not_recommended.length;
+ const seps=res.notes.filter(n=>n.startsWith('⚠️')),syn=res.notes.filter(n=>n.startsWith('🔗')),mons=res.notes.filter(n=>n.startsWith('🩺'));
+ const hasSafe=warns.length||seps.length||mons.length||res.not_recommended.length;
  const strong=res.recommended.filter(r=>{const t=topBenefit(r.id);return t&&(t.evidence_strength==='established'||t.evidence_strength==='moderate')}).length;
  const score=res.recommended.length?Math.round(strong/res.recommended.length*100):0;
  let h='<div class="wrap"><div style="margin:4px 0 10px"><button class="chip" onclick="go(\'survey\')">← 다시 선택</button></div>';
@@ -159,7 +159,8 @@ function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[
  h+='<div class="'+(hasSafe?'warn':'ok')+'"><b style="color:'+(hasSafe?'#d97706':'#047857')+'">'+(hasSafe?'⚠️ 복용 전 먼저 확인하세요':'✅ 안전 확인 — 충돌하는 추천이 없어요')+'</b>';
  res.not_recommended.forEach(n=>h+='<div class="muted" style="margin-top:6px">🚫 <b>'+esc(n.name)+'</b> 제외 — '+esc(n.reason)+'</div>');
  warns.forEach(w=>h+='<div class="muted" style="margin-top:6px">⚠️ <b>'+esc(w.n)+'</b> — '+esc(w.w)+'</div>');
- seps.forEach(s=>h+='<div class="muted" style="margin-top:6px">'+esc(s)+'</div>');h+='</div>';
+ seps.forEach(s=>h+='<div class="muted" style="margin-top:6px">'+esc(s)+'</div>');
+ mons.forEach(s=>h+='<div class="muted" style="margin-top:6px">'+esc(s)+'</div>');h+='</div>';
  const dm=sel.medications.filter(m=>DATA.meds[m]);
  if(dm.length){h+='<div class="card"><b>🏛️ 식약처 DUR — 복용약 공식 확인</b>';dm.forEach(m=>{const v=DATA.meds[m];h+='<div style="margin-top:6px"><b style="font-size:13.5px">'+esc(v.label)+'</b> <a class="src" target="_blank" href="https://nedrug.mfds.go.kr/searchDrug?searchKeyword='+encodeURIComponent(v.dur_query)+'">식약처에서 확인 →</a></div>'});h+='<small>※ 계열 대표성분 기준. 정확한 병용금기는 의·약사와 확인.</small></div>'}
  h+='<h2>'+(cl.length?esc(cl.join(' · '))+' 고민에 맞춘 핵심 '+Math.min(3,res.recommended.length)+'가지':'핵심 추천')+'</h2>';
@@ -206,21 +207,22 @@ function analyzeView(){
  // 약물 충돌
  const dconf=[];stack.forEach(id=>{const dc=drug(id,stackMeds);if(dc.action==='exclude')dconf.push('🚫 '+byId[id].name_ko+' — '+dc.excl);dc.warnings.forEach(w=>dconf.push('⚠️ '+byId[id].name_ko+' — '+w))});
  // 길항/시너지
- const ant=[],syn=[];for(let i=0;i<stack.length;i++)for(let j=i+1;j<stack.length;j++){const r=rel(stack[i],stack[j]);if(!r)continue;const a=byId[stack[i]].name_ko,b=byId[stack[j]].name_ko;if(r.type==='antagonism')ant.push('⚠️ '+a+' ↔ '+b+': '+r.problem+' ('+r.timing+')');else syn.push('🔗 '+a+' + '+b+': '+r.effect)}
+ const ant=[],syn=[],mon=[];for(let i=0;i<stack.length;i++)for(let j=i+1;j<stack.length;j++){const r=rel(stack[i],stack[j]);if(!r)continue;const a=byId[stack[i]].name_ko,b=byId[stack[j]].name_ko;if(r.type==='antagonism'){if(r.mode==='monitor')mon.push('🩺 '+a+' ↔ '+b+': '+r.problem+' — '+r.timing);else ant.push('⚠️ '+a+' ↔ '+b+': '+r.problem+' ('+r.timing+')')}else syn.push('🔗 '+a+' + '+b+': '+r.effect)}
  // 상한(UL) 주의
  const ul=stack.map(id=>{const e=EV[id];return e&&e.dosing&&e.dosing.ul&&e.dosing.ul!=='출처 미확인'?{n:byId[id].name_ko,ul:e.dosing.ul}:null}).filter(Boolean);
  // 카테고리 중복
  const cat={};stack.forEach(id=>{const c=byId[id].category||'기타';(cat[c]=cat[c]||[]).push(byId[id].name_ko)});
  const dupCat=Object.entries(cat).filter(([,v])=>v.length>1);
- const hasRisk=dconf.length||ant.length;
+ const hasRisk=dconf.length||ant.length||mon.length;
  o+='<div class="'+(hasRisk?'warn':'ok')+'"><b style="color:'+(hasRisk?'#d97706':'#047857')+'">'+(hasRisk?'⚠️ 주의가 필요한 조합이 있어요':'✅ 큰 충돌은 없어요')+'</b>';
  dconf.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+'</div>');
  ant.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+' — 시간 분리 권장</div>');
  o+='</div>';
+ if(mon.length){o+='<div class="card"><b>🩺 함께 복용 시 점검 권장</b>';mon.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+'</div>');o+='</div>'}
  if(syn.length){o+='<div class="ok"><b style="color:#047857">🔗 함께 먹으면 좋아요</b>';syn.forEach(x=>o+='<div class="muted" style="margin-top:6px">'+esc(x)+'</div>');o+='</div>'}
  if(ul.length){o+='<div class="card"><b>📐 상한(UL) 주의 — 여러 제품 합산 시 초과 주의</b>';ul.forEach(x=>o+='<div class="muted" style="margin-top:4px">'+esc(x.n)+': 상한 '+esc(x.ul)+'</div>');o+='</div>'}
  if(dupCat.length){o+='<div class="card"><b>🧩 같은 계열 중복</b>';dupCat.forEach(([c,v])=>o+='<div class="muted" style="margin-top:4px">'+esc(c)+': '+esc(v.join(', '))+' — 성분 겹침 확인</div>');o+='</div>'}
- o+='<div class="card"><b>📅 추천 복용 시간</b>';const m2=[],e2=[];stack.forEach(id=>{const cf=m2.some(x=>rel(x,id)?.type==='antagonism');(cf?e2:m2).push(id)});o+='<div class="muted" style="margin-top:6px">☀️ 아침: '+esc(m2.map(x=>byId[x].name_ko).join(', ')||'없음')+'</div><div class="muted">🌙 저녁: '+esc(e2.map(x=>byId[x].name_ko).join(', ')||'없음')+'</div></div>';
+ o+='<div class="card"><b>📅 추천 복용 시간</b>';const m2=[],e2=[];stack.forEach(id=>{const cf=m2.some(x=>{const r=rel(x,id);return r?.type==='antagonism'&&r.mode!=='monitor'});(cf?e2:m2).push(id)});o+='<div class="muted" style="margin-top:6px">☀️ 아침: '+esc(m2.map(x=>byId[x].name_ko).join(', ')||'없음')+'</div><div class="muted">🌙 저녁: '+esc(e2.map(x=>byId[x].name_ko).join(', ')||'없음')+'</div></div>';
  o+='<div class="foot">필라이즈 ‘중복·과다’ 분석을 근거(식약처·NIH UL·상호작용)로 재현한 데모. 실서비스는 제품 라벨(DSLD·식약처) 함량까지 합산 분석.</div>';
  out.innerHTML=o}
 // ---- 📖 성분 사전 ----

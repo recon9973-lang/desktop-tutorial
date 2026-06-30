@@ -162,10 +162,11 @@ function buildSchedule(recommended) {
   const morning = [];
   const evening = [];
   for (const r of recommended) {
-    // 이미 아침에 길항 성분이 있으면 저녁으로
-    const conflictMorning = morning.some(
-      (m) => relation(m, r.ingredient_id)?.type === 'antagonism'
-    );
+    // 이미 아침에 길항 성분이 있으면 저녁으로 (monitor 모드는 시간 분리 대상 아님)
+    const conflictMorning = morning.some((m) => {
+      const rl = relation(m, r.ingredient_id);
+      return rl?.type === 'antagonism' && rl.mode !== 'monitor';
+    });
     (conflictMorning ? evening : morning).push(r.ingredient_id);
   }
   const name = (id) => byId[id]?.name_ko || id;
@@ -181,6 +182,7 @@ function buildInteractionNotes(recommended) {
       if (!rel) continue;
       const a = byId[ids[i]].name_ko, b = byId[ids[j]].name_ko;
       if (rel.type === 'synergy') notes.push(`🔗 ${a} + ${b}: ${rel.effect} (함께 복용)`);
+      else if (rel.mode === 'monitor') notes.push(`🩺 ${a} ↔ ${b}: ${rel.problem} — ${rel.timing}`);
       else notes.push(`⚠️ ${a} ↔ ${b}: ${rel.problem} (${rel.timing})`);
     }
   }
