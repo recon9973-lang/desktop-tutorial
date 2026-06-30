@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import sourcesData from '../../data/sources.json';
 import evidenceData from '../../data/evidence.json';
+import { loadRoutine, saveRoutine, addItems } from '../../lib/routine';
 
 const DUR_LABEL = { continuous: '🟢 지속 복용', monitor: '🟡 3개월 후 점검', cyclic: '🔴 8주 후 점검' };
 const DUR_COLOR = { continuous: '#1aae39', monitor: '#dd5b00', cyclic: '#d63b3b' };
@@ -182,10 +184,26 @@ function ReviewBox({ ingredientId }) {
 }
 
 export default function ResultPage() {
+  const router = useRouter();
   const [result, setResult] = useState(null);
   const [kakaoSent, setKakaoSent] = useState(false);
 
   const [priceLive, setPriceLive] = useState(false);
+
+  // 추천 결과 → 내 루틴에 추가(복용 스케줄로 아침/저녁 슬롯 매핑) → /my 이동
+  function addAllToRoutine() {
+    if (!result) return;
+    const morning = new Set(result.schedule?.morning || []);
+    const evening = new Set(result.schedule?.evening || []);
+    const items = result.recommended.map((r) => {
+      const slots = [];
+      if (morning.has(r.name)) slots.push('morning');
+      if (evening.has(r.name)) slots.push('evening');
+      return { id: r.ingredient_id, name: r.name, slots: slots.length ? slots : ['morning'] };
+    });
+    saveRoutine(addItems(loadRoutine(), items));
+    router.push('/my');
+  }
 
   useEffect(() => {
     const raw = sessionStorage.getItem('survey_user');
@@ -460,7 +478,7 @@ export default function ResultPage() {
             <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fff', marginBottom: 4 }}>📦 내 영양제 등록하기</h3>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>섭취 시간 알람 · 복용 점검 · 조합 충돌 확인</p>
           </div>
-          <button style={{
+          <button onClick={addAllToRoutine} style={{
             background: '#fff', color: 'var(--secondary)',
             border: 'none', borderRadius: 'var(--r-full)', padding: '10px 24px',
             fontWeight: 700, fontSize: 15, cursor: 'pointer', whiteSpace: 'nowrap',

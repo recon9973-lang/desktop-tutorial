@@ -27,8 +27,11 @@ export default function RootLayout({ children }) {
             🧬 당신의영양제
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <a href="/my" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              📋 내 루틴
+            </a>
             <a href="/nearby" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-              🗺️ 약국·병원 찾기
+              🗺️ 약국 찾기
             </a>
             <a href="/survey" className="btn-primary" style={{ padding: '6px 20px', fontSize: 15 }}>
               무료로 시작하기
