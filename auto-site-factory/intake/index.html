@@ -135,11 +135,22 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
         <div><label id="lbl-name">상호명</label><input name="name" value="서울미소치과" required></div>
         <div><label>지역</label><input name="region" value="서울 강남"></div>
       </div>
-      <label>슬로건</label><input name="tagline" value="정직한 진료, 편안한 미소">
+      <label>슬로건</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input name="tagline" value="정직한 진료, 편안한 미소" style="flex:1">
+        <button type="button" id="ai-fill-btn" class="small" onclick="aiFill()" style="white-space:nowrap;flex:none;height:46px;padding:0 14px;font-size:14px">✨ AI 자동완성</button>
+      </div>
       <div class="row">
         <div><label>대표번호</label><input name="phone" value="02-1234-5678"></div>
         <div><label>대표색상</label><input name="primary" type="color" value="#533afd" style="height:46px;padding:4px"></div>
       </div>
+      <label>로고 <small style="font-weight:400;color:var(--muted)">업로드 시 대표색상 자동 추출</small></label>
+      <label id="logo-drop" class="drop" style="flex-direction:row;min-height:52px;justify-content:flex-start;gap:12px;padding:10px 16px">
+        <span id="logo-ico" class="ico" style="font-size:18px">🖼️</span>
+        <span id="logo-label" style="font-size:13px;color:var(--muted)">로고 파일 선택 (선택사항)</span>
+        <img id="logo-prev" hidden style="height:32px;max-width:80px;object-fit:contain;border-radius:4px">
+        <input type="file" id="logo-file" accept="image/*" hidden>
+      </label>
       <label>주소</label><input name="address" value="서울특별시 강남구 테헤란로 123, 4층">
       <label>카카오 상담 링크</label><input name="kakao" value="https://pf.kakao.com/_example/chat">
       <label>도메인</label><input name="domain" value="seoul-smile.com">
@@ -898,6 +909,78 @@ document.addEventListener('change', e => {
   if (e.target.classList.contains('doc-photo'))
     e.target.closest('.filebtn').classList.toggle('has', e.target.files.length > 0);
 });
+
+/* ── 로고 업로드 & 색상 자동추출 ────────────────────────────────── */
+document.getElementById('logo-file').addEventListener('change', async function() {
+  if (!this.files.length) return;
+  const file = this.files[0];
+  const dataUrl = await toDataURL(file);
+  const prev = document.getElementById('logo-prev');
+  prev.src = dataUrl;
+  prev.hidden = false;
+  document.getElementById('logo-label').textContent = file.name;
+  document.getElementById('logo-drop').classList.add('has');
+
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = 50; c.height = 50;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 50, 50);
+    const d = ctx.getImageData(0, 0, 50, 50).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i+3] < 128) continue;
+      const rv = d[i], gv = d[i+1], bv = d[i+2];
+      const lum = (rv + gv + bv) / 3;
+      if (lum > 235 || lum < 20) continue;
+      if (Math.max(rv, gv, bv) - Math.min(rv, gv, bv) < 30) continue;
+      r += rv; g += gv; b += bv; n++;
+    }
+    if (n < 5) return;
+    const hex = '#' + [Math.round(r/n), Math.round(g/n), Math.round(b/n)]
+      .map(v => v.toString(16).padStart(2, '0')).join('');
+    document.querySelector('input[name=primary]').value = hex;
+  };
+  img.src = dataUrl;
+});
+
+/* ── AI 자동완성 ─────────────────────────────────────────────────── */
+async function aiFill() {
+  const f = document.getElementById('f');
+  const btn = document.getElementById('ai-fill-btn');
+  const category = f.category.value;
+  const name = f.name.value.trim() || '우리 업체';
+  const region = f.region.value.trim() || '서울';
+  const specialty = f.specialty ? f.specialty.value : '';
+  const type = f.local_type ? f.local_type.value : '';
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ 생성 중...';
+  try {
+    const resp = await fetch('/api/ai-fill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category, specialty, type, name, region }),
+    });
+    if (!resp.ok) throw new Error('서버 오류 ' + resp.status);
+    const data = await resp.json();
+    if (data.error === 'ANTHROPIC_API_KEY_MISSING')
+      throw new Error('ANTHROPIC_API_KEY 미설정\nnode server.js 실행 시 환경변수를 포함하세요.');
+    if (data.error) throw new Error(data.error);
+    if (data.tagline) f.tagline.value = data.tagline;
+    if (data.faq && data.faq.length) {
+      document.getElementById('faq-list').innerHTML = '';
+      data.faq.forEach(item => addFaq(item));
+    }
+    btn.textContent = '✅ 완성!';
+    setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 2500);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = orig;
+    alert('AI 자동완성 실패:\n' + e.message + '\n\nserver.js를 먼저 실행하세요:\nANTHROPIC_API_KEY=sk-ant-... node server.js');
+  }
+}
 
 /* ── spec 빌드 ───────────────────────────────────────────────────── */
 let lastSpec = null;

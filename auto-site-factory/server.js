@@ -11,6 +11,7 @@
  *   GET  /output/<slug>/  → 생성된 정적 사이트 제공
  */
 const http  = require('http');
+const https = require('https');
 const fs    = require('fs');
 const path  = require('path');
 
@@ -80,6 +81,78 @@ const server = http.createServer(async (req, res) => {
 
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ error: e.message }));
+    }
+  }
+
+  // ── POST /api/ai-fill ──────────────────────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/api/ai-fill') {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY_MISSING' }));
+    }
+    try {
+      const body = await readBody(req);
+      const { category, specialty, type, name, region } = JSON.parse(body);
+      const subLabel = specialty || type || '';
+      const catLabel = category === 'clinic' ? '병원·의원' : '소상공인';
+      const subField = category === 'clinic' ? '진료과목' : '업종';
+      const prompt = [
+        '한국 소상공인·병원 홈페이지 카피라이터입니다.',
+        '아래 정보로 홈페이지 문구를 JSON만 반환하세요 (다른 텍스트 없이).',
+        '',
+        `업체명: ${name}`,
+        `카테고리: ${catLabel}`,
+        `${subField}: ${subLabel}`,
+        `지역: ${region}`,
+        '',
+        '반환 형식:',
+        '{',
+        '  "tagline": "20자 이내 슬로건",',
+        '  "metaDesc": "70자 이내 SEO 메타 설명",',
+        '  "faq": [',
+        '    {"q": "자주 묻는 질문 1", "a": "답변 1"},',
+        '    {"q": "자주 묻는 질문 2", "a": "답변 2"},',
+        '    {"q": "자주 묻는 질문 3", "a": "답변 3"}',
+        '  ]',
+        '}',
+      ].join('\n');
+      const payload = JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const aiResp = await new Promise((resolve, reject) => {
+        const options = {
+          hostname: 'api.anthropic.com',
+          path: '/v1/messages',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'Content-Length': Buffer.byteLength(payload),
+          },
+        };
+        const r = https.request(options, res2 => {
+          let buf = '';
+          res2.on('data', d => { buf += d; });
+          res2.on('end', () => {
+            try { resolve(JSON.parse(buf)); }
+            catch (e) { reject(new Error('API 파싱 실패: ' + buf.slice(0, 200))); }
+          });
+        });
+        r.on('error', reject);
+        r.write(payload);
+        r.end();
+      });
+      const text = (aiResp.content && aiResp.content[0] && aiResp.content[0].text) || '{}';
+      const m = text.match(/\{[\s\S]*\}/);
+      const parsed = m ? JSON.parse(m[0]) : {};
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify(parsed));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({ error: e.message }));
