@@ -15,7 +15,7 @@ const https = require('https');
 const fs    = require('fs');
 const path  = require('path');
 
-const { prepare, render } = require('./engine/generate');
+const { prepare, render, generateFromRaw } = require('./engine/generate');
 
 const PORT     = parseInt(process.env.PORT  || '3737', 10);
 const AI_MODEL = process.env.AI_MODEL || 'claude-haiku-4-5-20251001';
@@ -85,6 +85,20 @@ const server = http.createServer(async (req, res) => {
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({ error: e.message }));
+    }
+  }
+
+  // ── POST /api/generate ────────────────────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/api/generate') {
+    try {
+      const body = await readBody(req);
+      const rawSpec = JSON.parse(body);
+      const result = generateFromRaw(rawSpec);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ ok: true, ...result }));
+    } catch (e) {
+      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ ok: false, error: e.message }));
     }
   }
 

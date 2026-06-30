@@ -55,6 +55,9 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
 .btn-row .btn{margin-top:0;flex:1}
 .btn-preview{background:#0d253d}
 .btn-preview:hover{box-shadow:0 12px 24px rgba(13,37,61,.3)}
+.btn-publish{background:#16a34a}
+.btn-publish:hover{background:#15803d;box-shadow:0 12px 24px rgba(22,163,74,.3)}
+.btn-publish:disabled{background:#64748d;cursor:not-allowed}
 /* ── 미리보기 오버레이 ── */
 #preview-overlay{position:fixed;inset:0;z-index:1000;background:#0d1117;display:none;flex-direction:column}
 #preview-bar{display:flex;align-items:center;gap:10px;padding:10px 18px;background:#0d253d;color:#fff;flex:none}
@@ -244,6 +247,7 @@ pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:au
     <div class="btn-row">
       <button type="button" class="btn" onclick="build()">⚙️ spec 생성</button>
       <button type="button" class="btn btn-preview" onclick="preview()">🔍 실시간 미리보기</button>
+      <button type="button" class="btn btn-publish" id="btn-publish" onclick="publish()">🚀 발행</button>
     </div>
   </form>
 
@@ -1260,6 +1264,45 @@ function download() {
   a.href = URL.createObjectURL(blob);
   a.download = (lastSpec.domain || 'site-spec').replace(/[^\w]/g,'-') + '.json';
   a.click();
+}
+
+/* ── 발행 ────────────────────────────────────────────────────────── */
+async function publish() {
+  await build();
+  if (!lastSpec) return;
+  const btn = document.getElementById('btn-publish');
+  btn.disabled = true;
+  btn.textContent = '⏳ 발행 중...';
+  try {
+    const resp = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastSpec),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || '알 수 없는 오류');
+    btn.textContent = '✅ 발행 완료';
+    btn.style.background = '#16a34a';
+
+    // result 영역에 발행 완료 배너 삽입
+    const result = document.getElementById('result');
+    const existing = document.getElementById('publish-success');
+    if (existing) existing.remove();
+    const banner = document.createElement('div');
+    banner.id = 'publish-success';
+    banner.style.cssText = 'background:#dcfce7;border:1.5px solid #86efac;border-radius:14px;padding:20px 24px;margin-top:16px;font-size:14px;color:#166534';
+    banner.innerHTML = `<strong>🚀 발행 완료!</strong> — <code>${data.domain}</code><br>
+      <a href="/output/${data.slug}/" target="_blank" style="color:#16a34a;font-weight:600;text-decoration:underline">🌐 사이트 확인하기 →</a>
+      &nbsp;&nbsp;
+      <a href="/dashboard" target="_blank" style="color:#16a34a;font-weight:600;text-decoration:underline">📊 대시보드 →</a>`;
+    result.style.display = '';
+    result.querySelector('.card').appendChild(banner);
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🚀 발행'; }, 3000);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '🚀 발행';
+    alert('발행 실패: ' + e.message);
+  }
 }
 
 /* ── 미리보기 ─────────────────────────────────────────────────────── */

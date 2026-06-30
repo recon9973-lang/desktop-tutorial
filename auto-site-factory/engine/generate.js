@@ -461,6 +461,45 @@ function generate(specPath) {
   return outDir;
 }
 
+function generateFromRaw(rawSpec) {
+  const { spec, blueprint, specialty, scale, options, seoFiles } = prepare(rawSpec);
+
+  const tplPath = path.join(ROOT, 'blueprints', spec.category, 'template.html');
+  if (!fs.existsSync(tplPath))
+    throw new Error(`템플릿 파일이 없습니다: blueprints/${spec.category}/template.html`);
+  const tpl = fs.readFileSync(tplPath, 'utf8');
+  let html = render(tpl, spec);
+
+  if (options.includes('medical_review')) {
+    const { runMedicalReview } = require('./options/medical-review');
+    const rv = runMedicalReview(html);
+    html = rv.html;
+  }
+
+  const outDir = path.join(ROOT, 'output', spec.slug);
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'index.html'), html);
+  for (const [name, content] of Object.entries(seoFiles)) {
+    fs.writeFileSync(path.join(outDir, name), content);
+  }
+
+  const manifest = {
+    slug: spec.slug,
+    domain: spec.domain,
+    brandName: spec.brand.name,
+    category: spec.category,
+    specialtyLabel: specialty.label,
+    scale: scale.label,
+    options,
+    generatedAt: new Date().toISOString(),
+    sizeBytes: Buffer.byteLength(html),
+    hasBlog: fs.existsSync(path.join(outDir, 'blog', 'index.json')),
+  };
+  fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+
+  return { slug: spec.slug, domain: spec.domain, brandName: spec.brand.name, outDir };
+}
+
 if (require.main === module) {
   const specArg = process.argv[2];
   if (!specArg) {
@@ -470,4 +509,4 @@ if (require.main === module) {
   generate(path.resolve(specArg));
 }
 
-module.exports = { generate, prepare, render, slugify };
+module.exports = { generate, generateFromRaw, prepare, render, slugify };
