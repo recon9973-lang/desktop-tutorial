@@ -37,15 +37,26 @@ function _pad2(n) { return String(n).padStart(2, '0'); }
 function _hmToMin(hm) { const a = String(hm || '09:00').split(':'); return (parseInt(a[0]) || 0) * 60 + (parseInt(a[1]) || 0); }
 function _minToHM(min) { min = ((min % 1440) + 1440) % 1440; return _pad2(Math.floor(min / 60)) + ':' + _pad2(min % 60); }
 
-// 발행 개수만큼 시각(HH:MM) 배열 산출 — same/random/individual
-function computePublishTimes(sched, count) {
+// 결정적 PRNG — 같은 날엔 폴링마다 동일한 랜덤 슬롯이 나오도록(슬롯 도래 판정 일관성).
+function _hashStr(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function _mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// 현재 시각(KST) HH:MM
+function kstNowHM() {
+  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  return _pad2(d.getHours()) + ':' + _pad2(d.getMinutes());
+}
+
+// 발행 개수만큼 시각(HH:MM) 배열 산출 — same/random/individual. 항상 시간 오름차순 정렬(슬롯 도래 판정용).
+// seedStr(보통 오늘 KST 날짜)로 random을 결정적으로 만들어 폴링마다 동일한 결과 보장.
+function computePublishTimes(sched, count, seedStr) {
   const mode = (sched && sched.timeMode) || 'same';
   const out = [];
   if (mode === 'random') {
     let a = _hmToMin(sched.randStart || '09:00'), b = _hmToMin(sched.randEnd || '18:00');
     if (b < a) { const t = a; a = b; b = t; }
-    for (let i = 0; i < count; i++) out.push(_minToHM(a + Math.floor(Math.random() * (b - a + 1))));
-    out.sort();
+    const rnd = _mulberry32(_hashStr(String(seedStr || '') + '|' + a + '|' + b + '|' + count));
+    for (let i = 0; i < count; i++) out.push(_minToHM(a + Math.floor(rnd() * (b - a + 1))));
   } else if (mode === 'individual') {
     const arr = Array.isArray(sched.times) ? sched.times : [];
     for (let i = 0; i < count; i++) out.push(arr[i] || arr[arr.length - 1] || sched.time || '09:00');
@@ -53,6 +64,7 @@ function computePublishTimes(sched, count) {
     const t = (sched && sched.time) || '09:00';
     for (let i = 0; i < count; i++) out.push(t);
   }
+  out.sort(); // HH:MM 문자열 정렬 = 시간 오름차순
   return out;
 }
 
@@ -97,27 +109,51 @@ module.exports = async function handler(req, res) {
   if (!todaySched) {
     return res.status(200).json({ ok: true, skipped: true, reason: '오늘은 발행 스케줄이 없습니다.' });
   }
+  const todayStr = kstDateStr();
   const count = Math.max(1, parseInt(todaySched.dailyCount) || 1);
-  const publishTimes = computePublishTimes(todaySched, count); // ['09:00', ...] 길이 count
+  // 오늘의 발행 슬롯 시각(시간 오름차순). random은 날짜 시드로 결정적 → 폴링마다 동일.
+  const slots = computePublishTimes(todaySched, count, todayStr);
+  const nowHM = kstNowHM();
+  const dueCount = slots.filter(t => t <= nowHM).length; // 지금까지 도래한 슬롯 수
+  if (dueCount === 0) {
+    return res.status(200).json({ ok: true, skipped: true, reason: '아직 도래한 발행 시각이 없습니다.', now: nowHM, slots });
+  }
 
-  for (let i = 0; i < count; i++) {
+  // 오늘 이미 발행된 '스케줄' 글 수 — 폴링 멱등성(중복/재발행 방지)
+  let publishedToday = 0;
+  try {
+    const { posts } = await getPosts();
+    publishedToday = (posts || []).filter(p => p.scheduledDate === todayStr).length;
+  } catch (e) {
+    return res.status(200).json({ ok: true, skipped: true, reason: 'getPosts 실패 — 중복 방지 위해 이번 실행 건너뜀', error: e.message });
+  }
+
+  // 한 번 호출에서 최대 발행 수(함수 타임아웃 방지). 못 채운 슬롯은 다음 폴링이 따라잡음.
+  const MAX_PER_RUN = 3;
+  const toPublish = Math.min(Math.min(count, dueCount) - publishedToday, MAX_PER_RUN);
+  if (toPublish <= 0) {
+    return res.status(200).json({ ok: true, skipped: true, reason: '도래한 슬롯 모두 발행 완료', now: nowHM, dueCount, publishedToday });
+  }
+
+  for (let k = 0; k < toPublish; k++) {
+    const slotIdx = publishedToday + k;       // 다음 미발행 슬롯
+    const slotTime = slots[slotIdx] || nowHM;
     const cats = settings.categories || ['geo'];
     const keywords = settings.keywords || ['병원마케팅'];
     const regions = settings.regions || [];
 
-    const category = cats[i % cats.length];
-    const keyword = keywords[i % keywords.length];
-    const region = regions.length ? regions[i % regions.length] : '';
+    const category = cats[slotIdx % cats.length];
+    const keyword = keywords[slotIdx % keywords.length];
+    const region = regions.length ? regions[slotIdx % regions.length] : '';
 
     try {
       const post = await generatePost({ category, keyword, region, extra: settings.extra });
 
-      // 발행 예약 시각(KST 기준) — 글마다 same/random/individual 모드로 배정.
-      // publishAt이 미래면 프론트(블로그 목록·사이트맵)에서 그 시각까지 노출 보류.
-      const publishAt = kstPublishAtISO(publishTimes[i] || '09:00');
-      post.publishAt = publishAt;
-      post.date = publishAt.slice(0, 10);
-      post.scheduledTime = publishTimes[i] || '09:00';
+      // 예약 시각이 도래해 '지금 실제 발행'. scheduledDate로 당일 멱등성 보장.
+      post.scheduledDate = todayStr;
+      post.scheduledTime = slotTime;
+      post.publishAt = kstPublishAtISO(slotTime);
+      post.date = todayStr;
 
       // 이미지 1~2장 생성: 1번째=본문 최상단 히어로, 2번째=첫 h2 뒤 본문 삽입
       let imageError = null;
@@ -212,5 +248,5 @@ module.exports = async function handler(req, res) {
     console.warn('[cron] sitemap 갱신 실패(무시):', e.message);
   }
 
-  return res.status(200).json({ ok: true, ran: count, results });
+  return res.status(200).json({ ok: true, published: results.filter(r => r.ok).length, ran: results.length, dueCount, publishedBefore: publishedToday, now: nowHM, results });
 };
