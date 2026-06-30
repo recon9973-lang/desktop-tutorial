@@ -1,4 +1,12 @@
-const sharp = require('sharp');
+// sharp는 선택적 — 없으면(예: Vercel 빌드 환경) 조용히 건너뛰어 빌드를 깨뜨리지 않는다.
+// WebP는 Vercel 이미지 최적화로 송출되므로 빌드 시 변환이 필수가 아님(빌드 무관 WebP).
+let sharp;
+try {
+  sharp = require('sharp');
+} catch (e) {
+  console.warn('[convert-webp] sharp 미설치 — WebP 변환 건너뜀(빌드 무관). 메시지: ' + e.message);
+  process.exit(0);
+}
 const fs = require('fs');
 const path = require('path');
 
