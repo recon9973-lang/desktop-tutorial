@@ -96,6 +96,16 @@ for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const rl=rel(ids[i]
 return{recommended:rec,not_recommended:no,schedule:{morning:morning.map(nm),evening:evening.map(nm)},notes,slots:Object.fromEntries(rec.map(x=>[x.id,{m:morning.includes(x.id),e:evening.includes(x.id)}]))}}
 function topBenefit(id){const e=EV[id];if(!e||!e.benefits?.length)return null;const rk={established:3,moderate:2,limited:1,insufficient:0};return [...e.benefits].sort((a,b)=>(rk[b.evidence_strength]??0)-(rk[a.evidence_strength]??0))[0]}
 function concernLabels(id,cs){return cs.map(c=>concernById[c]).filter(c=>c&&c.ingredients.includes(id)).map(c=>c.label)}
+function realVal(v){return v&&v!=='출처 미확인'?v:null}
+// 권장량/상한 표시: 공식값 없으면 '미설정'으로 정직하게(없는 상한 지어내지 않음)
+function doseLine(d,mt){const m=mt||4;if(!d)return '';const r=realVal(d.rda_or_ai),u=realVal(d.ul);
+ if(!r&&!u)return '<div class="muted" style="font-size:12.5px;margin-top:'+m+'px">📐 공식 권장량·상한 미설정(영양소가 아닌 기능성 원료)</div>';
+ return '<div class="muted" style="font-size:12.5px;margin-top:'+m+'px">📐 '+(r?'권장 '+esc(r):'')+(r&&u?' · ':'')+(u?'상한 '+esc(u):'')+'</div>';}
+// 식약처 근거 블록: verified=deep-link 검증 → '인정+원문', 미검증 고시문구 → '고시 기능성+검색'
+function krBlock(kr,nameKo){if(!kr||!kr.mfds_function)return '';
+ if(kr.verified)return '<div style="font-size:12.5px;margin-top:4px">🇰🇷 <b>식약처 인정</b> “'+esc(kr.mfds_function)+'” <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
+ const q=encodeURIComponent(nameKo);
+ return '<div style="font-size:12.5px;margin-top:4px">🇰🇷 <b>식약처 고시 기능성</b> <span class="tag" style="background:#0d9488">고시 표준문구</span> “'+esc(kr.mfds_function)+'” <a class="src" target="_blank" href="https://various.foodsafetykorea.go.kr/nutrient/general/search/list?searchKeyword='+q+'">식품안전나라 →</a></div>';}
 // ---- state ----
 let view='home',sel={concerns:[],medications:[],allergies:[],diet:'general',profile:{age:'',sex:''}},result=null;
 let routine={items:[],checks:{}};
@@ -162,9 +172,9 @@ function resultView(){const res=result;const cl=sel.concerns.map(c=>concernById[
  res.recommended.forEach(r=>{const tb=topBenefit(r.id),st=tb?STRENGTH[tb.evidence_strength]:null,e=EV[r.id],kr=e&&e.kr_source;
   h+='<div class="card"><div><b style="font-size:16px">'+esc(r.name)+'</b> <span class="tag" style="background:#f5b800">'+'⭐'.repeat(r.lvl)+'</span> <span style="font-size:12px;color:var(--mute)">'+DUR_LABEL[r.dur]+'</span></div>';
   h+='<div class="muted" style="margin:4px 0">'+esc(r.fns.join(' · '))+'</div>';
-  if(kr&&kr.verified)h+='<div style="font-size:12.5px;margin-top:4px">🇰🇷 <b>식약처 인정</b> “'+esc(kr.mfds_function)+'” <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
+  h+=krBlock(kr,r.name);
   if(tb)h+='<div style="margin-top:4px"><span class="tag" style="background:'+st[1]+'">'+st[0]+'</span> <span class="muted">'+esc(tb.claim)+'</span> '+(tb.citation&&tb.citation.url?'<a class="src" target="_blank" href="'+tb.citation.url+'">'+esc(tb.citation.source)+' 원문 →</a>':'')+'</div>';
-  if(e&&e.dosing&&(e.dosing.rda_or_ai||e.dosing.ul))h+='<div class="muted" style="font-size:12.5px;margin-top:4px">📐 '+(e.dosing.rda_or_ai?'권장 '+esc(e.dosing.rda_or_ai):'')+(e.dosing.rda_or_ai&&e.dosing.ul?' · ':'')+(e.dosing.ul?'상한 '+esc(e.dosing.ul):'')+'</div>';
+  h+=doseLine(e&&e.dosing,4);
   if(r.dose)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">💊 제품 표기 '+esc(r.dose)+'</div>';
   r.warnings.forEach(w=>h+='<div style="font-size:12.5px;color:#d97706;margin-top:4px">⚠️ '+esc(w)+'</div>');
   if(r.cautions.length)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">주의: '+esc(r.cautions.join(' · '))+'</div>';
@@ -220,9 +230,9 @@ function dictView(){
   h+='<div class="card"><div onclick="dictTog(\''+i.id+'\')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><b style="font-size:16px">'+esc(i.name_ko)+'</b> <span class="tag" style="background:#f5b800">'+'⭐'.repeat(i.evidence.level)+'</span>'+(st?' <span class="tag" style="background:'+st[1]+'">'+st[0]+'</span>':'')+'<span style="margin-left:auto;color:var(--faint)">'+(op?'▴':'▾')+'</span></div>';
   h+='<div class="muted" style="margin-top:4px">'+esc(i.functions.join(' · '))+'</div>';
   if(op){
-   if(kr&&kr.verified)h+='<div style="font-size:12.5px;margin-top:8px">🇰🇷 <b>식약처 인정</b> “'+esc(kr.mfds_function)+'” <a class="src" target="_blank" href="'+kr.url+'">원문 →</a></div>';
+   h+=krBlock(kr,i.name_ko);
    (e&&e.benefits||[]).forEach(b=>{const s2=STRENGTH[b.evidence_strength];h+='<div style="margin-top:6px"><span class="tag" style="background:'+s2[1]+'">'+s2[0]+'</span> <span class="muted">'+esc(b.claim)+'</span> '+(b.citation&&b.citation.url?'<a class="src" target="_blank" href="'+b.citation.url+'">'+esc(b.citation.source)+' →</a>':'')+'</div>'});
-   if(e&&e.dosing&&(e.dosing.rda_or_ai||e.dosing.ul))h+='<div class="muted" style="font-size:12.5px;margin-top:6px">📐 '+(e.dosing.rda_or_ai?'권장 '+esc(e.dosing.rda_or_ai):'')+(e.dosing.rda_or_ai&&e.dosing.ul?' · ':'')+(e.dosing.ul?'상한 '+esc(e.dosing.ul):'')+'</div>';
+   h+=doseLine(e&&e.dosing,6);
    h+='<div class="muted" style="font-size:12.5px;margin-top:4px">💊 제품 표기 '+esc(i.daily_dose)+' · '+DUR_LABEL[i.duration_type]+'</div>';
    if(i.cautions&&i.cautions.length)h+='<div class="muted" style="font-size:12.5px;margin-top:4px">주의: '+esc(i.cautions.join(' · '))+'</div>';
    h+='<button class="chip" style="margin-top:10px" onclick="addOne(\''+i.id+'\')">🧪 내 조합에 추가</button>';
