@@ -5767,10 +5767,14 @@ function _renderSEO(data,url,domain,el){
   }
   _seoLast=res;
   try{ _lbRecord(res.domain, Math.round(res.total/res.max*100)); }catch(e){}
+  // 정밀 분석(PSI)을 기본 자동 실행 — 우선 정적 결과(즉시 표시) 후 Google 실제 렌더링 결과로 자동 갱신.
   el.innerHTML=SEOEngine.renderInfographic(res)
-    +'<div id="seo-psi-section" style="margin-top:14px"><button onclick="_runSEOPSI()" class="btn btn-p" style="width:100%;padding:11px;font-size:13px;border-radius:10px">🔬 성능 정밀 분석 실행 (PSI · 10~20초)</button></div>'
+    +'<div id="seo-psi-section" style="margin-top:14px;font-size:12.5px;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">'
+    +'<span style="display:inline-block;width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#533afd;border-radius:50%;animation:spin .8s linear infinite"></span>'
+    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영해 정확한 점수로 갱신됩니다 (10~20초)</div>'
     +_seoToolbar()
     +_seoCTA();
+  setTimeout(_runSEOPSI, 400);
 }
 
 // 정밀 분석(PSI) → 엔진 mergePSI → 100점 만점 재렌더
