@@ -49,12 +49,14 @@
   .chip{font-size:12.5px;padding:6px 12px;border-radius:999px;background:var(--white);
     border:1px solid var(--border);color:var(--mute);white-space:nowrap;transition:.15s}
   .chip:hover{color:var(--p);border-color:var(--ps)}
+  .chip i{font-style:normal;margin-right:1px}
   .chip span{color:var(--p);font-weight:800}
   main{padding:30px 0 80px}
   .cat{margin:36px 0;scroll-margin-top:160px}
   .cat-head{display:flex;align-items:center;gap:11px;margin-bottom:3px}
-  .cat-head h2{font-size:22px;margin:0;font-weight:800;color:var(--bd)}
-  .cat-head h2 .en{font-size:12.5px;color:var(--mute);font-weight:500;margin-left:6px}
+  .cat-head h2{font-size:22px;margin:0;font-weight:800;color:var(--bd);
+    display:flex;align-items:center;gap:9px}
+  .cat-head h2 .cat-ico{font-style:normal;font-size:20px;line-height:1}
   .count{font-size:12px;color:var(--pd);background:#eef0ff;border:1px solid #dfe2ff;
     padding:2px 10px;border-radius:999px;font-weight:700}
   .cat-desc{color:var(--mute);margin:4px 0 16px;font-size:14px}
@@ -102,39 +104,39 @@
     <div class="wrap">
       <input id="search" class="search" type="search"
              placeholder="🔍 리소스 검색 (이름·설명·카테고리)  예: 그라디언트, 아이콘, react, tailwind">
-      <nav class="nav"><a class="chip" href="#ui-graphics">UI 그래픽 &amp; 일러스트 <span>46</span></a>
-<a class="chip" href="#fonts">폰트 <span>42</span></a>
-<a class="chip" href="#colors">색상 <span>75</span></a>
-<a class="chip" href="#icons">아이콘 <span>63</span></a>
-<a class="chip" href="#logos">로고 <span>9</span></a>
-<a class="chip" href="#favicons">파비콘 <span>10</span></a>
-<a class="chip" href="#icon-fonts">아이콘 폰트 <span>22</span></a>
-<a class="chip" href="#stock-photos">스톡 사진 <span>38</span></a>
-<a class="chip" href="#stock-videos">스톡 영상 <span>10</span></a>
-<a class="chip" href="#stock-music-sound-effects">음악 &amp; 효과음 <span>9</span></a>
-<a class="chip" href="#vectors-clip-art">벡터 &amp; 클립아트 <span>29</span></a>
-<a class="chip" href="#product-image-mockups">제품 &amp; 이미지 목업 <span>21</span></a>
-<a class="chip" href="#html-css-templates">HTML &amp; CSS 템플릿 <span>28</span></a>
-<a class="chip" href="#css-frameworks">CSS 프레임워크 <span>64</span></a>
-<a class="chip" href="#css-methodologies">CSS 방법론 <span>5</span></a>
-<a class="chip" href="#css-animations">CSS 애니메이션 <span>27</span></a>
-<a class="chip" href="#javascript-animation-libraries">JavaScript 애니메이션 라이브러리 <span>35</span></a>
-<a class="chip" href="#javascript-chart-libraries">JavaScript 차트 라이브러리 <span>14</span></a>
-<a class="chip" href="#ui-components-kits">UI 컴포넌트 &amp; 키트 <span>65</span></a>
-<a class="chip" href="#react-ui-libraries">React UI 라이브러리 <span>74</span></a>
-<a class="chip" href="#vue-ui-libraries">Vue UI 라이브러리 <span>43</span></a>
-<a class="chip" href="#angular-ui-libraries">Angular UI 라이브러리 <span>18</span></a>
-<a class="chip" href="#svelte-ui-libraries">Svelte UI 라이브러리 <span>14</span></a>
-<a class="chip" href="#react-native-ui-libraries">React Native UI 라이브러리 <span>12</span></a>
-<a class="chip" href="#design-systems-style-guides">디자인 시스템 &amp; 스타일 가이드 <span>40</span></a>
-<a class="chip" href="#online-design-tools">온라인 디자인 도구 <span>73</span></a>
-<a class="chip" href="#downloadable-design-software">다운로드형 디자인 소프트웨어 <span>17</span></a>
-<a class="chip" href="#design-inspiration">디자인 영감 <span>46</span></a>
-<a class="chip" href="#image-compression">이미지 압축 <span>24</span></a>
-<a class="chip" href="#chrome-extensions">Chrome 확장 프로그램 <span>36</span></a>
-<a class="chip" href="#firefox-extensions">Firefox 확장 프로그램 <span>24</span></a>
-<a class="chip" href="#ai-graphic-design-tools">AI 그래픽 디자인 도구 <span>7</span></a>
-<a class="chip" href="#others">기타 <span>65</span></a></nav>
+      <nav class="nav"><a class="chip" href="#ui-graphics"><i>🎨</i> UI 그래픽 &amp; 일러스트 <span>46</span></a>
+<a class="chip" href="#fonts"><i>🔤</i> 폰트 <span>42</span></a>
+<a class="chip" href="#colors"><i>🌈</i> 색상 <span>75</span></a>
+<a class="chip" href="#icons"><i>⭐</i> 아이콘 <span>63</span></a>
+<a class="chip" href="#logos"><i>🏷️</i> 로고 <span>9</span></a>
+<a class="chip" href="#favicons"><i>🔖</i> 파비콘 <span>10</span></a>
+<a class="chip" href="#icon-fonts"><i>🔣</i> 아이콘 폰트 <span>22</span></a>
+<a class="chip" href="#stock-photos"><i>📷</i> 스톡 사진 <span>38</span></a>
+<a class="chip" href="#stock-videos"><i>🎬</i> 스톡 영상 <span>10</span></a>
+<a class="chip" href="#stock-music-sound-effects"><i>🎵</i> 음악 &amp; 효과음 <span>9</span></a>
+<a class="chip" href="#vectors-clip-art"><i>✏️</i> 벡터 &amp; 클립아트 <span>29</span></a>
+<a class="chip" href="#product-image-mockups"><i>📱</i> 제품 &amp; 이미지 목업 <span>21</span></a>
+<a class="chip" href="#html-css-templates"><i>📄</i> HTML &amp; CSS 템플릿 <span>28</span></a>
+<a class="chip" href="#css-frameworks"><i>🧩</i> CSS 프레임워크 <span>64</span></a>
+<a class="chip" href="#css-methodologies"><i>📐</i> CSS 방법론 <span>5</span></a>
+<a class="chip" href="#css-animations"><i>💫</i> CSS 애니메이션 <span>27</span></a>
+<a class="chip" href="#javascript-animation-libraries"><i>🎞️</i> JavaScript 애니메이션 라이브러리 <span>35</span></a>
+<a class="chip" href="#javascript-chart-libraries"><i>📊</i> JavaScript 차트 라이브러리 <span>14</span></a>
+<a class="chip" href="#ui-components-kits"><i>🧱</i> UI 컴포넌트 &amp; 키트 <span>65</span></a>
+<a class="chip" href="#react-ui-libraries"><i>⚛️</i> React UI 라이브러리 <span>74</span></a>
+<a class="chip" href="#vue-ui-libraries"><i>💚</i> Vue UI 라이브러리 <span>43</span></a>
+<a class="chip" href="#angular-ui-libraries"><i>🅰️</i> Angular UI 라이브러리 <span>18</span></a>
+<a class="chip" href="#svelte-ui-libraries"><i>🧡</i> Svelte UI 라이브러리 <span>14</span></a>
+<a class="chip" href="#react-native-ui-libraries"><i>📲</i> React Native UI 라이브러리 <span>12</span></a>
+<a class="chip" href="#design-systems-style-guides"><i>🗂️</i> 디자인 시스템 &amp; 스타일 가이드 <span>40</span></a>
+<a class="chip" href="#online-design-tools"><i>🛠️</i> 온라인 디자인 도구 <span>73</span></a>
+<a class="chip" href="#downloadable-design-software"><i>💻</i> 다운로드형 디자인 소프트웨어 <span>17</span></a>
+<a class="chip" href="#design-inspiration"><i>💡</i> 디자인 영감 <span>46</span></a>
+<a class="chip" href="#image-compression"><i>🗜️</i> 이미지 압축 <span>24</span></a>
+<a class="chip" href="#chrome-extensions"><i>🔌</i> Chrome 확장 프로그램 <span>36</span></a>
+<a class="chip" href="#firefox-extensions"><i>🦊</i> Firefox 확장 프로그램 <span>24</span></a>
+<a class="chip" href="#ai-graphic-design-tools"><i>🤖</i> AI 그래픽 디자인 도구 <span>7</span></a>
+<a class="chip" href="#others"><i>📦</i> 기타 <span>65</span></a></nav>
     </div>
   </div>
 
@@ -143,7 +145,7 @@
       
     <section class="cat" id="ui-graphics" data-cat>
       <div class="cat-head">
-        <h2>UI 그래픽 &amp; 일러스트 <span class="en">UI Graphics</span></h2>
+        <h2><i class="cat-ico">🎨</i> UI 그래픽 &amp; 일러스트</h2>
         <span class="count">46</span>
       </div>
       <p class="cat-desc">PSD·Sketch·Figma 등 다양한 형식의 모던 UI 컴포넌트와 일러스트 리소스</p>
@@ -383,7 +385,7 @@
 
     <section class="cat" id="fonts" data-cat>
       <div class="cat-head">
-        <h2>폰트 <span class="en">Fonts</span></h2>
+        <h2><i class="cat-ico">🔤</i> 폰트</h2>
         <span class="count">42</span>
       </div>
       <p class="cat-desc">무료 폰트 및 폰트 관련 도구</p>
@@ -603,7 +605,7 @@
 
     <section class="cat" id="colors" data-cat>
       <div class="cat-head">
-        <h2>색상 <span class="en">Colors</span></h2>
+        <h2><i class="cat-ico">🌈</i> 색상</h2>
         <span class="count">75</span>
       </div>
       <p class="cat-desc">색상 선택·팔레트·그라디언트·대비 검사 도구</p>
@@ -988,7 +990,7 @@
 
     <section class="cat" id="icons" data-cat>
       <div class="cat-head">
-        <h2>아이콘 <span class="en">Icons</span></h2>
+        <h2><i class="cat-ico">⭐</i> 아이콘</h2>
         <span class="count">63</span>
       </div>
       <p class="cat-desc">PNG·SVG 등 아이콘 리소스</p>
@@ -1313,7 +1315,7 @@
 
     <section class="cat" id="logos" data-cat>
       <div class="cat-head">
-        <h2>로고 <span class="en">Logos</span></h2>
+        <h2><i class="cat-ico">🏷️</i> 로고</h2>
         <span class="count">9</span>
       </div>
       <p class="cat-desc">로고 검색·다운로드·생성</p>
@@ -1368,7 +1370,7 @@
 
     <section class="cat" id="favicons" data-cat>
       <div class="cat-head">
-        <h2>파비콘 <span class="en">Favicons</span></h2>
+        <h2><i class="cat-ico">🔖</i> 파비콘</h2>
         <span class="count">10</span>
       </div>
       <p class="cat-desc">파비콘 생성 도구</p>
@@ -1428,7 +1430,7 @@
 
     <section class="cat" id="icon-fonts" data-cat>
       <div class="cat-head">
-        <h2>아이콘 폰트 <span class="en">Icon Fonts</span></h2>
+        <h2><i class="cat-ico">🔣</i> 아이콘 폰트</h2>
         <span class="count">22</span>
       </div>
       <p class="cat-desc">웹 폰트 형태의 아이콘 세트</p>
@@ -1548,7 +1550,7 @@
 
     <section class="cat" id="stock-photos" data-cat>
       <div class="cat-head">
-        <h2>스톡 사진 <span class="en">Stock Photos</span></h2>
+        <h2><i class="cat-ico">📷</i> 스톡 사진</h2>
         <span class="count">38</span>
       </div>
       <p class="cat-desc">무료 스톡 사진</p>
@@ -1748,7 +1750,7 @@
 
     <section class="cat" id="stock-videos" data-cat>
       <div class="cat-head">
-        <h2>스톡 영상 <span class="en">Stock Videos</span></h2>
+        <h2><i class="cat-ico">🎬</i> 스톡 영상</h2>
         <span class="count">10</span>
       </div>
       <p class="cat-desc">무료 스톡 영상</p>
@@ -1808,7 +1810,7 @@
 
     <section class="cat" id="stock-music-sound-effects" data-cat>
       <div class="cat-head">
-        <h2>음악 &amp; 효과음 <span class="en">Stock Music &amp; Sound Effects</span></h2>
+        <h2><i class="cat-ico">🎵</i> 음악 &amp; 효과음</h2>
         <span class="count">9</span>
       </div>
       <p class="cat-desc">무료 음악 및 효과음</p>
@@ -1863,7 +1865,7 @@
 
     <section class="cat" id="vectors-clip-art" data-cat>
       <div class="cat-head">
-        <h2>벡터 &amp; 클립아트 <span class="en">Vectors &amp; Clip Art</span></h2>
+        <h2><i class="cat-ico">✏️</i> 벡터 &amp; 클립아트</h2>
         <span class="count">29</span>
       </div>
       <p class="cat-desc">무료 벡터·클립아트·패턴</p>
@@ -2018,7 +2020,7 @@
 
     <section class="cat" id="product-image-mockups" data-cat>
       <div class="cat-head">
-        <h2>제품 &amp; 이미지 목업 <span class="en">Product &amp; Image Mockups</span></h2>
+        <h2><i class="cat-ico">📱</i> 제품 &amp; 이미지 목업</h2>
         <span class="count">21</span>
       </div>
       <p class="cat-desc">디바이스·제품 목업 생성</p>
@@ -2133,7 +2135,7 @@
 
     <section class="cat" id="html-css-templates" data-cat>
       <div class="cat-head">
-        <h2>HTML &amp; CSS 템플릿 <span class="en">HTML &amp; CSS Templates</span></h2>
+        <h2><i class="cat-ico">📄</i> HTML &amp; CSS 템플릿</h2>
         <span class="count">28</span>
       </div>
       <p class="cat-desc">무료 웹사이트 템플릿·테마</p>
@@ -2283,7 +2285,7 @@
 
     <section class="cat" id="css-frameworks" data-cat>
       <div class="cat-head">
-        <h2>CSS 프레임워크 <span class="en">CSS Frameworks</span></h2>
+        <h2><i class="cat-ico">🧩</i> CSS 프레임워크</h2>
         <span class="count">64</span>
       </div>
       <p class="cat-desc">웹사이트·앱 제작용 CSS/UI 프레임워크</p>
@@ -2613,7 +2615,7 @@
 
     <section class="cat" id="css-methodologies" data-cat>
       <div class="cat-head">
-        <h2>CSS 방법론 <span class="en">CSS Methodologies</span></h2>
+        <h2><i class="cat-ico">📐</i> CSS 방법론</h2>
         <span class="count">5</span>
       </div>
       <p class="cat-desc">모듈화·재사용 가능한 CSS 작성 방법론</p>
@@ -2648,7 +2650,7 @@
 
     <section class="cat" id="css-animations" data-cat>
       <div class="cat-head">
-        <h2>CSS 애니메이션 <span class="en">CSS Animations</span></h2>
+        <h2><i class="cat-ico">💫</i> CSS 애니메이션</h2>
         <span class="count">27</span>
       </div>
       <p class="cat-desc">CSS 기반 애니메이션 라이브러리</p>
@@ -2793,7 +2795,7 @@
 
     <section class="cat" id="javascript-animation-libraries" data-cat>
       <div class="cat-head">
-        <h2>JavaScript 애니메이션 라이브러리 <span class="en">Javascript Animation Libraries</span></h2>
+        <h2><i class="cat-ico">🎞️</i> JavaScript 애니메이션 라이브러리</h2>
         <span class="count">35</span>
       </div>
       <p class="cat-desc">JS 기반 애니메이션 라이브러리</p>
@@ -2978,7 +2980,7 @@
 
     <section class="cat" id="javascript-chart-libraries" data-cat>
       <div class="cat-head">
-        <h2>JavaScript 차트 라이브러리 <span class="en">Javascript Chart Libraries</span></h2>
+        <h2><i class="cat-ico">📊</i> JavaScript 차트 라이브러리</h2>
         <span class="count">14</span>
       </div>
       <p class="cat-desc">데이터 시각화 차트 라이브러리</p>
@@ -3058,7 +3060,7 @@
 
     <section class="cat" id="ui-components-kits" data-cat>
       <div class="cat-head">
-        <h2>UI 컴포넌트 &amp; 키트 <span class="en">UI Components &amp; Kits</span></h2>
+        <h2><i class="cat-ico">🧱</i> UI 컴포넌트 &amp; 키트</h2>
         <span class="count">65</span>
       </div>
       <p class="cat-desc">컴포넌트·UI 키트 제작 도구</p>
@@ -3393,7 +3395,7 @@
 
     <section class="cat" id="react-ui-libraries" data-cat>
       <div class="cat-head">
-        <h2>React UI 라이브러리 <span class="en">React UI Libraries</span></h2>
+        <h2><i class="cat-ico">⚛️</i> React UI 라이브러리</h2>
         <span class="count">74</span>
       </div>
       <p class="cat-desc">React용 UI·컴포넌트 라이브러리</p>
@@ -3773,7 +3775,7 @@
 
     <section class="cat" id="vue-ui-libraries" data-cat>
       <div class="cat-head">
-        <h2>Vue UI 라이브러리 <span class="en">Vue UI Libraries</span></h2>
+        <h2><i class="cat-ico">💚</i> Vue UI 라이브러리</h2>
         <span class="count">43</span>
       </div>
       <p class="cat-desc">Vue용 UI·컴포넌트 라이브러리</p>
@@ -3998,7 +4000,7 @@
 
     <section class="cat" id="angular-ui-libraries" data-cat>
       <div class="cat-head">
-        <h2>Angular UI 라이브러리 <span class="en">Angular UI Libraries</span></h2>
+        <h2><i class="cat-ico">🅰️</i> Angular UI 라이브러리</h2>
         <span class="count">18</span>
       </div>
       <p class="cat-desc">Angular용 UI·컴포넌트 라이브러리</p>
@@ -4098,7 +4100,7 @@
 
     <section class="cat" id="svelte-ui-libraries" data-cat>
       <div class="cat-head">
-        <h2>Svelte UI 라이브러리 <span class="en">Svelte UI Libraries</span></h2>
+        <h2><i class="cat-ico">🧡</i> Svelte UI 라이브러리</h2>
         <span class="count">14</span>
       </div>
       <p class="cat-desc">Svelte용 UI·컴포넌트 라이브러리</p>
@@ -4178,7 +4180,7 @@
 
     <section class="cat" id="react-native-ui-libraries" data-cat>
       <div class="cat-head">
-        <h2>React Native UI 라이브러리 <span class="en">React Native UI Libraries</span></h2>
+        <h2><i class="cat-ico">📲</i> React Native UI 라이브러리</h2>
         <span class="count">12</span>
       </div>
       <p class="cat-desc">React Native용 UI·컴포넌트 라이브러리</p>
@@ -4248,7 +4250,7 @@
 
     <section class="cat" id="design-systems-style-guides" data-cat>
       <div class="cat-head">
-        <h2>디자인 시스템 &amp; 스타일 가이드 <span class="en">Design Systems &amp; Style Guides</span></h2>
+        <h2><i class="cat-ico">🗂️</i> 디자인 시스템 &amp; 스타일 가이드</h2>
         <span class="count">40</span>
       </div>
       <p class="cat-desc">유명 기업의 디자인 시스템·스타일 가이드</p>
@@ -4458,7 +4460,7 @@
 
     <section class="cat" id="online-design-tools" data-cat>
       <div class="cat-head">
-        <h2>온라인 디자인 도구 <span class="en">Online Design Tools</span></h2>
+        <h2><i class="cat-ico">🛠️</i> 온라인 디자인 도구</h2>
         <span class="count">73</span>
       </div>
       <p class="cat-desc">브라우저에서 쓰는 온라인 디자인 도구</p>
@@ -4833,7 +4835,7 @@
 
     <section class="cat" id="downloadable-design-software" data-cat>
       <div class="cat-head">
-        <h2>다운로드형 디자인 소프트웨어 <span class="en">Downloadable Design Software</span></h2>
+        <h2><i class="cat-ico">💻</i> 다운로드형 디자인 소프트웨어</h2>
         <span class="count">17</span>
       </div>
       <p class="cat-desc">설치형 디자인 소프트웨어</p>
@@ -4928,7 +4930,7 @@
 
     <section class="cat" id="design-inspiration" data-cat>
       <div class="cat-head">
-        <h2>디자인 영감 <span class="en">Design Inspiration</span></h2>
+        <h2><i class="cat-ico">💡</i> 디자인 영감</h2>
         <span class="count">46</span>
       </div>
       <p class="cat-desc">디자인 영감을 얻는 갤러리·사이트</p>
@@ -5168,7 +5170,7 @@
 
     <section class="cat" id="image-compression" data-cat>
       <div class="cat-head">
-        <h2>이미지 압축 <span class="en">Image Compression</span></h2>
+        <h2><i class="cat-ico">🗜️</i> 이미지 압축</h2>
         <span class="count">24</span>
       </div>
       <p class="cat-desc">이미지 최적화·압축 도구</p>
@@ -5298,7 +5300,7 @@
 
     <section class="cat" id="chrome-extensions" data-cat>
       <div class="cat-head">
-        <h2>Chrome 확장 프로그램 <span class="en">Chrome Extensions</span></h2>
+        <h2><i class="cat-ico">🔌</i> Chrome 확장 프로그램</h2>
         <span class="count">36</span>
       </div>
       <p class="cat-desc">디자이너·개발자용 Chrome 확장 프로그램</p>
@@ -5488,7 +5490,7 @@
 
     <section class="cat" id="firefox-extensions" data-cat>
       <div class="cat-head">
-        <h2>Firefox 확장 프로그램 <span class="en">Firefox Extensions</span></h2>
+        <h2><i class="cat-ico">🦊</i> Firefox 확장 프로그램</h2>
         <span class="count">24</span>
       </div>
       <p class="cat-desc">디자이너·개발자용 Firefox 확장 프로그램</p>
@@ -5618,7 +5620,7 @@
 
     <section class="cat" id="ai-graphic-design-tools" data-cat>
       <div class="cat-head">
-        <h2>AI 그래픽 디자인 도구 <span class="en">AI Graphic Design Tools</span></h2>
+        <h2><i class="cat-ico">🤖</i> AI 그래픽 디자인 도구</h2>
         <span class="count">7</span>
       </div>
       <p class="cat-desc">AI 기반 그래픽 디자인 도구</p>
@@ -5663,7 +5665,7 @@
 
     <section class="cat" id="others" data-cat>
       <div class="cat-head">
-        <h2>기타 <span class="en">Others</span></h2>
+        <h2><i class="cat-ico">📦</i> 기타</h2>
         <span class="count">65</span>
       </div>
       <p class="cat-desc">그 외 유용한 디자인·개발 리소스</p>

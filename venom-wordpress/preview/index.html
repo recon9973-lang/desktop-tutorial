@@ -706,6 +706,7 @@ body{padding-top:0}
         <li><a href="javascript:void(0)" onclick="sp('blog')">블로그</a></li>
         <li><a href="javascript:void(0)" onclick="sp('hospital')">홈페이지 제작</a></li>
         <li><a href="javascript:void(0)" onclick="sp('diagnose')">무료진단 <span class="nav-new">FREE</span></a></li>
+        <li><a href="/design-resources" target="_blank" rel="noopener">디자인 리소스</a></li>
       </ul></nav>
     </div>
     <div class="header-actions">
@@ -784,6 +785,9 @@ body{padding-top:0}
     </div>
     <div class="mob-nav-group">
       <a href="javascript:void(0)" onclick="sp('diagnose');closeMobMenu()" class="mob-nav-item">무료진단 <span class="nav-new">FREE</span></a>
+    </div>
+    <div class="mob-nav-group">
+      <a href="/design-resources" target="_blank" rel="noopener" class="mob-nav-item">디자인 리소스</a>
     </div>
   </nav>
   <div class="mob-menu-footer">
@@ -9464,6 +9468,23 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   window.vnRetranslate=function(){ var l='ko'; try{l=localStorage.getItem('venom-lang')||'ko';}catch(e){} if(l==='en')translateTree(); };
   function init(){ try{localStorage.setItem('venom-lang','ko');}catch(e){} }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<!-- 디자인 리소스 footer 링크: 모든 footer 에 "리소스" 컬럼을 주입 -->
+<script>
+(function(){
+  function addResourceCol(){
+    document.querySelectorAll('footer.footer .footer-grid').forEach(function(g){
+      if(g.querySelector('.footer-col--resources'))return;
+      var col=document.createElement('div');
+      col.className='footer-col footer-col--resources';
+      col.innerHTML='<h5>리소스</h5>'+
+        '<a href="/design-resources" target="_blank" rel="noopener">디자인 리소스 모음</a>';
+      g.appendChild(col);
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addResourceCol);
+  else addResourceCol();
 })();
 </script>
 </body>
