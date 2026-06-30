@@ -18,6 +18,7 @@ const linker = require('../lib/internal-linker');
 const O = require('../lib/outreach');
 const TC = require('../lib/topic-cluster');
 const { fetchPsi } = require('../lib/psi');
+const GSC = require('../lib/search-console');
 
 const OUTREACH_PATH = 'venom-wordpress/preview/content/outreach.json';
 const CLUSTERS_PATH = 'venom-wordpress/preview/content/clusters.json';
@@ -28,9 +29,9 @@ function monitorUrls() {
   return raw.split(',').map((s) => s.trim()).filter((s) => /^https?:\/\//.test(s)).slice(0, 5);
 }
 
-// KST 기준 YYYY-MM-DD
-function ymdKST() {
-  const ms = Date.now() + 9 * 3600 * 1000;
+// KST 기준 YYYY-MM-DD (offsetDays 전)
+function ymdKST(offsetDays) {
+  const ms = Date.now() + 9 * 3600 * 1000 - (offsetDays || 0) * 86400000;
   return new Date(ms).toISOString().slice(0, 10);
 }
 
@@ -194,6 +195,39 @@ async function handleCluster(req, res, action) {
   return res.status(405).json({ ok: false, error: 'GET/POST only' });
 }
 
+// ── M3+: Search Console 실측 ──
+async function handleGsc(req, res) {
+  if (!GSC.isConfigured()) {
+    return res.status(200).json({ ok: true, configured: false, note: 'GSC 미설정: GSC_CLIENT_EMAIL/GSC_PRIVATE_KEY(또는 GSC_SERVICE_ACCOUNT_JSON) + GSC_SITE_URL 필요' });
+  }
+  const q = req.query || {};
+  const type = q.type || 'summary';
+  // GSC 데이터는 2~3일 지연 → endDate=오늘-3, startDate=오늘-30
+  const endDate = ymdKST(3);
+  const startDate = ymdKST(30);
+  const limit = Math.min(parseInt(q.limit, 10) || 10, 100);
+
+  if (type === 'query' || type === 'page') {
+    const r = await GSC.querySearchAnalytics({ startDate, endDate, dimensions: [type], rowLimit: limit });
+    if (!r.ok) return res.status(200).json({ ok: true, configured: true, error: r.reason });
+    return res.status(200).json({ ok: true, configured: true, range: { startDate, endDate }, rows: r.rows, totals: r.totals });
+  }
+
+  // summary: 총계 + 상위 쿼리 + 상위 페이지
+  const [tot, queries, pages] = await Promise.all([
+    GSC.querySearchAnalytics({ startDate, endDate, dimensions: [], rowLimit: 1 }),
+    GSC.querySearchAnalytics({ startDate, endDate, dimensions: ['query'], rowLimit: limit }),
+    GSC.querySearchAnalytics({ startDate, endDate, dimensions: ['page'], rowLimit: limit }),
+  ]);
+  if (!tot.ok) return res.status(200).json({ ok: true, configured: true, error: tot.reason });
+  return res.status(200).json({
+    ok: true, configured: true, range: { startDate, endDate },
+    totals: tot.totals,
+    topQueries: queries.ok ? queries.rows : [],
+    topPages: pages.ok ? pages.rows : [],
+  });
+}
+
 // ── M3: 인덱싱 준비도(발행물 기반 추정) ──
 async function handleIndexing(res) {
   const { posts } = await store.getPosts();
@@ -274,6 +308,7 @@ module.exports = async function handler(req, res) {
     if (moduleName === 'outreach') return await handleOutreach(req, res, action);
     if (moduleName === 'cluster') return await handleCluster(req, res, action);
     if (moduleName === 'indexing') return await handleIndexing(res);
+    if (moduleName === 'gsc') return await handleGsc(req, res);
     if (moduleName === 'cwv') return await handleCwv(req, res);
     if (moduleName === 'snapshot') return await handleSnapshot(req, res);
     return res.status(400).json({ ok: false, error: '알 수 없는 module' });

@@ -23,6 +23,7 @@ GET  /api/growthops?module=cluster&action=list         # 클러스터+완성도(
 POST /api/growthops?module=cluster&action=build        # body {category,region,pillar,size} (Bearer)
 POST /api/growthops?module=cluster&action=sync         # 발행글↔하위주제 재매칭        (Bearer)
 GET  /api/growthops?module=indexing                    # 발행물 인덱싱 준비도(슬러그·메타·이미지)
+GET  /api/growthops?module=gsc&type=summary|query|page # Search Console 실측(클릭·노출·CTR·순위)
 GET  /api/growthops?module=cwv[&url=&strategy=]        # Core Web Vitals(PSI) 측정
 GET  /api/growthops?module=outreach&action=list        # 연락처+요약
 GET  /api/growthops?module=outreach&action=remind      # 오늘 할 일
@@ -90,7 +91,19 @@ Hobby 12개 한도. 현재 `api/`는 `growthops.js` 포함 **12/12**. 추가 함
 - ✅ 아웃리치 제안 메일 초안 생성(`action=draft`, OpenAI 래퍼 재사용, 모달+복사)
 - ✅ 인덱싱 준비도(`module=indexing`) — 발행물 기반 추정
 
+## Search Console 실측 (M3+)
+서비스계정 JWT(RS256)로 검색 성과를 조회한다(외부 의존성 0). 설정:
+| env | 의미 |
+|---|---|
+| `GSC_SERVICE_ACCOUNT_JSON` | 서비스계정 키 JSON 전체 (또는 아래 2개) |
+| `GSC_CLIENT_EMAIL` / `GSC_PRIVATE_KEY` | 서비스계정 이메일 + PEM 키(`\n` 이스케이프 허용) |
+| `GSC_SITE_URL` | 등록 속성 (`https://example.com/` 또는 `sc-domain:example.com`) |
+
+준비: GCP에서 서비스계정 생성 → Search Console API 활성화 → **서비스계정 이메일을
+Search Console 속성에 사용자로 추가**. 데이터는 2~3일 지연(엔드포인트가 오늘-3 기준 28일).
+미설정 시 `configured:false`로 안전 반환(throw 없음). 콘솔 SEO 모니터 탭 "Search Console" 카드에서 확인.
+
 ## 다음 단계(후속)
-- Search Console API 실측 연동(OAuth 서비스계정 → 색인·노출·클릭). 현재는 준비도 추정만 제공.
+- GSC 일별 스냅샷 누적 → 클릭·노출 추세 그래프
 - 아웃리치 초안 다국어(en) 옵션
 - 클러스터 자동확장에 검색량 가중 정렬

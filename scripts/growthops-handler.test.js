@@ -134,6 +134,16 @@ async function test(name, fn) {
     assert.match(res._json.results[0].reason, /PSI_KEY/);
   });
 
+  await test('gsc: 미설정이면 configured:false로 안전 응답', async () => {
+    delete process.env.GSC_CLIENT_EMAIL; delete process.env.GSC_PRIVATE_KEY;
+    delete process.env.GSC_SERVICE_ACCOUNT_JSON; delete process.env.GSC_SITE_URL;
+    const res = mockRes();
+    await handler(mockReq('GET', { module: 'gsc', type: 'summary' }), res);
+    assert.strictEqual(res._status, 200);
+    assert.strictEqual(res._json.ok, true);
+    assert.strictEqual(res._json.configured, false);
+  });
+
   await test('indexing: 발행물 기반 준비도 반환', async () => {
     const res = mockRes();
     await handler(mockReq('GET', { module: 'indexing' }), res);

@@ -76,6 +76,11 @@
       <div class="grid" id="lh-stats"><div class="empty">불러오는 중…</div></div>
     </div>
     <div class="card">
+      <h2>Search Console (실측) <button class="btn sm ghost" onclick="loadGsc()">불러오기</button></h2>
+      <p class="muted">최근 28일 클릭·노출·CTR·평균순위(2~3일 지연). <code>GSC_SERVICE_ACCOUNT_JSON</code>(또는 이메일+키)와 <code>GSC_SITE_URL</code> 설정 필요.</p>
+      <div id="gsc"><div class="muted">“불러오기”를 눌러 확인하세요.</div></div>
+    </div>
+    <div class="card">
       <h2>인덱싱 준비도</h2>
       <p class="muted">발행물의 색인 준비 상태입니다(슬러그·메타·이미지). 실측 색인/클릭은 Search Console 연동 시.</p>
       <div class="grid" id="idx-stats"><div class="empty">불러오는 중…</div></div>
@@ -281,6 +286,23 @@ async function snapshot(){
     if(!r.ok){ toast(r.error||'실패'); return; }
     toast('스냅샷 저장됨 ('+r.snapshot.date+')'); loadTrend();
   }catch(e){ toast('스냅샷 실패'); }
+}
+async function loadGsc(){
+  const el=document.getElementById('gsc'); el.innerHTML='<div class="muted">불러오는 중…</div>';
+  try{
+    const r=await fetch(API+'?module=gsc&type=summary&limit=10').then(r=>r.json());
+    if(!r.configured){ el.innerHTML='<div class="muted">GSC 미설정입니다. 서비스계정 키와 GSC_SITE_URL을 설정하세요.</div>'; return; }
+    if(r.error){ el.innerHTML='<div class="muted">오류: '+esc(r.error)+'</div>'; return; }
+    const t=r.totals||{clicks:0,impressions:0,ctr:0};
+    let html='<div class="grid">'+[
+      ['클릭',t.clicks],['노출',t.impressions],['CTR',(t.ctr*100).toFixed(1)+'%'],
+    ].map(([l,n])=>`<div class="stat"><div class="n">${esc(n)}</div><div class="l">${l}</div></div>`).join('')+'</div>';
+    const tbl=(title,rows)=> rows&&rows.length ? `<h3>${title}</h3><table><tr><th>${title.includes('쿼리')?'검색어':'페이지'}</th><th>클릭</th><th>노출</th><th>순위</th></tr>`+
+      rows.map(x=>`<tr><td>${esc(x.keys[0]||'')}</td><td>${x.clicks}</td><td>${x.impressions}</td><td>${x.position.toFixed(1)}</td></tr>`).join('')+'</table>' : '';
+    html+=tbl('상위 검색어', r.topQueries)+tbl('상위 페이지', r.topPages);
+    html+=`<div class="muted" style="margin-top:6px">${r.range.startDate} ~ ${r.range.endDate}</div>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML='<div class="muted">불러오기 실패</div>'; }
 }
 function scoreColor(v){ return v==null?'var(--mute)':(v>=90?'var(--ok)':v>=50?'var(--warn)':'var(--bad)'); }
 async function loadCwv(){
