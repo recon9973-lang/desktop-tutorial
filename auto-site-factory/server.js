@@ -17,7 +17,8 @@ const path  = require('path');
 
 const { prepare, render } = require('./engine/generate');
 
-const PORT = 3737;
+const PORT     = parseInt(process.env.PORT  || '3737', 10);
+const AI_MODEL = process.env.AI_MODEL || 'claude-haiku-4-5-20251001';
 const ROOT = __dirname;
 
 const MIME = {
@@ -99,29 +100,43 @@ const server = http.createServer(async (req, res) => {
       const subLabel = specialty || type || '';
       const catLabel = category === 'clinic' ? '병원·의원' : '소상공인';
       const subField = category === 'clinic' ? '진료과목' : '업종';
+      const isClinic = category === 'clinic';
       const prompt = [
-        '한국 소상공인·병원 홈페이지 카피라이터입니다.',
-        '아래 정보로 홈페이지 문구를 JSON만 반환하세요 (다른 텍스트 없이).',
+        '당신은 한국 소상공인·병원 홈페이지 전문 카피라이터입니다.',
+        '아래 업체 정보를 바탕으로 홈페이지 문구를 작성하고 JSON만 반환하세요 (다른 텍스트 없이).',
         '',
         `업체명: ${name}`,
         `카테고리: ${catLabel}`,
         `${subField}: ${subLabel}`,
         `지역: ${region}`,
         '',
-        '반환 형식:',
+        isClinic ? [
+          '의료광고법 준수 필수:',
+          '- 최상급 표현 금지 (최고·최선·최대·유일·1등)',
+          '- 효과·완치 보증 표현 금지 (100% 효과·완치·반드시·무조건)',
+          '- 타 병원 비교·비하 금지',
+          '- 부작용 없음·통증 없음 단정 표현 금지',
+        ].join('\n') : '소비자기본법 준수: 과장·허위 광고 금지, 최저가 보장 금지',
+        '',
+        '작성 기준:',
+        '- tagline: 20자 이내, 지역명 또는 업종 특성 반영, 신뢰감 있는 어조',
+        `- metaDesc: 70자 이내, ${subLabel} 키워드 포함, 연락처/위치 힌트`,
+        '- faq: 실제 고객이 자주 묻는 질문 3개 (예약·위치·가격·시간 중심)',
+        '',
+        '반환 형식 (JSON만, 마크다운 없이):',
         '{',
-        '  "tagline": "20자 이내 슬로건",',
-        '  "metaDesc": "70자 이내 SEO 메타 설명",',
+        '  "tagline": "...",',
+        '  "metaDesc": "...",',
         '  "faq": [',
-        '    {"q": "자주 묻는 질문 1", "a": "답변 1"},',
-        '    {"q": "자주 묻는 질문 2", "a": "답변 2"},',
-        '    {"q": "자주 묻는 질문 3", "a": "답변 3"}',
+        '    {"q": "...", "a": "..."},',
+        '    {"q": "...", "a": "..."},',
+        '    {"q": "...", "a": "..."}',
         '  ]',
         '}',
       ].join('\n');
       const payload = JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 512,
+        model: AI_MODEL,
+        max_tokens: 700,
         messages: [{ role: 'user', content: prompt }],
       });
       const aiResp = await new Promise((resolve, reject) => {

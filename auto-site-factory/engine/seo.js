@@ -66,34 +66,43 @@ function llmsTxt(spec, specialty) {
     menuSection = `\n## 메뉴·서비스\n\n${menuLines}\n`;
   }
 
-  // 영업시간 (소상공인)
+  // 영업시간 — clinic과 local 모두 포함
   let hoursSection = '';
-  if (!isClinic && spec.local?.hours && spec.local.hours.length) {
-    const hoursLines = spec.local.hours.map(h => `- ${h.day}: ${h.time}`).join('\n');
-    hoursSection = `\n## 영업시간\n\n${hoursLines}\n`;
+  const hoursSource = isClinic ? spec.clinic?.hours : spec.local?.hours;
+  if (hoursSource && hoursSource.length) {
+    const hoursLines = hoursSource.map(h => `- ${h.day}: ${h.time}`).join('\n');
+    hoursSection = `\n## ${isClinic ? '진료시간' : '영업시간'}\n\n${hoursLines}\n`;
   }
 
-  // 주요 진료 (병원)
+  // 주요 진료 (병원) — 예약 안내 포함
   let serviceSection = '';
   if (isClinic && specialty.keywords && specialty.keywords.length) {
     const svcLines = specialty.keywords.map(k => `- ${k}`).join('\n');
-    serviceSection = `\n## 주요 진료\n\n${svcLines}\n`;
+    const bookingHint = spec.brand.kakao
+      ? `\n예약: 카카오 채널(${spec.brand.kakao}) 또는 전화(${spec.brand.phone})`
+      : `\n예약: 전화(${spec.brand.phone})`;
+    serviceSection = `\n## 주요 진료\n\n${svcLines}\n${bookingHint}\n`;
   }
 
-  // 고객 후기 요약
+  // 고객 후기 요약 — 최대 3개, body 없는 항목 필터
   let reviewSection = '';
   if (spec.reviews && spec.reviews.length) {
     const ratingItem = (spec.trust || []).find(t => String(t.lbl).includes('평점') || String(t.num).includes('★'));
-    const rating = ratingItem ? `평균 ${ratingItem.num}` : '별점 5점';
-    const samples = spec.reviews.slice(0, 2)
+    const rating = ratingItem ? `평균 ${ratingItem.num}` : '';
+    const samples = spec.reviews
+      .filter(r => r.body)
+      .slice(0, 3)
       .map(r => `> "${r.body}" — ${r.author || '고객 후기'}`)
       .join('\n');
-    reviewSection = `\n## 고객 후기\n\n${rating} · ${spec.reviews.length}개 후기\n\n${samples}\n`;
+    if (samples) {
+      const ratingLine = rating ? `${rating} · ` : '';
+      reviewSection = `\n## 고객 후기\n\n${ratingLine}${spec.reviews.length}개 후기\n\n${samples}\n`;
+    }
   }
 
-  // SNS / 외부링크
-  const sns   = !isClinic && spec.brand.instagram   ? `- 인스타그램: ${spec.brand.instagram}\n` : '';
-  const naver = !isClinic && spec.brand.naver_place ? `- 네이버 플레이스: ${spec.brand.naver_place}\n` : '';
+  // SNS / 외부링크 — clinic/local 모두
+  const sns   = spec.brand.instagram   ? `- 인스타그램: ${spec.brand.instagram}\n` : '';
+  const naver = spec.brand.naver_place ? `- 네이버 플레이스: ${spec.brand.naver_place}\n` : '';
 
   // 인용 정책
   const citation = isClinic

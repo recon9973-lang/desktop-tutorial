@@ -164,7 +164,9 @@ function buildMainSchema(spec, specialty, domain) {
     addressLocality: spec.brand.region || '',
     addressCountry: 'KR',
   };
-  const hoursSpec = spec.category !== 'clinic' ? buildHoursSchema(spec.local?.hours) : null;
+  const hoursSpec = spec.category === 'clinic'
+    ? buildHoursSchema(spec.clinic?.hours)
+    : buildHoursSchema(spec.local?.hours);
   const rating    = extractRating(spec.trust);
   const sameAs    = [spec.brand.instagram, spec.brand.naver_place, spec.brand.kakao]
     .filter(u => u && u.startsWith('http'));
@@ -228,13 +230,36 @@ function buildFaq(faq, brand, specialty) {
   return { html, schema };
 }
 
+// --- spec 검증: 필수 필드 누락 시 즉시 에러 --------------------------------
+function validateSpec(spec) {
+  if (!spec.category || !['clinic', 'local', 'press'].includes(spec.category))
+    throw new Error(`spec.category는 'clinic' | 'local' | 'press' 중 하나여야 합니다. 현재 값: ${spec.category}`);
+  if (!spec.domain)
+    throw new Error('spec.domain 필드가 없습니다. (예: "example.com")');
+  if (!spec.brand?.name)
+    throw new Error('spec.brand.name 필드가 없습니다.');
+  if (!spec.brand?.phone)
+    throw new Error('spec.brand.phone 필드가 없습니다.');
+  if (spec.brand.primary && !/^#[0-9a-fA-F]{3,8}$/.test(spec.brand.primary))
+    throw new Error(`spec.brand.primary 색상 형식이 올바르지 않습니다: ${spec.brand.primary} (예: "#533afd")`);
+  if (spec.reviews) {
+    for (const r of spec.reviews) {
+      if (r.stars !== undefined && (r.stars < 1 || r.stars > 5))
+        throw new Error(`reviews[].stars는 1~5 사이여야 합니다. 현재 값: ${r.stars}`);
+    }
+  }
+}
+
 // --- prepare(): site-spec 을 풍부화하고 섹션/SEO/페이지 콘텐츠 생성 --------
 // 정적 생성기와 WP 어댑터가 공유하는 단일 진실 소스.
 // clinic / local 두 카테고리를 모두 지원한다.
 function prepare(spec) {
-  const blueprint = JSON.parse(
-    fs.readFileSync(path.join(ROOT, 'blueprints', spec.category, 'blueprint.json'), 'utf8')
-  );
+  validateSpec(spec);
+
+  const bpPath = path.join(ROOT, 'blueprints', spec.category, 'blueprint.json');
+  if (!fs.existsSync(bpPath))
+    throw new Error(`블루프린트를 찾을 수 없습니다: blueprints/${spec.category}/blueprint.json`);
+  const blueprint = JSON.parse(fs.readFileSync(bpPath, 'utf8'));
 
   // 카테고리 범용: clinic → specialties, local → types
   const subCatMap = blueprint.specialties || blueprint.types || {};
@@ -327,10 +352,15 @@ function prepare(spec) {
 
 // --- 정적 HTML 출력 ----------------------------------------------------------
 function generate(specPath) {
+  if (!fs.existsSync(specPath))
+    throw new Error(`site-spec 파일을 찾을 수 없습니다: ${specPath}`);
   const raw = JSON.parse(fs.readFileSync(specPath, 'utf8'));
   const { spec, blueprint, specialty, scale, options, seoFiles } = prepare(raw);
 
-  const tpl = fs.readFileSync(path.join(ROOT, 'blueprints', spec.category, 'template.html'), 'utf8');
+  const tplPath = path.join(ROOT, 'blueprints', spec.category, 'template.html');
+  if (!fs.existsSync(tplPath))
+    throw new Error(`템플릿 파일이 없습니다: blueprints/${spec.category}/template.html`);
+  const tpl = fs.readFileSync(tplPath, 'utf8');
   let html = render(tpl, spec);
 
   // 의료광고 검수 (medical_review 옵션)
