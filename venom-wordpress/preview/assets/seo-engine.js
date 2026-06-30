@@ -22,7 +22,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
 
   // ── robots.txt 표준 파서 (RFC 9309) ─────────────────────────────
   // 지정 UA(또는 *)가 루트('/') 접근 가능한지. 충돌 시 least-restrictive(Allow 우선).
@@ -314,10 +314,27 @@
         overall: src.overall_category || ''
       };
     }
+    // PSI(Lighthouse)는 실제 브라우저로 렌더링하므로, 정적 수집이 놓친 항목을 렌더링 기준으로 보정한다.
+    // (경쟁사 NXT가 높은 점수를 주는 이유 = JS 렌더 후 평가. score===1 통과, 0 실패, 그 외=정적 유지)
+    function seoAudit(id) { var a = audits[id]; if (!a) return undefined; return a.score === 1 ? true : (a.score === 0 ? false : undefined); }
+    var psiByName = {
+      '제목(title) 태그': seoAudit('document-title'),
+      '메타 디스크립션': seoAudit('meta-description'),
+      '이미지 ALT 텍스트': seoAudit('image-alt'),
+      '의미있는 링크 텍스트': seoAudit('link-text'),
+      '인덱싱 허용': seoAudit('is-crawlable'),
+      'robots.txt 존재': seoAudit('robots-txt'),
+      'Canonical 태그': seoAudit('canonical'),
+      'Viewport(모바일)': seoAudit('viewport')
+    };
     var checks = {};
     result.categories.forEach(function (c) {
-      checks[c.key] = c.key === 'speed' ? speedItems
-        : c.items.map(function (it) { return [it.name, it.desc, it.points, it.pass, it.source]; });
+      if (c.key === 'speed') { checks.speed = speedItems; return; }
+      checks[c.key] = c.items.map(function (it) {
+        var pv = psiByName[it.name];
+        var finalPass = (pv !== undefined) ? pv : it.pass;   // PSI 렌더 결과 우선, 없으면 정적값
+        return [it.name, it.desc, it.points, finalPass, it.source];
+      });
     });
     var merged = buildResult(result.url, result.domain, result.isHttps, result.isSPA, checks, {
       seo: Math.round((cats.seo ? cats.seo.score : 0) * 100),
