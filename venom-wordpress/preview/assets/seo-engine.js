@@ -22,7 +22,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.2.0';
+  var VERSION = '1.3.0';
 
   // ── robots.txt 표준 파서 (RFC 9309) ─────────────────────────────
   // 지정 UA(또는 *)가 루트('/') 접근 가능한지. 충돌 시 least-restrictive(Allow 우선).
@@ -261,12 +261,18 @@
         pct: pending ? 0 : Math.round(score / max * 100), items: items
       };
     });
-    var scored = categories.filter(function (c) { return !c.pending; });
+    // 종합 SEO 점수는 속도(성능)를 제외한다 — Google SEO 점수·경쟁사(NXT)와 동일 기준.
+    // Google PSI도 SEO(검색최적화)와 성능(속도)을 별도 게이지로 분리하므로, 속도는 별도 표기한다.
+    var inHeadline = function (c) { return c.key !== 'speed'; };
+    var scored = categories.filter(function (c) { return !c.pending && inHeadline(c); });
     var baseTotal = scored.reduce(function (s, c) { return s + c.score; }, 0);
     var baseMax = scored.reduce(function (s, c) { return s + c.max; }, 0);
     var hasPSI = !!psi;
-    var total = hasPSI ? categories.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
-    var max = hasPSI ? categories.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    var headlineCats = categories.filter(inHeadline);
+    var total = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
+    var max = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    // 속도(성능)는 종합점수에서 분리해 별도 게이지로 노출(Google 성능 점수와 동일 위상)
+    var speedCat = categories.filter(function (c) { return c.key === 'speed'; })[0] || null;
     // 다양한 집계 수치
     var passed = 0, failed = 0, pending = 0, improvable = 0;
     categories.forEach(function (c) {
@@ -285,7 +291,7 @@
     };
     return {
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
-      categories: categories, baseTotal: baseTotal, baseMax: baseMax,
+      categories: categories, baseTotal: baseTotal, baseMax: baseMax, speedCat: speedCat,
       total: total, max: max, hasPSI: hasPSI, psi: psi || null,
       summary: summary, grade: gradeFor(total, max)
     };
@@ -379,7 +385,18 @@
     var brand = opts.brand || '#533afd';
     var g = result.grade;
     var gauge = donut(result.total, result.max, g.color, g.label);
-    var bars = result.categories.map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+    var bars = result.categories.filter(function (c) { return c.key !== 'speed'; })
+      .map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+    // 속도(성능)는 종합점수와 분리된 별도 게이지 — Google 성능 점수와 동일 위상
+    var sc = result.speedCat;
+    var speedGauge = '';
+    if (sc && !sc.pending) {
+      var sCol = sc.pct >= 70 ? '#16a34a' : sc.pct >= 40 ? '#d97706' : '#dc2626';
+      speedGauge = '<div style="flex-shrink:0;text-align:center">' +
+        donut(sc.score, sc.max, sCol, sc.pct + '%') +
+        '<div style="font-size:13px;font-weight:700;color:' + sCol + ';margin-top:2px">⚡ 속도(성능)</div>' +
+        '<div style="font-size:11px;color:#94a3b8">종합점수와 별도 · Google 기준</div></div>';
+    }
 
     // 등급 스케일
     var pct = result.max ? result.total / result.max : 0;
@@ -442,6 +459,7 @@
           (result.renderSuspect && !result.psi ?
             '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>정밀필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
         '</div>' +
+        speedGauge +
       '</div>' +
       statsStrip +
       psiBadges +
