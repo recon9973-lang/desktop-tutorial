@@ -47,8 +47,8 @@ withAction(actor, { permission, domainCheck, audit })(handler)
 |---|---|---|---|---|
 | `createClient` | name, code, businessNumber, contactInfo, 계약기간/월계약금, assignedMarketerId | SUPER_ADMIN, (범위 내)ADMIN | code 유일성, businessNumber 형식 | Audit |
 | `updateClient` | id + 수정필드 | 위 + 해당 담당 | 비활성 거래처 수정 제한 | Audit(before/after) |
-| `reassignMarketer` | clientId, newMarketerId | SUPER_ADMIN/ADMIN | 대상 마케터 ACTIVE 확인 | 관련 WorkItem 담당 재배정 정책 ❓, Audit |
-| `deactivateClient` | id, reason | SUPER_ADMIN/ADMIN | 미완 업무/미수금 존재 시 경고 | Audit |
+| `reassignMarketer` | clientId, newMarketerId | SUPER_ADMIN/ADMIN | 대상 마케터 ACTIVE 확인 | **거래처 업무는 함께 이관, 개인 업무는 유지**(§8-2), Audit |
+| `deactivateClient` | id, reason | SUPER_ADMIN/ADMIN | **차단 없음**. 미수금/미완업무/계약종료 상태를 확인단계에 표시(§8-3) | Audit |
 | `addClientAccount` | clientId, platform, label, handle, isPrimary | 담당 가능자 | client당 platform별 primary 1개 | Audit |
 | `updateClientAccount` / `deactivateClientAccount` | accountId + 필드 | 담당 가능자 | — | Audit |
 
@@ -126,11 +126,29 @@ withAction(actor, { permission, domainCheck, audit })(handler)
 
 ---
 
-## 8. 이번 스프린트에서 확정 필요한 세부 규칙 ❓
+## 8. 세부 규칙 (확정/대기)
 
-1. 업무 **상태전이 허용 표**의 최종 확정 (어떤 전이를 막을지). V1 규칙을 그대로 쓸지 검토.
-2. 거래처 담당자 변경 시 **기존 진행중 업무의 담당자**도 함께 옮길지.
-3. 거래처 **비활성화 가드** 강도(미수금/미완업무 있으면 차단 vs 경고).
-4. **첨부**: URL 링크 방식으로 1차 시작 OK인지, 아니면 업로드 인프라를 1차에 포함할지.
+| # | 규칙 | 상태 |
+|---|---|---|
+| 1 | 업무 **상태전이 허용표** 최종 확정 (V1 규칙 그대로 쓸지) | ❓ 대기 |
+| 2 | **담당자 변경 시 업무 이관** | ✅ 확정 (아래) |
+| 3 | **거래처 비활성화** | ✅ 확정 (아래) |
+| 4 | **첨부 방식** (URL 링크 vs 업로드) | 🔶 추천=URL 링크, 승인 대기 |
 
-위 4개만 정하면 §1부터 바로 구현 착수 가능(별도 ERP 세션에서).
+### 확정된 규칙 상세
+
+**#2 담당자 변경 시 업무 이관**
+- 거래처 담당자(`Client.assignedMarketerId`) 변경 시: 그 **거래처에 속한 업무(WorkItem)는 새 담당자에게 함께 이관**.
+- 단, **개인 업무(특정 거래처 작업이 아닌, 개인에게 직접 할당된 업무)는 이관하지 않고 기존 담당자에 유지.**
+- → `reassignMarketer` 액션은 (a) Client.assignedMarketerId 변경 + (b) 해당 clientId의 미완 WorkItem.ownerId 일괄 변경을 한 트랜잭션으로. '개인 업무' 구분 기준은 구현 시 확정(예: 거래처 작업 카테고리 vs 내부 지시 성격).
+
+**#3 거래처 비활성화**
+- **차단하지 않고 언제든 비활성화 가능**(그냥 비활성화).
+- 단 비활성화 화면에서 현재 상태를 **표시**: 미수금 여부 / 미완 업무 수 / 계약종료 여부.
+- → `deactivateClient`는 가드로 막지 않고, 확인 단계에서 위 정보를 보여주는 **경고/확인 방식**.
+
+### 대기 항목
+- **#1 상태전이표**: V1 규칙 그대로 사용 여부 (코드 확보 후 V1 규칙 표를 보고 확정 권장).
+- **#4 첨부**: 1차 = 외부 링크 붙여넣기(URL) 방식 추천. 직접 업로드는 보고서 스프린트에서.
+
+§1 공통 인프라부터 바로 착수 가능(별도 ERP 세션에서). #1·#4는 착수 후 해당 작업 시점에 확정해도 무방.
