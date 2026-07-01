@@ -9,9 +9,8 @@ const FEATURES = [
   { emoji: '📦', title: '내 영양제 관리', body: '먹는 영양제를 등록하고 섭취 시간 알람 설정. 점검 알림으로 과잉 복용 예방.' },
 ];
 
-// 히어로 배경 이미지(맞춤 생성). ⚠️ 현재는 생성 서비스 CDN 주소 —
-// 영구 보존하려면 파일을 apps/web/public/hero.jpg 로 내려받아 '/hero.jpg' 로 교체.
-const HERO_IMG = 'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260701_061005_523a196c-8159-4c95-bf62-def9cb457d42.png';
+// 히어로 배경 이미지(맞춤 생성) — 자체 호스팅. 파일: apps/web/public/hero.png
+const HERO_IMG = '/hero.png';
 
 const TRUST = [
   ['17', '성분 근거 코퍼스'],
