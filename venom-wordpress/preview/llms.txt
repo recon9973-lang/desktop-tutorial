@@ -8,8 +8,8 @@
 AI 검색 시대에 ChatGPT·Perplexity·Gemini 등 LLM 기반 검색에서 병원이 최상위로 인용되도록
 GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통합 운용합니다.
 
-- 설립: 2022년, 대구광역시 수성구
-- 대표: 이재훈
+- 설립: 2018년, 대구광역시 수성구
+- 공동대표: 김보형·이재훈
 - 연락처: 1661-4142 / venomad@naver.com
 - 주소: 대구광역시 수성구 용학로25길 54, 4층
 
