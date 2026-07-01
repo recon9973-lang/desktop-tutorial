@@ -26,18 +26,27 @@ export default function RootLayout({ children }) {
           <a href="/" style={{ fontWeight: 700, fontSize: 18, color: 'var(--ink)', textDecoration: 'none', letterSpacing: -0.5 }}>
             🧬 당신의영양제
           </a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <a href="/products" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-              🔎 제품 찾기
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, overflowX: 'auto', whiteSpace: 'nowrap' }}>
+            <a href="/analyze" style={{ fontSize: 14.5, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🧪 조합분석
             </a>
-            <a href="/my" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+            <a href="/products" style={{ fontSize: 14.5, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🔎 제품찾기
+            </a>
+            <a href="/rank" style={{ fontSize: 14.5, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🏆 랭킹
+            </a>
+            <a href="/ingredients" style={{ fontSize: 14.5, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              📖 성분사전
+            </a>
+            <a href="/my" style={{ fontSize: 14.5, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
               📋 내 루틴
             </a>
-            <a href="/nearby" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-              🗺️ 약국 찾기
+            <a href="/nearby" style={{ fontSize: 14.5, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🗺️ 약국
             </a>
-            <a href="/survey" className="btn-primary" style={{ padding: '6px 20px', fontSize: 15 }}>
-              무료로 시작하기
+            <a href="/survey" className="btn-primary" style={{ padding: '6px 18px', fontSize: 14.5, flexShrink: 0 }}>
+              무료 시작
             </a>
           </div>
         </nav>
