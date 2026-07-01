@@ -71,7 +71,12 @@ export default function AnalyzePage() {
           ))}
         </div>
 
-        <h2 className="title" style={{ marginBottom: 10 }}>복용 중인 약 (선택)</h2>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+          <h2 className="title" style={{ margin: 0 }}>복용 중인 약 (선택)</h2>
+          <a href="/drug" style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none' }}>
+            💊 약 이름 몰라요? 모양·사진으로 찾기 →
+          </a>
+        </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
           {Object.entries(meds).map(([k, v]) => (
             <button key={k} onClick={() => toggle(stackMeds, setStackMeds, k)} style={chip(stackMeds.includes(k))}>💊 {v.label}</button>
