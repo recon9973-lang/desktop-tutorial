@@ -6858,6 +6858,40 @@ function secretAdminClick(){
 var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅',diagnose:'무료 진단'};
 var catLabels={dental:'치과마케팅',implant:'임플란트마케팅',ortho_dental:'교정마케팅',skin:'피부과마케팅',ortho:'정형외과마케팅',oriental:'한의원마케팅',plastic:'성형외과마케팅',naegwa:'내과마케팅',angwa:'안과마케팅',shimui:'의료광고심의',medical_device:'의료기기마케팅'};
 var BASE_URL='https://desktop-tutorial-chi-peach.vercel.app/';
+// ── 페이지별 실제 URL + SEO 메타 (해시 SPA → 크롤 가능한 개별 페이지) ──
+// path=클린 URL, 각 페이지 고유 title·description·canonical·og. canonical은 현재 호스트(location.origin) 기준 → 도메인 이전에도 자동 대응.
+var PAGE_ROUTES={
+  home:      {path:'/',                   title:'병원마케팅 베놈 — 대한민국 No.1 병원 전문 마케팅 에이전시', desc:'치과·피부과·정형외과·한의원·성형외과 병원 전문 마케팅 에이전시. GEO·AEO·SEO 삼중 최적화로 AI 검색부터 네이버까지. 신환 평균 300% 증가, 재계약률 98%.'},
+  ai:        {path:'/ai',                 title:'AI 병원마케팅 — GEO·AEO·SEO 삼중 최적화 | 병원마케팅 베놈', desc:'ChatGPT·Perplexity·Google AI가 병원을 추천하는 시대. 베놈의 GEO·AEO·SEO 삼중 최적화로 AI 검색 채널을 정복합니다.'},
+  geo:       {path:'/geo',                title:'병원 GEO 최적화 — ChatGPT·Perplexity 추천 노출 | 베놈', desc:'생성형 AI(ChatGPT·Perplexity)가 우리 병원을 추천하게 만드는 GEO(생성엔진최적화) 전략. 구조화 데이터·엔티티·인용 최적화.'},
+  aeo:       {path:'/aeo',                title:'병원 AEO 최적화 — Google AI Overview 답변 채택 | 베놈', desc:'Google AI Overview가 우리 병원 답변을 채택하게 하는 AEO(답변엔진최적화). FAQ 스키마·질문 기반 콘텐츠 설계.'},
+  seo:       {path:'/seo',                title:'병원 SEO 최적화 — 네이버·구글 검색 1위 전략 | 베놈', desc:'네이버·구글 검색 상위노출을 위한 병원 SEO 완전 최적화. 기술 SEO·콘텐츠·백링크·로컬 최적화 통합 전략.'},
+  hosp_mkt:  {path:'/hospital-marketing', title:'진료과목별 병원 전문 마케팅 | 병원마케팅 베놈', desc:'치과·피부과·정형외과·한의원·성형외과 등 진료과목별 맞춤 병원 마케팅 전략. 과목별 환자 행동 데이터 기반 설계.'},
+  services:  {path:'/online-marketing',   title:'병원 온라인마케팅 채널별 완전 가이드 | 베놈', desc:'네이버 플레이스·블로그·키워드광고부터 SNS·유튜브까지 병원 온라인마케팅 채널별 통합 운영 전략.'},
+  hospital:  {path:'/website',            title:'환자가 신뢰하는 병원 홈페이지 제작 | 베놈', desc:'전환율 중심의 병원 홈페이지 제작. 예약·상담 유도, 모바일 최적화, SEO 내장 설계로 신환을 늘립니다.'},
+  about:     {path:'/about',              title:'회사 소개 — 병원마케팅 베놈', desc:'병원이 잘 되어야 우리도 존재합니다. 병원 전문 마케팅 900+ 운영 사례의 베놈을 소개합니다.'},
+  blog:      {path:'/blog',               title:'병원 마케팅 인사이트 — 블로그 | 베놈', desc:'GEO·AEO·SEO부터 진료과목별 마케팅 전략까지, 병원 마케팅 실전 인사이트를 매주 업데이트합니다.'},
+  contact:   {path:'/contact',            title:'마케팅 상담신청 | 병원마케팅 베놈', desc:'우리 병원 맞춤 마케팅 전략을 무료로 상담받으세요. 24시간 내 연락, 100% 맞춤 진단.'},
+  'seo-dict':{path:'/seo-dictionary',     title:'병원 마케팅 SEO·GEO·AEO 용어 사전 | 베놈', desc:'병원 마케팅에 필요한 SEO·GEO·AEO 핵심 용어를 쉽게 정리한 용어 사전.'},
+  diagnose:  {path:'/diagnose',           title:'우리 병원 AI·검색 종합 진단(무료) | 베놈', desc:'13개 항목으로 우리 병원의 AI·검색 노출 상태를 무료로 자가진단하세요. SEO·GEO 점수 즉시 확인.'}
+};
+var PATH_TO_PAGE={}; for(var _prk in PAGE_ROUTES){ PATH_TO_PAGE[PAGE_ROUTES[_prk].path]=_prk; }
+function _applyPageSEO(id){
+  var r=PAGE_ROUTES[id]; if(!r) return;
+  try{
+    if(r.title) document.title=r.title;
+    var canon=location.origin + r.path;
+    setCanonical(canon);
+    var m=function(name,val,isProp){
+      var sel=isProp?('meta[property="'+name+'"]'):('meta[name="'+name+'"]');
+      var e=document.querySelector(sel);
+      if(!e){ e=document.createElement('meta'); e.setAttribute(isProp?'property':'name',name); document.head.appendChild(e); }
+      e.setAttribute('content',val);
+    };
+    if(r.desc) m('description',r.desc,false);
+    m('og:title',r.title||'',true); m('og:description',r.desc||'',true); m('og:url',canon,true);
+  }catch(e){}
+}
 
 // ── 종합 진단 센터: 진료과/지역 상태 유지 + 진입/네비 ──
 var DIAG_STATE={cat:'',region:''};
@@ -6950,7 +6984,7 @@ function _setPrimaryH1(){
 if(typeof window!=='undefined') window.addEventListener('load', _setPrimaryH1);
 
 function sp(id, pushState){
-  if(pushState!==false) history.pushState({page:id},'','#'+id);
+  if(pushState!==false){ var _r=PAGE_ROUTES[id]; history.pushState({page:id},'', _r?_r.path:('#'+id)); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   var pg=document.getElementById('pg-'+id);
   if(pg){pg.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
@@ -6969,6 +7003,7 @@ function sp(id, pushState){
   var label=pageLabels[id]||id;
   if(id==='home'){updateBreadcrumb([['홈',BASE_URL]]);}
   else{updateBreadcrumb([['홈',BASE_URL],[label,BASE_URL+'#'+id]]);}
+  _applyPageSEO(id);
   _setPrimaryH1();
 }
 
@@ -9463,6 +9498,8 @@ window.addEventListener('popstate',function(e){
   // 클린 URL(/blog/<슬러그>) 뒤로/앞으로 대응
   if(/^\/blog\//.test(location.pathname||'')){ if(renderBlogFromPath()) return; }
   if(!st){
+    var _pp=PATH_TO_PAGE[location.pathname];
+    if(_pp){ sp(_pp,false); return; }
     var hash=location.hash.replace('#','');
     if(hash&&hash!=='home'){
       var cats=Object.keys(pages||{});
@@ -9484,6 +9521,9 @@ window.addEventListener('popstate',function(e){
     sp('blog', false); // 아직 글 미로드 → 블로그 목록 먼저, 로드 후 자동 렌더
     return;
   }
+  // 클린 URL(/geo, /about, / 등) 직접진입 → 해당 페이지 복원
+  var _pp=PATH_TO_PAGE[location.pathname];
+  if(_pp){ sp(_pp,false); return; }
   var hash=location.hash.replace('#','');
   var cats=Object.keys(pages||{});
   if(hash&&hash!=='home'){
