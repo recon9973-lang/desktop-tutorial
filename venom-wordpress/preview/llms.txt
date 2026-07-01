@@ -32,6 +32,7 @@ GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통
 ## 전문 진료과목별 마케팅 (페이지)
 
 - 치과 마케팅 (임플란트·교정·심미·보존·예방): /dental
+  - 네비게이션 임플란트(디지털 가이드 임플란트) 의학정보: /dental/navigation-implant
 - 피부과 마케팅 (리프팅·스킨부스터·색소): /dermatology
 - 정형외과 마케팅 (척추·관절·도수치료): /orthopedics
 - 한의원 마케팅 (통증·교통사고·다이어트·보약): /oriental-medicine
@@ -46,6 +47,7 @@ GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통
 - GEO(생성엔진 최적화): /geo
 - AEO(답변엔진 최적화): /aeo
 - SEO(검색엔진 최적화): /seo
+- SEO·GEO·AEO 용어사전 (95개 용어, 초성·ABC·카테고리 분류): /seo-dictionary
 
 ## 온라인 광고·채널 마케팅 (페이지)
 
