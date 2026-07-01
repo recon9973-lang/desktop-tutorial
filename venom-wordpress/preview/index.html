@@ -6951,13 +6951,60 @@ var DETAIL_ROUTES={
 };
 // 허브 진료과목 섹션(ds-<sec>) → 스포크 전용 페이지 매핑
 var HUB_SPOKES={
-  dental:[{sec:'implant', to:'dental_navi_implant', label:'네비게이션 임플란트 자세히'},{sec:'ortho', to:'dental_clear_aligner', label:'투명교정 자세히'},{sec:'cosmetic', to:'dental_laminate', label:'라미네이트 자세히'},{sec:'conservative', to:'dental_endo', label:'충치·신경치료 자세히'},{sec:'prevention', to:'dental_scaling', label:'스케일링·잇몸치료 자세히'}],
-  skin:[{sec:'pigment', to:'skin_laser_toning', label:'레이저 토닝 자세히'},{sec:'booster', to:'skin_booster', label:'스킨부스터 자세히'},{sec:'lifting', to:'skin_lifting', label:'리프팅 자세히'}],
-  ortho:[{sec:'special', to:'ortho_manual_therapy', label:'도수치료 자세히'},{sec:'spine', to:'ortho_disc', label:'허리디스크 자세히'},{sec:'joint', to:'ortho_knee', label:'무릎 관절염 자세히'}],
+  dental:[{sec:'implant', to:'dental_implant', label:'임플란트 자세히'},{sec:'ortho', to:'dental_orthodontics', label:'치아교정 자세히'},{sec:'cosmetic', to:'dental_cosmetic', label:'심미치료 자세히'},{sec:'conservative', to:'dental_conservative', label:'충치·보존치료 자세히'},{sec:'prevention', to:'dental_periodontal', label:'예방·잇몸치료 자세히'}],
+  skin:[{sec:'pigment', to:'skin_pigment', label:'색소·기미 치료 자세히'},{sec:'booster', to:'skin_hydration', label:'재생·수분 자세히'},{sec:'lifting', to:'skin_elasticity', label:'탄력·리프팅 자세히'}],
+  ortho:[{sec:'special', to:'ortho_rehab', label:'비수술·재활 자세히'},{sec:'spine', to:'ortho_spine', label:'척추 질환 자세히'},{sec:'joint', to:'ortho_joint', label:'관절 질환 자세히'}],
   oriental:[{sec:'pain', to:'oriental_chuna', label:'추나요법 자세히'},{sec:'diet', to:'oriental_diet', label:'한방 다이어트 자세히'},{sec:'accident', to:'oriental_accident', label:'교통사고 후유증 자세히'},{sec:'tonic', to:'oriental_tonic', label:'한약·보약 자세히'},{sec:'chronic', to:'oriental_chronic', label:'한방 내과 자세히'}],
   plastic:[{sec:'eye', to:'plastic_eye_surgery', label:'눈성형 자세히'},{sec:'nose', to:'plastic_nose', label:'코성형 자세히'},{sec:'petit', to:'plastic_petit', label:'보톡스·필러 자세히'},{sec:'antiaging', to:'plastic_antiaging', label:'안면거상·실리프팅 자세히'},{sec:'body', to:'plastic_body', label:'지방흡입 자세히'}],
-  angwa:[{sec:'cataract', to:'angwa_cataract', label:'백내장 자세히'},{sec:'vision', to:'angwa_lasik', label:'시력교정(라식·라섹) 자세히'},{sec:'retina', to:'angwa_glaucoma', label:'녹내장 자세히'},{sec:'dryeye', to:'angwa_dryeye', label:'안구건조증 자세히'}],
+  angwa:[{sec:'cataract', to:'angwa_cataract', label:'백내장 자세히'},{sec:'vision', to:'angwa_vision', label:'시력교정 자세히'},{sec:'retina', to:'angwa_glaucoma', label:'녹내장 자세히'},{sec:'dryeye', to:'angwa_dryeye', label:'안구건조증 자세히'}],
   naegwa:[{sec:'checkup', to:'naegwa_checkup', label:'건강검진 자세히'},{sec:'chronic', to:'naegwa_chronic', label:'고혈압·당뇨 관리 자세히'},{sec:'endocrine', to:'naegwa_thyroid', label:'갑상선 질환 자세히'},{sec:'digestive', to:'naegwa_endoscopy', label:'위·대장내시경 자세히'},{sec:'respiratory', to:'naegwa_respiratory', label:'호흡기·수액 자세히'}]
+};
+// ── 3단 카테고리 트리(허브→L2 하위주제→L3 세부): 사이드바·상단네비 공용 ──
+var HUB_TREE={
+  dental:[
+    {to:'dental_implant',label:'임플란트',sub:[{to:'dental_navi_implant',label:'네비게이션 임플란트'}]},
+    {to:'dental_orthodontics',label:'치아교정',sub:[{to:'dental_clear_aligner',label:'투명교정'}]},
+    {to:'dental_cosmetic',label:'심미치료',sub:[{to:'dental_laminate',label:'라미네이트'}]},
+    {to:'dental_conservative',label:'충치·보존치료',sub:[{to:'dental_endo',label:'충치·신경치료'}]},
+    {to:'dental_periodontal',label:'예방·잇몸치료',sub:[{to:'dental_scaling',label:'스케일링·잇몸치료'}]}
+  ],
+  skin:[
+    {to:'skin_pigment',label:'색소·기미',sub:[{to:'skin_laser_toning',label:'레이저 토닝'}]},
+    {to:'skin_elasticity',label:'탄력·리프팅',sub:[{to:'skin_lifting',label:'고주파·초음파 리프팅'}]},
+    {to:'skin_hydration',label:'재생·수분',sub:[{to:'skin_booster',label:'스킨부스터'}]}
+  ],
+  ortho:[
+    {to:'ortho_spine',label:'척추 질환',sub:[{to:'ortho_disc',label:'허리디스크'}]},
+    {to:'ortho_joint',label:'관절 질환',sub:[{to:'ortho_knee',label:'무릎 관절염'}]},
+    {to:'ortho_rehab',label:'비수술·재활',sub:[{to:'ortho_manual_therapy',label:'도수치료'}]}
+  ],
+  angwa:[
+    {to:'angwa_cataract',label:'백내장'},
+    {to:'angwa_vision',label:'시력교정',sub:[{to:'angwa_lasik',label:'라식·라섹·스마일'}]},
+    {to:'angwa_glaucoma',label:'녹내장'},
+    {to:'angwa_dryeye',label:'안구건조증'}
+  ],
+  oriental:[
+    {to:'oriental_chuna',label:'추나요법'},
+    {to:'oriental_diet',label:'한방 다이어트'},
+    {to:'oriental_accident',label:'교통사고 후유증'},
+    {to:'oriental_tonic',label:'한약·보약'},
+    {to:'oriental_chronic',label:'한방 내과'}
+  ],
+  plastic:[
+    {to:'plastic_eye_surgery',label:'눈성형'},
+    {to:'plastic_nose',label:'코성형'},
+    {to:'plastic_petit',label:'보톡스·필러'},
+    {to:'plastic_antiaging',label:'안면거상·실리프팅'},
+    {to:'plastic_body',label:'지방흡입'}
+  ],
+  naegwa:[
+    {to:'naegwa_checkup',label:'건강검진'},
+    {to:'naegwa_chronic',label:'고혈압·당뇨'},
+    {to:'naegwa_thyroid',label:'갑상선 질환'},
+    {to:'naegwa_endoscopy',label:'위·대장내시경'},
+    {to:'naegwa_respiratory',label:'호흡기·수액'}
+  ]
 };
 var PATH_TO_CAT={}; for(var _dck in DETAIL_ROUTES){ PATH_TO_CAT[DETAIL_ROUTES[_dck].path]=_dck; }
 // ── 진료과목 사이드바 아코디언(hover 펼침) 동적 생성 ──
@@ -6978,25 +7025,40 @@ function buildHubSidebar(){
   (function(){ if(document.getElementById('hub-acc-css'))return; var st=document.createElement('style'); st.id='hub-acc-css';
     st.textContent='.hub-accordion .snav-caret{float:right;font-size:10px;opacity:.55;transition:transform .22s}'
      +'.hub-accordion .snav-group.has-sub>a{position:relative}'
-     +'.hub-accordion .snav-sub{list-style:none;margin:2px 0 4px;padding:0;max-height:0;overflow:hidden;transition:max-height .3s ease}'
-     +'.hub-accordion .snav-group:hover .snav-sub,.hub-accordion .snav-group.open .snav-sub{max-height:460px}'
-     +'.hub-accordion .snav-group:hover .snav-caret,.hub-accordion .snav-group.open .snav-caret{transform:rotate(180deg);opacity:.9}'
-     +'.hub-accordion .snav-sub li a{display:block;padding:7px 12px 7px 34px;font-size:12.5px;color:var(--mute);border-radius:8px;position:relative}'
-     +'.hub-accordion .snav-sub li a:before{content:"›";position:absolute;left:20px;color:var(--psub)}'
-     +'.hub-accordion .snav-sub li a:hover{background:var(--soft);color:var(--p)}'
-     +'.hub-accordion .snav-sub li a.snav-active{background:rgba(83,58,253,.08);color:var(--p);font-weight:700}';
+     +'.hub-accordion .snav-sub{list-style:none;margin:2px 0 4px;padding:0;max-height:0;overflow:hidden;transition:max-height .35s ease}'
+     +'.hub-accordion .snav-group:hover .snav-sub,.hub-accordion .snav-group.open .snav-sub{max-height:1200px}'
+     +'.hub-accordion .snav-group:hover>a .snav-caret,.hub-accordion .snav-group.open>a .snav-caret{transform:rotate(180deg);opacity:.9}'
+     +'.hub-accordion .snav-sub>li>a{display:block;padding:7px 12px 7px 34px;font-size:12.5px;color:var(--mute);border-radius:8px;position:relative}'
+     +'.hub-accordion .snav-sub>li>a:before{content:"›";position:absolute;left:20px;color:var(--psub)}'
+     +'.hub-accordion .snav-sub>li>a:hover{background:var(--soft);color:var(--p)}'
+     +'.hub-accordion .snav-active{background:rgba(83,58,253,.08);color:var(--p)!important;font-weight:700}'
+     /* L3(3단) */
+     +'.hub-accordion .snav-sub2{list-style:none;margin:1px 0 3px;padding:0;max-height:0;overflow:hidden;transition:max-height .3s ease}'
+     +'.hub-accordion .snav-group2:hover .snav-sub2,.hub-accordion .snav-group2.open .snav-sub2{max-height:400px}'
+     +'.hub-accordion .snav-group2:hover>a .snav-caret,.hub-accordion .snav-group2.open>a .snav-caret{transform:rotate(180deg);opacity:.9}'
+     +'.hub-accordion .snav-sub2>li>a{display:block;padding:6px 12px 6px 48px;font-size:12px;color:var(--mute);border-radius:8px;position:relative}'
+     +'.hub-accordion .snav-sub2>li>a:before{content:"–";position:absolute;left:34px;color:var(--psub);opacity:.7}'
+     +'.hub-accordion .snav-sub2>li>a:hover{background:var(--soft);color:var(--p)}';
     document.head.appendChild(st); })();
+  var _mkA=function(to,label,cls,caret){ var r=DETAIL_ROUTES[to]; var p=(r&&r.path)||('#'+to);
+    return '<a href="'+p+'"'+(cls?' class="'+cls+'"':'')+' onclick="ld(\''+to+'\');return false" id="nav-'+to+'">'+label+(caret?'<span class="snav-caret">▾</span>':'')+'</a>'; };
   var html='';
   HUB_META.forEach(function(m){
-    var spokes=HUB_SPOKES[m.cat]||[];
+    var tree=HUB_TREE[m.cat]||[];
     var path=(DETAIL_ROUTES[m.cat]&&DETAIL_ROUTES[m.cat].path)||('#'+m.cat);
-    html+='<li class="snav-group'+(spokes.length?' has-sub':'')+'">';
-    html+='<a href="'+path+'" onclick="ld(\''+m.cat+'\');return false" id="nav-'+m.cat+'">'+m.icon+' '+m.label+(spokes.length?'<span class="snav-caret">▾</span>':'')+'</a>';
-    if(spokes.length){
+    html+='<li class="snav-group'+(tree.length?' has-sub':'')+'">';
+    html+='<a href="'+path+'" onclick="ld(\''+m.cat+'\');return false" id="nav-'+m.cat+'">'+m.icon+' '+m.label+(tree.length?'<span class="snav-caret">▾</span>':'')+'</a>';
+    if(tree.length){
       html+='<ul class="snav-sub">';
-      spokes.forEach(function(sk){
-        var sr=DETAIL_ROUTES[sk.to]; var lbl=_spokeLabel(sk.to);
-        html+='<li><a href="'+((sr&&sr.path)||('#'+sk.to))+'" onclick="ld(\''+sk.to+'\');return false" id="nav-'+sk.to+'">'+lbl+'</a></li>';
+      tree.forEach(function(l2){
+        var hasSub=l2.sub&&l2.sub.length;
+        html+='<li class="snav-group2'+(hasSub?' has-sub':'')+'">'+_mkA(l2.to,l2.label,'',hasSub);
+        if(hasSub){
+          html+='<ul class="snav-sub2">';
+          l2.sub.forEach(function(l3){ html+='<li>'+_mkA(l3.to,l3.label,'',false)+'</li>'; });
+          html+='</ul>';
+        }
+        html+='</li>';
       });
       html+='</ul>';
     }
@@ -7986,16 +8048,24 @@ function ld(cat, pushState){
   var d=pages[cat];if(!d)return;
   // 콘텐츠 주입
   document.getElementById('detail-content').innerHTML=d.html;
-  // TOC 주입
-  var toc=d.toc.map(function(t){return '<li><a href="#ds-'+t[0]+'" onclick="tocClick(this,\'ds-'+t[0]+'\');return false">'+t[1]+'</a></li>';}).join('');
+  // TOC 주입 — d.toc가 없으면 렌더된 dc-section h2에서 자동 생성(스포크·L2 대응)
+  var _toc=d.toc;
+  if(!_toc||!_toc.length){ _toc=[]; document.querySelectorAll('#detail-content .dc-section[id]').forEach(function(s){ var h=s.querySelector('h2'); if(h)_toc.push([s.id.replace(/^ds-/,''), h.textContent.trim()]); }); }
+  var toc=_toc.map(function(t){return '<li><a href="#ds-'+t[0]+'" onclick="tocClick(this,\'ds-'+t[0]+'\');return false">'+t[1]+'</a></li>';}).join('');
   document.getElementById('toc-list').innerHTML=toc;
-  // 키워드 주입
-  document.getElementById('toc-keywords').innerHTML='<div class="toc-kw-tags">'+d.kws.map(function(k){return '<span onclick="searchByKeyword(\''+k+'\')" style="cursor:pointer">'+k+'</span>';}).join('')+'</div>';
+  // 키워드 주입 — d.kws 없으면 태그행에서 보완
+  var _kws=d.kws;
+  if(!_kws||!_kws.length){ _kws=[]; var _tr=document.querySelector('#detail-content .dc-tag-row'); if(_tr)_tr.querySelectorAll('span').forEach(function(sp){_kws.push(sp.textContent.trim());}); }
+  document.getElementById('toc-keywords').innerHTML='<div class="toc-kw-tags">'+_kws.map(function(k){return '<span onclick="searchByKeyword(\''+k+'\')" style="cursor:pointer">'+k+'</span>';}).join('')+'</div>';
   // 사이드바 활성
   document.querySelectorAll('.sidebar-nav a').forEach(function(a){a.classList.remove('snav-active');});
-  document.querySelectorAll('.hub-accordion .snav-group.open').forEach(function(g){g.classList.remove('open');});
+  document.querySelectorAll('.hub-accordion .snav-group.open,.hub-accordion .snav-group2.open').forEach(function(g){g.classList.remove('open');});
   var navEl=document.getElementById('nav-'+cat);
-  if(navEl){navEl.classList.add('snav-active'); var _grp=navEl.closest?navEl.closest('.snav-group'):null; if(_grp)_grp.classList.add('open');}
+  if(navEl){navEl.classList.add('snav-active');
+    // 활성 항목의 모든 조상 그룹(L2·허브) 펼침
+    var _p=navEl.parentElement;
+    while(_p){ if(_p.classList&&(_p.classList.contains('snav-group')||_p.classList.contains('snav-group2'))) _p.classList.add('open'); _p=_p.parentElement; }
+  }
   window.scrollTo({top:0,behavior:'smooth'});
   // BreadcrumbList 업데이트 (스포크 페이지는 상위 허브 포함 4단계)
   var catLabel=catLabels[cat]||d.title||cat;
