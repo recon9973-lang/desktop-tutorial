@@ -2352,6 +2352,38 @@ body{padding-top:0}
     </div>
   </section>
 
+  <!-- 4개 AI 답변 엔진 비교 (NXT 참고 구조) -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head"><div class="section-badge">AI Answer Engines</div><h2>한 흐름으로 대응하는 4개 AI 답변 엔진</h2><p>엔진마다 답을 만드는 방식이 다릅니다. 베놈은 ChatGPT·Perplexity·Gemini·Google AI Mode를 하나의 GEO 전략으로 대응합니다.</p></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:32px">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r16);padding:22px"><div style="display:inline-block;font-size:11px;font-weight:800;color:#10a37f;background:#e7f8f2;padding:3px 10px;border-radius:20px;margin-bottom:10px">ChatGPT</div><h4 style="margin:0 0 6px;color:var(--bd)">대화형 추천</h4><p style="font-size:13px;color:var(--ink2);line-height:1.65;margin:0">SearchGPT·검색 연동으로 신뢰 출처를 인용해 병원을 추천. 구조화 데이터와 일관된 엔티티 정보가 인용 확률을 높입니다.</p></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r16);padding:22px"><div style="display:inline-block;font-size:11px;font-weight:800;color:#20808d;background:#e6f4f6;padding:3px 10px;border-radius:20px;margin-bottom:10px">Perplexity</div><h4 style="margin:0 0 6px;color:var(--bd)">실시간 검색·인용</h4><p style="font-size:13px;color:var(--ink2);line-height:1.65;margin:0">답변마다 출처 링크를 명시. 최신 콘텐츠·명확한 출처 표기가 인용에 직접 반영되는 엔진입니다.</p></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r16);padding:22px"><div style="display:inline-block;font-size:11px;font-weight:800;color:#4285f4;background:#e8f0fe;padding:3px 10px;border-radius:20px;margin-bottom:10px">Gemini</div><h4 style="margin:0 0 6px;color:var(--bd)">구글 생태계 연동</h4><p style="font-size:13px;color:var(--ink2);line-height:1.65;margin:0">구글 검색·지도·비즈니스 프로필과 연결. 플레이스·리뷰·구조화 데이터의 정합성이 중요합니다.</p></div>
+        <div style="background:linear-gradient(160deg,#14532d,#166534);border:1px solid transparent;border-radius:var(--r16);padding:22px;color:#fff"><div style="display:inline-block;font-size:11px;font-weight:800;color:#14532d;background:#bbf7d0;padding:3px 10px;border-radius:20px;margin-bottom:10px">Google AI Mode</div><h4 style="margin:0 0 6px;color:#fff">검색 결과 직접 노출</h4><p style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.65;margin:0">AI Overviews로 검색 상단에 요약 답변을 생성. E-E-A-T와 구조화 데이터가 인용의 핵심입니다.</p></div>
+      </div>
+      <!-- 비교 매트릭스 -->
+      <div style="overflow-x:auto;margin-top:28px">
+        <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px">
+          <thead><tr style="background:var(--soft)">
+            <th style="text-align:left;padding:14px 16px;font-weight:800;color:var(--bd);border-bottom:2px solid var(--border)">구분</th>
+            <th style="padding:14px 12px;font-weight:800;color:#10a37f;border-bottom:2px solid var(--border)">ChatGPT</th>
+            <th style="padding:14px 12px;font-weight:800;color:#20808d;border-bottom:2px solid var(--border)">Perplexity</th>
+            <th style="padding:14px 12px;font-weight:800;color:#4285f4;border-bottom:2px solid var(--border)">Gemini</th>
+            <th style="padding:14px 12px;font-weight:800;color:#166534;border-bottom:2px solid var(--border)">Google AI Mode</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:12px 16px;font-weight:700;color:var(--ink);border-bottom:1px solid var(--border)">답변 방식</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">대화형</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">검색+인용</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">멀티모달</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">검색 요약</td></tr>
+            <tr><td style="padding:12px 16px;font-weight:700;color:var(--ink);border-bottom:1px solid var(--border)">출처 표기</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">일부</td><td style="text-align:center;padding:12px;color:var(--p);font-weight:700;border-bottom:1px solid var(--border)">강함</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">일부</td><td style="text-align:center;padding:12px;color:var(--p);font-weight:700;border-bottom:1px solid var(--border)">강함</td></tr>
+            <tr><td style="padding:12px 16px;font-weight:700;color:var(--ink);border-bottom:1px solid var(--border)">핵심 신호</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">엔티티 일관성</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">최신·출처</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">플레이스·리뷰</td><td style="text-align:center;padding:12px;color:var(--ink2);border-bottom:1px solid var(--border)">E-E-A-T·스키마</td></tr>
+            <tr><td style="padding:12px 16px;font-weight:700;color:var(--ink);border-bottom:1px solid var(--border)">베놈 대응</td><td colspan="4" style="text-align:center;padding:12px;color:var(--p);font-weight:700;border-bottom:1px solid var(--border)">구조화 데이터 + 엔티티 + 신뢰 콘텐츠 = 4개 엔진 동시 대응</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--mute);margin-top:14px">※ 엔진별 동작은 각 서비스 정책에 따라 변동될 수 있으며, 위 비교는 GEO 전략 수립을 위한 일반적 특성 요약입니다.</p>
+    </div>
+  </section>
+
   <!-- FAQ -->
   <section class="section bg-soft" id="geo-faq">
     <div class="container" style="max-width:800px">
