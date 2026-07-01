@@ -33,30 +33,71 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "병원마케팅 베놈",
-  "alternateName": "Venom Marketing",
-  "description": "치과·피부과·정형외과·한의원·성형외과 전문 의료 마케팅 에이전시. GEO·AEO·SEO 삼중 최적화.",
-  "url": "https://desktop-tutorial-chi-peach.vercel.app/",
-  "telephone": "1661-4142",
-  "email": "venomad@naver.com",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "용학로25길54, 4층",
-    "addressLocality": "수성구",
-    "addressRegion": "대구광역시",
-    "postalCode": "42182",
-    "addressCountry": "KR"
-  },
-  "openingHoursSpecification": {
-    "@type": "OpeningHoursSpecification",
-    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-    "opens": "09:00",
-    "closes": "18:00"
-  },
-  "sameAs": ["https://pf.kakao.com/_jxjxdcxj/chat"],
-  "serviceType": ["병원마케팅","치과마케팅","피부과마케팅","GEO최적화","AEO최적화","SEO최적화"],
-  "areaServed": {"@type": "Country", "name": "KR"}
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://desktop-tutorial-chi-peach.vercel.app/#organization",
+      "name": "병원마케팅 베놈",
+      "alternateName": "Venom Hospital Marketing",
+      "url": "https://desktop-tutorial-chi-peach.vercel.app/",
+      "logo": "https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png",
+      "description": "치과·피부과·정형외과·한의원·성형외과 등 의료기관 전문 디지털 마케팅 에이전시. GEO·AEO·SEO 삼중 최적화.",
+      "foundingDate": "2022",
+      "founder": {"@type": "Person", "name": "이재훈"},
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "용학로25길 54, 4층",
+        "addressLocality": "수성구",
+        "addressRegion": "대구광역시",
+        "postalCode": "42182",
+        "addressCountry": "KR"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+82-1661-4142",
+        "email": "venomad@naver.com",
+        "contactType": "customer service",
+        "areaServed": "KR",
+        "availableLanguage": ["ko", "en"]
+      },
+      "sameAs": ["https://pf.kakao.com/_jxjxdcxj/chat"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://desktop-tutorial-chi-peach.vercel.app/#website",
+      "url": "https://desktop-tutorial-chi-peach.vercel.app/",
+      "name": "병원마케팅 베놈",
+      "publisher": {"@id": "https://desktop-tutorial-chi-peach.vercel.app/#organization"},
+      "inLanguage": "ko"
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": "https://desktop-tutorial-chi-peach.vercel.app/#service",
+      "name": "병원마케팅 베놈",
+      "image": "https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png",
+      "url": "https://desktop-tutorial-chi-peach.vercel.app/",
+      "telephone": "1661-4142",
+      "email": "venomad@naver.com",
+      "priceRange": "₩₩",
+      "parentOrganization": {"@id": "https://desktop-tutorial-chi-peach.vercel.app/#organization"},
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "용학로25길 54, 4층",
+        "addressLocality": "수성구",
+        "addressRegion": "대구광역시",
+        "postalCode": "42182",
+        "addressCountry": "KR"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "areaServed": {"@type": "Country", "name": "KR"},
+      "serviceType": ["병원마케팅","치과마케팅","피부과마케팅","정형외과마케팅","한의원마케팅","성형외과마케팅","내과마케팅","안과마케팅","의료광고심의","의료기기마케팅","GEO최적화","AEO최적화","SEO최적화","네이버검색광고","구글검색광고","공식채널관리","언론홍보","병원홈페이지제작"]
+    }
+  ]
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
