@@ -995,10 +995,14 @@ async function generateLive(){
   try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
     const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
     const data=await r.json().catch(()=>({}));
-    if(!r.ok||!data.ok)throw new Error(data.error||('HTTP '+r.status));
+    if(!r.ok||!data.ok){
+      if(!cfg.url)return promptFallback('엔진이 연결돼 있지 않아요');  // 백엔드 주소 미설정 → 프롬프트 폴백
+      throw new Error(data.error||('HTTP '+r.status));
+    }
     renderResult(data.post);saveHistory(data.post);$('genStatus').textContent='✅ 생성 완료!';
   }catch(e){
-    if(/Failed to fetch|NetworkError|load failed/i.test(e.message||'')){promptFallback('엔진에 연결할 수 없어요');}
+    // 백엔드 주소가 없거나 네트워크 오류면 프롬프트 복사로 폴백, 주소가 설정된 경우만 실제 서버 오류 표시
+    if(!cfg.url || /Failed to fetch|NetworkError|load failed/i.test(e.message||'')){promptFallback('엔진에 연결할 수 없어요');}
     else{$('genStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">엔진 연결(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 위 '📋 올인원 프롬프트 복사'로 어떤 AI에서든 바로 생성할 수 있어요.</span>`;}
   }finally{btn.disabled=false;btn.textContent='🪄 원고 생성하기';}
 }
