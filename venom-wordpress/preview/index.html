@@ -8088,15 +8088,25 @@ function ld(cat, pushState){
     while(_p){ if(_p.classList&&(_p.classList.contains('snav-group')||_p.classList.contains('snav-group2'))) _p.classList.add('open'); _p=_p.parentElement; }
   }
   window.scrollTo({top:0,behavior:'smooth'});
-  // BreadcrumbList 업데이트 (스포크 페이지는 상위 허브 포함 4단계)
-  var catLabel=catLabels[cat]||d.title||cat;
+  // BreadcrumbList 업데이트 — HUB_TREE 기반 완전 3단(홈>병원마케팅>허브>L2>L3)
+  var catLabel=catLabels[cat]||( (d.title||cat).split('—')[0].replace(/\([^)]*\)/g,'').trim() )||cat;
   var _drc=DETAIL_ROUTES[cat]||{};
-  if(_drc.parent&&DETAIL_ROUTES[_drc.parent]){
-    var _par=DETAIL_ROUTES[_drc.parent];
-    updateBreadcrumb([['홈',BASE_URL],['병원마케팅',BASE_URL+'#hosp_mkt'],[catLabels[_drc.parent]||_drc.parent,BASE_URL+_par.path],[catLabel,BASE_URL+_drc.path]]);
-  } else {
-    updateBreadcrumb([['홈',BASE_URL],['병원마케팅',BASE_URL+'#hosp_mkt'],[catLabel,BASE_URL+'#'+cat]]);
+  var _pp=function(c){ return BASE_URL.replace(/\/$/,'')+((DETAIL_ROUTES[c]&&DETAIL_ROUTES[c].path)||('#'+c)); };
+  // 이 페이지가 어떤 L2의 L3(자식)인지 HUB_TREE에서 조회
+  var _l2node=null,_hubOf=null;
+  for(var _h in HUB_TREE){ HUB_TREE[_h].forEach(function(x){ if(x.sub){ x.sub.forEach(function(s){ if(s.to===cat){_l2node=x;_hubOf=_h;} }); } }); }
+  var _crumbs=[['홈',BASE_URL],['병원마케팅',BASE_URL+'#hosp_mkt']];
+  if(_l2node&&_hubOf){ // L3
+    _crumbs.push([catLabels[_hubOf]||_hubOf, _pp(_hubOf)]);
+    _crumbs.push([_l2node.label, _pp(_l2node.to)]);
+    _crumbs.push([catLabel, _pp(cat)]);
+  } else if(_drc.parent&&DETAIL_ROUTES[_drc.parent]){ // L2(하위 일반주제)
+    _crumbs.push([catLabels[_drc.parent]||_drc.parent, _pp(_drc.parent)]);
+    _crumbs.push([catLabel, _pp(cat)]);
+  } else { // 허브
+    _crumbs.push([catLabel, _pp(cat)]);
   }
+  updateBreadcrumb(_crumbs);
   // 허브 섹션 → 스포크 전용 페이지 "자세히 →" 링크 주입 (NXT 용어사전 패턴)
   (HUB_SPOKES[cat]||[]).forEach(function(sk){
     var secEl=document.getElementById('ds-'+sk.sec);
