@@ -23,6 +23,31 @@
 | `prisma/schema-additions.prisma` | `prisma/schema.prisma` 에 병합 (V2.1 마이그레이션) |
 | `prisma/seed-masters.ts` | `prisma/seed.ts` 병합 또는 단독 실행 (마스터 시드) |
 
+## 전체 파일 인덱스 (V2.1 백엔드+UI 착수 코드)
+
+**스키마/인프라**
+- `prisma/schema-additions.prisma` — 신규 6모델 + 기존 필드추가 (마이그레이션)
+- `prisma/seed-masters.ts` — 업종/카테고리/채널/정책 시드
+- `server/crypto.ts` — 자격증명 AES-256-GCM
+- `server/auth-email.ts` — 이메일 인증 Auth(직원 화이트리스트)
+- `server/tracking.ts` — 로그인이력 + 추적조회
+- `server/report-pdf.ts` — 보고서 HTML→PDF
+- `jobs/keyword-rank.ts` — 키워드 순위 자동수집
+
+**server actions** (`actions/`)
+- `_helpers.ts` (공통: 인증·권한·감사·runAction)
+- `clients.ts` · `work.ts` · `work-schedule.ts` · `channel-accounts.ts`
+- `masters.ts` (잠금 거버넌스) · `finance.ts` (반자동 대사)
+- `leave.ts` · `reports.ts`
+
+**UI 컴포넌트** (`components/`, "use client")
+- `ClientForm.tsx` (업종 2단) · `WorkStatusButtons.tsx` · `CredentialField.tsx`
+- `MasterManager.tsx` (잠금) · `BankReconcile.tsx` (대사)
+> UI는 기존 shell/디자인시스템에 맞춰 스타일 조정 필요. 색상 토큰 `#533afd`(primary) 사용.
+
+## 상태
+V2.1 스펙의 **백엔드 로직 전부 + 대표 UI**가 staging에 준비됨. ERP 레포에서 배치→마이그레이션→빌드→나머지 화면 조립 단계.
+
 ### V2.1 적용 순서 (스프린트 0~2)
 1. `schema-additions.prisma` 내용을 `prisma/schema.prisma`에 병합 → `pnpm prisma migrate dev --name v2_1_structure`
 2. `crypto.ts` 배치 + `.env`에 `CREDENTIAL_ENC_KEY`(32바이트 hex64 또는 base64) 설정
