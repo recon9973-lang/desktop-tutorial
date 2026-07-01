@@ -13,6 +13,11 @@ const DEFAULT = {
   schedules: [],
   categories: ['geo'], keywords: ['병원 GEO마케팅', 'AI 병원마케팅'],
   regions: ['서울', '강남'], extra: '',
+  // GrowthOps 연동 옵션
+  mode: 'keyword',          // 'keyword'(기존) | 'cluster'(빈칸 우선 발행)
+  autoInternalLinks: false, // 발행 직전 관련글 내부링크 블록 자동주입(M2)
+  clusterAutoExpand: false, // 빈칸 소진 시 다음 필러로 새 클러스터 자동 설계
+  clusterPillars: [],       // 자동확장에 쓸 필러 키워드(없으면 keywords 사용)
 };
 
 function ghGet(filePath) {
