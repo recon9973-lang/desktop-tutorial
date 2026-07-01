@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const SHAPES = ['원형', '타원형', '장방형', '반원형', '삼각형', '사각형', '마름모형', '기타'];
 const COLORS = [
@@ -22,6 +22,30 @@ export default function DrugPage() {
   const [imprint, setImprint] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // 사진 식별(/drug/scan)에서 각인 넘어오면 프리필 + 자동 검색
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const ip = sp.get('imprint');
+    if (ip) { setImprint(ip); runWith({ imprint: ip }); }
+    // eslint-disable-next-line
+  }, []);
+
+  async function runWith(over = {}) {
+    const query = { q, shape, color, imprint, ...over };
+    if (!query.q && !query.shape && !query.color && !query.imprint) return;
+    setLoading(true); setData(null);
+    const qs = new URLSearchParams();
+    if (query.q) qs.set('q', query.q);
+    if (query.shape) qs.set('shape', query.shape);
+    if (query.color) qs.set('color', query.color);
+    if (query.imprint) qs.set('imprint', query.imprint);
+    try {
+      const res = await fetch(`/api/drug/search?${qs.toString()}`);
+      setData(await res.json());
+    } catch { setData({ error: '검색 실패', results: [] }); }
+    setLoading(false);
+  }
 
   async function run() {
     if (!q && !shape && !color && !imprint) return;
@@ -75,6 +99,9 @@ export default function DrugPage() {
         </div>
 
         <button onClick={run} className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: 16 }}>🔎 약 검색</button>
+        <a href="/drug/scan" style={{ display: 'block', textAlign: 'center', marginTop: 10, padding: '11px', fontSize: 15, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', border: '1.5px solid var(--hairline)', borderRadius: 'var(--r-full)' }}>
+          📷 이름을 모르면 — 사진으로 찾기
+        </a>
 
         {loading && <p style={{ textAlign: 'center', color: 'var(--ink-muted)', padding: 40 }}>검색 중…</p>}
 
