@@ -975,10 +975,17 @@ function toggleCfg(){const c=$('cfg');c.style.display=c.style.display==='none'?'
 function loadCfg(){try{return JSON.parse(localStorage.getItem('vstudio_cfg')||'{}');}catch(e){return{};}}
 function saveCfg(){localStorage.setItem('vstudio_cfg',JSON.stringify({url:$('cfg_url').value.trim(),secret:$('cfg_secret').value.trim()}));toast('설정 저장됨 ⚙️');}
 function applyCfg(){const c=loadCfg();if(c.url)$('cfg_url').value=c.url;if(c.secret)$('cfg_secret').value=c.secret;}
+function promptFallback(msg){ // 엔진 미연결 시: 올인원 프롬프트를 복사해 유용한 결과로 전환
+  try{navigator.clipboard.writeText(buildPrompt());}catch(_){}
+  $('genStatus').innerHTML=`⚠️ ${msg} — 대신 <b>올인원 프롬프트를 클립보드에 복사</b>했어요. ChatGPT·Claude 등에 붙여넣으면 바로 원고가 나옵니다.<br><span class="hint">실제 자동 생성은 배포(API 주소)+OPENAI_API_KEY 설정 시 작동해요. (STEP3 ⚙️ 연결 설정)</span>`;
+  toast('엔진 미연결 — 프롬프트 복사됨 📋');
+}
 async function generateLive(){
   syncInputs();
   if(!S.core){toast('STEP 0의 핵심 키워드를 입력해 주세요');go(0);return;}
   const cfg=loadCfg();const url=(cfg.url||'').replace(/\/$/,'')+'/api/generate-post';
+  // 로컬 파일/인라인처럼 서버가 없으면(같은 도메인 API 없음) 아예 시도하지 않고 프롬프트 복사로 폴백
+  if(!cfg.url && location.protocol!=='http:' && location.protocol!=='https:'){promptFallback('엔진이 연결돼 있지 않아요');return;}
   const p=S.persona||TARGETS[S.target];
   const extra=[S.extra,`글유형=${S.gtype}`,S.kw2?`보조키워드=${S.kw2}`:'',`CTA=${S.cta}`,S.topic?`제목 방향=${S.topic.t}`:''].filter(Boolean).join(' / ');
   const body={category:S.cat,keyword:S.core,region:S.region,extra,target:S.target,tone:S.tone,detail:S.detail||p.detail,
@@ -990,7 +997,9 @@ async function generateLive(){
     const data=await r.json().catch(()=>({}));
     if(!r.ok||!data.ok)throw new Error(data.error||('HTTP '+r.status));
     renderResult(data.post);saveHistory(data.post);$('genStatus').textContent='✅ 생성 완료!';
-  }catch(e){$('genStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">엔진 연결(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 위 '📋 올인원 프롬프트 복사'로 어떤 AI에서든 바로 생성할 수 있어요.</span>`;
+  }catch(e){
+    if(/Failed to fetch|NetworkError|load failed/i.test(e.message||'')){promptFallback('엔진에 연결할 수 없어요');}
+    else{$('genStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">엔진 연결(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 위 '📋 올인원 프롬프트 복사'로 어떤 AI에서든 바로 생성할 수 있어요.</span>`;}
   }finally{btn.disabled=false;btn.textContent='🪄 원고 생성하기';}
 }
 function renderResult(post){
