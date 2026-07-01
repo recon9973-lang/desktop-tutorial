@@ -203,6 +203,21 @@ body{padding-top:0}
 .dropdown a:hover{background:var(--soft);color:var(--p)}
 .dropdown .grp{padding:6px 12px 2px;font-size:10px;font-weight:400;
   text-transform:uppercase;letter-spacing:.08em;color:var(--mute2);margin-top:2px}
+/* 병원마케팅 메가메뉴(L2까지) */
+.dropdown-mega{width:min(720px,92vw);padding:16px 18px}
+.mega-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 16px}
+.mega-col{min-width:0}
+.dropdown-mega .mega-hub{display:block;font-size:12.5px;font-weight:800;color:var(--ink);
+  padding:6px 8px;border-radius:var(--r8);border-bottom:1px solid var(--border);margin-bottom:3px}
+.dropdown-mega .mega-hub:hover{color:var(--p);background:var(--soft)}
+.dropdown-mega .mega-col>a:not(.mega-hub){display:block;padding:4px 8px 4px 14px;font-size:12px;
+  font-weight:300;color:var(--ink2);border-radius:var(--r8);position:relative}
+.dropdown-mega .mega-col>a:not(.mega-hub):before{content:"›";position:absolute;left:4px;color:var(--psub);opacity:.6}
+.dropdown-mega .mega-col>a:not(.mega-hub):hover{background:var(--soft);color:var(--p)}
+.dropdown-mega .mega-svc{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;
+  border-top:1px solid var(--border);margin-top:6px;padding-top:10px}
+.dropdown-mega .mega-svc .mega-hub{border:0;margin:0;padding:6px 10px;background:var(--soft)}
+@media(max-width:1100px){.mega-cols{grid-template-columns:repeat(3,1fr)}.dropdown-mega{width:min(560px,92vw)}}
 .header-actions{display:flex;align-items:center;gap:8px;justify-content:flex-end}
 .phone-link{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:300;
   color:var(--ink2);padding:6px 12px;border-radius:var(--rpill);
@@ -713,19 +728,7 @@ body{padding-top:0}
       <nav><ul class="main-nav">
         <li>
           <a href="/hospital-marketing" onclick="sp('hosp_mkt');return false">병원마케팅 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
-          <div class="dropdown">
-            <div class="grp">과목별</div>
-            <a href="/dental" onclick="ld('dental');return false">치과마케팅</a>
-            <a href="/dermatology" onclick="ld('skin');return false">피부과마케팅</a>
-            <a href="/orthopedics" onclick="ld('ortho');return false">정형외과마케팅</a>
-            <a href="/oriental-medicine" onclick="ld('oriental');return false">한의원마케팅</a>
-            <a href="/plastic-surgery" onclick="ld('plastic');return false">성형외과마케팅</a>
-            <a href="/internal-medicine" onclick="ld('naegwa');return false">내과마케팅</a>
-            <a href="/ophthalmology" onclick="ld('angwa');return false">안과마케팅</a>
-            <div class="grp">서비스</div>
-            <a href="/medical-ad-review" onclick="ld('shimui');return false">의료광고심의</a>
-            <a href="/medical-device" onclick="ld('medical_device');return false">의료기기마케팅</a>
-          </div>
+          <div class="dropdown dropdown-mega" id="megaHosp"><!-- buildTopMega()가 HUB_TREE 기반 L2까지 동적 생성 --></div>
         </li>
         <li>
           <a href="/ai" onclick="sp('ai');return false">AI마케팅 <span class="nav-new">NEW</span> <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
@@ -7066,7 +7069,25 @@ function buildHubSidebar(){
   });
   el.innerHTML=html;
 }
-try{ if(document.readyState!=='loading')buildHubSidebar(); else document.addEventListener('DOMContentLoaded',buildHubSidebar); }catch(e){}
+// ── 상단 병원마케팅 메가메뉴(HUB_TREE 기반 L2까지) ──
+function buildTopMega(){
+  var el=document.getElementById('megaHosp'); if(!el)return;
+  var _p=function(c){ var r=DETAIL_ROUTES[c]; return (r&&r.path)||('#'+c); };
+  var html='<div class="mega-cols">';
+  HUB_META.forEach(function(m){
+    if(m.cat==='shimui'||m.cat==='medical_device')return; // 서비스는 하단 별도
+    var tree=HUB_TREE[m.cat]||[];
+    html+='<div class="mega-col"><a class="mega-hub" href="'+_p(m.cat)+'" onclick="ld(\''+m.cat+'\');return false">'+m.icon+' '+m.label+'</a>';
+    tree.forEach(function(l2){ html+='<a href="'+_p(l2.to)+'" onclick="ld(\''+l2.to+'\');return false">'+l2.label+'</a>'; });
+    html+='</div>';
+  });
+  // 서비스(심의·의료기기)
+  html+='<div class="mega-svc">';
+  ['shimui','medical_device'].forEach(function(c){ var m=HUB_META.filter(function(x){return x.cat===c;})[0]; if(m)html+='<a class="mega-hub" href="'+_p(c)+'" onclick="ld(\''+c+'\');return false">'+m.icon+' '+m.label+'</a>'; });
+  html+='</div></div>';
+  el.innerHTML=html;
+}
+try{ if(document.readyState!=='loading'){buildHubSidebar();buildTopMega();} else document.addEventListener('DOMContentLoaded',function(){buildHubSidebar();buildTopMega();}); }catch(e){}
 function _applyDetailSEO(cat){
   var r=DETAIL_ROUTES[cat]; if(!r) return;
   try{
