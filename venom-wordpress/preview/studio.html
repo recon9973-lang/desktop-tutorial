@@ -97,11 +97,21 @@
   .balance{height:22px;border-radius:999px;overflow:hidden;display:flex;margin-top:6px;border:1px solid var(--line)}
   .balance>span{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
   details>summary{cursor:pointer;font-weight:700;font-size:13.5px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}
+  .modal.open{display:flex;animation:fade .2s ease}
+  .modal-card{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:18px;max-width:660px;width:100%;max-height:86vh;overflow:auto;padding:26px;box-shadow:var(--shadow)}
+  .modal-card h3{margin:0 0 4px;font-size:20px}
+  .modal-card h4{margin:18px 0 4px;font-size:15px;color:var(--accent)}
+  .modal-card ul{margin:6px 0;padding-left:20px;font-size:13.5px}
+  .modal-card li{margin:3px 0}
+  .modal-card p{font-size:13.5px;margin:4px 0}
+  .modal-close{float:right;cursor:pointer;border:none;background:var(--accent-soft);color:var(--ink);border-radius:10px;padding:7px 13px;font-weight:700;font-size:13px}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="topbtns">
+    <button class="iconbtn" onclick="openHelp()">❓ 도움말</button>
     <button class="iconbtn" onclick="demo()">🎲 예시</button>
     <button class="iconbtn" onclick="resetAll()">🗑 초기화</button>
     <button class="iconbtn" onclick="toggleDark()" id="darkBtn">🌙</button>
@@ -392,6 +402,31 @@
   </section>
 </div>
 
+<div class="modal" id="helpModal" onclick="if(event.target===this)closeHelp()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeHelp()">✕ 닫기</button>
+    <h3>❓ 원고 스튜디오 사용법</h3>
+    <div class="hint">기획 → 집필 → 이미지/카드뉴스 → 키워드 → 검수 → 발행을 한 흐름으로. 처음이라면 우측 상단 <b>🎲 예시</b>부터.</div>
+    <h4>1) 6단계 흐름</h4>
+    <ul>
+      <li><b>STEP 0 시작</b> — 카테고리·키워드·지역·글유형·톤 옵션. 브랜드색·다크모드</li>
+      <li><b>STEP 1 아이디어</b> — 주제 후보·제목 변형, 키워드 리서치(검색량)·본문 키워드 추출</li>
+      <li><b>STEP 2 타겟</b> — 직장인/환자/보호자 등 → 페르소나 자동완성</li>
+      <li><b>STEP 3 톤·프롬프트</b> — 톤 믹서 → 올인원 프롬프트 자동조립 / 베놈 엔진 생성</li>
+      <li><b>STEP 4 시각화</b> — 인포그래픽 8종·AI 이미지·카드뉴스 텍스트</li>
+      <li><b>STEP 5 검수·발행</b> — 안전등·품질점수·WordPress 발행·일괄처리</li>
+    </ul>
+    <h4>2) 서버 없이 바로 되는 것</h4>
+    <p>✅ 프롬프트 조립·복사 · 인포그래픽 · 카드뉴스 · 키워드 추출 · 안전등 · 품질점수 · 브리프</p>
+    <h4>3) 서버(배포+키)가 필요한 것</h4>
+    <p>🌐 원고 자동생성 · AI 이미지 · 검색량 조회 · WordPress 발행<br>→ <b>STEP 3 ⚙️ 연결 설정</b>에 API 주소 + <code>ADMIN_SECRET</code> 입력(브라우저에만 저장). 엔진이 없으면 '원고 생성'이 <b>프롬프트를 대신 복사</b>해 줍니다.</p>
+    <h4>4) WordPress 발행 (합법 자동화)</h4>
+    <p>WP 관리자 → 사용자 → 프로필 → <b>응용프로그램 비밀번호</b> 생성 → STEP 5 ⚙️ 연결 → <b>임시저장 / 예약 / 즉시</b> 발행. (네이버·티스토리는 약관상 자동등록 대신 '붙여넣기용 복사')</p>
+    <h4>5) 팁</h4>
+    <p>💡 같은 주제라도 <b>타겟만 바꾸면</b> 전혀 다른 글 · 작업은 <b>자동 저장</b>돼 새로고침해도 복원 · 이미지·차트는 베놈과 동일한 <b>WebP</b>로 저장</p>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -446,6 +481,11 @@ function restoreState(){try{const o=JSON.parse(localStorage.getItem('vstudio_sta
   return !!(o.v&&o.v.i_core);}catch(e){return false;}}
 function resetAll(){if(!confirm('모든 입력을 지우고 새로 시작할까요?'))return;
   try{localStorage.removeItem('vstudio_state');}catch(e){}location.reload();}
+
+/* ───────────── 도움말 모달 ───────────── */
+function openHelp(){$('helpModal').classList.add('open');}
+function closeHelp(){$('helpModal').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp();});
 
 /* ───────────── 다크모드 / 데모 ───────────── */
 function toggleDark(){S.dark=!document.body.classList.contains('dark');
