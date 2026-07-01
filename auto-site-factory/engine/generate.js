@@ -315,6 +315,16 @@ function prepare(spec) {
   const stock = localOnly ? {} : (specialty.stock || {});
   spec.images = Object.assign({}, stock, spec.images || {});
   const ph = placeholderDataUri;
+
+  if (!localOnly) {
+    const si = require('./stock-images');
+    const subKey = spec.clinic?.specialty || spec.local?.type || spec.press?.type;
+    if (!spec.images.hero)  spec.images.hero  = si.getHero(spec.category, subKey);
+    if (!spec.images.intro) spec.images.intro = si.getIntro(spec.category, subKey);
+    if (!spec.images.gallery || !spec.images.gallery.length)
+      spec.images.gallery = si.getGallery(spec.category, subKey);
+  }
+
   spec.images.intro = spec.images.intro || ph(spec.category === 'clinic' ? '병원 내부 전경' : '매장 내부');
   if (spec.images.hero) {
     spec.images.heroBg = `url('${spec.images.hero}')`;

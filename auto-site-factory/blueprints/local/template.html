@@ -75,36 +75,36 @@ header{
 .nav-links .btn{padding:10px 20px;font-size:14px}
 @media(max-width:860px){.nav-links a:not(.btn){display:none}}
 
-/* ── Hero — gradient mesh ── */
-.hero{position:relative;min-height:640px;display:flex;align-items:center;overflow:hidden}
-.hero-mesh{
-  position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 70% 80% at 5% 20%,rgba(245,233,212,.9) 0%,transparent 55%),
-    radial-gradient(ellipse 60% 70% at 70% 5%,rgba(185,185,249,.75) 0%,transparent 55%),
-    radial-gradient(ellipse 50% 60% at 95% 70%,rgba(234,34,97,.25) 0%,transparent 50%),
-    radial-gradient(ellipse 55% 50% at 25% 90%,rgba(83,58,253,.35) 0%,transparent 55%),
-    linear-gradient(155deg,#f9f6ff 0%,#fff 60%);
+/* ── Hero — full-bleed photo + dark overlay ── */
+.hero{
+  position:relative;min-height:640px;display:flex;align-items:center;overflow:hidden;
+  background-color:#0a1520;
 }
 .hero-photo{
-  position:absolute;inset:0;z-index:1;
+  position:absolute;inset:0;z-index:0;
   background-size:cover;background-position:center;
-  opacity:.16;mix-blend-mode:multiply;
+  transition:transform 8s ease;
 }
-.hero>.wrap{position:relative;z-index:2;padding-top:80px;padding-bottom:80px}
+.hero:hover .hero-photo{transform:scale(1.03)}
+.hero-mesh{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(105deg,rgba(0,15,30,.90) 0%,rgba(0,18,38,.80) 38%,rgba(10,30,55,.50) 65%,rgba(83,58,253,.22) 100%);
+}
+.hero>.wrap{position:relative;z-index:2;padding-top:88px;padding-bottom:88px}
 .hero-inner{max-width:620px}
 .hero .badge{
   display:inline-flex;align-items:center;gap:8px;
-  background:rgba(83,58,253,.09);border:1px solid rgba(83,58,253,.22);
-  color:var(--p);font-size:13px;font-weight:500;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+  color:#fff;font-size:13px;font-weight:500;
   padding:6px 14px;border-radius:9999px;margin-bottom:26px;
 }
 .hero h1{
   font-size:clamp(34px,4.8vw,56px);
   font-weight:300;letter-spacing:-1.4px;line-height:1.08;
-  margin-bottom:20px;color:var(--ink);
+  margin-bottom:20px;color:#fff;
 }
-.hero p{font-size:18px;color:var(--ink-2);margin-bottom:38px;max-width:520px;line-height:1.65}
+.hero h1 b{font-weight:600;color:#a5b4fc}
+.hero p{font-size:18px;color:rgba(255,255,255,.82);margin-bottom:38px;max-width:520px;line-height:1.65}
 .hero .cta-row{display:flex;gap:12px;flex-wrap:wrap}
 
 /* ── Trust bar ── */
