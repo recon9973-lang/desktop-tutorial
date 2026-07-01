@@ -1,5 +1,4 @@
 {
-  "outputDirectory": "venom-wordpress/preview",
   "rewrites": [
     { "source": "/blog/:slug*", "destination": "/index.html" },
     { "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose)", "destination": "/index.html" },
