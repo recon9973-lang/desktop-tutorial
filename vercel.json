@@ -2,7 +2,8 @@
   "outputDirectory": "venom-wordpress/preview",
   "rewrites": [
     { "source": "/blog/:slug*", "destination": "/index.html" },
-    { "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose)", "destination": "/index.html" }
+    { "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose)", "destination": "/index.html" },
+    { "source": "/(dental|implant|orthodontics|dermatology|orthopedics|oriental-medicine|plastic-surgery|internal-medicine|ophthalmology|medical-ad-review|medical-device)", "destination": "/index.html" }
   ],
   "functions": {
     "api/generate-post.js": { "maxDuration": 120 },
