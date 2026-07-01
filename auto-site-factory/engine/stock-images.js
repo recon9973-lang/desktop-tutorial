@@ -1,95 +1,120 @@
 'use strict';
-// 카테고리/업종별 큐레이션 Unsplash 스톡 이미지
+// 카테고리/업종별 스톡 이미지
 // 이미지는 사용자가 spec.images.hero 등으로 덮어쓸 수 있음
+// 실사 이미지는 assets/images/ 에 있으며 raw.githubusercontent.com 으로 서빙
 
-const U = (id, w = 1920) =>
-  `https://images.unsplash.com/photo-${id}?w=${w}&q=82&auto=format&fit=crop`;
+const REPO_RAW = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/auto-site-factory/assets/images';
+
+const G = (path, w) => {
+  const url = `${REPO_RAW}/${path}`;
+  return w ? `${url}?w=${w}` : url;
+};
 
 const CLINIC_HERO = {
-  dental:   U('1606811971618-4486d14f3f99'),  // 치과 진료실
-  skin:     U('1570172619644-dfd03ed5d881'),  // 피부과
-  ortho:    U('1576091160550-2173dba999ef'),  // 정형/재활
-  plastic:  U('1522338140262-f46f5913618a'),  // 성형/미용
-  oriental: U('1540206276207-99e3bf1da4a9'),  // 한의원
-  naegwa:   U('1519494026892-80bbd2d6fd0d'),  // 내과/일반
-  angwa:    U('1587440871838-2f68e35e6d73'),  // 안과
-  default:  U('1551076805-e1869033e561'),     // 병원 일반
+  dental:   G('clinic/dental-hero.png'),
+  skin:     G('clinic/skin-hero.png'),
+  ortho:    G('clinic/ortho-hero.png'),
+  plastic:  G('clinic/plastic-hero.png'),
+  oriental: G('clinic/oriental-hero.png'),
+  naegwa:   G('clinic/naegwa-hero.png'),
+  angwa:    G('clinic/angwa-hero.png'),
+  default:  G('clinic/naegwa-hero.png'),
 };
 
 const CLINIC_INTRO = {
-  dental:   U('1607613009820-a29f7bb81c04', 960),
-  skin:     U('1522337360826-9a8dc6b6cf01', 960),
-  ortho:    U('1581056771107-24ca5f033842', 960),
-  plastic:  U('1576091160399-112ba8d25d1d', 960),
-  oriental: U('1533804575768-c2d8e01d7bb6', 960),
-  naegwa:   U('1530026405845-dba5ae3e888f', 960),
-  angwa:    U('1614649024145-4294b8f0e81f', 960),
-  default:  U('1519494026892-80bbd2d6fd0d', 960),
+  dental:   G('clinic/dental-intro.png'),
+  skin:     G('clinic/skin-intro.png'),
+  ortho:    G('clinic/ortho-intro.png'),
+  plastic:  G('clinic/plastic-intro.png'),
+  oriental: G('clinic/oriental-intro.png'),
+  naegwa:   G('clinic/naegwa-intro.png'),
+  angwa:    G('clinic/angwa-intro.png'),
+  default:  G('clinic/naegwa-intro.png'),
 };
 
 const CLINIC_GALLERY = {
-  dental:   [U('1588776814546-1ffbb172b0a0',800), U('1628177142898-93e36e4e3a50',800), U('1606811971618-4486d14f3f99',800)],
-  skin:     [U('1570172619644-dfd03ed5d881',800), U('1522337360826-9a8dc6b6cf01',800), U('1512290923902-8a9f81dc236c',800)],
-  ortho:    [U('1576091160550-2173dba999ef',800), U('1581056771107-24ca5f033842',800), U('1559839734-2b71ea197ec2',800)],
-  plastic:  [U('1522338140262-f46f5913618a',800), U('1576091160399-112ba8d25d1d',800), U('1612349317150-e413f6a5b16d',800)],
-  oriental: [U('1540206276207-99e3bf1da4a9',800), U('1533804575768-c2d8e01d7bb6',800), U('1544367577-be62196f0d85',800)],
-  naegwa:   [U('1519494026892-80bbd2d6fd0d',800), U('1530026405845-dba5ae3e888f',800), U('1551076805-e1869033e561',800)],
-  angwa:    [U('1587440871838-2f68e35e6d73',800), U('1614649024145-4294b8f0e81f',800), U('1573824857538-10e75a25cc2e',800)],
-  default:  [U('1519494026892-80bbd2d6fd0d',800), U('1530026405845-dba5ae3e888f',800), U('1551076805-e1869033e561',800)],
+  dental:   [G('clinic/dental-gallery-1.png'), G('clinic/dental-gallery-2.png'), G('clinic/dental-gallery-3.png')],
+  skin:     [G('clinic/skin-gallery-1.png'),   G('clinic/skin-gallery-2.png'),   G('clinic/skin-gallery-3.png')],
+  ortho:    [G('clinic/ortho-gallery-1.png'),  G('clinic/ortho-gallery-2.png'),  G('clinic/ortho-gallery-3.png')],
+  plastic:  [G('clinic/plastic-gallery-1.png'),G('clinic/plastic-gallery-2.png'),G('clinic/plastic-gallery-3.png')],
+  oriental: [G('clinic/oriental-gallery-1.png'),G('clinic/oriental-gallery-2.png'),G('clinic/oriental-gallery-3.png')],
+  naegwa:   [G('clinic/naegwa-gallery-1.png'), G('clinic/naegwa-gallery-2.png'), G('clinic/naegwa-gallery-3.png')],
+  angwa:    [G('clinic/angwa-gallery-1.png'),  G('clinic/angwa-gallery-2.png'),  G('clinic/angwa-gallery-3.png')],
+  default:  [G('clinic/naegwa-gallery-1.png'), G('clinic/naegwa-gallery-2.png'), G('clinic/naegwa-gallery-3.png')],
 };
 
 const LOCAL_HERO = {
-  cafe:       U('1501339847302-ac426a4a7cbb'),
-  restaurant: U('1414235077428-338989a2e8c0'),
-  beauty:     U('1522335789203-aabd1fc54bc9'),
-  nail:       U('1604654894610-df63bc536371'),
-  fitness:    U('1534438327276-14e5300c3a48'),
-  bakery:     U('1509440159596-0249088772ff'),
-  retail:     U('1555529669-e69e7aa0ba9a'),
-  default:    U('1556742049-0cfed4f6a45d'),
+  cafe:       G('local/cafe-hero.png'),
+  restaurant: G('local/restaurant-hero.png'),
+  beauty:     G('local/beauty-hero.png'),
+  nail:       G('local/nail-hero.png'),
+  fitness:    G('local/fitness-hero.png'),
+  bakery:     G('local/bakery-hero.png'),
+  retail:     G('local/retail-hero.png'),
+  default:    G('local/cafe-hero.png'),
 };
 
 const LOCAL_INTRO = {
-  cafe:       U('1495474472287-4d71bcdd2085', 960),
-  restaurant: U('1517248135467-4c7edcad34c4', 960),
-  beauty:     U('1560066984-138dafc5cbbd', 960),
-  fitness:    U('1517836357463-d25dfeac3438', 960),
-  bakery:     U('1587241321921-91a834d6d191', 960),
-  default:    U('1504384308090-c5fb69dc7d6e', 960),
+  cafe:       G('local/cafe-intro.png'),
+  restaurant: G('local/restaurant-intro.png'),
+  beauty:     G('local/beauty-intro.png'),
+  nail:       G('local/nail-intro.png'),
+  fitness:    G('local/fitness-intro.png'),
+  bakery:     G('local/bakery-intro.png'),
+  retail:     G('local/retail-intro.png'),
+  default:    G('local/cafe-intro.png'),
 };
 
 const LOCAL_GALLERY = {
-  cafe:       [U('1495474472287-4d71bcdd2085',800), U('1501339847302-ac426a4a7cbb',800), U('1453614512568-3ad81e2b44c2',800)],
-  restaurant: [U('1414235077428-338989a2e8c0',800), U('1517248135467-4c7edcad34c4',800), U('1504674900247-0877df9cc836',800)],
-  beauty:     [U('1522335789203-aabd1fc54bc9',800), U('1560066984-138dafc5cbbd',800), U('1521590832167-7bcbfaa6381f',800)],
-  nail:       [U('1604654894610-df63bc536371',800), U('1610992235732-21ef7eed4c4c',800), U('1604654891610-df63bc536371',800)],
-  fitness:    [U('1534438327276-14e5300c3a48',800), U('1517836357463-d25dfeac3438',800), U('1571902943202-507ec2618e8f',800)],
-  bakery:     [U('1509440159596-0249088772ff',800), U('1587241321921-91a834d6d191',800), U('1555507036-ab1f4038808a',800)],
-  retail:     [U('1555529669-e69e7aa0ba9a',800), U('1483985973862-6b3d3e284fa3',800), U('1601004890655-12291850b9c2',800)],
-  default:    [U('1504384308090-c5fb69dc7d6e',800), U('1556742049-0cfed4f6a45d',800), U('1504674900247-0877df9cc836',800)],
+  cafe:       [G('local/cafe-gallery-1.png'),       G('local/cafe-gallery-2.png'),       G('local/cafe-gallery-3.png')],
+  restaurant: [G('local/restaurant-gallery-1.png'), G('local/restaurant-gallery-2.png'), G('local/restaurant-gallery-3.png')],
+  beauty:     [G('local/beauty-gallery-1.png'),     G('local/beauty-gallery-2.png'),     G('local/beauty-gallery-3.png')],
+  nail:       [G('local/nail-gallery-1.png'),       G('local/nail-gallery-2.png'),       G('local/nail-gallery-3.png')],
+  fitness:    [G('local/fitness-gallery-1.png'),    G('local/fitness-gallery-2.png'),    G('local/fitness-gallery-3.png')],
+  bakery:     [G('local/bakery-gallery-1.png'),     G('local/bakery-gallery-2.png'),     G('local/bakery-gallery-3.png')],
+  retail:     [G('local/retail-gallery-1.png'),     G('local/retail-gallery-2.png'),     G('local/retail-gallery-3.png')],
+  default:    [G('local/cafe-gallery-1.png'),       G('local/cafe-gallery-2.png'),       G('local/cafe-gallery-3.png')],
 };
 
 const PRESS_HERO = {
-  newsroom: U('1504711434969-e33886168f5c'),
-  blog:     U('1499750310107-5fef28a66643'),
-  magazine: U('1585829365800-9b7b4567fb9b'),
-  default:  U('1504711434969-e33886168f5c'),
+  default: G('clinic/naegwa-hero.png'),
 };
 
-function getHero(category, subKey) {
+const LOCAL_PATH = '/home/user/desktop-tutorial/auto-site-factory/assets/images';
+
+function localPath(relPath) {
+  return `file://${LOCAL_PATH}/${relPath}`;
+}
+
+function getHero(category, subKey, local) {
+  if (local) {
+    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-hero.png`);
+    if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-hero.png`);
+    return localPath('clinic/naegwa-hero.png');
+  }
   if (category === 'clinic')  return CLINIC_HERO[subKey]  || CLINIC_HERO.default;
   if (category === 'local')   return LOCAL_HERO[subKey]   || LOCAL_HERO.default;
-  if (category === 'press')   return PRESS_HERO[subKey]   || PRESS_HERO.default;
+  if (category === 'press')   return PRESS_HERO.default;
   return CLINIC_HERO.default;
 }
 
-function getIntro(category, subKey) {
+function getIntro(category, subKey, local) {
+  if (local) {
+    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-intro.png`);
+    if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-intro.png`);
+    return localPath('clinic/naegwa-intro.png');
+  }
   if (category === 'clinic') return CLINIC_INTRO[subKey] || CLINIC_INTRO.default;
   if (category === 'local')  return LOCAL_INTRO[subKey]  || LOCAL_INTRO.default;
   return CLINIC_INTRO.default;
 }
 
-function getGallery(category, subKey) {
+function getGallery(category, subKey, local) {
+  if (local) {
+    const s = subKey || (category === 'local' ? 'cafe' : 'naegwa');
+    const cat = category === 'local' ? 'local' : 'clinic';
+    return [1,2,3].map(i => localPath(`${cat}/${s}-gallery-${i}.png`));
+  }
   if (category === 'clinic') return CLINIC_GALLERY[subKey] || CLINIC_GALLERY.default;
   if (category === 'local')  return LOCAL_GALLERY[subKey]  || LOCAL_GALLERY.default;
   return [];
