@@ -376,6 +376,18 @@
       </div>
     </div>
 
+    <div style="border-top:1px dashed var(--line);margin:18px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">📚 여러 글 일괄 처리 <span class="hint">(베놈 엔진 필요)</span></h2>
+      <div class="sub">키워드를 한 줄에 하나씩 넣으면, 현재 <b>카테고리·타겟·톤</b>으로 순서대로 원고를 생성하고, 원하면 WordPress <b>임시저장</b>까지 자동으로 이어서 처리해요.</div>
+      <textarea id="batch_kw" placeholder="거북목 도수치료&#10;무릎 관절염 주사치료&#10;오십견 비수술 치료" style="min-height:90px"></textarea>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <label class="toggle"><input type="checkbox" id="batch_wp"> 생성 후 WordPress 임시저장</label>
+        <button class="btn" id="batchBtn" onclick="runBatch()">▶ 일괄 실행</button>
+        <span class="hint">STEP3 ⚙️ API 연결이 필요합니다. 항목마다 순차 처리돼요.</span>
+      </div>
+      <div id="batchList" style="margin-top:10px"></div>
+    </div>
+
     <div class="nav"><button class="btn ghost" onclick="go(4)">← 이전</button><span></span></div>
   </section>
 </div>
@@ -1093,6 +1105,44 @@ function copyTags(){syncInputs();
   const tags=[...new Set(base)].slice(0,10).map(t=>'#'+t.replace(/\s+/g,'')).join(' ');
   if(!tags){toast('키워드가 없어요');return;}
   navigator.clipboard.writeText(tags).then(()=>toast('태그 복사됨 🏷️'));
+}
+
+/* ───────────── STEP5 여러 글 일괄 처리 (큐) ───────────── */
+let batchRunning=false;
+async function runBatch(){
+  if(batchRunning)return;
+  syncInputs();
+  const kws=$('batch_kw').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!kws.length){toast('키워드를 한 줄에 하나씩 입력하세요');return;}
+  const cfg=loadCfg(),wp=loadWp(),doWp=$('batch_wp').checked;
+  if(doWp&&(!wp.url||!wp.user||!wp.pw)){toast('WordPress 연결(STEP5 ⚙️)을 먼저 설정하세요');return;}
+  const api=(cfg.url||'').replace(/\/$/,'');
+  const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+  const p=S.persona||TARGETS[S.target];
+  const items=kws.map(k=>({k,state:'대기',link:null}));
+  const render=()=>{$('batchList').innerHTML=items.map((it,i)=>
+    `<div class="flagrow" style="background:var(--card);border-color:var(--line)">${i+1}. ${esc(it.k)} — <b>${esc(it.state)}</b>${it.link?` · <a href="${it.link}" target="_blank">열기 →</a>`:''}</div>`).join('');};
+  render();
+  batchRunning=true;const btn=$('batchBtn');btn.disabled=true;btn.textContent='⏳ 실행 중...';
+  for(let i=0;i<items.length;i++){const it=items[i];
+    try{
+      it.state='원고 생성 중...';render();
+      const body={category:S.cat,keyword:it.k,region:S.region,target:S.target,tone:S.tone,detail:S.detail||p.detail,
+        withImage:false,save:false,extra:[`글유형=${S.gtype}`,`CTA=${S.cta}`].join(' / ')};
+      const r=await fetch(api+'/api/generate-post',{method:'POST',headers,body:JSON.stringify(body)});
+      const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+      const post=d.post;
+      if(doWp){it.state='임시저장 중...';render();
+        const wr=await fetch(api+'/api/wp-draft',{method:'POST',headers,body:JSON.stringify({siteUrl:wp.url,user:wp.user,appPassword:wp.pw,title:post.title,html:post.html,status:'draft'})});
+        const wd=await wr.json().catch(()=>({}));if(!wr.ok||!wd.ok)throw new Error('WP: '+(wd.error||wr.status));
+        it.state='✅ 임시저장 완료';it.link=wd.editLink;
+      }else{it.state='✅ 생성 완료';}
+    }catch(e){it.state='❌ '+e.message;}
+    render();
+  }
+  batchRunning=false;btn.disabled=false;btn.textContent='▶ 일괄 실행';
+  const okN=items.filter(x=>x.state.startsWith('✅')).length;
+  toast(`일괄 처리 완료 — 성공 ${okN}/${items.length}`);
 }
 
 /* ───────────── 초기화 ───────────── */
