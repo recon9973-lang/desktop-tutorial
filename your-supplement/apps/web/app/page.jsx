@@ -9,56 +9,60 @@ const FEATURES = [
   { emoji: '📦', title: '내 영양제 관리', body: '먹는 영양제를 등록하고 섭취 시간 알람 설정. 점검 알림으로 과잉 복용 예방.' },
 ];
 
-const CONCERNS = [
-  { emoji: '😴', label: '피로 / 기력 저하' },
-  { emoji: '🌙', label: '수면 / 스트레스' },
-  { emoji: '👁️', label: '눈 피로 / 눈 건강' },
-  { emoji: '❤️', label: '혈관 / 혈중 지질' },
-  { emoji: '🦴', label: '뼈 / 관절' },
-  { emoji: '🛡️', label: '면역력' },
+// 히어로 배경 이미지(맞춤 생성). ⚠️ 현재는 생성 서비스 CDN 주소 —
+// 영구 보존하려면 파일을 apps/web/public/hero.jpg 로 내려받아 '/hero.jpg' 로 교체.
+const HERO_IMG = 'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260701_061005_523a196c-8159-4c95-bf62-def9cb457d42.png';
+
+const TRUST = [
+  ['17', '성분 근거 코퍼스'],
+  ['0', '광고·협찬'],
+  ['100%', '출처 표시'],
 ];
 
 export default function LandingPage() {
   return (
     <>
-      {/* Hero — dark indigo band (Notion secondary) */}
+      {/* Hero — photo-led (맞춤 생성 이미지 + 그린 오버레이) */}
       <section style={{
-        background: 'var(--secondary)', color: 'var(--on-primary)',
-        padding: '80px var(--sp-lg) 96px', textAlign: 'center',
+        position: 'relative', color: '#fff',
+        backgroundImage: `linear-gradient(100deg, rgba(11,59,45,0.95) 0%, rgba(11,59,45,0.86) 34%, rgba(11,59,45,0.55) 62%, rgba(6,95,70,0.28) 100%), url("${HERO_IMG}")`,
+        backgroundSize: 'cover', backgroundPosition: 'center right',
+        padding: '96px var(--sp-lg) 88px',
       }}>
-        <span className="badge" style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', marginBottom: 24, display: 'inline-flex' }}>
-          식약처 인정 근거 기반 추천
-        </span>
-
-        <h1 style={{ fontSize: 52, fontWeight: 700, lineHeight: 1.08, letterSpacing: -1.875, marginBottom: 20 }}>
-          내 몸에 맞는 영양제,<br />
-          <span style={{ color: 'var(--accent-sky)' }}>근거로 찾아드립니다</span>
-        </h1>
-
-        <p style={{ fontSize: 18, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)', maxWidth: 520, margin: '0 auto 40px' }}>
-          광고도, 주관적 후기도 아닙니다.<br />
-          식약처·NIH·논문 근거만으로 당신의 영양제를 추천해요.
-        </p>
-
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/survey" className="btn-primary" style={{ fontSize: 17, padding: '12px 32px' }}>
-            1분 설문 시작하기 →
-          </Link>
-          <a href="#how" className="btn-secondary" style={{ fontSize: 17, padding: '12px 32px' }}>
-            어떻게 추천하나요?
-          </a>
-        </div>
-
-        {/* Concern chips decoration */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 48 }}>
-          {CONCERNS.map((c) => (
-            <span key={c.label} style={{
-              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 'var(--r-full)', padding: '6px 14px', fontSize: 14, color: 'rgba(255,255,255,0.85)',
-            }}>
-              {c.emoji} {c.label}
+        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+          <div style={{ maxWidth: 580 }}>
+            <span className="badge" style={{ background: 'rgba(110,231,183,0.14)', color: '#6ee7b7', border: '1px solid rgba(110,231,183,0.32)', marginBottom: 22, display: 'inline-flex' }}>
+              식약처 · NIH · 논문 근거 기반
             </span>
-          ))}
+
+            <h1 style={{ fontSize: 50, fontWeight: 800, lineHeight: 1.12, letterSpacing: -1.6, marginBottom: 20 }}>
+              내 몸에 맞는 영양제,<br />
+              <span style={{ color: '#6ee7b7' }}>근거로 찾아드립니다</span>
+            </h1>
+
+            <p style={{ fontSize: 18, lineHeight: 1.65, color: 'rgba(255,255,255,0.85)', maxWidth: 470, marginBottom: 34 }}>
+              광고도, 주관적 후기도 아닙니다. 식약처·NIH·논문 근거만으로 당신의 영양제를 추천해요.
+            </p>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Link href="/survey" className="btn-primary" style={{ fontSize: 17, padding: '12px 32px' }}>
+                1분 설문 시작하기 →
+              </Link>
+              <a href="#how" className="btn-secondary" style={{ fontSize: 17, padding: '12px 32px', background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.28)' }}>
+                어떻게 추천하나요?
+              </a>
+            </div>
+
+            {/* 신뢰 지표 */}
+            <div style={{ display: 'flex', gap: 28, marginTop: 38, flexWrap: 'wrap' }}>
+              {TRUST.map(([n, l]) => (
+                <div key={l}>
+                  <div style={{ fontSize: 23, fontWeight: 800, color: '#6ee7b7', letterSpacing: -0.5 }}>{n}</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.72)' }}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
