@@ -45,31 +45,9 @@ const LOCAL_TYPE_TO_CAT = {
   retail:     'retail',
 };
 
-async function run(specPath, count) {
-  if (!process.env.OPENAI_API_KEY) {
-    console.log('[blog_auto] OPENAI_API_KEY 없음 — 건너뜁니다.');
-    return;
-  }
-
+async function _generate(spec, specialty, category, count) {
   const { generatePost } = require('../../lib/post-generator');
-  const { prepare, slugify } = require('./generate');
 
-  const raw = JSON.parse(fs.readFileSync(specPath, 'utf8'));
-
-  if (!raw.options || !raw.options.includes('blog_auto')) {
-    console.log('[blog_auto] site-spec에 blog_auto 옵션이 없습니다.');
-    return;
-  }
-
-  const { spec, specialty } = prepare(raw);
-  let category;
-  if (raw.category === 'local') {
-    const localType = raw.local && raw.local.type;
-    category = LOCAL_TYPE_TO_CAT[localType] || 'local';
-  } else {
-    const clinicSpecialty = raw.clinic && raw.clinic.specialty;
-    category = SPEC_TO_CAT[clinicSpecialty] || 'geo';
-  }
   const region   = spec.brand && spec.brand.region ? spec.brand.region : '';
   const keywords = (specialty.keywords || []).slice(0, count);
 
@@ -115,6 +93,57 @@ async function run(specPath, count) {
   console.log(`   목록: output/${spec.slug}/blog/index.json\n`);
 }
 
+async function run(specPath, count) {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log('[blog_auto] OPENAI_API_KEY 없음 — 건너뜁니다.');
+    return;
+  }
+
+  const { prepare } = require('./generate');
+  const raw = JSON.parse(fs.readFileSync(specPath, 'utf8'));
+
+  if (!raw.options || !raw.options.includes('blog_auto')) {
+    console.log('[blog_auto] site-spec에 blog_auto 옵션이 없습니다.');
+    return;
+  }
+
+  const { spec, specialty } = prepare(raw);
+  let category;
+  if (raw.category === 'local') {
+    const localType = raw.local && raw.local.type;
+    category = LOCAL_TYPE_TO_CAT[localType] || 'local';
+  } else {
+    const clinicSpecialty = raw.clinic && raw.clinic.specialty;
+    category = SPEC_TO_CAT[clinicSpecialty] || 'geo';
+  }
+
+  await _generate(spec, specialty, category, count);
+}
+
+async function runFromRaw(rawSpec, count = 3) {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log('[blog_auto] OPENAI_API_KEY 없음 — 건너뜁니다.');
+    return;
+  }
+  if (!rawSpec.options || !rawSpec.options.includes('blog_auto')) return;
+
+  const { prepare } = require('./generate');
+  const { spec, specialty } = prepare(rawSpec);
+
+  let category;
+  if (rawSpec.category === 'local') {
+    const localType = rawSpec.local && rawSpec.local.type;
+    category = LOCAL_TYPE_TO_CAT[localType] || 'local';
+  } else if (rawSpec.category === 'press') {
+    category = 'geo';
+  } else {
+    const clinicSpecialty = rawSpec.clinic && rawSpec.clinic.specialty;
+    category = SPEC_TO_CAT[clinicSpecialty] || 'geo';
+  }
+
+  await _generate(spec, specialty, category, count);
+}
+
 if (require.main === module) {
   const specArg = process.argv[2];
   const countArg = parseInt((process.argv.find(a => a.startsWith('--count=')) || '').split('=')[1], 10) || 3;
@@ -128,4 +157,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { run };
+module.exports = { run, runFromRaw };

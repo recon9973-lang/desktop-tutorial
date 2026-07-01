@@ -1142,12 +1142,14 @@ function clientPrepare(raw) {
   if (!raw.images.gallery) raw.images.gallery = [];
   var faqR = vFaq(raw.faq, sp);
   var mainSch = vSchema(raw, sp);
+  var _bcAnchor = raw.category==='clinic' ? 'departments' : raw.category==='press' ? 'articles' : 'menu';
+  var breadcrumbSch = JSON.stringify({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'홈',item:'https://'+(raw.domain||'')+'/'},{'@type':'ListItem',position:2,name:sp.label,item:'https://'+(raw.domain||'')+'/#'+_bcAnchor}]},null,2);
   if (raw.category==='clinic') {
-    raw.sections = { trust:vTrust(raw.trust), departments:vDepts(sp), doctors:vDocs(raw.clinic&&raw.clinic.doctors), reviews:vReviews(raw.reviews,sp), gallery:vGallery(raw.images.gallery,vPH), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch };
+    raw.sections = { trust:vTrust(raw.trust), departments:vDepts(sp), doctors:vDocs(raw.clinic&&raw.clinic.doctors), reviews:vReviews(raw.reviews,sp), gallery:vGallery(raw.images.gallery,vPH), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch, breadcrumbSchema:breadcrumbSch };
   } else if (raw.category==='press') {
-    raw.sections = { trust:vTrust(raw.trust), menu:vPressArticles(sp), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch };
+    raw.sections = { trust:vTrust(raw.trust), menu:vPressArticles(sp), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch, breadcrumbSchema:breadcrumbSch };
   } else {
-    raw.sections = { trust:vTrust(raw.trust), menu:vMenu(raw.local&&raw.local.menu,sp), hours:vHours(raw.local&&raw.local.hours), reviews:vLocalReviews(raw.reviews,sp), gallery:vGallery(raw.images.gallery,vPH), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch };
+    raw.sections = { trust:vTrust(raw.trust), menu:vMenu(raw.local&&raw.local.menu,sp), hours:vHours(raw.local&&raw.local.hours), reviews:vLocalReviews(raw.reviews,sp), gallery:vGallery(raw.images.gallery,vPH), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch, breadcrumbSchema:breadcrumbSch };
   }
   return raw;
 }

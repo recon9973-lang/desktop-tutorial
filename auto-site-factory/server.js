@@ -94,6 +94,11 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       const rawSpec = JSON.parse(body);
       const result = generateFromRaw(rawSpec);
+      // blog_auto: fire-and-forget (requires OPENAI_API_KEY)
+      if (rawSpec.options && rawSpec.options.includes('blog_auto')) {
+        const { runFromRaw } = require('./engine/blog-gen');
+        runFromRaw(rawSpec).catch(e => console.error('[blog_auto]', e.message));
+      }
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       return res.end(JSON.stringify({ ok: true, ...result }));
     } catch (e) {
@@ -237,7 +242,43 @@ const server = http.createServer(async (req, res) => {
   serveFile(res, path.join(ROOT, urlPath));
 });
 
+// 구 버전 output 디렉토리에 manifest.json 백필 (없는 경우만)
+function backfillManifests() {
+  const outputDir = path.join(ROOT, 'output');
+  if (!fs.existsSync(outputDir)) return;
+  fs.readdirSync(outputDir).forEach(slug => {
+    const dir = path.join(outputDir, slug);
+    if (!fs.statSync(dir).isDirectory()) return;
+    const manifestPath = path.join(dir, 'manifest.json');
+    if (fs.existsSync(manifestPath)) return;
+    const htmlPath = path.join(dir, 'index.html');
+    if (!fs.existsSync(htmlPath)) return;
+    const robotsPath = path.join(dir, 'robots.txt');
+    let domain = slug.replace(/-/g, '.');
+    if (fs.existsSync(robotsPath)) {
+      const m = fs.readFileSync(robotsPath, 'utf8').match(/Sitemap: https:\/\/([^/]+)/);
+      if (m) domain = m[1];
+    }
+    const html = fs.readFileSync(htmlPath, 'utf8');
+    const titleM = html.match(/<title>([^—<]+)/);
+    const brandName = titleM ? titleM[1].trim() : slug;
+    const isClinic = /MedicalClinic/.test(html);
+    const stat = fs.statSync(htmlPath);
+    const manifest = {
+      slug, domain, brandName,
+      category: isClinic ? 'clinic' : 'local',
+      specialtyLabel: '', scale: 'standard', options: [],
+      generatedAt: stat.mtime.toISOString(),
+      sizeBytes: stat.size,
+      hasBlog: fs.existsSync(path.join(dir, 'blog', 'index.json')),
+    };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    console.log(`  [manifest] 백필 완료: ${slug}`);
+  });
+}
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  VENOM Site Factory 미리보기 서버`);
   console.log(`  → http://localhost:${PORT}\n`);
+  backfillManifests();
 });
