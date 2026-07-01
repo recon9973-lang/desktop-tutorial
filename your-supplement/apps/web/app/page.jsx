@@ -58,6 +58,10 @@ export default function LandingPage() {
               </a>
             </div>
 
+            <Link href="/drug/scan" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 20, fontSize: 15, fontWeight: 600, color: '#6ee7b7', textDecoration: 'none' }}>
+              📷 이 약 뭐지? — 사진으로 알약 찾기 →
+            </Link>
+
             {/* 신뢰 지표 */}
             <div style={{ display: 'flex', gap: 28, marginTop: 38, flexWrap: 'wrap' }}>
               {TRUST.map(([n, l]) => (
@@ -176,6 +180,50 @@ export default function LandingPage() {
           <p className="body-sm" style={{ textAlign: 'center', color: 'var(--ink-faint)', marginTop: 16 }}>
             ※ 예시 화면입니다. 실제 추천은 설문 결과로 계산돼요.
           </p>
+        </div>
+      </section>
+
+      {/* 약 알기 — 검색·사진 식별 */}
+      <section style={{ maxWidth: 900, margin: '80px auto 0', padding: '0 var(--sp-lg)' }}>
+        <div style={{
+          borderRadius: 'var(--r-xl)', overflow: 'hidden', border: '1px solid var(--hairline)',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        }}>
+          <div style={{ background: 'var(--canvas)', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 16, justifyContent: 'center', order: 1 }}>
+            {[
+              { emoji: '🔎', title: '이름·성분으로 검색', body: '타이레놀·아세트아미노펜처럼 이름이나 성분으로 바로 조회' },
+              { emoji: '🎨', title: '모양·색·각인 필터', body: '이름을 몰라도 알약의 모양·색·각인으로 좁혀서 찾기' },
+              { emoji: '📷', title: '사진으로 각인 인식', body: '알약을 촬영하면 각인을 읽어 후보를 추려주는 보조 기능(베타)' },
+            ].map((f) => (
+              <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>{f.emoji}</span>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--ink)' }}>{f.title}</p>
+                  <p style={{ fontSize: 13.5, color: 'var(--ink-muted)', marginTop: 2 }}>{f.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'var(--secondary)', color: '#fff', padding: '40px 32px', order: 2 }}>
+            <span className="badge" style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', marginBottom: 16, display: 'inline-flex' }}>
+              식약처 낱알식별
+            </span>
+            <h2 style={{ fontSize: 30, fontWeight: 700, letterSpacing: -0.6, marginBottom: 12 }}>
+              💊 이 약, 뭘까?
+            </h2>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)', marginBottom: 28 }}>
+              처방받은 알약이 뭔지 궁금할 때. 이름·모양·색·각인으로 찾고,<br />
+              사진으로도 확인한 뒤 내 영양제와의 궁합까지 한 번에.
+            </p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <Link href="/drug" className="btn-primary" style={{ fontSize: 16, padding: '12px 26px', background: '#fff', color: 'var(--secondary)' }}>
+                약 검색하기 →
+              </Link>
+              <Link href="/drug/scan" style={{ fontSize: 16, padding: '12px 26px', fontWeight: 600, color: '#fff', textDecoration: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 'var(--r-full)' }}>
+                📷 사진으로 찾기
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -23,11 +23,16 @@ export default function DrugPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 사진 식별(/drug/scan)에서 각인 넘어오면 프리필 + 자동 검색
+  // 사진 식별(/drug/scan)에서 각인·색·모양 넘어오면 프리필 + 자동 검색
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
-    const ip = sp.get('imprint');
-    if (ip) { setImprint(ip); runWith({ imprint: ip }); }
+    const ip = sp.get('imprint') || '';
+    const cp = sp.get('color') || '';
+    const shp = sp.get('shape') || '';
+    if (ip) setImprint(ip);
+    if (cp && COLORS.some(([c]) => c === cp)) setColor(cp);
+    if (shp && SHAPES.includes(shp)) setShape(shp);
+    if (ip || cp || shp) runWith({ imprint: ip, color: cp, shape: shp });
     // eslint-disable-next-line
   }, []);
 
