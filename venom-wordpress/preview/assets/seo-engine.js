@@ -22,7 +22,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.4.0';
 
   // ── robots.txt 표준 파서 (RFC 9309) ─────────────────────────────
   // 지정 UA(또는 *)가 루트('/') 접근 가능한지. 충돌 시 least-restrictive(Allow 우선).
@@ -185,26 +185,37 @@
     var isSPA = (bodyText.length < 150 && scriptCount >= 2 && !title && !h1Count) ||
       (doc && !!doc.querySelector('#root:empty,#app:empty,[data-reactroot]:empty'));
 
+    // 정적 페치로 평가 불가한 'JS 렌더링/봇 차단' 정황 — 메타·구조화데이터를 JS로 주입하거나
+    // 봇 차단(401/403)으로 빈 응답이 오면, 해당 신호를 '실패'가 아니라 '정밀필요(pending)'로 처리한다.
+    // (정적 HTML에 이미 있으면 그대로 통과 — 거짓 통과는 만들지 않음)
+    var renderSuspect = isSPA
+      || (scriptCount >= 4 && !hasLd && !ogOk)          // JS 다수인데 구조화데이터·OG 둘 다 정적엔 없음
+      || (titleCount === 0 && bodyText.length < 400);   // 제목 없고 본문 빈약 → 차단/미렌더 의심
+    // JS로 흔히 주입되는 신호: 정적에 있으면 pass, 없으면 renderSuspect일 때 pending(null), 아니면 fail
+    var jsItem = function (v) { return v === true ? true : (renderSuspect ? null : false); };
+
     var checks = {
       content: [
-        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 8, titlePass, '공통'],
-        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 8, descPass, '공통'],
-        ['H1 대표 제목', h1Note, 6, h1Pass, '네이버'],
+        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 10, jsItem(titlePass), '공통'],
+        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 10, jsItem(descPass), '공통'],
+        ['H1 대표 제목', h1Note, 6, jsItem(h1Pass), '네이버'],
         ['이미지 ALT 텍스트', '이미지 대체 텍스트 (' + imgDesc + ')', 7, imgAltOk, '공통'],
         ['의미있는 링크 텍스트', '서술형 앵커 — "여기 클릭" 류 지양', 5, linkTextOk, 'Google'],
         ['서술형 URL', 'URL에 의미있는 단어 — ' + urlNote, 4, urlOk, 'Google']
       ],
       tech: [
         ['HTTPS 보안 연결', 'SSL 적용 — Google·네이버 모두 신뢰 신호', 6, isHttps, '공통'],
-        ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함', 6, crawlOk, '공통'],
-        ['인덱싱 허용', 'meta robots noindex 미설정', 5, notNoindex, '공통'],
-        ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 5, !!canonical, '공통'],
+        ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함', 7, crawlOk, '공통'],
+        ['인덱싱 허용', 'meta robots noindex 미설정', 6, notNoindex, '공통'],
+        ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 6, !!canonical, '공통'],
         ['Viewport(모바일)', '모바일 반응형 메타 — 모바일 우선 인덱싱', 4, hasViewport, '공통'],
         ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 4, !!lang, 'Google']
       ],
+      // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. Google SEO 점수·경쟁사가
+      // 채점하지 않고 PSI(Lighthouse SEO)로도 검증 불가하므로 비중을 낮춘다(감점 완화).
       search: [
-        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출', 7, hasLd, 'Google'],
-        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기', 6, ogOk, '네이버'],
+        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출(보너스)', 3, jsItem(hasLd), 'Google'],
+        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 3, jsItem(ogOk), '네이버'],
         ['sitemap.xml 선언', 'robots.txt에 Sitemap: 선언 — 수집 촉진', 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
         ['robots.txt 존재', '크롤러 수집 규칙 파일 제공', 3, robotsTxtOk, '공통']
@@ -217,7 +228,9 @@
       ]
     };
 
-    return buildResult(url, domain, isHttps, isSPA, checks, null);
+    var _res = buildResult(url, domain, isHttps, isSPA, checks, null);
+    _res.renderSuspect = renderSuspect;
+    return _res;
   }
 
   var CAT_DEF = [
@@ -250,12 +263,18 @@
         pct: pending ? 0 : Math.round(score / max * 100), items: items
       };
     });
-    var scored = categories.filter(function (c) { return !c.pending; });
+    // 종합 SEO 점수는 속도(성능)를 제외한다 — Google SEO 점수·경쟁사(NXT)와 동일 기준.
+    // Google PSI도 SEO(검색최적화)와 성능(속도)을 별도 게이지로 분리하므로, 속도는 별도 표기한다.
+    var inHeadline = function (c) { return c.key !== 'speed'; };
+    var scored = categories.filter(function (c) { return !c.pending && inHeadline(c); });
     var baseTotal = scored.reduce(function (s, c) { return s + c.score; }, 0);
     var baseMax = scored.reduce(function (s, c) { return s + c.max; }, 0);
     var hasPSI = !!psi;
-    var total = hasPSI ? categories.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
-    var max = hasPSI ? categories.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    var headlineCats = categories.filter(inHeadline);
+    var total = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
+    var max = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
+    // 속도(성능)는 종합점수에서 분리해 별도 게이지로 노출(Google 성능 점수와 동일 위상)
+    var speedCat = categories.filter(function (c) { return c.key === 'speed'; })[0] || null;
     // 다양한 집계 수치
     var passed = 0, failed = 0, pending = 0, improvable = 0;
     categories.forEach(function (c) {
@@ -274,7 +293,7 @@
     };
     return {
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
-      categories: categories, baseTotal: baseTotal, baseMax: baseMax,
+      categories: categories, baseTotal: baseTotal, baseMax: baseMax, speedCat: speedCat,
       total: total, max: max, hasPSI: hasPSI, psi: psi || null,
       summary: summary, grade: gradeFor(total, max)
     };
@@ -303,10 +322,27 @@
         overall: src.overall_category || ''
       };
     }
+    // PSI(Lighthouse)는 실제 브라우저로 렌더링하므로, 정적 수집이 놓친 항목을 렌더링 기준으로 보정한다.
+    // (경쟁사 NXT가 높은 점수를 주는 이유 = JS 렌더 후 평가. score===1 통과, 0 실패, 그 외=정적 유지)
+    function seoAudit(id) { var a = audits[id]; if (!a) return undefined; return a.score === 1 ? true : (a.score === 0 ? false : undefined); }
+    var psiByName = {
+      '제목(title) 태그': seoAudit('document-title'),
+      '메타 디스크립션': seoAudit('meta-description'),
+      '이미지 ALT 텍스트': seoAudit('image-alt'),
+      '의미있는 링크 텍스트': seoAudit('link-text'),
+      '인덱싱 허용': seoAudit('is-crawlable'),
+      'robots.txt 존재': seoAudit('robots-txt'),
+      'Canonical 태그': seoAudit('canonical'),
+      'Viewport(모바일)': seoAudit('viewport')
+    };
     var checks = {};
     result.categories.forEach(function (c) {
-      checks[c.key] = c.key === 'speed' ? speedItems
-        : c.items.map(function (it) { return [it.name, it.desc, it.points, it.pass, it.source]; });
+      if (c.key === 'speed') { checks.speed = speedItems; return; }
+      checks[c.key] = c.items.map(function (it) {
+        var pv = psiByName[it.name];
+        var finalPass = (pv !== undefined) ? pv : it.pass;   // PSI 렌더 결과 우선, 없으면 정적값
+        return [it.name, it.desc, it.points, finalPass, it.source];
+      });
     });
     var merged = buildResult(result.url, result.domain, result.isHttps, result.isSPA, checks, {
       seo: Math.round((cats.seo ? cats.seo.score : 0) * 100),
@@ -351,7 +387,18 @@
     var brand = opts.brand || '#533afd';
     var g = result.grade;
     var gauge = donut(result.total, result.max, g.color, g.label);
-    var bars = result.categories.map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+    var bars = result.categories.filter(function (c) { return c.key !== 'speed'; })
+      .map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+    // 속도(성능)는 종합점수와 분리된 별도 게이지 — Google 성능 점수와 동일 위상
+    var sc = result.speedCat;
+    var speedGauge = '';
+    if (sc && !sc.pending) {
+      var sCol = sc.pct >= 70 ? '#16a34a' : sc.pct >= 40 ? '#d97706' : '#dc2626';
+      speedGauge = '<div style="flex-shrink:0;text-align:center">' +
+        donut(sc.score, sc.max, sCol, sc.pct + '%') +
+        '<div style="font-size:13px;font-weight:700;color:' + sCol + ';margin-top:2px">⚡ 속도(성능)</div>' +
+        '<div style="font-size:11px;color:#94a3b8">종합점수와 별도 · Google 기준</div></div>';
+    }
 
     // 등급 스케일
     var pct = result.max ? result.total / result.max : 0;
@@ -410,8 +457,11 @@
           '<div style="font-size:11px;color:#94a3b8">' + esc(result.domain) + ' · ' + esc(g.desc) + '</div></div>' +
         '<div style="flex:1;min-width:220px">' + bars +
           (result.categories.some(function (c) { return c.pending; }) && !result.psi ?
-            '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 속도는 정밀 분석(PSI) 시 측정됩니다 (기본 90점 만점)</div>' : '') +
+            '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 종합 SEO 점수는 속도(성능) 제외 — Google SEO 점수와 동일 기준. 속도는 정밀 분석(PSI) 시 별도 게이지로 측정됩니다</div>' : '') +
+          (result.renderSuspect && !result.psi ?
+            '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>정밀필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
         '</div>' +
+        speedGauge +
       '</div>' +
       statsStrip +
       psiBadges +

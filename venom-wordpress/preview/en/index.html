@@ -5032,9 +5032,14 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 /* CTA section */
 .cta-section{
   background: linear-gradient(135deg, #0d1b2e 0%, #0d253d 100%) !important;
-  padding: 100px 0 !important;
+  /* dark banner: unify vertical height regardless of content + vertical-center */
+  min-height: 400px !important;
+  padding: 48px 0 !important;
+  display: flex !important;
+  align-items: center !important;
   position: relative; overflow: hidden;
 }
+.cta-section > .container{ width: 100%; }
 .cta-section::before{
   content:'';position:absolute;inset:0;
   background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(83,58,253,.2) 0%, transparent 70%);
@@ -5318,7 +5323,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .dc-cta-box .btn{width:100%!important;justify-content:center!important}
 
   /* ── CTA section (bottom consultation request) ── */
-  .cta-section{padding:60px 0!important}
+  .cta-section{min-height:0!important;padding:60px 0!important}
   .cta-inner{padding:0 16px!important;text-align:center!important}
   .cta-inner h2{font-size:26px!important;line-height:1.25!important;margin-bottom:12px!important}
   .cta-inner p{font-size:15px!important;margin-bottom:24px!important}

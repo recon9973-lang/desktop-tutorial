@@ -9,12 +9,18 @@
     "api/health.js": { "maxDuration": 20 },
     "api/insights.js": { "maxDuration": 30 },
     "api/posting-settings.js": { "maxDuration": 15 },
-    "api/publish-post.js": { "maxDuration": 15 }
+    "api/publish-post.js": { "maxDuration": 15 },
+    "api/seo-proxy.js": { "maxDuration": 60 },
+    "api/cron-seo-monitor.js": { "maxDuration": 300 }
   },
   "crons": [
     {
       "path": "/api/cron-daily-posts",
       "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron-seo-monitor",
+      "schedule": "0 18 * * *"
     }
   ],
   "headers": [

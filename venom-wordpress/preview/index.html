@@ -203,9 +203,9 @@ body{padding-top:0}
   color:var(--pd);margin-bottom:22px;display:inline-block;
   background:var(--psub);padding:4px 8px;border-radius:var(--rpill)}
 /* display-xxl: 56px/300/-1.4px */
-.hero h1{font-size:56px;font-weight:300;line-height:1.03;letter-spacing:-1.4px;
+.hero :is(h1,h2){font-size:56px;font-weight:300;line-height:1.03;letter-spacing:-1.4px;
   color:var(--ink);margin-bottom:24px;font-feature-settings:"ss01"}
-.hero h1 em{font-style:normal;color:var(--p)}
+.hero :is(h1,h2) em{font-style:normal;color:var(--p)}
 .hero-desc{max-width:500px;margin:0 auto 36px;font-size:18px;font-weight:300;
   color:var(--mute);line-height:1.6}
 .hero-cta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:72px}
@@ -630,19 +630,19 @@ body{padding-top:0}
 @media(max-width:1200px){
   .inner-layout{grid-template-columns:var(--lw) 1fr}
   .sidebar-right{display:none}
-  .hero h1{font-size:46px}
+  .hero :is(h1,h2){font-size:46px}
   .footer-grid{grid-template-columns:1fr 1fr 1fr;gap:28px}
 }
 @media(max-width:900px){
   .inner-layout{grid-template-columns:1fr}.sidebar-left{display:none}
   .grid-3,.grid-4,.pricing-grid,.testi-grid,.process-grid,.contact-grid,.ai-feat-grid,.hp-pkgs{grid-template-columns:1fr 1fr}
-  .hero h1{font-size:38px;letter-spacing:-.96px}
+  .hero :is(h1,h2){font-size:38px;letter-spacing:-.96px}
   .hero-stats{grid-template-columns:1fr 1fr}
   .footer-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:600px){
   .grid-3,.grid-4,.pricing-grid,.testi-grid,.process-grid,.contact-grid,.ai-feat-grid,.hp-pkgs,.grid-2,.form-row{grid-template-columns:1fr}
-  .hero h1{font-size:32px;letter-spacing:-.64px}
+  .hero :is(h1,h2){font-size:32px;letter-spacing:-.64px}
   .page-content{padding:28px 18px}
   .hero{padding:60px 0 48px}
   .cta-band h2{font-size:28px}
@@ -3108,11 +3108,11 @@ body{padding-top:0}
   @keyframes blogChip{0%{transform:translateY(36px);opacity:0}12%{opacity:.95}88%{opacity:.95}100%{transform:translateY(-52px);opacity:0}}
   .bloghd-inner{position:relative;text-align:center}
   .bloghd .section-badge{background:rgba(255,255,255,.16);color:#fff}
-  .bloghd h1{font-size:42px;font-weight:800;letter-spacing:-.03em;color:#fff;margin:14px 0 12px;line-height:1.16}
-  .bloghd h1 .cur{display:inline-block;width:3px;height:.92em;background:#a5b4fc;margin-left:5px;vertical-align:-1px;animation:blogCur 1s steps(1) infinite}
+  .bloghd :is(h1,h2){font-size:42px;font-weight:800;letter-spacing:-.03em;color:#fff;margin:14px 0 12px;line-height:1.16}
+  .bloghd :is(h1,h2) .cur{display:inline-block;width:3px;height:.92em;background:#a5b4fc;margin-left:5px;vertical-align:-1px;animation:blogCur 1s steps(1) infinite}
   @keyframes blogCur{50%{opacity:0}}
   .bloghd p{color:rgba(255,255,255,.74);font-size:16px}
-  @media(max-width:600px){.bloghd h1{font-size:30px}.bloghd-chips{display:none}}
+  @media(max-width:600px){.bloghd :is(h1,h2){font-size:30px}.bloghd-chips{display:none}}
   </style>
   <section class="bloghd">
     <div class="bloghd-bg"><span></span><span></span><span></span></div>
@@ -4498,7 +4498,7 @@ body{padding-top:0}
   padding:100px 0 80px}
 .hero{max-width:760px;margin:0 auto;text-align:center}
 .hero-badge{display:inline-block;background:var(--psub);color:var(--pd);font-size:10px;font-weight:400;letter-spacing:.1px;padding:4px 10px;border-radius:9999px;margin-bottom:20px}
-.hero h1{font-size:56px;font-weight:300;line-height:1.03;letter-spacing:-1.4px;color:var(--ink);margin-bottom:20px;font-feature-settings:"ss01"}
+.hero :is(h1,h2){font-size:56px;font-weight:300;line-height:1.03;letter-spacing:-1.4px;color:var(--ink);margin-bottom:20px;font-feature-settings:"ss01"}
 .g{background:linear-gradient(135deg,var(--p),var(--ruby));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-sub{font-size:18px;color:var(--ink2);line-height:1.6;margin-bottom:32px;max-width:560px;margin-left:auto;margin-right:auto}
 .hero-cta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:48px}
@@ -4757,7 +4757,7 @@ body{padding-top:0}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(max-width:1024px){.service-grid{grid-template-columns:repeat(2,1fr)}.three-col{grid-template-columns:1fr}.col-left,.col-right{display:none}.ai-panel-grid{grid-template-columns:1fr}.contact-grid{grid-template-columns:1fr}}
-@media(max-width:768px){.hero h1{font-size:36px!important}.price-grid,.testi-grid,.process-grid,.blog-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.hero :is(h1,h2){font-size:36px!important}.price-grid,.testi-grid,.process-grid,.blog-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}}
 
 /* ── NXT 참고 타이포그래피 오버라이드 ── */
 
@@ -4773,8 +4773,8 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 /* 히어로 */
 .hero{padding:32px 0 40px;text-align:center!important}
 .hero-badge{font-size:12px!important;font-weight:600!important;letter-spacing:0.04em!important;padding:6px 14px!important}
-.hero h1{font-size:60px!important;font-weight:800!important;line-height:1.15!important;letter-spacing:-0.04em!important;color:var(--ink)!important}
-.hero h1 .g{font-weight:800!important}
+.hero :is(h1,h2){font-size:60px!important;font-weight:800!important;line-height:1.15!important;letter-spacing:-0.04em!important;color:var(--ink)!important}
+.hero :is(h1,h2) .g{font-weight:800!important}
 .hero-sub{font-size:17px!important;font-weight:400!important;line-height:1.75!important;letter-spacing:-0.01em!important;color:var(--mute)!important}
 .hero-sub strong{font-weight:700!important;color:var(--ink)!important}
 .hero-cta .btn{font-size:15px!important;font-weight:600!important;padding:12px 24px!important}
@@ -4871,7 +4871,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 
 /* 모바일 오버라이드 */
 @media(max-width:768px){
-  .hero h1{font-size:38px!important}
+  .hero :is(h1,h2){font-size:38px!important}
   .section-head h2{font-size:28px!important}
   .ai-strip-text h2{font-size:30px!important}
   .cta-inner h2{font-size:30px!important}
@@ -4895,7 +4895,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   border: 1px solid rgba(83,58,253,.4) !important;
   backdrop-filter: blur(8px);
 }
-.hero h1{
+.hero :is(h1,h2){
   color: #fff !important;
   font-size: 64px !important;
   line-height: 1.1 !important;
@@ -4903,7 +4903,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   font-weight: 800 !important;
   margin-bottom: 24px !important;
 }
-.hero h1 .g{
+.hero :is(h1,h2) .g{
   background: linear-gradient(135deg, #a78bfa, #818cf8, #6ee7b7) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -4921,7 +4921,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 .hero-sub strong{ color: #fff !important; font-weight: 700 !important; }
 /* 다크 .mesh 서브페이지 히어로 가독성 보정:
    서브페이지 제목은 .hero 클래스 없이 .mesh>.container 직속 h1이라
-   기존 ".hero h1 흰색" 규칙이 안 먹어, 색 미지정 첫 줄이 다크-온-다크로
+   기존 ".hero :is(h1,h2) 흰색" 규칙이 안 먹어, 색 미지정 첫 줄이 다크-온-다크로
    숨던 문제를 수정(흰색). 부제(p)도 다크 배경에 맞춰 밝게. */
 .mesh > .container > h1{ color:#fff }
 .mesh > .container > p{ color:rgba(255,255,255,.72) !important }
@@ -5214,9 +5214,14 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 /* CTA 섹션 */
 .cta-section{
   background: linear-gradient(135deg, #0d1b2e 0%, #0d253d 100%) !important;
-  padding: 100px 0 !important;
+  /* dark banner: unify vertical height regardless of content + vertical-center */
+  min-height: 400px !important;
+  padding: 48px 0 !important;
+  display: flex !important;
+  align-items: center !important;
   position: relative; overflow: hidden;
 }
+.cta-section > .container{ width: 100%; }
 .cta-section::before{
   content:'';position:absolute;inset:0;
   background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(83,58,253,.2) 0%, transparent 70%);
@@ -5314,7 +5319,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 /* 모바일 추가 */
 @media(max-width:768px){
   .mesh{ padding: 80px 0 60px !important; }
-  .hero h1{ font-size: 40px !important; }
+  .hero :is(h1,h2){ font-size: 40px !important; }
   .cta-inner h2{ font-size: 32px !important; }
   .section{ padding: 72px 0 !important; }
   /* 헤더 모바일 */
@@ -5325,7 +5330,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .header-actions .btn{font-size:12px!important;padding:8px 14px!important}
   /* 히어로 모바일 */
   .hero{padding:60px 0 40px!important;text-align:center!important}
-  .hero h1{font-size:34px!important;letter-spacing:-0.03em!important}
+  .hero :is(h1,h2){font-size:34px!important;letter-spacing:-0.03em!important}
   .hero-sub{font-size:15px!important;margin:0 auto 24px!important}
   .hero-cta{flex-direction:column;align-items:center;gap:10px!important}
   .hero-cta .btn{width:100%;max-width:280px;justify-content:center}
@@ -5349,7 +5354,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .hero-stats{flex-wrap:wrap;gap:20px!important;justify-content:center}
 }
 @media(max-width:480px){
-  .hero h1{font-size:28px!important}
+  .hero :is(h1,h2){font-size:28px!important}
   .stat-bar-item{flex:1 1 0;min-width:0}
   .sb-num{font-size:22px}
   .sb-label{font-size:9px}
@@ -5505,7 +5510,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .dc-cta-box .btn{width:100%!important;justify-content:center!important}
 
   /* ── CTA 섹션 (하단 상담신청) ── */
-  .cta-section{padding:60px 0!important}
+  .cta-section{min-height:0!important;padding:60px 0!important}
   .cta-inner{padding:0 16px!important;text-align:center!important}
   .cta-inner h2{font-size:26px!important;line-height:1.25!important;margin-bottom:12px!important}
   .cta-inner p{font-size:15px!important;margin-bottom:24px!important}
@@ -5569,7 +5574,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .process-step{padding:20px 16px!important}
 }
 </style>
-<script src="assets/seo-engine.js"></script>
+<script src="assets/seo-engine.js?v=1.4.0"></script>
 <script>
 // ── 무료 진단 도구 ──
 // 카드 그리드: 해당 도구 카드로 스크롤 + 강조 + 입력 포커스
@@ -5762,10 +5767,14 @@ function _renderSEO(data,url,domain,el){
   }
   _seoLast=res;
   try{ _lbRecord(res.domain, Math.round(res.total/res.max*100)); }catch(e){}
+  // 정밀 분석(PSI)을 기본 자동 실행 — 우선 정적 결과(즉시 표시) 후 Google 실제 렌더링 결과로 자동 갱신.
   el.innerHTML=SEOEngine.renderInfographic(res)
-    +'<div id="seo-psi-section" style="margin-top:14px"><button onclick="_runSEOPSI()" class="btn btn-p" style="width:100%;padding:11px;font-size:13px;border-radius:10px">🔬 성능 정밀 분석 실행 (PSI · 10~20초)</button></div>'
+    +'<div id="seo-psi-section" style="margin-top:14px;font-size:12.5px;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">'
+    +'<span style="display:inline-block;width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#533afd;border-radius:50%;animation:spin .8s linear infinite"></span>'
+    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영해 정확한 점수로 갱신됩니다 (10~20초)</div>'
     +_seoToolbar()
     +_seoCTA();
+  setTimeout(_runSEOPSI, 400);
 }
 
 // 정밀 분석(PSI) → 엔진 mergePSI → 100점 만점 재렌더
@@ -5775,10 +5784,18 @@ function _runSEOPSI(){
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var domain=url.replace(/^https?:\/\//,'').split('/')[0];
   var sec=document.getElementById('seo-psi-section');
-  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','10~20초 소요');
-  fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now())
-    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(psi){
+  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','느린 사이트는 30~60초 소요');
+  // 느린 사이트는 PSI가 오래 걸린다 — 무한 스피너 방지용 타임아웃(75초).
+  var _psiCtl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  var _psiTimer = setTimeout(function(){ if(_psiCtl) try{_psiCtl.abort();}catch(e){} }, 75000);
+  fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now(), _psiCtl?{signal:_psiCtl.signal}:undefined)
+    .then(function(r){ clearTimeout(_psiTimer); return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
+    .then(function(resp){
+      // 프록시가 돌려준 실제 오류 메시지를 그대로 노출(원인 진단용). PSI 결과 없으면 실패 처리.
+      if(!resp.ok || (resp.j && resp.j.error) || !(resp.j && resp.j.lighthouseResult)){
+        throw new Error((resp.j && resp.j.error) ? resp.j.error : ('HTTP '+resp.status+' — PSI 응답 없음'));
+      }
+      var psi=resp.j;
       var base=_seoLast||SEOEngine.analyze({url:url,html:'',robots:'',isHttps:/^https/i.test(url)});
       var merged=SEOEngine.mergePSI(base,psi);
       _seoLast=merged;
@@ -5786,9 +5803,17 @@ function _runSEOPSI(){
       document.getElementById('seo-result').innerHTML=SEOEngine.renderInfographic(merged)+_seoToolbar()+_seoCTA();
     })
     .catch(function(err){
+      clearTimeout(_psiTimer);
       var s=document.getElementById('seo-psi-section');
-      if(s)s.innerHTML='<div style="color:#dc2626;font-size:13px;padding:12px">정밀 분석 실패: '+err.message
-        +' &nbsp;<button onclick="_runSEOPSI()" class="btn btn-p" style="padding:6px 12px;font-size:12px">재시도</button></div>';
+      var aborted = (err && err.name==='AbortError');
+      var msg = aborted ? 'PSI 응답이 75초 내 오지 않았습니다(사이트가 느리거나 서버 함수 시간초과).' : err.message;
+      // 가장 흔한 두 원인 — (1) PSI_KEY 미설정, (2) 함수 시간초과 — 에 맞춰 관리자 조치를 안내한다.
+      var hint = /PSI_KEY/i.test(msg)
+        ? '<div style="margin-top:6px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;line-height:1.6">⚙️ <b>관리자 조치</b>: Vercel 환경변수 <b>PSI_KEY</b>(Google PageSpeed Insights API 키)를 설정 후 재배포하세요.</div>'
+        : (aborted ? '<div style="margin-top:6px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;line-height:1.6">⚙️ <b>관리자 조치</b>: 느린 사이트는 PSI가 오래 걸립니다. 재시도하거나, 서버 함수 시간(seo-proxy maxDuration)을 확인하세요.</div>' : '');
+      if(s)s.innerHTML='<div style="font-size:13px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px">'
+        +'<span style="color:#dc2626;font-weight:700">정밀 분석(PSI) 실패:</span> <span style="color:#991b1b">'+msg+'</span>'
+        +' &nbsp;<button onclick="_runSEOPSI()" class="btn btn-p" style="padding:6px 12px;font-size:12px">재시도</button>'+hint+'</div>';
     });
 }
 
@@ -6895,6 +6920,35 @@ function updateBreadcrumb(items){
 }
 
 // ── 페이지 전환 ──
+// ── SEO: 활성 페이지 1개만 <h1> 유지 (SPA는 모든 페이지가 한 DOM에 있어 다중 H1이 됨) ──
+// 히어로/블로그 헤더 CSS는 :is(h1,h2)로 동일 스타일이라 태그를 바꿔도 외형은 그대로다.
+function _swapTag(el, tag){
+  if(!el || !el.tagName || el.tagName.toLowerCase()===tag) return el;
+  var n=document.createElement(tag);
+  for(var i=0;i<el.attributes.length;i++) n.setAttribute(el.attributes[i].name, el.attributes[i].value);
+  n.innerHTML=el.innerHTML;
+  if(el.parentNode) el.parentNode.replaceChild(n, el);
+  return n;
+}
+function _setPrimaryH1(){
+  try{
+    var active=document.querySelector('.page.active')||document.getElementById('pg-home');
+    var hero=null;
+    if(active){
+      if(active.id==='pg-blog-post'){
+        var c=document.getElementById('blog-post-content');
+        hero=(c&&(c.querySelector('h1')||c.querySelector('h2')))||active.querySelector('h1')||active.querySelector('h2');
+      }else{
+        hero=active.querySelector('h1')||active.querySelector('h2');
+      }
+    }
+    var hs=document.querySelectorAll('h1');
+    for(var i=0;i<hs.length;i++){ if(hs[i]!==hero) _swapTag(hs[i],'h2'); }
+    if(hero) _swapTag(hero,'h1');
+  }catch(e){}
+}
+if(typeof window!=='undefined') window.addEventListener('load', _setPrimaryH1);
+
 function sp(id, pushState){
   if(pushState!==false) history.pushState({page:id},'','#'+id);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -6915,6 +6969,7 @@ function sp(id, pushState){
   var label=pageLabels[id]||id;
   if(id==='home'){updateBreadcrumb([['홈',BASE_URL]]);}
   else{updateBreadcrumb([['홈',BASE_URL],[label,BASE_URL+'#'+id]]);}
+  _setPrimaryH1();
 }
 
 function searchByKeyword(kw) {
@@ -7091,6 +7146,7 @@ function openBlogPost(id, pushState) {
     try { rawHtml = injectInternalLinks(rawHtml); } catch(e) {}
     try { rawHtml = imgToWebp(rawHtml); } catch(e) {}
     el.innerHTML = tagRow + rawHtml;
+    _setPrimaryH1();
 
     // TOC: DOM 렌더 후 h2/h3 추출 (setTimeout으로 파싱 완료 보장)
     setTimeout(function() {
