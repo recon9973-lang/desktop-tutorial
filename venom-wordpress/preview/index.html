@@ -653,12 +653,12 @@ body{padding-top:0}
 
 <!-- PREVIEW NAV -->
 <nav class="preview-bar" id="previewBar">
-  <a onclick="sp('home')" id="tab-home" class="active">홈</a>
+  <a href="/" onclick="sp('home');return false" id="tab-home" class="active">홈</a>
   <a onclick="sp('detail')" id="tab-detail">상세페이지 (3단)</a>
-  <a onclick="sp('ai')" id="tab-ai">AI마케팅</a>
-  <a onclick="sp('hospital')" id="tab-hospital">병원홈페이지</a>
-  <a onclick="sp('contact')" id="tab-contact">문의하기</a>
-  <a onclick="sp('blog')" id="tab-blog">블로그</a>
+  <a href="/ai" onclick="sp('ai');return false" id="tab-ai">AI마케팅</a>
+  <a href="/website" onclick="sp('hospital');return false" id="tab-hospital">병원홈페이지</a>
+  <a href="/contact" onclick="sp('contact');return false" id="tab-contact">문의하기</a>
+  <a href="/blog" onclick="sp('blog');return false" id="tab-blog">블로그</a>
 </nav>
 
 <!-- HEADER -->
@@ -666,12 +666,12 @@ body{padding-top:0}
   <div class="container">
     <div></div>
     <div class="header-center">
-      <a href="javascript:void(0)" onclick="sp('home')" class="logo">
+      <a href="/" onclick="sp('home');return false" class="logo">
         <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:24px;width:auto;display:block;transform:translateY(-3px)">
       </a>
       <nav><ul class="main-nav">
         <li>
-          <a href="javascript:void(0)" onclick="sp('hosp_mkt')">병원마케팅 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <a href="/hospital-marketing" onclick="sp('hosp_mkt');return false">병원마케팅 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
           <div class="dropdown">
             <div class="grp">과목별</div>
             <a href="javascript:void(0)" onclick="ld('dental')">치과마케팅</a>
@@ -687,15 +687,15 @@ body{padding-top:0}
           </div>
         </li>
         <li>
-          <a href="javascript:void(0)" onclick="sp('ai')">AI마케팅 <span class="nav-new">NEW</span> <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <a href="/ai" onclick="sp('ai');return false">AI마케팅 <span class="nav-new">NEW</span> <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
           <div class="dropdown">
-            <a href="javascript:void(0)" onclick="sp('geo')">GEO — 생성AI 최적화</a>
-            <a href="javascript:void(0)" onclick="sp('aeo')">AEO — 답변엔진 최적화</a>
-            <a href="javascript:void(0)" onclick="sp('seo')">SEO — 검색엔진 최적화</a>
+            <a href="/geo" onclick="sp('geo');return false">GEO — 생성AI 최적화</a>
+            <a href="/aeo" onclick="sp('aeo');return false">AEO — 답변엔진 최적화</a>
+            <a href="/seo" onclick="sp('seo');return false">SEO — 검색엔진 최적화</a>
           </div>
         </li>
         <li>
-          <a href="javascript:void(0)" onclick="sp('services')">온라인마케팅 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <a href="/online-marketing" onclick="sp('services');return false">온라인마케팅 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
           <div class="dropdown">
             <div class="grp">채널별</div>
             <a href="javascript:void(0)" onclick="goSvc('svc-naver')">네이버 마케팅</a>
@@ -705,9 +705,9 @@ body{padding-top:0}
             <a href="javascript:void(0)" onclick="goSvc('svc-guide')">채널 선택 가이드</a>
           </div>
         </li>
-        <li><a href="javascript:void(0)" onclick="sp('blog')">블로그</a></li>
-        <li><a href="javascript:void(0)" onclick="sp('hospital')">홈페이지 제작</a></li>
-        <li><a href="javascript:void(0)" onclick="sp('diagnose')">무료진단 <span class="nav-new">FREE</span></a></li>
+        <li><a href="/blog" onclick="sp('blog');return false">블로그</a></li>
+        <li><a href="/website" onclick="sp('hospital');return false">홈페이지 제작</a></li>
+        <li><a href="/diagnose" onclick="sp('diagnose');return false">무료진단 <span class="nav-new">FREE</span></a></li>
       </ul></nav>
     </div>
     <div class="header-actions">
@@ -724,7 +724,7 @@ body{padding-top:0}
 <div class="mob-menu-overlay" id="mobMenuOverlay" onclick="closeMobMenu()"></div>
 <div class="mob-menu" id="mobMenu">
   <div class="mob-menu-head">
-    <a href="javascript:void(0)" onclick="sp('home');closeMobMenu()" class="logo">
+    <a href="/" onclick="sp('home');closeMobMenu();return false" class="logo">
       <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:22px;width:auto;display:block">
     </a>
     <button class="mob-close-btn" onclick="closeMobMenu()">
@@ -734,7 +734,7 @@ body{padding-top:0}
   <nav class="mob-nav">
     <div class="mob-nav-group">
       <div class="mob-nav-row">
-        <a href="javascript:void(0)" class="mob-nav-item mob-nav-main" onclick="sp('hosp_mkt');closeMobMenu()">병원마케팅</a>
+        <a href="/hospital-marketing" class="mob-nav-item mob-nav-main" onclick="sp('hosp_mkt');closeMobMenu();return false">병원마케팅</a>
         <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="병원마케팅 하위 메뉴 열기">
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -753,20 +753,20 @@ body{padding-top:0}
     </div>
     <div class="mob-nav-group">
       <div class="mob-nav-row">
-        <a href="javascript:void(0)" class="mob-nav-item mob-nav-main" onclick="sp('ai');closeMobMenu()">AI마케팅 <span class="nav-new">NEW</span></a>
+        <a href="/ai" class="mob-nav-item mob-nav-main" onclick="sp('ai');closeMobMenu();return false">AI마케팅 <span class="nav-new">NEW</span></a>
         <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="AI마케팅 하위 메뉴 열기">
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
       </div>
       <div class="mob-sub">
-        <a href="javascript:void(0)" onclick="sp('geo');closeMobMenu()">GEO — 생성AI 최적화</a>
-        <a href="javascript:void(0)" onclick="sp('aeo');closeMobMenu()">AEO — 답변엔진 최적화</a>
-        <a href="javascript:void(0)" onclick="sp('seo');closeMobMenu()">SEO — 검색엔진 최적화</a>
+        <a href="/geo" onclick="sp('geo');closeMobMenu();return false">GEO — 생성AI 최적화</a>
+        <a href="/aeo" onclick="sp('aeo');closeMobMenu();return false">AEO — 답변엔진 최적화</a>
+        <a href="/seo" onclick="sp('seo');closeMobMenu();return false">SEO — 검색엔진 최적화</a>
       </div>
     </div>
     <div class="mob-nav-group">
       <div class="mob-nav-row">
-        <a href="javascript:void(0)" class="mob-nav-item mob-nav-main" onclick="sp('services');closeMobMenu()">온라인마케팅</a>
+        <a href="/online-marketing" class="mob-nav-item mob-nav-main" onclick="sp('services');closeMobMenu();return false">온라인마케팅</a>
         <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="온라인마케팅 하위 메뉴 열기">
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -779,18 +779,18 @@ body{padding-top:0}
       </div>
     </div>
     <div class="mob-nav-group">
-      <a href="javascript:void(0)" onclick="sp('blog');closeMobMenu()" class="mob-nav-item">블로그</a>
+      <a href="/blog" onclick="sp('blog');closeMobMenu();return false" class="mob-nav-item">블로그</a>
     </div>
     <div class="mob-nav-group">
-      <a href="javascript:void(0)" onclick="sp('hospital');closeMobMenu()" class="mob-nav-item">홈페이지 제작</a>
+      <a href="/website" onclick="sp('hospital');closeMobMenu();return false" class="mob-nav-item">홈페이지 제작</a>
     </div>
     <div class="mob-nav-group">
-      <a href="javascript:void(0)" onclick="sp('diagnose');closeMobMenu()" class="mob-nav-item">무료진단 <span class="nav-new">FREE</span></a>
+      <a href="/diagnose" onclick="sp('diagnose');closeMobMenu();return false" class="mob-nav-item">무료진단 <span class="nav-new">FREE</span></a>
     </div>
   </nav>
   <div class="mob-menu-footer">
     <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p" style="width:100%;justify-content:center;padding:14px">💬 카카오 상담신청</a>
-    <a href="javascript:void(0)" onclick="sp('diagnose');switchTool('seo');closeMobMenu()" class="mob-cta-ghost">📊 SEO 점수 체크 →</a>
+    <a href="/diagnose" onclick="sp('diagnose');switchTool('seo');closeMobMenu();return false" class="mob-cta-ghost">📊 SEO 점수 체크 →</a>
   </div>
 </div>
 
@@ -998,7 +998,7 @@ body{padding-top:0}
             <span class="ai-logo">ChatGPT</span><span class="ai-logo">Perplexity</span>
             <span class="ai-logo">Gemini</span><span class="ai-logo">Claude</span><span class="ai-logo">Naver AI</span>
           </div>
-          <a href="javascript:void(0)" onclick="sp('ai')" class="btn btn-p" style="margin-top:24px">AI 마케팅 전략 보기</a>
+          <a href="/ai" onclick="sp('ai');return false" class="btn btn-p" style="margin-top:24px">AI 마케팅 전략 보기</a>
         </div>
         <div class="ai-strip-mockup">
           <div class="mockup-window">
@@ -1118,7 +1118,7 @@ body{padding-top:0}
             <li>✓ 검색광고 관리</li><li>✓ 월간 성과 리포트</li><li>✓ GEO 기본 설정</li>
             <li class="muted">— 인스타그램 운영</li><li class="muted">— 영상 콘텐츠</li>
           </ul>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">상담 신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">상담 신청</a>
         </div>
         <div class="price-card featured">
           <div class="price-best">Most Popular</div>
@@ -1131,7 +1131,7 @@ body{padding-top:0}
             <li>✓ GEO·AEO 완전 최적화</li><li>✓ 인스타그램 월 16편</li>
             <li class="muted">— 영상 콘텐츠</li>
           </ul>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;margin-top:24px">상담신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;margin-top:24px">상담신청</a>
         </div>
         <div class="price-card">
           <div class="price-tier">엔터프라이즈</div>
@@ -1143,7 +1143,7 @@ body{padding-top:0}
             <li>✓ GEO·AEO·SEO 완전 패키지</li><li>✓ 유튜브 채널 운영</li>
             <li>✓ 의료관광·해외환자 유치</li>
           </ul>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">문의하기</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">문의하기</a>
         </div>
       </div>
     </div>
@@ -1396,7 +1396,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -1418,16 +1418,16 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('about')">연혁 & 팀</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/about" onclick="sp('about');return false">연혁 & 팀</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -1846,7 +1846,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -1868,16 +1868,16 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('about')">연혁 & 팀</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/about" onclick="sp('about');return false">연혁 & 팀</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -1913,22 +1913,22 @@ body{padding-top:0}
         <div class="sidebar-section">
           <div class="sidebar-title">AI 마케팅</div>
           <ul class="sidebar-nav">
-            <li><a href="javascript:void(0)" onclick="sp('geo')" id="nav-geo">🤖 GEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('aeo')" id="nav-aeo">💬 AEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('seo')" id="nav-seo">🔍 SEO 최적화</a></li>
+            <li><a href="/geo" onclick="sp('geo');return false" id="nav-geo">🤖 GEO 최적화</a></li>
+            <li><a href="/aeo" onclick="sp('aeo');return false" id="nav-aeo">💬 AEO 최적화</a></li>
+            <li><a href="/seo" onclick="sp('seo');return false" id="nav-seo">🔍 SEO 최적화</a></li>
           </ul>
         </div>
         <div class="sidebar-section">
           <div class="sidebar-title">병원 홈페이지 제작</div>
           <ul class="sidebar-nav">
-            <li><a href="javascript:void(0)" onclick="sp('hospital')">기본형 — 990만원</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('hospital')">중급형 — 1,490만원</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('hospital')">고급형 — 2,490만원~</a></li>
+            <li><a href="/website" onclick="sp('hospital');return false">기본형 — 990만원</a></li>
+            <li><a href="/website" onclick="sp('hospital');return false">중급형 — 1,490만원</a></li>
+            <li><a href="/website" onclick="sp('hospital');return false">고급형 — 2,490만원~</a></li>
           </ul>
         </div>
         <div class="sidebar-cta">
           <p>지금 바로 상담 받아보세요</p>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
         </div>
       </div>
     </aside>
@@ -1948,7 +1948,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -1970,16 +1970,16 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('about')">연혁 & 팀</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/about" onclick="sp('about');return false">연혁 & 팀</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -2101,7 +2101,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -2123,15 +2123,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -2207,9 +2207,9 @@ body{padding-top:0}
         <div class="sidebar-section">
           <div class="sidebar-title">AI 마케팅</div>
           <ul class="sidebar-nav">
-            <li><a href="javascript:void(0)" onclick="sp('geo')" id="geo-snav">🤖 GEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('aeo')">💬 AEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('seo')">🔍 SEO 최적화</a></li>
+            <li><a href="/geo" onclick="sp('geo');return false" id="geo-snav">🤖 GEO 최적화</a></li>
+            <li><a href="/aeo" onclick="sp('aeo');return false">💬 AEO 최적화</a></li>
+            <li><a href="/seo" onclick="sp('seo');return false">🔍 SEO 최적화</a></li>
           </ul>
         </div>
         <div class="sidebar-section">
@@ -2224,7 +2224,7 @@ body{padding-top:0}
         </div>
         <div class="sidebar-cta">
           <p>AI 마케팅 전문 상담</p>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
         </div>
       </div>
     </aside>
@@ -2341,11 +2341,11 @@ body{padding-top:0}
       <div class="toc-sticky">
         <div class="toc-title">관련 서비스</div>
         <ul class="toc-list">
-          <li><a href="javascript:void(0)" onclick="sp('aeo')">💬 AEO 최적화</a></li>
-          <li><a href="javascript:void(0)" onclick="sp('seo')">🔍 SEO 최적화</a></li>
+          <li><a href="/aeo" onclick="sp('aeo');return false">💬 AEO 최적화</a></li>
+          <li><a href="/seo" onclick="sp('seo');return false">🔍 SEO 최적화</a></li>
           <li><a href="javascript:void(0)" onclick="ld('dental')">🦷 치과 마케팅</a></li>
           <li><a href="javascript:void(0)" onclick="ld('skin')">✨ 피부과 마케팅</a></li>
-          <li><a href="javascript:void(0)" onclick="sp('contact')">📋 상담신청</a></li>
+          <li><a href="/contact" onclick="sp('contact');return false">📋 상담신청</a></li>
         </ul>
         <div class="toc-keywords">
           <div class="toc-kw-title">관련 키워드</div>
@@ -2359,7 +2359,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -2381,15 +2381,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -2441,9 +2441,9 @@ body{padding-top:0}
         <div class="sidebar-section">
           <div class="sidebar-title">AI 마케팅</div>
           <ul class="sidebar-nav">
-            <li><a href="javascript:void(0)" onclick="sp('geo')">🤖 GEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('aeo')" id="aeo-snav">💬 AEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('seo')">🔍 SEO 최적화</a></li>
+            <li><a href="/geo" onclick="sp('geo');return false">🤖 GEO 최적화</a></li>
+            <li><a href="/aeo" onclick="sp('aeo');return false" id="aeo-snav">💬 AEO 최적화</a></li>
+            <li><a href="/seo" onclick="sp('seo');return false">🔍 SEO 최적화</a></li>
           </ul>
         </div>
         <div class="sidebar-section">
@@ -2458,7 +2458,7 @@ body{padding-top:0}
         </div>
         <div class="sidebar-cta">
           <p>AI 마케팅 전문 상담</p>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
         </div>
       </div>
     </aside>
@@ -2563,11 +2563,11 @@ body{padding-top:0}
       <div class="toc-sticky">
         <div class="toc-title">관련 서비스</div>
         <ul class="toc-list">
-          <li><a href="javascript:void(0)" onclick="sp('geo')">🤖 GEO 최적화</a></li>
-          <li><a href="javascript:void(0)" onclick="sp('seo')">🔍 SEO 최적화</a></li>
+          <li><a href="/geo" onclick="sp('geo');return false">🤖 GEO 최적화</a></li>
+          <li><a href="/seo" onclick="sp('seo');return false">🔍 SEO 최적화</a></li>
           <li><a href="javascript:void(0)" onclick="ld('dental')">🦷 치과 마케팅</a></li>
           <li><a href="javascript:void(0)" onclick="ld('skin')">✨ 피부과 마케팅</a></li>
-          <li><a href="javascript:void(0)" onclick="sp('contact')">📋 상담신청</a></li>
+          <li><a href="/contact" onclick="sp('contact');return false">📋 상담신청</a></li>
         </ul>
         <div class="toc-keywords">
           <div class="toc-kw-title">관련 키워드</div>
@@ -2581,7 +2581,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -2603,15 +2603,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -2640,7 +2640,7 @@ body{padding-top:0}
       <p style="font-size:18px;color:var(--ink2);max-width:640px;line-height:1.8">환자가 "강남 치과 임플란트"를 검색할 때 1위에 뜨는 병원이 되세요. 기술적 SEO부터 E-E-A-T 콘텐츠, 로컬 SEO까지 — 의료 특화 SEO 완전 패키지.</p>
       <div style="display:flex;gap:12px;margin-top:32px;flex-wrap:wrap">
         <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a>
-        <a href="javascript:void(0)" onclick="sp('diagnose');switchTool('seo')" class="btn btn-outline btn-lg">SEO 점수 체크 →</a>
+        <a href="/diagnose" onclick="sp('diagnose');switchTool('seo');return false" class="btn btn-outline btn-lg">SEO 점수 체크 →</a>
       </div>
       <div style="display:flex;gap:32px;margin-top:48px;flex-wrap:wrap">
         <div><div style="font-size:36px;font-weight:700;color:#fff">1<span style="font-size:20px">위</span></div><div style="font-size:13px;color:rgba(255,255,255,.6)">네이버 치과 키워드 평균 달성 기간 5개월</div></div>
@@ -2655,9 +2655,9 @@ body{padding-top:0}
         <div class="sidebar-section">
           <div class="sidebar-title">AI 마케팅</div>
           <ul class="sidebar-nav">
-            <li><a href="javascript:void(0)" onclick="sp('geo')">🤖 GEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('aeo')">💬 AEO 최적화</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('seo')" id="seo-snav">🔍 SEO 최적화</a></li>
+            <li><a href="/geo" onclick="sp('geo');return false">🤖 GEO 최적화</a></li>
+            <li><a href="/aeo" onclick="sp('aeo');return false">💬 AEO 최적화</a></li>
+            <li><a href="/seo" onclick="sp('seo');return false" id="seo-snav">🔍 SEO 최적화</a></li>
           </ul>
         </div>
         <div class="sidebar-section">
@@ -2672,7 +2672,7 @@ body{padding-top:0}
         </div>
         <div class="sidebar-cta">
           <p>AI 마케팅 전문 상담</p>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
         </div>
       </div>
     </aside>
@@ -2819,11 +2819,11 @@ body{padding-top:0}
       <div class="toc-sticky">
         <div class="toc-title">관련 서비스</div>
         <ul class="toc-list">
-          <li><a href="javascript:void(0)" onclick="sp('geo')">🤖 GEO 최적화</a></li>
-          <li><a href="javascript:void(0)" onclick="sp('aeo')">💬 AEO 최적화</a></li>
+          <li><a href="/geo" onclick="sp('geo');return false">🤖 GEO 최적화</a></li>
+          <li><a href="/aeo" onclick="sp('aeo');return false">💬 AEO 최적화</a></li>
           <li><a href="javascript:void(0)" onclick="ld('dental')">🦷 치과 마케팅</a></li>
           <li><a href="javascript:void(0)" onclick="ld('skin')">✨ 피부과 마케팅</a></li>
-          <li><a href="javascript:void(0)" onclick="sp('contact')">📋 상담신청</a></li>
+          <li><a href="/contact" onclick="sp('contact');return false">📋 상담신청</a></li>
         </ul>
         <div class="toc-keywords">
           <div class="toc-kw-title">관련 키워드</div>
@@ -2837,7 +2837,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -2859,15 +2859,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -2949,9 +2949,9 @@ body{padding-top:0}
     <div class="container">
       <div class="section-head"><h2>홈페이지 제작 패키지</h2></div>
       <div class="price-grid">
-        <div class="price-card"><div class="price-tier">기본형</div><div class="price-val">990<span class="price-unit">만원</span></div><div class="price-desc">1인 병원·소규모 의원을 위한 핵심 기능 홈페이지</div><ul class="price-list"><li>✓ 반응형 디자인</li><li>✓ 페이지 5개</li><li>✓ 네이버 예약 연동</li><li>✓ SEO 기본 설정</li><li>✓ 6개월 유지보수</li><li class="muted">— GEO·AEO 최적화</li></ul><a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">상담 신청</a></div>
-        <div class="price-card featured"><div class="price-best">Best Choice</div><div class="price-tier">중급형</div><div class="price-val">1,490<span class="price-unit">만원</span></div><div class="price-desc">성장 중인 병원을 위한 마케팅 중심 홈페이지</div><ul class="price-list"><li>✓ 프리미엄 UI/UX</li><li>✓ 페이지 15개 + 블로그</li><li>✓ GEO·AEO·SEO 최적화</li><li>✓ 다국어 지원</li><li>✓ CRM 연동</li><li>✓ 1년 유지보수</li></ul><a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;margin-top:24px">상담신청</a></div>
-        <div class="price-card"><div class="price-tier">고급형</div><div class="price-val">2,490<span class="price-unit">만원~</span></div><div class="price-desc">대형 병원·네트워크를 위한 완전 맞춤 솔루션</div><ul class="price-list"><li>✓ 완전 맞춤 디자인</li><li>✓ 무제한 페이지</li><li>✓ AI 챗봇 (진료 안내)</li><li>✓ 실시간 번역 10개 언어</li><li>✓ HIS 연동 가능</li><li>✓ 전담 유지보수팀</li></ul><a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">문의하기</a></div>
+        <div class="price-card"><div class="price-tier">기본형</div><div class="price-val">990<span class="price-unit">만원</span></div><div class="price-desc">1인 병원·소규모 의원을 위한 핵심 기능 홈페이지</div><ul class="price-list"><li>✓ 반응형 디자인</li><li>✓ 페이지 5개</li><li>✓ 네이버 예약 연동</li><li>✓ SEO 기본 설정</li><li>✓ 6개월 유지보수</li><li class="muted">— GEO·AEO 최적화</li></ul><a href="/contact" onclick="sp('contact');return false" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">상담 신청</a></div>
+        <div class="price-card featured"><div class="price-best">Best Choice</div><div class="price-tier">중급형</div><div class="price-val">1,490<span class="price-unit">만원</span></div><div class="price-desc">성장 중인 병원을 위한 마케팅 중심 홈페이지</div><ul class="price-list"><li>✓ 프리미엄 UI/UX</li><li>✓ 페이지 15개 + 블로그</li><li>✓ GEO·AEO·SEO 최적화</li><li>✓ 다국어 지원</li><li>✓ CRM 연동</li><li>✓ 1년 유지보수</li></ul><a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;margin-top:24px">상담신청</a></div>
+        <div class="price-card"><div class="price-tier">고급형</div><div class="price-val">2,490<span class="price-unit">만원~</span></div><div class="price-desc">대형 병원·네트워크를 위한 완전 맞춤 솔루션</div><ul class="price-list"><li>✓ 완전 맞춤 디자인</li><li>✓ 무제한 페이지</li><li>✓ AI 챗봇 (진료 안내)</li><li>✓ 실시간 번역 10개 언어</li><li>✓ HIS 연동 가능</li><li>✓ 전담 유지보수팀</li></ul><a href="/contact" onclick="sp('contact');return false" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:24px">문의하기</a></div>
       </div>
     </div>
   </section>
@@ -2960,7 +2960,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -2982,15 +2982,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -3048,7 +3048,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -3070,15 +3070,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -3155,7 +3155,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -3177,15 +3177,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -3286,7 +3286,7 @@ body{padding-top:0}
         </div>
       </div>
       <div style="margin-top:24px;padding:20px;background:rgba(83,58,253,.05);border-radius:var(--r12);border:1px solid rgba(83,58,253,.15)">
-        <p style="font-size:14px;color:var(--ink2);line-height:1.7;margin:0">💡 <strong>2025년 핵심 트렌드:</strong> 환자의 병원 탐색 경로가 "네이버 검색 → 블로그 확인"에서 "ChatGPT/Perplexity 질문 → AI 추천 → 홈페이지 방문"으로 이동하고 있습니다. 지금 GEO 선점에 실패하면 2026년에는 따라가기 어려운 격차가 생깁니다. → <a href="javascript:void(0)" onclick="sp('ai')" style="color:var(--p)">AI 마케팅 전략 자세히 보기</a></p>
+        <p style="font-size:14px;color:var(--ink2);line-height:1.7;margin:0">💡 <strong>2025년 핵심 트렌드:</strong> 환자의 병원 탐색 경로가 "네이버 검색 → 블로그 확인"에서 "ChatGPT/Perplexity 질문 → AI 추천 → 홈페이지 방문"으로 이동하고 있습니다. 지금 GEO 선점에 실패하면 2026년에는 따라가기 어려운 격차가 생깁니다. → <a href="/ai" onclick="sp('ai');return false" style="color:var(--p)">AI 마케팅 전략 자세히 보기</a></p>
       </div>
     </div>
   </section>
@@ -3427,12 +3427,12 @@ body{padding-top:0}
     </div>
   </section>
 
-  <section class="cta-section"><div class="container"><div class="cta-inner"><h2>우리 병원에 맞는 전략이 궁금하신가요?</h2><p>진료과목·지역·예산을 말씀해주시면 맞춤 전략을 무료로 제안해드립니다.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a><a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-ghost btn-lg">상담 신청서 작성</a></div></div></div></section>
+  <section class="cta-section"><div class="container"><div class="cta-inner"><h2>우리 병원에 맞는 전략이 궁금하신가요?</h2><p>진료과목·지역·예산을 말씀해주시면 맞춤 전략을 무료로 제안해드립니다.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a><a href="/contact" onclick="sp('contact');return false" class="btn btn-ghost btn-lg">상담 신청서 작성</a></div></div></div></section>
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -3454,15 +3454,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -3836,7 +3836,7 @@ body{padding-top:0}
                 <div><strong style="font-size:13px;color:var(--ink)">콘텐츠 축적 → 광고 효율 상승</strong><p style="font-size:13px;color:var(--ink2);margin:4px 0 0">양질의 콘텐츠가 쌓이면 광고 품질점수가 높아져 동일 예산으로 더 많은 노출을 얻습니다. 콘텐츠는 복리 자산입니다.</p></div>
               </div>
               <div style="margin-top:8px;text-align:center">
-                <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">맞춤 ROI 계산 받기 →</a>
+                <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">맞춤 ROI 계산 받기 →</a>
               </div>
             </div>
           </div>
@@ -3845,12 +3845,12 @@ body{padding-top:0}
     </div>
   </section>
 
-  <section class="cta-section"><div class="container"><div class="cta-inner"><h2>어떤 채널이 우리 병원에 맞을까요?</h2><p>진료과목·지역·예산을 알려주시면 맞춤 채널 전략을 무료로 제안합니다.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a><a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-ghost btn-lg">상담신청</a></div></div></div></section>
+  <section class="cta-section"><div class="container"><div class="cta-inner"><h2>어떤 채널이 우리 병원에 맞을까요?</h2><p>진료과목·지역·예산을 알려주시면 맞춤 채널 전략을 무료로 제안합니다.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-p btn-lg">💬 카카오상담</a><a href="/contact" onclick="sp('contact');return false" class="btn btn-ghost btn-lg">상담신청</a></div></div></div></section>
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -3872,15 +3872,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -4103,7 +4103,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -4125,15 +4125,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -4298,7 +4298,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -4320,15 +4320,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -4353,18 +4353,18 @@ body{padding-top:0}
         <div class="sidebar-section">
           <div class="sidebar-title">블로그 카테고리</div>
           <ul class="sidebar-nav">
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('all')">📋 전체 글</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('geo')">🤖 GEO/AEO</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('seo')">🔍 SEO</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('dental')">🦷 치과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('skin')">✨ 피부과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('oriental')">🌿 한의원</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('ortho')">🦴 정형외과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('plastic')">💎 성형외과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('naegwa')">🩺 내과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('angwa')">👁 안과</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('shimui')">📋 의료광고심의</a></li>
-            <li><a href="javascript:void(0)" onclick="sp('blog');filterBlog('지역마케팅')">📍 지역마케팅</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('all');return false">📋 전체 글</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('geo');return false">🤖 GEO/AEO</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('seo');return false">🔍 SEO</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('dental');return false">🦷 치과</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('skin');return false">✨ 피부과</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('oriental');return false">🌿 한의원</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('ortho');return false">🦴 정형외과</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('plastic');return false">💎 성형외과</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('naegwa');return false">🩺 내과</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('angwa');return false">👁 안과</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('shimui');return false">📋 의료광고심의</a></li>
+            <li><a href="/blog" onclick="sp('blog');filterBlog('지역마케팅');return false">📍 지역마케팅</a></li>
           </ul>
         </div>
         <div class="sidebar-section" id="blog-post-recent">
@@ -4373,7 +4373,7 @@ body{padding-top:0}
         </div>
         <div class="sidebar-cta">
           <p>마케팅 전문 상담</p>
-          <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
+          <a href="/contact" onclick="sp('contact');return false" class="btn btn-p" style="width:100%;justify-content:center;font-size:13px">상담신청</a>
         </div>
       </div>
     </aside>
@@ -4422,7 +4422,7 @@ body{padding-top:0}
           <div class="toc-kw-title">공유하기</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
             <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--soft);border-radius:6px;border:1px solid var(--border)">💬 카카오 상담</a>
-            <a href="javascript:void(0)" onclick="sp('contact')" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--soft);border-radius:6px;border:1px solid var(--border)">📋 상담신청서</a>
+            <a href="/contact" onclick="sp('contact');return false" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:8px 10px;background:var(--soft);border-radius:6px;border:1px solid var(--border)">📋 상담신청서</a>
           </div>
         </div>
       </div>
@@ -4433,7 +4433,7 @@ body{padding-top:0}
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="javascript:void(0)" onclick="sp('home')"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
+          <a href="/" onclick="sp('home');return false"><img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png" alt="병원마케팅 베놈" style="height:44px;width:auto;display:block;filter:brightness(0) invert(1)"></a>
           <p>AI 시대 병원 마케팅의 새로운 기준.<br>GEO·AEO·SEO 삼중 최적화 전문 에이전시.</p>
           <div class="footer-sns">
             <a href="https://blog.naver.com/venom_markepick" target="_blank" title="네이버 블로그"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg></a>
@@ -4455,15 +4455,15 @@ body{padding-top:0}
         </div>
         <div class="footer-col">
           <h5>AI 마케팅</h5>
-          <a href="javascript:void(0)" onclick="sp('geo')">GEO 최적화</a><a href="javascript:void(0)" onclick="sp('aeo')">AEO 최적화</a>
-          <a href="javascript:void(0)" onclick="sp('seo')">SEO 최적화</a><a href="javascript:void(0)" onclick="sp('hospital')">병원 홈페이지</a>
+          <a href="/geo" onclick="sp('geo');return false">GEO 최적화</a><a href="/aeo" onclick="sp('aeo');return false">AEO 최적화</a>
+          <a href="/seo" onclick="sp('seo');return false">SEO 최적화</a><a href="/website" onclick="sp('hospital');return false">병원 홈페이지</a>
         </div>
         <div class="footer-col">
           <h5>회사 정보</h5>
-          <a href="javascript:void(0)" onclick="sp('about')">회사 소개</a>
-          <a href="javascript:void(0)" onclick="sp('seo-dict')">SEO 용어 사전</a>
-          <a href="javascript:void(0)" onclick="sp('blog')">마케팅 블로그</a>
-          <a href="javascript:void(0)" onclick="sp('contact')">상담신청</a>
+          <a href="/about" onclick="sp('about');return false">회사 소개</a>
+          <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
+          <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/contact" onclick="sp('contact');return false">상담신청</a>
           <a href="/admin.html" target="_blank" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
@@ -7389,7 +7389,7 @@ var pages={
   </div>
 
   <h3 style="margin-top:28px">2. 콘텐츠는 진료명보다 환자의 질문으로 시작해야</h3>
-  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 "임플란트 종류"보다 "임플란트가 꼭 필요한가요?", "교정은 몇 살까지 가능한가요?"처럼 질문형으로 검색합니다. 특히 <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">AI 답변(GEO)</a>은 질문형 콘텐츠를 요약해 보여줍니다.</p>
+  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 "임플란트 종류"보다 "임플란트가 꼭 필요한가요?", "교정은 몇 살까지 가능한가요?"처럼 질문형으로 검색합니다. 특히 <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">AI 답변(GEO)</a>은 질문형 콘텐츠를 요약해 보여줍니다.</p>
   <ul class="dc-list">
     <li>환자가 느끼는 증상 또는 고민 → 치과에서 확인하는 검사 항목</li>
     <li>가능한 치료 방향 → 치료 전후 주의사항</li>
@@ -7397,7 +7397,7 @@ var pages={
   </ul>
 
   <h3 style="margin-top:28px">3. 검색엔진 노출만 보지 말고 AI 답변 노출까지 점검</h3>
-  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">"우리 치과는 검색엔진에는 노출되지만, <strong>AI 답변에도 노출되고 있는가?</strong>" 네이버 AI 브리핑·Google AI Overviews에서 치과가 인용되려면 다음 조건이 필요합니다. → <a href="javascript:void(0)" onclick="sp('ai')" style="color:var(--p)">AI 마케팅 자세히 보기</a></p>
+  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">"우리 치과는 검색엔진에는 노출되지만, <strong>AI 답변에도 노출되고 있는가?</strong>" 네이버 AI 브리핑·Google AI Overviews에서 치과가 인용되려면 다음 조건이 필요합니다. → <a href="/ai" onclick="sp('ai');return false" style="color:var(--p)">AI 마케팅 자세히 보기</a></p>
   <div class="dc-table-wrap">
     <table class="dc-table">
       <thead><tr><th>AI 노출 조건</th><th>설명</th></tr></thead>
@@ -7439,7 +7439,7 @@ var pages={
   <div class="dc-case">
     <div class="dc-case-label">FAQ 2</div>
     <h3>AI 답변 노출은 기존 SEO와 다른가요?</h3>
-    <p>완전히 다르지는 않습니다. Google은 AI 검색에서도 기존 검색 품질 시스템과 색인을 기반으로 한다고 설명합니다. 다만 질문형 구조, 출처, 명확한 답변성이 더 중요해졌습니다. → <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO·AEO 최적화 알아보기</a></p>
+    <p>완전히 다르지는 않습니다. Google은 AI 검색에서도 기존 검색 품질 시스템과 색인을 기반으로 한다고 설명합니다. 다만 질문형 구조, 출처, 명확한 답변성이 더 중요해졌습니다. → <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO·AEO 최적화 알아보기</a></p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">FAQ 3</div>
@@ -7449,7 +7449,7 @@ var pages={
   <div class="dc-case">
     <div class="dc-case-label">FAQ 4</div>
     <h3>신규 치과는 무엇부터 해야 하나요?</h3>
-    <p>홈페이지 기본 구조, 지도 정보, 의료진 소개, 대표 진료 콘텐츠, 전화 연결 동선을 먼저 정리해야 합니다. 블로그만으로는 부족하며, 홈페이지와 지도 채널이 함께 움직여야 합니다. → <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">무료 전략 상담 신청</a></p>
+    <p>홈페이지 기본 구조, 지도 정보, 의료진 소개, 대표 진료 콘텐츠, 전화 연결 동선을 먼저 정리해야 합니다. 블로그만으로는 부족하며, 홈페이지와 지도 채널이 함께 움직여야 합니다. → <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">무료 전략 상담 신청</a></p>
   </div>
 </div>
 
@@ -7458,17 +7458,17 @@ var pages={
   <div class="dc-case">
     <div class="dc-case-label">1단계</div>
     <h3>신뢰 기반 구축</h3>
-    <p>의료진 소개, 진료 철학, 장비, 진료 과정, 진료시간, 위치를 명확히 정리합니다. 환자는 광고 문구보다 "이 치과가 내 상황을 제대로 설명해주는가"를 봅니다. <a href="javascript:void(0)" onclick="sp('hospital')" style="color:var(--p)">병원 홈페이지 제작 알아보기 →</a></p>
+    <p>의료진 소개, 진료 철학, 장비, 진료 과정, 진료시간, 위치를 명확히 정리합니다. 환자는 광고 문구보다 "이 치과가 내 상황을 제대로 설명해주는가"를 봅니다. <a href="/website" onclick="sp('hospital');return false" style="color:var(--p)">병원 홈페이지 제작 알아보기 →</a></p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">2단계</div>
     <h3>검색·AI 콘텐츠 설계</h3>
-    <p>"임플란트 비용", "교정 기간", "사랑니 발치 통증", "충치치료 단계"처럼 환자가 실제로 묻는 질문을 AI가 인용하는 콘텐츠로 만듭니다. <a href="javascript:void(0)" onclick="sp('seo')" style="color:var(--p)">SEO 전략</a> + <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화</a>를 병행합니다.</p>
+    <p>"임플란트 비용", "교정 기간", "사랑니 발치 통증", "충치치료 단계"처럼 환자가 실제로 묻는 질문을 AI가 인용하는 콘텐츠로 만듭니다. <a href="/seo" onclick="sp('seo');return false" style="color:var(--p)">SEO 전략</a> + <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화</a>를 병행합니다.</p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">3단계</div>
     <h3>예약 전환 최적화</h3>
-    <p>콘텐츠 하단에는 전화번호, 예약 방법, 진료시간, 주차 정보, 내원 전 준비사항이 자연스럽게 이어져야 합니다. 이 동선이 없으면 검색 노출은 되어도 매출로 연결되지 않습니다. <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">지금 상담 신청하기 →</a></p>
+    <p>콘텐츠 하단에는 전화번호, 예약 방법, 진료시간, 주차 정보, 내원 전 준비사항이 자연스럽게 이어져야 합니다. 이 동선이 없으면 검색 노출은 되어도 매출로 연결되지 않습니다. <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">지금 상담 신청하기 →</a></p>
   </div>
 </div>
 <div class="dc-section" id="ds-cases-detail">
@@ -7544,7 +7544,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>치과 마케팅 상담신청</h3>
   <p>의료광고 기준 점검 + 검색·AI 노출 현황 무료 분석을 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   skin:{
@@ -7692,7 +7692,7 @@ var pages={
   </div>
 
   <h3 style="margin-top:28px">2. 키워드는 시술명보다 피부 고민에서 시작</h3>
-  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 "피코토닝"보다 "기미가 다시 올라와요", "인모드"보다 "턱선 처짐이 고민이에요"처럼 고민 중심으로 검색합니다. <a href="javascript:void(0)" onclick="sp('seo')" style="color:var(--p)">SEO 키워드 전략</a>도 시술명이 아닌 증상 키워드부터 설계해야 합니다.</p>
+  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 "피코토닝"보다 "기미가 다시 올라와요", "인모드"보다 "턱선 처짐이 고민이에요"처럼 고민 중심으로 검색합니다. <a href="/seo" onclick="sp('seo');return false" style="color:var(--p)">SEO 키워드 전략</a>도 시술명이 아닌 증상 키워드부터 설계해야 합니다.</p>
   <ul class="dc-list">
     <li>환자가 느끼는 피부 고민 → 원인과 악화 요인</li>
     <li>피부과에서 확인하는 진단 기준 → 가능한 시술 방향</li>
@@ -7700,7 +7700,7 @@ var pages={
   </ul>
 
   <h3 style="margin-top:28px">3. AI 답변 노출 — 2026년 핵심 지표</h3>
-  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">2026년 연구에 따르면 Google AI Overviews는 질문형 검색에서 <strong>64.7%</strong>까지 활성화됩니다. "기미 레이저 어떤 기준으로 골라야 하나요?", "보톡스와 필러 차이는?"처럼 질문형 피부과 콘텐츠가 AI 답변에 노출될 가능성이 큽니다. → <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화 알아보기</a></p>
+  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">2026년 연구에 따르면 Google AI Overviews는 질문형 검색에서 <strong>64.7%</strong>까지 활성화됩니다. "기미 레이저 어떤 기준으로 골라야 하나요?", "보톡스와 필러 차이는?"처럼 질문형 피부과 콘텐츠가 AI 답변에 노출될 가능성이 큽니다. → <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화 알아보기</a></p>
   <div class="dc-table-wrap">
     <table class="dc-table">
       <thead><tr><th>AI 노출 조건</th><th>설명</th></tr></thead>
@@ -7736,23 +7736,23 @@ var pages={
   <div class="dc-case">
     <div class="dc-case-label">1단계</div>
     <h3>신뢰 설계</h3>
-    <p>의료진 소개, 진료 철학, 시술 전 상담 기준, 부작용 안내, 사후관리 정보를 정리합니다. 피부과 환자는 가격보다 "내 피부 상태를 제대로 진단해줄 수 있는가"를 봅니다. <a href="javascript:void(0)" onclick="sp('hospital')" style="color:var(--p)">홈페이지 제작 알아보기 →</a></p>
+    <p>의료진 소개, 진료 철학, 시술 전 상담 기준, 부작용 안내, 사후관리 정보를 정리합니다. 피부과 환자는 가격보다 "내 피부 상태를 제대로 진단해줄 수 있는가"를 봅니다. <a href="/website" onclick="sp('hospital');return false" style="color:var(--p)">홈페이지 제작 알아보기 →</a></p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">2단계</div>
     <h3>검색·AI 콘텐츠 설계</h3>
-    <p>"기미 레이저 전 확인할 점", "여드름 흉터 치료가 어려운 이유", "보톡스와 필러 차이", "리프팅 시술 전 주의사항"처럼 환자가 묻는 질문을 콘텐츠로 만듭니다. <a href="javascript:void(0)" onclick="sp('aeo')" style="color:var(--p)">AEO 최적화</a>로 AI 답변에 노출시킵니다.</p>
+    <p>"기미 레이저 전 확인할 점", "여드름 흉터 치료가 어려운 이유", "보톡스와 필러 차이", "리프팅 시술 전 주의사항"처럼 환자가 묻는 질문을 콘텐츠로 만듭니다. <a href="/aeo" onclick="sp('aeo');return false" style="color:var(--p)">AEO 최적화</a>로 AI 답변에 노출시킵니다.</p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">3단계</div>
     <h3>상담 전환 설계</h3>
-    <p>전화번호, 예약 버튼, 진료시간, 위치, 주차, 상담 절차가 콘텐츠 하단에 자연스럽게 이어져야 합니다. <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">지금 무료 전략 상담 신청 →</a></p>
+    <p>전화번호, 예약 버튼, 진료시간, 위치, 주차, 상담 절차가 콘텐츠 하단에 자연스럽게 이어져야 합니다. <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">지금 무료 전략 상담 신청 →</a></p>
   </div>
 </div>
 <div class="dc-cta-box">
   <h3>피부과 마케팅 상담신청</h3>
   <p>의료광고 기준 점검 + AI 검색 노출 현황 무료 분석을 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   ortho:{
@@ -7845,7 +7845,7 @@ var pages={
   <h3>2. 비수술 치료의 한계를 솔직하게 말해야 신뢰를 얻습니다</h3>
   <p>"도수치료로 모두 낫습니다"보다 "이런 상태라면 비수술로 충분하고, 이런 경우라면 수술을 고려해야 합니다"라고 말하는 원장님이 환자 입장에서 더 신뢰가 갑니다. 판단 기준을 보여주는 콘텐츠가 오히려 전환율이 높습니다.</p>
   <h3>3. AI 검색에서 "허리 디스크 치료법"이 검색될 때 내 병원이 나와야 합니다</h3>
-  <p>2026년 환자의 62%가 ChatGPT·네이버 AI에게 통증 관련 질문을 합니다. "허리 디스크 비수술 치료", "도수치료 몇 회면 효과 있나요" 같은 질문에 귀 병원 콘텐츠가 답변으로 채택되어야 합니다. → <a href="javascript:void(0)" onclick="sp('aeo')" style="color:var(--p)">AEO 최적화 알아보기</a></p>
+  <p>2026년 환자의 62%가 ChatGPT·네이버 AI에게 통증 관련 질문을 합니다. "허리 디스크 비수술 치료", "도수치료 몇 회면 효과 있나요" 같은 질문에 귀 병원 콘텐츠가 답변으로 채택되어야 합니다. → <a href="/aeo" onclick="sp('aeo');return false" style="color:var(--p)">AEO 최적화 알아보기</a></p>
   <h3>4. 의료광고 주의: "완치", "100% 효과" 표현은 법적 리스크</h3>
   <div class="dc-table-wrap"><table class="dc-table">
     <tr><th>⚠️ 위험 표현</th><th>✅ 대체 표현</th></tr>
@@ -8030,7 +8030,7 @@ var pages={
   </div>
 
   <h3 style="margin-top:28px">2. 질환별 콘텐츠는 증상-원인-진료 과정 순서로</h3>
-  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 한의학 이론보다 "내 증상이 왜 생겼고, 한의원에서는 무엇을 확인하는지"를 알고 싶어 합니다. 이 구조는 <a href="javascript:void(0)" onclick="sp('aeo')" style="color:var(--p)">AI 답변(AEO)</a>에서도 요약되기 쉬운 형태입니다.</p>
+  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 한의학 이론보다 "내 증상이 왜 생겼고, 한의원에서는 무엇을 확인하는지"를 알고 싶어 합니다. 이 구조는 <a href="/aeo" onclick="sp('aeo');return false" style="color:var(--p)">AI 답변(AEO)</a>에서도 요약되기 쉬운 형태입니다.</p>
   <ul class="dc-list">
     <li>증상 설명 (허리통증, 목통증, 교통사고 후유증, 소화불량 등)</li>
     <li>진료 전 확인사항 (통증 위치, 발생 시점, 악화 요인)</li>
@@ -8038,7 +8038,7 @@ var pages={
   </ul>
 
   <h3 style="margin-top:28px">3. 지역 검색 최적화 필수</h3>
-  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 "동네명 + 한의원", "교통사고 한의원", "추나요법 한의원"처럼 문제 중심으로 검색합니다. 홈페이지·블로그·플레이스 정보에 <strong>진료과목·위치·진료시간·주차·야간진료·예약방법</strong>이 정확히 정리되어야 합니다. → <a href="javascript:void(0)" onclick="sp('seo')" style="color:var(--p)">로컬 SEO 전략 보기</a></p>
+  <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">환자는 "동네명 + 한의원", "교통사고 한의원", "추나요법 한의원"처럼 문제 중심으로 검색합니다. 홈페이지·블로그·플레이스 정보에 <strong>진료과목·위치·진료시간·주차·야간진료·예약방법</strong>이 정확히 정리되어야 합니다. → <a href="/seo" onclick="sp('seo');return false" style="color:var(--p)">로컬 SEO 전략 보기</a></p>
 
   <h3 style="margin-top:28px">4. 광고보다 전환 동선이 먼저</h3>
   <p style="color:var(--ink2);line-height:1.7;margin-bottom:16px">광고 클릭 수는 늘었는데 예약은 늘지 않는 이유: 환자가 콘텐츠를 봐도 "그래서 어떻게 예약하지?"를 알 수 없기 때문입니다.</p>
@@ -8068,23 +8068,23 @@ var pages={
   <div class="dc-case">
     <div class="dc-case-label">1단계</div>
     <h3>신뢰 설계</h3>
-    <p>의료진 소개, 진료 철학, 진료 과정, 위치, 진료시간을 홈페이지·플레이스·카카오채널에 명확히 정리합니다. <a href="javascript:void(0)" onclick="sp('hospital')" style="color:var(--p)">병원 홈페이지 제작 알아보기 →</a></p>
+    <p>의료진 소개, 진료 철학, 진료 과정, 위치, 진료시간을 홈페이지·플레이스·카카오채널에 명확히 정리합니다. <a href="/website" onclick="sp('hospital');return false" style="color:var(--p)">병원 홈페이지 제작 알아보기 →</a></p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">2단계</div>
     <h3>검색 설계</h3>
-    <p>"강남 교통사고 한의원", "목통증 한의원", "추나요법 한의원"처럼 지역명+증상명+진료 항목 조합으로 콘텐츠를 만듭니다. <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO</a> + <a href="javascript:void(0)" onclick="sp('seo')" style="color:var(--p)">SEO</a>를 병행합니다.</p>
+    <p>"강남 교통사고 한의원", "목통증 한의원", "추나요법 한의원"처럼 지역명+증상명+진료 항목 조합으로 콘텐츠를 만듭니다. <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO</a> + <a href="/seo" onclick="sp('seo');return false" style="color:var(--p)">SEO</a>를 병행합니다.</p>
   </div>
   <div class="dc-case">
     <div class="dc-case-label">3단계</div>
     <h3>전환 설계</h3>
-    <p>콘텐츠 하단에는 전화, 상담, 플레이스, 예약 방법이 자연스럽게 이어져야 합니다. <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">지금 한의원 마케팅 상담 신청 →</a></p>
+    <p>콘텐츠 하단에는 전화, 상담, 플레이스, 예약 방법이 자연스럽게 이어져야 합니다. <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">지금 한의원 마케팅 상담 신청 →</a></p>
   </div>
 </div>
 <div class="dc-cta-box">
   <h3>한의원 마케팅 상담신청</h3>
   <p>지역 검색 + AI 답변 노출 현황 무료 분석을 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   plastic:{
@@ -8189,7 +8189,7 @@ var pages={
     <tr><td>공통</td><td>구글 마이비즈니스</td><td>Korea cosmetic surgery review</td></tr>
   </table></div>
   <h3>5. 상담 전환 동선 설계가 수술 전환율을 결정합니다</h3>
-  <p>성형외과는 상담에서 수술까지 평균 3~8주의 결정 기간이 있습니다. 상담 후 카카오 채널 구독 → 정기 정보 발송 → 재방문 예약 유도의 리텐션 동선이 필요합니다. → <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">상담 신청하기</a></p>
+  <p>성형외과는 상담에서 수술까지 평균 3~8주의 결정 기간이 있습니다. 상담 후 카카오 채널 구독 → 정기 정보 발송 → 재방문 예약 유도의 리텐션 동선이 필요합니다. → <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">상담 신청하기</a></p>
 </div>
 <div class="dc-section" id="ds-real-cases">
   <h2>원장님 입장의 현실적 사례</h2>
@@ -8509,7 +8509,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>내과 마케팅 상담신청</h3>
   <p>지역 내과 검색 순위 + AI 노출 현황 무료 분석을 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   angwa:{
@@ -8597,7 +8597,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>안과 마케팅 상담신청</h3>
   <p>라식·백내장 키워드 현황 + 경쟁사 분석 무료 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   shimui:{
@@ -8700,7 +8700,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>의료광고심의 무료 검토</h3>
   <p>현재 집행 중인 광고의 의료법 위반 여부를 무료로 검토해드립니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   medical_device:{
@@ -8778,7 +8778,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>의료기기 마케팅 상담신청</h3>
   <p>귀사 제품의 검색 노출 현황 + 경쟁사 분석을 무료로 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
 </div>`
   },
   implant:{
@@ -8848,7 +8848,7 @@ var pages={
     <li>의료광고 기준 준수</li>
     <li>공식 기관·법령 출처 함께 제시</li>
   </ul>
-  <p>→ <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화 자세히 보기</a> | <a href="javascript:void(0)" onclick="sp('aeo')" style="color:var(--p)">AEO 답변엔진 최적화</a></p>
+  <p>→ <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화 자세히 보기</a> | <a href="/aeo" onclick="sp('aeo');return false" style="color:var(--p)">AEO 답변엔진 최적화</a></p>
   <h3>4. 지역 키워드와 진료 동선을 함께 설계해야 합니다</h3>
   <p>임플란트 환자는 "내가 갈 수 있는 치과"를 찾습니다. 홈페이지·블로그·지도·플레이스에 치과명, 주소, 전화, 진료시간, 주차 정보가 반드시 일치해야 합니다.</p>
   <h3>5. 조회수가 아니라 상담 전환율을 봐야 합니다</h3>
@@ -8873,7 +8873,7 @@ var pages={
   </div>
   <div class="dc-faq-item">
     <strong>Q. AI 답변 노출은 기존 SEO와 다른가요?</strong>
-    <p>완전히 다르지 않습니다. Google은 생성형 AI 검색에서도 기존 SEO 모범 사례가 기반이 된다고 안내합니다. 다만 질문형 구조, 출처, 명확한 답변성이 더 중요해졌습니다. → <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화 알아보기</a></p>
+    <p>완전히 다르지 않습니다. Google은 생성형 AI 검색에서도 기존 SEO 모범 사례가 기반이 된다고 안내합니다. 다만 질문형 구조, 출처, 명확한 답변성이 더 중요해졌습니다. → <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화 알아보기</a></p>
   </div>
   <div class="dc-faq-item">
     <strong>Q. 신규 치과는 무엇부터 해야 하나요?</strong>
@@ -8882,9 +8882,9 @@ var pages={
 </div>
 <div class="dc-section" id="ds-model">
   <h2>베놈의 3단계 임플란트 마케팅 모델</h2>
-  <div class="dc-model-step"><div class="dc-model-num">1단계</div><div><h3>신뢰 설계</h3><p>의료진 소개, 진료 철학, 검사 과정, 사후관리 기준을 정리합니다. 환자는 가격보다 "내 상태를 제대로 설명해줄 곳인가"를 봅니다. → <a href="javascript:void(0)" onclick="sp('hospital')" style="color:var(--p)">병원 홈페이지 제작</a></p></div></div>
-  <div class="dc-model-step"><div class="dc-model-num">2단계</div><div><h3>검색·AI 콘텐츠 설계</h3><p>"임플란트 비용이 다른 이유", "뼈이식이 필요한 경우", "임플란트 수술 전 확인할 것"처럼 질문형 콘텐츠를 AI에 물어보면 OO치과가 노출되도록 설계합니다. → <a href="javascript:void(0)" onclick="sp('seo')" style="color:var(--p)">SEO 전략</a> + <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화</a></p></div></div>
-  <div class="dc-model-step"><div class="dc-model-num">3단계</div><div><h3>상담 전환 설계</h3><p>콘텐츠 하단에는 전화번호, 상담 가능 시간, 위치, 주차, 예약 방법이 자연스럽게 이어져야 합니다. → <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">상담 신청하기</a></p></div></div>
+  <div class="dc-model-step"><div class="dc-model-num">1단계</div><div><h3>신뢰 설계</h3><p>의료진 소개, 진료 철학, 검사 과정, 사후관리 기준을 정리합니다. 환자는 가격보다 "내 상태를 제대로 설명해줄 곳인가"를 봅니다. → <a href="/website" onclick="sp('hospital');return false" style="color:var(--p)">병원 홈페이지 제작</a></p></div></div>
+  <div class="dc-model-step"><div class="dc-model-num">2단계</div><div><h3>검색·AI 콘텐츠 설계</h3><p>"임플란트 비용이 다른 이유", "뼈이식이 필요한 경우", "임플란트 수술 전 확인할 것"처럼 질문형 콘텐츠를 AI에 물어보면 OO치과가 노출되도록 설계합니다. → <a href="/seo" onclick="sp('seo');return false" style="color:var(--p)">SEO 전략</a> + <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화</a></p></div></div>
+  <div class="dc-model-step"><div class="dc-model-num">3단계</div><div><h3>상담 전환 설계</h3><p>콘텐츠 하단에는 전화번호, 상담 가능 시간, 위치, 주차, 예약 방법이 자연스럽게 이어져야 합니다. → <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">상담 신청하기</a></p></div></div>
 </div>
 <div class="dc-case">
   <div class="dc-case-label">치과 · 임플란트 · 강남</div>
@@ -8930,7 +8930,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>임플란트 마케팅 상담신청</h3>
   <p>임플란트 키워드 현황 진단 + AI 답변 노출 체크를 무료로 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
   <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-kakao" style="margin-left:10px">카카오상담</a>
 </div>`
   },
@@ -8994,7 +8994,7 @@ var pages={
   <h3>3. 검색엔진 노출만 보지 말고 AI 답변 노출을 확인해야 합니다</h3>
   <p>"우리 치과는 검색엔진에는 노출되지만, <strong>AI 답변에도 노출되고 있는가?</strong>"</p>
   <p>AI 답변에 노출되기 쉬운 교정 콘텐츠 조건: 질문형 제목, 첫 문장의 핵심 답변, 표와 단계별 구조화, 의료광고 기준 준수, 진단·장치·유지관리 구체적 설명, 공식 출처 제시.</p>
-  <p>→ <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화 알아보기</a> | <a href="javascript:void(0)" onclick="sp('aeo')" style="color:var(--p)">AEO 답변엔진 최적화</a></p>
+  <p>→ <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화 알아보기</a> | <a href="/aeo" onclick="sp('aeo');return false" style="color:var(--p)">AEO 답변엔진 최적화</a></p>
   <h3>4. '교정 장치'보다 '환자 상황' 중심으로 콘텐츠를 나눠야 합니다</h3>
   <div class="dc-table-wrap"><table class="dc-table">
     <tr><th>환자 유형</th><th>추천 콘텐츠 주제</th></tr>
@@ -9026,7 +9026,7 @@ var pages={
   </div>
   <div class="dc-faq-item">
     <strong>Q. AI 답변 노출은 왜 중요한가요?</strong>
-    <p>환자가 "교정치과 고르는 법", "성인 교정 주의사항"처럼 AI에게 질문하는 경우가 늘고 있기 때문입니다. → <a href="javascript:void(0)" onclick="sp('aeo')" style="color:var(--p)">AEO 최적화 알아보기</a></p>
+    <p>환자가 "교정치과 고르는 법", "성인 교정 주의사항"처럼 AI에게 질문하는 경우가 늘고 있기 때문입니다. → <a href="/aeo" onclick="sp('aeo');return false" style="color:var(--p)">AEO 최적화 알아보기</a></p>
   </div>
   <div class="dc-faq-item">
     <strong>Q. 교정치과 마케팅은 블로그만 해도 되나요?</strong>
@@ -9035,9 +9035,9 @@ var pages={
 </div>
 <div class="dc-section" id="ds-model">
   <h2>베놈의 교정마케팅 3단계 모델</h2>
-  <div class="dc-model-step"><div class="dc-model-num">1단계</div><div><h3>신뢰 설계</h3><p>의료진 소개, 진단 과정, 교정 장치 선택 기준, 유지장치 관리법을 정리합니다. → <a href="javascript:void(0)" onclick="sp('hospital')" style="color:var(--p)">병원 홈페이지 제작</a></p></div></div>
-  <div class="dc-model-step"><div class="dc-model-num">2단계</div><div><h3>검색·AI 콘텐츠 설계</h3><p>"성인 교정 기간", "투명교정 가능한 경우", "발치교정 기준"처럼 환자가 실제로 묻는 질문을 콘텐츠로 만듭니다. → <a href="javascript:void(0)" onclick="sp('seo')" style="color:var(--p)">SEO 전략</a> + <a href="javascript:void(0)" onclick="sp('geo')" style="color:var(--p)">GEO 최적화</a></p></div></div>
-  <div class="dc-model-step"><div class="dc-model-num">3단계</div><div><h3>상담 전환 설계</h3><p>콘텐츠 하단에는 전화번호, 위치, 진료시간, 상담 절차, 주차 정보, 예약 방법이 자연스럽게 이어져야 합니다. → <a href="javascript:void(0)" onclick="sp('contact')" style="color:var(--p)">상담 신청</a></p></div></div>
+  <div class="dc-model-step"><div class="dc-model-num">1단계</div><div><h3>신뢰 설계</h3><p>의료진 소개, 진단 과정, 교정 장치 선택 기준, 유지장치 관리법을 정리합니다. → <a href="/website" onclick="sp('hospital');return false" style="color:var(--p)">병원 홈페이지 제작</a></p></div></div>
+  <div class="dc-model-step"><div class="dc-model-num">2단계</div><div><h3>검색·AI 콘텐츠 설계</h3><p>"성인 교정 기간", "투명교정 가능한 경우", "발치교정 기준"처럼 환자가 실제로 묻는 질문을 콘텐츠로 만듭니다. → <a href="/seo" onclick="sp('seo');return false" style="color:var(--p)">SEO 전략</a> + <a href="/geo" onclick="sp('geo');return false" style="color:var(--p)">GEO 최적화</a></p></div></div>
+  <div class="dc-model-step"><div class="dc-model-num">3단계</div><div><h3>상담 전환 설계</h3><p>콘텐츠 하단에는 전화번호, 위치, 진료시간, 상담 절차, 주차 정보, 예약 방법이 자연스럽게 이어져야 합니다. → <a href="/contact" onclick="sp('contact');return false" style="color:var(--p)">상담 신청</a></p></div></div>
 </div>
 <div class="dc-case">
   <div class="dc-case-label">치과 · 교정 · 분당</div>
@@ -9083,7 +9083,7 @@ var pages={
 <div class="dc-cta-box">
   <h3>교정 마케팅 상담신청</h3>
   <p>교정 키워드 현황 진단 + AI 답변 노출 체크를 무료로 제공합니다.</p>
-  <a href="javascript:void(0)" onclick="sp('contact')" class="btn btn-p">상담신청 →</a>
+  <a href="/contact" onclick="sp('contact');return false" class="btn btn-p">상담신청 →</a>
   <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" class="btn btn-kakao" style="margin-left:10px">카카오상담</a>
 </div>`
   }
