@@ -3,7 +3,7 @@
 // 이미지는 사용자가 spec.images.hero 등으로 덮어쓸 수 있음
 // 실사 이미지는 assets/images/ 에 있으며 raw.githubusercontent.com 으로 서빙
 
-const REPO_RAW = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/auto-site-factory/assets/images';
+const REPO_RAW = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/claude%2Fauto-website-generator-qz1azp/auto-site-factory/assets/images';
 
 const G = (path, w) => {
   const url = `${REPO_RAW}/${path}`;
