@@ -1,5 +1,6 @@
 /*!
- * VENOM Infographics — 브라우저용 인포그래픽 렌더러 14종 (블로그 + 사이트 내부 콘텐츠 공용)
+ * VENOM Infographics — 브라우저용 인포그래픽 렌더러 16종 (블로그 + 사이트 내부 콘텐츠 공용)
+ *   data-vshape로 특정 모양 고정: 숫자(회전 인덱스) 또는 이름(radar·areaLine·verticalColumns 등)
  * 사용(HTML): <div data-vinfo='[{"label":"신환 증가","value":320},{"label":"재계약률","value":98}]'></div>
  *   (value는 0~100 권장. 100 초과 값은 라벨에 원값 표기하고 막대는 상대 스케일)
  * 렌더: VInfo.scan(root)  — data-vinfo 요소를 찾아 모양을 결정적 회전 렌더.
@@ -118,13 +119,44 @@
       + '<div style="font-size:22px;font-weight:800;line-height:1">' + num(x) + '</div>'
       + '<div style="font-size:12px;margin-top:6px;opacity:.95;word-break:keep-all">' + esc(x.label) + '</div></div>'; }).join('') + '</div>'); }
 
+  // 15) 레이더(펜타곤) 차트 — 다축 비교(참고: 사업분야 레이더)
+  function radar(d) {
+    var n = d.length; if (n < 3) return verticalColumns(d);
+    var cx = 130, cy = 130, R = 92;
+    function pt(i, frac) { var ang = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(ang) * R * frac, cy + Math.sin(ang) * R * frac]; }
+    var rings = '', axes = '', labels = '', poly = [];
+    for (var g = 1; g <= 4; g++) { var rp = []; for (var k = 0; k < n; k++) { var p = pt(k, g / 4); rp.push(p[0].toFixed(1) + ',' + p[1].toFixed(1)); } rings += '<polygon points="' + rp.join(' ') + '" fill="none" stroke="#e5e8f0" stroke-width="1"/>'; }
+    for (var i = 0; i < n; i++) { var edge = pt(i, 1); axes += '<line x1="' + cx + '" y1="' + cy + '" x2="' + edge[0].toFixed(1) + '" y2="' + edge[1].toFixed(1) + '" stroke="#e5e8f0" stroke-width="1"/>';
+      var frac = clamp(d[i].value) / 100, vp = pt(i, frac); poly.push(vp[0].toFixed(1) + ',' + vp[1].toFixed(1));
+      var lp = pt(i, 1.17); labels += '<text x="' + lp[0].toFixed(1) + '" y="' + lp[1].toFixed(1) + '" font-size="11" fill="#475569" text-anchor="middle" dominant-baseline="middle">' + esc(d[i].label) + '</text>'; }
+    var dots = d.map(function (x, i) { var vp = pt(i, clamp(x.value) / 100); return '<circle cx="' + vp[0].toFixed(1) + '" cy="' + vp[1].toFixed(1) + '" r="3.5" fill="' + BRAND + '"/>'; }).join('');
+    return wrap('<svg viewBox="0 0 260 260" width="100%" style="max-width:320px;display:block;margin:0 auto">' + rings + axes
+      + '<polygon points="' + poly.join(' ') + '" fill="' + BRAND + '33" stroke="' + BRAND + '" stroke-width="2"/>' + dots + labels + '</svg>'); }
+  // 16) 라인/에어리어 차트 — 추이(참고: 월별 순이익 라인)
+  function areaLine(d) {
+    var n = d.length; if (n < 2) return statCards(d);
+    var W = 300, H = 152, pad = 26, mx = maxOf(d), gid = 'vla' + hashSeed(d.map(function (x) { return x.label; }).join('|'));
+    function X(i) { return pad + i * (W - 2 * pad) / (n - 1); }
+    function Y(v) { return H - pad - (clamp(v / mx * 100) / 100) * (H - 2 * pad); }
+    var pts = d.map(function (x, i) { return X(i).toFixed(1) + ',' + Y(x.value).toFixed(1); });
+    var area = 'M' + X(0).toFixed(1) + ',' + (H - pad) + ' L' + pts.join(' L') + ' L' + X(n - 1).toFixed(1) + ',' + (H - pad) + ' Z';
+    var dots = d.map(function (x, i) { return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(x.value).toFixed(1) + '" r="3.5" fill="#fff" stroke="' + BRAND + '" stroke-width="2"/>'; }).join('');
+    var labels = d.map(function (x, i) { return '<text x="' + X(i).toFixed(1) + '" y="' + (H - 7) + '" font-size="10" fill="#94a3b8" text-anchor="middle">' + esc(x.label) + '</text>'; }).join('');
+    return wrap('<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="display:block">'
+      + '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + BRAND + '" stop-opacity="0.28"/><stop offset="1" stop-color="' + BRAND + '" stop-opacity="0"/></linearGradient></defs>'
+      + '<path d="' + area + '" fill="url(#' + gid + ')"/>'
+      + '<path d="M' + pts.join(' L') + '" fill="none" stroke="' + BRAND + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+      + dots + labels + '</svg>'); }
+
   var RENDERERS = [horizontalBars, verticalColumns, progressRings, statCards, rankingList,
-    gaugeList, dotMeter, insetBars, stepFlow, bubbleScale, hexBadge, pillTrack, lollipop, heatGrid];
+    gaugeList, dotMeter, insetBars, stepFlow, bubbleScale, hexBadge, pillTrack, lollipop, heatGrid, radar, areaLine];
+  var NAMED = { horizontalBars: horizontalBars, verticalColumns: verticalColumns, progressRings: progressRings, statCards: statCards, rankingList: rankingList, gaugeList: gaugeList, dotMeter: dotMeter, insetBars: insetBars, stepFlow: stepFlow, bubbleScale: bubbleScale, hexBadge: hexBadge, pillTrack: pillTrack, lollipop: lollipop, heatGrid: heatGrid, radar: radar, areaLine: areaLine };
 
   function hashSeed(s) { var h = 0, str = String(s || ''); for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); }
 
   function render(data, seed) {
     if (!data || data.length < 1) return '';
+    if (typeof seed === 'string' && NAMED[seed]) { try { return NAMED[seed](data); } catch (e) { return ''; } }
     var idx = (typeof seed === 'number' ? seed : hashSeed(data.map(function (x) { return x.label; }).join('|'))) % RENDERERS.length;
     try { return RENDERERS[idx](data); } catch (e) { return ''; }
   }
@@ -137,7 +169,7 @@
       var el = nodes[i], data;
       try { data = JSON.parse(el.getAttribute('data-vinfo')); } catch (e) { continue; }
       var shape = el.getAttribute('data-vshape');
-      var seed = shape != null && /^\d+$/.test(shape) ? parseInt(shape, 10) : undefined;
+      var seed = shape == null ? undefined : (/^\d+$/.test(shape) ? parseInt(shape, 10) : shape);
       el.innerHTML = render(data, seed);
       el.setAttribute('data-vdone', '1');
     }
