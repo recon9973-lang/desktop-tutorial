@@ -408,6 +408,9 @@ const CATS = {geo:'GEO/AI마케팅',seo:'SEO마케팅',dental:'치과',skin:'피
 const $ = id => document.getElementById(id);
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// 인라인 onclick="fn('...')" 속성 안에 안전하게 넣기 위한 이스케이프(JS 문자열 + HTML 속성)
+function jsq(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function pick(arr,seed){return arr[Math.abs(seed)%arr.length];}
 function clampNum(v){return Math.max(0,Math.min(100,Math.round(parseFloat(v)||0)));}
 function syncInputs(){
@@ -564,13 +567,13 @@ function renderKW(d){
   if(d.volumes&&d.volumes.length){
     const max=Math.max(...d.volumes.map(v=>v.volume));
     html+=`<div class="qgroup"><div class="gl">📊 월 검색량 상위 <span class="hint">(네이버 검색광고)</span></div>`+
-      d.volumes.map(v=>`<div class="metric" style="cursor:pointer" onclick="addKw('${esc(v.keyword)}')">
+      d.volumes.map(v=>`<div class="metric" style="cursor:pointer" onclick="addKw('${jsq(v.keyword)}')">
         <span>${esc(v.keyword)}</span>
         <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;height:8px;width:${Math.max(8,Math.round(v.volume/max*120))}px;background:var(--accent);border-radius:4px"></span><b>${v.volume.toLocaleString()}</b></span></div>`).join('')+`</div>`;
   }
   if(d.related&&d.related.length)
     html+=`<div class="qgroup"><div class="gl">🔗 연관 검색어 <span class="hint">(누르면 보조 키워드로 추가)</span></div>`+
-      d.related.map(k=>`<span class="qpill" style="cursor:pointer" onclick="addKw('${esc(k)}')">${esc(k)} ＋</span>`).join('')+`</div>`;
+      d.related.map(k=>`<span class="qpill" style="cursor:pointer" onclick="addKw('${jsq(k)}')">${esc(k)} ＋</span>`).join('')+`</div>`;
   if(d.questions&&d.questions.length)
     html+=`<div class="qgroup"><div class="gl">❓ 자주 묻는 질문</div>`+
       d.questions.map(q=>`<span class="qpill">${esc(q)}</span>`).join('')+`</div>`;
@@ -588,7 +591,7 @@ function extractKW(){
   if(!top.length){$('kwExtract').innerHTML='<div class="hint">2회 이상 반복된 키워드가 없어요.</div>';return;}
   const max=top[0][1];
   $('kwExtract').innerHTML=`<div class="qgroup"><div class="gl" style="margin-top:12px">📌 추출된 키워드 <span class="hint">(누르면 보조 키워드로 추가)</span></div>`+
-    top.map(([w,n])=>`<span class="qpill" style="cursor:pointer;opacity:${0.55+0.45*n/max}" onclick="addKw('${esc(w)}')">${esc(w)} ·${n} ＋</span>`).join('')+`</div>`;
+    top.map(([w,n])=>`<span class="qpill" style="cursor:pointer;opacity:${0.55+0.45*n/max}" onclick="addKw('${jsq(w)}')">${esc(w)} ·${n} ＋</span>`).join('')+`</div>`;
 }
 
 /* ───────────── STEP2 타겟 ───────────── */
