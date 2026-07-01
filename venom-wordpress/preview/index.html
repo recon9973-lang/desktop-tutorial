@@ -4613,6 +4613,54 @@ body{padding-top:0}
 .dc-cta-box p{font-size:14px;color:var(--mute);margin-bottom:16px}
 .dc-tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
 .dc-tag-row span{font-size:11px;background:rgba(83,58,253,.08);color:var(--pd);padding:3px 10px;border-radius:9999px}
+/* ── 상세페이지 임팩트 강화 디자인 시스템 (전 진료과목·스포크 공용) ── */
+.dc-hero{position:relative;margin-bottom:36px;padding:34px 34px 30px;border-bottom:none;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#1c1e54,#2e2b8c 55%,#533afd);color:#fff;box-shadow:0 24px 50px -28px rgba(83,58,253,.55)}
+.dc-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 12%,rgba(249,107,238,.28),transparent 42%),radial-gradient(circle at 8% 95%,rgba(234,34,97,.24),transparent 40%);pointer-events:none}
+.dc-hero>*{position:relative;z-index:1}
+.dc-hero h1{color:#fff!important;font-weight:800!important;letter-spacing:-.02em!important}
+.dc-hero .dc-sub{color:rgba(255,255,255,.9)!important}
+.dc-hero .dc-tag-row span{background:rgba(255,255,255,.14);color:#e9e9ff}
+.dc-hero-media{margin-top:18px;border-radius:14px;overflow:hidden;aspect-ratio:16/6;background:linear-gradient(120deg,#665efd,#f96bee);position:relative;display:flex;align-items:flex-end}
+.dc-hero-media img{width:100%;height:100%;object-fit:cover;display:block}
+.dc-hero-media .cap{position:absolute;left:16px;bottom:12px;font-size:12px;color:rgba(255,255,255,.9);background:rgba(0,0,0,.25);padding:4px 12px;border-radius:20px;backdrop-filter:blur(4px)}
+/* 섹션 이미지(그레이스풀 폴백: 이미지 없으면 그라디언트 노출) */
+.dc-figure{margin:18px 0;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/7;box-shadow:0 14px 34px -22px rgba(13,37,61,.4)}
+.dc-figure.g1{background:linear-gradient(135deg,#533afd,#665efd)}.dc-figure.g2{background:linear-gradient(135deg,#ea2261,#f96bee)}
+.dc-figure.g3{background:linear-gradient(135deg,#0d9488,#7bc5c2)}.dc-figure.g4{background:linear-gradient(135deg,#4434d4,#7bc5c2)}
+.dc-figure.g5{background:linear-gradient(135deg,#2e2b8c,#ea2261)}
+.dc-figure img{width:100%;height:100%;object-fit:cover;display:block}
+.dc-figure figcaption{position:absolute;left:14px;bottom:12px;font-size:12px;color:#fff;background:rgba(0,0,0,.32);padding:5px 13px;border-radius:20px;backdrop-filter:blur(4px)}
+/* 섹션 카드화 + 좌측 액센트 */
+.dc-section{margin-bottom:34px;scroll-margin-top:90px}
+.dc-section>h2{position:relative;padding-left:16px}
+.dc-section>h2::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:5px;border-radius:3px;background:linear-gradient(var(--p),var(--ruby))}
+/* 핵심 강조 콜아웃 */
+.dc-callout{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,rgba(83,58,253,.06),rgba(249,107,238,.05));border:1px solid rgba(83,58,253,.16);border-radius:14px;padding:16px 18px;margin:16px 0}
+.dc-callout .ic{font-size:20px;flex-shrink:0}
+.dc-callout div{font-size:14px;color:var(--ink2);line-height:1.7}
+.dc-callout b{color:var(--pd)}
+/* 섹션별 출처(하단 몰지 않고 각 섹션 아래) */
+.dc-src{font-size:12px;color:var(--mute);margin:6px 0 2px;padding-left:14px;border-left:2px solid var(--border);line-height:1.6}
+.dc-src b{color:var(--ink2);font-weight:600}
+.dc-src a{color:var(--p);text-decoration:none}.dc-src a:hover{text-decoration:underline}
+/* 콘텐츠 내부링크 강조 */
+.dc-section p a,.dc-ilink{color:var(--p);font-weight:600;text-decoration:none;border-bottom:1px solid rgba(83,58,253,.3)}
+.dc-section p a:hover{border-bottom-color:var(--p)}
+/* KPI 카드 임팩트 */
+.dc-kpi-card{background:linear-gradient(180deg,#fff,#f8f9ff);border:1px solid var(--border);box-shadow:0 10px 24px -18px rgba(83,58,253,.4)}
+.dc-kpi-num{font-weight:800!important}
+/* 인포그래픽 삽입 여백 */
+.dc-info{margin:20px 0}
+/* 관련 마케팅 서비스(이미지 카드) */
+.dc-related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:16px}
+.dc-rel-card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff;transition:.2s;text-decoration:none;display:block}
+.dc-rel-card:hover{transform:translateY(-4px);box-shadow:0 18px 38px -22px rgba(83,58,253,.5);border-color:var(--ps)}
+.dc-rel-thumb{aspect-ratio:16/9;position:relative;display:flex;align-items:flex-end}
+.dc-rel-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.dc-rel-body{padding:12px 14px}
+.dc-rel-body h4{font-size:14px;font-weight:800;color:var(--bd);margin:0 0 3px}
+.dc-rel-body span{font-size:12px;color:var(--p);font-weight:700}
+@media(max-width:640px){.dc-hero{padding:22px 18px}.dc-figure{aspect-ratio:16/9}}
 .dc-case{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px}
 .dc-case-label{font-size:11px;font-weight:500;color:var(--p);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .dc-case h3{font-size:17px;font-weight:400;color:var(--ink);margin-bottom:8px}
@@ -7955,9 +8003,14 @@ function ld(cat, pushState){
   };
   var related=relatedMap[cat]||[];
   if(related.length){
-    var relHtml='<div class="dc-section" style="border-top:2px solid var(--border);margin-top:40px;padding-top:32px"><h3 style="font-size:18px;font-weight:600;color:var(--ink);margin-bottom:16px">관련 마케팅 서비스</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">';
-    related.forEach(function(r){
-      relHtml+='<a href="'+((DETAIL_ROUTES[r]&&DETAIL_ROUTES[r].path)||'#'+r)+'" onclick="ld(\''+r+'\');return false" style="display:block;padding:14px 16px;background:var(--soft);border:1px solid var(--border);border-radius:var(--r8);color:var(--p);font-weight:600;font-size:14px;transition:all .2s" onmouseover="this.style.background=\'var(--p)\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'var(--soft)\';this.style.color=\'var(--p)\'">'+catLabels[r]+' →</a>';
+    var _gc=['g1','g2','g3','g4','g5'];
+    var relHtml='<div class="dc-section" style="border-top:2px solid var(--border);margin-top:44px;padding-top:32px"><h2>관련 마케팅 서비스</h2><p>함께 보면 좋은 진료과목·서비스입니다.</p><div class="dc-related-grid">';
+    related.forEach(function(r,ri){
+      var rp=(DETAIL_ROUTES[r]&&DETAIL_ROUTES[r].path)||('#'+r);
+      var rl=catLabels[r]||( pages[r]&&pages[r].title)||r;
+      relHtml+='<a class="dc-rel-card" href="'+rp+'" onclick="ld(\''+r+'\');return false">'
+        +'<div class="dc-rel-thumb dc-figure '+_gc[ri%5]+'" style="margin:0;border-radius:0;box-shadow:none;aspect-ratio:16/9"><img src="images/dept/'+r+'.jpg" alt="'+rl+'" loading="lazy" onerror="this.remove()"><figcaption>'+rl+'</figcaption></div>'
+        +'<div class="dc-rel-body"><h4>'+rl+'</h4><span>자세히 보기 →</span></div></a>';
     });
     relHtml+='</div></div>';
     document.getElementById('detail-content').insertAdjacentHTML('beforeend',relHtml);
