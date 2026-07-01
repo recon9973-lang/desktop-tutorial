@@ -8,15 +8,15 @@
 <meta name="keywords" content="hospital marketing Korea,dental marketing,dermatology marketing,orthopedic clinic marketing,Korean medicine clinic marketing,plastic surgery marketing,GEO optimization,AEO optimization,medical SEO,AI search optimization,medical advertising agency">
 <meta name="robots" content="index, follow">
 <meta name="author" content="VENOM Hospital Marketing">
-<link rel="canonical" href="https://desktop-tutorial-chi-peach.vercel.app/en/">
-<link rel="alternate" hreflang="ko" href="https://desktop-tutorial-chi-peach.vercel.app/">
-<link rel="alternate" hreflang="en" href="https://desktop-tutorial-chi-peach.vercel.app/en/">
-<link rel="alternate" hreflang="x-default" href="https://desktop-tutorial-chi-peach.vercel.app/">
+<link rel="canonical" href="https://venom-new-site.vercel.app/en/">
+<link rel="alternate" hreflang="ko" href="https://venom-new-site.vercel.app/">
+<link rel="alternate" hreflang="en" href="https://venom-new-site.vercel.app/en/">
+<link rel="alternate" hreflang="x-default" href="https://venom-new-site.vercel.app/">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="VENOM Hospital Marketing — Korea's No.1 Medical Marketing Agency">
 <meta property="og:description" content="Specialist marketing for dental, dermatology, orthopedics & more. GEO·AEO·SEO triple-optimized. Average 300% new-patient growth.">
-<meta property="og:url" content="https://desktop-tutorial-chi-peach.vercel.app/en/">
+<meta property="og:url" content="https://venom-new-site.vercel.app/en/">
 <meta property="og:site_name" content="VENOM Hospital Marketing">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/venom-wordpress/preview/images/office.jpeg">
@@ -37,7 +37,7 @@
   "name": "VENOM Hospital Marketing",
   "alternateName": "Venom Marketing",
   "description": "Specialist medical marketing agency for dental, dermatology, orthopedics, Korean medicine & plastic surgery. Triple-optimized: GEO·AEO·SEO.",
-  "url": "https://desktop-tutorial-chi-peach.vercel.app/",
+  "url": "https://venom-new-site.vercel.app/",
   "telephone": "1661-4142",
   "email": "venomad@naver.com",
   "address": {
@@ -2071,7 +2071,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
 <!-- BreadcrumbList Schema (updated dynamically) -->
 <script id="bc-schema" type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
-  {"@type":"ListItem","position":1,"name":"Home","item":"https://desktop-tutorial-chi-peach.vercel.app/"}
+  {"@type":"ListItem","position":1,"name":"Home","item":"https://venom-new-site.vercel.app/"}
 ]}
 </script>
 
@@ -5399,7 +5399,7 @@ function switchTool(id){
 function toolReady(type){}
 
 // ── Insight tools (Naver DataLab/Search + AI recommendations) ──
-var _INSIGHTS='https://desktop-tutorial-chi-peach.vercel.app/api/insights';
+var _INSIGHTS='https://venom-new-site.vercel.app/api/insights';
 function _spin(t){return '<div style="text-align:center;padding:28px 0;color:var(--mute)">'+t+'</div>';}
 function _err(el,m){el.innerHTML='<div style="padding:16px;background:#fff5f5;border:1px solid #fed7d7;border-radius:10px;color:#c53030;font-size:13px">⚠️ '+m+'</div>';}
 
@@ -5467,7 +5467,7 @@ function runAeo(){
   }).catch(function(e){_err(el,'Request failed: '+e.message);});
 }
 
-var _PSI_PROXY='https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=psi';
+var _PSI_PROXY='https://venom-new-site.vercel.app/api/seo-proxy?type=psi';
 
 function runSEO(){
   var url=document.getElementById('seo-url').value.trim();
@@ -5678,7 +5678,7 @@ function runGEO(){
   el.style.display='block';
   el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">Analyzing page GEO signals...<br><small style="display:block;margin-top:8px">Takes about 5-15 seconds</small></div>';
 
-  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=fetch&url='+encodeURIComponent(rawUrl))
+  fetch('https://venom-new-site.vercel.app/api/seo-proxy?type=fetch&url='+encodeURIComponent(rawUrl))
     .then(function(r){return r.json();})
     .then(function(data){
       btn.textContent='Analyze';btn.disabled=false;
@@ -5905,7 +5905,7 @@ function runKW(){
   el.style.display='block';
   el.innerHTML='<div style="text-align:center;padding:32px 0;color:var(--mute)">Looking up actual search volume via the Naver Search Ads API...<br><small style="display:block;margin-top:8px">Takes about 3-5 seconds</small></div>';
 
-  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/seo-proxy?type=keyword&keyword='+encodeURIComponent(kw))
+  fetch('https://venom-new-site.vercel.app/api/seo-proxy?type=keyword&keyword='+encodeURIComponent(kw))
     .then(function(r){return r.json();})
     .then(function(data){
       btn.textContent='Look up volume';btn.disabled=false;
@@ -6613,7 +6613,7 @@ function secretAdminClick(){
 // ── Dynamic BreadcrumbList Schema update ──
 var pageLabels={home:'Home',ai:'AI Marketing',geo:'GEO Optimization',aeo:'AEO Optimization',seo:'SEO Optimization',hosp_mkt:'Clinic Marketing',services:'Online Marketing',hospital:'Clinic Website',blog:'Blog',contact:'Contact',detail:'Specialty Marketing',diagnose:'Free Diagnosis'};
 var catLabels={dental:'Dental Marketing',implant:'Implant Marketing',ortho_dental:'Orthodontics Marketing',skin:'Dermatology Marketing',ortho:'Orthopedics Marketing',oriental:'Korean Medicine Clinic Marketing',plastic:'Plastic Surgery Marketing',naegwa:'Internal Medicine Marketing',angwa:'Ophthalmology Marketing',shimui:'Medical Ad Review',medical_device:'Medical Device Marketing'};
-var BASE_URL='https://desktop-tutorial-chi-peach.vercel.app/';
+var BASE_URL='https://venom-new-site.vercel.app/';
 function updateBreadcrumb(items){
   var el=document.getElementById('bc-schema');if(!el)return;
   var list=items.map(function(it,i){return '{"@type":"ListItem","position":'+(i+1)+',"name":"'+it[0]+'","item":"'+it[1]+'"}';});
@@ -8926,7 +8926,7 @@ function submitForm(e){
   btn.textContent = '⏳ Sending...';
   status.style.display='none';
 
-  fetch('https://desktop-tutorial-chi-peach.vercel.app/api/contact', {
+  fetch('https://venom-new-site.vercel.app/api/contact', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(data)
