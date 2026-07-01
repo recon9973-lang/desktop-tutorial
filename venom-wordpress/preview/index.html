@@ -8024,12 +8024,27 @@ function ld(cat, pushState){
     shimui:['dental','skin','plastic'],medical_device:['ortho','naegwa','shimui']
   };
   var related=relatedMap[cat]||[];
+  var _relTitle='관련 마케팅 서비스', _relDesc='함께 보면 좋은 진료과목·서비스입니다.';
+  // 하위 페이지(스포크·L2 등 parent 보유)는 형제 콘텐츠로 "함께 보면 좋은 글" 자동 생성
+  if(!related.length){
+    var _par=DETAIL_ROUTES[cat]&&DETAIL_ROUTES[cat].parent;
+    if(_par){
+      var _sibs=[];
+      for(var _k in DETAIL_ROUTES){ if(_k!==cat && DETAIL_ROUTES[_k].parent===_par && pages[_k]) _sibs.push(_k); }
+      // 시작 오프셋을 cat 길이로 회전시켜 페이지마다 다른 형제가 노출되게 함
+      if(_sibs.length>3){ var _off=cat.length%_sibs.length; _sibs=_sibs.slice(_off).concat(_sibs.slice(0,_off)); }
+      related=_sibs.slice(0,3);
+      if(related.indexOf(_par)<0 && pages[_par] && related.length<3) related.push(_par);
+      _relTitle='함께 보면 좋은 글'; _relDesc='같은 진료과목의 관련 콘텐츠입니다.';
+    }
+  }
   if(related.length){
     var _gc=['g1','g2','g3','g4','g5'];
-    var relHtml='<div class="dc-section" style="border-top:2px solid var(--border);margin-top:44px;padding-top:32px"><h2>관련 마케팅 서비스</h2><p>함께 보면 좋은 진료과목·서비스입니다.</p><div class="dc-related-grid">';
+    var _short=function(s){ return String(s).split('—')[0].split(' - ')[0].replace(/\([^)]*\)/g,'').trim()||String(s); };
+    var relHtml='<div class="dc-section" style="border-top:2px solid var(--border);margin-top:44px;padding-top:32px"><h2>'+_relTitle+'</h2><p>'+_relDesc+'</p><div class="dc-related-grid">';
     related.forEach(function(r,ri){
       var rp=(DETAIL_ROUTES[r]&&DETAIL_ROUTES[r].path)||('#'+r);
-      var rl=catLabels[r]||( pages[r]&&pages[r].title)||r;
+      var rl=_short(catLabels[r]||( pages[r]&&pages[r].title)||r);
       relHtml+='<a class="dc-rel-card" href="'+rp+'" onclick="ld(\''+r+'\');return false">'
         +'<div class="dc-rel-thumb dc-figure '+_gc[ri%5]+'" style="margin:0;border-radius:0;box-shadow:none;aspect-ratio:16/9"><img src="images/dept/'+r+'.jpg" alt="'+rl+'" loading="lazy" onerror="this.remove()"><figcaption>'+rl+'</figcaption></div>'
         +'<div class="dc-rel-body"><h4>'+rl+'</h4><span>자세히 보기 →</span></div></a>';
