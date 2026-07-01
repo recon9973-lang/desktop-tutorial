@@ -1,0 +1,1173 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "updated": "2026-06-29",
+    "purpose": "성분별 효능·권장량·약물 상호작용 근거를 권위 기관/논문 출처(URL)와 함께 축적. 추천 결과의 '근거 보기'와 운영자 검수에 사용.",
+    "method": "각 항목은 WebSearch로 NIH ODS·NCCIH·National Eye Institute·MedlinePlus·NCBI(PMC) 등 권위 출처에서 확인. citation.url은 검색 결과에 실제로 나타난 URL. accessed=조회일.",
+    "evidence_strength": {
+      "established": "확립된 근거(기관 합의/RDA 근거)",
+      "moderate": "중등도 근거(다수 연구/메타분석 지지)",
+      "limited": "제한적 근거(연구 부족/혼재)",
+      "insufficient": "근거 불충분"
+    },
+    "disclaimer": "질병의 진단·치료 목적이 아닌 정보 제공용. 수치(RDA/UL 등)는 검색 요약 기반 1차 초안이며 서비스 적용 전 각 citation.url 원문과 대조 검수 권장. 일부 항목은 '출처 미확인'으로 표기됨.",
+    "sources_catalog": "data/sources.json 참조",
+    "kr_primary_source": "국내 1차 출처(식약처)는 kr_source로 17종 전부 반영. 2단계 표기 — (1) verified:true: 식품안전나라 deep-link 원문 검증 완료 3종(lutein·probiotics·milk_thistle). (2) verified:false: 「건강기능식품의 기준 및 규격」 고시·개별인정 표준 기능성 내용 14종(basis 필드에 고시형/개별인정 구분). deep-link URL은 외부망 차단으로 미검증 → 배포 시 식품안전나라 OpenAPI로 자동 확인 후 verified 승격 예정. 표준 고시문구는 지어낸 것이 아니라 식약처 고시 표기.",
+    "kr_source_tiers": {
+      "verified_true": "deep-link 원문 URL 확인 완료(인정+원문 링크 표기)",
+      "verified_false": "식약처 고시 표준 기능성 내용(고시 표준문구로 표기, deep-link는 배포 시 검증)"
+    }
+  },
+  "evidence": [
+    {
+      "ingredient_id": "omega3",
+      "name_ko": "오메가3 (EPA/DHA)",
+      "name_en": "Omega-3 Fatty Acids (EPA/DHA)",
+      "benefits": [
+        {
+          "claim": "심혈관 건강 지원 및 중성지방 저하",
+          "evidence_strength": "moderate",
+          "note": "심장보호 목적 0.4~1 g/일 권장; 고용량은 중성지방 저하에 사용되나 의료진 관리 필요",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Omega-3 Fatty Acids - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "임신 중 조산 위험 감소 (DHA+EPA)",
+          "evidence_strength": "moderate",
+          "note": "가임기 여성은 DHA+EPA 최소 250 mg/일, 임신 중 DHA 100~200 mg/일 추가 권장",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Omega-3 Fatty Acids - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "뇌·망막 등 세포 구성 및 인지 기능 지원",
+          "evidence_strength": "limited",
+          "note": "DHA는 망막·뇌·정자 세포에 특히 고농도로 존재",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Office of Dietary Supplements - Omega-3 Fatty Acids",
+            "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-Consumer/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "EPA+DHA 250~500 mg/일(일반), 심장보호 400 mg~1 g/일",
+        "ul": "EPA+DHA 합산 3 g/일 이하(보충제 형태로는 최대 2 g/일 권고)",
+        "note": "ALA에 대한 AI는 별도로 존재하나 EPA/DHA 자체에는 공식 RDA 없음. 고용량은 출혈 위험·면역 영향 가능",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Omega-3 Fatty Acids - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "항응고제/항혈소판제 (와파린 등)",
+          "effect": "고용량 오메가3는 혈소판 응집 억제로 출혈 위험을 높일 수 있음(임상 관찰에서는 영향이 혼재). 병용 시 의료진 상담 권고",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Office of Dietary Supplements - Omega-3 Fatty Acids (Consumer)",
+            "url": "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-Consumer/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "와파린 등 항응고제 복용자는 출혈 위험으로 병용 전 의료진 상담",
+        "EPA+DHA 총 3 g/일 초과 금지(보충제 2 g/일 이하 권장)",
+        "흔한 경미 부작용: 입맛 변화, 트림, 속쓰림, 위장 불편"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
+        "basis": "고시형 기능성원료(EPA·DHA 함유 유지)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "vitamin_d",
+      "name_ko": "비타민D",
+      "name_en": "Vitamin D",
+      "benefits": [
+        {
+          "claim": "뼈 건강 유지와 정상적인 칼슘 대사에 필수적이다",
+          "evidence_strength": "established",
+          "note": "RDA는 건강한 사람의 골 건강과 칼슘 대사 유지를 위해 설정됨",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin D - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "골다공증 등 골질환 예방에 도움이 된다",
+          "evidence_strength": "moderate",
+          "note": "충분한 섭취가 골질환 및 일부 퇴행성·자가면역 질환 보호와 연관",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin D - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "성인 600 IU(15 mcg)/일, 70세 초과 800 IU(20 mcg)/일",
+        "ul": "4,000 IU(100 mcg)/일",
+        "note": "상한섭취량은 의학적 감독 없이 무기한 섭취해도 부작용이 없는 최고 수준",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Vitamin D - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "올리스타트(orlistat, 체중감량제)",
+          "effect": "음식·보충제로부터 비타민D 흡수를 감소시킬 수 있음",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin D - Consumer Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminD-Consumer/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "스타틴(statins)",
+          "effect": "고용량 비타민D가 일부 스타틴(아토르바스타틴·로바스타틴·심바스타틴)의 효력을 낮출 수 있으며, 대사 효소를 두고 경쟁",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin D - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "티아지드계 이뇨제(thiazide diuretics)",
+          "effect": "비타민D 보충제와 병용 시 혈중 칼슘을 과도하게 높일 수 있음",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin D - Consumer Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminD-Consumer/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "상한섭취량 4,000 IU/일을 초과하지 말 것",
+        "스타틴·티아지드 이뇨제 복용 시 의료진과 상담",
+        "과다 섭취 시 고칼슘혈증 위험"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "칼슘과 인이 흡수되고 이용되는 데 필요 · 뼈의 형성과 유지에 필요 · 골다공증 발생 위험 감소에 도움을 줌",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "calcium",
+      "name_ko": "칼슘",
+      "name_en": "Calcium",
+      "benefits": [
+        {
+          "claim": "뼈 형성·유지에 필수적이며 골밀도 유지에 기여",
+          "evidence_strength": "established",
+          "note": "성인 RDA의 주요 설정 근거가 골 유지 및 칼슘 균형 유지임",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Calcium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "칼슘 섭취 부족 임신부에서 1,500~2,000 mg/일 보충이 자간전증 위험을 낮출 수 있음",
+          "evidence_strength": "moderate",
+          "note": "식이 칼슘이 부족한 임신부 대상",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Calcium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "1,000~1,200 mg/일 (성인, 연령에 따라 다름)",
+        "ul": "2,500 mg/일 (성인 19~50세); 51세 이상은 2,000 mg/일",
+        "note": "RDA는 식품·보충제 등 모든 급원 합산. 보충제 과다 섭취는 신장결석 위험 증가 가능",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Calcium - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "철분(iron)",
+          "effect": "칼슘이 철분 흡수를 방해할 수 있어 두 보충제는 다른 시간대에 복용 권장",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Iron - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "보충제 과다 섭취 시 신장결석 위험 증가 가능",
+        "고용량 보충 칼슘은 심혈관 위험과의 연관성이 보고됨(근거 혼재)",
+        "철분과 시간 간격을 두고 복용"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "뼈와 치아 형성에 필요 · 신경과 근육 기능 유지에 필요 · 정상적인 혈액응고에 필요 · 골다공증 발생 위험 감소에 도움을 줌",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "magnesium",
+      "name_ko": "마그네슘",
+      "name_en": "Magnesium",
+      "benefits": [
+        {
+          "claim": "근육·신경 기능, 혈당, 혈압 조절 및 단백질·뼈·DNA 합성에 관여",
+          "evidence_strength": "established",
+          "note": "체내 다수 생리 과정의 보조인자",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Magnesium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "일부 임신부에서 자간전증 위험을 낮출 가능성",
+          "evidence_strength": "limited",
+          "note": "연구 결과 혼재",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Magnesium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "남성 400~420 mg/일, 여성 310~320 mg/일 (성인, 출처상 연령·성별별 상이; 정확한 표는 출처 확인)",
+        "ul": "보충제·의약품 유래 마그네슘 기준 350 mg/일 (성인)",
+        "note": "UL은 보충제·의약품 유래분에만 적용되며 식품 유래분은 포함하지 않음. 고용량 보충 시 설사·오심·복부경련 유발 가능",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Magnesium - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "비스포스포네이트(예: 알렌드로네이트)",
+          "effect": "경구 비스포스포네이트 흡수 감소; 최소 2시간 간격 복용",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Magnesium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "테트라사이클린·퀴놀론계 항생제",
+          "effect": "불용성 복합체 형성으로 항생제 흡수 저하; 항생제는 마그네슘 복용 2시간 전 또는 4~6시간 후 복용",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Magnesium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "이뇨제(루프·티아지드계)",
+          "effect": "소변 내 마그네슘 손실 증가(칼륨보존성 이뇨제는 배설 감소)",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Magnesium - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "고용량 보충 시 설사·오심·복부경련 유발 가능",
+        "신기능 저하자는 고마그네슘혈증 위험으로 주의",
+        "항생제·비스포스포네이트와 복용 간격 필요"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "에너지 이용에 필요 · 신경과 근육 기능 유지에 필요",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "vitamin_b_complex",
+      "name_ko": "비타민B군",
+      "name_en": "Vitamin B Complex",
+      "benefits": [
+        {
+          "claim": "에너지 대사의 조효소로 작용해 에너지 생산을 돕는다",
+          "evidence_strength": "established",
+          "note": "티아민(B1)·리보플라빈(B2)·니아신(B3)이 크렙스 회로·전자전달계·해당과정 등에 관여",
+          "citation": {
+            "source": "NCBI PMC",
+            "title": "Exploring neuropsychiatric manifestations of vitamin B complex deficiencies",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12401900/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "신경계 건강 유지에 필수적이다",
+          "evidence_strength": "established",
+          "note": "B6·엽산(B9)·B12는 호모시스테인 메틸화에 필요하며 결핍 시 신경·정신과적 문제와 연관",
+          "citation": {
+            "source": "NCBI PMC",
+            "title": "Exploring neuropsychiatric manifestations of vitamin B complex deficiencies",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12401900/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "적혈구 생성과 정상 대사에 기여한다",
+          "evidence_strength": "established",
+          "note": "B군은 적혈구 형성, 뇌 기능, 신경계 유지에 관여",
+          "citation": {
+            "source": "MedlinePlus",
+            "title": "B Vitamins",
+            "url": "https://medlineplus.gov/bvitamins.html",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": null,
+        "note": "비타민B군은 8종의 개별 수용성 비타민(B1·B2·B3·B5·B6·B7·B9·B12) 묶음으로 단일 RDA/UL이 없음. 각 비타민별 권장량은 개별 자료 확인 필요 — 출처 미확인",
+        "citation": {
+          "source": "MedlinePlus",
+          "title": "B Vitamins",
+          "url": "https://medlineplus.gov/bvitamins.html",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [],
+      "key_cautions": [
+        "B군은 개별 비타민별 권장량·상한이 다르므로 단일 합산 용량으로 판단하지 말 것",
+        "B12는 수년간 간에 저장되나 다른 B군은 규칙적 섭취 필요",
+        "개별 성분(예: 니아신 고용량) 부작용은 별도 확인 필요"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "탄수화물·에너지 대사에 필요(B1) · 체내 에너지 생성에 필요(B2) · 단백질·아미노산 이용에 필요(B6) · 정상적인 엽산·아미노산 대사에 필요(B12)",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "vitamin_c",
+      "name_ko": "비타민C",
+      "name_en": "Vitamin C",
+      "benefits": [
+        {
+          "claim": "항산화 작용을 하며 정상적인 면역 기능에 중요하다",
+          "evidence_strength": "established",
+          "note": "콜라겐 생성에도 비타민C가 필요함",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin C - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "콜라겐 합성에 필요하다",
+          "evidence_strength": "established",
+          "note": "결합조직·피부·혈관 건강에 기여",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin C - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "규칙적 섭취 시 감기 증상·지속 기간을 줄일 수 있다",
+          "evidence_strength": "limited",
+          "note": "극심한 신체적 스트레스를 겪는 사람에서 감기 위험 감소 가능",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin C - Consumer Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminC-Consumer/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "성인 75~120 mg/일(흡연자는 35 mg 추가)",
+        "ul": "2,000 mg/일",
+        "note": "수용성 비타민으로 과량은 소변으로 배출됨",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Vitamin C - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "항암화학요법·방사선요법",
+          "effect": "항산화제로서 항종양제의 세포독성 효과를 길항할 수 있어, 특히 고용량 시 종양 전문의와 상담 필요",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin C - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "스타틴+니아신 병용요법",
+          "effect": "한 연구에서 비타민C 등 항산화제가 스타틴-니아신 병용의 심장 보호 효과를 감소시킴",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Vitamin C - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/VitaminC-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "상한섭취량 2,000 mg/일을 초과하지 말 것(고용량 시 위장장애·설사 가능)",
+        "항암치료 중에는 종양 전문의와 상담",
+        "고용량은 신장결석 소인이 있는 사람에서 주의"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "결합조직 형성과 기능 유지에 필요 · 철의 흡수에 필요 · 유해산소로부터 세포를 보호하는 데 필요(항산화)",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "lutein",
+      "name_ko": "루테인",
+      "name_en": "Lutein (with Zeaxanthin)",
+      "benefits": [
+        {
+          "claim": "노인성 황반변성(AMD) 진행 위험 감소",
+          "evidence_strength": "moderate",
+          "note": "AREDS2에서 루테인+제아잔틴 포함 제형이 베타카로틴 대체 시 효능 개선; AMD 진행 위험 약 26% 감소(베타카로틴 미포함 비교)",
+          "citation": {
+            "source": "National Eye Institute (NIH)",
+            "title": "NIH study confirms benefit of supplements for slowing age-related macular degeneration",
+            "url": "https://www.nei.nih.gov/research-and-training/research-news/nih-study-confirms-benefit-supplements-slowing-age-related-macular-degeneration",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "후기 건성 AMD에서 지도형 위축 확장 지연",
+          "evidence_strength": "moderate",
+          "note": "항산화 보충제가 중심와 방향 위축 진행을 늦춤",
+          "citation": {
+            "source": "National Eye Institute (NIH)",
+            "title": "Supplements slow disease progression during late stage of dry age-related macular degeneration",
+            "url": "https://www.nei.nih.gov/research-and-training/research-news/supplements-slow-disease-progression-during-late-stage-dry-age-related-macular-degeneration",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "AREDS2 연구 용량: 루테인 10 mg + 제아잔틴 2 mg/일",
+        "ul": "출처 미확인",
+        "note": "루테인 자체의 공식 RDA/AI는 없음. 제시된 수치는 AREDS2 임상 제형 기준",
+        "citation": {
+          "source": "National Eye Institute (NIH)",
+          "title": "NIH study confirms benefit of supplements for slowing age-related macular degeneration",
+          "url": "https://www.nei.nih.gov/research-and-training/research-news/nih-study-confirms-benefit-supplements-slowing-age-related-macular-degeneration",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [],
+      "key_cautions": [
+        "AREDS2 제형은 중기·후기 AMD 대상으로 연구됨; 초기 AMD 예방 효과는 입증되지 않음",
+        "보충 전 안과적 평가 및 의료진 상담 권장"
+      ],
+      "kr_source": {
+        "source": "식약처 식품안전나라",
+        "mfds_function": "노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음",
+        "url": "https://www.foodsafetykorea.go.kr/portal/healthyfoodlife/functionalityView.do?viewNo=14",
+        "verified": true,
+        "accessed": "2026-06-29"
+      }
+    },
+    {
+      "ingredient_id": "probiotics",
+      "name_ko": "프로바이오틱스 (유산균)",
+      "name_en": "Probiotics",
+      "benefits": [
+        {
+          "claim": "항생제 관련 설사(AAD) 위험 감소",
+          "evidence_strength": "moderate",
+          "note": "LGG 또는 Saccharomyces boulardii를 항생제 시작 2일 이내 투여 시 18~64세 성인·소아에서 위험 감소; 노인에서는 효과 미입증",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Probiotics - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Probiotics-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "C. difficile 관련 설사 위험 감소",
+          "evidence_strength": "moderate",
+          "note": "31개 연구(8,672명) 분석에서 항생제 투여 성인·소아의 C. difficile 설사 위험 감소를 중등도 확신으로 지지",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Probiotics - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Probiotics-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "위장 건강 및 면역 기능 지원",
+          "evidence_strength": "limited",
+          "note": "효과는 균주·적응증별로 상이",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Probiotics: Usefulness and Safety",
+            "url": "https://www.nccih.nih.gov/health/probiotics-usefulness-and-safety",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "AAD 예방: LGG 또는 S. boulardii 5×10^9 CFU/일 이상(ESPGHAN 2023). 연구상 50억~400억 CFU/일",
+        "ul": "출처 미확인",
+        "note": "균주·적응증별로 용량이 다르며 공식 RDA 없음",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Probiotics - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Probiotics-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "면역억제제/면역저하 상태 (장기이식 후, 항암치료, HIV/AIDS 등)",
+          "effect": "드물게 균혈증·진균혈증 등 감염 보고; 대부분 중증·면역저하 환자에서 발생. 효능이 입증된 균주·적응증으로 제한 권고(WGO)",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Probiotics - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Probiotics-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "면역저하자, 중증 환자, 미숙아는 감염 위험으로 주의 및 의료진 상담 필수",
+        "흔한 부작용은 경미한 가스 등 위장 증상",
+        "효과는 특정 균주에 한정되며 일반화하기 어려움"
+      ],
+      "kr_source": {
+        "source": "식약처 식품안전나라",
+        "mfds_function": "유산균 증식 및 유해균 억제·배변활동 원활에 도움을 줄 수 있음(개별인정형은 식후 혈당 상승 억제·피부 보습 등 추가 인정)",
+        "url": "https://www.foodsafetykorea.go.kr/portal/board/board.do?menu_grp=MENU_NEW01&menu_no=2660",
+        "verified": true,
+        "accessed": "2026-06-29"
+      }
+    },
+    {
+      "ingredient_id": "milk_thistle",
+      "name_ko": "밀크씨슬(실리마린)",
+      "name_en": "Milk Thistle (Silymarin)",
+      "benefits": [
+        {
+          "claim": "간 질환(만성 간질환·간염 등)에 대한 효능은 근거 제한적",
+          "evidence_strength": "limited",
+          "note": "전임상에서는 항산화·간보호 효과가 있으나, 사람 임상에서는 결과가 일관되지 않고 양질의 근거가 부족함",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Milk Thistle: Usefulness and Safety",
+            "url": "https://www.nccih.nih.gov/health/milk-thistle",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "C형 간염 치료 효과는 위약과 차이 없음(근거 제한적)",
+          "evidence_strength": "limited",
+          "note": "2017년 23개 임상 메타분석에서 ALT/AST를 미미하게 낮췄으나 임상적 의의는 없다고 결론",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Hepatitis C and Dietary Supplements: What the Science Says",
+            "url": "https://www.nccih.nih.gov/health/providers/digest/hepatitis-c-and-dietary-supplements-science",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": null,
+        "note": "확립된 RDA/UL 없음. 연구에서 사용된 실리마린 용량은 대략 140~420mg 범위(제품별로 80% 실리마린 표준화가 흔함)이나 정확한 표준 용량은 출처 미확인",
+        "citation": {
+          "source": "NCCIH",
+          "title": "Milk Thistle: Usefulness and Safety",
+          "url": "https://www.nccih.nih.gov/health/milk-thistle",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [],
+      "key_cautions": [
+        "경구 복용 시 대체로 내약성 양호하나 복부팽만·메스꺼움·가스 등 소화기 증상 가능",
+        "간 질환 치료를 자가 보충제로 대체하지 말 것"
+      ],
+      "kr_source": {
+        "source": "식약처 식품안전나라",
+        "mfds_function": "간 건강에 도움을 줄 수 있음",
+        "url": "https://www.foodsafetykorea.go.kr/portal/healthyfoodlife/functionalityView.do?viewNo=13",
+        "verified": true,
+        "accessed": "2026-06-29"
+      }
+    },
+    {
+      "ingredient_id": "iron",
+      "name_ko": "철분",
+      "name_en": "Iron",
+      "benefits": [
+        {
+          "claim": "철결핍성 빈혈(IDA) 예방 및 관련 문제 예방",
+          "evidence_strength": "established",
+          "note": "철의 가장 중요한 건강 기여",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Iron - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "임신부에서 철결핍성 빈혈 위험과 영아의 일부 부작용 위험 감소",
+          "evidence_strength": "moderate",
+          "note": null,
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Iron - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "남성 8 mg/일; 여성(50세 이하) 18 mg/일, 51세 이상 8 mg/일; 임신부 27 mg/일",
+        "ul": "45 mg/일 (성인)",
+        "note": "임신 중 UL 45 mg/일. 고용량 철분은 위장장애·변비 유발 가능",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Iron - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "레보티록신(levothyroxine)",
+          "effect": "동시 복용 시 레보티록신 효력 저하 가능; 레보티록신과 4시간 이내 동시 복용 금지 권고",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Iron - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "칼슘(calcium)",
+          "effect": "칼슘이 철분 흡수를 방해할 수 있어 다른 시간대 복용 권장",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Iron - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "프로톤펌프억제제(PPI, 예: 오메프라졸)",
+          "effect": "위산도 저하로 철 흡수 감소 가능; 철결핍 환자는 철분 보충 반응이 저하될 수 있음",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Iron - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "철 과잉 섭취/과부하 위험이 있는 사람은 보충 전 상담 필요",
+        "레보티록신·칼슘과 복용 간격 필요",
+        "고용량은 위장장애·변비 유발 가능"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "체내 산소 운반과 혈액 생성에 필요 · 에너지 생성에 필요",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "zinc",
+      "name_ko": "아연",
+      "name_en": "Zinc",
+      "benefits": [
+        {
+          "claim": "면역 기능, 단백질·DNA 합성, 성장·발달 등 다수 효소 작용에 필수",
+          "evidence_strength": "established",
+          "note": "다수 대사 과정의 필수 미량원소",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Zinc - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": "40 mg/일 (성인)",
+        "note": "UL은 아연이 구리 상태에 미치는 악영향 수준에 근거하여 설정됨. 성인 RDA 정확한 수치는 검색 결과에서 명확히 확인되지 않아 null 처리(출처 미확인)",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Zinc - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "구리(copper)",
+          "effect": "고용량 아연이 구리 흡수를 억제하여 구리 결핍 유발 가능(약 60 mg/일 수준에서도 구리 상태 지표 저하 보고)",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Zinc - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "퀴놀론·테트라사이클린계 항생제",
+          "effect": "항생제 흡수 저하 가능",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Zinc - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "페니실라민(penicillamine)",
+          "effect": "상호 작용으로 약물 효과에 영향 가능",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Zinc - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Zinc-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "장기 고용량 복용 시 구리 결핍 위험",
+        "항생제·페니실라민과 복용 간격 필요",
+        "성인 RDA 수치는 출처 미확인 상태"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "정상적인 면역기능에 필요 · 정상적인 세포분열에 필요",
+        "basis": "고시 영양성분 기능성",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "red_yeast_rice",
+      "name_ko": "홍국(레드이스트라이스)",
+      "name_en": "Red Yeast Rice",
+      "benefits": [
+        {
+          "claim": "LDL 콜레스테롤 저하에 도움될 수 있음(모나콜린 K 함유 제품)",
+          "evidence_strength": "moderate",
+          "note": "모나콜린 K는 처방 스타틴 로바스타틴과 화학적으로 동일하여 콜레스테롤을 낮출 수 있으나, 그만큼 스타틴과 동일한 위험·상호작용을 가짐",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Red Yeast Rice",
+            "url": "https://www.nccih.nih.gov/health/red-yeast-rice",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": null,
+        "note": "표준 보충 용량 없음. 모나콜린 K는 로바스타틴 등가물이며, FDA는 미량 이상의 모나콜린 K 함유 홍국을 미승인 신약으로 보아 보충제 판매 불가로 규정. 제품 간 모나콜린 K 함량 편차가 크고, 3mg/일 낮은 용량에서도 중증 이상반응 사례 보고됨",
+        "citation": {
+          "source": "NCCIH",
+          "title": "Red Yeast Rice",
+          "url": "https://www.nccih.nih.gov/health/red-yeast-rice",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "스타틴 및 기타 약물(스타틴과 동일한 상호작용)",
+          "effect": "모나콜린 K가 로바스타틴과 동일하므로 스타틴 계열과 같은 약물 상호작용 및 근육·신장·간 손상 위험 증가 가능",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Red Yeast Rice",
+            "url": "https://www.nccih.nih.gov/health/red-yeast-rice",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "모나콜린 K = 로바스타틴(스타틴) 등가물 — 스타틴과 동일한 근육·신장·간 손상 위험",
+        "이미 스타틴 복용 중이거나 간·신장 질환이 있으면 의사 상담 필요",
+        "일부 제품에 신장 독성 오염물질 시트리닌(citrinin)이 검출될 수 있음"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+        "basis": "고시형 기능성원료(홍국)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "coq10",
+      "name_ko": "코엔자임Q10",
+      "name_en": "Coenzyme Q10 (CoQ10)",
+      "benefits": [
+        {
+          "claim": "체내 자연 생성 물질로 심장 등 에너지 대사 관여",
+          "evidence_strength": "limited",
+          "note": "심장·간·신장·췌장에 가장 높은 농도로 존재; 보충제로 판매됨",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Coenzyme Q10",
+            "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "혈압에 대한 의미있는 효과는 근거 부족",
+          "evidence_strength": "insufficient",
+          "note": "현재 제한적 근거상 혈압에 유의미한 영향은 없을 가능성",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Coenzyme Q10",
+            "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "출처 미확인",
+        "ul": "출처 미확인",
+        "note": "공식 RDA/UL 없음. 심각한 부작용 보고는 없으나 불면·소화불량 등 경미 부작용 가능",
+        "citation": {
+          "source": "NCCIH",
+          "title": "Coenzyme Q10",
+          "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "와파린 (항응고제)",
+          "effect": "CoQ10가 와파린의 항응고 효과에 영향을 줄 수 있음. 병용 시 주의",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Coenzyme Q10",
+            "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "인슐린 (당뇨약)",
+          "effect": "CoQ10가 인슐린과 상호작용할 수 있음",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Coenzyme Q10",
+            "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "와파린 복용자는 항응고 효과 변화 가능성으로 의료진 상담",
+        "당뇨약(인슐린) 복용자는 상호작용 주의",
+        "혈압약과 병용 시 주의하되 혈압에 대한 단독 효과 근거는 불충분"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "항산화에 도움을 줄 수 있음 · 높은 혈압 감소에 도움을 줄 수 있음",
+        "basis": "고시형 기능성원료(코엔자임Q10)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "lactium",
+      "name_ko": "락티움(우유단백가수분해물/α-카소제핀)",
+      "name_en": "Lactium (Hydrolyzed Milk Protein / Alpha-casozepine)",
+      "benefits": [
+        {
+          "claim": "스트레스·수면 완화 효능은 근거 제한적",
+          "evidence_strength": "limited",
+          "note": "α-카소제핀이 GABA-A 수용체에 작용해 항불안 효과가 제시되나, 일부 임상에서는 수면지표가 위약과 유의한 차이를 보이지 않음. NCCIH/ODS 공식 팩트시트 없음(출처 미확인)",
+          "citation": {
+            "source": "PMC (NCBI)",
+            "title": "A Double-Blind, Randomized, Placebo-Controlled Crossover Clinical Study of the Effects of Alpha-s1 Casein Hydrolysate on Sleep Disturbance",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6682925/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": null,
+        "note": "확립된 RDA/UL 없음. NCCIH/ODS 팩트시트가 없어 표준 용량 출처 미확인",
+        "citation": {
+          "source": "PMC (NCBI)",
+          "title": "A Double-Blind, Randomized, Placebo-Controlled Crossover Clinical Study of the Effects of Alpha-s1 Casein Hydrolysate on Sleep Disturbance",
+          "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6682925/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [],
+      "key_cautions": [
+        "근거가 제한적이며 NCCIH/ODS 공식 자료 없음",
+        "우유 단백 유래로 유제품 알레르기가 있으면 주의"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "스트레스로 인한 긴장 완화에 도움을 줄 수 있음",
+        "basis": "개별인정형 기능성원료(유단백가수분해물)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "korean_ginseng",
+      "name_ko": "홍삼(고려인삼/아시아인삼, Panax ginseng)",
+      "name_en": "Korean/Asian Ginseng (Panax ginseng)",
+      "benefits": [
+        {
+          "claim": "특정 건강 효과에 대한 근거는 제한적",
+          "evidence_strength": "limited",
+          "note": "감기 총 횟수를 위약 대비 약 25% 줄이고 감기/급성 호흡기 감염 기간을 단축했다는 보고가 있으나 확정적 결론을 위해 추가 연구 필요",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Asian Ginseng: Usefulness and Safety",
+            "url": "https://www.nccih.nih.gov/health/asian-ginseng",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": null,
+        "note": "확립된 RDA/UL 없음. 권장량 범위의 단기(최대 6개월) 경구 복용은 대체로 안전해 보이나 장기 안전성은 불확실. 구체적 표준 용량은 출처 미확인",
+        "citation": {
+          "source": "NCCIH",
+          "title": "Asian Ginseng: Usefulness and Safety",
+          "url": "https://www.nccih.nih.gov/health/asian-ginseng",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "와파린(Coumadin) 등 항응고제",
+          "effect": "혈액 응고에 영향을 줄 수 있고 와파린과의 상호작용 가능성이 제기됨(연구 결과는 혼재)",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Asian Ginseng: Usefulness and Safety",
+            "url": "https://www.nccih.nih.gov/health/asian-ginseng",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "혈압약(칼슘채널차단제 등)",
+          "effect": "혈압에 영향을 줄 수 있어 고혈압약과 상호작용 가능성 있음",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Asian Ginseng: Usefulness and Safety",
+            "url": "https://www.nccih.nih.gov/health/asian-ginseng",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "가장 흔한 부작용은 불면증; 드물게 중증 발진·간손상·중증 알레르기 보고",
+        "혈당을 낮출 수 있어 당뇨 환자는 의사 상담 필요; 자가면역질환 악화 및 혈액응고 영향 가능",
+        "약물 복용 중이거나 임신·수유부, 영유아는 사용 전 전문가 상담"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "면역력 증진·피로 개선에 도움을 줄 수 있음(홍삼: 혈소판 응집 억제를 통한 혈액 흐름·기억력 개선·항산화·갱년기 여성 건강에 추가 인정)",
+        "basis": "고시형 기능성원료(홍삼)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "msm",
+      "name_ko": "MSM(식이유황, 메틸설포닐메탄)",
+      "name_en": "MSM (Methylsulfonylmethane)",
+      "benefits": [
+        {
+          "claim": "골관절염 통증·증상 개선 효과는 근거 제한적(불확실)",
+          "evidence_strength": "limited",
+          "note": "연구가 매우 적어 골관절염 증상에 도움되는지 불확실. 일부 메타분석은 통증 감소가 통계적으로 유의하더라도 임상적으로 유의미하지 않다고 봄",
+          "citation": {
+            "source": "NCCIH",
+            "title": "Osteoarthritis: In Depth",
+            "url": "https://www.nccih.nih.gov/health/osteoarthritis-in-depth",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": null,
+        "ul": null,
+        "note": "확립된 RDA/UL 없음. 표준 보충 용량은 출처 미확인",
+        "citation": {
+          "source": "NCCIH",
+          "title": "Osteoarthritis: In Depth",
+          "url": "https://www.nccih.nih.gov/health/osteoarthritis-in-depth",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [],
+      "key_cautions": [
+        "골관절염에 대한 연구가 매우 제한적이어서 효과가 불확실함",
+        "표준 처방을 보충제로 대체하지 말 것"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "관절 및 연골 건강에 도움을 줄 수 있음",
+        "basis": "고시형 기능성원료(MSM)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    },
+    {
+      "ingredient_id": "folate",
+      "name_ko": "엽산",
+      "name_en": "Folate",
+      "benefits": [
+        {
+          "claim": "임신 전후 섭취 시 태아 신경관 결손 위험을 줄인다",
+          "evidence_strength": "established",
+          "note": "수정 전 최소 1개월~임신 초기 2~3개월에 특히 중요",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Folate - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "세포 분열과 핵산(DNA) 합성에 필수적이다",
+          "evidence_strength": "established",
+          "note": "적절한 배아·태아 발달에 핵심 역할",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Folate - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "claim": "비타민B12와 함께 적혈구 형성에 기여한다",
+          "evidence_strength": "established",
+          "note": "조직 성장과 세포 기능을 조절하는 DNA 생성에 필요",
+          "citation": {
+            "source": "MedlinePlus",
+            "title": "B Vitamins",
+            "url": "https://medlineplus.gov/bvitamins.html",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "dosing": {
+        "rda_or_ai": "성인 400 mcg DFE/일(임신 시 600 mcg DFE/일). 가임기 여성은 보충제·강화식품으로 엽산 400~800 mcg/일 권장",
+        "ul": "엽산(folic acid) 1,000 mcg/일",
+        "note": "DFE = 천연 엽산 mcg + (1.7 × 엽산 mcg). 상한은 합성 엽산 기준이며 천연 식품 엽산에는 적용되지 않음",
+        "citation": {
+          "source": "NIH ODS",
+          "title": "Folate - Health Professional Fact Sheet",
+          "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/",
+          "accessed": "2026-06-29"
+        }
+      },
+      "interactions": [
+        {
+          "with": "메토트렉세이트(methotrexate)",
+          "effect": "암 치료 시 항암 효과를 방해할 수 있음(종양 전문의 상담 필요). 저용량(류마티스·건선) 시에는 위장 부작용을 줄일 수 있음",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Folate - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        },
+        {
+          "with": "항경련제(예: 페니토인)",
+          "effect": "항경련제가 혈청 엽산을 낮추고, 엽산 보충제는 이들 약물의 혈중 농도를 낮출 수 있음",
+          "citation": {
+            "source": "NIH ODS",
+            "title": "Folate - Health Professional Fact Sheet",
+            "url": "https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/",
+            "accessed": "2026-06-29"
+          }
+        }
+      ],
+      "key_cautions": [
+        "합성 엽산 상한섭취량 1,000 mcg/일을 초과하지 말 것",
+        "고용량 엽산은 비타민B12 결핍을 가릴 수 있음",
+        "메토트렉세이트·항경련제 복용 시 의료진과 상담",
+        "대장 선종 병력자는 고용량 엽산 주의"
+      ],
+      "kr_source": {
+        "source": "식약처 「건강기능식품의 기준 및 규격」 고시",
+        "mfds_function": "세포와 혈액 생성에 필요 · 태아 신경관의 정상 발달에 필요 · 혈액의 호모시스테인 수준을 정상으로 유지하는 데 필요",
+        "basis": "고시 영양성분 기능성(엽산)",
+        "verified": false,
+        "note": "고시 표준 기능성 내용. deep-link 원문은 배포 시 식품안전나라 OpenAPI로 자동 검증 예정(샌드박스 외부망 차단으로 현재 미검증)."
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: '당신의 영양제 — 근거 기반 맞춤 추천',
+  title: '당신의영양제',
   description: '식약처·논문 근거로 내 몸에 맞는 영양제를 추천받고, 최저가와 복용 알람까지.',
 };
 
@@ -9,11 +9,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
+          as="style"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
       </head>
       <body>
@@ -24,11 +24,17 @@ export default function RootLayout({ children }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56,
         }}>
           <a href="/" style={{ fontWeight: 700, fontSize: 18, color: 'var(--ink)', textDecoration: 'none', letterSpacing: -0.5 }}>
-            🧬 당신의 영양제
+            🧬 당신의영양제
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <a href="/products" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              🔎 제품 찾기
+            </a>
+            <a href="/my" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              📋 내 루틴
+            </a>
             <a href="/nearby" style={{ fontSize: 15, color: 'var(--ink-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-              🗺️ 약국·병원 찾기
+              🗺️ 약국 찾기
             </a>
             <a href="/survey" className="btn-primary" style={{ padding: '6px 20px', fontSize: 15 }}>
               무료로 시작하기

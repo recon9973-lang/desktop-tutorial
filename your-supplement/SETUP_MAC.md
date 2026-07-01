@@ -45,7 +45,7 @@ cd desktop-tutorial
 
 ### 2-2. 우리가 작업한 브랜치로 전환
 ```bash
-git checkout claude/hospital-pharmacy-brainstorm-pdafsj
+git checkout claude/continue-session-96nt5z
 ```
 - 이제 `~/Desktop/desktop-tutorial/your-supplement` 안에 모든 코드가 있어요.
 
@@ -108,5 +108,5 @@ refreshOffersFromNaver('omega3', undefined, 1000)
 | 하고 싶은 것 | 명령어 |
 |---|---|
 | 웹 실행 | `cd ~/Desktop/desktop-tutorial/your-supplement/apps/web && npm run dev` |
-| 최신 코드 받기 | `git pull origin claude/hospital-pharmacy-brainstorm-pdafsj` |
+| 최신 코드 받기 | `git pull origin claude/continue-session-96nt5z` |
 | 실행 중지 | `Control + C` |

@@ -1,18 +1,19 @@
-// 당신의 영양제 — 추천 엔진 (v0.1)
-// 객관 근거 기반 점수: score = evidence_weight * concern_fit * safety_factor
-//                              - overlap_penalty + synergy_bonus
+// 당신의영양제 — 추천 엔진 (웹 ESM 포트)
+// ⚠️ 캐노니컬 로직: ../../../engine/recommend.js (Node/CommonJS).
+//    Vercel Root=apps/web 이라 레포 루트 밖을 번들할 수 없어, 동일 로직을
+//    ESM으로 옮기고 데이터(apps/web/data/*.json)를 직접 import 한다.
+//    로직을 고칠 땐 두 파일을 함께 맞춰야 함(추천 결과 동일성 유지).
+//
+// score = evidence_weight * concern_fit * safety_factor - overlap_penalty + synergy_bonus
 // 후기/별점(review)은 점수에 미반영 — 별도 레이어.
 
-const fs = require('fs');
-const path = require('path');
+import ingredientsData from '../data/ingredients.json';
+import concernsData from '../data/concerns.json';
+import interactions from '../data/interactions.json';
+import rules from '../data/recommendation_rules.json';
 
-const DATA = path.join(__dirname, '..', 'data');
-const load = (f) => JSON.parse(fs.readFileSync(path.join(DATA, f), 'utf8'));
-
-const ingredients = load('ingredients.json').ingredients;
-const concerns = load('concerns.json').concerns;
-const interactions = load('interactions.json');
-const rules = load('recommendation_rules.json');
+const ingredients = ingredientsData.ingredients;
+const concerns = concernsData.concerns;
 
 const byId = Object.fromEntries(ingredients.map((i) => [i.id, i]));
 const concernById = Object.fromEntries(concerns.map((c) => [c.id, c]));
@@ -76,7 +77,7 @@ function relation(idA, idB) {
   return null;
 }
 
-function recommend(user) {
+export function recommend(user) {
   const { concerns: userConcerns = [], medications = [], allergies = [] } = user;
   const recommended = [];
   const notRecommended = [];
@@ -114,7 +115,7 @@ function recommend(user) {
       ? rules.scoring.overlap_penalty.value * (matchedConcerns - 1)
       : 0;
 
-    let score = ew * fit * safety - overlap;
+    const score = ew * fit * safety - overlap;
 
     recommended.push({
       ingredient_id: id,
@@ -158,7 +159,6 @@ function recommend(user) {
 
 // 길항(시간차) 기반 아침/저녁 분리 + 시너지는 같은 시간
 function buildSchedule(recommended) {
-  const ids = recommended.map((r) => r.ingredient_id);
   const morning = [];
   const evening = [];
   for (const r of recommended) {
@@ -188,5 +188,3 @@ function buildInteractionNotes(recommended) {
   }
   return notes;
 }
-
-module.exports = { recommend };

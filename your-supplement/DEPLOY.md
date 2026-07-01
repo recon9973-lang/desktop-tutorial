@@ -18,7 +18,7 @@
 3. 설정 화면에서 ⭐ **중요**:
    - **Root Directory**: `Edit` 눌러 → `your-supplement/apps/web` 선택
    - **Framework Preset**: `Next.js` (자동 감지됨)
-   - **Branch**: `claude/hospital-pharmacy-brainstorm-pdafsj` 선택
+   - **Branch**: `claude/continue-session-96nt5z` 선택
 
 ## STEP 3. 환경변수 입력 (Environment Variables)
 배포 화면의 **Environment Variables**에 아래를 추가 (Key / Value):
@@ -50,3 +50,51 @@
 ## 로컬 개발은 그대로 유지
 - 빠르게 실험하고 싶을 땐 기존 `npm run dev`(localhost:3000)도 계속 쓸 수 있어요.
 - 배포 URL = "남에게 보여주는 진짜 사이트", 로컬 = "내가 실험하는 곳".
+
+---
+
+## ✅ 배포 점검 결과 (2026-06-29)
+
+`npm run build` 통과(11페이지) + 프로덕션 서버 스모크 테스트 전부 정상:
+
+| 라우트 | 상태 | 비고 |
+|---|---|---|
+| `/` `/survey` `/result` `/nearby` `/my` | 200 | 홈·설문·결과·지도·내 루틴 |
+| `POST /api/recommend` | 200 | 추천 엔진(키 불필요) |
+| `GET /api/offers` | 200 | 키 없으면 예시 가격(NO_KEY) |
+| `GET /api/nearby` | 200 | 키 없으면 샘플 약국 |
+
+**키 없이도 전부 동작**하고, 키를 넣으면 실데이터로 바뀝니다(아래 표). 내 루틴(복용기록·체크인·소진예측)은 브라우저 `localStorage` 기반이라 서버·키 불필요.
+
+| 키 | 없을 때 | 넣으면 |
+|---|---|---|
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | 지도 자리에 안내, 목록은 정상 | /nearby 지도 임베드 |
+| `DATA_GO_KR_KEY` | 샘플 약국·응급실 | 실시간 공공데이터 |
+| `NAVER_CLIENT_ID/SECRET` | 예시 최저가 | 네이버쇼핑 실시간 최저가 |
+
+> 환경변수 템플릿: `apps/web/.env.example` 참고. 전부 **선택사항**.
+
+### ⚠️ 배포 전 확인할 것
+1. **브랜치**: 현재 최신 작업은 `claude/continue-session-96nt5z`. Vercel 프로젝트의 **Production Branch**를 이 브랜치로 두거나 `main`에 병합하세요. (이 저장소의 `main`에는 영양제 앱이 없음)
+2. **Root Directory**: `your-supplement/apps/web` (STEP 2 참고).
+3. 카카오맵 키를 쓰면 배포 URL을 카카오 플랫폼 도메인에 등록(STEP 5).
+
+---
+
+## 🔧 현재 배포 상태 진단 (2026-06-30)
+
+Vercel은 **이미 이 저장소에 연동**되어 있습니다. 다만 프로젝트가 **2개** 생성돼 문제가 있습니다:
+
+| Vercel 프로젝트 | Root Directory | 상태 | 문제 |
+|---|---|---|---|
+| `desktop-tutorial` | (저장소 루트) | ✅ 배포됨 | ❌ **잘못된 폴더** — 영양제 앱은 `your-supplement/apps/web`인데 루트를 배포해 엉뚱한 내용이 뜸 |
+| `desktop-tutorial-g6q8` | `your-supplement/apps/web` | ❌ 실패 | **무료 플랜 하루 100회 배포 한도 초과** (중복 프로젝트가 매 푸시마다 배포를 2배 소모) |
+
+**즉, 설정이 올바른 프로젝트(g6q8)는 한도 때문에 못 떴고, 잘못된 프로젝트가 대신 떠 있는 상태입니다.**
+
+### ✅ 해결 방법 (대시보드에서, 한 번만)
+1. **중복 프로젝트 삭제** — Vercel → `desktop-tutorial`(Root=루트) 프로젝트 → Settings → 맨 아래 **Delete Project**. (올바른 `desktop-tutorial-g6q8`만 남김 → 배포 소모도 절반으로)
+2. **배포 한도 풀리면 재배포** — 무료 플랜 한도는 ~24시간 후 리셋. 리셋 후 `desktop-tutorial-g6q8` → **Deployments → 우측 ⋯ → Redeploy**. (급하면 Pro 업그레이드 시 한도 없음)
+3. (선택) 그 프로젝트 **Settings → Git → Production Branch**를 `claude/continue-session-96nt5z`로, **Root Directory**가 `your-supplement/apps/web`인지 확인.
+
+> 코드·빌드는 정상입니다(`next build` 17페이지 통과). 남은 건 위 **대시보드 클릭 2~3번**뿐.

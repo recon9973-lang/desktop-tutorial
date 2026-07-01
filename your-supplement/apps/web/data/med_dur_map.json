@@ -1,0 +1,81 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "purpose": "설문 복용약 코드 → 식약처 DUR 조회용 한글 약명(대표 성분) 매핑. /api/dur 조회·공식 확인 링크에 사용.",
+    "note": "혈압약·항생제 등 '계열'은 대표 성분 1종으로 매핑(완전치 않음). DUR 미설정 시 nedrug 검색 링크로 대체. (확장: 항생제·항우울제·면역억제제·디곡신·경구피임약·루프이뇨제·스테로이드 추가)"
+  },
+  "map": {
+    "warfarin": {
+      "label": "와파린(항응고제)",
+      "dur_query": "와파린"
+    },
+    "antiplatelet": {
+      "label": "아스피린/항혈소판제",
+      "dur_query": "아스피린"
+    },
+    "antihypertensive": {
+      "label": "혈압약",
+      "dur_query": "암로디핀"
+    },
+    "thiazide": {
+      "label": "티아지드 이뇨제",
+      "dur_query": "히드로클로로티아지드"
+    },
+    "statin": {
+      "label": "스타틴(고지혈증약)",
+      "dur_query": "심바스타틴"
+    },
+    "levothyroxine": {
+      "label": "갑상선호르몬제",
+      "dur_query": "레보티록신"
+    },
+    "antidiabetic": {
+      "label": "당뇨약/인슐린",
+      "dur_query": "메트포르민"
+    },
+    "bisphosphonate": {
+      "label": "골다공증약",
+      "dur_query": "알렌드론산"
+    },
+    "ppi": {
+      "label": "위산억제제(PPI)",
+      "dur_query": "오메프라졸"
+    },
+    "anticonvulsant": {
+      "label": "항경련제",
+      "dur_query": "페니토인"
+    },
+    "methotrexate": {
+      "label": "메토트렉세이트",
+      "dur_query": "메토트렉세이트"
+    },
+    "antibiotics": {
+      "label": "항생제(테트라사이클린·퀴놀론 등)",
+      "dur_query": "시프로플록사신"
+    },
+    "antidepressant": {
+      "label": "항우울제(MAOI 등)",
+      "dur_query": "셀레길린"
+    },
+    "immunosuppressant": {
+      "label": "면역억제제",
+      "dur_query": "사이클로스포린"
+    },
+    "digoxin": {
+      "label": "디곡신(강심제)",
+      "dur_query": "디곡신"
+    },
+    "oral_contraceptive": {
+      "label": "경구피임약",
+      "dur_query": "에티닐에스트라디올"
+    },
+    "loop_diuretic": {
+      "label": "루프 이뇨제",
+      "dur_query": "푸로세미드"
+    },
+    "corticosteroid": {
+      "label": "스테로이드(코르티코)",
+      "dur_query": "프레드니솔론"
+    }
+  }
+}

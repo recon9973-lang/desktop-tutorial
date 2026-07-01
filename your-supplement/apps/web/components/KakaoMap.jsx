@@ -49,8 +49,8 @@ export default function KakaoMap({ items = [], myLocation, height = 320 }) {
       if (myLocation) {
         new kakao.maps.Circle({
           center: new kakao.maps.LatLng(myLocation.lat, myLocation.lng),
-          radius: 30, strokeWeight: 2, strokeColor: '#0075de', strokeOpacity: 0.9,
-          fillColor: '#0075de', fillOpacity: 0.4, map,
+          radius: 30, strokeWeight: 2, strokeColor: '#059669', strokeOpacity: 0.9,
+          fillColor: '#059669', fillOpacity: 0.4, map,
         });
       }
     }).catch(() => {});

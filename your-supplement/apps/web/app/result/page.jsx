@@ -1,31 +1,116 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import sourcesData from '../../data/sources.json';
+import evidenceData from '../../data/evidence.json';
+import concernsData from '../../data/concerns.json';
+import medDurMap from '../../data/med_dur_map.json';
+import { loadRoutine, saveRoutine, addItems } from '../../lib/routine';
+
+const MED_DUR = medDurMap.map;
+const nedrugSearch = (kw) => `https://nedrug.mfds.go.kr/searchDrug?searchKeyword=${encodeURIComponent(kw)}`;
+
+// 고민(concern) 매핑 — "왜 나에게 이 성분인가" 설명용
+const CONCERN_BY_ID = Object.fromEntries(concernsData.concerns.map((c) => [c.id, c]));
+// 사용자가 선택한 고민 중 이 성분을 포함하는 고민 라벨들
+function concernLabelsFor(ingredientId, userConcerns = []) {
+  return userConcerns
+    .map((cid) => CONCERN_BY_ID[cid])
+    .filter((c) => c && c.ingredients.includes(ingredientId))
+    .map((c) => c.label);
+}
 
 const DUR_LABEL = { continuous: '🟢 지속 복용', monitor: '🟡 3개월 후 점검', cyclic: '🔴 8주 후 점검' };
 const DUR_COLOR = { continuous: '#1aae39', monitor: '#dd5b00', cyclic: '#d63b3b' };
 
-/* 서버에서 엔진 호출 대신, 클라이언트에서 API 호출 (실제 구현 시 /api/recommend) */
-async function fetchRecommendation(user) {
-  // TODO: 실제론 fetch('/api/recommend', { method:'POST', body: JSON.stringify(user) })
-  // 데모: 정적 결과 반환
+// 성분별 근거 코퍼스(data/evidence.json) 조회 + 근거 강도 라벨/색상
+const EV = Object.fromEntries(evidenceData.evidence.map((e) => [e.ingredient_id, e]));
+const STRENGTH = {
+  established: { label: '확립된 근거', color: '#047857' },
+  moderate: { label: '중등도 근거', color: '#0d9488' },
+  limited: { label: '제한적 근거', color: '#d97706' },
+  insufficient: { label: '근거 불충분', color: '#6b7280' },
+};
+const STRENGTH_RANK = { established: 3, moderate: 2, limited: 1, insufficient: 0 };
+// 가장 강한 근거의 효능 1건을 대표로
+function topBenefit(ingredientId) {
+  const e = EV[ingredientId];
+  if (!e || !e.benefits?.length) return null;
+  return [...e.benefits].sort(
+    (a, b) => (STRENGTH_RANK[b.evidence_strength] ?? 0) - (STRENGTH_RANK[a.evidence_strength] ?? 0)
+  )[0];
+}
+
+// 출처 카탈로그(data/sources.json) → id 조회. 성분 evidence.sources[].type 를
+// 추적 가능한 1차 출처 링크로 연결한다.
+const SRC = Object.fromEntries(sourcesData.sources.map((s) => [s.id, s]));
+const EVIDENCE_SOURCE_ID = { MFDS: 'foodsafety_nutrient', 'NIH-ODS': 'nih_ods', NLM: 'medlineplus' };
+
+function evidenceLinks(sources) {
+  return (sources || []).map((s) => {
+    const cat = SRC[EVIDENCE_SOURCE_ID[s.type]];
+    return { ref: s.ref, label: cat ? cat.name : s.type, url: cat ? cat.url : null };
+  });
+}
+
+// 네이버 키가 없을 때 보여줄 성분별 예시 최저가(하루당 가격 직관화용).
+// 실시간 /api/offers 응답이 오면 _live=true 로 덮어쓴다.
+const SAMPLE_PRICE = {
+  vitamin_d:         { price: 12900, count: 90,  per_day: 143, vendor: '네이버',   product: '뉴트리원 비타민D 2000IU 90정' },
+  vitamin_b_complex: { price: 18900, count: 60,  per_day: 315, vendor: '쿠팡',     product: '고려은단 비타민B 컴플렉스 60정' },
+  lutein:            { price: 15900, count: 90,  per_day: 177, vendor: '아이허브', product: 'NOW 루테인 10mg 90정' },
+  magnesium:         { price: 14900, count: 120, per_day: 124, vendor: '네이버',   product: '솔가 마그네슘 글리시네이트 120정' },
+  omega3:            { price: 21900, count: 90,  per_day: 243, vendor: '쿠팡',     product: '닥터스베스트 알티지 오메가3 90정' },
+  vitamin_c:         { price: 11900, count: 120, per_day: 99,  vendor: '네이버',   product: '고려은단 비타민C 1000 120정' },
+  zinc:              { price: 9900,  count: 90,  per_day: 110, vendor: '아이허브', product: 'NOW 아연 글루콘산 100정' },
+  probiotics:        { price: 23900, count: 60,  per_day: 398, vendor: '쿠팡',     product: '락토핏 골드 유산균 60포' },
+};
+
+// /api/recommend 호출이 실패할 때만 쓰는 정적 폴백(데모).
+const STATIC_DEMO = {
+  recommended: [
+    { ingredient_id: 'vitamin_d',      name: '비타민D',      evidence_level: 3, score: 1.3,  duration_type: 'monitor',    functions: ['칼슘 흡수·뼈 형성에 필요', '면역 기능 유지'], warnings: [] },
+    { ingredient_id: 'vitamin_b_complex', name: '비타민B군', evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['에너지 대사에 필요', '정상적 신경 기능'], warnings: [] },
+    { ingredient_id: 'lutein',          name: '루테인',       evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['노화로 인한 눈 건강 유지에 도움'], warnings: [] },
+    { ingredient_id: 'magnesium',       name: '마그네슘',     evidence_level: 3, score: 0.7,  duration_type: 'continuous', functions: ['에너지 생성', '신경·근육 기능 유지'], warnings: [] },
+    { ingredient_id: 'omega3',          name: '오메가3',      evidence_level: 3, score: 0.51, duration_type: 'continuous', functions: ['혈중 중성지방 개선', '혈행 개선'], warnings: ['와파린 복용 중이면 의사·약사 상담 후 결정하세요.'] },
+  ],
+  not_recommended: [
+    { name: '홍국', reason: '스타틴 복용 중 병용 금지' },
+  ],
+  schedule: { morning: ['비타민D', '비타민B군', '루테인', '마그네슘'], evening: ['오메가3'] },
+  interactions_note: [
+    '🔗 비타민D + 마그네슘: 마그네슘이 비타민D 활성화에 관여 (함께 복용)',
+    '🔗 비타민D + 칼슘: 뼈 형성 시너지 (함께 복용)',
+  ],
+};
+
+// 추천 항목에 예시 최저가를 붙인다(있는 성분만). 실시간 가격이 오면 이후 덮어씀.
+function withSamplePrice(result) {
   return {
-    recommended: [
-      { ingredient_id: 'vitamin_d',      name: '비타민D',         evidence_level: 3, score: 1.3,  duration_type: 'monitor',    functions: ['칼슘 흡수·뼈 형성에 필요', '면역 기능 유지'], warnings: [], best_price: { price: 12900, count: 90, per_day: 143, vendor: '네이버', product: '뉴트리원 비타민D 2000IU 90정' } },
-      { ingredient_id: 'vitamin_b_complex', name: '비타민B군',    evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['에너지 대사에 필요', '정상적 신경 기능'], warnings: [], best_price: { price: 18900, count: 60, per_day: 315, vendor: '쿠팡', product: '고려은단 비타민B 컴플렉스 60정' } },
-      { ingredient_id: 'lutein',          name: '루테인',          evidence_level: 3, score: 1.0,  duration_type: 'continuous', functions: ['노화로 인한 눈 건강 유지에 도움'], warnings: [], best_price: { price: 15900, count: 90, per_day: 177, vendor: '아이허브', product: 'NOW 루테인 10mg 90정' } },
-      { ingredient_id: 'magnesium',       name: '마그네슘',        evidence_level: 3, score: 0.7,  duration_type: 'continuous', functions: ['에너지 생성', '신경·근육 기능 유지'], warnings: [], best_price: { price: 14900, count: 120, per_day: 124, vendor: '네이버', product: '솔가 마그네슘 글리시네이트 120정' } },
-      { ingredient_id: 'omega3',          name: '오메가3',         evidence_level: 3, score: 0.51, duration_type: 'continuous', functions: ['혈중 중성지방 개선', '혈행 개선'], warnings: ['와파린 복용 중이면 의사·약사 상담 후 결정하세요.'], best_price: { price: 21900, count: 90, per_day: 243, vendor: '쿠팡', product: '닥터스베스트 알티지 오메가3 90정' } },
-    ],
-    not_recommended: [
-      { name: '홍국', reason: '스타틴 복용 중 병용 금지' },
-    ],
-    schedule: { morning: ['비타민D', '비타민B군', '루테인', '마그네슘'], evening: ['오메가3'] },
-    interactions_note: [
-      '🔗 비타민D + 마그네슘: 마그네슘이 비타민D 활성화에 관여 (함께 복용)',
-      '🔗 비타민D + 칼슘: 뼈 형성 시너지 (함께 복용)',
-    ],
+    ...result,
+    recommended: result.recommended.map((r) =>
+      SAMPLE_PRICE[r.ingredient_id] ? { ...r, best_price: SAMPLE_PRICE[r.ingredient_id] } : r
+    ),
   };
+}
+
+// 실제 추천 엔진(/api/recommend) 호출 → 실패 시 정적 데모로 폴백.
+async function fetchRecommendation(user) {
+  try {
+    const res = await fetch('/api/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user),
+    });
+    if (!res.ok) throw new Error('recommend api ' + res.status);
+    const data = await res.json();
+    if (!data || !Array.isArray(data.recommended)) throw new Error('bad shape');
+    return withSamplePrice(data);
+  } catch (e) {
+    return withSamplePrice(STATIC_DEMO);
+  }
 }
 
 // 주요 구매처 검색 링크 (API 키·제휴 없이도 바로 동작하는 딥링크)
@@ -114,14 +199,34 @@ function ReviewBox({ ingredientId }) {
 }
 
 export default function ResultPage() {
+  const router = useRouter();
   const [result, setResult] = useState(null);
+  const [user, setUser] = useState(null);
   const [kakaoSent, setKakaoSent] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  const [durByMed, setDurByMed] = useState({});
 
   const [priceLive, setPriceLive] = useState(false);
+
+  // 추천 결과 → 내 루틴에 추가(복용 스케줄로 아침/저녁 슬롯 매핑) → /my 이동
+  function addAllToRoutine() {
+    if (!result) return;
+    const morning = new Set(result.schedule?.morning || []);
+    const evening = new Set(result.schedule?.evening || []);
+    const items = result.recommended.map((r) => {
+      const slots = [];
+      if (morning.has(r.name)) slots.push('morning');
+      if (evening.has(r.name)) slots.push('evening');
+      return { id: r.ingredient_id, name: r.name, slots: slots.length ? slots : ['morning'], duration_type: r.duration_type };
+    });
+    saveRoutine(addItems(loadRoutine(), items));
+    router.push('/my');
+  }
 
   useEffect(() => {
     const raw = sessionStorage.getItem('survey_user');
     const user = raw ? JSON.parse(raw) : { concerns: ['fatigue', 'eye'], medications: [], allergies: [] };
+    setUser(user);
     fetchRecommendation(user).then(async (base) => {
       setResult(base); // 먼저 샘플로 즉시 표시
       // 네이버 API로 실제 최저가 교체 (키 있으면). 실패한 항목은 샘플 유지.
@@ -145,11 +250,43 @@ export default function ResultPage() {
     });
   }, []);
 
+  // 복용약 → 식약처 DUR 조회(설정 시 실데이터, 아니면 공식 링크로 폴백)
+  useEffect(() => {
+    const meds = (user?.medications || []).filter((m) => MED_DUR[m]);
+    meds.forEach(async (m) => {
+      try {
+        const res = await fetch(`/api/dur?q=${encodeURIComponent(MED_DUR[m].dur_query)}`);
+        const data = await res.json();
+        setDurByMed((prev) => ({ ...prev, [m]: data }));
+      } catch {
+        setDurByMed((prev) => ({ ...prev, [m]: { source: 'none' } }));
+      }
+    });
+  }, [user]);
+
   if (!result) return (
     <div style={{ textAlign: 'center', padding: '120px 24px' }}>
       <p className="title" style={{ color: 'var(--ink-muted)' }}>🧬 분석 중...</p>
     </div>
   );
+
+  // ── P2 요약/안전 계산 ──
+  const userConcerns = user?.concerns || [];
+  const concernLabels = userConcerns.map((id) => CONCERN_BY_ID[id]?.label).filter(Boolean);
+  const top3 = result.recommended.slice(0, 3);
+  const warns = result.recommended.flatMap((r) => {
+    const ws = r.warning_sources || (r.warnings || []).map((t) => ({ text: t, source: null }));
+    return ws.map((w) => ({ name: r.name, text: w.text, src: w.source }));
+  });
+  const separations = (result.interactions_note || []).filter((n) => n.startsWith('⚠️'));
+  const synergies = (result.interactions_note || []).filter((n) => n.startsWith('🔗'));
+  const excluded = result.not_recommended || [];
+  const hasSafety = warns.length || separations.length || excluded.length;
+  const lifestyle = user?.lifestyle || {};
+  const lifeNotes = [];
+  if (lifestyle.smoking && lifestyle.smoking !== 'none') lifeNotes.push('흡연 시 비타민C 소모가 커요 — 항산화 성분을 우선 고려하세요.');
+  if (lifestyle.drinking && lifestyle.drinking !== 'none') lifeNotes.push('음주가 잦다면 간 건강(밀크씨슬)도 함께 살펴보세요.');
+  const detailOpen = showDetail || result.recommended.length <= 3;
 
   return (
     <div style={{ background: 'var(--canvas-soft)', minHeight: '100vh' }}>
@@ -159,7 +296,7 @@ export default function ResultPage() {
           근거 기반 맞춤 추천
         </span>
         <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: -0.75, marginBottom: 8 }}>
-          🧬 당신의 영양제
+          🧬 당신의영양제
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15 }}>
           모든 추천은 식약처 인정 근거 기반 · 후기·광고 미반영
@@ -180,6 +317,100 @@ export default function ResultPage() {
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 24px' }}>
 
+        {/* P2: 안전 요약 — 불안 먼저 해소 */}
+        <div style={{
+          background: hasSafety ? '#fff8f0' : 'rgba(5,150,105,0.06)',
+          border: `1px solid ${hasSafety ? 'rgba(217,119,6,0.3)' : 'rgba(5,150,105,0.2)'}`,
+          borderRadius: 'var(--r-xl)', padding: '16px 20px', marginBottom: 16,
+        }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: hasSafety ? 'var(--accent-orange)' : 'var(--primary-active)', marginBottom: hasSafety ? 10 : 0 }}>
+            {hasSafety ? '⚠️ 복용 전 먼저 확인하세요' : '✅ 안전 확인 완료 — 충돌하는 추천이 없어요'}
+          </p>
+          {excluded.map((n, i) => (
+            <p key={'x' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>🚫 <strong>{n.name}</strong> 제외 — {n.reason}</p>
+          ))}
+          {warns.map((w, i) => (
+            <p key={'w' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>
+              ⚠️ <strong>{w.name}</strong> — {w.text}
+              {w.src?.url && (
+                <a href={w.src.url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>· {w.src.name} →</a>
+              )}
+            </p>
+          ))}
+          {separations.map((s, i) => (
+            <p key={'s' + i} style={{ fontSize: 13.5, color: 'var(--ink-secondary)', marginTop: 6 }}>{s} <span style={{ color: 'var(--ink-faint)' }}>— 시간 분리 권장</span></p>
+          ))}
+        </div>
+
+        {/* 식약처 DUR — 복용약 공식 확인 */}
+        {(user?.medications || []).some((m) => MED_DUR[m]) && (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-xl)', padding: '14px 18px', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>🏛️ 식약처 DUR — 복용약 공식 확인</p>
+            {(user.medications).filter((m) => MED_DUR[m]).map((m) => {
+              const info = MED_DUR[m];
+              const dur = durByMed[m];
+              const items = dur?.items || [];
+              return (
+                <div key={m} style={{ marginTop: 6 }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink-secondary)' }}>{info.label}</span>
+                  {items.length > 0 ? (
+                    items.slice(0, 3).map((it, i) => (
+                      <p key={i} style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 2 }}>· {it.against ? `${it.against} ` : ''}{it.reason || it.type}</p>
+                    ))
+                  ) : (
+                    <a href={nedrugSearch(info.dur_query)} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', marginLeft: 8 }}>
+                      식약처에서 ‘{info.dur_query}’ 확인 →
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+            <p style={{ fontSize: 11.5, color: 'var(--ink-faint)', marginTop: 8 }}>※ 계열 대표 성분 기준. 정확한 병용금기는 처방 의·약사와 확인하세요.</p>
+          </div>
+        )}
+
+        {/* P2: 개인화 핵심 요약 */}
+        <div style={{ marginBottom: 24 }}>
+          <h2 className="title" style={{ marginBottom: 4 }}>
+            {concernLabels.length ? `${concernLabels.join(' · ')} 고민에 맞춘 핵심 ${top3.length}가지` : `핵심 추천 ${top3.length}가지`}
+          </h2>
+          <p style={{ fontSize: 13.5, color: 'var(--ink-muted)', marginBottom: 14 }}>근거 등급이 높은 순으로 골랐어요. 자세한 근거·가격은 아래에서 볼 수 있어요.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {top3.map((r, i) => {
+              const labels = concernLabelsFor(r.ingredient_id, userConcerns);
+              const tb = topBenefit(r.ingredient_id);
+              const st = tb ? (STRENGTH[tb.evidence_strength] || STRENGTH.insufficient) : null;
+              return (
+                <div key={r.ingredient_id} className="card-elevated" style={{ borderRadius: 'var(--r-lg)', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 'var(--r-md)', flexShrink: 0,
+                    background: i === 0 ? 'var(--primary)' : 'var(--canvas-soft)',
+                    color: i === 0 ? '#fff' : 'var(--ink-muted)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14,
+                  }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <strong style={{ fontSize: 16 }}>{r.name}</strong>
+                      {st && <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: st.color, borderRadius: 'var(--r-full)', padding: '1px 8px' }}>{st.label}</span>}
+                    </div>
+                    <p style={{ fontSize: 13.5, color: 'var(--ink-muted)', marginTop: 3 }}>
+                      {labels.length ? <><strong style={{ color: 'var(--primary-active)' }}>{labels.join('·')}</strong>에 도움</> : (r.functions?.[0] || '')}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {lifeNotes.length > 0 && (
+            <div style={{ marginTop: 12, background: 'var(--canvas-soft)', borderRadius: 'var(--r-md)', padding: '10px 14px' }}>
+              {lifeNotes.map((n, i) => (
+                <p key={i} style={{ fontSize: 13, color: 'var(--ink-secondary)', marginTop: i ? 4 : 0 }}>💡 {n}</p>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Schedule box */}
         <div style={{ background: 'var(--surface)', borderRadius: 'var(--r-xl)', border: '1px solid var(--hairline)', padding: '20px 24px', marginBottom: 24 }}>
           <h2 className="title" style={{ marginBottom: 16 }}>📅 오늘의 복용 스케줄</h2>
@@ -195,17 +426,26 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Interaction notes */}
-        {result.interactions_note.length > 0 && (
-          <div style={{ background: 'rgba(0,117,222,0.05)', borderRadius: 'var(--r-lg)', border: '1px solid rgba(0,117,222,0.15)', padding: '16px 20px', marginBottom: 24 }}>
-            {result.interactions_note.map((n, i) => (
-              <p key={i} style={{ fontSize: 14, color: 'var(--ink-secondary)', marginBottom: i < result.interactions_note.length - 1 ? 8 : 0 }}>{n}</p>
+        {/* Interaction notes — 시너지(함께 복용)만. 길항은 안전 요약으로 이동 */}
+        {synergies.length > 0 && (
+          <div style={{ background: 'rgba(5,150,105,0.06)', borderRadius: 'var(--r-lg)', border: '1px solid rgba(5,150,105,0.18)', padding: '16px 20px', marginBottom: 24 }}>
+            {synergies.map((n, i) => (
+              <p key={i} style={{ fontSize: 14, color: 'var(--ink-secondary)', marginBottom: i < synergies.length - 1 ? 8 : 0 }}>{n}</p>
             ))}
           </div>
         )}
 
-        {/* Recommended list */}
-        <h2 className="title" style={{ marginBottom: 16 }}>✅ 추천 영양제</h2>
+        {/* Recommended list — 상세(인지부하↓ 위해 접기 가능) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 8 }}>
+          <h2 className="title">✅ 추천 영양제 전체 ({result.recommended.length})</h2>
+          {result.recommended.length > 3 && (
+            <button onClick={() => setShowDetail((v) => !v)}
+              style={{ background: 'none', border: '1px solid var(--hairline)', borderRadius: 'var(--r-full)', padding: '6px 14px', fontSize: 13, fontWeight: 600, color: 'var(--ink-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {detailOpen ? '접기 ▴' : '자세히 보기 ▾'}
+            </button>
+          )}
+        </div>
+        {detailOpen && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
           {result.recommended.map((r, i) => (
             <div key={r.ingredient_id} className="card-elevated" style={{ borderRadius: 'var(--r-xl)' }}>
@@ -239,6 +479,84 @@ export default function ResultPage() {
                   <p style={{ fontSize: 14, color: 'var(--ink-muted)', marginBottom: 6 }}>
                     {r.functions.join(' · ')}
                   </p>
+
+                  {/* 근거 — 추적 가능한 1차 출처 + 권장 섭취량 + 주의 */}
+                  {(r.evidence_sources?.length || r.daily_dose || r.cautions?.length || topBenefit(r.ingredient_id)) ? (
+                  <div style={{ background: 'rgba(5,150,105,0.05)', border: '1px solid rgba(5,150,105,0.14)', borderRadius: 'var(--r-md)', padding: '10px 12px', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 13 }}>
+                      <span style={{ fontWeight: 700, color: 'var(--ink-secondary)' }}>📋 근거</span>
+                      {evidenceLinks(r.evidence_sources).map((e, ei) => (
+                        <span key={ei} style={{ color: 'var(--ink-muted)' }}>
+                          {e.ref}
+                          {e.url && (
+                            <a href={e.url} target="_blank" rel="noopener noreferrer"
+                              style={{ marginLeft: 4, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+                              {e.label} 원문 →
+                            </a>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* 🇰🇷 식약처 인정 기능성 문구(검증된 국내 1차 출처) */}
+                    {(() => {
+                      const kr = EV[r.ingredient_id]?.kr_source;
+                      if (!kr?.verified) return null;
+                      return (
+                        <p style={{ fontSize: 12.5, color: 'var(--ink-secondary)', marginTop: 6 }}>
+                          🇰🇷 <strong>식약처 인정</strong> “{kr.mfds_function}”
+                          {kr.url && <a href={kr.url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>원문 →</a>}
+                        </p>
+                      );
+                    })()}
+
+                    {/* 검증된 효능 — 근거 코퍼스(evidence.json)의 최강 근거 1건 + 출처 */}
+                    {(() => {
+                      const tb = topBenefit(r.ingredient_id);
+                      if (!tb) return null;
+                      const st = STRENGTH[tb.evidence_strength] || STRENGTH.insufficient;
+                      return (
+                        <div style={{ marginTop: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: st.color, borderRadius: 'var(--r-full)', padding: '1px 8px' }}>
+                              {st.label}
+                            </span>
+                            <span style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>{tb.claim}</span>
+                          </div>
+                          {tb.citation?.url && (
+                            <a href={tb.citation.url} target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>
+                              {tb.citation.source} 근거 원문 →
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {(() => {
+                      const d = EV[r.ingredient_id]?.dosing;
+                      if (!d || (!d.rda_or_ai && !d.ul)) return null;
+                      return (
+                        <p style={{ fontSize: 12.5, color: 'var(--ink-muted)', marginTop: 6 }}>
+                          📐 {d.rda_or_ai && <span><strong>권장</strong> {d.rda_or_ai}</span>}
+                          {d.rda_or_ai && d.ul && ' · '}
+                          {d.ul && <span><strong>상한</strong> {d.ul}</span>}
+                        </p>
+                      );
+                    })()}
+
+                    {r.daily_dose && (
+                      <p style={{ fontSize: 13, color: 'var(--ink-secondary)', marginTop: 6 }}>
+                        💊 <strong>제품 표기 용량</strong> {r.daily_dose}
+                      </p>
+                    )}
+                    {r.cautions?.length > 0 && (
+                      <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 4 }}>
+                        ⚠️ {r.cautions.join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                  ) : null}
 
                   {/* Warnings */}
                   {r.warnings.length > 0 && (
@@ -286,6 +604,10 @@ export default function ResultPage() {
                         {b.vendor} →
                       </a>
                     ))}
+                    <Link href={`/products?ingredient_id=${r.ingredient_id}`}
+                      style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', textDecoration: 'none', border: '1px solid var(--hairline)', borderRadius: 'var(--r-full)', padding: '4px 12px' }}>
+                      🔎 시판 제품 보기
+                    </Link>
                   </div>
 
                   {/* Review box — 별점/의견 (근거와 분리) */}
@@ -295,27 +617,9 @@ export default function ResultPage() {
             </div>
           ))}
         </div>
-
-        {/* Not recommended */}
-        {result.not_recommended.length > 0 && (
-          <div style={{ marginBottom: 28 }}>
-            <h2 className="title" style={{ marginBottom: 12 }}>❌ 당신껜 권하지 않아요</h2>
-            <div className="card" style={{ borderRadius: 'var(--r-xl)' }}>
-              {result.not_recommended.map((n, i) => (
-                <div key={n.name} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0',
-                  borderBottom: i < result.not_recommended.length - 1 ? '1px solid var(--hairline)' : 'none',
-                }}>
-                  <span style={{ fontSize: 20 }}>🚫</span>
-                  <div>
-                    <strong style={{ fontSize: 15 }}>{n.name}</strong>
-                    <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: 2 }}>{n.reason}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
+
+        {/* 권하지 않음(제외)은 상단 안전 요약으로 통합 */}
 
         {/* Register my supplement CTA */}
         <div className="card" style={{
@@ -326,7 +630,7 @@ export default function ResultPage() {
             <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fff', marginBottom: 4 }}>📦 내 영양제 등록하기</h3>
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>섭취 시간 알람 · 복용 점검 · 조합 충돌 확인</p>
           </div>
-          <button style={{
+          <button onClick={addAllToRoutine} style={{
             background: '#fff', color: 'var(--secondary)',
             border: 'none', borderRadius: 'var(--r-full)', padding: '10px 24px',
             fontWeight: 700, fontSize: 15, cursor: 'pointer', whiteSpace: 'nowrap',
@@ -334,6 +638,26 @@ export default function ResultPage() {
             등록하기 →
           </button>
         </div>
+
+        {/* 살 약국 찾기 CTA — 추천 → 구매처(약국) 자연 연결 */}
+        <Link href="/nearby?type=pharmacy" style={{ textDecoration: 'none' }}>
+          <div className="card" style={{
+            borderRadius: 'var(--r-xl)', marginTop: 16, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
+          }}>
+            <div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>🗺️ 이 영양제, 가까운 약국에서 받기</h3>
+              <p style={{ fontSize: 14, color: 'var(--ink-muted)' }}>지금 문 연 약국 · 24시 응급실을 내 위치 기준으로</p>
+            </div>
+            <span style={{
+              background: 'var(--primary)', color: '#fff',
+              borderRadius: 'var(--r-full)', padding: '10px 24px',
+              fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap',
+            }}>
+              약국 찾기 →
+            </span>
+          </div>
+        </Link>
 
         {/* 근거 출처 — "광고 아닌 근거 기반" 정체성 노출 */}
         <div className="card" style={{ borderRadius: 'var(--r-xl)', marginTop: 28 }}>
@@ -354,7 +678,7 @@ export default function ResultPage() {
                   <span style={{ fontSize: 12, color: 'var(--ink-faint)', marginLeft: 6 }}>{s.org}</span>
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(0,117,222,0.08)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{s.tag}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'rgba(5,150,105,0.10)', borderRadius: 'var(--r-full)', padding: '2px 8px' }}>{s.tag}</span>
                   <span style={{ color: 'var(--primary)', fontSize: 14 }}>→</span>
                 </span>
               </a>

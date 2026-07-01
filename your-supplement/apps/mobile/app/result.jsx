@@ -42,7 +42,7 @@ export default function Result() {
       {/* Hero */}
       <View style={{ backgroundColor: colors.secondary, padding: spacing.lg, paddingTop: 40, paddingBottom: 48 }}>
         <View style={s.badge}><Text style={s.badgeText}>근거 기반 맞춤 추천</Text></View>
-        <Text style={{ fontSize: 28, fontWeight: '700', color: '#fff', letterSpacing: -0.5, marginBottom: 6 }}>🧬 당신의 영양제</Text>
+        <Text style={{ fontSize: 28, fontWeight: '700', color: '#fff', letterSpacing: -0.5, marginBottom: 6 }}>🧬 당신의영양제</Text>
         <Text style={{ ...typography.bodySm, color: 'rgba(255,255,255,0.7)' }}>후기·광고 미반영 · 식약처 인정 근거</Text>
 
         <TouchableOpacity style={s.kakaoBtn} onPress={handleKakao}>
