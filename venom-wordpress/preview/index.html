@@ -9128,6 +9128,7 @@ function ld(cat, pushState){
     relHtml+='</div></div>';
     document.getElementById('detail-content').insertAdjacentHTML('beforeend',relHtml);
   }
+  _setPrimaryH1(); // 진료과목 렌더 후에도 활성 페이지 H1 1개 보장
 }
 
 function tocClick(el,id){
