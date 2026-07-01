@@ -1,0 +1,152 @@
+// 목표: marketing-agency-erp 의 prisma/schema.prisma 에 아래 내용을 병합
+// (V2.1 스펙 기준. 컬럼 추가형 마이그레이션 — 기존 데이터 무손실)
+// 적용: 병합 후 `pnpm prisma migrate dev --name v2_1_structure`
+//
+// 실제 erp-v1 schema.prisma 컨벤션 준수: cuid() id, createdAt/updatedAt, @@index.
+// 기존 모델(Client, WorkItem, ClientAccount, User)에는 "추가 필드"만 표기 —
+// 해당 모델 본문에 그 필드와 relation을 삽입할 것.
+
+// ─────────────────────────────────────────────
+// 1) 마스터 테이블 (관리자 관리 + 최고관리자 잠금)
+// ─────────────────────────────────────────────
+
+/// 업종 마스터 (2단: parentId=null 대분류 / parent 지정 하위=진료과 등)
+model IndustryCategory {
+  id        String             @id @default(cuid())
+  name      String
+  parentId  String?
+  colorTag  String?            // hex, 목록/캘린더 색상 표시
+  isLocked  Boolean            @default(false) // 최고관리자만 해제/수정
+  isActive  Boolean            @default(true)
+  sortOrder Int                @default(0)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  parent    IndustryCategory?  @relation("IndustryTree", fields: [parentId], references: [id])
+  children  IndustryCategory[] @relation("IndustryTree")
+  clients   Client[]
+
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+}
+
+/// 업무 카테고리 마스터 (그룹: 블로그/검색광고/지도/SNS/웹/운영)
+model WorkCategoryMaster {
+  id        String     @id @default(cuid())
+  name      String
+  group     String     // 표시용 그룹 라벨
+  colorTag  String?
+  isLocked  Boolean    @default(false)
+  isActive  Boolean    @default(true)
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  workItems WorkItem[]
+
+  @@index([isActive, sortOrder])
+}
+
+/// 채널 종류 마스터 (네이버블로그/인스타/플레이스/홈페이지/파워링크 등)
+model ChannelType {
+  id        String          @id @default(cuid())
+  name      String
+  colorTag  String?
+  isActive  Boolean         @default(true)
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  accounts  ClientAccount[]
+
+  @@index([isActive, sortOrder])
+}
+
+// ─────────────────────────────────────────────
+// 2) 추적/감사 · 재무 · 정책
+// ─────────────────────────────────────────────
+
+/// 로그인 이력 (최고관리자 추적용)
+model LoginHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  at        DateTime @default(now())
+  ip        String?
+  userAgent String?
+  success   Boolean  @default(true)
+  logoutAt  DateTime?
+
+  user      User     @relation("UserLoginHistory", fields: [userId], references: [id])
+
+  @@index([userId, at])
+  @@index([at])
+}
+
+/// 은행 거래내역 (입금 반자동 대사용 임포트 데이터)
+model BankTransaction {
+  id               String         @id @default(cuid())
+  importedAt       DateTime       @default(now())
+  txDate           DateTime
+  amount           Decimal        @db.Decimal(14, 2)
+  counterpartyName String?        // 입금자명
+  memo             String?
+  matchStatus      String         @default("UNMATCHED") // UNMATCHED/SUGGESTED/CONFIRMED/IGNORED
+  matchedBillingId String?
+
+  matchedBilling   BillingRecord? @relation("BillingBankMatch", fields: [matchedBillingId], references: [id])
+
+  @@index([matchStatus, txDate])
+  @@index([matchedBillingId])
+}
+
+/// 회사 정책 (싱글턴 레코드로 운용)
+model CompanySetting {
+  id                    String   @id @default(cuid())
+  adminCanManageExpense Boolean  @default(false) // 회사 지출 등록/검토를 관리자에게 허용할지
+  auditRetentionDays    Int      @default(365)   // 추적 로그 보존일
+  workloadDailyMinutes  Int      @default(480)   // 마케터 1일 가용시간(워크로드 기준)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// 3) 기존 모델 추가 필드 (해당 모델 본문에 삽입)
+// ─────────────────────────────────────────────
+
+// model Client { ... 기존 필드 유지 ...
+//   industryCategoryId String?
+//   industryCustom     String?            // 업종 "기타" 수기 입력
+//   industryCategory   IndustryCategory?  @relation(fields: [industryCategoryId], references: [id])
+//   @@index([industryCategoryId])
+// }
+
+// model WorkItem { ... 기존 필드 유지 ...
+//   parentId         String?
+//   sequence         Int                 @default(0)
+//   scheduledStart   DateTime?
+//   scheduledEnd     DateTime?
+//   estimatedMinutes Int?
+//   workCategoryId   String?             // WorkCategoryMaster FK (기존 category enum과 병행/이관)
+//   parent           WorkItem?           @relation("WorkSubtasks", fields: [parentId], references: [id])
+//   subtasks         WorkItem[]          @relation("WorkSubtasks")
+//   workCategory     WorkCategoryMaster? @relation(fields: [workCategoryId], references: [id])
+//   @@index([parentId])
+//   @@index([ownerId, scheduledStart])
+//   @@index([workCategoryId])
+// }
+
+// model ClientAccount { ... 기존 필드 유지 ...
+//   channelTypeId String?
+//   usernameEnc   String?     // 암호화 저장 (AES-256-GCM, crypto.ts)
+//   passwordEnc   String?     // 암호화 저장
+//   channelType   ChannelType? @relation(fields: [channelTypeId], references: [id])
+//   @@index([channelTypeId])
+// }
+
+// model User { ... 기존 필드 유지 ...
+//   loginHistory LoginHistory[] @relation("UserLoginHistory")
+// }
+
+// model BillingRecord { ... 기존 필드 유지 ...
+//   bankMatches BankTransaction[] @relation("BillingBankMatch")
+// }

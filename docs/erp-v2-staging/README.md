@@ -18,6 +18,17 @@
 | `actions/_helpers.ts` | `src/server/actions/_helpers.ts` |
 | `actions/clients.ts` | `src/server/actions/clients.ts` |
 | `actions/work.ts` | `src/server/actions/work.ts` |
+| `actions/channel-accounts.ts` | `src/server/actions/channel-accounts.ts` |
+| `server/crypto.ts` | `src/server/crypto.ts` (자격증명 AES-256-GCM) |
+| `prisma/schema-additions.prisma` | `prisma/schema.prisma` 에 병합 (V2.1 마이그레이션) |
+| `prisma/seed-masters.ts` | `prisma/seed.ts` 병합 또는 단독 실행 (마스터 시드) |
+
+### V2.1 적용 순서 (스프린트 0~2)
+1. `schema-additions.prisma` 내용을 `prisma/schema.prisma`에 병합 → `pnpm prisma migrate dev --name v2_1_structure`
+2. `crypto.ts` 배치 + `.env`에 `CREDENTIAL_ENC_KEY`(32바이트 hex64 또는 base64) 설정
+3. `_helpers.ts` / `clients.ts` / `work.ts` / `channel-accounts.ts` 배치
+4. `seed-masters.ts`로 업종·카테고리·채널 시드
+5. `pnpm build` + 테스트 → UI 연결(`/clients`, `/work`, 설정 마스터)
 
 ## 새 세션에서 할 일 (순서)
 
