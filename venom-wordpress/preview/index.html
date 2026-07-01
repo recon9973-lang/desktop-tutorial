@@ -1937,19 +1937,7 @@ body{padding-top:0}
       <div class="sidebar-sticky">
         <div class="sidebar-section">
           <div class="sidebar-title">진료과목별 마케팅</div>
-          <ul class="sidebar-nav">
-            <li><a href="/dental" onclick="ld('dental');return false" id="nav-dental" class="snav-active">🦷 치과 마케팅</a></li>
-            <li><a href="/implant" onclick="ld('implant');return false" id="nav-implant" style="padding-left:24px;font-size:13px">　↳ 임플란트 마케팅</a></li>
-            <li><a href="/orthodontics" onclick="ld('ortho_dental');return false" id="nav-ortho_dental" style="padding-left:24px;font-size:13px">　↳ 교정 마케팅</a></li>
-            <li><a href="/dermatology" onclick="ld('skin');return false" id="nav-skin">✨ 피부과 마케팅</a></li>
-            <li><a href="/orthopedics" onclick="ld('ortho');return false" id="nav-ortho">🦴 정형외과 마케팅</a></li>
-            <li><a href="/oriental-medicine" onclick="ld('oriental');return false" id="nav-oriental">🌿 한의원 마케팅</a></li>
-            <li><a href="/plastic-surgery" onclick="ld('plastic');return false" id="nav-plastic">💎 성형외과 마케팅</a></li>
-            <li><a href="/internal-medicine" onclick="ld('naegwa');return false" id="nav-naegwa">🩺 내과 마케팅</a></li>
-            <li><a href="/ophthalmology" onclick="ld('angwa');return false" id="nav-angwa">👁 안과 마케팅</a></li>
-            <li><a href="/medical-ad-review" onclick="ld('shimui');return false" id="nav-shimui">📋 의료광고심의</a></li>
-            <li><a href="/medical-device" onclick="ld('medical_device');return false" id="nav-medical_device">🔬 의료기기 마케팅</a></li>
-          </ul>
+          <ul class="sidebar-nav hub-accordion" id="hub-nav"><!-- buildHubSidebar()가 동적 생성 --></ul>
         </div>
         <div class="sidebar-section">
           <div class="sidebar-title">AI 마케팅</div>
@@ -6912,6 +6900,51 @@ var HUB_SPOKES={
   naegwa:[{sec:'checkup', to:'naegwa_checkup', label:'건강검진 자세히'},{sec:'chronic', to:'naegwa_chronic', label:'고혈압·당뇨 관리 자세히'},{sec:'endocrine', to:'naegwa_thyroid', label:'갑상선 질환 자세히'},{sec:'digestive', to:'naegwa_endoscopy', label:'위·대장내시경 자세히'},{sec:'respiratory', to:'naegwa_respiratory', label:'호흡기·수액 자세히'}]
 };
 var PATH_TO_CAT={}; for(var _dck in DETAIL_ROUTES){ PATH_TO_CAT[DETAIL_ROUTES[_dck].path]=_dck; }
+// ── 진료과목 사이드바 아코디언(hover 펼침) 동적 생성 ──
+var HUB_META=[
+  {cat:'dental',icon:'🦷',label:'치과 마케팅'},
+  {cat:'skin',icon:'✨',label:'피부과 마케팅'},
+  {cat:'ortho',icon:'🦴',label:'정형외과 마케팅'},
+  {cat:'oriental',icon:'🌿',label:'한의원 마케팅'},
+  {cat:'plastic',icon:'💎',label:'성형외과 마케팅'},
+  {cat:'naegwa',icon:'🩺',label:'내과 마케팅'},
+  {cat:'angwa',icon:'👁',label:'안과 마케팅'},
+  {cat:'shimui',icon:'📋',label:'의료광고심의'},
+  {cat:'medical_device',icon:'🔬',label:'의료기기 마케팅'}
+];
+function _spokeLabel(to){ var t=(pages[to]&&pages[to].title)||to; return t; }
+function buildHubSidebar(){
+  var el=document.getElementById('hub-nav'); if(!el)return;
+  (function(){ if(document.getElementById('hub-acc-css'))return; var st=document.createElement('style'); st.id='hub-acc-css';
+    st.textContent='.hub-accordion .snav-caret{float:right;font-size:10px;opacity:.55;transition:transform .22s}'
+     +'.hub-accordion .snav-group.has-sub>a{position:relative}'
+     +'.hub-accordion .snav-sub{list-style:none;margin:2px 0 4px;padding:0;max-height:0;overflow:hidden;transition:max-height .3s ease}'
+     +'.hub-accordion .snav-group:hover .snav-sub,.hub-accordion .snav-group.open .snav-sub{max-height:460px}'
+     +'.hub-accordion .snav-group:hover .snav-caret,.hub-accordion .snav-group.open .snav-caret{transform:rotate(180deg);opacity:.9}'
+     +'.hub-accordion .snav-sub li a{display:block;padding:7px 12px 7px 34px;font-size:12.5px;color:var(--mute);border-radius:8px;position:relative}'
+     +'.hub-accordion .snav-sub li a:before{content:"›";position:absolute;left:20px;color:var(--psub)}'
+     +'.hub-accordion .snav-sub li a:hover{background:var(--soft);color:var(--p)}'
+     +'.hub-accordion .snav-sub li a.snav-active{background:rgba(83,58,253,.08);color:var(--p);font-weight:700}';
+    document.head.appendChild(st); })();
+  var html='';
+  HUB_META.forEach(function(m){
+    var spokes=HUB_SPOKES[m.cat]||[];
+    var path=(DETAIL_ROUTES[m.cat]&&DETAIL_ROUTES[m.cat].path)||('#'+m.cat);
+    html+='<li class="snav-group'+(spokes.length?' has-sub':'')+'">';
+    html+='<a href="'+path+'" onclick="ld(\''+m.cat+'\');return false" id="nav-'+m.cat+'">'+m.icon+' '+m.label+(spokes.length?'<span class="snav-caret">▾</span>':'')+'</a>';
+    if(spokes.length){
+      html+='<ul class="snav-sub">';
+      spokes.forEach(function(sk){
+        var sr=DETAIL_ROUTES[sk.to]; var lbl=_spokeLabel(sk.to);
+        html+='<li><a href="'+((sr&&sr.path)||('#'+sk.to))+'" onclick="ld(\''+sk.to+'\');return false" id="nav-'+sk.to+'">'+lbl+'</a></li>';
+      });
+      html+='</ul>';
+    }
+    html+='</li>';
+  });
+  el.innerHTML=html;
+}
+try{ if(document.readyState!=='loading')buildHubSidebar(); else document.addEventListener('DOMContentLoaded',buildHubSidebar); }catch(e){}
 function _applyDetailSEO(cat){
   var r=DETAIL_ROUTES[cat]; if(!r) return;
   try{
@@ -7888,8 +7921,9 @@ function ld(cat, pushState){
   document.getElementById('toc-keywords').innerHTML='<div class="toc-kw-tags">'+d.kws.map(function(k){return '<span onclick="searchByKeyword(\''+k+'\')" style="cursor:pointer">'+k+'</span>';}).join('')+'</div>';
   // 사이드바 활성
   document.querySelectorAll('.sidebar-nav a').forEach(function(a){a.classList.remove('snav-active');});
+  document.querySelectorAll('.hub-accordion .snav-group.open').forEach(function(g){g.classList.remove('open');});
   var navEl=document.getElementById('nav-'+cat);
-  if(navEl)navEl.classList.add('snav-active');
+  if(navEl){navEl.classList.add('snav-active'); var _grp=navEl.closest?navEl.closest('.snav-group'):null; if(_grp)_grp.classList.add('open');}
   window.scrollTo({top:0,behavior:'smooth'});
   // BreadcrumbList 업데이트 (스포크 페이지는 상위 허브 포함 4단계)
   var catLabel=catLabels[cat]||d.title||cat;
