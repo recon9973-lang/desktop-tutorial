@@ -8222,5 +8222,53 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
     }).observe(r,{attributes:true,attributeFilter:['style'],childList:true});
   });
 </script>
+
+<!-- 모바일 하단 탭바: 스크롤 다운=숨김 / 업=표시, 각 탭=카테고리 이동 -->
+<style>
+  .mbot{position:fixed;left:0;right:0;bottom:0;z-index:8000;display:none;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--border);box-shadow:0 -6px 24px rgba(13,37,61,.08);padding:6px 4px calc(6px + env(safe-area-inset-bottom));transform:translateY(0);transition:transform .28s cubic-bezier(.22,.65,.3,1)}
+  .mbot.hide{transform:translateY(110%)}
+  .mbot-inner{display:grid;grid-template-columns:repeat(5,1fr);max-width:560px;margin:0 auto}
+  .mbot button{background:none;border:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;color:#64748b;font-size:10.5px;font-weight:700;letter-spacing:-.02em}
+  .mbot button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .mbot button.on{color:var(--p)}
+  .mbot button.mbot-cta{color:#fff}
+  .mbot button.mbot-cta i{width:40px;height:40px;margin-top:-16px;border-radius:50%;background:linear-gradient(135deg,#7c6cfd,#533afd);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(83,58,253,.45);font-style:normal}
+  .mbot button.mbot-cta i svg{stroke:#fff}
+  .mbot button.mbot-cta span{color:var(--p)}
+  @media(max-width:860px){
+    .mbot{display:block}
+    body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+    #btt{bottom:84px!important}
+  }
+  @media (prefers-reduced-motion:reduce){.mbot{transition:none}}
+</style>
+<nav class="mbot" id="mbot" aria-label="모바일 하단 메뉴">
+  <div class="mbot-inner">
+    <button type="button" data-mb="home" onclick="mbotGo(this,function(){sp('home')})"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>홈</span></button>
+    <button type="button" data-mb="hosp" onclick="mbotGo(this,function(){sp('hosp_mkt')})"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M12 7v6M9 10h6"/><path d="M2 21h20"/></svg><span>병원마케팅</span></button>
+    <button type="button" class="mbot-cta" data-mb="diag" onclick="mbotGo(this,function(){sp('diagnose')})"><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></i><span>무료진단</span></button>
+    <button type="button" data-mb="ai" onclick="mbotGo(this,function(){sp('ai')})"><svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4c2.5.5 4 2.5 4 5a5 5 0 0 1-3 4.6V17a4 4 0 0 1-4 4h-2a4 4 0 0 1-4-4v-1.4A5 5 0 0 1 4 11c0-2.5 1.5-4.5 4-5a4 4 0 0 1 4-4Z"/><path d="M9 11h.01M15 11h.01"/></svg><span>AI마케팅</span></button>
+    <button type="button" data-mb="blog" onclick="mbotGo(this,function(){sp('blog')})"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>블로그</span></button>
+  </div>
+</nav>
+<script>
+(function(){
+  var bar=document.getElementById('mbot'); if(!bar)return;
+  function setOn(btn){ bar.querySelectorAll('button').forEach(function(b){b.classList.remove('on');}); if(btn)btn.classList.add('on'); }
+  window.mbotGo=function(btn,fn){ setOn(btn); try{fn();}catch(e){} window.scrollTo({top:0,behavior:'auto'}); bar.classList.remove('hide'); };
+  setOn(bar.querySelector('[data-mb="home"]'));
+  // 스크롤 방향 감지: 내리면 숨김, 올리면 표시 (rAF 스로틀)
+  var lastY=window.pageYOffset,ticking=false;
+  window.addEventListener('scroll',function(){
+    if(ticking)return; ticking=true;
+    requestAnimationFrame(function(){
+      var y=window.pageYOffset;
+      if(y>lastY+6&&y>160)bar.classList.add('hide');
+      else if(y<lastY-6||y<80)bar.classList.remove('hide');
+      lastY=y; ticking=false;
+    });
+  },{passive:true});
+})();
+</script>
 </body>
 </html>
