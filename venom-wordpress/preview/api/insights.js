@@ -180,8 +180,9 @@ async function keywordtool(req, res) {
     });
   }
   const list = r.json.keywordList.map(k => {
-    const pc = toNum(k.monthlyPcQcnt);
-    const mo = toNum(k.monthlyMobileQcnt);
+    // 네이버 공식 필드명은 monthlyPcQcCnt/monthlyMobileQcCnt — 구 표기는 폴백으로 유지
+    const pc = toNum(k.monthlyPcQcCnt != null ? k.monthlyPcQcCnt : k.monthlyPcQcnt);
+    const mo = toNum(k.monthlyMobileQcCnt != null ? k.monthlyMobileQcCnt : k.monthlyMobileQcnt);
     return {
       keyword: k.relKeyword,
       monthlyVolume: pc + mo,
