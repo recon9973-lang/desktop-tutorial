@@ -125,7 +125,7 @@ async function naverRelKeywords(keyword) {
     const j = JSON.parse(r.body);
     if (!Array.isArray(j.keywordList)) return [];
     return j.keywordList
-      .map((k) => ({ keyword: String(k.relKeyword || '').trim(), volume: adToNum(k.monthlyPcQcnt) + adToNum(k.monthlyMobileQcnt) }))
+      .map((k) => ({ keyword: String(k.relKeyword || '').trim(), volume: adToNum(k.monthlyPcQcCnt != null ? k.monthlyPcQcCnt : k.monthlyPcQcnt) + adToNum(k.monthlyMobileQcCnt != null ? k.monthlyMobileQcCnt : k.monthlyMobileQcnt) }))
       .filter((k) => k.keyword)
       .sort((a, b) => b.volume - a.volume);
   } catch (e) { return []; }
