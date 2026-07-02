@@ -6981,6 +6981,9 @@ function applyDiagState(){
   // 진료과·지역 미리채움
   var vc=document.getElementById('vd-cat');if(vc&&cat)vc.value=cat;
   var vr=document.getElementById('vd-region');if(vr&&region&&!vr.value)vr.value=region;
+  // 원클릭 진단 폼도 동기화(페이지 진입 시점 기준)
+  var fc=document.getElementById('fd-cat');if(fc&&cat)fc.value=cat;
+  var fr=document.getElementById('fd-region');if(fr&&region&&!fr.value)fr.value=region;
   // 진료과를 선택해 들어온 경우 자가진단을 자동으로 펼침(클릭 동선 단축) + 부드럽게 스크롤
   if(cat){
     var _b=document.getElementById('vd-body'),_l=document.getElementById('vd-launcher');
