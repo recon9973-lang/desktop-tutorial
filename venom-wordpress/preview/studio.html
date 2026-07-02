@@ -257,7 +257,10 @@
         </div>
         <div class="hint">설정은 이 브라우저에만 저장돼요(localStorage). 키는 서버로만 전송됩니다.</div>
       </div>
-      <button class="btn" id="genBtn" onclick="generateLive()">🪄 원고 생성하기</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="genBtn" onclick="generateLive()">🪄 원고 생성하기</button>
+        <button class="btn ghost" onclick="toggleCfg()">⚙️ 연결 설정</button>
+      </div>
       <div id="genStatus" class="hint" style="margin-top:8px"></div>
       <div id="genResult"></div>
     </div>
