@@ -1,0 +1,53 @@
+/* 목표 경로: src/app/tokens.css (globals.css에서 import) — 프리미엄 샘플 기반 ERP 토큰 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+
+:root {
+  --brand: #6d28d9;
+  --brand-2: #4f46e5;
+  --brand-grad: linear-gradient(135deg, #7c3aed, #4f46e5);
+  --brand-soft: #f5f3ff;
+  --ink: #0d0a1a;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --bg: #faf9fe;
+  --border: #ece9f5;
+  --sidebar-bg: #120a24;
+  --radius-card: 12px;
+  --radius-btn: 10px;
+  --shadow-card: 0 1px 3px rgba(24, 16, 48, .06);
+  --shadow-pop: 0 8px 24px rgba(124, 58, 237, .15);
+}
+
+body {
+  font-family: "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* 재사용 유틸 (Tailwind 없이도 동작) */
+.btn-primary {
+  background: var(--brand-grad); color: #fff; border: 0;
+  border-radius: var(--radius-btn); padding: .55rem 1rem; font-weight: 600;
+}
+.btn-primary:disabled { opacity: .5; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+}
+.tag { border-radius: 40px; padding: .15rem .6rem; font-size: .75rem; }
+
+/* 대시보드 상단 글래스 배너(트렌디 포인트) */
+.hero-glass {
+  background: linear-gradient(160deg, #0a0a0f 0%, #120a24 40%, #0f0818 100%);
+  color: #fff; border-radius: 16px; padding: 1.5rem;
+  box-shadow: var(--shadow-pop);
+}
+.hero-glass .chip {
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .15);
+  backdrop-filter: blur(12px); border-radius: 40px; padding: .25rem .75rem;
+}
+
+/* 사이드바 (거래처단/베놈단) */
+.erp-sidebar { background: var(--sidebar-bg); color: #fff; }
+.erp-sidebar .nav-item.active { background: var(--brand-grad); border-radius: 8px; }
+.erp-sidebar .nav-item { color: rgba(255, 255, 255, .7); }
