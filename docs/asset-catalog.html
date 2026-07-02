@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>VENOM 재사용 자산 카탈로그</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'WenQuanYi Zen Hei','Noto Sans CJK KR',sans-serif;color:#0f172a;font-size:12.5px;line-height:1.7}
+  .page{page-break-after:always;padding:34px 40px}
+  .page:last-child{page-break-after:auto}
+  /* 표지 */
+  .cover{height:96vh;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(160deg,#0d1b2e,#1c2b57 60%,#10193a);color:#fff;border-radius:0;padding:60px}
+  .cover .brand{font-size:14px;font-weight:700;letter-spacing:.25em;color:#a5b4fc;margin-bottom:22px}
+  .cover h1{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-bottom:16px}
+  .cover p{font-size:14px;color:rgba(255,255,255,.75);line-height:1.8;max-width:520px}
+  .cover .meta{margin-top:44px;font-size:12px;color:rgba(255,255,255,.55)}
+  .cover .stats{display:flex;gap:28px;margin-top:36px}
+  .cover .stats div{border-left:3px solid #533afd;padding-left:14px}
+  .cover .stats b{display:block;font-size:24px;font-weight:800}
+  .cover .stats span{font-size:11px;color:rgba(255,255,255,.6)}
+  /* 본문 */
+  h2{font-size:21px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px;color:#10193a}
+  h2 .no{color:#533afd;margin-right:8px}
+  .sec-sub{font-size:12px;color:#64748b;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;margin-bottom:22px}
+  th{background:#f1f5f9;text-align:left;font-size:11px;letter-spacing:.03em;color:#334155;padding:8px 10px;border-bottom:2px solid #e2e8f0}
+  td{padding:8px 10px;border-bottom:1px solid #eef2f7;vertical-align:top}
+  td.n{font-weight:700;white-space:nowrap;color:#10193a}
+  td.p{font-family:monospace;font-size:10.5px;color:#533afd;white-space:nowrap}
+  .tag{display:inline-block;font-size:10px;font-weight:700;background:#eef2ff;color:#533afd;border-radius:99px;padding:2px 8px;margin-right:4px}
+  .callout{background:#f8fafc;border-left:3px solid #533afd;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:12px;color:#334155}
+  .foot{position:running(footer);font-size:10px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div class="page cover">
+  <div class="brand">VENOM MARKETING · ASSET CATALOG</div>
+  <h1>재사용 자산 카탈로그<br>스킬 · 자동화 · 파이프라인 전집</h1>
+  <p>Claude Code 세션들에서 구축한 "스킬처럼 다시 쓸 수 있는" 자산 전체를 정리했습니다.
+  스킬 6종, GitHub 자동화 3종, 서버리스 API 13종, 라이브러리 16종, 브라우저 엔진 5종,
+  운영 파이프라인 패턴 7종, 그리고 타 프로젝트 자산(사이트 팩토리·ERP·원고 파이프라인)까지 —
+  모두 지금 바로 재호출·재사용 가능한 상태입니다.</p>
+  <div class="stats">
+    <div><b>6</b><span>Claude 스킬</span></div>
+    <div><b>3</b><span>GitHub 자동화</span></div>
+    <div><b>29</b><span>API·라이브러리</span></div>
+    <div><b>4</b><span>타 프로젝트</span></div>
+  </div>
+  <div class="meta">작성일 2026-07-02 · 저장소 recon9973-lang/desktop-tutorial · 배포 venom-new-site.vercel.app</div>
+</div>
+
+<div class="page">
+  <h2><span class="no">01</span>Claude Code 스킬 — "이름 부르면 실행"</h2>
+  <p class="sec-sub">채팅에서 스킬명을 부르거나 관련 요청을 하면 자동 로드됩니다. 위치: 리포 docs/skills/ · 브랜치별 .claude/skills/</p>
+  <table>
+    <tr><th style="width:150px">스킬</th><th>무엇을 하는가</th><th style="width:160px">호출 방법</th></tr>
+    <tr><td class="n">seo-medical-expert</td><td>SEO·GEO·AEO + 한국 의료광고법 통합 전문가. 콘텐츠 6요구사항(3,000자·인포그래픽·실사진·표·출처4+), 마케팅 접미사 룰, 가짜 인용 금지 원칙 내장. Google Search Central 200문서+의료법 기반.</td><td class="p">/seo 또는 의료 콘텐츠 요청 시 자동</td></tr>
+    <tr><td class="n">전수검사</td><td>사이트 10영역 전수 감사(SEO·의료법·6요구사항·오탈자·링크·사진·코드·UI/UX·보안·법정 페이지) 후 발견 즉시 수정→커밋→PR→머지→배포까지. 과거 세션의 함정 노트 포함.</td><td class="p">/전수검사, "전수조사해줘"</td></tr>
+    <tr><td class="n">startup-hook-skill</td><td>Claude Code 웹 세션용 SessionStart 훅 생성 — 의존성 설치·테스트/린터 준비 자동화.</td><td class="p">"세션 셋업 훅 만들어줘"</td></tr>
+    <tr><td class="n">web-design</td><td>웹 디자인 스킬 + 스타일 레퍼런스 6종(minimal-swiss, editorial-luxury, saas-stripe, medical-clinic, friendly-rounded, bold-brutalist).</td><td class="p">website-management-program-skills 브랜치</td></tr>
+    <tr><td class="n">seo-audit</td><td>SEO 감사 절차 스킬(위 브랜치).</td><td class="p">〃</td></tr>
+    <tr><td class="n">ai-content-writer</td><td>AI 콘텐츠 작성 스킬(위 브랜치).</td><td class="p">〃</td></tr>
+  </table>
+  <div class="callout">스킬은 <b>main의 docs/skills/</b>에 두면 모든 세션에서 자동 인식됩니다. web-design·seo-audit·ai-content-writer 3종은 아직 브랜치에만 있어, main으로 옮기면 상시 사용 가능합니다.</div>
+
+  <h2><span class="no">02</span>GitHub Actions 자동화 — "무인 운영"</h2>
+  <p class="sec-sub">위치: .github/workflows/ · GitHub → Actions 탭에서 수동 실행(workflow_dispatch)도 가능</p>
+  <table>
+    <tr><th style="width:150px">워크플로</th><th>무엇을 하는가</th><th style="width:150px">트리거</th></tr>
+    <tr><td class="n">auto-publish.yml</td><td>블로그 자동 발행 크론 트리거 — 즉시/같은시간/랜덤/개별 예약, 하루 최대 3건, 중복 방지 멱등성, 발행 락(10분 TTL).</td><td class="p">스케줄 + 수동</td></tr>
+    <tr><td class="n">convert-webp.yml</td><td>업로드된 JPG/PNG를 WebP로 자동 변환(sharp, 재귀 스캔) — 사진만 올리면 최적화는 자동.</td><td class="p">이미지 push + 수동</td></tr>
+    <tr><td class="n">api-check.yml</td><td>프로덕션 API·페이지 실측 프로브(경로 입력식) — 배포 후 검증 표준 절차.</td><td class="p">수동(path 입력)</td></tr>
+  </table>
+</div>
+
+<div class="page">
+  <h2><span class="no">03</span>서버리스 API 13종 — venom-wordpress/preview/api/</h2>
+  <p class="sec-sub">Vercel Functions (Hobby 12개 한도 내 통합 설계 — seo-proxy 1개가 4종 역할)</p>
+  <table>
+    <tr><th style="width:160px">파일</th><th>역할</th></tr>
+    <tr><td class="n">cron-daily-posts.js</td><td>자동 발행 엔진 — 설정 로드 3중 폴백, 발행 락, 멱등성, 이미지 2장 병렬 생성(서로 다른 프롬프트)</td></tr>
+    <tr><td class="n">seo-proxy.js</td><td>4-in-1 프록시: PSI 속도 / Knowledge Graph 엔티티 / 페이지+robots 수집(SSRF 방어) / 네이버 검색광고 검색량(공식 HMAC 서명)</td></tr>
+    <tr><td class="n">insights.js</td><td>네이버 데이터랩 트렌드 + 검색량 + Perplexity AI 실측(AEO) 통합</td></tr>
+    <tr><td class="n">generate-post.js / publish-post.js</td><td>원고 생성·발행(관리자)</td></tr>
+    <tr><td class="n">posting-settings.js</td><td>발행 모드 설정 저장(즉시/예약/랜덤/개별)</td></tr>
+    <tr><td class="n">health.js</td><td>API 키 연결 상태 대시보드(6종 키 감지)</td></tr>
+    <tr><td class="n">store.js / contact.js / analytics.js / growthops.js / usage-stats.js / cron-seo-monitor.js</td><td>콘텐츠 저장 · 상담 접수 · 방문 통계 · 그로스 · 사용량 · SEO 모니터 크론</td></tr>
+  </table>
+
+  <h2><span class="no">04</span>라이브러리 16종 — venom-wordpress/preview/lib/</h2>
+  <table>
+    <tr><th style="width:170px">모듈</th><th>재사용 포인트</th></tr>
+    <tr><td class="n">post-generator.js</td><td>원고 생성 + <b>buildImagePrompt</b>: 인물6×장면6×스타일4 조합 이미지 프롬프트 빌더(키워드 시드) — 어느 프로젝트든 이미지 다양화에 재사용</td></tr>
+    <tr><td class="n">github-store.js</td><td><b>withConflictRetry</b>(409 재읽기-병합-재시도 4회) + <b>acquireLock/releaseLock</b>(TTL 락) — GitHub를 DB로 쓰는 모든 프로젝트의 동시성 해법</td></tr>
+    <tr><td class="n">content-validator.js</td><td>링크 소독(비URL href 해제·카카오 라벨 정규화) — 발행 전 콘텐츠 검문소</td></tr>
+    <tr><td class="n">medical-ad-validator.js</td><td>의료광고법 금지 표현 자동 검수</td></tr>
+    <tr><td class="n">image-generator.js</td><td>AI 이미지 생성+저장(GitHub 커밋)</td></tr>
+    <tr><td class="n">sitemap-builder.js</td><td>정적 라우트+블로그 통합 사이트맵(91 URL)</td></tr>
+    <tr><td class="n">internal-linker.js / topic-cluster.js / keyword-research.js</td><td>내부링크 자동화 · 토픽 클러스터 · 키워드 리서치</td></tr>
+    <tr><td class="n">infographics.js / post-designer.js</td><td>차트(막대·radar·라인) 렌더 · 본문 디자인 요소</td></tr>
+    <tr><td class="n">translate.js / psi.js / search-console.js / openai-client.js / outreach.js</td><td>영문화 · PSI · 서치콘솔 · OpenAI 클라이언트 · 아웃리치</td></tr>
+  </table>
+
+  <h2><span class="no">05</span>브라우저 엔진 — index.html 내장</h2>
+  <table>
+    <tr><th style="width:170px">자산</th><th>재사용 포인트</th></tr>
+    <tr><td class="n">seo-engine.js</td><td>렌더와 분리된 SEO 채점 순수함수 — SEOEngine.analyze({url,html,robots}) + PSI 병합. 어떤 사이트든 점수화 가능</td></tr>
+    <tr><td class="n">runFullDiag 오케스트레이터</td><td>URL 1회 입력→수집→SEO→AI 실측→검색량 자동 진단+처방 — 리드젠 진단 도구의 골격</td></tr>
+    <tr><td class="n">PDF 리포트 패턴</td><td>seoPDF/geoPDF/diagFullPDF — 팝업 print 방식 클라이언트 PDF(서버 불필요)</td></tr>
+    <tr><td class="n">fx 모션 레이어</td><td>IO 스크롤 리빌+스태거·타이핑 효과·다크히어로 진입 모션 — 무JS 안전·reduced-motion 대응</td></tr>
+    <tr><td class="n">모바일 하단 탭바</td><td>스크롤 방향 감지 숨김/표시 내비(rAF 스로틀·safe-area)</td></tr>
+  </table>
+</div>
+
+<div class="page">
+  <h2><span class="no">06</span>운영 파이프라인 패턴 — "일하는 방식 자체가 자산"</h2>
+  <table>
+    <tr><th style="width:190px">패턴</th><th>내용</th></tr>
+    <tr><td class="n">즉시 배포 파이프라인</td><td>수정→검증→커밋→PR 생성→즉시 머지→브랜치 리셋(git checkout -B … origin/main). 이번 세션에서 PR #24~#47 총 24회 무사고 운영</td></tr>
+    <tr><td class="n">배포 후 실측 검증</td><td>로컬에 쌓지 않고 배포 직후 api-check.yml로 프로덕션 프로브 — "고쳤다"가 아니라 "확인했다"</td></tr>
+    <tr><td class="n">Playwright E2E(목킹)</td><td>프로덕션 전용 API를 route 목킹으로 대체해 로컬에서 전체 플로우 검증(진단 오케스트레이터 검증에 사용)</td></tr>
+    <tr><td class="n">js-check(vm.Script)</td><td>8,000줄 단일 HTML의 인라인 JS 전수 구문 검사 — 배포 전 0오류 게이트</td></tr>
+    <tr><td class="n">균형 파서 배치 수정</td><td>단일 라인 JS 문자열로 압축된 콘텐츠(pages 객체)를 안전하게 항목 단위로 수정하는 node 스크립트 패턴</td></tr>
+    <tr><td class="n">섹션 균형 컷/이동</td><td>section 태그 깊이 카운트로 정확한 블록 추출→검증(mustContain)→제거/재배열 — 오컷 방지 검증 내장</td></tr>
+    <tr><td class="n">사진 파이프라인</td><td>업로드(아무 폴더)→Pillow/sharp WebP 변환→풀 순차 배정→:has(img) 원본비율 프레임</td></tr>
+  </table>
+
+  <h2><span class="no">07</span>타 프로젝트 자산 — 브랜치에 대기 중</h2>
+  <table>
+    <tr><th style="width:190px">프로젝트</th><th>내용</th><th style="width:170px">위치</th></tr>
+    <tr><td class="n">VENOM 사이트 팩토리</td><td>병원/로컬/보도자료 블루프린트 + 생성 엔진(generate.js·seo.js·blog-gen.js·wp-adapter.js) + 접수 폼 — "사이트 찍어내는 공장"의 골격</td><td class="p">split/venom-site-factory<br>claude/auto-website-generator-*</td></tr>
+    <tr><td class="n">VENOM ERP v2</td><td>거래처·직원·채널계정 액션 모듈(TypeScript) + 조립/인수인계/머지 가이드 문서</td><td class="p">claude/venom-erp-assembly-*<br>claude/venom-erp-planning-*</td></tr>
+    <tr><td class="n">원고 프롬프트 파이프라인</td><td>tone-engine(톤 조절) + generate-image/post + wp-draft(워드프레스 초안 연동)</td><td class="p">claude/manuscript-prompt-creation-*</td></tr>
+    <tr><td class="n">당신의영양제(your-supplement)</td><td>치과 실사진 51장(현재 본사이트에 적용 완료) · Vercel 프로젝트 env 진단 이력</td><td class="p">your-supplement/ 폴더</td></tr>
+  </table>
+
+  <h2><span class="no">08</span>교육·레퍼런스 자료</h2>
+  <table>
+    <tr><th style="width:190px">자료</th><th>내용</th></tr>
+    <tr><td class="n">강의자료 1·2부(PDF) + Session1·2(PPTX)</td><td>AI 검색 패러다임 전환 · 테크니컬 SEO 완전정복 — 리포 루트</td></tr>
+    <tr><td class="n">AI_Content_Creation_Guide.md / DESIGN-stripe.md</td><td>콘텐츠 제작 가이드 · Stripe풍 디자인 노트</td></tr>
+    <tr><td class="n">디자인 목업 30여 장</td><td>치과·의료 웹 디자인 레퍼런스 이미지(루트 *.jpeg)</td></tr>
+  </table>
+  <div class="callout"><b>추천 다음 단계</b> ① 브랜치의 스킬 3종(web-design·seo-audit·ai-content-writer)을 main docs/skills/로 승격 ② 사이트 팩토리를 별도 리포로 분리해 신규 수주 시 즉시 가동 ③ 이 카탈로그를 신규 세션 온보딩 문서로 사용</div>
+  <p style="margin-top:26px;font-size:10.5px;color:#94a3b8">본 문서는 Claude Code 세션에서 자동 생성되었습니다 · 2026-07-02 · 문의: 세션에서 "카탈로그 업데이트해줘"</p>
+</div>
+
+</body>
+</html>
