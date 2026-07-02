@@ -1236,10 +1236,16 @@ function toggleCfg(){const c=$('cfg');c.style.display=c.style.display==='none'?'
 function loadCfg(){try{return JSON.parse(localStorage.getItem('vstudio_cfg')||'{}');}catch(e){return{};}}
 function saveCfg(){localStorage.setItem('vstudio_cfg',JSON.stringify({url:$('cfg_url').value.trim(),secret:$('cfg_secret').value.trim()}));toast('설정 저장됨 ⚙️');}
 function applyCfg(){const c=loadCfg();if(c.url)$('cfg_url').value=c.url;if(c.secret)$('cfg_secret').value=c.secret;}
-function promptFallback(msg){ // 엔진 미연결 시: 올인원 프롬프트를 복사해 유용한 결과로 전환
-  try{navigator.clipboard.writeText(buildPrompt());}catch(_){}
-  $('genStatus').innerHTML=`⚠️ ${msg} — 대신 <b>올인원 프롬프트를 클립보드에 복사</b>했어요. ChatGPT·Claude 등에 붙여넣으면 바로 원고가 나옵니다.<br><span class="hint">실제 자동 생성은 배포(API 주소)+OPENAI_API_KEY 설정 시 작동해요. (STEP3 ⚙️ 연결 설정)</span>`;
-  toast('엔진 미연결 — 프롬프트 복사됨 📋');
+function promptFallback(msg){ // 서버 미연결 시: 프롬프트를 복사하고 AI로 바로 가는 길을 제시
+  let copied=false;try{navigator.clipboard.writeText(buildPrompt());copied=true;}catch(_){}
+  $('genStatus').innerHTML=`✅ <b>프롬프트가 준비됐어요!</b> ${copied?'클립보드에 <b>복사</b>했어요.':''} 아래 버튼으로 AI를 열고 <b>붙여넣기(Ctrl+V) → 엔터</b>만 하면 원고가 나옵니다.`;
+  $('genResult').innerHTML=`<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn sm" style="display:inline-block;text-decoration:none" href="https://chatgpt.com" target="_blank" rel="noopener">🤖 ChatGPT 열기 →</a>
+      <a class="btn sm" style="display:inline-block;text-decoration:none" href="https://claude.ai" target="_blank" rel="noopener">🤖 Claude 열기 →</a>
+      <button class="btn ghost sm" onclick="copyPrompt()">📋 다시 복사</button>
+    </div>
+    <div class="hint" style="margin-top:8px">💡 새 탭이 열리면 빈 채팅에 붙여넣고 엔터하세요. (버튼 안에서 바로 나오게 하려면 서버 연결이 필요해요 — 지금은 이 방법이 제일 빨라요.)</div>`;
+  toast('프롬프트 복사됨 — AI에 붙여넣으세요 📋');
 }
 async function generateLive(){
   syncInputs();
