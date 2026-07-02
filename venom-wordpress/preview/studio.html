@@ -118,11 +118,68 @@
     .wrap{padding-bottom:72px}
     .modal-card{padding:20px}
   }
+  /* ── 랜딩 인트로 오버레이 (스코프: .lp-) ── */
+  #lp{position:fixed;inset:0;z-index:200;overflow:auto;background:var(--bg)}
+  #lp.hide{display:none}
+  .lp-nav{position:sticky;top:0;background:rgba(245,248,247,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .lp-nav .lp-in{max-width:1000px;margin:0 auto;padding:0 22px;height:60px;display:flex;align-items:center;justify-content:space-between}
+  .lp-logo{font-weight:900;font-size:18px}.lp-logo b{color:var(--accent)}
+  .lp-hero{max-width:1000px;margin:0 auto;padding:60px 22px 50px;display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
+  .lp-pill{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:13px;padding:6px 13px;border-radius:999px;margin-bottom:16px}
+  .lp-h1{font-size:42px;line-height:1.18;letter-spacing:-1px;font-weight:900;color:var(--ink)}
+  .lp-h1 em{color:var(--accent);font-style:normal}
+  .lp-sub{font-size:17px;color:var(--muted);margin:18px 0 26px}
+  .lp-btn{display:inline-block;background:var(--accent);color:#fff;border:none;padding:16px 34px;border-radius:14px;font-weight:800;font-size:17px;cursor:pointer;font-family:inherit}
+  .lp-btn:hover{filter:brightness(1.07)}
+  .lp-trust{margin-top:22px;color:var(--muted);font-size:13.5px;display:flex;gap:16px;flex-wrap:wrap}
+  .lp-mock{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 44px rgba(30,60,50,.12);padding:20px}
+  .lp-mock .r{height:12px;border-radius:6px;background:var(--accent-soft);margin:8px 0}
+  .lp-feats{max-width:1000px;margin:0 auto;padding:10px 22px 60px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .lp-feat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .lp-feat .i{font-size:24px}.lp-feat h3{font-size:16px;margin:8px 0 4px;font-weight:800}.lp-feat p{font-size:13.5px;color:var(--muted)}
+  @media(max-width:780px){.lp-hero{grid-template-columns:1fr;text-align:center}.lp-h1{font-size:32px}.lp-trust{justify-content:center}.lp-feats{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+
+<!-- 랜딩 인트로 (한 파일 안에서 '무료로 시작하기' → 스튜디오로 전환) -->
+<div id="lp">
+  <div class="lp-nav"><div class="lp-in">
+    <div class="lp-logo">원고<b>스튜디오</b></div>
+    <button class="lp-btn" style="padding:9px 18px;font-size:14px" onclick="startApp()">무료로 시작</button>
+  </div></div>
+  <div class="lp-hero">
+    <div>
+      <span class="lp-pill">🏥 병원·헬스케어 콘텐츠 전용</span>
+      <div class="lp-h1">병원 콘텐츠,<br><em>기획부터 발행</em>까지<br>한 번에.</div>
+      <div class="lp-sub">다정한 톤의 원고와 인포그래픽·카드뉴스까지, AI로 5분 만에. 의료광고법은 자동으로 지켜드려요.</div>
+      <button class="lp-btn" onclick="startApp()">🪄 무료로 시작하기</button>
+      <div class="lp-trust"><span>✅ 의료광고법 자동 검증</span><span>🔎 네이버·구글 SEO</span><span>📤 WordPress 발행</span></div>
+    </div>
+    <div class="lp-mock">
+      <div style="font-weight:800;font-size:15px">혹시 나도 거북목? 5초 자가체크</div>
+      <div class="r" style="width:85%"></div><div class="r"></div><div class="r" style="width:60%"></div>
+      <svg viewBox="0 0 120 120" style="width:120px;display:block;margin:12px auto 4px">
+        <circle cx="60" cy="60" r="46" fill="none" stroke="var(--accent-soft)" stroke-width="16"/>
+        <circle cx="60" cy="60" r="46" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="87" transform="rotate(-90 60 60)"/>
+        <text x="60" y="66" text-anchor="middle" font-size="26" font-weight="800" fill="var(--accent)">70%</text></svg>
+      <div style="text-align:center;font-size:12.5px;color:var(--muted)">직장인 10명 중 7명이 거북목 경험</div>
+    </div>
+  </div>
+  <div class="lp-feats">
+    <div class="lp-feat"><div class="i">🪄</div><h3>아이디어 스파크</h3><p>키워드로 주제·제목·검색 질문 자동 생성</p></div>
+    <div class="lp-feat"><div class="i">🎚️</div><h3>다정한 이중 톤</h3><p>공감은 구어체, 정보는 문어체로 안심시키기</p></div>
+    <div class="lp-feat"><div class="i">📊</div><h3>인포그래픽·카드뉴스</h3><p>수치를 그래프로, 이미지에 텍스트까지</p></div>
+    <div class="lp-feat"><div class="i">🚦</div><h3>의료광고 안전등</h3><p>금지 표현 실시간 검출·대체어 제안</p></div>
+    <div class="lp-feat"><div class="i">📤</div><h3>WordPress 발행</h3><p>임시저장·예약·즉시 발행까지</p></div>
+    <div class="lp-feat"><div class="i">📚</div><h3>여러 글 일괄</h3><p>키워드 여러 개를 순서대로 자동 처리</p></div>
+  </div>
+  <div style="text-align:center;padding:0 22px 60px"><button class="lp-btn" onclick="startApp()">지금 시작하기 →</button></div>
+</div>
+
 <header class="top">
   <div class="topbtns">
+    <button class="iconbtn" onclick="showLanding()" aria-label="소개 화면으로">🏠 소개</button>
     <button class="iconbtn" onclick="openHelp()" aria-label="사용법 도움말 열기">❓ 도움말</button>
     <button class="iconbtn" onclick="demo()" aria-label="예시 값으로 채우기">🎲 예시</button>
     <button class="iconbtn" onclick="resetAll()" aria-label="모든 입력 초기화">🗑 초기화</button>
@@ -499,6 +556,11 @@ function restoreState(){try{const o=JSON.parse(localStorage.getItem('vstudio_sta
   return !!(o.v&&o.v.i_core);}catch(e){return false;}}
 function resetAll(){if(!confirm('모든 입력을 지우고 새로 시작할까요?'))return;
   try{localStorage.removeItem('vstudio_state');}catch(e){}location.reload();}
+
+/* ───────────── 랜딩 → 앱 전환 ───────────── */
+function startApp(){const lp=$('lp');if(lp)lp.classList.add('hide');window.scrollTo(0,0);
+  try{localStorage.setItem('vstudio_started','1');}catch(e){}}
+function showLanding(){const lp=$('lp');if(lp)lp.classList.remove('hide');window.scrollTo(0,0);}
 
 /* ───────────── 도움말 모달 ───────────── */
 let lastFocus=null;
