@@ -1,0 +1,32 @@
+name: API Check
+
+# 배포된 API 엔드포인트 동작 점검용 (수동 실행)
+# 예: path에 "/api/insights?type=aeo&q=대전 임플란트 잘하는 치과&name=베놈" 입력
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: '점검할 API 경로(쿼리 포함)'
+        required: false
+        default: '/api/health'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call endpoint
+        env:
+          BASE: https://venom-new-site.vercel.app
+          API_PATH: ${{ github.event.inputs.path }}
+        run: |
+          URL="${BASE}${API_PATH}"
+          echo "GET $URL"
+          code=$(curl -sS --max-time 120 -o /tmp/resp.txt -w "%{http_code}" -G "$URL")
+          echo "HTTP $code"
+          cat /tmp/resp.txt | head -c 4000
+          echo ""
+          if [ "$code" != "200" ]; then
+            echo "::warning::endpoint returned HTTP $code"
+          fi
