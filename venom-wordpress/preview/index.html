@@ -100,9 +100,8 @@
   ]
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Pretendard는 Google Fonts에 없어 기존 googleapis 요청 3건은 죽은 홉이었음 — jsdelivr 단일화 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 /* ── DESIGN-stripe.md 토큰 완전 적용 ── */
@@ -5374,7 +5373,7 @@ function seoPDF(){
 }
 
 // ── SEO 점수 명예의 전당 (리더보드) ──
-var _LB_API='https://venom-new-site.vercel.app/api/analytics';
+var _LB_API='/api/analytics'; // 상대 경로 — 커스텀 도메인 이전·로컬에서도 동일 동작(자기 도메인 경유)
 function _lbRecord(domain,score){
   if(!domain||!score)return;
   try{
@@ -6268,17 +6267,21 @@ var ADMIN_CAT_BG={
   '지역마케팅':'linear-gradient(135deg,#0ea5e9,#0284c7)'
 };
 
-// 이미지 송출 시 WebP 변환(저장은 JPG 유지). raw.githubusercontent 이미지 src를
-// 무료 이미지 CDN(wsrv.nl) WebP 송출로 치환 → Vercel 빌드와 무관, 옛 글까지 자동 적용.
-// 브라우저가 받는 실제 이미지는 WebP(SEO·로딩 속도↑), 원본은 GitHub에 JPG로 그대로 보존.
+// 이미지 송출 시 WebP 변환(저장은 JPG 유지) — 경유지 단축판.
+// 구버전은 raw.githubusercontent → wsrv.nl(외부 CDN) 2홉을 태웠으나,
+// 이제 content/images의 WebP가 배포에 포함되므로(convert-webp.yml) 자기 도메인에서 직접 송출.
+// 체인: [구] 사용자→wsrv.nl→GitHub raw  →  [신] 사용자→Vercel CDN (0 외부홉)
+// 폴백: 신규 글의 WebP가 아직 생성 전이면 onerror가 같은 경로의 원본 JPG로 1회 전환.
 function imgToWebp(html) {
   if (!html) return html;
+  // 로고 워터마크(구 글의 raw URL) → 자체 도메인 webp
+  html = String(html).split('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png').join('/images/logo_venomad.webp');
   return String(html).replace(
-    /(<img\b[^>]*\bsrc=")(https:\/\/raw\.githubusercontent\.com\/[^"]+)(")/gi,
-    function(m, pre, url, post) {
-      // 이미 변환된 건 건너뜀
-      if (/wsrv\.nl/.test(url)) return m;
-      return pre + 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&output=webp&q=80' + post;
+    /(<img\b[^>]*)\bsrc="https:\/\/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"]+?)(\.(?:jpg|jpeg|png))?"/gi,
+    function(m, pre, localPath, ext) {
+      var jpg = localPath + (ext || '.jpg');
+      var webp = localPath + '.webp';
+      return pre + 'src="' + webp + '" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=\'' + jpg + '\'}"';
     }
   );
 }
@@ -6344,7 +6347,9 @@ else{loadAdminPosts();}
 
 // GitHub 저장 AI 포스트 로드 (content/blog-posts.json)
 (function loadServerPosts(){
-  fetch('/content/blog-posts.json?_='+Date.now())
+  // 캐시버스터(?_=Date.now()) 제거: URL이 매번 달라져 ETag 304 재검증이 불가능했음.
+  // cache:'no-cache'는 조건부 요청(If-None-Match)을 강제해 변경 없으면 304로 211KB 재전송을 생략.
+  fetch('/content/blog-posts.json',{cache:'no-cache'})
     .then(function(r){return r.ok?r.json():[];})
     .then(function(posts){
       if(!Array.isArray(posts)||!posts.length)return;

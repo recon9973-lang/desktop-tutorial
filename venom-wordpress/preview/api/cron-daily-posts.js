@@ -232,7 +232,7 @@ module.exports = async function handler(req, res) {
       try {
         const imgUrls = [];
         const safe = (s) => String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-        const LOGO = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png';
+        const LOGO = 'https://venom-new-site.vercel.app/images/logo_venomad.webp';
         const fig = (url, cap, alt) => `<figure style="position:relative;margin:24px 0 32px;border-radius:12px;overflow:hidden">`
           + `<img src="${url}" alt="${safe(alt || post.title)}" style="width:100%;height:auto;display:block" loading="lazy">`
           + `<img src="${LOGO}" alt="병원마케팅 베놈 로고" style="position:absolute;right:14px;bottom:36px;width:104px;height:auto;opacity:.95;filter:drop-shadow(0 2px 8px rgba(0,0,0,.45))">`

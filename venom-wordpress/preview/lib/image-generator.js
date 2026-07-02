@@ -58,7 +58,8 @@ async function generateAndSaveImage(prompt, postId, index = 0, title = '') {
   const saved = await saveToGitHub(imgBuffer, githubPath);
   if (!saved.ok) return { url: null, githubPath: null, error: 'GitHub 저장 실패: ' + (saved.error || '') };
 
-  // GitHub raw URL로 직접 서빙 → Vercel 재배포 없이 즉시 표시 (배포 한도와 무관)
+  // GitHub raw URL 반환 — 관리자 미리보기용(재배포 전 즉시 표시).
+  // 방문자 화면에서는 index.html의 imgToWebp()가 자체 도메인(/content/images/*.webp)으로 재작성해 서빙.
   const rawUrl = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/venom-wordpress/preview/content/images/${encodeURIComponent(filename)}`;
   return { url: rawUrl, githubPath, error: null };
 }

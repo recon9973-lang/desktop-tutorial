@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
           // SEO용 alt(제목+키워드+브랜드, 속성 깨짐 방지 위해 큰따옴표 이스케이프)
           const safe = (s) => String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
           const altText = `${safe(post.title)} | ${safe(keyword)} - 병원마케팅 베놈`;
-          const LOGO = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png';
+          const LOGO = 'https://venom-new-site.vercel.app/images/logo_venomad.webp';
           const heroImg = `<figure style="position:relative;margin:0 0 32px;border-radius:12px;overflow:hidden">
   <img src="${img1.url}" alt="${altText}" style="width:100%;height:auto;display:block" loading="lazy">
   <img src="${LOGO}" alt="병원마케팅 베놈 로고" style="position:absolute;right:14px;bottom:36px;width:104px;height:auto;opacity:.95;filter:drop-shadow(0 2px 8px rgba(0,0,0,.45))">
