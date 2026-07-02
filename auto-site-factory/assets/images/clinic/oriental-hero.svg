@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720">
+  <defs>
+    <radialGradient id="bg" cx="55%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </radialGradient>
+    <!-- 미세 도트 패턴 -->
+    <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="1.5" fill="rgba(255,255,255,0.12)"/>
+    </pattern>
+    <!-- 부드러운 원형 블러 하이라이트 -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+  <!-- 배경 -->
+  <rect width="1100" height="720" fill="url(#bg)"/>
+  <!-- 도트 패턴 오버레이 -->
+  <rect width="1100" height="720" fill="url(#dots)"/>
+  <!-- 글로우 원 -->
+  <ellipse cx="605" cy="306" rx="440" ry="302.4" fill="url(#glow)"/>
+  <!-- 배경 원형 장식 -->
+  <circle cx="968" cy="129.6" r="158.4" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="110" cy="561.6" r="108" fill="rgba(255,255,255,0.06)"/>
+  <!-- 아이콘/일러스트 -->
+  <circle cx="550" cy="300" r="160" fill="rgba(255,255,255,0.1)"/>
+    <!-- 한자/나뭇잎 심볼 -->
+    <path d="M550,160 Q620,220 600,310 Q580,380 550,400 Q520,380 500,310 Q480,220 550,160Z" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+    <line x1="550" y1="160" x2="550" y2="400" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <!-- 침 -->
+    <line x1="450" y1="250" x2="550" y2="280" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+    <line x1="480" y1="300" x2="540" y2="310" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+  <!-- 하단 텍스트 배지 -->
+  <rect x="450" y="640" width="200" height="52" rx="26" fill="rgba(0,0,0,0.22)"/>
+  <text x="550" y="663" text-anchor="middle" font-family="'Pretendard','Inter',Arial,sans-serif" font-size="15.84" font-weight="700" fill="rgba(255,255,255,0.95)" letter-spacing="2">ORIENTAL MEDICINE</text>
+  <text x="550" y="682" text-anchor="middle" font-family="'Pretendard','Inter',Arial,sans-serif" font-size="20.16" font-weight="500" fill="rgba(255,255,255,0.75)">한의원 전문</text>
+</svg>

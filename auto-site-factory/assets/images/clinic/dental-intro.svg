@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <radialGradient id="bg" cx="55%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#e8f4fd"/>
+      <stop offset="50%" stop-color="#93c5fd"/>
+      <stop offset="100%" stop-color="#1e40af"/>
+    </radialGradient>
+    <!-- 미세 도트 패턴 -->
+    <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="1.5" fill="rgba(255,255,255,0.12)"/>
+    </pattern>
+    <!-- 부드러운 원형 블러 하이라이트 -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+  <!-- 배경 -->
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <!-- 도트 패턴 오버레이 -->
+  <rect width="800" height="600" fill="url(#dots)"/>
+  <!-- 글로우 원 -->
+  <ellipse cx="440.00000000000006" cy="255" rx="320" ry="252" fill="url(#glow)"/>
+  <!-- 배경 원형 장식 -->
+  <circle cx="704" cy="108" r="132" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="80" cy="468" r="90" fill="rgba(255,255,255,0.06)"/>
+  <!-- 아이콘/일러스트 -->
+  <ellipse cx="400" cy="290" rx="110" ry="135" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <path d="M355,275 Q330,310 342,355 Q355,375 380,363 Q400,353 420,363 Q445,375 458,355 Q470,310 445,275" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+  <!-- 하단 텍스트 배지 -->
+  <rect x="300" y="520" width="200" height="52" rx="26" fill="rgba(0,0,0,0.22)"/>
+  <text x="400" y="543" text-anchor="middle" font-family="'Pretendard','Inter',Arial,sans-serif" font-size="13.2" font-weight="700" fill="rgba(255,255,255,0.95)" letter-spacing="2">PROFESSIONAL CARE</text>
+  <text x="400" y="562" text-anchor="middle" font-family="'Pretendard','Inter',Arial,sans-serif" font-size="16.8" font-weight="500" fill="rgba(255,255,255,0.75)">임플란트·교정·충치</text>
+</svg>

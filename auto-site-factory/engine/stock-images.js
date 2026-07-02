@@ -1,48 +1,45 @@
 'use strict';
 // 카테고리/업종별 스톡 이미지
-// 이미지는 사용자가 spec.images.hero 등으로 덮어쓸 수 있음
-// 실사 이미지는 assets/images/ 에 있으며 raw.githubusercontent.com 으로 서빙
+// spec.images.hero 등으로 언제든지 사용자 이미지로 덮어쓸 수 있음
 
+// GitHub raw CDN: assets/images/*.svg
 const REPO_RAW = 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/auto-site-factory/assets/images';
-
-const G = (path, w) => {
-  const url = `${REPO_RAW}/${path}`;
-  return w ? `${url}?w=${w}` : url;
-};
+const G = p => `${REPO_RAW}/${p}`;
 
 const CLINIC_HERO = {
-  dental:   G('clinic/dental-hero.png'),
-  skin:     G('clinic/skin-hero.png'),
-  ortho:    G('clinic/ortho-hero.png'),
-  plastic:  G('clinic/plastic-hero.png'),
-  oriental: G('clinic/oriental-hero.png'),
-  naegwa:   G('clinic/naegwa-hero.png'),
-  angwa:    G('clinic/angwa-hero.png'),
-  default:  G('clinic/naegwa-hero.png'),
+  dental:   G('clinic/dental-hero.svg'),
+  skin:     G('clinic/skin-hero.svg'),
+  ortho:    G('clinic/ortho-hero.svg'),
+  plastic:  G('clinic/plastic-hero.svg'),
+  oriental: G('clinic/oriental-hero.svg'),
+  naegwa:   G('clinic/naegwa-hero.svg'),
+  angwa:    G('clinic/angwa-hero.svg'),
+  default:  G('clinic/naegwa-hero.svg'),
 };
 
 const CLINIC_INTRO = {
-  dental:   G('clinic/dental-intro.png'),
-  skin:     G('clinic/skin-intro.png'),
-  ortho:    G('clinic/ortho-intro.png'),
-  plastic:  G('clinic/plastic-intro.png'),
-  oriental: G('clinic/oriental-intro.png'),
-  naegwa:   G('clinic/naegwa-intro.png'),
-  angwa:    G('clinic/angwa-intro.png'),
-  default:  G('clinic/naegwa-intro.png'),
+  dental:   G('clinic/dental-intro.svg'),
+  skin:     G('clinic/skin-intro.svg'),
+  ortho:    G('clinic/ortho-intro.svg'),
+  plastic:  G('clinic/plastic-intro.svg'),
+  oriental: G('clinic/oriental-intro.svg'),
+  naegwa:   G('clinic/naegwa-intro.svg'),
+  angwa:    G('clinic/angwa-intro.svg'),
+  default:  G('clinic/naegwa-intro.svg'),
 };
 
 const CLINIC_GALLERY = {
-  dental:   [G('clinic/dental-gallery-1.png'), G('clinic/dental-gallery-2.png'), G('clinic/dental-gallery-3.png')],
-  skin:     [G('clinic/skin-gallery-1.png'),   G('clinic/skin-gallery-2.png'),   G('clinic/skin-gallery-3.png')],
-  ortho:    [G('clinic/ortho-gallery-1.png'),  G('clinic/ortho-gallery-2.png'),  G('clinic/ortho-gallery-3.png')],
-  plastic:  [G('clinic/plastic-gallery-1.png'),G('clinic/plastic-gallery-2.png'),G('clinic/plastic-gallery-3.png')],
-  oriental: [G('clinic/oriental-gallery-1.png'),G('clinic/oriental-gallery-2.png'),G('clinic/oriental-gallery-3.png')],
-  naegwa:   [G('clinic/naegwa-gallery-1.png'), G('clinic/naegwa-gallery-2.png'), G('clinic/naegwa-gallery-3.png')],
-  angwa:    [G('clinic/angwa-gallery-1.png'),  G('clinic/angwa-gallery-2.png'),  G('clinic/angwa-gallery-3.png')],
-  default:  [G('clinic/naegwa-gallery-1.png'), G('clinic/naegwa-gallery-2.png'), G('clinic/naegwa-gallery-3.png')],
+  dental:   [G('clinic/dental-gallery-1.svg'),   G('clinic/dental-gallery-2.svg'),   G('clinic/dental-gallery-3.svg')],
+  skin:     [G('clinic/skin-gallery-1.svg'),     G('clinic/skin-gallery-2.svg'),     G('clinic/skin-gallery-3.svg')],
+  ortho:    [G('clinic/ortho-gallery-1.svg'),    G('clinic/ortho-gallery-2.svg'),    G('clinic/ortho-gallery-3.svg')],
+  plastic:  [G('clinic/plastic-gallery-1.svg'),  G('clinic/plastic-gallery-2.svg'),  G('clinic/plastic-gallery-3.svg')],
+  oriental: [G('clinic/oriental-gallery-1.svg'), G('clinic/oriental-gallery-2.svg'), G('clinic/oriental-gallery-3.svg')],
+  naegwa:   [G('clinic/naegwa-gallery-1.svg'),   G('clinic/naegwa-gallery-2.svg'),   G('clinic/naegwa-gallery-3.svg')],
+  angwa:    [G('clinic/angwa-gallery-1.svg'),    G('clinic/angwa-gallery-2.svg'),    G('clinic/angwa-gallery-3.svg')],
+  default:  [G('clinic/naegwa-gallery-1.svg'),   G('clinic/naegwa-gallery-2.svg'),   G('clinic/naegwa-gallery-3.svg')],
 };
 
+// ── 소상공인 로컬 ──────────────────────────────────────────
 const LOCAL_HERO = {
   cafe:       G('local/cafe-hero.png'),
   restaurant: G('local/restaurant-hero.png'),
@@ -77,20 +74,19 @@ const LOCAL_GALLERY = {
 };
 
 const PRESS_HERO = {
-  default: G('clinic/naegwa-hero.png'),
+  default: G('clinic/naegwa-hero.svg'),
 };
 
-const LOCAL_PATH = '/home/user/desktop-tutorial/auto-site-factory/assets/images';
-
 function localPath(relPath) {
-  return `file://${LOCAL_PATH}/${relPath}`;
+  return `/assets/images/${relPath}`;
 }
 
 function getHero(category, subKey, local) {
   if (local) {
-    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-hero.png`);
+    const ext = category === 'clinic' ? 'svg' : 'png';
+    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-hero.${ext}`);
     if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-hero.png`);
-    return localPath('clinic/naegwa-hero.png');
+    return localPath('clinic/naegwa-hero.svg');
   }
   if (category === 'clinic')  return CLINIC_HERO[subKey]  || CLINIC_HERO.default;
   if (category === 'local')   return LOCAL_HERO[subKey]   || LOCAL_HERO.default;
@@ -100,9 +96,10 @@ function getHero(category, subKey, local) {
 
 function getIntro(category, subKey, local) {
   if (local) {
-    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-intro.png`);
+    const ext = category === 'clinic' ? 'svg' : 'png';
+    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-intro.${ext}`);
     if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-intro.png`);
-    return localPath('clinic/naegwa-intro.png');
+    return localPath('clinic/naegwa-intro.svg');
   }
   if (category === 'clinic') return CLINIC_INTRO[subKey] || CLINIC_INTRO.default;
   if (category === 'local')  return LOCAL_INTRO[subKey]  || LOCAL_INTRO.default;
@@ -111,9 +108,10 @@ function getIntro(category, subKey, local) {
 
 function getGallery(category, subKey, local) {
   if (local) {
-    const s = subKey || (category === 'local' ? 'cafe' : 'naegwa');
+    const s   = subKey || (category === 'local' ? 'cafe' : 'naegwa');
     const cat = category === 'local' ? 'local' : 'clinic';
-    return [1,2,3].map(i => localPath(`${cat}/${s}-gallery-${i}.png`));
+    const ext = category === 'clinic' ? 'svg' : 'png';
+    return [1,2,3].map(i => localPath(`${cat}/${s}-gallery-${i}.${ext}`));
   }
   if (category === 'clinic') return CLINIC_GALLERY[subKey] || CLINIC_GALLERY.default;
   if (category === 'local')  return LOCAL_GALLERY[subKey]  || LOCAL_GALLERY.default;
