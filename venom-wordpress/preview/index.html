@@ -8276,5 +8276,44 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   },{passive:true});
 })();
 </script>
+
+<!-- 디자인 정돈 레이어: 타이포 위계·여백 리듬·크롬 절제 (전체 구성 재정립) -->
+<style>
+  /* ── 1. 상세 페이지: 카드 크롬 제거 → 에디토리얼 흐름 (여백이 위계를 만든다) ── */
+  .dc-section{margin-bottom:72px;scroll-margin-top:90px}
+  .dc-section>h2{font-size:27px;font-weight:750;letter-spacing:-.035em;color:var(--ink);margin-bottom:18px;padding-left:0;padding-top:0}
+  .dc-section>h2::before{display:none}
+  .dc-section h3{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin:30px 0 8px}
+  .dc-section p{font-size:15px;line-height:1.85;color:var(--ink2);max-width:74ch}
+  /* 콜아웃: 그라디언트 → 단색 절제(포인트는 좌측 1개 선만) */
+  .dc-callout{background:var(--soft);border:none;border-left:3px solid var(--p);border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0}
+  .dc-callout .ic{font-size:17px}
+  /* 태그 행: 조용한 단색 */
+  .dc-tag-row span{background:var(--soft);color:var(--ink2);border:none}
+  /* 피겨: 그림자 절제 + 여백 */
+  .dc-figure{margin:26px 0;box-shadow:0 10px 30px -22px rgba(13,37,61,.35)}
+  /* 표: 헤더 단색화 */
+  .dc-table thead th{background:var(--soft);color:var(--ink)}
+
+  /* ── 2. 랜딩: 섹션 리듬·타이틀 스케일 통일 ── */
+  .section{padding:104px 0}
+  .section-head{margin:0 auto 60px}
+  .section-head h2,.gx-head h2,.inv-head h2,.cs-head h2,.rm-head h2{font-size:36px;font-weight:800;letter-spacing:-.035em;line-height:1.22}
+  .section-head p{font-size:15.5px;line-height:1.75}
+  @media(max-width:700px){
+    .section{padding:64px 0}
+    .section-head h2,.gx-head h2,.inv-head h2,.cs-head h2{font-size:27px}
+    .dc-section{margin-bottom:52px}
+    .dc-section>h2{font-size:22px}
+  }
+
+  /* ── 3. 토큰 수렴: 라운드·그림자 (카드류 16px 통일) ── */
+  .orch-card,.gx-card,.gx-cmp-card,.aig-vs-card,.inv-card,.tool-card,.cs-card,.testi-card{border-radius:16px}
+  .tool-card,.orch-card{box-shadow:0 1px 2px rgba(13,37,61,.04)}
+
+  /* ── 4. 밀도 완화: 본문 링크·강조 절제 ── */
+  .dc-ilink{font-weight:600}
+  .dc-info{margin:28px 0}
+</style>
 </body>
 </html>
