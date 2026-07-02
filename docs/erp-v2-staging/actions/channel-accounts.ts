@@ -7,7 +7,6 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { Role } from "@/domain/types";
 import { assertCanAccessClient } from "@/domain/access-control";
 import { db } from "@/server/db";
 import { encryptSecret, decryptSecret } from "@/server/crypto";

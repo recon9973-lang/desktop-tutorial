@@ -6,8 +6,12 @@
 // - recordAudit(): AuditLog 실제 저장 (before/after 스냅샷)
 // - runAction(): 표준 try/catch → ActionResult 변환 (에러코드를 사용자 메시지로)
 // - requestMeta(): ip/userAgent 추출 (감사 메타)
-"use server";
-
+//
+// 주의: 이 파일은 "use server" 모듈이 아니다(일반 서버 유틸). 이유:
+//  (1) runAction()은 함수를 인자로 받는데, server action 인자는 직렬화 가능해야 하므로
+//      "use server"로 노출하면 안 된다. (2) toAuditState()는 동기 함수인데
+//      "use server" 파일은 async export만 허용한다. 실제 server action 진입점은
+//      이 파일을 import해 쓰는 actions/*.ts들이며, 각자 "use server"를 갖는다.
 import { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 
