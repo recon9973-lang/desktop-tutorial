@@ -1006,53 +1006,9 @@ body{padding-top:0}
   .gx-cmp-card.new .gx-cmp-foot{border-color:rgba(255,255,255,.16);color:#a5b4fc}
   @media(max-width:760px){.gx-flow{grid-template-columns:1fr}.gx-arrow{transform:rotate(90deg);padding:6px 0}.gx-cmp{grid-template-columns:1fr}.gx-title{font-size:26px}}
   </style>
-  <section class="section nb-sec">
-    <style>
-      .nb-sec{background:#fff}
-      .nb-eyebrow{display:block;text-align:center;font-size:13px;font-weight:800;letter-spacing:.02em;color:#e11d48;margin-bottom:14px}
-      .nb-title{text-align:center;font-size:38px;font-weight:800;letter-spacing:-.035em;line-height:1.22;color:#0f172a;margin:0 0 14px}
-      .nb-title em{font-style:normal;color:#e11d48}
-      .nb-sub{text-align:center;color:var(--mute);font-size:16px;margin:0 auto 46px;max-width:560px}
-      .nb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1080px;margin:0 auto}
-      .nb-card{background:#fafafa;border:1px solid #ececec;border-radius:18px;padding:28px 24px;transition:.2s}
-      .nb-card:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(15,23,42,.08);border-color:#fecdd3}
-      .nb-num{font-size:15px;font-weight:800;color:#e11d48;letter-spacing:.04em;margin-bottom:14px}
-      .nb-card h3{font-size:19px;font-weight:800;color:#0f172a;letter-spacing:-.02em;margin:0 0 10px;line-height:1.3}
-      .nb-card p{font-size:13.5px;color:#475569;line-height:1.68;margin:0}
-      .nb-foot{text-align:center;margin-top:34px;font-size:15px;color:#334155}
-      .nb-foot b{color:#e11d48}
-      @media(max-width:960px){.nb-grid{grid-template-columns:1fr 1fr}}
-      @media(max-width:600px){.nb-grid{grid-template-columns:1fr}.nb-title{font-size:27px}}
-    </style>
-    <div class="container">
-      <span class="nb-eyebrow">왜 네이버 블로그만으로는 안 되는가</span>
-      <h2 class="nb-title">네이버 블로그, <em>쓸수록 불안해지는</em> 이유.</h2>
-      <p class="nb-sub">원장님이 못 써서가 아닙니다. 남의 플랫폼 위에서만 하는 마케팅은 구조적으로 흔들립니다.</p>
-      <div class="nb-grid">
-        <div class="nb-card">
-          <div class="nb-num">01</div>
-          <h3>글 누락</h3>
-          <p>진료 끝나고 밤새 쓴 글이 검색에 반영되지 않습니다. 저품질·누락 판정은 이유도 알려주지 않고, 이의를 제기할 곳도 마땅치 않습니다.</p>
-        </div>
-        <div class="nb-card">
-          <div class="nb-num">02</div>
-          <h3>로직 변경</h3>
-          <p>C-Rank·DIA 로직이 업데이트되면 순위는 리셋됩니다. 몇 달을 쌓아 만든 상위 노출이 알고리즘 변경 한 번에 사라질 수 있습니다.</p>
-        </div>
-        <div class="nb-card">
-          <div class="nb-num">03</div>
-          <h3>대형 펌 물량 공세</h3>
-          <p>대형 대행사는 하루에도 수십 건씩 발행합니다. 원장님이 주 2회 정성껏 쓰는 글은 물량 앞에서 밀려납니다. 성실함만으로는 이길 수 없는 싸움입니다.</p>
-        </div>
-        <div class="nb-card">
-          <div class="nb-num">04</div>
-          <h3>CPC 10만 원</h3>
-          <p>'임플란트' 같은 경쟁 키워드는 클릭 한 번에 광고비가 수만 원에서 10만 원대까지 치솟습니다. 클릭이 예약이 된다는 보장은 어디에도 없습니다.</p>
-        </div>
-      </div>
-      <p class="nb-foot">블로그가 잘못된 게 아닙니다. <b>블로그"만" 하는 것</b>이 문제입니다.</p>
-    </div>
-  </section>
+  
+<!-- nb-sec 섹션 제거: 홈 2차 정리(메시지 중복 통합) -->
+
 
   <section class="section aig-sec">
     <style>
@@ -1246,69 +1202,9 @@ body{padding-top:0}
   </section>
 
   <!-- 🆕 인터랙티브 로드맵 (병원 AI·검색 노출 5단계) -->
-  <section class="section rm-section">
-    <style>
-      .rm-head{text-align:center;max-width:620px;margin:0 auto 30px}
-      .rm-head h2{font-size:34px;font-weight:300;letter-spacing:-.8px;color:var(--ink);margin-bottom:12px}
-      .rm-head h2 em{font-style:normal;color:var(--p)}
-      .rm-head p{font-size:15px;color:var(--mute)}
-      .rm-list{max-width:720px;margin:0 auto}
-      .rm-step{border:1px solid var(--border);border-radius:14px;margin-bottom:12px;background:#fff;overflow:hidden;transition:box-shadow .2s}
-      .rm-step.open{box-shadow:rgba(0,55,112,.07) 0 8px 26px;border-color:rgba(83,58,253,.3)}
-      .rm-step-head{display:flex;align-items:center;gap:16px;padding:18px 20px;cursor:pointer}
-      .rm-num{width:38px;height:38px;flex-shrink:0;border-radius:50%;background:var(--soft);color:var(--p);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s}
-      .rm-step.open .rm-num{background:var(--p);color:#fff}
-      .rm-step-title{flex:1;font-size:16px;font-weight:600;color:var(--ink)}
-      .rm-step-sub{font-size:13px;color:var(--mute);font-weight:400;margin-top:2px}
-      .rm-chev{color:var(--mute);transition:transform .25s;flex-shrink:0}
-      .rm-step.open .rm-chev{transform:rotate(180deg);color:var(--p)}
-      .rm-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
-      .rm-step.open .rm-body{max-height:400px}
-      .rm-body-inner{padding:0 20px 20px 74px}
-      .rm-todo{font-size:13px;color:var(--ink2);line-height:1.5;padding:5px 0 5px 18px;position:relative}
-      .rm-todo:before{content:'✓';position:absolute;left:0;color:var(--p);font-weight:700}
-      .rm-venom{margin-top:12px;font-size:12px;color:var(--p);background:rgba(83,58,253,.06);border-radius:8px;padding:8px 12px;font-weight:600}
-      @media(max-width:600px){.rm-head h2{font-size:26px}.rm-body-inner{padding:0 18px 18px 20px}}
-    </style>
-    <div class="container">
-      <div class="rm-head">
-        <div class="section-badge">실행 로드맵</div>
-        <h2>AI·검색에 노출되는 <em>5단계</em></h2>
-        <p>각 단계를 눌러 무엇을 어떻게 하는지 확인하세요.</p>
-      </div>
-      <div class="rm-list" id="rm-list">
-        <div class="rm-step open">
-          <div class="rm-step-head" onclick="rmToggle(0)"><div class="rm-num">1</div><div class="rm-step-title">진단<div class="rm-step-sub">현재 노출 상태부터 정확히 파악</div></div><svg class="rm-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
-          <div class="rm-body"><div class="rm-body-inner"><div class="rm-todo">네이버 플레이스·지도 노출 점검</div><div class="rm-todo">핵심 진료 키워드 검색 순위 확인</div><div class="rm-todo">ChatGPT·Perplexity 추천 여부 확인</div><div class="rm-todo">경쟁 병원 노출 현황 분석</div><div class="rm-venom">베놈: 무료 진단 리포트 제공</div></div></div>
-        </div>
-        <div class="rm-step">
-          <div class="rm-step-head" onclick="rmToggle(1)"><div class="rm-num">2</div><div class="rm-step-title">기반 정비<div class="rm-step-sub">검색·AI가 신뢰할 토대 만들기</div></div><svg class="rm-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
-          <div class="rm-body"><div class="rm-body-inner"><div class="rm-todo">네이버 플레이스 완성도 95% 이상</div><div class="rm-todo">홈페이지 모바일·로딩속도 최적화</div><div class="rm-todo">Schema.org(병원·FAQ) 구조화 마크업</div><div class="rm-todo">원장 전문성(E-E-A-T) 정보 정비</div><div class="rm-venom">베놈: 기술 SEO·플레이스 셋업</div></div></div>
-        </div>
-        <div class="rm-step">
-          <div class="rm-step-head" onclick="rmToggle(2)"><div class="rm-num">3</div><div class="rm-step-title">콘텐츠<div class="rm-step-sub">환자의 질문에 답하는 콘텐츠(AEO)</div></div><svg class="rm-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
-          <div class="rm-body"><div class="rm-body-inner"><div class="rm-todo">질문형(FAQ) 구조 콘텐츠 제작</div><div class="rm-todo">블로그 정기 발행(주제 트렌드 반영)</div><div class="rm-todo">진료과 핵심 키워드 공략</div><div class="rm-todo">규정 내 후기·사례 정리</div><div class="rm-venom">베놈: AEO 콘텐츠 기획·집필</div></div></div>
-        </div>
-        <div class="rm-step">
-          <div class="rm-step-head" onclick="rmToggle(3)"><div class="rm-num">4</div><div class="rm-step-title">AI·검색 노출<div class="rm-step-sub">ChatGPT·구글 AI가 인용하게</div></div><svg class="rm-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
-          <div class="rm-body"><div class="rm-body-inner"><div class="rm-todo">병원 엔티티 구축(GEO)</div><div class="rm-todo">구조화 데이터 고도화</div><div class="rm-todo">외부 신뢰 신호(인용·언급) 확보</div><div class="rm-todo">구글 AI Overviews 대응</div><div class="rm-venom">베놈: GEO 최적화 집행</div></div></div>
-        </div>
-        <div class="rm-step">
-          <div class="rm-step-head" onclick="rmToggle(4)"><div class="rm-num">5</div><div class="rm-step-title">측정·고도화<div class="rm-step-sub">데이터로 지속 개선</div></div><svg class="rm-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
-          <div class="rm-body"><div class="rm-body-inner"><div class="rm-todo">키워드 순위 추적</div><div class="rm-todo">유입·전환 측정</div><div class="rm-todo">월간 성과 리포트</div><div class="rm-todo">전략 고도화·재투자</div><div class="rm-venom">베놈: 성과 리포트·지속 운영</div></div></div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:24px"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 우리 병원은 몇 단계? 무료 진단받기</a></div>
-    </div>
-    <script>
-      function rmToggle(i){
-        var steps=document.querySelectorAll('.rm-step'); if(!steps[i])return;
-        var willOpen=!steps[i].classList.contains('open');
-        steps.forEach(function(s){s.classList.remove('open');});
-        if(willOpen)steps[i].classList.add('open');
-      }
-    </script>
-  </section>
+  
+<!-- rm-section 섹션 제거: 홈 2차 정리(메시지 중복 통합) -->
+
 
   <!-- 🆕 스토리텔링 성과 사례 슬라이드 -->
   <section class="section cs-section">
