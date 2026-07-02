@@ -2,423 +2,495 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/</loc>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://desktop-tutorial-chi-peach.vercel.app/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://desktop-tutorial-chi-peach.vercel.app/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://desktop-tutorial-chi-peach.vercel.app/"/>
+    <loc>https://venom-new-site.vercel.app/</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://venom-new-site.vercel.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://venom-new-site.vercel.app/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://venom-new-site.vercel.app/"/>
     <lastmod>2026-06-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/en/</loc>
-    <xhtml:link rel="alternate" hreflang="ko" href="https://desktop-tutorial-chi-peach.vercel.app/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://desktop-tutorial-chi-peach.vercel.app/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://desktop-tutorial-chi-peach.vercel.app/"/>
+    <loc>https://venom-new-site.vercel.app/en/</loc>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://venom-new-site.vercel.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://venom-new-site.vercel.app/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://venom-new-site.vercel.app/"/>
     <lastmod>2026-06-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%8C%80%EC%A0%84-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85%EC%9D%98-GEO-AEO-%ED%99%9C%EC%9A%A9%EA%B3%BC-AI-29680</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%8C%80%EC%A0%84-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85%EC%9D%98-GEO-AEO-%ED%99%9C%EC%9A%A9%EA%B3%BC-AI-29680</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%B6%80%EC%82%B0%EC%9D%98-GEO-AIO-%EB%A7%88%EC%BC%80%ED%8C%85-%EB%B3%91%EC%9B%90-SEO-%EC%B5%9C-53059</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%B6%80%EC%82%B0%EC%9D%98-GEO-AIO-%EB%A7%88%EC%BC%80%ED%8C%85-%EB%B3%91%EC%9B%90-SEO-%EC%B5%9C-53059</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%9D%B8%EC%B2%9C-%EB%B3%91%EC%9B%90-%EB%A7%88%EC%BC%80%ED%8C%85%EC%9D%98-5%EA%B0%80%EC%A7%80-%ED%95%B5%EC%8B%AC-%EC%A0%84%EB%9E%B5%EA%B3%BC-%EC%84%B1%EA%B3%B5-78874</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%9D%B8%EC%B2%9C-%EB%B3%91%EC%9B%90-%EB%A7%88%EC%BC%80%ED%8C%85%EC%9D%98-5%EA%B0%80%EC%A7%80-%ED%95%B5%EC%8B%AC-%EC%A0%84%EB%9E%B5%EA%B3%BC-%EC%84%B1%EA%B3%B5-78874</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%8C%80%EA%B5%AC-GEO-AEO-%EB%A7%88%EC%BC%80%ED%8C%85-%EC%A0%84%EB%9E%B5-5%EA%B0%80%EC%A7%80-AI-04927</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%8C%80%EA%B5%AC-GEO-AEO-%EB%A7%88%EC%BC%80%ED%8C%85-%EC%A0%84%EB%9E%B5-5%EA%B0%80%EC%A7%80-AI-04927</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%8C%80%EC%A0%84-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85%EC%9D%98-5%EA%B0%80%EC%A7%80-%ED%95%B5%EC%8B%AC-%EC%A0%84%EB%9E%B5%EA%B3%BC-%EC%B5%9C%EC%8B%A0-25810</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%8C%80%EC%A0%84-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85%EC%9D%98-5%EA%B0%80%EC%A7%80-%ED%95%B5%EC%8B%AC-%EC%A0%84%EB%9E%B5%EA%B3%BC-%EC%B5%9C%EC%8B%A0-25810</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95-%EC%8B%9C%EC%88%A0-%EC%A0%88%EC%B0%A8%EC%99%80-%ED%9A%8C%EB%B3%B5%EA%B8%B0%EA%B0%84-%EB%B6%80%EC%9E%91%EC%9A%A9-5%EA%B0%80%EC%A7%80-57438</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95-%EC%8B%9C%EC%88%A0-%EC%A0%88%EC%B0%A8%EC%99%80-%ED%9A%8C%EB%B3%B5%EA%B8%B0%EA%B0%84-%EB%B6%80%EC%9E%91%EC%9A%A9-5%EA%B0%80%EC%A7%80-57438</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95-%EB%A7%88%EC%BC%80%ED%8C%85-%EC%A0%84%EB%9E%B5-TOP-5-%EB%B0%8F-%EC%8B%9C%EC%88%A0-%EC%A0%95%EB%B3%B4-14105</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95-%EB%A7%88%EC%BC%80%ED%8C%85-%EC%A0%84%EB%9E%B5-TOP-5-%EB%B0%8F-%EC%8B%9C%EC%88%A0-%EC%A0%95%EB%B3%B4-14105</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95%EC%9D%98-%EC%A0%88%EC%B0%A8%EC%99%80-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD-90-%EB%A7%8C%EC%A1%B1%EB%8F%84-%EB%B6%84%EC%84%9D-74836</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95%EC%9D%98-%EC%A0%88%EC%B0%A8%EC%99%80-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD-90-%EB%A7%8C%EC%A1%B1%EB%8F%84-%EB%B6%84%EC%84%9D-74836</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95-%EB%A7%88%EC%BC%80%ED%8C%85-%ED%9A%A8%EA%B3%BC%EC%A0%81%EC%9D%B8-%EC%8B%9C%EC%88%A0%EA%B3%BC-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD-5%EA%B0%80-36039</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95-%EB%A7%88%EC%BC%80%ED%8C%85-%ED%9A%A8%EA%B3%BC%EC%A0%81%EC%9D%B8-%EC%8B%9C%EC%88%A0%EA%B3%BC-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD-5%EA%B0%80-36039</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95%EC%9D%98-%EB%AA%A8%EB%93%A0-%EA%B2%83-%EC%A0%88%EC%B0%A8-%EB%B6%80%EC%9E%91%EC%9A%A9-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD-%EC%B4%9D%EC%A0%95-98949</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%BD%94%EC%84%B1%ED%98%95%EC%9D%98-%EB%AA%A8%EB%93%A0-%EA%B2%83-%EC%A0%88%EC%B0%A8-%EB%B6%80%EC%9E%91%EC%9A%A9-%EC%A3%BC%EC%9D%98%EC%82%AC%ED%95%AD-%EC%B4%9D%EC%A0%95-98949</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%8C%80%EC%A0%84-GEO-%EB%A7%88%EC%BC%80%ED%8C%85-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5%EC%9C%BC%EB%A1%9C-%EC%A7%80%EC%97%AD-%EA%B2%80-53609</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%8C%80%EC%A0%84-GEO-%EB%A7%88%EC%BC%80%ED%8C%85-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5%EC%9C%BC%EB%A1%9C-%EC%A7%80%EC%97%AD-%EA%B2%80-53609</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EA%B4%91%EC%A3%BC-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85-%EC%84%B1%EA%B3%B5%EC%9D%84-%EC%9C%84%ED%95%9C-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5-16253</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EA%B4%91%EC%A3%BC-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85-%EC%84%B1%EA%B3%B5%EC%9D%84-%EC%9C%84%ED%95%9C-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5-16253</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EC%9D%B8%EC%B2%9C-%EC%A7%80%EC%97%AD-%EB%A7%88%EC%BC%80%ED%8C%85-AI-%ED%99%9C%EC%9A%A9%ED%95%9C-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5-79567</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EC%9D%B8%EC%B2%9C-%EC%A7%80%EC%97%AD-%EB%A7%88%EC%BC%80%ED%8C%85-AI-%ED%99%9C%EC%9A%A9%ED%95%9C-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5-79567</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%B6%80%EC%82%B0-%EC%A7%80%EC%97%AD%EB%A7%88%EC%BC%80%ED%8C%85-GEO-%EC%B5%9C%EC%A0%81%ED%99%94-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5-39105</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%B6%80%EC%82%B0-%EC%A7%80%EC%97%AD%EB%A7%88%EC%BC%80%ED%8C%85-GEO-%EC%B5%9C%EC%A0%81%ED%99%94-5%EA%B0%80%EC%A7%80-%EC%A0%84%EB%9E%B5-39105</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/blog/%EB%8C%80%EA%B5%AC-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85-%EC%A7%80%EC%97%AD-%EA%B2%80%EC%83%89-%EC%B5%9C%EC%A0%81%ED%99%94-5%EA%B0%80%EC%A7%80-%EC%A0%84-00854</loc>
+    <loc>https://venom-new-site.vercel.app/blog/%EB%8C%80%EA%B5%AC-%EB%B3%91%EC%9B%90%EB%A7%88%EC%BC%80%ED%8C%85-%EC%A7%80%EC%97%AD-%EA%B2%80%EC%83%89-%EC%B5%9C%EC%A0%81%ED%99%94-5%EA%B0%80%EC%A7%80-%EC%A0%84-00854</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/ai</loc>
+    <loc>https://venom-new-site.vercel.app/ai</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/geo</loc>
+    <loc>https://venom-new-site.vercel.app/geo</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/aeo</loc>
+    <loc>https://venom-new-site.vercel.app/aeo</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/seo</loc>
+    <loc>https://venom-new-site.vercel.app/seo</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/hospital-marketing</loc>
+    <loc>https://venom-new-site.vercel.app/hospital-marketing</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/online-marketing</loc>
+    <loc>https://venom-new-site.vercel.app/online-marketing</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/website</loc>
+    <loc>https://venom-new-site.vercel.app/website</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/about</loc>
+    <loc>https://venom-new-site.vercel.app/about</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/contact</loc>
+    <loc>https://venom-new-site.vercel.app/contact</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/seo-dictionary</loc>
+    <loc>https://venom-new-site.vercel.app/seo-dictionary</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/diagnose</loc>
+    <loc>https://venom-new-site.vercel.app/diagnose</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dental</loc>
+    <loc>https://venom-new-site.vercel.app/dental</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/implant</loc>
+    <loc>https://venom-new-site.vercel.app/implant</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/orthodontics</loc>
+    <loc>https://venom-new-site.vercel.app/orthodontics</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dermatology</loc>
+    <loc>https://venom-new-site.vercel.app/dermatology</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/orthopedics</loc>
+    <loc>https://venom-new-site.vercel.app/orthopedics</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/oriental-medicine</loc>
+    <loc>https://venom-new-site.vercel.app/oriental-medicine</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/plastic-surgery</loc>
+    <loc>https://venom-new-site.vercel.app/plastic-surgery</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/internal-medicine</loc>
+    <loc>https://venom-new-site.vercel.app/internal-medicine</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/ophthalmology</loc>
+    <loc>https://venom-new-site.vercel.app/ophthalmology</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/medical-ad-review</loc>
+    <loc>https://venom-new-site.vercel.app/medical-ad-review</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/medical-device</loc>
+    <loc>https://venom-new-site.vercel.app/medical-device</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dental/navigation-implant</loc>
+    <loc>https://venom-new-site.vercel.app/dental/navigation-implant</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dental/clear-aligner</loc>
+    <loc>https://venom-new-site.vercel.app/dental/clear-aligner</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dental/laminate</loc>
+    <loc>https://venom-new-site.vercel.app/dental/laminate</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dermatology/laser-toning</loc>
+    <loc>https://venom-new-site.vercel.app/dermatology/laser-toning</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/orthopedics/manual-therapy</loc>
+    <loc>https://venom-new-site.vercel.app/orthopedics/manual-therapy</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/oriental-medicine/chuna</loc>
+    <loc>https://venom-new-site.vercel.app/oriental-medicine/chuna</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/plastic-surgery/eye-surgery</loc>
+    <loc>https://venom-new-site.vercel.app/plastic-surgery/eye-surgery</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/ophthalmology/cataract</loc>
+    <loc>https://venom-new-site.vercel.app/ophthalmology/cataract</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/internal-medicine/health-checkup</loc>
+    <loc>https://venom-new-site.vercel.app/internal-medicine/health-checkup</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dental/scaling</loc>
+    <loc>https://venom-new-site.vercel.app/dental/scaling</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dermatology/skin-booster</loc>
+    <loc>https://venom-new-site.vercel.app/dermatology/skin-booster</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/orthopedics/herniated-disc</loc>
+    <loc>https://venom-new-site.vercel.app/orthopedics/herniated-disc</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/plastic-surgery/rhinoplasty</loc>
+    <loc>https://venom-new-site.vercel.app/plastic-surgery/rhinoplasty</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/ophthalmology/lasik</loc>
+    <loc>https://venom-new-site.vercel.app/ophthalmology/lasik</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/oriental-medicine/diet</loc>
+    <loc>https://venom-new-site.vercel.app/oriental-medicine/diet</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/internal-medicine/chronic-disease</loc>
+    <loc>https://venom-new-site.vercel.app/internal-medicine/chronic-disease</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/orthopedics/knee-arthritis</loc>
+    <loc>https://venom-new-site.vercel.app/orthopedics/knee-arthritis</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dermatology/lifting</loc>
+    <loc>https://venom-new-site.vercel.app/dermatology/lifting</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/plastic-surgery/botox-filler</loc>
+    <loc>https://venom-new-site.vercel.app/plastic-surgery/botox-filler</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/ophthalmology/glaucoma</loc>
+    <loc>https://venom-new-site.vercel.app/ophthalmology/glaucoma</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/internal-medicine/thyroid</loc>
+    <loc>https://venom-new-site.vercel.app/internal-medicine/thyroid</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/dental/root-canal</loc>
+    <loc>https://venom-new-site.vercel.app/dental/root-canal</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/ophthalmology/dry-eye</loc>
+    <loc>https://venom-new-site.vercel.app/ophthalmology/dry-eye</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/oriental-medicine/traffic-accident</loc>
+    <loc>https://venom-new-site.vercel.app/oriental-medicine/traffic-accident</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/internal-medicine/endoscopy</loc>
+    <loc>https://venom-new-site.vercel.app/internal-medicine/endoscopy</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/plastic-surgery/facelift</loc>
+    <loc>https://venom-new-site.vercel.app/plastic-surgery/facelift</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/plastic-surgery/liposuction</loc>
+    <loc>https://venom-new-site.vercel.app/plastic-surgery/liposuction</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/oriental-medicine/herbal-tonic</loc>
+    <loc>https://venom-new-site.vercel.app/oriental-medicine/herbal-tonic</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/oriental-medicine/internal</loc>
+    <loc>https://venom-new-site.vercel.app/oriental-medicine/internal</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://desktop-tutorial-chi-peach.vercel.app/internal-medicine/respiratory</loc>
+    <loc>https://venom-new-site.vercel.app/internal-medicine/respiratory</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dental/implant</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dental/orthodontics</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dental/cosmetic</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dental/conservative</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dental/periodontal</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dermatology/pigment</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dermatology/regeneration</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/dermatology/elasticity</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/orthopedics/spine</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/orthopedics/joint</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/orthopedics/rehab</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://venom-new-site.vercel.app/ophthalmology/vision</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

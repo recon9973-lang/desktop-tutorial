@@ -73,7 +73,7 @@ GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통
 
 ## 주요 링크
 
-- 홈페이지: https://desktop-tutorial-chi-peach.vercel.app/
+- 홈페이지: https://venom-new-site.vercel.app/
 - 카카오 상담: https://pf.kakao.com/_jxjxdcxj/chat
 - 인스타그램: https://www.instagram.com/venom_markepick
-- Sitemap: https://desktop-tutorial-chi-peach.vercel.app/sitemap.xml
+- Sitemap: https://venom-new-site.vercel.app/sitemap.xml
