@@ -328,7 +328,7 @@ ${DELIMITER.END}`;
     'publisher': {
       '@type': 'Organization',
       'name': '병원마케팅 베놈',
-      'logo': { '@type': 'ImageObject', 'url': 'https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png' }
+      'logo': { '@type': 'ImageObject', 'url': 'https://venom-new-site.vercel.app/images/logo_venomad.png' }
     },
     'mainEntityOfPage': { '@type': 'WebPage', '@id': `https://desktop-tutorial-chi-peach.vercel.app/blog/${encodeURIComponent(slug)}` },
   });

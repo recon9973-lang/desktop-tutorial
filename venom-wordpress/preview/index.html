@@ -100,9 +100,8 @@
   ]
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Pretendard는 Google Fonts에 없어 기존 googleapis 요청 3건은 죽은 홉이었음 — jsdelivr 단일화 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 /* ── DESIGN-stripe.md 토큰 완전 적용 ── */
@@ -4289,6 +4288,11 @@ a.ai-logo:hover{background:rgba(255,255,255,.22);color:#fff;border-color:rgba(25
 .dc-figure.g5{background:linear-gradient(135deg,#2e2b8c,#ea2261)}
 .dc-figure img{width:100%;height:100%;object-fit:cover;display:block}
 .dc-figure figcaption{position:absolute;left:14px;bottom:12px;font-size:12px;color:#fff;background:rgba(0,0,0,.32);padding:5px 13px;border-radius:20px;backdrop-filter:blur(4px)}
+/* 가로·세로 믹스: 짝수 피겨(g2·g4)는 세로 프레임으로 우측 배치 + 텍스트 감싸기 — 페이지에 가로/세로 교차 리듬 */
+.dc-section{display:flow-root}
+.dc-figure.g2:not(.dc-rel-thumb),.dc-figure.g4:not(.dc-rel-thumb){float:right;width:min(44%,320px);aspect-ratio:3/4;margin:6px 0 14px 20px}
+.dc-figure.g2:not(.dc-rel-thumb) figcaption,.dc-figure.g4:not(.dc-rel-thumb) figcaption{left:10px;bottom:10px;font-size:11px;padding:4px 10px}
+@media(max-width:640px){.dc-figure.g2:not(.dc-rel-thumb),.dc-figure.g4:not(.dc-rel-thumb){float:none;width:100%;aspect-ratio:16/9;margin:18px 0}}
 /* 섹션 카드화 + 좌측 액센트 */
 .dc-section{margin-bottom:34px;scroll-margin-top:90px}
 .dc-section>h2{position:relative;padding-left:16px}
@@ -5374,7 +5378,7 @@ function seoPDF(){
 }
 
 // ── SEO 점수 명예의 전당 (리더보드) ──
-var _LB_API='https://venom-new-site.vercel.app/api/analytics';
+var _LB_API='/api/analytics'; // 상대 경로 — 커스텀 도메인 이전·로컬에서도 동일 동작(자기 도메인 경유)
 function _lbRecord(domain,score){
   if(!domain||!score)return;
   try{
@@ -6268,17 +6272,21 @@ var ADMIN_CAT_BG={
   '지역마케팅':'linear-gradient(135deg,#0ea5e9,#0284c7)'
 };
 
-// 이미지 송출 시 WebP 변환(저장은 JPG 유지). raw.githubusercontent 이미지 src를
-// 무료 이미지 CDN(wsrv.nl) WebP 송출로 치환 → Vercel 빌드와 무관, 옛 글까지 자동 적용.
-// 브라우저가 받는 실제 이미지는 WebP(SEO·로딩 속도↑), 원본은 GitHub에 JPG로 그대로 보존.
+// 이미지 송출 시 WebP 변환(저장은 JPG 유지) — 경유지 단축판.
+// 구버전은 raw.githubusercontent → wsrv.nl(외부 CDN) 2홉을 태웠으나,
+// 이제 content/images의 WebP가 배포에 포함되므로(convert-webp.yml) 자기 도메인에서 직접 송출.
+// 체인: [구] 사용자→wsrv.nl→GitHub raw  →  [신] 사용자→Vercel CDN (0 외부홉)
+// 폴백: 신규 글의 WebP가 아직 생성 전이면 onerror가 같은 경로의 원본 JPG로 1회 전환.
 function imgToWebp(html) {
   if (!html) return html;
+  // 로고 워터마크(구 글의 raw URL) → 자체 도메인 webp
+  html = String(html).split('https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/logo_venomad_hospital%20marketing.png').join('/images/logo_venomad.webp');
   return String(html).replace(
-    /(<img\b[^>]*\bsrc=")(https:\/\/raw\.githubusercontent\.com\/[^"]+)(")/gi,
-    function(m, pre, url, post) {
-      // 이미 변환된 건 건너뜀
-      if (/wsrv\.nl/.test(url)) return m;
-      return pre + 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&output=webp&q=80' + post;
+    /(<img\b[^>]*)\bsrc="https:\/\/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"]+?)(\.(?:jpg|jpeg|png))?"/gi,
+    function(m, pre, localPath, ext) {
+      var jpg = localPath + (ext || '.jpg');
+      var webp = localPath + '.webp';
+      return pre + 'src="' + webp + '" onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=\'' + jpg + '\'}"';
     }
   );
 }
@@ -6344,7 +6352,9 @@ else{loadAdminPosts();}
 
 // GitHub 저장 AI 포스트 로드 (content/blog-posts.json)
 (function loadServerPosts(){
-  fetch('/content/blog-posts.json?_='+Date.now())
+  // 캐시버스터(?_=Date.now()) 제거: URL이 매번 달라져 ETag 304 재검증이 불가능했음.
+  // cache:'no-cache'는 조건부 요청(If-None-Match)을 강제해 변경 없으면 304로 211KB 재전송을 생략.
+  fetch('/content/blog-posts.json',{cache:'no-cache'})
     .then(function(r){return r.ok?r.json():[];})
     .then(function(posts){
       if(!Array.isArray(posts)||!posts.length)return;
@@ -7927,6 +7937,26 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
 <script>
 (function(){ function gmount(){ try{ if(window.Glossary && document.getElementById('glossary-root')) Glossary.mount('glossary-root'); }catch(e){} }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',gmount);else gmount(); })();
+</script>
+<!-- 콘텐츠 드래그 방지 (원고 도용 방지) — 입력 요소는 예외로 폼 사용성 유지 -->
+<style>
+  body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+  input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+  img{-webkit-user-drag:none;user-drag:none}
+</style>
+<script>
+  // 이미지·링크 끌어저장(드래그) 차단. 입력 요소 안의 드래그(텍스트 이동)는 허용.
+  document.addEventListener('dragstart',function(e){
+    var t=e.target;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;
+    e.preventDefault();
+  });
+  // 선택 시작 차단(구형 브라우저 폴백) — 입력 요소 예외
+  document.addEventListener('selectstart',function(e){
+    var t=e.target;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+    e.preventDefault();
+  });
 </script>
 </body>
 </html>
