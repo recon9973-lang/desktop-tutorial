@@ -783,17 +783,7 @@ body{padding-top:0}
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
       </div>
-      <div class="mob-sub">
-        <a href="/dental" onclick="ld('dental');closeMobMenu();return false">치과마케팅</a>
-        <a href="/dermatology" onclick="ld('skin');closeMobMenu();return false">피부과마케팅</a>
-        <a href="/orthopedics" onclick="ld('ortho');closeMobMenu();return false">정형외과마케팅</a>
-        <a href="/oriental-medicine" onclick="ld('oriental');closeMobMenu();return false">한의원마케팅</a>
-        <a href="/plastic-surgery" onclick="ld('plastic');closeMobMenu();return false">성형외과마케팅</a>
-        <a href="/internal-medicine" onclick="ld('naegwa');closeMobMenu();return false">내과마케팅</a>
-        <a href="/ophthalmology" onclick="ld('angwa');closeMobMenu();return false">안과마케팅</a>
-        <a href="/medical-ad-review" onclick="ld('shimui');closeMobMenu();return false">의료광고심의</a>
-        <a href="/medical-device" onclick="ld('medical_device');closeMobMenu();return false">의료기기마케팅</a>
-      </div>
+      <div class="mob-sub" id="mobHospSub"><!-- buildMobHospNav()가 HUB_TREE 기반 허브→L2 동적 생성 --></div>
     </div>
     <div class="mob-nav-group">
       <div class="mob-nav-row">
@@ -7087,7 +7077,48 @@ function buildTopMega(){
   html+='</div></div>';
   el.innerHTML=html;
 }
-try{ if(document.readyState!=='loading'){buildHubSidebar();buildTopMega();} else document.addEventListener('DOMContentLoaded',function(){buildHubSidebar();buildTopMega();}); }catch(e){}
+// ── 모바일 병원마케팅 서브메뉴(HUB_TREE 기반 허브→L2 2단) ──
+function buildMobHospNav(){
+  var el=document.getElementById('mobHospSub'); if(!el)return;
+  (function(){ if(document.getElementById('mob-sub2-css'))return; var st=document.createElement('style'); st.id='mob-sub2-css';
+    st.textContent='.mob-hub-row{display:flex;align-items:stretch}'
+     +'.mob-hub-row>a{flex:1;min-width:0}'
+     +'.mob-hub-row .mob-sub2-toggle{flex-shrink:0;display:flex;align-items:center;padding:0 18px;background:none;border:none;border-left:1px solid var(--soft);cursor:pointer;color:var(--mute)}'
+     +'.mob-hub-row .mob-sub2-toggle svg{width:14px;height:14px;transition:transform .2s}'
+     +'.mob-hub-row .mob-sub2-toggle.active svg{transform:rotate(180deg)}'
+     +'.mob-sub2{display:none;background:#f3f3f6;padding:2px 0 6px}'
+     +'.mob-sub2.open{display:block}'
+     +'.mob-sub2 a{display:block;padding:9px 16px 9px 40px;font-size:13px;color:var(--mute);position:relative}'
+     +'.mob-sub2 a:before{content:"–";position:absolute;left:28px;color:var(--psub)}'
+     +'.mob-sub2 a:hover{color:var(--p);background:rgba(83,58,253,.06)}';
+    document.head.appendChild(st); })();
+  var _p=function(c){ var r=DETAIL_ROUTES[c]; return (r&&r.path)||('#'+c); };
+  var html='';
+  HUB_META.forEach(function(m){
+    var tree=HUB_TREE[m.cat]||[];
+    if(!tree.length){
+      html+='<a href="'+_p(m.cat)+'" onclick="ld(\''+m.cat+'\');closeMobMenu();return false">'+m.icon+' '+m.label+'</a>';
+      return;
+    }
+    html+='<div class="mob-hub-row"><a href="'+_p(m.cat)+'" onclick="ld(\''+m.cat+'\');closeMobMenu();return false">'+m.icon+' '+m.label+'</a>'
+      +'<button class="mob-sub2-toggle" onclick="toggleMobSub2(this)" aria-label="'+m.label+' 하위 주제 열기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button></div>';
+    html+='<div class="mob-sub2">';
+    tree.forEach(function(l2){ html+='<a href="'+_p(l2.to)+'" onclick="ld(\''+l2.to+'\');closeMobMenu();return false">'+l2.label+'</a>'; });
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function toggleMobSub2(btn){
+  var sub=btn.closest('.mob-hub-row').nextElementSibling;
+  if(!sub||!sub.classList.contains('mob-sub2'))return;
+  var isOpen=sub.classList.contains('open');
+  // 같은 레벨의 다른 L2 목록만 닫기(부모 mob-sub은 유지)
+  var host=btn.closest('.mob-sub')||document;
+  host.querySelectorAll('.mob-sub2.open').forEach(function(s){ s.classList.remove('open'); });
+  host.querySelectorAll('.mob-sub2-toggle.active').forEach(function(b){ b.classList.remove('active'); });
+  if(!isOpen){ sub.classList.add('open'); btn.classList.add('active'); }
+}
+try{ if(document.readyState!=='loading'){buildHubSidebar();buildTopMega();buildMobHospNav();} else document.addEventListener('DOMContentLoaded',function(){buildHubSidebar();buildTopMega();buildMobHospNav();}); }catch(e){}
 function _applyDetailSEO(cat){
   var r=DETAIL_ROUTES[cat]; if(!r) return;
   try{
