@@ -42,6 +42,19 @@ function cleanContent(html) {
   out = out.replace(/\b1[5-9]\d{2}[-\s.]?\d{4}\b/g, '');                       // 1588 등 대표번호
   out = out.replace(/(전화|연락처|Tel\.?|TEL)\s*[:：]\s*(?=[<\s])/g, '');      // 번호 제거 후 남은 라벨 정리
 
+  // 5.5) 링크 소독 (GPT 환각 방지) — 잘못된 href 보정
+  //   - '카카오' 라벨인데 카카오채널이 아닌 곳(환각 도메인 등)으로 가는 링크 → 공식 채널로 교정
+  //   - href가 URL 형식이 아닌 링크(href="카카오 상담" 등) → 링크 해제(텍스트만 유지)
+  const KAKAO_CHANNEL_URL = 'https://pf.kakao.com/_jxjxdcxj/chat';
+  out = out.replace(/<a\b([^>]*?)href=(["'])([^"']*)\2([^>]*)>([\s\S]*?)<\/a>/gi, function (m, pre, q, href, post, label) {
+    const plainLabel = label.replace(/<[^>]+>/g, '');
+    if (/카카오|카톡/.test(plainLabel) && !/pf\.kakao\.com/.test(href)) {
+      return '<a href="' + KAKAO_CHANNEL_URL + '" target="_blank" rel="noopener">' + label + '</a>';
+    }
+    if (!/^(https?:\/\/|\/|#|mailto:)/i.test(href)) return label;
+    return m;
+  });
+
   // 6) 과도한 공백/빈 줄 정리
   out = out.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n');
 
