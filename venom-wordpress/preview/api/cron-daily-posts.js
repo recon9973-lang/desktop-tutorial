@@ -242,7 +242,7 @@ module.exports = async function handler(req, res) {
         // 1·2번째 이미지를 병렬 생성(타임아웃 여유 확보) — 서로 다른 파일명이라 충돌 없음
         const [img1, img2] = await Promise.all([
           generateAndSaveImage(post.imagePrompt, post.id, 0, post.title),
-          generateAndSaveImage(post.imagePrompt, post.id, 1, post.title),
+          generateAndSaveImage(post.imagePrompt2 || post.imagePrompt, post.id, 1, post.title),
         ]);
         if (img1 && img1.url) {
           imgUrls.push(img1.url);
