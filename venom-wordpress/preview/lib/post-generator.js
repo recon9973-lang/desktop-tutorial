@@ -15,19 +15,53 @@ const CAT_LABEL = {
 };
 
 // 이미지 프롬프트 — 카테고리별 고정 템플릿 (AI 호출 없이 토큰 절약)
-const IMAGE_PROMPT = {
-  geo:      'Modern hospital reception desk with digital marketing analytics dashboard on screen, professional Korean medical facility, clean white interior, warm lighting',
-  seo:      'Korean medical professional reviewing SEO analytics on laptop in bright clinic office, search ranking graphs visible on screen',
-  dental:   'Modern dental clinic interior with professional equipment, Korean dentist in clean white coat, bright examination room',
-  skin:     'Upscale Korean dermatology clinic consultation room, professional skincare equipment, soft lighting, clean aesthetic',
-  oriental: 'Traditional Korean oriental medicine clinic with modern interior, acupuncture and herb medicine elements, professional setting',
-  ortho:    'Physical therapy room in Korean orthopedic clinic, rehabilitation equipment, professional medical staff',
-  plastic:  'Premium Korean aesthetic clinic consultation room, professional medical staff, modern clean interior design',
-  naegwa:   'Korean internal medicine clinic with professional doctor consulting patient, modern medical equipment, clean environment',
-  angwa:    'Korean ophthalmology clinic with eye examination equipment, professional optometrist, bright clean medical space',
-  shimui:   'Korean medical advertising compliance meeting, professionals reviewing documents, modern conference room',
-  geo_local:'Local Korean hospital building exterior with city landmark background, professional medical facility, daytime professional photo',
+// ── 이미지 프롬프트 빌더 — 인물×장면×스타일 조합(키워드 시드)으로 단조로움 방지 ──
+// 기존: 카테고리당 고정 1문장 → 같은 카테고리 글은 전부 같은 그림('병원'=건물만, 나머지=의사만).
+// 변경: 주제 키워드를 장면에 녹이고, 히어로(variant 0)와 본문(variant 1)이 서로 다른 장면이 되도록 결정적 조합.
+const IMG_SETTINGS = {
+  geo:      'modern Korean medical office',
+  seo:      'bright Korean clinic back-office',
+  dental:   'modern Korean dental clinic',
+  skin:     'upscale Korean dermatology clinic',
+  oriental: 'Korean oriental medicine clinic with modern interior',
+  ortho:    'Korean orthopedic rehabilitation center',
+  plastic:  'premium Korean aesthetic clinic',
+  naegwa:   'Korean internal medicine clinic',
+  angwa:    'Korean ophthalmology clinic',
+  shimui:   'modern Korean medical conference room',
+  geo_local:'Korean local hospital lobby with people',
 };
+const IMG_SUBJECTS = [
+  'a Korean doctor in a white coat (30s)',
+  'a Korean female physician with a warm expression',
+  'a marketing consultant presenting to two Korean doctors',
+  'a patient and a Korean doctor in a friendly consultation',
+  'close-up of hands only (no faces)',
+  'a small medical team in discussion',
+];
+const IMG_SCENES = [
+  'reviewing a rising patient-growth line chart about "{kw}" on a large monitor, screen content softly blurred',
+  'looking at a smartphone where an AI chat app recommends a local clinic, phone screen in sharp focus',
+  'discussing a strategy board with sticky notes and simple graphs related to "{kw}"',
+  'a planning flat-lay on a desk: notebook with hand-drawn funnel, tablet with charts, stethoscope beside',
+  'walking through a bright clinic corridor, candid documentary style, motion in the frame',
+  'pointing at a wall-mounted dashboard with upward trend bars, over-the-shoulder view',
+];
+const IMG_STYLES = [
+  'bright editorial photography, natural window light',
+  'photojournalistic candid shot, shallow depth of field',
+  'clean minimal composition, warm tones, high-key lighting',
+  'cinematic soft light, subtle bokeh background',
+];
+function _imgHash(str) { let h = 5381; for (let i = 0; i < String(str).length; i++) h = ((h << 5) + h + String(str).charCodeAt(i)) >>> 0; return h; }
+function buildImagePrompt(category, keyword, variant) {
+  const seed = _imgHash(String(category) + '|' + String(keyword)) + (variant || 0) * 7;
+  const setting = IMG_SETTINGS[category] || IMG_SETTINGS.geo;
+  const subject = IMG_SUBJECTS[seed % IMG_SUBJECTS.length];
+  const scene = IMG_SCENES[Math.floor(seed / 7) % IMG_SCENES.length].replace('{kw}', String(keyword || '병원 마케팅'));
+  const style = IMG_STYLES[Math.floor(seed / 41) % IMG_STYLES.length];
+  return subject + ' in ' + setting + ', ' + scene + ', ' + style + ', realistic photo, no visible text or letters in the image';
+}
 
 // ── 카테고리별 반드시 다뤄야 할 핵심 주제 (일반론 방지) ──
 const CAT_CORE = {
@@ -355,7 +389,8 @@ ${DELIMITER.END}`;
     seoTitle:  parsed.seoTitle || parsed.title,
     metaDesc:  parsed.metaDesc || '',
     keywords:  parsed.keywords || keyword,
-    imagePrompt: IMAGE_PROMPT[category] || IMAGE_PROMPT.geo,
+    imagePrompt: buildImagePrompt(category, keyword, 0),
+    imagePrompt2: buildImagePrompt(category, keyword, 1),
     html:      htmlWithSchema,
     status:    publishable ? 'draft' : 'review',
     date:      isoDate.slice(0, 10),

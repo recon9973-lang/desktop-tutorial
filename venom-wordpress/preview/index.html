@@ -8125,6 +8125,10 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
     new MutationObserver(function(){
       if(r.style.display!=='none'){
         var c=r.closest('.tool-card'); if(c)c.classList.add('expanded');
+        // 결과가 뜨면 입력창 자동 비우기(값 잔존 지적 반영) — 로딩 중에는 유지
+        if(c&&r.innerHTML.indexOf('분석 중')<0&&r.innerHTML.indexOf('조회 중')<0&&r.innerHTML.indexOf('질문 중')<0&&r.innerHTML.length>200){
+          c.querySelectorAll('.tool-input').forEach(function(inp){inp.value='';});
+        }
         // GEO 결과에 PDF 저장 버튼 자동 부착 (렌더마다 재부착)
         if(r.id==='geo-result'&&!r.querySelector('.geo-pdf-btn')&&r.innerHTML.indexOf('분석 중')<0&&r.innerHTML.indexOf('spin')<0&&r.innerHTML.length>200){
           var d=document.createElement('div');d.style.cssText='text-align:center;margin-top:14px';
