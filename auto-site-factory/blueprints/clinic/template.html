@@ -299,6 +299,51 @@ h2.sec.lt{color:#fff}
 .cta-band p{color:rgba(255,255,255,.72);margin-bottom:32px;font-size:17px;max-width:480px;margin-left:auto;margin-right:auto}
 @media(max-width:520px){.cta-band{padding:48px 24px;border-radius:16px}}
 
+/* ── Announcement bar ── */
+.announce{
+  background:var(--p);color:#fff;
+  text-align:center;padding:9px 20px;font-size:13px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.announce a{color:rgba(255,255,255,.85);text-decoration:underline;text-underline-offset:2px;font-weight:600}
+
+/* ── Tag pills strip ── */
+.tag-strip{background:#fff;border-bottom:1px solid var(--border)}
+.tag-row{display:flex;gap:10px;padding:14px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tag-row::-webkit-scrollbar{display:none}
+.tag-pill{
+  flex:none;display:inline-flex;align-items:center;gap:5px;
+  background:var(--p-bg);color:var(--p);border:1px solid rgba(83,58,253,.15);
+  padding:6px 14px;border-radius:9999px;font-size:13px;font-weight:500;white-space:nowrap;
+}
+
+/* ── 3-step process ── */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:48px;position:relative}
+.steps-grid::before{
+  content:'';position:absolute;top:28px;left:calc(16.66% + 14px);right:calc(16.66% + 14px);
+  height:0;border-top:2px dashed rgba(83,58,253,.2);z-index:0;pointer-events:none;
+}
+@media(max-width:700px){.steps-grid{grid-template-columns:1fr;gap:20px}.steps-grid::before{display:none}}
+.step-card{
+  background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px 28px;
+  text-align:center;position:relative;z-index:1;
+  box-shadow:0 1px 3px var(--shadow);transition:.2s;
+}
+.step-card:hover{box-shadow:0 8px 28px rgba(0,55,112,.11);transform:translateY(-3px)}
+.step-num{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--p);color:#fff;
+  font-size:22px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;letter-spacing:-.5px;
+}
+.step-card h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-.2px}
+.step-card p{font-size:14px;color:var(--muted);line-height:1.6}
+
+/* ── Hero rating float ── */
+.hero-float .stars{color:#f59e0b;font-size:14px;letter-spacing:1px;line-height:1;margin-bottom:3px}
+.rating-src{font-size:11px;color:var(--muted);margin-top:2px}
+
 /* ── Footer ── */
 footer{background:var(--dark);color:rgba(255,255,255,.6);padding:64px 0;font-size:14px}
 .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
@@ -320,6 +365,11 @@ footer a:hover{color:rgba(255,255,255,.9)}
 </style>
 </head>
 <body>
+
+<!-- ── ANNOUNCEMENT BAR ── -->
+<div class="announce" role="banner">
+  📅 당일 예약 가능 &nbsp;·&nbsp; 👨‍⚕️ 전문의 직접 진료 &nbsp;·&nbsp; ✔ 의료광고심의 준수 &nbsp;&nbsp;<a href="{{brand.kakao}}" target="_blank" rel="noopener">지금 상담 신청하기 →</a>
+</div>
 
 <header><div class="wrap nav">
   <div class="logo">{{brand.name}}<span>.</span></div>
@@ -349,13 +399,30 @@ footer a:hover{color:rgba(255,255,255,.9)}
       <div class="hero-right">
         <img class="hero-img" src="{{images.hero}}" alt="{{brand.name}} {{specialty.label}}" loading="eager">
         <div class="hero-float">
-          <div class="hf-num">#1</div>
-          <div class="hf-txt"><strong>환자 만족도</strong>{{brand.region}} 추천 병원</div>
+          <div>
+            <div class="stars">★★★★★</div>
+            <div class="hf-num">4.9</div>
+            <div class="rating-src">네이버·구글 리뷰</div>
+          </div>
+          <div class="hf-txt"><strong>{{brand.region}} 추천 병원</strong>지역 대표 {{specialty.label}}</div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ── SERVICE TAG PILLS ── -->
+<div class="tag-strip"><div class="wrap">
+  <div class="tag-row">
+    <span class="tag-pill">✓ 비급여 투명 안내</span>
+    <span class="tag-pill">✓ 당일 예약·상담</span>
+    <span class="tag-pill">✓ 전문의 1:1 진료</span>
+    <span class="tag-pill">✓ 디지털 정밀 진단</span>
+    <span class="tag-pill">✓ 의료광고심의 준수</span>
+    <span class="tag-pill">✓ 치료 후 사후 관리</span>
+    <span class="tag-pill">✓ 주차 가능</span>
+  </div>
+</div></div>
 
 <!-- ── STATS BAND ── -->
 <div class="stats-band">
@@ -433,6 +500,30 @@ footer a:hover{color:rgba(255,255,255,.9)}
   <h2 class="sec">진료 환경</h2>
   <p class="sec-desc">환자가 편안할 수 있도록 설계한 {{brand.name}}의 공간입니다.</p>
   <div class="gallery">{{sections.gallery}}</div>
+</div></section>
+
+<!-- ── 3-STEP PROCESS ── -->
+<section class="pad"><div class="wrap">
+  <div class="eyebrow">PROCESS</div>
+  <h2 class="sec">간단한 3단계로<br>치료를 시작하세요</h2>
+  <p class="sec-desc">복잡한 절차 없이, 빠르게 예약하고 전문가와 상담하세요.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <h3>상담 예약</h3>
+      <p>카카오 채널 또는 전화로 간편하게 예약하세요. 당일 예약도 가능합니다.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <h3>정밀 진단</h3>
+      <p>최신 장비로 정확하게 진단하고, 투명한 치료 계획을 안내해 드립니다.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <h3>맞춤 치료</h3>
+      <p>전문의가 1:1로 직접 집도하며, 치료 후 사후 관리까지 책임집니다.</p>
+    </div>
+  </div>
 </div></section>
 
 <!-- ── DOCTORS ── -->
