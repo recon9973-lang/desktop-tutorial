@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원고 스튜디오 — 병원 콘텐츠, 기획부터 발행까지</title>
+<meta name="description" content="다정한 헬스케어 원고와 인포그래픽·카드뉴스까지, AI로 한 흐름에. 의료광고법 준수·SEO·WordPress 자동발행.">
+<style>
+  :root{--accent:#2f7d6b;--accent2:#3aa07f;--ink:#16241f;--muted:#5f736e;--bg:#f5f8f7;--card:#fff;--line:#e5ecea;--soft:#e7f3f0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  a{text-decoration:none;color:inherit}
+  .btn{display:inline-block;background:var(--accent);color:#fff;padding:15px 28px;border-radius:14px;font-weight:800;font-size:16px;transition:.15s;border:none;cursor:pointer}
+  .btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+  .btn.ghost{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+  .btn.big{padding:18px 40px;font-size:18px}
+  /* nav */
+  nav{position:sticky;top:0;background:rgba(245,248,247,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:20}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:900;font-size:19px;letter-spacing:-.5px}
+  .logo span{color:var(--accent)}
+  nav .links{display:flex;gap:26px;align-items:center;font-weight:600;font-size:14.5px;color:var(--muted)}
+  nav .links a:hover{color:var(--accent)}
+  @media(max-width:720px){nav .links a:not(.btn){display:none}}
+  /* hero */
+  .hero{padding:76px 0 60px;background:radial-gradient(1200px 500px at 70% -10%,var(--soft),transparent)}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+  @media(max-width:820px){.hero .wrap{grid-template-columns:1fr;text-align:center}}
+  .pill{display:inline-block;background:var(--soft);color:var(--accent);font-weight:700;font-size:13px;padding:7px 14px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:46px;line-height:1.18;letter-spacing:-1.2px;font-weight:900}
+  .hero h1 em{color:var(--accent);font-style:normal}
+  .hero p.sub{font-size:18px;color:var(--muted);margin:20px 0 28px;max-width:520px}
+  @media(max-width:820px){.hero p.sub{margin-left:auto;margin-right:auto}.hero h1{font-size:34px}}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+  @media(max-width:820px){.cta-row{justify-content:center}}
+  .trust{margin-top:26px;color:var(--muted);font-size:13.5px;display:flex;gap:16px;flex-wrap:wrap}
+  @media(max-width:820px){.trust{justify-content:center}}
+  .trust b{color:var(--ink)}
+  /* hero card mock */
+  .mock{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 20px 50px rgba(30,60,50,.12);padding:22px}
+  .mock .bar{display:flex;gap:6px;margin-bottom:14px}
+  .mock .bar i{width:11px;height:11px;border-radius:50%;background:#e0e7e5}
+  .mock .row{height:12px;border-radius:6px;background:#eef3f1;margin:9px 0}
+  .mock .row.s{width:60%}.mock .row.m{width:85%}
+  .donut{width:120px;height:120px;margin:14px auto 6px;display:block}
+  .mock .tag{display:inline-block;font-size:11px;background:var(--soft);color:var(--accent);padding:4px 9px;border-radius:6px;font-weight:700;margin:2px 3px 0 0}
+  /* sections */
+  section{padding:64px 0}
+  .eyebrow{text-align:center;color:var(--accent);font-weight:800;font-size:14px;letter-spacing:.5px}
+  h2.sec{text-align:center;font-size:32px;font-weight:900;letter-spacing:-.8px;margin:8px 0 8px}
+  p.lead{text-align:center;color:var(--muted);font-size:16.5px;max-width:620px;margin:0 auto 40px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .feat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;transition:.15s}
+  .feat:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 14px 30px rgba(30,60,50,.08)}
+  .feat .ic{width:46px;height:46px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:23px;margin-bottom:14px}
+  .feat h3{font-size:18px;font-weight:800;margin-bottom:6px}
+  .feat p{color:var(--muted);font-size:14.5px}
+  /* steps */
+  .steps{background:var(--ink);color:#eaf2ef}
+  .steps h2.sec,.steps .eyebrow{color:#fff}
+  .steps .eyebrow{color:#8fd3c1}
+  .steps p.lead{color:#a9bcb7}
+  .stepgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:s}
+  @media(max-width:820px){.stepgrid{grid-template-columns:1fr}}
+  .step{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:26px;position:relative}
+  .step .n{width:38px;height:38px;border-radius:50%;background:var(--accent2);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .step h3{font-size:18px;margin-bottom:6px}
+  .step p{color:#a9bcb7;font-size:14.5px}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center}
+  @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat .num{font-size:38px;font-weight:900;color:var(--accent)}
+  .stat .lab{color:var(--muted);font-size:13.5px}
+  /* cta band */
+  .band{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;text-align:center;border-radius:26px;padding:56px 24px;margin:0 auto}
+  .band h2{font-size:32px;font-weight:900;letter-spacing:-.6px}
+  .band p{opacity:.92;margin:12px 0 26px;font-size:16.5px}
+  .band .btn{background:#fff;color:var(--accent)}
+  .band .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.7)}
+  /* faq */
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:10px}
+  details summary{font-weight:700;cursor:pointer;font-size:15.5px;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary::after{content:"+";float:right;color:var(--accent);font-weight:900}
+  details[open] summary::after{content:"−"}
+  details p{color:var(--muted);font-size:14.5px;margin-top:10px}
+  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:13.5px;text-align:center}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="logo">원고<span>스튜디오</span></div>
+  <div class="links">
+    <a href="#features">기능</a>
+    <a href="#how">작동 방식</a>
+    <a href="#faq">FAQ</a>
+    <a href="#start" class="btn" style="padding:10px 18px;font-size:14px">무료로 시작</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="pill">🏥 병원·헬스케어 콘텐츠 전용</span>
+    <h1>병원 콘텐츠,<br><em>기획부터 발행</em>까지<br>한 번에.</h1>
+    <p class="sub">다정한 톤의 원고와 인포그래픽·카드뉴스까지, AI로 5분 만에. 의료광고법은 자동으로 지켜드려요.</p>
+    <div class="cta-row">
+      <a href="#start" class="btn big">무료로 시작하기</a>
+      <a href="#how" class="btn ghost big">작동 방식 보기</a>
+    </div>
+    <div class="trust">
+      <span>✅ <b>의료광고법</b> 자동 검증</span>
+      <span>🔎 네이버·구글 <b>SEO</b></span>
+      <span>📤 WordPress <b>자동발행</b></span>
+    </div>
+  </div>
+  <div class="mock" aria-hidden="true">
+    <div class="bar"><i></i><i></i><i></i></div>
+    <div style="font-weight:800;font-size:15px">혹시 나도 거북목? 5초 자가체크</div>
+    <div class="row m"></div><div class="row"></div><div class="row s"></div>
+    <svg class="donut" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="46" fill="none" stroke="#eef3f1" stroke-width="16"/>
+      <circle cx="60" cy="60" r="46" fill="none" stroke="#2f7d6b" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="289" stroke-dashoffset="87" transform="rotate(-90 60 60)"/>
+      <text x="60" y="66" text-anchor="middle" font-size="26" font-weight="800" fill="#2f7d6b">70%</text>
+    </svg>
+    <div style="text-align:center;font-size:12.5px;color:#5f736e;margin-bottom:8px">직장인 10명 중 7명이 거북목 경험</div>
+    <div><span class="tag"># 거북목</span><span class="tag"># 도수치료</span><span class="tag"># 자세교정</span></div>
+  </div>
+</div></header>
+
+<section id="features"><div class="wrap">
+  <div class="eyebrow">FEATURES</div>
+  <h2 class="sec">기획 · 집필 · 시각화 · 발행, 전부</h2>
+  <p class="lead">따로 흩어진 도구를 오갈 필요 없이, 한 화면에서 원고 한 편이 완성됩니다.</p>
+  <div class="grid">
+    <div class="feat"><div class="ic">🪄</div><h3>아이디어 스파크</h3><p>키워드만 넣으면 검색 질문·주제 후보·제목 변형을 자동으로 펼쳐줘요.</p></div>
+    <div class="feat"><div class="ic">🎯</div><h3>타겟 페르소나</h3><p>직장인·환자·보호자 등 타겟만 바꾸면 글의 결이 통째로 달라집니다.</p></div>
+    <div class="feat"><div class="ic">🎚️</div><h3>다정한 이중 톤</h3><p>공감은 구어체, 정보는 문어체. 겁주지 않고 안심시키는 말투로.</p></div>
+    <div class="feat"><div class="ic">📊</div><h3>인포그래픽 8종</h3><p>수치를 도넛·막대·픽토그램 등으로. SVG·WebP로 바로 내려받기.</p></div>
+    <div class="feat"><div class="ic">📰</div><h3>카드뉴스</h3><p>이미지에 제목·부제를 얹어 SNS 카드뉴스를 즉석에서 완성.</p></div>
+    <div class="feat"><div class="ic">🚦</div><h3>의료광고 안전등</h3><p>금지 표현을 실시간 검출하고 안전한 대체어까지 제안해요.</p></div>
+  </div>
+</div></section>
+
+<section class="steps" id="how"><div class="wrap">
+  <div class="eyebrow">HOW IT WORKS</div>
+  <h2 class="sec">3단계면 끝</h2>
+  <p class="lead">복잡한 설정 없이, 오늘 처음 써도 5분이면 한 편.</p>
+  <div class="stepgrid">
+    <div class="step"><div class="n">1</div><h3>주제·타겟 입력</h3><p>분야와 키워드, 누구를 위한 글인지만 골라요.</p></div>
+    <div class="step"><div class="n">2</div><h3>톤·구성 선택</h3><p>다정함↔전문성 비율과 옵션을 슬라이더로 조절.</p></div>
+    <div class="step"><div class="n">3</div><h3>원고 + 이미지 완성</h3><p>본문·인포그래픽·FAQ까지 한 번에. 그대로 발행.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="num">5분</div><div class="lab">한 편 완성까지</div></div>
+    <div class="stat"><div class="num">8종</div><div class="lab">인포그래픽 유형</div></div>
+    <div class="stat"><div class="num">0건</div><div class="lab">의료광고 위반 목표</div></div>
+    <div class="stat"><div class="num">1클릭</div><div class="lab">WordPress 발행</div></div>
+  </div>
+</div></section>
+
+<section id="start"><div class="wrap">
+  <div class="band">
+    <h2>오늘, 첫 원고를 뽑아보세요</h2>
+    <p>설치도 로그인도 필요 없어요. 주제 하나면 시작합니다.</p>
+    <div class="cta-row" style="justify-content:center">
+      <a href="#" class="btn big">무료로 시작하기</a>
+      <a href="#" class="btn ghost big">상담 문의</a>
+    </div>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="eyebrow">FAQ</div>
+  <h2 class="sec">자주 묻는 질문</h2>
+  <p class="lead"></p>
+  <details open><summary>의료광고법에 안 걸리나요?</summary><p>본문의 금지 표현(최고·완치·100% 등)을 자동으로 검출하고 안전한 대체어를 제안합니다. 발행 전 안전등으로 한 번 더 확인해요.</p></details>
+  <details><summary>어떤 진료과에 쓸 수 있나요?</summary><p>정형외과·피부과·치과·내과·한의원·성형외과·안과 등 카테고리를 기본 제공하고, 키워드로 세부 주제를 잡습니다.</p></details>
+  <details><summary>블로그·워드프레스에 바로 올릴 수 있나요?</summary><p>WordPress는 공식 API로 임시저장·예약·즉시 발행을 지원합니다. 네이버·티스토리는 붙여넣기용 서식으로 내보내요.</p></details>
+  <details><summary>글만 나오나요, 이미지도 되나요?</summary><p>대표 이미지(AI)·인포그래픽 8종·카드뉴스까지 한 화면에서 만들고, WebP로 최적화해 내려받을 수 있어요.</p></details>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="logo" style="margin-bottom:8px">원고<span>스튜디오</span></div>
+  병원마케팅 베놈 · 헬스케어 콘텐츠 자동화 · 의료광고법 준수<br>
+  <span style="font-size:12px">© 원고 스튜디오. 본 페이지는 데모용 랜딩입니다.</span>
+</div></footer>
+
+</body>
+</html>
