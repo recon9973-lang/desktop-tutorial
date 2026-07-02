@@ -5,7 +5,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose|naver-ads|google-ads|channel-management|pr)",
+      "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose|privacy|terms|naver-ads|google-ads|channel-management|pr)",
       "destination": "/index.html"
     },
     {
