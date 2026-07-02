@@ -2425,10 +2425,24 @@ function apNormTimes(s) {
 
 function apTimeBlock(s, i) {
   var mode = s.timeMode || 'same';
+  var isInstant = (mode === 'instant');
   var html = '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">'
-    + '<div style="font-size:11px;color:var(--mute);margin-bottom:6px">⏰ 발행 시간 방식</div>'
+    + '<div style="font-size:11px;color:var(--mute);margin-bottom:6px">🚀 발행 방식</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
-    + ['same|동일 시간','random|랜덤 시간','individual|개별 배정'].map(function(opt){
+    + [['instant','즉시 발행',isInstant],['sched','예약 발행',!isInstant]].map(function(opt){
+        var on=opt[2];
+        var click = opt[0]==='instant' ? "apSetTimeMode("+i+",'instant')" : "apSetTimeMode("+i+",'"+(s._lastSchedMode||'random')+"')";
+        return '<button onclick="'+click+'" style="padding:6px 14px;border:1.5px solid '+(on?'var(--p)':'var(--border)')+';border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:'+(on?'var(--p)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+opt[1]+'</button>';
+      }).join('') + '</div>';
+
+  if (isInstant) {
+    html += '<div style="font-size:12px;color:var(--mute);line-height:1.6">크론이 확인하는 즉시(최대 15분 이내) 그날 할당량을 발행합니다. 발행 시각을 기다리지 않습니다.</div></div>';
+    return html;
+  }
+
+  html += '<div style="font-size:11px;color:var(--mute);margin-bottom:6px">⏰ 예약 시간 방식</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+    + ['random|랜덤 시간','same|동일 시간','individual|개별 배정'].map(function(opt){
         var v=opt.split('|')[0], label=opt.split('|')[1];
         var on=(mode===v);
         return '<button onclick="apSetTimeMode('+i+',\''+v+'\')" style="padding:6px 12px;border:1px solid '+(on?'var(--p)':'var(--border)')+';border-radius:6px;font-size:12px;cursor:pointer;background:'+(on?'var(--p)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+'">'+label+'</button>';
@@ -2485,6 +2499,7 @@ function apSetDailyCount(i, v) {
 }
 function apSetTimeMode(i, mode) {
   _apSchedules[i].timeMode = mode;
+  if (mode !== 'instant') _apSchedules[i]._lastSchedMode = mode; // 즉시↔예약 토글 시 마지막 예약 방식 기억
   if (mode === 'individual') apNormTimes(_apSchedules[i]);
   apRenderSchedules();
 }

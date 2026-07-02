@@ -51,11 +51,16 @@ function kstNowHM() {
   return _pad2(d.getHours()) + ':' + _pad2(d.getMinutes());
 }
 
-// 발행 개수만큼 시각(HH:MM) 배열 산출 — same/random/individual. 항상 시간 오름차순 정렬(슬롯 도래 판정용).
+// 발행 개수만큼 시각(HH:MM) 배열 산출 — instant/same/random/individual. 항상 시간 오름차순 정렬(슬롯 도래 판정용).
 // seedStr(보통 오늘 KST 날짜)로 random을 결정적으로 만들어 폴링마다 동일한 결과 보장.
 function computePublishTimes(sched, count, seedStr) {
   const mode = (sched && sched.timeMode) || 'same';
   const out = [];
+  if (mode === 'instant') {
+    // 즉시 발행: 슬롯을 자정으로 두어 크론이 도는 즉시 전부 도래 처리
+    for (let i = 0; i < count; i++) out.push('00:00');
+    return out;
+  }
   if (mode === 'random') {
     let a = _hmToMin(sched.randStart || '09:00'), b = _hmToMin(sched.randEnd || '18:00');
     if (b < a) { const t = a; a = b; b = t; }
@@ -160,7 +165,8 @@ module.exports = async function handler(req, res) {
 
   for (let k = 0; k < toPublish; k++) {
     const slotIdx = publishedToday + k;       // 다음 미발행 슬롯
-    const slotTime = slots[slotIdx] || nowHM;
+    // 즉시 발행 슬롯('00:00')은 표기용 발행 시각을 실제 발행 시점으로 기록
+    const slotTime = ((todaySched.timeMode === 'instant') ? nowHM : slots[slotIdx]) || nowHM;
     const cats = settings.categories || ['geo'];
     const keywords = settings.keywords || ['병원마케팅'];
     const regions = settings.regions || [];
