@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원고 스튜디오 · Manuscript Studio</title>
+<style>
+  :root{
+    --accent:#2f7d6b; --accent-soft:#e7f3f0; --ink:#1d2b29; --muted:#6b7d79;
+    --bg:#f6f8f7; --card:#ffffff; --line:#e4ebe9; --warn:#e8a33d; --bad:#d9534f; --good:#3aa07f;
+    --radius:18px; --shadow:0 6px 24px rgba(30,50,46,.08);
+  }
+  body.dark{
+    --accent-soft:#1d3a33; --ink:#e8efed; --muted:#9fb2ad; --bg:#0f1715; --card:#16201d;
+    --line:#26332f; --shadow:0 6px 24px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+  a{color:var(--accent)}
+  code{background:var(--accent-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+  header.top{padding:24px 22px 10px;text-align:center;position:relative}
+  header.top h1{margin:0;font-size:24px;letter-spacing:-.5px}
+  header.top .tag{color:var(--muted);font-size:14px;margin-top:4px}
+  .topbtns{position:absolute;right:18px;top:18px;display:flex;gap:8px}
+  .iconbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;
+    padding:7px 11px;font-size:13px;cursor:pointer;font-weight:600}
+  .wrap{max-width:900px;margin:0 auto;padding:0 16px 90px}
+  .stepper{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0 20px}
+  .stepper button{border:1px solid var(--line);background:var(--card);color:var(--muted);
+    padding:8px 12px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s;font-weight:600}
+  .stepper button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .stepper button.done{color:var(--accent);border-color:var(--accent)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:24px;margin-bottom:18px}
+  .card h2{margin:0 0 4px;font-size:19px}
+  .card .sub{color:var(--muted);font-size:13.5px;margin-bottom:16px}
+  .panel{display:none}
+  .panel.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  label.f{display:block;font-weight:600;font-size:13px;margin:14px 0 6px}
+  input[type=text],textarea,select{width:100%;padding:11px 13px;border:1px solid var(--line);
+    border-radius:12px;font-size:14px;font-family:inherit;background:var(--card);color:var(--ink)}
+  textarea{min-height:80px;resize:vertical}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:150px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;
+    font-size:13.5px;cursor:pointer;transition:.15s;font-weight:600;color:var(--ink)}
+  .chip.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .toggle{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;
+    padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card)}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 18px;
+    font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.ghost{background:var(--card);color:var(--accent);border:1px solid var(--accent)}
+  .btn.sm{padding:8px 12px;font-size:13px}
+  .nav{display:flex;justify-content:space-between;margin-top:14px;gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:620px){.grid2,.grid3{grid-template-columns:1fr}}
+  .ideacard{border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.15s;background:var(--card)}
+  .ideacard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .ideacard.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .ideacard .t{font-weight:700;font-size:15px;margin-bottom:6px}
+  .ideacard .m{font-size:12.5px;color:var(--muted)}
+  .qgroup{margin-top:12px}
+  .qgroup .gl{font-weight:700;font-size:13px;margin-bottom:6px}
+  .qpill{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;
+    padding:5px 11px;font-size:12.5px;margin:4px 4px 0 0;font-weight:600}
+  pre.prompt{white-space:pre-wrap;background:#0f1c1a;color:#d7e6e2;border-radius:14px;padding:16px;
+    font-size:12.5px;line-height:1.55;max-height:360px;overflow:auto;font-family:ui-monospace,Menlo,monospace}
+  .ex{background:var(--accent-soft);border-radius:12px;padding:11px 13px;font-size:13.5px;margin-top:8px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .light{display:flex;align-items:center;gap:14px;margin-top:14px}
+  .bulb{width:54px;height:54px;border-radius:50%;background:#ddd;transition:.2s;flex-shrink:0}
+  .bulb.green{background:var(--good);box-shadow:0 0 18px var(--good)}
+  .bulb.yellow{background:var(--warn);box-shadow:0 0 18px var(--warn)}
+  .bulb.red{background:var(--bad);box-shadow:0 0 18px var(--bad)}
+  mark.flag{background:#ffe2e0;color:#b33;border-radius:4px;padding:0 3px;font-weight:700}
+  .flagrow{font-size:13px;margin:6px 0;padding:8px 10px;background:rgba(217,83,79,.08);border-radius:10px;border:1px solid rgba(217,83,79,.25)}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-size:13.5px;font-weight:700;
+    transition:.25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .chartbox{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+  .chartcell{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--card);text-align:center}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .pbar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:0 0 18px}
+  .pbar>i{display:block;height:100%;background:var(--accent);width:0;transition:.3s}
+  .kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--accent);
+    background:var(--accent-soft);padding:4px 9px;border-radius:999px;margin-bottom:10px}
+  .scoreWrap{display:flex;align-items:center;gap:18px;margin:14px 0}
+  .ring{width:92px;height:92px;flex-shrink:0}
+  .metric{font-size:13px;margin:5px 0;display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:5px}
+  .balance{height:22px;border-radius:999px;overflow:hidden;display:flex;margin-top:6px;border:1px solid var(--line)}
+  .balance>span{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+  details>summary{cursor:pointer;font-weight:700;font-size:13.5px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}
+  .modal.open{display:flex;animation:fade .2s ease}
+  .modal-card{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:18px;max-width:660px;width:100%;max-height:86vh;overflow:auto;padding:26px;box-shadow:var(--shadow)}
+  .modal-card h3{margin:0 0 4px;font-size:20px}
+  .modal-card h4{margin:18px 0 4px;font-size:15px;color:var(--accent)}
+  .modal-card ul{margin:6px 0;padding-left:20px;font-size:13.5px}
+  .modal-card li{margin:3px 0}
+  .modal-card p{font-size:13.5px;margin:4px 0}
+  .modal-close{float:right;cursor:pointer;border:none;background:var(--accent-soft);color:var(--ink);border-radius:10px;padding:7px 13px;font-weight:700;font-size:13px}
+  /* 접근성: 키보드 포커스 표시 */
+  .iconbtn:focus-visible,.btn:focus-visible,.chip:focus-visible,.stepper button:focus-visible,
+  .toggle:focus-within,input:focus-visible,select:focus-visible,textarea:focus-visible,.ideacard:focus-visible{
+    outline:3px solid var(--accent);outline-offset:2px}
+  /* 모바일 레이아웃 */
+  @media(max-width:560px){
+    .topbtns{position:static;justify-content:center;margin:0 0 10px;flex-wrap:wrap}
+    header.top{padding-top:16px}
+    .card{padding:18px}
+    .wrap{padding-bottom:72px}
+    .modal-card{padding:20px}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="topbtns">
+    <button class="iconbtn" onclick="openHelp()" aria-label="사용법 도움말 열기">❓ 도움말</button>
+    <button class="iconbtn" onclick="demo()" aria-label="예시 값으로 채우기">🎲 예시</button>
+    <button class="iconbtn" onclick="resetAll()" aria-label="모든 입력 초기화">🗑 초기화</button>
+    <button class="iconbtn" onclick="toggleDark()" id="darkBtn" aria-label="다크모드 전환">🌙</button>
+  </div>
+  <h1>✍️ 원고 스튜디오</h1>
+  <div class="tag">분야·핵심·타겟만 넣으면 — 다정한 헬스케어 원고와 인포그래픽까지, 한 흐름으로</div>
+</header>
+
+<div class="wrap">
+  <div class="pbar"><i id="pbar"></i></div>
+  <div class="stepper" id="stepper"></div>
+
+  <!-- STEP 0 -->
+  <section class="panel active card" data-step="0">
+    <span class="kicker">STEP 0 · 시작</span>
+    <h2>무엇을, 어떻게 쓸까요?</h2>
+    <div class="sub">기본 정보와 옵션을 정하면 이후 모든 단계가 여기에 맞춰집니다. 처음이라면 우측 상단 <b>🎲 예시</b>로 한 번에 채워보세요.</div>
+    <div class="row">
+      <div><label class="f">카테고리 <span class="hint">(베놈 엔진 연동)</span></label><select id="i_cat"></select></div>
+      <div><label class="f">핵심 키워드 <span style="color:var(--bad)">*</span></label><input type="text" id="i_core" placeholder="예: 거북목 도수치료"></div>
+    </div>
+    <div class="row">
+      <div><label class="f">보조 키워드 <span class="hint">(콤마, 선택)</span></label><input type="text" id="i_kw2" placeholder="예: 목디스크, 일자목, 자세교정"></div>
+      <div><label class="f">지역 <span class="hint">(지역 SEO·선택)</span></label><input type="text" id="i_region" placeholder="예: 대전 둔산동"></div>
+    </div>
+    <div class="grid3">
+      <div><label class="f">글 유형</label><select id="i_gtype">
+        <option>정보형</option><option>스토리형</option><option>Q&A형</option><option>비교형</option><option>체험·후기형</option><option>예방·습관형</option></select></div>
+      <div><label class="f">채널</label><select id="i_channel">
+        <option>블로그</option><option>뉴스레터</option><option>홈페이지 칼럼</option><option>인스타 카드뉴스</option></select></div>
+      <div><label class="f">분량</label><select id="i_length">
+        <option>800자</option><option>1,200자</option><option selected>1,500자</option><option>2,000자</option><option>3,000자</option></select></div>
+    </div>
+    <div class="grid3">
+      <div><label class="f">이모지 사용</label><div class="chips" id="emojiChips"></div><input type="hidden" id="i_emoji" value="적게"></div>
+      <div><label class="f">CTA(행동 유도)</label><select id="i_cta">
+        <option>카카오 상담</option><option>온라인 예약</option><option>방문 안내</option><option>뉴스레터 구독</option><option>자가진단 체크</option></select></div>
+      <div><label class="f">브랜드 색</label><input type="color" id="i_color" value="#2f7d6b" style="height:44px;padding:4px"></div>
+    </div>
+    <label class="f">추가 지시 <span class="hint">(특이사항·선택)</span></label>
+    <input type="text" id="i_extra" placeholder="예: 비수술 치료 강조, 50대 타겟, 후기 톤 피하기">
+    <div class="nav"><span></span><button class="btn" onclick="go(1)">다음 → 아이디어 스파크</button></div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="panel card" data-step="1">
+    <span class="kicker">STEP 1 · 브레인스토밍</span>
+    <h2>🪄 아이디어 스파크</h2>
+    <div class="sub">핵심 키워드로 검색 질문을 3가지 의도로 나눠 펼치고, 원고 주제 후보를 카드로 제안합니다. 마음에 드는 카드를 고르세요.</div>
+    <button class="btn ghost sm" onclick="spark()">✨ 아이디어 펼치기 (다시 누르면 새로 섞여요)</button>
+    <div id="questions"></div>
+    <div class="grid2" id="topics" style="margin-top:16px"></div>
+    <div id="titleVariants"></div>
+
+    <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🔎 키워드 리서치 <span class="hint">(연관어·월 검색량)</span></h2>
+      <div class="sub">핵심 키워드의 연관 검색어·자주 묻는 질문·<b>실제 월 검색량</b>을 가져옵니다(네이버/구글). 키워드를 누르면 보조 키워드로 담겨요. <a href="#" onclick="go(3);toggleCfg();return false;">⚙️ 엔진 연결</a> 시 검색량까지 표시.</div>
+      <button class="btn ghost sm" onclick="researchKW()">🔎 연관 키워드 가져오기</button>
+      <div id="kwStatus" class="hint" style="margin-top:8px"></div>
+      <div id="kwResult"></div>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:18px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">✂️ 본문에서 키워드 추출</h2>
+      <div class="sub">원고·자료를 붙여넣으면 자주 나온 핵심어를 뽑아줍니다(브라우저에서 즉시, 검색 불필요).</div>
+      <textarea id="kwText" placeholder="분석할 글/자료를 붙여넣으세요..." style="min-height:80px"></textarea>
+      <button class="btn ghost sm" style="margin-top:8px" onclick="extractKW()">✂️ 키워드 추출</button>
+      <div id="kwExtract"></div>
+    </div>
+
+    <div class="nav"><button class="btn ghost" onclick="go(0)">← 이전</button><button class="btn" onclick="go(2)">다음 → 타겟 설정</button></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel card" data-step="2">
+    <span class="kicker">STEP 2 · 타겟 설정</span>
+    <h2>🎯 이 글은 누구를 위한 글인가요?</h2>
+    <div class="sub">타겟을 바꾸면 같은 주제도 전혀 다른 글이 됩니다. 고르면 페르소나가 자동으로 채워지고, 직접 다듬을 수도 있어요.</div>
+    <div class="chips" id="targetChips"></div>
+    <div class="row" style="margin-top:6px">
+      <div><label class="f">연령대</label><div class="chips" id="ageChips"></div><input type="hidden" id="t_age" value="30대"></div>
+      <div><label class="f">타겟 한 줄 묘사</label><input type="text" id="t_detail" placeholder="예: 하루 8시간 앉아 일하는 30대 직장인"></div>
+    </div>
+    <div id="persona"></div>
+    <details style="margin-top:12px"><summary>✏️ 페르소나 직접 편집 (선택)</summary>
+      <label class="f">불안 (콤마로 구분)</label><input type="text" id="p_pains">
+      <label class="f">궁금증 (콤마로 구분)</label><input type="text" id="p_qs">
+      <label class="f">유도할 행동</label><input type="text" id="p_action">
+      <button class="btn sm" style="margin-top:10px" onclick="applyCustomPersona()">적용</button>
+    </details>
+    <div class="nav"><button class="btn ghost" onclick="go(1)">← 이전</button><button class="btn" onclick="go(3)">다음 → 톤 &amp; 프롬프트</button></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel card" data-step="3">
+    <span class="kicker">STEP 3 · 톤 &amp; 프롬프트</span>
+    <h2>🎚️ 톤 믹서 &amp; 올인원 프롬프트</h2>
+    <div class="sub">다정함과 전문성의 비율, 그리고 구성 옵션을 정하면 프롬프트가 실시간으로 조립됩니다. 어떤 AI에 붙여넣어도 작동해요.</div>
+    <label class="f">다정한 구어체 ←→ 신뢰의 문어체 : <span id="toneLbl" style="color:var(--accent)"></span></label>
+    <input type="range" id="tone" min="0" max="100" value="35" oninput="renderTone()">
+    <div class="ex" id="toneEx"></div>
+    <div class="grid3" style="margin-top:14px">
+      <div><label class="f">스토리텔링 강도</label><select id="o_story" onchange="buildPrompt()"><option>약하게</option><option selected>보통</option><option>강하게</option></select></div>
+      <div><label class="f">프롬프트 상세도</label><select id="o_verb" onchange="buildPrompt()"><option>간단</option><option selected>표준</option><option>상세</option></select></div>
+      <div><label class="f">구성 옵션</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+          <label class="toggle"><input type="checkbox" id="o_q" checked onchange="buildPrompt()"> 질문형 소제목</label>
+          <label class="toggle"><input type="checkbox" id="o_faq" checked onchange="buildPrompt()"> FAQ</label>
+        </div></div>
+    </div>
+    <div style="margin:16px 0 8px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" onclick="copyPrompt()">📋 올인원 프롬프트 복사</button>
+      <button class="btn ghost" onclick="dlPrompt()">⬇ 프롬프트 .txt</button>
+      <button class="btn ghost" onclick="buildPrompt()">↻ 새로고침</button>
+    </div>
+    <pre class="prompt" id="promptOut"></pre>
+    <div class="hint" id="promptLen"></div>
+
+    <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🚀 베놈 엔진으로 실제 원고 생성 <span class="hint">(베놈 사이트와 동일 파이프라인)</span></h2>
+      <div class="sub">버튼 한 번으로 베놈 엔진(<code>/api/generate-post</code>)을 호출합니다 — 10단 구조·의료광고 자동검증·인포그래픽·FAQ·이미지까지. <a href="#" onclick="toggleCfg();return false;">⚙️ 연결 설정</a></div>
+      <div id="cfg" style="display:none;background:var(--accent-soft);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div class="row">
+          <div><label class="f">API 주소</label><input type="text" id="cfg_url" placeholder="https://...vercel.app (비우면 같은 도메인)"></div>
+          <div><label class="f">ADMIN_SECRET</label><input type="text" id="cfg_secret" placeholder="관리자 시크릿(설정된 경우)"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <label class="toggle"><input type="checkbox" id="cfg_img" checked> 이미지 생성</label>
+          <label class="toggle"><input type="checkbox" id="cfg_save"> 생성 후 저장(draft)</label>
+          <button class="btn sm" onclick="saveCfg()">설정 저장</button>
+        </div>
+        <div class="hint">설정은 이 브라우저에만 저장돼요(localStorage). 키는 서버로만 전송됩니다.</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="genBtn" onclick="generateLive()">🪄 원고 생성하기</button>
+        <button class="btn ghost" onclick="toggleCfg()">⚙️ 연결 설정</button>
+      </div>
+      <div id="genStatus" class="hint" style="margin-top:8px"></div>
+      <div id="genResult"></div>
+    </div>
+    <div id="historyWrap" style="margin-top:20px"></div>
+    <div class="nav"><button class="btn ghost" onclick="go(2)">← 이전</button><button class="btn" onclick="go(4)">다음 → 인포그래픽</button></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="panel card" data-step="4">
+    <span class="kicker">STEP 4 · 수치 시각화</span>
+    <h2>📊 숫자 → 인포그래픽 <span class="hint">(8종)</span></h2>
+    <div class="sub">본문 속 수치를 한눈에 들어오는 그림으로. 유형을 고르고 데이터를 넣으면 즉시 SVG가 그려지고, PNG·SVG로 내려받을 수 있어요.</div>
+    <div class="row">
+      <div><label class="f">유형</label><select id="c_type" onchange="chartTypeUI()">
+        <option value="donut">도넛 (비율)</option>
+        <option value="gauge">게이지 (달성도)</option>
+        <option value="bar">막대 비교 (우리/평균)</option>
+        <option value="picto">픽토그램 (10명 중)</option>
+        <option value="stat">통계 카드 (큰 숫자)</option>
+        <option value="progress">진행 막대 (여러 항목)</option>
+        <option value="ranking">순위 (랭킹)</option>
+        <option value="steps">단계 흐름</option>
+      </select></div>
+      <div><label class="f">한눈 메시지 / 제목</label><input type="text" id="c_label" placeholder="예: 직장인 10명 중 7명이 거북목 경험"></div>
+    </div>
+    <div id="c_single"><label class="f">수치(%) <span id="c_valhint" class="hint"></span></label><input type="text" id="c_val" placeholder="70"></div>
+    <div id="c_multi" style="display:none"><label class="f" id="c_multilbl">데이터 (한 줄에 하나: <code>라벨 70</code>)</label>
+      <textarea id="c_multiv" placeholder="도수치료 78&#10;운동치료 54&#10;약물치료 32"></textarea></div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn" onclick="addChart()">＋ 인포그래픽 추가</button>
+      <span class="hint">⚠️ 의학 수치는 반드시 실제 출처를 확인하세요. 없는 숫자는 만들지 않습니다.</span>
+    </div>
+    <div class="chartbox" id="charts"></div>
+
+    <div style="border-top:1px dashed var(--line);margin:24px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🖼️ AI 대표 이미지 생성 <span class="hint">(DALL·E / gpt-image)</span></h2>
+      <div class="sub">원고에 어울리는 대표 이미지·일러스트를 AI로 만들어요. 다운로드는 베놈 사이트와 동일한 <b>WebP(품질 85)</b>로 최적화됩니다. 프롬프트는 입력값에서 자동으로 초안이 잡혀요. <a href="#" onclick="go(3);toggleCfg();return false;">⚙️ 엔진 연결 설정</a>(STEP3과 공유)</div>
+      <label class="f">이미지 프롬프트 <button class="btn ghost sm" style="float:right;padding:3px 9px" onclick="suggestImgPrompt()">↻ 자동 추천</button></label>
+      <textarea id="img_prompt" placeholder="예: 목을 만지며 모니터를 보는 30대 직장인, 밝고 다정한 병원 진료실"></textarea>
+      <div class="grid2" style="margin-top:6px">
+        <div><label class="f">스타일</label><div class="chips" id="imgStyleChips"></div></div>
+        <div><label class="f">비율</label><div class="chips" id="imgAspectChips"></div></div>
+      </div>
+      <input type="hidden" id="img_style" value="photo"><input type="hidden" id="img_aspect" value="square">
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="imgBtn" onclick="genImage()">🖼️ 이미지 생성하기</button>
+        <button class="btn ghost" onclick="copyImgPrompt()">📋 프롬프트 복사</button>
+      </div>
+      <div id="imgStatus" class="hint" style="margin-top:8px"></div>
+      <div id="imgResult"></div>
+      <div class="hint">💡 엔진 연결 없이도 프롬프트를 복사해 미드저니·DALL·E 등 어떤 이미지 AI에든 바로 쓸 수 있어요.</div>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:24px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">📰 카드뉴스 텍스트 입히기</h2>
+      <div class="sub">생성한 이미지나 직접 올린 사진에 제목·부제를 얹어 카드뉴스를 만들어요. 모두 브라우저에서 즉시 처리되고 WebP로 저장됩니다.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn ghost sm" onclick="cardUseGenerated()">🖼️ 생성 이미지 사용</button>
+        <label class="btn ghost sm" style="cursor:pointer">📁 이미지 업로드<input type="file" accept="image/*" style="display:none" onchange="cardUpload(this)"></label>
+      </div>
+      <input type="text" id="card_title" placeholder="제목 (예: 거북목, 이렇게 풀어요)" oninput="renderCard()">
+      <input type="text" id="card_sub" placeholder="부제 (예: 직장인 5분 루틴)" oninput="renderCard()" style="margin-top:8px">
+      <input type="text" id="card_cap" placeholder="하단 캡션 (예: 병원마케팅 베놈 · 카카오 상담)" oninput="renderCard()" style="margin-top:8px">
+      <div class="grid2" style="margin-top:10px">
+        <div><label class="f">텍스트 위치</label><div class="chips" id="cardPosChips"></div></div>
+        <div><label class="f">글자색 · 비율</label><div style="display:flex;gap:8px;flex-wrap:wrap"><div class="chips" id="cardColorChips"></div><div class="chips" id="cardRatioChips"></div></div></div>
+      </div>
+      <input type="hidden" id="card_pos" value="bottom"><input type="hidden" id="card_color" value="light"><input type="hidden" id="card_ratio" value="1:1">
+      <label class="toggle" style="margin-top:10px"><input type="checkbox" id="card_scrim" checked onchange="renderCard()"> 가독성 배경(스크림)</label>
+      <div style="margin-top:12px;text-align:center"><canvas id="cardCanvas" style="max-width:100%;border-radius:14px;border:1px solid var(--line)"></canvas></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="dlCard('image/webp')">⬇ WebP 저장</button>
+        <button class="btn ghost" onclick="dlCard('image/png')">⬇ PNG 저장</button>
+      </div>
+    </div>
+
+    <div class="nav"><button class="btn ghost" onclick="go(3)">← 이전</button><button class="btn" onclick="go(5)">다음 → 안전 검수</button></div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="panel card" data-step="5">
+    <span class="kicker">STEP 5 · 검수 &amp; 내보내기</span>
+    <h2>🚦 안전등 · 품질 점수 · 브리프</h2>
+    <div class="sub">초안을 붙여넣으면 ① 의료광고 위험 표현을 잡고 ② 글의 품질을 자동 채점하고 ③ 구어/문어 균형까지 보여줍니다.</div>
+    <textarea id="checkText" placeholder="AI가 써준 원고를 여기에 붙여넣어 보세요..." oninput="checkAll()" style="min-height:120px"></textarea>
+    <div class="light"><div class="bulb" id="bulb"></div><div id="lightMsg" style="font-weight:700">텍스트를 입력하면 검사합니다.</div></div>
+    <div id="flags"></div>
+
+    <div id="qualityBox" style="display:none">
+      <h2 style="font-size:16px;margin-top:22px">📈 품질 점수</h2>
+      <div class="scoreWrap">
+        <svg class="ring" id="scoreRing" viewBox="0 0 100 100"></svg>
+        <div style="flex:1" id="metrics"></div>
+      </div>
+      <div class="f" style="margin-top:6px">🗣️ 구어체 ↔ 문어체 균형</div>
+      <div class="balance" id="balance"></div>
+    </div>
+
+    <div style="margin:22px 0 6px;border-top:1px solid var(--line);padding-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" onclick="downloadBrief()">📥 전체 브리프(.md)</button>
+      <button class="btn ghost" onclick="copyBrief()">📋 브리프 복사</button>
+      <button class="btn ghost" onclick="window.print()">🖨️ 인쇄/PDF</button>
+    </div>
+    <div class="hint">브리프에는 입력값·옵션·주제·타겟·페르소나·올인원 프롬프트·인포그래픽 사양이 한 파일로 담깁니다.</div>
+
+    <div style="border-top:1px dashed var(--line);margin:22px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">🟢 WordPress 자동 임시저장 <span class="hint">(공식 API·합법)</span></h2>
+      <div class="sub">내 워드프레스에 <b>임시저장(draft)</b>으로 자동 등록합니다. 공식 Application Password를 쓰므로 약관 위반이 아니에요. 검토 후 워드프레스에서 발행하면 됩니다. <a href="#" onclick="toggleWp();return false;">⚙️ 워드프레스 연결</a></div>
+      <div id="wpcfg" style="display:none;background:var(--accent-soft);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div class="row">
+          <div><label class="f">사이트 URL</label><input type="text" id="wp_url" placeholder="https://myblog.com"></div>
+          <div><label class="f">사용자명</label><input type="text" id="wp_user" placeholder="admin"></div>
+        </div>
+        <label class="f">Application Password <span class="hint">(WP 관리자 → 사용자 → 프로필 → 응용프로그램 비밀번호)</span></label>
+        <input type="text" id="wp_pw" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx">
+        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn sm" onclick="saveWp()">연결 저장</button></div>
+        <div class="hint">⚠️ API 주소(STEP3 ⚙️)도 설정돼 있어야 합니다(브라우저→내 서버→워드프레스 경유). 키는 내 서버로만 전송돼요.</div>
+      </div>
+      <label class="f">제목</label><input type="text" id="wp_title" placeholder="(비우면 선택 주제 제목 사용)">
+      <div class="grid2" style="margin-top:10px">
+        <div><label class="f">발행 모드</label><div class="chips" id="wpModeChips"></div><input type="hidden" id="wp_mode" value="draft"></div>
+        <div id="wpDateWrap" style="display:none"><label class="f">예약 일시</label><input type="datetime-local" id="wp_date"></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="wpBtn" onclick="wpDraft()">📝 WordPress에 임시저장</button>
+        <span class="hint">본문은 베놈 엔진 생성 결과(있으면) 또는 위 검수창 내용을 사용합니다.</span>
+      </div>
+      <div id="wpStatus" class="hint" style="margin-top:8px"></div>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:18px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">📋 네이버·티스토리 붙여넣기용 내보내기 <span class="hint">(자동화 대신 안전)</span></h2>
+      <div class="sub">자동 등록은 약관 위반이라, 에디터에 <b>바로 붙는 서식 HTML</b>로 내보냅니다. 복사 → 에디터 붙여넣기 → 임시저장만 하면 끝(계정 리스크 0).</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="copyForBlog('naver')">📋 네이버용 복사</button>
+        <button class="btn ghost sm" onclick="copyForBlog('tistory')">📋 티스토리용(HTML) 복사</button>
+        <button class="btn ghost sm" onclick="copyTags()">🏷️ 태그 복사</button>
+      </div>
+    </div>
+
+    <div style="border-top:1px dashed var(--line);margin:18px 0 0;padding-top:18px">
+      <h2 style="font-size:17px">📚 여러 글 일괄 처리 <span class="hint">(베놈 엔진 필요)</span></h2>
+      <div class="sub">키워드를 한 줄에 하나씩 넣으면, 현재 <b>카테고리·타겟·톤</b>으로 순서대로 원고를 생성하고, 원하면 WordPress <b>임시저장</b>까지 자동으로 이어서 처리해요.</div>
+      <textarea id="batch_kw" placeholder="거북목 도수치료&#10;무릎 관절염 주사치료&#10;오십견 비수술 치료" style="min-height:90px"></textarea>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <label class="toggle"><input type="checkbox" id="batch_wp"> 생성 후 WordPress 임시저장</label>
+        <button class="btn" id="batchBtn" onclick="runBatch()">▶ 일괄 실행</button>
+        <span class="hint">STEP3 ⚙️ API 연결이 필요합니다. 항목마다 순차 처리돼요.</span>
+      </div>
+      <div id="batchList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="nav"><button class="btn ghost" onclick="go(4)">← 이전</button><span></span></div>
+  </section>
+</div>
+
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-label="원고 스튜디오 사용법" onclick="if(event.target===this)closeHelp()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeHelp()">✕ 닫기</button>
+    <h3>❓ 원고 스튜디오 사용법</h3>
+    <div class="hint">기획 → 집필 → 이미지/카드뉴스 → 키워드 → 검수 → 발행을 한 흐름으로. 처음이라면 우측 상단 <b>🎲 예시</b>부터.</div>
+    <h4>1) 6단계 흐름</h4>
+    <ul>
+      <li><b>STEP 0 시작</b> — 카테고리·키워드·지역·글유형·톤 옵션. 브랜드색·다크모드</li>
+      <li><b>STEP 1 아이디어</b> — 주제 후보·제목 변형, 키워드 리서치(검색량)·본문 키워드 추출</li>
+      <li><b>STEP 2 타겟</b> — 직장인/환자/보호자 등 → 페르소나 자동완성</li>
+      <li><b>STEP 3 톤·프롬프트</b> — 톤 믹서 → 올인원 프롬프트 자동조립 / 베놈 엔진 생성</li>
+      <li><b>STEP 4 시각화</b> — 인포그래픽 8종·AI 이미지·카드뉴스 텍스트</li>
+      <li><b>STEP 5 검수·발행</b> — 안전등·품질점수·WordPress 발행·일괄처리</li>
+    </ul>
+    <h4>2) 서버 없이 바로 되는 것</h4>
+    <p>✅ 프롬프트 조립·복사 · 인포그래픽 · 카드뉴스 · 키워드 추출 · 안전등 · 품질점수 · 브리프</p>
+    <h4>3) 서버(배포+키)가 필요한 것</h4>
+    <p>🌐 원고 자동생성 · AI 이미지 · 검색량 조회 · WordPress 발행<br>→ <b>STEP 3 ⚙️ 연결 설정</b>에 API 주소 + <code>ADMIN_SECRET</code> 입력(브라우저에만 저장). 엔진이 없으면 '원고 생성'이 <b>프롬프트를 대신 복사</b>해 줍니다.</p>
+    <h4>4) WordPress 발행 (합법 자동화)</h4>
+    <p>WP 관리자 → 사용자 → 프로필 → <b>응용프로그램 비밀번호</b> 생성 → STEP 5 ⚙️ 연결 → <b>임시저장 / 예약 / 즉시</b> 발행. (네이버·티스토리는 약관상 자동등록 대신 '붙여넣기용 복사')</p>
+    <h4>5) 팁</h4>
+    <p>💡 같은 주제라도 <b>타겟만 바꾸면</b> 전혀 다른 글 · 작업은 <b>자동 저장</b>돼 새로고침해도 복원 · 이미지·차트는 베놈과 동일한 <b>WebP</b>로 저장</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ───────────── 상태 ───────────── */
+const S = { step:0, cat:'ortho', core:'', kw2:'', region:'', gtype:'정보형', channel:'블로그',
+  length:'1,500자', emoji:'적게', cta:'카카오 상담', color:'#2f7d6b', extra:'',
+  topic:null, target:'직장인', age:'30대', detail:'', persona:null, custom:null,
+  tone:35, story:'보통', verb:'표준', optQ:true, optFaq:true, charts:[] };
+const STEPS = ['시작','아이디어','타겟','톤·프롬프트','인포그래픽','검수'];
+const CATS = {geo:'GEO/AI마케팅',seo:'SEO마케팅',dental:'치과',skin:'피부과',oriental:'한의원',
+  ortho:'정형외과',plastic:'성형외과',naegwa:'내과',angwa:'안과',shimui:'의료광고심의',geo_local:'지역마케팅'};
+
+/* ───────────── 유틸 ───────────── */
+const $ = id => document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// 인라인 onclick="fn('...')" 속성 안에 안전하게 넣기 위한 이스케이프(JS 문자열 + HTML 속성)
+function jsq(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function pick(arr,seed){return arr[Math.abs(seed)%arr.length];}
+function clampNum(v){return Math.max(0,Math.min(100,Math.round(parseFloat(v)||0)));}
+function syncInputs(){
+  S.core=$('i_core').value.trim();S.cat=$('i_cat').value;S.kw2=$('i_kw2').value.trim();
+  S.region=$('i_region').value.trim();S.gtype=$('i_gtype').value;S.channel=$('i_channel').value;
+  S.length=$('i_length').value;S.emoji=$('i_emoji').value;S.cta=$('i_cta').value;
+  S.color=$('i_color').value;S.extra=$('i_extra').value.trim();
+}
+
+/* ───────────── 칩 버튼 그룹 (선택 즉시 반응) ───────────── */
+function chipGroup(host,hidden,opts,onpick){
+  const cur=$(hidden).value;
+  // opts: ['a','b'] 또는 [['val','라벨'],...]
+  const norm=opts.map(o=>Array.isArray(o)?o:[o,o]);
+  $(host).innerHTML=norm.map(([v,l])=>`<div class="chip ${v===cur?'sel':''}" data-v="${esc(v)}" role="button" tabindex="0" aria-pressed="${v===cur}">${esc(l)}</div>`).join('');
+  $(host).querySelectorAll('.chip').forEach(c=>{
+    const act=()=>{$(hidden).value=c.dataset.v;
+      $(host).querySelectorAll('.chip').forEach(x=>{const on=x===c;x.classList.toggle('sel',on);x.setAttribute('aria-pressed',on);});
+      syncInputs();saveState();onpick&&onpick(c.dataset.v);};
+    c.addEventListener('click',act);
+    c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}});
+  });
+}
+
+/* ───────────── 자동 저장 / 복원 / 초기화 (고도화) ───────────── */
+const SAVE_IDS=['i_cat','i_core','i_kw2','i_region','i_gtype','i_channel','i_length','i_emoji','i_cta','i_color','i_extra','t_detail','t_age','p_pains','p_qs','p_action','tone','o_story','o_verb'];
+const SAVE_CHK=['o_q','o_faq'];
+function saveState(){try{const o={v:{},c:{},topic:S.topic,target:S.target,charts:S.charts};
+  SAVE_IDS.forEach(id=>{const el=$(id);if(el)o.v[id]=el.value;});
+  SAVE_CHK.forEach(id=>{const el=$(id);if(el)o.c[id]=el.checked;});
+  localStorage.setItem('vstudio_state',JSON.stringify(o));}catch(e){}}
+function restoreState(){try{const o=JSON.parse(localStorage.getItem('vstudio_state')||'null');if(!o)return false;
+  SAVE_IDS.forEach(id=>{const el=$(id);if(el&&o.v[id]!=null)el.value=o.v[id];});
+  SAVE_CHK.forEach(id=>{const el=$(id);if(el&&o.c[id]!=null)el.checked=o.c[id];});
+  if(o.topic)S.topic=o.topic;if(o.target)S.target=o.target;if(Array.isArray(o.charts))S.charts=o.charts;
+  return !!(o.v&&o.v.i_core);}catch(e){return false;}}
+function resetAll(){if(!confirm('모든 입력을 지우고 새로 시작할까요?'))return;
+  try{localStorage.removeItem('vstudio_state');}catch(e){}location.reload();}
+
+/* ───────────── 도움말 모달 ───────────── */
+let lastFocus=null;
+function openHelp(){lastFocus=document.activeElement;$('helpModal').classList.add('open');
+  const c=$('helpModal').querySelector('.modal-close');if(c)c.focus();}
+function closeHelp(){$('helpModal').classList.remove('open');if(lastFocus&&lastFocus.focus)try{lastFocus.focus();}catch(e){}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp();});
+
+/* ───────────── 다크모드 / 데모 ───────────── */
+function toggleDark(){S.dark=!document.body.classList.contains('dark');
+  document.body.classList.toggle('dark',S.dark);$('darkBtn').textContent=S.dark?'☀️':'🌙';
+  try{localStorage.setItem('vstudio_dark',S.dark?'1':'0')}catch(e){}}
+function demo(){
+  $('i_cat').value='ortho';$('i_core').value='거북목 도수치료';$('i_kw2').value='목디스크, 일자목, 자세교정';
+  $('i_region').value='대전 둔산동';$('i_gtype').value='Q&A형';$('i_cta').value='카카오 상담';
+  $('i_extra').value='비수술 치료 강조';$('i_color').value='#2f7d6b';
+  document.documentElement.style.setProperty('--accent','#2f7d6b');
+  document.documentElement.style.setProperty('--accent-soft',hexSoft('#2f7d6b'));
+  syncInputs();toast('예시가 채워졌어요 🎲 — "다음"을 눌러보세요');
+}
+
+/* ───────────── 스텝 네비 ───────────── */
+function renderStepper(){
+  $('stepper').innerHTML = STEPS.map((s,i)=>
+    `<button class="${i===S.step?'active':(i<S.step?'done':'')}" onclick="go(${i})">${i}. ${s}</button>`).join('');
+  $('pbar').style.width = (S.step/(STEPS.length-1)*100)+'%';
+}
+function go(n){
+  syncInputs();
+  if(n>=1 && !S.core){toast('먼저 STEP 0의 "핵심 키워드"를 입력해 주세요 🙂');return;}
+  S.step=n;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',+p.dataset.step===n));
+  renderStepper();
+  if(n===1 && !$('questions').innerHTML) spark();
+  if(n===2) renderTargets();
+  if(n===3){renderTone();buildPrompt();}
+  if(n===4){chartTypeUI();if(!$('img_prompt').value.trim())suggestImgPrompt();renderCard();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ───────────── 브랜드 색 ───────────── */
+$('i_color').addEventListener('input',e=>{const c=e.target.value;
+  document.documentElement.style.setProperty('--accent',c);
+  document.documentElement.style.setProperty('--accent-soft',hexSoft(c));S.color=c;
+  if(S.charts.length)renderCharts();});
+function hexSoft(hex){const n=parseInt(hex.slice(1),16);const r=n>>16,g=(n>>8)&255,b=n&255;
+  return document.body.classList.contains('dark')?`rgba(${r},${g},${b},.22)`:`rgba(${r},${g},${b},.12)`;}
+
+/* ───────────── STEP1 아이디어 스파크 ───────────── */
+let sparkSeed=7;
+function spark(){
+  syncInputs();
+  if(!S.core){toast('핵심 키워드를 먼저 입력해 주세요');return;}
+  sparkSeed=(sparkSeed*31+13)%9973;const k=S.core;
+  const groups=[
+    {gl:'😟 증상·불안 해소형', q:[`${k}, 병원 꼭 가야 하나요?`,`${k} 방치하면 어떻게 되나요?`,`${k} 초기 증상은 뭔가요?`,
+      `${k}, 큰 병으로 이어지나요?`,`${k} 자가진단 방법이 있나요?`,`${k}, 나이 들수록 심해지나요?`]},
+    {gl:'🔍 정보·비교형', q:[`${k} 치료법은 뭐가 있나요?`,`${k} 치료 기간은 얼마나 걸리나요?`,`${k} 비용은 어느 정도인가요?`,
+      `${k}, 수술 vs 비수술 차이는?`,`${k} 병원 고르는 기준은?`,`${k} 보험 적용되나요?`]},
+    {gl:'🎬 행동 유도형', q:[`직장 다니면서 ${k} 관리할 수 있나요?`,`${k}에 좋은 생활습관은?`,`${k} 집에서 하는 운동 있나요?`,
+      `${k} 재발을 막으려면?`,`오늘부터 ${k} 줄이는 법은?`,`${k} 검사는 어떻게 받나요?`]}];
+  $('questions').innerHTML = groups.map((g,gi)=>{
+    const qs=[...new Set([0,1,2].map(i=>pick(g.q,sparkSeed+gi*5+i*7)))];
+    return `<div class="qgroup"><div class="gl">${g.gl}</div>${qs.map(q=>`<span class="qpill">${esc(q)}</span>`).join('')}</div>`;
+  }).join('');
+
+  const angles=[
+    {p:'증상·불안',t:`혹시 나도 ${k}? 5초 자가체크`,who:'증상이 막 시작된 사람',num:'자가진단 항목 적중률 80%',ty:'Q&A형'},
+    {p:'정보·비교',t:`${k}, 병원마다 다른 치료법 한눈 비교`,who:'똑똑하게 알아보는 사람',num:'치료법별 회복기간 비교',ty:'비교형'},
+    {p:'행동 유도',t:`오늘부터 ${k} 줄이는 3분 루틴`,who:'바빠서 미루던 직장인',num:'하루 3분 × 4주 변화',ty:'예방·습관형'},
+    {p:'스토리',t:`${k}로 고생하던 OO님의 12주 기록`,who:'공감으로 움직이는 사람',num:'12주 통증지수 추이',ty:'스토리형'},
+    {p:'예방',t:`${k} 안 생기게 미리 챙기는 습관`,who:'아직 괜찮은 예방 관심층',num:'예방수칙 실천율 통계',ty:'예방·습관형'},
+    {p:'비용·기간',t:`${k} 치료비·기간 총정리 (2025)`,who:'비용이 걱정인 사람',num:'평균 치료 기간·횟수',ty:'정보형'},
+    {p:'오해·진실',t:`${k}, 흔한 오해 5가지 바로잡기`,who:'잘못된 정보에 불안한 사람',num:'오해 vs 사실 비교표',ty:'정보형'},
+    {p:'체험·후기',t:`${k} 치료받기 전 알았다면 좋았을 것`,who:'치료를 망설이는 사람',num:'치료 전·후 만족도',ty:'체험·후기형'}];
+  const sel=[];for(let i=0;i<6;i++)sel.push(angles[(sparkSeed+i*2)%angles.length]);
+  $('topics').innerHTML=[...new Map(sel.map(a=>[a.t,a])).values()].map(a=>
+    `<div class="ideacard ${S.topic&&S.topic.t===a.t?'sel':''}" onclick='selTopic(${JSON.stringify(a).replace(/'/g,"&#39;")})'>
+       <div class="t">${esc(a.t)}</div>
+       <div class="m">🏷️ ${esc(a.p)} · 👤 ${esc(a.who)} · 📝 ${esc(a.ty)}<br>📊 ${esc(a.num)}</div></div>`).join('');
+  if(S.topic)renderTitleVariants();
+}
+function selTopic(a){S.topic=a;if(a.ty)$('i_gtype').value=a.ty;spark();renderTitleVariants();saveState();toast('주제 선택됨 ✔');}
+function renderTitleVariants(){
+  if(!S.topic){$('titleVariants').innerHTML='';return;}
+  const k=S.core,base=S.topic.t;
+  const vs=[base,
+    `${k}, 꼭 알아야 할 ${(Math.abs(sparkSeed)%4)+3}가지`,
+    `${k} 때문에 고민이라면 — 이것부터 보세요`,
+    `${S.region?S.region+' ':''}${k}, 후회 없는 선택 가이드`];
+  $('titleVariants').innerHTML=`<div class="qgroup"><div class="gl" style="margin-top:14px">💡 제목 변형 (마음에 드는 걸 STEP3에서 씁니다)</div>
+    ${[...new Set(vs)].map(t=>`<span class="qpill">${esc(t)}</span>`).join('')}</div>`;
+}
+
+/* ───────────── STEP1 키워드 리서치 / 추출 ───────────── */
+function addKw(word){
+  const cur=$('i_kw2').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(cur.map(s=>s.toLowerCase()).includes(word.toLowerCase())){toast('이미 담긴 키워드예요');return;}
+  cur.push(word);$('i_kw2').value=cur.join(', ');syncInputs();saveState();toast(`보조 키워드에 추가: ${word}`);
+}
+function kwOfflineCombos(){
+  const k=S.core;if(!k)return[];const r=S.region?S.region+' ':'';
+  const mods=['추천','비용','가격','후기','병원','방법','증상','원인','기간','효과','자가진단','운동','예방','보험','명의'];
+  return [...new Set(mods.map(m=>`${r}${k} ${m}`).concat([`${r}${k}`,`${k} vs`,`${k} 잘하는 곳`]))];
+}
+async function researchKW(){
+  syncInputs();
+  if(!S.core){toast('STEP 0의 핵심 키워드를 먼저 입력하세요');return;}
+  const cfg=loadCfg();const url=(cfg.url||'').replace(/\/$/,'')+'/api/keywords';
+  $('kwStatus').textContent='연관 키워드 조회 중...';
+  try{
+    const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify({keyword:S.core,region:S.region})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+    renderKW(d);$('kwStatus').textContent=`✅ 네이버 ${d.sources.naver||0} · 구글 ${d.sources.google||0} · 검색광고 ${d.sources.searchad||0}`;
+  }catch(e){
+    // 오프라인 폴백: 검색량 없이 후보 키워드만
+    const combos=kwOfflineCombos();
+    $('kwStatus').innerHTML=`⚠️ 엔진 미연결 — 후보 키워드만 표시(검색량 제외). <span class="hint">실제 검색량은 ⚙️ 엔진 연결 + 네이버 검색광고 키 설정 시.</span>`;
+    renderKW({related:combos,questions:[],volumes:[]});
+  }
+}
+function renderKW(d){
+  let html='';
+  if(d.volumes&&d.volumes.length){
+    const max=Math.max(...d.volumes.map(v=>v.volume));
+    html+=`<div class="qgroup"><div class="gl">📊 월 검색량 상위 <span class="hint">(네이버 검색광고)</span></div>`+
+      d.volumes.map(v=>`<div class="metric" style="cursor:pointer" onclick="addKw('${jsq(v.keyword)}')">
+        <span>${esc(v.keyword)}</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="display:inline-block;height:8px;width:${Math.max(8,Math.round(v.volume/max*120))}px;background:var(--accent);border-radius:4px"></span><b>${v.volume.toLocaleString()}</b></span></div>`).join('')+`</div>`;
+  }
+  if(d.related&&d.related.length)
+    html+=`<div class="qgroup"><div class="gl">🔗 연관 검색어 <span class="hint">(누르면 보조 키워드로 추가)</span></div>`+
+      d.related.map(k=>`<span class="qpill" style="cursor:pointer" onclick="addKw('${jsq(k)}')">${esc(k)} ＋</span>`).join('')+`</div>`;
+  if(d.questions&&d.questions.length)
+    html+=`<div class="qgroup"><div class="gl">❓ 자주 묻는 질문</div>`+
+      d.questions.map(q=>`<span class="qpill">${esc(q)}</span>`).join('')+`</div>`;
+  $('kwResult').innerHTML=html||'<div class="hint">결과가 없어요.</div>';
+}
+const KW_STOP=new Set(['그리고','그러나','하지만','그래서','때문에','이런','저런','그런','합니다','입니다','있습니다','수','것','등','및','를','을','이','가','은','는','에','의','도','로','으로','에서','부터','까지','대한','위해','통해','경우','또한','더','very','the','and','for','with','that']);
+function extractKW(){
+  const raw=$('kwText').value;
+  if(raw.trim().length<10){toast('분석할 글을 조금 더 넣어주세요');return;}
+  const words=raw.toLowerCase().replace(/[^가-힣a-z0-9\s]/g,' ').split(/\s+/)
+    .map(w=>{if(/[가-힣]$/.test(w)&&w.length>=3){const s=w.replace(/(으로|에서|에게|까지|부터|에는|이라|라고|이|가|은|는|을|를|의|도|에|와|과|로|만|랑|보다|처럼)$/,'');if(s.length>=2)return s;}return w;})
+    .filter(w=>w.length>=2&&!KW_STOP.has(w));
+  const freq={};words.forEach(w=>freq[w]=(freq[w]||0)+1);
+  const top=Object.entries(freq).filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  if(!top.length){$('kwExtract').innerHTML='<div class="hint">2회 이상 반복된 키워드가 없어요.</div>';return;}
+  const max=top[0][1];
+  $('kwExtract').innerHTML=`<div class="qgroup"><div class="gl" style="margin-top:12px">📌 추출된 키워드 <span class="hint">(누르면 보조 키워드로 추가)</span></div>`+
+    top.map(([w,n])=>`<span class="qpill" style="cursor:pointer;opacity:${0.55+0.45*n/max}" onclick="addKw('${jsq(w)}')">${esc(w)} ·${n} ＋</span>`).join('')+`</div>`;
+}
+
+/* ───────────── STEP2 타겟 ───────────── */
+const TARGETS={
+  '직장인':{detail:'하루 8시간 앉아 일하는 30대 직장인',
+    pains:['바빠서 병원 갈 시간이 없다','증상이 일상에 자꾸 끼어든다','큰 병일까 막연히 불안하다'],
+    qs:['일하면서도 관리할 수 있나요?','병원 한 번이면 끝나나요?','지금 안 가도 괜찮을까요?'],
+    action:'점심시간 10분, 가까운 곳에서 간단 체크 예약'},
+  '환자 본인':{detail:'이미 증상이 뚜렷해 진단·치료가 궁금한 분',
+    pains:['치료가 얼마나 걸릴지 모르겠다','재발이 두렵다','일상으로 돌아갈 수 있을까'],
+    qs:['치료법은 뭐가 있나요?','회복까지 얼마나 걸리나요?','재발을 막으려면?'],
+    action:'내 상태에 맞는 치료 계획 상담받기'},
+  '보호자·가족':{detail:'부모님/배우자를 걱정하는 가족',
+    pains:['대신 알아봐 드리고 싶다','어디부터 시작할지 모르겠다','괜히 겁만 줄까 조심스럽다'],
+    qs:['어떤 병원에 모셔야 하나요?','집에서 뭘 도와드릴 수 있나요?','지금 상태가 위험한가요?'],
+    action:'보호자가 함께 보는 체크리스트로 첫 진료 준비'},
+  '예방 관심층':{detail:'아직 증상은 없지만 미리 챙기려는 분',
+    pains:['지금 괜찮아도 나중이 걱정','뭘 해야 예방되는지 모른다','검진이 필요한지 헷갈린다'],
+    qs:['예방하려면 뭘 하나요?','검진은 언제 받나요?','생활습관만으로 충분한가요?'],
+    action:'나에게 맞는 예방수칙·검진주기 확인'},
+  '시니어·고령':{detail:'만성 증상을 안고 살아가는 60대 이상',
+    pains:['수술이 무섭다','약을 오래 먹어도 되나','자식에게 부담될까 걱정'],
+    qs:['수술 말고 방법 없나요?','약은 계속 먹어야 하나요?','걷기 운동해도 되나요?'],
+    action:'무리 없는 비수술·재활 상담 안내'},
+  '2030 사회초년생':{detail:'증상은 가볍지만 검색은 많이 하는 20~30대',
+    pains:['병원비가 부담된다','시간 내기 어렵다','별것 아닌데 유난인가 싶다'],
+    qs:['이 정도도 병원 가나요?','집에서 먼저 해볼 건?','보험으로 되나요?'],
+    action:'부담 없는 첫 상담·자가관리 가이드'}};
+function renderTargets(){
+  $('targetChips').innerHTML=Object.keys(TARGETS).map(t=>
+    `<div class="chip ${S.target===t?'sel':''}" role="button" tabindex="0" onclick="selTarget('${t}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selTarget('${t}')}">${t}</div>`).join('');
+  chipGroup('ageChips','t_age',['해당 없음','20대','30대','40대','50대','60대+'],v=>{
+    S.age=v;if(S.persona)drawPersona(S.custom?S.target+' (맞춤)':S.target,S.persona);});
+  selTarget(S.target,true);
+}
+function selTarget(t,keep){
+  S.target=t;S.custom=null;const p=TARGETS[t];
+  S.age=$('t_age').value;
+  if(!keep||!$('t_detail').value)$('t_detail').value=p.detail;
+  S.detail=$('t_detail').value;S.persona=p;
+  document.querySelectorAll('#targetChips .chip').forEach(c=>c.classList.toggle('sel',c.textContent===t));
+  $('p_pains').value=p.pains.join(', ');$('p_qs').value=p.qs.join(', ');$('p_action').value=p.action;
+  drawPersona(t,p);
+}
+function drawPersona(t,p){
+  $('persona').innerHTML=`<div class="card" style="box-shadow:none;margin:14px 0 0">
+    <div style="font-weight:700;margin-bottom:8px">👤 ${esc(t)} ${S.age!=='해당 없음'?'· '+esc(S.age):''}</div>
+    <div class="m" style="font-size:13.5px"><b>지금 느끼는 불안</b><ul>${p.pains.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+    <b>진짜 궁금한 것</b><ul>${p.qs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+    <b>🎬 유도할 행동</b> · ${esc(p.action)}</div></div>`;
+}
+function applyCustomPersona(){
+  const p={detail:$('t_detail').value.trim(),
+    pains:$('p_pains').value.split(',').map(s=>s.trim()).filter(Boolean),
+    qs:$('p_qs').value.split(',').map(s=>s.trim()).filter(Boolean),
+    action:$('p_action').value.trim()};
+  S.persona=p;S.custom=p;S.detail=p.detail;drawPersona(S.target+' (맞춤)',p);toast('맞춤 페르소나 적용됨 ✔');
+}
+$('t_detail')&&$('t_detail').addEventListener('input',e=>S.detail=e.target.value);
+
+/* ───────────── STEP3 톤 + 프롬프트 ───────────── */
+function renderTone(){
+  const v=+$('tone').value;S.tone=v;
+  let lbl,intro,info,end;
+  if(v<33){lbl='다정함 ↑ (말 거는 느낌)';
+    intro='"요즘 목이 자주 뻐근하시죠? 저도 그 마음 잘 알아요."';
+    info='"거북목은 경추(목뼈)가 앞으로 기운 상태를 말해요."';
+    end='"오늘 딱 하나만 같이 해봐요. 어깨 펴고 숨 한 번!"';}
+  else if(v<67){lbl='균형 (공감+정보 반반)';
+    intro='"요즘 목이 자주 뻐근하시죠?"';
+    info='"거북목은 경추(목뼈) 정렬이 무너진 상태입니다."';
+    end='"무리하지 마시고, 오늘은 스트레칭 한 번부터 시작해 보세요."';}
+  else{lbl='전문성 ↑ (또박또박 정보)';
+    intro='"장시간 좌식 근무는 목 건강을 위협합니다."';
+    info='"거북목은 경추 정렬이 무너진 상태이며, 방치 시 만성 통증으로 이어집니다."';
+    end='"증상이 2주 이상 지속되면 전문의 상담이 필요합니다."';}
+  $('toneLbl').textContent=lbl;
+  $('toneEx').innerHTML=`🗣️ <b>도입</b> ${esc(intro)}<br>📘 <b>정보</b> ${esc(info)}<br>💚 <b>마무리</b> ${esc(end)}`;
+  buildPrompt();
+}
+function buildPrompt(){
+  syncInputs();
+  S.story=$('o_story')?$('o_story').value:'보통';S.verb=$('o_verb')?$('o_verb').value:'표준';
+  S.optQ=$('o_q')?$('o_q').checked:true;S.optFaq=$('o_faq')?$('o_faq').checked:true;
+  const topic=S.topic?S.topic.t:(S.core+' 관련 주제');
+  const num=S.topic?S.topic.num:'핵심 수치 1개';
+  const p=S.persona||TARGETS[S.target];
+  const toneLine=S.tone<33?'다정한 구어체 비중을 높여 따뜻하게'
+    :S.tone<67?'공감(구어체)과 정보(문어체)를 반반으로 균형 있게'
+    :'신뢰감 있는 문어체 비중을 높여 전문적으로';
+  const emojiLine={'없음':'이모지는 쓰지 않는다.','적게':'이모지는 소제목 정도에만 절제해서 쓴다.','보통':'이모지를 적절히 활용해 친근하게.'}[S.emoji];
+  const lines=[];
+  lines.push('너는 병원·헬스케어 콘텐츠를 집필하는 베테랑 에디터이자 다정한 작가야.','아래 조건으로 원고를 완성해줘.','');
+  lines.push('[입력]',`- 분야: ${CATS[S.cat]}`,`- 핵심 키워드: ${S.core}`);
+  if(S.kw2)lines.push(`- 보조 키워드: ${S.kw2}`);
+  lines.push(`- 제목(가제): ${topic}`,`- 글 유형: ${S.gtype}`,
+    `- 타겟: ${S.target}${S.age!=='해당 없음'?'('+S.age+')':''} — ${S.detail||p.detail}`,
+    `- 채널: ${S.channel} / 분량: ${S.length}${S.region?' / 지역: '+S.region:''}`,'');
+  if(S.verb!=='간단'){
+    lines.push(`[타겟이 느끼는 불안] ${p.pains.join(' · ')}`,
+      `[타겟이 궁금한 것] ${p.qs.join(' · ')}`,
+      `[유도할 행동(CTA)] ${p.action} → "${S.cta}"로 자연스럽게 연결`,'');
+  }
+  lines.push('[말투 규칙]',
+    `- ${toneLine} 쓴다. (공감·말걸기=구어체 "~하시죠?/~거든요", 정보·통계·치료=문어체 "~입니다")`,
+    '- 독자를 아끼는 사람처럼 대하고, 겁주지 말고 안심시킨다.',
+    '- 어려운 용어는 괄호로 쉽게 풀어준다. 모호한 수식어 대신 구체적 수치를 쓴다.',
+    `- ${emojiLine} 한 문단 3~4줄.`,
+    '- 과장·효능보장(완치 100% 등)·공포마케팅 금지(의료광고법 준수).');
+  if(S.story!=='약하게')lines.push(`- 스토리텔링을 ${S.story==='강하게'?'적극':'적절히'} 활용해 사례·장면으로 공감을 끌어낸다.`);
+  lines.push('','[구조]','1. 도입: 타겟의 일상 장면으로 공감하며 시작(구어체).');
+  lines.push(`2. 본문: ${S.optQ?'소제목은 독자가 검색할 질문형으로. ':''}소제목 아래 핵심 답변(즉답)을 먼저 제시하고, 그다음 쉽게 설명.`);
+  lines.push(`3. 수치 자리에는 [📊 그래프: ${num}] 마커만 남겨라(이미지는 따로 만든다).`);
+  lines.push(`4. 마무리: 따뜻한 응원 + 오늘 할 수 있는 행동 1가지 + 부드러운 안내("${S.cta}").`);
+  if(S.optFaq)lines.push('5. 끝에 FAQ 5개(질문형 + 짧은 답).');
+  if(S.verb==='상세')lines.push('','※ 각 소제목마다 정량 데이터(퍼센트·기간·횟수)를 1개 이상 넣고, 신뢰할 수 있는 기관(보건복지부·학회 등) 유형을 1회 이상 언급해라(없는 통계·논문명은 지어내지 말 것).');
+  lines.push('','먼저 도입부와 첫 소제목까지만 써서 보여주고, 내가 "이어서" 하면 끝까지 완성해줘.');
+  const out=lines.join('\n');
+  $('promptOut').textContent=out;
+  const lenEl=$('promptLen');if(lenEl)lenEl.textContent=`📏 프롬프트 ${out.length}자 · 예상 토큰 약 ${Math.round(out.length/2.2)}개`;
+  return out;
+}
+function copyPrompt(){navigator.clipboard.writeText(buildPrompt()).then(()=>toast('프롬프트 복사됨! 아무 AI에 붙여넣으세요 📋'));}
+function dlPrompt(){const b=new Blob([buildPrompt()],{type:'text/plain'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=`prompt-${(S.core||'manuscript').replace(/\s+/g,'-')}.txt`;a.click();toast('프롬프트 .txt 저장 ⬇');}
+
+/* ───────────── STEP4 인포그래픽 (8종) ───────────── */
+const MULTI=['progress','ranking','steps'];
+function chartTypeUI(){
+  const t=$('c_type').value,multi=MULTI.includes(t);
+  $('c_single').style.display=multi?'none':'block';
+  $('c_multi').style.display=multi?'block':'none';
+  const hints={donut:'(0~100)',gauge:'(달성도 0~100)',bar:'(우리 값 %)',picto:'(0~100)',stat:'(숫자, % 아니어도 됨)'};
+  $('c_valhint').textContent=hints[t]||'';
+  $('c_multilbl').innerHTML = t==='steps'
+    ? '단계 (한 줄에 하나: <code>증상 확인</code>)'
+    : '데이터 (한 줄에 하나: <code>라벨 70</code>)';
+  $('c_multiv').placeholder = t==='steps'
+    ? '증상 확인\n정밀 검사\n맞춤 치료\n재활·관리'
+    : '도수치료 78\n운동치료 54\n약물치료 32';
+}
+function parseMulti(){return $('c_multiv').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+  const m=l.match(/^(.*?)[\s:,]+(\d+(?:\.\d+)?)\s*%?$/);
+  return m?{label:m[1].trim(),val:clampNum(m[2])}:{label:l,val:null};});}
+function addChart(){
+  const t=$('c_type').value,label=$('c_label').value.trim();
+  if(MULTI.includes(t)){const items=parseMulti();
+    if(!items.length){toast('데이터를 한 줄에 하나씩 입력해 주세요');return;}
+    S.charts.push({type:t,label,items});}
+  else{const val=$('c_val').value.trim();
+    if(val===''){toast('수치를 입력해 주세요');return;}
+    S.charts.push({type:t,label,val});}
+  renderCharts();saveState();$('c_label').value='';$('c_val').value='';$('c_multiv').value='';
+}
+function rmChart(i){S.charts.splice(i,1);renderCharts();saveState();}
+function renderCharts(){
+  $('charts').innerHTML=S.charts.map((c,i)=>`<div class="chartcell">${svgFor(c)}
+     <div style="font-size:12.5px;font-weight:700;max-width:260px;margin:8px auto 6px">${esc(c.label||'')}</div>
+     <button class="btn ghost sm" onclick="dlSvg(${i})">⬇ SVG</button>
+     <button class="btn ghost sm" onclick="dlWebp(${i})">⬇ WebP</button>
+     <button class="btn ghost sm" onclick="dlPng(${i})">⬇ PNG</button>
+     <button class="btn ghost sm" onclick="rmChart(${i})">✕</button></div>`).join('')
+   ||'<div class="hint">아직 추가된 인포그래픽이 없어요. 유형을 고르고 데이터를 넣어보세요.</div>';
+}
+function wrapSvg(w,h,inner){return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" rx="14" fill="#fff"/>${inner}</svg>`;}
+function svgFor(c){const col=S.color;
+  if(c.type==='donut'){const v=clampNum(c.val),r=64,cir=2*Math.PI*r,off=cir*(1-v/100);
+    return wrapSvg(240,200,`<circle cx="120" cy="96" r="${r}" fill="none" stroke="#eef2f1" stroke-width="22"/>
+      <circle cx="120" cy="96" r="${r}" fill="none" stroke="${col}" stroke-width="22" stroke-dasharray="${cir}" stroke-dashoffset="${off}" stroke-linecap="round" transform="rotate(-90 120 96)"/>
+      <text x="120" y="90" text-anchor="middle" font-size="34" font-weight="800" fill="${col}">${v}%</text>
+      <text x="120" y="112" text-anchor="middle" font-size="11" fill="#6b7d79">비율</text>`);}
+  if(c.type==='gauge'){const v=clampNum(c.val),len=Math.PI*80,off=len*(1-v/100);
+    return wrapSvg(240,170,`<path d="M40 135 A80 80 0 0 1 200 135" fill="none" stroke="#eef2f1" stroke-width="18" stroke-linecap="round"/>
+      <path d="M40 135 A80 80 0 0 1 200 135" fill="none" stroke="${col}" stroke-width="18" stroke-linecap="round" stroke-dasharray="${len}" stroke-dashoffset="${off}"/>
+      <text x="120" y="125" text-anchor="middle" font-size="32" font-weight="800" fill="${col}">${v}%</text>`);}
+  if(c.type==='bar'){const v=clampNum(c.val),bh=v/100*120;
+    return wrapSvg(240,200,`<rect x="64" y="40" width="48" height="120" rx="8" fill="#eef2f1"/>
+      <rect x="64" y="${40+120-bh}" width="48" height="${bh}" rx="8" fill="${col}"/>
+      <rect x="140" y="60" width="48" height="100" rx="8" fill="#dfe7e5"/>
+      <text x="88" y="${30+120-bh}" text-anchor="middle" font-size="22" font-weight="800" fill="${col}">${v}%</text>
+      <text x="88" y="178" text-anchor="middle" font-size="11" fill="#6b7d79">우리</text>
+      <text x="164" y="178" text-anchor="middle" font-size="11" fill="#9aa">평균</text>`);}
+  if(c.type==='picto'){const v=clampNum(c.val),n=Math.round(v/10);let dots='';
+    for(let i=0;i<10;i++){const x=40+(i%5)*38,y=58+Math.floor(i/5)*58;
+      dots+=`<g transform="translate(${x},${y})"><circle cx="0" cy="0" r="9" fill="${i<n?col:'#e3e9e7'}"/><rect x="-8" y="10" width="16" height="20" rx="7" fill="${i<n?col:'#e3e9e7'}"/></g>`;}
+    return wrapSvg(240,190,`${dots}<text x="120" y="178" text-anchor="middle" font-size="13" font-weight="700" fill="${col}">10명 중 ${n}명</text>`);}
+  if(c.type==='stat'){const val=esc(c.val);
+    return wrapSvg(260,150,`<text x="130" y="78" text-anchor="middle" font-size="52" font-weight="800" fill="${col}">${val}</text>
+      <rect x="90" y="98" width="80" height="4" rx="2" fill="${col}"/>`);}
+  if(c.type==='progress'){const items=c.items;const W=320,rowH=38,top=18,H=top+items.length*rowH+10;
+    const rows=items.map((it,i)=>{const y=top+i*rowH,v=it.val==null?0:it.val,w=v/100*140;
+      return `<text x="14" y="${y+16}" font-size="12.5" fill="#444">${esc(it.label)}</text>
+        <rect x="150" y="${y+6}" width="140" height="14" rx="7" fill="#eef2f1"/>
+        <rect x="150" y="${y+6}" width="${w}" height="14" rx="7" fill="${col}"/>
+        <text x="${150+w+6>300?300:150+w+6}" y="${y+17}" font-size="11" font-weight="700" fill="${col}">${v}%</text>`;}).join('');
+    return wrapSvg(W,H,rows);}
+  if(c.type==='ranking'){const items=[...c.items].sort((a,b)=>(b.val||0)-(a.val||0));
+    const W=320,rowH=40,top=16,H=top+items.length*rowH+8,max=Math.max(1,...items.map(x=>x.val||0));
+    const rows=items.map((it,i)=>{const y=top+i*rowH,w=(it.val||0)/max*150;
+      return `<circle cx="22" cy="${y+16}" r="13" fill="${i===0?col:'#dfe7e5'}"/><text x="22" y="${y+20}" text-anchor="middle" font-size="12" font-weight="800" fill="${i===0?'#fff':col}">${i+1}</text>
+        <text x="44" y="${y+13}" font-size="12.5" font-weight="700" fill="#333">${esc(it.label)}</text>
+        <rect x="44" y="${y+18}" width="150" height="10" rx="5" fill="#eef2f1"/>
+        <rect x="44" y="${y+18}" width="${w}" height="10" rx="5" fill="${col}"/>
+        <text x="200" y="${y+18}" font-size="11" font-weight="700" fill="${col}">${it.val!=null?it.val+'%':''}</text>`;}).join('');
+    return wrapSvg(W,H,rows);}
+  if(c.type==='steps'){const items=c.items;const n=items.length,W=Math.max(260,n*120),H=120,cx=i=>60+i*((W-120)/Math.max(1,n-1));
+    let line=`<line x1="60" y1="50" x2="${W-60}" y2="50" stroke="#dfe7e5" stroke-width="3"/>`;
+    const nodes=items.map((it,i)=>{const x=cx(i);
+      return `<circle cx="${x}" cy="50" r="16" fill="${col}"/><text x="${x}" y="55" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${i+1}</text>
+        <text x="${x}" y="88" text-anchor="middle" font-size="12" fill="#333">${esc(it.label)}</text>`;}).join('');
+    return wrapSvg(W,H,line+nodes);}
+  return wrapSvg(240,120,`<text x="120" y="60" text-anchor="middle">?</text>`);
+}
+function dlSvg(i){const blob=new Blob([svgFor(S.charts[i])],{type:'image/svg+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`infographic-${i+1}.svg`;a.click();toast('SVG 내려받기 ⬇');}
+function dlChartRaster(i,fmt){const svg=svgFor(S.charts[i]);const img=new Image();
+  const url='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
+  const webp=fmt==='image/webp';
+  img.onload=()=>{const sc=2,cv=document.createElement('canvas');cv.width=img.width*sc;cv.height=img.height*sc;
+    const ctx=cv.getContext('2d');ctx.scale(sc,sc);ctx.drawImage(img,0,0);
+    cv.toBlob(b=>{if(!b){toast(webp?'WebP 미지원 — PNG로 받아보세요':'변환 실패');return;}
+      const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`infographic-${i+1}.${webp?'webp':'png'}`;a.click();
+      toast(`${webp?'WebP':'PNG'} 내려받기 ⬇ (${Math.round(b.size/1024)}KB)`);},fmt,webp?0.9:0.92);};
+  img.onerror=()=>toast('변환 실패 — SVG로 받아보세요');img.src=url;}
+function dlPng(i){dlChartRaster(i,'image/png');}
+function dlWebp(i){dlChartRaster(i,'image/webp');}
+
+/* ───────────── STEP4 AI 이미지 생성 ───────────── */
+const IMG_STYLES=[['photo','사진'],['illustration','일러스트'],['thumbnail','썸네일'],['card','카드뉴스'],['render3d','3D']];
+const IMG_ASPECTS=[['square','정사각 1:1'],['wide','가로 16:9'],['tall','세로 4:5']];
+function suggestImgPrompt(){
+  syncInputs();const p=S.persona||(typeof TARGETS!=='undefined'?TARGETS[S.target]:null);
+  const who=S.detail||(p&&p.detail)||'환자';const subj=S.topic?S.topic.t:S.core;
+  $('img_prompt').value=`${subj} 관련 장면 — 등장인물: ${who}${S.region?`, 배경: ${S.region}`:''}. 밝고 다정하며 신뢰감 있는 한국 병원 분위기`;
+  toast('프롬프트 초안을 추천했어요 ✨');
+}
+function copyImgPrompt(){const v=$('img_prompt').value.trim();if(!v){toast('프롬프트를 먼저 입력/추천하세요');return;}
+  navigator.clipboard.writeText(v).then(()=>toast('이미지 프롬프트 복사됨 📋'));}
+async function genImage(){
+  const prompt=$('img_prompt').value.trim();
+  if(!prompt){toast('이미지 프롬프트를 입력하거나 "↻ 자동 추천"을 눌러주세요');return;}
+  const cfg=loadCfg();const url=(cfg.url||'').replace(/\/$/,'')+'/api/generate-image';
+  const body={prompt,style:$('img_style').value,aspect:$('img_aspect').value};
+  const btn=$('imgBtn');btn.disabled=true;btn.textContent='⏳ 이미지 생성 중... (최대 1분)';
+  $('imgStatus').textContent='이미지 엔진(/api/generate-image) 호출 중...';
+  try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.ok)throw new Error(data.error||('HTTP '+r.status));
+    window.__lastImg=data.dataUrl;window.__lastMime=data.mime||'image/png';
+    $('imgStatus').textContent='✅ 생성 완료! ('+(data.model||'')+')';
+    $('imgResult').innerHTML=`<div style="margin-top:12px"><img src="${data.dataUrl}" style="max-width:100%;border-radius:14px;border:1px solid var(--line)">
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" onclick="dlImgWebp()">⬇ WebP 다운로드 <span class="hint" style="color:#cfe">(베놈 최적화)</span></button>
+        <button class="btn ghost sm" onclick="dlImgOrig()">⬇ 원본</button></div>
+      <div class="hint" id="imgSizeNote"></div></div>`;
+  }catch(e){$('imgStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">이미지 엔진(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 '📋 프롬프트 복사'로 다른 이미지 AI에 붙여넣어 쓰세요.</span>`;
+  }finally{btn.disabled=false;btn.textContent='🖼️ 이미지 생성하기';}
+}
+// 베놈 WebP 최적화(빌드 스크립트 sharp quality 85)와 동일하게, 브라우저 canvas로 WebP 변환(0.85)
+function toWebp(dataUrl,cb){const img=new Image();
+  img.onload=()=>{const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+    cv.getContext('2d').drawImage(img,0,0);cv.toBlob(b=>cb(b),'image/webp',0.85);};
+  img.onerror=()=>cb(null);img.src=dataUrl;}
+function dlImgWebp(){if(!window.__lastImg)return;
+  toWebp(window.__lastImg,b=>{
+    if(!b){toast('이 브라우저는 WebP 변환을 지원하지 않아요 — 원본으로 받습니다');return dlImgOrig();}
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.webp`;a.click();
+    const note=$('imgSizeNote');if(note)note.textContent=`💾 WebP ${Math.round(b.size/1024)}KB 저장 (베놈 사이트와 동일 포맷·품질 85)`;
+    toast('WebP 다운로드 ⬇');});}
+function dlImgOrig(){if(!window.__lastImg)return;const ext=(window.__lastMime||'').includes('png')?'png':'jpg';
+  const a=document.createElement('a');a.href=window.__lastImg;
+  a.download=`image-${(S.core||'manuscript').replace(/\s+/g,'-')}.${ext}`;a.click();toast('원본 다운로드 ⬇');}
+
+/* ───────────── STEP4 카드뉴스 텍스트 오버레이 (캔버스) ───────────── */
+let cardImg=null;
+function cardUseGenerated(){if(!window.__lastImg){toast('먼저 위에서 AI 이미지를 생성하거나 업로드하세요');return;}loadCardImg(window.__lastImg);}
+function cardUpload(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>loadCardImg(e.target.result);r.readAsDataURL(f);}
+function loadCardImg(src){const im=new Image();im.onload=()=>{cardImg=im;renderCard();toast('이미지 불러옴 — 텍스트를 입력하세요');};im.onerror=()=>toast('이미지 로드 실패');im.src=src;}
+function wrapByWidth(ctx,text,maxW){const out=[];let line='';for(const ch of [...text]){const t=line+ch;
+  if(ctx.measureText(t).width>maxW&&line){out.push(line);line=ch;}else line=t;}if(line)out.push(line);return out;}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function renderCard(){
+  const cv=$('cardCanvas');if(!cv)return;
+  const ratio=$('card_ratio').value;const W=1080,H=ratio==='4:5'?1350:1080;
+  cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+  ctx.fillStyle='#e9efed';ctx.fillRect(0,0,W,H);
+  if(cardImg){const ir=cardImg.width/cardImg.height,cr=W/H;let dw,dh,dx,dy;
+    if(ir>cr){dh=H;dw=H*ir;dx=(W-dw)/2;dy=0;}else{dw=W;dh=W/ir;dx=0;dy=(H-dh)/2;}
+    ctx.drawImage(cardImg,dx,dy,dw,dh);}
+  else{ctx.fillStyle='#cfd8d5';ctx.fillRect(0,0,W,H);ctx.fillStyle='#8a9a96';ctx.font='34px sans-serif';
+    ctx.textAlign='center';ctx.fillText('🖼️ 이미지를 선택하세요',W/2,H/2);ctx.textAlign='left';}
+  const title=$('card_title').value.trim(),sub=$('card_sub').value.trim(),cap=$('card_cap').value.trim();
+  const light=$('card_color').value==='light';const txt=light?'#ffffff':'#16201d';
+  const accent=S.color||'#2f7d6b';const margin=80,maxW=W-margin*2;
+  const tS=Math.round(W*0.075),sS=Math.round(W*0.042),cS=Math.round(W*0.030);
+  const fF='"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  const blocks=[];
+  if(title){ctx.font=`800 ${tS}px ${fF}`;wrapByWidth(ctx,title,maxW).forEach(l=>blocks.push({t:l,s:tS,w:'800'}));}
+  if(sub){ctx.font=`600 ${sS}px ${fF}`;wrapByWidth(ctx,sub,maxW).forEach(l=>blocks.push({t:l,s:sS,w:'600'}));}
+  const lh=b=>Math.round(b.s*1.30);
+  if(blocks.length){
+    const bh=blocks.reduce((a,b)=>a+lh(b),0)+20;
+    const pos=$('card_pos').value;
+    let y=pos==='top'?margin+70:pos==='center'?Math.round((H-bh)/2)+40:H-margin-bh-(cap?54:0);
+    if($('card_scrim').checked){ctx.fillStyle=light?'rgba(0,0,0,.42)':'rgba(255,255,255,.80)';
+      rrect(ctx,margin-34,y-58,maxW+68,bh+74,30);ctx.fill();}
+    ctx.fillStyle=accent;rrect(ctx,margin,y-34,120,12,6);ctx.fill();
+    let yy=y;blocks.forEach(b=>{ctx.font=`${b.w} ${b.s}px ${fF}`;ctx.fillStyle=txt;ctx.fillText(b.t,margin,yy+b.s*0.8);yy+=lh(b);});
+  }
+  if(cap){ctx.font=`600 ${cS}px ${fF}`;ctx.fillStyle=light?'rgba(255,255,255,.92)':'rgba(0,0,0,.72)';
+    ctx.fillText(cap,margin,H-58);}
+}
+function dlCard(fmt){const cv=$('cardCanvas');if(!cv||!cardImg){toast('먼저 이미지를 선택하세요');return;}
+  cv.toBlob(b=>{if(!b){toast('내보내기 실패 — PNG로 받아보세요');return;}const a=document.createElement('a');
+    a.href=URL.createObjectURL(b);a.download=`cardnews-${(S.core||'card').replace(/\s+/g,'-')}.${fmt==='image/webp'?'webp':'png'}`;a.click();
+    toast(`${fmt==='image/webp'?'WebP':'PNG'} 저장 ⬇ (${Math.round(b.size/1024)}KB)`);},fmt,0.9);}
+
+/* ───────────── STEP5 안전등 + 품질점수 ───────────── */
+const FIXMAP=[['최고의','전문적인'],['최고','우수한'],['최상','우수한'],['최초','초기'],['유일','대표적'],
+['넘버원','선도적'],['1등','검증된'],['1위','신뢰할 수 있는'],['100% 효과','체계적인 효과'],['100%','체계적인'],
+['완치','증상 개선'],['완벽한 치료','체계적인 치료'],['완전히 낫','회복'],['치료 보장','치료 지원'],
+['효과 보장','효과 기대'],['반드시','대부분의 경우'],['무조건','일반적으로'],['절대','전반적으로'],
+['탁월한','전문적인'],['놀라운 효과','유의미한 효과'],['기적','주목할 변화'],['부작용 없','부작용을 최소화'],
+['부작용 전혀','부작용 관리'],['완전히 안전','안전을 최우선'],['통증 없이','통증을 최소화하며'],
+['마취 없이','편안한 환경에서'],['타 병원보다','전문적으로'],['경쟁 병원','타 의료기관'],['무료 시술','무료 상담'],
+['공짜','이벤트'],['경품','혜택'],['최저가','합리적인 가격'],['가격 보장','안정적인 가격'],['즉시 효과','효과 발현'],
+['의학적으로 증명','임상 근거에 따른'],['과학적으로 검증','전문적으로 검토된'],['강력 추천','적극 안내']]
+  .sort((a,b)=>b[0].length-a[0].length);
+function checkAll(){checkAd();checkQuality();}
+function checkAd(){
+  const raw=$('checkText').value;const found=[];
+  FIXMAP.forEach(([bad,good])=>{if(raw.includes(bad))found.push([bad,good]);});
+  const seen=new Set();const uniq=found.filter(([b])=>{if(seen.has(b))return false;for(const s of seen)if(s.includes(b))return false;seen.add(b);return true;});
+  const bulb=$('bulb');bulb.className='bulb';
+  if(!raw.trim()){$('lightMsg').textContent='텍스트를 입력하면 검사합니다.';$('flags').innerHTML='';return;}
+  if(uniq.length===0){bulb.classList.add('green');$('lightMsg').innerHTML='🟢 안전 — 위험 표현이 발견되지 않았어요.';$('flags').innerHTML='';}
+  else{bulb.classList.add(uniq.length>=3?'red':'yellow');
+    $('lightMsg').innerHTML=(uniq.length>=3?'🔴':'🟡')+` 위험 표현 ${uniq.length}개 — 대체어를 확인하세요.`;
+    $('flags').innerHTML=uniq.map(([b,g])=>`<div class="flagrow">⚠️ <b>${esc(b)}</b> → 제안: <b style="color:var(--good)">${esc(g)}</b></div>`).join('');}
+}
+function checkQuality(){
+  const raw=$('checkText').value;const box=$('qualityBox');
+  if(raw.trim().length<20){box.style.display='none';return;}
+  box.style.display='block';
+  const noSpace=raw.replace(/\s/g,'').length;
+  const gureo=(raw.match(/(요[.?!]|죠[.?!]|거든요|시죠|어요|아요|해요|에요)/g)||[]).length;
+  const muneo=(raw.match(/(입니다|습니다|합니다|됩니다|입니까)/g)||[]).length;
+  const nums=(raw.match(/\d/g)||[]).length;
+  const qs=(raw.match(/\?/g)||[]).length;
+  const sentences=raw.split(/[.!?]\s/).filter(s=>s.trim().length>1);
+  const avgLen=sentences.length?Math.round(noSpace/sentences.length):0;
+  let score=0;const m=[];
+  const add=(ok,partial,label,detail)=>{const pts=ok?100:partial?60:20;score+=pts;
+    m.push(`<div class="metric"><span>${ok?'✅':partial?'🟡':'⬜'} ${label}</span><span style="color:var(--muted)">${detail}</span></div>`);};
+  add(noSpace>=800,noSpace>=400,'분량',`${noSpace}자`);
+  add(qs>=3,qs>=1,'질문형 소제목/FAQ',`물음표 ${qs}개`);
+  add(nums>=5,nums>=1,'구체적 수치',`숫자 ${nums}개`);
+  add(gureo>=2&&muneo>=2,gureo>=1||muneo>=1,'구어/문어 혼합',`구어 ${gureo}·문어 ${muneo}`);
+  add(avgLen>0&&avgLen<=45,avgLen<=70,'문장 길이',`평균 ${avgLen}자`);
+  const total=Math.round(score/5);
+  // ring
+  const r=40,cir=2*Math.PI*r,off=cir*(1-total/100);
+  const col=total>=80?'#3aa07f':total>=60?'#e8a33d':'#d9534f';
+  $('scoreRing').innerHTML=`<circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--line)" stroke-width="9"/>
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${cir}" stroke-dashoffset="${off}" transform="rotate(-90 50 50)"/>
+    <text x="50" y="48" text-anchor="middle" font-size="22" font-weight="800" fill="${col}">${total}</text>
+    <text x="50" y="64" text-anchor="middle" font-size="9" fill="var(--muted)">/ 100</text>`;
+  $('metrics').innerHTML=m.join('');
+  // balance bar
+  const tot=gureo+muneo||1,gp=Math.round(gureo/tot*100),mp=100-gp;
+  $('balance').innerHTML=`<span style="width:${gp}%;background:var(--accent)">${gp>12?'구어 '+gp+'%':''}</span>
+    <span style="width:${mp}%;background:#7c8d89">${mp>12?'문어 '+mp+'%':''}</span>`;
+}
+
+/* ───────────── 베놈 엔진 실생성 ───────────── */
+function toggleCfg(){const c=$('cfg');c.style.display=c.style.display==='none'?'block':'none';}
+function loadCfg(){try{return JSON.parse(localStorage.getItem('vstudio_cfg')||'{}');}catch(e){return{};}}
+function saveCfg(){localStorage.setItem('vstudio_cfg',JSON.stringify({url:$('cfg_url').value.trim(),secret:$('cfg_secret').value.trim()}));toast('설정 저장됨 ⚙️');}
+function applyCfg(){const c=loadCfg();if(c.url)$('cfg_url').value=c.url;if(c.secret)$('cfg_secret').value=c.secret;}
+function promptFallback(msg){ // 엔진 미연결 시: 올인원 프롬프트를 복사해 유용한 결과로 전환
+  try{navigator.clipboard.writeText(buildPrompt());}catch(_){}
+  $('genStatus').innerHTML=`⚠️ ${msg} — 대신 <b>올인원 프롬프트를 클립보드에 복사</b>했어요. ChatGPT·Claude 등에 붙여넣으면 바로 원고가 나옵니다.<br><span class="hint">실제 자동 생성은 배포(API 주소)+OPENAI_API_KEY 설정 시 작동해요. (STEP3 ⚙️ 연결 설정)</span>`;
+  toast('엔진 미연결 — 프롬프트 복사됨 📋');
+}
+async function generateLive(){
+  syncInputs();
+  if(!S.core){toast('STEP 0의 핵심 키워드를 입력해 주세요');go(0);return;}
+  const cfg=loadCfg();const url=(cfg.url||'').replace(/\/$/,'')+'/api/generate-post';
+  // 로컬 파일/인라인처럼 서버가 없으면(같은 도메인 API 없음) 아예 시도하지 않고 프롬프트 복사로 폴백
+  if(!cfg.url && location.protocol!=='http:' && location.protocol!=='https:'){promptFallback('엔진이 연결돼 있지 않아요');return;}
+  const p=S.persona||TARGETS[S.target];
+  const extra=[S.extra,`글유형=${S.gtype}`,S.kw2?`보조키워드=${S.kw2}`:'',`CTA=${S.cta}`,S.topic?`제목 방향=${S.topic.t}`:''].filter(Boolean).join(' / ');
+  const body={category:S.cat,keyword:S.core,region:S.region,extra,target:S.target,tone:S.tone,detail:S.detail||p.detail,
+    withImage:$('cfg_img').checked,save:$('cfg_save').checked};
+  const btn=$('genBtn');btn.disabled=true;btn.textContent='⏳ 생성 중... (최대 1~2분)';
+  $('genStatus').textContent='베놈 엔진(/api/generate-post) 호출 중...';
+  try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.ok){
+      if(!cfg.url)return promptFallback('엔진이 연결돼 있지 않아요');  // 백엔드 주소 미설정 → 프롬프트 폴백
+      throw new Error(data.error||('HTTP '+r.status));
+    }
+    renderResult(data.post);saveHistory(data.post);$('genStatus').textContent='✅ 생성 완료!';
+  }catch(e){
+    // 백엔드 주소가 없거나 네트워크 오류면 프롬프트 복사로 폴백, 주소가 설정된 경우만 실제 서버 오류 표시
+    if(!cfg.url || /Failed to fetch|NetworkError|load failed/i.test(e.message||'')){promptFallback('엔진에 연결할 수 없어요');}
+    else{$('genStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">엔진 연결(배포 URL·OPENAI_API_KEY·ADMIN_SECRET)이 필요합니다. 그 전까지는 위 '📋 올인원 프롬프트 복사'로 어떤 AI에서든 바로 생성할 수 있어요.</span>`;}
+  }finally{btn.disabled=false;btn.textContent='🪄 원고 생성하기';}
+}
+function renderResult(post){
+  window.__lastHtml=(post.html||'').replace(/<script[\s\S]*?<\/script>/gi,'');
+  const imgs=(post.images||[]).map(u=>`<img src="${u}" style="max-width:100%;border-radius:10px;margin:8px 0">`).join('');
+  $('genResult').innerHTML=`<div class="card" style="box-shadow:none;margin-top:14px">
+    <div style="font-weight:800;font-size:16px">${esc(post.title||'')}</div>
+    <div class="hint" style="margin:6px 0">${post.publishable?'🟢 발행 가능(의료광고 검증 통과)':'🟡 검토 필요'} · 이미지 ${esc(post.imageStatus||'-')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <button class="btn sm" onclick="copyHtml()">📋 HTML 복사</button>
+      <button class="btn ghost sm" onclick="dlHtml()">⬇ HTML</button>
+      <button class="btn ghost sm" onclick="pasteToCheck()">🚦 안전·품질 검수로</button></div>
+    <details><summary>📑 SEO 메타 보기</summary><div class="hint" style="margin-top:6px"><b>메타설명:</b> ${esc(post.metaDesc||'')}<br><b>키워드:</b> ${esc(post.keywords||'')}</div></details>
+    ${imgs}<div style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;max-height:420px;overflow:auto">${window.__lastHtml}</div></div>`;
+}
+function copyHtml(){navigator.clipboard.writeText(window.__lastHtml||'').then(()=>toast('HTML 복사됨 📋'));}
+function dlHtml(){const b=new Blob([window.__lastHtml||''],{type:'text/html'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=`post-${(S.core||'manuscript').replace(/\s+/g,'-')}.html`;a.click();toast('HTML 다운로드 ⬇');}
+function pasteToCheck(){$('checkText').value=(window.__lastHtml||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();go(5);checkAll();}
+function hist(){try{return JSON.parse(localStorage.getItem('vstudio_hist')||'[]');}catch(e){return[];}}
+function saveHistory(post){let h=hist();h.unshift({t:post.title,when:new Date().toLocaleString('ko-KR'),cat:S.cat});
+  localStorage.setItem('vstudio_hist',JSON.stringify(h.slice(0,8)));renderHistory();}
+function renderHistory(){const h=hist();$('historyWrap').innerHTML=h.length?
+  `<div class="hint" style="font-weight:700;margin-bottom:6px">🕘 최근 생성 기록</div>`+
+  h.map(x=>`<div class="flagrow" style="background:var(--card);border-color:var(--line)">${esc(x.t||'(제목없음)')} <span class="hint">· ${esc(CATS[x.cat]||x.cat)} · ${esc(x.when)}</span></div>`).join(''):'';}
+
+/* ───────────── 브리프 ───────────── */
+function brief(){syncInputs();const p=S.persona||TARGETS[S.target];
+  return `# 원고 브리프 — ${S.core||'(주제)'}
+
+## 1. 입력 & 옵션
+- 카테고리: ${CATS[S.cat]}
+- 핵심/보조 키워드: ${S.core}${S.kw2?' / '+S.kw2:''}
+- 글 유형: ${S.gtype} · 채널: ${S.channel} · 분량: ${S.length}
+- 지역: ${S.region||'-'} · 이모지: ${S.emoji} · CTA: ${S.cta}
+
+## 2. 선택 주제
+- 제목(가제): ${S.topic?S.topic.t:'(미선택)'}
+- 수치 아이디어: ${S.topic?S.topic.num:'-'}
+
+## 3. 타겟 & 페르소나
+- 타겟: ${S.target}${S.age!=='해당 없음'?'('+S.age+')':''} ${S.custom?'(맞춤)':''} — ${S.detail||p.detail}
+- 불안: ${p.pains.join(' / ')}
+- 궁금증: ${p.qs.join(' / ')}
+- 유도 행동: ${p.action}
+
+## 4. 톤 & 구성
+- 톤: ${S.tone<33?'다정함↑':S.tone<67?'균형':'전문성↑'} (${S.tone}/100) · 스토리텔링: ${S.story} · 상세도: ${S.verb}
+- 질문형 소제목: ${S.optQ?'O':'X'} · FAQ: ${S.optFaq?'O':'X'}
+
+## 5. 올인원 프롬프트
+\`\`\`
+${buildPrompt()}
+\`\`\`
+
+## 6. 인포그래픽 사양
+${S.charts.length?S.charts.map((c,i)=>`- #${i+1} [${c.type}] ${c.label||''} ${c.items?'= '+c.items.map(x=>x.label+(x.val!=null?':'+x.val:'')).join(', '):'= '+c.val}`).join('\n'):'- (없음)'}
+
+---
+_원고 스튜디오에서 생성 · 의학 수치는 실제 출처 확인 필수 · 의료광고법 준수_
+`;}
+function downloadBrief(){const b=new Blob([brief()],{type:'text/markdown'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=`brief-${(S.core||'manuscript').replace(/\s+/g,'-')}.md`;a.click();toast('브리프 .md 내려받기 ⬇');}
+function copyBrief(){navigator.clipboard.writeText(brief()).then(()=>toast('브리프 복사됨 📋'));}
+
+/* ───────────── STEP5 WordPress 임시저장 / 블로그 내보내기 ───────────── */
+function toggleWp(){const c=$('wpcfg');c.style.display=c.style.display==='none'?'block':'none';}
+function loadWp(){try{return JSON.parse(localStorage.getItem('vstudio_wp')||'{}');}catch(e){return{};}}
+function saveWp(){localStorage.setItem('vstudio_wp',JSON.stringify({url:$('wp_url').value.trim(),user:$('wp_user').value.trim(),pw:$('wp_pw').value.trim()}));toast('워드프레스 연결 저장됨 ⚙️');}
+function applyWp(){const w=loadWp();if(w.url)$('wp_url').value=w.url;if(w.user)$('wp_user').value=w.user;if(w.pw)$('wp_pw').value=w.pw;}
+function getPostContent(){
+  syncInputs();let html=window.__lastHtml||'';
+  if(!html){const t=$('checkText').value.trim();
+    if(t)html=t.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('\n');}
+  const title=($('wp_title')&&$('wp_title').value.trim())||(S.topic&&S.topic.t)||S.core||'제목 없음';
+  return {title,html};
+}
+function wpModeChanged(){const m=$('wp_mode').value;
+  $('wpDateWrap').style.display=m==='future'?'block':'none';
+  $('wpBtn').textContent=m==='future'?'⏰ 예약 발행':m==='publish'?'🚀 즉시 발행':'📝 WordPress에 임시저장';}
+async function wpDraft(){
+  const wp=loadWp(),cfg=loadCfg();
+  if(!wp.url||!wp.user||!wp.pw){toast('먼저 ⚙️ 워드프레스 연결을 설정하세요');toggleWp();return;}
+  const mode=$('wp_mode').value,date=$('wp_date')?$('wp_date').value:'';
+  if(mode==='future'&&!date){toast('예약 일시를 선택하세요');return;}
+  if(mode==='publish'&&!confirm('지금 바로 공개 발행할까요? (임시저장이 아닙니다)'))return;
+  const {title,html}=getPostContent();
+  if(!html){toast('본문이 없어요 — 베놈 엔진으로 생성하거나 검수창에 붙여넣으세요');return;}
+  const api=(cfg.url||'').replace(/\/$/,'')+'/api/wp-draft';
+  const word=mode==='future'?'예약':mode==='publish'?'발행':'임시저장';
+  const btn=$('wpBtn');const lbl=btn.textContent;btn.disabled=true;btn.textContent='⏳ '+word+' 중...';$('wpStatus').textContent='워드프레스에 '+word+' 중...';
+  try{const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+    const r=await fetch(api,{method:'POST',headers,body:JSON.stringify({siteUrl:wp.url,user:wp.user,appPassword:wp.pw,title,html,status:mode,date:mode==='future'?date:''})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+    const done=d.status==='future'?'예약 완료':d.status==='publish'?'발행 완료':'임시저장 완료';
+    $('wpStatus').innerHTML=`✅ ${done}! <a href="${d.editLink}" target="_blank">워드프레스에서 보기/편집 →</a>`+(d.link?` · <a href="${d.link}" target="_blank">글 링크</a>`:'');
+    toast('WordPress '+done+' 📝');
+  }catch(e){$('wpStatus').innerHTML=`❌ ${esc(e.message)}<br><span class="hint">사이트 URL·사용자명·앱 비밀번호와 STEP3의 API 주소를 확인하세요.</span>`;}
+  finally{btn.disabled=false;btn.textContent=lbl;}
+}
+async function copyRich(html){const plain=html.replace(/<[^>]+>/g,'');
+  try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([plain],{type:'text/plain'})})]);return true;}
+  catch(e){try{await navigator.clipboard.writeText(html);return true;}catch(e2){return false;}}}
+async function copyForBlog(platform){
+  const {html}=getPostContent();
+  if(!html){toast('본문이 없어요 — 생성하거나 검수창에 붙여넣으세요');return;}
+  if(platform==='tistory'){let ok=false;try{await navigator.clipboard.writeText(html);ok=true;}catch(e){}
+    toast(ok?'티스토리 HTML 복사됨 — 글쓰기 HTML 모드에 붙여넣기':'복사 실패');return;}
+  const ok=await copyRich(html);
+  toast(ok?'네이버용 복사됨 — 스마트에디터에 붙여넣기':'복사 실패');
+}
+function copyTags(){syncInputs();
+  const base=[S.core].concat((S.kw2||'').split(',')).map(s=>s.trim()).filter(Boolean);
+  const tags=[...new Set(base)].slice(0,10).map(t=>'#'+t.replace(/\s+/g,'')).join(' ');
+  if(!tags){toast('키워드가 없어요');return;}
+  navigator.clipboard.writeText(tags).then(()=>toast('태그 복사됨 🏷️'));
+}
+
+/* ───────────── STEP5 여러 글 일괄 처리 (큐) ───────────── */
+let batchRunning=false;
+async function runBatch(){
+  if(batchRunning)return;
+  syncInputs();
+  const kws=$('batch_kw').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!kws.length){toast('키워드를 한 줄에 하나씩 입력하세요');return;}
+  const cfg=loadCfg(),wp=loadWp(),doWp=$('batch_wp').checked;
+  if(doWp&&(!wp.url||!wp.user||!wp.pw)){toast('WordPress 연결(STEP5 ⚙️)을 먼저 설정하세요');return;}
+  const api=(cfg.url||'').replace(/\/$/,'');
+  const headers={'Content-Type':'application/json'};if(cfg.secret)headers['Authorization']='Bearer '+cfg.secret;
+  const p=S.persona||TARGETS[S.target];
+  const items=kws.map(k=>({k,state:'대기',link:null}));
+  const render=()=>{$('batchList').innerHTML=items.map((it,i)=>
+    `<div class="flagrow" style="background:var(--card);border-color:var(--line)">${i+1}. ${esc(it.k)} — <b>${esc(it.state)}</b>${it.link?` · <a href="${it.link}" target="_blank">열기 →</a>`:''}</div>`).join('');};
+  render();
+  batchRunning=true;const btn=$('batchBtn');btn.disabled=true;btn.textContent='⏳ 실행 중...';
+  for(let i=0;i<items.length;i++){const it=items[i];
+    try{
+      it.state='원고 생성 중...';render();
+      const body={category:S.cat,keyword:it.k,region:S.region,target:S.target,tone:S.tone,detail:S.detail||p.detail,
+        withImage:false,save:false,extra:[`글유형=${S.gtype}`,`CTA=${S.cta}`].join(' / ')};
+      const r=await fetch(api+'/api/generate-post',{method:'POST',headers,body:JSON.stringify(body)});
+      const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+      const post=d.post;
+      if(doWp){it.state='임시저장 중...';render();
+        const wr=await fetch(api+'/api/wp-draft',{method:'POST',headers,body:JSON.stringify({siteUrl:wp.url,user:wp.user,appPassword:wp.pw,title:post.title,html:post.html,status:'draft'})});
+        const wd=await wr.json().catch(()=>({}));if(!wr.ok||!wd.ok)throw new Error('WP: '+(wd.error||wr.status));
+        it.state='✅ 임시저장 완료';it.link=wd.editLink;
+      }else{it.state='✅ 생성 완료';}
+    }catch(e){it.state='❌ '+e.message;}
+    render();
+  }
+  batchRunning=false;btn.disabled=false;btn.textContent='▶ 일괄 실행';
+  const okN=items.filter(x=>x.state.startsWith('✅')).length;
+  toast(`일괄 처리 완료 — 성공 ${okN}/${items.length}`);
+}
+
+/* ───────────── 초기화 ───────────── */
+$('i_cat').innerHTML=Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+$('i_cat').value='ortho';
+try{if(localStorage.getItem('vstudio_dark')==='1')toggleDark();}catch(e){}
+// 이전 작업 복원(있으면)
+const restored=restoreState();
+// 이모지 칩(복원된 hidden 값 반영)
+chipGroup('emojiChips','i_emoji',['없음','적게','보통'],()=>{if(S.step===3)buildPrompt();});
+chipGroup('imgStyleChips','img_style',IMG_STYLES,null);
+chipGroup('imgAspectChips','img_aspect',IMG_ASPECTS,null);
+chipGroup('cardPosChips','card_pos',[['top','상단'],['center','중앙'],['bottom','하단']],renderCard);
+chipGroup('cardColorChips','card_color',[['light','흰 글자'],['dark','검은 글자']],renderCard);
+chipGroup('cardRatioChips','card_ratio',[['1:1','정사각'],['4:5','세로']],renderCard);
+chipGroup('wpModeChips','wp_mode',[['draft','임시저장'],['future','예약 발행'],['publish','즉시 발행']],wpModeChanged);
+// 브랜드 색 테마 반영
+(function(){const c=$('i_color').value;document.documentElement.style.setProperty('--accent',c);
+  document.documentElement.style.setProperty('--accent-soft',hexSoft(c));})();
+syncInputs();
+// 입력 변경 시 자동 저장
+document.addEventListener('input',e=>{if(e.target&&e.target.id)saveState();});
+document.addEventListener('change',saveState);
+applyCfg();applyWp();renderHistory();renderStepper();
+if(restored)setTimeout(()=>toast('이전에 작성하던 내용을 불러왔어요 💾 (🗑 초기화로 새로 시작)'),400);
+</script>
+</body>
+</html>
