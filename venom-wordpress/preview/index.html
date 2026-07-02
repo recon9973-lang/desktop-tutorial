@@ -7938,6 +7938,87 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
 (function(){ function gmount(){ try{ if(window.Glossary && document.getElementById('glossary-root')) Glossary.mount('glossary-root'); }catch(e){} }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',gmount);else gmount(); })();
 </script>
+<!-- ══ 모션 레이어: 스크롤 리빌·플로팅 오브·버튼 샤인·그래프 드로우 ══
+     안전 설계: 숨김 상태(fx-pre)는 JS가 부여 → JS 미동작 시 콘텐츠 정상 표시.
+     prefers-reduced-motion 사용자는 전체 비활성. transform/opacity만 사용(리플로우 없음). -->
+<style>
+  /* 스크롤 리빌 */
+  .fx-pre{opacity:0;transform:translateY(26px)}
+  .fx-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.22,.65,.3,1),transform .7s cubic-bezier(.22,.65,.3,1)}
+  .fx-in.fx-d1{transition-delay:.08s}.fx-in.fx-d2{transition-delay:.16s}.fx-in.fx-d3{transition-delay:.24s}
+  /* 히어로 플로팅 오브 */
+  .fx-orbs{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .fx-orb{position:absolute;border-radius:50%;filter:blur(46px);opacity:.5;animation:fxFloat 14s ease-in-out infinite}
+  .fx-orb.o1{width:340px;height:340px;left:-90px;top:8%;background:radial-gradient(circle,#533afd66,transparent 70%)}
+  .fx-orb.o2{width:270px;height:270px;right:-60px;top:32%;background:radial-gradient(circle,#f0abfc55,transparent 70%);animation-delay:-5s;animation-duration:18s}
+  .fx-orb.o3{width:200px;height:200px;left:38%;bottom:-70px;background:radial-gradient(circle,#6ee7b74d,transparent 70%);animation-delay:-9s;animation-duration:16s}
+  @keyframes fxFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(34px,-26px) scale(1.08)}66%{transform:translate(-22px,20px) scale(.94)}}
+  /* 히어로 배지 라이브 점 */
+  .hf-badge::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#6ee7b7;margin-right:8px;vertical-align:1px;animation:fxBlink 1.8s ease-in-out infinite}
+  @keyframes fxBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(110,231,183,.5)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(110,231,183,0)}}
+  /* 주요 버튼 샤인 스윕 (호버) */
+  .btn-p{position:relative;overflow:hidden}
+  .btn-p::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);transition:left .55s ease}
+  .btn-p:hover::after{left:130%}
+  /* 카드 호버 리프트 강화 (nb·aig·inv) */
+  .nb-card,.aig-vs-card,.inv-card{transition:transform .25s ease,box-shadow .25s ease}
+  .inv-card:hover{transform:translateY(-4px);box-shadow:0 26px 60px rgba(15,23,42,.14)}
+  .nb-num{position:relative;display:inline-block}
+  .nb-num::after{content:'';position:absolute;left:0;bottom:-6px;height:3px;width:0;background:#e11d48;border-radius:2px;transition:width .6s ease .3s}
+  .fx-in .nb-num::after,.nb-card.fx-in .nb-num::after{width:26px}
+  /* AI 성장 그래프 드로우 인 */
+  .aig-chart-card path[stroke="#533afd"]{stroke-dasharray:900;stroke-dashoffset:900}
+  .aig-chart-card.fx-in path[stroke="#533afd"]{animation:fxDraw 1.6s ease-out .25s forwards}
+  @keyframes fxDraw{to{stroke-dashoffset:0}}
+  .aig-chart-card circle{opacity:0;transition:opacity .4s ease}
+  .aig-chart-card.fx-in circle{opacity:1}
+  .aig-chart-card.fx-in circle:nth-of-type(1){transition-delay:.5s}.aig-chart-card.fx-in circle:nth-of-type(2){transition-delay:.85s}
+  .aig-chart-card.fx-in circle:nth-of-type(3){transition-delay:1.2s}.aig-chart-card.fx-in circle:nth-of-type(4){transition-delay:1.6s}
+  /* 마감 CTA 배지 펄스 */
+  .cta-inner>div:first-child{animation:fxPulse 2.6s ease-in-out infinite}
+  @keyframes fxPulse{0%,100%{box-shadow:0 0 0 0 rgba(225,29,72,.35)}50%{box-shadow:0 0 0 9px rgba(225,29,72,0)}}
+  /* 접근성: 모션 최소화 사용자 전체 비활성 */
+  @media (prefers-reduced-motion:reduce){
+    .fx-pre{opacity:1;transform:none}
+    .fx-orb,.hf-badge::before,.cta-inner>div:first-child{animation:none}
+    .aig-chart-card path[stroke="#533afd"]{stroke-dasharray:none;stroke-dashoffset:0}
+    .aig-chart-card circle{opacity:1}
+  }
+</style>
+<script>
+(function(){
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  // 히어로 플로팅 오브 주입
+  var hero=document.querySelector('.hero-slider-section');
+  if(hero&&!hero.querySelector('.fx-orbs')){
+    var orbs=document.createElement('div');orbs.className='fx-orbs';
+    orbs.innerHTML='<div class="fx-orb o1"></div><div class="fx-orb o2"></div><div class="fx-orb o3"></div>';
+    hero.insertBefore(orbs,hero.firstChild);
+  }
+  // 스크롤 리빌 대상
+  var SEL=['.section-head','.nb-card','.aig-chart-card','.aig-vs-card','.aig-punch','.dr-photo','.dr-txt',
+    '.inv-head','.inv-card','.process-step','.testi-card','.gx-card','.gx-cmp-card','.rm-step',
+    '.hero-diag-card','.dc-section','.cs-head','.rm-head'].join(',');
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('fx-in'); io.unobserve(e.target); } });
+  },{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+  var seen=new WeakSet();
+  function scan(root){
+    (root||document).querySelectorAll(SEL).forEach(function(el,i){
+      if(seen.has(el))return; seen.add(el);
+      // 그리드 형제 스태거
+      var idx=Array.prototype.indexOf.call(el.parentElement?el.parentElement.children:[],el);
+      if(idx>0&&idx<4)el.classList.add('fx-d'+idx);
+      el.classList.add('fx-pre');
+      io.observe(el);
+    });
+  }
+  scan(document);
+  // SPA 페이지 전환·상세 렌더 시 새 요소 재스캔
+  new MutationObserver(function(){ scan(document); }).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
 <!-- 콘텐츠 드래그 방지 (원고 도용 방지) — 입력 요소는 예외로 폼 사용성 유지 -->
 <style>
   body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
