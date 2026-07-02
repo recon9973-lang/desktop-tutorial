@@ -863,7 +863,7 @@ body{padding-top:0}
     <div class="container">
       <div class="hf">
         <div class="hf-badge">AI 검색 시대 병원마케팅 · GEO 전문 에이전시</div>
-        <div class="hf-bubble" aria-live="polite">
+        <div class="hf-bubble" aria-hidden="true">
           <span class="hfb-ico">🤖</span>
           <span class="hf-q" id="hf-q">"임플란트 잘 하는 곳 추천해줘"</span><span class="hf-cursor"></span>
         </div>
@@ -874,13 +874,22 @@ body{padding-top:0}
     </div>
     <script>
       (function(){
+        // 실제 타이핑 효과: 질문을 한 글자씩 쓰고 → 잠시 두고 → 지우고 → 다음 질문
         var qs=['"임플란트 잘 하는 곳 추천해줘"','"리프팅 잘 하는 곳 추천해줘"','"교통사고 한의원 추천해줘"','"쌍꺼풀 수술 잘 하는 곳 추천해줘"'];
-        var i=0,el=null;
-        setInterval(function(){
-          el=el||document.getElementById('hf-q'); if(!el)return;
-          el.classList.add('fade');
-          setTimeout(function(){ i=(i+1)%qs.length; el.textContent=qs[i]; el.classList.remove('fade'); },350);
-        },3200);
+        var el=document.getElementById('hf-q'); if(!el)return;
+        if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){
+          var r=0; setInterval(function(){ r=(r+1)%qs.length; el.textContent=qs[r]; },3200); return;
+        }
+        var qi=0,ci=qs[0].length,mode='hold';
+        function tick(){
+          var t=60;
+          if(mode==='hold'){ mode='del'; t=1900; }
+          else if(mode==='del'){ ci--; el.textContent=qs[qi].slice(0,ci); t=28; if(ci<=1){ mode='swap'; } }
+          else if(mode==='swap'){ qi=(qi+1)%qs.length; ci=1; el.textContent=qs[qi].slice(0,1); mode='type'; t=90; }
+          else { ci++; el.textContent=qs[qi].slice(0,ci); if(ci>=qs[qi].length){ mode='hold'; t=2600; } else { t=52+((ci*13)%3)*34; } }
+          setTimeout(tick,t);
+        }
+        setTimeout(tick,2200);
       })();
     </script>
 
@@ -8056,8 +8065,19 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   .dropdown>a{transition:color .15s,padding-left .18s,background .15s}
   .dropdown>a:hover{padding-left:22px}
   .dropdown .grp{color:var(--p);letter-spacing:.08em}
+  /* 다크히어로 제목 진입 모션 — display 토글(SPA 전환) 때마다 재생. CSS만으로 동작해 무JS 안전 */
+  @keyframes fxTitleIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .page>.mesh:first-child h1,.page>section.mesh:first-of-type h1,.bloghd h1,.diag-hub h1{animation:fxTitleIn .65s cubic-bezier(.22,.65,.3,1) both}
+  .page>.mesh:first-child h1+p,.page>section.mesh:first-of-type h1+p,.diag-hub h1+p{animation:fxTitleIn .65s cubic-bezier(.22,.65,.3,1) .14s both}
+  #pg-home>.mesh:first-child h1,#pg-home>.mesh:first-child h1+p{animation:none}
+  /* 그라디언트 텍스트 흐름 — 히어로 강조 문구가 은은하게 살아 움직임 */
+  @keyframes fxGradPan{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .hero-diag-txt h2 span{background-size:200% 100%;animation:fxGradPan 5.5s ease-in-out infinite}
   /* 접근성: 모션 최소화 사용자 전체 비활성 */
   @media (prefers-reduced-motion:reduce){
+    .page>.mesh:first-child h1,.page>section.mesh:first-of-type h1,.bloghd h1,.diag-hub h1,
+    .page>.mesh:first-child h1+p,.page>section.mesh:first-of-type h1+p,.diag-hub h1+p{animation:none;opacity:1;transform:none}
+    .hero-diag-txt h2 span{animation:none}
     .fx-pre{opacity:1;transform:none}
     .fx-orb,.hf-badge::before,.cta-inner>div:first-child{animation:none}
     .aig-chart-card path[stroke="#533afd"]{stroke-dasharray:none;stroke-dashoffset:0}
