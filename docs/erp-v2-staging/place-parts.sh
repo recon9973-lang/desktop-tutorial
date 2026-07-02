@@ -100,13 +100,14 @@ for row in "${MERGE[@]}"; do
   echo "      ↳ 병합: $desc"
 done
 
-# ASSEMBLY.md도 참고용으로 함께 배치
+# 가이드 문서도 _to-merge/ 에 함께 배치
 place "ASSEMBLY.md" "_to-merge/ASSEMBLY.md"
+place "MERGE-GUIDE.md" "_to-merge/MERGE-GUIDE.md"
 
 cat <<'NOTE'
 
 == 배치 후 필수 절차 (ASSEMBLY.md 참조) ==
-  1. _to-merge/ 의 5개 파일을 대상 파일에 손으로 병합 (특히 schema 주석 필드추가 §3-A)
+  1. _to-merge/ 의 5개 파일을 대상 파일에 병합 → _to-merge/MERGE-GUIDE.md 절차대로 (특히 schema)
   2. env 설정: CREDENTIAL_ENC_KEY, KW_PROXY_URL, (이메일 로그인 시) AUTH_SECRET/EMAIL_SERVER/EMAIL_FROM
   3. npm: next-auth @auth/prisma-adapter nodemailer / -D vitest tsx  (playwright devDep 확인)
   4. 필수 수정 확인: §3-B(Role 런타임 enum), §3-C(getIndustryTree flat), §3-D(ClientAccount 생성경로)
