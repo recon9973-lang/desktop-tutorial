@@ -2,7 +2,7 @@
 
 const { generatePost } = require('../lib/post-generator');
 const { generateAndSaveImage } = require('../lib/image-generator');
-const { savePost, savePostEn, appendLog, getPosts, getJsonFile, saveJsonFile } = require('../lib/github-store');
+const { savePost, savePostEn, appendLog, getPosts, getJsonFile, saveJsonFile, acquireLock, releaseLock } = require('../lib/github-store');
 const { translatePostToEnglish } = require('../lib/translate');
 const { updateSitemap } = require('../lib/sitemap-builder');
 const TC = require('../lib/topic-cluster'); // M1: 토픽 클러스터(빈칸 우선 발행)
@@ -158,9 +158,28 @@ module.exports = async function handler(req, res) {
 
   // 한 번 호출에서 최대 발행 수(함수 타임아웃 방지). 못 채운 슬롯은 다음 폴링이 따라잡음.
   const MAX_PER_RUN = 3;
-  const toPublish = Math.min(Math.min(count, dueCount) - publishedToday, MAX_PER_RUN);
+  let toPublish = Math.min(Math.min(count, dueCount) - publishedToday, MAX_PER_RUN);
   if (toPublish <= 0) {
     return res.status(200).json({ ok: true, skipped: true, reason: '도래한 슬롯 모두 발행 완료', now: nowHM, dueCount, publishedToday });
+  }
+
+  // 발행 작업 락 — 수동 재실행·크론 겹침이 같은 슬롯을 중복 발행하는 것을 방지.
+  // 발행할 게 있을 때만 잠그므로 평상시 폴링은 커밋을 만들지 않는다.
+  const LOCK_PATH = 'venom-wordpress/preview/content/.publish-lock.json';
+  const lock = await acquireLock(LOCK_PATH, 10 * 60 * 1000);
+  if (!lock) {
+    return res.status(200).json({ ok: true, skipped: true, reason: '다른 발행 작업이 진행 중(잠금) — 다음 폴링에서 이어집니다.' });
+  }
+  try {
+
+  // 락 획득 직후 발행 수 재확인 — 락을 기다리는 사이 다른 실행이 이미 발행했을 수 있다
+  try {
+    const { posts } = await getPosts();
+    publishedToday = (posts || []).filter(p => p.scheduledDate === todayStr).length;
+  } catch {}
+  toPublish = Math.min(Math.min(count, dueCount) - publishedToday, MAX_PER_RUN);
+  if (toPublish <= 0) {
+    return res.status(200).json({ ok: true, skipped: true, reason: '도래한 슬롯 모두 발행 완료(동시 실행 감지)', now: nowHM, dueCount, publishedToday });
   }
 
   for (let k = 0; k < toPublish; k++) {
@@ -322,4 +341,8 @@ module.exports = async function handler(req, res) {
   }
 
   return res.status(200).json({ ok: true, published: results.filter(r => r.ok).length, ran: results.length, dueCount, publishedBefore: publishedToday, now: nowHM, results });
+
+  } finally {
+    await releaseLock(LOCK_PATH, lock.sha).catch(() => {});
+  }
 };
