@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENOM Site Factory — 고객정보 입력 (직원용)</title>
+<style>
+:root{--p:#533afd;--bd:#1c1e54;--ink:#0d253d;--soft:#f6f9fc;--border:#e3e8ee;--muted:#697386}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Pretendard',-apple-system,sans-serif;color:var(--ink);background:var(--soft);line-height:1.6}
+.wrap{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+header{background:var(--bd);color:#fff;padding:28px 0}
+header .wrap{padding-top:0;padding-bottom:0}
+header h1{font-size:22px;font-weight:800}
+header p{opacity:.7;font-size:14px;margin-top:4px}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;margin-top:24px}
+.card h2{font-size:16px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card h2 .n{background:var(--p);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.card .hint{color:var(--muted);font-size:13px;margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p)}
+.row{display:flex;gap:14px}.row>div{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{flex:none}
+.chip input{display:none}
+.chip span{display:inline-block;padding:9px 16px;border:1.5px solid var(--border);border-radius:9999px;cursor:pointer;font-size:14px;transition:.15s}
+.chip input:checked+span{background:var(--p);color:#fff;border-color:var(--p)}
+.chip input:disabled+span{opacity:.4;cursor:default}
+.opts label{display:flex;align-items:center;gap:10px;font-weight:500;background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0;cursor:pointer}
+.opts input{width:auto}
+.btn{background:var(--p);color:#fff;border:none;padding:15px 28px;border-radius:9999px;font-weight:700;font-size:16px;cursor:pointer;width:100%;margin-top:24px;transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(83,58,253,.25)}
+pre{background:#0d1117;color:#7ee787;padding:18px;border-radius:12px;overflow:auto;font-size:13px;margin-top:18px;max-height:340px}
+.doctor-row{display:flex;gap:10px;margin-bottom:8px;align-items:center}
+.menu-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.hour-row-input{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.small{background:#eef0ff;color:var(--p);border:none;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer;font-size:13px}
+.cmd{background:#eef0ff;border-radius:10px;padding:14px;font-size:13px;margin-top:14px;font-family:monospace;color:var(--bd)}
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:680px){.img-grid{grid-template-columns:1fr}}
+.drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;
+  border:1.5px dashed var(--border);border-radius:12px;padding:18px 10px;min-height:128px;cursor:pointer;transition:.15s;background:var(--soft);overflow:hidden}
+.drop:hover{border-color:var(--p);background:#fff}
+.drop .ico{font-size:24px}
+.drop b{font-size:13px}
+.drop small{font-size:11px;color:var(--muted)}
+.drop.has{border-style:solid;border-color:var(--p)}
+.drop .prev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.drop .badge-n{position:absolute;top:6px;right:8px;background:var(--p);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;z-index:2}
+.filebtn{display:inline-flex;align-items:center;justify-content:center;width:42px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:16px;flex:none}
+.filebtn.has{border-color:var(--p);background:#eef0ff}
+[data-show]{transition:.15s}
+.btn-row{display:flex;gap:12px;margin-top:24px}
+.btn-row .btn{margin-top:0;flex:1}
+.btn-preview{background:#0d253d}
+.btn-preview:hover{box-shadow:0 12px 24px rgba(13,37,61,.3)}
+.btn-publish{background:#16a34a}
+.btn-publish:hover{background:#15803d;box-shadow:0 12px 24px rgba(22,163,74,.3)}
+.btn-publish:disabled{background:#64748d;cursor:not-allowed}
+/* ── 미리보기 오버레이 ── */
+#preview-overlay{position:fixed;inset:0;z-index:1000;background:#0d1117;display:none;flex-direction:column}
+#preview-bar{display:flex;align-items:center;gap:10px;padding:10px 18px;background:#0d253d;color:#fff;flex:none}
+#preview-bar .title{font-weight:700;font-size:14px}
+#preview-bar .spacer{flex:1}
+.pv-btn{background:#fff2;color:#fff;border:1px solid #ffffff33;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.pv-btn:hover{background:#fff3}
+.pv-btn.active{background:var(--p);border-color:var(--p)}
+.pv-btn.close-btn{background:#e74c3c33;border-color:#e74c3c55;color:#ff6b6b}
+.pv-btn.close-btn:hover{background:#e74c3c}
+#preview-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden;background:#111}
+#preview-frame{border:none;border-radius:10px;box-shadow:0 20px 60px #000a;transition:width .3s,height .3s;background:#fff}
+#preview-spinner{color:#fff;font-family:sans-serif;font-size:15px;text-align:center;padding:40px}
+#preview-url-bar{display:flex;align-items:center;gap:8px;background:#1a1f2e;border-radius:8px;padding:6px 14px;max-width:480px;flex:1;cursor:default}
+#preview-url-bar .dot{width:10px;height:10px;border-radius:50%}
+#preview-url-bar .addr{flex:1;font-size:12px;color:#7ee787;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>🏭 VENOM Site Factory</h1><p>고객정보 입력 — 직원용 내부 도구</p></div></header>
+<div class="wrap">
+  <form id="f">
+
+    <!-- 1. 대분류 -->
+    <div class="card">
+      <h2><span class="n">1</span> 대분류</h2>
+      <p class="hint">카테고리를 선택하면 아래 항목이 바뀝니다.</p>
+      <div class="chips">
+        <label class="chip"><input type="radio" name="category" value="clinic" checked onchange="switchCat('clinic')"><span>🏥 병원·의료</span></label>
+        <label class="chip"><input type="radio" name="category" value="local" onchange="switchCat('local')"><span>🏪 소상공인</span></label>
+        <label class="chip"><input type="radio" name="category" value="press" onchange="switchCat('press')"><span>📰 언론·뉴스룸</span></label>
+        <label class="chip"><input type="radio" name="category" value="blog" disabled><span>✍️ 블로그 (준비중)</span></label>
+      </div>
+
+      <!-- clinic: 진료과목 -->
+      <div data-show="clinic">
+        <label>진료과목</label>
+        <select name="specialty">
+          <option value="dental">치과</option>
+          <option value="skin">피부과</option>
+          <option value="ortho">정형외과</option>
+          <option value="oriental">한의원</option>
+          <option value="plastic">성형외과</option>
+          <option value="naegwa">내과</option>
+          <option value="angwa">안과</option>
+        </select>
+      </div>
+
+      <!-- press: 미디어 유형 -->
+      <div data-show="press" style="display:none">
+        <label>미디어 유형</label>
+        <select name="press_type">
+          <option value="newsroom">기업 뉴스룸</option>
+          <option value="blog">기업 블로그</option>
+          <option value="magazine">웹진·매거진</option>
+        </select>
+      </div>
+
+      <!-- local: 업종 -->
+      <div data-show="local" style="display:none">
+        <label>업종</label>
+        <select name="local_type">
+          <option value="cafe">카페·디저트</option>
+          <option value="restaurant">식당·음식점</option>
+          <option value="beauty">헤어·미용실</option>
+          <option value="nail">네일·속눈썹샵</option>
+          <option value="fitness">헬스·PT샵</option>
+          <option value="bakery">베이커리·케이크</option>
+          <option value="retail">소매·전문점</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 2. 규모 -->
+    <div class="card">
+      <h2><span class="n">2</span> 규모</h2>
+      <div class="chips">
+        <label class="chip"><input type="radio" name="scale" value="lite"><span>Lite (1p)</span></label>
+        <label class="chip"><input type="radio" name="scale" value="standard" checked><span>Standard (5p)</span></label>
+        <label class="chip"><input type="radio" name="scale" value="pro"><span>Pro (7p+)</span></label>
+      </div>
+    </div>
+
+    <!-- 3. 브랜드 정보 -->
+    <div class="card">
+      <h2><span class="n">3</span> 브랜드 기본정보</h2>
+      <div class="row">
+        <div><label id="lbl-name">상호명</label><input name="name" value="서울미소치과" required></div>
+        <div><label>지역</label><input name="region" value="서울 강남"></div>
+      </div>
+      <label>슬로건</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input name="tagline" value="정직한 진료, 편안한 미소" style="flex:1">
+        <button type="button" id="ai-fill-btn" class="small" onclick="aiFill()" style="white-space:nowrap;flex:none;height:46px;padding:0 14px;font-size:14px">✨ AI 자동완성</button>
+      </div>
+      <div class="row">
+        <div><label>대표번호</label><input name="phone" value="02-1234-5678"></div>
+        <div><label>대표색상</label><input name="primary" type="color" value="#533afd" style="height:46px;padding:4px"></div>
+      </div>
+      <label>로고 <small style="font-weight:400;color:var(--muted)">업로드 시 대표색상 자동 추출</small></label>
+      <label id="logo-drop" class="drop" style="flex-direction:row;min-height:52px;justify-content:flex-start;gap:12px;padding:10px 16px">
+        <span id="logo-ico" class="ico" style="font-size:18px">🖼️</span>
+        <span id="logo-label" style="font-size:13px;color:var(--muted)">로고 파일 선택 (선택사항)</span>
+        <img id="logo-prev" hidden style="height:32px;max-width:80px;object-fit:contain;border-radius:4px">
+        <input type="file" id="logo-file" accept="image/*" hidden>
+      </label>
+      <label>주소</label><input name="address" value="서울특별시 강남구 테헤란로 123, 4층">
+      <label>카카오 상담 링크</label><input name="kakao" value="https://pf.kakao.com/_example/chat">
+      <label>도메인</label><input name="domain" value="seoul-smile.com">
+
+      <!-- local 전용: SNS -->
+      <div data-show="local" style="display:none">
+        <label>인스타그램 URL</label><input name="instagram" placeholder="https://instagram.com/...">
+        <label>네이버 플레이스 URL</label><input name="naver_place" placeholder="https://map.naver.com/v5/entry/place/...">
+      </div>
+    </div>
+
+    <!-- 4A. 의료진 (clinic) -->
+    <div class="card" data-show="clinic">
+      <h2><span class="n">4</span> 의료진</h2>
+      <p class="hint">비워두면 기본 1명으로 생성됩니다.</p>
+      <div id="doctors"></div>
+      <button type="button" class="small" onclick="addDoctor()">+ 의료진 추가</button>
+    </div>
+
+    <!-- 4B. 메뉴·서비스 + 영업시간 (local) -->
+    <div class="card" data-show="local" style="display:none">
+      <h2><span class="n">4</span> 메뉴·서비스</h2>
+      <p class="hint">메뉴명·가격·설명을 입력하세요. 비우면 업종 기본값으로 자동 채워집니다.</p>
+      <div id="menu-list"></div>
+      <button type="button" class="small" onclick="addMenu()">+ 메뉴 추가</button>
+
+      <h2 style="margin-top:22px"><span class="n" style="background:#697386">⏰</span> 영업시간</h2>
+      <div id="hours-list"></div>
+      <button type="button" class="small" onclick="addHour()">+ 시간 추가</button>
+    </div>
+
+    <!-- 5. 이미지 -->
+    <div class="card">
+      <h2><span class="n">5</span> 이미지 (실사진)</h2>
+      <p class="hint">업로드하면 사이트에 그대로 적용됩니다. <b>비우면 업종별 AI 스톡</b>으로 자동 채워집니다.</p>
+      <div class="img-grid">
+        <label class="drop" data-key="hero">
+          <span class="ico" id="ico-hero">🏠</span><b>대표 사진</b><small>히어로 배경 (가로형 권장)</small>
+          <input type="file" accept="image/*" id="img-hero" hidden>
+          <img class="prev" hidden>
+        </label>
+        <label class="drop" data-key="intro">
+          <span class="ico">🛋️</span><b>내부 전경</b><small>소개 섹션</small>
+          <input type="file" accept="image/*" id="img-intro" hidden>
+          <img class="prev" hidden>
+        </label>
+        <label class="drop" data-key="gallery">
+          <span class="ico">🖼️</span><b>갤러리 사진</b><small>최대 3장 (다중 선택)</small>
+          <input type="file" accept="image/*" id="img-gallery" multiple hidden>
+          <img class="prev" hidden>
+        </label>
+      </div>
+    </div>
+
+    <!-- 6. 신뢰 지표 -->
+    <div class="card">
+      <h2><span class="n">6</span> 신뢰 지표 <small style="font-weight:400;color:#697386;font-size:13px">비워두면 업종 기본값 자동 사용</small></h2>
+      <p class="hint">숫자 4개를 입력하세요. "운영 연수 / 평점 / 누적 고객 / 자랑 포인트" 순서 추천.</p>
+      <div id="trust-list"></div>
+      <button type="button" class="small" onclick="addTrust()">+ 지표 추가</button>
+    </div>
+
+    <!-- 7. 고객 후기 -->
+    <div class="card">
+      <h2><span class="n">7</span> 고객 후기 <small style="font-weight:400;color:#697386;font-size:13px">비워두면 샘플 사용</small></h2>
+      <div id="reviews-list"></div>
+      <button type="button" class="small" onclick="addReview()">+ 후기 추가</button>
+    </div>
+
+    <!-- 8. FAQ -->
+    <div class="card">
+      <h2><span class="n">8</span> FAQ <small style="font-weight:400;color:#697386;font-size:13px">비워두면 업종 기본 FAQ</small></h2>
+      <div id="faq-list"></div>
+      <button type="button" class="small" onclick="addFaq()">+ Q&amp;A 추가</button>
+    </div>
+
+    <!-- 9. 옵션 팩 -->
+    <div class="card">
+      <h2><span class="n">9</span> 기능 옵션 팩</h2>
+      <p class="hint">AI검색 최적화는 기본 포함. 카테고리에 따라 일부 항목이 달라집니다.</p>
+      <div class="opts">
+        <label><input type="checkbox" name="opt" value="seo_pack" checked disabled> ⑤ AI검색 최적화 (SEO/AEO/GEO/llms.txt) — 기본</label>
+        <label data-show="clinic"><input type="checkbox" name="opt" value="medical_review" checked> ③ 의료광고 검수 팩</label>
+        <label><input type="checkbox" name="opt" value="blog_auto" checked> ① 블로그 자동발행 팩</label>
+        <label><input type="checkbox" name="opt" value="image_pack" checked> ② 이미지 변환 팩</label>
+        <label><input type="checkbox" name="opt" value="translate"> ④ 다국어 글로벌 팩</label>
+        <label><input type="checkbox" name="opt" value="analytics" checked> ⑥ 분석·인사이트 팩</label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn" onclick="build()">⚙️ spec 생성</button>
+      <button type="button" class="btn btn-preview" onclick="preview()">🔍 실시간 미리보기</button>
+      <button type="button" class="btn btn-publish" id="btn-publish" onclick="publish()">🚀 발행</button>
+    </div>
+  </form>
+
+  <!-- 미리보기 오버레이 -->
+  <div id="preview-overlay">
+    <div id="preview-bar">
+      <span class="title">🔍 VENOM 미리보기</span>
+      <div id="preview-url-bar">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        <span class="addr" id="preview-domain">localhost:3737/preview</span>
+      </div>
+      <span class="spacer"></span>
+      <button class="pv-btn active" id="btn-desktop" onclick="setPreviewMode('desktop')">🖥️ 데스크탑</button>
+      <button class="pv-btn" id="btn-mobile" onclick="setPreviewMode('mobile')">📱 모바일</button>
+      <button class="pv-btn close-btn" onclick="closePreview()">✕ 닫기</button>
+    </div>
+    <div id="preview-stage">
+      <div id="preview-spinner" style="display:none">
+        <div style="font-size:36px;margin-bottom:16px">⏳</div>
+        <div>미리보기 생성 중...</div>
+      </div>
+      <iframe id="preview-frame" src="about:blank"></iframe>
+    </div>
+  </div>
+
+  <div id="result" style="display:none">
+    <div class="card">
+      <h2>✅ 생성된 site-spec.json</h2>
+      <p class="hint">아래 JSON을 다운로드한 뒤 엔진에 넣으면 사이트가 자동 생성됩니다.</p>
+      <pre id="json"></pre>
+      <button type="button" class="small" onclick="download()">⬇️ JSON 다운로드</button>
+      <div class="cmd" id="cmd-hint">node engine/generate.js &lt;파일명&gt;.json</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   VENOM Site Factory — 클라이언트 사이드 렌더 엔진 (서버 불필요)
+═══════════════════════════════════════════════════════════════ */
+const BLUEPRINTS = {
+  clinic: {
+    defaultOptions: ['seo_pack','medical_review','blog_auto','image_pack','analytics'],
+    specialties: {
+      dental:   { label:'치과',    keywords:['임플란트','교정','충치치료','심미보철'],
+        stock: { hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115134_a3cb724a-19dd-484c-ba57-0d495171bd4e.png',
+                 intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115151_9c1a2a95-e1f8-403c-ba88-1ce634d84077.png',
+                 gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115141_8aef89f6-3733-446f-bd9d-2d8451c7b972.png',
+                          'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115151_9c1a2a95-e1f8-403c-ba88-1ce634d84077.png',
+                          'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_115134_a3cb724a-19dd-484c-ba57-0d495171bd4e.png'] } },
+      skin:     { label:'피부과',  keywords:['여드름','기미·색소','보톡스','필러','레이저'] },
+      ortho:    { label:'정형외과',keywords:['도수치료','관절','척추','물리치료'] },
+      oriental: { label:'한의원',  keywords:['다이어트','교통사고','추나','한약'] },
+      plastic:  { label:'성형외과',keywords:['눈','코','안면윤곽','리프팅'] },
+      naegwa:   { label:'내과',    keywords:['건강검진','내시경','당뇨','고혈압'] },
+      angwa:    { label:'안과',    keywords:['라식','라섹','백내장','노안교정'] },
+    },
+    scales: { lite:{pages:['home']}, standard:{pages:['home','departments','doctors','reviews','contact']}, pro:{pages:['home','departments','doctors','reviews','blog','directions','contact']} },
+  },
+  local: {
+    defaultOptions: ['seo_pack','blog_auto','analytics'],
+    types: {
+      cafe:       { label:'카페·디저트',   keywords:['시그니처 음료','브런치','수제 디저트','테이크아웃','공간대여'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_175753_7b578f59-19be-48c8-9309-209703c10f0a.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_175754_1b78f110-baa0-4f4b-b54c-89ffcc8e76bb.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_175800_0ea70be5-50ca-4490-913f-41c64073843b.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_175801_4437fa64-55a6-4e14-b938-f494dc41e0ce.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260629_175803_71465ab6-5251-4a1e-8502-05d913d3faf7.png'] } },
+      restaurant: { label:'식당·음식점',   keywords:['점심 특선','저녁 코스','포장·배달','단체 예약','홀 식사'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_011736_7b954e60-7b1b-4b3e-bb96-67a2d3194800.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012121_f2aedd3c-df95-4415-8c3a-3dad5cfaf26a.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012133_37d7a109-e926-40ea-80d0-554b03241066.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012134_6a94d016-dbf1-4473-8c8e-a7f68ea1ed31.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012135_fbd331e7-3291-44b0-ac15-fd9b17061189.png'] } },
+      beauty:     { label:'헤어·미용실',   keywords:['커트','펌·염색','두피케어','트리트먼트','스타일링'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_011738_8dde60d7-7a42-4162-bb64-d788fe318929.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012122_743b7abf-dc16-441f-8291-4d98eff1251b.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012137_81b4f197-1ed1-4a28-856a-14c0e875b330.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012138_5e13edc6-1ccc-402d-b423-c0b2b1c2db60.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012140_2de63870-12c0-45af-9bcc-895dfdd6a864.png'] } },
+      nail:       { label:'네일·속눈썹샵', keywords:['젤네일','네일아트','속눈썹 연장','왁싱','발관리'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_011739_e4249e6a-006b-4fb2-a7d3-b04e6b94ccee.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012124_f71fe86e-5c55-448b-85fa-da96b5d855cd.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012141_9fa17765-0c85-4180-b0fd-06046be0ab68.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012142_6342c9de-5d9a-4ff9-9ab9-b3231d857226.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012143_1b1fbd8e-c006-4565-9877-68dc48ba6775.png'] } },
+      fitness:    { label:'헬스·PT샵',     keywords:['1:1 PT','체중감량','근력운동','재활운동','체형교정'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_011740_0fa67bd9-0e04-4efc-9604-acf45c8dd809.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012125_9e29001d-64db-445d-a78a-a2350e3268a7.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012144_edc9a7ea-1ca6-4de1-97a1-9c29076721dc.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012145_394469f3-7a59-4adc-8710-afb41f3a0a1e.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012146_ce23a387-83df-4380-bb03-d3d010d01afd.png'] } },
+      bakery:     { label:'베이커리·케이크', keywords:['맞춤 케이크','천연발효빵','오더케이크','시즌 메뉴','픽업 주문'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_011741_5541a11c-1166-4b2e-9e43-828da06b7f52.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012126_09e2e1d7-d4f9-40ec-bc38-eab116fe2013.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012148_a0bb154c-facc-421a-91fd-d4cd40ab7085.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012149_56943cf4-65fd-4873-ac2d-44d000ec66de.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012150_175a13ef-0543-4d79-b4b9-de37208d1927.png'] } },
+      retail:     { label:'소매·전문점',   keywords:['품질 보증','전문 상담','당일 출고','회원 혜택','기획 이벤트'],
+        stock:{ hero:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_011742_9f16bdce-9286-4ba0-8b4b-f3ae8636eb34.png', intro:'https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012127_ff06d131-1acd-4587-b564-e46ebcb6669e.png', gallery:['https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012151_f20d3f12-0e77-4523-ad99-27c7efab503f.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012152_1c7cf41f-ee3f-42d7-81e4-e6911be0f597.png','https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260630_012153_905c6283-a13e-4dfc-94ba-e5f331054453.png'] } },
+    },
+    scales: { lite:{pages:['home']}, standard:{pages:['home','menu','reviews','contact']}, pro:{pages:['home','menu','reviews','blog','directions','contact']} },
+  },
+  press: {
+    defaultOptions: ['seo_pack','blog_auto','analytics'],
+    types: {
+      newsroom: { label:'기업 뉴스룸', keywords:['보도자료','공식 발표','미디어킷','언론 보도','임원 프로필'] },
+      blog:     { label:'기업 블로그', keywords:['인사이트','업계 트렌드','제품 업데이트','팀 스토리','케이스 스터디'] },
+      magazine: { label:'웹진·매거진', keywords:['칼럼','인터뷰','기획 기사','데이터 리포트','오피니언'] },
+    },
+    scales: { lite:{pages:['home']}, standard:{pages:['home','articles','about','contact']}, pro:{pages:['home','articles','categories','about','contact','media-kit']} },
+  },
+};
+
+/* 템플릿 — _S = '<\/' + 'script>' 로 닫는 태그 분리 */
+const _S = '</' + 'script>';
+const TEMPLATES = {
+  clinic: [
+`<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{brand.name}} — {{specialty.label}} | {{brand.tagline}}</title>
+<meta name="description" content="{{meta.description}}">
+<meta name="keywords" content="{{meta.keywords}}">
+<link rel="canonical" href="https://{{domain}}/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{brand.name}} — {{specialty.label}}">
+<meta property="og:description" content="{{meta.description}}">
+<meta property="og:image" content="{{images.hero}}">
+<meta property="og:url" content="https://{{domain}}/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{{sections.mainSchema}}
+`,`
+<script type="application/ld+json">
+{{sections.faqSchema}}
+`,`
+<style>
+:root{--p:{{brand.primary}};--p-deep:#4434d4;--p-soft:#665efd;--p-bg:rgba(83,58,253,.09);--dark:#1e2b3c;--ink:#0d253d;--ink-2:#273951;--muted:#64748d;--soft:#f6f9fc;--border:#e3e8ee;--shadow:rgba(0,55,112,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Pretendard',system-ui,-apple-system,'Malgun Gothic',sans-serif;font-weight:400;color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01"}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--p);color:#fff;padding:13px 26px;border-radius:9999px;font-weight:500;font-size:16px;line-height:1;transition:background .18s,box-shadow .18s,transform .15s;border:none;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--p-deep);box-shadow:0 8px 28px rgba(83,58,253,.32);transform:translateY(-1px)}
+.btn.ghost{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.22);box-shadow:none;transform:translateY(-1px)}
+.btn.outline{background:transparent;border:1.5px solid var(--p);color:var(--p)}
+.btn.outline:hover{background:var(--p);color:#fff}
+.btn.white{background:#fff;color:var(--p);font-weight:700}
+.btn.white:hover{background:#f0f0ff;transform:translateY(-1px)}
+header{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:200}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+.logo span{color:var(--p)}
+.nav-links{display:flex;gap:30px;align-items:center}
+.nav-links a{font-size:15px;color:var(--muted);font-weight:400;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-links .btn{padding:10px 20px;font-size:14px}
+@media(max-width:860px){.nav-links a:not(.btn){display:none}}
+.hero{background:#f0f7ff;overflow:hidden;padding-top:80px}
+.hero-split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:flex-end}
+.hero-left{padding-bottom:80px}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;background:var(--p-bg);border:1px solid rgba(83,58,253,.2);color:var(--p);font-size:13px;font-weight:600;padding:6px 14px;border-radius:9999px;margin-bottom:28px}
+.hero h1{font-size:clamp(38px,5vw,60px);font-weight:800;letter-spacing:-2px;line-height:1.06;margin-bottom:22px;color:var(--ink)}
+.hero p{font-size:18px;color:var(--muted);margin-bottom:38px;max-width:480px;line-height:1.7}
+.hero .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.hero-right{position:relative}
+.hero-img{width:100%;height:520px;object-fit:cover;border-radius:24px 24px 0 0;box-shadow:0 24px 64px rgba(0,55,112,.18)}
+.hero-float{position:absolute;left:24px;bottom:24px;background:#fff;border-radius:14px;padding:16px 22px;box-shadow:0 8px 32px rgba(0,55,112,.16);display:flex;align-items:center;gap:14px}
+.hf-num{font-size:28px;font-weight:800;color:var(--p);line-height:1;letter-spacing:-1px}
+.hf-txt{font-size:13px;color:var(--muted);line-height:1.45}
+.hf-txt strong{display:block;font-size:15px;font-weight:700;color:var(--ink)}
+@media(max-width:860px){.hero-split{grid-template-columns:1fr;gap:0;padding-bottom:48px}.hero-right{display:none}}
+.stats-band{background:var(--dark)}
+.stats-flex{display:flex;align-items:stretch}
+.stat-hl{background:var(--p);flex:0 0 172px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 20px;text-align:center}
+.stat-hl .rank{font-size:46px;font-weight:800;line-height:1;letter-spacing:-2px;color:#fff}
+.stat-hl .tag{font-size:11px;font-weight:700;color:rgba(255,255,255,.72);margin-top:8px;letter-spacing:.1em;text-transform:uppercase}
+.trust-dark{display:flex!important;flex:1}
+.trust-dark>div{flex:1;padding:32px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.09);transition:background .2s}
+.trust-dark>div:last-child{border-right:none}
+.trust-dark .num{font-size:38px;font-weight:800;letter-spacing:-1.6px;color:#fff;line-height:1;margin-bottom:6px;font-feature-settings:"tnum"}
+.trust-dark .lbl{font-size:13px;color:rgba(255,255,255,.48)}
+.feat-strip{background:#fff;border-bottom:1px solid var(--border)}
+.feat-row{display:grid;grid-template-columns:repeat(4,1fr)}
+.feat-item{padding:32px 24px;display:flex;align-items:flex-start;gap:14px;border-right:1px solid var(--border)}
+.feat-item:last-child{border-right:none}
+.feat-icon{width:44px;height:44px;border-radius:12px;flex:none;background:var(--p-bg);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:20px}
+.feat-item h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px;letter-spacing:-.2px}
+.feat-item p{font-size:13px;color:var(--muted);line-height:1.5}
+@media(max-width:860px){.feat-row{grid-template-columns:repeat(2,1fr)}.feat-item:nth-child(2){border-right:none}.feat-item:nth-child(n+3){border-top:1px solid var(--border)}}
+section.pad{padding:96px 0}
+.eyebrow{display:inline-flex;align-items:center;background:var(--p-bg);color:var(--p);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:9999px;margin-bottom:16px}
+.eyebrow.lt{background:rgba(255,255,255,.12);color:rgba(255,255,255,.62)}
+h2.sec{font-size:clamp(28px,3.6vw,44px);font-weight:700;letter-spacing:-.96px;line-height:1.12;margin-bottom:14px}
+h2.sec.lt{color:#fff}
+.sec-desc{color:var(--muted);margin-bottom:48px;max-width:640px;font-size:17px;line-height:1.65}
+.sec-desc.lt{color:rgba(255,255,255,.5)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media(max-width:860px){.split{grid-template-columns:1fr;gap:32px}}
+.split .photo{border-radius:16px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 1px 3px var(--shadow),0 20px 48px rgba(0,55,112,.09)}
+.split .photo img{width:100%;height:100%;object-fit:cover}
+.checks{list-style:none;margin-top:24px}
+.checks li{display:flex;gap:12px;align-items:flex-start;margin:14px 0;font-size:16px;color:var(--ink-2)}
+.checks li::before{content:"✓";flex:none;width:22px;height:22px;background:var(--p-bg);color:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-top:3px}
+.dept-section{background:#0c1d2e;padding:96px 0}
+.dept-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;counter-reset:dept}
+@media(max-width:860px){.dept-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.dept-grid{grid-template-columns:1fr}}
+.dept-grid .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px;box-shadow:none;counter-increment:dept;position:relative;overflow:hidden;transition:.2s}
+.dept-grid .card:hover{background:rgba(255,255,255,.09);border-color:rgba(83,58,253,.35);transform:translateY(-3px)}
+.dept-grid .card::before{content:counter(dept,decimal-leading-zero);position:absolute;top:18px;right:18px;font-size:11px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.2);font-feature-settings:"tnum"}
+.dept-grid .card .ic{width:44px;height:44px;border-radius:12px;background:rgba(83,58,253,.2);color:#a5b4fc;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;font-weight:600}
+.dept-grid .card h3{font-size:17px;font-weight:600;color:#fff;margin-bottom:8px;letter-spacing:-.2px}
+.dept-grid .card p{font-size:14px;color:rgba(255,255,255,.45);line-height:1.6}
+.gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:200px 200px;gap:14px}
+.gallery figure{border-radius:12px;overflow:hidden;position:relative;box-shadow:0 1px 3px var(--shadow)}
+.gallery figure:first-child{grid-row:span 2}
+.gallery img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.gallery figure:hover img{transform:scale(1.04)}
+.gallery figcaption{position:absolute;left:14px;bottom:12px;color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+@media(max-width:760px){.gallery{grid-template-columns:1fr 1fr;grid-template-rows:160px 160px}.gallery figure:first-child{grid-row:span 1;grid-column:span 2}}
+.doc{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:.2s;box-shadow:0 1px 3px var(--shadow)}
+.doc:hover{box-shadow:0 10px 28px rgba(0,55,112,.11);transform:translateY(-3px)}
+.doc .ph{aspect-ratio:4/5;background:var(--soft);overflow:hidden}
+.doc .ph img{width:100%;height:100%;object-fit:cover}
+.doc .avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--p),var(--dark))}
+.doc .info{padding:22px}
+.doc .info h3{font-size:18px;margin-bottom:4px;font-weight:600;letter-spacing:-.22px}
+.doc .info .role{color:var(--p);font-size:13px;font-weight:600;margin-bottom:8px}
+.doc .info p{color:var(--muted);font-size:14px;line-height:1.55}
+.hours-card{background:var(--dark);border-radius:16px;padding:32px;color:#fff}
+.hours-card .lbl-sm{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:18px;display:block}
+.hour-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:15px}
+.hour-row:last-child{border-bottom:none}
+.hour-row .day{color:rgba(255,255,255,.6)}
+.hour-row .time{font-weight:500;font-feature-settings:"tnum";letter-spacing:-.02em}
+.grid{display:grid;gap:20px}
+.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.g3,.g4{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;transition:.2s;box-shadow:0 1px 3px var(--shadow)}
+.card:hover{box-shadow:0 10px 28px rgba(0,55,112,.11);transform:translateY(-3px);border-color:rgba(83,58,253,.22)}
+.card .ic{width:40px;height:40px;border-radius:10px;background:var(--p-bg);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px;font-weight:600}
+.card h3{font-size:17px;margin-bottom:7px;font-weight:600;letter-spacing:-.22px}
+.card p{font-size:14px;color:var(--muted);line-height:1.55}
+.faq-item{border-bottom:1px solid var(--border);padding:24px 0}
+.faq-item h3{font-size:17px;margin-bottom:10px;display:flex;align-items:flex-start;font-weight:600;letter-spacing:-.2px}
+.faq-item h3::before{content:"Q";flex:none;display:inline-flex;align-items:center;justify-content:center;background:var(--p-bg);color:var(--p);font-size:11px;font-weight:700;min-width:26px;height:22px;padding:0 8px;border-radius:9999px;margin-right:10px;margin-top:1px;letter-spacing:.04em}
+.faq-item p{color:var(--muted);font-size:15px;padding-left:36px;line-height:1.7}
+.cta-band{background:var(--p);border-radius:24px;padding:72px 48px;text-align:center}
+.cta-band h2{font-size:clamp(26px,3.2vw,38px);font-weight:800;letter-spacing:-.96px;margin-bottom:14px;color:#fff}
+.cta-band p{color:rgba(255,255,255,.72);margin-bottom:32px;font-size:17px;max-width:480px;margin-left:auto;margin-right:auto}
+footer{background:var(--dark);color:rgba(255,255,255,.6);padding:64px 0;font-size:14px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+@media(max-width:860px){.foot-grid{grid-template-columns:1fr 1fr;gap:28px}}
+@media(max-width:520px){.foot-grid{grid-template-columns:1fr}}
+.foot-logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em;margin-bottom:10px}
+.foot-logo span{color:rgba(101,94,253,.9)}
+.foot-grid strong{color:rgba(255,255,255,.85);font-weight:600;font-size:15px;display:block;margin-bottom:12px}
+footer a{color:rgba(255,255,255,.45);transition:color .15s}
+footer a:hover{color:rgba(255,255,255,.9)}
+.foot-links{display:flex;flex-direction:column;gap:8px}
+.foot-sep{height:1px;background:rgba(255,255,255,.08);margin:48px 0 24px}
+.foot-copy{font-size:13px;color:rgba(255,255,255,.3)}
+.foot-badge{display:inline-flex;align-items:center;gap:6px;margin-top:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.45);font-size:12px;padding:5px 12px;border-radius:9999px}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <div class="logo">{{brand.name}}<span>.</span></div>
+  <nav class="nav-links">
+    <a href="#intro">병원소개</a>
+    <a href="#departments">진료안내</a>
+    <a href="#gallery">진료환경</a>
+    <a href="#doctors">의료진</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn" href="{{brand.kakao}}" target="_blank" rel="noopener">상담신청</a>
+  </nav>
+</div></header>
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-split">
+      <div class="hero-left">
+        <div class="badge">{{brand.region}} · {{specialty.label}} 전문</div>
+        <h1>{{hero.headline}}</h1>
+        <p>{{hero.sub}}</p>
+        <div class="cta-row">
+          <a class="btn" href="{{brand.kakao}}" target="_blank" rel="noopener">카카오 상담신청</a>
+          <a class="btn outline" href="tel:{{brand.phone}}">📞 {{brand.phone}}</a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <img class="hero-img" src="{{images.hero}}" alt="{{brand.name}} {{specialty.label}}" loading="eager">
+        <div class="hero-float">
+          <div class="hf-num">#1</div>
+          <div class="hf-txt"><strong>환자 만족도</strong>{{brand.region}} 추천 병원</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="stats-band">
+  <div class="stats-flex">
+    <div class="stat-hl"><div class="rank">#1</div><div class="tag">환자 선택</div></div>
+    <div class="trust trust-dark">{{sections.trust}}</div>
+  </div>
+</div>
+<div class="feat-strip"><div class="wrap">
+  <div class="feat-row">
+    <div class="feat-item"><div class="feat-icon">🏥</div><div><h4>최신 의료 장비</h4><p>최첨단 진단·치료 장비로 정확하고 안전한 진료</p></div></div>
+    <div class="feat-item"><div class="feat-icon">👨‍⚕️</div><div><h4>전문 의료진</h4><p>{{specialty.label}} 전문 의사가 직접 진료·상담</p></div></div>
+    <div class="feat-item"><div class="feat-icon">💬</div><div><h4>1:1 맞춤 상담</h4><p>충분한 설명과 투명한 치료 계획 안내</p></div></div>
+    <div class="feat-item"><div class="feat-icon">📍</div><div><h4>편리한 위치</h4><p>{{brand.region}} 중심부 접근 편리한 위치</p></div></div>
+  </div>
+</div></div>
+<section class="pad" id="intro"><div class="wrap">
+  <div class="split">
+    <div class="photo"><img src="{{images.intro}}" alt="{{brand.name}} 내부 전경" loading="lazy"></div>
+    <div>
+      <div class="eyebrow">ABOUT</div>
+      <h2 class="sec">{{brand.region}},<br>믿고 찾는 {{specialty.label}}</h2>
+      <p style="color:var(--muted);font-size:16px;line-height:1.7;margin-bottom:0">{{brand.name}}은(는) 정확한 진단과 정직한 진료를 원칙으로, 환자 한 분 한 분께 충분히 설명하고 함께 결정하는 진료를 약속합니다.</p>
+      <ul class="checks">
+        <li>편안하고 위생적인 최신 진료 환경</li>
+        <li>{{specialty.label}} 전문 의료진의 1:1 맞춤 상담</li>
+        <li>과잉진료 없는 투명한 진료 안내</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+<section class="dept-section" id="departments"><div class="wrap">
+  <div class="eyebrow lt">DEPARTMENTS</div>
+  <h2 class="sec lt">진료 안내</h2>
+  <p class="sec-desc lt">{{brand.name}}의 전문 진료 항목입니다.</p>
+  <div class="dept-grid">{{sections.departments}}</div>
+</div></section>
+<section class="pad" id="gallery"><div class="wrap">
+  <div class="eyebrow">CLINIC</div>
+  <h2 class="sec">진료 환경</h2>
+  <p class="sec-desc">환자가 편안할 수 있도록 설계한 {{brand.name}}의 공간입니다.</p>
+  <div class="gallery">{{sections.gallery}}</div>
+</div></section>
+<section class="pad" id="doctors" style="background:var(--soft)"><div class="wrap">
+  <div class="eyebrow">MEDICAL TEAM</div>
+  <h2 class="sec">의료진 소개</h2>
+  <p class="sec-desc">풍부한 임상 경험의 전문 의료진이 직접 진료합니다.</p>
+  <div class="grid g3">{{sections.doctors}}</div>
+</div></section>
+<section class="pad" style="background:var(--soft)"><div class="wrap">
+  <div class="split">
+    <div>
+      <div class="eyebrow">HOURS</div>
+      <h2 class="sec" style="margin-bottom:24px">진료 시간</h2>
+      <div class="hours-card"><span class="lbl-sm">운영 시간</span>{{sections.hours}}</div>
+    </div>
+    <div>
+      <div class="eyebrow">LOCATION</div>
+      <h2 class="sec" style="margin-bottom:24px">오시는 길</h2>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px;box-shadow:0 1px 3px var(--shadow)">
+        <p style="font-size:16px;font-weight:500;color:var(--ink);margin-bottom:8px">📍 {{brand.address}}</p>
+        <p style="font-size:15px;color:var(--muted);margin-bottom:20px">대표번호: <a href="tel:{{brand.phone}}" style="color:var(--p)">{{brand.phone}}</a></p>
+        <a class="btn outline" href="{{brand.kakao}}" target="_blank" rel="noopener" style="width:100%;justify-content:center">길찾기 · 상담 예약</a>
+      </div>
+    </div>
+  </div>
+</div></section>
+<section class="pad" id="reviews"><div class="wrap">
+  <div class="eyebrow">CASES</div>
+  <h2 class="sec">진료 사례</h2>
+  <p class="sec-desc">실제 진료 과정을 투명하게 안내합니다.</p>
+  <div class="grid g3">{{sections.reviews}}</div>
+</div></section>
+<section class="pad" id="faq" style="background:var(--soft)"><div class="wrap" style="max-width:760px">
+  <div class="eyebrow">FAQ</div>
+  <h2 class="sec">자주 묻는 질문</h2>
+  <div>{{sections.faq}}</div>
+</div></section>
+<section class="pad"><div class="wrap">
+  <div class="cta-band">
+    <div class="eyebrow lt">CONTACT</div>
+    <h2>{{brand.name}}, 지금 상담하세요</h2>
+    <p>궁금한 점을 편하게 문의해 주세요. 친절하게 안내해 드리겠습니다.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="btn white" href="{{brand.kakao}}" target="_blank" rel="noopener">카카오 상담신청</a>
+      <a class="btn ghost" href="tel:{{brand.phone}}">📞 전화 문의</a>
+    </div>
+  </div>
+</div></section>
+<footer><div class="wrap">
+  <div class="foot-grid">
+    <div>
+      <div class="foot-logo">{{brand.name}}<span>.</span></div>
+      <p>{{brand.address}}</p>
+      <p style="margin-top:6px">대표번호 <a href="tel:{{brand.phone}}">{{brand.phone}}</a></p>
+      <div class="foot-badge">의료광고심의 준수 · {{specialty.label}} 전문</div>
+    </div>
+    <div>
+      <strong>빠른 메뉴</strong>
+      <div class="foot-links">
+        <a href="#intro">병원소개</a>
+        <a href="#departments">진료안내</a>
+        <a href="#gallery">진료환경</a>
+        <a href="#doctors">의료진</a>
+      </div>
+    </div>
+    <div>
+      <strong>진료 안내</strong>
+      <div class="foot-links">
+        <a href="#departments">전문 진료</a>
+        <a href="#doctors">의료진 소개</a>
+        <a href="#faq">자주 묻는 질문</a>
+      </div>
+    </div>
+    <div>
+      <strong>상담 &amp; 문의</strong>
+      <div class="foot-links">
+        <a href="{{brand.kakao}}" target="_blank" rel="noopener">카카오 상담</a>
+        <a href="tel:{{brand.phone}}">{{brand.phone}}</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-sep"></div>
+  <p class="foot-copy">{{brand.name}} · {{specialty.label}} 전문 · Powered by VENOM Site Factory</p>
+</div></footer>
+</body>
+</html>`].join(_S),
+
+  local: [
+`<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{brand.name}} — {{specialty.label}} | {{brand.tagline}}</title>
+<meta name="description" content="{{meta.description}}">
+<meta name="keywords" content="{{meta.keywords}}">
+<link rel="canonical" href="https://{{domain}}/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{brand.name}} — {{specialty.label}}">
+<meta property="og:description" content="{{meta.description}}">
+<meta property="og:image" content="{{images.hero}}">
+<meta property="og:url" content="https://{{domain}}/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{{sections.mainSchema}}
+`,`
+<script type="application/ld+json">
+{{sections.faqSchema}}
+`,`
+<style>
+:root{--p:{{brand.primary}};--p-deep:#4434d4;--p-soft:#665efd;--p-bg:rgba(83,58,253,.09);--dark:#1e2b3c;--ink:#0d253d;--ink-2:#273951;--muted:#64748d;--soft:#f6f9fc;--border:#e3e8ee;--shadow:rgba(0,55,112,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Pretendard',system-ui,-apple-system,'Malgun Gothic',sans-serif;font-weight:400;color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01"}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--p);color:#fff;padding:13px 26px;border-radius:9999px;font-weight:500;font-size:16px;line-height:1;transition:background .18s,box-shadow .18s,transform .15s;border:none;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--p-deep);box-shadow:0 8px 28px rgba(83,58,253,.32);transform:translateY(-1px)}
+.btn.ghost{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.22);box-shadow:none;transform:translateY(-1px)}
+.btn.outline{background:transparent;border:1.5px solid var(--p);color:var(--p)}
+.btn.outline:hover{background:var(--p);color:#fff}
+.btn.white{background:#fff;color:var(--p);font-weight:700}
+.btn.white:hover{background:#f0f0ff;transform:translateY(-1px)}
+header{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);z-index:200}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+.logo span{color:var(--p)}
+.nav-links{display:flex;gap:30px;align-items:center}
+.nav-links a{font-size:15px;color:var(--muted);font-weight:400;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-links .btn{padding:10px 20px;font-size:14px}
+@media(max-width:860px){.nav-links a:not(.btn){display:none}}
+.hero{background:#f0f7ff;overflow:hidden;padding-top:80px}
+.hero-split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:flex-end}
+.hero-left{padding-bottom:80px}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;background:var(--p-bg);border:1px solid rgba(83,58,253,.2);color:var(--p);font-size:13px;font-weight:600;padding:6px 14px;border-radius:9999px;margin-bottom:28px}
+.hero h1{font-size:clamp(38px,5vw,60px);font-weight:800;letter-spacing:-2px;line-height:1.06;margin-bottom:22px;color:var(--ink)}
+.hero p{font-size:18px;color:var(--muted);margin-bottom:38px;max-width:480px;line-height:1.7}
+.hero .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.hero-right{position:relative}
+.hero-img{width:100%;height:520px;object-fit:cover;border-radius:24px 24px 0 0;box-shadow:0 24px 64px rgba(0,55,112,.18)}
+.hero-float{position:absolute;left:24px;bottom:24px;background:#fff;border-radius:14px;padding:16px 22px;box-shadow:0 8px 32px rgba(0,55,112,.16);display:flex;align-items:center;gap:14px}
+.hf-num{font-size:28px;font-weight:800;color:var(--p);line-height:1;letter-spacing:-1px}
+.hf-txt{font-size:13px;color:var(--muted);line-height:1.45}
+.hf-txt strong{display:block;font-size:15px;font-weight:700;color:var(--ink)}
+@media(max-width:860px){.hero-split{grid-template-columns:1fr;gap:0;padding-bottom:48px}.hero-right{display:none}}
+.stats-band{background:var(--dark)}
+.stats-flex{display:flex;align-items:stretch}
+.stat-hl{background:var(--p);flex:0 0 172px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 20px;text-align:center}
+.stat-hl .rank{font-size:46px;font-weight:800;line-height:1;letter-spacing:-2px;color:#fff}
+.stat-hl .tag{font-size:11px;font-weight:700;color:rgba(255,255,255,.72);margin-top:8px;letter-spacing:.1em;text-transform:uppercase}
+.trust-dark{display:flex!important;flex:1}
+.trust-dark>div{flex:1;padding:32px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.09);transition:background .2s}
+.trust-dark>div:last-child{border-right:none}
+.trust-dark .num{font-size:38px;font-weight:800;letter-spacing:-1.6px;color:#fff;line-height:1;margin-bottom:6px;font-feature-settings:"tnum"}
+.trust-dark .lbl{font-size:13px;color:rgba(255,255,255,.48)}
+.feat-strip{background:#fff;border-bottom:1px solid var(--border)}
+.feat-row{display:grid;grid-template-columns:repeat(4,1fr)}
+.feat-item{padding:32px 24px;display:flex;align-items:flex-start;gap:14px;border-right:1px solid var(--border)}
+.feat-item:last-child{border-right:none}
+.feat-icon{width:44px;height:44px;border-radius:12px;flex:none;background:var(--p-bg);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:20px}
+.feat-item h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px;letter-spacing:-.2px}
+.feat-item p{font-size:13px;color:var(--muted);line-height:1.5}
+@media(max-width:860px){.feat-row{grid-template-columns:repeat(2,1fr)}.feat-item:nth-child(2){border-right:none}.feat-item:nth-child(n+3){border-top:1px solid var(--border)}}
+section.pad{padding:96px 0}
+.eyebrow{display:inline-flex;align-items:center;background:var(--p-bg);color:var(--p);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:9999px;margin-bottom:16px}
+.eyebrow.lt{background:rgba(255,255,255,.12);color:rgba(255,255,255,.62)}
+h2.sec{font-size:clamp(28px,3.6vw,44px);font-weight:700;letter-spacing:-.96px;line-height:1.12;margin-bottom:14px}
+.sec-desc{color:var(--muted);margin-bottom:48px;max-width:640px;font-size:17px;line-height:1.65}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media(max-width:860px){.split{grid-template-columns:1fr;gap:32px}}
+.split .photo{border-radius:16px;overflow:hidden;aspect-ratio:4/3;box-shadow:0 1px 3px var(--shadow),0 20px 48px rgba(0,55,112,.09)}
+.split .photo img{width:100%;height:100%;object-fit:cover}
+.checks{list-style:none;margin-top:24px}
+.checks li{display:flex;gap:12px;align-items:flex-start;margin:14px 0;font-size:16px;color:var(--ink-2)}
+.checks li::before{content:"✓";flex:none;width:22px;height:22px;background:var(--p-bg);color:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-top:3px}
+.grid{display:grid;gap:20px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:860px){.g4,.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.g4,.g3,.g2{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;transition:.2s;box-shadow:0 1px 3px var(--shadow)}
+.card:hover{box-shadow:0 10px 28px rgba(0,55,112,.11);transform:translateY(-3px);border-color:rgba(83,58,253,.22)}
+.card .ic{width:40px;height:40px;border-radius:10px;background:var(--p-bg);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px;font-weight:600}
+.card h3{font-size:17px;margin-bottom:7px;font-weight:600;letter-spacing:-.22px}
+.card .price{font-size:22px;font-weight:700;color:var(--p);margin:8px 0;font-feature-settings:"tnum";letter-spacing:-.5px}
+.card .price span{font-size:14px;font-weight:400;color:var(--muted);margin-left:2px}
+.card p{font-size:14px;color:var(--muted);line-height:1.55}
+.gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:200px 200px;gap:14px}
+.gallery figure{border-radius:12px;overflow:hidden;position:relative;box-shadow:0 1px 3px var(--shadow)}
+.gallery figure:first-child{grid-row:span 2}
+.gallery img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.gallery figure:hover img{transform:scale(1.04)}
+.gallery figcaption{position:absolute;left:14px;bottom:12px;color:#fff;font-size:13px;font-weight:500;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+@media(max-width:760px){.gallery{grid-template-columns:1fr 1fr;grid-template-rows:160px 160px}.gallery figure:first-child{grid-row:span 1;grid-column:span 2}}
+.hours-loc{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+@media(max-width:760px){.hours-loc{grid-template-columns:1fr;gap:28px}}
+.hours-block{background:var(--dark);border-radius:16px;padding:32px;color:#fff}
+.hours-block .lbl-sm{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:18px;display:block}
+.hour-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:15px}
+.hour-row:last-child{border-bottom:none}
+.hour-row .day{color:rgba(255,255,255,.6)}
+.hour-row .time{font-weight:500;font-feature-settings:"tnum";letter-spacing:-.02em}
+.map-links{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.map-link{display:flex;align-items:center;gap:14px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:12px;font-size:15px;font-weight:500;transition:.2s;box-shadow:0 1px 3px var(--shadow)}
+.map-link:hover{border-color:rgba(83,58,253,.3);box-shadow:0 6px 20px rgba(0,55,112,.1);transform:translateY(-1px)}
+.map-link .icon{width:36px;height:36px;border-radius:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;font-weight:700}
+.review-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;box-shadow:0 1px 3px var(--shadow);transition:.2s}
+.review-card:hover{box-shadow:0 10px 28px rgba(0,55,112,.1);transform:translateY(-3px)}
+.review-card .stars{color:#f59e0b;font-size:14px;margin-bottom:12px}
+.review-card .body{font-size:15px;color:var(--ink-2);line-height:1.65;margin-bottom:14px}
+.review-card .author{font-size:13px;color:var(--muted);font-weight:500}
+.faq-item{border-bottom:1px solid var(--border);padding:24px 0}
+.faq-item h3{font-size:17px;margin-bottom:10px;display:flex;align-items:flex-start;font-weight:600;letter-spacing:-.2px}
+.faq-item h3::before{content:"Q";flex:none;display:inline-flex;align-items:center;justify-content:center;background:var(--p-bg);color:var(--p);font-size:11px;font-weight:700;min-width:26px;height:22px;padding:0 8px;border-radius:9999px;margin-right:10px;margin-top:1px;letter-spacing:.04em}
+.faq-item p{color:var(--muted);font-size:15px;padding-left:36px;line-height:1.7}
+.cta-band{background:var(--p);border-radius:24px;padding:72px 48px;text-align:center}
+.cta-band h2{font-size:clamp(26px,3.2vw,38px);font-weight:800;letter-spacing:-.96px;margin-bottom:14px;color:#fff}
+.cta-band p{color:rgba(255,255,255,.72);margin-bottom:32px;font-size:17px;max-width:500px;margin-left:auto;margin-right:auto}
+.cta-row-center{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+footer{background:var(--dark);color:rgba(255,255,255,.6);padding:64px 0;font-size:14px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+@media(max-width:860px){.foot-grid{grid-template-columns:1fr 1fr;gap:28px}}
+@media(max-width:520px){.foot-grid{grid-template-columns:1fr}}
+.foot-logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em;margin-bottom:10px}
+.foot-logo span{color:rgba(101,94,253,.9)}
+.foot-grid strong{color:rgba(255,255,255,.85);font-weight:600;font-size:15px;display:block;margin-bottom:12px}
+footer a{color:rgba(255,255,255,.45);transition:color .15s}
+footer a:hover{color:rgba(255,255,255,.9)}
+.foot-links{display:flex;flex-direction:column;gap:8px}
+.foot-sns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.foot-sns a{color:rgba(255,255,255,.5);font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.14);border-radius:9999px;transition:.2s}
+.foot-sns a:hover{border-color:rgba(83,58,253,.55);color:rgba(101,94,253,.9)}
+.foot-sep{height:1px;background:rgba(255,255,255,.08);margin:48px 0 24px}
+.foot-copy{font-size:13px;color:rgba(255,255,255,.3)}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <div class="logo">{{brand.name}}<span>.</span></div>
+  <nav class="nav-links">
+    <a href="#about">소개</a><a href="#menu">메뉴·서비스</a>
+    <a href="#gallery">갤러리</a><a href="#hours">오시는길</a><a href="#faq">FAQ</a>
+    <a class="btn" href="{{brand.kakao}}" target="_blank" rel="noopener">카카오 문의</a>
+  </nav>
+</div></header>
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-split">
+      <div class="hero-left">
+        <div class="badge">📍 {{brand.region}} · {{specialty.label}}</div>
+        <h1>{{hero.headline}}</h1>
+        <p>{{hero.sub}}</p>
+        <div class="cta-row">
+          <a class="btn" href="{{brand.kakao}}" target="_blank" rel="noopener">💬 카카오 문의</a>
+          <a class="btn outline" href="tel:{{brand.phone}}">📞 {{brand.phone}}</a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <img class="hero-img" src="{{images.hero}}" alt="{{brand.name}} {{specialty.label}}" loading="eager">
+        <div class="hero-float">
+          <div class="hf-num">⭐</div>
+          <div class="hf-txt"><strong>{{brand.region}} 인기</strong>고객 만족 1위</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="stats-band">
+  <div class="stats-flex">
+    <div class="stat-hl"><div class="rank">#1</div><div class="tag">고객 선택</div></div>
+    <div class="trust trust-dark">{{sections.trust}}</div>
+  </div>
+</div>
+<div class="feat-strip"><div class="wrap">
+  <div class="feat-row">
+    <div class="feat-item"><div class="feat-icon">🍽️</div><div><h4>엄선한 재료</h4><p>신선하고 좋은 재료만 사용한 정성 가득한 메뉴</p></div></div>
+    <div class="feat-item"><div class="feat-icon">😊</div><div><h4>친절한 서비스</h4><p>편안하고 따뜻한 공간에서 최고의 서비스 경험</p></div></div>
+    <div class="feat-item"><div class="feat-icon">🕐</div><div><h4>편리한 영업시간</h4><p>{{brand.region}} 고객님이 오시기 편한 운영 시간</p></div></div>
+    <div class="feat-item"><div class="feat-icon">📍</div><div><h4>찾아오기 쉬운 위치</h4><p>{{brand.region}} 중심부, 대중교통 접근 편리</p></div></div>
+  </div>
+</div></div>
+<section class="pad" id="about"><div class="wrap">
+  <div class="split">
+    <div>
+      <div class="eyebrow">OUR STORY</div>
+      <h2 class="sec">{{brand.region}},<br>{{brand.name}}의 이야기</h2>
+      <p style="color:var(--muted);font-size:16px;line-height:1.7;margin-bottom:0">{{brand.name}}은(는) {{specialty.label}}로서 매일 정성을 다해 운영하고 있습니다. 좋은 재료와 진심 어린 서비스로 찾아오시는 모든 분께 만족을 드리겠습니다.</p>
+      <ul class="checks">
+        <li>엄선한 재료와 직접 만드는 정성</li>
+        <li>편안하고 깨끗한 공간</li>
+        <li>단골 고객이 인정하는 맛과 서비스</li>
+      </ul>
+    </div>
+    <div class="photo"><img src="{{images.intro}}" alt="{{brand.name}} 내부" loading="lazy"></div>
+  </div>
+</div></section>
+<section class="pad" id="menu" style="background:var(--soft)"><div class="wrap">
+  <div class="eyebrow">MENU &amp; SERVICE</div>
+  <h2 class="sec">메뉴 · 서비스</h2>
+  <p class="sec-desc">{{brand.name}}의 대표 메뉴와 서비스입니다.</p>
+  <div class="grid g4">{{sections.menu}}</div>
+</div></section>
+<section class="pad" id="gallery"><div class="wrap">
+  <div class="eyebrow">GALLERY</div>
+  <h2 class="sec">공간 갤러리</h2>
+  <p class="sec-desc">{{brand.name}}의 공간과 메뉴를 사진으로 만나보세요.</p>
+  <div class="gallery">{{sections.gallery}}</div>
+</div></section>
+<section class="pad" id="hours" style="background:var(--soft)"><div class="wrap">
+  <div class="eyebrow">HOURS &amp; LOCATION</div>
+  <h2 class="sec">영업시간 · 오시는길</h2>
+  <div class="hours-loc" style="margin-top:32px">
+    <div>
+      <div class="hours-block"><span class="lbl-sm">영업 시간</span>{{sections.hours}}</div>
+      <p style="margin-top:12px;font-size:13px;color:var(--muted)">※ 공휴일 및 임시 휴무는 SNS를 확인해 주세요.</p>
+    </div>
+    <div>
+      <p style="font-size:16px;font-weight:500;color:var(--ink-2);margin-bottom:20px">📍 {{brand.address}}</p>
+      <div class="map-links">
+        <a class="map-link" href="{{brand.naver_place}}" target="_blank" rel="noopener">
+          <span class="icon" style="background:#03c75a">N</span><span>네이버 지도로 보기</span>
+        </a>
+        <a class="map-link" href="https://map.kakao.com/link/search/{{brand.name}}" target="_blank" rel="noopener">
+          <span class="icon" style="background:#FAE100;color:#391B1B">K</span><span>카카오맵으로 보기</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div></section>
+<section class="pad" id="reviews"><div class="wrap">
+  <div class="eyebrow">REVIEWS</div>
+  <h2 class="sec">고객 후기</h2>
+  <p class="sec-desc">{{brand.name}}을(를) 다녀가신 고객님의 후기입니다.</p>
+  <div class="grid g3">{{sections.reviews}}</div>
+</div></section>
+<section class="pad" id="faq" style="background:var(--soft)"><div class="wrap" style="max-width:760px">
+  <div class="eyebrow">FAQ</div>
+  <h2 class="sec">자주 묻는 질문</h2>
+  <div>{{sections.faq}}</div>
+</div></section>
+<section class="pad"><div class="wrap">
+  <div class="cta-band">
+    <div class="eyebrow lt">CONTACT</div>
+    <h2>{{brand.name}}, 지금 방문해보세요</h2>
+    <p>궁금한 점은 편하게 문의해 주세요. 예약·방문 모두 환영합니다.</p>
+    <div class="cta-row-center">
+      <a class="btn white" href="{{brand.kakao}}" target="_blank" rel="noopener">💬 카카오 문의</a>
+      <a class="btn ghost" href="{{brand.instagram}}" target="_blank" rel="noopener">📷 인스타그램</a>
+      <a class="btn ghost" href="{{brand.naver_place}}" target="_blank" rel="noopener">🗺 네이버 플레이스</a>
+    </div>
+  </div>
+</div></section>
+<footer><div class="wrap">
+  <div class="foot-grid">
+    <div>
+      <div class="foot-logo">{{brand.name}}<span>.</span></div>
+      <p>{{brand.address}}</p>
+      <p style="margin-top:6px">대표번호 <a href="tel:{{brand.phone}}">{{brand.phone}}</a></p>
+      <div class="foot-sns">
+        <a href="{{brand.instagram}}" target="_blank" rel="noopener">Instagram</a>
+        <a href="{{brand.naver_place}}" target="_blank" rel="noopener">네이버 플레이스</a>
+        <a href="{{brand.kakao}}" target="_blank" rel="noopener">카카오 채널</a>
+      </div>
+    </div>
+    <div>
+      <strong>빠른 메뉴</strong>
+      <div class="foot-links">
+        <a href="#about">소개</a>
+        <a href="#menu">메뉴·서비스</a>
+        <a href="#gallery">갤러리</a>
+        <a href="#hours">오시는길</a>
+      </div>
+    </div>
+    <div>
+      <strong>메뉴 안내</strong>
+      <div class="foot-links">
+        <a href="#menu">대표 메뉴</a>
+        <a href="#gallery">공간 갤러리</a>
+        <a href="#faq">자주 묻는 질문</a>
+      </div>
+    </div>
+    <div>
+      <strong>상담 &amp; 문의</strong>
+      <div class="foot-links">
+        <a href="{{brand.kakao}}" target="_blank" rel="noopener">카카오 채널</a>
+        <a href="tel:{{brand.phone}}">{{brand.phone}}</a>
+        <a href="{{brand.instagram}}" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-sep"></div>
+  <p class="foot-copy">{{brand.name}} · {{specialty.label}} · {{brand.region}} · Powered by VENOM Site Factory</p>
+</div></footer>
+</body>
+</html>`].join(_S),
+  press: [
+`<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{brand.name}} — {{specialty.label}}</title>
+<meta name="description" content="{{meta.description}}">
+<meta name="keywords" content="{{meta.keywords}}">
+<meta property="og:title" content="{{brand.name}} — {{specialty.label}}">
+<meta property="og:description" content="{{meta.description}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://{{domain}}/">
+<link rel="canonical" href="https://{{domain}}/">
+<script type="application/ld+json">
+{{sections.mainSchema}}
+`,`
+<script type="application/ld+json">
+{{sections.faqSchema}}
+`,`
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--p:{{brand.primary}};--p-deep:#4434d4;--p-bg:rgba(83,58,253,.09);--dark:#1c1e54;--ink:#0d253d;--ink-2:#273951;--muted:#64748d;--soft:#f6f9fc;--cream:#f5e9d4;--border:#e3e8ee;--shadow:rgba(0,55,112,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Pretendard',system-ui,-apple-system,sans-serif;font-weight:300;color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;height:auto;display:block}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 32px;height:64px;display:flex;align-items:center;gap:32px}
+.nav-logo{font-weight:700;font-size:18px;letter-spacing:-.03em;color:var(--dark)}
+.nav-logo span{color:var(--p)}
+.nav-links{display:flex;gap:28px;margin-left:auto}
+.nav-links a{font-size:14px;font-weight:400;color:var(--muted);transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{background:var(--p);color:#fff;padding:9px 20px;border-radius:9999px;font-size:14px;font-weight:500;transition:background .15s}
+.nav-cta:hover{background:var(--p-deep);color:#fff}
+.hero{position:relative;min-height:520px;display:flex;align-items:center;overflow:hidden;background:var(--dark)}
+.hero-mesh{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 60% 90% at 5% 30%,rgba(245,233,212,.18) 0%,transparent 55%),radial-gradient(ellipse 50% 70% at 90% 10%,rgba(83,58,253,.35) 0%,transparent 55%),radial-gradient(ellipse 70% 60% at 50% 80%,rgba(28,30,84,.9) 0%,transparent 65%)}
+.hero-inner{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:80px 32px;width:100%}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.9);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:9999px;margin-bottom:28px}
+.hero h1{font-size:clamp(36px,5vw,60px);font-weight:300;letter-spacing:-1.6px;line-height:1.06;color:#fff;margin-bottom:20px;max-width:700px}
+.hero h1 b{font-weight:600;color:#c4b5fd}
+.hero p{font-size:18px;color:rgba(255,255,255,.72);margin-bottom:40px;max-width:540px;line-height:1.65}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:9999px;font-weight:400;font-size:15px;line-height:1;transition:all .18s;border:none;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--p);color:#fff}.btn-primary:hover{background:var(--p-deep);box-shadow:0 8px 24px rgba(83,58,253,.4)}
+.btn-ghost{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.3);color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.18)}
+section{padding:88px 0}
+.sec-inner{max-width:1120px;margin:0 auto;padding:0 32px}
+.eyebrow{display:inline-flex;background:var(--p-bg);color:var(--p);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:9999px;margin-bottom:16px}
+h2.sec{font-size:clamp(28px,3.6vw,44px);font-weight:300;letter-spacing:-.96px;margin-bottom:16px}
+.sec-desc{color:var(--muted);margin-bottom:56px;max-width:600px;font-size:17px;line-height:1.65}
+.featured{background:var(--soft)}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.feat-img{border-radius:20px;overflow:hidden;aspect-ratio:16/9;background:var(--border)}
+.feat-img img{width:100%;height:100%;object-fit:cover}
+.feat-content .cat-tag{display:inline-block;background:var(--p-bg);color:var(--p);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:9999px;margin-bottom:16px}
+.feat-content h3{font-size:clamp(22px,2.8vw,34px);font-weight:300;letter-spacing:-.72px;margin-bottom:14px;line-height:1.22}
+.feat-content p{color:var(--muted);font-size:16px;line-height:1.65;margin-bottom:24px}
+.feat-meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:12px}
+.feat-meta .dot{width:4px;height:4px;border-radius:50%;background:var(--border)}
+.articles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.article-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow .2s,transform .2s}
+.article-card:hover{box-shadow:0 10px 32px var(--shadow);transform:translateY(-3px);border-color:rgba(83,58,253,.18)}
+.article-card .thumb{aspect-ratio:3/2;background:var(--soft);overflow:hidden}
+.article-card .body{padding:20px}
+.article-card .cat{font-size:11px;font-weight:600;color:var(--p);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.article-card h4{font-size:16px;font-weight:500;letter-spacing:-.24px;line-height:1.38;margin-bottom:8px}
+.article-card .meta{font-size:12px;color:var(--muted)}
+.article-placeholder{background:linear-gradient(135deg,var(--p-bg),rgba(245,233,212,.3));display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:3/2}
+.article-placeholder span{padding:16px;font-size:13px;font-weight:500;color:var(--p)}
+.faq-section{background:var(--soft)}
+.faq-grid{max-width:760px}
+.faq-item{border-bottom:1px solid var(--border);padding:24px 0}
+.faq-item:last-child{border-bottom:none}
+.faq-item h3{font-size:17px;font-weight:400;letter-spacing:-.24px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
+.faq-item h3::before{content:"Q";flex:none;background:var(--p-bg);color:var(--p);border-radius:9999px;padding:0 9px;font-size:13px;font-weight:600;margin-top:2px}
+.faq-item p{color:var(--muted);font-size:15px;line-height:1.7;padding-left:36px}
+.cta-band{background:var(--cream);border-radius:24px;padding:72px 48px;text-align:center;margin:0 32px}
+.cta-band h2{font-size:clamp(26px,3.2vw,42px);font-weight:300;letter-spacing:-.8px;margin-bottom:16px}
+.cta-band p{color:var(--muted);font-size:17px;margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto}
+.cta-form{display:flex;gap:10px;max-width:440px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.cta-form input{flex:1;min-width:200px;padding:12px 18px;border:1.5px solid var(--border);border-radius:9999px;font-size:15px;font-family:inherit;outline:none}
+.cta-form input:focus{border-color:var(--p)}
+.trust-section{border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust{display:grid;grid-template-columns:repeat(4,1fr)}
+.trust>div{padding:32px 24px;text-align:center;border-right:1px solid var(--border)}
+.trust>div:last-child{border-right:none}
+.trust .num{font-size:40px;font-weight:300;letter-spacing:-1.4px;color:var(--p);line-height:1;margin-bottom:6px}
+.trust .lbl{font-size:13px;color:var(--muted)}
+footer{background:var(--dark);color:rgba(255,255,255,.75);padding:64px 0 40px}
+.foot-inner{max-width:1120px;margin:0 auto;padding:0 32px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:56px}
+.foot-logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.04em;margin-bottom:14px}
+.foot-logo span{color:#c4b5fd}
+.foot-desc{font-size:14px;line-height:1.7;max-width:280px;opacity:.7}
+.foot-col h4{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:18px}
+.foot-col a{display:block;font-size:14px;color:rgba(255,255,255,.65);margin-bottom:10px;transition:color .15s}
+.foot-col a:hover{color:#fff}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:28px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:rgba(255,255,255,.35)}
+@media(max-width:900px){.feat-grid{grid-template-columns:1fr}.articles-grid{grid-template-columns:1fr 1fr}.foot-grid{grid-template-columns:1fr;gap:32px}.trust{grid-template-columns:repeat(2,1fr)}.trust>div:nth-child(2){border-right:none}}
+@media(max-width:600px){.nav-links{display:none}.hero{min-height:420px}.articles-grid{grid-template-columns:1fr}section{padding:60px 0}.cta-band{margin:0;border-radius:0;padding:52px 24px}.trust{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo"><span>V</span> {{brand.name}}</div>
+    <div class="nav-links">
+      <a href="#articles">기사</a>
+      <a href="#faq">자주 묻는 질문</a>
+      <a href="#contact">문의</a>
+    </div>
+    <a class="nav-cta btn" href="{{brand.kakao}}">구독하기</a>
+  </div>
+</nav>
+<section class="hero" id="home">
+  <div class="hero-mesh"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">{{brand.region}} · {{specialty.label}}</div>
+    <h1>{{hero.headline}}</h1>
+    <p>{{hero.sub}}</p>
+    <div class="hero-btns">
+      <a class="btn btn-primary" href="#articles">최신 기사 보기</a>
+      <a class="btn btn-ghost" href="{{brand.kakao}}">뉴스레터 구독</a>
+    </div>
+  </div>
+</section>
+<section class="trust-section">
+  <div class="trust">{{sections.trust}}</div>
+</section>
+<section class="featured" id="featured">
+  <div class="sec-inner">
+    <div class="feat-grid">
+      <div class="feat-img"><img src="{{images.hero}}" alt="{{brand.name}} 대표 기사" loading="lazy"></div>
+      <div class="feat-content">
+        <span class="cat-tag">{{specialty.label}}</span>
+        <h3>{{hero.headline}}</h3>
+        <p>{{hero.sub}}</p>
+        <div class="feat-meta"><span>{{brand.name}}</span><span class="dot"></span><span>{{brand.region}}</span></div>
+        <br><a class="btn btn-primary" href="#articles" style="margin-top:8px">전체 기사 보기</a>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="articles">
+  <div class="sec-inner">
+    <div class="eyebrow">최신 기사</div>
+    <h2 class="sec">{{specialty.label}} 주요 콘텐츠</h2>
+    <p class="sec-desc">{{brand.name}}의 최신 소식과 인사이트를 확인하세요.</p>
+    <div class="articles-grid">{{sections.menu}}</div>
+  </div>
+</section>
+<section class="faq-section" id="faq">
+  <div class="sec-inner">
+    <div class="eyebrow">FAQ</div>
+    <h2 class="sec">자주 묻는 질문</h2>
+    <div class="faq-grid">{{sections.faq}}</div>
+  </div>
+</section>
+<section id="contact" style="padding:80px 0;background:#fff">
+  <div class="sec-inner">
+    <div class="cta-band">
+      <div class="eyebrow">뉴스레터</div>
+      <h2>최신 소식을 가장 먼저 받아보세요</h2>
+      <p>{{brand.name}}의 새 기사와 업데이트 알림을 이메일로 받아보세요.</p>
+      <div class="cta-form">
+        <input type="email" placeholder="이메일 주소 입력">
+        <a class="btn btn-primary" href="{{brand.kakao}}">구독하기</a>
+      </div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="foot-inner">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-logo"><span>V</span> {{brand.name}}</div>
+        <p class="foot-desc">{{meta.description}}</p>
+      </div>
+      <div class="foot-col">
+        <h4>콘텐츠</h4>
+        <a href="#articles">최신 기사</a>
+        <a href="#featured">주요 소식</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="foot-col">
+        <h4>문의</h4>
+        <a href="tel:{{brand.phone}}">{{brand.phone}}</a>
+        <a href="{{brand.kakao}}">카카오 채널</a>
+        <a href="{{brand.naver_place}}">네이버 블로그</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© {{brand.name}} · {{brand.address}}</span>
+      <span>Powered by VENOM Site Factory</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>`].join(_S),
+};
+
+/* 토큰 치환 */
+function vRender(tpl, data) {
+  return tpl.replace(/\{\{\s*([\w.]+)\s*\}\}/g, function(_, key) {
+    var val = key.split('.').reduce(function(o,k){ return o==null?o:o[k]; }, data);
+    return val==null ? '' : String(val);
+  });
+}
+function vPH(label) {
+  var svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#dfe6ee'/><stop offset='1' stop-color='#c4d0dd'/></linearGradient></defs><rect width='800' height='600' fill='url(#g)'/><text x='400' y='310' font-family='sans-serif' font-size='54' fill='#8b9bad' text-anchor='middle'>📷</text><text x='400' y='370' font-family='sans-serif' font-size='28' font-weight='700' fill='#6c7d90' text-anchor='middle'>"+label+"</text></svg>";
+  return 'data:image/svg+xml,'+encodeURIComponent(svg);
+}
+function vTrust(s){ var l=s&&s.length?s:[{num:'20년+',lbl:'운영 경력'},{num:'98%',lbl:'고객 만족도'},{num:'5,000+',lbl:'누적 고객'},{num:'연중무휴',lbl:'상담 안내'}]; return l.map(function(x){return'<div><div class="num">'+x.num+'</div><div class="lbl">'+x.lbl+'</div></div>';}).join(''); }
+function vDepts(sp){ return (sp.keywords||[]).map(function(k){return'<div class="card"><div class="ic">'+k.trim().charAt(0)+'</div><h3>'+k+'</h3><p>'+sp.label+' 전문의 '+k+' 진료</p></div>';}).join(''); }
+function vDocs(docs){ var l=docs&&docs.length?docs:[{name:'대표원장',role:'전문의',desc:'풍부한 임상 경험'}]; return l.map(function(d){var v=d.photo?'<img src="'+d.photo+'" alt="'+d.name+'">':'<div class="avatar">'+d.name.trim().charAt(0)+'</div>';return'<div class="doc"><div class="ph">'+v+'</div><div class="info"><h3>'+d.name+'</h3><div class="role">'+(d.role||'전문의')+'</div><p>'+(d.desc||'')+'</p></div></div>';}).join(''); }
+function vGallery(g,ph){ var caps=['매장 내부','갤러리 2','갤러리 3']; var imgs=[0,1,2].map(function(i){return(g&&g[i])||ph(caps[i]);}); return imgs.map(function(s,i){return'<figure><img src="'+s+'" alt="'+caps[i]+'"><figcaption>'+caps[i]+'</figcaption></figure>';}).join(''); }
+function vReviews(r,sp){ var l=r&&r.length?r:sp.keywords.slice(0,3).map(function(k){return{title:k+' 진료 사례',body:k+' 관련 진료 안내'};}); return l.map(function(x){return'<div class="card"><h3>'+(x.title||x.author||'')+'</h3><p>'+(x.body||'')+'</p></div>';}).join(''); }
+function vMenu(m,sp){ var l=m&&m.length?m:sp.keywords.slice(0,4).map(function(k){return{name:k,price:'',desc:sp.label+' 대표 서비스'};}); return l.map(function(x){var p=x.price?'<div class="price">'+x.price+'<span>원</span></div>':'';return'<div class="card"><div class="ic">'+x.name.trim().charAt(0)+'</div><h3>'+x.name+'</h3>'+p+'<p>'+(x.desc||'')+'</p></div>';}).join(''); }
+function vHours(h){ var l=h&&h.length?h:[{day:'평일',time:'09:00 – 18:00'},{day:'주말',time:'10:00 – 17:00'},{day:'정기휴무',time:'매주 월요일'}]; return l.map(function(x){return'<div class="hour-row"><span class="day">'+x.day+'</span><span class="time">'+x.time+'</span></div>';}).join(''); }
+function vPressArticles(sp){ return sp.keywords.slice(0,3).map(function(k){ return '<div class="article-card"><div class="thumb article-placeholder"><span>'+k+'</span></div><div class="body"><div class="cat">'+sp.label+'</div><h4>'+k+' 관련 주요 소식</h4><div class="meta">최신 업데이트</div></div></div>'; }).join(''); }
+function vLocalReviews(r,sp){ var l=r&&r.length?r:sp.keywords.slice(0,3).map(function(k,i){return{author:'고객'+(i+1),stars:5,body:k+' 정말 만족스러웠어요!'};}); return l.map(function(x){var st='★'.repeat(Math.min(5,Math.max(1,x.stars||5)));return'<div class="review-card"><div class="stars">'+st+'</div><p class="body">'+(x.body||'')+'</p><div class="author">— '+(x.author||'익명')+'</div></div>';}).join(''); }
+function vFaq(faq,sp){ var l=faq&&faq.length?faq:[{q:sp.label+' 예약이 필요한가요?',a:'카카오 또는 전화로 편하게 문의해 주세요.'},{q:'주차가 가능한가요?',a:'건물 내 주차 가능합니다.'},{q:'운영시간은 어떻게 되나요?',a:'평일 기준으로 운영하며 자세한 내용은 전화로 안내드립니다.'}]; var html=l.map(function(f){return'<div class="faq-item"><h3>'+f.q+'</h3><p>'+f.a+'</p></div>';}).join(''); var schema=JSON.stringify({'@context':'https://schema.org','@type':'FAQPage',mainEntity:l.map(function(f){return{'@type':'Question',name:f.q,acceptedAnswer:{'@type':'Answer',text:f.a}};})},null,2); return{html:html,schema:schema}; }
+function vSchema(spec,sp){ var addr={'@type':'PostalAddress',streetAddress:spec.brand.address||'',addressLocality:spec.brand.region||'',addressCountry:'KR'}; var rating=null; if(spec.trust&&spec.trust.length){var ri=spec.trust.find(function(t){return String(t.num).includes('★')||String(t.lbl).includes('평점');}); var ci=spec.trust.find(function(t){return String(t.lbl).includes('고객')||String(t.lbl).includes('진료');});if(ri){var rv=parseFloat(String(ri.num).replace(/[^\d.]/g,''));if(!isNaN(rv))rating={'@type':'AggregateRating',ratingValue:rv,bestRating:5,worstRating:1,reviewCount:ci?parseInt(String(ci.num).replace(/[^\d]/g,''))||100:100};}} var entity; if(spec.category==='clinic'){entity={'@context':'https://schema.org','@type':['MedicalClinic','LocalBusiness'],name:spec.brand.name,telephone:spec.brand.phone,address:addr,url:'https://'+(spec.domain||'')+'/',description:(spec.meta&&spec.meta.description)||'',medicalSpecialty:sp.label};}else{entity={'@context':'https://schema.org','@type':['LocalBusiness','Organization'],name:spec.brand.name,telephone:spec.brand.phone,address:addr,url:'https://'+(spec.domain||'')+'/',description:(spec.meta&&spec.meta.description)||'',priceRange:'₩₩'};} if(rating)entity.aggregateRating=rating; return JSON.stringify(entity,null,2); }
+
+function clientPrepare(raw) {
+  var bp = BLUEPRINTS[raw.category] || BLUEPRINTS.clinic;
+  var subMap = bp.specialties || bp.types || {};
+  var subKey = (raw.clinic&&raw.clinic.specialty)||(raw.local&&raw.local.type)||(raw.press&&raw.press.type);
+  var sp = subMap[subKey] || Object.values(subMap)[0];
+  raw.lang = (raw.locale&&raw.locale[0])||'ko';
+  raw.specialty = sp;
+  raw.slug = ((raw.domain||raw.brand.name)+'').toLowerCase().replace(/[^\w가-힣]+/g,'-').replace(/^-+|-+$/g,'');
+  raw.hero = raw.hero||{};
+  if (raw.category==='clinic') {
+    raw.hero.headline = raw.hero.headline||(raw.brand.region+' <b>'+sp.label+'</b>,<br>믿을 수 있는 '+raw.brand.name);
+    raw.hero.sub = raw.hero.sub||(sp.keywords.slice(0,3).join(' · ')+' — 정확한 진단과 정직한 진료로 함께합니다.');
+    raw.meta = { description:raw.brand.region+' '+sp.label+' '+raw.brand.name+'. '+sp.keywords.join(', ')+' 진료. 상담 '+raw.brand.phone+'.', keywords:[raw.brand.name,sp.label].concat(sp.keywords).join(', ') };
+  } else if (raw.category==='press') {
+    raw.hero.headline = raw.hero.headline||('<b>'+sp.label+'</b>,<br>'+raw.brand.name);
+    raw.hero.sub = raw.hero.sub||(sp.keywords.slice(0,3).join(' · ')+' — '+(raw.brand.tagline||''));
+    raw.meta = { description:raw.brand.name+' '+sp.label+'. '+sp.keywords.join(', ')+'.', keywords:[raw.brand.name,sp.label,raw.brand.region].concat(sp.keywords).join(', ') };
+    raw.brand.kakao      = raw.brand.kakao     ||'';
+    raw.brand.naver_place= raw.brand.naver_place||'';
+  } else {
+    raw.hero.headline = raw.hero.headline||(raw.brand.region+' <b>'+sp.label+'</b>,<br>'+raw.brand.name);
+    raw.hero.sub = raw.hero.sub||(sp.keywords.slice(0,3).join(' · ')+' — '+(raw.brand.tagline||''));
+    raw.meta = { description:raw.brand.region+' '+sp.label+' '+raw.brand.name+'. '+sp.keywords.join(', ')+'. 문의 '+raw.brand.phone+'.', keywords:[raw.brand.name,sp.label,raw.brand.region].concat(sp.keywords).join(', ') };
+    raw.brand.instagram   = raw.brand.instagram  ||'';
+    raw.brand.naver_place = raw.brand.naver_place||'';
+  }
+  var stock = (sp.stock||{});
+  raw.images = Object.assign({}, stock, raw.images||{});
+  raw.images.intro = raw.images.intro || vPH(raw.category==='clinic'?'병원 내부 전경':'매장 내부');
+  if (raw.images.hero) { raw.images.heroBg = "url('"+raw.images.hero+"')"; }
+  else { raw.images.hero=''; raw.images.heroBg='linear-gradient(135deg,var(--p),var(--bd))'; }
+  if (!raw.images.gallery) raw.images.gallery = [];
+  var faqR = vFaq(raw.faq, sp);
+  var mainSch = vSchema(raw, sp);
+  var _bcAnchor = raw.category==='clinic' ? 'departments' : raw.category==='press' ? 'articles' : 'menu';
+  var breadcrumbSch = JSON.stringify({'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'홈',item:'https://'+(raw.domain||'')+'/'},{'@type':'ListItem',position:2,name:sp.label,item:'https://'+(raw.domain||'')+'/#'+_bcAnchor}]},null,2);
+  if (raw.category==='clinic') {
+    raw.sections = { trust:vTrust(raw.trust), departments:vDepts(sp), doctors:vDocs(raw.clinic&&raw.clinic.doctors), reviews:vReviews(raw.reviews,sp), gallery:vGallery(raw.images.gallery,vPH), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch, breadcrumbSchema:breadcrumbSch };
+  } else if (raw.category==='press') {
+    raw.sections = { trust:vTrust(raw.trust), menu:vPressArticles(sp), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch, breadcrumbSchema:breadcrumbSch };
+  } else {
+    raw.sections = { trust:vTrust(raw.trust), menu:vMenu(raw.local&&raw.local.menu,sp), hours:vHours(raw.local&&raw.local.hours), reviews:vLocalReviews(raw.reviews,sp), gallery:vGallery(raw.images.gallery,vPH), faq:faqR.html, faqSchema:faqR.schema, mainSchema:mainSch, breadcrumbSchema:breadcrumbSch };
+  }
+  return raw;
+}
+
+function clientRender(rawSpec) {
+  var spec = clientPrepare(JSON.parse(JSON.stringify(rawSpec)));
+  return vRender(TEMPLATES[spec.category]||TEMPLATES.clinic, spec);
+}
+</script>
+
+<script>
+/* ── 카테고리 전환 ──────────────────────────────────────────────── */
+function switchCat(cat) {
+  document.querySelectorAll('[data-show]').forEach(el => {
+    const target = el.dataset.show;
+    el.style.display = (target === cat || target === 'both') ? '' : 'none';
+  });
+  // 상호명 레이블
+  document.getElementById('lbl-name').textContent = cat === 'clinic' ? '병원명' : '상호명';
+  // 대표색상 기본값
+  const pc = document.querySelector('input[name=primary]');
+  if (cat === 'local'  && pc.value === '#533afd') pc.value = '#c8844a';
+  if (cat === 'press'  && pc.value === '#533afd') pc.value = '#1c1e54';
+  if (cat === 'clinic' && (pc.value === '#c8844a' || pc.value === '#1c1e54')) pc.value = '#533afd';
+  // 도메인 힌트
+  const dom = document.querySelector('input[name=domain]');
+  if (cat === 'local'  && dom.value === 'seoul-smile.com') dom.value = 'my-local-store.co.kr';
+  if (cat === 'press'  && dom.value === 'seoul-smile.com') dom.value = 'newsroom.company.co.kr';
+  if (cat === 'clinic' && (dom.value === 'my-local-store.co.kr' || dom.value === 'newsroom.company.co.kr')) dom.value = 'seoul-smile.com';
+  // 슬로건 힌트
+  const tg = document.querySelector('input[name=tagline]');
+  if (cat === 'local'  && tg.value === '정직한 진료, 편안한 미소') tg.value = '매일 정성껏 만드는 특별한 공간';
+  if (cat === 'press'  && tg.value === '정직한 진료, 편안한 미소') tg.value = '신뢰할 수 있는 공식 미디어 채널';
+  if (cat === 'clinic' && (tg.value === '매일 정성껏 만드는 특별한 공간' || tg.value === '신뢰할 수 있는 공식 미디어 채널')) tg.value = '정직한 진료, 편안한 미소';
+}
+
+/* ── 의료진 행 ───────────────────────────────────────────────────── */
+function addDoctor(d) {
+  d = d || {name:'',role:'',desc:''};
+  const div = document.createElement('div');
+  div.className = 'doctor-row';
+  div.innerHTML = `<input placeholder="이름" value="${d.name}" style="flex:1">`
+    + `<input placeholder="직책" value="${d.role}" style="flex:1">`
+    + `<input placeholder="소개" value="${d.desc}" style="flex:2">`
+    + `<label class="filebtn" title="의료진 사진">📷<input type="file" accept="image/*" class="doc-photo" hidden></label>`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('doctors').appendChild(div);
+}
+addDoctor({name:'김치과 원장', role:'치과 전문의', desc:'임플란트 20년 임상'});
+
+/* ── 메뉴 행 ─────────────────────────────────────────────────────── */
+function addMenu(m) {
+  m = m || {name:'', price:'', desc:''};
+  const div = document.createElement('div');
+  div.className = 'menu-row';
+  div.innerHTML = `<input placeholder="메뉴명" value="${m.name}" style="flex:2">`
+    + `<input placeholder="가격(숫자만)" value="${m.price}" style="flex:1">`
+    + `<input placeholder="간단 설명" value="${m.desc}" style="flex:3">`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('menu-list').appendChild(div);
+}
+// 초기 샘플 메뉴
+[
+  {name:'시그니처 음료', price:'6,500', desc:'대표 메뉴'},
+  {name:'수제 디저트',   price:'5,500', desc:'매일 직접 만드는 수제 디저트'},
+].forEach(addMenu);
+
+/* ── 영업시간 행 ─────────────────────────────────────────────────── */
+function addHour(h) {
+  h = h || {day:'', time:''};
+  const div = document.createElement('div');
+  div.className = 'hour-row-input';
+  div.innerHTML = `<input placeholder="요일 (예: 평일)" value="${h.day}" style="flex:1">`
+    + `<input placeholder="시간 (예: 09:00 – 22:00)" value="${h.time}" style="flex:2">`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('hours-list').appendChild(div);
+}
+[
+  {day:'평일', time:'09:00 – 22:00'},
+  {day:'주말·공휴일', time:'10:00 – 23:00'},
+  {day:'매주 월요일', time:'정기 휴무'},
+].forEach(addHour);
+
+/* ── 신뢰 지표 행 ────────────────────────────────────────────────── */
+function addTrust(t) {
+  t = t || {num:'', lbl:''};
+  const div = document.createElement('div');
+  div.className = 'trust-row';
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  div.innerHTML = `<input placeholder="숫자 (예: 8년+, 4.9★)" value="${t.num}" style="flex:1">`
+    + `<input placeholder="라벨 (예: 운영연수, 네이버 평점)" value="${t.lbl}" style="flex:2">`
+    + `<button type="button" class="small" onclick="this.parentNode.remove()">×</button>`;
+  document.getElementById('trust-list').appendChild(div);
+}
+[
+  {num:'10년+', lbl:'운영 경력'},
+  {num:'4.9★', lbl:'네이버 평점'},
+  {num:'1,000+', lbl:'누적 고객'},
+  {num:'100%', lbl:'직접 운영'},
+].forEach(addTrust);
+
+/* ── 고객 후기 행 ─────────────────────────────────────────────────── */
+function addReview(r) {
+  r = r || {author:'', stars:5, body:''};
+  const div = document.createElement('div');
+  div.className = 'review-input-row';
+  div.style.cssText = 'border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px';
+  div.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input placeholder="작성자 (예: 김민지 님)" value="${r.author}" style="flex:2">
+      <select style="flex:1;height:46px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px">
+        ${[5,4,3].map(s=>`<option value="${s}"${r.stars==s?' selected':''}>${'★'.repeat(s)} ${s}점</option>`).join('')}
+      </select>
+      <button type="button" class="small" onclick="this.closest('.review-input-row').remove()">×</button>
+    </div>
+    <textarea placeholder="후기 내용" rows="2" style="width:100%;resize:vertical;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:14px">${r.body}</textarea>`;
+  document.getElementById('reviews-list').appendChild(div);
+}
+[
+  {author:'고객 A님', stars:5, body:'정말 만족스러운 서비스였어요. 다음에도 꼭 다시 오겠습니다!'},
+  {author:'고객 B님', stars:5, body:'친절하고 전문적인 서비스에 감동 받았습니다. 강력 추천해요.'},
+].forEach(addReview);
+
+/* ── FAQ 행 ──────────────────────────────────────────────────────── */
+function addFaq(f) {
+  f = f || {q:'', a:''};
+  const div = document.createElement('div');
+  div.className = 'faq-input-row';
+  div.style.cssText = 'border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px';
+  div.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input placeholder="질문 (예: 예약이 필요한가요?)" value="${f.q}" style="flex:1">
+      <button type="button" class="small" onclick="this.closest('.faq-input-row').remove()">×</button>
+    </div>
+    <textarea placeholder="답변" rows="2" style="width:100%;resize:vertical;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:14px">${f.a}</textarea>`;
+  document.getElementById('faq-list').appendChild(div);
+}
+
+/* ── 파일 → data URI ─────────────────────────────────────────────── */
+function toDataURL(file) {
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+}
+function bindPreview(input) {
+  input.addEventListener('change', async () => {
+    const drop = input.closest('.drop');
+    if (!input.files.length) return;
+    if (input.id === 'img-gallery') {
+      drop.classList.add('has');
+      const old = drop.querySelector('.badge-n'); if (old) old.remove();
+      const b = document.createElement('span'); b.className='badge-n'; b.textContent=Math.min(input.files.length,3)+'장'; drop.appendChild(b);
+      const prev = drop.querySelector('.prev'); prev.src=await toDataURL(input.files[0]); prev.hidden=false;
+    } else {
+      drop.classList.add('has');
+      const prev = drop.querySelector('.prev'); prev.src=await toDataURL(input.files[0]); prev.hidden=false;
+    }
+  });
+}
+['img-hero','img-intro','img-gallery'].forEach(id => bindPreview(document.getElementById(id)));
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('doc-photo'))
+    e.target.closest('.filebtn').classList.toggle('has', e.target.files.length > 0);
+});
+
+/* ── 로고 업로드 & 색상 자동추출 ────────────────────────────────── */
+document.getElementById('logo-file').addEventListener('change', async function() {
+  if (!this.files.length) return;
+  const file = this.files[0];
+  const dataUrl = await toDataURL(file);
+  const prev = document.getElementById('logo-prev');
+  prev.src = dataUrl;
+  prev.hidden = false;
+  document.getElementById('logo-label').textContent = file.name;
+  document.getElementById('logo-drop').classList.add('has');
+
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = 50; c.height = 50;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 50, 50);
+    const d = ctx.getImageData(0, 0, 50, 50).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i+3] < 128) continue;
+      const rv = d[i], gv = d[i+1], bv = d[i+2];
+      const lum = (rv + gv + bv) / 3;
+      if (lum > 235 || lum < 20) continue;
+      if (Math.max(rv, gv, bv) - Math.min(rv, gv, bv) < 30) continue;
+      r += rv; g += gv; b += bv; n++;
+    }
+    if (n < 5) return;
+    const hex = '#' + [Math.round(r/n), Math.round(g/n), Math.round(b/n)]
+      .map(v => v.toString(16).padStart(2, '0')).join('');
+    document.querySelector('input[name=primary]').value = hex;
+  };
+  img.src = dataUrl;
+});
+
+/* ── AI 자동완성 ─────────────────────────────────────────────────── */
+async function aiFill() {
+  const f = document.getElementById('f');
+  const btn = document.getElementById('ai-fill-btn');
+  const category = f.category.value;
+  const name = f.name.value.trim() || '우리 업체';
+  const region = f.region.value.trim() || '서울';
+  const specialty = f.specialty ? f.specialty.value : '';
+  const type = f.local_type ? f.local_type.value : '';
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ 생성 중...';
+  try {
+    const resp = await fetch('/api/ai-fill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category, specialty, type, name, region }),
+    });
+    if (!resp.ok) throw new Error('서버 오류 ' + resp.status);
+    const data = await resp.json();
+    if (data.error === 'ANTHROPIC_API_KEY_MISSING')
+      throw new Error('ANTHROPIC_API_KEY 미설정\nnode server.js 실행 시 환경변수를 포함하세요.');
+    if (data.error) throw new Error(data.error);
+    if (data.tagline) f.tagline.value = data.tagline;
+    if (data.faq && data.faq.length) {
+      document.getElementById('faq-list').innerHTML = '';
+      data.faq.forEach(item => addFaq(item));
+    }
+    btn.textContent = '✅ 완성!';
+    setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 2500);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = orig;
+    alert('AI 자동완성 실패:\n' + e.message + '\n\nserver.js를 먼저 실행하세요:\nANTHROPIC_API_KEY=sk-ant-... node server.js');
+  }
+}
+
+/* ── spec 수집 (이미지 제외, UI 업데이트 없음) ───────────────────── */
+function collectSpec() {
+  const f = document.getElementById('f');
+  const category = f.category.value;
+  const opts = [...document.querySelectorAll('input[name=opt]:checked')].map(c => c.value);
+  if (!opts.includes('seo_pack')) opts.unshift('seo_pack');
+  const brand = {
+    name: f.name.value, tagline: f.tagline.value, primary: f.primary.value,
+    region: f.region.value, phone: f.phone.value,
+    address: f.address.value, kakao: f.kakao.value,
+  };
+  const spec = {
+    category, scale: f.scale.value, domain: f.domain.value,
+    locale: opts.includes('translate') ? ['ko','en'] : ['ko'],
+    brand, options: opts,
+  };
+  if (category === 'clinic') {
+    const doctors = [...document.querySelectorAll('#doctors .doctor-row')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return ins[0].value ? { name: ins[0].value, role: ins[1].value, desc: ins[2].value } : null;
+    }).filter(Boolean);
+    spec.clinic = { specialty: f.specialty.value, doctors };
+  } else if (category === 'local') {
+    brand.instagram   = f.instagram?.value   || '';
+    brand.naver_place = f.naver_place?.value || '';
+    const menu = [...document.querySelectorAll('#menu-list .menu-row')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return { name: ins[0].value, price: ins[1].value, desc: ins[2].value };
+    }).filter(m => m.name);
+    const hours = [...document.querySelectorAll('#hours-list .hour-row-input')].map(r => {
+      const ins = r.querySelectorAll('input');
+      return { day: ins[0].value, time: ins[1].value };
+    }).filter(h => h.day);
+    spec.local = { type: f.local_type.value, hours, menu };
+  } else if (category === 'press') {
+    spec.press = { type: f.press_type?.value || 'newsroom' };
+  }
+  const trust = [...document.querySelectorAll('#trust-list .trust-row')].map(r => {
+    const ins = r.querySelectorAll('input');
+    return { num: ins[0].value, lbl: ins[1].value };
+  }).filter(t => t.num);
+  if (trust.length) spec.trust = trust;
+  const reviews = [...document.querySelectorAll('#reviews-list .review-input-row')].map(r => ({
+    author: r.querySelector('input').value,
+    stars:  +r.querySelector('select').value,
+    body:   r.querySelector('textarea').value,
+  })).filter(r => r.body);
+  if (reviews.length) spec.reviews = reviews;
+  const faq = [...document.querySelectorAll('#faq-list .faq-input-row')].map(r => ({
+    q: r.querySelector('input').value,
+    a: r.querySelector('textarea').value,
+  })).filter(item => item.q);
+  if (faq.length) spec.faq = faq;
+  return spec;
+}
+
+/* ── spec 빌드 (이미지 포함 + UI 업데이트) ──────────────────────── */
+let lastSpec = null;
+async function build() {
+  const errs = validateInputs();
+  if (errs.length) { alert('입력 오류:\n\n' + errs.join('\n')); return; }
+  const images = {};
+  const hero = document.getElementById('img-hero').files[0];
+  const intro = document.getElementById('img-intro').files[0];
+  const gal = [...document.getElementById('img-gallery').files].slice(0,3);
+  if (hero)  images.hero    = await toDataURL(hero);
+  if (intro) images.intro   = await toDataURL(intro);
+  if (gal.length) images.gallery = await Promise.all(gal.map(toDataURL));
+
+  const f = document.getElementById('f');
+  const category = f.category.value;
+  // 의료진 사진 (이미지가 있는 경우 별도 처리)
+  if (category === 'clinic') {
+    const rows = [...document.querySelectorAll('#doctors .doctor-row')];
+    for (const r of rows) {
+      const pf = r.querySelector('.doc-photo');
+      if (pf && pf.files.length) {
+        const ins = r.querySelectorAll('input');
+        if (!ins[0].value) continue;
+      }
+    }
+  }
+
+  const spec = collectSpec();
+  if (Object.keys(images).length) spec.images = images;
+  lastSpec = spec;
+
+  const shown = JSON.stringify(spec, (k,v) =>
+    (typeof v === 'string' && v.startsWith('data:'))
+      ? `[…업로드 이미지 ${Math.round(v.length/1024)}KB…]` : v, 2);
+  document.getElementById('json').textContent = shown;
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+
+/* ── 실시간 미리보기 자동갱신 (미리보기 열려있을 때만) ────────────── */
+let _pvTimer = null;
+document.getElementById('f').addEventListener('input', () => {
+  const overlay = document.getElementById('preview-overlay');
+  if (overlay.style.display !== 'flex') return;
+  clearTimeout(_pvTimer);
+  _pvTimer = setTimeout(() => {
+    try {
+      const spec = collectSpec();
+      if (lastSpec && lastSpec.images) spec.images = lastSpec.images;
+      lastSpec = spec;
+      document.getElementById('preview-frame').srcdoc = clientRender(spec);
+    } catch (e) { /* 조용히 무시 */ }
+  }, 500);
+});
+
+function download() {
+  const blob = new Blob([JSON.stringify(lastSpec,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (lastSpec.domain || 'site-spec').replace(/[^\w]/g,'-') + '.json';
+  a.click();
+}
+
+/* ── 발행 ────────────────────────────────────────────────────────── */
+async function publish() {
+  await build();
+  if (!lastSpec) return;
+  const btn = document.getElementById('btn-publish');
+  btn.disabled = true;
+  btn.textContent = '⏳ 발행 중...';
+  try {
+    const resp = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastSpec),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || '알 수 없는 오류');
+    btn.textContent = '✅ 발행 완료';
+    btn.style.background = '#16a34a';
+
+    // result 영역에 발행 완료 배너 삽입
+    const result = document.getElementById('result');
+    const existing = document.getElementById('publish-success');
+    if (existing) existing.remove();
+    const banner = document.createElement('div');
+    banner.id = 'publish-success';
+    banner.style.cssText = 'background:#dcfce7;border:1.5px solid #86efac;border-radius:14px;padding:20px 24px;margin-top:16px;font-size:14px;color:#166534';
+    banner.innerHTML = `<strong>🚀 발행 완료!</strong> — <code>${data.domain}</code><br>
+      <a href="/output/${data.slug}/" target="_blank" style="color:#16a34a;font-weight:600;text-decoration:underline">🌐 사이트 확인하기 →</a>
+      &nbsp;&nbsp;
+      <a href="/dashboard" target="_blank" style="color:#16a34a;font-weight:600;text-decoration:underline">📊 대시보드 →</a>`;
+    result.style.display = '';
+    result.querySelector('.card').appendChild(banner);
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🚀 발행'; }, 3000);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '🚀 발행';
+    alert('발행 실패: ' + e.message);
+  }
+}
+
+/* ── 미리보기 ─────────────────────────────────────────────────────── */
+let previewMode = 'desktop';
+
+async function preview() {
+  await build();
+  if (!lastSpec) return;
+
+  const overlay  = document.getElementById('preview-overlay');
+  const frame    = document.getElementById('preview-frame');
+  const spinner  = document.getElementById('preview-spinner');
+  const domainEl = document.getElementById('preview-domain');
+
+  overlay.style.display = 'flex';
+  frame.style.display   = 'none';
+  spinner.style.display = 'block';
+  domainEl.textContent  = lastSpec.domain || 'preview';
+  setPreviewMode(previewMode, false);
+
+  try {
+    const html = clientRender(lastSpec);
+    frame.srcdoc = html;
+    spinner.style.display = 'none';
+    frame.style.display   = '';
+  } catch (e) {
+    frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#f8f9fa"><div style="text-align:center;padding:40px;max-width:540px"><div style="font-size:48px;margin-bottom:16px">⚠️</div><h2 style="color:#1c1e54;margin-bottom:12px">렌더 오류</h2><pre style="text-align:left;background:#0d1117;color:#ff6b6b;padding:16px;border-radius:10px;font-size:13px;overflow:auto;margin-top:12px;white-space:pre-wrap">${e.message}</pre></div></body></html>`;
+    spinner.style.display = 'none';
+    frame.style.display   = '';
+  }
+}
+
+function setPreviewMode(mode, toggle=true) {
+  previewMode = mode;
+  const frame = document.getElementById('preview-frame');
+  const stage = document.getElementById('preview-stage');
+  const dBtn  = document.getElementById('btn-desktop');
+  const mBtn  = document.getElementById('btn-mobile');
+
+  if (mode === 'desktop') {
+    frame.style.width  = '100%';
+    frame.style.height = '100%';
+    stage.style.padding = '0';
+    frame.style.borderRadius = '0';
+    frame.style.boxShadow = 'none';
+    dBtn.classList.add('active');
+    mBtn.classList.remove('active');
+  } else {
+    frame.style.width  = '390px';
+    frame.style.height = '844px';
+    stage.style.padding = '20px';
+    frame.style.borderRadius = '32px';
+    frame.style.boxShadow = '0 30px 80px #0008';
+    mBtn.classList.add('active');
+    dBtn.classList.remove('active');
+  }
+}
+
+function closePreview() {
+  document.getElementById('preview-overlay').style.display = 'none';
+  document.getElementById('preview-frame').srcdoc = '';
+}
+
+// ESC 키로 미리보기 닫기
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePreview();
+});
+
+/* ── 입력 검증 ───────────────────────────────────────────────────── */
+function validateInputs() {
+  const f = document.getElementById('f');
+  const errors = [];
+
+  const name = f.name?.value.trim();
+  if (!name) errors.push('상호명(병원명)을 입력해 주세요.');
+
+  const domain = f.domain?.value.trim();
+  if (!domain) {
+    errors.push('도메인을 입력해 주세요. (예: my-clinic.com)');
+  } else if (!/^[\w-]+(\.[\w-]+)+$/.test(domain)) {
+    errors.push(`도메인 형식이 올바르지 않습니다: "${domain}" (예: my-clinic.com)`);
+  }
+
+  const phone = f.phone?.value.trim();
+  if (phone && !/^[\d\-\+\s()]{7,20}$/.test(phone)) {
+    errors.push(`전화번호 형식을 확인해 주세요: "${phone}"`);
+  }
+
+  const primary = f.primary?.value;
+  if (primary && !/^#[0-9a-fA-F]{3,8}$/.test(primary)) {
+    errors.push(`대표색상 형식이 올바르지 않습니다: "${primary}"`);
+  }
+
+  ['kakao', 'instagram', 'naver_place'].forEach(field => {
+    const el = f[field];
+    if (el && el.value.trim() && !el.value.trim().startsWith('http')) {
+      errors.push(`${field} 링크는 http(s)://로 시작해야 합니다.`);
+    }
+  });
+
+  return errors;
+}
+
+/* ── 폼 자동저장/복구 (localStorage) ────────────────────────────── */
+const LS_KEY = 'venom_form_v1';
+const SKIP_TYPES = new Set(['file', 'submit', 'button']);
+
+function saveFormToStorage() {
+  try {
+    const f = document.getElementById('f');
+    const data = {};
+    f.querySelectorAll('input,select,textarea').forEach(el => {
+      if (!el.name || SKIP_TYPES.has(el.type)) return;
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        data[el.name + '::' + el.value] = el.checked;
+      } else {
+        data[el.name + '::' + el.id] = el.value;
+      }
+    });
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  } catch (e) { /* private browsing or quota exceeded */ }
+}
+
+function restoreFormFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    const f = document.getElementById('f');
+    f.querySelectorAll('input,select,textarea').forEach(el => {
+      if (!el.name || SKIP_TYPES.has(el.type)) return;
+      const key = (el.type === 'checkbox' || el.type === 'radio')
+        ? el.name + '::' + el.value
+        : el.name + '::' + el.id;
+      if (!(key in data)) return;
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        el.checked = data[key];
+      } else {
+        el.value = data[key];
+      }
+    });
+    // 카테고리 전환 UI 동기화
+    const cat = f.category?.value;
+    if (cat) { switchCat(cat); f.category.value = cat; }
+    console.log('[VENOM] 이전 입력 복구 완료');
+  } catch (e) { /* 복구 실패는 조용히 무시 */ }
+}
+
+// 폼 입력 시 500ms 디바운스로 자동저장
+let _saveTimer = null;
+document.getElementById('f').addEventListener('input', () => {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveFormToStorage, 500);
+});
+document.getElementById('f').addEventListener('change', () => {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveFormToStorage, 500);
+});
+
+// 페이지 로드 시 복구
+restoreFormFromStorage();
+</script>
+</body>
+</html>

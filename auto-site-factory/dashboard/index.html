@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VENOM Site Factory — 대시보드</title>
+<style>
+:root{--p:#533afd;--dark:#1c1e54;--ink:#0d253d;--muted:#64748d;--soft:#f6f9fc;--border:#e3e8ee;--green:#16a34a;--yellow:#ca8a04;--red:#dc2626}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Pretendard',-apple-system,sans-serif;background:var(--soft);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+
+header{background:var(--dark);color:#fff;padding:0}
+.header-inner{max-width:1180px;margin:0 auto;padding:20px 32px;display:flex;align-items:center;gap:16px}
+.header-inner h1{font-size:18px;font-weight:700;letter-spacing:-.03em}
+.header-inner h1 span{color:#c4b5fd}
+.header-inner .sub{font-size:13px;color:rgba(255,255,255,.5);margin-left:auto}
+.nav-link{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 16px;border-radius:9999px;font-size:13px;font-weight:500;transition:.15s}
+.nav-link:hover{background:rgba(255,255,255,.2)}
+
+.main{max-width:1180px;margin:0 auto;padding:40px 32px}
+
+/* 통계 카드 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 24px}
+.stat-card .num{font-size:32px;font-weight:300;letter-spacing:-1px;color:var(--p);line-height:1;margin-bottom:4px;font-feature-settings:"tnum"}
+.stat-card .lbl{font-size:13px;color:var(--muted)}
+
+/* 섹션 헤더 */
+.sec-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.sec-header h2{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.sec-header .count{background:var(--p);color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:9999px}
+.sec-header .actions{margin-left:auto;display:flex;gap:8px}
+.btn-sm{background:var(--p);color:#fff;border:none;padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.btn-sm:hover{background:#4434d4}
+.btn-sm.outline{background:transparent;border:1.5px solid var(--border);color:var(--ink)}
+.btn-sm.outline:hover{border-color:var(--p);color:var(--p)}
+
+/* 사이트 테이블 */
+.site-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.site-table th{background:var(--soft);border-bottom:1px solid var(--border);padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.site-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+.site-table tr:last-child td{border-bottom:none}
+.site-table tr:hover td{background:var(--soft)}
+.site-name{font-weight:500;color:var(--ink)}
+.site-domain{font-size:13px;color:var(--p);font-family:monospace}
+.cat-badge{display:inline-block;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:600;letter-spacing:.04em}
+.cat-clinic{background:#ede9fe;color:#7c3aed}
+.cat-local{background:#fef3c7;color:#92400e}
+.cat-press{background:#dcfce7;color:#166534}
+.cat-unknown{background:var(--soft);color:var(--muted)}
+.size-badge{font-size:12px;color:var(--muted);font-family:monospace}
+.date-cell{font-size:12px;color:var(--muted)}
+.actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+.link-btn{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border:1px solid var(--border);color:var(--ink);padding:5px 10px;border-radius:8px;font-size:12px;font-weight:500;transition:.15s;white-space:nowrap}
+.link-btn:hover{border-color:var(--p);color:var(--p);background:#eef0ff}
+.seo-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot-green{background:var(--green)}
+.dot-yellow{background:var(--yellow)}
+.dot-red{background:var(--red)}
+.seo-cell{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+
+/* 빈 상태 */
+.empty{text-align:center;padding:80px 32px;color:var(--muted)}
+.empty .ico{font-size:48px;margin-bottom:16px}
+.empty p{font-size:15px;margin-bottom:24px}
+
+/* 로딩 */
+.loading{text-align:center;padding:60px;color:var(--muted)}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 옵션 뱃지들 */
+.opt-list{display:flex;gap:4px;flex-wrap:wrap}
+.opt{padding:2px 7px;background:var(--soft);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--muted)}
+.opt.active{background:#eef0ff;border-color:#c7d2fe;color:var(--p)}
+
+@media(max-width:900px){
+  .stats{grid-template-columns:1fr 1fr}
+  .site-table{font-size:13px}
+  .actions-cell{flex-direction:column}
+}
+@media(max-width:600px){
+  .main{padding:24px 16px}
+  .stats{grid-template-columns:1fr 1fr}
+  .header-inner{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1><span>V</span> VENOM Site Factory</h1>
+    <span class="sub">대시보드 — 직원용</span>
+    <a href="/" class="nav-link">+ 새 사이트</a>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- 통계 -->
+  <div class="stats" id="stats">
+    <div class="stat-card"><div class="num" id="stat-total">—</div><div class="lbl">생성된 사이트</div></div>
+    <div class="stat-card"><div class="num" id="stat-clinic">—</div><div class="lbl">병원·의원</div></div>
+    <div class="stat-card"><div class="num" id="stat-local">—</div><div class="lbl">소상공인</div></div>
+    <div class="stat-card"><div class="num" id="stat-press">—</div><div class="lbl">뉴스룸·press</div></div>
+  </div>
+
+  <!-- 사이트 목록 -->
+  <div class="sec-header">
+    <h2>생성된 사이트</h2>
+    <span class="count" id="site-count">0</span>
+    <div class="actions">
+      <button class="btn-sm outline" onclick="loadSites()">↻ 새로고침</button>
+      <a href="/" class="btn-sm">+ 새 사이트 생성</a>
+    </div>
+  </div>
+
+  <div id="site-list">
+    <div class="loading"><div class="spinner"></div><br>사이트 목록 로딩 중...</div>
+  </div>
+
+</div>
+
+<script>
+async function loadSites() {
+  const el = document.getElementById('site-list');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div><br>사이트 목록 로딩 중...</div>';
+  try {
+    const resp = await fetch('/api/sites');
+    if (!resp.ok) throw new Error('서버 오류 ' + resp.status);
+    const sites = await resp.json();
+    renderSites(sites);
+    updateStats(sites);
+  } catch (e) {
+    el.innerHTML = `<div class="empty"><div class="ico">⚠️</div><p>불러오기 실패: ${e.message}</p><p style="font-size:13px">서버가 실행 중인지 확인하세요: <code>node auto-site-factory/server.js</code></p></div>`;
+  }
+}
+
+function updateStats(sites) {
+  document.getElementById('stat-total').textContent = sites.length;
+  document.getElementById('stat-clinic').textContent = sites.filter(s => s.category === 'clinic').length;
+  document.getElementById('stat-local').textContent = sites.filter(s => s.category === 'local').length;
+  document.getElementById('stat-press').textContent = sites.filter(s => s.category === 'press').length;
+  document.getElementById('site-count').textContent = sites.length;
+}
+
+function catBadge(cat) {
+  const map = { clinic: ['cat-clinic', '병원'], local: ['cat-local', '소상공인'], press: ['cat-press', '뉴스룸'] };
+  const [cls, label] = map[cat] || ['cat-unknown', cat || '?'];
+  return `<span class="cat-badge ${cls}">${label}</span>`;
+}
+
+function seoStatus(site) {
+  // manifest 있으면 options에서 seo_pack 여부 확인
+  const hasSeo = site.options && site.options.includes('seo_pack');
+  const hasBlog = site.hasBlog;
+  const dots = [
+    `<span class="seo-dot ${hasSeo ? 'dot-green' : 'dot-yellow'}" title="${hasSeo ? 'SEO 팩 포함' : 'SEO 팩 없음'}"></span>`,
+    `<span class="seo-dot ${hasBlog ? 'dot-green' : 'dot-red'}" title="${hasBlog ? '블로그 있음' : '블로그 없음'}"></span>`,
+  ].join('');
+  return `<div class="seo-cell">${dots}<span>${hasSeo ? 'SEO' : '—'} / ${hasBlog ? '블로그' : '블로그 없음'}</span></div>`;
+}
+
+function optBadges(options) {
+  if (!options || !options.length) return '<span class="opt">기본</span>';
+  const labels = { seo_pack: 'SEO', medical_review: '의료검수', blog_auto: '블로그', image_pack: '이미지', translate: '다국어', analytics: '분석' };
+  return `<div class="opt-list">${options.map(o =>
+    `<span class="opt active">${labels[o] || o}</span>`
+  ).join('')}</div>`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes > 1024*1024) return (bytes/1024/1024).toFixed(1)+'MB';
+  return Math.round(bytes/1024)+'KB';
+}
+
+function renderSites(sites) {
+  const el = document.getElementById('site-list');
+  if (!sites.length) {
+    el.innerHTML = `<div class="empty">
+      <div class="ico">🏭</div>
+      <p>생성된 사이트가 없습니다.</p>
+      <a href="/" class="btn-sm">첫 번째 사이트 생성하기</a>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<table class="site-table">
+    <thead><tr>
+      <th>브랜드</th>
+      <th>도메인</th>
+      <th>카테고리</th>
+      <th>규모</th>
+      <th>옵션</th>
+      <th>SEO</th>
+      <th>크기</th>
+      <th>생성일시</th>
+      <th>바로가기</th>
+    </tr></thead>
+    <tbody>
+    ${sites.map(s => `<tr>
+      <td><div class="site-name">${s.brandName || s.slug}</div>${s.specialtyLabel ? `<div style="font-size:12px;color:var(--muted)">${s.specialtyLabel}</div>` : ''}</td>
+      <td><a class="site-domain" href="https://${s.domain}/" target="_blank">${s.domain}</a></td>
+      <td>${catBadge(s.category)}</td>
+      <td><span style="font-size:13px;color:var(--muted)">${s.scale || '—'}</span></td>
+      <td>${optBadges(s.options)}</td>
+      <td>${seoStatus(s)}</td>
+      <td><span class="size-badge">${fmtSize(s.sizeBytes)}</span></td>
+      <td><span class="date-cell">${fmtDate(s.generatedAt)}</span></td>
+      <td><div class="actions-cell">
+        <a class="link-btn" href="/output/${s.slug}/" target="_blank">🌐 미리보기</a>
+        <a class="link-btn" href="/output/${s.slug}/sitemap.xml" target="_blank">🗺 sitemap</a>
+        <a class="link-btn" href="/output/${s.slug}/llms.txt" target="_blank">🤖 llms.txt</a>
+        ${s.hasBlog ? `<a class="link-btn" href="/output/${s.slug}/blog/" target="_blank">📝 블로그</a>` : ''}
+      </div></td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+loadSites();
+</script>
+</body>
+</html>

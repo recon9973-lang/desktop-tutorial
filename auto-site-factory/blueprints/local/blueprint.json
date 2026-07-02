@@ -1,0 +1,44 @@
+{
+  "category": "local",
+  "label": "소상공인·로컬",
+  "description": "식당·카페·미용실 등 지역 소상공인 홈페이지. 메뉴·후기·오시는길 중심 구조.",
+  "defaultOptions": ["seo_pack", "blog_auto", "analytics"],
+  "types": {
+    "cafe": {
+      "label": "카페·디저트",
+      "keywords": ["시그니처 음료", "브런치", "수제 디저트", "테이크아웃", "공간대여"]
+    },
+    "restaurant": {
+      "label": "식당·음식점",
+      "keywords": ["점심 특선", "저녁 코스", "포장·배달", "단체 예약", "홀 식사"]
+    },
+    "beauty": {
+      "label": "헤어·미용실",
+      "keywords": ["커트", "펌·염색", "두피케어", "트리트먼트", "스타일링"]
+    },
+    "nail": {
+      "label": "네일·속눈썹샵",
+      "keywords": ["젤네일", "네일아트", "속눈썹 연장", "왁싱", "발관리"]
+    },
+    "fitness": {
+      "label": "헬스·PT샵",
+      "keywords": ["1:1 PT", "체중감량", "근력운동", "재활운동", "체형교정"]
+    },
+    "bakery": {
+      "label": "베이커리·케이크",
+      "keywords": ["맞춤 케이크", "천연발효빵", "오더케이크", "시즌 메뉴", "픽업 주문"]
+    },
+    "retail": {
+      "label": "소매·전문점",
+      "keywords": ["품질 보증", "전문 상담", "당일 출고", "회원 혜택", "기획 이벤트"]
+    }
+  },
+  "scales": {
+    "lite":     { "label": "Lite",     "pages": ["home"] },
+    "standard": { "label": "Standard", "pages": ["home", "menu", "reviews", "contact"] },
+    "pro":      { "label": "Pro",      "pages": ["home", "menu", "reviews", "blog", "directions", "contact"] }
+  },
+  "sections": {
+    "home": ["hero", "trust", "about", "menu", "gallery", "hours", "reviews", "cta"]
+  }
+}
