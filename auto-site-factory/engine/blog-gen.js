@@ -94,8 +94,8 @@ async function _generate(spec, specialty, category, count) {
 }
 
 async function run(specPath, count) {
-  if (!process.env.OPENAI_API_KEY) {
-    console.log('[blog_auto] OPENAI_API_KEY 없음 — 건너뜁니다.');
+  if (!process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+    console.log('[blog_auto] OPENAI_API_KEY 또는 ANTHROPIC_API_KEY 없음 — 건너뜁니다.');
     return;
   }
 
@@ -121,8 +121,8 @@ async function run(specPath, count) {
 }
 
 async function runFromRaw(rawSpec, count = 3) {
-  if (!process.env.OPENAI_API_KEY) {
-    console.log('[blog_auto] OPENAI_API_KEY 없음 — 건너뜁니다.');
+  if (!process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+    console.log('[blog_auto] OPENAI_API_KEY 또는 ANTHROPIC_API_KEY 없음 — 건너뜁니다.');
     return;
   }
   if (!rawSpec.options || !rawSpec.options.includes('blog_auto')) return;

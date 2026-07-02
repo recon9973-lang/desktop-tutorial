@@ -1,0 +1,46 @@
+{
+  "category": "press",
+  "slug": "venom-newsroom",
+  "lang": "ko",
+  "domain": "newsroom.venom.kr",
+  "brand": {
+    "name": "베놈 뉴스룸",
+    "primary": "#3b5bdb",
+    "tagline": "병원 디지털 마케팅의 최신 인사이트",
+    "phone": "02-000-0000",
+    "region": "서울",
+    "address": "서울특별시 마포구 상암동 1580",
+    "kakao": "https://pf.kakao.com/_example/chat",
+    "naver_place": "https://blog.naver.com/venommarketing",
+    "instagram": "https://instagram.com/venom_marketing"
+  },
+  "press": {
+    "type": "newsroom"
+  },
+  "scale": "standard",
+  "options": ["seo_pack", "blog_auto", "analytics"],
+  "hero": {
+    "headline": "병원 마케팅의 <b>새로운 기준</b>을 만듭니다",
+    "sub": "GEO·AEO·SEO 최적화 전략과 실전 케이스를 가장 빠르게 전달합니다. 구독하고 경쟁자보다 한 발 앞서세요."
+  },
+  "meta": {
+    "description": "베놈 뉴스룸 — 병원·클리닉 디지털 마케팅 최신 트렌드, GEO/AEO 전략, SEO 실전 케이스 뉴스레터.",
+    "keywords": "병원마케팅, 의원SEO, GEO최적화, AI검색마케팅, 클리닉브랜딩, 네이버플레이스, 의료광고"
+  },
+  "trust": [
+    { "num": "500+",  "label": "구독 의원·병원" },
+    { "num": "3년",   "label": "발행 연속" },
+    { "num": "주 2회","label": "뉴스레터 발송" },
+    { "num": "98%",  "label": "독자 만족도" }
+  ],
+  "menu": [
+    { "title": "GEO 최적화 완전 가이드", "desc": "ChatGPT·Perplexity가 병원을 추천하게 만드는 구체적인 방법", "cat": "GEO/AEO" },
+    { "title": "네이버 플레이스 2026 알고리즘 변화", "desc": "리뷰·키워드·사진 최적화 핵심 포인트 총정리", "cat": "로컬SEO" },
+    { "title": "의료광고 사전심의 실전 체크리스트", "desc": "위반 사례 10선으로 배우는 합법 콘텐츠 기준", "cat": "법규준수" }
+  ],
+  "faq": [
+    { "q": "뉴스레터는 어떻게 구독하나요?", "a": "카카오 채널 친구 추가 또는 이메일 구독 양식을 작성하시면 즉시 발송됩니다." },
+    { "q": "콘텐츠를 우리 병원 SNS에 공유해도 되나요?", "a": "출처 표기 시 자유롭게 공유 가능합니다. 상업적 재가공은 별도 협의가 필요합니다." },
+    { "q": "병원 마케팅 컨설팅도 받을 수 있나요?", "a": "카카오 채널 또는 이메일로 문의 주시면 담당자가 24시간 내 답변드립니다." }
+  ]
+}
