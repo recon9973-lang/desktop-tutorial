@@ -83,18 +83,28 @@ function authCheck(req) {
   return (req.headers['authorization'] || '') === `Bearer ${secret}`;
 }
 
+const SETTINGS_PATH = 'venom-wordpress/preview/content/posting-settings.json';
+
 async function loadSettings() {
+  // 1순위: GitHub에서 설정 파일 직접 조회 (HTTP 자기호출보다 실패 지점이 적다)
   try {
-    // Node 18+ Vercel 런타임의 전역 fetch 사용 (node-fetch 의존 제거 — 조용한 무력화 방지)
-    const f = (typeof fetch !== 'undefined') ? fetch : null;
-    if (!f) return DEFAULT_SETTINGS;
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-    const r = await f(`${baseUrl}/api/posting-settings`, {
-      headers: { Authorization: `Bearer ${process.env.ADMIN_SECRET || ''}` },
-    });
-    if (r.ok) return await r.json();
+    const f = await getJsonFile(SETTINGS_PATH, null);
+    if (f && f.content && typeof f.content.enabled === 'boolean') {
+      return { ...f.content, _source: 'github' };
+    }
   } catch {}
-  return DEFAULT_SETTINGS;
+  // 2순위: 자체 API 경유 (구 방식 유지)
+  try {
+    const f = (typeof fetch !== 'undefined') ? fetch : null;
+    if (f) {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      const r = await f(`${baseUrl}/api/posting-settings`, {
+        headers: { Authorization: `Bearer ${process.env.ADMIN_SECRET || ''}` },
+      });
+      if (r.ok) return { ...(await r.json()), _source: 'self-api' };
+    }
+  } catch {}
+  return { ...DEFAULT_SETTINGS, _source: 'fallback-default' };
 }
 
 module.exports = async function handler(req, res) {
@@ -105,7 +115,8 @@ module.exports = async function handler(req, res) {
 
   const settings = await loadSettings();
   if (!settings.enabled) {
-    return res.status(200).json({ ok: true, skipped: true, reason: '자동 포스팅 비활성화 상태' });
+    // _source가 fallback-default면 "설정을 못 읽어서" 꺼진 것으로 보이는 상태 — 원인 구분용으로 노출
+    return res.status(200).json({ ok: true, skipped: true, reason: '자동 포스팅 비활성화 상태', settingsSource: settings._source || 'unknown' });
   }
 
   const results = [];
