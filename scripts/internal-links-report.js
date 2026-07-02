@@ -6,7 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { suggestLinks } = require('../lib/internal-linker');
+const { suggestLinks } = require('../venom-wordpress/preview/lib/internal-linker');
 
 const ROOT = path.resolve(__dirname, '..');
 const POSTS = path.join(ROOT, 'venom-wordpress/preview/content/blog-posts.json');

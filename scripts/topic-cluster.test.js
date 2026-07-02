@@ -2,7 +2,7 @@
 
 // node scripts/topic-cluster.test.js
 const assert = require('assert');
-const T = require('../lib/topic-cluster');
+const T = require('../venom-wordpress/preview/lib/topic-cluster');
 
 let pass = 0;
 function test(n, fn){ try{ fn(); pass++; console.log('  ✓ '+n); }catch(e){ console.error('  ✗ '+n+'\n    '+e.message); process.exitCode=1; } }

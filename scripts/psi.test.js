@@ -2,7 +2,7 @@
 
 // node scripts/psi.test.js
 const assert = require('assert');
-const { parsePsi } = require('../lib/psi');
+const { parsePsi } = require('../venom-wordpress/preview/lib/psi');
 
 let pass = 0;
 function test(n, fn){ try{ fn(); pass++; console.log('  ✓ '+n); }catch(e){ console.error('  ✗ '+n+'\n    '+e.message); process.exitCode=1; } }

@@ -24,7 +24,7 @@ jobs:
           ENDPOINT: ${{ vars.PUBLISH_ENDPOINT }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          URL="${ENDPOINT:-https://desktop-tutorial-chi-peach.vercel.app/api/cron-daily-posts}"
+          URL="${ENDPOINT:-https://venom-new-site.vercel.app/api/cron-daily-posts}"
           if [ -z "$CRON_SECRET" ]; then
             echo "::error::CRON_SECRET secret is not set in this repository (Settings → Secrets and variables → Actions)."
             exit 1
