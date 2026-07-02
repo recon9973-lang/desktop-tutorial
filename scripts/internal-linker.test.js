@@ -2,7 +2,7 @@
 
 // 의존성 없는 경량 테스트 러너:  node scripts/internal-linker.test.js
 const assert = require('assert');
-const L = require('../lib/internal-linker');
+const L = require('../venom-wordpress/preview/lib/internal-linker');
 
 let pass = 0;
 function test(name, fn) {

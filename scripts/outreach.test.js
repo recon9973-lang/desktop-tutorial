@@ -2,7 +2,7 @@
 
 // node scripts/outreach.test.js
 const assert = require('assert');
-const O = require('../lib/outreach');
+const O = require('../venom-wordpress/preview/lib/outreach');
 
 let pass = 0;
 function test(name, fn) {

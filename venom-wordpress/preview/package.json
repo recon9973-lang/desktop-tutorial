@@ -1,0 +1,6 @@
+{
+  "name": "venom-site",
+  "private": true,
+  "engines": { "node": ">=18" },
+  "dependencies": { "linkedom": "^0.18.12" }
+}

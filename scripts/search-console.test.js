@@ -3,7 +3,7 @@
 // node scripts/search-console.test.js
 const assert = require('assert');
 const crypto = require('crypto');
-const G = require('../lib/search-console');
+const G = require('../venom-wordpress/preview/lib/search-console');
 
 let pass = 0;
 function test(n, fn){ try{ fn(); pass++; console.log('  ✓ '+n); }catch(e){ console.error('  ✗ '+n+'\n    '+e.message); process.exitCode=1; } }

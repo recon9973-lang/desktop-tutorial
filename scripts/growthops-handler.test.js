@@ -6,7 +6,7 @@ const assert = require('assert');
 const path = require('path');
 
 // 1) github-store를 require 캐시에서 인메모리 구현으로 교체
-const storePath = require.resolve('../lib/github-store');
+const storePath = require.resolve('../venom-wordpress/preview/lib/github-store');
 const mem = { files: {} }; // path -> content
 require.cache[storePath] = {
   id: storePath, filename: storePath, loaded: true, exports: {
@@ -16,7 +16,7 @@ require.cache[storePath] = {
   },
 };
 
-const handler = require('../api/growthops');
+const handler = require('../venom-wordpress/preview/api/growthops');
 
 mem.posts = [
   { id: 'a', slug: 'a', cat: 'dental', region: '대구', status: 'published', title: '대구 임플란트 마케팅', keywords: '대구,임플란트,치과', html: '' },
