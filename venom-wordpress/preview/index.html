@@ -744,9 +744,10 @@ body{padding-top:0}
             <a href="/online-marketing/naver" onclick="ld('online_naver');return false">네이버 마케팅</a>
             <a href="/online-marketing/sns" onclick="ld('online_sns');return false">인스타그램·SNS</a>
             <a href="/online-marketing/youtube" onclick="ld('online_youtube');return false">유튜브 마케팅</a>
-            <div class="grp">광고·채널운영</div>
+            <div class="grp">검색광고</div>
             <a href="/naver-ads" onclick="ld('naver_ads');return false">네이버 검색광고</a>
             <a href="/google-ads" onclick="ld('google_ads');return false">구글 검색광고</a>
+            <div class="grp">운영·홍보</div>
             <a href="/channel-management" onclick="ld('channel_mgmt');return false">공식채널 관리</a>
             <a href="/pr" onclick="ld('media_pr');return false">언론홍보</a>
             <div class="grp">가이드</div>
@@ -1549,8 +1550,8 @@ body{padding-top:0}
     <div class="container">
       <div class="cta-inner">
         <div style="display:inline-block;font-size:12.5px;font-weight:800;letter-spacing:.05em;color:#fecdd3;background:rgba(225,29,72,.25);border:1px solid rgba(225,29,72,.5);padding:6px 16px;border-radius:9999px;margin-bottom:18px">매월 10명 한정</div>
-        <h2>AI가 추천하는 진료 예약 자동화 시스템,<br>지금 시작하세요</h2>
-        <p>이제 경쟁 병원에 지지 마세요. 원장님은 진료만 보세요 — 나머지는 베놈 AI가 도와드릴게요.</p>
+        <h2 style="word-break:keep-all;text-wrap:balance"><span style="white-space:nowrap">AI가 추천하는</span> <span style="white-space:nowrap">진료 예약 자동화 시스템</span><br>지금 시작하세요</h2>
+        <p style="word-break:keep-all;max-width:560px;margin-left:auto;margin-right:auto">이제 경쟁 병원에 지지 마세요.<br>원장님은 진료만 보세요 — 나머지는 베놈 AI가 도와드릴게요.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 카카오상담</a>
           <a href="tel:16614142" class="btn btn-ghost btn-lg">📞 1661-4142 전화상담</a>
@@ -1730,23 +1731,27 @@ body{padding-top:0}
       .diag-track{height:7px;background:rgba(255,255,255,.1);border-radius:9999px;overflow:hidden;margin-bottom:13px}
       .diag-track i{display:block;height:100%;border-radius:9999px}
       .diag-foot{margin-top:16px;font-size:11px;color:rgba(255,255,255,.5);text-align:center;border-top:1px solid rgba(255,255,255,.1);padding-top:12px}
-      @media(max-width:860px){.diag-hub-inner{grid-template-columns:1fr;gap:30px;text-align:center}.diag-hub-head{text-align:center}.diag-context,.diag-nav{justify-content:center}.diag-hub-visual{max-width:420px;margin:0 auto;width:100%}}
+      .diag-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+      .diag-flow button{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:10px 16px;cursor:pointer;color:#fff;font-family:inherit;transition:.2s}
+      .diag-flow button:hover{background:rgba(255,255,255,.15);transform:translateY(-2px)}
+      .diag-flow button b{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#6ee7b7);color:#1c1e54;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .diag-flow button span{font-size:13px;font-weight:700}
+      .diag-flow>i{color:rgba(255,255,255,.4);font-style:normal;font-weight:700}
+      @media(max-width:860px){.diag-hub-inner{grid-template-columns:1fr;gap:30px;text-align:center}.diag-hub-head{text-align:center}.diag-context,.diag-nav,.diag-flow{justify-content:center}.diag-hub-visual{max-width:420px;margin:0 auto;width:100%}}
       @media(max-width:600px){.diag-hub-head h2{font-size:25px}.diag-hub{padding:40px 0 34px}}
     </style>
     <div class="diag-hub-inner">
       <div class="diag-hub-head">
         <div class="section-badge">종합 진단 센터</div>
         <h2><span id="diag-cat-label">우리 병원</span> <em>AI·검색</em> 종합 진단</h2>
-        <p>13개 항목 자가진단과 6가지 실시간 검색 진단을 한 페이지에서. 선택한 진료과·지역이 그대로 유지됩니다.</p>
+        <p>우리 병원이 AI·검색에서 몇 점인지 — 3단계면 끝납니다.</p>
         <div class="diag-context" id="diag-context"></div>
-        <div class="diag-nav">
-          <button onclick="diagJump('vd')">📋 13항목 자가진단</button>
-          <button onclick="diagJump('seo')">🔍 SEO 점수</button>
-          <button onclick="diagJump('geo')">🤖 GEO 점수</button>
-          <button onclick="diagJump('kw')">📊 키워드 검색량</button>
-          <button onclick="diagJump('trend')">📈 검색 트렌드</button>
-          <button onclick="diagJump('aeo')">🤖 AI 추천</button>
-          <button onclick="diagJump('expose')">🔎 노출·경쟁</button>
+        <div class="diag-flow">
+          <button onclick="diagJump('vd')"><b>1</b><span>1분 자가진단</span></button>
+          <i>→</i>
+          <button onclick="diagJump('seo')"><b>2</b><span>실측 정밀 체크</span></button>
+          <i>→</i>
+          <button onclick="var el=document.querySelector('.diag-close');if(el)el.scrollIntoView({behavior:'smooth'})"><b>3</b><span>무료 리포트 받기</span></button>
         </div>
       </div>
       <div class="diag-hub-visual" aria-hidden="true">
@@ -1833,9 +1838,9 @@ body{padding-top:0}
     </style>
     <div class="container">
       <div class="diag-sec">
-        <span class="diag-sec-no">STEP 1 · 자가진단</span>
-        <h2 style="font-size:18px">📋 13개 항목 자가진단</h2>
-        <p>예·부분·아니오로 체크하면 GEO·SEO 준비도가 100점 만점 점수로 나옵니다.</p>
+        <span class="diag-sec-no">STEP 1</span>
+        <h2 style="font-size:22px">먼저, 1분 자가진단</h2>
+        <p>13개 항목만 체크하면 위 예시 리포트가 <b>내 병원 점수</b>로 바뀝니다.</p>
       </div>
       <!-- 트리거(기본 닫힘) -->
       <button class="vd-launcher" id="vd-launcher" onclick="vdToggle()" type="button" aria-expanded="false" aria-controls="vd-body">
@@ -1991,9 +1996,9 @@ body{padding-top:0}
   <section class="tool-section">
     <div class="container">
       <div class="diag-sec">
-        <span class="diag-sec-no">STEP 2 · 실시간 진단</span>
-        <h3>🔍 실시간 검색 진단 6종</h3>
-        <p>실제 데이터로 SEO·GEO·키워드·트렌드·AI 추천·노출 경쟁을 즉시 확인하세요.</p>
+        <span class="diag-sec-no">STEP 2</span>
+        <h3>다음, 실제 데이터로 정밀 체크</h3>
+        <p>궁금한 것만 골라 쓰세요 — SEO·GEO 점수, 키워드 검색량, AI 추천 여부까지 전부 실측입니다.</p>
       </div>
       <div id="seo-lb" class="seo-lb" style="display:none"></div>
       <div class="tool-grid">
@@ -4071,11 +4076,10 @@ body{padding-top:0}
           <a href="/seo-dictionary" onclick="sp('seo-dict');return false">SEO 용어 사전</a>
           <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
           <a href="/contact" onclick="sp('contact');return false">상담신청</a>
-          <a href="/admin.html" target="_blank" rel="noopener" style="color:rgba(255,255,255,.3);font-size:11px">관리자</a>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2025 병원마케팅 베놈(주식회사 베놈). All rights reserved. · <a href="/privacy" onclick="sp('privacy');return false" style="color:rgba(255,255,255,.55);text-decoration:underline">개인정보처리방침</a> · <a href="/terms" onclick="sp('terms');return false" style="color:rgba(255,255,255,.45)">이용약관</a> <span class="secret-admin-trigger" onclick="secretAdminClick()" title="관리자" style="cursor:pointer;user-select:none;color:inherit">⚡</span></span>
+        <span>© 2025 병원마케팅 베놈(주식회사 베놈). All rights reserved. · <a href="/privacy" onclick="sp('privacy');return false" style="color:rgba(255,255,255,.55);text-decoration:underline">개인정보처리방침</a> · <a href="/terms" onclick="sp('terms');return false" style="color:rgba(255,255,255,.45)">이용약관</a> <span class="secret-admin-trigger" onclick="secretAdminClick()" style="cursor:default;user-select:none;color:inherit">⚡</span></span>
         <span>사업자등록번호: 291-86-02777 | 대표: 김보형 | 대구광역시 수성구 용학로25길54, 4층 | 1661-4142</span>
       </div>
     </div>
@@ -4702,20 +4706,22 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 /* ── 스캔형 로딩 애니메이션 ── */
 .seo-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:18px;padding:48px 20px;text-align:center}
-.seo-radar{position:relative;width:120px;height:120px;border-radius:50%;
-  background:radial-gradient(circle,rgba(83,58,253,.06),transparent 70%)}
-.seo-radar i{position:absolute;inset:0;margin:auto;border-radius:50%;border:1.5px solid var(--psub);opacity:.6}
-.seo-radar i:nth-child(1){width:40px;height:40px}
-.seo-radar i:nth-child(2){width:78px;height:78px;animation:seoPulse 1.8s ease-out infinite}
-.seo-radar i:nth-child(3){width:116px;height:116px;animation:seoPulse 1.8s ease-out .6s infinite}
+.seo-radar{position:relative;width:170px;height:170px;border-radius:50%;
+  background:radial-gradient(circle,rgba(83,58,253,.1),transparent 70%)}
+.seo-radar i{position:absolute;inset:0;margin:auto;border-radius:50%;border:2px solid var(--p);opacity:.55}
+.seo-radar i:nth-child(1){width:58px;height:58px}
+.seo-radar i:nth-child(2){width:112px;height:112px;animation:seoPulse 1.8s ease-out infinite}
+.seo-radar i:nth-child(3){width:164px;height:164px;animation:seoPulse 1.8s ease-out .6s infinite}
 .seo-radar b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:800;color:var(--p);letter-spacing:.04em}
+  font-size:19px;font-weight:800;color:var(--p);letter-spacing:.04em}
 .seo-radar::after{content:"";position:absolute;inset:0;border-radius:50%;
-  background:conic-gradient(from 0deg,transparent 0deg,rgba(83,58,253,.28) 60deg,transparent 90deg);
-  animation:spin 1.3s linear infinite;-webkit-mask:radial-gradient(circle,transparent 18px,#000 19px);mask:radial-gradient(circle,transparent 18px,#000 19px)}
-@keyframes seoPulse{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.12);opacity:0}}
-.seo-loader-txt strong{display:block;font-size:15px;color:var(--ink);font-weight:700}
-.seo-loader-txt span{display:block;font-size:12px;color:var(--mute);margin-top:4px}
+  background:conic-gradient(from 0deg,transparent 0deg,rgba(83,58,253,.5) 60deg,transparent 90deg);
+  animation:spin 1.3s linear infinite;-webkit-mask:radial-gradient(circle,transparent 27px,#000 28px);mask:radial-gradient(circle,transparent 27px,#000 28px)}
+@keyframes seoPulse{0%{transform:scale(.7);opacity:.8}100%{transform:scale(1.1);opacity:0}}
+.seo-loader-txt strong{display:block;font-size:17px;color:var(--ink);font-weight:800}
+.seo-loader-txt span{display:block;font-size:13.5px;color:var(--mute);margin-top:5px}
+/* 분석 결과가 뜨면 해당 카드를 전폭으로 확장 — 옆 칸 흰 여백 해소 */
+.tool-card.expanded{grid-column:1/-1}
 /* 결과 컨테이너: 숫자/콘텐츠 칸 밖 넘침 방지 */
 #seo-result{overflow:hidden;word-break:keep-all}
 #seo-result svg{max-width:100%;height:auto}
@@ -5269,14 +5275,34 @@ function runTrend(){
     var colors=['#533afd','#f96bee','#10b981'];
     var html='<div style="font-weight:600;margin-bottom:14px">최근 1년 검색 트렌드 (상대지수)</div>';
     results.forEach(function(g,gi){
-      var data=g.data||[];var max=Math.max.apply(null,data.map(function(x){return x.ratio;}).concat([1]));
-      var last=data.length?Math.round(data[data.length-1].ratio):0;
-      html+='<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px"><span style="color:'+colors[gi]+'">'+g.title+'</span><span style="color:var(--mute)">최근 지수 '+last+'</span></div>';
-      html+='<div style="display:flex;align-items:flex-end;gap:2px;height:60px">';
-      data.forEach(function(p){var h=Math.round(p.ratio/max*100);html+='<div title="'+p.period+': '+Math.round(p.ratio)+'" style="flex:1;height:'+h+'%;min-height:2px;background:'+colors[gi]+';opacity:.85;border-radius:2px 2px 0 0"></div>';});
-      html+='</div></div>';
+      var data=g.data||[];var vals=data.map(function(x){return x.ratio;});
+      var max=Math.max.apply(null,vals.concat([1]));
+      var maxIdx=vals.indexOf(Math.max.apply(null,vals));
+      var minIdx=vals.indexOf(Math.min.apply(null,vals));
+      var last=data.length?Math.round(vals[vals.length-1]):0;
+      var prev=data.length>1?Math.round(vals[vals.length-2]):0;
+      var delta=prev?Math.round((last-prev)/prev*100):0;
+      var fmtM=function(p){return p&&p.period?p.period.slice(2,7).replace('-','.'):'';};
+      html+='<div style="margin-bottom:22px">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:8px;flex-wrap:wrap;gap:4px"><span style="color:'+colors[gi]+'">'+g.title+'</span><span style="font-weight:600;color:var(--mute);font-size:12px">최근 지수 '+last+' · 전월 대비 <b style="color:'+(delta>=0?'#16a34a':'#dc2626')+'">'+(delta>=0?'+':'')+delta+'%</b></span></div>';
+      html+='<div style="display:flex;align-items:flex-end;gap:3px;height:88px">';
+      data.forEach(function(p,i){
+        var bh=Math.max(3,Math.round(p.ratio/max*100));
+        var peak=(i===maxIdx);
+        html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">'
+          +(peak?'<span style="font-size:9px;font-weight:800;color:'+colors[gi]+';line-height:1.4">'+Math.round(p.ratio)+'</span>':'')
+          +'<div title="'+p.period+' · 지수 '+Math.round(p.ratio)+'" style="width:100%;height:'+bh+'%;background:'+(peak?colors[gi]:colors[gi]+'99')+';border-radius:3px 3px 0 0;transition:height .5s ease"></div></div>';
+      });
+      html+='</div>';
+      html+='<div style="display:flex;gap:3px;margin-top:4px">';
+      data.forEach(function(p,i){ html+='<span style="flex:1;text-align:center;font-size:8.5px;color:#94a3b8;letter-spacing:-.02em">'+((i%2===0||data.length<=8)?fmtM(p):'')+'</span>'; });
+      html+='</div>';
+      html+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--mute)">'
+        +'<span>🔺 피크 <b>'+fmtM(data[maxIdx])+'</b></span><span>🔻 저점 <b>'+fmtM(data[minIdx])+'</b></span>'
+        +'<span>피크 대비 현재 <b>'+Math.round(last/max*100)+'%</b></span></div>';
+      html+='</div>';
     });
-    html+='<div style="font-size:12px;color:var(--mute);margin-top:8px">출처: 네이버 데이터랩 · 기간 내 최고치=100 기준 상대값</div>';
+    html+='<div style="font-size:12px;color:var(--mute);margin-top:8px">출처: 네이버 데이터랩 실데이터 · 최고 검색월=100 기준 상대지수 — 절대 검색량은 \'키워드 검색량\' 도구에서 확인하세요</div>';
     html+='<div style="margin-top:16px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-sm">💬 이 트렌드로 우리 병원 전략 상담</a></div>';
     el.innerHTML=html;
   }).catch(function(e){_err(el,'요청 실패: '+e.message);});
@@ -5302,6 +5328,14 @@ function runExpose(){
   }).catch(function(e){_err(el,'요청 실패: '+e.message);});
 }
 
+// AI 원문 답변 경량 정리: **볼드** 렌더, [1][2] 인용번호 위첨자, 원문 오탈자는 AI 실측이므로 보존
+function _mdLite(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/\[(\d+)\]/g,'<sup style="color:var(--p);font-weight:700">[$1]</sup>')
+    .replace(/\n/g,'<br>');
+}
 function runAeo(){
   var q=document.getElementById('aeo-q').value.trim();var name=document.getElementById('aeo-name').value.trim();
   if(!q){alert('질문을 입력해주세요');return;}
@@ -5314,8 +5348,8 @@ function runAeo(){
       html+='<div style="background:'+(ok?'#f0fdf4':'#fff5f5')+';border:1px solid '+(ok?'#bbf7d0':'#fecaca')+';border-radius:10px;padding:14px 16px;margin-bottom:14px;font-weight:600;color:'+(ok?'#16a34a':'#dc2626')+'">'
         +(ok?'✅ AI 답변에 "'+d.name+'"이(가) 언급됐습니다!':'❌ AI 답변에 "'+d.name+'"은(는) 언급되지 않았습니다 — GEO/AEO 최적화가 필요합니다')+'</div>';
     }
-    html+='<div style="font-size:13px;font-weight:600;margin-bottom:6px">AI 답변</div><div style="background:var(--soft);border-radius:10px;padding:16px;font-size:13px;line-height:1.7;color:var(--ink2);white-space:pre-wrap;max-height:300px;overflow-y:auto">'+(d.answer||'').replace(/</g,'&lt;')+'</div>';
-    if(d.citations&&d.citations.length){html+='<div style="font-size:11px;color:var(--mute);margin-top:8px">출처: '+d.citations.slice(0,3).map(function(u){return '<a href="'+u+'" target="_blank" rel="nofollow" style="color:var(--p)">'+u.replace(/^https?:\/\//,'').slice(0,30)+'…</a>';}).join(', ')+'</div>';}
+    html+='<div style="font-size:13px;font-weight:600;margin-bottom:6px">AI 답변 <span style="font-weight:500;color:var(--mute);font-size:11px">(Perplexity 실측 원문 — 표현·표기는 AI 생성 그대로입니다)</span></div><div style="background:var(--soft);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--ink2);max-height:300px;overflow-y:auto">'+_mdLite(d.answer||'')+'</div>';
+    if(d.citations&&d.citations.length){html+='<div style="font-size:11px;color:var(--mute);margin-top:10px;line-height:1.7"><b style="color:var(--ink2)">AI가 실제 인용한 출처</b> <span style="color:#94a3b8">(품질과 무관한 실측 — 이런 사이트가 인용되는 것이 지금의 AI 검색입니다)</span><br>'+d.citations.slice(0,3).map(function(u){var dom=u.replace(/^https?:\/\//,'').split('/')[0];return '<a href="'+u+'" target="_blank" rel="nofollow noopener" style="color:var(--p)">'+dom+'</a>';}).join(' · ')+'</div>';}
     html+='<div style="margin-top:16px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-sm">💬 AI 검색에 우리 병원 노출시키기</a></div>';
     el.innerHTML=html;
   }).catch(function(e){_err(el,'요청 실패: '+e.message);});
@@ -5371,6 +5405,21 @@ function _seoCTA(){
 }
 function _seoToolbar(){
   return '<button onclick="seoPDF()" class="btn btn-s" style="width:100%;padding:11px;font-size:13px;border-radius:10px;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px">📄 진단 결과 PDF로 저장</button>';
+}
+function geoPDF(){
+  var el=document.getElementById('geo-result');
+  if(!el||el.style.display==='none'||!el.innerHTML.trim()){alert('먼저 GEO 분석을 실행해주세요');return;}
+  var w=window.open('','_blank');
+  if(!w){alert('팝업을 허용해주세요');return;}
+  w.document.write('<html><head><meta charset="utf-8"><title>GEO 진단 리포트 | 병원마케팅 베놈</title>'
+    +'<style>body{font-family:Pretendard,-apple-system,sans-serif;padding:36px;color:#0f172a;max-width:760px;margin:0 auto}'
+    +'h1{font-size:22px;color:#533afd;margin:0 0 4px}small{color:#64748b}hr{border:none;border-top:1px solid #e2e8f0;margin:18px 0}'
+    +'img,svg{max-width:100%}button,a.btn{display:none!important}<\/style></head><body>'
+    +'<h1>GEO 진단 리포트</h1><small>병원마케팅 베놈 · '+new Date().toLocaleDateString('ko-KR')+' · venom-new-site.vercel.app<\/small><hr>'
+    +el.innerHTML
+    +'<hr><small>본 리포트는 공개 데이터 기반 자동 진단 결과로, 실제 성과를 보장하지 않습니다. 문의: 카카오채널 베놈마케팅<\/small>'
+    +'<script>setTimeout(function(){window.print()},400)<\/script></body></html>');
+  w.document.close();
 }
 function seoPDF(){
   if(typeof SEOEngine==='undefined'||!_seoLast){alert('먼저 분석을 실행해주세요');return;}
@@ -5726,7 +5775,7 @@ function runKW(){
       if(!keywords.length){
         el.innerHTML='<div style="padding:24px;text-align:center;color:var(--mute)">검색 결과가 없습니다.</div>';return;
       }
-      var compLabel=function(v){return v<0.1?'낮음':v<0.3?'보통':v<0.6?'높음':'매우높음';};
+      var compLabel=function(v){if(typeof v==='string'){return v==='높음'?'높음':v==='중간'?'보통':'낮음';}return v<0.1?'낮음':v<0.3?'보통':v<0.6?'높음':'매우높음';};
       var compColor={'낮음':'#10b981','보통':'#f59e0b','높음':'#ef4444','매우높음':'#7c3aed'};
       var stratLabel=function(comp,vol){
         if(comp==='낮음')return '✅ 공략 최우선';
@@ -6461,8 +6510,17 @@ else{loadAdminPosts();}
 
 // ── 비밀 관리자 버튼 ──
 // 관리자 진입: ⚡ 아이콘 단일 클릭 → 로그인 페이지(비밀번호로 보호). 루트 절대경로라 어느 페이지에서도 동작.
+// 관리자 비밀 진입: ⚡를 2초 내 5회 클릭 (원래 사양 복원 — 원클릭 변경은 지시된 적 없음)
+var _secretClickCount=0,_secretTimer=null;
 function secretAdminClick(){
-  window.location.href='/admin-login.html';
+  _secretClickCount++;
+  clearTimeout(_secretTimer);
+  if(_secretClickCount>=5){
+    _secretClickCount=0;
+    window.location.href='/admin-login.html';
+  }else{
+    _secretTimer=setTimeout(function(){_secretClickCount=0;},2000);
+  }
 }
 
 // ── 방문자 추적 ──
@@ -6849,7 +6907,7 @@ function applyDiagState(){
   if(cat){
     var _b=document.getElementById('vd-body'),_l=document.getElementById('vd-launcher');
     if(_b&&_l&&!_b.classList.contains('open')){_b.classList.add('open');_l.classList.add('open');_l.setAttribute('aria-expanded','true');}
-    setTimeout(function(){var s=document.querySelector('#pg-diagnose .vd-section');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},120);
+    /* 자동 스크롤 제거 — 진입 시 다크 히어로(퍼널 3-스텝)가 먼저 보이도록 */
   }
   // 도구 입력 예시 자동 채움(비어 있을 때만)
   var kwLabel=cat?((region?region+' ':'')+cat):(region||'');
@@ -7977,6 +8035,27 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   /* 마감 CTA 배지 펄스 */
   .cta-inner>div:first-child{animation:fxPulse 2.6s ease-in-out infinite}
   @keyframes fxPulse{0%,100%{box-shadow:0 0 0 0 rgba(225,29,72,.35)}50%{box-shadow:0 0 0 9px rgba(225,29,72,0)}}
+  /* 다크 히어로 세로 폭 통일 — 표준 520px, AI 서브(geo/aeo/seo) 750px, 홈은 특수 유지 */
+  .page>.mesh:first-child,.page>section.mesh:first-of-type,.bloghd,.diag-hub{min-height:520px;display:flex;flex-direction:column;justify-content:center}
+  #pg-home>.mesh:first-child{min-height:0}
+  #pg-geo>.mesh:first-of-type,#pg-aeo>.mesh:first-of-type,#pg-seo>.mesh:first-of-type{min-height:750px}
+  @media(max-width:700px){.page>.mesh:first-child,.page>section.mesh:first-of-type,.bloghd,.diag-hub{min-height:420px}#pg-geo>.mesh:first-of-type,#pg-aeo>.mesh:first-of-type,#pg-seo>.mesh:first-of-type{min-height:0}}
+  /* 메가메뉴·드롭다운 모션 + 컬러 액센트 */
+  .dropdown,.dropdown-mega{animation:fxMenuIn .26s cubic-bezier(.22,.65,.3,1)}
+  @keyframes fxMenuIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+  .dropdown-mega .mega-col{animation:fxMenuIn .4s cubic-bezier(.22,.65,.3,1) backwards}
+  .dropdown-mega .mega-col:nth-child(2){animation-delay:.06s}
+  .dropdown-mega .mega-col:nth-child(3){animation-delay:.12s}
+  .dropdown-mega .mega-col:nth-child(4){animation-delay:.18s}
+  .dropdown-mega .mega-hub{position:relative;transition:color .18s ease}
+  .dropdown-mega .mega-hub::after{content:'';position:absolute;left:8px;bottom:1px;height:2px;width:0;border-radius:2px;background:linear-gradient(90deg,var(--p),#6ee7b7);transition:width .28s ease}
+  .dropdown-mega .mega-hub:hover::after{width:44px}
+  .dropdown-mega .mega-col>a:not(.mega-hub){transition:color .15s,padding-left .18s,background .15s;border-radius:6px}
+  .dropdown-mega .mega-col>a:not(.mega-hub):hover{color:var(--p);padding-left:19px;background:var(--soft)}
+  .dropdown-mega .mega-col>a:not(.mega-hub):hover::before{color:var(--p);opacity:1}
+  .dropdown>a{transition:color .15s,padding-left .18s,background .15s}
+  .dropdown>a:hover{padding-left:22px}
+  .dropdown .grp{color:var(--p);letter-spacing:.08em}
   /* 접근성: 모션 최소화 사용자 전체 비활성 */
   @media (prefers-reduced-motion:reduce){
     .fx-pre{opacity:1;transform:none}
@@ -8037,6 +8116,23 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
     var t=e.target;
     if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
     e.preventDefault();
+  });
+</script>
+
+<script>
+  // 진단 도구: 결과가 표시되면 카드를 전폭으로 확장(옆 흰 여백 해소)
+  document.querySelectorAll('.tool-result').forEach(function(r){
+    new MutationObserver(function(){
+      if(r.style.display!=='none'){
+        var c=r.closest('.tool-card'); if(c)c.classList.add('expanded');
+        // GEO 결과에 PDF 저장 버튼 자동 부착 (렌더마다 재부착)
+        if(r.id==='geo-result'&&!r.querySelector('.geo-pdf-btn')&&r.innerHTML.indexOf('분석 중')<0&&r.innerHTML.indexOf('spin')<0&&r.innerHTML.length>200){
+          var d=document.createElement('div');d.style.cssText='text-align:center;margin-top:14px';
+          d.innerHTML='<button class="geo-pdf-btn btn btn-s" onclick="geoPDF()" style="padding:10px 22px;font-size:13px;border-radius:10px">📄 GEO 리포트 PDF 저장</button>';
+          r.appendChild(d);
+        }
+      }
+    }).observe(r,{attributes:true,attributeFilter:['style'],childList:true});
   });
 </script>
 </body>
