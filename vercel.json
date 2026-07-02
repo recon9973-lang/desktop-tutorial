@@ -1,19 +1,51 @@
 {
   "rewrites": [
-    { "source": "/blog/:slug*", "destination": "/index.html" },
-    { "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose)", "destination": "/index.html" },
-    { "source": "/(dental|implant|orthodontics|dermatology|orthopedics|oriental-medicine|plastic-surgery|internal-medicine|ophthalmology|medical-ad-review|medical-device)", "destination": "/index.html" },
-    { "source": "/(dental|implant|orthodontics|dermatology|orthopedics|oriental-medicine|plastic-surgery|internal-medicine|ophthalmology|medical-ad-review|medical-device)/:sub*", "destination": "/index.html" }
+    {
+      "source": "/blog/:slug*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(ai|geo|aeo|seo|hospital-marketing|online-marketing|website|about|blog|contact|seo-dictionary|diagnose)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(dental|implant|orthodontics|dermatology|orthopedics|oriental-medicine|plastic-surgery|internal-medicine|ophthalmology|medical-ad-review|medical-device)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(dental|implant|orthodontics|dermatology|orthopedics|oriental-medicine|plastic-surgery|internal-medicine|ophthalmology|medical-ad-review|medical-device)/:sub*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/online-marketing/:sub*",
+      "destination": "/index.html"
+    }
   ],
   "functions": {
-    "api/generate-post.js": { "maxDuration": 120 },
-    "api/cron-daily-posts.js": { "maxDuration": 120 },
-    "api/health.js": { "maxDuration": 20 },
-    "api/insights.js": { "maxDuration": 30 },
-    "api/posting-settings.js": { "maxDuration": 15 },
-    "api/publish-post.js": { "maxDuration": 15 },
-    "api/seo-proxy.js": { "maxDuration": 60 },
-    "api/cron-seo-monitor.js": { "maxDuration": 300 }
+    "api/generate-post.js": {
+      "maxDuration": 120
+    },
+    "api/cron-daily-posts.js": {
+      "maxDuration": 120
+    },
+    "api/health.js": {
+      "maxDuration": 20
+    },
+    "api/insights.js": {
+      "maxDuration": 30
+    },
+    "api/posting-settings.js": {
+      "maxDuration": 15
+    },
+    "api/publish-post.js": {
+      "maxDuration": 15
+    },
+    "api/seo-proxy.js": {
+      "maxDuration": 60
+    },
+    "api/cron-seo-monitor.js": {
+      "maxDuration": 300
+    }
   },
   "crons": [
     {
@@ -29,93 +61,165 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/en/",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/en/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/admin.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/admin-login.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/content/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
       ]
     },
     {
       "source": "/images/:path*",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/:path*.webp",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/:path*.png",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/:path*.(css|js|woff2|woff|ttf)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/robots.txt",
-      "headers": [{ "key": "Content-Type", "value": "text/plain" }]
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        }
+      ]
     },
     {
       "source": "/sitemap.xml",
-      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml"
+        }
+      ]
     },
     {
       "source": "/llms.txt",
-      "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
     }
   ]
 }
