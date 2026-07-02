@@ -281,6 +281,30 @@ h2.sec.lt{color:#fff}
 .cta-row-center{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 @media(max-width:520px){.cta-band{padding:48px 24px;border-radius:16px}}
 
+/* ── Announcement bar ── */
+.announce{background:var(--p);color:#fff;text-align:center;padding:9px 20px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:12px;}
+.announce a{color:rgba(255,255,255,.85);text-decoration:underline;text-underline-offset:2px;font-weight:600}
+
+/* ── Tag pills strip ── */
+.tag-strip{background:#fff;border-bottom:1px solid var(--border)}
+.tag-row{display:flex;gap:10px;padding:14px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tag-row::-webkit-scrollbar{display:none}
+.tag-pill{flex:none;display:inline-flex;align-items:center;gap:5px;background:var(--p-bg);color:var(--p);border:1px solid rgba(83,58,253,.15);padding:6px 14px;border-radius:9999px;font-size:13px;font-weight:500;white-space:nowrap;}
+
+/* ── Hero star rating float ── */
+.hero-float .stars{color:#f59e0b;font-size:14px;letter-spacing:1px;line-height:1;margin-bottom:3px}
+.rating-src{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── 3-step process ── */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:48px;position:relative}
+.steps-grid::before{content:'';position:absolute;top:28px;left:calc(16.66% + 14px);right:calc(16.66% + 14px);height:0;border-top:2px dashed rgba(83,58,253,.2);z-index:0;pointer-events:none;}
+.step-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px 24px;text-align:center;position:relative;z-index:1;box-shadow:0 1px 3px var(--shadow);transition:.2s}
+.step-card:hover{box-shadow:0 10px 28px rgba(0,55,112,.11);transform:translateY(-3px)}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--p);color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+.step-card h3{font-size:17px;font-weight:700;margin-bottom:10px;color:var(--ink);letter-spacing:-.2px}
+.step-card p{font-size:14px;color:var(--muted);line-height:1.6}
+@media(max-width:760px){.steps-grid{grid-template-columns:1fr;gap:16px}.steps-grid::before{display:none}}
+
 /* ── Footer ── */
 footer{background:var(--dark);color:rgba(255,255,255,.6);padding:64px 0;font-size:14px}
 .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
@@ -300,6 +324,10 @@ footer a:hover{color:rgba(255,255,255,.9)}
 </style>
 </head>
 <body>
+
+<div class="announce" role="banner">
+  🎉 오늘도 영업 중 &nbsp;·&nbsp; ✨ 신규 고객 웰컴 이벤트 &nbsp;·&nbsp; 📱 SNS 팔로우 시 혜택 제공 &nbsp;&nbsp;<a href="{{brand.kakao}}" target="_blank" rel="noopener">지금 문의하기 →</a>
+</div>
 
 <header><div class="wrap nav">
   <div class="logo">{{brand.name}}<span>.</span></div>
@@ -329,13 +357,30 @@ footer a:hover{color:rgba(255,255,255,.9)}
       <div class="hero-right">
         <img class="hero-img" src="{{images.hero}}" alt="{{brand.name}} {{specialty.label}}" loading="eager">
         <div class="hero-float">
-          <div class="hf-num">⭐</div>
-          <div class="hf-txt"><strong>{{brand.region}} 인기 맛집</strong>고객 만족 1위</div>
+          <div>
+            <div class="stars">★★★★★</div>
+            <div class="hf-num">4.9</div>
+            <div class="rating-src">네이버·구글 리뷰</div>
+          </div>
+          <div class="hf-txt"><strong>{{brand.region}} 인기 {{specialty.label}}</strong>지역 대표 브랜드</div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ── TAG PILLS ── -->
+<div class="tag-strip"><div class="wrap">
+  <div class="tag-row">
+    <span class="tag-pill">✓ 품질 보증</span>
+    <span class="tag-pill">✓ 친절한 서비스</span>
+    <span class="tag-pill">✓ 위생 철저</span>
+    <span class="tag-pill">✓ 합리적인 가격</span>
+    <span class="tag-pill">✓ 예약 가능</span>
+    <span class="tag-pill">✓ 주차 편리</span>
+    <span class="tag-pill">✓ 단골 혜택</span>
+  </div>
+</div></div>
 
 <!-- ── STATS BAND ── -->
 <div class="stats-band">
@@ -413,6 +458,18 @@ footer a:hover{color:rgba(255,255,255,.9)}
   <h2 class="sec">공간 갤러리</h2>
   <p class="sec-desc">{{brand.name}}의 공간과 메뉴를 사진으로 만나보세요.</p>
   <div class="gallery">{{sections.gallery}}</div>
+</div></section>
+
+<!-- ── 3-STEP PROCESS ── -->
+<section class="pad" style="background:var(--soft)"><div class="wrap">
+  <div class="eyebrow">HOW IT WORKS</div>
+  <h2 class="sec">간단한 3단계로<br>이용을 시작하세요</h2>
+  <p class="sec-desc">복잡한 절차 없이 편리하게 방문·예약하세요.</p>
+  <div class="steps-grid">
+    <div class="step-card"><div class="step-num">01</div><h3>예약·문의</h3><p>카카오 채널 또는 전화로 간편하게 예약하거나 언제든지 문의해 주세요.</p></div>
+    <div class="step-card"><div class="step-num">02</div><h3>방문</h3><p>{{brand.address}}으로 방문해 주세요. 주차·대중교통 모두 편리합니다.</p></div>
+    <div class="step-card"><div class="step-num">03</div><h3>경험 &amp; 만족</h3><p>정성껏 준비한 서비스를 경험하시고, 단골 혜택도 챙겨가세요.</p></div>
+  </div>
 </div></section>
 
 <!-- ── HOURS / LOCATION ── -->

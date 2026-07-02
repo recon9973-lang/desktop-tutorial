@@ -41,36 +41,36 @@ const CLINIC_GALLERY = {
 
 // ── 소상공인 로컬 ──────────────────────────────────────────
 const LOCAL_HERO = {
-  cafe:       G('local/cafe-hero.png'),
-  restaurant: G('local/restaurant-hero.png'),
-  beauty:     G('local/beauty-hero.png'),
-  nail:       G('local/nail-hero.png'),
-  fitness:    G('local/fitness-hero.png'),
-  bakery:     G('local/bakery-hero.png'),
-  retail:     G('local/retail-hero.png'),
-  default:    G('local/cafe-hero.png'),
+  cafe:       G('local/cafe-hero.svg'),
+  restaurant: G('local/restaurant-hero.svg'),
+  beauty:     G('local/beauty-hero.svg'),
+  nail:       G('local/nail-hero.svg'),
+  fitness:    G('local/fitness-hero.svg'),
+  bakery:     G('local/bakery-hero.svg'),
+  retail:     G('local/retail-hero.svg'),
+  default:    G('local/cafe-hero.svg'),
 };
 
 const LOCAL_INTRO = {
-  cafe:       G('local/cafe-intro.png'),
-  restaurant: G('local/restaurant-intro.png'),
-  beauty:     G('local/beauty-intro.png'),
-  nail:       G('local/nail-intro.png'),
-  fitness:    G('local/fitness-intro.png'),
-  bakery:     G('local/bakery-intro.png'),
-  retail:     G('local/retail-intro.png'),
-  default:    G('local/cafe-intro.png'),
+  cafe:       G('local/cafe-intro.svg'),
+  restaurant: G('local/restaurant-intro.svg'),
+  beauty:     G('local/beauty-intro.svg'),
+  nail:       G('local/nail-intro.svg'),
+  fitness:    G('local/fitness-intro.svg'),
+  bakery:     G('local/bakery-intro.svg'),
+  retail:     G('local/retail-intro.svg'),
+  default:    G('local/cafe-intro.svg'),
 };
 
 const LOCAL_GALLERY = {
-  cafe:       [G('local/cafe-gallery-1.png'),       G('local/cafe-gallery-2.png'),       G('local/cafe-gallery-3.png')],
-  restaurant: [G('local/restaurant-gallery-1.png'), G('local/restaurant-gallery-2.png'), G('local/restaurant-gallery-3.png')],
-  beauty:     [G('local/beauty-gallery-1.png'),     G('local/beauty-gallery-2.png'),     G('local/beauty-gallery-3.png')],
-  nail:       [G('local/nail-gallery-1.png'),       G('local/nail-gallery-2.png'),       G('local/nail-gallery-3.png')],
-  fitness:    [G('local/fitness-gallery-1.png'),    G('local/fitness-gallery-2.png'),    G('local/fitness-gallery-3.png')],
-  bakery:     [G('local/bakery-gallery-1.png'),     G('local/bakery-gallery-2.png'),     G('local/bakery-gallery-3.png')],
-  retail:     [G('local/retail-gallery-1.png'),     G('local/retail-gallery-2.png'),     G('local/retail-gallery-3.png')],
-  default:    [G('local/cafe-gallery-1.png'),       G('local/cafe-gallery-2.png'),       G('local/cafe-gallery-3.png')],
+  cafe:       [G('local/cafe-gallery-1.svg'),       G('local/cafe-gallery-2.svg'),       G('local/cafe-gallery-3.svg')],
+  restaurant: [G('local/restaurant-gallery-1.svg'), G('local/restaurant-gallery-2.svg'), G('local/restaurant-gallery-3.svg')],
+  beauty:     [G('local/beauty-gallery-1.svg'),     G('local/beauty-gallery-2.svg'),     G('local/beauty-gallery-3.svg')],
+  nail:       [G('local/nail-gallery-1.svg'),       G('local/nail-gallery-2.svg'),       G('local/nail-gallery-3.svg')],
+  fitness:    [G('local/fitness-gallery-1.svg'),    G('local/fitness-gallery-2.svg'),    G('local/fitness-gallery-3.svg')],
+  bakery:     [G('local/bakery-gallery-1.svg'),     G('local/bakery-gallery-2.svg'),     G('local/bakery-gallery-3.svg')],
+  retail:     [G('local/retail-gallery-1.svg'),     G('local/retail-gallery-2.svg'),     G('local/retail-gallery-3.svg')],
+  default:    [G('local/cafe-gallery-1.svg'),       G('local/cafe-gallery-2.svg'),       G('local/cafe-gallery-3.svg')],
 };
 
 const PRESS_HERO = {
@@ -83,9 +83,8 @@ function localPath(relPath) {
 
 function getHero(category, subKey, local) {
   if (local) {
-    const ext = category === 'clinic' ? 'svg' : 'png';
-    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-hero.${ext}`);
-    if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-hero.png`);
+    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-hero.svg`);
+    if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-hero.svg`);
     return localPath('clinic/naegwa-hero.svg');
   }
   if (category === 'clinic')  return CLINIC_HERO[subKey]  || CLINIC_HERO.default;
@@ -96,9 +95,8 @@ function getHero(category, subKey, local) {
 
 function getIntro(category, subKey, local) {
   if (local) {
-    const ext = category === 'clinic' ? 'svg' : 'png';
-    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-intro.${ext}`);
-    if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-intro.png`);
+    if (category === 'clinic') return localPath(`clinic/${subKey || 'naegwa'}-intro.svg`);
+    if (category === 'local')  return localPath(`local/${subKey  || 'cafe'}-intro.svg`);
     return localPath('clinic/naegwa-intro.svg');
   }
   if (category === 'clinic') return CLINIC_INTRO[subKey] || CLINIC_INTRO.default;
@@ -110,8 +108,7 @@ function getGallery(category, subKey, local) {
   if (local) {
     const s   = subKey || (category === 'local' ? 'cafe' : 'naegwa');
     const cat = category === 'local' ? 'local' : 'clinic';
-    const ext = category === 'clinic' ? 'svg' : 'png';
-    return [1,2,3].map(i => localPath(`${cat}/${s}-gallery-${i}.${ext}`));
+    return [1,2,3].map(i => localPath(`${cat}/${s}-gallery-${i}.svg`));
   }
   if (category === 'clinic') return CLINIC_GALLERY[subKey] || CLINIC_GALLERY.default;
   if (category === 'local')  return LOCAL_GALLERY[subKey]  || LOCAL_GALLERY.default;

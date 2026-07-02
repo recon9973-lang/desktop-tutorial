@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="700" height="520" viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgbakerygallery2" cx="35%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="55%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#78350f" />
+    </radialGradient>
+    <radialGradient id="glowbakerygallery2" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.22)" />
+      <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+    </radialGradient>
+    <pattern id="dotsbakerygallery2" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="1.5" fill="rgba(255,255,255,0.18)" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="520" fill="url(#bgbakerygallery2)" />
+
+  <!-- Dot pattern overlay -->
+  <rect width="700" height="520" fill="url(#dotsbakerygallery2)" />
+
+  <!-- Glow -->
+  <ellipse cx="262.5" cy="182" rx="315" ry="234" fill="url(#glowbakerygallery2)" />
+
+  <!-- Decorative circles -->
+  <circle cx="640" cy="55" r="90" fill="rgba(255,255,255,0.07)" />
+  <circle cx="670" cy="480" r="65" fill="rgba(255,255,255,0.05)" />
+  <circle cx="40" cy="470" r="80" fill="rgba(0,0,0,0.06)" />
+
+  <!-- Specialty icon (centered, scaled) -->
+  <g transform="translate(14.5, -35.19999999999999) scale(0.82)">
+    
+      <ellipse cx="400" cy="345" rx="100" ry="65" fill="rgba(255,255,255,0.4)" />
+      <path d="M310 345 Q310 285 360 275 Q400 270 440 275 Q490 285 490 345 Q490 390 400 395 Q310 390 310 345Z" fill="rgba(255,255,255,0.5)" />
+      <ellipse cx="400" cy="275" rx="90" ry="30" fill="rgba(255,255,255,0.45)" />
+      <path d="M340 300 Q360 290 380 300" fill="none" stroke="rgba(120,53,15,0.5)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M420 300 Q440 290 460 300" fill="none" stroke="rgba(120,53,15,0.5)" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="400" cy="270" rx="30" ry="10" fill="rgba(255,255,255,0.6)" />
+      <ellipse cx="400" cy="410" rx="72" ry="11" fill="rgba(120,53,15,0.3)" />
+      <circle cx="265" cy="195" r="28" fill="rgba(255,255,255,0.12)" />
+      <circle cx="545" cy="175" r="22" fill="rgba(255,255,255,0.1)" />
+    
+  </g>
+
+  <!-- Bottom info badge -->
+  <rect x="220" y="452" width="260" height="48" rx="24" fill="rgba(0,0,0,0.35)" />
+  <text x="350" y="473" text-anchor="middle" font-family="'Noto Sans KR',Arial,sans-serif" font-size="17" font-weight="700" fill="white">베이커리</text>
+  <text x="350" y="492" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.75)">Bakery & Café</text>
+</svg>
