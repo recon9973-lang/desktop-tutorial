@@ -125,7 +125,9 @@ module.exports = async function handler(req, res) {
     const hmac = crypto.createHmac('sha256', secretKey);
     hmac.update(timestamp + '.GET./keywordstool', 'utf8');
     const signature = hmac.digest('base64');
-    const hints = [keyword, keyword + ' 비용', keyword + ' 후기', keyword + ' 잘하는곳', keyword + ' 추천'];
+    // hintKeywords는 공백 불허(네이버 11001 오류) — 공백 제거형 변형 키워드 사용
+const base = String(keyword).replace(/\s+/g, '');
+const hints = [base, base + '비용', base + '후기', base + '잘하는곳', base + '추천'];
     const apiPath = '/keywordstool?hintKeywords=' + hints.map(encodeURIComponent).join(',') + '&showDetail=1';
     https.get({
       hostname: 'api.searchad.naver.com', path: apiPath, method: 'GET',
