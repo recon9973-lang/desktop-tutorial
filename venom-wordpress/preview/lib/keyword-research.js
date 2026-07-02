@@ -79,16 +79,25 @@ async function googleAutocomplete(keyword) {
 }
 
 // ── 3. 네이버 검색광고 키워드도구 (실제 월 검색량 동반 연관키워드) ──
+// 검색광고 API 자격증명 — 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
+function adCreds() {
+  return {
+    key: (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim(),
+    secret: (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim(),
+    customer: (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim(),
+  };
+}
 function searchAdHeaders(method, apiPath) {
   const ts = String(Date.now());
+  const ad = adCreds();
   const sign = crypto
-    .createHmac('sha256', (process.env.NAVER_AD_SECRET || '').trim())
+    .createHmac('sha256', ad.secret)
     .update(`${ts}.${method}.${apiPath}`)
     .digest('base64');
   return {
     'X-Timestamp': ts,
-    'X-API-KEY': (process.env.NAVER_AD_API_KEY || '').trim(),
-    'X-Customer': (process.env.NAVER_AD_CUSTOMER_ID || '').trim(),
+    'X-API-KEY': ad.key,
+    'X-Customer': ad.customer,
     'X-Signature': sign,
   };
 }
@@ -102,7 +111,8 @@ function adToNum(v) {
   return 0;
 }
 async function naverRelKeywords(keyword) {
-  if (!process.env.NAVER_AD_API_KEY || !process.env.NAVER_AD_SECRET || !process.env.NAVER_AD_CUSTOMER_ID) return [];
+  const ad = adCreds();
+  if (!ad.key || !ad.secret || !ad.customer) return [];
   const hint = String(keyword).replace(/\s+/g, '');
   const apiPath = '/keywordstool';
   const r = await httpGet({

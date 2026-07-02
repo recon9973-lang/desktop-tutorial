@@ -136,7 +136,10 @@ module.exports = async function handler(req, res) {
     hasGitHub: !!process.env.GITHUB_TOKEN,
     hasAdminSecret: !!process.env.ADMIN_SECRET,
     hasKV: !!((process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) && (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN)),
-    hasNaverAd: !!(process.env.NAVER_AD_API_KEY && process.env.NAVER_AD_SECRET && process.env.NAVER_AD_CUSTOMER_ID),
+    hasNaverAd: !!((process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE) && (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY) && (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID)),
+    hasNaverOpen: !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET),
+    hasPerplexity: !!process.env.PERPLEXITY_API_KEY,
+    hasPSI: !!process.env.PSI_KEY,
     time: new Date().toISOString(),
   };
 

@@ -113,15 +113,17 @@ module.exports = async function handler(req, res) {
   if (type === 'keyword') {
     const keyword = req.query.keyword;
     if (!keyword) { res.status(400).json({ error: 'keyword parameter required' }); return; }
-    const customerId = (process.env.NAVER_CUSTOMER_ID || '').trim();
-    const accessLicense = (process.env.NAVER_ACCESS_LICENSE || '').trim();
-    const secretKey = (process.env.NAVER_SECRET_KEY || '').trim();
+    // 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
+    const customerId = (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim();
+    const accessLicense = (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim();
+    const secretKey = (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim();
     if (!customerId || !accessLicense || !secretKey) {
       res.status(500).json({ error: 'Naver API credentials not configured' }); return;
     }
+    // 네이버 검색광고 공식 서명 규격: HMAC-SHA256("{timestamp}.{method}.{uri}", 비밀키 문자열)
     const timestamp = Date.now().toString();
-    const hmac = crypto.createHmac('sha256', Buffer.from(secretKey, 'base64'));
-    hmac.update(timestamp + '.' + accessLicense, 'utf8');
+    const hmac = crypto.createHmac('sha256', secretKey);
+    hmac.update(timestamp + '.GET./keywordstool', 'utf8');
     const signature = hmac.digest('base64');
     const hints = [keyword, keyword + ' 비용', keyword + ' 후기', keyword + ' 잘하는곳', keyword + ' 추천'];
     const apiPath = '/keywordstool?hintKeywords=' + hints.map(encodeURIComponent).join(',') + '&showDetail=1';

@@ -121,15 +121,25 @@ async function aeo(req, res) {
 // 검색광고 API는 데이터랩/검색과 별개(host: api.searchad.naver.com, HMAC 서명 인증).
 function searchAdHeaders(method, apiPath) {
   const ts = String(Date.now());
+  const ad = adCreds();
   const sign = crypto
-    .createHmac('sha256', (process.env.NAVER_AD_SECRET || '').trim())
+    .createHmac('sha256', ad.secret)
     .update(`${ts}.${method}.${apiPath}`)
     .digest('base64');
   return {
     'X-Timestamp': ts,
-    'X-API-KEY': (process.env.NAVER_AD_API_KEY || '').trim(),
-    'X-Customer': (process.env.NAVER_AD_CUSTOMER_ID || '').trim(),
+    'X-API-KEY': ad.key,
+    'X-Customer': ad.customer,
     'X-Signature': sign,
+  };
+}
+
+// 검색광고 API 자격증명 — 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
+function adCreds() {
+  return {
+    key: (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim(),
+    secret: (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim(),
+    customer: (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim(),
   };
 }
 
@@ -145,10 +155,11 @@ function toNum(v) {
 }
 
 async function keywordtool(req, res) {
-  if (!process.env.NAVER_AD_API_KEY || !process.env.NAVER_AD_SECRET || !process.env.NAVER_AD_CUSTOMER_ID) {
+  const ad = adCreds();
+  if (!ad.key || !ad.secret || !ad.customer) {
     return res.status(501).json({
       configured: false,
-      error: '네이버 검색광고 API 미설정 — NAVER_AD_API_KEY, NAVER_AD_SECRET, NAVER_AD_CUSTOMER_ID 필요',
+      error: '네이버 검색광고 API 미설정 — NAVER_AD_API_KEY(또는 NAVER_ACCESS_LICENSE), NAVER_AD_SECRET(또는 NAVER_SECRET_KEY), NAVER_AD_CUSTOMER_ID(또는 NAVER_CUSTOMER_ID) 필요',
     });
   }
   const q = (req.query.q || req.query.query || '').trim();
