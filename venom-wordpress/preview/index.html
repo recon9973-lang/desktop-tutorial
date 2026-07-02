@@ -4288,6 +4288,11 @@ a.ai-logo:hover{background:rgba(255,255,255,.22);color:#fff;border-color:rgba(25
 .dc-figure.g5{background:linear-gradient(135deg,#2e2b8c,#ea2261)}
 .dc-figure img{width:100%;height:100%;object-fit:cover;display:block}
 .dc-figure figcaption{position:absolute;left:14px;bottom:12px;font-size:12px;color:#fff;background:rgba(0,0,0,.32);padding:5px 13px;border-radius:20px;backdrop-filter:blur(4px)}
+/* 가로·세로 믹스: 짝수 피겨(g2·g4)는 세로 프레임으로 우측 배치 + 텍스트 감싸기 — 페이지에 가로/세로 교차 리듬 */
+.dc-section{display:flow-root}
+.dc-figure.g2:not(.dc-rel-thumb),.dc-figure.g4:not(.dc-rel-thumb){float:right;width:min(44%,320px);aspect-ratio:3/4;margin:6px 0 14px 20px}
+.dc-figure.g2:not(.dc-rel-thumb) figcaption,.dc-figure.g4:not(.dc-rel-thumb) figcaption{left:10px;bottom:10px;font-size:11px;padding:4px 10px}
+@media(max-width:640px){.dc-figure.g2:not(.dc-rel-thumb),.dc-figure.g4:not(.dc-rel-thumb){float:none;width:100%;aspect-ratio:16/9;margin:18px 0}}
 /* 섹션 카드화 + 좌측 액센트 */
 .dc-section{margin-bottom:34px;scroll-margin-top:90px}
 .dc-section>h2{position:relative;padding-left:16px}
@@ -7932,6 +7937,26 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
 <script>
 (function(){ function gmount(){ try{ if(window.Glossary && document.getElementById('glossary-root')) Glossary.mount('glossary-root'); }catch(e){} }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',gmount);else gmount(); })();
+</script>
+<!-- 콘텐츠 드래그 방지 (원고 도용 방지) — 입력 요소는 예외로 폼 사용성 유지 -->
+<style>
+  body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+  input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+  img{-webkit-user-drag:none;user-drag:none}
+</style>
+<script>
+  // 이미지·링크 끌어저장(드래그) 차단. 입력 요소 안의 드래그(텍스트 이동)는 허용.
+  document.addEventListener('dragstart',function(e){
+    var t=e.target;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;
+    e.preventDefault();
+  });
+  // 선택 시작 차단(구형 브라우저 폴백) — 입력 요소 예외
+  document.addEventListener('selectstart',function(e){
+    var t=e.target;
+    if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+    e.preventDefault();
+  });
 </script>
 </body>
 </html>
