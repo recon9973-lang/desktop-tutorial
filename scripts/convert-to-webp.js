@@ -10,7 +10,11 @@ try {
 const fs = require('fs');
 const path = require('path');
 
-const IMAGES_DIR = path.join(__dirname, '../venom-wordpress/preview/images');
+// 재귀 스캔 대상: 사이트 이미지(dept 하위 포함) + 자동발행 포스트 이미지
+const IMAGE_DIRS = [
+  path.join(__dirname, '../venom-wordpress/preview/images'),
+  path.join(__dirname, '../venom-wordpress/preview/content/images'),
+];
 const SUPPORTED = ['.jpg', '.jpeg', '.png'];
 
 async function convertToWebP(filePath) {
@@ -35,15 +39,19 @@ async function convertToWebP(filePath) {
   console.log(`✓ ${path.basename(filePath)} → ${path.basename(webpPath)} (${saved}% smaller)`);
 }
 
-async function run() {
-  if (!fs.existsSync(IMAGES_DIR)) {
-    console.log('Images directory not found:', IMAGES_DIR);
-    return;
+function walk(dir) {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const name of fs.readdirSync(dir)) {
+    const p = path.join(dir, name);
+    if (fs.statSync(p).isDirectory()) out.push(...walk(p));
+    else if (SUPPORTED.includes(path.extname(name).toLowerCase())) out.push(p);
   }
+  return out;
+}
 
-  const files = fs.readdirSync(IMAGES_DIR)
-    .filter(f => SUPPORTED.includes(path.extname(f).toLowerCase()))
-    .map(f => path.join(IMAGES_DIR, f));
+async function run() {
+  const files = IMAGE_DIRS.flatMap(walk);
 
   if (files.length === 0) {
     console.log('No images to convert.');

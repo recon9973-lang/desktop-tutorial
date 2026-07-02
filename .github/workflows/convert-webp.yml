@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'venom-wordpress/preview/images/**'
+      - 'venom-wordpress/preview/content/images/**'
+  workflow_dispatch:
 
 jobs:
   convert:
@@ -20,8 +22,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+      # sharp는 루트 package.json 의존성이 아니므로 명시 설치 (미설치 시 변환이 조용히 스킵되던 버그 수정)
+      - name: Install sharp
+        run: npm install sharp --no-save
 
       - name: Convert images to WebP
         run: node scripts/convert-to-webp.js
@@ -30,6 +33,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add venom-wordpress/preview/images/*.webp 2>/dev/null || true
+          git add 'venom-wordpress/preview/images/**/*.webp' 'venom-wordpress/preview/content/images/**/*.webp' 2>/dev/null || true
           git diff --staged --quiet || git commit -m "chore: auto-convert images to WebP"
           git push origin main
