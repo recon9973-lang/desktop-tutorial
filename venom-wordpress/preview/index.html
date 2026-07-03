@@ -2929,6 +2929,32 @@ body{padding-top:0}
 <!-- PAGE: 블로그 -->
 <div id="pg-blog" class="page">
   <style>
+  /* 오늘의집 스타일: 롤링 배너 */
+  .bban{position:relative;border-radius:18px;overflow:hidden;margin:6px 0 28px;height:170px;cursor:pointer;background:var(--soft)}
+  .bban-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;pointer-events:none}
+  .bban-slide.on{opacity:1;pointer-events:auto}
+  .bban-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .bban-slide .ov{position:absolute;inset:0;background:linear-gradient(95deg,rgba(13,27,46,.82) 0%,rgba(13,27,46,.45) 60%,rgba(13,27,46,.15) 100%)}
+  .bban-txt{position:absolute;left:22px;right:90px;top:50%;transform:translateY(-50%);color:#fff}
+  .bban-txt small{display:block;font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:7px;letter-spacing:.02em}
+  .bban-txt strong{font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .bban-ind{position:absolute;right:14px;bottom:12px;background:rgba(0,0,0,.45);color:#fff;font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:9999px;z-index:2}
+  /* 카테고리별 가로 스와이프 섹션 */
+  .bsec{margin:0 0 38px}
+  .bsec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+  .bsec-head h3{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:0}
+  .bsec-head h3 small{font-weight:600;color:var(--mute);font-size:12.5px;margin-left:7px}
+  .bsec-more{width:34px;height:34px;border-radius:50%;background:var(--soft);border:none;cursor:pointer;font-size:15px;color:var(--ink2);display:flex;align-items:center;justify-content:center;transition:.15s}
+  .bsec-more:hover{background:var(--p);color:#fff}
+  .bsec-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:2px 2px 8px;scrollbar-width:none}
+  .bsec-row::-webkit-scrollbar{display:none}
+  .bs-card{flex:0 0 172px;scroll-snap-align:start;text-decoration:none;color:inherit;display:block}
+  .bs-thumb{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:var(--soft);border:1px solid var(--border)}
+  .bs-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease}
+  .bs-card:hover .bs-thumb img{transform:scale(1.04)}
+  .bs-t{font-size:13.5px;font-weight:700;line-height:1.45;margin-top:9px;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:-.01em}
+  .bs-m{font-size:11.5px;color:var(--mute);margin-top:4px}
+  @media(max-width:600px){.bs-card{flex-basis:150px}.bban{height:150px}.bban-txt strong{font-size:16.5px}}
   .bloghd{position:relative;overflow:hidden;isolation:isolate;padding:74px 0 66px;
     background:linear-gradient(135deg,#1c1e54 0%,#26246a 55%,#11122e 100%)}
   .bloghd-bg{position:absolute;inset:0;z-index:-2}
@@ -2983,6 +3009,8 @@ body{padding-top:0}
         <button class="filter-btn" onclick="filterBlog('shimui')">의료광고심의</button>
         <button class="filter-btn" onclick="filterBlog('지역마케팅')">지역마케팅</button>
       </div>
+      <div id="blog-banner" aria-label="추천 콘텐츠"></div>
+      <div id="blog-sections"></div>
       <div class="blog-grid" id="blog-grid"></div>
       <div class="blog-pagination" id="blog-pagination"></div>
     </div>
@@ -7631,6 +7659,73 @@ var _BLOG_CAT_THUMB = {
   '의료기기':'/images/dept/medical_device.webp',
   'GEO/AI':'/images/office.webp','SEO':'/images/office.webp','AEO':'/images/office.webp','전략':'/images/office.webp','지역마케팅':'/images/office.webp'
 };
+// 글의 대표 썸네일 결정 (목록 카드·섹션 카드·배너 공용)
+function _postThumbOf(p) {
+  var thumb = (p.images && p.images[0]) || p.image || p.thumb || _postImgById[p.id] || '';
+  if (!thumb && p.html) { var m = String(p.html).match(/<img[^>]+src="([^"]+)"/); if (m) thumb = m[1]; }
+  if (!thumb) { var lb = BLOG_CAT_LABEL[p.cat] || p.cat; thumb = _BLOG_CAT_THUMB[p.cat] || _BLOG_CAT_THUMB[lb] || ''; }
+  var fb = '';
+  var tm = thumb && thumb.match(/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"?]+?)(\.(?:jpg|jpeg|png))?$/i);
+  if (tm) { fb = tm[1] + (tm[2] || '.jpg'); thumb = tm[1] + '.webp'; }
+  return { src: thumb, fb: fb };
+}
+// 카테고리별 가로 스와이프 섹션 (오늘의집 스타일)
+var _BSEC_ORDER = ['지역마케팅','GEO/AI','SEO','치과','피부과','정형외과','한의원','성형외과','내과','안과','의료광고심의','전략'];
+function _bsCard(p) {
+  var t = _postThumbOf(p);
+  var oe = t.fb ? 'if(this.dataset.f){this.remove()}else{this.dataset.f=1;this.src=\'' + t.fb + '\'}' : 'this.remove()';
+  var href = p.slug ? '/blog/' + encodeURIComponent(p.slug) : '#blog-post/' + p.id;
+  return '<a class="bs-card" href="' + href + '" onclick="openBlogPost(\'' + p.id + '\');return false;">'
+    + '<div class="bs-thumb">' + (t.src ? '<img src="' + t.src + '" alt="" loading="lazy" decoding="async" onerror="' + oe + '">' : '') + '</div>'
+    + '<div class="bs-t">' + p.title + '</div>'
+    + '<div class="bs-m">' + (p.date || '') + (p.readTime ? ' · ' + p.readTime + ' 읽기' : '') + '</div></a>';
+}
+function renderBlogSections() {
+  var wrap = document.getElementById('blog-sections');
+  if (!wrap) return;
+  var all = _allBlogPosts();
+  var groups = {};
+  all.forEach(function(p) {
+    var lb = BLOG_CAT_LABEL[p.cat] || p.cat;
+    (groups[lb] = groups[lb] || []).push(p);
+  });
+  var labels = _BSEC_ORDER.filter(function(l) { return groups[l]; })
+    .concat(Object.keys(groups).filter(function(l) { return _BSEC_ORDER.indexOf(l) < 0; }));
+  wrap.innerHTML = labels.map(function(lb) {
+    var list = groups[lb];
+    var rawKey = list[0].cat;
+    return '<div class="bsec"><div class="bsec-head">'
+      + '<h3>' + lb + '<small>' + list.length + '</small></h3>'
+      + '<button class="bsec-more" onclick="filterBlog(\'' + String(rawKey).replace(/'/g, '') + '\')" aria-label="' + lb + ' 전체보기">→</button></div>'
+      + '<div class="bsec-row">' + list.slice(0, 10).map(_bsCard).join('') + '</div></div>';
+  }).join('');
+}
+// 롤링 배너 (최신 3편)
+var _bbanTimer = null;
+function renderBlogBanner() {
+  var el = document.getElementById('blog-banner');
+  if (!el) return;
+  var latest = _allBlogPosts().slice(0, 3);
+  if (!latest.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="bban">' + latest.map(function(p, i) {
+    var t = _postThumbOf(p);
+    return '<div class="bban-slide' + (i === 0 ? ' on' : '') + '" onclick="openBlogPost(\'' + p.id + '\')">'
+      + (t.src ? '<img src="' + t.src + '" alt="" loading="lazy"' + (t.fb ? ' onerror="if(this.dataset.f){this.remove()}else{this.dataset.f=1;this.src=\'' + t.fb + '\'}"' : '') + '>' : '')
+      + '<div class="ov"></div><div class="bban-txt"><small>추천 콘텐츠</small><strong>' + p.title + '</strong></div></div>';
+  }).join('') + '<span class="bban-ind" id="bban-ind">1/' + latest.length + '</span></div>';
+  if (_bbanTimer) clearInterval(_bbanTimer);
+  if (latest.length > 1 && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    var idx = 0;
+    _bbanTimer = setInterval(function() {
+      var slides = el.querySelectorAll('.bban-slide');
+      if (!slides.length) { clearInterval(_bbanTimer); return; }
+      idx = (idx + 1) % slides.length;
+      slides.forEach(function(s, i) { s.classList.toggle('on', i === idx); });
+      var ind = document.getElementById('bban-ind');
+      if (ind) ind.textContent = (idx + 1) + '/' + slides.length;
+    }, 4200);
+  }
+}
 function _buildBlogCard(p) {
   var label = BLOG_CAT_LABEL[p.cat] || p.cat;
   var imgClass = p.bg ? 'class="blog-img ' + p.bg + '"' : 'class="blog-img" style="background:' + (p.bgStyle || ADMIN_CAT_BG[p.cat] || 'linear-gradient(135deg,var(--p),var(--bd))') + '"';
@@ -7707,7 +7802,25 @@ function renderBlogGrid() {
   if (!grid) return;
 
   var all = _allBlogPosts();
-  var filtered = _blogCurrentCat === 'all' ? all : all.filter(function(p){ return p.cat === _blogCurrentCat; });
+  // '전체' = 오늘의집식 배너 + 카테고리별 가로 스와이프 섹션
+  var secWrap = document.getElementById('blog-sections');
+  var banWrap = document.getElementById('blog-banner');
+  if (_blogCurrentCat === 'all' && secWrap) {
+    secWrap.style.display = 'block';
+    if (banWrap) banWrap.style.display = 'block';
+    grid.style.display = 'none';
+    if (pgWrap) pgWrap.innerHTML = '';
+    renderBlogBanner();
+    renderBlogSections();
+    _injectBlogCarouselSchema(all.slice(0, BLOG_PER_PAGE));
+    return;
+  }
+  if (secWrap) secWrap.style.display = 'none';
+  if (banWrap) banWrap.style.display = 'none';
+  grid.style.display = '';
+  // 카테고리 매칭: 원시 키가 달라도 라벨이 같으면 포함 (예: geo_local ↔ 지역마케팅)
+  var _lbl = function(c){ return BLOG_CAT_LABEL[c] || c; };
+  var filtered = all.filter(function(p){ return p.cat === _blogCurrentCat || _lbl(p.cat) === _lbl(_blogCurrentCat); });
   var total = filtered.length;
   var totalPages = Math.max(1, Math.ceil(total / BLOG_PER_PAGE));
   if (_blogCurrentPage > totalPages) _blogCurrentPage = 1;
