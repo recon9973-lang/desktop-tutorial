@@ -7221,6 +7221,20 @@ function _injectBlogImageLD(post, pageUrl){
   s.textContent=JSON.stringify(ld); document.head.appendChild(s);
 }
 
+// 본문 내 그라디언트 상담 CTA 박스 → 실사 사진 배경 + 반투명 오버레이 배너로 변환(기존 발행 글 소급)
+function _ctaPhotoize(root){
+  try{
+    root.querySelectorAll('div[style*="linear-gradient(135deg"]').forEach(function(box){
+      if(!box.querySelector('a[href*="pf.kakao.com"]'))return;
+      if(box.dataset.ctaPhoto)return; box.dataset.ctaPhoto='1';
+      var inner=box.innerHTML;
+      box.setAttribute('style','position:relative;border-radius:16px;overflow:hidden;margin:56px 0 8px;min-height:200px;padding:0;text-align:center');
+      box.innerHTML='<img src="/images/office.webp" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">'
+        +'<div style="position:absolute;inset:0;background:linear-gradient(100deg,rgba(13,27,46,.85) 0%,rgba(13,27,46,.62) 55%,rgba(28,30,84,.45) 100%)"></div>'
+        +'<div style="position:relative;padding:38px 28px">'+inner+'</div>';
+    });
+  }catch(e){}
+}
 function openBlogPost(id, pushState) {
   var post = blogPosts[id];
   if (!post) return;
@@ -7260,6 +7274,7 @@ function openBlogPost(id, pushState) {
     try { rawHtml = injectInternalLinks(rawHtml); } catch(e) {}
     try { rawHtml = imgToWebp(rawHtml); } catch(e) {}
     el.innerHTML = tagRow + rawHtml;
+    _ctaPhotoize(el);
     _setPrimaryH1();
     try{if(window.VInfo)VInfo.scan(document);}catch(e){}
 
@@ -8349,6 +8364,14 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   .orch-card,.gx-card,.gx-cmp-card,.aig-vs-card,.inv-card,.tool-card,.cs-card,.testi-card{border-radius:16px}
   .tool-card,.orch-card{box-shadow:0 1px 2px rgba(13,37,61,.04)}
 
+  /* ── 블로그 본문 가독성: 소카테고리(소제목·목록) 간격 확대 — 기존 발행 글 인라인 스타일 오버라이드 ── */
+  #blog-post-content h2{margin:64px 0 20px!important}
+  #blog-post-content h3{margin:48px 0 14px!important}
+  #blog-post-content h4{margin:38px 0 12px!important}
+  #blog-post-content ul,#blog-post-content ol{margin:18px 0 32px!important}
+  #blog-post-content li{margin:0 0 14px!important}
+  #blog-post-content p{margin:0 0 22px!important}
+  #blog-post-content blockquote{margin:32px 0!important}
   /* ── 4. 밀도 완화: 본문 링크·강조 절제 ── */
   .dc-ilink{font-weight:600}
   .dc-info{margin:28px 0}
