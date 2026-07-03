@@ -1672,6 +1672,53 @@ body{padding-top:0}
       <div id="orch-report"></div>
     </div>
   </section>
+
+  <!-- AI 노출 매트릭스: 실제 AI 엔진들에게 환자 질문 5종을 던져 언급 여부를 실측 -->
+  <section class="section vd-mtx" id="vd-mtx" style="background:#fff">
+    <style>
+      .mtx-wrap{max-width:920px;margin:0 auto;padding:0 20px}
+      .mtx-head{text-align:center;max-width:620px;margin:0 auto 26px}
+      .mtx-head .diag-sec-no{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--p);background:var(--psub);padding:4px 12px;border-radius:9999px;margin-bottom:12px}
+      .mtx-head h3{font-size:24px;font-weight:800;letter-spacing:-.03em;color:var(--ink);margin:0 0 8px}
+      .mtx-head p{font-size:14px;color:var(--mute);line-height:1.7;margin:0}
+      .mtx-form{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;max-width:820px;margin:0 auto 8px}
+      .mtx-form input,.mtx-form select{padding:13px 15px;border:1px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;outline:none}
+      .mtx-form input:focus,.mtx-form select:focus{border-color:var(--p)}
+      .mtx-btn{padding:13px 24px;background:linear-gradient(135deg,#7c6cfd,#533afd);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap}
+      .mtx-btn:disabled{opacity:.6;cursor:wait}
+      .mtx-note{font-size:11.5px;color:var(--mute);text-align:center;margin:8px 0 0}
+      .mtx-table-wrap{overflow-x:auto;margin-top:22px}
+      .mtx-table{width:100%;border-collapse:separate;border-spacing:4px;min-width:520px}
+      .mtx-table th{font-size:12px;font-weight:700;color:var(--ink2);padding:8px 6px;text-align:center}
+      .mtx-table th.q{text-align:left;font-weight:600;color:var(--ink2);max-width:280px;font-size:12.5px;line-height:1.45}
+      .mtx-cell{width:64px;height:44px;border-radius:10px;text-align:center;font-size:17px;background:var(--soft);cursor:pointer;transition:.15s;vertical-align:middle}
+      .mtx-cell:hover{transform:scale(1.06)}
+      .mtx-cell.g{background:#dcfce7}.mtx-cell.y{background:#fef9c3}.mtx-cell.r{background:#fee2e2}.mtx-cell.p{background:var(--soft);color:var(--mute);font-size:12px}
+      .mtx-sum{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+      .mtx-sum .orch-card{min-width:180px;text-align:center}
+      .mtx-detail{margin-top:14px;background:var(--soft);border-radius:14px;padding:18px 20px;font-size:13.5px;line-height:1.8;color:var(--ink2);display:none}
+      .mtx-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:12px;color:var(--mute)}
+      @media(max-width:760px){.mtx-form{grid-template-columns:1fr 1fr}.mtx-form input[id=mtx-name]{grid-column:1/-1}.mtx-btn{grid-column:1/-1}}
+    </style>
+    <div class="mtx-wrap">
+      <div class="mtx-head">
+        <span class="diag-sec-no">AI 노출 매트릭스</span>
+        <h3>AI들에게 직접 물어봅니다 — 우리 병원이 나올까요?</h3>
+        <p>환자들이 실제로 묻는 질문 5가지를 <b>실제 AI 검색엔진들</b>에 던져, 엔진별·질문별 노출 여부를 한 표로 보여드립니다.</p>
+      </div>
+      <div class="mtx-form">
+        <input type="text" id="mtx-name" placeholder="병원명 (예: 베놈치과)" autocomplete="off">
+        <input type="text" id="mtx-region" placeholder="지역 (예: 강남)" autocomplete="off">
+        <select id="mtx-cat" aria-label="진료과">
+          <option value="">진료과</option>
+          <option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>내과</option><option>안과</option>
+        </select>
+        <button class="mtx-btn" id="mtx-btn" onclick="runAiMatrix()">실측 시작 →</button>
+      </div>
+      <p class="mtx-note">엔진 수 × 질문 5개를 순차 실측합니다 (약 30~60초). AI 답변은 시점에 따라 달라질 수 있습니다.</p>
+      <div id="mtx-out"></div>
+    </div>
+  </section>
   <!-- 🆕 병원 마케팅 자가진단 위젯 -->
   <section class="section vd-section">
     <style>
@@ -1902,7 +1949,7 @@ body{padding-top:0}
       <div class="tool-grid">
         <!-- SEO -->
         <div class="tool-card" id="tool-seo">
-          <div class="tool-card-head"><span class="tool-card-ico">🔍</span><div><div class="tool-card-name">SEO 점수 체크</div><div class="tool-card-desc">홈페이지 SEO를 100점 기준으로 진단</div></div></div>
+          <div class="tool-card-head"><span class="tool-card-ico">🔍</span><div><div class="tool-card-name">SEO 점수 체크 <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:9999px;vertical-align:2px;background:var(--soft);color:var(--mute)">웹 진단</span></div><div class="tool-card-desc">홈페이지 SEO를 100점 기준으로 진단</div></div></div>
           <div class="tool-input-wrap">
             <input type="url" id="seo-url" class="tool-input" placeholder="https://병원홈페이지.com" oninput="toolReady('seo')" onkeydown="if(event.key==='Enter')runSEO()">
             <button class="tool-btn" onclick="runSEO()">분석</button>
@@ -1911,7 +1958,7 @@ body{padding-top:0}
         </div>
         <!-- GEO -->
         <div class="tool-card" id="tool-geo">
-          <div class="tool-card-head"><span class="tool-card-ico">🤖</span><div><div class="tool-card-name">GEO 점수 체크</div><div class="tool-card-desc">ChatGPT·Perplexity AI 노출 신호 진단</div></div></div>
+          <div class="tool-card-head"><span class="tool-card-ico">🤖</span><div><div class="tool-card-name">GEO 점수 체크 <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:9999px;vertical-align:2px;background:var(--soft);color:var(--mute)">웹 진단</span></div><div class="tool-card-desc">ChatGPT·Perplexity AI 노출 신호 진단</div></div></div>
           <div class="tool-input-wrap">
             <input type="url" id="geo-url" class="tool-input" placeholder="병원 홈페이지 URL (예: https://venomad.co.kr)" oninput="toolReady('geo')" onkeydown="if(event.key==='Enter')runGEO()">
             <button class="tool-btn" onclick="runGEO()">분석</button>
@@ -1920,7 +1967,7 @@ body{padding-top:0}
         </div>
         <!-- 키워드 검색량 -->
         <div class="tool-card" id="tool-kw">
-          <div class="tool-card-head"><span class="tool-card-ico">📊</span><div><div class="tool-card-name">키워드 검색량</div><div class="tool-card-desc">월 검색량·경쟁도·예상 광고비</div></div></div>
+          <div class="tool-card-head"><span class="tool-card-ico">📊</span><div><div class="tool-card-name">키워드 검색량 <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:9999px;vertical-align:2px;background:var(--soft);color:var(--mute)">데이터 실측</span></div><div class="tool-card-desc">월 검색량·경쟁도·예상 광고비</div></div></div>
           <div class="tool-input-wrap">
             <input type="text" id="kw-input" class="tool-input" placeholder="키워드 (예: 강남 임플란트)" oninput="toolReady('kw')" onkeydown="if(event.key==='Enter')runKW()">
             <button class="tool-btn" onclick="runKW()">조회</button>
@@ -1929,7 +1976,7 @@ body{padding-top:0}
         </div>
         <!-- 검색 트렌드 -->
         <div class="tool-card" id="tool-trend">
-          <div class="tool-card-head"><span class="tool-card-ico">📈</span><div><div class="tool-card-name">검색 트렌드</div><div class="tool-card-desc">최근 1년 네이버 검색 추이 비교</div></div></div>
+          <div class="tool-card-head"><span class="tool-card-ico">📈</span><div><div class="tool-card-name">검색 트렌드 <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:9999px;vertical-align:2px;background:var(--soft);color:var(--mute)">데이터 실측</span></div><div class="tool-card-desc">최근 1년 네이버 검색 추이 비교</div></div></div>
           <div class="tool-input-wrap">
             <input type="text" id="trend-input" class="tool-input" placeholder="키워드(쉼표로 최대 3개: 임플란트, 교정)" onkeydown="if(event.key==='Enter')runTrend()">
             <button class="tool-btn" onclick="runTrend()">트렌드</button>
@@ -1938,7 +1985,7 @@ body{padding-top:0}
         </div>
         <!-- AI 추천 확인 -->
         <div class="tool-card" id="tool-aeo">
-          <div class="tool-card-head"><span class="tool-card-ico">🤖</span><div><div class="tool-card-name">AI 추천 확인</div><div class="tool-card-desc">AI 답변에 우리 병원 언급 여부 확인</div></div></div>
+          <div class="tool-card-head"><span class="tool-card-ico">🤖</span><div><div class="tool-card-name">AI 추천 확인 <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:9999px;vertical-align:2px;background:rgba(16,185,129,.12);color:#0f766e">AI 실측</span></div><div class="tool-card-desc">AI 답변에 우리 병원 언급 여부 확인</div></div></div>
           <div class="tool-aeo-fields">
             <input type="text" id="aeo-q" class="tool-input tool-input-box" placeholder="질문 (예: 대전 유성구 임플란트 잘하는 치과)" onkeydown="if(event.key==='Enter')runAeo()">
             <div class="tool-aeo-row">
@@ -1950,7 +1997,7 @@ body{padding-top:0}
         </div>
         <!-- 노출·경쟁 진단 -->
         <div class="tool-card" id="tool-expose">
-          <div class="tool-card-head"><span class="tool-card-ico">🔎</span><div><div class="tool-card-name">노출·경쟁 진단</div><div class="tool-card-desc">키워드 블로그·웹 경쟁량·발행 추이</div></div></div>
+          <div class="tool-card-head"><span class="tool-card-ico">🔎</span><div><div class="tool-card-name">노출·경쟁 진단 <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:9999px;vertical-align:2px;background:var(--soft);color:var(--mute)">데이터 실측</span></div><div class="tool-card-desc">키워드 블로그·웹 경쟁량·발행 추이</div></div></div>
           <div class="tool-input-wrap">
             <input type="text" id="expose-q" class="tool-input" placeholder="키워드 (예: 대전 임플란트)" onkeydown="if(event.key==='Enter')runExpose()">
             <button class="tool-btn" onclick="runExpose()">진단</button>
@@ -5428,13 +5475,117 @@ function _orchRender(){
   if(ai!==null&&ai<70)rx.push(['🤖','<b>GEO 콘텐츠 구축</b> — AI가 인용할 수 있는 진료 정보 페이지가 없으면 AI 추천에서 계속 빠집니다.']);
   if(_orch.kw&&_orch.kw.vol>=1000&&(ai===null||ai<70))rx.push(['🎯','<b>지역 키워드 선점 기회</b> — "'+_orch.kw.kw+'"가 월 '+_orch.kw.vol.toLocaleString()+'회 검색되는데 AI 답변에 우리 병원이 없습니다.']);
   if(!rx.length)rx.push(['✅','핵심 지표가 양호합니다. 유지 관리와 콘텐츠 확장이 다음 단계입니다.']);
-  html+='<div class="orch-rx"><h4>맞춤 처방</h4>'+rx.map(function(r){return '<div class="orch-rx-item"><i>'+r[0]+'</i><div>'+r[1]+'</div></div>';}).join('')+'</div>';
+  html+='<div class="orch-rx"><h4>맞춤 처방 로드맵</h4><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">'+rx.map(function(r,i){return '<div style="background:var(--soft);border-radius:14px;padding:16px 16px 14px;position:relative"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:24px;height:24px;border-radius:50%;background:var(--p);color:#fff;font-size:12.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">'+(i+1)+'</span><span style="font-size:17px">'+r[0]+'</span></div><div style="font-size:12.5px;line-height:1.65;color:var(--ink2)">'+r[1]+'</div></div>';}).join('')+'</div></div>';
   html+='<div class="orch-cta">'
     +'<button class="btn btn-p" onclick="diagFullPDF()" style="padding:13px 26px">📄 진단 리포트 PDF 저장</button>'
     +'<a class="btn btn-o" href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" style="padding:13px 26px">💬 결과 상담하기 (무료)</a>'
     +'</div>';
   html+='<p class="orch-note">본 진단은 공개 데이터 기반 자동 분석으로, 실제 성과를 보장하지 않습니다. AI 답변은 시점에 따라 달라질 수 있습니다.</p>';
   document.getElementById('orch-report').innerHTML=html;
+}
+// ── AI 노출 매트릭스: 가용 엔진 조회 → 엔진×질문 순차 실측 → 히트맵 ──
+var _MTX_ENGINES = { perplexity:'Perplexity', openai:'ChatGPT', gemini:'Gemini', claude:'Claude' };
+var _mtx = null;
+function _mtxQuestions(name, region, cat){
+  var rc = (region ? region + ' ' : '') + cat;
+  return [
+    rc + ' 잘하는 곳 추천해줘',
+    rc + ' 어디가 좋아?',
+    rc + ' 비용 합리적인 곳 알려줘',
+    name + ' 어때? 믿을 만한 곳이야?',
+    (region ? region + '에서 ' : '') + cat + ' 후기 좋은 병원 알려줘'
+  ];
+}
+function runAiMatrix(){
+  var name = document.getElementById('mtx-name').value.trim();
+  var region = document.getElementById('mtx-region').value.trim();
+  var cat = document.getElementById('mtx-cat').value;
+  if(!name){ alert('병원명을 입력해주세요'); return; }
+  if(!cat){ alert('진료과를 선택해주세요'); return; }
+  var btn = document.getElementById('mtx-btn');
+  btn.disabled = true; btn.textContent = '실측 중…';
+  var out = document.getElementById('mtx-out');
+  out.innerHTML = '<div style="text-align:center;padding:26px 0;color:var(--mute)">가용 AI 엔진 확인 중…</div>';
+  fetch(_INSIGHTS + '?type=engines').then(function(r){ return r.json(); }).then(function(av){
+    var engines = Object.keys(_MTX_ENGINES).filter(function(e){ return av[e]; });
+    if(!engines.length){ out.innerHTML = '<div style="text-align:center;padding:26px 0;color:#dc2626">사용 가능한 AI 엔진이 없습니다.</div>'; btn.disabled=false; btn.textContent='실측 시작 →'; return; }
+    var qs = _mtxQuestions(name, region, cat);
+    _mtx = { name:name, engines:engines, qs:qs, cells:{}, total: engines.length * qs.length, done: 0 };
+    // 표 골격 렌더 (전 셀 대기 상태)
+    var html = '<div class="mtx-table-wrap"><table class="mtx-table"><tr><th class="q">환자 질문 \\ AI 엔진</th>'
+      + engines.map(function(e){ return '<th>' + _MTX_ENGINES[e] + '</th>'; }).join('') + '</tr>';
+    qs.forEach(function(q, qi){
+      html += '<tr><th class="q">' + q + '</th>' + engines.map(function(e){
+        return '<td class="mtx-cell p" id="mc-' + e + '-' + qi + '">…</td>';
+      }).join('') + '</tr>';
+    });
+    html += '</table></div>';
+    html += '<div class="mtx-legend"><span>🟢 인용됨(근거 채택)</span><span>🟡 언급됨</span><span>🔴 미노출</span></div>';
+    html += '<div id="mtx-progress" style="text-align:center;font-size:13px;color:var(--p);font-weight:700;margin-top:12px">실측 0/' + _mtx.total + '</div>';
+    html += '<div class="mtx-detail" id="mtx-detail"></div><div id="mtx-summary"></div>';
+    out.innerHTML = html;
+    // 순차 실측 (엔진별 병렬 금지 — 요금·타임아웃 안정)
+    var jobs = [];
+    engines.forEach(function(e){ qs.forEach(function(q, qi){ jobs.push({ e:e, q:q, qi:qi }); }); });
+    (function next(i){
+      if(i >= jobs.length){ _mtxFinish(); return; }
+      var j = jobs[i];
+      fetch(_INSIGHTS + '?type=aeo&engine=' + j.e + '&q=' + encodeURIComponent(j.q) + '&name=' + encodeURIComponent(name))
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var cell = document.getElementById('mc-' + j.e + '-' + j.qi);
+          var verdict = 'r', icon = '🔴';
+          if(!d.error){
+            var ans = String(d.answer || '');
+            var cited = (d.citations || []).some(function(u){ return name && String(u).indexOf(name) >= 0; });
+            if(d.mentioned && (d.citations || []).length && cited){ verdict = 'g'; icon = '🟢'; }
+            else if(d.mentioned){ verdict = 'y'; icon = '🟡'; }
+          } else { icon = '⚠️'; }
+          _mtx.cells[j.e + '-' + j.qi] = { v: verdict, d: d, q: j.q, e: j.e };
+          if(cell){ cell.className = 'mtx-cell ' + verdict; cell.textContent = icon;
+            cell.onclick = function(){ _mtxShow(j.e + '-' + j.qi); }; }
+          _mtx.done++;
+          var pg = document.getElementById('mtx-progress');
+          if(pg) pg.textContent = '실측 ' + _mtx.done + '/' + _mtx.total + ' — ' + _MTX_ENGINES[j.e] + ' 응답 수신';
+          next(i + 1);
+        })
+        .catch(function(){ _mtx.done++; next(i + 1); });
+    })(0);
+  }).catch(function(){ out.innerHTML='<div style="text-align:center;padding:26px 0;color:#dc2626">엔진 조회 실패</div>'; btn.disabled=false; btn.textContent='실측 시작 →'; });
+}
+function _mtxShow(key){
+  var c = _mtx && _mtx.cells[key]; if(!c) return;
+  var el = document.getElementById('mtx-detail');
+  el.style.display = 'block';
+  el.innerHTML = '<b style="color:var(--ink)">' + _MTX_ENGINES[c.e] + '</b> · "' + c.q + '"<br><br>'
+    + (c.d.error ? '<span style="color:#dc2626">오류: ' + c.d.error + '</span>'
+      : String(c.d.answer || '').replace(/</g,'&lt;').slice(0, 900) + ((c.d.citations||[]).length ? '<br><br><b>인용 출처:</b> ' + c.d.citations.slice(0,4).map(function(u){ var dm=String(u).replace(/^https?:\/\//,'').split('/')[0]; return '<a href="'+u+'" target="_blank" rel="nofollow noopener" style="color:var(--p)">'+dm+'</a>'; }).join(' · ') : ''));
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function _mtxFinish(){
+  var btn = document.getElementById('mtx-btn');
+  btn.disabled = false; btn.textContent = '다시 실측 →';
+  var pg = document.getElementById('mtx-progress'); if(pg) pg.textContent = '실측 완료 — 셀을 누르면 AI의 원문 답변을 볼 수 있습니다';
+  // 요약: 전체 노출률 + 엔진별
+  var total = 0, hit = 0, byE = {};
+  Object.keys(_mtx.cells).forEach(function(k){
+    var c = _mtx.cells[k]; total++;
+    byE[c.e] = byE[c.e] || { t:0, h:0 }; byE[c.e].t++;
+    if(c.v === 'g' || c.v === 'y'){ hit++; byE[c.e].h++; }
+  });
+  var pct = total ? Math.round(hit / total * 100) : 0;
+  var col = pct >= 60 ? '#10b981' : pct >= 30 ? '#f59e0b' : '#ef4444';
+  var html = '<div class="mtx-sum">'
+    + '<div class="orch-card"><h4>📊 종합 노출률</h4><div class="val" style="color:' + col + '">' + pct + '<small>%</small></div><p>' + total + '회 질문 중 ' + hit + '회 노출</p></div>'
+    + _mtx.engines.map(function(e){
+        var s = byE[e] || { t:0, h:0 };
+        return '<div class="orch-card"><h4>' + _MTX_ENGINES[e] + '</h4><div class="val" style="font-size:22px;color:var(--ink)">' + s.h + '/' + s.t + '</div><p>질문 중 노출 횟수</p></div>';
+      }).join('') + '</div>';
+  if(pct < 60){
+    html += '<div class="orch-rx" style="margin-top:14px"><h4>이 결과가 의미하는 것</h4><div class="orch-rx-item"><i>🎯</i><div>환자가 AI에게 물었을 때 <b>' + (100 - pct) + '%는 우리 병원 없이 경쟁 병원만 추천</b>되고 있습니다. GEO 콘텐츠 구축으로 이 표를 초록색으로 바꾸는 것이 베놈의 일입니다.</div></div></div>';
+  }
+  html += '<div class="orch-cta" style="margin-top:16px"><a class="btn btn-p" href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" style="padding:13px 26px">💬 이 결과로 상담하기 (무료)</a></div>';
+  document.getElementById('mtx-summary').innerHTML = html;
 }
 function diagFullPDF(){
   var el=document.getElementById('orch-report');
