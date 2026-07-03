@@ -43,6 +43,14 @@ module.exports = async function handler(req, res) {
     var data;
     try { data = JSON.parse(text); } catch(e) { data = { result: 'ok' }; }
 
+    // 상담신청 1건을 KV 카운터에 집계(대시보드 실데이터) — 응답 지연 없이 fire-and-forget
+    try {
+      var _host = (req.headers && req.headers.host) || 'venom-new-site.vercel.app';
+      fetch('https://' + _host + '/api/analytics', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: 1 }),
+      }).catch(function(){});
+    } catch (e) {}
+
     return res.status(200).json({ result: 'ok', raw: data });
   } catch (e) {
     console.error('contact handler error:', e.message);

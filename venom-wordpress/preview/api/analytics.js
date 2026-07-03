@@ -127,6 +127,18 @@ async function topScores(req, res) {
   return res.status(200).json({ configured: true, mode: LB_DISCLOSURE, period, items });
 }
 
+// 상담신청(리드) 집계 — analytics KV 패턴 재사용, 별도 저장소·의존성 0
+async function recordLead(req, res) {
+  if (!KV_URL || !KV_TOKEN) return res.status(200).json({ ok: false, configured: false });
+  const today = ymdKST(0);
+  await kv([
+    ['INCR', 'va:lead:total'],
+    ['INCR', 'va:lead:' + today],
+    ['EXPIRE', 'va:lead:' + today, DAY_TTL],
+  ]);
+  return res.status(200).json({ ok: true });
+}
+
 async function track(req, res) {
   const b = req.body || {};
   const ref = (b.ref || '').slice(0, 300);
@@ -164,6 +176,8 @@ async function read(req, res) {
     ['MGET', ...CHANNELS.map(c => 'va:src:' + c)],
     ['GET', 'va:pv:total'],
     ['GET', 'va:uv:total'],
+    ['MGET', ...days.map(d => 'va:lead:' + d)], // r.json[5]
+    ['GET', 'va:lead:total'],                    // r.json[6]
   ]);
   if (!r || !r.json || !Array.isArray(r.json)) {
     return res.status(200).json({ configured: true, error: 'KV 응답 오류', daily: [], channels: [] });
@@ -174,17 +188,20 @@ async function read(req, res) {
   const pvTotal = n(r.json[3] && r.json[3].result);
   const uvTotal = n(r.json[4] && r.json[4].result);
 
-  const daily = days.map((d, i) => ({ date: d, pv: n(pvArr[i]), uv: n(uvArr[i]) }));
+  const leadArr = (r.json[5] && r.json[5].result) || [];
+  const leadTotal = n(r.json[6] && r.json[6].result);
+
+  const daily = days.map((d, i) => ({ date: d, pv: n(pvArr[i]), uv: n(uvArr[i]), lead: n(leadArr[i]) }));
   const channels = CHANNELS.map((c, i) => ({ key: c, pageviews: n(srcArr[i]) }))
     .filter(c => c.pageviews > 0).sort((a, b) => b.pageviews - a.pageviews);
 
   const last = (k, days2) => sum(daily.slice(-days2).map(x => x[k]));
   return res.status(200).json({
     configured: true,
-    totals: { pageviews: pvTotal, visitors: uvTotal },
-    today: { pageviews: last('pv', 1), visitors: last('uv', 1) },
-    week: { pageviews: last('pv', 7), visitors: last('uv', 7) },
-    month: { pageviews: last('pv', 30), visitors: last('uv', 30) },
+    totals: { pageviews: pvTotal, visitors: uvTotal, leads: leadTotal },
+    today: { pageviews: last('pv', 1), visitors: last('uv', 1), leads: last('lead', 1) },
+    week: { pageviews: last('pv', 7), visitors: last('uv', 7), leads: last('lead', 7) },
+    month: { pageviews: last('pv', 30), visitors: last('uv', 30), leads: last('lead', 30) },
     daily, channels,
   });
 }
@@ -196,6 +213,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   try {
     if (req.method === 'POST') {
+      if (req.body && req.body.lead) return await recordLead(req, res); // 상담신청(리드) 집계
       if (req.body && req.body.lb) return await recordScore(req, res); // SEO 점수 기록
       return await track(req, res);
     }
