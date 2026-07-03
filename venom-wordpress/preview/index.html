@@ -6485,6 +6485,8 @@ else{loadAdminPosts();}
     .then(function(r){return r.ok?r.json():[];})
     .then(function(posts){
       if(!Array.isArray(posts)||!posts.length)return;
+      posts.forEach(function(p){ if(p.images&&p.images[0]) _postImgById[p.id]=p.images[0]; });
+      try{ renderBlogGrid(); }catch(e){}
       var stored;
       try{stored=JSON.parse(localStorage.getItem('venom_blog_posts')||'[]');}catch(e){stored=[];}
       var ids=new Set(stored.map(function(p){return p.id;}));
@@ -7590,15 +7592,35 @@ var BLOG_CAT_LABEL = {
   shimui:'의료광고심의', '지역마케팅':'지역마케팅', geo_local:'지역마케팅'
 };
 
+// 서버 글 id → 대표 이미지 (로더가 images를 누락해도 카드가 직접 참조)
+var _postImgById = {};
+// 카테고리별 기본 썸네일(실사진) — 글에 이미지가 없을 때 폴백
+var _BLOG_CAT_THUMB = {
+  '치과':'/images/photos/dental/dental02.webp','피부과':'/images/dept/skin.webp',
+  '정형외과':'/images/dept/ortho.webp','한의원':'/images/dept/oriental.webp',
+  '성형외과':'/images/dept/plastic.webp','내과':'/images/dept/naegwa.webp',
+  '안과':'/images/photos/eye/eye01.webp','의료광고심의':'/images/dept/shimui.webp',
+  '의료기기':'/images/dept/medical_device.webp',
+  'GEO/AI':'/images/office.webp','SEO':'/images/office.webp','AEO':'/images/office.webp','전략':'/images/office.webp','지역마케팅':'/images/office.webp'
+};
 function _buildBlogCard(p) {
   var label = BLOG_CAT_LABEL[p.cat] || p.cat;
   var imgClass = p.bg ? 'class="blog-img ' + p.bg + '"' : 'class="blog-img" style="background:' + (p.bgStyle || ADMIN_CAT_BG[p.cat] || 'linear-gradient(135deg,var(--p),var(--bd))') + '"';
+  // 썸네일: ① 글 내부 이미지 ② html 본문 첫 <img> ③ 카테고리 실사진
+  var thumb = (p.images && p.images[0]) || p.image || p.thumb || _postImgById[p.id] || '';
+  // raw.githubusercontent 경유 제거: 사이트 내 /content/images/*.webp로 재작성(onerror 시 jpg)
+  var _tm = thumb && thumb.match(/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"?]+?)(\.(?:jpg|jpeg|png))?$/i);
+  var thumbFb = '';
+  if (_tm) { thumbFb = _tm[1] + (_tm[2] || '.jpg'); thumb = _tm[1] + '.webp'; }
+  if (!thumb && p.html) { var m = String(p.html).match(/<img[^>]+src="([^"]+)"/); if (m) thumb = m[1]; }
+  if (!thumb) thumb = _BLOG_CAT_THUMB[p.cat] || _BLOG_CAT_THUMB[label] || '';
+  var thumbImg = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="' + (thumbFb ? 'if(this.dataset.f){this.remove()}else{this.dataset.f=1;this.src=\'' + thumbFb + '\'}' : 'this.remove()') + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">' : '';
   var tags = Array.isArray(p.tags) ? p.tags : (p.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
   var excerpt = p.excerpt || (p.meta || '').slice(0,100) || '';
   // 크롤 가능한 실제 링크(/blog/<슬러그>) + SPA 내비(onclick·return false). 슬러그 없으면 해시 폴백.
   var href = p.slug ? '/blog/' + encodeURIComponent(p.slug) : '#blog-post/' + p.id;
   return '<a href="'+href+'" class="blog-card" style="cursor:pointer;display:block;text-decoration:none;color:inherit" onclick="openBlogPost(\''+p.id+'\');return false;">'
-    + '<div '+imgClass+'><span class="blog-cat-badge">'+label+'</span></div>'
+    + '<div '+imgClass+'>'+thumbImg+'<span class="blog-cat-badge" style="position:relative;z-index:2">'+label+'</span></div>'
     + '<div class="blog-body">'
     + '<div class="post-meta">'+(p.date||'')+(p.readTime?' · '+p.readTime+' 읽기':'')+'</div>'
     + '<h2 class="bcard-t">'+p.title+'</h2><p>'+excerpt+'</p>'
