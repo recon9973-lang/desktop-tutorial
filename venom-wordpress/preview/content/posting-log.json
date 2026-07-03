@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1783050936923",
+    "title": "대전 SEO 마케팅: 베놈으로 검색 순위 2.4배 향상시키기",
+    "tokenUsage": {
+      "promptTokens": 2507,
+      "completionTokens": 1881,
+      "totalTokens": 4388,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-03T03:57:09.724Z"
+  },
+  {
     "action": "generate",
     "id": "auto_1782809907761",
     "title": "대전에서 SEO 마케팅 성공을 위한 5가지 전략",
