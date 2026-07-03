@@ -8,8 +8,19 @@
 
 const https = require('https');
 
-const KV_URL   = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// KV 자격증명 자동 인식 — Upstash 마켓플레이스가 붙이는 접두사(STORAGE_ 등) 무관.
+// REST 엔드포인트만 사용(redis:// 프로토콜 URL은 제외). 읽기전용 토큰도 제외.
+function _pickEnv(reList, extraSkip) {
+  for (const re of reList) {
+    for (const k of Object.keys(process.env)) {
+      if (extraSkip && extraSkip.test(k)) continue;
+      if (re.test(k) && process.env[k]) return process.env[k];
+    }
+  }
+  return '';
+}
+const KV_URL   = _pickEnv([/(^|_)KV_REST_API_URL$/, /(^|_)UPSTASH_REDIS_REST_URL$/, /REST_API_URL$/, /REDIS_REST_URL$/]);
+const KV_TOKEN = _pickEnv([/(^|_)KV_REST_API_TOKEN$/, /(^|_)UPSTASH_REDIS_REST_TOKEN$/, /REST_API_TOKEN$/, /REDIS_REST_TOKEN$/], /READ_ONLY/);
 
 const CHANNELS = ['direct', 'naver', 'google', 'daum', 'instagram', 'facebook', 'youtube', 'bing', 'other'];
 const DAY_TTL = 60 * 60 * 24 * 120; // 일별 키 120일 보관
@@ -187,7 +198,7 @@ async function track(req, res) {
 async function read(req, res) {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   if (!KV_URL || !KV_TOKEN) {
-    return res.status(200).json({ configured: false, note: 'KV 미설정 — Vercel KV(Upstash) 연동 후 실데이터 표시' });
+    return res.status(200).json({ configured: false, note: 'KV 미설정 — Vercel KV(Upstash) 연동 후 실데이터 표시', kvKeys: Object.keys(process.env).filter(k => /KV|UPSTASH|REDIS/i.test(k)).sort() });
   }
   const days = [];
   for (let i = 29; i >= 0; i--) days.push(ymdKST(i)); // 과거→오늘 순
