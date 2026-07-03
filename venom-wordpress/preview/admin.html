@@ -239,26 +239,26 @@ a{color:var(--p);text-decoration:none}
         <div class="stat-card">
           <div class="stat-icon">👥</div>
           <div class="stat-label">오늘 방문자</div>
-          <div class="stat-val" id="stat-visitors">248</div>
-          <div class="stat-change up">↑ 12% 전일 대비</div>
+          <div class="stat-val" id="stat-visitors">—</div>
+          <div class="stat-change" id="stat-visitors-chg">—</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">📄</div>
-          <div class="stat-label">페이지뷰</div>
-          <div class="stat-val" id="stat-pv">1,024</div>
-          <div class="stat-change up">↑ 8% 전일 대비</div>
+          <div class="stat-label">오늘 페이지뷰</div>
+          <div class="stat-val" id="stat-pv">—</div>
+          <div class="stat-change" id="stat-pv-chg">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✍️</div>
+          <div class="stat-label">발행 포스팅</div>
+          <div class="stat-val" id="stat-posts">—</div>
+          <div class="stat-change" id="stat-posts-sub">—</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">💬</div>
-          <div class="stat-label">상담 신청</div>
-          <div class="stat-val" id="stat-leads">14</div>
-          <div class="stat-change up">↑ 3건 전일 대비</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🔍</div>
-          <div class="stat-label">키워드 순위 1위</div>
-          <div class="stat-val" id="stat-kw">7</div>
-          <div class="stat-change up">↑ 2개 상승</div>
+          <div class="stat-label">상담 신청 (오늘)</div>
+          <div class="stat-val" id="stat-leads">—</div>
+          <div class="stat-change" id="stat-leads-chg">—</div>
         </div>
       </div>
 
@@ -271,33 +271,18 @@ a{color:var(--p);text-decoration:none}
               <option>최근 7일</option><option>최근 30일</option>
             </select>
           </div>
-          <div class="chart-wrap" id="chart">
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:45%"></div><div class="chart-label">월</div></div>
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:60%"></div><div class="chart-label">화</div></div>
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:38%"></div><div class="chart-label">수</div></div>
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:72%"></div><div class="chart-label">목</div></div>
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:88%"></div><div class="chart-label">금</div></div>
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:52%;opacity:.5"></div><div class="chart-label">토</div></div>
-            <div class="chart-bar-wrap"><div class="chart-bar" style="height:30%;opacity:.5"></div><div class="chart-label">일</div></div>
-          </div>
+          <div class="chart-wrap" id="chart"><div style="width:100%;text-align:center;color:var(--mute);font-size:13px;align-self:center">데이터 불러오는 중…</div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mute);padding-top:8px;border-top:1px solid var(--border)">
-            <span>총 방문자 <strong style="color:var(--ink)">1,842</strong></span>
-            <span>신규 <strong style="color:var(--p)">68%</strong></span>
-            <span>재방문 <strong style="color:var(--ink)">32%</strong></span>
+            <span>주간 방문자 <strong style="color:var(--ink)" id="dash-week-total">—</strong></span>
+            <span>주간 페이지뷰 <strong style="color:var(--p)" id="dash-week-pv">—</strong></span>
+            <span>방문자당 PV <strong style="color:var(--ink)" id="dash-week-ppv">—</strong></span>
           </div>
         </div>
 
         <!-- 유입 채널 -->
         <div class="card">
-          <div class="card-head"><div class="card-title">📡 유입 채널 분포</div></div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>네이버 검색</span><span style="font-weight:600;color:var(--ink)">38%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:38%;background:#03c75a"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>직접 유입</span><span style="font-weight:600;color:var(--ink)">22%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:22%;background:var(--p)"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>카카오톡</span><span style="font-weight:600;color:var(--ink)">18%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:18%;background:#ffcd00"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>구글 검색</span><span style="font-weight:600;color:var(--ink)">12%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:12%;background:#ea4335"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>인스타그램</span><span style="font-weight:600;color:var(--ink)">7%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:7%;background:#e1306c"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>기타</span><span style="font-weight:600;color:var(--ink)">3%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:3%;background:var(--mute)"></div></div></div>
-          </div>
+          <div class="card-head"><div class="card-title">📡 유입 채널 분포 <span style="font-size:11px;font-weight:400;color:var(--mute)">(전기간 누적)</span></div></div>
+          <div id="dash-channel-bars" style="display:flex;flex-direction:column;gap:10px"><div style="text-align:center;color:var(--mute);font-size:13px;padding:20px">불러오는 중…</div></div>
         </div>
       </div>
 
@@ -309,25 +294,18 @@ a{color:var(--p);text-decoration:none}
             <button class="btn btn-p btn-sm" onclick="showSection('blog')">+ 작성</button>
           </div>
           <table class="data-table">
-            <thead><tr><th>제목</th><th>상태</th><th>조회</th></tr></thead>
+            <thead><tr><th>제목</th><th>상태</th><th>조회 <span style="font-size:10px;font-weight:400;color:var(--mute)">(연동 예정)</span></th></tr></thead>
             <tbody id="recent-posts">
-              <tr><td>ChatGPT에 병원이 추천되는 3가지 방법</td><td><span class="badge badge-green">발행</span></td><td>842</td></tr>
-              <tr><td>의료광고 금지 표현 완벽 정리 2025</td><td><span class="badge badge-green">발행</span></td><td>624</td></tr>
-              <tr><td>네이버 플레이스 1위 달성 전략</td><td><span class="badge badge-yellow">초안</span></td><td>—</td></tr>
-              <tr><td>임플란트 마케팅 가이드</td><td><span class="badge badge-green">발행</span></td><td>318</td></tr>
+              <tr><td colspan="3" style="text-align:center;color:var(--mute);padding:16px">불러오는 중…</td></tr>
             </tbody>
           </table>
         </div>
 
         <div class="card">
-          <div class="card-head"><div class="card-title">🔍 인기 검색 키워드 TOP 10</div></div>
+          <div class="card-head"><div class="card-title">📈 키워드 시장 규모 TOP 10 <span style="font-size:11px;font-weight:400;color:var(--mute)">(네이버 검색광고 실측)</span></div></div>
           <div id="kw-list" style="display:flex;flex-direction:column;gap:6px">
-            <div class="kw-row"><div class="kw-head">키워드</div><div class="kw-head">방문</div><div class="kw-head">순위</div><div class="kw-head">변동</div></div>
-            <div class="kw-row"><div class="kw-cell">치과마케팅</div><div class="kw-cell">142</div><div class="kw-cell">3위</div><div class="kw-cell" style="color:#16a34a">↑2</div></div>
-            <div class="kw-row"><div class="kw-cell">피부과마케팅</div><div class="kw-cell">98</div><div class="kw-cell">5위</div><div class="kw-cell" style="color:#16a34a">↑1</div></div>
-            <div class="kw-row"><div class="kw-cell">병원마케팅</div><div class="kw-cell">87</div><div class="kw-cell">8위</div><div class="kw-cell" style="color:var(--mute)">—</div></div>
-            <div class="kw-row"><div class="kw-cell">GEO최적화</div><div class="kw-cell">64</div><div class="kw-cell">1위</div><div class="kw-cell" style="color:#16a34a">↑4</div></div>
-            <div class="kw-row"><div class="kw-cell">한의원마케팅</div><div class="kw-cell">52</div><div class="kw-cell">6위</div><div class="kw-cell" style="color:#dc2626">↓1</div></div>
+            <div class="kw-row"><div class="kw-head">키워드</div><div class="kw-head">월 검색량</div><div class="kw-head">경쟁도</div><div class="kw-head">월 클릭</div></div>
+            <div class="kw-row"><div class="kw-cell" style="grid-column:1/-1;color:var(--mute);text-align:center;padding:12px">불러오는 중…</div></div>
           </div>
         </div>
       </div>
@@ -419,26 +397,26 @@ a{color:var(--p);text-decoration:none}
         <div class="stat-card">
           <div class="stat-icon">👥</div>
           <div class="stat-label">오늘 방문자</div>
-          <div class="stat-val" id="v-today">248</div>
-          <div class="stat-change up" id="v-today-chg">↑ 12% 전일 대비</div>
+          <div class="stat-val" id="v-today">—</div>
+          <div class="stat-change" id="v-today-chg">—</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">📄</div>
           <div class="stat-label">이번 주 방문자</div>
-          <div class="stat-val" id="v-week">1,842</div>
-          <div class="stat-change up">↑ 18% 전주 대비</div>
+          <div class="stat-val" id="v-week">—</div>
+          <div class="stat-change" id="v-week-chg">—</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">⏱️</div>
           <div class="stat-label">평균 체류 시간</div>
-          <div class="stat-val" id="v-duration">3:24</div>
-          <div class="stat-change up">↑ 0:22 개선</div>
+          <div class="stat-val" id="v-duration" style="font-size:15px;color:var(--mute)">연동 예정</div>
+          <div class="stat-change">세션 추적 필요</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">💬</div>
           <div class="stat-label">오늘 상담 신청</div>
-          <div class="stat-val" id="v-leads">14</div>
-          <div class="stat-change up">↑ 3건 전일 대비</div>
+          <div class="stat-val" id="v-leads">—</div>
+          <div class="stat-change" id="v-leads-chg">—</div>
         </div>
       </div>
 
@@ -453,10 +431,8 @@ a{color:var(--p);text-decoration:none}
         </div>
         <div id="v-chart-30" style="height:160px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative"></div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mute);padding-top:8px;border-top:1px solid var(--border)">
-          <span id="v-month-total">월 방문자 <strong style="color:var(--ink)">7,248</strong></span>
-          <span>신규 <strong style="color:var(--p)">68%</strong></span>
-          <span>재방문 <strong style="color:var(--ink)">32%</strong></span>
-          <span>전환율 <strong style="color:#16a34a">2.6%</strong></span>
+          <span id="v-month-total">월 방문자 <strong style="color:var(--ink)">—</strong></span>
+          <span style="color:var(--mute)">신규/재방문·전환율 <strong>연동 예정</strong></span>
         </div>
       </div>
 
@@ -465,7 +441,7 @@ a{color:var(--p);text-decoration:none}
         <div class="card">
           <div class="card-head">
             <div class="card-title">👁️ 실시간 방문 로그</div>
-            <span class="badge badge-green" id="realtime-badge">● 실시간</span>
+            <span class="badge badge-green" id="realtime-badge">● 60초 자동 갱신</span>
           </div>
           <div id="visitor-log" style="max-height:280px;overflow-y:auto"></div>
         </div>
@@ -487,11 +463,7 @@ a{color:var(--p);text-decoration:none}
         </div>
         <div class="card">
           <div class="card-title" style="margin-bottom:16px">📱 디바이스</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>📱 모바일</span><span id="d-mobile">68%</span></div><div class="seo-bar"><div class="seo-bar-fill" id="d-mobile-bar" style="width:68%;background:var(--p)"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>💻 데스크톱</span><span id="d-desktop">28%</span></div><div class="seo-bar"><div class="seo-bar-fill" id="d-desktop-bar" style="width:28%;background:var(--bd)"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>📟 태블릿</span><span id="d-tablet">4%</span></div><div class="seo-bar"><div class="seo-bar-fill" id="d-tablet-bar" style="width:4%;background:var(--mute)"></div></div></div>
-          </div>
+          <div style="display:flex;flex-direction:column;gap:10px"><div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">연동 예정 — 실측 데이터 수집 후 표시</div></div>
           <div style="margin-top:20px">
             <div class="card-title" style="margin-bottom:12px;font-size:13px">⏰ 시간대별 방문</div>
             <div id="v-hourly" style="height:80px;display:flex;align-items:flex-end;gap:2px"></div>
@@ -503,36 +475,8 @@ a{color:var(--p);text-decoration:none}
       <!-- 전환 퍼널 -->
       <div class="card">
         <div class="card-head"><div class="card-title">🎯 상담 전환 퍼널</div><span style="font-size:12px;color:var(--mute)">이번 주 기준</span></div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative">
-          <div style="text-align:center;padding:16px 8px">
-            <div style="font-size:24px;font-weight:700;color:var(--p)">1,842</div>
-            <div style="font-size:11px;color:var(--mute);margin-top:4px">방문자</div>
-            <div style="height:4px;background:var(--p);margin-top:12px;border-radius:2px"></div>
-          </div>
-          <div style="text-align:center;padding:16px 8px">
-            <div style="font-size:24px;font-weight:700;color:#4285f4">924</div>
-            <div style="font-size:11px;color:var(--mute);margin-top:4px">페이지 탐색</div>
-            <div style="height:4px;background:#4285f4;margin-top:12px;border-radius:2px"></div>
-            <div style="font-size:10px;color:var(--mute);margin-top:4px">50.2%</div>
-          </div>
-          <div style="text-align:center;padding:16px 8px">
-            <div style="font-size:24px;font-weight:700;color:#10a37f">312</div>
-            <div style="font-size:11px;color:var(--mute);margin-top:4px">상담 페이지 클릭</div>
-            <div style="height:4px;background:#10a37f;margin-top:12px;border-radius:2px"></div>
-            <div style="font-size:10px;color:var(--mute);margin-top:4px">33.8%</div>
-          </div>
-          <div style="text-align:center;padding:16px 8px">
-            <div style="font-size:24px;font-weight:700;color:#f59e0b">96</div>
-            <div style="font-size:11px;color:var(--mute);margin-top:4px">카카오 채널 클릭</div>
-            <div style="height:4px;background:#f59e0b;margin-top:12px;border-radius:2px"></div>
-            <div style="font-size:10px;color:var(--mute);margin-top:4px">30.8%</div>
-          </div>
-          <div style="text-align:center;padding:16px 8px">
-            <div style="font-size:24px;font-weight:700;color:#16a34a">48</div>
-            <div style="font-size:11px;color:var(--mute);margin-top:4px">상담 신청 완료</div>
-            <div style="height:4px;background:#16a34a;margin-top:12px;border-radius:2px"></div>
-            <div style="font-size:10px;color:#16a34a;font-weight:700;margin-top:4px">전환율 2.6%</div>
-          </div>
+        <div style="text-align:center;color:var(--mute);font-size:13px;padding:28px">🎯 전환 퍼널은 방문→상담클릭→카카오→신청 이벤트 추적 연동 후 표시됩니다 (연동 예정)</div>
+      
         </div>
       </div>
     </div>
@@ -1285,40 +1229,98 @@ function editPost(){toast('수정 모드 진입 (연동 준비 중)')}
 // ── 대시보드 실데이터 반영 ──
 var CAT_LABEL_MAP={geo:'GEO/AI',seo:'SEO',dental:'치과',skin:'피부과',oriental:'한의원',ortho:'정형외과',plastic:'성형외과',naegwa:'내과',angwa:'안과',shimui:'의료광고심의','지역마케팅':'지역마케팅'};
 
+// 전일 대비 델타 — daily[len-1] vs daily[len-2]. 분모0/데이터부족 가드.
+function _applyDelta(id,daily,key){
+  var el=document.getElementById(id); if(!el)return;
+  if(!daily||daily.length<2){el.textContent='—';el.className='stat-change';return;}
+  var t=Number(daily[daily.length-1][key])||0, y=Number(daily[daily.length-2][key])||0;
+  if(y===0){ el.textContent=(t>0?'↑ '+t+' 전일 대비':'— 전일 대비'); el.className='stat-change '+(t>0?'up':''); return; }
+  var pct=Math.round((t-y)/y*100);
+  el.textContent=(pct>0?'↑ ':pct<0?'↓ ':'')+Math.abs(pct)+'% 전일 대비';
+  el.className='stat-change '+(pct>=0?'up':'down');
+}
+
 function updateDashboard(){
-  var posts=getBlogPosts();
-  var published=posts.filter(function(p){return p.status==='발행';});
-  var drafts=posts.filter(function(p){return p.status==='초안';});
-
-  // 대시보드 포스팅 수
-  var statEl=document.getElementById('stat-posts');
-  if(statEl)statEl.textContent=published.length;
-
-  // 포스팅 목록 카운트
-  var countEl=document.querySelector('#section-blog .card-title span');
-  if(countEl)countEl.textContent='('+posts.length+'개)';
-
-  // 대시보드 최근 포스팅 테이블
-  var tbody=document.getElementById('recent-posts');
-  if(tbody){
-    if(posts.length===0){
-      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--mute);padding:16px">작성된 포스팅이 없습니다</td></tr>';
-    }else{
-      tbody.innerHTML=posts.slice(0,5).map(function(p){
-        var badge=p.status==='발행'?'<span class="badge badge-green">발행</span>':'<span class="badge badge-yellow">초안</span>';
-        return '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.title+'</td><td>'+badge+'</td><td>'+(p.views||'—')+'</td></tr>';
-      }).join('');
+  // ── 발행 포스팅 + 최근 포스팅: 서버 공개본(content/blog-posts.json) 우선, 로컬 초안 병합 ──
+  var local=[]; try{ local=getBlogPosts()||[]; }catch(e){}
+  var isPub=function(p){ return p.status==='발행'||p.status==='published'; };
+  var renderPosts=function(all){
+    var seen={}, merged=[];
+    all.concat(local).forEach(function(p){ var k=p.id||p.slug||p.title; if(k&&seen[k])return; if(k)seen[k]=1; merged.push(p); });
+    merged.sort(function(a,b){ return new Date(b.createdAt||b.date||0)-new Date(a.createdAt||a.date||0); });
+    var pub=merged.filter(isPub);
+    _setT('stat-posts', pub.length||'—');
+    var sub=document.getElementById('stat-posts-sub'); if(sub)sub.textContent='총 '+merged.length+'개 (초안 포함)';
+    var countEl=document.querySelector('#section-blog .card-title span'); if(countEl)countEl.textContent='('+merged.length+'개)';
+    var tbody=document.getElementById('recent-posts');
+    if(tbody){
+      if(!merged.length){ tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--mute);padding:16px">작성된 포스팅이 없습니다</td></tr>'; }
+      else{ tbody.innerHTML=merged.slice(0,5).map(function(p){
+        var badge=isPub(p)?'<span class="badge badge-green">발행</span>':'<span class="badge badge-yellow">초안</span>';
+        var title=(p.title||'').replace(/</g,'&lt;');
+        return '<tr><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+title+'</td><td>'+badge+'</td><td style="color:var(--mute)">'+(p.views?_nfmt(p.views):'—')+'</td></tr>';
+      }).join(''); }
     }
-  }
+  };
+  fetch('/content/blog-posts.json',{cache:'no-cache'})
+    .then(function(r){return r.ok?r.json():[];})
+    .then(function(srv){ renderPosts(Array.isArray(srv)?srv:(srv&&srv.posts)||[]); })
+    .catch(function(){ renderPosts([]); });
 
-  // 대시보드 상단 KPI — 서버 자체 분석 실데이터 반영(미연동이면 기존 값 유지)
+  // ── 상단 KPI/차트/채널/리드: /api/analytics 실데이터 ──
   if(typeof getServerAnalytics==='function'){
     getServerAnalytics(function(srv){
-      if(!(srv&&srv.configured))return;
+      var ok=srv&&srv.configured&&!srv.error&&srv.today; // (a)미설정·(b)에러 모두 실값 주입 스킵
+      if(typeof analyticsBanner==='function')analyticsBanner('dashboard',!!ok);
+      if(!ok)return;
+      // KPI
       _setT('stat-visitors',_nfmt(srv.today.visitors));
       _setT('stat-pv',_nfmt(srv.today.pageviews));
+      _applyDelta('stat-visitors-chg',srv.daily,'uv');
+      _applyDelta('stat-pv-chg',srv.daily,'pv');
+      // 상담신청(리드) — leads 필드 있을 때만
+      if(srv.today.leads!=null){ _setT('stat-leads',_nfmt(srv.today.leads)); _applyDelta('stat-leads-chg',srv.daily,'lead'); }
+      else { _setT('stat-leads','—'); }
+      // 주간 차트(최근 7일 방문자) + 유입 채널(전기간 누적)
+      if(typeof render30Chart==='function')render30Chart(document.getElementById('chart'),srv.daily.slice(-7),'uv');
+      if(typeof renderChannelBars==='function')renderChannelBars(document.getElementById('dash-channel-bars'),srv.channels);
+      // 차트 하단 요약(주간 방문자/페이지뷰/방문자당 PV)
+      _setT('dash-week-total',_nfmt(srv.week.visitors));
+      _setT('dash-week-pv',_nfmt(srv.week.pageviews));
+      var ppv=document.getElementById('dash-week-ppv');
+      if(ppv)ppv.textContent=srv.week.visitors>0?(srv.week.pageviews/srv.week.visitors).toFixed(1):'—';
     });
   }
+
+  // ── 키워드 시장 규모(네이버 검색광고 실측) ──
+  renderDashKeywords();
+}
+
+// 대시보드 키워드 위젯 — 네이버 검색광고 실측(월 검색량·경쟁도·클릭). 미연동/빈응답이면 '연동 대기'.
+var _DASH_KW=['치과마케팅','피부과마케팅','병원마케팅','성형외과마케팅','한의원마케팅'];
+function renderDashKeywords(){
+  var list=document.getElementById('kw-list'); if(!list)return;
+  var head='<div class="kw-row"><div class="kw-head">키워드</div><div class="kw-head">월 검색량</div><div class="kw-head">경쟁도</div><div class="kw-head">월 클릭</div></div>';
+  fetch('/api/insights?type=keywordtool&q='+encodeURIComponent(_DASH_KW.join(',')))
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};},function(){return {s:r.status,j:null};});})
+    .then(function(res){
+      if(res.s===200&&res.j&&res.j.keywords&&res.j.keywords.length){
+        var rows=res.j.keywords.slice(0,10).map(function(d){
+          var comp=d.competition||'-';
+          var cc=comp==='높음'?'#dc2626':comp==='낮음'?'#16a34a':'var(--ink)';
+          return '<div class="kw-row"><div class="kw-cell" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(d.keyword||'').replace(/</g,'&lt;')+'</div>'
+            +'<div class="kw-cell" style="font-weight:600;color:var(--p)">'+(d.monthlyVolume||0).toLocaleString()+'</div>'
+            +'<div class="kw-cell" style="color:'+cc+'">'+comp+'</div>'
+            +'<div class="kw-cell">'+(d.avgClicks||0).toLocaleString()+'</div></div>';
+        }).join('');
+        list.innerHTML=head+rows;
+      }else{
+        list.innerHTML=head+'<div class="kw-row"><div class="kw-cell" style="grid-column:1/-1;color:var(--mute);text-align:center;padding:14px">네이버 검색광고 API 연동 대기 — 실측 데이터가 없어 표시하지 않습니다.</div></div>';
+      }
+    })
+    .catch(function(){
+      list.innerHTML=head+'<div class="kw-row"><div class="kw-cell" style="grid-column:1/-1;color:var(--mute);text-align:center;padding:14px">데이터를 불러오지 못했습니다.</div></div>';
+    });
 }
 
 // 포스팅 수 stat 카드 추가 (없으면 3번째 카드 재활용)
@@ -1349,7 +1351,14 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // ── OTHER ──
 function logout(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem('venom-admin-auth');window.location.href='admin-login.html';}}
-function updateChart(v){toast(v+' 데이터 로딩 중')}
+function updateChart(v){
+  if(typeof getServerAnalytics!=='function')return;
+  getServerAnalytics(function(srv){
+    if(!(srv&&srv.configured&&!srv.error&&srv.daily&&srv.daily.length))return;
+    var n=(''+v).indexOf('30')>=0?30:7;
+    render30Chart(document.getElementById('chart'),srv.daily.slice(-n),'uv');
+  });
+}
 // ── KEYWORD TOOL ──
 var kwDatabase={
   '치과마케팅':{pc:1820,mo:2400,comp:0.78,cpc:2100,cat:'치과',naver:3,google:8,chg:2,visits:142},
@@ -1545,41 +1554,13 @@ function generateCardnews(){toast('오늘 카드뉴스 생성 중... (AI API 연
   }
 
   // Top pages
-  var tp=document.getElementById('v-top-pages');
-  if(tp){
-    var pages=[
-      {name:'/치과마케팅',v:412},{name:'/임플란트마케팅',v:334},{name:'/피부과마케팅',v:289},
-      {name:'/GEO-최적화',v:241},{name:'/contact',v:198}
-    ];
-    var maxV=pages[0].v;
-    tp.innerHTML=pages.map(function(p,i){
-      return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--p);font-weight:600">'+(i+1)+'.</span> <span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span><span style="color:var(--mute)">'+p.v+'</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+Math.round(p.v/maxV*100)+'%;background:var(--p)"></div></div></div>';
-    }).join('');
-  }
+  var tp=document.getElementById('v-top-pages'); if(tp)tp.innerHTML='<div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">연동 예정 — 실측 데이터 수집 후 표시</div>';
 
   // Regions
-  var rg=document.getElementById('v-regions');
-  if(rg){
-    var regions=[
-      {name:'서울',pct:38},{name:'경기',pct:24},{name:'부산',pct:9},
-      {name:'인천',pct:7},{name:'대구',pct:6},{name:'기타',pct:16}
-    ];
-    rg.innerHTML=regions.map(function(r){
-      return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+r.name+'</span><span style="color:var(--mute)">'+r.pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+r.pct+'%;background:var(--bd)"></div></div></div>';
-    }).join('');
-  }
+  var rg=document.getElementById('v-regions'); if(rg)rg.innerHTML='<div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">연동 예정 — 실측 데이터 수집 후 표시</div>';
 
   // Hourly chart
-  var hourly=document.getElementById('v-hourly');
-  if(hourly){
-    var hours=[2,1,1,1,2,4,8,14,21,28,32,34,36,30,27,24,29,35,38,34,28,20,12,6];
-    var maxH=Math.max.apply(null,hours);
-    hourly.innerHTML=hours.map(function(v,i){
-      var pct=Math.round(v/maxH*100);
-      var isPeak=(i>=9&&i<=20);
-      return '<div style="flex:1;background:'+(isPeak?'var(--p)':'var(--bd)')+';opacity:'+(isPeak?'0.8':'0.35')+';border-radius:2px 2px 0 0;height:'+pct+'%;min-height:2px" title="'+i+'시: '+v+'명"></div>';
-    }).join('');
-  }
+  var hourly=document.getElementById('v-hourly'); if(hourly)hourly.innerHTML='<div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">연동 예정 — 실측 데이터 수집 후 표시</div>';
 })();
 
 // ── REALTIME SIMULATION ──
@@ -1589,21 +1570,16 @@ var logMessages=[
   {icon:'🤖',bg:'#fff7ed',path:'/GEO-최적화',meta:'구글 검색 · GEO 병원 · 서초구',badge:'신규',bc:'badge-blue'},
   {icon:'✨',bg:'#f5f3ff',path:'/피부과마케팅',meta:'인스타그램 · 마포구',badge:'재방문',bc:'badge-blue'},
 ];
-var logIdx=0;
+// 실데이터 60초 자동 갱신(가짜 실시간 카운터 제거). 활성 섹션만 재조회.
 setInterval(function(){
-  var log=logMessages[logIdx%logMessages.length];
-  var container=document.getElementById('visitor-log');
-  if(!container)return;
-  var div=document.createElement('div');
-  div.className='log-item';
-  div.innerHTML='<div class="log-icon" style="background:'+log.bg+'">'+log.icon+'</div><div class="log-detail"><div class="log-path">'+log.path+'</div><div class="log-meta">'+log.meta+' · 방금 전</div></div><div class="log-badge"><span class="badge '+log.bc+'">'+log.badge+'</span></div>';
-  container.insertBefore(div,container.firstChild);
-  if(container.children.length>8)container.removeChild(container.lastChild);
-  logIdx++;
-  // update stat
-  var sv=document.getElementById('stat-visitors');
-  if(sv)sv.textContent=parseInt(sv.textContent.replace(',',''))+1;
-},8000);
+  _srvAnalytics=null;_srvAnalyticsAt=0; // 메모이즈 무효화 → 최신 집계 재요청
+  var ds=document.getElementById('section-dashboard');
+  var vs=document.getElementById('section-visitors');
+  if(ds&&ds.classList.contains('active')&&typeof updateDashboard==='function')updateDashboard();
+  if(vs&&vs.classList.contains('active')&&typeof initVisitors==='function')initVisitors();
+},60000);
+// 실 방문자 개별 로그는 서버가 개인 방문을 저장하지 않아(집계만) 제공 불가 → empty-state
+(function(){var c=document.getElementById('visitor-log');if(c&&!c.children.length)c.innerHTML='<div style="text-align:center;color:var(--mute);font-size:13px;padding:24px">개별 방문 로그는 집계 정책상 제공하지 않습니다.<br>총계·채널·추이는 상단 카드에서 실시간 확인하세요.</div>';})();
 
 // ── RESPONSIVE ──
 if(window.innerWidth<900)document.getElementById('menu-btn').style.display='block';
@@ -1977,11 +1953,13 @@ function render30Chart(chart,daily,key){
 function initVisitors(){
   initVisitorsLocal();
   getServerAnalytics(function(srv){
-    var configured=srv&&srv.configured;
-    analyticsBanner('visitors',configured);
-    if(!configured)return;
+    var ok=srv&&srv.configured&&!srv.error&&srv.today;
+    analyticsBanner('visitors',!!ok);
+    if(!ok)return;
     _setT('v-today',_nfmt(srv.today.visitors));
     _setT('v-week',_nfmt(srv.week.visitors));
+    _applyDelta('v-today-chg',srv.daily,'uv');
+    if(srv.today.leads!=null){_setT('v-leads',_nfmt(srv.today.leads));_applyDelta('v-leads-chg',srv.daily,'lead');}
     var monthEl=document.getElementById('v-month-total');
     if(monthEl)monthEl.innerHTML='월 방문자 <strong style="color:var(--ink)">'+_nfmt(srv.month.visitors)+'</strong> · 페이지뷰 <strong style="color:var(--ink)">'+_nfmt(srv.month.pageviews)+'</strong>';
     render30Chart(document.getElementById('v-chart-30'),srv.daily,'uv');
