@@ -58,9 +58,24 @@ node pipeline/retrieve.js "전후사진 허용 요건"   # 검색 동작 확인
 ## 현재 상태
 
 - ✅ **Phase 1 — 데이터 파이프라인**: 사례집 → 24 청크(근거조항 31종), Q&A 12, 금지/위험 표현 65개, 안전 대체표현 13, 역색인 899토큰. 키워드 검색 end-to-end 검증 완료.
-- ⬜ Phase 2 — 조문 전문(law.go.kr)·협회 심의기준·FAQ 보강, 임베딩(`embed.js`) 부착
-- ⬜ Phase 3 — 챗봇 API(`preview/api/chatbot.js`) + RAG 응답(근거 인용)
-- ⬜ Phase 4 — 웹 위젯 + 문구 자가진단 UI, 평가 루프(10,000 질문)
+- ✅ **Phase 3(1차) — 챗봇 API + 웹 데모**: `preview/api/chatbot.js`(RAG 응답·문구 자가진단), `lib/retriever.js`·`lib/rag.js`, `demo.html`(웹 UI). LLM 키 없이도 근거 요약·룰 진단으로 동작(폴백). 오프라인 스모크 테스트 6/6 통과.
+- ⬜ Phase 2 — 조문 전문(law.go.kr)·협회 심의기준·FAQ 보강, 임베딩(`embed.js`) 부착 → 하이브리드 검색 완성
+- ⬜ Phase 4 — 사이트 임베드 위젯, 평가·개선 루프(10,000 질문, LLM-as-Judge)
+
+## API
+
+```
+POST /api/chatbot  { "message": "...", "mode": "qa" | "diagnose" }
+  qa       → { answer, sources[], grounded, llm }   근거 인용 답변
+  diagnose → { diagnosis:{ pass, forbidden[], risky[], suggestion, replacements[] } }
+GET  /api/chatbot  → { kb 통계, llm 연동여부, modes }
+```
+LLM 자연어 답변 활성화: 환경변수 `OPENAI_API_KEY` 설정(미설정 시 근거 요약 폴백).
+
+### 로컬 검증
+```bash
+node pipeline/test-api.js     # 핸들러 오프라인 스모크 테스트(6/6)
+```
 
 ## 재사용 자산 (VENOM 기존 코드)
 

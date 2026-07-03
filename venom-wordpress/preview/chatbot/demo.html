@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>의료광고심의 도우미 챗봇 · 데모</title>
+<style>
+  :root { --navy:#0f2a43; --blue:#1d6fe0; --line:#e5e9f0; --bg:#f6f8fb; --warn:#c62828; --ok:#1b7a3d; --risk:#b26a00; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,'Segoe UI',Roboto,'Noto Sans KR',sans-serif; background:var(--bg); color:#16232e; }
+  .wrap { max-width:760px; margin:0 auto; padding:20px 16px 40px; }
+  header { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  header h1 { font-size:19px; margin:0; color:var(--navy); }
+  .badge { font-size:11px; background:var(--navy); color:#fff; padding:2px 8px; border-radius:20px; }
+  .sub { color:#5a6b7a; font-size:13px; margin:0 0 14px; }
+  .modes { display:flex; gap:8px; margin-bottom:12px; }
+  .modes button { flex:0 0 auto; padding:7px 14px; border:1px solid var(--line); background:#fff; border-radius:20px; cursor:pointer; font-size:13px; color:#3a4a58; }
+  .modes button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  #chat { background:#fff; border:1px solid var(--line); border-radius:14px; min-height:280px; padding:14px; }
+  .msg { margin:0 0 14px; }
+  .msg .who { font-size:12px; color:#8493a1; margin-bottom:4px; }
+  .msg.bot .bubble { background:#f0f5fd; border:1px solid #dce8fb; }
+  .msg.me .bubble { background:var(--navy); color:#fff; }
+  .bubble { display:inline-block; padding:10px 13px; border-radius:12px; white-space:pre-wrap; line-height:1.6; font-size:14px; max-width:100%; }
+  .sources { margin-top:8px; font-size:12px; }
+  .sources details { background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin-top:6px; }
+  .sources summary { cursor:pointer; color:var(--navy); font-weight:600; }
+  .ref { display:inline-block; background:#eef3fb; color:#28527a; border-radius:5px; padding:1px 7px; margin:2px 3px 0 0; font-size:11px; }
+  .diag { border-radius:10px; padding:10px 12px; font-size:13px; }
+  .diag.bad { background:#fdecec; border:1px solid #f6c5c5; }
+  .diag.good { background:#eaf6ee; border:1px solid #bfe3c9; }
+  .chip { display:inline-block; border-radius:5px; padding:2px 8px; margin:2px 4px 2px 0; font-size:12px; }
+  .chip.f { background:#fbdada; color:var(--warn); }
+  .chip.r { background:#fbeecd; color:var(--risk); }
+  .fix { margin-top:8px; background:#fff; border:1px dashed #bcd; border-radius:8px; padding:8px 10px; }
+  form { display:flex; gap:8px; margin-top:12px; }
+  textarea { flex:1; resize:vertical; min-height:48px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; font-family:inherit; }
+  .send { padding:0 18px; background:var(--blue); color:#fff; border:none; border-radius:10px; cursor:pointer; font-size:14px; }
+  .send:disabled { opacity:.5; }
+  .disclaimer { margin-top:14px; font-size:11.5px; color:#8493a1; line-height:1.5; }
+  .examples { margin:10px 0 0; font-size:12px; color:#5a6b7a; }
+  .examples a { color:var(--blue); text-decoration:none; margin-right:10px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🩺 의료광고심의 도우미</h1><span class="badge">데모</span>
+  </header>
+  <p class="sub">의료법 제56·57조·표시광고법 근거로 답하고, 광고 문구의 위반 소지를 진단합니다.</p>
+
+  <div class="modes">
+    <button data-mode="qa" class="on">💬 질문하기</button>
+    <button data-mode="diagnose">🔍 문구 자가진단</button>
+  </div>
+
+  <div id="chat">
+    <div class="msg bot"><div class="who">도우미</div><div class="bubble">안녕하세요. 의료광고·의료광고심의·의료법에 대해 물어보시거나, ‘문구 자가진단’ 모드에서 광고 문구를 붙여넣어 위반 소지를 확인해 보세요.</div></div>
+  </div>
+
+  <p class="examples" id="examples"></p>
+
+  <form id="f">
+    <textarea id="q" placeholder="질문을 입력하세요… (예: 전후사진은 어떤 경우에 게시할 수 있나요?)"></textarea>
+    <button class="send" id="send" type="submit">전송</button>
+  </form>
+
+  <p class="disclaimer">※ 본 서비스는 참고용 사전 진단 도구입니다. 실제 심의 승인·반려는 자율심의기구(대한의사협회 등)의 심의 결과에 따르며, 본 답변이 이를 보장하지 않습니다.</p>
+</div>
+
+<script>
+const API = '/api/chatbot';
+let mode = 'qa';
+const chat = document.getElementById('chat');
+const q = document.getElementById('q');
+const sendBtn = document.getElementById('send');
+const EXAMPLES = {
+  qa: ['사전심의 대상 매체 10만명 기준은?', '전후사진 게시 허용 요건은?', '비급여 할인 광고 주의사항은?'],
+  diagnose: ['세계 최초, 100% 완치를 보장하는 부작용 없는 시술!', '타 병원보다 저렴한 최저가 임플란트, 선착순 무료 이벤트']
+};
+
+function esc(s){ return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function renderExamples(){
+  document.getElementById('examples').innerHTML = '예시: ' +
+    EXAMPLES[mode].map(x=>`<a data-ex="${esc(x)}">${esc(x)}</a>`).join('');
+}
+function addMsg(who, cls, html){
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.innerHTML = `<div class="who">${who}</div><div class="bubble">${html}</div>`;
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+  return d;
+}
+function sourcesHtml(sources){
+  if(!sources || !sources.length) return '';
+  const items = sources.map(s=>{
+    const refs = (s.legalRefs||[]).map(r=>`<span class="ref">${esc(r)}</span>`).join('');
+    return `<div style="margin:6px 0"><b>${esc(s.title.split('›').pop().trim())}</b><br>${refs}<div style="color:#8493a1;font-size:11px;margin-top:2px">${esc(s.source)}</div></div>`;
+  }).join('');
+  return `<div class="sources"><details><summary>근거 ${sources.length}건 보기</summary>${items}</details></div>`;
+}
+function diagHtml(d){
+  if(d.error) return `<div class="diag">진단기 미연동: ${esc(d.error)}</div>`;
+  const cls = d.pass ? 'good' : 'bad';
+  let h = `<div class="diag ${cls}">${d.pass ? '✅ 금지 표현이 발견되지 않았습니다.' : '⚠️ 위반 소지 표현이 발견되었습니다.'}`;
+  if(d.forbidden && d.forbidden.length) h += `<div style="margin-top:6px">금지어: ${d.forbidden.map(x=>`<span class="chip f">${esc(x)}</span>`).join('')}</div>`;
+  if(d.risky && d.risky.length) h += `<div style="margin-top:4px">주의어: ${d.risky.map(x=>`<span class="chip r">${esc(x)}</span>`).join('')}</div>`;
+  h += '</div>';
+  if(d.suggestion) h += `<div class="fix"><b>안전 대체안</b><br>${esc(d.suggestion)}</div>`;
+  if(d.replacements && d.replacements.length){
+    h += '<div class="sources"><details><summary>근거별 대체 방향</summary>' +
+      d.replacements.map(r=>`<div style="margin:5px 0"><b>${esc(r.expression)}</b><br><span style="color:#5a6b7a">${esc(r.basis)}</span> → ${esc(r.saferDirection)}</div>`).join('') +
+      '</details></div>';
+  }
+  return h;
+}
+
+document.querySelectorAll('.modes button').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.modes button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); mode = b.dataset.mode;
+    q.placeholder = mode==='diagnose' ? '검수할 광고 문구를 붙여넣으세요…' : '질문을 입력하세요…';
+    renderExamples();
+  };
+});
+document.getElementById('examples').onclick = e=>{ if(e.target.dataset.ex){ q.value = e.target.dataset.ex; q.focus(); } };
+
+document.getElementById('f').onsubmit = async (e)=>{
+  e.preventDefault();
+  const text = q.value.trim(); if(!text) return;
+  addMsg('나','me', esc(text)); q.value=''; sendBtn.disabled=true;
+  const loading = addMsg('도우미','bot','<i style="color:#8493a1">분석 중…</i>');
+  try{
+    const r = await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,mode})});
+    const data = await r.json();
+    if(mode==='diagnose'){
+      loading.querySelector('.bubble').innerHTML = diagHtml(data.diagnosis||{});
+    } else {
+      loading.querySelector('.bubble').innerHTML = esc(data.answer||data.error||'응답 없음') + sourcesHtml(data.sources);
+    }
+  }catch(err){
+    loading.querySelector('.bubble').innerHTML = '요청 실패: ' + esc(err.message) + ' (배포 환경에서 /api/chatbot 연결 필요)';
+  }finally{ sendBtn.disabled=false; }
+};
+renderExamples();
+</script>
+</body>
+</html>

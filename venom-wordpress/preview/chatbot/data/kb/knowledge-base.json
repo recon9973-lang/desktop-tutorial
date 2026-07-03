@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-03T18:52:50.030Z",
+  "updated": "2026-07-03T19:22:06.777Z",
   "schema": "venom-medical-ad-chatbot/kb@1",
   "description": "의료광고심의 도우미 챗봇 RAG 지식베이스(청크 단위). 각 청크는 출처·근거조항·태그 메타데이터 포함.",
   "sources": [
