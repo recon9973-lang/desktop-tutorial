@@ -28,10 +28,24 @@
 7. ASSEMBLY.md §3-B(Role 런타임 enum)·§3-C(getIndustryTree flat) 확인, §4대로 UI 배선.
 8. 커밋 → PR.
 
-## 사용자에게 받아야 할 결정/입력
-- **§3-D 결정**: `ClientAccount.platform`을 nullable로 완화하고 신규계정은 channel-accounts 경로로 일원화할지.
-- **인증**: 이메일 매직링크 로그인을 이번에 도입할지(도입 시 Auth.js 어댑터 모델 `Account`/`Session`/`VerificationToken` 존재 확인 필요). 미도입 시 `auth-email.ts` 병합 보류.
-- env 실제 값(시크릿)은 사용자가 제공/설정.
+## 확정된 결정 (사용자 승인 완료 — 다시 묻지 말 것)
+- **§3-D 채널계정 방식 = 통일함.** `ClientAccount.platform`을 nullable(`ClientAccountPlatform?`)로 완화하는
+  마이그레이션을 넣고, 신규 채널계정 생성은 `channel-accounts.ts`(channelTypeId + 암호화) 경로로 일원화한다.
+  `actions/clients.ts#addClientAccount`의 platform 기반 생성 경로는 제거 또는 이관용으로만 남긴다.
+- **인증 = 이메일 매직링크 도입함.** `auth-email.ts`를 `src/server/auth.ts`로 반영한다.
+  → **선행 필수**: base Prisma 스키마에 Auth.js 어댑터 모델 `Account`/`Session`/`VerificationToken`(+어댑터형 `User`)이
+  있는지 확인, 없으면 어댑터 모델을 먼저 추가·마이그레이션한다. env: `AUTH_SECRET`/`EMAIL_SERVER`/`EMAIL_FROM` 필요.
+
+## env(시크릿) — 사용자가 값 제공/설정. 각 값 준비법은 아래.
+로컬은 `.env`(prisma/next가 로드), 배포는 호스팅(예: Vercel) 환경변수에 동일하게 설정.
+| 변수 | 무엇 | 준비 방법 |
+|---|---|---|
+| `CREDENTIAL_ENC_KEY` | 채널계정 자격증명 암호화 키(32B) | 새로 생성: `openssl rand -hex 32` 결과(64자)를 값으로. **한 번 정하면 바꾸지 말 것**(바꾸면 기존 암호문 복호화 불가). |
+| `AUTH_SECRET` | Auth.js 세션 서명 키 | 새로 생성: `openssl rand -base64 32` 또는 `npx auth secret`. |
+| `EMAIL_SERVER` | 매직링크 발송 SMTP | 메일 발송 서비스의 SMTP 접속 문자열 `smtp://사용자:비번@호스트:포트` (예: SendGrid/Mailgun/AWS SES/Gmail SMTP). |
+| `EMAIL_FROM` | 로그인 메일 발신 주소 | 위 서비스에서 인증된 발신 주소 (예: `no-reply@venom.co.kr`). |
+| `KW_PROXY_URL` | 키워드 순위 프록시 URL | 신규 생성 아님 — 베놈이 이미 쓰는 네이버 키워드 프록시 엔드포인트 URL(홈페이지 레포 `api/kw-proxy`)을 넣는다. 모르면 확인 필요. |
+| `DATABASE_URL` | DB 접속 | erp-v1에 이미 존재(그대로). |
 
 ## 이미 반영된 수정(부품 자체)
 - `actions/_helpers.ts`: `"use server"` 제거(서버 유틸이라 정상, 빌드 차단 이슈였음).
