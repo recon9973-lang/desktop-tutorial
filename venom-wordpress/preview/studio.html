@@ -31,16 +31,22 @@
     padding:8px 12px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s;font-weight:600}
   .stepper button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
   .stepper button.done{color:var(--accent);border-color:var(--accent)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    box-shadow:var(--shadow);padding:24px;margin-bottom:18px}
-  .card h2{margin:0 0 4px;font-size:19px}
-  .card .sub{color:var(--muted);font-size:13.5px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;
+    box-shadow:var(--shadow);padding:28px;margin-bottom:18px}
+  .card h2{margin:0 0 6px;font-size:23px;font-weight:800;letter-spacing:-.5px}
+  /* 설명을 '텍스트 줄'이 아니라 강조 콜아웃으로 → 가시성↑ */
+  .card .sub{color:var(--muted);font-size:14px;line-height:1.6;margin:8px 0 20px;
+    padding:12px 15px;background:color-mix(in srgb,var(--accent) 6%,var(--card));
+    border-left:3px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:0 12px 12px 0}
   .panel{display:none}
   .panel.active{display:block;animation:fade .25s ease}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  label.f{display:block;font-weight:600;font-size:13px;margin:14px 0 6px}
-  input[type=text],textarea,select{width:100%;padding:11px 13px;border:1px solid var(--line);
-    border-radius:12px;font-size:14px;font-family:inherit;background:var(--card);color:var(--ink)}
+  /* 라벨에 컬러 마커 → 항목 구분이 한눈에 */
+  label.f{display:block;font-weight:700;font-size:13.5px;margin:18px 0 8px;color:var(--ink)}
+  label.f::before{content:"";display:inline-block;width:4px;height:13px;border-radius:2px;
+    background:var(--accent);margin-right:8px;vertical-align:-2px}
+  input[type=text],textarea,select{width:100%;padding:13px 15px;border:1px solid var(--line);
+    border-radius:13px;font-size:14.5px;font-family:inherit;background:var(--card);color:var(--ink)}
   textarea{min-height:80px;resize:vertical}
   input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   .row{display:flex;gap:12px;flex-wrap:wrap}
@@ -86,11 +92,12 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .chartbox{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
   .chartcell{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--card);text-align:center}
-  .hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .hint{font-size:12px;color:var(--muted);opacity:.85;margin-top:8px;line-height:1.5}
   .pbar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:0 0 18px}
   .pbar>i{display:block;height:100%;background:var(--accent);width:0;transition:.3s}
-  .kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--accent);
-    background:var(--accent-soft);padding:4px 9px;border-radius:999px;margin-bottom:10px}
+  .kicker{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.4px;color:#fff;
+    background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#5cc3aa));
+    padding:6px 13px;border-radius:999px;margin-bottom:12px;box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 28%,transparent)}
   .scoreWrap{display:flex;align-items:center;gap:18px;margin:14px 0}
   .ring{width:92px;height:92px;flex-shrink:0}
   .metric{font-size:13px;margin:5px 0;display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:5px}
