@@ -5685,6 +5685,15 @@ function seoPDF(){
 
 // ── SEO 점수 명예의 전당 (리더보드) ──
 var _LB_API='/api/analytics'; // 상대 경로 — 커스텀 도메인 이전·로컬에서도 동일 동작(자기 도메인 경유)
+// 전환 퍼널 이벤트 비콘 — 상담 CTA·카카오 클릭 실측(관리자 방문자 분석 퍼널)
+function _vaEvent(ev){try{var pl=JSON.stringify({ev:ev});if(navigator.sendBeacon){navigator.sendBeacon('/api/analytics',new Blob([pl],{type:'application/json'}));}else{fetch('/api/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:pl,keepalive:true}).catch(function(){});}}catch(e){}}
+document.addEventListener('click',function(e){
+  var a=e.target&&e.target.closest?e.target.closest('a,button'):null; if(!a)return;
+  var href=(a.getAttribute&&a.getAttribute('href'))||'';
+  if(href.indexOf('pf.kakao.com')>=0){_vaEvent('kakao');return;}
+  var txt=(a.textContent||''); var oc=(a.getAttribute&&a.getAttribute('onclick'))||'';
+  if(/상담|무료진단|진단 시작|문의하기/.test(txt)||/'contact'|'diagnose'/.test(oc)){_vaEvent('cta');}
+},true);
 function _lbRecord(domain,score){
   if(!domain||!score)return;
   try{

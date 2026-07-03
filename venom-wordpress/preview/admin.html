@@ -475,7 +475,7 @@ a{color:var(--p);text-decoration:none}
       <!-- 전환 퍼널 -->
       <div class="card">
         <div class="card-head"><div class="card-title">🎯 상담 전환 퍼널</div><span style="font-size:12px;color:var(--mute)">이번 주 기준</span></div>
-        <div style="text-align:center;color:var(--mute);font-size:13px;padding:28px">🎯 전환 퍼널은 방문→상담클릭→카카오→신청 이벤트 추적 연동 후 표시됩니다 (연동 예정)</div>
+        <div id="v-funnel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative"><div style="grid-column:1/-1;text-align:center;color:var(--mute);font-size:13px;padding:24px">불러오는 중…</div></div>
       
         </div>
       </div>
@@ -1964,7 +1964,55 @@ function initVisitors(){
     if(monthEl)monthEl.innerHTML='월 방문자 <strong style="color:var(--ink)">'+_nfmt(srv.month.visitors)+'</strong> · 페이지뷰 <strong style="color:var(--ink)">'+_nfmt(srv.month.pageviews)+'</strong>';
     render30Chart(document.getElementById('v-chart-30'),srv.daily,'uv');
     renderChannelBars(document.getElementById('v-channel-bars'),srv.channels);
+    renderVisitorExtras(srv);
   });
+}
+// 방문자 분석 확장 지표 렌더 — 디바이스·시간대·인기페이지·지역·전환퍼널(전부 /api/analytics 실측)
+function renderVisitorExtras(srv){
+  var pend='<div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">아직 수집된 데이터가 없습니다</div>';
+  // 디바이스
+  var dev=srv.device||{}, dt=(dev.mobile||0)+(dev.desktop||0)+(dev.tablet||0);
+  var devHost=document.querySelector('#section-visitors .card-title'); // fallback
+  var devBox=document.getElementById('dash-device')||_findDeviceBox();
+  if(devBox){
+    if(!dt){devBox.innerHTML=pend;}
+    else{
+      var rows=[['📱 모바일',dev.mobile||0,'var(--p)'],['💻 데스크톱',dev.desktop||0,'var(--bd)'],['📟 태블릿',dev.tablet||0,'var(--mute)']];
+      devBox.innerHTML=rows.map(function(r){var pct=Math.round(r[1]/dt*100);return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+r[0]+'</span><span>'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:'+r[2]+'"></div></div></div>';}).join('');
+    }
+  }
+  // 인기 페이지 TOP 5
+  var tp=document.getElementById('v-top-pages');
+  if(tp){var pages=srv.topPaths||[];
+    if(!pages.length){tp.innerHTML=pend;}
+    else{var mx=pages[0].count||1;tp.innerHTML=pages.map(function(p,i){var pct=Math.round(p.count/mx*100);var nm=(p.name||'').replace(/</g,'&lt;');return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--p);font-weight:600">'+(i+1)+'.</span> <span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</span><span style="color:var(--mute)">'+p.count+'</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--p)"></div></div></div>';}).join('');}
+  }
+  // 지역
+  var rg=document.getElementById('v-regions');
+  if(rg){var regs=srv.regions||[];var rt=regs.reduce(function(a,r){return a+(r.count||0);},0);
+    if(!rt){rg.innerHTML=pend;}
+    else{rg.innerHTML=regs.map(function(r){var pct=Math.round(r.count/rt*100);var nm=(r.name||'').replace(/</g,'&lt;');return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+nm+'</span><span style="color:var(--mute)">'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--bd)"></div></div></div>';}).join('');}
+  }
+  // 시간대별
+  var hourly=document.getElementById('v-hourly');
+  if(hourly){var hrs=srv.hourly||[];var mh=Math.max.apply(null,hrs.concat([1]));
+    if(!hrs.some(function(v){return v>0;})){hourly.innerHTML=pend;}
+    else{hourly.innerHTML=hrs.map(function(v,i){var pct=Math.round(v/mh*100);var pk=(i>=9&&i<=20);return '<div style="flex:1;background:'+(pk?'var(--p)':'var(--bd)')+';opacity:'+(pk?0.8:0.35)+';border-radius:2px 2px 0 0;height:'+pct+'%;min-height:2px" title="'+i+'시: '+v+'"></div>';}).join('');}
+  }
+  // 전환 퍼널
+  var fn=srv.funnel||{};
+  var fnBox=document.getElementById('v-funnel');
+  if(fnBox){
+    var stages=[['방문',fn.views||0,'var(--p)'],['상담 클릭',fn.cta||0,'#10a37f'],['카카오 클릭',fn.kakao||0,'#f59e0b'],['상담 완료',fn.leads||0,'#16a34a']];
+    var base=stages[0][1]||1;
+    fnBox.innerHTML=stages.map(function(s,i){var pct=i===0?100:Math.round(s[1]/base*100);var conv=i>0&&stages[i-1][1]?Math.round(s[1]/stages[i-1][1]*100):null;return '<div style="text-align:center;padding:16px 8px"><div style="font-size:24px;font-weight:700;color:'+s[2]+'">'+(s[1]||0).toLocaleString()+'</div><div style="font-size:11px;color:var(--mute);margin-top:4px">'+s[0]+'</div><div style="height:4px;background:'+s[2]+';margin-top:12px;border-radius:2px;opacity:'+(0.3+pct/143)+'"></div>'+(conv!=null?'<div style="font-size:10px;color:var(--mute);margin-top:4px">'+conv+'%</div>':'')+'</div>';}).join('');
+  }
+}
+function _findDeviceBox(){
+  // 디바이스 카드의 연동예정 컨테이너 탐색(id 없음)
+  var cards=document.querySelectorAll('#section-visitors .card');
+  for(var i=0;i<cards.length;i++){var t=cards[i].querySelector('.card-title');if(t&&/디바이스/.test(t.textContent)){var box=cards[i].querySelector('div[style*="flex-direction:column"]');if(box)return box;}}
+  return null;
 }
 function initVisitorsLocal(){
   var visits=getVisits();
