@@ -64,7 +64,10 @@ node pipeline/retrieve.js "전후사진 허용 요건"   # 검색 동작 확인
   - ✅ 임베딩 파이프라인(`pipeline/embed.js`) + 하이브리드 검색 훅(embeddings.json 생성 시 자동 활성)
   - ✅ 조문 수집기(`pipeline/fetch-statutes.js`, law.go.kr DRF API) — 키/허용망 제공 시 즉시 실행. *현 환경은 law.go.kr 접근이 프록시 차단되어 pending 기록.*
   - ⬜ 협회 심의기준·FAQ 수집
-- ⬜ Phase 4 — 사이트 임베드 위젯, 평가·개선 루프(10,000 질문, LLM-as-Judge)
+- 🟡 **Phase 4(진행) — 평가셋·개선 루프**:
+  - ✅ 질문 10,000개 생성(`pipeline/gen-questions.js` → `data/eval/questions.json`) — 11개 카테고리, 난이도·근거조항 라벨, 홀드아웃 1,000개 분리(오더 2번)
+  - ⬜ LLM-as-Judge 평가·개선 루프(질문→답변→검토→진단→수정, 오더 3번)
+  - ⬜ 사이트 임베드 위젯
 
 > **하이브리드/조문 활성화**: `OPENAI_API_KEY` 설정 후 `node pipeline/embed.js` → 벡터 검색 자동 on. `LAW_OC=<법령API OC>` 설정 후 `node pipeline/fetch-statutes.js` → 조문 원문 수집(허용망 필요).
 
