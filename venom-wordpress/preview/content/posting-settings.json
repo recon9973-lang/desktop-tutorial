@@ -4,18 +4,39 @@
     {
       "from": "2026-06-28",
       "to": "2026-07-28",
-      "dailyCount": 1
+      "dailyCount": 11,
+      "timeMode": "random",
+      "_lastSchedMode": "random",
+      "randStart": "03:00"
     }
   ],
   "categories": [
-    "seo"
+    "seo",
+    "geo",
+    "dental",
+    "skin",
+    "oriental",
+    "ortho",
+    "plastic",
+    "naegwa",
+    "angwa",
+    "shimui",
+    "geo_local"
   ],
   "keywords": [
-    "베놈"
+    "병원마케팅"
   ],
   "regions": [
-    "대전"
+    "대전",
+    "대구",
+    "부산",
+    "인천",
+    "울산"
   ],
   "extra": "",
-  "updatedAt": "2026-06-30T08:58:00.399Z"
+  "mode": "cluster",
+  "autoInternalLinks": true,
+  "clusterAutoExpand": false,
+  "clusterPillars": [],
+  "updatedAt": "2026-07-04T18:40:16.811Z"
 }
