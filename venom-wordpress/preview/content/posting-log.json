@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783191238266",
+    "title": "부산 내과마케팅: 당뇨·고혈압 관리로 고객 30% 증가",
+    "category": "naegwa",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2600,
+      "completionTokens": 2059,
+      "totalTokens": 4659,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:54:16.906Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783191097177",
     "title": "대구 성형외과 마케팅 5가지 필수 전략과 시술 정보",
     "category": "plastic",
