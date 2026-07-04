@@ -352,7 +352,7 @@ a{color:var(--p);text-decoration:none}
         <!-- AI 초안 생성 패널 -->
         <div class="card" id="ai-draft-panel" style="display:none">
           <div class="card-head"><div class="card-title">🤖 AI 초안 생성</div><button class="btn btn-outline btn-sm" onclick="document.getElementById('ai-draft-panel').style.display='none'">닫기</button></div>
-          <div class="form-group"><label>블로그 주제 또는 키워드</label><input type="text" id="ai-topic" placeholder="예: 임플란트 치과 마케팅 전략 2025"></div>
+          <div class="form-group"><label>블로그 주제 또는 키워드</label><input type="text" id="ai-topic" autocomplete="off" placeholder="예: 임플란트 치과 마케팅 전략 2025"></div>
           <div class="form-row">
             <div class="form-group"><label>타겟 독자</label><select id="ai-target"><option>병원 원장</option><option>마케팅 담당자</option><option>예비 환자</option></select></div>
             <div class="form-group"><label>글 길이</label><select id="ai-length"><option>짧게 (500자)</option><option>보통 (1,000자)</option><option>상세 (2,000자+)</option></select></div>
@@ -368,7 +368,7 @@ a{color:var(--p);text-decoration:none}
           <div class="card-head">
             <div class="card-title">전체 포스팅 <span style="font-size:13px;color:var(--mute);font-weight:400" id="post-total-count">(0개)</span></div>
             <div style="display:flex;gap:8px">
-              <input type="text" placeholder="검색..." style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;width:200px">
+              <input type="text" id="blog-search" autocomplete="off" placeholder="검색..." style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;width:200px">
               <select class="btn btn-outline btn-sm"><option>전체 상태</option><option>발행</option><option>초안</option></select>
             </div>
           </div>
@@ -500,7 +500,7 @@ a{color:var(--p);text-decoration:none}
         </div>
         <p style="font-size:13px;color:var(--mute);margin-bottom:16px">키워드를 입력하면 월 검색량·경쟁도·CPC를 분석합니다. 실제 데이터는 네이버 검색광고 API 연동 후 자동 전환됩니다.</p>
         <div style="display:flex;gap:10px;margin-bottom:16px">
-          <input id="kw-input" type="text" placeholder="예: 치과 임플란트 마케팅, 피부과 SNS 광고" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:14px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')lookupKeyword()">
+          <input id="kw-input" type="text" autocomplete="off" placeholder="예: 치과 임플란트 마케팅, 피부과 SNS 광고" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:14px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')lookupKeyword()">
           <button class="btn btn-p" onclick="lookupKeyword()">🔍 조회</button>
           <button class="btn btn-outline" onclick="addToTracking()">+ 추적 추가</button>
         </div>
@@ -796,8 +796,8 @@ a{color:var(--p);text-decoration:none}
         <!-- URL 입력 UI -->
         <div id="media-url-panel" style="display:none">
           <div style="display:flex;gap:10px;margin-bottom:12px">
-            <input type="text" id="media-url-input" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
-            <input type="text" id="media-name-input" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
+            <input type="text" id="media-url-input" autocomplete="off" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
+            <input type="text" id="media-name-input" autocomplete="off" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
             <button class="btn btn-p" onclick="addMedia()">+ 추가</button>
           </div>
         </div>
@@ -958,11 +958,11 @@ a{color:var(--p);text-decoration:none}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
           <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">키워드</label>
-            <input type="text" id="ap-prev-kw" placeholder="예: 강남 치과 GEO 마케팅" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+            <input type="text" id="ap-prev-kw" autocomplete="off" placeholder="예: 강남 치과 GEO 마케팅" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
           </div>
           <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">지역 (선택)</label>
-            <input type="text" id="ap-prev-region" placeholder="예: 강남구" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+            <input type="text" id="ap-prev-region" autocomplete="off" placeholder="예: 강남구" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:16px">
@@ -1342,12 +1342,22 @@ function ensurePostStatCard(){
 }
 
 // 초기 렌더링
+// 새로고침/뒤로가기(bfcache) 시 브라우저가 도구 검색창에 이전 입력값을 복원하는 현상 제거.
+// 검색·조회용 임시 입력만 비운다(설정·편집 필드는 저장값을 유지하므로 제외).
+var _TRANSIENT_INPUTS = ['kw-input','blog-search','ai-topic','ap-prev-kw','ap-prev-region','media-url-input','media-name-input'];
+function _clearToolInputs(){
+  _TRANSIENT_INPUTS.forEach(function(id){ var el=document.getElementById(id); if(el)el.value=''; });
+}
+
 document.addEventListener('DOMContentLoaded',function(){
+  _clearToolInputs();
   renderPostList();
   renderKeywordTable();
   ensurePostStatCard();
   updateDashboard();
 });
+// bfcache 복원(뒤로/앞으로) 시에도 값 복원 방지
+window.addEventListener('pageshow',function(e){ if(e.persisted)_clearToolInputs(); });
 
 // ── OTHER ──
 function logout(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem('venom-admin-auth');window.location.href='admin-login.html';}}
