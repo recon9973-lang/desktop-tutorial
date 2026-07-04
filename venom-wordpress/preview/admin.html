@@ -912,8 +912,15 @@ a{color:var(--p);text-decoration:none}
       <!-- 토큰 사용량 그래프 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-head">
-          <div class="card-title">📊 토큰 사용량 (최근 30일)</div>
-          <button class="btn btn-outline btn-sm" onclick="apLoadUsageStats()">새로고침</button>
+          <div class="card-title">📊 토큰 사용량 <span id="ap-usage-period-label" style="font-size:12px;font-weight:400;color:var(--mute)">(최근 30일)</span></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="ap-usage-period" class="btn btn-outline btn-sm" onchange="apLoadUsageStats()" style="padding:6px 10px;cursor:pointer">
+              <option value="7">최근 7일</option>
+              <option value="30" selected>최근 30일</option>
+              <option value="90">최근 90일</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="apLoadUsageStats()">새로고침</button>
+          </div>
         </div>
         <!-- 요약 -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px" id="ap-usage-summary">
@@ -936,12 +943,12 @@ a{color:var(--p);text-decoration:none}
         </div>
         <!-- 바 차트 -->
         <div style="margin-bottom:8px;font-size:11px;color:var(--mute)">일별 토큰 사용량</div>
-        <div id="ap-token-chart" style="height:120px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
+        <div id="ap-token-chart" style="height:120px;display:flex;align-items:flex-end;gap:3px;padding-bottom:22px;position:relative">
           <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:12px;color:var(--mute);padding:8px">데이터를 불러오는 중...</div>
         </div>
         <!-- 비용 차트 -->
         <div style="margin-bottom:8px;margin-top:16px;font-size:11px;color:var(--mute)">일별 예상 비용 (USD)</div>
-        <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
+        <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:22px;position:relative">
         </div>
         <div style="font-size:11px;color:var(--mute);margin-top:8px">* gpt-4o-mini: 입력 $0.15/1M · 출력 $0.60/1M | 이미지(gpt-image-1, 1024×1024): 장당 약 $0.04</div>
       </div>
@@ -3032,8 +3039,12 @@ async function apRunNow() {
 
 // ── 토큰 사용량 차트 ──
 async function apLoadUsageStats() {
+  var _selP = document.getElementById('ap-usage-period');
+  var period = _selP ? (parseInt(_selP.value, 10) || 30) : 30;
+  var _lblP = document.getElementById('ap-usage-period-label');
+  if (_lblP) _lblP.textContent = '(최근 ' + period + '일)';
   try {
-    const r = await fetch(apApiBase() + '/api/usage-stats', { headers: apHeaders() });
+    const r = await fetch(apApiBase() + '/api/usage-stats?days=' + period, { headers: apHeaders() });
     if (!r.ok) return;
     const data = await r.json();
     if (!data.ok) return;
@@ -3055,13 +3066,17 @@ async function apLoadUsageStats() {
       const wrap = document.getElementById(containerId);
       if (!wrap) return;
       const total = values.length;
+      // 기간에 따라 라벨 간격 조정(7일=매일, 30일=5일, 90일=10일). 마지막(오늘)은 앞 라벨과 겹치지 않을 때만.
+      const step = total <= 10 ? 1 : total <= 31 ? 5 : 10;
       wrap.innerHTML = days.map(function(d, i) {
         const pct = Math.max((values[i] / maxVal) * 100, values[i] > 0 ? 4 : 0);
-        const showLabel = (i % 7 === 0) || i === total - 1;
+        const onStep = (i % step === 0);
+        const isLast = (i === total - 1);
+        const showLabel = onStep || (isLast && (i % step) >= Math.ceil(step / 2));
         const dateLabel = d.date ? d.date.slice(5) : '';
         return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;position:relative">'
           + '<div title="' + labelFn(d) + '" style="width:100%;border-radius:3px 3px 0 0;background:' + color + ';height:' + pct + '%;min-height:' + (values[i] > 0 ? '4px' : '0') + ';opacity:.85;transition:height .4s;cursor:default"></div>'
-          + (showLabel ? '<div style="position:absolute;bottom:-18px;font-size:9px;color:var(--mute);white-space:nowrap">' + dateLabel + '</div>' : '')
+          + (showLabel ? '<div style="position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--mute);white-space:nowrap">' + dateLabel + '</div>' : '')
           + '</div>';
       }).join('');
     }
