@@ -1,0 +1,8 @@
+# 보험 매니저 봇 (프로젝트 ①·②)
+PyMuPDF>=1.24        # PDF 좌표 기재 + 렌더링(팩스 이미지)
+playwright>=1.44     # GA 웹 자동화 (실행 전 `playwright install chromium` 필요)
+keyring>=24          # 로그인 자격증명 OS 보안 저장소
+# OCR(온디바이스) — 이미지 입력 사용 시 택1
+#   pytesseract + 시스템 tesseract-ocr(+ tesseract-ocr-kor)
+#   또는 paddleocr
+pytesseract>=0.3.10  # (선택) 이미지 OCR

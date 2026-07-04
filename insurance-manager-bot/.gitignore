@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+output/
+*.sqlite3
+_filled*.png
+_faxout/
+calib_p*.png
