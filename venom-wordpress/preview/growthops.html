@@ -218,9 +218,10 @@
 
 <script>
 const API = '/api/growthops';
-let SECRET = localStorage.getItem('growthops_secret') || '';
+// 관리자 콘솔과 토큰 공유(동일 오리진). growthops_secret 우선, 없으면 admin 토큰 사용.
+let SECRET = localStorage.getItem('growthops_secret') || localStorage.getItem('venom-admin-secret') || '';
 document.getElementById('secret').value = SECRET;
-function saveSecret(){ SECRET = document.getElementById('secret').value.trim(); localStorage.setItem('growthops_secret', SECRET); toast('시크릿 저장됨'); }
+function saveSecret(){ SECRET = document.getElementById('secret').value.trim(); localStorage.setItem('growthops_secret', SECRET); localStorage.setItem('venom-admin-secret', SECRET); toast('시크릿 저장됨 — 관리자 콘솔과 공유됨'); }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1900); }
 function authHeaders(){ return SECRET ? {'Authorization':'Bearer '+SECRET,'Content-Type':'application/json'} : {'Content-Type':'application/json'}; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }

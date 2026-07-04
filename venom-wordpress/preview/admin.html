@@ -2322,7 +2322,7 @@ function renderCards(){
 async function initCardnews(){await storeGet('cardnews',CARD_KEY,[]);renderCards();}
 
 // ── AI 자동 포스팅 ──
-var AP_ADMIN_SECRET = localStorage.getItem('venom-admin-secret') || '';
+var AP_ADMIN_SECRET = localStorage.getItem('venom-admin-secret') || localStorage.getItem('growthops_secret') || '';
 var _apCurrentPost = null;
 
 var AP_CAT_LABEL = {
@@ -2902,7 +2902,8 @@ function apSaveSecret() {
   if (!val) { toast('토큰을 입력해주세요.'); return; }
   AP_ADMIN_SECRET = val;
   localStorage.setItem('venom-admin-secret', val);
-  document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 이제 API 호출에 사용됩니다.';
+  localStorage.setItem('growthops_secret', val); // GrowthOps 콘솔과 토큰 공유
+  document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 관리자·GrowthOps 콘솔에서 함께 사용됩니다.';
   document.getElementById('ap-secret-input').value = '';
   toast('API 토큰 저장 완료');
 }
