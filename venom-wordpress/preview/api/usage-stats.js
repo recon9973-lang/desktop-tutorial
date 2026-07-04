@@ -54,10 +54,14 @@ module.exports = async function handler(req, res) {
       ? JSON.parse(Buffer.from(file.content, 'base64').toString('utf8'))
       : [];
 
-    // last 30 days
+    // 기간 선택(7/30/90일 등). 기본 30일, 7~90일 범위로 클램프.
+    let nDays = parseInt((req.query && req.query.days) || '30', 10);
+    if (!Number.isFinite(nDays)) nDays = 30;
+    nDays = Math.max(7, Math.min(90, nDays));
+
     const today = new Date();
     const days = [];
-    for (let i = 29; i >= 0; i--) {
+    for (let i = nDays - 1; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       days.push(d.toISOString().slice(0, 10));
@@ -100,7 +104,7 @@ module.exports = async function handler(req, res) {
       return acc;
     }, { posts: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, images: 0, costUsd: 0 });
 
-    return res.status(200).json({ ok: true, days: all, totals });
+    return res.status(200).json({ ok: true, days: all, totals, period: nDays });
   } catch (e) {
     console.error('[usage-stats]', e);
     return res.status(500).json({ error: e.message });
