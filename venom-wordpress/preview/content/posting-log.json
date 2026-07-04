@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783190999175",
+    "title": "대전 정형외과 마케팅 전략 5가지, 효과적 성과 달성하기",
+    "category": "ortho",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2626,
+      "completionTokens": 1847,
+      "totalTokens": 4473,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:50:15.686Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783190902526",
     "title": "울산 한의원 마케팅: 비급여 포지셔닝 3가지 방법",
     "category": "oriental",
