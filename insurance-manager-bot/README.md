@@ -28,9 +28,21 @@ insurance-manager-bot/
 │   ├── ga_login.py     # 반자동 로그인(ID/PW 자동 + 간편PW 수동)
 │   ├── ga_form_fill.py # 필드 자동 입력 — ★셀렉터 캘리브레이션 필요
 │   └── app.py          # 오케스트레이터(제출 전 사람 확인 게이트)
+├── ui/app_ui.py     # 데스크톱 UI(PySide6): 두 봇 탭 + ① 작성 미리보기
 ├── tools/calibrate_template.py  # 양식 개정 시 좌표 재추출
 └── tests/test_validation.py
 ```
+
+## 데스크톱 UI 실행
+```bash
+python -m ui.app_ui
+```
+![탭 ① 미리보기](ui/preview_tab1.png)
+
+- 탭 ① 가입설계동의: 입력/카톡 파싱 → [작성 & 미리보기](우측에 작성된 동의서 실시간 표시)
+  → [팩스 이미지 생성] → [폴더 열기]. 동의 확인 체크가 있어야 작성됨.
+- 탭 ② 고객정보 자동입력: 카톡 [파싱 & 검증] → 주민번호 **체크섬 검증 + 마스킹 표시**.
+- 리눅스에서 Qt 실행 시 시스템 라이브러리 필요: `apt-get install libegl1 libgl1 libxkbcommon0`.
 
 ## 설치
 ```bash
