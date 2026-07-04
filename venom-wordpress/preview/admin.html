@@ -764,7 +764,7 @@ a{color:var(--p);text-decoration:none}
           <div class="form-group"><label>이름</label><input type="text" id="u-name" placeholder="홍길동"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>비밀번호 <span style="color:#dc2626">*</span></label><input type="password" id="u-pw" placeholder="비밀번호 입력"></div>
+          <div class="form-group"><label>비밀번호 <span style="color:#dc2626">*</span></label><input type="text" id="u-pw" autocomplete="off" placeholder="비밀번호 입력" style="-webkit-text-security:disc"></div>
           <div class="form-group"><label>권한</label><select id="u-role"><option value="admin">최고관리자</option><option value="editor">편집자</option><option value="viewer">조회자</option></select></div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -901,7 +901,7 @@ a{color:var(--p);text-decoration:none}
           <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">🔑 API 인증 토큰 (Vercel 환경변수 ADMIN_SECRET 값)</label>
             <div style="display:flex;gap:8px">
-              <input type="password" id="ap-secret-input" placeholder="ADMIN_SECRET 값 입력" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+              <input type="text" id="ap-secret-input" autocomplete="off" placeholder="ADMIN_SECRET 값 입력" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none;-webkit-text-security:disc">
               <button class="btn btn-outline btn-sm" onclick="apSaveSecret()">저장</button>
             </div>
             <div style="font-size:11px;color:var(--mute);margin-top:4px" id="ap-secret-status"></div>
