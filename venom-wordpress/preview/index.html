@@ -7723,6 +7723,7 @@ function ld(cat, pushState){
     }
   }
   if(related.length){
+    var _relImg=function(k){ try{ var m=String((pages[k]&&pages[k].html)||'').match(/<img[^>]+src="([^"]+)"/); if(m&&m[1])return m[1]; }catch(e){} return '/images/dept/'+k+'.jpg'; };
     var _gc=['g1','g2','g3','g4','g5'];
     var _short=function(s){ return String(s).split('—')[0].split(' - ')[0].replace(/\([^)]*\)/g,'').trim()||String(s); };
     var relHtml='<div class="dc-section" style="border-top:2px solid var(--border);margin-top:44px;padding-top:32px"><h2>'+_relTitle+'</h2><p>'+_relDesc+'</p><div class="dc-related-grid">';
@@ -7730,7 +7731,7 @@ function ld(cat, pushState){
       var rp=(DETAIL_ROUTES[r]&&DETAIL_ROUTES[r].path)||('#'+r);
       var rl=_short(catLabels[r]||( pages[r]&&pages[r].title)||r);
       relHtml+='<a class="dc-rel-card" href="'+rp+'" onclick="ld(\''+r+'\');return false">'
-        +'<div class="dc-rel-thumb dc-figure '+_gc[ri%5]+'" style="margin:0;border-radius:0;box-shadow:none;aspect-ratio:16/9"><img src="/images/dept/'+r+'.jpg" alt="'+rl+'" loading="lazy" onerror="this.remove()"><figcaption>'+rl+'</figcaption></div>'
+        +'<div class="dc-rel-thumb dc-figure '+_gc[ri%5]+'" style="margin:0;border-radius:0;box-shadow:none;aspect-ratio:16/9"><img src="'+_relImg(r)+'" alt="'+rl+'" loading="lazy" onerror="this.remove()"><figcaption>'+rl+'</figcaption></div>'
         +'<div class="dc-rel-body"><div class="dc-rel-t">'+rl+'</div><span>자세히 보기 →</span></div></a>';
     });
     relHtml+='</div></div>';
