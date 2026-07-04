@@ -42,7 +42,14 @@ python -m ui.app_ui
 - 탭 ① 가입설계동의: 입력/카톡 파싱 → [작성 & 미리보기](우측에 작성된 동의서 실시간 표시)
   → [팩스 이미지 생성] → [폴더 열기]. 동의 확인 체크가 있어야 작성됨.
 - 탭 ② 고객정보 자동입력: 카톡 [파싱 & 검증] → 주민번호 **체크섬 검증 + 마스킹 표시**.
+- **이미지 OCR 입력**: 두 탭 모두 사진을 창에 **드래그드롭**하거나 [이미지 불러오기(OCR)]로
+  종이/신분증/카톡 스크린샷에서 항목을 자동 추출(온디바이스 Tesseract, 클라우드 전송 없음).
 - 리눅스에서 Qt 실행 시 시스템 라이브러리 필요: `apt-get install libegl1 libgl1 libxkbcommon0`.
+  OCR: `apt-get install tesseract-ocr tesseract-ocr-kor`.
+
+## Windows 배포(exe)
+파이썬 없이 더블클릭 실행하도록 단일 exe로 패키징한다 → [`packaging/build_windows.md`](packaging/build_windows.md).
+한글 폰트(`assets/NanumGothic.ttf`)와 좌표 템플릿은 exe에 번들된다.
 
 ## 설치
 ```bash

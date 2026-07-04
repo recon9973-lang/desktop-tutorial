@@ -25,13 +25,59 @@ from PySide6.QtWidgets import (                                           # noqa
 )
 
 import fitz                                                                # noqa: E402
-from common.parsing import parse_customer_text                            # noqa: E402
+from common.ocr import OCRUnavailable, image_to_text, ocr_available       # noqa: E402
+from common.parsing import ParsedCustomer, parse_customer_text            # noqa: E402
 from common.validation import (mask_rrn, normalize_phone, rrn_birthdate,  # noqa: E402
                                validate_rrn)
 from consent_bot.fill_pdf import ConsentData, fill_consent_pdf, verify_layout  # noqa: E402
 from consent_bot.to_fax_images import output_pdf_name, pdf_to_fax_images  # noqa: E402
 
 _DEFAULT_FORM = Path(__file__).resolve().parent.parent / "양식_원본.pdf"
+_IMG_EXT = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
+
+
+def _first_dropped_image(event) -> str | None:
+    for url in event.mimeData().urls():
+        p = url.toLocalFile()
+        if Path(p).suffix.lower() in _IMG_EXT:
+            return p
+    return None
+
+
+class ImageDropMixin:
+    """이미지 파일 드래그드롭 → 온디바이스 OCR → 항목 채우기.
+
+    서브클래스는 on_ocr_parsed(ParsedCustomer, raw_text) 를 구현한다.
+    """
+
+    def enable_image_drop(self):
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if _first_dropped_image(event):
+            event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        path = _first_dropped_image(event)
+        if path:
+            self.run_ocr(path)
+
+    def run_ocr(self, path: str):
+        if not ocr_available():
+            QMessageBox.warning(
+                self, "OCR 불가",
+                "온디바이스 Tesseract가 없습니다. tesseract-ocr(+kor)를 설치하세요.\n"
+                "개인정보 보호를 위해 클라우드 OCR로 대체하지 않습니다.")
+            return
+        try:
+            text = image_to_text(path)
+        except OCRUnavailable as e:
+            QMessageBox.warning(self, "OCR 불가", str(e))
+            return
+        self.on_ocr_parsed(parse_customer_text(text), text)
+
+    def on_ocr_parsed(self, parsed: ParsedCustomer, raw_text: str):  # override
+        raise NotImplementedError
 
 
 def _render_pdf_page(pdf: Path, page_index: int, width: int = 460) -> QPixmap:
@@ -45,11 +91,12 @@ def _render_pdf_page(pdf: Path, page_index: int, width: int = 460) -> QPixmap:
     return qpix
 
 
-class ConsentTab(QWidget):
+class ConsentTab(ImageDropMixin, QWidget):
     """탭 ① 가입설계동의 봇."""
 
     def __init__(self):
         super().__init__()
+        self.enable_image_drop()
         self._filled_pdf: Path | None = None
         self._out_dir = Path("./output")
 
@@ -75,13 +122,18 @@ class ConsentTab(QWidget):
         form.addRow("동의 확인", self.consent_chk)
         left.addWidget(form_box)
 
-        # 카톡 파싱
-        paste_box = QGroupBox("카톡/문자 원문 붙여넣기(선택)")
+        # 카톡 파싱 / 이미지 OCR
+        paste_box = QGroupBox("카톡/문자 원문 붙여넣기 · 이미지 드래그드롭(OCR)")
         pv = QVBoxLayout(paste_box)
-        self.paste = QPlainTextEdit(); self.paste.setPlaceholderText("이름/전화가 포함된 원문…")
+        self.paste = QPlainTextEdit()
+        self.paste.setPlaceholderText("이름/전화가 포함된 원문… 또는 사진을 이 창에 끌어다 놓기")
+        btn_row = QHBoxLayout()
         parse_btn = QPushButton("파싱하여 채우기")
         parse_btn.clicked.connect(self._parse)
-        pv.addWidget(self.paste); pv.addWidget(parse_btn)
+        ocr_btn = QPushButton("이미지 불러오기(OCR)")
+        ocr_btn.clicked.connect(self._pick_image)
+        btn_row.addWidget(parse_btn); btn_row.addWidget(ocr_btn)
+        pv.addWidget(self.paste); pv.addLayout(btn_row)
         left.addWidget(paste_box)
 
         # 액션 버튼
@@ -119,12 +171,24 @@ class ConsentTab(QWidget):
             self.src.setText(f)
 
     def _parse(self):
-        p = parse_customer_text(self.paste.toPlainText())
+        self._apply_parsed(parse_customer_text(self.paste.toPlainText()), "파싱 완료")
+
+    def _pick_image(self):
+        f, _ = QFileDialog.getOpenFileName(self, "고객정보 이미지", "",
+                                           "이미지 (*.png *.jpg *.jpeg *.bmp *.tif *.tiff *.webp)")
+        if f:
+            self.run_ocr(f)
+
+    def on_ocr_parsed(self, parsed: ParsedCustomer, raw_text: str):
+        self.paste.setPlainText(raw_text)
+        self._apply_parsed(parsed, "이미지 OCR 완료 — 값 확인 필요")
+
+    def _apply_parsed(self, p: ParsedCustomer, base_msg: str):
         if p.name:
             self.name.setText(p.name)
         if p.phone:
             self.phone.setText(p.phone)
-        msg = "파싱 완료"
+        msg = base_msg
         if p.warnings:
             msg += " — [주의] " + "; ".join(p.warnings)
         self.status.setText(msg)
@@ -181,21 +245,26 @@ class ConsentTab(QWidget):
             self.status.setText(f"폴더: {self._out_dir.resolve()}")
 
 
-class EntryTab(QWidget):
+class EntryTab(ImageDropMixin, QWidget):
     """탭 ② 고객정보 자동입력 봇."""
 
     def __init__(self):
         super().__init__()
+        self.enable_image_drop()
         self._rrn: str | None = None
         root = QVBoxLayout(self)
 
-        paste_box = QGroupBox("카톡/문자 원문 붙여넣기")
+        paste_box = QGroupBox("카톡/문자 원문 붙여넣기 · 이미지 드래그드롭(OCR)")
         pv = QVBoxLayout(paste_box)
         self.paste = QPlainTextEdit()
-        self.paste.setPlaceholderText("이름/전화/주소/주민번호가 포함된 원문…")
+        self.paste.setPlaceholderText("이름/전화/주소/주민번호 원문… 또는 사진을 이 창에 끌어다 놓기")
+        btn_row = QHBoxLayout()
         parse_btn = QPushButton("파싱 & 검증")
         parse_btn.clicked.connect(self._parse)
-        pv.addWidget(self.paste); pv.addWidget(parse_btn)
+        ocr_btn = QPushButton("이미지 불러오기(OCR)")
+        ocr_btn.clicked.connect(self._pick_image)
+        btn_row.addWidget(parse_btn); btn_row.addWidget(ocr_btn)
+        pv.addWidget(self.paste); pv.addLayout(btn_row)
         root.addWidget(paste_box)
 
         form_box = QGroupBox("확인 (주민번호는 마스킹 표시)")
@@ -214,8 +283,20 @@ class EntryTab(QWidget):
         self.status = QLabel("대기 중"); self.status.setWordWrap(True)
         root.addWidget(self.status); root.addStretch(1)
 
+    def _pick_image(self):
+        f, _ = QFileDialog.getOpenFileName(self, "고객정보 이미지", "",
+                                           "이미지 (*.png *.jpg *.jpeg *.bmp *.tif *.tiff *.webp)")
+        if f:
+            self.run_ocr(f)
+
+    def on_ocr_parsed(self, parsed: ParsedCustomer, raw_text: str):
+        self.paste.setPlainText(raw_text)
+        self._apply(parsed)
+
     def _parse(self):
-        p = parse_customer_text(self.paste.toPlainText())
+        self._apply(parse_customer_text(self.paste.toPlainText()))
+
+    def _apply(self, p: ParsedCustomer):
         self.name.setText(p.name or ""); self.phone.setText(p.phone or "")
         self.address.setText(p.address or "")
         self._rrn = p.rrn

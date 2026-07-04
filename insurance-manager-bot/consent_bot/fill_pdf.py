@@ -13,12 +13,44 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+import os
+import sys
+
 import fitz  # PyMuPDF
 
 _HERE = Path(__file__).parent
 _TEMPLATE_PATH = _HERE / "template.json"
-_FONT = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
 _FONT_ALIAS = "kr"
+
+
+def _resolve_font() -> str:
+    """한글 폰트 경로를 이식성 있게 탐색(Windows exe/리눅스/맥 공통).
+
+    우선순위: 환경변수 → 번들(assets, PyInstaller _MEIPASS) → OS 시스템 폰트.
+    """
+    candidates = []
+    if os.environ.get("IMB_FONT"):
+        candidates.append(os.environ["IMB_FONT"])
+    # 번들 폰트(패키징 시 포함)
+    bundled = Path(getattr(sys, "_MEIPASS", _HERE.parent)) / "assets" / "NanumGothic.ttf"
+    candidates.append(str(bundled))
+    candidates.append(str(_HERE.parent / "assets" / "NanumGothic.ttf"))
+    # OS 시스템 폰트
+    candidates += [
+        "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",   # Linux
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",       # Linux fallback(CJK)
+        r"C:\Windows\Fonts\malgun.ttf",                        # Windows 맑은 고딕
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",          # macOS
+    ]
+    for c in candidates:
+        if c and Path(c).exists():
+            return c
+    raise FileNotFoundError(
+        "한글 폰트를 찾지 못했습니다. assets/NanumGothic.ttf를 두거나 IMB_FONT 환경변수를 설정하세요."
+    )
+
+
+_FONT = _resolve_font()
 
 
 @dataclass
