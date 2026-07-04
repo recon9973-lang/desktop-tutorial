@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783190569392",
+    "title": "대구 병원마케팅: GEO/AEO 활용법과 AI 추천 원리",
+    "category": "geo",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2612,
+      "completionTokens": 1891,
+      "totalTokens": 4503,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:43:06.589Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783190455491",
     "title": "대전 병원마케팅의 핵심 전략 5가지",
     "category": "seo",
