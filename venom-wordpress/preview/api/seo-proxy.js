@@ -113,10 +113,10 @@ module.exports = async function handler(req, res) {
   if (type === 'keyword') {
     const keyword = req.query.keyword;
     if (!keyword) { res.status(400).json({ error: 'keyword parameter required' }); return; }
-    // 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
-    const customerId = (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim();
-    const accessLicense = (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim();
-    const secretKey = (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim();
+    // 검색광고 API 자격증명 — 정식 변수명(NAVER_AD_*)으로 통일
+    const customerId = (process.env.NAVER_AD_CUSTOMER_ID || '').trim();
+    const accessLicense = (process.env.NAVER_AD_API_KEY || '').trim();
+    const secretKey = (process.env.NAVER_AD_SECRET || '').trim();
     if (!customerId || !accessLicense || !secretKey) {
       res.status(500).json({ error: 'Naver API credentials not configured' }); return;
     }

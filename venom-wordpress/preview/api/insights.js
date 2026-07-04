@@ -256,12 +256,12 @@ function searchAdHeaders(method, apiPath) {
   };
 }
 
-// 검색광고 API 자격증명 — 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
+// 검색광고 API 자격증명 — 정식 변수명(NAVER_AD_*)으로 통일
 function adCreds() {
   return {
-    key: (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim(),
-    secret: (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim(),
-    customer: (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim(),
+    key: (process.env.NAVER_AD_API_KEY || '').trim(),
+    secret: (process.env.NAVER_AD_SECRET || '').trim(),
+    customer: (process.env.NAVER_AD_CUSTOMER_ID || '').trim(),
   };
 }
 
@@ -281,7 +281,7 @@ async function keywordtool(req, res) {
   if (!ad.key || !ad.secret || !ad.customer) {
     return res.status(501).json({
       configured: false,
-      error: '네이버 검색광고 API 미설정 — NAVER_AD_API_KEY(또는 NAVER_ACCESS_LICENSE), NAVER_AD_SECRET(또는 NAVER_SECRET_KEY), NAVER_AD_CUSTOMER_ID(또는 NAVER_CUSTOMER_ID) 필요',
+      error: '네이버 검색광고 API 미설정 — NAVER_AD_API_KEY, NAVER_AD_SECRET, NAVER_AD_CUSTOMER_ID 필요',
     });
   }
   const q = (req.query.q || req.query.query || '').trim();

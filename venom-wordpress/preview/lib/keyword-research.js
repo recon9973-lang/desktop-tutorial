@@ -79,12 +79,12 @@ async function googleAutocomplete(keyword) {
 }
 
 // ── 3. 네이버 검색광고 키워드도구 (실제 월 검색량 동반 연관키워드) ──
-// 검색광고 API 자격증명 — 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
+// 검색광고 API 자격증명 — 정식 변수명(NAVER_AD_*)으로 통일
 function adCreds() {
   return {
-    key: (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim(),
-    secret: (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim(),
-    customer: (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim(),
+    key: (process.env.NAVER_AD_API_KEY || '').trim(),
+    secret: (process.env.NAVER_AD_SECRET || '').trim(),
+    customer: (process.env.NAVER_AD_CUSTOMER_ID || '').trim(),
   };
 }
 function searchAdHeaders(method, apiPath) {
