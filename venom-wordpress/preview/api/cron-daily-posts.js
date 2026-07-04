@@ -19,6 +19,13 @@ const DEFAULT_SETTINGS = {
   extra: '',
 };
 
+// 카테고리 → 기본 키워드(키워드 미설정 시 사용). 관리자 UI의 AP_CAT_LABEL과 일치.
+const CAT_LABEL = {
+  geo: 'GEO/AI마케팅', seo: 'SEO마케팅', dental: '치과마케팅', skin: '피부과마케팅',
+  oriental: '한의원마케팅', ortho: '정형외과마케팅', plastic: '성형외과마케팅',
+  naegwa: '내과마케팅', angwa: '안과마케팅', shimui: '의료광고심의', geo_local: '지역마케팅',
+};
+
 // 오늘 날짜(KST) YYYY-MM-DD
 function kstDateStr() {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })).toISOString().slice(0, 10);
@@ -186,12 +193,14 @@ module.exports = async function handler(req, res) {
     const slotIdx = publishedToday + k;       // 다음 미발행 슬롯
     // 즉시 발행 슬롯('00:00')은 표기용 발행 시각을 실제 발행 시점으로 기록
     const slotTime = ((todaySched.timeMode === 'instant') ? nowHM : slots[slotIdx]) || nowHM;
-    const cats = settings.categories || ['geo'];
-    const keywords = settings.keywords || ['병원마케팅'];
+    // 빈 배열은 falsy가 아니므로 length까지 확인(빈 배열이면 keywords[i%0]=undefined → 발행 실패 방지)
+    const cats = (Array.isArray(settings.categories) && settings.categories.length) ? settings.categories : ['geo'];
+    const keywords = (Array.isArray(settings.keywords) ? settings.keywords.filter(Boolean) : []);
     const regions = settings.regions || [];
 
     let category = cats[slotIdx % cats.length];
-    let keyword = keywords[slotIdx % keywords.length];
+    // 키워드 미설정 시 카테고리 라벨을 기본 키워드로 사용
+    let keyword = keywords.length ? keywords[slotIdx % keywords.length] : (CAT_LABEL[category] || '병원마케팅');
     let region = regions.length ? regions[slotIdx % regions.length] : '';
 
     // 클러스터 빈칸이 있으면 그 하위주제를 우선 발행(없으면 기존 로테이션 유지)

@@ -2959,15 +2959,18 @@ async function apRunNow() {
     const active = settings.schedules.find(s => s.from <= todayStr && s.to >= todayStr);
     count = active ? (parseInt(active.dailyCount) || 1) : 1;
   }
-  const cats = (settings.categories || ['geo']);
-  const keywords = (settings.keywords || ['병원마케팅']);
+  // 빈 배열은 falsy가 아니므로 length까지 확인(빈 배열이면 keywords[i%0]=undefined → 서버 400 방지)
+  const cats = (Array.isArray(settings.categories) && settings.categories.length) ? settings.categories : ['geo'];
+  const keywords = Array.isArray(settings.keywords) ? settings.keywords.filter(Boolean) : [];
   const regions = (settings.regions || []);
   const extra = settings.extra || '';
 
   const results = [];
   for (let i = 0; i < count; i++) {
     const category = cats[i % cats.length];
-    const keyword = keywords[i % keywords.length];
+    // 키워드 미설정 시 카테고리 라벨(예: dental→치과마케팅)을 기본 키워드로 사용
+    let keyword = keywords.length ? keywords[i % keywords.length] : '';
+    if (!keyword) keyword = AP_CAT_LABEL[category] || '병원마케팅';
     const region = regions.length ? regions[i % regions.length] : '';
     btn.textContent = `⏳ ${i+1}/${count} 생성 중...`;
     try {
