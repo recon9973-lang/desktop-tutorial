@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783190902526",
+    "title": "울산 한의원 마케팅: 비급여 포지셔닝 3가지 방법",
+    "category": "oriental",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2604,
+      "completionTokens": 1823,
+      "totalTokens": 4427,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:48:39.233Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783190796170",
     "title": "인천 피부과 마케팅의 5가지 전략과 성공 사례",
     "category": "skin",
