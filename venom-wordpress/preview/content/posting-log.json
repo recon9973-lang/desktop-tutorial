@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783193757392",
+    "title": "대전 병원마케팅 전략 5가지, SEO로 효과 극대화하기",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 2106,
+      "totalTokens": 4704,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-04T19:37:21.645Z"
+  },
+  {
     "action": "generate",
     "id": "auto_1783191566619",
     "title": "대전 병원마케팅 5가지 필수 요소와 효과적인 실행 전략",
