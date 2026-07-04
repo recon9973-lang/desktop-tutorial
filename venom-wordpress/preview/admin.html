@@ -2513,6 +2513,8 @@ function apRenderSchedules() {
     return;
   }
   var today = apToday();
+  // 저장돼 있던 과거 시작일은 오늘로 당김(예약은 오늘부터). 종료일이 시작일보다 앞서면 함께 맞춤.
+  _apSchedules.forEach(function(s){ if (!s.from || s.from < today) s.from = today; if (s.to && s.to < s.from) s.to = s.from; });
   wrap.innerHTML = _apSchedules.map(function(s, i) {
     var minTo = (s.from && s.from > today) ? s.from : today; // 종료일은 시작일 이후만
     return '<div style="padding:12px 16px;background:var(--soft);border-radius:var(--r8);border:1px solid var(--border)">'
