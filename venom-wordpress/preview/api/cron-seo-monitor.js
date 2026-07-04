@@ -30,7 +30,7 @@ const CONCURRENCY  = 4;    // 동시 측정 수
 
 // seo-engine을 Node에서 직접 사용(UMD: module.exports). 화면과 동일 채점 보장.
 let SEOEngine = null;
-try { SEOEngine = require('../venom-wordpress/preview/assets/seo-engine.js'); }
+try { SEOEngine = require('../assets/seo-engine.js'); }
 catch (e) { console.error('[seo-monitor] seo-engine 로드 실패:', e.message); }
 
 // linkedom: 서버 측 DOM. 없으면 PSI 기준으로 강등(빌드/실행 안 깨짐).
