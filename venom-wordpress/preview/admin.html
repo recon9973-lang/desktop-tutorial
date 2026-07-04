@@ -2779,6 +2779,17 @@ function apDraftPreview() {
 }
 
 // 포스트 목록 로드 (로컬 우선)
+// 발행 일시(KST, 'YYYY-MM-DD HH:MM'). publishAt→createdAt→id(auto_<ms>) 순으로 시각 추출, 없으면 날짜만.
+function _apPostWhen(p) {
+  var t = null;
+  if (p.publishAt) t = new Date(p.publishAt);
+  else if (p.createdAt) t = new Date(p.createdAt);
+  else if (p.id && /^auto_(\d+)$/.test(p.id)) t = new Date(Number(p.id.slice(5)));
+  if (!t || isNaN(t.getTime())) return p.date || '';
+  var k = new Date(t.getTime() + 9 * 3600 * 1000), z = function(n){ return (n<10?'0':'')+n; };
+  return k.getUTCFullYear()+'-'+z(k.getUTCMonth()+1)+'-'+z(k.getUTCDate())+' '+z(k.getUTCHours())+':'+z(k.getUTCMinutes());
+}
+
 async function apLoadPosts() {
   const listEl = document.getElementById('ap-posts-list');
   listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mute);font-size:13px">불러오는 중...</div>';
@@ -2829,7 +2840,7 @@ async function apLoadPosts() {
             <span style="font-size:10px;color:${statusColor};font-weight:600">${statusLabel}</span>
           </div>
           <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.title}</div>
-          <div style="font-size:11px;color:var(--mute);margin-top:2px">${p.date || ''}</div>
+          <div style="font-size:11px;color:var(--mute);margin-top:2px">🕒 ${_apPostWhen(p)}</div>
           ${reviewNote}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
