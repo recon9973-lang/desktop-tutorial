@@ -142,14 +142,18 @@ local_ulsan   울산 지역마케팅
 
 ## 6. 네이버 키워드 API 설정
 
-### api/kw-proxy.js
+### 검색광고 API (api/insights.js · api/seo-proxy.js · lib/keyword-research.js)
 
-- 환경변수 (Vercel 대시보드에서 설정):
-  - `NAVER_CUSTOMER_ID` — 고객 ID
-  - `NAVER_ACCESS_LICENSE` — API 키
-  - `NAVER_SECRET_KEY` — 시크릿 키 (base64 디코딩 없이 직접 사용)
+- 환경변수 (Vercel 대시보드에서 설정) — 정식 이름 / (구 이름):
+  - `NAVER_AD_CUSTOMER_ID` — 고객 ID · (구 `NAVER_CUSTOMER_ID`)
+  - `NAVER_AD_API_KEY` — API 키(액세스 라이선스) · (구 `NAVER_ACCESS_LICENSE`)
+  - `NAVER_AD_SECRET` — 시크릿 키(base64 디코딩 없이 직접 사용) · (구 `NAVER_SECRET_KEY`)
+- 코드는 정식 이름을 우선 읽고, 구 이름은 하위호환으로 폴백 수용한다(둘 중 한 세트만 설정).
 - HMAC-SHA256 서명: `timestamp + '.' + accessLicense`
-- 403 오류 시: Vercel 환경변수에서 `NAVER_SECRET_KEY` 재입력 필요
+- 403 오류 시: Vercel 환경변수에서 `NAVER_AD_SECRET`(구 `NAVER_SECRET_KEY`) 재입력 필요
+
+> 검색·오픈API(블로그/쇼핑 검색량 등)는 별도로 `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` 사용.
+> 이 두 이름은 your-supplement·design-resources 파이프라인과도 **동일**해 프로젝트 간 공유 가능.
 
 ---
 

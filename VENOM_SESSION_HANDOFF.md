@@ -87,7 +87,10 @@
 - [ ] YouTube Shorts 실제 영상 ID (현재: `dQw4w9WgXcQ` 더미 4개 사용 중, 라인 963/970/977/984)
 - [ ] OG 이미지 `/og-image.jpg` 1200×630px 파일
 - [ ] 실제 카카오 채널 ID (현재: `pf.kakao.com/_jxjxdcxj` 플레이스홀더)
-- [ ] 네이버 API 키 (NAVER_CLIENT_ID, NAVER_SECRET_KEY) Vercel 환경변수
+- [ ] 네이버 API 키 Vercel 환경변수
+  - 검색·오픈API: `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET`
+  - 검색광고 API(정식): `NAVER_AD_API_KEY` / `NAVER_AD_SECRET` / `NAVER_AD_CUSTOMER_ID`
+    (구 이름 `NAVER_ACCESS_LICENSE` / `NAVER_SECRET_KEY` / `NAVER_CUSTOMER_ID` 도 하위호환으로 동작)
 
 ---
 
