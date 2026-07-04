@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783191349311",
+    "title": "인천 안과 마케팅: 근시·녹내장 수술 효과 2.4배 증가",
+    "category": "angwa",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1832,
+      "totalTokens": 4443,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:56:08.913Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783191238266",
     "title": "부산 내과마케팅: 당뇨·고혈압 관리로 고객 30% 증가",
     "category": "naegwa",
