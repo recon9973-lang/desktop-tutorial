@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783191097177",
+    "title": "대구 성형외과 마케팅 5가지 필수 전략과 시술 정보",
+    "category": "plastic",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2610,
+      "completionTokens": 1929,
+      "totalTokens": 4539,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:51:56.225Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783190999175",
     "title": "대전 정형외과 마케팅 전략 5가지, 효과적 성과 달성하기",
     "category": "ortho",
