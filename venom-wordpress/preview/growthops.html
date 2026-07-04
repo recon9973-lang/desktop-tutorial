@@ -190,9 +190,12 @@
 
 <script>
 const API = '/api/growthops';
-let SECRET = localStorage.getItem('growthops_secret') || '';
+// ADMIN_SECRET은 admin.html과 동일한 저장 키('venom-admin-secret')를 사용해
+// 같은 도메인의 콘솔끼리 토큰을 공유한다. 구버전 키('growthops_secret') 값은 1회 이관.
+let SECRET = localStorage.getItem('venom-admin-secret') || localStorage.getItem('growthops_secret') || '';
+if (SECRET && !localStorage.getItem('venom-admin-secret')) { try { localStorage.setItem('venom-admin-secret', SECRET); } catch(e){} }
 document.getElementById('secret').value = SECRET;
-function saveSecret(){ SECRET = document.getElementById('secret').value.trim(); localStorage.setItem('growthops_secret', SECRET); toast('시크릿 저장됨'); }
+function saveSecret(){ SECRET = document.getElementById('secret').value.trim(); localStorage.setItem('venom-admin-secret', SECRET); toast('시크릿 저장됨'); }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1900); }
 function authHeaders(){ return SECRET ? {'Authorization':'Bearer '+SECRET,'Content-Type':'application/json'} : {'Content-Type':'application/json'}; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
