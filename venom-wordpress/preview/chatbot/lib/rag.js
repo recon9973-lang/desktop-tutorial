@@ -11,7 +11,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { retrieve } = require('./retriever');
+const { retrieve, stats } = require('./retriever');
+let embedder = null;
+try { embedder = require('../pipeline/embed'); } catch (e) {}
 
 const KB_DIR = path.resolve(__dirname, '..', 'data', 'kb');
 const RULES = JSON.parse(fs.readFileSync(path.join(KB_DIR, 'forbidden-rules.json'), 'utf8'));
@@ -52,7 +54,12 @@ function sourcesOf(hits) {
  * @returns {Promise<{answer, sources, grounded, llm}>}
  */
 async function answerQuestion(message, opts = {}) {
-  const hits = retrieve(message, opts.topK || 4);
+  // 하이브리드 활성(embeddings.json + 키) 시 질의 임베딩으로 벡터 축 가중
+  let queryVector = null;
+  if (embedder && stats().hybrid && process.env.OPENAI_API_KEY) {
+    try { queryVector = await embedder.embedText(message); } catch (e) { /* 키워드 축만 사용 */ }
+  }
+  const hits = retrieve(message, opts.topK || 4, queryVector);
   const sources = sourcesOf(hits);
 
   if (!hits.length) {

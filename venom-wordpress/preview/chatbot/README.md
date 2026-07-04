@@ -59,8 +59,14 @@ node pipeline/retrieve.js "전후사진 허용 요건"   # 검색 동작 확인
 
 - ✅ **Phase 1 — 데이터 파이프라인**: 사례집 → 24 청크(근거조항 31종), Q&A 12, 금지/위험 표현 65개, 안전 대체표현 13, 역색인 899토큰. 키워드 검색 end-to-end 검증 완료.
 - ✅ **Phase 3(1차) — 챗봇 API + 웹 데모**: `preview/api/chatbot.js`(RAG 응답·문구 자가진단), `lib/retriever.js`·`lib/rag.js`, `demo.html`(웹 UI). LLM 키 없이도 근거 요약·룰 진단으로 동작(폴백). 오프라인 스모크 테스트 6/6 통과.
-- ⬜ Phase 2 — 조문 전문(law.go.kr)·협회 심의기준·FAQ 보강, 임베딩(`embed.js`) 부착 → 하이브리드 검색 완성
+- 🟡 **Phase 2(진행) — 검색 고도화·데이터 보강**:
+  - ✅ 도메인 동의어 확장(`data/synonyms.json`, 87토큰) → recall 향상(예: "후기"→치료경험담 제2호 매칭)
+  - ✅ 임베딩 파이프라인(`pipeline/embed.js`) + 하이브리드 검색 훅(embeddings.json 생성 시 자동 활성)
+  - ✅ 조문 수집기(`pipeline/fetch-statutes.js`, law.go.kr DRF API) — 키/허용망 제공 시 즉시 실행. *현 환경은 law.go.kr 접근이 프록시 차단되어 pending 기록.*
+  - ⬜ 협회 심의기준·FAQ 수집
 - ⬜ Phase 4 — 사이트 임베드 위젯, 평가·개선 루프(10,000 질문, LLM-as-Judge)
+
+> **하이브리드/조문 활성화**: `OPENAI_API_KEY` 설정 후 `node pipeline/embed.js` → 벡터 검색 자동 on. `LAW_OC=<법령API OC>` 설정 후 `node pipeline/fetch-statutes.js` → 조문 원문 수집(허용망 필요).
 
 ## API
 

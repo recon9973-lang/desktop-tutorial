@@ -44,7 +44,12 @@ async function call(method, body) {
     `위반 탐지 ${diag.forbidden.length}건: ${diag.forbidden.slice(0, 4).join(', ')}…`);
   check(!!diag.suggestion, `안전 대체안 생성: "${(diag.suggestion || '').slice(0, 40)}…"`);
 
-  console.log('4) 검증 — 빈 message 거부');
+  console.log('4) 동의어 확장 recall — "후기"로 치료경험담(제2호) 검색');
+  const s = await call('POST', { message: '환자 후기 올려도 되나요?' });
+  check(s._json.sources.some(x => /제2호|치료경험담|경험담/.test(x.title) || (x.legalRefs || []).join().includes('제56조')),
+    `동의어(후기→치료경험담)로 근거 매칭: ${s._json.sources[0] ? s._json.sources[0].title.split('›').pop().trim() : '없음'}`);
+
+  console.log('5) 검증 — 빈 message 거부');
   const e = await call('POST', { message: '' });
   check(e._status === 400, '빈 입력 400 반환');
 
