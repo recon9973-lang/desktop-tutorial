@@ -1,5 +1,20 @@
 [
   {
+    "action": "generate",
+    "id": "auto_1783190455491",
+    "title": "대전 병원마케팅의 핵심 전략 5가지",
+    "category": "seo",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 2021,
+      "totalTokens": 4619,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:41:14.486Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1783127911403",
     "title": "대전 SEO 마케팅의 5가지 핵심 전략과 베놈 활용법",
