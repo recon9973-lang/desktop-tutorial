@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783191473460",
+    "title": "울산 병원마케팅: 의료광고 심의 절차와 규정 5가지",
+    "category": "shimui",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2552,
+      "completionTokens": 1928,
+      "totalTokens": 4480,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:58:10.929Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783191349311",
     "title": "인천 안과 마케팅: 근시·녹내장 수술 효과 2.4배 증가",
     "category": "angwa",
