@@ -1,6 +1,21 @@
 [
   {
     "action": "generate",
+    "id": "auto_1783190694679",
+    "title": "부산 치과 마케팅의 5가지 성공 전략과 실행 방안",
+    "category": "dental",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 2047,
+      "totalTokens": 4686,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:45:13.090Z"
+  },
+  {
+    "action": "generate",
     "id": "auto_1783190569392",
     "title": "대구 병원마케팅: GEO/AEO 활용법과 AI 추천 원리",
     "category": "geo",
