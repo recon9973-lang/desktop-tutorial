@@ -539,17 +539,16 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ 유입 출처 ══ -->
     <div id="section-sources" class="admin-section">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head"><div class="card-title">📡 유입 채널 분포 <span style="font-size:11px;font-weight:400;color:var(--mute)">(전기간 누적 · 실측)</span></div></div>
+        <div id="sources-chart-bars" style="display:flex;flex-direction:column;gap:10px"><div style="text-align:center;color:var(--mute);font-size:13px;padding:18px">불러오는 중…</div></div>
+      </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">📡 유입 출처 상세</div></div>
+        <div class="card-head"><div class="card-title">📡 유입 출처 상세 <span style="font-size:11px;font-weight:400;color:var(--mute)">(전환·이탈률은 세션 추적 연동 예정)</span></div></div>
         <table class="data-table">
           <thead><tr><th>출처</th><th>방문자</th><th>비율</th><th>전환</th><th>이탈률</th></tr></thead>
           <tbody>
-            <tr><td>🟢 네이버 검색</td><td>699</td><td>38%</td><td>12%</td><td>42%</td></tr>
-            <tr><td>⚫ 직접 유입</td><td>405</td><td>22%</td><td>18%</td><td>28%</td></tr>
-            <tr><td>🟡 카카오톡</td><td>331</td><td>18%</td><td>22%</td><td>35%</td></tr>
-            <tr><td>🔴 구글 검색</td><td>221</td><td>12%</td><td>9%</td><td>48%</td></tr>
-            <tr><td>🔴 인스타그램</td><td>129</td><td>7%</td><td>6%</td><td>54%</td></tr>
-            <tr><td>🔵 기타</td><td>57</td><td>3%</td><td>4%</td><td>62%</td></tr>
+            <tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">불러오는 중…</td></tr>
           </tbody>
         </table>
       </div>
@@ -2156,7 +2155,11 @@ function initVisitorsLocal(){
 function initSources(){
   initSourcesLocal();
   getServerAnalytics(function(srv){
-    if(!(srv&&srv.configured&&srv.channels))return;
+    var ok=!!(srv&&srv.configured&&srv.channels);
+    if(typeof analyticsBanner==='function')analyticsBanner('sources',ok);
+    var chart=document.getElementById('sources-chart-bars');
+    if(!ok){ if(chart)chart.innerHTML='<div style="text-align:center;color:var(--mute);font-size:13px;padding:18px">실시간 전체 집계 미연동 — 채널 분포는 KV 연동 후 표시됩니다. (아래 표는 이 브라우저 로컬 기록)</div>'; return; }
+    if(typeof renderChannelBars==='function')renderChannelBars(chart,srv.channels);
     var tbody=document.querySelector('#section-sources tbody');
     if(!tbody)return;
     var total=srv.channels.reduce(function(a,c){return a+c.pageviews;},0)||1;
