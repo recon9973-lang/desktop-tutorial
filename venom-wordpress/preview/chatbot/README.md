@@ -91,9 +91,9 @@ node pipeline/eval-loop.js --all     # 전체 10,000 평가 → data/eval/eval-r
 POST /api/chatbot  { "message": "...", "mode": "qa" | "diagnose" }
   qa       → { answer, sources[], grounded, llm }   근거 인용 답변
   diagnose → { diagnosis:{ pass, forbidden[], risky[], suggestion, replacements[] } }
-GET  /api/chatbot  → { kb 통계, llm 연동여부, modes }
+GET  /api/chatbot  → { kb 통계, llm 연동여부, provider, model, modes }
 ```
-LLM 자연어 답변 활성화: 환경변수 `OPENAI_API_KEY` 설정(미설정 시 근거 요약 폴백).
+LLM 자연어 답변 활성화(두뇌): 환경변수 `ANTHROPIC_API_KEY`(Claude) 설정 시 우선 사용, 없으면 `OPENAI_API_KEY` 폴백, 둘 다 없으면 근거 요약 폴백. 모델은 `ANTHROPIC_MODEL`(기본 `claude-opus-4-8`)로 교체 가능.
 
 ### 로컬 검증
 ```bash
@@ -103,5 +103,6 @@ node pipeline/test-api.js     # 핸들러 오프라인 스모크 테스트(6/6)
 ## 재사용 자산 (VENOM 기존 코드)
 
 - `../lib/medical-ad-validator.js` — 금지표현 검증기·자동 대체(자가진단 룰엔진에 통합)
-- `../lib/openai-client.js` — LLM 호출 클라이언트
+- `../lib/anthropic-client.js` — Claude(Anthropic) 두뇌 호출 클라이언트(현재 기본 LLM)
+- `../lib/openai-client.js` — OpenAI 호출 클라이언트(폴백·임베딩용)
 - `../api/store.js`, KV(Upstash) — 세션·로그 저장 패턴
