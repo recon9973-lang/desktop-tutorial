@@ -1,0 +1,143 @@
+{
+  "updated": "2026-07-05T12:24:35.873Z",
+  "count": 12,
+  "items": [
+    {
+      "id": "qa-001",
+      "question": "로그인만 걸면 후기·전후사진 게시 OK?",
+      "answer": "아니오. 포털 아이디 로그인·임시아이디 등으로 실질적으로 불특정 다수가 열람하면 광고로 봄. 대가성·이해관계 미표시는 표시광고법 기만광고.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "표시광고법"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-002",
+      "question": "환자 단순 방문후기도 치료경험담?",
+      "answer": "만족도·친절도 등 단순 후기는 원칙적 광고 아님. 단, 병원이 정하거나 유도하고 구체적 진료경험·수술예후 담으면 제2호 저촉.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "금지유형"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-003",
+      "question": "전후사진은 절대 금지?",
+      "answer": "아님. 5요건(동일 환자·동일인·촬영시기 명시·동일조건 무보정·부작용 명시) 충족 시 게재 가능.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-004",
+      "question": "비급여 할인·무료 이벤트는 유인행위?",
+      "answer": "대상·기간·범위·할인폭 명확히 하고 시장질서 저해 없으면 제한적 가능. 경제약자 한정 무료·체험단은 유인 소지 큼.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-005",
+      "question": "의료 플랫폼/소셜커머스 광고 대행 가능?",
+      "answer": "정보제공·장소 대여 수준은 가능. 단 진료 유도 대가로 진료비 비율 수수료 수취는 제27조 제3항 소개·알선·유인.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [
+        "제27조 제3항"
+      ],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-006",
+      "question": "\"물광주사·백옥주사\" 등 자율명칭 OK?",
+      "answer": "일률 위반은 아니나 공인 안 된 치료법·시술명·약제는 불가. 학회·문헌 근거 명칭 권장. 의료기기 업체 부여 명칭은 그 사실 명시 필요.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-007",
+      "question": "\"부작용/통증 거의 없다\" 표현?",
+      "answer": "의학 자료 근거·완전부재 취지 아니면 곧바로 위반 아니나(판례) 가급적 사용 자제, 객관적 근거 필수.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-008",
+      "question": "기사에 연락처 없어도 광고성이면 위반?",
+      "answer": "연락처·약도 유무 외에 게재 경위·대가·광고효과 의도·횟수 종합 판단. '기사형 광고'는 '광고' 명확 표시 필요.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-009",
+      "question": "배너와 랜딩페이지 별도 심의?",
+      "answer": "합쳐 하나의 광고로 전체 심의.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-010",
+      "question": "개별 계정/블로그가 10만 미만이면 심의 면제?",
+      "answer": "매체(플랫폼)가 10만 이상이면 개별 계정 무관하게 심의 대상. 병원 홈페이지용 블로그·SNS도 면제 아님.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-011",
+      "question": "자율심의기준 위반 = 의료법 위반?",
+      "answer": "미심의·상이 광고는 제11호 위반. 그 외 사항은 심의기준 위반만으로 의료법 위반 아님.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [],
+      "tags": [
+        "금지유형",
+        "사전심의"
+      ],
+      "origin": "casebook"
+    },
+    {
+      "id": "qa-012",
+      "question": "사실인 수상·인증 이력도 광고 불가?",
+      "answer": "원칙 금지. 다만 의료법 제58조 인증, 정부·지자체·공공기관·법령·WHO 협력기구 인증·보증만 예외 허용.",
+      "source": "mohw-casebook-2024-12",
+      "legalRefs": [
+        "제58조"
+      ],
+      "tags": [
+        "일반"
+      ],
+      "origin": "casebook"
+    }
+  ]
+}

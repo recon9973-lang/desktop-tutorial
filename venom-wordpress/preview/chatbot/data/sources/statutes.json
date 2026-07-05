@@ -1,0 +1,8 @@
+{
+  "updated": "2026-07-05T12:24:35.657Z",
+  "status": "pending",
+  "source": "law.go.kr DRF",
+  "reason": "LAW_OC(OC) 미설정 — open.law.go.kr에서 무료 발급 필요",
+  "howTo": "LAW_OC=<OC> node pipeline/fetch-statutes.js  (OC: open.law.go.kr 발급)",
+  "statutes": []
+}
