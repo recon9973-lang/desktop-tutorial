@@ -227,7 +227,8 @@
       "maxDuration": 120
     },
     "api/eval-judge.js": {
-      "maxDuration": 300
+      "maxDuration": 300,
+      "includeFiles": "chatbot/data/**"
     }
   },
   "crons": [

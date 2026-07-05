@@ -103,13 +103,30 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
 
+  const q0 = req.query || {};
+  // 진단 모드: Claude 호출 없이 즉시 응답. 배포/키/데이터 번들 상태 확인용.
+  if (q0.ping === '1' || q0.ping === 'true') {
+    let pool = [];
+    try { pool = buildPool(); } catch (e) {}
+    const gold = loadJson(path.join(EVAL, 'gold.json'), { cases: [] });
+    const sample = loadJson(path.join(EVAL, 'questions-sample.json'), { sample: [] });
+    return res.status(200).json({
+      ok: true, deployed: true,
+      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+      answerModel: process.env.ANTHROPIC_MODEL || 'claude-opus-4-8',
+      judgeModel: process.env.ANTHROPIC_JUDGE_MODEL || 'claude-haiku-4-5',
+      dataBundled: { gold: (gold.cases || []).length, sample: (sample.sample || []).length, poolSize: pool.length },
+      usage: 'GET /api/eval-judge?n=6 (채점 실행). 느리면 n을 줄이세요.',
+    });
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(503).json({ error: 'ANTHROPIC_API_KEY 미설정 — Vercel 환경변수 설정 후 실행하세요.' });
   }
 
   try {
-    const q = req.query || {};
-    const n = Math.max(1, Math.min(24, parseInt(q.n, 10) || 12));
+    const q = q0;
+    const n = Math.max(1, Math.min(24, parseInt(q.n, 10) || 6));
     const offset = Math.max(0, parseInt(q.offset, 10) || 0);
     const conc = Math.max(1, Math.min(6, parseInt(q.c, 10) || 4));
 
