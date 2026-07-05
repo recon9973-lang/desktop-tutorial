@@ -222,6 +222,9 @@
     },
     "api/chatbot.js": {
       "maxDuration": 30
+    },
+    "api/statutes-refresh.js": {
+      "maxDuration": 60
     }
   },
   "crons": [

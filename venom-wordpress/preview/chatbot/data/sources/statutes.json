@@ -1,29 +1,8 @@
 {
-  "updated": "2026-07-04T17:03:29.545Z",
+  "updated": "2026-07-05T12:24:35.657Z",
   "status": "pending",
-  "reason": "LAW_OC(OC) 미설정 — 법령API 키 없음",
-  "targets": [
-    {
-      "law": "의료법",
-      "article": "제56조",
-      "title": "의료광고의 금지 등"
-    },
-    {
-      "law": "의료법",
-      "article": "제57조",
-      "title": "의료광고의 심의"
-    },
-    {
-      "law": "의료법 시행령",
-      "article": "제23조",
-      "title": "의료광고의 금지 기준"
-    },
-    {
-      "law": "의료법 시행령",
-      "article": "제24조",
-      "title": "의료광고의 심의"
-    }
-  ],
-  "howTo": "https://open.law.go.kr 에서 OC 발급 후  LAW_OC=<OC> node pipeline/fetch-statutes.js",
+  "source": "law.go.kr DRF",
+  "reason": "LAW_OC(OC) 미설정 — open.law.go.kr에서 무료 발급 필요",
+  "howTo": "LAW_OC=<OC> node pipeline/fetch-statutes.js  (OC: open.law.go.kr 발급)",
   "statutes": []
 }

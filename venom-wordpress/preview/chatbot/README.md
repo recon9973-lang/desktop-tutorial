@@ -62,8 +62,15 @@ node pipeline/retrieve.js "전후사진 허용 요건"   # 검색 동작 확인
 - 🟡 **Phase 2(진행) — 검색 고도화·데이터 보강**:
   - ✅ 도메인 동의어 확장(`data/synonyms.json`, 87토큰) → recall 향상(예: "후기"→치료경험담 제2호 매칭)
   - ✅ 임베딩 파이프라인(`pipeline/embed.js`) + 하이브리드 검색 훅(embeddings.json 생성 시 자동 활성)
-  - ✅ 조문 수집기(`pipeline/fetch-statutes.js`, law.go.kr DRF API) — 키/허용망 제공 시 즉시 실행. *현 환경은 law.go.kr 접근이 프록시 차단되어 pending 기록.*
+  - ✅ 조문 수집기 — CLI(`pipeline/fetch-statutes.js`) + **Vercel 엔드포인트(`api/statutes-refresh.js`)**. 공유 로직 `lib/statute-fetcher.js`. 수집 성공 시 build.js가 조문을 지식베이스에 자동 통합(`조문원문` 태그). *현 개발 컨테이너는 law.go.kr 프록시 차단 → Vercel(허용망)에서 실행 권장(최신성).*
   - ⬜ 협회 심의기준·FAQ 수집
+
+#### 조문 최신본 수집 (Vercel, 최신성 반영)
+```
+GET /api/statutes-refresh          # 수집 테스트(law.go.kr 도달·조문 미리보기)
+GET /api/statutes-refresh?save=1   # 성공 시 statutes.json GitHub 커밋(ADMIN_SECRET 필요 시 Bearer)
+```
+필요 env: `LAW_OC`(open.law.go.kr 무료 발급), 저장 시 `GITHUB_TOKEN`. 저장 후 `node pipeline/build.js`로 지식베이스 통합. 차단·실패 시 조문 파일을 직접 제공해도 동일 통합.
 - ✅ **Phase 4 — 평가셋·개선 루프**:
   - 질문 10,000개 생성(`pipeline/gen-questions.js`) — 11개 카테고리, 난이도·근거조항 라벨, 홀드아웃 1,000 분리(오더 2번)
   - 평가·개선 루프(`pipeline/eval-loop.js`, 오더 3번: 질문→답변→검토→진단→수정) — **인용 적중률 92.2%** / 문구진단 정합 100%(전체 10,000). 진단→동의어 보강→재평가로 표시광고법 46%→임계 통과 실증.

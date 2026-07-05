@@ -215,6 +215,30 @@ function buildIndex(chunks) {
   };
 }
 
+// ── 조문 원문 통합(statutes.json, status=ok일 때만) ──────────────
+function buildStatuteChunks() {
+  const p = path.join(SRC_DIR, 'statutes.json');
+  if (!fs.existsSync(p)) return [];
+  let doc; try { doc = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return []; }
+  if (doc.status !== 'ok' || !Array.isArray(doc.statutes)) return [];
+  return doc.statutes.map((s, i) => {
+    const legal = extractLegalRefs(`${s.law} ${s.article} ${s.text}`);
+    const tags = tagChunk(s.article + ' ' + s.title, s.text);
+    tags.push('조문원문');
+    return {
+      id: 'statute-' + slugify(s.article, i),
+      title: `${s.law} ${s.article}(${s.title})`,
+      h2: '의료법 조문 원문', h3: `${s.article} ${s.title}`,
+      source: 'law.go.kr', sourceTitle: `국가법령정보센터 ${s.law} ${s.article}`,
+      legalRefs: legal.refs.length ? legal.refs : [`${s.article}`],
+      laws: ['의료법'],
+      tags: [...new Set(tags)],
+      text: s.text.trim(),
+      chars: s.text.trim().length,
+    };
+  });
+}
+
 // ── 실행 ─────────────────────────────────────────────────────────
 function main() {
   if (!fs.existsSync(CASEBOOK)) {
@@ -225,6 +249,7 @@ function main() {
   fs.mkdirSync(KB_DIR, { recursive: true });
 
   const chunks = buildChunks(md);
+  chunks.push(...buildStatuteChunks());  // 수집된 조문 원문(있으면) 통합
   const kb = {
     updated: BUILT_AT,
     schema: 'venom-medical-ad-chatbot/kb@1',
