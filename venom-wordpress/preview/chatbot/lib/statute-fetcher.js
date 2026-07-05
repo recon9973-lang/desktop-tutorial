@@ -84,17 +84,21 @@ function parseArticles(body, mst) {
   }
   if (out.length) return { statutes: out, via: '조문단위', units: units.length };
 
-  // 전략 2: <조문내용> 블록에서 대상 조문 라벨로 시작하는 것 매칭
-  const contents = body.match(/<조문내용>[\s\S]*?<\/조문내용>/g) || [];
-  for (const c of contents) {
-    const text = clean(c);
-    for (const t of TARGETS) {
-      if (new RegExp('^' + esc(t.article) + '\\s*[\\(（]').test(text) && !out.find(o => o.article === t.article)) {
-        out.push({ law: t.law, article: t.article, title: t.title, text, mst });
-      }
-    }
+  // 전략 2: <조문내용> 위치 기반 슬라이싱.
+  // 의료법 XML은 <조문단위> 래핑 없이 <조문내용>(조 제목 줄) + <항>/<호>가 형제로 나열됨.
+  // 각 조문내용을 조(條) 경계로 보고, 헤더~다음 조문내용 직전까지 통째로 잘라 항·호를 포함시킨다.
+  const markers = [];
+  const re = /<조문내용>([\s\S]*?)<\/조문내용>/g;
+  let m;
+  while ((m = re.exec(body)) !== null) markers.push({ index: m.index, header: clean(m[1]) });
+  for (let i = 0; i < markers.length; i++) {
+    const t = TARGETS.find(x => new RegExp('^' + esc(x.article) + '\\s*[\\(（]').test(markers[i].header));
+    if (!t || out.find(o => o.article === t.article)) continue;
+    const end = i + 1 < markers.length ? markers[i + 1].index : body.length;
+    const text = clean(body.slice(markers[i].index, end));   // 조 제목 + 이하 항·호 전체
+    out.push({ law: t.law, article: t.article, title: t.title, text, mst });
   }
-  return { statutes: out, via: '조문내용', units: units.length, contents: contents.length };
+  return { statutes: out, via: '조문내용-슬라이스', units: units.length, contents: markers.length };
 }
 
 /**
