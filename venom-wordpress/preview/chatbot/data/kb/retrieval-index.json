@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-05T18:27:20.144Z",
+  "updated": "2026-07-05T18:37:17.434Z",
   "method": "keyword-inverted (하이브리드 검색의 키워드 축; 벡터 임베딩은 embed.js에서 부착)",
   "tokenCount": 11960,
   "inverted": {

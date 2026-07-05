@@ -1,10 +1,10 @@
 {
-  "updated": "2026-07-05T18:27:40.529Z",
+  "updated": "2026-07-05T18:36:53.244Z",
   "scope": "large-sample 3016/190000",
-  "citationAccuracy": 95.8,
+  "citationAccuracy": 95.5,
   "byOrigin": {
-    "law": "96.7% (1588)",
-    "synthetic": "94.8% (1428)"
+    "law": "96.9% (1588)",
+    "synthetic": "93.9% (1428)"
   },
   "weakByRef": [],
   "note": "인용 적중률=예상 근거조항(조 단위)이 top-5 검색근거에 포함된 비율. LLM 정답채점은 배포 키로 확장."
