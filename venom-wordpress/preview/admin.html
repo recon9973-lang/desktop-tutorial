@@ -556,26 +556,29 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ SEO 점수 ══ -->
     <div id="section-seo" class="admin-section">
+      <!-- 종합 등급 배너 (엔진 실측 — 홈페이지 HTML + robots.txt + PageSpeed Insights) -->
+      <div id="seo-overall" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;border:2px solid var(--border);border-radius:var(--r12);padding:18px 22px;margin-bottom:16px;background:var(--soft)">
+        <div style="text-align:center;min-width:120px">
+          <div><span id="seo-overall-score" style="font-size:44px;font-weight:800;color:var(--ink)">—</span><span style="font-size:18px;color:var(--mute);font-weight:600">/100</span></div>
+          <div id="seo-overall-grade" style="font-size:13px;font-weight:700;color:var(--mute)">미측정</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;font-size:15px;color:var(--ink)">종합 SEO 점수 <span id="seo-overall-domain" style="font-size:12px;font-weight:600;color:var(--p)"></span></div>
+          <div style="font-size:12px;color:var(--mute);margin-top:3px;line-height:1.6">Google Search Central + PageSpeed Insights(Lighthouse) 1차 기준 · 네이버 서치어드바이저 2차 · 속도(CWV)는 종합점수와 분리된 별도 지표 · <b>순위 보장 아님</b></div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#16a34a">94</div><div class="stat-label" style="text-align:center">종합 SEO 점수</div></div>
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:var(--p)">98</div><div class="stat-label" style="text-align:center">기술 SEO</div></div>
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#f59e0b">88</div><div class="stat-label" style="text-align:center">콘텐츠 SEO</div></div>
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#06b6d4">91</div><div class="stat-label" style="text-align:center">로컬 SEO</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-content" style="font-size:34px;font-weight:700;color:#533afd">—</div><div class="stat-label" style="text-align:center">📝 콘텐츠 &amp; 메타</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-tech" style="font-size:34px;font-weight:700;color:#06b6d4">—</div><div class="stat-label" style="text-align:center">⚙️ 기술·크롤링</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-search" style="font-size:34px;font-weight:700;color:#8b5cf6">—</div><div class="stat-label" style="text-align:center">🔍 검색 노출</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-speed" style="font-size:34px;font-weight:700;color:#f59e0b">—</div><div class="stat-label" style="text-align:center">⚡ 속도(CWV)</div></div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">SEO 항목별 점검</div><button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔄 재점검</button></div>
+        <div class="card-head"><div class="card-title">SEO 항목별 점검 <span style="font-size:11px;font-weight:600;color:var(--mute)">(홈페이지 실측)</span></div><button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔄 재점검</button></div>
         <table class="data-table">
           <thead><tr><th>항목</th><th>설명</th><th>상태</th><th>점수</th></tr></thead>
-          <tbody>
-            <tr><td>메타 title</td><td>60자 이내, 핵심 키워드 포함</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
-            <tr><td>메타 description</td><td>160자 이내, 전환 유도 문구</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
-            <tr><td>Schema.org 구조화 데이터</td><td>LocalBusiness + MedicalBusiness</td><td><span class="badge badge-green">통과</span></td><td>15/15</td></tr>
-            <tr><td>OG 태그 (소셜 공유)</td><td>og:title, og:description, og:image</td><td><span class="badge badge-yellow">부분</span></td><td>6/10</td></tr>
-            <tr><td>Canonical URL</td><td>중복 콘텐츠 방지</td><td><span class="badge badge-green">통과</span></td><td>5/5</td></tr>
-            <tr><td>H1 태그</td><td>페이지당 1개, 핵심 키워드 포함</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
-            <tr><td>이미지 alt 텍스트</td><td>모든 이미지에 alt 속성 필요</td><td><span class="badge badge-red">미흡</span></td><td>4/10</td></tr>
-            <tr><td>robots.txt</td><td>AI 크롤러 허용 여부</td><td><span class="badge badge-yellow">부분</span></td><td>3/5</td></tr>
-            <tr><td>Core Web Vitals</td><td>LCP, FID, CLS 기준치 이내</td><td><span class="badge badge-green">통과</span></td><td>15/15</td></tr>
+          <tbody id="seo-audit-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">미측정 — 재점검 버튼으로 실측하세요</td></tr>
           </tbody>
         </table>
       </div>
@@ -1069,7 +1072,7 @@ function showSection(id){
   if(id==='logos')initLogoSection();
   if(id==='visitors')initVisitors();
   if(id==='sources')initSources();
-  if(id==='seo')runSeoAudit();
+  if(id==='seo'&&!_seoAuditDone){_seoAuditDone=true;runSeoAudit();}
   if(id==='seomonitor')initSeoMonitor();
   if(id==='reports')initReports();
   if(id==='cardnews')initCardnews();
@@ -1537,7 +1540,6 @@ function removeFromTracking(kw){
 
 // (구) 시뮬레이션 순위 갱신 제거 — 실측 새로고침으로 대체
 function runKeywordUpdate(){ renderKeywordTable(); }
-function runSeoAudit(){toast('SEO 재점검 중...')}
 function downloadReport(){toast('PDF 생성 중... (실제 배포 시 자동 생성)')}
 function generateCardnews(){toast('오늘 카드뉴스 생성 중... (AI API 연동 필요)')}
 
@@ -2177,55 +2179,68 @@ function initSourcesLocal(){
 // ══════════════════════════════════════
 // ── SEO 점수 ──
 // ══════════════════════════════════════
-function runSeoAudit(){
-  var tbody=document.querySelector('#section-seo table tbody');
-  if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">⏳ 분석 중...</td></tr>';
-  fetch('index.html?nocache='+Date.now()).then(function(r){return r.text();}).then(function(html){
-    var parser=new DOMParser();
-    var doc=parser.parseFromString(html,'text/html');
-    var checks=[
-      {name:'메타 title',desc:'60자 이내, 핵심 키워드 포함',
-        test:function(){var t=doc.querySelector('title');return t&&t.textContent.length>0&&t.textContent.length<=70;},score:10},
-      {name:'메타 description',desc:'160자 이내 설명',
-        test:function(){var m=doc.querySelector('meta[name="description"]');return m&&m.content&&m.content.length<=160;},score:10},
-      {name:'H1 태그',desc:'페이지당 1개',
-        test:function(){return doc.querySelectorAll('h1').length>=1;},score:10},
-      {name:'Schema.org 구조화 데이터',desc:'LocalBusiness, MedicalBusiness',
-        test:function(){return html.includes('schema.org')&&(html.includes('MedicalBusiness')||html.includes('LocalBusiness'));},score:15},
-      {name:'OG 태그',desc:'og:title, og:description, og:image',
-        test:function(){return doc.querySelector('meta[property="og:title"]')&&doc.querySelector('meta[property="og:description"]');},score:10},
-      {name:'Canonical URL',desc:'중복 콘텐츠 방지',
-        test:function(){return !!doc.querySelector('link[rel="canonical"]');},score:5},
-      {name:'robots.txt AI 크롤러',desc:'GPTBot, ClaudeBot, PerplexityBot 허용',
-        test:function(){return html.includes('GPTBot')||html.includes('ClaudeBot');},
-        asyncTest:function(){return fetch('robots.txt').then(function(r){return r.text();}).then(function(t){return t.includes('GPTBot');});},score:5},
-      {name:'이미지 alt 텍스트',desc:'모든 img에 alt 속성',
-        test:function(){var imgs=doc.querySelectorAll('img');var noAlt=Array.from(imgs).filter(function(i){return!i.alt;});return noAlt.length===0;},score:10},
-      {name:'뷰포트 메타태그',desc:'모바일 최적화',
-        test:function(){return !!doc.querySelector('meta[name="viewport"]');},score:5},
-      {name:'lang 속성',desc:'html lang 속성 설정',
-        test:function(){return !!doc.querySelector('html[lang]');},score:5},
-    ];
-    var results=checks.map(function(c){
-      var ok;
-      try{ok=c.test();}catch(e){ok=false;}
-      return {name:c.name,desc:c.desc,ok:ok,score:c.score};
+// SEO 점수 = SEOEngine 실측(홈페이지 HTML + robots.txt) + PageSpeed Insights(seo-proxy) 병합.
+// index.html의 진단 플로우(SEOEngine.analyze → mergePSI)와 동일 방식. PSI 실패 시 속도(CWV)는
+// pending("정밀 필요") 유지 — 절대 수치를 지어내지 않는다.
+var _seoAuditDone=false;
+var _SEO_PROXY_ADMIN='https://venom-new-site.vercel.app/api/seo-proxy';
+function _seoEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function _seoRender(res){
+  var byKey={}; res.categories.forEach(function(c){byKey[c.key]=c;});
+  var ov=document.getElementById('seo-overall-score');
+  if(ov)ov.textContent=res.max?Math.round(res.total/res.max*100):'—';
+  var og=document.getElementById('seo-overall-grade');
+  if(og&&res.grade){og.textContent=res.grade.label;og.style.color=res.grade.color;}
+  var od=document.getElementById('seo-overall-domain'); if(od)od.textContent=res.domain||'';
+  var bnr=document.getElementById('seo-overall'); if(bnr&&res.grade)bnr.style.borderColor=res.grade.color;
+  ['content','tech','search','speed'].forEach(function(k){
+    var c=byKey[k], el=document.getElementById('seo-score-'+k);
+    if(!el||!c)return;
+    if(c.pending){ el.textContent='정밀 필요'; el.style.fontSize='18px'; el.style.color='#9ca3af';
+      el.title='PSI 연동 시 측정 (Google PageSpeed Insights)'; }
+    else { el.textContent=c.score+'/'+c.max; el.style.fontSize='34px'; el.style.color=c.color;
+      el.title=c.pct+'점'; }
+  });
+  var tbody=document.getElementById('seo-audit-tbody');
+  if(tbody){
+    var rows=[];
+    res.categories.forEach(function(c){
+      c.items.forEach(function(it){
+        var badge,sc;
+        if(it.pass===null){ badge='<span class="badge badge-yellow">정밀필요</span>'; sc='—/'+it.points; }
+        else if(it.pass){ badge='<span class="badge badge-green">통과</span>'; sc='+'+it.points; }
+        else { badge='<span class="badge badge-red">미흡</span>'; sc='0/'+it.points; }
+        rows.push('<tr><td>'+_seoEsc(it.name)+'</td><td>'+_seoEsc(it.desc)+'</td><td>'+badge+'</td><td>'+sc+'</td></tr>');
+      });
     });
-    var total=results.reduce(function(s,r){return s+r.score;},0);
-    var earned=results.reduce(function(s,r){return s+(r.ok?r.score:Math.floor(r.score*.4));},0);
-    var pct=Math.round(earned/total*100);
-    // 상단 점수 카드 업데이트
-    var scoreCards=document.querySelectorAll('#section-seo .stat-card');
-    if(scoreCards[0]){scoreCards[0].querySelector('div').textContent=pct;}
-    if(tbody){
-      tbody.innerHTML=results.map(function(r){
-        var badge=r.ok?'<span class="badge badge-green">통과</span>':'<span class="badge badge-red">미흡</span>';
-        var sc=r.ok?r.score:Math.floor(r.score*.4);
-        return '<tr><td>'+r.name+'</td><td>'+r.desc+'</td><td>'+badge+'</td><td>'+sc+'/'+r.score+'</td></tr>';
-      }).join('');
-    }
+    tbody.innerHTML=rows.join('');
+  }
+}
+
+function runSeoAudit(){
+  var tbody=document.getElementById('seo-audit-tbody');
+  if(typeof SEOEngine==='undefined'){
+    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#dc2626;padding:16px">SEO 엔진 로드 실패 — 새로고침 후 다시 시도</td></tr>';
+    return;
+  }
+  if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">⏳ 실측 분석 중...</td></tr>';
+  var origin=location.origin, homeUrl=origin+'/';
+  Promise.all([
+    fetch(homeUrl,{cache:'no-store'}).then(function(r){return r.text();}).catch(function(){return '';}),
+    fetch(origin+'/robots.txt',{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).catch(function(){return '';})
+  ]).then(function(arr){
+    var res=SEOEngine.analyze({url:homeUrl,html:arr[0]||'',robots:arr[1]||'',isHttps:location.protocol==='https:'});
+    _seoRender(res);
+    // PageSpeed Insights 병합 — index.html과 동일한 seo-proxy 경로. 실패해도 속도는 pending 유지.
+    fetch(_SEO_PROXY_ADMIN+'?type=psi&url='+encodeURIComponent(homeUrl)+'&nonce='+Date.now())
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};});})
+      .then(function(resp){
+        if(!resp.ok||!(resp.j&&resp.j.lighthouseResult))return; // PSI 미가용 → 속도 pending 유지
+        try{ _seoRender(SEOEngine.mergePSI(res,resp.j)); }catch(e){}
+      }).catch(function(){});
   }).catch(function(){
-    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">로컬 환경에서는 분석 불가 — 배포 후 사용 가능</td></tr>';
+    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">분석 실패 — 재점검 버튼으로 다시 시도</td></tr>';
   });
 }
 

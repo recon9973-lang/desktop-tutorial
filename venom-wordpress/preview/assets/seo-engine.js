@@ -1,6 +1,9 @@
 /*!
  * VENOM SEO Engine — 독립 실행형 SEO 진단 엔진 (의존성 0)
- * 평가 기준: Google SEO 시작 가이드 + 네이버 서치어드바이저 가이드
+ * 평가 기준(1차): Google Search Central(SEO 시작 가이드·helpful content·page experience)
+ *               + Google PageSpeed Insights / Lighthouse(Core Web Vitals 공식 임계값)
+ * 평가 기준(2차): 네이버 서치어드바이저 가이드
+ * ※ 순위 보장 아님 — 1차 데이터는 Google Search Console 확인 권장
  *
  * 사용법 (브라우저):
  *   const result = SEOEngine.analyze({ url, html, robots, isHttps });
@@ -22,7 +25,25 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.4.0';
+  var VERSION = '1.5.0';
+
+  // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
+  //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
+  //   CLS: good ≤ 0.10 · needs-improvement ≤ 0.25 · poor > 0.25   (단위 없음)
+  //   INP: good ≤ 200ms · needs-improvement ≤ 500ms · poor > 500ms (ms, 2024년 FID 대체)
+  var CWV_THRESHOLDS = {
+    LCP: { good: 2.5, ni: 4.0, unit: 's' },
+    CLS: { good: 0.10, ni: 0.25, unit: '' },
+    INP: { good: 200, ni: 500, unit: 'ms' }
+  };
+  // 측정값을 Google 공식 3구간(good / needs-improvement / poor)으로 분류. 값 없으면 'unknown'.
+  function cwvClassify(metric, value) {
+    var t = CWV_THRESHOLDS[String(metric || '').toUpperCase()];
+    if (!t || value == null || isNaN(value)) return 'unknown';
+    if (value <= t.good) return 'good';
+    if (value <= t.ni) return 'needs-improvement';
+    return 'poor';
+  }
 
   // ── robots.txt 표준 파서 (RFC 9309) ─────────────────────────────
   // 지정 UA(또는 *)가 루트('/') 접근 가능한지. 충돌 시 least-restrictive(Allow 우선).
@@ -194,37 +215,44 @@
     // JS로 흔히 주입되는 신호: 정적에 있으면 pass, 없으면 renderSuspect일 때 pending(null), 아니면 fail
     var jsItem = function (v) { return v === true ? true : (renderSuspect ? null : false); };
 
+    // ── 배점(Google 우선순위 반영) ───────────────────────────────
+    // Google Search Central(SEO 시작 가이드·helpful content·page experience)의 문서화된 우선순위에
+    // 맞춰 배점: ①기술 기반(크롤/색인/모바일/HTTPS/canonical)과 ②핵심 콘텐츠 신호(title·description·
+    // H1·alt·내부링크·URL)를 가장 무겁게, ③리치결과·공유용 '보너스' 신호는 낮게. 속도(CWV)는
+    // 별도 게이지(PSI 실측)로 분리한다. 종합 배점 합계 = 100(콘텐츠42 + 기술42 + 검색16).
     var checks = {
       content: [
-        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 10, jsItem(titlePass), '공통'],
-        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 10, jsItem(descPass), '공통'],
-        ['H1 대표 제목', h1Note, 6, jsItem(h1Pass), '네이버'],
-        ['이미지 ALT 텍스트', '이미지 대체 텍스트 (' + imgDesc + ')', 7, imgAltOk, '공통'],
-        ['의미있는 링크 텍스트', '서술형 앵커 — "여기 클릭" 류 지양', 5, linkTextOk, 'Google'],
+        ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 12, jsItem(titlePass), 'Google'],
+        ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 8, jsItem(descPass), 'Google'],
+        ['H1 대표 제목', h1Note, 6, jsItem(h1Pass), '공통'],
+        ['이미지 ALT 텍스트', '이미지 대체 텍스트 (' + imgDesc + ')', 6, imgAltOk, 'Google'],
+        ['의미있는 링크 텍스트', '서술형 앵커·내부링크 — "여기 클릭" 류 지양', 6, linkTextOk, 'Google'],
         ['서술형 URL', 'URL에 의미있는 단어 — ' + urlNote, 4, urlOk, 'Google']
       ],
       tech: [
-        ['HTTPS 보안 연결', 'SSL 적용 — Google·네이버 모두 신뢰 신호', 6, isHttps, '공통'],
-        ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함', 7, crawlOk, '공통'],
-        ['인덱싱 허용', 'meta robots noindex 미설정', 6, notNoindex, '공통'],
-        ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 6, !!canonical, '공통'],
-        ['Viewport(모바일)', '모바일 반응형 메타 — 모바일 우선 인덱싱', 4, hasViewport, '공통'],
-        ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 4, !!lang, 'Google']
+        ['HTTPS 보안 연결', 'SSL 적용 — Google page experience 신뢰 신호', 8, isHttps, 'Google'],
+        ['검색로봇 수집 허용', 'robots.txt가 Googlebot·Yeti 차단 안 함 — 크롤 가능성', 9, crawlOk, 'Google'],
+        ['인덱싱 허용', 'meta robots noindex 미설정 — 색인 가능성', 8, notNoindex, 'Google'],
+        ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 6, !!canonical, 'Google'],
+        ['Viewport(모바일)', '모바일 반응형 메타 — 모바일 우선 인덱싱', 8, hasViewport, 'Google'],
+        ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 3, !!lang, 'Google']
       ],
-      // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. Google SEO 점수·경쟁사가
-      // 채점하지 않고 PSI(Lighthouse SEO)로도 검증 불가하므로 비중을 낮춘다(감점 완화).
+      // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. 구조화 데이터는 Google이 페이지 이해·
+      // 리치결과에 활용하므로 비중을 올리고(5), 나머지 공유·보조 신호는 낮게 유지한다.
       search: [
-        ['구조화 데이터', 'Schema.org JSON-LD — 리치결과 노출(보너스)', 3, jsItem(hasLd), 'Google'],
-        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 3, jsItem(ogOk), '네이버'],
+        ['구조화 데이터', 'Schema.org JSON-LD — Google 페이지 이해·리치결과', 5, jsItem(hasLd), 'Google'],
+        ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 2, jsItem(ogOk), '네이버'],
         ['sitemap.xml 선언', 'robots.txt에 Sitemap: 선언 — 수집 촉진', 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
         ['robots.txt 존재', '크롤러 수집 규칙 파일 제공', 3, robotsTxtOk, '공통']
       ],
+      // 속도(Core Web Vitals) = Google PageSpeed Insights / Lighthouse 실측 전용. PSI 없이는
+      // 절대 점수를 만들지 않고 pending(정밀 필요) 유지. 배점 합계 10(성능4·LCP3·CLS2·INP1).
       speed: [
-        ['성능 점수', 'Google Lighthouse 성능 점수 (정밀 분석 시 측정)', 3, null, 'Google'],
-        ['텍스트 압축', 'gzip/brotli 압축 적용 여부', 3, null, 'Google'],
-        ['이미지 최적화', 'WebP 형식·지연 로딩 적용 여부', 2, null, 'Google'],
-        ['렌더링 최적화', 'CSS·JS 렌더링 차단 최소화', 2, null, 'Google']
+        ['성능 점수(Lighthouse)', 'Google Lighthouse 성능 — 정밀 분석(PSI) 시 측정', 4, null, 'Google'],
+        ['LCP · 최대 콘텐츠 렌더', 'Google 기준 ≤2.5s 양호 — PSI 현장데이터 측정', 3, null, 'Google'],
+        ['CLS · 누적 레이아웃 이동', 'Google 기준 ≤0.10 양호 — PSI 측정', 2, null, 'Google'],
+        ['INP · 상호작용 반응성', 'Google 기준 ≤200ms 양호(2024 FID 대체) — PSI 측정', 1, null, 'Google']
       ]
     };
 
@@ -237,7 +265,7 @@
     { key: 'content', label: '콘텐츠 & 메타', icon: '📝', color: '#533afd' },
     { key: 'tech', label: '기술·크롤링', icon: '⚙️', color: '#06b6d4' },
     { key: 'search', label: '검색 노출 강화', icon: '🔍', color: '#8b5cf6' },
-    { key: 'speed', label: '속도 최적화', icon: '⚡', color: '#f59e0b' }
+    { key: 'speed', label: '속도(CWV)', icon: '⚡', color: '#f59e0b' }
   ];
 
   function gradeFor(total, max) {
@@ -304,24 +332,46 @@
     var audits = (psiJson.lighthouseResult && psiJson.lighthouseResult.audits) || {};
     var cats = (psiJson.lighthouseResult && psiJson.lighthouseResult.categories) || {};
     function pass(id) { var a = audits[id]; return !!(a && (a.score === 1 || a.score === null)); }
+    function labNum(id) { var a = audits[id]; return (a && typeof a.numericValue === 'number') ? a.numericValue : null; }
     var perf = Math.round((cats.performance ? cats.performance.score : 0) * 100);
-    var speedItems = [
-      ['성능 점수', 'Google Lighthouse 성능: ' + perf + '/100', 3, perf >= 90, 'Google'],
-      ['텍스트 압축', 'gzip/brotli 압축 적용 여부', 3, pass('uses-text-compression'), 'Google'],
-      ['이미지 최적화', 'WebP 형식·지연 로딩 적용 여부', 2, pass('uses-webp-images'), 'Google'],
-      ['렌더링 최적화', 'CSS·JS 렌더링 차단 최소화', 2, pass('render-blocking-resources'), 'Google']
-    ];
+
+    // Core Web Vitals — CrUX 현장데이터 우선, 없으면 Lighthouse 랩(lab) 값으로 보정.
     var le = psiJson.loadingExperience, ole = psiJson.originLoadingExperience;
     var crux = null, src = (le && le.metrics) ? le : (ole && ole.metrics) ? ole : null;
     if (src) {
-      var lcp = src.metrics.LARGEST_CONTENTFUL_PAINT_MS, cls = src.metrics.CUMULATIVE_LAYOUT_SHIFT_SCORE;
+      var lcp = src.metrics.LARGEST_CONTENTFUL_PAINT_MS,
+          cls = src.metrics.CUMULATIVE_LAYOUT_SHIFT_SCORE,
+          inp = src.metrics.INTERACTION_TO_NEXT_PAINT;
+      var lcpSecF = lcp ? +(lcp.percentile / 1000).toFixed(2) : null;   // ms → s
+      var clsValF = cls ? +(cls.percentile / 100).toFixed(3) : null;    // CrUX는 ×100
+      var inpMsF = inp ? inp.percentile : null;                          // ms
       crux = {
         origin: !(le && le.metrics),
-        lcp: lcp ? { sec: +(lcp.percentile / 1000).toFixed(2), cat: lcp.category } : null,
-        cls: cls ? { val: +(cls.percentile / 100).toFixed(3), cat: cls.category } : null,
+        // 카테고리는 Google 공식 임계값(cwvClassify)으로 직접 산출 — good/needs-improvement/poor
+        lcp: lcpSecF != null ? { sec: lcpSecF, cat: cwvClassify('LCP', lcpSecF) } : null,
+        cls: clsValF != null ? { val: clsValF, cat: cwvClassify('CLS', clsValF) } : null,
+        inp: inpMsF != null ? { ms: inpMsF, cat: cwvClassify('INP', inpMsF) } : null,
         overall: src.overall_category || ''
       };
     }
+    // CWV 채점값(현장 → 랩 폴백). good만 통과(true), ni/poor는 미흡(false), 값 자체 없으면 랩 프록시.
+    var lcpSec = (crux && crux.lcp) ? crux.lcp.sec : (labNum('largest-contentful-paint') != null ? +(labNum('largest-contentful-paint') / 1000).toFixed(2) : null);
+    var clsVal = (crux && crux.cls) ? crux.cls.val : (labNum('cumulative-layout-shift') != null ? +labNum('cumulative-layout-shift').toFixed(3) : null);
+    var inpMs = (crux && crux.inp) ? crux.inp.ms : null;
+    var lcpCat = cwvClassify('LCP', lcpSec), clsCat = cwvClassify('CLS', clsVal), inpCat = cwvClassify('INP', inpMs);
+    function cwvPass(cat) { return cat === 'good' ? true : (cat === 'unknown' ? null : false); }
+    // INP는 CrUX 현장데이터에만 존재 — 없으면 Lighthouse 랩 프록시(TBT: Total Blocking Time)로 대체.
+    var tbt = audits['total-blocking-time'];
+    var inpPass = (inpMs != null) ? cwvPass(inpCat) : (tbt ? (tbt.score != null ? tbt.score >= 0.9 : null) : null);
+    var lcpNote = lcpSec != null ? ('현재 ' + lcpSec + 's (' + lcpCat + ')') : '데이터 없음';
+    var clsNote = clsVal != null ? ('현재 ' + clsVal + ' (' + clsCat + ')') : '데이터 없음';
+    var inpNote = inpMs != null ? ('현재 ' + inpMs + 'ms (' + inpCat + ')') : (tbt ? 'CrUX 현장데이터 없음 · 랩(TBT) 프록시' : '데이터 없음');
+    var speedItems = [
+      ['성능 점수(Lighthouse)', 'Google Lighthouse 성능: ' + perf + '/100 (≥90 통과)', 4, perf >= 90, 'Google'],
+      ['LCP · 최대 콘텐츠 렌더', 'Google 기준 ≤2.5s 양호 — ' + lcpNote, 3, cwvPass(lcpCat), 'Google'],
+      ['CLS · 누적 레이아웃 이동', 'Google 기준 ≤0.10 양호 — ' + clsNote, 2, cwvPass(clsCat), 'Google'],
+      ['INP · 상호작용 반응성', 'Google 기준 ≤200ms 양호(2024 FID 대체) — ' + inpNote, 1, inpPass, 'Google']
+    ];
     // PSI(Lighthouse)는 실제 브라우저로 렌더링하므로, 정적 수집이 놓친 항목을 렌더링 기준으로 보정한다.
     // (경쟁사 NXT가 높은 점수를 주는 이유 = JS 렌더 후 평가. score===1 통과, 0 실패, 그 외=정적 유지)
     function seoAudit(id) { var a = audits[id]; if (!a) return undefined; return a.score === 1 ? true : (a.score === 0 ? false : undefined); }
@@ -421,9 +471,10 @@
       if (p.crux) {
         var cx = p.crux;
         psiBadges += '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px 14px;margin-top:10px;font-size:12px;color:#166534">' +
-          '📊 실제 사용자 현장 데이터(CrUX' + (cx.origin ? ' · 도메인 누적' : '') + ') ' +
+          '📊 실제 사용자 현장 데이터(CrUX' + (cx.origin ? ' · 도메인 누적' : '') + ') · Google 공식 임계값 ' +
           (cx.lcp ? 'LCP <strong>' + cx.lcp.sec + 's (' + cx.lcp.cat + ')</strong> ' : '') +
-          (cx.cls ? '· CLS <strong>' + cx.cls.val + ' (' + cx.cls.cat + ')</strong>' : '') + '</div>';
+          (cx.cls ? '· CLS <strong>' + cx.cls.val + ' (' + cx.cls.cat + ')</strong> ' : '') +
+          (cx.inp ? '· INP <strong>' + cx.inp.ms + 'ms (' + cx.inp.cat + ')</strong>' : '') + '</div>';
       }
     }
 
@@ -469,8 +520,10 @@
       table +
       renderItems(result) +
       '<div style="background:#f4f6fa;border:1px solid #e3e8ee;border-radius:10px;padding:9px 13px;margin-top:14px;font-size:11px;color:#64748b;line-height:1.7">' +
-        '📚 평가 기준: <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=ko" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">Google SEO 가이드</a> · ' +
-        '<a href="https://searchadvisor.naver.com/guide" target="_blank" rel="noopener" style="color:#03C75A;font-weight:700">네이버 서치어드바이저</a> 기반 · 순위 보장 아님, 1차 데이터는 Search Console 확인 권장' +
+        '📚 평가 기준(1차): <a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=ko" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">Google Search Central</a> + ' +
+        '<a href="https://pagespeed.web.dev/" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">PageSpeed Insights(Lighthouse)</a> · ' +
+        '2차: <a href="https://searchadvisor.naver.com/guide" target="_blank" rel="noopener" style="color:#03C75A;font-weight:700">네이버 서치어드바이저</a> · ' +
+        '속도는 Google Core Web Vitals 공식 임계값(LCP≤2.5s·CLS≤0.10·INP≤200ms) 기준 · 순위 보장 아님, 1차 데이터는 Search Console 확인 권장' +
       '</div></div>';
   }
 
@@ -539,6 +592,8 @@
     version: VERSION,
     analyze: analyze,
     mergePSI: mergePSI,
+    cwvClassify: cwvClassify,
+    CWV_THRESHOLDS: CWV_THRESHOLDS,
     robotsAllows: robotsAllows,
     renderInfographic: renderInfographic,
     buildReportHTML: buildReportHTML,
