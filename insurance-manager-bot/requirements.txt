@@ -9,3 +9,7 @@ keyring>=24          # 로그인 자격증명 OS 보안 저장소
 pytesseract>=0.3.10  # 이미지 OCR(온디바이스). 시스템 tesseract-ocr(+kor) 필요
 Pillow>=10.0         # OCR 이미지 로딩/전처리
 # 배포(선택): pyinstaller  → packaging/build_windows.md 참고
+# 원스톱 웹앱(webapp/)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
