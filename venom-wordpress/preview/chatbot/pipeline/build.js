@@ -336,6 +336,17 @@ function main() {
 
   console.log('✅ 데이터 파이프라인 빌드 완료');
   console.log(JSON.stringify(manifest.outputs, null, 2));
+
+  // 빌드 게이트: 골드 회귀 검사(기대 근거가 검색 상위에 포함되는지) 자동 실행.
+  // 실패하면 비정상 종료 → 근거 누락 상태의 KB가 조용히 배포되는 것을 차단.
+  try {
+    const { execFileSync } = require('child_process');
+    console.log('\n── 골드 회귀 검사 ──');
+    execFileSync(process.execPath, [path.join(__dirname, 'audit-gold.js')], { stdio: 'inherit' });
+  } catch (e) {
+    console.error('❌ 골드 회귀 검사 실패 — 위 실패 케이스의 근거·동의어·검색을 보강하세요.');
+    process.exit(1);
+  }
 }
 
 main();
