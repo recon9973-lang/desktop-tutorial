@@ -1709,12 +1709,19 @@ body{padding-top:0}
         <p>환자들이 실제로 묻는 질문 5가지를 <b>실제 AI 검색엔진들</b>에 던져, 엔진별·질문별 노출 여부를 한 표로 보여드립니다.</p>
       </div>
       <div class="mtx-form">
-        <input type="text" id="mtx-name" placeholder="병원명 (예: 베놈치과)" autocomplete="off">
+        <input type="text" id="mtx-name" placeholder="상호·병원명 (예: 베놈치과)" autocomplete="off">
         <input type="text" id="mtx-region" placeholder="지역 (예: 강남)" autocomplete="off">
-        <select id="mtx-cat" aria-label="진료과">
-          <option value="">진료과</option>
-          <option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>내과</option><option>안과</option>
+        <select id="mtx-cat" aria-label="업종" onchange="_mtxCatToggle()">
+          <option value="">업종 선택</option>
+          <optgroup label="병원·의료">
+            <option>치과</option><option>피부과</option><option>정형외과</option><option>한의원</option><option>성형외과</option><option>내과</option><option>안과</option>
+          </optgroup>
+          <optgroup label="기타 업종">
+            <option>학원·교육</option><option>헬스장·PT</option><option>카페·음식점</option><option>법률·세무</option><option>부동산</option><option>미용실·뷰티</option>
+          </optgroup>
+          <option value="__custom__">＋ 기타 (직접 입력)</option>
         </select>
+        <input type="text" id="mtx-cat-custom" placeholder="업종 직접 입력 (예: 반려동물 병원)" autocomplete="off" style="display:none">
         <button class="mtx-btn" id="mtx-btn" onclick="runAiMatrix()">실측 시작 →</button>
       </div>
       <p class="mtx-note">엔진 수 × 질문 5개를 순차 실측합니다 (약 30~60초). AI 답변은 시점에 따라 달라질 수 있습니다.</p>
@@ -5716,15 +5723,21 @@ function _mtxQuestions(name, region, cat){
     rc + ' 어디가 좋아?',
     rc + ' 비용 합리적인 곳 알려줘',
     name + ' 어때? 믿을 만한 곳이야?',
-    (region ? region + '에서 ' : '') + cat + ' 후기 좋은 병원 알려줘'
+    (region ? region + '에서 ' : '') + cat + ' 후기 좋은 곳 알려줘'
   ];
+}
+// 업종 셀렉트에서 '기타(직접 입력)' 선택 시 자유 입력칸 노출
+function _mtxCatToggle(){
+  var s=document.getElementById('mtx-cat'), c=document.getElementById('mtx-cat-custom');
+  if(!s||!c)return; var on=(s.value==='__custom__'); c.style.display=on?'':'none'; if(on)c.focus();
 }
 function runAiMatrix(){
   var name = document.getElementById('mtx-name').value.trim();
   var region = document.getElementById('mtx-region').value.trim();
-  var cat = document.getElementById('mtx-cat').value;
-  if(!name){ alert('병원명을 입력해주세요'); return; }
-  if(!cat){ alert('진료과를 선택해주세요'); return; }
+  var catSel = document.getElementById('mtx-cat').value;
+  var cat = (catSel==='__custom__') ? (document.getElementById('mtx-cat-custom').value.trim()) : catSel;
+  if(!name){ alert('상호(병원명)를 입력해주세요'); return; }
+  if(!cat){ alert('업종을 선택하거나 직접 입력해주세요'); return; }
   var btn = document.getElementById('mtx-btn');
   btn.disabled = true; btn.textContent = '실측 중…';
   var out = document.getElementById('mtx-out');
