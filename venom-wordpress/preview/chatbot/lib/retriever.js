@@ -100,10 +100,14 @@ function retrieve(query, topK = 4, queryVector = null) {
   const cand = new Set([...kw.keys(), ...vecById.keys()]);
   const maxKw = Math.max(1, ...kw.values());
   const scored = [...cand].map(id => {
+    const chunk = _byId.get(id);
     const k = (kw.get(id) || 0) / maxKw;         // 0~1 정규화
     const v = vecById.get(id) || 0;               // 코사인 0~1
-    const score = vecById.size ? (0.6 * k + 0.4 * v) : k;
-    return { chunk: _byId.get(id), score, kw: kw.get(id) || 0, vec: v };
+    let score = vecById.size ? (0.6 * k + 0.4 * v) : k;
+    // 리랭킹: 근거조항을 보유한 청크(법령·사례집)를 30% 상향 → 근거 인용 정밀도 회복.
+    // (협회 FAQ 등 근거태그 없는 청크가 법령 질의에서 사례집을 밀어내는 문제 보정)
+    if (chunk && chunk.legalRefs && chunk.legalRefs.length) score *= 1.3;
+    return { chunk, score, kw: kw.get(id) || 0, vec: v };
   }).filter(x => x.chunk);
 
   return scored
