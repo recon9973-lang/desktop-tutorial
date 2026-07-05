@@ -59,9 +59,11 @@ module.exports = async function handler(req, res) {
 
     let saved = false, saveNote;
     if (save && result.status === 'ok') {
-      const secret = process.env.ADMIN_SECRET;
-      const auth = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
-      if (secret && auth !== secret) return res.status(401).json({ error: 'save에는 ADMIN_SECRET 필요' });
+      const secret = process.env.ADMIN_SECRET || process.env.CRON_SECRET;
+      // 인증: Bearer 헤더 또는 ?token= 쿼리(브라우저 편의). CRON_SECRET도 허용(향후 크론 자동 갱신).
+      const provided = (req.headers['authorization'] || '').replace('Bearer ', '').trim() || (req.query && req.query.token) || '';
+      const ok = !secret || provided === process.env.ADMIN_SECRET || (process.env.CRON_SECRET && provided === process.env.CRON_SECRET);
+      if (!ok) return res.status(401).json({ error: 'save 인증 필요: ?save=1&token=<ADMIN_SECRET> 또는 Bearer 헤더' });
       if (!process.env.GITHUB_TOKEN) { saveNote = 'GITHUB_TOKEN 미설정 — 저장 생략'; }
       else {
         const doc = { updated: new Date().toISOString(), status: 'ok', source: 'law.go.kr DRF', mst: result.mst, statutes: result.statutes };
