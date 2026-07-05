@@ -77,8 +77,10 @@ module.exports = async function handler(req, res) {
     return res.status(result.status === 'ok' ? 200 : 502).json({
       status: result.status,
       reason: result.reason,
+      mst: result.mst,
       count: result.statutes.length,
       articles: result.statutes.map(s => ({ article: s.article, title: s.title, preview: s.text.slice(0, 120) + (s.text.length > 120 ? '…' : '') })),
+      ...(result.debug ? { debug: result.debug } : {}),
       saved, saveNote,
       hint: result.status === 'ok'
         ? (save ? '저장됨 → node pipeline/build.js 재빌드로 지식베이스 통합' : '?save=1 로 저장 가능(ADMIN_SECRET 필요 시 Bearer)')
