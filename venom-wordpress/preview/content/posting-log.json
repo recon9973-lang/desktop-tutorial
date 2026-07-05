@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783229608475",
+    "title": "대구 성형외과 마케팅 전략 TOP 5: 시술·브랜딩·회복",
+    "tokenUsage": {
+      "promptTokens": 2610,
+      "completionTokens": 2091,
+      "totalTokens": 4701,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-05T05:35:30.167Z"
+  },
+  {
     "action": "cron-en-fail",
     "id": "auto_1783229608475",
     "error": "translate timeout",
