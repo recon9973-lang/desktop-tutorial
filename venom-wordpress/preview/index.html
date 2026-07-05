@@ -7700,7 +7700,7 @@ function openBlogPost(id, pushState) {
     // 정적 글: 폴더 사진 figure 제거 후 AI 변형 히어로 1장 삽입(폴더 사진 원본 노출 방지)
     if (_AI_HERO[id]) {
       rawHtml = rawHtml.replace(/<figure[^>]*>[\s\S]*?<\/figure>/gi, '');
-      var _heroImg = '<figure class="bp-hero" style="margin:20px 0 28px;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px -22px rgba(13,37,61,.35)"><img src="' + _AI_HERO[id] + '" alt="' + (post.title || '') + '" loading="lazy" style="width:100%;height:auto;display:block" onerror="var f=this.closest(\'figure\');if(f)f.remove()"></figure>';
+      var _heroImg = '<figure class="bp-hero" style="margin:20px 0 28px;border-radius:16px;overflow:hidden;aspect-ratio:16/9;box-shadow:0 10px 30px -22px rgba(13,37,61,.35)"><img src="' + _AI_HERO[id] + '" alt="' + (post.title || '') + '" loading="lazy" style="width:100%;height:100%;display:block;object-fit:cover;object-position:50% 28%" onerror="var f=this.closest(\'figure\');if(f)f.remove()"></figure>';
       if (/<\/h1>/i.test(rawHtml)) rawHtml = rawHtml.replace(/<\/h1>/i, '</h1>' + _heroImg);
       else rawHtml = _heroImg + rawHtml;
     }
