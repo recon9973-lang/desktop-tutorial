@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1783278475683",
+    "title": "대전 병원마케팅의 성공을 위한 5가지 필수 전략",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 2005,
+      "totalTokens": 4603,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T19:09:17.235Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783248696841",
     "title": "대전 병원마케팅 5가지 핵심 전략과 실행 방안",
     "tokenUsage": {
