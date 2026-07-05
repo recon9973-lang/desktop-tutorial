@@ -8807,7 +8807,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   @media(max-width:860px){
     .mbot{display:block}
     body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
-    #btt{bottom:84px!important}
+    #btt{bottom:84px!important;left:16px;right:auto!important} /* 모바일: 좌하단으로 이동 — 우측 정렬된 도구 버튼(조회·분석 등)과 겹침 방지 */
   }
   @media (prefers-reduced-motion:reduce){.mbot{transition:none}}
 </style>
