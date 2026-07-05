@@ -1,0 +1,13 @@
+{
+  "updated": "2026-07-05T15:47:34.199Z",
+  "total": 190000,
+  "target": 190000,
+  "byOrigin": {
+    "law": 100000,
+    "synthetic": 90000
+  },
+  "lawTarget": 100000,
+  "synthTarget": 90000,
+  "holdout": 3800,
+  "note": "전체 질문은 questions-full.jsonl(대용량, 배포 제외). 결정론적 생성기로 재현."
+}
