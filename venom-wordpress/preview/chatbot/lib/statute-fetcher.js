@@ -52,15 +52,14 @@ function lawNameOf(body) {
 }
 
 // lawSearch 결과에서 '의료법' 정확 일치 MST. 없으면 '' (엉뚱한 폴백 금지).
+// 주의: 결과 태그는 <law id="1"> 처럼 속성이 붙는다 → <law\b[^>]*> 로 매칭.
 function selectMst(searchBody) {
-  const blocks = searchBody.match(/<law>[\s\S]*?<\/law>/g) || [];
-  for (const b of blocks) {
-    if (lawNameOf(b) === '의료법') {
-      const m = pick(/<법령일련번호>(\d+)<\/법령일련번호>/, b);
-      if (m) return m;
-    }
-  }
-  return '';
+  const blocks = searchBody.match(/<law\b[^>]*>[\s\S]*?<\/law>/g) || [];
+  const matches = blocks.filter(b => lawNameOf(b) === '의료법');
+  if (!matches.length) return '';
+  // 현행본 우선(연혁본 배제)
+  const current = matches.find(b => /현행/.test(pick(/<현행연혁코드>([\s\S]*?)<\/현행연혁코드>/, b)));
+  return pick(/<법령일련번호>(\d+)<\/법령일련번호>/, current || matches[0]);
 }
 
 function labelOf(no, branch) {
