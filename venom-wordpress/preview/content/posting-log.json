@@ -1,6 +1,21 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1783278591090",
+    "title": "대구 병원 마케팅 필수 가이드: GEO/AEO와 AI 활용 5가지",
+    "tokenUsage": {
+      "promptTokens": 2612,
+      "completionTokens": 2244,
+      "totalTokens": 4856,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at ae03cc8c4e87fc2e46b21e392bc1858105de1e0f but expected bc90b263e1a8dbd70c15fda8162e1f2986d181a7",
+    "autoFixed": false,
+    "ts": "2026-07-05T19:11:18.576Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783278475683",
     "title": "대전 병원마케팅의 성공을 위한 5가지 필수 전략",
     "tokenUsage": {
