@@ -130,8 +130,8 @@
   --s2:rgba(0,55,112,.08) 0 8px 24px,rgba(0,55,112,.04) 0 2px 6px;
   --header:64px;--mw:1200px;--lw:228px;--rw:208px;
 }
-html{scroll-behavior:smooth;font-size:16px;word-break:keep-all;word-wrap:break-word;overflow-x:clip}
-body{overflow-x:clip;zoom:var(--zoom, 1.1)} /* 사이트 전체 가독성 확대(뉴스 기사 수준). px 인라인 크기까지 균일 확대 */
+html{scroll-behavior:smooth;font-size:17px;word-break:keep-all;word-wrap:break-word;overflow-x:clip}
+body{overflow-x:clip} /* 가독성: html 기본 폰트를 17px로(레이아웃/고정요소 안전). zoom은 모바일 고정바·가로overflow 깨져 제거 */
 body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',system-ui,-apple-system,sans-serif;
   font-weight:400;color:var(--ink);background:#fff;line-height:1.6;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -4851,7 +4851,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 .tool-input-wrap{display:flex;gap:0;background:#fff;border:1.5px solid var(--border);
   border-radius:var(--r12);overflow:hidden;box-shadow:var(--s2);transition:.2s}
 .tool-input-wrap:focus-within{border-color:var(--p);box-shadow:0 0 0 3px rgba(83,58,253,.12),var(--s2)}
-.tool-input{flex:1;border:none;outline:none;padding:16px 20px;font-size:15px;
+.tool-input{flex:1;min-width:0;border:none;outline:none;padding:16px 20px;font-size:15px;
   color:var(--ink);font-family:inherit;background:transparent}
 .tool-input::placeholder{color:var(--mute)}
 .tool-btn{background:var(--p);color:#fff;border:none;padding:16px 28px;
