@@ -1689,7 +1689,8 @@ body{padding-top:0}
       .mtx-btn{padding:13px 24px;background:linear-gradient(135deg,#7c6cfd,#533afd);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap}
       .mtx-btn:disabled{opacity:.6;cursor:wait}
       .mtx-note{font-size:11.5px;color:var(--mute);text-align:center;margin:8px 0 0}
-      .mtx-table-wrap{overflow-x:auto;margin-top:22px}
+      .mtx-table-wrap{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;max-width:100%;margin-top:22px}
+      #mtx-out{max-width:100%;min-width:0;overflow-x:hidden}
       .mtx-table{width:100%;border-collapse:separate;border-spacing:4px;min-width:520px}
       .mtx-table th{font-size:12px;font-weight:700;color:var(--ink2);padding:8px 6px;text-align:center}
       .mtx-table th.q{text-align:left;font-weight:600;color:var(--ink2);max-width:280px;font-size:12.5px;line-height:1.45}
@@ -4876,7 +4877,8 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 .tool-btn-round{border-radius:10px}
 @media(max-width:760px){.tool-grid{grid-template-columns:1fr}}
 .tool-result{margin-top:28px;background:#fff;border:1px solid var(--border);
-  border-radius:var(--r12);padding:28px;box-shadow:var(--s1)}
+  border-radius:var(--r12);padding:28px;box-shadow:var(--s1);
+  max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;word-break:break-word}
 .tr-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:16px}
 .tr-score-wrap{display:flex;align-items:center;gap:20px;margin-bottom:20px}
 .tr-score-num{font-size:56px;font-weight:800;color:var(--p);line-height:1;letter-spacing:-0.03em}
@@ -8056,8 +8058,49 @@ var _BLOG_CAT_THUMB = {
   '의료기기':'/images/dept/medical_device.webp',
   'GEO/AI':'/images/office.webp','SEO':'/images/office.webp','AEO':'/images/office.webp','전략':'/images/office.webp','지역마케팅':'/images/office.webp'
 };
+// 실사진 풀: 카테고리별 다수의 실제 사진으로 카드 썸네일을 분산해 동일 이미지 반복을 방지.
+// (기존엔 카테고리당 단일 폴백 이미지로 수렴하거나 AI 생성 이미지가 서로 비슷해 그리드가 반복적으로 보였음)
+function _photoSeq(dir, prefix, n) {
+  var a = []; for (var i = 1; i <= n; i++) { a.push('/images/photos/' + dir + '/' + prefix + (i < 10 ? '0' + i : i) + '.webp'); } return a;
+}
+var _BLOG_PHOTO_POOL = {
+  '치과': _photoSeq('dental', 'dental', 51),
+  '피부과': _photoSeq('skin', 'skin', 40),
+  '정형외과': _photoSeq('ortho', 'ortho', 45),
+  '한의원': _photoSeq('oriental', 'oriental', 35),
+  '성형외과': _photoSeq('plastic', 'plastic', 29),
+  '내과': _photoSeq('naegwa', 'naegwa', 18),
+  '안과': _photoSeq('eye', 'eye', 32),
+  'GEO/AI': _photoSeq('misc', 'misc', 48),
+  'SEO': _photoSeq('misc', 'misc', 48),
+  'AEO': _photoSeq('misc', 'misc', 48),
+  '전략': _photoSeq('misc', 'misc', 48),
+  '지역마케팅': _photoSeq('misc', 'misc', 48),
+  '의료광고심의': _photoSeq('misc', 'misc', 48)
+};
+function _hashStr(s) { s = String(s); var h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return h; }
+// 글 id → 배정된 실사진(섹션 내 서로 다른 파일 보장). 렌더 전에 _assignBlogThumbs로 채움.
+var _thumbAssign = {};
+function _assignBlogThumbs(posts) {
+  var groups = {};
+  posts.forEach(function(p) { var lb = BLOG_CAT_LABEL[p.cat] || p.cat; (groups[lb] = groups[lb] || []).push(p); });
+  _thumbAssign = {};
+  Object.keys(groups).forEach(function(lb) {
+    var pool = _BLOG_PHOTO_POOL[lb]; if (!pool || !pool.length) return;
+    // id 기준 안정 정렬 후 순차 배정 → 같은 섹션 내에서는 서로 다른 파일(그룹 크기 < 풀 크기)
+    var list = groups[lb].slice().sort(function(a, b) { return String(a.id) < String(b.id) ? -1 : 1; });
+    var off = _hashStr(lb) % pool.length; // 섹션마다 시작 오프셋을 달리해 섹션 간 겹침도 최소화
+    list.forEach(function(p, idx) { _thumbAssign[p.id] = pool[(off + idx) % pool.length]; });
+  });
+}
 // 글의 대표 썸네일 결정 (목록 카드·섹션 카드·배너 공용)
 function _postThumbOf(p) {
+  // ① 카테고리 실사진 풀이 있으면 배정된(또는 해시로 분산된) 실사진 사용 — 반복 이미지 제거
+  var lb0 = BLOG_CAT_LABEL[p.cat] || p.cat;
+  var pool = _BLOG_PHOTO_POOL[lb0];
+  if (pool && pool.length) {
+    return { src: _thumbAssign[p.id] || pool[_hashStr(p.id) % pool.length], fb: '' };
+  }
   var thumb = (p.images && p.images[0]) || p.image || p.thumb || _postImgById[p.id] || '';
   if (!thumb && p.html) { var m = String(p.html).match(/<img[^>]+src="([^"]+)"/); if (m) thumb = m[1]; }
   if (!thumb) { var lb = BLOG_CAT_LABEL[p.cat] || p.cat; thumb = _BLOG_CAT_THUMB[p.cat] || _BLOG_CAT_THUMB[lb] || ''; }
@@ -8081,6 +8124,7 @@ function renderBlogSections() {
   var wrap = document.getElementById('blog-sections');
   if (!wrap) return;
   var all = _allBlogPosts();
+  _assignBlogThumbs(all);
   var groups = {};
   all.forEach(function(p) {
     var lb = BLOG_CAT_LABEL[p.cat] || p.cat;
@@ -8102,6 +8146,7 @@ var _bbanTimer = null;
 function renderBlogBanner() {
   var el = document.getElementById('blog-banner');
   if (!el) return;
+  _assignBlogThumbs(_allBlogPosts());
   var latest = _allBlogPosts().slice(0, 3);
   if (!latest.length) { el.innerHTML = ''; return; }
   el.innerHTML = '<div class="bban">' + latest.map(function(p, i) {
@@ -8126,14 +8171,9 @@ function renderBlogBanner() {
 function _buildBlogCard(p) {
   var label = BLOG_CAT_LABEL[p.cat] || p.cat;
   var imgClass = p.bg ? 'class="blog-img ' + p.bg + '"' : 'class="blog-img" style="background:' + (p.bgStyle || ADMIN_CAT_BG[p.cat] || 'linear-gradient(135deg,var(--p),var(--bd))') + '"';
-  // 썸네일: ① 글 내부 이미지 ② html 본문 첫 <img> ③ 카테고리 실사진
-  var thumb = (p.images && p.images[0]) || p.image || p.thumb || _postImgById[p.id] || '';
-  // raw.githubusercontent 경유 제거: 사이트 내 /content/images/*.webp로 재작성(onerror 시 jpg)
-  var _tm = thumb && thumb.match(/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"?]+?)(\.(?:jpg|jpeg|png))?$/i);
-  var thumbFb = '';
-  if (_tm) { thumbFb = _tm[1] + (_tm[2] || '.jpg'); thumb = _tm[1] + '.webp'; }
-  if (!thumb && p.html) { var m = String(p.html).match(/<img[^>]+src="([^"]+)"/); if (m) thumb = m[1]; }
-  if (!thumb) thumb = _BLOG_CAT_THUMB[p.cat] || _BLOG_CAT_THUMB[label] || '';
+  // 썸네일: 카테고리 실사진 풀에서 분산 배정(반복 방지) → 폴백은 공용 리졸버가 처리
+  var _tt = _postThumbOf(p);
+  var thumb = _tt.src, thumbFb = _tt.fb;
   var thumbImg = thumb ? '<img src="' + thumb + '" alt="" loading="lazy" decoding="async" onerror="' + (thumbFb ? 'if(this.dataset.f){this.remove()}else{this.dataset.f=1;this.src=\'' + thumbFb + '\'}' : 'this.remove()') + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">' : '';
   var tags = Array.isArray(p.tags) ? p.tags : (p.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
   var excerpt = p.excerpt || (p.meta || '').slice(0,100) || '';
@@ -8199,6 +8239,7 @@ function renderBlogGrid() {
   if (!grid) return;
 
   var all = _allBlogPosts();
+  _assignBlogThumbs(all);
   // '전체' = 오늘의집식 배너 + 카테고리별 가로 스와이프 섹션
   var secWrap = document.getElementById('blog-sections');
   var banWrap = document.getElementById('blog-banner');
