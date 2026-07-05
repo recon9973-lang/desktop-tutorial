@@ -1,5 +1,23 @@
 [
   {
+    "action": "cron-review",
+    "id": "auto_1783240246141",
+    "title": "울산 병원마케팅: 의료광고 사전심의 및 합법 콘텐츠 기준",
+    "tokenUsage": {
+      "promptTokens": 2552,
+      "completionTokens": 1832,
+      "totalTokens": 4384,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at ab3f1689efb57e5499d94f32ca6795e4a3378cd0 but expected a2b23d3d1def1322c96409f6a3e25d68823d47c8",
+    "forbidden": [],
+    "contentErrors": [
+      "본문이 닫는 태그로 끝나지 않습니다(생성 중 잘림 의심)."
+    ],
+    "ts": "2026-07-05T08:31:06.346Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1783229753814",
     "title": "부산 내과마케팅의 핵심 5가지 전략과 실행 방안",
