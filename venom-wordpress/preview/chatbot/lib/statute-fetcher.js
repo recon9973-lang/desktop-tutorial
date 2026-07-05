@@ -52,6 +52,21 @@ function defaultGet(url) {
   });
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+// get 재시도 래퍼(일시적 실패·rate limit 대비): 200이고 에러문구 없을 때까지 최대 tries회.
+async function getRetry(get, url, tries = 3) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await get(url);
+      if (r.status === 200 && !hasErr(r.body)) return r;
+      last = r;
+    } catch (e) { last = { status: 0, body: '', err: e.message }; }
+    await sleep(500 * (i + 1));
+  }
+  return last || { status: 0, body: '' };
+}
+
 function pick(re, s) { const m = (s || '').match(re); return m ? m[1] : ''; }
 function clean(s) {
   return (s || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ')
@@ -118,18 +133,15 @@ async function fetchOneLaw(oc, law, get) {
     const r = await get(`https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&LM=${enc(law.name)}`);
     if (r.status === 200 && !hasErr(r.body) && lawNameOf(r.body) === law.name) { body = r.body; via = 'LM'; mst = pick(/법령일련번호>(\d+)</, r.body); }
   } catch (e) { /* 폴백 */ }
-  // ② 검색 → 정확일치 MST → 재조회
+  // ② 검색 → 정확일치 MST → 재조회(재시도 포함)
   if (!body) {
-    let probe;
-    try { probe = await get(`https://www.law.go.kr/DRF/lawSearch.do?OC=${enc(oc)}&target=law&type=XML&query=${enc(law.name)}&display=50`); }
-    catch (e) { return { name: law.name, status: 'error', reason: '네트워크: ' + e.message, statutes: [] }; }
+    const probe = await getRetry(get, `https://www.law.go.kr/DRF/lawSearch.do?OC=${enc(oc)}&target=law&type=XML&query=${enc(law.name)}&display=50`);
     if (probe.status !== 200 || hasErr(probe.body)) return { name: law.name, status: 'error', reason: `검색 응답 이상(${probe.status})`, statutes: [] };
     mst = selectMst(probe.body, law.name);
     if (!mst) return { name: law.name, status: 'error', reason: `검색에서 '${law.name}' 정확 일치 없음`, statutes: [] };
-    try {
-      const r = await get(`https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&MST=${mst}`);
-      if (r.status === 200 && !hasErr(r.body)) { body = r.body; via = 'MST'; }
-    } catch (e) { return { name: law.name, status: 'error', reason: '본문 조회 실패: ' + e.message, statutes: [], mst }; }
+    const r = await getRetry(get, `https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&MST=${mst}`);
+    if (r.status === 200 && !hasErr(r.body)) { body = r.body; via = 'MST'; }
+    else return { name: law.name, status: 'error', reason: `본문 조회 실패(재시도 후, status ${r.status})`, statutes: [], mst };
   }
   if (!body) return { name: law.name, status: 'error', reason: '본문 조회 실패', statutes: [], mst };
 
@@ -150,7 +162,10 @@ async function fetchStatutes(oc, opts = {}) {
   if (!oc) return { status: 'pending', reason: 'LAW_OC(OC) 미설정 — open.law.go.kr에서 무료 발급 필요', statutes: [] };
 
   const results = [];
-  for (const law of LAWS) results.push(await fetchOneLaw(oc, law, get));
+  for (let i = 0; i < LAWS.length; i++) {
+    if (i > 0) await sleep(800);           // 법령 사이 지연 — law.go.kr 연속요청 제한 회피
+    results.push(await fetchOneLaw(oc, LAWS[i], get));
+  }
 
   const statutes = results.flatMap(r => r.statutes);
   const laws = results.map(r => ({ name: r.name, status: r.status, count: r.statutes.length, ...(r.reason ? { reason: r.reason } : {}), ...(r.mst ? { mst: r.mst } : {}) }));

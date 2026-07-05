@@ -224,7 +224,7 @@
       "maxDuration": 30
     },
     "api/statutes-refresh.js": {
-      "maxDuration": 60
+      "maxDuration": 120
     }
   },
   "crons": [
