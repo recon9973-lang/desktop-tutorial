@@ -135,11 +135,22 @@ module.exports = async function handler(req, res) {
     if (!batch.length) return res.status(200).json({ note: 'offset이 표본 범위를 벗어남', poolSize: pool.length });
 
     const graded = await pmap(batch, conc, async (item) => {
-      const r = await rag.answerQuestion(item.q);
-      if (!r.llm) return { ...item, skipped: '답변 LLM 미동작' };
-      const v = await judgeAnswer({ question: item.q, answer: r.answer, context: r.context });
-      return { ...item, answer: r.answer, refs: (r.sources || []).flatMap(s => s.legalRefs).slice(0, 4), ...v };
+      let stage = 'answer';
+      try {
+        const r = await rag.answerQuestion(item.q);
+        if (!r.llm) return { ...item, skipped: '답변 LLM 미동작(키/응답 없음)' };
+        stage = 'judge';
+        const v = await judgeAnswer({ question: item.q, answer: r.answer, context: r.context });
+        return { ...item, answer: r.answer, refs: (r.sources || []).flatMap(s => s.legalRefs).slice(0, 4), ...v };
+      } catch (e) {
+        return { ...item, error: `${stage}: ${e.message}` };
+      }
     });
+
+    // 진단: 채점 실패 원인을 드러낸다(전멸 시 원인 파악용)
+    const errored = graded.filter(g => g && g.error);
+    const skipped = graded.filter(g => g && g.skipped);
+    const sampleErrors = [...new Set(errored.map(g => g.error))].slice(0, 3);
 
     // 집계: 전체 + 그룹별 약점 지도
     const scored = graded.filter(g => g && g.verdict);
@@ -158,6 +169,7 @@ module.exports = async function handler(req, res) {
       updated: new Date().toISOString(),
       model: { answer: process.env.ANTHROPIC_MODEL || 'claude-opus-4-8', judge: process.env.ANTHROPIC_JUDGE_MODEL || 'claude-haiku-4-5' },
       batch: { n: batch.length, offset, poolSize: pool.length },
+      diagnostics: { scored: scored.length, errored: errored.length, skipped: skipped.length, sampleErrors },
       overall: {
         passRate: scored.length ? +(pass / scored.length * 100).toFixed(0) : 0,
         avgGrounding: avg(scored, 'grounding'), avgCorrectness: avg(scored, 'correctness'), avgCitation: avg(scored, 'citation'),
