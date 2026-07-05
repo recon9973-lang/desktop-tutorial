@@ -201,6 +201,7 @@ function buildForbiddenRules(md) {
 // ── 추가 소스 통합(data/sources/extra/*.md) — 협회 자료·심의기준·가이드라인·시행규칙 ──
 function sourceMeta(file) {
   if (file.startsWith('assoc-')) return { tag: '협회자료', label: assocLabel(file) };
+  if (file.startsWith('guide-exemption')) return { tag: '심의기준', label: '사전심의 예외 — 심의 없이 게재 가능한 정보성 콘텐츠(의료법 제57조 제3항·심의기준 제3조)' };
   if (file.startsWith('guideline-')) return { tag: '심의기준', label: '의료광고 공통 심의기준(2019.11.19, 3개 협회 공통)' };
   if (file.startsWith('enforcement-rule')) return { tag: '조문원문', label: '의료법 시행규칙 — 의료광고 관련(2026.6.12)' };
   return { tag: '일반', label: file };
