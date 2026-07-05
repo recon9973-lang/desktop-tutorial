@@ -5,3 +5,5 @@ output/
 _filled*.png
 _faxout/
 calib_p*.png
+_demo/
+selftest*.png
