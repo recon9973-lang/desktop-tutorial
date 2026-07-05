@@ -19,7 +19,7 @@
 | `GEMINI_API_KEY` | Google Gemini (AI 매트릭스) | 베놈사이트 | ai.google.dev | 공유 | 필요 |
 
 > **모델 설정(값 아님, 정규화 대상):** `OPENAI_TEXT_MODEL`·`OPENAI_SEARCH_MODEL`·`OPENAI_IMAGE_MODEL`·`OPENAI_MODEL`·`PERPLEXITY_MODEL`·`ANTHROPIC_MODEL`·`GEMINI_MODEL`. 시크릿 아님 → 코드 기본값/설정으로 관리 권장.
-> **⚠️ 이름 중복:** 코드에 `GEMINI_API_KEY`와 `GOOGLE_AI_KEY`가 혼재 → **`GEMINI_API_KEY`로 통일** 권장.
+> **✅ 코드 정규화됨:** insights.js가 `GEMINI_API_KEY || GOOGLE_AI_KEY`(정규 이름 우선 + 폴백)로 읽음. **값은 `GEMINI_API_KEY`로만 입력하면 됨** (코드 수정 불필요, 폴백은 안전망으로 유지).
 
 ## 2. 네이버 (⚠️ 이름 정규화 최우선)
 
@@ -29,7 +29,7 @@
 | `NAVER_AD_API_KEY` / `NAVER_AD_SECRET` / `NAVER_AD_CUSTOMER_ID` | 검색광고 키워드도구(검색량·연관어) | 베놈사이트, (원장님앱) | searchad.naver.com | 공유 | 필요 |
 | `NAVER_CALENDAR_CLIENT_ID` / `_SECRET` | 캘린더 OAuth | ERP | developers.naver.com | 전용 | 연기 |
 
-> **⚠️ 정규화 필수:** 검색광고 키가 코드에 **두 이름으로 혼재** — `NAVER_AD_API_KEY/SECRET/CUSTOMER_ID` **와** `NAVER_ACCESS_LICENSE/NAVER_SECRET_KEY/NAVER_CUSTOMER_ID`. **`NAVER_AD_*`로 통일**하고 나머지는 폐기.
+> **✅ 코드 정규화됨:** keyword-research.js·insights.js가 `NAVER_AD_API_KEY || NAVER_ACCESS_LICENSE` 식으로 **정규 이름 우선 + 구이름 폴백**으로 읽음. **값은 `NAVER_AD_*`로만 입력**하면 됨 (코드 수정 불필요). 구이름 폴백은 안전망으로 유지, 정리는 선택.
 
 ## 3. 카카오 (⚠️ 정규화 필요)
 
@@ -57,7 +57,7 @@
 | `CREDENTIAL_ENC_KEY` | 자격증명 AES-256-GCM | ERP | 필요 |
 | `ADMIN_SECRET` / `CRON_SECRET` | 관리자·크론 보호 | 베놈사이트 | 필요 |
 
-> **⚠️ 정규화:** `KV_REST_API_*`와 `UPSTASH_REDIS_REST_*`는 같은 저장소 → 한 쌍으로 통일.
+> **✅ 코드 정규화됨:** analytics.js가 `KV_REST_API_URL || UPSTASH_REDIS_REST_URL`로 읽음(정규 우선 + 폴백). **값은 `KV_REST_API_*`로만 입력**하면 됨.
 
 ## 5. 결제·은행·공공데이터 (기능 연기 — 참고)
 
@@ -81,8 +81,14 @@
 - **공유 그룹**(한 값 → 여러 프로젝트): `OPENAI_API_KEY`, `NAVER_CLIENT_ID/SECRET`, `NAVER_AD_*`, `PERPLEXITY/ANTHROPIC/GEMINI`, `KAKAO_*` → 시크릿 매니저의 "공유" 프로젝트에 두고 각 앱이 참조.
 - **전용**: `DATABASE_URL`, `AUTH_SECRET`, `CREDENTIAL_ENC_KEY`, 템플릿 코드 등 → 앱별 분리.
 
-### 6.3 이름 정규화(선행 과제)
-위 ⚠️ 표시 4건을 코드에서 먼저 통일: ① 네이버 검색광고 `NAVER_AD_*` ② 카카오 알림톡 방식 ③ `GEMINI_API_KEY` ④ `KV_REST_API_*`. → 정규 이름으로 통일해야 시크릿 매니저에서 중복 없이 관리 가능.
+### 6.3 이름 정규화 — 현황
+**대부분 코드에서 이미 처리됨**(정규 이름 우선 + 구이름 폴백). 값 입력 시 **정규 이름만 사용**하면 된다.
+- ✅ 네이버 검색광고 `NAVER_AD_*` — 코드 폴백 있음 (keyword-research.js·insights.js)
+- ✅ `GEMINI_API_KEY` — 코드 폴백 있음 (insights.js)
+- ✅ `KV_REST_API_*` — 코드 폴백 있음 (analytics.js)
+- ⏳ 카카오 알림톡 — `KAKAO_API_KEY`(직접) vs `ALIMTALK_API_*`(대행사)는 **단순 이름 문제가 아니라 발송 방식 결정** → 대행사(솔라피 등) 채택 여부 결정 후 한 방식으로 확정.
+
+즉 시크릿 매니저엔 **정규 이름으로만 값을 넣으면** 되고, 별도 코드 정규화 작업은 카카오 방식 결정만 남는다.
 
 ### 6.4 레지스트리 추적(값 아님)
 이 문서(`API-KEYS-REGISTRY.md`)를 **키 상태 대장**으로 유지. 선택적으로 **Airtable "API Key Registry" 베이스**(이름·상태·담당·발급처·프로젝트 — 값 없음)로 옮기면 비개발자도 발급 진행 상황을 관리 가능.
