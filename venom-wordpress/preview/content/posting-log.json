@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1783248696841",
+    "title": "대전 병원마케팅 5가지 핵심 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2576,
+      "completionTokens": 1961,
+      "totalTokens": 4537,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T10:53:27.885Z"
+  },
+  {
     "action": "cron-review",
     "id": "auto_1783240246141",
     "title": "울산 병원마케팅: 의료광고 사전심의 및 합법 콘텐츠 기준",
