@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1783229753814",
+    "title": "부산 내과마케팅의 핵심 5가지 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2600,
+      "completionTokens": 2037,
+      "totalTokens": 4637,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-05T05:37:10.349Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1783229608475",
     "title": "대구 성형외과 마케팅 전략 TOP 5: 시술·브랜딩·회복",
     "tokenUsage": {
