@@ -84,13 +84,14 @@ async function answerQuestion(message, opts = {}) {
     return { answer: `제공된 자료로는 확인이 어렵습니다. 질문을 구체화해 주세요.\n\n${DISCLAIMER}`, sources, grounded: false, llm: false };
   }
 
+  const context = contextBlock(hits);
   const brain = pickLlm();
   if (brain) {
-    const userPrompt = `질문: ${message}\n\n[근거]\n${contextBlock(hits)}\n\n위 근거만 사용해 근거 조항을 인용하며 답하라.`;
+    const userPrompt = `질문: ${message}\n\n[근거]\n${context}\n\n위 근거만 사용해 근거 조항을 인용하며 답하라.`;
     try {
       const { text } = await brain.client.chatComplete(SYSTEM_PROMPT, userPrompt, brain.opts);
       const answer = /디스클레이머|참고용|심의 결과/.test(text) ? text : `${text}\n\n${DISCLAIMER}`;
-      return { answer, sources, grounded: true, llm: true, provider: brain.provider };
+      return { answer, sources, grounded: true, llm: true, provider: brain.provider, context };
     } catch (e) {
       // LLM 실패 → 폴백으로 진행
     }

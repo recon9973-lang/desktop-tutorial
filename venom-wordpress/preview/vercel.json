@@ -225,6 +225,9 @@
     },
     "api/statutes-refresh.js": {
       "maxDuration": 120
+    },
+    "api/eval-judge.js": {
+      "maxDuration": 300
     }
   },
   "crons": [
