@@ -8118,21 +8118,26 @@ function _assignBlogThumbs(posts) {
 }
 // 글의 대표 썸네일 결정 (목록 카드·섹션 카드·배너 공용)
 function _postThumbOf(p) {
-  // ⓪ 정적 글에 AI 변형 이미지가 있으면 최우선 사용(폴더 사진 원본 대신)
+  // 겉(썸네일)=속(본문 히어로) 통일 원칙 — 글의 대표 이미지를 그대로 썸네일로 사용
+  // ⓪ 정적 글: AI 변형 히어로(본문과 동일)
   if (p && _AI_HERO[p.id]) { return { src: _AI_HERO[p.id], fb: '' }; }
-  // ① 카테고리 실사진 풀이 있으면 배정된(또는 해시로 분산된) 실사진 사용 — 반복 이미지 제거
+  // ① 글 자체 대표 이미지(자동포스트의 크론 AI 이미지 등) — 본문 첫 이미지와 동일
+  var thumb = (p.images && p.images[0]) || p.image || p.thumb || _postImgById[p.id] || '';
+  if (!thumb && p.html) { var m = String(p.html).match(/<img[^>]+src="([^"]+)"/); if (m) thumb = m[1]; }
+  if (thumb) {
+    var fb = '';
+    var tm = thumb.match(/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"?]+?)(\.(?:jpg|jpeg|png))?$/i);
+    if (tm) { fb = tm[1] + (tm[2] || '.jpg'); thumb = tm[1] + '.webp'; }
+    return { src: thumb, fb: fb };
+  }
+  // ② 자체 이미지가 전혀 없을 때만 카테고리 실사진 풀로 폴백(반복 방지)
   var lb0 = BLOG_CAT_LABEL[p.cat] || p.cat;
   var pool = _BLOG_PHOTO_POOL[lb0];
   if (pool && pool.length) {
     return { src: _thumbAssign[p.id] || pool[_hashStr(p.id) % pool.length], fb: '' };
   }
-  var thumb = (p.images && p.images[0]) || p.image || p.thumb || _postImgById[p.id] || '';
-  if (!thumb && p.html) { var m = String(p.html).match(/<img[^>]+src="([^"]+)"/); if (m) thumb = m[1]; }
-  if (!thumb) { var lb = BLOG_CAT_LABEL[p.cat] || p.cat; thumb = _BLOG_CAT_THUMB[p.cat] || _BLOG_CAT_THUMB[lb] || ''; }
-  var fb = '';
-  var tm = thumb && thumb.match(/raw\.githubusercontent\.com\/[^"]*\/venom-wordpress\/preview(\/content\/images\/[^"?]+?)(\.(?:jpg|jpeg|png))?$/i);
-  if (tm) { fb = tm[1] + (tm[2] || '.jpg'); thumb = tm[1] + '.webp'; }
-  return { src: thumb, fb: fb };
+  var lb = BLOG_CAT_LABEL[p.cat] || p.cat;
+  return { src: _BLOG_CAT_THUMB[p.cat] || _BLOG_CAT_THUMB[lb] || '', fb: '' };
 }
 // 카테고리별 가로 스와이프 섹션 (오늘의집 스타일)
 var _BSEC_ORDER = ['지역마케팅','GEO/AI','SEO','치과','피부과','정형외과','한의원','성형외과','내과','안과','의료광고심의','전략'];
