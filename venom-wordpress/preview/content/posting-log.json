@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1783214695731",
+    "title": "인천 피부과 마케팅 성공을 위한 5가지 전략",
+    "tokenUsage": {
+      "promptTokens": 2620,
+      "completionTokens": 2002,
+      "totalTokens": 4622,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T01:26:23.525Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783204723201",
     "title": "부산 치과 마케팅의 5가지 성공 전략과 실행 방안",
     "tokenUsage": {
