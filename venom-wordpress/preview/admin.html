@@ -573,6 +573,10 @@ a{color:var(--p);text-decoration:none}
         <div class="stat-card" style="text-align:center"><div id="seo-score-search" style="font-size:34px;font-weight:700;color:#8b5cf6">—</div><div class="stat-label" style="text-align:center">🔍 검색 노출</div></div>
         <div class="stat-card" style="text-align:center"><div id="seo-score-speed" style="font-size:34px;font-weight:700;color:#f59e0b">—</div><div class="stat-label" style="text-align:center">⚡ 속도(CWV)</div></div>
       </div>
+      <div class="card" id="seo-gcompare-card">
+        <div class="card-head"><div class="card-title">🆚 구글 Lighthouse 실측 비교 <span style="font-size:11px;font-weight:600;color:var(--mute)">(PageSpeed Insights · 모바일)</span></div></div>
+        <div id="seo-gcompare"><div style="font-size:13px;color:var(--mute)">재점검 시 구글 Lighthouse(SEO·성능·접근성·모범사례) 실측 점수를 베놈 엔진 점수와 나란히 비교합니다. <b>Vercel PSI_KEY 연동 필요.</b></div></div>
+      </div>
       <div class="card">
         <div class="card-head"><div class="card-title">SEO 항목별 점검 <span style="font-size:11px;font-weight:600;color:var(--mute)">(홈페이지 실측)</span></div><button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔄 재점검</button></div>
         <table class="data-table">
@@ -2218,6 +2222,22 @@ function _seoRender(res){
   }
 }
 
+// 구글 Lighthouse(PSI) 카테고리 점수 vs 베놈 엔진 종합 — 참고용 비교(산정 방식 상이).
+function _renderGoogleCompare(lhr, ourPct){
+  var box=document.getElementById('seo-gcompare'); if(!box)return;
+  var cats=(lhr&&lhr.categories)||{};
+  var g=function(k){ var c=cats[k]; return (c&&typeof c.score==='number')?Math.round(c.score*100):null; };
+  var rows=[['베놈 엔진 종합', ourPct, '#533afd'],['구글 · SEO', g('seo'), '#4285F4'],
+    ['구글 · 성능(Performance)', g('performance'), '#0f9d58'],['구글 · 접근성(Accessibility)', g('accessibility'), '#f4b400'],
+    ['구글 · 모범사례(Best Practices)', g('best-practices'), '#db4437']];
+  var col=function(v){ return v==null?'#9ca3af':v>=90?'#16a34a':v>=50?'#d97706':'#dc2626'; };
+  box.innerHTML=rows.map(function(r){ var v=r[1], w=v==null?0:v;
+    return '<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:600">'+r[0]+'</span><span style="font-weight:700;color:'+col(v)+'">'+(v==null?'—':v+'/100')+'</span></div>'
+      +'<div style="height:8px;background:var(--soft);border-radius:99px;overflow:hidden"><div style="height:100%;width:'+w+'%;background:'+r[2]+';border-radius:99px;transition:width .5s"></div></div></div>';
+  }).join('')+'<div style="font-size:11px;color:var(--mute);margin-top:10px;line-height:1.6">※ 구글 점수는 <b>Lighthouse(모바일)</b> 실측(0–100). 베놈 엔진 종합은 Search Central 가중 점수라 <b>산정 방식이 달라 절대 동일치가 아닌 참고용</b>입니다 — 성능은 속도/CWV, 구글 SEO는 크롤링·메타·구조 위주.</div>';
+}
+function _gcompareMsg(msg){ var box=document.getElementById('seo-gcompare'); if(box)box.innerHTML='<div style="font-size:13px;color:var(--mute)">'+msg+'</div>'; }
+
 function runSeoAudit(){
   var tbody=document.getElementById('seo-audit-tbody');
   if(typeof SEOEngine==='undefined'){
@@ -2232,13 +2252,18 @@ function runSeoAudit(){
   ]).then(function(arr){
     var res=SEOEngine.analyze({url:homeUrl,html:arr[0]||'',robots:arr[1]||'',isHttps:location.protocol==='https:'});
     _seoRender(res);
-    // PageSpeed Insights 병합 — index.html과 동일한 seo-proxy 경로. 실패해도 속도는 pending 유지.
+    _gcompareMsg('⏳ 구글 Lighthouse 실측 조회 중…');
+    // PageSpeed Insights 병합 + 구글 점수 비교 — index.html과 동일한 seo-proxy 경로. 실패해도 속도는 pending 유지.
     fetch(_SEO_PROXY_ADMIN+'?type=psi&url='+encodeURIComponent(homeUrl)+'&nonce='+Date.now())
       .then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};});})
       .then(function(resp){
-        if(!resp.ok||!(resp.j&&resp.j.lighthouseResult))return; // PSI 미가용 → 속도 pending 유지
-        try{ _seoRender(SEOEngine.mergePSI(res,resp.j)); }catch(e){}
-      }).catch(function(){});
+        if(!resp.ok||!(resp.j&&resp.j.lighthouseResult)){
+          _gcompareMsg((resp.j&&resp.j.error)?('구글 Lighthouse 비교 불가 — '+_seoEsc(resp.j.error)):'구글 Lighthouse 비교 — PSI 연동 필요(Vercel PSI_KEY).');
+          return; // PSI 미가용 → 속도 pending 유지
+        }
+        try{ var merged=SEOEngine.mergePSI(res,resp.j); _seoRender(merged);
+          _renderGoogleCompare(resp.j.lighthouseResult, merged.max?Math.round(merged.total/merged.max*100):null); }catch(e){}
+      }).catch(function(){ _gcompareMsg('구글 Lighthouse 비교 조회 실패 — 재점검으로 다시 시도'); });
   }).catch(function(){
     if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">분석 실패 — 재점검 버튼으로 다시 시도</td></tr>';
   });
