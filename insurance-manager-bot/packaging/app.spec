@@ -11,8 +11,9 @@ block_cipher = None
 ROOT = os.path.abspath(os.getcwd())
 
 datas = [
-    (os.path.join("assets", "NanumGothic.ttf"), "assets"),
-    (os.path.join("consent_bot", "template.json"), "consent_bot"),
+    (os.path.join(ROOT, "assets", "NanumGothic.ttf"), "assets"),
+    (os.path.join(ROOT, "assets", "NanumPen.ttf"), "assets"),   # 손글씨 폰트
+    (os.path.join(ROOT, "consent_bot", "template.json"), "consent_bot"),
 ]
 
 hiddenimports = [
@@ -24,7 +25,7 @@ hiddenimports = [
 ]
 
 a = Analysis(
-    ["packaging/entry.py"],
+    [os.path.join(ROOT, "packaging", "entry.py")],
     pathex=[ROOT],
     binaries=[],
     datas=datas,
