@@ -120,6 +120,19 @@ function main() {
     round++;
   }
 
+  // 실제 FAQ 질문 증강(오더 2번 '질문 수집') — 있으면 코퍼스 앞에 편입
+  try {
+    const real = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'real-questions.json'), 'utf8'));
+    const refOf = q => /심의필|유효기간|사후통보|심의 대상|매체/.test(q) ? ['의료법 제57조'] : /수수료|서류|절차|신청/.test(q) ? ['의료법 제57조', '의료법 시행규칙'] : ['의료법 제56조'];
+    const realItems = (real.questions || []).map((q, i) => ({
+      id: 'qr-' + String(i + 1).padStart(4, '0'), q, cat: '실제FAQ', refs: refOf(q), diff: 'real', origin: 'faq',
+    }));
+    items.unshift(...realItems);
+    // id 재부여(순서 일관)
+    items.forEach((it, i) => { if (it.origin === 'synthetic') it.id = 'q-' + String(i + 1).padStart(5, '0'); });
+    console.log(`   + 실제 FAQ 질문 ${realItems.length}개 편입`);
+  } catch (e) { /* real-questions 없으면 합성만 */ }
+
   const byCategory = {};
   for (const it of items) byCategory[it.cat] = (byCategory[it.cat] || 0) + 1;
   const totalCandidates = buckets.reduce((n, b) => n + b.items.length, 0);
