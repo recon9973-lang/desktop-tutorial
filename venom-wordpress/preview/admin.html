@@ -557,6 +557,15 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ SEO 점수 ══ -->
     <div id="section-seo" class="admin-section">
+      <!-- 검사 대상 URL (비우면 자사 홈페이지 · 임의 도메인 넣으면 경쟁사 비교) -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap">🔎 검사 대상</span>
+          <input type="text" id="seo-url-input" autocomplete="off" placeholder="비우면 내 홈페이지 · 예: marketingbank.org (경쟁사 비교)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none" onkeydown="if(event.key==='Enter')runSeoAudit()">
+          <button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔍 검사</button>
+        </div>
+        <div style="font-size:11px;color:var(--mute);margin-top:8px">임의 도메인을 넣으면 서버(seo-proxy)로 HTML을 수집해 <b>베놈 엔진 vs 구글 Lighthouse</b>로 비교합니다. 비우면 자사 홈페이지 실측.</div>
+      </div>
       <!-- 종합 등급 배너 (엔진 실측 — 홈페이지 HTML + robots.txt + PageSpeed Insights) -->
       <div id="seo-overall" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;border:2px solid var(--border);border-radius:var(--r12);padding:18px 22px;margin-bottom:16px;background:var(--soft)">
         <div style="text-align:center;min-width:120px">
@@ -2239,6 +2248,25 @@ function _renderGoogleCompare(lhr, ourPct){
 }
 function _gcompareMsg(msg){ var box=document.getElementById('seo-gcompare'); if(box)box.innerHTML='<div style="font-size:13px;color:var(--mute)">'+msg+'</div>'; }
 
+// 검사 대상 HTML/robots 수집. 입력 비면 자사 홈(직접 fetch), 임의 도메인이면 seo-proxy(type=fetch)로 서버측 수집.
+function _seoFetchTarget(){
+  var origin=location.origin;
+  var raw=(document.getElementById('seo-url-input')||{}).value; raw=(raw||'').trim();
+  var isSelf=!raw || raw===origin || raw===origin+'/' || raw===location.hostname;
+  if(isSelf){
+    var homeUrl=origin+'/';
+    return Promise.all([
+      fetch(homeUrl,{cache:'no-store'}).then(function(r){return r.text();}).catch(function(){return '';}),
+      fetch(origin+'/robots.txt',{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).catch(function(){return '';})
+    ]).then(function(a){return {url:homeUrl,html:a[0]||'',robots:a[1]||'',isHttps:location.protocol==='https:'};});
+  }
+  var full=/^https?:\/\//i.test(raw)?raw:'https://'+raw;
+  return fetch(_SEO_PROXY_ADMIN+'?type=fetch&url='+encodeURIComponent(full)+'&nonce='+Date.now())
+    .then(function(r){return r.json().catch(function(){return {};});})
+    .then(function(j){return {url:full,html:(j&&j.html)||'',robots:(j&&j.robots)||'',isHttps:!!(j&&j.isHttps)};})
+    .catch(function(){return {url:full,html:'',robots:'',isHttps:/^https:/i.test(full)};});
+}
+
 function runSeoAudit(){
   var tbody=document.getElementById('seo-audit-tbody');
   if(typeof SEOEngine==='undefined'){
@@ -2246,16 +2274,16 @@ function runSeoAudit(){
     return;
   }
   if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">⏳ 실측 분석 중...</td></tr>';
-  var origin=location.origin, homeUrl=origin+'/';
-  Promise.all([
-    fetch(homeUrl,{cache:'no-store'}).then(function(r){return r.text();}).catch(function(){return '';}),
-    fetch(origin+'/robots.txt',{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).catch(function(){return '';})
-  ]).then(function(arr){
-    var res=SEOEngine.analyze({url:homeUrl,html:arr[0]||'',robots:arr[1]||'',isHttps:location.protocol==='https:'});
+  _seoFetchTarget().then(function(t){
+    if(!t.html){
+      if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#dc2626;padding:16px">HTML 수집 실패 — 주소를 확인하세요(차단·오프라인 도메인이거나 봇 차단 사이트일 수 있음).</td></tr>';
+      _gcompareMsg('대상 HTML을 못 가져와 비교 불가.'); return;
+    }
+    var res=SEOEngine.analyze({url:t.url,html:t.html,robots:t.robots,isHttps:t.isHttps});
     _seoRender(res);
     _gcompareMsg('⏳ 구글 Lighthouse 실측 조회 중…');
-    // PageSpeed Insights 병합 + 구글 점수 비교 — index.html과 동일한 seo-proxy 경로. 실패해도 속도는 pending 유지.
-    fetch(_SEO_PROXY_ADMIN+'?type=psi&url='+encodeURIComponent(homeUrl)+'&nonce='+Date.now())
+    // PageSpeed Insights 병합 + 구글 점수 비교. 실패해도 속도는 pending 유지.
+    fetch(_SEO_PROXY_ADMIN+'?type=psi&url='+encodeURIComponent(t.url)+'&nonce='+Date.now())
       .then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};});})
       .then(function(resp){
         if(!resp.ok||!(resp.j&&resp.j.lighthouseResult)){
