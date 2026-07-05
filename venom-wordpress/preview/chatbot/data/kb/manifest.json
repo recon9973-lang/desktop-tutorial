@@ -1,23 +1,26 @@
 {
-  "builtAt": "2026-07-05T14:56:49.453Z",
+  "builtAt": "2026-07-05T15:05:02.176Z",
   "inputs": {
     "casebook": "data/sources/medical-ad-casebook.md"
   },
   "outputs": {
     "knowledge-base.json": {
-      "chunks": 28,
-      "legalRefsDistinct": 56,
+      "chunks": 116,
+      "legalRefsDistinct": 91,
       "tagDist": {
-        "사전심의": 10,
-        "표시광고법": 10,
-        "총칙": 2,
-        "금지유형": 23,
-        "진료과목": 11,
-        "외국인환자": 4,
+        "사전심의": 69,
+        "표시광고법": 32,
+        "총칙": 21,
+        "금지유형": 41,
+        "진료과목": 73,
+        "외국인환자": 6,
         "체크리스트": 1,
         "QA": 1,
         "대체표현": 1,
-        "조문원문": 4
+        "조문원문": 6,
+        "협회자료": 46,
+        "심의기준": 40,
+        "일반": 1
       }
     },
     "qa-seed.json": {
@@ -29,7 +32,7 @@
       "casebookReplacements": 13
     },
     "retrieval-index.json": {
-      "tokens": 1267
+      "tokens": 11917
     }
   },
   "next": [
