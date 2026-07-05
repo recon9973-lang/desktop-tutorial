@@ -36,10 +36,15 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
+      const provider = process.env.ANTHROPIC_API_KEY ? 'anthropic'
+        : process.env.OPENAI_API_KEY ? 'openai' : null;
       return res.status(200).json({
         service: '의료광고심의 도우미 챗봇',
         kb: stats(),
-        llm: !!process.env.OPENAI_API_KEY,
+        llm: !!provider,
+        provider,
+        model: provider === 'anthropic' ? (process.env.ANTHROPIC_MODEL || 'claude-opus-4-8')
+          : provider === 'openai' ? (process.env.OPENAI_TEXT_MODEL || 'gpt-4o-mini') : null,
         modes: ['qa', 'diagnose'],
       });
     }

@@ -6,7 +6,8 @@
  *  answerQuestion(message)  : 근거 검색 → LLM이 근거 인용하며 답변(키 없으면 근거 요약 폴백)
  *  diagnoseCopy(text)       : 광고 문구 자가진단(금지·위험 표현 탐지 + 안전 대체안)
  *
- * 재사용: preview/lib/openai-client.js, preview/lib/medical-ad-validator.js
+ * 두뇌(LLM): Claude(Anthropic)를 우선 사용하고, 없으면 OpenAI, 둘 다 없으면 근거 요약 폴백.
+ * 재사용: preview/lib/anthropic-client.js, preview/lib/openai-client.js, preview/lib/medical-ad-validator.js
  */
 
 const fs = require('fs');
@@ -19,9 +20,25 @@ const KB_DIR = path.resolve(__dirname, '..', 'data', 'kb');
 const RULES = JSON.parse(fs.readFileSync(path.join(KB_DIR, 'forbidden-rules.json'), 'utf8'));
 
 // 재사용 자산(없어도 폴백 동작)
-let validator = null, llm = null;
+let validator = null, anthropic = null, openai = null;
 try { validator = require('../../lib/medical-ad-validator'); } catch (e) {}
-try { llm = require('../../lib/openai-client'); } catch (e) {}
+try { anthropic = require('../../lib/anthropic-client'); } catch (e) {}
+try { openai = require('../../lib/openai-client'); } catch (e) {}
+
+/**
+ * 사용할 LLM 두뇌 선택: Claude(Anthropic) 우선 → OpenAI 폴백.
+ * @returns {{provider, client, opts}|null}
+ */
+function pickLlm() {
+  if (anthropic && process.env.ANTHROPIC_API_KEY) {
+    // Opus 4.8 계열은 temperature 미지원 → max_tokens만 전달.
+    return { provider: 'anthropic', client: anthropic, opts: { max_tokens: 900 } };
+  }
+  if (openai && process.env.OPENAI_API_KEY) {
+    return { provider: 'openai', client: openai, opts: { temperature: 0.2, max_tokens: 900 } };
+  }
+  return null;
+}
 
 const DISCLAIMER = '※ 본 답변은 참고용 사전 진단입니다. 실제 심의 승인·반려는 자율심의기구(대한의사협회 등)의 심의 결과에 따릅니다.';
 
@@ -66,13 +83,13 @@ async function answerQuestion(message, opts = {}) {
     return { answer: `제공된 자료로는 확인이 어렵습니다. 질문을 구체화해 주세요.\n\n${DISCLAIMER}`, sources, grounded: false, llm: false };
   }
 
-  const hasKey = !!(process.env.OPENAI_API_KEY);
-  if (llm && hasKey) {
+  const brain = pickLlm();
+  if (brain) {
     const userPrompt = `질문: ${message}\n\n[근거]\n${contextBlock(hits)}\n\n위 근거만 사용해 근거 조항을 인용하며 답하라.`;
     try {
-      const { text } = await llm.chatComplete(SYSTEM_PROMPT, userPrompt, { temperature: 0.2, max_tokens: 900 });
+      const { text } = await brain.client.chatComplete(SYSTEM_PROMPT, userPrompt, brain.opts);
       const answer = /디스클레이머|참고용|심의 결과/.test(text) ? text : `${text}\n\n${DISCLAIMER}`;
-      return { answer, sources, grounded: true, llm: true };
+      return { answer, sources, grounded: true, llm: true, provider: brain.provider };
     } catch (e) {
       // LLM 실패 → 폴백으로 진행
     }
@@ -85,7 +102,7 @@ async function answerQuestion(message, opts = {}) {
   const answer =
     `가장 관련 있는 근거는 「${top.title.split(' › ').pop()}」입니다.\n\n${excerpt}${top.text.length > 500 ? '…' : ''}\n\n` +
     (refs ? `관련 근거: ${refs}\n\n` : '') +
-    `(LLM 미연동 상태 — 근거 요약으로 응답. OPENAI_API_KEY 설정 시 근거 인용형 자연어 답변이 활성화됩니다.)\n\n${DISCLAIMER}`;
+    `(LLM 미연동 상태 — 근거 요약으로 응답. ANTHROPIC_API_KEY(Claude) 설정 시 근거 인용형 자연어 답변이 활성화됩니다.)\n\n${DISCLAIMER}`;
   return { answer, sources, grounded: true, llm: false };
 }
 
