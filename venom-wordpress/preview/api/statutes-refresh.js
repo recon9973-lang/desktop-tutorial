@@ -81,7 +81,10 @@ module.exports = async function handler(req, res) {
       reason: result.reason,
       mst: result.mst,
       count: result.statutes.length,
-      articles: result.statutes.map(s => ({ article: s.article, title: s.title, preview: s.text.slice(0, 120) + (s.text.length > 120 ? '…' : '') })),
+      // ?full=1 이면 조문 전문(공개 법령)을 그대로 반환 → 인증 없이 통합 가능
+      articles: (req.query && (req.query.full === '1' || req.query.full === 'true'))
+        ? result.statutes.map(s => ({ article: s.article, title: s.title, text: s.text }))
+        : result.statutes.map(s => ({ article: s.article, title: s.title, preview: s.text.slice(0, 120) + (s.text.length > 120 ? '…' : '') })),
       ...(result.debug ? { debug: result.debug } : {}),
       saved, saveNote,
       hint: result.status === 'ok'
