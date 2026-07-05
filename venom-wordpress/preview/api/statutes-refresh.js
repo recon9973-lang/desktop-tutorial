@@ -80,6 +80,7 @@ module.exports = async function handler(req, res) {
       status: result.status,
       reason: result.reason,
       mst: result.mst,
+      laws: result.laws,
       count: result.statutes.length,
       // ?full=1 이면 조문 전문(공개 법령)을 그대로 반환 → 인증 없이 통합 가능
       articles: (req.query && (req.query.full === '1' || req.query.full === 'true'))

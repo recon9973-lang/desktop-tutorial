@@ -1,27 +1,44 @@
 'use strict';
 
 /**
- * 의료법 조문 수집 공유 로직 — 국가법령정보센터(law.go.kr) DRF Open API.
- * CLI(pipeline/fetch-statutes.js)와 API(api/statutes-refresh.js)가 공용으로 사용.
+ * 의료광고 관련 법령 조문 수집 공유 로직 — 국가법령정보센터(law.go.kr) DRF Open API.
+ * CLI(pipeline/fetch-statutes.js)·API(api/statutes-refresh.js) 공용.
  *
- * 방식:
- *   ① lawService를 법령명(LM=의료법)으로 직접 조회 → 검색 단계의 오선택 방지
- *   ② 실패 시 lawSearch로 '의료법' 정확 일치 MST를 찾아 재조회(정확 일치 없으면 중단 — 엉뚱한 법 방지)
- *   ③ <조문단위> 파싱, 실패하면 <조문내용> 블록으로 폴백
- *   ④ 그래도 실패 시 제56조 실제 원문 스니펫을 debug로 반환(구조 확인용)
+ * 대상(여러 법령):
+ *   - 의료법(법률): 제56·57·57의2·57의3조
+ *   - 의료법 시행령(대통령령): 제23·24조
  *
- * http get 함수 주입 가능(테스트/모킹). 조문을 임의 생성하지 않는다.
+ * 방식(법령별):
+ *   ① lawService LM=<법령명> 직접 조회 → 실패 시 ② lawSearch 정확일치 MST 재조회
+ *   ③ <조문단위> 파싱 실패 시 <조문내용> 위치 슬라이싱(항·호 포함)
+ *
+ * 조문을 임의 생성하지 않는다. 실패 시 status/ debug로 보고.
+ * (의료광고심의위원회 운영규정은 협회 자율규정이라 법령 API 대상 아님 — 별도 소스로 관리)
  */
 
 const https = require('https');
 const enc = encodeURIComponent;
 
-const TARGETS = [
-  { law: '의료법', article: '제56조', title: '의료광고의 금지 등' },
-  { law: '의료법', article: '제57조', title: '의료광고의 심의' },
-  { law: '의료법', article: '제57조의2', title: '의료광고에 관한 심의위원회' },
-  { law: '의료법', article: '제57조의3', title: '자율심의기구의 심의 등에 대한 모니터링' },
+const LAWS = [
+  {
+    name: '의료법', type: '법률',
+    articles: [
+      { article: '제56조', title: '의료광고의 금지 등' },
+      { article: '제57조', title: '의료광고의 심의' },
+      { article: '제57조의2', title: '의료광고에 관한 심의위원회' },
+      { article: '제57조의3', title: '자율심의기구의 심의 등에 대한 모니터링' },
+    ],
+  },
+  {
+    name: '의료법 시행령', type: '대통령령',
+    articles: [
+      { article: '제23조', title: '의료광고의 금지 기준' },
+      { article: '제24조', title: '의료광고의 심의' },
+    ],
+  },
 ];
+// 하위호환(기존 참조): 평탄화된 전체 대상
+const TARGETS = LAWS.flatMap(l => l.articles.map(a => ({ law: l.name, ...a })));
 
 function defaultGet(url) {
   return new Promise((resolve, reject) => {
@@ -43,21 +60,15 @@ function clean(s) {
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function hasErr(b) { return !b || /<error|로그인이 필요|허용되지 않|사용자ID|등록되지/.test(b); }
 
-// 법령명(언더스코어 유무·태그 변형 모두 허용)
 function lawNameOf(body) {
-  return clean(
-    pick(/<법령명_?한글>([\s\S]*?)<\/법령명_?한글>/, body) ||
-    pick(/<법령명>([\s\S]*?)<\/법령명>/, body)
-  );
+  return clean(pick(/<법령명_?한글>([\s\S]*?)<\/법령명_?한글>/, body) || pick(/<법령명>([\s\S]*?)<\/법령명>/, body));
 }
 
-// lawSearch 결과에서 '의료법' 정확 일치 MST. 없으면 '' (엉뚱한 폴백 금지).
-// 주의: 결과 태그는 <law id="1"> 처럼 속성이 붙는다 → <law\b[^>]*> 로 매칭.
-function selectMst(searchBody) {
+// lawSearch 결과에서 지정 법령명 정확 일치 MST(현행 우선). 없으면 ''.
+function selectMst(searchBody, lawName) {
   const blocks = searchBody.match(/<law\b[^>]*>[\s\S]*?<\/law>/g) || [];
-  const matches = blocks.filter(b => lawNameOf(b) === '의료법');
+  const matches = blocks.filter(b => lawNameOf(b) === lawName);
   if (!matches.length) return '';
-  // 현행본 우선(연혁본 배제)
   const current = matches.find(b => /현행/.test(pick(/<현행연혁코드>([\s\S]*?)<\/현행연혁코드>/, b)));
   return pick(/<법령일련번호>(\d+)<\/법령일련번호>/, current || matches[0]);
 }
@@ -67,94 +78,87 @@ function labelOf(no, branch) {
   return b && b !== '0' ? `제${no}조의${parseInt(b, 10)}` : `제${no}조`;
 }
 
-// 본문 body에서 대상 조문 추출(2중 전략)
-function parseArticles(body, mst) {
+// 본문에서 대상 조문 추출(2중 전략). articles: [{article,title}]
+function parseArticles(body, mst, lawName, articles) {
   const out = [];
+  const wants = a => articles.find(x => x.article === a);
+
   // 전략 1: <조문단위>
   const units = body.match(/<조문단위>[\s\S]*?<\/조문단위>/g) || [];
   for (const u of units) {
     const no = pick(/<조문번호>(\d+)<\/조문번호>/, u);
     if (!no) continue;
-    const label = labelOf(no, pick(/<조문가지번호>([\s\S]*?)<\/조문가지번호>/, u));
-    const t = TARGETS.find(x => x.article === label);
+    const t = wants(labelOf(no, pick(/<조문가지번호>([\s\S]*?)<\/조문가지번호>/, u)));
     if (!t) continue;
     const title = clean(pick(/<조문제목>([\s\S]*?)<\/조문제목>/, u)) || t.title;
     const text = clean(u);
-    if (text) out.push({ law: t.law, article: label, title, text, mst });
+    if (text) out.push({ law: lawName, article: t.article, title, text, mst });
   }
   if (out.length) return { statutes: out, via: '조문단위', units: units.length };
 
-  // 전략 2: <조문내용> 위치 기반 슬라이싱.
-  // 의료법 XML은 <조문단위> 래핑 없이 <조문내용>(조 제목 줄) + <항>/<호>가 형제로 나열됨.
-  // 각 조문내용을 조(條) 경계로 보고, 헤더~다음 조문내용 직전까지 통째로 잘라 항·호를 포함시킨다.
+  // 전략 2: <조문내용> 위치 슬라이싱(항·호 포함)
   const markers = [];
   const re = /<조문내용>([\s\S]*?)<\/조문내용>/g;
   let m;
   while ((m = re.exec(body)) !== null) markers.push({ index: m.index, header: clean(m[1]) });
   for (let i = 0; i < markers.length; i++) {
-    const t = TARGETS.find(x => new RegExp('^' + esc(x.article) + '\\s*[\\(（]').test(markers[i].header));
+    const t = wants((markers[i].header.match(/^(제\d+조(?:의\d+)?)\s*[\(（]/) || [])[1]);
     if (!t || out.find(o => o.article === t.article)) continue;
     const end = i + 1 < markers.length ? markers[i + 1].index : body.length;
-    const text = clean(body.slice(markers[i].index, end));   // 조 제목 + 이하 항·호 전체
-    out.push({ law: t.law, article: t.article, title: t.title, text, mst });
+    out.push({ law: lawName, article: t.article, title: t.title, text: clean(body.slice(markers[i].index, end)), mst });
   }
   return { statutes: out, via: '조문내용-슬라이스', units: units.length, contents: markers.length };
 }
 
+// 법령 1건 조회 → 조문 추출
+async function fetchOneLaw(oc, law, get) {
+  let body = '', mst = '', via = '';
+  // ① LM 직접
+  try {
+    const r = await get(`https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&LM=${enc(law.name)}`);
+    if (r.status === 200 && !hasErr(r.body) && lawNameOf(r.body) === law.name) { body = r.body; via = 'LM'; mst = pick(/법령일련번호>(\d+)</, r.body); }
+  } catch (e) { /* 폴백 */ }
+  // ② 검색 → 정확일치 MST → 재조회
+  if (!body) {
+    let probe;
+    try { probe = await get(`https://www.law.go.kr/DRF/lawSearch.do?OC=${enc(oc)}&target=law&type=XML&query=${enc(law.name)}&display=50`); }
+    catch (e) { return { name: law.name, status: 'error', reason: '네트워크: ' + e.message, statutes: [] }; }
+    if (probe.status !== 200 || hasErr(probe.body)) return { name: law.name, status: 'error', reason: `검색 응답 이상(${probe.status})`, statutes: [] };
+    mst = selectMst(probe.body, law.name);
+    if (!mst) return { name: law.name, status: 'error', reason: `검색에서 '${law.name}' 정확 일치 없음`, statutes: [] };
+    try {
+      const r = await get(`https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&MST=${mst}`);
+      if (r.status === 200 && !hasErr(r.body)) { body = r.body; via = 'MST'; }
+    } catch (e) { return { name: law.name, status: 'error', reason: '본문 조회 실패: ' + e.message, statutes: [], mst }; }
+  }
+  if (!body) return { name: law.name, status: 'error', reason: '본문 조회 실패', statutes: [], mst };
+
+  const parsed = parseArticles(body, mst, law.name, law.articles);
+  if (!parsed.statutes.length) {
+    const i = body.indexOf(law.articles[0].article);
+    return { name: law.name, status: 'error', reason: `조문 매칭 0건(조문단위 ${parsed.units}, 조문내용 ${parsed.contents || 0})`, statutes: [], mst, debug: { via, has: i >= 0, snippet: i >= 0 ? body.slice(i - 20, i + 200) : '' } };
+  }
+  return { name: law.name, status: 'ok', via, mst, statutes: parsed.statutes };
+}
+
 /**
- * @param {string} oc  법령API OC
- * @param {object} opts { get }
+ * 여러 법령(의료법·의료법 시행령) 조문 수집.
+ * @returns {Promise<{status, reason?, statutes:[], laws:[], debug?}>}
  */
 async function fetchStatutes(oc, opts = {}) {
   const get = opts.get || defaultGet;
   if (!oc) return { status: 'pending', reason: 'LAW_OC(OC) 미설정 — open.law.go.kr에서 무료 발급 필요', statutes: [] };
 
-  let body = '', mst = '', via = '';
+  const results = [];
+  for (const law of LAWS) results.push(await fetchOneLaw(oc, law, get));
 
-  // ① 법령명 직접 조회
-  try {
-    const r = await get(`https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&LM=${enc('의료법')}`);
-    if (r.status === 200 && !hasErr(r.body) && lawNameOf(r.body) === '의료법') { body = r.body; via = 'LM'; mst = pick(/법령일련번호>(\d+)</, r.body); }
-  } catch (e) { /* 폴백 */ }
-
-  // ② 폴백: 검색 → 정확 일치 MST → 재조회
-  if (!body) {
-    let probe;
-    try {
-      probe = await get(`https://www.law.go.kr/DRF/lawSearch.do?OC=${enc(oc)}&target=law&type=XML&query=${enc('의료법')}&display=30`);
-    } catch (e) {
-      return { status: 'error', reason: 'law.go.kr 네트워크 도달 불가: ' + e.message, statutes: [] };
-    }
-    if (probe.status !== 200 || hasErr(probe.body)) {
-      return { status: 'error', reason: `법령API 응답 이상(status ${probe.status}) — OC 유효성 확인`, statutes: [], debug: { head: (probe.body || '').slice(0, 200) } };
-    }
-    mst = selectMst(probe.body);
-    if (!mst) return { status: 'error', reason: "검색 결과에서 '의료법' 정확 일치를 찾지 못함", statutes: [], debug: { searchHead: probe.body.slice(0, 400) } };
-    try {
-      const r = await get(`https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&MST=${mst}`);
-      if (r.status === 200 && !hasErr(r.body)) { body = r.body; via = 'MST'; }
-    } catch (e) {
-      return { status: 'error', reason: '본문 조회 네트워크 실패: ' + e.message, statutes: [], mst };
-    }
+  const statutes = results.flatMap(r => r.statutes);
+  const laws = results.map(r => ({ name: r.name, status: r.status, count: r.statutes.length, ...(r.reason ? { reason: r.reason } : {}), ...(r.mst ? { mst: r.mst } : {}) }));
+  if (!statutes.length) {
+    return { status: 'error', reason: '전체 법령 수집 0건', statutes: [], laws, debug: results.map(r => r.debug).filter(Boolean) };
   }
-
-  if (!body) return { status: 'error', reason: '의료법 본문 조회 실패', statutes: [], mst };
-  const name = lawNameOf(body);
-  if (name && name !== '의료법') {
-    return { status: 'error', reason: `잘못된 법령 조회됨: ${name}`, statutes: [], mst, debug: { name, via } };
-  }
-
-  const parsed = parseArticles(body, mst);
-  if (!parsed.statutes.length) {
-    const i = body.indexOf('제56조');
-    return {
-      status: 'error',
-      reason: `조문 매칭 0건(법령 ${name || '?'}, 조문단위 ${parsed.units}, 조문내용 ${parsed.contents || 0})`,
-      statutes: [], mst,
-      debug: { name, via, units: parsed.units, contents: parsed.contents || 0, has56: i >= 0, art56: i >= 0 ? body.slice(i - 30, i + 220) : '(제56조 없음)' },
-    };
-  }
-  return { status: 'ok', mst, via, statutes: parsed.statutes };
+  const anyErr = results.some(r => r.status !== 'ok');
+  return { status: 'ok', partial: anyErr, statutes, laws, mst: results[0].mst };
 }
 
-module.exports = { fetchStatutes, TARGETS, _internal: { selectMst, labelOf, parseArticles, lawNameOf } };
+module.exports = { fetchStatutes, LAWS, TARGETS, _internal: { selectMst, labelOf, parseArticles, lawNameOf, fetchOneLaw } };
