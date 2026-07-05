@@ -73,7 +73,21 @@ function clean(s) {
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 }
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-function hasErr(b) { return !b || /<error|로그인이 필요|허용되지 않|사용자ID|등록되지/.test(b); }
+// DRF 오류 응답 감지(명확한 신호만 — 법조문 본문에 흔한 '등록되지/허용되지'는 제외해 오탐 방지)
+function hasErr(b) { return !b || /<error|로그인이 필요|OpenAPI|인증키가 유효|사용자 ID를 확인/.test(b); }
+// 법령 본문(조문 포함) 여부 — 본문 조회 결과 검증용(긍정 신호)
+function isLawBody(b) { return !!b && /<조문내용>|<조문단위>|<조문[\s>]/.test(b); }
+// 조문 텍스트 정리: 꼬리 메타데이터 제거 + 중복 항·호 번호 축약
+function cleanStatuteText(text) {
+  let t = text;
+  // 다음 조문 메타가 꼬리에 붙는 경우 제거: "... 57 조문 제목 20260407 N" / "58 전문 20260407 N"
+  t = t.replace(/\s+\d+(?:\s+\d+)?\s+(?:조문|전문)(?:\s+[^\d]+?)?\s+\d{8}\s+[NY]\s*$/, '');
+  // 중복 번호 축약: "① ①" → "①", "1. 1." → "1.", "가. 가." → "가."
+  t = t.replace(/([①-⑳])\s+\1/g, '$1');
+  t = t.replace(/(\d+)\.\s+\1\./g, '$1.');
+  t = t.replace(/([가-힣])\.\s+\1\./g, '$1.');
+  return t.replace(/\s+/g, ' ').trim();
+}
 
 function lawNameOf(body) {
   return clean(pick(/<법령명_?한글>([\s\S]*?)<\/법령명_?한글>/, body) || pick(/<법령명>([\s\S]*?)<\/법령명>/, body));
@@ -106,7 +120,7 @@ function parseArticles(body, mst, lawName, articles) {
     const t = wants(labelOf(no, pick(/<조문가지번호>([\s\S]*?)<\/조문가지번호>/, u)));
     if (!t) continue;
     const title = clean(pick(/<조문제목>([\s\S]*?)<\/조문제목>/, u)) || t.title;
-    const text = clean(u);
+    const text = cleanStatuteText(clean(u));
     if (text) out.push({ law: lawName, article: t.article, title, text, mst });
   }
   if (out.length) return { statutes: out, via: '조문단위', units: units.length };
@@ -120,7 +134,7 @@ function parseArticles(body, mst, lawName, articles) {
     const t = wants((markers[i].header.match(/^(제\d+조(?:의\d+)?)\s*[\(（]/) || [])[1]);
     if (!t || out.find(o => o.article === t.article)) continue;
     const end = i + 1 < markers.length ? markers[i + 1].index : body.length;
-    out.push({ law: lawName, article: t.article, title: t.title, text: clean(body.slice(markers[i].index, end)), mst });
+    out.push({ law: lawName, article: t.article, title: t.title, text: cleanStatuteText(clean(body.slice(markers[i].index, end))), mst });
   }
   return { statutes: out, via: '조문내용-슬라이스', units: units.length, contents: markers.length };
 }
@@ -140,8 +154,8 @@ async function fetchOneLaw(oc, law, get) {
     mst = selectMst(probe.body, law.name);
     if (!mst) return { name: law.name, status: 'error', reason: `검색에서 '${law.name}' 정확 일치 없음`, statutes: [] };
     const r = await getRetry(get, `https://www.law.go.kr/DRF/lawService.do?OC=${enc(oc)}&target=law&type=XML&MST=${mst}`);
-    if (r.status === 200 && !hasErr(r.body)) { body = r.body; via = 'MST'; }
-    else return { name: law.name, status: 'error', reason: `본문 조회 실패(재시도 후, status ${r.status})`, statutes: [], mst };
+    if (r.status === 200 && isLawBody(r.body)) { body = r.body; via = 'MST'; }
+    else return { name: law.name, status: 'error', reason: `본문 조회 실패(재시도 후, status ${r.status}, 법령본문 ${isLawBody(r.body)})`, statutes: [], mst };
   }
   if (!body) return { name: law.name, status: 'error', reason: '본문 조회 실패', statutes: [], mst };
 
@@ -176,4 +190,4 @@ async function fetchStatutes(oc, opts = {}) {
   return { status: 'ok', partial: anyErr, statutes, laws, mst: results[0].mst };
 }
 
-module.exports = { fetchStatutes, LAWS, TARGETS, _internal: { selectMst, labelOf, parseArticles, lawNameOf, fetchOneLaw } };
+module.exports = { fetchStatutes, LAWS, TARGETS, _internal: { selectMst, labelOf, parseArticles, lawNameOf, fetchOneLaw, cleanStatuteText, isLawBody, hasErr } };
