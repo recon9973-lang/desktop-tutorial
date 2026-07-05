@@ -198,6 +198,52 @@ function buildForbiddenRules(md) {
   };
 }
 
+// ── 추가 소스 통합(data/sources/extra/*.md) — 협회 자료·심의기준·가이드라인·시행규칙 ──
+function sourceMeta(file) {
+  if (file.startsWith('assoc-')) return { tag: '협회자료', label: assocLabel(file) };
+  if (file.startsWith('guideline-')) return { tag: '심의기준', label: '의료광고 공통 심의기준(2019.11.19, 3개 협회 공통)' };
+  if (file.startsWith('enforcement-rule')) return { tag: '조문원문', label: '의료법 시행규칙 — 의료광고 관련(2026.6.12)' };
+  return { tag: '일반', label: file };
+}
+function assocLabel(f) {
+  const org = /dental/.test(f) ? '대한치과의사협회' : /kma|의사/.test(f) ? '대한의사협회' : /han|한의/.test(f) ? '대한한의사협회' : '자율심의기구';
+  const kind = /faq/.test(f) ? 'FAQ' : /procedure/.test(f) ? '심의절차' : /target/.test(f) ? '심의대상' : /fees/.test(f) ? '심의수수료' : /documents/.test(f) ? '구비서류' : /reconsider/.test(f) ? '재심의청구' : /device/.test(f) ? '의료기기 광고 심의' : '심의안내';
+  return `${org} 의료광고심의 — ${kind}`;
+}
+function buildExtraChunks() {
+  const dir = path.join(SRC_DIR, 'extra');
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  let gid = 0;
+  for (const file of fs.readdirSync(dir).filter(f => /\.(md|txt)$/.test(f)).sort()) {
+    const raw = fs.readFileSync(path.join(dir, file), 'utf8');
+    const { tag, label } = sourceMeta(file);
+    const srcId = file.replace(/\.(md|txt)$/, '');
+    const paras = raw.split(/\n{2,}/).map(s => s.replace(/^#+\s*/, '').trim()).filter(Boolean);
+    let buf = '';
+    const flush = () => {
+      const text = buf.trim();
+      buf = '';
+      if (text.length < 40) return;
+      const legal = extractLegalRefs(text);
+      out.push({
+        id: 'extra-' + slugify(srcId, gid++),
+        title: label, h2: label, h3: '',
+        source: srcId, sourceTitle: label,
+        legalRefs: legal.refs, laws: legal.laws,
+        tags: [...new Set([...tagChunk(label, text), tag])],
+        text, chars: text.length,
+      });
+    };
+    for (const p of paras) {
+      if (buf && (buf.length + p.length) > 1100) flush();
+      buf += (buf ? '\n\n' : '') + p;
+    }
+    flush();
+  }
+  return out;
+}
+
 // ── 4) 키워드 역색인 ─────────────────────────────────────────────
 function buildIndex(chunks) {
   const inverted = {};   // token -> [chunkId,...]
@@ -250,6 +296,7 @@ function main() {
 
   const chunks = buildChunks(md);
   chunks.push(...buildStatuteChunks());  // 수집된 조문 원문(있으면) 통합
+  chunks.push(...buildExtraChunks());    // 협회 자료·심의기준·가이드라인·시행규칙 통합
   const kb = {
     updated: BUILT_AT,
     schema: 'venom-medical-ad-chatbot/kb@1',
