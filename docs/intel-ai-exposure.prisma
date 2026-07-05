@@ -1,0 +1,60 @@
+// ============================================================
+// AI 검색 진단 — 저장 설계 (intel 스키마)
+// ============================================================
+// 목적: "AI 검색 진단" 툴(병합본)의 측정 결과를 시계열로 저장해
+//       병원별 AI 노출 추이·답변 내용 변화를 추적한다.
+// 배치: DBARCHITECTURE.md의 "단일 Neon + 스키마 분리"에 따라 intel 스키마.
+//       원장님 앱이 거래처(ERP Client)와 clinicId로 연결 가능.
+// 채우기: 크론 워커가 active TrackedQuery를 주기마다 각 엔진에 실제 질문 →
+//       기존 aeo 엔진 재사용 → Snapshot insert → 일별 롤업.
+// 한 측정 = 한 행(mentioned=①점수, answerText=②원문) → 병합 툴과 1:1 정합.
+// ============================================================
+
+model TrackedQuery {
+  id        String   @id @default(cuid())
+  clinicId  String   // ERP Client.id 또는 병원 식별자
+  query     String   // 예: "대전 임플란트 추천"
+  active    Boolean  @default(true)
+  cadence   String   @default("weekly") // "daily" | "weekly"
+  createdAt DateTime @default(now())
+  snapshots AiExposureSnapshot[]
+
+  @@index([clinicId, active])
+  @@schema("intel")
+}
+
+model AiExposureSnapshot {
+  id         String   @id @default(cuid())
+  clinicId   String
+  queryId    String
+  engine     String   // perplexity | openai | gemini | claude
+  measuredAt DateTime @default(now())
+
+  // ① 노출 점수 (툴 상단 점수판)
+  mentioned  Boolean  // 나옴 / 안 나옴
+  rank       Int?     // 추천 목록 내 등장 순서
+
+  // ② 답변 내용 (툴 펼침 영역)
+  answerText  String  @db.Text
+  competitors Json?   // 답변에 언급된 경쟁 병원
+  citations   Json?   // 인용 출처 URL
+  sentiment   String? // positive | neutral | negative
+
+  query TrackedQuery @relation(fields: [queryId], references: [id])
+
+  @@index([clinicId, queryId, engine, measuredAt])
+  @@schema("intel")
+}
+
+model AiExposureDaily {
+  id           String   @id @default(cuid())
+  clinicId     String
+  date         DateTime @db.Date
+  enginesTotal Int
+  enginesHit   Int
+  exposureRate Float
+
+  @@unique([clinicId, date])
+  @@index([clinicId, date])
+  @@schema("intel")
+}
