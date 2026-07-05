@@ -1985,6 +1985,22 @@ function initVisitors(){
   });
 }
 // 방문자 분석 확장 지표 렌더 — 디바이스·시간대·인기페이지·지역·전환퍼널(전부 /api/analytics 실측)
+// 지역명 영문(Vercel geo x-vercel-ip-city)→한글. 미매핑(해외 등)은 원문 유지(정직).
+var _KR_REGION={
+  'Seoul':'서울','Busan':'부산','Incheon':'인천','Daegu':'대구','Daejeon':'대전','Gwangju':'광주','Ulsan':'울산','Sejong':'세종',
+  'Suwon':'수원','Seongnam':'성남','Goyang':'고양','Yongin':'용인','Bucheon':'부천','Ansan':'안산','Namyangju':'남양주','Hwaseong':'화성','Pyeongtaek':'평택','Anyang':'안양','Uijeongbu':'의정부',
+  'Cheongju':'청주','Jeonju':'전주','Cheonan':'천안','Andong':'안동','Pohang':'포항','Changwon':'창원','Gimhae':'김해','Jeju':'제주','Wonju':'원주','Chuncheon':'춘천','Gumi':'구미','Yeosu':'여수','Mokpo':'목포','Gyeongju':'경주',
+  'Gangnam-gu':'강남구','Seocho-gu':'서초구','Songpa-gu':'송파구','Dongjak-gu':'동작구','Mapo-gu':'마포구','Yongsan-gu':'용산구','Jongno-gu':'종로구','Gangseo-gu':'강서구','Yeongdeungpo-gu':'영등포구','Nowon-gu':'노원구'
+};
+function _krRegion(n){ n=String(n||''); return _KR_REGION[n]||n; }
+// 경로 정리: 잘못 이어붙은 URL(2번째 http 이후) 제거, 절대URL이면 pathname만, 길면 말줄임.
+function _cleanPath(p){ p=String(p||''); var i=p.search(/https?:\/\/?/i); if(i>0)p=p.slice(0,i);
+  try{ if(/^https?:\/\//i.test(p))p=new URL(p).pathname; }catch(e){} p=p.split('?')[0].split('#')[0]||'/';
+  return p; }
+function _pageAnchor(rawPath){ var c=_cleanPath(rawPath); var disp=(c.length>52?c.slice(0,52)+'…':c).replace(/</g,'&lt;');
+  var href=location.origin+(c.charAt(0)==='/'?c:'/'+c);
+  return '<a href="'+href+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--border)" title="'+href.replace(/"/g,'')+'">'+disp+'</a>'; }
+
 function renderVisitorExtras(srv){
   var pend='<div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">아직 수집된 데이터가 없습니다</div>';
   // 디바이스
@@ -2002,13 +2018,13 @@ function renderVisitorExtras(srv){
   var tp=document.getElementById('v-top-pages');
   if(tp){var pages=srv.topPaths||[];
     if(!pages.length){tp.innerHTML=pend;}
-    else{var mx=pages[0].count||1;tp.innerHTML=pages.map(function(p,i){var pct=Math.round(p.count/mx*100);var nm=(p.name||'').replace(/</g,'&lt;');return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--p);font-weight:600">'+(i+1)+'.</span> <span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</span><span style="color:var(--mute)">'+p.count+'</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--p)"></div></div></div>';}).join('');}
+    else{var mx=pages[0].count||1;tp.innerHTML=pages.map(function(p,i){var pct=Math.round(p.count/mx*100);var nm=_pageAnchor(p.name);return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--p);font-weight:600">'+(i+1)+'.</span> <span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</span><span style="color:var(--mute)">'+p.count+'</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--p)"></div></div></div>';}).join('');}
   }
   // 지역
   var rg=document.getElementById('v-regions');
   if(rg){var regs=srv.regions||[];var rt=regs.reduce(function(a,r){return a+(r.count||0);},0);
     if(!rt){rg.innerHTML=pend;}
-    else{rg.innerHTML=regs.map(function(r){var pct=Math.round(r.count/rt*100);var nm=(r.name||'').replace(/</g,'&lt;');return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+nm+'</span><span style="color:var(--mute)">'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--bd)"></div></div></div>';}).join('');}
+    else{rg.innerHTML=regs.map(function(r){var pct=Math.round(r.count/rt*100);var nm=_krRegion(r.name).replace(/</g,'&lt;');return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+nm+'</span><span style="color:var(--mute)">'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--bd)"></div></div></div>';}).join('');}
   }
   // 시간대별
   var hourly=document.getElementById('v-hourly');
