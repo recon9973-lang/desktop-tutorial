@@ -486,10 +486,10 @@ a{color:var(--p);text-decoration:none}
 
       <!-- KPI 요약 -->
       <div class="stat-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">추적 키워드</div><div class="stat-val" id="kw-count">12</div><div class="stat-change up">↑ 3개 추가됨</div></div>
-        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">TOP 3 키워드</div><div class="stat-val" id="kw-top3">4</div><div class="stat-change up">↑ 1 전주 대비</div></div>
-        <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">월 노출량 합계</div><div class="stat-val" id="kw-impression">14,850</div><div class="stat-change up">↑ 18%</div></div>
-        <div class="stat-card"><div class="stat-icon">💡</div><div class="stat-label">평균 클릭률</div><div class="stat-val" id="kw-ctr">4.2%</div><div class="stat-change up">↑ 0.6%p</div></div>
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">추적 키워드</div><div class="stat-val" id="kw-count">—</div><div class="stat-change">추적 목록</div></div>
+        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">월 검색량 합계 <span style="font-size:9px;color:var(--mute)">(네이버 실측)</span></div><div class="stat-val" id="kw-volsum">—</div><div class="stat-change">PC+모바일</div></div>
+        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">최고 검색량 키워드</div><div class="stat-val" id="kw-topvol">—</div><div class="stat-change">월 기준</div></div>
+        <div class="stat-card"><div class="stat-icon">🖱️</div><div class="stat-label">월 클릭 합계 <span style="font-size:9px;color:var(--mute)">(네이버 실측)</span></div><div class="stat-val" id="kw-clicksum">—</div><div class="stat-change">추정 클릭수</div></div>
       </div>
 
       <!-- 키워드 검색량 조회 도구 -->
@@ -520,16 +520,17 @@ a{color:var(--p);text-decoration:none}
       <!-- 추적 키워드 현황 테이블 -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">📋 추적 키워드 현황</div>
+          <div class="card-title">📋 추적 키워드 현황 <span style="font-size:11px;font-weight:400;color:var(--mute)">(네이버 검색광고 실측)</span></div>
           <div style="display:flex;gap:8px">
             <select id="kw-filter" class="btn btn-outline btn-sm" onchange="renderKeywordTable()">
-              <option value="all">전체</option><option value="top">TOP 10 이내</option><option value="up">순위 상승</option><option value="down">순위 하락</option>
+              <option value="vol">검색량 높은순</option><option value="name">이름순</option>
             </select>
-            <button class="btn btn-p btn-sm" onclick="runKeywordUpdate()">🔄 순위 갱신</button>
+            <button class="btn btn-p btn-sm" onclick="renderKeywordTable()">🔄 새로고침</button>
           </div>
         </div>
+        <p style="font-size:12px;color:var(--mute);margin:-4px 0 12px">월 검색량·경쟁도·클릭은 네이버 검색광고 실측입니다. 네이버/구글 <b>검색 순위</b>는 별도 순위추적 연동이 필요해 표시하지 않습니다(연동 예정).</p>
         <table class="data-table">
-          <thead><tr><th>키워드</th><th>카테고리</th><th>네이버 순위</th><th>구글 순위</th><th>월 검색량</th><th>경쟁도</th><th>전주 대비</th><th>유입수</th><th></th></tr></thead>
+          <thead><tr><th>키워드</th><th>월 검색량</th><th>경쟁도</th><th>월 클릭(추정)</th><th></th></tr></thead>
           <tbody id="kw-table-body"></tbody>
         </table>
       </div>
@@ -1402,24 +1403,43 @@ var kwTracking=Object.keys(kwDatabase);
 function compLabel(v){return v>=0.8?'<span class="badge badge-red">높음</span>':v>=0.5?'<span class="badge badge-yellow">중간</span>':'<span class="badge badge-green">낮음</span>';}
 function chgLabel(v){return v>0?'<span style="color:#16a34a">↑'+v+'</span>':v<0?'<span style="color:#dc2626">↓'+Math.abs(v)+'</span>':'<span style="color:var(--mute)">—</span>';}
 
+function _setKwKpi(rows){
+  var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+  if(!rows||!rows.length){ s('kw-volsum','—'); s('kw-topvol','—'); s('kw-clicksum','—'); return; }
+  var volsum=rows.reduce(function(a,r){return a+(r.monthlyVolume||0);},0);
+  var clicksum=rows.reduce(function(a,r){return a+(r.avgClicks||0);},0);
+  var top=rows.slice().sort(function(a,b){return (b.monthlyVolume||0)-(a.monthlyVolume||0);})[0];
+  s('kw-volsum',volsum.toLocaleString()); s('kw-clicksum',clicksum.toLocaleString());
+  s('kw-topvol',top?(top.monthlyVolume||0).toLocaleString():'—');
+}
+// 추적 키워드 현황 — 네이버 검색광고 실측(월 검색량·경쟁도·클릭). 순위는 미표시(연동 예정).
 function renderKeywordTable(){
-  var filter=document.getElementById('kw-filter')?document.getElementById('kw-filter').value:'all';
-  var body=document.getElementById('kw-table-body');
-  if(!body)return;
-  var rows=kwTracking.filter(function(k){
-    var d=kwDatabase[k];if(!d)return false;
-    if(filter==='top')return d.naver<=10||d.google<=10;
-    if(filter==='up')return d.chg>0;
-    if(filter==='down')return d.chg<0;
-    return true;
-  });
-  body.innerHTML=rows.map(function(k){
-    var d=kwDatabase[k];
-    return '<tr><td><strong>'+k+'</strong></td><td><span class="badge badge-blue" style="font-size:10px">'+d.cat+'</span></td><td>'+(d.naver<=3?'<strong style="color:var(--p)">':'')+d.naver+'위'+(d.naver<=3?'</strong>':'')+'</td><td>'+d.google+'위</td><td><strong>'+(d.pc+d.mo).toLocaleString()+'</strong><span style="font-size:11px;color:var(--mute)"> (PC:'+d.pc.toLocaleString()+'/MO:'+d.mo.toLocaleString()+')</span></td><td>'+compLabel(d.comp)+'</td><td>'+chgLabel(d.chg)+'</td><td>'+d.visits+'</td><td><button class="btn btn-outline btn-sm" style="font-size:11px" onclick="removeFromTracking(\''+k+'\')">삭제</button></td></tr>';
-  }).join('');
-  document.getElementById('kw-count').textContent=kwTracking.length;
-  var top3=kwTracking.filter(function(k){var d=kwDatabase[k];return d&&(d.naver<=3||d.google<=3);}).length;
-  document.getElementById('kw-top3').textContent=top3;
+  var body=document.getElementById('kw-table-body'); if(!body)return;
+  var sort=document.getElementById('kw-filter')?document.getElementById('kw-filter').value:'vol';
+  var cnt=document.getElementById('kw-count'); if(cnt)cnt.textContent=kwTracking.length;
+  if(!kwTracking.length){ body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">추적 중인 키워드가 없습니다. 위 “키워드 검색량 조회”에서 조회 후 “+ 추적 추가”하세요.</td></tr>'; _setKwKpi(null); return; }
+  body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">네이버 실측 데이터 불러오는 중…</td></tr>';
+  fetch('/api/insights?type=keywordtool&q='+encodeURIComponent(kwTracking.join(',')))
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};},function(){return {s:r.status,j:null};});})
+    .then(function(res){
+      if(!(res.s===200&&res.j&&res.j.keywords&&res.j.keywords.length)){
+        body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">네이버 검색광고 API 연동 대기 — 실측 데이터가 없어 표시하지 않습니다.</td></tr>'; _setKwKpi(null); return;
+      }
+      var rows=res.j.keywords.slice();
+      if(sort==='name')rows.sort(function(a,b){return String(a.keyword||'').localeCompare(String(b.keyword||''));});
+      else rows.sort(function(a,b){return (b.monthlyVolume||0)-(a.monthlyVolume||0);});
+      body.innerHTML=rows.map(function(d){
+        var comp=d.competition||'-'; var cc=comp==='높음'?'#dc2626':comp==='낮음'?'#16a34a':'var(--ink)';
+        var kw=String(d.keyword||'').replace(/</g,'&lt;'); var kwj=String(d.keyword||'').replace(/'/g,"\\'");
+        return '<tr><td><strong>'+kw+'</strong></td>'
+          +'<td style="font-weight:600;color:var(--p)">'+(d.monthlyVolume||0).toLocaleString()+'</td>'
+          +'<td style="color:'+cc+'">'+comp+'</td>'
+          +'<td>'+(d.avgClicks||0).toLocaleString()+'</td>'
+          +'<td><button class="btn btn-outline btn-sm" style="font-size:11px" onclick="removeFromTracking(\''+kwj+'\')">삭제</button></td></tr>';
+      }).join('');
+      _setKwKpi(rows);
+    })
+    .catch(function(){ body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">데이터를 불러오지 못했습니다.</td></tr>'; _setKwKpi(null); });
 }
 
 function lookupKeyword(){
@@ -1504,7 +1524,6 @@ function addToTracking(){
   var added=0;
   kws.forEach(function(kw){
     if(!kwTracking.includes(kw)){kwTracking.push(kw);added++;}
-    if(!kwDatabase[kw]){kwDatabase[kw]={pc:Math.round(200+Math.random()*2000),mo:Math.round(300+Math.random()*3000),comp:Math.round(30+Math.random()*60)/100,cpc:Math.round(800+Math.random()*3000),cat:'기타',naver:Math.round(5+Math.random()*45),google:Math.round(8+Math.random()*60),chg:0,visits:0};}
   });
   if(added>0){renderKeywordTable();toast(added+'개 키워드가 추적 목록에 추가되었습니다.');}
   else toast('이미 추적 중인 키워드입니다.');
@@ -1516,18 +1535,8 @@ function removeFromTracking(kw){
   toast('"'+kw+'" 키워드 추적이 해제되었습니다.');
 }
 
-function runKeywordUpdate(){
-  toast('키워드 순위 갱신 중...');
-  setTimeout(function(){
-    kwTracking.forEach(function(k){
-      var d=kwDatabase[k];if(!d)return;
-      d.chg=Math.round(-2+Math.random()*4);
-      d.naver=Math.max(1,d.naver-d.chg);
-    });
-    renderKeywordTable();
-    toast('✅ 순위 갱신 완료 (시뮬레이션)');
-  },1200);
-}
+// (구) 시뮬레이션 순위 갱신 제거 — 실측 새로고침으로 대체
+function runKeywordUpdate(){ renderKeywordTable(); }
 function runSeoAudit(){toast('SEO 재점검 중...')}
 function downloadReport(){toast('PDF 생성 중... (실제 배포 시 자동 생성)')}
 function generateCardnews(){toast('오늘 카드뉴스 생성 중... (AI API 연동 필요)')}
