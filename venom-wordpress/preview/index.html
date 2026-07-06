@@ -8957,5 +8957,107 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
   .dc-ilink{font-weight:600}
   .dc-info{margin:28px 0}
 </style>
+
+<!-- ── 의료광고심의 도우미 챗봇 위젯(전 페이지 공통) — 근거: preview/chatbot, API: /api/chatbot ── -->
+<style id="vcb-style">
+  #vcb-bubble{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:50%;
+    background:linear-gradient(135deg,#1d6fe0,#0f2a43);color:#fff;border:none;cursor:pointer;
+    box-shadow:0 10px 26px -8px rgba(15,42,67,.55);font-size:26px;z-index:9998;display:flex;
+    align-items:center;justify-content:center;transition:transform .15s}
+  #vcb-bubble:hover{transform:scale(1.06)}
+  #vcb-bubble .vcb-badge{position:absolute;top:-3px;right:-3px;background:#e53935;color:#fff;
+    font-size:10px;font-weight:700;border-radius:20px;padding:1px 5px}
+  #btt{bottom:92px!important}
+  #vcb-panel{position:fixed;bottom:92px;right:24px;width:370px;max-width:92vw;height:564px;max-height:74vh;
+    background:#fff;border:1px solid #e5e9f0;border-radius:16px;z-index:9999;display:none;flex-direction:column;
+    overflow:hidden;box-shadow:0 24px 60px -18px rgba(15,42,67,.5);font-family:-apple-system,'Segoe UI',Roboto,'Noto Sans KR',sans-serif}
+  #vcb-panel.vcb-open{display:flex}
+  .vcb-head{background:#0f2a43;color:#fff;padding:13px 15px;display:flex;align-items:center;gap:8px}
+  .vcb-head h4{margin:0;font-size:15px;font-weight:600;flex:1}
+  .vcb-head .vcb-x{background:none;border:none;color:#cdd8e4;font-size:20px;cursor:pointer;line-height:1}
+  .vcb-status{font-size:11px;color:#5a6b7a;padding:7px 14px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#fafbfd}
+  .vcb-status .vcb-dot{width:7px;height:7px;border-radius:50%;background:#c9d3dd}
+  .vcb-status .vcb-dot.on{background:#1b7a3d}
+  .vcb-modes{display:flex;gap:6px;padding:10px 14px 4px}
+  .vcb-modes button{flex:0 0 auto;padding:5px 12px;border:1px solid #e5e9f0;background:#fff;border-radius:18px;cursor:pointer;font-size:12px;color:#3a4a58}
+  .vcb-modes button.on{background:#1d6fe0;color:#fff;border-color:#1d6fe0}
+  #vcb-chat{flex:1;overflow-y:auto;padding:12px 14px}
+  .vcb-msg{margin:0 0 12px;font-size:13.5px;line-height:1.6}
+  .vcb-msg .vcb-b{display:inline-block;padding:9px 12px;border-radius:12px;white-space:normal;max-width:100%}
+  .vcb-msg.bot .vcb-b{background:#f0f5fd;border:1px solid #dce8fb;color:#16232e}
+  .vcb-msg.me{text-align:right}
+  .vcb-msg.me .vcb-b{background:#0f2a43;color:#fff;text-align:left}
+  .vcb-b b{font-weight:700}.vcb-b ul,.vcb-b ol{margin:5px 0;padding-left:18px}.vcb-b li{margin:2px 0}
+  .vcb-b code{background:#e7eefb;border-radius:4px;padding:0 4px}
+  .vcb-ref{display:inline-block;background:#eef3fb;color:#28527a;border-radius:5px;padding:1px 6px;margin:2px 3px 0 0;font-size:10.5px}
+  .vcb-src{margin-top:7px;font-size:11.5px}.vcb-src summary{cursor:pointer;color:#0f2a43;font-weight:600}
+  .vcb-diag{border-radius:9px;padding:9px 11px;font-size:12.5px}
+  .vcb-diag.bad{background:#fdecec;border:1px solid #f6c5c5}.vcb-diag.good{background:#eaf6ee;border:1px solid #bfe3c9}
+  .vcb-chip{display:inline-block;border-radius:5px;padding:1px 7px;margin:2px 3px 0 0;font-size:11px}
+  .vcb-chip.f{background:#fbdada;color:#c62828}.vcb-chip.r{background:#fbeecd;color:#b26a00}
+  .vcb-fix{margin-top:7px;background:#fff;border:1px dashed #bcd;border-radius:8px;padding:7px 9px}
+  .vcb-typing span{display:inline-block;width:6px;height:6px;margin:0 1px;border-radius:50%;background:#9db1c4;animation:vcbblink 1.2s infinite both}
+  .vcb-typing span:nth-child(2){animation-delay:.2s}.vcb-typing span:nth-child(3){animation-delay:.4s}
+  @keyframes vcbblink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .vcb-foot{padding:8px 14px 12px;border-top:1px solid #eef1f6}
+  .vcb-form{display:flex;gap:7px}
+  .vcb-form textarea{flex:1;resize:none;height:40px;padding:9px 11px;border:1px solid #e5e9f0;border-radius:10px;font-size:13px;font-family:inherit}
+  .vcb-form button{padding:0 15px;background:#1d6fe0;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px}
+  .vcb-form button:disabled{opacity:.5}
+  .vcb-note{font-size:10.5px;color:#8493a1;margin:7px 0 0;line-height:1.45}
+  @media(max-width:480px){#vcb-panel{right:3vw;left:3vw;width:auto;bottom:88px}}
+</style>
+<button id="vcb-bubble" aria-label="의료광고심의 도우미 열기">🩺<span class="vcb-badge">AI</span></button>
+<div id="vcb-panel" role="dialog" aria-label="의료광고심의 도우미 챗봇">
+  <div class="vcb-head"><span>🩺</span><h4>의료광고심의 도우미</h4><button class="vcb-x" id="vcb-close" aria-label="닫기">×</button></div>
+  <div class="vcb-status" id="vcb-status"><span class="vcb-dot"></span> 연결 확인 중…</div>
+  <div class="vcb-modes"><button data-m="qa" class="on">💬 질문하기</button><button data-m="diagnose">🔍 문구 진단</button></div>
+  <div id="vcb-chat"><div class="vcb-msg bot"><div class="vcb-b">안녕하세요. 의료광고·심의·의료법 질문에 <b>근거 조항을 인용</b>해 답합니다. ‘문구 진단’에서 광고 문구의 위반 소지도 확인해 보세요.</div></div></div>
+  <div class="vcb-foot">
+    <form class="vcb-form" id="vcb-form"><textarea id="vcb-q" placeholder="예: 전후사진은 언제 게시할 수 있나요?"></textarea><button id="vcb-send" type="submit">전송</button></form>
+    <p class="vcb-note">※ 참고용 사전 진단입니다. 실제 심의 승인·반려는 자율심의기구의 심의 결과에 따릅니다.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var API='/api/chatbot', mode='qa', inited=false;
+  var $=function(id){return document.getElementById(id)};
+  var bubble=$('vcb-bubble'), panel=$('vcb-panel'), chat=$('vcb-chat'), q=$('vcb-q'), send=$('vcb-send');
+  function esc(s){return (s||'').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+  function mdLite(s){
+    var t=esc(s||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>');
+    var lines=t.split('\n'),out='',list=null,close=function(){if(list){out+='</'+list+'>';list=null}};
+    for(var i=0;i<lines.length;i++){var ln=lines[i],m;
+      if((m=ln.match(/^\s*\d+[.)]\s+(.*)/))){if(list!=='ol'){close();out+='<ol>';list='ol'}out+='<li>'+m[1]+'</li>'}
+      else if((m=ln.match(/^\s*[-•]\s+(.*)/))){if(list!=='ul'){close();out+='<ul>';list='ul'}out+='<li>'+m[1]+'</li>'}
+      else{close();out+=ln+'<br>'}}
+    close();return out.replace(/(<br>\s*)+$/,'')
+  }
+  function add(cls,html){var d=document.createElement('div');d.className='vcb-msg '+cls;d.innerHTML='<div class="vcb-b">'+html+'</div>';chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d}
+  function srcHtml(s){if(!s||!s.length)return '';var it=s.map(function(x){var r=(x.legalRefs||[]).map(function(v){return '<span class="vcb-ref">'+esc(v)+'</span>'}).join('');return '<div style="margin:5px 0"><b>'+esc((x.title||'').split('›').pop().trim())+'</b><br>'+r+'</div>'}).join('');return '<div class="vcb-src"><details><summary>근거 '+s.length+'건</summary>'+it+'</details></div>'}
+  function diagHtml(d){if(!d||d.error)return '<div class="vcb-diag">진단기 미연동'+(d&&d.error?': '+esc(d.error):'')+'</div>';var h='<div class="vcb-diag '+(d.pass?'good':'bad')+'">'+(d.pass?'✅ 금지 표현이 발견되지 않았습니다.':'⚠️ 위반 소지 표현이 있습니다.');if(d.forbidden&&d.forbidden.length)h+='<div style="margin-top:5px">금지어: '+d.forbidden.map(function(x){return '<span class="vcb-chip f">'+esc(x)+'</span>'}).join('')+'</div>';if(d.risky&&d.risky.length)h+='<div style="margin-top:3px">주의어: '+d.risky.map(function(x){return '<span class="vcb-chip r">'+esc(x)+'</span>'}).join('')+'</div>';h+='</div>';if(d.suggestion)h+='<div class="vcb-fix"><b>안전 대체안</b><br>'+esc(d.suggestion)+'</div>';return h}
+  function loadStatus(){
+    fetch(API).then(function(r){return r.json()}).then(function(s){
+      var chunks=(s.kb&&s.kb.chunks)||0, brain=s.provider==='anthropic'?'Claude':s.provider==='openai'?'AI':'근거요약';
+      $('vcb-status').innerHTML='<span class="vcb-dot on"></span> 두뇌 '+esc(brain)+' · 근거 '+chunks+'건 · 의료법 제56·57조 기반';
+    }).catch(function(){$('vcb-status').innerHTML='<span class="vcb-dot"></span> 배포 환경에서 활성화됩니다';});
+  }
+  function openPanel(){panel.classList.add('vcb-open');if(!inited){inited=true;loadStatus()}q.focus()}
+  bubble.onclick=function(){panel.classList.contains('vcb-open')?panel.classList.remove('vcb-open'):openPanel()};
+  $('vcb-close').onclick=function(){panel.classList.remove('vcb-open')};
+  var mbtns=panel.querySelectorAll('.vcb-modes button');
+  for(var i=0;i<mbtns.length;i++)mbtns[i].onclick=function(){for(var j=0;j<mbtns.length;j++)mbtns[j].classList.remove('on');this.classList.add('on');mode=this.getAttribute('data-m');q.placeholder=mode==='diagnose'?'검수할 광고 문구를 붙여넣으세요…':'예: 전후사진은 언제 게시할 수 있나요?'};
+  q.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('vcb-form').requestSubmit()}});
+  $('vcb-form').onsubmit=function(e){
+    e.preventDefault();var text=q.value.trim();if(!text)return;
+    add('me',esc(text));q.value='';send.disabled=true;
+    var load=add('bot','<span class="vcb-typing"><span></span><span></span><span></span></span>');
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,mode:mode})})
+      .then(function(r){return r.json()}).then(function(data){
+        load.querySelector('.vcb-b').innerHTML = mode==='diagnose' ? diagHtml(data.diagnosis||{}) : (mdLite(data.answer||data.error||'응답 없음')+srcHtml(data.sources));
+      }).catch(function(err){load.querySelector('.vcb-b').innerHTML='요청 실패: '+esc(err.message)}).then(function(){send.disabled=false});
+  };
+})();
+</script>
 </body>
 </html>
