@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1783346561373",
+    "title": "인천 안과마케팅의 5가지 효과적인 전략",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1979,
+      "totalTokens": 4590,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-06T14:04:16.765Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1783332438278",
     "title": "대구 성형외과 마케팅: 쌍꺼풀에서 리프팅까지 7가지 시술 정보",
