@@ -1,6 +1,21 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1783380989708",
+    "title": "인천 피부과 마케팅 전략 5가지 핵심 인사이트",
+    "tokenUsage": {
+      "promptTokens": 2619,
+      "completionTokens": 1782,
+      "totalTokens": 4401,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at a5c9496eed84df73294b0f461b5bdb5341617ad8 but expected e586849807109f1149b3bf4e1722a51943e51ca6",
+    "autoFixed": false,
+    "ts": "2026-07-06T23:37:43.151Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783371736254",
     "title": "부산 치과마케팅 5가지 전략으로 고객 단가 30% 증가",
     "tokenUsage": {
