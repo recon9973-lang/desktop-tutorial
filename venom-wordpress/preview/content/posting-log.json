@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1783371736254",
+    "title": "부산 치과마케팅 5가지 전략으로 고객 단가 30% 증가",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 1812,
+      "totalTokens": 4451,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-06T21:03:35.159Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783371626479",
     "title": "대구 병원마케팅: GEO와 AI 활용 5가지 전략",
     "tokenUsage": {
