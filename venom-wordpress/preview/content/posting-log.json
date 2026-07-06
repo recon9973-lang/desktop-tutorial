@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1783371626479",
+    "title": "대구 병원마케팅: GEO와 AI 활용 5가지 전략",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1979,
+      "totalTokens": 4590,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-06T21:01:50.997Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1783364798805",
     "title": "대전 병원마케팅 5가지 전략으로 SEO 최적화하기",
