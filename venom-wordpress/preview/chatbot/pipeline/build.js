@@ -202,6 +202,9 @@ function buildForbiddenRules(md) {
 function sourceMeta(file) {
   if (file.startsWith('assoc-')) return { tag: '협회자료', label: assocLabel(file) };
   if (file.startsWith('guide-exemption')) return { tag: '심의기준', label: '사전심의 예외 — 심의 없이 게재 가능한 정보성 콘텐츠(의료법 제57조 제3항·심의기준 제3조)' };
+  if (file.startsWith('guide-56')) return { tag: '조문원문', label: '의료법 제56조 제2항 — 금지 의료광고 유형·정확한 호수 매핑' };
+  if (file.startsWith('guide-ad-subject')) return { tag: '심의기준', label: '의료광고의 주체 — 대행사 대행 가능 여부(의료법 제56조 제1항·제27조 제3항)' };
+  if (file.startsWith('guide-compare')) return { tag: '심의기준', label: '비교·비방광고 금지 — 정확한 근거 제56조 제2항 제4·5호' };
   if (file.startsWith('guideline-')) return { tag: '심의기준', label: '의료광고 공통 심의기준(2019.11.19, 3개 협회 공통)' };
   if (file.startsWith('enforcement-rule')) return { tag: '조문원문', label: '의료법 시행규칙 — 의료광고 관련(2026.6.12)' };
   return { tag: '일반', label: file };
