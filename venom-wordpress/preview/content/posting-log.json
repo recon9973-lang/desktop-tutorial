@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1783332438278",
+    "title": "대구 성형외과 마케팅: 쌍꺼풀에서 리프팅까지 7가지 시술 정보",
+    "tokenUsage": {
+      "promptTokens": 2610,
+      "completionTokens": 2103,
+      "totalTokens": 4713,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T10:08:29.954Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1783332323689",
     "title": "대전 정형외과 마케팅, 허리디스크 치료로 신환 2.4배 증가",
     "tokenUsage": {
