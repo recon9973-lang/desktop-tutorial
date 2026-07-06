@@ -13,6 +13,16 @@ const PRICE_OUTPUT = 0.60;
 // dall-e-3 1024x1024 standard
 const PRICE_IMAGE  = 0.040;
 
+// 카테고리 코드 → 한글 라벨(상세 분석 표기용)
+const CAT_LABEL = {
+  geo_local: '지역마케팅', geo: 'GEO/AI', aeo: 'AEO', seo: 'SEO', strategy: '전략',
+  dental: '치과', skin: '피부과', ortho: '정형외과', oriental: '한의원',
+  plastic: '성형외과', naegwa: '내과', angwa: '안과', shimui: '의료광고심의',
+  hosp_mkt: '병원마케팅', marketing: '마케팅',
+};
+const catLabel = (c) => CAT_LABEL[c] || c || '기타';
+const round4 = (n) => Math.round(n * 1e4) / 1e4;
+
 function ghGet(filePath) {
   return new Promise((resolve) => {
     if (!TOKEN) return resolve(null);
@@ -72,23 +82,38 @@ module.exports = async function handler(req, res) {
       byDay[d] = { date: d, posts: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, images: 0, costUsd: 0 };
     });
 
+    // 상세 분석 누적기 (카테고리·모델·액션별 / 입력·출력 / 비용 구성)
+    const byCat = {}, byModel = {}, byAction = {};
+    const io = { promptTokens: 0, completionTokens: 0 };
+    const cost = { inputUsd: 0, outputUsd: 0, imageUsd: 0 };
+    const bump = (map, key, ent) => {
+      const m = (map[key] = map[key] || { key, posts: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, images: 0, costUsd: 0 });
+      m.posts += 1;
+      m.promptTokens += ent.p; m.completionTokens += ent.c; m.totalTokens += ent.t;
+      m.images += ent.img; m.costUsd += ent.cost;
+    };
+
     logs.forEach(entry => {
       const date = (entry.ts || '').slice(0, 10);
       if (!byDay[date]) return;
       const d = byDay[date];
       if (entry.action === 'cron-publish' || entry.action === 'cron-publish-fixed' || entry.action === 'generate') {
         d.posts += 1;
-        if (entry.tokenUsage) {
-          d.promptTokens     += entry.tokenUsage.promptTokens     || 0;
-          d.completionTokens += entry.tokenUsage.completionTokens || 0;
-          d.totalTokens      += entry.tokenUsage.totalTokens      || 0;
-          d.costUsd += (entry.tokenUsage.promptTokens     / 1e6) * PRICE_INPUT;
-          d.costUsd += (entry.tokenUsage.completionTokens / 1e6) * PRICE_OUTPUT;
-        }
-        if (entry.imageGenerated) {
-          d.images  += 1;
-          d.costUsd += PRICE_IMAGE;
-        }
+        const tu = entry.tokenUsage || {};
+        const p = tu.promptTokens || 0, c = tu.completionTokens || 0, t = tu.totalTokens || (p + c);
+        const inUsd = (p / 1e6) * PRICE_INPUT, outUsd = (c / 1e6) * PRICE_OUTPUT;
+        const imgUsd = entry.imageGenerated ? PRICE_IMAGE : 0;
+        const entCost = inUsd + outUsd + imgUsd;
+        d.promptTokens += p; d.completionTokens += c; d.totalTokens += t;
+        d.costUsd += inUsd + outUsd;
+        if (entry.imageGenerated) { d.images += 1; d.costUsd += PRICE_IMAGE; }
+        // 상세 누적
+        io.promptTokens += p; io.completionTokens += c;
+        cost.inputUsd += inUsd; cost.outputUsd += outUsd; cost.imageUsd += imgUsd;
+        const acc = { p, c, t, img: entry.imageGenerated ? 1 : 0, cost: entCost };
+        bump(byCat, entry.category || '기타', acc);
+        bump(byModel, (tu.model || 'unknown'), acc);
+        bump(byAction, (entry.action === 'generate' ? '수동/즉시' : '크론 자동'), acc);
       }
     });
 
@@ -104,7 +129,39 @@ module.exports = async function handler(req, res) {
       return acc;
     }, { posts: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, images: 0, costUsd: 0 });
 
-    return res.status(200).json({ ok: true, days: all, totals, period: nDays });
+    // 상세 분석 정리 (내림차순 정렬 + 비율)
+    const tt = totals.totalTokens || 1;
+    const sortByTokens = (map, addLabel) => Object.values(map)
+      .map(m => Object.assign(m, {
+        label: addLabel ? catLabel(m.key) : m.key,
+        costUsd: round4(m.costUsd),
+        pct: Math.round((m.totalTokens / tt) * 100),
+      }))
+      .sort((a, b) => b.totalTokens - a.totalTokens);
+
+    const detail = {
+      byCategory: sortByTokens(byCat, true),
+      byModel:    sortByTokens(byModel, false),
+      byAction:   sortByTokens(byAction, false),
+      io: {
+        promptTokens: io.promptTokens,
+        completionTokens: io.completionTokens,
+        promptPct: Math.round((io.promptTokens / tt) * 100),
+        completionPct: Math.round((io.completionTokens / tt) * 100),
+      },
+      cost: {
+        inputUsd:  round4(cost.inputUsd),
+        outputUsd: round4(cost.outputUsd),
+        imageUsd:  round4(cost.imageUsd),
+        totalUsd:  round4(cost.inputUsd + cost.outputUsd + cost.imageUsd),
+      },
+      avg: {
+        tokensPerPost: totals.posts ? Math.round(totals.totalTokens / totals.posts) : 0,
+        costPerPost:   totals.posts ? round4(totals.costUsd / totals.posts) : 0,
+      },
+    };
+
+    return res.status(200).json({ ok: true, days: all, totals, period: nDays, detail });
   } catch (e) {
     console.error('[usage-stats]', e);
     return res.status(500).json({ error: e.message });
