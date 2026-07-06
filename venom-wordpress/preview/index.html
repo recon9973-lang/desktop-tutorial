@@ -798,7 +798,7 @@ body{padding-top:0}
   <nav class="mob-nav">
     <div class="mob-nav-group">
       <div class="mob-nav-row">
-        <a href="/hospital-marketing" class="mob-nav-item mob-nav-main" onclick="sp('hosp_mkt');closeMobMenu();return false">병원마케팅</a>
+        <a href="/hospital-marketing" class="mob-nav-item mob-nav-main" onclick="return mobParent(this)">병원마케팅</a>
         <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="병원마케팅 하위 메뉴 열기">
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -807,12 +807,13 @@ body{padding-top:0}
     </div>
     <div class="mob-nav-group">
       <div class="mob-nav-row">
-        <a href="/ai" class="mob-nav-item mob-nav-main" onclick="sp('ai');closeMobMenu();return false">AI마케팅 <span class="nav-new">NEW</span></a>
+        <a href="/ai" class="mob-nav-item mob-nav-main" onclick="return mobParent(this)">AI마케팅 <span class="nav-new">NEW</span></a>
         <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="AI마케팅 하위 메뉴 열기">
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
       </div>
       <div class="mob-sub">
+        <a href="/ai" onclick="sp('ai');closeMobMenu();return false" class="mob-sub-ov">AI마케팅 개요 →</a>
         <a href="/geo" onclick="sp('geo');closeMobMenu();return false">GEO — 생성AI 최적화</a>
         <a href="/aeo" onclick="sp('aeo');closeMobMenu();return false">AEO — 답변엔진 최적화</a>
         <a href="/seo" onclick="sp('seo');closeMobMenu();return false">SEO — 검색엔진 최적화</a>
@@ -820,12 +821,13 @@ body{padding-top:0}
     </div>
     <div class="mob-nav-group">
       <div class="mob-nav-row">
-        <a href="/online-marketing" class="mob-nav-item mob-nav-main" onclick="sp('services');closeMobMenu();return false">온라인마케팅</a>
+        <a href="/online-marketing" class="mob-nav-item mob-nav-main" onclick="return mobParent(this)">온라인마케팅</a>
         <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="온라인마케팅 하위 메뉴 열기">
           <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
       </div>
       <div class="mob-sub">
+        <a href="/online-marketing" onclick="sp('services');closeMobMenu();return false" class="mob-sub-ov">온라인마케팅 개요 →</a>
         <a href="/online-marketing/naver" onclick="ld('online_naver');closeMobMenu();return false">네이버 마케팅</a>
         <a href="/online-marketing/sns" onclick="ld('online_sns');closeMobMenu();return false">인스타그램·SNS</a>
         <a href="/online-marketing/youtube" onclick="ld('online_youtube');closeMobMenu();return false">유튜브 마케팅</a>
@@ -5197,6 +5199,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 .mob-sub a{display:block;padding:11px 24px 11px 36px;font-size:14px;font-weight:400;
   color:var(--ink2);text-decoration:none;transition:.12s;letter-spacing:0}
 .mob-sub a:hover{color:var(--p);background:rgba(83,58,253,.06)}
+.mob-sub a.mob-sub-ov{font-weight:700;color:var(--p)}
 .mob-menu-footer{padding:20px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:10px}
 .mob-cta-ghost{display:block;text-align:center;padding:12px;font-size:14px;font-weight:600;
   color:var(--p);border:1.5px solid var(--p);border-radius:var(--rpill);text-decoration:none;transition:.2s}
@@ -7370,7 +7373,7 @@ function buildMobHospNav(){
      +'.mob-sub2 a:hover{color:var(--p);background:rgba(83,58,253,.06)}';
     document.head.appendChild(st); })();
   var _p=function(c){ var r=DETAIL_ROUTES[c]; return (r&&r.path)||('#'+c); };
-  var html='';
+  var html='<a href="/hospital-marketing" onclick="sp(\'hosp_mkt\');closeMobMenu();return false" class="mob-sub-ov">병원마케팅 개요 →</a>';
   HUB_META.forEach(function(m){
     var tree=HUB_TREE[m.cat]||[];
     if(!tree.length){
@@ -8676,6 +8679,14 @@ function toggleMobSub(btn){
     sub.classList.add('open');
     btn.classList.add('active');
   }
+}
+// 모바일: 상위 메뉴 라벨을 누르면 하위 카테고리를 펼친다(바로 이동하지 않음).
+// 개요 페이지는 펼쳐진 서브의 "개요" 링크로 이동.
+function mobParent(el){
+  var grp=el.closest('.mob-nav-group');
+  var tg=grp?grp.querySelector('.mob-sub-toggle'):null;
+  if(tg){ toggleMobSub(tg); }
+  return false;
 }
 // ESC 키로 닫기
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMenu(); });
