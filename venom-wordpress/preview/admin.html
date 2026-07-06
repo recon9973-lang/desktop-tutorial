@@ -968,6 +968,32 @@ a{color:var(--p);text-decoration:none}
         <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:22px;position:relative">
         </div>
         <div style="font-size:11px;color:var(--mute);margin-top:8px">* gpt-4o-mini: 입력 $0.15/1M · 출력 $0.60/1M | 이미지(gpt-image-1, 1024×1024): 장당 약 $0.04</div>
+
+        <!-- 상세 분석 -->
+        <div id="ap-usage-detail" style="margin-top:22px;border-top:1px solid var(--border);padding-top:18px">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">🔎 상세 분석 — 어디에 얼마나 쓰고 있나</div>
+          <div style="font-size:11px;color:var(--mute);margin-bottom:14px">자동 포스팅(블로그 글·이미지 생성) 기준. AI 노출 매트릭스(Perplexity·ChatGPT·Gemini·Claude)는 별도 계정이라 여기 포함되지 않습니다.</div>
+
+          <!-- 비용 구성 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">💰 비용 구성 (무엇이 돈을 쓰나)</div>
+          <div id="ap-cost-split" style="display:flex;height:26px;border-radius:6px;overflow:hidden;margin-bottom:6px;background:var(--soft)"></div>
+          <div id="ap-cost-legend" style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--mute);margin-bottom:18px"></div>
+
+          <!-- 입력/출력 토큰 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">🔤 입력 vs 출력 토큰</div>
+          <div id="ap-io-split" style="display:flex;height:22px;border-radius:6px;overflow:hidden;margin-bottom:6px;background:var(--soft)"></div>
+          <div id="ap-io-legend" style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--mute);margin-bottom:18px"></div>
+
+          <!-- 글당 평균 -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px" id="ap-avg-cards"></div>
+
+          <!-- 카테고리별 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:10px">🗂️ 카테고리(주제)별 사용량</div>
+          <div id="ap-cat-breakdown" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+
+          <!-- 모델·액션 -->
+          <div id="ap-model-action" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+        </div>
       </div>
 
       <!-- 글 미리보기 생성 -->
@@ -3183,9 +3209,73 @@ async function apLoadUsageStats() {
     makeChart('ap-cost-chart',  days.map(d => d.costUsd),    maxCost,   '#4ade80',
       d => d.date + ': $' + d.costUsd.toFixed(4) + ' (이미지 ' + d.images + '장)');
 
+    if (data.detail) apRenderUsageDetail(data.detail, t);
+
   } catch(e) {
     console.warn('[usage-stats]', e);
   }
+}
+
+// ── 토큰 사용량 상세 분석 렌더 ──
+function apRenderUsageDetail(dt, totals) {
+  var _set = function(id, html){ var e=document.getElementById(id); if(e) e.innerHTML=html; };
+  var fmtN = function(n){ return (n||0).toLocaleString(); };
+  var kTok = function(n){ return (n||0) >= 1000 ? ((n/1000).toFixed(1)+'K') : String(n||0); };
+  var segBar = function(parts){ // parts: [{pct,color}]
+    return parts.filter(function(p){return p.pct>0;}).map(function(p){
+      return '<div title="'+(p.title||'')+'" style="width:'+p.pct+'%;background:'+p.color+'"></div>';
+    }).join('');
+  };
+  // 1) 비용 구성 (입력/출력/이미지)
+  var c = dt.cost || {inputUsd:0,outputUsd:0,imageUsd:0,totalUsd:0};
+  var ct = c.totalUsd || (c.inputUsd+c.outputUsd+c.imageUsd) || 0.0001;
+  var cSeg = [
+    {pct:Math.round(c.imageUsd/ct*100),  color:'#f59e0b', title:'이미지'},
+    {pct:Math.round(c.outputUsd/ct*100), color:'#4f46e5', title:'출력 토큰'},
+    {pct:Math.round(c.inputUsd/ct*100),  color:'#0ea5e9', title:'입력 토큰'},
+  ];
+  _set('ap-cost-split', segBar(cSeg));
+  _set('ap-cost-legend',
+    '<span><b style="color:#f59e0b">■</b> 이미지 $'+c.imageUsd.toFixed(4)+' ('+Math.round(c.imageUsd/ct*100)+'%)</span>'
+    +'<span><b style="color:#4f46e5">■</b> 출력 토큰 $'+c.outputUsd.toFixed(4)+' ('+Math.round(c.outputUsd/ct*100)+'%)</span>'
+    +'<span><b style="color:#0ea5e9">■</b> 입력 토큰 $'+c.inputUsd.toFixed(4)+' ('+Math.round(c.inputUsd/ct*100)+'%)</span>'
+    +'<span style="font-weight:700;color:var(--ink)">합계 $'+ct.toFixed(4)+'</span>');
+  // 2) 입력/출력 토큰
+  var io = dt.io || {promptTokens:0,completionTokens:0,promptPct:0,completionPct:0};
+  _set('ap-io-split', segBar([
+    {pct:io.promptPct, color:'#0ea5e9', title:'입력'},
+    {pct:io.completionPct, color:'#4f46e5', title:'출력'},
+  ]));
+  _set('ap-io-legend',
+    '<span><b style="color:#0ea5e9">■</b> 입력 '+fmtN(io.promptTokens)+' ('+io.promptPct+'%)</span>'
+    +'<span><b style="color:#4f46e5">■</b> 출력 '+fmtN(io.completionTokens)+' ('+io.completionPct+'%)</span>');
+  // 3) 글당 평균
+  var av = dt.avg || {tokensPerPost:0,costPerPost:0};
+  _set('ap-avg-cards',
+    '<div style="background:var(--soft);border-radius:var(--r8);padding:12px"><div style="font-size:11px;color:var(--mute)">글당 평균 토큰</div><div style="font-size:18px;font-weight:700;color:var(--p)">'+fmtN(av.tokensPerPost)+'</div></div>'
+    +'<div style="background:var(--soft);border-radius:var(--r8);padding:12px"><div style="font-size:11px;color:var(--mute)">글당 평균 비용</div><div style="font-size:18px;font-weight:700;color:#4ade80">$'+(av.costPerPost||0).toFixed(4)+'</div></div>'
+    +'<div style="background:var(--soft);border-radius:var(--r8);padding:12px"><div style="font-size:11px;color:var(--mute)">기간 총 비용</div><div style="font-size:18px;font-weight:700;color:#4ade80">$'+(totals.costUsd||0).toFixed(3)+'</div></div>');
+  // 4) 카테고리별 (토큰 비율 바)
+  var cats = dt.byCategory || [];
+  var maxCatTok = Math.max.apply(null, cats.map(function(x){return x.totalTokens;}).concat([1]));
+  _set('ap-cat-breakdown', cats.length ? cats.map(function(x){
+    var w = Math.max(Math.round(x.totalTokens/maxCatTok*100), 2);
+    return '<div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">'
+      +'<span style="color:var(--ink);font-weight:600">'+x.label+' <span style="color:var(--mute);font-weight:400">· '+x.posts+'건</span></span>'
+      +'<span style="color:var(--mute)">'+kTok(x.totalTokens)+' 토큰 ('+x.pct+'%) · $'+(x.costUsd||0).toFixed(3)+'</span></div>'
+      +'<div style="height:8px;border-radius:4px;background:var(--soft);overflow:hidden"><div style="height:100%;width:'+w+'%;background:linear-gradient(90deg,#533afd,#7c6bff)"></div></div>'
+      +'</div>';
+  }).join('') : '<div style="font-size:12px;color:var(--mute)">데이터 없음</div>');
+  // 5) 모델·액션
+  var listBox = function(title, rows){
+    return '<div><div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">'+title+'</div>'
+      + (rows.length ? rows.map(function(x){
+          return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--ink)">'+(x.label||x.key)+'</span><span style="color:var(--mute)">'+x.posts+'건 · '+kTok(x.totalTokens)+' ('+x.pct+'%)</span></div>';
+        }).join('') : '<div style="font-size:12px;color:var(--mute)">-</div>')
+      + '</div>';
+  };
+  _set('ap-model-action', listBox('🧠 모델별', dt.byModel||[]) + listBox('⚙️ 생성 방식별', dt.byAction||[]));
 }
 
 function initAutoPost() {
