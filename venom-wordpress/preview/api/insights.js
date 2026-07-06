@@ -131,22 +131,35 @@ async function askOpenAI(q) {
 
 async function askGemini(q) {
   const key = _GEMINI_KEY;
-  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-  const body = JSON.stringify({
-    contents: [{ role: 'user', parts: [{ text: AI_SYSTEM + '\n\n' + q }] }],
-    tools: [{ google_search: {} }],
-  });
-  const r = await httpReq({
-    hostname: 'generativelanguage.googleapis.com',
-    path: '/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key),
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, bodyStr: body,
-  });
-  if (r.status !== 200 || !r.json || !r.json.candidates) throw new Error((r.json && r.json.error && r.json.error.message) || ('Gemini HTTP ' + r.status));
-  const cand = r.json.candidates[0] || {};
-  const answer = ((cand.content || {}).parts || []).map(p => p.text || '').join('');
-  const gm = cand.groundingMetadata || {};
-  const citations = (gm.groundingChunks || []).map(c => (c.web && c.web.uri) || '').filter(Boolean);
-  return { answer, citations };
+  // 모델별 무료 할당량이 다를 수 있어(예: gemini-2.0-flash free_tier limit:0) 여러 모델을 순차 폴백.
+  const models = [];
+  [process.env.GEMINI_MODEL, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash']
+    .forEach(m => { if (m && models.indexOf(m) < 0) models.push(m); });
+  let lastErr = 'Gemini 호출 실패';
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    // 1차: 웹검색(그라운딩) 포함, 실패 시 2차: 그라운딩 없이(무료 할당량 회피)
+    for (let g = 0; g < 2; g++) {
+      const payload = { contents: [{ role: 'user', parts: [{ text: AI_SYSTEM + '\n\n' + q }] }] };
+      if (g === 0) payload.tools = [{ google_search: {} }];
+      const r = await httpReq({
+        hostname: 'generativelanguage.googleapis.com',
+        path: '/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, bodyStr: JSON.stringify(payload),
+      });
+      if (r.status === 200 && r.json && r.json.candidates) {
+        const cand = r.json.candidates[0] || {};
+        const answer = ((cand.content || {}).parts || []).map(p => p.text || '').join('');
+        const gm = cand.groundingMetadata || {};
+        const citations = (gm.groundingChunks || []).map(c => (c.web && c.web.uri) || '').filter(Boolean);
+        return { answer, citations };
+      }
+      lastErr = (r.json && r.json.error && r.json.error.message) || ('Gemini HTTP ' + r.status);
+      // 할당량/모델없음 계열이 아니면 더 시도하지 않고 종료
+      if (r.status !== 429 && r.status !== 404 && !/quota|not found|billing|exceeded/i.test(lastErr)) return Promise.reject(new Error(lastErr));
+    }
+  }
+  throw new Error(lastErr);
 }
 
 async function askClaude(q) {
