@@ -520,6 +520,11 @@ body{padding-top:0}
 .faq-ans{padding:0 20px 18px;font-size:14px;font-weight:400;color:var(--ink2);line-height:1.8}
 @keyframes faqReveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .faq-item[open] .faq-ans{animation:faqReveal .28s ease}
+/* FAQ 등 details 공통: 마우스 클릭 시 나타나는 파란 포커스 박스 제거(키보드 접근성은 유지) */
+summary{outline:none}
+summary:focus{outline:none}
+summary:focus-visible{outline:2px solid var(--p);outline-offset:2px;border-radius:8px}
+summary::-webkit-details-marker{display:none}
 .content-cta{margin-top:44px;background:var(--soft);border-radius:var(--r12);padding:28px;text-align:center}
 .content-cta h3{font-size:19px;font-weight:300;margin-bottom:8px;letter-spacing:-.02em}
 .content-cta p{font-size:13.5px;font-weight:300;color:var(--mute);margin-bottom:18px}
@@ -2515,21 +2520,21 @@ body{padding-top:0}
     <div class="container" style="max-width:800px">
       <div class="section-head"><div class="section-badge">FAQ</div><h2>GEO 자주 묻는 질문</h2></div>
       <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px">
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">GEO(Generative Engine Optimization)란 무엇인가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">GEO는 ChatGPT·Perplexity·Gemini 등 생성형 AI 검색엔진에서 병원이 상위에 추천되도록 최적화하는 마케팅 전략입니다. Schema.org 구조화 데이터, AI 크롤러 허용, 권위 콘텐츠 배포가 핵심입니다.</p>
+        <details class="faq-item">
+          <summary>GEO(Generative Engine Optimization)란 무엇인가요?</summary>
+          <p class="faq-ans">GEO는 ChatGPT·Perplexity·Gemini 등 생성형 AI 검색엔진에서 병원이 상위에 추천되도록 최적화하는 마케팅 전략입니다. Schema.org 구조화 데이터, AI 크롤러 허용, 권위 콘텐츠 배포가 핵심입니다.</p>
         </details>
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">GEO 최적화에 걸리는 시간은 얼마나 되나요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">일반적으로 구조화 데이터 적용 후 4~8주 이내에 ChatGPT·Perplexity에서 병원명이 인용되기 시작합니다. 경쟁 강도와 기존 콘텐츠 양에 따라 다를 수 있습니다.</p>
+        <details class="faq-item">
+          <summary>GEO 최적화에 걸리는 시간은 얼마나 되나요?</summary>
+          <p class="faq-ans">일반적으로 구조화 데이터 적용 후 4~8주 이내에 ChatGPT·Perplexity에서 병원명이 인용되기 시작합니다. 경쟁 강도와 기존 콘텐츠 양에 따라 다를 수 있습니다.</p>
         </details>
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">GEO와 SEO는 어떻게 다른가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">SEO는 네이버·구글 검색 결과 순위 최적화이고, GEO는 ChatGPT·Perplexity 등 AI가 답변을 생성할 때 병원이 인용·추천되도록 하는 최적화입니다. 2025년에는 두 가지를 병행해야 합니다.</p>
+        <details class="faq-item">
+          <summary>GEO와 SEO는 어떻게 다른가요?</summary>
+          <p class="faq-ans">SEO는 네이버·구글 검색 결과 순위 최적화이고, GEO는 ChatGPT·Perplexity 등 AI가 답변을 생성할 때 병원이 인용·추천되도록 하는 최적화입니다. 2025년에는 두 가지를 병행해야 합니다.</p>
         </details>
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">병원 GEO 최적화 비용은 얼마인가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">베놈의 병원 GEO 최적화 서비스는 월 150만원부터 시작합니다. 초기 구조화 데이터 세팅 + 월간 AI 인용 모니터링 + 콘텐츠 최적화가 포함됩니다. 자세한 견적은 상담으로 안내드립니다.</p>
+        <details class="faq-item">
+          <summary>병원 GEO 최적화 비용은 얼마인가요?</summary>
+          <p class="faq-ans">베놈의 병원 GEO 최적화 서비스는 월 150만원부터 시작합니다. 초기 구조화 데이터 세팅 + 월간 AI 인용 모니터링 + 콘텐츠 최적화가 포함됩니다. 자세한 견적은 상담으로 안내드립니다.</p>
         </details>
       </div>
     </div>
@@ -2766,21 +2771,21 @@ body{padding-top:0}
     <div class="container" style="max-width:800px">
       <div class="section-head"><div class="section-badge">FAQ</div><h2>AEO 자주 묻는 질문</h2></div>
       <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px">
-        <details style="background:var(--soft);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">AEO(Answer Engine Optimization)란 무엇인가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">AEO는 Google AI Overview·네이버 AI 검색·Bing Chat 등 AI 답변 엔진이 환자의 질문에 귀 병원의 답변을 채택하도록 최적화하는 전략입니다. FAQPage·HowTo·Speakable Schema 구현이 핵심입니다.</p>
+        <details class="faq-item">
+          <summary>AEO(Answer Engine Optimization)란 무엇인가요?</summary>
+          <p class="faq-ans">AEO는 Google AI Overview·네이버 AI 검색·Bing Chat 등 AI 답변 엔진이 환자의 질문에 귀 병원의 답변을 채택하도록 최적화하는 전략입니다. FAQPage·HowTo·Speakable Schema 구현이 핵심입니다.</p>
         </details>
-        <details style="background:var(--soft);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">AEO로 Google AI Overview에 노출되려면 어떻게 해야 하나요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">FAQPage Schema를 홈페이지에 구현하고, 환자가 자주 묻는 질문 30개 이상을 명확한 답변 형태로 작성해야 합니다. 베놈은 진료과목별 FAQ 50+ 세트를 제공합니다.</p>
+        <details class="faq-item">
+          <summary>AEO로 Google AI Overview에 노출되려면 어떻게 해야 하나요?</summary>
+          <p class="faq-ans">FAQPage Schema를 홈페이지에 구현하고, 환자가 자주 묻는 질문 30개 이상을 명확한 답변 형태로 작성해야 합니다. 베놈은 진료과목별 FAQ 50+ 세트를 제공합니다.</p>
         </details>
-        <details style="background:var(--soft);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">음성검색 최적화와 AEO는 같은 건가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">AEO의 중요한 구성 요소 중 하나가 음성검색 최적화입니다. Speakable 마크업을 통해 스마트 스피커·음성 어시스턴트가 병원 정보를 읽어주도록 설정합니다.</p>
+        <details class="faq-item">
+          <summary>음성검색 최적화와 AEO는 같은 건가요?</summary>
+          <p class="faq-ans">AEO의 중요한 구성 요소 중 하나가 음성검색 최적화입니다. Speakable 마크업을 통해 스마트 스피커·음성 어시스턴트가 병원 정보를 읽어주도록 설정합니다.</p>
         </details>
-        <details style="background:var(--soft);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">병원 AEO 최적화 효과는 얼마나 빨리 나타나나요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">FAQPage Schema 적용 후 Google이 인덱싱하는 데 2~4주가 소요됩니다. Rich Result(리치 스니펫)은 보통 4~6주 후 검색 결과에 표시되기 시작합니다.</p>
+        <details class="faq-item">
+          <summary>병원 AEO 최적화 효과는 얼마나 빨리 나타나나요?</summary>
+          <p class="faq-ans">FAQPage Schema 적용 후 Google이 인덱싱하는 데 2~4주가 소요됩니다. Rich Result(리치 스니펫)은 보통 4~6주 후 검색 결과에 표시되기 시작합니다.</p>
         </details>
       </div>
     </div>
@@ -3054,21 +3059,21 @@ body{padding-top:0}
     <div class="container" style="max-width:800px">
       <div class="section-head"><div class="section-badge">FAQ</div><h2>병원 SEO 자주 묻는 질문</h2></div>
       <div style="margin-top:32px;display:flex;flex-direction:column;gap:16px">
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">병원 SEO 최적화란 무엇인가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">병원 SEO는 네이버·구글에서 '지역명 + 진료과목' 검색 시 상위에 노출되도록 홈페이지 기술, 콘텐츠, 링크를 최적화하는 전략입니다. E-E-A-T(경험·전문성·권위성·신뢰성)가 의료 SEO의 핵심입니다.</p>
+        <details class="faq-item">
+          <summary>병원 SEO 최적화란 무엇인가요?</summary>
+          <p class="faq-ans">병원 SEO는 네이버·구글에서 '지역명 + 진료과목' 검색 시 상위에 노출되도록 홈페이지 기술, 콘텐츠, 링크를 최적화하는 전략입니다. E-E-A-T(경험·전문성·권위성·신뢰성)가 의료 SEO의 핵심입니다.</p>
         </details>
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">Core Web Vitals가 병원 SEO에 왜 중요한가요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">Google은 LCP(2.5초 이하), INP(200ms 이하), CLS(0.1 이하)를 순위 결정 요소로 사용합니다. 느린 병원 홈페이지는 Google 검색 순위에서 불이익을 받습니다.</p>
+        <details class="faq-item">
+          <summary>Core Web Vitals가 병원 SEO에 왜 중요한가요?</summary>
+          <p class="faq-ans">Google은 LCP(2.5초 이하), INP(200ms 이하), CLS(0.1 이하)를 순위 결정 요소로 사용합니다. 느린 병원 홈페이지는 Google 검색 순위에서 불이익을 받습니다.</p>
         </details>
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">네이버 플레이스 SEO는 어떻게 하나요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">네이버 플레이스 상위노출을 위해서는 리뷰 수·응답률·사진 수·정보 완성도·블로그 연동이 중요합니다. 베놈은 플레이스 알고리즘에 맞춘 월간 관리 서비스를 제공합니다.</p>
+        <details class="faq-item">
+          <summary>네이버 플레이스 SEO는 어떻게 하나요?</summary>
+          <p class="faq-ans">네이버 플레이스 상위노출을 위해서는 리뷰 수·응답률·사진 수·정보 완성도·블로그 연동이 중요합니다. 베놈은 플레이스 알고리즘에 맞춘 월간 관리 서비스를 제공합니다.</p>
         </details>
-        <details style="background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:20px 24px;cursor:pointer">
-          <summary style="font-weight:600;color:var(--bd);font-size:15px;list-style:none">병원 SEO 효과가 나타나는 데 얼마나 걸리나요?</summary>
-          <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin:12px 0 0">기술적 SEO 개선은 1~2주 내 반영됩니다. 콘텐츠 SEO 효과는 3~6개월이 일반적입니다. 네이버 플레이스는 리뷰 누적과 함께 2~3개월 내 순위 변화가 나타납니다.</p>
+        <details class="faq-item">
+          <summary>병원 SEO 효과가 나타나는 데 얼마나 걸리나요?</summary>
+          <p class="faq-ans">기술적 SEO 개선은 1~2주 내 반영됩니다. 콘텐츠 SEO 효과는 3~6개월이 일반적입니다. 네이버 플레이스는 리뷰 누적과 함께 2~3개월 내 순위 변화가 나타납니다.</p>
         </details>
       </div>
     </div>
