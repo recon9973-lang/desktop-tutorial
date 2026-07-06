@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783346682415",
+    "title": "울산 병원마케팅 필수 가이드: 의료광고 심의 절차와 규정",
+    "tokenUsage": {
+      "promptTokens": 2552,
+      "completionTokens": 1800,
+      "totalTokens": 4352,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T14:05:57.035Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1783346561373",
     "title": "인천 안과마케팅의 5가지 효과적인 전략",
