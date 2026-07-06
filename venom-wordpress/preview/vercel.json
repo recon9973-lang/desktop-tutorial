@@ -229,6 +229,10 @@
     "api/eval-judge.js": {
       "maxDuration": 300,
       "includeFiles": "chatbot/data/**"
+    },
+    "api/cron-eval.js": {
+      "maxDuration": 300,
+      "includeFiles": "chatbot/data/**"
     }
   },
   "crons": [
@@ -241,7 +245,7 @@
       "schedule": "0 18 * * *"
     },
     {
-      "path": "/api/eval-judge?n=24&save=1",
+      "path": "/api/cron-eval",
       "schedule": "0 0 * * 1"
     }
   ]
