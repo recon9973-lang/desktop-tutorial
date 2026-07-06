@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1783364798805",
+    "title": "대전 병원마케팅 5가지 전략으로 SEO 최적화하기",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 1994,
+      "totalTokens": 4592,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T19:07:57.677Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1783346682415",
     "title": "울산 병원마케팅 필수 가이드: 의료광고 심의 절차와 규정",
     "tokenUsage": {
