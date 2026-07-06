@@ -10,6 +10,7 @@ const https = require('https');
 const http = require('http');
 const crypto = require('crypto');
 const { URL } = require('url');
+const sa = require('../lib/naver-searchad'); // 검색광고 키워드도구 단일 소스
 
 // 단순 GET → JSON 패스스루 (entity, psi 공용)
 function getJson(fullUrl, res, withRaw) {
@@ -109,43 +110,17 @@ module.exports = async function handler(req, res) {
     return getJson('https://www.googleapis.com' + apiPath, res, true);
   }
 
-  // ── 3) 네이버 검색광고 키워드 도구 ──
+  // ── 3) 네이버 검색광고 키워드 도구 (인증·호출은 lib/naver-searchad 단일 소스) ──
   if (type === 'keyword') {
     const keyword = req.query.keyword;
     if (!keyword) { res.status(400).json({ error: 'keyword parameter required' }); return; }
-    // 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
-    const customerId = (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim();
-    const accessLicense = (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim();
-    const secretKey = (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim();
-    if (!customerId || !accessLicense || !secretKey) {
-      res.status(500).json({ error: 'Naver API credentials not configured' }); return;
-    }
-    // 네이버 검색광고 공식 서명 규격: HMAC-SHA256("{timestamp}.{method}.{uri}", 비밀키 문자열)
-    const timestamp = Date.now().toString();
-    const hmac = crypto.createHmac('sha256', secretKey);
-    hmac.update(timestamp + '.GET./keywordstool', 'utf8');
-    const signature = hmac.digest('base64');
-    // hintKeywords는 공백 불허(네이버 11001 오류) — 공백 제거형 변형 키워드 사용
-const base = String(keyword).replace(/\s+/g, '');
-const hints = [base, base + '비용', base + '후기', base + '잘하는곳', base + '추천'];
-    const apiPath = '/keywordstool?hintKeywords=' + hints.map(encodeURIComponent).join(',') + '&showDetail=1';
-    https.get({
-      hostname: 'api.searchad.naver.com', path: apiPath, method: 'GET',
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'X-Timestamp': timestamp, 'X-API-KEY': accessLicense,
-        'X-Customer': customerId, 'X-Signature': signature
-      }
-    }, function(r) {
-      var chunks = [];
-      r.on('data', function(c) { chunks.push(c); });
-      r.on('end', function() {
-        var body = Buffer.concat(chunks).toString('utf8');
-        try { res.status(r.statusCode).json(JSON.parse(body)); }
-        catch (e) { res.status(500).json({ error: 'Parse error', raw: body.slice(0, 500) }); }
-      });
-    }).on('error', function(e) { res.status(500).json({ error: e.message }); });
-    return;
+    // hintKeywords는 공백 불허(네이버 11001 오류) — 공백 제거형 변형 키워드로 확장
+    const base = String(keyword).replace(/\s+/g, '');
+    const hints = [base, base + '비용', base + '후기', base + '잘하는곳', base + '추천'];
+    const r = await sa.fetchKeywordTool(hints);
+    if (r.configured === false) { res.status(500).json({ error: 'Naver API credentials not configured' }); return; }
+    if (r.json) { res.status(r.status).json(r.json); return; } // 기존과 동일: 네이버 원시 응답 그대로 전달
+    res.status(r.status || 500).json({ error: r.error || 'Naver searchad error' }); return;
   }
 
   // ── 4) 페이지 HTML + robots.txt 수집 (GEO 분석) ──
