@@ -3,6 +3,9 @@ node_modules/
 .DS_Store
 *.log
 
+# 챗봇 대규모 질문셋(생성기로 재현 가능, 배포 제외)
+venom-wordpress/preview/chatbot/data/eval/questions-full.jsonl
+
 # Secrets — 실제 env 파일은 절대 커밋 금지 (템플릿 .env.example 은 추적)
 .env
 .env.local

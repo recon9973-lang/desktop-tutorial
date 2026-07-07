@@ -1,6 +1,548 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1783402276947",
+    "title": "대구 성형외과 마케팅의 5가지 핵심 전략",
+    "tokenUsage": {
+      "promptTokens": 2609,
+      "completionTokens": 1687,
+      "totalTokens": 4296,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-07T05:32:57.415Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783387396485",
+    "title": "대전 정형외과 마케팅: 허리디스크 치료 효과 30%",
+    "tokenUsage": {
+      "promptTokens": 2626,
+      "completionTokens": 1808,
+      "totalTokens": 4434,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at 6eb1bd777c89036db3e8fe51b327c856be82c62a but expected 0456a119a32c0514ee64a4dc995c8147f3c4c654",
+    "autoFixed": true,
+    "ts": "2026-07-07T01:24:37.973Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783381088200",
+    "title": "울산 한의원 마케팅 전략 TOP 5, 효과적 포지셔닝 방법",
+    "tokenUsage": {
+      "promptTokens": 2613,
+      "completionTokens": 1918,
+      "totalTokens": 4531,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T23:39:21.815Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783380989708",
+    "title": "인천 피부과 마케팅 전략 5가지 핵심 인사이트",
+    "tokenUsage": {
+      "promptTokens": 2619,
+      "completionTokens": 1782,
+      "totalTokens": 4401,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at a5c9496eed84df73294b0f461b5bdb5341617ad8 but expected e586849807109f1149b3bf4e1722a51943e51ca6",
+    "autoFixed": false,
+    "ts": "2026-07-06T23:37:43.151Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783371736254",
+    "title": "부산 치과마케팅 5가지 전략으로 고객 단가 30% 증가",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 1812,
+      "totalTokens": 4451,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-06T21:03:35.159Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783371626479",
+    "title": "대구 병원마케팅: GEO와 AI 활용 5가지 전략",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1979,
+      "totalTokens": 4590,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-06T21:01:50.997Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783364798805",
+    "title": "대전 병원마케팅 5가지 전략으로 SEO 최적화하기",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 1994,
+      "totalTokens": 4592,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T19:07:57.677Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783346682415",
+    "title": "울산 병원마케팅 필수 가이드: 의료광고 심의 절차와 규정",
+    "tokenUsage": {
+      "promptTokens": 2552,
+      "completionTokens": 1800,
+      "totalTokens": 4352,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T14:05:57.035Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783346561373",
+    "title": "인천 안과마케팅의 5가지 효과적인 전략",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1979,
+      "totalTokens": 4590,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-06T14:04:16.765Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783332438278",
+    "title": "대구 성형외과 마케팅: 쌍꺼풀에서 리프팅까지 7가지 시술 정보",
+    "tokenUsage": {
+      "promptTokens": 2610,
+      "completionTokens": 2103,
+      "totalTokens": 4713,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T10:08:29.954Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783332323689",
+    "title": "대전 정형외과 마케팅, 허리디스크 치료로 신환 2.4배 증가",
+    "tokenUsage": {
+      "promptTokens": 2626,
+      "completionTokens": 1920,
+      "totalTokens": 4546,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T10:06:38.357Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783317183951",
+    "title": "울산 한의원 마케팅 5가지 전략과 성공 사례",
+    "tokenUsage": {
+      "promptTokens": 2614,
+      "completionTokens": 1840,
+      "totalTokens": 4454,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T05:54:32.296Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783317051004",
+    "title": "인천 피부과 마케팅의 5가지 핵심 전략과 성공 사례",
+    "tokenUsage": {
+      "promptTokens": 2620,
+      "completionTokens": 2221,
+      "totalTokens": 4841,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-06T05:52:29.477Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783291132009",
+    "title": "부산 치과마케팅: 효과적인 5가지 전략과 성공 사례",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 2345,
+      "totalTokens": 4984,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-05T22:40:04.808Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783278591090",
+    "title": "대구 병원 마케팅 필수 가이드: GEO/AEO와 AI 활용 5가지",
+    "tokenUsage": {
+      "promptTokens": 2612,
+      "completionTokens": 2244,
+      "totalTokens": 4856,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at ae03cc8c4e87fc2e46b21e392bc1858105de1e0f but expected bc90b263e1a8dbd70c15fda8162e1f2986d181a7",
+    "autoFixed": false,
+    "ts": "2026-07-05T19:11:18.576Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783278475683",
+    "title": "대전 병원마케팅의 성공을 위한 5가지 필수 전략",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 2005,
+      "totalTokens": 4603,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T19:09:17.235Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783248696841",
+    "title": "대전 병원마케팅 5가지 핵심 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2576,
+      "completionTokens": 1961,
+      "totalTokens": 4537,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T10:53:27.885Z"
+  },
+  {
+    "action": "cron-review",
+    "id": "auto_1783240246141",
+    "title": "울산 병원마케팅: 의료광고 사전심의 및 합법 콘텐츠 기준",
+    "tokenUsage": {
+      "promptTokens": 2552,
+      "completionTokens": 1832,
+      "totalTokens": 4384,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at ab3f1689efb57e5499d94f32ca6795e4a3378cd0 but expected a2b23d3d1def1322c96409f6a3e25d68823d47c8",
+    "forbidden": [],
+    "contentErrors": [
+      "본문이 닫는 태그로 끝나지 않습니다(생성 중 잘림 의심)."
+    ],
+    "ts": "2026-07-05T08:31:06.346Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783229753814",
+    "title": "부산 내과마케팅의 핵심 5가지 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2600,
+      "completionTokens": 2037,
+      "totalTokens": 4637,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-05T05:37:10.349Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783229608475",
+    "title": "대구 성형외과 마케팅 전략 TOP 5: 시술·브랜딩·회복",
+    "tokenUsage": {
+      "promptTokens": 2610,
+      "completionTokens": 2091,
+      "totalTokens": 4701,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-05T05:35:30.167Z"
+  },
+  {
+    "action": "cron-en-fail",
+    "id": "auto_1783229608475",
+    "error": "translate timeout",
+    "ts": "2026-07-05T05:35:29.415Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783214807910",
+    "title": "울산 한의원 마케팅: 통증 및 비만 치료 전략 3가지",
+    "tokenUsage": {
+      "promptTokens": 2614,
+      "completionTokens": 2098,
+      "totalTokens": 4712,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T01:28:01.543Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783214695731",
+    "title": "인천 피부과 마케팅 성공을 위한 5가지 전략",
+    "tokenUsage": {
+      "promptTokens": 2620,
+      "completionTokens": 2002,
+      "totalTokens": 4622,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-05T01:26:23.525Z"
+  },
+  {
+    "action": "cron-publish",
+    "id": "auto_1783204723201",
+    "title": "부산 치과 마케팅의 5가지 성공 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 2112,
+      "totalTokens": 4751,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-04T22:39:50.010Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783201168373",
+    "title": "대구 병원마케팅 성공을 위한 5가지 핵심 전략",
+    "tokenUsage": {
+      "promptTokens": 2612,
+      "completionTokens": 1920,
+      "totalTokens": 4532,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-04T21:40:50.054Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783193757392",
+    "title": "대전 병원마케팅 전략 5가지, SEO로 효과 극대화하기",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 2106,
+      "totalTokens": 4704,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-04T19:37:21.645Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783191566619",
+    "title": "대전 병원마케팅 5가지 필수 요소와 효과적인 실행 전략",
+    "category": "geo_local",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2576,
+      "completionTokens": 1870,
+      "totalTokens": 4446,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:59:45.028Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783191473460",
+    "title": "울산 병원마케팅: 의료광고 심의 절차와 규정 5가지",
+    "category": "shimui",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2552,
+      "completionTokens": 1928,
+      "totalTokens": 4480,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:58:10.929Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783191349311",
+    "title": "인천 안과 마케팅: 근시·녹내장 수술 효과 2.4배 증가",
+    "category": "angwa",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1832,
+      "totalTokens": 4443,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:56:08.913Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783191238266",
+    "title": "부산 내과마케팅: 당뇨·고혈압 관리로 고객 30% 증가",
+    "category": "naegwa",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2600,
+      "completionTokens": 2059,
+      "totalTokens": 4659,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:54:16.906Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783191097177",
+    "title": "대구 성형외과 마케팅 5가지 필수 전략과 시술 정보",
+    "category": "plastic",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2610,
+      "completionTokens": 1929,
+      "totalTokens": 4539,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:51:56.225Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783190999175",
+    "title": "대전 정형외과 마케팅 전략 5가지, 효과적 성과 달성하기",
+    "category": "ortho",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2626,
+      "completionTokens": 1847,
+      "totalTokens": 4473,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:50:15.686Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783190902526",
+    "title": "울산 한의원 마케팅: 비급여 포지셔닝 3가지 방법",
+    "category": "oriental",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2604,
+      "completionTokens": 1823,
+      "totalTokens": 4427,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:48:39.233Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783190796170",
+    "title": "인천 피부과 마케팅의 5가지 전략과 성공 사례",
+    "category": "skin",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2620,
+      "completionTokens": 1839,
+      "totalTokens": 4459,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:46:54.859Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783190694679",
+    "title": "부산 치과 마케팅의 5가지 성공 전략과 실행 방안",
+    "category": "dental",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 2047,
+      "totalTokens": 4686,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:45:13.090Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783190569392",
+    "title": "대구 병원마케팅: GEO/AEO 활용법과 AI 추천 원리",
+    "category": "geo",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2612,
+      "completionTokens": 1891,
+      "totalTokens": 4503,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:43:06.589Z"
+  },
+  {
+    "action": "generate",
+    "id": "auto_1783190455491",
+    "title": "대전 병원마케팅의 핵심 전략 5가지",
+    "category": "seo",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2598,
+      "completionTokens": 2021,
+      "totalTokens": 4619,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-04T18:41:14.486Z"
+  },
+  {
+    "action": "cron-publish-fixed",
+    "id": "auto_1783127911403",
+    "title": "대전 SEO 마케팅의 5가지 핵심 전략과 베놈 활용법",
+    "tokenUsage": {
+      "promptTokens": 2507,
+      "completionTokens": 1904,
+      "totalTokens": 4411,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-04T01:19:50.259Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783050936923",
     "title": "대전 SEO 마케팅: 베놈으로 검색 순위 2.4배 향상시키기",
     "tokenUsage": {

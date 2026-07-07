@@ -93,12 +93,16 @@ async function search(req, res) {
 // 각 엔진에 "환자 입장 질문"을 실제로 던져 답변·인용을 받아온다. 키 없는 엔진은 자동 비활성.
 const AI_SYSTEM = '너는 한국 사용자에게 병원·의원을 추천하는 검색 도우미다. 실제 검색 결과를 근거로 구체적인 병원명과 이유를 답하라.';
 
+// AI 키 접두사·별칭 관대 인식(Vercel/마켓플레이스 접두사 대응)
+function _pickAI(reList){for(const re of reList){for(const k of Object.keys(process.env)){if(re.test(k)&&process.env[k])return process.env[k];}}return '';}
+const _ANTHROPIC_KEY = _pickAI([/^ANTHROPIC_API_KEY$/, /ANTHROPIC.*KEY$/, /^CLAUDE_API_KEY$/, /CLAUDE.*API.*KEY$/]);
+const _GEMINI_KEY = _pickAI([/^GEMINI_API_KEY$/, /^GOOGLE_AI_KEY$/, /GEMINI.*API.*KEY$/]);
 function engineKeys() {
   return {
     perplexity: !!process.env.PERPLEXITY_API_KEY,
     openai: !!process.env.OPENAI_API_KEY,
-    gemini: !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_KEY),
-    claude: !!process.env.ANTHROPIC_API_KEY,
+    gemini: !!_GEMINI_KEY,
+    claude: !!_ANTHROPIC_KEY,
   };
 }
 
@@ -127,27 +131,40 @@ async function askOpenAI(q) {
 }
 
 async function askGemini(q) {
-  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_KEY;
-  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-  const body = JSON.stringify({
-    contents: [{ role: 'user', parts: [{ text: AI_SYSTEM + '\n\n' + q }] }],
-    tools: [{ google_search: {} }],
-  });
-  const r = await httpReq({
-    hostname: 'generativelanguage.googleapis.com',
-    path: '/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key),
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, bodyStr: body,
-  });
-  if (r.status !== 200 || !r.json || !r.json.candidates) throw new Error((r.json && r.json.error && r.json.error.message) || ('Gemini HTTP ' + r.status));
-  const cand = r.json.candidates[0] || {};
-  const answer = ((cand.content || {}).parts || []).map(p => p.text || '').join('');
-  const gm = cand.groundingMetadata || {};
-  const citations = (gm.groundingChunks || []).map(c => (c.web && c.web.uri) || '').filter(Boolean);
-  return { answer, citations };
+  const key = _GEMINI_KEY;
+  // 모델별 무료 할당량이 다를 수 있어(예: gemini-2.0-flash free_tier limit:0) 여러 모델을 순차 폴백.
+  const models = [];
+  [process.env.GEMINI_MODEL, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash']
+    .forEach(m => { if (m && models.indexOf(m) < 0) models.push(m); });
+  let lastErr = 'Gemini 호출 실패';
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    // 1차: 웹검색(그라운딩) 포함, 실패 시 2차: 그라운딩 없이(무료 할당량 회피)
+    for (let g = 0; g < 2; g++) {
+      const payload = { contents: [{ role: 'user', parts: [{ text: AI_SYSTEM + '\n\n' + q }] }] };
+      if (g === 0) payload.tools = [{ google_search: {} }];
+      const r = await httpReq({
+        hostname: 'generativelanguage.googleapis.com',
+        path: '/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, bodyStr: JSON.stringify(payload),
+      });
+      if (r.status === 200 && r.json && r.json.candidates) {
+        const cand = r.json.candidates[0] || {};
+        const answer = ((cand.content || {}).parts || []).map(p => p.text || '').join('');
+        const gm = cand.groundingMetadata || {};
+        const citations = (gm.groundingChunks || []).map(c => (c.web && c.web.uri) || '').filter(Boolean);
+        return { answer, citations };
+      }
+      lastErr = (r.json && r.json.error && r.json.error.message) || ('Gemini HTTP ' + r.status);
+      // 할당량/모델없음 계열이 아니면 더 시도하지 않고 종료
+      if (r.status !== 429 && r.status !== 404 && !/quota|not found|billing|exceeded/i.test(lastErr)) return Promise.reject(new Error(lastErr));
+    }
+  }
+  throw new Error(lastErr);
 }
 
 async function askClaude(q) {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = _ANTHROPIC_KEY;
   const body = JSON.stringify({
     model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001',
     max_tokens: 1024, system: AI_SYSTEM,
@@ -277,7 +294,7 @@ module.exports = async function handler(req, res) {
     if (type === 'trend') return await trend(req, res);
     if (type === 'search') return await search(req, res);
     if (type === 'aeo') return await aeo(req, res);
-    if (type === 'engines') return res.status(200).json(engineKeys());
+    if (type === 'engines') return res.status(200).json(Object.assign(engineKeys(), { _keys: Object.keys(process.env).filter(k => /ANTHROPIC|CLAUDE|GEMINI|GOOGLE_AI|OPENAI|PERPLEXITY/i.test(k)).sort() }));
     if (type === 'keywordtool') return await keywordtool(req, res);
     return res.status(400).json({ error: 'unknown type (trend|search|aeo|engines|keywordtool)' });
   } catch (e) {

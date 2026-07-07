@@ -1,0 +1,71 @@
+name: Fetch blog AI images
+
+# AI 생성 블로그 이미지(외부 CDN)를 저장소로 내려받아 webp로 변환·커밋한다.
+# 샌드박스는 외부 egress가 막혀 있어 직접 다운로드가 불가 → 이 워크플로가 대신 수행한다.
+# 매니페스트: venom-wordpress/preview/content/blog-ai-manifest.json  ([{id,out,url}, ...])
+
+on:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Manifest path'
+        required: false
+        default: 'venom-wordpress/preview/content/blog-ai-manifest.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-blog-ai
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install webp tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq webp
+
+      - name: Download + convert AI images
+        env:
+          MANIFEST: ${{ github.event.inputs.manifest }}
+        run: |
+          node - "$MANIFEST" <<'NODE'
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+          const man = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          let ok = 0, fail = 0;
+          for (const e of man) {
+            const tmp = '/tmp/' + e.id + '.png';
+            try {
+              execSync(`curl -fsSL --retry 3 -o "${tmp}" "${e.url}"`, { stdio: 'pipe' });
+              fs.mkdirSync(require('path').dirname(e.out), { recursive: true });
+              // 최대 폭 1600으로 축소 + webp 품질 82
+              execSync(`cwebp -quiet -q 82 -resize 1600 0 "${tmp}" -o "${e.out}"`, { stdio: 'pipe' });
+              const kb = Math.round(fs.statSync(e.out).size / 1024);
+              console.log(`OK   ${e.id} -> ${e.out} (${kb}KB)`);
+              ok++;
+            } catch (err) {
+              console.log(`FAIL ${e.id}: ${String(err.message || err).slice(0, 120)}`);
+              fail++;
+            }
+          }
+          console.log(`\n${ok} ok, ${fail} failed`);
+          if (ok === 0) process.exit(1);
+          NODE
+
+      - name: Commit + push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add venom-wordpress/preview/images/blog-ai/
+          if git diff --cached --quiet; then
+            echo "No image changes to commit."
+          else
+            git commit -m "chore(blog): AI 변형 이미지 저장소 자체 저장 (fetch-blog-ai)"
+            git push origin main
+          fi

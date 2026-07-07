@@ -1,0 +1,137 @@
+'use strict';
+
+/**
+ * RAG 오케스트레이션 — 의료광고심의 도우미 챗봇의 답변 생성 핵심.
+ *
+ *  answerQuestion(message)  : 근거 검색 → LLM이 근거 인용하며 답변(키 없으면 근거 요약 폴백)
+ *  diagnoseCopy(text)       : 광고 문구 자가진단(금지·위험 표현 탐지 + 안전 대체안)
+ *
+ * 두뇌(LLM): Claude(Anthropic)를 우선 사용하고, 없으면 OpenAI, 둘 다 없으면 근거 요약 폴백.
+ * 재사용: preview/lib/anthropic-client.js, preview/lib/openai-client.js, preview/lib/medical-ad-validator.js
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { retrieve, stats } = require('./retriever');
+let embedder = null;
+try { embedder = require('../pipeline/embed'); } catch (e) {}
+
+const KB_DIR = path.resolve(__dirname, '..', 'data', 'kb');
+const RULES = JSON.parse(fs.readFileSync(path.join(KB_DIR, 'forbidden-rules.json'), 'utf8'));
+
+// 재사용 자산(없어도 폴백 동작)
+let validator = null, anthropic = null, openai = null;
+try { validator = require('../../lib/medical-ad-validator'); } catch (e) {}
+try { anthropic = require('../../lib/anthropic-client'); } catch (e) {}
+try { openai = require('../../lib/openai-client'); } catch (e) {}
+
+/**
+ * 사용할 LLM 두뇌 선택: Claude(Anthropic) 우선 → OpenAI 폴백.
+ * @returns {{provider, client, opts}|null}
+ */
+function pickLlm() {
+  if (anthropic && process.env.ANTHROPIC_API_KEY) {
+    // Opus 4.8 계열은 temperature 미지원 → max_tokens만 전달.
+    return { provider: 'anthropic', client: anthropic, opts: { max_tokens: 900 } };
+  }
+  if (openai && process.env.OPENAI_API_KEY) {
+    return { provider: 'openai', client: openai, opts: { temperature: 0.2, max_tokens: 900 } };
+  }
+  return null;
+}
+
+const DISCLAIMER = '※ 본 답변은 참고용 사전 진단입니다. 실제 심의 승인·반려는 자율심의기구(대한의사협회 등)의 심의 결과에 따릅니다.';
+
+const SYSTEM_PROMPT = [
+  '당신은 한국 의료광고법·의료광고심의 전문가 어시스턴트다.',
+  '반드시 아래 [근거] 안의 내용만 사용해 답한다. 근거에 없는 개념·수치·수수료 유형·법리·원칙을 새로 지어내 덧붙이지 않는다. 근거가 질문 사안을 직접 다루지 않으면 금지/허용을 단정하지 말고 "제공된 자료로는 직접 확인이 어렵다"고 밝힌 뒤, 근거가 실제로 말하는 범위만 조건부로 안내한다.',
+  '특정 사례·품목·시술에만 적용되는 규정을 그 분야 전체로 일반화하지 않는다(예: 특정 신의료기술 한 사례를 근거로 해당 시술 전체를 규제 대상으로 단정하지 않는다).',
+  '질문이 직접 묻는 핵심에 먼저 답한다. 질문이 묻지 않은 주제를 근거 없이 장황하게 덧붙이지 않는다.',
+  '법조문·심의기준을 인용할 때는 근거의 조항(예: 의료법 제56조 제2항 제2호)을 함께 표기한다. 근거에서 정확한 호(號)를 확인할 수 없으면 조 단위까지만 인용하고 특정 호를 지어내지 않는다.',
+  '사전심의 여부는 두 가지를 분리해 판단한다: (1) 매체가 심의 대상인가(예: 일일 평균 이용자 10만명 이상 매체, 의료법 제57조 제1항·시행령 제24조), (2) 그 매체에 올리는 게시물이 심의 대상 의료광고인가. 심의 대상 매체라도 의료법 제57조 제3항의 정보성 항목만으로 구성되거나 유인 요소 없는 공익적·정보성 콘텐츠(심의기준 제3조)는 심의 없이 게재할 수 있다. 근거에 예외가 있으면 반드시 함께 안내하고, "매체가 대상이면 무조건 심의"라고 단정하지 않는다.',
+  '치료효과 보장·최상급·환자 유인·비교·오인 표현을 옹호하지 않는다. 다만 효과·안전성을 광고 문구로 주장하는 사안에 한해 부작용·주의사항 병기를 안내하고, 그 외 질문(예: 순수 비교표현의 허용 여부)에는 해당 쟁점에만 답하고 부작용 병기 등 무관한 요건을 끌어오지 않는다.',
+  '답변은 두괄식(결론 먼저)으로 간결하게. 마지막에 반드시 디스클레이머를 붙인다.',
+].join('\n');
+
+function contextBlock(hits) {
+  return hits.map((h, i) =>
+    `[근거 ${i + 1}] (${h.chunk.legalRefs.join(', ') || '출처: ' + h.chunk.sourceTitle})\n${h.chunk.text}`
+  ).join('\n\n');
+}
+
+function sourcesOf(hits) {
+  return hits.map(h => ({
+    title: h.chunk.title,
+    legalRefs: h.chunk.legalRefs,
+    tags: h.chunk.tags,
+    source: h.chunk.sourceTitle,
+    score: h.score,
+  }));
+}
+
+/**
+ * Q&A: 근거 검색 후 LLM으로 근거 기반 답변. 키 없으면 근거 요약 폴백.
+ * @returns {Promise<{answer, sources, grounded, llm}>}
+ */
+async function answerQuestion(message, opts = {}) {
+  // 하이브리드 활성(embeddings.json + 키) 시 질의 임베딩으로 벡터 축 가중
+  let queryVector = null;
+  if (embedder && stats().hybrid && process.env.OPENAI_API_KEY) {
+    try { queryVector = await embedder.embedText(message); } catch (e) { /* 키워드 축만 사용 */ }
+  }
+  const hits = retrieve(message, opts.topK || 6, queryVector);
+  const sources = sourcesOf(hits);
+
+  if (!hits.length) {
+    return { answer: `제공된 자료로는 확인이 어렵습니다. 질문을 구체화해 주세요.\n\n${DISCLAIMER}`, sources, grounded: false, llm: false };
+  }
+
+  const context = contextBlock(hits);
+  const brain = pickLlm();
+  if (brain) {
+    const userPrompt = `질문: ${message}\n\n[근거]\n${context}\n\n위 근거만 사용해 근거 조항을 인용하며 답하라.`;
+    try {
+      const { text } = await brain.client.chatComplete(SYSTEM_PROMPT, userPrompt, brain.opts);
+      const answer = /디스클레이머|참고용|심의 결과/.test(text) ? text : `${text}\n\n${DISCLAIMER}`;
+      return { answer, sources, grounded: true, llm: true, provider: brain.provider, context };
+    } catch (e) {
+      // LLM 실패 → 폴백으로 진행
+    }
+  }
+
+  // 폴백: 근거 청크 요약(LLM 미연동/실패 시에도 유용한 답변 제공)
+  const top = hits[0].chunk;
+  const excerpt = top.text.replace(/\n+/g, ' ').replace(/\*\*/g, '').slice(0, 500);
+  const refs = [...new Set(hits.flatMap(h => h.chunk.legalRefs))].slice(0, 6).join(', ');
+  const answer =
+    `가장 관련 있는 근거는 「${top.title.split(' › ').pop()}」입니다.\n\n${excerpt}${top.text.length > 500 ? '…' : ''}\n\n` +
+    (refs ? `관련 근거: ${refs}\n\n` : '') +
+    `(LLM 미연동 상태 — 근거 요약으로 응답. ANTHROPIC_API_KEY(Claude) 설정 시 근거 인용형 자연어 답변이 활성화됩니다.)\n\n${DISCLAIMER}`;
+  return { answer, sources, grounded: true, llm: false };
+}
+
+/**
+ * 문구 자가진단: 금지·위험 표현 탐지 + 안전 대체안.
+ * @returns {{pass, forbidden, risky, suggestion, replacements}}
+ */
+function diagnoseCopy(text) {
+  if (!validator) {
+    return { pass: null, error: 'medical-ad-validator 미연동' };
+  }
+  const v = validator.validateMedicalAd(text);
+  const suggestion = validator.autoFix(text);
+  // 사례집 §7 대체표현 중 실제 등장한 것 매칭
+  const replacements = (RULES.casebookReplacements || []).filter(r =>
+    r.expression.split(/[·,\/]/).some(term => term.trim() && text.includes(term.trim()))
+  );
+  return {
+    pass: v.pass,
+    forbidden: v.forbidden,
+    risky: v.risky,
+    suggestion: suggestion !== text ? suggestion : null,
+    replacements,
+    disclaimer: DISCLAIMER,
+  };
+}
+
+module.exports = { answerQuestion, diagnoseCopy, SYSTEM_PROMPT, DISCLAIMER };

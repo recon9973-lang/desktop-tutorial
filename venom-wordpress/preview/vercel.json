@@ -219,6 +219,20 @@
     },
     "api/cron-seo-monitor.js": {
       "maxDuration": 300
+    },
+    "api/chatbot.js": {
+      "maxDuration": 30
+    },
+    "api/statutes-refresh.js": {
+      "maxDuration": 120
+    },
+    "api/eval-judge.js": {
+      "maxDuration": 300,
+      "includeFiles": "chatbot/data/**"
+    },
+    "api/cron-eval.js": {
+      "maxDuration": 300,
+      "includeFiles": "chatbot/data/**"
     }
   },
   "crons": [
@@ -229,6 +243,10 @@
     {
       "path": "/api/cron-seo-monitor",
       "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron-eval",
+      "schedule": "0 0 * * 1"
     }
   ]
 }

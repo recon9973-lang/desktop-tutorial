@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>관리자 대시보드 — 병원마케팅 베놈</title>
 <meta name="robots" content="noindex, nofollow">
 <script>
@@ -352,7 +353,7 @@ a{color:var(--p);text-decoration:none}
         <!-- AI 초안 생성 패널 -->
         <div class="card" id="ai-draft-panel" style="display:none">
           <div class="card-head"><div class="card-title">🤖 AI 초안 생성</div><button class="btn btn-outline btn-sm" onclick="document.getElementById('ai-draft-panel').style.display='none'">닫기</button></div>
-          <div class="form-group"><label>블로그 주제 또는 키워드</label><input type="text" id="ai-topic" placeholder="예: 임플란트 치과 마케팅 전략 2025"></div>
+          <div class="form-group"><label>블로그 주제 또는 키워드</label><input type="text" id="ai-topic" autocomplete="off" placeholder="예: 임플란트 치과 마케팅 전략 2025"></div>
           <div class="form-row">
             <div class="form-group"><label>타겟 독자</label><select id="ai-target"><option>병원 원장</option><option>마케팅 담당자</option><option>예비 환자</option></select></div>
             <div class="form-group"><label>글 길이</label><select id="ai-length"><option>짧게 (500자)</option><option>보통 (1,000자)</option><option>상세 (2,000자+)</option></select></div>
@@ -368,7 +369,7 @@ a{color:var(--p);text-decoration:none}
           <div class="card-head">
             <div class="card-title">전체 포스팅 <span style="font-size:13px;color:var(--mute);font-weight:400" id="post-total-count">(0개)</span></div>
             <div style="display:flex;gap:8px">
-              <input type="text" placeholder="검색..." style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;width:200px">
+              <input type="text" id="blog-search" autocomplete="off" placeholder="검색..." style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;width:200px">
               <select class="btn btn-outline btn-sm"><option>전체 상태</option><option>발행</option><option>초안</option></select>
             </div>
           </div>
@@ -475,7 +476,7 @@ a{color:var(--p);text-decoration:none}
       <!-- 전환 퍼널 -->
       <div class="card">
         <div class="card-head"><div class="card-title">🎯 상담 전환 퍼널</div><span style="font-size:12px;color:var(--mute)">이번 주 기준</span></div>
-        <div style="text-align:center;color:var(--mute);font-size:13px;padding:28px">🎯 전환 퍼널은 방문→상담클릭→카카오→신청 이벤트 추적 연동 후 표시됩니다 (연동 예정)</div>
+        <div id="v-funnel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative"><div style="grid-column:1/-1;text-align:center;color:var(--mute);font-size:13px;padding:24px">불러오는 중…</div></div>
       
         </div>
       </div>
@@ -486,10 +487,10 @@ a{color:var(--p);text-decoration:none}
 
       <!-- KPI 요약 -->
       <div class="stat-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">추적 키워드</div><div class="stat-val" id="kw-count">12</div><div class="stat-change up">↑ 3개 추가됨</div></div>
-        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">TOP 3 키워드</div><div class="stat-val" id="kw-top3">4</div><div class="stat-change up">↑ 1 전주 대비</div></div>
-        <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">월 노출량 합계</div><div class="stat-val" id="kw-impression">14,850</div><div class="stat-change up">↑ 18%</div></div>
-        <div class="stat-card"><div class="stat-icon">💡</div><div class="stat-label">평균 클릭률</div><div class="stat-val" id="kw-ctr">4.2%</div><div class="stat-change up">↑ 0.6%p</div></div>
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">추적 키워드</div><div class="stat-val" id="kw-count">—</div><div class="stat-change">추적 목록</div></div>
+        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">월 검색량 합계 <span style="font-size:9px;color:var(--mute)">(네이버 실측)</span></div><div class="stat-val" id="kw-volsum">—</div><div class="stat-change">PC+모바일</div></div>
+        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">최고 검색량 키워드</div><div class="stat-val" id="kw-topvol">—</div><div class="stat-change">월 기준</div></div>
+        <div class="stat-card"><div class="stat-icon">🖱️</div><div class="stat-label">월 클릭 합계 <span style="font-size:9px;color:var(--mute)">(네이버 실측)</span></div><div class="stat-val" id="kw-clicksum">—</div><div class="stat-change">추정 클릭수</div></div>
       </div>
 
       <!-- 키워드 검색량 조회 도구 -->
@@ -500,7 +501,7 @@ a{color:var(--p);text-decoration:none}
         </div>
         <p style="font-size:13px;color:var(--mute);margin-bottom:16px">키워드를 입력하면 월 검색량·경쟁도·CPC를 분석합니다. 실제 데이터는 네이버 검색광고 API 연동 후 자동 전환됩니다.</p>
         <div style="display:flex;gap:10px;margin-bottom:16px">
-          <input id="kw-input" type="text" placeholder="예: 치과 임플란트 마케팅, 피부과 SNS 광고" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:14px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')lookupKeyword()">
+          <input id="kw-input" type="text" autocomplete="off" placeholder="예: 치과 임플란트 마케팅, 피부과 SNS 광고" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:14px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')lookupKeyword()">
           <button class="btn btn-p" onclick="lookupKeyword()">🔍 조회</button>
           <button class="btn btn-outline" onclick="addToTracking()">+ 추적 추가</button>
         </div>
@@ -520,16 +521,17 @@ a{color:var(--p);text-decoration:none}
       <!-- 추적 키워드 현황 테이블 -->
       <div class="card">
         <div class="card-head">
-          <div class="card-title">📋 추적 키워드 현황</div>
+          <div class="card-title">📋 추적 키워드 현황 <span style="font-size:11px;font-weight:400;color:var(--mute)">(네이버 검색광고 실측)</span></div>
           <div style="display:flex;gap:8px">
             <select id="kw-filter" class="btn btn-outline btn-sm" onchange="renderKeywordTable()">
-              <option value="all">전체</option><option value="top">TOP 10 이내</option><option value="up">순위 상승</option><option value="down">순위 하락</option>
+              <option value="vol">검색량 높은순</option><option value="name">이름순</option>
             </select>
-            <button class="btn btn-p btn-sm" onclick="runKeywordUpdate()">🔄 순위 갱신</button>
+            <button class="btn btn-p btn-sm" onclick="renderKeywordTable()">🔄 새로고침</button>
           </div>
         </div>
+        <p style="font-size:12px;color:var(--mute);margin:-4px 0 12px">월 검색량·경쟁도·클릭은 네이버 검색광고 실측입니다. 네이버/구글 <b>검색 순위</b>는 별도 순위추적 연동이 필요해 표시하지 않습니다(연동 예정).</p>
         <table class="data-table">
-          <thead><tr><th>키워드</th><th>카테고리</th><th>네이버 순위</th><th>구글 순위</th><th>월 검색량</th><th>경쟁도</th><th>전주 대비</th><th>유입수</th><th></th></tr></thead>
+          <thead><tr><th>키워드</th><th>월 검색량</th><th>경쟁도</th><th>월 클릭(추정)</th><th></th></tr></thead>
           <tbody id="kw-table-body"></tbody>
         </table>
       </div>
@@ -537,17 +539,16 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ 유입 출처 ══ -->
     <div id="section-sources" class="admin-section">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head"><div class="card-title">📡 유입 채널 분포 <span style="font-size:11px;font-weight:400;color:var(--mute)">(전기간 누적 · 실측)</span></div></div>
+        <div id="sources-chart-bars" style="display:flex;flex-direction:column;gap:10px"><div style="text-align:center;color:var(--mute);font-size:13px;padding:18px">불러오는 중…</div></div>
+      </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">📡 유입 출처 상세</div></div>
+        <div class="card-head"><div class="card-title">📡 유입 출처 상세 <span style="font-size:11px;font-weight:400;color:var(--mute)">(전환·이탈률은 세션 추적 연동 예정)</span></div></div>
         <table class="data-table">
           <thead><tr><th>출처</th><th>방문자</th><th>비율</th><th>전환</th><th>이탈률</th></tr></thead>
           <tbody>
-            <tr><td>🟢 네이버 검색</td><td>699</td><td>38%</td><td>12%</td><td>42%</td></tr>
-            <tr><td>⚫ 직접 유입</td><td>405</td><td>22%</td><td>18%</td><td>28%</td></tr>
-            <tr><td>🟡 카카오톡</td><td>331</td><td>18%</td><td>22%</td><td>35%</td></tr>
-            <tr><td>🔴 구글 검색</td><td>221</td><td>12%</td><td>9%</td><td>48%</td></tr>
-            <tr><td>🔴 인스타그램</td><td>129</td><td>7%</td><td>6%</td><td>54%</td></tr>
-            <tr><td>🔵 기타</td><td>57</td><td>3%</td><td>4%</td><td>62%</td></tr>
+            <tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">불러오는 중…</td></tr>
           </tbody>
         </table>
       </div>
@@ -555,26 +556,42 @@ a{color:var(--p);text-decoration:none}
 
     <!-- ══ SEO 점수 ══ -->
     <div id="section-seo" class="admin-section">
+      <!-- 검사 대상 URL (비우면 자사 홈페이지 · 임의 도메인 넣으면 경쟁사 비교) -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap">🔎 검사 대상</span>
+          <input type="text" id="seo-url-input" autocomplete="off" placeholder="비우면 내 홈페이지 · 예: marketingbank.org (경쟁사 비교)" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none" onkeydown="if(event.key==='Enter')runSeoAudit()">
+          <button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔍 검사</button>
+        </div>
+        <div style="font-size:11px;color:var(--mute);margin-top:8px">임의 도메인을 넣으면 서버(seo-proxy)로 HTML을 수집해 <b>베놈 엔진 vs 구글 Lighthouse</b>로 비교합니다. 비우면 자사 홈페이지 실측.</div>
+      </div>
+      <!-- 종합 등급 배너 (엔진 실측 — 홈페이지 HTML + robots.txt + PageSpeed Insights) -->
+      <div id="seo-overall" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;border:2px solid var(--border);border-radius:var(--r12);padding:18px 22px;margin-bottom:16px;background:var(--soft)">
+        <div style="text-align:center;min-width:120px">
+          <div><span id="seo-overall-score" style="font-size:44px;font-weight:800;color:var(--ink)">—</span><span style="font-size:18px;color:var(--mute);font-weight:600">/100</span></div>
+          <div id="seo-overall-grade" style="font-size:13px;font-weight:700;color:var(--mute)">미측정</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;font-size:15px;color:var(--ink)">종합 SEO 점수 <span id="seo-overall-domain" style="font-size:12px;font-weight:600;color:var(--p)"></span></div>
+          <div style="font-size:12px;color:var(--mute);margin-top:3px;line-height:1.6">Google Search Central + PageSpeed Insights(Lighthouse) 1차 기준 · 네이버 서치어드바이저 2차 · 속도(CWV)는 종합점수와 분리된 별도 지표 · <b>순위 보장 아님</b></div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#16a34a">94</div><div class="stat-label" style="text-align:center">종합 SEO 점수</div></div>
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:var(--p)">98</div><div class="stat-label" style="text-align:center">기술 SEO</div></div>
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#f59e0b">88</div><div class="stat-label" style="text-align:center">콘텐츠 SEO</div></div>
-        <div class="stat-card" style="text-align:center"><div style="font-size:48px;font-weight:700;color:#06b6d4">91</div><div class="stat-label" style="text-align:center">로컬 SEO</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-content" style="font-size:34px;font-weight:700;color:#533afd">—</div><div class="stat-label" style="text-align:center">📝 콘텐츠 &amp; 메타</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-tech" style="font-size:34px;font-weight:700;color:#06b6d4">—</div><div class="stat-label" style="text-align:center">⚙️ 기술·크롤링</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-search" style="font-size:34px;font-weight:700;color:#8b5cf6">—</div><div class="stat-label" style="text-align:center">🔍 검색 노출</div></div>
+        <div class="stat-card" style="text-align:center"><div id="seo-score-speed" style="font-size:34px;font-weight:700;color:#f59e0b">—</div><div class="stat-label" style="text-align:center">⚡ 속도(CWV)</div></div>
+      </div>
+      <div class="card" id="seo-gcompare-card">
+        <div class="card-head"><div class="card-title">🆚 구글 Lighthouse 실측 비교 <span style="font-size:11px;font-weight:600;color:var(--mute)">(PageSpeed Insights · 모바일)</span></div></div>
+        <div id="seo-gcompare"><div style="font-size:13px;color:var(--mute)">재점검 시 구글 Lighthouse(SEO·성능·접근성·모범사례) 실측 점수를 베놈 엔진 점수와 나란히 비교합니다. <b>Vercel PSI_KEY 연동 필요.</b></div></div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="card-title">SEO 항목별 점검</div><button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔄 재점검</button></div>
+        <div class="card-head"><div class="card-title">SEO 항목별 점검 <span style="font-size:11px;font-weight:600;color:var(--mute)">(홈페이지 실측)</span></div><button class="btn btn-p btn-sm" onclick="runSeoAudit()">🔄 재점검</button></div>
         <table class="data-table">
           <thead><tr><th>항목</th><th>설명</th><th>상태</th><th>점수</th></tr></thead>
-          <tbody>
-            <tr><td>메타 title</td><td>60자 이내, 핵심 키워드 포함</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
-            <tr><td>메타 description</td><td>160자 이내, 전환 유도 문구</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
-            <tr><td>Schema.org 구조화 데이터</td><td>LocalBusiness + MedicalBusiness</td><td><span class="badge badge-green">통과</span></td><td>15/15</td></tr>
-            <tr><td>OG 태그 (소셜 공유)</td><td>og:title, og:description, og:image</td><td><span class="badge badge-yellow">부분</span></td><td>6/10</td></tr>
-            <tr><td>Canonical URL</td><td>중복 콘텐츠 방지</td><td><span class="badge badge-green">통과</span></td><td>5/5</td></tr>
-            <tr><td>H1 태그</td><td>페이지당 1개, 핵심 키워드 포함</td><td><span class="badge badge-green">통과</span></td><td>10/10</td></tr>
-            <tr><td>이미지 alt 텍스트</td><td>모든 이미지에 alt 속성 필요</td><td><span class="badge badge-red">미흡</span></td><td>4/10</td></tr>
-            <tr><td>robots.txt</td><td>AI 크롤러 허용 여부</td><td><span class="badge badge-yellow">부분</span></td><td>3/5</td></tr>
-            <tr><td>Core Web Vitals</td><td>LCP, FID, CLS 기준치 이내</td><td><span class="badge badge-green">통과</span></td><td>15/15</td></tr>
+          <tbody id="seo-audit-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">미측정 — 재점검 버튼으로 실측하세요</td></tr>
           </tbody>
         </table>
       </div>
@@ -764,7 +781,7 @@ a{color:var(--p);text-decoration:none}
           <div class="form-group"><label>이름</label><input type="text" id="u-name" placeholder="홍길동"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>비밀번호 <span style="color:#dc2626">*</span></label><input type="password" id="u-pw" placeholder="비밀번호 입력"></div>
+          <div class="form-group"><label>비밀번호 <span style="color:#dc2626">*</span></label><input type="text" id="u-pw" autocomplete="off" placeholder="비밀번호 입력" style="-webkit-text-security:disc"></div>
           <div class="form-group"><label>권한</label><select id="u-role"><option value="admin">최고관리자</option><option value="editor">편집자</option><option value="viewer">조회자</option></select></div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -796,8 +813,8 @@ a{color:var(--p);text-decoration:none}
         <!-- URL 입력 UI -->
         <div id="media-url-panel" style="display:none">
           <div style="display:flex;gap:10px;margin-bottom:12px">
-            <input type="text" id="media-url-input" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
-            <input type="text" id="media-name-input" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
+            <input type="text" id="media-url-input" autocomplete="off" placeholder="이미지 URL을 붙여넣기하세요 (https://...)" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter')addMedia()">
+            <input type="text" id="media-name-input" autocomplete="off" placeholder="파일명 (선택)" style="width:160px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;outline:none">
             <button class="btn btn-p" onclick="addMedia()">+ 추가</button>
           </div>
         </div>
@@ -901,7 +918,7 @@ a{color:var(--p);text-decoration:none}
           <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">🔑 API 인증 토큰 (Vercel 환경변수 ADMIN_SECRET 값)</label>
             <div style="display:flex;gap:8px">
-              <input type="password" id="ap-secret-input" placeholder="ADMIN_SECRET 값 입력" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+              <input type="text" id="ap-secret-input" autocomplete="off" placeholder="ADMIN_SECRET 값 입력" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none;-webkit-text-security:disc">
               <button class="btn btn-outline btn-sm" onclick="apSaveSecret()">저장</button>
             </div>
             <div style="font-size:11px;color:var(--mute);margin-top:4px" id="ap-secret-status"></div>
@@ -912,8 +929,15 @@ a{color:var(--p);text-decoration:none}
       <!-- 토큰 사용량 그래프 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-head">
-          <div class="card-title">📊 토큰 사용량 (최근 30일)</div>
-          <button class="btn btn-outline btn-sm" onclick="apLoadUsageStats()">새로고침</button>
+          <div class="card-title">📊 토큰 사용량 <span id="ap-usage-period-label" style="font-size:12px;font-weight:400;color:var(--mute)">(최근 30일)</span></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="ap-usage-period" class="btn btn-outline btn-sm" onchange="apLoadUsageStats()" style="padding:6px 10px;cursor:pointer">
+              <option value="7">최근 7일</option>
+              <option value="30" selected>최근 30일</option>
+              <option value="90">최근 90일</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="apLoadUsageStats()">새로고침</button>
+          </div>
         </div>
         <!-- 요약 -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px" id="ap-usage-summary">
@@ -936,14 +960,40 @@ a{color:var(--p);text-decoration:none}
         </div>
         <!-- 바 차트 -->
         <div style="margin-bottom:8px;font-size:11px;color:var(--mute)">일별 토큰 사용량</div>
-        <div id="ap-token-chart" style="height:120px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
+        <div id="ap-token-chart" style="height:120px;display:flex;align-items:flex-end;gap:3px;padding-bottom:22px;position:relative">
           <div style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:12px;color:var(--mute);padding:8px">데이터를 불러오는 중...</div>
         </div>
         <!-- 비용 차트 -->
         <div style="margin-bottom:8px;margin-top:16px;font-size:11px;color:var(--mute)">일별 예상 비용 (USD)</div>
-        <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:20px;position:relative;overflow:hidden">
+        <div id="ap-cost-chart" style="height:80px;display:flex;align-items:flex-end;gap:3px;padding-bottom:22px;position:relative">
         </div>
         <div style="font-size:11px;color:var(--mute);margin-top:8px">* gpt-4o-mini: 입력 $0.15/1M · 출력 $0.60/1M | 이미지(gpt-image-1, 1024×1024): 장당 약 $0.04</div>
+
+        <!-- 상세 분석 -->
+        <div id="ap-usage-detail" style="margin-top:22px;border-top:1px solid var(--border);padding-top:18px">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">🔎 상세 분석 — 어디에 얼마나 쓰고 있나</div>
+          <div style="font-size:11px;color:var(--mute);margin-bottom:14px">자동 포스팅(블로그 글·이미지 생성) 기준. AI 노출 매트릭스(Perplexity·ChatGPT·Gemini·Claude)는 별도 계정이라 여기 포함되지 않습니다.</div>
+
+          <!-- 비용 구성 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">💰 비용 구성 (무엇이 돈을 쓰나)</div>
+          <div id="ap-cost-split" style="display:flex;height:26px;border-radius:6px;overflow:hidden;margin-bottom:6px;background:var(--soft)"></div>
+          <div id="ap-cost-legend" style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--mute);margin-bottom:18px"></div>
+
+          <!-- 입력/출력 토큰 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">🔤 입력 vs 출력 토큰</div>
+          <div id="ap-io-split" style="display:flex;height:22px;border-radius:6px;overflow:hidden;margin-bottom:6px;background:var(--soft)"></div>
+          <div id="ap-io-legend" style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--mute);margin-bottom:18px"></div>
+
+          <!-- 글당 평균 -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px" id="ap-avg-cards"></div>
+
+          <!-- 카테고리별 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:10px">🗂️ 카테고리(주제)별 사용량</div>
+          <div id="ap-cat-breakdown" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+
+          <!-- 모델·액션 -->
+          <div id="ap-model-action" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+        </div>
       </div>
 
       <!-- 글 미리보기 생성 -->
@@ -958,11 +1008,11 @@ a{color:var(--p);text-decoration:none}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
           <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">키워드</label>
-            <input type="text" id="ap-prev-kw" placeholder="예: 강남 치과 GEO 마케팅" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+            <input type="text" id="ap-prev-kw" autocomplete="off" placeholder="예: 강남 치과 GEO 마케팅" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
           </div>
           <div>
             <label style="font-size:12px;color:var(--mute);display:block;margin-bottom:6px">지역 (선택)</label>
-            <input type="text" id="ap-prev-region" placeholder="예: 강남구" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
+            <input type="text" id="ap-prev-region" autocomplete="off" placeholder="예: 강남구" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r8);font-size:13px;font-family:inherit;background:var(--soft);color:var(--ink);outline:none">
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:16px">
@@ -1061,7 +1111,7 @@ function showSection(id){
   if(id==='logos')initLogoSection();
   if(id==='visitors')initVisitors();
   if(id==='sources')initSources();
-  if(id==='seo')runSeoAudit();
+  if(id==='seo'&&!_seoAuditDone){_seoAuditDone=true;runSeoAudit();}
   if(id==='seomonitor')initSeoMonitor();
   if(id==='reports')initReports();
   if(id==='cardnews')initCardnews();
@@ -1342,12 +1392,22 @@ function ensurePostStatCard(){
 }
 
 // 초기 렌더링
+// 새로고침/뒤로가기(bfcache) 시 브라우저가 도구 검색창에 이전 입력값을 복원하는 현상 제거.
+// 검색·조회용 임시 입력만 비운다(설정·편집 필드는 저장값을 유지하므로 제외).
+var _TRANSIENT_INPUTS = ['kw-input','blog-search','ai-topic','ap-prev-kw','ap-prev-region','media-url-input','media-name-input'];
+function _clearToolInputs(){
+  _TRANSIENT_INPUTS.forEach(function(id){ var el=document.getElementById(id); if(el)el.value=''; });
+}
+
 document.addEventListener('DOMContentLoaded',function(){
+  _clearToolInputs();
   renderPostList();
   renderKeywordTable();
   ensurePostStatCard();
   updateDashboard();
 });
+// bfcache 복원(뒤로/앞으로) 시에도 값 복원 방지
+window.addEventListener('pageshow',function(e){ if(e.persisted)_clearToolInputs(); });
 
 // ── OTHER ──
 function logout(){if(confirm('로그아웃 하시겠습니까?')){sessionStorage.removeItem('venom-admin-auth');window.location.href='admin-login.html';}}
@@ -1385,24 +1445,43 @@ var kwTracking=Object.keys(kwDatabase);
 function compLabel(v){return v>=0.8?'<span class="badge badge-red">높음</span>':v>=0.5?'<span class="badge badge-yellow">중간</span>':'<span class="badge badge-green">낮음</span>';}
 function chgLabel(v){return v>0?'<span style="color:#16a34a">↑'+v+'</span>':v<0?'<span style="color:#dc2626">↓'+Math.abs(v)+'</span>':'<span style="color:var(--mute)">—</span>';}
 
+function _setKwKpi(rows){
+  var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+  if(!rows||!rows.length){ s('kw-volsum','—'); s('kw-topvol','—'); s('kw-clicksum','—'); return; }
+  var volsum=rows.reduce(function(a,r){return a+(r.monthlyVolume||0);},0);
+  var clicksum=rows.reduce(function(a,r){return a+(r.avgClicks||0);},0);
+  var top=rows.slice().sort(function(a,b){return (b.monthlyVolume||0)-(a.monthlyVolume||0);})[0];
+  s('kw-volsum',volsum.toLocaleString()); s('kw-clicksum',clicksum.toLocaleString());
+  s('kw-topvol',top?(top.monthlyVolume||0).toLocaleString():'—');
+}
+// 추적 키워드 현황 — 네이버 검색광고 실측(월 검색량·경쟁도·클릭). 순위는 미표시(연동 예정).
 function renderKeywordTable(){
-  var filter=document.getElementById('kw-filter')?document.getElementById('kw-filter').value:'all';
-  var body=document.getElementById('kw-table-body');
-  if(!body)return;
-  var rows=kwTracking.filter(function(k){
-    var d=kwDatabase[k];if(!d)return false;
-    if(filter==='top')return d.naver<=10||d.google<=10;
-    if(filter==='up')return d.chg>0;
-    if(filter==='down')return d.chg<0;
-    return true;
-  });
-  body.innerHTML=rows.map(function(k){
-    var d=kwDatabase[k];
-    return '<tr><td><strong>'+k+'</strong></td><td><span class="badge badge-blue" style="font-size:10px">'+d.cat+'</span></td><td>'+(d.naver<=3?'<strong style="color:var(--p)">':'')+d.naver+'위'+(d.naver<=3?'</strong>':'')+'</td><td>'+d.google+'위</td><td><strong>'+(d.pc+d.mo).toLocaleString()+'</strong><span style="font-size:11px;color:var(--mute)"> (PC:'+d.pc.toLocaleString()+'/MO:'+d.mo.toLocaleString()+')</span></td><td>'+compLabel(d.comp)+'</td><td>'+chgLabel(d.chg)+'</td><td>'+d.visits+'</td><td><button class="btn btn-outline btn-sm" style="font-size:11px" onclick="removeFromTracking(\''+k+'\')">삭제</button></td></tr>';
-  }).join('');
-  document.getElementById('kw-count').textContent=kwTracking.length;
-  var top3=kwTracking.filter(function(k){var d=kwDatabase[k];return d&&(d.naver<=3||d.google<=3);}).length;
-  document.getElementById('kw-top3').textContent=top3;
+  var body=document.getElementById('kw-table-body'); if(!body)return;
+  var sort=document.getElementById('kw-filter')?document.getElementById('kw-filter').value:'vol';
+  var cnt=document.getElementById('kw-count'); if(cnt)cnt.textContent=kwTracking.length;
+  if(!kwTracking.length){ body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">추적 중인 키워드가 없습니다. 위 “키워드 검색량 조회”에서 조회 후 “+ 추적 추가”하세요.</td></tr>'; _setKwKpi(null); return; }
+  body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">네이버 실측 데이터 불러오는 중…</td></tr>';
+  fetch('/api/insights?type=keywordtool&q='+encodeURIComponent(kwTracking.join(',')))
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};},function(){return {s:r.status,j:null};});})
+    .then(function(res){
+      if(!(res.s===200&&res.j&&res.j.keywords&&res.j.keywords.length)){
+        body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">네이버 검색광고 API 연동 대기 — 실측 데이터가 없어 표시하지 않습니다.</td></tr>'; _setKwKpi(null); return;
+      }
+      var rows=res.j.keywords.slice();
+      if(sort==='name')rows.sort(function(a,b){return String(a.keyword||'').localeCompare(String(b.keyword||''));});
+      else rows.sort(function(a,b){return (b.monthlyVolume||0)-(a.monthlyVolume||0);});
+      body.innerHTML=rows.map(function(d){
+        var comp=d.competition||'-'; var cc=comp==='높음'?'#dc2626':comp==='낮음'?'#16a34a':'var(--ink)';
+        var kw=String(d.keyword||'').replace(/</g,'&lt;'); var kwj=String(d.keyword||'').replace(/'/g,"\\'");
+        return '<tr><td><strong>'+kw+'</strong></td>'
+          +'<td style="font-weight:600;color:var(--p)">'+(d.monthlyVolume||0).toLocaleString()+'</td>'
+          +'<td style="color:'+cc+'">'+comp+'</td>'
+          +'<td>'+(d.avgClicks||0).toLocaleString()+'</td>'
+          +'<td><button class="btn btn-outline btn-sm" style="font-size:11px" onclick="removeFromTracking(\''+kwj+'\')">삭제</button></td></tr>';
+      }).join('');
+      _setKwKpi(rows);
+    })
+    .catch(function(){ body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:16px">데이터를 불러오지 못했습니다.</td></tr>'; _setKwKpi(null); });
 }
 
 function lookupKeyword(){
@@ -1487,7 +1566,6 @@ function addToTracking(){
   var added=0;
   kws.forEach(function(kw){
     if(!kwTracking.includes(kw)){kwTracking.push(kw);added++;}
-    if(!kwDatabase[kw]){kwDatabase[kw]={pc:Math.round(200+Math.random()*2000),mo:Math.round(300+Math.random()*3000),comp:Math.round(30+Math.random()*60)/100,cpc:Math.round(800+Math.random()*3000),cat:'기타',naver:Math.round(5+Math.random()*45),google:Math.round(8+Math.random()*60),chg:0,visits:0};}
   });
   if(added>0){renderKeywordTable();toast(added+'개 키워드가 추적 목록에 추가되었습니다.');}
   else toast('이미 추적 중인 키워드입니다.');
@@ -1499,19 +1577,8 @@ function removeFromTracking(kw){
   toast('"'+kw+'" 키워드 추적이 해제되었습니다.');
 }
 
-function runKeywordUpdate(){
-  toast('키워드 순위 갱신 중...');
-  setTimeout(function(){
-    kwTracking.forEach(function(k){
-      var d=kwDatabase[k];if(!d)return;
-      d.chg=Math.round(-2+Math.random()*4);
-      d.naver=Math.max(1,d.naver-d.chg);
-    });
-    renderKeywordTable();
-    toast('✅ 순위 갱신 완료 (시뮬레이션)');
-  },1200);
-}
-function runSeoAudit(){toast('SEO 재점검 중...')}
+// (구) 시뮬레이션 순위 갱신 제거 — 실측 새로고침으로 대체
+function runKeywordUpdate(){ renderKeywordTable(); }
 function downloadReport(){toast('PDF 생성 중... (실제 배포 시 자동 생성)')}
 function generateCardnews(){toast('오늘 카드뉴스 생성 중... (AI API 연동 필요)')}
 
@@ -1964,7 +2031,71 @@ function initVisitors(){
     if(monthEl)monthEl.innerHTML='월 방문자 <strong style="color:var(--ink)">'+_nfmt(srv.month.visitors)+'</strong> · 페이지뷰 <strong style="color:var(--ink)">'+_nfmt(srv.month.pageviews)+'</strong>';
     render30Chart(document.getElementById('v-chart-30'),srv.daily,'uv');
     renderChannelBars(document.getElementById('v-channel-bars'),srv.channels);
+    renderVisitorExtras(srv);
   });
+}
+// 방문자 분석 확장 지표 렌더 — 디바이스·시간대·인기페이지·지역·전환퍼널(전부 /api/analytics 실측)
+// 지역명 영문(Vercel geo x-vercel-ip-city)→한글. 미매핑(해외 등)은 원문 유지(정직).
+var _KR_REGION={
+  'Seoul':'서울','Busan':'부산','Incheon':'인천','Daegu':'대구','Daejeon':'대전','Gwangju':'광주','Ulsan':'울산','Sejong':'세종',
+  'Suwon':'수원','Seongnam':'성남','Goyang':'고양','Yongin':'용인','Bucheon':'부천','Ansan':'안산','Namyangju':'남양주','Hwaseong':'화성','Pyeongtaek':'평택','Anyang':'안양','Uijeongbu':'의정부',
+  'Cheongju':'청주','Jeonju':'전주','Cheonan':'천안','Andong':'안동','Pohang':'포항','Changwon':'창원','Gimhae':'김해','Jeju':'제주','Wonju':'원주','Chuncheon':'춘천','Gumi':'구미','Yeosu':'여수','Mokpo':'목포','Gyeongju':'경주',
+  'Gangnam-gu':'강남구','Seocho-gu':'서초구','Songpa-gu':'송파구','Dongjak-gu':'동작구','Mapo-gu':'마포구','Yongsan-gu':'용산구','Jongno-gu':'종로구','Gangseo-gu':'강서구','Yeongdeungpo-gu':'영등포구','Nowon-gu':'노원구'
+};
+function _krRegion(n){ n=String(n||''); return _KR_REGION[n]||n; }
+// 경로 정리: 잘못 이어붙은 URL(2번째 http 이후) 제거, 절대URL이면 pathname만, 길면 말줄임.
+function _cleanPath(p){ p=String(p||''); var i=p.search(/https?:\/\/?/i); if(i>0)p=p.slice(0,i);
+  try{ if(/^https?:\/\//i.test(p))p=new URL(p).pathname; }catch(e){} p=p.split('?')[0].split('#')[0]||'/';
+  return p; }
+function _pageAnchor(rawPath){ var c=_cleanPath(rawPath); var disp=(c.length>52?c.slice(0,52)+'…':c).replace(/</g,'&lt;');
+  var href=location.origin+(c.charAt(0)==='/'?c:'/'+c);
+  return '<a href="'+href+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--border)" title="'+href.replace(/"/g,'')+'">'+disp+'</a>'; }
+
+function renderVisitorExtras(srv){
+  var pend='<div style="text-align:center;color:var(--mute);font-size:12px;padding:18px">아직 수집된 데이터가 없습니다</div>';
+  // 디바이스
+  var dev=srv.device||{}, dt=(dev.mobile||0)+(dev.desktop||0)+(dev.tablet||0);
+  var devHost=document.querySelector('#section-visitors .card-title'); // fallback
+  var devBox=document.getElementById('dash-device')||_findDeviceBox();
+  if(devBox){
+    if(!dt){devBox.innerHTML=pend;}
+    else{
+      var rows=[['📱 모바일',dev.mobile||0,'var(--p)'],['💻 데스크톱',dev.desktop||0,'var(--bd)'],['📟 태블릿',dev.tablet||0,'var(--mute)']];
+      devBox.innerHTML=rows.map(function(r){var pct=Math.round(r[1]/dt*100);return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+r[0]+'</span><span>'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:'+r[2]+'"></div></div></div>';}).join('');
+    }
+  }
+  // 인기 페이지 TOP 5
+  var tp=document.getElementById('v-top-pages');
+  if(tp){var pages=srv.topPaths||[];
+    if(!pages.length){tp.innerHTML=pend;}
+    else{var mx=pages[0].count||1;tp.innerHTML=pages.map(function(p,i){var pct=Math.round(p.count/mx*100);var nm=_pageAnchor(p.name);return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--p);font-weight:600">'+(i+1)+'.</span> <span style="flex:1;margin:0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nm+'</span><span style="color:var(--mute)">'+p.count+'</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--p)"></div></div></div>';}).join('');}
+  }
+  // 지역
+  var rg=document.getElementById('v-regions');
+  if(rg){var regs=srv.regions||[];var rt=regs.reduce(function(a,r){return a+(r.count||0);},0);
+    if(!rt){rg.innerHTML=pend;}
+    else{rg.innerHTML=regs.map(function(r){var pct=Math.round(r.count/rt*100);var nm=_krRegion(r.name).replace(/</g,'&lt;');return '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+nm+'</span><span style="color:var(--mute)">'+pct+'%</span></div><div class="seo-bar"><div class="seo-bar-fill" style="width:'+pct+'%;background:var(--bd)"></div></div></div>';}).join('');}
+  }
+  // 시간대별
+  var hourly=document.getElementById('v-hourly');
+  if(hourly){var hrs=srv.hourly||[];var mh=Math.max.apply(null,hrs.concat([1]));
+    if(!hrs.some(function(v){return v>0;})){hourly.innerHTML=pend;}
+    else{hourly.innerHTML=hrs.map(function(v,i){var pct=Math.round(v/mh*100);var pk=(i>=9&&i<=20);return '<div style="flex:1;background:'+(pk?'var(--p)':'var(--bd)')+';opacity:'+(pk?0.8:0.35)+';border-radius:2px 2px 0 0;height:'+pct+'%;min-height:2px" title="'+i+'시: '+v+'"></div>';}).join('');}
+  }
+  // 전환 퍼널
+  var fn=srv.funnel||{};
+  var fnBox=document.getElementById('v-funnel');
+  if(fnBox){
+    var stages=[['방문',fn.views||0,'var(--p)'],['상담 클릭',fn.cta||0,'#10a37f'],['카카오 클릭',fn.kakao||0,'#f59e0b'],['상담 완료',fn.leads||0,'#16a34a']];
+    var base=stages[0][1]||1;
+    fnBox.innerHTML=stages.map(function(s,i){var pct=i===0?100:Math.round(s[1]/base*100);var conv=i>0&&stages[i-1][1]?Math.round(s[1]/stages[i-1][1]*100):null;return '<div style="text-align:center;padding:16px 8px"><div style="font-size:24px;font-weight:700;color:'+s[2]+'">'+(s[1]||0).toLocaleString()+'</div><div style="font-size:11px;color:var(--mute);margin-top:4px">'+s[0]+'</div><div style="height:4px;background:'+s[2]+';margin-top:12px;border-radius:2px;opacity:'+(0.3+pct/143)+'"></div>'+(conv!=null?'<div style="font-size:10px;color:var(--mute);margin-top:4px">'+conv+'%</div>':'')+'</div>';}).join('');
+  }
+}
+function _findDeviceBox(){
+  // 디바이스 카드의 연동예정 컨테이너 탐색(id 없음)
+  var cards=document.querySelectorAll('#section-visitors .card');
+  for(var i=0;i<cards.length;i++){var t=cards[i].querySelector('.card-title');if(t&&/디바이스/.test(t.textContent)){var box=cards[i].querySelector('div[style*="flex-direction:column"]');if(box)return box;}}
+  return null;
 }
 function initVisitorsLocal(){
   var visits=getVisits();
@@ -2050,7 +2181,11 @@ function initVisitorsLocal(){
 function initSources(){
   initSourcesLocal();
   getServerAnalytics(function(srv){
-    if(!(srv&&srv.configured&&srv.channels))return;
+    var ok=!!(srv&&srv.configured&&srv.channels);
+    if(typeof analyticsBanner==='function')analyticsBanner('sources',ok);
+    var chart=document.getElementById('sources-chart-bars');
+    if(!ok){ if(chart)chart.innerHTML='<div style="text-align:center;color:var(--mute);font-size:13px;padding:18px">실시간 전체 집계 미연동 — 채널 분포는 KV 연동 후 표시됩니다. (아래 표는 이 브라우저 로컬 기록)</div>'; return; }
+    if(typeof renderChannelBars==='function')renderChannelBars(chart,srv.channels);
     var tbody=document.querySelector('#section-sources tbody');
     if(!tbody)return;
     var total=srv.channels.reduce(function(a,c){return a+c.pageviews;},0)||1;
@@ -2087,55 +2222,108 @@ function initSourcesLocal(){
 // ══════════════════════════════════════
 // ── SEO 점수 ──
 // ══════════════════════════════════════
-function runSeoAudit(){
-  var tbody=document.querySelector('#section-seo table tbody');
-  if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">⏳ 분석 중...</td></tr>';
-  fetch('index.html?nocache='+Date.now()).then(function(r){return r.text();}).then(function(html){
-    var parser=new DOMParser();
-    var doc=parser.parseFromString(html,'text/html');
-    var checks=[
-      {name:'메타 title',desc:'60자 이내, 핵심 키워드 포함',
-        test:function(){var t=doc.querySelector('title');return t&&t.textContent.length>0&&t.textContent.length<=70;},score:10},
-      {name:'메타 description',desc:'160자 이내 설명',
-        test:function(){var m=doc.querySelector('meta[name="description"]');return m&&m.content&&m.content.length<=160;},score:10},
-      {name:'H1 태그',desc:'페이지당 1개',
-        test:function(){return doc.querySelectorAll('h1').length>=1;},score:10},
-      {name:'Schema.org 구조화 데이터',desc:'LocalBusiness, MedicalBusiness',
-        test:function(){return html.includes('schema.org')&&(html.includes('MedicalBusiness')||html.includes('LocalBusiness'));},score:15},
-      {name:'OG 태그',desc:'og:title, og:description, og:image',
-        test:function(){return doc.querySelector('meta[property="og:title"]')&&doc.querySelector('meta[property="og:description"]');},score:10},
-      {name:'Canonical URL',desc:'중복 콘텐츠 방지',
-        test:function(){return !!doc.querySelector('link[rel="canonical"]');},score:5},
-      {name:'robots.txt AI 크롤러',desc:'GPTBot, ClaudeBot, PerplexityBot 허용',
-        test:function(){return html.includes('GPTBot')||html.includes('ClaudeBot');},
-        asyncTest:function(){return fetch('robots.txt').then(function(r){return r.text();}).then(function(t){return t.includes('GPTBot');});},score:5},
-      {name:'이미지 alt 텍스트',desc:'모든 img에 alt 속성',
-        test:function(){var imgs=doc.querySelectorAll('img');var noAlt=Array.from(imgs).filter(function(i){return!i.alt;});return noAlt.length===0;},score:10},
-      {name:'뷰포트 메타태그',desc:'모바일 최적화',
-        test:function(){return !!doc.querySelector('meta[name="viewport"]');},score:5},
-      {name:'lang 속성',desc:'html lang 속성 설정',
-        test:function(){return !!doc.querySelector('html[lang]');},score:5},
-    ];
-    var results=checks.map(function(c){
-      var ok;
-      try{ok=c.test();}catch(e){ok=false;}
-      return {name:c.name,desc:c.desc,ok:ok,score:c.score};
+// SEO 점수 = SEOEngine 실측(홈페이지 HTML + robots.txt) + PageSpeed Insights(seo-proxy) 병합.
+// index.html의 진단 플로우(SEOEngine.analyze → mergePSI)와 동일 방식. PSI 실패 시 속도(CWV)는
+// pending("정밀 필요") 유지 — 절대 수치를 지어내지 않는다.
+var _seoAuditDone=false;
+var _SEO_PROXY_ADMIN='https://venom-new-site.vercel.app/api/seo-proxy';
+function _seoEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function _seoRender(res){
+  var byKey={}; res.categories.forEach(function(c){byKey[c.key]=c;});
+  var ov=document.getElementById('seo-overall-score');
+  if(ov)ov.textContent=res.max?Math.round(res.total/res.max*100):'—';
+  var og=document.getElementById('seo-overall-grade');
+  if(og&&res.grade){og.textContent=res.grade.label;og.style.color=res.grade.color;}
+  var od=document.getElementById('seo-overall-domain'); if(od)od.textContent=res.domain||'';
+  var bnr=document.getElementById('seo-overall'); if(bnr&&res.grade)bnr.style.borderColor=res.grade.color;
+  ['content','tech','search','speed'].forEach(function(k){
+    var c=byKey[k], el=document.getElementById('seo-score-'+k);
+    if(!el||!c)return;
+    if(c.pending){ el.textContent='정밀 필요'; el.style.fontSize='18px'; el.style.color='#9ca3af';
+      el.title='PSI 연동 시 측정 (Google PageSpeed Insights)'; }
+    else { el.textContent=c.score+'/'+c.max; el.style.fontSize='34px'; el.style.color=c.color;
+      el.title=c.pct+'점'; }
+  });
+  var tbody=document.getElementById('seo-audit-tbody');
+  if(tbody){
+    var rows=[];
+    res.categories.forEach(function(c){
+      c.items.forEach(function(it){
+        var badge,sc;
+        if(it.pass===null){ badge='<span class="badge badge-yellow">정밀필요</span>'; sc='—/'+it.points; }
+        else if(it.pass){ badge='<span class="badge badge-green">통과</span>'; sc='+'+it.points; }
+        else { badge='<span class="badge badge-red">미흡</span>'; sc='0/'+it.points; }
+        rows.push('<tr><td>'+_seoEsc(it.name)+'</td><td>'+_seoEsc(it.desc)+'</td><td>'+badge+'</td><td>'+sc+'</td></tr>');
+      });
     });
-    var total=results.reduce(function(s,r){return s+r.score;},0);
-    var earned=results.reduce(function(s,r){return s+(r.ok?r.score:Math.floor(r.score*.4));},0);
-    var pct=Math.round(earned/total*100);
-    // 상단 점수 카드 업데이트
-    var scoreCards=document.querySelectorAll('#section-seo .stat-card');
-    if(scoreCards[0]){scoreCards[0].querySelector('div').textContent=pct;}
-    if(tbody){
-      tbody.innerHTML=results.map(function(r){
-        var badge=r.ok?'<span class="badge badge-green">통과</span>':'<span class="badge badge-red">미흡</span>';
-        var sc=r.ok?r.score:Math.floor(r.score*.4);
-        return '<tr><td>'+r.name+'</td><td>'+r.desc+'</td><td>'+badge+'</td><td>'+sc+'/'+r.score+'</td></tr>';
-      }).join('');
+    tbody.innerHTML=rows.join('');
+  }
+}
+
+// 구글 Lighthouse(PSI) 카테고리 점수 vs 베놈 엔진 종합 — 참고용 비교(산정 방식 상이).
+function _renderGoogleCompare(lhr, ourPct){
+  var box=document.getElementById('seo-gcompare'); if(!box)return;
+  var cats=(lhr&&lhr.categories)||{};
+  var g=function(k){ var c=cats[k]; return (c&&typeof c.score==='number')?Math.round(c.score*100):null; };
+  var rows=[['베놈 엔진 종합', ourPct, '#533afd'],['구글 · SEO', g('seo'), '#4285F4'],
+    ['구글 · 성능(Performance)', g('performance'), '#0f9d58'],['구글 · 접근성(Accessibility)', g('accessibility'), '#f4b400'],
+    ['구글 · 모범사례(Best Practices)', g('best-practices'), '#db4437']];
+  var col=function(v){ return v==null?'#9ca3af':v>=90?'#16a34a':v>=50?'#d97706':'#dc2626'; };
+  box.innerHTML=rows.map(function(r){ var v=r[1], w=v==null?0:v;
+    return '<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:600">'+r[0]+'</span><span style="font-weight:700;color:'+col(v)+'">'+(v==null?'—':v+'/100')+'</span></div>'
+      +'<div style="height:8px;background:var(--soft);border-radius:99px;overflow:hidden"><div style="height:100%;width:'+w+'%;background:'+r[2]+';border-radius:99px;transition:width .5s"></div></div></div>';
+  }).join('')+'<div style="font-size:11px;color:var(--mute);margin-top:10px;line-height:1.6">※ 구글 점수는 <b>Lighthouse(모바일)</b> 실측(0–100). 베놈 엔진 종합은 Search Central 가중 점수라 <b>산정 방식이 달라 절대 동일치가 아닌 참고용</b>입니다 — 성능은 속도/CWV, 구글 SEO는 크롤링·메타·구조 위주.</div>';
+}
+function _gcompareMsg(msg){ var box=document.getElementById('seo-gcompare'); if(box)box.innerHTML='<div style="font-size:13px;color:var(--mute)">'+msg+'</div>'; }
+
+// 검사 대상 HTML/robots 수집. 입력 비면 자사 홈(직접 fetch), 임의 도메인이면 seo-proxy(type=fetch)로 서버측 수집.
+function _seoFetchTarget(){
+  var origin=location.origin;
+  var raw=(document.getElementById('seo-url-input')||{}).value; raw=(raw||'').trim();
+  var isSelf=!raw || raw===origin || raw===origin+'/' || raw===location.hostname;
+  if(isSelf){
+    var homeUrl=origin+'/';
+    return Promise.all([
+      fetch(homeUrl,{cache:'no-store'}).then(function(r){return r.text();}).catch(function(){return '';}),
+      fetch(origin+'/robots.txt',{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).catch(function(){return '';})
+    ]).then(function(a){return {url:homeUrl,html:a[0]||'',robots:a[1]||'',isHttps:location.protocol==='https:'};});
+  }
+  var full=/^https?:\/\//i.test(raw)?raw:'https://'+raw;
+  return fetch(_SEO_PROXY_ADMIN+'?type=fetch&url='+encodeURIComponent(full)+'&nonce='+Date.now())
+    .then(function(r){return r.json().catch(function(){return {};});})
+    .then(function(j){return {url:full,html:(j&&j.html)||'',robots:(j&&j.robots)||'',isHttps:!!(j&&j.isHttps)};})
+    .catch(function(){return {url:full,html:'',robots:'',isHttps:/^https:/i.test(full)};});
+}
+
+function runSeoAudit(){
+  var tbody=document.getElementById('seo-audit-tbody');
+  if(typeof SEOEngine==='undefined'){
+    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#dc2626;padding:16px">SEO 엔진 로드 실패 — 새로고침 후 다시 시도</td></tr>';
+    return;
+  }
+  if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">⏳ 실측 분석 중...</td></tr>';
+  _seoFetchTarget().then(function(t){
+    if(!t.html){
+      if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#dc2626;padding:16px">HTML 수집 실패 — 주소를 확인하세요(차단·오프라인 도메인이거나 봇 차단 사이트일 수 있음).</td></tr>';
+      _gcompareMsg('대상 HTML을 못 가져와 비교 불가.'); return;
     }
+    var res=SEOEngine.analyze({url:t.url,html:t.html,robots:t.robots,isHttps:t.isHttps});
+    _seoRender(res);
+    _gcompareMsg('⏳ 구글 Lighthouse 실측 조회 중…');
+    // PageSpeed Insights 병합 + 구글 점수 비교. 실패해도 속도는 pending 유지.
+    fetch(_SEO_PROXY_ADMIN+'?type=psi&url='+encodeURIComponent(t.url)+'&nonce='+Date.now())
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){return {ok:r.ok,j:j};});})
+      .then(function(resp){
+        if(!resp.ok||!(resp.j&&resp.j.lighthouseResult)){
+          _gcompareMsg((resp.j&&resp.j.error)?('구글 Lighthouse 비교 불가 — '+_seoEsc(resp.j.error)):'구글 Lighthouse 비교 — PSI 연동 필요(Vercel PSI_KEY).');
+          return; // PSI 미가용 → 속도 pending 유지
+        }
+        try{ var merged=SEOEngine.mergePSI(res,resp.j); _seoRender(merged);
+          _renderGoogleCompare(resp.j.lighthouseResult, merged.max?Math.round(merged.total/merged.max*100):null); }catch(e){}
+      }).catch(function(){ _gcompareMsg('구글 Lighthouse 비교 조회 실패 — 재점검으로 다시 시도'); });
   }).catch(function(){
-    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">로컬 환경에서는 분석 불가 — 배포 후 사용 가능</td></tr>';
+    if(tbody)tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--mute);padding:16px">분석 실패 — 재점검 버튼으로 다시 시도</td></tr>';
   });
 }
 
@@ -2264,7 +2452,7 @@ function renderCards(){
 async function initCardnews(){await storeGet('cardnews',CARD_KEY,[]);renderCards();}
 
 // ── AI 자동 포스팅 ──
-var AP_ADMIN_SECRET = localStorage.getItem('venom-admin-secret') || '';
+var AP_ADMIN_SECRET = localStorage.getItem('venom-admin-secret') || localStorage.getItem('growthops_secret') || '';
 var _apCurrentPost = null;
 
 var AP_CAT_LABEL = {
@@ -2454,20 +2642,34 @@ function apRenderSchedules() {
     wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mute);font-size:13px;border:1px dashed var(--border);border-radius:var(--r8)">스케줄이 없습니다. 위의 버튼으로 추가하세요.</div>';
     return;
   }
+  var today = apToday();
+  // 저장돼 있던 과거 시작일은 오늘로 당김(예약은 오늘부터). 종료일이 시작일보다 앞서면 함께 맞춤.
+  _apSchedules.forEach(function(s){ if (!s.from || s.from < today) s.from = today; if (s.to && s.to < s.from) s.to = s.from; });
   wrap.innerHTML = _apSchedules.map(function(s, i) {
+    var minTo = (s.from && s.from > today) ? s.from : today; // 종료일은 시작일 이후만
     return '<div style="padding:12px 16px;background:var(--soft);border-radius:var(--r8);border:1px solid var(--border)">'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end">'
-      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">시작일</div>'
-      + '<input type="date" value="'+s.from+'" onchange="_apSchedules['+i+'].from=this.value" style="'+_AP_IN+'"></div>'
-      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">종료일</div>'
-      + '<input type="date" value="'+s.to+'" onchange="_apSchedules['+i+'].to=this.value" style="'+_AP_IN+'"></div>'
-      + '<div><div style="font-size:11px;color:var(--mute);margin-bottom:4px">하루 발행 수</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end">'
+      + '<div style="flex:1 1 140px;min-width:130px"><div style="font-size:11px;color:var(--mute);margin-bottom:4px">시작일</div>'
+      + '<input type="date" min="'+today+'" value="'+s.from+'" onchange="apSetFrom('+i+',this.value)" style="'+_AP_IN+'"></div>'
+      + '<div style="flex:1 1 140px;min-width:130px"><div style="font-size:11px;color:var(--mute);margin-bottom:4px">종료일</div>'
+      + '<input type="date" min="'+minTo+'" value="'+s.to+'" onchange="_apSchedules['+i+'].to=this.value" style="'+_AP_IN+'"></div>'
+      + '<div style="flex:0 0 auto"><div style="font-size:11px;color:var(--mute);margin-bottom:4px">하루 발행 수</div>'
       + '<input type="number" min="1" value="'+s.dailyCount+'" onchange="apSetDailyCount('+i+',this.value)" style="'+_AP_IN+';width:80px"></div>'
-      + '<div><button onclick="apRemoveSchedule('+i+')" style="padding:8px 12px;border:1px solid #f87171;border-radius:6px;background:transparent;color:#f87171;cursor:pointer;font-size:13px">삭제</button></div>'
+      + '<div style="flex:0 0 auto"><button onclick="apRemoveSchedule('+i+')" style="padding:9px 14px;border:1px solid #f87171;border-radius:6px;background:transparent;color:#f87171;cursor:pointer;font-size:13px;white-space:nowrap">삭제</button></div>'
       + '</div>'
       + apTimeBlock(s, i)
       + '</div>';
   }).join('');
+}
+
+// 오늘(KST, YYYY-MM-DD) — 예약 시작일 하한
+function apToday() { return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); }
+
+// 시작일 변경: 종료일이 그보다 앞서면 함께 당김
+function apSetFrom(i, v) {
+  _apSchedules[i].from = v;
+  if (_apSchedules[i].to && _apSchedules[i].to < v) _apSchedules[i].to = v;
+  apRenderSchedules();
 }
 
 function apSetDailyCount(i, v) {
@@ -2487,8 +2689,8 @@ function apSetIndivTime(i, k, v) {
 }
 
 function apAddSchedule() {
-  var today = new Date().toISOString().slice(0, 10);
-  var nextMonth = new Date();
+  var today = apToday();
+  var nextMonth = new Date(Date.now() + 9 * 3600 * 1000);
   nextMonth.setMonth(nextMonth.getMonth() + 1);
   var next = nextMonth.toISOString().slice(0, 10);
   _apSchedules.push({ from: today, to: next, dailyCount: 1, timeMode: 'same', time: '09:00', randStart: '09:00', randEnd: '18:00', times: ['09:00'] });
@@ -2707,6 +2909,17 @@ function apDraftPreview() {
 }
 
 // 포스트 목록 로드 (로컬 우선)
+// 발행 일시(KST, 'YYYY-MM-DD HH:MM'). publishAt→createdAt→id(auto_<ms>) 순으로 시각 추출, 없으면 날짜만.
+function _apPostWhen(p) {
+  var t = null;
+  if (p.publishAt) t = new Date(p.publishAt);
+  else if (p.createdAt) t = new Date(p.createdAt);
+  else if (p.id && /^auto_(\d+)$/.test(p.id)) t = new Date(Number(p.id.slice(5)));
+  if (!t || isNaN(t.getTime())) return p.date || '';
+  var k = new Date(t.getTime() + 9 * 3600 * 1000), z = function(n){ return (n<10?'0':'')+n; };
+  return k.getUTCFullYear()+'-'+z(k.getUTCMonth()+1)+'-'+z(k.getUTCDate())+' '+z(k.getUTCHours())+':'+z(k.getUTCMinutes());
+}
+
 async function apLoadPosts() {
   const listEl = document.getElementById('ap-posts-list');
   listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mute);font-size:13px">불러오는 중...</div>';
@@ -2757,7 +2970,7 @@ async function apLoadPosts() {
             <span style="font-size:10px;color:${statusColor};font-weight:600">${statusLabel}</span>
           </div>
           <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.title}</div>
-          <div style="font-size:11px;color:var(--mute);margin-top:2px">${p.date || ''}</div>
+          <div style="font-size:11px;color:var(--mute);margin-top:2px">🕒 ${_apPostWhen(p)}</div>
           ${reviewNote}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
@@ -2830,7 +3043,8 @@ function apSaveSecret() {
   if (!val) { toast('토큰을 입력해주세요.'); return; }
   AP_ADMIN_SECRET = val;
   localStorage.setItem('venom-admin-secret', val);
-  document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 이제 API 호출에 사용됩니다.';
+  localStorage.setItem('growthops_secret', val); // GrowthOps 콘솔과 토큰 공유
+  document.getElementById('ap-secret-status').textContent = '✅ 저장됨 — 관리자·GrowthOps 콘솔에서 함께 사용됩니다.';
   document.getElementById('ap-secret-input').value = '';
   toast('API 토큰 저장 완료');
 }
@@ -2887,15 +3101,18 @@ async function apRunNow() {
     const active = settings.schedules.find(s => s.from <= todayStr && s.to >= todayStr);
     count = active ? (parseInt(active.dailyCount) || 1) : 1;
   }
-  const cats = (settings.categories || ['geo']);
-  const keywords = (settings.keywords || ['병원마케팅']);
+  // 빈 배열은 falsy가 아니므로 length까지 확인(빈 배열이면 keywords[i%0]=undefined → 서버 400 방지)
+  const cats = (Array.isArray(settings.categories) && settings.categories.length) ? settings.categories : ['geo'];
+  const keywords = Array.isArray(settings.keywords) ? settings.keywords.filter(Boolean) : [];
   const regions = (settings.regions || []);
   const extra = settings.extra || '';
 
   const results = [];
   for (let i = 0; i < count; i++) {
     const category = cats[i % cats.length];
-    const keyword = keywords[i % keywords.length];
+    // 키워드 미설정 시 카테고리 라벨(예: dental→치과마케팅)을 기본 키워드로 사용
+    let keyword = keywords.length ? keywords[i % keywords.length] : '';
+    if (!keyword) keyword = AP_CAT_LABEL[category] || '병원마케팅';
     const region = regions.length ? regions[i % regions.length] : '';
     btn.textContent = `⏳ ${i+1}/${count} 생성 중...`;
     try {
@@ -2945,8 +3162,12 @@ async function apRunNow() {
 
 // ── 토큰 사용량 차트 ──
 async function apLoadUsageStats() {
+  var _selP = document.getElementById('ap-usage-period');
+  var period = _selP ? (parseInt(_selP.value, 10) || 30) : 30;
+  var _lblP = document.getElementById('ap-usage-period-label');
+  if (_lblP) _lblP.textContent = '(최근 ' + period + '일)';
   try {
-    const r = await fetch(apApiBase() + '/api/usage-stats', { headers: apHeaders() });
+    const r = await fetch(apApiBase() + '/api/usage-stats?days=' + period, { headers: apHeaders() });
     if (!r.ok) return;
     const data = await r.json();
     if (!data.ok) return;
@@ -2968,13 +3189,17 @@ async function apLoadUsageStats() {
       const wrap = document.getElementById(containerId);
       if (!wrap) return;
       const total = values.length;
+      // 기간에 따라 라벨 간격 조정(7일=매일, 30일=5일, 90일=10일). 마지막(오늘)은 앞 라벨과 겹치지 않을 때만.
+      const step = total <= 10 ? 1 : total <= 31 ? 5 : 10;
       wrap.innerHTML = days.map(function(d, i) {
         const pct = Math.max((values[i] / maxVal) * 100, values[i] > 0 ? 4 : 0);
-        const showLabel = (i % 7 === 0) || i === total - 1;
+        const onStep = (i % step === 0);
+        const isLast = (i === total - 1);
+        const showLabel = onStep || (isLast && (i % step) >= Math.ceil(step / 2));
         const dateLabel = d.date ? d.date.slice(5) : '';
         return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;position:relative">'
           + '<div title="' + labelFn(d) + '" style="width:100%;border-radius:3px 3px 0 0;background:' + color + ';height:' + pct + '%;min-height:' + (values[i] > 0 ? '4px' : '0') + ';opacity:.85;transition:height .4s;cursor:default"></div>'
-          + (showLabel ? '<div style="position:absolute;bottom:-18px;font-size:9px;color:var(--mute);white-space:nowrap">' + dateLabel + '</div>' : '')
+          + (showLabel ? '<div style="position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--mute);white-space:nowrap">' + dateLabel + '</div>' : '')
           + '</div>';
       }).join('');
     }
@@ -2984,9 +3209,73 @@ async function apLoadUsageStats() {
     makeChart('ap-cost-chart',  days.map(d => d.costUsd),    maxCost,   '#4ade80',
       d => d.date + ': $' + d.costUsd.toFixed(4) + ' (이미지 ' + d.images + '장)');
 
+    if (data.detail) apRenderUsageDetail(data.detail, t);
+
   } catch(e) {
     console.warn('[usage-stats]', e);
   }
+}
+
+// ── 토큰 사용량 상세 분석 렌더 ──
+function apRenderUsageDetail(dt, totals) {
+  var _set = function(id, html){ var e=document.getElementById(id); if(e) e.innerHTML=html; };
+  var fmtN = function(n){ return (n||0).toLocaleString(); };
+  var kTok = function(n){ return (n||0) >= 1000 ? ((n/1000).toFixed(1)+'K') : String(n||0); };
+  var segBar = function(parts){ // parts: [{pct,color}]
+    return parts.filter(function(p){return p.pct>0;}).map(function(p){
+      return '<div title="'+(p.title||'')+'" style="width:'+p.pct+'%;background:'+p.color+'"></div>';
+    }).join('');
+  };
+  // 1) 비용 구성 (입력/출력/이미지)
+  var c = dt.cost || {inputUsd:0,outputUsd:0,imageUsd:0,totalUsd:0};
+  var ct = c.totalUsd || (c.inputUsd+c.outputUsd+c.imageUsd) || 0.0001;
+  var cSeg = [
+    {pct:Math.round(c.imageUsd/ct*100),  color:'#f59e0b', title:'이미지'},
+    {pct:Math.round(c.outputUsd/ct*100), color:'#4f46e5', title:'출력 토큰'},
+    {pct:Math.round(c.inputUsd/ct*100),  color:'#0ea5e9', title:'입력 토큰'},
+  ];
+  _set('ap-cost-split', segBar(cSeg));
+  _set('ap-cost-legend',
+    '<span><b style="color:#f59e0b">■</b> 이미지 $'+c.imageUsd.toFixed(4)+' ('+Math.round(c.imageUsd/ct*100)+'%)</span>'
+    +'<span><b style="color:#4f46e5">■</b> 출력 토큰 $'+c.outputUsd.toFixed(4)+' ('+Math.round(c.outputUsd/ct*100)+'%)</span>'
+    +'<span><b style="color:#0ea5e9">■</b> 입력 토큰 $'+c.inputUsd.toFixed(4)+' ('+Math.round(c.inputUsd/ct*100)+'%)</span>'
+    +'<span style="font-weight:700;color:var(--ink)">합계 $'+ct.toFixed(4)+'</span>');
+  // 2) 입력/출력 토큰
+  var io = dt.io || {promptTokens:0,completionTokens:0,promptPct:0,completionPct:0};
+  _set('ap-io-split', segBar([
+    {pct:io.promptPct, color:'#0ea5e9', title:'입력'},
+    {pct:io.completionPct, color:'#4f46e5', title:'출력'},
+  ]));
+  _set('ap-io-legend',
+    '<span><b style="color:#0ea5e9">■</b> 입력 '+fmtN(io.promptTokens)+' ('+io.promptPct+'%)</span>'
+    +'<span><b style="color:#4f46e5">■</b> 출력 '+fmtN(io.completionTokens)+' ('+io.completionPct+'%)</span>');
+  // 3) 글당 평균
+  var av = dt.avg || {tokensPerPost:0,costPerPost:0};
+  _set('ap-avg-cards',
+    '<div style="background:var(--soft);border-radius:var(--r8);padding:12px"><div style="font-size:11px;color:var(--mute)">글당 평균 토큰</div><div style="font-size:18px;font-weight:700;color:var(--p)">'+fmtN(av.tokensPerPost)+'</div></div>'
+    +'<div style="background:var(--soft);border-radius:var(--r8);padding:12px"><div style="font-size:11px;color:var(--mute)">글당 평균 비용</div><div style="font-size:18px;font-weight:700;color:#4ade80">$'+(av.costPerPost||0).toFixed(4)+'</div></div>'
+    +'<div style="background:var(--soft);border-radius:var(--r8);padding:12px"><div style="font-size:11px;color:var(--mute)">기간 총 비용</div><div style="font-size:18px;font-weight:700;color:#4ade80">$'+(totals.costUsd||0).toFixed(3)+'</div></div>');
+  // 4) 카테고리별 (토큰 비율 바)
+  var cats = dt.byCategory || [];
+  var maxCatTok = Math.max.apply(null, cats.map(function(x){return x.totalTokens;}).concat([1]));
+  _set('ap-cat-breakdown', cats.length ? cats.map(function(x){
+    var w = Math.max(Math.round(x.totalTokens/maxCatTok*100), 2);
+    return '<div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">'
+      +'<span style="color:var(--ink);font-weight:600">'+x.label+' <span style="color:var(--mute);font-weight:400">· '+x.posts+'건</span></span>'
+      +'<span style="color:var(--mute)">'+kTok(x.totalTokens)+' 토큰 ('+x.pct+'%) · $'+(x.costUsd||0).toFixed(3)+'</span></div>'
+      +'<div style="height:8px;border-radius:4px;background:var(--soft);overflow:hidden"><div style="height:100%;width:'+w+'%;background:linear-gradient(90deg,#533afd,#7c6bff)"></div></div>'
+      +'</div>';
+  }).join('') : '<div style="font-size:12px;color:var(--mute)">데이터 없음</div>');
+  // 5) 모델·액션
+  var listBox = function(title, rows){
+    return '<div><div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">'+title+'</div>'
+      + (rows.length ? rows.map(function(x){
+          return '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--ink)">'+(x.label||x.key)+'</span><span style="color:var(--mute)">'+x.posts+'건 · '+kTok(x.totalTokens)+' ('+x.pct+'%)</span></div>';
+        }).join('') : '<div style="font-size:12px;color:var(--mute)">-</div>')
+      + '</div>';
+  };
+  _set('ap-model-action', listBox('🧠 모델별', dt.byModel||[]) + listBox('⚙️ 생성 방식별', dt.byAction||[]));
 }
 
 function initAutoPost() {

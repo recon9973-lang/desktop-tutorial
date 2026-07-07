@@ -8,8 +8,19 @@
 
 const https = require('https');
 
-const KV_URL   = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// KV 자격증명 자동 인식 — Upstash 마켓플레이스가 붙이는 접두사(STORAGE_ 등) 무관.
+// REST 엔드포인트만 사용(redis:// 프로토콜 URL은 제외). 읽기전용 토큰도 제외.
+function _pickEnv(reList, extraSkip) {
+  for (const re of reList) {
+    for (const k of Object.keys(process.env)) {
+      if (extraSkip && extraSkip.test(k)) continue;
+      if (re.test(k) && process.env[k]) return process.env[k];
+    }
+  }
+  return '';
+}
+const KV_URL   = _pickEnv([/(^|_)KV_REST_API_URL$/, /(^|_)UPSTASH_REDIS_REST_URL$/, /REST_API_URL$/, /REDIS_REST_URL$/]);
+const KV_TOKEN = _pickEnv([/(^|_)KV_REST_API_TOKEN$/, /(^|_)UPSTASH_REDIS_REST_TOKEN$/, /REST_API_TOKEN$/, /REDIS_REST_TOKEN$/], /READ_ONLY/);
 
 const CHANNELS = ['direct', 'naver', 'google', 'daum', 'instagram', 'facebook', 'youtube', 'bing', 'other'];
 const DAY_TTL = 60 * 60 * 24 * 120; // 일별 키 120일 보관
@@ -73,6 +84,8 @@ function sum(arr) { return arr.reduce((a, b) => a + n(b), 0); }
 
 // ── SEO 점수 리더보드 ──────────────────────────────────────────
 function ymKST() { return ymdKST(0).slice(0, 7); } // YYYY-MM (KST)
+function hourKST() { return new Date(Date.now() + 9 * 3600 * 1000).getUTCHours(); } // 0-23 (KST)
+function deviceOf(ua) { ua = String(ua || ''); if (/ipad|tablet/i.test(ua)) return 'tablet'; if (/mobile|android|iphone|ipod/i.test(ua)) return 'mobile'; return 'desktop'; }
 function isoWeekKST() {
   const d = new Date(Date.now() + 9 * 3600 * 1000);
   d.setUTCHours(0, 0, 0, 0);
@@ -141,18 +154,38 @@ async function recordLead(req, res) {
 
 async function track(req, res) {
   const b = req.body || {};
+  const h = req.headers || {};
+
+  // 전환 퍼널 이벤트(상담 클릭/카카오 클릭) — 별도 비콘 {ev:'cta'|'kakao'}
+  if (b.ev === 'cta' || b.ev === 'kakao') {
+    await kv([['INCR', 'va:fn:' + b.ev]]);
+    return res.status(200).json({ ok: true });
+  }
+
   const ref = (b.ref || '').slice(0, 300);
-  const selfHost = (req.headers && req.headers.host) || '';
+  const selfHost = h.host || '';
   const ch = channelOf(ref, selfHost);
   const today = ymdKST(0);
   const isNew = !!b.nv;
+  const dev = deviceOf(h['user-agent']);
+  const hour = hourKST();
+  // 경로: 쿼리·해시 제거, 길이 제한
+  let path = String(b.path || '/').split('?')[0].split('#')[0].slice(0, 120) || '/';
+  // 지역: Vercel geo 헤더(도시 우선, 없으면 리전 코드). 미배포 환경엔 없음 → 스킵
+  let region = '';
+  try { region = decodeURIComponent(h['x-vercel-ip-city'] || '').slice(0, 40); } catch (e) {}
+  if (!region) region = String(h['x-vercel-ip-country-region'] || '').slice(0, 40);
 
   const cmds = [
     ['INCR', 'va:pv:total'],
     ['INCR', 'va:pv:' + today],
     ['EXPIRE', 'va:pv:' + today, DAY_TTL],
     ['INCR', 'va:src:' + ch],
+    ['INCR', 'va:dev:' + dev],
+    ['INCR', 'va:hour:' + hour],
+    ['ZINCRBY', 'va:path', 1, path],
   ];
+  if (region) cmds.push(['ZINCRBY', 'va:region', 1, region]);
   if (isNew) {
     cmds.push(['INCR', 'va:uv:total']);
     cmds.push(['INCR', 'va:uv:' + today]);
@@ -165,7 +198,7 @@ async function track(req, res) {
 async function read(req, res) {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   if (!KV_URL || !KV_TOKEN) {
-    return res.status(200).json({ configured: false, note: 'KV 미설정 — Vercel KV(Upstash) 연동 후 실데이터 표시' });
+    return res.status(200).json({ configured: false, note: 'KV 미설정 — Vercel KV(Upstash) 연동 후 실데이터 표시', kvKeys: Object.keys(process.env).filter(k => /KV|UPSTASH|REDIS/i.test(k)).sort() });
   }
   const days = [];
   for (let i = 29; i >= 0; i--) days.push(ymdKST(i)); // 과거→오늘 순
@@ -178,6 +211,12 @@ async function read(req, res) {
     ['GET', 'va:uv:total'],
     ['MGET', ...days.map(d => 'va:lead:' + d)], // r.json[5]
     ['GET', 'va:lead:total'],                    // r.json[6]
+    ['MGET', 'va:dev:mobile', 'va:dev:desktop', 'va:dev:tablet'], // [7]
+    ['MGET', ...Array.from({ length: 24 }, (_, i) => 'va:hour:' + i)], // [8]
+    ['ZREVRANGE', 'va:path', 0, 4, 'WITHSCORES'],   // [9]
+    ['ZREVRANGE', 'va:region', 0, 5, 'WITHSCORES'], // [10]
+    ['GET', 'va:fn:cta'],                            // [11]
+    ['GET', 'va:fn:kakao'],                          // [12]
   ]);
   if (!r || !r.json || !Array.isArray(r.json)) {
     return res.status(200).json({ configured: true, error: 'KV 응답 오류', daily: [], channels: [] });
@@ -196,13 +235,24 @@ async function read(req, res) {
     .filter(c => c.pageviews > 0).sort((a, b) => b.pageviews - a.pageviews);
 
   const last = (k, days2) => sum(daily.slice(-days2).map(x => x[k]));
+
+  // 확장 지표: 디바이스·시간대·인기페이지·지역·전환퍼널
+  const devArr = (r.json[7] && r.json[7].result) || [];
+  const device = { mobile: n(devArr[0]), desktop: n(devArr[1]), tablet: n(devArr[2]) };
+  const hourArr = (r.json[8] && r.json[8].result) || [];
+  const hourly = Array.from({ length: 24 }, (_, i) => n(hourArr[i]));
+  const zpairs = (arr) => { const out = []; for (let i = 0; i < arr.length; i += 2) out.push({ name: arr[i], count: n(arr[i + 1]) }); return out; };
+  const topPaths = zpairs((r.json[9] && r.json[9].result) || []);
+  const regions = zpairs((r.json[10] && r.json[10].result) || []);
+  const funnel = { views: pvTotal, cta: n(r.json[11] && r.json[11].result), kakao: n(r.json[12] && r.json[12].result), leads: leadTotal };
+
   return res.status(200).json({
     configured: true,
     totals: { pageviews: pvTotal, visitors: uvTotal, leads: leadTotal },
     today: { pageviews: last('pv', 1), visitors: last('uv', 1), leads: last('lead', 1) },
     week: { pageviews: last('pv', 7), visitors: last('uv', 7), leads: last('lead', 7) },
     month: { pageviews: last('pv', 30), visitors: last('uv', 30), leads: last('lead', 30) },
-    daily, channels,
+    daily, channels, device, hourly, topPaths, regions, funnel,
   });
 }
 
