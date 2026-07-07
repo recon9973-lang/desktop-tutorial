@@ -540,8 +540,7 @@ CREATE INDEX IF NOT EXISTS idx_grants_user ON report_grants (user_id);
 --   - data_operator/legal_reviewer/admin : 서버(service_role) 경유로만 접근 + audit_logs 기록
 -- 예시(개념):
 --   ALTER TABLE self_check_results ENABLE ROW LEVEL SECURITY;
---   DROP POLICY IF EXISTS sc_owner ON self_check_results;
-CREATE POLICY sc_owner ON self_check_results
+--   CREATE POLICY sc_owner ON self_check_results
 --     USING (user_id = current_app_user_id());   -- auth.uid() 매핑 함수
 -- ---------------------------------------------------------------
 
