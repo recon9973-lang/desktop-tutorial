@@ -1,0 +1,36 @@
+name: Run clinic SQL
+
+# 임의 SQL을 Supabase Management API로 실행하는 범용 진단 도구 (수동 실행).
+# 기본값은 leads 함수와 동일한 INSERT 재현 → 진짜 오류 확인용.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: 'Supabase 프로젝트 REF'
+        required: true
+        default: 'sfybgrfhbmszztvqwgju'
+      sql:
+        description: '실행할 SQL'
+        required: true
+        default: "INSERT INTO diagnosis_requests (hospital_name,hospital_address,department,applicant_name,phone,email,delivery_method,consent_required,consent_text_version,client_ip,status) VALUES ('직접INSERT테스트','서울 강남구','피부과','SQL봇','010-0000-0000','sql@example.com','email',true,'diag','0.0.0.0','received') RETURNING id;"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Execute SQL via Management API
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          REF: ${{ github.event.inputs.project_ref }}
+          SQL: ${{ github.event.inputs.sql }}
+        run: |
+          jq -n --arg q "$SQL" '{query:$q}' > /tmp/b.json
+          echo "SQL: $SQL"
+          code=$(curl -sS --max-time 60 -o /tmp/out.json -w "%{http_code}" \
+            -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            --data @/tmp/b.json)
+          echo "HTTP $code"
+          echo "응답:"; cat /tmp/out.json; echo ""
