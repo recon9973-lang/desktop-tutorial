@@ -1,0 +1,43 @@
+{
+  "clusters": [
+    {
+      "id": "cl_한의원-마산-교통사고한의원",
+      "pillar": "교통사고한의원",
+      "category": "한의원",
+      "region": "마산",
+      "createdAt": "2026-07-07T17:41:45.268Z",
+      "subtopics": [
+        {
+          "kw": "마산 교통 사고 한의원",
+          "postId": null,
+          "status": "open"
+        },
+        {
+          "kw": "마산 교통사고 병원",
+          "postId": null,
+          "status": "open"
+        },
+        {
+          "kw": "마산 교통사고",
+          "postId": null,
+          "status": "open"
+        },
+        {
+          "kw": "정형외과",
+          "postId": null,
+          "status": "open"
+        },
+        {
+          "kw": "이비인후과",
+          "postId": null,
+          "status": "open"
+        },
+        {
+          "kw": "내과",
+          "postId": null,
+          "status": "open"
+        }
+      ]
+    }
+  ]
+}
