@@ -631,3 +631,23 @@ $$;
 DROP TRIGGER IF EXISTS trg_users_touch ON users;
 CREATE TRIGGER trg_users_touch BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
+-- ═══════════════════════════════════════════════════════════
+-- ▼▼▼  Data API 권한 부여 (필수)
+-- ═══════════════════════════════════════════════════════════
+-- 프로젝트 생성 시 "Automatically expose new tables"를 끈 상태 + Management API(postgres)로
+-- 테이블을 만들면 API 역할에 GRANT가 자동으로 붙지 않아 42501(permission denied)이 난다.
+-- Edge Function은 service_role 로 Data API(PostgREST)를 통해 접근하므로 아래 권한이 필요하다.
+-- (RLS는 그대로 유지 — 행 접근은 정책이 통제. anon/authenticated 직접 접근은 열지 않는다:
+--  모든 데이터 조작은 Edge Function=service_role 경유. service_role 은 BYPASSRLS.)
+GRANT USAGE ON SCHEMA public TO service_role, anon, authenticated;
+GRANT ALL PRIVILEGES ON ALL TABLES    IN SCHEMA public TO service_role;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO service_role;
+-- 앞으로 postgres가 만들 객체에도 자동 부여
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES    TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO service_role;
+
+-- PostgREST가 권한/스키마 변경을 즉시 반영하도록 리로드
+NOTIFY pgrst, 'reload schema';
