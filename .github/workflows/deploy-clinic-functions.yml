@@ -1,0 +1,49 @@
+name: Deploy clinic Edge Functions
+
+# 원장님_앱(/clinic)의 Supabase Edge Function 4종 배포 (수동 실행)
+# 사전 준비(최초 1회):
+#   1) supabase.com → Account → Access Tokens 에서 토큰 발급
+#   2) 이 저장소 → Settings → Secrets and variables → Actions →
+#      New repository secret 로 SUPABASE_ACCESS_TOKEN 등록
+# 이후 Actions 탭 → 이 워크플로 → Run workflow (project_ref 기본값 사용)
+#
+# 함수가 쓰는 env(SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY)는
+# Supabase 런타임이 자동 주입하므로 별도 설정 불필요. verify_jwt=false 는 --no-verify-jwt 로 지정.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: 'Supabase 프로젝트 REF'
+        required: true
+        default: 'sfybgrfhbmszztvqwgju'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: venom-wordpress/preview/clinic
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          REF: ${{ github.event.inputs.project_ref }}
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN 시크릿이 없습니다. 저장소 Settings→Secrets에 등록하세요."
+            exit 1
+          fi
+          for fn in leads reports self-check admin-leads; do
+            echo "→ deploy $fn"
+            supabase functions deploy "$fn" --project-ref "$REF" --no-verify-jwt
+          done
+          echo "✅ 4개 함수 배포 완료: https://${REF}.supabase.co/functions/v1/"
