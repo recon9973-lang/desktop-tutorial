@@ -1,6 +1,21 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1783387396485",
+    "title": "대전 정형외과 마케팅: 허리디스크 치료 효과 30%",
+    "tokenUsage": {
+      "promptTokens": 2626,
+      "completionTokens": 1808,
+      "totalTokens": 4434,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at 6eb1bd777c89036db3e8fe51b327c856be82c62a but expected 0456a119a32c0514ee64a4dc995c8147f3c4c654",
+    "autoFixed": true,
+    "ts": "2026-07-07T01:24:37.973Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1783381088200",
     "title": "울산 한의원 마케팅 전략 TOP 5, 효과적 포지셔닝 방법",
     "tokenUsage": {
