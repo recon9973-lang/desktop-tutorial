@@ -1,0 +1,35 @@
+name: Probe clinic REST (PostgREST cache)
+
+# PostgREST(Data API)가 새 테이블을 인식하는지 확인 (수동 실행).
+#   404 PGRST205 → 스키마 캐시에 테이블 없음(리로드 필요)
+#   200 [] 또는 권한응답 → 캐시 정상 (문제는 다른 곳)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Supabase base URL'
+        required: true
+        default: 'https://sfybgrfhbmszztvqwgju.supabase.co'
+      key:
+        description: 'publishable/anon key'
+        required: true
+        default: 'sb_publishable_TjZ3aj2k1z0C9l3U2z5OGw_ieww5Ux-'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: GET /rest/v1/diagnosis_requests
+        env:
+          BASE: ${{ github.event.inputs.base }}
+          KEY: ${{ github.event.inputs.key }}
+        run: |
+          echo "== GET $BASE/rest/v1/diagnosis_requests?select=id&limit=1 =="
+          code=$(curl -sS --max-time 30 -o /tmp/r.json -w "%{http_code}" \
+            "$BASE/rest/v1/diagnosis_requests?select=id&limit=1" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+          echo "HTTP $code"; echo "BODY:"; cat /tmp/r.json; echo ""
+          echo "---"
+          echo "해석: 404 PGRST205=캐시에 테이블 없음 / 200 []=캐시 정상"
