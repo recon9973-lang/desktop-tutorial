@@ -2,3 +2,9 @@ node_modules/
 .vercel/
 .DS_Store
 *.log
+
+# Secrets — 실제 env 파일은 절대 커밋 금지 (템플릿 .env.example 은 추적)
+.env
+.env.local
+.env.*.local
+!.env.example
