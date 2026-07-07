@@ -1,0 +1,45 @@
+name: Config clinic Supabase Auth
+
+# 매직링크 로그인용 Auth 설정 (Site URL + 복귀 URL 허용목록) — Management API (수동 실행).
+# report-view 의 OTP는 email_redirect_to=location.href 로 /clinic/report-view/ 로 복귀한다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: 'Supabase 프로젝트 REF'
+        required: true
+        default: 'sfybgrfhbmszztvqwgju'
+      site_url:
+        description: 'Site URL'
+        required: true
+        default: 'https://venom-new-site.vercel.app'
+      allow_list:
+        description: '복귀 URL 허용목록(콤마구분, 와일드카드 가능)'
+        required: true
+        default: 'https://venom-new-site.vercel.app/**'
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: PATCH auth config
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          REF: ${{ github.event.inputs.project_ref }}
+          SITE: ${{ github.event.inputs.site_url }}
+          ALLOW: ${{ github.event.inputs.allow_list }}
+        run: |
+          jq -n --arg s "$SITE" --arg a "$ALLOW" \
+            '{site_url:$s, uri_allow_list:$a, mailer_autoconfirm:false}' > /tmp/b.json
+          echo "body:"; cat /tmp/b.json; echo ""
+          code=$(curl -sS --max-time 60 -o /tmp/out.json -w "%{http_code}" \
+            -X PATCH "https://api.supabase.com/v1/projects/$REF/config/auth" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            --data @/tmp/b.json)
+          echo "HTTP $code"
+          echo "응답(site_url·uri_allow_list 확인):"
+          jq '{site_url, uri_allow_list, external_email_enabled}' /tmp/out.json 2>/dev/null || head -c 1500 /tmp/out.json
+          echo ""
+          [ "$code" = "200" ] && echo "✅ Auth 설정 완료" || { echo "::error::실패 HTTP $code"; exit 1; }
