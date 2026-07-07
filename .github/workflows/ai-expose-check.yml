@@ -1,0 +1,78 @@
+name: AI Exposure Check
+
+# 4대 AI(Perplexity·ChatGPT·Gemini·Claude)에 환자 질문을 던져
+# 특정 업체가 답변에 노출(언급)되는지 실측한다. GitHub 러너가 배포된 /api/insights를 호출.
+# 입력: venom-wordpress/preview/content/ai-expose-input.json ({businesses:[{key,name,cores,questions}]})
+# 결과는 로그의 RESULTS_JSON= 한 줄에 JSON으로 출력된다.
+
+on:
+  workflow_dispatch:
+    inputs:
+      input:
+        description: 'input json path'
+        required: false
+        default: 'venom-wordpress/preview/content/ai-expose-input.json'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run AEO exposure checks
+        env:
+          INPUT: ${{ github.event.inputs.input }}
+        run: |
+          node - "$INPUT" <<'NODE'
+          const https = require('https');
+          const fs = require('fs');
+          const BASE = 'https://venom-new-site.vercel.app';
+          const ENGINES = ['perplexity', 'openai', 'gemini', 'claude'];
+          const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+
+          function get(url) {
+            return new Promise((resolve) => {
+              const req = https.get(url, (r) => {
+                let d = '';
+                r.on('data', c => d += c);
+                r.on('end', () => { let j = null; try { j = JSON.parse(d); } catch {} resolve({ status: r.statusCode, json: j }); });
+              });
+              req.on('error', (e) => resolve({ status: 0, json: { error: e.message } }));
+              req.setTimeout(60000, () => { req.destroy(); resolve({ status: 0, json: { error: 'timeout' } }); });
+            });
+          }
+          const norm = s => String(s || '').replace(/\s+/g, '');
+
+          const jobs = [];
+          cfg.businesses.forEach(b => b.questions.forEach((q, qi) =>
+            ENGINES.forEach(e => jobs.push({ biz: b.key, name: b.name, cores: b.cores || [b.name], e, q, qi }))));
+
+          (async () => {
+            const results = [];
+            let idx = 0;
+            const CONC = 5;
+            async function worker() {
+              while (idx < jobs.length) {
+                const j = jobs[idx++];
+                const url = BASE + '/api/insights?type=aeo&engine=' + j.e + '&q=' + encodeURIComponent(j.q) + '&name=' + encodeURIComponent(j.name);
+                const r = await get(url);
+                const d = r.json || {};
+                let verdict = 'none', err = null;
+                if (d.error) { verdict = 'error'; err = String(d.error).slice(0, 120); }
+                else {
+                  const ans = norm(d.answer);
+                  const cited = (d.citations || []).some(u => j.cores.some(c => norm(u).includes(norm(c))));
+                  const mentioned = d.mentioned === true || j.cores.some(c => ans.includes(norm(c)));
+                  verdict = cited ? 'cited' : (mentioned ? 'mentioned' : 'none');
+                }
+                results.push({ biz: j.biz, e: j.e, qi: j.qi, verdict, err });
+                console.log(`  ${j.biz} q${j.qi} ${j.e} -> ${verdict}${err ? ' (' + err + ')' : ''}`);
+              }
+            }
+            await Promise.all(Array.from({ length: CONC }, () => worker()));
+            console.log('\nRESULTS_JSON=' + JSON.stringify(results));
+          })();
+          NODE
