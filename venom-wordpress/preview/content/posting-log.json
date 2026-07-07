@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1783402276947",
+    "title": "대구 성형외과 마케팅의 5가지 핵심 전략",
+    "tokenUsage": {
+      "promptTokens": 2609,
+      "completionTokens": 1687,
+      "totalTokens": 4296,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-07T05:32:57.415Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1783387396485",
     "title": "대전 정형외과 마케팅: 허리디스크 치료 효과 30%",
