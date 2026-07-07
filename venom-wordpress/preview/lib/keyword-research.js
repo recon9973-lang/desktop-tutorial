@@ -9,6 +9,7 @@
 
 const https = require('https');
 const crypto = require('crypto');
+const sa = require('./naver-searchad'); // 검색광고 키워드도구 단일 소스
 
 // ── 공통 HTTPS GET ──
 function httpGet(urlOrOpts, { timeout = 7000, headers = {} } = {}) {
@@ -79,56 +80,15 @@ async function googleAutocomplete(keyword) {
 }
 
 // ── 3. 네이버 검색광고 키워드도구 (실제 월 검색량 동반 연관키워드) ──
-// 검색광고 API 자격증명 — 신·구 변수명 모두 허용 (저장소 통합 전 등록분 호환)
-function adCreds() {
-  return {
-    key: (process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE || '').trim(),
-    secret: (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY || '').trim(),
-    customer: (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID || '').trim(),
-  };
-}
-function searchAdHeaders(method, apiPath) {
-  const ts = String(Date.now());
-  const ad = adCreds();
-  const sign = crypto
-    .createHmac('sha256', ad.secret)
-    .update(`${ts}.${method}.${apiPath}`)
-    .digest('base64');
-  return {
-    'X-Timestamp': ts,
-    'X-API-KEY': ad.key,
-    'X-Customer': ad.customer,
-    'X-Signature': sign,
-  };
-}
-function adToNum(v) {
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') {
-    if (/<\s*10/.test(v)) return 5;
-    const n = parseInt(v.replace(/[^\d]/g, ''), 10);
-    return isNaN(n) ? 0 : n;
-  }
-  return 0;
-}
+// 검색광고 연관키워드 — 인증·원시호출은 lib/naver-searchad 단일 소스.
+// 실패/미설정 시 [] 반환(글 생성은 절대 막지 않는다).
 async function naverRelKeywords(keyword) {
-  const ad = adCreds();
-  if (!ad.key || !ad.secret || !ad.customer) return [];
-  const hint = String(keyword).replace(/\s+/g, '');
-  const apiPath = '/keywordstool';
-  const r = await httpGet({
-    hostname: 'api.searchad.naver.com',
-    path: `${apiPath}?hintKeywords=${encodeURIComponent(hint)}&showDetail=1`,
-    headers: searchAdHeaders('GET', apiPath),
-  });
-  if (r.status !== 200 || !r.body) return [];
-  try {
-    const j = JSON.parse(r.body);
-    if (!Array.isArray(j.keywordList)) return [];
-    return j.keywordList
-      .map((k) => ({ keyword: String(k.relKeyword || '').trim(), volume: adToNum(k.monthlyPcQcCnt != null ? k.monthlyPcQcCnt : k.monthlyPcQcnt) + adToNum(k.monthlyMobileQcCnt != null ? k.monthlyMobileQcCnt : k.monthlyMobileQcnt) }))
-      .filter((k) => k.keyword)
-      .sort((a, b) => b.volume - a.volume);
-  } catch (e) { return []; }
+  const r = await sa.fetchKeywordTool(keyword);
+  if (!r.keywordList) return [];
+  return r.keywordList
+    .map((k) => ({ keyword: String(k.relKeyword || '').trim(), volume: sa.toNum(k.monthlyPcQcCnt != null ? k.monthlyPcQcCnt : k.monthlyPcQcnt) + sa.toNum(k.monthlyMobileQcCnt != null ? k.monthlyMobileQcCnt : k.monthlyMobileQcnt) }))
+    .filter((k) => k.keyword)
+    .sort((a, b) => b.volume - a.volume);
 }
 
 // ── 정규화 ──

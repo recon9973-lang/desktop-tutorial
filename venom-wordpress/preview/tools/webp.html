@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이미지 WebP 변환기 · 병원마케팅 베놈</title>
+  <meta name="description" content="JPG·PNG 이미지를 웹 최적화 WebP로 변환. 병원마케팅 베놈 무료 도구.">
+  <meta name="robots" content="index,follow">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #faf8f4;
+      --panel: #ffffff;
+      --text: #16233b;
+      --muted: #5f6a7d;
+      --line: #ece6dc;
+      --accent: #e8703a;
+      --accent-dark: #c85c2c;
+      --danger: #b42318;
+      --shadow: 0 18px 50px rgba(28, 39, 57, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Malgun Gothic", Arial, sans-serif;
+    }
+
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel,
+    .settings {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 330px;
+      padding: 28px;
+      border: 2px dashed #9eb2c8;
+      border-radius: 8px;
+      background: #fbfcfe;
+      text-align: center;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: #effaf6;
+      transform: translateY(-1px);
+    }
+
+    .drop-zone svg {
+      width: 58px;
+      height: 58px;
+      margin-bottom: 18px;
+      color: var(--accent);
+    }
+
+    .drop-zone strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 22px;
+    }
+
+    .drop-zone button,
+    .primary,
+    .secondary {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .drop-zone button,
+    .primary {
+      margin-top: 18px;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .drop-zone button:hover,
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary {
+      background: #e9eef5;
+      color: var(--text);
+    }
+
+    .secondary:hover {
+      background: #dfe7f0;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .settings {
+      padding: 20px;
+    }
+
+    .settings h2,
+    .queue h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0 22px;
+      color: var(--muted);
+    }
+
+    .toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .note {
+      margin: -4px 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .queue {
+      margin-top: 18px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #eef2f7;
+    }
+
+    .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      min-width: 82px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status.error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .empty {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      header {
+        display: block;
+      }
+
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .drop-zone {
+        min-height: 280px;
+      }
+
+      .item {
+        grid-template-columns: 48px minmax(0, 1fr);
+      }
+
+      .status {
+        grid-column: 2;
+        min-width: 0;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <a href="/" style="display:inline-block;margin-bottom:10px;font-size:13px;font-weight:700;color:var(--accent);text-decoration:none">← 병원마케팅 베놈</a>
+        <h1>이미지 WebP 변환기</h1>
+        <p>JPG·PNG를 웹 최적화 WebP로. 이미지는 이 브라우저 안에서만 처리되어 서버로 전송되지 않습니다.</p>
+      </div>
+    </header>
+
+    <section class="shell" aria-label="이미지 변환 도구">
+      <div class="panel">
+        <label class="drop-zone" id="dropZone" for="fileInput">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 16V4m0 0 4.5 4.5M12 4 7.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 16.5v1.75A1.75 1.75 0 0 1 18.25 20H5.75A1.75 1.75 0 0 1 4 18.25V16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <strong>JPG 또는 PNG 파일을 끌어다 놓으세요</strong>
+            <p>여러 파일을 한 번에 선택할 수 있습니다.</p>
+            <button type="button" id="pickButton">파일 선택</button>
+          </span>
+        </label>
+        <input id="fileInput" type="file" accept="image/jpeg,image/png" multiple>
+
+        <div class="queue">
+          <h2>변환 목록</h2>
+          <div class="list" id="fileList">
+            <div class="empty">아직 선택한 이미지가 없습니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="settings" aria-label="변환 설정">
+        <h2>설정</h2>
+        <div class="field">
+          <label for="quality">
+            <span>품질</span>
+            <span id="qualityValue">90</span>
+          </label>
+          <input id="quality" type="range" min="1" max="100" value="90">
+        </div>
+
+        <label class="toggle">
+          <input id="keepOriginalName" type="checkbox" checked>
+          <span>원본 파일명 유지</span>
+        </label>
+
+        <div class="actions">
+          <button class="primary" type="button" id="convertButton">폴더 선택 후 저장</button>
+          <button class="secondary" type="button" id="clearButton">목록 비우기</button>
+        </div>
+        <p class="note" id="saveNote"></p>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const dropZone = document.querySelector("#dropZone");
+    const fileInput = document.querySelector("#fileInput");
+    const pickButton = document.querySelector("#pickButton");
+    const fileList = document.querySelector("#fileList");
+    const quality = document.querySelector("#quality");
+    const qualityValue = document.querySelector("#qualityValue");
+    const convertButton = document.querySelector("#convertButton");
+    const clearButton = document.querySelector("#clearButton");
+    const keepOriginalName = document.querySelector("#keepOriginalName");
+    const saveNote = document.querySelector("#saveNote");
+
+    let files = [];
+    const canSaveToFolder = "showDirectoryPicker" in window;
+
+    saveNote.textContent = canSaveToFolder
+      ? "Chrome/Edge에서는 선택한 폴더에 압축 없이 저장됩니다."
+      : "이 브라우저는 폴더 저장을 지원하지 않아 ZIP 하나로 다운로드됩니다.";
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    }
+
+    function baseName(name) {
+      return name.replace(/\.[^/.]+$/, "");
+    }
+
+    function uniqueName(name, usedNames) {
+      if (!usedNames.has(name)) {
+        usedNames.add(name);
+        return name;
+      }
+
+      const stem = baseName(name);
+      const extension = name.slice(stem.length);
+      let counter = 1;
+      let candidate = `${stem}_${counter}${extension}`;
+      while (usedNames.has(candidate)) {
+        counter += 1;
+        candidate = `${stem}_${counter}${extension}`;
+      }
+      usedNames.add(candidate);
+      return candidate;
+    }
+
+    function addFiles(selectedFiles) {
+      const incoming = Array.from(selectedFiles).filter(file =>
+        ["image/jpeg", "image/png"].includes(file.type)
+      );
+
+      const known = new Set(files.map(file => `${file.name}_${file.size}_${file.lastModified}`));
+      for (const file of incoming) {
+        const key = `${file.name}_${file.size}_${file.lastModified}`;
+        if (!known.has(key)) files.push(file);
+      }
+
+      renderList();
+    }
+
+    function renderList(statuses = new Map()) {
+      fileList.innerHTML = "";
+
+      if (files.length === 0) {
+        fileList.innerHTML = '<div class="empty">아직 선택한 이미지가 없습니다.</div>';
+        return;
+      }
+
+      files.forEach((file, index) => {
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const img = document.createElement("img");
+        img.className = "thumb";
+        img.alt = "";
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+
+        const info = document.createElement("div");
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = file.name;
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = `${file.type.replace("image/", "").toUpperCase()} · ${formatBytes(file.size)}`;
+        info.append(name, meta);
+
+        const status = document.createElement("div");
+        const current = statuses.get(index) || "대기";
+        status.className = current.startsWith("오류") ? "status error" : "status";
+        status.textContent = current;
+
+        row.append(img, info, status);
+        fileList.append(row);
+      });
+    }
+
+    function readImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("이미지를 읽을 수 없습니다."));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function canvasToBlob(canvas, type, qualityNumber) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error("WEBP 변환을 지원하지 않는 브라우저입니다."));
+        }, type, qualityNumber);
+      });
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function makeCrcTable() {
+      const table = new Uint32Array(256);
+      for (let i = 0; i < 256; i += 1) {
+        let value = i;
+        for (let bit = 0; bit < 8; bit += 1) {
+          value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+        }
+        table[i] = value >>> 0;
+      }
+      return table;
+    }
+
+    const crcTable = makeCrcTable();
+
+    function crc32(bytes) {
+      let value = 0xffffffff;
+      for (const byte of bytes) {
+        value = crcTable[(value ^ byte) & 0xff] ^ (value >>> 8);
+      }
+      return (value ^ 0xffffffff) >>> 0;
+    }
+
+    function dosDateTime(date = new Date()) {
+      const year = Math.max(1980, date.getFullYear());
+      const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+      const day = ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+      return { time, day };
+    }
+
+    function writeUint16(target, offset, value) {
+      target[offset] = value & 0xff;
+      target[offset + 1] = (value >>> 8) & 0xff;
+    }
+
+    function writeUint32(target, offset, value) {
+      target[offset] = value & 0xff;
+      target[offset + 1] = (value >>> 8) & 0xff;
+      target[offset + 2] = (value >>> 16) & 0xff;
+      target[offset + 3] = (value >>> 24) & 0xff;
+    }
+
+    function createZip(entries) {
+      const encoder = new TextEncoder();
+      const localParts = [];
+      const centralParts = [];
+      const { time, day } = dosDateTime();
+      let offset = 0;
+
+      for (const entry of entries) {
+        const nameBytes = encoder.encode(entry.name);
+        const data = entry.bytes;
+        const checksum = crc32(data);
+
+        const local = new Uint8Array(30 + nameBytes.length);
+        writeUint32(local, 0, 0x04034b50);
+        writeUint16(local, 4, 20);
+        writeUint16(local, 6, 0x0800);
+        writeUint16(local, 8, 0);
+        writeUint16(local, 10, time);
+        writeUint16(local, 12, day);
+        writeUint32(local, 14, checksum);
+        writeUint32(local, 18, data.length);
+        writeUint32(local, 22, data.length);
+        writeUint16(local, 26, nameBytes.length);
+        local.set(nameBytes, 30);
+        localParts.push(local, data);
+
+        const central = new Uint8Array(46 + nameBytes.length);
+        writeUint32(central, 0, 0x02014b50);
+        writeUint16(central, 4, 20);
+        writeUint16(central, 6, 20);
+        writeUint16(central, 8, 0x0800);
+        writeUint16(central, 10, 0);
+        writeUint16(central, 12, time);
+        writeUint16(central, 14, day);
+        writeUint32(central, 16, checksum);
+        writeUint32(central, 20, data.length);
+        writeUint32(central, 24, data.length);
+        writeUint16(central, 28, nameBytes.length);
+        writeUint32(central, 42, offset);
+        central.set(nameBytes, 46);
+        centralParts.push(central);
+
+        offset += local.length + data.length;
+      }
+
+      const centralSize = centralParts.reduce((total, part) => total + part.length, 0);
+      const end = new Uint8Array(22);
+      writeUint32(end, 0, 0x06054b50);
+      writeUint16(end, 8, entries.length);
+      writeUint16(end, 10, entries.length);
+      writeUint32(end, 12, centralSize);
+      writeUint32(end, 16, offset);
+
+      return new Blob([...localParts, ...centralParts, end], { type: "application/zip" });
+    }
+
+    async function saveEntriesToFolder(entries, directory) {
+      for (const entry of entries) {
+        const fileHandle = await directory.getFileHandle(entry.name, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(entry.blob);
+        await writable.close();
+      }
+    }
+
+    async function convertAll() {
+      if (files.length === 0) return;
+
+      convertButton.disabled = true;
+      const statuses = new Map();
+      const qualityNumber = Number(quality.value) / 100;
+      const outputEntries = [];
+      const usedNames = new Set();
+      let directory = null;
+
+      try {
+        if (canSaveToFolder) {
+          directory = await window.showDirectoryPicker({ mode: "readwrite" });
+        }
+      } catch (error) {
+        convertButton.disabled = false;
+        return;
+      }
+
+      for (const [index, file] of files.entries()) {
+        try {
+          statuses.set(index, "변환 중");
+          renderList(statuses);
+
+          const img = await readImage(file);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const context = canvas.getContext("2d");
+          context.drawImage(img, 0, 0);
+
+          const blob = await canvasToBlob(canvas, "image/webp", qualityNumber);
+          const filename = keepOriginalName.checked
+            ? `${baseName(file.name)}.webp`
+            : `converted_${index + 1}.webp`;
+
+          outputEntries.push({
+            name: uniqueName(filename, usedNames),
+            blob
+          });
+          statuses.set(index, `완료 · ${formatBytes(blob.size)}`);
+          renderList(statuses);
+        } catch (error) {
+          statuses.set(index, `오류 · ${error.message}`);
+          renderList(statuses);
+        }
+      }
+
+      if (outputEntries.length > 0) {
+        try {
+          if (canSaveToFolder) {
+            statuses.set(files.length - 1, "폴더 저장 중");
+            renderList(statuses);
+            await saveEntriesToFolder(outputEntries, directory);
+          } else {
+            const zipEntries = [];
+            for (const entry of outputEntries) {
+              zipEntries.push({
+                name: entry.name,
+                bytes: new Uint8Array(await entry.blob.arrayBuffer())
+              });
+            }
+            const zipBlob = createZip(zipEntries);
+            downloadBlob(zipBlob, "webp_files.zip");
+          }
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            alert(`저장 중 오류가 발생했습니다: ${error.message}`);
+          }
+        }
+      }
+
+      convertButton.disabled = false;
+    }
+
+    pickButton.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", event => addFiles(event.target.files));
+    quality.addEventListener("input", () => qualityValue.textContent = quality.value);
+    convertButton.addEventListener("click", convertAll);
+    clearButton.addEventListener("click", () => {
+      files = [];
+      fileInput.value = "";
+      renderList();
+    });
+
+    ["dragenter", "dragover"].forEach(eventName => {
+      dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(eventName => {
+      dropZone.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropZone.classList.remove("dragover");
+      });
+    });
+
+    dropZone.addEventListener("drop", event => addFiles(event.dataTransfer.files));
+  </script>
+</body>
+</html>
