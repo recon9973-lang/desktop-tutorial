@@ -1,0 +1,44 @@
+name: Apply clinic DB schema
+
+# deploy_all.sql 을 Supabase Management API로 실행해 스키마를 자동 적용 (수동 실행).
+# 수동 SQL Editor 붙여넣기 대체 — 이미 등록된 SUPABASE_ACCESS_TOKEN(sbp_...) 사용.
+# 스키마는 idempotent 라 여러 번 돌려도 안전.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: 'Supabase 프로젝트 REF'
+        required: true
+        default: 'sfybgrfhbmszztvqwgju'
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run deploy_all.sql via Management API
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          REF: ${{ github.event.inputs.project_ref }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN 시크릿 없음"; exit 1
+          fi
+          SQL_FILE=venom-wordpress/preview/clinic/db/deploy_all.sql
+          echo "SQL 파일: $SQL_FILE ($(wc -l < $SQL_FILE) 줄)"
+          # SQL 전체를 JSON 문자열로 안전 인코딩
+          jq -Rs '{query: .}' "$SQL_FILE" > /tmp/body.json
+          code=$(curl -sS --max-time 120 -o /tmp/out.json -w "%{http_code}" \
+            -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @/tmp/body.json)
+          echo "HTTP $code"
+          echo "응답:"; head -c 2000 /tmp/out.json; echo ""
+          if [ "$code" != "200" ] && [ "$code" != "201" ]; then
+            echo "::error::스키마 적용 실패 (HTTP $code)"; exit 1
+          fi
+          echo "✅ 스키마 적용 완료"
