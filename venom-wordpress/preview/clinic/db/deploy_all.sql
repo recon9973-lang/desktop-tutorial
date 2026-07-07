@@ -2,6 +2,7 @@
 -- 원장 앱 전체 DB 설치 (한 번에 실행용). Supabase SQL Editor에 통째로 붙여넣고 Run.
 -- schema.sql + schema_member_app.sql + policies_member_app.sql + triggers_member_app.sql 를
 -- 올바른 순서로 합친 파일입니다. (개별 파일은 그대로 유지)
+-- ※ 재실행 안전(idempotent): 이미 있는 타입/테이블/정책은 건너뛴다. 몇 번을 돌려도 OK.
 -- ============================================================
 
 -- 필요한 확장 먼저 활성화 (Supabase 지원)
@@ -24,9 +25,12 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 -- 공통 enum
 -- ---------------------------------------------------------------
 
-CREATE TYPE hospital_status AS ENUM ('operating', 'closed', 'suspended', 'unknown');
+DO $idem$ BEGIN
+  CREATE TYPE hospital_status AS ENUM ('operating', 'closed', 'suspended', 'unknown');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE keyword_type AS ENUM (
+DO $idem$ BEGIN
+  CREATE TYPE keyword_type AS ENUM (
   'region_department',  -- 지역+진료과 (예: 강남 피부과)
   'procedure',          -- 시술 (예: 리프팅)
   'symptom',            -- 고민/증상 (예: 탈모)
@@ -34,18 +38,28 @@ CREATE TYPE keyword_type AS ENUM (
   'brand',              -- 병원 브랜드
   'local_modifier'      -- 역/동 단위 지역 수식어
 );
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE risk_level AS ENUM ('low', 'medium', 'high', 'critical');
+DO $idem$ BEGIN
+  CREATE TYPE risk_level AS ENUM ('low', 'medium', 'high', 'critical');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE legal_review_status AS ENUM (
+DO $idem$ BEGIN
+  CREATE TYPE legal_review_status AS ENUM (
   'not_required', 'pending', 'in_review', 'approved', 'rejected'
 );
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE collection_mode AS ENUM ('manual', 'semi_automated', 'approved_automated');
+DO $idem$ BEGIN
+  CREATE TYPE collection_mode AS ENUM ('manual', 'semi_automated', 'approved_automated');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE serp_section_type AS ENUM ('place', 'search_ad', 'organic', 'integrated', 'unknown');
+DO $idem$ BEGIN
+  CREATE TYPE serp_section_type AS ENUM ('place', 'search_ad', 'organic', 'integrated', 'unknown');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE evidence_type AS ENUM (
+DO $idem$ BEGIN
+  CREATE TYPE evidence_type AS ENUM (
   'raw_api_payload',
   'serp_screenshot',
   'serp_html',
@@ -54,25 +68,32 @@ CREATE TYPE evidence_type AS ENUM (
   'collection_error_log',
   'manual_review_note'
 );
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE visibility_scope AS ENUM (
+DO $idem$ BEGIN
+  CREATE TYPE visibility_scope AS ENUM (
   'internal_admin_only',   -- 기본값. 관리자단 전용
   'internal_legal_only',   -- 법무 검토자 전용
   'customer_safe_summary', -- 법무 승인 후 요약값만 고객 노출 가능
   'blocked'                -- 노출/사용 금지
 );
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE user_role AS ENUM (
+DO $idem$ BEGIN
+  CREATE TYPE user_role AS ENUM (
   'customer', 'agency_manager', 'data_operator', 'legal_reviewer', 'admin'
 );
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TYPE compliance_status AS ENUM ('safe', 'needs_review', 'blocked');
+DO $idem$ BEGIN
+  CREATE TYPE compliance_status AS ENUM ('safe', 'needs_review', 'blocked');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
 -- ---------------------------------------------------------------
 -- 사용자 / 권한
 -- ---------------------------------------------------------------
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id            BIGSERIAL PRIMARY KEY,
   email         CITEXT UNIQUE NOT NULL,
   password_hash TEXT,
@@ -84,7 +105,7 @@ CREATE TABLE users (
 );
 
 -- 원천자료 열람/다운로드/삭제 감사 로그 (기획서 11.6)
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   id           BIGSERIAL PRIMARY KEY,
   user_id      BIGINT REFERENCES users(id),
   action       TEXT NOT NULL,          -- view / download / delete / export ...
@@ -93,14 +114,14 @@ CREATE TABLE audit_logs (
   detail       JSONB,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_audit_logs_target ON audit_logs (target_table, target_id);
-CREATE INDEX idx_audit_logs_user   ON audit_logs (user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_target ON audit_logs (target_table, target_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user   ON audit_logs (user_id, created_at);
 
 -- ---------------------------------------------------------------
 -- 8.1 hospitals — 병원 마스터 (공공데이터 기반)
 -- ---------------------------------------------------------------
 
-CREATE TABLE hospitals (
+CREATE TABLE IF NOT EXISTS hospitals (
   id              BIGSERIAL PRIMARY KEY,
   name            TEXT NOT NULL,
   normalized_name TEXT NOT NULL,
@@ -118,15 +139,15 @@ CREATE TABLE hospitals (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (source, source_id)
 );
-CREATE INDEX idx_hospitals_geom ON hospitals USING GIST (geom);
-CREATE INDEX idx_hospitals_norm_name ON hospitals (normalized_name);
-CREATE INDEX idx_hospitals_department ON hospitals (department_code);
+CREATE INDEX IF NOT EXISTS idx_hospitals_geom ON hospitals USING GIST (geom);
+CREATE INDEX IF NOT EXISTS idx_hospitals_norm_name ON hospitals (normalized_name);
+CREATE INDEX IF NOT EXISTS idx_hospitals_department ON hospitals (department_code);
 
 -- ---------------------------------------------------------------
 -- 8.2 hospital_profiles — 고객이 등록/검증한 내 병원
 -- ---------------------------------------------------------------
 
-CREATE TABLE hospital_profiles (
+CREATE TABLE IF NOT EXISTS hospital_profiles (
   id                    BIGSERIAL PRIMARY KEY,
   hospital_id           BIGINT NOT NULL REFERENCES hospitals(id),
   owner_user_id         BIGINT NOT NULL REFERENCES users(id),
@@ -139,13 +160,13 @@ CREATE TABLE hospital_profiles (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_profiles_owner ON hospital_profiles (owner_user_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_owner ON hospital_profiles (owner_user_id);
 
 -- ---------------------------------------------------------------
 -- 8.3 competitors — 월 스냅샷 단위 반경 내 경쟁 세트
 -- ---------------------------------------------------------------
 
-CREATE TABLE competitors (
+CREATE TABLE IF NOT EXISTS competitors (
   id                       BIGSERIAL PRIMARY KEY,
   base_hospital_id         BIGINT NOT NULL REFERENCES hospital_profiles(id),
   competitor_hospital_id   BIGINT NOT NULL REFERENCES hospitals(id),
@@ -158,13 +179,13 @@ CREATE TABLE competitors (
   created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (base_hospital_id, competitor_hospital_id, radius_m, snapshot_month)
 );
-CREATE INDEX idx_competitors_base ON competitors (base_hospital_id, snapshot_month, radius_m);
+CREATE INDEX IF NOT EXISTS idx_competitors_base ON competitors (base_hospital_id, snapshot_month, radius_m);
 
 -- ---------------------------------------------------------------
 -- 8.4 keywords — 진료과별 키워드 사전 (수동 관리)
 -- ---------------------------------------------------------------
 
-CREATE TABLE keywords (
+CREATE TABLE IF NOT EXISTS keywords (
   id           BIGSERIAL PRIMARY KEY,
   department   TEXT NOT NULL,
   keyword      TEXT NOT NULL,
@@ -179,7 +200,7 @@ CREATE TABLE keywords (
 -- 8.5 search_api_results — 네이버 공식 API 관찰값
 -- ---------------------------------------------------------------
 
-CREATE TABLE search_api_results (
+CREATE TABLE IF NOT EXISTS search_api_results (
   id                  BIGSERIAL PRIMARY KEY,
   hospital_profile_id BIGINT NOT NULL REFERENCES hospital_profiles(id),
   keyword_id          BIGINT NOT NULL REFERENCES keywords(id),
@@ -194,14 +215,14 @@ CREATE TABLE search_api_results (
   confidence_score    NUMERIC(4,3),
   raw_payload_ref     TEXT                           -- internal_evidence_items.storage_ref 참조 키
 );
-CREATE INDEX idx_api_results_profile
+CREATE INDEX IF NOT EXISTS idx_api_results_profile
   ON search_api_results (hospital_profile_id, keyword_id, collected_at);
 
 -- ---------------------------------------------------------------
 -- 8.6 serp_snapshots — 월간 검증 스냅샷 (B-safe, 법무 검토 후 운영)
 -- ---------------------------------------------------------------
 
-CREATE TABLE serp_snapshots (
+CREATE TABLE IF NOT EXISTS serp_snapshots (
   id                  BIGSERIAL PRIMARY KEY,
   hospital_profile_id BIGINT NOT NULL REFERENCES hospital_profiles(id),
   keyword_id          BIGINT NOT NULL REFERENCES keywords(id),
@@ -216,14 +237,14 @@ CREATE TABLE serp_snapshots (
   legal_review_status legal_review_status NOT NULL DEFAULT 'pending',
   CHECK (login_state = FALSE)                           -- 로그인/개인화 결과 사용 금지 (기획서 11.2)
 );
-CREATE INDEX idx_serp_snapshots_profile
+CREATE INDEX IF NOT EXISTS idx_serp_snapshots_profile
   ON serp_snapshots (hospital_profile_id, keyword_id, collected_at);
 
 -- ---------------------------------------------------------------
 -- 8.7 population_area_metrics — SGIS 인구/공간 지표
 -- ---------------------------------------------------------------
 
-CREATE TABLE population_area_metrics (
+CREATE TABLE IF NOT EXISTS population_area_metrics (
   id                BIGSERIAL PRIMARY KEY,
   area_code         TEXT NOT NULL,
   area_type         TEXT NOT NULL,          -- adm_dong / census_block
@@ -235,13 +256,13 @@ CREATE TABLE population_area_metrics (
   source_updated_at DATE,
   UNIQUE (area_code, area_type)
 );
-CREATE INDEX idx_population_geom ON population_area_metrics USING GIST (geom);
+CREATE INDEX IF NOT EXISTS idx_population_geom ON population_area_metrics USING GIST (geom);
 
 -- ---------------------------------------------------------------
 -- 8.8 radius_metrics — 월간 반경별 점수 (대시보드 캐시)
 -- ---------------------------------------------------------------
 
-CREATE TABLE radius_metrics (
+CREATE TABLE IF NOT EXISTS radius_metrics (
   id                         BIGSERIAL PRIMARY KEY,
   hospital_profile_id        BIGINT NOT NULL REFERENCES hospital_profiles(id),
   radius_m                   INTEGER NOT NULL CHECK (radius_m IN (500, 1000, 1500, 2000)),
@@ -260,7 +281,7 @@ CREATE TABLE radius_metrics (
 -- 8.9 action_recommendations — 월간 개선 액션 (컴플라이언스 게이트 포함)
 -- ---------------------------------------------------------------
 
-CREATE TABLE action_recommendations (
+CREATE TABLE IF NOT EXISTS action_recommendations (
   id                  BIGSERIAL PRIMARY KEY,
   hospital_profile_id BIGINT NOT NULL REFERENCES hospital_profiles(id),
   snapshot_month      DATE NOT NULL,
@@ -271,13 +292,13 @@ CREATE TABLE action_recommendations (
   evidence_metric     JSONB,                       -- 근거 지표 (점수/키워드 등급 등 안전값만)
   compliance_status   compliance_status NOT NULL DEFAULT 'needs_review'
 );
-CREATE INDEX idx_actions_profile ON action_recommendations (hospital_profile_id, snapshot_month, priority);
+CREATE INDEX IF NOT EXISTS idx_actions_profile ON action_recommendations (hospital_profile_id, snapshot_month, priority);
 
 -- ---------------------------------------------------------------
 -- 8.10 internal_evidence_items — 관리자 전용 고위험 원천자료
 -- ---------------------------------------------------------------
 
-CREATE TABLE internal_evidence_items (
+CREATE TABLE IF NOT EXISTS internal_evidence_items (
   id                  BIGSERIAL PRIMARY KEY,
   hospital_profile_id BIGINT REFERENCES hospital_profiles(id),
   keyword_id          BIGINT REFERENCES keywords(id),
@@ -293,8 +314,8 @@ CREATE TABLE internal_evidence_items (
   reviewed_by         BIGINT REFERENCES users(id),
   reviewed_at         TIMESTAMPTZ
 );
-CREATE INDEX idx_evidence_profile ON internal_evidence_items (hospital_profile_id, collected_at);
-CREATE INDEX idx_evidence_review  ON internal_evidence_items (legal_review_status, risk_level);
+CREATE INDEX IF NOT EXISTS idx_evidence_profile ON internal_evidence_items (hospital_profile_id, collected_at);
+CREATE INDEX IF NOT EXISTS idx_evidence_review  ON internal_evidence_items (legal_review_status, risk_level);
 
 -- 법무 승인 전 customer_safe_summary 승격 금지 (기획서 8.10 원칙)
 CREATE OR REPLACE FUNCTION enforce_evidence_visibility() RETURNS trigger AS $$
@@ -307,6 +328,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_evidence_visibility ON internal_evidence_items;
 CREATE TRIGGER trg_evidence_visibility
   BEFORE INSERT OR UPDATE ON internal_evidence_items
   FOR EACH ROW EXECUTE FUNCTION enforce_evidence_visibility();
@@ -315,7 +337,8 @@ CREATE TRIGGER trg_evidence_visibility
 -- 무료 진단 신청 접수 + 어뷰징 방지 (docs/어뷰징-방지-정책.md)
 -- ---------------------------------------------------------------
 
-CREATE TYPE request_status AS ENUM (
+DO $idem$ BEGIN
+  CREATE TYPE request_status AS ENUM (
   'received',      -- 접수
   'generating',    -- 리포트 생성 중
   'sent',          -- 발송 완료
@@ -324,9 +347,10 @@ CREATE TYPE request_status AS ENUM (
   'rejected',      -- 어뷰징/중복 등으로 반려
   'blocked'        -- 차단 (재신청 불가)
 );
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
 -- 신청 1건 = 1행. 동의 증적(일시/IP/문구 버전)을 함께 보관 (개인정보보호법 대응)
-CREATE TABLE diagnosis_requests (
+CREATE TABLE IF NOT EXISTS diagnosis_requests (
   id                  BIGSERIAL PRIMARY KEY,
   hospital_name       TEXT NOT NULL,
   hospital_address    TEXT NOT NULL,
@@ -353,10 +377,10 @@ CREATE TABLE diagnosis_requests (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_requests_ip_time    ON diagnosis_requests (client_ip, created_at);
-CREATE INDEX idx_requests_email_time ON diagnosis_requests (email, created_at);
-CREATE INDEX idx_requests_hospital   ON diagnosis_requests (hospital_name, hospital_address);
-CREATE INDEX idx_requests_status     ON diagnosis_requests (status, created_at);
+CREATE INDEX IF NOT EXISTS idx_requests_ip_time    ON diagnosis_requests (client_ip, created_at);
+CREATE INDEX IF NOT EXISTS idx_requests_email_time ON diagnosis_requests (email, created_at);
+CREATE INDEX IF NOT EXISTS idx_requests_hospital   ON diagnosis_requests (hospital_name, hospital_address);
+CREATE INDEX IF NOT EXISTS idx_requests_status     ON diagnosis_requests (status, created_at);
 
 -- 요청 제한 정책 (애플리케이션 레이어에서 접수 전 검사, 기본값)
 --   IP당:     일 3회 / 월 10회 초과 시 자동 반려(rejected) + 검토 큐
@@ -375,7 +399,7 @@ CREATE OR REPLACE FUNCTION count_recent_requests(
 $$ LANGUAGE sql STABLE;
 
 -- 수신거부 / 재연락 금지 목록 (정보통신망법 §50, 어떤 캠페인에서도 제외)
-CREATE TABLE suppression_list (
+CREATE TABLE IF NOT EXISTS suppression_list (
   id           BIGSERIAL PRIMARY KEY,
   channel      TEXT NOT NULL CHECK (channel IN ('sms', 'email', 'call', 'all')),
   identifier   TEXT NOT NULL,                    -- 전화번호 또는 이메일
@@ -386,7 +410,7 @@ CREATE TABLE suppression_list (
 );
 
 -- 차단 IP/식별자 (어뷰징 확정 건)
-CREATE TABLE abuse_blocklist (
+CREATE TABLE IF NOT EXISTS abuse_blocklist (
   id           BIGSERIAL PRIMARY KEY,
   kind         TEXT NOT NULL CHECK (kind IN ('ip', 'email', 'phone')),
   identifier   TEXT NOT NULL,
@@ -433,9 +457,11 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;   -- gen_random_uuid, digest
 -- M.1 auth_challenges — magic-link / OTP (무비밀번호 회원가입·로그인)
 --   이메일 소유 확인만으로 무료 회원가입. 비밀번호 미보관(users.password_hash NULL 허용).
 -- ---------------------------------------------------------------
-CREATE TYPE auth_purpose AS ENUM ('signup', 'login', 'report_unlock');
+DO $idem$ BEGIN
+  CREATE TYPE auth_purpose AS ENUM ('signup', 'login', 'report_unlock');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TABLE auth_challenges (
+CREATE TABLE IF NOT EXISTS auth_challenges (
   id           BIGSERIAL PRIMARY KEY,
   email        CITEXT NOT NULL,
   purpose      auth_purpose NOT NULL,
@@ -447,17 +473,19 @@ CREATE TABLE auth_challenges (
   expires_at   TIMESTAMPTZ NOT NULL,        -- 보통 발급 후 15분
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_auth_ch_email  ON auth_challenges (email, created_at);
-CREATE INDEX idx_auth_ch_expiry ON auth_challenges (expires_at);
+CREATE INDEX IF NOT EXISTS idx_auth_ch_email  ON auth_challenges (email, created_at);
+CREATE INDEX IF NOT EXISTS idx_auth_ch_expiry ON auth_challenges (expires_at);
 -- 발급 남용 방지: 이메일/IP당 분당 한도는 앱 레이어에서 검사(abuse 정책 준용).
 
 -- ---------------------------------------------------------------
 -- M.2 self_check_results — 자가진단(리스크·비용·동선) 결과 저장·재열람
 --   계산 자체는 클라이언트에서 수행. 회원이 "저장"을 눌러야만 서버로 전송·보관.
 -- ---------------------------------------------------------------
-CREATE TYPE self_check_kind AS ENUM ('risk', 'cost', 'journey');
+DO $idem$ BEGIN
+  CREATE TYPE self_check_kind AS ENUM ('risk', 'cost', 'journey');
+EXCEPTION WHEN duplicate_object THEN null; END $idem$;
 
-CREATE TABLE self_check_results (
+CREATE TABLE IF NOT EXISTS self_check_results (
   id           BIGSERIAL PRIMARY KEY,
   user_id      BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   kind         self_check_kind NOT NULL,
@@ -467,14 +495,14 @@ CREATE TABLE self_check_results (
   tool_version TEXT NOT NULL,               -- 계산 로직 버전(재현성)
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_selfcheck_user ON self_check_results (user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_selfcheck_user ON self_check_results (user_id, created_at);
 
 -- ---------------------------------------------------------------
 -- M.3 reports — 생성된 진단 리포트 레지스트리(마킹판/전체판 게이팅)
 --   auto_diagnose 산출물을 등록. 익명은 masked, 회원가입·해제 후 full 열람.
 --   본문은 Storage(경로) 또는 DB(html)에 보관 — 둘 다 지원.
 -- ---------------------------------------------------------------
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
   id                BIGSERIAL PRIMARY KEY,
   public_token      TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
   hospital_name     TEXT NOT NULL,
@@ -487,21 +515,21 @@ CREATE TABLE reports (
   generated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   expires_at        TIMESTAMPTZ           -- 열람 만료(선택)
 );
-CREATE INDEX idx_reports_hospital ON reports (hospital_name, hospital_address);
-CREATE INDEX idx_reports_request  ON reports (request_id);
+CREATE INDEX IF NOT EXISTS idx_reports_hospital ON reports (hospital_name, hospital_address);
+CREATE INDEX IF NOT EXISTS idx_reports_request  ON reports (request_id);
 
 -- ---------------------------------------------------------------
 -- M.4 report_grants — 회원 → 리포트 전체공개 열람 해제(마킹 해제)
 --   "무료 회원가입 시 나머지도 무료로 본다" 모델의 권한 행.
 -- ---------------------------------------------------------------
-CREATE TABLE report_grants (
+CREATE TABLE IF NOT EXISTS report_grants (
   id           BIGSERIAL PRIMARY KEY,
   report_id    BIGINT NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
   user_id      BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   granted_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (report_id, user_id)
 );
-CREATE INDEX idx_grants_user ON report_grants (user_id);
+CREATE INDEX IF NOT EXISTS idx_grants_user ON report_grants (user_id);
 
 -- ---------------------------------------------------------------
 -- RLS 정책 개요 (Supabase auth 연동 시 활성화)
@@ -512,7 +540,8 @@ CREATE INDEX idx_grants_user ON report_grants (user_id);
 --   - data_operator/legal_reviewer/admin : 서버(service_role) 경유로만 접근 + audit_logs 기록
 -- 예시(개념):
 --   ALTER TABLE self_check_results ENABLE ROW LEVEL SECURITY;
---   CREATE POLICY sc_owner ON self_check_results
+--   DROP POLICY IF EXISTS sc_owner ON self_check_results;
+CREATE POLICY sc_owner ON self_check_results
 --     USING (user_id = current_app_user_id());   -- auth.uid() 매핑 함수
 -- ---------------------------------------------------------------
 
@@ -544,15 +573,19 @@ ALTER TABLE auth_challenges    ENABLE ROW LEVEL SECURITY;
 
 -- 자가진단 결과 — 소유자만 열람/기록/삭제
 ALTER TABLE self_check_results ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS sc_owner_select ON self_check_results;
 CREATE POLICY sc_owner_select ON self_check_results
   FOR SELECT USING (user_id = app_user_id());
+DROP POLICY IF EXISTS sc_owner_insert ON self_check_results;
 CREATE POLICY sc_owner_insert ON self_check_results
   FOR INSERT WITH CHECK (user_id = app_user_id());
+DROP POLICY IF EXISTS sc_owner_delete ON self_check_results;
 CREATE POLICY sc_owner_delete ON self_check_results
   FOR DELETE USING (user_id = app_user_id());
 
 -- 리포트 열람 권한 — 소유자만 자기 grant 확인
 ALTER TABLE report_grants ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS rg_owner_select ON report_grants;
 CREATE POLICY rg_owner_select ON report_grants
   FOR SELECT USING (user_id = app_user_id());
 
@@ -563,6 +596,7 @@ ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 
 -- users — 본인 행만 조회(관리자단은 service_role/role 기반 별도 처리)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS users_self_select ON users;
 CREATE POLICY users_self_select ON users
   FOR SELECT USING (auth_uid = auth.uid());
 
