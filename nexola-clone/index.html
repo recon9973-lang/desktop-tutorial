@@ -20,7 +20,7 @@
 <header class="site-header">
   <a class="brand" href="index.html" aria-label="VENOM 병원마케팅"><img class="brand-logo" src="assets/img/venom-logo.png" alt="VENOM"></a>
   <div class="header-right">
-    <div class="avail"><span class="star">✦</span> 상담 접수중<br><a href="#contact">무료 상담 신청</a></div>
+    <div class="avail"><span class="dot-live" aria-hidden="true"></span> 상담 접수중<br><a href="#contact">무료 상담 신청</a></div>
     <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
 </header>
@@ -38,40 +38,46 @@
   </div>
 </div>
 
+<main class="page">
+
 <!-- Hero -->
 <section class="hero wrap">
+  <div class="grid-lines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
   <div class="hero-top">
-    <h1 class="display">VENOM</h1>
+    <h1 class="display vlogo" aria-label="VENOM">
+      <span class="ltr" aria-hidden="true">V</span><span class="ltr" aria-hidden="true">E</span><span class="ltr" aria-hidden="true">N</span><span class="o" aria-hidden="true"></span><span class="ltr m" aria-hidden="true">M</span>
+    </h1>
     <div class="hero-side">
       <div class="badge" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v16M4 12h16" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/></svg>
       </div>
       <div class="hero-est">
-        <div class="num">병원</div>
-        <div class="label">전문 마케팅 대행사</div>
+        <div class="num"><span data-count="7" data-suffix="+">0</span></div>
+        <div class="label">전문 진료과 경험</div>
       </div>
     </div>
   </div>
 
-  <div class="hero-media">
-    <img src="assets/img/office.jpg" alt="베놈 사무실 전경">
+  <div class="hero-media parallax">
+    <div class="p-media"><img src="assets/img/office.jpg" alt="베놈 사무실 전경"></div>
     <div class="hero-cta">
-      <a class="btn" href="#contact">무료 마케팅 진단 <span class="dot"></span></a>
-      <a class="btn ghost" href="#contact">카카오로 상담하기 ↗</a>
+      <a class="btn" href="#contact">GEO Check <span class="dot"></span></a>
+      <a class="btn ghost" href="#contact">SEO Check ↗</a>
     </div>
   </div>
 </section>
 
-<!-- Logo bar -->
-<section class="wrap"><div class="logobar">
-  <span class="lb-label">진료과 전문</span>
-  <span>치과</span><span>피부과</span><span>성형외과</span><span>한의원</span><span>정형외과</span><span>안과</span><span>산부인과</span>
+<!-- Marquee: 진료과 -->
+<section class="wrap"><div class="marquee" aria-label="전문 진료과">
+  <div class="marquee-track">치과<b class="m-dot">•</b>피부과<b class="m-dot">•</b>성형외과<b class="m-dot">•</b>한의원<b class="m-dot">•</b>정형외과<b class="m-dot">•</b>안과<b class="m-dot">•</b>산부인과<b class="m-dot">•</b>이비인후과<b class="m-dot">•</b></div>
+  <div class="marquee-track" aria-hidden="true">치과<b class="m-dot">•</b>피부과<b class="m-dot">•</b>성형외과<b class="m-dot">•</b>한의원<b class="m-dot">•</b>정형외과<b class="m-dot">•</b>안과<b class="m-dot">•</b>산부인과<b class="m-dot">•</b>이비인후과<b class="m-dot">•</b></div>
 </div></section>
 
 <!-- Intro -->
 <section class="intro sec-pad wrap" id="about">
   <div class="eyebrow" data-reveal><span class="dots"><i></i><i></i><i></i></span><span class="label">ABOUT VENOM</span></div>
-  <h2 class="h-xl kr" data-reveal>병원 마케팅은<br><span class="dim">병원만 아는 팀이 합니다.</span></h2>
+  <h2 class="h-xl kr" data-mask>병원 마케팅은<br><span class="dim">병원만 아는 팀이 합니다.</span></h2>
   <p class="lead kr" data-reveal style="margin-top:40px">유행하는 방식이 아니라, 우리 병원 환자가 실제로 검색하는 키워드에서 보이게 만듭니다.
   전략·콘텐츠·상위노출·홈페이지까지 한 팀에서 책임지고, 의료광고 심의 기준을 지키며 운영합니다.</p>
 </section>
@@ -79,7 +85,7 @@
 <!-- Services -->
 <section class="projects sec-pad wrap" id="service">
   <div class="head">
-    <h2 class="h-lg" data-reveal>Services</h2>
+    <h2 class="h-lg" data-mask>Services</h2>
     <div class="side" data-reveal><div class="label">병원 맞춤 5개 영역</div><a href="#contact">상담 신청</a></div>
   </div>
   <div class="proj-list">
@@ -124,17 +130,21 @@
 <section class="quote sec-pad wrap" id="team">
   <div class="eyebrow" data-reveal><span class="dots"><i></i><i></i><i></i></span><span class="label">TEAM</span></div>
   <h2 class="h-md kr" data-reveal>병원의 성장을 함께<br>설계하는 사람들.</h2>
+  <div class="counter" data-reveal>
+    <span class="cn"><span data-count="3">0</span></span>
+    <span class="cl">병원별 전담<br>마케터가 배정됩니다</span>
+  </div>
   <div class="team-grid">
     <div class="member" data-reveal>
-      <div class="ph-photo"><img src="assets/img/team-ceo.jpg" alt="김보형 대표"></div>
+      <div class="ph-photo"><img class="desat" src="assets/img/team-ceo.jpg" alt="김보형 대표"></div>
       <div class="m-name">김보형</div><div class="m-role">대표 · 마케팅 총괄</div>
     </div>
     <div class="member" data-reveal>
-      <div class="ph-photo"><img src="assets/img/team-1.jpg" alt="이재훈"></div>
+      <div class="ph-photo"><img class="desat" src="assets/img/team-1.jpg" alt="이재훈"></div>
       <div class="m-name">이재훈</div><div class="m-role">퍼포먼스 · 그로스</div>
     </div>
     <div class="member" data-reveal>
-      <div class="ph-photo"><img src="assets/img/team-2.jpg" alt="서민구"></div>
+      <div class="ph-photo"><img class="desat" src="assets/img/team-2.jpg" alt="서민구"></div>
       <div class="m-name">서민구</div><div class="m-role">SEO · 콘텐츠</div>
     </div>
   </div>
@@ -175,7 +185,7 @@
 <section class="contact dark sec-pad" id="contact">
   <div class="wrap">
     <div class="eyebrow" data-reveal style="color:var(--on-dark)"><span class="dots"><i></i><i></i><i></i></span><span class="label" style="color:var(--on-dark-muted)">무료 상담</span></div>
-    <h2 class="display" data-reveal>Contact</h2>
+    <h2 class="display" data-mask>Contact</h2>
     <div class="sub" data-reveal>병원마케팅 베놈</div>
     <div class="cta-row" data-reveal style="margin-top:36px">
       <a class="btn" href="tel:1661-4142">1661-4142 전화상담 <span class="dot"></span></a>
@@ -189,8 +199,10 @@
   </div>
 </section>
 
-<!-- Newsletter + Footer -->
-<footer class="foot wrap">
+</main>
+
+<!-- Newsletter + Footer (reveal on scroll) -->
+<footer class="foot wrap reveal-foot">
   <div class="news">
     <div>
       <h2 class="h-md" data-reveal>Newsletter</h2>
