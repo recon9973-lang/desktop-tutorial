@@ -1,0 +1,28 @@
+name: Check deployed HTML
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Base URL'
+        required: true
+        default: 'https://venom-new-site.vercel.app'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Fetch and grep script src
+        env:
+          BASE: ${{ github.event.inputs.base }}
+        run: |
+          for path in "/" "/diagnose" "/online-marketing/test"; do
+            echo "──────── $BASE$path ────────"
+            code=$(curl -sS --max-time 30 -o /tmp/h.html -w "%{http_code}" "$BASE$path")
+            echo "HTTP $code"
+            echo "seo-engine 스크립트 태그:"
+            grep -oE '<script src="[^"]*seo-engine[^"]*"' /tmp/h.html | head -1 || echo "  (없음)"
+            echo ""
+          done
+          echo "== /assets/ = 절대(수정됨) / assets/ = 상대(옛버전) =="
