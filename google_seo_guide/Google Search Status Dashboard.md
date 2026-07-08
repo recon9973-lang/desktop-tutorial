@@ -1,0 +1,3 @@
+# Google Search Status Dashboard
+
+This page provides status information on the services that are part of Google Search. Check back here to view the current status of the services listed below. If you are experiencing an issue not listed here, please [contact Support](https://developers.google.com/search/help). Learn more about what's posted on the dashboard in [this FAQ](https://developers.google.com/search/help/status-dashboard). For additional information on these services, please visit [https://developers.google.com/search/help/status-dashboard](https://developers.google.com/search/help/status-dashboard).
