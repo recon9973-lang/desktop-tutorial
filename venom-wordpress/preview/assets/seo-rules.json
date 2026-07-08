@@ -1,0 +1,172 @@
+{
+  "version": "1.0",
+  "generated_from": "00_지식맵_MASTER_INDEX.md (Google 검색 공식 문서 201종 구조화)",
+  "note": "각 채점 항목을 Google 공식 문서 번호[n]와 처방 템플릿에 명시적으로 연결한 근거 지식베이스. seo-engine.js/리포트가 '근거[n]' 배지·처방 생성에 소비. [n]은 지식맵 문서번호 = google_seo_guide/ 원문 정렬 순번. 규칙·배점은 docs/seo-guidelines.md 준용.",
+  "doc_titles": {
+    "1": "AI 기능 및 웹사이트(AI 개요/AI 모드)",
+    "4": "Core Web Vitals",
+    "8": "Google 검색 Essentials",
+    "10": "Google 검색 기술 요구사항",
+    "19": "파비콘 정의",
+    "27": "시선을 끄는 제목 링크 작성",
+    "30": "URL 구조 권장사항",
+    "39": "생성형 AI 기능 최적화 가이드",
+    "47": "웹 검색 스팸 정책",
+    "63": "페이지 경험 이해",
+    "72": "robots.txt 사양 해석",
+    "79": "지원 메타 태그·속성",
+    "80": "SEO 링크 권장사항",
+    "87": "noindex로 색인 차단",
+    "89": "SEO 기본 가이드(Starter Guide)",
+    "94": "URL 표준화란",
+    "95": "rel=canonical 지정 방법",
+    "96": "robots.txt 소개·가이드",
+    "97": "robots.txt 만들기·제출",
+    "114": "구조화 데이터 작동 방식 소개",
+    "115": "구조화 데이터 일반 가이드라인",
+    "143": "메타 설명 작성 방법",
+    "144": "모바일 중심 색인",
+    "151": "사이트맵 제작·제출",
+    "153": "사이트맵이란",
+    "169": "생성형 AI 콘텐츠 안내",
+    "171": "유용하고 신뢰할 수 있는 사용자 중심 콘텐츠",
+    "175": "이미지 SEO 권장사항",
+    "189": "최신 검색 문서 업데이트(What's new)",
+    "199": "페이지의 현지화된 버전(hreflang)"
+  },
+  "categories": [
+    { "key": "content", "label": "콘텐츠 & 메타", "weight": 38 },
+    { "key": "tech", "label": "기술 · 크롤링", "weight": 30 },
+    { "key": "search", "label": "검색 노출 강화", "weight": 22 },
+    { "key": "speed", "label": "속도 최적화(CWV)", "weight": 10 }
+  ],
+  "rules": [
+    {
+      "id": "title", "category": "content", "label": "제목(title) 태그", "weight": 8,
+      "rule": "존재 + 단일 + 길이 10~60자 (네이버: title 2개 이상이면 감점)",
+      "grounds": [27, 89], "naver_ground": true,
+      "prescription": "각 페이지에 고유하고 구체적인 <title> 1개를 둔다. 키워드 스터핑·상용구·사이트명만 반복 금지. Google이 title/heading/앵커로 제목 링크를 생성·개선한다."
+    },
+    {
+      "id": "meta_description", "category": "content", "label": "메타 디스크립션", "weight": 8,
+      "rule": "존재 + 단일(중복 감점) + 길이 50~160자",
+      "grounds": [143, 89], "naver_ground": false,
+      "prescription": "페이지별 고유한 요약을 작성. 스니펫은 주로 본문에서 자동 생성되므로 정답 길이는 없고 기기폭에서 잘린다. 노출 제어는 nosnippet/max-snippet/data-nosnippet."
+    },
+    {
+      "id": "h1", "category": "content", "label": "H1 대표 제목", "weight": 6,
+      "rule": "정확히 1개(0=없음, 2개+=구조 혼란)",
+      "grounds": [89], "naver_ground": true,
+      "caveat": "Google은 '헤딩 순서·개수는 검색 관점에서 무관'(접근성 목적)이라 명시([89]). 이 항목의 강한 근거는 네이버 서치어드바이저 쪽이며, Google 근거로는 약함 — 리포트에 '네이버 기준'으로 표기 권장.",
+      "prescription": "페이지 핵심 주제를 담은 H1 1개. 다만 순위 직접 요인은 아님(가독성·접근성 목적)."
+    },
+    {
+      "id": "img_alt", "category": "content", "label": "이미지 ALT 텍스트", "weight": 7,
+      "rule": "alt 속성 누락만 집계(빈 alt=\"\"·추적픽셀 제외), 누락 ≤10% 허용",
+      "grounds": [175, 89], "naver_ground": false,
+      "prescription": "표준 <img src>에 구체적 alt. 키워드 스터핑 금지. CSS 배경이미지는 색인되지 않으니 콘텐츠 이미지는 <img>로."
+    },
+    {
+      "id": "link_text", "category": "content", "label": "의미있는 링크 텍스트", "weight": 5,
+      "rule": "'여기 클릭'·맨 URL·빈 텍스트 지양(이미지 링크는 alt로 평가)",
+      "grounds": [80], "naver_ground": false,
+      "prescription": "href 있는 <a>에 구체·간결한 앵커텍스트. 유료=rel=sponsored, UGC=rel=ugc."
+    },
+    {
+      "id": "descriptive_url", "category": "content", "label": "서술형 URL", "weight": 4,
+      "rule": "의미있는 단어, 세션ID·임의ID·과다 파라미터 지양",
+      "grounds": [30], "naver_ground": false,
+      "caveat": "URL/도메인 내 키워드는 순위에 거의 무영향([89]). 목적은 중복·크롤링 낭비 방지.",
+      "prescription": "설명형 경로·하이픈 구분, 매개변수 최소화. 필터/패싯 무한 URL은 robots·canonical로 관리."
+    },
+    {
+      "id": "https", "category": "tech", "label": "HTTPS 보안 연결", "weight": 6,
+      "rule": "SSL 적용",
+      "grounds": [10, 63], "naver_ground": false,
+      "prescription": "전 페이지 HTTPS. 페이지 경험 자가평가 항목이며 기술 요구사항의 기본."
+    },
+    {
+      "id": "robots_allow", "category": "tech", "label": "검색로봇 수집 허용", "weight": 6,
+      "rule": "robots.txt가 Googlebot·Yeti(네이버)·* 를 차단하지 않음 (RFC 9309 그룹 파싱)",
+      "grounds": [96, 72, 10], "naver_ground": true,
+      "prescription": "핵심 페이지·CSS/JS를 robots.txt로 차단하지 않는다. robots.txt는 '숨김'이 아니라 '요청 과부하 방지' 수단."
+    },
+    {
+      "id": "indexable", "category": "tech", "label": "인덱싱 허용", "weight": 5,
+      "rule": "meta robots/X-Robots-Tag 에 noindex 미설정",
+      "grounds": [87, 10], "naver_ground": false,
+      "prescription": "색인돼야 할 페이지에 noindex 금지. robots.txt로 차단하면 noindex 태그를 못 읽어 오히려 계속 노출될 수 있음."
+    },
+    {
+      "id": "canonical", "category": "tech", "label": "Canonical 태그", "weight": 5,
+      "rule": "중복 URL 정규화(rel=canonical)",
+      "grounds": [95, 94], "naver_ground": false,
+      "prescription": "대표 URL을 절대경로 rel=canonical로 지정(HTML head 또는 HTTP 헤더, 일관되게). 중복 자체는 정상이며 스팸 아님. 강도: 리디렉션 > canonical > 사이트맵."
+    },
+    {
+      "id": "viewport", "category": "tech", "label": "Viewport(모바일)", "weight": 4,
+      "rule": "viewport meta 존재",
+      "grounds": [144], "naver_ground": false,
+      "prescription": "반응형 viewport 설정. Google은 모바일 중심 색인 — 모바일·데스크톱 콘텐츠·메타·구조화데이터를 동일하게."
+    },
+    {
+      "id": "html_lang", "category": "tech", "label": "HTML lang 속성", "weight": 4,
+      "rule": "html lang 속성 존재",
+      "grounds": [79, 199], "naver_ground": true,
+      "caveat": "Google 지원 메타 목록[79]은 'HTML lang'을 미지원으로 명시(Google은 언어감지에 hreflang·본문 사용). 다국어·다지역 신호는 hreflang[199]이 정답 — HTML lang 배점의 Google 근거는 약함(접근성/네이버 기준). 리포트 표기·재보정 검토 대상.",
+      "prescription": "접근성·네이버용으로 lang 명시하되, 다국어 SEO는 hreflang 양방향 링크로 구현."
+    },
+    {
+      "id": "structured_data", "category": "search", "label": "구조화 데이터(JSON-LD)", "weight": 7,
+      "rule": "Schema.org JSON-LD 존재 — 리치결과 자격(필수 아님)",
+      "grounds": [114, 115], "naver_ground": false,
+      "caveat": "리치결과 '자격'일 뿐 순위·AI노출 필수 아님([39]). 표시되지 않는 정보 마크업·가짜 리뷰 금지([115]).",
+      "prescription": "병원은 Organization/LocalBusiness/Article JSON-LD 권장. 실제 페이지에 보이는 정보만 마크업. 리치결과 테스트로 검증."
+    },
+    {
+      "id": "open_graph", "category": "search", "label": "Open Graph 태그", "weight": 6,
+      "rule": "og:title + og:description",
+      "grounds": [], "naver_ground": true,
+      "caveat": "Google 지원 메타 목록[79]에 OG는 없음(공유 미리보기·네이버/SNS용). Google 순위 근거는 아님 — '공유·네이버 기준'으로 표기.",
+      "prescription": "og:title·og:description·og:image로 공유·네이버 미리보기 품질 확보."
+    },
+    {
+      "id": "sitemap_decl", "category": "search", "label": "sitemap.xml 선언", "weight": 4,
+      "rule": "robots.txt의 Sitemap: 선언(소규모 사이트는 선택)",
+      "grounds": [153, 151], "naver_ground": false,
+      "caveat": "500개 이하 & 내부 링크 긴밀 사이트는 사이트맵이 불필요할 수 있음([153]).",
+      "prescription": "규모/뉴스/리치미디어 사이트는 사이트맵 제출(Search Console/robots.txt Sitemap:). <lastmod>는 정확할 때만."
+    },
+    {
+      "id": "favicon", "category": "search", "label": "파비콘", "weight": 2,
+      "rule": "홈페이지 favicon 링크 존재",
+      "grounds": [19], "naver_ground": false,
+      "prescription": "홈페이지에 <link rel=\"icon\">, 정사각형 ≥8x8(48x48+ 권장), 사이트당 1개."
+    },
+    {
+      "id": "robots_exists", "category": "search", "label": "robots.txt 존재", "weight": 3,
+      "rule": "robots.txt 제공",
+      "grounds": [96, 97], "naver_ground": false,
+      "prescription": "루트에 UTF-8 robots.txt(최대 500KiB). 캐시 24시간이라 갱신은 재크롤링 요청."
+    },
+    {
+      "id": "speed_cwv", "category": "speed", "label": "속도·Core Web Vitals", "weight": 10,
+      "rule": "PSI(Lighthouse) 성능 + CrUX 현장데이터",
+      "grounds": [4, 63], "naver_ground": false,
+      "prescription": "LCP ≤2.5초 · INP <200ms · CLS <0.1. 이미지·스크립트 경량화, 렌더링 차단 제거. 순위에 직접 쓰이는 페이지경험 신호는 CWV."
+    }
+  ],
+  "not_penalized": [
+    { "item": "헤딩 순서·개수", "reason": "Google 검색 관점에서 순서 무관(접근성 목적)", "grounds": [89] },
+    { "item": "콘텐츠 단어 수", "reason": "길이 자체는 순위와 무관, '마법의 글자 수' 없음", "grounds": [171, 89] },
+    { "item": "키워드 밀도 / meta keywords", "reason": "키워드 스터핑은 스팸 정책 위반, keywords 메타 미사용", "grounds": [47, 89, 79] },
+    { "item": "구조화 데이터 필수화", "reason": "생성형 AI 검색·순위에 필수 아님(리치결과용 권장)", "grounds": [39, 114] },
+    { "item": "llms.txt / AI 전용 마크업", "reason": "Google이 사용하지 않음", "grounds": [39, 189] },
+    { "item": "도메인 키워드 · TLD · 서브도메인 vs 서브디렉터리", "reason": "순위 영향 미미", "grounds": [89] }
+  ],
+  "geo_positioning": {
+    "principle": "AI 노출(GEO/AEO)은 정석 SEO·E-E-A-T·구조화데이터의 결과이며 'AI 전용 특별 최적화'는 불필요.",
+    "grounds": [39, 1],
+    "usage": "GEO 상품은 'AI 전용 마법'이 아니라 '멀티AI 실측 + 공식 근거 기반 처방'으로 포지셔닝. 근거 없는 과장 GEO 업체 대비 신뢰 차별화."
+  }
+}
