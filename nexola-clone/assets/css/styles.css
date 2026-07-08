@@ -420,8 +420,13 @@ section{position:relative}
 .pl-word{
   font-family:var(--disp);color:var(--on-dark);font-weight:800;
   letter-spacing:.02em;font-size:clamp(40px,8vw,92px);
-  opacity:0;transform:translateY(18px);
-  animation:plIn .8s var(--ease) .15s forwards;
+  opacity:0;filter:blur(24px);transform:scaleX(1.28);
+  animation:plBlur 1.05s var(--ease) .2s forwards;
+}
+@keyframes plBlur{
+  0%{opacity:0;filter:blur(24px);transform:scaleX(1.28)}
+  55%{opacity:1}
+  100%{opacity:1;filter:blur(0);transform:scaleX(1)}
 }
 .pl-word .pl-dot{color:var(--accent)}
 .pl-sub{
