@@ -1,0 +1,126 @@
+name: Verify live fixes (Playwright)
+
+# 라이브 사이트에서 3개 수정 실측: 챗봇 중복 문구 제거 / AI 매트릭스 병렬 속도 / 용어사전 모바일.
+# 배포 검증용 수동 실행.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Base URL'
+        required: true
+        default: 'https://venom-new-site.vercel.app'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Setup
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm i playwright >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+          echo "playwright ready"
+
+      - name: Deployment marker check
+        env: { BASE: "${{ github.event.inputs.base }}" }
+        run: |
+          curl -sS --max-time 60 "$BASE/" -o /tmp/idx.html
+          echo "index.html bytes: $(wc -c < /tmp/idx.html)"
+          check () { if grep -qF "$2" /tmp/idx.html; then echo "✅ $1"; else echo "❌ $1 (marker not found)"; fi; }
+          check "matrix parallel (_mtxLane)"       "_mtxLane"
+          check "chatbot disclaimer strip regex"   "본 답변은 참고용 사전 진단입니다"
+          check "glossary script tag"              "/assets/glossary.js"
+
+      - name: Drive live fixes
+        env: { BASE: "${{ github.event.inputs.base }}" }
+        run: |
+          cat > run.js <<'EOF'
+          const { chromium, devices } = require('playwright');
+          const BASE = process.env.BASE;
+          (async () => {
+            const b = await chromium.launch();
+
+            // ---- 1) GLOSSARY on MOBILE ----
+            {
+              const ctx = await b.newContext({ ...devices['iPhone 13'] });
+              const p = await ctx.newPage();
+              await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 60000 });
+              // glossary.js 로드 상태
+              const gjs = await p.evaluate(async () => { try { const r = await fetch('/assets/glossary.js?v=1.0.0'); return r.status; } catch(e){ return 'ERR'; } });
+              const cards = await p.evaluate(() => {
+                const root = document.getElementById('glossary-root');
+                if (!root) return -1;
+                return root.querySelectorAll('*').length;
+              });
+              console.log(`[GLOSSARY/mobile] glossary.js=${gjs}  glossary-root descendants=${cards}  => ${cards>0?'PASS ✅':'FAIL ❌'}`);
+              await ctx.close();
+            }
+
+            // ---- 2) CHATBOT duplicate disclaimer ----
+            {
+              const ctx = await b.newContext();
+              const p = await ctx.newPage();
+              await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 60000 });
+              try {
+                await p.click('#vcb-bubble', { timeout: 10000 });
+                await p.fill('#vcb-q', '전후사진은 언제 게시할 수 있나요?');
+                await p.click('#vcb-send');
+                // 답변 대기: 마지막 bot 메시지가 typing placeholder가 아니게 될 때까지
+                await p.waitForFunction(() => {
+                  const bots = document.querySelectorAll('#vcb-chat .vcb-msg.bot .vcb-b');
+                  const last = bots[bots.length-1];
+                  return last && !last.querySelector('.vcb-typing') && last.innerText.trim().length > 3;
+                }, { timeout: 45000 });
+                const r = await p.evaluate(() => {
+                  const bots = document.querySelectorAll('#vcb-chat .vcb-msg.bot .vcb-b');
+                  const last = bots[bots.length-1];
+                  const body = last ? last.innerText : '';
+                  const panel = document.getElementById('vcb-panel');
+                  const panelText = panel ? panel.innerText : '';
+                  const inline = (body.match(/본 답변은 참고용 사전 진단입니다/g)||[]).length;
+                  const footerLines = (panelText.match(/참고용 사전 진단/g)||[]).length;
+                  return { inline, footerLines, bodyHead: body.slice(0,120) };
+                });
+                const pass = r.inline === 0;
+                console.log(`[CHATBOT] inline-disclaimer-in-answer=${r.inline} (기대 0)  total '참고용 사전 진단' lines=${r.footerLines}  => ${pass?'PASS ✅ (중복 제거됨)':'FAIL ❌ (본문에 문구 남음)'}`);
+                console.log(`          answer head: ${r.bodyHead.replace(/\n/g,' ')}`);
+              } catch (e) {
+                console.log('[CHATBOT] 실행 불가/타임아웃: ' + e.message);
+              }
+              await ctx.close();
+            }
+
+            // ---- 3) AI MATRIX parallel speed ----
+            {
+              const ctx = await b.newContext();
+              const p = await ctx.newPage();
+              await p.goto(BASE + '/', { waitUntil: 'networkidle', timeout: 60000 });
+              try {
+                await p.evaluate(() => {
+                  document.getElementById('mtx-name').value = '베놈치과';
+                  document.getElementById('mtx-region').value = '강남';
+                  const sel = document.getElementById('mtx-cat'); sel.value = '치과';
+                  sel.dispatchEvent(new Event('change'));
+                });
+                const t0 = Date.now();
+                await p.evaluate(() => window.runAiMatrix());
+                await p.waitForFunction(() => {
+                  const out = document.getElementById('mtx-out');
+                  return out && out.innerText.trim().length > 40;
+                }, { timeout: 60000 });
+                const secs = ((Date.now()-t0)/1000).toFixed(1);
+                const head = await p.evaluate(() => document.getElementById('mtx-out').innerText.slice(0,160).replace(/\n/g,' '));
+                console.log(`[MATRIX] 실측 완료 소요 ${secs}s (병렬 목표 ~10~20s)  => ${secs<30?'PASS ✅':'느림 ⚠️'}`);
+                console.log(`         out head: ${head}`);
+              } catch (e) {
+                console.log('[MATRIX] 실행 불가/타임아웃: ' + e.message);
+              }
+              await ctx.close();
+            }
+
+            await b.close();
+          })().catch(e => { console.log('FATAL', e.message); process.exit(1); });
+          EOF
+          node run.js
