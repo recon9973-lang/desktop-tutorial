@@ -477,21 +477,20 @@ body.intro-lock{overflow:hidden}
 .vlogo .ltr{display:inline-block}
 .vlogo .o{
   display:inline-block;flex:none;position:relative;
-  width:.82em;height:.72em;margin:0 .02em;
-  border:.145em solid currentColor;border-radius:.4em;   /* stadium capsule like the logo */
-  transition:width .55s var(--ease);
-  animation:oIntro 1.3s var(--ease) .35s both;
+  width:1em;height:.72em;margin:0 .03em;
+  border:.15em solid currentColor;border-radius:.4em;   /* hollow stadium capsule — no fill */
+  transition:width .5s var(--ease);
+  animation:oIntro 1.5s var(--ease) .35s both;         /* round → stretched wide */
 }
-.vlogo .o::after{
-  content:"";position:absolute;inset:.03em;border-radius:.32em;background:var(--accent);
-  transform:scaleX(0);transform-origin:left;transition:transform .55s var(--ease);
-}
-.vlogo:hover .o{width:1.25em}
-.vlogo:hover .o::after{transform:scaleX(1)}
+.vlogo:hover .o{width:1.12em}
 .vlogo .m{position:relative}
-.vlogo .m::after{content:"";position:absolute;top:.05em;right:-.05em;
-  width:.13em;height:.13em;border-radius:50%;background:var(--accent)}
-@keyframes oIntro{0%{width:.5em}55%{width:1.18em}100%{width:.9em}}
+.vlogo .m::after{content:"";position:absolute;top:-.11em;right:.03em;
+  width:.16em;height:.16em;border-radius:50%;background:var(--accent)}
+@keyframes oIntro{
+  0%{width:.72em}     /* perfect round (width == height) */
+  62%{width:1.1em}    /* overshoot — stretches wide */
+  100%{width:1em}     /* settle elongated */
+}
 
 /* logo bar */
 .logobar{display:flex;flex-wrap:wrap;gap:14px 40px;align-items:center;

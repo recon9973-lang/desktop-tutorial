@@ -11,11 +11,36 @@
       pl.classList.add('hidden');
     } else {
       document.body.classList.add('intro-lock');
-      var finish = function () {
-        pl.classList.add('done');
+      var lift = function () {
+        pl.classList.add('done');            // curtain slides up
         document.body.classList.remove('intro-lock');
         window.scrollTo(0, 0);
-        setTimeout(function () { pl.classList.add('hidden'); }, 1100);
+        setTimeout(function () { pl.classList.add('hidden'); }, 1000);
+      };
+      var finish = function () {
+        var heroW = document.querySelector('.hero .display.vlogo');
+        var plw = pl.querySelector('.pl-word');
+        if (!reduce && heroW && plw) {
+          // FLIP: move + scale the intro word onto the hero wordmark, then lift
+          var s = plw.getBoundingClientRect();
+          var t = heroW.getBoundingClientRect();
+          var scale = t.height / s.height;
+          plw.style.opacity = '1';
+          plw.style.filter = 'none';
+          plw.style.animation = 'none';
+          plw.style.transformOrigin = 'left top';
+          var sub = pl.querySelector('.pl-sub'), bar = pl.querySelector('.pl-bar');
+          if (sub) sub.style.opacity = '0';
+          if (bar) bar.style.opacity = '0';
+          var dx = t.left - s.left, dy = t.top - s.top;
+          plw.style.transition = 'transform .85s cubic-bezier(.7,0,.18,1)';
+          requestAnimationFrame(function () {
+            plw.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+          });
+          setTimeout(lift, 760);
+        } else {
+          lift();
+        }
       };
       // hold the intro ~1.6s after the window finishes loading
       if (document.readyState === 'complete') {
