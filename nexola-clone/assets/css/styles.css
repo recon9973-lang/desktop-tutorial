@@ -284,6 +284,41 @@ section{position:relative}
 }
 @media(max-width:520px){.stat-grid{grid-template-columns:1fr}}
 
+/* ---------- Intro preloader (curtain-up reveal) ---------- */
+.preloader{
+  position:fixed;inset:0;z-index:200;background:var(--dark);
+  display:grid;place-items:center;
+  transform:translateY(0);
+  transition:transform 1s var(--ease);
+  will-change:transform;
+}
+.preloader.done{transform:translateY(-100%)}   /* black slides up → white rises from bottom */
+.preloader.hidden{display:none}
+.pl-word{
+  font-family:var(--disp);color:var(--on-dark);font-weight:800;
+  letter-spacing:.02em;font-size:clamp(40px,8vw,92px);
+  opacity:0;transform:translateY(18px);
+  animation:plIn .8s var(--ease) .15s forwards;
+}
+.pl-word .pl-dot{color:var(--accent)}
+.pl-sub{
+  position:absolute;bottom:16%;left:0;right:0;text-align:center;
+  font-family:var(--kr);font-size:13px;letter-spacing:.12em;
+  color:var(--on-dark-muted);opacity:0;animation:plIn .8s var(--ease) .45s forwards;
+}
+.pl-bar{
+  position:absolute;bottom:12%;left:50%;transform:translateX(-50%);
+  width:min(220px,42vw);height:1px;background:rgba(255,255,255,.18);overflow:hidden;
+}
+.pl-bar::after{
+  content:"";position:absolute;inset:0;background:var(--accent);
+  transform:scaleX(0);transform-origin:left;
+  animation:plBar 1.5s var(--ease) .1s forwards;
+}
+@keyframes plIn{to{opacity:1;transform:none}}
+@keyframes plBar{to{transform:scaleX(1)}}
+body.intro-lock{overflow:hidden}
+
 /* ---------- Venom brand additions ---------- */
 .brand-logo{height:26px;width:auto;display:block}
 .site-header.solid .brand-logo,.brand-logo{filter:none}

@@ -4,6 +4,33 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine = window.matchMedia('(pointer: fine)').matches;
 
+  /* ---- Intro preloader: black + text, then curtain slides up ---- */
+  var pl = document.querySelector('.preloader');
+  if (pl) {
+    var seen = false;
+    try { seen = sessionStorage.getItem('venomIntro') === '1'; } catch (e) {}
+    if (reduce || seen) {
+      pl.classList.add('hidden');
+    } else {
+      document.body.classList.add('intro-lock');
+      try { sessionStorage.setItem('venomIntro', '1'); } catch (e) {}
+      var finish = function () {
+        pl.classList.add('done');
+        document.body.classList.remove('intro-lock');
+        window.scrollTo(0, 0);
+        setTimeout(function () { pl.classList.add('hidden'); }, 1100);
+      };
+      // hold the intro ~1.6s after the window finishes loading
+      if (document.readyState === 'complete') {
+        setTimeout(finish, 1600);
+      } else {
+        window.addEventListener('load', function () { setTimeout(finish, 1600); });
+        // safety cap so the intro never gets stuck
+        setTimeout(finish, 4000);
+      }
+    }
+  }
+
   /* ---- Sticky header: hide on scroll-down, solid after hero ---- */
   var header = document.querySelector('.site-header');
   var lastY = 0;
