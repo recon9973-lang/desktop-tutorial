@@ -168,7 +168,7 @@ body.menu-open .overlay-foot{opacity:1}
 }
 .badge svg{width:60%;height:60%}
 @keyframes spin{to{transform:rotate(360deg)}}
-.hero-media{position:relative;margin-top:12px;border-radius:6px;overflow:hidden;
+.hero-media{position:relative;margin-top:clamp(44px,6.5vh,104px);border-radius:6px;overflow:hidden;
   aspect-ratio:16/6.6;min-height:340px}
 .hero-media .ph{position:absolute;inset:0;animation:heroReveal 1.6s var(--ease) both}
 @keyframes heroReveal{from{filter:brightness(.15) saturate(.4);transform:scale(1.08)}
@@ -461,13 +461,14 @@ body.intro-lock{overflow:hidden}
 .tagline{font-family:var(--kr);font-size:clamp(15px,1.5vw,20px);color:var(--ink);
   max-width:34ch;line-height:1.55;margin-top:22px;word-break:keep-all}
 
-/* real photo hero — grayscale → color reveal on load */
-.hero-media .p-media img{animation:heroColor 2s var(--ease) both}
-@keyframes heroColor{
-  0%{filter:grayscale(1) brightness(.4) contrast(1.25)}
-  60%{filter:grayscale(.35) brightness(.9) contrast(1.05)}
-  100%{filter:grayscale(0) brightness(1) contrast(1)}
-}
+/* real photo hero — grayscale by default; colorizes while in view (repeatable) */
+.hero-media .p-media img{filter:grayscale(1) brightness(.62) contrast(1.12);
+  transition:filter 1.4s var(--ease)}
+.hero-media.color:not(.hold) .p-media img{filter:grayscale(0) brightness(1) contrast(1)}
+
+/* hero CTA over the image — keep ghost button legible on dark areas */
+.hero-cta .btn.ghost{--f:#fff;border-color:rgba(255,255,255,.6);background:rgba(0,0,0,.14)}
+.hero-cta .btn.ghost:hover{background:#fff;color:var(--ink);border-color:#fff}
 /* generic grayscale→color on scroll-in */
 .desat{filter:grayscale(1) contrast(1.04);transition:filter 1.2s var(--ease)}
 .desat.in{filter:grayscale(0) contrast(1)}

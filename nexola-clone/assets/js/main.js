@@ -143,6 +143,18 @@
     px();
   }
 
+  /* ---- Hero image: grayscale <-> color while in view (repeatable on scroll) ---- */
+  var heroMedia = document.querySelector('.hero-media');
+  if (heroMedia) {
+    if ('IntersectionObserver' in window && !reduce) {
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) { heroMedia.classList.toggle('color', e.isIntersecting); });
+      }, { threshold: 0.12 }).observe(heroMedia);
+    } else {
+      heroMedia.classList.add('color');
+    }
+  }
+
   /* ---- Accordion ---- */
   document.querySelectorAll('.acc-item .acc-q').forEach(function (q) {
     q.addEventListener('click', function () {
