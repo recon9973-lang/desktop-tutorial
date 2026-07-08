@@ -7,13 +7,10 @@
   /* ---- Intro preloader: black + text, then curtain slides up ---- */
   var pl = document.querySelector('.preloader');
   if (pl) {
-    var seen = false;
-    try { seen = sessionStorage.getItem('venomIntro') === '1'; } catch (e) {}
-    if (reduce || seen) {
+    if (reduce) {
       pl.classList.add('hidden');
     } else {
       document.body.classList.add('intro-lock');
-      try { sessionStorage.setItem('venomIntro', '1'); } catch (e) {}
       var finish = function () {
         pl.classList.add('done');
         document.body.classList.remove('intro-lock');

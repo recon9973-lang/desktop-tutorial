@@ -55,8 +55,9 @@ body{
 /* ---------- Type ---------- */
 .display{
   font-weight:800;letter-spacing:-.045em;line-height:.84;
-  font-size:clamp(66px,19vw,380px);
+  font-size:clamp(56px,14.5vw,300px);
 }
+.hero .display.vlogo{white-space:nowrap}
 .h-xl{font-weight:800;letter-spacing:-.03em;line-height:.95;
   font-size:clamp(44px,9vw,150px)}
 .h-lg{font-weight:700;letter-spacing:-.02em;line-height:1.02;
@@ -471,7 +472,7 @@ body.intro-lock{overflow:hidden}
 .vlogo .ltr{display:inline-block}
 .vlogo .o{
   display:inline-block;flex:none;position:relative;
-  width:.9em;height:.72em;margin:0 .03em;
+  width:.82em;height:.72em;margin:0 .02em;
   border:.145em solid currentColor;border-radius:.4em;   /* stadium capsule like the logo */
   transition:width .55s var(--ease);
   animation:oIntro 1.3s var(--ease) .35s both;
