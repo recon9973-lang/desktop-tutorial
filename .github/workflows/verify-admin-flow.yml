@@ -1,0 +1,86 @@
+name: Verify admin flow (real data)
+
+# 관리자 매직링크 인증 → admin-leads 실데이터 반환 전체 경로를 서버측에서 검증.
+# service_role/토큰은 러너 내부에서만 사용하고 절대 echo 하지 않는다. PII는 출력하지 않고 건수만.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: 'Supabase 프로젝트 REF'
+        required: true
+        default: 'sfybgrfhbmszztvqwgju'
+      email:
+        description: '검증할 관리자 이메일'
+        required: true
+        default: '76cold@gmail.com'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Mint admin session and call admin-leads
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          REF: ${{ github.event.inputs.project_ref }}
+          EMAIL: ${{ github.event.inputs.email }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TOKEN:-}" ]; then echo "::error::SUPABASE_ACCESS_TOKEN 없음"; exit 1; fi
+          URL="https://${REF}.supabase.co"
+
+          # 1) service_role 키 획득 (Management API) — 출력 금지
+          SRK=$(curl -sS --max-time 60 \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://api.supabase.com/v1/projects/$REF/api-keys?reveal=true" \
+            | jq -r '.[] | select(.name=="service_role") | .api_key')
+          if [ -z "$SRK" ] || [ "$SRK" = "null" ]; then echo "::error::service_role 키 획득 실패"; exit 1; fi
+          echo "::add-mask::$SRK"
+          echo "service_role 키 확보 (마스킹됨)"
+
+          # 2) 관리자 auth 사용자 생성(이미 있으면 무시) → 트리거가 auth_uid 연결
+          CODE=$(curl -sS --max-time 60 -o /tmp/u.json -w "%{http_code}" \
+            -X POST "$URL/auth/v1/admin/users" \
+            -H "apikey: $SRK" -H "Authorization: Bearer $SRK" -H "content-type: application/json" \
+            --data "$(jq -n --arg e "$EMAIL" '{email:$e, email_confirm:true}')")
+          echo "admin/users create HTTP $CODE (200/201=생성, 422=이미존재 → 모두 정상)"
+
+          # 3) users 행 상태 확인 (auth_uid 연결 + role=admin)
+          ESC=$(printf "%s" "$EMAIL" | sed "s/'/''/g")
+          curl -sS --max-time 60 -o /tmp/row.json \
+            -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            --data "$(jq -n --arg q "SELECT email, role, (auth_uid IS NOT NULL) AS linked FROM public.users WHERE email='${ESC}';" '{query:$q}')"
+          echo "users 행: $(cat /tmp/row.json)"
+
+          # 4) 매직링크 토큰 생성 → verify 로 access_token 획득
+          curl -sS --max-time 60 -o /tmp/link.json \
+            -X POST "$URL/auth/v1/admin/generate_link" \
+            -H "apikey: $SRK" -H "Authorization: Bearer $SRK" -H "content-type: application/json" \
+            --data "$(jq -n --arg e "$EMAIL" '{type:"magiclink", email:$e}')"
+          HASHED=$(jq -r '.hashed_token // .properties.hashed_token // empty' /tmp/link.json)
+          if [ -z "$HASHED" ]; then echo "::error::hashed_token 없음: $(head -c 300 /tmp/link.json)"; exit 1; fi
+          echo "::add-mask::$HASHED"
+
+          curl -sS --max-time 60 -o /tmp/sess.json \
+            -X POST "$URL/auth/v1/verify" \
+            -H "apikey: $SRK" -H "content-type: application/json" \
+            --data "$(jq -n --arg t "$HASHED" '{type:"magiclink", token:$t}')"
+          ACCESS=$(jq -r '.access_token // empty' /tmp/sess.json)
+          if [ -z "$ACCESS" ]; then echo "::error::access_token 없음: $(head -c 300 /tmp/sess.json)"; exit 1; fi
+          echo "::add-mask::$ACCESS"
+          echo "관리자 access_token 확보 (마스킹됨)"
+
+          # 5) admin-leads 호출 → 실데이터 반환 확인 (PII 미출력, 건수/상태만)
+          curl -sS --max-time 60 -o /tmp/leads.json \
+            "$URL/functions/v1/admin-leads" \
+            -H "apikey: $SRK" -H "Authorization: Bearer $ACCESS"
+          OK=$(jq -r '.ok' /tmp/leads.json)
+          CNT=$(jq -r '(.leads // []) | length' /tmp/leads.json)
+          echo "──────────────────────────────"
+          echo "admin-leads ok=$OK  실데이터 건수=$CNT"
+          echo "상태 분포: $(jq -c '[(.leads // [])[].status] | group_by(.) | map({(.[0]): length}) | add' /tmp/leads.json 2>/dev/null)"
+          echo "병원명 마스킹 샘플: $(jq -r '[(.leads // [])[] | (.hospital_name|.[0:2]) + "**"] | unique | .[0:5] | join(", ")' /tmp/leads.json 2>/dev/null)"
+          echo "──────────────────────────────"
+          if [ "$OK" = "true" ]; then echo "✅ 관리자 인증→실데이터 경로 정상 (건수 $CNT)"; else echo "::error::admin-leads 실패: $(head -c 300 /tmp/leads.json)"; exit 1; fi
