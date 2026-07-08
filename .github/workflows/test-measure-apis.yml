@@ -1,0 +1,39 @@
+name: Test measurement APIs
+
+# SEO/AEO 측정 API 전수 실측 (수동 실행). 각 엔드포인트 HTTP 코드 + 응답 앞부분 출력.
+#   404 = 함수 미배포(Vercel 함수 한도 초과 의심) / 500 = 런타임·env / 200 = 정상
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Base URL'
+        required: true
+        default: 'https://venom-new-site.vercel.app'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe endpoints
+        env:
+          BASE: ${{ github.event.inputs.base }}
+        run: |
+          probe () {
+            local name="$1"; local path="$2"
+            local code
+            code=$(curl -sS --max-time 90 -o /tmp/r.txt -w "%{http_code}" "$BASE$path")
+            echo "──────────────────────────────────────────"
+            echo "[$name] $path"
+            echo "HTTP $code"
+            echo "body(앞 400자): $(head -c 400 /tmp/r.txt)"
+            echo ""
+          }
+          probe "health"        "/api/health"
+          probe "seo-fetch(핵심)" "/api/seo-proxy?type=fetch&url=https%3A%2F%2Fexample.com"
+          probe "seo-psi"       "/api/seo-proxy?type=psi&url=https%3A%2F%2Fexample.com"
+          probe "seo-keyword"   "/api/seo-proxy?type=keyword&keyword=%EC%B9%98%EA%B3%BC"
+          probe "aeo-engines"   "/api/insights?type=engines"
+          probe "insights-trend" "/api/insights?type=trend&keyword=%EC%B9%98%EA%B3%BC"
+          echo "== 해석: 404=미배포(함수 한도) / 500=런타임·env 미설정 / 200=정상 =="
