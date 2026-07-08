@@ -66,7 +66,7 @@ jobs:
           curl -sS --max-time 60 -o /tmp/sess.json \
             -X POST "$URL/auth/v1/verify" \
             -H "apikey: $SRK" -H "content-type: application/json" \
-            --data "$(jq -n --arg t "$HASHED" '{type:"magiclink", token:$t}')"
+            --data "$(jq -n --arg t "$HASHED" '{type:"magiclink", token_hash:$t}')"
           ACCESS=$(jq -r '.access_token // empty' /tmp/sess.json)
           if [ -z "$ACCESS" ]; then echo "::error::access_token 없음: $(head -c 300 /tmp/sess.json)"; exit 1; fi
           echo "::add-mask::$ACCESS"
