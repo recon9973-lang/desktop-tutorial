@@ -194,8 +194,8 @@ body.menu-open .overlay-foot{opacity:1}
 
 /* ---------- Sections ---------- */
 section{position:relative}
-.sec-pad{padding-block:clamp(80px,12vh,180px)}
-.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+.sec-pad{padding-block:clamp(120px,18vh,280px)}
+.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:44px}
 .eyebrow .dots{display:flex;gap:5px}
 .eyebrow .dots i{width:6px;height:6px;border-radius:50%;background:var(--ink);display:block}
 
@@ -206,7 +206,7 @@ section{position:relative}
 .projects .head{display:grid;grid-template-columns:1fr auto;align-items:end;gap:20px}
 .projects .head .side{text-align:right;font-size:14px}
 .projects .head .side a{border-bottom:1px solid currentColor}
-.proj-list{margin-top:40px;border-top:1px solid var(--line)}
+.proj-list{margin-top:64px;border-top:1px solid var(--line)}
 .proj{display:grid;grid-template-columns:1fr auto;align-items:center;gap:20px;
   padding:26px 4px;border-bottom:1px solid var(--line);position:relative;cursor:pointer;
   transition:padding-left .4s var(--ease)}
@@ -235,7 +235,7 @@ section{position:relative}
 .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
 
 /* FAQ */
-.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,110px)}
 @media(max-width:800px){.faq-grid{grid-template-columns:1fr;gap:24px}}
 .acc{border-top:1px solid var(--line)}
 .acc-item{border-bottom:1px solid var(--line)}
