@@ -1745,7 +1745,7 @@ summary::-webkit-details-marker{display:none}
         <input type="text" id="mtx-cat-custom" placeholder="업종 직접 입력 (예: 반려동물 병원)" autocomplete="off" style="display:none">
         <button class="mtx-btn" id="mtx-btn" onclick="runAiMatrix()">실측 시작 →</button>
       </div>
-      <p class="mtx-note">엔진 수 × 질문 5개를 순차 실측합니다 (약 30~60초). AI 답변은 시점에 따라 달라질 수 있습니다.</p>
+      <p class="mtx-note">엔진별 병렬로 질문 5개를 실측합니다 (약 10~20초). AI 답변은 시점에 따라 달라질 수 있습니다.</p>
       <div id="mtx-out"></div>
     </div>
   </section>
@@ -5783,33 +5783,36 @@ function runAiMatrix(){
     html += '<div id="mtx-progress" style="text-align:center;font-size:13px;color:var(--p);font-weight:700;margin-top:12px">실측 0/' + _mtx.total + '</div>';
     html += '<div class="mtx-detail" id="mtx-detail"></div><div id="mtx-summary"></div>';
     out.innerHTML = html;
-    // 순차 실측 (엔진별 병렬 금지 — 요금·타임아웃 안정)
-    var jobs = [];
-    engines.forEach(function(e){ qs.forEach(function(q, qi){ jobs.push({ e:e, q:q, qi:qi }); }); });
-    (function next(i){
-      if(i >= jobs.length){ _mtxFinish(); return; }
-      var j = jobs[i];
-      fetch(_INSIGHTS + '?type=aeo&engine=' + j.e + '&q=' + encodeURIComponent(j.q) + '&name=' + encodeURIComponent(name))
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          var cell = document.getElementById('mc-' + j.e + '-' + j.qi);
-          var verdict = 'r', icon = '🔴';
-          if(!d.error){
-            var ans = String(d.answer || '');
-            var cited = (d.citations || []).some(function(u){ return name && String(u).indexOf(name) >= 0; });
-            if(d.mentioned && (d.citations || []).length && cited){ verdict = 'g'; icon = '🟢'; }
-            else if(d.mentioned){ verdict = 'y'; icon = '🟡'; }
-          } else { icon = '⚠️'; }
-          _mtx.cells[j.e + '-' + j.qi] = { v: verdict, d: d, q: j.q, e: j.e };
-          if(cell){ cell.className = 'mtx-cell ' + verdict; cell.textContent = icon;
-            cell.onclick = function(){ _mtxShow(j.e + '-' + j.qi); }; }
-          _mtx.done++;
-          var pg = document.getElementById('mtx-progress');
-          if(pg) pg.textContent = '실측 ' + _mtx.done + '/' + _mtx.total + ' — ' + _MTX_ENGINES[j.e] + ' 응답 수신';
-          next(i + 1);
-        })
-        .catch(function(){ _mtx.done++; next(i + 1); });
-    })(0);
+    // 엔진별 병렬 실측: 엔진 간 동시 실행(≈엔진 수만큼 단축), 엔진 내부는 순차(엔진별 rate limit 안전).
+    // 총 호출·비용은 동일(엔진×질문). 각 셀은 응답 도착 즉시 갱신.
+    var _lanes = engines.length;
+    function _mtxLane(e){
+      var qi = 0;
+      (function step(){
+        if(qi >= qs.length){ if(--_lanes === 0) _mtxFinish(); return; }
+        var q = qs[qi], cqi = qi; qi++;
+        fetch(_INSIGHTS + '?type=aeo&engine=' + e + '&q=' + encodeURIComponent(q) + '&name=' + encodeURIComponent(name))
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            var cell = document.getElementById('mc-' + e + '-' + cqi);
+            var verdict = 'r', icon = '🔴';
+            if(!d.error){
+              var cited = (d.citations || []).some(function(u){ return name && String(u).indexOf(name) >= 0; });
+              if(d.mentioned && (d.citations || []).length && cited){ verdict = 'g'; icon = '🟢'; }
+              else if(d.mentioned){ verdict = 'y'; icon = '🟡'; }
+            } else { icon = '⚠️'; }
+            _mtx.cells[e + '-' + cqi] = { v: verdict, d: d, q: q, e: e };
+            if(cell){ cell.className = 'mtx-cell ' + verdict; cell.textContent = icon;
+              cell.onclick = function(){ _mtxShow(e + '-' + cqi); }; }
+            _mtx.done++;
+            var pg = document.getElementById('mtx-progress');
+            if(pg) pg.textContent = '실측 ' + _mtx.done + '/' + _mtx.total + ' — ' + _MTX_ENGINES[e] + ' 응답 수신';
+            step();
+          })
+          .catch(function(){ _mtx.done++; step(); });
+      })();
+    }
+    engines.forEach(_mtxLane);
   }).catch(function(){ out.innerHTML='<div style="text-align:center;padding:26px 0;color:#dc2626">엔진 조회 실패</div>'; btn.disabled=false; btn.textContent='실측 시작 →'; });
 }
 function _mtxShow(key){
