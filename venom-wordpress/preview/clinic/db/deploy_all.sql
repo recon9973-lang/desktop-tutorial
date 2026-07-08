@@ -607,12 +607,14 @@ CREATE POLICY users_self_select ON users
 -- (auth 스키마는 Supabase 전용이라 로컬 vanilla Postgres에는 없음 — Supabase에서 실행)
 
 -- 무료 회원가입: Supabase Auth 사용자 생성 시 앱 users 행 자동 생성(auth_uid 매핑).
+--   이메일로 미리 등록된 직원(admin 등) 행이 있으면 role은 유지한 채 auth_uid만 연결한다.
+--   (사전 프로비저닝된 관리자가 최초 로그인 시 customer로 강등되지 않도록 email 기준 upsert)
 CREATE OR REPLACE FUNCTION handle_new_auth_user() RETURNS TRIGGER
   LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   INSERT INTO public.users (auth_uid, email, role)
   VALUES (NEW.id, NEW.email, 'customer')
-  ON CONFLICT (auth_uid) DO NOTHING;
+  ON CONFLICT (email) DO UPDATE SET auth_uid = EXCLUDED.auth_uid;
   RETURN NEW;
 END;
 $$;

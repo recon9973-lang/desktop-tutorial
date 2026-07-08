@@ -1,0 +1,52 @@
+name: Set clinic user role
+
+# 특정 이메일의 clinic users.role 을 지정 role 로 설정(직원 프로비저닝).
+#   - 행이 없으면 미리 생성(auth_uid=NULL) → 해당 이메일 최초 로그인 시 트리거가 auth_uid 연결.
+#   - 행이 있으면 role 만 갱신.
+# Supabase Management API(POST /database/query) 사용. SUPABASE_ACCESS_TOKEN(sbp_...) 필요.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_ref:
+        description: 'Supabase 프로젝트 REF'
+        required: true
+        default: 'sfybgrfhbmszztvqwgju'
+      email:
+        description: '대상 이메일'
+        required: true
+      role:
+        description: 'admin / agency_manager / data_operator / legal_reviewer / customer'
+        required: true
+        default: 'admin'
+
+jobs:
+  setrole:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Upsert role via Management API
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          REF: ${{ github.event.inputs.project_ref }}
+          EMAIL: ${{ github.event.inputs.email }}
+          ROLE: ${{ github.event.inputs.role }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "::error::SUPABASE_ACCESS_TOKEN 시크릿 없음"; exit 1; fi
+          case "$ROLE" in
+            admin|agency_manager|data_operator|legal_reviewer|customer) ;;
+            *) echo "::error::잘못된 role: $ROLE"; exit 1 ;;
+          esac
+          # 이메일/role 을 SQL 리터럴로 안전 삽입(작은따옴표 이스케이프)
+          ESC_EMAIL=$(printf "%s" "$EMAIL" | sed "s/'/''/g")
+          SQL="INSERT INTO public.users (email, role) VALUES ('${ESC_EMAIL}', '${ROLE}'::user_role) ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role, active = TRUE; SELECT id, email, role, auth_uid, active FROM public.users WHERE email = '${ESC_EMAIL}';"
+          jq -n --arg q "$SQL" '{query:$q}' > /tmp/body.json
+          code=$(curl -sS --max-time 60 -o /tmp/out.json -w "%{http_code}" \
+            -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+            --data @/tmp/body.json)
+          echo "HTTP $code"; echo "응답:"; head -c 1500 /tmp/out.json; echo ""
+          if [ "$code" != "200" ] && [ "$code" != "201" ]; then
+            echo "::error::role 설정 실패 (HTTP $code)"; exit 1
+          fi
+          echo "✅ $EMAIL → $ROLE 설정 완료"
