@@ -13,16 +13,19 @@ ul{list-style:none}
 
 /* ---------- Tokens ---------- */
 :root{
-  --bg:#F4F3F1;
+  --bg:#F5F4F1;
   --ink:#0B0B0B;
   --muted:#8A8A8A;
-  --line:#E3E2DE;
+  --line:#E4E3DE;
   --dark:#0A0A0A;
-  --on-dark:#F4F3F1;
+  --on-dark:#F5F4F1;
   --on-dark-muted:#9A9A97;
+  --accent:#F26522;          /* Venom logo orange */
+  --accent-ink:#c34e12;
   --pad:clamp(20px,4.5vw,64px);
   --maxw:1440px;
-  --disp:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,system-ui,sans-serif;
+  --disp:"Helvetica Neue",Helvetica,"Pretendard","Apple SD Gothic Neo","Malgun Gothic",Arial,sans-serif;
+  --kr:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Helvetica Neue",Arial,sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
   --dur:.7s;
 }
@@ -280,6 +283,68 @@ section{position:relative}
   .cursor{display:none}
 }
 @media(max-width:520px){.stat-grid{grid-template-columns:1fr}}
+
+/* ---------- Venom brand additions ---------- */
+.brand-logo{height:26px;width:auto;display:block}
+.site-header.solid .brand-logo,.brand-logo{filter:none}
+.overlay .brand-logo{height:30px;filter:invert(1) brightness(2)}
+.kr{font-family:var(--kr);line-height:1.6;word-break:keep-all}
+.h-lg.kr,.h-md.kr,.h-xl.kr{line-height:1.14;word-break:keep-all}
+.accent{color:var(--accent)}
+.eyebrow .dots i{background:var(--accent)}
+.hero-est .num{color:var(--accent)}
+.avail .star{color:var(--accent)}
+.badge{border-color:var(--accent);color:var(--accent)}
+.tagline{font-family:var(--kr);font-size:clamp(15px,1.5vw,20px);color:var(--ink);
+  max-width:34ch;line-height:1.55;margin-top:22px;word-break:keep-all}
+
+/* real photo hero */
+.hero-media img{width:100%;height:100%;object-fit:cover;
+  animation:heroReveal 1.6s var(--ease) both}
+
+/* logo bar */
+.logobar{display:flex;flex-wrap:wrap;gap:14px 40px;align-items:center;
+  padding:26px 0;border-block:1px solid var(--line);color:var(--muted);
+  font-family:var(--kr);font-size:15px}
+.logobar .lb-label{font-size:12px;letter-spacing:.06em}
+
+/* service list: reuse .proj, add index + tag */
+.proj .idx{font-size:13px;color:var(--muted);margin-right:14px}
+.proj .name{font-family:var(--kr);display:flex;align-items:baseline;gap:0}
+.proj .tags{color:var(--muted);font-size:14px;margin-top:4px;font-family:var(--kr)}
+.proj:hover .name{color:var(--accent)}
+
+/* team */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px}
+@media(max-width:720px){.team-grid{grid-template-columns:1fr}}
+.member{}
+.member .ph-photo{aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--line)}
+.member .ph-photo img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.03);
+  transition:filter .5s var(--ease),transform .6s var(--ease)}
+.member:hover .ph-photo img{filter:grayscale(0);transform:scale(1.03)}
+.member .m-name{font-family:var(--kr);font-weight:700;margin-top:14px;font-size:18px}
+.member .m-role{font-family:var(--kr);color:var(--muted);font-size:14px}
+
+/* stat accent */
+.stats .stat .n{color:var(--on-dark)}
+.stats .stat:nth-child(1) .n,.stats .stat:nth-child(3) .n{color:var(--accent)}
+.disclaim{font-family:var(--kr);color:var(--on-dark-muted);font-size:12.5px;margin-top:34px}
+
+/* contact info block */
+.contact .sub{font-family:var(--kr)}
+.cinfo{display:grid;grid-template-columns:repeat(3,auto);gap:14px 60px;margin-top:44px;
+  font-family:var(--kr);color:var(--on-dark-muted);font-size:15px}
+@media(max-width:720px){.cinfo{grid-template-columns:1fr}}
+.cinfo b{color:var(--on-dark);font-weight:600;display:block;margin-bottom:4px;font-size:13px;letter-spacing:.03em}
+.cinfo a{color:var(--on-dark)}
+.btn.kakao{--b:#FEE500;--f:#191600}
+
+/* company legal row */
+.company{font-family:var(--kr);color:var(--muted);font-size:13px;line-height:1.7;
+  margin-top:40px;max-width:60ch}
+.lead.kr,.acc-a p{font-family:var(--kr);word-break:keep-all}
+.acc-q{font-family:var(--kr)}
+.field{font-family:var(--kr)}
 
 /* ---------- Reduced motion ---------- */
 @media(prefers-reduced-motion:reduce){
