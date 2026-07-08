@@ -419,7 +419,7 @@ section{position:relative}
 .preloader.hidden{display:none}
 .pl-word{
   font-family:var(--disp);color:var(--on-dark);font-weight:800;
-  letter-spacing:.02em;font-size:clamp(40px,8vw,92px);
+  letter-spacing:-.045em;line-height:.84;font-size:clamp(44px,8.5vw,104px);
   opacity:0;filter:blur(24px);transform:scaleX(1.28);
   animation:plBlur 1.05s var(--ease) .2s forwards;
 }
