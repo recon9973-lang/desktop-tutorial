@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VENOM — 택타일 브루탈리즘 컨셉 | GEO 에이전시 리브랜딩 샘플</title>
+<meta name="description" content="1px 솔리드 보더와 입체 버튼으로 구성된 택타일 브루탈리즘 컨셉. 페이지 자체가 하나의 인터페이스가 되는 GEO 에이전시 랜딩 샘플.">
+<style>
+:root{
+  --bg:#0b0b0c;--panel:#141416;--panel2:#1b1b1e;--ink:#f2f0ea;--mute:#9d9a92;--dim:#6a675f;
+  --acc:#ff3b5c;--acc2:#ffd21e;--lime:#c6ff3a;--line:#ffffff;
+  --sans:'Pretendard','Apple SD Gothic Neo',-apple-system,system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+.mono{font-family:var(--mono)}
+.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+#glow{position:fixed;width:460px;height:460px;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(255,59,92,.10),transparent 62%);transform:translate(-50%,-50%);left:50%;top:20%;mix-blend-mode:screen}
+
+/* hard-edge components */
+.box{border:1px solid rgba(255,255,255,.85);background:var(--panel)}
+.shadow{box-shadow:6px 6px 0 rgba(255,255,255,.9)}
+.shadow-acc{box-shadow:6px 6px 0 var(--acc)}
+
+/* nav */
+header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.85)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:900;font-size:19px;letter-spacing:-.02em;border:1px solid #fff;padding:5px 10px}
+.brand b{color:var(--acc)}
+.nav-links{display:flex;gap:0;font-family:var(--mono);font-size:12px}
+.nav-links a{padding:8px 14px;border-left:1px solid rgba(255,255,255,.22);color:var(--mute)}
+.nav-links a:hover{color:var(--ink);background:var(--panel2)}
+.nav-cta{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--acc);color:#0b0b0c;padding:9px 16px;border:1px solid #fff;box-shadow:3px 3px 0 #fff}
+@media(max-width:820px){.nav-links{display:none}}
+
+/* hero */
+.hero{position:relative;z-index:1;padding:56px 0 40px}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:0;border:1px solid rgba(255,255,255,.85)}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.hero-l{padding:40px;border-right:1px solid rgba(255,255,255,.85)}
+@media(max-width:900px){.hero-l{border-right:none;border-bottom:1px solid rgba(255,255,255,.85)}}
+.tagrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.tagrow span{font-family:var(--mono);font-size:11px;padding:5px 10px;border:1px solid rgba(255,255,255,.5)}
+.tagrow span.on{background:var(--lime);color:#0b0b0c;border-color:var(--lime)}
+.hero h1{font-size:clamp(34px,5.6vw,64px);font-weight:900;letter-spacing:-.03em;line-height:1.0;margin-bottom:20px}
+.hero h1 mark{background:var(--acc);color:#0b0b0c;padding:0 6px}
+.hero p{color:var(--mute);font-size:16.5px;max-width:440px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.btn{font-family:var(--sans);font-weight:800;font-size:15px;padding:15px 24px;border:1px solid #fff;cursor:pointer;transition:transform .06s,box-shadow .06s;background:var(--panel2);color:var(--ink)}
+.btn.acc{background:var(--acc);color:#0b0b0c;box-shadow:5px 5px 0 #fff}
+.btn.lime{background:var(--lime);color:#0b0b0c;box-shadow:5px 5px 0 #fff}
+.btn:active{transform:translate(5px,5px);box-shadow:0 0 0 #fff}
+
+/* terminal simulator (hero right) */
+.hero-r{padding:0;display:flex;flex-direction:column;background:#0e0e10}
+.term-top{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.3);font-family:var(--mono);font-size:11px;color:var(--dim)}
+.term-top .dot{width:9px;height:9px;border:1px solid #fff}
+.term-top .dot.f{background:var(--acc);border-color:var(--acc)}
+.term-top .live{margin-left:auto;color:var(--lime)}
+.term{flex:1;padding:18px;font-family:var(--mono);font-size:13px;line-height:1.7}
+.term .pfx{color:var(--lime)}
+.term .q{color:var(--ink)}
+.term .cur{display:inline-block;width:8px;height:15px;background:var(--lime);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.term .res{margin-top:14px;border-top:1px dashed rgba(255,255,255,.2);padding-top:14px;min-height:96px}
+.term .res .hit{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;opacity:0;transform:translateX(-6px);transition:.3s}
+.term .res .hit.show{opacity:1;transform:none}
+.term .res .rank{color:var(--acc2);width:20px}
+.term .res .name{color:var(--ink);font-weight:700}
+.term .res .name.top{color:var(--lime)}
+.term .res .meta{color:var(--dim);font-size:11px}
+
+/* department selector */
+.dept{position:relative;z-index:1;margin-top:22px}
+.dept-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dept-head h2{font-size:20px;font-weight:900;letter-spacing:-.02em}
+.dept-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:-1px;border:1px solid rgba(255,255,255,.85)}
+@media(max-width:900px){.dept-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.dept-grid{grid-template-columns:repeat(2,1fr)}}
+.dcell{border:1px solid rgba(255,255,255,.3);padding:20px 14px;cursor:pointer;transition:.12s;background:var(--panel);position:relative}
+.dcell:hover{background:var(--acc);color:#0b0b0c}
+.dcell:hover .dn{color:#0b0b0c}
+.dcell .di{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.dcell:hover .di{color:#0b0b0c}
+.dcell .dn{font-size:16px;font-weight:800;margin-top:8px}
+.dcell .darr{position:absolute;right:12px;bottom:12px;opacity:0;transition:.12s;font-weight:900}
+.dcell:hover .darr{opacity:1}
+
+/* section */
+section{position:relative;z-index:1}
+.sec{padding:70px 0}
+.sec-head{margin-bottom:34px}
+.sec-head h2{font-size:clamp(26px,4vw,42px);font-weight:900;letter-spacing:-.02em;margin-top:12px}
+.sec-head h2 mark{background:var(--lime);color:#0b0b0c;padding:0 6px}
+
+/* service blocks */
+.svc{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:860px){.svc{grid-template-columns:1fr}}
+.svc .b{border:1px solid rgba(255,255,255,.85);background:var(--panel);padding:26px;box-shadow:6px 6px 0 rgba(255,255,255,.9);transition:.15s}
+.svc .b:hover{box-shadow:6px 6px 0 var(--acc);transform:translate(-2px,-2px)}
+.svc .b .no{font-family:var(--mono);font-size:12px;color:var(--acc)}
+.svc .b h3{font-size:22px;font-weight:900;margin:14px 0 10px}
+.svc .b p{color:var(--mute);font-size:14.5px}
+.svc .b .kpi{margin-top:20px;padding-top:16px;border-top:1px dashed rgba(255,255,255,.2);font-family:var(--mono);display:flex;justify-content:space-between;font-size:13px}
+.svc .b .kpi b{color:var(--lime);font-size:24px}
+
+/* stat strip */
+.strip{border-top:1px solid rgba(255,255,255,.85);border-bottom:1px solid rgba(255,255,255,.85);display:grid;grid-template-columns:repeat(4,1fr)}
+@media(max-width:760px){.strip{grid-template-columns:1fr 1fr}}
+.strip .s{padding:34px 16px;border-left:1px solid rgba(255,255,255,.22)}
+.strip .s:first-child{border-left:none}
+.strip .s .n{font-family:var(--mono);font-size:clamp(28px,4vw,44px);font-weight:900}
+.strip .s .n em{font-style:normal;color:var(--acc)}
+.strip .s .l{color:var(--dim);font-size:12px;margin-top:6px}
+
+/* cta */
+.cta{padding:70px 0}
+.cta .b{border:1px solid rgba(255,255,255,.85);background:var(--panel);padding:52px 36px;box-shadow:10px 10px 0 var(--acc);text-align:center}
+.cta h2{font-size:clamp(28px,4.4vw,48px);font-weight:900;letter-spacing:-.02em}
+.cta h2 mark{background:var(--acc);color:#0b0b0c;padding:0 6px}
+.cta p{color:var(--mute);margin:14px 0 26px}
+
+footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.85);padding:30px 0;color:var(--dim);font-size:13px;margin-top:20px}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.foot .cols{display:flex;gap:20px;font-family:var(--mono);font-size:12px}
+.badge{position:fixed;left:14px;bottom:14px;z-index:50;font-family:var(--mono);font-size:11px;color:#0b0b0c;background:var(--lime);border:1px solid #fff;padding:6px 11px;box-shadow:3px 3px 0 #fff}
+</style>
+</head>
+<body>
+<div id="glow"></div>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">VENOM<b>_</b>GEO</div>
+    <nav class="nav-links">
+      <a href="#dept">진료과</a><a href="#svc">엔진</a><a href="#proof">성과</a><a href="#cta">문의</a>
+    </nav>
+    <a class="nav-cta" href="#cta">진단 요청 →</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-l">
+        <div class="tagrow">
+          <span class="on">GEO</span><span>AEO</span><span>SEO</span><span class="mono">EST. 대구</span>
+        </div>
+        <h1>AI 검색 결과는<br><mark>설계</mark>할 수 있다.</h1>
+        <p>VENOM은 페이지가 아니라 인터페이스를 만듭니다. 병원의 답변 노출을 1px 단위로 정밀하게 최적화합니다.</p>
+        <div class="hero-cta">
+          <button class="btn acc" onclick="location.href='#cta'">우리 병원 GEO 진단하기 →</button>
+          <button class="btn" onclick="location.href='#dept'">진료과 선택</button>
+        </div>
+      </div>
+      <div class="hero-r">
+        <div class="term-top mono">
+          <span class="dot f"></span><span class="dot"></span><span class="dot"></span>
+          <span>ai-search.simulator</span><span class="live">● LIVE</span>
+        </div>
+        <div class="term">
+          <div><span class="pfx">query&gt;</span> <span class="q" id="query"></span><span class="cur"></span></div>
+          <div class="res" id="res"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEPARTMENT SELECTOR -->
+    <div class="dept" id="dept">
+      <div class="dept-head">
+        <h2>어떤 진료과세요?</h2>
+        <span class="lbl">SELECT DEPARTMENT →</span>
+      </div>
+      <div class="dept-grid">
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-01</div><div class="dn">치과</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-02</div><div class="dn">피부과</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-03</div><div class="dn">정형외과</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-04</div><div class="dn">한의원</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-05</div><div class="dn">성형외과</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-06</div><div class="dn">내과</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-07</div><div class="dn">안과</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-08</div><div class="dn">의료기기</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="pick(this)"><div class="di mono">D-09</div><div class="dn">의료광고심의</div><span class="darr">↗</span></div>
+        <div class="dcell" onclick="location.href='#cta'"><div class="di mono">D-10</div><div class="dn">기타 상담</div><span class="darr">↗</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="sec" id="svc">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="lbl">// TRIPLE ENGINE STACK</span>
+      <h2>검색 엔진 세 개, <mark>하나의 시스템</mark>으로.</h2>
+    </div>
+    <div class="svc">
+      <div class="b"><div class="no mono">01 / GEO</div><h3>생성 엔진 최적화</h3><p>ChatGPT·Gemini가 병원을 추천 답변으로 인용하도록 엔티티를 설계합니다.</p><div class="kpi mono"><span>AI 인용 점유</span><b>+318%</b></div></div>
+      <div class="b"><div class="no mono">02 / AEO</div><h3>답변 엔진 최적화</h3><p>진료 질문에 즉답으로 노출되는 Q&A 구조를 구축합니다.</p><div class="kpi mono"><span>답변 노출</span><b>TOP1</b></div></div>
+      <div class="b"><div class="no mono">03 / SEO</div><h3>검색 엔진 최적화</h3><p>네이버·구글 상위 노출을 테크니컬·콘텐츠·링크로 완성합니다.</p><div class="kpi mono"><span>진료과</span><b>9과</b></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STAT STRIP -->
+<div class="strip" id="proof">
+  <div class="s"><div class="n mono"><em>+</em>318<em>%</em></div><div class="l">AI 답변 인용 증가</div></div>
+  <div class="s"><div class="n mono">7<em>개</em></div><div class="l">엔진 통합 모니터링</div></div>
+  <div class="s"><div class="n mono">24/7</div><div class="l">실시간 지수 추적</div></div>
+  <div class="s"><div class="n mono">100<em>%</em></div><div class="l">의료광고법 준수</div></div>
+</div>
+
+<!-- CTA -->
+<section class="cta" id="cta">
+  <div class="wrap">
+    <div class="b">
+      <span class="lbl">// FREE GEO DIAGNOSIS</span>
+      <h2>우리 병원, <mark>AI는 추천</mark>하고 있을까?</h2>
+      <p>7개 엔진 기준 무료 GEO 진단 리포트를 받아보세요.</p>
+      <button class="btn lime" onclick="alert('샘플 페이지입니다 — 진단 폼 연동 예정')">무료 GEO 진단 리포트 받기 →</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand">VENOM<b>_</b>GEO</div>
+    <div class="cols mono"><span>병원마케팅 베놈</span><span>1661-4142</span><span>대구 수성구 용학로25길54</span></div>
+  </div>
+</footer>
+
+<div class="badge mono">CONCEPT 03 · TACTILE BRUTALISM</div>
+
+<script>
+/* glow */
+(function(){const g=document.getElementById('glow');
+  addEventListener('pointermove',e=>{g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';},{passive:true});})();
+
+/* department pick feedback */
+function pick(el){
+  document.querySelectorAll('.dcell').forEach(c=>c.style.background='');
+  el.style.background='var(--lime)';el.querySelector('.dn').style.color='#0b0b0c';el.querySelector('.di').style.color='#0b0b0c';
+  const q=document.getElementById('query');
+  location.href='#cta';
+}
+
+/* AI search simulator — terminal */
+(function(){
+  const qEl=document.getElementById('query'),resEl=document.getElementById('res');
+  const scenes=[
+    {q:'대구 임플란트 잘하는 치과',hits:[['01','OO치과','디지털 임플란트 · GEO최적화',true],['02','△△치과','일반 진료'],['03','□□치과','정보 부족']]},
+    {q:'여드름 흉터 피부과 추천',hits:[['01','OO의원','색소·흉터 프로그램 · AI인용',true],['02','△△피부과','일반 노출'],['03','□□의원','미노출']]},
+    {q:'무릎 비수술 정형외과',hits:[['01','OO정형외과','비수술 재활 · 답변노출',true],['02','△△병원','부분 노출'],['03','□□의원','미노출']]},
+    {q:'라식 안과 안전한 곳',hits:[['01','OO안과','정밀검사 프로토콜 · AEO',true],['02','△△안과','일반'],['03','□□안과','미노출']]}
+  ];
+  let si=0;
+  function typeQ(str,cb){qEl.textContent='';let i=0;
+    (function t(){if(i<=str.length){qEl.textContent=str.slice(0,i++);setTimeout(t,52);}else setTimeout(cb,420);})();}
+  function run(){const s=scenes[si%scenes.length];resEl.innerHTML='';
+    typeQ(s.q,()=>{
+      s.hits.forEach((h,i)=>{const d=document.createElement('div');d.className='hit';
+        d.innerHTML=`<span class="rank">${h[0]}</span><span class="name${h[3]?' top':''}">${h[1]}</span><span class="meta">${h[2]}</span>`;
+        resEl.appendChild(d);setTimeout(()=>d.classList.add('show'),260*(i+1));});
+      si++;setTimeout(run,3000);});}
+  run();
+})();
+</script>
+</body>
+</html>

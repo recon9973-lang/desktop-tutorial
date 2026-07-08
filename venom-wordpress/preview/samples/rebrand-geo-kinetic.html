@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VENOM — 키네틱 타이포그래피 컨셉 | GEO 에이전시 리브랜딩 샘플</title>
+<meta name="description" content="AI가 추천하는 병원, 그곳이 당신입니까? 스크롤에 반응하는 키네틱 타이포그래피 컨셉 랜딩 샘플.">
+<style>
+:root{
+  --bg:#0a0a0f;--ink:#f4f2ff;--mute:#9a96b8;--dim:#5c5878;
+  --vio:#7c5cff;--vio2:#a78bff;--acid:#e8ff59;--line:#221f33;
+  --sans:'Pretendard','Apple SD Gothic Neo',-apple-system,system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono)}
+#glow{position:fixed;width:640px;height:640px;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(124,92,255,.14),transparent 60%);transform:translate(-50%,-50%);left:50%;top:20%;mix-blend-mode:screen}
+
+/* nav */
+header{position:fixed;top:0;left:0;right:0;z-index:40;backdrop-filter:blur(12px);background:rgba(10,10,15,.6);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{font-weight:900;font-size:19px;letter-spacing:-.02em}
+.brand b{color:var(--vio2)}
+.nav-links{display:flex;gap:26px;font-size:13px;color:var(--mute)}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{font-size:13px;font-weight:700;padding:9px 16px;border-radius:30px;background:var(--acid);color:#12130a}
+@media(max-width:760px){.nav-links{display:none}}
+
+/* hero */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 0 60px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--vio2);margin-bottom:26px}
+.kh{font-weight:900;letter-spacing:-.04em;line-height:.92;font-size:clamp(44px,10vw,132px)}
+.kh .row{display:block;overflow:hidden}
+.kh .row span{display:inline-block;transform:translateY(110%);opacity:0;animation:rise .9s cubic-bezier(.16,1,.3,1) forwards}
+.kh .row:nth-child(2) span{animation-delay:.12s}
+.kh .row:nth-child(3) span{animation-delay:.24s}
+@keyframes rise{to{transform:translateY(0);opacity:1}}
+.kh em{font-style:normal;color:var(--vio2)}
+.kh .out{color:transparent;-webkit-text-stroke:1.5px var(--dim)}
+.hero-sub{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;gap:24px;flex-wrap:wrap}
+.hero-sub p{color:var(--mute);font-size:18px;max-width:440px}
+.hero-sub .btn{white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:15px;padding:16px 26px;border-radius:40px;cursor:pointer;border:none;background:var(--acid);color:#12130a;transition:.2s}
+.btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px -10px rgba(232,255,89,.5)}
+.scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.2em;animation:bob 1.8s infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* marquee */
+.marquee{position:relative;z-index:1;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0;overflow:hidden;white-space:nowrap;background:#0c0c14}
+.marquee .track{display:inline-block;animation:scrollx 26s linear infinite;font-weight:900;font-size:34px;letter-spacing:-.02em}
+.marquee .track span{color:transparent;-webkit-text-stroke:1px var(--dim);margin:0 20px}
+.marquee .track em{font-style:normal;color:var(--vio2);margin:0 20px}
+@keyframes scrollx{to{transform:translateX(-50%)}}
+
+/* kinetic statement */
+.state{position:relative;z-index:1;padding:130px 0}
+.state .big{font-weight:900;font-size:clamp(30px,6vw,80px);line-height:1.02;letter-spacing:-.03em}
+.state .big .w{display:inline-block;opacity:.12;transition:opacity .5s,transform .5s,color .5s;transform:translateY(14px)}
+.state .big .w.on{opacity:1;transform:translateY(0)}
+.state .big .w.hl{color:var(--vio2)}
+.state .cap{font-family:var(--mono);color:var(--dim);font-size:12px;letter-spacing:.2em;margin-bottom:30px}
+
+/* simulator strip */
+.sim{position:relative;z-index:1;padding:60px 0}
+.sim .box{border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,#12101d,#0b0b12);padding:28px;max-width:720px;margin:0 auto}
+.sim .lab{font-family:var(--mono);font-size:11px;color:var(--vio2);letter-spacing:.2em;margin-bottom:16px}
+.sim .q{font-weight:800;font-size:clamp(20px,3.4vw,34px);letter-spacing:-.02em;min-height:1.2em}
+.sim .cur{display:inline-block;width:3px;height:1em;background:var(--acid);vertical-align:-.12em;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.sim .ans{margin-top:18px;display:flex;align-items:center;gap:12px;font-size:15px;color:var(--mute);min-height:28px}
+.sim .ans .pin{width:26px;height:26px;border-radius:8px;background:var(--vio);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;flex-shrink:0}
+.sim .ans b{color:var(--ink)}
+.sim .ans .t{font-family:var(--mono);font-size:11px;color:var(--acid);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+
+/* concept cards, scroll-scale */
+.grid{position:relative;z-index:1;padding:60px 0 30px}
+.grid .g{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.grid .g{grid-template-columns:1fr}}
+.tile{border:1px solid var(--line);border-radius:18px;padding:30px;background:#0d0d15;opacity:0;transform:translateY(40px) scale(.97);transition:.7s cubic-bezier(.16,1,.3,1)}
+.tile.on{opacity:1;transform:none}
+.tile .n{font-family:var(--mono);color:var(--vio2);font-size:13px}
+.tile h3{font-size:22px;font-weight:800;margin:16px 0 10px;letter-spacing:-.02em}
+.tile p{color:var(--mute);font-size:14.5px}
+.tile .m{margin-top:20px;font-family:var(--mono);font-size:34px;font-weight:800;color:var(--acid)}
+
+/* big cta */
+.cta{position:relative;z-index:1;padding:120px 0}
+.cta h2{font-weight:900;font-size:clamp(36px,7vw,104px);line-height:.94;letter-spacing:-.04em;text-align:center}
+.cta h2 em{font-style:normal;color:var(--vio2)}
+.cta .c{text-align:center;margin-top:40px}
+.cta p{color:var(--mute);margin:0 auto 26px;max-width:440px;text-align:center}
+
+footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:36px 0;color:var(--dim);font-size:13px}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.foot .cols{display:flex;gap:24px;font-family:var(--mono);font-size:12px}
+.badge{position:fixed;left:16px;bottom:16px;z-index:50;font-family:var(--mono);font-size:11px;color:var(--dim);background:rgba(12,12,20,.85);border:1px solid var(--line);padding:7px 12px;border-radius:8px;backdrop-filter:blur(8px)}
+.badge b{color:var(--vio2)}
+</style>
+</head>
+<body>
+<div id="glow"></div>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">VENOM<b>°</b></div>
+    <nav class="nav-links"><a href="#state">철학</a><a href="#sim">시뮬레이터</a><a href="#concepts">서비스</a><a href="#cta">문의</a></nav>
+    <a class="nav-cta" href="#cta">GEO 진단 →</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">// AI가 병원을 고르는 시대</div>
+    <h1 class="kh">
+      <span class="row"><span>AI가 추천하는</span></span>
+      <span class="row"><span><em>병원,</em> 그곳이</span></span>
+      <span class="row"><span class="out">당신입니까?</span></span>
+    </h1>
+    <div class="hero-sub">
+      <p>사람이 검색하기 전에, AI가 먼저 답합니다. VENOM은 그 답 안에 당신의 병원을 새깁니다.</p>
+      <button class="btn" onclick="location.href='#cta'">우리 병원 GEO 진단하기 →</button>
+    </div>
+  </div>
+  <div class="scroll-hint mono">SCROLL ↓</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="track">
+    <em>GEO</em><span>생성엔진최적화</span><em>AEO</em><span>답변엔진최적화</span><em>SEO</em><span>검색엔진최적화</span>
+    <em>GEO</em><span>생성엔진최적화</span><em>AEO</em><span>답변엔진최적화</span><em>SEO</em><span>검색엔진최적화</span>
+  </div>
+</div>
+
+<!-- STATEMENT -->
+<section class="state" id="state">
+  <div class="wrap">
+    <div class="cap mono">// 01 — 검색의 문법이 바뀌었다</div>
+    <p class="big" id="statement" data-hl="3,4,10,11">환자는 더 이상 10개의 링크를 보지 않습니다. AI가 건넨 단 하나의 추천을 신뢰합니다. 그 추천에 들어가는 병원이 다음 10년을 가져갑니다.</p>
+  </div>
+</section>
+
+<!-- SIMULATOR -->
+<section class="sim" id="sim">
+  <div class="wrap">
+    <div class="box">
+      <div class="lab mono">AI SEARCH SIMULATOR · LIVE</div>
+      <div class="q"><span id="query"></span><span class="cur"></span></div>
+      <div class="ans" id="answer" style="opacity:0"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPTS -->
+<section class="grid" id="concepts">
+  <div class="wrap g">
+    <div class="tile js-reveal"><div class="n mono">01 / GEO</div><h3>생성 엔진 최적화</h3><p>ChatGPT·Gemini의 추천 답변 안에 병원 엔티티를 각인시킵니다.</p><div class="m">+318%</div></div>
+    <div class="tile js-reveal"><div class="n mono">02 / AEO</div><h3>답변 엔진 최적화</h3><p>진료 질문에 즉답으로 노출되는 Q&A 아키텍처를 설계합니다.</p><div class="m">TOP 1</div></div>
+    <div class="tile js-reveal"><div class="n mono">03 / SEO</div><h3>검색 엔진 최적화</h3><p>네이버·구글 상위 노출을 테크니컬·콘텐츠로 완성합니다.</p><div class="m">9과</div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="cta">
+  <div class="wrap">
+    <h2>다음 추천은<br><em>당신 차례.</em></h2>
+    <div class="c">
+      <p>7개 엔진 기준 무료 GEO 진단 리포트. 지금 병원이 AI에 어떻게 보이는지 확인하세요.</p>
+      <button class="btn" onclick="alert('샘플 페이지입니다 — 진단 폼 연동 예정')">무료 GEO 진단 리포트 받기 →</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand">VENOM<b>°</b></div>
+    <div class="cols mono"><span>병원마케팅 베놈</span><span>1661-4142</span><span>대구 수성구</span></div>
+  </div>
+</footer>
+
+<div class="badge mono">CONCEPT 02 · <b>KINETIC TYPOGRAPHY</b></div>
+
+<script>
+/* glow */
+(function(){const g=document.getElementById('glow');
+  addEventListener('pointermove',e=>{g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';},{passive:true});})();
+
+/* split statement into words + scroll-linked reveal */
+(function(){
+  const el=document.getElementById('statement');
+  const hl=(el.dataset.hl||'').split(',').map(Number);
+  const words=el.textContent.trim().split(/\s+/);
+  el.textContent='';
+  words.forEach((w,i)=>{const s=document.createElement('span');s.className='w'+(hl.includes(i)?' hl':'');
+    s.textContent=w+' ';el.appendChild(s);});
+  const spans=[...el.querySelectorAll('.w')];
+  function onScroll(){const vh=innerHeight;spans.forEach((s,i)=>{
+    const r=s.getBoundingClientRect();const trigger=vh*0.82;
+    if(r.top<trigger)s.classList.add('on');});}
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
+
+/* reveal tiles */
+(function(){
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.25});
+  document.querySelectorAll('.js-reveal').forEach((t,i)=>{t.style.transitionDelay=(i*.1)+'s';io.observe(t);});
+})();
+
+/* AI search simulator */
+(function(){
+  const qEl=document.getElementById('query'),aEl=document.getElementById('answer');
+  const scenes=[
+    {q:'대구 임플란트 잘하는 치과 어디야?',n:'치',b:'OO치과',t:'#GEO추천'},
+    {q:'여드름 흉터 치료 잘하는 피부과',n:'피',b:'OO의원',t:'#AI인용'},
+    {q:'허리디스크 비수술 정형외과 추천',n:'정',b:'OO정형외과',t:'#답변노출'},
+    {q:'눈밑지방 재배치 성형외과 후기',n:'성',b:'OO성형외과',t:'#AEO'}
+  ];
+  let si=0;
+  function typeQ(str,cb){qEl.textContent='';let i=0;
+    (function t(){if(i<=str.length){qEl.textContent=str.slice(0,i++);setTimeout(t,50);}else setTimeout(cb,450);})();}
+  function run(){const s=scenes[si%scenes.length];
+    typeQ(s.q,()=>{aEl.style.transition='opacity .4s';aEl.style.opacity=0;
+      setTimeout(()=>{aEl.innerHTML=`<span class="pin">${s.n}</span><span>AI 추천 · <b>${s.b}</b></span><span class="t mono">${s.t}</span>`;
+        aEl.style.opacity=1;si++;setTimeout(run,2700);},450);});}
+  run();
+})();
+</script>
+</body>
+</html>
