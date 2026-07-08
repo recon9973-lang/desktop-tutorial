@@ -9078,7 +9078,8 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
     var load=add('bot','<span class="vcb-typing"><span></span><span></span><span></span></span>');
     fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,mode:mode})})
       .then(function(r){return r.json()}).then(function(data){
-        load.querySelector('.vcb-b').innerHTML = mode==='diagnose' ? diagHtml(data.diagnosis||{}) : (mdLite(data.answer||data.error||'응답 없음')+srcHtml(data.sources));
+        var _ans=(data.answer||data.error||'응답 없음').replace(/\s*※\s*본 답변은 참고용 사전 진단입니다[\s\S]*$/,'');
+        load.querySelector('.vcb-b').innerHTML = mode==='diagnose' ? diagHtml(data.diagnosis||{}) : (mdLite(_ans)+srcHtml(data.sources));
       }).catch(function(err){load.querySelector('.vcb-b').innerHTML='요청 실패: '+esc(err.message)}).then(function(){send.disabled=false});
   };
 })();
