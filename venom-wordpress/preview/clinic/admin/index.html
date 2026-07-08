@@ -91,8 +91,19 @@
 
 <header><div class="wrap h-inner">
   <div class="brand"><span class="mark">V</span> (주)베놈 검색정보 진단 — 통합 관리자단</div>
-  <div class="role">로그인: <b>admin@venomad</b> · 역할 admin · 프로토타입(목업 데이터)</div>
+  <div class="role" id="roleLabel">로그인이 필요합니다 · <button type="button" class="lbtn" style="font:inherit;padding:4px 10px;border-radius:6px;border:1px solid var(--border,#3a3f4a);background:var(--surface-1,#20242c);color:inherit;cursor:pointer">관리자 로그인</button></div>
 </div></header>
+<div id="loginBar" style="display:none;background:var(--surface-1,#20242c);border-bottom:1px solid var(--border,#3a3f4a)"><div class="wrap" style="padding:12px 0">
+  <form id="loginForm" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <label for="loginEmail" style="font-size:13px;color:var(--text-secondary,#b6bdc7)">관리자 이메일</label>
+    <input type="email" id="loginEmail" placeholder="admin@example.com" autocomplete="email"
+      style="font:inherit;padding:7px 10px;border-radius:6px;border:1px solid var(--border,#3a3f4a);background:var(--surface-2,#171a20);color:inherit;min-width:220px">
+    <button type="submit" id="loginSend"
+      style="font:inherit;padding:7px 14px;border-radius:6px;border:0;background:#2a78d6;color:#fff;cursor:pointer;font-weight:700">로그인 링크 받기</button>
+    <span id="loginMsg" style="font-size:12px;color:var(--text-muted,#8b93a0)"></span>
+  </form>
+  <p style="margin:8px 0 0;font-size:12px;color:var(--text-muted,#8b93a0)">입력하신 메일로 로그인 링크가 전송됩니다. 링크를 누르면 이 화면으로 돌아와 자동 로그인됩니다.</p>
+</div></div>
 <div class="warn-banner"><div class="wrap">
   <b>내부 전용.</b> 이 화면의 모든 자료(신청자 개인정보·원천 증빙·차단 목록)는 외부 공유 금지.
   열람·다운로드·차단·해제는 감사 로그에 기록됩니다. 실서비스에서는 인증(SSO/2FA) 뒤에만 접근 가능해야 합니다.
@@ -251,9 +262,23 @@ const LEADS=[
 const ST={received:['p-warn','접수'],generating:['p-warn','생성중'],sent:['p-good','발송'],consulting:['p-good','상담'],
   converted:['p-good','전환'],rejected:['p-crit','반려'],blocked:['p-crit','차단']};
 
-// ── 실데이터 연결 (관리자 로그인 시). 미설정/미로그인 시 아래 목업 유지 ──
+// ── 실데이터 연결 (관리자 매직링크 로그인 시). 미로그인 시 아래 목업 유지 ──
 const ADMIN_ENDPOINT='https://sfybgrfhbmszztvqwgju.supabase.co/functions/v1/admin-leads'; // 예: https://xxxx.supabase.co/functions/v1/admin-leads
+const SUPABASE_URL='https://sfybgrfhbmszztvqwgju.supabase.co';
+const SUPABASE_ANON='sb_publishable_TjZ3aj2k1z0C9l3U2z5OGw_ieww5Ux-'; // 공개 키(publishable)
 const adminToken=()=>{try{return sessionStorage.getItem('venom_at')||'';}catch{return'';}};
+
+// 매직링크 복귀: URL 해시(#access_token=…)에서 세션 토큰 회수
+(function grabSession(){
+  if(!location.hash) return;
+  const h=new URLSearchParams(location.hash.slice(1));
+  const at=h.get('access_token');
+  if(at){ try{sessionStorage.setItem('venom_at',at);}catch{}
+    history.replaceState(null,'',location.pathname+location.search); }
+})();
+function setRole(html){ const r=$('#roleLabel'); if(r) r.innerHTML=html; }
+function toggleLogin(show){ const b=$('#loginBar'); if(b) b.style.display=show?'block':'none'; if(show){const e=$('#loginEmail'); if(e) e.focus();} }
+function wireLoginBtns(){ $$('.lbtn').forEach(b=>{ b.onclick=()=>toggleLogin(true); }); }
 const CHMAP=[['consent_ad_sms','문자'],['consent_ad_email','이메일'],['consent_ad_call','전화']];
 const mapLead=r=>({id:r.id, d:(r.created_at||'').slice(5,10).replace('-','-'), h:r.hospital_name,
   n:r.applicant_name+(r.applicant_role?' '+r.applicant_role:''), dv:r.delivery_method,
@@ -281,7 +306,7 @@ function renderLeads(){
 async function patchStatus(id,status){
   try{
     const res=await fetch(ADMIN_ENDPOINT,{method:'PATCH',
-      headers:{'content-type':'application/json','Authorization':'Bearer '+adminToken()},
+      headers:{'content-type':'application/json','Authorization':'Bearer '+adminToken(),'apikey':SUPABASE_ANON},
       body:JSON.stringify({id,status})});
     const d=await res.json().catch(()=>({}));
     if(res.ok&&d.ok){const row=LEADS_VIEW.find(l=>l.id===id); if(row)row.st=status;}
@@ -289,18 +314,46 @@ async function patchStatus(id,status){
   }catch{alert('네트워크 오류로 상태를 변경하지 못했습니다.');}
 }
 async function loadLeads(){
-  if(ADMIN_ENDPOINT && adminToken()){
+  const at=adminToken();
+  if(ADMIN_ENDPOINT && at){
     try{
-      const res=await fetch(ADMIN_ENDPOINT,{headers:{'Authorization':'Bearer '+adminToken()}});
-      const d=await res.json();
+      const res=await fetch(ADMIN_ENDPOINT,{headers:{'Authorization':'Bearer '+at,'apikey':SUPABASE_ANON}});
+      const d=await res.json().catch(()=>({}));
       if(res.ok&&d.ok){ LEADS_VIEW=d.leads.map(mapLead); LIVE=true;
-        const role=document.querySelector('.role');
-        if(role) role.innerHTML='로그인: 관리자 · 역할 admin · <b style="color:var(--status-good)">실데이터 연결됨</b>';
+        toggleLogin(false);
+        setRole('역할 admin · <b style="color:var(--status-good,#3fb950)">실데이터 연결됨</b> · <button type="button" class="lbtn2" style="font:inherit;padding:2px 8px;border-radius:5px;border:1px solid var(--border,#3a3f4a);background:transparent;color:inherit;cursor:pointer">로그아웃</button>');
+        $$('.lbtn2').forEach(b=>b.onclick=()=>{try{sessionStorage.removeItem('venom_at');}catch{}location.reload();});
+      } else if(res.status===403 || d.reason==='forbidden'){
+        setRole('이 계정은 <b style="color:var(--status-crit,#f85149)">관리자 권한이 없습니다</b> · <button type="button" class="lbtn" style="font:inherit;padding:4px 10px;border-radius:6px;border:1px solid var(--border,#3a3f4a);background:var(--surface-1,#20242c);color:inherit;cursor:pointer">다른 이메일로 로그인</button>');
+        try{sessionStorage.removeItem('venom_at');}catch{} wireLoginBtns();
+      } else {
+        setRole('로그인 세션이 만료되었습니다 · <button type="button" class="lbtn" style="font:inherit;padding:4px 10px;border-radius:6px;border:1px solid var(--border,#3a3f4a);background:var(--surface-1,#20242c);color:inherit;cursor:pointer">다시 로그인</button>');
+        try{sessionStorage.removeItem('venom_at');}catch{} wireLoginBtns();
       }
-    }catch{/* 목업 유지 */}
+    }catch{ setRole('네트워크 오류 · 목업 데이터 표시 중 · <button type="button" class="lbtn" style="font:inherit;padding:4px 10px;border-radius:6px;border:1px solid var(--border,#3a3f4a);background:var(--surface-1,#20242c);color:inherit;cursor:pointer">로그인</button>'); wireLoginBtns(); }
+  } else {
+    setRole('로그인이 필요합니다 · <button type="button" class="lbtn" style="font:inherit;padding:4px 10px;border-radius:6px;border:1px solid var(--border,#3a3f4a);background:var(--surface-1,#20242c);color:inherit;cursor:pointer">관리자 로그인</button>');
+    wireLoginBtns();
   }
   renderLeads();
 }
+// 매직링크 발송
+const _lf=$('#loginForm');
+if(_lf) _lf.addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const email=$('#loginEmail').value.trim(), msg=$('#loginMsg');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.style.color='var(--status-crit,#f85149)'; msg.textContent='이메일 형식을 확인해 주세요.'; return; }
+  const btn=$('#loginSend'); btn.disabled=true; msg.style.color='var(--text-muted,#8b93a0)'; msg.textContent='메일 발송 중…';
+  try{
+    const res=await fetch(SUPABASE_URL+'/auth/v1/otp',{method:'POST',
+      headers:{'content-type':'application/json','apikey':SUPABASE_ANON},
+      body:JSON.stringify({email,create_user:true,options:{email_redirect_to:location.href}})});
+    if(res.ok){ msg.style.color='var(--status-good,#3fb950)'; msg.textContent='메일함을 확인하세요 — 링크를 누르면 관리자로 로그인됩니다.'; }
+    else{ msg.style.color='var(--status-crit,#f85149)'; msg.textContent='메일 발송 실패. 잠시 후 다시 시도해 주세요.'; }
+  }catch{ msg.style.color='var(--status-crit,#f85149)'; msg.textContent='네트워크 오류가 발생했습니다.'; }
+  finally{ btn.disabled=false; }
+});
+wireLoginBtns();
 $('#fStatus').addEventListener('change',renderLeads);
 loadLeads();
 
