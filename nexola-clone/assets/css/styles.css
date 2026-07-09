@@ -1,5 +1,5 @@
 /* =========================================================
-   MERIDIAN® — original recreation in the editorial-studio genre
+   VENOM 병원마케팅 — original editorial landing
    Design tokens + components. No third-party assets.
    ========================================================= */
 
@@ -417,34 +417,6 @@ section{position:relative}
 }
 .preloader.done{transform:translateY(-100%)}   /* black slides up → white rises from bottom */
 .preloader.hidden{display:none}
-.pl-word{
-  font-family:var(--disp);color:var(--on-dark);font-weight:800;
-  letter-spacing:-.045em;line-height:.84;font-size:clamp(44px,8.5vw,104px);
-  opacity:0;filter:blur(24px);transform:scaleX(1.28);
-  animation:plBlur 1.05s var(--ease) .2s forwards;
-}
-@keyframes plBlur{
-  0%{opacity:0;filter:blur(24px);transform:scaleX(1.28)}
-  55%{opacity:1}
-  100%{opacity:1;filter:blur(0);transform:scaleX(1)}
-}
-.pl-word .pl-dot{color:var(--accent)}
-.pl-sub{
-  position:absolute;bottom:16%;left:0;right:0;text-align:center;
-  font-family:var(--kr);font-size:13px;letter-spacing:.12em;
-  color:var(--on-dark-muted);opacity:0;animation:plIn .8s var(--ease) .45s forwards;
-}
-.pl-bar{
-  position:absolute;bottom:12%;left:50%;transform:translateX(-50%);
-  width:min(220px,42vw);height:1px;background:rgba(255,255,255,.18);overflow:hidden;
-}
-.pl-bar::after{
-  content:"";position:absolute;inset:0;background:var(--accent);
-  transform:scaleX(0);transform-origin:left;
-  animation:plBar 1.5s var(--ease) .1s forwards;
-}
-@keyframes plIn{to{opacity:1;transform:none}}
-@keyframes plBar{to{transform:scaleX(1)}}
 body.intro-lock{overflow:hidden}
 /* typewriter intro */
 .type-wrap{font-family:var(--disp);color:var(--on-dark);font-weight:800;letter-spacing:-.02em;

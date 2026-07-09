@@ -1,4 +1,4 @@
-/* MERIDIAN® — interactions (vanilla, dependency-free) */
+/* VENOM 병원마케팅 — interactions (vanilla, dependency-free) */
 (function () {
   'use strict';
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
