@@ -446,6 +446,14 @@ section{position:relative}
 @keyframes plIn{to{opacity:1;transform:none}}
 @keyframes plBar{to{transform:scaleX(1)}}
 body.intro-lock{overflow:hidden}
+/* typewriter intro */
+.type-wrap{font-family:var(--disp);color:var(--on-dark);font-weight:800;letter-spacing:-.02em;
+  font-size:clamp(38px,8vw,96px);display:inline-flex;align-items:center;line-height:1}
+.type-text{white-space:pre}
+.type-cursor{display:inline-block;width:.07em;height:.9em;background:var(--accent);
+  margin-left:.05em;animation:caret 1.05s steps(1) infinite}
+.type-cursor.busy{animation:none;opacity:1}
+@keyframes caret{50%{opacity:0}}
 
 /* ---------- Venom brand additions ---------- */
 .brand-logo{height:26px;width:auto;display:block}

@@ -4,52 +4,61 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine = window.matchMedia('(pointer: fine)').matches;
 
-  /* ---- Intro preloader: black + text, then curtain slides up ---- */
+  /* ---- Intro: blinking caret, then a self-correcting "AI ready?" typewriter ---- */
   var pl = document.querySelector('.preloader');
+  var hm = document.querySelector('.hero-media');
   if (pl) {
-    if (reduce) {
+    var txt = pl.querySelector('.type-text');
+    var caret = pl.querySelector('.type-cursor');
+    var endIntro = function () {
+      if (pl.classList.contains('done')) return;
+      pl.classList.add('done');                 // curtain slides up → landing page
+      document.body.classList.remove('intro-lock');
+      window.scrollTo(0, 0);
+      if (hm) setTimeout(function () { hm.classList.remove('hold'); }, 220);
+      setTimeout(function () { pl.classList.add('hidden'); }, 1000);
+    };
+    if (reduce || !txt) {
       pl.classList.add('hidden');
+      if (hm) hm.classList.remove('hold');
     } else {
       document.body.classList.add('intro-lock');
-      var lift = function () {
-        pl.classList.add('done');            // curtain slides up
-        document.body.classList.remove('intro-lock');
-        window.scrollTo(0, 0);
-        setTimeout(function () { pl.classList.add('hidden'); }, 1000);
+      if (hm) hm.classList.add('hold');
+      var typed = '';
+      var draw = function () { txt.textContent = typed; };
+      var busy = function (on) { if (caret) caret.classList.toggle('busy', on); };
+      var typeStr = function (str, cb) {
+        busy(true);
+        var i = 0;
+        (function step() {
+          if (i >= str.length) { busy(false); cb(); return; }
+          typed += str.charAt(i++); draw();
+          setTimeout(step, 95 + Math.random() * 80);
+        })();
       };
-      var finish = function () {
-        var heroW = document.querySelector('.hero .display.vlogo');
-        var plw = pl.querySelector('.pl-word');
-        if (!reduce && heroW && plw) {
-          // FLIP: move + scale the intro word onto the hero wordmark, then lift
-          var s = plw.getBoundingClientRect();
-          var t = heroW.getBoundingClientRect();
-          var scale = t.height / s.height;
-          plw.style.opacity = '1';
-          plw.style.filter = 'none';
-          plw.style.animation = 'none';
-          plw.style.transformOrigin = 'left top';
-          var sub = pl.querySelector('.pl-sub'), bar = pl.querySelector('.pl-bar');
-          if (sub) sub.style.opacity = '0';
-          if (bar) bar.style.opacity = '0';
-          var dx = t.left - s.left, dy = t.top - s.top;
-          plw.style.transition = 'transform .85s cubic-bezier(.7,0,.18,1)';
-          requestAnimationFrame(function () {
-            plw.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
-          });
-          setTimeout(lift, 760);
-        } else {
-          lift();
-        }
+      var delN = function (n, cb) {
+        busy(true);
+        (function step() {
+          if (n <= 0) { busy(false); cb(); return; }
+          typed = typed.slice(0, -1); draw(); n--;
+          setTimeout(step, 90);
+        })();
       };
-      // hold the intro ~1.6s after the window finishes loading
-      if (document.readyState === 'complete') {
-        setTimeout(finish, 1600);
-      } else {
-        window.addEventListener('load', function () { setTimeout(finish, 1600); });
-        // safety cap so the intro never gets stuck
-        setTimeout(finish, 4000);
-      }
+      var timeline = [
+        function (n) { setTimeout(n, 2000); },   // blinking caret ~2s
+        function (n) { typeStr('AI rae', n); },  // type with a deliberate typo
+        function (n) { setTimeout(n, 380); },
+        function (n) { delN(2, n); },            // backspace "ae"
+        function (n) { setTimeout(n, 140); },
+        function (n) { typeStr('eady?', n); },   // → "AI ready?"
+        function (n) { setTimeout(n, 820); },
+        function () { endIntro(); }
+      ];
+      var run = function (i) { if (i < timeline.length) timeline[i](function () { run(i + 1); }); };
+      var start = function () { run(0); };
+      if (document.readyState === 'complete') start();
+      else window.addEventListener('load', start);
+      setTimeout(function () { endIntro(); }, 12000); // safety: never get stuck
     }
   }
 
