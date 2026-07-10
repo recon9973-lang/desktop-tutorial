@@ -80,8 +80,10 @@ async function handleKakao(res, body) {
 
   const callbackUrl = body.userRequest && body.userRequest.callbackUrl;
 
-  // 'geo' 뷰만 실 프로빙(느림·유료). 나머지는 light.
-  const diagOpts = { region: '', now: Date.now(), geoMode: cmd.view === 'geo' ? 'full' : 'light' };
+  // 'geo' 뷰만 실 프로빙(느림·유료), 'compete' 뷰만 경쟁 비교(로컬 다중호출). 나머지는 light.
+  const diagOpts = { region: '', now: Date.now(),
+    geoMode: cmd.view === 'geo' ? 'full' : 'light',
+    compete: cmd.view === 'compete' };
 
   if (callbackUrl) {
     // 5초 내 ack → 진단 완료 시 콜백으로 최종 응답(서버리스는 반환 promise까지 살아있음)
@@ -120,6 +122,7 @@ module.exports = async function handler(req, res) {
           region: (q.region || '').toString().trim(),
           now: Date.now(),
           geoMode: String(q.geo || '') === '1' ? 'full' : 'light',
+          compete: String(q.compete || '') === '1',
         });
         res.status(200).json(report);
       } catch (e) {

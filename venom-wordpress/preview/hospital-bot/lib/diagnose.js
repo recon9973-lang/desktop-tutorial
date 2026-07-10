@@ -26,6 +26,7 @@ function defaultDeps() {
   return {
     naverOpenapi: require('./naver-openapi'),
     geoProbe: require('./geo-probe'),
+    compete: require('./compete'),
     searchad: require('../../lib/naver-searchad'),
     psi: require('../../lib/psi'),
     adValidator: require('../../lib/medical-ad-validator'),
@@ -296,11 +297,23 @@ async function diagnose(rawInput, opts = {}) {
       : deps.geoProbe.preview(gname, { category: place.category || '', region }),
   ]);
 
+  // 3) 경쟁사 비교(opt-in) — 'compete' 명령에서만. GEO 경쟁 목록 있으면 재활용.
+  let compete = null;
+  if (opts.compete) {
+    try {
+      compete = await deps.compete.compareCompetitors(gname, {
+        region, dept, deps,
+        existingCompetitors: (geo && geo.competitors) || [],
+      });
+    } catch (e) { compete = { status: 'error', error: e.message, rows: [] }; }
+  }
+
   const report = {
     ok: true,
     query: q,
     resolved: { region, dept, homepage, place },
     seo, geo, local, ads, adLaw,
+    compete,
     disclaimer: '본 진단은 공개 데이터 기반 참고용이며, 실제 성과·심의 통과를 보장하지 않습니다.',
     meta: {
       reused: ['naver-searchad', 'psi', 'medical-ad-validator', 'naver-openapi'],

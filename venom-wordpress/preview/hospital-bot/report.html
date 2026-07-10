@@ -132,8 +132,12 @@
        + cardLaw(rep.adLaw)
        + '</div>';
 
+    if(rep.compete) h += cardCompete(rep.compete);
+
+    var withCompete = qs.get('compete')==='1';
     h += '<div class="actions">'
-       + (!withGeo ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&geo=1">🤖 AI 검색(GEO) 실측하기</a>' : '')
+       + (!withGeo ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&geo=1'+(withCompete?'&compete=1':'')+'">🤖 AI 검색(GEO) 실측하기</a>' : '')
+       + (!withCompete ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&compete=1'+(withGeo?'&geo=1':'')+'">🏆 동네 순위 보기</a>' : '')
        + '<button class="btn ghost" onclick="window.print()">🖨 PDF로 저장/인쇄</button>'
        + '</div>';
 
@@ -211,6 +215,22 @@
       + '<div style="margin-top:6px">'+law.forbidden.map(function(w){return '<span class="tag" style="background:var(--crit-bg);color:var(--crit);margin:2px">'+esc(w)+'</span>';}).join('')+'</div>'
       + (law.risky&&law.risky.length?'<div style="margin-top:8px;font-size:12.5px;color:var(--muted)">주의 표현: '+law.risky.map(esc).join(', ')+'</div>':'');
     return card('⚖️ 의료광고법', stTag('crit','주의 필요'), body);
+  }
+
+  function cardCompete(cp){
+    if(!cp || cp.status==='insufficient') return '<div class="card" style="margin-top:14px"><h3>🏆 동네 순위</h3><div class="metric"><span>'+esc((cp&&cp.note)||'비교할 경쟁 병원을 찾지 못했습니다.')+'</span></div></div>';
+    if(cp.status!=='ok') return '';
+    var rows = (cp.rows||[]).map(function(r){
+      var bits=[]; if(r.blog!=null)bits.push('블로그 '+fmt(r.blog)); if(r.news!=null)bits.push('뉴스 '+fmt(r.news)); if(r.geoMentions!=null)bits.push('AI '+r.geoMentions+'회');
+      var star = r.isTarget?' <span class="tag" style="background:var(--p-soft);color:var(--p)">우리 병원</span>':'';
+      var bg = r.isTarget?' style="background:var(--p-soft)"':'';
+      return '<tr'+bg+'><td class="num">'+r.rank+'</td><td>'+esc(r.name)+star+'</td><td style="color:var(--muted)">'+esc(bits.join(' · ')||'·')+'</td></tr>';
+    }).join('');
+    var title = '🏆 '+esc((cp.region?cp.region+' ':'')+(cp.dept||'')).trim()+' 동네 순위';
+    var rank = cp.targetRank?'<div style="margin:10px 2px 0;font-weight:700;color:var(--p)">우리 병원: '+cp.total+'곳 중 '+cp.targetRank+'위</div>':'';
+    return '<div class="card" style="margin-top:14px"><h3>'+title+stTag('ok','비교')+'</h3>'
+      + '<table><thead><tr><th>순위</th><th>병원</th><th>로컬 노출</th></tr></thead><tbody>'+rows+'</tbody></table>'
+      + rank + '<div style="margin-top:8px;font-size:12px;color:var(--muted)">※ '+esc(cp.note||'')+'</div></div>';
   }
 
   // ── 조각 헬퍼 ──

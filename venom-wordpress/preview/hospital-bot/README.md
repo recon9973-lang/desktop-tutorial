@@ -16,12 +16,15 @@ hospital-bot/
 │   ├── naver-openapi.js   병원 탐지·로컬(플레이스/블로그/뉴스) 래퍼
 │   ├── geo-probe.js       GEO/AI 노출 실 프로빙(preview/probe) — 인용률·SoV·감성
 │   ├── kakao-format.js    진단서 → 카카오 SkillResponse + 발화 파싱
-│   └── whitelist.js       직원 발신자 게이팅(VENOMI_WHITELIST)
+│   ├── whitelist.js       직원 발신자 게이팅(VENOMI_WHITELIST)
+│   └── compete.js         경쟁사 비교(동네 순위표)
 ├── report.html            웹 풀리포트(라이브 진단·시각화·PDF)
 └── test/
-    ├── run.js             코어 오프라인 검증(20 assert)
-    ├── kakao.js           카톡 연동 오프라인 검증(30 assert)
-    └── geo.js             GEO 프로빙 오프라인 검증(18 assert)
+    ├── run.js             코어 오프라인 검증
+    ├── kakao.js           카톡 연동 오프라인 검증
+    ├── geo.js             GEO 프로빙 오프라인 검증
+    ├── compete.js         경쟁사 비교 오프라인 검증
+    └── smoke.sh           배포 스모크(curl)
 ```
 
 재사용(기존 저장소 자산): `../lib/naver-searchad`(검색량·경쟁도), `../lib/psi`(속도·SEO), `../lib/medical-ad-validator`(금지어).
@@ -35,7 +38,7 @@ hospital-bot/
 | 광고(검색량·경쟁도·CPC) | 네이버 검색광고 키워드도구 + 입찰가 추정 | ✅ 검색량·경쟁도·CPC(모바일 2위 추정) |
 | 의료광고법 스캔 | 금지어 사전 | ✅ |
 | GEO/AI 노출 | ChatGPT·Perplexity·Gemini·Claude 실질의 | ✅ P1 — 인용률·SoV·감성·등급 |
-| 경쟁사 비교 | 조립 | ⬜ P2 |
+| 경쟁사 비교 | 네이버 로컬 + GEO 경쟁 재활용 | ✅ P2 — 동네 순위표(블로그·뉴스·AI언급) |
 
 ## API
 
@@ -96,10 +99,16 @@ node hospital-bot/test/run.js --live "대구 수성구 OO치과"   # 실 API(키
 - 라이브 진단(`GET /api/hospital-bot?hospital=..`)을 불러와 점수 바·경쟁·처방을 렌더, **인쇄→PDF 저장** 지원.
 - 카톡 종합 카드에서 링크로 연결(`VENOMI_SITE_BASE` 설정 시 자동 노출).
 
+## 경쟁사 비교(동네 순위) — opt-in
+
+- 발화 `병원명 순위`(또는 `경쟁`), 웹 `?hospital=..&compete=1`.
+- 후보 = 네이버 로컬 검색 상위 + (GEO 실측 시) AI가 대신 추천한 병원. 타깃 제외·중복 제거.
+- 타깃+경쟁 최대 4곳에 대해 **블로그·뉴스 노출 + AI 언급수**만 값싸게 수집해 순위표 산출(풀 진단 N회 안 함).
+
 ## 다음 단계
 
-- **경쟁사 비교(P2)**: 동일 지역·진료과 상위 3곳 나란히(GEO SoV의 competitors 재활용).
 - **진단 캐시**: 병원별 24h KV 캐시(재조회 비용 절감).
+- **제안서 자동 초안(P3)**: 진단 → 베놈 제안서/견적 초안.
 
 > CPC(입찰가 추정)는 완료 — `lib/naver-searchad.fetchBidEstimate`(POST /estimate/average-position-bid/keyword). 실측 불가 환경 대비 응답 스키마 불일치 시 null로 안전 degrade. 프로덕션 첫 호출 시 실제 응답 필드(bid/estimate) 확인 권장.
 </content>

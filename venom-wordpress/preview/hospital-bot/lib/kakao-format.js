@@ -28,6 +28,7 @@ function reportLinkCard(name) {
 // ── 발화 파싱 ─────────────────────────────────────────
 const VIEW_KEYWORDS = [
   ['law', /(심의|광고법|의료법)$/],
+  ['compete', /(경쟁|경쟁사|순위|동네순위|비교)$/],
   ['ads', /(광고|광고비|키워드|cpc)$/i],
   ['geo', /(geo|지오|ai검색|ai 검색)$/i],
   ['seo', /(seo|에스이오|검색최적화)$/i],
@@ -65,7 +66,7 @@ function viewQuickReplies(name) {
     qr('SEO 자세히', `${name} seo`),
     qr('GEO 자세히', `${name} geo`),
     qr('광고 제안', `${name} 광고`),
-    qr('플레이스', `${name} 플레이스`),
+    qr('동네 순위', `${name} 순위`),
     qr('무료 상담', '상담'),
   ];
 }
@@ -272,6 +273,35 @@ function fmtNum(n) { return n == null ? '·' : Number(n).toLocaleString('ko-KR')
 function valOr(v) { return v == null ? '·' : v; }
 function pctText(v) { return v == null ? '·' : `${Math.round(v * 100)}%`; }
 
+// ── 뷰: 경쟁사 비교(동네 순위) ─────────────────────────
+function renderCompete(report) {
+  const name = displayName(report);
+  const cp = report.compete;
+  if (!cp || cp.status === 'insufficient') {
+    return skill([simpleText(`🏆 ${name} 동네 순위\n\n${(cp && cp.note) || '비교할 경쟁 병원을 찾지 못했습니다.'}`)], viewQuickReplies(name));
+  }
+  if (cp.status !== 'ok') {
+    return skill([simpleText(`🏆 ${name} 동네 순위\n\n비교를 완료하지 못했습니다.`)], viewQuickReplies(name));
+  }
+  const head = `🏆 ${cp.region ? cp.region + ' ' : ''}${cp.dept || ''} 동네 순위`.replace(/\s+/g, ' ').trim();
+  const L = [head, ''];
+  cp.rows.forEach((r) => {
+    const star = r.isTarget ? '★ ' : '';
+    const bits = [];
+    if (r.blog != null) bits.push(`블로그 ${fmtNum(r.blog)}`);
+    if (r.news != null) bits.push(`뉴스 ${fmtNum(r.news)}`);
+    if (r.geoMentions != null) bits.push(`AI ${r.geoMentions}회`);
+    L.push(`${r.rank}. ${star}${r.name}  (${bits.join(' · ') || '·'})`);
+  });
+  if (cp.targetRank) {
+    L.push('');
+    L.push(`👉 우리 병원: ${cp.total}곳 중 ${cp.targetRank}위`);
+  }
+  L.push('');
+  L.push(`※ ${cp.note}`);
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+}
+
 // 뷰 → 렌더러 디스패치
 function render(report, view) {
   switch (view) {
@@ -279,13 +309,14 @@ function render(report, view) {
     case 'ads': return renderAds(report);
     case 'local': return renderLocal(report);
     case 'geo': return renderGeo(report);
+    case 'compete': return renderCompete(report);
     default: return renderSummary(report);
   }
 }
 
 module.exports = {
   parseCommand, render,
-  renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderContact,
+  renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderCompete, renderContact,
   renderRefusal, renderAsk, renderError, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,
