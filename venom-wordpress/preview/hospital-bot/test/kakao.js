@@ -69,7 +69,7 @@ async function main() {
   assert(/CPC.*P1/.test(ads.template.outputs[0].simpleText.text), '광고: CPC P1 고지(허위수치 없음)');
 
   const geo = kf.render(report, 'geo');
-  assert(isValidSkill(geo) && /P1/.test(geo.template.outputs[0].simpleText.text), 'GEO: P1 예정 안내');
+  assert(isValidSkill(geo) && /(AI 엔진|실측|GEO)/.test(geo.template.outputs[0].simpleText.text), 'GEO 뷰 렌더(미설정 안내)');
 
   const contact = kf.renderContact();
   assert(isValidSkill(contact) && contact.template.outputs[0].textCard, '상담 CTA textCard');

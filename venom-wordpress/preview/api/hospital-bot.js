@@ -71,11 +71,14 @@ async function handleKakao(res, body) {
 
   const callbackUrl = body.userRequest && body.userRequest.callbackUrl;
 
+  // 'geo' 뷰만 실 프로빙(느림·유료). 나머지는 light.
+  const diagOpts = { region: '', now: Date.now(), geoMode: cmd.view === 'geo' ? 'full' : 'light' };
+
   if (callbackUrl) {
     // 5초 내 ack → 진단 완료 시 콜백으로 최종 응답(서버리스는 반환 promise까지 살아있음)
     res.status(200).json({ version: '2.0', useCallback: true, data: kf.ackData(cmd.hospital) });
     try {
-      const report = await diagnose(cmd.hospital, { region: '', now: Date.now() });
+      const report = await diagnose(cmd.hospital, diagOpts);
       await postCallback(callbackUrl, kf.render(report, cmd.view));
     } catch (e) {
       await postCallback(callbackUrl, kf.renderError(e.message)).catch(() => {});
@@ -85,7 +88,7 @@ async function handleKakao(res, body) {
 
   // 콜백 미설정 → 동기 응답(캐시·빠른 경로 가정, 5초 초과 시 오픈빌더가 타임아웃)
   try {
-    const report = await diagnose(cmd.hospital, { region: '', now: Date.now() });
+    const report = await diagnose(cmd.hospital, diagOpts);
     res.status(200).json(kf.render(report, cmd.view));
   } catch (e) {
     res.status(200).json(kf.renderError(e.message));

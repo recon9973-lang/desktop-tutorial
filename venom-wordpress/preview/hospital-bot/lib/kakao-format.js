@@ -98,8 +98,9 @@ function line_seo(seo) {
 }
 function line_geo(geo) {
   if (!geo) return '·';
-  if (geo.status === 'pending') return 'P1에서 측정 예정 ⏳';
-  if (geo.grade) return `${geo.grade} (인용률 ${pctText(geo.citationRate)})`;
+  if (geo.status === 'done') return `${geo.grade || '·'} (인용률 ${pctText(geo.citationRate)})`;
+  if (geo.status === 'ready') return "'geo' 명령으로 실측 ⏳";
+  if (geo.status === 'unconfigured') return 'AI엔진 미설정';
   return '·';
 }
 function line_local(local) {
@@ -182,13 +183,35 @@ function renderLocal(report) {
 function renderGeo(report) {
   const name = displayName(report);
   const geo = report.geo || {};
-  if (geo.status === 'pending') {
-    const L = [`🤖 ${name} GEO·AI검색`, '', 'ChatGPT·Perplexity·Gemini 노출 진단은 P1에서 활성화됩니다.', '', '준비된 진단 질문:'];
-    (geo.prompts || []).slice(0, 5).forEach((p) => L.push(`· ${p}`));
+
+  if (geo.status === 'unconfigured') {
+    return skill([simpleText(`🤖 ${name} GEO·AI검색\n\nAI 엔진 키가 설정되지 않아 실측할 수 없습니다.\n(PERPLEXITY/OPENAI/GEMINI/ANTHROPIC 중 1개 이상 필요)`)], viewQuickReplies(name));
+  }
+  if (geo.status === 'ready') {
+    const L = [`🤖 ${name} GEO·AI검색`, '', `준비된 AI 엔진: ${(geo.engines || []).join(', ') || '·'}`, '', '진단 질문(예):'];
+    (geo.prompts || []).slice(0, 4).forEach((p) => L.push(`· ${p}`));
+    L.push('', '실측하려면 다시 "geo"를 눌러 주세요(20초 내외 소요).');
     return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
   }
-  const L = [`🤖 ${name} GEO·AI검색`, '', `등급 ${geo.grade} · 인용률 ${pctText(geo.citationRate)} · 점유율 ${pctText(geo.shareOfVoice)}`];
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  if (geo.status === 'done') {
+    const senti = { positive: '긍정 🟢', neutral: '중립 ⚪', negative: '부정 🔴' }[geo.sentiment] || '·';
+    const L = [`🤖 ${name} GEO·AI검색 실측`, ''];
+    L.push(`등급 ${gradeIcon(geo.grade)} ${geo.grade}`);
+    L.push(`· 인용률 ${pctText(geo.citationRate)} (${geo.mentionedCount}/${geo.asked}건 언급)`);
+    L.push(`· 답변 내 점유율(SoV) ${pctText(geo.shareOfVoice)}`);
+    L.push(`· 언급 톤 ${senti}`);
+    L.push(`· 엔진 ${(geo.engines || []).join(', ')}`);
+    if (geo.competitors && geo.competitors.length) {
+      L.push('', '함께 언급된 경쟁 병원:');
+      geo.competitors.slice(0, 3).forEach((c) => L.push(`  · ${c.name} (${c.mentions}회)`));
+    }
+    if (geo.samples && geo.samples.length) {
+      L.push('', `예: "${geo.samples[0].excerpt}…" (${geo.samples[0].engine})`);
+    }
+    L.push('', '※ 공개 AI 검색 실측(참고용).');
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  }
+  return skill([simpleText(`🤖 ${name} GEO·AI검색\n\n측정할 수 없습니다.`)], viewQuickReplies(name));
 }
 
 // ── 뷰: 상담 CTA ───────────────────────────────────────

@@ -220,8 +220,14 @@ function summarize(report) {
     score += report.seo.score100 * 0.4; weight += 0.4;
     if (report.seo.score100 < 60) urgent.push('홈페이지 SEO/속도 개선');
   }
-  // GEO는 P0 미측정 → 등급 산정 제외, 안내만
-  if (report.geo && report.geo.status === 'pending') urgent.push('AI 검색(GEO) 노출 진단 — P1에서 측정 예정');
+  // GEO: 실측(done)이면 낮은 등급을 시급 항목으로. preview면 안내만.
+  if (report.geo) {
+    if (report.geo.status === 'done') {
+      if (report.geo.grade && 'DF'.includes(report.geo.grade)) urgent.push('AI 검색(GEO) 노출 강화');
+    } else if (report.geo.status === 'ready') {
+      urgent.push("AI 검색(GEO) 실측 권장 — 'geo' 명령");
+    }
+  }
 
   if (report.local && report.local.blog && report.local.blog.total != null) {
     const blogScore = Math.min(100, (report.local.blog.total / 50) * 100);
@@ -263,12 +269,18 @@ async function diagnose(rawInput, opts = {}) {
   const homepage = place.homepage || null;
 
   // 2) 6대 진단 병렬
+  //    GEO는 기본 light(preview): 종합 카드용, 호출 없음(빠름).
+  //    'geo' 명령 등에서 opts.geoMode='full' → 실 프로빙(느림·유료).
+  const gname = place.found ? place.name : q.name;
+  const geoMode = opts.geoMode === 'full' ? 'full' : 'light';
   const [seo, local, ads, adLaw, geo] = await Promise.all([
     diagnoseSeo(deps, homepage),
-    diagnoseLocal(deps, place.found ? place.name : q.name, region),
+    diagnoseLocal(deps, gname, region),
     diagnoseAds(deps, dept, region),
     diagnoseAdLaw(deps, homepage),
-    deps.geoProbe.probe(place.found ? place.name : q.name, { category: place.category || '', region }),
+    geoMode === 'full'
+      ? deps.geoProbe.probe(gname, { category: place.category || '', region })
+      : deps.geoProbe.preview(gname, { category: place.category || '', region }),
   ]);
 
   const report = {

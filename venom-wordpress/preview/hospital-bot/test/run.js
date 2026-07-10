@@ -86,7 +86,7 @@ async function main() {
   assert(r.ads.status === 'ok' && r.ads.keywords[0].volume === 4300, `광고 최상위 키워드 검색량=${r.ads.keywords[0].volume}`);
   assert(r.ads.cpc.status === 'p1-pending', 'CPC는 P1 표기(허위수치 없음)');
   assert(r.adLaw.status === 'ok' && r.adLaw.pass === false && r.adLaw.forbidden.includes('최고'), '광고법: "최고" 위반 탐지');
-  assert(r.geo.status === 'pending' && Array.isArray(r.geo.prompts) && r.geo.prompts.length > 0, `GEO 스텁 + 프롬프트셋 ${r.geo.prompts.length}개`);
+  assert(['ready', 'unconfigured'].includes(r.geo.status) && Array.isArray(r.geo.prompts) && r.geo.prompts.length > 0, `GEO light(preview) 상태=${r.geo.status}, 프롬프트 ${r.geo.prompts.length}개`);
   assert(r.summary.grade && r.summary.urgent.length > 0, `종합등급=${r.summary.grade}, 우선개선=${r.summary.urgent.length}`);
 
   console.log('\n── 진단서 요약 ──');

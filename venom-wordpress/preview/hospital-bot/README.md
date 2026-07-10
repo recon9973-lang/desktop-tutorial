@@ -14,7 +14,7 @@ hospital-bot/
 ├── lib/
 │   ├── diagnose.js        ★ 코어 오케스트레이터 — diagnose(병원명) → 진단서
 │   ├── naver-openapi.js   병원 탐지·로컬(플레이스/블로그/뉴스) 래퍼
-│   ├── geo-probe.js       GEO/AI 노출 진단 (P0 스텁 → P1 활성)
+│   ├── geo-probe.js       GEO/AI 노출 실 프로빙(preview/probe) — 인용률·SoV·감성
 │   ├── kakao-format.js    진단서 → 카카오 SkillResponse + 발화 파싱
 │   └── whitelist.js       직원 발신자 게이팅(VENOMI_WHITELIST)
 └── test/
@@ -32,7 +32,7 @@ hospital-bot/
 | 네이버 로컬(플레이스/블로그/뉴스) | 네이버 OpenAPI | ✅ |
 | 광고(검색량·경쟁도) | 네이버 검색광고 키워드도구 | ✅ (CPC는 P1) |
 | 의료광고법 스캔 | 금지어 사전 | ✅ |
-| GEO/AI 노출 | LLM 다중 프로빙 | ⬜ P1(현재 프롬프트셋만) |
+| GEO/AI 노출 | ChatGPT·Perplexity·Gemini·Claude 실질의 | ✅ P1 — 인용률·SoV·감성·등급 |
 | 경쟁사 비교 | 조립 | ⬜ P2 |
 
 ## API
@@ -69,6 +69,7 @@ POST /api/hospital-bot
 - `NAVER_AD_API_KEY` / `NAVER_AD_SECRET` / `NAVER_AD_CUSTOMER_ID` — 검색광고 키워드도구(검색량)
 - `PSI_KEY` — Google PageSpeed(SEO·속도)
 - `VENOMI_WHITELIST` — (선택) 직원 카카오 botUserKey 쉼표목록. 미설정 시 open(개발), 설정 시 직원만 허용.
+- **GEO 실측(1개 이상)**: `PERPLEXITY_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY`(또는 GOOGLE_AI_KEY) / `ANTHROPIC_API_KEY`. 미설정 시 GEO는 'unconfigured'로 표기(허위수치 없음).
 
 ## 검증
 
@@ -76,13 +77,19 @@ POST /api/hospital-bot
 cd venom-wordpress/preview
 node hospital-bot/test/run.js                       # 코어 오프라인(mock) — 20 assert
 node hospital-bot/test/kakao.js                     # 카톡 연동 오프라인 — 25 assert
+node hospital-bot/test/geo.js                        # GEO 프로빙 오프라인 — 18 assert
 node hospital-bot/test/run.js --live "대구 수성구 OO치과"   # 실 API(키 설정 시)
 ```
 
+## GEO 진단 — 2모드 (비용·지연 통제)
+
+- **preview(종합 카드)**: AI 호출 없이 엔진 가용성·프롬프트셋만 즉시 반환.
+- **probe(`geo` 명령)**: 환자 의도 프롬프트 4개 × 가용 엔진 최대 3개를 실질의 → **인용률·SoV·감성·등급**.
+  브랜드 질의(병원명 직접 언급)는 인용률 부풀림 방지를 위해 기본 세트에서 제외.
+
 ## 다음 단계
 
-- **P1 GEO**: `lib/geo-probe.js` 실 프로빙(ChatGPT·Perplexity·Gemini) → 인용률·SoV·등급.
 - **웹 풀리포트**: `/hospital-bot/report/:id` 상세·시각화(카톡 카드에서 링크).
 - **CPC**: 검색광고 입찰가 추정 API 연동.
-- **경쟁사 비교(P2)**: 동일 지역·진료과 상위 3곳 나란히.
+- **경쟁사 비교(P2)**: 동일 지역·진료과 상위 3곳 나란히(GEO SoV의 competitors 재활용).
 </content>
