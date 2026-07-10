@@ -226,7 +226,7 @@ Vercel 서버리스  api/hospital-bot.js  ← 신규 (오케스트레이터)
 
 | Phase | 산출물 | 비고 |
 |---|---|---|
-| **P0. 내부 MVP(2주)** | `api/hospital-bot.js` 종합 진단(플레이스+검색량+SEO+광고법) + 오픈빌더 연결 + **직원 화이트리스트** + 웹 풀리포트 | 🟢 **코어 엔진 + 카카오 연동 완료**(`diagnose.js`·`kakao-format.js`·`whitelist.js`, 오프라인 45 assert 통과). 남음: 오픈빌더 챗봇 실배포·웹 리포트 |
+| **P0. 내부 MVP(2주)** | `api/hospital-bot.js` 종합 진단(플레이스+검색량+SEO+광고법) + 오픈빌더 연결 + **직원 화이트리스트** + 웹 풀리포트 | 🟢 **완료** — 코어 엔진·카카오 연동·**웹 풀리포트(`report.html`)** 모두. 오프라인 68 assert + 페이지 렌더/엔드포인트 E2E 통과. 남음: 오픈빌더 챗봇 실배포(설정) |
 | **P1. GEO 진단(1~2주)** | `lib/geo-probe.js`(ChatGPT/Perplexity/Gemini/Claude 프로빙) + 인용률·SoV·감성·등급 | 🟢 **완료** — preview/probe 2모드, `lib/ai-engines` 공유 추출, 오프라인 18 assert |
 | **P2. 경쟁·광고법(1주)** | 경쟁 비교표(동네 순위) + 광고법 리스크 스캔(기존 RAG 연결) | |
 | **P3. 제안서 자동화·운영** | 진단→**제안서/견적 자동 초안**, 사용량·비용 모니터링(변동 한도 소프트 조절), 슬랙·CRM 연동 | 트랙 B 핵심 가치 |

@@ -81,10 +81,23 @@ async function main() {
   const ack = kf.ackData('OO치과');
   assert(ack.text && /진단 중/.test(ack.text), 'ack 데이터');
 
+  console.log('== 웹 리포트 링크(VENOMI_SITE_BASE) ==');
+  delete process.env.VENOMI_SITE_BASE;
+  assert(kf.reportUrl('OO치과') === null, '미설정 시 링크 없음');
+  const sumNoLink = kf.render(report, 'summary');
+  assert(sumNoLink.template.outputs.length === 1, '미설정 시 요약 출력 1개(링크 카드 없음)');
+  process.env.VENOMI_SITE_BASE = 'https://venomi.example.com/';
+  assert(/venomi\.example\.com\/hospital-bot\/report\.html\?hospital=/.test(kf.reportUrl('대구 OO치과')), '리포트 URL 생성');
+  const sumLink = kf.render(report, 'summary');
+  assert(sumLink.template.outputs.length === 2 && sumLink.template.outputs[1].textCard, '설정 시 링크 카드 추가');
+  assert(sumLink.template.outputs[1].textCard.buttons[0].webLinkUrl.indexOf('report.html') > 0, '웹링크 버튼');
+  delete process.env.VENOMI_SITE_BASE;
+
   console.log('== 핸들러 감지 로직 ==');
   const api = require(path.join(__dirname, '..', '..', 'api', 'hospital-bot'));
   assert(api._internal.isKakaoSkill({ userRequest: {}, action: {} }) === true, '카카오 페이로드 감지');
   assert(api._internal.isKakaoSkill({ hospital: 'x' }) === false, '순수 API 페이로드 구분');
+  assert(typeof api._internal.getQuery === 'function' && api._internal.getQuery({ url: '/api/hospital-bot?hospital=abc&geo=1' }).hospital === 'abc', 'GET 쿼리 파싱(웹 리포트)');
 
   console.log(fails ? `\n❌ ${fails}건 실패` : '\n✅ 전체 통과');
   process.exit(fails ? 1 : 0);

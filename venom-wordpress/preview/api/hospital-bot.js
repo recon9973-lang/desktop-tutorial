@@ -24,6 +24,15 @@ const { diagnose } = require(path.join(CB, 'diagnose'));
 const kf = require(path.join(CB, 'kakao-format'));
 const whitelist = require(path.join(CB, 'whitelist'));
 
+function getQuery(req) {
+  if (req.query && typeof req.query === 'object') return req.query;
+  try {
+    const u = new URL(req.url, 'http://localhost');
+    const o = {}; u.searchParams.forEach((v, k) => { o[k] = v; });
+    return o;
+  } catch (e) { return {}; }
+}
+
 async function readBody(req) {
   let body = req.body;
   if (body && typeof body === 'object' && !Array.isArray(body)) return body;
@@ -102,6 +111,22 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
   if (req.method === 'GET') {
+    // 웹 리포트용 라이브 진단: /api/hospital-bot?hospital=..&geo=1
+    const q = getQuery(req);
+    const hospital = (q.hospital || q.q || '').toString().trim();
+    if (hospital) {
+      try {
+        const report = await diagnose(hospital, {
+          region: (q.region || '').toString().trim(),
+          now: Date.now(),
+          geoMode: String(q.geo || '') === '1' ? 'full' : 'light',
+        });
+        res.status(200).json(report);
+      } catch (e) {
+        res.status(500).json({ error: '진단 처리 오류', detail: e.message });
+      }
+      return;
+    }
     res.status(200).json({
       service: 'venomi-hospital-bot',
       phase: 'P0 + 카카오 연동(#2)',
@@ -135,4 +160,4 @@ module.exports = async function handler(req, res) {
 };
 
 // 테스트 노출
-module.exports._internal = { isKakaoSkill, postCallback };
+module.exports._internal = { isKakaoSkill, postCallback, getQuery };

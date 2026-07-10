@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>베노미 병원 진단서</title>
+<style>
+  :root{
+    --p:#533afd; --p-soft:#ede9ff; --bd:#1c1e54; --ink:#0d253d; --muted:#5a6b80;
+    --bg:#f6f9fc; --card:#fff; --border:#e3e8ee; --rule:#eef2f7;
+    --good:#0ea472; --good-bg:#e6f7f0; --warn:#c9820a; --warn-bg:#fdf3e0; --crit:#d64545; --crit-bg:#fdecec;
+    --shadow:0 1px 2px rgba(28,30,84,.05),0 8px 28px rgba(28,30,84,.07);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    line-height:1.6;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:22px}
+  .tnum{font-variant-numeric:tabular-nums}
+  a{color:var(--p)}
+  h1,h2,h3{letter-spacing:-.02em;line-height:1.25}
+  /* header */
+  .rpt-head{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);
+    padding:22px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800}
+  .brand .mk{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--bd));
+    display:grid;place-items:center;color:#fff;font-size:18px}
+  .brand small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+  .grade{display:flex;align-items:center;gap:12px}
+  .grade .big{font-size:40px;font-weight:800;line-height:1}
+  .grade .lbl{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .A{color:var(--good)} .B{color:var(--p)} .C{color:var(--warn)} .D,.F{color:var(--crit)}
+  .subject{margin:18px 2px 4px}
+  .subject h1{font-size:26px;margin:0}
+  .subject .meta{color:var(--muted);font-size:13.5px;margin-top:4px}
+  /* urgent */
+  .urgent{background:var(--warn-bg);border:1px solid #f3e0bd;border-radius:14px;padding:14px 16px;margin:16px 0;font-size:14px}
+  .urgent b{color:var(--warn)}
+  .urgent ul{margin:6px 0 0;padding-left:20px}
+  /* cards grid */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px 19px}
+  .card h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .card h3 .st{margin-left:auto;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .st.ok{color:var(--good);background:var(--good-bg)} .st.warn{color:var(--warn);background:var(--warn-bg)}
+  .st.crit{color:var(--crit);background:var(--crit-bg)} .st.na{color:var(--muted);background:var(--rule)}
+  .metric{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--rule);font-size:14px}
+  .metric:last-child{border-bottom:0}
+  .metric .v{font-weight:700;font-variant-numeric:tabular-nums}
+  .bar{height:8px;border-radius:99px;background:var(--rule);overflow:hidden;margin:3px 0 2px}
+  .bar>i{display:block;height:100%;border-radius:99px;background:var(--p)}
+  .bar.g>i{background:var(--good)} .bar.w>i{background:var(--warn)} .bar.c>i{background:var(--crit)}
+  .fixlist{margin:10px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink)}
+  .fixlist li{margin:3px 0}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:4px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule)}
+  th{color:var(--muted);font-weight:700;font-size:12px}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--rule);color:var(--bd)}
+  .btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--p);background:var(--p);color:#fff;
+    border-radius:10px;padding:9px 15px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;text-decoration:none}
+  .btn.ghost{background:transparent;color:var(--p)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .foot{margin:20px 0 40px;color:var(--muted);font-size:12.5px}
+  .foot .disc{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:12px;padding:12px 15px;margin-bottom:14px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+  .center{text-align:center;color:var(--muted);padding:60px 0}
+  .spin{width:26px;height:26px;border:3px solid var(--rule);border-top-color:var(--p);border-radius:50%;display:inline-block;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  @media print{
+    body{background:#fff} .actions,.btn{display:none!important}
+    .card,.rpt-head{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app">
+    <div class="center"><span class="spin"></span><p>진단서를 불러오는 중…</p></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var qs = new URLSearchParams(location.search);
+  var hospital = (qs.get('hospital')||qs.get('q')||'').trim();
+  var withGeo = qs.get('geo')==='1';
+  var app = document.getElementById('app');
+
+  if(!hospital){ app.innerHTML = msg('병원명이 필요합니다', '주소에 <code>?hospital=병원명</code>을 추가하세요. 예) ?hospital=대구 수성구 OO치과'); return; }
+
+  fetchReport();
+
+  function fetchReport(){
+    app.innerHTML = '<div class="center"><span class="spin"></span><p>'+esc(hospital)+' 진단 중…'+(withGeo?' (AI 검색 실측 포함, 최대 30초)':'')+'</p></div>';
+    var url = '/api/hospital-bot?hospital='+encodeURIComponent(hospital)+(withGeo?'&geo=1':'');
+    fetch(url).then(function(r){return r.json();}).then(render).catch(function(e){
+      app.innerHTML = msg('진단을 불러오지 못했습니다', esc(String(e&&e.message||e)));
+    });
+  }
+
+  function render(rep){
+    if(!rep || rep.error){ app.innerHTML = msg('진단 오류', esc((rep&&(rep.detail||rep.error))||'알 수 없는 오류')); return; }
+    var name = (rep.resolved && rep.resolved.place && rep.resolved.place.found && rep.resolved.place.name) || (rep.query&&rep.query.name) || hospital;
+    var region = (rep.resolved && rep.resolved.region) || '';
+    var s = rep.summary||{};
+    var gcls = gradeClass(s.grade);
+
+    var h = '';
+    h += '<div class="rpt-head">'
+       +   '<div class="brand"><span class="mk">🩺</span><span>베노미 진단서<small>병원마케팅 베놈 · 마케팅 건강검진</small></span></div>'
+       +   '<div class="grade"><div><div class="lbl">종합등급</div><div class="big '+gcls+'">'+esc(s.grade||'N/A')+'</div></div>'
+       +     (s.score!=null?'<div class="lbl tnum">'+s.score+'점</div>':'')+'</div>'
+       + '</div>';
+
+    h += '<div class="subject"><h1>'+esc(name)+'</h1><div class="meta">'
+       + (region?esc(region)+' · ':'') + (rep.resolved&&rep.resolved.dept?esc(rep.resolved.dept)+' · ':'')
+       + (rep.resolved&&rep.resolved.homepage?'<a href="'+esc(rep.resolved.homepage)+'" target="_blank" rel="noopener">홈페이지</a>':'홈페이지 미발견')
+       + '</div></div>';
+
+    if(s.urgent && s.urgent.length){
+      h += '<div class="urgent"><b>가장 시급한 개선</b><ul>'+s.urgent.map(function(u){return '<li>'+esc(u)+'</li>';}).join('')+'</ul></div>';
+    }
+
+    h += '<div class="cards">'
+       + cardSeo(rep.seo)
+       + cardGeo(rep.geo)
+       + cardLocal(rep.local)
+       + cardAds(rep.ads)
+       + cardLaw(rep.adLaw)
+       + '</div>';
+
+    h += '<div class="actions">'
+       + (!withGeo ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&geo=1">🤖 AI 검색(GEO) 실측하기</a>' : '')
+       + '<button class="btn ghost" onclick="window.print()">🖨 PDF로 저장/인쇄</button>'
+       + '</div>';
+
+    h += '<div class="foot"><div class="disc">'+esc(rep.disclaimer||'공개 데이터 기반 참고용 진단입니다.')+'</div>'
+       + '주식회사 베놈 · 1661-4142 · 대구광역시 수성구 용학로25길 54, 4층</div>';
+
+    app.innerHTML = h;
+  }
+
+  // ── 카드 렌더러 ──
+  function cardSeo(seo){
+    seo = seo||{};
+    if(seo.status!=='ok') return card('🔎 SEO 홈페이지', stTag(seo.status==='no-homepage'?'na':'na', seo.status==='no-homepage'?'홈페이지 미발견':'측정 불가'),
+      '<div class="metric"><span>'+esc(seo.note||statusKo(seo.status))+'</span></div>');
+    var sc = seo.scores||{};
+    var body = scoreRow('종합 SEO 점수', seo.score100, 100)
+      + subBar('성능', sc.performance) + subBar('SEO', sc.seo) + subBar('접근성', sc.accessibility)
+      + (seo.lab&&seo.lab.lcpMs?'<div class="metric"><span>최대콘텐츠표시(LCP)</span><span class="v">'+(seo.lab.lcpMs/1000).toFixed(1)+'초</span></div>':'')
+      + (seo.topFixes&&seo.topFixes.length?'<ul class="fixlist">'+seo.topFixes.map(function(f){return '<li>'+esc(f)+'</li>';}).join('')+'</ul>':'');
+    return card('🔎 SEO 홈페이지', stByScore(seo.score100), body);
+  }
+
+  function cardGeo(geo){
+    geo = geo||{};
+    if(geo.status==='done'){
+      var senti = {positive:'긍정',neutral:'중립',negative:'부정'}[geo.sentiment]||'·';
+      var body = scoreRow('AI 인용률', Math.round((geo.citationRate||0)*100), 100, 'ai검색에서 이 병원이 언급된 비율')
+        + '<div class="metric"><span>언급 / 질의</span><span class="v tnum">'+ (geo.mentionedCount||0) +' / '+ (geo.asked||0) +'</span></div>'
+        + '<div class="metric"><span>답변 내 점유율(SoV)</span><span class="v">'+pct(geo.shareOfVoice)+'</span></div>'
+        + '<div class="metric"><span>언급 톤</span><span class="v">'+senti+'</span></div>'
+        + '<div class="metric"><span>엔진</span><span class="v">'+esc((geo.engines||[]).join(', '))+'</span></div>'
+        + (geo.competitors&&geo.competitors.length?'<div style="margin-top:8px;font-size:12.5px;color:var(--muted)">함께 언급된 경쟁: '+geo.competitors.slice(0,4).map(function(c){return esc(c.name)+'('+c.mentions+')';}).join(', ')+'</div>':'');
+      return card('🤖 GEO · AI검색', gradeTag(geo.grade), body);
+    }
+    if(geo.status==='ready') return card('🤖 GEO · AI검색', stTag('warn','실측 대기'),
+      '<div class="metric"><span>'+esc(geo.note||'')+'</span></div><div style="margin-top:8px;font-size:12.5px;color:var(--muted)">아래 <b>AI 검색(GEO) 실측하기</b> 버튼으로 실행하세요.</div>');
+    return card('🤖 GEO · AI검색', stTag('na','미설정'),
+      '<div class="metric"><span>'+esc(geo.note||'AI 엔진 키 미설정')+'</span></div>');
+  }
+
+  function cardLocal(local){
+    local = local||{};
+    var pl = local.place||{}, bl = local.blog||{}, nw = local.news||{};
+    var body = '<div class="metric"><span>네이버 플레이스</span><span class="v">'+(pl.registered==null?'·':(pl.registered?'등록 확인':'미확인'))+'</span></div>'
+      + '<div class="metric"><span>블로그 노출</span><span class="v tnum">'+(bl.total==null?'·':fmt(bl.total)+'건')+'</span></div>'
+      + '<div class="metric"><span>뉴스 / PR</span><span class="v tnum">'+(nw.total==null?'·':fmt(nw.total)+'건')+'</span></div>'
+      + (local.signals&&local.signals.length?'<ul class="fixlist">'+local.signals.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>':'');
+    return card('📍 네이버 로컬', stTag('ok','조회'), body);
+  }
+
+  function cardAds(ads){
+    ads = ads||{};
+    if(ads.status!=='ok'||!ads.keywords||!ads.keywords.length)
+      return card('💰 광고 컨설팅', stTag('na', ads.status==='unconfigured'?'API 미설정':'조회 실패'),
+        '<div class="metric"><span>'+esc((ads&&ads.note)||statusKo(ads.status))+'</span></div>');
+    var rows = ads.keywords.slice(0,7).map(function(k){
+      return '<tr><td>'+esc(k.keyword)+'</td><td class="num">'+fmt(k.volume)+'</td><td><span class="tag">'+esc(k.competition)+'</span></td></tr>';
+    }).join('');
+    var body = '<table><thead><tr><th>키워드</th><th style="text-align:right">월 검색량</th><th>경쟁</th></tr></thead><tbody>'+rows+'</tbody></table>'
+      + '<div style="margin-top:8px;font-size:12px;color:var(--muted)">※ CPC(입찰가)는 추후 추가 예정.</div>';
+    return card('💰 광고 컨설팅', stTag('ok','조회'), body);
+  }
+
+  function cardLaw(law){
+    law = law||{};
+    if(law.status!=='ok') return card('⚖️ 의료광고법', stTag('na', law.status==='no-homepage'?'홈페이지 미발견':'스캔 불가'),
+      '<div class="metric"><span>'+esc(statusKo(law.status))+'</span></div>');
+    if(law.pass) return card('⚖️ 의료광고법', stTag('ok','양호'),
+      '<div class="metric"><span>홈페이지 본문에서 금지 표현 미발견(참고용)</span></div>');
+    var body = '<div class="metric"><span>위반 소지 표현</span><span class="v" style="color:var(--crit)">'+law.forbidden.length+'건</span></div>'
+      + '<div style="margin-top:6px">'+law.forbidden.map(function(w){return '<span class="tag" style="background:var(--crit-bg);color:var(--crit);margin:2px">'+esc(w)+'</span>';}).join('')+'</div>'
+      + (law.risky&&law.risky.length?'<div style="margin-top:8px;font-size:12.5px;color:var(--muted)">주의 표현: '+law.risky.map(esc).join(', ')+'</div>':'');
+    return card('⚖️ 의료광고법', stTag('crit','주의 필요'), body);
+  }
+
+  // ── 조각 헬퍼 ──
+  function card(title, st, body){ return '<div class="card"><h3>'+title+st+'</h3>'+body+'</div>'; }
+  function stTag(cls,label){ return '<span class="st '+cls+'">'+esc(label)+'</span>'; }
+  function stByScore(n){ if(n==null)return stTag('na','·'); return n>=80?stTag('ok',n+'/100'):n>=60?stTag('warn',n+'/100'):stTag('crit',n+'/100'); }
+  function gradeTag(g){ var c={A:'ok',B:'ok',C:'warn',D:'crit',F:'crit'}[g]||'na'; return stTag(c,'등급 '+(g||'·')); }
+  function scoreRow(label,val,max,hint){
+    var pctv = max?Math.round((val||0)/max*100):0;
+    var cls = pctv>=80?'g':pctv>=60?'w':'c';
+    return '<div class="metric"><span>'+esc(label)+(hint?' <span style="color:var(--muted);font-size:11.5px">'+esc(hint)+'</span>':'')+'</span><span class="v tnum">'+(val==null?'·':val)+(max===100?'':'')+'</span></div>'
+      + '<div class="bar '+cls+'"><i style="width:'+pctv+'%"></i></div>';
+  }
+  function subBar(label,val){
+    if(val==null) return '';
+    var cls = val>=80?'g':val>=60?'w':'c';
+    return '<div class="metric" style="border-bottom:0;padding-bottom:0"><span>'+esc(label)+'</span><span class="v tnum">'+val+'</span></div>'
+      + '<div class="bar '+cls+'"><i style="width:'+val+'%"></i></div>';
+  }
+  function gradeClass(g){ return {A:'A',B:'B',C:'C',D:'D',F:'F'}[g]||''; }
+  function statusKo(s){ return ({'no-homepage':'공식 홈페이지를 찾지 못했습니다','unavailable':'측정 도구 미설정','unconfigured':'API 미설정','error':'처리 오류','fetch-failed':'페이지 수집 실패'})[s]||('상태: '+(s||'·')); }
+  function pct(v){ return v==null?'·':Math.round(v*100)+'%'; }
+  function fmt(n){ return n==null?'·':Number(n).toLocaleString('ko-KR'); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function msg(title,sub){ return '<div class="center"><h2>'+esc(title)+'</h2><p>'+sub+'</p></div>'; }
+})();
+</script>
+</body>
+</html>

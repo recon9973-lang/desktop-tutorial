@@ -12,6 +12,19 @@
 const CHANNEL_URL = 'https://pf.kakao.com/_jxjxdcxj';
 const TEL = '1661-4142';
 
+// 웹 풀리포트 URL (VENOMI_SITE_BASE 설정 시에만 카드에 링크 노출)
+function reportUrl(name) {
+  const base = (process.env.VENOMI_SITE_BASE || '').replace(/\/+$/, '');
+  if (!base) return null;
+  return `${base}/hospital-bot/report.html?hospital=${encodeURIComponent(name)}`;
+}
+function reportLinkCard(name) {
+  const url = reportUrl(name);
+  if (!url) return null;
+  return { textCard: { title: '📄 상세 웹 리포트', description: '점수·경쟁·처방을 웹에서 자세히 보고 PDF로 저장할 수 있어요.',
+    buttons: [{ action: 'webLink', label: '웹 리포트 열기', webLinkUrl: url }] } };
+}
+
 // ── 발화 파싱 ─────────────────────────────────────────
 const VIEW_KEYWORDS = [
   ['law', /(심의|광고법|의료법)$/],
@@ -86,7 +99,10 @@ function renderSummary(report) {
   }
   L.push('');
   L.push('※ 공개 데이터 기반 참고용 진단입니다.');
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  const outputs = [simpleText(L.join('\n'))];
+  const linkCard = reportLinkCard(name);
+  if (linkCard) outputs.push(linkCard);
+  return skill(outputs, viewQuickReplies(name));
 }
 
 function line_seo(seo) {
@@ -268,6 +284,6 @@ module.exports = {
   parseCommand, render,
   renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderContact,
   renderRefusal, renderAsk, renderError, ackData,
-  skill, simpleText, viewQuickReplies, displayName,
+  skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,
 };

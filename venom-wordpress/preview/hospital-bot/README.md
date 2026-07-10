@@ -17,9 +17,11 @@ hospital-bot/
 │   ├── geo-probe.js       GEO/AI 노출 실 프로빙(preview/probe) — 인용률·SoV·감성
 │   ├── kakao-format.js    진단서 → 카카오 SkillResponse + 발화 파싱
 │   └── whitelist.js       직원 발신자 게이팅(VENOMI_WHITELIST)
+├── report.html            웹 풀리포트(라이브 진단·시각화·PDF)
 └── test/
     ├── run.js             코어 오프라인 검증(20 assert)
-    └── kakao.js           카톡 연동 오프라인 검증(25 assert)
+    ├── kakao.js           카톡 연동 오프라인 검증(30 assert)
+    └── geo.js             GEO 프로빙 오프라인 검증(18 assert)
 ```
 
 재사용(기존 저장소 자산): `../lib/naver-searchad`(검색량·경쟁도), `../lib/psi`(속도·SEO), `../lib/medical-ad-validator`(금지어).
@@ -69,6 +71,7 @@ POST /api/hospital-bot
 - `NAVER_AD_API_KEY` / `NAVER_AD_SECRET` / `NAVER_AD_CUSTOMER_ID` — 검색광고 키워드도구(검색량)
 - `PSI_KEY` — Google PageSpeed(SEO·속도)
 - `VENOMI_WHITELIST` — (선택) 직원 카카오 botUserKey 쉼표목록. 미설정 시 open(개발), 설정 시 직원만 허용.
+- `VENOMI_SITE_BASE` — (선택) 웹 리포트 절대 URL 베이스(예: `https://<배포도메인>`). 설정 시 카톡 카드에 웹 리포트 링크 노출.
 - **GEO 실측(1개 이상)**: `PERPLEXITY_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY`(또는 GOOGLE_AI_KEY) / `ANTHROPIC_API_KEY`. 미설정 시 GEO는 'unconfigured'로 표기(허위수치 없음).
 
 ## 검증
@@ -87,9 +90,15 @@ node hospital-bot/test/run.js --live "대구 수성구 OO치과"   # 실 API(키
 - **probe(`geo` 명령)**: 환자 의도 프롬프트 4개 × 가용 엔진 최대 3개를 실질의 → **인용률·SoV·감성·등급**.
   브랜드 질의(병원명 직접 언급)는 인용률 부풀림 방지를 위해 기본 세트에서 제외.
 
+## 웹 풀리포트
+
+- 페이지: `/hospital-bot/report.html?hospital=<병원명>` (`&geo=1` → AI 검색 실측 포함).
+- 라이브 진단(`GET /api/hospital-bot?hospital=..`)을 불러와 점수 바·경쟁·처방을 렌더, **인쇄→PDF 저장** 지원.
+- 카톡 종합 카드에서 링크로 연결(`VENOMI_SITE_BASE` 설정 시 자동 노출).
+
 ## 다음 단계
 
-- **웹 풀리포트**: `/hospital-bot/report/:id` 상세·시각화(카톡 카드에서 링크).
 - **CPC**: 검색광고 입찰가 추정 API 연동.
 - **경쟁사 비교(P2)**: 동일 지역·진료과 상위 3곳 나란히(GEO SoV의 competitors 재활용).
+- **진단 캐시**: 병원별 24h KV 캐시(재조회 비용 절감).
 </content>
