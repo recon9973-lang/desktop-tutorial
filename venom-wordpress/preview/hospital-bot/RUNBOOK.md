@@ -6,6 +6,19 @@
 
 ---
 
+## 0. 배포 준비 체크리스트 (GO-LIVE)
+
+- [ ] **환경변수 설정**(§1) — 최소 `NAVER_CLIENT_ID/SECRET`. 광고=검색광고 3종, SEO=`PSI_KEY`, GEO=AI엔진 1개+.
+- [ ] 🔒 **`VENOMI_WHITELIST` 설정 필수(운영)** — 미설정 시 채널을 추가한 **누구나** 진단을 돌릴 수 있음(비용·오남용). 직원 `botUserKey`만 등록해 enforced로 잠글 것. (개발/테스트 동안만 open 허용)
+- [ ] `VENOMI_SITE_BASE` = 배포 도메인 — 카톡 카드의 웹 리포트/제안서 링크 활성화.
+- [ ] (선택) `KV_REST_API_URL/TOKEN` — 24h 캐시로 재조회 비용 절감.
+- [ ] **배포 후 `GET /api/hospital-bot`** 로 `config` 확인(각 키 true, whitelistMode, cache).
+- [ ] **스모크**(§3 / `test/smoke.sh`) — 실제 병원 1곳 종합·GEO·순위·제안서 확인.
+- [ ] **오픈빌더 연결**(§4) — 폴백 블록 스킬 + **콜백 사용 ON** + 화이트리스트 등록.
+- [ ] 파일럿: 기존 고객 병원 3~5곳 진단 → 리포트 정합성·의료광고법 문구 재검.
+
+---
+
 ## 1. 환경변수 (Vercel → Settings → Environment Variables)
 
 | 차원 | 키 | 없으면 |
@@ -16,6 +29,7 @@
 | GEO 실측(1개↑) | `PERPLEXITY_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` | geo `unconfigured` |
 | 직원 게이팅(운영 시) | `VENOMI_WHITELIST` = 직원 botUserKey 쉼표목록 | open(개발) |
 | 카톡 카드 웹링크 | `VENOMI_SITE_BASE` = `https://<배포도메인>` | 링크 숨김 |
+| 진단 24h 캐시 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` (Vercel KV) | 캐시 off(정상 동작) |
 
 > 모든 키는 선택적으로 동작(부분 성공). 없는 차원은 **수치를 지어내지 않고** status로 표기.
 
