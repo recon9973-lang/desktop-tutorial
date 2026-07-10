@@ -31,9 +31,14 @@ function defaultDeps() {
     searchad: require('../../lib/naver-searchad'),
     psi: require('../../lib/psi'),
     adValidator: require('../../lib/medical-ad-validator'),
+    cache: require('../../lib/cache'),
     fetchHtml,
   };
 }
+
+const CACHE_TTL = 60 * 60 * 24; // 24h
+function cacheNorm(s) { return String(s || '').replace(/\s+/g, '').toLowerCase(); }
+async function safe(promise) { try { return await promise; } catch (e) { return null; } }
 
 // ── 유틸 ──────────────────────────────────────────────
 // 광역/특별시·도(구로 끝나는 '대구'가 자치구로 오인되지 않게 별도 처리)
@@ -264,49 +269,78 @@ function summarize(report) {
   return { grade, score: norm == null ? null : Math.round(norm), headline, urgent: urgent.slice(0, 3) };
 }
 
-// ── 메인 오케스트레이터 ────────────────────────────────
-async function diagnose(rawInput, opts = {}) {
-  const deps = opts.deps || defaultDeps();
-  const started = opts.now || 0; // Date.now는 서버 핸들러에서 주입(스크립트 재현성)
+// 베이스 번들(값싼 5대 진단 + 병원탐지 + GEO preview) — 24h 캐시 단위
+async function computeBase(deps, q) {
   const warnings = [];
-  const q = parseInput(rawInput);
-  if (opts.region) q.region = opts.region;
-
-  // 1) 병원 탐지
   let place;
-  try {
-    place = await deps.naverOpenapi.findHospital(q.raw, {});
-  } catch (e) { place = { found: false, error: e.message, source: 'naver-local' }; }
+  try { place = await deps.naverOpenapi.findHospital(q.raw, {}); }
+  catch (e) { place = { found: false, error: e.message, source: 'naver-local' }; }
   if (!place.found) warnings.push('병원 탐지 실패 — 지역·정식명칭으로 재시도 권장');
 
   const region = q.region || regionFromAddress(place.address) || '';
   const dept = simplifyDept(place.category) || simplifyDept(q.raw);
   const homepage = place.homepage || null;
-
-  // 2) 6대 진단 병렬
-  //    GEO는 기본 light(preview): 종합 카드용, 호출 없음(빠름).
-  //    'geo' 명령 등에서 opts.geoMode='full' → 실 프로빙(느림·유료).
   const gname = place.found ? place.name : q.name;
-  const geoMode = opts.geoMode === 'full' ? 'full' : 'light';
-  const [seo, local, ads, adLaw, geo] = await Promise.all([
+
+  const [seo, local, ads, adLaw, geoPreview] = await Promise.all([
     diagnoseSeo(deps, homepage),
     diagnoseLocal(deps, gname, region),
     diagnoseAds(deps, dept, region),
     diagnoseAdLaw(deps, homepage),
-    geoMode === 'full'
-      ? deps.geoProbe.probe(gname, { category: place.category || '', region })
-      : deps.geoProbe.preview(gname, { category: place.category || '', region }),
+    deps.geoProbe.preview(gname, { category: place.category || '', region }),
   ]);
+  return { place, region, dept, homepage, gname, seo, local, ads, adLaw, geoPreview, warnings };
+}
 
-  // 3) 경쟁사 비교(opt-in) — 'compete' 명령에서만. GEO 경쟁 목록 있으면 재활용.
+// ── 메인 오케스트레이터 ────────────────────────────────
+async function diagnose(rawInput, opts = {}) {
+  const deps = opts.deps || defaultDeps();
+  const cache = deps.cache;
+  const useCache = opts.cache !== false && cache && cache.configured && cache.configured();
+  const started = opts.now || 0; // Date.now는 서버 핸들러에서 주입(스크립트 재현성)
+  const q = parseInput(rawInput);
+  if (opts.region) q.region = opts.region;
+  const geoMode = opts.geoMode === 'full' ? 'full' : 'light';
+  const cacheHit = { base: false, geo: false, compete: false };
+
+  // 1) 베이스 번들(24h 캐시): 병원탐지 + 값싼 5대 + GEO preview
+  const baseKey = `venomi:base:v2:${cacheNorm(q.raw)}|${q.region || ''}`;
+  let base = useCache ? await safe(cache.getJson(baseKey)) : null;
+  if (base) cacheHit.base = true;
+  else {
+    base = await computeBase(deps, q);
+    if (useCache) await safe(cache.setJson(baseKey, base, CACHE_TTL));
+  }
+  const { place, region, dept, homepage, gname, seo, local, ads, adLaw } = base;
+  const warnings = (base.warnings || []).slice();
+
+  // 2) GEO — light면 preview 재사용, full이면 실 프로빙(별도 24h 캐시)
+  let geo = base.geoPreview;
+  if (geoMode === 'full') {
+    const geoKey = `venomi:geo:v2:${cacheNorm(gname)}|${region}`;
+    let g = useCache ? await safe(cache.getJson(geoKey)) : null;
+    if (g) cacheHit.geo = true;
+    else {
+      g = await deps.geoProbe.probe(gname, { category: place.category || '', region });
+      if (useCache && g && g.status === 'done') await safe(cache.setJson(geoKey, g, CACHE_TTL));
+    }
+    geo = g;
+  }
+
+  // 3) 경쟁사 비교(opt-in, 24h 캐시) — GEO 경쟁 목록 재활용
   let compete = null;
   if (opts.compete) {
-    try {
-      compete = await deps.compete.compareCompetitors(gname, {
-        region, dept, deps,
-        existingCompetitors: (geo && geo.competitors) || [],
-      });
-    } catch (e) { compete = { status: 'error', error: e.message, rows: [] }; }
+    const cKey = `venomi:compete:v2:${cacheNorm(gname)}|${region}`;
+    compete = useCache ? await safe(cache.getJson(cKey)) : null;
+    if (compete) cacheHit.compete = true;
+    else {
+      try {
+        compete = await deps.compete.compareCompetitors(gname, {
+          region, dept, deps, existingCompetitors: (geo && geo.competitors) || [],
+        });
+      } catch (e) { compete = { status: 'error', error: e.message, rows: [] }; }
+      if (useCache && compete && compete.status === 'ok') await safe(cache.setJson(cKey, compete, CACHE_TTL));
+    }
   }
 
   const report = {
@@ -320,6 +354,7 @@ async function diagnose(rawInput, opts = {}) {
       reused: ['naver-searchad', 'psi', 'medical-ad-validator', 'naver-openapi'],
       generatedAtMs: started || null,
       warnings,
+      cache: useCache ? cacheHit : { enabled: false },
     },
   };
   report.summary = summarize(report);
@@ -333,4 +368,4 @@ async function diagnose(rawInput, opts = {}) {
   return report;
 }
 
-module.exports = { diagnose, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, fetchHtml, defaultDeps };
+module.exports = { diagnose, computeBase, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, fetchHtml, defaultDeps };

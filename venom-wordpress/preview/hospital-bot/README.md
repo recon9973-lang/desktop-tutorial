@@ -26,6 +26,7 @@ hospital-bot/
     ├── geo.js             GEO 프로빙 오프라인 검증
     ├── compete.js         경쟁사 비교 오프라인 검증
     ├── proposal.js        제안서 초안 오프라인 검증
+    ├── cache.js           진단 캐시 오프라인 검증
     └── smoke.sh           배포 스모크(curl)
 ```
 
@@ -77,6 +78,7 @@ POST /api/hospital-bot
 - `PSI_KEY` — Google PageSpeed(SEO·속도)
 - `VENOMI_WHITELIST` — (선택) 직원 카카오 botUserKey 쉼표목록. 미설정 시 open(개발), 설정 시 직원만 허용.
 - `VENOMI_SITE_BASE` — (선택) 웹 리포트 절대 URL 베이스(예: `https://<배포도메인>`). 설정 시 카톡 카드에 웹 리포트 링크 노출.
+- `KV_REST_API_URL` / `KV_REST_API_TOKEN` — (선택) Vercel KV/Upstash. 설정 시 진단 24h 캐시(재조회 비용·지연 절감). 미설정 시 캐시 off(정상 동작).
 - **GEO 실측(1개 이상)**: `PERPLEXITY_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY`(또는 GOOGLE_AI_KEY) / `ANTHROPIC_API_KEY`. 미설정 시 GEO는 'unconfigured'로 표기(허위수치 없음).
 
 ## 검증
@@ -115,10 +117,16 @@ node hospital-bot/test/run.js --live "대구 수성구 OO치과"   # 실 API(키
   가정(클릭률 4%)을 명시해 추정 → 월 광고비 밴드. `lib/proposal.js`.
 - 웹 리포트에 제안서 섹션 렌더 + PDF 저장.
 
+## 진단 캐시(24h)
+
+병원+지역 기준으로 **베이스 번들·GEO 실측·경쟁 비교를 각각 24h 캐시**(Vercel KV).
+드릴다운(종합→GEO→순위→제안서)에서 값싼 베이스 재계산·중복 GEO 호출을 스킵.
+`report.meta.cache`로 hit 여부 노출. `?cache=0`(또는 opts.cache=false)로 강제 갱신. KV 미설정 시 자동 off.
+
 ## 다음 단계
 
-- **진단 캐시**: 병원별 24h KV 캐시(재조회 비용 절감).
 - **제안서 운영**: 슬랙·CRM 연동, LLM 프로즈 다듬기(선택).
+- **사용량·비용 모니터링**: 변동 한도 소프트 조절(트랙 B 운영).
 
 > CPC(입찰가 추정)는 완료 — `lib/naver-searchad.fetchBidEstimate`(POST /estimate/average-position-bid/keyword). 실측 불가 환경 대비 응답 스키마 불일치 시 null로 안전 degrade. 프로덕션 첫 호출 시 실제 응답 필드(bid/estimate) 확인 권장.
 </content>

@@ -125,6 +125,7 @@ module.exports = async function handler(req, res) {
           geoMode: String(q.geo || '') === '1' ? 'full' : 'light',
           compete: String(q.compete || '') === '1' || String(q.proposal || '') === '1',
           proposal: String(q.proposal || '') === '1',
+          cache: String(q.cache || '') !== '0', // ?cache=0 → 강제 갱신
         });
         res.status(200).json(report);
       } catch (e) {
@@ -140,6 +141,7 @@ module.exports = async function handler(req, res) {
         naverSearchAd: !!(process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE),
         psi: !!process.env.PSI_KEY,
         whitelistMode: whitelist.isConfigured() ? 'enforced' : 'open',
+        cache: require(path.join(__dirname, '..', 'lib', 'cache')).configured() ? '24h(KV)' : 'off',
       },
       reused: ['naver-searchad', 'psi', 'medical-ad-validator', 'naver-openapi', 'geo-probe(stub)'],
       note: '순수 API: POST { hospital, region? } · 카카오 스킬: userRequest/action 페이로드',
