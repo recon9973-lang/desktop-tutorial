@@ -8,6 +8,15 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
+<?php if (is_front_page()) : ?>
+<!-- Intro preloader — typewriter "AI ready?" (홈에서만) -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="type-wrap">
+    <span class="type-text"></span><span class="type-cursor"></span>
+  </div>
+</div>
+<?php endif; ?>
+
 <!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobileOverlay" aria-hidden="true"></div>
 <nav class="mobile-menu" id="mobileMenu" aria-label="모바일 메뉴">

@@ -865,3 +865,14 @@ h4 { font-size: 18px; font-weight: 300; line-height: 1.4; }
   .service-card, .ai-card, .pricing-card, .blog-card, .process-step, .testimonial-card { transform: none; }
   .hero-eyebrow .pill-tag::before { animation: none; }
 }
+
+/* 인트로 프리로더 — 타이핑 "AI ready?" + 커튼 리빌 */
+.preloader { position: fixed; inset: 0; z-index: 2000; background: var(--color-brand-dark); display: grid; place-items: center; transform: translateY(0); transition: transform 1s cubic-bezier(0.7,0,0.2,1); will-change: transform; }
+.preloader.done { transform: translateY(-100%); }
+.preloader.hidden { display: none; }
+body.intro-lock { overflow: hidden; }
+.preloader .type-wrap { font-family: var(--f-display, inherit); color: #fff; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(38px, 8vw, 92px); display: inline-flex; align-items: center; line-height: 1; }
+.preloader .type-text { white-space: pre; }
+.preloader .type-cursor { display: inline-block; width: 0.07em; height: 0.9em; background: var(--color-primary); margin-left: 0.05em; animation: venomCaret 1.05s steps(1) infinite; }
+.preloader .type-cursor.busy { animation: none; opacity: 1; }
+@keyframes venomCaret { 50% { opacity: 0; } }

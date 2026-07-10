@@ -17,6 +17,7 @@
     initCountUp();
     initHeroFx();
     initMagnetic();
+    initIntro();
   });
 
   const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -249,5 +250,56 @@
       });
       btn.addEventListener('pointerleave', () => { btn.style.transform = ''; });
     });
+  }
+
+  /* ── 인트로: 커서 깜박임 → "AI ready?" 자가교정 타이핑 → 커튼 리빌 ── */
+  function initIntro() {
+    const pl = document.getElementById('preloader');
+    if (!pl) return;
+    const txt = pl.querySelector('.type-text');
+    const caret = pl.querySelector('.type-cursor');
+    const end = () => {
+      if (pl.classList.contains('done')) return;
+      pl.classList.add('done');
+      document.body.classList.remove('intro-lock');
+      window.scrollTo(0, 0);
+      setTimeout(() => pl.classList.add('hidden'), 1000);
+    };
+    if (REDUCE || !txt) { pl.classList.add('hidden'); document.body.classList.remove('intro-lock'); return; }
+
+    document.body.classList.add('intro-lock');
+    let typed = '';
+    const draw = () => { txt.textContent = typed; };
+    const busy = on => { if (caret) caret.classList.toggle('busy', on); };
+    const typeStr = (str, cb) => {
+      busy(true); let i = 0;
+      (function step() {
+        if (i >= str.length) { busy(false); cb(); return; }
+        typed += str.charAt(i++); draw();
+        setTimeout(step, 95 + Math.random() * 80);
+      })();
+    };
+    const delN = (n, cb) => {
+      busy(true);
+      (function step() {
+        if (n <= 0) { busy(false); cb(); return; }
+        typed = typed.slice(0, -1); draw(); n--;
+        setTimeout(step, 90);
+      })();
+    };
+    const timeline = [
+      n => setTimeout(n, 1400),        // 커서 깜박임
+      n => typeStr('AI rae', n),       // 오타 포함 타이핑
+      n => setTimeout(n, 360),
+      n => delN(2, n),                 // "ae" 삭제
+      n => setTimeout(n, 140),
+      n => typeStr('eady?', n),        // → "AI ready?"
+      n => setTimeout(n, 800),
+      () => end()
+    ];
+    const run = i => { if (i < timeline.length) timeline[i](() => run(i + 1)); };
+    const start = () => run(0);
+    document.readyState === 'complete' ? start() : window.addEventListener('load', start);
+    setTimeout(end, 12000); // 안전장치
   }
 })();
