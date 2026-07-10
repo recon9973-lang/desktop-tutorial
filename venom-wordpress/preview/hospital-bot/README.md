@@ -3,10 +3,9 @@
 > 병원명만 넣으면 SEO·GEO·네이버 로컬·광고·의료광고법을 한 번에 진단하는 AI 코워커.
 > 기획: [`PLAN.md`](./PLAN.md) · 시각 기획안은 세션 Artifact 참조.
 
-## 현재 상태 — P0 (코어 엔진 완료)
+## 현재 상태 — P0 코어 엔진 + 카카오 연동(#2) 완료
 
-병원명 → **6대 진단서 JSON**을 만드는 오케스트레이터를 구현했습니다.
-카카오 오픈빌더 연동·직원 화이트리스트(#2)는 이 위에 얹습니다.
+병원명 → **6대 진단서 JSON** 오케스트레이터 + **카카오 오픈빌더 스킬 서버**(직원 화이트리스트·5초 콜백 대응)를 구현했습니다.
 
 ```
 hospital-bot/
@@ -15,9 +14,12 @@ hospital-bot/
 ├── lib/
 │   ├── diagnose.js        ★ 코어 오케스트레이터 — diagnose(병원명) → 진단서
 │   ├── naver-openapi.js   병원 탐지·로컬(플레이스/블로그/뉴스) 래퍼
-│   └── geo-probe.js       GEO/AI 노출 진단 (P0 스텁 → P1 활성)
+│   ├── geo-probe.js       GEO/AI 노출 진단 (P0 스텁 → P1 활성)
+│   ├── kakao-format.js    진단서 → 카카오 SkillResponse + 발화 파싱
+│   └── whitelist.js       직원 발신자 게이팅(VENOMI_WHITELIST)
 └── test/
-    └── run.js             오프라인 검증(네트워크·키 불필요)
+    ├── run.js             코어 오프라인 검증(20 assert)
+    └── kakao.js           카톡 연동 오프라인 검증(25 assert)
 ```
 
 재사용(기존 저장소 자산): `../lib/naver-searchad`(검색량·경쟁도), `../lib/psi`(속도·SEO), `../lib/medical-ad-validator`(금지어).
@@ -36,30 +38,51 @@ hospital-bot/
 ## API
 
 ```
-GET  /api/hospital-bot                     상태·연동키 설정 여부
-POST /api/hospital-bot { hospital, region? }  → 진단서 JSON
+GET  /api/hospital-bot                          상태·연동키·화이트리스트 모드
+POST /api/hospital-bot
+  ① 순수 API:   { hospital, region? }            → 진단서 JSON(내부·테스트)
+  ② 카카오 스킬: { userRequest, action, ... }     → SkillResponse v2.0
 ```
 
-응답 요지: `{ summary:{grade,urgent[]}, seo, geo, local, ads, adLaw, disclaimer }`.
+응답 요지(순수 API): `{ summary:{grade,urgent[]}, seo, geo, local, ads, adLaw, disclaimer }`.
 모든 외부 호출은 개별 가드 — 일부 실패해도 부분 진단서가 나옵니다. **없는 수치는 지어내지 않고** status로 표기합니다.
+
+## 카카오 오픈빌더 연동
+
+발화(병원명) → 6대 요약 카드 + 뷰 전환 버튼(quickReplies). 상세 뷰는 발화로도 진입:
+`OO치과 seo` · `OO치과 광고` · `OO치과 geo` · `OO치과 플레이스` · `OO치과 심의` · `상담`.
+
+**5초 타임아웃 대응**: 블록에 **콜백(callback) 사용**을 켜면, 봇이 먼저 "진단 중…" ack를 보내고
+진단 완료 시 `callbackUrl`로 최종 카드를 POST합니다(서버리스에서도 반환 프라미스까지 함수 유지).
+
+**연결 순서**
+1. 카카오톡 채널 챗봇(오픈빌더) 생성 → **폴백 블록**에 스킬 연결.
+2. 스킬 URL: `https://<배포도메인>/api/hospital-bot` (POST).
+3. 블록에서 **콜백 사용 ON**(권장) → 느린 진단도 타임아웃 없이 전달.
+4. `VENOMI_WHITELIST`에 직원 `botUserKey`를 등록해 **enforced**로 잠금(미설정 시 open).
+
+> `userRequest.user.id`(botUserKey)는 채널·봇마다 고유값입니다. 직원별로 한 번 발화시켜 로그에서 확보 후 등록하세요.
 
 ## 필요 환경변수 (Vercel)
 
 - `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` — 네이버 검색 OpenAPI(병원 탐지·로컬)
 - `NAVER_AD_API_KEY` / `NAVER_AD_SECRET` / `NAVER_AD_CUSTOMER_ID` — 검색광고 키워드도구(검색량)
 - `PSI_KEY` — Google PageSpeed(SEO·속도)
+- `VENOMI_WHITELIST` — (선택) 직원 카카오 botUserKey 쉼표목록. 미설정 시 open(개발), 설정 시 직원만 허용.
 
 ## 검증
 
 ```bash
 cd venom-wordpress/preview
-node hospital-bot/test/run.js                       # 오프라인(mock) — 20개 assert
+node hospital-bot/test/run.js                       # 코어 오프라인(mock) — 20 assert
+node hospital-bot/test/kakao.js                     # 카톡 연동 오프라인 — 25 assert
 node hospital-bot/test/run.js --live "대구 수성구 OO치과"   # 실 API(키 설정 시)
 ```
 
 ## 다음 단계
 
-- **#2 카카오 연동**: 오픈빌더 스킬 서버(`api/hospital-bot`에 카톡 포맷터·발신자 화이트리스트 추가) + 5초 타임아웃 대응(즉답 후 채널 메시지 푸시).
 - **P1 GEO**: `lib/geo-probe.js` 실 프로빙(ChatGPT·Perplexity·Gemini) → 인용률·SoV·등급.
+- **웹 풀리포트**: `/hospital-bot/report/:id` 상세·시각화(카톡 카드에서 링크).
 - **CPC**: 검색광고 입찰가 추정 API 연동.
+- **경쟁사 비교(P2)**: 동일 지역·진료과 상위 3곳 나란히.
 </content>
