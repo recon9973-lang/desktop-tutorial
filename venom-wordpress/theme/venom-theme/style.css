@@ -876,3 +876,29 @@ body.intro-lock { overflow: hidden; }
 .preloader .type-cursor { display: inline-block; width: 0.07em; height: 0.9em; background: var(--color-primary); margin-left: 0.05em; animation: venomCaret 1.05s steps(1) infinite; }
 .preloader .type-cursor.busy { animation: none; opacity: 1; }
 @keyframes venomCaret { 50% { opacity: 0; } }
+
+/* 진료과 마퀴 */
+.venom-mq { border-top: 1px solid var(--color-hairline); border-bottom: 1px solid var(--color-hairline); overflow: hidden; --mq-dur: 28s; }
+.venom-mq-track { display: flex; width: max-content; white-space: nowrap; padding: 20px 0; animation: venomMq var(--mq-dur) linear infinite; }
+.venom-mq-track .it { font-size: clamp(20px, 2.4vw, 30px); font-weight: 750; letter-spacing: -0.02em; padding: 0 20px; color: var(--color-ink); }
+.venom-mq-track .sep { color: var(--color-primary); padding: 0 2px; align-self: center; }
+@keyframes venomMq { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .venom-mq-track { animation: none; } }
+
+/* 왜 베놈인가 — 다크 밴드 */
+.venom-darkband { background: var(--color-brand-dark); color: #fff; }
+.venom-darkband .pill-tag { color: #fff; background: rgba(255,255,255,.1); }
+.venom-darkband h2 { color: #fff; }
+.venom-darkband .dband-head { max-width: 640px; margin: 0 auto 44px; text-align: center; }
+.venom-darkband .dband-head p { color: rgba(255,255,255,.6); margin-top: 14px; }
+.venom-darkband .dband-stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid rgba(255,255,255,.14); border-radius: var(--radius-xl); overflow: hidden; }
+.venom-darkband .dstat { padding: 30px 24px; border-right: 1px solid rgba(255,255,255,.12); }
+.venom-darkband .dstat:last-child { border-right: none; }
+.venom-darkband .dstat .dn { font-size: clamp(22px, 2.6vw, 30px); font-weight: 800; letter-spacing: -0.02em; }
+.venom-darkband .dstat .dn em { font-style: normal; color: var(--color-primary); }
+.venom-darkband .dstat .dl { color: rgba(255,255,255,.6); font-size: 13.5px; margin-top: 10px; }
+@media (max-width: 760px) {
+  .venom-darkband .dband-stats { grid-template-columns: 1fr 1fr; }
+  .venom-darkband .dstat:nth-child(2) { border-right: none; }
+  .venom-darkband .dstat:nth-child(1), .venom-darkband .dstat:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,.12); }
+}

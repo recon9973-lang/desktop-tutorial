@@ -58,16 +58,14 @@ get_header(); ?>
   </div>
 </section>
 
-<!-- Trust Logos -->
-<div class="section" style="padding:32px 0;border-bottom:1px solid var(--color-hairline);">
-  <div class="container trust-strip">
-    <span class="trust-strip-label">다양한 진료과 병원과 함께합니다</span>
-    <?php
-    $types = ['치과','피부과','정형외과','한의원','성형외과','내과','안과','의료기기'];
-    foreach ($types as $t): ?>
-      <span class="trust-logo"><?php echo esc_html($t); ?></span>
-    <?php endforeach; ?>
-  </div>
+<!-- 진료과 마퀴 -->
+<div class="venom-mq" aria-label="전문 진료과">
+  <?php
+  $types = ['치과','피부과','성형외과','한의원','정형외과','안과','산부인과','이비인후과','내과','의료기기'];
+  $one = '';
+  foreach ($types as $t) { $one .= '<span class="it">' . esc_html($t) . '</span><span class="sep">✦</span>'; }
+  ?>
+  <div class="venom-mq-track"><?php echo $one . $one; ?></div>
 </div>
 
 <!-- ============================================================
@@ -282,6 +280,25 @@ get_header(); ?>
           </div>
         </div>
       <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     왜 베놈인가 (다크 밴드)
+     ============================================================ -->
+<section class="section venom-darkband">
+  <div class="container">
+    <div class="dband-head">
+      <span class="pill-tag">왜 베놈인가</span>
+      <h2 class="display-lg" data-reveal style="margin-top:1rem;">보이는 마케팅이 아니라,<br>내원으로 이어지는 마케팅.</h2>
+      <p data-reveal>추측이 아니라 데이터로. 병원만 다루는 전담팀이 의료광고 심의 기준을 지키며 운영합니다.</p>
+    </div>
+    <div class="dband-stats" data-reveal>
+      <div class="dstat"><div class="dn">병원 전문</div><div class="dl">병원 마케팅만 다루는 전담팀</div></div>
+      <div class="dstat"><div class="dn">1:1</div><div class="dl">병원별 전담 담당자 배정</div></div>
+      <div class="dstat"><div class="dn">심의 <em>준수</em></div><div class="dl">의료광고 기준 준수 운영</div></div>
+      <div class="dstat"><div class="dn">월간 <em>리포트</em></div><div class="dl">성과를 투명하게 공유</div></div>
     </div>
   </div>
 </section>
