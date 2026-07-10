@@ -43,10 +43,15 @@ function venom_enqueue_assets(): void {
     $v = wp_get_theme()->get('Version');
     $uri = get_template_directory_uri();
 
-    // Google Fonts — Inter
+    // Pretendard (한글 최적) + Inter fallback
+    wp_enqueue_style(
+        'venom-pretendard',
+        'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css',
+        [], null
+    );
     wp_enqueue_style(
         'venom-fonts',
-        'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap',
+        'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
         [], null
     );
 

@@ -7,41 +7,51 @@ get_header(); ?>
 <!-- ============================================================
      HERO — Gradient Mesh
      ============================================================ -->
-<section class="gradient-mesh hero">
+<section class="gradient-mesh hero has-visual">
   <div class="container">
-    <div class="hero-eyebrow">
-      <span class="pill-tag">대한민국 No.1 병원 전문 마케팅</span>
-    </div>
-    <h1 class="display-xxl hero-title">
-      병원 매출을<br>
-      <strong>데이터로 증명</strong>하는<br>
-      마케팅 파트너
-    </h1>
-    <p class="hero-desc">
-      의료광고심의부터 SEO · GEO · AEO · SNS 광고까지.<br>
-      베놈은 병원 전문 마케터가 직접 전략을 설계하고 실행합니다.
-    </p>
-    <div class="hero-cta">
-      <a href="<?php echo home_url('/contact'); ?>" class="btn btn-primary btn-lg">무료 상담 신청하기</a>
-      <a href="<?php echo home_url('/hospital-marketing'); ?>" class="btn btn-secondary btn-lg">서비스 알아보기</a>
+    <div class="hero-copy">
+      <div class="hero-eyebrow">
+        <span class="pill-tag">대한민국 No.1 병원 전문 마케팅</span>
+      </div>
+      <h1 class="display-xxl hero-title">
+        병원 매출을<br>
+        <strong>데이터로 증명</strong>하는<br>
+        마케팅 파트너
+      </h1>
+      <p class="hero-desc">
+        의료광고심의부터 SEO · GEO · AEO · SNS 광고까지.<br>
+        베놈은 병원 전문 마케터가 직접 전략을 설계하고 실행합니다.
+      </p>
+      <div class="hero-cta">
+        <a href="<?php echo home_url('/contact'); ?>" class="btn btn-primary btn-lg">무료 상담 신청하기</a>
+        <a href="<?php echo home_url('/hospital-marketing'); ?>" class="btn btn-secondary btn-lg">서비스 알아보기</a>
+      </div>
     </div>
 
-    <!-- Stats -->
+    <div class="hero-visual" aria-hidden="true">
+      <img src="<?php echo get_template_directory_uri(); ?>/assets/img/hero.jpg" alt="병원 진료 현장">
+      <canvas id="venomEcg"></canvas>
+      <div class="v-tag"><span>LIVE · 검색 유입</span><b>데이터 기반</b></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="container">
     <div class="hero-stats">
       <div class="stat-item">
-        <div class="stat-number">500<span style="font-size:0.6em;">+</span></div>
+        <div class="stat-number" data-count="500">500<span class="stat-suffix">+</span></div>
         <div class="stat-label">병원 마케팅 진행</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">98<span style="font-size:0.6em;">%</span></div>
+        <div class="stat-number" data-count="98">98<span class="stat-suffix">%</span></div>
         <div class="stat-label">고객 재계약률</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">7<span style="font-size:0.6em;">년+</span></div>
+        <div class="stat-number" data-count="7">7<span class="stat-suffix">년+</span></div>
         <div class="stat-label">병원마케팅 전문</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">24<span style="font-size:0.6em;">h</span></div>
+        <div class="stat-number" data-count="24">24<span class="stat-suffix">h</span></div>
         <div class="stat-label">전담 담당자 응대</div>
       </div>
     </div>

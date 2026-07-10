@@ -32,11 +32,7 @@
       if (has_custom_logo()) {
           the_custom_logo();
       } else { ?>
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect width="28" height="28" rx="6" fill="#533afd"/>
-          <path d="M6 8l8 12 8-12" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>병원마케팅 <strong>베놈</strong></span>
+        <span class="venom-mark">venom<span class="dot"></span></span>
       <?php } ?>
     </a>
 

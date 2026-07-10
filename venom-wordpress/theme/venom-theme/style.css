@@ -17,33 +17,33 @@ Tags: hospital-marketing, seo, geo, aeo, agency
    DESIGN TOKENS (Stripe-inspired)
    ============================================================ */
 :root {
-  /* Primary — Indigo */
-  --color-primary:           #533afd;
-  --color-primary-deep:      #4434d4;
-  --color-primary-press:     #2e2b8c;
-  --color-primary-soft:      #665efd;
-  --color-primary-subdued:   #b9b9f9;
-  --color-brand-dark:        #1c1e54;
+  /* Primary — Venom Signal Orange */
+  --color-primary:           #ff4a1c;
+  --color-primary-deep:      #e23e11;
+  --color-primary-press:     #c43409;
+  --color-primary-soft:      #ff6b42;
+  --color-primary-subdued:   #ffd9cc;
+  --color-brand-dark:        #15181b;
 
-  /* Ink */
-  --color-ink:               #0d253d;
-  --color-ink-secondary:     #273951;
-  --color-ink-mute:          #64748d;
+  /* Ink — blue-black */
+  --color-ink:               #15181b;
+  --color-ink-secondary:     #2a2f35;
+  --color-ink-mute:          #6b7076;
 
   /* Accents */
-  --color-ruby:              #ea2261;
-  --color-magenta:           #f96bee;
-  --color-lemon:             #9b6829;
-  --color-shadow-blue:       #003770;
+  --color-ruby:              #e23e11;
+  --color-magenta:           #ff6b42;
+  --color-lemon:             #12756b;
+  --color-shadow-blue:       #22272b;
 
-  /* Canvas */
+  /* Canvas — cool clinical */
   --color-canvas:            #ffffff;
-  --color-canvas-soft:       #f6f9fc;
-  --color-canvas-cream:      #f5e9d4;
+  --color-canvas-soft:       #f1f3f4;
+  --color-canvas-cream:      #f4f5f6;
 
   /* Borders */
-  --color-hairline:          #e3e8ee;
-  --color-hairline-input:    #a8c3de;
+  --color-hairline:          #e2e5e7;
+  --color-hairline-input:    #c4ccd1;
 
   /* On-primary */
   --color-on-primary:        #ffffff;
@@ -67,8 +67,8 @@ Tags: hospital-marketing, seo, geo, aeo, agency
   --space-huge: 64px;
 
   /* Shadows */
-  --shadow-1: rgba(0,55,112,0.08) 0 1px 3px;
-  --shadow-2: rgba(0,55,112,0.08) 0 8px 24px, rgba(0,55,112,0.04) 0 2px 6px;
+  --shadow-1: rgba(21,24,27,0.06) 0 1px 3px;
+  --shadow-2: rgba(21,24,27,0.10) 0 18px 40px -20px, rgba(21,24,27,0.05) 0 2px 6px;
 
   /* Transition */
   --transition: 200ms cubic-bezier(0.4,0,0.2,1);
@@ -92,8 +92,8 @@ html {
 }
 
 body {
-  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
-  font-weight: 300;
+  font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', 'Malgun Gothic', system-ui, sans-serif;
+  font-weight: 400;
   color: var(--color-ink);
   background: var(--color-canvas);
   line-height: 1.4;
@@ -796,3 +796,72 @@ h4 { font-size: 18px; font-weight: 300; line-height: 1.4; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-xl); }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-xl); }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-xl); }
+
+/* ============================================================
+   VENOM SIGNATURE — 오리지널 미니멀·모던 레이어
+   ============================================================ */
+
+/* 타이포 — 큰 헤드라인 타이트하게 */
+.display-xxl, .display-xl, .display-lg {
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.hero-title { text-wrap: balance; }
+.hero-title strong { color: var(--color-primary); font-weight: 800; }
+
+/* 헤더 스크롤 (JS: .scrolled) */
+.site-header { transition: background var(--transition), box-shadow var(--transition), border-color var(--transition); }
+.site-header.scrolled {
+  box-shadow: var(--shadow-2);
+  background: color-mix(in srgb, var(--color-canvas) 85%, transparent);
+  backdrop-filter: saturate(1.2) blur(12px);
+}
+
+/* 버튼 — 필(pill) + 마그네틱 대비 */
+.btn { will-change: transform; transition: transform 160ms ease, background var(--transition), color var(--transition), border-color var(--transition); }
+.btn-primary, .btn-lg { border-radius: var(--radius-pill); }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-deep); }
+
+/* 로고 워드마크 */
+.site-logo .venom-mark { display: inline-flex; align-items: baseline; gap: 2px; font-size: 20px; font-weight: 800; letter-spacing: -0.04em; color: var(--color-ink); }
+.site-logo .venom-mark .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); align-self: flex-end; margin-bottom: 5px; }
+
+/* eyebrow pulse */
+.hero-eyebrow .pill-tag { display: inline-flex; align-items: center; gap: 8px; }
+.hero-eyebrow .pill-tag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); box-shadow: 0 0 0 0 var(--color-primary); animation: venomBeat 2.4s infinite; }
+@keyframes venomBeat { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); } 70% { box-shadow: 0 0 0 12px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* 히어로 비주얼 — 흑백↔컬러 + ECG 캔버스 */
+.hero-visual { position: relative; aspect-ratio: 5 / 6; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-2); background: var(--color-shadow-blue); }
+.hero-visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.03); filter: grayscale(1) contrast(1.05) brightness(0.92); transition: filter 1.1s ease; }
+.hero-visual.color img { filter: grayscale(0) contrast(1.02) brightness(1); }
+.hero-visual canvas { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; opacity: 0.92; pointer-events: none; }
+.hero-visual .v-tag { position: absolute; left: 16px; bottom: 14px; right: 16px; display: flex; justify-content: space-between; color: #fff; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+.hero-visual .v-tag b { font-weight: 700; }
+
+/* 히어로 2열 (비주얼 있을 때) */
+.hero.has-visual .container { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
+@media (max-width: 900px) { .hero.has-visual .container { grid-template-columns: 1fr; } .hero-visual { aspect-ratio: 4 / 3; order: -1; } }
+
+/* 스탯 카운트업 */
+.stat-number { font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -0.03em; }
+.stat-suffix { color: var(--color-primary); }
+
+/* 스크롤 등장 (JS: .animate-in) */
+.service-card, .ai-card, .pricing-card, .blog-card, .process-step, .testimonial-card {
+  transition: opacity 0.7s cubic-bezier(0.2,0.7,0.2,1), transform 0.7s cubic-bezier(0.2,0.7,0.2,1);
+  transform: translateY(22px);
+}
+.animate-in { opacity: 1 !important; transform: none !important; }
+
+/* 서비스 카드 — 호버 시 포인트 라인 */
+.service-card { position: relative; overflow: hidden; }
+.service-card::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--color-primary); transition: width 0.45s ease; }
+.service-card:hover::after { width: 100%; }
+.service-card:hover .service-card-icon { color: var(--color-primary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .service-card, .ai-card, .pricing-card, .blog-card, .process-step, .testimonial-card { transform: none; }
+  .hero-eyebrow .pill-tag::before { animation: none; }
+}
