@@ -133,7 +133,8 @@ function line_ads_top(ads) {
     return '·';
   }
   const k = ads.keywords[0];
-  return `'${k.keyword}' 月${fmtNum(k.volume)}회·경쟁 ${k.competition}`;
+  const cpc = k.cpc != null ? `·CPC ₩${fmtNum(k.cpc)}` : '';
+  return `'${k.keyword}' 月${fmtNum(k.volume)}회·경쟁 ${k.competition}${cpc}`;
 }
 function line_law(law) {
   if (!law) return '·';
@@ -171,12 +172,14 @@ function renderAds(report) {
     const why = ads.status === 'unconfigured' ? '검색광고 API가 아직 연결되지 않았습니다.' : (ads.note || '데이터를 불러오지 못했습니다.');
     return skill([simpleText(`💰 ${name} 광고\n\n${why}`)], viewQuickReplies(name));
   }
-  const L = [`💰 ${name} 광고 컨설팅`, '', '키워드 · 월검색량 · 경쟁도'];
+  const hasCpc = ads.cpc && ads.cpc.status === 'ok';
+  const L = [`💰 ${name} 광고 컨설팅`, '', hasCpc ? '키워드 · 월검색량 · 경쟁 · CPC' : '키워드 · 월검색량 · 경쟁도'];
   ads.keywords.slice(0, 6).forEach((k) => {
-    L.push(`• ${k.keyword}  ${fmtNum(k.volume)}회  (${k.competition})`);
+    const cpc = k.cpc != null ? `  ₩${fmtNum(k.cpc)}` : '';
+    L.push(`• ${k.keyword}  ${fmtNum(k.volume)}회  (${k.competition})${cpc}`);
   });
   L.push('');
-  L.push('※ CPC(입찰가)는 P1에서 추가됩니다.');
+  L.push(hasCpc ? '※ CPC = 모바일 평균 2위 노출 추정 입찰가.' : '※ CPC(입찰가)는 검색광고 키 설정 시 표시됩니다.');
   return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
 }
 

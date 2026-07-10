@@ -32,7 +32,7 @@ hospital-bot/
 |---|---|---|
 | SEO(홈페이지) | PageSpeed | ✅ |
 | 네이버 로컬(플레이스/블로그/뉴스) | 네이버 OpenAPI | ✅ |
-| 광고(검색량·경쟁도) | 네이버 검색광고 키워드도구 | ✅ (CPC는 P1) |
+| 광고(검색량·경쟁도·CPC) | 네이버 검색광고 키워드도구 + 입찰가 추정 | ✅ 검색량·경쟁도·CPC(모바일 2위 추정) |
 | 의료광고법 스캔 | 금지어 사전 | ✅ |
 | GEO/AI 노출 | ChatGPT·Perplexity·Gemini·Claude 실질의 | ✅ P1 — 인용률·SoV·감성·등급 |
 | 경쟁사 비교 | 조립 | ⬜ P2 |
@@ -98,7 +98,8 @@ node hospital-bot/test/run.js --live "대구 수성구 OO치과"   # 실 API(키
 
 ## 다음 단계
 
-- **CPC**: 검색광고 입찰가 추정 API 연동.
 - **경쟁사 비교(P2)**: 동일 지역·진료과 상위 3곳 나란히(GEO SoV의 competitors 재활용).
 - **진단 캐시**: 병원별 24h KV 캐시(재조회 비용 절감).
+
+> CPC(입찰가 추정)는 완료 — `lib/naver-searchad.fetchBidEstimate`(POST /estimate/average-position-bid/keyword). 실측 불가 환경 대비 응답 스키마 불일치 시 null로 안전 degrade. 프로덕션 첫 호출 시 실제 응답 필드(bid/estimate) 확인 권장.
 </content>

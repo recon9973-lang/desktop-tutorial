@@ -179,14 +179,27 @@ async function diagnoseAds(deps, dept, region) {
         pc, mobile: mo,
         competition: k.compIdx || '-',                       // 높음/중간/낮음
         avgAdDepth: k.plAvgDepth != null ? k.plAvgDepth : null, // 평균 노출 광고 수(경쟁 신호)
+        cpc: null,                                           // 아래에서 입찰가 추정 부착
       };
     }).sort((a, b) => b.volume - a.volume);
-    return {
-      status: 'ok',
-      seeds,
-      keywords,
-      cpc: { status: 'p1-pending', note: 'CPC(입찰가)는 P1에서 입찰가 추정 API로 추가됩니다. 현재는 검색량·경쟁도만 제공.' },
-    };
+
+    // CPC(입찰가 추정) — 상위 5개 키워드, 모바일 2위 노출 기준. 실패해도 검색량 결과는 유지.
+    let cpcMeta = { status: 'unavailable', note: '입찰가 추정 미제공' };
+    if (typeof deps.searchad.fetchBidEstimate === 'function') {
+      try {
+        const top = keywords.slice(0, 5).map((k) => k.keyword);
+        const bid = await deps.searchad.fetchBidEstimate(top, { device: 'MOBILE', position: 2 });
+        if (bid && bid.bids) {
+          keywords.forEach((k) => { if (bid.bids[k.keyword] != null) k.cpc = bid.bids[k.keyword]; });
+          cpcMeta = { status: 'ok', device: bid.device, position: bid.position, note: '모바일 평균 2위 노출 추정 입찰가(원).' };
+        } else {
+          cpcMeta = { status: bid && bid.configured === false ? 'unconfigured' : 'unavailable', note: (bid && bid.error) || '입찰가 추정 미응답' };
+        }
+      } catch (e) {
+        cpcMeta = { status: 'error', note: e.message };
+      }
+    }
+    return { status: 'ok', seeds, keywords, cpc: cpcMeta };
   } catch (e) {
     return { status: 'error', seeds, error: e.message };
   }

@@ -89,4 +89,49 @@ function fetchKeywordTool(hints, opts) {
   });
 }
 
-module.exports = { adCreds, isConfigured, signHeaders, toNum, fetchKeywordTool };
+// 입찰가 추정: 평균 노출 위치별 입찰가(average-position-bid)
+//   POST /estimate/average-position-bid/keyword
+//   body { device:'PC'|'MOBILE', items:[{ key:'<키워드>', position:<1~15> }] }
+//   반환: { status, configured, error|null, bids: { '<키워드>': <원> } | null, device, position }
+// 실측 불가 환경 대비: 응답 스키마가 예상과 다르면 bids=null로 안전 degrade(허위수치 금지).
+function fetchBidEstimate(keywords, opts) {
+  const timeout = (opts && opts.timeout) || 8000;
+  const device = (opts && opts.device) === 'PC' ? 'PC' : 'MOBILE';
+  const position = (opts && opts.position) || 2;
+  return new Promise((resolve) => {
+    const c = adCreds();
+    if (!isConfigured(c)) return resolve({ status: 501, configured: false, error: '네이버 검색광고 API 미설정', bids: null, device, position });
+    const list = (Array.isArray(keywords) ? keywords : [keywords])
+      .map((k) => String(k).replace(/\s+/g, '')).filter(Boolean).slice(0, 5);
+    if (!list.length) return resolve({ status: 400, configured: true, error: '키워드 없음', bids: null, device, position });
+
+    const apiPath = '/estimate/average-position-bid/keyword';
+    const body = JSON.stringify({ device, items: list.map((k) => ({ key: k, position })) });
+    const headers = Object.assign(signHeaders('POST', apiPath, c), { 'Content-Length': Buffer.byteLength(body) });
+    const req = https.request(
+      { hostname: 'api.searchad.naver.com', path: apiPath, method: 'POST', headers },
+      (res) => {
+        const chunks = [];
+        res.on('data', (d) => chunks.push(d));
+        res.on('end', () => {
+          const raw = Buffer.concat(chunks).toString('utf8');
+          let json = null; try { json = JSON.parse(raw); } catch (e) { /* null */ }
+          if (res.statusCode !== 200 || !json) {
+            return resolve({ status: res.statusCode, configured: true, error: (json && (json.title || json.message)) || ('HTTP ' + res.statusCode), bids: null, device, position });
+          }
+          // 예상 스키마: { estimate:[{ key, position, bid }] }. 다른 형태면 안전 degrade.
+          const arr = Array.isArray(json.estimate) ? json.estimate : (Array.isArray(json) ? json : null);
+          if (!arr) return resolve({ status: 200, configured: true, error: '입찰가 응답 형식 예상과 다름', bids: null, device, position });
+          const bids = {};
+          arr.forEach((e) => { if (e && e.key != null && typeof e.bid === 'number') bids[e.key] = e.bid; });
+          resolve({ status: 200, configured: true, error: null, bids: Object.keys(bids).length ? bids : null, device, position });
+        });
+      }
+    );
+    req.on('error', (e) => resolve({ status: 500, configured: true, error: e.message, bids: null, device, position }));
+    req.setTimeout(timeout, () => { req.destroy(); resolve({ status: 504, configured: true, error: 'timeout', bids: null, device, position }); });
+    req.write(body); req.end();
+  });
+}
+
+module.exports = { adCreds, isConfigured, signHeaders, toNum, fetchKeywordTool, fetchBidEstimate };

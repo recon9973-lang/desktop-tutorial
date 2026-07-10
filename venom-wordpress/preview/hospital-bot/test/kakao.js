@@ -21,6 +21,7 @@ const mockDeps = {
   searchad: {
     toNum: (v) => parseInt(String(v).replace(/[^0-9]/g, ''), 10) || 0,
     async fetchKeywordTool() { return { status: 200, configured: true, error: null, keywordList: [ { relKeyword: '수성구임플란트', monthlyPcQcCnt: 900, monthlyMobileQcCnt: 3400, compIdx: '높음', plAvgDepth: 15 } ] }; },
+    async fetchBidEstimate() { return { status: 200, configured: true, error: null, device: 'MOBILE', position: 2, bids: { '수성구임플란트': 3900 } }; },
   },
   psi: { async fetchPsi(url) { return { ok: true, url, strategy: 'mobile', scores: { performance: 48, seo: 83, accessibility: 76, bestPractices: 92 }, lab: { lcpMs: 4200 }, field: null }; } },
   adValidator: { validateMedicalAd(t) { const f = /최고/.test(t) ? ['최고'] : []; return { pass: !f.length, forbidden: f, risky: [] }; } },
@@ -66,7 +67,7 @@ async function main() {
 
   const ads = kf.render(report, 'ads');
   assert(isValidSkill(ads) && /수성구임플란트/.test(ads.template.outputs[0].simpleText.text), '광고 상세 렌더');
-  assert(/CPC.*P1/.test(ads.template.outputs[0].simpleText.text), '광고: CPC P1 고지(허위수치 없음)');
+  assert(/₩3,900/.test(ads.template.outputs[0].simpleText.text) && /2위 노출 추정/.test(ads.template.outputs[0].simpleText.text), '광고: CPC 입찰가 표시');
 
   const geo = kf.render(report, 'geo');
   assert(isValidSkill(geo) && /(AI 엔진|실측|GEO)/.test(geo.template.outputs[0].simpleText.text), 'GEO 뷰 렌더(미설정 안내)');

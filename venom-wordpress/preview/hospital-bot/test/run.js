@@ -33,6 +33,10 @@ const mockDeps = {
         { relKeyword: '수성구치아교정', monthlyPcQcCnt: 300, monthlyMobileQcCnt: 1200, compIdx: '중간', plAvgDepth: 8 },
       ] };
     },
+    async fetchBidEstimate(list) {
+      return { status: 200, configured: true, error: null, device: 'MOBILE', position: 2,
+        bids: { '수성구임플란트': 3900, '수성구치아교정': 2100 } };
+    },
   },
   psi: {
     async fetchPsi(url) {
@@ -84,7 +88,7 @@ async function main() {
   assert(r.local.blog.total === 42, `블로그 total=${r.local.blog.total}`);
   assert(r.local.news.total === 0 && r.local.signals.some(s => /PR/.test(s)), '뉴스 0 → PR 기회 신호');
   assert(r.ads.status === 'ok' && r.ads.keywords[0].volume === 4300, `광고 최상위 키워드 검색량=${r.ads.keywords[0].volume}`);
-  assert(r.ads.cpc.status === 'p1-pending', 'CPC는 P1 표기(허위수치 없음)');
+  assert(r.ads.cpc.status === 'ok' && r.ads.keywords[0].cpc === 3900, `CPC 부착: 최상위 키워드 ₩${r.ads.keywords[0].cpc}`);
   assert(r.adLaw.status === 'ok' && r.adLaw.pass === false && r.adLaw.forbidden.includes('최고'), '광고법: "최고" 위반 탐지');
   assert(['ready', 'unconfigured'].includes(r.geo.status) && Array.isArray(r.geo.prompts) && r.geo.prompts.length > 0, `GEO light(preview) 상태=${r.geo.status}, 프롬프트 ${r.geo.prompts.length}개`);
   assert(r.summary.grade && r.summary.urgent.length > 0, `종합등급=${r.summary.grade}, 우선개선=${r.summary.urgent.length}`);

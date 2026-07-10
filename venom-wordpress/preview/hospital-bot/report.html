@@ -189,11 +189,15 @@
     if(ads.status!=='ok'||!ads.keywords||!ads.keywords.length)
       return card('💰 광고 컨설팅', stTag('na', ads.status==='unconfigured'?'API 미설정':'조회 실패'),
         '<div class="metric"><span>'+esc((ads&&ads.note)||statusKo(ads.status))+'</span></div>');
+    var hasCpc = ads.cpc && ads.cpc.status==='ok';
     var rows = ads.keywords.slice(0,7).map(function(k){
-      return '<tr><td>'+esc(k.keyword)+'</td><td class="num">'+fmt(k.volume)+'</td><td><span class="tag">'+esc(k.competition)+'</span></td></tr>';
+      var cpcCell = hasCpc ? '<td class="num">'+(k.cpc!=null?'₩'+fmt(k.cpc):'·')+'</td>' : '';
+      return '<tr><td>'+esc(k.keyword)+'</td><td class="num">'+fmt(k.volume)+'</td><td><span class="tag">'+esc(k.competition)+'</span></td>'+cpcCell+'</tr>';
     }).join('');
-    var body = '<table><thead><tr><th>키워드</th><th style="text-align:right">월 검색량</th><th>경쟁</th></tr></thead><tbody>'+rows+'</tbody></table>'
-      + '<div style="margin-top:8px;font-size:12px;color:var(--muted)">※ CPC(입찰가)는 추후 추가 예정.</div>';
+    var head = '<tr><th>키워드</th><th style="text-align:right">월 검색량</th><th>경쟁</th>'+(hasCpc?'<th style="text-align:right">CPC</th>':'')+'</tr>';
+    var body = '<table><thead>'+head+'</thead><tbody>'+rows+'</tbody></table>'
+      + '<div style="margin-top:8px;font-size:12px;color:var(--muted)">'
+      + (hasCpc?'※ CPC = 모바일 평균 2위 노출 추정 입찰가(원).':'※ CPC(입찰가)는 검색광고 키 설정 시 표시됩니다.')+'</div>';
     return card('💰 광고 컨설팅', stTag('ok','조회'), body);
   }
 
