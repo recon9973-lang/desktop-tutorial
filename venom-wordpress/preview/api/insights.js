@@ -91,131 +91,17 @@ async function search(req, res) {
 
 // ── C. AEO 가시성 — 멀티 AI 엔진 실질문 (perplexity | openai | gemini | claude) ──
 // 각 엔진에 "환자 입장 질문"을 실제로 던져 답변·인용을 받아온다. 키 없는 엔진은 자동 비활성.
-const AI_SYSTEM = '너는 한국 사용자에게 병원·의원을 추천하는 검색 도우미다. 실제 검색 결과를 근거로 구체적인 병원명과 이유를 답하라.';
-
-// AI 키 접두사·별칭 관대 인식(Vercel/마켓플레이스 접두사 대응)
-function _pickAI(reList){for(const re of reList){for(const k of Object.keys(process.env)){if(re.test(k)&&process.env[k])return process.env[k];}}return '';}
-const _ANTHROPIC_KEY = _pickAI([/^ANTHROPIC_API_KEY$/, /ANTHROPIC.*KEY$/, /^CLAUDE_API_KEY$/, /CLAUDE.*API.*KEY$/]);
-const _GEMINI_KEY = _pickAI([/^GEMINI_API_KEY$/, /^GOOGLE_AI_KEY$/, /GEMINI.*API.*KEY$/]);
-function engineKeys() {
-  return {
-    perplexity: !!process.env.PERPLEXITY_API_KEY,
-    openai: !!process.env.OPENAI_API_KEY,
-    gemini: !!_GEMINI_KEY,
-    claude: !!_ANTHROPIC_KEY,
-  };
-}
-
-async function askOpenAI(q) {
-  const key = process.env.OPENAI_API_KEY;
-  const body = JSON.stringify({
-    model: process.env.OPENAI_SEARCH_MODEL || 'gpt-4o-mini',
-    tools: [{ type: 'web_search_preview' }],
-    input: [{ role: 'system', content: AI_SYSTEM }, { role: 'user', content: q }],
-  });
-  const r = await httpReq({
-    hostname: 'api.openai.com', path: '/v1/responses', method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' }, bodyStr: body,
-  });
-  if (r.status !== 200 || !r.json) throw new Error((r.json && r.json.error && r.json.error.message) || ('OpenAI HTTP ' + r.status));
-  let answer = '', citations = [];
-  (r.json.output || []).forEach(o => {
-    if (o.type === 'message') (o.content || []).forEach(c => {
-      if (c.type === 'output_text') {
-        answer += c.text || '';
-        (c.annotations || []).forEach(a => { if (a.type === 'url_citation' && a.url) citations.push(a.url); });
-      }
-    });
-  });
-  return { answer, citations };
-}
-
-async function askGemini(q) {
-  const key = _GEMINI_KEY;
-  // 모델별 무료 할당량이 다를 수 있어(예: gemini-2.0-flash free_tier limit:0) 여러 모델을 순차 폴백.
-  const models = [];
-  [process.env.GEMINI_MODEL, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash']
-    .forEach(m => { if (m && models.indexOf(m) < 0) models.push(m); });
-  let lastErr = 'Gemini 호출 실패';
-  for (let i = 0; i < models.length; i++) {
-    const model = models[i];
-    // 1차: 웹검색(그라운딩) 포함, 실패 시 2차: 그라운딩 없이(무료 할당량 회피)
-    for (let g = 0; g < 2; g++) {
-      const payload = { contents: [{ role: 'user', parts: [{ text: AI_SYSTEM + '\n\n' + q }] }] };
-      if (g === 0) payload.tools = [{ google_search: {} }];
-      const r = await httpReq({
-        hostname: 'generativelanguage.googleapis.com',
-        path: '/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key),
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, bodyStr: JSON.stringify(payload),
-      });
-      if (r.status === 200 && r.json && r.json.candidates) {
-        const cand = r.json.candidates[0] || {};
-        const answer = ((cand.content || {}).parts || []).map(p => p.text || '').join('');
-        const gm = cand.groundingMetadata || {};
-        const citations = (gm.groundingChunks || []).map(c => (c.web && c.web.uri) || '').filter(Boolean);
-        return { answer, citations };
-      }
-      lastErr = (r.json && r.json.error && r.json.error.message) || ('Gemini HTTP ' + r.status);
-      // 할당량/모델없음 계열이 아니면 더 시도하지 않고 종료
-      if (r.status !== 429 && r.status !== 404 && !/quota|not found|billing|exceeded/i.test(lastErr)) return Promise.reject(new Error(lastErr));
-    }
-  }
-  throw new Error(lastErr);
-}
-
-async function askClaude(q) {
-  const key = _ANTHROPIC_KEY;
-  const body = JSON.stringify({
-    model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001',
-    max_tokens: 1024, system: AI_SYSTEM,
-    messages: [{ role: 'user', content: q }],
-    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }],
-  });
-  const r = await httpReq({
-    hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
-    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' }, bodyStr: body,
-  });
-  if (r.status !== 200 || !r.json || !r.json.content) throw new Error((r.json && r.json.error && r.json.error.message) || ('Claude HTTP ' + r.status));
-  let answer = '', citations = [];
-  (r.json.content || []).forEach(b => {
-    if (b.type === 'text') {
-      answer += b.text || '';
-      (b.citations || []).forEach(c => { if (c.url) citations.push(c.url); });
-    }
-  });
-  return { answer, citations };
-}
-
-async function askPerplexity(q) {
-  const key = process.env.PERPLEXITY_API_KEY;
-  const body = JSON.stringify({
-    model: process.env.PERPLEXITY_MODEL || 'sonar',
-    messages: [
-      { role: 'system', content: AI_SYSTEM },
-      { role: 'user', content: q },
-    ],
-  });
-  const r = await httpReq({
-    hostname: 'api.perplexity.ai', path: '/chat/completions', method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' }, bodyStr: body,
-  });
-  if (r.status !== 200 || !r.json || !r.json.choices) throw new Error((r.json && r.json.error && (r.json.error.message || r.json.error)) || ('Perplexity HTTP ' + r.status));
-  return {
-    answer: r.json.choices[0].message.content || '',
-    citations: r.json.citations || (r.json.search_results || []).map(x => x.url) || [],
-  };
-}
+const aiEngines = require('../lib/ai-engines');
 
 async function aeo(req, res) {
   const engine = String(req.query.engine || 'perplexity').toLowerCase();
-  const avail = engineKeys();
+  const avail = aiEngines.engineKeys();
   if (!avail[engine]) return res.status(500).json({ error: engine + ' 키 미설정', engine });
   const q = (req.query.q || '').trim();
   const name = (req.query.name || '').trim();
   if (!q) return res.status(400).json({ error: 'q(질문) 필요' });
-  const ASK = { perplexity: askPerplexity, openai: askOpenAI, gemini: askGemini, claude: askClaude };
   try {
-    const out = await ASK[engine](q);
+    const out = await aiEngines.ask(engine, q);
     const answer = out.answer || '';
     const mentioned = name ? answer.toLowerCase().includes(name.toLowerCase()) : null;
     return res.status(200).json({ engine, answer, mentioned, name, citations: out.citations || [] });
@@ -224,7 +110,7 @@ async function aeo(req, res) {
   }
 }
 
-// (구 단일 perplexity 구현은 askPerplexity로 이관)
+// (구 단일 perplexity 구현은 lib/ai-engines의 askPerplexity로 이관)
 async function _legacyAeoUnused(req, res) {
   const key = process.env.PERPLEXITY_API_KEY;
   if (!key) return res.status(500).json({ error: 'PERPLEXITY_API_KEY 미설정 — 실제 AI검색 결과 확인에 필요합니다.' });
@@ -294,7 +180,7 @@ module.exports = async function handler(req, res) {
     if (type === 'trend') return await trend(req, res);
     if (type === 'search') return await search(req, res);
     if (type === 'aeo') return await aeo(req, res);
-    if (type === 'engines') return res.status(200).json(Object.assign(engineKeys(), { _keys: Object.keys(process.env).filter(k => /ANTHROPIC|CLAUDE|GEMINI|GOOGLE_AI|OPENAI|PERPLEXITY/i.test(k)).sort() }));
+    if (type === 'engines') return res.status(200).json(Object.assign(aiEngines.engineKeys(), { _keys: Object.keys(process.env).filter(k => /ANTHROPIC|CLAUDE|GEMINI|GOOGLE_AI|OPENAI|PERPLEXITY/i.test(k)).sort() }));
     if (type === 'keywordtool') return await keywordtool(req, res);
     return res.status(400).json({ error: 'unknown type (trend|search|aeo|engines|keywordtool)' });
   } catch (e) {
