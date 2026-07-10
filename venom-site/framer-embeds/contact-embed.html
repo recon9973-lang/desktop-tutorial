@@ -1,0 +1,74 @@
+<!-- ===========================================================
+   VENOM 상담폼 — Framer "Embed(HTML)" 컴포넌트에 통째로 붙여넣기.
+   기존 베놈 백엔드(Vercel)로 바로 전송됩니다.
+   폰트/색은 Framer 페이지에 맞게 CSS 변수만 바꾸면 됩니다.
+   =========================================================== -->
+<div id="venom-contact">
+  <form class="vc-form" novalidate>
+    <div class="vc-row">
+      <input class="vc-field" name="hospital" placeholder="병원·의원명 *" required>
+      <input class="vc-field" name="name" placeholder="담당자 성함 *" required>
+    </div>
+    <div class="vc-row">
+      <input class="vc-field" name="phone" placeholder="연락처 *" inputmode="tel" required>
+      <input class="vc-field" name="department" placeholder="진료과 (예: 정형외과)">
+    </div>
+    <textarea class="vc-field" name="message" placeholder="현재 고민이나 목표를 적어주세요"></textarea>
+    <button class="vc-btn" type="submit">무료 진단 신청 ↗</button>
+    <div class="vc-status" data-form-status></div>
+  </form>
+</div>
+
+<style>
+  #venom-contact{--vc-accent:#FF4A1C;--vc-ink:#15181B;--vc-bd:rgba(255,255,255,.18);--vc-bg:rgba(255,255,255,.06);--vc-ph:rgba(255,255,255,.5);--vc-fg:#fff;
+    font-family:"Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;}
+  #venom-contact .vc-form{display:flex;flex-direction:column;gap:12px;max-width:640px}
+  #venom-contact .vc-row{display:flex;gap:12px}
+  #venom-contact .vc-row .vc-field{flex:1}
+  #venom-contact .vc-field{width:100%;background:var(--vc-bg);border:1px solid var(--vc-bd);color:var(--vc-fg);
+    border-radius:11px;padding:15px 16px;font:inherit;font-size:15px;transition:border-color .2s,background .2s;box-sizing:border-box}
+  #venom-contact .vc-field::placeholder{color:var(--vc-ph)}
+  #venom-contact .vc-field:focus{outline:none;border-color:var(--vc-accent);background:rgba(255,255,255,.1)}
+  #venom-contact textarea.vc-field{min-height:110px;resize:vertical}
+  #venom-contact .vc-btn{align-self:flex-start;background:var(--vc-accent);color:#fff;border:none;cursor:pointer;
+    font:inherit;font-weight:700;font-size:15px;border-radius:999px;padding:15px 28px;transition:transform .15s,opacity .2s}
+  #venom-contact .vc-btn:hover{transform:translateY(-1px)}
+  #venom-contact .vc-btn:disabled{opacity:.6;cursor:default}
+  #venom-contact .vc-status{font-size:14px;display:none;padding-top:4px}
+  #venom-contact .vc-status.ok{display:block;color:#7CF2C0}
+  #venom-contact .vc-status.err{display:block;color:#FFB4A0}
+  #venom-contact .vc-status a{color:#fff;text-decoration:underline}
+  @media(max-width:520px){#venom-contact .vc-row{flex-direction:column}}
+</style>
+
+<script>
+(function(){
+  var API_BASE = "https://desktop-tutorial-chi-peach.vercel.app";
+  var KAKAO = "https://pf.kakao.com/_jxjxdcxj/chat";
+  var root = document.getElementById("venom-contact");
+  var form = root.querySelector(".vc-form");
+  var box  = root.querySelector("[data-form-status]");
+  function say(kind, html){ box.className = "vc-status " + kind; box.innerHTML = html; }
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var data = {};
+    form.querySelectorAll("[name]").forEach(function(el){ data[el.name] = (el.value||"").trim(); });
+    if(!data.hospital && !data.name){ return say("err","병원명 또는 성함을 입력해 주세요."); }
+    if(!data.hospital) data.hospital = data.name;
+    var btn = form.querySelector(".vc-btn"), lab = btn.textContent;
+    btn.disabled = true; btn.textContent = "전송 중…";
+    fetch(API_BASE + "/api/contact", {
+      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(r && r.result === "ok"){ form.reset(); say("ok","상담 신청이 완료됐습니다. 담당자가 24시간 내 연락드립니다."); }
+      else throw new Error("server");
+    })
+    .catch(function(){
+      say("err","전송 오류가 발생했습니다. <a href=\""+KAKAO+"\" target=\"_blank\" rel=\"noopener\">카카오톡</a>으로 문의해 주세요.");
+    })
+    .finally(function(){ btn.disabled=false; btn.textContent=lab; });
+  });
+})();
+</script>
