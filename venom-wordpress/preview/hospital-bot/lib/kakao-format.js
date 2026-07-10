@@ -24,16 +24,23 @@ function reportLinkCard(name) {
   return { textCard: { title: '📄 상세 웹 리포트', description: '점수·경쟁·처방을 웹에서 자세히 보고 PDF로 저장할 수 있어요.',
     buttons: [{ action: 'webLink', label: '웹 리포트 열기', webLinkUrl: url }] } };
 }
+function proposalLinkCard(name) {
+  const url = reportUrl(name);
+  if (!url) return null;
+  return { textCard: { title: '📄 전체 제안서(웹)', description: '제안 솔루션·광고비 추정·기대효과 전체를 웹에서 보고 PDF로 저장.',
+    buttons: [{ action: 'webLink', label: '전체 제안서 열기', webLinkUrl: url + '&proposal=1' }] } };
+}
 
 // ── 발화 파싱 ─────────────────────────────────────────
 const VIEW_KEYWORDS = [
   ['law', /(심의|광고법|의료법)$/],
+  ['proposal', /(제안서|견적서|견적|제안)$/],
   ['compete', /(경쟁|경쟁사|순위|동네순위|비교)$/],
   ['ads', /(광고|광고비|키워드|cpc)$/i],
   ['geo', /(geo|지오|ai검색|ai 검색)$/i],
   ['seo', /(seo|에스이오|검색최적화)$/i],
   ['local', /(플레이스|로컬|place|지도)$/i],
-  ['contact', /^(상담|견적|문의|컨설팅)$/],
+  ['contact', /^(상담|문의|컨설팅)$/],
 ];
 
 function parseCommand(utterance) {
@@ -302,6 +309,30 @@ function renderCompete(report) {
   return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
 }
 
+// ── 뷰: 제안서 초안(요약 카드 + 웹 전체 링크) ──────────
+function renderProposal(report) {
+  const name = displayName(report);
+  const p = report.proposal;
+  if (!p || p.error) {
+    return skill([simpleText(`📄 ${name} 제안 초안\n\n제안서를 생성하지 못했습니다.`)], viewQuickReplies(name));
+  }
+  const L = [`📄 ${name} 마케팅 제안 초안`, p.summaryLine, ''];
+  L.push('핵심 제안:');
+  (p.recommendations || []).slice(0, 4).forEach((r) => L.push(`• [${r.priority.toUpperCase()}] ${r.area} — ${r.service}`));
+  if (!p.recommendations || !p.recommendations.length) L.push('• (데이터 보강 후 상세 제안)');
+  const b = p.budget || {};
+  L.push('');
+  if (b.status === 'ok') L.push(`예상 월 광고비: ₩${fmtNum(b.monthlyMin)} ~ ₩${fmtNum(b.monthlyMax)} (권장 ₩${fmtNum(b.monthlyRec)})`);
+  else if (b.status === 'partial') L.push('예상 광고비: 검색광고 키 설정 시 산정(현재 수요만 확인)');
+  else L.push('예상 광고비: 검색광고 데이터 없음');
+  L.push('※ 대행 수수료 별도 협의 · 의료광고법 준수');
+
+  const outputs = [simpleText(L.join('\n'))];
+  const link = proposalLinkCard(name);
+  if (link) outputs.push(link);
+  return skill(outputs, viewQuickReplies(name));
+}
+
 // 뷰 → 렌더러 디스패치
 function render(report, view) {
   switch (view) {
@@ -310,13 +341,14 @@ function render(report, view) {
     case 'local': return renderLocal(report);
     case 'geo': return renderGeo(report);
     case 'compete': return renderCompete(report);
+    case 'proposal': return renderProposal(report);
     default: return renderSummary(report);
   }
 }
 
 module.exports = {
   parseCommand, render,
-  renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderCompete, renderContact,
+  renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderCompete, renderProposal, renderContact,
   renderRefusal, renderAsk, renderError, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,

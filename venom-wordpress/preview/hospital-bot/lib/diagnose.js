@@ -27,6 +27,7 @@ function defaultDeps() {
     naverOpenapi: require('./naver-openapi'),
     geoProbe: require('./geo-probe'),
     compete: require('./compete'),
+    proposal: require('./proposal'),
     searchad: require('../../lib/naver-searchad'),
     psi: require('../../lib/psi'),
     adValidator: require('../../lib/medical-ad-validator'),
@@ -322,6 +323,13 @@ async function diagnose(rawInput, opts = {}) {
     },
   };
   report.summary = summarize(report);
+
+  // 4) 제안서 자동 초안(opt-in) — 결정론적, report 완성 후 변환
+  if (opts.proposal) {
+    try { report.proposal = deps.proposal.buildProposal(report); }
+    catch (e) { report.proposal = { error: e.message }; }
+  }
+
   return report;
 }
 

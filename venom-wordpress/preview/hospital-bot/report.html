@@ -133,11 +133,15 @@
        + '</div>';
 
     if(rep.compete) h += cardCompete(rep.compete);
+    if(rep.proposal) h += cardProposal(rep.proposal);
 
     var withCompete = qs.get('compete')==='1';
+    var withProposal = qs.get('proposal')==='1';
+    var keep = (withGeo?'&geo=1':'');
     h += '<div class="actions">'
-       + (!withGeo ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&geo=1'+(withCompete?'&compete=1':'')+'">🤖 AI 검색(GEO) 실측하기</a>' : '')
-       + (!withCompete ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&compete=1'+(withGeo?'&geo=1':'')+'">🏆 동네 순위 보기</a>' : '')
+       + (!withGeo ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&geo=1'+(withCompete?'&compete=1':'')+(withProposal?'&proposal=1':'')+'">🤖 AI 검색(GEO) 실측하기</a>' : '')
+       + (!withCompete && !withProposal ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&compete=1'+keep+'">🏆 동네 순위 보기</a>' : '')
+       + (!withProposal ? '<a class="btn" href="?hospital='+encodeURIComponent(hospital)+'&proposal=1'+keep+'">📄 제안서 생성</a>' : '')
        + '<button class="btn ghost" onclick="window.print()">🖨 PDF로 저장/인쇄</button>'
        + '</div>';
 
@@ -231,6 +235,46 @@
     return '<div class="card" style="margin-top:14px"><h3>'+title+stTag('ok','비교')+'</h3>'
       + '<table><thead><tr><th>순위</th><th>병원</th><th>로컬 노출</th></tr></thead><tbody>'+rows+'</tbody></table>'
       + rank + '<div style="margin-top:8px;font-size:12px;color:var(--muted)">※ '+esc(cp.note||'')+'</div></div>';
+  }
+
+  function cardProposal(p){
+    if(!p || p.error) return '';
+    var L = '<div class="card" style="margin-top:14px;border-top:3px solid var(--p)">';
+    L += '<h3>📄 마케팅 제안 초안'+stTag('ok','자동생성')+'</h3>';
+    L += '<div style="color:var(--muted);font-size:13.5px;margin-bottom:8px">'+esc(p.summaryLine||'')+'</div>';
+    if((p.strengths&&p.strengths.length)||(p.weaknesses&&p.weaknesses.length)){
+      L += '<div style="font-size:13px;margin-bottom:10px">';
+      if(p.strengths&&p.strengths.length) L += '<div><b style="color:var(--good)">강점</b> '+esc(p.strengths.join(' · '))+'</div>';
+      if(p.weaknesses&&p.weaknesses.length) L += '<div><b style="color:var(--crit)">약점</b> '+esc(p.weaknesses.join(' · '))+'</div>';
+      L += '</div>';
+    }
+    // 제안 솔루션
+    L += '<div style="font-weight:700;margin:6px 0 4px">제안 솔루션</div>';
+    (p.recommendations||[]).forEach(function(r){
+      var pr = {high:'crit',medium:'warn',low:'na'}[r.priority]||'na';
+      L += '<div style="padding:7px 0;border-bottom:1px solid var(--rule)">'
+        + '<span class="st '+pr+'">'+esc(r.priority.toUpperCase())+'</span> <b>'+esc(r.area)+'</b> — '+esc(r.service)
+        + '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">진단: '+esc(r.finding)+' · '+esc(r.rationale)+'</div></div>';
+    });
+    if(!p.recommendations||!p.recommendations.length) L += '<div class="metric"><span>추가 데이터 확보 후 상세 제안</span></div>';
+    // 예상 광고비
+    var b = p.budget||{};
+    L += '<div style="font-weight:700;margin:12px 0 4px">예상 광고비(추정)</div>';
+    if(b.status==='ok'){
+      var rows = (b.rows||[]).map(function(r){return '<tr><td>'+esc(r.keyword)+'</td><td class="num">'+fmt(r.volume)+'</td><td class="num">'+fmt(r.estClicks)+'</td><td class="num">'+(r.cpc!=null?'₩'+fmt(r.cpc):'·')+'</td><td class="num">'+(r.estMonthly!=null?'₩'+fmt(r.estMonthly):'·')+'</td></tr>';}).join('');
+      L += '<table><thead><tr><th>키워드</th><th class="num">월검색</th><th class="num">예상클릭</th><th class="num">CPC</th><th class="num">월 광고비</th></tr></thead><tbody>'+rows+'</tbody></table>';
+      L += '<div style="margin-top:8px;font-weight:700;color:var(--p)">월 광고비 밴드: ₩'+fmt(b.monthlyMin)+' ~ ₩'+fmt(b.monthlyMax)+' (권장 ₩'+fmt(b.monthlyRec)+')</div>';
+    } else if(b.status==='partial'){
+      L += '<div class="metric"><span>검색 수요 확인됨 · CPC 미제공(키 설정 후 광고비 산정)</span></div>';
+    } else { L += '<div class="metric"><span>검색광고 데이터 없음</span></div>'; }
+    L += '<div style="margin-top:6px;font-size:12px;color:var(--muted)">'+esc(b.note||'')+'</div>';
+    // 기대효과
+    if(p.expectedEffects&&p.expectedEffects.length){
+      L += '<div style="font-weight:700;margin:12px 0 4px">기대 효과</div><ul class="fixlist">'+p.expectedEffects.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+'</ul>';
+    }
+    L += '<div style="margin-top:12px;font-size:12px;color:var(--muted);border-top:1px solid var(--rule);padding-top:8px">'+esc(p.compliance||'')+'</div>';
+    L += '</div>';
+    return L;
   }
 
   // ── 조각 헬퍼 ──
