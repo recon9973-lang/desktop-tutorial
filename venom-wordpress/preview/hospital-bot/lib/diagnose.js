@@ -212,22 +212,48 @@ async function diagnoseAds(deps, dept, region) {
   }
 }
 
+// 본문에서 매칭 표현의 앞뒤 문맥을 뽑아 "어디에 있는지"를 알려준다(모든 발생, 표현당 최대 cap곳).
+function locateTerm(text, term, radius, cap) {
+  radius = radius || 26; cap = cap || 3;
+  const lower = String(text).toLowerCase();
+  const t = String(term).toLowerCase();
+  const out = [];
+  let from = 0, idx;
+  while (t && (idx = lower.indexOf(t, from)) >= 0 && out.length < cap) {
+    const start = Math.max(0, idx - radius);
+    const end = Math.min(text.length, idx + term.length + radius);
+    let snip = text.slice(start, end).replace(/\s+/g, ' ').trim();
+    if (start > 0) snip = '…' + snip;
+    if (end < text.length) snip = snip + '…';
+    out.push(snip);
+    from = idx + term.length;
+  }
+  return out;
+}
+
 async function diagnoseAdLaw(deps, homepage) {
-  if (!homepage) return { status: 'no-homepage', pass: null, forbidden: [], risky: [] };
+  if (!homepage) return { status: 'no-homepage', pass: null, forbidden: [], risky: [], hits: [] };
   try {
     const page = await deps.fetchHtml(homepage, { timeout: 7000 });
-    if (!page.ok) return { status: 'fetch-failed', checkedUrl: homepage, error: page.error, pass: null, forbidden: [], risky: [] };
-    const v = deps.adValidator.validateMedicalAd(page.text || '');
+    if (!page.ok) return { status: 'fetch-failed', checkedUrl: homepage, error: page.error, pass: null, forbidden: [], risky: [], hits: [] };
+    const text = page.text || '';
+    const v = deps.adValidator.validateMedicalAd(text);
+    const mkHits = (terms, kind) => (terms || []).map((term) => {
+      const contexts = locateTerm(text, term);
+      return { term, kind, count: contexts.length, contexts };
+    });
+    const hits = mkHits(v.forbidden, 'forbidden').concat(mkHits(v.risky, 'risky'));
     return {
       status: 'ok',
       checkedUrl: homepage,
       pass: v.pass,
       forbidden: v.forbidden || [],
       risky: v.risky || [],
+      hits,
       note: v.pass ? '홈페이지 본문에서 금지 표현이 발견되지 않았습니다(참고용).' : `금지 소지 표현 ${(v.forbidden || []).length}건 발견.`,
     };
   } catch (e) {
-    return { status: 'error', checkedUrl: homepage, error: e.message, pass: null, forbidden: [], risky: [] };
+    return { status: 'error', checkedUrl: homepage, error: e.message, pass: null, forbidden: [], risky: [], hits: [] };
   }
 }
 

@@ -333,6 +333,35 @@ function renderProposal(report) {
   return skill(outputs, viewQuickReplies(name));
 }
 
+// ── 뷰: 의료광고법 상세(위반 문구 위치·링크) ──────────
+function renderLaw(report) {
+  const name = displayName(report);
+  const law = report.adLaw || {};
+  const L = [`⚖️ ${name} · 의료광고법 점검`, ''];
+  if (law.status !== 'ok') {
+    L.push(law.status === 'no-homepage' ? '홈페이지를 찾지 못해 점검하지 못했습니다.' : '홈페이지 본문 점검에 실패했습니다.');
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  }
+  if (law.pass) {
+    L.push('홈페이지 본문에서 금지 표현이 발견되지 않았습니다(참고용).');
+    if (law.checkedUrl) { L.push(''); L.push(`확인한 페이지: ${law.checkedUrl}`); }
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  }
+  const hits = (law.hits && law.hits.length) ? law.hits
+    : (law.forbidden || []).map((w) => ({ term: w, kind: 'forbidden', count: 0, contexts: [] }));
+  L.push(`위반·주의 소지 ${hits.length}건 — 위치:`);
+  hits.forEach((h) => {
+    const mark = h.kind === 'forbidden' ? '🚫' : '⚠️';
+    L.push('');
+    L.push(`${mark} ${h.term}${h.count > 1 ? ` (본문 ${h.count}곳)` : ''}`);
+    (h.contexts || []).slice(0, 2).forEach((c) => L.push(`  └ ${c}`));
+  });
+  if (law.checkedUrl) { L.push(''); L.push(`확인한 페이지: ${law.checkedUrl}`); L.push('(링크에서 Ctrl+F로 위 문구를 찾으세요)'); }
+  L.push('');
+  L.push('※ 전후사진·효과보장·최상급 표현은 위반 소지가 있습니다.');
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+}
+
 // 뷰 → 렌더러 디스패치
 function render(report, view) {
   switch (view) {
@@ -340,6 +369,7 @@ function render(report, view) {
     case 'ads': return renderAds(report);
     case 'local': return renderLocal(report);
     case 'geo': return renderGeo(report);
+    case 'law': return renderLaw(report);
     case 'compete': return renderCompete(report);
     case 'proposal': return renderProposal(report);
     default: return renderSummary(report);
@@ -348,7 +378,7 @@ function render(report, view) {
 
 module.exports = {
   parseCommand, render,
-  renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderCompete, renderProposal, renderContact,
+  renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderLaw, renderCompete, renderProposal, renderContact,
   renderRefusal, renderAsk, renderError, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,
