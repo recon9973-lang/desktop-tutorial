@@ -69,11 +69,14 @@ function isKakaoSkill(body) {
 // 카카오 스킬 요청 처리
 async function handleKakao(res, body) {
   const user = (body.userRequest && body.userRequest.user) || {};
-  const gate = whitelist.check(user.id);
-  if (!gate.allowed) { res.status(200).json(kf.renderRefusal()); return; }
-
   const utter = (body.userRequest && body.userRequest.utterance) || '';
   const cmd = kf.parseCommand(utter);
+
+  // 온보딩: 본인 접근키 조회는 화이트리스트와 무관하게 허용(등록 전이라도 확인 가능)
+  if (cmd.view === 'myid') { res.status(200).json(kf.renderMyId(user.id)); return; }
+
+  const gate = whitelist.check(user.id);
+  if (!gate.allowed) { res.status(200).json(kf.renderRefusal(user.id)); return; }
 
   if (cmd.view === 'contact') { res.status(200).json(kf.renderContact()); return; }
   if (!cmd.hospital) { res.status(200).json(kf.renderAsk()); return; }

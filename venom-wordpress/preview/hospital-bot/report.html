@@ -209,15 +209,41 @@
     return card('💰 광고 컨설팅', stTag('ok','조회'), body);
   }
 
+  // 이미 escape된 문맥에서 표현을 형광펜 처리(대소문자 무시)
+  function hl(escaped, term){
+    var t = esc(String(term||''));
+    if(!t) return escaped;
+    try {
+      var re = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+      return escaped.replace(re, function(m){ return '<mark style="background:#ffe08a;color:#7c2d12;padding:0 2px;border-radius:3px;font-weight:700">'+m+'</mark>'; });
+    } catch(e){ return escaped; }
+  }
   function cardLaw(law){
     law = law||{};
     if(law.status!=='ok') return card('⚖️ 의료광고법', stTag('na', law.status==='no-homepage'?'홈페이지 미발견':'스캔 불가'),
       '<div class="metric"><span>'+esc(statusKo(law.status))+'</span></div>');
+    var linkHtml = law.checkedUrl ? '<div style="margin-top:10px;font-size:12.5px"><a href="'+esc(law.checkedUrl)+'" target="_blank" rel="noopener">확인한 페이지 열기 ↗</a> <span style="color:var(--muted)">— 링크에서 Ctrl+F로 아래 문구를 찾으세요</span></div>' : '';
     if(law.pass) return card('⚖️ 의료광고법', stTag('ok','양호'),
-      '<div class="metric"><span>홈페이지 본문에서 금지 표현 미발견(참고용)</span></div>');
-    var body = '<div class="metric"><span>위반 소지 표현</span><span class="v" style="color:var(--crit)">'+law.forbidden.length+'건</span></div>'
-      + '<div style="margin-top:6px">'+law.forbidden.map(function(w){return '<span class="tag" style="background:var(--crit-bg);color:var(--crit);margin:2px">'+esc(w)+'</span>';}).join('')+'</div>'
-      + (law.risky&&law.risky.length?'<div style="margin-top:8px;font-size:12.5px;color:var(--muted)">주의 표현: '+law.risky.map(esc).join(', ')+'</div>':'');
+      '<div class="metric"><span>홈페이지 본문에서 금지 표현 미발견(참고용)</span></div>'+linkHtml);
+    var hits = (law.hits && law.hits.length) ? law.hits
+      : (law.forbidden||[]).map(function(w){return {term:w,kind:'forbidden',count:0,contexts:[]};})
+          .concat((law.risky||[]).map(function(w){return {term:w,kind:'risky',count:0,contexts:[]};}));
+    var items = hits.map(function(h){
+      var isF = h.kind==='forbidden';
+      var color = isF?'var(--crit)':'var(--warn)';
+      var bg = isF?'var(--crit-bg)':'var(--warn-bg)';
+      var label = isF?'금지':'주의';
+      var ctx = (h.contexts&&h.contexts.length)
+        ? h.contexts.map(function(c){ return '<div style="font-size:12.5px;color:var(--ink);margin-top:4px;line-height:1.6">'+hl(esc(c), h.term)+'</div>'; }).join('')
+        : '<div style="font-size:12px;color:var(--muted);margin-top:4px">본문 내 위치 정보 없음</div>';
+      return '<div style="padding:9px 0;border-top:1px solid var(--rule)">'
+        + '<span class="tag" style="background:'+bg+';color:'+color+';margin-right:6px">'+label+'</span>'
+        + '<b style="color:'+color+'">'+esc(h.term)+'</b>'
+        + (h.count>1?' <span style="font-size:11.5px;color:var(--muted)">본문 '+h.count+'곳</span>':'')
+        + ctx + '</div>';
+    }).join('');
+    var body = '<div class="metric"><span>위반·주의 표현</span><span class="v" style="color:var(--crit)">'+(law.forbidden.length + ((law.risky&&law.risky.length)||0))+'건</span></div>'
+      + items + linkHtml;
     return card('⚖️ 의료광고법', stTag('crit','주의 필요'), body);
   }
 
