@@ -45,6 +45,8 @@ const VIEW_KEYWORDS = [
 
 function parseCommand(utterance) {
   const s = String(utterance || '').trim().replace(/\s+/g, ' ');
+  // 온보딩용: 본인 접근키(botUserKey) 조회 — 화이트리스트 등록에 사용
+  if (/^(내\s*키|내\s*아이디|내아이디|아이디\s*확인|키\s*확인|my\s*id|myid)$/i.test(s)) return { view: 'myid', hospital: '' };
   for (const [view, re] of VIEW_KEYWORDS) {
     if (re.test(s)) {
       if (view === 'contact') return { view: 'contact', hospital: '' };
@@ -257,8 +259,16 @@ function renderContact() {
 }
 
 // ── 상태/오류/거절/진행 ────────────────────────────────
-function renderRefusal() {
-  return skill([simpleText('🔒 베노미는 베놈 내부 직원 전용 진단 도구입니다.\n접근 권한이 필요하면 관리자에게 문의해 주세요.')]);
+function renderRefusal(userId) {
+  const keyLine = userId
+    ? `\n\n내 접근키(botUserKey):\n${userId}\n관리자에게 이 키를 전달해 등록을 요청하세요.`
+    : '\n접근 권한이 필요하면 관리자에게 문의해 주세요.';
+  return skill([simpleText(`🔒 베노미는 베놈 내부 직원 전용 진단 도구입니다.${keyLine}`)]);
+}
+// 온보딩: 본인 접근키(botUserKey) 안내 — 화이트리스트 등록용
+function renderMyId(userId) {
+  const id = userId || '(확인 불가)';
+  return skill([simpleText(`🪪 내 베노미 접근키(botUserKey)\n\n${id}\n\n이 값을 관리자에게 전달하면 직원 화이트리스트에 등록됩니다.\n(등록 후 병원명을 입력하면 진단이 시작됩니다.)`)]);
 }
 function renderAsk() {
   return skill([simpleText('진단할 병원명을 입력해 주세요.\n예) 대구 수성구 OO치과')]);
@@ -379,7 +389,7 @@ function render(report, view) {
 module.exports = {
   parseCommand, render,
   renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderLaw, renderCompete, renderProposal, renderContact,
-  renderRefusal, renderAsk, renderError, ackData,
+  renderRefusal, renderMyId, renderAsk, renderError, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,
 };
