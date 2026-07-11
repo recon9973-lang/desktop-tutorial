@@ -76,8 +76,10 @@ function viewQuickReplies(name) {
   return [
     qr('SEO 자세히', `${name} seo`),
     qr('GEO 자세히', `${name} geo`),
-    qr('광고 제안', `${name} 광고`),
+    qr('광고 분석', `${name} 광고`),
     qr('동네 순위', `${name} 순위`),
+    qr('의료광고법', `${name} 심의`),
+    qr('제안서', `${name} 제안서`),
     qr('무료 상담', '상담'),
   ];
 }
