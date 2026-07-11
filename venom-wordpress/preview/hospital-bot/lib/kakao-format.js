@@ -47,6 +47,8 @@ function parseCommand(utterance) {
   const s = String(utterance || '').trim().replace(/\s+/g, ' ');
   // 온보딩용: 본인 접근키(botUserKey) 조회 — 화이트리스트 등록에 사용
   if (/^(내\s*키|내\s*아이디|내아이디|아이디\s*확인|키\s*확인|my\s*id|myid)$/i.test(s)) return { view: 'myid', hospital: '' };
+  // 사용법 안내
+  if (/^(도움말|도움|사용법|사용\s*방법|명령어|help|\?|？)$/i.test(s)) return { view: 'help', hospital: '' };
   for (const [view, re] of VIEW_KEYWORDS) {
     if (re.test(s)) {
       if (view === 'contact') return { view: 'contact', hospital: '' };
@@ -94,9 +96,18 @@ function renderSummary(report) {
   const name = displayName(report);
   const region = report.resolved && report.resolved.region;
   const s = report.summary || {};
+  const place = report.resolved && report.resolved.place;
+  const notFound = !!(place && place.found === false);
   const L = [];
   L.push(`🩺 ${name}${region ? `(${region})` : ''} 마케팅 건강검진`);
   L.push('');
+  if (notFound) {
+    const typed = (report.query && report.query.name) || name;
+    L.push(`⚠️ '${typed}' 정식 등록 정보를 찾지 못했어요.`);
+    L.push('지역+정식명칭으로 다시 시도해 주세요. (예: 대구 수성구 ○○치과)');
+    L.push('아래는 입력한 이름 기준 참고 결과입니다.');
+    L.push('');
+  }
   L.push(`▪ 종합등급  ${gradeIcon(s.grade)} ${s.grade || 'N/A'}${s.score != null ? ` (${s.score}점)` : ''}`);
   L.push(`▪ SEO 홈페이지  ${line_seo(report.seo)}`);
   L.push(`▪ GEO·AI검색  ${line_geo(report.geo)}`);
@@ -270,6 +281,30 @@ function renderMyId(userId) {
   const id = userId || '(확인 불가)';
   return skill([simpleText(`🪪 내 베노미 접근키(botUserKey)\n\n${id}\n\n이 값을 관리자에게 전달하면 직원 화이트리스트에 등록됩니다.\n(등록 후 병원명을 입력하면 진단이 시작됩니다.)`)]);
 }
+// 사용법 안내
+function renderHelp() {
+  const L = [
+    '🩺 베노미 사용법',
+    '',
+    '병원명을 넣으면 6대 진단을 요약해 드려요.',
+    '예) 대구 수성구 ○○치과',
+    '',
+    '더 자세히(진단 후 버튼 또는 발화):',
+    '· ○○치과 seo   홈페이지 속도·SEO',
+    '· ○○치과 geo   AI 검색 노출 실측',
+    '· ○○치과 광고   검색량·CPC',
+    '· ○○치과 순위   동네 경쟁 비교',
+    '· ○○치과 심의   의료광고법 위반 문구 위치',
+    '· ○○치과 제안서   진단→제안서 초안',
+    '',
+    '기타:',
+    '· 내키   내 접근키(직원 등록용)',
+    '· 상담   상담 채널 안내',
+    '',
+    '※ 병원을 못 찾으면 지역+정식명칭으로 다시 시도하세요.',
+  ];
+  return skill([simpleText(L.join('\n'))]);
+}
 function renderAsk() {
   return skill([simpleText('진단할 병원명을 입력해 주세요.\n예) 대구 수성구 OO치과')]);
 }
@@ -380,6 +415,7 @@ function render(report, view) {
     case 'local': return renderLocal(report);
     case 'geo': return renderGeo(report);
     case 'law': return renderLaw(report);
+    case 'help': return renderHelp(report);
     case 'compete': return renderCompete(report);
     case 'proposal': return renderProposal(report);
     default: return renderSummary(report);
@@ -389,7 +425,7 @@ function render(report, view) {
 module.exports = {
   parseCommand, render,
   renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderLaw, renderCompete, renderProposal, renderContact,
-  renderRefusal, renderMyId, renderAsk, renderError, ackData,
+  renderRefusal, renderMyId, renderHelp, renderAsk, renderError, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,
 };
