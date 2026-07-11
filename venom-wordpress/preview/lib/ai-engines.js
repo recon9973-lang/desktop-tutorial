@@ -32,6 +32,8 @@ function httpReq({ hostname, path, method, headers, bodyStr }) {
   });
 }
 
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
 // AI 키 접두사·별칭 관대 인식(Vercel/마켓플레이스 접두사 대응)
 function pickAI(reList) {
   for (const re of reList) {
@@ -85,9 +87,12 @@ async function askGemini(q) {
   [process.env.GEMINI_MODEL, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash']
     .forEach((m) => { if (m && models.indexOf(m) < 0) models.push(m); });
   let lastErr = 'Gemini 호출 실패';
+  let attempt = 0;
   for (let i = 0; i < models.length; i++) {
     const model = models[i];
     for (let g = 0; g < 2; g++) {
+      if (attempt > 0) await sleep(Math.min(300 * attempt, 1500)); // 과부하·무응답 대비 백오프
+      attempt++;
       const payload = { contents: [{ role: 'user', parts: [{ text: AI_SYSTEM + '\n\n' + q }] }] };
       if (g === 0) payload.tools = [{ google_search: {} }];
       const r = await httpReq({ hostname: 'generativelanguage.googleapis.com',
@@ -100,8 +105,11 @@ async function askGemini(q) {
         const citations = (gm.groundingChunks || []).map((c) => (c.web && c.web.uri) || '').filter(Boolean);
         return { answer, citations };
       }
-      lastErr = (r.json && r.json.error && r.json.error.message) || ('Gemini HTTP ' + r.status);
-      if (r.status !== 429 && r.status !== 404 && !/quota|not found|billing|exceeded/i.test(lastErr)) throw new Error(lastErr);
+      lastErr = (r.json && r.json.error && r.json.error.message) || r.error || ('Gemini HTTP ' + r.status);
+      // 폴백 재시도 대상: 레이트리밋/쿼터/404 + 일시적 서버 과부하(5xx·high demand)·네트워크 무응답(status 0·timeout)
+      const retryable = r.status === 0 || r.status === 429 || r.status === 404 || r.status >= 500 ||
+        /quota|not found|billing|exceeded|overload|high demand|try again|unavailable|timeout|deadline/i.test(lastErr);
+      if (!retryable) throw new Error(lastErr);
     }
   }
   throw new Error(lastErr);
