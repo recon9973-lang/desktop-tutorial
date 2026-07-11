@@ -120,6 +120,12 @@
        + (rep.resolved&&rep.resolved.homepage?'<a href="'+esc(rep.resolved.homepage)+'" target="_blank" rel="noopener">홈페이지</a>':'홈페이지 미발견')
        + '</div></div>';
 
+    if(rep.resolved && rep.resolved.place && rep.resolved.place.found===false){
+      var typed = (rep.query&&rep.query.name) || name;
+      h += '<div class="urgent" style="background:var(--crit-bg);border-color:#f3c0c0">'
+         + '<b style="color:var(--crit)">병원을 찾지 못했어요</b>'
+         + '<div style="margin-top:4px;font-size:13.5px;color:var(--ink)">\''+esc(typed)+'\' 정식 등록 정보를 찾지 못했습니다. <b>지역+정식명칭</b>으로 다시 시도해 주세요. (예: 대구 수성구 ○○치과)<br>아래는 입력한 이름 기준 참고 결과입니다.</div></div>';
+    }
     if(s.urgent && s.urgent.length){
       h += '<div class="urgent"><b>가장 시급한 개선</b><ul>'+s.urgent.map(function(u){return '<li>'+esc(u)+'</li>';}).join('')+'</ul></div>';
     }
