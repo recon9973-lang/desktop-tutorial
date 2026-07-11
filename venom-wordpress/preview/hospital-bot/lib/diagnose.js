@@ -292,7 +292,18 @@ function summarize(report) {
   const headline = norm == null
     ? '데이터가 부족해 종합 등급을 산정하지 못했습니다(키/설정 확인 필요).'
     : `종합등급 ${grade} · 우선 개선 ${Math.min(urgent.length, 3)}건`;
-  return { grade, score: norm == null ? null : Math.round(norm), headline, urgent: urgent.slice(0, 3) };
+  // 부분 진단 투명성: 선택 키 미설정으로 미측정된 지표를 표기(등급 오해 방지)
+  const unmeasured = [];
+  if (!(report.seo && report.seo.status === 'ok')) unmeasured.push('SEO');
+  if (report.geo && report.geo.status === 'unconfigured') unmeasured.push('GEO');
+  if (report.ads && report.ads.status === 'unconfigured') unmeasured.push('광고');
+  return {
+    grade, score: norm == null ? null : Math.round(norm), headline,
+    urgent: urgent.slice(0, 3),
+    measuredWeight: Math.round(weight * 100) / 100,
+    partial: unmeasured.length > 0,
+    unmeasured,
+  };
 }
 
 // 베이스 번들(값싼 5대 진단 + 병원탐지 + GEO preview) — 24h 캐시 단위
