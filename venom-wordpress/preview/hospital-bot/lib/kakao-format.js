@@ -118,6 +118,10 @@ function renderSummary(report) {
     L.push('');
     L.push(`가장 시급: ${s.urgent.join(' / ')}`);
   }
+  if (s.partial && s.unmeasured && s.unmeasured.length) {
+    L.push('');
+    L.push(`ℹ️ 선택 지표 미설정: ${s.unmeasured.join('·')} — 키 추가 시 등급 정확도↑`);
+  }
   L.push('');
   L.push('※ 공개 데이터 기반 참고용 진단입니다.');
   const outputs = [simpleText(L.join('\n'))];
