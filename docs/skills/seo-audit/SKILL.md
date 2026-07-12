@@ -3,8 +3,10 @@ name: seo-audit
 description: >-
   홈페이지의 SEO를 Google SEO 시작 가이드 + 네이버 서치어드바이저 공식 기준으로 진단·채점·개선 처방한다.
   URL이나 HTML을 주고 "SEO 점검/진단/분석/점수", "검색 최적화 확인", "네이버/구글 SEO 검사",
-  "왜 검색에 안 잡히나", "메타태그/robots/사이트맵/구조화데이터 점검", "SEO 리포트 만들어줘" 라고
-  할 때 사용. 다수 홈페이지를 관리하는 콘솔에서 사이트별 SEO 상태를 표준 100점 체계로 평가할 때 적합.
+  "왜 검색에 안 잡히나", "메타태그/robots/사이트맵/구조화데이터 점검", "SEO 리포트 만들어줘",
+  "E-E-A-T/신뢰도 진단", "AI 노출(GEO) 점검" 이라고 할 때 사용. 다수 홈페이지를 관리하는 콘솔에서
+  사이트별 SEO 상태를 표준 100점 체계로 평가할 때 적합. 근거는 Google 공식문서 203종(`google_seo_guide/`)
+  + 네이버 가이드. 진단기 완전체는 `venom-wordpress/preview/seo/` 한 폴더에 있다.
 ---
 
 # SEO 진단·최적화 스킬 (Google + 네이버 공식 기준)
@@ -22,8 +24,12 @@ description: >-
 - **Google** — SEO 시작 가이드, How Search Works, Helpful Content, AI 최적화 가이드, URL 구조, 링크 모범사례, Sitemap
 - **네이버** — 서치어드바이저 SEO 가이드 (`https://searchadvisor.naver.com/guide`)
 - **성능(속도)** — Google PageSpeed Insights(PSI) / Lighthouse 실측
-- 프로젝트 내 상세 근거: `docs/seo-guidelines.md`
-- 재사용 채점 엔진: `venom-wordpress/preview/assets/seo-engine.js` (의존성 0, 브라우저·Node 겸용)
+- **진단기 완전체(단일 소스)**: `venom-wordpress/preview/seo/` — 엔진 + 규칙 + README 한 곳
+  - 엔진: `seo/seo-engine.js` (의존성 0, 브라우저·Node 겸용)
+  - 규칙+지식근거: `seo/seo-rules.json` (규칙 23개, 각 규칙이 Google 문서번호 `grounds`로 인용)
+  - 전체 지도: `seo/README.md`
+- **원천 지식(203문서)**: `google_seo_guide/` (Google 공식 SEO 문서 203종) + 인덱스 `google_seo_guide/00_지식맵_MASTER_INDEX.md`
+- 상세 근거: `docs/seo-guidelines.md`
 
 ---
 
@@ -32,12 +38,15 @@ description: >-
 기본 분석(원본 HTML 파싱, ~1–2초) = **90점**. 정밀 분석(PSI) 시 속도 10점 합산 = **100점**.
 **종합 SEO 점수에서 속도(성능)는 분리**한다 — Google이 SEO와 성능을 별도 게이지로 나누기 때문.
 
-| 카테고리 | 배점 | 측정 |
-|---|---|---|
-| 콘텐츠 & 메타 | 38 | HTML 파싱 |
-| 기술·크롤링 | 30 | HTML + robots.txt |
-| 검색 노출 강화 | 22 | HTML + robots.txt |
-| 속도 최적화 | 10 | PSI(Lighthouse) 정밀 분석 |
+> 점수는 `total/max` 백분율로 정규화된다(카테고리 증감에 자동 대응). 정확한 배점은 항상 엔진(`seo/seo-engine.js`)이 기준.
+
+| 카테고리 | 측정 |
+|---|---|
+| 📝 콘텐츠 & 메타 | HTML 파싱 (title·description·H1·ALT·링크·URL) |
+| ⚙️ 기술·크롤링 | HTML + robots.txt (HTTPS·색인·canonical·viewport·lang) |
+| 🔍 검색 노출 강화 | 구조화데이터·OG·sitemap·파비콘·robots.txt |
+| 🩺 신뢰·전문성(E-E-A-T) | 저자·의료진 · 조직/병원정보 · 발행수정일 · 연락처 · 엔티티(sameAs) — **의료(YMYL) 가중** |
+| ⚡ 속도 최적화 | PSI(Lighthouse) 정밀 분석 — 종합점수와 분리 |
 
 ### ① 콘텐츠 & 메타 (38)
 | 항목 | 배점 | 출처 | 통과 규칙 |
@@ -68,7 +77,19 @@ description: >-
 | 파비콘 | 2 | Google | 검색결과 아이콘 |
 | robots.txt 존재 | 3 | 공통 | 수집 규칙 파일 제공 |
 
-### ④ 속도 최적화 (10, PSI 정밀 분석)
+### ④ 신뢰·전문성 (E-E-A-T) — 의료(YMYL) 가중
+| 항목 | 출처 | 통과 규칙 |
+|---|---|---|
+| 저자·의료진 정보 | Google [171·145] | 작성/감수 의료진·전문성 표기 (meta author, Article.author, 대표원장/전문의/감수) |
+| 조직·병원 정보 | Google [185·121] | Organization/LocalBusiness/Medical* JSON-LD 또는 상호·사업자번호·주소 |
+| 발행·수정일 | Google [145] | datePublished/dateModified 또는 게시일·`time[datetime]` |
+| 연락처·접근성 | 공통 [121] | `tel:`·전화번호·주소 노출 |
+| 엔티티 신호(sameAs) | Google [185·39] | `sameAs` 또는 권위있는 외부연결 2개+ — 생성형 AI/지식패널 그라운딩 |
+
+> **Google 문서 기준(오해 주의)**: E-E-A-T 자체는 직접 순위요소가 아니나 **YMYL(건강)은 신뢰성에 가중**([171]).
+> 생성형 AI(GEO) 노출은 **기존 SEO + 엔티티 신호로 충분**([39][1]) — FAQ 스키마(2026 지원중단)·llms.txt·청킹은 불필요.
+
+### ⑤ 속도 최적화 (PSI 정밀 분석)
 성능 점수·텍스트 압축·이미지 최적화(WebP·지연로딩)·렌더링 차단 최소화 — Lighthouse 실측 + CrUX 현장 데이터.
 
 ---
@@ -86,7 +107,7 @@ description: >-
 
 프로젝트에 엔진이 있으면 직접 호출:
 ```js
-const SEOEngine = require('./venom-wordpress/preview/assets/seo-engine.js');
+const SEOEngine = require('./venom-wordpress/preview/seo/seo-engine.js');
 const result = SEOEngine.analyze({ url, html, robots, isHttps });   // Node면 { doc } 도 전달(jsdom)
 // PSI JSON이 있으면:  const merged = SEOEngine.mergePSI(result, psiJson);
 // result.total / result.max / result.grade / result.categories[].items
@@ -111,7 +132,7 @@ const result = SEOEngine.analyze({ url, html, robots, isHttps });   // Node면 {
 🔎 SEO 진단: {도메인}
 종합 {total}/{max}점 · {등급}
 
-[카테고리별]  콘텐츠&메타 xx/38 · 기술·크롤링 xx/30 · 검색노출 xx/22 (· 속도 xx/10)
+[카테고리별]  콘텐츠&메타 · 기술·크롤링 · 검색노출 · 🩺신뢰(E-E-A-T) (· 속도)
 
 ⚠️ 개선 우선순위 (배점 높은 순)
 1. [항목] (+N점) — 현재 상태 → 조치 방법
@@ -124,8 +145,9 @@ const result = SEOEngine.analyze({ url, html, robots, isHttps });   // Node면 {
 ---
 
 ## 개선 시 추가로 챙기면 좋은 것 (권장 확장)
-- **AEO/GEO(생성형 AI 검색) 신호**: FAQPage·Article·MedicalClinic 등 Schema.org JSON-LD, 즉답형 리드,
-  인용 가능한 권위 콘텐츠 — 이 부분은 `ai-content-writer` 스킬과 짝으로 쓰면 강력하다.
+- **AEO/GEO(생성형 AI 검색) 신호**: Article·MedicalClinic·Organization(sameAs) 등 Schema.org JSON-LD,
+  즉답형 리드, 인용 가능한 권위 콘텐츠 + 엔티티 명확화 — 기존 SEO+신뢰(E-E-A-T) 신호로 충분([39][1]).
+  ⚠️ FAQPage 리치결과는 2026년 지원 중단이므로 리치결과 목적으론 권장하지 않음. `ai-content-writer` 스킬과 짝.
 - **Core Web Vitals**: LCP/CLS/INP를 CrUX 현장 데이터로 모니터링.
 - **다중 사이트 트렌드**: 관리 콘솔에서 도메인별 점수를 일자별로 저장해 추세 그래프화
   (프로젝트의 `api/cron-seo-monitor.js` 패턴 참고).

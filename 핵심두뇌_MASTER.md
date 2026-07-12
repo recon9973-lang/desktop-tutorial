@@ -71,6 +71,17 @@
 
 ---
 
+## 🧩 스킬 (docs/skills/) — 뭐라고 부르면 나오나
+| 스킬 이름 | 부르는 말(트리거) | 하는 일 |
+|---|---|---|
+| **`seo-audit`** | "SEO 진단/점검/점수", "E-E-A-T 진단", "AI 노출(GEO) 점검" | SEO 진단·채점·처방 (엔진 `seo/` + 203문서 근거, 신뢰 E-E-A-T 포함) |
+| `seo-medical-expert` | "병원 SEO", "의료 콘텐츠", "의료광고법" | 의료 SEO/GEO + 한국 의료광고법 검수 |
+| `ai-content-writer` | "블로그 글 써줘", "콘텐츠 작성" | AI 콘텐츠 작성 |
+| `web-design` | "웹디자인", "UI 개선" | 웹 디자인 |
+| `전수검사` | "전수조사/전체 점검/사이트 감사" | 사이트 10개 영역 종합 감사·수정 |
+
+> 스킬 정의: `docs/skills/<이름>/SKILL.md`. 부르는 말(설명 트리거)로 자동 호출되거나 `/이름`으로 실행.
+
 ## 🌿 브랜치·배포 규칙
 - **desktop-tutorial**: `main`이 라이브(자동배포). 작업은 `claude/*` 브랜치 → PR → main 병합.
 - **marketing-agency-erp**: `erp-v1`이 라이브(자동배포). 빌드 시 Neon DB에 `prisma db push`.
