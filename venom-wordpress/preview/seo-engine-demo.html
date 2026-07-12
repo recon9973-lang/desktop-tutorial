@@ -28,7 +28,7 @@
 <body>
 <div class="wrap">
   <h1>VENOM SEO Engine <span style="font-size:13px;color:var(--mute);font-weight:400">독립 데모</span></h1>
-  <div class="sub">엔진 파일 하나(<code>assets/seo-engine.js</code>)만으로 동작합니다. Google·네이버 공식 가이드 기준.</div>
+  <div class="sub">엔진 파일 하나(<code>/seo/seo-engine.js</code>)만으로 동작합니다. Google·네이버 공식 가이드 기준.</div>
   <div class="bar">
     <input id="u" type="url" placeholder="https://example.com" value="https://example.com"
       onkeydown="if(event.key==='Enter')run()">
@@ -38,7 +38,7 @@
   <div id="out" class="card" style="display:none"></div>
 </div>
 
-<script src="assets/seo-engine.js"></script>
+<script src="/seo/seo-engine.js?v=1.6.0"></script>
 <script>
 var PROXY='https://venom-new-site.vercel.app/api/seo-proxy';
 var last=null;

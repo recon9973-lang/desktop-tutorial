@@ -25,7 +25,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.5.0';
+  var VERSION = '1.6.0';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -215,6 +215,36 @@
     // JS로 흔히 주입되는 신호: 정적에 있으면 pass, 없으면 renderSuspect일 때 pending(null), 아니면 fail
     var jsItem = function (v) { return v === true ? true : (renderSuspect ? null : false); };
 
+    // ── 신뢰·전문성(E-E-A-T) · 엔티티 신호 — 의료(YMYL) 가중 ─────────
+    // 근거: [171]신뢰성 최우선·YMYL(건강) 가중 · [145]기사 author/datePublished/dateModified
+    //       [185]Organization(sameAs·주소) · [121]LocalBusiness(주소·영업시간) · [39][1]생성형AI=기존SEO
+    // 주의(공식 문서 반영): FAQ 리치결과 지원중단(2026)·llms.txt 불필요·"단어 수" 순위요인 아님 → 미채택.
+    var ldText = '';
+    try {
+      var _ldN = doc ? doc.querySelectorAll('script[type="application/ld+json"]') : [];
+      for (var _li = 0; _li < _ldN.length; _li++) ldText += ' ' + (_ldN[_li].textContent || '');
+    } catch (e) {}
+    if (!ldText && html) { var _ldM = html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi); if (_ldM) ldText = _ldM.join(' '); }
+    var bodyHead = bodyText.slice(0, 6000);
+    var hasAuthor = !!metaByName('author')
+      || /"author"\s*:/i.test(ldText)
+      || (doc && !!doc.querySelector('[rel="author"],[itemprop="author"],[class*="author"],[class*="byline"],[class*="writer"]'))
+      || /(작성자|글쓴이|감수|검수|대표원장|전문의|의료진|원장)/.test(bodyHead);
+    var hasDates = /"date(Published|Modified)"\s*:/i.test(ldText)
+      || (doc && !!doc.querySelector('time[datetime],[itemprop="datePublished"],[itemprop="dateModified"]'))
+      || !!metaByProp('article:published_time') || !!metaByProp('article:modified_time');
+    var hasOrg = /"@type"\s*:\s*"?(Organization|LocalBusiness|MedicalOrganization|MedicalClinic|Hospital|Dentist|Physician)"?/i.test(ldText)
+      || /\d{3}-\d{2}-\d{5}/.test(bodyText)
+      || /(상호|대표자|사업자등록번호|의료기관)/.test(bodyHead);
+    var hasContact = (doc && !!doc.querySelector('a[href^="tel:"]'))
+      || /0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/.test(bodyText)
+      || /"(telephone|address)"\s*:/i.test(ldText);
+    var extLinks = realAnchors.filter(function (a) {
+      var h = a.getAttribute('href') || '';
+      return /^https?:\/\//i.test(h) && h.indexOf(domain) === -1;
+    }).length;
+    var hasEntity = /"sameAs"\s*:/i.test(ldText) || extLinks >= 2;
+
     // ── 배점(Google 우선순위 반영) ───────────────────────────────
     // Google Search Central(SEO 시작 가이드·helpful content·page experience)의 문서화된 우선순위에
     // 맞춰 배점: ①기술 기반(크롤/색인/모바일/HTTPS/canonical)과 ②핵심 콘텐츠 신호(title·description·
@@ -246,6 +276,16 @@
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
         ['robots.txt 존재', '크롤러 수집 규칙 파일 제공', 3, robotsTxtOk, '공통']
       ],
+      // 신뢰·전문성(E-E-A-T) = 의료(YMYL) 가중 신호. Google: E-E-A-T 중 '신뢰성'이 최우선이며
+      // YMYL(건강)에 특히 가중([171]). 직접 순위요소는 아니나 병원 사이트엔 전환·품질 신뢰의 핵심.
+      // 생성형 AI 노출도 기존 SEO+엔티티 신호로 충분([39][1]) — 별도 AEO 최적화 불필요.
+      trust: [
+        ['저자·의료진 정보', '작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]', 5, jsItem(hasAuthor), 'Google'],
+        ['조직·병원 정보', 'Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]', 4, jsItem(hasOrg), 'Google'],
+        ['발행·수정일(최신성)', 'datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]', 3, jsItem(hasDates), 'Google'],
+        ['연락처·접근성', '전화(tel:)·주소 노출 — 신뢰·전환 [121]', 2, hasContact, '공통'],
+        ['엔티티 신호(sameAs)', 'sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]', 2, jsItem(hasEntity), 'Google']
+      ],
       // 속도(Core Web Vitals) = Google PageSpeed Insights / Lighthouse 실측 전용. PSI 없이는
       // 절대 점수를 만들지 않고 pending(정밀 필요) 유지. 배점 합계 10(성능4·LCP3·CLS2·INP1).
       speed: [
@@ -265,6 +305,7 @@
     { key: 'content', label: '콘텐츠 & 메타', icon: '📝', color: '#533afd' },
     { key: 'tech', label: '기술·크롤링', icon: '⚙️', color: '#06b6d4' },
     { key: 'search', label: '검색 노출 강화', icon: '🔍', color: '#8b5cf6' },
+    { key: 'trust', label: '신뢰·전문성(E-E-A-T)', icon: '🩺', color: '#10b981' },
     { key: 'speed', label: '속도(CWV)', icon: '⚡', color: '#f59e0b' }
   ];
 
