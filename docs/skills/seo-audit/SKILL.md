@@ -46,7 +46,10 @@ description: >-
 | ⚙️ 기술·크롤링 | HTML + robots.txt (HTTPS·색인·canonical·viewport·lang) |
 | 🔍 검색 노출 강화 | 구조화데이터·OG·sitemap·파비콘·robots.txt |
 | 🩺 신뢰·전문성(E-E-A-T) | 저자·의료진 · 조직/병원정보 · 발행수정일 · 연락처 · 엔티티(sameAs) — **의료(YMYL) 가중** |
+| ✍️ 콘텐츠 최적화 | 포커스 키워드 배치(제목·본문·메타) · 소제목 구조 · 문단 가독성 · 스캔(목록·표) — Rank Math류 글최적화 |
 | ⚡ 속도 최적화 | PSI(Lighthouse) 정밀 분석 — 종합점수와 분리 |
+
+> **포커스 키워드 진단**: `analyze({ url, html, robots, isHttps, keyword: '대상키워드' })` — 키워드를 주면 제목·본문·메타 **배치**를 평가(밀도/스터핑은 Google 스팸정책이라 미채점).
 
 ### ① 콘텐츠 & 메타 (38)
 | 항목 | 배점 | 출처 | 통과 규칙 |

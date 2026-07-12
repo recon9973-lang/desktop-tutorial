@@ -1,7 +1,7 @@
 {
  "version": "1.0",
  "generated_from": "00_지식맵_MASTER_INDEX.md (Google 검색 공식 문서 201종 구조화)",
- "note": "각 채점 항목을 Google 공식 문서 번호[n]와 처방 템플릿에 명시적으로 연결한 근거 지식베이스. seo-engine.js/리포트가 '근거[n]' 배지·처방 생성에 소비. [n]은 지식맵 문서번호 = google_seo_guide/ 원문 정렬 순번. 규칙·배점은 docs/seo-guidelines.md 준용. | v1.6: 신뢰·전문성(E-E-A-T) 5규칙 추가 — 의료(YMYL) 가중. 근거 [171][185][121][145][141][39][1].",
+ "note": "각 채점 항목을 Google 공식 문서 번호[n]와 처방 템플릿에 명시적으로 연결한 근거 지식베이스. seo-engine.js/리포트가 '근거[n]' 배지·처방 생성에 소비. [n]은 지식맵 문서번호 = google_seo_guide/ 원문 정렬 순번. 규칙·배점은 docs/seo-guidelines.md 준용. | v1.6: 신뢰·전문성(E-E-A-T) 5규칙 추가 — 의료(YMYL) 가중. 근거 [171][185][121][145][141][39][1]. | v1.7: 콘텐츠 최적화(포커스 키워드 배치·소제목·가독성·스캔) 6규칙 — Rank Math류 글최적화를 Google 근거로 구현(밀도/스터핑 배제).",
  "doc_titles": {
   "1": "AI 기능 및 웹사이트(AI 개요/AI 모드)",
   "4": "Core Web Vitals",
@@ -54,6 +54,11 @@
    "key": "trust",
    "label": "신뢰·전문성(E-E-A-T)",
    "weight": 16
+  },
+  {
+   "key": "writing",
+   "label": "콘텐츠 최적화",
+   "weight": 15
   },
   {
    "key": "speed",
@@ -363,6 +368,82 @@
    "naver_ground": false,
    "caveat": "생성형 AI 노출엔 별도 최적화 불필요·기존 SEO+엔티티면 충분([39][1]). llms.txt·청킹·FAQ리치결과(지원중단)는 미채택.",
    "prescription": "Organization sameAs(네이버플레이스·공식 SNS·위키 등)로 병원 엔티티를 명확히 연결."
+  },
+  {
+   "id": "kw_title",
+   "category": "writing",
+   "label": "포커스 키워드 — 제목",
+   "weight": 3,
+   "rule": "keyword 입력 시: 대상 키워드가 <title>에 자연스럽게 포함(스터핑 아님)",
+   "grounds": [
+    89,
+    27
+   ],
+   "naver_ground": true,
+   "caveat": "키워드 '밀도/반복'은 스팸([89][47]) — 미채택. '배치(위치)'만 평가.",
+   "prescription": "핵심 키워드를 제목 앞부분에 자연스럽게 1회. 상용구·사이트명 반복 금지."
+  },
+  {
+   "id": "kw_body",
+   "category": "writing",
+   "label": "포커스 키워드 — 본문·소제목",
+   "weight": 3,
+   "rule": "keyword가 H1/소제목/첫 문단에 반영",
+   "grounds": [
+    89
+   ],
+   "naver_ground": false,
+   "prescription": "첫 문단·소제목에 주제 키워드를 자연스럽게 반영(맥락 우선)."
+  },
+  {
+   "id": "kw_meta",
+   "category": "writing",
+   "label": "포커스 키워드 — 메타·URL",
+   "weight": 2,
+   "rule": "keyword가 메타 설명·URL에 반영",
+   "grounds": [
+    143,
+    30
+   ],
+   "naver_ground": false,
+   "prescription": "메타 설명·URL 슬러그에 핵심어 포함(서술형)."
+  },
+  {
+   "id": "subheads",
+   "category": "writing",
+   "label": "소제목 구조",
+   "weight": 3,
+   "rule": "긴 본문(≥800자)에 H2/H3 소제목 존재 — 스캔 용이",
+   "grounds": [
+    89,
+    39
+   ],
+   "naver_ground": false,
+   "prescription": "긴 글은 H2/H3로 구획화. (헤딩 순서 자체는 순위요인 아님 — 스캔·이해 목적)"
+  },
+  {
+   "id": "readability",
+   "category": "writing",
+   "label": "문단 가독성",
+   "weight": 2,
+   "rule": "지나치게 긴 문단(>500자) 비율 ≤30%",
+   "grounds": [
+    171
+   ],
+   "naver_ground": false,
+   "prescription": "문단을 짧게 나눠 스캔 가능성↑. (마법의 글자수는 없음 — 구조가 핵심)"
+  },
+  {
+   "id": "scannable",
+   "category": "writing",
+   "label": "스캔 구조(목록·표)",
+   "weight": 2,
+   "rule": "목록(ul/ol 3개+) 또는 표(table) 존재",
+   "grounds": [
+    39
+   ],
+   "naver_ground": false,
+   "prescription": "핵심 정보를 목록·표로 구조화 — 사용자·생성형 AI 스캔에 유리."
   }
  ],
  "not_penalized": [

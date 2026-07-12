@@ -25,7 +25,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.6.0';
+  var VERSION = '1.7.0';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -245,6 +245,25 @@
     }).length;
     var hasEntity = /"sameAs"\s*:/i.test(ldText) || extLinks >= 2;
 
+    // ── 콘텐츠 최적화(작성 가이드) — 포커스 키워드 배치·구조·스캔성 ──
+    // 근거: [89]서술형 제목·헤딩·사람중심 콘텐츠, [39]구조·스캔 가능성.
+    // ※ 키워드 '밀도/스터핑'은 스팸 정책 위반([89][47])이라 미채택 — '배치(위치)'만 본다.
+    var keyword = (input.keyword || '').trim().toLowerCase();
+    var subHeads = doc ? Array.prototype.slice.call(doc.querySelectorAll('h2,h3')) : [];
+    var subHeadText = subHeads.map(function (h) { return (h.textContent || ''); }).join(' ').toLowerCase();
+    var firstParaEl = doc ? doc.querySelector('article p, main p, .content p, #content p, p') : null;
+    var firstPara = firstParaEl ? (firstParaEl.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() : '';
+    var h1Low = (doc && doc.querySelector('h1')) ? (doc.querySelector('h1').textContent || '').toLowerCase() : '';
+    var kwInTitle = !!keyword && title.toLowerCase().indexOf(keyword) >= 0;
+    var kwInBody = !!keyword && (h1Low.indexOf(keyword) >= 0 || subHeadText.indexOf(keyword) >= 0 || firstPara.indexOf(keyword) >= 0);
+    var kwInMeta = !!keyword && (metaDesc.toLowerCase().indexOf(keyword) >= 0 || urlPath.toLowerCase().indexOf(keyword) >= 0);
+    var paras = doc ? Array.prototype.slice.call(doc.querySelectorAll('p')) : [];
+    var longContent = bodyText.length >= 800;
+    var hasSubheads = subHeads.length >= 2;
+    var longParas = paras.filter(function (p) { return (p.textContent || '').replace(/\s+/g, ' ').trim().length > 500; }).length;
+    var paraOk = paras.length === 0 || (longParas / Math.max(1, paras.length)) <= 0.3;
+    var hasScan = doc ? (!!doc.querySelector('table') || doc.querySelectorAll('ul li, ol li').length >= 3) : false;
+
     // ── 배점(Google 우선순위 반영) ───────────────────────────────
     // Google Search Central(SEO 시작 가이드·helpful content·page experience)의 문서화된 우선순위에
     // 맞춰 배점: ①기술 기반(크롤/색인/모바일/HTTPS/canonical)과 ②핵심 콘텐츠 신호(title·description·
@@ -286,6 +305,17 @@
         ['연락처·접근성', '전화(tel:)·주소 노출 — 신뢰·전환 [121]', 2, hasContact, '공통'],
         ['엔티티 신호(sameAs)', 'sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]', 2, jsItem(hasEntity), 'Google']
       ],
+      // 콘텐츠 최적화(작성 가이드) = Rank Math류 '글 최적화'를 Google 근거로 안전하게 구현.
+      // 포커스 키워드는 keyword 입력 시에만 '배치(위치)'를 평가(밀도/스터핑은 미채택). 구조·스캔성은 상시.
+      writing: (keyword ? [
+        ['포커스 키워드 — 제목', '"' + keyword + '" 제목 반영(자연스럽게, 스터핑 아님)', 3, jsItem(kwInTitle), 'Google'],
+        ['포커스 키워드 — 본문·소제목', '"' + keyword + '" H1/소제목/첫 문단 반영', 3, jsItem(kwInBody), 'Google'],
+        ['포커스 키워드 — 메타·URL', '"' + keyword + '" 메타 설명·URL 반영', 2, jsItem(kwInMeta), 'Google']
+      ] : []).concat([
+        ['소제목 구조', longContent ? (hasSubheads ? '긴 본문에 H2/H3 소제목 — 스캔 용이' : '긴 본문에 소제목 부족 — H2/H3 추가 권장') : '본문 분량 적정(소제목 선택)', 3, longContent ? jsItem(hasSubheads) : true, 'Google'],
+        ['문단 가독성', '지나치게 긴 문단 없음 — 스캔 가능성', 2, jsItem(paraOk), 'Google'],
+        ['스캔 구조(목록·표)', '목록·표로 정보 구조화 — AI/사용자 스캔', 2, jsItem(hasScan), 'Google']
+      ]),
       // 속도(Core Web Vitals) = Google PageSpeed Insights / Lighthouse 실측 전용. PSI 없이는
       // 절대 점수를 만들지 않고 pending(정밀 필요) 유지. 배점 합계 10(성능4·LCP3·CLS2·INP1).
       speed: [
@@ -306,6 +336,7 @@
     { key: 'tech', label: '기술·크롤링', icon: '⚙️', color: '#06b6d4' },
     { key: 'search', label: '검색 노출 강화', icon: '🔍', color: '#8b5cf6' },
     { key: 'trust', label: '신뢰·전문성(E-E-A-T)', icon: '🩺', color: '#10b981' },
+    { key: 'writing', label: '콘텐츠 최적화', icon: '✍️', color: '#f43f5e' },
     { key: 'speed', label: '속도(CWV)', icon: '⚡', color: '#f59e0b' }
   ];
 
