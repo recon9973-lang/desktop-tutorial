@@ -28,6 +28,51 @@
       "published": false,
       "publishedAt": null,
       "mediaId": null
+    },
+    {
+      "id": "eeat-04",
+      "hook": "AI가 믿는 콘텐츠엔 이게 있어요 (E-E-A-T)",
+      "img": "persona-nami/ig/post4.png",
+      "cap": "persona-nami/ig/post4.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "schema-05",
+      "hook": "AI한테 떠먹여 주는 법 (구조화 데이터)",
+      "img": "persona-nami/ig/post5.png",
+      "cap": "persona-nami/ig/post5.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "llmstxt-06",
+      "hook": "AI한테 보내는 초대장 (llms.txt)",
+      "img": "persona-nami/ig/post6.png",
+      "cap": "persona-nami/ig/post6.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "mention-07",
+      "hook": "링크보다 '언급'이 중요해요 (멘션)",
+      "img": "persona-nami/ig/post7.png",
+      "cap": "persona-nami/ig/post7.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "smartblock-08",
+      "hook": "네이버도 이제 '답'을 보여줘요 (스마트블록)",
+      "img": "persona-nami/ig/post8.png",
+      "cap": "persona-nami/ig/post8.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
     }
   ]
 }
