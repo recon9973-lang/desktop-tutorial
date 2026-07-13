@@ -14,7 +14,7 @@ GV="${GRAPH_VERSION:-v21.0}"
 BASE="https://graph.facebook.com/${GV}"
 
 # 공개 이미지 URL(커밋 SHA 고정) — 안정적으로 접근 가능.
-IMG_BASE="https://cdn.jsdelivr.net/gh/recon9973-lang/desktop-tutorial@2b9583686e9bac72339740fb6e15ad93114fcfe4/persona-nami/ig"
+IMG_BASE="https://cdn.jsdelivr.net/gh/recon9973-lang/desktop-tutorial@25c3e12bbf8bf5810babbd4036c17e419b9e24d6/persona-nami/ig"
 
 IMAGES=(
   "${IMG_BASE}/post1.png"

@@ -1,0 +1,44 @@
+name: Publish IG photos
+
+# GROUND(@ground_geo) 인스타그램 사진 3장 자동발행.
+# 샌드박스는 graph.facebook.com egress가 막혀 있어 직접 발행 불가 → 이 Action(러너)이 대신 발행한다.
+# 토큰은 저장소 Secret(IG_TOKEN)에 1회만 넣으면 되고, 채팅/코드에 노출되지 않는다.
+#
+# 준비(1회): Settings → Secrets and variables → Actions → New repository secret
+#   - IG_TOKEN : 인스타그램(페이스북 그래프) 장기 액세스 토큰   (필수)
+#   - IG_ID    : 인스타그램 비즈니스 계정 ID (선택, 기본 17841472664941872)
+#
+# 실행: Actions 탭 → "Publish IG photos" → Run workflow  (또는 API 트리거)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '발행하려면 publish 입력'
+        required: true
+        default: 'publish'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-ig
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ github.event.inputs.confirm == 'publish' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish 3 photos to Instagram
+        env:
+          IG_ID: ${{ secrets.IG_ID || '17841472664941872' }}
+          TOKEN: ${{ secrets.IG_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::IG_TOKEN 시크릿이 없습니다. Settings → Secrets → Actions 에 IG_TOKEN 을 추가하세요."
+            exit 1
+          fi
+          bash persona-nami/ig/publish-ig.sh
