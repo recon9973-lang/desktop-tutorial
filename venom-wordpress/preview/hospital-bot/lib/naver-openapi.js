@@ -24,6 +24,14 @@ function stripTags(s) {
   return String(s || '').replace(/<\/?b>/g, '').replace(/<[^>]+>/g, '').trim();
 }
 
+// 입력 업체명과 검색결과 상호의 포함관계(정직성 신뢰도용) — 완전일치가 아니라 관대하게.
+function normName(s) { return String(s || '').toLowerCase().replace(/<\/?b>/g, '').replace(/[^0-9a-z가-힣]/g, ''); }
+function nameMatches(candidate, target) {
+  const a = normName(candidate), b = normName(target);
+  if (!a || !b || b.length < 2) return false;
+  return a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
+}
+
 // GET https://openapi.naver.com/v1/search/<kind>.json?...
 function searchJson(kind, query, { display = 5, sort = 'random', timeout = 7000 } = {}) {
   return new Promise((resolve) => {
@@ -56,13 +64,22 @@ function searchJson(kind, query, { display = 5, sort = 'random', timeout = 7000 
   });
 }
 
-// 병원 탐지: local 검색 상위 1건을 정규화해서 반환
+// 병원 탐지: local 검색 결과 중 입력명과 일치하는 상위 1건(없으면 top1)을 정규화해서 반환.
+// opts.matchName 제공 시 상호 일치 여부로 confidence(high/low)를 표기 — 잘못된 상호 매칭을 신뢰도로 알린다.
 async function findHospital(query, opts) {
+  opts = opts || {};
   const r = await searchJson('local', query, Object.assign({ display: 5, sort: 'random' }, opts));
-  if (!r.ok || !r.items.length) return { found: false, source: 'naver-local', error: r.error || '검색 결과 없음', raw: r };
-  const it = r.items[0];
+  if (!r.ok || !r.items.length) return { found: false, source: 'naver-local', error: r.error || '검색 결과 없음', confidence: 'none', raw: r };
+  const mn = opts.matchName || '';
+  let it = r.items[0], matched = false;
+  if (mn) {
+    const hit = r.items.find((x) => nameMatches(x.title, mn));
+    if (hit) { it = hit; matched = true; }
+  }
   return {
     found: true,
+    matched,
+    confidence: mn ? (matched ? 'high' : 'low') : 'medium',
     source: 'naver-local',
     name: stripTags(it.title),
     category: it.category || '',
@@ -75,4 +92,4 @@ async function findHospital(query, opts) {
   };
 }
 
-module.exports = { creds, isConfigured, stripTags, searchJson, findHospital };
+module.exports = { creds, isConfigured, stripTags, normName, nameMatches, searchJson, findHospital };

@@ -194,9 +194,13 @@
   function cardLocal(local){
     local = local||{};
     var pl = local.place||{}, bl = local.blog||{}, nw = local.news||{};
-    var body = '<div class="metric"><span>네이버 플레이스</span><span class="v">'+(pl.registered==null?'·':(pl.registered?'등록 확인':'미확인'))+'</span></div>'
-      + '<div class="metric"><span>블로그 노출</span><span class="v tnum">'+(bl.total==null?'·':fmt(bl.total)+'건')+'</span></div>'
-      + '<div class="metric"><span>뉴스 / PR</span><span class="v tnum">'+(nw.total==null?'·':fmt(nw.total)+'건')+'</span></div>'
+    // 플레이스: 상호 일치 시에만 '등록 확인'. 불일치·0건은 '미등록' 단정 금지 → '검색 미확인'(색인 한계)
+    var placeTxt = pl.registered===true?'등록 확인':(pl.confidence==='low'?'검색 미확인 <small style="color:var(--muted)">지도 직접 확인</small>':'·');
+    // 블로그/뉴스: 표본 관련성 낮으면 부풀려진 총계에 정직 표기(동명 혼입)
+    var relNote = function(x){ return (x&&x.matchRate!=null&&x.confidence==='low')?' <small style="color:var(--muted)">(표본 '+x.sampled+'건 중 관련 '+x.matched+'건)</small>':''; };
+    var body = '<div class="metric"><span>네이버 플레이스</span><span class="v">'+placeTxt+'</span></div>'
+      + '<div class="metric"><span>블로그 노출</span><span class="v tnum">'+(bl.total==null?'·':fmt(bl.total)+'건'+relNote(bl))+'</span></div>'
+      + '<div class="metric"><span>뉴스 / PR</span><span class="v tnum">'+(nw.total==null?'·':fmt(nw.total)+'건'+relNote(nw))+'</span></div>'
       + (local.signals&&local.signals.length?'<ul class="fixlist">'+local.signals.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>':'');
     return card('📍 네이버 로컬', stTag('ok','조회'), body);
   }
