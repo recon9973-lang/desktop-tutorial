@@ -69,24 +69,18 @@ async function resolveHomepage(name, opts) {
   if (typeof fetchHtml !== 'function' || !name) return null;
   const q = [opts.region, name].filter(Boolean).join(' ').trim() || name;
   const enc = encodeURIComponent(q);
-  const H = { timeout: 3500, maxBytes: 1200000 };
+  const H = { timeout: 2500, maxBytes: 1200000 }; // 동기 응답(5초) 안에 들도록 짧게
   try {
-    // 1) 목록 검색 → place id
+    // 1) 목록 검색 → 홈페이지가 있으면 즉시, 없으면 place id
     const list = await fetchHtml(`https://pcmap.place.naver.com/place/list?query=${enc}`, H);
     const listHtml = (list && list.ok && list.html) || '';
-    // 목록 HTML에 이미 홈페이지가 들어있으면 바로 사용
     const direct = extractHomepage(listHtml);
     if (direct) return direct;
     const id = extractPlaceId(listHtml);
     if (!id) return null;
-    // 2) 상세(home 탭) → 홈페이지 추출
-    for (const path of [`/place/${id}/home`, `/place/${id}/information`, `/place/${id}`]) {
-      const detail = await fetchHtml(`https://pcmap.place.naver.com${path}`, H);
-      const html = (detail && detail.ok && detail.html) || '';
-      const hp = extractHomepage(html);
-      if (hp) return hp;
-    }
-    return null;
+    // 2) 상세(home 탭) 1회만 — 지연 최소화
+    const detail = await fetchHtml(`https://pcmap.place.naver.com/place/${id}/home`, H);
+    return extractHomepage((detail && detail.ok && detail.html) || '');
   } catch (e) { return null; }
 }
 
@@ -99,17 +93,12 @@ async function searchHomepage(name, opts) {
   if (typeof fetchHtml !== 'function' || !name) return null;
   const q = [opts.region, name, '홈페이지'].filter(Boolean).join(' ');
   const enc = encodeURIComponent(q);
-  const H = { timeout: 3500, maxBytes: 1200000 };
-  // Bing이 서버측 스크래핑에 비교적 관대. 실패 시 구글도 시도.
-  const engines = [`https://www.bing.com/search?q=${enc}`, `https://www.google.com/search?q=${enc}`];
-  for (const eng of engines) {
-    try {
-      const r = await fetchHtml(eng, H);
-      const hp = extractHomepage((r && r.ok && r.html) || '');
-      if (hp) return hp;
-    } catch (e) { /* 다음 엔진 */ }
-  }
-  return null;
+  const H = { timeout: 2500, maxBytes: 1200000 };
+  // Bing이 서버측 스크래핑에 비교적 관대. 지연 최소화 위해 1개 엔진만.
+  try {
+    const r = await fetchHtml(`https://www.bing.com/search?q=${enc}`, H);
+    return extractHomepage((r && r.ok && r.html) || '');
+  } catch (e) { return null; }
 }
 
 // 통합: 플레이스 상세 → 검색엔진 순으로 실제 홈페이지 best-effort 탐색.
