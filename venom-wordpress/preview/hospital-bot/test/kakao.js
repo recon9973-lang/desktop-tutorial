@@ -34,14 +34,14 @@ function isValidSkill(r) {
 
 async function main() {
   console.log('== 발화 파싱 ==');
-  assert(kf.parseCommand('대구 수성구 OO치과').view === 'summary', '기본=종합');
+  assert(kf.parseCommand('대구 수성구 OO치과').view === 'confirm', '기본=업체확인');
   assert(kf.parseCommand('OO치과 seo').view === 'seo' && kf.parseCommand('OO치과 seo').hospital === 'OO치과', 'seo 뷰 + 병원명 분리');
   assert(kf.parseCommand('OO치과 광고').view === 'ads', '광고 뷰');
   assert(kf.parseCommand('OO치과 geo').view === 'geo', 'geo 뷰');
   assert(kf.parseCommand('OO치과 플레이스').view === 'local', '플레이스 뷰');
   assert(kf.parseCommand('OO치과 심의').view === 'law', '심의 뷰');
   assert(kf.parseCommand('상담').view === 'contact', '상담=CTA');
-  assert(kf.parseCommand('seo').view === 'summary', '병원명 없는 seo → 종합(빈 병원명 방지)');
+  assert(kf.parseCommand('seo').view === 'confirm', '병원명 없는 seo → 업체확인(빈 병원명 방지)');
 
   console.log('== 화이트리스트 ==');
   delete process.env.VENOMI_WHITELIST;

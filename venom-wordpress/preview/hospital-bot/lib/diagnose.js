@@ -545,19 +545,9 @@ async function computeBase(deps, q, nowMs) {
   const overrode = !!q.url;
   let homepage = q.url || place.homepage || null;
   let homepageKind = classifyHomepage(homepage); // 'site' | 'blog' | 'social' | null
-  let homepageSource = overrode ? 'user' : 'naver-link';
-  // 대표 링크가 블로그/SNS면(사용자 지정 아님), 플레이스 상세에서 실제 홈페이지 자동 탐색(best-effort).
-  // 실패해도 조용히 넘어가 blog-only로 폴백(네트워크·스크래핑 불안정 대비).
-  if (!overrode && homepage && homepageKind !== 'site' && deps.naverPlace) {
-    // 동기 응답(5초) 안에 들도록 자동 탐색 전체를 하드 타임아웃으로 감싼다(초과 시 blog-only 폴백).
-    const found = await safe(Promise.race([
-      deps.naverPlace.findHomepage(gname, { region, deps }),
-      new Promise((r) => setTimeout(() => r(null), 3000)),
-    ]));
-    if (found && found.url && classifyHomepage(found.url) === 'site') {
-      homepage = found.url; homepageKind = 'site'; homepageSource = found.source; // 'naver-place' | 'search'
-    }
-  }
+  const homepageSource = overrode ? 'user' : 'naver-link';
+  // 자동 스크래핑 탐색은 정확도·응답속도 문제로 비활성(잘린 URL·타임아웃). SEO는
+  // 네이버 대표링크가 정식 사이트일 때만 자동 채점, 블로그/SNS면 사용자가 주소를 직접 입력.
   // 정식 홈페이지(site)만 홈페이지 SEO로 채점. 블로그·SNS는 '홈페이지 아님'으로 정직 표기
   // (블로그 활동은 네이버 로컬 지표에, 블로그 글의 의료광고법은 adLaw로 계속 점검).
   // 단, 사용자가 URL을 직접 지정하면 블로그라도 그 의도대로 채점한다.
@@ -583,6 +573,32 @@ async function computeBase(deps, q, nowMs) {
   return { place, region, dept, medical, homepage, homepageKind, homepageSource, gname, seo, local, ads, adLaw, geoPreview, search, warnings };
 }
 
+// 업체 확인(경량) — 진단 없이 네이버 탐지만. '하나씩 확인' 첫 화면용(빠름).
+async function resolvePlace(rawInput, opts = {}) {
+  const deps = opts.deps || defaultDeps();
+  const q = parseInput(rawInput);
+  if (opts.region) q.region = opts.region;
+  let place;
+  try { place = await deps.naverOpenapi.findHospital(q.raw, { matchName: q.name }); }
+  catch (e) { place = { found: false, error: e.message, source: 'naver-local' }; }
+  const region = q.region || regionFromAddress(place.address) || '';
+  const rawCat = place.category || '';
+  const gname = place.found ? place.name : q.name;
+  const medical = isMedical(rawCat, gname);
+  const dept = medical
+    ? (simplifyDept(rawCat) || simplifyDept(q.raw) || '병원')
+    : (businessCategory(rawCat) || '');
+  const homepage = q.url || place.homepage || null;
+  return {
+    found: !!place.found,
+    confidence: place.confidence || (place.found ? 'medium' : 'none'),
+    name: gname, region, category: rawCat, dept, medical,
+    homepage, homepageKind: classifyHomepage(homepage),
+    telephone: place.telephone || '', address: place.address || '',
+    candidates: place.candidates || [],
+  };
+}
+
 // ── 메인 오케스트레이터 ────────────────────────────────
 async function diagnose(rawInput, opts = {}) {
   const deps = opts.deps || defaultDeps();
@@ -595,7 +611,7 @@ async function diagnose(rawInput, opts = {}) {
   const cacheHit = { base: false, geo: false, compete: false };
 
   // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v9:${cacheNorm(q.raw)}|${q.region || ''}`;
+  const baseKey = `venomi:base:v10:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {
@@ -659,4 +675,4 @@ async function diagnose(rawInput, opts = {}) {
   return report;
 }
 
-module.exports = { diagnose, computeBase, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, isMedical, businessCategory, fetchHtml, defaultDeps };
+module.exports = { diagnose, resolvePlace, computeBase, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, isMedical, businessCategory, classifyHomepage, fetchHtml, defaultDeps };
