@@ -20,6 +20,7 @@
 
 const https = require('https');
 const http = require('http');
+const zlib = require('zlib');
 
 // 온페이지 SEO — 화면·크론과 100% 동일한 seo-engine(의존성 0)으로 채점.
 // linkedom(서버측 DOM)이 있으면 정적 DOM 분석까지, 없으면 PSI 기준으로 강등(빌드/실행 안 깨짐).
@@ -141,16 +142,33 @@ function keywordSeeds(dept, region, medical) {
   return Array.from(new Set(seeds.filter(Boolean))).slice(0, 5);
 }
 
-// 홈페이지 HTML 수집(가드형) — 의료광고법 스캔용
-function fetchHtml(url, { timeout = 7000, maxBytes = 500000 } = {}) {
+// 홈페이지 HTML 수집(가드형) — 의료광고법 스캔 + 온페이지 SEO용.
+// 실제 병원 홈페이지 대응: 브라우저 UA(봇 차단 회피) + gzip/br/deflate 압축 해제(cron-seo-monitor와 동일 정책).
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+function decodeBody(buf, encoding) {
+  try {
+    const enc = String(encoding || '').toLowerCase();
+    if (enc.indexOf('br') >= 0) return zlib.brotliDecompressSync(buf).toString('utf8');
+    if (enc.indexOf('gzip') >= 0) return zlib.gunzipSync(buf).toString('utf8');
+    if (enc.indexOf('deflate') >= 0) return zlib.inflateSync(buf).toString('utf8');
+  } catch (e) { /* 압축 해제 실패 시 원본 시도 */ }
+  return buf.toString('utf8');
+}
+function fetchHtml(url, { timeout = 7000, maxBytes = 500000, redirects = 0 } = {}) {
   return new Promise((resolve) => {
     if (!url || !/^https?:\/\//.test(url)) return resolve({ ok: false, error: 'invalid url', text: '' });
+    if (redirects > 5) return resolve({ ok: false, error: 'too many redirects', text: '' });
     const lib = url.startsWith('https') ? https : http;
     let received = 0; const chunks = [];
-    const req = lib.get(url, { headers: { 'User-Agent': 'VenomiBot/0.1 (+diagnostic)' } }, (res) => {
+    const req = lib.get(url, { headers: {
+      'User-Agent': BROWSER_UA,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+    } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         res.destroy();
-        return resolve(fetchHtml(new URL(res.headers.location, url).toString(), { timeout, maxBytes }));
+        return resolve(fetchHtml(new URL(res.headers.location, url).toString(), { timeout, maxBytes, redirects: redirects + 1 }));
       }
       res.on('data', (d) => {
         received += d.length;
@@ -158,7 +176,7 @@ function fetchHtml(url, { timeout = 7000, maxBytes = 500000 } = {}) {
         else res.destroy();
       });
       res.on('end', () => {
-        const html = Buffer.concat(chunks).toString('utf8'); // 원본(줄바꿈 보존) — robots.txt·SEO DOM 분석용
+        const html = decodeBody(Buffer.concat(chunks), res.headers['content-encoding']); // 압축 해제 + 원본(줄바꿈 보존)
         const text = html
           .replace(/<script[\s\S]*?<\/script>/gi, ' ')
           .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -186,7 +204,7 @@ async function diagnoseSeo(deps, homepage) {
 
   // 병렬 수집: 페이지 HTML · robots.txt · PSI(선택)
   const [page, robotsR, psi] = await Promise.all([
-    safe(deps.fetchHtml(url, { timeout: 4000, maxBytes: 900000 })),
+    safe(deps.fetchHtml(url, { timeout: 5000, maxBytes: 900000 })),
     origin ? safe(deps.fetchHtml(origin + '/robots.txt', { timeout: 2500, maxBytes: 60000 })) : Promise.resolve(null),
     safe(deps.psi.fetchPsi(url, { strategy: 'mobile' })),
   ]);
@@ -196,12 +214,12 @@ async function diagnoseSeo(deps, homepage) {
   const s = (psiOk && psi.scores) || {};
 
   // 온페이지 SEO(의존성 0 엔진) — linkedom DOM이 있어야 정적 분석 신뢰 가능
-  let onPage = null;
+  let onPage = null, onPageErr = '';
   if (deps.seoEngine && deps.parseHTML && html) {
     try {
       const doc = deps.parseHTML(html).document;
       onPage = deps.seoEngine.analyze({ url, html, robots, isHttps, doc });
-    } catch (e) { onPage = null; }
+    } catch (e) { onPage = null; onPageErr = e.message; }
   }
 
   // 온페이지 채점 성공 → 이를 주 SEO 점수로. 실패 시 PSI로 폴백.
@@ -236,9 +254,14 @@ async function diagnoseSeo(deps, homepage) {
     return { status: 'ok', url, source: 'psi', scores: s, score100, lab: psi.lab || null, topFixes: topFixes.slice(0, 3) };
   }
 
-  // 온페이지·PSI 모두 실패
-  if (page && page.ok === false) return { status: 'unavailable', url, note: '홈페이지 응답을 받지 못했습니다(차단·오프라인 가능).' };
-  return { status: 'unavailable', url, note: (psi && psi.reason) || 'SEO 엔진·PSI 모두 미가용' };
+  // 온페이지·PSI 모두 실패 — 원인을 정직하게 진단(측정 불가 이유 노출)
+  const why = !html ? '홈페이지 응답 실패(차단·오프라인·타임아웃)'
+    : !deps.seoEngine ? 'SEO 엔진 미로드'
+    : !deps.parseHTML ? 'linkedom(DOM) 미설치'
+    : onPageErr ? ('DOM 분석 오류: ' + onPageErr)
+    : 'DOM 분석 실패';
+  return { status: 'unavailable', url, note: '온페이지 SEO 미측정 — ' + why, reason: why,
+    diag: { htmlBytes: (page && page.bytes) || 0, engine: !!deps.seoEngine, linkedom: !!deps.parseHTML, psi: psiOk } };
 }
 
 // 표본(상위 items)에서 실제로 업체명을 언급한 비율 → 검색 총계의 신뢰도.
