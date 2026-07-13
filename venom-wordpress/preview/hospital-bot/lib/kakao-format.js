@@ -138,7 +138,7 @@ function line_seo(seo) {
   if (!seo) return '·';
   if (seo.status === 'ok') return `${seo.score100}/100 ${scoreIcon(seo.score100)}`;
   if (seo.status === 'no-homepage') return '공식 홈페이지 미발견';
-  if (seo.status === 'unavailable') return '측정 불가(PSI 키 확인)';
+  if (seo.status === 'unavailable') return '측정 보류(홈페이지 수집 실패)';
   return '측정 실패';
 }
 // GSC 실측 한 줄(관리 고객만) — 28일 클릭·노출·평균순위
