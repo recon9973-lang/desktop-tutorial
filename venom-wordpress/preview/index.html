@@ -6011,7 +6011,7 @@ function _renderSEO(data,url,domain,el){
   el.innerHTML=SEOEngine.renderInfographic(res)
     +'<div id="seo-psi-section" style="margin-top:14px;font-size:12.5px;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">'
     +'<span style="display:inline-block;width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#533afd;border-radius:50%;animation:spin .8s linear infinite"></span>'
-    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영해 정확한 점수로 갱신됩니다 (10~20초)</div>'
+    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영합니다 (최대 30초 · 느리면 자동 생략, 위 정적 결과는 이미 유효)</div>'
     +_seoToolbar()
     +_seoCTA();
   setTimeout(_runSEOPSI, 400);
@@ -6024,14 +6024,25 @@ function _runSEOPSI(){
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var domain=url.replace(/^https?:\/\//,'').split('/')[0];
   var sec=document.getElementById('seo-psi-section');
-  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','느린 사이트는 30~60초 소요');
-  // 느린 사이트는 PSI가 오래 걸린다 — 무한 스피너 방지용 타임아웃(75초).
+  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','최대 30초 · 느리면 자동 생략');
+  // 무한 스피너 방지: 28초 내 미응답이면 정밀분석 자동 생략(위 정적 결과는 그대로 유효).
+  // AbortController가 없어도 _psiSkip이 UI를 반드시 종료시킨다(진짜 무한 스피너 원천 차단).
+  var _psiDone=false;
   var _psiCtl = (typeof AbortController!=='undefined') ? new AbortController() : null;
-  var _psiTimer = setTimeout(function(){ if(_psiCtl) try{_psiCtl.abort();}catch(e){} }, 75000);
+  function _psiSkip(reason,admin){
+    if(_psiDone) return; _psiDone=true;
+    if(_psiCtl){ try{_psiCtl.abort();}catch(e){} }
+    var s2=document.getElementById('seo-psi-section');
+    if(s2)s2.innerHTML='<div style="font-size:12px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px 12px;line-height:1.6">'
+      +'ℹ️ 정밀(속도) 분석 생략 — <b>정적 SEO 결과 기준</b>입니다.'+(reason?' '+reason:'')
+      +' <button onclick="_runSEOPSI()" class="btn btn-p" style="padding:4px 11px;font-size:11px;margin-left:4px">정밀 분석 재시도</button>'+(admin||'')+'</div>';
+  }
+  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 30초 내 오지 않음)'); }, 28000);
   fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now(), _psiCtl?{signal:_psiCtl.signal}:undefined)
-    .then(function(r){ clearTimeout(_psiTimer); return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
+    .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
     .then(function(resp){
-      // 프록시가 돌려준 실제 오류 메시지를 그대로 노출(원인 진단용). PSI 결과 없으면 실패 처리.
+      clearTimeout(_psiTimer);
+      if(_psiDone) return; _psiDone=true;
       if(!resp.ok || (resp.j && resp.j.error) || !(resp.j && resp.j.lighthouseResult)){
         throw new Error((resp.j && resp.j.error) ? resp.j.error : ('HTTP '+resp.status+' — PSI 응답 없음'));
       }
@@ -6044,16 +6055,12 @@ function _runSEOPSI(){
     })
     .catch(function(err){
       clearTimeout(_psiTimer);
-      var s=document.getElementById('seo-psi-section');
-      var aborted = (err && err.name==='AbortError');
-      var msg = aborted ? 'PSI 응답이 75초 내 오지 않았습니다(사이트가 느리거나 서버 함수 시간초과).' : err.message;
-      // 가장 흔한 두 원인 — (1) PSI_KEY 미설정, (2) 함수 시간초과 — 에 맞춰 관리자 조치를 안내한다.
-      var hint = /PSI_KEY/i.test(msg)
-        ? '<div style="margin-top:6px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;line-height:1.6">⚙️ <b>관리자 조치</b>: Vercel 환경변수 <b>PSI_KEY</b>(Google PageSpeed Insights API 키)를 설정 후 재배포하세요.</div>'
-        : (aborted ? '<div style="margin-top:6px;font-size:12px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;line-height:1.6">⚙️ <b>관리자 조치</b>: 느린 사이트는 PSI가 오래 걸립니다. 재시도하거나, 서버 함수 시간(seo-proxy maxDuration)을 확인하세요.</div>' : '');
-      if(s)s.innerHTML='<div style="font-size:13px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px">'
-        +'<span style="color:#dc2626;font-weight:700">정밀 분석(PSI) 실패:</span> <span style="color:#991b1b">'+msg+'</span>'
-        +' &nbsp;<button onclick="_runSEOPSI()" class="btn btn-p" style="padding:6px 12px;font-size:12px">재시도</button>'+hint+'</div>';
+      if(err && err.name==='AbortError'){ return; } // 이미 _psiSkip이 처리
+      var msg=(err&&err.message)||'PSI 오류';
+      // PSI_KEY 미설정이면 관리자 조치를 함께 안내(그 외엔 조용히 생략).
+      var admin = /PSI_KEY/i.test(msg)
+        ? '<div style="margin-top:6px;color:#92400e">⚙️ 관리자: Vercel 환경변수 <b>PSI_KEY</b>(PageSpeed API 키) 설정 후 재배포하면 속도(정밀) 분석이 켜집니다.</div>' : '';
+      _psiDone=false; _psiSkip('('+msg+')', admin);
     });
 }
 

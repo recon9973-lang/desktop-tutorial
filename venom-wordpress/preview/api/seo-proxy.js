@@ -43,7 +43,10 @@ function isBlockedHost(hostname) {
 }
 
 // 리다이렉트 추적 URL fetch (fetch 타입용)
-function fetchUrl(urlStr, redirects) {
+var _BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+var _GOOGLEBOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+// ua: 미지정 시 브라우저 UA. 봇차단(401/403/429/503) 응답이면 Googlebot UA로 1회 자동 재시도.
+function fetchUrl(urlStr, redirects, ua) {
   return new Promise(function(resolve, reject) {
     if (redirects > 5) { reject(new Error('Too many redirects')); return; }
     var parsed;
@@ -56,7 +59,7 @@ function fetchUrl(urlStr, redirects) {
       method: 'GET',
       headers: {
         // 실제 크롬 UA로 위장: 일부 호스팅/CMS가 미상 봇에 빈/축약 페이지를 주는 문제 방지
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'User-Agent': ua || _BROWSER_UA,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
         'Accept-Encoding': 'identity'
@@ -72,7 +75,15 @@ function fetchUrl(urlStr, redirects) {
       }
       var chunks = [];
       res.on('data', function(c) { chunks.push(c); });
-      res.on('end', function() { resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString('utf8') }); });
+      res.on('end', function() {
+        var body = Buffer.concat(chunks).toString('utf8');
+        // 봇차단(401/403/429/503)이고 아직 브라우저 UA면 → Googlebot UA로 1회 재시도(SEO 친화 사이트 회복)
+        if ([401, 403, 429, 503].indexOf(res.statusCode) >= 0 && !ua) {
+          resolve(fetchUrl(urlStr, redirects, _GOOGLEBOT_UA));
+          return;
+        }
+        resolve({ status: res.statusCode, body: body });
+      });
     });
     req.on('error', reject);
     req.on('timeout', function() { req.destroy(); reject(new Error('Timeout')); });
