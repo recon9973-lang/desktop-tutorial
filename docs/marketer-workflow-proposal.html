@@ -1,0 +1,397 @@
+<title>VENOM MarketerOps — 마케터 워크플로우 ERP 통합 기획안</title>
+<style>
+  :root{
+    --p:#533afd; --p-soft:#ece9ff; --bd:#1c1e54; --ink:#0d253d; --muted:#5a6b82;
+    --soft:#f6f9fc; --card:#ffffff; --border:#e3e8ee; --bg:#eef2f8;
+    --good:#0f9d6b; --good-soft:#e3f6ee; --warn:#d98a00; --warn-soft:#fdf1dc; --crit:#d33c4b; --crit-soft:#fbe6e8;
+    --shadow:0 1px 2px rgba(13,37,61,.04),0 8px 24px rgba(13,37,61,.06);
+    --r:14px; --r-sm:9px;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --p:#8b7bff; --p-soft:#241f45; --bd:#c7cffb; --ink:#e8eef7; --muted:#95a6bd;
+      --soft:#141a26; --card:#161d2b; --border:#273246; --bg:#0d121c;
+      --good:#3ecf8e; --good-soft:#0f2a20; --warn:#f0b35b; --warn-soft:#2c2110; --crit:#f0808d; --crit-soft:#2e161a;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --p:#533afd; --p-soft:#ece9ff; --bd:#1c1e54; --ink:#0d253d; --muted:#5a6b82;
+    --soft:#f6f9fc; --card:#ffffff; --border:#e3e8ee; --bg:#eef2f8;
+    --good:#0f9d6b; --good-soft:#e3f6ee; --warn:#d98a00; --warn-soft:#fdf1dc; --crit:#d33c4b; --crit-soft:#fbe6e8;
+  }
+  :root[data-theme="dark"]{
+    --p:#8b7bff; --p-soft:#241f45; --bd:#c7cffb; --ink:#e8eef7; --muted:#95a6bd;
+    --soft:#141a26; --card:#161d2b; --border:#273246; --bg:#0d121c;
+    --good:#3ecf8e; --good-soft:#0f2a20; --warn:#f0b35b; --warn-soft:#2c2110; --crit:#f0808d; --crit-soft:#2e161a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    -webkit-font-smoothing:antialiased;font-size:16px}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px 96px}
+  a{color:var(--p);text-decoration:none}
+
+  /* Header */
+  header.hero{background:linear-gradient(135deg,var(--bd),var(--p));color:#fff;margin-bottom:34px;
+    border-radius:0 0 26px 26px;box-shadow:var(--shadow)}
+  .hero-in{max-width:1060px;margin:0 auto;padding:46px 22px 40px}
+  .eyebrow{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;opacity:.85;
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:#fff;opacity:.7}
+  h1{font-size:clamp(28px,4.4vw,44px);line-height:1.14;margin:16px 0 10px;font-weight:800;
+    letter-spacing:-.02em;text-wrap:balance}
+  .hero p.lede{font-size:clamp(15px,1.9vw,18px);max-width:60ch;opacity:.95;margin:0 0 22px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px}
+  .meta span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+    padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:600;backdrop-filter:blur(4px)}
+
+  /* Section scaffolding */
+  section{margin:0 0 30px;scroll-margin-top:16px}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin:0 0 14px}
+  .sec-n{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--p);
+    background:var(--p-soft);padding:3px 9px;border-radius:7px;white-space:nowrap}
+  h2{font-size:clamp(20px,2.6vw,26px);margin:0;font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+  h3{font-size:16.5px;margin:22px 0 8px;font-weight:700;color:var(--bd)}
+  p{margin:0 0 12px}
+  .lead{color:var(--muted);font-size:15px;margin:-4px 0 16px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+    padding:20px 22px;box-shadow:var(--shadow)}
+  .card + .card{margin-top:14px}
+
+  /* Tables */
+  .tbl{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);background:var(--card);box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:top}
+  thead th{background:var(--soft);font-weight:700;color:var(--bd);position:sticky;top:0;font-size:12.5px;
+    letter-spacing:.01em;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .yes{color:var(--good);font-weight:800}
+  code{font-family:var(--mono);font-size:.86em;background:var(--soft);border:1px solid var(--border);
+    padding:1px 6px;border-radius:6px}
+
+  /* Pills */
+  .pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;
+    letter-spacing:.02em;white-space:nowrap}
+  .pill.reuse{background:var(--good-soft);color:var(--good)}
+  .pill.new{background:var(--p-soft);color:var(--p)}
+  .pill.must{background:var(--crit-soft);color:var(--crit)}
+  .pill.should{background:var(--warn-soft);color:var(--warn)}
+  .pill.could{background:var(--good-soft);color:var(--good)}
+  .pill.wont{background:var(--soft);color:var(--muted)}
+
+  /* Grid */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  /* Pain cards */
+  .pain{border-left:3px solid var(--crit);padding:13px 16px;background:var(--card);border:1px solid var(--border);
+    border-left-width:3px;border-radius:var(--r-sm)}
+  .pain .k{font-family:var(--mono);font-size:12px;color:var(--crit);font-weight:700}
+  .pain .want{color:var(--muted);font-size:13px;margin-top:4px}
+  .pain .fix{font-size:13.5px;margin-top:7px;font-weight:600}
+  .pain .fix::before{content:"→ ";color:var(--p);font-weight:800}
+
+  /* Flow */
+  .flow{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;
+    box-shadow:var(--shadow);overflow-x:auto}
+  .flow-row{display:flex;gap:10px;align-items:stretch;min-width:640px}
+  .step{flex:1;background:var(--soft);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 13px;min-width:120px}
+  .step .n{font-family:var(--mono);font-size:11px;color:var(--p);font-weight:700}
+  .step .t{font-weight:700;font-size:14px;margin:3px 0 3px}
+  .step .d{font-size:12px;color:var(--muted);line-height:1.45}
+  .arrow{align-self:center;color:var(--p);font-weight:800;font-size:18px}
+  .flow-back{margin-top:12px;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--border);padding-top:10px}
+  .flow-back b{color:var(--crit)}
+
+  /* Module cards */
+  .mod{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:17px 19px;box-shadow:var(--shadow)}
+  .mod .tag{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--p);
+    padding:2px 8px;border-radius:6px}
+  .mod h4{margin:10px 0 6px;font-size:16px;font-weight:800}
+  .mod ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:var(--ink)}
+  .mod li{margin:4px 0}
+  .mod .maps{color:var(--muted)}
+
+  /* Roadmap */
+  .phase{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+  .phase .ph{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--p)}
+  .phase h4{margin:6px 0 4px;font-size:17px;font-weight:800}
+  .phase .when{font-size:12.5px;color:var(--muted);font-weight:600}
+  .phase p{font-size:13.5px;margin:9px 0 0;color:var(--muted)}
+  .phase .why{color:var(--ink);font-style:italic}
+
+  /* KPI */
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);text-align:center}
+  .kpi .big{font-size:26px;font-weight:800;color:var(--p);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .kpi .lbl{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+  .callout{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 34%,transparent);
+    border-radius:var(--r-sm);padding:13px 16px;font-size:13.5px;margin:14px 0}
+  .callout b{color:var(--warn)}
+  .callout.info{background:var(--p-soft);border-color:color-mix(in srgb,var(--p) 30%,transparent)}
+  .callout.info b{color:var(--p)}
+
+  /* nav */
+  nav.toc{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--border);margin-bottom:26px}
+  .toc-in{max-width:1060px;margin:0 auto;padding:10px 22px;display:flex;gap:6px;overflow-x:auto;
+    scrollbar-width:none}
+  .toc-in::-webkit-scrollbar{display:none}
+  .toc-in a{font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 10px;border-radius:7px;white-space:nowrap}
+  .toc-in a:hover{background:var(--p-soft);color:var(--p)}
+
+  footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:40px;padding-top:20px;
+    border-top:1px solid var(--border)}
+  .src{font-size:12.5px;color:var(--muted)}
+  .src li{margin:4px 0}
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<header class="hero">
+  <div class="hero-in">
+    <div class="eyebrow">VENOM MarketerOps <span class="dot"></span> 마케터 워크플로우 기획안 <span class="dot"></span> 2026.07.13</div>
+    <h1>직원 머릿속·시트·캘린더에 흩어진 마케터 업무를<br>ERP 한 곳으로 녹여낸다</h1>
+    <p class="lede">담당자 5인이 실제로 하는 일과 직접 요청한 희망사항을, 이미 82% 완성된 베놈 ERP 위에 얹어 하나의 워크플로우로 통합하는 설계. 신규 구축이 아니라 <b>기존 자산 재포장 + 자동화 연결</b>입니다.</p>
+    <div class="meta">
+      <span>거래처 → 키워드 → 원고 → 이미지 → 발행 → 모니터링 → 보고</span>
+      <span>재사용 우선</span>
+      <span>월보장 자동감시</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="toc-in">
+    <a href="#as-is">현행 분석</a>
+    <a href="#pain">병목→요구</a>
+    <a href="#flow">To-Be 흐름</a>
+    <a href="#reuse">자산 재사용</a>
+    <a href="#modules">기능 모듈</a>
+    <a href="#auto">자동화</a>
+    <a href="#roadmap">우선순위·로드맵</a>
+    <a href="#risk">리스크</a>
+    <a href="#kpi">성과지표</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- AS IS -->
+  <section id="as-is">
+    <div class="sec-h"><span class="sec-n">01</span><h2>현행 업무 분석 — 담당자 데이터 기반</h2></div>
+    <p class="lead">베놈 마케터들은 여러 병원 거래처의 네이버 노출을 매일 관리한다. 그 업무가 지금은 <b>구글시트 · 구글캘린더 · 개인메모(SMemo·포스트잇)·저장된 프롬프트</b> 세 군데로 흩어져 있어 인수인계가 불가능하다.</p>
+
+    <div class="tbl">
+      <table>
+        <thead><tr><th>담당자</th><th>핵심 업무</th><th>사용 도구</th><th>남긴 문제 / 희망</th></tr></thead>
+        <tbody>
+          <tr><td><b>신현지</b></td><td>원고 추출·수정, 발행, 이미지, 일정관리</td><td>구글캘린더(업체별 색상), 프롬프트+제미나이/GPT, 미리캔버스·클립아트코리아·포토샵·제미나이</td><td>캘린더 툴팁, 글꾸미기 자동화, GIF 삽입, <b>월보장 순위하락 자동보고</b>, 인수인계 특이사항 칸, 뉴스피드</td></tr>
+          <tr><td><b>최보선</b></td><td>업무확인·기타확인</td><td>구글 스프레드시트, SMemo·포스트잇</td><td>메모가 개인 PC에 갇힘 → 인수인계 취약</td></tr>
+          <tr><td><b>서연</b></td><td>원고 출력, 일정, 이미지 배경제거</td><td>시트·독스, 포토샵·remove.bg, 미리캔버스, 스케두</td><td><b>키워드+병원+상세정보 → 원고 자동출력</b>, <b>업무 입력 → 한 달 일정 자동생성</b>, 배경제거 내장</td></tr>
+          <tr><td>김민서 / 이필호</td><td>동일 계열 업무</td><td>네이버 메일함</td><td>상세 미공유</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>실제 관리 대상 — "키워드 노출 현황" 매트릭스 (핵심 산출물, 실측)</h3>
+    <p class="lead">담당자들은 병원별로 <b>9개 노출영역</b>을 키워드마다 손으로 채운다. "월보장" 키워드는 계약상 순위를 보장한 키워드로, 떨어지면 계약 리스크다.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>키워드</th><th class="num">검색량</th><th>플레이스</th><th>상단통합</th><th>클립</th><th>하단통합</th><th>이미지</th></tr></thead>
+        <tbody>
+          <tr><td>대구병원마케팅</td><td class="num">430</td><td>달서2</td><td class="yes">○</td><td class="yes">○</td><td class="yes">○</td><td class="yes">○</td></tr>
+          <tr><td>대구치과마케팅</td><td class="num">40</td><td>—</td><td class="yes">○</td><td class="yes">○</td><td class="yes">○</td><td>—</td></tr>
+          <tr><td>대구한의원마케팅</td><td class="num">30</td><td>—</td><td class="yes">○</td><td class="yes">○</td><td class="yes">○</td><td class="yes">○</td></tr>
+          <tr><td>대구마케팅</td><td class="num">310</td><td>베놈X/달서2</td><td class="yes">○</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>병원마케팅</td><td class="num">6,310</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid g3" style="margin-top:14px">
+      <div class="card"><h3 style="margin-top:0">발행·성과 트랙</h3><p class="lead" style="margin:0">브블(브랜드블로그)·배포(정보성)·월보장 3종 트랙으로 포스팅번호·날짜·키워드·링크·방문자·조회수를 시트에 기록. 네이버·티스토리·인스타 멀티채널.</p></div>
+      <div class="card"><h3 style="margin-top:0">원고 파이프라인</h3><p class="lead" style="margin:0">저장 프롬프트로 역할설정+13필수규칙을 GPT/제미나이에 주입. 2,500자·핵심요약·목차6·FAQ·의료광고법 준수. 프롬프트가 개인 파일에 흩어짐.</p></div>
+      <div class="card"><h3 style="margin-top:0">이미지 생산</h3><p class="lead" style="margin:0">카드뉴스·썸네일·본문을 미리캔버스/포토샵 제작, remove.bg 배경제거, 제미나이 구도수정, 의료심의문구 삽입.</p></div>
+    </div>
+  </section>
+
+  <!-- PAIN -->
+  <section id="pain">
+    <div class="sec-h"><span class="sec-n">02</span><h2>핵심 병목 → 기능 요구 매핑</h2></div>
+    <p class="lead">담당자가 <b>직접 요청한 희망사항</b>을 그대로 기능 요구로 옮겼다. (원문 취지 인용)</p>
+    <div class="grid g2">
+      <div class="pain"><div class="k">P1 · 원고</div><div class="want">"키워드+병원+상세정보 입력 시 원고 자동출력"</div><div class="fix">거래처 프리셋 주입 원고 자동생성</div></div>
+      <div class="pain"><div class="k">P2 · 일정</div><div class="want">"업무 입력 시 한 달 전체 일정 자동생성"</div><div class="fix">발행 캘린더 자동편성기</div></div>
+      <div class="pain" style="border-left-color:var(--crit)"><div class="k">P3 · 월보장 (최우선)</div><div class="want">"순위 떨어지거나 미노출 시 자동 보고"</div><div class="fix">노출 모니터링 + 카카오 알림</div></div>
+      <div class="pain"><div class="k">P4 · 노출입력</div><div class="want">매트릭스 수작업</div><div class="fix">노출 트래커(검색량 자동채움)</div></div>
+      <div class="pain"><div class="k">P5 · 글꾸미기</div><div class="want">"색상·강조까지 자동화"</div><div class="fix">발행 서식/스니펫 자동화</div></div>
+      <div class="pain"><div class="k">P6 · GIF</div><div class="want">"GIF 생성·삽입"</div><div class="fix">GIF/모션 생성(Higgsfield 재사용)</div></div>
+      <div class="pain"><div class="k">P7 · 배경제거</div><div class="want">"배경제거 내장"</div><div class="fix">이미지 스튜디오 내 배경제거</div></div>
+      <div class="pain"><div class="k">P8 · 캘린더</div><div class="want">"라벨에 마우스 올리면 메모 툴팁"</div><div class="fix">작업카드 호버 요약</div></div>
+      <div class="pain" style="border-left-color:var(--crit)"><div class="k">P9 · 인수인계</div><div class="want">"담당업체 특이사항 칸"</div><div class="fix">거래처 특이사항/인수인계 노트</div></div>
+      <div class="pain"><div class="k">P10 · 학습</div><div class="want">"ERP홈에 마케팅·AI 뉴스 피드"</div><div class="fix">대시보드 뉴스 피드</div></div>
+    </div>
+  </section>
+
+  <!-- FLOW -->
+  <section id="flow">
+    <div class="sec-h"><span class="sec-n">03</span><h2>To-Be 통합 워크플로우</h2></div>
+    <p class="lead">거래처(병원) 하나가 온보딩되면 <b>하나의 파이프라인</b>을 흐른다. 각 단계는 기존 ERP 자산에 직접 매핑된다.</p>
+    <div class="flow">
+      <div class="flow-row">
+        <div class="step"><div class="n">①</div><div class="t">월간 편성</div><div class="d">발행 캘린더 자동생성</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">②</div><div class="t">원고 생성</div><div class="d">프리셋+의료광고 검증</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">③</div><div class="t">크리에이티브</div><div class="d">카드뉴스·GIF·배경제거</div></div>
+        <div class="arrow">→</div>
+        <div class="step"><div class="n">④</div><div class="t">발행</div><div class="d">네이버·티스토리·인스타</div></div>
+      </div>
+      <div class="flow-back">
+        ⑤ <b>노출 모니터링</b>(월보장 순위하락 → 카카오 알림톡) &nbsp;→&nbsp; ⑥ 성과·보고서 자동집계(방문자·조회수·순위) &nbsp;→&nbsp; 온보딩 데이터로 환류
+      </div>
+    </div>
+    <div class="callout info"><b>온보딩 시 1회 등록:</b> 키워드(월보장/일반) · 프롬프트 프리셋 · 특이사항 노트 · 채널 계정(브블/배포/티스토리/인스타) — 이후 파이프라인이 이 데이터를 자동으로 소비한다.</div>
+  </section>
+
+  <!-- REUSE -->
+  <section id="reuse">
+    <div class="sec-h"><span class="sec-n">04</span><h2>기존 ERP 자산 재사용 맵</h2></div>
+    <p class="lead">신규는 최소, 대부분 재포장·연결. <span class="pill reuse">♻️ 재사용</span> <span class="pill new">🆕 신규</span></p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>단계</th><th>재사용 자산 (출처)</th><th>상태</th><th>신규 작업</th></tr></thead>
+        <tbody>
+          <tr><td>거래처·계약·업무</td><td>ERP 25 Prisma 모델</td><td><span class="pill reuse">재사용</span></td><td>키워드·특이사항 필드 확장</td></tr>
+          <tr><td>① 스케줄 편성</td><td><code>api/cron-daily-posts.js</code></td><td><span class="pill reuse">부분</span></td><td>월간 편성 생성기 UI</td></tr>
+          <tr><td>② 원고 생성</td><td>ERP <code>manuscript</code> + <code>post-generator</code> + <code>medical-ad-validator</code></td><td><span class="pill reuse">재사용</span></td><td>거래처 프롬프트 프리셋 주입층</td></tr>
+          <tr><td>③ 이미지·카드뉴스</td><td><code>image-studio</code>·<code>CardNewsMaker</code>·Higgsfield</td><td><span class="pill reuse">재사용</span></td><td>배경제거·GIF 버튼 노출</td></tr>
+          <tr><td>④ 발행</td><td><code>marketing-studio</code>(VME: naver·wordpress·canva)</td><td><span class="pill reuse">재사용</span></td><td>티스토리·인스타 어댑터, 서식 스니펫</td></tr>
+          <tr><td>⑤ 노출 모니터링</td><td><code>api/insights.js</code>·<code>keyword-research</code>·<code>search-console</code></td><td><span class="pill reuse">재사용</span></td><td><b>월보장 스냅샷 스케줄러 + 임계 알림</b></td></tr>
+          <tr><td>⑥ 성과·보고서</td><td><code>api/analytics.js</code>(Vercel KV)</td><td><span class="pill reuse">재사용</span></td><td>거래처별 리포트 템플릿</td></tr>
+          <tr><td>자동화 글루</td><td>Make + 카카오 알림톡 + Airtable</td><td><span class="pill new">신규 L4</span></td><td>순위하락→알림, 편성→업무 자동생성</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><b>인프라 제약 준수:</b> Vercel Hobby 함수 12개 한도 → 신규 API는 <code>?type=</code> 라우팅으로 기존 함수에 합침. 영속저장은 GitHub(JSON·git이력)+Vercel KV(시계열)만 사용.</div>
+  </section>
+
+  <!-- MODULES -->
+  <section id="modules">
+    <div class="sec-h"><span class="sec-n">05</span><h2>기능 모듈 명세</h2></div>
+    <div class="grid g2">
+      <div class="mod"><span class="tag">M1</span><h4>거래처 워크스페이스</h4>
+        <ul>
+          <li>병원 프로필 · 채널계정 · 월보장 계약 탭(보장키워드·목표순위·만료일)</li>
+          <li><b>특이사항/인수인계 노트</b> — 타임라인형, 담당 교체 시 그대로 승계 <span class="maps">(P9)</span></li>
+          <li>PC 폴더를 태그 기반 자산함으로 대체</li>
+        </ul></div>
+      <div class="mod"><span class="tag">M2</span><h4>키워드·노출 트래커 <span style="color:var(--crit);font-size:12px">최우선</span></h4>
+        <ul>
+          <li>9개 노출영역 매트릭스 → ERP 테이블, 검색량 자동채움 <span class="maps">(P4)</span></li>
+          <li><b>월보장 모니터링</b>: 순위 스냅샷 → 이탈 시 카카오 알림톡 <span class="maps">(P3)</span></li>
+          <li>노출 히트맵·추세 그래프(상승/하락 색상)</li>
+        </ul></div>
+      <div class="mod"><span class="tag">M3</span><h4>원고 스튜디오 확장</h4>
+        <ul>
+          <li>거래처 프롬프트 프리셋(역할설정+13규칙), 슬롯만 채워 출력 <span class="maps">(P1)</span></li>
+          <li>유형: 브랜드블로그(원장 1인칭)·정보성 배포·영수증 원고</li>
+          <li>의료광고법·유사문서 검증 통과 + <b>발행 서식 자동화</b> <span class="maps">(P5)</span></li>
+        </ul></div>
+      <div class="mod"><span class="tag">M4</span><h4>크리에이티브 스튜디오</h4>
+        <ul>
+          <li>배경제거 내장 <span class="maps">(P7)</span> · 카드뉴스 · 썸네일</li>
+          <li><b>GIF/짧은 모션</b>(Higgsfield) <span class="maps">(P6)</span> · 의료심의문구 자동삽입</li>
+          <li>인물 정체성 유지(한국인·얼굴 보존) 규칙</li>
+        </ul></div>
+      <div class="mod"><span class="tag">M5</span><h4>발행 오케스트레이터</h4>
+        <ul>
+          <li>네이버(브블/배포 분리)·티스토리·인스타, 로그 자동기록</li>
+          <li>발행 즉시 트래커·보고서 연결</li>
+          <li>⚠️ 네이버는 반자동(초안+서식복사→사람 게시)로 설계</li>
+        </ul></div>
+      <div class="mod"><span class="tag">M6·M7</span><h4>스케줄 · 대시보드 홈</h4>
+        <ul>
+          <li>월간 편성 자동생성 <span class="maps">(P2)</span> + 작업카드 호버요약 <span class="maps">(P8)</span></li>
+          <li>홈: 오늘 할일 · <b>월보장 경보</b> · 성과 스파크라인</li>
+          <li>마케팅·AI 뉴스 피드 <span class="maps">(P10)</span></li>
+        </ul></div>
+    </div>
+  </section>
+
+  <!-- AUTO -->
+  <section id="auto">
+    <div class="sec-h"><span class="sec-n">06</span><h2>자동화 시나리오 (Make + 카카오 알림톡)</h2></div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>시나리오</th><th>트리거</th><th>흐름</th></tr></thead>
+        <tbody>
+          <tr><td><b>월보장 경보</b></td><td>스케줄러(일 1회)</td><td>순위 스냅샷 → 목표 이탈 감지 → Alert 생성 → <b>카카오 알림톡</b>(담당자+대표) → 대시보드 경보</td></tr>
+          <tr><td>편성 → 업무생성</td><td>편성 확정</td><td>ScheduleItem 일괄 → ERP Task 자동생성 → 담당자 배정 → 캘린더 반영</td></tr>
+          <tr><td>발행 후 로그</td><td>Publication 생성</td><td>링크·번호 기록 → analytics 방문자/조회수 수집 → 보고서 갱신</td></tr>
+          <tr><td>마감 리마인더</td><td>마감 D-1</td><td>영수증 원고·월보장 미완 작업 알림톡</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info"><b>왜 자동감시인가:</b> 네이버 데이터랩 실측상 "대구병원마케팅" 검색 관심도가 2026-03에 평월 대비 <b>약 3배</b> 급등하는 등 월 단위 변동성이 커, 사람이 매일 순위를 확인하기 어렵다. 임계 알림이 실효적이다.</div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <div class="sec-h"><span class="sec-n">07</span><h2>우선순위 &amp; 로드맵</h2></div>
+    <div class="grid g4" style="margin-bottom:16px">
+      <div class="card"><span class="pill must">MUST</span><p class="lead" style="margin:9px 0 0">M2 노출·월보장 알림, M3 원고 프리셋, M1 특이사항 노트</p></div>
+      <div class="card"><span class="pill should">SHOULD</span><p class="lead" style="margin:9px 0 0">M6 월간 편성·호버요약, M5 멀티채널 발행, M7 대시보드·뉴스피드</p></div>
+      <div class="card"><span class="pill could">COULD</span><p class="lead" style="margin:9px 0 0">M3 서식 자동화, M4 GIF·배경제거, 캘린더 양방향 동기화</p></div>
+      <div class="card"><span class="pill wont">WON'T</span><p class="lead" style="margin:9px 0 0">네이버 완전 자동게시(계정 리스크), 무검수 AI 발행</p></div>
+    </div>
+    <div class="grid g3">
+      <div class="phase"><div class="ph">PHASE 1 · 2–3주</div><h4>감시와 자동원고</h4><div class="when">M1 특이사항 → M2 트래커·월보장 알림 → M3 거래처 프리셋 원고</div><p class="why">가장 아픈 P3·P1·P9를 먼저 해결, 즉시 체감.</p></div>
+      <div class="phase"><div class="ph">PHASE 2 · 3–4주</div><h4>편성과 발행</h4><div class="when">M6 월간 편성·호버요약 → M5 멀티채널 발행 로그 → M7 대시보드·뉴스피드</div><p class="why">반복 업무의 편성·기록을 자동화.</p></div>
+      <div class="phase"><div class="ph">PHASE 3 · 여유 시</div><h4>크리에이티브·꾸미기</h4><div class="when">M3 서식 자동화 → M4 GIF·배경제거 → 캘린더 동기화</div><p class="why">퀄리티·속도 마감 작업.</p></div>
+    </div>
+  </section>
+
+  <!-- RISK -->
+  <section id="risk">
+    <div class="sec-h"><span class="sec-n">08</span><h2>리스크 &amp; 준수</h2></div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>리스크</th><th>내용</th><th>대응</th></tr></thead>
+        <tbody>
+          <tr><td>네이버 자동화 정책</td><td>블로그 자동게시·크롤링은 계정 정지 위험, 공식 발행 API 없음</td><td>발행은 <b>반자동</b>(초안+서식복사→사람 게시). 순위는 공식 데이터랩·검색광고·Search Console API만</td></tr>
+          <tr><td>의료광고법</td><td>전후사진·효과보장·최상급·환자유인 금지, 사전심의</td><td><code>medical-ad-validator</code> 필수 통과 + 심의문구 자동삽입 + 사람 최종검수</td></tr>
+          <tr><td>데이터 정합성</td><td>시트→ERP 이관 시 유실</td><td>CSV 임포트 + 병행운영 2주, 스냅샷 이력 보존</td></tr>
+          <tr><td>계정·개인정보</td><td>채널 로그인 정보</td><td>ERP AES 암호화 저장 재사용, 최소권한</td></tr>
+          <tr><td>저장소 노출</td><td>ERP 저장소 Public</td><td>Private 전환 권고</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- KPI -->
+  <section id="kpi">
+    <div class="sec-h"><span class="sec-n">09</span><h2>성공 지표</h2></div>
+    <div class="grid g4">
+      <div class="kpi"><div class="big">24h</div><div class="lbl">월보장 순위이탈<br>감지시간 (수일 → 24h)</div></div>
+      <div class="kpi"><div class="big">−50%</div><div class="lbl">원고 1건<br>생산시간</div></div>
+      <div class="kpi"><div class="big">0건</div><div class="lbl">인수인계 시<br>특이사항 유실</div></div>
+      <div class="kpi"><div class="big">+20%</div><div class="lbl">담당자당<br>관리 거래처 여력</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>VENOM MarketerOps</b> · 스펙: <code>desktop-tutorial/docs/PLAN-marketer-workflow.md</code> · 구현 타깃: <code>marketing-agency-erp (erp-v1)</code></p>
+    <ul class="src" style="list-style:none;padding:0;max-width:70ch;margin:10px auto 0">
+      <li>근거: 담당자 업무 공유 메일·스크린샷·운영시트(2026-07-03) · 원고 프롬프트 실측</li>
+      <li>네이버 데이터랩 실측(2025-07~2026-06) · 2026 의료마케팅 트렌드(AI가 신뢰하는 병원=AEO/GEO)</li>
+    </ul>
+  </footer>
+</div>
