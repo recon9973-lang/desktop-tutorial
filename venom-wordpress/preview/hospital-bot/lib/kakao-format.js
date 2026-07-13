@@ -45,8 +45,8 @@ const VIEW_KEYWORDS = [
 
 function parseCommand(utterance) {
   const s = String(utterance || '').trim().replace(/\s+/g, ' ');
-  // 온보딩용: 본인 접근키(botUserKey) 조회 — 화이트리스트 등록에 사용
-  if (/^(내\s*키|내\s*아이디|내아이디|아이디\s*확인|키\s*확인|my\s*id|myid)$/i.test(s)) return { view: 'myid', hospital: '' };
+  // 온보딩용: 본인 접근키(botUserKey) 조회 — 화이트리스트 등록에 사용(자연스러운 변형 폭넓게 인식)
+  if (/^(내\s*키|키\s*발급|발급\s*요청|발급|키\s*받기|키\s*확인|키\s*조회|내\s*아이디|내아이디|아이디\s*확인|아이디\s*발급|아이디|접근\s*키|등록\s*키|인증\s*키|가입|등록\s*요청|등록|my\s*id|myid|id)$/i.test(s)) return { view: 'myid', hospital: '' };
   // 사용법 안내
   if (/^(도움말|도움|사용법|사용\s*방법|명령어|help|\?|？)$/i.test(s)) return { view: 'help', hospital: '' };
   for (const [view, re] of VIEW_KEYWORDS) {
