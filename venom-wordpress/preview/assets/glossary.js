@@ -10,7 +10,8 @@
   var DICTS = {
     seo:       { label: 'SEO 용어사전' },
     ai:        { label: 'AI 용어사전' },
-    marketing: { label: '마케팅 용어사전' }
+    marketing: { label: '마케팅 용어사전' },
+    dev:       { label: '개발 용어사전' }
   };
 
   var CATS = {
@@ -28,7 +29,12 @@
     // ── 마케팅 ─────────────────────────────
     mkt_metric:   { label: '지표·측정', color: '#dc2626', dict: 'marketing' },
     mkt_channel:  { label: '채널·매체', color: '#2563eb', dict: 'marketing' },
-    mkt_strategy: { label: '전략·전환', color: '#d97706', dict: 'marketing' }
+    mkt_strategy: { label: '전략·전환', color: '#d97706', dict: 'marketing' },
+    // ── 개발 ───────────────────────────────
+    dev_frontend: { label: '프론트엔드',  color: '#2563eb', dict: 'dev' },
+    dev_backend:  { label: '백엔드·API',  color: '#0d9488', dict: 'dev' },
+    dev_infra:    { label: '인프라·배포', color: '#ea580c', dict: 'dev' },
+    dev_common:   { label: '개발 일반',   color: '#7c3aed', dict: 'dev' }
   };
 
   // [ko, en, def, cat, dict]  (dict 생략 시 'seo')
@@ -83,6 +89,8 @@
     ['시드 키워드','Seed keywords','제공하는 제품·서비스를 설명하는 기본적인 단어.','keyword','seo'],
     ['LSI 키워드','LSI keywords','Latent Semantic Indexing, 특정 주제와 밀접하게 관련되어 자주 쓰이는 단어.','keyword','seo'],
     ['키워드 카니발리제이션','Keyword cannibalization','여러 콘텐츠가 동일 키워드로 경쟁해 어느 것도 상위가 아닌 상태.','keyword','seo'],
+    ['검색 의도','Search Intent','사용자가 검색으로 이루려는 실제 목적(정보·거래·이동 등).','keyword','seo'],
+    ['토픽 클러스터','Topic Cluster','핵심 주제(필러) 글과 세부 글을 내부링크로 묶어 주제 권위를 높이는 콘텐츠 구조.','keyword','seo'],
 
     ['오픈 그래프','Open Graph Protocol','페이스북 등에서 웹사이트의 디테일한 정보를 제공하게 하는 기능.','technical','seo'],
     ['트위터 카드','Twitter card','트위터에서 링크 공유 시 글·이미지를 미리보기로 보는 기능.','technical','seo'],
@@ -110,6 +118,9 @@
     ['리치 스니펫','Rich snippet','이미지·비디오·FAQ 등이 추가되어 개선된 검색결과(리치 결과).','technical','seo'],
     ['구조화된 데이터','Structured Data','검색엔진이 콘텐츠를 더 잘 이해하도록 조직화해 제공하는 데이터.','technical','seo'],
     ['코어 웹 바이탈','Core Web Vitals','LCP·INP·CLS 3지표로 페이지 로딩·반응·시각 안정성을 측정하는 구글의 핵심 웹 지표.','technical','seo'],
+    ['INP','Interaction to Next Paint','사용자 입력에 페이지가 반응하는 속도를 재는 코어 웹 바이탈 지표(2024년 FID 대체).','technical','seo'],
+    ['스키마 마크업','Schema Markup','Schema.org 어휘로 콘텐츠 유형을 구조화 데이터로 표시해 리치 결과를 돕는 표준.','technical','seo'],
+    ['브레드크럼','Breadcrumbs','현재 페이지의 사이트 내 위치를 계층으로 보여주는 탐색 경로.','technical','seo'],
 
     ['도메인 점수','Domain Authority','DA, 웹사이트가 상위 랭킹에 오를 가능성을 예측한 점수.','link','seo'],
     ['백링크','Backlinks','다른 도메인의 사이트에서 해당 페이지로 연결된 링크.','link','seo'],
@@ -159,6 +170,9 @@
     ['컨텍스트 윈도우','Context window','AI가 한 번에 기억·처리할 수 있는 토큰(문맥)의 최대 범위.','ai_tech','ai'],
     ['파운데이션 모델','Foundation model','대규모 데이터로 사전학습돼 다양한 작업에 두루 응용되는 기반 AI 모델.','ai_tech','ai'],
     ['파라미터','Parameter','모델이 학습으로 조정하는 내부 가중치. 수가 많을수록 표현력이 커지는 경향.','ai_tech','ai'],
+    ['MCP','MCP','Model Context Protocol, AI 모델을 외부 도구·데이터와 표준 방식으로 연결하는 규약.','ai_tech','ai'],
+    ['그라운딩','Grounding','AI 답변을 신뢰할 수 있는 실제 출처에 근거시켜 정확도를 높이는 것.','ai_tech','ai'],
+    ['프롬프트 인젝션','Prompt Injection','악의적 입력으로 AI의 지시를 가로채거나 왜곡하는 공격 기법.','ai_tech','ai'],
 
     // ═══════════════ 마케팅 용어사전 ═══════════════
     ['CTR','Click-Through Rate','클릭률. 광고·검색결과 노출 대비 클릭이 발생한 비율(클릭수 ÷ 노출수).','mkt_metric','marketing'],
@@ -192,7 +206,64 @@
     ['디스플레이 광고','Display Ad','배너·이미지·영상 형태로 웹·앱 지면에 노출하는 광고.','mkt_channel','marketing'],
     ['네이버 플레이스','Naver Place','네이버 지도·검색에 노출되는 지역 업체 정보. 병원 로컬 마케팅의 핵심 채널.','mkt_channel','marketing'],
     ['카카오톡 채널','KakaoTalk Channel','카카오톡으로 소식·상담·예약을 제공하는 비즈니스 메시지 채널.','mkt_channel','marketing'],
-    ['UTM','UTM Parameter','URL 뒤에 붙여 유입 캠페인·매체·소재를 구분해 추적하는 표준 파라미터.','mkt_channel','marketing']
+    ['UTM','UTM Parameter','URL 뒤에 붙여 유입 캠페인·매체·소재를 구분해 추적하는 표준 파라미터.','mkt_channel','marketing'],
+    ['옴니채널','Omnichannel','온·오프라인 채널을 끊김 없이 통합해 일관된 고객 경험을 제공하는 전략.','mkt_strategy','marketing'],
+    ['퍼스트파티 데이터','First-party Data','기업이 고객에게서 직접 수집한 자사 데이터. 쿠키 규제 시대의 핵심 자산.','mkt_strategy','marketing'],
+    ['리퍼럴','Referral','기존 고객의 추천·소개를 통해 새 고객을 얻는 유입.','mkt_channel','marketing'],
+    ['숏폼','Short-form','15~60초 세로형 영상 콘텐츠(릴스·쇼츠·틱톡). 도달 확장에 강력.','mkt_channel','marketing'],
+
+    // ═══════════════ 개발 용어사전 ═══════════════
+    // ── 프론트엔드 ──
+    ['프론트엔드','Frontend','사용자가 직접 보고 상호작용하는 화면(UI)을 만드는 웹 개발 영역.','dev_frontend','dev'],
+    ['HTML','HTML','웹 페이지의 구조와 콘텐츠를 정의하는 마크업 언어.','dev_frontend','dev'],
+    ['CSS','CSS','웹 페이지의 색·글꼴·레이아웃 등 디자인을 지정하는 스타일 언어.','dev_frontend','dev'],
+    ['자바스크립트','JavaScript','웹 페이지에 동적 기능과 상호작용을 더하는 프로그래밍 언어.','dev_frontend','dev'],
+    ['프레임워크','Framework','반복되는 개발 작업을 표준화해 앱을 빠르게 만들도록 돕는 코드 뼈대.','dev_frontend','dev'],
+    ['라이브러리','Library','특정 기능을 미리 만들어 가져다 쓰는 재사용 코드 모음.','dev_frontend','dev'],
+    ['리액트','React','컴포넌트 단위로 UI를 구성하는 대표적인 프론트엔드 라이브러리.','dev_frontend','dev'],
+    ['컴포넌트','Component','버튼·카드처럼 재사용 가능한 독립적인 UI 조각.','dev_frontend','dev'],
+    ['SPA','SPA','Single Page Application, 페이지 전체를 새로고침하지 않고 화면을 바꾸는 웹앱 방식.','dev_frontend','dev'],
+    ['반응형','Responsive','화면 크기에 따라 레이아웃이 자동으로 맞춰지는 디자인 방식.','dev_frontend','dev'],
+    ['DOM','DOM','Document Object Model, 브라우저가 HTML을 객체 구조로 다루는 모델.','dev_frontend','dev'],
+    ['웹 접근성','Accessibility','장애 여부와 관계없이 누구나 웹을 이용할 수 있게 만드는 설계 원칙.','dev_frontend','dev'],
+
+    // ── 백엔드·API ──
+    ['백엔드','Backend','서버·데이터베이스 등 화면 뒤에서 데이터를 처리하는 개발 영역.','dev_backend','dev'],
+    ['서버','Server','요청을 받아 처리하고 응답을 돌려주는 컴퓨터·프로그램.','dev_backend','dev'],
+    ['데이터베이스','Database','데이터를 체계적으로 저장·검색·관리하는 시스템(MySQL·PostgreSQL 등).','dev_backend','dev'],
+    ['API','API','Application Programming Interface, 프로그램끼리 데이터를 주고받는 규약·창구.','dev_backend','dev'],
+    ['REST API','REST API','HTTP 규약으로 자원을 주소(URL)와 메서드로 다루는 API 설계 방식.','dev_backend','dev'],
+    ['엔드포인트','Endpoint','API에 접근하는 개별 주소(URL). 요청을 받는 창구.','dev_backend','dev'],
+    ['JSON','JSON','사람이 읽기 쉬운 텍스트로 데이터를 표현·교환하는 표준 형식.','dev_backend','dev'],
+    ['인증','Authentication','사용자가 누구인지 확인하는 절차(로그인 등).','dev_backend','dev'],
+    ['권한 관리','Authorization','인증된 사용자가 무엇을 할 수 있는지 허용 범위를 정하는 것.','dev_backend','dev'],
+    ['쿼리','Query','데이터베이스에 원하는 데이터를 요청하는 명령.','dev_backend','dev'],
+    ['캐시','Cache','자주 쓰는 데이터를 임시 저장해 응답 속도를 높이는 기술.','dev_backend','dev'],
+    ['웹훅','Webhook','특정 이벤트가 생기면 지정한 주소로 자동 알림을 보내는 방식.','dev_backend','dev'],
+    ['SDK','SDK','Software Development Kit, 특정 플랫폼용 앱 개발을 돕는 도구·코드 모음.','dev_backend','dev'],
+
+    // ── 인프라·배포 ──
+    ['배포','Deployment','완성된 코드를 실제 서비스 환경에 올려 사용자가 쓰게 하는 작업.','dev_infra','dev'],
+    ['CI/CD','CI/CD','코드 통합·테스트·배포를 자동화하는 개발 파이프라인.','dev_infra','dev'],
+    ['깃','Git','코드 변경 이력을 관리하는 분산 버전 관리 시스템.','dev_infra','dev'],
+    ['깃허브','GitHub','Git 저장소를 클라우드에서 협업·관리하는 대표 플랫폼.','dev_infra','dev'],
+    ['저장소','Repository','프로젝트 코드와 변경 이력이 저장되는 공간(리포지토리).','dev_infra','dev'],
+    ['브랜치','Branch','원본을 건드리지 않고 독립적으로 작업하는 코드 분기.','dev_infra','dev'],
+    ['클라우드','Cloud','서버·저장소를 직접 소유하지 않고 인터넷으로 빌려 쓰는 방식.','dev_infra','dev'],
+    ['CDN','CDN','Content Delivery Network, 콘텐츠를 사용자와 가까운 서버에서 빠르게 전달하는 망.','dev_infra','dev'],
+    ['도메인','Domain','사이트 주소로 쓰이는 사람이 읽기 쉬운 이름(example.com).','dev_infra','dev'],
+    ['환경변수','Environment Variable','API 키 등 민감·설정 값을 코드 밖에서 주입하는 변수.','dev_infra','dev'],
+    ['서버리스','Serverless','서버 관리 없이 함수 단위로 코드를 실행하는 클라우드 방식.','dev_infra','dev'],
+
+    // ── 개발 일반 ──
+    ['오픈소스','Open Source','소스코드를 공개해 누구나 보고 수정·기여할 수 있는 소프트웨어.','dev_common','dev'],
+    ['버그','Bug','프로그램이 의도와 다르게 동작하게 만드는 결함·오류.','dev_common','dev'],
+    ['디버깅','Debugging','버그의 원인을 찾아 고치는 과정.','dev_common','dev'],
+    ['리팩터링','Refactoring','동작은 그대로 두고 코드 구조를 더 깔끔하게 개선하는 작업.','dev_common','dev'],
+    ['오픈 API','Open API','외부 개발자가 쓸 수 있도록 규격을 공개한 API.','dev_common','dev'],
+    ['레이턴시','Latency','요청 후 응답이 올 때까지 걸리는 지연 시간.','dev_common','dev'],
+    ['버전 관리','Version Control','코드의 변경 이력을 기록·추적해 되돌리거나 협업할 수 있게 하는 관리.','dev_common','dev'],
+    ['테스트','Test','코드가 의도대로 동작하는지 자동·수동으로 확인하는 절차.','dev_common','dev']
   ];
 
   var CHO = ['ㄱ','ㄱ','ㄴ','ㄷ','ㄷ','ㄹ','ㅁ','ㅂ','ㅂ','ㅅ','ㅅ','ㅇ','ㅈ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
