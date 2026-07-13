@@ -234,7 +234,7 @@ function locateTerm(text, term, radius, cap) {
 async function diagnoseAdLaw(deps, homepage) {
   if (!homepage) return { status: 'no-homepage', pass: null, forbidden: [], risky: [], hits: [] };
   try {
-    const page = await deps.fetchHtml(homepage, { timeout: 7000 });
+    const page = await deps.fetchHtml(homepage, { timeout: 3500 });
     if (!page.ok) return { status: 'fetch-failed', checkedUrl: homepage, error: page.error, pass: null, forbidden: [], risky: [], hits: [] };
     const text = page.text || '';
     const v = deps.adValidator.validateMedicalAd(text);

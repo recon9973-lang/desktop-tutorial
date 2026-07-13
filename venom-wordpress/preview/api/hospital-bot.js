@@ -102,9 +102,14 @@ async function handleKakao(res, body) {
     return;
   }
 
-  // 콜백 미설정 → 동기 응답(캐시·빠른 경로 가정, 5초 초과 시 오픈빌더가 타임아웃)
+  // 콜백 미설정 → 동기 응답. 카톡 5초 타임아웃 방지: 4.5초 내 미완료면
+  // '무응답' 대신 재시도 안내를 보낸다(콜드스타트·느린 홈페이지 대비).
   try {
-    const report = await diagnose(cmd.hospital, diagOpts);
+    const report = await Promise.race([
+      diagnose(cmd.hospital, diagOpts),
+      new Promise((resolve) => setTimeout(() => resolve(null), 4500)),
+    ]);
+    if (!report) { res.status(200).json(kf.renderSlow(cmd.hospital)); return; }
     res.status(200).json(kf.render(report, cmd.view));
   } catch (e) {
     res.status(200).json(kf.renderError(e.message));
