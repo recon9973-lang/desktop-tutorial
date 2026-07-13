@@ -117,7 +117,7 @@
 
     h += '<div class="subject"><h1>'+esc(name)+'</h1><div class="meta">'
        + (region?esc(region)+' · ':'') + (rep.resolved&&rep.resolved.dept?esc(rep.resolved.dept)+' · ':'')
-       + (rep.resolved&&rep.resolved.homepage?'<a href="'+esc(rep.resolved.homepage)+'" target="_blank" rel="noopener">홈페이지</a>':'홈페이지 미발견')
+       + (rep.resolved&&rep.resolved.homepage?'<a href="'+esc(rep.resolved.homepage)+'" target="_blank" rel="noopener">'+(rep.resolved.homepageKind==='blog'?'블로그':rep.resolved.homepageKind==='social'?'SNS':'홈페이지')+'</a>':'홈페이지 미발견')
        + '</div></div>';
 
     if(rep.resolved && rep.resolved.place && rep.resolved.place.found===false){
@@ -240,9 +240,14 @@
       '<div class="metric"><span>비의료 업종 — 의료광고법 점검 대상이 아닙니다.</span></div>');
     if(law.status!=='ok') return card('⚖️ 의료광고법', stTag('na', law.status==='no-homepage'?'홈페이지 미발견':'스캔 불가'),
       '<div class="metric"><span>'+esc(statusKo(law.status))+'</span></div>');
-    var linkHtml = law.checkedUrl ? '<div style="margin-top:10px;font-size:12.5px"><a href="'+esc(law.checkedUrl)+'" target="_blank" rel="noopener">확인한 페이지 열기 ↗</a> <span style="color:var(--muted)">— 링크에서 Ctrl+F로 아래 문구를 찾으세요</span></div>' : '';
+    // 확인한 페이지 종류(블로그/SNS/홈페이지)를 URL로 판별해 정확히 라벨링
+    var pageKind = /(^|\.)(blog\.naver\.com|blog\.me|post\.naver\.com|cafe\.naver\.com|tistory\.com|brunch\.co\.kr)/i.test(law.checkedUrl||'') ? '블로그'
+      : /(^|\.)(instagram\.com|facebook\.com|youtube\.com|band\.us|pf\.kakao\.com)/i.test(law.checkedUrl||'') ? 'SNS' : '홈페이지';
+    // '확인한 페이지 열기' 링크는 항상, 'Ctrl+F로 찾으세요' 안내는 위반 표현이 있을 때만(양호 땐 모순).
+    var openLink = law.checkedUrl ? '<div style="margin-top:10px;font-size:12.5px"><a href="'+esc(law.checkedUrl)+'" target="_blank" rel="noopener">확인한 '+pageKind+' 페이지 열기 ↗</a></div>' : '';
+    var findHint = law.checkedUrl ? '<div style="margin-top:6px;font-size:12px;color:var(--muted)">링크에서 Ctrl+F로 아래 문구를 찾으세요</div>' : '';
     if(law.pass) return card('⚖️ 의료광고법', stTag('ok','양호'),
-      '<div class="metric"><span>홈페이지 본문에서 금지 표현 미발견(참고용)</span></div>'+linkHtml);
+      '<div class="metric"><span>'+pageKind+' 본문에서 금지 표현 미발견(참고용)</span></div>'+openLink);
     var hits = (law.hits && law.hits.length) ? law.hits
       : (law.forbidden||[]).map(function(w){return {term:w,kind:'forbidden',count:0,contexts:[]};})
           .concat((law.risky||[]).map(function(w){return {term:w,kind:'risky',count:0,contexts:[]};}));
@@ -261,7 +266,7 @@
         + ctx + '</div>';
     }).join('');
     var body = '<div class="metric"><span>위반·주의 표현</span><span class="v" style="color:var(--crit)">'+(law.forbidden.length + ((law.risky&&law.risky.length)||0))+'건</span></div>'
-      + items + linkHtml;
+      + items + openLink + findHint;
     return card('⚖️ 의료광고법', stTag('crit','주의 필요'), body);
   }
 

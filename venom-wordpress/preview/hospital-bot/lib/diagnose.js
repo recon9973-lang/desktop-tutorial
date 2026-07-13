@@ -602,7 +602,7 @@ async function diagnose(rawInput, opts = {}) {
     base = await computeBase(deps, q, started);
     if (useCache) await safe(cache.setJson(baseKey, base, CACHE_TTL));
   }
-  const { place, region, dept, medical, homepage, homepageKind, gname, seo, local, ads, adLaw, search } = base;
+  const { place, region, dept, medical, homepage, homepageKind, homepageSource, gname, seo, local, ads, adLaw, search } = base;
   const warnings = (base.warnings || []).slice();
 
   // 2) GEO — light면 preview 재사용, full이면 실 프로빙(별도 24h 캐시)
@@ -637,7 +637,7 @@ async function diagnose(rawInput, opts = {}) {
   const report = {
     ok: true,
     query: q,
-    resolved: { region, dept, medical, homepage, place },
+    resolved: { region, dept, medical, homepage, homepageKind, homepageSource, place },
     seo, geo, local, ads, adLaw, search,
     compete,
     disclaimer: '본 진단은 공개 데이터 기반 참고용이며, 실제 성과·심의 통과를 보장하지 않습니다.',
