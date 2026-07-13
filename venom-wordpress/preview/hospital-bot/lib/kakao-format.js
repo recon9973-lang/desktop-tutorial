@@ -215,6 +215,7 @@ function renderSeo(report) {
     L.push(`· 성능 ${valOr(sc.performance)} / SEO ${valOr(sc.seo)} / 접근성 ${valOr(sc.accessibility)}`);
   }
   if (seo.lab && seo.lab.lcpMs) L.push(`· 최대콘텐츠표시(LCP) ${(seo.lab.lcpMs / 1000).toFixed(1)}초`);
+  if (seo.autoDetected) L.push(`· ℹ️ 홈페이지 자동 탐색(${seo.autoDetected === 'search' ? '검색' : '네이버 플레이스'} 기준 추정) — 다르면 주소를 함께 입력해 주세요`);
   if (seo.onPage && seo.onPage.renderSuspect) L.push('· ⚠ JS 렌더링/봇 차단 정황 — 일부 항목 정밀분석 필요');
   // GSC 실측(연결된 관리 고객) — 추정 아닌 실제 검색 성과
   gscLines(report).forEach((x) => L.push(x));

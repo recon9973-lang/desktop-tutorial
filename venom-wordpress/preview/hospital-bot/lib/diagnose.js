@@ -33,6 +33,7 @@ try { parseHTML = require('linkedom').parseHTML; } catch (e) { /* optional */ }
 function defaultDeps() {
   return {
     naverOpenapi: require('./naver-openapi'),
+    naverPlace: require('./naver-place'), // 블로그 대표링크일 때 실제 홈페이지 자동 탐색(best-effort)
     geoProbe: require('./geo-probe'),
     compete: require('./compete'),
     proposal: require('./proposal'),
@@ -542,8 +543,17 @@ async function computeBase(deps, q, nowMs) {
     : (businessCategory(rawCat) || '');
   // 사용자가 URL을 직접 입력하면 그 주소를 우선(네이버가 준 대표 링크가 블로그일 때 실제 홈페이지 지정).
   const overrode = !!q.url;
-  const homepage = q.url || place.homepage || null;
-  const homepageKind = classifyHomepage(homepage); // 'site' | 'blog' | 'social' | null
+  let homepage = q.url || place.homepage || null;
+  let homepageKind = classifyHomepage(homepage); // 'site' | 'blog' | 'social' | null
+  let homepageSource = overrode ? 'user' : 'naver-link';
+  // 대표 링크가 블로그/SNS면(사용자 지정 아님), 플레이스 상세에서 실제 홈페이지 자동 탐색(best-effort).
+  // 실패해도 조용히 넘어가 blog-only로 폴백(네트워크·스크래핑 불안정 대비).
+  if (!overrode && homepage && homepageKind !== 'site' && deps.naverPlace) {
+    const found = await safe(deps.naverPlace.findHomepage(gname, { region, deps }));
+    if (found && found.url && classifyHomepage(found.url) === 'site') {
+      homepage = found.url; homepageKind = 'site'; homepageSource = found.source; // 'naver-place' | 'search'
+    }
+  }
   // 정식 홈페이지(site)만 홈페이지 SEO로 채점. 블로그·SNS는 '홈페이지 아님'으로 정직 표기
   // (블로그 활동은 네이버 로컬 지표에, 블로그 글의 의료광고법은 adLaw로 계속 점검).
   // 단, 사용자가 URL을 직접 지정하면 블로그라도 그 의도대로 채점한다.
@@ -562,7 +572,11 @@ async function computeBase(deps, q, nowMs) {
     deps.geoProbe.preview(gname, { category: rawCat, region }),
     diagnoseSearchConsole(deps, homepage, nowMs),
   ]);
-  return { place, region, dept, medical, homepage, homepageKind, gname, seo, local, ads, adLaw, geoPreview, search, warnings };
+  // 홈페이지를 자동 탐색으로 찾았으면 '추정'으로 표기(사장님이 검증 가능하도록)
+  if (seo && seo.status === 'ok' && (homepageSource === 'naver-place' || homepageSource === 'search')) {
+    seo.autoDetected = homepageSource;
+  }
+  return { place, region, dept, medical, homepage, homepageKind, homepageSource, gname, seo, local, ads, adLaw, geoPreview, search, warnings };
 }
 
 // ── 메인 오케스트레이터 ────────────────────────────────
@@ -577,7 +591,7 @@ async function diagnose(rawInput, opts = {}) {
   const cacheHit = { base: false, geo: false, compete: false };
 
   // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v7:${cacheNorm(q.raw)}|${q.region || ''}`;
+  const baseKey = `venomi:base:v8:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {
