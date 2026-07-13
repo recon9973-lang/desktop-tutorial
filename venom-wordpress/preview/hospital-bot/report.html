@@ -163,8 +163,11 @@
   // ── 카드 렌더러 ──
   function cardSeo(seo){
     seo = seo||{};
-    if(seo.status!=='ok') return card('🔎 SEO 홈페이지', stTag(seo.status==='no-homepage'?'na':'na', seo.status==='no-homepage'?'홈페이지 미발견':'측정 불가'),
-      '<div class="metric"><span>'+esc(seo.note||statusKo(seo.status))+'</span></div>');
+    if(seo.status!=='ok'){
+      var seoTag = seo.status==='no-homepage'?'홈페이지 미발견':seo.status==='blog-only'?(seo.kind==='social'?'SNS(홈페이지 아님)':'블로그(홈페이지 아님)'):'측정 불가';
+      return card('🔎 SEO 홈페이지', stTag('na', seoTag),
+        '<div class="metric"><span>'+esc(seo.note||statusKo(seo.status))+'</span></div>');
+    }
     var sc = seo.scores||{};
     var body = scoreRow('종합 SEO 점수', seo.score100, 100)
       + subBar('성능', sc.performance) + subBar('SEO', sc.seo) + subBar('접근성', sc.accessibility)

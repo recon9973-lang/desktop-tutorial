@@ -60,6 +60,21 @@ function nameMatches(candidate, target) {
   return a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
 }
 
+// '홈페이지'로 등록됐지만 실제로는 블로그·SNS인 링크 분류.
+// 네이버 플레이스는 블로그를 홈페이지로 걸어둔 경우가 많다 → 블로그 글 한 페이지를 '홈페이지 SEO'로
+// 점수내면 오해(병원이 못 고치는 템플릿 항목을 개선안으로 제시). 정직하게 구분한다.
+function classifyHomepage(url) {
+  if (!url) return null;
+  let host = '';
+  try { host = new URL(/^https?:/.test(url) ? url : 'https://' + url).host.toLowerCase().replace(/^www\./, ''); }
+  catch (e) { return 'site'; }
+  const blog = /(^|\.)(blog\.naver\.com|m\.blog\.naver\.com|blog\.me|post\.naver\.com|cafe\.naver\.com|m\.cafe\.naver\.com|tistory\.com|brunch\.co\.kr|blogspot\.com)$/;
+  const social = /(^|\.)(instagram\.com|facebook\.com|m\.facebook\.com|youtube\.com|youtu\.be|band\.us|pf\.kakao\.com|story\.kakao\.com|twitter\.com|x\.com|threads\.net|tiktok\.com)$/;
+  if (blog.test(host)) return 'blog';
+  if (social.test(host)) return 'social';
+  return 'site';
+}
+
 const CACHE_TTL = 60 * 60 * 24; // 24h
 function cacheNorm(s) { return String(s || '').replace(/\s+/g, '').toLowerCase(); }
 async function safe(promise) { try { return await promise; } catch (e) { return null; } }
@@ -84,14 +99,19 @@ function extractRegion(text) {
 }
 
 function parseInput(raw) {
-  const s = String(raw || '').trim().replace(/\s+/g, ' ');
+  let s = String(raw || '').trim().replace(/\s+/g, ' ');
+  // 사용자가 실제 홈페이지 URL을 함께 입력하면 추출 → SEO 진단 대상 오버라이드
+  // (네이버 검색 API는 링크 1개만 주고 그게 블로그인 경우가 많아, 정식 홈페이지를 직접 받는다)
+  const urlMatch = s.match(/https?:\/\/[^\s]+/i);
+  const url = urlMatch ? urlMatch[0].replace(/[)\]}>,.]+$/, '') : '';
+  if (url) s = s.replace(urlMatch[0], ' ').replace(/\s+/g, ' ').trim();
   const region = extractRegion(s);
   // 병원명 = 지역/광역 토큰 제거 후 남은 것(없으면 원문)
   const all = (s.match(REGION_TOKEN_RE) || []);
   let name = s;
   for (const t of all) name = name.split(t).join(' ');
   name = name.replace(/\s+/g, ' ').trim() || s;
-  return { raw: s, name, region };
+  return { raw: s, name, region, url };
 }
 
 function regionFromAddress(addr) {
@@ -520,10 +540,20 @@ async function computeBase(deps, q, nowMs) {
   const dept = medical
     ? (simplifyDept(rawCat) || simplifyDept(q.raw) || '병원')
     : (businessCategory(rawCat) || '');
-  const homepage = place.homepage || null;
+  // 사용자가 URL을 직접 입력하면 그 주소를 우선(네이버가 준 대표 링크가 블로그일 때 실제 홈페이지 지정).
+  const overrode = !!q.url;
+  const homepage = q.url || place.homepage || null;
+  const homepageKind = classifyHomepage(homepage); // 'site' | 'blog' | 'social' | null
+  // 정식 홈페이지(site)만 홈페이지 SEO로 채점. 블로그·SNS는 '홈페이지 아님'으로 정직 표기
+  // (블로그 활동은 네이버 로컬 지표에, 블로그 글의 의료광고법은 adLaw로 계속 점검).
+  // 단, 사용자가 URL을 직접 지정하면 블로그라도 그 의도대로 채점한다.
+  const seoPromise = (homepage && homepageKind !== 'site' && !overrode)
+    ? Promise.resolve({ status: 'blog-only', url: homepage, kind: homepageKind,
+        note: `네이버가 제공한 대표 링크가 ${homepageKind === 'blog' ? '블로그' : 'SNS'}예요. 실제 홈페이지가 따로 있으면 주소를 함께 입력해 주세요(예: ${gname} https://…). 홈페이지 SEO는 정식 웹사이트 기준으로 진단됩니다.` })
+    : diagnoseSeo(deps, homepage);
 
   const [seo, local, ads, adLaw, geoPreview, search] = await Promise.all([
-    diagnoseSeo(deps, homepage),
+    seoPromise,
     diagnoseLocal(deps, gname, region),
     diagnoseAds(deps, dept, region, medical),
     // 의료광고법은 병원·의원 등 의료 업종에만 적용(비의료는 해당 없음)
@@ -532,7 +562,7 @@ async function computeBase(deps, q, nowMs) {
     deps.geoProbe.preview(gname, { category: rawCat, region }),
     diagnoseSearchConsole(deps, homepage, nowMs),
   ]);
-  return { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw, geoPreview, search, warnings };
+  return { place, region, dept, medical, homepage, homepageKind, gname, seo, local, ads, adLaw, geoPreview, search, warnings };
 }
 
 // ── 메인 오케스트레이터 ────────────────────────────────
@@ -547,14 +577,14 @@ async function diagnose(rawInput, opts = {}) {
   const cacheHit = { base: false, geo: false, compete: false };
 
   // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v6:${cacheNorm(q.raw)}|${q.region || ''}`;
+  const baseKey = `venomi:base:v7:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {
     base = await computeBase(deps, q, started);
     if (useCache) await safe(cache.setJson(baseKey, base, CACHE_TTL));
   }
-  const { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw, search } = base;
+  const { place, region, dept, medical, homepage, homepageKind, gname, seo, local, ads, adLaw, search } = base;
   const warnings = (base.warnings || []).slice();
 
   // 2) GEO — light면 preview 재사용, full이면 실 프로빙(별도 24h 캐시)
