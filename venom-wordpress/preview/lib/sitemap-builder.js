@@ -2,7 +2,7 @@
 
 const https = require('https');
 
-const BASE_URL = 'https://desktop-tutorial-chi-peach.vercel.app';
+const BASE_URL = 'https://venom-new-site.vercel.app';
 const OWNER    = process.env.GITHUB_OWNER  || 'recon9973-lang';
 const REPO     = process.env.GITHUB_REPO   || 'desktop-tutorial';
 const BRANCH   = process.env.GITHUB_BRANCH || 'main';

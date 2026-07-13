@@ -1,0 +1,28 @@
+name: Check Sitemap Drift
+
+# sitemap.xml ↔ 콘텐츠/도메인 표류 자동 검증 (roadmap ①)
+# 글·사이트맵·생성기 변경 시 표류가 있으면 실패시켜 조기 감지.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'venom-wordpress/preview/content/blog-posts.json'
+      - 'venom-wordpress/preview/sitemap.xml'
+      - 'venom-wordpress/preview/robots.txt'
+      - 'venom-wordpress/preview/lib/sitemap-builder.js'
+      - 'venom-wordpress/preview/scripts/check-sitemap.js'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate sitemap drift
+        working-directory: venom-wordpress/preview
+        run: node scripts/check-sitemap.js

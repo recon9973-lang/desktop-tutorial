@@ -341,15 +341,21 @@ module.exports = async function handler(req, res) {
     catch (e) { console.warn('[cron] 클러스터 저장 실패(무시):', e.message); }
   }
 
-  // 사이트맵 자동 갱신
+  // 사이트맵 자동 갱신 (+ 표류 감지: 라이브 글 수 ↔ 사이트맵 반영 수)
+  let sitemap = { updated: false, liveCount: 0 };
   try {
     const { posts: allPosts } = await getPosts();
-    await updateSitemap(allPosts);
+    const nowMs = Date.now();
+    sitemap.liveCount = (allPosts || []).filter(p =>
+      p.status === 'published' && (p.slug || p.id) && (!p.publishAt || Date.parse(p.publishAt) <= nowMs)
+    ).length;
+    sitemap.updated = await updateSitemap(allPosts);
+    if (!sitemap.updated) console.warn('[cron] sitemap 갱신 안 됨(토큰 없음 또는 API 실패) — 라이브 글', sitemap.liveCount, '건 미반영 가능');
   } catch (e) {
     console.warn('[cron] sitemap 갱신 실패(무시):', e.message);
   }
 
-  return res.status(200).json({ ok: true, published: results.filter(r => r.ok).length, ran: results.length, dueCount, publishedBefore: publishedToday, now: nowHM, results });
+  return res.status(200).json({ ok: true, published: results.filter(r => r.ok).length, ran: results.length, dueCount, publishedBefore: publishedToday, now: nowHM, sitemap, results });
 
   } finally {
     await releaseLock(LOCK_PATH, lock.sha).catch(() => {});

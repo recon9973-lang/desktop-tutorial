@@ -357,14 +357,14 @@ ${DELIMITER.END}`;
     'author': {
       '@type': 'Organization',
       'name': '병원마케팅 베놈',
-      'url': 'https://desktop-tutorial-chi-peach.vercel.app/'
+      'url': 'https://venom-new-site.vercel.app/'
     },
     'publisher': {
       '@type': 'Organization',
       'name': '병원마케팅 베놈',
       'logo': { '@type': 'ImageObject', 'url': 'https://venom-new-site.vercel.app/images/logo_venomad.png' }
     },
-    'mainEntityOfPage': { '@type': 'WebPage', '@id': `https://desktop-tutorial-chi-peach.vercel.app/blog/${encodeURIComponent(slug)}` },
+    'mainEntityOfPage': { '@type': 'WebPage', '@id': `https://venom-new-site.vercel.app/blog/${encodeURIComponent(slug)}` },
   });
 
   // FAQ 섹션 → FAQPage 구조화 데이터(있을 때만). Article과 함께 head에 삽입.

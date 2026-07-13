@@ -2,5 +2,9 @@
   "name": "venom-site",
   "private": true,
   "engines": { "node": ">=18" },
+  "scripts": {
+    "check:sitemap": "node scripts/check-sitemap.js",
+    "fix:sitemap": "node scripts/check-sitemap.js --fix"
+  },
   "dependencies": { "linkedom": "^0.18.12" }
 }
