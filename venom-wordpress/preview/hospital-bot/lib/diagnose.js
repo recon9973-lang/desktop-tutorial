@@ -563,7 +563,7 @@ async function computeBase(deps, q, nowMs) {
   // 단, 사용자가 URL을 직접 지정하면 블로그라도 그 의도대로 채점한다.
   const seoPromise = (homepage && homepageKind !== 'site' && !overrode)
     ? Promise.resolve({ status: 'blog-only', url: homepage, kind: homepageKind,
-        note: `네이버가 제공한 대표 링크가 ${homepageKind === 'blog' ? '블로그' : 'SNS'}예요. 실제 홈페이지가 따로 있으면 주소를 함께 입력해 주세요(예: ${gname} https://…). 홈페이지 SEO는 정식 웹사이트 기준으로 진단됩니다.` })
+        note: `네이버가 제공한 대표 링크가 ${homepageKind === 'blog' ? '블로그' : 'SNS'}예요. 실제 홈페이지가 따로 있으면 병원명 뒤에 홈페이지 주소를 붙여 보내주세요. 홈페이지 SEO는 정식 웹사이트 기준으로 진단됩니다.` })
     : diagnoseSeo(deps, homepage);
 
   const [seo, local, ads, adLaw, geoPreview, search] = await Promise.all([
@@ -595,7 +595,7 @@ async function diagnose(rawInput, opts = {}) {
   const cacheHit = { base: false, geo: false, compete: false };
 
   // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v8:${cacheNorm(q.raw)}|${q.region || ''}`;
+  const baseKey = `venomi:base:v9:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {

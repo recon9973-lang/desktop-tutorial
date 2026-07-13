@@ -21,8 +21,11 @@ function hostOf(url) {
 function isSiteUrl(url) {
   if (!url || !/^https?:\/\//i.test(url)) return false;
   if (IMG_EXT.test(url)) return false;
+  // 검색결과의 잘린 표시 URL(말줄임·공백·따옴표 등) 거부 — "https://…" 같은 쓰레기값 차단
+  if (/[……\s"'<>()]/.test(url)) return false;
   const h = hostOf(url);
-  if (!h) return false;
+  // 유효한 도메인만: 영숫자·하이픈·점 + 2자 이상 TLD, 연속점(..) 없음(잘린 호스트 방지)
+  if (!h || /\.\./.test(h) || !/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/i.test(h)) return false;
   return !NON_SITE_HOST.test(h);
 }
 
