@@ -317,6 +317,11 @@ function renderAsk() {
 function renderError(msg) {
   return skill([simpleText(`진단 중 문제가 발생했습니다.\n${msg || ''}\n잠시 후 다시 시도해 주세요.`)]);
 }
+// 동기 응답이 5초를 넘길 때(콜드스타트·느린 홈페이지) '무응답' 대신 재시도 안내
+function renderSlow(hospital) {
+  const name = hospital ? `'${hospital}' ` : '';
+  return skill([simpleText(`⏳ ${name}진단을 준비 중이에요.\n첫 요청은 서버가 깨어나느라 조금 느릴 수 있어요.\n5초 뒤 한 번만 다시 보내주세요. 🙏`)]);
+}
 function ackData(hospital) {
   return { text: `🩺 "${hospital}" 진단 중이에요… 20초 내로 결과를 보내드릴게요.` };
 }
@@ -431,7 +436,7 @@ function render(report, view) {
 module.exports = {
   parseCommand, render,
   renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderLaw, renderCompete, renderProposal, renderContact,
-  renderRefusal, renderMyId, renderHelp, renderAsk, renderError, ackData,
+  renderRefusal, renderMyId, renderHelp, renderAsk, renderError, renderSlow, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,
   CHANNEL_URL, TEL,
 };
