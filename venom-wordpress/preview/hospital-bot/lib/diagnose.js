@@ -549,7 +549,11 @@ async function computeBase(deps, q, nowMs) {
   // 대표 링크가 블로그/SNS면(사용자 지정 아님), 플레이스 상세에서 실제 홈페이지 자동 탐색(best-effort).
   // 실패해도 조용히 넘어가 blog-only로 폴백(네트워크·스크래핑 불안정 대비).
   if (!overrode && homepage && homepageKind !== 'site' && deps.naverPlace) {
-    const found = await safe(deps.naverPlace.findHomepage(gname, { region, deps }));
+    // 동기 응답(5초) 안에 들도록 자동 탐색 전체를 하드 타임아웃으로 감싼다(초과 시 blog-only 폴백).
+    const found = await safe(Promise.race([
+      deps.naverPlace.findHomepage(gname, { region, deps }),
+      new Promise((r) => setTimeout(() => r(null), 3000)),
+    ]));
     if (found && found.url && classifyHomepage(found.url) === 'site') {
       homepage = found.url; homepageKind = 'site'; homepageSource = found.source; // 'naver-place' | 'search'
     }
