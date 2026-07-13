@@ -21,6 +21,13 @@
 const https = require('https');
 const http = require('http');
 
+// 온페이지 SEO — 화면·크론과 100% 동일한 seo-engine(의존성 0)으로 채점.
+// linkedom(서버측 DOM)이 있으면 정적 DOM 분석까지, 없으면 PSI 기준으로 강등(빌드/실행 안 깨짐).
+let SEOEngine = null;
+try { SEOEngine = require('../../seo/seo-engine.js'); } catch (e) { /* optional */ }
+let parseHTML = null;
+try { parseHTML = require('linkedom').parseHTML; } catch (e) { /* optional */ }
+
 // 기본 의존성(실제 구현) — 테스트에서 deps로 교체 가능
 function defaultDeps() {
   return {
@@ -30,10 +37,25 @@ function defaultDeps() {
     proposal: require('./proposal'),
     searchad: require('../../lib/naver-searchad'),
     psi: require('../../lib/psi'),
+    searchConsole: (function () { try { return require('../../lib/search-console'); } catch (e) { return null; } })(),
     adValidator: require('../../lib/medical-ad-validator'),
     cache: require('../../lib/cache'),
+    seoEngine: SEOEngine,
+    parseHTML,
     fetchHtml,
   };
+}
+
+// ── 이름 매칭(정직성 신뢰도용) ─────────────────────────
+// 검색 결과 상호/문서가 입력한 업체명과 실제로 일치하는지 판단해, 동명 혼입·한계 색인으로 인한
+// 오탐("미등록", "블로그 N건")을 신뢰도로 정직하게 낮춘다. 완전일치가 아니라 포함관계로 관대하게.
+function normName(s) {
+  return String(s || '').toLowerCase().replace(/<\/?b>/g, '').replace(/[^0-9a-z가-힣]/g, '');
+}
+function nameMatches(candidate, target) {
+  const a = normName(candidate), b = normName(target);
+  if (!a || !b || b.length < 2) return false;
+  return a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
 }
 
 const CACHE_TTL = 60 * 60 * 24; // 24h
@@ -136,14 +158,14 @@ function fetchHtml(url, { timeout = 7000, maxBytes = 500000 } = {}) {
         else res.destroy();
       });
       res.on('end', () => {
-        const html = Buffer.concat(chunks).toString('utf8');
+        const html = Buffer.concat(chunks).toString('utf8'); // 원본(줄바꿈 보존) — robots.txt·SEO DOM 분석용
         const text = html
           .replace(/<script[\s\S]*?<\/script>/gi, ' ')
           .replace(/<style[\s\S]*?<\/style>/gi, ' ')
           .replace(/<[^>]+>/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
-        resolve({ ok: true, status: res.statusCode, text, bytes: received });
+        resolve({ ok: true, status: res.statusCode, html, text, bytes: received });
       });
     });
     req.on('error', (e) => resolve({ ok: false, error: e.message, text: '' }));
@@ -152,44 +174,169 @@ function fetchHtml(url, { timeout = 7000, maxBytes = 500000 } = {}) {
 }
 
 // ── 개별 진단 ─────────────────────────────────────────
+// 온페이지 SEO(정적 DOM, seo-engine) + PSI(성능·CWV)를 함께 채점.
+//  · PSI 키가 없어도 온페이지 SEO는 실측(무료) — 홈페이지가 있으면 항상 구체 개선안 제공.
+//  · seo-engine/linkedom 미가용 시엔 기존처럼 PSI 점수로 폴백(거짓 점수 안 만듦).
 async function diagnoseSeo(deps, homepage) {
   if (!homepage) return { status: 'no-homepage', note: '공식 홈페이지를 찾지 못했습니다.' };
-  try {
-    const p = await deps.psi.fetchPsi(homepage, { strategy: 'mobile' });
-    if (!p || !p.ok) return { status: 'unavailable', url: homepage, note: (p && p.reason) || 'PSI 미설정' };
-    const s = p.scores || {};
+  const url = /^https?:\/\//.test(homepage) ? homepage : 'https://' + homepage;
+  const isHttps = /^https:/i.test(url);
+  let origin = '';
+  try { const u = new URL(url); origin = u.protocol + '//' + u.host; } catch (e) { /* keep */ }
+
+  // 병렬 수집: 페이지 HTML · robots.txt · PSI(선택)
+  const [page, robotsR, psi] = await Promise.all([
+    safe(deps.fetchHtml(url, { timeout: 4000, maxBytes: 900000 })),
+    origin ? safe(deps.fetchHtml(origin + '/robots.txt', { timeout: 2500, maxBytes: 60000 })) : Promise.resolve(null),
+    safe(deps.psi.fetchPsi(url, { strategy: 'mobile' })),
+  ]);
+  const html = (page && page.ok && page.html) || '';
+  const robots = (robotsR && robotsR.ok && robotsR.html) || '';
+  const psiOk = !!(psi && psi.ok);
+  const s = (psiOk && psi.scores) || {};
+
+  // 온페이지 SEO(의존성 0 엔진) — linkedom DOM이 있어야 정적 분석 신뢰 가능
+  let onPage = null;
+  if (deps.seoEngine && deps.parseHTML && html) {
+    try {
+      const doc = deps.parseHTML(html).document;
+      onPage = deps.seoEngine.analyze({ url, html, robots, isHttps, doc });
+    } catch (e) { onPage = null; }
+  }
+
+  // 온페이지 채점 성공 → 이를 주 SEO 점수로. 실패 시 PSI로 폴백.
+  if (onPage && onPage.max) {
+    const onScore = Math.round(onPage.total / onPage.max * 100);
+    const failed = [];
+    (onPage.categories || []).forEach((c) => {
+      if (c.key === 'speed') return; // 속도는 PSI에서 별도로
+      (c.items || []).forEach((it) => { if (it.pass === false) failed.push({ name: it.name, points: it.points }); });
+    });
+    failed.sort((a, b) => b.points - a.points);
+    const topFixes = failed.slice(0, 3).map((f) => f.name + ' 보강');
+    if (psiOk && s.performance != null && s.performance < 70) topFixes.unshift('모바일 속도 개선(이미지·스크립트)');
+    return {
+      status: 'ok', url, source: psiOk ? 'onpage+psi' : 'onpage',
+      score100: onScore,
+      scores: { performance: (psiOk ? s.performance : null), seo: onScore, accessibility: (psiOk ? s.accessibility : null) },
+      lab: (psiOk && psi.lab) || null,
+      onPage: { score: onScore, grade: onPage.grade && onPage.grade.label, passed: onPage.summary && onPage.summary.passed, failed: onPage.summary && onPage.summary.failed, renderSuspect: !!onPage.renderSuspect },
+      topFixes: topFixes.slice(0, 3),
+    };
+  }
+
+  // 폴백: PSI만(기존 동작)
+  if (psiOk) {
     const score100 = Math.round(((s.performance || 0) + (s.seo || 0)) / 2);
     const topFixes = [];
     if (s.performance != null && s.performance < 70) topFixes.push('모바일 페이지 속도 개선(이미지·스크립트 최적화)');
-    if (p.lab && p.lab.lcpMs && p.lab.lcpMs > 2500) topFixes.push('LCP 2.5초 초과 — 대표 이미지 최적화');
+    if (psi.lab && psi.lab.lcpMs && psi.lab.lcpMs > 2500) topFixes.push('LCP 2.5초 초과 — 대표 이미지 최적화');
     if (s.seo != null && s.seo < 90) topFixes.push('기본 SEO 태그(title/meta/구조화데이터) 보강');
     if (s.accessibility != null && s.accessibility < 80) topFixes.push('접근성(alt·대비) 개선');
-    return { status: 'ok', url: homepage, scores: s, score100, lab: p.lab || null, topFixes: topFixes.slice(0, 3) };
-  } catch (e) {
-    return { status: 'error', url: homepage, error: e.message };
+    return { status: 'ok', url, source: 'psi', scores: s, score100, lab: psi.lab || null, topFixes: topFixes.slice(0, 3) };
   }
+
+  // 온페이지·PSI 모두 실패
+  if (page && page.ok === false) return { status: 'unavailable', url, note: '홈페이지 응답을 받지 못했습니다(차단·오프라인 가능).' };
+  return { status: 'unavailable', url, note: (psi && psi.reason) || 'SEO 엔진·PSI 모두 미가용' };
+}
+
+// 표본(상위 items)에서 실제로 업체명을 언급한 비율 → 검색 총계의 신뢰도.
+// 네이버 검색 총계(total)는 '키워드 일치 건수'라 동명이인·일반어면 부풀려진다. 표본 매칭률로 정직화.
+function sampleConfidence(items, name) {
+  const arr = Array.isArray(items) ? items : [];
+  const sampled = arr.length;
+  const stripTags = (s) => String(s || '').replace(/<\/?b>/g, '').replace(/<[^>]+>/g, '');
+  const matched = arr.filter((it) => nameMatches(stripTags(it.title) + ' ' + stripTags(it.description), name)).length;
+  const rate = sampled ? matched / sampled : null;
+  const confidence = rate == null ? 'none' : rate >= 0.6 ? 'high' : rate >= 0.3 ? 'medium' : 'low';
+  return { sampled, matched, matchRate: rate, confidence };
+}
+
+// ── GSC(구글 서치콘솔) 실측 — '연결된 관리 고객' 전용 ────────────
+// 진단 홈페이지가 연결된 GSC 속성과 같은 도메인일 때만 실 검색성과(클릭·노출·순위·검색어)를 붙인다.
+// 미설정/다른 도메인/실패는 status로 정직하게 강등(추정치 만들지 않음).
+function gscHost(u) {
+  if (!u) return '';
+  if (u.indexOf('sc-domain:') === 0) return u.slice(10).toLowerCase().replace(/^www\./, '');
+  try { return new URL(/^https?:/.test(u) ? u : 'https://' + u).host.toLowerCase().replace(/^www\./, ''); }
+  catch (e) { return ''; }
+}
+function domainMatches(a, b) {
+  const ha = gscHost(a), hb = gscHost(b);
+  return !!ha && !!hb && (ha === hb || ha.endsWith('.' + hb) || hb.endsWith('.' + ha));
+}
+function gscDateRange(nowMs, days) {
+  const ymd = (d) => new Date(d).toISOString().slice(0, 10);
+  const end = (nowMs || Date.now()) - 2 * 86400000; // GSC 데이터 지연 ~2일
+  const start = end - (days - 1) * 86400000;
+  return { start: ymd(start), end: ymd(end) };
+}
+async function diagnoseSearchConsole(deps, homepage, nowMs) {
+  const sc = deps.searchConsole;
+  if (!sc || !sc.isConfigured || !sc.isConfigured()) return { status: 'unconfigured' };
+  const cfg = sc.loadConfig ? sc.loadConfig() : null;
+  if (!cfg) return { status: 'unconfigured' };
+  if (homepage && !domainMatches(homepage, cfg.siteUrl)) {
+    return { status: 'na', note: '연결된 GSC 속성과 다른 도메인 — 관리(연결) 고객만 실측' };
+  }
+  const { start, end } = gscDateRange(nowMs, 28);
+  try {
+    const [totals, byQuery] = await Promise.all([
+      sc.querySearchAnalytics({ startDate: start, endDate: end, dimensions: [], rowLimit: 1, now: nowMs ? nowMs / 1000 : undefined }),
+      sc.querySearchAnalytics({ startDate: start, endDate: end, dimensions: ['query'], rowLimit: 5, now: nowMs ? nowMs / 1000 : undefined }),
+    ]);
+    if (!totals.ok) return { status: 'error', note: totals.reason };
+    const t = totals.totals || { clicks: 0, impressions: 0, ctr: 0 };
+    const top = (byQuery.ok ? byQuery.rows : []).map((r) => ({
+      query: (r.keys && r.keys[0]) || '', clicks: r.clicks, impressions: r.impressions,
+      position: Math.round((r.position || 0) * 10) / 10,
+    }));
+    return { status: 'ok', siteUrl: cfg.siteUrl, period: { start, end },
+      clicks: t.clicks, impressions: t.impressions, ctr: t.ctr, topQueries: top };
+  } catch (e) { return { status: 'error', note: e.message }; }
 }
 
 async function diagnoseLocal(deps, name, region) {
   const out = { place: null, blog: null, news: null, signals: [] };
   const q = [region, name].filter(Boolean).join(' ').trim() || name;
+  const stripTags = (s) => String(s || '').replace(/<\/?b>/g, '').replace(/<[^>]+>/g, '');
+  // 플레이스: 검색결과 상호가 입력명과 일치할 때만 '등록 확인'. 불일치·0건은 '미등록'이 아니라
+  // '검색 미확인(unknown)' — 네이버 검색 OpenAPI 로컬 색인은 지도/플레이스 DB 전체를 담지 않는다.
   try {
-    const local = await deps.naverOpenapi.searchJson('local', q, { display: 3 });
-    out.place = local.ok ? { registered: local.items.length > 0, count: local.items.length } : { registered: null, error: local.error };
-  } catch (e) { out.place = { registered: null, error: e.message }; }
+    const local = await deps.naverOpenapi.searchJson('local', q, { display: 5 });
+    if (!local.ok) {
+      out.place = { registered: null, confidence: 'none', error: local.error };
+    } else {
+      const hits = (local.items || []).filter((it) => nameMatches(stripTags(it.title), name));
+      if (hits.length) {
+        out.place = { registered: true, confidence: 'high', matched: hits.length };
+      } else {
+        out.place = { registered: null, confidence: 'low', count: (local.items || []).length,
+          note: '검색 API로 확인 안 됨 — 네이버 지도에서 직접 확인 권장' };
+      }
+    }
+  } catch (e) { out.place = { registered: null, confidence: 'none', error: e.message }; }
+
   try {
-    const blog = await deps.naverOpenapi.searchJson('blog', name, { display: 3, sort: 'date' });
-    out.blog = blog.ok ? { total: blog.total } : { total: null, error: blog.error };
+    const blog = await deps.naverOpenapi.searchJson('blog', name, { display: 10, sort: 'sim' });
+    out.blog = blog.ok ? Object.assign({ total: blog.total }, sampleConfidence(blog.items, name)) : { total: null, error: blog.error };
   } catch (e) { out.blog = { total: null, error: e.message }; }
   try {
-    const news = await deps.naverOpenapi.searchJson('news', name, { display: 3, sort: 'date' });
-    out.news = news.ok ? { total: news.total } : { total: null, error: news.error };
+    const news = await deps.naverOpenapi.searchJson('news', name, { display: 10, sort: 'sim' });
+    out.news = news.ok ? Object.assign({ total: news.total }, sampleConfidence(news.items, name)) : { total: null, error: news.error };
   } catch (e) { out.news = { total: null, error: e.message }; }
 
-  if (out.blog && out.blog.total != null) {
-    out.signals.push(out.blog.total >= 30 ? '블로그 노출 활발' : '블로그 콘텐츠 부족 — 포스팅 강화 필요');
+  if (out.place && out.place.confidence === 'low') {
+    out.signals.push('플레이스 검색 미확인 — 네이버 지도 직접 확인 권장(색인 한계)');
   }
-  if (out.news && out.news.total != null && out.news.total === 0) out.signals.push('언론/PR 노출 없음 — E-E-A-T 백링크 기회');
+  if (out.blog && out.blog.total != null) {
+    if (out.blog.confidence === 'low') out.signals.push('블로그 검색결과 관련성 낮음 — 동명·일반어 혼입 가능(정식명칭 확인)');
+    else out.signals.push(out.blog.total >= 30 ? '블로그 노출 활발' : '블로그 콘텐츠 부족 — 포스팅 강화 필요');
+  }
+  if (out.news && out.news.total != null && out.news.confidence !== 'low' && out.news.total === 0) {
+    out.signals.push('언론/PR 노출 없음 — E-E-A-T 백링크 기회');
+  }
   return out;
 }
 
@@ -329,12 +476,13 @@ function summarize(report) {
 }
 
 // 베이스 번들(값싼 5대 진단 + 병원탐지 + GEO preview) — 24h 캐시 단위
-async function computeBase(deps, q) {
+async function computeBase(deps, q, nowMs) {
   const warnings = [];
   let place;
-  try { place = await deps.naverOpenapi.findHospital(q.raw, {}); }
+  try { place = await deps.naverOpenapi.findHospital(q.raw, { matchName: q.name }); }
   catch (e) { place = { found: false, error: e.message, source: 'naver-local' }; }
   if (!place.found) warnings.push('업체 탐지 실패 — 지역·정식명칭으로 재시도 권장');
+  else if (place.confidence === 'low') warnings.push('입력명과 검색결과 상호가 정확히 일치하지 않음 — 정식명칭 확인 권장');
 
   const region = q.region || regionFromAddress(place.address) || '';
   const rawCat = place.category || '';
@@ -345,7 +493,7 @@ async function computeBase(deps, q) {
     : (businessCategory(rawCat) || '');
   const homepage = place.homepage || null;
 
-  const [seo, local, ads, adLaw, geoPreview] = await Promise.all([
+  const [seo, local, ads, adLaw, geoPreview, search] = await Promise.all([
     diagnoseSeo(deps, homepage),
     diagnoseLocal(deps, gname, region),
     diagnoseAds(deps, dept, region, medical),
@@ -353,8 +501,9 @@ async function computeBase(deps, q) {
     medical ? diagnoseAdLaw(deps, homepage)
             : Promise.resolve({ status: 'na', reason: '비의료 업종', pass: null, forbidden: [], risky: [], hits: [] }),
     deps.geoProbe.preview(gname, { category: rawCat, region }),
+    diagnoseSearchConsole(deps, homepage, nowMs),
   ]);
-  return { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw, geoPreview, warnings };
+  return { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw, geoPreview, search, warnings };
 }
 
 // ── 메인 오케스트레이터 ────────────────────────────────
@@ -369,14 +518,14 @@ async function diagnose(rawInput, opts = {}) {
   const cacheHit = { base: false, geo: false, compete: false };
 
   // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v3:${cacheNorm(q.raw)}|${q.region || ''}`;
+  const baseKey = `venomi:base:v4:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {
-    base = await computeBase(deps, q);
+    base = await computeBase(deps, q, started);
     if (useCache) await safe(cache.setJson(baseKey, base, CACHE_TTL));
   }
-  const { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw } = base;
+  const { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw, search } = base;
   const warnings = (base.warnings || []).slice();
 
   // 2) GEO — light면 preview 재사용, full이면 실 프로빙(별도 24h 캐시)
@@ -412,7 +561,7 @@ async function diagnose(rawInput, opts = {}) {
     ok: true,
     query: q,
     resolved: { region, dept, medical, homepage, place },
-    seo, geo, local, ads, adLaw,
+    seo, geo, local, ads, adLaw, search,
     compete,
     disclaimer: '본 진단은 공개 데이터 기반 참고용이며, 실제 성과·심의 통과를 보장하지 않습니다.',
     meta: {

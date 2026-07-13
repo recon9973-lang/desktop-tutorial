@@ -145,16 +145,18 @@ module.exports = async function handler(req, res) {
     res.status(200).json({
       service: 'venomi-hospital-bot',
       phase: '운영(내부) · 전업종 진단(의료광고법 조건부)',
-      build: 'v5-2026-07-13',
-      features: ['진단6', '전업종(비의료 조건부)', 'myid(내키)', 'help(도움말)', 'law-locate(심의위치)', 'partial-grade(부분진단)', 'no-timeout(무응답방지)'],
+      build: 'v6-2026-07-13',
+      features: ['진단6', '전업종(비의료 조건부)', 'myid(내키)', 'help(도움말)', 'law-locate(심의위치)', 'partial-grade(부분진단)', 'no-timeout(무응답방지)', 'onpage-seo(seo-engine)', 'trust-confidence(오탐방지)', 'gsc-live(관리고객 실측)'],
       config: {
         naverOpenapi: !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET),
         naverSearchAd: !!(process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE),
         psi: !!process.env.PSI_KEY,
+        gsc: !!(process.env.GSC_SERVICE_ACCOUNT_JSON || (process.env.GSC_CLIENT_EMAIL && process.env.GSC_PRIVATE_KEY)) && !!(process.env.GSC_SITE_URL || process.env.SITE_URL),
+        onpageSeo: (function () { try { require(path.join(__dirname, '..', 'seo', 'seo-engine.js')); return true; } catch (e) { return false; } })(),
         whitelistMode: whitelist.isConfigured() ? 'enforced' : 'open',
         cache: require(path.join(__dirname, '..', 'lib', 'cache')).configured() ? '24h(KV)' : 'off',
       },
-      reused: ['naver-searchad', 'psi', 'medical-ad-validator', 'naver-openapi', 'geo-probe(stub)'],
+      reused: ['seo-engine(온페이지)', 'search-console(GSC)', 'naver-searchad', 'psi', 'medical-ad-validator', 'naver-openapi', 'geo-probe(stub)'],
       note: '순수 API: POST { hospital, region? } · 카카오 스킬: userRequest/action 페이로드',
     });
     return;

@@ -113,6 +113,7 @@ function renderSummary(report) {
   }
   L.push(`▪ 종합등급  ${gradeIcon(s.grade)} ${s.grade || 'N/A'}${s.score != null ? ` (${s.score}점)` : ''}`);
   L.push(`▪ SEO 홈페이지  ${line_seo(report.seo)}`);
+  if (report.search && report.search.status === 'ok') L.push(`▪ 구글 실측(GSC)  ${line_search(report.search)}`);
   L.push(`▪ GEO·AI검색  ${line_geo(report.geo)}`);
   L.push(`▪ 네이버 로컬  ${line_local(report.local)}`);
   L.push(`▪ 광고 기회  ${line_ads_top(report.ads)}`);
@@ -140,6 +141,13 @@ function line_seo(seo) {
   if (seo.status === 'unavailable') return '측정 불가(PSI 키 확인)';
   return '측정 실패';
 }
+// GSC 실측 한 줄(관리 고객만) — 28일 클릭·노출·평균순위
+function line_search(sc) {
+  if (!sc || sc.status !== 'ok') return '·';
+  const pos = (sc.topQueries && sc.topQueries.length) ? sc.topQueries[0].position : null;
+  const posTxt = pos ? ` · 대표검색어 ${pos}위` : '';
+  return `28일 클릭 ${fmtNum(sc.clicks)}·노출 ${fmtNum(sc.impressions)}${posTxt}`;
+}
 function line_geo(geo) {
   if (!geo) return '·';
   if (geo.status === 'done') return `${geo.grade || '·'} (인용률 ${pctText(geo.citationRate)})`;
@@ -150,9 +158,16 @@ function line_geo(geo) {
 function line_local(local) {
   if (!local) return '·';
   const parts = [];
-  if (local.place && local.place.registered != null) parts.push(local.place.registered ? '플레이스 등록' : '플레이스 미등록');
-  if (local.blog && local.blog.total != null) parts.push(`블로그 ${local.blog.total}건`);
-  if (local.news && local.news.total != null) parts.push(`뉴스 ${local.news.total}건`);
+  // 플레이스: 상호 일치 시에만 '등록 확인'. 불일치·0건은 '미등록' 단정 금지 → '검색 미확인'.
+  if (local.place) {
+    if (local.place.registered === true) parts.push('플레이스 등록 확인');
+    else if (local.place.confidence === 'low') parts.push('플레이스 검색 미확인');
+  }
+  // 블로그: 표본 관련성이 낮으면 부풀려진 건수를 그대로 신뢰하지 않는다.
+  if (local.blog && local.blog.total != null) {
+    parts.push(local.blog.confidence === 'low' ? '블로그 관련성 낮음' : `블로그 ${fmtNum(local.blog.total)}건`);
+  }
+  if (local.news && local.news.total != null && local.news.confidence !== 'low') parts.push(`뉴스 ${fmtNum(local.news.total)}건`);
   return parts.length ? parts.join(' · ') : '·';
 }
 function line_ads_top(ads) {
@@ -172,17 +187,36 @@ function line_law(law) {
 }
 
 // ── 뷰: SEO 상세 ───────────────────────────────────────
+// GSC 실측 블록(연결된 관리 고객만) — SEO 상세에 공용
+function gscLines(report) {
+  const gsc = report && report.search;
+  if (!gsc || gsc.status !== 'ok') return [];
+  const L = ['', '📈 구글 실측(GSC · 최근 28일):', `· 클릭 ${fmtNum(gsc.clicks)} · 노출 ${fmtNum(gsc.impressions)} · CTR ${pctText(gsc.ctr)}`];
+  (gsc.topQueries || []).slice(0, 3).forEach((q) => L.push(`· "${q.query}" ${q.position}위 (클릭 ${fmtNum(q.clicks)})`));
+  return L;
+}
+
 function renderSeo(report) {
   const name = displayName(report);
   const seo = report.seo || {};
   if (seo.status !== 'ok') {
-    return skill([simpleText(`🔎 ${name} SEO\n\n${line_seo(seo)}\n${seo.note || ''}`)], viewQuickReplies(name));
+    const gl = gscLines(report);
+    const head = `🔎 ${name} SEO\n\n${line_seo(seo)}\n${seo.note || ''}`;
+    return skill([simpleText(gl.length ? head + '\n' + gl.join('\n') : head)], viewQuickReplies(name));
   }
   const sc = seo.scores || {};
   const L = [`🔎 ${name} SEO 진단`, ''];
-  L.push(`종합 ${seo.score100}/100 ${scoreIcon(seo.score100)}`);
-  L.push(`· 성능 ${valOr(sc.performance)} / SEO ${valOr(sc.seo)} / 접근성 ${valOr(sc.accessibility)}`);
+  L.push(`종합 ${seo.score100}/100 ${scoreIcon(seo.score100)}${seo.onPage && seo.onPage.grade ? ` (${seo.onPage.grade})` : ''}`);
+  if (seo.onPage) {
+    L.push(`· 온페이지 통과 ${valOr(seo.onPage.passed)}개 / 미흡 ${valOr(seo.onPage.failed)}개`);
+    L.push(`· 성능 ${valOr(sc.performance)} / 접근성 ${valOr(sc.accessibility)}${seo.source === 'onpage' ? ' (성능은 PSI 키 설정 시)' : ''}`);
+  } else {
+    L.push(`· 성능 ${valOr(sc.performance)} / SEO ${valOr(sc.seo)} / 접근성 ${valOr(sc.accessibility)}`);
+  }
   if (seo.lab && seo.lab.lcpMs) L.push(`· 최대콘텐츠표시(LCP) ${(seo.lab.lcpMs / 1000).toFixed(1)}초`);
+  if (seo.onPage && seo.onPage.renderSuspect) L.push('· ⚠ JS 렌더링/봇 차단 정황 — 일부 항목 정밀분석 필요');
+  // GSC 실측(연결된 관리 고객) — 추정 아닌 실제 검색 성과
+  gscLines(report).forEach((x) => L.push(x));
   if (seo.topFixes && seo.topFixes.length) {
     L.push('');
     L.push('개선 우선순위:');
@@ -217,9 +251,17 @@ function renderLocal(report) {
   const name = displayName(report);
   const local = report.local || {};
   const L = [`📍 ${name} 네이버 로컬`, ''];
-  L.push(`플레이스: ${local.place && local.place.registered != null ? (local.place.registered ? '등록 확인' : '미등록/미확인') : '·'}`);
-  L.push(`블로그 노출: ${local.blog && local.blog.total != null ? fmtNum(local.blog.total) + '건' : '·'}`);
-  L.push(`뉴스/PR: ${local.news && local.news.total != null ? fmtNum(local.news.total) + '건' : '·'}`);
+  // 플레이스: 상호 일치 시 '등록 확인', 아니면 '검색 미확인'(미등록 단정 금지 — 색인 한계)
+  const pl = local.place || {};
+  const placeTxt = pl.registered === true ? '등록 확인'
+    : pl.confidence === 'low' ? '검색 미확인 (네이버 지도에서 직접 확인 권장)'
+    : pl.error ? '조회 실패' : '·';
+  L.push(`플레이스: ${placeTxt}`);
+  // 블로그/뉴스: 검색 총계 + 표본 관련성(동명 혼입 정직 표기)
+  const relTxt = (x) => (x && x.matchRate != null && x.confidence === 'low')
+    ? ` (표본 ${x.sampled}건 중 관련 ${x.matched}건 — 동명 혼입 가능)` : '';
+  L.push(`블로그 노출: ${local.blog && local.blog.total != null ? fmtNum(local.blog.total) + '건' + relTxt(local.blog) : '·'}`);
+  L.push(`뉴스/PR: ${local.news && local.news.total != null ? fmtNum(local.news.total) + '건' + relTxt(local.news) : '·'}`);
   if (local.signals && local.signals.length) {
     L.push('');
     local.signals.forEach((s) => L.push(`· ${s}`));
