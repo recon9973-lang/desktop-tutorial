@@ -1,0 +1,33 @@
+{
+  "igId": "17841472664941872",
+  "note": "GROUND(@ground_geo) 인스타 발행 큐 — 하루 1개씩 위에서부터 발행. published=true 는 발행 완료. img/cap 은 저장소 상대경로(발행 시 커밋 SHA로 jsDelivr 공개 URL 자동 생성).",
+  "posts": [
+    {
+      "id": "geo-01",
+      "hook": "요즘, 아무도 검색 안 해요",
+      "img": "persona-nami/ig/post1.png",
+      "cap": "persona-nami/ig/post1.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "aeo-02",
+      "hook": "챗GPT한테 우리 브랜드 물어봤더니…",
+      "img": "persona-nami/ig/post2.png",
+      "cap": "persona-nami/ig/post2.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "seo-03",
+      "hook": "SEO, 30초컷 요약",
+      "img": "persona-nami/ig/post3.png",
+      "cap": "persona-nami/ig/post3.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    }
+  ]
+}
