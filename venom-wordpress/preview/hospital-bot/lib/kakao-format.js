@@ -56,7 +56,10 @@ function parseCommand(utterance) {
       if (hospital) return { view, hospital };
     }
   }
-  return { view: 'summary', hospital: s };
+  // URL만 붙여 보낸 경우(뷰 키워드 없음) → SEO 의도로 간주(홈페이지 주소 진단)
+  if (/https?:\/\/\S+/i.test(s)) return { view: 'seo', hospital: s };
+  // 기본: 업체 확인(종합 진단 대신 '무엇을 확인할까요' 버튼)
+  return { view: 'confirm', hospital: s };
 }
 
 // ── 응답 빌더 ─────────────────────────────────────────
@@ -71,15 +74,17 @@ function clip(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.sl
 function qr(label, messageText) { return { label: clip(label, 14), action: 'message', messageText }; }
 function qrLink(label, url) { return { label: clip(label, 14), action: 'webLink', webLinkUrl: url }; }
 
-// 병원명 기준 뷰 전환 quickReplies
-function viewQuickReplies(name) {
+// 항목별 확인 quickReplies — 지역+병원명을 붙여 항상 정확히 재조회되게 한다.
+function viewQuickReplies(name, region) {
+  const q = (region ? region + ' ' : '') + name;
   return [
-    qr('SEO 자세히', `${name} seo`),
-    qr('GEO 자세히', `${name} geo`),
-    qr('광고 분석', `${name} 광고`),
-    qr('동네 순위', `${name} 순위`),
-    qr('의료광고법', `${name} 심의`),
-    qr('제안서', `${name} 제안서`),
+    qr('📍 네이버 로컬', `${q} 로컬`),
+    qr('⚖️ 의료광고법', `${q} 심의`),
+    qr('💰 광고 기회', `${q} 광고`),
+    qr('🔎 SEO(주소필요)', `${q} seo`),
+    qr('🤖 AI검색(GEO)', `${q} geo`),
+    qr('🏆 동네 순위', `${q} 순위`),
+    qr('📄 제안서', `${q} 제안서`),
     qr('무료 상담', '상담'),
   ];
 }
@@ -131,7 +136,35 @@ function renderSummary(report) {
   const outputs = [simpleText(L.join('\n'))];
   const linkCard = reportLinkCard(name);
   if (linkCard) outputs.push(linkCard);
-  return skill(outputs, viewQuickReplies(name));
+  return skill(outputs, viewQuickReplies(name, report.resolved && report.resolved.region));
+}
+
+// ── 뷰: 업체 확인(하나씩 확인 진입점) ──────────────────
+function homepageLabel(kind, has) {
+  if (!has) return '없음';
+  return kind === 'blog' ? '블로그' : kind === 'social' ? 'SNS' : '홈페이지';
+}
+function renderConfirm(info) {
+  info = info || {};
+  const name = info.name || '병원';
+  if (!info.found) {
+    return skill([simpleText(`⚠️ '${name}' 정식 등록 정보를 찾지 못했어요.\n지역(구·동)+정식명칭으로 다시 보내주세요.\n예) 대구 수성구 ○○치과`)]);
+  }
+  const medical = info.medical !== false;
+  const L = [`${medical ? '🩺' : '📊'} ${name}`];
+  const sub = [info.region, info.dept || info.category].filter(Boolean).join(' · ');
+  if (sub) L.push(sub);
+  L.push(`네이버 링크: ${homepageLabel(info.homepageKind, !!info.homepage)}`);
+  if (info.confidence === 'low') L.push('⚠ 입력명과 검색결과가 정확히 일치하지 않아요 — 정식명칭 확인');
+  L.push('');
+  L.push('무엇을 확인할까요? 아래에서 하나씩 눌러보세요.');
+  L.push('(항목별로 따로 진단해 정확도를 높였어요)');
+  const outputs = [simpleText(L.join('\n'))];
+  return skill(outputs, viewQuickReplies(name, info.region));
+}
+// 지역 필수 안내(항상 지역+병원명)
+function renderAskRegion() {
+  return skill([simpleText('어느 지역 병원인가요?\n지역(구·동)까지 함께 보내주세요.\n예) 대구 수성구 범어5층치과의원')]);
 }
 
 function line_seo(seo) {
@@ -201,9 +234,21 @@ function renderSeo(report) {
   const name = displayName(report);
   const seo = report.seo || {};
   if (seo.status !== 'ok') {
+    const region = report.resolved && report.resolved.region;
+    const L = [`🔎 ${name} SEO`, '', line_seo(seo)];
+    // 블로그/SNS·홈페이지 미발견 → 실제 홈페이지 주소 입력 안내(하나씩·정확도 우선)
+    if (seo.status === 'blog-only' || seo.status === 'no-homepage') {
+      L.push('');
+      L.push('홈페이지 SEO는 실제 웹사이트 주소가 필요해요.');
+      L.push(`아래처럼 주소를 붙여 보내주세요:`);
+      L.push(`${(region ? region + ' ' : '')}${name} https://홈페이지주소`);
+      L.push('(블로그·SNS는 SEO 대상이 아니에요. 블로그는 "네이버 로컬"에서 확인)');
+    } else if (seo.note) {
+      L.push(seo.note);
+    }
     const gl = gscLines(report);
-    const head = `🔎 ${name} SEO\n\n${line_seo(seo)}\n${seo.note || ''}`;
-    return skill([simpleText(gl.length ? head + '\n' + gl.join('\n') : head)], viewQuickReplies(name));
+    if (gl.length) gl.forEach((x) => L.push(x));
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name, region));
   }
   const sc = seo.scores || {};
   const L = [`🔎 ${name} SEO 진단`, ''];
@@ -226,7 +271,7 @@ function renderSeo(report) {
   }
   L.push('');
   L.push(`대상: ${seo.url}`);
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // ── 뷰: 광고 상세 ──────────────────────────────────────
@@ -235,7 +280,7 @@ function renderAds(report) {
   const ads = report.ads || {};
   if (ads.status !== 'ok' || !ads.keywords || !ads.keywords.length) {
     const why = ads.status === 'unconfigured' ? '검색광고 API가 아직 연결되지 않았습니다.' : (ads.note || '데이터를 불러오지 못했습니다.');
-    return skill([simpleText(`💰 ${name} 광고\n\n${why}`)], viewQuickReplies(name));
+    return skill([simpleText(`💰 ${name} 광고\n\n${why}`)], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   const hasCpc = ads.cpc && ads.cpc.status === 'ok';
   const L = [`💰 ${name} 광고 컨설팅`, '', hasCpc ? '키워드 · 월검색량 · 경쟁 · CPC' : '키워드 · 월검색량 · 경쟁도'];
@@ -245,7 +290,7 @@ function renderAds(report) {
   });
   L.push('');
   L.push(hasCpc ? '※ CPC = 모바일 평균 2위 노출 추정 입찰가.' : '※ CPC(입찰가)는 검색광고 키 설정 시 표시됩니다.');
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // ── 뷰: 로컬 상세 ──────────────────────────────────────
@@ -268,7 +313,7 @@ function renderLocal(report) {
     L.push('');
     local.signals.forEach((s) => L.push(`· ${s}`));
   }
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // ── 뷰: GEO 상세(P0) ──────────────────────────────────
@@ -277,13 +322,13 @@ function renderGeo(report) {
   const geo = report.geo || {};
 
   if (geo.status === 'unconfigured') {
-    return skill([simpleText(`🤖 ${name} GEO·AI검색\n\nAI 엔진 키가 설정되지 않아 실측할 수 없습니다.\n(PERPLEXITY/OPENAI/GEMINI/ANTHROPIC 중 1개 이상 필요)`)], viewQuickReplies(name));
+    return skill([simpleText(`🤖 ${name} GEO·AI검색\n\nAI 엔진 키가 설정되지 않아 실측할 수 없습니다.\n(PERPLEXITY/OPENAI/GEMINI/ANTHROPIC 중 1개 이상 필요)`)], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   if (geo.status === 'ready') {
     const L = [`🤖 ${name} GEO·AI검색`, '', `준비된 AI 엔진: ${(geo.engines || []).join(', ') || '·'}`, '', '진단 질문(예):'];
     (geo.prompts || []).slice(0, 4).forEach((p) => L.push(`· ${p}`));
     L.push('', '실측하려면 다시 "geo"를 눌러 주세요(20초 내외 소요).');
-    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   if (geo.status === 'done') {
     const senti = { positive: '긍정 🟢', neutral: '중립 ⚪', negative: '부정 🔴' }[geo.sentiment] || '·';
@@ -301,9 +346,9 @@ function renderGeo(report) {
       L.push('', `예: "${geo.samples[0].excerpt}…" (${geo.samples[0].engine})`);
     }
     L.push('', '※ 공개 AI 검색 실측(참고용).');
-    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
-  return skill([simpleText(`🤖 ${name} GEO·AI검색\n\n측정할 수 없습니다.`)], viewQuickReplies(name));
+  return skill([simpleText(`🤖 ${name} GEO·AI검색\n\n측정할 수 없습니다.`)], viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // ── 뷰: 상담 CTA ───────────────────────────────────────
@@ -338,25 +383,24 @@ function renderHelp() {
   const L = [
     '🩺 베노미 사용법',
     '',
-    '병원명을 넣으면 6대 진단을 요약해 드려요.',
+    '지역+병원명을 넣으면 업체를 확인하고,',
+    '항목을 하나씩 눌러 정확히 진단해요.',
     '예) 대구 수성구 ○○치과',
     '',
-    '더 자세히(진단 후 버튼 또는 발화):',
-    '· ○○치과 seo   홈페이지 속도·SEO',
-    '· ○○치과 geo   AI 검색 노출 실측',
-    '· ○○치과 광고   검색량·CPC',
-    '· ○○치과 순위   동네 경쟁 비교',
+    '항목(버튼 또는 발화):',
+    '· ○○치과 로컬   네이버 플레이스·블로그',
     '· ○○치과 심의   의료광고법 위반 문구 위치',
-    '· ○○치과 제안서   진단→제안서 초안',
+    '· ○○치과 광고   검색량·CPC',
+    '· ○○치과 seo    홈페이지 SEO (주소 필요)',
+    '· ○○치과 geo    AI 검색 노출 실측',
+    '· ○○치과 순위   동네 경쟁 비교',
     '',
-    '기타:',
-    '· 내키   내 접근키(직원 등록용)',
-    '· 상담   상담 채널 안내',
-    '',
-    '홈페이지가 블로그로 잡히면 실제 주소를 함께 넣어주세요:',
+    'SEO는 실제 홈페이지 주소를 함께 넣어주세요:',
     '예) 대구 수성구 ○○치과 https://real-site.com',
+    '(블로그·SNS는 SEO 대상 아님)',
     '',
-    '※ 병원을 못 찾으면 지역+정식명칭으로 다시 시도하세요.',
+    '기타: 내키(직원 등록) · 상담',
+    '※ 항상 지역(구·동)+정식명칭으로 보내주세요.',
   ];
   return skill([simpleText(L.join('\n'))]);
 }
@@ -390,10 +434,10 @@ function renderCompete(report) {
   const name = displayName(report);
   const cp = report.compete;
   if (!cp || cp.status === 'insufficient') {
-    return skill([simpleText(`🏆 ${name} 동네 순위\n\n${(cp && cp.note) || '비교할 경쟁 병원을 찾지 못했습니다.'}`)], viewQuickReplies(name));
+    return skill([simpleText(`🏆 ${name} 동네 순위\n\n${(cp && cp.note) || '비교할 경쟁 병원을 찾지 못했습니다.'}`)], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   if (cp.status !== 'ok') {
-    return skill([simpleText(`🏆 ${name} 동네 순위\n\n비교를 완료하지 못했습니다.`)], viewQuickReplies(name));
+    return skill([simpleText(`🏆 ${name} 동네 순위\n\n비교를 완료하지 못했습니다.`)], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   const head = `🏆 ${cp.region ? cp.region + ' ' : ''}${cp.dept || ''} 동네 순위`.replace(/\s+/g, ' ').trim();
   const L = [head, ''];
@@ -411,7 +455,7 @@ function renderCompete(report) {
   }
   L.push('');
   L.push(`※ ${cp.note}`);
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // ── 뷰: 제안서 초안(요약 카드 + 웹 전체 링크) ──────────
@@ -419,7 +463,7 @@ function renderProposal(report) {
   const name = displayName(report);
   const p = report.proposal;
   if (!p || p.error) {
-    return skill([simpleText(`📄 ${name} 제안 초안\n\n제안서를 생성하지 못했습니다.`)], viewQuickReplies(name));
+    return skill([simpleText(`📄 ${name} 제안 초안\n\n제안서를 생성하지 못했습니다.`)], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   const L = [`📄 ${name} 마케팅 제안 초안`, p.summaryLine, ''];
   L.push('핵심 제안:');
@@ -435,7 +479,7 @@ function renderProposal(report) {
   const outputs = [simpleText(L.join('\n'))];
   const link = proposalLinkCard(name);
   if (link) outputs.push(link);
-  return skill(outputs, viewQuickReplies(name));
+  return skill(outputs, viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // ── 뷰: 의료광고법 상세(위반 문구 위치·링크) ──────────
@@ -449,16 +493,16 @@ function renderLaw(report) {
   if (law.status === 'na') {
     L.push('이 업종은 의료광고법 대상이 아니에요(비의료).');
     L.push('병원·의원·치과·한의원 등 의료 업종에서만 심의 점검을 제공합니다.');
-    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   if (law.status !== 'ok') {
     L.push(law.status === 'no-homepage' ? '점검할 페이지를 찾지 못했습니다.' : `${pageKind} 본문 점검에 실패했습니다.`);
-    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   if (law.pass) {
     L.push(`${pageKind} 본문에서 금지 표현이 발견되지 않았습니다(참고용).`);
     if (law.checkedUrl) { L.push(''); L.push(`확인한 ${pageKind}: ${law.checkedUrl}`); }
-    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
   }
   const hits = (law.hits && law.hits.length) ? law.hits
     : (law.forbidden || []).map((w) => ({ term: w, kind: 'forbidden', count: 0, contexts: [] }));
@@ -472,7 +516,7 @@ function renderLaw(report) {
   if (law.checkedUrl) { L.push(''); L.push(`확인한 페이지: ${law.checkedUrl}`); L.push('(링크에서 Ctrl+F로 위 문구를 찾으세요)'); }
   L.push('');
   L.push('※ 전후사진·효과보장·최상급 표현은 위반 소지가 있습니다.');
-  return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  return skill([simpleText(L.join('\n'))], viewQuickReplies(name, report.resolved && report.resolved.region));
 }
 
 // 뷰 → 렌더러 디스패치
@@ -492,6 +536,7 @@ function render(report, view) {
 
 module.exports = {
   parseCommand, render,
+  renderConfirm, renderAskRegion,
   renderSummary, renderSeo, renderAds, renderLocal, renderGeo, renderLaw, renderCompete, renderProposal, renderContact,
   renderRefusal, renderMyId, renderHelp, renderAsk, renderError, renderSlow, ackData,
   skill, simpleText, viewQuickReplies, displayName, reportUrl, reportLinkCard,

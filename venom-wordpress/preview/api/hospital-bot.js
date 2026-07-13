@@ -20,7 +20,8 @@
 const path = require('path');
 const https = require('https');
 const CB = path.join(__dirname, '..', 'hospital-bot', 'lib');
-const { diagnose } = require(path.join(CB, 'diagnose'));
+const D = require(path.join(CB, 'diagnose'));
+const { diagnose } = D;
 const kf = require(path.join(CB, 'kakao-format'));
 const whitelist = require(path.join(CB, 'whitelist'));
 
@@ -81,6 +82,23 @@ async function handleKakao(res, body) {
 
   if (cmd.view === 'contact') { res.status(200).json(kf.renderContact()); return; }
   if (!cmd.hospital) { res.status(200).json(kf.renderAsk()); return; }
+
+  // 항상 지역+병원명 — 지역(구·동)이 없으면 되물어 정확도를 높인다.
+  const parsed = D.parseInput(cmd.hospital);
+  if (!parsed.region) { res.status(200).json(kf.renderAskRegion()); return; }
+
+  // 업체 확인(하나씩 확인 진입점) — 종합 진단 없이 네이버 탐지만(빠름) + 항목 버튼.
+  if (cmd.view === 'confirm') {
+    try {
+      const info = await Promise.race([
+        D.resolvePlace(cmd.hospital, { now: Date.now() }),
+        new Promise((resolve) => setTimeout(() => resolve(null), 4500)),
+      ]);
+      if (!info) { res.status(200).json(kf.renderSlow(parsed.name)); return; }
+      res.status(200).json(kf.renderConfirm(info));
+    } catch (e) { res.status(200).json(kf.renderError(e.message)); }
+    return;
+  }
 
   const callbackUrl = body.userRequest && body.userRequest.callbackUrl;
 
@@ -145,8 +163,8 @@ module.exports = async function handler(req, res) {
     res.status(200).json({
       service: 'venomi-hospital-bot',
       phase: '운영(내부) · 전업종 진단(의료광고법 조건부)',
-      build: 'v6-2026-07-13',
-      features: ['진단6', '전업종(비의료 조건부)', 'myid(내키)', 'help(도움말)', 'law-locate(심의위치)', 'partial-grade(부분진단)', 'no-timeout(무응답방지)', 'onpage-seo(seo-engine)', 'trust-confidence(오탐방지)', 'gsc-live(관리고객 실측)'],
+      build: 'v7-2026-07-14',
+      features: ['confirm-first(업체확인 우선)', '항목별 진단(하나씩)', 'region-required(지역필수)', 'seo-url(주소입력)', 'onpage-seo(seo-engine)', 'trust-confidence(오탐방지)', 'gsc-live(관리고객 실측)', 'myid(내키)', 'help(도움말)', 'law-locate(심의위치)'],
       config: {
         naverOpenapi: !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET),
         naverSearchAd: !!(process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE),
