@@ -1,0 +1,156 @@
+{
+  "updated": "2026-07-13T00:02:21.276Z",
+  "model": {
+    "answer": "claude-opus-4-8",
+    "judge": "claude-haiku-4-5"
+  },
+  "batch": {
+    "n": 24,
+    "offset": 0,
+    "poolSize": 5023
+  },
+  "diagnostics": {
+    "scored": 24,
+    "errored": 0,
+    "skipped": 0,
+    "sampleErrors": []
+  },
+  "overall": {
+    "passRate": 100,
+    "avgGrounding": 4.92,
+    "avgCorrectness": 4.92,
+    "avgCitation": 4.92,
+    "hallucinationRate": 0
+  },
+  "weakestGroups": [
+    {
+      "group": "경험담·전후사진",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "할인·유인",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "사전심의 예외(정보성)",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "심의대상 매체",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "심의필·유효기간",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "과장·최상급",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    }
+  ],
+  "failures": [],
+  "allByGroup": [
+    {
+      "group": "경험담·전후사진",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "할인·유인",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "사전심의 예외(정보성)",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "심의대상 매체",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "심의필·유효기간",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "과장·최상급",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "비교·비방",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "방송광고 금지",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "광고주체",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "자격·명칭",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "표시광고법",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "골드",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "의료법 제56조",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "의료법 제57조",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "의료법 제3조",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    }
+  ]
+}
