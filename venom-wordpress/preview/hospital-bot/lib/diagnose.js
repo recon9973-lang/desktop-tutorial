@@ -579,7 +579,7 @@ async function resolvePlace(rawInput, opts = {}) {
   const q = parseInput(rawInput);
   if (opts.region) q.region = opts.region;
   let place;
-  try { place = await deps.naverOpenapi.findHospital(q.raw, { matchName: q.name }); }
+  try { place = await deps.naverOpenapi.findHospital(q.raw, { matchName: q.name, timeout: 2800 }); }
   catch (e) { place = { found: false, error: e.message, source: 'naver-local' }; }
   const region = q.region || regionFromAddress(place.address) || '';
   const rawCat = place.category || '';
