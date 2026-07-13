@@ -1,0 +1,311 @@
+<title>VENOM MarketerOps — Phase 1 화면 목업</title>
+<style>
+  :root{
+    --p:#533afd; --p-soft:#ece9ff; --bd:#1c1e54; --ink:#0d253d; --muted:#5a6b82;
+    --soft:#f6f9fc; --card:#ffffff; --border:#e3e8ee; --bg:#eef2f8; --panel:#ffffff;
+    --good:#0f9d6b; --good-soft:#e3f6ee; --warn:#d98a00; --warn-soft:#fdf1dc; --crit:#d33c4b; --crit-soft:#fbe6e8;
+    --shadow:0 1px 2px rgba(13,37,61,.05),0 8px 24px rgba(13,37,61,.07);
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    --r:13px;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --p:#8b7bff; --p-soft:#241f45; --bd:#c7cffb; --ink:#e8eef7; --muted:#95a6bd;
+    --soft:#131a26; --card:#161d2b; --border:#273246; --bg:#0d121c; --panel:#111725;
+    --good:#3ecf8e; --good-soft:#0f2a20; --warn:#f0b35b; --warn-soft:#2c2110; --crit:#f0808d; --crit-soft:#2e161a;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{--p:#533afd;--p-soft:#ece9ff;--bd:#1c1e54;--ink:#0d253d;--muted:#5a6b82;--soft:#f6f9fc;--card:#fff;--border:#e3e8ee;--bg:#eef2f8;--panel:#fff;--good:#0f9d6b;--good-soft:#e3f6ee;--warn:#d98a00;--warn-soft:#fdf1dc;--crit:#d33c4b;--crit-soft:#fbe6e8;}
+  :root[data-theme="dark"]{--p:#8b7bff;--p-soft:#241f45;--bd:#c7cffb;--ink:#e8eef7;--muted:#95a6bd;--soft:#131a26;--card:#161d2b;--border:#273246;--bg:#0d121c;--panel:#111725;--good:#3ecf8e;--good-soft:#0f2a20;--warn:#f0b35b;--warn-soft:#2c2110;--crit:#f0808d;--crit-soft:#2e161a;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .app{max-width:1160px;margin:20px auto;background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;display:grid;grid-template-columns:210px 1fr;min-height:660px}
+  @media(max-width:800px){.app{grid-template-columns:1fr}.side{display:none}}
+
+  /* sidebar */
+  .side{background:var(--soft);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:3px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;padding:6px 8px 12px;letter-spacing:-.01em}
+  .brand .logo{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--bd),var(--p));display:grid;place-items:center;color:#fff;font-size:13px}
+  .side .cap{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 8px 4px}
+  .cli{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--ink)}
+  .cli:hover{background:var(--p-soft)}
+  .cli.on{background:var(--p);color:#fff;font-weight:600}
+  .cli .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .cli.on .dot{outline:2px solid rgba(255,255,255,.5)}
+  .cli .warnpip{margin-left:auto;font-size:11px;background:var(--crit);color:#fff;border-radius:999px;padding:0 6px;font-weight:700}
+
+  /* main */
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{padding:16px 22px 0;border-bottom:1px solid var(--border)}
+  .crumb{font-size:12px;color:var(--muted)}
+  .h{display:flex;align-items:center;gap:10px;margin:5px 0 3px}
+  .h h1{font-size:20px;margin:0;font-weight:800;letter-spacing:-.01em}
+  .h .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--p-soft);color:var(--p)}
+  .sub{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .tabs{display:flex;gap:2px}
+  .tab{padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--p);border-bottom-color:var(--p)}
+  .body{padding:20px 22px 26px;overflow:auto}
+  .view{display:none}
+  .view.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.view.on{animation:none}}
+
+  /* alert banner */
+  .alertbar{display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:var(--r);margin-bottom:16px;
+    background:var(--crit-soft);border:1px solid color-mix(in srgb,var(--crit) 32%,transparent)}
+  .alertbar .ic{width:30px;height:30px;border-radius:8px;background:var(--crit);color:#fff;display:grid;place-items:center;font-size:15px;flex:none}
+  .alertbar b{color:var(--crit)}
+  .alertbar .meta{font-size:12.5px;color:var(--muted)}
+  .alertbar .act{margin-left:auto;display:flex;gap:6px}
+  .btn{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:8px;border:1px solid var(--border);
+    background:var(--card);color:var(--ink);cursor:pointer}
+  .btn:hover{border-color:var(--p);color:var(--p)}
+  .btn.pri{background:var(--p);color:#fff;border-color:var(--p)}
+  .btn.pri:hover{filter:brightness(1.08);color:#fff}
+
+  /* matrix */
+  .scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);background:var(--card);box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+  th,td{padding:9px 8px;border-bottom:1px solid var(--border);text-align:center}
+  thead th{background:var(--soft);font-size:11.5px;font-weight:700;color:var(--bd);white-space:nowrap;position:sticky;top:0}
+  th.kw,td.kw{text-align:left;white-space:nowrap;font-weight:600;position:sticky;left:0;background:var(--card)}
+  thead th.kw{background:var(--soft)}
+  tbody tr:last-child td{border-bottom:none}
+  .vol{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+  .lock{color:var(--warn);font-size:11px;margin-right:3px}
+  /* rank badge */
+  .rk{display:inline-block;min-width:26px;font-weight:800;font-size:12px;padding:3px 7px;border-radius:7px;font-variant-numeric:tabular-nums}
+  .rk.g1{background:var(--good-soft);color:var(--good)}
+  .rk.g2{background:var(--warn-soft);color:var(--warn)}
+  .rk.g0{background:var(--soft);color:var(--muted);border:1px dashed var(--border);font-weight:600}
+  .rk.crit{background:var(--crit-soft);color:var(--crit);outline:2px solid color-mix(in srgb,var(--crit) 30%,transparent)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+
+  /* handoff notes */
+  .note{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:11px}
+  .note.pin{border-left:3px solid var(--warn)}
+  .note .nh{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .note .who{font-weight:700;color:var(--ink)}
+  .tagchip{font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--p-soft);color:var(--p)}
+  .tagchip.warn{background:var(--warn-soft);color:var(--warn)}
+  .tagchip.crit{background:var(--crit-soft);color:var(--crit)}
+  .pinlbl{margin-left:auto;font-size:11px;color:var(--warn);font-weight:700}
+  .noteadd{display:flex;gap:8px;margin-top:6px}
+  .noteadd input{flex:1;font-family:var(--sans);font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--ink)}
+
+  /* manuscript */
+  .ms{display:grid;grid-template-columns:300px 1fr;gap:16px}
+  @media(max-width:720px){.ms{grid-template-columns:1fr}}
+  .form{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+  .form label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:12px 0 5px}
+  .form label:first-of-type{margin-top:0}
+  .form input,.form select,.form textarea{width:100%;font-family:var(--sans);font-size:13px;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--soft);color:var(--ink)}
+  .form textarea{resize:vertical;min-height:56px}
+  .segs{display:flex;gap:5px}
+  .seg{flex:1;text-align:center;padding:7px;font-size:12.5px;font-weight:600;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted)}
+  .seg.on{background:var(--p);color:#fff;border-color:var(--p)}
+  .result{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-height:340px}
+  .rbadges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .rb{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;display:inline-flex;gap:5px;align-items:center}
+  .rb.ok{background:var(--good-soft);color:var(--good)}
+  .rb.low{background:var(--good-soft);color:var(--good)}
+  .rb.info{background:var(--p-soft);color:var(--p)}
+  .doc h4{margin:0 0 4px;font-size:17px;font-weight:800}
+  .doc .summary{background:var(--soft);border-left:3px solid var(--p);padding:10px 13px;border-radius:8px;font-size:13px;margin:12px 0}
+  .doc ol{margin:10px 0;padding-left:20px;font-size:13.5px}
+  .doc ol li{margin:3px 0}
+  .doc p{font-size:13.5px;color:var(--ink)}
+  .doc .faq{margin-top:12px;font-size:13px}
+  .doc .faq b{color:var(--bd)}
+  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:80px 20px}
+  .spark{display:inline-flex;align-items:flex-end;gap:2px;height:22px;margin-left:6px;vertical-align:middle}
+  .spark i{width:4px;background:var(--p);border-radius:1px;opacity:.55}
+  .foot{max-width:1160px;margin:10px auto 30px;font-size:11.5px;color:var(--muted);text-align:center}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:8px;text-align:center}
+</style>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand"><span class="logo">🐍</span> MarketerOps</div>
+    <div class="cap">담당 거래처 · 신현지</div>
+    <div class="cli on"><span class="dot" style="background:#d33c4b"></span>OO정형외과<span class="warnpip">1</span></div>
+    <div class="cli"><span class="dot" style="background:#533afd"></span>미소진치과</div>
+    <div class="cli"><span class="dot" style="background:#0f9d6b"></span>그랜드안과</div>
+    <div class="cli"><span class="dot" style="background:#d98a00"></span>명성요양병원</div>
+    <div class="cli"><span class="dot" style="background:#8b5cf6"></span>팔선생한의원</div>
+    <div class="cap">Phase 1 모듈</div>
+    <div class="cli" style="font-size:12px;cursor:default"><span class="dot" style="background:var(--muted)"></span>M1·M2·M3</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="top">
+      <div class="crumb">거래처 › OO정형외과 (대구 수성구 · 정형외과)</div>
+      <div class="h"><h1>OO정형외과</h1><span class="badge">월보장 3건</span><span class="badge" style="background:var(--crit-soft);color:var(--crit)">경보 1</span></div>
+      <div class="sub">플레이스 ID 1234567 · 채널: 네이버 브블/배포 · 티스토리 · 인스타 &nbsp;·&nbsp; 담당 신현지</div>
+      <div class="tabs">
+        <div class="tab" data-v="exposure">키워드·노출 (M2)</div>
+        <div class="tab on" data-v="handoff">특이사항 (M1)</div>
+        <div class="tab" data-v="manuscript">원고 생성 (M3)</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <!-- M2 EXPOSURE -->
+      <section class="view" data-v="exposure">
+        <div class="alertbar">
+          <div class="ic">🔴</div>
+          <div>
+            <div><b>월보장 이탈</b> — '수성구 도수치료' 상단통합 <b>1위 → 미노출</b></div>
+            <div class="meta">07-13 08:00 자동 감지 · 카카오 알림톡 발송됨(담당자+대표)</div>
+          </div>
+          <div class="act"><button class="btn">확인(ACK)</button><button class="btn pri">원고 보강 →</button></div>
+        </div>
+        <div class="scroll">
+          <table>
+            <thead><tr>
+              <th class="kw">키워드</th><th>검색량</th><th>플레이스</th><th>상단통합</th><th>클립</th>
+              <th>브랜드<br>콘텐츠</th><th>인기글</th><th>하단통합</th><th>이미지</th><th>추세</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td class="kw"><span class="lock">🔒</span>수성구 도수치료</td><td class="vol">210</td>
+                <td><span class="rk g2">4</span></td><td><span class="rk crit">이탈</span></td>
+                <td><span class="rk g1">2</span></td><td><span class="rk g0">–</span></td>
+                <td><span class="rk g0">–</span></td><td><span class="rk g1">3</span></td><td><span class="rk g1">1</span></td>
+                <td><span class="spark"><i style="height:40%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:35%"></i><i style="height:10%"></i></span></td>
+              </tr>
+              <tr>
+                <td class="kw"><span class="lock">🔒</span>대구병원마케팅</td><td class="vol">430</td>
+                <td><span class="rk g1">2</span></td><td><span class="rk g1">1</span></td>
+                <td><span class="rk g1">2</span></td><td><span class="rk g0">–</span></td>
+                <td><span class="rk g0">–</span></td><td><span class="rk g1">1</span></td><td><span class="rk g1">1</span></td>
+                <td><span class="spark"><i style="height:60%"></i><i style="height:55%"></i><i style="height:65%"></i><i style="height:70%"></i><i style="height:75%"></i></span></td>
+              </tr>
+              <tr>
+                <td class="kw"><span class="lock">🔒</span>수성구 정형외과</td><td class="vol">140</td>
+                <td><span class="rk g1">1</span></td><td><span class="rk g1">3</span></td>
+                <td><span class="rk g0">–</span></td><td><span class="rk g2">6</span></td>
+                <td><span class="rk g0">–</span></td><td><span class="rk g1">2</span></td><td><span class="rk g0">–</span></td>
+                <td><span class="spark"><i style="height:50%"></i><i style="height:52%"></i><i style="height:48%"></i><i style="height:55%"></i><i style="height:58%"></i></span></td>
+              </tr>
+              <tr>
+                <td class="kw">교통사고 후 재활</td><td class="vol">90</td>
+                <td><span class="rk g0">–</span></td><td><span class="rk g2">7</span></td>
+                <td><span class="rk g1">3</span></td><td><span class="rk g0">–</span></td>
+                <td><span class="rk g2">5</span></td><td><span class="rk g2">8</span></td><td><span class="rk g0">–</span></td>
+                <td><span class="spark"><i style="height:30%"></i><i style="height:40%"></i><i style="height:45%"></i><i style="height:50%"></i><i style="height:55%"></i></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--good-soft);border:1px solid var(--good)"></i>1~3위 (안정)</span>
+          <span><i class="sw" style="background:var(--warn-soft);border:1px solid var(--warn)"></i>4~10위 (주의)</span>
+          <span><i class="sw" style="background:var(--crit-soft);border:1px solid var(--crit)"></i>월보장 이탈</span>
+          <span><i class="sw" style="background:var(--soft);border:1px dashed var(--border)"></i>미노출</span>
+          <span>🔒 월보장 키워드 · 검색량은 네이버 키워드도구 자동채움</span>
+        </div>
+      </section>
+
+      <!-- M1 HANDOFF -->
+      <section class="view on" data-v="handoff">
+        <div class="note pin">
+          <div class="nh"><span class="who">대표</span> · 2026-06-28 <span class="tagchip crit">계약</span><span class="pinlbl">📌 고정</span></div>
+          <div>월보장 3키워드(수성구 도수치료·대구병원마케팅·수성구 정형외과) 계약. <b>상단통합 1위 보장</b>, 만료 2026-12-31. 순위 이탈 시 즉시 대응 필수.</div>
+        </div>
+        <div class="note pin">
+          <div class="nh"><span class="who">신현지</span> · 2026-07-01 <span class="tagchip warn">원장 성향</span><span class="pinlbl">📌 고정</span></div>
+          <div>원장님이 <b>전후사진·과장표현 극도로 민감</b>. 원고는 의료광고법 통과분만 전달. '최고/1등' 표현 절대 금지. 브랜드블로그는 1인칭 친근체 선호.</div>
+        </div>
+        <div class="note">
+          <div class="nh"><span class="who">신현지</span> · 2026-07-08 <span class="tagchip">발행</span></div>
+          <div>티스토리(venom-markepick)는 주2회, 네이버 배포는 매일 4~5개. 영수증 원고 마감은 매월 15·30일. 인스타는 카드뉴스만.</div>
+        </div>
+        <div class="note">
+          <div class="nh"><span class="who">최보선</span> · 2026-07-10 <span class="tagchip">주의</span></div>
+          <div>공휴일 진료안내 이미지 별도 요청 잦음. 제헌절(7/17) 휴무 몰아보기 콘텐츠 예정.</div>
+        </div>
+        <div class="noteadd">
+          <input placeholder="특이사항 추가 — 담당이 바뀌어도 그대로 승계됩니다" />
+          <button class="btn pri">추가</button>
+        </div>
+        <div class="hint">담당 교체 시 노트는 100% 보존됩니다. SMemo·포스트잇·개인 프롬프트를 여기로 승격하세요.</div>
+      </section>
+
+      <!-- M3 MANUSCRIPT -->
+      <section class="view" data-v="manuscript">
+        <div class="ms">
+          <div class="form">
+            <label>원고 유형 (프리셋)</label>
+            <div class="segs"><div class="seg on">브랜드블로그</div><div class="seg">정보성</div><div class="seg">영수증</div></div>
+            <label>키워드</label>
+            <input value="수성구 도수치료" />
+            <label>병원</label>
+            <input value="OO정형외과 (김OO 원장)" />
+            <label>상세정보</label>
+            <textarea>교통사고 후 목·허리 통증 재활, 도수치료 + 물리치료 병행 프로그램. 원장 1인칭 친근체.</textarea>
+            <label>주입되는 규칙</label>
+            <div style="font-size:11.5px;color:var(--muted);line-height:1.5">역할설정 + 13필수규칙(유사문서 회피·2500자·핵심요약·목차6·FAQ·의료광고법) 자동 적용</div>
+            <button class="btn pri" style="width:100%;margin-top:14px;padding:10px" id="gen">원고 생성 →</button>
+          </div>
+          <div class="result" id="res">
+            <div class="empty">좌측 슬롯을 채우고 <b>원고 생성</b>을 누르면<br>의료광고법 검증을 통과한 원고가 여기 표시됩니다.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+<div class="foot">VENOM MarketerOps · Phase 1 화면 목업(개념 검증용) · 실제 데이터는 담당자 운영시트·프롬프트 기반 예시</div>
+
+<script>
+  // theme already handled by tokens
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      var v=t.getAttribute('data-v');
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('on',x===t)});
+      document.querySelectorAll('.view').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-v')===v)});
+    });
+  });
+  document.querySelectorAll('.seg').forEach(function(s){
+    s.addEventListener('click',function(){
+      s.parentNode.querySelectorAll('.seg').forEach(function(x){x.classList.toggle('on',x===s)});
+    });
+  });
+  document.getElementById('gen').addEventListener('click',function(){
+    var res=document.getElementById('res');
+    res.innerHTML=''+
+      '<div class="rbadges">'+
+        '<span class="rb ok">✓ 의료광고법 통과</span>'+
+        '<span class="rb low">유사문서 위험 낮음</span>'+
+        '<span class="rb info">2,540자 · 목차 6</span>'+
+      '</div>'+
+      '<div class="doc">'+
+        '<h4>교통사고 후 도수치료, 언제 시작해야 회복이 빠를까</h4>'+
+        '<div class="summary"><b>핵심요약</b> — 교통사고 후 통증은 사고 직후보다 2~3일 뒤에 심해지는 경우가 많다. 초기 도수치료는 굳어진 근육과 어긋난 관절 정렬을 바로잡아 회복 기간을 단축한다.</div>'+
+        '<ol>'+
+          '<li>교통사고 후 통증이 늦게 오는 이유</li>'+
+          '<li>도수치료가 필요한 신호</li>'+
+          '<li>물리치료와 도수치료의 차이</li>'+
+          '<li>회복을 앞당기는 치료 순서</li>'+
+          '<li>재활 기간과 생활 관리</li>'+
+          '<li>자주 묻는 질문(FAQ)</li>'+
+        '</ol>'+
+        '<p>사고 직후에는 아드레날린 때문에 통증을 느끼지 못하다가, 시간이 지나며 목과 허리에 뻐근함이 나타난다. 이 시기의 관리가 이후 회복 속도를 결정한다…</p>'+
+        '<div class="faq"><b>Q. 도수치료는 몇 회 받아야 하나요?</b><br>개인의 손상 정도에 따라 다르며, 정확한 횟수는 진료 후 결정하는 것을 권장한다.</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;margin-top:16px">'+
+        '<button class="btn pri">네이버 서식 복사</button>'+
+        '<button class="btn">이미지·카드뉴스</button>'+
+        '<button class="btn">발행 캘린더에 추가</button>'+
+      '</div>';
+  });
+</script>
