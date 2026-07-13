@@ -80,10 +80,24 @@ function simplifyDept(category) {
   return m ? m[1] : '';
 }
 
-// 진료과 + 지역 → 광고 키워드 시드(최대 5, 공백 제거는 fetchKeywordTool이 처리)
-function keywordSeeds(dept, region) {
-  const d = dept || '병원';
-  const base = {
+// 의료 업종 여부 — 의료광고법 등 병원 전용 기능의 on/off 판단
+const MED_RE = /병원|의원|의료|치과|한의|한방|성형외과|피부과|정형외과|안과|내과|이비인후과|산부인과|비뇨|가정의학|통증의학|재활의학|클리닉|메디컬|약국/;
+function isMedical(category, name) {
+  return MED_RE.test(String(category || '')) || /병원|의원|치과|한의원|클리닉/.test(String(name || ''));
+}
+// 네이버 카테고리("음식점>카페,디저트")에서 대표 업종 라벨 추출(비의료 일반 업종용)
+function businessCategory(category) {
+  const c = String(category || '').trim();
+  if (!c) return '';
+  const seg = c.split('>').filter(Boolean).pop() || c;
+  return (seg.split(',')[0] || '').trim();
+}
+
+// 업종 + 지역 → 광고 키워드 시드(최대 5). medical=false면 일반 업종 의도 키워드.
+function keywordSeeds(dept, region, medical) {
+  const isMed = medical !== false; // 하위호환: 생략 시 의료로 간주
+  const d = dept || (isMed ? '병원' : '업체');
+  const medBase = {
     '치과': ['임플란트', '치아교정', '충치치료'],
     '피부과': ['여드름', '피부관리', '점빼기'],
     '성형외과': ['쌍꺼풀', '코성형', '지방흡입'],
@@ -91,9 +105,17 @@ function keywordSeeds(dept, region) {
     '한의원': ['다이어트한약', '교통사고', '추나요법'],
     '안과': ['라식', '백내장', '드림렌즈'],
     '내과': ['건강검진', '위내시경', '갑상선'],
-  }[d] || ['진료', '예약', '비용'];
+  }[d];
   const r = region || '';
-  const seeds = [r ? `${r}${d}` : d].concat(base.map((b) => (r ? `${r}${b}` : b)));
+  let seeds;
+  if (isMed) {
+    const base = medBase || ['진료', '예약', '비용'];
+    seeds = [r ? `${r}${d}` : d].concat(base.map((b) => (r ? `${r}${b}` : b)));
+  } else {
+    // 일반 업종: 지역+업종, 지역+업종+의도(예약/가격/후기/추천)
+    const intent = ['예약', '가격', '후기', '추천'];
+    seeds = [r ? `${r}${d}` : d].concat(intent.map((b) => (r ? `${r}${d} ${b}` : `${d} ${b}`)));
+  }
   return Array.from(new Set(seeds.filter(Boolean))).slice(0, 5);
 }
 
@@ -171,8 +193,8 @@ async function diagnoseLocal(deps, name, region) {
   return out;
 }
 
-async function diagnoseAds(deps, dept, region) {
-  const seeds = keywordSeeds(dept, region);
+async function diagnoseAds(deps, dept, region, medical) {
+  const seeds = keywordSeeds(dept, region, medical);
   try {
     const r = await deps.searchad.fetchKeywordTool(seeds, { timeout: 8000 });
     if (!r || !r.keywordList) return { status: r && r.configured === false ? 'unconfigured' : 'unavailable', seeds, note: (r && r.error) || '검색광고 API 미응답' };
@@ -312,21 +334,27 @@ async function computeBase(deps, q) {
   let place;
   try { place = await deps.naverOpenapi.findHospital(q.raw, {}); }
   catch (e) { place = { found: false, error: e.message, source: 'naver-local' }; }
-  if (!place.found) warnings.push('병원 탐지 실패 — 지역·정식명칭으로 재시도 권장');
+  if (!place.found) warnings.push('업체 탐지 실패 — 지역·정식명칭으로 재시도 권장');
 
   const region = q.region || regionFromAddress(place.address) || '';
-  const dept = simplifyDept(place.category) || simplifyDept(q.raw);
-  const homepage = place.homepage || null;
+  const rawCat = place.category || '';
   const gname = place.found ? place.name : q.name;
+  const medical = isMedical(rawCat, gname);
+  const dept = medical
+    ? (simplifyDept(rawCat) || simplifyDept(q.raw) || '병원')
+    : (businessCategory(rawCat) || '');
+  const homepage = place.homepage || null;
 
   const [seo, local, ads, adLaw, geoPreview] = await Promise.all([
     diagnoseSeo(deps, homepage),
     diagnoseLocal(deps, gname, region),
-    diagnoseAds(deps, dept, region),
-    diagnoseAdLaw(deps, homepage),
-    deps.geoProbe.preview(gname, { category: place.category || '', region }),
+    diagnoseAds(deps, dept, region, medical),
+    // 의료광고법은 병원·의원 등 의료 업종에만 적용(비의료는 해당 없음)
+    medical ? diagnoseAdLaw(deps, homepage)
+            : Promise.resolve({ status: 'na', reason: '비의료 업종', pass: null, forbidden: [], risky: [], hits: [] }),
+    deps.geoProbe.preview(gname, { category: rawCat, region }),
   ]);
-  return { place, region, dept, homepage, gname, seo, local, ads, adLaw, geoPreview, warnings };
+  return { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw, geoPreview, warnings };
 }
 
 // ── 메인 오케스트레이터 ────────────────────────────────
@@ -340,15 +368,15 @@ async function diagnose(rawInput, opts = {}) {
   const geoMode = opts.geoMode === 'full' ? 'full' : 'light';
   const cacheHit = { base: false, geo: false, compete: false };
 
-  // 1) 베이스 번들(24h 캐시): 병원탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v2:${cacheNorm(q.raw)}|${q.region || ''}`;
+  // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
+  const baseKey = `venomi:base:v3:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {
     base = await computeBase(deps, q);
     if (useCache) await safe(cache.setJson(baseKey, base, CACHE_TTL));
   }
-  const { place, region, dept, homepage, gname, seo, local, ads, adLaw } = base;
+  const { place, region, dept, medical, homepage, gname, seo, local, ads, adLaw } = base;
   const warnings = (base.warnings || []).slice();
 
   // 2) GEO — light면 preview 재사용, full이면 실 프로빙(별도 24h 캐시)
@@ -383,7 +411,7 @@ async function diagnose(rawInput, opts = {}) {
   const report = {
     ok: true,
     query: q,
-    resolved: { region, dept, homepage, place },
+    resolved: { region, dept, medical, homepage, place },
     seo, geo, local, ads, adLaw,
     compete,
     disclaimer: '본 진단은 공개 데이터 기반 참고용이며, 실제 성과·심의 통과를 보장하지 않습니다.',
@@ -405,4 +433,4 @@ async function diagnose(rawInput, opts = {}) {
   return report;
 }
 
-module.exports = { diagnose, computeBase, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, fetchHtml, defaultDeps };
+module.exports = { diagnose, computeBase, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, isMedical, businessCategory, fetchHtml, defaultDeps };

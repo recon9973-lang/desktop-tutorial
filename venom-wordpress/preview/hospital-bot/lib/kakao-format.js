@@ -100,8 +100,9 @@ function renderSummary(report) {
   const s = report.summary || {};
   const place = report.resolved && report.resolved.place;
   const notFound = !!(place && place.found === false);
+  const medical = !(report.resolved && report.resolved.medical === false);
   const L = [];
-  L.push(`🩺 ${name}${region ? `(${region})` : ''} 마케팅 건강검진`);
+  L.push(`${medical ? '🩺' : '📊'} ${name}${region ? `(${region})` : ''} 마케팅 건강검진`);
   L.push('');
   if (notFound) {
     const typed = (report.query && report.query.name) || name;
@@ -115,7 +116,7 @@ function renderSummary(report) {
   L.push(`▪ GEO·AI검색  ${line_geo(report.geo)}`);
   L.push(`▪ 네이버 로컬  ${line_local(report.local)}`);
   L.push(`▪ 광고 기회  ${line_ads_top(report.ads)}`);
-  L.push(`▪ 의료광고법  ${line_law(report.adLaw)}`);
+  if (medical) L.push(`▪ 의료광고법  ${line_law(report.adLaw)}`);
   if (s.urgent && s.urgent.length) {
     L.push('');
     L.push(`가장 시급: ${s.urgent.join(' / ')}`);
@@ -165,6 +166,7 @@ function line_ads_top(ads) {
 }
 function line_law(law) {
   if (!law) return '·';
+  if (law.status === 'na') return '해당 없음(비의료)';
   if (law.status !== 'ok') return law.status === 'no-homepage' ? '홈페이지 미발견' : '스캔 불가';
   return law.pass ? '양호 🟢' : `주의 ${law.forbidden.length}건 ⚠`;
 }
@@ -394,6 +396,11 @@ function renderLaw(report) {
   const name = displayName(report);
   const law = report.adLaw || {};
   const L = [`⚖️ ${name} · 의료광고법 점검`, ''];
+  if (law.status === 'na') {
+    L.push('이 업종은 의료광고법 대상이 아니에요(비의료).');
+    L.push('병원·의원·치과·한의원 등 의료 업종에서만 심의 점검을 제공합니다.');
+    return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
+  }
   if (law.status !== 'ok') {
     L.push(law.status === 'no-homepage' ? '홈페이지를 찾지 못해 점검하지 못했습니다.' : '홈페이지 본문 점검에 실패했습니다.');
     return skill([simpleText(L.join('\n'))], viewQuickReplies(name));

@@ -144,9 +144,9 @@ module.exports = async function handler(req, res) {
     }
     res.status(200).json({
       service: 'venomi-hospital-bot',
-      phase: '운영(내부) · 6대진단 + 도움말 + 내키',
-      build: 'v4-2026-07-13',
-      features: ['진단6', 'myid(내키)', 'help(도움말)', 'law-locate(심의위치)', 'partial-grade(부분진단)', 'proposal(제안서)'],
+      phase: '운영(내부) · 전업종 진단(의료광고법 조건부)',
+      build: 'v5-2026-07-13',
+      features: ['진단6', '전업종(비의료 조건부)', 'myid(내키)', 'help(도움말)', 'law-locate(심의위치)', 'partial-grade(부분진단)', 'no-timeout(무응답방지)'],
       config: {
         naverOpenapi: !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET),
         naverSearchAd: !!(process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE),
