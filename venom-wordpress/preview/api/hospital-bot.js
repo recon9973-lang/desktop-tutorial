@@ -92,7 +92,7 @@ async function handleKakao(res, body) {
     try {
       const info = await Promise.race([
         D.resolvePlace(cmd.hospital, { now: Date.now() }),
-        new Promise((resolve) => setTimeout(() => resolve(null), 4500)),
+        new Promise((resolve) => setTimeout(() => resolve(null), 3500)),
       ]);
       if (!info) { res.status(200).json(kf.renderSlow(parsed.name)); return; }
       res.status(200).json(kf.renderConfirm(info));
@@ -125,7 +125,7 @@ async function handleKakao(res, body) {
   try {
     const report = await Promise.race([
       diagnose(cmd.hospital, diagOpts),
-      new Promise((resolve) => setTimeout(() => resolve(null), 4500)),
+      new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
     ]);
     if (!report) { res.status(200).json(kf.renderSlow(cmd.hospital)); return; }
     res.status(200).json(kf.render(report, cmd.view));
