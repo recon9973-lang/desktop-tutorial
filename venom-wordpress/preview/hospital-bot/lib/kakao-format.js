@@ -138,6 +138,7 @@ function line_seo(seo) {
   if (!seo) return '·';
   if (seo.status === 'ok') return `${seo.score100}/100 ${scoreIcon(seo.score100)}`;
   if (seo.status === 'no-homepage') return '공식 홈페이지 미발견';
+  if (seo.status === 'blog-only') return seo.kind === 'social' ? 'SNS만 등록(홈페이지 아님)' : '블로그만 등록(홈페이지 아님)';
   if (seo.status === 'unavailable') return '측정 보류(홈페이지 수집 실패)';
   return '측정 실패';
 }
@@ -350,6 +351,9 @@ function renderHelp() {
     '기타:',
     '· 내키   내 접근키(직원 등록용)',
     '· 상담   상담 채널 안내',
+    '',
+    '홈페이지가 블로그로 잡히면 실제 주소를 함께 넣어주세요:',
+    '예) 대구 수성구 ○○치과 https://real-site.com',
     '',
     '※ 병원을 못 찾으면 지역+정식명칭으로 다시 시도하세요.',
   ];
