@@ -91,6 +91,7 @@
 - **GitHub Actions** secrets (워크플로용)
 - **로컬** `.env.local` (git 제외)
 - ⚠️ 비밀키 값은 **코드/이 문서에 절대 넣지 않음**.
+- **GSC(구글 서치콘솔) 실측 연동** → 설정법: [`venom-wordpress/preview/docs/GSC_SETUP.md`](venom-wordpress/preview/docs/GSC_SETUP.md) · 확인: `/api/health`의 `hasGSC` · 라이브러리 `lib/search-console.js`
 
 ---
 

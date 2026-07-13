@@ -140,6 +140,7 @@ module.exports = async function handler(req, res) {
     hasNaverOpen: !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET),
     hasPerplexity: !!process.env.PERPLEXITY_API_KEY,
     hasPSI: !!process.env.PSI_KEY,
+    hasGSC: (function () { try { return require('../lib/search-console').isConfigured(); } catch { return false; } })(),
     time: new Date().toISOString(),
   };
 

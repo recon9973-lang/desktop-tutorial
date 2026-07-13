@@ -4,7 +4,8 @@
   "engines": { "node": ">=18" },
   "scripts": {
     "check:sitemap": "node scripts/check-sitemap.js",
-    "fix:sitemap": "node scripts/check-sitemap.js --fix"
+    "fix:sitemap": "node scripts/check-sitemap.js --fix",
+    "test:gsc": "node scripts/test-search-console.js"
   },
   "dependencies": { "linkedom": "^0.18.12" }
 }
