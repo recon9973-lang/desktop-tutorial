@@ -12,7 +12,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $base = "https://graph.facebook.com/$GraphVersion"
-$assetRoot = "https://cdn.jsdelivr.net/gh/recon9973-lang/desktop-tutorial@6420a672817b34d0669584f3d3e1f68d41bbdaf4/persona-nami/ig"
+$assetRoot = "https://cdn.jsdelivr.net/gh/recon9973-lang/desktop-tutorial@25c3e12bbf8bf5810babbd4036c17e419b9e24d6/persona-nami/ig"
 
 $posts = @(
   @{ img = "$assetRoot/post1.png"; cap = "$assetRoot/post1.txt" },
