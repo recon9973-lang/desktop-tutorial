@@ -14,7 +14,7 @@ on:
         default: 'venom-wordpress/preview/content/ai-expose-input.json'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   check:
@@ -25,12 +25,15 @@ jobs:
       - name: Run AEO exposure checks
         env:
           INPUT: ${{ github.event.inputs.input }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           node - "$INPUT" <<'NODE'
           const https = require('https');
           const fs = require('fs');
           const BASE = 'https://venom-new-site.vercel.app';
           const ENGINES = ['perplexity', 'openai', 'gemini', 'claude'];
+          const ENG_LABEL = { perplexity: 'Perplexity', openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude' };
+          const OUT_PATH = 'venom-wordpress/preview/content/ai-expose-latest.json';
           const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 
           function get(url) {
@@ -74,5 +77,46 @@ jobs:
             }
             await Promise.all(Array.from({ length: CONC }, () => worker()));
             console.log('\nRESULTS_JSON=' + JSON.stringify(results));
+
+            // ── 관리자단 연결용 실측 스냅샷 저장 (grid + 요약) ──
+            const byBiz = {};
+            results.forEach((r) => { (byBiz[r.biz] = byBiz[r.biz] || {}); (byBiz[r.biz][r.qi] = byBiz[r.biz][r.qi] || {})[r.e] = r.verdict; });
+            const EXPOSED = new Set(['cited', 'mentioned']);
+            const businesses = cfg.businesses.map((b) => {
+              const grid = byBiz[b.key] || {};
+              let total = 0, exposed = 0, dcells = 0, dexp = 0, errs = 0;
+              b.questions.forEach((q, qi) => ENGINES.forEach((e) => {
+                const v = (grid[qi] || {})[e] || 'none';
+                if (v === 'error') { errs++; return; }
+                total++; if (EXPOSED.has(v)) exposed++;
+                if (qi < b.questions.length - 1) { dcells++; if (EXPOSED.has(v)) dexp++; } // 마지막(브랜드) 제외 = 발견형
+              }));
+              return {
+                key: b.key, name: b.name, questions: b.questions, grid,
+                summary: {
+                  total_cells: total, exposed, disc_cells: dcells, disc_exposed: dexp, errors: errs,
+                  tot_pct: total ? Math.round(exposed / total * 100) : 0,
+                  disc_pct: dcells ? Math.round(dexp / dcells * 100) : 0,
+                },
+              };
+            });
+            const snapshot = {
+              generated_at: new Date().toISOString(),
+              run_id: String(process.env.GITHUB_RUN_ID || ''),
+              engines: ENGINES, eng_label: ENG_LABEL, businesses,
+            };
+            fs.writeFileSync(OUT_PATH, JSON.stringify(snapshot, null, 2) + '\n');
+            console.log('WROTE ' + OUT_PATH);
           })();
           NODE
+      - name: Commit snapshot
+        run: |
+          set -e
+          F=venom-wordpress/preview/content/ai-expose-latest.json
+          if git diff --quiet -- "$F"; then echo "no change"; exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$F"
+          git commit -m "chore(diag): AI 노출 실측 스냅샷 갱신 (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:main
+        continue-on-error: true

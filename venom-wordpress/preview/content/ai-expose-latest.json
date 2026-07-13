@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-07-11T23:57:08Z",
+  "run_id": "29172884932",
+  "engines": ["perplexity", "openai", "gemini", "claude"],
+  "eng_label": { "perplexity": "Perplexity", "openai": "ChatGPT", "gemini": "Gemini", "claude": "Claude" },
+  "businesses": [
+    {
+      "key": "pain",
+      "name": "시원마취통증의학과의원",
+      "questions": [
+        "포항 정형외과 잘하는 곳 추천해줘",
+        "포항 도수치료 잘하는 병원 어디가 좋아?",
+        "포항 무릎통증 치료 병원 추천해줘",
+        "포항 죽도동 허리디스크 잘 보는 병원 알려줘",
+        "시원마취통증의학과의원 어때? 믿을 만한 곳이야?"
+      ],
+      "grid": {
+        "0": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "1": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "2": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "3": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "mentioned" },
+        "4": { "perplexity": "mentioned", "openai": "mentioned", "gemini": "mentioned", "claude": "mentioned" }
+      },
+      "summary": { "total_cells": 20, "exposed": 5, "disc_cells": 16, "disc_exposed": 1, "tot_pct": 25, "disc_pct": 6, "errors": 0 }
+    },
+    {
+      "key": "skin",
+      "name": "시원스킨클리닉",
+      "questions": [
+        "포항 피부과 잘하는 곳 추천해줘",
+        "포항 피부관리 어디가 좋아?",
+        "포항 여드름 치료 잘하는 병원 알려줘",
+        "포항 죽도동 스킨케어 추천해줘",
+        "시원스킨클리닉 어때? 믿을 만한 곳이야?"
+      ],
+      "grid": {
+        "0": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "1": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "2": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "3": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
+        "4": { "perplexity": "mentioned", "openai": "mentioned", "gemini": "none", "claude": "mentioned" }
+      },
+      "summary": { "total_cells": 20, "exposed": 3, "disc_cells": 16, "disc_exposed": 0, "tot_pct": 15, "disc_pct": 0, "errors": 0 }
+    }
+  ]
+}

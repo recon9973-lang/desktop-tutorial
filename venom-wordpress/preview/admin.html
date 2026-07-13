@@ -195,6 +195,7 @@ a{color:var(--p);text-decoration:none}
   <div class="nav-section">마케팅 분석</div>
   <div class="nav-item" onclick="showSection('visitors')"><span class="nav-icon">👥</span>방문자 분석</div>
   <div class="nav-item" onclick="showSection('keywords')"><span class="nav-icon">🔍</span>키워드 현황</div>
+  <div class="nav-item" onclick="showSection('aiexpose')"><span class="nav-icon">🤖</span>AI 노출 실측</div>
   <div class="nav-item" onclick="showSection('sources')"><span class="nav-icon">📡</span>유입 출처</div>
   <div class="nav-item" onclick="showSection('seo')"><span class="nav-icon">⚙️</span>SEO 점수</div>
   <div class="nav-item" onclick="showSection('seomonitor')"><span class="nav-icon">📈</span>SEO 관리</div>
@@ -535,6 +536,18 @@ a{color:var(--p);text-decoration:none}
           <tbody id="kw-table-body"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ══ AI 노출 실측 ══ -->
+    <div id="section-aiexpose" class="admin-section">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head">
+          <div class="card-title">🤖 4대 AI 노출 실측 <span style="font-size:11px;font-weight:400;color:var(--mute)">(Perplexity·ChatGPT·Gemini·Claude)</span></div>
+          <span class="badge" id="aiexpose-meta" style="font-size:11px;color:var(--mute)">불러오는 중…</span>
+        </div>
+        <p style="font-size:13px;color:var(--mute);margin:2px 0 0">환자가 실제로 던지는 질문을 4대 AI에 그대로 물어, 답변에 업체가 등장(언급/인용)하는지 실측합니다. 데이터는 <b>AI Exposure Check</b> 워크플로가 자동 갱신합니다.</p>
+      </div>
+      <div id="aiexpose-body"><div style="text-align:center;color:var(--mute);font-size:13px;padding:40px">불러오는 중…</div></div>
     </div>
 
     <!-- ══ 유입 출처 ══ -->
@@ -972,7 +985,7 @@ a{color:var(--p);text-decoration:none}
         <!-- 상세 분석 -->
         <div id="ap-usage-detail" style="margin-top:22px;border-top:1px solid var(--border);padding-top:18px">
           <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">🔎 상세 분석 — 어디에 얼마나 쓰고 있나</div>
-          <div style="font-size:11px;color:var(--mute);margin-bottom:14px">자동 포스팅(블로그 글·이미지 생성) 기준. AI 노출 매트릭스(Perplexity·ChatGPT·Gemini·Claude)는 별도 계정이라 여기 포함되지 않습니다.</div>
+          <div style="font-size:11px;color:var(--mute);margin-bottom:14px">자동 포스팅(블로그 글·이미지 생성) 비용 기준. 4대 AI(Perplexity·ChatGPT·Gemini·Claude) 노출 실측은 <b>‘AI 노출 실측’</b> 메뉴에서 확인하세요.</div>
 
           <!-- 비용 구성 -->
           <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">💰 비용 구성 (무엇이 돈을 쓰나)</div>
@@ -1094,8 +1107,8 @@ function toggleSidebar(force){
 }
 
 // ── SECTION ROUTING ──
-var sections=['dashboard','blog','pages','visitors','keywords','sources','seo','seomonitor','reports','cardnews','settings','users','media','autopost','logos'];
-var titles={dashboard:'대시보드',blog:'블로그 포스팅',pages:'페이지 관리',visitors:'방문자 분석',keywords:'키워드 현황',sources:'유입 출처',seo:'SEO 점수',seomonitor:'SEO 관리',reports:'마케팅 리포트',cardnews:'데일리 카드뉴스',settings:'사이트 설정',users:'계정 관리',media:'미디어 라이브러리',autopost:'AI 자동 포스팅',logos:'레퍼런스 로고'};
+var sections=['dashboard','blog','pages','visitors','keywords','aiexpose','sources','seo','seomonitor','reports','cardnews','settings','users','media','autopost','logos'];
+var titles={dashboard:'대시보드',blog:'블로그 포스팅',pages:'페이지 관리',visitors:'방문자 분석',keywords:'키워드 현황',aiexpose:'AI 노출 실측',sources:'유입 출처',seo:'SEO 점수',seomonitor:'SEO 관리',reports:'마케팅 리포트',cardnews:'데일리 카드뉴스',settings:'사이트 설정',users:'계정 관리',media:'미디어 라이브러리',autopost:'AI 자동 포스팅',logos:'레퍼런스 로고'};
 function showSection(id){
   sections.forEach(function(s){
     var el=document.getElementById('section-'+s);
@@ -1120,6 +1133,47 @@ function showSection(id){
   if(id==='media')initMedia();
   if(id==='pages')initPages();
   if(id==='autopost')initAutoPost();
+  if(id==='aiexpose')initAiExpose();
+}
+
+// ── AI 노출 실측 (content/ai-expose-latest.json — AI Exposure Check 워크플로가 갱신) ──
+var _aiExposeLoaded=false;
+function _aeVerdict(v){
+  if(v==='cited')return['인용','#0a7d3c','#e3f6ea'];
+  if(v==='mentioned')return['언급','#0a7d3c','#e3f6ea'];
+  if(v==='error')return['측정불가','#8a6d00','#fff6da'];
+  return['미노출','#b42318','#fdecea'];
+}
+function initAiExpose(){
+  if(_aiExposeLoaded)return; _aiExposeLoaded=true;
+  var body=document.getElementById('aiexpose-body');
+  var meta=document.getElementById('aiexpose-meta');
+  fetch('/content/ai-expose-latest.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(j){
+    if(!j||!j.businesses||!j.businesses.length){body.innerHTML='<div class="card"><div style="text-align:center;color:var(--mute);padding:32px">아직 실측 데이터가 없습니다 — GitHub Actions의 <b>AI Exposure Check</b> 워크플로를 실행하면 자동 채워집니다.</div></div>';if(meta)meta.textContent='데이터 없음';return;}
+    var engs=j.engines||['perplexity','openai','gemini','claude'];
+    var elab=j.eng_label||{};
+    if(meta)meta.textContent='실측일 '+String(j.generated_at||'').slice(0,10)+(j.run_id?(' · run '+j.run_id):'');
+    body.innerHTML=j.businesses.map(function(b){
+      var s=b.summary||{};
+      var g=b.grid||{};
+      var head=engs.map(function(e){return '<th style="padding:7px 4px;border:1px solid var(--border);background:#111827;color:#fff;font-size:11px">'+(elab[e]||e)+'</th>';}).join('');
+      var rows=(b.questions||[]).map(function(q,qi){
+        var isBrand=(qi===b.questions.length-1);
+        var cells=engs.map(function(e){var v=((g[qi]||g[String(qi)]||{})[e])||'none';var m=_aeVerdict(v);return '<td style="text-align:center;padding:6px 4px;border:1px solid var(--border);background:'+m[2]+';color:'+m[1]+';font-size:11px;font-weight:700">'+m[0]+'</td>';}).join('');
+        var tag='<span style="display:inline-block;background:'+(isBrand?'#eef2ff':'#f3f4f6')+';color:#374151;font-size:9.5px;padding:1px 6px;border-radius:8px;margin-right:5px">'+(isBrand?'브랜드':'발견형')+'</span>';
+        return '<tr><td style="padding:6px 8px;border:1px solid var(--border);font-size:12px">'+tag+String(q).replace(/</g,'&lt;')+'</td>'+cells+'</tr>';
+      }).join('');
+      return '<div class="card" style="margin-bottom:16px">'
+        +'<div class="card-head"><div class="card-title">'+String(b.name).replace(/</g,'&lt;')+'</div></div>'
+        +'<div class="stat-grid" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">'
+        +'<div class="stat-card"><div class="stat-label">전체 노출률</div><div class="stat-val" style="color:#5b21b6">'+(s.tot_pct||0)+'%</div><div class="stat-change">'+(s.exposed||0)+'/'+(s.total_cells||0)+'회 노출</div></div>'
+        +'<div class="stat-card"><div class="stat-label">발견형 질문 노출률 <span style="font-size:9px;color:var(--mute)">(신환)</span></div><div class="stat-val" style="color:#b42318">'+(s.disc_pct||0)+'%</div><div class="stat-change">'+(s.disc_exposed||0)+'/'+(s.disc_cells||0)+'회</div></div>'
+        +'</div>'
+        +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th style="padding:7px 8px;border:1px solid var(--border);background:#111827;color:#fff;font-size:11px;text-align:left">환자 질문</th>'+head+'</tr>'+rows+'</table></div>'
+        +(s.errors?'<div style="font-size:10px;color:#8a6d00;margin-top:8px">※ 측정불가 '+s.errors+'건 (해당 AI 일시 오류, 재측정 시 갱신)</div>':'')
+        +'</div>';
+    }).join('');
+  }).catch(function(){body.innerHTML='<div class="card"><div style="text-align:center;color:var(--mute);padding:32px">실측 데이터를 불러오지 못했습니다.</div></div>';if(meta)meta.textContent='오류';});
 }
 
 // ── TABS ──
