@@ -43,6 +43,7 @@ function defaultDeps() {
     cache: require('../../lib/cache'),
     seoEngine: SEOEngine,
     parseHTML,
+    onpageLite: require('./onpage-lite'), // linkedom 없을 때 폴백(의존성 0)
     fetchHtml,
   };
 }
@@ -213,13 +214,18 @@ async function diagnoseSeo(deps, homepage) {
   const psiOk = !!(psi && psi.ok);
   const s = (psiOk && psi.scores) || {};
 
-  // 온페이지 SEO(의존성 0 엔진) — linkedom DOM이 있어야 정적 분석 신뢰 가능
+  // 온페이지 SEO — 1순위: seo-engine + linkedom(화면과 동일 엔진, 정밀).
+  // 2순위(폴백): 의존성 0 라이트 스코어러 — linkedom 미설치여도 HTML만 있으면 항상 채점.
   let onPage = null, onPageErr = '';
   if (deps.seoEngine && deps.parseHTML && html) {
     try {
       const doc = deps.parseHTML(html).document;
       onPage = deps.seoEngine.analyze({ url, html, robots, isHttps, doc });
     } catch (e) { onPage = null; onPageErr = e.message; }
+  }
+  if (!onPage && html && deps.onpageLite) {
+    try { onPage = deps.onpageLite.analyze({ url, html, robots, isHttps }); }
+    catch (e) { onPageErr = onPageErr || e.message; }
   }
 
   // 온페이지 채점 성공 → 이를 주 SEO 점수로. 실패 시 PSI로 폴백.
@@ -234,7 +240,7 @@ async function diagnoseSeo(deps, homepage) {
     const topFixes = failed.slice(0, 3).map((f) => f.name + ' 보강');
     if (psiOk && s.performance != null && s.performance < 70) topFixes.unshift('모바일 속도 개선(이미지·스크립트)');
     return {
-      status: 'ok', url, source: psiOk ? 'onpage+psi' : 'onpage',
+      status: 'ok', url, source: (onPage.lite ? 'onpage-lite' : 'onpage') + (psiOk ? '+psi' : ''),
       score100: onScore,
       scores: { performance: (psiOk ? s.performance : null), seo: onScore, accessibility: (psiOk ? s.accessibility : null) },
       lab: (psiOk && psi.lab) || null,
@@ -541,7 +547,7 @@ async function diagnose(rawInput, opts = {}) {
   const cacheHit = { base: false, geo: false, compete: false };
 
   // 1) 베이스 번들(24h 캐시): 업체탐지 + 값싼 5대 + GEO preview
-  const baseKey = `venomi:base:v5:${cacheNorm(q.raw)}|${q.region || ''}`;
+  const baseKey = `venomi:base:v6:${cacheNorm(q.raw)}|${q.region || ''}`;
   let base = useCache ? await safe(cache.getJson(baseKey)) : null;
   if (base) cacheHit.base = true;
   else {
