@@ -442,6 +442,9 @@ function renderProposal(report) {
 function renderLaw(report) {
   const name = displayName(report);
   const law = report.adLaw || {};
+  // 확인한 페이지 종류(블로그/SNS/홈페이지)를 정확히 라벨링
+  const kind = report.resolved && report.resolved.homepageKind;
+  const pageKind = kind === 'blog' ? '블로그' : kind === 'social' ? 'SNS' : '홈페이지';
   const L = [`⚖️ ${name} · 의료광고법 점검`, ''];
   if (law.status === 'na') {
     L.push('이 업종은 의료광고법 대상이 아니에요(비의료).');
@@ -449,12 +452,12 @@ function renderLaw(report) {
     return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
   }
   if (law.status !== 'ok') {
-    L.push(law.status === 'no-homepage' ? '홈페이지를 찾지 못해 점검하지 못했습니다.' : '홈페이지 본문 점검에 실패했습니다.');
+    L.push(law.status === 'no-homepage' ? '점검할 페이지를 찾지 못했습니다.' : `${pageKind} 본문 점검에 실패했습니다.`);
     return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
   }
   if (law.pass) {
-    L.push('홈페이지 본문에서 금지 표현이 발견되지 않았습니다(참고용).');
-    if (law.checkedUrl) { L.push(''); L.push(`확인한 페이지: ${law.checkedUrl}`); }
+    L.push(`${pageKind} 본문에서 금지 표현이 발견되지 않았습니다(참고용).`);
+    if (law.checkedUrl) { L.push(''); L.push(`확인한 ${pageKind}: ${law.checkedUrl}`); }
     return skill([simpleText(L.join('\n'))], viewQuickReplies(name));
   }
   const hits = (law.hits && law.hits.length) ? law.hits
