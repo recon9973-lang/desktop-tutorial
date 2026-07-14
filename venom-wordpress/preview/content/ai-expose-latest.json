@@ -1,8 +1,18 @@
 {
-  "generated_at": "2026-07-11T23:57:08Z",
-  "run_id": "29172884932",
-  "engines": ["perplexity", "openai", "gemini", "claude"],
-  "eng_label": { "perplexity": "Perplexity", "openai": "ChatGPT", "gemini": "Gemini", "claude": "Claude" },
+  "generated_at": "2026-07-14T15:20:55.083Z",
+  "run_id": "29344815433",
+  "engines": [
+    "perplexity",
+    "openai",
+    "gemini",
+    "claude"
+  ],
+  "eng_label": {
+    "perplexity": "Perplexity",
+    "openai": "ChatGPT",
+    "gemini": "Gemini",
+    "claude": "Claude"
+  },
   "businesses": [
     {
       "key": "pain",
@@ -15,13 +25,46 @@
         "시원마취통증의학과의원 어때? 믿을 만한 곳이야?"
       ],
       "grid": {
-        "0": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "1": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "2": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "3": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "mentioned" },
-        "4": { "perplexity": "mentioned", "openai": "mentioned", "gemini": "mentioned", "claude": "mentioned" }
+        "0": {
+          "perplexity": "none",
+          "openai": "none",
+          "claude": "none",
+          "gemini": "none"
+        },
+        "1": {
+          "perplexity": "mentioned",
+          "openai": "none",
+          "claude": "none",
+          "gemini": "none"
+        },
+        "2": {
+          "perplexity": "none",
+          "openai": "none",
+          "gemini": "none",
+          "claude": "none"
+        },
+        "3": {
+          "perplexity": "none",
+          "openai": "none",
+          "claude": "mentioned",
+          "gemini": "mentioned"
+        },
+        "4": {
+          "perplexity": "mentioned",
+          "openai": "mentioned",
+          "gemini": "mentioned",
+          "claude": "mentioned"
+        }
       },
-      "summary": { "total_cells": 20, "exposed": 5, "disc_cells": 16, "disc_exposed": 1, "tot_pct": 25, "disc_pct": 6, "errors": 0 }
+      "summary": {
+        "total_cells": 20,
+        "exposed": 7,
+        "disc_cells": 16,
+        "disc_exposed": 3,
+        "errors": 0,
+        "tot_pct": 35,
+        "disc_pct": 19
+      }
     },
     {
       "key": "skin",
@@ -34,13 +77,46 @@
         "시원스킨클리닉 어때? 믿을 만한 곳이야?"
       ],
       "grid": {
-        "0": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "1": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "2": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "3": { "perplexity": "none", "openai": "none", "gemini": "none", "claude": "none" },
-        "4": { "perplexity": "mentioned", "openai": "mentioned", "gemini": "none", "claude": "mentioned" }
+        "0": {
+          "openai": "none",
+          "perplexity": "none",
+          "gemini": "none",
+          "claude": "none"
+        },
+        "1": {
+          "perplexity": "none",
+          "openai": "none",
+          "claude": "none",
+          "gemini": "none"
+        },
+        "2": {
+          "perplexity": "none",
+          "openai": "none",
+          "claude": "none",
+          "gemini": "none"
+        },
+        "3": {
+          "perplexity": "none",
+          "openai": "none",
+          "claude": "none",
+          "gemini": "none"
+        },
+        "4": {
+          "perplexity": "mentioned",
+          "openai": "mentioned",
+          "gemini": "mentioned",
+          "claude": "mentioned"
+        }
       },
-      "summary": { "total_cells": 20, "exposed": 3, "disc_cells": 16, "disc_exposed": 0, "tot_pct": 15, "disc_pct": 0, "errors": 0 }
+      "summary": {
+        "total_cells": 20,
+        "exposed": 4,
+        "disc_cells": 16,
+        "disc_exposed": 0,
+        "errors": 0,
+        "tot_pct": 20,
+        "disc_pct": 0
+      }
     }
   ]
 }
