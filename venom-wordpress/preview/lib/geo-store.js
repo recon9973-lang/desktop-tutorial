@@ -20,6 +20,7 @@ const COLLECTIONS = {
   prompts:     { file: 'prompt-sets.json',    key: 'sets' },
   automations: { file: 'automations.json',    key: 'automations' },
   metrics:     { file: 'metrics.json',        key: 'metrics' },
+  reports:     { file: 'reports.json',        key: 'reports' },
 };
 
 let backend = require('./github-store'); // 기본: 실제 GitHub 저장

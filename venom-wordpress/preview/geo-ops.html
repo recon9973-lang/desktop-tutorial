@@ -128,6 +128,7 @@
       <div class="tab" data-t="channels" onclick="showTab('channels')">채널</div>
       <div class="tab" data-t="metrics" onclick="showTab('metrics')">성과</div>
       <div class="tab" data-t="exposure" onclick="showTab('exposure')">AI 인용 모니터링</div>
+      <div class="tab" data-t="report" onclick="showTab('report')">리포트</div>
     </div>
     <div id="cd-overview" class="card"><div class="empty">—</div></div>
     <div id="cd-channels" class="hide">
@@ -170,6 +171,16 @@
       <div class="card"><h3>추이</h3><div id="mx-charts"><div class="empty">—</div></div></div>
     </div>
     <div id="cd-exposure" class="hide"><div class="card"><div id="exposure-body" class="empty">—</div></div></div>
+    <div id="cd-report" class="hide">
+      <div class="card">
+        <div style="display:flex;align-items:end;gap:10px">
+          <div style="flex:1"><label>기간(라벨)</label><input id="rp-period" placeholder="2026-W28"></div>
+          <button class="btn" onclick="generateReport()">주간 리포트 생성</button>
+        </div>
+        <div class="muted" style="margin-top:6px">성과·AI인용·업무 데이터를 집계해 성과/리스크/다음액션을 도출합니다. 통계를 지어내지 않고 실제 수집값만 사용합니다.</div>
+      </div>
+      <div id="rp-body"><div class="empty">아직 생성된 리포트가 없습니다</div></div>
+    </div>
   </section>
 
   <!-- 업무 보드 -->
@@ -216,7 +227,7 @@ function showSec(s){
   if(s==='tasks')initTasks();
 }
 function showTab(t){
-  ['overview','channels','metrics','exposure'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
+  ['overview','channels','metrics','exposure','report'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
   document.querySelectorAll('#sec-client .tab').forEach(el=>el.classList.toggle('on',el.dataset.t===t));
 }
 
@@ -288,7 +299,7 @@ async function openClient(id){
     '</div><h3>핵심 키워드</h3><div class="muted">'+esc((CURRENT.coreKeywords||[]).join(', ')||'—')+'</div>'+
     '<h3>경쟁사(SOV 비교)</h3><div class="muted">'+esc((CURRENT.competitors||[]).join(', ')||'—')+'</div>'+
     '<div style="margin-top:14px"><button class="btn ghost sm" onclick="openClientForm(CURRENT);showSec(\'clients\')">편집</button></div>';
-  loadChannels(id); loadMetrics(id); loadExposure(id);
+  loadChannels(id); loadMetrics(id); loadExposure(id); loadReport(id);
 }
 function tile(l,v){ return '<div class="stat"><div class="n" style="font-size:1rem">'+esc(v||'—')+'</div><div class="l">'+l+'</div></div>'; }
 
@@ -370,6 +381,37 @@ async function loadExposure(id){
   });
   html+='</tbody></table><div class="muted" style="margin-top:8px">실측일 '+String(snap.generated_at||'').slice(0,10)+(snap.run_id?(' · run '+snap.run_id):'')+'</div>';
   body.innerHTML=html;
+}
+
+// ── 주간 리포트 ──
+async function generateReport(){
+  if(!CURRENT)return;
+  const period=document.getElementById('rp-period').value.trim();
+  const j=await api('?module=report&action=generate',{method:'POST',body:JSON.stringify({clientId:CURRENT.id,period})});
+  if(j&&j.ok){ toast('리포트 생성됨'); renderReport(j.data); }
+  else toast('생성 실패 — 시크릿 확인');
+}
+async function loadReport(id){
+  const j=await api('?module=report&action=list&clientId='+encodeURIComponent(id));
+  const body=document.getElementById('rp-body');
+  if(!j||!j.ok||!j.data.length){ body.innerHTML='<div class="card"><div class="empty">아직 생성된 리포트가 없습니다 — 위에서 “주간 리포트 생성”</div></div>'; return; }
+  const latest=j.data.slice().sort((a,b)=>String(b.generatedAt||'').localeCompare(String(a.generatedAt||'')))[0];
+  renderReport(latest);
+}
+function reportList(title,items,color){
+  if(!items||!items.length)return '';
+  return '<h3 style="color:'+color+'">'+title+'</h3><ul style="margin:0 0 6px;padding-left:18px">'+items.map(x=>'<li style="font-size:.86rem;margin:3px 0">'+esc(x)+'</li>').join('')+'</ul>';
+}
+function renderReport(r){
+  document.getElementById('rp-body').innerHTML='<div class="card">'+
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">'+
+      '<h2 style="margin:0">주간 리포트 '+esc(r.reportPeriod||'')+'</h2>'+
+      '<span class="muted">'+String(r.generatedAt||'').slice(0,10)+'</span></div>'+
+    '<div style="background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px;margin:10px 0;font-size:.88rem">'+esc(r.summary||'')+'</div>'+
+    reportList('✅ 성과(keyWins)',r.keyWins,'#166534')+
+    reportList('⚠ 리스크',r.risks,'#b42318')+
+    reportList('▶ 다음 액션',r.nextActions,'#4338ca')+
+    '</div>';
 }
 
 // ── 업무 보드(칸반·승인큐·플레이북 생성) ──

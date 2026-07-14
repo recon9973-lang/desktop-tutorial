@@ -1,0 +1,73 @@
+name: GEO Weekly Report
+
+# 거래처(geo/clients.json active)별 주간 리포트를 배포된 /api/geo-ops?module=report&action=generate 로 생성한다.
+# 리포트 생성은 서버에서 metrics/exposure/tasks 를 집계(lib/geo-report). 러너는 트리거만 담당(샌드박스 egress 우회).
+# 필요 시크릿: ADMIN_SECRET(쓰기 인증). 미설정이면 배포 API 가 인증 미적용 상태여야 동작.
+
+on:
+  schedule:
+    # 매주 금요일 08:00 UTC = 17:00 KST
+    - cron: '0 8 * * 5'
+  workflow_dispatch:
+    inputs:
+      period:
+        description: '리포트 기간 라벨(예: 2026-W28). 비우면 ISO 주차 자동'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate weekly reports for active clients
+        env:
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+          PERIOD_INPUT: ${{ github.event.inputs.period }}
+        run: |
+          node - <<'NODE'
+          const https = require('https');
+          const fs = require('fs');
+          const BASE = 'https://venom-new-site.vercel.app';
+          const SECRET = process.env.ADMIN_SECRET || '';
+
+          // ISO 주차 라벨(YYYY-Www) — 입력이 있으면 우선
+          function isoWeek(d) {
+            const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+            const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+            const ys = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+            const wk = Math.ceil((((t - ys) / 86400000) + 1) / 7);
+            return t.getUTCFullYear() + '-W' + String(wk).padStart(2, '0');
+          }
+          const period = process.env.PERIOD_INPUT || isoWeek(new Date());
+
+          let clients = [];
+          try { clients = (JSON.parse(fs.readFileSync('venom-wordpress/preview/content/geo/clients.json', 'utf8')).clients || []).filter(c => c && c.active !== false); } catch (e) {}
+          console.log('active clients=' + clients.length + ' period=' + period);
+
+          function post(clientId) {
+            const body = JSON.stringify({ clientId, period });
+            return new Promise((resolve) => {
+              const req = https.request(BASE + '/api/geo-ops?module=report&action=generate', {
+                method: 'POST',
+                headers: Object.assign({ 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+                  SECRET ? { 'Authorization': 'Bearer ' + SECRET } : {}),
+              }, (r) => { let d = ''; r.on('data', c => d += c); r.on('end', () => { let j = null; try { j = JSON.parse(d); } catch {} resolve({ status: r.statusCode, j }); }); });
+              req.on('error', (e) => resolve({ status: 0, j: { error: e.message } }));
+              req.setTimeout(60000, () => { req.destroy(); resolve({ status: 0, j: { error: 'timeout' } }); });
+              req.write(body); req.end();
+            });
+          }
+
+          (async () => {
+            for (const c of clients) {
+              const r = await post(c.id);
+              console.log('  ' + c.id + ' -> ' + (r.j && r.j.ok ? 'ok' : ('FAIL ' + (r.j && r.j.error || r.status))));
+            }
+            console.log('done');
+          })();
+          NODE

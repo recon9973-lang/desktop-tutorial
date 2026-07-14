@@ -163,6 +163,27 @@ async function call(opts) { const res = mockRes(); await handler(mockReq(opts), 
     ok('clientId 누락 400', res._status === 400);
   }
 
+  console.log('report generate/list/get');
+  {
+    // pain 거래처는 앞 블록에서 생성됨 + metrics/tasks 존재
+    let res = await call({ method: 'POST', query: { module: 'report', action: 'generate' }, body: { clientId: 'pain', period: '2026-W28' } });
+    ok('report generate 200', res._json.ok && res._json.data.clientId === 'pain');
+    ok('report id 규칙', res._json.data.id === 'rpt_pain_2026-W28');
+    ok('report 구조', Array.isArray(res._json.data.keyWins) && Array.isArray(res._json.data.nextActions) && typeof res._json.data.summary === 'string');
+    const rid = res._json.data.id;
+
+    res = await call({ method: 'GET', query: { module: 'report', action: 'list', clientId: 'pain' } });
+    ok('report list', res._json.ok && res._json.count >= 1);
+
+    res = await call({ method: 'GET', query: { module: 'report', action: 'get', id: rid } });
+    ok('report get', res._json.ok && res._json.data.id === rid);
+
+    res = await call({ method: 'POST', query: { module: 'report', action: 'generate' }, body: { period: 'x' } });
+    ok('report clientId 누락 400', res._status === 400);
+    res = await call({ method: 'POST', query: { module: 'report', action: 'generate' }, body: { clientId: 'ghost' } });
+    ok('report 없는 거래처 404', res._status === 404);
+  }
+
   console.log('인증 게이트');
   {
     process.env.ADMIN_SECRET = 'sesame';

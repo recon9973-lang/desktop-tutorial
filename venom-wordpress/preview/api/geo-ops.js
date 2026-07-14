@@ -19,6 +19,9 @@
 const geo = require('../lib/geo-store');
 const tpl = require('../lib/geo-templates');
 const gm = require('../lib/geo-metrics');
+const gr = require('../lib/geo-report');
+const store = require('../lib/github-store');
+const AIEXPOSE_PATH = 'venom-wordpress/preview/content/ai-expose-latest.json';
 
 // tasks.json 상태값(칸반) — 이동 검증용
 const TASK_STATUS = ['backlog', 'thisweek', 'doing', 'review', 'hold', 'done', 'failed'];
@@ -166,6 +169,49 @@ async function handleMetrics(req, res) {
   return res.status(200).json({ ok: true, count: saved.length });
 }
 
+// ── 주간 리포트 (설계 §1.1 Report · P1 #7) ──
+async function exposureFor(clientId) {
+  try {
+    const f = await store.getJsonFile(AIEXPOSE_PATH, null);
+    const snap = f && f.content;
+    if (!snap || !Array.isArray(snap.businesses)) return null;
+    const b = snap.businesses.find((x) => x.key === clientId);
+    return b ? b.summary || null : null;
+  } catch { return null; }
+}
+
+async function handleReport(req, res) {
+  const action = String(req.query.action || (req.method === 'GET' ? 'list' : 'generate')).toLowerCase();
+
+  if (req.method === 'GET') {
+    if (action === 'get') {
+      const r = await geo.get('reports', String(req.query.id || ''));
+      return res.status(r ? 200 : 404).json({ ok: !!r, data: r || null });
+    }
+    const list = await geo.list('reports', req.query.clientId ? { clientId: String(req.query.clientId) } : null);
+    return res.status(200).json({ ok: true, count: list.length, data: list });
+  }
+
+  // generate (POST) — 인증 필요
+  if (!authOk(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
+  const body = await readBody(req);
+  const clientId = body.clientId;
+  const period = body.period || '';
+  if (!clientId) return res.status(400).json({ ok: false, error: 'clientId 필요' });
+  const client = await geo.get('clients', String(clientId));
+  if (!client) return res.status(404).json({ ok: false, error: '거래처 없음' });
+
+  const [metricsAll, tasks, exposure] = await Promise.all([
+    geo.list('metrics', { clientId: String(clientId) }),
+    geo.list('tasks', { clientId: String(clientId) }),
+    exposureFor(String(clientId)),
+  ]);
+  const metricsSummary = gm.summarize(metricsAll, { clientId: String(clientId) });
+  const report = gr.buildReport({ client, period, metricsSummary, exposure, tasks }, new Date().toISOString());
+  const saved = await geo.upsert('reports', report, 'rpt');
+  return res.status(200).json({ ok: true, data: saved });
+}
+
 // ── 관제 대시보드 집계 (설계 §2.1) ──
 async function handleDashboard(res) {
   const [clients, channels, tasks, autos] = await Promise.all([
@@ -197,6 +243,7 @@ module.exports = async function handler(req, res) {
     if (!authOk(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
     if (module === 'dashboard') return await handleDashboard(res);
     if (module === 'metrics') return await handleMetrics(req, res);
+    if (module === 'report') return await handleReport(req, res);
     if (module === 'templates') {
       const templates = await tpl.loadTemplates();
       return res.status(200).json({ ok: true, count: templates.length, data: templates.map((t) => ({ id: t.id, channelType: t.channelType, cap: t.cap, steps: (t.steps || t.variants || []).length })) });
