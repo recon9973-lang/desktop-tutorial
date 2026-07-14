@@ -304,6 +304,14 @@ function renderLocal(report) {
     : pl.confidence === 'low' ? '검색 미확인 (네이버 지도에서 직접 확인 권장)'
     : pl.error ? '조회 실패' : '·';
   L.push(`플레이스: ${placeTxt}`);
+  // 플레이스 리뷰 수(방문자+블로그) — 로컬 신뢰·활성도 신호(best-effort로 확보 시만)
+  if (local.reviews) {
+    const rv = local.reviews;
+    const parts = [];
+    if (rv.visitor != null) parts.push(`방문자 ${fmtNum(rv.visitor)}`);
+    if (rv.blog != null) parts.push(`블로그 ${fmtNum(rv.blog)}`);
+    L.push(`리뷰: ${parts.join(' · ') || fmtNum(rv.total)}${rv.total != null && parts.length ? ` (총 ${fmtNum(rv.total)})` : ''}`);
+  }
   // 핵심 키워드 실제 순위(유의미 데이터) — 플레이스 top5 · 블로그 top20
   const ranks = local.keywordRanks || [];
   if (ranks.length) {
