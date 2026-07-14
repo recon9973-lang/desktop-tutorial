@@ -2,9 +2,9 @@
   "enabled": true,
   "schedules": [
     {
-      "from": "2026-07-14",
+      "from": "2026-07-15",
       "to": "2026-07-28",
-      "dailyCount": 3,
+      "dailyCount": 5,
       "timeMode": "random",
       "_lastSchedMode": "random",
       "randStart": "08:00",
@@ -39,5 +39,5 @@
   "autoInternalLinks": true,
   "clusterAutoExpand": false,
   "clusterPillars": [],
-  "updatedAt": "2026-07-13T16:06:06.373Z"
+  "updatedAt": "2026-07-14T15:34:06.858Z"
 }
