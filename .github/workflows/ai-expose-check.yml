@@ -111,16 +111,40 @@ jobs:
             };
             fs.writeFileSync(OUT_PATH, JSON.stringify(snapshot, null, 2) + '\n');
             console.log('WROTE ' + OUT_PATH);
+
+            // ── 월별 추이용 히스토리 누적 (같은 달이면 최신으로 대체, 최근 36개월 유지) ──
+            const HIST_PATH = 'venom-wordpress/preview/content/ai-expose-history.json';
+            let hist = [];
+            try { hist = JSON.parse(fs.readFileSync(HIST_PATH, 'utf8')); if (!Array.isArray(hist)) hist = []; } catch {}
+            const entry = {
+              generated_at: snapshot.generated_at,
+              run_id: snapshot.run_id,
+              businesses: businesses.map((b) => ({
+                key: b.key, name: b.name,
+                tot_pct: b.summary.tot_pct, disc_pct: b.summary.disc_pct,
+                exposed: b.summary.exposed, total_cells: b.summary.total_cells,
+              })),
+            };
+            const ym = String(entry.generated_at).slice(0, 7);
+            hist = hist.filter((h) => String(h.generated_at).slice(0, 7) !== ym);
+            hist.push(entry);
+            hist.sort((a, b) => String(a.generated_at).localeCompare(String(b.generated_at)));
+            if (hist.length > 36) hist = hist.slice(hist.length - 36);
+            fs.writeFileSync(HIST_PATH, JSON.stringify(hist, null, 2) + '\n');
+            console.log('WROTE ' + HIST_PATH);
           })();
           NODE
       - name: Commit snapshot
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           set -e
           F=venom-wordpress/preview/content/ai-expose-latest.json
-          if git diff --quiet -- "$F"; then echo "no change"; exit 0; fi
+          H=venom-wordpress/preview/content/ai-expose-history.json
+          git add "$F" "$H"
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$F"
-          git commit -m "chore(diag): AI 노출 실측 스냅샷 갱신 (run ${GITHUB_RUN_ID})"
+          git commit -m "chore(diag): AI 노출 실측 스냅샷·추이 갱신 (run ${GITHUB_RUN_ID})"
           git push origin HEAD:main
         continue-on-error: true

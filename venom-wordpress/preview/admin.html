@@ -543,9 +543,13 @@ a{color:var(--p);text-decoration:none}
       <div class="card" style="margin-bottom:16px">
         <div class="card-head">
           <div class="card-title">🤖 4대 AI 노출 실측 <span style="font-size:11px;font-weight:400;color:var(--mute)">(Perplexity·ChatGPT·Gemini·Claude)</span></div>
-          <span class="badge" id="aiexpose-meta" style="font-size:11px;color:var(--mute)">불러오는 중…</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge" id="aiexpose-meta" style="font-size:11px;color:var(--mute)">불러오는 중…</span>
+            <button class="btn btn-outline btn-sm" onclick="reloadAiExpose()" title="최신 스냅샷 다시 불러오기">🔄 새로고침</button>
+            <a class="btn btn-p btn-sm" href="https://github.com/recon9973-lang/desktop-tutorial/actions/workflows/ai-expose-check.yml" target="_blank" rel="noopener" title="GitHub Actions에서 'Run workflow'로 즉시 재측정">⚡ 지금 측정</a>
+          </div>
         </div>
-        <p style="font-size:13px;color:var(--mute);margin:2px 0 0">환자가 실제로 던지는 질문을 4대 AI에 그대로 물어, 답변에 업체가 등장(언급/인용)하는지 실측합니다. 데이터는 <b>AI Exposure Check</b> 워크플로가 자동 갱신합니다.</p>
+        <p style="font-size:13px;color:var(--mute);margin:2px 0 0">환자가 실제로 던지는 질문을 4대 AI에 그대로 물어, 답변에 업체가 등장(언급/인용)하는지 실측합니다. 데이터는 <b>AI Exposure Check</b> 워크플로가 매월 1일 자동 갱신하며, <b>지금 측정</b> 버튼으로 즉시 재측정할 수 있습니다.</p>
       </div>
       <div id="aiexpose-body"><div style="text-align:center;color:var(--mute);font-size:13px;padding:40px">불러오는 중…</div></div>
     </div>
@@ -1144,12 +1148,44 @@ function _aeVerdict(v){
   if(v==='error')return['측정불가','#8a6d00','#fff6da'];
   return['미노출','#b42318','#fdecea'];
 }
+// 월별 추이 미니 차트 (전체 노출률·발견형)
+function _aeTrendHTML(hist,key){
+  if(!hist||!hist.length)return '';
+  var pts=hist.map(function(h){
+    var b=(h.businesses||[]).filter(function(x){return x.key===key;})[0];
+    return b?{ym:String(h.generated_at||'').slice(0,7),tot:b.tot_pct||0,disc:b.disc_pct||0}:null;
+  }).filter(Boolean);
+  if(!pts.length)return '';
+  var max=10; pts.forEach(function(p){max=Math.max(max,p.tot,p.disc);});
+  var bars=pts.map(function(p){
+    var mm=(p.ym.slice(5)||'').replace(/^0/,'')+'월';
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:34px">'
+      +'<div style="display:flex;align-items:flex-end;gap:2px;height:84px">'
+        +'<div title="전체 '+p.tot+'%" style="width:9px;border-radius:3px 3px 0 0;background:#7c3aed;height:'+Math.max(3,Math.round(p.tot/max*84))+'px"></div>'
+        +'<div title="발견형 '+p.disc+'%" style="width:9px;border-radius:3px 3px 0 0;background:#b42318;height:'+Math.max(3,Math.round(p.disc/max*84))+'px"></div>'
+      +'</div>'
+      +'<div style="font-size:10px;font-weight:800;color:#5b21b6;line-height:1">'+p.tot+'%</div>'
+      +'<div style="font-size:9px;color:var(--mute)">'+mm+'</div>'
+    +'</div>';
+  }).join('');
+  var note=pts.length<2?'<span style="color:var(--mute)"> · 매월 1일 자동 누적됩니다</span>':'';
+  return '<div style="margin:2px 0 14px;padding:12px 14px;background:var(--soft,#f7f8fb);border-radius:10px">'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:8px;font-weight:700">📈 월별 추이 '
+    +'<span style="color:#7c3aed">■</span> 전체 노출률 '
+    +'<span style="color:#b42318;margin-left:6px">■</span> 발견형(신환)'+note+'</div>'
+    +'<div style="display:flex;align-items:flex-end;gap:8px;overflow-x:auto;padding-bottom:2px">'+bars+'</div></div>';
+}
+function reloadAiExpose(){ _aiExposeLoaded=false; initAiExpose(); }
 function initAiExpose(){
   if(_aiExposeLoaded)return; _aiExposeLoaded=true;
   var body=document.getElementById('aiexpose-body');
   var meta=document.getElementById('aiexpose-meta');
-  fetch('/content/ai-expose-latest.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(j){
-    if(!j||!j.businesses||!j.businesses.length){body.innerHTML='<div class="card"><div style="text-align:center;color:var(--mute);padding:32px">아직 실측 데이터가 없습니다 — GitHub Actions의 <b>AI Exposure Check</b> 워크플로를 실행하면 자동 채워집니다.</div></div>';if(meta)meta.textContent='데이터 없음';return;}
+  Promise.all([
+    fetch('/content/ai-expose-latest.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
+    fetch('/content/ai-expose-history.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+  ]).then(function(res){
+    var j=res[0]; var hist=Array.isArray(res[1])?res[1]:[];
+    if(!j||!j.businesses||!j.businesses.length){body.innerHTML='<div class="card"><div style="text-align:center;color:var(--mute);padding:32px">아직 실측 데이터가 없습니다 — 상단 <b>⚡ 지금 측정</b> 버튼으로 <b>AI Exposure Check</b> 워크플로를 실행하면 자동 채워집니다.</div></div>';if(meta)meta.textContent='데이터 없음';return;}
     var engs=j.engines||['perplexity','openai','gemini','claude'];
     var elab=j.eng_label||{};
     if(meta)meta.textContent='실측일 '+String(j.generated_at||'').slice(0,10)+(j.run_id?(' · run '+j.run_id):'');
@@ -1169,6 +1205,7 @@ function initAiExpose(){
         +'<div class="stat-card"><div class="stat-label">전체 노출률</div><div class="stat-val" style="color:#5b21b6">'+(s.tot_pct||0)+'%</div><div class="stat-change">'+(s.exposed||0)+'/'+(s.total_cells||0)+'회 노출</div></div>'
         +'<div class="stat-card"><div class="stat-label">발견형 질문 노출률 <span style="font-size:9px;color:var(--mute)">(신환)</span></div><div class="stat-val" style="color:#b42318">'+(s.disc_pct||0)+'%</div><div class="stat-change">'+(s.disc_exposed||0)+'/'+(s.disc_cells||0)+'회</div></div>'
         +'</div>'
+        +_aeTrendHTML(hist,b.key)
         +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th style="padding:7px 8px;border:1px solid var(--border);background:#111827;color:#fff;font-size:11px;text-align:left">환자 질문</th>'+head+'</tr>'+rows+'</table></div>'
         +(s.errors?'<div style="font-size:10px;color:#8a6d00;margin-top:8px">※ 측정불가 '+s.errors+'건 (해당 AI 일시 오류, 재측정 시 갱신)</div>':'')
         +'</div>';
