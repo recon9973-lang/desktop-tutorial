@@ -304,9 +304,23 @@ function renderLocal(report) {
     : pl.confidence === 'low' ? '검색 미확인 (네이버 지도에서 직접 확인 권장)'
     : pl.error ? '조회 실패' : '·';
   L.push(`플레이스: ${placeTxt}`);
+  // 핵심 키워드 실제 순위(유의미 데이터) — 플레이스 top5 · 블로그 top20
+  const ranks = local.keywordRanks || [];
+  if (ranks.length) {
+    L.push('');
+    L.push('🔑 핵심 키워드 순위:');
+    ranks.forEach((r) => {
+      const p = r.placeRank ? `플레이스 ${r.placeRank}위` : (r.placeChecked ? '플레이스 5위밖' : '플레이스 —');
+      const b = r.blogRank ? `블로그 ${r.blogRank}위` : (r.blogChecked ? '블로그 20위밖' : '블로그 —');
+      L.push(`· ${r.keyword}`);
+      L.push(`   ${p} · ${b}`);
+    });
+    L.push('※ 플레이스=상위5위·블로그=상위20위 기준(네이버 검색 API)');
+  }
   // 블로그/뉴스: 검색 총계 + 표본 관련성(동명 혼입 정직 표기)
   const relTxt = (x) => (x && x.matchRate != null && x.confidence === 'low')
-    ? ` (표본 ${x.sampled}건 중 관련 ${x.matched}건 — 동명 혼입 가능)` : '';
+    ? ` (표본 ${x.sampled}건 중 관련 ${x.matched}건)` : '';
+  L.push('');
   L.push(`블로그 노출: ${local.blog && local.blog.total != null ? fmtNum(local.blog.total) + '건' + relTxt(local.blog) : '·'}`);
   L.push(`뉴스/PR: ${local.news && local.news.total != null ? fmtNum(local.news.total) + '건' + relTxt(local.news) : '·'}`);
   if (local.signals && local.signals.length) {

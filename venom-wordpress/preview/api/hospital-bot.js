@@ -100,6 +100,19 @@ async function handleKakao(res, body) {
     return;
   }
 
+  // 네이버 로컬(경량 전용) — 로컬 지표 + 핵심 키워드 순위만(빠르고 정확).
+  if (cmd.view === 'local') {
+    try {
+      const report = await Promise.race([
+        D.diagnoseLocalOnly(cmd.hospital, { now: Date.now() }),
+        new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
+      ]);
+      if (!report) { res.status(200).json(kf.renderSlow(parsed.name)); return; }
+      res.status(200).json(kf.renderLocal(report));
+    } catch (e) { res.status(200).json(kf.renderError(e.message)); }
+    return;
+  }
+
   const callbackUrl = body.userRequest && body.userRequest.callbackUrl;
 
   // 'geo' 뷰만 실 프로빙(느림·유료), 'compete' 뷰만 경쟁 비교(로컬 다중호출). 나머지는 light.
