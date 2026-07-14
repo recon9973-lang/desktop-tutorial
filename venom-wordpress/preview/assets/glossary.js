@@ -873,8 +873,10 @@
     CHO_LIST.forEach(function (c) { choChips += chip(c, state.mode === 'cho' && state.val === c, 'data-mode="cho" data-val="' + c + '"'); });
     var abcChips = ''; abcKeys.forEach(function (a) { abcChips += chip(a, state.mode === 'abc' && state.val === a, 'data-mode="abc" data-val="' + a + '"'); });
     return '<div class="gl-tabwrap" style="--ac:' + DICTS[state.dict].color + '">'
-      + '<div class="gl-tabs">' + dictTabs + searchPill + '</div>'
-      + '<div class="gl-tabline"></div>'
+      + '<div class="gl-tabbar">'
+      + '<div class="gl-tabs">' + dictTabs + '</div>'
+      + searchPill
+      + '</div>'
       + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">카테고리</span>' + catChips + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">가나다</span>' + choChips + '</div>'
@@ -1037,20 +1039,21 @@
     if (document.getElementById('gl-css')) return;
     var s = document.createElement('style'); s.id = 'gl-css';
     s.textContent = [
-      // 사전 선택 — 폴더 탭 + 통합 검색(참조 이미지형, 색상: SEO·AI·MKT·DEV)
-      '.gl-tabwrap{margin-bottom:18px}',
-      '.gl-tabs{display:flex;align-items:flex-end;gap:5px;flex-wrap:wrap;position:relative;z-index:2}',
-      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:14px;letter-spacing:.4px;color:#fff;padding:12px 24px;background:var(--dc,#533afd);clip-path:polygon(11px 0,calc(100% - 11px) 0,100% 100%,0 100%);opacity:.5;filter:saturate(.85);transition:.18s;top:2px}',
-      '.gl-dict:hover{opacity:.82}',
-      '.gl-dict.on{opacity:1;filter:none;padding-top:15px;top:0;box-shadow:0 -3px 10px -4px var(--dc,#533afd);animation:gl-tabpop .3s cubic-bezier(.34,1.35,.5,1)}',
-      '@keyframes gl-tabpop{0%{opacity:.35;transform:translateY(8px) scale(.94);filter:saturate(.35) brightness(1.05)}60%{transform:translateY(-2px) scale(1.02)}100%{opacity:1;transform:none;filter:none}}',
-      '.gl-dict-ab{font-weight:900;text-shadow:0 1px 1px rgba(0,0,0,.18)}',
-      '.gl-dict-n{font-size:11px;font-weight:800;background:rgba(255,255,255,.26);color:#fff;padding:2px 8px;border-radius:9px}',
-      '.gl-tabsearch{margin-left:auto;display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border,#e3e8ee);border-radius:22px;padding:9px 16px;min-width:210px;align-self:center;color:var(--mute,#94a3b8);transition:.15s}',
-      '.gl-tabsearch:focus-within{border-color:var(--ac,#533afd);color:var(--ac,#533afd)}',
+      // 사전 선택 — 스큐어모픽 폴더 탭 + 통합 검색(참조 이미지형, 색상: SEO·AI·MKT·DEV)
+      '.gl-tabwrap{margin-bottom:18px;background:linear-gradient(180deg,#fbfcfe,#e9edf3);border:1px solid #dbe1ea;border-radius:15px;box-shadow:0 16px 36px -16px rgba(28,38,66,.32),inset 0 1px 0 #fff;padding:11px 11px 13px}',
+      '.gl-tabbar{position:relative;display:flex;align-items:flex-end;gap:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--ac,#533afd) 82%,#fff),var(--ac,#533afd));border-radius:11px;padding:0 10px;min-height:56px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -10px 20px -12px rgba(0,0,0,.25),0 8px 18px -10px var(--ac,#533afd)}',
+      '.gl-tabs{display:flex;align-items:flex-end;flex:1;min-width:0}',
+      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:13.5px;letter-spacing:.5px;color:#fff;padding:12px 30px 11px;margin-right:-14px;background:linear-gradient(180deg,color-mix(in srgb,var(--dc,#533afd) 62%,#fff),color-mix(in srgb,var(--dc,#533afd) 96%,#000));clip-path:polygon(14px 0,100% 0,calc(100% - 14px) 100%,0 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset -1px 0 0 rgba(0,0,0,.1);filter:saturate(.7) brightness(.96);opacity:.92;transition:filter .18s,opacity .18s}',
+      '.gl-dict:first-child{border-radius:9px 0 0 0}',
+      '.gl-dict:hover{filter:saturate(.95);opacity:1}',
+      '.gl-dict.on{filter:none;opacity:1;z-index:5;color:#fff;padding:15px 30px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--dc,#533afd) 80%,#fff),var(--dc,#533afd));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 -4px 14px -4px rgba(0,0,0,.35);animation:gl-tabpop .32s cubic-bezier(.34,1.4,.5,1)}',
+      '@keyframes gl-tabpop{0%{transform:translateY(9px) scale(.93);filter:saturate(.3) brightness(1.1);opacity:.4}55%{transform:translateY(-3px) scale(1.03)}100%{transform:none;filter:none;opacity:1}}',
+      '.gl-dict-ab{font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.28)}',
+      '.gl-dict-n{font-size:11px;font-weight:800;background:rgba(255,255,255,.28);color:#fff;padding:2px 8px;border-radius:9px;text-shadow:none}',
+      '.gl-tabsearch{flex-shrink:0;display:flex;align-items:center;gap:8px;background:#fff;border:none;border-radius:22px;padding:9px 15px;min-width:190px;align-self:center;color:var(--mute,#94a3b8);box-shadow:inset 0 1px 3px rgba(0,0,0,.14),0 1px 0 rgba(255,255,255,.4);transition:.15s}',
+      '.gl-tabsearch:focus-within{color:var(--ac,#533afd);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ac,#533afd) 45%,#fff),inset 0 1px 3px rgba(0,0,0,.1)}',
       '.gl-tabsearch input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:#1c1e54}',
-      '.gl-tabline{height:13px;background:var(--ac,#533afd);border-radius:2px 9px 9px 9px;position:relative;z-index:1;box-shadow:0 10px 22px -12px var(--ac,#533afd)}',
-      '@media(max-width:600px){.gl-tabs{gap:3px}.gl-dict{padding:11px 15px}.gl-dict.on{padding-top:14px}.gl-tabsearch{margin-left:0;order:5;width:100%;min-width:0;margin-top:8px}}',
+      '@media(max-width:640px){.gl-tabbar{flex-wrap:wrap;padding:7px;gap:6px;min-height:0}.gl-tabs{order:1;width:100%;overflow-x:auto;padding-bottom:1px}.gl-dict{padding:9px 15px 8px;font-size:12px;letter-spacing:.3px;flex-shrink:0}.gl-dict.on{padding:11px 15px 9px}.gl-dict-n{padding:1px 6px}.gl-tabsearch{order:2;width:100%;min-width:0}}',
       '.gl-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}',
       '.gl-row-lbl{font-size:12px;font-weight:800;color:var(--mute,#64748d);width:56px;flex-shrink:0}',
       '.gl-chip{border:1px solid var(--border,#e3e8ee);background:#fff;color:#334155;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}',
