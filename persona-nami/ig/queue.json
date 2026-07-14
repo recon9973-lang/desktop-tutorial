@@ -7,9 +7,9 @@
       "hook": "요즘, 아무도 검색 안 해요",
       "img": "persona-nami/ig/post1.png",
       "cap": "persona-nami/ig/post1.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null
+      "published": true,
+      "publishedAt": "2026-07-14T16:09:29.166Z",
+      "mediaId": "18481606597097805"
     },
     {
       "id": "aeo-02",
