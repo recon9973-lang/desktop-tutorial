@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="robots" content="noindex,nofollow">
+<title>VENOM GEO-OS · 거래처 GEO 운영 콘솔</title>
+<style>
+  :root{
+    --p:#533afd; --bd:#1c1e54; --ink:#0d253d; --ink2:#273951; --mute:#64748d;
+    --soft:#f6f9fc; --border:#e3e8ee; --r12:12px; --r16:16px;
+    --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--soft);padding-left:230px}
+  header{background:var(--bd);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:12px}
+  header h1{font-size:1.02rem;margin:0;font-weight:700}
+  header .tag{font-size:.72rem;background:rgba(255,255,255,.15);padding:3px 8px;border-radius:999px}
+  .secretbar{display:flex;gap:8px;align-items:center;margin-left:auto}
+  .secretbar input{width:170px;padding:6px 9px;font-size:.8rem;border:0;border-radius:8px}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--r16);padding:20px;margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat{background:var(--soft);border:1px solid var(--border);border-radius:var(--r12);padding:14px}
+  .stat .n{font-size:1.6rem;font-weight:800;color:var(--p)}
+  .stat .l{font-size:.78rem;color:var(--mute);margin-top:2px}
+  h2{font-size:1.05rem;margin:0 0 14px}
+  h3{font-size:.9rem;color:var(--ink2);margin:18px 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:.86rem}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+  th{color:var(--mute);font-weight:600;font-size:.78rem}
+  tr.clickable{cursor:pointer} tr.clickable:hover td{background:var(--soft)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:600}
+  .pill.on{background:#dcfce7;color:#166534}.pill.off{background:#f1f5f9;color:#475569}
+  .pill.risk{background:#fee2e2;color:#991b1b}
+  .lvl{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:6px;font-size:.7rem;font-weight:800;color:#fff}
+  .lvlA{background:#16a34a}.lvlB{background:#d97706}.lvlC{background:#2563eb}.lvlD{background:#dc2626}
+  input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:10px;font:inherit;background:#fff}
+  label{display:block;font-size:.78rem;color:var(--mute);margin:0 0 4px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .btn{padding:9px 16px;border:0;border-radius:10px;background:var(--p);color:#fff;font-weight:700;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--p);border:1px solid var(--p)}
+  .btn.sm{padding:5px 10px;font-size:.78rem}
+  .muted{color:var(--mute);font-size:.82rem}
+  .empty{color:var(--mute);text-align:center;padding:28px}
+  .tabs{display:flex;gap:8px;margin:4px 0 16px;flex-wrap:wrap}
+  .tab{padding:8px 15px;border:1px solid var(--border);background:#fff;border-radius:999px;cursor:pointer;font-weight:600;color:var(--ink2);font-size:.84rem}
+  .tab.on{background:var(--p);color:#fff;border-color:var(--p)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;opacity:0;transition:.3s;font-size:.85rem;z-index:50}
+  .toast.show{opacity:1}
+  .hide{display:none !important}
+  body.ro .wbtn{display:none !important} /* 읽기 전용 역할: 쓰기 UI 숨김(서버 인증은 ADMIN_SECRET 별도) */
+  .rolebadge{font-size:.7rem;background:rgba(255,255,255,.15);padding:3px 8px;border-radius:999px}
+  .mtx td,.mtx th{border:1px solid var(--border);text-align:center;padding:6px 5px;font-size:.74rem}
+  .gside{width:230px;background:var(--bd);color:#fff;position:fixed;top:0;bottom:0;left:0;display:flex;flex-direction:column;overflow-y:auto;z-index:100}
+  .gside-logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .gside-logo .lg{font-size:14px;font-weight:800}
+  .gside-logo .sb{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
+  .gside-sec{font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;padding:16px 20px 6px}
+  .snav{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:1px 10px;border-radius:10px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:600}
+  .snav span{width:18px;text-align:center}
+  .snav:hover{background:rgba(255,255,255,.08);color:#fff}
+  .snav.active{background:var(--p);color:#fff}
+  @media(max-width:820px){ .gside{display:none} body{padding-left:0} }
+</style>
+</head>
+<body>
+
+<nav class="gside">
+  <div class="gside-logo"><div class="lg">VENOM GEO-OS</div><div class="sb">거래처 GEO 운영 콘솔</div></div>
+  <div class="gside-sec">운영</div>
+  <div class="snav active" data-sec="dashboard" onclick="showSec('dashboard')"><span>📊</span>전체 관제</div>
+  <div class="snav" data-sec="clients" onclick="showSec('clients')"><span>🏥</span>거래처</div>
+  <div class="snav" data-sec="tasks" onclick="showSec('tasks')"><span>🗂️</span>업무 보드</div>
+  <div class="snav" data-sec="automation" onclick="showSec('automation')"><span>⚙️</span>자동화 로그</div>
+  <div class="gside-sec">권한</div>
+  <div style="padding:4px 16px 16px">
+    <select id="role" onchange="setRole(this.value)" style="width:100%;padding:8px;border-radius:8px;border:0;font-size:12px">
+      <option value="admin">운영 관리자</option>
+      <option value="staff">실무자</option>
+      <option value="content">콘텐츠 담당</option>
+      <option value="analyst">성과 분석가(읽기)</option>
+      <option value="clientview">거래처 담당(읽기)</option>
+      <option value="dev">개발/자동화</option>
+    </select>
+  </div>
+</nav>
+
+<header>
+  <h1>VENOM GEO-OS</h1><span class="tag" id="hdr-sub">거래처 GEO 운영</span>
+  <div class="secretbar">
+    <input id="secret" type="text" autocomplete="off" placeholder="ADMIN_SECRET" title="읽기/쓰기에 필요" style="-webkit-text-security:disc">
+    <button class="btn sm" onclick="saveSecret()">저장</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 전체 관제 -->
+  <section id="sec-dashboard">
+    <h2>전체 관제 대시보드</h2>
+    <div class="card"><div class="grid" id="dash-stats"><div class="empty">불러오는 중…</div></div></div>
+    <div class="card"><h3>⚠ 리스크 알림</h3><div id="dash-risks"><div class="empty">—</div></div></div>
+  </section>
+
+  <!-- 거래처 목록 -->
+  <section id="sec-clients" class="hide">
+    <h2>거래처 <button class="btn sm wbtn" style="margin-left:8px" onclick="openClientForm()">+ 새 거래처</button></h2>
+    <div class="card" id="client-form" style="display:none">
+      <h3 id="cf-title">새 거래처</h3>
+      <input type="hidden" id="cf-id">
+      <div class="row">
+        <div><label>거래처명 *</label><input id="cf-name" placeholder="예: 시원마취통증의학과의원"></div>
+        <div><label>업종</label><input id="cf-industry" placeholder="병원/통증의학"></div>
+      </div>
+      <div class="row">
+        <div><label>지역</label><input id="cf-region" placeholder="포항"></div>
+        <div><label>홈페이지 URL</label><input id="cf-website" placeholder="https://…"></div>
+      </div>
+      <div class="row">
+        <div><label>핵심 키워드(쉼표)</label><input id="cf-cores" placeholder="시원마취통증의학과, 시원마취통증"></div>
+        <div><label>경쟁사(쉼표)</label><input id="cf-competitors" placeholder="경쟁병원A, 경쟁병원B"></div>
+      </div>
+      <div class="row">
+        <div><label>운영 단계</label><select id="cf-stage"><option>진단</option><option>기반구축</option><option>콘텐츠생산</option><option>채널확장</option><option>최적화</option></select></div>
+        <div><label>활성(실측 포함)</label><select id="cf-active"><option value="true">활성</option><option value="false">비활성</option></select></div>
+      </div>
+      <button class="btn" onclick="saveClient()">저장</button>
+      <button class="btn ghost" onclick="document.getElementById('client-form').style.display='none'">닫기</button>
+    </div>
+    <div class="card"><table><thead><tr><th>거래처</th><th>업종</th><th>지역</th><th>단계</th><th>상태</th></tr></thead><tbody id="clients-tbody"><tr><td colspan="5" class="empty">불러오는 중…</td></tr></tbody></table></div>
+  </section>
+
+  <!-- 거래처 상세 -->
+  <section id="sec-client" class="hide">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <button class="btn ghost sm" onclick="showSec('clients')">← 목록</button>
+      <h2 id="cd-name" style="margin:0">거래처</h2>
+    </div>
+    <div class="tabs">
+      <div class="tab on" data-t="overview" onclick="showTab('overview')">개요</div>
+      <div class="tab" data-t="channels" onclick="showTab('channels')">채널</div>
+      <div class="tab" data-t="metrics" onclick="showTab('metrics')">성과</div>
+      <div class="tab" data-t="exposure" onclick="showTab('exposure')">AI 인용 모니터링</div>
+      <div class="tab" data-t="report" onclick="showTab('report')">리포트</div>
+    </div>
+    <div id="cd-overview" class="card"><div class="empty">—</div></div>
+    <div id="cd-channels" class="hide">
+      <div class="card wbtn">
+        <h3>채널 추가</h3>
+        <div class="row">
+          <div><label>채널 유형</label><select id="ch-type">
+            <option value="website">website</option><option value="gsc">gsc</option><option value="ga4">ga4</option>
+            <option value="gbp">gbp</option><option value="naver_place">naver_place</option>
+            <option value="linkedin">linkedin</option><option value="youtube">youtube</option><option value="blog">blog</option>
+            <option value="naver_blog">naver_blog</option><option value="naver_brunch">naver_brunch</option>
+            <option value="reddit">reddit</option><option value="naver_kin">naver_kin</option><option value="naver_cafe">naver_cafe</option>
+            <option value="stackoverflow">stackoverflow</option><option value="quora">quora</option>
+            <option value="wikipedia">wikipedia</option><option value="arxiv">arxiv</option><option value="github">github</option>
+            <option value="pr_global">pr_global</option><option value="pr_kr">pr_kr</option>
+          </select></div>
+          <div><label>계정 URL</label><input id="ch-url" placeholder="https://…"></div>
+        </div>
+        <div class="row">
+          <div><label>접근 상태</label><select id="ch-access"><option>미연결</option><option>초대요청</option><option>연결됨</option><option>오류</option></select></div>
+          <div><label>위험도</label><select id="ch-risk"><option value="low">낮음</option><option value="mid">중간</option><option value="high">높음</option></select></div>
+        </div>
+        <button class="btn" onclick="saveChannel()">채널 저장</button>
+      </div>
+      <div class="card"><table><thead><tr><th>유형</th><th>레벨</th><th>접근</th><th>위험</th><th>URL</th></tr></thead><tbody id="channels-tbody"><tr><td colspan="5" class="empty">—</td></tr></tbody></table></div>
+    </div>
+    <div id="cd-metrics" class="hide">
+      <div class="card wbtn">
+        <h3>성과 데이터 적재 (CSV)</h3>
+        <div class="muted" style="margin-bottom:8px">GSC "날짜" 내보내기(<code>Date,Clicks,Impressions,CTR,Position</code>) 또는 <code>metricName,metricDate,value</code> 형식을 붙여넣으세요. 같은 날짜는 덮어씁니다.</div>
+        <textarea id="mx-csv" style="min-height:90px" placeholder="Date,Clicks,Impressions,CTR,Position
+2026-07-01,120,3400,3.5%,8.2
+2026-07-08,150,3600,4.1%,7.4"></textarea>
+        <div class="row" style="grid-template-columns:1fr auto auto;align-items:end;margin-top:10px">
+          <div><label>출처</label><select id="mx-source"><option value="gsc">gsc</option><option value="ga4">ga4</option><option value="manual">manual</option></select></div>
+          <div><button class="btn ghost" onclick="collectGsc()" title="거래처 gscProperty + 서버 GSC 자격증명 필요">GSC 자동수집</button></div>
+          <div><button class="btn" onclick="ingestMetrics()">CSV 적재</button></div>
+        </div>
+      </div>
+      <div class="card"><h3>요약</h3><div class="grid" id="mx-summary"><div class="empty">—</div></div></div>
+      <div class="card"><h3>추이</h3><div id="mx-charts"><div class="empty">—</div></div></div>
+    </div>
+    <div id="cd-exposure" class="hide"><div class="card"><div id="exposure-body" class="empty">—</div></div></div>
+    <div id="cd-report" class="hide">
+      <div class="card wbtn">
+        <div style="display:flex;align-items:end;gap:10px">
+          <div style="flex:1"><label>기간(라벨)</label><input id="rp-period" placeholder="2026-W28"></div>
+          <button class="btn" onclick="generateReport()">주간 리포트 생성</button>
+        </div>
+        <div class="muted" style="margin-top:6px">성과·AI인용·업무 데이터를 집계해 성과/리스크/다음액션을 도출합니다. 통계를 지어내지 않고 실제 수집값만 사용합니다.</div>
+      </div>
+      <div id="rp-body"><div class="empty">아직 생성된 리포트가 없습니다</div></div>
+    </div>
+  </section>
+
+  <!-- 업무 보드 -->
+  <section id="sec-tasks" class="hide">
+    <h2>업무 보드</h2>
+    <div class="card wbtn">
+      <h3>채널 플레이북에서 업무 생성</h3>
+      <div class="row" style="grid-template-columns:1fr 1fr auto;align-items:end">
+        <div><label>거래처</label><select id="gen-client"><option value="">거래처 선택</option></select></div>
+        <div><label>채널 플레이북</label><select id="gen-template"><option value="">템플릿 선택</option></select></div>
+        <div><button class="btn" onclick="generateTasks()">업무 생성</button></div>
+      </div>
+      <div class="muted">선택한 거래처에 해당 채널의 단계별 업무가 자동화레벨(A~D)과 함께 생성됩니다. 위키/레딧 게시 등은 D(안내만)로 강등되어 자동 실행되지 않습니다.</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <label style="margin:0">거래처 필터</label>
+        <select id="task-filter" style="width:auto" onchange="loadTasks()"><option value="">전체</option></select>
+        <button class="btn ghost sm" onclick="loadTasks()">새로고침</button>
+      </div>
+      <div id="approval-queue"></div>
+      <div id="kanban" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px"></div>
+    </div>
+  </section>
+
+  <!-- 자동화 로그 -->
+  <section id="sec-automation" class="hide">
+    <h2>자동화 로그 <button class="btn ghost sm" onclick="loadAutomations()">새로고침</button></h2>
+    <div class="card">
+      <div class="muted" style="margin-bottom:8px">GitHub Actions 워크플로(AI 실측·주간 리포트 등)의 실행 상태·오류. 러너가 <code>?module=automation&action=log</code>로 기록합니다.</div>
+      <table><thead><tr><th>자동화</th><th>유형</th><th>상태</th><th>최근 실행</th><th>결과/오류</th></tr></thead><tbody id="automation-tbody"><tr><td colspan="5" class="empty">불러오는 중…</td></tr></tbody></table>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='/api/geo-ops';
+let SECRET = localStorage.getItem('venom-admin-secret') || localStorage.getItem('growthops_secret') || '';
+let CURRENT=null; // 현재 거래처
+
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+function saveSecret(){ SECRET=document.getElementById('secret').value.trim(); localStorage.setItem('venom-admin-secret',SECRET); localStorage.setItem('growthops_secret',SECRET); toast('시크릿 저장됨 — 관리자 콘솔과 공유'); refresh(); }
+function authHeaders(){ return SECRET?{'Authorization':'Bearer '+SECRET,'Content-Type':'application/json'}:{'Content-Type':'application/json'}; }
+async function api(path,opts){ try{ const r=await fetch(API+path,Object.assign({headers:authHeaders()},opts||{})); if(r.status===401){toast('ADMIN_SECRET을 입력·저장하세요');return null;} return await r.json(); }catch(e){ return null; } }
+
+function showSec(s){
+  ['dashboard','clients','client','tasks','automation'].forEach(x=>document.getElementById('sec-'+x).classList.toggle('hide',x!==s));
+  document.querySelectorAll('.snav').forEach(n=>n.classList.toggle('active',n.dataset.sec===s));
+  if(s==='dashboard')loadDashboard();
+  if(s==='clients')loadClients();
+  if(s==='tasks')initTasks();
+  if(s==='automation')loadAutomations();
+}
+
+// ── 역할(권한) — 화면 범위 제어(파일럿). 서버 쓰기 인증은 ADMIN_SECRET 별도 ──
+const ROLES={
+  admin:{label:'운영 관리자',secs:['dashboard','clients','tasks','automation'],write:true},
+  staff:{label:'실무자',secs:['dashboard','clients','tasks'],write:true},
+  content:{label:'콘텐츠 담당',secs:['clients','tasks'],write:true},
+  analyst:{label:'성과 분석가',secs:['dashboard','clients','automation'],write:false},
+  clientview:{label:'거래처 담당',secs:['clients'],write:false},
+  dev:{label:'개발/자동화',secs:['dashboard','automation'],write:true},
+};
+let ROLE=localStorage.getItem('geo-role')||'admin';
+let CANWRITE=true;
+function setRole(r){ ROLE=r; localStorage.setItem('geo-role',r); applyRole(); }
+function applyRole(){
+  const def=ROLES[ROLE]||ROLES.admin;
+  CANWRITE=def.write;
+  document.body.classList.toggle('ro',!def.write);
+  document.querySelectorAll('.snav').forEach(n=>n.classList.toggle('hide',!def.secs.includes(n.dataset.sec)));
+  document.getElementById('hdr-sub').innerHTML='거래처 GEO 운영 · <span class="rolebadge">'+def.label+(def.write?'':' · 읽기전용')+'</span>';
+  const roleSel=document.getElementById('role'); if(roleSel)roleSel.value=ROLE;
+  // 현재 섹션이 역할에 없으면 첫 허용 섹션으로
+  const cur=document.querySelector('.snav.active');
+  if(!cur||!def.secs.includes(cur.dataset.sec))showSec(def.secs[0]);
+}
+
+// ── 자동화 로그 ──
+async function loadAutomations(){
+  const tb=document.getElementById('automation-tbody');
+  const j=await api('?module=automations&action=list');
+  if(!j||!j.ok){ tb.innerHTML='<tr><td colspan="5" class="empty">데이터 없음 — 시크릿 확인</td></tr>'; return; }
+  if(!j.data.length){ tb.innerHTML='<tr><td colspan="5" class="empty">기록된 자동화 실행이 없습니다 — 워크플로 실행 시 채워집니다</td></tr>'; return; }
+  const color=s=>s==='error'||s==='failed'?'#dc2626':(s==='ok'||s==='success'?'#16a34a':'#64748d');
+  tb.innerHTML=j.data.slice().sort((a,b)=>String(b.lastRunAt||'').localeCompare(String(a.lastRunAt||''))).map(a=>
+    '<tr><td><b>'+esc(a.name||a.id)+'</b></td><td>'+esc(a.workflowType||'')+'</td>'+
+    '<td><span class="pill" style="background:#f1f5f9;color:'+color(a.status||a.lastResult)+'">'+esc(a.status||a.lastResult||'—')+'</span></td>'+
+    '<td class="muted">'+String(a.lastRunAt||'').slice(0,16).replace('T',' ')+'</td>'+
+    '<td class="muted">'+esc(a.errorMessage||a.lastResult||'')+'</td></tr>').join('');
+}
+function showTab(t){
+  ['overview','channels','metrics','exposure','report'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
+  document.querySelectorAll('#sec-client .tab').forEach(el=>el.classList.toggle('on',el.dataset.t===t));
+}
+
+// ── 관제 ──
+async function loadDashboard(){
+  const st=document.getElementById('dash-stats'), rk=document.getElementById('dash-risks');
+  const j=await api('?module=dashboard');
+  if(!j||!j.ok){ st.innerHTML='<div class="empty">데이터 없음 — 시크릿 확인</div>'; rk.innerHTML='<div class="empty">—</div>'; return; }
+  const d=j.data;
+  st.innerHTML=[
+    ['거래처',d.clientsTotal],['활성',d.clientsActive],['채널',d.channelsTotal],
+    ['승인 대기',d.tasksApprovalWaiting],['이번주 마감',d.tasksDueThisWeek],['자동화 실패',d.automationsFailed],['리스크',d.riskCount]
+  ].map(x=>'<div class="stat"><div class="n">'+x[1]+'</div><div class="l">'+x[0]+'</div></div>').join('');
+  rk.innerHTML=(d.risks&&d.risks.length)?('<table><thead><tr><th>거래처</th><th>채널</th><th>상태</th></tr></thead><tbody>'+
+    d.risks.map(r=>'<tr><td>'+(r.clientId||'')+'</td><td>'+(r.channelType||'')+'</td><td><span class="pill risk">'+(r.healthStatus||'')+'</span></td></tr>').join('')+'</tbody></table>'):'<div class="empty">리스크 없음</div>';
+}
+
+// ── 거래처 목록 ──
+async function loadClients(){
+  const tb=document.getElementById('clients-tbody');
+  const j=await api('?module=clients&action=list');
+  if(!j||!j.ok){ tb.innerHTML='<tr><td colspan="5" class="empty">데이터 없음 — 시크릿 확인</td></tr>'; return; }
+  if(!j.data.length){ tb.innerHTML='<tr><td colspan="5" class="empty">거래처가 없습니다 — “+ 새 거래처”로 등록</td></tr>'; return; }
+  tb.innerHTML=j.data.map(c=>'<tr class="clickable" onclick="openClient(\''+c.id+'\')"><td><b>'+esc(c.name)+'</b></td><td>'+esc(c.industry||'')+'</td><td>'+esc(c.region||'')+'</td><td>'+esc(c.lifecycleStage||'')+'</td><td><span class="pill '+(c.active?'on':'off')+'">'+(c.active?'활성':'비활성')+'</span></td></tr>').join('');
+}
+function openClientForm(c){
+  document.getElementById('client-form').style.display='block';
+  document.getElementById('cf-title').textContent=c?'거래처 편집':'새 거래처';
+  document.getElementById('cf-id').value=c?c.id:'';
+  document.getElementById('cf-name').value=c?c.name||'':'';
+  document.getElementById('cf-industry').value=c?c.industry||'':'';
+  document.getElementById('cf-region').value=c?c.region||'':'';
+  document.getElementById('cf-website').value=c?c.websiteUrl||'':'';
+  document.getElementById('cf-cores').value=c&&c.coreKeywords?c.coreKeywords.join(', '):'';
+  document.getElementById('cf-competitors').value=c&&c.competitors?c.competitors.join(', '):'';
+  document.getElementById('cf-stage').value=c?c.lifecycleStage||'진단':'진단';
+  document.getElementById('cf-active').value=c?String(c.active!==false):'true';
+}
+function splitList(v){ return (v||'').split(',').map(s=>s.trim()).filter(Boolean); }
+async function saveClient(){
+  const name=document.getElementById('cf-name').value.trim();
+  if(!name){ toast('거래처명 필요'); return; }
+  const client={
+    name, industry:document.getElementById('cf-industry').value.trim(),
+    region:document.getElementById('cf-region').value.trim(),
+    websiteUrl:document.getElementById('cf-website').value.trim(),
+    coreKeywords:splitList(document.getElementById('cf-cores').value),
+    competitors:splitList(document.getElementById('cf-competitors').value),
+    lifecycleStage:document.getElementById('cf-stage').value,
+    active:document.getElementById('cf-active').value==='true',
+    priorityAiEngines:['perplexity','openai','gemini','claude']
+  };
+  const id=document.getElementById('cf-id').value; if(id)client.id=id;
+  const j=await api('?module=clients&action=upsert',{method:'POST',body:JSON.stringify({client})});
+  if(j&&j.ok){ toast('저장됨'); document.getElementById('client-form').style.display='none'; loadClients(); }
+  else toast('저장 실패 — 시크릿 확인');
+}
+
+// ── 거래처 상세 ──
+async function openClient(id){
+  showSec('client'); showTab('overview');
+  const j=await api('?module=clients&action=get&id='+encodeURIComponent(id));
+  if(!j||!j.ok){ document.getElementById('cd-overview').innerHTML='<div class="empty">불러오기 실패</div>'; return; }
+  CURRENT=j.data;
+  document.getElementById('cd-name').textContent=CURRENT.name;
+  document.getElementById('cd-overview').innerHTML=
+    '<div class="grid">'+
+    tile('업종',CURRENT.industry)+tile('지역',CURRENT.region)+tile('단계',CURRENT.lifecycleStage)+tile('활성',CURRENT.active?'활성':'비활성')+
+    '</div><h3>핵심 키워드</h3><div class="muted">'+esc((CURRENT.coreKeywords||[]).join(', ')||'—')+'</div>'+
+    '<h3>경쟁사(SOV 비교)</h3><div class="muted">'+esc((CURRENT.competitors||[]).join(', ')||'—')+'</div>'+
+    '<div style="margin-top:14px"><button class="btn ghost sm" onclick="openClientForm(CURRENT);showSec(\'clients\')">편집</button></div>';
+  loadChannels(id); loadMetrics(id); loadExposure(id); loadReport(id);
+}
+function tile(l,v){ return '<div class="stat"><div class="n" style="font-size:1rem">'+esc(v||'—')+'</div><div class="l">'+l+'</div></div>'; }
+
+const LVL={website:'A',gsc:'A',ga4:'A',schema:'A',llms_txt:'A',gbp:'B',naver_place:'B',linkedin:'B',youtube:'B',blog:'B',naver_blog:'B',naver_brunch:'B',reddit:'C',naver_kin:'C',naver_cafe:'C',stackoverflow:'C',quora:'C',wikipedia:'C',arxiv:'D',github:'B',pr_global:'B',pr_kr:'B'};
+async function loadChannels(id){
+  const tb=document.getElementById('channels-tbody');
+  const j=await api('?module=channels&action=list&clientId='+encodeURIComponent(id));
+  if(!j||!j.ok||!j.data.length){ tb.innerHTML='<tr><td colspan="5" class="empty">채널 없음</td></tr>'; return; }
+  tb.innerHTML=j.data.map(c=>{const lv=LVL[c.channelType]||'D';return '<tr><td>'+esc(c.channelType)+'</td><td><span class="lvl lvl'+lv+'">'+lv+'</span></td><td>'+esc(c.accessStatus||'')+'</td><td>'+esc(c.riskLevel||'')+'</td><td class="muted">'+esc(c.accountUrl||'')+'</td></tr>';}).join('');
+}
+async function saveChannel(){
+  if(!CURRENT){ return; }
+  const channel={ clientId:CURRENT.id, channelType:document.getElementById('ch-type').value,
+    accountUrl:document.getElementById('ch-url').value.trim(),
+    accessStatus:document.getElementById('ch-access').value,
+    riskLevel:document.getElementById('ch-risk').value,
+    defaultAutomationLevel:LVL[document.getElementById('ch-type').value]||'D' };
+  const j=await api('?module=channels&action=upsert',{method:'POST',body:JSON.stringify({channel})});
+  if(j&&j.ok){ toast('채널 저장됨'); document.getElementById('ch-url').value=''; loadChannels(CURRENT.id); }
+  else toast('저장 실패');
+}
+
+// ── 성과 메트릭 (CSV 적재 + 요약 + SVG 추이) ──
+const MLABEL={clicks:'클릭',impressions:'노출',ctr:'CTR',position:'평균순위',sessions:'세션',conversions:'전환'};
+async function ingestMetrics(){
+  if(!CURRENT)return;
+  const csv=document.getElementById('mx-csv').value.trim();
+  if(!csv){ toast('CSV를 붙여넣으세요'); return; }
+  const j=await api('?module=metrics&action=ingest',{method:'POST',body:JSON.stringify({clientId:CURRENT.id,source:document.getElementById('mx-source').value,csv})});
+  if(j&&j.ok){ toast(j.count+'개 지표 적재됨'+(j.count===0?' (형식 확인)':'')); document.getElementById('mx-csv').value=''; loadMetrics(CURRENT.id); }
+  else toast('적재 실패 — 시크릿/형식 확인');
+}
+async function collectGsc(){
+  if(!CURRENT)return;
+  toast('GSC 수집 요청 중…');
+  const j=await api('?module=metrics&action=collect',{method:'POST',body:JSON.stringify({clientId:CURRENT.id})});
+  if(!j){ toast('실패 — 시크릿 확인'); return; }
+  if(j.configured===false){ toast('설정 필요: '+(j.note||'gscProperty/자격증명')); return; }
+  if(j.ok){ toast('GSC '+j.count+'개 지표 수집됨'); loadMetrics(CURRENT.id); }
+  else toast('수집 실패: '+(j.error||''));
+}
+async function loadMetrics(id){
+  const sum=document.getElementById('mx-summary'), ch=document.getElementById('mx-charts');
+  const j=await api('?module=metrics&action=summary&clientId='+encodeURIComponent(id));
+  if(!j||!j.ok||!j.data.length){ sum.innerHTML='<div class="empty">성과 데이터 없음 — 위에서 CSV를 적재하세요</div>'; ch.innerHTML=''; return; }
+  sum.innerHTML=j.data.map(m=>{
+    const lab=MLABEL[m.metricName]||m.metricName;
+    const d=m.delta;
+    const arrow=(d==null)?'':(d>0?'<span style="color:#16a34a">▲'+d+'</span>':(d<0?'<span style="color:#dc2626">▼'+Math.abs(d)+'</span>':'–'));
+    return '<div class="stat"><div class="n" style="font-size:1.3rem">'+esc(String(m.latest))+'</div><div class="l">'+esc(lab)+' '+arrow+'</div></div>';
+  }).join('');
+  // 메트릭별 시계열 차트
+  const names=j.data.map(m=>m.metricName);
+  const seriesAll=await Promise.all(names.map(n=>api('?module=metrics&action=series&clientId='+encodeURIComponent(id)+'&metricName='+encodeURIComponent(n)).then(r=>({n,pts:(r&&r.ok)?r.data:[]}))));
+  ch.innerHTML=seriesAll.filter(s=>s.pts.length).map(s=>sparkCard(MLABEL[s.n]||s.n,s.pts)).join('')||'<div class="empty">추이 표시할 데이터가 부족합니다</div>';
+}
+function sparkCard(label,pts){
+  const W=420,H=90,P=8;
+  const vals=pts.map(p=>p.value);
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=(mx-mn)||1;
+  const step=pts.length>1?(W-2*P)/(pts.length-1):0;
+  const xy=pts.map((p,i)=>[P+i*step,H-P-((p.value-mn)/rng)*(H-2*P)]);
+  const line=xy.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+' '+c[1].toFixed(1)).join(' ');
+  const dots=xy.map(c=>'<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="2.5" fill="#533afd"/>').join('');
+  return '<div style="margin-bottom:14px">'+
+    '<div style="font-size:.8rem;font-weight:700;color:var(--ink2);margin-bottom:4px">'+esc(label)+' <span class="muted">'+pts[0].date+' → '+pts[pts.length-1].date+'</span></div>'+
+    '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto;background:var(--soft);border:1px solid var(--border);border-radius:10px">'+
+    '<path d="'+line+'" fill="none" stroke="#533afd" stroke-width="2"/>'+dots+'</svg></div>';
+}
+
+// ── AI 인용 매트릭스 (ai-expose-latest.json 재사용 — AI Exposure Check 워크플로 산출) ──
+function aeVerdict(v){ if(v==='cited')return['인용','#0a7d3c','#e3f6ea']; if(v==='mentioned')return['언급','#0a7d3c','#e3f6ea']; if(v==='error')return['측정불가','#8a6d00','#fff6da']; return['미노출','#b42318','#fdecea']; }
+async function loadExposure(id){
+  const body=document.getElementById('exposure-body');
+  let snap=null;
+  try{ snap=await fetch('/content/ai-expose-latest.json?_='+Date.now()).then(r=>r.ok?r.json():null); }catch(e){}
+  if(!snap||!snap.businesses){ body.innerHTML='<div class="empty">아직 실측 데이터 없음 — GitHub Actions <b>AI Exposure Check</b> 실행 시 자동 채워집니다.</div>'; return; }
+  const b=snap.businesses.filter(x=>x.key===id)[0];
+  if(!b){ body.innerHTML='<div class="empty">이 거래처의 실측 스냅샷이 아직 없습니다. 다음 측정 주기에 포함됩니다.</div>'; return; }
+  const engs=snap.engines||['perplexity','openai','gemini','claude'], elab=snap.eng_label||{};
+  const s=b.summary||{};
+  let html='<div class="grid" style="margin-bottom:14px">'+tile('전체 노출률',(s.tot_pct||0)+'%')+tile('발견형(신환)',(s.disc_pct||0)+'%')+tile('측정불가',s.errors||0)+'</div>';
+  html+='<table class="mtx"><thead><tr><th style="text-align:left">질문</th>'+engs.map(e=>'<th style="background:#111827;color:#fff">'+(elab[e]||e)+'</th>').join('')+'</tr></thead><tbody>';
+  (b.questions||[]).forEach((q,qi)=>{
+    const brand=(qi===b.questions.length-1);
+    html+='<tr><td style="text-align:left;max-width:280px">'+(brand?'<span class="pill off">브랜드</span> ':'')+esc(q)+'</td>'+
+      engs.map(e=>{const v=((b.grid[qi]||b.grid[String(qi)]||{})[e])||'none';const m=aeVerdict(v);return '<td style="background:'+m[2]+';color:'+m[1]+';font-weight:700">'+m[0]+'</td>';}).join('')+'</tr>';
+  });
+  html+='</tbody></table><div class="muted" style="margin-top:8px">실측일 '+String(snap.generated_at||'').slice(0,10)+(snap.run_id?(' · run '+snap.run_id):'')+'</div>';
+  body.innerHTML=html;
+}
+
+// ── 주간 리포트 ──
+async function generateReport(){
+  if(!CURRENT)return;
+  const period=document.getElementById('rp-period').value.trim();
+  const j=await api('?module=report&action=generate',{method:'POST',body:JSON.stringify({clientId:CURRENT.id,period})});
+  if(j&&j.ok){ toast('리포트 생성됨'); renderReport(j.data); }
+  else toast('생성 실패 — 시크릿 확인');
+}
+async function loadReport(id){
+  const j=await api('?module=report&action=list&clientId='+encodeURIComponent(id));
+  const body=document.getElementById('rp-body');
+  if(!j||!j.ok||!j.data.length){ body.innerHTML='<div class="card"><div class="empty">아직 생성된 리포트가 없습니다 — 위에서 “주간 리포트 생성”</div></div>'; return; }
+  const latest=j.data.slice().sort((a,b)=>String(b.generatedAt||'').localeCompare(String(a.generatedAt||'')))[0];
+  renderReport(latest);
+}
+function reportList(title,items,color){
+  if(!items||!items.length)return '';
+  return '<h3 style="color:'+color+'">'+title+'</h3><ul style="margin:0 0 6px;padding-left:18px">'+items.map(x=>'<li style="font-size:.86rem;margin:3px 0">'+esc(x)+'</li>').join('')+'</ul>';
+}
+function renderReport(r){
+  document.getElementById('rp-body').innerHTML='<div class="card">'+
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">'+
+      '<h2 style="margin:0">주간 리포트 '+esc(r.reportPeriod||'')+'</h2>'+
+      '<span class="muted">'+String(r.generatedAt||'').slice(0,10)+'</span></div>'+
+    '<div style="background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:12px;margin:10px 0;font-size:.88rem">'+esc(r.summary||'')+'</div>'+
+    reportList('✅ 성과(keyWins)',r.keyWins,'#166534')+
+    reportList('⚠ 리스크',r.risks,'#b42318')+
+    reportList('▶ 다음 액션',r.nextActions,'#4338ca')+
+    '</div>';
+}
+
+// ── 업무 보드(칸반·승인큐·플레이북 생성) ──
+const KCOLS=[['backlog','Backlog'],['thisweek','이번주'],['doing','진행중'],['review','승인대기'],['hold','보류'],['done','완료'],['failed','실패/재작업']];
+let TASKS_INIT=false;
+async function initTasks(){
+  if(!TASKS_INIT){
+    TASKS_INIT=true;
+    // 거래처·템플릿 셀렉트 채우기
+    const cj=await api('?module=clients&action=list');
+    const clients=(cj&&cj.ok)?cj.data:[];
+    const opts='<option value="">'+'거래처 선택'+'</option>'+clients.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+    document.getElementById('gen-client').innerHTML=opts;
+    document.getElementById('task-filter').innerHTML='<option value="">전체</option>'+clients.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+    const tj=await api('?module=templates');
+    const tps=(tj&&tj.ok)?tj.data:[];
+    document.getElementById('gen-template').innerHTML='<option value="">채널 플레이북 선택</option>'+tps.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.id)+' ('+t.cap+'상한 · '+t.steps+'단계)</option>').join('');
+  }
+  loadTasks();
+}
+async function generateTasks(){
+  const clientId=document.getElementById('gen-client').value, templateId=document.getElementById('gen-template').value;
+  if(!clientId||!templateId){ toast('거래처·플레이북을 선택하세요'); return; }
+  const j=await api('?module=tasks&action=generate',{method:'POST',body:JSON.stringify({clientId,templateId})});
+  if(j&&j.ok){ toast(j.count+'개 업무 생성됨'); loadTasks(); }
+  else toast('생성 실패 — 시크릿 확인');
+}
+async function loadTasks(){
+  const filter=document.getElementById('task-filter').value;
+  const q='?module=tasks&action=list'+(filter?('&clientId='+encodeURIComponent(filter)):'');
+  const j=await api(q);
+  const kb=document.getElementById('kanban'), aq=document.getElementById('approval-queue');
+  if(!j||!j.ok){ kb.innerHTML='<div class="empty">데이터 없음 — 시크릿 확인</div>'; aq.innerHTML=''; return; }
+  const tasks=j.data;
+  // 승인 큐(상단 고정): approvalStatus pending
+  const pending=tasks.filter(t=>t.approvalStatus==='pending');
+  aq.innerHTML=pending.length?('<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;margin-bottom:14px">'+
+    '<div style="font-weight:800;color:#9a3412;margin-bottom:8px">🔔 승인 대기 '+pending.length+'건</div>'+
+    pending.map(t=>'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #fde8cf">'+
+      lvlBadge(t.automationLevel)+'<span style="flex:1">'+esc(t.title)+' <span class="muted">('+esc(t.clientId)+')</span></span>'+
+      (CANWRITE?('<button class="btn sm" onclick="approveTask(\''+t.id+'\',\'approved\')">승인</button>'+
+      '<button class="btn ghost sm" onclick="approveTask(\''+t.id+'\',\'rejected\')">반려</button>'):'')+'</div>').join('')+'</div>'):'';
+  // 칸반
+  kb.innerHTML=renderKanban(tasks);
+}
+function lvlBadge(l){ l=l||'D'; return '<span class="lvl lvl'+l+'">'+l+'</span>'; }
+function renderKanban(tasks){
+  return KCOLS.map(([key,label])=>{
+    const items=tasks.filter(t=>(t.status||'backlog')===key);
+    const cards=items.map(t=>'<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px;margin-bottom:8px">'+
+      '<div style="display:flex;gap:6px;align-items:flex-start">'+lvlBadge(t.automationLevel)+'<div style="flex:1;font-size:.8rem;font-weight:600;line-height:1.3">'+esc(t.title||'')+'</div></div>'+
+      '<div class="muted" style="margin:4px 0 6px">'+esc(t.clientId||'')+(t.guard?(' · <span style="color:#b42318">🔒'+esc(t.guard)+'</span>'):'')+'</div>'+
+      (CANWRITE?('<select style="font-size:.72rem;padding:4px 6px" onchange="moveTask(\''+t.id+'\',this.value)">'+
+        KCOLS.map(([k,l])=>'<option value="'+k+'"'+(k===key?' selected':'')+'>'+l+'</option>').join('')+
+      '</select>'):'<span class="pill off">'+esc(label)+'</span>')+'</div>').join('')||'<div class="muted" style="font-size:.75rem;padding:6px">—</div>';
+    return '<div style="min-width:170px;flex:0 0 170px;background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:10px">'+
+      '<div style="font-size:.76rem;font-weight:800;color:var(--ink2);margin-bottom:8px">'+label+' <span class="muted">'+items.length+'</span></div>'+cards+'</div>';
+  }).join('');
+}
+async function moveTask(id,to){
+  const j=await api('?module=tasks&action=move',{method:'POST',body:JSON.stringify({id,to})});
+  if(j&&j.ok){ loadTasks(); } else toast('이동 실패');
+}
+async function approveTask(id,decision){
+  const j=await api('?module=tasks&action=approve',{method:'POST',body:JSON.stringify({id,decision})});
+  if(j&&j.ok){ toast(decision==='approved'?'승인됨':'반려됨'); loadTasks(); } else toast('처리 실패');
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function refresh(){ const cur=document.querySelector('.snav.active'); showSec(cur?cur.dataset.sec:'dashboard'); }
+
+// init
+document.getElementById('secret').value=SECRET;
+applyRole();
+showSec((ROLES[ROLE]||ROLES.admin).secs[0]);
+</script>
+</body>
+</html>

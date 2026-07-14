@@ -2,7 +2,8 @@ name: AI Exposure Check
 
 # 4대 AI(Perplexity·ChatGPT·Gemini·Claude)에 환자 질문을 던져
 # 특정 업체가 답변에 노출(언급)되는지 실측한다. GitHub 러너가 배포된 /api/insights를 호출.
-# 입력: venom-wordpress/preview/content/ai-expose-input.json ({businesses:[{key,name,cores,questions}]})
+# 입력(P1-3 일반화): geo/clients.json(active) + geo/prompt-sets.json 을 lib/geo-aeo-input.js 가
+#   { businesses:[{key,name,cores,questions}] } 로 컴파일. 신규 소스가 비면 ai-expose-input.json 폴백.
 # 결과는 로그의 RESULTS_JSON= 한 줄에 JSON으로 출력된다.
 
 on:
@@ -34,11 +35,15 @@ jobs:
           node - "$INPUT" <<'NODE'
           const https = require('https');
           const fs = require('fs');
+          const path = require('path');
           const BASE = 'https://venom-new-site.vercel.app';
           const ENGINES = ['perplexity', 'openai', 'gemini', 'claude'];
           const ENG_LABEL = { perplexity: 'Perplexity', openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude' };
           const OUT_PATH = 'venom-wordpress/preview/content/ai-expose-latest.json';
-          const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          // P1-3: 거래처 멀티테넌트(geo/clients.json active + prompt-sets.json)를 컴파일. 비면 argv[2](기존 입력) 폴백.
+          const aeoInput = require(path.resolve(process.cwd(), 'venom-wordpress/preview/lib/geo-aeo-input.js'));
+          const cfg = aeoInput.loadInput(fs, { fallbackPath: process.argv[2] });
+          console.log(`INPUT source=${cfg.source} businesses=${cfg.businesses.length}`);
 
           function get(url) {
             return new Promise((resolve) => {
