@@ -1,0 +1,54 @@
+name: Publish IG photos
+
+# GROUND(@ground_geo) 인스타그램 — 큐에서 "하루 1장"씩 자동발행.
+# 샌드박스는 graph.facebook.com egress가 막혀 발행 불가 → 이 Action(러너)이 대신 발행한다.
+# 토큰은 저장소 Secret(IG_TOKEN)에 1회만 등록. 채팅/코드에 노출되지 않는다.
+#
+# 준비(1회): Settings → Secrets and variables → Actions → New repository secret
+#   - IG_TOKEN : 인스타(페이스북 그래프) 장기 액세스 토큰   (필수)
+#   - IG_ID    : 인스타 비즈니스 계정 ID (선택, 기본 queue.json 값)
+#
+# 트리거:
+#   - schedule: 매일 21:00 KST(=12:00 UTC) 자동. ※ GitHub cron은 기본 브랜치에서만 동작.
+#   - workflow_dispatch: 아무 브랜치에서나 수동/API 트리거(하루 1장 즉시).
+
+on:
+  schedule:
+    - cron: '0 12 * * *'      # 21:00 KST 매일
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-ig
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish next queued photo
+        env:
+          IG_ID: ${{ secrets.IG_ID }}
+          TOKEN: ${{ secrets.IG_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::IG_TOKEN 시크릿이 없습니다. Settings → Secrets → Actions 에 추가하세요."
+            exit 1
+          fi
+          node persona-nami/ig/publish-next.mjs
+
+      - name: Commit queue update
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add persona-nami/ig/queue.json
+          if git diff --cached --quiet; then
+            echo "큐 변경 없음(발행할 게시물 없음)."
+          else
+            git commit -m "chore(ig): 큐 발행 상태 갱신 [skip ci]"
+            git push
+          fi

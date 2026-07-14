@@ -1,0 +1,78 @@
+{
+  "igId": "17841472664941872",
+  "note": "GROUND(@ground_geo) 인스타 발행 큐 — 하루 1개씩 위에서부터 발행. published=true 는 발행 완료. img/cap 은 저장소 상대경로(발행 시 커밋 SHA로 jsDelivr 공개 URL 자동 생성).",
+  "posts": [
+    {
+      "id": "geo-01",
+      "hook": "요즘, 아무도 검색 안 해요",
+      "img": "persona-nami/ig/post1.png",
+      "cap": "persona-nami/ig/post1.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "aeo-02",
+      "hook": "챗GPT한테 우리 브랜드 물어봤더니…",
+      "img": "persona-nami/ig/post2.png",
+      "cap": "persona-nami/ig/post2.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "seo-03",
+      "hook": "SEO, 30초컷 요약",
+      "img": "persona-nami/ig/post3.png",
+      "cap": "persona-nami/ig/post3.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "eeat-04",
+      "hook": "AI가 믿는 콘텐츠엔 이게 있어요 (E-E-A-T)",
+      "img": "persona-nami/ig/post4.png",
+      "cap": "persona-nami/ig/post4.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "schema-05",
+      "hook": "AI한테 떠먹여 주는 법 (구조화 데이터)",
+      "img": "persona-nami/ig/post5.png",
+      "cap": "persona-nami/ig/post5.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "llmstxt-06",
+      "hook": "AI한테 보내는 초대장 (llms.txt)",
+      "img": "persona-nami/ig/post6.png",
+      "cap": "persona-nami/ig/post6.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "mention-07",
+      "hook": "링크보다 '언급'이 중요해요 (멘션)",
+      "img": "persona-nami/ig/post7.png",
+      "cap": "persona-nami/ig/post7.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    },
+    {
+      "id": "smartblock-08",
+      "hook": "네이버도 이제 '답'을 보여줘요 (스마트블록)",
+      "img": "persona-nami/ig/post8.png",
+      "cap": "persona-nami/ig/post8.txt",
+      "published": false,
+      "publishedAt": null,
+      "mediaId": null
+    }
+  ]
+}
