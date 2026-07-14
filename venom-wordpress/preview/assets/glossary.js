@@ -22,6 +22,11 @@
     technical: { label: '테크니컬',   color: '#ea580c', dict: 'seo' },
     link:      { label: '링크빌딩',   color: '#9333ea', dict: 'seo' },
     optimize:  { label: '최적화',     color: '#e11d48', dict: 'seo' },
+    seo_geo:   { label: 'GEO',        color: '#0d9488', dict: 'seo' },
+    seo_aeo:   { label: 'AEO',        color: '#0891b2', dict: 'seo' },
+    seo_local: { label: '로컬 SEO',   color: '#65a30d', dict: 'seo' },
+    seo_metric:{ label: 'SEO 지표',   color: '#c2410c', dict: 'seo' },
+    seo_risk:  { label: 'SEO 리스크', color: '#dc2626', dict: 'seo' },
     // ── AI ────────────────────────────────
     ai_basic:  { label: 'AI 기본',    color: '#0d9488', dict: 'ai' },
     ai_geo:    { label: 'GEO·AEO',    color: '#0891b2', dict: 'ai' },
@@ -42,109 +47,246 @@
 
   // [ko, en, def, cat, dict]  (dict 생략 시 'seo')
   var TERMS = [
-    // ═══════════════ SEO 용어사전 ═══════════════
-    ['검색엔진 최적화','SEO','검색엔진에서 찾기 쉽도록 사이트를 개선하는 프로세스.','basic','seo'],
-    ['검색 엔진','Search engine','구글, 야후, 네이버와 같이 정보를 찾아주는 엔진.','basic','seo'],
+    // ═══════════════ SEO 용어사전 (검증본 150 + 보존 66) ═══════════════
+    // [ko, en, def, cat, dict, {ac,detail,ex,rel,src:[[name,url],...]}]
+
+    // ── 기본 용어 ──
+    ['KPI','KPI','Key Performance Indicator의 약자로 목표 달성 성과를 객관적으로 평가하는 핵심 기준.','basic','seo'],
     ['SERP','SERP','Search Engine Results Pages의 약자로 검색엔진 결과 페이지를 의미.','basic','seo'],
-    ['온페이지 SEO','on-page SEO','소유하고 있는 웹사이트상에서 수행하는 최적화 작업.','basic','seo'],
+    ['URL','URL','Uniform Resource Locators의 약자로 콘텐츠의 주소·위치.','basic','seo'],
+    ['검색 엔진','Search engine','구글, 야후, 네이버와 같이 정보를 찾아주는 엔진.','basic','seo'],
+    ['검색 쿼리','Search Query','사용자가 검색창이나 AI 검색에 입력하는 단어와 문장.','basic','seo',{detail:'사용자가 검색창이나 AI 검색에 입력하는 단어와 문장. 실무에서는 검색 기본 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'반품 기간이 얼마나 걸려요라고 검색.',rel:'키워드;검색 의도;대화형 쿼리',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['검색엔진 결과 페이지','Search Engine Results Page','사용자 검색 후 검색엔진이 결과와 기능을 보여주는 화면.','basic','seo',{ac:'SERP',detail:'사용자 검색 후 검색엔진이 결과와 기능을 보여주는 화면. 실무에서는 검색 기본 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'파란 링크, 광고, 이미지, AI Overview가 함께 표시됨.',rel:'스니펫;리치 결과;AI Overview',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet']]}],
+    ['검색엔진최적화','Search Engine Optimization','검색엔진이 콘텐츠를 이해하고 사용자가 찾게 만드는 최적화 활동.','basic','seo',{ac:'SEO',detail:'검색엔진이 콘텐츠를 이해하고 사용자가 찾게 만드는 최적화 활동. 실무에서는 검색 기본 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'사이트 구조와 콘텐츠를 개선해 자연 검색 노출을 높임.',rel:'검색엔진;크롤링;색인',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['그레이햇 SEO','Grey hat SEO','블랙햇과 화이트햇의 경계에 있는 SEO 작업.','basic','seo'],
+    ['랭킹','Ranking','검색어에 대한 연관순 검색결과 나열.','basic','seo'],
+    ['롱테일 키워드','Long-tail Keyword','구체적이고 길어 의도가 뚜렷한 검색어.','basic','seo',{detail:'구체적이고 길어 의도가 뚜렷한 검색어. 실무에서는 검색 기본 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'초보자용 무릎 보호 러닝화 추천.',rel:'헤드 키워드;전환;검색 의도',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['리치 결과','Rich Result','구조화 데이터 등을 바탕으로 검색 결과가 확장 표시되는 형태.','basic','seo',{detail:'구조화 데이터 등을 바탕으로 검색 결과가 확장 표시되는 형태. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품 가격, 평점, 재고가 결과에 표시.',rel:'구조화 데이터;리치 스니펫;SERP',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet']]}],
+    ['리치 스니펫','Rich Snippet','평점, 가격, 이미지처럼 추가 정보가 붙은 검색 스니펫.','basic','seo',{detail:'평점, 가격, 이미지처럼 추가 정보가 붙은 검색 스니펫. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'레시피 결과에 조리 시간과 평점 표시.',rel:'리치 결과;구조화 데이터;스니펫',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet']]}],
+    ['메타 설명','Meta Description','검색 스니펫 설명 후보가 되는 HTML meta description 내용.','basic','seo',{detail:'검색 스니펫 설명 후보가 되는 HTML meta description 내용. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'페이지 요약을 1~2문장으로 작성.',rel:'스니펫;타이틀 링크;CTR',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - Meta Tags','https://developers.google.com/search/docs/crawling-indexing/special-tags']]}],
+    ['블랙햇 SEO','Black hat SEO','검색엔진의 정책에 반하는 SEO 작업.','basic','seo'],
+    ['사이트링크','Sitelinks','검색 결과 아래에 사이트의 주요 하위 링크가 함께 표시되는 기능.','basic','seo',{detail:'검색 결과 아래에 사이트의 주요 하위 링크가 함께 표시되는 기능. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'브랜드 검색 결과에 가격, 문의, 블로그 링크 표시.',rel:'내비게이션;사이트 구조;SERP',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['스니펫','Snippet','검색 결과에서 페이지 내용을 요약해 보여주는 설명 영역.','basic','seo',{detail:'검색 결과에서 페이지 내용을 요약해 보여주는 설명 영역. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'검색어와 관련된 문장이 결과 설명에 표시.',rel:'메타 설명;리치 스니펫;SERP',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - Meta Tags','https://developers.google.com/search/docs/crawling-indexing/special-tags']]}],
+    ['오가닉','Organic','유료 광고가 아닌 자연적으로 얻어진 검색결과 순위.','basic','seo'],
     ['오프페이지 SEO','Off-page SEO','해당 웹사이트가 아닌 다른 공간에서 이루어지는 최적화 작업.','basic','seo'],
     ['온서프 SEO','on-SERP SEO','검색결과 페이지에서 이루어지는 최적화 작업.','basic','seo'],
-    ['블랙햇 SEO','Black hat SEO','검색엔진의 정책에 반하는 SEO 작업.','basic','seo'],
-    ['화이트햇 SEO','White hat SEO','검색엔진이 권장하는 방식의 SEO 작업.','basic','seo'],
-    ['그레이햇 SEO','Grey hat SEO','블랙햇과 화이트햇의 경계에 있는 SEO 작업.','basic','seo'],
-    ['크롤링','Crawling','신규 또는 업데이트된 웹페이지를 찾는 프로세스.','basic','seo'],
-    ['피쳐드 스니펫','Featured snippets','특정 검색어에 제공되는 검색결과 상위의 오가닉 답변 박스.','basic','seo'],
+    ['온페이지 SEO','on-page SEO','소유하고 있는 웹사이트상에서 수행하는 최적화 작업.','basic','seo'],
     ['이미지 캐러셀','Image carousels','특정 검색결과에 보여지는 좌우 스크롤형 이미지 모음집.','basic','seo'],
-    ['인덱싱','Indexing','수집 페이지를 분석한 후 빠르게 찾아볼 수 있도록 저장하는 작업.','basic','seo'],
-    ['KPI','KPI','Key Performance Indicator의 약자로 목표 달성 성과를 객관적으로 평가하는 핵심 기준.','basic','seo'],
-    ['로컬 팩','Local pack','검색어 주제와 검색자의 지리적 위치를 고려한 위치 기반 결과.','basic','seo'],
-    ['오가닉','Organic','유료 광고가 아닌 자연적으로 얻어진 검색결과 순위.','basic','seo'],
-    ['관련 질문','People Also Ask','검색결과에 보여지는 드롭다운 형태의 연관 추가 질문 모음.','basic','seo'],
+    ['자연 검색','Organic Search','광고가 아닌 검색 결과를 통해 발생하는 발견과 방문.','basic','seo',{detail:'광고가 아닌 검색 결과를 통해 발생하는 발견과 방문. 실무에서는 검색 기본 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'블로그 글이 광고 없이 검색 결과에서 클릭됨.',rel:'SEO;검색 트래픽;SERP',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['지식 패널','Knowledge Panel','엔티티 정보를 요약해 보여주는 검색 결과 패널.','basic','seo',{detail:'엔티티 정보를 요약해 보여주는 검색 결과 패널. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'회사명 검색 시 로고, 설명, 공식 사이트가 표시.',rel:'엔티티;Organization;Schema.org',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['추천 스니펫','Featured Snippet','검색 결과 상단에 답변 요약을 강조 표시하는 기능.','basic','seo',{detail:'검색 결과 상단에 답변 요약을 강조 표시하는 기능. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'정의형 질문에 짧은 문단 답변이 상단 노출.',rel:'AEO;직접 답변;스니펫',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
     ['쿼리','Query','사용자가 검색창에 입력하는 검색어.','basic','seo'],
-    ['랭킹','Ranking','검색어에 대한 연관순 검색결과 나열.','basic','seo'],
+    ['키워드','Keyword','사용자가 정보를 찾을 때 쓰는 핵심 단어나 구문.','basic','seo',{detail:'사용자가 정보를 찾을 때 쓰는 핵심 단어나 구문. 실무에서는 검색 기본 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'러닝화 추천, 세금 신고 방법.',rel:'키워드 리서치;롱테일 키워드;검색 의도',src:[['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['타이틀 링크','Title Link','검색 결과에서 클릭 가능한 제목으로 표시되는 텍스트.','basic','seo',{detail:'검색 결과에서 클릭 가능한 제목으로 표시되는 텍스트. 실무에서는 검색 노출 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'페이지 title과 주요 헤딩을 명확하게 작성.',rel:'메타 설명;스니펫;SERP',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
     ['트래픽','Traffic','웹사이트로의 방문 유입.','basic','seo'],
-    ['URL','URL','Uniform Resource Locators의 약자로 콘텐츠의 주소·위치.','basic','seo'],
+    ['피쳐드 스니펫','Featured snippets','특정 검색어에 제공되는 검색결과 상위의 오가닉 답변 박스.','basic','seo'],
+    ['화이트햇 SEO','White hat SEO','검색엔진이 권장하는 방식의 SEO 작업.','basic','seo'],
 
-    ['알고리즘','Algorithms','검색 의도에 가장 적합한 결과를 전달하기 위해 정보를 채굴·정렬하는 프로세스·공식.','engine','seo'],
-    ['크롤러','Crawler','스파이더·로봇으로 불리며 웹 페이지를 수집·색인 생성하는 자동 소프트웨어.','engine','seo'],
-    ['크롤 버짓','Crawl budget','검색엔진 수집봇이 웹사이트에서 평균적으로 수집하는 페이지 수.','engine','seo'],
-    ['페이지 랭크','PageRank','구글 검색 결과에서 웹페이지 순위를 정하는 구글의 알고리즘.','engine','seo'],
-    ['색인','Index','제공할 가치가 있는 콘텐츠를 선별해 모아놓은 거대한 데이터베이스.','engine','seo'],
+    // ── 검색엔진 ──
     ['2xx 상태 코드','2xx status codes','서버 요청 처리 성공 응답(상태) 코드.','engine','seo'],
-    ['301 리디렉션','301 redirect','도메인·URL을 영구적으로 변경할 때 사용하는 리디렉션.','engine','seo'],
     ['302 리디렉션','302 redirect','페이지·사이트를 일시적으로 옮길 때 사용하는 리디렉션.','engine','seo'],
     ['404 에러','404 error','요청한 파일이 없어 불러올 수 없을 때 표시하는 에러.','engine','seo'],
     ['5xx 상태 코드','5xx status codes','서버 오류로 인한 요청 처리 불가 상태 코드.','engine','seo'],
-    ['캐싱','Caching','웹페이지의 저장본.','engine','seo'],
-    ['카페인','Caffeine','구글의 색인 시스템으로 수집된 웹 콘텐츠의 모음집.','engine','seo'],
-    ['클로킹','Cloaking','검색엔진과 방문자에게 서로 다른 콘텐츠를 보여주는 편법.','engine','seo'],
-    ['구글 서치 콘솔','Google Search Console','구글이 사이트를 어떻게 인식하는지 점검하는 관리자용 무료 툴.','engine','seo'],
+    ['AI 크롤러','AI Crawler','AI 기능이나 모델 관련 목적의 콘텐츠 접근에 쓰이는 크롤러.','engine','seo',{detail:'AI 기능이나 모델 관련 목적의 콘텐츠 접근에 쓰이는 크롤러. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI 기능 표시와 학습 목적 접근을 구분해 제어.',rel:'Google-Extended;robots.txt;AI 검색',src:[['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['Google-Extended','Google-Extended','Google의 일부 AI 학습·개선 사용을 제어하기 위한 제품 토큰.','engine','seo',{detail:'Google의 일부 AI 학습·개선 사용을 제어하기 위한 제품 토큰. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'robots.txt에서 Google-Extended 접근 규칙을 설정.',rel:'AI 크롤러;robots.txt;콘텐츠 제어',src:[['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers'],['Google Search Central - robots.txt','https://developers.google.com/search/docs/crawling-indexing/robots/intro']]}],
+    ['Googlebot','Googlebot','Google 검색이 웹 콘텐츠를 수집할 때 사용하는 대표 크롤러.','engine','seo',{detail:'Google 검색이 웹 콘텐츠를 수집할 때 사용하는 대표 크롤러. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'서버 로그에서 Googlebot 요청을 확인.',rel:'크롤러;Google-Extended;크롤링',src:[['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers'],['Google Search Central - robots.txt','https://developers.google.com/search/docs/crawling-indexing/robots/intro']]}],
     ['HTML','HTML','Hypertext markup language의 약자로 웹 페이지를 만드는 데 쓰이는 언어.','engine','seo'],
-    ['내부 링크','Internal links','같은 웹사이트의 다른 페이지로 이동시키는 링크.','engine','seo'],
-    ['자바스크립트','JavaScript','웹 페이지에 행동 요소를 추가하는 프로그래밍 언어.','engine','seo'],
+    ['IndexNow','IndexNow','URL 변경을 참여 검색엔진에 빠르게 알리는 공개 프로토콜.','engine','seo',{detail:'URL 변경을 참여 검색엔진에 빠르게 알리는 공개 프로토콜. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품 페이지 업데이트 후 IndexNow API로 제출.',rel:'사이트맵;크롤링;Bing',src:[['IndexNow Documentation','https://www.indexnow.org/documentation'],['Google Search Central - Sitemaps','https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview']]}],
+    ['noindex','noindex','검색엔진에 페이지를 색인하지 말라고 지시하는 값.','engine','seo',{detail:'검색엔진에 페이지를 색인하지 말라고 지시하는 값. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'회원 전용 안내 페이지를 검색 결과에서 제외.',rel:'robots 메타 태그;X-Robots-Tag;색인',src:[['Google Search Central - Meta Tags','https://developers.google.com/search/docs/crawling-indexing/special-tags'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['robots 메타 태그','Robots Meta Tag','페이지 단위로 색인과 스니펫 표시를 제어하는 HTML 메타 태그.','engine','seo',{detail:'페이지 단위로 색인과 스니펫 표시를 제어하는 HTML 메타 태그. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'검색 결과에 보이면 안 되는 페이지에 noindex 적용.',rel:'noindex;nofollow;스니펫 제어',src:[['Google Search Central - Meta Tags','https://developers.google.com/search/docs/crawling-indexing/special-tags'],['Google Search Central - robots.txt','https://developers.google.com/search/docs/crawling-indexing/robots/intro']]}],
+    ['robots.txt','robots.txt','크롤러가 접근할 수 있는 경로를 안내하는 사이트 루트 파일.','engine','seo',{detail:'크롤러가 접근할 수 있는 경로를 안내하는 사이트 루트 파일. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'관리자 페이지 경로를 Disallow로 지정.',rel:'Disallow;크롤러;Google-Extended',src:[['Google Search Central - robots.txt','https://developers.google.com/search/docs/crawling-indexing/robots/intro'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
+    ['구글 서치 콘솔','Google Search Console','구글이 사이트를 어떻게 인식하는지 점검하는 관리자용 무료 툴.','engine','seo'],
     ['노인덱스 태그','NoIndex tag','검색엔진에게 특정 페이지를 색인하지 말라고 알려주는 메타 태그.','engine','seo'],
-    ['로봇 배제 표준','Robots.txt','검색엔진 로봇의 접근을 제어하고 사이트맵 위치를 알려주는 규약.','engine','seo'],
-    ['사이트 맵','Sitemap.xml','웹사이트 내의 모든 페이지들을 나열한 파일.','engine','seo'],
+    ['렌더링','Rendering','검색엔진이 HTML, CSS, JavaScript를 처리해 페이지 내용을 파악하는 과정.','engine','seo',{detail:'검색엔진이 HTML, CSS, JavaScript를 처리해 페이지 내용을 파악하는 과정. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'JS로 불러온 상품 설명이 렌더링 후에 보임.',rel:'JavaScript SEO;클라이언트 렌더링;서버 렌더링',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
+    ['사이트맵','Sitemap','검색엔진에 중요한 URL과 변경 정보를 알려주는 파일.','engine','seo',{detail:'검색엔진에 중요한 URL과 변경 정보를 알려주는 파일. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'sitemap.xml에 주요 카테고리와 글 URL을 포함.',rel:'사이트맵 색인;크롤링;색인',src:[['Google Search Central - Sitemaps','https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['색인','Indexing','검색엔진이 페이지를 저장하고 검색 대상으로 처리하는 과정.','engine','seo',{detail:'검색엔진이 페이지를 저장하고 검색 대상으로 처리하는 과정. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'새 문서가 Google 색인에 포함됨.',rel:'크롤링;색인 커버리지;noindex',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['색인 커버리지','Index Coverage','사이트 URL이 색인에 포함됐는지와 제외 사유를 보여주는 상태.','engine','seo',{detail:'사이트 URL이 색인에 포함됐는지와 제외 사유를 보여주는 상태. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Search Console에서 발견됨-현재 색인 생성 안 됨을 확인.',rel:'Search Console;색인;크롤링 오류',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['알고리즘','Algorithms','검색 의도에 가장 적합한 결과를 전달하기 위해 정보를 채굴·정렬하는 프로세스·공식.','engine','seo'],
+    ['자바스크립트','JavaScript','웹 페이지에 행동 요소를 추가하는 프로그래밍 언어.','engine','seo'],
+    ['카페인','Caffeine','구글의 색인 시스템으로 수집된 웹 콘텐츠의 모음집.','engine','seo'],
+    ['캐싱','Caching','웹페이지의 저장본.','engine','seo'],
+    ['크롤 예산','Crawl Budget','검색엔진이 사이트에서 크롤링할 수 있는 대략적 리소스와 우선순위.','engine','seo',{detail:'검색엔진이 사이트에서 크롤링할 수 있는 대략적 리소스와 우선순위. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'대형 쇼핑몰에서 중복 필터 URL 크롤링을 줄임.',rel:'크롤 수요;크롤 속도;사이트 구조',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
+    ['크롤러','Crawler','웹 페이지를 자동으로 탐색하고 가져오는 검색엔진 프로그램.','engine','seo',{detail:'웹 페이지를 자동으로 탐색하고 가져오는 검색엔진 프로그램. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Googlebot이 링크를 따라 페이지를 수집.',rel:'Googlebot;크롤링;robots.txt',src:[['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers'],['Google Search Central - robots.txt','https://developers.google.com/search/docs/crawling-indexing/robots/intro']]}],
+    ['크롤링','Crawling','검색엔진이 웹 페이지를 발견하고 가져오는 과정.','engine','seo',{detail:'검색엔진이 웹 페이지를 발견하고 가져오는 과정. 실무에서는 크롤링·색인 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Googlebot이 새 블로그 글 URL을 방문.',rel:'크롤러;색인;사이트맵',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
+    ['페이지 랭크','PageRank','구글 검색 결과에서 웹페이지 순위를 정하는 구글의 알고리즘.','engine','seo'],
 
-    ['키워드 경쟁지수','Keyword Difficulty','특정 키워드를 사용하는 경쟁자가 얼마나 많은지 숫자로 나타낸 수치.','keyword','seo'],
-    ['롱테일 키워드','Long-tail keywords','검색량은 적지만 검색의도가 구체적으로 표현된 키워드.','keyword','seo'],
-    ['검색량','Search volume','해당 키워드를 얼마나 검색했는지 보여주는 수치.','keyword','seo'],
-    ['시드 키워드','Seed keywords','제공하는 제품·서비스를 설명하는 기본적인 단어.','keyword','seo'],
+    // ── 키워드 ──
     ['LSI 키워드','LSI keywords','Latent Semantic Indexing, 특정 주제와 밀접하게 관련되어 자주 쓰이는 단어.','keyword','seo'],
+    ['거래형 의도','Transactional Intent','구매, 예약, 가입처럼 행동을 완료하려는 검색 목적.','keyword','seo',{detail:'구매, 예약, 가입처럼 행동을 완료하려는 검색 목적. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'노트북 할인 구매 검색.',rel:'전환;제품 구조화 데이터;상업 조사',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681']]}],
+    ['검색 의도','Search Intent','사용자가 검색으로 실제 해결하려는 목적.','keyword','seo',{detail:'사용자가 검색으로 실제 해결하려는 목적. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'가격 비교, 사용법 확인, 구매 페이지 찾기.',rel:'정보형 의도;거래형 의도;AEO',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['검색량','Search volume','해당 키워드를 얼마나 검색했는지 보여주는 수치.','keyword','seo'],
+    ['도움되는 콘텐츠','Helpful Content','사용자가 방문 후 만족할 만큼 유용하고 신뢰할 수 있는 콘텐츠.','keyword','seo',{detail:'사용자가 방문 후 만족할 만큼 유용하고 신뢰할 수 있는 콘텐츠. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'질문에 직접 답하고 근거와 다음 행동을 제시.',rel:'사람 우선 콘텐츠;검색 의도;품질',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['비상품화 콘텐츠','Non-commodity Content','흔한 요약을 넘어 고유 경험과 관점을 담은 콘텐츠.','keyword','seo',{detail:'흔한 요약을 넘어 고유 경험과 관점을 담은 콘텐츠. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'단순 팁 목록 대신 실제 실패 사례와 데이터를 제공.',rel:'정보 이득;GEO;사람 우선 콘텐츠',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['사람 우선 콘텐츠','People-first Content','검색엔진보다 실제 독자의 만족과 문제 해결을 우선하는 콘텐츠.','keyword','seo',{detail:'검색엔진보다 실제 독자의 만족과 문제 해결을 우선하는 콘텐츠. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'경험 기반으로 장단점과 한계를 솔직히 설명.',rel:'도움되는 콘텐츠;E-E-A-T;스팸 정책',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['상업 조사 의도','Commercial Investigation Intent','구매 전 비교와 평가를 하려는 검색 목적.','keyword','seo',{detail:'구매 전 비교와 평가를 하려는 검색 목적. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'A 제품 B 제품 비교 후기 검색.',rel:'리뷰;제품 스니펫;검색 의도',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['시드 키워드','Seed keywords','제공하는 제품·서비스를 설명하는 기본적인 단어.','keyword','seo'],
+    ['시맨틱 SEO','Semantic SEO','단어 반복보다 의미, 주제, 관계를 중심으로 콘텐츠를 최적화하는 접근.','keyword','seo',{detail:'단어 반복보다 의미, 주제, 관계를 중심으로 콘텐츠를 최적화하는 접근. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'러닝화 글에서 쿠션, 착지, 부상 예방까지 함께 설명.',rel:'엔티티;토픽 클러스터;GEO',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['엔티티','Entity','사람, 장소, 조직, 제품처럼 식별 가능한 대상.','keyword','seo',{detail:'사람, 장소, 조직, 제품처럼 식별 가능한 대상. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'브랜드, 창업자, 매장을 명확히 연결해 설명.',rel:'지식 패널;Schema.org;토픽 권위',src:[['Schema.org - Getting Started','https://schema.org/docs/gs.html'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['정보 이득','Information Gain','기존 결과에 없는 독창적 관점이나 세부 정보를 제공하는 가치.','keyword','seo',{detail:'기존 결과에 없는 독창적 관점이나 세부 정보를 제공하는 가치. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'실제 테스트 데이터와 사진으로 리뷰를 보강.',rel:'비상품화 콘텐츠;GEO;사람 우선 콘텐츠',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['정보형 의도','Informational Intent','지식, 설명, 방법을 얻으려는 검색 목적.','keyword','seo',{detail:'지식, 설명, 방법을 얻으려는 검색 목적. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'robots.txt가 뭐야를 검색.',rel:'AEO;답변형 콘텐츠;검색 의도',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['콘텐츠 신선도','Content Freshness','콘텐츠가 현재 상황과 최신 정보에 맞게 유지되는 정도.','keyword','seo',{detail:'콘텐츠가 현재 상황과 최신 정보에 맞게 유지되는 정도. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'2026 규정 변경을 반영해 세금 글 업데이트.',rel:'업데이트;색인;사용자 만족',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['콘텐츠 허브','Content Hub','관련 콘텐츠를 한곳에 모아 탐색성과 주제 권위를 높이는 영역.','keyword','seo',{detail:'관련 콘텐츠를 한곳에 모아 탐색성과 주제 권위를 높이는 영역. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'검색 마케팅 자료실을 카테고리별로 구성.',rel:'토픽 권위;내부 링크;필러 페이지',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['키워드 경쟁지수','Keyword Difficulty','특정 키워드를 사용하는 경쟁자가 얼마나 많은지 숫자로 나타낸 수치.','keyword','seo'],
+    ['키워드 리서치','Keyword Research','사용자 수요와 표현을 파악해 콘텐츠 주제를 정하는 조사.','keyword','seo',{detail:'사용자 수요와 표현을 파악해 콘텐츠 주제를 정하는 조사. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Search Console 쿼리로 새 가이드 주제 선정.',rel:'검색 쿼리;검색량;콘텐츠 갭',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
     ['키워드 카니발리제이션','Keyword cannibalization','여러 콘텐츠가 동일 키워드로 경쟁해 어느 것도 상위가 아닌 상태.','keyword','seo'],
-    ['검색 의도','Search Intent','사용자가 검색으로 이루려는 실제 목적(정보·거래·이동 등).','keyword','seo'],
-    ['토픽 클러스터','Topic Cluster','핵심 주제(필러) 글과 세부 글을 내부링크로 묶어 주제 권위를 높이는 콘텐츠 구조.','keyword','seo'],
+    ['탐색형 의도','Navigational Intent','특정 사이트나 브랜드 페이지로 이동하려는 검색 목적.','keyword','seo',{detail:'특정 사이트나 브랜드 페이지로 이동하려는 검색 목적. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Google Search Console 로그인 검색.',rel:'브랜드 검색;사이트링크;검색 의도',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet']]}],
+    ['토픽 권위','Topical Authority','특정 주제에 대해 깊고 일관된 전문성을 보여주는 상태.','keyword','seo',{detail:'특정 주제에 대해 깊고 일관된 전문성을 보여주는 상태. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'법률 사이트가 상속 주제를 체계적으로 다룸.',rel:'E-E-A-T;콘텐츠 허브;GEO',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Quality Rater Guidelines','https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf']]}],
+    ['토픽 클러스터','Topic Cluster','중심 주제와 하위 글을 내부 링크로 묶은 콘텐츠 구조.','keyword','seo',{detail:'중심 주제와 하위 글을 내부 링크로 묶은 콘텐츠 구조. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'SEO 허브와 크롤링, 색인, 구조화 데이터 글을 연결.',rel:'필러 페이지;콘텐츠 허브;내부 링크',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['필러 페이지','Pillar Page','넓은 주제를 포괄하고 세부 글로 연결하는 중심 페이지.','keyword','seo',{detail:'넓은 주제를 포괄하고 세부 글로 연결하는 중심 페이지. 실무에서는 콘텐츠 전략 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI 마케팅 가이드에서 GEO, AEO, SEO 글로 연결.',rel:'토픽 클러스터;콘텐츠 허브;사이트 구조',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
 
-    ['오픈 그래프','Open Graph Protocol','페이스북 등에서 웹사이트의 디테일한 정보를 제공하게 하는 기능.','technical','seo'],
-    ['트위터 카드','Twitter card','트위터에서 링크 공유 시 글·이미지를 미리보기로 보는 기능.','technical','seo'],
-    ['이미지 대체 텍스트','Image alt text','웹 수집봇에게 이미지를 설명하는 문자열.','technical','seo'],
-    ['앵커 텍스트','Anchor text','링크가 삽입된 텍스트.','technical','seo'],
-    ['이미지 사이트 맵','Image sitemap','웹사이트에 업로드된 이미지의 URL만 나열한 파일.','technical','seo'],
-    ['키워드 스터핑','Keyword stuffing','같은 키워드를 의도적으로 반복하는 정책 위반 작업.','technical','seo'],
-    ['타이틀 태그','Title tag','검색결과에서 페이지의 제목을 보여주는 HTML 태그.','technical','seo'],
-    ['메타 디스크립션','Meta descriptions','웹페이지에 대한 요약 설명글.','technical','seo'],
-    ['보안 프로토콜','Security Protocol(HTTPS)','HTTP 보안 강화 버전으로 SSL·TLS로 세션 데이터를 암호화.','technical','seo'],
-    ['캐노니컬 태그','Rel=canonical','원본 및 중복 URL 주소를 검색엔진에게 알려주는 태그.','technical','seo'],
-    ['SSL','SSL','Secure Sockets Layer, 서버·브라우저 간 데이터를 암호화하는 보안 기술.','technical','seo'],
-    ['썸네일','Thumbnails','큰 이미지의 작은 버전.','technical','seo'],
+    // ── 테크니컬 ──
     ['AMP','AMP','Accelerated Mobile Pages, 더 빠른 로딩을 제공하는 페이지 복사본.','technical','seo'],
+    ['BreadcrumbList','BreadcrumbList','브레드크럼 경로를 구조화하는 Schema.org 타입.','technical','seo',{detail:'브레드크럼 경로를 구조화하는 Schema.org 타입. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'홈 > 카테고리 > 상품 경로를 JSON-LD로 표시.',rel:'브레드크럼;구조화 데이터;SERP',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['CSS','CSS','Cascading Style Sheet, 웹 페이지의 디자인 요소를 설정하는 언어.','technical','seo'],
+    ['FAQPage','FAQPage','질문과 답변 목록을 구조화해 표현하는 Schema.org 타입.','technical','seo',{detail:'질문과 답변 목록을 구조화해 표현하는 Schema.org 타입. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'배송 FAQ의 질문과 답을 마크업.',rel:'FAQ;AEO;직접 답변',src:[['Schema.org - Getting Started','https://schema.org/docs/gs.html'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['HTTPS','HTTPS','암호화된 HTTP 통신으로 사이트 보안과 신뢰를 높이는 프로토콜.','technical','seo',{detail:'암호화된 HTTP 통신으로 사이트 보안과 신뢰를 높이는 프로토콜. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'결제 페이지와 전체 사이트를 HTTPS로 제공.',rel:'보안;페이지 경험;기술 요구사항',src:[['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['IP 주소','IP address','Internet Protocol, 네트워크 상 컴퓨터의 고유 주소.','technical','seo'],
+    ['JSON-LD','JSON for Linking Data','구조화 데이터를 JSON 형식으로 페이지에 삽입하는 방식.','technical','seo',{ac:'JSON-LD',detail:'구조화 데이터를 JSON 형식으로 페이지에 삽입하는 방식. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'script type=application/ld+json 안에 Product 데이터 작성.',rel:'Schema.org;구조화 데이터;리치 결과',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['JavaScript SEO','JavaScript SEO','JavaScript 기반 사이트를 검색엔진이 이해하도록 최적화하는 기술.','technical','seo',{ac:'JS SEO',detail:'JavaScript 기반 사이트를 검색엔진이 이해하도록 최적화하는 기술. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'렌더링 후 콘텐츠가 Googlebot에 보이는지 점검.',rel:'렌더링;CSR;SSR',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
+    ['LocalBusiness 구조화 데이터','LocalBusiness Structured Data','매장 주소, 영업시간, 전화번호 등을 구조화하는 마크업.','technical','seo',{detail:'매장 주소, 영업시간, 전화번호 등을 구조화하는 마크업. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'식당 페이지에 openingHours와 address를 표시.',rel:'로컬 SEO;NAP;Google Business Profile',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['Organization 구조화 데이터','Organization Structured Data','조직의 이름, 로고, 연락처, 식별 정보를 구조화하는 마크업.','technical','seo',{detail:'조직의 이름, 로고, 연락처, 식별 정보를 구조화하는 마크업. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'회사 소개 페이지에 공식 로고와 URL을 표시.',rel:'엔티티;지식 패널;Schema.org',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['Product 구조화 데이터','Product Structured Data','상품명, 가격, 재고, 평점 같은 상품 정보를 구조화하는 마크업.','technical','seo',{detail:'상품명, 가격, 재고, 평점 같은 상품 정보를 구조화하는 마크업. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품 상세 페이지에 price와 availability를 표시.',rel:'리치 결과;전자상거래 SEO;Review',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['SSL','SSL','Secure Sockets Layer, 서버·브라우저 간 데이터를 암호화하는 보안 기술.','technical','seo'],
+    ['Schema.org','Schema.org','검색엔진과 웹에서 쓰는 구조화 데이터 어휘 공동 표준.','technical','seo',{detail:'검색엔진과 웹에서 쓰는 구조화 데이터 어휘 공동 표준. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Article, Product, LocalBusiness 타입 사용.',rel:'구조화 데이터;JSON-LD;엔티티',src:[['Schema.org - Getting Started','https://schema.org/docs/gs.html'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['ccTLD','ccTLD','country code top level domain, 특정 국가 관련 도메인(.kr·.uk 등).','technical','seo'],
+    ['구조화 데이터','Structured Data','페이지 정보를 검색엔진이 이해하기 쉬운 형식으로 표시하는 마크업.','technical','seo',{detail:'페이지 정보를 검색엔진이 이해하기 쉬운 형식으로 표시하는 마크업. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'제품 가격과 평점을 JSON-LD로 제공.',rel:'Schema.org;리치 결과;JSON-LD',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['누적 레이아웃 이동','Cumulative Layout Shift','페이지 로딩 중 예기치 않은 레이아웃 이동 정도.','technical','seo',{ac:'CLS',detail:'페이지 로딩 중 예기치 않은 레이아웃 이동 정도. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'광고 삽입으로 본문이 갑자기 밀리는 문제 측정.',rel:'Core Web Vitals;페이지 경험;렌더링',src:[['Google Search Central - Core Web Vitals','https://developers.google.com/search/docs/appearance/core-web-vitals'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['다음 페인트 상호작용','Interaction to Next Paint','사용자 상호작용 후 화면 반응까지의 지연을 측정하는 지표.','technical','seo',{ac:'INP',detail:'사용자 상호작용 후 화면 반응까지의 지연을 측정하는 지표. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'버튼 클릭 후 UI가 빠르게 반응하는지 확인.',rel:'Core Web Vitals;사용자 경험;성능',src:[['Google Search Central - Core Web Vitals','https://developers.google.com/search/docs/appearance/core-web-vitals'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['대체 텍스트','Alt Text','이미지 내용을 설명하는 텍스트 속성.','technical','seo',{detail:'이미지 내용을 설명하는 텍스트 속성. 실무에서는 미디어 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'차트 이미지에 핵심 내용을 설명.',rel:'이미지 SEO;접근성;검색 의도',src:[['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['리뷰 스니펫','Review Snippet','평점과 리뷰 요약이 검색 결과에 표시되는 기능.','technical','seo',{detail:'평점과 리뷰 요약이 검색 결과에 표시되는 기능. 실무에서는 구조화 데이터 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'제품 결과에 별점 평균과 리뷰 수 표시.',rel:'Product;리치 결과;신뢰',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['메타 디스크립션','Meta descriptions','웹페이지에 대한 요약 설명글.','technical','seo'],
+    ['모바일 우선 색인','Mobile-first Indexing','Google이 주로 모바일 버전 콘텐츠를 색인과 평가에 사용하는 방식.','technical','seo',{detail:'Google이 주로 모바일 버전 콘텐츠를 색인과 평가에 사용하는 방식. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'데스크톱에만 있는 문구가 모바일에 없어 색인 신호가 약해짐.',rel:'반응형 디자인;모바일 SEO;렌더링',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['반응형 디자인','Responsive Design','화면 크기에 따라 같은 URL과 HTML이 유연하게 표시되는 설계.','technical','seo',{detail:'화면 크기에 따라 같은 URL과 HTML이 유연하게 표시되는 설계. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'모바일과 데스크톱에서 동일 콘텐츠를 적절히 배치.',rel:'모바일 우선 색인;사용자 경험;CSS',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['보안 프로토콜','Security Protocol(HTTPS)','HTTP 보안 강화 버전으로 SSL·TLS로 세션 데이터를 암호화.','technical','seo'],
     ['브라우저','Browser','웹에서 정보를 얻을 수 있게 하는 소프트웨어(크롬·익스플로러 등).','technical','seo'],
+    ['비디오 SEO','Video SEO','동영상 콘텐츠를 검색과 동영상 기능에 잘 노출시키는 최적화.','technical','seo',{detail:'동영상 콘텐츠를 검색과 동영상 기능에 잘 노출시키는 최적화. 실무에서는 미디어 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'썸네일, 설명, VideoObject 마크업 제공.',rel:'VideoObject;자막;구조화 데이터',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['서버 사이드 렌더링','Server-side Rendering','서버에서 완성된 HTML을 만들어 전달하는 렌더링 방식.','technical','seo',{ac:'SSR',detail:'서버에서 완성된 HTML을 만들어 전달하는 렌더링 방식. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품명과 설명이 초기 HTML에 포함됨.',rel:'렌더링;CSR;JavaScript SEO',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
     ['서브 도메인','Subdomain','상위 도메인의 하위에 있는 독립적인 웹사이트.','technical','seo'],
     ['서브 폴더','Subfolder','루트 폴더 하위에 속한 폴더.','technical','seo'],
-    ['ccTLD','ccTLD','country code top level domain, 특정 국가 관련 도메인(.kr·.uk 등).','technical','seo'],
-    ['CSS','CSS','Cascading Style Sheet, 웹 페이지의 디자인 요소를 설정하는 언어.','technical','seo'],
-    ['Hreflang','Hreflang','문서의 언어 및 지역을 지정하는 HTML 메타 요소.','technical','seo'],
-    ['IP 주소','IP address','Internet Protocol, 네트워크 상 컴퓨터의 고유 주소.','technical','seo'],
-    ['모바일 중심 색인','Mobile-first indexing','모바일 버전 수집봇으로 모바일 페이지를 중점 크롤링·색인하는 구글 방식.','technical','seo'],
-    ['렌더링','Rendering','코드를 사용자가 볼 수 있는 비주얼 형식으로 변환하는 프로세스.','technical','seo'],
-    ['반응형 웹 디자인','Responsive design','각 기기에 최적화된 사이즈로 변하는 구글 권장 웹 디자인.','technical','seo'],
-    ['리치 스니펫','Rich snippet','이미지·비디오·FAQ 등이 추가되어 개선된 검색결과(리치 결과).','technical','seo'],
-    ['구조화된 데이터','Structured Data','검색엔진이 콘텐츠를 더 잘 이해하도록 조직화해 제공하는 데이터.','technical','seo'],
-    ['코어 웹 바이탈','Core Web Vitals','LCP·INP·CLS 3지표로 페이지 로딩·반응·시각 안정성을 측정하는 구글의 핵심 웹 지표.','technical','seo'],
-    ['INP','Interaction to Next Paint','사용자 입력에 페이지가 반응하는 속도를 재는 코어 웹 바이탈 지표(2024년 FID 대체).','technical','seo'],
     ['스키마 마크업','Schema Markup','Schema.org 어휘로 콘텐츠 유형을 구조화 데이터로 표시해 리치 결과를 돕는 표준.','technical','seo'],
-    ['브레드크럼','Breadcrumbs','현재 페이지의 사이트 내 위치를 계층으로 보여주는 탐색 경로.','technical','seo'],
+    ['썸네일','Thumbnails','큰 이미지의 작은 버전.','technical','seo'],
+    ['오픈 그래프','Open Graph Protocol','페이스북 등에서 웹사이트의 디테일한 정보를 제공하게 하는 기능.','technical','seo'],
+    ['이미지 SEO','Image SEO','이미지를 검색엔진과 사용자에게 잘 이해시키는 최적화.','technical','seo',{detail:'이미지를 검색엔진과 사용자에게 잘 이해시키는 최적화. 실무에서는 미디어 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'파일명, alt text, 크기, 구조화 데이터를 정리.',rel:'대체 텍스트;이미지 사이트맵;LCP',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['이미지 대체 텍스트','Image alt text','웹 수집봇에게 이미지를 설명하는 문자열.','technical','seo'],
+    ['이미지 사이트 맵','Image sitemap','웹사이트에 업로드된 이미지의 URL만 나열한 파일.','technical','seo'],
+    ['지연 로딩','Lazy Loading','필요한 시점에 이미지나 콘텐츠를 늦게 불러오는 최적화 방식.','technical','seo',{detail:'필요한 시점에 이미지나 콘텐츠를 늦게 불러오는 최적화 방식. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'스크롤 근처에 도달할 때 이미지 로드.',rel:'이미지 SEO;성능;렌더링',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Core Web Vitals','https://developers.google.com/search/docs/appearance/core-web-vitals']]}],
+    ['최대 콘텐츠풀 페인트','Largest Contentful Paint','페이지의 주요 콘텐츠가 로드되는 속도를 나타내는 성능 지표.','technical','seo',{ac:'LCP',detail:'페이지의 주요 콘텐츠가 로드되는 속도를 나타내는 성능 지표. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'히어로 이미지가 2.2초 안에 표시됨.',rel:'Core Web Vitals;속도;이미지 최적화',src:[['Google Search Central - Core Web Vitals','https://developers.google.com/search/docs/appearance/core-web-vitals'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['클라이언트 사이드 렌더링','Client-side Rendering','브라우저에서 JavaScript로 주요 콘텐츠를 생성하는 방식.','technical','seo',{ac:'CSR',detail:'브라우저에서 JavaScript로 주요 콘텐츠를 생성하는 방식. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'초기 HTML에는 빈 div만 있고 JS 실행 후 글이 보임.',rel:'렌더링;SSR;JavaScript SEO',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Google Crawlers','https://developers.google.com/crawling/docs/crawlers-fetchers/overview-google-crawlers']]}],
+    ['타이틀 태그','Title tag','검색결과에서 페이지의 제목을 보여주는 HTML 태그.','technical','seo'],
+    ['트위터 카드','Twitter card','트위터에서 링크 공유 시 글·이미지를 미리보기로 보는 기능.','technical','seo'],
+    ['페이지 경험','Page Experience','사용자가 페이지를 이용할 때 느끼는 속도, 안정성, 모바일 친화성 등 경험 요소.','technical','seo',{detail:'사용자가 페이지를 이용할 때 느끼는 속도, 안정성, 모바일 친화성 등 경험 요소. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'느린 로딩과 침입형 팝업을 줄임.',rel:'Core Web Vitals;모바일;사용자 경험',src:[['Google Search Central - Core Web Vitals','https://developers.google.com/search/docs/appearance/core-web-vitals'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['핵심 웹 지표','Core Web Vitals','사용자 경험을 측정하는 Google의 주요 페이지 성능 지표.','technical','seo',{ac:'CWV',detail:'사용자 경험을 측정하는 Google의 주요 페이지 성능 지표. 실무에서는 기술 SEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'LCP, INP, CLS를 모니터링.',rel:'LCP;INP;CLS',src:[['Google Search Central - Core Web Vitals','https://developers.google.com/search/docs/appearance/core-web-vitals'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
 
-    ['도메인 점수','Domain Authority','DA, 웹사이트가 상위 랭킹에 오를 가능성을 예측한 점수.','link','seo'],
-    ['백링크','Backlinks','다른 도메인의 사이트에서 해당 페이지로 연결된 링크.','link','seo'],
-    ['링크 주스','Link Juice','하이퍼링크를 통해 다른 사이트로 전달하는 가치·권력.','link','seo'],
-    ['노팔로우 링크','rel=nofollow','링크 주스를 제공하지 않고 검색 순위에 기여하지 않는 링크.','link','seo'],
-    ['팔로우 링크','DoFollow links','모든 링크의 기본 상태로 링크 주스를 제공하는 링크.','link','seo'],
+    // ── 링크빌딩 ──
+    ['301 리디렉션','301 Redirect','영구 이동을 나타내는 HTTP 리디렉션.','link','seo',{detail:'영구 이동을 나타내는 HTTP 리디렉션. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'도메인 변경 후 모든 URL을 새 도메인으로 301 처리.',rel:'리디렉션;사이트 이전;상태 코드',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls']]}],
+    ['404 오류','404 Not Found','요청한 URL을 찾을 수 없음을 나타내는 HTTP 상태.','link','seo',{detail:'요청한 URL을 찾을 수 없음을 나타내는 HTTP 상태. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'삭제된 게시글 URL이 404를 반환.',rel:'소프트 404;410;리디렉션',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['URL 구조','URL Structure','사용자와 검색엔진이 이해하기 쉬운 URL 설계.','link','seo',{detail:'사용자와 검색엔진이 이해하기 쉬운 URL 설계. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'example.com/seo/crawling처럼 주제를 드러냄.',rel:'슬러그;브레드크럼;사이트 구조',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['nofollow','nofollow','링크를 보증하지 않음을 검색엔진에 알리는 rel 속성 값.','link','seo',{detail:'링크를 보증하지 않음을 검색엔진에 알리는 rel 속성 값. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'사용자 댓글 링크에 rel=nofollow 적용.',rel:'sponsored;ugc;링크 스팸',src:[['Google Search Central - Meta Tags','https://developers.google.com/search/docs/crawling-indexing/special-tags'],['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies']]}],
+    ['rel=canonical','rel=canonical','페이지의 대표 URL을 알려주는 link rel 속성.','link','seo',{detail:'페이지의 대표 URL을 알려주는 link rel 속성. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'프린트용 페이지가 원본 글을 canonical로 지정.',rel:'정규화;대표 URL;HTML head',src:[['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls'],['Google Search Central - Meta Tags','https://developers.google.com/search/docs/crawling-indexing/special-tags']]}],
+    ['고아 페이지','Orphan Page','사이트 내부 링크로 거의 연결되지 않아 발견이 어려운 페이지.','link','seo',{detail:'사이트 내부 링크로 거의 연결되지 않아 발견이 어려운 페이지. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'게시됐지만 어떤 메뉴나 글에서도 링크되지 않은 이벤트 페이지.',rel:'내부 링크;사이트맵;사이트 구조',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Sitemaps','https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview']]}],
     ['구글 애널리틱스','Google Analytics','사이트와 사용자의 상호작용 인사이트를 제공하는 구글 무료 툴.','link','seo'],
+    ['내부 링크','Internal Link','같은 사이트 안의 다른 페이지로 연결하는 링크.','link','seo',{detail:'같은 사이트 안의 다른 페이지로 연결하는 링크. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'SEO 가이드에서 사이트맵 문서로 링크.',rel:'앵커 텍스트;토픽 클러스터;크롤링',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['내비게이션','Navigation','사용자가 사이트 안에서 원하는 페이지를 찾도록 돕는 메뉴와 링크 체계.','link','seo',{detail:'사용자가 사이트 안에서 원하는 페이지를 찾도록 돕는 메뉴와 링크 체계. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상단 메뉴와 사이드바로 주요 카테고리 제공.',rel:'사이트 구조;내부 링크;사용자 경험',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['노팔로우 링크','rel=nofollow','링크 주스를 제공하지 않고 검색 순위에 기여하지 않는 링크.','link','seo'],
+    ['대표 URL','Canonical URL','중복 페이지 묶음에서 검색엔진에 우선 보여주길 원하는 URL.','link','seo',{detail:'중복 페이지 묶음에서 검색엔진에 우선 보여주길 원하는 URL. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'http와 https 중 https 버전을 대표 URL로 선택.',rel:'정규화;rel=canonical;중복 콘텐츠',src:[['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['도메인 점수','Domain Authority','DA, 웹사이트가 상위 랭킹에 오를 가능성을 예측한 점수.','link','seo'],
+    ['리디렉션','Redirect','사용자와 크롤러를 한 URL에서 다른 URL로 보내는 처리.','link','seo',{detail:'사용자와 크롤러를 한 URL에서 다른 URL로 보내는 처리. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'옛 블로그 글을 새 URL로 이동.',rel:'301;302;사이트 이전',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls']]}],
     ['링크 빌딩','Link building','다른 사이트로부터 방문자 유입 링크를 얻어 권위를 높이는 작업.','link','seo'],
+    ['링크 주스','Link Juice','하이퍼링크를 통해 다른 사이트로 전달하는 가치·권력.','link','seo'],
+    ['백링크','Backlink','다른 사이트에서 내 사이트로 연결되는 링크.','link','seo',{detail:'다른 사이트에서 내 사이트로 연결되는 링크. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'업계 보고서가 내 연구 페이지를 인용.',rel:'링크 스팸;권위;외부 링크',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies']]}],
+    ['브레드크럼','Breadcrumb','페이지의 위치와 상위 구조를 보여주는 탐색 경로.','link','seo',{detail:'페이지의 위치와 상위 구조를 보여주는 탐색 경로. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'홈 > SEO > 기술 SEO.',rel:'BreadcrumbList;사이트 구조;리치 결과',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['사이트 구조','Site Architecture','페이지와 카테고리가 논리적으로 연결된 전체 구조.','link','seo',{detail:'페이지와 카테고리가 논리적으로 연결된 전체 구조. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상위 카테고리와 하위 글을 주제별로 배치.',rel:'내비게이션;토픽 클러스터;크롤링',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['소프트 404','Soft 404','실제 없는 페이지가 200 응답처럼 처리되는 오류.','link','seo',{detail:'실제 없는 페이지가 200 응답처럼 처리되는 오류. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'품절 상품 페이지가 빈 내용으로 200 응답.',rel:'404;410;색인 커버리지',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['앵커 텍스트','Anchor Text','링크에 표시되는 클릭 가능한 텍스트.','link','seo',{detail:'링크에 표시되는 클릭 가능한 텍스트. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'자세한 내용은 robots.txt 가이드 링크.',rel:'내부 링크;외부 링크;링크 맥락',src:[['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['외부 링크','External Link','다른 도메인의 페이지로 연결하는 링크.','link','seo',{detail:'다른 도메인의 페이지로 연결하는 링크. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'통계 출처인 정부 보고서로 링크.',rel:'출처 표시;백링크;신뢰',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['정규화','Canonicalization','중복 또는 유사 URL 중 대표 URL을 선택하도록 신호를 주는 처리.','link','seo',{detail:'중복 또는 유사 URL 중 대표 URL을 선택하도록 신호를 주는 처리. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'필터 URL 대신 기본 카테고리 URL을 대표로 지정.',rel:'canonical URL;중복 콘텐츠;rel=canonical',src:[['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['중복 콘텐츠','Duplicate Content','서로 같거나 매우 비슷한 내용이 여러 URL에 존재하는 상태.','link','seo',{detail:'서로 같거나 매우 비슷한 내용이 여러 URL에 존재하는 상태. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품 필터 조합으로 동일 설명 페이지가 여러 개 생성.',rel:'정규화;대표 URL;파라미터 URL',src:[['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['팔로우 링크','DoFollow links','모든 링크의 기본 상태로 링크 주스를 제공하는 링크.','link','seo'],
+    ['패싯 내비게이션','Faceted Navigation','필터 조합으로 URL이 많이 생기는 탐색 구조.','link','seo',{detail:'필터 조합으로 URL이 많이 생기는 탐색 구조. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'색상, 가격, 브랜드 필터가 수천 URL을 생성.',rel:'중복 콘텐츠;크롤 예산;정규화',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Canonicalization','https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls']]}],
+    ['페이지네이션','Pagination','긴 목록을 여러 페이지로 나누어 탐색하게 하는 방식.','link','seo',{detail:'긴 목록을 여러 페이지로 나누어 탐색하게 하는 방식. 실무에서는 링크·사이트 구조 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품 목록을 1, 2, 3 페이지로 분리.',rel:'카테고리;크롤링;무한 스크롤',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
 
-    ['이탈율','Bounce rate','사이트를 방문한 후 상호작용 없이 이탈한 비율.','optimize','seo'],
-    ['채널','Channel','소셜미디어·자연검색 등 유입을 얻기 위한 다양한 수단.','optimize','seo'],
-    ['클릭율','Click-through rate','CTR, 노출 대비 얻은 URL 클릭수의 비율.','optimize','seo'],
-    ['전환율','Conversion rate','유입된 방문자 수 대비 전환수의 비율.','optimize','seo'],
+    // ── 최적화 ──
+    ['E-E-A-T','E-E-A-T','경험·전문성·권위성·신뢰성, 구글이 YMYL 콘텐츠 품질을 평가하는 기준.','optimize','seo'],
+    ['UTM 코드','UTM code','Urchin tracking module, URL 끝에 삽입해 유입 경로를 추적하는 코드.','optimize','seo'],
+    ['검색 품질 평가자 가이드라인','Search Quality Rater Guidelines','검색 품질 평가자가 결과 품질을 평가할 때 참고하는 지침.','optimize','seo',{ac:'QRG',detail:'검색 품질 평가자가 결과 품질을 평가할 때 참고하는 지침. 실무에서는 품질·신뢰 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'YMYL, E-E-A-T, 페이지 목적을 품질 판단에 활용.',rel:'E-E-A-T;YMYL;품질 평가',src:[['Google Search Quality Rater Guidelines','https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['경험·전문성·권위·신뢰','Experience, Expertise, Authoritativeness, Trust','콘텐츠 품질과 신뢰성을 평가할 때 보는 경험, 전문성, 권위, 신뢰 요소.','optimize','seo',{ac:'E-E-A-T',detail:'콘텐츠 품질과 신뢰성을 평가할 때 보는 경험, 전문성, 권위, 신뢰 요소. 실무에서는 품질·신뢰 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'전문가 저자, 실제 사용 경험, 명확한 출처를 표시.',rel:'YMYL;품질 평가;저자성',src:[['Google Search Quality Rater Guidelines','https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
     ['구글 애널리틱스 목표','GA goals','구글 애널리틱스로 전환율을 추적하기 위해 설정하는 목표.','optimize','seo'],
     ['구글 태그 관리자','Google Tag Manager','웹사이트의 여러 트래킹 코드를 관리하는 구글 무료 툴.','optimize','seo'],
-    ['구글봇','Googlebot','구글의 웹 수집봇.','optimize','seo'],
-    ['프루닝','Pruning','부진한 콘텐츠를 버려 웹사이트 전체 퀄리티를 높이는 작업.','optimize','seo'],
+    ['돈 또는 생명 관련 주제','Your Money or Your Life','건강, 금융, 안전처럼 사람의 삶에 큰 영향을 줄 수 있는 주제.','optimize','seo',{ac:'YMYL',detail:'건강, 금융, 안전처럼 사람의 삶에 큰 영향을 줄 수 있는 주제. 실무에서는 품질·신뢰 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'의료 조언 글에 전문가 검토와 최신 출처를 표시.',rel:'E-E-A-T;신뢰;품질 평가',src:[['Google Search Quality Rater Guidelines','https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
     ['서치 트래픽','Search traffic','구글과 같은 검색엔진을 통해 유입된 웹사이트 방문.','optimize','seo'],
+    ['이탈율','Bounce rate','사이트를 방문한 후 상호작용 없이 이탈한 비율.','optimize','seo'],
+    ['저자성','Authorship','콘텐츠 작성자와 책임 주체를 명확히 보여주는 신뢰 신호.','optimize','seo',{detail:'콘텐츠 작성자와 책임 주체를 명확히 보여주는 신뢰 신호. 실무에서는 품질·신뢰 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'전문가 프로필과 검토 일자를 표시.',rel:'E-E-A-T;투명성;출처 표시',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Quality Rater Guidelines','https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf']]}],
+    ['전환율','Conversion rate','유입된 방문자 수 대비 전환수의 비율.','optimize','seo'],
+    ['채널','Channel','소셜미디어·자연검색 등 유입을 얻기 위한 다양한 수단.','optimize','seo'],
+    ['출처 표시','Source Attribution','주장과 데이터의 근거가 되는 원문이나 기관을 밝히는 것.','optimize','seo',{detail:'주장과 데이터의 근거가 되는 원문이나 기관을 밝히는 것. 실무에서는 품질·신뢰 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'통계 수치 옆에 기관 보고서 링크를 제공.',rel:'인용;AI 검색;신뢰',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
     ['페이지 체류시간','Time on page','사용자가 한 페이지에 체류하는 시간.','optimize','seo'],
-    ['UTM 코드','UTM code','Urchin tracking module, URL 끝에 삽입해 유입 경로를 추적하는 코드.','optimize','seo'],
-    ['E-E-A-T','E-E-A-T','경험·전문성·권위성·신뢰성, 구글이 YMYL 콘텐츠 품질을 평가하는 기준.','optimize','seo'],
+    ['프루닝','Pruning','부진한 콘텐츠를 버려 웹사이트 전체 퀄리티를 높이는 작업.','optimize','seo'],
+
+    // ── GEO ──
+    ['AI Mode','AI Mode','Google 검색의 대화형 생성 AI 검색 경험.','seo_geo','seo',{detail:'Google 검색의 대화형 생성 AI 검색 경험. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'추가 질문을 이어가며 검색 답변을 탐색.',rel:'AI Overview;대화형 쿼리;생성형 검색',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['AI Overview','AI Overview','Google 검색에서 AI가 여러 출처를 종합해 보여주는 요약 답변.','seo_geo','seo',{ac:'AIO',detail:'Google 검색에서 AI가 여러 출처를 종합해 보여주는 요약 답변. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'복잡한 질문에 요약과 관련 링크가 표시.',rel:'GEO;AI Mode;제로 클릭',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['AI 검색 노출','AI Search Visibility','생성형 검색 기능에서 브랜드나 콘텐츠가 언급·인용되는 정도.','seo_geo','seo',{detail:'생성형 검색 기능에서 브랜드나 콘텐츠가 언급·인용되는 정도. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI Overview 인용 여부와 관련 쿼리를 추적.',rel:'GEO;AI 인용;제로 클릭',src:[['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['AI 답변 점유율','Share of AI Answer','AI 답변에서 특정 브랜드나 출처가 차지하는 언급 비중.','seo_geo','seo',{detail:'AI 답변에서 특정 브랜드나 출처가 차지하는 언급 비중. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'비교형 질문에서 우리 브랜드 언급률을 측정.',rel:'AI 검색 노출;브랜드 멘션;GEO',src:[['Generative Engine Optimization','https://arxiv.org/abs/2509.08919'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['AI 답변 충실도','Claim Fidelity','AI 답변의 개별 주장들이 인용 출처에 의해 실제로 뒷받침되는 정도.','seo_geo','seo',{detail:'AI 답변의 개별 주장들이 인용 출처에 의해 실제로 뒷받침되는 정도. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI Overview의 수치가 링크 문서에 있는지 검증.',rel:'AI 인용;출처 귀속;환각',src:[['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['AI 인용','AI Citation','생성형 검색 답변이 근거로 연결하거나 표시하는 출처 링크.','seo_geo','seo',{detail:'생성형 검색 답변이 근거로 연결하거나 표시하는 출처 링크. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI Overview 답변 옆에 내 가이드가 링크됨.',rel:'출처 표시;GEO;AI Overview',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['검색 기반 생성','Retrieval-Augmented Generation','검색한 문서 근거를 사용해 AI 답변의 정확성과 최신성을 높이는 방식.','seo_geo','seo',{ac:'RAG',detail:'검색한 문서 근거를 사용해 AI 답변의 정확성과 최신성을 높이는 방식. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'검색 색인에서 페이지를 찾고 답변 생성에 반영.',rel:'그라운딩;AI Overview;쿼리 팬아웃',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Generative Engine Optimization','https://arxiv.org/abs/2509.08919']]}],
+    ['검색 생성 경험','Search Generative Experience','Google이 AI Overview 전 단계에서 실험한 생성형 검색 경험.','seo_geo','seo',{ac:'SGE',detail:'Google이 AI Overview 전 단계에서 실험한 생성형 검색 경험. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'초기 실험에서 AI 요약과 후속 질문을 제공.',rel:'AI Overview;AI Mode;GEO',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['그라운딩','Grounding','AI 답변을 검색 결과나 문서 근거에 연결하는 과정.','seo_geo','seo',{detail:'AI 답변을 검색 결과나 문서 근거에 연결하는 과정. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'제품 정책 문서를 근거로 답변 생성.',rel:'RAG;출처 표시;AI 검색',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Generative Engine Optimization','https://arxiv.org/abs/2509.08919']]}],
+    ['근거 쿼리','Grounding Query','AI 답변 생성을 위해 관련 문서를 찾는 데 쓰이는 보조 검색 질의.','seo_geo','seo',{detail:'AI 답변 생성을 위해 관련 문서를 찾는 데 쓰이는 보조 검색 질의. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'원래 질문을 여러 세부 질의로 나누어 자료를 찾음.',rel:'쿼리 팬아웃;RAG;AI 검색',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['멀티모달 검색','Multimodal Search','텍스트, 이미지, 음성 등 여러 입력 형태를 활용하는 검색.','seo_geo','seo',{detail:'텍스트, 이미지, 음성 등 여러 입력 형태를 활용하는 검색. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'사진을 올리고 제품명과 구매처를 묻기.',rel:'이미지 SEO;AI Mode;대화형 쿼리',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['브랜드 멘션','Brand Mention','링크 여부와 관계없이 브랜드가 검색 결과나 AI 답변에 언급되는 것.','seo_geo','seo',{detail:'링크 여부와 관계없이 브랜드가 검색 결과나 AI 답변에 언급되는 것. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI 답변이 추천 도구 목록에 브랜드명을 포함.',rel:'AI 답변 점유율;엔티티;GEO',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Generative Engine Optimization','https://arxiv.org/abs/2509.08919']]}],
+    ['생성형 AI 검색','Generative AI Search','AI가 검색 결과를 종합해 답변과 링크를 함께 제공하는 검색 경험.','seo_geo','seo',{detail:'AI가 검색 결과를 종합해 답변과 링크를 함께 제공하는 검색 경험. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI Overview가 여러 출처를 요약해 답변.',rel:'AI Overview;AI Mode;RAG',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['생성형 엔진 최적화','Generative Engine Optimization','생성형 AI 검색과 답변에서 콘텐츠가 인용·노출되도록 최적화하는 접근.','seo_geo','seo',{ac:'GEO',detail:'생성형 AI 검색과 답변에서 콘텐츠가 인용·노출되도록 최적화하는 접근. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'독창적 근거와 명확한 구조로 AI 답변 출처 가능성 개선.',rel:'AEO;AI Overview;출처 표시',src:[['Generative Engine Optimization','https://arxiv.org/abs/2509.08919'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['인용 가능성','Citation-worthiness','AI 검색이나 답변 시스템이 근거로 삼기 좋은 콘텐츠 특성.','seo_geo','seo',{detail:'AI 검색이나 답변 시스템이 근거로 삼기 좋은 콘텐츠 특성. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'명확한 정의, 데이터, 원문 출처, 최신 날짜를 제공.',rel:'AI 인용;정보 이득;출처 표시',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Generative Engine Optimization','https://arxiv.org/abs/2509.08919']]}],
+    ['출처 귀속','Source Attribution','AI 답변이나 검색 결과가 정보의 원천을 명확히 연결하는 방식.','seo_geo','seo',{detail:'AI 답변이나 검색 결과가 정보의 원천을 명확히 연결하는 방식. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'요약 답변 아래에 관련 웹 페이지 링크 표시.',rel:'AI 인용;신뢰;GEO',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['쿼리 팬아웃','Query Fan-out','AI가 원래 질문과 관련된 여러 보조 쿼리를 동시에 생성해 검색하는 방식.','seo_geo','seo',{detail:'AI가 원래 질문과 관련된 여러 보조 쿼리를 동시에 생성해 검색하는 방식. 실무에서는 GEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'잔디 잡초 제거 질문에서 예방, 제초제, 천연 방법을 함께 검색.',rel:'AI Mode;RAG;검색 의도',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+
+    // ── AEO ──
+    ['FAQ','Frequently Asked Questions','사용자가 자주 묻는 질문과 짧은 답변을 묶은 콘텐츠 형식.','seo_aeo','seo',{ac:'FAQ',detail:'사용자가 자주 묻는 질문과 짧은 답변을 묶은 콘텐츠 형식. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'배송, 환불, 설치 질문을 한 페이지에 정리.',rel:'FAQPage;AEO;직접 답변',src:[['Schema.org - Getting Started','https://schema.org/docs/gs.html'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['Speakable 구조화 데이터','Speakable Structured Data','음성 재생에 적합한 텍스트 부분을 표시하는 구조화 데이터.','seo_aeo','seo',{detail:'음성 재생에 적합한 텍스트 부분을 표시하는 구조화 데이터. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'뉴스 기사 중 핵심 요약 문장을 speakable로 표시.',rel:'음성 검색;구조화 데이터;AEO',src:[['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data'],['Schema.org - Getting Started','https://schema.org/docs/gs.html']]}],
+    ['관련 질문','People Also Ask','검색 결과에서 관련 질문과 답을 확장해 보여주는 기능.','seo_aeo','seo',{ac:'PAA',detail:'검색 결과에서 관련 질문과 답을 확장해 보여주는 기능. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'SEO란 무엇인가 아래에 관련 질문이 표시.',rel:'FAQ;검색 의도;AEO',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['답변 엔진','Answer Engine','링크 목록보다 질문에 대한 직접 답을 제공하는 검색·AI 시스템.','seo_aeo','seo',{detail:'링크 목록보다 질문에 대한 직접 답을 제공하는 검색·AI 시스템. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI 챗봇이나 검색 요약이 답을 바로 제시.',rel:'AEO;직접 답변;AI 검색',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['답변 엔진 최적화','Answer Engine Optimization','검색이나 AI 답변에서 직접 답으로 선택되도록 콘텐츠를 설계하는 접근.','seo_aeo','seo',{ac:'AEO',detail:'검색이나 AI 답변에서 직접 답으로 선택되도록 콘텐츠를 설계하는 접근. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'질문-답 구조와 근거를 명확히 제공.',rel:'추천 스니펫;FAQ;GEO',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Generative Engine Optimization','https://arxiv.org/abs/2509.08919']]}],
+    ['대화형 쿼리','Conversational Query','자연어 문장처럼 길고 맥락이 있는 검색 질의.','seo_aeo','seo',{detail:'자연어 문장처럼 길고 맥락이 있는 검색 질의. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'내 상황에서 어떤 보험을 골라야 해라고 질문.',rel:'자연어 쿼리;AI Mode;검색 의도',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['음성 검색','Voice Search','음성 입력으로 검색 질의를 수행하는 방식.','seo_aeo','seo',{detail:'음성 입력으로 검색 질의를 수행하는 방식. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'스마트폰에 근처 약국 문 열었어라고 묻기.',rel:'자연어 쿼리;로컬 SEO;AEO',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['자연어 쿼리','Natural Language Query','키워드 조합보다 사람 말에 가까운 문장형 질의.','seo_aeo','seo',{detail:'키워드 조합보다 사람 말에 가까운 문장형 질의. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'서울에서 아이와 갈 만한 실내 장소 추천.',rel:'대화형 쿼리;AEO;AI 검색',src:[['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['제로 클릭 검색','Zero-click Search','사용자가 결과 페이지에서 답을 얻어 사이트를 클릭하지 않는 검색.','seo_aeo','seo',{detail:'사용자가 결과 페이지에서 답을 얻어 사이트를 클릭하지 않는 검색. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'날씨, 계산, 짧은 정의를 결과 화면에서 해결.',rel:'직접 답변;AI Overview;CTR',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Measuring Google AI Overviews','https://arxiv.org/abs/2605.14021']]}],
+    ['직접 답변','Direct Answer','사용자가 클릭 전에 검색 결과나 AI 응답에서 받는 간결한 답.','seo_aeo','seo',{detail:'사용자가 클릭 전에 검색 결과나 AI 응답에서 받는 간결한 답. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'영업시간 질문에 결과 화면에서 바로 답 표시.',rel:'추천 스니펫;제로 클릭;AEO',src:[['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['질문-답 콘텐츠','Question-and-answer Content','질문과 답변 쌍으로 구성해 의도와 답을 명확히 하는 콘텐츠.','seo_aeo','seo',{ac:'Q&A',detail:'질문과 답변 쌍으로 구성해 의도와 답을 명확히 하는 콘텐츠. 실무에서는 AEO 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'각 섹션 제목을 실제 질문으로 작성.',rel:'FAQ;PAA;AEO',src:[['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+
+    // ── 로컬 SEO ──
+    ['Google 비즈니스 프로필','Google Business Profile','Google 검색과 지도에 업체 정보를 관리하는 무료 프로필.','seo_local','seo',{ac:'GBP',detail:'Google 검색과 지도에 업체 정보를 관리하는 무료 프로필. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'영업시간과 전화번호를 최신으로 유지.',rel:'로컬 SEO;리뷰;NAP',src:[['Google Business Profile Help','https://support.google.com/business/answer/3038177'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['NAP 일관성','Name, Address, Phone Consistency','업체명, 주소, 전화번호가 웹 전반에서 일관되게 표시되는 상태.','seo_local','seo',{ac:'NAP',detail:'업체명, 주소, 전화번호가 웹 전반에서 일관되게 표시되는 상태. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'홈페이지와 비즈니스 프로필의 주소를 동일하게 유지.',rel:'로컬 SEO;LocalBusiness;신뢰',src:[['Google Business Profile Help','https://support.google.com/business/answer/3038177'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['hreflang','hreflang','언어와 지역별 대체 페이지를 검색엔진에 알려주는 HTML 속성.','seo_local','seo',{detail:'언어와 지역별 대체 페이지를 검색엔진에 알려주는 HTML 속성. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'한국어 페이지와 영어 페이지를 서로 연결.',rel:'국제 SEO;x-default;다국어 사이트',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['국제 SEO','International SEO','여러 국가와 언어 사용자를 대상으로 검색 노출을 최적화하는 작업.','seo_local','seo',{detail:'여러 국가와 언어 사용자를 대상으로 검색 노출을 최적화하는 작업. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'한국어, 영어, 일본어 페이지의 hreflang 구성.',rel:'hreflang;지역 타겟팅;다국어',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['로컬 SEO','Local SEO','지역 기반 검색에서 매장이나 서비스가 잘 발견되도록 하는 최적화.','seo_local','seo',{detail:'지역 기반 검색에서 매장이나 서비스가 잘 발견되도록 하는 최적화. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'근처 치과 검색에 병원이 노출되도록 정보 관리.',rel:'Google Business Profile;NAP;로컬 팩',src:[['Google Business Profile Help','https://support.google.com/business/answer/3038177'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['로컬 팩','Local Pack','지역 검색 결과에서 지도와 업체 목록을 묶어 보여주는 SERP 기능.','seo_local','seo',{detail:'지역 검색 결과에서 지도와 업체 목록을 묶어 보여주는 SERP 기능. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'근처 카페 검색 시 지도 아래 세 업체가 표시.',rel:'Google Business Profile;리뷰;로컬 SEO',src:[['Google Business Profile Help','https://support.google.com/business/answer/3038177'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['리뷰','Reviews','사용자 평가와 경험이 담긴 평점·후기 콘텐츠.','seo_local','seo',{detail:'사용자 평가와 경험이 담긴 평점·후기 콘텐츠. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'고객 후기에 답변하고 허위 리뷰를 신고.',rel:'Review Snippet;로컬 SEO;E-E-A-T',src:[['Google Business Profile Help','https://support.google.com/business/answer/3038177'],['Google Search Central - Structured Data','https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data']]}],
+    ['지역 타겟팅','Geo-targeting','특정 국가나 지역 사용자를 대상으로 콘텐츠와 신호를 맞추는 전략.','seo_local','seo',{detail:'특정 국가나 지역 사용자를 대상으로 콘텐츠와 신호를 맞추는 전략. 실무에서는 국제·로컬 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'캐나다 사용자를 위한 가격과 배송 정보를 별도 제공.',rel:'국제 SEO;로컬 SEO;hreflang',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+
+    // ── SEO 지표 ──
+    ['검색 트래픽 하락','Search Traffic Drop','검색 유입이 평소보다 의미 있게 줄어든 상태.','seo_metric','seo',{detail:'검색 유입이 평소보다 의미 있게 줄어든 상태. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'업데이트 이후 특정 디렉터리 클릭이 감소.',rel:'Search Console;색인;순위 업데이트',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['노출수','Impressions','검색 결과에 사이트가 사용자에게 표시된 횟수.','seo_metric','seo',{detail:'검색 결과에 사이트가 사용자에게 표시된 횟수. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Search Console에서 특정 쿼리 노출수 확인.',rel:'클릭수;CTR;평균 게재순위',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681']]}],
+    ['랜딩 페이지','Landing Page','사용자가 검색 결과나 링크를 통해 처음 도착하는 페이지.','seo_metric','seo',{detail:'사용자가 검색 결과나 링크를 통해 처음 도착하는 페이지. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'검색 유입의 첫 페이지별 전환율 분석.',rel:'검색 의도;전환;GA4',src:[['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['세션','Session','사용자가 일정 시간 동안 사이트와 상호작용한 방문 단위.','seo_metric','seo',{detail:'사용자가 일정 시간 동안 사이트와 상호작용한 방문 단위. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'자연 검색 유입 세션을 GA4에서 확인.',rel:'사용자;이벤트;전환',src:[['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['전환','Conversion','사용자가 비즈니스 목표에 해당하는 행동을 완료한 것.','seo_metric','seo',{detail:'사용자가 비즈니스 목표에 해당하는 행동을 완료한 것. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'자연 검색 방문자가 상담 신청서를 제출.',rel:'핵심 이벤트;거래형 의도;랜딩 페이지',src:[['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+    ['코어 업데이트','Core Update','Google의 핵심 순위 시스템에 대한 광범위한 변경.','seo_metric','seo',{detail:'Google의 핵심 순위 시스템에 대한 광범위한 변경. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'콘텐츠 품질 재평가로 순위가 변동.',rel:'순위 업데이트;도움되는 콘텐츠;E-E-A-T',src:[['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['클릭률','Click-through Rate','노출 대비 클릭이 발생한 비율.','seo_metric','seo',{ac:'CTR',detail:'노출 대비 클릭이 발생한 비율. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'타이틀 링크 개선 후 CTR 상승.',rel:'노출수;클릭수;스니펫',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Search Central - Snippets','https://developers.google.com/search/docs/appearance/snippet']]}],
+    ['클릭수','Clicks','검색 결과에서 사용자가 사이트를 클릭한 횟수.','seo_metric','seo',{detail:'검색 결과에서 사용자가 사이트를 클릭한 횟수. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'검색 결과 클릭이 지난달보다 20% 증가.',rel:'노출수;CTR;자연 검색',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681']]}],
+    ['평균 게재순위','Average Position','Search Console에서 쿼리나 페이지의 평균 검색 결과 위치.','seo_metric','seo',{detail:'Search Console에서 쿼리나 페이지의 평균 검색 결과 위치. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'핵심 키워드 평균 게재순위가 8.4로 개선.',rel:'노출수;클릭수;순위 추적',src:[['Google Search Console Help','https://support.google.com/webmasters/answer/9128668'],['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681']]}],
+    ['핵심 이벤트','Key Event','비즈니스 목표에 중요한 GA4 이벤트.','seo_metric','seo',{detail:'비즈니스 목표에 중요한 GA4 이벤트. 실무에서는 분석·성과 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'문의 완료와 구매를 핵심 이벤트로 지정.',rel:'전환;GA4;성과 측정',src:[['Google Analytics Help - Google Analytics','https://support.google.com/analytics/answer/10089681'],['Google Search Console Help','https://support.google.com/webmasters/answer/9128668']]}],
+
+    // ── SEO 리스크 ──
+    ['도어웨이 페이지','Doorway Page','비슷한 검색어를 노리고 사용자를 같은 목적지로 보내는 저품질 페이지.','seo_risk','seo',{detail:'비슷한 검색어를 노리고 사용자를 같은 목적지로 보내는 저품질 페이지. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'지역명만 바꾼 수백 개 서비스 페이지 생성.',rel:'스팸 정책;스케일 콘텐츠 남용;검색 의도',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['링크 스팸','Link Spam','순위 조작을 위해 링크를 구매, 교환, 자동 생성하는 행위.','seo_risk','seo',{detail:'순위 조작을 위해 링크를 구매, 교환, 자동 생성하는 행위. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'유료 링크 네트워크로 백링크를 대량 확보.',rel:'nofollow;sponsored;백링크',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - SEO Starter Guide','https://developers.google.com/search/docs/fundamentals/seo-starter-guide']]}],
+    ['만료 도메인 남용','Expired Domain Abuse','만료 도메인의 기존 평판을 이용해 저품질 콘텐츠 순위를 조작하는 행위.','seo_risk','seo',{detail:'만료 도메인의 기존 평판을 이용해 저품질 콘텐츠 순위를 조작하는 행위. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'옛 교육기관 도메인에 카지노 글을 올림.',rel:'스팸 정책;도메인 평판;링크 스팸',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['사이트 평판 남용','Site Reputation Abuse','강한 도메인의 평판을 빌려 관련 없는 제3자 콘텐츠를 노출시키는 행위.','seo_risk','seo',{detail:'강한 도메인의 평판을 빌려 관련 없는 제3자 콘텐츠를 노출시키는 행위. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'뉴스 사이트 하위 폴더에 무관한 쿠폰 페이지 게시.',rel:'스팸 정책;기생 SEO;신뢰',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['스케일 콘텐츠 남용','Scaled Content Abuse','검색 조작을 위해 대량의 저가치 콘텐츠를 생성하는 행위.','seo_risk','seo',{detail:'검색 조작을 위해 대량의 저가치 콘텐츠를 생성하는 행위. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'AI로 만든 유사 페이지를 수천 개 게시.',rel:'도움되는 콘텐츠;GEO;스팸 정책',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Optimizing for Generative AI Search','https://developers.google.com/search/docs/fundamentals/ai-optimization-guide']]}],
+    ['스크랩 콘텐츠','Scraped Content','다른 사이트 콘텐츠를 무단 복사해 만든 저가치 콘텐츠.','seo_risk','seo',{detail:'다른 사이트 콘텐츠를 무단 복사해 만든 저가치 콘텐츠. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'기사 내용을 그대로 긁어와 재게시.',rel:'중복 콘텐츠;스팸 정책;저작권',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['스팸 정책','Spam Policies','검색 결과 품질을 해치는 조작 행위를 제한하는 검색엔진 정책.','seo_risk','seo',{detail:'검색 결과 품질을 해치는 조작 행위를 제한하는 검색엔진 정책. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'자동 생성 저품질 페이지를 대량 게시하지 않음.',rel:'스케일 콘텐츠 남용;클로킹;링크 스팸',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['얇은 제휴 콘텐츠','Thin Affiliate','실질적 가치 없이 제휴 링크만 제공하는 얕은 콘텐츠.','seo_risk','seo',{detail:'실질적 가치 없이 제휴 링크만 제공하는 얕은 콘텐츠. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'상품 설명을 복사하고 구매 링크만 붙임.',rel:'콘텐츠 품질;스팸 정책;전환',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
+    ['클로킹','Cloaking','사용자와 검색엔진에 서로 다른 콘텐츠를 보여주는 조작.','seo_risk','seo',{detail:'사용자와 검색엔진에 서로 다른 콘텐츠를 보여주는 조작. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'Googlebot에는 정보 글, 사용자에게는 광고만 표시.',rel:'스팸 정책;리디렉션;크롤러',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Search Essentials','https://developers.google.com/search/docs/essentials']]}],
+    ['키워드 스터핑','Keyword Stuffing','순위 조작을 위해 키워드를 부자연스럽게 반복하는 행위.','seo_risk','seo',{detail:'순위 조작을 위해 키워드를 부자연스럽게 반복하는 행위. 실무에서는 스팸·위험 맥락에서 검색엔진, 답변 엔진, 생성형 검색 시스템이 콘텐츠를 발견·이해·표시하는 방식과 연결해 관리한다.',ex:'본문에 같은 지역명과 서비스명을 과도하게 반복.',rel:'스팸 정책;검색 의도;콘텐츠 품질',src:[['Google Search Central - Spam Policies','https://developers.google.com/search/docs/essentials/spam-policies'],['Google Search Central - Helpful, Reliable, People-first Content','https://developers.google.com/search/docs/fundamentals/creating-helpful-content']]}],
 
     // ═══════════════ AI 용어사전 (검증본 150 + 보존 13) ═══════════════
     // [ko, en, def, cat, dict, {ac,detail,ex,rel,src:[[name,url],...]}]
@@ -425,8 +567,10 @@
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function dictOf(t) { return t[4] || 'seo'; }
 
-  var state = { dict: 'seo', mode: 'all', val: '', cat: 'all', q: '' };
+  var PAGE = 24;
+  var state = { dict: 'seo', mode: 'all', val: '', cat: 'all', q: '', limit: PAGE };
   var rootEl = null;
+  var renderedList = [];
 
   function chip(label, active, attrs) { return '<button class="gl-chip' + (active ? ' on' : '') + '" ' + attrs + '>' + label + '</button>'; }
 
@@ -475,32 +619,75 @@
     return true;
   }
 
+  function hasDetail(t) { var x = t[5] || {}; return !!(x.detail || x.ex || (x.src && x.src.length)); }
+
   function buildCards() {
-    var list = TERMS.filter(match).sort(function (a, b) { return a[0].localeCompare(b[0], 'ko'); });
-    if (!list.length) return '<p class="gl-empty">검색 결과가 없습니다. 다른 키워드로 찾아보세요.</p>';
-    var cards = list.map(function (t) {
+    var full = TERMS.filter(match).sort(function (a, b) { return a[0].localeCompare(b[0], 'ko'); });
+    if (!full.length) { renderedList = []; return '<p class="gl-empty">검색 결과가 없습니다. 다른 키워드로 찾아보세요.</p>'; }
+    var shown = full.slice(0, state.limit);
+    renderedList = shown;
+    var cards = shown.map(function (t, i) {
       var c = CATS[t[3]] || CATS.basic;
       var x = t[5] || {};
       var enLine = esc(t[1]) + (x.ac ? ' <span class="gl-ac">' + esc(x.ac) + '</span>' : '');
-      var more = '';
-      if (x.detail || x.ex || (x.src && x.src.length)) {
-        var inner = '';
-        if (x.detail) inner += '<p class="gl-detail">' + esc(x.detail) + '</p>';
-        if (x.ex) inner += '<p class="gl-ex"><b>예시</b> ' + esc(x.ex) + '</p>';
-        if (x.rel) inner += '<p class="gl-rel"><b>관련</b> ' + esc(x.rel).split(';').map(function (r) { return '<span class="gl-tag">' + r.trim() + '</span>'; }).join('') + '</p>';
-        if (x.src && x.src.length) {
-          inner += '<p class="gl-src"><b>출처</b> ' + x.src.map(function (s) {
-            return '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener nofollow">' + esc(s[0]) + '</a>';
-          }).join('<span class="gl-src-sep">·</span>') + '</p>';
-        }
-        more = '<details class="gl-more"><summary>자세히 보기</summary><div class="gl-more-in">' + inner + '</div></details>';
-      }
-      return '<div class="gl-card">'
+      var more = hasDetail(t);
+      var attr = more ? ' data-ci="' + i + '" tabindex="0" role="button" aria-label="' + esc(t[0]) + ' 상세 보기"' : '';
+      return '<div class="gl-card' + (more ? ' clickable' : '') + '"' + attr + '>'
         + '<div class="gl-top"><span class="gl-term">' + esc(t[0]) + '</span><span class="gl-cat" style="--c:' + c.color + '">' + c.label + '</span></div>'
         + '<div class="gl-en">' + enLine + '</div>'
-        + '<p class="gl-def">' + esc(t[2]) + '</p>' + more + '</div>';
+        + '<p class="gl-def">' + esc(t[2]) + '</p>'
+        + (more ? '<div class="gl-open">자세히 보기 <span>→</span></div>' : '') + '</div>';
     }).join('');
-    return '<div class="gl-count">' + DICTS[state.dict].label + ' · ' + list.length + '개 용어</div><div class="gl-grid">' + cards + '</div>';
+    var head = '<div class="gl-count">' + DICTS[state.dict].label + ' · 전체 ' + full.length + '개 중 ' + shown.length + '개 표시</div>';
+    var load = full.length > shown.length
+      ? '<div class="gl-loadwrap"><button class="gl-load" data-load>더 보기 <span>' + (full.length - shown.length) + '개 남음</span></button></div>'
+      : '';
+    return head + '<div class="gl-grid">' + cards + '</div>' + load;
+  }
+
+  function modalHTML(t) {
+    var c = CATS[t[3]] || CATS.basic;
+    var x = t[5] || {};
+    var h = '<div class="gl-m-cat" style="--c:' + c.color + '">' + c.label + '</div>';
+    h += '<h3 id="gl-m-term" class="gl-m-term">' + esc(t[0]) + '</h3>';
+    h += '<div class="gl-m-en">' + esc(t[1]) + (x.ac ? ' <span class="gl-ac">' + esc(x.ac) + '</span>' : '') + '</div>';
+    h += '<p class="gl-m-def">' + esc(t[2]) + '</p>';
+    if (x.detail) h += '<p class="gl-m-detail">' + esc(x.detail) + '</p>';
+    if (x.ex) h += '<div class="gl-m-sec"><div class="gl-m-lbl">예시</div><p>' + esc(x.ex) + '</p></div>';
+    if (x.rel) h += '<div class="gl-m-sec"><div class="gl-m-lbl">관련 용어</div><p class="gl-m-tags">' + esc(x.rel).split(';').map(function (r) { return '<span class="gl-tag">' + r.trim() + '</span>'; }).join('') + '</p></div>';
+    if (x.src && x.src.length) h += '<div class="gl-m-sec"><div class="gl-m-lbl">출처</div><p>' + x.src.map(function (s) { return '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener nofollow">' + esc(s[0]) + '</a>'; }).join('<span class="gl-src-sep">·</span>') + '</p></div>';
+    return h;
+  }
+
+  function ensureModal() {
+    var m = document.getElementById('gl-modal');
+    if (m) return m;
+    m = document.createElement('div');
+    m.id = 'gl-modal'; m.className = 'gl-modal'; m.setAttribute('aria-hidden', 'true');
+    m.innerHTML = '<div class="gl-modal-bg" data-close></div>'
+      + '<div class="gl-modal-box" role="dialog" aria-modal="true" aria-labelledby="gl-m-term">'
+      + '<button class="gl-modal-x" data-close aria-label="닫기">×</button>'
+      + '<div id="gl-m-body"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-close]')) closeModal(); });
+    return m;
+  }
+  function openModal(t) {
+    var m = ensureModal();
+    m.querySelector('#gl-m-body').innerHTML = modalHTML(t);
+    m.querySelector('.gl-modal-box').scrollTop = 0;
+    m.classList.add('on'); m.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var x = m.querySelector('.gl-modal-x'); if (x) x.focus();
+  }
+  function closeModal() {
+    var m = document.getElementById('gl-modal'); if (!m) return;
+    m.classList.remove('on'); m.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  function openByCard(card) {
+    var ci = parseInt(card.getAttribute('data-ci'), 10);
+    if (!isNaN(ci) && renderedList[ci]) openModal(renderedList[ci]);
   }
 
   function renderCards() { var c = rootEl.querySelector('#gl-cards'); if (c) c.innerHTML = buildCards(); }
@@ -511,25 +698,40 @@
   }
 
   function onClick(e) {
-    var d = e.target.closest ? e.target.closest('.gl-dict') : null;
-    if (d) { state.dict = d.getAttribute('data-dict'); state.cat = 'all'; state.mode = 'all'; state.val = ''; state.q = ''; renderAll(); return; }
-    var b = e.target.closest ? e.target.closest('.gl-chip') : null; if (!b) return;
+    var tgt = e.target;
+    if (tgt.closest && tgt.closest('[data-load]')) { state.limit += PAGE; renderCards(); return; }
+    var card = tgt.closest ? tgt.closest('.gl-card.clickable') : null;
+    if (card && !(tgt.closest && tgt.closest('a'))) { openByCard(card); return; }
+    var d = tgt.closest ? tgt.closest('.gl-dict') : null;
+    if (d) { state.dict = d.getAttribute('data-dict'); state.cat = 'all'; state.mode = 'all'; state.val = ''; state.q = ''; state.limit = PAGE; renderAll(); return; }
+    var b = tgt.closest ? tgt.closest('.gl-chip') : null; if (!b) return;
     if (b.hasAttribute('data-cat')) { state.cat = b.getAttribute('data-cat'); }
     else { state.mode = b.getAttribute('data-mode'); state.val = b.getAttribute('data-val') || ''; }
+    state.limit = PAGE;
     renderAll();
   }
-  function onInput(e) { if (e.target && e.target.id === 'gl-q') { state.q = e.target.value; renderCards(); } }
+  function onInput(e) { if (e.target && e.target.id === 'gl-q') { state.q = e.target.value; state.limit = PAGE; renderCards(); } }
+  function onKey(e) {
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      var card = e.target && e.target.closest ? e.target.closest('.gl-card.clickable') : null;
+      if (card) { e.preventDefault(); openByCard(card); }
+    }
+  }
 
   function mount(id) {
     rootEl = document.getElementById(id || 'glossary-root'); if (!rootEl) return;
     if (rootEl.getAttribute('data-mounted')) return;
     rootEl.setAttribute('data-mounted', '1');
     injectCSS();
+    ensureModal();
     rootEl.innerHTML = '<div id="gl-controls"></div><div id="gl-cards"></div>';
     rootEl.querySelector('#gl-controls').innerHTML = buildControls();
     renderCards();
     rootEl.addEventListener('click', onClick);
     rootEl.addEventListener('input', onInput);
+    rootEl.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
   }
 
   function injectCSS() {
@@ -551,8 +753,10 @@
       '.gl-chip.on{background:var(--p,#533afd);border-color:var(--p,#533afd);color:#fff}',
       '.gl-chip.cat.on{background:var(--c,#533afd);border-color:var(--c,#533afd)}',
       '.gl-count{margin:18px 2px 12px;font-size:13px;font-weight:700;color:var(--mute,#64748d)}',
-      '.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}',
+      '.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;align-items:start}',
       '.gl-card{border:1px solid var(--border,#e3e8ee);border-radius:14px;padding:16px 18px;background:#fff;transition:.15s}',
+      '.gl-card.clickable{cursor:pointer}',
+      '.gl-card.clickable:focus-visible{outline:2px solid var(--p,#533afd);outline-offset:2px}',
       '.gl-card:hover{border-color:var(--p,#533afd);box-shadow:0 8px 22px -12px rgba(83,58,253,.35);transform:translateY(-2px)}',
       '.gl-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}',
       '.gl-term{font-size:16px;font-weight:800;color:var(--bd,#1c1e54);word-break:keep-all}',
@@ -560,19 +764,38 @@
       '.gl-en{font-size:12px;font-weight:700;color:var(--p,#533afd);margin:2px 0 8px}',
       '.gl-def{font-size:13.5px;line-height:1.65;color:var(--ink2,#475569);margin:0}',
       '.gl-ac{font-size:10.5px;font-weight:800;color:var(--mute,#64748d);background:color-mix(in srgb,var(--p,#533afd) 8%,#fff);padding:1px 6px;border-radius:6px;margin-left:5px;letter-spacing:.3px}',
-      '.gl-more{margin-top:10px;border-top:1px dashed var(--border,#e3e8ee);padding-top:8px}',
-      '.gl-more summary{font-size:12px;font-weight:800;color:var(--p,#533afd);cursor:pointer;list-style:none;user-select:none}',
-      '.gl-more summary::-webkit-details-marker{display:none}',
-      '.gl-more summary::before{content:"＋ ";font-weight:800}',
-      '.gl-more[open] summary::before{content:"－ "}',
-      '.gl-more-in{padding-top:8px}',
-      '.gl-more-in p{font-size:12.5px;line-height:1.6;color:var(--ink2,#475569);margin:0 0 7px}',
-      '.gl-more-in b{color:var(--bd,#1c1e54);font-weight:800;margin-right:4px}',
+      '.gl-open{margin-top:11px;font-size:12px;font-weight:800;color:var(--p,#533afd);display:flex;align-items:center;gap:4px}',
+      '.gl-open span{transition:transform .15s}',
+      '.gl-card.clickable:hover .gl-open span{transform:translateX(3px)}',
+      '.gl-loadwrap{text-align:center;margin-top:22px}',
+      '.gl-load{border:1.5px solid var(--border,#e3e8ee);background:#fff;color:var(--bd,#1c1e54);border-radius:12px;padding:12px 26px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s}',
+      '.gl-load:hover{border-color:var(--p,#533afd);color:var(--p,#533afd)}',
+      '.gl-load span{font-weight:700;color:var(--mute,#94a3b8);margin-left:4px}',
       '.gl-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--p,#533afd);background:color-mix(in srgb,var(--p,#533afd) 9%,#fff);padding:2px 8px;border-radius:10px;margin:2px 4px 2px 0}',
       '.gl-src a{color:var(--p,#533afd);font-weight:700;text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--p,#533afd) 40%,#fff)}',
       '.gl-src a:hover{border-bottom-color:var(--p,#533afd)}',
       '.gl-src-sep{color:var(--mute,#94a3b8);margin:0 7px}',
-      '.gl-empty{padding:40px;text-align:center;color:var(--mute,#64748d)}'
+      '.gl-empty{padding:40px;text-align:center;color:var(--mute,#64748d)}',
+      // ── 상세 모달 / 모바일 바텀시트 ──
+      '.gl-modal{position:fixed;inset:0;z-index:10000;display:none}',
+      '.gl-modal.on{display:block}',
+      '.gl-modal-bg{position:absolute;inset:0;background:rgba(15,23,42,.55);animation:gl-fade .18s ease}',
+      '.gl-modal-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 40px));max-height:85vh;overflow-y:auto;background:#fff;border-radius:18px;padding:30px 30px 26px;box-shadow:0 30px 70px -20px rgba(15,23,42,.5);animation:gl-pop .2s ease}',
+      '.gl-modal-x{position:absolute;top:15px;right:15px;width:34px;height:34px;border:none;background:var(--soft,#f1f5f9);color:#64748b;border-radius:9px;font-size:22px;line-height:1;cursor:pointer;font-family:inherit;transition:.15s}',
+      '.gl-modal-x:hover{background:#e2e8f0;color:#1e293b}',
+      '.gl-m-cat{display:inline-block;font-size:11px;font-weight:800;color:var(--c,#533afd);background:color-mix(in srgb,var(--c,#533afd) 12%,#fff);padding:4px 11px;border-radius:12px;margin-bottom:12px}',
+      '.gl-m-term{font-size:24px;font-weight:800;color:var(--bd,#1c1e54);margin:0 0 4px;word-break:keep-all;padding-right:30px}',
+      '.gl-m-en{font-size:14px;font-weight:700;color:var(--p,#533afd);margin-bottom:16px}',
+      '.gl-m-def{font-size:15px;line-height:1.7;color:var(--ink2,#334155);margin:0 0 10px;font-weight:600}',
+      '.gl-m-detail{font-size:14px;line-height:1.75;color:var(--ink2,#475569);margin:0}',
+      '.gl-m-sec{margin-top:18px;padding-top:16px;border-top:1px solid var(--border,#eef2f6)}',
+      '.gl-m-lbl{font-size:11px;font-weight:800;color:var(--mute,#94a3b8);letter-spacing:.5px;margin-bottom:8px}',
+      '.gl-m-sec p{font-size:14px;line-height:1.65;color:var(--ink2,#475569);margin:0}',
+      '.gl-m-tags{margin:0}',
+      '@keyframes gl-fade{from{opacity:0}to{opacity:1}}',
+      '@keyframes gl-pop{from{opacity:0;transform:translate(-50%,-46%) scale(.97)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}',
+      '@keyframes gl-sheet{from{transform:translateY(100%)}to{transform:translateY(0)}}',
+      '@media(max-width:560px){.gl-modal-box{top:auto;bottom:0;left:0;transform:none;width:100%;max-height:88vh;border-radius:20px 20px 0 0;padding:26px 20px calc(26px + env(safe-area-inset-bottom));animation:gl-sheet .24s ease}.gl-m-term{font-size:21px}}'
     ].join('');
     document.head.appendChild(s);
   }
