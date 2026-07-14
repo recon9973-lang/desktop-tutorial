@@ -854,11 +854,13 @@
     // 사전 전환 세그먼트
     var dictTabs = '';
     Object.keys(DICTS).forEach(function (d) {
-      dictTabs += '<button class="gl-dict' + (state.dict === d ? ' on' : '') + '" data-dict="' + d + '" style="--dc:' + DICTS[d].color + '">'
+      dictTabs += '<button class="gl-dict' + (state.dict === d ? ' on' : '') + '" data-dict="' + d + '" style="--dc:' + DICTS[d].color + '" title="' + esc(DICTS[d].label) + '">'
         + '<span class="gl-dict-ab">' + DICTS[d].abbr + '</span>'
-        + '<span class="gl-dict-lb">' + DICTS[d].label + '</span>'
         + '<span class="gl-dict-n">' + dictCount(d) + '</span></button>';
     });
+    var searchPill = '<div class="gl-tabsearch">'
+      + '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>'
+      + '<input type="search" id="gl-q" placeholder="용어 검색 — 한글·영문·설명" value="' + esc(state.q) + '" autocomplete="off"></div>';
     // 현재 사전의 카테고리만
     var abcSet = {}; cur.forEach(function (t) { abcSet[abcLead(t[1])] = 1; });
     var abcKeys = Object.keys(abcSet).sort();
@@ -870,8 +872,10 @@
     var choChips = chip('전체', state.mode === 'all', 'data-mode="all"');
     CHO_LIST.forEach(function (c) { choChips += chip(c, state.mode === 'cho' && state.val === c, 'data-mode="cho" data-val="' + c + '"'); });
     var abcChips = ''; abcKeys.forEach(function (a) { abcChips += chip(a, state.mode === 'abc' && state.val === a, 'data-mode="abc" data-val="' + a + '"'); });
-    return '<div class="gl-dicts">' + dictTabs + '</div>'
-      + '<div class="gl-search"><input type="search" id="gl-q" placeholder="용어 검색 — 한글·영문·설명" value="' + esc(state.q) + '" autocomplete="off"></div>'
+    return '<div class="gl-tabwrap" style="--ac:' + DICTS[state.dict].color + '">'
+      + '<div class="gl-tabs">' + dictTabs + searchPill + '</div>'
+      + '<div class="gl-tabline"></div>'
+      + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">카테고리</span>' + catChips + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">가나다</span>' + choChips + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">ABC</span>' + abcChips + '</div>';
@@ -1033,19 +1037,20 @@
     if (document.getElementById('gl-css')) return;
     var s = document.createElement('style'); s.id = 'gl-css';
     s.textContent = [
-      // 사전 선택 — 파일/폴더 탭 느낌(색상: SEO·AI·MKT·DEV)
-      '.gl-dicts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}',
-      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--border,#e3e8ee);background:#f6f7fb;color:#475569;border-radius:11px 11px 13px 13px;padding:11px 15px 11px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s;overflow:hidden}',
-      '.gl-dict::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--dc,#533afd);opacity:.45;transition:.15s}',
-      '.gl-dict:hover{background:#fff;color:var(--dc,#533afd);border-color:var(--dc,#533afd)}',
-      '.gl-dict:hover::before{opacity:.8}',
-      '.gl-dict.on{background:#fff;color:var(--dc,#533afd);border-color:var(--dc,#533afd);box-shadow:0 8px 20px -10px var(--dc,#533afd)}',
-      '.gl-dict.on::before{opacity:1;height:5px}',
-      '.gl-dict-ab{font-size:10px;font-weight:900;letter-spacing:.5px;color:#fff;background:var(--dc,#533afd);padding:3px 7px;border-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.12)}',
-      '.gl-dict-n{font-size:11.5px;font-weight:800;background:color-mix(in srgb,var(--dc,#533afd) 13%,#fff);color:var(--dc,#533afd);padding:2px 8px;border-radius:10px}',
-      '@media(max-width:520px){.gl-dict-lb{display:none}.gl-dict{padding:10px 13px}}',
-      '.gl-search input{width:100%;box-sizing:border-box;padding:14px 18px;border:1.5px solid var(--border,#e3e8ee);border-radius:12px;font-size:15px;font-family:inherit;margin-bottom:16px}',
-      '.gl-search input:focus{outline:none;border-color:var(--p,#533afd)}',
+      // 사전 선택 — 폴더 탭 + 통합 검색(참조 이미지형, 색상: SEO·AI·MKT·DEV)
+      '.gl-tabwrap{margin-bottom:18px}',
+      '.gl-tabs{display:flex;align-items:flex-end;gap:5px;flex-wrap:wrap;position:relative;z-index:2}',
+      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:14px;letter-spacing:.4px;color:#fff;padding:12px 24px;background:var(--dc,#533afd);clip-path:polygon(11px 0,calc(100% - 11px) 0,100% 100%,0 100%);opacity:.5;filter:saturate(.85);transition:.18s;top:2px}',
+      '.gl-dict:hover{opacity:.82}',
+      '.gl-dict.on{opacity:1;filter:none;padding-top:15px;top:0;box-shadow:0 -3px 10px -4px var(--dc,#533afd);animation:gl-tabpop .3s cubic-bezier(.34,1.35,.5,1)}',
+      '@keyframes gl-tabpop{0%{opacity:.35;transform:translateY(8px) scale(.94);filter:saturate(.35) brightness(1.05)}60%{transform:translateY(-2px) scale(1.02)}100%{opacity:1;transform:none;filter:none}}',
+      '.gl-dict-ab{font-weight:900;text-shadow:0 1px 1px rgba(0,0,0,.18)}',
+      '.gl-dict-n{font-size:11px;font-weight:800;background:rgba(255,255,255,.26);color:#fff;padding:2px 8px;border-radius:9px}',
+      '.gl-tabsearch{margin-left:auto;display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border,#e3e8ee);border-radius:22px;padding:9px 16px;min-width:210px;align-self:center;color:var(--mute,#94a3b8);transition:.15s}',
+      '.gl-tabsearch:focus-within{border-color:var(--ac,#533afd);color:var(--ac,#533afd)}',
+      '.gl-tabsearch input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:#1c1e54}',
+      '.gl-tabline{height:13px;background:var(--ac,#533afd);border-radius:2px 9px 9px 9px;position:relative;z-index:1;box-shadow:0 10px 22px -12px var(--ac,#533afd)}',
+      '@media(max-width:600px){.gl-tabs{gap:3px}.gl-dict{padding:11px 15px}.gl-dict.on{padding-top:14px}.gl-tabsearch{margin-left:0;order:5;width:100%;min-width:0;margin-top:8px}}',
       '.gl-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}',
       '.gl-row-lbl{font-size:12px;font-weight:800;color:var(--mute,#64748d);width:56px;flex-shrink:0}',
       '.gl-chip{border:1px solid var(--border,#e3e8ee);background:#fff;color:#334155;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}',
