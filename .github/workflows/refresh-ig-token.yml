@@ -1,0 +1,48 @@
+name: Refresh IG token
+
+# 인스타(페이스북 그래프) 장기 토큰 자동 연장 — 매월 1회 fb_exchange_token으로 60일 갱신.
+# 만료 전에 주기적으로 갱신하므로 사람이 다시 발급할 필요가 없다.
+#
+# 준비(1회): Settings → Secrets and variables → Actions 에 아래 2개 추가
+#   - META_APP_SECRET : Meta 앱(설정→기본설정)의 "앱 시크릿 코드"
+#   - GH_PAT          : 이 저장소 Secrets 쓰기 권한 PAT(파인그레인드: Secrets=Read/Write)
+#                       (기본 GITHUB_TOKEN은 시크릿을 못 바꿔서 별도 PAT가 필요)
+# 앱 ID(2008871193323648)는 비밀이 아니라 아래에 상수로 둔다.
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'   # 매월 1일 12:00 KST
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-ig-token
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exchange long-lived token & update IG_TOKEN secret
+        env:
+          APP_ID: "2008871193323648"
+          APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          CUR_TOKEN: ${{ secrets.IG_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$APP_SECRET" ] || [ -z "$CUR_TOKEN" ] || [ -z "$GH_TOKEN" ]; then
+            echo "::error::META_APP_SECRET / IG_TOKEN / GH_PAT 중 누락 — 시크릿을 확인하세요."
+            exit 1
+          fi
+          resp=$(curl -sS "https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${APP_ID}&client_secret=${APP_SECRET}&fb_exchange_token=${CUR_TOKEN}")
+          new=$(printf '%s' "$resp" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("access_token",""))' 2>/dev/null || true)
+          if [ -z "$new" ]; then
+            echo "::error::토큰 갱신 실패(응답에 access_token 없음). 앱시크릿/토큰 유효성 확인."
+            # 토큰 값이 로그에 남지 않도록 원문은 출력하지 않는다.
+            exit 1
+          fi
+          printf '%s' "$new" | gh secret set IG_TOKEN --repo "$REPO" --body-file -
+          echo "✓ IG_TOKEN 갱신 완료 — 새 60일 토큰으로 교체했습니다."

@@ -1,6 +1,6 @@
 {
   "igId": "17841472664941872",
-  "note": "GROUND(@ground_geo) 인스타 발행 큐 — 하루 1개씩 위에서부터 발행. published=true 는 발행 완료. img/cap 은 저장소 상대경로(발행 시 커밋 SHA로 jsDelivr 공개 URL 자동 생성).",
+  "note": "GROUND(@ground_geo) 인스타 발행 큐 — 하루 1개씩 위에서부터 발행. images 배열이 있으면 캐러셀(여러 장), 없으면 img 단일. 경로는 저장소 상대(발행 시 커밋 SHA로 jsDelivr 공개 URL 생성).",
   "posts": [
     {
       "id": "geo-01",
@@ -18,7 +18,12 @@
       "cap": "persona-nami/ig/post2.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post2.png",
+        "persona-nami/ig/post2-b.png",
+        "persona-nami/ig/post2-c.png"
+      ]
     },
     {
       "id": "seo-03",
@@ -27,7 +32,12 @@
       "cap": "persona-nami/ig/post3.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post3.png",
+        "persona-nami/ig/post3-b.png",
+        "persona-nami/ig/post3-c.png"
+      ]
     },
     {
       "id": "eeat-04",
@@ -36,7 +46,12 @@
       "cap": "persona-nami/ig/post4.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post4.png",
+        "persona-nami/ig/post4-b.png",
+        "persona-nami/ig/post4-c.png"
+      ]
     },
     {
       "id": "schema-05",
@@ -45,7 +60,12 @@
       "cap": "persona-nami/ig/post5.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post5.png",
+        "persona-nami/ig/post5-b.png",
+        "persona-nami/ig/post5-c.png"
+      ]
     },
     {
       "id": "llmstxt-06",
@@ -54,7 +74,12 @@
       "cap": "persona-nami/ig/post6.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post6.png",
+        "persona-nami/ig/post6-b.png",
+        "persona-nami/ig/post6-c.png"
+      ]
     },
     {
       "id": "mention-07",
@@ -63,7 +88,12 @@
       "cap": "persona-nami/ig/post7.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post7.png",
+        "persona-nami/ig/post7-b.png",
+        "persona-nami/ig/post7-c.png"
+      ]
     },
     {
       "id": "smartblock-08",
@@ -72,7 +102,12 @@
       "cap": "persona-nami/ig/post8.txt",
       "published": false,
       "publishedAt": null,
-      "mediaId": null
+      "mediaId": null,
+      "images": [
+        "persona-nami/ig/post8.png",
+        "persona-nami/ig/post8-b.png",
+        "persona-nami/ig/post8-c.png"
+      ]
     }
   ]
 }
