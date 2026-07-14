@@ -18,6 +18,7 @@
 
 const geo = require('../lib/geo-store');
 const tpl = require('../lib/geo-templates');
+const gm = require('../lib/geo-metrics');
 
 // tasks.json 상태값(칸반) — 이동 검증용
 const TASK_STATUS = ['backlog', 'thisweek', 'doing', 'review', 'hold', 'done', 'failed'];
@@ -129,6 +130,42 @@ async function handleEntity(req, res, mod) {
   return res.status(400).json({ ok: false, error: 'unknown action: ' + action });
 }
 
+// ── 성과 메트릭 (설계 §3 metrics · P1 #6) ──
+async function handleMetrics(req, res) {
+  const action = String(req.query.action || (req.method === 'GET' ? 'summary' : 'ingest')).toLowerCase();
+
+  if (req.method === 'GET') {
+    const clientId = req.query.clientId ? String(req.query.clientId) : null;
+    const all = await geo.list('metrics', clientId ? { clientId } : null);
+    if (action === 'series') {
+      return res.status(200).json({ ok: true, data: gm.seriesFrom(all, { clientId, metricName: req.query.metricName ? String(req.query.metricName) : null }) });
+    }
+    // summary
+    return res.status(200).json({ ok: true, data: gm.summarize(all, { clientId }) });
+  }
+
+  // ingest (POST) — 인증 필요
+  if (!authOk(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
+  const body = await readBody(req);
+  const clientId = body.clientId;
+  if (!clientId) return res.status(400).json({ ok: false, error: 'clientId 필요' });
+  let records = [];
+  try {
+    if (typeof body.csv === 'string' && body.csv.trim()) {
+      records = gm.csvToMetrics(body.csv, { clientId, source: body.source || 'csv', channelId: body.channelId });
+    } else if (Array.isArray(body.rows)) {
+      records = body.rows
+        .filter((r) => r && r.metricName && r.metricDate && r.value != null)
+        .map((r) => ({ id: 'm_' + clientId + '_' + r.metricName + '_' + r.metricDate, clientId, channelId: body.channelId || null, metricName: r.metricName, metricDate: r.metricDate, value: Number(r.value), source: body.source || 'api' }));
+    } else {
+      return res.status(400).json({ ok: false, error: 'csv 문자열 또는 rows 배열 필요' });
+    }
+  } catch (e) { return res.status(400).json({ ok: false, error: e.message }); }
+  if (!records.length) return res.status(200).json({ ok: true, count: 0, note: '유효 레코드 없음 — CSV 헤더(Date,Clicks,…) 또는 metricName,metricDate,value 확인' });
+  const saved = await geo.upsertMany('metrics', records);
+  return res.status(200).json({ ok: true, count: saved.length });
+}
+
 // ── 관제 대시보드 집계 (설계 §2.1) ──
 async function handleDashboard(res) {
   const [clients, channels, tasks, autos] = await Promise.all([
@@ -159,6 +196,7 @@ module.exports = async function handler(req, res) {
   try {
     if (!authOk(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
     if (module === 'dashboard') return await handleDashboard(res);
+    if (module === 'metrics') return await handleMetrics(req, res);
     if (module === 'templates') {
       const templates = await tpl.loadTemplates();
       return res.status(200).json({ ok: true, count: templates.length, data: templates.map((t) => ({ id: t.id, channelType: t.channelType, cap: t.cap, steps: (t.steps || t.variants || []).length })) });

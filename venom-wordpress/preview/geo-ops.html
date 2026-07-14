@@ -126,6 +126,7 @@
     <div class="tabs">
       <div class="tab on" data-t="overview" onclick="showTab('overview')">개요</div>
       <div class="tab" data-t="channels" onclick="showTab('channels')">채널</div>
+      <div class="tab" data-t="metrics" onclick="showTab('metrics')">성과</div>
       <div class="tab" data-t="exposure" onclick="showTab('exposure')">AI 인용 모니터링</div>
     </div>
     <div id="cd-overview" class="card"><div class="empty">—</div></div>
@@ -152,6 +153,21 @@
         <button class="btn" onclick="saveChannel()">채널 저장</button>
       </div>
       <div class="card"><table><thead><tr><th>유형</th><th>레벨</th><th>접근</th><th>위험</th><th>URL</th></tr></thead><tbody id="channels-tbody"><tr><td colspan="5" class="empty">—</td></tr></tbody></table></div>
+    </div>
+    <div id="cd-metrics" class="hide">
+      <div class="card">
+        <h3>성과 데이터 적재 (CSV)</h3>
+        <div class="muted" style="margin-bottom:8px">GSC "날짜" 내보내기(<code>Date,Clicks,Impressions,CTR,Position</code>) 또는 <code>metricName,metricDate,value</code> 형식을 붙여넣으세요. 같은 날짜는 덮어씁니다.</div>
+        <textarea id="mx-csv" style="min-height:90px" placeholder="Date,Clicks,Impressions,CTR,Position
+2026-07-01,120,3400,3.5%,8.2
+2026-07-08,150,3600,4.1%,7.4"></textarea>
+        <div class="row" style="grid-template-columns:1fr auto;align-items:end;margin-top:10px">
+          <div><label>출처</label><select id="mx-source"><option value="gsc">gsc</option><option value="ga4">ga4</option><option value="manual">manual</option></select></div>
+          <div><button class="btn" onclick="ingestMetrics()">적재</button></div>
+        </div>
+      </div>
+      <div class="card"><h3>요약</h3><div class="grid" id="mx-summary"><div class="empty">—</div></div></div>
+      <div class="card"><h3>추이</h3><div id="mx-charts"><div class="empty">—</div></div></div>
     </div>
     <div id="cd-exposure" class="hide"><div class="card"><div id="exposure-body" class="empty">—</div></div></div>
   </section>
@@ -200,7 +216,7 @@ function showSec(s){
   if(s==='tasks')initTasks();
 }
 function showTab(t){
-  ['overview','channels','exposure'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
+  ['overview','channels','metrics','exposure'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
   document.querySelectorAll('#sec-client .tab').forEach(el=>el.classList.toggle('on',el.dataset.t===t));
 }
 
@@ -272,7 +288,7 @@ async function openClient(id){
     '</div><h3>핵심 키워드</h3><div class="muted">'+esc((CURRENT.coreKeywords||[]).join(', ')||'—')+'</div>'+
     '<h3>경쟁사(SOV 비교)</h3><div class="muted">'+esc((CURRENT.competitors||[]).join(', ')||'—')+'</div>'+
     '<div style="margin-top:14px"><button class="btn ghost sm" onclick="openClientForm(CURRENT);showSec(\'clients\')">편집</button></div>';
-  loadChannels(id); loadExposure(id);
+  loadChannels(id); loadMetrics(id); loadExposure(id);
 }
 function tile(l,v){ return '<div class="stat"><div class="n" style="font-size:1rem">'+esc(v||'—')+'</div><div class="l">'+l+'</div></div>'; }
 
@@ -293,6 +309,45 @@ async function saveChannel(){
   const j=await api('?module=channels&action=upsert',{method:'POST',body:JSON.stringify({channel})});
   if(j&&j.ok){ toast('채널 저장됨'); document.getElementById('ch-url').value=''; loadChannels(CURRENT.id); }
   else toast('저장 실패');
+}
+
+// ── 성과 메트릭 (CSV 적재 + 요약 + SVG 추이) ──
+const MLABEL={clicks:'클릭',impressions:'노출',ctr:'CTR',position:'평균순위',sessions:'세션',conversions:'전환'};
+async function ingestMetrics(){
+  if(!CURRENT)return;
+  const csv=document.getElementById('mx-csv').value.trim();
+  if(!csv){ toast('CSV를 붙여넣으세요'); return; }
+  const j=await api('?module=metrics&action=ingest',{method:'POST',body:JSON.stringify({clientId:CURRENT.id,source:document.getElementById('mx-source').value,csv})});
+  if(j&&j.ok){ toast(j.count+'개 지표 적재됨'+(j.count===0?' (형식 확인)':'')); document.getElementById('mx-csv').value=''; loadMetrics(CURRENT.id); }
+  else toast('적재 실패 — 시크릿/형식 확인');
+}
+async function loadMetrics(id){
+  const sum=document.getElementById('mx-summary'), ch=document.getElementById('mx-charts');
+  const j=await api('?module=metrics&action=summary&clientId='+encodeURIComponent(id));
+  if(!j||!j.ok||!j.data.length){ sum.innerHTML='<div class="empty">성과 데이터 없음 — 위에서 CSV를 적재하세요</div>'; ch.innerHTML=''; return; }
+  sum.innerHTML=j.data.map(m=>{
+    const lab=MLABEL[m.metricName]||m.metricName;
+    const d=m.delta;
+    const arrow=(d==null)?'':(d>0?'<span style="color:#16a34a">▲'+d+'</span>':(d<0?'<span style="color:#dc2626">▼'+Math.abs(d)+'</span>':'–'));
+    return '<div class="stat"><div class="n" style="font-size:1.3rem">'+esc(String(m.latest))+'</div><div class="l">'+esc(lab)+' '+arrow+'</div></div>';
+  }).join('');
+  // 메트릭별 시계열 차트
+  const names=j.data.map(m=>m.metricName);
+  const seriesAll=await Promise.all(names.map(n=>api('?module=metrics&action=series&clientId='+encodeURIComponent(id)+'&metricName='+encodeURIComponent(n)).then(r=>({n,pts:(r&&r.ok)?r.data:[]}))));
+  ch.innerHTML=seriesAll.filter(s=>s.pts.length).map(s=>sparkCard(MLABEL[s.n]||s.n,s.pts)).join('')||'<div class="empty">추이 표시할 데이터가 부족합니다</div>';
+}
+function sparkCard(label,pts){
+  const W=420,H=90,P=8;
+  const vals=pts.map(p=>p.value);
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=(mx-mn)||1;
+  const step=pts.length>1?(W-2*P)/(pts.length-1):0;
+  const xy=pts.map((p,i)=>[P+i*step,H-P-((p.value-mn)/rng)*(H-2*P)]);
+  const line=xy.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+' '+c[1].toFixed(1)).join(' ');
+  const dots=xy.map(c=>'<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="2.5" fill="#533afd"/>').join('');
+  return '<div style="margin-bottom:14px">'+
+    '<div style="font-size:.8rem;font-weight:700;color:var(--ink2);margin-bottom:4px">'+esc(label)+' <span class="muted">'+pts[0].date+' → '+pts[pts.length-1].date+'</span></div>'+
+    '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:'+W+'px;height:auto;background:var(--soft);border:1px solid var(--border);border-radius:10px">'+
+    '<path d="'+line+'" fill="none" stroke="#533afd" stroke-width="2"/>'+dots+'</svg></div>';
 }
 
 // ── AI 인용 매트릭스 (ai-expose-latest.json 재사용 — AI Exposure Check 워크플로 산출) ──

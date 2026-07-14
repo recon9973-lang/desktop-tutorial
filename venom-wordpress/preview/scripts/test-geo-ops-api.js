@@ -136,6 +136,33 @@ async function call(opts) { const res = mockRes(); await handler(mockReq(opts), 
     ok('pain Task 목록 누적', res._json.count >= 3);
   }
 
+  console.log('metrics ingest/series/summary');
+  {
+    // CSV 적재
+    const csv = 'Date,Clicks,Impressions\n2026-07-01,10,100\n2026-07-02,20,150';
+    let res = await call({ method: 'POST', query: { module: 'metrics', action: 'ingest' }, body: { clientId: 'pain', source: 'gsc', csv } });
+    ok('metrics ingest CSV', res._json.ok && res._json.count === 4);
+
+    res = await call({ method: 'GET', query: { module: 'metrics', action: 'series', clientId: 'pain', metricName: 'clicks' } });
+    ok('metrics series 정렬', res._json.ok && res._json.data.length === 2 && res._json.data[0].date === '2026-07-01' && res._json.data[1].value === 20);
+
+    res = await call({ method: 'GET', query: { module: 'metrics', action: 'summary', clientId: 'pain' } });
+    const clk = res._json.data.find((x) => x.metricName === 'clicks');
+    ok('metrics summary delta', clk.latest === 20 && clk.delta === 10);
+
+    // 재적재 시 중복 없이 덮어씀(같은 날짜 값 갱신)
+    res = await call({ method: 'POST', query: { module: 'metrics', action: 'ingest' }, body: { clientId: 'pain', source: 'gsc', csv: 'Date,Clicks\n2026-07-02,25' } });
+    res = await call({ method: 'GET', query: { module: 'metrics', action: 'series', clientId: 'pain', metricName: 'clicks' } });
+    ok('재적재 중복없이 갱신', res._json.data.length === 2 && res._json.data[1].value === 25);
+
+    // rows 배열 경로
+    res = await call({ method: 'POST', query: { module: 'metrics', action: 'ingest' }, body: { clientId: 'pain', rows: [{ metricName: 'sessions', metricDate: '2026-07-02', value: 42 }] } });
+    ok('metrics ingest rows', res._json.ok && res._json.count === 1);
+
+    res = await call({ method: 'POST', query: { module: 'metrics', action: 'ingest' }, body: { source: 'x', csv: 'a' } });
+    ok('clientId 누락 400', res._status === 400);
+  }
+
   console.log('인증 게이트');
   {
     process.env.ADMIN_SECRET = 'sesame';
