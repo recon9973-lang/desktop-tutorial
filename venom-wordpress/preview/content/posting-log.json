@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784039935986",
+    "title": "마산 교통사고 한의원, 효과적인 치료법 TOP 5",
+    "tokenUsage": {
+      "promptTokens": 2535,
+      "completionTokens": 2071,
+      "totalTokens": 4606,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-14T14:40:37.475Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784039827558",
     "title": "마산 교통 사고 한의원 선택 시 고려해야 할 5가지",
