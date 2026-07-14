@@ -183,6 +183,8 @@ Client.id ≡ clinicId ≡ ERP Client.id (느슨 연결)
 
 **착수 순서 근거**: 3(실측 일반화)이 최소노력·최대효과이자 모든 지표의 입력. 1·2는 그 그릇.
 
+**진행 현황(2026-07-14)**: ✅ **#1 완료** `lib/geo-store.js`(테스트 21) · ✅ **#2 완료** `api/geo-ops.js`(테스트 18) + 시드 `content/geo/*.json`(pain/skin 이관) · ✅ **#3 완료** `lib/geo-aeo-input.js`(테스트 13) + `ai-expose-check.yml` 일반화(하드코딩 제거, geo 소스 우선·기존 파일 폴백). 남은 P1: #4 콘솔 뼈대(`/geo-ops.html`) · #5 업무보드 · #6 성과수집(CSV→GSC) · #7 주간리포트 · #8 자동화 로그·권한. (Vercel 함수 19개 — Pro 플랜 전제; 초과 시 growthops.js에 흡수 검토.)
+
 ---
 
 ## 6. 테스트 시나리오
