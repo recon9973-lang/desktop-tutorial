@@ -52,6 +52,7 @@
 ### 베놈 사이트 (`desktop-tutorial/venom-wordpress/preview/`)
 | 기능 | 위치 | 유료? |
 |---|---|---|
+| **카톡 병원 진단봇(베노미)** | `api/hospital-bot.js` + `hospital-bot/` (전체정리: `hospital-bot/베노미_전체정리.md`) | 무료(+선택키) |
 | SEO 진단기(룰 엔진) | `seo/seo-engine.js` + `seo/seo-rules.json` + `seo/README.md` | 무료 |
 | SEO 지식근거(203문서) | `../../google_seo_guide/` | — |
 | AI 노출 매트릭스(AEO) | `api/insights.js` (Perplexity·Claude·Gemini·GPT) | **유료(토큰)** |
