@@ -1,0 +1,23 @@
+[
+  {
+    "post": "post2",
+    "id": "aeo-02",
+    "theme": "emerald",
+    "hookHtml": "챗GPT한테<br>우리 브랜드<br><mark>물어봤더니</mark>",
+    "cutout": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260714_173827_716d10c9-9ad7-4ccc-a407-1bd89ea3d587.png"
+  },
+  {
+    "post": "post3",
+    "id": "seo-03",
+    "theme": "cream",
+    "hookHtml": "요즘 SEO,<br><mark>3줄</mark>로 끝",
+    "cutout": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260714_173831_5521ed1e-f312-4e23-bc65-13df8687f6e7.png"
+  },
+  {
+    "post": "post4",
+    "id": "eeat-04",
+    "theme": "lime",
+    "hookHtml": "AI가 <mark>믿는</mark><br>콘텐츠엔<br>이게 있어요",
+    "cutout": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260714_173906_b50dce4c-c0d2-489b-b275-60e1ef7a9ade.png"
+  }
+]
