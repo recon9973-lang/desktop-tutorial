@@ -854,11 +854,13 @@
     // 사전 전환 세그먼트
     var dictTabs = '';
     Object.keys(DICTS).forEach(function (d) {
-      dictTabs += '<button class="gl-dict' + (state.dict === d ? ' on' : '') + '" data-dict="' + d + '" style="--dc:' + DICTS[d].color + '">'
+      dictTabs += '<button class="gl-dict' + (state.dict === d ? ' on' : '') + '" data-dict="' + d + '" style="--dc:' + DICTS[d].color + '" title="' + esc(DICTS[d].label) + '">'
         + '<span class="gl-dict-ab">' + DICTS[d].abbr + '</span>'
-        + '<span class="gl-dict-lb">' + DICTS[d].label + '</span>'
         + '<span class="gl-dict-n">' + dictCount(d) + '</span></button>';
     });
+    var searchPill = '<div class="gl-tabsearch">'
+      + '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>'
+      + '<input type="search" id="gl-q" placeholder="용어 검색 — 한글·영문·설명" value="' + esc(state.q) + '" autocomplete="off"></div>';
     // 현재 사전의 카테고리만
     var abcSet = {}; cur.forEach(function (t) { abcSet[abcLead(t[1])] = 1; });
     var abcKeys = Object.keys(abcSet).sort();
@@ -870,8 +872,12 @@
     var choChips = chip('전체', state.mode === 'all', 'data-mode="all"');
     CHO_LIST.forEach(function (c) { choChips += chip(c, state.mode === 'cho' && state.val === c, 'data-mode="cho" data-val="' + c + '"'); });
     var abcChips = ''; abcKeys.forEach(function (a) { abcChips += chip(a, state.mode === 'abc' && state.val === a, 'data-mode="abc" data-val="' + a + '"'); });
-    return '<div class="gl-dicts">' + dictTabs + '</div>'
-      + '<div class="gl-search"><input type="search" id="gl-q" placeholder="용어 검색 — 한글·영문·설명" value="' + esc(state.q) + '" autocomplete="off"></div>'
+    return '<div class="gl-tabwrap" style="--ac:' + DICTS[state.dict].color + '">'
+      + '<div class="gl-tabbar">'
+      + '<div class="gl-tabs">' + dictTabs + '</div>'
+      + searchPill
+      + '</div>'
+      + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">카테고리</span>' + catChips + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">가나다</span>' + choChips + '</div>'
       + '<div class="gl-row"><span class="gl-row-lbl">ABC</span>' + abcChips + '</div>';
@@ -1033,19 +1039,21 @@
     if (document.getElementById('gl-css')) return;
     var s = document.createElement('style'); s.id = 'gl-css';
     s.textContent = [
-      // 사전 선택 — 파일/폴더 탭 느낌(색상: SEO·AI·MKT·DEV)
-      '.gl-dicts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}',
-      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--border,#e3e8ee);background:#f6f7fb;color:#475569;border-radius:11px 11px 13px 13px;padding:11px 15px 11px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s;overflow:hidden}',
-      '.gl-dict::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--dc,#533afd);opacity:.45;transition:.15s}',
-      '.gl-dict:hover{background:#fff;color:var(--dc,#533afd);border-color:var(--dc,#533afd)}',
-      '.gl-dict:hover::before{opacity:.8}',
-      '.gl-dict.on{background:#fff;color:var(--dc,#533afd);border-color:var(--dc,#533afd);box-shadow:0 8px 20px -10px var(--dc,#533afd)}',
-      '.gl-dict.on::before{opacity:1;height:5px}',
-      '.gl-dict-ab{font-size:10px;font-weight:900;letter-spacing:.5px;color:#fff;background:var(--dc,#533afd);padding:3px 7px;border-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.12)}',
-      '.gl-dict-n{font-size:11.5px;font-weight:800;background:color-mix(in srgb,var(--dc,#533afd) 13%,#fff);color:var(--dc,#533afd);padding:2px 8px;border-radius:10px}',
-      '@media(max-width:520px){.gl-dict-lb{display:none}.gl-dict{padding:10px 13px}}',
-      '.gl-search input{width:100%;box-sizing:border-box;padding:14px 18px;border:1.5px solid var(--border,#e3e8ee);border-radius:12px;font-size:15px;font-family:inherit;margin-bottom:16px}',
-      '.gl-search input:focus{outline:none;border-color:var(--p,#533afd)}',
+      // 사전 선택 — 스큐어모픽 폴더 탭 + 통합 검색(참조 이미지형, 색상: SEO·AI·MKT·DEV)
+      '.gl-tabwrap{margin-bottom:18px;background:linear-gradient(180deg,#fbfcfe,#e9edf3);border:1px solid #dbe1ea;border-radius:15px;box-shadow:0 16px 36px -16px rgba(28,38,66,.32),inset 0 1px 0 #fff;padding:11px 11px 13px}',
+      '.gl-tabbar{position:relative;display:flex;align-items:flex-end;gap:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--ac,#533afd) 82%,#fff),var(--ac,#533afd));border-radius:11px;padding:0 10px;min-height:56px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -10px 20px -12px rgba(0,0,0,.25),0 8px 18px -10px var(--ac,#533afd)}',
+      '.gl-tabs{display:flex;align-items:flex-end;flex:1;min-width:0}',
+      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:13.5px;letter-spacing:.5px;color:#fff;padding:12px 30px 11px;margin-right:-14px;background:linear-gradient(180deg,color-mix(in srgb,var(--dc,#533afd) 62%,#fff),color-mix(in srgb,var(--dc,#533afd) 96%,#000));clip-path:polygon(14px 0,100% 0,calc(100% - 14px) 100%,0 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset -1px 0 0 rgba(0,0,0,.1);filter:saturate(.7) brightness(.96);opacity:.92;transition:filter .18s,opacity .18s}',
+      '.gl-dict:first-child{border-radius:9px 0 0 0}',
+      '.gl-dict:hover{filter:saturate(.95);opacity:1}',
+      '.gl-dict.on{filter:none;opacity:1;z-index:5;color:#fff;padding:15px 30px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--dc,#533afd) 80%,#fff),var(--dc,#533afd));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 -4px 14px -4px rgba(0,0,0,.35);animation:gl-tabpop .32s cubic-bezier(.34,1.4,.5,1)}',
+      '@keyframes gl-tabpop{0%{transform:translateY(9px) scale(.93);filter:saturate(.3) brightness(1.1);opacity:.4}55%{transform:translateY(-3px) scale(1.03)}100%{transform:none;filter:none;opacity:1}}',
+      '.gl-dict-ab{font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.28)}',
+      '.gl-dict-n{font-size:11px;font-weight:800;background:rgba(255,255,255,.28);color:#fff;padding:2px 8px;border-radius:9px;text-shadow:none}',
+      '.gl-tabsearch{flex-shrink:0;display:flex;align-items:center;gap:8px;background:#fff;border:none;border-radius:22px;padding:9px 15px;min-width:190px;align-self:center;color:var(--mute,#94a3b8);box-shadow:inset 0 1px 3px rgba(0,0,0,.14),0 1px 0 rgba(255,255,255,.4);transition:.15s}',
+      '.gl-tabsearch:focus-within{color:var(--ac,#533afd);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ac,#533afd) 45%,#fff),inset 0 1px 3px rgba(0,0,0,.1)}',
+      '.gl-tabsearch input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:#1c1e54}',
+      '@media(max-width:640px){.gl-tabbar{flex-wrap:wrap;padding:7px;gap:6px;min-height:0}.gl-tabs{order:1;width:100%;overflow-x:auto;padding-bottom:1px}.gl-dict{padding:9px 15px 8px;font-size:12px;letter-spacing:.3px;flex-shrink:0}.gl-dict.on{padding:11px 15px 9px}.gl-dict-n{padding:1px 6px}.gl-tabsearch{order:2;width:100%;min-width:0}}',
       '.gl-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}',
       '.gl-row-lbl{font-size:12px;font-weight:800;color:var(--mute,#64748d);width:56px;flex-shrink:0}',
       '.gl-chip{border:1px solid var(--border,#e3e8ee);background:#fff;color:#334155;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}',
