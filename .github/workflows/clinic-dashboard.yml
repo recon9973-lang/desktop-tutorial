@@ -1,0 +1,86 @@
+name: Clinic Dashboard Refresh
+
+# 클리닉 원장님 대시보드 실데이터(dashboard-live.json)를 medirank 파이프라인으로 재생성한다.
+# 입력: venom-wordpress/preview/clinic/data/dashboard-input.json (병원 좌표·진료과 등)
+# ⚠️ 실측 키(시크릿)가 없으면 파이프라인이 목업으로 대체하므로, 아래 가드가 키 부재 시
+#    실행을 건너뛰어 기존 실데이터를 보존한다(덮어쓰기 방지).
+#
+# 필요한 저장소 시크릿(Settings → Secrets and variables → Actions):
+#   DATA_GO_KR_SERVICE_KEY  (필수·심평원)
+#   NAVER_CLIENT_ID / NAVER_CLIENT_SECRET  (필수·네이버 지역검색)
+#   NAVER_AD_API_KEY / NAVER_AD_SECRET_KEY / NAVER_AD_CUSTOMER_ID  (선택·검색광고 키워드)
+#   NAVER_MAP_KEY_ID / NAVER_MAP_KEY  (선택·좌표 보정)
+#   SGIS_CONSUMER_KEY / SGIS_CONSUMER_SECRET  (선택·인구/상권)
+
+on:
+  schedule:
+    # 매월 1일 01:00 UTC = 10:00 KST (AI Exposure Check와 시간대 분리)
+    - cron: '0 1 1 * *'
+  workflow_dispatch:
+    inputs:
+      input:
+        description: 'input json path'
+        required: false
+        default: 'venom-wordpress/preview/clinic/data/dashboard-input.json'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Refresh dashboard-live.json
+        env:
+          INPUT: ${{ github.event.inputs.input || 'venom-wordpress/preview/clinic/data/dashboard-input.json' }}
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          NAVER_AD_API_KEY: ${{ secrets.NAVER_AD_API_KEY }}
+          NAVER_AD_SECRET_KEY: ${{ secrets.NAVER_AD_SECRET_KEY }}
+          NAVER_AD_CUSTOMER_ID: ${{ secrets.NAVER_AD_CUSTOMER_ID }}
+          NAVER_MAP_KEY_ID: ${{ secrets.NAVER_MAP_KEY_ID }}
+          NAVER_MAP_KEY: ${{ secrets.NAVER_MAP_KEY }}
+          SGIS_CONSUMER_KEY: ${{ secrets.SGIS_CONSUMER_KEY }}
+          SGIS_CONSUMER_SECRET: ${{ secrets.SGIS_CONSUMER_SECRET }}
+        run: |
+          set -e
+          # ── 가드: 필수 실측 키가 없으면 실데이터 보존 위해 건너뜀 ──
+          if [ -z "$DATA_GO_KR_SERVICE_KEY" ] || [ -z "$NAVER_CLIENT_ID" ] || [ -z "$NAVER_CLIENT_SECRET" ]; then
+            echo "::warning::필수 실측 시크릿(DATA_GO_KR_SERVICE_KEY·NAVER_CLIENT_ID·NAVER_CLIENT_SECRET) 미설정 — 목업 덮어쓰기 방지를 위해 스킵합니다."
+            exit 0
+          fi
+          IN="$GITHUB_WORKSPACE/$INPUT"
+          cd venom-wordpress/preview/clinic/pipeline
+          python3 - "$IN" <<'PY'
+          import json, sys, subprocess
+          c = json.load(open(sys.argv[1], encoding='utf-8'))
+          argmap = [('name','--name'),('address','--address'),('department','--department'),
+                    ('lat','--lat'),('lng','--lng'),('dgsbjt','--dgsbjt'),
+                    ('adm_cd','--adm-cd'),('biz_type','--biz-type')]
+          args = ['python3', 'export_dashboard.py']
+          for key, cli in argmap:
+              v = c.get(key)
+              if v not in (None, ''):
+                  args += [cli, str(v)]
+          print('실행:', ' '.join(args))
+          subprocess.run(args, check=True)
+          PY
+      - name: Commit dashboard-live.json
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -e
+          F=venom-wordpress/preview/clinic/data/dashboard-live.json
+          git add "$F"
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(clinic): 대시보드 실데이터 갱신 (run ${GITHUB_RUN_ID})"
+          git push origin HEAD:main
+        continue-on-error: true
