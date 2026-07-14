@@ -20,18 +20,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Chromium + Korean fonts
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq chromium-browser fonts-noto-cjk fonts-noto-color-emoji || \
-          sudo apt-get install -y -qq chromium fonts-noto-cjk fonts-noto-color-emoji
+      - name: Install Korean fonts
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk fonts-noto-color-emoji
+
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
 
       - name: Composite covers
         env:
-          CHROME_BIN: chromium-browser
-        run: |
-          command -v chromium-browser >/dev/null || export CHROME_BIN=chromium
-          node persona-nami/ig/build-cover.mjs
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: node persona-nami/ig/build-cover.mjs
 
       - name: Commit covers
         run: |
