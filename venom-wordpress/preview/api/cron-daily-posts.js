@@ -163,8 +163,9 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: true, reason: 'getPosts 실패 — 중복 방지 위해 이번 실행 건너뜀', error: e.message });
   }
 
-  // 한 번 호출에서 최대 발행 수(함수 타임아웃 방지). 못 채운 슬롯은 다음 폴링이 따라잡음.
-  const MAX_PER_RUN = 3;
+  // 한 번 호출에서 최대 발행 수. 1건이면 호출당 ~60~90초로 curl(180s)·함수 타임아웃 안에
+  // 확실히 응답 완료 → 워크플로가 성공으로 표시. 못 채운 슬롯은 다음 폴링이 따라잡는다(멱등).
+  const MAX_PER_RUN = 1;
   let toPublish = Math.min(Math.min(count, dueCount) - publishedToday, MAX_PER_RUN);
   if (toPublish <= 0) {
     return res.status(200).json({ ok: true, skipped: true, reason: '도래한 슬롯 모두 발행 완료', now: nowHM, dueCount, publishedToday });
