@@ -1,0 +1,40 @@
+{
+  "clients": [
+    {
+      "id": "pain",
+      "name": "시원마취통증의학과의원",
+      "industry": "병원/통증의학",
+      "region": "포항",
+      "websiteUrl": "",
+      "coreKeywords": ["시원마취통증의학과", "시원마취통증"],
+      "competitors": [],
+      "priorityAiEngines": ["perplexity", "openai", "gemini", "claude"],
+      "lifecycleStage": "최적화",
+      "planType": "",
+      "monthlyBudget": null,
+      "primaryContact": "",
+      "assignee": "",
+      "gscProperty": "",
+      "ga4PropertyId": "",
+      "active": true
+    },
+    {
+      "id": "skin",
+      "name": "시원스킨클리닉",
+      "industry": "병원/피부과",
+      "region": "포항",
+      "websiteUrl": "",
+      "coreKeywords": ["시원스킨클리닉", "시원스킨"],
+      "competitors": [],
+      "priorityAiEngines": ["perplexity", "openai", "gemini", "claude"],
+      "lifecycleStage": "최적화",
+      "planType": "",
+      "monthlyBudget": null,
+      "primaryContact": "",
+      "assignee": "",
+      "gscProperty": "",
+      "ga4PropertyId": "",
+      "active": true
+    }
+  ]
+}

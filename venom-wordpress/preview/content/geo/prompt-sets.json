@@ -1,0 +1,28 @@
+{
+  "sets": [
+    {
+      "id": "set_pain",
+      "clientId": "pain",
+      "cadence": "weekly",
+      "questions": [
+        { "id": "pain-q0", "text": "포항 정형외과 잘하는 곳 추천해줘", "type": "discovery" },
+        { "id": "pain-q1", "text": "포항 도수치료 잘하는 병원 어디가 좋아?", "type": "discovery" },
+        { "id": "pain-q2", "text": "포항 무릎통증 치료 병원 추천해줘", "type": "discovery" },
+        { "id": "pain-q3", "text": "포항 죽도동 허리디스크 잘 보는 병원 알려줘", "type": "discovery" },
+        { "id": "pain-q4", "text": "시원마취통증의학과의원 어때? 믿을 만한 곳이야?", "type": "brand" }
+      ]
+    },
+    {
+      "id": "set_skin",
+      "clientId": "skin",
+      "cadence": "weekly",
+      "questions": [
+        { "id": "skin-q0", "text": "포항 피부과 잘하는 곳 추천해줘", "type": "discovery" },
+        { "id": "skin-q1", "text": "포항 피부관리 어디가 좋아?", "type": "discovery" },
+        { "id": "skin-q2", "text": "포항 여드름 치료 잘하는 병원 알려줘", "type": "discovery" },
+        { "id": "skin-q3", "text": "포항 죽도동 스킨케어 추천해줘", "type": "discovery" },
+        { "id": "skin-q4", "text": "시원스킨클리닉 어때? 믿을 만한 곳이야?", "type": "brand" }
+      ]
+    }
+  ]
+}
