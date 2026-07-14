@@ -1,0 +1,142 @@
+{
+  "_meta": {
+    "purpose": "GEO 운영 OS 채널별 업무 템플릿 시드. 원천 사양: docs/plans/geo-ops-os-channel-playbooks.md",
+    "levels": { "A": "시스템 직접실행", "B": "초안+예약→인간승인", "C": "초안만→인간게시", "D": "안내(체크리스트/증빙)만" },
+    "rule": "step.level은 channel.defaultAutomationLevel 상한을 초과할 수 없다. wikipedia/reddit/arxiv 게시 단계는 D 고정(자동 실행 금지).",
+    "updatedAt": "2026-07-14"
+  },
+  "templates": [
+    {
+      "id": "wikipedia",
+      "channelType": "wikipedia",
+      "cap": "C",
+      "steps": [
+        { "step": "계정 신뢰도 4주 타항목 편집(자동인증 자격)", "level": "D", "evidence": "편집횟수 스크린샷" },
+        { "step": "주목성 확인(독립 언론 2건+)", "level": "C", "system": "Google News RSS 출처 자동수집", "evidence": "출처 URL 목록" },
+        { "step": "COI 이해충돌 공개 선언", "level": "D", "evidence": "사용자토론 링크" },
+        { "step": "초안 작성(NPOV·각주·홍보표현 금지)", "level": "C", "system": "LLM 중립성 초안", "evidence": "샌드박스 링크" },
+        { "step": "실제 항목 생성·게시", "level": "D", "guard": "자동 게시 금지 — 인간 직접", "evidence": "게시 diff URL" },
+        { "step": "월 1회 유지관리", "level": "D", "system": "Wikipedia API 변경감시→알림", "evidence": "갱신 이력" }
+      ],
+      "forbidden": ["자동 편집/게시", "홍보성 표현 자동삽입"],
+      "kpi": ["항목 생성 여부", "편집 유지율 추세"]
+    },
+    {
+      "id": "reddit",
+      "channelType": "reddit",
+      "cap": "C",
+      "steps": [
+        { "step": "Karma 육성 4~8주", "level": "D", "evidence": "프로필 karma" },
+        { "step": "타깃 서브레딧 선정", "level": "A", "system": "업종 키워드 후보 수집" },
+        { "step": "답변 기회 탐지(브랜드/키워드 신규글)", "level": "A", "system": "Reddit API 모니터링→Slack 알림", "evidence": "알림 로그" },
+        { "step": "전문가 답변 초안(공감→해결책→자사 1회)", "level": "C", "system": "LLM 초안(개인화 필수)", "evidence": "초안" },
+        { "step": "실제 게시", "level": "D", "guard": "자동 게시 금지 — 인간 직접 입력", "evidence": "댓글 URL" },
+        { "step": "AMA 기획", "level": "D", "evidence": "모더레이터 승인" }
+      ],
+      "forbidden": ["자동 게시", "업보트 조작", "cross-posting"],
+      "kpi": ["답변 수·업보트(수동)", "Perplexity 인용 여부(실측)"]
+    },
+    {
+      "id": "linkedin",
+      "channelType": "linkedin",
+      "cap": "B",
+      "steps": [
+        { "step": "프로필·기업페이지 최적화(1회)", "level": "B", "system": "소개문·Specialties 초안" },
+        { "step": "Post 주3~5회(로테이션)", "level": "B", "system": "초안 3편→Buffer 예약(승인 후)", "evidence": "게시 URL" },
+        { "step": "Article 월2~4회(BLUF·H2질문·데이터·800단어+)", "level": "B", "system": "Perplexity 데이터+Claude 초안", "evidence": "게시 URL" },
+        { "step": "발행 후 Post·그룹 공유", "level": "C", "system": "요약 댓글 초안" }
+      ],
+      "forbidden": ["자사홍보 편중(교육80/홍보20 유지)"],
+      "kpi": ["팔로워", "Article 조회(LinkedIn Analytics API)"]
+    },
+    {
+      "id": "youtube",
+      "channelType": "youtube",
+      "cap": "B",
+      "steps": [
+        { "step": "채널 개설·키워드 설정", "level": "D", "evidence": "채널 URL" },
+        { "step": "스크립트(BLUF·소주제·수치)", "level": "C", "system": "LLM 초안" },
+        { "step": "자막 SRT 생성", "level": "A", "system": "음성→Whisper→SRT→전문용어 치환", "evidence": "SRT 파일" },
+        { "step": "제목/설명/태그 SEO", "level": "B", "system": "제목5변형+설명+태그 초안" },
+        { "step": "업로드·자막 첨부·첫48h 관리", "level": "C", "system": "배포 링크 초안", "evidence": "영상 URL" }
+      ],
+      "forbidden": ["자동 자막 방치(오인용)"],
+      "kpi": ["조회수·구독자(YouTube Analytics API)"]
+    },
+    {
+      "id": "github",
+      "channelType": "github",
+      "cap": "B",
+      "steps": [
+        { "step": "조직·저장소·README 구조화", "level": "B", "system": "README 초안·자동갱신 PR", "evidence": "PR URL" },
+        { "step": "GitHub Pages 문서 사이트", "level": "B", "system": "docs 마크다운 초안", "evidence": "사이트 URL" }
+      ],
+      "forbidden": [],
+      "kpi": ["Star 수"]
+    },
+    {
+      "id": "stackoverflow",
+      "channelType": "stackoverflow",
+      "cap": "C",
+      "steps": [
+        { "step": "평판 쌓기·전문답변(코드검증)", "level": "C", "system": "답변 초안(코드 로컬검증 경고)", "guard": "AI 무편집 답변 게시 정책 위반", "evidence": "답변 URL" }
+      ],
+      "forbidden": ["AI 무편집 답변 게시"],
+      "kpi": ["평판(수동)"]
+    },
+    {
+      "id": "arxiv",
+      "channelType": "arxiv",
+      "cap": "D",
+      "steps": [
+        { "step": "Endorsement 확보", "level": "D", "evidence": "이메일" },
+        { "step": "LaTeX 리포트(초록·방법·결과)", "level": "C", "system": "형식 교정·참고문헌 통일 보조", "evidence": ".tex" },
+        { "step": "제출", "level": "D", "guard": "AI 생성 논문 전체 제출 금지(학술윤리)", "evidence": "제출 ID" }
+      ],
+      "forbidden": ["AI 생성 논문 제출"],
+      "kpi": ["제출 여부"],
+      "fallback": "추천인 없으면 ResearchGate/SSRN 안내"
+    },
+    {
+      "id": "pr",
+      "channelType": "pr_global",
+      "cap": "B",
+      "steps": [
+        { "step": "AP스타일 초안(헤드라인·5W1H 리드·수치 서두)", "level": "B", "system": "Claude 초안" },
+        { "step": "CEO 인용문·수치 검증", "level": "D", "guard": "법적 책임 — 인간 확인", "evidence": "승인 기록" },
+        { "step": "배포(지역·시간·카테고리)", "level": "D", "guard": "인간 제출", "evidence": "배포 확인" },
+        { "step": "배포 후 미디어 모니터링", "level": "A", "system": "Google Alerts RSS→픽업 감지→알림", "evidence": "픽업 목록" }
+      ],
+      "forbidden": ["허위수치·최상급 자동생성"],
+      "kpi": ["미디어 픽업·백링크 수"]
+    },
+    {
+      "id": "google_seo",
+      "channelType": "gsc",
+      "cap": "A",
+      "steps": [
+        { "step": "GSC 등록·sitemap 제출", "level": "D", "system": "이후 색인상태 자동수집", "evidence": "GSC 스크린샷" },
+        { "step": "색인 요청", "level": "B", "guard": "Indexing API 미사용 — sitemap+GSC 제출로", "evidence": "색인 상태" },
+        { "step": "FAQPage/Article Schema", "level": "A", "system": "자동 삽입·Actions 검증", "note": "위생 항목 — 인용 리프트 약속 금지", "evidence": "validator 결과" },
+        { "step": "llms.txt 유지", "level": "A", "system": "sitemap 파싱→자동 갱신·커밋", "note": "위생 항목 — 리프트 약속 금지", "evidence": "파일 diff" }
+      ],
+      "forbidden": ["Schema/llms.txt 인용배수 KPI 하드코딩", "Indexing API 일반페이지"],
+      "kpi": ["색인 페이지수·클릭·노출·순위(GSC API)"]
+    },
+    {
+      "id": "naver_ugc",
+      "channelType": "naver_blog",
+      "cap": "B",
+      "variants": [
+        { "channelType": "naver_blog", "cap": "B", "step": "전문 롱폼·키워드·정기", "level": "B" },
+        { "channelType": "naver_cafe", "cap": "C", "step": "커뮤니티 전문 답변", "level": "C" },
+        { "channelType": "naver_kin", "cap": "C", "step": "지식인 전문가 답변·출처명시", "level": "C" },
+        { "channelType": "naver_brunch", "cap": "B", "step": "심층 아티클", "level": "B" },
+        { "channelType": "naver_place", "cap": "B", "step": "지역정보 정합성·리뷰", "level": "B" }
+      ],
+      "monitoring": "Naver Search/DataLab Open API로 SERP·트렌드 수집. Search Advisor 성과지표는 수동 보완.",
+      "note": "첨부4: Naver AI Tab/Briefing은 카페·블로그·지식iN에서 답변 생성 — 별도 트랙",
+      "kpi": ["SERP 순위(Naver Search API)", "DataLab 트렌드"]
+    }
+  ]
+}

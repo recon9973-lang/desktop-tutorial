@@ -46,7 +46,20 @@ content/geo/checklist-templates.json # 업무 템플릿(코드 아닌 데이터)
 | `gscProperty`·`ga4PropertyId` | string | 성과 수집 연결키(선택) |
 | `active` | bool | 실측 루프 포함 여부 |
 
-**channels.json** — `{ channels: [ ... ] }` : `id, clientId, channelType(웹사이트|GSC|GA4|GBP|Naver|YouTube|LinkedIn|Reddit|Wikipedia|GitHub|PR), accountUrl, ownerEmail, accessStatus, apiStatus, healthStatus, twoFactor, lastActivityAt, nextAction, riskLevel, evidenceUrl`
+**channels.json** — `{ channels: [ ... ] }` : `id, clientId, channelType, defaultAutomationLevel, accountUrl, ownerEmail, accessStatus, apiStatus, healthStatus, twoFactor, lastActivityAt, nextAction, riskLevel, evidenceUrl`
+
+**channelType 전체 목록**(첨부1·4 채널 완전 반영 — A 보완):
+| 카테고리 | channelType | 기본 자동화레벨 | 근거 |
+|---|---|---|---|
+| 성과/기술 | `website` · `gsc` · `ga4` · `schema` · `llms_txt` | 🟢 A | 수집·검증 직접 실행 |
+| 로컬 | `gbp`(Google Business) · `naver_place` | 🟡 B | 정보 정합성, 승인 후 반영 |
+| 콘텐츠 | `linkedin` · `youtube` · `blog`(자사) · `naver_blog` · `naver_brunch` | 🟡 B | 초안+예약, 인간 승인 게시 |
+| 커뮤니티 | `reddit` · `naver_kin`(지식인) · `naver_cafe` · `stackoverflow` · `quora` | 🔵 C→🔴 D | **초안만, 게시는 인간**(계정 리스크) |
+| 백과 | `wikipedia` | 🔵 C(초안)→🔴 D(게시) | **자동 게시 금지선** |
+| 학술 | `arxiv` · `github` | 🔴 D(arxiv) / 🟡 B(github README) | arXiv 제출 인간필수 |
+| PR | `pr_global`(PRNewswire) · `pr_kr`(뉴스와이어·연합) | 🟡 B(초안)→🔴 D(배포승인) | CEO 인용문·수치 검증 |
+
+> `defaultAutomationLevel`은 채널 생성 시 자동 지정되며, 이 채널에서 생성되는 Task의 상한 레벨을 강제한다(예: `wikipedia`/`reddit` Task는 A/B 승격 불가 → 자동 게시 원천 차단). **한국 UGC(지식인·카페·블로그·브런치·Place)를 별도 채널로 분리**해 첨부4의 "Naver AI Tab은 카페·블로그·지식iN에서 답변 생성" 취지 반영.
 
 **tasks.json** — `id, clientId, channelId, title, taskType, automationLevel(A|B|C|D), status(backlog|thisweek|doing|review|hold|done|failed), assignee, dueDate, priority, checklistTemplateId, inputRefs, evidenceUrl, approvalStatus, recurrenceRule`
 
