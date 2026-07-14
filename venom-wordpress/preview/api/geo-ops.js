@@ -20,6 +20,8 @@ const geo = require('../lib/geo-store');
 const tpl = require('../lib/geo-templates');
 const gm = require('../lib/geo-metrics');
 const gr = require('../lib/geo-report');
+const gsc = require('../lib/geo-gsc');
+const SC = require('../lib/search-console');
 const store = require('../lib/github-store');
 const AIEXPOSE_PATH = 'venom-wordpress/preview/content/ai-expose-latest.json';
 
@@ -155,11 +157,32 @@ async function handleMetrics(req, res) {
     return res.status(200).json({ ok: true, data: gm.summarize(all, { clientId }) });
   }
 
-  // ingest (POST) — 인증 필요
+  // 쓰기(POST) — 인증 필요
   if (!authOk(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
   const body = await readBody(req);
   const clientId = body.clientId;
   if (!clientId) return res.status(400).json({ ok: false, error: 'clientId 필요' });
+
+  // collect: GSC API 자동수집 → 메트릭 적재 (P1 #6 후속)
+  if (action === 'collect') {
+    const client = await geo.get('clients', String(clientId));
+    if (!client) return res.status(404).json({ ok: false, error: '거래처 없음' });
+    const siteUrl = client.gscProperty;
+    if (!siteUrl) return res.status(200).json({ ok: false, configured: false, note: '거래처 gscProperty 미설정' });
+    const env = Object.assign({}, process.env, { GSC_SITE_URL: siteUrl });
+    if (!SC.isConfigured(env)) return res.status(200).json({ ok: false, configured: false, note: 'GSC 서비스계정 자격증명 미설정(GSC_CLIENT_EMAIL/GSC_PRIVATE_KEY 등)' });
+    const days = Number(body.days) || 28;
+    const end = new Date(Date.now() - 3 * 86400000);   // GSC 데이터 지연 ~3일
+    const start = new Date(end.getTime() - days * 86400000);
+    const ymd = (d) => d.toISOString().slice(0, 10);
+    const q = await SC.querySearchAnalytics({ env, startDate: ymd(start), endDate: ymd(end), dimensions: ['date'], rowLimit: 500 });
+    if (!q.ok) return res.status(502).json({ ok: false, error: q.reason || 'GSC 쿼리 실패' });
+    const records = gsc.rowsToMetrics(q.rows, { clientId: String(clientId), source: 'gsc' });
+    if (!records.length) return res.status(200).json({ ok: true, count: 0, note: 'GSC 데이터 없음(기간 내)' });
+    const saved = await geo.upsertMany('metrics', records);
+    return res.status(200).json({ ok: true, count: saved.length, range: { start: ymd(start), end: ymd(end) } });
+  }
+
   let records = [];
   try {
     if (typeof body.csv === 'string' && body.csv.trim()) {

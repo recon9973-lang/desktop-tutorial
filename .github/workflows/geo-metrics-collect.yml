@@ -1,0 +1,61 @@
+name: GEO Metrics Collect (GSC)
+
+# 거래처(geo/clients.json active, gscProperty 설정된)별 GSC 성과를 배포된
+# /api/geo-ops?module=metrics&action=collect 로 자동 수집·적재한다.
+# 실제 GSC 조회·변환·적재는 서버(lib/search-console + lib/geo-gsc)에서 수행. 러너는 트리거만(egress 우회).
+# 필요 시크릿: ADMIN_SECRET(쓰기 인증). GSC 자격증명은 배포 환경(Vercel env)에 설정.
+
+on:
+  schedule:
+    # 매일 22:00 UTC = 07:00 KST (익일)
+    - cron: '0 22 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect GSC metrics for active clients
+        env:
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+        run: |
+          node - <<'NODE'
+          const https = require('https');
+          const fs = require('fs');
+          const BASE = 'https://venom-new-site.vercel.app';
+          const SECRET = process.env.ADMIN_SECRET || '';
+
+          let clients = [];
+          try { clients = (JSON.parse(fs.readFileSync('venom-wordpress/preview/content/geo/clients.json', 'utf8')).clients || []).filter(c => c && c.active !== false && c.gscProperty); } catch (e) {}
+          console.log('gsc clients=' + clients.length);
+
+          function req(path, bodyObj) {
+            const body = JSON.stringify(bodyObj);
+            return new Promise((resolve) => {
+              const r = https.request(BASE + path, {
+                method: 'POST',
+                headers: Object.assign({ 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, SECRET ? { 'Authorization': 'Bearer ' + SECRET } : {}),
+              }, (res) => { let d = ''; res.on('data', c => d += c); res.on('end', () => { let j = null; try { j = JSON.parse(d); } catch {} resolve({ status: res.statusCode, j }); }); });
+              r.on('error', (e) => resolve({ status: 0, j: { error: e.message } }));
+              r.setTimeout(60000, () => { r.destroy(); resolve({ status: 0, j: { error: 'timeout' } }); });
+              r.write(body); r.end();
+            });
+          }
+
+          (async () => {
+            let okc = 0, fail = 0, skip = 0;
+            for (const c of clients) {
+              const r = await req('/api/geo-ops?module=metrics&action=collect', { clientId: c.id });
+              if (r.j && r.j.ok) { okc++; console.log('  ' + c.id + ' -> ok ' + (r.j.count || 0)); }
+              else if (r.j && r.j.configured === false) { skip++; console.log('  ' + c.id + ' -> skip(' + (r.j.note || 'unconfigured') + ')'); }
+              else { fail++; console.log('  ' + c.id + ' -> FAIL ' + (r.j && r.j.error || r.status)); }
+            }
+            await req('/api/geo-ops?module=automations&action=log', { automation: { name: 'GEO Metrics Collect', workflowType: 'metrics', status: fail ? 'error' : 'ok', errorMessage: fail ? (fail + '개 실패') : '' } });
+            console.log('done · ok=' + okc + ' skip=' + skip + ' fail=' + fail);
+          })();
+          NODE

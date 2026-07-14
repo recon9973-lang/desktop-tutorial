@@ -163,6 +163,42 @@ async function call(opts) { const res = mockRes(); await handler(mockReq(opts), 
     ok('clientId 누락 400', res._status === 400);
   }
 
+  console.log('metrics collect (GSC 자동수집, SC 목킹)');
+  {
+    const SC = require('../lib/search-console.js');
+    const _isConf = SC.isConfigured, _query = SC.querySearchAnalytics;
+
+    // gscProperty 없는 거래처 → configured:false
+    await call({ method: 'POST', query: { module: 'clients', action: 'upsert' }, body: { client: { id: 'pain', name: '시원통증', active: true } } });
+    let res = await call({ method: 'POST', query: { module: 'metrics', action: 'collect' }, body: { clientId: 'pain' } });
+    ok('gscProperty 미설정 configured:false', res._json.ok === false && res._json.configured === false);
+
+    // gscProperty 설정 + SC 목킹
+    await call({ method: 'POST', query: { module: 'clients', action: 'upsert' }, body: { client: { id: 'pain', name: '시원통증', active: true, gscProperty: 'sc-domain:example.com' } } });
+    SC.isConfigured = () => false;
+    res = await call({ method: 'POST', query: { module: 'metrics', action: 'collect' }, body: { clientId: 'pain' } });
+    ok('자격증명 미설정 configured:false', res._json.configured === false);
+
+    SC.isConfigured = () => true;
+    SC.querySearchAnalytics = async () => ({ ok: true, rows: [
+      { keys: ['2026-07-01'], clicks: 10, impressions: 200, ctr: 0.05, position: 8 },
+      { keys: ['2026-07-02'], clicks: 14, impressions: 220, ctr: 0.06, position: 7 },
+    ] });
+    res = await call({ method: 'POST', query: { module: 'metrics', action: 'collect' }, body: { clientId: 'pain', days: 14 } });
+    ok('collect 적재(2일×4=8)', res._json.ok && res._json.count === 8);
+
+    res = await call({ method: 'GET', query: { module: 'metrics', action: 'summary', clientId: 'pain' } });
+    ok('collect 후 summary clicks', res._json.data.find((x) => x.metricName === 'clicks').latest === 14);
+    ok('collect 후 ctr %', res._json.data.find((x) => x.metricName === 'ctr').latest === 6);
+
+    // GSC 쿼리 실패 → 502
+    SC.querySearchAnalytics = async () => ({ ok: false, reason: 'GSC 쿼리 실패: 403' });
+    res = await call({ method: 'POST', query: { module: 'metrics', action: 'collect' }, body: { clientId: 'pain' } });
+    ok('GSC 실패 502', res._status === 502);
+
+    SC.isConfigured = _isConf; SC.querySearchAnalytics = _query; // 복원
+  }
+
   console.log('report generate/list/get');
   {
     // pain 거래처는 앞 블록에서 생성됨 + metrics/tasks 존재
