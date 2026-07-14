@@ -664,11 +664,13 @@ async function diagnoseLocalOnly(rawInput, opts = {}) {
     ? (simplifyDept(rawCat) || simplifyDept(q.raw) || '병원')
     : (businessCategory(rawCat) || '');
   const blogId = blogIdFromUrl(place.homepage);
-  const [local, ranks] = await Promise.all([
+  const [local, ranks, reviews] = await Promise.all([
     diagnoseLocal(deps, gname, region),
     keywordRanks(deps, { name: gname, region, dept, medical, blogId }),
+    deps.naverPlace ? safe(deps.naverPlace.fetchPlaceReviews(gname, { region, deps })) : Promise.resolve(null),
   ]);
   local.keywordRanks = ranks;
+  if (reviews) local.reviews = reviews;
   return {
     ok: true, query: q,
     resolved: { region, dept, medical, homepage: place.homepage || null, homepageKind: classifyHomepage(place.homepage), place },

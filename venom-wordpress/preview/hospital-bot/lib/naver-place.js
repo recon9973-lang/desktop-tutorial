@@ -104,6 +104,39 @@ async function searchHomepage(name, opts) {
   } catch (e) { return null; }
 }
 
+// 플레이스 상세 문자열에서 리뷰 수 추출 — 정확한 JSON 키만(가짜 없음).
+function extractReviewCounts(text) {
+  const s = String(text || '').replace(/\\\//g, '/');
+  const num = (re) => { const m = s.match(re); return m ? parseInt(m[1], 10) : null; };
+  const visitor = num(/"visitorReviewCount"\s*:\s*"?(\d+)"?/i);
+  const blog = num(/"blogCafeReviewCount"\s*:\s*"?(\d+)"?/i) != null
+    ? num(/"blogCafeReviewCount"\s*:\s*"?(\d+)"?/i)
+    : num(/"blogReviewCount"\s*:\s*"?(\d+)"?/i);
+  const total = num(/"totalReviewCount"\s*:\s*"?(\d+)"?/i);
+  if (visitor == null && blog == null && total == null) return null;
+  return { visitor, blog, total: total != null ? total : ((visitor || 0) + (blog || 0)) };
+}
+// 플레이스 리뷰 수(방문자+블로그) best-effort 조회. 실패 시 null.
+async function fetchPlaceReviews(name, opts) {
+  opts = opts || {};
+  const deps = opts.deps || {};
+  const fetchHtml = deps.fetchHtml;
+  if (typeof fetchHtml !== 'function' || !name) return null;
+  const q = [opts.region, name].filter(Boolean).join(' ').trim() || name;
+  const enc = encodeURIComponent(q);
+  const H = { timeout: 2500, maxBytes: 1500000 };
+  try {
+    const list = await fetchHtml(`https://pcmap.place.naver.com/place/list?query=${enc}`, H);
+    const listHtml = (list && list.ok && list.html) || '';
+    const direct = extractReviewCounts(listHtml);
+    if (direct) return direct;
+    const id = extractPlaceId(listHtml);
+    if (!id) return null;
+    const detail = await fetchHtml(`https://pcmap.place.naver.com/place/${id}/home`, H);
+    return extractReviewCounts((detail && detail.ok && detail.html) || '');
+  } catch (e) { return null; }
+}
+
 // 통합: 플레이스 상세 → 검색엔진 순으로 실제 홈페이지 best-effort 탐색.
 async function findHomepage(name, opts) {
   const viaPlace = await resolveHomepage(name, opts).catch(() => null);
@@ -113,4 +146,4 @@ async function findHomepage(name, opts) {
   return null;
 }
 
-module.exports = { findHomepage, resolveHomepage, searchHomepage, extractHomepage, extractPlaceId, isSiteUrl, hostOf };
+module.exports = { findHomepage, resolveHomepage, searchHomepage, fetchPlaceReviews, extractReviewCounts, extractHomepage, extractPlaceId, isSiteUrl, hostOf };
