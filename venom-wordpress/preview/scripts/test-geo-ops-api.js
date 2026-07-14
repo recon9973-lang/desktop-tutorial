@@ -10,6 +10,7 @@
  */
 
 const geo = require('../lib/geo-store.js');
+const tpl = require('../lib/geo-templates.js');
 const handler = require('../api/geo-ops.js');
 
 let pass = 0, fail = 0;
@@ -93,6 +94,46 @@ async function call(opts) { const res = mockRes(); await handler(mockReq(opts), 
     ok('unknown module 400', res._status === 400);
     res = await call({ method: 'POST', query: { module: 'clients', action: 'weird' }, body: {} });
     ok('unknown action 400', res._status === 400);
+  }
+
+  console.log('templates 모듈 + tasks generate/approve');
+  {
+    // geo-templates 백엔드 주입(작은 시드)
+    const seed = { templates: [
+      { id: 'wikipedia', channelType: 'wikipedia', cap: 'C', steps: [{ step: '초안', level: 'C' }, { step: '게시', level: 'D', guard: '자동금지' }] },
+      { id: 'linkedin', channelType: 'linkedin', cap: 'B', steps: [{ step: 'Post', level: 'B' }] },
+    ] };
+    tpl._setBackend({ async getJsonFile() { return { content: seed }; } });
+
+    let res = await call({ method: 'GET', query: { module: 'templates' } });
+    ok('templates list', res._json.ok && res._json.count === 2 && res._json.data[0].steps === 2);
+
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'generate' }, body: { clientId: 'pain', templateId: 'wikipedia' } });
+    ok('generate 2 Task', res._json.ok && res._json.count === 2);
+    ok('generate 게시단계 D 유지', res._json.data.some((t) => /게시/.test(t.title) && t.automationLevel === 'D'));
+
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'generate' }, body: { clientId: 'pain', templateId: 'linkedin' } });
+    const bTask = res._json.data[0];
+    ok('linkedin B단계 승인대기', bTask.approvalStatus === 'pending' && bTask.status === 'backlog');
+
+    // 승인 → thisweek
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'approve' }, body: { id: bTask.id, decision: 'approved' } });
+    ok('approve → thisweek', res._json.ok && res._json.data.approvalStatus === 'approved' && res._json.data.status === 'thisweek');
+
+    // 반려 → hold
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'generate' }, body: { clientId: 'skin2', templateId: 'linkedin' } });
+    const rTask = res._json.data[0];
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'approve' }, body: { id: rTask.id, decision: 'rejected' } });
+    ok('reject → hold', res._json.data.approvalStatus === 'rejected' && res._json.data.status === 'hold');
+
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'generate' }, body: { clientId: 'pain' } });
+    ok('generate templateId 누락 400', res._status === 400);
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'generate' }, body: { clientId: 'pain', templateId: 'nope' } });
+    ok('generate 없는 템플릿 404', res._status === 404);
+
+    // 생성된 Task 가 tasks 컬렉션에 존재(clientId 필터)
+    res = await call({ method: 'GET', query: { module: 'tasks', action: 'list', clientId: 'pain' } });
+    ok('pain Task 목록 누적', res._json.count >= 3);
   }
 
   console.log('인증 게이트');

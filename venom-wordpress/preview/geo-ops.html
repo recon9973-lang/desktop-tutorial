@@ -70,6 +70,7 @@
   <div class="gside-sec">운영</div>
   <div class="snav active" data-sec="dashboard" onclick="showSec('dashboard')"><span>📊</span>전체 관제</div>
   <div class="snav" data-sec="clients" onclick="showSec('clients')"><span>🏥</span>거래처</div>
+  <div class="snav" data-sec="tasks" onclick="showSec('tasks')"><span>🗂️</span>업무 보드</div>
 </nav>
 
 <header>
@@ -154,6 +155,29 @@
     </div>
     <div id="cd-exposure" class="hide"><div class="card"><div id="exposure-body" class="empty">—</div></div></div>
   </section>
+
+  <!-- 업무 보드 -->
+  <section id="sec-tasks" class="hide">
+    <h2>업무 보드</h2>
+    <div class="card">
+      <h3>채널 플레이북에서 업무 생성</h3>
+      <div class="row" style="grid-template-columns:1fr 1fr auto;align-items:end">
+        <div><label>거래처</label><select id="gen-client"><option value="">거래처 선택</option></select></div>
+        <div><label>채널 플레이북</label><select id="gen-template"><option value="">템플릿 선택</option></select></div>
+        <div><button class="btn" onclick="generateTasks()">업무 생성</button></div>
+      </div>
+      <div class="muted">선택한 거래처에 해당 채널의 단계별 업무가 자동화레벨(A~D)과 함께 생성됩니다. 위키/레딧 게시 등은 D(안내만)로 강등되어 자동 실행되지 않습니다.</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <label style="margin:0">거래처 필터</label>
+        <select id="task-filter" style="width:auto" onchange="loadTasks()"><option value="">전체</option></select>
+        <button class="btn ghost sm" onclick="loadTasks()">새로고침</button>
+      </div>
+      <div id="approval-queue"></div>
+      <div id="kanban" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px"></div>
+    </div>
+  </section>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -169,10 +193,11 @@ function authHeaders(){ return SECRET?{'Authorization':'Bearer '+SECRET,'Content
 async function api(path,opts){ try{ const r=await fetch(API+path,Object.assign({headers:authHeaders()},opts||{})); if(r.status===401){toast('ADMIN_SECRET을 입력·저장하세요');return null;} return await r.json(); }catch(e){ return null; } }
 
 function showSec(s){
-  ['dashboard','clients','client'].forEach(x=>document.getElementById('sec-'+x).classList.toggle('hide',x!==s));
+  ['dashboard','clients','client','tasks'].forEach(x=>document.getElementById('sec-'+x).classList.toggle('hide',x!==s));
   document.querySelectorAll('.snav').forEach(n=>n.classList.toggle('active',n.dataset.sec===s));
   if(s==='dashboard')loadDashboard();
   if(s==='clients')loadClients();
+  if(s==='tasks')initTasks();
 }
 function showTab(t){
   ['overview','channels','exposure'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
@@ -290,6 +315,72 @@ async function loadExposure(id){
   });
   html+='</tbody></table><div class="muted" style="margin-top:8px">실측일 '+String(snap.generated_at||'').slice(0,10)+(snap.run_id?(' · run '+snap.run_id):'')+'</div>';
   body.innerHTML=html;
+}
+
+// ── 업무 보드(칸반·승인큐·플레이북 생성) ──
+const KCOLS=[['backlog','Backlog'],['thisweek','이번주'],['doing','진행중'],['review','승인대기'],['hold','보류'],['done','완료'],['failed','실패/재작업']];
+let TASKS_INIT=false;
+async function initTasks(){
+  if(!TASKS_INIT){
+    TASKS_INIT=true;
+    // 거래처·템플릿 셀렉트 채우기
+    const cj=await api('?module=clients&action=list');
+    const clients=(cj&&cj.ok)?cj.data:[];
+    const opts='<option value="">'+'거래처 선택'+'</option>'+clients.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+    document.getElementById('gen-client').innerHTML=opts;
+    document.getElementById('task-filter').innerHTML='<option value="">전체</option>'+clients.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');
+    const tj=await api('?module=templates');
+    const tps=(tj&&tj.ok)?tj.data:[];
+    document.getElementById('gen-template').innerHTML='<option value="">채널 플레이북 선택</option>'+tps.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.id)+' ('+t.cap+'상한 · '+t.steps+'단계)</option>').join('');
+  }
+  loadTasks();
+}
+async function generateTasks(){
+  const clientId=document.getElementById('gen-client').value, templateId=document.getElementById('gen-template').value;
+  if(!clientId||!templateId){ toast('거래처·플레이북을 선택하세요'); return; }
+  const j=await api('?module=tasks&action=generate',{method:'POST',body:JSON.stringify({clientId,templateId})});
+  if(j&&j.ok){ toast(j.count+'개 업무 생성됨'); loadTasks(); }
+  else toast('생성 실패 — 시크릿 확인');
+}
+async function loadTasks(){
+  const filter=document.getElementById('task-filter').value;
+  const q='?module=tasks&action=list'+(filter?('&clientId='+encodeURIComponent(filter)):'');
+  const j=await api(q);
+  const kb=document.getElementById('kanban'), aq=document.getElementById('approval-queue');
+  if(!j||!j.ok){ kb.innerHTML='<div class="empty">데이터 없음 — 시크릿 확인</div>'; aq.innerHTML=''; return; }
+  const tasks=j.data;
+  // 승인 큐(상단 고정): approvalStatus pending
+  const pending=tasks.filter(t=>t.approvalStatus==='pending');
+  aq.innerHTML=pending.length?('<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;margin-bottom:14px">'+
+    '<div style="font-weight:800;color:#9a3412;margin-bottom:8px">🔔 승인 대기 '+pending.length+'건</div>'+
+    pending.map(t=>'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid #fde8cf">'+
+      lvlBadge(t.automationLevel)+'<span style="flex:1">'+esc(t.title)+' <span class="muted">('+esc(t.clientId)+')</span></span>'+
+      '<button class="btn sm" onclick="approveTask(\''+t.id+'\',\'approved\')">승인</button>'+
+      '<button class="btn ghost sm" onclick="approveTask(\''+t.id+'\',\'rejected\')">반려</button></div>').join('')+'</div>'):'';
+  // 칸반
+  kb.innerHTML=renderKanban(tasks);
+}
+function lvlBadge(l){ l=l||'D'; return '<span class="lvl lvl'+l+'">'+l+'</span>'; }
+function renderKanban(tasks){
+  return KCOLS.map(([key,label])=>{
+    const items=tasks.filter(t=>(t.status||'backlog')===key);
+    const cards=items.map(t=>'<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px;margin-bottom:8px">'+
+      '<div style="display:flex;gap:6px;align-items:flex-start">'+lvlBadge(t.automationLevel)+'<div style="flex:1;font-size:.8rem;font-weight:600;line-height:1.3">'+esc(t.title||'')+'</div></div>'+
+      '<div class="muted" style="margin:4px 0 6px">'+esc(t.clientId||'')+(t.guard?(' · <span style="color:#b42318">🔒'+esc(t.guard)+'</span>'):'')+'</div>'+
+      '<select style="font-size:.72rem;padding:4px 6px" onchange="moveTask(\''+t.id+'\',this.value)">'+
+        KCOLS.map(([k,l])=>'<option value="'+k+'"'+(k===key?' selected':'')+'>'+l+'</option>').join('')+
+      '</select></div>').join('')||'<div class="muted" style="font-size:.75rem;padding:6px">—</div>';
+    return '<div style="min-width:170px;flex:0 0 170px;background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:10px">'+
+      '<div style="font-size:.76rem;font-weight:800;color:var(--ink2);margin-bottom:8px">'+label+' <span class="muted">'+items.length+'</span></div>'+cards+'</div>';
+  }).join('');
+}
+async function moveTask(id,to){
+  const j=await api('?module=tasks&action=move',{method:'POST',body:JSON.stringify({id,to})});
+  if(j&&j.ok){ loadTasks(); } else toast('이동 실패');
+}
+async function approveTask(id,decision){
+  const j=await api('?module=tasks&action=approve',{method:'POST',body:JSON.stringify({id,decision})});
+  if(j&&j.ok){ toast(decision==='approved'?'승인됨':'반려됨'); loadTasks(); } else toast('처리 실패');
 }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }

@@ -183,7 +183,7 @@ Client.id ≡ clinicId ≡ ERP Client.id (느슨 연결)
 
 **착수 순서 근거**: 3(실측 일반화)이 최소노력·최대효과이자 모든 지표의 입력. 1·2는 그 그릇.
 
-**진행 현황(2026-07-14)**: ✅ **#1 완료** `lib/geo-store.js`(테스트 21) · ✅ **#2 완료** `api/geo-ops.js`(테스트 18) + 시드 `content/geo/*.json`(pain/skin 이관) · ✅ **#3 완료** `lib/geo-aeo-input.js`(테스트 13) + `ai-expose-check.yml` 일반화(하드코딩 제거, geo 소스 우선·기존 파일 폴백). ✅ **#4 완료** `/geo-ops.html` 콘솔(관제 대시보드 + 거래처 목록/등록 + 상세: 개요·채널·AI인용 매트릭스; 기존 디자인토큰·`venom-admin-secret` 공유·`ai-expose-latest.json` 재사용; Playwright 렌더 검증). 남은 P1: #5 업무보드(칸반) · #6 성과수집(CSV→GSC) · #7 주간리포트 · #8 자동화 로그·권한. (Vercel 함수 19개 — Pro 플랜 전제; 초과 시 growthops.js에 흡수 검토.)
+**진행 현황(2026-07-14)**: ✅ **#1 완료** `lib/geo-store.js`(테스트 21) · ✅ **#2 완료** `api/geo-ops.js`(테스트 18) + 시드 `content/geo/*.json`(pain/skin 이관) · ✅ **#3 완료** `lib/geo-aeo-input.js`(테스트 13) + `ai-expose-check.yml` 일반화(하드코딩 제거, geo 소스 우선·기존 파일 폴백). ✅ **#4 완료** `/geo-ops.html` 콘솔(관제 대시보드 + 거래처 목록/등록 + 상세: 개요·채널·AI인용 매트릭스; 기존 디자인토큰·`venom-admin-secret` 공유·`ai-expose-latest.json` 재사용; Playwright 렌더 검증). ✅ **#5 완료** 업무보드(칸반 7열·승인큐 상단고정·채널 플레이북→Task 인스턴스화 with cap 클램프: 위키/레딧 게시 D 강등) + `lib/geo-templates.js`(테스트 20) + `tasks generate/approve` 액션 + `templates` 모듈. 남은 P1: #6 성과수집(CSV→GSC) · #7 주간리포트 · #8 자동화 로그·권한. (Vercel 함수 19개 — Pro 플랜 전제; 초과 시 growthops.js에 흡수 검토.)
 
 ---
 

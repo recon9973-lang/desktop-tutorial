@@ -17,6 +17,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 const geo = require('../lib/geo-store');
+const tpl = require('../lib/geo-templates');
 
 // tasks.json 상태값(칸반) — 이동 검증용
 const TASK_STATUS = ['backlog', 'thisweek', 'doing', 'review', 'hold', 'done', 'failed'];
@@ -96,6 +97,28 @@ async function handleEntity(req, res, mod) {
     return res.status(200).json({ ok: true, data: saved });
   }
 
+  if (action === 'approve' && mod.coll === 'tasks') {
+    const { id, decision } = body; // 'approved' | 'rejected'
+    if (!id) return res.status(400).json({ ok: false, error: 'id 필요' });
+    const task = await geo.get('tasks', String(id));
+    if (!task) return res.status(404).json({ ok: false, error: 'task 없음' });
+    const approvalStatus = decision === 'rejected' ? 'rejected' : 'approved';
+    const status = approvalStatus === 'approved' ? 'thisweek' : 'hold';
+    const saved = await geo.upsert('tasks', Object.assign({}, task, { approvalStatus, status }));
+    return res.status(200).json({ ok: true, data: saved });
+  }
+
+  if (action === 'generate' && mod.coll === 'tasks') {
+    const { clientId, templateId } = body;
+    if (!clientId || !templateId) return res.status(400).json({ ok: false, error: 'clientId, templateId 필요' });
+    const templates = await tpl.loadTemplates();
+    const t = templates.find((x) => x.id === templateId);
+    if (!t) return res.status(404).json({ ok: false, error: '템플릿 없음: ' + templateId });
+    const tasks = tpl.buildTasksFromTemplate(t, String(clientId));
+    const created = await geo.upsertMany('tasks', tasks, 'tsk');
+    return res.status(200).json({ ok: true, count: created.length, data: created });
+  }
+
   if (action === 'upsert') {
     const item = body[mod.field] || body.item || body;
     if (!item || typeof item !== 'object') return res.status(400).json({ ok: false, error: mod.field + ' 필요' });
@@ -136,6 +159,10 @@ module.exports = async function handler(req, res) {
   try {
     if (!authOk(req)) return res.status(401).json({ ok: false, error: 'unauthorized' });
     if (module === 'dashboard') return await handleDashboard(res);
+    if (module === 'templates') {
+      const templates = await tpl.loadTemplates();
+      return res.status(200).json({ ok: true, count: templates.length, data: templates.map((t) => ({ id: t.id, channelType: t.channelType, cap: t.cap, steps: (t.steps || t.variants || []).length })) });
+    }
     const mod = MODULES[module];
     if (!mod) return res.status(400).json({ ok: false, error: 'unknown module (dashboard|clients|channels|tasks|content|prompts|automations)' });
     return await handleEntity(req, res, mod);

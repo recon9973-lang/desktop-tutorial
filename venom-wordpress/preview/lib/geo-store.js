@@ -95,9 +95,23 @@ async function remove(coll, id) {
   return _mutate(coll, (arr) => removeItem(arr, id), `chore(geo): delete ${coll} ${id}`);
 }
 
+// 여러 항목을 1커밋으로 upsert (템플릿 인스턴스화 등 — N개 개별 커밋 방지)
+async function upsertMany(coll, items, idPrefix) {
+  const prepared = (items || []).map((it) => {
+    const w = Object.assign({}, it);
+    if (!w.id) w.id = genId(idPrefix || coll.slice(0, 4));
+    w.updatedAt = new Date().toISOString();
+    return w;
+  });
+  if (!prepared.length) return [];
+  await _mutate(coll, (arr) => { prepared.forEach((w) => upsertItem(arr, w)); return prepared.length; },
+    `chore(geo): upsertMany ${coll} ${prepared.length}`);
+  return prepared;
+}
+
 module.exports = {
   COLLECTIONS, collMeta,
   genId, upsertItem, removeItem, matchFilter,
-  list, get, upsert, remove,
+  list, get, upsert, upsertMany, remove,
   _setBackend,
 };
