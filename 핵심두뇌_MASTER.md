@@ -2,7 +2,7 @@
 
 > **"매번 어디 있는지 못 찾는 일"을 끝내는 단일 인덱스.** 뭔가 찾을 땐 여기부터.
 > 계정: GitHub `recon9973-lang`(recon9973@gmail.com) · 운영 `76cold@gmail.com`
-> 최종 갱신: 2026-07-13
+> 최종 갱신: 2026-07-14
 > 전체 아키텍처·기능·작업이력 종합: [`docs/VENOM_전체_작업문서-2026-07-13.md`](docs/VENOM_전체_작업문서-2026-07-13.md)
 
 ---
@@ -60,6 +60,7 @@
 | 키워드/속도/엔티티 체크 | `api/seo-proxy.js` (네이버·구글 무료API) | 무료 |
 | 자동 블로그 글생성 | `api/generate-post.js`, `api/cron-daily-posts.js` | **유료(토큰)** |
 | 클리닉 진단(medirank) | `clinic/pipeline/`, `clinic/self-check/` | 무료 |
+| 용어사전(SEO·AI·마케팅·개발) | `assets/glossary.js` (SEO 216·AI 163·마케팅 34·개발 44) · 원본 CSV 백업 `content/glossary/` · 페이지 `index.html#pg-seo-dict` | 무료 |
 | 관리자 화면 | `admin.html` / 클리닉 `clinic/admin/` | — |
 
 ### ERP (`marketing-agency-erp/src/`)
