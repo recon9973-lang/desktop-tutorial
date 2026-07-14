@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마케터를 위한 Claude · 1시간 입문</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* stage (dark) — default */
+    --bg:#14121A; --bg-2:#1C1926; --bg-3:#232030;
+    --ink:#ECE7DF; --muted:#9E97A8; --faint:#6E687A;
+    --line:rgba(236,231,223,.13); --line-2:rgba(236,231,223,.22);
+    --accent:#FF5230; --accent-soft:rgba(255,82,48,.14);
+    --accent-2:#7E97FF; --accent-2-soft:rgba(126,151,255,.14);
+    --ok:#57C98B; --warn:#E7B94C;
+    --shadow:0 24px 60px -24px rgba(0,0,0,.7);
+    --serif:"Fraunces",Georgia,"Times New Roman",serif;
+    --sans:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  :root[data-theme="light"]{
+    --bg:#F3EFE7; --bg-2:#FBF9F3; --bg-3:#FFFFFF;
+    --ink:#211C2A; --muted:#6B6577; --faint:#928C9C;
+    --line:rgba(33,28,42,.14); --line-2:rgba(33,28,42,.24);
+    --accent:#EE3F19; --accent-soft:rgba(238,63,25,.10);
+    --accent-2:#3D51CC; --accent-2-soft:rgba(61,81,204,.10);
+    --ok:#1F9D5B; --warn:#B77E12;
+    --shadow:0 24px 50px -28px rgba(33,28,42,.35);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); overflow:hidden;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- shell ---------- */
+  .stage{position:fixed; inset:0; display:flex; flex-direction:column}
+  .rail{
+    flex:0 0 auto; display:flex; align-items:center; gap:1rem;
+    padding:clamp(.7rem,1.6vh,1.1rem) clamp(1.2rem,3.4vw,3rem);
+    border-bottom:1px solid var(--line); font-family:var(--mono);
+    font-size:clamp(.6rem,1.15vw,.72rem); letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); z-index:20;
+  }
+  .rail .brand{color:var(--ink); font-weight:600}
+  .rail .brand b{color:var(--accent); font-weight:600}
+  .rail .sec{flex:1; text-align:center; color:var(--faint)}
+  .rail .count{color:var(--ink)} .rail .count b{color:var(--accent)}
+
+  .slides{position:relative; flex:1; min-height:0}
+  .slide{
+    position:absolute; inset:0; padding:clamp(1.4rem,5vh,3.4rem) clamp(1.4rem,6vw,5.5rem);
+    display:flex; flex-direction:column; justify-content:center;
+    opacity:0; visibility:hidden; transition:opacity .5s ease;
+  }
+  .slide.active{opacity:1; visibility:visible}
+  .wrap{width:100%; max-width:1180px; margin:0 auto}
+
+  /* reveal */
+  .r{opacity:0; transform:translateY(14px); transition:opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); transition-delay:0ms}
+  .slide.active .r{opacity:1; transform:none; transition-delay:calc(var(--d,0)*75ms + 90ms)}
+  @media (prefers-reduced-motion:reduce){ .r{transition:none !important; transform:none !important} }
+
+  /* ---------- type ---------- */
+  .eyebrow{font-family:var(--mono); font-size:clamp(.62rem,1.2vw,.76rem); letter-spacing:.24em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:.7rem}
+  .eyebrow::before{content:""; width:1.9rem; height:1px; background:var(--accent)}
+  h1{font-family:var(--serif); font-weight:900; line-height:.98; letter-spacing:-.01em; text-wrap:balance; margin:0; font-size:clamp(2.4rem,6.6vw,5.4rem)}
+  h2{font-family:var(--serif); font-weight:600; line-height:1.02; letter-spacing:-.01em; text-wrap:balance; margin:0; font-size:clamp(1.9rem,4.6vw,3.4rem)}
+  h2 em{font-style:italic; color:var(--accent)}
+  .lead{font-size:clamp(1rem,1.9vw,1.4rem); line-height:1.5; color:var(--muted); max-width:60ch; text-wrap:pretty}
+  p{margin:0}
+  .accent{color:var(--accent)} .accent2{color:var(--accent-2)}
+  .serifq{font-family:var(--serif); font-style:italic; font-weight:500}
+
+  /* ---------- primitives ---------- */
+  .grid{display:grid; gap:clamp(.7rem,1.5vw,1.15rem)}
+  .card{background:var(--bg-2); border:1px solid var(--line); border-radius:16px; padding:clamp(1rem,1.9vw,1.5rem); display:flex; flex-direction:column; gap:.5rem}
+  .card .k{font-family:var(--mono); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-2)}
+  .card h3{margin:0; font-size:clamp(1.02rem,1.7vw,1.32rem); font-weight:700; letter-spacing:-.01em}
+  .card p{color:var(--muted); font-size:clamp(.85rem,1.25vw,.98rem); line-height:1.5}
+  .idx{font-family:var(--mono); color:var(--faint); font-size:.7rem; letter-spacing:.1em}
+
+  ul.clean{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.66rem}
+  ul.clean li{position:relative; padding-left:1.4rem; color:var(--ink); font-size:clamp(.9rem,1.4vw,1.08rem); line-height:1.45}
+  ul.clean li::before{content:""; position:absolute; left:0; top:.62em; width:.5rem; height:.5rem; border-radius:50%; background:var(--accent)}
+  ul.clean li b{font-weight:700}
+  ul.clean.blue li::before{background:var(--accent-2)}
+  ul.clean small{display:block; color:var(--muted); font-size:.82em; margin-top:.15rem; line-height:1.4}
+
+  .pill{display:inline-flex; align-items:center; gap:.45rem; font-family:var(--mono); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; padding:.34rem .7rem; border-radius:999px; border:1px solid var(--line-2); color:var(--muted)}
+  .pill.hot{color:var(--accent); border-color:color-mix(in srgb,var(--accent) 40%,transparent); background:var(--accent-soft)}
+  .pill.beta{color:var(--accent-2); border-color:color-mix(in srgb,var(--accent-2) 40%,transparent); background:var(--accent-2-soft)}
+
+  .divider-num{font-family:var(--serif); font-weight:900; font-size:clamp(5rem,20vw,15rem); line-height:.8; color:transparent; -webkit-text-stroke:2px var(--line-2); letter-spacing:-.02em}
+
+  /* table */
+  .tbl{width:100%; border-collapse:collapse; font-size:clamp(.8rem,1.3vw,1rem)}
+  .tbl th,.tbl td{text-align:left; padding:clamp(.6rem,1.3vh,1rem) clamp(.7rem,1.4vw,1.2rem); border-bottom:1px solid var(--line); vertical-align:top}
+  .tbl thead th{font-family:var(--mono); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-weight:500}
+  .tbl tbody{}
+  .tbl td b{color:var(--ink); font-weight:700}
+  .tbl td .con{color:var(--accent); font-family:var(--serif); font-weight:600}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl .analogy{color:var(--accent-2); font-style:italic; font-family:var(--serif)}
+
+  /* flow */
+  .flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:.55rem}
+  .flow .step{flex:1 1 0; min-width:120px; background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:.9rem 1rem; display:flex; flex-direction:column; gap:.35rem}
+  .flow .step .n{font-family:var(--mono); font-size:.66rem; color:var(--accent); letter-spacing:.1em}
+  .flow .step .t{font-weight:700; font-size:clamp(.85rem,1.3vw,1rem); letter-spacing:-.01em}
+  .flow .step .d{color:var(--muted); font-size:.8rem; line-height:1.4}
+  .flow .arrow{display:flex; align-items:center; color:var(--faint); font-size:1.1rem}
+
+  .two{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(1.2rem,3.5vw,3rem); align-items:center}
+  .two.wide{grid-template-columns:1fr 1.15fr}
+  @media (max-width:820px){ .two,.two.wide{grid-template-columns:1fr} }
+
+  .stat{display:flex; flex-direction:column; gap:.2rem}
+  .stat .big{font-family:var(--serif); font-weight:900; font-size:clamp(1.8rem,4vw,3rem); line-height:1; color:var(--accent)}
+  .stat .lab{font-family:var(--mono); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+
+  .quote-block{border-left:3px solid var(--accent); padding:.4rem 0 .4rem 1.2rem; font-family:var(--serif); font-style:italic; font-size:clamp(1rem,1.7vw,1.35rem); line-height:1.45; color:var(--ink); max-width:56ch}
+
+  .src{font-family:var(--mono); font-size:.62rem; letter-spacing:.06em; color:var(--faint); margin-top:.2rem}
+  .src b{color:var(--muted); font-weight:500}
+
+  /* map diagram */
+  .map{display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem}
+  .map .node{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:1rem 1.1rem; display:flex; flex-direction:column; gap:.3rem}
+  .map .node .role{font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; color:var(--faint)}
+  .map .node .nm{font-weight:700; font-size:clamp(.95rem,1.5vw,1.15rem)}
+  .map .node .nm .en{color:var(--accent)}
+  .map .node p{color:var(--muted); font-size:.82rem; line-height:1.4}
+  .map .node.core{background:linear-gradient(135deg,var(--accent-soft),transparent); border-color:color-mix(in srgb,var(--accent) 34%,transparent)}
+  .map .node.ext .nm .en{color:var(--accent-2)}
+
+  /* footer bits */
+  .progress{position:fixed; left:0; bottom:0; height:3px; width:100%; background:transparent; z-index:30}
+  .progress span{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .45s cubic-bezier(.4,.1,.2,1)}
+  .hint{position:fixed; left:clamp(1.2rem,3.4vw,3rem); bottom:.9rem; font-family:var(--mono); font-size:.6rem; letter-spacing:.08em; color:var(--faint); text-transform:uppercase; z-index:25; opacity:.75}
+  .hint b{color:var(--muted)}
+  .hint kbd{color:var(--ink); border:1px solid var(--line-2); border-radius:4px; padding:0 .3rem; margin:0 .1rem}
+
+  /* speaker notes overlay */
+  .notes{position:fixed; left:50%; bottom:2.4rem; transform:translateX(-50%) translateY(12px); width:min(880px,90vw); max-height:42vh; overflow:auto; background:var(--bg-3); border:1px solid var(--line-2); border-radius:16px; box-shadow:var(--shadow); padding:1.1rem 1.4rem; z-index:40; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s}
+  .notes.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto}
+  .notes .nh{font-family:var(--mono); font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin-bottom:.5rem}
+  .notes .nb{font-size:.94rem; line-height:1.6; color:var(--ink); white-space:pre-wrap}
+  .s-note{display:none}
+
+  /* title slide flourish */
+  .hero-mark{position:absolute; right:clamp(-1rem,-2vw,-2rem); top:50%; transform:translateY(-50%); font-family:var(--serif); font-weight:900; font-size:min(46vh,44vw); line-height:.8; color:transparent; -webkit-text-stroke:1.5px var(--line); pointer-events:none; user-select:none; z-index:0}
+  .title-inner{position:relative; z-index:1}
+  .meta-row{display:flex; flex-wrap:wrap; gap:1.6rem; font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .meta-row b{color:var(--ink); font-weight:500}
+
+  .kicker{font-family:var(--mono); font-size:.7rem; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin-bottom:.4rem}
+</style>
+</head>
+<body>
+<div class="stage">
+  <header class="rail">
+    <span class="brand">CLAUDE <b>×</b> MARKETING</span>
+    <span class="sec" id="secLabel">오프닝</span>
+    <span class="count"><b id="cur">01</b> / <span id="tot">28</span></span>
+  </header>
+
+  <main class="slides" id="slides">
+
+    <!-- 1 · TITLE -->
+    <section class="slide active" data-section="오프닝">
+      <div class="hero-mark" aria-hidden="true">C</div>
+      <div class="wrap title-inner">
+        <div class="eyebrow r" style="--d:0">1시간 입문 · 마케팅 팀 대상 · 공식 문서 기준</div>
+        <h1 class="r" style="--d:1; margin-top:1.1rem">카피 한 줄부터<br>캠페인 전체까지</h1>
+        <p class="lead r" style="--d:2; margin-top:1.3rem; color:var(--ink)">챗봇이 아니라, <span class="accent serifq">브랜드를 이해하는 작업 파트너</span>로서의 Claude.</p>
+        <div class="meta-row r" style="--d:3; margin-top:2.2rem">
+          <span>발표 <b>2026 · 07 · 14</b></span>
+          <span>대상 <b>비개발자 마케터</b></span>
+          <span>분량 <b>60분 · 실습 포함</b></span>
+        </div>
+      </div>
+      <div class="s-note">환영 인사 후 한 문장으로 프레임을 겁니다. "오늘은 기능 이름을 외우는 시간이 아니라, 여러분의 마케팅 업무 중 무엇을 Claude에게 맡길지 판단하는 시간입니다." 강조: 챗봇이라는 선입견을 오늘 깨겠다. 손: 여러분 중 카피, 리서치, 리포트, 덱을 매주 만드는 분? 바로 그 반복을 다룹니다.</div>
+    </section>
+
+    <!-- 2 · MAP -->
+    <section class="slide" data-section="오프닝">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">오늘의 지도</div>
+        <h2 class="r" style="--d:1; margin:.7rem 0 1.4rem">여섯 개의 도구, <em>하나의 흐름</em></h2>
+        <div class="map">
+          <div class="node core r" style="--d:1"><span class="role">시작점</span><span class="nm"><span class="en">Chat</span> 대화·초안</span><p>카피, 이메일, 브리프를 대화로 빠르게 초안화</p></div>
+          <div class="node core r" style="--d:2"><span class="role">근거</span><span class="nm"><span class="en">Research</span> 조사</span><p>시장·경쟁·트렌드를 출처와 함께</p></div>
+          <div class="node core r" style="--d:3"><span class="role">결과물</span><span class="nm"><span class="en">Code · Design</span></span><p>랜딩페이지·덱·목업을 실제 산출물로</p></div>
+          <div class="node ext r" style="--d:4"><span class="role">연결</span><span class="nm"><span class="en">MCP · Connectors</span></span><p>Drive·Slack·Notion 등 우리 도구에 연결</p></div>
+          <div class="node ext r" style="--d:5"><span class="role">확장</span><span class="nm"><span class="en">Skills · Plugins</span></span><p>반복 마케팅 절차를 팀 자산으로 재사용</p></div>
+          <div class="node r" style="--d:6; background:var(--bg-3); border-style:dashed"><span class="role">오늘의 약속</span><span class="nm">작게 시작</span><p>내 업무 하나를 골라 작은 반복 흐름부터</p></div>
+        </div>
+      </div>
+      <div class="s-note">여섯 블록을 분리해서 배우되, 실무에서는 하나로 이어진다는 점을 강조. 안쪽 4개(Chat·Research·Code·Design)는 "무엇을 만드는가", 바깥 2개(연결·확장)는 "어떻게 우리 시스템과 붙는가". 오늘 마지막 약속: 다 배우려 하지 말 것. 30초 안에 넘어가세요.</div>
+    </section>
+
+    <!-- 3 · HOOK -->
+    <section class="slide" data-section="오프닝">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">왜 지금, 마케터에게</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1.2rem">반복은 많고, <em>시간은 없다</em></h2>
+          <ul class="clean r" style="--d:2">
+            <li>카피 A/B <b>5안</b>을 매주 새로 쓴다</li>
+            <li>경쟁사·트렌드 조사에 <b>반나절</b>이 사라진다</li>
+            <li>주간 리포트와 피치덱은 <b>매번 처음부터</b></li>
+            <li>콘텐츠 캘린더·채널별 변주는 <b>손이 많이 간다</b></li>
+          </ul>
+        </div>
+        <div class="grid r" style="--d:3; gap:.8rem">
+          <div class="card"><span class="k">전환</span><h3>사람은 판단, Claude는 초안</h3><p>브랜드 전략과 최종 검수는 사람이. 반복되는 생산과 조사는 파트너에게 위임합니다.</p></div>
+          <div class="quote-block">"한 번에 완성"이 아니라, 대화하며 점점 선명해지게.</div>
+        </div>
+      </div>
+      <div class="s-note">청중 공감 슬라이드. 왼쪽 페인포인트를 읽으며 고개 끄덕이게 만든 뒤, 오른쪽에서 전환. 핵심 메시지: Claude는 여러분의 판단을 대체하지 않는다. 반복 생산·조사를 덜어 전략에 쓸 시간을 돌려준다. 오늘 강의 전체를 관통하는 문장: 초안은 AI, 최종 검수는 사람.</div>
+    </section>
+
+    <!-- 4 · DIVIDER 01 -->
+    <section class="slide" data-section="01 이해하기">
+      <div class="wrap">
+        <div class="divider-num r" style="--d:0">01</div>
+        <h2 class="r" style="--d:1; margin-top:.4rem">Claude를 이해하기</h2>
+        <p class="lead r" style="--d:2; margin-top:.8rem">무엇으로 만들어졌고, 왜 "검수 가능한" 파트너인가.</p>
+      </div>
+      <div class="s-note">섹션 전환. 짧게. "먼저 도구의 성격을 이해하고, 바로 실전으로 넘어갑니다." 5초.</div>
+    </section>
+
+    <!-- 5 · WHAT IS CLAUDE -->
+    <section class="slide" data-section="01 이해하기">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">Claude란</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1.1rem">Anthropic이 만든<br><em>대규모 언어모델 제품군</em></h2>
+          <ul class="clean r" style="--d:2">
+            <li><b>텍스트·이미지 입력</b>, 텍스트 출력</li>
+            <li><b>다국어·비전</b> 지원 (한국어 자연스럽게)</li>
+            <li>글쓰기·학습·조사·분석·창작에 사용</li>
+          </ul>
+          <p class="src r" style="--d:3" style="margin-top:1rem"><b>출처</b> platform.claude.com/docs · claude.com/product/overview</p>
+        </div>
+        <div class="grid r" style="--d:3" style="grid-template-columns:1fr 1fr; gap:.7rem">
+          <div class="card"><span class="k">모델 등급</span><h3>Opus</h3><p>가장 깊은 추론·에이전트 작업</p></div>
+          <div class="card"><span class="k">모델 등급</span><h3>Sonnet</h3><p>속도와 성능의 균형</p></div>
+          <div class="card"><span class="k">모델 등급</span><h3>Haiku</h3><p>가볍고 빠른 처리</p></div>
+          <div class="card" style="border-style:dashed"><span class="k">주의</span><h3>모델명은 갱신됨</h3><p>발표 직전 최신 권장 모델 확인</p></div>
+        </div>
+      </div>
+      <div class="s-note">비개발자에게 "모델 = 두뇌의 버전"이라고 설명. 등급명만 언급하고 모델 ID는 말하지 않습니다(자주 바뀜). 마케팅 관점: 대부분 업무는 균형형(Sonnet)으로 충분, 복잡한 캠페인 기획·대량 분석은 Opus. 라인업은 계속 갱신되니 그때그때 확인하라고만.</div>
+    </section>
+
+    <!-- 6 · CONSTITUTIONAL AI -->
+    <section class="slide" data-section="01 이해하기">
+      <div class="wrap two wide">
+        <div>
+          <div class="eyebrow r" style="--d:0">설계 철학 · Constitutional AI</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1.1rem">왜 마케터에게<br><em>검수 가능성</em>이 중요한가</h2>
+          <p class="lead r" style="--d:2" style="font-size:clamp(.95rem,1.5vw,1.15rem)">원칙 목록을 기준으로 모델이 스스로 답을 비평하고 고칩니다. 무해성 학습에는 사람 라벨 대신 AI 피드백을 씁니다.</p>
+        </div>
+        <div class="grid r" style="--d:3" style="gap:.7rem">
+          <div class="card"><span class="k">2단계</span><h3>자기 비평 → 수정</h3><p>원칙에 비춰 스스로 답을 다시 씀 (지도학습)</p></div>
+          <div class="card"><span class="k">그다음</span><h3>AI 피드백 강화학습</h3><p>무해성은 사람 라벨 대신 AI 피드백(RLAIF). 유용성은 여전히 사람 피드백.</p></div>
+          <div class="quote-block" style="font-size:clamp(.95rem,1.5vw,1.2rem)">마케터에겐 "유용하지만 <span class="accent">검수 가능한</span> 동료".</div>
+        </div>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:1.1rem">출처 anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback</p>
+      <div class="s-note">너무 학술적으로 가지 말 것. 마케팅 번역: 브랜드는 잘못된 주장, 과장 광고, 근거 없는 수치에 취약하다. Claude는 "모르는 것·하면 안 되는 것·확인할 것"을 구분하도록 설계됐다. 하지만 그게 검수 면제는 아니다. 다음 섹션부터 실제로 무엇을 만들 수 있는지 보여준다고 예고.</div>
+    </section>
+
+    <!-- 7 · DIVIDER 02 -->
+    <section class="slide" data-section="02 만들기">
+      <div class="wrap">
+        <div class="divider-num r" style="--d:0">02</div>
+        <h2 class="r" style="--d:1; margin-top:.4rem">만들기 · <em>Chat & Research</em></h2>
+        <p class="lead r" style="--d:2; margin-top:.8rem">초안을 뽑고, 근거를 붙이는 두 축.</p>
+      </div>
+      <div class="s-note">가장 중요한 섹션. 여기서 청중이 "당장 써봐야지"를 느끼게 만든다. 5초 전환.</div>
+    </section>
+
+    <!-- 8 · GOOD BRIEF -->
+    <section class="slide" data-section="02 만들기">
+      <div class="wrap two wide">
+        <div>
+          <div class="eyebrow r" style="--d:0">Chat 기본 · 좋은 브리프</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">모호한 질문보다<br><em>맥락 있는 브리프</em></h2>
+          <ul class="clean blue r" style="--d:2">
+            <li><b>역할</b> 누구로서 쓰는가 (브랜드·톤)</li>
+            <li><b>목표</b> 무엇을 달성하나 (전환·인지)</li>
+            <li><b>자료</b> 제품 정보·타깃·금지어</li>
+            <li><b>출력형식</b> 표·3안·글자수·채널</li>
+            <li><b>검수기준</b> 광고규정·근거 표시</li>
+          </ul>
+        </div>
+        <div class="card r" style="--d:3" style="background:var(--bg-3)">
+          <span class="k">예시 프롬프트</span>
+          <p class="serifq" style="color:var(--ink); font-size:clamp(.92rem,1.4vw,1.12rem); line-height:1.55; font-style:italic">"우리는 20-30대 직장인 대상 배달 앱이다. 신규가입 프로모션 인스타 카피를 <span class="accent">3안</span> 써줘. 각 40자 이내, 반말·경쾌한 톤, 최상급 표현 금지, 근거 없는 수치 금지. 표로 정리해줘."</p>
+        </div>
+      </div>
+      <div class="s-note">실습1과 연결되는 슬라이드. 5요소를 손가락으로 세며 설명. "카피 써줘"와 예시 프롬프트를 대조. 핵심: 검수기준(광고규정·금지어)을 프롬프트에 미리 넣으면 결과 품질이 급상승. 여기서 라이브 데모 1분 하면 최고.</div>
+    </section>
+
+    <!-- 9 · CHAT USE -->
+    <section class="slide" data-section="02 만들기">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">Chat 마케팅 활용</div>
+        <h2 class="r" style="--d:1; margin:.7rem 0 1.3rem">채팅에서 잘 되는 <em>마케팅 업무</em></h2>
+        <div class="grid r" style="--d:2" style="grid-template-columns:repeat(3,1fr)">
+          <div class="card"><span class="k">카피</span><h3>광고·헤드라인 변주</h3><p>채널·타깃별 톤 3~5안 동시 생성</p></div>
+          <div class="card"><span class="k">보이스</span><h3>브랜드 톤 고정</h3><p>가이드를 주면 일관된 목소리 유지</p></div>
+          <div class="card"><span class="k">이메일</span><h3>뉴스레터·시퀀스</h3><p>제목·본문·CTA 초안과 개선</p></div>
+          <div class="card"><span class="k">SNS</span><h3>콘텐츠 캘린더</h3><p>주제→포스트→해시태그 구조화</p></div>
+          <div class="card"><span class="k">요약</span><h3>긴 자료 압축</h3><p>리포트·인터뷰·리뷰를 핵심으로</p></div>
+          <div class="card"><span class="k">개선</span><h3>피드백 루프</h3><p>"더 짧게·더 B2B스럽게" 반복 조율</p></div>
+        </div>
+      </div>
+      <div class="s-note">빠르게 훑되, 청중 직무에 맞는 2~3개만 깊게. 강점은 "한 번에 완성"이 아니라 "대화하며 조율". 결과는 초안이며 브랜드 팩트·법적 표현은 사람이 확정. 카드 하나 골라 "이거 오늘 오후에 바로 해보세요" 권유.</div>
+    </section>
+
+    <!-- 10 · RESEARCH -->
+    <section class="slide" data-section="02 만들기">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">Research</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">시장·경쟁·트렌드를<br><em>출처와 함께</em></h2>
+          <ul class="clean r" style="--d:2">
+            <li>여러 검색을 <b>순차로 이어가며</b> 다음 조사를 스스로 판단</li>
+            <li>웹 + <b>연결된 내부 자료</b>(Docs·Calendar 등) 결합</li>
+            <li>답변에 <b>출처</b>가 붙는다</li>
+          </ul>
+          <div class="grid r" style="--d:3" style="grid-template-columns:1fr 1fr; gap:.7rem; margin-top:1.1rem">
+            <div class="stat"><span class="big">유료</span><span class="lab">Pro·Max·Team·Ent</span></div>
+            <div class="stat"><span class="big">웹검색 ON</span><span class="lab">필수 조건</span></div>
+          </div>
+        </div>
+        <div class="grid r" style="--d:3" style="gap:.6rem">
+          <div class="card"><span class="k">언제 쓰나</span><h3>경쟁사 포지셔닝 스캔</h3><p>메시지·가격·프로모션 비교</p></div>
+          <div class="card"><span class="k">언제 쓰나</span><h3>카테고리 트렌드</h3><p>최신 흐름을 근거와 함께</p></div>
+          <div class="card"><span class="k">언제 쓰나</span><h3>주장에 근거가 필요할 때</h3><p>덱·리포트에 인용 붙이기</p></div>
+        </div>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:1rem">출처 support.claude.com/en/articles/11088861-use-research-on-claude</p>
+      <div class="s-note">마케터에게 Research는 킬러 기능. "반나절 걸리던 경쟁사 스캔을 초안 수준으로 단축." 단, 유료 플랜 + 웹 검색 ON이 조건. 출처가 붙는다는 점을 강조: 덱에 근거를 넣을 수 있다. 그러나 출처는 반드시 클릭해 확인하라고 경고(다음 안전 섹션 예고).</div>
+    </section>
+
+    <!-- 11 · RESEARCH VS -->
+    <section class="slide" data-section="02 만들기">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">구분하기</div>
+        <h2 class="r" style="--d:1; margin:.7rem 0 1.3rem">채팅 · 웹검색 · <em>리서치</em></h2>
+        <div class="flow r" style="--d:2">
+          <div class="step"><span class="n">기본</span><span class="t">일반 채팅</span><span class="d">준 정보 + 모델 지식으로 즉답. 아이디어·초안에 최적.</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">+웹</span><span class="t">웹 검색</span><span class="d">최신 사실 한두 개를 빠르게 확인.</span></div>
+          <div class="arrow">→</div>
+          <div class="step" style="border-color:color-mix(in srgb,var(--accent) 40%,transparent)"><span class="n">깊게</span><span class="t">Research</span><span class="d">여러 출처를 따라가며 조사 계획을 갱신하는 심층 조사.</span></div>
+        </div>
+        <p class="lead r" style="--d:3" style="margin-top:1.6rem; font-size:clamp(.95rem,1.5vw,1.2rem)">아이디어는 <span class="accent">채팅</span>, 사실 확인은 <span class="accent">웹검색</span>, 근거 있는 리포트는 <span class="accent">리서치</span>.</p>
+      </div>
+      <div class="s-note">헷갈림 정리 슬라이드. 세 가지를 상황으로 구분: 브레인스토밍=채팅, "이 통계 최신이야?"=웹검색, "경쟁 3사 6개월 프로모션 비교"=리서치. 이 한 장이 실습2의 분류 감각을 만든다.</div>
+    </section>
+
+    <!-- 12 · DIVIDER 03 -->
+    <section class="slide" data-section="03 결과물">
+      <div class="wrap">
+        <div class="divider-num r" style="--d:0">03</div>
+        <h2 class="r" style="--d:1; margin-top:.4rem">결과물 · <em>Code & Design</em></h2>
+        <p class="lead r" style="--d:2; margin-top:.8rem">초안을 넘어, 진짜 산출물로.</p>
+      </div>
+      <div class="s-note">"개발 얘기 나온다고 긴장하지 마세요. 마케터가 쓰는 법으로 보여드립니다." 5초.</div>
+    </section>
+
+    <!-- 13 · CLAUDE CODE -->
+    <section class="slide" data-section="03 결과물">
+      <div class="wrap two wide">
+        <div>
+          <div class="eyebrow r" style="--d:0">Claude Code</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">파일을 <em>실제로</em><br>읽고 고치는 작업자</h2>
+          <p class="lead r" style="--d:2" style="font-size:clamp(.92rem,1.4vw,1.1rem)">Chat이 "대화로 답을 받는 곳"이라면, Code는 "프로젝트 폴더에서 파일을 고치고 검증하는 작업자". 터미널·IDE·데스크톱·웹에서.</p>
+          <p class="src r" style="--d:3" style="margin-top:.9rem">출처 code.claude.com/docs/en/overview</p>
+        </div>
+        <div class="grid r" style="--d:3" style="gap:.7rem">
+          <div class="card"><span class="k">마케터 활용</span><h3>랜딩페이지·이벤트 페이지</h3><p>HTML 초안 생성과 수정</p></div>
+          <div class="card"><span class="k">마케터 활용</span><h3>데이터 처리·리포트</h3><p>CSV 정리, 캠페인 수치 집계</p></div>
+          <div class="card"><span class="k">마케터 활용</span><h3>대량 카피·UTM 자동화</h3><p>반복 산출물을 스크립트로</p></div>
+        </div>
+      </div>
+      <div class="s-note">비개발자 저항을 낮추는 게 목표. "코드를 몰라도 결과물을 얻는다." 예: 100개 상품의 광고 카피를 표로 넣으면 일괄 생성, UTM 링크 대량 생성, 캠페인 CSV 요약. 단, 파일을 실제로 바꾸므로 권한 확인이 핵심 → 다음 장.</div>
+    </section>
+
+    <!-- 14 · CODE CAUTION -->
+    <section class="slide" data-section="03 결과물">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">Code 실전 요청 예</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1.1rem">이렇게 <em>시킨다</em></h2>
+          <ul class="clean r" style="--d:2">
+            <li>"이벤트 랜딩페이지 초안을 만들어줘"</li>
+            <li>"이 캠페인 CSV에서 채널별 전환율을 계산해줘"</li>
+            <li>"상품 50개 광고 카피를 표로 생성해줘"</li>
+            <li>"주간 리포트를 지난주 형식에 맞춰 갱신해줘"</li>
+          </ul>
+        </div>
+        <div class="card r" style="--d:3" style="border-color:color-mix(in srgb,var(--warn) 40%,transparent); background:color-mix(in srgb,var(--warn) 8%,var(--bg-2))">
+          <span class="k" style="color:var(--warn)">반드시 확인</span>
+          <ul class="clean r" style="--d:4" style="gap:.5rem">
+            <li>변경 <b>전후 비교</b></li>
+            <li>파일 변경·명령 실행 <b>권한 승인</b></li>
+            <li>실행·계산 <b>결과 검증</b></li>
+          </ul>
+        </div>
+      </div>
+      <div class="s-note">힘이 세질수록 확인이 중요하다는 원칙을 처음으로 강하게 못 박는다. 파일을 실제로 바꾸는 도구이므로, 승인 없이 지나가지 말 것. 마케터도 "결과 숫자 검증"은 필수. 안전 섹션의 예고편.</div>
+    </section>
+
+    <!-- 15 · DESIGN -->
+    <section class="slide" data-section="03 결과물">
+      <div class="wrap two wide">
+        <div>
+          <div class="eyebrow r" style="--d:0">Claude Design <span class="pill beta" style="margin-left:.4rem">BETA</span></div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">아이디어를<br><em>시각 결과물</em>로</h2>
+          <ul class="clean blue r" style="--d:2">
+            <li>피치덱·원페이지·목업·와이어프레임</li>
+            <li><b>PPTX · PDF · HTML</b> 내보내기</li>
+            <li>Claude Code와 <b>양방향</b> 연동 (디자인→구현)</li>
+          </ul>
+          <p class="src r" style="--d:3" style="margin-top:.9rem">출처 claude.com/product/design</p>
+        </div>
+        <div class="grid r" style="--d:3" style="gap:.7rem">
+          <div class="card"><span class="k">마케팅</span><h3>캠페인 피치덱</h3><p>제안 흐름과 비주얼 초안을 한 번에</p></div>
+          <div class="card"><span class="k">마케팅</span><h3>제품 원페이지</h3><p>세일즈·랜딩용 한 장 구성</p></div>
+          <div class="card"><span class="k">마케팅</span><h3>SNS·배너 목업</h3><p>브랜드 시스템을 반영한 초안</p></div>
+        </div>
+      </div>
+      <div class="s-note">"예쁘게 만드는 기능"이 아니라 초안 생성·흐름 설계·브랜드 반영·출력·도구연결까지 포함. 베타임을 명시. 하이라이트: PPTX/PDF로 바로 뽑아 실무에 투입. 오늘 이 발표 덱도 그런 결과물의 예라고 살짝 연결하면 좋다.</div>
+    </section>
+
+    <!-- 16 · ARTIFACTS -->
+    <section class="slide" data-section="03 결과물">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">Artifacts</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">결과를 <em>인터랙티브<br>페이지</em>로 공유</h2>
+          <ul class="clean r" style="--d:2">
+            <li>캠페인 <b>대시보드</b>·비교안</li>
+            <li>조사 <b>타임라인</b>·리포트</li>
+            <li>링크로 팀과 바로 공유</li>
+          </ul>
+        </div>
+        <div class="card r" style="--d:3" style="border-style:dashed">
+          <span class="k" style="color:var(--warn)">제약 (정확히)</span>
+          <p style="font-size:clamp(.95rem,1.5vw,1.15rem); line-height:1.5; color:var(--ink)">백엔드가 있는 완전한 웹앱이 아니라, <span class="accent serifq">하나의 자체 포함 페이지</span>입니다.</p>
+        </div>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:1rem">출처 code.claude.com/docs/en/artifacts</p>
+      <div class="s-note">과장 방지: "완전한 웹앱"이라 말하지 말 것. 마케터 활용: 캠페인 성과 요약 페이지, A/B 카피 비교안을 링크로 공유. 팀 리뷰가 빨라진다. 이 덱 자체가 자체 포함 HTML의 예시라고 언급 가능.</div>
+    </section>
+
+    <!-- 17 · DIVIDER 04 -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap">
+        <div class="divider-num r" style="--d:0">04</div>
+        <h2 class="r" style="--d:1; margin-top:.4rem">연결과 확장</h2>
+        <p class="lead r" style="--d:2; margin-top:.8rem">우리 도구에 붙이고, 반복을 팀 자산으로.</p>
+      </div>
+      <div class="s-note">"여기 네 단어가 자주 헷갈립니다. 오늘 확실히 구분해드립니다." 5초.</div>
+    </section>
+
+    <!-- 18 · MCP -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">MCP · 아주 쉽게</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">AI와 도구를 잇는<br><em>개방형 표준</em></h2>
+          <ul class="clean r" style="--d:2">
+            <li>서비스마다 따로 연결하던 것을 <b>하나의 표준</b>으로</li>
+            <li>Claude가 <b>업무 맥락</b>을 가져와 더 관련성 높은 답을</li>
+          </ul>
+          <p class="src r" style="--d:3" style="margin-top:.9rem">출처 anthropic.com/news/model-context-protocol</p>
+        </div>
+        <div class="quote-block r" style="--d:3" style="font-size:clamp(1.05rem,1.8vw,1.5rem)">Claude가 똑똑한 사람이라면,<br>MCP는 회사 시스템에 들어가는<br><span class="accent2">공용 출입 규격</span>.</div>
+      </div>
+      <div class="s-note">기술 용어를 비유로. "콘센트 규격"처럼, 어떤 도구든 같은 방식으로 꽂힌다. 마케터는 MCP 자체를 만들 일은 드물지만, 이 표준 덕에 커넥터가 쉽게 늘어난다는 맥락만 이해하면 충분. 거버넌스 세부는 생략(자주 바뀜).</div>
+    </section>
+
+    <!-- 19 · CONNECTORS -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap two wide">
+        <div>
+          <div class="eyebrow r" style="--d:0">Connectors</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">우리 앱에 <em>연결</em></h2>
+          <ul class="clean r" style="--d:2">
+            <li><b>Google Drive</b> 브랜드 자산·가이드 검색</li>
+            <li><b>Slack</b> 요약·공지 전송</li>
+            <li><b>Notion·Linear</b> 문서·태스크 연동</li>
+          </ul>
+          <div class="card r" style="--d:3" style="margin-top:1rem; border-color:color-mix(in srgb,var(--accent) 34%,transparent); background:var(--accent-soft)">
+            <span class="k" style="color:var(--accent)">핵심 보안</span>
+            <p style="color:var(--ink); font-size:clamp(.9rem,1.35vw,1.05rem); line-height:1.5">연결 서비스의 <b>사용자 권한을 그대로 상속</b>. 원래 못 보는 파일은 Claude도 못 봅니다.</p>
+          </div>
+        </div>
+        <div class="grid r" style="--d:3" style="gap:.6rem">
+          <div class="card"><span class="k">읽기</span><h3>검색·조회</h3><p>자료를 찾아 맥락으로 활용</p></div>
+          <div class="card"><span class="k">쓰기</span><h3>작업 수행</h3><p>이슈 생성·메시지 전송 등</p></div>
+          <div class="card" style="border-style:dashed"><span class="k" style="color:var(--warn)">권장</span><h3>최소 권한</h3><p>읽기 우선, 쓰기·삭제는 승인형</p></div>
+        </div>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:.9rem">출처 support.claude.com/en/articles/11176164</p>
+      <div class="s-note">권한 상속 개념이 오늘 보안 메시지의 핵심. "연결하면 Claude가 다 본다"는 오해를 바로잡는다: 여러분이 접근 못 하는 건 Claude도 못 본다. 조직은 읽기만 허용하고 쓰기·삭제를 제한할 수 있다. 마케팅 자산이 든 Drive를 예로.</div>
+    </section>
+
+    <!-- 20 · REMOTE VS DESKTOP -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">Remote vs Desktop</div>
+        <h2 class="r" style="--d:1; margin:.7rem 0 1.3rem">클라우드냐, <em>내 컴퓨터냐</em></h2>
+        <div class="grid r" style="--d:2" style="grid-template-columns:1fr 1fr; gap:1rem">
+          <div class="card"><span class="k" style="color:var(--accent-2)">Remote Connector</span><h3>클라우드·SaaS</h3><p>Slack·Notion·Linear·GitHub. 한번 연결하면 여러 표면에서.</p></div>
+          <div class="card"><span class="k" style="color:var(--accent-2)">Desktop Extension</span><h3>로컬·OS 접근</h3><p>로컬 파일·로컬 DB·데스크톱 앱. 기준점은 Claude Desktop 앱.</p></div>
+        </div>
+        <p class="lead r" style="--d:3" style="margin-top:1.3rem; font-size:clamp(.9rem,1.4vw,1.1rem)">원격 세션의 로컬 파일 접근은 <span class="accent">데스크톱 앱이 열려 있을 때만</span> 동작합니다.</p>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:.8rem">출처 support.claude.com/en/articles/11725091</p>
+      <div class="s-note">대부분의 마케터는 Remote(클라우드 SaaS)만 쓰면 된다. 로컬 파일이 많은 경우에만 데스크톱 확장. 세부는 짧게. 이 슬라이드는 빠르게(1.5분).</div>
+    </section>
+
+    <!-- 21 · SKILLS -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">Skills</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">반복 절차를<br><em>재사용</em>으로</h2>
+          <ul class="clean r" style="--d:2">
+            <li><code>SKILL.md</code>로 절차를 한 번 정의</li>
+            <li>관련될 때 <b>자동 호출</b> 또는 <b>/이름</b>으로 직접</li>
+          </ul>
+        </div>
+        <div class="grid r" style="--d:3" style="gap:.55rem">
+          <div class="card"><span class="k">/content-calendar</span><h3>콘텐츠 캘린더 생성</h3></div>
+          <div class="card"><span class="k">/campaign-brief</span><h3>캠페인 브리프 템플릿</h3></div>
+          <div class="card"><span class="k">/copy-review</span><h3>카피 광고규정 점검</h3></div>
+          <div class="card"><span class="k">/weekly-report</span><h3>주간 리포트 절차</h3></div>
+        </div>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:.9rem">출처 code.claude.com/docs/en/skills</p>
+      <div class="s-note">마케터에게 가장 실용적 확장. "매주 같은 지시를 붙여넣고 있다면 그게 스킬 후보." 콘텐츠 캘린더, 카피 규정 점검, 주간 리포트처럼 반복 절차를 팀 표준으로 고정. 한 번 만들면 신규 입사자도 /명령 한 줄로 같은 품질.</div>
+    </section>
+
+    <!-- 22 · PLUGINS -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">Plugins</div>
+          <h2 class="r" style="--d:1; margin:.7rem 0 1rem">팀을 위한<br><em>도구 세트</em></h2>
+          <ul class="clean blue r" style="--d:2">
+            <li><b>스킬 · 에이전트 · 훅 · MCP 서버</b>를 하나로 묶음</li>
+            <li>팀 공유·버전 관리·여러 프로젝트 재사용</li>
+            <li>충돌 방지용 <b>네임스페이스</b> 명령</li>
+          </ul>
+        </div>
+        <div class="quote-block r" style="--d:3" style="font-size:clamp(1rem,1.6vw,1.35rem)">Skill이 레시피 하나라면,<br>Plugin은 <span class="accent2">마케팅 팀 주방 세트</span>.</div>
+      </div>
+      <p class="src r" style="--d:4" style="margin-top:.9rem">출처 code.claude.com/docs/en/plugins · discover-plugins</p>
+      <div class="s-note">스킬과의 차이만 명확히. 스킬=절차 하나, 플러그인=여러 절차+도구 연결+자동화를 묶은 배포 단위. 마케팅 팀이 공통 워크플로우를 표준화·배포할 때. 개인은 스킬로 충분, 팀 확산은 플러그인.</div>
+    </section>
+
+    <!-- 23 · COMPARISON TABLE -->
+    <section class="slide" data-section="04 연결·확장">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">한 장 정리</div>
+        <h2 class="r" style="--d:1; margin:.6rem 0 1.1rem">네 개념 <em>비교</em></h2>
+        <div class="r" style="--d:2; overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th>개념</th><th>한 줄 정의</th><th>비유</th><th>마케팅 예시</th></tr></thead>
+          <tbody>
+            <tr><td><span class="con">MCP</span></td><td>AI–도구 연결 표준</td><td class="analogy">공용 콘센트 규격</td><td>Drive·Slack 연결의 바탕</td></tr>
+            <tr><td><span class="con">Connector</span></td><td>실제 앱 연결</td><td class="analogy">로그인된 출입문</td><td>Drive 자산 검색, Slack 전송</td></tr>
+            <tr><td><span class="con">Skill</span></td><td>반복 절차 지침</td><td class="analogy">업무 매뉴얼</td><td>콘텐츠 캘린더, 카피 점검</td></tr>
+            <tr><td><span class="con">Plugin</span></td><td>확장 기능 묶음</td><td class="analogy">팀 도구 패키지</td><td>마케팅 워크플로우 세트</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="lead r" style="--d:3" style="margin-top:1.1rem; font-size:clamp(.9rem,1.4vw,1.1rem)">보너스 · <b>Subagent</b>: 조사·자료 읽기 같은 보조 작업을 <span class="accent">별도 컨텍스트</span>에서 하고 요약만 돌려주는 작업자.</p>
+      </div>
+      <div class="s-note">오늘의 핵심 한 장. 청중에게 사진 찍으라고 권한다. 네 단어를 비유로 각인: 콘센트·출입문·매뉴얼·패키지. 실습2가 바로 이 표를 테스트한다고 예고.</div>
+    </section>
+
+    <!-- 24 · DIVIDER 05 -->
+    <section class="slide" data-section="05 실무·안전">
+      <div class="wrap">
+        <div class="divider-num r" style="--d:0">05</div>
+        <h2 class="r" style="--d:1; margin-top:.4rem">실무와 <em>안전</em></h2>
+        <p class="lead r" style="--d:2; margin-top:.8rem">하나로 이어 붙이고, 안전하게 굴리기.</p>
+      </div>
+      <div class="s-note">마무리 섹션. "이제 조각을 하나의 흐름으로 잇습니다." 5초.</div>
+    </section>
+
+    <!-- 25 · WORKFLOW -->
+    <section class="slide" data-section="05 실무·안전">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">마케팅 캠페인 · 처음부터 끝까지</div>
+        <h2 class="r" style="--d:1; margin:.6rem 0 1.3rem">하나의 <em>흐름</em>으로</h2>
+        <div class="flow r" style="--d:2">
+          <div class="step"><span class="n">01 Chat</span><span class="t">브리프 정리</span><span class="d">목표·타깃·톤 확정</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">02 Research</span><span class="t">시장·경쟁 조사</span><span class="d">근거·출처 확보</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">03 Chat</span><span class="t">카피·크리에이티브</span><span class="d">채널별 변주 생성</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">04 Design</span><span class="t">덱·목업</span><span class="d">비주얼 초안·PPTX</span></div>
+          <div class="arrow">→</div>
+          <div class="step"><span class="n">05 Connector</span><span class="t">배포·공유</span><span class="d">Drive 반영·Slack 공지</span></div>
+          <div class="arrow">→</div>
+          <div class="step" style="border-color:color-mix(in srgb,var(--accent) 40%,transparent)"><span class="n">06 Code</span><span class="t">성과 분석</span><span class="d">데이터 집계·리포트</span></div>
+        </div>
+        <p class="lead r" style="--d:3" style="margin-top:1.6rem; font-size:clamp(.95rem,1.5vw,1.2rem)">반복되는 이 흐름을 <span class="accent">Skill·Plugin</span>으로 고정하면 팀 자산이 됩니다.</p>
+      </div>
+      <div class="s-note">오늘 배운 모든 조각이 하나로 연결되는 클라이맥스. 실제 캠페인 한 건을 상상하며 스토리텔링. 마지막에 "이 여섯 단계 중 반복되는 부분을 스킬로 만들면, 다음 캠페인은 절반 시간에". 청중이 자기 캠페인에 대입하도록 3초 정지.</div>
+    </section>
+
+    <!-- 26 · SAFETY -->
+    <section class="slide" data-section="05 실무·안전">
+      <div class="wrap">
+        <div class="eyebrow r" style="--d:0">안전하게 쓰는 법</div>
+        <h2 class="r" style="--d:1; margin:.6rem 0 1.2rem">힘이 셀수록 <em>확인</em>이 중요</h2>
+        <div class="grid r" style="--d:2" style="grid-template-columns:repeat(3,1fr); gap:.7rem">
+          <div class="card"><span class="k">사실</span><h3>출처 확인</h3><p>수치·인용은 Research·웹으로 검증. 지어내지 않기.</p></div>
+          <div class="card"><span class="k">광고규정</span><h3>표현 점검</h3><p>과장·최상급·전후·근거 없는 효과 배제.</p></div>
+          <div class="card"><span class="k">권한</span><h3>최소 연결</h3><p>읽기 우선, 쓰기·삭제는 승인형으로.</p></div>
+          <div class="card"><span class="k">개인정보</span><h3>업로드 전 확인</h3><p>민감정보·고객 데이터는 조직 정책 준수.</p></div>
+          <div class="card"><span class="k">검수</span><h3>사람이 최종</h3><p>발행 전 브랜드·법적 표현 사람 확인.</p></div>
+          <div class="card"><span class="k">기록</span><h3>확인일·출처 표기</h3><p>AI 생성물에 근거와 날짜 남기기.</p></div>
+        </div>
+      </div>
+      <div class="s-note">마케팅 특화 안전. 브랜드는 잘못된 주장·과장 광고에 특히 취약. 광고규정(과장·최상급·전후사진·근거 없는 효과)을 명시적으로 언급. 고객 데이터 업로드는 조직 정책 먼저. 반복해온 문장으로 마무리: 초안은 AI, 최종 검수는 사람.</div>
+    </section>
+
+    <!-- 27 · EXERCISES -->
+    <section class="slide" data-section="05 실무·안전">
+      <div class="wrap two">
+        <div>
+          <div class="eyebrow r" style="--d:0">실습 1</div>
+          <h2 class="r" style="--d:1; margin:.6rem 0 1rem" style="font-size:clamp(1.5rem,3.2vw,2.4rem)">좋은 브리프 만들기</h2>
+          <ul class="clean r" style="--d:2">
+            <li><span style="color:var(--faint)">나쁜 예</span> "인스타 카피 써줘"</li>
+            <li><span class="accent">좋은 예</span> 역할·목표·자료·형식·검수기준 5요소</li>
+          </ul>
+          <p class="lead r" style="--d:3" style="margin-top:.8rem; font-size:.95rem">각자 자기 브랜드로 5요소 브리프 1개 작성 (3분)</p>
+        </div>
+        <div>
+          <div class="eyebrow r" style="--d:2">실습 2</div>
+          <h2 class="r" style="--d:3; margin:.6rem 0 1rem" style="font-size:clamp(1.5rem,3.2vw,2.4rem)">개념 분류 퀴즈</h2>
+          <p class="lead r" style="--d:4" style="font-size:.95rem; margin-bottom:.6rem">아래는 Chat·Research·Code·Design·Connector·Skill 중 무엇?</p>
+          <ul class="clean blue r" style="--d:5" style="gap:.4rem">
+            <li>"경쟁 3사 프로모션 6개월치 비교" <small>→ Research</small></li>
+            <li>"상품 50개 광고 카피 표로 생성" <small>→ Code</small></li>
+            <li>"제품 피치덱 초안" <small>→ Design</small></li>
+            <li>"Slack에 요약 전송" <small>→ Connector</small></li>
+          </ul>
+        </div>
+      </div>
+      <div class="s-note">진행자용 정답은 노트 참조. 실습1은 3분 개별 작성 후 2~3명 발표. 실습2는 손들기로 즉답. 정답: Research / Code / Design / Connector. 추가: "40p PDF 3문단 요약"=Chat, "주간 배포 점검 절차 재사용"=Skill, "팀 리뷰 도구 세트 배포"=Plugin. 시간 부족하면 실습2만.</div>
+    </section>
+
+    <!-- 28 · CLOSING -->
+    <section class="slide" data-section="마무리">
+      <div class="hero-mark" aria-hidden="true">→</div>
+      <div class="wrap title-inner">
+        <div class="eyebrow r" style="--d:0">마무리</div>
+        <h2 class="r" style="--d:1; margin:.7rem 0 1.4rem">기능을 다 배우지 말고,<br><em>업무 하나</em>부터</h2>
+        <div class="flow r" style="--d:2" style="margin-bottom:1.6rem">
+          <div class="step"><span class="t">Chat</span></div><div class="arrow">→</div>
+          <div class="step"><span class="t">Research</span></div><div class="arrow">→</div>
+          <div class="step"><span class="t">Connector</span></div><div class="arrow">→</div>
+          <div class="step"><span class="t">Design·Code</span></div><div class="arrow">→</div>
+          <div class="step" style="border-color:color-mix(in srgb,var(--accent) 40%,transparent)"><span class="t">Skill·Plugin</span></div>
+        </div>
+        <ul class="clean r" style="--d:3" style="max-width:60ch">
+          <li>Claude는 답변기가 아니라 <b>브랜드 맥락을 함께 다루는 파트너</b></li>
+          <li>연결될수록 <b>권한·출처·검수</b>가 더 중요</li>
+          <li>초안은 AI, <b>최종 검수는 사람</b></li>
+        </ul>
+        <p class="src r" style="--d:4" style="margin-top:1.4rem"><b>확인일 2026-07-14 · 공식 문서 기준.</b> 가격·플랜·모델명·베타 범위는 발표 직전 재확인.</p>
+      </div>
+      <div class="s-note">확장 순서를 다시 보여주며 오늘의 약속 회수: 작게 시작. 핵심 문장 3개로 마무리. Q&A로 넘어가기 전, "오늘 오후에 딱 하나, 여러분 업무의 반복 하나를 Claude에게 맡겨보세요." 감사 인사.</div>
+    </section>
+
+  </main>
+
+  <div class="progress"><span id="bar"></span></div>
+  <div class="hint">
+    <kbd>←</kbd><kbd>→</kbd> 이동 · <kbd>N</kbd> 노트 · <kbd>T</kbd> 테마 · <kbd>F</kbd> 전체화면
+  </div>
+</div>
+
+<div class="notes" id="notes">
+  <div class="nh" id="notesHead">발표자 노트 · 01</div>
+  <div class="nb" id="notesBody"></div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var i = 0, notesOn = false;
+  var elCur = document.getElementById('cur'),
+      elTot = document.getElementById('tot'),
+      elBar = document.getElementById('bar'),
+      elSec = document.getElementById('secLabel'),
+      elNotes = document.getElementById('notes'),
+      elNB = document.getElementById('notesBody'),
+      elNH = document.getElementById('notesHead');
+  elTot.textContent = String(total).padStart(2,'0');
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function render(){
+    slides.forEach(function(s,n){ s.classList.toggle('active', n===i); });
+    elCur.textContent = pad(i+1);
+    elBar.style.width = ((i+1)/total*100) + '%';
+    elSec.textContent = slides[i].getAttribute('data-section') || '';
+    var note = slides[i].querySelector('.s-note');
+    elNB.textContent = note ? note.textContent.trim() : '(노트 없음)';
+    elNH.textContent = '발표자 노트 · ' + pad(i+1);
+    try{ history.replaceState(null,'','#'+(i+1)); }catch(e){}
+  }
+  function go(n){ i = Math.max(0, Math.min(total-1, n)); render(); }
+  function next(){ go(i+1); }
+  function prev(){ go(i-1); }
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '){ e.preventDefault(); next(); }
+    else if(k==='ArrowLeft'||k==='PageUp'){ e.preventDefault(); prev(); }
+    else if(k==='Home'){ go(0); }
+    else if(k==='End'){ go(total-1); }
+    else if(k==='n'||k==='N'){ notesOn=!notesOn; elNotes.classList.toggle('show',notesOn); }
+    else if(k==='t'||k==='T'){
+      var cur = document.documentElement.getAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', cur==='light'?'dark':'light');
+    }
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement){ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); }
+      else{ document.exitFullscreen&&document.exitFullscreen(); }
+    }
+  });
+
+  // click / tap to advance (ignore when notes open or interactive)
+  document.getElementById('slides').addEventListener('click', function(e){
+    if(notesOn) return;
+    var x = e.clientX, w = window.innerWidth;
+    if(x < w*0.28){ prev(); } else { next(); }
+  });
+
+  // swipe
+  var sx=0;
+  document.addEventListener('touchstart', function(e){ sx=e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - sx;
+    if(Math.abs(dx)>50){ dx<0?next():prev(); }
+  }, {passive:true});
+
+  var start = parseInt((location.hash||'').replace('#',''),10);
+  if(start>=1 && start<=total){ i=start-1; }
+  render();
+})();
+</script>
+</body>
+</html>
