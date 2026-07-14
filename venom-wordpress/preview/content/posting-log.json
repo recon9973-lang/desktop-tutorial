@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1784039827558",
+    "title": "마산 교통 사고 한의원 선택 시 고려해야 할 5가지",
+    "tokenUsage": {
+      "promptTokens": 2533,
+      "completionTokens": 1896,
+      "totalTokens": 4429,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-14T14:38:28.961Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1783402276947",
     "title": "대구 성형외과 마케팅의 5가지 핵심 전략",
     "tokenUsage": {
