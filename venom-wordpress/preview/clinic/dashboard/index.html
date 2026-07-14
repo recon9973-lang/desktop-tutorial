@@ -237,7 +237,7 @@
   <!-- ================= 지도 분석 ================= -->
   <section class="panel" id="panel-map">
     <h2>반경 내 <span class="t-comp">경쟁 병원</span> 지도</h2>
-    <p class="sub"><span class="t-mine">내 병원</span> 중심 · 선택 반경 <span class="rEcho">1km</span> · 점을 누르거나 올리면 상세가 보입니다. (개략 위치 목업)</p>
+    <p class="sub"><span class="t-mine">내 병원</span> 중심 · 선택 반경 <span class="rEcho">1km</span> · 점을 누르거나 올리면 상세가 보입니다. <span id="mapNote">(개략 위치 목업)</span></p>
     <div class="card chart-card" style="padding:10px">
       <div id="mapChart"></div>
       <div class="legend" id="mapLegend">
@@ -340,7 +340,7 @@
     <b>데이터 출처·기준</b> — 건강보험심사평가원 병원정보서비스(2026-06 갱신) · 소상공인시장진흥공단 상가(상권)정보(2026-2Q) ·
     행정안전부 법정동코드 · SGIS 통계지리정보 · 네이버 지역 검색 API(2026-07-01 수집, 비로그인, 결과 상위 5건).<br>
     공식 API 결과는 실제 검색화면과 다를 수 있습니다. 인구·상권 지표는 잠재 수요 참고지표이며 실제 방문 수요를 보장하지 않습니다.
-    <b>본 화면은 목업 데이터 기반 MVP 프로토타입입니다.</b>
+    <b id="mvpNote">본 화면은 목업 데이터 기반 MVP 프로토타입입니다.</b>
   </footer>
 </main>
 
@@ -869,6 +869,14 @@ function applyLiveData(j){
   document.querySelector('.hospital-id').innerHTML=
     `<b id="hName">${esc(h.name)}</b>${h.department?' · '+esc(h.department):''}<br>${h.address?esc(h.address)+' · ':''}${esc(j.month)} 리포트`;
   document.querySelector('.brand small').textContent='실데이터 · '+j.month+' 기준';
+  // 목업 안내 → 실측 안내로 전환 (실데이터가 로드된 경우)
+  var mapNote=document.getElementById('mapNote');
+  if(mapNote)mapNote.textContent='(실측 경쟁업체 · 거리·방위 기준 개략 배치)';
+  var mvp=document.getElementById('mvpNote');
+  if(mvp){
+    var src=(j.data_basis&&j.data_basis.sources)?j.data_basis.sources.join(' · '):'공식 API';
+    mvp.textContent='본 화면은 실측 데이터 기반입니다 — '+src+' ('+j.month+' 기준).';
+  }
 }
 fetch('../data/dashboard-live.json')
   .then(r=>r.ok?r.json():null)
