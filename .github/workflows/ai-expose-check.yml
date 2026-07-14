@@ -6,6 +6,9 @@ name: AI Exposure Check
 # 결과는 로그의 RESULTS_JSON= 한 줄에 JSON으로 출력된다.
 
 on:
+  schedule:
+    # 매월 1일 00:00 UTC = 09:00 KST — 4대 AI 노출 자동 재측정(월 1회)
+    - cron: '0 0 1 * *'
   workflow_dispatch:
     inputs:
       input:
@@ -24,7 +27,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run AEO exposure checks
         env:
-          INPUT: ${{ github.event.inputs.input }}
+          # 스케줄 실행 시 inputs.input이 비므로 기본 경로로 폴백
+          INPUT: ${{ github.event.inputs.input || 'venom-wordpress/preview/content/ai-expose-input.json' }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           node - "$INPUT" <<'NODE'
