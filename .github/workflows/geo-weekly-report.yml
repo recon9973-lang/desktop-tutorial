@@ -63,11 +63,26 @@ jobs:
             });
           }
 
+          function logRun(status, errorMessage) {
+            const body = JSON.stringify({ automation: { name: 'GEO Weekly Report', workflowType: 'report', status, errorMessage: errorMessage || '' } });
+            return new Promise((resolve) => {
+              const req = https.request(BASE + '/api/geo-ops?module=automations&action=log', {
+                method: 'POST',
+                headers: Object.assign({ 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, SECRET ? { 'Authorization': 'Bearer ' + SECRET } : {}),
+              }, (r) => { r.on('data', () => {}); r.on('end', resolve); });
+              req.on('error', resolve); req.setTimeout(30000, () => { req.destroy(); resolve(); });
+              req.write(body); req.end();
+            });
+          }
+
           (async () => {
+            let okCount = 0, fail = 0;
             for (const c of clients) {
               const r = await post(c.id);
-              console.log('  ' + c.id + ' -> ' + (r.j && r.j.ok ? 'ok' : ('FAIL ' + (r.j && r.j.error || r.status))));
+              const good = r.j && r.j.ok; good ? okCount++ : fail++;
+              console.log('  ' + c.id + ' -> ' + (good ? 'ok' : ('FAIL ' + (r.j && r.j.error || r.status))));
             }
-            console.log('done');
+            await logRun(fail ? 'error' : 'ok', fail ? (fail + '개 거래처 실패') : '');
+            console.log('done · ok=' + okCount + ' fail=' + fail);
           })();
           NODE

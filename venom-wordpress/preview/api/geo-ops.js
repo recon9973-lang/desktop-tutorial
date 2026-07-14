@@ -112,6 +112,14 @@ async function handleEntity(req, res, mod) {
     return res.status(200).json({ ok: true, data: saved });
   }
 
+  if (action === 'log' && mod.coll === 'automations') {
+    const a = body.automation || body;
+    if (!a || !a.name) return res.status(400).json({ ok: false, error: 'automation.name 필요' });
+    const rec = Object.assign({ id: 'atm_' + String(a.name).replace(/[^\w-]/g, '_') }, a, { lastRunAt: new Date().toISOString() });
+    const saved = await geo.upsert('automations', rec);
+    return res.status(200).json({ ok: true, data: saved });
+  }
+
   if (action === 'generate' && mod.coll === 'tasks') {
     const { clientId, templateId } = body;
     if (!clientId || !templateId) return res.status(400).json({ ok: false, error: 'clientId, templateId 필요' });

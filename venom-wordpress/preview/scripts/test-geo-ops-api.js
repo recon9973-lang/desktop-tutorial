@@ -184,6 +184,19 @@ async function call(opts) { const res = mockRes(); await handler(mockReq(opts), 
     ok('report 없는 거래처 404', res._status === 404);
   }
 
+  console.log('automation log');
+  {
+    let res = await call({ method: 'POST', query: { module: 'automations', action: 'log' }, body: { automation: { name: 'AI Exposure Check', workflowType: 'exposure', status: 'ok' } } });
+    ok('automation log 200', res._json.ok && res._json.data.id === 'atm_AI_Exposure_Check' && res._json.data.lastRunAt);
+    // 같은 name 재기록 → 갱신(중복 없음)
+    res = await call({ method: 'POST', query: { module: 'automations', action: 'log' }, body: { automation: { name: 'AI Exposure Check', status: 'error', errorMessage: 'timeout' } } });
+    ok('automation 재기록 갱신', res._json.data.status === 'error');
+    res = await call({ method: 'GET', query: { module: 'automations', action: 'list' } });
+    ok('automation list 1건(중복없음)', res._json.data.filter((a) => a.name === 'AI Exposure Check').length === 1);
+    res = await call({ method: 'POST', query: { module: 'automations', action: 'log' }, body: { automation: {} } });
+    ok('name 누락 400', res._status === 400);
+  }
+
   console.log('인증 게이트');
   {
     process.env.ADMIN_SECRET = 'sesame';
