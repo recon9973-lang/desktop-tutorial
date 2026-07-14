@@ -1,5 +1,20 @@
 [
   {
+    "action": "generate",
+    "id": "auto_1784043297499",
+    "title": "대전 병원마케팅 5가지 전략과 알고리즘 이해하기",
+    "category": "seo",
+    "keyword": "병원마케팅",
+    "tokenUsage": {
+      "promptTokens": 2593,
+      "completionTokens": 1876,
+      "totalTokens": 4469,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "ts": "2026-07-14T15:35:18.865Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1784039935986",
     "title": "마산 교통사고 한의원, 효과적인 치료법 TOP 5",
