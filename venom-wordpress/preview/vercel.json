@@ -240,10 +240,6 @@
   },
   "crons": [
     {
-      "path": "/api/cron-daily-posts",
-      "schedule": "0 15 * * *"
-    },
-    {
       "path": "/api/cron-seo-monitor",
       "schedule": "0 18 * * *"
     },
