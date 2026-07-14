@@ -10,14 +10,15 @@ const POSTS_PATH = 'venom-wordpress/preview/content/blog-posts.json';
 const EN_POSTS_PATH = 'venom-wordpress/preview/content/blog-posts-en.json';
 const LOG_PATH   = 'venom-wordpress/preview/content/posting-log.json';
 
-function ghRequest(method, path, body) {
+// 임의의 GitHub API 경로 호출(저수준).
+function ghCall(method, apiPath, body) {
   if (!TOKEN) throw new Error('GITHUB_TOKEN 환경변수가 없습니다.');
   const payload = body ? JSON.stringify(body) : undefined;
   return new Promise((resolve, reject) => {
     const req = https.request(
       {
         hostname: 'api.github.com',
-        path: `/repos/${OWNER}/${REPO}/contents/${path}`,
+        path: apiPath,
         method,
         headers: {
           'Authorization': `token ${TOKEN}`,
@@ -44,14 +45,32 @@ function ghRequest(method, path, body) {
   });
 }
 
+// Contents API(파일 경로) 호출.
+function ghRequest(method, path, body) {
+  return ghCall(method, `/repos/${OWNER}/${REPO}/contents/${path}`, body);
+}
+
 async function getFile(filePath) {
   const r = await ghRequest('GET', filePath);
   if (r.status === 404) return null;
   if (r.status !== 200) throw new Error('GitHub GET 실패: ' + r.status);
-  return {
-    sha: r.body.sha,
-    content: JSON.parse(Buffer.from(r.body.content, 'base64').toString('utf8')),
-  };
+
+  // 1MB 이하: Contents API가 base64 content를 인라인으로 반환.
+  let raw = (r.body && r.body.content && r.body.encoding === 'base64')
+    ? Buffer.from(r.body.content, 'base64').toString('utf8')
+    : null;
+
+  // 1MB 초과: Contents API는 content를 비워서(encoding:"none") 반환 →
+  // Git Blobs API(최대 100MB)로 폴백해 sha로 실제 내용을 가져온다.
+  if (raw === null && r.body && r.body.sha) {
+    const b = await ghCall('GET', `/repos/${OWNER}/${REPO}/git/blobs/${r.body.sha}`);
+    if (b.status === 200 && b.body && b.body.content && b.body.encoding === 'base64') {
+      raw = Buffer.from(b.body.content, 'base64').toString('utf8');
+    }
+  }
+  if (raw === null) throw new Error('GitHub 파일 내용을 읽지 못했습니다(대용량 폴백 실패): ' + filePath);
+
+  return { sha: r.body.sha, content: JSON.parse(raw) };
 }
 
 async function putFile(filePath, content, sha, message) {
