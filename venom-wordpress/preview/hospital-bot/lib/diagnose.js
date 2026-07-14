@@ -347,6 +347,55 @@ async function diagnoseSearchConsole(deps, homepage, nowMs) {
   } catch (e) { return { status: 'error', note: e.message }; }
 }
 
+// 태그 제거(로컬 헬퍼)
+function stripTagsLite(s) { return String(s || '').replace(/<\/?b>/g, '').replace(/<[^>]+>/g, ''); }
+// 블로그 URL에서 블로그 ID 추출(자기 블로그 정밀 매칭용)
+function blogIdFromUrl(url) {
+  const m = String(url || '').match(/blog\.naver\.com\/([a-z0-9_-]+)/i);
+  return m ? m[1].toLowerCase() : '';
+}
+// 핵심 키워드(지역+진료과) — 순위 조회용(공백 포함, 검색 관련성↑)
+function coreKeywords(dept, region, medical) {
+  const r = region ? region + ' ' : '';
+  const d = dept || (medical === false ? '업체' : '병원');
+  if (medical === false) return [r + d, `${r}${d} 예약`, `${r}${d} 후기`].filter(Boolean);
+  const medBase = {
+    '치과': ['임플란트', '치아교정', '충치치료'], '피부과': ['여드름', '피부관리', '점빼기'],
+    '성형외과': ['쌍꺼풀', '코성형', '지방흡입'], '정형외과': ['도수치료', '무릎통증', '허리디스크'],
+    '한의원': ['다이어트한약', '교통사고', '추나요법'], '안과': ['라식', '백내장', '드림렌즈'],
+    '내과': ['건강검진', '위내시경', '갑상선'],
+  }[d] || ['진료', '예약', '비용'];
+  return [r + d].concat(medBase.map((b) => r + b)).slice(0, 4);
+}
+// 핵심 키워드별 실제 순위: 플레이스(top5, OpenAPI 한계) + 블로그(top20, 자기 블로그 정밀 매칭)
+async function keywordRanks(deps, { name, region, dept, medical, blogId }) {
+  const kws = coreKeywords(dept, region, medical).slice(0, 3);
+  const rows = await Promise.all(kws.map(async (kw) => {
+    const [local, blog] = await Promise.all([
+      safe(deps.naverOpenapi.searchJson('local', kw, { display: 5, timeout: 2200 })),
+      safe(deps.naverOpenapi.searchJson('blog', kw, { display: 20, sort: 'sim', timeout: 2200 })),
+    ]);
+    let placeRank = null, placeChecked = false;
+    if (local && local.ok) {
+      placeChecked = true;
+      const i = local.items.findIndex((it) => nameMatches(stripTagsLite(it.title), name));
+      placeRank = i >= 0 ? i + 1 : null; // null = 5위권 밖(OpenAPI는 top5만)
+    }
+    let blogRank = null, blogChecked = false;
+    if (blog && blog.ok) {
+      blogChecked = true;
+      const i = blog.items.findIndex((it) => {
+        const link = ((it.link || '') + ' ' + (it.bloggerlink || '')).toLowerCase();
+        if (blogId && link.indexOf(blogId) >= 0) return true;
+        return nameMatches(stripTagsLite(it.title) + ' ' + stripTagsLite(it.description), name);
+      });
+      blogRank = i >= 0 ? i + 1 : null; // null = 20위권 밖
+    }
+    return { keyword: kw, placeRank, blogRank, placeChecked, blogChecked };
+  }));
+  return rows;
+}
+
 async function diagnoseLocal(deps, name, region) {
   const out = { place: null, blog: null, news: null, signals: [] };
   const q = [region, name].filter(Boolean).join(' ').trim() || name;
@@ -599,6 +648,34 @@ async function resolvePlace(rawInput, opts = {}) {
   };
 }
 
+// 네이버 로컬 전용(경량) — 진단 전체가 아니라 로컬 지표 + 핵심 키워드 순위만. 빠르고 정확.
+async function diagnoseLocalOnly(rawInput, opts = {}) {
+  const deps = opts.deps || defaultDeps();
+  const q = parseInput(rawInput);
+  if (opts.region) q.region = opts.region;
+  let place;
+  try { place = await deps.naverOpenapi.findHospital(q.raw, { matchName: q.name, timeout: 2500 }); }
+  catch (e) { place = { found: false, error: e.message }; }
+  const region = q.region || regionFromAddress(place.address) || '';
+  const rawCat = place.category || '';
+  const gname = place.found ? place.name : q.name;
+  const medical = isMedical(rawCat, gname);
+  const dept = medical
+    ? (simplifyDept(rawCat) || simplifyDept(q.raw) || '병원')
+    : (businessCategory(rawCat) || '');
+  const blogId = blogIdFromUrl(place.homepage);
+  const [local, ranks] = await Promise.all([
+    diagnoseLocal(deps, gname, region),
+    keywordRanks(deps, { name: gname, region, dept, medical, blogId }),
+  ]);
+  local.keywordRanks = ranks;
+  return {
+    ok: true, query: q,
+    resolved: { region, dept, medical, homepage: place.homepage || null, homepageKind: classifyHomepage(place.homepage), place },
+    local,
+  };
+}
+
 // ── 메인 오케스트레이터 ────────────────────────────────
 async function diagnose(rawInput, opts = {}) {
   const deps = opts.deps || defaultDeps();
@@ -675,4 +752,4 @@ async function diagnose(rawInput, opts = {}) {
   return report;
 }
 
-module.exports = { diagnose, resolvePlace, computeBase, parseInput, keywordSeeds, summarize, regionFromAddress, simplifyDept, isMedical, businessCategory, classifyHomepage, fetchHtml, defaultDeps };
+module.exports = { diagnose, resolvePlace, diagnoseLocalOnly, computeBase, parseInput, keywordSeeds, coreKeywords, keywordRanks, summarize, regionFromAddress, simplifyDept, isMedical, businessCategory, classifyHomepage, fetchHtml, defaultDeps };
