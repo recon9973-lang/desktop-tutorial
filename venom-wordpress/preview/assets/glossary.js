@@ -8,10 +8,10 @@
 
   // 사전(3종). 각 카테고리는 dict 로 소속 사전을 가진다.
   var DICTS = {
-    seo:       { label: 'SEO 용어사전' },
-    ai:        { label: 'AI 용어사전' },
-    marketing: { label: '마케팅 용어사전' },
-    dev:       { label: '개발 용어사전' }
+    seo:       { label: 'SEO 용어사전',  abbr: 'SEO', color: '#533afd' },
+    ai:        { label: 'AI 용어사전',   abbr: 'AI',  color: '#0d9488' },
+    marketing: { label: '마케팅 용어사전', abbr: 'MKT', color: '#d97706' },
+    dev:       { label: '개발 용어사전',  abbr: 'DEV', color: '#2563eb' }
   };
 
   var CATS = {
@@ -838,7 +838,7 @@
   function dictOf(t) { return t[4] || 'seo'; }
 
   var PAGE = 24;
-  var state = { dict: 'seo', mode: 'all', val: '', cat: 'all', q: '', limit: PAGE };
+  var state = { dict: 'seo', mode: 'all', val: '', cat: 'all', q: '', page: 1 };
   var rootEl = null;
   var renderedList = [];
 
@@ -854,8 +854,10 @@
     // 사전 전환 세그먼트
     var dictTabs = '';
     Object.keys(DICTS).forEach(function (d) {
-      dictTabs += '<button class="gl-dict' + (state.dict === d ? ' on' : '') + '" data-dict="' + d + '">'
-        + DICTS[d].label + '<span class="gl-dict-n">' + dictCount(d) + '</span></button>';
+      dictTabs += '<button class="gl-dict' + (state.dict === d ? ' on' : '') + '" data-dict="' + d + '" style="--dc:' + DICTS[d].color + '">'
+        + '<span class="gl-dict-ab">' + DICTS[d].abbr + '</span>'
+        + '<span class="gl-dict-lb">' + DICTS[d].label + '</span>'
+        + '<span class="gl-dict-n">' + dictCount(d) + '</span></button>';
     });
     // 현재 사전의 카테고리만
     var abcSet = {}; cur.forEach(function (t) { abcSet[abcLead(t[1])] = 1; });
@@ -891,10 +893,30 @@
 
   function hasDetail(t) { var x = t[5] || {}; return !!(x.detail || x.ex || (x.src && x.src.length)); }
 
+  function pager(pages) {
+    if (pages <= 1) return '';
+    var cur = state.page;
+    var out = '<button class="gl-page nav" data-page="' + (cur - 1) + '"' + (cur <= 1 ? ' disabled' : '') + ' aria-label="이전">‹</button>';
+    var win = {}; [1, pages, cur - 2, cur - 1, cur, cur + 1, cur + 2].forEach(function (p) { if (p >= 1 && p <= pages) win[p] = 1; });
+    var keys = Object.keys(win).map(Number).sort(function (a, b) { return a - b; });
+    var prev = 0;
+    keys.forEach(function (p) {
+      if (prev && p - prev > 1) out += '<span class="gl-page-gap">…</span>';
+      out += '<button class="gl-page' + (p === cur ? ' on' : '') + '" data-page="' + p + '"' + (p === cur ? ' aria-current="page"' : '') + '>' + p + '</button>';
+      prev = p;
+    });
+    out += '<button class="gl-page nav" data-page="' + (cur + 1) + '"' + (cur >= pages ? ' disabled' : '') + ' aria-label="다음">›</button>';
+    return '<div class="gl-pager" style="--pc:' + DICTS[state.dict].color + '">' + out + '</div>';
+  }
+
   function buildCards() {
     var full = TERMS.filter(match).sort(function (a, b) { return a[0].localeCompare(b[0], 'ko'); });
     if (!full.length) { renderedList = []; return '<p class="gl-empty">검색 결과가 없습니다. 다른 키워드로 찾아보세요.</p>'; }
-    var shown = full.slice(0, state.limit);
+    var pages = Math.ceil(full.length / PAGE);
+    if (state.page > pages) state.page = pages;
+    if (state.page < 1) state.page = 1;
+    var start = (state.page - 1) * PAGE;
+    var shown = full.slice(start, start + PAGE);
     renderedList = shown;
     var cards = shown.map(function (t, i) {
       var c = CATS[t[3]] || CATS.basic;
@@ -908,11 +930,8 @@
         + '<p class="gl-def">' + esc(t[2]) + '</p>'
         + (more ? '<div class="gl-open">자세히 보기 <span>→</span></div>' : '') + '</div>';
     }).join('');
-    var head = '<div class="gl-count">' + DICTS[state.dict].label + ' · 전체 ' + full.length + '개 중 ' + shown.length + '개 표시</div>';
-    var load = full.length > shown.length
-      ? '<div class="gl-loadwrap"><button class="gl-load" data-load>더 보기 <span>' + (full.length - shown.length) + '개 남음</span></button></div>'
-      : '';
-    return head + '<div class="gl-grid">' + cards + '</div>' + load;
+    var head = '<div class="gl-count">' + DICTS[state.dict].label + ' · 전체 ' + full.length + '개 · ' + state.page + '/' + pages + ' 페이지</div>';
+    return head + '<div class="gl-grid">' + cards + '</div>' + pager(pages);
   }
 
   function modalHTML(t) {
@@ -969,18 +988,24 @@
 
   function onClick(e) {
     var tgt = e.target;
-    if (tgt.closest && tgt.closest('[data-load]')) { state.limit += PAGE; renderCards(); return; }
+    var pg = tgt.closest ? tgt.closest('.gl-page') : null;
+    if (pg && !pg.hasAttribute('disabled')) {
+      state.page = parseInt(pg.getAttribute('data-page'), 10) || 1;
+      renderCards();
+      var cardsEl = rootEl.querySelector('#gl-cards'); if (cardsEl && cardsEl.scrollIntoView) cardsEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      return;
+    }
     var card = tgt.closest ? tgt.closest('.gl-card.clickable') : null;
     if (card && !(tgt.closest && tgt.closest('a'))) { openByCard(card); return; }
     var d = tgt.closest ? tgt.closest('.gl-dict') : null;
-    if (d) { state.dict = d.getAttribute('data-dict'); state.cat = 'all'; state.mode = 'all'; state.val = ''; state.q = ''; state.limit = PAGE; renderAll(); return; }
+    if (d) { state.dict = d.getAttribute('data-dict'); state.cat = 'all'; state.mode = 'all'; state.val = ''; state.q = ''; state.page = 1; renderAll(); return; }
     var b = tgt.closest ? tgt.closest('.gl-chip') : null; if (!b) return;
     if (b.hasAttribute('data-cat')) { state.cat = b.getAttribute('data-cat'); }
     else { state.mode = b.getAttribute('data-mode'); state.val = b.getAttribute('data-val') || ''; }
-    state.limit = PAGE;
+    state.page = 1;
     renderAll();
   }
-  function onInput(e) { if (e.target && e.target.id === 'gl-q') { state.q = e.target.value; state.limit = PAGE; renderCards(); } }
+  function onInput(e) { if (e.target && e.target.id === 'gl-q') { state.q = e.target.value; state.page = 1; renderCards(); } }
   function onKey(e) {
     if (e.key === 'Escape') { closeModal(); return; }
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
@@ -1008,12 +1033,17 @@
     if (document.getElementById('gl-css')) return;
     var s = document.createElement('style'); s.id = 'gl-css';
     s.textContent = [
-      '.gl-dicts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}',
-      '.gl-dict{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--border,#e3e8ee);background:#fff;color:#334155;border-radius:12px;padding:11px 18px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s}',
-      '.gl-dict:hover{border-color:var(--p,#533afd);color:var(--p,#533afd)}',
-      '.gl-dict.on{background:var(--p,#533afd);border-color:var(--p,#533afd);color:#fff}',
-      '.gl-dict-n{font-size:11.5px;font-weight:800;background:color-mix(in srgb,var(--p,#533afd) 12%,#fff);color:var(--p,#533afd);padding:2px 8px;border-radius:10px}',
-      '.gl-dict.on .gl-dict-n{background:rgba(255,255,255,.24);color:#fff}',
+      // 사전 선택 — 파일/폴더 탭 느낌(색상: SEO·AI·MKT·DEV)
+      '.gl-dicts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}',
+      '.gl-dict{position:relative;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--border,#e3e8ee);background:#f6f7fb;color:#475569;border-radius:11px 11px 13px 13px;padding:11px 15px 11px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s;overflow:hidden}',
+      '.gl-dict::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--dc,#533afd);opacity:.45;transition:.15s}',
+      '.gl-dict:hover{background:#fff;color:var(--dc,#533afd);border-color:var(--dc,#533afd)}',
+      '.gl-dict:hover::before{opacity:.8}',
+      '.gl-dict.on{background:#fff;color:var(--dc,#533afd);border-color:var(--dc,#533afd);box-shadow:0 8px 20px -10px var(--dc,#533afd)}',
+      '.gl-dict.on::before{opacity:1;height:5px}',
+      '.gl-dict-ab{font-size:10px;font-weight:900;letter-spacing:.5px;color:#fff;background:var(--dc,#533afd);padding:3px 7px;border-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.12)}',
+      '.gl-dict-n{font-size:11.5px;font-weight:800;background:color-mix(in srgb,var(--dc,#533afd) 13%,#fff);color:var(--dc,#533afd);padding:2px 8px;border-radius:10px}',
+      '@media(max-width:520px){.gl-dict-lb{display:none}.gl-dict{padding:10px 13px}}',
       '.gl-search input{width:100%;box-sizing:border-box;padding:14px 18px;border:1.5px solid var(--border,#e3e8ee);border-radius:12px;font-size:15px;font-family:inherit;margin-bottom:16px}',
       '.gl-search input:focus{outline:none;border-color:var(--p,#533afd)}',
       '.gl-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}',
@@ -1037,10 +1067,13 @@
       '.gl-open{margin-top:11px;font-size:12px;font-weight:800;color:var(--p,#533afd);display:flex;align-items:center;gap:4px}',
       '.gl-open span{transition:transform .15s}',
       '.gl-card.clickable:hover .gl-open span{transform:translateX(3px)}',
-      '.gl-loadwrap{text-align:center;margin-top:22px}',
-      '.gl-load{border:1.5px solid var(--border,#e3e8ee);background:#fff;color:var(--bd,#1c1e54);border-radius:12px;padding:12px 26px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s}',
-      '.gl-load:hover{border-color:var(--p,#533afd);color:var(--p,#533afd)}',
-      '.gl-load span{font-weight:700;color:var(--mute,#94a3b8);margin-left:4px}',
+      '.gl-pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:5px;margin-top:26px}',
+      '.gl-page{min-width:36px;height:36px;padding:0 10px;border:1.5px solid var(--border,#e3e8ee);background:#fff;color:#475569;border-radius:9px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s;display:inline-flex;align-items:center;justify-content:center}',
+      '.gl-page:hover:not([disabled]):not(.on){border-color:var(--pc,#533afd);color:var(--pc,#533afd)}',
+      '.gl-page.on{background:var(--pc,#533afd);border-color:var(--pc,#533afd);color:#fff;cursor:default}',
+      '.gl-page[disabled]{opacity:.4;cursor:not-allowed}',
+      '.gl-page.nav{font-size:18px;line-height:1}',
+      '.gl-page-gap{padding:0 3px;color:var(--mute,#94a3b8);font-weight:800;align-self:flex-end}',
       '.gl-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--p,#533afd);background:color-mix(in srgb,var(--p,#533afd) 9%,#fff);padding:2px 8px;border-radius:10px;margin:2px 4px 2px 0}',
       '.gl-src a{color:var(--p,#533afd);font-weight:700;text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--p,#533afd) 40%,#fff)}',
       '.gl-src a:hover{border-bottom-color:var(--p,#533afd)}',
