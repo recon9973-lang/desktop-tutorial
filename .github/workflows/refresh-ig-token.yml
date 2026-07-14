@@ -44,5 +44,6 @@ jobs:
             # 토큰 값이 로그에 남지 않도록 원문은 출력하지 않는다.
             exit 1
           fi
-          printf '%s' "$new" | gh secret set IG_TOKEN --repo "$REPO" --body-file -
+          # gh secret set: --body 미지정 시 표준입력에서 값을 읽는다(러너 gh 버전 호환).
+          printf '%s' "$new" | gh secret set IG_TOKEN --repo "$REPO"
           echo "✓ IG_TOKEN 갱신 완료 — 새 60일 토큰으로 교체했습니다."
