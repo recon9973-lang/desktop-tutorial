@@ -95,6 +95,13 @@ function authCheck(req) {
   return (req.headers['authorization'] || '') === `Bearer ${secret}`;
 }
 
+// 읽기전용(plan) 조회용 — CRON_SECRET 또는 ADMIN_SECRET 허용(관리자 화면에서 예약 현황 조회).
+function authAny(req) {
+  const h = req.headers['authorization'] || '';
+  const cs = process.env.CRON_SECRET, as = process.env.ADMIN_SECRET;
+  return (cs && h === `Bearer ${cs}`) || (as && h === `Bearer ${as}`);
+}
+
 const SETTINGS_PATH = 'venom-wordpress/preview/content/posting-settings.json';
 
 async function loadSettings() {
@@ -123,6 +130,40 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'POST/GET only' });
   }
+  // ── 읽기전용 예약 현황(plan): 발행하지 않고 오늘 슬롯·상태만 반환 ──
+  if (String((req.query && req.query.plan) || '') === '1') {
+    if (!authAny(req)) return res.status(401).json({ error: '인증 실패' });
+    const settings = await loadSettings();
+    const todayStr = kstDateStr();
+    const nowHM = kstNowHM();
+    const todaySched = getTodaySchedule(settings);
+    let todayPosts = [];
+    try { todayPosts = ((await getPosts()).posts || []).filter(p => p.scheduledDate === todayStr); }
+    catch (e) { /* 조회 실패 시 빈 목록 */ }
+    let slots = [];
+    if (todaySched) {
+      const count = Math.max(1, parseInt(todaySched.dailyCount) || 1);
+      slots = computePublishTimes(todaySched, count, todayStr).map((t) => {
+        const pub = todayPosts.find(p => p.scheduledTime === t);
+        return { time: t, due: t <= nowHM, published: !!pub, title: pub ? pub.title : null };
+      });
+    }
+    return res.status(200).json({
+      ok: true, plan: true, date: todayStr, now: nowHM,
+      enabled: !!settings.enabled, settingsSource: settings._source || 'unknown',
+      schedule: todaySched ? {
+        from: todaySched.from, to: todaySched.to,
+        dailyCount: parseInt(todaySched.dailyCount) || 1,
+        timeMode: todaySched.timeMode || 'same',
+        window: (todaySched.randStart || todaySched.time || '') + (todaySched.randEnd ? '~' + todaySched.randEnd : ''),
+      } : null,
+      slots,
+      publishedToday: todayPosts.length,
+      pendingCount: slots.filter(s => !s.published).length,
+      dueUnpublished: slots.filter(s => s.due && !s.published).length,
+    });
+  }
+
   if (!authCheck(req)) return res.status(401).json({ error: '인증 실패' });
 
   const settings = await loadSettings();

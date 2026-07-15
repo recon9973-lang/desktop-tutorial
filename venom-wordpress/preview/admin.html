@@ -855,6 +855,16 @@ a{color:var(--p);text-decoration:none}
       <div id="ap-diag-result" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:var(--r8);font-size:13px;line-height:1.8;background:var(--soft);border:1px solid var(--border)"></div>
       <div id="ap-run-result" style="display:none;margin-bottom:16px;padding:14px 18px;border-radius:var(--r8);font-size:13px;line-height:1.7"></div>
 
+      <!-- 예약 작업 현황 + 오류 진단 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head">
+          <div class="card-title">📋 오늘 예약 작업 &amp; 오류 진단</div>
+          <button class="btn btn-outline btn-sm" onclick="apLoadPlan();apLoadErrors()">🔄 새로고침</button>
+        </div>
+        <div id="ap-plan-body" style="font-size:13px;color:var(--mute)">불러오는 중…</div>
+        <div id="ap-errors-body" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px"></div>
+      </div>
+
       <!-- 상태 카드 -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:20px">
         <div class="card" style="padding:18px">
@@ -1010,6 +1020,20 @@ a{color:var(--p);text-decoration:none}
 
           <!-- 모델·액션 -->
           <div id="ap-model-action" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+
+          <!-- 일자별 상세 표 -->
+          <div style="font-size:12px;font-weight:600;color:var(--ink2);margin:20px 0 8px">📅 일자별 상세 (발행·토큰·비용)</div>
+          <div style="overflow-x:auto;max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r8)">
+            <table style="width:100%;border-collapse:collapse;font-size:12px" id="ap-usage-table">
+              <thead><tr style="position:sticky;top:0;background:#111827;color:#fff">
+                <th style="padding:8px 10px;text-align:left">날짜</th><th style="padding:8px 6px;text-align:right">글</th>
+                <th style="padding:8px 6px;text-align:right">이미지</th><th style="padding:8px 6px;text-align:right">입력</th>
+                <th style="padding:8px 6px;text-align:right">출력</th><th style="padding:8px 6px;text-align:right">총토큰</th>
+                <th style="padding:8px 10px;text-align:right">비용</th>
+              </tr></thead>
+              <tbody id="ap-usage-tbody"><tr><td colspan="7" style="padding:16px;text-align:center;color:var(--mute)">불러오는 중…</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -3280,8 +3304,8 @@ async function apLoadUsageStats() {
       const wrap = document.getElementById(containerId);
       if (!wrap) return;
       const total = values.length;
-      // 기간에 따라 라벨 간격 조정(7일=매일, 30일=5일, 90일=10일). 마지막(오늘)은 앞 라벨과 겹치지 않을 때만.
-      const step = total <= 10 ? 1 : total <= 31 ? 5 : 10;
+      // 라벨 간격: 촘촘하게(≤14일 매일, ≤31일 3일, ≤60일 5일, 그외 7일). 마지막(오늘)은 겹치지 않을 때만.
+      const step = total <= 14 ? 1 : total <= 31 ? 3 : total <= 60 ? 5 : 7;
       wrap.innerHTML = days.map(function(d, i) {
         const pct = Math.max((values[i] / maxVal) * 100, values[i] > 0 ? 4 : 0);
         const onStep = (i % step === 0);
@@ -3302,9 +3326,108 @@ async function apLoadUsageStats() {
 
     if (data.detail) apRenderUsageDetail(data.detail, t);
 
+    // 일자별 상세 표(최신순)
+    var tb = document.getElementById('ap-usage-tbody');
+    if (tb) {
+      tb.innerHTML = days.slice().reverse().map(function(d){
+        var dim = d.posts ? '' : 'opacity:.45;';
+        return '<tr style="border-bottom:1px solid var(--border);'+dim+'">'
+          + '<td style="padding:7px 10px;font-variant-numeric:tabular-nums">'+d.date+'</td>'
+          + '<td style="padding:7px 6px;text-align:right;font-weight:'+(d.posts?'700':'400')+'">'+(d.posts||0)+'</td>'
+          + '<td style="padding:7px 6px;text-align:right">'+(d.images||0)+'</td>'
+          + '<td style="padding:7px 6px;text-align:right;color:var(--mute)">'+(d.promptTokens||0).toLocaleString()+'</td>'
+          + '<td style="padding:7px 6px;text-align:right;color:var(--mute)">'+(d.completionTokens||0).toLocaleString()+'</td>'
+          + '<td style="padding:7px 6px;text-align:right;font-weight:600">'+(d.totalTokens||0).toLocaleString()+'</td>'
+          + '<td style="padding:7px 10px;text-align:right;color:#16a34a">$'+(d.costUsd||0).toFixed(4)+'</td></tr>';
+      }).join('');
+    }
+
   } catch(e) {
     console.warn('[usage-stats]', e);
   }
+}
+
+// 작은 HTML 이스케이프
+function apEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── 오늘 예약 작업 현황(발행 안 함, plan 조회) ──
+async function apLoadPlan(){
+  var el=document.getElementById('ap-plan-body'); if(!el) return;
+  el.innerHTML='예약 현황 불러오는 중…';
+  try{
+    var r=await fetch(apApiBase()+'/api/cron-daily-posts?plan=1',{headers:apHeaders()});
+    var d=await r.json();
+    if(!r.ok||!d.ok){ el.innerHTML='<span style="color:#f87171">예약 현황 조회 실패: '+apEsc(d.error||('HTTP '+r.status))+'</span> <span style="color:var(--mute)">(ADMIN_SECRET 토큰 확인)</span>'; return; }
+    if(!d.enabled){ el.innerHTML='<div style="color:#f59e0b">⏸ 자동 포스팅이 <b>비활성</b> 상태입니다. (아래 설정에서 활성화)</div>'; return; }
+    if(!d.schedule){ el.innerHTML='<div style="color:var(--mute)">오늘('+d.date+')은 예약된 발행 스케줄이 없습니다.</div>'; return; }
+    var s=d.schedule;
+    var head='<div style="font-size:12px;color:var(--mute);margin-bottom:12px">'
+      +d.date+' · 하루 <b style="color:var(--ink)">'+s.dailyCount+'건</b> · 발행창 '+apEsc(s.window||s.timeMode)+' · 현재 '+d.now+' KST · '
+      +'<b style="color:var(--ink)">발행 '+d.publishedToday+'/'+d.slots.length+'</b>'+(d.dueUnpublished?' · <span style="color:#f59e0b">대기 '+d.dueUnpublished+'건</span>':'')+'</div>';
+    var rows=d.slots.map(function(sl){
+      var st = sl.published ? '<span style="color:#16a34a">✅ 발행완료</span>'
+        : (sl.due ? '<span style="color:#f59e0b">⏳ 발행 대기(시각 도래)</span>' : '<span style="color:var(--mute)">🕘 예약 대기</span>');
+      return '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-weight:700;font-variant-numeric:tabular-nums;min-width:50px">'+sl.time+'</span>'
+        +'<span style="min-width:130px">'+st+'</span>'
+        +'<span style="color:var(--ink2);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(sl.title?apEsc(sl.title):'—')+'</span></div>';
+    }).join('');
+    el.innerHTML=head+rows;
+  }catch(e){ el.innerHTML='<span style="color:#f87171">조회 오류: '+apEsc(e.message)+'</span>'; }
+}
+
+// ── 오류·스킵 진단(로그 + 시스템 상태 분류) ──
+async function apLoadErrors(){
+  var el=document.getElementById('ap-errors-body'); if(!el) return;
+  el.innerHTML='<div style="font-size:12px;color:var(--mute)">오류·스킵 진단 불러오는 중…</div>';
+  // 1) 최근 로그에서 오류/검수/실패 추출
+  var logErrs=[];
+  try{
+    var lr=await fetch('/content/posting-log.json?_='+Date.now());
+    if(lr.ok){
+      var logs=await lr.json(); if(!Array.isArray(logs)) logs=logs.log||logs.entries||[];
+      logs.slice(-60).reverse().forEach(function(e){
+        var isErr = e && (e.error || e.action==='cron-en-fail' || e.action==='cron-review' || /fail|error|skip/i.test(e.action||''));
+        if(isErr) logErrs.push(e);
+      });
+    }
+  }catch(e){}
+  logErrs=logErrs.slice(0,6);
+  // 2) 시스템 상태(토큰/키/권한)
+  var health=null;
+  try{ var hr=await fetch(apApiBase()+'/api/health?check=full',{headers:apHeaders()}); if(hr.ok) health=await hr.json(); }catch(e){}
+
+  function classify(e){
+    var msg=((e.error||'')+' '+(e.reason||'')+' '+(e.action||'')).toLowerCase();
+    if(/quota|insufficient|billing|exceeded|429|rate.?limit|한도|소진/.test(msg)) return ['💳 API 토큰·쿼터 소진','OpenAI 크레딧/사용 한도 확인 필요 (결제·상한)'];
+    if(/lock|잠금|동시|concurren/.test(msg)) return ['🔒 크론 충돌(동시 실행 잠금)','정상 동작 — 다음 폴링이 이어받아 발행'];
+    if(/timeout|timed out|시간\s*초과|지연/.test(msg)) return ['⏱ 생성 지연·타임아웃','다음 폴링이 멱등 발행으로 자동 복구'];
+    if(e.action==='cron-review' || /검수|forbidden|의료광고|금지/.test(msg)) return ['📋 의료광고 검수 대기','금지표현 감지 — 관리자 수동 검토 필요'];
+    if(/getposts|github|권한|token/.test(msg)) return ['🔗 GitHub 접근 오류','GITHUB_TOKEN 유효성·쓰기 권한 확인'];
+    return ['⚠ 기타 오류', (e.error||e.reason||'상세 없음').slice(0,80)];
+  }
+
+  var h='';
+  if(health){
+    var okKey=!!(health.openai&&health.openai.keyValid);
+    var okCron=!!(health.env&&health.env.CRON_SECRET);
+    var okPush=!!(health.github&&health.github.canPush);
+    var pill=function(ok,label,bad){return '<span style="padding:4px 10px;border-radius:12px;font-size:11.5px;background:'+(ok?'#dcfce7':'#fee2e2')+';color:'+(ok?'#15803d':'#b91c1c')+'">'+label+' '+(ok?'정상':bad)+'</span>';};
+    h+='<div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:8px">🩺 시스템 상태 (오류 원인 사전 점검)</div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'
+      +pill(okKey,'OpenAI 토큰','오류·소진')+pill(okCron,'크론 시크릿','미설정')+pill(okPush,'GitHub 쓰기','오류')+'</div>';
+  }
+  h+='<div style="font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:8px">⚠️ 최근 오류·검수·스킵 ('+logErrs.length+')</div>';
+  if(!logErrs.length){ h+='<div style="font-size:12px;color:#16a34a">최근 발행 오류가 없습니다. ✅</div>'; }
+  else{
+    h+=logErrs.map(function(e){
+      var c=classify(e); var when=(e.ts||'').replace('T',' ').slice(5,16);
+      return '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--ink)">'+c[0]+'</b><span style="color:var(--mute);white-space:nowrap">'+when+'</span></div>'
+        +'<div style="color:var(--mute);margin-top:2px">'+apEsc(c[1])+(e.title?' · '+apEsc(e.title):'')+'</div></div>';
+    }).join('');
+  }
+  el.innerHTML=h;
 }
 
 // ── 토큰 사용량 상세 분석 렌더 ──
@@ -3385,6 +3508,8 @@ function initAutoPost() {
   apLoadSettings();
   apLoadPosts();
   apLoadUsageStats();
+  apLoadPlan();
+  apLoadErrors();
 }
 
 // ── LAST UPDATED ──
