@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784090815134",
+    "title": "마산 교통사고 한의원, 효과적인 치료법 5가지",
+    "tokenUsage": {
+      "promptTokens": 2536,
+      "completionTokens": 1921,
+      "totalTokens": 4457,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-15T04:47:52.654Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784080269434",
     "title": "마산 교통 사고 한의원 TOP 5 전략과 효과적 접근법",
