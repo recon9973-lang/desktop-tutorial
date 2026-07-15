@@ -7,35 +7,40 @@
 - **이어갈 작업(RESUME)**: 없음
 
 ## 최근 커밋 (8)
-- 2026-07-14 chore(autopost): 중복 스케줄러 제거 — Vercel cron에서 cron-daily-posts 삭제
-- 2026-07-14 fix(autopost): MAX_PER_RUN 3→1 — 폴링당 1건으로 curl/함수 타임아웃 제거
-- 2026-07-14 auto: 발행 "마산 교통사고 한의원 선택 시 고려해야 할 5가지"
-- 2026-07-14 auto: 포스트 이미지 auto_1784040064107-5-1.jpg
-- 2026-07-14 auto: 포스트 이미지 auto_1784040064107-5.jpg
-- 2026-07-14 auto: 포스팅 로그 업데이트
-- 2026-07-14 auto(en): "Top 5 Effective Treatments at Masan Traffic Accident Oriental Medicine Clinic"
-- 2026-07-14 auto: 발행 "마산 교통사고 한의원, 효과적인 치료법 TOP 5"
+- 2026-07-15 feat(system): 세션 자동 체크포인트·핸드오프 + PROJECT_STATE 자동화
+- 2026-07-16 docs: GROUND 자동발행 운영 문서 (#183)
+- 2026-07-15 chore(ig): 큐 발행 상태 갱신 [skip ci]
+- 2026-07-15 lock: 발행 작업 잠금 해제
+- 2026-07-15 chore: auto-update sitemap.xml
+- 2026-07-15 auto(growthops): 클러스터 빈칸 채움
+- 2026-07-15 auto: 포스팅 로그 업데이트
+- 2026-07-15 auto: 포스팅 로그 업데이트
 
-## 워크플로 (13)
+## 워크플로 (18)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
 - `api-check.yml` · 수동
 - `apply-clinic-schema.yml` · 수동
 - `auto-publish.yml` · '*/15 * * * *' · 수동
+- `build-covers.yml` · 수동
 - `check-sitemap.yml` · 수동
 - `clinic-dashboard.yml` · '0 1 1 * *' · 수동
 - `config-clinic-auth.yml` · 수동
 - `convert-webp.yml` · 수동
 - `deploy-clinic-functions.yml` · 수동
 - `fetch-blog-ai.yml` · 수동
+- `geo-metrics-collect.yml` · '0 22 * * *' · 수동
+- `geo-task-recur.yml` · '0 22 * * 0' · 수동
+- `geo-weekly-report.yml` · '0 8 * * 5' · 수동
 - `project-state.yml` · 수동
 - `publish-ig.yml` · '0 12 * * *' · 수동
+- `refresh-ig-token.yml` · '0 3 1 * *' · 수동
 - `set-clinic-role.yml` · 수동
 
 ## Vercel crons
 - `/api/cron-seo-monitor` · 0 18 * * *
 - `/api/cron-eval` · 0 0 * * 1
 
-## API 엔드포인트 (30)
+## API 엔드포인트 (31)
 - `venom-wordpress/preview/api/analytics.js`
 - `venom-wordpress/preview/api/chatbot.js`
 - `venom-wordpress/preview/api/contact.js`
@@ -44,6 +49,7 @@
 - `venom-wordpress/preview/api/cron-seo-monitor.js`
 - `venom-wordpress/preview/api/eval-judge.js`
 - `venom-wordpress/preview/api/generate-post.js`
+- `venom-wordpress/preview/api/geo-ops.js`
 - `venom-wordpress/preview/api/growthops.js`
 - `venom-wordpress/preview/api/health.js`
 - `venom-wordpress/preview/api/hospital-bot.js`
@@ -65,13 +71,13 @@
 - `your-supplement/server/api/kakao.js`
 - `your-supplement/server/api/offers.js`
 - `your-supplement/server/api/recommend.js`
-- `your-supplement/server/api/schedule.js`
+- `…(+1)`
 
 ## package 스크립트
 `convert-webp` · `build`  ·  deps 1개
 
-## 환경변수 표면 (이름만, 값 아님 · 68)
-`ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BUILD_TS` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `MFDS_DUR_API_URL` · `MFDS_MATERIAL_API_URL` · `MFDS_PILL_API_URL` · `…(+28)`
+## 환경변수 표면 (이름만, 값 아님 · 69)
+`ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BUILD_TS` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `MFDS_DUR_API_URL` · `MFDS_MATERIAL_API_URL` · `…(+29)`
 
 ---
-*생성: 커밋 ab3a953 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 2e48f83 기준. 값·비밀은 포함하지 않음.*
