@@ -1,0 +1,65 @@
+name: GEO Task Recurrence
+
+# 매주 월요일, 반복(recurrenceRule) 업무를 이번 주기(ISO 주차)로 자동 인스턴스화한다.
+# 실제 생성은 서버(/api/geo-ops?module=tasks&action=recur, lib/geo-recur)에서. 러너는 트리거만.
+# 필요 시크릿: ADMIN_SECRET(쓰기 인증).
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'   # 일 22:00 UTC = 월 07:00 KST
+  workflow_dispatch:
+    inputs:
+      period:
+        description: '주기 라벨(예: 2026-W28). 비우면 ISO 주차 자동'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  recur:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate recurring tasks for active clients
+        env:
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+          PERIOD_INPUT: ${{ github.event.inputs.period }}
+        run: |
+          node - <<'NODE'
+          const https = require('https');
+          const fs = require('fs');
+          const BASE = 'https://venom-new-site.vercel.app';
+          const SECRET = process.env.ADMIN_SECRET || '';
+          function isoWeek(d) {
+            const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+            const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+            const ys = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+            return t.getUTCFullYear() + '-W' + String(Math.ceil((((t - ys) / 86400000) + 1) / 7)).padStart(2, '0');
+          }
+          const period = process.env.PERIOD_INPUT || isoWeek(new Date());
+          let clients = [];
+          try { clients = (JSON.parse(fs.readFileSync('venom-wordpress/preview/content/geo/clients.json', 'utf8')).clients || []).filter(c => c && c.active !== false); } catch (e) {}
+          console.log('active clients=' + clients.length + ' period=' + period);
+          function post(path, obj) {
+            const body = JSON.stringify(obj);
+            return new Promise((resolve) => {
+              const r = https.request(BASE + path, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, SECRET ? { 'Authorization': 'Bearer ' + SECRET } : {}) },
+                (res) => { let d = ''; res.on('data', c => d += c); res.on('end', () => { let j = null; try { j = JSON.parse(d); } catch {} resolve({ status: res.statusCode, j }); }); });
+              r.on('error', (e) => resolve({ status: 0, j: { error: e.message } })); r.setTimeout(45000, () => { r.destroy(); resolve({ status: 0, j: { error: 'timeout' } }); });
+              r.write(body); r.end();
+            });
+          }
+          (async () => {
+            let total = 0, fail = 0;
+            for (const c of clients) {
+              const r = await post('/api/geo-ops?module=tasks&action=recur', { clientId: c.id, period });
+              if (r.j && r.j.ok) { total += (r.j.count || 0); console.log('  ' + c.id + ' -> +' + (r.j.count || 0)); }
+              else { fail++; console.log('  ' + c.id + ' -> FAIL ' + (r.j && r.j.error || r.status)); }
+            }
+            await post('/api/geo-ops?module=automations&action=log', { automation: { name: 'GEO Task Recurrence', workflowType: 'tasks', status: fail ? 'error' : 'ok', errorMessage: fail ? (fail + '개 실패') : ('생성 ' + total) } });
+            console.log('done · created=' + total + ' fail=' + fail);
+          })();
+          NODE

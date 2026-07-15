@@ -38,7 +38,7 @@ console.log('buildReport');
       { metricName: 'position', latest: 7.4, prev: 8.2, delta: -0.8 },
       { metricName: 'impressions', latest: 3000, prev: 3200, delta: -200 },
     ],
-    exposure: { tot_pct: 25, disc_pct: 0, errors: 2 },
+    exposure: { tot_pct: 25, disc_pct: 0, errors: 2, sov_pct: 40 },
     tasks: [{ status: 'done' }, { status: 'doing' }, { status: 'failed' }, { status: 'review', approvalStatus: 'pending' }],
   }, '2026-07-14T00:00:00.000Z');
 
@@ -49,6 +49,8 @@ console.log('buildReport');
   ok('발견형 0% → risk', has(rep.risks, '발견형(신환) 질문에서 AI 미노출'));
   ok('발견형 0% → nextAction 콘텐츠', has(rep.nextActions, '질문형 콘텐츠'));
   ok('측정불가 → risk', has(rep.risks, '측정불가 2건'));
+  ok('SOV 열세 → risk', has(rep.risks, 'SOV 40% (열세)'));
+  ok('summary에 SOV', rep.summary.includes('SOV 40%'));
   ok('승인대기 → nextAction', has(rep.nextActions, '승인 대기 업무 1건'));
   ok('실패 → risk', has(rep.risks, '실패/재작업 업무 1건'));
   ok('완료율 → win', has(rep.keyWins, '업무 완료율 25%'));
