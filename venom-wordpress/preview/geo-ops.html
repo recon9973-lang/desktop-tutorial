@@ -106,6 +106,7 @@
   <!-- 거래처 목록 -->
   <section id="sec-clients" class="hide">
     <h2>거래처 <button class="btn sm wbtn" style="margin-left:8px" onclick="openClientForm()">+ 새 거래처</button></h2>
+    <div class="card" style="padding:12px"><input id="client-search" placeholder="🔍 거래처명·업종·지역 검색" oninput="renderClients()" autocomplete="off"></div>
     <div class="card" id="client-form" style="display:none">
       <h3 id="cf-title">새 거래처</h3>
       <input type="hidden" id="cf-id">
@@ -140,6 +141,7 @@
     <div class="tabs">
       <div class="tab on" data-t="overview" onclick="showTab('overview')">개요</div>
       <div class="tab" data-t="channels" onclick="showTab('channels')">채널</div>
+      <div class="tab" data-t="content" onclick="showTab('content')">콘텐츠 캘린더</div>
       <div class="tab" data-t="metrics" onclick="showTab('metrics')">성과</div>
       <div class="tab" data-t="exposure" onclick="showTab('exposure')">AI 인용 모니터링</div>
       <div class="tab" data-t="report" onclick="showTab('report')">리포트</div>
@@ -168,6 +170,25 @@
         <button class="btn" onclick="saveChannel()">채널 저장</button>
       </div>
       <div class="card"><table><thead><tr><th>유형</th><th>레벨</th><th>접근</th><th>위험</th><th>URL</th></tr></thead><tbody id="channels-tbody"><tr><td colspan="5" class="empty">—</td></tr></tbody></table></div>
+    </div>
+    <div id="cd-content" class="hide">
+      <div class="card wbtn">
+        <h3>콘텐츠 추가</h3>
+        <div class="row">
+          <div><label>제목</label><input id="ct-title" placeholder="예: 포항 무릎통증 치료 가이드"></div>
+          <div><label>유형</label><select id="ct-type"><option>blog</option><option>faq</option><option>linkedin_article</option><option>youtube</option><option>pr</option><option>naver_blog</option></select></div>
+        </div>
+        <div class="row">
+          <div><label>타깃 키워드</label><input id="ct-kw" placeholder="포항 무릎통증"></div>
+          <div><label>발행 예정일</label><input id="ct-date" placeholder="2026-07-20" autocomplete="off"></div>
+        </div>
+        <div class="row">
+          <div><label>상태</label><select id="ct-status"><option value="draft">초안</option><option value="review">검토</option><option value="scheduled">예약</option><option value="published">발행됨</option></select></div>
+          <div><label>발행 URL(선택)</label><input id="ct-url" placeholder="https://…"></div>
+        </div>
+        <button class="btn" onclick="saveContent()">콘텐츠 저장</button>
+      </div>
+      <div class="card"><h3>콘텐츠 캘린더</h3><div id="ct-list"><div class="empty">—</div></div></div>
     </div>
     <div id="cd-metrics" class="hide">
       <div class="card wbtn">
@@ -209,6 +230,11 @@
         <div><button class="btn" onclick="generateTasks()">업무 생성</button></div>
       </div>
       <div class="muted">선택한 거래처에 해당 채널의 단계별 업무가 자동화레벨(A~D)과 함께 생성됩니다. 위키/레딧 게시 등은 D(안내만)로 강등되어 자동 실행되지 않습니다.</div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:14px 0">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn ghost" onclick="recurTasks()">🔁 이번 주 반복 업무 생성</button>
+        <span class="muted">recurrenceRule이 설정된 반복 시드를 이번 주기(<b id="cur-week"></b>)로 1건씩 인스턴스화합니다. 중복은 자동 방지. (매주 월 자동 실행: geo-task-recur.yml)</span>
+      </div>
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -290,7 +316,7 @@ async function loadAutomations(){
     '<td class="muted">'+esc(a.errorMessage||a.lastResult||'')+'</td></tr>').join('');
 }
 function showTab(t){
-  ['overview','channels','metrics','exposure','report'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
+  ['overview','channels','content','metrics','exposure','report'].forEach(x=>document.getElementById('cd-'+x).classList.toggle('hide',x!==t));
   document.querySelectorAll('#sec-client .tab').forEach(el=>el.classList.toggle('on',el.dataset.t===t));
 }
 
@@ -309,12 +335,19 @@ async function loadDashboard(){
 }
 
 // ── 거래처 목록 ──
+let CLIENTS=[];
 async function loadClients(){
-  const tb=document.getElementById('clients-tbody');
   const j=await api('?module=clients&action=list');
-  if(!j||!j.ok){ tb.innerHTML='<tr><td colspan="5" class="empty">데이터 없음 — 시크릿 확인</td></tr>'; return; }
-  if(!j.data.length){ tb.innerHTML='<tr><td colspan="5" class="empty">거래처가 없습니다 — “+ 새 거래처”로 등록</td></tr>'; return; }
-  tb.innerHTML=j.data.map(c=>'<tr class="clickable" onclick="openClient(\''+c.id+'\')"><td><b>'+esc(c.name)+'</b></td><td>'+esc(c.industry||'')+'</td><td>'+esc(c.region||'')+'</td><td>'+esc(c.lifecycleStage||'')+'</td><td><span class="pill '+(c.active?'on':'off')+'">'+(c.active?'활성':'비활성')+'</span></td></tr>').join('');
+  CLIENTS=(j&&j.ok)?j.data:[];
+  renderClients();
+}
+function renderClients(){
+  const tb=document.getElementById('clients-tbody');
+  const q=(document.getElementById('client-search')?.value||'').trim().toLowerCase();
+  const rows=CLIENTS.filter(c=>!q||[c.name,c.industry,c.region].some(v=>String(v||'').toLowerCase().includes(q)));
+  if(!CLIENTS.length){ tb.innerHTML='<tr><td colspan="5" class="empty">거래처가 없습니다 — “+ 새 거래처”로 등록</td></tr>'; return; }
+  if(!rows.length){ tb.innerHTML='<tr><td colspan="5" class="empty">검색 결과 없음</td></tr>'; return; }
+  tb.innerHTML=rows.map(c=>'<tr class="clickable" onclick="openClient(\''+c.id+'\')"><td><b>'+esc(c.name)+'</b></td><td>'+esc(c.industry||'')+'</td><td>'+esc(c.region||'')+'</td><td>'+esc(c.lifecycleStage||'')+'</td><td><span class="pill '+(c.active?'on':'off')+'">'+(c.active?'활성':'비활성')+'</span></td></tr>').join('');
 }
 function openClientForm(c){
   document.getElementById('client-form').style.display='block';
@@ -362,7 +395,28 @@ async function openClient(id){
     '</div><h3>핵심 키워드</h3><div class="muted">'+esc((CURRENT.coreKeywords||[]).join(', ')||'—')+'</div>'+
     '<h3>경쟁사(SOV 비교)</h3><div class="muted">'+esc((CURRENT.competitors||[]).join(', ')||'—')+'</div>'+
     '<div style="margin-top:14px"><button class="btn ghost sm" onclick="openClientForm(CURRENT);showSec(\'clients\')">편집</button></div>';
-  loadChannels(id); loadMetrics(id); loadExposure(id); loadReport(id);
+  loadChannels(id); loadContent(id); loadMetrics(id); loadExposure(id); loadReport(id);
+}
+// ── 콘텐츠 캘린더 ──
+async function saveContent(){
+  if(!CURRENT)return;
+  const title=document.getElementById('ct-title').value.trim();
+  if(!title){ toast('제목 필요'); return; }
+  const item={ clientId:CURRENT.id, title, contentType:document.getElementById('ct-type').value,
+    targetKeyword:document.getElementById('ct-kw').value.trim(), publishAt:document.getElementById('ct-date').value.trim(),
+    publishStatus:document.getElementById('ct-status').value, publishUrl:document.getElementById('ct-url').value.trim() };
+  const j=await api('?module=content&action=upsert',{method:'POST',body:JSON.stringify({item})});
+  if(j&&j.ok){ toast('콘텐츠 저장됨'); document.getElementById('ct-title').value=''; loadContent(CURRENT.id); }
+  else toast('저장 실패');
+}
+async function loadContent(id){
+  const el=document.getElementById('ct-list');
+  const j=await api('?module=content&action=list&clientId='+encodeURIComponent(id));
+  if(!j||!j.ok||!j.data.length){ el.innerHTML='<div class="empty">콘텐츠 없음 — 위에서 추가</div>'; return; }
+  const items=j.data.slice().sort((a,b)=>String(a.publishAt||'').localeCompare(String(b.publishAt||'')));
+  const sc={draft:'#64748d',review:'#d97706',scheduled:'#2563eb',published:'#16a34a'};
+  el.innerHTML='<table><thead><tr><th>발행예정</th><th>제목</th><th>유형</th><th>키워드</th><th>상태</th></tr></thead><tbody>'+
+    items.map(c=>'<tr><td class="muted">'+esc(c.publishAt||'—')+'</td><td><b>'+esc(c.title)+'</b>'+(c.publishUrl?' <a href="'+esc(c.publishUrl)+'" target="_blank">↗</a>':'')+'</td><td>'+esc(c.contentType||'')+'</td><td class="muted">'+esc(c.targetKeyword||'')+'</td><td><span class="pill" style="background:#f1f5f9;color:'+(sc[c.publishStatus]||'#64748d')+'">'+esc(c.publishStatus||'draft')+'</span></td></tr>').join('')+'</tbody></table>';
 }
 function tile(l,v){ return '<div class="stat"><div class="n" style="font-size:1rem">'+esc(v||'—')+'</div><div class="l">'+l+'</div></div>'; }
 
@@ -444,7 +498,11 @@ async function loadExposure(id){
   if(!b){ body.innerHTML='<div class="empty">이 거래처의 실측 스냅샷이 아직 없습니다. 다음 측정 주기에 포함됩니다.</div>'; return; }
   const engs=snap.engines||['perplexity','openai','gemini','claude'], elab=snap.eng_label||{};
   const s=b.summary||{};
-  let html='<div class="grid" style="margin-bottom:14px">'+tile('전체 노출률',(s.tot_pct||0)+'%')+tile('발견형(신환)',(s.disc_pct||0)+'%')+tile('측정불가',s.errors||0)+'</div>';
+  const sovTile=(typeof s.sov_pct==='number')?tile('경쟁사 대비 SOV',s.sov_pct+'%'):tile('SOV','경쟁사 미등록');
+  let html='<div class="grid" style="margin-bottom:14px">'+tile('전체 노출률',(s.tot_pct||0)+'%')+tile('발견형(신환)',(s.disc_pct||0)+'%')+sovTile+tile('측정불가',s.errors||0)+'</div>';
+  if(s.sov_breakdown&&Object.keys(s.sov_breakdown).length){
+    html+='<div class="muted" style="margin-bottom:10px">SOV 분모(언급 수): 자사 '+(s.sov_self||0)+' · 경쟁사 '+(s.sov_comp||0)+' ('+Object.entries(s.sov_breakdown).map(function(kv){return esc(kv[0])+' '+kv[1];}).join(', ')+')</div>';
+  }
   html+='<table class="mtx"><thead><tr><th style="text-align:left">질문</th>'+engs.map(e=>'<th style="background:#111827;color:#fff">'+(elab[e]||e)+'</th>').join('')+'</tr></thead><tbody>';
   (b.questions||[]).forEach((q,qi)=>{
     const brand=(qi===b.questions.length-1);
@@ -501,8 +559,18 @@ async function initTasks(){
     const tj=await api('?module=templates');
     const tps=(tj&&tj.ok)?tj.data:[];
     document.getElementById('gen-template').innerHTML='<option value="">채널 플레이북 선택</option>'+tps.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.id)+' ('+t.cap+'상한 · '+t.steps+'단계)</option>').join('');
+    const cw=document.getElementById('cur-week'); if(cw)cw.textContent=isoWeek(new Date());
   }
   loadTasks();
+}
+function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const ys=new Date(Date.UTC(t.getUTCFullYear(),0,1)); const wk=Math.ceil((((t-ys)/86400000)+1)/7); return t.getUTCFullYear()+'-W'+String(wk).padStart(2,'0'); }
+async function recurTasks(){
+  const period=isoWeek(new Date());
+  const filter=document.getElementById('task-filter').value;
+  const body={period}; if(filter)body.clientId=filter;
+  const j=await api('?module=tasks&action=recur',{method:'POST',body:JSON.stringify(body)});
+  if(j&&j.ok){ toast(j.count+'개 반복 업무 생성('+period+')'); loadTasks(); }
+  else toast('생성 실패 — 시크릿 확인');
 }
 async function generateTasks(){
   const clientId=document.getElementById('gen-client').value, templateId=document.getElementById('gen-template').value;

@@ -42,6 +42,7 @@ jobs:
           const OUT_PATH = 'venom-wordpress/preview/content/ai-expose-latest.json';
           // P1-3: 거래처 멀티테넌트(geo/clients.json active + prompt-sets.json)를 컴파일. 비면 argv[2](기존 입력) 폴백.
           const aeoInput = require(path.resolve(process.cwd(), 'venom-wordpress/preview/lib/geo-aeo-input.js'));
+          const geoSov = require(path.resolve(process.cwd(), 'venom-wordpress/preview/lib/geo-sov.js'));
           const cfg = aeoInput.loadInput(fs, { fallbackPath: process.argv[2] });
           console.log(`INPUT source=${cfg.source} businesses=${cfg.businesses.length}`);
 
@@ -60,7 +61,7 @@ jobs:
 
           const jobs = [];
           cfg.businesses.forEach(b => b.questions.forEach((q, qi) =>
-            ENGINES.forEach(e => jobs.push({ biz: b.key, name: b.name, cores: b.cores || [b.name], e, q, qi }))));
+            ENGINES.forEach(e => jobs.push({ biz: b.key, name: b.name, cores: b.cores || [b.name], competitors: b.competitors || [], e, q, qi }))));
 
           (async () => {
             const results = [];
@@ -72,15 +73,16 @@ jobs:
                 const url = BASE + '/api/insights?type=aeo&engine=' + j.e + '&q=' + encodeURIComponent(j.q) + '&name=' + encodeURIComponent(j.name);
                 const r = await get(url);
                 const d = r.json || {};
-                let verdict = 'none', err = null;
+                let verdict = 'none', err = null, compHits = [];
                 if (d.error) { verdict = 'error'; err = String(d.error).slice(0, 120); }
                 else {
                   const ans = norm(d.answer);
                   const cited = (d.citations || []).some(u => j.cores.some(c => norm(u).includes(norm(c))));
                   const mentioned = d.mentioned === true || j.cores.some(c => ans.includes(norm(c)));
                   verdict = cited ? 'cited' : (mentioned ? 'mentioned' : 'none');
+                  compHits = geoSov.mentions(d.answer, j.competitors); // SOV: 답변 내 경쟁사 언급
                 }
-                results.push({ biz: j.biz, e: j.e, qi: j.qi, verdict, err });
+                results.push({ biz: j.biz, e: j.e, qi: j.qi, verdict, err, selfHit: (verdict === 'cited' || verdict === 'mentioned'), compHits });
                 console.log(`  ${j.biz} q${j.qi} ${j.e} -> ${verdict}${err ? ' (' + err + ')' : ''}`);
               }
             }
@@ -100,12 +102,15 @@ jobs:
                 total++; if (EXPOSED.has(v)) exposed++;
                 if (qi < b.questions.length - 1) { dcells++; if (EXPOSED.has(v)) dexp++; } // 마지막(브랜드) 제외 = 발견형
               }));
+              const cells = results.filter((r) => r.biz === b.key).map((r) => ({ selfHit: r.selfHit, compHits: r.compHits || [] }));
+              const sov = geoSov.buildSov(cells);
               return {
                 key: b.key, name: b.name, questions: b.questions, grid,
                 summary: {
                   total_cells: total, exposed, disc_cells: dcells, disc_exposed: dexp, errors: errs,
                   tot_pct: total ? Math.round(exposed / total * 100) : 0,
                   disc_pct: dcells ? Math.round(dexp / dcells * 100) : 0,
+                  sov_pct: sov.sovPct, sov_self: sov.selfMentions, sov_comp: sov.totalComp, sov_breakdown: sov.compMentions,
                 },
               };
             });

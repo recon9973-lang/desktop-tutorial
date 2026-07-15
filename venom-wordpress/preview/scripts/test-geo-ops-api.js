@@ -220,6 +220,21 @@ async function call(opts) { const res = mockRes(); await handler(mockReq(opts), 
     ok('report 없는 거래처 404', res._status === 404);
   }
 
+  console.log('tasks recur');
+  {
+    // 반복 시드 2개 등록
+    await call({ method: 'POST', query: { module: 'tasks', action: 'upsert' }, body: { task: { id: 'seedA', clientId: 'pain', templateId: 'linkedin', channelType: 'linkedin', title: 'LinkedIn 주간', automationLevel: 'B', recurrenceRule: 'weekly' } } });
+    await call({ method: 'POST', query: { module: 'tasks', action: 'upsert' }, body: { task: { id: 'seedB', clientId: 'pain', templateId: 'gsc', channelType: 'gsc', title: '색인 점검', automationLevel: 'A', recurrenceRule: 'weekly' } } });
+    let res = await call({ method: 'POST', query: { module: 'tasks', action: 'recur' }, body: { period: '2026-W28', clientId: 'pain' } });
+    ok('recur 2건 생성', res._json.ok && res._json.count === 2 && res._json.data.every((t) => t.period === '2026-W28'));
+    // 재실행 → 중복 없음
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'recur' }, body: { period: '2026-W28', clientId: 'pain' } });
+    ok('recur 재실행 0건(중복방지)', res._json.count === 0);
+    // period 누락 400
+    res = await call({ method: 'POST', query: { module: 'tasks', action: 'recur' }, body: { clientId: 'pain' } });
+    ok('recur period 누락 400', res._status === 400);
+  }
+
   console.log('automation log');
   {
     let res = await call({ method: 'POST', query: { module: 'automations', action: 'log' }, body: { automation: { name: 'AI Exposure Check', workflowType: 'exposure', status: 'ok' } } });

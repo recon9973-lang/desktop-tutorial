@@ -22,7 +22,8 @@ function buildBusinesses(clients, sets) {
         ? set.questions.map((q) => (typeof q === 'string' ? q : (q && q.text))).filter(Boolean)
         : [];
       const cores = Array.isArray(c.coreKeywords) && c.coreKeywords.length ? c.coreKeywords : [c.name];
-      return { key: c.id, name: c.name, cores, questions };
+      const competitors = Array.isArray(c.competitors) ? c.competitors : [];
+      return { key: c.id, name: c.name, cores, competitors, questions };
     })
     .filter((b) => b.questions.length > 0);
 }

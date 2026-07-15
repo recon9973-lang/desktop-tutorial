@@ -53,6 +53,10 @@ function buildReport(input, nowIso) {
       else keyWins.push(`발견형(신환) AI 노출률 ${ex.disc_pct}%`);
     }
     if (typeof ex.tot_pct === 'number' && ex.tot_pct > 0) keyWins.push(`전체 AI 노출률 ${ex.tot_pct}%`);
+    if (typeof ex.sov_pct === 'number') {
+      if (ex.sov_pct >= 50) keyWins.push(`경쟁사 대비 SOV ${ex.sov_pct}% (우위)`);
+      else { risks.push(`경쟁사 대비 SOV ${ex.sov_pct}% (열세)`); nextActions.push('경쟁사 우위 채널 분석 → 해당 채널 콘텐츠 강화'); }
+    }
     if (ex.errors) risks.push(`AI 측정불가 ${ex.errors}건 — 재측정 필요`);
   } else {
     nextActions.push('AI 인용 실측 미실행 — 프롬프트셋 등록 후 첫 측정');
@@ -83,7 +87,7 @@ function buildReport(input, nowIso) {
 function assembleSummary(client, ms, ex, ts) {
   const parts = [];
   parts.push(`${client.name || '거래처'} · ${client.region || ''} ${client.industry || ''}`.trim());
-  if (ex && typeof ex.tot_pct === 'number') parts.push(`AI 노출 전체 ${ex.tot_pct}%·발견형 ${ex.disc_pct != null ? ex.disc_pct + '%' : '—'}`);
+  if (ex && typeof ex.tot_pct === 'number') parts.push(`AI 노출 전체 ${ex.tot_pct}%·발견형 ${ex.disc_pct != null ? ex.disc_pct + '%' : '—'}${typeof ex.sov_pct === 'number' ? '·SOV ' + ex.sov_pct + '%' : ''}`);
   if (ms.length) {
     const up = ms.filter((m) => improved(m.metricName, m.delta) === true).length;
     const down = ms.filter((m) => improved(m.metricName, m.delta) === false).length;

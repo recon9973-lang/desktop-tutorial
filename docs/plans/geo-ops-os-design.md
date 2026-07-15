@@ -185,6 +185,13 @@ Client.id ≡ clinicId ≡ ERP Client.id (느슨 연결)
 
 **진행 현황(2026-07-14)**: ✅ **#1 완료** `lib/geo-store.js`(테스트 21) · ✅ **#2 완료** `api/geo-ops.js`(테스트 18) + 시드 `content/geo/*.json`(pain/skin 이관) · ✅ **#3 완료** `lib/geo-aeo-input.js`(테스트 13) + `ai-expose-check.yml` 일반화(하드코딩 제거, geo 소스 우선·기존 파일 폴백). ✅ **#4 완료** `/geo-ops.html` 콘솔(관제 대시보드 + 거래처 목록/등록 + 상세: 개요·채널·AI인용 매트릭스; 기존 디자인토큰·`venom-admin-secret` 공유·`ai-expose-latest.json` 재사용; Playwright 렌더 검증). ✅ **#5 완료** 업무보드(칸반 7열·승인큐 상단고정·채널 플레이북→Task 인스턴스화 with cap 클램프: 위키/레딧 게시 D 강등) + `lib/geo-templates.js`(테스트 20) + `tasks generate/approve` 액션 + `templates` 모듈. ✅ **#6 성과수집 CSV 경로 완료** `lib/geo-metrics.js`(CSV 파싱·정규화·시계열·요약, 테스트 19) + `metrics` 컬렉션 + `metrics ingest/series/summary` 액션 + 콘솔 성과 탭(CSV 적재·요약 타일·SVG 추이). GSC "Dates"·한글·일반형 CSV 지원, 재적재 중복없이 갱신. ✅ **GSC API 자동수집 완료**(후속) — `lib/geo-gsc.js`(GSC date행→메트릭, ctr 소수→%, 테스트 9) + `metrics collect` 액션(거래처 `gscProperty`별 `querySearchAnalytics` env override로 멀티테넌트, search-console.js 무수정 재사용) + 콘솔 "GSC 자동수집" 버튼 + `geo-metrics-collect.yml`(일 07:00 KST, active+gscProperty 거래처 루프, 자동 로그). ✅ **#7 주간리포트 완료** `lib/geo-report.js`(성과delta·AI인용·업무 집계 → keyWins/risks/nextActions, 통계 미생성·실수집값만, 테스트 23) + `report generate/list/get` 액션 + 콘솔 리포트 탭 + `geo-weekly-report.yml`(금 17:00 KST, active 거래처 루프). ✅ **#8 자동화 로그·권한 완료** — `automation log` 액션(name키 upsert·실행시각 스탬프, 중복없음) + 콘솔 자동화 로그 섹션(상태 색상·최근실행·오류) + weekly-report 워크플로가 실행 후 자동 로그 기록. **역할 6종**(운영관리자·실무자·콘텐츠·성과분석가·거래처담당·개발) UI 범위 제어(읽기전용은 쓰기 UI·미허용 섹션 숨김; 서버 쓰기 인증은 ADMIN_SECRET 별도 — 전면 RBAC는 P3). Playwright로 역할 게이팅 검증.
 
+### ✅ MVP 잔여 4항목 완료 (2026-07-14, 지침서 §13.1 완결)
+- **거래처 자유텍스트 검색**: 콘솔 클라이언트사이드 필터(명·업종·지역)
+- **콘텐츠 캘린더**: 거래처 상세 탭 — 콘텐츠 추가/발행예정일·상태·URL, 날짜순 목록(content 컬렉션 활용)
+- **반복업무 자동생성**: `lib/geo-recur.js`(테스트 15) + `tasks recur` 액션(period 중복방지) + 콘솔 버튼(ISO 주차) + `geo-task-recur.yml`(월 07:00 KST)
+- **거래처 SOV(경쟁사 점유율)**: `lib/geo-sov.js` + `ai-expose-check.yml`에 경쟁사 언급 집계 통합(competitors 없으면 null·후방호환) + 콘솔 SOV 타일·경쟁사 분해 + 주간 리포트 SOV 반영
+→ 지침서 §13.1 MVP 필수 9항목 완결. 백엔드 테스트 누적 **177개**.
+
 ### ✅ P1 전체 완료 (2026-07-14)
 등록→실측→업무→성과→리포트 한 바퀴 동작. 백엔드 테스트 누적 **140개**(store 21·templates 20·metrics 19·report 23·aeo 13·api 44) + 콘솔 Playwright 검증. 배포 후 실호출 확인 대상: AI 실측/주간리포트/자동화로그 워크플로(러너 egress + ADMIN_SECRET 필요), GSC API 자동수집(후속). (Vercel 함수 19개 — Pro 플랜 전제; 초과 시 growthops.js에 흡수 검토.)
 

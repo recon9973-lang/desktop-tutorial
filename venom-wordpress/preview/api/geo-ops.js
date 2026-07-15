@@ -18,6 +18,7 @@
 
 const geo = require('../lib/geo-store');
 const tpl = require('../lib/geo-templates');
+const recur = require('../lib/geo-recur');
 const gm = require('../lib/geo-metrics');
 const gr = require('../lib/geo-report');
 const gsc = require('../lib/geo-gsc');
@@ -120,6 +121,16 @@ async function handleEntity(req, res, mod) {
     const rec = Object.assign({ id: 'atm_' + String(a.name).replace(/[^\w-]/g, '_') }, a, { lastRunAt: new Date().toISOString() });
     const saved = await geo.upsert('automations', rec);
     return res.status(200).json({ ok: true, data: saved });
+  }
+
+  if (action === 'recur' && mod.coll === 'tasks') {
+    const period = body.period;
+    if (!period) return res.status(400).json({ ok: false, error: 'period 필요(예: 2026-W28)' });
+    const all = await geo.list('tasks', body.clientId ? { clientId: String(body.clientId) } : null);
+    const due = recur.dueRecurrences(all, String(period));
+    if (!due.length) return res.status(200).json({ ok: true, count: 0, note: '이번 주기 생성할 반복 업무 없음' });
+    const created = await geo.upsertMany('tasks', due, 'tsk');
+    return res.status(200).json({ ok: true, count: created.length, data: created });
   }
 
   if (action === 'generate' && mod.coll === 'tasks') {
