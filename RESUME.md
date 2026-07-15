@@ -11,7 +11,7 @@
 ## 바로 이어갈 작업 (우선순위)
 1. **GSC 마무리** — 사용자가 Vercel `desktop-tutorial` 프로젝트 → Environment Variables에 `GSC_SERVICE_ACCOUNT_JSON`(서비스계정 JSON 전체) + `GSC_SITE_URL=https://venom-new-site.vercel.app/` 입력 후 **Redeploy** → `/api/health`의 `hasGSC:true` 확인. (서비스계정 이메일 `venom-gsc@gen-lang-client-0415758733.iam.gserviceaccount.com`을 Search Console 속성 사용자로 추가했는지도 확인)
 2. **디자인 스튜디오 라이브 반영** — `marketing-agency-erp` 지정 브랜치 `claude/project-audit-progress-z4bn01`(커밋 `7cbb5f7`)을 **erp-v1에 반영**. 단, PR 생성은 사용자 명시 허락 필요.
-3. **최강스킬 롤아웃(선택)** — 나머지 6개 저장소에 연속성 시스템 설치(저장소별 clone/커밋).
+3. ~~**최강스킬 롤아웃**~~ ✅ **완료** — 나머지 6개 저장소 전부에 연속성 시스템 설치(PROJECT_STATE 생성기+CI·checkpoint 스킬·훅 2개·settings.json·CLAUDE.md). 각 저장소 `claude/project-audit-progress-z4bn01`에 커밋·푸시: marketing-agency-erp `84599ba`·Design-resources `a5aff27`·seo-generator `dde9123`·webp `2f08d61`·seo-writing-skill `faaabbd`·your-supplement `627f7de`. 워크플로 트리거는 각 저장소 기본 브랜치(erp-v1 / pages 브랜치 / main 등)로 설정. **남은 것**: 각 저장소에서 기본 브랜치로 머지되면 project-state CI가 자동 발동.
 
 ## 대기/차단 (사용자 액션)
 - GSC env 입력·Redeploy (위 1)
