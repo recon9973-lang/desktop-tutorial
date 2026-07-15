@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-07-15 diag(gsc): health에 GSC 진단 필드 추가 (비밀 미노출·불리언만)
+- 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-15 chore(checkpoint): 세션 인계 — session-log·RESUME·PROJECT_STATE·CLAUDE.md
 - 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-15 chore(checkpoint): 세션 s01 인계 — 로그·RESUME·PROJECT_STATE·CLAUDE.md
 - 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-15 feat(skill): 최강스킬 — 연속성·토큰절약 시스템 설치형 스킬
 - 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-15 feat(system): 세션 자동 체크포인트·핸드오프 + PROJECT_STATE 자동화
-- 2026-07-16 docs: GROUND 자동발행 운영 문서 (#183)
 
 ## 워크플로 (18)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -80,4 +80,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BUILD_TS` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `MFDS_DUR_API_URL` · `MFDS_MATERIAL_API_URL` · `…(+29)`
 
 ---
-*생성: 커밋 8c8bdd1 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 c009758 기준. 값·비밀은 포함하지 않음.*
