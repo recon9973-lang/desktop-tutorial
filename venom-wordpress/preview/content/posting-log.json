@@ -1,5 +1,11 @@
 [
   {
+    "action": "cron-en-fail",
+    "id": "auto_1784107285397",
+    "error": "translate timeout",
+    "ts": "2026-07-15T09:23:28.872Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1784099441217",
     "title": "마산 교통사고 한의원, 치료 효과와 선택 기준 5가지",
