@@ -17,7 +17,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - name: Trigger publish endpoint (publishes any due slots)
         env:
@@ -29,8 +29,14 @@ jobs:
             echo "::error::CRON_SECRET secret is not set in this repository (Settings → Secrets and variables → Actions)."
             exit 1
           fi
-          code=$(curl -sS --max-time 180 -o /tmp/resp.json -w "%{http_code}" \
-            -X POST "$URL" -H "Authorization: Bearer $CRON_SECRET")
+          # 엔드포인트 함수 maxDuration=300s에 맞춰 curl 타임아웃 290s(기존 180s는 조기 절단으로 타임아웃 유발).
+          # 함수는 멱등 — 타임아웃/에러여도 다음 폴링이 못 채운 슬롯을 이어서 발행하므로 워크플로는 실패로 죽이지 않는다.
+          code=$(curl -sS --max-time 290 -o /tmp/resp.json -w "%{http_code}" \
+            -X POST "$URL" -H "Authorization: Bearer $CRON_SECRET") || {
+              rc=$?
+              echo "::warning::curl 실패(exit $rc) — 생성 지연 추정. 다음 폴링이 멱등 발행으로 이어받습니다."
+              exit 0
+            }
           echo "HTTP $code"
           cat /tmp/resp.json 2>/dev/null || true
           echo ""
