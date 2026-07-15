@@ -32,7 +32,8 @@ html,body{width:1080px;height:1080px;overflow:hidden;}
 .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:75% 20%;}
 .scrim{position:absolute;inset:0;background:${scrim};}
 .badge{position:absolute;top:46px;left:52px;background:${badgeBg};color:${badgeText};font-size:28px;font-weight:800;padding:12px 24px;border-radius:40px;letter-spacing:.3px;}
-.hook{position:absolute;left:56px;top:196px;right:400px;color:${text};font-size:86px;font-weight:900;line-height:1.15;letter-spacing:-3px;text-shadow:${dark ? "0 2px 14px rgba(0,0,0,.35)" : "0 2px 12px rgba(255,255,255,.5)"};}
+.hook{position:absolute;left:56px;top:180px;right:496px;color:${text};font-size:80px;font-weight:900;line-height:1.42;letter-spacing:-2px;text-shadow:${dark ? "0 2px 14px rgba(0,0,0,.35)" : "0 2px 12px rgba(255,255,255,.5)"};}
+.hook mark{margin:6px 0;display:inline-block;}
 .hook mark,.hl{background:${hl};color:${hlText};padding:0 14px;border-radius:8px;box-decoration-break:clone;-webkit-box-decoration-break:clone;}
 .swipe{position:absolute;left:56px;bottom:60px;display:flex;align-items:center;gap:12px;color:${text};font-size:29px;font-weight:800;}
 .swipe .arw{width:58px;height:58px;border-radius:50%;background:${hl};color:${hlText};display:flex;align-items:center;justify-content:center;font-size:32px;}
