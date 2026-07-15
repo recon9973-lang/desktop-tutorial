@@ -1,5 +1,11 @@
 [
   {
+    "action": "cron-en-fail",
+    "id": "auto_1784113676887",
+    "error": "translate timeout",
+    "ts": "2026-07-15T11:10:04.627Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784107285397",
     "title": "마산 정형외과 5곳 비교 — 추천 및 진료정보",
