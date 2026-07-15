@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1784113676887",
+    "title": "마산 이비인후과 추천 병원 TOP 5 및 야간 진료 정보",
+    "tokenUsage": {
+      "promptTokens": 2564,
+      "completionTokens": 2116,
+      "totalTokens": 4680,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-15T11:10:06.476Z"
+  },
+  {
     "action": "cron-en-fail",
     "id": "auto_1784113676887",
     "error": "translate timeout",
