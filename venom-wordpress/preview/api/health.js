@@ -141,6 +141,30 @@ module.exports = async function handler(req, res) {
     hasPerplexity: !!process.env.PERPLEXITY_API_KEY,
     hasPSI: !!process.env.PSI_KEY,
     hasGSC: (function () { try { return require('../lib/search-console').isConfigured(); } catch { return false; } })(),
+    // GSC 진단(비밀값 미노출 — 불리언/형식만). hasGSC:false 원인 특정용.
+    gscDiag: (function () {
+      try {
+        const e = process.env;
+        const hasJson = !!e.GSC_SERVICE_ACCOUNT_JSON;
+        let jsonParses = false, jEmail = false, jKey = false, jsonLen = 0;
+        if (hasJson) {
+          jsonLen = String(e.GSC_SERVICE_ACCOUNT_JSON).length;
+          try { const j = JSON.parse(e.GSC_SERVICE_ACCOUNT_JSON); jsonParses = true; jEmail = !!j.client_email; jKey = !!(j.private_key && String(j.private_key).indexOf('PRIVATE KEY') >= 0); }
+          catch { jsonParses = false; }
+        }
+        return {
+          hasJsonVar: hasJson,
+          jsonLen,                                   // 값 길이(잘림 감지). 정상 서비스계정 JSON은 보통 2000~2500자
+          jsonParses,                                // false면 붙여넣기 손상(스마트따옴표/줄바꿈 등)
+          jsonHasClientEmail: jEmail,
+          jsonHasPrivateKey: jKey,
+          hasClientEmailEnv: !!e.GSC_CLIENT_EMAIL,
+          hasPrivateKeyEnv: !!e.GSC_PRIVATE_KEY,
+          hasSiteUrl: !!(e.GSC_SITE_URL || e.SITE_URL),
+          siteUrlFormatOk: /^https?:\/\/.+/.test(e.GSC_SITE_URL || e.SITE_URL || ''),
+        };
+      } catch (err) { return { error: String(err && err.message || err) }; }
+    })(),
     time: new Date().toISOString(),
   };
 
