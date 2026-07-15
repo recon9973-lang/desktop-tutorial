@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1784107285397",
+    "title": "마산 정형외과 5곳 비교 — 추천 및 진료정보",
+    "tokenUsage": {
+      "promptTokens": 2554,
+      "completionTokens": 1939,
+      "totalTokens": 4493,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-15T09:23:29.816Z"
+  },
+  {
     "action": "cron-en-fail",
     "id": "auto_1784107285397",
     "error": "translate timeout",
