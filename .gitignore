@@ -11,3 +11,6 @@ venom-wordpress/preview/chatbot/data/eval/questions-full.jsonl
 .env.local
 .env.*.local
 !.env.example
+
+# IG 카드 렌더 임시 산출물
+persona-nami/ig/*.html
