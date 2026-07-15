@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1784080269434",
+    "title": "마산 교통 사고 한의원 TOP 5 전략과 효과적 접근법",
+    "tokenUsage": {
+      "promptTokens": 2534,
+      "completionTokens": 1951,
+      "totalTokens": 4485,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-15T01:52:09.975Z"
+  },
+  {
     "action": "generate",
     "id": "auto_1784043297499",
     "title": "대전 병원마케팅 5가지 전략과 알고리즘 이해하기",
