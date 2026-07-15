@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 없음
 
 ## 최근 커밋 (8)
+- 2026-07-15 feat(skill): 최강스킬 — 연속성·토큰절약 시스템 설치형 스킬
+- 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-15 feat(system): 세션 자동 체크포인트·핸드오프 + PROJECT_STATE 자동화
 - 2026-07-16 docs: GROUND 자동발행 운영 문서 (#183)
 - 2026-07-15 chore(ig): 큐 발행 상태 갱신 [skip ci]
 - 2026-07-15 lock: 발행 작업 잠금 해제
 - 2026-07-15 chore: auto-update sitemap.xml
 - 2026-07-15 auto(growthops): 클러스터 빈칸 채움
-- 2026-07-15 auto: 포스팅 로그 업데이트
-- 2026-07-15 auto: 포스팅 로그 업데이트
 
 ## 워크플로 (18)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -80,4 +80,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BUILD_TS` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `MFDS_DUR_API_URL` · `MFDS_MATERIAL_API_URL` · `…(+29)`
 
 ---
-*생성: 커밋 2e48f83 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 8f68be1 기준. 값·비밀은 포함하지 않음.*
