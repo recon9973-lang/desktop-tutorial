@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784099441217",
+    "title": "마산 교통사고 한의원, 치료 효과와 선택 기준 5가지",
+    "tokenUsage": {
+      "promptTokens": 2398,
+      "completionTokens": 1785,
+      "totalTokens": 4183,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-15T07:12:10.351Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784090815134",
     "title": "마산 교통사고 한의원, 효과적인 치료법 5가지",
     "tokenUsage": {
