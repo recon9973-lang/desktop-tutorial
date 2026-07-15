@@ -32,9 +32,9 @@
       "hook": "SEO, 30초컷 요약",
       "img": "persona-nami/ig/post3.png",
       "cap": "persona-nami/ig/post3.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null,
+      "published": true,
+      "publishedAt": "2026-07-15T13:15:05.200Z",
+      "mediaId": "18102811555984462",
       "images": [
         "persona-nami/ig/post3.png",
         "persona-nami/ig/post3-2.png",
