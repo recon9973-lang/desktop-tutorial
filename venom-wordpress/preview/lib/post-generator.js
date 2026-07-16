@@ -345,7 +345,10 @@ ${DELIMITER.END}`;
 
   const postId  = 'auto_' + Date.now();
   const slug    = makeSlug(parsed.title || keyword, postId);
-  const isoDate = new Date().toISOString();
+  const _now    = new Date();
+  const isoDate = _now.toISOString(); // 절대시각(스키마 datePublished — Z 포함이라 TZ 안전)
+  // 표시용 날짜는 KST 기준. UTC 슬라이스는 KST 00~09시 글을 하루 이전으로 잘못 표기함.
+  const kstDate = new Date(_now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })).toISOString().slice(0, 10);
   const articleSchema = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -393,7 +396,7 @@ ${DELIMITER.END}`;
     imagePrompt2: buildImagePrompt(category, keyword, 1),
     html:      htmlWithSchema,
     status:    publishable ? 'draft' : 'review',
-    date:      isoDate.slice(0, 10),
+    date:      kstDate,
     createdAt: isoDate,
     views:     0,
     region,

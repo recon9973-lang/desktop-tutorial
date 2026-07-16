@@ -480,14 +480,6 @@
    ]
   },
   {
-   "item": "llms.txt / AI 전용 마크업",
-   "reason": "Google이 사용하지 않음",
-   "grounds": [
-    39,
-    189
-   ]
-  },
-  {
    "item": "도메인 키워드 · TLD · 서브도메인 vs 서브디렉터리",
    "reason": "순위 영향 미미",
    "grounds": [
@@ -501,6 +493,10 @@
    39,
    1
   ],
-  "usage": "GEO 상품은 'AI 전용 마법'이 아니라 '멀티AI 실측 + 공식 근거 기반 처방'으로 포지셔닝. 근거 없는 과장 GEO 업체 대비 신뢰 차별화."
+  "usage": "GEO 상품은 'AI 전용 마법'이 아니라 '멀티AI 실측 + 공식 근거 기반 처방'으로 포지셔닝. 근거 없는 과장 GEO 업체 대비 신뢰 차별화.",
+  "hygiene": {
+   "llms_txt": "llms.txt는 SEO 순위 요인이 아니므로 SEO 점수엔 미반영. 단 GEO 위생(운영) 항목으로 유지·서빙한다(robots.txt에 'LLMs:' 선언, /llms.txt는 text/plain). GEO 운영 체크리스트(geo-ops·checklist-templates)에서 Level A로 관리하며 순위 리프트는 약속하지 않는다.",
+   "grounds": [39, 189]
+  }
  }
 }
