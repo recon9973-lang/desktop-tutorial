@@ -48,9 +48,9 @@
       "hook": "AI가 믿는 콘텐츠엔 이게 있어요 (E-E-A-T)",
       "img": "persona-nami/ig/post4.png",
       "cap": "persona-nami/ig/post4.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null,
+      "published": true,
+      "publishedAt": "2026-07-16T13:23:05.722Z",
+      "mediaId": "17957317227176810",
       "images": [
         "persona-nami/ig/post4.png",
         "persona-nami/ig/post4-2.png",
