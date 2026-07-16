@@ -6956,6 +6956,15 @@ else{loadAdminPosts();}
     .then(function(posts){
       if(!Array.isArray(posts)||!posts.length)return;
       posts.forEach(function(p){ if(p.images&&p.images[0]) _postImgById[p.id]=p.images[0]; });
+      // 서버가 date의 진실 소스 — 캐시(localStorage·_dynBlogPosts·blogPosts)의 기존 글 date를 서버값으로 교정.
+      // (과거 UTC 오차로 하루 밀린 날짜 등이 브라우저 캐시에 굳어도 다음 로드에서 자동 정정)
+      var _srvDate={}; posts.forEach(function(p){ if(p.id) _srvDate[p.id]=p.date; });
+      _dynBlogPosts.forEach(function(p){ if(_srvDate[p.id]&&p.date!==_srvDate[p.id]) p.date=_srvDate[p.id]; });
+      try{ Object.keys(blogPosts).forEach(function(id){ if(_srvDate[id]&&blogPosts[id]&&blogPosts[id].date!==_srvDate[id]) blogPosts[id].date=_srvDate[id]; }); }catch(e){}
+      try{ var _st=JSON.parse(localStorage.getItem('venom_blog_posts')||'[]'),_ch=false;
+        _st.forEach(function(p){ if(_srvDate[p.id]&&p.date!==_srvDate[p.id]){ p.date=_srvDate[p.id]; _ch=true; } });
+        if(_ch) localStorage.setItem('venom_blog_posts', JSON.stringify(_st));
+      }catch(e){}
       try{ renderBlogGrid(); }catch(e){}
       var stored;
       try{stored=JSON.parse(localStorage.getItem('venom_blog_posts')||'[]');}catch(e){stored=[];}
