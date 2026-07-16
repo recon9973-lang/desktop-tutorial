@@ -109,7 +109,8 @@ geo-store 21 · geo-templates 20 · geo-metrics 19 · geo-gsc 9 · geo-report 25
 | 첫 오더 즉시 요청(정독+리서치+브레인스토밍 기획) | **100%** (+ 설계·구현·배포로 초과) |
 | 실무 사용 가능선(P1 8항목) | **100%** |
 | 지침서 §13.1 MVP 필수 9항목 | **100%** |
-| 상용화 전체(MVP+2차+3차) | **~50%** |
+| **ERP 병합(M1~M6 코드·PR·검증)** | **100%** (머지·M6 실행은 팀 액션) |
+| 상용화 전체(MVP+2차+3차) | **~60%** |
 
 ---
 
@@ -118,6 +119,47 @@ geo-store 21 · geo-templates 20 · geo-metrics 19 · geo-gsc 9 · geo-report 25
 - **3차**: 서버측 RBAC·요금제/청구·화이트라벨·업종 벤치마크
 - **운영 심화**: 거래처 competitors 등록 → SOV 실측 · 프롬프트셋 콘솔 편집 UI · 거래처 KV 시계열 SOV 추이
 - **즉시 후속**: 팀이 GitHub Secret 등록 → 리포트 워크플로 재실행 → 첫 파일럿 리포트 라이브 생성
+
+---
+
+## 8. ERP 병합(M1~M6) — 완료 (2026-07-16 추가)
+
+> 최종 목적 "완료 후 베놈 ERP와 병합" 실행분. 상세: [`geo-erp-integration-delivery.md`](geo-erp-integration-delivery.md) · 설계: [`geo-erp-integration-design-v2.md`](geo-erp-integration-design-v2.md)
+
+`recon9973-lang/marketing-agency-erp`(base `erp-v1`)에 6개 모듈 이식 — **전부 open PR(자동 머지 안 함)**, 오프라인 52케이스 통과.
+
+| 모듈 | 내용 | PR | 스키마 |
+|---|---|---|---|
+| M1 | 경쟁사 SOV 집계 + KPI 타일 | #42 | 0 |
+| M2 | 채널 자동화 cap-clamp | #43 | 0 |
+| M3 | 거래처 GEO 주간 리포트 | #44 | 0 |
+| M4 | 반복 업무 자동 생성(cadenceDays) | #45 ✅빌드 green | 0 |
+| M5 | 온보딩 Phase 체크리스트 | #46 | 0 |
+| M6 | NAS→ERP 이관 스크립트 골격 | #47 | 0 |
+
+---
+
+## 9. 라이브 TODO 체크리스트 (2026-07-16 기준)
+
+### ✅ 완료
+- [x] GEO-OS 파일럿 구축·배포(P1 8항목·MVP 9항목) — §1~6
+- [x] 통합 설계서 v2(ERP 실사 기반 정정)
+- [x] ERP 병합 M1~M6 구현·PR·오프라인 검증(52케이스)
+- [x] 통합 인도 문서(`geo-erp-integration-delivery.md`)
+
+### ⏭ 팀 액션 (병합 마무리)
+- [ ] **PR 순차 머지**: #42 → #43 → #44 → #45 → #46 → #47 (⚠️ M2#43·M5#46이 같은 `OnboardingTaskTemplate` 타입에 필드 추가 → **M2 먼저**, 충돌 시 양쪽 유지)
+- [ ] **M6 실행**: `sqlite3 team.db ".schema"`로 `NAS_SCHEMA` 확정 → `staff-map.json` 작성 → dry-run → `--commit`
+- [ ] **desktop-tutorial 파일럿**: GitHub Secret `ADMIN_SECRET` 등록(자동화 유일 차단) — 병합 완료 시 파일럿 종료
+
+### 🔜 UI 후속 (설계 §7, 선택)
+- [ ] SOV 차트(M1 데이터 · `components/geo`)
+- [ ] ClientDetail Phase 진행률 탭(M5 `onboardingPhaseSummary`)
+- [ ] reports에 geo-weekly 타입(M3 `assembleGeoWeekly`)
+
+### 📌 중장기 (2차·3차, §7 유지)
+- [ ] 콘텐츠 초안 자동생성(B 승인큐)·Slack 승인·고객 포털·PDF 발송
+- [ ] 서버측 RBAC·요금제/청구·화이트라벨·업종 벤치마크
 
 ---
 *배포 파이프라인: implement → 검증(JS/Playwright) → commit → PR → squash-merge → 브랜치 origin/main 리셋. 작업 브랜치 `claude/production-ready-planning-mpkir0`.*
