@@ -1,6 +1,21 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784187284255",
+    "title": "대구 병원마케팅의 5가지 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2609,
+      "completionTokens": 1882,
+      "totalTokens": 4491,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "imageError": "GitHub 저장 실패: HTTP 409 is at c93a3c81e8ddadff3ce2fdecb70279114f7fc1f3 but expected bea964eedff50554b6ecfc092f2406d063aa9482",
+    "autoFixed": true,
+    "ts": "2026-07-16T07:36:07.007Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784179176917",
     "title": "마산 내과 의원 추천 TOP 5와 효과적인 한의원 마케팅 전략",
     "tokenUsage": {
