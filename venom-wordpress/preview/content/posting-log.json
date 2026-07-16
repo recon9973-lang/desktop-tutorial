@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784179176917",
+    "title": "마산 내과 의원 추천 TOP 5와 효과적인 한의원 마케팅 전략",
+    "tokenUsage": {
+      "promptTokens": 2517,
+      "completionTokens": 1975,
+      "totalTokens": 4492,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-16T05:20:55.900Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784113676887",
     "title": "마산 이비인후과 추천 병원 TOP 5 및 야간 진료 정보",
