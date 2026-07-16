@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-07-16 feat(autopost): 예약 작업 조회·오류 진단·토큰 상세 + 타임아웃 하드닝 (#184)
-- 2026-07-16 seo-monitor: 2026-07-16 일일 점수 갱신
-- 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-15 diag(gsc): health에 GSC 진단 필드 추가 (비밀 미노출·불리언만)
-- 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-15 chore(checkpoint): 세션 인계 — session-log·RESUME·PROJECT_STATE·CLAUDE.md
-- 2026-07-15 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-15 chore(checkpoint): 세션 s01 인계 — 로그·RESUME·PROJECT_STATE·CLAUDE.md
+- 2026-07-16 fix: 자동블로그 최신글 날짜 KST 보정 + llms.txt SEO→GEO 재분류 (#185)
+- 2026-07-16 lock: 발행 작업 잠금 해제
+- 2026-07-16 chore: auto-update sitemap.xml
+- 2026-07-16 auto: 포스팅 로그 업데이트
+- 2026-07-16 auto(en): "5 Dental Marketing Strategies in Busan to Increase Customer Acquisition by 30%"
+- 2026-07-16 auto: 발행 "부산 치과 마케팅 전략 5가지, 고객 유치 30%↑"
+- 2026-07-16 auto: 포스트 이미지 auto_1784195330333-5-30-1.jpg
+- 2026-07-16 lock: 발행 작업 잠금
 
 ## 워크플로 (18)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -80,4 +80,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BUILD_TS` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `MFDS_DUR_API_URL` · `MFDS_MATERIAL_API_URL` · `…(+29)`
 
 ---
-*생성: 커밋 39dda1c 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 0ea53ce 기준. 값·비밀은 포함하지 않음.*
