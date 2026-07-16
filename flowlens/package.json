@@ -1,0 +1,37 @@
+{
+  "name": "flowlens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FlowLens — 개인정보 보호형 웹 행동 분석 SaaS (대행사용 MVP)",
+  "scripts": {
+    "dev": "next dev -p 4311",
+    "build": "next build",
+    "vercel-build": "sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' prisma/schema.prisma && prisma generate && prisma db push --skip-generate && next build",
+    "start": "next start -p 4311",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.mjs",
+    "db:reset": "prisma db push --force-reset && node prisma/seed.mjs",
+    "cleanup": "node scripts/cleanup.mjs",
+    "ext:zip": "cd extension && zip -r ../flowlens-extension.zip . -x '.DS_Store'",
+    "setup": "prisma generate && prisma db push && node prisma/seed.mjs",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.1",
+    "@sparticuz/chromium": "^149.0.0",
+    "next": "^15.1.4",
+    "puppeteer-core": "^25.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "prisma": "^6.2.1",
+    "typescript": "^5.7.3"
+  }
+}

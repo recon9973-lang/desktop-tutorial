@@ -1,0 +1,37 @@
+# FlowLens 로컬/운영용 PostgreSQL + 앱 실행
+# 사용: docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: flowlens
+      POSTGRES_PASSWORD: flowlens_pw_change_me
+      POSTGRES_DB: flowlens
+    ports:
+      - "5432:5432"
+    volumes:
+      - flowlens_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowlens"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://flowlens:flowlens_pw_change_me@db:5432/flowlens?schema=public"
+      FLOWLENS_SECRET: "change-me-to-a-long-random-string"
+      NEXT_PUBLIC_TOSS_CLIENT_KEY: "${NEXT_PUBLIC_TOSS_CLIENT_KEY}"
+      TOSS_SECRET_KEY: "${TOSS_SECRET_KEY}"
+      NODE_ENV: production
+    ports:
+      - "4311:4311"
+
+volumes:
+  flowlens_pgdata:

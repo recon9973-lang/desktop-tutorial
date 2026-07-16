@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "FlowLens 히트맵 오버레이",
+  "version": "0.1.0",
+  "description": "실제 웹페이지 위에 FlowLens 클릭 히트맵·스크롤맵을 겹쳐 보여주는 뷰어(대행사·운영자용).",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FlowLens 히트맵 오버레이",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

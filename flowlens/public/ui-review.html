@@ -1,0 +1,516 @@
+<title>FlowLens UI/UX 점검판</title>
+<style>
+  /* ===== 점검판 캔버스 (뷰어 테마 대응) ===== */
+  :root{
+    --canvas:#e9ebf1; --canvas-2:#dfe2ea; --ink:#1a1d29; --ink-2:#59607a; --ink-3:#8a90a6;
+    --line:#d3d7e0; --brand:#1d4ed8; --brand-soft:#eaf1fe;
+    --note-bg:#ffffff; --note-line:#e5e7ef;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --canvas:#0f111a; --canvas-2:#161927; --ink:#e9ebf3; --ink-2:#a2a9c2; --ink-3:#727892;
+      --line:#282c3b; --brand:#1d4ed8; --brand-soft:#211f3a; --note-bg:#161927; --note-line:#282c3b; }
+  }
+  :root[data-theme="light"]{ --canvas:#e9ebf1; --canvas-2:#dfe2ea; --ink:#1a1d29; --ink-2:#59607a; --ink-3:#8a90a6; --line:#d3d7e0; --brand:#1d4ed8; --brand-soft:#eaf1fe; --note-bg:#ffffff; --note-line:#e5e7ef; }
+  :root[data-theme="dark"]{ --canvas:#0f111a; --canvas-2:#161927; --ink:#e9ebf3; --ink-2:#a2a9c2; --ink-3:#727892; --line:#282c3b; --brand:#1d4ed8; --brand-soft:#211f3a; --note-bg:#161927; --note-line:#282c3b; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--canvas); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif; }
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{ display:grid; grid-template-columns:230px 1fr; gap:0; max-width:1400px; margin:0 auto; }
+  /* 좌측 점검 네비 */
+  .rail{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:26px 18px;
+    border-right:1px solid var(--line); }
+  .rail .logo{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:15px; letter-spacing:-.02em; margin-bottom:4px; }
+  .rail .logo .sq{ width:20px; height:20px; border-radius:6px; background:linear-gradient(135deg,#1d4ed8,#1e3a8a); }
+  .rail .sub{ font-size:11.5px; color:var(--ink-3); margin-bottom:20px; }
+  .rail nav{ display:flex; flex-direction:column; gap:2px; }
+  .rail nav a{ font-size:13px; color:var(--ink-2); padding:7px 10px; border-radius:8px; display:flex; gap:8px; align-items:center; }
+  .rail nav a:hover{ background:var(--canvas-2); color:var(--ink); }
+  .rail nav a .n{ font-size:10.5px; color:var(--ink-3); font-variant-numeric:tabular-nums; min-width:16px; }
+
+  .main{ padding:26px 30px 120px; min-width:0; }
+  .head{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:6px; }
+  .head h1{ font-size:24px; letter-spacing:-.03em; margin:0; }
+  .head p{ margin:6px 0 0; color:var(--ink-2); font-size:13.5px; max-width:60ch; }
+  .legend{ font-size:11.5px; color:var(--ink-3); display:flex; gap:12px; flex-wrap:wrap; }
+  .legend b{ color:var(--brand); }
+
+  /* 화면 블록 */
+  .screen{ margin-top:40px; scroll-margin-top:16px; }
+  .screen-label{ display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+  .screen-label .kicker{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); font-weight:700; }
+  .screen-label h2{ font-size:17px; margin:0; letter-spacing:-.01em; }
+  .screen-label .path{ font-size:11.5px; color:var(--ink-3); font-family:ui-monospace,Menlo,monospace; margin-left:auto; }
+
+  /* 브라우저 프레임 (실제 앱을 담는 창) */
+  .frame{ border:1px solid var(--line); border-radius:14px; overflow:hidden; box-shadow:0 10px 40px rgba(20,22,40,.14); background:#fff; }
+  .frame .bar{ height:34px; background:#eef0f5; border-bottom:1px solid #e5e7ef; display:flex; align-items:center; gap:7px; padding:0 12px; }
+  .frame .bar i{ width:10px; height:10px; border-radius:50%; background:#cdd2df; display:inline-block; }
+  .frame .bar .url{ margin-left:10px; font-size:11px; color:#9aa2ba; font-family:ui-monospace,Menlo,monospace; background:#fff; border:1px solid #e5e7ef; border-radius:6px; padding:3px 10px; }
+  .frame.phone{ max-width:390px; margin:0 auto; }
+
+  .notes{ margin-top:12px; background:var(--note-bg); border:1px solid var(--note-line); border-left:3px solid var(--brand); border-radius:10px; padding:12px 16px; }
+  .notes h3{ margin:0 0 6px; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--brand); }
+  .notes ul{ margin:0; padding-left:18px; }
+  .notes li{ font-size:13px; color:var(--ink-2); line-height:1.7; }
+
+  /* ============ FlowLens 실제 디자인 토큰(프레임 내부, 항상 라이트=제품 원본) ============ */
+  .app{ --bg:#f6f7fb; --surface:#fff; --surface-2:#f0f1f7; --border:#e5e7ef; --text:#1a1d29; --text-2:#616a86; --text-3:#9aa2ba;
+    --accent:#1d4ed8; --accent-soft:#eaf1fe; --green:#12a150; --amber:#d98a00; --red:#e5484d;
+    --radius:10px; --shadow:0 1px 2px rgba(20,22,40,.04),0 4px 16px rgba(20,22,40,.05);
+    background:var(--bg); color:var(--text); font-size:13px; line-height:1.5; }
+  .app h1,.app h2,.app h3,.app h4{ margin:0; font-weight:700; letter-spacing:-.01em; }
+  .app .muted{ color:var(--text-2); } .app .small{ font-size:11.5px; }
+  .app .topbar{ display:flex; align-items:center; justify-content:space-between; height:52px; padding:0 20px; background:var(--surface); border-bottom:1px solid var(--border); }
+  .app .brand{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:15px; }
+  .app .brand .dot{ width:20px; height:20px; border-radius:6px; background:linear-gradient(135deg,#1d4ed8,#1e3a8a); }
+  .app .container{ padding:22px 20px; }
+  .app .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .app .pad{ padding:16px; }
+  .app .grid{ display:grid; gap:12px; }
+  .app .g4{ grid-template-columns:repeat(4,1fr);} .app .g3{ grid-template-columns:repeat(3,1fr);} .app .g2{ grid-template-columns:repeat(2,1fr);}
+  .app .metric .label{ color:var(--text-2); font-size:11.5px; font-weight:600; margin-bottom:6px; }
+  .app .metric .value{ font-size:24px; font-weight:800; letter-spacing:-.02em; }
+  .app .metric .sub{ font-size:11px; color:var(--text-3); margin-top:3px; }
+  .app .badge{ display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .app .badge.hi{ background:#e7f6ee; color:var(--green);} .app .badge.md{ background:#fbf1de; color:var(--amber);} .app .badge.lo{ background:#eaf1fe; color:var(--accent);} .app .badge.gray{ background:var(--surface-2); color:var(--text-2);}
+  .app .btn{ display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); font-weight:600; font-size:12.5px; color:var(--text); }
+  .app .btn.pri{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .app .btn.sm{ padding:6px 11px; font-size:11.5px; }
+  .app .tabs{ display:flex; gap:2px; border-bottom:1px solid var(--border); margin:14px 0 16px; overflow-x:auto; }
+  .app .tab{ padding:9px 12px; font-weight:600; font-size:12.5px; color:var(--text-2); border-bottom:2px solid transparent; white-space:nowrap; }
+  .app .tab.on{ color:var(--accent); border-bottom-color:var(--accent); }
+  .app .pill{ font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:6px; background:var(--surface-2); color:var(--text-2); }
+  .app .bar-track{ background:var(--surface-2); border-radius:999px; height:7px; overflow:hidden; } .app .bar-fill{ height:100%; background:var(--accent); border-radius:999px; }
+  .app .notice{ background:var(--accent-soft); border:1px solid #cfe0fd; color:#1e40af; border-radius:10px; padding:11px 14px; font-size:12.5px; }
+  .app table{ width:100%; border-collapse:collapse; font-size:12.5px; } .app th{ text-align:left; color:var(--text-2); font-weight:600; font-size:11px; padding:9px 10px; border-bottom:1px solid var(--border);} .app td{ padding:10px; border-bottom:1px solid var(--border);} .app tr:last-child td{ border-bottom:none; }
+  .app .row{ display:flex; align-items:center; gap:8px; } .app .between{ display:flex; align-items:center; justify-content:space-between; gap:10px; } .app .stack{ display:flex; flex-direction:column; gap:8px; }
+  .app .code{ background:#12141d; color:#e6e6ef; border-radius:9px; padding:12px 14px; font-family:ui-monospace,Menlo,monospace; font-size:11.5px; overflow-x:auto; }
+  .app .dotleg{ display:inline-block; width:9px; height:9px; border-radius:3px; }
+
+  /* 히트맵/스크롤/퍼널/폰 */
+  .heat{ position:relative; height:230px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:repeating-linear-gradient(180deg,#fafafa 0 1px,transparent 1px 44px),#fff; }
+  .blob{ position:absolute; border-radius:50%; filter:blur(6px); }
+  .band{ height:26px; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-size:11px; font-weight:600; border-bottom:1px solid rgba(255,255,255,.5); }
+  .fbar{ height:34px; border-radius:8px; background:linear-gradient(90deg,#1d4ed8,#1e3a8a); }
+  .phone-sketch{ position:relative; aspect-ratio:9/16; max-width:230px; margin:0 auto; background:repeating-linear-gradient(180deg,#fafafa 0 1px,transparent 1px 40px),#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .zone{ position:relative; height:44px; border-radius:8px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--text-2); }
+
+  @media(max-width:900px){ .wrap{ grid-template-columns:1fr; } .rail{ position:static; height:auto; border-right:none; border-bottom:1px solid var(--line); } .app .g4{ grid-template-columns:repeat(2,1fr);} .app .g3,.app .g2{ grid-template-columns:1fr;} }
+</style>
+
+<div class="wrap">
+  <!-- 좌측 점검 네비 -->
+  <div class="rail">
+    <div class="logo"><span class="sq"></span> FlowLens</div>
+    <div class="sub">UI/UX 점검판 · v1</div>
+    <nav>
+      <a href="#s1"><span class="n">01</span> 랜딩페이지</a>
+      <a href="#s2"><span class="n">02</span> 무료 진단 결과</a>
+      <a href="#s3"><span class="n">03</span> 대행사 대시보드</a>
+      <a href="#s4"><span class="n">04</span> 사이트 개요</a>
+      <a href="#s5"><span class="n">05</span> 히트맵 스튜디오</a>
+      <a href="#s6"><span class="n">06</span> 전환 퍼널</a>
+      <a href="#s7"><span class="n">07</span> 전/후 비교</a>
+      <a href="#s8"><span class="n">08</span> 개선 제안 리포트</a>
+      <a href="#s9"><span class="n">09</span> 세션 리플레이</a>
+      <a href="#s10"><span class="n">10</span> 요금제 · 결제</a>
+      <a href="#s11"><span class="n">11</span> 화이트라벨 공유</a>
+      <a href="#s12"><span class="n">12</span> 데이터 관리</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="head">
+      <div>
+        <h1>FlowLens UI/UX 점검판</h1>
+        <p>실제 제품 디자인 그대로 주요 화면을 모았습니다. 스크롤하며 레이아웃·위계·여백·카피를 점검하고, 각 화면 아래 <b style="color:var(--brand)">점검 포인트</b>를 참고해 고칠 부분을 정하세요.</p>
+      </div>
+      <div class="legend">우측 상단 테마 토글로 <b>라이트/다크</b> 캔버스 전환 · 화면 프레임은 제품 원본(라이트) 기준</div>
+    </div>
+
+    <!-- 01 랜딩 -->
+    <section class="screen" id="s1">
+      <div class="screen-label"><span class="kicker">획득</span><h2>랜딩페이지</h2><span class="path">/</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">app.seokorea.org</span></div>
+        <div class="app">
+          <div class="topbar"><div class="brand"><span class="dot"></span> FlowLens</div><div class="row"><span class="btn sm">로그인</span><span class="btn pri sm">무료로 시작</span></div></div>
+          <div class="container" style="text-align:center; background:radial-gradient(600px 300px at 50% -20%,#eaf1fe,transparent),var(--bg)">
+            <span class="badge lo" style="margin-bottom:12px">✨ 개인정보 보호형 행동 분석 SaaS</span>
+            <h1 style="font-size:30px; line-height:1.2; margin:8px 0 10px">광고비는 쓰는데<br>왜 안 팔리는지 보입니다</h1>
+            <p class="muted" style="max-width:460px; margin:0 auto 20px; font-size:14px">방문자의 클릭·스크롤·망설임을 분석해 매출과 문의 전환을 높일 개선점을 자동으로 제안합니다. 먼저, 내 사이트를 무료로 진단해 보세요.</p>
+            <div class="row" style="max-width:440px; margin:0 auto; gap:8px">
+              <div style="flex:1; border:1px solid var(--border); border-radius:11px; background:#fff; padding:11px 14px; text-align:left; color:var(--text-3); font-size:13px">내 사이트 주소 입력 (예: mysite.co.kr)</div>
+              <span class="btn pri">무료 진단</span>
+            </div>
+            <div class="small muted" style="margin-top:8px">가입 없이 즉시 확인 · 카드 필요 없음</div>
+          </div>
+          <div class="container">
+            <div class="grid g4">
+              <div class="card pad"><div style="font-size:22px">🇰🇷</div><h4 style="margin:8px 0 5px; font-size:14px">국내 플랫폼 원클릭 설치</h4><p class="muted small" style="margin:0">워드프레스·Cafe24·아임웹·GTM까지 스크립트 한 줄로.</p></div>
+              <div class="card pad"><div style="font-size:22px">🧭</div><h4 style="margin:8px 0 5px; font-size:14px">한국어 개선 리포트</h4><p class="muted small" style="margin:0">데이터가 아니라 '무엇을 고칠지'를 과제로.</p></div>
+              <div class="card pad"><div style="font-size:22px">🔒</div><h4 style="margin:8px 0 5px; font-size:14px">개인정보 보호 기본값</h4><p class="muted small" style="margin:0">입력값·비밀번호 미수집, 민감정보 자동 마스킹.</p></div>
+              <div class="card pad"><div style="font-size:22px">🏢</div><h4 style="margin:8px 0 5px; font-size:14px">대행사 화이트라벨</h4><p class="muted small" style="margin:0">여러 고객사를 한 곳에서, 로고 박힌 리포트 공유.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>히어로 카피(문제 제기형)가 첫 3초에 와닿는지 — 업종별 카피 A/B 여지.</li>
+        <li>신뢰 요소(고객 로고·후기·설치 수)가 없음 → 전환율에 큰 영향, 추가 검토.</li>
+        <li>무료 진단 입력창이 CTA로 충분히 도드라지는지(테두리·그림자 강조 여지).</li>
+      </ul></div>
+    </section>
+
+    <!-- 02 진단 결과 -->
+    <section class="screen" id="s2">
+      <div class="screen-label"><span class="kicker">전환 후크</span><h2>무료 진단 결과 (히트맵 인포그래픽)</h2><span class="path">/ → 진단</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">진단 결과</span></div>
+        <div class="app"><div class="container">
+          <div class="card pad">
+            <div class="between" style="margin-bottom:14px"><div><div class="muted small">진단 대상</div><div style="font-weight:700">https://moodcollection.co.kr</div></div>
+              <div class="row"><div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(#d98a00 200deg,var(--surface-2) 0);display:grid;place-items:center"><div style="width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800">56</div></div><span class="small muted">기본 점수</span></div>
+            </div>
+            <div class="row" style="gap:6px; margin-bottom:12px"><span class="badge hi">양호 5</span><span class="badge md">주의 4</span><span class="badge" style="background:#fdecec;color:#e5484d">문제 0</span></div>
+            <div class="grid g2" style="gap:14px">
+              <div style="position:relative;height:230px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff">
+                <div style="position:absolute;inset:0;opacity:.92">
+                  <div style="height:32px;border-bottom:1px solid #e5e7ef;display:flex;align-items:center;justify-content:space-between;padding:0 5%">
+                    <div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;border-radius:4px;background:#1d4ed8"></div><div style="width:40px;height:7px;background:#e5e7ef;border-radius:3px"></div></div>
+                    <div style="display:flex;gap:10px"><div style="width:20px;height:6px;background:#e5e7ef;border-radius:3px"></div><div style="width:20px;height:6px;background:#e5e7ef;border-radius:3px"></div><div style="width:20px;height:6px;background:#e5e7ef;border-radius:3px"></div></div>
+                    <div style="width:40px;height:18px;border-radius:5px;background:#1d4ed8;opacity:.85"></div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:12px;padding:6% 6% 4%">
+                    <div style="display:flex;flex-direction:column;gap:7px">
+                      <div style="width:70%;height:11px;background:#e5e7ef;border-radius:3px"></div><div style="width:88%;height:11px;background:#e5e7ef;border-radius:3px"></div><div style="width:50%;height:11px;background:#e5e7ef;border-radius:3px"></div>
+                      <div style="width:78px;height:22px;border-radius:6px;background:#22c55e;opacity:.55;margin-top:4px"></div>
+                    </div>
+                    <div style="border-radius:10px;background:linear-gradient(135deg,#e4ecfb,#dbe8ff);min-height:78px"></div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 6%">
+                    <div style="border:1px solid #e5e7ef;border-radius:8px;height:48px"></div><div style="border:1px solid #e5e7ef;border-radius:8px;height:48px"></div><div style="border:1px solid #e5e7ef;border-radius:8px;height:48px"></div>
+                  </div>
+                </div>
+                <div style="position:absolute;left:84%;top:13%;width:66px;height:66px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(234,179,8,.52),transparent 72%);filter:blur(6px)"></div>
+                <div style="position:absolute;left:26%;top:52%;width:58px;height:58px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(234,179,8,.46),transparent 74%);filter:blur(6px)"></div>
+                <div style="position:absolute;left:78%;top:70%;width:60px;height:60px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(234,179,8,.4),transparent 74%);filter:blur(6px)"></div>
+                <div style="position:absolute;left:32%;top:30%;width:60px;height:60px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.26),transparent 70%);filter:blur(6px)"></div>
+              </div>
+              <div>
+                <div class="notice" style="background:#fdecec;border-color:#f5c2c2;color:#c0362c;margin-bottom:10px">🔥 가장 뜨거운 영역: <b>상단·보안</b> — 여기부터 개선하세요.</div>
+                <div class="row" style="align-items:flex-start;gap:9px;margin-bottom:8px"><span class="badge" style="background:rgba(217,138,0,.2);color:#d98a00">주의</span><div><b class="small">상단 · 보안</b><div class="muted small">분석 도구가 감지되지 않습니다.</div></div></div>
+                <div style="border-top:1px dashed var(--border);padding-top:12px;margin-top:6px">
+                  <div class="row" style="margin-bottom:10px"><span class="badge lo">🔒 설치하면 보이는 것</span></div>
+                  <div class="grid g2" style="gap:8px">
+                    <div style="background:var(--surface-2);border-radius:9px;padding:9px 11px"><div>🖱</div><b class="small">클릭 히트맵</b></div>
+                    <div style="background:var(--surface-2);border-radius:9px;padding:9px 11px"><div>😤</div><b class="small">좌절 클릭</b></div>
+                  </div>
+                  <div style="text-align:center;margin-top:12px"><span class="btn pri">무료로 가입하고 실제 분석 시작 →</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>"지금 되는 진단"과 "설치해야 보이는 것"의 구분이 명확한가 — 잠금 티저가 가입 동기로 충분한지.</li>
+        <li>점수(56)의 의미·기준이 방문자에게 직관적으로 전달되는지(색·라벨 보강 여지).</li>
+        <li>진단 후 이탈 방지: 이메일로 결과 보내기 같은 2차 후크 검토.</li>
+      </ul></div>
+    </section>
+
+    <!-- 03 대시보드 -->
+    <section class="screen" id="s3">
+      <div class="screen-label"><span class="kicker">대행사</span><h2>대행사 대시보드</h2><span class="path">/dashboard</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">/dashboard</span></div>
+        <div class="app">
+          <div class="topbar"><div class="brand"><span class="dot"></span> FlowLens <span class="pill" style="margin-left:4px">그로스랩</span></div><div class="row"><span class="btn sm">요금제</span><span class="muted small">김대표</span><span class="btn sm">로그아웃</span></div></div>
+          <div class="container">
+            <div class="between" style="margin-bottom:16px"><div><h1 style="font-size:20px">대행사 대시보드</h1><p class="muted small" style="margin-top:3px">2개 고객사 · 3개 사이트 관리 중</p></div><span class="btn">추적 데모 페이지 열기 ↗</span></div>
+            <div class="grid g4" style="margin-bottom:20px">
+              <div class="card metric pad"><div class="label">총 세션 (전체 사이트)</div><div class="value">1,312</div></div>
+              <div class="card metric pad"><div class="label">관리 사이트</div><div class="value">3</div><div class="sub">고객사 2곳</div></div>
+              <div class="card metric pad"><div class="label">도출된 개선 과제</div><div class="value">7</div><div class="sub">룰 엔진 자동 생성</div></div>
+              <div class="card metric pad"><div class="label">전환 이벤트</div><div class="value">85</div></div>
+            </div>
+            <div class="row" style="margin-bottom:10px"><h3 style="font-size:15px">무드컬렉션</h3><span class="badge lo">쇼핑몰</span><span class="muted small">사이트 2개</span></div>
+            <div class="grid g2">
+              <div class="card pad"><div class="between" style="margin-bottom:12px"><div><div style="font-weight:700;font-size:14px">무드컬렉션 자사몰</div><div class="muted small">moodcollection.co.kr</div></div><span class="badge md">개선 3건</span></div>
+                <div class="grid g4" style="gap:10px"><div><div class="muted" style="font-size:10px">세션</div><b>562</b></div><div><div class="muted" style="font-size:10px">이탈률</div><b>17%</b></div><div><div class="muted" style="font-size:10px">모바일</div><b>72%</b></div><div><div class="muted" style="font-size:10px">주의 클릭</div><b>196</b></div></div></div>
+              <div class="card pad"><div class="between" style="margin-bottom:12px"><div><div style="font-weight:700;font-size:14px">여름세일 랜딩</div><div class="muted small">moodcollection.co.kr</div></div><span class="badge md">개선 2건</span></div>
+                <div class="grid g4" style="gap:10px"><div><div class="muted" style="font-size:10px">세션</div><b>430</b></div><div><div class="muted" style="font-size:10px">이탈률</div><b>25%</b></div><div><div class="muted" style="font-size:10px">모바일</div><b>68%</b></div><div><div class="muted" style="font-size:10px">주의 클릭</div><b>41</b></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>고객사 → 사이트 위계는 명확. 사이트가 많아지면 <b>검색·정렬·즐겨찾기</b>가 필요.</li>
+        <li>신규 가입 직후 <b>빈 상태(empty state)</b> 안내가 없음 → 첫 사이트 등록 유도 화면 필요.</li>
+        <li>카드에 추세(전주 대비 ↑↓)가 없어 "지금 좋아지는 중인지"가 안 보임.</li>
+      </ul></div>
+    </section>
+
+    <!-- 04 사이트 개요 -->
+    <section class="screen" id="s4">
+      <div class="screen-label"><span class="kicker">분석</span><h2>사이트 개요</h2><span class="path">/sites/:id</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">/sites/무드컬렉션 자사몰</span></div>
+        <div class="app"><div class="container">
+          <div class="row" style="margin-bottom:2px"><h1 style="font-size:20px">무드컬렉션 자사몰</h1><span class="badge lo">쇼핑몰</span></div>
+          <p class="muted small">무드컬렉션 · moodcollection.co.kr</p>
+          <div class="tabs"><span class="tab on">개요</span><span class="tab">히트맵</span><span class="tab">퍼널</span><span class="tab">세션</span><span class="tab">전후 비교</span><span class="tab">개선 제안</span><span class="tab">설치·공유</span><span class="tab">데이터 관리</span></div>
+          <div class="grid g4" style="margin-bottom:12px">
+            <div class="card metric pad"><div class="label">세션</div><div class="value">562</div></div>
+            <div class="card metric pad"><div class="label">이탈률</div><div class="value">17%</div><div class="sub">단일 페이지 후 이탈</div></div>
+            <div class="card metric pad"><div class="label">평균 스크롤</div><div class="value">51%</div><div class="sub">페이지 도달 깊이</div></div>
+            <div class="card metric pad"><div class="label">전환</div><div class="value">25</div></div>
+          </div>
+          <div class="grid g3">
+            <div class="card pad"><h4 style="margin-bottom:12px">디바이스</h4>
+              <div style="margin-bottom:10px"><div class="between small" style="margin-bottom:4px"><span>모바일</span><span class="muted">72%</span></div><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div></div>
+              <div style="margin-bottom:10px"><div class="between small" style="margin-bottom:4px"><span>데스크톱</span><span class="muted">23%</span></div><div class="bar-track"><div class="bar-fill" style="width:23%;background:#22c55e"></div></div></div>
+              <div><div class="between small" style="margin-bottom:4px"><span>태블릿</span><span class="muted">5%</span></div><div class="bar-track"><div class="bar-fill" style="width:5%;background:#eab308"></div></div></div></div>
+            <div class="card pad"><h4 style="margin-bottom:12px">유입 채널</h4>
+              <div style="margin-bottom:10px"><div class="between small" style="margin-bottom:4px"><span>광고</span><span class="muted">30%</span></div><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div></div>
+              <div style="margin-bottom:10px"><div class="between small" style="margin-bottom:4px"><span>검색</span><span class="muted">28%</span></div><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div></div>
+              <div><div class="between small" style="margin-bottom:4px"><span>직접 유입</span><span class="muted">15%</span></div><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div></div></div>
+            <div class="card pad"><h4 style="margin-bottom:12px">스크롤 도달률</h4>
+              <div style="margin-bottom:10px"><div class="between small" style="margin-bottom:4px"><span>25% 지점 도달</span><span class="muted">90%</span></div><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div></div>
+              <div style="margin-bottom:10px"><div class="between small" style="margin-bottom:4px"><span>50% 지점 도달</span><span class="muted">54%</span></div><div class="bar-track"><div class="bar-fill" style="width:54%"></div></div></div>
+              <div><div class="between small" style="margin-bottom:4px"><span>75% 지점 도달</span><span class="muted">10%</span></div><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div></div></div>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>탭이 8개로 많음 → 자주 쓰는 것 우선/그룹핑, 모바일에서 가로 스크롤 처리 점검.</li>
+        <li>지표 카드에 <b>기간 선택(7일/30일)</b>과 증감 표시가 없음.</li>
+        <li>3개 막대 카드가 정보 밀도는 좋으나 색 의미(파랑=?)가 통일됐는지 확인.</li>
+      </ul></div>
+    </section>
+
+    <!-- 05 히트맵 스튜디오 -->
+    <section class="screen" id="s5">
+      <div class="screen-label"><span class="kicker">핵심</span><h2>히트맵 스튜디오</h2><span class="path">/sites/:id/heatmap</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">히트맵</span></div>
+        <div class="app"><div class="container"><div class="card pad">
+          <div class="row" style="flex-wrap:wrap;margin-bottom:10px"><span class="btn pri sm">전체 1,779</span><span class="btn sm">🖥 데스크톱 427</span><span class="btn sm">📱 모바일 1,289</span><span class="btn sm">태블릿 63</span></div>
+          <div class="tabs" style="margin:0 0 14px"><span class="tab on">클릭맵</span><span class="tab">셀렉터</span><span class="tab">스크롤맵</span><span class="tab">제스처</span></div>
+          <div class="row" style="flex-wrap:wrap;margin-bottom:12px"><span class="btn pri sm">전체 1779</span><span class="btn sm">일반 클릭 1583</span><span class="btn sm">Dead click 157</span><span class="btn sm">Rage click 39</span>
+            <span style="margin-left:auto" class="small muted"><span class="dotleg" style="background:#3b82f6"></span> 낮음 <span class="dotleg" style="background:#22c55e"></span><span class="dotleg" style="background:#eab308"></span><span class="dotleg" style="background:#ef4444"></span> 높음</span></div>
+          <div class="heat">
+            <!-- 실사이트 배경 목업 (히트맵이 실제 화면 위에 얹힌 것처럼) -->
+            <div style="position:absolute;inset:0;opacity:.9">
+              <div style="height:34px;border-bottom:1px solid #e5e7ef;display:flex;align-items:center;justify-content:space-between;padding:0 4%">
+                <div style="display:flex;align-items:center;gap:6px"><div style="width:15px;height:15px;border-radius:4px;background:#1d4ed8"></div><div style="width:44px;height:7px;background:#e5e7ef;border-radius:3px"></div></div>
+                <div style="display:flex;gap:12px"><div style="width:22px;height:6px;background:#e5e7ef;border-radius:3px"></div><div style="width:22px;height:6px;background:#e5e7ef;border-radius:3px"></div><div style="width:22px;height:6px;background:#e5e7ef;border-radius:3px"></div></div>
+                <div style="width:46px;height:20px;border-radius:6px;background:#1d4ed8;opacity:.85"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:16px;padding:5% 5% 3%">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="width:72%;height:13px;background:#e5e7ef;border-radius:3px"></div><div style="width:90%;height:13px;background:#e5e7ef;border-radius:3px"></div><div style="width:52%;height:13px;background:#e5e7ef;border-radius:3px"></div>
+                  <div style="width:90px;height:26px;border-radius:7px;background:#22c55e;opacity:.5;margin-top:4px"></div>
+                </div>
+                <div style="border-radius:12px;background:linear-gradient(135deg,#e4ecfb,#dbe8ff);min-height:96px"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 5%">
+                <div style="border:1px solid #e5e7ef;border-radius:9px;height:56px"></div><div style="border:1px solid #e5e7ef;border-radius:9px;height:56px"></div><div style="border:1px solid #e5e7ef;border-radius:9px;height:56px"></div>
+              </div>
+            </div>
+            <div class="blob" style="left:52%;top:18%;width:120px;height:80px;background:radial-gradient(circle,rgba(239,68,68,.85),rgba(34,197,94,.5) 55%,rgba(59,130,246,.2) 80%,transparent)"></div>
+            <div class="blob" style="left:80%;top:14%;width:110px;height:70px;background:radial-gradient(circle,rgba(239,68,68,.8),rgba(234,179,8,.5) 50%,transparent 80%)"></div>
+            <div class="blob" style="left:50%;top:55%;width:130px;height:80px;background:radial-gradient(circle,rgba(239,68,68,.8),rgba(34,197,94,.5) 55%,transparent 82%)"></div>
+          </div>
+        </div></div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>필터가 3층(디바이스 · 뷰모드 · 클릭유형)이라 처음엔 복잡할 수 있음 → 기본값·안내 보강.</li>
+        <li>지금은 회색 와이어프레임 위 오버레이. <b>실제 페이지 스냅샷</b> 위에 얹으면 훨씬 직관적(향후).</li>
+        <li>히트 영역 클릭 시 상세(요소·건수) 팝오버가 있으면 Amplitude 수준에 근접.</li>
+      </ul></div>
+    </section>
+
+    <!-- 06 퍼널 -->
+    <section class="screen" id="s6">
+      <div class="screen-label"><span class="kicker">분석</span><h2>전환 퍼널</h2><span class="path">/sites/:id/funnel</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">퍼널</span></div>
+        <div class="app"><div class="container"><div class="card pad">
+          <h4 style="margin-bottom:16px">전환 퍼널</h4>
+          <div class="stack" style="gap:14px">
+            <div><div class="between small" style="margin-bottom:5px"><span><span class="badge gray">1</span> <b>방문 (세션)</b></span><span class="muted">562 · 전체의 100%</span></div><div class="fbar" style="width:100%"></div></div>
+            <div><div class="between small" style="margin-bottom:5px"><span><span class="badge gray">2</span> <b>콘텐츠 확인 (스크롤 25%+)</b></span><span class="muted">510 · 91%</span></div><div class="fbar" style="width:91%"></div><div class="small" style="color:var(--text-2);margin-top:3px">↓ 이전 대비 9% 이탈</div></div>
+            <div><div class="between small" style="margin-bottom:5px"><span><span class="badge gray">3</span> <b>몰입 (스크롤 50%+)</b></span><span class="muted">305 · 54%</span></div><div class="fbar" style="width:54%"></div><div class="small" style="color:var(--red);margin-top:3px">↓ 이전 대비 40% 이탈</div></div>
+            <div><div class="between small" style="margin-bottom:5px"><span><span class="badge gray">4</span> <b>클릭/행동</b></span><span class="muted">257 · 46%</span></div><div class="fbar" style="width:46%"></div><div class="small" style="color:var(--text-2);margin-top:3px">↓ 이전 대비 16% 이탈</div></div>
+            <div><div class="between small" style="margin-bottom:5px"><span><span class="badge gray">5</span> <b>전환</b></span><span class="muted">26 · 5%</span></div><div class="fbar" style="width:5%;background:var(--green)"></div></div>
+          </div>
+        </div></div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>단계가 고정(스크롤·클릭 기준). <b>고객이 직접 퍼널 단계 정의</b>(URL·이벤트)하는 기능은 향후 과제.</li>
+        <li>"가장 큰 이탈 구간"을 색뿐 아니라 상단 요약으로도 못박아 주면 좋음.</li>
+      </ul></div>
+    </section>
+
+    <!-- 07 전후 비교 -->
+    <section class="screen" id="s7">
+      <div class="screen-label"><span class="kicker">성과 증명</span><h2>개선 전/후 비교</h2><span class="path">/sites/:id/compare</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">전후 비교</span></div>
+        <div class="app"><div class="container">
+          <div class="notice" style="margin-bottom:14px"><b>이전 14일</b>과 <b>최근 14일</b>의 지표를 비교합니다. (초록 = 개선, 빨강 = 악화)</div>
+          <div class="grid g3" style="margin-bottom:14px">
+            <div class="card metric pad"><div class="label">개선된 지표</div><div class="value" style="color:var(--green)">3</div></div>
+            <div class="card metric pad"><div class="label">악화된 지표</div><div class="value" style="color:var(--red)">5</div></div>
+            <div class="card metric pad"><div class="label">변화 없음</div><div class="value">1</div></div>
+          </div>
+          <div class="card" style="overflow:hidden"><table>
+            <thead><tr><th>지표</th><th>이전 14일</th><th>최근 14일</th><th>변화</th></tr></thead>
+            <tbody>
+              <tr><td><b>세션</b></td><td class="muted">269</td><td><b>251</b></td><td style="color:var(--red);font-weight:700">▼ 18 악화</td></tr>
+              <tr><td><b>이탈률</b></td><td class="muted">17%</td><td><b>17%</b></td><td style="color:var(--text-3)">– 0%</td></tr>
+              <tr><td><b>Dead click 비율</b></td><td class="muted">8%</td><td><b>10%</b></td><td style="color:var(--red);font-weight:700">▲ 2% 악화</td></tr>
+              <tr><td><b>CTA 노출률</b></td><td class="muted">27%</td><td><b>36%</b></td><td style="color:var(--green);font-weight:700">▲ 9% 개선</td></tr>
+            </tbody></table></div>
+        </div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>대행사 핵심 화면. 기준선이 "최근 14일 vs 이전 14일"로 고정 → <b>개선 배포일 기준 지정</b> 필요.</li>
+        <li>초록/빨강만으로 구분 → 색각 접근성(아이콘·부호 병기)은 이미 ▲▼로 보완됨. 유지.</li>
+      </ul></div>
+    </section>
+
+    <!-- 08 개선 제안 -->
+    <section class="screen" id="s8">
+      <div class="screen-label"><span class="kicker">가치</span><h2>개선 제안 (자동 리포트)</h2><span class="path">/sites/:id/suggestions</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">개선 제안</span></div>
+        <div class="app"><div class="container">
+          <div class="card pad" style="border-color:#cfe0fd;background:linear-gradient(180deg,#f5f9ff,#fff)">
+            <div class="row" style="margin-bottom:8px"><span class="badge lo">✨ 자동 리포트</span><span class="muted small">자체 룰 엔진 기반 · 외부 AI 미전송</span></div>
+            <h3 style="font-size:16px;margin-bottom:8px">구매 전환을 높이려면 "모바일 방문자가 핵심 버튼을 보기 전에 이탈합니다"부터 개선하는 것을 권장합니다.</h3>
+            <p style="margin:0 0 14px">분석 기간 동안 562개 세션이 수집되었고, 모바일 방문이 72%로 다수입니다. 이탈률 17%, 평균 스크롤 51%이며 구매 전환은 25건입니다.</p>
+            <div class="small" style="font-weight:700;color:var(--text-2);margin-bottom:8px">우선 조치</div>
+            <div class="stack" style="gap:8px">
+              <div class="card pad" style="box-shadow:none"><div class="row" style="margin-bottom:3px"><span class="badge lo">1</span><b class="small">모바일 방문자가 핵심 버튼을 보기 전에 이탈합니다</b></div><p class="small" style="margin:2px 0">💡 첫 화면에 고정(sticky) CTA를 추가하거나 핵심 버튼을 상단으로.</p><p class="small muted" style="margin:0">📊 모바일 비중 72%, CTA 노출률 27%.</p></div>
+              <div class="card pad" style="box-shadow:none"><div class="row" style="margin-bottom:3px"><span class="badge lo">2</span><b class="small">클릭되지 않는 요소를 누르는 방문자가 있습니다</b></div><p class="small muted" style="margin:2px 0 0">📊 반응 없는 클릭(dead click) 9% (157건).</p></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>제안이 읽기 전용. <b>"완료 체크 / 담당자 / 개선 과제 보드"</b>로 발전하면 대행사 운영 도구가 됨.</li>
+        <li>신뢰도(세션 수 기반) 배지가 개별 제안에도 잘 붙는지 확인.</li>
+      </ul></div>
+    </section>
+
+    <!-- 09 세션 리플레이 -->
+    <section class="screen" id="s9">
+      <div class="screen-label"><span class="kicker">관찰</span><h2>세션 리플레이</h2><span class="path">/sites/:id/sessions/:sid</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">세션 재생</span></div>
+        <div class="app"><div class="container"><div class="grid" style="grid-template-columns:1fr 240px;gap:16px">
+          <div class="card pad">
+            <div class="between" style="margin-bottom:10px"><div class="row"><span class="btn pri sm">▶ 재생 (4배속)</span><span class="btn sm">처음으로</span></div><span class="pill">📱 모바일</span></div>
+            <div style="height:6px;background:var(--surface-2);border-radius:999px;margin-bottom:4px"><div style="width:30%;height:100%;background:var(--accent);border-radius:999px"></div></div>
+            <div class="between small muted" style="margin-bottom:12px"><span>31.6초</span><span>총 433.8초</span></div>
+            <div class="phone-sketch">
+              <div style="position:absolute;left:50%;top:12%;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:#1d4ed8;border:2px solid #fff;box-shadow:0 0 0 4px rgba(109,94,252,.27)"></div>
+              <div style="position:absolute;left:34%;top:26%;width:11px;height:11px;border-radius:50%;background:#1d4ed8;opacity:.4"></div>
+              <div style="position:absolute;left:62%;top:24%;width:11px;height:11px;border-radius:50%;background:#1d4ed8;opacity:.4"></div>
+              <div style="position:absolute;left:0;right:0;top:38%;height:2px;background:rgba(109,94,252,.5)"><span class="pill" style="position:absolute;right:6px;top:-14px;font-size:9px">스크롤 21%</span></div>
+            </div>
+          </div>
+          <div class="card pad"><h4 style="margin-bottom:10px">이벤트 타임라인</h4>
+            <div class="stack" style="gap:5px">
+              <div class="row" style="background:var(--accent-soft);padding:6px 8px;border-radius:8px"><span class="dotleg" style="background:#9aa2ba"></span><span class="small" style="font-weight:700">페이지 진입</span><span class="small muted" style="margin-left:auto">0.0s</span></div>
+              <div class="row" style="padding:6px 8px"><span class="dotleg" style="background:#22c55e"></span><span class="small">CTA 노출 <span class="muted">구매하기</span></span><span class="small muted" style="margin-left:auto">0.0s</span></div>
+              <div class="row" style="padding:6px 8px"><span class="dotleg" style="background:#9aa2ba"></span><span class="small">스크롤</span><span class="small muted" style="margin-left:auto">1.5s</span></div>
+              <div class="row" style="padding:6px 8px"><span class="dotleg" style="background:#1d4ed8"></span><span class="small">클릭 <span class="muted">장바구니</span></span><span class="small muted" style="margin-left:auto">3.6s</span></div>
+            </div>
+          </div>
+        </div></div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>DOM 녹화가 아니라 이벤트 재생 → 개인정보 안전하지만 "실제 화면 재현"은 아님. 기대치 안내 필요.</li>
+        <li>세션 목록에서 원하는 세션(전환/이탈/디바이스) <b>필터·검색</b>이 약함.</li>
+      </ul></div>
+    </section>
+
+    <!-- 10 요금제 -->
+    <section class="screen" id="s10">
+      <div class="screen-label"><span class="kicker">수익화</span><h2>요금제 · 결제</h2><span class="path">/billing</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">/billing</span></div>
+        <div class="app"><div class="container">
+          <h1 style="font-size:20px;margin-bottom:4px">요금제 · 사용량</h1>
+          <div class="grid g2" style="margin:14px 0">
+            <div class="card pad"><div class="muted small">현재 요금제</div><div class="row" style="margin:6px 0 10px"><span style="font-size:22px;font-weight:800">Growth</span><span class="badge lo">19,800원/월</span></div><div class="small muted">사이트 3 / 3개 · 보관 90일</div></div>
+            <div class="card pad"><div class="between" style="margin-bottom:6px"><span class="muted small">이번 달 세션</span><span class="small"><b>557</b> / 20,000</span></div><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div><div class="small muted" style="margin-top:6px">한도의 3% 사용 중</div></div>
+          </div>
+          <div class="grid g3">
+            <div class="card pad"><b style="font-size:15px">Free</b><div style="font-size:20px;font-weight:800;margin:4px 0">0원<span class="muted" style="font-size:11px;font-weight:500"> /월</span></div><div class="muted small" style="margin-bottom:10px">체험 / 소규모</div><span class="btn sm" style="width:100%;justify-content:center">무료로 변경</span></div>
+            <div class="card pad" style="border-color:var(--accent);border-width:2px"><div class="between"><b style="font-size:15px">Growth</b><span class="badge lo">현재</span></div><div style="font-size:20px;font-weight:800;margin:4px 0">19,800원<span class="muted" style="font-size:11px;font-weight:500"> /월</span></div><div class="muted small" style="margin-bottom:10px">쇼핑몰 / 광고 집행사</div><span class="btn sm" style="width:100%;justify-content:center;opacity:.6">이용 중</span></div>
+            <div class="card pad"><b style="font-size:15px">Pro</b><div style="font-size:20px;font-weight:800;margin:4px 0">33,000원<span class="muted" style="font-size:11px;font-weight:500"> /월</span></div><div class="muted small" style="margin-bottom:10px">성장 쇼핑몰 / 마케팅팀</div><span class="btn pri sm" style="width:100%;justify-content:center">업그레이드 →</span></div>
+          </div>
+        </div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>현재/추천 요금제 강조는 좋음. <b>연간 결제 할인</b>·요금제 비교표는 없음.</li>
+        <li>사용량 임박(90%+) 시 업그레이드 유도 배너 등 능동적 안내 검토.</li>
+      </ul></div>
+    </section>
+
+    <!-- 11 화이트라벨 공유 -->
+    <section class="screen" id="s11">
+      <div class="screen-label"><span class="kicker">대행사 무기</span><h2>화이트라벨 공유 리포트</h2><span class="path">/share/:token · 공개</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">app.seokorea.org/share/…</span></div>
+        <div class="app">
+          <div class="topbar"><div class="brand"><span class="dot"></span> GrowthLab</div><span class="pill">행동 분석 리포트</span></div>
+          <div class="container">
+            <p class="muted small">무드컬렉션</p>
+            <h1 style="font-size:22px;margin-bottom:4px">무드컬렉션 자사몰 행동 분석 리포트</h1>
+            <p class="muted small" style="margin-bottom:18px">2026년 7월 14일 기준 · 읽기전용</p>
+            <div class="card pad" style="border-color:#cfe0fd;background:linear-gradient(180deg,#f5f9ff,#fff);margin-bottom:16px">
+              <div class="row" style="margin-bottom:8px"><span class="badge lo">✨ 자동 리포트</span></div>
+              <h3 style="font-size:15px">구매 전환을 높이려면 "모바일 방문자가 핵심 버튼을 보기 전에 이탈합니다"부터 개선하세요.</h3>
+            </div>
+            <div class="grid g4">
+              <div class="card metric pad"><div class="label">세션</div><div class="value">561</div></div>
+              <div class="card metric pad"><div class="label">이탈률</div><div class="value">19%</div></div>
+              <div class="card metric pad"><div class="label">모바일 비중</div><div class="value">74%</div></div>
+              <div class="card metric pad"><div class="label">전환</div><div class="value">30</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>대행사 로고가 <b>텍스트("GrowthLab")</b>. 실제 로고 이미지 업로드 지원이 필요.</li>
+        <li>고객 전달 시 <b>PDF 다운로드/인쇄</b> 버튼이 없음 → 보고 실무에서 중요.</li>
+      </ul></div>
+    </section>
+
+    <!-- 12 데이터 관리 -->
+    <section class="screen" id="s12">
+      <div class="screen-label"><span class="kicker">개인정보</span><h2>데이터 관리 (삭제 · 감사로그)</h2><span class="path">/sites/:id/data</span></div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span class="url">데이터 관리</span></div>
+        <div class="app"><div class="container"><div class="grid g2" style="align-items:start">
+          <div class="card pad"><h4 style="margin-bottom:6px">방문자 데이터 삭제</h4><p class="muted small" style="margin-top:0">삭제 요청·보관정책에 따라 삭제합니다. <b>되돌릴 수 없습니다.</b></p>
+            <div class="stack" style="gap:10px">
+              <div style="border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:11px 13px"><div class="row"><input type="radio" checked><b class="small">기간으로 삭제</b><span class="muted small">— 날짜 범위</span></div></div>
+              <div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div class="row"><input type="radio"><b class="small">페이지로 삭제</b></div></div>
+              <div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div class="row"><input type="radio"><b class="small">세션키로 삭제</b><span class="muted small">— 삭제요청 처리</span></div></div>
+              <div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px"><div class="row"><input type="radio"><b class="small" style="color:#c0362c">전체 삭제</b></div></div>
+            </div>
+            <span class="btn sm" style="margin-top:14px;background:#fdecec;border-color:#f5c2c2;color:#c0362c;font-weight:700">선택 데이터 영구 삭제</span>
+          </div>
+          <div class="card pad"><h4 style="margin-bottom:6px">감사 로그</h4><p class="muted small" style="margin-top:0">민감 행위 기록(최근 20건).</p>
+            <div class="between" style="padding:8px 0;border-bottom:1px solid var(--border)"><span><span class="badge gray">데이터 삭제</span> <span class="small">path=/cart · 1291건</span></span><span class="muted small">오후 10:54</span></div>
+            <div class="between" style="padding:8px 0"><span><span class="badge gray">로그인</span> <span class="small">owner@growthlab.kr</span></span><span class="muted small">오후 10:53</span></div>
+          </div>
+        </div></div></div>
+      </div>
+      <div class="notes"><h3>점검 포인트</h3><ul>
+        <li>파괴적 동작(전체 삭제)에 대한 경고·확인 절차가 충분한지(2차 확인·되돌리기 불가 명시).</li>
+        <li>감사 로그 열람 권한(OWNER만?)과 보존기간 정책 확인.</li>
+      </ul></div>
+    </section>
+
+    <p style="text-align:center;color:var(--ink-3);font-size:12px;margin-top:60px">FlowLens UI/UX 점검판 · 실제 제품 디자인 기준 · 고칠 항목을 정하면 화면별로 순차 개선</p>
+  </div>
+</div>

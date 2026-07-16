@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { width: 280px; margin: 0; font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: #0b1020; background: #fff; }
+    .hd { display: flex; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid #e2e6ee; font-weight: 800; }
+    .hd .sq { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, #1d4ed8, #1e3a8a); }
+    .bd { padding: 14px 16px; }
+    label { display: block; font-size: 11.5px; font-weight: 600; color: #4b5468; margin: 10px 0 5px; }
+    input, select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #e2e6ee; border-radius: 8px; font-size: 13px; }
+    button { width: 100%; margin-top: 14px; padding: 10px; border: 0; border-radius: 8px; background: #1d4ed8; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+    button.off { background: #eef1f6; color: #0b1020; }
+    .hint { font-size: 11px; color: #8891a3; margin-top: 8px; line-height: 1.5; }
+    .status { font-size: 12px; margin-top: 10px; color: #1d4ed8; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="hd"><span class="sq"></span> FlowLens 히트맵</div>
+  <div class="bd">
+    <label>FlowLens 주소</label>
+    <input id="origin" value="https://flow.seokorea.org" placeholder="https://flow.seokorea.org" />
+    <label>사이트 키 (siteKey)</label>
+    <input id="siteKey" placeholder="cmr..." />
+    <label>오버레이 토큰 (설치 화면에서 복사)</label>
+    <input id="token" placeholder="비밀 토큰 — 외부에 공유하지 마세요" />
+    <label>표시</label>
+    <select id="mode">
+      <option value="heat">클릭 히트맵</option>
+      <option value="scroll">스크롤맵</option>
+    </select>
+    <label>클릭 유형 (히트맵)</label>
+    <select id="gesture">
+      <option value="click">클릭 전체</option>
+      <option value="all">클릭 + 제스처</option>
+    </select>
+    <label>기간</label>
+    <select id="period">
+      <option value="0">전체</option>
+      <option value="7">최근 7일</option>
+      <option value="30">최근 30일</option>
+    </select>
+    <button id="toggle">이 페이지에 표시 켜기</button>
+    <div class="status" id="status"></div>
+    <div class="hint">대행사·운영자용 QA 뷰어입니다. 지금 보고 있는 페이지 위에 실제 클릭 히트맵을 겹쳐 표시합니다. (방문자 데이터 수집은 추적 스크립트가 담당)</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

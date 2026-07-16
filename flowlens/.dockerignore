@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+*.db
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+.env
+.env.local
+npm-debug.log
+.DS_Store
+docs

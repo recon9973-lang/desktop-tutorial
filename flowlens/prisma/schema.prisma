@@ -1,0 +1,234 @@
+// FlowLens 데이터 모델
+// 개발: SQLite. 운영: provider를 "postgresql"로 바꾸고 DATABASE_URL 교체 후 migrate.
+// SQLite 호환을 위해 enum 대신 String을 쓰고 값 규칙은 주석으로 명시한다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // 로컬 개발은 sqlite. Vercel 배포 시 vercel-build 스크립트가 자동으로 postgresql로 바꿔 빌드한다.
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 대행사 워크스페이스 (멀티테넌시의 최상위 격리 단위)
+model Agency {
+  id          String    @id @default(cuid())
+  name        String
+  logoText    String // 화이트라벨 리포트에 표시할 로고 텍스트
+  logoUrl     String    @default("") // 화이트라벨 로고 이미지(data URL 또는 URL). 있으면 텍스트 대신 표시
+  plan        String    @default("FREE") // FREE | GROWTH | AGENCY
+  trialEndsAt DateTime? // FREE 체험 만료 시각. 지나면 수집 중단(읽기 전용).
+  overageStop Boolean   @default(false) // true면 한도 초과 시 종량 대신 수집 정지
+  createdAt   DateTime  @default(now())
+  users       User[]
+  clients     Client[]
+}
+
+// 로그인 무차별 대입 방어. 원문 IP는 저장하지 않고 해시만 보관.
+model LoginThrottle {
+  ipHash    String    @id
+  fails     Int       @default(0)
+  windowAt  DateTime  @default(now())
+  lockUntil DateTime?
+}
+
+// 월별 세션 사용량 (요금제 한도·종량 과금 기준). 세션 생성 시에만 증가.
+model UsageMonth {
+  id       String @id @default(cuid())
+  agencyId String
+  ym       String // "2026-07"
+  sessions Int    @default(0)
+
+  @@unique([agencyId, ym])
+}
+
+// 개선 과제 보드: 제안(ruleId)별 처리 상태를 사이트 단위로 저장
+model SuggestionStatus {
+  id        String   @id @default(cuid())
+  siteId    String
+  ruleId    String // Suggestion.id 와 매칭 (예: mobile-cta)
+  status    String   @default("OPEN") // OPEN | DOING | DONE
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, ruleId])
+}
+
+// 대행사 멤버
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String
+  passwordHash String
+  role         String  @default("MEMBER") // OWNER | MEMBER
+  agencyId     String
+  agency       Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+// 대행사가 관리하는 고객사
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  industry  String   @default("ETC") // ECOMMERCE | CLINIC | EDU | B2B | ETC
+  agencyId  String
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  sites     Site[]
+  createdAt DateTime @default(now())
+}
+
+// 고객사의 웹사이트 (추적 단위)
+model Site {
+  id            String     @id @default(cuid())
+  name          String
+  domain        String // 수집 도메인 화이트리스트 (도용 방지)
+  siteKey       String     @unique @default(cuid()) // 공개값 (추적 스크립트에 노출됨)
+  // 크롬 확장 등 외부 뷰어용 비밀 토큰. siteKey와 달리 절대 공개하지 않는다.
+  // (siteKey만으로 히트맵을 읽을 수 있으면 남의 데이터가 노출되므로 분리)
+  // 기존 사이트는 null → 설치 화면에서 최초 조회 시 발급
+  overlayToken  String?    @unique
+  retentionDays Int        @default(90)
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sessions      Session[]
+  events        Event[]
+  shareLinks    ShareLink[]
+  createdAt     DateTime   @default(now())
+}
+
+// 방문 세션 (개인 식별 아님, 세션 구분용)
+model Session {
+  id           String   @id @default(cuid())
+  siteId       String
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  sessionKey   String
+  device       String   @default("DESKTOP") // MOBILE | DESKTOP | TABLET
+  referrer     String   @default("")
+  channel      String   @default("direct") // direct | search | ad | social | referral
+  startedAt    DateTime @default(now())
+  lastEventAt  DateTime @default(now())
+  maxScrollPct Int      @default(0)
+  pageCount    Int      @default(1)
+  isBounce     Boolean  @default(true)
+  events       Event[]
+
+  @@index([siteId])
+  @@index([sessionKey])
+}
+
+// 개별 이벤트. 좌표는 0~1 상대값. IP/폼입력값 컬럼 없음(설계상 미수집).
+model Event {
+  id          String   @id @default(cuid())
+  siteId      String
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type        String // page_view | click | rage_click | dead_click | scroll | pointer_sample | form_focus | form_submit | cta_view | cta_click | conversion | session_end
+  url         String   @default("")
+  path        String   @default("/")
+  xRel        Float? // 문서 폭 대비 0~1
+  yRel        Float? // 문서 높이 대비 0~1
+  vw          Int? // viewport width
+  vh          Int? // viewport height
+  scrollPct   Int? // 스크롤 도달 %
+  targetLabel String? // 마스킹된 클릭 대상 라벨
+  meta        String   @default("{}") // 부가 정보 JSON 문자열
+  ts          DateTime @default(now())
+
+  @@index([siteId, type])
+  @@index([sessionId])
+}
+
+// 마우스 이동 경로. 좌표를 낱개 이벤트(수백 줄)로 저장하지 않고
+// 세션·페이지별 "경로 1줄"로 압축 저장한다 (저장량 약 40~50배 절감).
+// points 형식: "x,y|x,y|..." — 0~1000 정수 상대좌표만. 개인정보 없음.
+model MovePath {
+  id        String   @id @default(cuid())
+  siteId    String
+  sessionId String
+  device    String   @default("DESKTOP") // 조회 시 조인 없이 기기 필터하려고 비정규화
+  path      String   @default("/")
+  points    String
+  count     Int      @default(0)
+  ts        DateTime @default(now())
+
+  @@index([siteId, path])
+  @@index([sessionId])
+}
+
+// 감사 로그: 민감 행위(로그인·데이터 삭제·공유링크 생성·요금제 변경 등) 기록
+model AuditLog {
+  id        String   @id @default(cuid())
+  agencyId  String
+  userId    String?
+  userEmail String   @default("")
+  action    String // LOGIN | DELETE_DATA | CREATE_SHARE | CHANGE_PLAN | SIGNUP
+  detail    String   @default("")
+  ts        DateTime @default(now())
+
+  @@index([agencyId])
+}
+
+// 무료 진단(랜딩)용 데모 배경: 도메인당 1회만 캡처해 재사용한다(비용 절감).
+model DemoScreenshot {
+  id         String   @id @default(cuid())
+  domain     String   @unique
+  image      Bytes
+  mime       String   @default("image/png") // 신규 캡처는 image/webp (약 8배 작음)
+  width      Int
+  height     Int
+  capturedAt DateTime @default(now())
+}
+
+// 무료 진단 캡처 남용 방지: IP당 1회 캡처 허용. 원문 IP는 저장하지 않고 해시만 보관.
+model DiagnoseQuota {
+  ipHash  String   @id
+  count   Int      @default(1)
+  firstAt DateTime @default(now())
+  lastAt  DateTime @updatedAt
+}
+
+// 히트맵 집계 스냅샷: 보관기간이 지난 원시 이벤트를 격자 카운트로 압축 저장(롤업).
+// 원시 이벤트는 삭제해도 이 스냅샷으로 히트맵을 다시 그릴 수 있다(용량 급감, 기능 유지).
+model HeatmapSnapshot {
+  id        String   @id @default(cuid())
+  siteId    String
+  path      String   @default("/")
+  kind      String // "click" | "move"
+  device    String   @default("DESKTOP") // DESKTOP | MOBILE | TABLET
+  // 격자 카운트 JSON. click: {cols,rows,cells:[[i,j,click,rage,dead]]}, move: {cols,rows,cells:[[i,j,n]]}
+  grid      String
+  samples   Int      @default(0)
+  periodTo  DateTime // 이 시점 이전 데이터를 집계함(롤업 경계)
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, path, kind, device])
+  @@index([siteId, path])
+}
+
+// 사이트 페이지 스크린샷 (히트맵/전후비교 배경). 전체페이지 캡처 + 원본 크기 저장.
+model Screenshot {
+  id         String   @id @default(cuid())
+  siteId     String
+  path       String   @default("/")
+  device     String   @default("DESKTOP") // DESKTOP | MOBILE — 기기별 레이아웃이 달라 각각 캡처
+  image      Bytes
+  mime       String   @default("image/png") // 신규 캡처는 image/webp (약 8배 작음)
+  width      Int // 캡처 뷰포트 폭(px)
+  height     Int // 전체 페이지 높이(px)
+  capturedAt DateTime @default(now())
+
+  @@unique([siteId, path, device])
+}
+
+// 고객 공유용 화이트라벨 읽기전용 링크
+model ShareLink {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  token     String   @unique @default(cuid())
+  active    Boolean  @default(true)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+}
