@@ -8258,6 +8258,12 @@ function _allBlogPosts() {
   // 예약 발행: publishAt이 미래인 글은 그 시각 전까지 목록·캐러셀·사이트맵에서 숨김
   var now = Date.now();
   var live = _dynBlogPosts.filter(function(p){ return !p.publishAt || Date.parse(p.publishAt) <= now; });
+  // 최신순 정렬 — id(auto_<생성ms>) 내림차순. 삽입 순서(오래된 글 먼저)라 섹션·'최신 N편'·목록이
+  // 옛 글부터 보이던 문제를 교정. (정적 글은 뒤에 유지)
+  live = live.slice().sort(function(a, b){
+    var ai = String(a.id), bi = String(b.id);
+    return ai < bi ? 1 : (ai > bi ? -1 : 0);
+  });
   return live.concat(STATIC_BLOG_POSTS);
 }
 
