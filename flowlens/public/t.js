@@ -154,6 +154,21 @@
     return false;
   }
 
+  // 팝업·플로팅 배너처럼 화면에 고정된 레이어 안인가.
+  // 고정 레이어의 클릭을 문서 좌표(pageY = clientY + scrollY)로 환산하면, 같은 "닫기" 버튼이
+  // 스크롤 위치에 따라 히트맵의 전혀 다른 곳에 찍힌다(맨 위에서 닫으면 9% 지점, 중간에서 닫으면 99% 지점).
+  // 그러면 뒤에 있는 콘텐츠의 클릭 수가 부풀려지고 히트맵이 오염되므로 좌표를 보내지 않는다.
+  function inFixedLayer(el) {
+    var n = el;
+    for (var i = 0; i < 8 && n && n.nodeType === 1 && n !== document.body; i++) {
+      var pos = "";
+      try { pos = window.getComputedStyle(n).position; } catch (e) {}
+      if (pos === "fixed" || pos === "sticky") return true;
+      n = n.parentElement;
+    }
+    return false;
+  }
+
   // 문서 대비 상대 좌표 (0~1)
   function relCoords(e) {
     var docW = Math.max(document.documentElement.scrollWidth, window.innerWidth);
@@ -255,7 +270,13 @@
 
       var interactive = isInteractive(el);
       var type = isRage ? "rage_click" : !interactive ? "dead_click" : "click";
-      push(type, { xRel: c.xRel, yRel: c.yRel, scrollPct: maxScroll, targetLabel: labelOf(el) });
+      // 고정 레이어(팝업 등)의 클릭은 문서 좌표가 무의미하므로 좌표 없이 보낸다.
+      // 좌표가 없으면 히트맵 조회(xRel not null)에서 자동 제외되고, 클릭 수·라벨은 그대로 남는다.
+      if (inFixedLayer(el)) {
+        push(type, { scrollPct: maxScroll, targetLabel: labelOf(el), meta: '{"fixed":1}' });
+      } else {
+        push(type, { xRel: c.xRel, yRel: c.yRel, scrollPct: maxScroll, targetLabel: labelOf(el) });
+      }
     },
     true
   );
@@ -363,6 +384,53 @@
   var ctaObserved = new WeakSet(); // 중복 observe 방지
   var ctaViewed = new WeakSet(); // 노출 1회만 기록
   var ctaCount = 0;
+  var ctaPending = []; // 화면엔 들어왔지만 팝업에 가려져 아직 "봤다"고 할 수 없는 것
+
+  // IntersectionObserver는 "화면 영역 안에 있나"만 보고 "실제로 눈에 보이나"는 보지 않는다.
+  // 그래서 팝업이 새까맣게 덮고 있는 CTA도 노출 100%로 잡힌다 → 노출률이 부풀고 mobile-cta 제안이
+  // 영영 안 뜬다. 요소 중심점에 실제로 뭐가 있는지 확인해서 가려졌는지 판별한다.
+  function ctaVisibleAt(el) {
+    var r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return false;
+    var x = Math.min(Math.max(r.left + r.width / 2, 1), window.innerWidth - 1);
+    var y = Math.min(Math.max(r.top + r.height / 2, 1), window.innerHeight - 1);
+    var top;
+    try { top = document.elementFromPoint(x, y); } catch (e) { return true; } // 확인 불가면 보인 것으로 (과소집계 방지)
+    if (!top) return false;
+    // 자기 자신·자손(내부 span 등)·조상이 잡히면 가려지지 않은 것.
+    // 판정이 애매하면 "보였다" 쪽으로 기운다 — 과소집계는 없는 문제를 있다고 하는 오진을 만든다.
+    return el === top || el.contains(top) || top.contains(el);
+  }
+
+  // IO의 threshold 0.6과 같은 기준을 직접 계산 (재확인용. IO는 다시 안 터지므로)
+  function ctaInView(el) {
+    var r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return false;
+    var visW = Math.max(0, Math.min(r.right, window.innerWidth) - Math.max(r.left, 0));
+    var visH = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
+    return (visW * visH) / (r.width * r.height) >= 0.6;
+  }
+
+  function ctaFire(el) {
+    ctaViewed.add(el);
+    push("cta_view", { targetLabel: labelOf(el) });
+    if (ctaIo) ctaIo.unobserve(el); // 1회면 충분
+  }
+
+  // 팝업을 닫으면 그제서야 보이게 된다. IO는 스크롤이 없으면 다시 안 터지므로 주기적으로 재확인한다.
+  // 대기 중인 게 없으면 즉시 반환하므로 평소 비용은 사실상 0.
+  function ctaRecheck() {
+    if (!ctaPending.length) return;
+    var still = [];
+    for (var i = 0; i < ctaPending.length; i++) {
+      var el = ctaPending[i];
+      if (ctaViewed.has(el)) continue;
+      if (!ctaInView(el)) { still.push(el); continue; } // 화면 밖으로 나감 → 계속 대기
+      if (ctaVisibleAt(el)) ctaFire(el);
+      else still.push(el); // 아직 가려져 있음
+    }
+    ctaPending = still;
+  }
 
   function scanCtas() {
     if (!ctaIo || ctaCount >= CTA_MAX) return;
@@ -383,15 +451,18 @@
       function (entries) {
         for (var i = 0; i < entries.length; i++) {
           var en = entries[i];
-          if (en.isIntersecting && !ctaViewed.has(en.target)) {
-            ctaViewed.add(en.target);
-            push("cta_view", { targetLabel: labelOf(en.target) });
-            ctaIo.unobserve(en.target); // 1회면 충분
+          if (!en.isIntersecting || ctaViewed.has(en.target)) continue;
+          if (ctaVisibleAt(en.target)) {
+            ctaFire(en.target);
+          } else if (ctaPending.indexOf(en.target) < 0) {
+            ctaPending.push(en.target); // 팝업 등에 가려짐 → 닫히면 그때 기록
           }
         }
       },
       { threshold: 0.6 }
     );
+    // 가려져 대기 중인 CTA를 다시 확인 (팝업이 닫히는 시점을 잡는다)
+    setInterval(ctaRecheck, 2000);
 
     scanCtas();
     // GTM은 페이지 초반에 스크립트를 넣기도 한다. 그 시점엔 DOM이 비어 있어 위 스캔이 0건일 수 있으므로

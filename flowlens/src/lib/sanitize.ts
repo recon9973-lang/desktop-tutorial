@@ -49,7 +49,8 @@ export function sanitizeLabel(raw: unknown): string | null {
 }
 
 // meta: 민감 키 차단 + 값 마스킹 + allowlist. 기본은 dir(제스처 방향)만 허용.
-const META_KEY_ALLOW = new Set(["dir"]);
+// dir: 스와이프 방향. fixed: 팝업 등 화면 고정 레이어의 클릭(문서 좌표가 없어 히트맵에서 제외됨)
+const META_KEY_ALLOW = new Set(["dir", "fixed"]);
 const META_KEY_BLOCK = /pass|pwd|email|mail|phone|tel|mobile|name|addr|address|rrn|birth|ssn|card|account|token|medical|health/i;
 
 export function sanitizeMeta(raw: unknown): string {

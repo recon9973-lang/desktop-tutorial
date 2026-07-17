@@ -46,14 +46,16 @@ export async function getSiteMetrics(siteId: string, range?: DateRange): Promise
   const clicks = typeCount("click");
   const rageClicks = typeCount("rage_click");
   const deadClicks = typeCount("dead_click");
-  const pageViews = typeCount("page_view") || 1;
-  const ctaViews = typeCount("cta_view");
   const conversions = typeCount("conversion");
 
   // 폼 시작/제출 (세션 단위 근사)
-  const [formFocusSessions, formSubmitSessions] = await Promise.all([
+  // CTA 노출도 세션 단위로 센다. 이벤트 수 ÷ 페이지뷰 수로 계산하면, 한 화면에 CTA가 3개 보이는
+  // 순간 300%가 되어 늘 100%로 잘린다(= "핵심 버튼을 못 본다"는 mobile-cta 제안이 영영 안 뜬다).
+  // 재야 하는 건 "방문자 중 몇 %가 CTA를 봤나" 이므로 세션 기준이 맞다.
+  const [formFocusSessions, formSubmitSessions, ctaViewSessions] = await Promise.all([
     prisma.event.findMany({ where: { ...eWhere, type: "form_focus" }, distinct: ["sessionId"], select: { sessionId: true } }),
     prisma.event.findMany({ where: { ...eWhere, type: "form_submit" }, distinct: ["sessionId"], select: { sessionId: true } }),
+    prisma.event.findMany({ where: { ...eWhere, type: "cta_view" }, distinct: ["sessionId"], select: { sessionId: true } }),
   ]);
   const formStarts = formFocusSessions.length;
   const formSubmits = formSubmitSessions.length;
@@ -79,7 +81,7 @@ export async function getSiteMetrics(siteId: string, range?: DateRange): Promise
     rageClicks,
     deadClicks,
     deadClickRate: pct(deadClicks, totalClicks),
-    ctaViewRate: Math.min(100, pct(ctaViews, pageViews)),
+    ctaViewRate: pct(ctaViewSessions.length, sessions), // CTA를 1개 이상 본 세션 비율
     formStarts,
     formSubmits,
     formCompletionRate: pct(formSubmits, formStarts),
