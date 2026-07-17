@@ -7,6 +7,7 @@ import { generateSuggestions } from "@/lib/rules";
 import TopBar from "@/components/TopBar";
 import { IndustryBadge, MetricCard } from "@/components/ui";
 import { METRIC_HELP } from "@/lib/metric-help";
+import { isAdminEmail } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <TopBar agencyName={user.agency.name} userName={user.name} />
+      <TopBar agencyName={user.agency.name} userName={user.name} isAdmin={isAdminEmail(user.email)} />
       <div className="container">
         <div className="between" style={{ marginBottom: 20 }}>
           <div>
