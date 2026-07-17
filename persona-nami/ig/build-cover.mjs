@@ -70,3 +70,14 @@ for (const it of items) {
   ok++;
 }
 console.log(`${ok}/${items.length} covers built`);
+
+// 부가: 원본 그대로 저장할 참고 이미지(합성 없음). persona-nami/ig/raw-fetch.json = [{url, out}].
+// 샌드박스는 생성 CDN egress가 막혀 있어, 러너에서 내려받아 저장소에 저장한다(예: nami-body.png 교체).
+const RAW = "persona-nami/ig/raw-fetch.json";
+if (fs.existsSync(RAW)) {
+  const raws = JSON.parse(fs.readFileSync(RAW, "utf8"));
+  for (const r of raws) {
+    await download(r.url, r.out);
+    console.log(`✓ raw 저장: ${r.out}`);
+  }
+}

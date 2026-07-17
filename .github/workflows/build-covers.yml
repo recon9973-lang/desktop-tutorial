@@ -36,7 +36,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add persona-nami/ig/post*.png
+          git add persona-nami/ig/post*.png persona-nami/*.png
           if git diff --cached --quiet; then
             echo "커버 변경 없음."
           else
