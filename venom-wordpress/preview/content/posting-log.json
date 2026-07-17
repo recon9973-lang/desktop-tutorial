@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784283946390",
+    "title": "울산 한의원 마케팅: 통증, 비염, 다이어트 3가지 효과적 전략",
+    "tokenUsage": {
+      "promptTokens": 2613,
+      "completionTokens": 1911,
+      "totalTokens": 4524,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-17T10:27:05.441Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784277238529",
     "title": "인천 피부과 마케팅의 5가지 전략과 실행 방안",
     "tokenUsage": {
