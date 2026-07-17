@@ -15,11 +15,11 @@ const DEVICES = [
   { key: "TABLET", label: "태블릿" },
 ];
 const MODES = [
-  { key: "click", label: "클릭맵" },
-  { key: "move", label: "무브맵" },
-  { key: "selector", label: "셀렉터" },
-  { key: "scroll", label: "스크롤맵" },
-  { key: "gesture", label: "제스처" },
+  { key: "click", label: "클릭맵", desc: "방문자가 어디를 눌렀는지 — 뜨거운 색일수록 많이 클릭한 곳입니다." },
+  { key: "move", label: "무브맵", desc: "마우스가 지나간 길입니다. 시선이 머문 자리를 짐작할 수 있습니다." },
+  { key: "selector", label: "셀렉터", desc: "가장 많이 눌린 버튼·링크를 이름 순위로 보여줍니다. (좌표 없이도 집계)" },
+  { key: "scroll", label: "스크롤맵", desc: "방문자가 페이지를 어디까지 내려봤는지 — 아래로 갈수록 보는 사람이 줄어듭니다." },
+  { key: "gesture", label: "제스처", desc: "모바일 전용 — 더블탭·확대·스와이프가 일어난 위치입니다." },
 ];
 
 export default function HeatmapStudio({
@@ -173,6 +173,11 @@ export default function HeatmapStudio({
             </button>
           );
         })}
+      </div>
+      {/* 현재 지도가 무엇을 보여주는지 한 줄 설명 — 비개발자 고객도 바로 이해하도록 */}
+      <div className="muted small" style={{ margin: "-6px 0 16px", display: "flex", gap: 6, alignItems: "baseline" }}>
+        <span aria-hidden="true" style={{ color: "var(--accent)" }}>ⓘ</span>
+        <span>{MODES.find((m) => m.key === mode)?.desc}</span>
       </div>
       {!mapsAll && (
         <div className="notice small" style={{ marginBottom: 14 }}>

@@ -46,6 +46,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const totalSuggestions = siteMetrics.reduce((a, x) => a + x.suggestions.length, 0);
   const totalConversions = siteMetrics.reduce((a, x) => a + x.m.conversions, 0);
 
+  // 우선 확인이 필요한 사이트: 상태가 나쁜 것부터. 대행사가 "지금 뭘 볼지" 바로 알게 한다.
+  const priority = siteMetrics
+    .map((x) => ({ ...x, health: siteHealth(x) }))
+    .filter((x) => x.health.level === "crit" || x.health.level === "warn")
+    .sort((a, b) => (a.health.level === "crit" ? 0 : 1) - (b.health.level === "crit" ? 0 : 1))
+    .slice(0, 8);
+
   return (
     <>
       <TopBar agencyName={user.agency.name} userName={user.name} isAdmin={isAdminEmail(user.email)} />
@@ -77,6 +84,25 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <MetricCard label="전환 이벤트" value={totalConversions.toLocaleString()} help={METRIC_HELP.totalConversions} />
         </div>
 
+        {/* 우선 확인이 필요한 사이트 — 상태 나쁜 것부터 한눈에 */}
+        {!q && priority.length > 0 && (
+          <div className="priority">
+            <div className="priority-head">
+              <span className="pdot" />
+              지금 확인이 필요한 사이트 {priority.length}곳
+            </div>
+            <div className="priority-list">
+              {priority.map((x) => (
+                <Link key={x.site.id} href={`/sites/${x.site.id}`} className="pchip">
+                  <span className={`hd ${x.health.level}`} />
+                  {x.site.name}
+                  <span className="why">· {x.health.why}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 검색 */}
         <form method="get" className="between" style={{ marginBottom: 20, gap: 8 }}>
           <input name="q" defaultValue={q} placeholder="고객사·사이트·도메인 검색" className="field-inline" style={{ flex: 1, maxWidth: 360 }} />
@@ -100,16 +126,15 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               {client.sites.map((s) => {
                 const data = byId.get(s.id)!;
                 const attention = data.m.rageClicks + data.m.deadClicks;
+                const health = siteHealth(data);
                 return (
-                  <Link key={s.id} href={`/sites/${s.id}`} className="card card-pad" style={{ display: "block" }}>
+                  <Link key={s.id} href={`/sites/${s.id}`} className={`card card-pad site-card h-${health.level}`}>
                     <div className="between" style={{ marginBottom: 14 }}>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 15 }}>{s.name}</div>
                         <div className="muted small">{s.domain}</div>
                       </div>
-                      {data.suggestions.length > 0 && (
-                        <span className="badge medium">개선 {data.suggestions.length}건</span>
-                      )}
+                      <span className={`health-tag ${health.level}`} title={health.why}>{health.label}</span>
                     </div>
                     <div className="grid grid-4" style={{ gap: 10 }}>
                       <MiniStat label="세션" value={data.m.sessions.toLocaleString()} />
@@ -137,4 +162,23 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       <div style={{ fontWeight: 700, fontSize: 16 }}>{value}</div>
     </div>
   );
+}
+
+type Health = { level: "crit" | "warn" | "ok" | "idle"; label: string; why: string };
+
+// 사이트 건강 상태를 색·라벨로 인코딩. 대행사가 훑어서 우선순위를 잡게 하는 게 목적.
+function siteHealth(x: { m: { sessions: number; rageClicks: number; deadClicks: number }; suggestions: { impact: number }[] }): Health {
+  if (x.m.sessions === 0) return { level: "idle", label: "데이터 없음", why: "아직 방문 없음" };
+  const rage = x.m.rageClicks;
+  const dead = x.m.deadClicks;
+  const bigSuggestion = x.suggestions.some((s) => s.impact >= 5);
+  if (bigSuggestion || x.suggestions.length >= 2 || rage >= 3) {
+    const why = bigSuggestion ? "중요 개선점" : rage >= 3 ? `좌절 클릭 ${rage}건` : `개선 ${x.suggestions.length}건`;
+    return { level: "crit", label: "확인 필요", why };
+  }
+  if (x.suggestions.length >= 1 || rage >= 1 || dead >= 5) {
+    const why = x.suggestions.length ? `개선 ${x.suggestions.length}건` : rage ? `좌절 클릭 ${rage}건` : `죽은 클릭 ${dead}건`;
+    return { level: "warn", label: "점검", why };
+  }
+  return { level: "ok", label: "양호", why: "특이사항 없음" };
 }
