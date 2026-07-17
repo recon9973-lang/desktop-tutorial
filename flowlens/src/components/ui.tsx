@@ -1,11 +1,26 @@
 import type { Confidence } from "@/lib/rules";
 
-export function MetricCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+// help를 주면 카드에 마우스를 올렸을 때(또는 탭·키보드 포커스 시) 설명이 뜬다.
+// CSS만으로 동작하므로 서버 컴포넌트 그대로 쓸 수 있다(자바스크립트 추가 없음).
+// 문구는 @/lib/metric-help 에 모아둔다.
+export function MetricCard({ label, value, sub, help }: { label: string; value: string | number; sub?: string; help?: string }) {
   return (
-    <div className="card metric">
-      <div className="label">{label}</div>
+    <div className={"card metric" + (help ? " has-help" : "")} tabIndex={help ? 0 : undefined}>
+      <div className="label">
+        {label}
+        {help && (
+          <span className="help-dot" aria-hidden="true">
+            ?
+          </span>
+        )}
+      </div>
       <div className="value">{value}</div>
       {sub && <div className="sub">{sub}</div>}
+      {help && (
+        <span className="help-pop" role="tooltip">
+          {help}
+        </span>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { loadSiteForUser } from "@/lib/site";
 import { getSiteMetrics } from "@/lib/metrics";
 import { generateSuggestions } from "@/lib/rules";
 import { MetricCard, Bar, ConfidenceBadge } from "@/components/ui";
+import { METRIC_HELP } from "@/lib/metric-help";
 
 export const dynamic = "force-dynamic";
 
@@ -43,17 +44,17 @@ export default async function SiteOverview({ params, searchParams }: { params: P
       </div>
 
       <div className="grid grid-4" style={{ marginBottom: 16 }}>
-        <MetricCard label="세션" value={m.sessions.toLocaleString()} />
-        <MetricCard label="이탈률" value={`${m.bounceRate}%`} sub="단일 페이지 후 이탈" />
-        <MetricCard label="평균 스크롤" value={`${m.avgScroll}%`} sub="페이지 도달 깊이" />
-        <MetricCard label="전환" value={m.conversions.toLocaleString()} />
+        <MetricCard label="세션" value={m.sessions.toLocaleString()} help={METRIC_HELP.sessions} />
+        <MetricCard label="이탈률" value={`${m.bounceRate}%`} sub="단일 페이지 후 이탈" help={METRIC_HELP.bounce} />
+        <MetricCard label="평균 스크롤" value={`${m.avgScroll}%`} sub="페이지 도달 깊이" help={METRIC_HELP.avgScroll} />
+        <MetricCard label="전환" value={m.conversions.toLocaleString()} help={METRIC_HELP.conversions} />
       </div>
 
       <div className="grid grid-4" style={{ marginBottom: 24 }}>
-        <MetricCard label="일반 클릭" value={m.clicks.toLocaleString()} />
-        <MetricCard label="Dead click" value={m.deadClicks.toLocaleString()} sub={`전체 클릭의 ${m.deadClickRate}%`} />
-        <MetricCard label="Rage click" value={m.rageClicks.toLocaleString()} sub="좌절 클릭" />
-        <MetricCard label="CTA 노출률" value={`${m.ctaViewRate}%`} sub="핵심 버튼 노출" />
+        <MetricCard label="일반 클릭" value={m.clicks.toLocaleString()} help={METRIC_HELP.clicks} />
+        <MetricCard label="Dead click" value={m.deadClicks.toLocaleString()} sub={`전체 클릭의 ${m.deadClickRate}%`} help={METRIC_HELP.deadClick} />
+        <MetricCard label="Rage click" value={m.rageClicks.toLocaleString()} sub="좌절 클릭" help={METRIC_HELP.rageClick} />
+        <MetricCard label="CTA 노출률" value={`${m.ctaViewRate}%`} sub="핵심 버튼 노출" help={METRIC_HELP.ctaViewRate} />
       </div>
 
       <div className="grid grid-3">

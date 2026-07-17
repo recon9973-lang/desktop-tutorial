@@ -4,6 +4,7 @@ import { getSiteMetrics } from "@/lib/metrics";
 import { generateSuggestions } from "@/lib/rules";
 import { generateReport } from "@/lib/report";
 import { MetricCard, Bar, ConfidenceBadge } from "@/components/ui";
+import { METRIC_HELP } from "@/lib/metric-help";
 import ReportView from "@/components/ReportView";
 import PrintButton from "@/components/PrintButton";
 
@@ -58,10 +59,10 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
         </div>
 
         <div className="grid grid-4" style={{ marginBottom: 24 }}>
-          <MetricCard label="세션" value={m.sessions.toLocaleString()} />
-          <MetricCard label="이탈률" value={`${m.bounceRate}%`} />
-          <MetricCard label="모바일 비중" value={`${m.device.mobilePct}%`} />
-          <MetricCard label="전환" value={m.conversions.toLocaleString()} />
+          <MetricCard label="세션" value={m.sessions.toLocaleString()} help={METRIC_HELP.sessions} />
+          <MetricCard label="이탈률" value={`${m.bounceRate}%`} help={METRIC_HELP.bounce} />
+          <MetricCard label="모바일 비중" value={`${m.device.mobilePct}%`} help={METRIC_HELP.mobilePct} />
+          <MetricCard label="전환" value={m.conversions.toLocaleString()} help={METRIC_HELP.conversions} />
         </div>
 
         <div className="grid grid-2" style={{ marginBottom: 28 }}>

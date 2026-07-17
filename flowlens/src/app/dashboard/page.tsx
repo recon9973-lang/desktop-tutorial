@@ -6,6 +6,7 @@ import { getSiteMetrics } from "@/lib/metrics";
 import { generateSuggestions } from "@/lib/rules";
 import TopBar from "@/components/TopBar";
 import { IndustryBadge, MetricCard } from "@/components/ui";
+import { METRIC_HELP } from "@/lib/metric-help";
 
 export const dynamic = "force-dynamic";
 
@@ -69,10 +70,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         ) : (
         <>
         <div className="grid grid-4" style={{ marginBottom: 20 }}>
-          <MetricCard label="총 세션 (전체 사이트)" value={totalSessions.toLocaleString()} />
-          <MetricCard label="관리 사이트" value={allSites.length} sub={`고객사 ${clients.length}곳`} />
-          <MetricCard label="도출된 개선 과제" value={totalSuggestions} sub="룰 엔진 자동 생성" />
-          <MetricCard label="전환 이벤트" value={totalConversions.toLocaleString()} />
+          <MetricCard label="총 세션 (전체 사이트)" value={totalSessions.toLocaleString()} help={METRIC_HELP.totalSessions} />
+          <MetricCard label="관리 사이트" value={allSites.length} sub={`고객사 ${clients.length}곳`} help={METRIC_HELP.sitesManaged} />
+          <MetricCard label="도출된 개선 과제" value={totalSuggestions} sub="룰 엔진 자동 생성" help={METRIC_HELP.suggestions} />
+          <MetricCard label="전환 이벤트" value={totalConversions.toLocaleString()} help={METRIC_HELP.totalConversions} />
         </div>
 
         {/* 검색 */}
