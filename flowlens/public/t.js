@@ -312,22 +312,103 @@
     true
   );
 
-  // CTA 노출 (버튼/주요 링크가 뷰포트에 들어오면 1회 cta_view)
+  // ---- CTA 노출 (핵심 행동 유도 요소가 뷰포트에 들어오면 1회 cta_view) ----
+  // 이 값(cta_view / page_view = ctaViewRate)이 "mobile-cta" 개선제안의 근거이므로 오탐이 곧 오진이다.
+  // 과거에는 "button, a.btn, .cta, [data-cta]"만 봤다. .btn/.cta 클래스 관례를 쓰지 않는 사이트에서는
+  // 진짜 CTA("여행문의" 등 평범한 <a>)를 전부 놓치고 헤더의 30x25 검색 아이콘만 잡혀,
+  // 노출률이 늘 100%(=문제 없음)로 나와 제안이 영원히 뜨지 않았다. 그래서 텍스트·크기로 판정한다.
+  // 영어는 반드시 단어 경계(\b)로 감쌀 것. 없으면 "Facebook"의 book, "restart"의 start 가 걸려
+  // 푸터 SNS 링크까지 CTA로 오인한다. 한국어는 단어 경계 개념이 없어 부분일치로 둔다.
+  var CTA_TEXT = /예약|문의|신청|상담|구매|결제|주문|접수|가입|등록|무료|시작|바로가기|다운로드|견적|장바구니|\b(?:reserve|book|buy|order|apply|contact|sign\s?up|get\s?started|download|quote|demo|start)\b/i;
+  var CTA_MIN_W = 60; // 아이콘 버튼(예: 검색 돋보기)을 CTA로 오인하지 않기 위한 최소 크기
+  var CTA_MIN_H = 24;
+  var CTA_MAX = 40; // 관찰 대상 상한 (성능 보호)
+  var CTA_SEL =
+    "button, a[href], [role=button], input[type=submit], input[type=button], [data-cta], [data-fl-cta], .cta, .btn";
+
+  function ctaText(el) {
+    // input의 value는 읽지 않는다(개인정보 원칙). submit 버튼은 아래에서 별도 처리.
+    var t = el.getAttribute("data-fl-label") || el.getAttribute("aria-label") || el.textContent || "";
+    return t.replace(/\s+/g, " ").trim();
+  }
+
+  function isCta(el) {
+    // 1) 의도가 명시된 것은 무조건 인정 (.cta 는 "이게 CTA다"라는 선언이므로 신뢰한다)
+    if (el.getAttribute("data-cta") !== null || el.getAttribute("data-fl-cta") !== null) return true;
+    if (el.classList && el.classList.contains("cta")) return true;
+    // 2) 클릭 가능한 요소만
+    var tag = (el.tagName || "").toLowerCase();
+    var type = (el.getAttribute("type") || "").toLowerCase();
+    var clickable =
+      tag === "button" ||
+      (tag === "a" && el.getAttribute("href") !== null) ||
+      el.getAttribute("role") === "button" ||
+      (tag === "input" && (type === "submit" || type === "button"));
+    if (!clickable) return false;
+    // 3) 제출 버튼은 그 자체가 전환 행동이므로 문구를 보지 않는다
+    if (type === "submit") return true;
+    // 4) 아이콘·장식 배제: 너무 작거나(=아이콘) 글자가 없으면 CTA로 보지 않는다
+    var r = el.getBoundingClientRect();
+    if (r.width < CTA_MIN_W || r.height < CTA_MIN_H) return false;
+    var txt = ctaText(el);
+    if (!txt) return false;
+    // 5) 행동 유도 문구일 때만 CTA.
+    //    .btn 을 근거로 쓰면 안 된다 — 로그인·쿠키동의 버튼에도 똑같이 붙는 범용 스타일 클래스라
+    //    전부 CTA로 잡혀 노출률이 부풀고, 그러면 mobile-cta 제안이 다시 영원히 안 뜬다.
+    return CTA_TEXT.test(txt);
+  }
+
+  var ctaIo = null;
+  var ctaMo = null;
+  var ctaObserved = new WeakSet(); // 중복 observe 방지
+  var ctaViewed = new WeakSet(); // 노출 1회만 기록
+  var ctaCount = 0;
+
+  function scanCtas() {
+    if (!ctaIo || ctaCount >= CTA_MAX) return;
+    var els = document.querySelectorAll(CTA_SEL);
+    for (var i = 0; i < els.length && ctaCount < CTA_MAX; i++) {
+      var el = els[i];
+      if (ctaObserved.has(el) || isIgnored(el) || !isCta(el)) continue;
+      ctaObserved.add(el);
+      ctaCount++;
+      ctaIo.observe(el);
+    }
+    // 상한에 도달하면 더 볼 필요가 없다
+    if (ctaCount >= CTA_MAX && ctaMo) ctaMo.disconnect();
+  }
+
   try {
-    var seen = new WeakSet();
-    var io = new IntersectionObserver(
+    ctaIo = new IntersectionObserver(
       function (entries) {
-        entries.forEach(function (en) {
-          if (en.isIntersecting && !seen.has(en.target)) {
-            seen.add(en.target);
+        for (var i = 0; i < entries.length; i++) {
+          var en = entries[i];
+          if (en.isIntersecting && !ctaViewed.has(en.target)) {
+            ctaViewed.add(en.target);
             push("cta_view", { targetLabel: labelOf(en.target) });
+            ctaIo.unobserve(en.target); // 1회면 충분
           }
-        });
+        }
       },
       { threshold: 0.6 }
     );
-    // 대표 CTA 후보: 버튼, 주요 링크
-    document.querySelectorAll("button, a.btn, .cta, [data-cta]").forEach(function (el) { io.observe(el); });
+
+    scanCtas();
+    // GTM은 페이지 초반에 스크립트를 넣기도 한다. 그 시점엔 DOM이 비어 있어 위 스캔이 0건일 수 있으므로
+    // DOM 완성 시점과 로드 완료 시점에 다시 훑는다.
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scanCtas);
+    window.addEventListener("load", scanCtas);
+    // 비동기로 나중에 그려지는 버튼도 관찰 (과도한 스캔을 막으려 디바운스)
+    var ctaTick = 0;
+    ctaMo = new MutationObserver(function () {
+      clearTimeout(ctaTick);
+      ctaTick = setTimeout(scanCtas, 500);
+    });
+    ctaMo.observe(document.documentElement, { childList: true, subtree: true });
+    // 30초 뒤에는 레이아웃이 안정됐다고 보고 감시를 끈다 (배터리·CPU 보호)
+    setTimeout(function () {
+      if (ctaMo) ctaMo.disconnect();
+    }, 30000);
   } catch (e) {}
 
   // ---- 모바일 제스처 (탭은 click으로 이미 수집됨. 여기서는 더블탭/줌/스와이프) ----
