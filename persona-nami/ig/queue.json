@@ -64,9 +64,9 @@
       "hook": "AI한테 떠먹여 주는 법 (구조화 데이터)",
       "img": "persona-nami/ig/post5.png",
       "cap": "persona-nami/ig/post5.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null,
+      "published": true,
+      "publishedAt": "2026-07-17T13:07:22.037Z",
+      "mediaId": "18097967966193468",
       "images": [
         "persona-nami/ig/post5.png",
         "persona-nami/ig/post5-2.png",
