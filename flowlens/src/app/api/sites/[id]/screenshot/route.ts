@@ -50,16 +50,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   let path = "/";
   let device: "DESKTOP" | "MOBILE" = "DESKTOP";
+  let dismissPopups = false;
   try {
     const ct = req.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
       const b = await req.json();
       path = cleanPath(b?.path ?? "/");
       device = cleanDevice(b?.device);
+      dismissPopups = b?.dismissPopups === true;
     } else {
       const form = await req.formData();
       path = cleanPath(String(form.get("path") || "/"));
       device = cleanDevice(String(form.get("device") || ""));
+      dismissPopups = String(form.get("dismissPopups") || "") === "1";
     }
   } catch {
     /* 기본값 */
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const target = `https://${site.domain}${path === "/" ? "/" : path}`;
 
   try {
-    const { buf, width, height, mime, finalUrl, dialog } = await captureFullPage(target, device);
+    const { buf, width, height, mime, finalUrl, dialog, popupsHidden } = await captureFullPage(target, device, { dismissPopups });
 
     // 요청한 경로와 실제 도착지가 다르면 저장하지 않는다.
     // 추적기는 개인정보 보호를 위해 쿼리(?상품번호=…)를 떼고 경로만 저장하는데,
@@ -102,7 +105,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       create: { siteId: site.id, path, device, image, mime, width, height },
       update: { image, mime, width, height, capturedAt: new Date() },
     });
-    return NextResponse.json({ ok: true, device, width, height });
+    return NextResponse.json({ ok: true, device, width, height, popupsHidden });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message.slice(0, 200) }, { status: 500 });
   }

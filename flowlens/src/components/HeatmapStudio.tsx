@@ -24,6 +24,7 @@ const MODES = [
 
 export default function HeatmapStudio({
   points,
+  clickLabels = [],
   gesturePoints = [],
   movePoints = [],
   scrollSessions,
@@ -34,6 +35,9 @@ export default function HeatmapStudio({
   mapsAll = true,
 }: {
   points: Point[];
+  // 셀렉터 랭킹 전용. points는 좌표가 있는 클릭만이라 팝업·고정 헤더 클릭이 빠지는데,
+  // "무엇을 눌렀나" 목록에서까지 빠질 이유는 없다.
+  clickLabels?: { label: string | null; device: string; type: string }[];
   gesturePoints?: Point[];
   movePoints?: MovePt[];
   scrollSessions: ScrollSession[];
@@ -50,6 +54,7 @@ export default function HeatmapStudio({
   const [shotErr, setShotErr] = useState("");
   // 재시도해도 소용없는 실패(주소만으로 열리지 않는 페이지)인지
   const [shotFatal, setShotFatal] = useState(false);
+  const [popupNote, setPopupNote] = useState("");
 
   // 모바일 클릭 좌표는 모바일 레이아웃 기준 → 배경도 모바일 캡처를 써야 정확히 얹힌다.
   // 제스처(탭·더블탭·줌·스와이프)는 모바일 전용 동작이므로 항상 모바일 화면을 배경으로.
@@ -59,21 +64,29 @@ export default function HeatmapStudio({
     ? `/api/sites/${siteId}/screenshot?path=${encodeURIComponent(path)}&device=${bgDevice}&v=${captured[bgDevice] || 0}`
     : undefined;
 
-  async function captureShot() {
+  async function captureShot(dismissPopups = false) {
     setCapturing(true);
     setShotErr("");
     setShotFatal(false);
+    setPopupNote("");
     try {
       const r = await fetch(`/api/sites/${siteId}/screenshot`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ path, device: bgDevice }),
+        body: JSON.stringify({ path, device: bgDevice, dismissPopups }),
       });
       const d = await r.json();
       if (!r.ok || !d.ok) {
         // 422(=주소만으로 못 여는 페이지)는 다시 눌러도 절대 안 된다 → 재시도를 권하지 않는다.
         if (r.status === 422 || d.reason === "redirected") setShotFatal(true);
         throw new Error(d.error || "캡처 실패");
+      }
+      if (dismissPopups) {
+        setPopupNote(
+          d.popupsHidden > 0
+            ? `팝업 ${d.popupsHidden}개를 숨기고 찍었습니다. 팝업을 누른 클릭은 여전히 그 자리에 찍히니, 무엇을 눌렀는지는 셀렉터 탭에서 이름으로 확인하세요.`
+            : "닫기 버튼이 있는 팝업을 찾지 못해 화면 그대로 찍었습니다."
+        );
       }
       setCaptured((c) => ({ ...c, [bgDevice]: Date.now() }));
     } catch (e) {
@@ -103,6 +116,10 @@ export default function HeatmapStudio({
   }, [path]);
 
   const fPoints = useMemo(() => (device === "ALL" ? points : points.filter((p) => p.device === device)), [points, device]);
+  const fLabels = useMemo(
+    () => (device === "ALL" ? clickLabels : clickLabels.filter((p) => p.device === device)),
+    [clickLabels, device]
+  );
   const fGestures = useMemo(
     () => (device === "ALL" ? gesturePoints : gesturePoints.filter((p) => p.device === device)),
     [gesturePoints, device]
@@ -182,12 +199,23 @@ export default function HeatmapStudio({
               {shotErr && !shotFatal && <span className="small" style={{ color: "var(--red)" }}>{shotErr}</span>}
               {/* 재시도해도 안 되는 실패에서는 "다시 시도" 버튼을 감춘다(헛수고 방지) */}
               {!shotFatal && (
-                <button type="button" className="btn sm" onClick={captureShot} disabled={capturing}>
-                  {capturing ? "캡처 중…" : shotReady ? "화면 새로 캡처" : "다시 시도"}
-                </button>
+                <>
+                  {/* 팝업이 히어로·핵심 버튼을 덮으면 뒤에 뭘 클릭했는지 배경에서 볼 수 없다 */}
+                  <button type="button" className="btn sm" onClick={() => captureShot(true)} disabled={capturing} title="팝업을 숨기고 다시 촬영합니다">
+                    팝업 닫고 캡처
+                  </button>
+                  <button type="button" className="btn sm" onClick={() => captureShot(false)} disabled={capturing}>
+                    {capturing ? "캡처 중…" : shotReady ? "화면 새로 캡처" : "다시 시도"}
+                  </button>
+                </>
               )}
             </span>
           </div>
+          {popupNote && (
+            <div className="notice small" style={{ marginTop: 8 }}>
+              {popupNote}
+            </div>
+          )}
           {/* 주소만으로 열리지 않는 페이지(상세·주문·게시글 등). 틀린 배경을 씌우면
               "이 페이지 클릭"을 엉뚱한 화면 위에 뿌리게 되므로 배경 없이 표시한다. */}
           {shotFatal && (
@@ -220,7 +248,7 @@ export default function HeatmapStudio({
           </>
         )
       )}
-      {mode === "selector" && <SelectorRanking points={fPoints} />}
+      {mode === "selector" && <SelectorRanking points={fLabels.length ? fLabels : fPoints} />}
       {mode === "scroll" && <ScrollMap sessions={fSessions} avgFold={avgFold} />}
       {mode === "gesture" && <GestureView taps={fPoints} gestures={fGestures} bgUrl={bgUrl} />}
     </div>
@@ -288,7 +316,8 @@ function GestureView({ taps, gestures, bgUrl }: { taps: Point[]; gestures: Point
 }
 
 // ---- 셀렉터 랭킹 (가장 많이 클릭된 요소) ----
-function SelectorRanking({ points }: { points: Point[] }) {
+// 라벨만 있으면 되므로 좌표 없는 클릭도 받는다
+function SelectorRanking({ points }: { points: { label: string | null }[] }) {
   const ranked = useMemo(() => {
     const map = new Map<string, number>();
     let total = 0;

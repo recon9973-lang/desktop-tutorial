@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { loadSiteForUser } from "@/lib/site";
 import { prisma } from "@/lib/db";
-import { getHeatmapPoints, getGesturePoints, getMovePoints, getSitePaths, getScrollData } from "@/lib/metrics";
+import { getHeatmapPoints, getGesturePoints, getMovePoints, getSitePaths, getScrollData, getClickLabels } from "@/lib/metrics";
 import { getSnapshotPoints } from "@/lib/rollup";
 import { can } from "@/lib/plans";
 import HeatmapStudio from "@/components/HeatmapStudio";
@@ -26,9 +26,11 @@ export default async function HeatmapPage({
   const range = days > 0 ? { from: new Date(Date.now() - days * 24 * 60 * 60 * 1000), to: new Date() } : undefined;
 
   const shotPath = path || "/";
-  const [paths, livePoints, gestures, liveMoves, scroll, shots, snap] = await Promise.all([
+  const [paths, livePoints, clickLabels, gestures, liveMoves, scroll, shots, snap] = await Promise.all([
     getSitePaths(site.id),
     getHeatmapPoints(site.id, path, 4000, range),
+    // 셀렉터 랭킹용 — 좌표 없는 클릭(팝업·고정 헤더)도 "무엇을 눌렀나"에는 들어가야 한다
+    getClickLabels(site.id, path, 4000, range),
     getGesturePoints(site.id, path),
     getMovePoints(site.id, path, 8000, range),
     getScrollData(site.id),
@@ -87,7 +89,7 @@ export default async function HeatmapPage({
 
       <div>
         {path && <p className="muted small" style={{ marginBottom: 10 }}>페이지: <b>{path}</b></p>}
-        <HeatmapStudio points={points} gesturePoints={gestures} movePoints={moves} scrollSessions={scroll.sessions} avgFold={scroll.avgFold} siteId={site.id} path={shotPath} shotDevices={shotDevices} mapsAll={can(user?.agency.plan, "maps_all")} />
+        <HeatmapStudio points={points} clickLabels={clickLabels} gesturePoints={gestures} movePoints={moves} scrollSessions={scroll.sessions} avgFold={scroll.avgFold} siteId={site.id} path={shotPath} shotDevices={shotDevices} mapsAll={can(user?.agency.plan, "maps_all")} />
       </div>
     </div>
   );

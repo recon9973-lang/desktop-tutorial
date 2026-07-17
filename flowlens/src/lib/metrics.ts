@@ -115,6 +115,26 @@ export async function getHeatmapPoints(siteId: string, path?: string, limit = 40
   }));
 }
 
+// 셀렉터 랭킹("가장 많이 클릭된 요소")용. 라벨만 필요하므로 좌표가 없는 클릭도 포함한다.
+// 히트맵(getHeatmapPoints)은 좌표가 있어야 점을 찍을 수 있어 xRel not null로 거르지만,
+// 이 목록은 "무엇을 눌렀나"가 전부라 좌표와 무관하다.
+// (팝업·고정 헤더 클릭은 문서 좌표가 무의미해 좌표 없이 저장된다 → 히트맵에선 빠지고 여기선 보인다)
+export type ClickLabel = { label: string | null; device: string; type: string };
+export async function getClickLabels(siteId: string, path?: string, limit = 4000, range?: DateRange): Promise<ClickLabel[]> {
+  const events = await prisma.event.findMany({
+    where: {
+      siteId,
+      type: { in: ["click", "rage_click", "dead_click", "cta_click"] },
+      ...(path ? { path } : {}),
+      ...(range ? { ts: { gte: range.from, lt: range.to } } : {}),
+    },
+    select: { type: true, targetLabel: true, session: { select: { device: true } } },
+    take: limit,
+    orderBy: { ts: "desc" },
+  });
+  return events.map((e) => ({ label: e.targetLabel, device: e.session?.device ?? "DESKTOP", type: e.type }));
+}
+
 // 무브맵 포인터 샘플. 궤적(선)을 그리려면 세션별·시간순 정렬이 필요.
 export type MovePoint = { x: number; y: number; device: string; session: string };
 export async function getMovePoints(siteId: string, path?: string, limit = 8000, range?: DateRange): Promise<MovePoint[]> {

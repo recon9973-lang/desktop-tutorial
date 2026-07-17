@@ -24,10 +24,41 @@ export function normPath(p: string): string {
   return ("/" + String(p || "").replace(/^\/+/, "").replace(/\/+/g, "/")).replace(/\/+$/, "") || "/";
 }
 
+// 팝업 레이어를 숨기는 스크립트. 브라우저 안에서 실행된다.
+// 정의: "닫기/오늘 하루 열지 않기 같은 컨트롤을 품고 있는 위치지정(absolute·fixed) 레이어" = 팝업.
+// 클릭이 아니라 숨기기를 쓴다 — 닫기 버튼이 <a>인 사이트가 많아 클릭하면 페이지가 넘어가 버린다.
+// (good-tour.kr 실측: #popup11·#popup12 만 정확히 잡히고, 헤더·히어로·푸터는 그대로 남았다)
+function hidePopupLayers(): number {
+  const CLOSE = /^(닫기|닫기\s*x|오늘\s*하루.*(안|않)|하루\s*동안.*(안|않)|다시\s*(안|않)\s*보기|그만보기|close|×|✕|✖|x)$/i;
+  const layerOf = (el: Element): HTMLElement | null => {
+    let n: HTMLElement | null = el as HTMLElement;
+    for (let i = 0; i < 10 && n && n !== document.body; i++) {
+      const cs = getComputedStyle(n);
+      if (cs.position === "fixed" || cs.position === "absolute") {
+        const z = parseInt(cs.zIndex, 10);
+        if (Number.isFinite(z) && z >= 1) return n;
+      }
+      n = n.parentElement;
+    }
+    return null;
+  };
+  const layers = new Set<HTMLElement>();
+  document.querySelectorAll("a,button,span,div,img,i").forEach((el) => {
+    const t = (el.getAttribute("aria-label") || el.getAttribute("alt") || el.textContent || "").replace(/\s+/g, " ").trim();
+    if (!CLOSE.test(t)) return;
+    if (!el.getBoundingClientRect().width) return; // 이미 숨겨진 것
+    const l = layerOf(el);
+    if (l) layers.add(l);
+  });
+  layers.forEach((l) => (l.style.display = "none"));
+  return layers.size;
+}
+
 export async function captureFullPage(
   url: string,
-  device: "DESKTOP" | "MOBILE" = "DESKTOP"
-): Promise<{ buf: Uint8Array; width: number; height: number; mime: string; finalUrl: string; dialog: string | null }> {
+  device: "DESKTOP" | "MOBILE" = "DESKTOP",
+  opts: { dismissPopups?: boolean } = {}
+): Promise<{ buf: Uint8Array; width: number; height: number; mime: string; finalUrl: string; dialog: string | null; popupsHidden: number }> {
   const p = PROFILES[device] ?? PROFILES.DESKTOP;
   const width = p.width;
   const browser = await puppeteer.launch({
@@ -62,11 +93,25 @@ export async function captureFullPage(
     await new Promise((r) => setTimeout(r, 1500));
 
     const finalUrl = page.url();
+
+    // 팝업이 히어로·CTA를 덮고 있으면 "뒤에 뭘 클릭했는지" 배경에서 볼 수가 없다.
+    // 요청 시에만 숨긴다(기본은 방문자가 실제로 본 화면 그대로).
+    let popupsHidden = 0;
+    if (opts.dismissPopups) {
+      try {
+        popupsHidden = await page.evaluate(hidePopupLayers);
+        await new Promise((r) => setTimeout(r, 400)); // 레이아웃 정리 대기
+      } catch {
+        // 팝업 숨기기가 실패해도 캡처 자체는 살린다 (배경 없는 것보다 팝업 있는 배경이 낫다)
+        popupsHidden = 0;
+      }
+    }
+
     const height = await page.evaluate(() => document.documentElement.scrollHeight);
     // WebP로 저장 (PNG 대비 약 8배 작음 → 저장·전송 비용 절감)
     const raw = await page.screenshot({ type: "webp", quality: 80, fullPage: true });
     // Prisma Bytes는 ArrayBuffer 기반 Uint8Array를 요구 → 새 배열로 복사
-    return { buf: new Uint8Array(raw), width, height, mime: "image/webp", finalUrl, dialog };
+    return { buf: new Uint8Array(raw), width, height, mime: "image/webp", finalUrl, dialog, popupsHidden };
   } finally {
     await browser.close();
   }
