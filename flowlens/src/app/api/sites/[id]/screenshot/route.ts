@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { loadSiteForUser } from "@/lib/site";
-import { captureFullPage } from "@/lib/screenshot";
+import { captureFullPage, normPath } from "@/lib/screenshot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,7 +69,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const target = `https://${site.domain}${path === "/" ? "/" : path}`;
 
   try {
-    const { buf, width, height, mime } = await captureFullPage(target, device);
+    const { buf, width, height, mime, finalUrl, dialog } = await captureFullPage(target, device);
+
+    // 요청한 경로와 실제 도착지가 다르면 저장하지 않는다.
+    // 추적기는 개인정보 보호를 위해 쿼리(?상품번호=…)를 떼고 경로만 저장하는데,
+    // 상세페이지는 그 쿼리가 있어야 열린다. 쿼리 없이 열면 홈·목록으로 튕기므로
+    // 그 화면을 배경으로 쓰면 "상세페이지 클릭"을 엉뚱한 그림 위에 뿌리게 된다.
+    // 틀린 배경보다 정직한 실패가 낫다(문서 5-⑥ 원칙).
+    let landed = "";
+    try {
+      landed = normPath(new URL(finalUrl).pathname);
+    } catch {
+      /* 파싱 실패 시 검사 생략 */
+    }
+    if (landed && landed !== normPath(path)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          reason: "redirected",
+          landed,
+          dialog,
+          error: `이 페이지는 주소만으로 열리지 않아 배경을 만들 수 없습니다. (${normPath(path)} → ${landed}로 이동${dialog ? `, 경고창: ${dialog}` : ""})`,
+        },
+        { status: 422 }
+      );
+    }
+
     // ArrayBuffer 기반 Uint8Array로 정규화 (Prisma Bytes 타입 요구)
     const image = Uint8Array.from(buf);
     await prisma.screenshot.upsert({

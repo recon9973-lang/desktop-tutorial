@@ -19,7 +19,15 @@ const PROFILES = {
   },
 } as const;
 
-export async function captureFullPage(url: string, device: "DESKTOP" | "MOBILE" = "DESKTOP"): Promise<{ buf: Uint8Array; width: number; height: number; mime: string }> {
+// 경로 비교용 정규화: 중복 슬래시를 하나로, 끝 슬래시 제거. ("//a/b/" → "/a/b")
+export function normPath(p: string): string {
+  return ("/" + String(p || "").replace(/^\/+/, "").replace(/\/+/g, "/")).replace(/\/+$/, "") || "/";
+}
+
+export async function captureFullPage(
+  url: string,
+  device: "DESKTOP" | "MOBILE" = "DESKTOP"
+): Promise<{ buf: Uint8Array; width: number; height: number; mime: string; finalUrl: string; dialog: string | null }> {
   const p = PROFILES[device] ?? PROFILES.DESKTOP;
   const width = p.width;
   const browser = await puppeteer.launch({
@@ -32,14 +40,33 @@ export async function captureFullPage(url: string, device: "DESKTOP" | "MOBILE" 
     const page = await browser.newPage();
     await page.setViewport({ width, height: p.height, deviceScaleFactor: 1, isMobile: p.isMobile, hasTouch: p.isMobile });
     await page.setUserAgent(p.ua);
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 45000 });
+
+    // ⚠️ alert/confirm 이 뜨면 헤드리스 크롬은 응답할 사람이 없어 goto가 끝나지 않는다.
+    // (good-tour.kr은 쿼리 없이 상세페이지를 열면 alert('잘못된 접근 방식입니다')를 띄운다
+    //  → 45초 타임아웃 → 캡처가 영영 500. 반드시 닫아줘야 한다.)
+    let dialog: string | null = null;
+    page.on("dialog", async (d) => {
+      if (!dialog) dialog = `${d.type()}: ${d.message().slice(0, 80)}`;
+      try {
+        await d.dismiss();
+      } catch {
+        /* 이미 닫힘 */
+      }
+    });
+
+    // networkidle2는 채팅위젯·폴링 트래커가 있는 사이트에서 영영 오지 않는다.
+    // 로드만 기다린 뒤, 잠잠해지면 좋고 아니면 그냥 진행한다(못 찍는 것보다 낫다).
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 25000 });
+    await page.waitForNetworkIdle({ idleTime: 500, timeout: 8000 }).catch(() => {});
     // 지연 로딩 이미지·팝업 애니메이션이 자리잡도록 잠깐 대기
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 1500));
+
+    const finalUrl = page.url();
     const height = await page.evaluate(() => document.documentElement.scrollHeight);
     // WebP로 저장 (PNG 대비 약 8배 작음 → 저장·전송 비용 절감)
     const raw = await page.screenshot({ type: "webp", quality: 80, fullPage: true });
     // Prisma Bytes는 ArrayBuffer 기반 Uint8Array를 요구 → 새 배열로 복사
-    return { buf: new Uint8Array(raw), width, height, mime: "image/webp" };
+    return { buf: new Uint8Array(raw), width, height, mime: "image/webp", finalUrl, dialog };
   } finally {
     await browser.close();
   }

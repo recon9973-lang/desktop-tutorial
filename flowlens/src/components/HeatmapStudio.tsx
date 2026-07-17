@@ -48,6 +48,8 @@ export default function HeatmapStudio({
   const [captured, setCaptured] = useState<Record<string, number>>({}); // 기기별 캡처 버전(캐시버스터)
   const [capturing, setCapturing] = useState(false);
   const [shotErr, setShotErr] = useState("");
+  // 재시도해도 소용없는 실패(주소만으로 열리지 않는 페이지)인지
+  const [shotFatal, setShotFatal] = useState(false);
 
   // 모바일 클릭 좌표는 모바일 레이아웃 기준 → 배경도 모바일 캡처를 써야 정확히 얹힌다.
   // 제스처(탭·더블탭·줌·스와이프)는 모바일 전용 동작이므로 항상 모바일 화면을 배경으로.
@@ -60,6 +62,7 @@ export default function HeatmapStudio({
   async function captureShot() {
     setCapturing(true);
     setShotErr("");
+    setShotFatal(false);
     try {
       const r = await fetch(`/api/sites/${siteId}/screenshot`, {
         method: "POST",
@@ -67,7 +70,11 @@ export default function HeatmapStudio({
         body: JSON.stringify({ path, device: bgDevice }),
       });
       const d = await r.json();
-      if (!r.ok || !d.ok) throw new Error(d.error || "캡처 실패");
+      if (!r.ok || !d.ok) {
+        // 422(=주소만으로 못 여는 페이지)는 다시 눌러도 절대 안 된다 → 재시도를 권하지 않는다.
+        if (r.status === 422 || d.reason === "redirected") setShotFatal(true);
+        throw new Error(d.error || "캡처 실패");
+      }
       setCaptured((c) => ({ ...c, [bgDevice]: Date.now() }));
     } catch (e) {
       setShotErr((e as Error).message);
@@ -76,16 +83,24 @@ export default function HeatmapStudio({
     }
   }
 
-  // 배경이 없으면 사용자가 버튼을 누르지 않아도 자동으로 캡처한다(기기별 1회 시도).
+  // 배경이 없으면 사용자가 버튼을 누르지 않아도 자동으로 캡처한다(기기·페이지별 1회 시도).
   // 실패해도 반복 호출하지 않도록 시도 여부를 기록.
+  // 키에 path가 빠지면 다른 페이지로 넘어갔을 때 자동 캡처가 영영 안 돈다.
   const autoTried = useRef<Record<string, boolean>>({});
   useEffect(() => {
     if (mode !== "click" && mode !== "move") return;
     if (shotReady || capturing) return;
-    if (autoTried.current[bgDevice]) return;
-    autoTried.current[bgDevice] = true;
+    const key = `${bgDevice}:${path}`;
+    if (autoTried.current[key]) return;
+    autoTried.current[key] = true;
     captureShot();
-  }, [mode, bgDevice, shotReady, capturing]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode, bgDevice, path, shotReady, capturing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 페이지를 바꾸면 이전 페이지의 실패 메시지는 지운다
+  useEffect(() => {
+    setShotErr("");
+    setShotFatal(false);
+  }, [path]);
 
   const fPoints = useMemo(() => (device === "ALL" ? points : points.filter((p) => p.device === device)), [points, device]);
   const fGestures = useMemo(
@@ -157,17 +172,31 @@ export default function HeatmapStudio({
                 ? `배경: 실제 ${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면 위에 히트맵 표시 중`
                 : capturing
                   ? `실제 ${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면을 캡처하는 중… (최대 30초, 끝나면 자동으로 바뀝니다)`
-                  : shotErr
-                    ? "화면 캡처에 실패했습니다. 다시 시도해 주세요."
-                    : `${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면 준비 중…`}
+                  : shotFatal
+                    ? "이 페이지는 배경 없이 표시합니다"
+                    : shotErr
+                      ? "화면 캡처에 실패했습니다. 다시 시도해 주세요."
+                      : `${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면 준비 중…`}
             </span>
             <span className="row" style={{ gap: 8 }}>
-              {shotErr && <span className="small" style={{ color: "var(--red)" }}>{shotErr}</span>}
-              <button type="button" className="btn sm" onClick={captureShot} disabled={capturing}>
-                {capturing ? "캡처 중…" : shotReady ? "화면 새로 캡처" : "다시 시도"}
-              </button>
+              {shotErr && !shotFatal && <span className="small" style={{ color: "var(--red)" }}>{shotErr}</span>}
+              {/* 재시도해도 안 되는 실패에서는 "다시 시도" 버튼을 감춘다(헛수고 방지) */}
+              {!shotFatal && (
+                <button type="button" className="btn sm" onClick={captureShot} disabled={capturing}>
+                  {capturing ? "캡처 중…" : shotReady ? "화면 새로 캡처" : "다시 시도"}
+                </button>
+              )}
             </span>
           </div>
+          {/* 주소만으로 열리지 않는 페이지(상세·주문·게시글 등). 틀린 배경을 씌우면
+              "이 페이지 클릭"을 엉뚱한 화면 위에 뿌리게 되므로 배경 없이 표시한다. */}
+          {shotFatal && (
+            <div className="notice small" style={{ marginTop: 8, background: "#fef9e7", borderColor: "#f0d98a", color: "#8a6d00" }}>
+              <b>{path}</b> 는 주소에 상품번호·글번호 같은 정보가 있어야 열리는 페이지입니다. FlowLens는 개인정보 보호를 위해 주소에서 그 부분을 떼고 저장하므로, 이 페이지의 실제 화면을 다시 열 수 없습니다.
+              <br />
+              엉뚱한 화면(홈·목록)을 배경으로 깔면 클릭 위치가 실제와 달라 잘못 읽게 되므로, <b>배경 없이 좌표만</b> 표시합니다. 클릭 데이터 자체는 정상입니다.
+            </div>
+          )}
           {device === "ALL" && (deviceCounts.MOBILE ?? 0) > 0 && (
             <div className="notice small" style={{ marginTop: 8, background: "#fef9e7", borderColor: "#f0d98a", color: "#8a6d00" }}>
               전체 보기는 <b>데스크톱 화면</b>을 배경으로 씁니다. 모바일은 화면 구성이 달라 위치가 어긋날 수 있으니, 위에서 <b>📱 모바일</b>을 선택하면 모바일 화면 위에 정확히 표시됩니다.
