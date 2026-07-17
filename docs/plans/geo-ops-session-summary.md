@@ -146,11 +146,11 @@ geo-store 21 · geo-templates 20 · geo-metrics 19 · geo-gsc 9 · geo-report 25
 - [x] 통합 설계서 v2(ERP 실사 기반 정정)
 - [x] ERP 병합 M1~M6 구현·PR·오프라인 검증(52케이스)
 - [x] 통합 인도 문서(`geo-erp-integration-delivery.md`)
+- [x] **PR #42~#47 전부 erp-v1 머지 완료** (2026-07-16, 전 PR Vercel green). M2#43↔M5#46 타입 충돌은 세 필드(phase·automationLevel·channel) 모두 유지로 해소됨. `sov.ts`·`geo-weekly.ts`·`recurrence.ts`·`work-recur.ts`·`migrate-nas-to-erp.ts` 및 SOV KPI 안착 확인.
 
 ### ⏭ 팀 액션 (병합 마무리)
-- [ ] **PR 순차 머지**: #42 → #43 → #44 → #45 → #46 → #47 (⚠️ M2#43·M5#46이 같은 `OnboardingTaskTemplate` 타입에 필드 추가 → **M2 먼저**, 충돌 시 양쪽 유지)
 - [ ] **M6 실행**: `sqlite3 team.db ".schema"`로 `NAS_SCHEMA` 확정 → `staff-map.json` 작성 → dry-run → `--commit`
-- [ ] **desktop-tutorial 파일럿**: GitHub Secret `ADMIN_SECRET` 등록(자동화 유일 차단) — 병합 완료 시 파일럿 종료
+- [ ] **desktop-tutorial 파일럿**: GitHub Secret `ADMIN_SECRET` 등록(자동화 유일 차단) — 병합 완료로 파일럿 종료 수순
 
 ### 🔜 UI 후속 (설계 §7, 선택)
 - [ ] SOV 차트(M1 데이터 · `components/geo`)
