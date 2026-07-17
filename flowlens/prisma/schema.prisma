@@ -34,6 +34,14 @@ model LoginThrottle {
   lockUntil DateTime?
 }
 
+// 범용 rate limit 카운터(고정 윈도우). id = sha256(key). 수집·캡처 남용 방지.
+// 원문 IP는 저장하지 않는다(key 안에서 해시로만 쓰임).
+model RateLimit {
+  id       String   @id
+  count    Int      @default(0)
+  windowAt DateTime @default(now())
+}
+
 // 월별 세션 사용량 (요금제 한도·종량 과금 기준). 세션 생성 시에만 증가.
 model UsageMonth {
   id       String @id @default(cuid())

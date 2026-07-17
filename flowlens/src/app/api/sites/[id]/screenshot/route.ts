@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { loadSiteForUser } from "@/lib/site";
 import { captureFullPage, normPath } from "@/lib/screenshot";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,8 +46,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 // POST: 사이트 페이지를 촬영해 저장(있으면 갱신). { path } 폼/JSON.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { site } = await loadSiteForUser(id);
-  if (!site) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 403 });
+  const { site, user } = await loadSiteForUser(id);
+  if (!site || !user) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 403 });
+
+  // 캡처는 헤드리스 크롬을 띄우는 무거운 작업(1회 수십 초·고메모리)이다.
+  // 인증이 있어도 횟수 제한이 없으면 계정 하나로 함수 비용을 태울 수 있다(보안감사 HIGH).
+  // 대행사당 1분에 10회로 제한. 정상 사용(페이지별 배경 캡처)에는 충분하다.
+  const rl = await rateLimit(`shot:${user.agencyId}`, 10, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: `캡처 요청이 너무 많습니다. ${rl.retryAfterSec}초 후 다시 시도하세요.` },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
 
   let path = "/";
   let device: "DESKTOP" | "MOBILE" = "DESKTOP";

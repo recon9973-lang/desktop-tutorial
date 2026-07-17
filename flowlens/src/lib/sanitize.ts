@@ -72,16 +72,24 @@ export function sanitizeMeta(raw: unknown): string {
 }
 
 // 수집 요청 도메인 검증 (5.1): Origin/Referer 호스트가 등록 도메인과 일치하는지.
+// ⚠️ fail-CLOSED: 헤더가 없거나 이상하면 거부한다.
+//   과거엔 헤더 부재 시 통과(fail-open)였는데, 브라우저가 아닌 클라이언트(curl 등)는 Origin/Referer를
+//   생략할 수 있어 검증이 통째로 무력화됐다(보안감사 HIGH). 정상 추적 스크립트는 브라우저에서 돌아
+//   Origin이 항상 붙으므로 진짜 방문자 수집에는 영향이 없다.
 export function hostAllowed(reqHost: string | null, siteDomain: string): boolean {
-  if (!reqHost) return true; // 헤더 부재 시 검증 불가 → 허용(잔여 리스크, 로깅 권장)
+  if (!reqHost) return false; // 헤더 부재·파싱실패 → 거부
   const h = reqHost.toLowerCase();
   if (h === "localhost" || h === "127.0.0.1" || h.endsWith(".localhost")) return true; // 개발/데모
-  if (!siteDomain) return true;
+  if (!siteDomain) return false; // 등록 도메인이 없으면 검증 불가 → 거부
   const d = siteDomain
     .replace(/^https?:\/\//, "")
     .replace(/\/.*$/, "")
     .toLowerCase();
-  return h === d || h.endsWith("." + d) || d.endsWith("." + h);
+  if (!d) return false;
+  // h가 d 이거나 d의 하위 서브도메인일 때만 허용.
+  // 과거의 `d.endsWith("."+h)`(역방향)은 등록도메인이 요청호스트의 하위일 때도 통과시켜
+  // "com" 같은 값으로 우회가 됐다(보안감사). 제거한다.
+  return h === d || h.endsWith("." + d);
 }
 
 export function hostFromHeaders(origin: string | null, referer: string | null): string | null {

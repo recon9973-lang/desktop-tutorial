@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hostAllowed, hostFromHeaders, sanitizeUrl, sanitizePath, sanitizeReferrer, sanitizeLabel, sanitizeMeta } from "@/lib/sanitize";
 import { getPlan } from "@/lib/plans";
+import { rateLimit, ipHashOf } from "@/lib/ratelimit";
 
 // 외부 고객 사이트에서 호출되므로 CORS 허용.
 const CORS = {
@@ -64,6 +65,17 @@ export async function POST(req: NextRequest) {
   const { site: siteKey, session: sessionKey, events } = body;
   if (!siteKey || !sessionKey || !Array.isArray(events) || events.length === 0) {
     return NextResponse.json({ ok: false, error: "missing fields" }, { status: 400, headers: CORS });
+  }
+  // 한 요청당 이벤트 개수 상한(거대 페이로드로 DB를 부풀리는 것 방지)
+  if (events.length > 100) {
+    return NextResponse.json({ ok: false, error: "too many events" }, { status: 413, headers: CORS });
+  }
+
+  // rate limit: 같은 IP·사이트 기준 10초에 20요청. 정상 추적기는 5초 주기이므로 여유롭고,
+  // 위조 요청을 대량으로 퍼붓는 것은 막는다. siteKey는 공개값이라 이 방어가 특히 중요하다.
+  const rl = await rateLimit(`collect:${siteKey}:${ipHashOf(req)}`, 20, 10_000);
+  if (!rl.ok) {
+    return NextResponse.json({ ok: true, throttled: true }, { status: 429, headers: { ...CORS, "Retry-After": String(rl.retryAfterSec) } });
   }
 
   const site = await prisma.site.findUnique({
