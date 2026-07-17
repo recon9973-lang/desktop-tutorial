@@ -1,37 +1,27 @@
 [
   {
-    "post": "post2", "id": "aeo-02", "dark": true,
-    "hookHtml": "챗GPT한테<br>우리 브랜드<br><mark>물어봤더니</mark>",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060241_8aa35597-664f-405e-b1c7-20ec918624ae.png"
-  },
-  {
-    "post": "post3", "id": "seo-03", "dark": false,
-    "hookHtml": "요즘 SEO,<br><mark>3줄</mark>로 끝",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060246_f2f33f7c-18eb-4ebf-9ab8-5dcd7dec463f.png"
-  },
-  {
     "post": "post4", "id": "eeat-04", "dark": false,
     "hookHtml": "AI가 <mark>믿는</mark><br>콘텐츠엔<br>이게 있어요",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060248_8cc106ed-8cd0-4399-8e1a-098637313d16.png"
+    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260717_134259_24362121-d870-48c0-b2c6-4d5f39203bbd.png"
   },
   {
     "post": "post5", "id": "schema-05", "dark": false,
     "hookHtml": "AI한테<br><mark>떠먹여</mark><br>주는 법",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060251_8ae125ee-a94a-4c6e-9218-ee83f75b7220.png"
+    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260717_134326_72e6b87c-88a4-4e7e-b496-a5bab1766c95.png"
   },
   {
     "post": "post6", "id": "llmstxt-06", "dark": true,
     "hookHtml": "AI한테<br>보내는<br><mark>초대장</mark>",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060314_a3c44386-66bf-4bfe-826a-7b94d50e313c.png"
+    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260717_134330_84bc8565-6fc9-43e3-9b21-ff4422221989.png"
   },
   {
     "post": "post7", "id": "mention-07", "dark": true,
     "hookHtml": "링크보다<br><mark>'언급'</mark>이<br>중요해요",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060318_202c5b86-7670-4129-a791-7f2f66c851e8.png"
+    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260717_134334_1a1a83b1-baaf-4709-a154-7de886be95f4.png"
   },
   {
     "post": "post8", "id": "smartblock-08", "dark": true,
     "hookHtml": "네이버도 이제<br><mark>'답'</mark>을<br>보여줘요",
-    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260715_060321_91cd5093-e523-435b-82c1-83a1a9bcedfe.png"
+    "photo": "https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260717_134338_deddc779-a88e-4fd3-8ae1-e0aed3269636.png"
   }
 ]
