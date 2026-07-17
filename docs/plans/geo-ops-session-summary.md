@@ -137,6 +137,14 @@ geo-store 21 · geo-templates 20 · geo-metrics 19 · geo-gsc 9 · geo-report 25
 | M5 | 온보딩 Phase 체크리스트 | #46 | 0 |
 | M6 | NAS→ERP 이관 스크립트 골격 | #47 | 0 |
 
+**UI 후속(설계 §7) — 완료·머지:** 전부 erp-v1 안착(Vercel green).
+
+| UI | 내용 | PR |
+|---|---|---|
+| SOV 차트 | 자사/경쟁사 점유 바 + 경쟁사별 언급 분해(GEO 관측 현황 탭) | #48 |
+| Phase 진행률 탭 | 거래처 상세에 Phase별 완료율(WorkItem 집계) | #49 |
+| 주간 리포트 UI | reports 서브라우트 온디맨드 조립·렌더 | #50 |
+
 ---
 
 ## 9. 라이브 TODO 체크리스트 (2026-07-16 기준)
@@ -147,15 +155,11 @@ geo-store 21 · geo-templates 20 · geo-metrics 19 · geo-gsc 9 · geo-report 25
 - [x] ERP 병합 M1~M6 구현·PR·오프라인 검증(52케이스)
 - [x] 통합 인도 문서(`geo-erp-integration-delivery.md`)
 - [x] **PR #42~#47 전부 erp-v1 머지 완료** (2026-07-16, 전 PR Vercel green). M2#43↔M5#46 타입 충돌은 세 필드(phase·automationLevel·channel) 모두 유지로 해소됨. `sov.ts`·`geo-weekly.ts`·`recurrence.ts`·`work-recur.ts`·`migrate-nas-to-erp.ts` 및 SOV KPI 안착 확인.
+- [x] **UI 후속 #48·#49·#50 전부 머지** (2026-07-16, Vercel green). SOV 차트·Phase 진행률 탭·주간 리포트 UI. `SovChart.tsx`·`ClientOnboardingProgress.tsx`·`GeoWeeklyReport.tsx`·`reports/geo-weekly` 안착 확인.
 
 ### ⏭ 팀 액션 (병합 마무리)
-- [ ] **M6 실행**: `sqlite3 team.db ".schema"`로 `NAS_SCHEMA` 확정 → `staff-map.json` 작성 → dry-run → `--commit`
+- [ ] **M6 실행**: NAS SQLite 백업본(`.backup`) 확보(LAN/온라인 무관, 상시 연결 불필요) → `sqlite3 team.db ".schema"`로 `NAS_SCHEMA` 확정 → `staff-map.json` 작성 → dry-run → `--commit`
 - [ ] **desktop-tutorial 파일럿**: GitHub Secret `ADMIN_SECRET` 등록(자동화 유일 차단) — 병합 완료로 파일럿 종료 수순
-
-### 🔜 UI 후속 (설계 §7, 선택)
-- [ ] SOV 차트(M1 데이터 · `components/geo`)
-- [ ] ClientDetail Phase 진행률 탭(M5 `onboardingPhaseSummary`)
-- [ ] reports에 geo-weekly 타입(M3 `assembleGeoWeekly`)
 
 ### 📌 중장기 (2차·3차, §7 유지)
 - [ ] 콘텐츠 초안 자동생성(B 승인큐)·Slack 승인·고객 포털·PDF 발송
