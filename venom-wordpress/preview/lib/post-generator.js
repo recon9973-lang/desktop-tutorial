@@ -31,21 +31,23 @@ const IMG_SETTINGS = {
   shimui:   'modern Korean medical conference room',
   geo_local:'Korean local hospital lobby with people',
 };
+// 인물 클로즈업(AI 얼굴)은 언캐니 밸리·거부감의 최대 원인 → 얼굴이 드러나는 주체는 배제.
+// 환경·오브젝트·뒷모습·손만 등장시켜 "진짜 같은" 다큐멘터리 톤을 유지하고 가짜 얼굴을 원천 차단.
 const IMG_SUBJECTS = [
-  'a Korean doctor in a white coat (30s)',
-  'a Korean female physician with a warm expression',
-  'a marketing consultant presenting to two Korean doctors',
-  'a patient and a Korean doctor in a friendly consultation',
-  'close-up of hands only (no faces)',
-  'a small medical team in discussion',
+  'close-up of hands only reviewing a document on a desk (no faces, no people visible)',
+  'a person viewed from behind at a desk (only the back is visible, face not shown)',
+  'a tidy desk flat-lay of planning and medical materials (no people in frame)',
+  'a quiet, unoccupied waiting area with warm modern furniture (no people)',
+  'a tablet and monitor showing simple graphs, framed with hands only (no faces)',
+  'a bright, calm interior detail with soft natural light (no people)',
 ];
 const IMG_SCENES = [
-  'reviewing a rising patient-growth line chart about "{kw}" on a large monitor, screen content softly blurred',
-  'looking at a smartphone where an AI chat app recommends a local clinic, phone screen in sharp focus',
-  'discussing a strategy board with sticky notes and simple graphs related to "{kw}"',
-  'a planning flat-lay on a desk: notebook with hand-drawn funnel, tablet with charts, stethoscope beside',
-  'walking through a bright clinic corridor, candid documentary style, motion in the frame',
-  'pointing at a wall-mounted dashboard with upward trend bars, over-the-shoulder view',
+  'a rising patient-growth line chart about "{kw}" on a large monitor, screen content softly blurred',
+  'a smartphone on the desk where an AI chat app recommends a local clinic, phone screen in sharp focus',
+  'a strategy board with sticky notes and simple graphs related to "{kw}"',
+  'a planning flat-lay: notebook with a hand-drawn funnel, tablet with charts, stethoscope beside',
+  'a bright clinic corridor in candid documentary style, soft motion in the frame',
+  'a wall-mounted dashboard with upward trend bars, over-the-shoulder framing',
 ];
 const IMG_STYLES = [
   'bright editorial photography, natural window light',
