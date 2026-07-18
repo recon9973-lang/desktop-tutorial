@@ -47,26 +47,58 @@ export default async function Landing() {
         </nav>
       </div>
 
-      {/* 히어로 — 토스식 올-라이트 (밝은 중앙 + 떠 있는 제품 조각) */}
+      {/* 히어로 — "내 홈페이지에서 고객 행동 패턴을 분석한다" (소유자 관점) */}
       <section className="tl-hero">
-        {/* 떠 있는 작은 제품 조각들 */}
-        <div className="tl-float tl-f1" aria-hidden><div className="k">전환</div><div className="v up">+32%</div></div>
-        <div className="tl-float tl-f2" aria-hidden><div className="heatdot" /></div>
-        <div className="tl-float tl-f3" aria-hidden><div className="k">이탈률</div><div className="v">19%</div></div>
-        <div className="tl-float tl-f4" aria-hidden><div className="k">좌절 클릭</div><div className="v" style={{ color: "var(--red)" }}>14</div></div>
-
         <div className="tl-hero-inner">
-          <span className="tl-eyebrow"><span className="live" aria-hidden />행동 분석 · 개인정보 미수집</span>
-          <h1>광고비는 쓰는데<br />왜 안 팔리는지 보입니다</h1>
+          <span className="tl-eyebrow"><span className="live" aria-hidden />내 홈페이지 고객 행동 분석 · 개인정보 미수집</span>
+          <h1>고객이 내 홈페이지에서<br />어디서 망설이는지 보입니다</h1>
           <p className="tl-hero-sub">
-            방문자의 클릭·스크롤·망설임을 분석해 매출과 문의 전환을 높일 개선점을 자동으로 제안합니다. 먼저, 내 사이트를 무료로 진단해 보세요.
+            방문자가 어디를 클릭하고, 어디서 멈추고, 어디서 떠나는지 — 실제 내 화면 위에서 확인하고 무엇을 고칠지 제안받으세요.
           </p>
           <div className="tl-hero-diag">
             <DiagnoseWidget />
           </div>
-          <div className="tl-hero-trust"><b>1,000+</b> 대행사·쇼핑몰이 신뢰합니다</div>
+          <div className="tl-hero-trust"><b>1,000+</b> 홈페이지가 고객 행동을 보고 있습니다</div>
+        </div>
+
+        {/* 히어로 이미지 — 내 홈페이지 위에 고객 행동(클릭·궤적·열지도·인사이트)이 겹쳐 보임 */}
+        <div className="tl-stage" aria-hidden>
+          <div className="tl-hp">
+            <div className="tl-hp-bar">
+              <i /><i /><i /><span className="tl-hp-url">mysite.co.kr</span>
+              <span className="tl-hp-live"><span className="d" />지금 8명 행동 분석 중</span>
+            </div>
+            <div className="tl-hp-body">
+              {/* 가짜 내 홈페이지 */}
+              <div className="tl-hp-nav">
+                <div className="tl-hp-logo" />
+                <div className="tl-hp-menu"><span /><span /><span /></div>
+              </div>
+              <div className="tl-hp-h" />
+              <div className="tl-hp-h s" />
+              <div className="tl-hp-row">
+                <div className="tl-hp-btn primary">구매하기</div>
+                <div className="tl-hp-btn ghost">더 알아보기</div>
+              </div>
+              <div className="tl-hp-cards"><div className="tl-hp-card" /><div className="tl-hp-card" /><div className="tl-hp-card" /></div>
+
+              {/* 고객 행동 오버레이 */}
+              <svg className="tl-move" viewBox="0 0 700 300" preserveAspectRatio="none">
+                <path d="M60 40 C 180 60, 120 150, 260 130 S 420 90, 500 170" fill="none" stroke="var(--accent)" strokeWidth="2" strokeOpacity="0.55" strokeDasharray="5 5" strokeLinecap="round" />
+              </svg>
+              <div className="tl-heatb" style={{ width: 110, height: 80, left: "58%", top: 96, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(234,179,8,.4) 46%,rgba(59,130,246,.18) 76%,transparent)" }} />
+              <div className="tl-heatb" style={{ width: 74, height: 56, left: "10%", top: 150, background: "radial-gradient(circle,rgba(239,68,68,.55),rgba(34,197,94,.35) 55%,transparent 80%)" }} />
+              <span className="tl-click" style={{ left: "22%", top: "58%", background: "var(--red)" }} />
+              <span className="tl-click c2" style={{ left: "64%", top: "40%", background: "var(--red)" }} />
+              <span className="tl-click c3" style={{ left: "18%", top: "40%", background: "var(--accent)" }} />
+              {/* 인사이트 말풍선 */}
+              <div className="tl-insight i2" style={{ left: "30%", top: "50%" }}><span className="dot" style={{ background: "var(--red)" }} />이 버튼, 안 눌려요</div>
+              <div className="tl-insight" style={{ right: "6%", top: "62%" }}><span className="dot" style={{ background: "var(--amber)" }} />여기서 3.2초 머묾</div>
+            </div>
+          </div>
         </div>
       </section>
+      <div style={{ height: 70, background: "var(--bg)" }} />
 
       {/* 기능 1 — 실제 화면 위 히트맵 (텍스트 좌 · 스크린샷 우) */}
       <section id="service">

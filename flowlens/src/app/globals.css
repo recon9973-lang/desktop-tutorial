@@ -418,3 +418,43 @@ button { font-family: inherit; cursor: pointer; }
 .tl-final-card { background: linear-gradient(180deg, #eef4fc, #fff); border: 1px solid var(--border); border-radius: 24px; padding: 56px 24px; text-align: center; box-shadow: var(--shadow); }
 .tl-final-card h2 { font-size: clamp(25px,3.6vw,34px); letter-spacing: -0.028em; margin-bottom: 10px; }
 .tl-final-card p { color: var(--text-2); margin-bottom: 24px; }
+
+/* ===== 히어로 이미지 — "내 홈페이지 위에 고객 행동이 겹쳐 보인다" ===== */
+.tl-stage { max-width: 860px; margin: 44px auto -56px; padding: 0 12px; position: relative; z-index: 2; }
+.tl-hp { background: #fff; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 30px 74px rgba(20,40,90,.17); }
+.tl-hp-bar { height: 36px; background: var(--surface-2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; padding: 0 14px; }
+.tl-hp-bar i { width: 9px; height: 9px; border-radius: 50%; background: #cfd4dd; }
+.tl-hp-url { margin-left: 8px; font-size: 11.5px; color: var(--text-3); }
+.tl-hp-live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--green); }
+.tl-hp-live .d { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.tl-hp-body { position: relative; padding: 26px 26px 34px; min-height: 300px; background: #fff; overflow: hidden; }
+/* 가짜 홈페이지 콘텐츠 */
+.tl-hp-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.tl-hp-logo { width: 76px; height: 16px; border-radius: 5px; background: #dbe2ee; }
+.tl-hp-menu { margin-left: auto; display: flex; gap: 14px; }
+.tl-hp-menu span { width: 40px; height: 10px; border-radius: 4px; background: var(--surface-2); }
+.tl-hp-h { height: 26px; width: 62%; border-radius: 7px; background: #d7deea; margin-bottom: 12px; }
+.tl-hp-h.s { width: 44%; margin-bottom: 20px; }
+.tl-hp-row { display: flex; gap: 12px; margin-bottom: 22px; }
+.tl-hp-btn { padding: 11px 20px; border-radius: 9px; font-size: 13px; font-weight: 700; }
+.tl-hp-btn.primary { background: var(--accent); color: #fff; }
+.tl-hp-btn.ghost { background: var(--surface-2); color: var(--text-3); }
+.tl-hp-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.tl-hp-card { height: 66px; border-radius: 10px; background: var(--surface-2); }
+/* 행동 오버레이 */
+.tl-ov { position: absolute; inset: 0; pointer-events: none; }
+.tl-heatb { position: absolute; border-radius: 50%; filter: blur(7px); }
+.tl-click { position: absolute; width: 15px; height: 15px; border-radius: 50%; transform: translate(-50%,-50%); }
+.tl-click::after { content: ""; position: absolute; inset: 0; border-radius: 50%; }
+.tl-move { position: absolute; inset: 0; }
+.tl-insight { position: absolute; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 7px 11px; font-size: 11.5px; font-weight: 600; box-shadow: 0 8px 22px rgba(20,40,90,.14); white-space: nowrap; }
+.tl-insight .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+@media (prefers-reduced-motion: no-preference) {
+  .tl-click { animation: clickPulse 2.2s ease-out infinite; }
+  .tl-click.c2 { animation-delay: .7s; } .tl-click.c3 { animation-delay: 1.4s; }
+  .tl-insight { animation: insFloat 4.5s ease-in-out infinite; }
+  .tl-insight.i2 { animation-delay: 1.5s; }
+  @keyframes clickPulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); } 70%,100% { box-shadow: 0 0 0 16px rgba(239,68,68,0); } }
+  @keyframes insFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+}
+@media (max-width: 620px) { .tl-insight { display: none; } .tl-hp-body { min-height: 240px; } }
