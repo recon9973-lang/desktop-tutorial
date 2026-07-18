@@ -49,6 +49,20 @@
   catch (e) { origin = location.origin; }
   var COLLECT_URL = origin + "/api/collect";
 
+  // ---- 사전 동의 모드 (해외·의료 등 민감 사이트) ----
+  // 활성화: <script ... data-fl-consent="required">, window.FLOWLENS_REQUIRE_CONSENT=true, 또는 ?consent=required
+  // 동의 전에는 collectBlocked=true 라서 push()가 아무 이벤트도 만들지 않는다(데이터 미전송).
+  // 사이트 동의 배너에서 승인 시 window.flowlens.grantConsent() 호출 → 즉시 수집 시작.
+  var requireConsent =
+    (script && script.getAttribute && script.getAttribute("data-fl-consent") === "required") ||
+    window.FLOWLENS_REQUIRE_CONSENT === true;
+  if (!requireConsent && script && script.src) {
+    try { if (new URL(script.src).searchParams.get("consent") === "required") requireConsent = true; } catch (e) {}
+  }
+  var consentGranted = false;
+  try { consentGranted = localStorage.getItem("fl_consent") === "1"; } catch (e) {}
+  var collectBlocked = requireConsent && !consentGranted;
+
   // ---- 세션 관리 (개인 식별 아님) ----
   var SESSION_TTL = 30 * 60 * 1000; // 30분 무활동 만료
   function getSessionKey() {
@@ -208,6 +222,7 @@
   };
 
   function push(type, data) {
+    if (collectBlocked) return; // 사전 동의 전에는 어떤 이벤트도 수집·전송하지 않음
     var ev = {
       type: type,
       url: cleanUrl(),
@@ -582,5 +597,16 @@
       clearInterval(flushTimer);
     },
     optIn: function () { try { localStorage.removeItem("fl_optout"); } catch (e) {} },
+    // 사전 동의 모드에서 방문자가 동의 → 즉시 수집 시작(이후 방문에도 기억).
+    grantConsent: function () {
+      try { localStorage.setItem("fl_consent", "1"); } catch (e) {}
+      collectBlocked = false;
+    },
+    // 동의 철회 → 즉시 수집 중단 + 대기 큐 폐기.
+    revokeConsent: function () {
+      try { localStorage.setItem("fl_consent", "0"); } catch (e) {}
+      collectBlocked = true;
+      queue.length = 0;
+    },
   };
 })();

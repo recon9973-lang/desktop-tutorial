@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 
 const ERRORS: Record<string, string> = {
-  invalid: "입력값을 확인하세요. 비밀번호는 6자 이상이어야 합니다.",
+  invalid: "입력값을 확인하세요. 비밀번호는 8자 이상이어야 합니다.",
   email: "이미 가입된 이메일입니다.",
+  agree: "약관·개인정보처리방침·처리위탁 계약(DPA)에 동의해야 가입할 수 있습니다.",
 };
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -30,14 +31,18 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           <div className="field"><label>대행사 / 회사 이름</label><input name="agencyName" placeholder="그로스랩" required /></div>
           <div className="field"><label>이름</label><input name="name" placeholder="홍길동" required /></div>
           <div className="field"><label>이메일</label><input name="email" type="email" placeholder="you@company.com" required /></div>
-          <div className="field"><label>비밀번호 (6자 이상)</label><input name="password" type="password" minLength={6} required /></div>
-          <button className="btn primary" type="submit" style={{ width: "100%", justifyContent: "center", marginTop: 6 }}>
+          <div className="field"><label>비밀번호 (8자 이상)</label><input name="password" type="password" minLength={8} required /></div>
+          <label className="small muted" style={{ display: "flex", gap: 8, alignItems: "flex-start", margin: "10px 0 2px", lineHeight: 1.5 }}>
+            <input name="agree" type="checkbox" value="1" required style={{ marginTop: 3 }} />
+            <span>
+              <Link href="/terms" style={{ color: "var(--accent)" }}>이용약관</Link>,{" "}
+              <Link href="/privacy" style={{ color: "var(--accent)" }}>개인정보처리방침</Link>,{" "}
+              <Link href="/dpa" style={{ color: "var(--accent)" }}>개인정보 처리위탁 계약(DPA)</Link>에 동의합니다. (필수)
+            </span>
+          </label>
+          <button className="btn primary" type="submit" style={{ width: "100%", justifyContent: "center", marginTop: 10 }}>
             무료로 시작하기
           </button>
-          <p className="small muted" style={{ margin: "12px 0 0", textAlign: "center" }}>
-            가입 시 <Link href="/terms" style={{ color: "var(--accent)" }}>이용약관</Link>과{" "}
-            <Link href="/privacy" style={{ color: "var(--accent)" }}>개인정보처리방침</Link>에 동의하게 됩니다.
-          </p>
         </form>
 
         <div className="hr" />
