@@ -119,15 +119,20 @@
       // value 미접근. 타입/aria만.
       return "[" + (el.getAttribute("type") || tag) + "]";
     }
+    // contenteditable(리치 에디터·일부 검색창·채팅 입력)에 방문자가 친 글이 textContent로 새는 것 방지.
+    // isContentEditable 은 편집영역의 자식(span 등)에서도 true → 값을 읽지 않고 자리표시만.
+    if (el.isContentEditable) return "[edit]";
     // 고객이 지정한 안전 라벨(data-fl-label) 우선, 없으면 aria-label/텍스트
     var txt = el.getAttribute("data-fl-label") || el.getAttribute("aria-label") || el.textContent || el.getAttribute("alt") || "";
     return mask(txt);
   }
 
   // 고객이 수집 제외로 지정한 영역([data-fl-ignore], .fl-sensitive)
+  // 조상 6단계만 보면 깊은 DOM에서 수집제외가 무시된다("무조건 미수집" 약속 위반) → 뿌리까지 확인.
+  // 상한 40은 비정상적으로 깊은 트리에서의 폭주만 막는 안전장치(정상 페이지는 훨씬 얕다).
   function isIgnored(el) {
     var n = el;
-    for (var i = 0; i < 6 && n; i++) {
+    for (var i = 0; i < 40 && n && n !== document.body; i++) {
       if (n.getAttribute && (n.getAttribute("data-fl-ignore") !== null || (n.classList && n.classList.contains("fl-sensitive")))) return true;
       n = n.parentElement;
     }

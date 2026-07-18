@@ -66,6 +66,15 @@ export async function POST(req: NextRequest) {
   if (!siteKey || !sessionKey || !Array.isArray(events) || events.length === 0) {
     return NextResponse.json({ ok: false, error: "missing fields" }, { status: 400, headers: CORS });
   }
+
+  // 이벤트 시각 검증: 클라이언트가 준 ts를 그대로 믿으면, 미래 시각을 넣어 보관기간 삭제(ts < cutoff)를
+  // 영영 회피할 수 있다(감사 M7). 미래(+시계오차 60초 허용)거나 30일 넘게 과거면 서버 시각으로 대체.
+  const nowMs = Date.now();
+  const safeTs = (t: unknown): Date => {
+    const n = typeof t === "number" ? t : NaN;
+    if (!Number.isFinite(n) || n > nowMs + 60_000 || n < nowMs - 30 * 24 * 60 * 60 * 1000) return new Date(nowMs);
+    return new Date(n);
+  };
   // 한 요청당 이벤트 개수 상한(거대 페이로드로 DB를 부풀리는 것 방지)
   if (events.length > 100) {
     return NextResponse.json({ ok: false, error: "too many events" }, { status: 413, headers: CORS });
@@ -166,7 +175,7 @@ export async function POST(req: NextRequest) {
           path: sanitizePath(e.path || "/"),
           points: p.points,
           count: p.count,
-          ts: e.ts ? new Date(e.ts) : new Date(),
+          ts: safeTs(e.ts),
         };
       })
       .filter(Boolean) as { siteId: string; sessionId: string; device: string; path: string; points: string; count: number; ts: Date }[];
@@ -189,7 +198,7 @@ export async function POST(req: NextRequest) {
       scrollPct: typeof e.scrollPct === "number" ? Math.min(100, Math.max(0, Math.round(e.scrollPct))) : null,
       targetLabel: sanitizeLabel(e.targetLabel), // 서버 2차 마스킹
       meta: sanitizeMeta(e.meta), // 민감 키 차단 + 값 마스킹 + allowlist
-      ts: e.ts ? new Date(e.ts) : new Date(),
+      ts: safeTs(e.ts),
     })),
   });
 
