@@ -50,10 +50,10 @@ export default async function Landing() {
       {/* 히어로 — "내 홈페이지에서 고객 행동 패턴을 분석한다" (소유자 관점) */}
       <section className="tl-hero">
         <div className="tl-hero-inner">
-          <span className="tl-eyebrow"><span className="live" aria-hidden />내 홈페이지 고객 행동 분석 · 개인정보 미수집</span>
-          <h1>고객이 내 홈페이지에서<br />어디서 망설이는지 보입니다</h1>
+          <span className="tl-eyebrow"><span className="live" aria-hidden />내 홈페이지 고객 행동 패턴 · 개인정보 미수집</span>
+          <h1>내 홈페이지 고객의<br />행동 패턴이 보입니다</h1>
           <p className="tl-hero-sub">
-            방문자가 어디를 클릭하고, 어디서 멈추고, 어디서 떠나는지 — 실제 내 화면 위에서 확인하고 무엇을 고칠지 제안받으세요.
+            고객이 어디를 클릭하고, 어디서 멈추고, 어디서 떠나는지 — 실제 내 화면 위에서 확인하고 무엇을 고칠지 제안받으세요.
           </p>
           <div className="tl-hero-diag">
             <DiagnoseWidget />
