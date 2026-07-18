@@ -79,7 +79,7 @@ const BENEFITS = [
   { t: "전환율 향상", d: "왜 안 사는지 짚어 실제로 고칩니다", bg: "#e7f6ee", fg: "#0e7c50", d1: "M3 17l6-6 4 4 8-8", d2: "M21 7h-5m5 0v5" },
   { t: "광고비 효율", d: "들어온 사람을 놓치지 않게", bg: "#e6f0fb", fg: "#0075de", d1: "M12 3a9 9 0 100 18 9 9 0 000-18z", d2: "M12 8a4 4 0 100 8 4 4 0 000-8z", circle: true },
   { t: "시간 절감", d: "개선 과제를 자동으로 정리", bg: "#fdf0e2", fg: "#b5590a", d1: "M12 7v5l3 2", d2: "M12 3a9 9 0 100 18 9 9 0 000-18z" },
-  { t: "안전한 데이터", d: "입력값·IP 미수집", bg: "#eef0fb", fg: "#3a3f9e", d1: "M6 11V8a6 6 0 1112 0v3", d2: "M5 11h14v9H5z" },
+  { t: "안전한 데이터", d: "입력값 미수집·원문 IP 미저장", bg: "#eef0fb", fg: "#3a3f9e", d1: "M6 11V8a6 6 0 1112 0v3", d2: "M5 11h14v9H5z" },
 ];
 
 export default async function Landing() {
@@ -112,7 +112,7 @@ export default async function Landing() {
       {/* 히어로 — "내 홈페이지에서 고객 행동 패턴을 분석한다" (소유자 관점) */}
       <section className="tl-hero">
         <div className="tl-hero-inner">
-          <span className="tl-eyebrow"><span className="live" aria-hidden />내 홈페이지 고객 행동 패턴 · 개인정보 미수집</span>
+          <span className="tl-eyebrow"><span className="live" aria-hidden />내 홈페이지 고객 행동 패턴 · 이름·비밀번호·IP 미수집</span>
           <h1>내 홈페이지 고객의<br />행동 패턴이 보입니다</h1>
           <p className="tl-hero-sub">
             고객이 어디를 클릭하고, 어디서 멈추고, 어디서 떠나는지 — 실제 내 화면 위에서 확인하고 무엇을 고칠지 제안받으세요.
@@ -267,15 +267,15 @@ export default async function Landing() {
       <section>
         <div className="tl-feat">
           <div className="tl-feat-copy">
-            <div className="tl-feat-eyebrow">개인정보 미수집</div>
-            <h2>안 모으니까,<br />안심하고 제안할 수 있습니다</h2>
-            <p>입력값·비밀번호는 <b>아예 받지 않고</b>, IP는 저장하지 않고 해시만. 민감정보는 자동으로 가립니다. 병원·쇼핑몰처럼 개인정보에 민감한 업종에 안전하게 쓸 수 있습니다.</p>
+            <div className="tl-feat-eyebrow">개인정보 보호 설계</div>
+            <h2>민감정보는 안 모으니까,<br />안심하고 제안할 수 있습니다</h2>
+            <p>입력값·비밀번호는 <b>아예 받지 않고</b>, 원문 IP는 저장하지 않고 해시만. 민감정보는 자동으로 가립니다. 수집하는 행동 데이터는 <b>비식별화</b>해 다루며, 병원·쇼핑몰처럼 개인정보에 민감한 업종에도 보수적으로 설계했습니다.</p>
             <p className="tl-note">폼 입력값 · 비밀번호 · 원문 IP 미저장</p>
           </div>
           <div className="tl-shot" aria-hidden>
             <div className="tl-shot-bar"><i /><i /><i /><span className="u">수집 정책</span></div>
             <div className="tl-shot-body" style={{ minHeight: 200 }}>
-              {[["이름 입력값", "미수집"], ["전화번호", "미수집"], ["비밀번호", "미수집"], ["원문 IP", "해시만 저장"], ["클릭·스크롤 좌표", "수집 (익명)"]].map(([k, v]) => (
+              {[["이름 입력값", "미수집"], ["전화번호", "미수집"], ["비밀번호", "미수집"], ["원문 IP", "해시만 저장"], ["클릭·스크롤 좌표", "비식별 처리"]].map(([k, v]) => (
                 <div key={k} className="between" style={{ padding: "11px 12px", border: "1px solid var(--border)", borderRadius: 10, marginBottom: 8 }}>
                   <span style={{ fontSize: 13.5, fontWeight: 600 }}>{k}</span>
                   <span className="badge" style={{ background: v.includes("미수집") || v.includes("해시") ? "#e7f6ee" : "var(--accent-soft)", color: v.includes("미수집") || v.includes("해시") ? "var(--green)" : "var(--accent)" }}>{v}</span>
