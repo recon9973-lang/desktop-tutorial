@@ -458,3 +458,25 @@ button { font-family: inherit; cursor: pointer; }
   @keyframes insFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 }
 @media (max-width: 620px) { .tl-insight { display: none; } .tl-hp-body { min-height: 240px; } }
+
+/* ===== 실제 같은 가상 홈페이지 (회색 목업 대신) — 히어로·기능 이미지 공용 ===== */
+.rl-site { font-size: 12px; color: var(--text); }
+.rl-nav { display: flex; align-items: center; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.rl-brand { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: 15px; letter-spacing: -0.02em; }
+.rl-brand .b { width: 18px; height: 18px; border-radius: 6px; background: linear-gradient(135deg, #ff8fa3, #ff5470); }
+.rl-menu { margin-left: 14px; display: flex; gap: 14px; color: var(--text-3); font-weight: 600; font-size: 12px; }
+.rl-cart { margin-left: auto; width: 22px; height: 22px; border-radius: 7px; background: var(--surface-2); }
+.rl-banner { position: relative; border-radius: 12px; overflow: hidden; padding: 22px 22px; margin-bottom: 16px;
+  background: linear-gradient(120deg, #2b3a67 0%, #4a6cae 60%, #6f8fd6 100%); color: #fff; }
+.rl-banner .tag { font-size: 11px; font-weight: 700; opacity: .85; letter-spacing: .04em; }
+.rl-banner .ttl { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; margin: 6px 0 12px; }
+.rl-banner .cta { display: inline-block; background: #fff; color: #223; font-weight: 800; font-size: 12px; padding: 8px 16px; border-radius: 999px; }
+.rl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.rl-prod .thumb { height: 78px; border-radius: 10px; margin-bottom: 8px; }
+.rl-prod:nth-child(1) .thumb { background: linear-gradient(135deg, #e7ddcf, #cdbfa6); }
+.rl-prod:nth-child(2) .thumb { background: linear-gradient(135deg, #d9e3ef, #aebfd6); }
+.rl-prod:nth-child(3) .thumb { background: linear-gradient(135deg, #e6dde9, #c9b6d4); }
+.rl-prod .nm { font-size: 12px; font-weight: 600; }
+.rl-prod .pr { font-size: 12.5px; font-weight: 800; margin-top: 2px; }
+.rl-prod .pr .off { color: var(--red); margin-right: 5px; }
+@media (max-width: 620px) { .rl-banner .ttl { font-size: 17px; } .rl-prod .thumb { height: 56px; } }

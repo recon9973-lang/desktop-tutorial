@@ -69,31 +69,37 @@ export default async function Landing() {
               <span className="tl-hp-live"><span className="d" />지금 8명 행동 분석 중</span>
             </div>
             <div className="tl-hp-body">
-              {/* 가짜 내 홈페이지 */}
-              <div className="tl-hp-nav">
-                <div className="tl-hp-logo" />
-                <div className="tl-hp-menu"><span /><span /><span /></div>
+              {/* 실제 같은 내 홈페이지 (쇼핑몰) */}
+              <div className="rl-site">
+                <div className="rl-nav">
+                  <div className="rl-brand"><span className="b" />라온</div>
+                  <div className="rl-menu"><span>신상품</span><span>베스트</span><span>세일</span></div>
+                  <div className="rl-cart" />
+                </div>
+                <div className="rl-banner">
+                  <div className="tag">SUMMER SALE</div>
+                  <div className="ttl">여름 시즌 오프<br />최대 40% 할인</div>
+                  <span className="cta">지금 쇼핑하기</span>
+                </div>
+                <div className="rl-grid">
+                  <div className="rl-prod"><div className="thumb" /><div className="nm">린넨 오버셔츠</div><div className="pr"><span className="off">40%</span>39,000원</div></div>
+                  <div className="rl-prod"><div className="thumb" /><div className="nm">코튼 와이드팬츠</div><div className="pr"><span className="off">30%</span>45,000원</div></div>
+                  <div className="rl-prod"><div className="thumb" /><div className="nm">캔버스 토트백</div><div className="pr"><span className="off">25%</span>29,000원</div></div>
+                </div>
               </div>
-              <div className="tl-hp-h" />
-              <div className="tl-hp-h s" />
-              <div className="tl-hp-row">
-                <div className="tl-hp-btn primary">구매하기</div>
-                <div className="tl-hp-btn ghost">더 알아보기</div>
-              </div>
-              <div className="tl-hp-cards"><div className="tl-hp-card" /><div className="tl-hp-card" /><div className="tl-hp-card" /></div>
 
               {/* 고객 행동 오버레이 */}
               <svg className="tl-move" viewBox="0 0 700 300" preserveAspectRatio="none">
-                <path d="M60 40 C 180 60, 120 150, 260 130 S 420 90, 500 170" fill="none" stroke="var(--accent)" strokeWidth="2" strokeOpacity="0.55" strokeDasharray="5 5" strokeLinecap="round" />
+                <path d="M70 40 C 200 50, 150 130, 300 120 S 470 150, 560 200" fill="none" stroke="var(--accent)" strokeWidth="2" strokeOpacity="0.5" strokeDasharray="5 5" strokeLinecap="round" />
               </svg>
-              <div className="tl-heatb" style={{ width: 110, height: 80, left: "58%", top: 96, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(234,179,8,.4) 46%,rgba(59,130,246,.18) 76%,transparent)" }} />
-              <div className="tl-heatb" style={{ width: 74, height: 56, left: "10%", top: 150, background: "radial-gradient(circle,rgba(239,68,68,.55),rgba(34,197,94,.35) 55%,transparent 80%)" }} />
-              <span className="tl-click" style={{ left: "22%", top: "58%", background: "var(--red)" }} />
-              <span className="tl-click c2" style={{ left: "64%", top: "40%", background: "var(--red)" }} />
-              <span className="tl-click c3" style={{ left: "18%", top: "40%", background: "var(--accent)" }} />
+              <div className="tl-heatb" style={{ width: 108, height: 66, left: "20%", top: 92, background: "radial-gradient(circle,rgba(239,68,68,.68),rgba(234,179,8,.4) 46%,rgba(59,130,246,.16) 76%,transparent)" }} />
+              <div className="tl-heatb" style={{ width: 66, height: 50, left: "8%", top: 214, background: "radial-gradient(circle,rgba(239,68,68,.5),rgba(34,197,94,.34) 55%,transparent 80%)" }} />
+              <span className="tl-click" style={{ left: "23%", top: "44%", background: "var(--red)" }} />
+              <span className="tl-click c2" style={{ left: "12%", top: "80%", background: "var(--accent)" }} />
+              <span className="tl-click c3" style={{ left: "52%", top: "82%", background: "var(--accent)" }} />
               {/* 인사이트 말풍선 */}
-              <div className="tl-insight i2" style={{ left: "30%", top: "50%" }}><span className="dot" style={{ background: "var(--red)" }} />이 버튼, 안 눌려요</div>
-              <div className="tl-insight" style={{ right: "6%", top: "62%" }}><span className="dot" style={{ background: "var(--amber)" }} />여기서 3.2초 머묾</div>
+              <div className="tl-insight" style={{ left: "27%", top: "36%" }}><span className="dot" style={{ background: "var(--red)" }} />“지금 쇼핑하기” 잘 눌러요</div>
+              <div className="tl-insight i2" style={{ right: "5%", top: "70%" }}><span className="dot" style={{ background: "var(--amber)" }} />토트백에서 3.2초 머묾</div>
             </div>
           </div>
         </div>
@@ -110,13 +116,24 @@ export default async function Landing() {
             <p className="tl-note">클릭맵 · 무브맵 · 스크롤맵 · 셀렉터 · 제스처</p>
           </div>
           <div className="tl-shot" aria-hidden>
-            <div className="tl-shot-bar"><i /><i /><i /><span className="u">mysite.co.kr</span></div>
+            <div className="tl-shot-bar"><i /><i /><i /><span className="u">라온몰 · 상품 상세</span></div>
             <div className="tl-shot-body">
-              <div className="tl-line t" /><div className="tl-line" style={{ width: "92%" }} /><div className="tl-line" style={{ width: "80%" }} />
-              <div style={{ height: 56, borderRadius: 8, background: "var(--surface-2)", margin: "10px 0" }} />
-              <div className="tl-line" style={{ width: "70%" }} /><div className="tl-line" style={{ width: "58%" }} />
-              <div className="tl-heat" style={{ width: 120, height: 90, right: 30, top: 40, background: "radial-gradient(circle,rgba(239,68,68,.85),rgba(234,179,8,.5) 45%,rgba(59,130,246,.22) 75%,transparent)" }} />
-              <div className="tl-heat" style={{ width: 84, height: 64, left: 40, top: 120, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(34,197,94,.4) 55%,transparent 80%)" }} />
+              <div className="rl-site">
+                <div className="rl-grid" style={{ gridTemplateColumns: "1.1fr 1fr", gap: 14, alignItems: "start" }}>
+                  <div className="rl-prod"><div className="thumb" style={{ height: 120 }} /></div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>린넨 오버셔츠</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 10 }}><span style={{ color: "var(--red)", marginRight: 6 }}>40%</span>39,000원</div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-3)", lineHeight: 1.7, marginBottom: 12 }}>가볍고 시원한 여름 린넨 소재<br />내추럴한 실루엣 · 3color</div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <div className="rl-banner" style={{ padding: "10px 16px", margin: 0, flex: 1, textAlign: "center" }}><span style={{ fontWeight: 800, fontSize: 12.5 }}>장바구니</span></div>
+                      <div style={{ padding: "10px 16px", borderRadius: 12, border: "1px solid var(--border)", fontSize: 12.5, fontWeight: 700, color: "var(--text-3)" }}>바로구매</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="tl-heat" style={{ width: 116, height: 84, right: 30, top: 30, background: "radial-gradient(circle,rgba(239,68,68,.82),rgba(234,179,8,.48) 45%,rgba(59,130,246,.2) 75%,transparent)" }} />
+              <div className="tl-heat" style={{ width: 92, height: 60, left: 30, top: 150, background: "radial-gradient(circle,rgba(239,68,68,.66),rgba(34,197,94,.4) 55%,transparent 80%)" }} />
             </div>
           </div>
         </div>
