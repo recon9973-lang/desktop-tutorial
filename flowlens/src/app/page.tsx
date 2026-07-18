@@ -114,6 +114,81 @@ export default async function Landing() {
         </div>
       </section>
 
+      {/* 맵 종류 쇼케이스 — 한 번 설치로 5가지 지도 */}
+      <section className="maps" aria-label="지도 종류">
+        <h2>한 번 설치로, 5가지 지도로 봅니다</h2>
+        <p className="lead">같은 방문 데이터를 각도만 바꿔 보여줍니다. 문제의 종류에 따라 골라 보세요.</p>
+        <div className="maps-grid">
+          {/* 클릭맵 */}
+          <div className="map-card">
+            <div className="map-thumb">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/landing/skincare-event.webp" alt="" />
+              <div className="map-ov">
+                <span className="bt-hot md" style={{ left: "71%", top: "78%" }} />
+                <span className="bt-hot sm" style={{ left: "26%", top: "66%" }} />
+              </div>
+            </div>
+            <div className="map-meta"><div className="t">클릭맵</div><div className="d">어디를 눌렀나 — 뜨거울수록 클릭 많음</div></div>
+          </div>
+          {/* 무브맵 */}
+          <div className="map-card">
+            <div className="map-thumb">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/landing/skincare-event.webp" alt="" />
+              <div className="map-ov movemap">
+                <svg viewBox="0 0 300 128" preserveAspectRatio="none" aria-hidden>
+                  <path d="M40 24 C 120 20, 90 80, 160 78 S 230 100, 250 96" fill="none" stroke="rgba(20,22,30,.55)" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <span className="dwell" style={{ left: "53%", top: "61%" }} />
+                <span className="dwell" style={{ left: "83%", top: "75%" }} />
+              </div>
+            </div>
+            <div className="map-meta"><div className="t">무브맵</div><div className="d">마우스가 지나간 길 · 시선 흐름</div></div>
+          </div>
+          {/* 스크롤맵 */}
+          <div className="map-card">
+            <div className="map-thumb">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/landing/skincare-event.webp" alt="" />
+              <div className="map-ov scrollmap">
+                <span className="tick" style={{ top: 4 }}>100%</span>
+                <span className="tick" style={{ top: "48%" }}>52%</span>
+                <span className="tick" style={{ bottom: 4 }}>18%</span>
+              </div>
+            </div>
+            <div className="map-meta"><div className="t">스크롤맵</div><div className="d">어디까지 내려봤나 — 아래로 갈수록 줄어듦</div></div>
+          </div>
+          {/* 셀렉터 */}
+          <div className="map-card">
+            <div className="selrank">
+              {[["응모하기", 42], ["재생 버튼", 28], ["온라인몰", 17], ["리뷰 이벤트", 9]].map(([nm, pct], i) => (
+                <div className="selrow" key={nm as string}>
+                  <span className="rk">{i + 1}</span>
+                  <span className="nm">{nm}</span>
+                  <span className="bar"><i style={{ width: `${pct}%` }} /></span>
+                  <span className="pct">{pct}%</span>
+                </div>
+              ))}
+            </div>
+            <div className="map-meta"><div className="t">셀렉터</div><div className="d">가장 많이 눌린 버튼·링크 순위</div></div>
+          </div>
+          {/* 제스처 */}
+          <div className="map-card">
+            <div className="map-thumb">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/landing/skincare-event.webp" alt="" />
+              <div className="map-ov gesture">
+                <span className="tap" style={{ left: "30%", top: "55%" }} />
+                <span className="tap" style={{ left: "71%", top: "78%" }} />
+                <span className="swipe" style={{ left: "40%", top: "40%", width: 70, transform: "rotate(8deg)" }} />
+              </div>
+            </div>
+            <div className="map-meta"><div className="t">제스처</div><div className="d">모바일 탭·더블탭·확대·스와이프</div></div>
+          </div>
+        </div>
+      </section>
+
       {/* 기능 2 — 한국어 개선 리포트 (스크린샷 좌 · 텍스트 우) */}
       <section id="why">
         <div className="tl-feat rev">

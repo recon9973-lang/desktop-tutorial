@@ -531,3 +531,38 @@ button { font-family: inherit; cursor: pointer; }
 .bt-hot.lg { width: 118px; height: 92px; }
 .bt-hot.md { width: 92px; height: 74px; }
 .bt-hot.sm { width: 66px; height: 54px; }
+
+/* ===== 맵 종류 쇼케이스 (클릭·무브·스크롤·셀렉터·제스처) ===== */
+.maps { max-width: 1120px; margin: 0 auto; padding: 24px 24px 64px; }
+.maps h2 { text-align: center; font-size: clamp(23px,3.4vw,30px); letter-spacing: -0.025em; margin-bottom: 8px; }
+.maps .lead { text-align: center; color: var(--text-2); max-width: 560px; margin: 0 auto 30px; }
+.maps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+@media (max-width: 960px) { .maps-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); } }
+.map-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); transition: transform .14s ease, box-shadow .14s ease; }
+.map-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(20,40,90,.10); }
+.map-thumb { position: relative; height: 128px; overflow: hidden; background: var(--surface-2); }
+.map-thumb > img { width: 100%; height: 128px; object-fit: cover; object-position: top; display: block; }
+.map-ov { position: absolute; inset: 0; pointer-events: none; }
+.map-meta { padding: 12px 14px 16px; min-height: 82px; }
+.map-meta .t { font-weight: 750; font-size: 14px; letter-spacing: -0.01em; }
+.map-meta .d { font-size: 11.5px; color: var(--text-3); margin-top: 3px; line-height: 1.5; }
+/* 클릭맵 무지개 블롭은 .bt-hot 재사용 */
+/* 무브맵 — 어두운 궤적 + 체류 점 */
+.movemap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.movemap .dwell { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: rgba(20,22,30,.65); transform: translate(-50%,-50%); box-shadow: 0 0 0 4px rgba(20,22,30,.15); }
+/* 스크롤맵 — 위(따뜻,많이 봄)→아래(차가움,적게 봄) */
+.scrollmap { background: linear-gradient(180deg, rgba(239,68,68,.52) 0%, rgba(234,179,8,.42) 32%, rgba(34,197,94,.34) 58%, rgba(59,130,246,.3) 82%, rgba(59,130,246,.12) 100%); mix-blend-mode: multiply; }
+.scrollmap .tick { position: absolute; right: 6px; font-size: 9px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+/* 셀렉터 — 가장 많이 눌린 요소 순위 */
+.selrank { padding: 14px 14px 6px; height: 128px; display: flex; flex-direction: column; justify-content: center; gap: 9px; background: var(--surface-2); }
+.selrow { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.selrow .rk { width: 15px; height: 15px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-weight: 800; font-size: 9px; display: grid; place-items: center; flex-shrink: 0; }
+.selrow .nm { font-weight: 600; white-space: nowrap; }
+.selrow .bar { flex: 1; height: 6px; border-radius: 999px; background: #dfe1e6; overflow: hidden; }
+.selrow .bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.selrow .pct { font-weight: 800; font-variant-numeric: tabular-nums; }
+/* 제스처 — 모바일 탭·스와이프 */
+.gesture .tap { position: absolute; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--accent); transform: translate(-50%,-50%); }
+.gesture .tap::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: rgba(0,117,222,.35); }
+.gesture .swipe { position: absolute; height: 3px; background: var(--accent); border-radius: 999px; }
+.gesture .swipe::after { content: ""; position: absolute; right: -1px; top: -3px; border: 5px solid transparent; border-left-color: var(--accent); }
