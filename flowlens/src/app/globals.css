@@ -498,3 +498,36 @@ button { font-family: inherit; cursor: pointer; }
 .tl-scope-card.ok li::before { content: ""; position: absolute; left: 3px; top: 6px; width: 10px; height: 5px; border-left: 2.4px solid var(--green); border-bottom: 2.4px solid var(--green); transform: rotate(-45deg); }
 .tl-scope-card.no li::before { content: "✕"; position: absolute; left: 4px; top: 0; color: var(--red); font-weight: 800; font-size: 12px; }
 .tl-scope-card .note { font-size: 12.5px; color: var(--text-3); margin: 14px 0 0; padding-top: 13px; border-top: 1px solid var(--border); }
+
+/* ===== 뷰티/코스메틱 목업 (레퍼런스 참고) + 무지개 열지도 + 버튼 위 핫스팟 ===== */
+.bt-site { color: var(--text); }
+.bt-nav { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid #e6ddcf; }
+.bt-brand { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 17px; letter-spacing: .04em; color: #6b5b4a; }
+.bt-menu { display: flex; gap: 15px; font-size: 10.5px; font-weight: 700; letter-spacing: .09em; color: #a1927e; }
+.bt-shop { position: relative; margin-left: auto; background: #fff; border: 1px solid #e3d8c8; border-radius: 999px; padding: 6px 15px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; color: #6b5b4a; }
+.bt-hero { position: relative; border-radius: 14px; overflow: hidden; padding: 22px 24px; background: linear-gradient(120deg, #f0e7d9 0%, #e8ddcc 100%); min-height: 148px; display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.bt-hero-copy { flex: 1; min-width: 0; }
+.bt-hero-h { font-family: Georgia, "Times New Roman", serif; font-size: clamp(20px, 3vw, 30px); line-height: 1.02; color: #6b5b4a; font-weight: 700; letter-spacing: -.01em; }
+.bt-hero-sub { font-size: 11px; color: #9a8b78; margin: 8px 0 12px; line-height: 1.5; }
+.bt-cta { position: relative; display: inline-block; background: #6b5b4a; color: #fff; font-weight: 800; font-size: 11.5px; letter-spacing: .04em; padding: 9px 18px; border-radius: 999px; }
+/* CSS 드로퍼 세럼 병 */
+.bt-bottle { width: 58px; flex-shrink: 0; }
+.bt-bottle .cap { width: 18px; height: 24px; background: #fdfbf7; border-radius: 5px 5px 3px 3px; margin: 0 auto; box-shadow: inset 0 -3px 4px rgba(0,0,0,.06); }
+.bt-bottle .neck { width: 13px; height: 7px; background: #efe7d9; margin: 0 auto; }
+.bt-bottle .body { position: relative; width: 50px; height: 66px; margin: 0 auto; border-radius: 9px; background: linear-gradient(165deg, #f6dca6 0%, #e7b978 100%); box-shadow: inset 1px 1px 3px rgba(255,255,255,.5), 0 6px 14px rgba(120,90,40,.18); }
+.bt-bottle .label { position: absolute; left: 8px; right: 8px; top: 18px; height: 30px; background: #fff; border-radius: 4px; }
+.bt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.bt-card .th { height: 62px; border-radius: 9px; }
+.bt-card:nth-child(1) .th { background: linear-gradient(135deg, #e9f0e3, #c8dcbf); }
+.bt-card:nth-child(2) .th { background: linear-gradient(135deg, #efe4d4, #d7c1a2); }
+.bt-card:nth-child(3) .th { background: linear-gradient(135deg, #f4e6ea, #dcc0c8); }
+.bt-card .nm { font-size: 11px; font-weight: 700; margin-top: 6px; color: #6b5b4a; }
+.bt-card .pr { font-size: 11.5px; font-weight: 800; margin-top: 1px; }
+.bt-card .pr .off { color: var(--red); margin-right: 4px; }
+
+/* 무지개 열지도 핫스팟 — 버튼 안에 넣으면 버튼 위에 정확히 얹힌다 */
+.bt-hot { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); border-radius: 50%; filter: blur(3px); pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, rgba(255,26,26,.82) 0%, rgba(255,140,0,.6) 24%, rgba(255,225,0,.46) 44%, rgba(70,200,90,.32) 64%, rgba(50,120,255,.2) 84%, transparent 100%); }
+.bt-hot.lg { width: 118px; height: 92px; }
+.bt-hot.md { width: 92px; height: 74px; }
+.bt-hot.sm { width: 66px; height: 54px; }
