@@ -1,0 +1,50 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "히트맵으로 홈페이지 전환율 올리는 법 — 방문자가 어디서 떠나는지 찾는 5단계",
+      "description": "클릭·스크롤 히트맵으로 홈페이지에서 방문자가 떠나는 지점을 찾고 전환율을 개선하는 실무 5단계 가이드.",
+      "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
+      "publisher": { "@type": "Organization", "name": "FlowLens", "url": "https://flow.seokorea.org" },
+      "datePublished": "2026-07-19",
+      "inLanguage": "ko",
+      "keywords": "히트맵, 전환율 개선, 웹사이트 이탈률, 행동 분석, 클릭맵, 스크롤맵"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "히트맵은 방문자가 몇 명 정도 모여야 신뢰할 수 있나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "정해진 절대 기준은 없지만, 일반적으로 페이지·구간별로 수백 세션 이상 쌓였을 때 패턴이 안정적으로 보입니다. 방문자가 적은 페이지는 기간을 늘려 데이터를 모은 뒤 판단하는 것이 좋습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "히트맵을 쓰면 방문자의 개인정보를 수집하게 되나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "도구에 따라 다릅니다. FlowLens는 이름·전화·비밀번호 같은 폼 입력값과 원문 IP를 수집하지 않는 설계이며, 민감정보 패턴은 전송 전에 자동으로 가립니다. 병원처럼 개인정보에 민감한 업종에서도 보수적으로 설계했습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "클릭맵과 스크롤맵 중 무엇부터 봐야 하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "대개 스크롤맵으로 진입층 이탈을 먼저 확인한 뒤 클릭맵으로 탐색층을 보는 순서가 효율적입니다. 사람들이 콘텐츠에 도달조차 못 한다면 클릭 분석은 그다음 문제입니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "모바일과 PC는 따로 봐야 하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "네. 화면 크기와 조작 방식(마우스 vs 터치)이 달라 이탈 지점도 다릅니다. 특히 모바일 비중이 높은 사이트는 모바일 히트맵을 기준으로 개선하는 것이 안전합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "쇼핑몰(쿠팡·네이버쇼핑)이나 SNS에도 설치할 수 있나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "아니요. 히트맵 스크립트는 내가 코드를 넣을 수 있는 내 홈페이지·자사몰에만 설치됩니다. 외부 스크립트 삽입이 막힌 오픈마켓·플랫폼·SNS 프로필에는 설치할 수 없습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "히트맵만 보면 전환율이 바로 오르나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "히트맵은 어디가 문제인지 알려주는 진단 도구입니다. 실제 개선은 발견한 문제를 가설→수정→전후 비교로 검증하며 반복할 때 이루어집니다. 한 번에 하나씩 바꾸는 원칙이 중요합니다." }
+        }
+      ]
+    }
+  ]
+}
