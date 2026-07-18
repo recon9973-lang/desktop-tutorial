@@ -6,22 +6,18 @@ import CookieConsent from "@/components/CookieConsent";
 
 export const dynamic = "force-dynamic";
 
-const SERVICES = ["클릭 히트맵", "스크롤맵 · 셀렉터", "세션 리플레이", "전환 퍼널", "전/후 비교", "한국어 개선 리포트", "화이트라벨 공유", "모바일 제스처"];
-
 const STEPS = [
   { t: "스크립트 한 줄 설치", d: "발급된 추적 코드를 사이트 head에 넣거나 워드프레스 플러그인을 설치합니다." },
   { t: "방문자 행동 자동 수집", d: "클릭·스크롤·체류·좌절클릭을 개인정보 안전하게 수집합니다." },
   { t: "개선 리포트 자동 생성", d: "히트맵·퍼널·전후 비교와 한국어 개선 과제를 자동으로 받아봅니다." },
 ];
 
-// 원형 다이어그램 노드 (중심 주변 배치)
-const ORBIT = [
-  { t: "전환율 향상", x: 50, y: 4 },
-  { t: "이탈 원인 파악", x: 89, y: 22 },
-  { t: "광고비 효율", x: 93, y: 66 },
-  { t: "개선 과제 자동화", x: 50, y: 96 },
-  { t: "시간·비용 절감", x: 9, y: 66 },
-  { t: "데이터 기반 의사결정", x: 8, y: 22 },
+// 혜택 4종 (간결한 인라인 SVG 아이콘 — 이모지 대신)
+const BENEFITS = [
+  { t: "전환율 향상", d: "왜 안 사는지 짚어 실제로 고칩니다", bg: "#e7f6ee", fg: "#0e7c50", d1: "M3 17l6-6 4 4 8-8", d2: "M21 7h-5m5 0v5" },
+  { t: "광고비 효율", d: "들어온 사람을 놓치지 않게", bg: "#e6f0fb", fg: "#0075de", d1: "M12 3a9 9 0 100 18 9 9 0 000-18z", d2: "M12 8a4 4 0 100 8 4 4 0 000-8z", circle: true },
+  { t: "시간 절감", d: "개선 과제를 자동으로 정리", bg: "#fdf0e2", fg: "#b5590a", d1: "M12 7v5l3 2", d2: "M12 3a9 9 0 100 18 9 9 0 000-18z" },
+  { t: "안전한 데이터", d: "입력값·IP 미수집", bg: "#eef0fb", fg: "#3a3f9e", d1: "M6 11V8a6 6 0 1112 0v3", d2: "M5 11h14v9H5z" },
 ];
 
 export default async function Landing() {
@@ -51,104 +47,106 @@ export default async function Landing() {
         </nav>
       </div>
 
-      {/* 히어로 — 다크 콘솔 (열지도가 빛나는) */}
-      <section className="lp-hero3">
-        <div className="lp-hero3-glow" aria-hidden />
-        <div className="lp-hero3-inner">
-          <span className="lp-eyebrow2"><span className="live" aria-hidden />행동 분석 · 개인정보 미수집</span>
-          <h1>광고비는 쓰는데<br /><span className="heat">왜 안 팔리는지</span> 보입니다</h1>
-          <p className="lp-hero3-sub">
+      {/* 히어로 — 토스식 올-라이트 (밝은 중앙 + 떠 있는 제품 조각) */}
+      <section className="tl-hero">
+        {/* 떠 있는 작은 제품 조각들 */}
+        <div className="tl-float tl-f1" aria-hidden><div className="k">전환</div><div className="v up">+32%</div></div>
+        <div className="tl-float tl-f2" aria-hidden><div className="heatdot" /></div>
+        <div className="tl-float tl-f3" aria-hidden><div className="k">이탈률</div><div className="v">19%</div></div>
+        <div className="tl-float tl-f4" aria-hidden><div className="k">좌절 클릭</div><div className="v" style={{ color: "var(--red)" }}>14</div></div>
+
+        <div className="tl-hero-inner">
+          <span className="tl-eyebrow"><span className="live" aria-hidden />행동 분석 · 개인정보 미수집</span>
+          <h1>광고비는 쓰는데<br />왜 안 팔리는지 보입니다</h1>
+          <p className="tl-hero-sub">
             방문자의 클릭·스크롤·망설임을 분석해 매출과 문의 전환을 높일 개선점을 자동으로 제안합니다. 먼저, 내 사이트를 무료로 진단해 보세요.
           </p>
-          <div className="lp-diag-card">
+          <div className="tl-hero-diag">
             <DiagnoseWidget />
           </div>
-          <div className="lp-trust">
-            <span className="stack-imgs" aria-hidden>
-              <span className="av" /><span className="av" /><span className="av" /><span className="av" />
-            </span>
-            <span><b>1,000+</b> 대행사·쇼핑몰이 신뢰합니다</span>
-          </div>
+          <div className="tl-hero-trust"><b>1,000+</b> 대행사·쇼핑몰이 신뢰합니다</div>
         </div>
+      </section>
 
-        {/* 제품 목업 — 히트맵이 얹힌 실제 대시보드 느낌 */}
-        <div className="lp-hero3-mock">
-          <div className="lp-mock">
-            <div className="lp-mock-bar"><i /><i /><i /><span className="small muted" style={{ marginLeft: 8 }}>mysite.co.kr — FlowLens</span></div>
-            <div className="lp-mock-body">
-              <div className="lp-mock-tiles">
-                <div className="lp-mock-tile"><b>2,107</b><span>세션</span></div>
-                <div className="lp-mock-tile"><b>19%</b><span>이탈률</span></div>
-                <div className="lp-mock-tile"><b>147</b><span>전환</span></div>
-              </div>
-              <div className="lp-mock-chart">
-                <div style={{ height: "40%" }} /><div style={{ height: "62%" }} /><div style={{ height: "48%" }} /><div style={{ height: "80%" }} /><div style={{ height: "70%" }} /><div style={{ height: "95%" }} /><div style={{ height: "60%" }} />
-              </div>
-              <div className="lp-heatblob" style={{ width: 120, height: 80, right: 26, top: 60, background: "radial-gradient(circle,rgba(239,68,68,.8),rgba(234,179,8,.45) 45%,rgba(59,130,246,.2) 75%,transparent)" }} />
-              <div className="lp-heatblob" style={{ width: 90, height: 60, left: 40, top: 120, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(34,197,94,.4) 55%,transparent 80%)" }} />
+      {/* 기능 1 — 실제 화면 위 히트맵 (텍스트 좌 · 스크린샷 우) */}
+      <section id="service">
+        <div className="tl-feat">
+          <div className="tl-feat-copy">
+            <div className="tl-feat-eyebrow">실제 화면 위 히트맵</div>
+            <h2>회색 목업이 아니라,<br />진짜 그 페이지 위에서 봅니다</h2>
+            <p>방문자가 어디를 눌렀는지, 어디서 멈췄는지를 실제 사이트 화면 위에 얹어 보여줍니다. 기기별로 자동 캡처해 모바일·데스크톱을 따로 봅니다.</p>
+            <p className="tl-note">클릭맵 · 무브맵 · 스크롤맵 · 셀렉터 · 제스처</p>
+          </div>
+          <div className="tl-shot" aria-hidden>
+            <div className="tl-shot-bar"><i /><i /><i /><span className="u">mysite.co.kr</span></div>
+            <div className="tl-shot-body">
+              <div className="tl-line t" /><div className="tl-line" style={{ width: "92%" }} /><div className="tl-line" style={{ width: "80%" }} />
+              <div style={{ height: 56, borderRadius: 8, background: "var(--surface-2)", margin: "10px 0" }} />
+              <div className="tl-line" style={{ width: "70%" }} /><div className="tl-line" style={{ width: "58%" }} />
+              <div className="tl-heat" style={{ width: 120, height: 90, right: 30, top: 40, background: "radial-gradient(circle,rgba(239,68,68,.85),rgba(234,179,8,.5) 45%,rgba(59,130,246,.22) 75%,transparent)" }} />
+              <div className="tl-heat" style={{ width: 84, height: 64, left: 40, top: 120, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(34,197,94,.4) 55%,transparent 80%)" }} />
             </div>
           </div>
         </div>
       </section>
-      <div className="lp-hero3-spacer" />
 
-      {/* 우리가 하는 일 (벤토) */}
-      <section className="lp-section" id="service" style={{ paddingTop: 68 }}>
-        <span className="lp-eyebrow-txt">우리가 하는 일</span>
-        <h2 style={{ textAlign: "left", marginBottom: 26, maxWidth: 760 }}>기능 수가 아니라, 국내 대행사·쇼핑몰이 실제로 개선하게 만드는 운영 경험에 집중합니다</h2>
-        <div className="bento">
-          <div className="cell">
-            <div className="between" style={{ marginBottom: 12 }}><span className="badge low">FlowLens 소개</span><span className="cell-arrow">↗</span></div>
-            <div style={{ fontWeight: 700, marginBottom: 4 }}>행동 분석 SaaS</div>
-            <p className="muted small" style={{ margin: 0 }}>클릭·스크롤·좌절을 수집해 히트맵과 한국어 개선 리포트로. 스크립트 한 줄이면 시작합니다.</p>
+      {/* 기능 2 — 한국어 개선 리포트 (스크린샷 좌 · 텍스트 우) */}
+      <section id="why">
+        <div className="tl-feat rev">
+          <div className="tl-feat-copy">
+            <div className="tl-feat-eyebrow">한국어 개선 리포트</div>
+            <h2>숫자만 던지지 않고,<br />무엇을 고칠지 알려줍니다</h2>
+            <p>“모바일에서 핵심 버튼을 보기 전에 이탈합니다 → 상단으로 올리세요” 처럼, 대행사가 고객에게 그대로 내밀 수 있는 <b>할 일 형태</b>의 리포트로 받아봅니다.</p>
+            <p className="tl-note">데이터 해석을 대신 하지 않아도 됩니다.</p>
           </div>
-          <div className="cell tint" style={{ display: "grid", placeItems: "center" }}>
-            <div style={{ textAlign: "center" }}>
-              <div className="heat-chip" style={{ margin: "0 auto 10px" }} aria-hidden />
-              <div style={{ fontWeight: 700, marginTop: 6 }}>실사이트 위 히트맵</div>
-              <div className="muted small">회색 목업이 아닌 진짜 화면 위</div>
+          <div className="tl-shot" aria-hidden>
+            <div className="tl-shot-bar"><i /><i /><i /><span className="u">개선 리포트</span></div>
+            <div className="tl-shot-body">
+              <div className="tl-sug"><span className="n">1</span><div><div className="st">모바일 방문자가 핵심 버튼을 보기 전에 이탈합니다</div><div className="sd">첫 화면에 고정 CTA를 추가하세요 · 영향도 높음</div></div></div>
+              <div className="tl-sug"><span className="n">2</span><div><div className="st">클릭되지 않는 요소를 누르는 방문자가 있습니다</div><div className="sd">이미지처럼 보이는 영역을 실제 버튼으로 · 34건</div></div></div>
+              <div className="tl-sug"><span className="n">3</span><div><div className="st">페이지 중반 이전에 이탈이 많습니다</div><div className="sd">핵심 메시지를 상단으로 · 50% 도달 34%</div></div></div>
             </div>
           </div>
-          <div className="cell rows">
-            <div className="between" style={{ marginBottom: 12 }}><b>제공 기능</b><span className="cell-arrow">↗</span></div>
-            <div className="svc-list">
-              {SERVICES.map((s) => (
-                <div key={s} className="svc-pill"><span className="d" />{s}</div>
+        </div>
+      </section>
+
+      {/* 기능 3 — 개인정보 미수집 (텍스트 좌 · 스크린샷 우) */}
+      <section>
+        <div className="tl-feat">
+          <div className="tl-feat-copy">
+            <div className="tl-feat-eyebrow">개인정보 미수집</div>
+            <h2>안 모으니까,<br />안심하고 제안할 수 있습니다</h2>
+            <p>입력값·비밀번호는 <b>아예 받지 않고</b>, IP는 저장하지 않고 해시만. 민감정보는 자동으로 가립니다. 병원·쇼핑몰처럼 개인정보에 민감한 업종에 안전하게 쓸 수 있습니다.</p>
+            <p className="tl-note">폼 입력값 · 비밀번호 · 원문 IP 미저장</p>
+          </div>
+          <div className="tl-shot" aria-hidden>
+            <div className="tl-shot-bar"><i /><i /><i /><span className="u">수집 정책</span></div>
+            <div className="tl-shot-body" style={{ minHeight: 200 }}>
+              {[["이름 입력값", "미수집"], ["전화번호", "미수집"], ["비밀번호", "미수집"], ["원문 IP", "해시만 저장"], ["클릭·스크롤 좌표", "수집 (익명)"]].map(([k, v]) => (
+                <div key={k} className="between" style={{ padding: "11px 12px", border: "1px solid var(--border)", borderRadius: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{k}</span>
+                  <span className="badge" style={{ background: v.includes("미수집") || v.includes("해시") ? "#e7f6ee" : "var(--accent-soft)", color: v.includes("미수집") || v.includes("해시") ? "var(--green)" : "var(--accent)" }}>{v}</span>
+                </div>
               ))}
             </div>
           </div>
-          <div className="cell tint" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <span className="mark-lbl" style={{ marginBottom: 8 }}><span className="dot" />보안 · 프라이버시</span>
-            <div style={{ fontWeight: 700, margin: "2px 0 4px" }}>개인정보 보호 우선</div>
-            <p className="muted small" style={{ margin: 0 }}>입력값·비밀번호 미수집, 민감정보 자동 마스킹, IP 미저장.</p>
-          </div>
-          <div className="cell span2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-            <div>
-              <span className="badge medium" style={{ marginBottom: 8 }}>무료 진단</span>
-              <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>가입 없이 내 사이트 기본 점검</div>
-              <p className="muted small" style={{ margin: 0 }}>모바일 대응·CTA·폼·속도까지 즉시 진단하고, 설치하면 실제 행동 데이터가 쌓입니다.</p>
-            </div>
-            <Link href="/signup" className="btn primary pill" style={{ whiteSpace: "nowrap" }}>무료로 시작 →</Link>
-          </div>
         </div>
       </section>
 
-      {/* 왜 중요한가 (원형 다이어그램) */}
-      <section className="lp-section" id="why" style={{ paddingTop: 20 }}>
-        <span className="lp-eyebrow-txt" style={{ display: "block", textAlign: "center" }}>왜 이게 중요한가</span>
-        <h2>방문자 행동을 이해하면<br />전환·광고효율·의사결정이 달라집니다</h2>
-        <div className="orbit">
-          <svg className="orbit-ring" viewBox="0 0 100 74" preserveAspectRatio="none" aria-hidden>
-            <ellipse cx="50" cy="37" rx="46" ry="34" fill="none" stroke="var(--border)" strokeWidth="0.4" strokeDasharray="1.4 1.4" />
-          </svg>
-          <div className="orbit-center">
-            <div style={{ textAlign: "center" }}>
-              <div className="heat-chip" style={{ margin: "0 auto 8px", width: 40, height: 40 }} aria-hidden />
-              <div style={{ fontWeight: 700, fontSize: 13, marginTop: 2 }}>전환 개선</div>
+      {/* 혜택 아이콘 줄 */}
+      <section className="tl-bench">
+        <h2>방문자 행동을 이해하면 이렇게 달라집니다</h2>
+        <div className="tl-bench-grid">
+          {BENEFITS.map((b) => (
+            <div key={b.t} className="tl-bench-item">
+              <div className="tl-bench-ic" style={{ background: b.bg, color: b.fg }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d={b.d1} />{b.d2 && <path d={b.d2} />}{b.circle && <circle cx="12" cy="12" r="3" />}
+                </svg>
+              </div>
+              <div className="bt">{b.t}</div>
+              <div className="bd">{b.d}</div>
             </div>
-          </div>
-          {ORBIT.map((n) => (
-            <div key={n.t} className="orbit-node" style={{ left: `${n.x}%`, top: `${n.y}%` }}>{n.t}</div>
           ))}
         </div>
       </section>
@@ -194,12 +192,12 @@ export default async function Landing() {
         </div>
       </section>
 
-      {/* 마지막 CTA */}
-      <section className="lp-section" style={{ paddingTop: 0 }}>
-        <div className="lp-cta">
-          <h2 style={{ marginBottom: 10 }}>지금 무료로 시작하세요</h2>
-          <p style={{ opacity: 0.9, marginBottom: 22 }}>카드 없이 가입 · 스크립트 한 줄 설치 · 며칠이면 첫 리포트</p>
-          <Link href="/signup" className="btn white pill" style={{ padding: "13px 28px", fontWeight: 700 }}>대행사 워크스페이스 무료로 만들기 →</Link>
+      {/* 마지막 CTA — 밝은 카드 (어두운 밴드 대신) */}
+      <section className="tl-final">
+        <div className="tl-final-card">
+          <h2>지금 무료로 시작하세요</h2>
+          <p>카드 없이 가입 · 스크립트 한 줄 설치 · 며칠이면 첫 리포트</p>
+          <Link href="/signup" className="btn primary pill" style={{ padding: "13px 28px", fontWeight: 700 }}>대행사 워크스페이스 무료로 만들기 →</Link>
         </div>
       </section>
 
