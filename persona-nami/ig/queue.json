@@ -80,9 +80,9 @@
       "hook": "AI한테 보내는 초대장 (llms.txt)",
       "img": "persona-nami/ig/post6.png",
       "cap": "persona-nami/ig/post6.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null,
+      "published": true,
+      "publishedAt": "2026-07-18T12:54:30.568Z",
+      "mediaId": "18471378172104500",
       "images": [
         "persona-nami/ig/post6.png",
         "persona-nami/ig/post6-2.png",
