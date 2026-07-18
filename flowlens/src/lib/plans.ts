@@ -80,3 +80,24 @@ export function getPlan(key: string | undefined | null): Plan {
 export function can(planKey: string | undefined | null, feature: Feature): boolean {
   return getPlan(planKey).features.includes(feature);
 }
+
+// ---- 연간 결제 할인 ----
+// 1년 선불 시 할인. 선불이라 현금이 먼저 들어오고 이탈(해지)이 줄어드는 게 핵심 이점.
+// 기본 10%. 참고: 업계에선 "2개월 무료(≈16.7%)"가 전환이 더 잘 되는 편 — 필요하면 이 값만 올리면 된다.
+export const ANNUAL_DISCOUNT = 0.1;
+
+// 연 결제 총액(100원 단위 반올림). 무료 플랜은 0.
+export function annualPrice(plan: Plan): number {
+  if (plan.price <= 0) return 0;
+  return Math.round((plan.price * 12 * (1 - ANNUAL_DISCOUNT)) / 100) * 100;
+}
+// 연 결제를 월로 환산한 표시가(“월 X원 꼴”). 100원 단위.
+export function annualMonthly(plan: Plan): number {
+  if (plan.price <= 0) return 0;
+  return Math.round(annualPrice(plan) / 12 / 100) * 100;
+}
+// 월 결제 12개월 대비 연 결제로 아끼는 금액.
+export function annualSaving(plan: Plan): number {
+  if (plan.price <= 0) return 0;
+  return plan.price * 12 - annualPrice(plan);
+}

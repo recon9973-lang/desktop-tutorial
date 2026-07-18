@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { PLANS } from "@/lib/plans";
 import { audit } from "@/lib/audit";
+import { syncRetentionForPlan } from "@/lib/billing";
 
 // 요금제 변경.
 // ⚠️ MVP 스텁: 실제 결제(PG) 연동 없이 요금제만 즉시 변경한다.
@@ -31,7 +32,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 셀프 다운그레이드(무료로 내리기). 보관일은 즉시 줄이지 않는다(데이터 삭제 방지) —
+  // 관리자 경로와 동일하게 syncRetentionForPlan 이 올리기만 한다. docs/08 정책.
   await prisma.agency.update({ where: { id: user.agencyId }, data: { plan } });
+  await syncRetentionForPlan(prisma, user.agencyId, plan);
   await audit(user.agencyId, "CHANGE_PLAN", { userId: user.id, userEmail: user.email, detail: plan });
   return NextResponse.redirect(new URL("/billing?changed=1", origin), { status: 303 });
 }

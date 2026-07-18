@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getAdminUser } from "@/lib/admin";
 import { audit } from "@/lib/audit";
 import { PLANS } from "@/lib/plans";
+import { syncRetentionForPlan } from "@/lib/billing";
 
 // 모든 액션은 서버에서 실행되며, 매 호출마다 운영자 여부를 다시 확인한다.
 // 클라이언트가 보낸 값은 신뢰하지 않는다(운영자 판정은 세션+화이트리스트로만).
@@ -16,7 +17,7 @@ async function assertAdmin() {
 }
 
 // 요금제 변경. 유료 전환 차단(결제 우회 방지) 정책과 달리, 운영자는 결제 확인 후 수동 반영이 가능하다.
-// 단, 요금제별 보관일을 사이트에도 반영해야 방침과 실제가 어긋나지 않는다(감사 M16).
+// 보관일은 syncRetentionForPlan 이 "올리기만" 한다 — 다운그레이드로 데이터가 갑자기 삭제되지 않게(docs/08 정책).
 export async function adminSetPlan(formData: FormData) {
   const admin = await assertAdmin();
   const agencyId = String(formData.get("agencyId") || "");
@@ -26,21 +27,13 @@ export async function adminSetPlan(formData: FormData) {
 
   await prisma.$transaction(async (tx) => {
     await tx.agency.update({ where: { id: agencyId }, data: { plan: target.key } });
-    // 이 대행사의 모든 사이트 보관일을 새 요금제 기준으로 맞춘다.
-    const clients = await tx.client.findMany({ where: { agencyId }, select: { id: true } });
-    const clientIds = clients.map((c) => c.id);
-    if (clientIds.length) {
-      await tx.site.updateMany({
-        where: { clientId: { in: clientIds } },
-        data: { retentionDays: target.retentionDays },
-      });
-    }
+    await syncRetentionForPlan(tx, agencyId, target.key);
   });
 
   await audit(agencyId, "CHANGE_PLAN", {
     userId: admin.id,
     userEmail: admin.email,
-    detail: `[ADMIN] ${plan} (보관 ${target.retentionDays}일)`,
+    detail: `[ADMIN] ${plan} (보관 최소 ${target.retentionDays}일 보장, 축소 없음)`,
   });
   revalidatePath("/admin");
 }
