@@ -3,6 +3,7 @@ import { getAdminUser } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 import { PLANS } from "@/lib/plans";
 import { adminSetPlan, adminExtendTrial, adminClearTrial } from "./actions";
+import ConfirmButton from "./ConfirmButton";
 
 export const dynamic = "force-dynamic";
 
@@ -130,7 +131,12 @@ function AgencyTable({ title, rows, muted = false }: { title: string; rows: Row[
                     </option>
                   ))}
                 </select>
-                <button type="submit" className="btn sm primary">요금제 적용</button>
+                <ConfirmButton
+                  className="btn sm primary"
+                  message={`[${r.name}]의 요금제를 바꿉니다.\n\n무료(FREE)로 내리면 보관일이 14일로 줄어, 자동 정리가 켜진 뒤 오래된 데이터가 삭제될 수 있습니다.\n\n계속할까요?`}
+                >
+                  요금제 적용
+                </ConfirmButton>
               </form>
               <span style={{ width: 1, height: 20, background: "var(--border)" }} />
               {/* 체험 제어 */}
@@ -140,7 +146,9 @@ function AgencyTable({ title, rows, muted = false }: { title: string; rows: Row[
               </form>
               <form action={adminClearTrial}>
                 <input type="hidden" name="agencyId" value={r.id} />
-                <button type="submit" className="btn sm">체험 제한 해제</button>
+                <ConfirmButton className="btn sm" message={`[${r.name}]의 체험 제한을 해제해 수집을 다시 켭니다. 계속할까요?`}>
+                  체험 제한 해제
+                </ConfirmButton>
               </form>
             </div>
           </div>
