@@ -40,68 +40,61 @@ export default async function Landing() {
           </div>
           <div className="row">
             {user ? (
-              <Link href="/dashboard" className="btn primary sm">대시보드로 →</Link>
+              <Link href="/dashboard" className="btn primary pill sm">대시보드로 →</Link>
             ) : (
               <>
                 <Link href="/login" className="btn sm">로그인</Link>
-                <Link href="/signup" className="btn primary sm">무료로 시작</Link>
+                <Link href="/signup" className="btn primary pill sm">무료로 시작</Link>
               </>
             )}
           </div>
         </nav>
       </div>
 
-      {/* 히어로 (분할) */}
-      <section className="lp-hero2">
-        <div className="lp-hero2-inner">
-          {/* 좌: 카피 + 무료 진단 */}
-          <div className="lp-hero-card">
-            <span className="lp-eyebrow">✨ 개인정보 보호형 행동 분석 SaaS</span>
-            <h1>광고비는 쓰는데<br /><span className="hl">왜 안 팔리는지</span> 보입니다</h1>
-            <p className="muted" style={{ fontSize: 15, marginTop: 0, marginBottom: 22 }}>
-              방문자의 클릭·스크롤·망설임을 분석해 매출과 문의 전환을 높일 개선점을 자동으로 제안합니다. 먼저, 내 사이트를 무료로 진단해 보세요.
-            </p>
+      {/* 히어로 — 다크 콘솔 (열지도가 빛나는) */}
+      <section className="lp-hero3">
+        <div className="lp-hero3-glow" aria-hidden />
+        <div className="lp-hero3-inner">
+          <span className="lp-eyebrow2"><span className="live" aria-hidden />행동 분석 · 개인정보 미수집</span>
+          <h1>광고비는 쓰는데<br /><span className="heat">왜 안 팔리는지</span> 보입니다</h1>
+          <p className="lp-hero3-sub">
+            방문자의 클릭·스크롤·망설임을 분석해 매출과 문의 전환을 높일 개선점을 자동으로 제안합니다. 먼저, 내 사이트를 무료로 진단해 보세요.
+          </p>
+          <div className="lp-diag-card">
             <DiagnoseWidget />
-            <div className="avatars">
-              <div className="stack-imgs">
-                <span className="av" /><span className="av" /><span className="av" /><span className="av" />
-              </div>
-              <div className="small muted"><b style={{ color: "var(--text)" }}>1,000+</b> 대행사·쇼핑몰이 신뢰합니다</div>
-            </div>
           </div>
+          <div className="lp-trust">
+            <span className="stack-imgs" aria-hidden>
+              <span className="av" /><span className="av" /><span className="av" /><span className="av" />
+            </span>
+            <span><b>1,000+</b> 대행사·쇼핑몰이 신뢰합니다</span>
+          </div>
+        </div>
 
-          {/* 우: 대시보드 + 히트맵 목업 */}
-          <div className="lp-visual">
-            <div className="lp-mock">
-              <div className="lp-mock-bar"><i /><i /><i /><span className="small muted" style={{ marginLeft: 8 }}>mysite.co.kr — FlowLens</span></div>
-              <div className="lp-mock-body">
-                <div className="lp-mock-tiles">
-                  <div className="lp-mock-tile"><b>2,107</b><span>세션</span></div>
-                  <div className="lp-mock-tile"><b>19%</b><span>이탈률</span></div>
-                  <div className="lp-mock-tile"><b>147</b><span>전환</span></div>
-                </div>
-                <div className="lp-mock-chart">
-                  <div style={{ height: "40%" }} /><div style={{ height: "62%" }} /><div style={{ height: "48%" }} /><div style={{ height: "80%" }} /><div style={{ height: "70%" }} /><div style={{ height: "95%" }} /><div style={{ height: "60%" }} />
-                </div>
-                {/* 히트맵이 화면과 어우러지도록 오버레이 */}
-                <div className="lp-heatblob" style={{ width: 120, height: 80, right: 26, top: 60, background: "radial-gradient(circle,rgba(239,68,68,.8),rgba(234,179,8,.45) 45%,rgba(59,130,246,.2) 75%,transparent)" }} />
-                <div className="lp-heatblob" style={{ width: 90, height: 60, left: 40, top: 120, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(34,197,94,.4) 55%,transparent 80%)" }} />
+        {/* 제품 목업 — 히트맵이 얹힌 실제 대시보드 느낌 */}
+        <div className="lp-hero3-mock">
+          <div className="lp-mock">
+            <div className="lp-mock-bar"><i /><i /><i /><span className="small muted" style={{ marginLeft: 8 }}>mysite.co.kr — FlowLens</span></div>
+            <div className="lp-mock-body">
+              <div className="lp-mock-tiles">
+                <div className="lp-mock-tile"><b>2,107</b><span>세션</span></div>
+                <div className="lp-mock-tile"><b>19%</b><span>이탈률</span></div>
+                <div className="lp-mock-tile"><b>147</b><span>전환</span></div>
               </div>
-            </div>
-            <div className="hero-badge">
-              <div className="ic">🩺</div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 13 }}>무료 진단</div>
-                <div className="muted small">가입 없이 즉시 · 카드 필요 없음</div>
+              <div className="lp-mock-chart">
+                <div style={{ height: "40%" }} /><div style={{ height: "62%" }} /><div style={{ height: "48%" }} /><div style={{ height: "80%" }} /><div style={{ height: "70%" }} /><div style={{ height: "95%" }} /><div style={{ height: "60%" }} />
               </div>
+              <div className="lp-heatblob" style={{ width: 120, height: 80, right: 26, top: 60, background: "radial-gradient(circle,rgba(239,68,68,.8),rgba(234,179,8,.45) 45%,rgba(59,130,246,.2) 75%,transparent)" }} />
+              <div className="lp-heatblob" style={{ width: 90, height: 60, left: 40, top: 120, background: "radial-gradient(circle,rgba(239,68,68,.7),rgba(34,197,94,.4) 55%,transparent 80%)" }} />
             </div>
           </div>
         </div>
       </section>
+      <div className="lp-hero3-spacer" />
 
       {/* 우리가 하는 일 (벤토) */}
       <section className="lp-section" id="service" style={{ paddingTop: 68 }}>
-        <p className="lead" style={{ marginBottom: 6, textAlign: "left", maxWidth: "none", color: "var(--accent)", fontWeight: 700, fontSize: 13 }}>우리가 하는 일</p>
+        <span className="lp-eyebrow-txt">우리가 하는 일</span>
         <h2 style={{ textAlign: "left", marginBottom: 26, maxWidth: 760 }}>기능 수가 아니라, 국내 대행사·쇼핑몰이 실제로 개선하게 만드는 운영 경험에 집중합니다</h2>
         <div className="bento">
           <div className="cell">
@@ -111,7 +104,7 @@ export default async function Landing() {
           </div>
           <div className="cell tint" style={{ display: "grid", placeItems: "center" }}>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 30 }}>🔥</div>
+              <div className="heat-chip" style={{ margin: "0 auto 10px" }} aria-hidden />
               <div style={{ fontWeight: 700, marginTop: 6 }}>실사이트 위 히트맵</div>
               <div className="muted small">회색 목업이 아닌 진짜 화면 위</div>
             </div>
@@ -125,8 +118,8 @@ export default async function Landing() {
             </div>
           </div>
           <div className="cell tint" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <div style={{ fontSize: 24 }}>🔒</div>
-            <div style={{ fontWeight: 700, margin: "8px 0 4px" }}>개인정보 보호 우선</div>
+            <span className="mark-lbl" style={{ marginBottom: 8 }}><span className="dot" />보안 · 프라이버시</span>
+            <div style={{ fontWeight: 700, margin: "2px 0 4px" }}>개인정보 보호 우선</div>
             <p className="muted small" style={{ margin: 0 }}>입력값·비밀번호 미수집, 민감정보 자동 마스킹, IP 미저장.</p>
           </div>
           <div className="cell span2" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
@@ -135,14 +128,14 @@ export default async function Landing() {
               <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>가입 없이 내 사이트 기본 점검</div>
               <p className="muted small" style={{ margin: 0 }}>모바일 대응·CTA·폼·속도까지 즉시 진단하고, 설치하면 실제 행동 데이터가 쌓입니다.</p>
             </div>
-            <Link href="/signup" className="btn primary" style={{ whiteSpace: "nowrap" }}>무료로 시작 →</Link>
+            <Link href="/signup" className="btn primary pill" style={{ whiteSpace: "nowrap" }}>무료로 시작 →</Link>
           </div>
         </div>
       </section>
 
       {/* 왜 중요한가 (원형 다이어그램) */}
       <section className="lp-section" id="why" style={{ paddingTop: 20 }}>
-        <p className="lead" style={{ marginBottom: 6, color: "var(--accent)", fontWeight: 700, fontSize: 13 }}>왜 이게 중요한가</p>
+        <span className="lp-eyebrow-txt" style={{ display: "block", textAlign: "center" }}>왜 이게 중요한가</span>
         <h2>방문자 행동을 이해하면<br />전환·광고효율·의사결정이 달라집니다</h2>
         <div className="orbit">
           <svg className="orbit-ring" viewBox="0 0 100 74" preserveAspectRatio="none" aria-hidden>
@@ -150,7 +143,7 @@ export default async function Landing() {
           </svg>
           <div className="orbit-center">
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 30 }}>📈</div>
+              <div className="heat-chip" style={{ margin: "0 auto 8px", width: 40, height: 40 }} aria-hidden />
               <div style={{ fontWeight: 700, fontSize: 13, marginTop: 2 }}>전환 개선</div>
             </div>
           </div>
@@ -193,7 +186,7 @@ export default async function Landing() {
               <ul className="small muted" style={{ margin: "0 0 16px", paddingLeft: 16, lineHeight: 1.9 }}>
                 {p.highlights.map((h) => <li key={h}>{h}</li>)}
               </ul>
-              <Link href="/signup" className={`btn sm ${p.key === "GROWTH" ? "primary" : ""}`} style={{ width: "100%", justifyContent: "center" }}>
+              <Link href="/signup" className={`btn sm pill ${p.key === "GROWTH" ? "primary" : ""}`} style={{ width: "100%", justifyContent: "center" }}>
                 {p.price === 0 ? "무료로 시작" : "시작하기"}
               </Link>
             </div>
@@ -206,7 +199,7 @@ export default async function Landing() {
         <div className="lp-cta">
           <h2 style={{ marginBottom: 10 }}>지금 무료로 시작하세요</h2>
           <p style={{ opacity: 0.9, marginBottom: 22 }}>카드 없이 가입 · 스크립트 한 줄 설치 · 며칠이면 첫 리포트</p>
-          <Link href="/signup" className="btn white" style={{ padding: "13px 28px", fontWeight: 700 }}>대행사 워크스페이스 무료로 만들기 →</Link>
+          <Link href="/signup" className="btn white pill" style={{ padding: "13px 28px", fontWeight: 700 }}>대행사 워크스페이스 무료로 만들기 →</Link>
         </div>
       </section>
 
