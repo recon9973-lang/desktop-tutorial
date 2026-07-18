@@ -566,3 +566,47 @@ button { font-family: inherit; cursor: pointer; }
 .gesture .tap::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: rgba(0,117,222,.35); }
 .gesture .swipe { position: absolute; height: 3px; background: var(--accent); border-radius: 999px; }
 .gesture .swipe::after { content: ""; position: absolute; right: -1px; top: -3px; border: 5px solid transparent; border-left-color: var(--accent); }
+
+/* ===== 모던 쇼핑몰 목업 (퀸잇/무신사 톤) — 실사 상품사진은 추후 라이선스로 교체 ===== */
+.ml { color: var(--text); font-size: 12px; }
+.ml-nav { display: flex; align-items: center; gap: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.ml-logo { font-weight: 800; font-size: 15px; letter-spacing: -0.03em; color: var(--text); }
+.ml-menu { display: flex; gap: 12px; font-size: 11px; font-weight: 700; color: var(--text-2); }
+.ml-menu .on { color: var(--accent); }
+.ml-search { margin-left: auto; width: 180px; max-width: 34%; height: 26px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); }
+.ml-ico { display: flex; gap: 8px; }
+.ml-ico span { width: 20px; height: 20px; border-radius: 6px; background: var(--surface-2); }
+.ml-banners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.ml-ban { border-radius: 12px; padding: 16px; min-height: 92px; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; }
+.ml-ban .k { font-size: 10px; font-weight: 700; opacity: .9; }
+.ml-ban .t { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-top: 3px; }
+.ml-ban.b1 { background: linear-gradient(135deg, #e9c6b6, #caa088); }
+.ml-ban.b2 { background: linear-gradient(135deg, #6ea9a0, #3f857b); }
+.ml-ban.b3 { background: linear-gradient(135deg, #7fa7d6, #4a79b8); }
+.ml-chips { display: flex; gap: 8px; margin-bottom: 14px; overflow: hidden; }
+.ml-chip { font-size: 10.5px; font-weight: 600; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; white-space: nowrap; }
+.ml-sec { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.ml-sec .h { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+.ml-sec .ai { font-size: 10px; color: var(--accent); font-weight: 700; }
+.ml-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.ml-prod .th { position: relative; height: 92px; border-radius: 9px; overflow: hidden; }
+.ml-prod:nth-child(5n+1) .th { background: linear-gradient(160deg, #eef1f5, #d7dee8); }
+.ml-prod:nth-child(5n+2) .th { background: linear-gradient(160deg, #efe7dc, #ddccb6); }
+.ml-prod:nth-child(5n+3) .th { background: linear-gradient(160deg, #eae7ef, #cfc6dd); }
+.ml-prod:nth-child(5n+4) .th { background: linear-gradient(160deg, #e6efe8, #c6dbcb); }
+.ml-prod:nth-child(5n+5) .th { background: linear-gradient(160deg, #f2e7ea, #ddc3ca); }
+.ml-prod .th .tag { position: absolute; left: 6px; top: 6px; background: rgba(0,0,0,.62); color: #fff; font-size: 8.5px; font-weight: 800; padding: 2px 6px; border-radius: 5px; }
+.ml-prod .br { font-size: 10px; font-weight: 700; margin-top: 7px; }
+.ml-prod .nm { font-size: 10px; color: var(--text-3); line-height: 1.35; margin-top: 1px; height: 26px; overflow: hidden; }
+.ml-prod .pr { margin-top: 3px; font-size: 12px; font-weight: 800; }
+.ml-prod .pr .off { color: var(--red); margin-right: 4px; }
+.ml-prod .rt { font-size: 9.5px; color: var(--text-4); margin-top: 2px; }
+/* 미니(맵 썸네일용) — 상품 그리드만 */
+.mlm { padding: 12px; height: 100%; background: #fff; }
+.mlm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.mlm-prod .th { height: 46px; border-radius: 7px; }
+.mlm-prod:nth-child(3n+1) .th { background: linear-gradient(160deg, #eef1f5, #d7dee8); }
+.mlm-prod:nth-child(3n+2) .th { background: linear-gradient(160deg, #efe7dc, #ddccb6); }
+.mlm-prod:nth-child(3n+3) .th { background: linear-gradient(160deg, #eae7ef, #cfc6dd); }
+.mlm-prod .ln { height: 6px; border-radius: 3px; background: var(--surface-2); margin-top: 5px; }
+.mlm-prod .ln.p { width: 60%; background: #dfe1e6; margin-top: 3px; }

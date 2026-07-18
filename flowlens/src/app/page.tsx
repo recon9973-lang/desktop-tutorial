@@ -6,6 +6,68 @@ import CookieConsent from "@/components/CookieConsent";
 
 export const dynamic = "force-dynamic";
 
+// 모던 쇼핑몰 목업용 상품 (가상 — 실사 상품사진은 추후 라이선스로 교체)
+const MALL_PRODUCTS = [
+  { br: "마지아룩", nm: "여름버전 밴딩 와이드 팬츠", off: 41, price: "28,700", rt: "4.5 (1,159)" },
+  { br: "룸메어", nm: "모브 린넨100 세미와이드 팬츠", off: 63, price: "44,251", rt: "4.6 (1,402)" },
+  { br: "플로레센스", nm: "미루나 하늘하늘 티블라우스", off: 53, price: "36,800", rt: "3.4 (68)", tag: "1+1" },
+  { br: "하루메이비", nm: "핀턱셔링 포인트 여름 셔츠", off: 44, price: "30,200", rt: "4.6 (1,991)" },
+  { br: "키스해링", nm: "썸머 시어 여름 가디건", off: 51, price: "38,935", rt: "5.0 (3)" },
+];
+
+// 모던 쇼핑몰 홈 목업 (퀸잇/무신사 톤)
+function MallMock() {
+  return (
+    <div className="ml">
+      <div className="ml-nav">
+        <span className="ml-logo">무드몰</span>
+        <span className="ml-menu"><span className="on">추천</span><span>여성</span><span>남성</span><span>뷰티</span><span>세일</span></span>
+        <span className="ml-search" />
+        <span className="ml-ico"><span /><span /><span /></span>
+      </div>
+      <div className="ml-banners">
+        <div className="ml-ban b1"><span className="k">여름 스타일 특가</span><span className="t">오래 사랑받는 옷</span></div>
+        <div className="ml-ban b2"><span className="k">시즌 오프</span><span className="t">프리미엄 골프웨어</span></div>
+        <div className="ml-ban b3"><span className="k">최대 68% OFF</span><span className="t">가벼운 여름 특가</span></div>
+      </div>
+      <div className="ml-chips">
+        {["실패없는쇼핑", "원피스", "티셔츠", "팬츠", "니트", "가방", "신발", "뷰티"].map((c) => (
+          <span key={c} className="ml-chip">{c}</span>
+        ))}
+      </div>
+      <div className="ml-sec"><span className="h">관심 가질 만한 상품</span><span className="ai">AI 추천</span></div>
+      <div className="ml-grid">
+        {MALL_PRODUCTS.map((p) => (
+          <div className="ml-prod" key={p.nm}>
+            <div className="th">{p.tag && <span className="tag">{p.tag}</span>}</div>
+            <div className="br">{p.br}</div>
+            <div className="nm">{p.nm}</div>
+            <div className="pr"><span className="off">{p.off}%</span>{p.price}</div>
+            <div className="rt">★ {p.rt}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 맵 썸네일용 미니 쇼핑몰 (상품 그리드만)
+function MallMini() {
+  return (
+    <div className="mlm">
+      <div className="mlm-grid">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div className="mlm-prod" key={i}>
+            <div className="th" />
+            <div className="ln" style={{ width: "80%" }} />
+            <div className="ln p" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const STEPS = [
   { t: "스크립트 한 줄 설치", d: "발급된 추적 코드를 사이트 head에 넣거나 워드프레스 플러그인을 설치합니다." },
   { t: "방문자 행동 자동 수집", d: "클릭·스크롤·체류·좌절클릭을 개인정보 안전하게 수집합니다." },
@@ -68,23 +130,20 @@ export default async function Landing() {
               <i /><i /><i /><span className="tl-hp-url">mysite.co.kr</span>
               <span className="tl-hp-live"><span className="d" />지금 8명 행동 분석 중</span>
             </div>
-            <div className="tl-hp-body" style={{ padding: 0, minHeight: 0 }}>
-              {/* 실제 홈페이지 화면 (라이선스 이미지) */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/landing/skincare-event.webp" alt="" style={{ display: "block", width: "100%" }} />
-
-              {/* 고객이 마우스로 응모하기 버튼까지 간 궤적 */}
-              <svg className="tl-move" viewBox="0 0 900 535" preserveAspectRatio="none">
-                <path d="M120 70 C 320 60, 250 260, 420 300 S 560 400, 630 400" fill="none" stroke="var(--accent)" strokeWidth="2.4" strokeOpacity="0.5" strokeDasharray="6 6" strokeLinecap="round" />
+            <div className="tl-hp-body" style={{ position: "relative" }}>
+              <MallMock />
+              {/* 고객이 마우스로 상품·배너까지 간 궤적 */}
+              <svg className="tl-move" viewBox="0 0 900 480" preserveAspectRatio="none">
+                <path d="M120 60 C 320 50, 260 230, 430 250 S 600 360, 660 380" fill="none" stroke="var(--accent)" strokeWidth="2.4" strokeOpacity="0.5" strokeDasharray="6 6" strokeLinecap="round" />
               </svg>
-              {/* 무지개 히트맵 — 버튼 위에 정확히 */}
-              <span className="bt-hot lg" style={{ left: "70.5%", top: "76.5%" }} />
-              <span className="bt-hot md" style={{ left: "26%", top: "66%" }} />
-              <span className="tl-click" style={{ left: "70.5%", top: "76.5%", background: "var(--red)" }} />
-              <span className="tl-click c2" style={{ left: "26%", top: "66%", background: "var(--red)" }} />
+              {/* 무지개 히트맵 — 골프 배너·상품 위 */}
+              <span className="bt-hot lg" style={{ left: "50%", top: "26%" }} />
+              <span className="bt-hot md" style={{ left: "13%", top: "64%" }} />
+              <span className="tl-click" style={{ left: "50%", top: "26%", background: "var(--red)" }} />
+              <span className="tl-click c2" style={{ left: "13%", top: "64%", background: "var(--red)" }} />
               {/* 인사이트 말풍선 */}
-              <div className="tl-insight" style={{ left: "40%", top: "64%" }}><span className="dot" style={{ background: "var(--red)" }} />“응모하기”에 클릭 집중</div>
-              <div className="tl-insight i2" style={{ left: "3%", top: "50%" }}><span className="dot" style={{ background: "var(--amber)" }} />영상은 3초 보고 이탈</div>
+              <div className="tl-insight" style={{ left: "52%", top: "17%" }}><span className="dot" style={{ background: "var(--red)" }} />골프 배너에 클릭 집중</div>
+              <div className="tl-insight i2" style={{ left: "2%", top: "52%" }}><span className="dot" style={{ background: "var(--amber)" }} />이 상품에서 4초 머묾</div>
             </div>
           </div>
         </div>
@@ -102,13 +161,12 @@ export default async function Landing() {
           </div>
           <div className="tl-shot" aria-hidden>
             <div className="tl-shot-bar"><i /><i /><i /><span className="u">mysite.co.kr</span></div>
-            <div className="tl-shot-body" style={{ padding: 0, position: "relative" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/landing/skincare-hero.webp" alt="" style={{ display: "block", width: "100%" }} />
-              {/* 실제 화면 위 히트맵 — 시선이 몰린 곳(헤드라인·모델·제품) */}
-              <span className="bt-hot lg" style={{ left: "76%", top: "36%" }} />
-              <span className="bt-hot md" style={{ left: "22%", top: "45%" }} />
-              <span className="bt-hot sm" style={{ left: "42%", top: "76%" }} />
+            <div className="tl-shot-body" style={{ position: "relative" }}>
+              <MallMock />
+              {/* 실제 화면 위 히트맵 — 시선·클릭이 몰린 배너·상품 */}
+              <span className="bt-hot lg" style={{ left: "50%", top: "26%" }} />
+              <span className="bt-hot md" style={{ left: "13%", top: "64%" }} />
+              <span className="bt-hot sm" style={{ left: "50%", top: "64%" }} />
             </div>
           </div>
         </div>
@@ -117,13 +175,12 @@ export default async function Landing() {
       {/* 맵 종류 쇼케이스 — 한 번 설치로 5가지 지도 */}
       <section className="maps" aria-label="지도 종류">
         <h2>한 번 설치로, 5가지 지도로 봅니다</h2>
-        <p className="lead">같은 방문 데이터를 각도만 바꿔 보여줍니다. 문제의 종류에 따라 골라 보세요.</p>
+        <p className="lead">같은 방문 데이터를 각도만 바꿔 보여줍니다. 아래는 <b>최근 30일 · 방문 12,480세션</b> 기준 예시입니다.</p>
         <div className="maps-grid">
           {/* 클릭맵 */}
           <div className="map-card">
             <div className="map-thumb">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/landing/skincare-event.webp" alt="" />
+              <MallMini />
               <div className="map-ov">
                 <span className="bt-hot md" style={{ left: "71%", top: "78%" }} />
                 <span className="bt-hot sm" style={{ left: "26%", top: "66%" }} />
@@ -134,8 +191,7 @@ export default async function Landing() {
           {/* 무브맵 */}
           <div className="map-card">
             <div className="map-thumb">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/landing/skincare-event.webp" alt="" />
+              <MallMini />
               <div className="map-ov movemap">
                 <svg viewBox="0 0 300 128" preserveAspectRatio="none" aria-hidden>
                   <path d="M40 24 C 120 20, 90 80, 160 78 S 230 100, 250 96" fill="none" stroke="rgba(20,22,30,.55)" strokeWidth="2" strokeLinecap="round" />
@@ -149,8 +205,7 @@ export default async function Landing() {
           {/* 스크롤맵 */}
           <div className="map-card">
             <div className="map-thumb">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/landing/skincare-event.webp" alt="" />
+              <MallMini />
               <div className="map-ov scrollmap">
                 <span className="tick" style={{ top: 4 }}>100%</span>
                 <span className="tick" style={{ top: "48%" }}>52%</span>
@@ -162,7 +217,7 @@ export default async function Landing() {
           {/* 셀렉터 */}
           <div className="map-card">
             <div className="selrank">
-              {[["응모하기", 42], ["재생 버튼", 28], ["온라인몰", 17], ["리뷰 이벤트", 9]].map(([nm, pct], i) => (
+              {[["장바구니 담기", 38], ["상품 이미지", 27], ["여름 특가 배너", 16], ["찜하기", 11]].map(([nm, pct], i) => (
                 <div className="selrow" key={nm as string}>
                   <span className="rk">{i + 1}</span>
                   <span className="nm">{nm}</span>
@@ -176,8 +231,7 @@ export default async function Landing() {
           {/* 제스처 */}
           <div className="map-card">
             <div className="map-thumb">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/landing/skincare-event.webp" alt="" />
+              <MallMini />
               <div className="map-ov gesture">
                 <span className="tap" style={{ left: "30%", top: "55%" }} />
                 <span className="tap" style={{ left: "71%", top: "78%" }} />
