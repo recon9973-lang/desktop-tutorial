@@ -22,7 +22,14 @@ async function generateAndSaveImage(prompt, postId, index = 0, title = '') {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return { url: null, githubPath: null, error: 'OPENAI_API_KEY 미설정(Vercel 환경변수)' };
 
-  const fullPrompt = `Professional Korean hospital marketing photography. ${prompt}. Clean, modern, trustworthy aesthetic. No text overlay. High quality realistic photo style. Bright, professional lighting.`;
+  // 에디토리얼 다큐멘터리 톤 + 강한 네거티브(텍스트·로고·왜곡손·인물 얼굴 금지)로
+  // AI 티(언캐니 밸리·가짜 간판/글자)를 최소화한다. gpt-image/dall-e는 별도 negative_prompt가
+  // 없어 프롬프트 안에 부정 지시를 인라인으로 넣는다.
+  const fullPrompt = `Editorial documentary photography for a Korean healthcare setting. ${prompt}. `
+    + `Natural, authentic, understated and trustworthy mood; realistic natural lighting, true-to-life colors, subtle depth of field. `
+    + `Absolutely NO text, letters, numbers, Korean or English characters, signage, logos, brand names, watermarks or on-screen UI text anywhere in the image. `
+    + `Do NOT show close-up or in-focus human faces; if a person appears, show them from behind, cropped, or out of focus. `
+    + `Avoid glossy stock-photo look, avoid distorted hands or extra fingers, avoid surreal or artificial artifacts.`;
 
   // 이미지 생성 → base64 → GitHub 저장 (sharp 의존 제거 — Lambda 네이티브 바이너리 호환 문제 방지)
   // 모델 폴백 체인: 설정 모델 → gpt-image-1 → dall-e-3 → dall-e-2 순으로 시도.
