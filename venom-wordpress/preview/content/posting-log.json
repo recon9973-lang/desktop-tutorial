@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784355534025",
+    "title": "부산 치과마케팅 5가지 핵심 전략으로 환자 유치↑",
+    "tokenUsage": {
+      "promptTokens": 2641,
+      "completionTokens": 1861,
+      "totalTokens": 4502,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-18T06:19:53.575Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784347997364",
     "title": "대구 병원마케팅의 3단계 전략과 성공 사례",
