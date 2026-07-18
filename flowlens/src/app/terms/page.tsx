@@ -7,14 +7,10 @@ export default function Terms() {
     <div className="legal">
       <Link href="/" className="muted small">← FlowLens 홈</Link>
       <h1 style={{ marginTop: 12 }}>이용약관</h1>
-      <p className="muted small">시행일: 2026-07-14 · 버전 초안 v0.1</p>
-
-      <div className="notice" style={{ margin: "16px 0" }}>
-        ⚠️ 본 문서는 <b>초안 템플릿</b>입니다. 서비스 오픈 전 법률 자문 검토 후 회사 정보·환불정책·준거법 등을 확정하세요.
-      </div>
+      <p className="muted small">시행일: 2026-07-19 · 버전 v1.0</p>
 
       <h2>제1조 (목적)</h2>
-      <p>본 약관은 주식회사 [회사명](이하 "회사")이 제공하는 FlowLens(이하 "서비스")의 이용조건 및 절차, 회사와 이용자의 권리·의무를 규정함을 목적으로 합니다.</p>
+      <p>본 약관은 주식회사 베놈(이하 "회사")이 제공하는 FlowLens(이하 "서비스")의 이용조건 및 절차, 회사와 이용자의 권리·의무를 규정함을 목적으로 합니다.</p>
 
       <h2>제2조 (정의)</h2>
       <ul>
@@ -52,7 +48,11 @@ export default function Terms() {
       <p>본 약관은 대한민국 법령에 따라 해석되며, 분쟁은 회사 소재지를 관할하는 법원을 전속 관할로 합니다.</p>
 
       <div className="hr" />
-      <p className="small"><Link href="/privacy" style={{ color: "var(--accent)" }}>개인정보처리방침</Link> · <Link href="/" style={{ color: "var(--accent)" }}>홈으로</Link></p>
+      <p className="muted small">
+        상호: 주식회사 베놈 · 대표자: 김보형 · 사업자등록번호: 291-86-02777<br />
+        주소: 대구광역시 수성구 용학로25길 54, 4층 · 문의: venomad@naver.com · 1661-4142
+      </p>
+      <p className="small" style={{ marginTop: 12 }}><Link href="/privacy" style={{ color: "var(--accent)" }}>개인정보처리방침</Link> · <Link href="/" style={{ color: "var(--accent)" }}>홈으로</Link></p>
     </div>
   );
 }

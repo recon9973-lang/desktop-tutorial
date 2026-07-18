@@ -385,6 +385,11 @@ export default async function Landing() {
           <Link href="/terms" style={{ color: "var(--text-2)" }}>이용약관</Link>
         </div>
         FlowLens · 개인정보 보호형 웹 행동 분석 · 폼 입력값·비밀번호 미수집, 민감정보 자동 마스킹
+        <div style={{ marginTop: 10, fontSize: 12, color: "var(--text-4)", lineHeight: 1.6 }}>
+          주식회사 베놈 · 대표 김보형 · 사업자등록번호 291-86-02777<br />
+          대구광역시 수성구 용학로25길 54, 4층 · venomad@naver.com · 1661-4142<br />
+          © {new Date().getFullYear()} VENOM Inc. All rights reserved.
+        </div>
       </footer>
 
       <CookieConsent />
