@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1784336676750",
+    "title": "대전 병원마케팅 5가지 핵심 전략과 SEO 최적화 방법",
+    "tokenUsage": {
+      "promptTokens": 2593,
+      "completionTokens": 1892,
+      "totalTokens": 4485,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-18T01:05:45.176Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1784283946390",
     "title": "울산 한의원 마케팅: 통증, 비염, 다이어트 3가지 효과적 전략",
