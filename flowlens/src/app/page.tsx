@@ -143,7 +143,7 @@ export default async function Landing() {
               <span className="tl-click c2" style={{ left: "13%", top: "64%", background: "var(--red)" }} />
               {/* 인사이트 말풍선 */}
               <div className="tl-insight" style={{ left: "52%", top: "17%" }}><span className="dot" style={{ background: "var(--red)" }} />골프 배너에 클릭 집중</div>
-              <div className="tl-insight i2" style={{ left: "2%", top: "52%" }}><span className="dot" style={{ background: "var(--amber)" }} />이 상품에서 4초 머묾</div>
+              <div className="tl-insight i2" style={{ left: "2%", top: "52%" }}><span className="dot" style={{ background: "var(--amber)" }} />이 상품에서 평균 4초 체류</div>
             </div>
           </div>
         </div>
