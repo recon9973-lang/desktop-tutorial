@@ -6,13 +6,13 @@ import CookieConsent from "@/components/CookieConsent";
 
 export const dynamic = "force-dynamic";
 
-// 모던 쇼핑몰 목업용 상품 (가상 — 실사 상품사진은 추후 라이선스로 교체)
+// 모던 쇼핑몰 목업용 상품 (가상 브랜드/가격 · 상품사진은 자체 생성한 스튜디오 컷)
 const MALL_PRODUCTS = [
-  { br: "마지아룩", nm: "여름버전 밴딩 와이드 팬츠", off: 41, price: "28,700", rt: "4.5 (1,159)" },
-  { br: "룸메어", nm: "모브 린넨100 세미와이드 팬츠", off: 63, price: "44,251", rt: "4.6 (1,402)" },
-  { br: "플로레센스", nm: "미루나 하늘하늘 티블라우스", off: 53, price: "36,800", rt: "3.4 (68)", tag: "1+1" },
-  { br: "하루메이비", nm: "핀턱셔링 포인트 여름 셔츠", off: 44, price: "30,200", rt: "4.6 (1,991)" },
-  { br: "키스해링", nm: "썸머 시어 여름 가디건", off: 51, price: "38,935", rt: "5.0 (3)" },
+  { br: "마지아룩", nm: "여름버전 밴딩 와이드 팬츠", off: 41, price: "28,700", rt: "4.5 (1,159)", img: "/landing/mall/m1.webp" },
+  { br: "룸메어", nm: "모브 린넨100 세미와이드 팬츠", off: 63, price: "44,251", rt: "4.6 (1,402)", img: "/landing/mall/m2.webp" },
+  { br: "플로레센스", nm: "미루나 하늘하늘 티블라우스", off: 53, price: "36,800", rt: "3.4 (68)", tag: "1+1", img: "/landing/mall/m3.webp" },
+  { br: "하루메이비", nm: "핀턱셔링 포인트 여름 셔츠", off: 44, price: "30,200", rt: "4.6 (1,991)", img: "/landing/mall/m4.webp" },
+  { br: "키스해링", nm: "썸머 시어 여름 가디건", off: 51, price: "38,935", rt: "5.0 (3)", img: "/landing/mall/m5.webp" },
 ];
 
 // 모던 쇼핑몰 홈 목업 (퀸잇/무신사 톤)
@@ -39,7 +39,7 @@ function MallMock() {
       <div className="ml-grid">
         {MALL_PRODUCTS.map((p) => (
           <div className="ml-prod" key={p.nm}>
-            <div className="th">{p.tag && <span className="tag">{p.tag}</span>}</div>
+            <div className="th" style={{ backgroundImage: `url(${p.img})` }}>{p.tag && <span className="tag">{p.tag}</span>}</div>
             <div className="br">{p.br}</div>
             <div className="nm">{p.nm}</div>
             <div className="pr"><span className="off">{p.off}%</span>{p.price}</div>
@@ -58,7 +58,7 @@ function MallMini() {
       <div className="mlm-grid">
         {Array.from({ length: 6 }).map((_, i) => (
           <div className="mlm-prod" key={i}>
-            <div className="th" />
+            <div className="th" style={{ backgroundImage: `url(${MALL_PRODUCTS[i % MALL_PRODUCTS.length].img})` }} />
             <div className="ln" style={{ width: "80%" }} />
             <div className="ln p" />
           </div>

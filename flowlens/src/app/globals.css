@@ -589,12 +589,7 @@ button { font-family: inherit; cursor: pointer; }
 .ml-sec .h { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
 .ml-sec .ai { font-size: 10px; color: var(--accent); font-weight: 700; }
 .ml-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-.ml-prod .th { position: relative; height: 92px; border-radius: 9px; overflow: hidden; }
-.ml-prod:nth-child(5n+1) .th { background: linear-gradient(160deg, #eef1f5, #d7dee8); }
-.ml-prod:nth-child(5n+2) .th { background: linear-gradient(160deg, #efe7dc, #ddccb6); }
-.ml-prod:nth-child(5n+3) .th { background: linear-gradient(160deg, #eae7ef, #cfc6dd); }
-.ml-prod:nth-child(5n+4) .th { background: linear-gradient(160deg, #e6efe8, #c6dbcb); }
-.ml-prod:nth-child(5n+5) .th { background: linear-gradient(160deg, #f2e7ea, #ddc3ca); }
+.ml-prod .th { position: relative; height: 92px; border-radius: 9px; overflow: hidden; background: #f1f1f3 center/cover no-repeat; }
 .ml-prod .th .tag { position: absolute; left: 6px; top: 6px; background: rgba(0,0,0,.62); color: #fff; font-size: 8.5px; font-weight: 800; padding: 2px 6px; border-radius: 5px; }
 .ml-prod .br { font-size: 10px; font-weight: 700; margin-top: 7px; }
 .ml-prod .nm { font-size: 10px; color: var(--text-3); line-height: 1.35; margin-top: 1px; height: 26px; overflow: hidden; }
@@ -604,9 +599,6 @@ button { font-family: inherit; cursor: pointer; }
 /* 미니(맵 썸네일용) — 상품 그리드만 */
 .mlm { padding: 12px; height: 100%; background: #fff; }
 .mlm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.mlm-prod .th { height: 46px; border-radius: 7px; }
-.mlm-prod:nth-child(3n+1) .th { background: linear-gradient(160deg, #eef1f5, #d7dee8); }
-.mlm-prod:nth-child(3n+2) .th { background: linear-gradient(160deg, #efe7dc, #ddccb6); }
-.mlm-prod:nth-child(3n+3) .th { background: linear-gradient(160deg, #eae7ef, #cfc6dd); }
+.mlm-prod .th { height: 46px; border-radius: 7px; background: #f1f1f3 center/cover no-repeat; }
 .mlm-prod .ln { height: 6px; border-radius: 3px; background: var(--surface-2); margin-top: 5px; }
 .mlm-prod .ln.p { width: 60%; background: #dfe1e6; margin-top: 3px; }
