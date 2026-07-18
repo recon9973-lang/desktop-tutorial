@@ -480,3 +480,21 @@ button { font-family: inherit; cursor: pointer; }
 .rl-prod .pr { font-size: 12.5px; font-weight: 800; margin-top: 2px; }
 .rl-prod .pr .off { color: var(--red); margin-right: 5px; }
 @media (max-width: 620px) { .rl-banner .ttl { font-size: 17px; } .rl-prod .thumb { height: 56px; } }
+
+/* ===== 설치 가능 범위 (되는 곳 / 안 되는 곳) — 기대치 사전 명시 ===== */
+.tl-scope { max-width: 1000px; margin: 0 auto; padding: 20px 24px 64px; }
+.tl-scope h2 { text-align: center; font-size: clamp(23px,3.4vw,30px); letter-spacing: -0.025em; margin-bottom: 8px; }
+.tl-scope .lead { text-align: center; color: var(--text-2); max-width: 560px; margin: 0 auto 30px; }
+.tl-scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .tl-scope-grid { grid-template-columns: 1fr; } }
+.tl-scope-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; box-shadow: var(--shadow); }
+.tl-scope-card.ok { border-color: color-mix(in srgb, var(--green) 32%, var(--border)); }
+.tl-scope-card .hd { display: inline-flex; align-items: center; gap: 7px; font-weight: 800; font-size: 13.5px; padding: 5px 13px; border-radius: 999px; margin-bottom: 16px; }
+.tl-scope-card.ok .hd { background: #e7f6ee; color: var(--green); }
+.tl-scope-card.no .hd { background: #fbe9e7; color: var(--red); }
+.tl-scope-card ul { list-style: none; margin: 0; padding: 0; }
+.tl-scope-card li { position: relative; padding-left: 24px; margin-bottom: 11px; font-size: 14.5px; color: var(--text-2); line-height: 1.5; }
+.tl-scope-card li b { color: var(--text); font-weight: 700; }
+.tl-scope-card.ok li::before { content: ""; position: absolute; left: 3px; top: 6px; width: 10px; height: 5px; border-left: 2.4px solid var(--green); border-bottom: 2.4px solid var(--green); transform: rotate(-45deg); }
+.tl-scope-card.no li::before { content: "✕"; position: absolute; left: 4px; top: 0; color: var(--red); font-weight: 800; font-size: 12px; }
+.tl-scope-card .note { font-size: 12.5px; color: var(--text-3); margin: 14px 0 0; padding-top: 13px; border-top: 1px solid var(--border); }

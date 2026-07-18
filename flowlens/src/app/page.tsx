@@ -217,6 +217,31 @@ export default async function Landing() {
         </div>
       </section>
 
+      {/* 설치 가능 범위 — 되는 곳 / 안 되는 곳 (가입 전 기대치 명시) */}
+      <section className="tl-scope" id="install-scope">
+        <h2>어디에 설치할 수 있나요?</h2>
+        <p className="lead">내 홈페이지 소스에 <b>스크립트 한 줄</b>을 넣을 수 있는 곳이면 됩니다.</p>
+        <div className="tl-scope-grid">
+          <div className="tl-scope-card ok">
+            <span className="hd">설치 가능</span>
+            <ul>
+              <li><b>자사몰</b> — 카페24 · 아임웹 · 고도몰 · 메이크샵 · 식스샵</li>
+              <li><b>홈페이지·랜딩</b> — 워드프레스 · 윅스 · 직접 만든 사이트</li>
+              <li><b>구글 태그 매니저(GTM)</b>를 넣을 수 있는 모든 사이트</li>
+            </ul>
+          </div>
+          <div className="tl-scope-card no">
+            <span className="hd">설치 불가</span>
+            <ul>
+              <li><b>오픈마켓</b> — 쿠팡 · 지마켓 · 옥션 · 11번가</li>
+              <li><b>네이버쇼핑 · 스마트스토어</b></li>
+              <li><b>네이버 블로그·카페 · 인스타 · 유튜브</b></li>
+            </ul>
+            <p className="note">외부 스크립트를 넣을 수 없는 남의 플랫폼은 지원되지 않습니다. (마켓 셀러도 <b>광고로 유입되는 자사몰·랜딩</b>은 분석할 수 있습니다.)</p>
+          </div>
+        </div>
+      </section>
+
       {/* 요금제 */}
       <section className="lp-section" style={{ paddingTop: 0 }} id="pricing">
         <h2>요금제</h2>
