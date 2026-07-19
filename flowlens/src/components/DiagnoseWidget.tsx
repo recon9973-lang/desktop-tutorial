@@ -62,8 +62,19 @@ export default function DiagnoseWidget() {
       <p className="small" style={{ opacity: 0.7, marginTop: 8 }}>가입 없이 즉시 확인 · 카드 필요 없음</p>
 
       {result && !result.ok && (
-        <div className="notice" style={{ marginTop: 18, background: "#fdecec", borderColor: "#f5c2c2", color: "#c0362c" }}>
-          {result.error}
+        <div className="card card-pad" style={{ marginTop: 18, textAlign: "left" }}>
+          <div className="notice" style={{ background: "#fdecec", borderColor: "#f5c2c2", color: "#c0362c", marginBottom: 0 }}>
+            {result.error}
+          </div>
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            <p className="muted small" style={{ marginBottom: 10 }}>
+              자동 진단이 막혀도 걱정 마세요 — 추적 코드를 설치하면 <b>실제 방문자 데이터</b>로 클릭·스크롤·이탈을 볼 수 있습니다.
+            </p>
+            <Link href="/signup" className="btn primary" style={{ padding: "12px 24px" }}>
+              무료로 가입하고 실제 행동 분석 시작하기 →
+            </Link>
+            <p className="muted small" style={{ marginTop: 8 }}>스크립트 한 줄 설치 · 며칠 뒤 자동 리포트</p>
+          </div>
         </div>
       )}
 
