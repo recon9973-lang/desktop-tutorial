@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-07-18 fix(autopost): AI 블로그 이미지 거부감 완화 — 인물 얼굴 제거 + 네거티브 강화 (#188)
-- 2026-07-18 lock: 발행 작업 잠금 해제
-- 2026-07-18 chore: auto-update sitemap.xml
-- 2026-07-18 auto: 포스팅 로그 업데이트
-- 2026-07-18 auto(en): "5 Marketing Strategies and Success Stories for Dermatology in Incheon"
-- 2026-07-18 auto: 발행 "인천 피부과 마케팅 5가지 전략과 성공 사례"
-- 2026-07-18 auto: 포스트 이미지 auto_1784362572553-5-1.jpg
-- 2026-07-18 auto: 포스트 이미지 auto_1784362572553-5.jpg
+- 2026-07-19 fix(autopost): 이미지 씬에서 화면·차트 제거 — 깨진 글자(AI 티) 원천 차단 (Phase 0.1) (#189)
+- 2026-07-19 chore(ig): 큐 발행 상태 갱신 [skip ci]
+- 2026-07-19 lock: 발행 작업 잠금 해제
+- 2026-07-19 chore: auto-update sitemap.xml
+- 2026-07-19 auto: 포스팅 로그 업데이트
+- 2026-07-19 auto(en): "Top 5 Marketing Strategies for Traditional Korean Medicine Clinics in Ulsan and Effective Approaches"
+- 2026-07-19 auto: 발행 "울산 한의원 마케팅 전략 TOP 5 및 효과적인 접근 방법"
+- 2026-07-19 auto: 포스트 이미지 auto_1784452669769-TOP-5-1.jpg
 
 ## 워크플로 (18)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -80,4 +80,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BUILD_TS` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `MFDS_DUR_API_URL` · `MFDS_MATERIAL_API_URL` · `…(+29)`
 
 ---
-*생성: 커밋 d86a98d 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 27a2747 기준. 값·비밀은 포함하지 않음.*
