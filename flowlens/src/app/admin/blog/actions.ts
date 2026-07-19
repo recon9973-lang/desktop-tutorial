@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getAdminUser } from "@/lib/admin";
+import { generateFlowLensPost } from "@/lib/autoblog/generator";
 
 async function assertAdmin() {
   const a = await getAdminUser();
@@ -58,4 +59,42 @@ export async function deleteBlogPost(form: FormData) {
   const slug = String(form.get("slug") || "");
   await prisma.blogPost.deleteMany({ where: { slug } });
   redirect("/admin/blog");
+}
+
+// AI 초안 생성 → 임시저장(초안, 미발행)으로 저장 후 수정 화면으로 이동.
+// 자동 발행하지 않고 반드시 사람이 검토 후 발행하도록 설계(안전).
+export async function generateBlogDraft(form: FormData) {
+  await assertAdmin();
+  const category = String(form.get("category") || "heatmap").trim();
+  const keyword = String(form.get("keyword") || "").trim();
+  const region = String(form.get("region") || "").trim();
+  const extra = String(form.get("extra") || "").trim();
+  if (!keyword) redirect("/admin/blog?err=" + encodeURIComponent("키워드를 입력하세요."));
+
+  let slug = "";
+  let errMsg = "";
+  try {
+    const draft = await generateFlowLensPost({ category, keyword, region, extra });
+    slug = "ai-" + Date.now().toString(36);
+    await prisma.blogPost.create({
+      data: {
+        slug,
+        title: draft.title,
+        seoTitle: draft.seoTitle,
+        description: draft.metaDesc,
+        keywords: draft.keywords,
+        category: draft.categoryLabel,
+        body: draft.bodyHtml,
+        author: "FlowLens (주식회사 베놈)",
+        date: new Date().toISOString().slice(0, 10),
+        published: false, // 항상 초안으로 — 사람이 검토 후 발행
+      },
+    });
+  } catch (e) {
+    errMsg = e instanceof Error ? e.message : "AI 생성 중 오류가 발생했습니다.";
+  }
+
+  // redirect는 try/catch 밖에서 (내부적으로 throw 하므로)
+  if (errMsg) redirect("/admin/blog?err=" + encodeURIComponent(errMsg));
+  redirect(`/admin/blog/${slug}?new=1`);
 }

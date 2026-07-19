@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
 import { getAdminUser } from "@/lib/admin";
 import { getAllDbPosts } from "@/lib/blog";
-import { saveBlogPost, toggleBlogPublish, deleteBlogPost } from "./actions";
+import { saveBlogPost, toggleBlogPublish, deleteBlogPost, generateBlogDraft } from "./actions";
+import { CAT_LABEL } from "@/lib/autoblog/generator";
+import { BlogForm } from "./BlogForm";
 import fs from "fs";
 import path from "path";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // AI 생성이 오래 걸릴 수 있어 여유 확보
 export const metadata = { title: "블로그 관리 — FlowLens 운영자" };
 
 // 파일(코드) 기반 글 목록 — 읽기 전용 표시용
@@ -15,10 +18,11 @@ function fileSlugs(): string[] {
   return fs.readdirSync(dir).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, ""));
 }
 
-export default async function AdminBlog() {
+export default async function AdminBlog({ searchParams }: { searchParams: Promise<{ err?: string }> }) {
   const admin = await getAdminUser();
   if (!admin) notFound();
 
+  const { err } = await searchParams;
   const dbPosts = await getAllDbPosts();
   const files = fileSlugs();
   const today = new Date().toISOString().slice(0, 10);
@@ -28,12 +32,27 @@ export default async function AdminBlog() {
       <a href="/admin" className="muted small">← 운영자 홈</a>
       <h1 style={{ fontSize: 22, margin: "8px 0 4px" }}>블로그 관리</h1>
       <p className="muted small" style={{ margin: "0 0 24px" }}>
-        여기서 블로그 글을 직접 쓰고 발행할 수 있습니다. <b>발행</b>을 켜면 즉시 <a href="/blog" target="_blank" style={{ color: "var(--accent)" }}>공개 블로그</a>와 사이트맵에 반영됩니다.
+        여기서 블로그 글을 직접 쓰거나 <b>AI로 초안을 생성</b>해 발행할 수 있습니다. <b>발행</b>을 켜면 즉시 <a href="/blog" target="_blank" style={{ color: "var(--accent)" }}>공개 블로그</a>와 사이트맵에 반영됩니다.
       </p>
 
-      {/* 새 글 작성 */}
+      {err && (
+        <div className="card card-pad" style={{ marginBottom: 18, background: "#3d1a1a", border: "1px solid #7f2c2c", color: "#f8b4b4" }}>
+          ❌ {err}
+        </div>
+      )}
+
+      {/* AI 초안 생성 */}
+      <details className="card card-pad" style={{ marginBottom: 18 }}>
+        <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 15 }}>🤖 AI로 초안 생성</summary>
+        <p className="muted small" style={{ margin: "10px 0 0" }}>
+          키워드를 넣으면 AI가 초안을 쓰고 <b>의료광고법 금지어를 자동 검수</b>합니다. 결과는 <b>임시저장(초안)</b>으로 저장되며, 검토·수정 후 직접 발행합니다. (OpenAI API 키 필요 · 글 1편당 약 수십~수백 원)
+        </p>
+        <AiForm />
+      </details>
+
+      {/* 새 글 직접 작성 */}
       <details className="card card-pad" style={{ marginBottom: 26 }} open={dbPosts.length === 0}>
-        <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 15 }}>+ 새 글 작성</summary>
+        <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 15 }}>+ 새 글 직접 작성</summary>
         <BlogForm action={saveBlogPost} today={today} />
       </details>
 
@@ -83,62 +102,32 @@ export default async function AdminBlog() {
   );
 }
 
-// 작성/수정 공용 폼
-export function BlogForm({
-  action,
-  post,
-  today,
-}: {
-  action: (form: FormData) => void;
-  post?: { slug: string; title: string; seoTitle: string; description: string; keywords: string; category: string; body: string; author: string; date: string; published: boolean };
-  today: string;
-}) {
+// AI 초안 생성 폼
+function AiForm() {
   const L: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-2)", margin: "14px 0 4px" };
   const I: React.CSSProperties = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, boxSizing: "border-box" };
   return (
-    <form action={action} style={{ marginTop: 12 }}>
-      <label style={L}>제목 *</label>
-      <input style={I} name="title" required defaultValue={post?.title} placeholder="예) 병원 홈페이지 예약 전환율 높이는 법" />
+    <form action={generateBlogDraft} style={{ marginTop: 12 }}>
+      <label style={L}>카테고리(주제)</label>
+      <select style={I} name="category" defaultValue="heatmap">
+        {Object.entries(CAT_LABEL).map(([k, v]) => (
+          <option key={k} value={k}>{v}</option>
+        ))}
+      </select>
 
-      <label style={L}>주소(slug) * — 영문·숫자·하이픈만. 예: hospital-booking-tips</label>
-      <input style={I} name="slug" required defaultValue={post?.slug} readOnly={!!post} placeholder="hospital-booking-tips" />
-      {post && <div className="muted small" style={{ marginTop: 3 }}>주소는 발행 후 변경할 수 없습니다(SEO 보호).</div>}
+      <label style={L}>키워드 * — 글의 핵심 주제</label>
+      <input style={I} name="keyword" required placeholder="예) 병원 홈페이지 예약 전환율" />
 
-      <label style={L}>카테고리</label>
-      <input style={I} name="category" defaultValue={post?.category} placeholder="예) 전환율 · 병원마케팅" />
+      <label style={L}>지역(선택) — 지역 맥락을 넣고 싶을 때</label>
+      <input style={I} name="region" placeholder="예) 강남, 부산 서면" />
 
-      <label style={L}>요약(설명) — 목록·검색 결과에 노출</label>
-      <input style={I} name="description" defaultValue={post?.description} placeholder="한 줄 요약" />
+      <label style={L}>추가 지시(선택)</label>
+      <input style={I} name="extra" placeholder="예) 모바일 위주로, 초보자 대상으로" />
 
-      <label style={L}>검색 키워드 — 쉼표로 구분</label>
-      <input style={I} name="keywords" defaultValue={post?.keywords} placeholder="히트맵, 전환율, 병원마케팅" />
-
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <div style={{ flex: "1 1 160px" }}>
-          <label style={L}>발행일</label>
-          <input style={I} name="date" defaultValue={post?.date || today} placeholder={today} />
-        </div>
-        <div style={{ flex: "1 1 160px" }}>
-          <label style={L}>작성자</label>
-          <input style={I} name="author" defaultValue={post?.author || "FlowLens (주식회사 베놈)"} />
-        </div>
+      <div style={{ marginTop: 16 }}>
+        <button className="btn primary" type="submit">🤖 초안 생성 (30초~1분 소요)</button>
       </div>
-
-      <label style={L}>SEO 제목(선택) — 비우면 제목 사용</label>
-      <input style={I} name="seoTitle" defaultValue={post?.seoTitle} placeholder="검색 결과 제목" />
-
-      <label style={L}>본문 (마크다운) — ## 소제목, **굵게**, - 목록, [링크](주소) 사용 가능</label>
-      <textarea style={{ ...I, minHeight: 320, fontFamily: "ui-monospace, monospace", lineHeight: 1.6 }} name="body" defaultValue={post?.body} placeholder={"## 소제목\n\n본문을 작성하세요.\n\n- 핵심 1\n- 핵심 2"} />
-
-      <label style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 4px", fontSize: 14, fontWeight: 700 }}>
-        <input type="checkbox" name="published" defaultChecked={post?.published} value="on" style={{ width: 16, height: 16 }} />
-        지금 발행하기 (체크 안 하면 임시저장)
-      </label>
-
-      <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-        <button className="btn primary" type="submit">저장</button>
-        <a className="btn" href="/admin/blog">취소</a>
-      </div>
+      <p className="muted small" style={{ marginTop: 8 }}>생성 후 수정 화면으로 이동합니다. 내용을 확인한 뒤 발행하세요.</p>
     </form>
   );
 }
