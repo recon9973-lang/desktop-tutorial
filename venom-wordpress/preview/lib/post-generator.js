@@ -38,16 +38,18 @@ const IMG_SUBJECTS = [
   'a person viewed from behind at a desk (only the back is visible, face not shown)',
   'a tidy desk flat-lay of planning and medical materials (no people in frame)',
   'a quiet, unoccupied waiting area with warm modern furniture (no people)',
-  'a tablet and monitor showing simple graphs, framed with hands only (no faces)',
+  'a close-up of a stethoscope and a notebook on a clean wooden desk (no people)',
   'a bright, calm interior detail with soft natural light (no people)',
 ];
+// 화면(모니터·대시보드·스마트폰)은 AI가 깨진 글자를 채워 넣어 "AI 티"의 원인이 된다 →
+// 씬에서 화면·차트를 전부 제거하고 조명·구도·오브젝트 변주만으로 다양성을 확보한다(텍스트 0).
 const IMG_SCENES = [
-  'a rising patient-growth line chart about "{kw}" on a large monitor, screen content softly blurred',
-  'a smartphone on the desk where an AI chat app recommends a local clinic, phone screen in sharp focus',
-  'a strategy board with sticky notes and simple graphs related to "{kw}"',
-  'a planning flat-lay: notebook with a hand-drawn funnel, tablet with charts, stethoscope beside',
-  'a bright clinic corridor in candid documentary style, soft motion in the frame',
-  'a wall-mounted dashboard with upward trend bars, over-the-shoulder framing',
+  'soft natural window light falling across the scene, calm and airy mood',
+  'warm indirect lighting with gentle shadows, shallow depth of field',
+  'clean minimal composition with a potted plant and neutral tones',
+  'candid documentary framing with subtle motion and natural depth',
+  'over-the-shoulder framing focusing on hands and materials, background softly blurred',
+  'bright high-key lighting in an uncluttered modern interior',
 ];
 const IMG_STYLES = [
   'bright editorial photography, natural window light',
