@@ -6,6 +6,7 @@ import type { PostMeta } from "./blog";
 
 const BASE = "https://flow.seokorea.org";
 const ORG_ID = `${BASE}/#organization`;
+const OG_IMAGE = `${BASE}/og`; // 브랜드 대표 이미지(1200×630) — src/app/og/route.tsx
 
 // ── 사이트 공통: Organization + WebSite (모든 페이지 <head>에 1회) ──
 export function siteJsonLd(): string {
@@ -114,8 +115,20 @@ export function postJsonLd(meta: PostMeta, renderedHtml: string): string {
     inLanguage: "ko-KR",
     datePublished: meta.date,
     dateModified: meta.date,
-    author: { "@id": ORG_ID },
-    publisher: { "@id": ORG_ID },
+    // 대표 이미지 (Article 리치결과 권장 필드) — 1200×630
+    image: {
+      "@type": "ImageObject",
+      url: OG_IMAGE,
+      width: 1200,
+      height: 630,
+    },
+    author: { "@type": "Organization", name: "FlowLens", url: BASE },
+    publisher: {
+      "@type": "Organization",
+      name: "FlowLens",
+      url: BASE,
+      logo: { "@type": "ImageObject", url: OG_IMAGE, width: 1200, height: 630 },
+    },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     keywords: (meta.keywords || []).join(", "),
     // AEO — 음성/AI 답변엔진이 읽을 핵심 영역

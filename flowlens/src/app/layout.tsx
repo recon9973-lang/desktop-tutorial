@@ -15,6 +15,13 @@ export const metadata: Metadata = {
     siteName: "FlowLens",
     locale: "ko_KR",
     url: "https://flow.seokorea.org",
+    images: [{ url: "/og", width: 1200, height: 630, alt: "FlowLens" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FlowLens — 개인정보 보호형 웹 행동 분석",
+    description: "히트맵으로 홈페이지 고객의 행동 패턴을 분석하고 전환율을 올리세요.",
+    images: ["/og"],
   },
 };
 
