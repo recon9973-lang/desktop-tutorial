@@ -1,5 +1,6 @@
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
+import { isHostPublic } from "./diagnose";
 
 // 사이트 전체 페이지를 헤드리스 크롬으로 캡처한다.
 // 반환: PNG 버퍼 + 캡처 폭/전체 높이(px). 히트맵 좌표(0~1)를 이 이미지 위에 정확히 정렬하는 데 사용.
@@ -71,6 +72,25 @@ export async function captureFullPage(
     const page = await browser.newPage();
     await page.setViewport({ width, height: p.height, deviceScaleFactor: 1, isMobile: p.isMobile, hasTouch: p.isMobile });
     await page.setUserAgent(p.ua);
+
+    // SSRF 방어: 리다이렉트·서브리소스가 내부/사설 IP로 향하면 차단한다.
+    // (초기 URL만 검사하면 공개 URL이 내부망으로 302 리다이렉트하는 우회가 가능하다.)
+    const hostOk = new Map<string, boolean>();
+    await page.setRequestInterception(true);
+    page.on("request", async (req) => {
+      try {
+        const u = new URL(req.url());
+        if (u.protocol !== "http:" && u.protocol !== "https:") return req.continue(); // data:/blob: 등은 SSRF 아님
+        let ok = hostOk.get(u.hostname);
+        if (ok === undefined) {
+          ok = await isHostPublic(u.hostname);
+          hostOk.set(u.hostname, ok);
+        }
+        return ok ? req.continue() : req.abort();
+      } catch {
+        return req.abort();
+      }
+    });
 
     // ⚠️ alert/confirm 이 뜨면 헤드리스 크롬은 응답할 사람이 없어 goto가 끝나지 않는다.
     // (good-tour.kr은 쿼리 없이 상세페이지를 열면 alert('잘못된 접근 방식입니다')를 띄운다

@@ -21,7 +21,7 @@ export default async function DemoPage() {
         <b> {site?.name}</b> 사이트로 이벤트가 수집됩니다. 대시보드 → 설치 탭에서 이벤트 수가 늘어나는 것을 확인하세요.
       </div>
 
-      <DemoLiveCount siteKey={siteKey} />
+      <DemoLiveCount />
 
       {/* 가짜 상품 랜딩 */}
       <div className="card card-pad" style={{ marginTop: 20 }}>

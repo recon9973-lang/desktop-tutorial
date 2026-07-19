@@ -48,20 +48,75 @@ export type Diagnosis =
       platform: Platform;
     };
 
-// SSRF 방어: 내부/사설/루프백 IP로의 요청 차단
+// SSRF 방어: 내부/사설/루프백 IP로의 요청 차단.
+// IPv4-mapped IPv6(::ffff:127.0.0.1 등)와 CGNAT(100.64/10)까지 포함해 우회를 막는다.
 function isPrivateIp(ip: string): boolean {
-  if (ip === "127.0.0.1" || ip === "::1") return true;
-  if (net.isIPv4(ip)) {
-    const [a, b] = ip.split(".").map(Number);
-    if (a === 10) return true;
-    if (a === 127) return true;
-    if (a === 169 && b === 254) return true; // link-local / metadata
+  let addr = ip;
+  const mapped = /^::ffff:(.+)$/i.exec(addr);
+  if (mapped) {
+    if (net.isIPv4(mapped[1])) {
+      addr = mapped[1];
+    } else {
+      // 16진 표기(::ffff:7f00:1)를 점 표기로 환산
+      const hx = mapped[1].split(":");
+      if (hx.length === 2) {
+        const hi = parseInt(hx[0], 16);
+        const lo = parseInt(hx[1], 16);
+        if (Number.isFinite(hi) && Number.isFinite(lo)) addr = `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
+      }
+    }
+  }
+  if (addr === "127.0.0.1" || addr === "::1" || addr === "0.0.0.0" || addr === "::") return true;
+  if (net.isIPv4(addr)) {
+    const [a, b] = addr.split(".").map(Number);
+    if (a === 10 || a === 127 || a === 0) return true;
+    if (a === 169 && b === 254) return true; // link-local / 클라우드 메타데이터
     if (a === 192 && b === 168) return true;
     if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 0) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT 100.64.0.0/10
+    return false;
   }
-  if (ip.startsWith("fc") || ip.startsWith("fd") || ip.startsWith("fe80")) return true;
+  const low = addr.toLowerCase();
+  if (low.startsWith("fc") || low.startsWith("fd") || low.startsWith("fe80")) return true;
   return false;
+}
+
+// 호스트의 "모든" 해석 주소가 공인일 때만 true. 하나라도 사설이면 차단(부분 우회 방지).
+export async function isHostPublic(hostname: string): Promise<boolean> {
+  if (!hostname) return false;
+  try {
+    const addrs = await dns.lookup(hostname, { all: true });
+    if (!addrs.length) return false;
+    return addrs.every((a) => !isPrivateIp(a.address));
+  } catch {
+    return false;
+  }
+}
+
+// SSRF-safe fetch: 리다이렉트를 수동으로 따라가며 매 홉의 호스트를 재검증한다.
+// (초기 호스트만 검사하고 redirect:follow 하면 내부망으로 우회되는 문제를 막는다.)
+export async function safeFetch(
+  start: URL,
+  headers: Record<string, string>,
+  signal: AbortSignal,
+  maxRedirects = 4
+): Promise<Response> {
+  let current = start;
+  for (let i = 0; i <= maxRedirects; i++) {
+    if (!(await isHostPublic(current.hostname))) throw new Error("blocked_host");
+    const res = await fetch(current.toString(), { headers, signal, redirect: "manual" });
+    const loc = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null;
+    if (!loc) return res;
+    let next: URL;
+    try {
+      next = new URL(loc, current);
+    } catch {
+      throw new Error("bad_redirect");
+    }
+    if (next.protocol !== "http:" && next.protocol !== "https:") throw new Error("bad_redirect_scheme");
+    current = next;
+  }
+  throw new Error("too_many_redirects");
 }
 
 function normalizeUrl(input: string): URL | null {
@@ -82,12 +137,7 @@ function normalizeUrl(input: string): URL | null {
 export async function resolvePublicUrl(input: string): Promise<URL | null> {
   const url = normalizeUrl(input);
   if (!url) return null;
-  try {
-    const { address } = await dns.lookup(url.hostname);
-    if (isPrivateIp(address)) return null;
-  } catch {
-    return null;
-  }
+  if (!(await isHostPublic(url.hostname))) return null;
   return url;
 }
 
@@ -108,17 +158,13 @@ export async function diagnose(input: string): Promise<Diagnosis> {
   const timer = setTimeout(() => controller.abort(), 7000);
   let html = "";
   try {
-    const res = await fetch(url.toString(), {
-      signal: controller.signal,
-      redirect: "follow",
-      // 일부 사이트의 보안 설정이 봇 형태의 UA를 차단해 빈 페이지를 주므로 일반 브라우저 UA를 쓴다.
-      // (공개 페이지를 소유자 요청으로 1회 읽는 용도)
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
-        "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
-      },
-    });
+    // SSRF-safe: 리다이렉트 홉마다 호스트를 재검증한다(내부망 우회 방지).
+    // 일부 사이트의 보안 설정이 봇 UA를 차단해 빈 페이지를 주므로 일반 브라우저 UA를 쓴다.
+    const res = await safeFetch(url, {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+      "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+    }, controller.signal);
     if (!res.ok) return { ok: false, error: `사이트가 응답하지 않습니다 (HTTP ${res.status}).` };
     const buf = await res.arrayBuffer();
     html = new TextDecoder("utf-8").decode(buf.slice(0, 500_000)); // 최대 ~500KB만 분석
