@@ -32,6 +32,7 @@ export default function HeatmapStudio({
   siteId,
   path = "/",
   shotDevices = [],
+  shotInfo = {},
   mapsAll = true,
 }: {
   points: Point[];
@@ -45,6 +46,7 @@ export default function HeatmapStudio({
   siteId: string;
   path?: string;
   shotDevices?: string[]; // 이 페이지에 스크린샷이 있는 기기 목록
+  shotInfo?: Record<string, string>; // 기기별 배경 촬영 시각(ISO) — 오래되면 재캡처 권유
   mapsAll?: boolean; // 요금제가 히트맵 5종 전부를 허용하는지 (false면 클릭맵만)
 }) {
   const [device, setDevice] = useState("ALL");
@@ -63,6 +65,13 @@ export default function HeatmapStudio({
   const bgUrl = shotReady
     ? `/api/sites/${siteId}/screenshot?path=${encodeURIComponent(path)}&device=${bgDevice}&v=${captured[bgDevice] || 0}`
     : undefined;
+
+  // 배경 촬영 시각: 이번 세션에 재캡처했으면 그 시각, 아니면 서버가 준 시각.
+  // 오래된 배경 위에 히트맵을 얹으면 사이트가 바뀐 만큼 클릭이 어긋나므로 재캡처를 권한다.
+  const bgCapturedMs = captured[bgDevice] ?? (shotInfo[bgDevice] ? Date.parse(shotInfo[bgDevice]) : NaN);
+  const bgAgeDays = Number.isFinite(bgCapturedMs) ? Math.floor((Date.now() - bgCapturedMs) / 86_400_000) : null;
+  const bgStale = bgAgeDays !== null && bgAgeDays >= 21;
+  const bgAgeLabel = bgAgeDays === null ? "" : bgAgeDays <= 0 ? "오늘 촬영" : bgAgeDays === 1 ? "어제 촬영" : `${bgAgeDays}일 전 촬영`;
 
   async function captureShot(dismissPopups = false) {
     setCapturing(true);
@@ -191,7 +200,7 @@ export default function HeatmapStudio({
           <div className="between" style={{ flexWrap: "wrap", gap: 8 }}>
             <span className="muted small">
               {shotReady
-                ? `배경: 실제 ${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면 위에 히트맵 표시 중`
+                ? `배경: 실제 ${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면 위에 히트맵 표시 중${bgAgeLabel ? ` · ${bgAgeLabel}` : ""}`
                 : capturing
                   ? `실제 ${bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 화면을 캡처하는 중… (최대 30초, 끝나면 자동으로 바뀝니다)`
                   : shotFatal
@@ -219,6 +228,11 @@ export default function HeatmapStudio({
           {popupNote && (
             <div className="notice small" style={{ marginTop: 8 }}>
               {popupNote}
+            </div>
+          )}
+          {shotReady && bgStale && !capturing && (
+            <div className="notice small" style={{ marginTop: 8, background: "#fef9e7", borderColor: "#f0d98a", color: "#8a6d00" }}>
+              배경을 찍은 지 <b>{bgAgeDays}일</b> 됐습니다. 그동안 사이트 화면이 바뀌었다면 클릭이 조금 어긋나 보일 수 있어요 — <b>&lsquo;화면 새로 캡처&rsquo;</b>로 갱신하면 더 정확하게 얹힙니다.
             </div>
           )}
           {/* 주소만으로 열리지 않는 페이지(상세·주문·게시글 등). 틀린 배경을 씌우면

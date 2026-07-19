@@ -34,7 +34,7 @@ export default async function HeatmapPage({
     getGesturePoints(site.id, path),
     getMovePoints(site.id, path, 8000, range),
     getScrollData(site.id),
-    prisma.screenshot.findMany({ where: { siteId: site.id, path: shotPath }, select: { device: true } }),
+    prisma.screenshot.findMany({ where: { siteId: site.id, path: shotPath }, select: { device: true, capturedAt: true } }),
     // 보관 스냅샷은 날짜정보가 없으므로 "전체" 기간일 때만 합친다
     days > 0 ? Promise.resolve({ clicks: [], moves: [] }) : getSnapshotPoints(site.id, path),
   ]);
@@ -42,6 +42,8 @@ export default async function HeatmapPage({
   const points = [...livePoints, ...snap.clicks];
   const moves = [...liveMoves, ...snap.moves];
   const shotDevices = shots.map((s) => s.device);
+  const shotInfo: Record<string, string> = {};
+  for (const s of shots) shotInfo[s.device] = s.capturedAt.toISOString();
 
   return (
     <div className="grid" style={{ gridTemplateColumns: "220px 1fr", gap: 20 }}>
@@ -89,7 +91,7 @@ export default async function HeatmapPage({
 
       <div>
         {path && <p className="muted small" style={{ marginBottom: 10 }}>페이지: <b>{path}</b></p>}
-        <HeatmapStudio points={points} clickLabels={clickLabels} gesturePoints={gestures} movePoints={moves} scrollSessions={scroll.sessions} avgFold={scroll.avgFold} siteId={site.id} path={shotPath} shotDevices={shotDevices} mapsAll={can(user?.agency.plan, "maps_all")} />
+        <HeatmapStudio points={points} clickLabels={clickLabels} gesturePoints={gestures} movePoints={moves} scrollSessions={scroll.sessions} avgFold={scroll.avgFold} siteId={site.id} path={shotPath} shotDevices={shotDevices} shotInfo={shotInfo} mapsAll={can(user?.agency.plan, "maps_all")} />
       </div>
     </div>
   );
