@@ -82,6 +82,31 @@ const BENEFITS = [
   { t: "안전한 데이터", d: "입력값 미수집·원문 IP 미저장", bg: "#eef0fb", fg: "#3a3f9e", d1: "M6 11V8a6 6 0 1112 0v3", d2: "M5 11h14v9H5z" },
 ];
 
+// 업종별 활용 시나리오 (실측 수치가 아니라 "이렇게 씁니다" 예시 — 표시광고법 유의)
+const USE_CASES = [
+  {
+    tag: "쇼핑몰 · 자사몰",
+    problem: "광고로 들어와도 장바구니·결제에서 빠져나갈 때",
+    find: "클릭맵·스크롤맵으로 상품·장바구니·결제 단계의 이탈 지점을 확인",
+    act: "이탈 구간의 버튼·문구·순서를 하나씩 바꿔 전후 비교",
+    href: "/blog/heatmap-conversion",
+  },
+  {
+    tag: "병원 · 상담",
+    problem: "방문은 있는데 예약·전화 문의로 이어지지 않을 때",
+    find: "예약 버튼 주목도·의료진 정보 도달률·모바일 전화 편의를 점검",
+    act: "예약 CTA를 상단으로, 전화는 탭하면 걸리게 (의료광고 규정 유의)",
+    href: "/blog/hospital-conversion",
+  },
+  {
+    tag: "랜딩 · B2B",
+    problem: "상담신청 폼 앞에서 방문자가 돌아설 때",
+    find: "폼 도달률·입력 중단 지점·좌절 클릭을 확인",
+    act: "입력 항목 최소화·신뢰 요소 배치로 문의 전환 점검",
+    href: "/blog/form-conversion",
+  },
+];
+
 export default async function Landing() {
   const user = await getCurrentUser();
 
@@ -301,6 +326,23 @@ export default async function Landing() {
               <div className="bt">{b.t}</div>
               <div className="bd">{b.d}</div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 업종별 활용 시나리오 */}
+      <section className="lp-section usecases" style={{ paddingTop: 8 }}>
+        <h2>업종별로 이렇게 씁니다</h2>
+        <p className="lead">실제 방문 데이터를 각 업종의 목표에 맞춰 봅니다. (아래는 활용 예시입니다)</p>
+        <div className="grid grid-3">
+          {USE_CASES.map((u) => (
+            <Link key={u.tag} href={u.href} className="card card-pad uc-card">
+              <span className="uc-tag">{u.tag}</span>
+              <div className="uc-row"><span className="uc-k">상황</span><span>{u.problem}</span></div>
+              <div className="uc-row"><span className="uc-k find">확인</span><span>{u.find}</span></div>
+              <div className="uc-row"><span className="uc-k act">개선</span><span>{u.act}</span></div>
+              <span className="uc-more">자세히 보기 →</span>
+            </Link>
           ))}
         </div>
       </section>
