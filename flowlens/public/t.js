@@ -180,9 +180,16 @@
   function inFixedLayer(el) {
     var n = el;
     for (var i = 0; i < 8 && n && n.nodeType === 1 && n !== document.body; i++) {
-      var pos = "";
-      try { pos = window.getComputedStyle(n).position; } catch (e) {}
+      var pos = "", z = NaN;
+      try { var cs = window.getComputedStyle(n); pos = cs.position; z = parseInt(cs.zIndex, 10); } catch (e) {}
       if (pos === "fixed" || pos === "sticky") return true;
+      // 팝업·플로팅 배너("오늘 하루 열지 않기" 등)는 대개 position:absolute + z-index로 body 위에 띄운다.
+      // 이런 레이어의 클릭도 문서 좌표로 환산하면 배경(팝업 제거본)의 엉뚱한 빈 공간에 찍히므로 제외한다.
+      if (pos === "absolute" && isFinite(z) && z >= 1) {
+        var op = null;
+        try { op = n.offsetParent; } catch (e) {}
+        if (op === document.body || op === null || op === document.documentElement) return true;
+      }
       n = n.parentElement;
     }
     return false;
