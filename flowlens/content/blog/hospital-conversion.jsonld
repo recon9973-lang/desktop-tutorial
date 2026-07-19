@@ -1,0 +1,51 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "병원 홈페이지 예약·문의 전환 점검하는 법 — 방문자가 어디서 망설이는지",
+      "description": "히트맵·행동 분석으로 병원 홈페이지에서 방문자가 망설이는 지점을 찾아 예약·문의 전환을 점검·개선하는 방법.",
+      "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FlowLens",
+        "url": "https://flow.seokorea.org",
+        "sameAs": ["https://pf.kakao.com/_jxjxdcxj"],
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+82-1661-4142", "email": "venomad@naver.com", "contactType": "customer service" }
+      },
+      "datePublished": "2026-07-21",
+      "inLanguage": "ko",
+      "keywords": "병원 홈페이지, 예약 전환, 병원 마케팅, 행동 분석, 히트맵, 전환율 개선"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "병원 홈페이지에 행동 분석을 써도 개인정보 문제는 없나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "도구에 따라 다릅니다. FlowLens는 환자 이름·연락처 등 입력값과 원문 IP를 수집하지 않고, 민감정보는 자동으로 가리는 설계입니다. 다만 병원은 자사 개인정보처리방침에 행동 분석 도구 사용 사실을 고지하는 것이 좋습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "예약이 늘지 않는 원인을 어떻게 찾나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "스크롤맵으로 방문자가 예약 영역까지 도달하는지, 클릭맵으로 예약 버튼이 실제로 눌리는지 확인합니다. 도달이 적으면 위치를, 도달은 하는데 안 눌리면 버튼 문구·디자인을 점검합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "모바일과 PC를 따로 봐야 하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "네. 병원 홈페이지는 모바일 검색 유입이 많은 경우가 흔해, 모바일 히트맵 기준으로 예약·전화 편의를 점검하는 것이 중요합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "홈페이지를 새로 만드는 게 나을까요, 부분 개선이 나을까요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "먼저 데이터로 병목을 확인하는 것이 안전합니다. 큰 리뉴얼은 비용·위험이 크고, 예약 버튼 위치 같은 부분 개선만으로도 전환이 달라질 때가 많습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "의료광고 규정 때문에 조심할 게 있나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "홈페이지·광고 문구는 의료법상 심의 대상일 수 있습니다. 과장·비교 표현을 피하고, 부작용·비급여 고지 등 규정을 확인하세요. 본 글은 사용성·전환 점검에 관한 일반 정보입니다." }
+        }
+      ]
+    }
+  ]
+}
