@@ -89,8 +89,8 @@ export function generateSuggestions(m: SiteMetrics): Suggestion[] {
     });
   }
 
-  // 6) 높은 이탈률 일반 경고
-  if (m.bounceRate >= 70 && m.sessions >= 50) {
+  // 6) 높은 이탈률 (데스크톱 중심 사이트) — 모바일 중심이면 아래 mobile-bounce가 대신 처리
+  if (m.bounceRate >= 70 && m.sessions >= 50 && m.device.mobilePct < 50) {
     out.push({
       id: "bounce",
       title: "이탈률이 높습니다",
@@ -99,6 +99,45 @@ export function generateSuggestions(m: SiteMetrics): Suggestion[] {
       confidence: conf,
       impact: 3,
       area: "유입 / 첫인상",
+    });
+  }
+
+  // 7) 모바일 이탈 — 모바일 비중이 높은데 이탈률도 높음
+  if (m.device.mobilePct >= 50 && m.bounceRate >= 65 && m.sessions >= 50) {
+    out.push({
+      id: "mobile-bounce",
+      title: "모바일 방문자 이탈이 큽니다",
+      detail: "모바일 로딩 속도, 첫 화면 메시지, 버튼 크기·위치를 점검하세요. 데스크톱과 모바일은 화면이 달라 따로 봐야 합니다.",
+      evidence: `모바일 비중 ${m.device.mobilePct}%, 이탈률 ${m.bounceRate}% (세션 ${m.sessions}).`,
+      confidence: conf,
+      impact: 4,
+      area: "모바일 / 첫인상",
+    });
+  }
+
+  // 8) 끝까지 읽는데 전환이 없음 — 콘텐츠는 소비하나 행동으로 안 이어짐
+  if (m.conversions === 0 && m.sessions >= 100 && m.scrollReach.p75 >= 50) {
+    out.push({
+      id: "engaged-no-convert",
+      title: "끝까지 읽는데 전환이 없습니다",
+      detail: "방문자가 페이지를 깊이까지 보는데도 전환이 없습니다. CTA가 약하거나 눈에 안 띄는 경우가 많습니다 — 버튼 문구·색·위치와 오퍼를 강화하세요.",
+      evidence: `75% 지점 도달률 ${m.scrollReach.p75}%인데 전환 0건 (세션 ${m.sessions}).`,
+      confidence: conf,
+      impact: 4,
+      area: "전환 / CTA",
+    });
+  }
+
+  // 9) 방문은 있는데 전환이 없음 (일반) — 위 engaged 케이스가 아닐 때
+  if (m.conversions === 0 && m.sessions >= 100 && m.scrollReach.p75 < 50) {
+    out.push({
+      id: "no-convert",
+      title: "방문은 있는데 전환이 없습니다",
+      detail: "전환(구매·문의·신청)이 한 건도 없습니다. 방문자가 깊이 보기 전에 이탈하고 있으니, 첫 화면의 가치 제안과 CTA 노출부터 점검하세요.",
+      evidence: `세션 ${m.sessions}개, 전환 0건 (75% 도달률 ${m.scrollReach.p75}%).`,
+      confidence: conf,
+      impact: 4,
+      area: "전환 / 첫인상",
     });
   }
 
