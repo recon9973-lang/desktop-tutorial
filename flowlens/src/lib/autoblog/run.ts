@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { generateFlowLensPost } from "./generator";
 
 export type DraftResult =
-  | { ok: true; slug: string; title: string; publishableHint: boolean }
+  | { ok: true; slug: string; title: string; publishable: boolean; published: boolean }
   | { ok: false; keyword: string; error: string };
 
 function splitLines(s: string): string[] {
@@ -40,6 +40,9 @@ export async function runDailyDrafts(overrideCount?: number): Promise<{
     try {
       const draft = await generateFlowLensPost({ category, keyword, region, extra: s.extra });
       const slug = "ai-" + Date.now().toString(36) + "-" + i;
+      // 자동발행: 설정이 켜져 있고 + 검수(의료광고·콘텐츠) 통과한 글만 즉시 발행.
+      // 검수 실패본은 자동발행 상태여도 초안으로 보관해 사람이 검토하게 한다.
+      const published = s.autoPublish && draft.publishable;
       await prisma.blogPost.create({
         data: {
           slug,
@@ -51,10 +54,10 @@ export async function runDailyDrafts(overrideCount?: number): Promise<{
           body: draft.bodyHtml,
           author: "FlowLens (주식회사 베놈)",
           date: new Date().toISOString().slice(0, 10),
-          published: false, // 항상 초안
+          published,
         },
       });
-      results.push({ ok: true, slug, title: draft.title, publishableHint: draft.publishable });
+      results.push({ ok: true, slug, title: draft.title, publishable: draft.publishable, published });
     } catch (e) {
       results.push({ ok: false, keyword, error: e instanceof Error ? e.message : "생성 오류" });
     }

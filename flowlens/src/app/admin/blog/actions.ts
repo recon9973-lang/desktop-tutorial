@@ -105,6 +105,7 @@ export async function saveAutoBlogSettings(form: FormData) {
   await assertAdmin();
   const data = {
     enabled: form.get("enabled") === "on" || form.get("enabled") === "1",
+    autoPublish: form.get("autoPublish") === "on" || form.get("autoPublish") === "1",
     dailyCount: Math.min(Math.max(1, parseInt(String(form.get("dailyCount") || "1"), 10) || 1), 5),
     category: String(form.get("category") || "heatmap").trim(),
     keywords: String(form.get("keywords") || "").trim(),
@@ -125,15 +126,18 @@ export async function runAutoBlogNow() {
   await assertAdmin();
   let errMsg = "";
   let okCount = 0;
+  let publishedCount = 0;
   try {
     const out = await runDailyDrafts(1);
     if (out.skippedReason) errMsg = out.skippedReason;
-    okCount = out.results.filter((r) => r.ok).length;
+    const ok = out.results.filter((r) => r.ok);
+    okCount = ok.length;
+    publishedCount = ok.filter((r) => "published" in r && r.published).length;
     const failed = out.results.find((r) => !r.ok);
     if (!errMsg && okCount === 0 && failed && "error" in failed) errMsg = failed.error;
   } catch (e) {
     errMsg = e instanceof Error ? e.message : "생성 오류";
   }
   if (errMsg) redirect("/admin/blog?err=" + encodeURIComponent(errMsg));
-  redirect("/admin/blog?ran=" + okCount);
+  redirect(`/admin/blog?ran=${okCount}&pub=${publishedCount}`);
 }

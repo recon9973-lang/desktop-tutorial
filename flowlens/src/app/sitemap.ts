@@ -3,6 +3,9 @@ import { getAllPosts } from "@/lib/blog";
 
 const BASE = "https://flow.seokorea.org";
 
+// DB에 새로 발행된(자동발행 포함) 글이 즉시 사이트맵에 반영되도록 동적 생성.
+export const dynamic = "force-dynamic";
+
 // 검색엔진 수집용 사이트맵. 공개 페이지 + 블로그 글 전체를 자동 포함한다.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [

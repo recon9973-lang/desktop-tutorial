@@ -20,11 +20,11 @@ function fileSlugs(): string[] {
   return fs.readdirSync(dir).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, ""));
 }
 
-export default async function AdminBlog({ searchParams }: { searchParams: Promise<{ err?: string; saved?: string; ran?: string }> }) {
+export default async function AdminBlog({ searchParams }: { searchParams: Promise<{ err?: string; saved?: string; ran?: string; pub?: string }> }) {
   const admin = await getAdminUser();
   if (!admin) notFound();
 
-  const { err, saved, ran } = await searchParams;
+  const { err, saved, ran, pub } = await searchParams;
   const dbPosts = await getAllDbPosts();
   const setting = await prisma.autoBlogSetting.findUnique({ where: { id: "default" } });
   const files = fileSlugs();
@@ -50,14 +50,14 @@ export default async function AdminBlog({ searchParams }: { searchParams: Promis
       )}
       {ran !== undefined && (
         <div className="card card-pad" style={{ marginBottom: 18, background: "var(--accent-soft)", border: "1px solid var(--accent)" }}>
-          ✅ 초안 {ran}개를 생성했습니다. 아래 <b>“내가 쓴 글”</b>에서 확인·발행하세요.
+          ✅ 글 {ran}개 생성 완료{pub && Number(pub) > 0 ? ` — 그중 ${pub}개는 검수 통과로 자동 발행됨` : " (초안 저장)"}. 아래 <b>“내가 쓴 글”</b>에서 확인하세요.
         </div>
       )}
 
       {/* 매일 자동 생성 설정 */}
       <details className="card card-pad" style={{ marginBottom: 18 }} open={!!setting?.enabled}>
         <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 15 }}>
-          ⏰ 매일 자동 생성 {setting?.enabled ? <span className="badge" style={{ background: "var(--accent)", color: "#fff", padding: "1px 8px", borderRadius: 999, fontSize: 11, marginLeft: 6 }}>켜짐 · 하루 {setting.dailyCount}개</span> : <span className="muted small">(꺼짐)</span>}
+          ⏰ 매일 자동 생성 {setting?.enabled ? <span className="badge" style={{ background: "var(--accent)", color: "#fff", padding: "1px 8px", borderRadius: 999, fontSize: 11, marginLeft: 6 }}>켜짐 · 하루 {setting.dailyCount}개{setting.autoPublish ? " · 자동발행" : " · 초안"}</span> : <span className="muted small">(꺼짐)</span>}
         </summary>
         <p className="muted small" style={{ margin: "10px 0 0" }}>
           매일 아침(한국시간 6시경) AI가 아래 키워드로 초안을 자동 생성합니다. <b>발행은 자동으로 하지 않고</b>, 항상 임시저장(초안)으로만 쌓입니다. 대표님이 검토 후 발행하세요.
@@ -127,7 +127,7 @@ export default async function AdminBlog({ searchParams }: { searchParams: Promis
 }
 
 // 매일 자동 생성 설정 폼
-function AutoSettingsForm({ setting }: { setting: { enabled: boolean; dailyCount: number; category: string; keywords: string; regions: string; extra: string } | null }) {
+function AutoSettingsForm({ setting }: { setting: { enabled: boolean; autoPublish: boolean; dailyCount: number; category: string; keywords: string; regions: string; extra: string } | null }) {
   const L: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-2)", margin: "14px 0 4px" };
   const I: React.CSSProperties = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, boxSizing: "border-box" };
   return (
@@ -137,6 +137,16 @@ function AutoSettingsForm({ setting }: { setting: { enabled: boolean; dailyCount
           <input type="checkbox" name="enabled" defaultChecked={setting?.enabled} value="on" style={{ width: 16, height: 16 }} />
           매일 자동 생성 켜기
         </label>
+
+        <div style={{ marginTop: 12, padding: "12px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 700 }}>
+            <input type="checkbox" name="autoPublish" defaultChecked={setting?.autoPublish} value="on" style={{ width: 16, height: 16 }} />
+            🚀 자동 발행까지 켜기 (검토 없이 바로 공개)
+          </label>
+          <p className="muted small" style={{ margin: "6px 0 0" }}>
+            켜면 <b>의료광고법·콘텐츠 검수를 통과한 글만</b> 자동으로 공개됩니다. 검수에 걸린 글은 자동발행이어도 <b>초안으로 보관</b>돼 대표님이 검토합니다. (끄면: 전부 초안으로만 쌓이고 사람이 발행)
+          </p>
+        </div>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 120px" }}>
