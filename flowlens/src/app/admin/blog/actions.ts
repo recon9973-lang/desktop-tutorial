@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getAdminUser } from "@/lib/admin";
 import { generateFlowLensPost } from "@/lib/autoblog/generator";
+import { runDailyDrafts } from "@/lib/autoblog/run";
 
 async function assertAdmin() {
   const a = await getAdminUser();
@@ -97,4 +98,42 @@ export async function generateBlogDraft(form: FormData) {
   // redirect는 try/catch 밖에서 (내부적으로 throw 하므로)
   if (errMsg) redirect("/admin/blog?err=" + encodeURIComponent(errMsg));
   redirect(`/admin/blog/${slug}?new=1`);
+}
+
+// 자동 생성 설정 저장 (단일 행 upsert)
+export async function saveAutoBlogSettings(form: FormData) {
+  await assertAdmin();
+  const data = {
+    enabled: form.get("enabled") === "on" || form.get("enabled") === "1",
+    dailyCount: Math.min(Math.max(1, parseInt(String(form.get("dailyCount") || "1"), 10) || 1), 5),
+    category: String(form.get("category") || "heatmap").trim(),
+    keywords: String(form.get("keywords") || "").trim(),
+    regions: String(form.get("regions") || "").trim(),
+    extra: String(form.get("extra") || "").trim(),
+  };
+  await prisma.autoBlogSetting.upsert({
+    where: { id: "default" },
+    create: { id: "default", ...data },
+    update: data,
+  });
+  redirect("/admin/blog?saved=1");
+}
+
+// "지금 바로 1개 생성" — 설정의 키워드로 초안 1개를 즉시 생성(테스트/샘플용).
+// (여러 편은 시간이 오래 걸려 크론에 맡김. 수동은 안전하게 1개.)
+export async function runAutoBlogNow() {
+  await assertAdmin();
+  let errMsg = "";
+  let okCount = 0;
+  try {
+    const out = await runDailyDrafts(1);
+    if (out.skippedReason) errMsg = out.skippedReason;
+    okCount = out.results.filter((r) => r.ok).length;
+    const failed = out.results.find((r) => !r.ok);
+    if (!errMsg && okCount === 0 && failed && "error" in failed) errMsg = failed.error;
+  } catch (e) {
+    errMsg = e instanceof Error ? e.message : "생성 오류";
+  }
+  if (errMsg) redirect("/admin/blog?err=" + encodeURIComponent(errMsg));
+  redirect("/admin/blog?ran=" + okCount);
 }

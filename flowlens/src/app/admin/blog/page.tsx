@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { getAdminUser } from "@/lib/admin";
 import { getAllDbPosts } from "@/lib/blog";
-import { saveBlogPost, toggleBlogPublish, deleteBlogPost, generateBlogDraft } from "./actions";
+import { prisma } from "@/lib/db";
+import { saveBlogPost, toggleBlogPublish, deleteBlogPost, generateBlogDraft, saveAutoBlogSettings, runAutoBlogNow } from "./actions";
 import { CAT_LABEL } from "@/lib/autoblog/generator";
 import { BlogForm } from "./BlogForm";
 import fs from "fs";
@@ -18,12 +19,13 @@ function fileSlugs(): string[] {
   return fs.readdirSync(dir).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, ""));
 }
 
-export default async function AdminBlog({ searchParams }: { searchParams: Promise<{ err?: string }> }) {
+export default async function AdminBlog({ searchParams }: { searchParams: Promise<{ err?: string; saved?: string; ran?: string }> }) {
   const admin = await getAdminUser();
   if (!admin) notFound();
 
-  const { err } = await searchParams;
+  const { err, saved, ran } = await searchParams;
   const dbPosts = await getAllDbPosts();
+  const setting = await prisma.autoBlogSetting.findUnique({ where: { id: "default" } });
   const files = fileSlugs();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -40,6 +42,27 @@ export default async function AdminBlog({ searchParams }: { searchParams: Promis
           ❌ {err}
         </div>
       )}
+      {saved && (
+        <div className="card card-pad" style={{ marginBottom: 18, background: "var(--accent-soft)", border: "1px solid var(--accent)" }}>
+          ✅ 자동 생성 설정을 저장했습니다.
+        </div>
+      )}
+      {ran !== undefined && (
+        <div className="card card-pad" style={{ marginBottom: 18, background: "var(--accent-soft)", border: "1px solid var(--accent)" }}>
+          ✅ 초안 {ran}개를 생성했습니다. 아래 <b>“내가 쓴 글”</b>에서 확인·발행하세요.
+        </div>
+      )}
+
+      {/* 매일 자동 생성 설정 */}
+      <details className="card card-pad" style={{ marginBottom: 18 }} open={!!setting?.enabled}>
+        <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 15 }}>
+          ⏰ 매일 자동 생성 {setting?.enabled ? <span className="badge" style={{ background: "var(--accent)", color: "#fff", padding: "1px 8px", borderRadius: 999, fontSize: 11, marginLeft: 6 }}>켜짐 · 하루 {setting.dailyCount}개</span> : <span className="muted small">(꺼짐)</span>}
+        </summary>
+        <p className="muted small" style={{ margin: "10px 0 0" }}>
+          매일 아침(한국시간 6시경) AI가 아래 키워드로 초안을 자동 생성합니다. <b>발행은 자동으로 하지 않고</b>, 항상 임시저장(초안)으로만 쌓입니다. 대표님이 검토 후 발행하세요.
+        </p>
+        <AutoSettingsForm setting={setting} />
+      </details>
 
       {/* AI 초안 생성 */}
       <details className="card card-pad" style={{ marginBottom: 18 }}>
@@ -99,6 +122,55 @@ export default async function AdminBlog({ searchParams }: { searchParams: Promis
         {files.length === 0 && <span className="muted small">없음</span>}
       </div>
     </div>
+  );
+}
+
+// 매일 자동 생성 설정 폼
+function AutoSettingsForm({ setting }: { setting: { enabled: boolean; dailyCount: number; category: string; keywords: string; regions: string; extra: string } | null }) {
+  const L: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, color: "var(--text-2)", margin: "14px 0 4px" };
+  const I: React.CSSProperties = { width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, boxSizing: "border-box" };
+  return (
+    <>
+      <form action={saveAutoBlogSettings} style={{ marginTop: 12 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 700 }}>
+          <input type="checkbox" name="enabled" defaultChecked={setting?.enabled} value="on" style={{ width: 16, height: 16 }} />
+          매일 자동 생성 켜기
+        </label>
+
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 120px" }}>
+            <label style={L}>하루 생성 개수 (1~5)</label>
+            <input style={I} type="number" name="dailyCount" min={1} max={5} defaultValue={setting?.dailyCount ?? 1} />
+          </div>
+          <div style={{ flex: "2 1 200px" }}>
+            <label style={L}>카테고리(주제)</label>
+            <select style={I} name="category" defaultValue={setting?.category || "heatmap"}>
+              {Object.entries(CAT_LABEL).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <label style={L}>키워드 목록 — 한 줄에 하나씩 (순서대로 돌아가며 사용)</label>
+        <textarea style={{ ...I, minHeight: 100, lineHeight: 1.6 }} name="keywords" defaultValue={setting?.keywords} placeholder={"병원 홈페이지 예약 전환율\n히트맵으로 이탈 지점 찾기\n랜딩페이지 전환율 높이는 법"} />
+
+        <label style={L}>지역 목록(선택) — 한 줄에 하나씩</label>
+        <textarea style={{ ...I, minHeight: 60, lineHeight: 1.6 }} name="regions" defaultValue={setting?.regions} placeholder={"강남\n부산 서면"} />
+
+        <label style={L}>추가 지시(선택)</label>
+        <input style={I} name="extra" defaultValue={setting?.extra} placeholder="예) 초보자 대상으로, 모바일 위주로" />
+
+        <div style={{ marginTop: 16 }}>
+          <button className="btn primary" type="submit">설정 저장</button>
+        </div>
+      </form>
+
+      <form action={runAutoBlogNow} style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+        <button className="btn" type="submit">▶ 지금 1개 생성해 테스트</button>
+        <span className="muted small" style={{ marginLeft: 10 }}>설정을 저장한 뒤 눌러야 반영됩니다. (초안으로 저장)</span>
+      </form>
+    </>
   );
 }
 
