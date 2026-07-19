@@ -91,6 +91,15 @@ export default async function HeatmapPage({
 
       <div>
         {path && <p className="muted small" style={{ marginBottom: 10 }}>페이지: <b>{path}</b></p>}
+        {points.length === 0 && moves.length === 0 && scroll.sessions.length === 0 && (
+          <div className="card card-pad" style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", background: "#eef5ff", borderColor: "#c9dcff" }}>
+            <div>
+              <b>아직 표시할 데이터가 없어요</b>
+              <div className="muted small" style={{ marginTop: 3 }}>추적 코드를 설치하고 방문이 생기면 클릭·이동·스크롤이 이 화면에 쌓입니다.</div>
+            </div>
+            <Link className="btn primary sm" href={`/sites/${site.id}/install`}>설치하기</Link>
+          </div>
+        )}
         <HeatmapStudio points={points} clickLabels={clickLabels} gesturePoints={gestures} movePoints={moves} scrollSessions={scroll.sessions} avgFold={scroll.avgFold} siteId={site.id} path={shotPath} shotDevices={shotDevices} shotInfo={shotInfo} mapsAll={can(user?.agency.plan, "maps_all")} />
       </div>
     </div>
