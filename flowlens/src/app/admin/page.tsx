@@ -4,11 +4,27 @@ import { prisma } from "@/lib/db";
 import { PLANS } from "@/lib/plans";
 import { adminSetPlan, adminExtendTrial, adminClearTrial } from "./actions";
 import ConfirmButton from "./ConfirmButton";
+import { getAllPosts } from "@/lib/blog";
 
 export const dynamic = "force-dynamic";
 
 function ym(): string {
   return new Date().toISOString().slice(0, 7);
+}
+
+const ACTION_LABEL: Record<string, string> = {
+  LOGIN: "로그인",
+  SIGNUP: "가입",
+  CHANGE_PLAN: "요금제 변경",
+  DELETE_DATA: "데이터 삭제",
+  CREATE_SHARE: "공유링크 생성",
+  CREATE_SITE: "사이트 등록",
+  CHANGE_PASSWORD: "비밀번호 변경",
+  TRIAL_REMINDER: "체험 만료 알림",
+};
+
+function fmtTs(d: Date): string {
+  return d.toISOString().slice(0, 16).replace("T", " ");
 }
 
 export default async function AdminPage() {
@@ -28,6 +44,13 @@ export default async function AdminPage() {
   // 이번 달 사용량을 한 번에 조회
   const usages = await prisma.usageMonth.findMany({ where: { ym: thisYm } });
   const usageBy = new Map(usages.map((u) => [u.agencyId, u.sessions]));
+
+  // 최근 활동(감사 로그): 누가 언제 무엇을 했는지 — 운영 추적용
+  const agencyName = new Map(agencies.map((a) => [a.id, a.name]));
+  const auditLogs = await prisma.auditLog.findMany({ orderBy: { ts: "desc" }, take: 40 });
+
+  // 발행된 블로그 글 목록 (파일 기반 — 읽기 전용 현황)
+  const posts = getAllPosts();
 
   const now = Date.now();
   const rows = agencies.map((a) => {
@@ -97,6 +120,69 @@ export default async function AdminPage() {
 
       <AgencyTable title="실계정" rows={real} />
       {test.length > 0 && <AgencyTable title="테스트 계정 (@example.com)" rows={test} muted />}
+
+      {/* 최근 활동 (감사 로그) — 누가 언제 무엇을 했는지 */}
+      <div style={{ marginTop: 34 }}>
+        <h2 style={{ fontSize: 15, margin: "0 0 12px", color: "var(--text-2)" }}>최근 활동 (감사 로그 · 최근 {auditLogs.length}건)</h2>
+        {auditLogs.length === 0 ? (
+          <div className="card card-pad muted small">아직 기록된 활동이 없습니다.</div>
+        ) : (
+          <div className="card" style={{ padding: 0, overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 640 }}>
+              <thead>
+                <tr style={{ textAlign: "left", color: "var(--text-3)", borderBottom: "1px solid var(--border)" }}>
+                  <th style={{ padding: "10px 14px", fontWeight: 700 }}>시각(UTC)</th>
+                  <th style={{ padding: "10px 14px", fontWeight: 700 }}>행위</th>
+                  <th style={{ padding: "10px 14px", fontWeight: 700 }}>대행사</th>
+                  <th style={{ padding: "10px 14px", fontWeight: 700 }}>사용자</th>
+                  <th style={{ padding: "10px 14px", fontWeight: 700 }}>상세</th>
+                </tr>
+              </thead>
+              <tbody>
+                {auditLogs.map((l) => (
+                  <tr key={l.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td style={{ padding: "9px 14px", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", color: "var(--text-3)" }}>{fmtTs(l.ts)}</td>
+                    <td style={{ padding: "9px 14px", whiteSpace: "nowrap", fontWeight: 700 }}>{ACTION_LABEL[l.action] ?? l.action}</td>
+                    <td style={{ padding: "9px 14px" }}>{agencyName.get(l.agencyId) ?? "—"}</td>
+                    <td style={{ padding: "9px 14px", color: "var(--text-3)" }}>{l.userEmail || "—"}</td>
+                    <td style={{ padding: "9px 14px", color: "var(--text-3)" }}>{l.detail || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 블로그 글 현황 (읽기 전용 — 발행/수정은 코드·배포로 관리) */}
+      <div style={{ marginTop: 34 }}>
+        <h2 style={{ fontSize: 15, margin: "0 0 4px", color: "var(--text-2)" }}>블로그 글 ({posts.length}편)</h2>
+        <p className="muted small" style={{ margin: "0 0 12px" }}>
+          현재 블로그는 코드(파일) 기반으로 관리됩니다. 이 목록은 발행 현황이며, 새 글 작성·수정은 배포로 반영됩니다.
+        </p>
+        <div className="card" style={{ padding: 0, overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 560 }}>
+            <thead>
+              <tr style={{ textAlign: "left", color: "var(--text-3)", borderBottom: "1px solid var(--border)" }}>
+                <th style={{ padding: "10px 14px", fontWeight: 700 }}>발행일</th>
+                <th style={{ padding: "10px 14px", fontWeight: 700 }}>카테고리</th>
+                <th style={{ padding: "10px 14px", fontWeight: 700 }}>제목</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.map((p) => (
+                <tr key={p.slug} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <td style={{ padding: "9px 14px", whiteSpace: "nowrap", color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>{p.date}</td>
+                  <td style={{ padding: "9px 14px", whiteSpace: "nowrap", color: "var(--text-3)" }}>{p.category ?? "—"}</td>
+                  <td style={{ padding: "9px 14px" }}>
+                    <a href={`/blog/${p.slug}`} target="_blank" style={{ color: "var(--accent)" }}>{p.title}</a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
