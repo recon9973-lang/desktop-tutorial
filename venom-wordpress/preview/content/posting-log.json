@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784435598482",
+    "title": "부산 치과 마케팅 전략 5가지, 신환 2.4배 증가",
+    "tokenUsage": {
+      "promptTokens": 2641,
+      "completionTokens": 2211,
+      "totalTokens": 4852,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-19T04:34:19.305Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784423391439",
     "title": "대구 병원마케팅의 성공 전략 3가지와 AI 활용법",
