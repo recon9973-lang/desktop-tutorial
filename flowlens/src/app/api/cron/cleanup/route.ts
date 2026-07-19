@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { rollupExpiredEvents } from "@/lib/rollup";
+import { sendEmail, trialReminderHtml } from "@/lib/email";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,5 +36,30 @@ export async function GET(req: NextRequest) {
     await prisma.session.deleteMany({ where: { siteId: site.id, lastEventAt: { lt: cutoff }, events: { none: {} } } });
   }
 
-  return NextResponse.json({ ok: true, sites: sites.length, rolledSites, deletedEvents: totalDeleted });
+  // 체험 만료 3일 이내 리마인드 메일 (RESEND_API_KEY 설정 시에만 실제 발송). 대행사당 1회.
+  let remindersSent = 0;
+  const soon = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const expiring = await prisma.agency.findMany({
+    where: { plan: "FREE", trialEndsAt: { gte: new Date(), lte: soon } },
+    include: { users: { where: { role: "OWNER" }, take: 1, select: { email: true, name: true } } },
+  });
+  for (const a of expiring) {
+    const owner = a.users[0];
+    if (!owner || !a.trialEndsAt) continue;
+    const already = await prisma.auditLog.findFirst({ where: { agencyId: a.id, action: "TRIAL_REMINDER" } });
+    if (already) continue; // 이미 보냈으면 건너뜀(중복 방지)
+    const daysLeft = Math.max(1, Math.ceil((a.trialEndsAt.getTime() - Date.now()) / 86_400_000));
+    const res = await sendEmail({
+      to: owner.email,
+      subject: `FlowLens 무료 체험이 ${daysLeft}일 남았어요`,
+      html: trialReminderHtml(owner.name, daysLeft),
+    });
+    // 실제 발송에 성공했을 때만 감사로그를 남긴다 → 키 미설정(skipped)/오류면 다음 실행에서 재시도.
+    if (res.ok) {
+      await audit(a.id, "TRIAL_REMINDER", { userEmail: owner.email, detail: `체험 만료 ${daysLeft}일 전 리마인드` });
+      remindersSent++;
+    }
+  }
+
+  return NextResponse.json({ ok: true, sites: sites.length, rolledSites, deletedEvents: totalDeleted, remindersSent });
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { hashPassword, createSession } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { getPlan } from "@/lib/plans";
+import { sendEmail, welcomeHtml } from "@/lib/email";
 
 // 실제 자체 회원가입: 대행사(워크스페이스) + OWNER 계정을 생성하고 로그인시킨다.
 export async function POST(req: NextRequest) {
@@ -39,5 +40,7 @@ export async function POST(req: NextRequest) {
 
   await createSession(agency.users[0].id);
   await audit(agency.id, "SIGNUP", { userId: agency.users[0].id, userEmail: email, detail: "약관·개인정보처리방침·DPA 동의(v1.0)" });
+  // 환영 메일(설정된 경우에만 발송). 가입 응답을 막지 않도록 await 없이 fire-and-forget.
+  sendEmail({ to: email, subject: "FlowLens 시작을 환영합니다", html: welcomeHtml(name) }).catch(() => {});
   return NextResponse.redirect(new URL("/dashboard", origin), { status: 303 });
 }

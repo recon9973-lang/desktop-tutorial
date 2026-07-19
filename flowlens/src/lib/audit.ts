@@ -4,7 +4,7 @@ import { prisma } from "./db";
 // 실패해도 본 기능을 막지 않도록 조용히 무시.
 export async function audit(
   agencyId: string,
-  action: "LOGIN" | "SIGNUP" | "DELETE_DATA" | "CREATE_SHARE" | "CHANGE_PLAN" | "CREATE_SITE" | "CHANGE_PASSWORD",
+  action: "LOGIN" | "SIGNUP" | "DELETE_DATA" | "CREATE_SHARE" | "CHANGE_PLAN" | "CREATE_SITE" | "CHANGE_PASSWORD" | "TRIAL_REMINDER",
   opts?: { userId?: string; userEmail?: string; detail?: string }
 ) {
   try {
