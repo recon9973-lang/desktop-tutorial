@@ -1,3 +1,5 @@
+import { SubmitButton } from "./SubmitButton";
+
 // 블로그 글 작성/수정 공용 폼 (서버 컴포넌트에서 사용)
 export function BlogForm({
   action,
@@ -61,8 +63,8 @@ export function BlogForm({
         지금 발행하기 (체크 안 하면 임시저장)
       </label>
 
-      <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-        <button className="btn primary" type="submit">저장</button>
+      <div style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "center" }}>
+        <SubmitButton pending="저장 중…">저장</SubmitButton>
         <a className="btn" href="/admin/blog">취소</a>
       </div>
     </form>

@@ -5,11 +5,12 @@ import { prisma } from "@/lib/db";
 import { saveBlogPost, toggleBlogPublish, deleteBlogPost, generateBlogDraft, saveAutoBlogSettings, runAutoBlogNow } from "./actions";
 import { CAT_LABEL } from "@/lib/autoblog/generator";
 import { BlogForm } from "./BlogForm";
+import { SubmitButton } from "./SubmitButton";
 import fs from "fs";
 import path from "path";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60; // AI 생성이 오래 걸릴 수 있어 여유 확보
+export const maxDuration = 120; // AI 생성이 오래 걸릴 수 있어 여유 확보
 export const metadata = { title: "블로그 관리 — FlowLens 운영자" };
 
 // 파일(코드) 기반 글 목록 — 읽기 전용 표시용
@@ -162,12 +163,12 @@ function AutoSettingsForm({ setting }: { setting: { enabled: boolean; dailyCount
         <input style={I} name="extra" defaultValue={setting?.extra} placeholder="예) 초보자 대상으로, 모바일 위주로" />
 
         <div style={{ marginTop: 16 }}>
-          <button className="btn primary" type="submit">설정 저장</button>
+          <SubmitButton pending="저장 중…">설정 저장</SubmitButton>
         </div>
       </form>
 
       <form action={runAutoBlogNow} style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
-        <button className="btn" type="submit">▶ 지금 1개 생성해 테스트</button>
+        <SubmitButton className="btn" pending="생성 중… (최대 1분)" note="AI가 초안 1개를 만들고 있습니다. 최대 1분 걸립니다. 이 페이지를 닫지 마세요.">▶ 지금 1개 생성해 테스트</SubmitButton>
         <span className="muted small" style={{ marginLeft: 10 }}>설정을 저장한 뒤 눌러야 반영됩니다. (초안으로 저장)</span>
       </form>
     </>
@@ -197,7 +198,7 @@ function AiForm() {
       <input style={I} name="extra" placeholder="예) 모바일 위주로, 초보자 대상으로" />
 
       <div style={{ marginTop: 16 }}>
-        <button className="btn primary" type="submit">🤖 초안 생성 (30초~1분 소요)</button>
+        <SubmitButton pending="생성 중… (최대 1분)" note="AI가 글을 쓰고 있습니다. 최대 1분 걸립니다. 이 페이지를 닫지 마세요.">🤖 초안 생성 (30초~1분 소요)</SubmitButton>
       </div>
       <p className="muted small" style={{ marginTop: 8 }}>생성 후 수정 화면으로 이동합니다. 내용을 확인한 뒤 발행하세요.</p>
     </form>
