@@ -6,7 +6,13 @@
       "headline": "상담신청 폼 이탈 줄이는 법 — 문의 수를 늘리는 5가지 점검",
       "description": "히트맵·행동 분석으로 상담신청 폼의 이탈 지점을 찾아 문의 수를 늘리는 5가지 실무 점검.",
       "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
-      "publisher": { "@type": "Organization", "name": "FlowLens", "url": "https://flow.seokorea.org" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FlowLens",
+        "url": "https://flow.seokorea.org",
+        "sameAs": ["https://pf.kakao.com/_jxjxdcxj"],
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+82-1661-4142", "email": "venomad@naver.com", "contactType": "customer service" }
+      },
       "datePublished": "2026-07-20",
       "inLanguage": "ko",
       "keywords": "상담신청 폼, 폼 이탈률, 전환율 개선, 행동 분석, 히트맵, 문의 전환"

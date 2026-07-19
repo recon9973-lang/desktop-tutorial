@@ -6,7 +6,13 @@
       "headline": "히트맵으로 홈페이지 전환율 올리는 법 — 방문자가 어디서 떠나는지 찾는 5단계",
       "description": "클릭·스크롤 히트맵으로 홈페이지에서 방문자가 떠나는 지점을 찾고 전환율을 개선하는 실무 5단계 가이드.",
       "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
-      "publisher": { "@type": "Organization", "name": "FlowLens", "url": "https://flow.seokorea.org" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FlowLens",
+        "url": "https://flow.seokorea.org",
+        "sameAs": ["https://pf.kakao.com/_jxjxdcxj"],
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+82-1661-4142", "email": "venomad@naver.com", "contactType": "customer service" }
+      },
       "datePublished": "2026-07-19",
       "inLanguage": "ko",
       "keywords": "히트맵, 전환율 개선, 웹사이트 이탈률, 행동 분석, 클릭맵, 스크롤맵"
