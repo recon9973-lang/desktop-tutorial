@@ -70,6 +70,15 @@ function stripTags(s: string): string {
     .trim();
 }
 
+// "2026-07-23" → "2026-07-23T09:00:00+09:00" (구조화 데이터 datetime + 한국 시간대).
+// 이미 시간/시간대가 포함된 ISO면 그대로 둔다.
+function toIsoDate(d: string): string {
+  if (!d) return d;
+  if (/T\d{2}:\d{2}/.test(d)) return d; // 이미 시간 포함
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return `${d}T09:00:00+09:00`;
+  return d;
+}
+
 export function extractFaqs(html: string): { q: string; a: string }[] {
   if (!html) return [];
   const startRe = /<h2[^>]*>[^<]*자주\s*묻는\s*질문[\s\S]*?<\/h2>/i;
@@ -113,8 +122,8 @@ export function postJsonLd(meta: PostMeta, renderedHtml: string): string {
     headline: meta.seoTitle || meta.title,
     description: meta.description,
     inLanguage: "ko-KR",
-    datePublished: meta.date,
-    dateModified: meta.date,
+    datePublished: toIsoDate(meta.date),
+    dateModified: toIsoDate(meta.date),
     // 대표 이미지 (Article 리치결과 권장 필드) — 1200×630
     image: {
       "@type": "ImageObject",
