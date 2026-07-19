@@ -23,6 +23,16 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     orderBy: { createdAt: "asc" },
   });
 
+  // 온보딩·리텐션 넛지용: 무료 체험 잔여일. (FREE + trialEndsAt 있을 때만)
+  const agency = await prisma.agency.findUnique({
+    where: { id: user.agencyId },
+    select: { plan: true, trialEndsAt: true },
+  });
+  const trialDaysLeft =
+    agency?.plan === "FREE" && agency.trialEndsAt
+      ? Math.ceil((agency.trialEndsAt.getTime() - Date.now()) / 86_400_000)
+      : null;
+
   // 검색 필터: 고객사명이 맞으면 그 고객사 전체, 아니면 사이트명/도메인 매칭만
   const filteredClients = clients
     .map((c) => {
@@ -41,6 +51,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     })
   );
   const byId = new Map(siteMetrics.map((x) => [x.site.id, x]));
+
+  // 설치 미완료(아직 데이터가 한 건도 없는) 사이트 — 설치 넛지 대상.
+  const notInstalled = siteMetrics.filter((x) => x.m.sessions === 0);
 
   const totalSessions = siteMetrics.reduce((a, x) => a + x.m.sessions, 0);
   const totalSuggestions = siteMetrics.reduce((a, x) => a + x.suggestions.length, 0);
@@ -67,6 +80,48 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <Link className="btn primary" href="/sites/new">+ 사이트 등록</Link>
           </div>
         </div>
+
+        {/* 온보딩·리텐션 넛지 */}
+        {trialDaysLeft !== null && (
+          <div
+            className="card card-pad"
+            style={{
+              marginBottom: 14,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+              background: trialDaysLeft <= 3 ? "#fbf4e6" : "#eef5ff",
+              borderColor: trialDaysLeft <= 3 ? "#f0dcb0" : "#c9dcff",
+            }}
+          >
+            <div>
+              <b>{trialDaysLeft > 0 ? `무료 체험이 ${trialDaysLeft}일 남았어요` : "무료 체험이 종료되었어요"}</b>
+              <div className="muted small" style={{ marginTop: 2 }}>
+                {trialDaysLeft > 0
+                  ? "체험이 끝나면 새 데이터 수집이 멈춥니다. 요금제를 선택하면 끊김 없이 이어집니다."
+                  : "요금제를 선택하면 수집이 다시 시작됩니다. 그동안 쌓인 데이터는 보관 기간 동안 유지됩니다."}
+              </div>
+            </div>
+            <Link className="btn primary" href="/billing">요금제 보기</Link>
+          </div>
+        )}
+
+        {clients.length > 0 && notInstalled.length > 0 && (
+          <div
+            className="card card-pad"
+            style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}
+          >
+            <div>
+              <b>아직 데이터가 없는 사이트 {notInstalled.length}곳</b>
+              <div className="muted small" style={{ marginTop: 2 }}>
+                추적 스크립트 설치가 끝났는지 확인해 보세요. 설치했는데도 비어 있으면 &lsquo;원인 점검&rsquo;으로 이유를 알 수 있어요.
+              </div>
+            </div>
+            <Link className="btn" href={`/sites/${notInstalled[0].site.id}/install`}>설치 확인하기</Link>
+          </div>
+        )}
 
         {clients.length === 0 ? (
           <div className="card card-pad" style={{ textAlign: "center", padding: "48px 24px" }}>
