@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const contentType = "image/png";
 
 // 브랜드 대표 이미지(1200×630). 블로그 Article 구조화 데이터의 image,
 // 그리고 소셜 공유 미리보기(og:image)에 사용. 안정적 URL: /og
