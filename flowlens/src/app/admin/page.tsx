@@ -56,6 +56,18 @@ export default async function AdminPage() {
   const real = rows.filter((r) => !r.isTest);
   const test = rows.filter((r) => r.isTest);
 
+  // 운영자 요약: 실계정 기준 총계 + 현재 요금제 배정 기준 예상 월 매출(MRR).
+  const totalSites = real.reduce((n, r) => n + r.siteCount, 0);
+  const totalSessions = real.reduce((n, r) => n + r.used, 0);
+  const paidCount = real.filter((r) => r.plan !== "FREE").length;
+  const mrr = real.reduce((n, r) => n + (PLANS.find((p) => p.key === r.plan)?.price ?? 0), 0);
+  const summary = [
+    { label: "실계정", value: real.length.toLocaleString() },
+    { label: "활성 사이트", value: totalSites.toLocaleString() },
+    { label: "이번 달 총 세션", value: totalSessions.toLocaleString() },
+    { label: "예상 월 매출(MRR)", value: `${mrr.toLocaleString()}원`, sub: `유료 ${paidCount}곳` },
+  ];
+
   return (
     <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 22px 80px" }}>
       <div className="between" style={{ marginBottom: 6 }}>
@@ -69,8 +81,18 @@ export default async function AdminPage() {
           {thisYm} 기준 · 실계정 {real.length} · 테스트 {test.length}
         </div>
       </div>
-      <div className="notice small" style={{ marginBottom: 20 }}>
+      <div className="notice small" style={{ marginBottom: 18 }}>
         결제 연동 전까지 <b>유료 전환은 여기서 수동으로</b> 처리합니다. 요금제를 바꾸면 사이트 보관일도 자동으로 맞춰지고, 모든 변경은 감사 로그에 남습니다. (네온 SQL 직접 입력을 대체)
+      </div>
+
+      <div className="grid grid-4" style={{ marginBottom: 22 }}>
+        {summary.map((s) => (
+          <div key={s.label} className="card metric">
+            <div className="label">{s.label}</div>
+            <div className="value" style={{ fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
+            {s.sub && <div className="sub">{s.sub}</div>}
+          </div>
+        ))}
       </div>
 
       <AgencyTable title="실계정" rows={real} />
@@ -114,9 +136,17 @@ function AgencyTable({ title, rows, muted = false }: { title: string; rows: Row[
                 <div className="small" style={{ color: r.trial.danger ? "var(--red)" : "var(--text-3)", marginTop: 2, fontWeight: r.trial.danger ? 700 : 400 }}>
                   {r.trial.label}
                 </div>
-                <div className="small muted" style={{ marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
-                  이번 달 {r.used.toLocaleString()} / {r.planLimit.toLocaleString()} 세션
-                </div>
+                {(() => {
+                  const over = r.planLimit > 0 && r.used >= r.planLimit;
+                  const near = r.planLimit > 0 && !over && r.used >= r.planLimit * 0.8;
+                  const color = over ? "var(--red)" : near ? "var(--amber)" : "var(--text-3)";
+                  return (
+                    <div className="small" style={{ marginTop: 2, fontVariantNumeric: "tabular-nums", color, fontWeight: over || near ? 700 : 400 }}>
+                      이번 달 {r.used.toLocaleString()} / {r.planLimit.toLocaleString()} 세션
+                      {over ? " · 한도 초과" : near ? " · 한도 임박" : ""}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
