@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPost, getRelatedPosts } from "@/lib/blog";
+import { postJsonLd } from "@/lib/seo";
 
 // DB에서 쓴 글도 즉시 반영되도록 동적 렌더 (파일 글 + DB 글 병합)
 export const dynamic = "force-dynamic";
@@ -29,12 +30,13 @@ export default async function Post({ params }: { params: Promise<{ slug: string 
   const post = await getPost(slug);
   if (!post) notFound();
   const related = await getRelatedPosts(slug, 3);
+  // Article + BreadcrumbList + FAQPage(있으면) 구조화 데이터 — 렌더된 본문에서 FAQ 자동 추출
+  const jsonld = postJsonLd(post.meta, post.html);
 
   return (
     <article className="post">
-      {post.jsonld && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: post.jsonld }} />
-      )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonld }} />
+
       <div className="post-head">
         <Link href="/blog" className="muted small">← 블로그</Link>
         {post.meta.category && <span className="blog-cat">{post.meta.category}</span>}
