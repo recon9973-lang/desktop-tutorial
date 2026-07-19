@@ -96,9 +96,9 @@
       "hook": "링크보다 '언급'이 중요해요 (멘션)",
       "img": "persona-nami/ig/post7.png",
       "cap": "persona-nami/ig/post7.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null,
+      "published": true,
+      "publishedAt": "2026-07-19T12:56:49.438Z",
+      "mediaId": "18105516815160766",
       "images": [
         "persona-nami/ig/post7.png",
         "persona-nami/ig/post7-2.png",
