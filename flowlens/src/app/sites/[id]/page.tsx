@@ -32,8 +32,25 @@ export default async function SiteOverview({ params, searchParams }: { params: P
   const channelTotal = Object.values(m.channel).reduce((a, b) => a + b, 0) || 1;
   const channelEntries = Object.entries(m.channel).sort((a, b) => b[1] - a[1]);
 
+  const noData = m.sessions === 0;
+
   return (
     <>
+      {noData && (
+        <div
+          className="card card-pad"
+          style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap", background: "#eef5ff", borderColor: "#c9dcff" }}
+        >
+          <div>
+            <b>아직 데이터가 없어요 — 추적 코드를 설치하면 시작됩니다</b>
+            <div className="muted small" style={{ marginTop: 3 }}>
+              이 사이트에 코드 한 줄을 넣으면 방문자의 클릭·스크롤이 여기에 쌓입니다. 설치 화면에서 &lsquo;설치 상태&rsquo;도 실시간으로 확인할 수 있어요.
+            </div>
+          </div>
+          <Link className="btn primary" href={`/sites/${site.id}/install`}>추적 코드 설치하기</Link>
+        </div>
+      )}
+
       <div className="row" style={{ marginBottom: 14, flexWrap: "wrap" }}>
         {PERIODS.map((p) => (
           <Link key={p.key} href={`/sites/${site.id}?period=${p.key}`} className={`btn sm ${periodKey === p.key ? "primary" : ""}`}>
