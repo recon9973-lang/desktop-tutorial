@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/blog";
+import { getPost, getRelatedPosts } from "@/lib/blog";
 
-export function generateStaticParams() {
-  return getPostSlugs().map((slug) => ({ slug }));
-}
+// DB에서 쓴 글도 즉시 반영되도록 동적 렌더 (파일 글 + DB 글 병합)
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPost(slug);
   if (!post) return { title: "글을 찾을 수 없습니다 — FlowLens" };
   return {
     title: post.meta.seoTitle || post.meta.title,
@@ -27,9 +26,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function Post({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPost(slug);
   if (!post) notFound();
-  const related = getRelatedPosts(slug, 3);
+  const related = await getRelatedPosts(slug, 3);
 
   return (
     <article className="post">

@@ -240,3 +240,21 @@ model ShareLink {
   expiresAt DateTime?
   createdAt DateTime @default(now())
 }
+
+// 관리자에서 작성·발행하는 블로그 글 (파일 기반 글과 별개로 DB에 저장).
+// 공개 렌더는 파일 글 + published=true DB 글을 합쳐 보여준다.
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  seoTitle    String   @default("")
+  description String   @default("")
+  keywords    String   @default("") // 쉼표 구분
+  category    String   @default("")
+  body        String   // 마크다운 본문
+  author      String   @default("FlowLens (주식회사 베놈)")
+  published   Boolean  @default(false)
+  date        String   // "2026-07-24"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

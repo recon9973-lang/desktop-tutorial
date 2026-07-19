@@ -49,8 +49,8 @@ export default async function AdminPage() {
   const agencyName = new Map(agencies.map((a) => [a.id, a.name]));
   const auditLogs = await prisma.auditLog.findMany({ orderBy: { ts: "desc" }, take: 40 });
 
-  // 발행된 블로그 글 목록 (파일 기반 — 읽기 전용 현황)
-  const posts = getAllPosts();
+  // 블로그 글 수 (파일 + DB 발행)
+  const posts = await getAllPosts();
 
   const now = Date.now();
   const rows = agencies.map((a) => {
@@ -154,33 +154,14 @@ export default async function AdminPage() {
         )}
       </div>
 
-      {/* 블로그 글 현황 (읽기 전용 — 발행/수정은 코드·배포로 관리) */}
+      {/* 블로그 관리(CMS) 진입 */}
       <div style={{ marginTop: 34 }}>
-        <h2 style={{ fontSize: 15, margin: "0 0 4px", color: "var(--text-2)" }}>블로그 글 ({posts.length}편)</h2>
-        <p className="muted small" style={{ margin: "0 0 12px" }}>
-          현재 블로그는 코드(파일) 기반으로 관리됩니다. 이 목록은 발행 현황이며, 새 글 작성·수정은 배포로 반영됩니다.
-        </p>
-        <div className="card" style={{ padding: 0, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 560 }}>
-            <thead>
-              <tr style={{ textAlign: "left", color: "var(--text-3)", borderBottom: "1px solid var(--border)" }}>
-                <th style={{ padding: "10px 14px", fontWeight: 700 }}>발행일</th>
-                <th style={{ padding: "10px 14px", fontWeight: 700 }}>카테고리</th>
-                <th style={{ padding: "10px 14px", fontWeight: 700 }}>제목</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((p) => (
-                <tr key={p.slug} style={{ borderBottom: "1px solid var(--border)" }}>
-                  <td style={{ padding: "9px 14px", whiteSpace: "nowrap", color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>{p.date}</td>
-                  <td style={{ padding: "9px 14px", whiteSpace: "nowrap", color: "var(--text-3)" }}>{p.category ?? "—"}</td>
-                  <td style={{ padding: "9px 14px" }}>
-                    <a href={`/blog/${p.slug}`} target="_blank" style={{ color: "var(--accent)" }}>{p.title}</a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="card card-pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <b>블로그 관리 ({posts.length}편 발행 중)</b>
+            <div className="muted small" style={{ marginTop: 3 }}>관리자에서 글을 직접 작성·수정·발행할 수 있습니다. (기존 파일 글은 코드로 관리)</div>
+          </div>
+          <a className="btn primary" href="/admin/blog">블로그 관리 열기 →</a>
         </div>
       </div>
     </div>

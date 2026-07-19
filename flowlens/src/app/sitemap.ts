@@ -4,7 +4,7 @@ import { getAllPosts } from "@/lib/blog";
 const BASE = "https://flow.seokorea.org";
 
 // 검색엔진 수집용 사이트맵. 공개 페이지 + 블로그 글 전체를 자동 포함한다.
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${BASE}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE}/blog`, changeFrequency: "weekly", priority: 0.8 },
@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/dpa`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  const posts: MetadataRoute.Sitemap = getAllPosts().map((p) => ({
+  const posts: MetadataRoute.Sitemap = (await getAllPosts()).map((p) => ({
     url: `${BASE}/blog/${p.slug}`,
     lastModified: p.date ? new Date(p.date) : undefined,
     changeFrequency: "monthly",

@@ -7,8 +7,10 @@ export const metadata = {
   alternates: { canonical: "/blog" },
 };
 
-export default function Blog() {
-  const posts = getAllPosts();
+export const dynamic = "force-dynamic";
+
+export default async function Blog() {
+  const posts = await getAllPosts();
   return (
     <div className="blog-wrap">
       <div className="blog-head">
