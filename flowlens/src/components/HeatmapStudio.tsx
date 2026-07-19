@@ -56,6 +56,7 @@ export default function HeatmapStudio({
   const [shotErr, setShotErr] = useState("");
   // 재시도해도 소용없는 실패(주소만으로 열리지 않는 페이지)인지
   const [shotFatal, setShotFatal] = useState(false);
+  const [sampleUrl, setSampleUrl] = useState(""); // 대표 주소(상세페이지 배경용)
   const [popupNote, setPopupNote] = useState("");
 
   // 모바일 클릭 좌표는 모바일 레이아웃 기준 → 배경도 모바일 캡처를 써야 정확히 얹힌다.
@@ -73,7 +74,7 @@ export default function HeatmapStudio({
   const bgStale = bgAgeDays !== null && bgAgeDays >= 21;
   const bgAgeLabel = bgAgeDays === null ? "" : bgAgeDays <= 0 ? "오늘 촬영" : bgAgeDays === 1 ? "어제 촬영" : `${bgAgeDays}일 전 촬영`;
 
-  async function captureShot(dismissPopups = false) {
+  async function captureShot(dismissPopups = false, sampleUrl?: string) {
     setCapturing(true);
     setShotErr("");
     setShotFatal(false);
@@ -82,12 +83,13 @@ export default function HeatmapStudio({
       const r = await fetch(`/api/sites/${siteId}/screenshot`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ path, device: bgDevice, dismissPopups }),
+        body: JSON.stringify({ path, device: bgDevice, dismissPopups, sampleUrl: sampleUrl || undefined }),
       });
       const d = await r.json();
       if (!r.ok || !d.ok) {
-        // 422(=주소만으로 못 여는 페이지)는 다시 눌러도 절대 안 된다 → 재시도를 권하지 않는다.
-        if (r.status === 422 || d.reason === "redirected") setShotFatal(true);
+        // 422(주소만으로 못 여는 페이지)는 대표 주소 없이 재시도해도 소용없다.
+        // 단, 대표 주소를 넣었는데 실패한 것(400 등)은 다시 시도 가능하게 fatal로 잠그지 않는다.
+        if ((r.status === 422 || d.reason === "redirected") && !sampleUrl) setShotFatal(true);
         throw new Error(d.error || "캡처 실패");
       }
       if (dismissPopups) {
@@ -124,7 +126,10 @@ export default function HeatmapStudio({
     setShotFatal(false);
   }, [path]);
 
-  const fPoints = useMemo(() => (device === "ALL" ? points : points.filter((p) => p.device === device)), [points, device]);
+  // 정확도: 실제 화면 배경 위에는 그 화면 기기(bgDevice)의 클릭만 찍는다.
+  // (모바일 클릭은 모바일 레이아웃 기준 좌표라 데스크톱 배경에 얹으면 엉뚱한 위치가 된다.)
+  const plotDevice = shotReady && device === "ALL" ? bgDevice : device;
+  const fPoints = useMemo(() => (plotDevice === "ALL" ? points : points.filter((p) => p.device === plotDevice)), [points, plotDevice]);
   const fLabels = useMemo(
     () => (device === "ALL" ? clickLabels : clickLabels.filter((p) => p.device === device)),
     [clickLabels, device]
@@ -134,8 +139,8 @@ export default function HeatmapStudio({
     [gesturePoints, device]
   );
   const fMoves = useMemo(
-    () => (device === "ALL" ? movePoints : movePoints.filter((p) => p.device === device)),
-    [movePoints, device]
+    () => (plotDevice === "ALL" ? movePoints : movePoints.filter((p) => p.device === plotDevice)),
+    [movePoints, plotDevice]
   );
   const fSessions = useMemo(
     () => (device === "ALL" ? scrollSessions : scrollSessions.filter((s) => s.device === device)),
@@ -242,11 +247,32 @@ export default function HeatmapStudio({
               <b>{path}</b> 는 주소에 상품번호·글번호 같은 정보가 있어야 열리는 페이지입니다. FlowLens는 개인정보 보호를 위해 주소에서 그 부분을 떼고 저장하므로, 이 페이지의 실제 화면을 다시 열 수 없습니다.
               <br />
               엉뚱한 화면(홈·목록)을 배경으로 깔면 클릭 위치가 실제와 달라 잘못 읽게 되므로, <b>배경 없이 좌표만</b> 표시합니다. 클릭 데이터 자체는 정상입니다.
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #f0d98a" }}>
+                <b>대표 주소로 배경 만들기:</b> 이 페이지의 실제 주소(예: 상품 하나) 하나를 붙여넣으면 그 화면을 대표 배경으로 씁니다. 레이아웃이 같은 페이지들이라 정확히 얹힙니다.
+                <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                  <input
+                    value={sampleUrl}
+                    onChange={(e) => setSampleUrl(e.currentTarget.value)}
+                    placeholder="이 페이지의 실제 주소 (상품번호 등 포함)"
+                    className="field-inline"
+                    style={{ flex: 1, minWidth: 220, fontSize: 12.5 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn sm primary"
+                    disabled={capturing || !sampleUrl.trim()}
+                    onClick={() => captureShot(false, sampleUrl.trim())}
+                  >
+                    {capturing ? "만드는 중…" : "이 주소로 배경 만들기"}
+                  </button>
+                </div>
+                {shotErr && sampleUrl && <div className="small" style={{ color: "var(--red)", marginTop: 6 }}>{shotErr}</div>}
+              </div>
             </div>
           )}
-          {device === "ALL" && (deviceCounts.MOBILE ?? 0) > 0 && (
+          {device === "ALL" && shotReady && (deviceCounts.MOBILE ?? 0) > 0 && (
             <div className="notice small" style={{ marginTop: 8, background: "#fef9e7", borderColor: "#f0d98a", color: "#8a6d00" }}>
-              전체 보기는 <b>데스크톱 화면</b>을 배경으로 씁니다. 모바일은 화면 구성이 달라 위치가 어긋날 수 있으니, 위에서 <b>📱 모바일</b>을 선택하면 모바일 화면 위에 정확히 표시됩니다.
+              정확도를 위해 지금은 <b>{bgDevice === "MOBILE" ? "모바일" : "데스크톱"} 클릭만</b> 이 배경에 표시합니다(기기마다 화면 구성이 달라 좌표가 어긋나기 때문). 다른 기기는 위에서 <b>{bgDevice === "MOBILE" ? "🖥 데스크톱" : "📱 모바일"}</b>을 선택하세요.
             </div>
           )}
         </div>

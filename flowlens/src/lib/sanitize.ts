@@ -26,10 +26,14 @@ export function sanitizeUrl(raw: string): string {
   }
 }
 
-// 경로: query/hash 제거.
+// 경로: query/hash 제거 + 슬래시 정규화.
+// (선행·중복 슬래시를 하나로, 끝 슬래시 제거 — "//product/list/"·"/product/list" 가 같은 페이지로 합쳐지게)
 export function sanitizePath(raw: string): string {
   if (!raw) return "/";
-  return raw.split(/[?#]/)[0].slice(0, 200);
+  let p = raw.split(/[?#]/)[0];
+  p = "/" + p.replace(/^\/+/, "").replace(/\/{2,}/g, "/"); // 선행·중복 슬래시 정규화
+  p = p.replace(/(.)\/+$/, "$1"); // 끝 슬래시 제거(루트 "/"는 유지)
+  return p.slice(0, 200) || "/";
 }
 
 // referrer: 호스트명만 저장(전체 referrer URL 미저장).

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { loadSiteForUser } from "@/lib/site";
 import { captureFullPage, normPath } from "@/lib/screenshot";
+import { resolvePublicUrl } from "@/lib/diagnose";
 import { rateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let path = "/";
   let device: "DESKTOP" | "MOBILE" = "DESKTOP";
   let dismissPopups = false;
+  let sampleUrl = ""; // 파라미터 필요 페이지(상세·주문·게시글)의 대표 주소
   try {
     const ct = req.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
@@ -70,18 +72,47 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       path = cleanPath(b?.path ?? "/");
       device = cleanDevice(b?.device);
       dismissPopups = b?.dismissPopups === true;
+      sampleUrl = String(b?.sampleUrl || "").trim();
     } else {
       const form = await req.formData();
       path = cleanPath(String(form.get("path") || "/"));
       device = cleanDevice(String(form.get("device") || ""));
       dismissPopups = String(form.get("dismissPopups") || "") === "1";
+      sampleUrl = String(form.get("sampleUrl") || "").trim();
     }
   } catch {
     /* 기본값 */
   }
 
-  // 등록 도메인 기준 URL 구성 (도용 방지: 사용자가 임의 URL 못 넣게 site.domain 사용)
-  const target = `https://${site.domain}${path === "/" ? "/" : path}`;
+  const dHost = site.domain.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "").toLowerCase();
+
+  // 캡처 대상 URL 결정.
+  //  - 기본: 등록 도메인 + 경로 (도용 방지)
+  //  - 대표 주소(sampleUrl): 상세페이지처럼 ?상품번호=… 가 있어야 열리는 페이지의 실제 주소.
+  //    같은 도메인·같은 경로만 허용하고, 그 화면을 이 경로 그룹의 대표 배경으로 저장한다.
+  let target: string;
+  if (sampleUrl) {
+    let u: URL;
+    try {
+      u = new URL(/^https?:\/\//i.test(sampleUrl) ? sampleUrl : `https://${sampleUrl}`);
+    } catch {
+      return NextResponse.json({ ok: false, error: "주소 형식이 올바르지 않습니다." }, { status: 400 });
+    }
+    const sHost = u.hostname.replace(/^www\./, "").toLowerCase();
+    if (sHost !== dHost) {
+      return NextResponse.json({ ok: false, error: `등록한 도메인(${dHost})의 주소만 넣을 수 있습니다.` }, { status: 400 });
+    }
+    if (normPath(u.pathname) !== normPath(path)) {
+      return NextResponse.json({ ok: false, error: `이 페이지(${normPath(path)})와 경로가 다른 주소입니다.` }, { status: 400 });
+    }
+    const safe = await resolvePublicUrl(u.toString());
+    if (!safe) {
+      return NextResponse.json({ ok: false, error: "이 주소는 열 수 없습니다." }, { status: 400 });
+    }
+    target = safe.toString();
+  } else {
+    target = `https://${site.domain}${path === "/" ? "/" : path}`;
+  }
 
   try {
     const { buf, width, height, mime, finalUrl, dialog, popupsHidden } = await captureFullPage(target, device, { dismissPopups });
