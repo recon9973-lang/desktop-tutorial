@@ -570,10 +570,17 @@ button { font-family: inherit; cursor: pointer; }
 /* ===== 모던 쇼핑몰 목업 (퀸잇/무신사 톤) — 실사 상품사진은 추후 라이선스로 교체 ===== */
 .ml { color: var(--text); font-size: 12px; }
 .ml-nav { display: flex; align-items: center; gap: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
-.ml-logo { font-weight: 800; font-size: 15px; letter-spacing: -0.03em; color: var(--text); }
+.ml-logo { font-weight: 800; font-size: 15px; letter-spacing: -0.03em; color: var(--text); white-space: nowrap; flex: none; }
 .ml-menu { display: flex; gap: 12px; font-size: 11px; font-weight: 700; color: var(--text-2); }
 .ml-menu .on { color: var(--accent); }
 .ml-search { margin-left: auto; width: 180px; max-width: 34%; height: 26px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); }
+/* 좁은 화면: 목업 나비가 세로로 쪼개지지 않게 검색창을 숨기고 메뉴를 축소 */
+@media (max-width: 560px) {
+  .ml-nav { gap: 8px; }
+  .ml-menu { gap: 8px; font-size: 10px; }
+  .ml-search { display: none; }
+  .ml-ico { margin-left: auto; }
+}
 .ml-ico { display: flex; gap: 8px; }
 .ml-ico span { width: 20px; height: 20px; border-radius: 6px; background: var(--surface-2); }
 .ml-banners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
