@@ -95,6 +95,7 @@ export default async function Landing() {
             <a href="#service">기능</a>
             <a href="#why">왜 중요한가</a>
             <a href="#pricing">요금제</a>
+            <Link href="/blog">블로그</Link>
           </div>
           <div className="row">
             {user ? (
@@ -381,6 +382,7 @@ export default async function Landing() {
 
       <footer className="lp-footer">
         <div className="row" style={{ justifyContent: "center", gap: 14, marginBottom: 8 }}>
+          <Link href="/blog" style={{ color: "var(--text-2)" }}>블로그</Link>
           <Link href="/privacy" style={{ color: "var(--text-2)" }}>개인정보처리방침</Link>
           <Link href="/terms" style={{ color: "var(--text-2)" }}>이용약관</Link>
         </div>

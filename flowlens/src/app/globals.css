@@ -602,3 +602,39 @@ button { font-family: inherit; cursor: pointer; }
 .mlm-prod .th { height: 46px; border-radius: 7px; background: #f1f1f3 center/cover no-repeat; }
 .mlm-prod .ln { height: 6px; border-radius: 3px; background: var(--surface-2); margin-top: 5px; }
 .mlm-prod .ln.p { width: 60%; background: #dfe1e6; margin-top: 3px; }
+
+/* ---------- 블로그 ---------- */
+.blog-wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 72px; }
+.blog-head h1 { font-size: 34px; letter-spacing: -.03em; margin: 12px 0 8px; }
+.blog-head p { font-size: 15px; max-width: 60ch; }
+.blog-list { display: grid; gap: 14px; margin-top: 28px; }
+.blog-card { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; text-decoration: none; color: inherit; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.blog-card:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(20,25,40,.07); transform: translateY(-1px); }
+.blog-cat { display: inline-block; font-size: 11.5px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 999px; letter-spacing: .02em; }
+.blog-card h2 { font-size: 19px; letter-spacing: -.02em; margin: 10px 0 6px; line-height: 1.35; }
+.blog-desc { font-size: 14px; color: var(--text-2); margin: 0 0 10px; line-height: 1.6; }
+.blog-meta { font-size: 12.5px; color: var(--text-4); }
+
+/* 개별 글 */
+.post { max-width: 720px; margin: 0 auto; padding: 40px 20px 72px; }
+.post-head h1 { font-size: clamp(26px, 4vw, 34px); letter-spacing: -.03em; line-height: 1.25; margin: 12px 0 8px; text-wrap: balance; }
+.post-head .blog-cat { margin-top: 12px; }
+.post-meta { margin: 4px 0 0; }
+.post-body { margin-top: 28px; font-size: 16px; line-height: 1.8; color: var(--text); }
+.post-body > p:first-child { font-size: 18px; color: var(--text); font-weight: 500; line-height: 1.7; }
+.post-body h2 { font-size: 23px; letter-spacing: -.02em; margin: 40px 0 12px; padding-top: 6px; }
+.post-body h3 { font-size: 18px; margin: 26px 0 8px; }
+.post-body p { margin: 0 0 16px; }
+.post-body ul, .post-body ol { margin: 0 0 18px; padding-left: 22px; }
+.post-body li { margin: 6px 0; }
+.post-body b, .post-body strong { font-weight: 700; }
+.post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.post-body blockquote { margin: 20px 0; padding: 12px 18px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; color: var(--text-2); font-size: 15px; }
+.post-body blockquote p:last-child { margin: 0; }
+.post-body hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+.post-body table { width: 100%; border-collapse: collapse; margin: 8px 0 22px; font-size: 14.5px; display: block; overflow-x: auto; }
+.post-body th, .post-body td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; vertical-align: top; }
+.post-body thead th { background: var(--surface-2); font-weight: 700; font-size: 13.5px; }
+.post-cta { margin-top: 44px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; }
+.post-cta .big { font-size: 17px; font-weight: 800; letter-spacing: -.02em; margin: 0 0 3px; }
+@media (max-width: 560px) { .post-cta { flex-direction: column; align-items: flex-start; } }
