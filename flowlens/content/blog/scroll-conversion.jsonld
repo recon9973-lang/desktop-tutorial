@@ -1,0 +1,51 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "스크롤맵으로 첫 화면 이탈 줄이는 법 — 방문자는 어디까지 볼까",
+      "description": "스크롤맵으로 방문자가 어디까지 보는지 확인해 첫 화면과 CTA 배치를 개선하고 전환을 높이는 방법.",
+      "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FlowLens",
+        "url": "https://flow.seokorea.org",
+        "sameAs": ["https://pf.kakao.com/_jxjxdcxj"],
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+82-1661-4142", "email": "venomad@naver.com", "contactType": "customer service" }
+      },
+      "datePublished": "2026-07-22",
+      "inLanguage": "ko",
+      "keywords": "스크롤맵, 첫 화면 이탈, 전환율 개선, 행동 분석, 히트맵, 이탈률"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "스크롤맵은 방문자가 얼마나 있어야 신뢰할 수 있나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "일반적으로 페이지별로 수백 세션 이상 쌓였을 때 패턴이 안정적으로 보입니다. 방문이 적은 페이지는 기간을 늘려 판단하세요." }
+        },
+        {
+          "@type": "Question",
+          "name": "첫 화면은 어디까지를 말하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "스크롤 없이 처음 보이는 영역입니다. 화면 크기·기기에 따라 다르므로, 모바일·PC를 나눠서 보는 것이 정확합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "CTA를 무조건 위로 올리면 되나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "도달률만 보면 위가 유리하지만, 방문자가 아직 설득되기 전이면 전환이 안 될 수 있습니다. 위치를 바꾼 뒤 전후 비교로 실제 전환을 확인하는 것이 중요합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "스크롤맵과 클릭맵 중 뭐부터 보나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "대개 스크롤맵으로 도달 여부를 먼저 확인한 뒤, 도달한 구간에서 클릭맵으로 무엇을 누르는지 봅니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "콘텐츠가 긴 페이지는 어떻게 하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "급감 구간을 찾아 그 앞에 핵심 요약이나 CTA를 배치하고, 지루한 구간은 줄이거나 순서를 바꿉니다." }
+        }
+      ]
+    }
+  ]
+}
