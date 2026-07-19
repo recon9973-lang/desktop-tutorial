@@ -50,7 +50,7 @@ export default async function InstallPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <InstallClient siteKey={site.siteKey} />
+      <InstallClient siteKey={site.siteKey} siteId={site.id} />
 
       {platform && (
         <div className="notice" style={{ background: "#eef5ff", borderColor: "#c9dcff" }}>
