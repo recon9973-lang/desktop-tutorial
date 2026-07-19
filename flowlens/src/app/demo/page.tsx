@@ -18,7 +18,7 @@ export default async function DemoPage() {
       <div className="brand" style={{ marginBottom: 8 }}><span className="dot" /> FlowLens 추적 데모</div>
       <div className="notice" style={{ marginBottom: 20 }}>
         이 페이지에는 실제 추적 스크립트(<code>/t.js</code>)가 설치되어 있습니다. 아래 요소를 클릭·스크롤하면
-        <b> {site?.name}</b> 사이트로 이벤트가 수집됩니다. 대시보드 → 설치 탭에서 이벤트 수가 늘어나는 것을 확인하세요.
+        그 행동이 <b>실시간으로 감지</b>됩니다(위 카운터). 이름·연락처 등 입력값과 IP는 수집하지 않습니다.
       </div>
 
       <DemoLiveCount />
