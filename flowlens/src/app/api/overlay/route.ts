@@ -51,9 +51,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, mode: "scroll", site: site.name, bands, avgFold }, { status: 200, headers });
   }
 
+  // 기기 필터: 실제 페이지 위에 얹으므로, 보는 기기(예: 데스크톱)의 클릭만 보여야 정확하다.
+  // (모바일 클릭은 모바일 레이아웃 좌표라 데스크톱 화면에 얹으면 어긋난다.)
+  const device = (url.searchParams.get("device") || "").toUpperCase();
   const raw = await getHeatmapPoints(site.id, path, 4000, range);
   const points = raw
     .filter((p) => (gesture === "all" ? true : ["click", "rage_click", "dead_click", "cta_click"].includes(p.type)))
+    .filter((p) => !device || device === "ALL" || p.device === device)
     .map((p) => ({ x: p.x, y: p.y, type: p.type }));
   return NextResponse.json({ ok: true, mode: "heat", site: site.name, count: points.length, points }, { status: 200, headers });
 }

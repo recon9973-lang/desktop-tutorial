@@ -2,13 +2,14 @@
 const $ = (id) => document.getElementById(id);
 
 // 저장된 설정 불러오기
-chrome.storage.local.get(["origin", "siteKey", "token", "gesture", "mode", "period"], (c) => {
+chrome.storage.local.get(["origin", "siteKey", "token", "gesture", "mode", "period", "device"], (c) => {
   if (c.origin) $("origin").value = c.origin;
   if (c.siteKey) $("siteKey").value = c.siteKey;
   if (c.token) $("token").value = c.token;
   if (c.gesture) $("gesture").value = c.gesture;
   if (c.mode) $("mode").value = c.mode;
   if (c.period) $("period").value = c.period;
+  if (c.device) $("device").value = c.device;
 });
 
 $("toggle").addEventListener("click", async () => {
@@ -18,11 +19,12 @@ $("toggle").addEventListener("click", async () => {
   const gesture = $("gesture").value;
   const mode = $("mode").value;
   const period = $("period").value;
+  const device = $("device").value;
   if (!origin || !siteKey || !token) {
     $("status").textContent = "FlowLens 주소 · 사이트 키 · 오버레이 토큰을 모두 입력하세요.";
     return;
   }
-  await chrome.storage.local.set({ origin, siteKey, token, gesture, mode, period });
+  await chrome.storage.local.set({ origin, siteKey, token, gesture, mode, period, device });
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) return;
@@ -30,7 +32,7 @@ $("toggle").addEventListener("click", async () => {
   $("status").textContent = "불러오는 중…";
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content.js"] });
-    const res = await chrome.tabs.sendMessage(tab.id, { type: "FL_TOGGLE", origin, siteKey, token, gesture, mode, period });
+    const res = await chrome.tabs.sendMessage(tab.id, { type: "FL_TOGGLE", origin, siteKey, token, gesture, mode, period, device });
     if (res?.on) $("status").textContent = mode === "scroll" ? "스크롤맵 표시 중" : `히트맵 표시 중 · 클릭 ${res.count ?? 0}개`;
     else $("status").textContent = "표시를 껐습니다.";
   } catch (e) {

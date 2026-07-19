@@ -102,7 +102,7 @@
     }
     const mode = msg.mode || "heat";
     // token: 사이트별 비밀 토큰 (쿠키는 SameSite=Lax라 확장에서 전달되지 않으므로 토큰으로 인증)
-    const u = `${msg.origin}/api/overlay?site=${encodeURIComponent(msg.siteKey)}&token=${encodeURIComponent(msg.token || "")}&path=${encodeURIComponent(location.pathname)}&mode=${mode}&gesture=${msg.gesture}&period=${msg.period || 0}`;
+    const u = `${msg.origin}/api/overlay?site=${encodeURIComponent(msg.siteKey)}&token=${encodeURIComponent(msg.token || "")}&path=${encodeURIComponent(location.pathname)}&mode=${mode}&gesture=${msg.gesture}&period=${msg.period || 0}&device=${encodeURIComponent(msg.device || "DESKTOP")}`;
     fetch(u)
       .then((r) => r.json())
       .then((data) => {
