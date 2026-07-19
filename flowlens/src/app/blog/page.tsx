@@ -2,8 +2,9 @@ import Link from "next/link";
 import { getAllPosts } from "@/lib/blog";
 
 export const metadata = {
-  title: "블로그 — FlowLens",
+  title: "블로그",
   description: "히트맵·행동 분석으로 홈페이지 전환율과 매출을 올리는 실무 가이드. FlowLens 활용법과 개선 노하우를 정리합니다.",
+  alternates: { canonical: "/blog" },
 };
 
 export default function Blog() {

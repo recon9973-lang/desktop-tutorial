@@ -1,0 +1,45 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "상담신청 폼 이탈 줄이는 법 — 문의 수를 늘리는 5가지 점검",
+      "description": "히트맵·행동 분석으로 상담신청 폼의 이탈 지점을 찾아 문의 수를 늘리는 5가지 실무 점검.",
+      "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
+      "publisher": { "@type": "Organization", "name": "FlowLens", "url": "https://flow.seokorea.org" },
+      "datePublished": "2026-07-20",
+      "inLanguage": "ko",
+      "keywords": "상담신청 폼, 폼 이탈률, 전환율 개선, 행동 분석, 히트맵, 문의 전환"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "상담신청 폼 항목은 몇 개가 적당한가요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "정답은 없지만, 일반적으로 처음 단계는 이름·연락처 정도로 최소화하고 추가 정보는 상담 과정에서 받는 편이 완료율에 유리합니다. 자사 데이터로 항목 수를 줄여가며 전후 비교하는 것이 가장 정확합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "폼 이탈이 많은지 어떻게 아나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "스크롤맵으로 폼까지 도달한 비율을, 클릭맵·무브맵으로 어느 입력칸에서 상호작용이 끊기는지를 봅니다. 접속 통계의 전체 이탈률만으로는 폼 구간의 문제가 잘 드러나지 않습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "폼 분석을 하면 방문자의 입력 내용이 저장되나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "FlowLens는 입력값(이름·전화·내용)을 수집하지 않고, 어느 칸에 들어갔다 나갔는지 같은 상호작용 신호만 봅니다. 비밀번호·민감 항목은 설계상 제외됩니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "좌절 클릭이 무엇인가요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "같은 위치를 짧은 시간에 반복해서 빠르게 누르는 행동입니다. 버튼이 안 눌리거나 반응이 없을 때 나타나며, 폼에서는 제출 오류·불명확한 안내의 신호일 때가 많습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "모바일과 PC 폼을 따로 봐야 하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "네. 입력 방식과 화면이 달라 이탈 지점도 다릅니다. 특히 상담 문의는 모바일 비중이 높은 경우가 많아 모바일 기준 점검이 중요합니다." }
+        }
+      ]
+    }
+  ]
+}

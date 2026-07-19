@@ -57,6 +57,24 @@ export function getAllPosts(): PostMeta[] {
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
+// 내부링크(관련 글): 같은 카테고리를 우선하고, 키워드가 겹치는 순으로 정렬.
+export function getRelatedPosts(slug: string, limit = 3): PostMeta[] {
+  const all = getAllPosts();
+  const current = all.find((p) => p.slug === slug);
+  if (!current) return all.filter((p) => p.slug !== slug).slice(0, limit);
+  const kw = new Set(current.keywords || []);
+  return all
+    .filter((p) => p.slug !== slug)
+    .map((p) => {
+      const overlap = (p.keywords || []).filter((k) => kw.has(k)).length;
+      const sameCat = p.category && p.category === current.category ? 1 : 0;
+      return { p, score: sameCat * 10 + overlap };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((x) => x.p);
+}
+
 export function getPost(slug: string): { meta: PostMeta; html: string; jsonld: string | null } | null {
   const file = path.join(DIR, `${slug}.md`);
   if (!fs.existsSync(file)) return null;
@@ -64,7 +82,9 @@ export function getPost(slug: string): { meta: PostMeta; html: string; jsonld: s
   const { meta, body } = parseFrontMatter(raw);
   // 본문의 첫 H1(제목)은 페이지에서 별도 렌더하므로 제거해 중복을 막는다.
   const bodyNoH1 = body.replace(/^\s*#\s+.*(\r?\n|$)/, "");
-  const html = marked.parse(bodyNoH1, { async: false }) as string;
+  let html = marked.parse(bodyNoH1, { async: false }) as string;
+  // 외부(http) 링크는 새 탭 + 안전 rel. 내부 링크(/blog 등)는 그대로 둔다.
+  html = html.replace(/<a href="(https?:\/\/[^"]+)"/g, '<a href="$1" target="_blank" rel="noopener noreferrer"');
   const ldFile = path.join(DIR, `${slug}.jsonld`);
   const jsonld = fs.existsSync(ldFile) ? fs.readFileSync(ldFile, "utf8") : null;
   return { meta: { slug, keywords: [], ...(meta as object) } as unknown as PostMeta, html, jsonld };
