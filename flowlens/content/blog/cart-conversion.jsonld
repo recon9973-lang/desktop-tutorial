@@ -1,0 +1,51 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "장바구니 이탈 줄이는 법 — 결제 직전에서 놓치지 않기",
+      "description": "히트맵·행동 분석으로 장바구니·결제 단계의 이탈 지점을 찾아 쇼핑몰 결제 전환을 높이는 방법.",
+      "author": { "@type": "Organization", "name": "주식회사 베놈 (FlowLens)" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FlowLens",
+        "url": "https://flow.seokorea.org",
+        "sameAs": ["https://pf.kakao.com/_jxjxdcxj"],
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+82-1661-4142", "email": "venomad@naver.com", "contactType": "customer service" }
+      },
+      "datePublished": "2026-07-23",
+      "inLanguage": "ko",
+      "keywords": "장바구니 이탈, 결제 전환, 쇼핑몰 전환율, 행동 분석, 히트맵, 이탈률"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "장바구니 이탈률은 어디서 보나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "퍼널에서 장바구니→결제→완료 단계별 이탈을 봅니다. 접속 통계의 전체 이탈률만으로는 결제 구간 문제가 잘 드러나지 않습니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "결제 단계에서 개인정보(카드번호)가 수집되나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "FlowLens는 카드번호·입력값을 수집하지 않고, 어느 칸에 들어갔다 나갔는지 같은 상호작용 신호만 봅니다. 비밀번호·결제 정보는 설계상 제외됩니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "비회원 결제를 꼭 열어야 하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "정답은 없지만, 회원가입 강제가 큰 마찰이 되는 경우가 많습니다. 퍼널에서 그 구간 이탈이 크면 비회원 결제를 열어 전후 비교로 확인해 보세요." }
+        },
+        {
+          "@type": "Question",
+          "name": "모바일 결제가 더 많이 이탈하나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "쇼핑몰은 모바일 비중이 높은 경우가 많고, 작은 화면에서 입력·버튼이 불편하면 이탈이 큽니다. 모바일 히트맵 기준으로 별도 점검이 중요합니다." }
+        },
+        {
+          "@type": "Question",
+          "name": "배송비는 언제 보여주는 게 좋나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "가능한 한 일찍(상품·장바구니 단계) 명확히 알리는 편이 결제 단계의 이탈을 줄입니다. 예상 못 한 비용이 마지막에 나타나면 신뢰가 무너집니다." }
+        }
+      ]
+    }
+  ]
+}
