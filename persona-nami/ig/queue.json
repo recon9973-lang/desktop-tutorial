@@ -112,9 +112,9 @@
       "hook": "네이버도 이제 '답'을 보여줘요 (스마트블록)",
       "img": "persona-nami/ig/post8.png",
       "cap": "persona-nami/ig/post8.txt",
-      "published": false,
-      "publishedAt": null,
-      "mediaId": null,
+      "published": true,
+      "publishedAt": "2026-07-20T13:50:14.864Z",
+      "mediaId": "18100833460930548",
       "images": [
         "persona-nami/ig/post8.png",
         "persona-nami/ig/post8-2.png",
