@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-13T00:02:21.276Z",
+  "updated": "2026-07-20T00:02:21.230Z",
   "model": {
     "answer": "claude-opus-4-8",
     "judge": "claude-haiku-4-5"
@@ -17,14 +17,32 @@
   },
   "overall": {
     "passRate": 100,
-    "avgGrounding": 4.92,
-    "avgCorrectness": 4.92,
-    "avgCitation": 4.92,
+    "avgGrounding": 4.75,
+    "avgCorrectness": 4.71,
+    "avgCitation": 4.75,
     "hallucinationRate": 0
   },
   "weakestGroups": [
     {
       "group": "경험담·전후사진",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "골드",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "의료법 제3조",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "과장·최상급",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
@@ -36,28 +54,10 @@
       "avgCorrectness": 4.5
     },
     {
-      "group": "사전심의 예외(정보성)",
+      "group": "의료법 제56조",
       "n": 2,
       "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "심의대상 매체",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "심의필·유효기간",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "과장·최상급",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
+      "avgCorrectness": 4.5
     }
   ],
   "failures": [],
@@ -66,10 +66,34 @@
       "group": "경험담·전후사진",
       "n": 2,
       "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "골드",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "의료법 제3조",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "과장·최상급",
+      "n": 2,
+      "passRate": 100,
       "avgCorrectness": 4.5
     },
     {
       "group": "할인·유인",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "의료법 제56조",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
@@ -88,12 +112,6 @@
     },
     {
       "group": "심의필·유효기간",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "과장·최상급",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
@@ -129,25 +147,7 @@
       "avgCorrectness": 5
     },
     {
-      "group": "골드",
-      "n": 1,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "의료법 제56조",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
       "group": "의료법 제57조",
-      "n": 1,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "의료법 제3조",
       "n": 1,
       "passRate": 100,
       "avgCorrectness": 5
