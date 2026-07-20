@@ -26,6 +26,7 @@
 ### 겉·속 통일
 - `index.html`의 `_AI_HERO` 맵이 정적 글의 **썸네일(`_postThumbOf`)과 본문 히어로(`openBlogPost`)를 동시에 구동**한다. 따라서 한 이미지로 겉(썸네일)·속(본문)이 자동 통일된다.
 - 자동포스트는 크론 생성 이미지(`content/images/`)를 본문·썸네일에 공용으로 사용한다.
+- **자동포스트 이미지 = 볼드 카드뉴스**(AI 사진 아님). 크론(`lib/image-generator.js`)은 `BLOG_IMAGE_MODE=card`(기본)로 DALL-E를 호출하지 않고 `<postId>-card.jpg` 경로만 지정하고, 발행 직후 `.github/workflows/render-blog-cards.yml`가 `tools/cardgen`(Playwright+Pretendard)으로 렌더·커밋한다. AI 사진 거부감·깨진 글자 제거 + 비용 0 + 그리드 통일. 되돌리려면 `BLOG_IMAGE_MODE=dalle`.
 
 ### 자체저장 파이프라인 (샌드박스 egress 차단 우회)
 작업 컨테이너는 외부 CDN 다운로드가 막혀 있어, 생성 이미지를 저장소로 커밋하려면 GitHub Actions를 쓴다.
