@@ -340,6 +340,41 @@
     { key: 'speed', label: '속도(CWV)', icon: '⚡', color: '#f59e0b' }
   ];
 
+  // 실패(미충족) 항목에 보여줄 '바로 붙여넣는' 수정 코드 스니펫. 검사 항목명(it[0])이 키.
+  // <head> 삽입/robots.txt/본문 예시를 그대로 복사할 수 있게 최소·정확하게 유지한다.
+  var FIX = {
+    '제목(title) 태그': '<!-- <head> 안, 페이지당 1개 · 10~60자 -->\n<title>병원명 · 지역 · 진료과목 핵심키워드</title>',
+    '메타 디스크립션': '<!-- <head> 안 · 50~160자 · 페이지마다 고유 -->\n<meta name="description" content="지역 진료과목 병원 소개 — 핵심 진료·특장점을 한 문장으로 요약">',
+    'H1 대표 제목': '<!-- 페이지 대표 제목, 페이지당 1개만 -->\n<h1>지역 진료과목 — 병원명</h1>',
+    '이미지 ALT 텍스트': '<!-- 모든 의미있는 이미지에 alt -->\n<img src="clinic.jpg" alt="OO병원 임플란트 상담 장면">',
+    '의미있는 링크 텍스트': '<!-- "여기 클릭"·"더보기" 대신 서술형 -->\n<a href="/implant">임플란트 진료 안내 보기</a>',
+    '서술형 URL': '좋음: /implant-consult\n피함: /page?id=12983  (임의 숫자·세션ID)',
+    'HTTPS 보안 연결': '# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)',
+    '검색로봇 수집 허용': '# robots.txt — Googlebot·Yeti(네이버) 차단 금지\nUser-agent: *\nAllow: /',
+    '인덱싱 허용': '<!-- noindex 제거 또는 index로 -->\n<meta name="robots" content="index, follow">',
+    'Canonical 태그': '<!-- <head> 안, 이 페이지의 대표 주소 -->\n<link rel="canonical" href="https://도메인/현재-경로">',
+    'Viewport(모바일)': '<!-- <head> 최상단 -->\n<meta name="viewport" content="width=device-width, initial-scale=1">',
+    'HTML lang 속성': '<html lang="ko">',
+    '구조화 데이터': '<script type="application/ld+json">\n{\n  "@context":"https://schema.org",\n  "@type":"MedicalClinic",\n  "name":"OO병원",\n  "address":"서울시 ...",\n  "telephone":"02-123-4567"\n}\n</script>',
+    'Open Graph 태그': '<meta property="og:title" content="OO병원 — 지역 진료과목">\n<meta property="og:description" content="핵심 진료 소개">\n<meta property="og:image" content="https://도메인/og.jpg">',
+    'sitemap.xml 선언': '# robots.txt 마지막 줄\nSitemap: https://도메인/sitemap.xml',
+    '파비콘': '<link rel="icon" href="/favicon.ico">',
+    'robots.txt 존재': '# /robots.txt 파일 생성\nUser-agent: *\nAllow: /\nSitemap: https://도메인/sitemap.xml',
+    '저자·의료진 정보': '<!-- 작성/감수 의료진 명시 (YMYL 신뢰) -->\n<p class="byline">감수: OOO 대표원장 · OO과 전문의</p>',
+    '조직·병원 정보': '<script type="application/ld+json">\n{"@context":"https://schema.org","@type":"Organization",\n "name":"OO병원","url":"https://도메인","telephone":"02-123-4567"}\n</script>',
+    '발행·수정일(최신성)': '<time datetime="2026-07-20">2026년 7월 20일 게시</time>\n<!-- 또는 JSON-LD datePublished / dateModified -->',
+    '연락처·접근성': '<a href="tel:0212345678">02-1234-5678</a>\n<address>서울시 OO구 OO로 00</address>',
+    '엔티티 신호(sameAs)': '<!-- Organization JSON-LD 안 -->\n"sameAs":["https://blog.naver.com/OO","https://www.instagram.com/OO"]',
+    '소제목 구조': '<h2>진료 안내</h2>\n<h3>임플란트</h3>\n<!-- 긴 본문은 H2/H3로 구획 -->',
+    '문단 가독성': '<!-- 500자 넘는 문단은 2~3개로 분할, 핵심은 목록으로 -->',
+    '스캔 구조(목록·표)': '<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>'
+  };
+  var fixFor = function (name) {
+    if (FIX[name]) return FIX[name];
+    if (/포커스 키워드/.test(name)) return '<!-- 타깃 키워드를 제목·H1·첫 문단·메타에 자연스럽게 1~2회 -->';
+    return '';
+  };
+
   function gradeFor(total, max) {
     var pct = max ? total / max : 0;
     if (pct >= 0.9) return { label: '플래티넘', color: '#7c3aed', desc: '최상위 SEO' };
@@ -352,7 +387,7 @@
   function buildResult(url, domain, isHttps, isSPA, checks, psi) {
     var categories = CAT_DEF.map(function (cat) {
       var items = checks[cat.key].map(function (it) {
-        return { name: it[0], desc: it[1], points: it[2], pass: it[3], source: it[4] };
+        return { name: it[0], desc: it[1], points: it[2], pass: it[3], source: it[4], fix: fixFor(it[0]) };
       });
       var max = items.reduce(function (s, it) { return s + it.points; }, 0);
       var pending = items.some(function (it) { return it.pass === null; });
@@ -610,10 +645,19 @@
             '<span style="color:#9ca3af;font-size:12px">—/' + it.points + '</span></div>';
         }
         var ok = it.pass;
+        // 실패(미충족) 항목엔 '문제 진단 + 바로 붙여넣는 수정 코드'를 항목 하단에 노출.
+        var codeBlock = '';
+        if (!ok && it.fix) {
+          codeBlock = '<div style="margin:2px 0 8px 27px">' +
+            '<div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:4px">🔧 이렇게 고치세요 — 아래 코드를 삽입</div>' +
+            '<pre style="margin:0;background:#0f172a;color:#e2e8f0;border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.55;overflow-x:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">' +
+            esc(it.fix) + '</pre></div>';
+        }
         return '<div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid #f1f3f7">' +
           '<span style="flex-shrink:0;width:18px;height:18px;border-radius:50%;font-size:11px;text-align:center;line-height:18px;color:#fff;background:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '✓' : '✗') + '</span>' +
           '<span style="flex:1;font-size:13px"><strong style="font-weight:' + (ok ? 600 : 700) + '">' + esc(it.name) + '</strong>' + badge + ' <span style="color:#64748b">— ' + esc(it.desc) + '</span></span>' +
-          '<span style="font-size:12px;font-weight:700;color:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '+' + it.points : '0/' + it.points) + '</span></div>';
+          '<span style="font-size:12px;font-weight:700;color:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '+' + it.points : '0/' + it.points) + '</span></div>' +
+          codeBlock;
       }).join('');
       return '<div style="border:1px solid #e3e8ee;border-radius:12px;overflow:hidden;margin-bottom:12px">' +
         '<div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#f8fafc">' +
