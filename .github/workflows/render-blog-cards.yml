@@ -1,0 +1,68 @@
+name: Render blog cards
+
+# 자동발행(Scheduled Auto-Publish) 직후 실행되어, 카드 이미지가 아직 없는 신규 글을
+# tools/cardgen(Playwright + Pretendard)으로 렌더해 jpg+webp로 커밋한다.
+# 크론은 BLOG_IMAGE_MODE=card(기본)로 DALL-E를 호출하지 않고 카드 파일 경로만 지정 →
+# 실제 이미지는 이 워크플로가 생성한다(AI 사진 거부감 제거 · DALL-E 비용 0 · 그리드 통일).
+
+on:
+  workflow_run:
+    workflows: ["Scheduled Auto-Publish"]
+    types: [completed]
+  workflow_dispatch: {}
+  schedule:
+    - cron: '20 * * * *'   # 안전망: 매시 20분(웹훅 누락 대비)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-blog-cards
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install renderer deps
+        working-directory: tools/cardgen
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Install Pillow (webp/jpg 변환)
+        run: python3 -m pip install --quiet --user pillow
+
+      - name: Render missing cards
+        working-directory: tools/cardgen
+        run: node render.mjs
+
+      - name: Convert PNG → jpg + webp
+        working-directory: tools/cardgen
+        run: python3 convert.py out ../../venom-wordpress/preview/content/images
+
+      - name: Commit new card images
+        run: |
+          git config user.name "venom-cardgen[bot]"
+          git config user.email "venom-cardgen@users.noreply.github.com"
+          git add venom-wordpress/preview/content/images
+          if git diff --cached --quiet; then
+            echo "새 카드 없음 — 커밋 생략."
+            exit 0
+          fi
+          COUNT=$(git diff --cached --name-only | grep -c '\.jpg$' || true)
+          git commit -m "auto(card): 신규 블로그 카드뉴스 이미지 ${COUNT}건 생성 [skip ci]"
+          # 자동발행 등 동시 커밋과 경합 시 rebase 후 재시도
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin HEAD:main && { echo "push OK"; break; }
+            echo "push 재시도 $i"; sleep $((i*3))
+          done

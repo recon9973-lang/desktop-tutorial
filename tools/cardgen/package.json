@@ -1,0 +1,13 @@
+{
+  "name": "venom-cardgen",
+  "private": true,
+  "version": "1.0.0",
+  "description": "VENOM 자동블로그 카드뉴스 이미지 렌더러 (Playwright + Pretendard)",
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}

@@ -19,6 +19,19 @@ function detectExt(buf) {
 // 항상 { url, githubPath, error } 형태로 반환 — 실패 시 error에 사유를 담아
 // 호출부(API 응답)에서 화면에 표시할 수 있게 한다(조용한 실패 방지).
 async function generateAndSaveImage(prompt, postId, index = 0, title = '') {
+  // 카드뉴스 모드(기본): DALL-E를 호출하지 않고 결정적 카드 파일 경로만 지정한다.
+  // 실제 이미지는 발행 직후 GitHub Actions(render-blog-cards.yml)가 tools/cardgen으로
+  // 렌더·커밋한다 → AI 사진 거부감 제거 + DALL-E 비용 0 + 그리드 영구 통일.
+  // 되돌리려면 Vercel 환경변수 BLOG_IMAGE_MODE=dalle 로 설정.
+  const IMAGE_MODE = process.env.BLOG_IMAGE_MODE || 'card';
+  if (IMAGE_MODE === 'card') {
+    const filename = index === 0 ? `${postId}-card.jpg` : `${postId}-card-${index}.jpg`;
+    const githubPath = `venom-wordpress/preview/content/images/${filename}`;
+    const rawUrl = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/venom-wordpress/preview/content/images/${encodeURIComponent(filename)}`;
+    // pending: 파일은 아직 없고 Actions가 곧 생성한다는 표시(호출부 로깅용).
+    return { url: rawUrl, githubPath, error: null, pending: true };
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return { url: null, githubPath: null, error: 'OPENAI_API_KEY 미설정(Vercel 환경변수)' };
 
