@@ -5533,6 +5533,552 @@
             "desc": "즉시 조치 필요"
           }
         }
+      },
+      {
+        "date": "2026-07-22",
+        "pct": 53,
+        "total": 80,
+        "max": 151,
+        "grade": "개선필요",
+        "cats": [
+          {
+            "key": "content",
+            "label": "콘텐츠 & 메타",
+            "score": 36,
+            "max": 42,
+            "pct": 86,
+            "pending": false
+          },
+          {
+            "key": "tech",
+            "label": "기술·크롤링",
+            "score": 35,
+            "max": 53,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "search",
+            "label": "검색 노출 강화",
+            "score": 0,
+            "max": 16,
+            "pct": 0,
+            "pending": false
+          },
+          {
+            "key": "trust",
+            "label": "신뢰·전문성(E-E-A-T)",
+            "score": 0,
+            "max": 16,
+            "pct": 0,
+            "pending": false
+          },
+          {
+            "key": "writing",
+            "label": "콘텐츠 최적화",
+            "score": 5,
+            "max": 7,
+            "pct": 71,
+            "pending": false
+          },
+          {
+            "key": "security",
+            "label": "보안(응답 헤더)",
+            "score": 4,
+            "max": 17,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "score": 3,
+            "max": 10,
+            "pct": 30,
+            "pending": false
+          }
+        ],
+        "psi": {
+          "seo": 92,
+          "perf": 61,
+          "accessibility": 91,
+          "bestPractices": 88
+        },
+        "full": {
+          "version": "1.7.0",
+          "url": "https://venomad.com",
+          "domain": "venomad.com",
+          "isHttps": true,
+          "isSPA": false,
+          "categories": [
+            {
+              "key": "content",
+              "label": "콘텐츠 & 메타",
+              "icon": "📝",
+              "color": "#533afd",
+              "max": 42,
+              "score": 36,
+              "pending": false,
+              "pct": 86,
+              "items": [
+                {
+                  "name": "제목(title) 태그",
+                  "desc": "검색결과 제목 — title 태그 없음 — 추가 필요",
+                  "points": 12,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 페이지당 1개 · 10~60자 -->\n<title>병원명 · 지역 · 진료과목 핵심키워드</title>"
+                },
+                {
+                  "name": "메타 디스크립션",
+                  "desc": "검색결과 설명문 — 메타 디스크립션 없음 — 검색 스니펫에 직접 영향",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안 · 50~160자 · 페이지마다 고유 -->\n<meta name=\"description\" content=\"지역 진료과목 병원 소개 — 핵심 진료·특장점을 한 문장으로 요약\">"
+                },
+                {
+                  "name": "H1 대표 제목",
+                  "desc": "H1 없음 — 페이지 대표 제목 추가 필요",
+                  "points": 6,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<!-- 페이지 대표 제목, 페이지당 1개만 -->\n<h1>지역 진료과목 — 병원명</h1>"
+                },
+                {
+                  "name": "이미지 ALT 텍스트",
+                  "desc": "이미지 대체 텍스트 (이미지 없음)",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 모든 의미있는 이미지에 alt -->\n<img src=\"clinic.jpg\" alt=\"OO병원 임플란트 상담 장면\">"
+                },
+                {
+                  "name": "의미있는 링크 텍스트",
+                  "desc": "서술형 앵커·내부링크 — \"여기 클릭\" 류 지양",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- \"여기 클릭\"·\"더보기\" 대신 서술형 -->\n<a href=\"/implant\">임플란트 진료 안내 보기</a>"
+                },
+                {
+                  "name": "서술형 URL",
+                  "desc": "URL에 의미있는 단어 — 홈 경로 — 적정",
+                  "points": 4,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "좋음: /implant-consult\n피함: /page?id=12983  (임의 숫자·세션ID)"
+                }
+              ]
+            },
+            {
+              "key": "tech",
+              "label": "기술·크롤링",
+              "icon": "⚙️",
+              "color": "#06b6d4",
+              "max": 53,
+              "score": 35,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — Google page experience 신뢰 신호",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "검색로봇 수집 허용",
+                  "desc": "robots.txt가 Googlebot·Yeti 차단 안 함 — 크롤 가능성",
+                  "points": 9,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# robots.txt — Googlebot·Yeti(네이버) 차단 금지\nUser-agent: *\nAllow: /"
+                },
+                {
+                  "name": "인덱싱 허용",
+                  "desc": "meta robots noindex 미설정 — 색인 가능성",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- noindex 제거 또는 index로 -->\n<meta name=\"robots\" content=\"index, follow\">"
+                },
+                {
+                  "name": "Canonical 태그",
+                  "desc": "중복 URL 정규화 — 대표 주소 지정",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 이 페이지의 대표 주소 -->\n<link rel=\"canonical\" href=\"https://도메인/현재-경로\">"
+                },
+                {
+                  "name": "Viewport(모바일)",
+                  "desc": "모바일 반응형 메타 — 모바일 우선 인덱싱",
+                  "points": 8,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 최상단 -->\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                },
+                {
+                  "name": "HTML lang 속성",
+                  "desc": "페이지 언어 명시 — 검색엔진 언어 인식",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<html lang=\"ko\">"
+                },
+                {
+                  "name": "HTTP 압축",
+                  "desc": "gzip/br 압축 — 전송량↓·로딩↑ (미적용)",
+                  "points": 4,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 서버/CDN에서 gzip 또는 brotli 압축 켜기\n# Nginx: gzip on;  ·  Vercel/Cloudflare: 기본 제공"
+                },
+                {
+                  "name": "차세대 이미지(WebP)",
+                  "desc": "WebP/AVIF 사용 — 이미지 용량↓·속도↑",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<picture>\n  <source srcset=\"img.webp\" type=\"image/webp\">\n  <img src=\"img.jpg\" alt=\"설명\">\n</picture>"
+                },
+                {
+                  "name": "이미지 지연로딩",
+                  "desc": "loading=\"lazy\" — 초기 로딩 속도 개선 (이미지 없음)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<img src=\"img.webp\" alt=\"설명\" loading=\"lazy\">"
+                },
+                {
+                  "name": "이미지 최적화",
+                  "desc": "과다 이미지·대용량 인라인 점검 (이미지 없음)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 대용량 인라인(data:base64)은 외부 파일로, 이미지 수는 필요한 만큼만 -->\n<img src=\"/img/photo.webp\" alt=\"설명\" loading=\"lazy\" width=\"800\" height=\"600\">"
+                }
+              ]
+            },
+            {
+              "key": "search",
+              "label": "검색 노출 강화",
+              "icon": "🔍",
+              "color": "#8b5cf6",
+              "max": 16,
+              "score": 0,
+              "pending": false,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "구조화 데이터",
+                  "desc": "JSON-LD 없음 — Schema.org 구조화 데이터 추가 권장",
+                  "points": 5,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\n  \"@context\":\"https://schema.org\",\n  \"@type\":\"MedicalClinic\",\n  \"name\":\"OO병원\",\n  \"address\":\"서울시 ...\",\n  \"telephone\":\"02-123-4567\"\n}\n</script>"
+                },
+                {
+                  "name": "Open Graph 태그",
+                  "desc": "og:title·og:description — 공유 미리보기(보너스)",
+                  "points": 2,
+                  "pass": false,
+                  "source": "네이버",
+                  "fix": "<meta property=\"og:title\" content=\"OO병원 — 지역 진료과목\">\n<meta property=\"og:description\" content=\"핵심 진료 소개\">\n<meta property=\"og:image\" content=\"https://도메인/og.jpg\">"
+                },
+                {
+                  "name": "sitemap.xml 선언",
+                  "desc": "sitemap.xml 없음 — 생성 후 robots.txt에 선언",
+                  "points": 4,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "# robots.txt 마지막 줄\nSitemap: https://도메인/sitemap.xml"
+                },
+                {
+                  "name": "파비콘",
+                  "desc": "검색결과에 표시되는 사이트 아이콘",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<link rel=\"icon\" href=\"/favicon.ico\">"
+                },
+                {
+                  "name": "robots.txt 존재",
+                  "desc": "robots.txt 없음 — 페이지(HTML)가 대신 응답(소프트 404)",
+                  "points": 3,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "# /robots.txt 파일 생성\nUser-agent: *\nAllow: /\nSitemap: https://도메인/sitemap.xml"
+                }
+              ]
+            },
+            {
+              "key": "trust",
+              "label": "신뢰·전문성(E-E-A-T)",
+              "icon": "🩺",
+              "color": "#10b981",
+              "max": 16,
+              "score": 0,
+              "pending": false,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "저자·의료진 정보",
+                  "desc": "작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]",
+                  "points": 5,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- 작성/감수 의료진 명시 (YMYL 신뢰) -->\n<p class=\"byline\">감수: OOO 대표원장 · OO과 전문의</p>"
+                },
+                {
+                  "name": "조직·병원 정보",
+                  "desc": "Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]",
+                  "points": 4,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\n \"name\":\"OO병원\",\"url\":\"https://도메인\",\"telephone\":\"02-123-4567\"}\n</script>"
+                },
+                {
+                  "name": "발행·수정일(최신성)",
+                  "desc": "datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<time datetime=\"2026-07-20\">2026년 7월 20일 게시</time>\n<!-- 또는 JSON-LD datePublished / dateModified -->"
+                },
+                {
+                  "name": "연락처·접근성",
+                  "desc": "전화(tel:)·주소 노출 — 신뢰·전환 [121]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<a href=\"tel:0212345678\">02-1234-5678</a>\n<address>서울시 OO구 OO로 00</address>"
+                },
+                {
+                  "name": "엔티티 신호(sameAs)",
+                  "desc": "sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- Organization JSON-LD 안 -->\n\"sameAs\":[\"https://blog.naver.com/OO\",\"https://www.instagram.com/OO\"]"
+                }
+              ]
+            },
+            {
+              "key": "writing",
+              "label": "콘텐츠 최적화",
+              "icon": "✍️",
+              "color": "#f43f5e",
+              "max": 7,
+              "score": 5,
+              "pending": false,
+              "pct": 71,
+              "items": [
+                {
+                  "name": "소제목 구조",
+                  "desc": "본문 분량 적정(소제목 선택)",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<h2>진료 안내</h2>\n<h3>임플란트</h3>\n<!-- 긴 본문은 H2/H3로 구획 -->"
+                },
+                {
+                  "name": "문단 가독성",
+                  "desc": "지나치게 긴 문단 없음 — 스캔 가능성",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 500자 넘는 문단은 2~3개로 분할, 핵심은 목록으로 -->"
+                },
+                {
+                  "name": "스캔 구조(목록·표)",
+                  "desc": "목록·표로 정보 구조화 — AI/사용자 스캔",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>"
+                }
+              ]
+            },
+            {
+              "key": "security",
+              "label": "보안(응답 헤더)",
+              "icon": "🔒",
+              "color": "#0ea5e9",
+              "max": 17,
+              "score": 4,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — 전송 구간 암호화(신뢰 기본)",
+                  "points": 4,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "HSTS 적용",
+                  "desc": "Strict-Transport-Security — HTTPS 강제(다운그레이드 공격 방어)",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더(서버·CDN 설정)\nStrict-Transport-Security: max-age=31536000; includeSubDomains"
+                },
+                {
+                  "name": "콘텐츠 스니핑 차단",
+                  "desc": "X-Content-Type-Options: nosniff — MIME 스니핑 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nX-Content-Type-Options: nosniff"
+                },
+                {
+                  "name": "클릭재킹 차단",
+                  "desc": "X-Frame-Options 또는 CSP frame-ancestors — iframe 삽입 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (둘 중 하나)\nX-Frame-Options: SAMEORIGIN\n# 또는 CSP: frame-ancestors 'self'"
+                },
+                {
+                  "name": "Referrer 정책",
+                  "desc": "Referrer-Policy — 외부 이동 시 참조정보 제어",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nReferrer-Policy: strict-origin-when-cross-origin"
+                },
+                {
+                  "name": "콘텐츠 보안 정책(CSP)",
+                  "desc": "Content-Security-Policy — XSS·주입 방어(보너스)",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (예시 — 사이트에 맞게 조정)\nContent-Security-Policy: default-src 'self'; img-src 'self' data: https:"
+                }
+              ]
+            },
+            {
+              "key": "speed",
+              "label": "속도(CWV)",
+              "icon": "⚡",
+              "color": "#f59e0b",
+              "max": 10,
+              "score": 3,
+              "pending": false,
+              "pct": 30,
+              "items": [
+                {
+                  "name": "성능 점수(Lighthouse)",
+                  "desc": "Google Lighthouse 성능: 61/100 (≥90 통과)",
+                  "points": 4,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "LCP · 최대 콘텐츠 렌더",
+                  "desc": "Google 기준 ≤2.5s 양호 — 현재 6.78s (poor)",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "CLS · 누적 레이아웃 이동",
+                  "desc": "Google 기준 ≤0.10 양호 — 현재 0.015 (good)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "INP · 상호작용 반응성",
+                  "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                  "points": 1,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                }
+              ]
+            }
+          ],
+          "baseTotal": 41,
+          "baseMax": 81,
+          "speedCat": {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "icon": "⚡",
+            "color": "#f59e0b",
+            "max": 10,
+            "score": 3,
+            "pending": false,
+            "pct": 30,
+            "items": [
+              {
+                "name": "성능 점수(Lighthouse)",
+                "desc": "Google Lighthouse 성능: 61/100 (≥90 통과)",
+                "points": 4,
+                "pass": false,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "LCP · 최대 콘텐츠 렌더",
+                "desc": "Google 기준 ≤2.5s 양호 — 현재 6.78s (poor)",
+                "points": 3,
+                "pass": false,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "CLS · 누적 레이아웃 이동",
+                "desc": "Google 기준 ≤0.10 양호 — 현재 0.015 (good)",
+                "points": 2,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "INP · 상호작용 반응성",
+                "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                "points": 1,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              }
+            ]
+          },
+          "total": 80,
+          "max": 151,
+          "hasPSI": true,
+          "psi": {
+            "seo": 92,
+            "perf": 61,
+            "accessibility": 91,
+            "bestPractices": 88,
+            "crux": null
+          },
+          "summary": {
+            "passed": 16,
+            "failed": 17,
+            "pending": 6,
+            "totalItems": 39,
+            "passRate": 48,
+            "improvable": 61
+          },
+          "grade": {
+            "label": "개선필요",
+            "color": "#dc2626",
+            "desc": "즉시 조치 필요"
+          },
+          "keywordSeeds": []
+        }
       }
     ],
     "marketingbank.org": [
@@ -10444,6 +10990,557 @@
             "desc": "개선 중"
           }
         }
+      },
+      {
+        "date": "2026-07-22",
+        "pct": 62,
+        "total": 93,
+        "max": 151,
+        "grade": "브론즈",
+        "cats": [
+          {
+            "key": "content",
+            "label": "콘텐츠 & 메타",
+            "score": 34,
+            "max": 42,
+            "pct": 81,
+            "pending": false
+          },
+          {
+            "key": "tech",
+            "label": "기술·크롤링",
+            "score": 38,
+            "max": 53,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "search",
+            "label": "검색 노출 강화",
+            "score": 9,
+            "max": 16,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "trust",
+            "label": "신뢰·전문성(E-E-A-T)",
+            "score": 3,
+            "max": 16,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "writing",
+            "label": "콘텐츠 최적화",
+            "score": 5,
+            "max": 7,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "security",
+            "label": "보안(응답 헤더)",
+            "score": 4,
+            "max": 17,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "score": 3,
+            "max": 10,
+            "pct": 30,
+            "pending": false
+          }
+        ],
+        "psi": {
+          "seo": 92,
+          "perf": 64,
+          "accessibility": 100,
+          "bestPractices": 100
+        },
+        "full": {
+          "version": "1.7.0",
+          "url": "https://marketingbank.org",
+          "domain": "marketingbank.org",
+          "isHttps": true,
+          "isSPA": false,
+          "categories": [
+            {
+              "key": "content",
+              "label": "콘텐츠 & 메타",
+              "icon": "📝",
+              "color": "#533afd",
+              "max": 42,
+              "score": 34,
+              "pending": false,
+              "pct": 81,
+              "items": [
+                {
+                  "name": "제목(title) 태그",
+                  "desc": "검색결과 제목 — 현재 17자 · 적정",
+                  "points": 12,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 페이지당 1개 · 10~60자 -->\n<title>병원명 · 지역 · 진료과목 핵심키워드</title>"
+                },
+                {
+                  "name": "메타 디스크립션",
+                  "desc": "검색결과 설명문 — 메타 디스크립션 없음 — 검색 스니펫에 직접 영향",
+                  "points": 8,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안 · 50~160자 · 페이지마다 고유 -->\n<meta name=\"description\" content=\"지역 진료과목 병원 소개 — 핵심 진료·특장점을 한 문장으로 요약\">"
+                },
+                {
+                  "name": "H1 대표 제목",
+                  "desc": "대표 제목 1개 — 적정",
+                  "points": 6,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "<!-- 페이지 대표 제목, 페이지당 1개만 -->\n<h1>지역 진료과목 — 병원명</h1>"
+                },
+                {
+                  "name": "이미지 ALT 텍스트",
+                  "desc": "이미지 대체 텍스트 (모든 이미지 alt 있음)",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 모든 의미있는 이미지에 alt -->\n<img src=\"clinic.jpg\" alt=\"OO병원 임플란트 상담 장면\">"
+                },
+                {
+                  "name": "의미있는 링크 텍스트",
+                  "desc": "서술형 앵커·내부링크 — \"여기 클릭\" 류 지양",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- \"여기 클릭\"·\"더보기\" 대신 서술형 -->\n<a href=\"/implant\">임플란트 진료 안내 보기</a>"
+                },
+                {
+                  "name": "서술형 URL",
+                  "desc": "URL에 의미있는 단어 — 홈 경로 — 적정",
+                  "points": 4,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "좋음: /implant-consult\n피함: /page?id=12983  (임의 숫자·세션ID)"
+                }
+              ]
+            },
+            {
+              "key": "tech",
+              "label": "기술·크롤링",
+              "icon": "⚙️",
+              "color": "#06b6d4",
+              "max": 53,
+              "score": 38,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — Google page experience 신뢰 신호",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "검색로봇 수집 허용",
+                  "desc": "robots.txt가 Googlebot·Yeti 차단 안 함 — 크롤 가능성",
+                  "points": 9,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# robots.txt — Googlebot·Yeti(네이버) 차단 금지\nUser-agent: *\nAllow: /"
+                },
+                {
+                  "name": "인덱싱 허용",
+                  "desc": "meta robots noindex 미설정 — 색인 가능성",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- noindex 제거 또는 index로 -->\n<meta name=\"robots\" content=\"index, follow\">"
+                },
+                {
+                  "name": "Canonical 태그",
+                  "desc": "중복 URL 정규화 — 대표 주소 지정",
+                  "points": 6,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 이 페이지의 대표 주소 -->\n<link rel=\"canonical\" href=\"https://도메인/현재-경로\">"
+                },
+                {
+                  "name": "Viewport(모바일)",
+                  "desc": "모바일 반응형 메타 — 모바일 우선 인덱싱",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 최상단 -->\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                },
+                {
+                  "name": "HTML lang 속성",
+                  "desc": "페이지 언어 명시 — 검색엔진 언어 인식",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<html lang=\"ko\">"
+                },
+                {
+                  "name": "HTTP 압축",
+                  "desc": "gzip/br 압축 — 전송량↓·로딩↑ (미적용)",
+                  "points": 4,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 서버/CDN에서 gzip 또는 brotli 압축 켜기\n# Nginx: gzip on;  ·  Vercel/Cloudflare: 기본 제공"
+                },
+                {
+                  "name": "차세대 이미지(WebP)",
+                  "desc": "WebP/AVIF 사용 — 이미지 용량↓·속도↑",
+                  "points": 3,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<picture>\n  <source srcset=\"img.webp\" type=\"image/webp\">\n  <img src=\"img.jpg\" alt=\"설명\">\n</picture>"
+                },
+                {
+                  "name": "이미지 지연로딩",
+                  "desc": "loading=\"lazy\" — 초기 로딩 속도 개선 (0/1개 지연로딩(loading=\"lazy\"))",
+                  "points": 2,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<img src=\"img.webp\" alt=\"설명\" loading=\"lazy\">"
+                },
+                {
+                  "name": "이미지 최적화",
+                  "desc": "과다 이미지·대용량 인라인 점검 (1개)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 대용량 인라인(data:base64)은 외부 파일로, 이미지 수는 필요한 만큼만 -->\n<img src=\"/img/photo.webp\" alt=\"설명\" loading=\"lazy\" width=\"800\" height=\"600\">"
+                }
+              ]
+            },
+            {
+              "key": "search",
+              "label": "검색 노출 강화",
+              "icon": "🔍",
+              "color": "#8b5cf6",
+              "max": 16,
+              "score": 9,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "구조화 데이터",
+                  "desc": "JSON-LD 없음 — Schema.org 구조화 데이터 추가 권장",
+                  "points": 5,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\n  \"@context\":\"https://schema.org\",\n  \"@type\":\"MedicalClinic\",\n  \"name\":\"OO병원\",\n  \"address\":\"서울시 ...\",\n  \"telephone\":\"02-123-4567\"\n}\n</script>"
+                },
+                {
+                  "name": "Open Graph 태그",
+                  "desc": "og:title·og:description — 공유 미리보기(보너스)",
+                  "points": 2,
+                  "pass": null,
+                  "source": "네이버",
+                  "fix": "<meta property=\"og:title\" content=\"OO병원 — 지역 진료과목\">\n<meta property=\"og:description\" content=\"핵심 진료 소개\">\n<meta property=\"og:image\" content=\"https://도메인/og.jpg\">"
+                },
+                {
+                  "name": "sitemap.xml 선언",
+                  "desc": "robots.txt에 Sitemap 선언됨",
+                  "points": 4,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "# robots.txt 마지막 줄\nSitemap: https://도메인/sitemap.xml"
+                },
+                {
+                  "name": "파비콘",
+                  "desc": "검색결과에 표시되는 사이트 아이콘",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<link rel=\"icon\" href=\"/favicon.ico\">"
+                },
+                {
+                  "name": "robots.txt 존재",
+                  "desc": "크롤러 수집 규칙 파일 제공",
+                  "points": 3,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "# /robots.txt 파일 생성\nUser-agent: *\nAllow: /\nSitemap: https://도메인/sitemap.xml"
+                }
+              ]
+            },
+            {
+              "key": "trust",
+              "label": "신뢰·전문성(E-E-A-T)",
+              "icon": "🩺",
+              "color": "#10b981",
+              "max": 16,
+              "score": 3,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "저자·의료진 정보",
+                  "desc": "작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]",
+                  "points": 5,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<!-- 작성/감수 의료진 명시 (YMYL 신뢰) -->\n<p class=\"byline\">감수: OOO 대표원장 · OO과 전문의</p>"
+                },
+                {
+                  "name": "조직·병원 정보",
+                  "desc": "Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]",
+                  "points": 4,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\n \"name\":\"OO병원\",\"url\":\"https://도메인\",\"telephone\":\"02-123-4567\"}\n</script>"
+                },
+                {
+                  "name": "발행·수정일(최신성)",
+                  "desc": "datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<time datetime=\"2026-07-20\">2026년 7월 20일 게시</time>\n<!-- 또는 JSON-LD datePublished / dateModified -->"
+                },
+                {
+                  "name": "연락처·접근성",
+                  "desc": "전화(tel:)·주소 노출 — 신뢰·전환 [121]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<a href=\"tel:0212345678\">02-1234-5678</a>\n<address>서울시 OO구 OO로 00</address>"
+                },
+                {
+                  "name": "엔티티 신호(sameAs)",
+                  "desc": "sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]",
+                  "points": 2,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<!-- Organization JSON-LD 안 -->\n\"sameAs\":[\"https://blog.naver.com/OO\",\"https://www.instagram.com/OO\"]"
+                }
+              ]
+            },
+            {
+              "key": "writing",
+              "label": "콘텐츠 최적화",
+              "icon": "✍️",
+              "color": "#f43f5e",
+              "max": 7,
+              "score": 5,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "소제목 구조",
+                  "desc": "긴 본문에 H2/H3 소제목 — 스캔 용이",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<h2>진료 안내</h2>\n<h3>임플란트</h3>\n<!-- 긴 본문은 H2/H3로 구획 -->"
+                },
+                {
+                  "name": "문단 가독성",
+                  "desc": "지나치게 긴 문단 없음 — 스캔 가능성",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 500자 넘는 문단은 2~3개로 분할, 핵심은 목록으로 -->"
+                },
+                {
+                  "name": "스캔 구조(목록·표)",
+                  "desc": "목록·표로 정보 구조화 — AI/사용자 스캔",
+                  "points": 2,
+                  "pass": null,
+                  "source": "Google",
+                  "fix": "<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>"
+                }
+              ]
+            },
+            {
+              "key": "security",
+              "label": "보안(응답 헤더)",
+              "icon": "🔒",
+              "color": "#0ea5e9",
+              "max": 17,
+              "score": 4,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — 전송 구간 암호화(신뢰 기본)",
+                  "points": 4,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "HSTS 적용",
+                  "desc": "Strict-Transport-Security — HTTPS 강제(다운그레이드 공격 방어)",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더(서버·CDN 설정)\nStrict-Transport-Security: max-age=31536000; includeSubDomains"
+                },
+                {
+                  "name": "콘텐츠 스니핑 차단",
+                  "desc": "X-Content-Type-Options: nosniff — MIME 스니핑 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nX-Content-Type-Options: nosniff"
+                },
+                {
+                  "name": "클릭재킹 차단",
+                  "desc": "X-Frame-Options 또는 CSP frame-ancestors — iframe 삽입 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (둘 중 하나)\nX-Frame-Options: SAMEORIGIN\n# 또는 CSP: frame-ancestors 'self'"
+                },
+                {
+                  "name": "Referrer 정책",
+                  "desc": "Referrer-Policy — 외부 이동 시 참조정보 제어",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nReferrer-Policy: strict-origin-when-cross-origin"
+                },
+                {
+                  "name": "콘텐츠 보안 정책(CSP)",
+                  "desc": "Content-Security-Policy — XSS·주입 방어(보너스)",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (예시 — 사이트에 맞게 조정)\nContent-Security-Policy: default-src 'self'; img-src 'self' data: https:"
+                }
+              ]
+            },
+            {
+              "key": "speed",
+              "label": "속도(CWV)",
+              "icon": "⚡",
+              "color": "#f59e0b",
+              "max": 10,
+              "score": 3,
+              "pending": false,
+              "pct": 30,
+              "items": [
+                {
+                  "name": "성능 점수(Lighthouse)",
+                  "desc": "Google Lighthouse 성능: 64/100 (≥90 통과)",
+                  "points": 4,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "LCP · 최대 콘텐츠 렌더",
+                  "desc": "Google 기준 ≤2.5s 양호 — 현재 6.23s (poor)",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "CLS · 누적 레이아웃 이동",
+                  "desc": "Google 기준 ≤0.10 양호 — 현재 0 (good)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "INP · 상호작용 반응성",
+                  "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                  "points": 1,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                }
+              ]
+            }
+          ],
+          "baseTotal": 34,
+          "baseMax": 42,
+          "speedCat": {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "icon": "⚡",
+            "color": "#f59e0b",
+            "max": 10,
+            "score": 3,
+            "pending": false,
+            "pct": 30,
+            "items": [
+              {
+                "name": "성능 점수(Lighthouse)",
+                "desc": "Google Lighthouse 성능: 64/100 (≥90 통과)",
+                "points": 4,
+                "pass": false,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "LCP · 최대 콘텐츠 렌더",
+                "desc": "Google 기준 ≤2.5s 양호 — 현재 6.23s (poor)",
+                "points": 3,
+                "pass": false,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "CLS · 누적 레이아웃 이동",
+                "desc": "Google 기준 ≤0.10 양호 — 현재 0 (good)",
+                "points": 2,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "INP · 상호작용 반응성",
+                "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                "points": 1,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              }
+            ]
+          },
+          "total": 93,
+          "max": 151,
+          "hasPSI": true,
+          "psi": {
+            "seo": 92,
+            "perf": 64,
+            "accessibility": 100,
+            "bestPractices": 100,
+            "crux": null
+          },
+          "summary": {
+            "passed": 20,
+            "failed": 5,
+            "pending": 14,
+            "totalItems": 39,
+            "passRate": 80,
+            "improvable": 23
+          },
+          "grade": {
+            "label": "브론즈",
+            "color": "#b45309",
+            "desc": "보통"
+          },
+          "keywordSeeds": [
+            "My WordPress",
+            "WordPress Site",
+            "Site My",
+            "My"
+          ]
+        }
       }
     ],
     "good-tour.kr": [
@@ -15314,6 +16411,552 @@
             "color": "#dc2626",
             "desc": "즉시 조치 필요"
           }
+        }
+      },
+      {
+        "date": "2026-07-22",
+        "pct": 44,
+        "total": 66,
+        "max": 151,
+        "grade": "개선필요",
+        "cats": [
+          {
+            "key": "content",
+            "label": "콘텐츠 & 메타",
+            "score": 28,
+            "max": 42,
+            "pct": 67,
+            "pending": false
+          },
+          {
+            "key": "tech",
+            "label": "기술·크롤링",
+            "score": 29,
+            "max": 53,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "search",
+            "label": "검색 노출 강화",
+            "score": 0,
+            "max": 16,
+            "pct": 0,
+            "pending": false
+          },
+          {
+            "key": "trust",
+            "label": "신뢰·전문성(E-E-A-T)",
+            "score": 0,
+            "max": 16,
+            "pct": 0,
+            "pending": false
+          },
+          {
+            "key": "writing",
+            "label": "콘텐츠 최적화",
+            "score": 5,
+            "max": 7,
+            "pct": 71,
+            "pending": false
+          },
+          {
+            "key": "security",
+            "label": "보안(응답 헤더)",
+            "score": 4,
+            "max": 17,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "score": 10,
+            "max": 10,
+            "pct": 100,
+            "pending": false
+          }
+        ],
+        "psi": {
+          "seo": 73,
+          "perf": 97,
+          "accessibility": 73,
+          "bestPractices": 88
+        },
+        "full": {
+          "version": "1.7.0",
+          "url": "https://good-tour.kr",
+          "domain": "good-tour.kr",
+          "isHttps": true,
+          "isSPA": false,
+          "categories": [
+            {
+              "key": "content",
+              "label": "콘텐츠 & 메타",
+              "icon": "📝",
+              "color": "#533afd",
+              "max": 42,
+              "score": 28,
+              "pending": false,
+              "pct": 67,
+              "items": [
+                {
+                  "name": "제목(title) 태그",
+                  "desc": "검색결과 제목 — title 태그 없음 — 추가 필요",
+                  "points": 12,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 페이지당 1개 · 10~60자 -->\n<title>병원명 · 지역 · 진료과목 핵심키워드</title>"
+                },
+                {
+                  "name": "메타 디스크립션",
+                  "desc": "검색결과 설명문 — 메타 디스크립션 없음 — 검색 스니펫에 직접 영향",
+                  "points": 8,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안 · 50~160자 · 페이지마다 고유 -->\n<meta name=\"description\" content=\"지역 진료과목 병원 소개 — 핵심 진료·특장점을 한 문장으로 요약\">"
+                },
+                {
+                  "name": "H1 대표 제목",
+                  "desc": "H1 없음 — 페이지 대표 제목 추가 필요",
+                  "points": 6,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<!-- 페이지 대표 제목, 페이지당 1개만 -->\n<h1>지역 진료과목 — 병원명</h1>"
+                },
+                {
+                  "name": "이미지 ALT 텍스트",
+                  "desc": "이미지 대체 텍스트 (이미지 없음)",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 모든 의미있는 이미지에 alt -->\n<img src=\"clinic.jpg\" alt=\"OO병원 임플란트 상담 장면\">"
+                },
+                {
+                  "name": "의미있는 링크 텍스트",
+                  "desc": "서술형 앵커·내부링크 — \"여기 클릭\" 류 지양",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- \"여기 클릭\"·\"더보기\" 대신 서술형 -->\n<a href=\"/implant\">임플란트 진료 안내 보기</a>"
+                },
+                {
+                  "name": "서술형 URL",
+                  "desc": "URL에 의미있는 단어 — 홈 경로 — 적정",
+                  "points": 4,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "좋음: /implant-consult\n피함: /page?id=12983  (임의 숫자·세션ID)"
+                }
+              ]
+            },
+            {
+              "key": "tech",
+              "label": "기술·크롤링",
+              "icon": "⚙️",
+              "color": "#06b6d4",
+              "max": 53,
+              "score": 29,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — Google page experience 신뢰 신호",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "검색로봇 수집 허용",
+                  "desc": "robots.txt가 Googlebot·Yeti 차단 안 함 — 크롤 가능성",
+                  "points": 9,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# robots.txt — Googlebot·Yeti(네이버) 차단 금지\nUser-agent: *\nAllow: /"
+                },
+                {
+                  "name": "인덱싱 허용",
+                  "desc": "meta robots noindex 미설정 — 색인 가능성",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- noindex 제거 또는 index로 -->\n<meta name=\"robots\" content=\"index, follow\">"
+                },
+                {
+                  "name": "Canonical 태그",
+                  "desc": "중복 URL 정규화 — 대표 주소 지정",
+                  "points": 6,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 이 페이지의 대표 주소 -->\n<link rel=\"canonical\" href=\"https://도메인/현재-경로\">"
+                },
+                {
+                  "name": "Viewport(모바일)",
+                  "desc": "모바일 반응형 메타 — 모바일 우선 인덱싱",
+                  "points": 8,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 최상단 -->\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                },
+                {
+                  "name": "HTML lang 속성",
+                  "desc": "페이지 언어 명시 — 검색엔진 언어 인식",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<html lang=\"ko\">"
+                },
+                {
+                  "name": "HTTP 압축",
+                  "desc": "gzip/br 압축 — 전송량↓·로딩↑ (미적용)",
+                  "points": 4,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 서버/CDN에서 gzip 또는 brotli 압축 켜기\n# Nginx: gzip on;  ·  Vercel/Cloudflare: 기본 제공"
+                },
+                {
+                  "name": "차세대 이미지(WebP)",
+                  "desc": "WebP/AVIF 사용 — 이미지 용량↓·속도↑",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<picture>\n  <source srcset=\"img.webp\" type=\"image/webp\">\n  <img src=\"img.jpg\" alt=\"설명\">\n</picture>"
+                },
+                {
+                  "name": "이미지 지연로딩",
+                  "desc": "loading=\"lazy\" — 초기 로딩 속도 개선 (이미지 없음)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<img src=\"img.webp\" alt=\"설명\" loading=\"lazy\">"
+                },
+                {
+                  "name": "이미지 최적화",
+                  "desc": "과다 이미지·대용량 인라인 점검 (이미지 없음)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 대용량 인라인(data:base64)은 외부 파일로, 이미지 수는 필요한 만큼만 -->\n<img src=\"/img/photo.webp\" alt=\"설명\" loading=\"lazy\" width=\"800\" height=\"600\">"
+                }
+              ]
+            },
+            {
+              "key": "search",
+              "label": "검색 노출 강화",
+              "icon": "🔍",
+              "color": "#8b5cf6",
+              "max": 16,
+              "score": 0,
+              "pending": false,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "구조화 데이터",
+                  "desc": "JSON-LD 없음 — Schema.org 구조화 데이터 추가 권장",
+                  "points": 5,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\n  \"@context\":\"https://schema.org\",\n  \"@type\":\"MedicalClinic\",\n  \"name\":\"OO병원\",\n  \"address\":\"서울시 ...\",\n  \"telephone\":\"02-123-4567\"\n}\n</script>"
+                },
+                {
+                  "name": "Open Graph 태그",
+                  "desc": "og:title·og:description — 공유 미리보기(보너스)",
+                  "points": 2,
+                  "pass": false,
+                  "source": "네이버",
+                  "fix": "<meta property=\"og:title\" content=\"OO병원 — 지역 진료과목\">\n<meta property=\"og:description\" content=\"핵심 진료 소개\">\n<meta property=\"og:image\" content=\"https://도메인/og.jpg\">"
+                },
+                {
+                  "name": "sitemap.xml 선언",
+                  "desc": "sitemap.xml 없음 — 생성 후 robots.txt에 선언",
+                  "points": 4,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "# robots.txt 마지막 줄\nSitemap: https://도메인/sitemap.xml"
+                },
+                {
+                  "name": "파비콘",
+                  "desc": "검색결과에 표시되는 사이트 아이콘",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<link rel=\"icon\" href=\"/favicon.ico\">"
+                },
+                {
+                  "name": "robots.txt 존재",
+                  "desc": "robots.txt 없음 — 페이지(HTML)가 대신 응답(소프트 404)",
+                  "points": 3,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "# /robots.txt 파일 생성\nUser-agent: *\nAllow: /\nSitemap: https://도메인/sitemap.xml"
+                }
+              ]
+            },
+            {
+              "key": "trust",
+              "label": "신뢰·전문성(E-E-A-T)",
+              "icon": "🩺",
+              "color": "#10b981",
+              "max": 16,
+              "score": 0,
+              "pending": false,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "저자·의료진 정보",
+                  "desc": "작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]",
+                  "points": 5,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- 작성/감수 의료진 명시 (YMYL 신뢰) -->\n<p class=\"byline\">감수: OOO 대표원장 · OO과 전문의</p>"
+                },
+                {
+                  "name": "조직·병원 정보",
+                  "desc": "Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]",
+                  "points": 4,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\n \"name\":\"OO병원\",\"url\":\"https://도메인\",\"telephone\":\"02-123-4567\"}\n</script>"
+                },
+                {
+                  "name": "발행·수정일(최신성)",
+                  "desc": "datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<time datetime=\"2026-07-20\">2026년 7월 20일 게시</time>\n<!-- 또는 JSON-LD datePublished / dateModified -->"
+                },
+                {
+                  "name": "연락처·접근성",
+                  "desc": "전화(tel:)·주소 노출 — 신뢰·전환 [121]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<a href=\"tel:0212345678\">02-1234-5678</a>\n<address>서울시 OO구 OO로 00</address>"
+                },
+                {
+                  "name": "엔티티 신호(sameAs)",
+                  "desc": "sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- Organization JSON-LD 안 -->\n\"sameAs\":[\"https://blog.naver.com/OO\",\"https://www.instagram.com/OO\"]"
+                }
+              ]
+            },
+            {
+              "key": "writing",
+              "label": "콘텐츠 최적화",
+              "icon": "✍️",
+              "color": "#f43f5e",
+              "max": 7,
+              "score": 5,
+              "pending": false,
+              "pct": 71,
+              "items": [
+                {
+                  "name": "소제목 구조",
+                  "desc": "본문 분량 적정(소제목 선택)",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<h2>진료 안내</h2>\n<h3>임플란트</h3>\n<!-- 긴 본문은 H2/H3로 구획 -->"
+                },
+                {
+                  "name": "문단 가독성",
+                  "desc": "지나치게 긴 문단 없음 — 스캔 가능성",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 500자 넘는 문단은 2~3개로 분할, 핵심은 목록으로 -->"
+                },
+                {
+                  "name": "스캔 구조(목록·표)",
+                  "desc": "목록·표로 정보 구조화 — AI/사용자 스캔",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>"
+                }
+              ]
+            },
+            {
+              "key": "security",
+              "label": "보안(응답 헤더)",
+              "icon": "🔒",
+              "color": "#0ea5e9",
+              "max": 17,
+              "score": 4,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — 전송 구간 암호화(신뢰 기본)",
+                  "points": 4,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "HSTS 적용",
+                  "desc": "Strict-Transport-Security — HTTPS 강제(다운그레이드 공격 방어)",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더(서버·CDN 설정)\nStrict-Transport-Security: max-age=31536000; includeSubDomains"
+                },
+                {
+                  "name": "콘텐츠 스니핑 차단",
+                  "desc": "X-Content-Type-Options: nosniff — MIME 스니핑 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nX-Content-Type-Options: nosniff"
+                },
+                {
+                  "name": "클릭재킹 차단",
+                  "desc": "X-Frame-Options 또는 CSP frame-ancestors — iframe 삽입 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (둘 중 하나)\nX-Frame-Options: SAMEORIGIN\n# 또는 CSP: frame-ancestors 'self'"
+                },
+                {
+                  "name": "Referrer 정책",
+                  "desc": "Referrer-Policy — 외부 이동 시 참조정보 제어",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nReferrer-Policy: strict-origin-when-cross-origin"
+                },
+                {
+                  "name": "콘텐츠 보안 정책(CSP)",
+                  "desc": "Content-Security-Policy — XSS·주입 방어(보너스)",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (예시 — 사이트에 맞게 조정)\nContent-Security-Policy: default-src 'self'; img-src 'self' data: https:"
+                }
+              ]
+            },
+            {
+              "key": "speed",
+              "label": "속도(CWV)",
+              "icon": "⚡",
+              "color": "#f59e0b",
+              "max": 10,
+              "score": 10,
+              "pending": false,
+              "pct": 100,
+              "items": [
+                {
+                  "name": "성능 점수(Lighthouse)",
+                  "desc": "Google Lighthouse 성능: 97/100 (≥90 통과)",
+                  "points": 4,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "LCP · 최대 콘텐츠 렌더",
+                  "desc": "Google 기준 ≤2.5s 양호 — 현재 2.25s (good)",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "CLS · 누적 레이아웃 이동",
+                  "desc": "Google 기준 ≤0.10 양호 — 현재 0 (good)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "INP · 상호작용 반응성",
+                  "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                  "points": 1,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                }
+              ]
+            }
+          ],
+          "baseTotal": 33,
+          "baseMax": 81,
+          "speedCat": {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "icon": "⚡",
+            "color": "#f59e0b",
+            "max": 10,
+            "score": 10,
+            "pending": false,
+            "pct": 100,
+            "items": [
+              {
+                "name": "성능 점수(Lighthouse)",
+                "desc": "Google Lighthouse 성능: 97/100 (≥90 통과)",
+                "points": 4,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "LCP · 최대 콘텐츠 렌더",
+                "desc": "Google 기준 ≤2.5s 양호 — 현재 2.25s (good)",
+                "points": 3,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "CLS · 누적 레이아웃 이동",
+                "desc": "Google 기준 ≤0.10 양호 — 현재 0 (good)",
+                "points": 2,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "INP · 상호작용 반응성",
+                "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                "points": 1,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              }
+            ]
+          },
+          "total": 66,
+          "max": 151,
+          "hasPSI": true,
+          "psi": {
+            "seo": 73,
+            "perf": 97,
+            "accessibility": 73,
+            "bestPractices": 88,
+            "crux": null
+          },
+          "summary": {
+            "passed": 16,
+            "failed": 17,
+            "pending": 6,
+            "totalItems": 39,
+            "passRate": 48,
+            "improvable": 68
+          },
+          "grade": {
+            "label": "개선필요",
+            "color": "#dc2626",
+            "desc": "즉시 조치 필요"
+          },
+          "keywordSeeds": []
         }
       }
     ],
@@ -20225,6 +21868,552 @@
             "color": "#dc2626",
             "desc": "즉시 조치 필요"
           }
+        }
+      },
+      {
+        "date": "2026-07-22",
+        "pct": 44,
+        "total": 66,
+        "max": 151,
+        "grade": "개선필요",
+        "cats": [
+          {
+            "key": "content",
+            "label": "콘텐츠 & 메타",
+            "score": 28,
+            "max": 42,
+            "pct": 67,
+            "pending": false
+          },
+          {
+            "key": "tech",
+            "label": "기술·크롤링",
+            "score": 29,
+            "max": 53,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "search",
+            "label": "검색 노출 강화",
+            "score": 0,
+            "max": 16,
+            "pct": 0,
+            "pending": false
+          },
+          {
+            "key": "trust",
+            "label": "신뢰·전문성(E-E-A-T)",
+            "score": 0,
+            "max": 16,
+            "pct": 0,
+            "pending": false
+          },
+          {
+            "key": "writing",
+            "label": "콘텐츠 최적화",
+            "score": 5,
+            "max": 7,
+            "pct": 71,
+            "pending": false
+          },
+          {
+            "key": "security",
+            "label": "보안(응답 헤더)",
+            "score": 4,
+            "max": 17,
+            "pct": 0,
+            "pending": true
+          },
+          {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "score": 10,
+            "max": 10,
+            "pct": 100,
+            "pending": false
+          }
+        ],
+        "psi": {
+          "seo": 73,
+          "perf": 100,
+          "accessibility": 73,
+          "bestPractices": 92
+        },
+        "full": {
+          "version": "1.7.0",
+          "url": "https://markepick.com",
+          "domain": "markepick.com",
+          "isHttps": true,
+          "isSPA": false,
+          "categories": [
+            {
+              "key": "content",
+              "label": "콘텐츠 & 메타",
+              "icon": "📝",
+              "color": "#533afd",
+              "max": 42,
+              "score": 28,
+              "pending": false,
+              "pct": 67,
+              "items": [
+                {
+                  "name": "제목(title) 태그",
+                  "desc": "검색결과 제목 — title 태그 없음 — 추가 필요",
+                  "points": 12,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 페이지당 1개 · 10~60자 -->\n<title>병원명 · 지역 · 진료과목 핵심키워드</title>"
+                },
+                {
+                  "name": "메타 디스크립션",
+                  "desc": "검색결과 설명문 — 메타 디스크립션 없음 — 검색 스니펫에 직접 영향",
+                  "points": 8,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안 · 50~160자 · 페이지마다 고유 -->\n<meta name=\"description\" content=\"지역 진료과목 병원 소개 — 핵심 진료·특장점을 한 문장으로 요약\">"
+                },
+                {
+                  "name": "H1 대표 제목",
+                  "desc": "H1 없음 — 페이지 대표 제목 추가 필요",
+                  "points": 6,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<!-- 페이지 대표 제목, 페이지당 1개만 -->\n<h1>지역 진료과목 — 병원명</h1>"
+                },
+                {
+                  "name": "이미지 ALT 텍스트",
+                  "desc": "이미지 대체 텍스트 (이미지 없음)",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 모든 의미있는 이미지에 alt -->\n<img src=\"clinic.jpg\" alt=\"OO병원 임플란트 상담 장면\">"
+                },
+                {
+                  "name": "의미있는 링크 텍스트",
+                  "desc": "서술형 앵커·내부링크 — \"여기 클릭\" 류 지양",
+                  "points": 6,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- \"여기 클릭\"·\"더보기\" 대신 서술형 -->\n<a href=\"/implant\">임플란트 진료 안내 보기</a>"
+                },
+                {
+                  "name": "서술형 URL",
+                  "desc": "URL에 의미있는 단어 — 홈 경로 — 적정",
+                  "points": 4,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "좋음: /implant-consult\n피함: /page?id=12983  (임의 숫자·세션ID)"
+                }
+              ]
+            },
+            {
+              "key": "tech",
+              "label": "기술·크롤링",
+              "icon": "⚙️",
+              "color": "#06b6d4",
+              "max": 53,
+              "score": 29,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — Google page experience 신뢰 신호",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "검색로봇 수집 허용",
+                  "desc": "robots.txt가 Googlebot·Yeti 차단 안 함 — 크롤 가능성",
+                  "points": 9,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "# robots.txt — Googlebot·Yeti(네이버) 차단 금지\nUser-agent: *\nAllow: /"
+                },
+                {
+                  "name": "인덱싱 허용",
+                  "desc": "meta robots noindex 미설정 — 색인 가능성",
+                  "points": 8,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- noindex 제거 또는 index로 -->\n<meta name=\"robots\" content=\"index, follow\">"
+                },
+                {
+                  "name": "Canonical 태그",
+                  "desc": "중복 URL 정규화 — 대표 주소 지정",
+                  "points": 6,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 안, 이 페이지의 대표 주소 -->\n<link rel=\"canonical\" href=\"https://도메인/현재-경로\">"
+                },
+                {
+                  "name": "Viewport(모바일)",
+                  "desc": "모바일 반응형 메타 — 모바일 우선 인덱싱",
+                  "points": 8,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- <head> 최상단 -->\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                },
+                {
+                  "name": "HTML lang 속성",
+                  "desc": "페이지 언어 명시 — 검색엔진 언어 인식",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<html lang=\"ko\">"
+                },
+                {
+                  "name": "HTTP 압축",
+                  "desc": "gzip/br 압축 — 전송량↓·로딩↑ (미적용)",
+                  "points": 4,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 서버/CDN에서 gzip 또는 brotli 압축 켜기\n# Nginx: gzip on;  ·  Vercel/Cloudflare: 기본 제공"
+                },
+                {
+                  "name": "차세대 이미지(WebP)",
+                  "desc": "WebP/AVIF 사용 — 이미지 용량↓·속도↑",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<picture>\n  <source srcset=\"img.webp\" type=\"image/webp\">\n  <img src=\"img.jpg\" alt=\"설명\">\n</picture>"
+                },
+                {
+                  "name": "이미지 지연로딩",
+                  "desc": "loading=\"lazy\" — 초기 로딩 속도 개선 (이미지 없음)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<img src=\"img.webp\" alt=\"설명\" loading=\"lazy\">"
+                },
+                {
+                  "name": "이미지 최적화",
+                  "desc": "과다 이미지·대용량 인라인 점검 (이미지 없음)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 대용량 인라인(data:base64)은 외부 파일로, 이미지 수는 필요한 만큼만 -->\n<img src=\"/img/photo.webp\" alt=\"설명\" loading=\"lazy\" width=\"800\" height=\"600\">"
+                }
+              ]
+            },
+            {
+              "key": "search",
+              "label": "검색 노출 강화",
+              "icon": "🔍",
+              "color": "#8b5cf6",
+              "max": 16,
+              "score": 0,
+              "pending": false,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "구조화 데이터",
+                  "desc": "JSON-LD 없음 — Schema.org 구조화 데이터 추가 권장",
+                  "points": 5,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\n  \"@context\":\"https://schema.org\",\n  \"@type\":\"MedicalClinic\",\n  \"name\":\"OO병원\",\n  \"address\":\"서울시 ...\",\n  \"telephone\":\"02-123-4567\"\n}\n</script>"
+                },
+                {
+                  "name": "Open Graph 태그",
+                  "desc": "og:title·og:description — 공유 미리보기(보너스)",
+                  "points": 2,
+                  "pass": false,
+                  "source": "네이버",
+                  "fix": "<meta property=\"og:title\" content=\"OO병원 — 지역 진료과목\">\n<meta property=\"og:description\" content=\"핵심 진료 소개\">\n<meta property=\"og:image\" content=\"https://도메인/og.jpg\">"
+                },
+                {
+                  "name": "sitemap.xml 선언",
+                  "desc": "sitemap.xml 없음 — 생성 후 robots.txt에 선언",
+                  "points": 4,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "# robots.txt 마지막 줄\nSitemap: https://도메인/sitemap.xml"
+                },
+                {
+                  "name": "파비콘",
+                  "desc": "검색결과에 표시되는 사이트 아이콘",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<link rel=\"icon\" href=\"/favicon.ico\">"
+                },
+                {
+                  "name": "robots.txt 존재",
+                  "desc": "robots.txt 없음 — 페이지(HTML)가 대신 응답(소프트 404)",
+                  "points": 3,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "# /robots.txt 파일 생성\nUser-agent: *\nAllow: /\nSitemap: https://도메인/sitemap.xml"
+                }
+              ]
+            },
+            {
+              "key": "trust",
+              "label": "신뢰·전문성(E-E-A-T)",
+              "icon": "🩺",
+              "color": "#10b981",
+              "max": 16,
+              "score": 0,
+              "pending": false,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "저자·의료진 정보",
+                  "desc": "작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]",
+                  "points": 5,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- 작성/감수 의료진 명시 (YMYL 신뢰) -->\n<p class=\"byline\">감수: OOO 대표원장 · OO과 전문의</p>"
+                },
+                {
+                  "name": "조직·병원 정보",
+                  "desc": "Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]",
+                  "points": 4,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<script type=\"application/ld+json\">\n{\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\n \"name\":\"OO병원\",\"url\":\"https://도메인\",\"telephone\":\"02-123-4567\"}\n</script>"
+                },
+                {
+                  "name": "발행·수정일(최신성)",
+                  "desc": "datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]",
+                  "points": 3,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<time datetime=\"2026-07-20\">2026년 7월 20일 게시</time>\n<!-- 또는 JSON-LD datePublished / dateModified -->"
+                },
+                {
+                  "name": "연락처·접근성",
+                  "desc": "전화(tel:)·주소 노출 — 신뢰·전환 [121]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "공통",
+                  "fix": "<a href=\"tel:0212345678\">02-1234-5678</a>\n<address>서울시 OO구 OO로 00</address>"
+                },
+                {
+                  "name": "엔티티 신호(sameAs)",
+                  "desc": "sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<!-- Organization JSON-LD 안 -->\n\"sameAs\":[\"https://blog.naver.com/OO\",\"https://www.instagram.com/OO\"]"
+                }
+              ]
+            },
+            {
+              "key": "writing",
+              "label": "콘텐츠 최적화",
+              "icon": "✍️",
+              "color": "#f43f5e",
+              "max": 7,
+              "score": 5,
+              "pending": false,
+              "pct": 71,
+              "items": [
+                {
+                  "name": "소제목 구조",
+                  "desc": "본문 분량 적정(소제목 선택)",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<h2>진료 안내</h2>\n<h3>임플란트</h3>\n<!-- 긴 본문은 H2/H3로 구획 -->"
+                },
+                {
+                  "name": "문단 가독성",
+                  "desc": "지나치게 긴 문단 없음 — 스캔 가능성",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": "<!-- 500자 넘는 문단은 2~3개로 분할, 핵심은 목록으로 -->"
+                },
+                {
+                  "name": "스캔 구조(목록·표)",
+                  "desc": "목록·표로 정보 구조화 — AI/사용자 스캔",
+                  "points": 2,
+                  "pass": false,
+                  "source": "Google",
+                  "fix": "<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>"
+                }
+              ]
+            },
+            {
+              "key": "security",
+              "label": "보안(응답 헤더)",
+              "icon": "🔒",
+              "color": "#0ea5e9",
+              "max": 17,
+              "score": 4,
+              "pending": true,
+              "pct": 0,
+              "items": [
+                {
+                  "name": "HTTPS 보안 연결",
+                  "desc": "SSL 적용 — 전송 구간 암호화(신뢰 기본)",
+                  "points": 4,
+                  "pass": true,
+                  "source": "공통",
+                  "fix": "# http → https 301 리다이렉트 + SSL 인증서 적용\n# (호스팅/CDN에서 강제 HTTPS 켜기)"
+                },
+                {
+                  "name": "HSTS 적용",
+                  "desc": "Strict-Transport-Security — HTTPS 강제(다운그레이드 공격 방어)",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더(서버·CDN 설정)\nStrict-Transport-Security: max-age=31536000; includeSubDomains"
+                },
+                {
+                  "name": "콘텐츠 스니핑 차단",
+                  "desc": "X-Content-Type-Options: nosniff — MIME 스니핑 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nX-Content-Type-Options: nosniff"
+                },
+                {
+                  "name": "클릭재킹 차단",
+                  "desc": "X-Frame-Options 또는 CSP frame-ancestors — iframe 삽입 방어",
+                  "points": 3,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (둘 중 하나)\nX-Frame-Options: SAMEORIGIN\n# 또는 CSP: frame-ancestors 'self'"
+                },
+                {
+                  "name": "Referrer 정책",
+                  "desc": "Referrer-Policy — 외부 이동 시 참조정보 제어",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더\nReferrer-Policy: strict-origin-when-cross-origin"
+                },
+                {
+                  "name": "콘텐츠 보안 정책(CSP)",
+                  "desc": "Content-Security-Policy — XSS·주입 방어(보너스)",
+                  "points": 2,
+                  "pass": null,
+                  "source": "공통",
+                  "fix": "# 응답 헤더 (예시 — 사이트에 맞게 조정)\nContent-Security-Policy: default-src 'self'; img-src 'self' data: https:"
+                }
+              ]
+            },
+            {
+              "key": "speed",
+              "label": "속도(CWV)",
+              "icon": "⚡",
+              "color": "#f59e0b",
+              "max": 10,
+              "score": 10,
+              "pending": false,
+              "pct": 100,
+              "items": [
+                {
+                  "name": "성능 점수(Lighthouse)",
+                  "desc": "Google Lighthouse 성능: 100/100 (≥90 통과)",
+                  "points": 4,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "LCP · 최대 콘텐츠 렌더",
+                  "desc": "Google 기준 ≤2.5s 양호 — 현재 1.23s (good)",
+                  "points": 3,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "CLS · 누적 레이아웃 이동",
+                  "desc": "Google 기준 ≤0.10 양호 — 현재 0 (good)",
+                  "points": 2,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                },
+                {
+                  "name": "INP · 상호작용 반응성",
+                  "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                  "points": 1,
+                  "pass": true,
+                  "source": "Google",
+                  "fix": ""
+                }
+              ]
+            }
+          ],
+          "baseTotal": 33,
+          "baseMax": 81,
+          "speedCat": {
+            "key": "speed",
+            "label": "속도(CWV)",
+            "icon": "⚡",
+            "color": "#f59e0b",
+            "max": 10,
+            "score": 10,
+            "pending": false,
+            "pct": 100,
+            "items": [
+              {
+                "name": "성능 점수(Lighthouse)",
+                "desc": "Google Lighthouse 성능: 100/100 (≥90 통과)",
+                "points": 4,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "LCP · 최대 콘텐츠 렌더",
+                "desc": "Google 기준 ≤2.5s 양호 — 현재 1.23s (good)",
+                "points": 3,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "CLS · 누적 레이아웃 이동",
+                "desc": "Google 기준 ≤0.10 양호 — 현재 0 (good)",
+                "points": 2,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              },
+              {
+                "name": "INP · 상호작용 반응성",
+                "desc": "Google 기준 ≤200ms 양호(2024 FID 대체) — CrUX 현장데이터 없음 · 랩(TBT) 프록시",
+                "points": 1,
+                "pass": true,
+                "source": "Google",
+                "fix": ""
+              }
+            ]
+          },
+          "total": 66,
+          "max": 151,
+          "hasPSI": true,
+          "psi": {
+            "seo": 73,
+            "perf": 100,
+            "accessibility": 73,
+            "bestPractices": 92,
+            "crux": null
+          },
+          "summary": {
+            "passed": 16,
+            "failed": 17,
+            "pending": 6,
+            "totalItems": 39,
+            "passRate": 48,
+            "improvable": 68
+          },
+          "grade": {
+            "label": "개선필요",
+            "color": "#dc2626",
+            "desc": "즉시 조치 필요"
+          },
+          "keywordSeeds": []
         }
       }
     ]
