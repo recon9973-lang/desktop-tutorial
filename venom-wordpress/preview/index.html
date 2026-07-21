@@ -5474,7 +5474,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .process-step{padding:20px 16px!important}
 }
 </style>
-<script src="/seo/seo-engine.js?v=1.7.0"></script>
+<script src="/seo/seo-engine.js?v=1.8.0"></script>
 <script src="/assets/infographics.js?v=1.1.0"></script>
 <script src="/assets/glossary.js?v=2.0.0"></script>
 <script>
@@ -5617,7 +5617,7 @@ function runFullDiag(){
   var btn=document.getElementById('fd-start');btn.disabled=true;btn.textContent='진단 중… (약 30초~1분)';
   setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},150);
 
-  // PSI 병렬 시작 (20~60초 — 도착 시 속도 카드 병합)
+  // PSI 병렬 시작 (약 10~15초 — 도착 시 속도 카드 병합)
   if(url){
     fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url))
       .then(function(r){return r.json();})
@@ -5717,7 +5717,7 @@ function _orchRender(){
     +'<p>실측 기준: SEO 구조(Google 기준, 속도 제외) · 모바일 속도(PSI) · AI 답변 노출(Perplexity 실측) · 검색 수요(네이버 검색광고)</p></div></div>';
   html+='<div class="orch-report-grid">'
     +card('SEO 구조','🔍',seoPct,_orch.seo?('통과 '+_orch.seo.summary.passed+' · 개선 '+_orch.seo.summary.failed+'항목'):'URL 미입력 또는 수집 실패')
-    +card('모바일 속도','⚡',(psi===null||psi===undefined)?(_orch.done.psi?null:'wait'):psi,(_orch.done.psi||!_orch.url)?'Google PageSpeed 실측':'Google PageSpeed 측정 중 (20~60초) — 완료되면 자동 반영')
+    +card('모바일 속도','⚡',(psi===null||psi===undefined)?(_orch.done.psi?null:'wait'):psi,(_orch.done.psi||!_orch.url)?'Google PageSpeed 실측':'Google PageSpeed 측정 중 (약 10~15초) — 완료되면 자동 반영')
     +card('AI 노출','🤖',ai,_orch.ai?('"'+_orch.ai.q+'" 실측 — '+(_orch.ai.cited?'우리 병원이 인용됩니다':(_orch.ai.mentioned?'언급되지만 인용은 없습니다':'AI 답변에 우리 병원이 없습니다'))):'실측 실패')
     +card('검색 기회','📈',null,kwDesc).replace('측정 불가','—')
     +'</div>';
@@ -6001,7 +6001,7 @@ function _renderSEO(data,url,domain,el){
       +'<div style="font-size:34px;margin-bottom:8px">⚙️</div>'
       +'<strong style="font-size:15px">JavaScript로 렌더링되는 사이트입니다</strong>'
       +'<p style="color:var(--mute);font-size:13px;margin:8px auto 16px;line-height:1.6;max-width:420px">원본 HTML이 비어 있어, 정확한 측정을 위해 <strong>Google이 실제 브라우저로 렌더링</strong>하는 정밀 분석으로 측정합니다.</p>'
-      +'<div id="seo-psi-section"><button onclick="_runSEOPSI()" class="btn btn-p" style="padding:11px 22px;font-size:13px">🔬 정밀 분석 시작 (10~20초)</button></div></div>';
+      +'<div id="seo-psi-section"><button onclick="_runSEOPSI()" class="btn btn-p" style="padding:11px 22px;font-size:13px">🔬 정밀 분석 시작 (약 10초)</button></div></div>';
     setTimeout(_runSEOPSI,500);
     return;
   }
@@ -6011,7 +6011,7 @@ function _renderSEO(data,url,domain,el){
   el.innerHTML=SEOEngine.renderInfographic(res)
     +'<div id="seo-psi-section" style="margin-top:14px;font-size:12.5px;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">'
     +'<span style="display:inline-block;width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#533afd;border-radius:50%;animation:spin .8s linear infinite"></span>'
-    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영합니다 (최대 30초 · 느리면 자동 생략, 위 정적 결과는 이미 유효)</div>'
+    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영합니다 (최대 15초 · 느리면 자동 생략, 위 정적 결과는 이미 유효)</div>'
     +_seoToolbar()
     +_seoCTA();
   setTimeout(_runSEOPSI, 400);
@@ -6024,7 +6024,7 @@ function _runSEOPSI(){
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var domain=url.replace(/^https?:\/\//,'').split('/')[0];
   var sec=document.getElementById('seo-psi-section');
-  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','최대 30초 · 느리면 자동 생략');
+  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','최대 15초 · 느리면 자동 생략');
   // 무한 스피너 방지: 28초 내 미응답이면 정밀분석 자동 생략(위 정적 결과는 그대로 유효).
   // AbortController가 없어도 _psiSkip이 UI를 반드시 종료시킨다(진짜 무한 스피너 원천 차단).
   var _psiDone=false;
@@ -6037,7 +6037,7 @@ function _runSEOPSI(){
       +'ℹ️ 정밀(속도) 분석 생략 — <b>정적 SEO 결과 기준</b>입니다.'+(reason?' '+reason:'')
       +' <button onclick="_runSEOPSI()" class="btn btn-p" style="padding:4px 11px;font-size:11px;margin-left:4px">정밀 분석 재시도</button>'+(admin||'')+'</div>';
   }
-  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 30초 내 오지 않음)'); }, 28000);
+  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 16초 내 오지 않음)'); }, 16000);
   fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now(), _psiCtl?{signal:_psiCtl.signal}:undefined)
     .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
     .then(function(resp){
