@@ -502,10 +502,11 @@
       });
     });
     var merged = buildResult(result.url, result.domain, result.isHttps, result.isSPA, checks, {
-      seo: Math.round((cats.seo ? cats.seo.score : 0) * 100),
+      // 요청하지 않은 카테고리는 null → 게이지에 '—'로 표시(0점 오해 방지).
+      seo: cats.seo ? Math.round(cats.seo.score * 100) : null,
       perf: perf,
-      accessibility: Math.round((cats.accessibility ? cats.accessibility.score : 0) * 100),
-      bestPractices: Math.round((cats['best-practices'] ? cats['best-practices'].score : 0) * 100),
+      accessibility: cats.accessibility ? Math.round(cats.accessibility.score * 100) : null,
+      bestPractices: cats['best-practices'] ? Math.round(cats['best-practices'].score * 100) : null,
       crux: crux
     });
     return merged;
@@ -571,7 +572,12 @@
     var psiBadges = '';
     if (result.psi) {
       var p = result.psi;
-      var b = function (lbl, v, col) { return '<span style="background:#f4f6fa;border-radius:8px;padding:8px 12px;font-size:12px">' + lbl + ' <strong style="color:' + col + '">' + v + '</strong></span>'; };
+      // 값이 null(미요청 카테고리)이면 '—'로 표시하고 회색 처리.
+      var b = function (lbl, v, col) {
+        var has = (v !== null && v !== undefined);
+        return '<span style="background:#f4f6fa;border-radius:8px;padding:8px 12px;font-size:12px">' + lbl +
+          ' <strong style="color:' + (has ? col : '#9ca3af') + '">' + (has ? v : '—') + '</strong></span>';
+      };
       psiBadges = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">' +
         b('SEO', p.seo, '#4285F4') + b('성능', p.perf, p.perf >= 90 ? '#16a34a' : p.perf >= 50 ? '#d97706' : '#dc2626') +
         b('접근성', p.accessibility, '#06b6d4') + b('권장사항', p.bestPractices, '#8b5cf6') + '</div>';

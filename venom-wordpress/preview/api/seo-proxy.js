@@ -13,18 +13,28 @@ const { URL } = require('url');
 const sa = require('../lib/naver-searchad'); // 검색광고 키워드도구 단일 소스
 
 // 단순 GET → JSON 패스스루 (entity, psi 공용)
+// 상류(구글 PSI 등)가 느릴 때 함수가 무한 대기하지 않도록 20초 타임아웃을 건다
+// → 초과 시 504로 즉시 응답, 클라이언트의 '정밀분석 생략'이 곧바로 동작한다.
 function getJson(fullUrl, res, withRaw) {
-  https.get(fullUrl, function(r) {
+  var done = false;
+  var reqObj = https.get(fullUrl, function(r) {
     var chunks = [];
     r.on('data', function(c) { chunks.push(c); });
     r.on('end', function() {
+      if (done) return; done = true;
       var body = Buffer.concat(chunks).toString('utf8');
       try { res.status(r.statusCode).json(JSON.parse(body)); }
       catch (e) {
         res.status(500).json(withRaw ? { error: 'Parse error', raw: body.slice(0, 300) } : { error: 'Parse error' });
       }
     });
-  }).on('error', function(e) { res.status(500).json({ error: e.message }); });
+  });
+  reqObj.on('error', function(e) { if (done) return; done = true; res.status(500).json({ error: e.message }); });
+  reqObj.setTimeout(20000, function() {
+    if (done) return; done = true;
+    reqObj.destroy();
+    res.status(504).json({ error: '상류 응답 지연(20초 초과) — 정밀분석 생략' });
+  });
 }
 
 // SSRF 방지: 내부/사설/링크로컬 호스트 차단
@@ -115,9 +125,12 @@ module.exports = async function handler(req, res) {
     if (!url) { res.status(400).json({ error: 'url parameter required' }); return; }
     const key = process.env.PSI_KEY;
     if (!key) { res.status(500).json({ error: 'PSI_KEY not configured' }); return; }
+    // 속도 개선: 4개 카테고리(20~40s) → 필요한 2개(performance·seo)만 요청.
+    // 항목 판정(psiByName)에 쓰는 audit은 seo 카테고리에 포함되고, 접근성·모범사례
+    // 게이지는 부가 정보라 생략 → PSI 응답 시간을 대폭 단축한다.
     const apiPath = '/pagespeedonline/v5/runPagespeed?url=' + encodeURIComponent(url)
       + '&key=' + key
-      + '&strategy=mobile&category=seo&category=performance&category=best-practices&category=accessibility';
+      + '&strategy=mobile&category=performance&category=seo';
     return getJson('https://www.googleapis.com' + apiPath, res, true);
   }
 
