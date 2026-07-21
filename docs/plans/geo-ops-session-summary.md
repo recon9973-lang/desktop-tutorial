@@ -147,17 +147,19 @@ geo-store 21 · geo-templates 20 · geo-metrics 19 · geo-gsc 9 · geo-report 25
 
 ---
 
-## 9. 라이브 TODO 체크리스트 (2026-07-16 기준)
+## 9. 라이브 TODO 체크리스트 (2026-07-16 갱신 · 코어+UI 전부 머지)
 
 ### ✅ 완료
 - [x] GEO-OS 파일럿 구축·배포(P1 8항목·MVP 9항목) — §1~6
 - [x] 통합 설계서 v2(ERP 실사 기반 정정)
-- [x] ERP 병합 M1~M6 구현·PR·오프라인 검증(52케이스)
-- [x] 통합 인도 문서(`geo-erp-integration-delivery.md`)
-- [x] **PR #42~#47 전부 erp-v1 머지 완료** (2026-07-16, 전 PR Vercel green). M2#43↔M5#46 타입 충돌은 세 필드(phase·automationLevel·channel) 모두 유지로 해소됨. `sov.ts`·`geo-weekly.ts`·`recurrence.ts`·`work-recur.ts`·`migrate-nas-to-erp.ts` 및 SOV KPI 안착 확인.
+- [x] ERP 병합 M1~M6 구현·PR·오프라인 검증
+- [x] **PR #42~#47(코어 6종) 전부 erp-v1 머지 완료** (2026-07-16, 전 PR Vercel green). M2#43↔M5#46 타입 충돌은 세 필드(phase·automationLevel·channel) 모두 유지로 해소됨. `sov.ts`·`geo-weekly.ts`·`recurrence.ts`·`work-recur.ts`·`migrate-nas-to-erp.ts` 및 SOV KPI 안착 확인.
 - [x] **UI 후속 #48·#49·#50 전부 머지** (2026-07-16, Vercel green). SOV 차트·Phase 진행률 탭·주간 리포트 UI. `SovChart.tsx`·`ClientOnboardingProgress.tsx`·`GeoWeeklyReport.tsx`·`reports/geo-weekly` 안착 확인.
+- [x] **오프라인 검증 총 95케이스**(코어 52 + UI 43), 9개 PR 전부 Vercel green.
+- [x] **NAS 접근 가이드 문서화**(LAN/온라인 장단점·속도·조합별) — 인도 문서 부록 A.
+- [x] **인도 문서 종합 갱신**(`geo-erp-integration-delivery.md`) — 전체 작업 빠짐없이 기록(머지 SHA·충돌 해소·검증·인벤토리·연대기).
 
-### ⏭ 팀 액션 (병합 마무리)
+### ⏭ 팀 액션 (남은 것)
 - [ ] **M6 실행**: NAS SQLite 백업본(`.backup`) 확보(LAN/온라인 무관, 상시 연결 불필요) → `sqlite3 team.db ".schema"`로 `NAS_SCHEMA` 확정 → `staff-map.json` 작성 → dry-run → `--commit`
 - [ ] **desktop-tutorial 파일럿**: GitHub Secret `ADMIN_SECRET` 등록(자동화 유일 차단) — 병합 완료로 파일럿 종료 수순
 
