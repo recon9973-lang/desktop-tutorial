@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784596042126",
+    "title": "대전 병원마케팅 성공을 위한 5가지 전략",
+    "tokenUsage": {
+      "promptTokens": 2593,
+      "completionTokens": 1819,
+      "totalTokens": 4412,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-21T01:08:39.621Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784552534740",
     "title": "인천 피부과 마케팅 전략 5가지, 효과적 접근법 공개",
     "tokenUsage": {
