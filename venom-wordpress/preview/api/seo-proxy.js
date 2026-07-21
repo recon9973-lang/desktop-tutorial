@@ -178,6 +178,8 @@ module.exports = async function handler(req, res) {
       res.status(200).json({
         html: pageResult.status === 'fulfilled' ? pageResult.value.body : '',
         robots: robotsResult.status === 'fulfilled' ? robotsResult.value.body : '',
+        // robots.txt의 실제 HTTP 상태코드 — 소프트 404(HTML을 200으로 돌려주는 SPA 호스팅) 오탐 방지에 사용.
+        robotsStatus: robotsResult.status === 'fulfilled' ? robotsResult.value.status : 0,
         pageStatus: pageResult.status === 'fulfilled' ? pageResult.value.status : 0,
         isHttps: parsed.protocol === 'https:',
         headers: pickH

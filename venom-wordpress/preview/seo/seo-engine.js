@@ -194,7 +194,18 @@
     var lang = doc ? (doc.documentElement.getAttribute('lang') || '').trim() : '';
     var robotsMeta = (metaByName('robots') || metaByName('googlebot'));
     var notNoindex = !/noindex/i.test(robotsMeta);
-    var robotsTxtOk = robots.trim().length > 0;
+    // robots.txt 유효성: 단순 '비어있지 않음'은 소프트 404(HTML을 200으로 주는 호스팅)를 오탐한다.
+    // → ① HTTP 200 (상태코드 있으면), ② HTML이 아님, ③ 실제 지시어(user-agent/disallow/allow/sitemap) 포함.
+    var robotsStatus = (typeof input.robotsStatus === 'number') ? input.robotsStatus : null;
+    var _robotsBody = (robots || '').trim();
+    var robotsIsHtml = /^<(?:!doctype|html|\?xml|head|body)/i.test(_robotsBody);
+    var robotsHasDirective = /(^|\n)\s*(user-agent|disallow|allow|sitemap|crawl-delay)\s*:/i.test(_robotsBody);
+    var robotsTxtOk = _robotsBody.length > 0 && !robotsIsHtml && robotsHasDirective
+      && (robotsStatus === null || robotsStatus === 200);
+    var robotsTxtNote = robotsTxtOk ? '크롤러 수집 규칙 파일 제공'
+      : (robotsStatus && robotsStatus !== 200) ? ('robots.txt 없음 — HTTP ' + robotsStatus + ' 응답')
+      : (robotsIsHtml || (!robotsHasDirective && _robotsBody.length > 0)) ? 'robots.txt 없음 — 페이지(HTML)가 대신 응답(소프트 404)'
+      : 'robots.txt 없음 — /robots.txt 파일을 추가하세요';
     var crawlOk = robotsAllows(robots, 'Googlebot') && robotsAllows(robots, 'Yeti') && robotsAllows(robots, '*');
 
     // 검색 노출
@@ -354,7 +365,7 @@
         ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 2, jsItem(ogOk), '네이버'],
         ['sitemap.xml 선언', 'robots.txt에 Sitemap: 선언 — 수집 촉진', 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
-        ['robots.txt 존재', '크롤러 수집 규칙 파일 제공', 3, robotsTxtOk, '공통']
+        ['robots.txt 존재', robotsTxtNote, 3, robotsTxtOk, '공통']
       ],
       // 신뢰·전문성(E-E-A-T) = 의료(YMYL) 가중 신호. Google: E-E-A-T 중 '신뢰성'이 최우선이며
       // YMYL(건강)에 특히 가중([171]). 직접 순위요소는 아니나 병원 사이트엔 전환·품질 신뢰의 핵심.
