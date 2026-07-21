@@ -3,7 +3,7 @@
 > 🤖 자동 생성 파일. 직접 수정 금지 — `node scripts/gen-project-state.mjs`(또는 CI)가 push마다 갱신.
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
-- **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
+- **저장소**: desktop-tutorial  ·  **현재 브랜치**: claude/session-review-prep-an0to9  ·  **기본 브랜치**: claude/session-review-prep-an0to9
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
