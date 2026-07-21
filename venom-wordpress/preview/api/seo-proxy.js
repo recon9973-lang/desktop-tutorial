@@ -8,6 +8,7 @@
 
 const https = require('https');
 const http = require('http');
+const zlib = require('zlib');
 const crypto = require('crypto');
 const { URL } = require('url');
 const sa = require('../lib/naver-searchad'); // 검색광고 키워드도구 단일 소스
@@ -72,7 +73,8 @@ function fetchUrl(urlStr, redirects, ua) {
         'User-Agent': ua || _BROWSER_UA,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Accept-Encoding': 'identity'
+        // 압축 허용 → content-encoding으로 gzip/br 사용 여부(속도 신호) 감지. 본문은 아래서 해제.
+        'Accept-Encoding': 'gzip, deflate, br'
       },
       timeout: 12000
     };
@@ -86,13 +88,20 @@ function fetchUrl(urlStr, redirects, ua) {
       var chunks = [];
       res.on('data', function(c) { chunks.push(c); });
       res.on('end', function() {
-        var body = Buffer.concat(chunks).toString('utf8');
+        var buf = Buffer.concat(chunks);
+        var enc = (res.headers['content-encoding'] || '').toLowerCase();
+        try {
+          if (enc.indexOf('br') >= 0) buf = zlib.brotliDecompressSync(buf);
+          else if (enc.indexOf('gzip') >= 0) buf = zlib.gunzipSync(buf);
+          else if (enc.indexOf('deflate') >= 0) buf = zlib.inflateSync(buf);
+        } catch (e) { /* 해제 실패 시 원본 유지(파싱은 실패해도 헤더 신호는 유효) */ }
+        var body = buf.toString('utf8');
         // 봇차단(401/403/429/503)이고 아직 브라우저 UA면 → Googlebot UA로 1회 재시도(SEO 친화 사이트 회복)
         if ([401, 403, 429, 503].indexOf(res.statusCode) >= 0 && !ua) {
           resolve(fetchUrl(urlStr, redirects, _GOOGLEBOT_UA));
           return;
         }
-        resolve({ status: res.statusCode, body: body });
+        resolve({ status: res.statusCode, body: body, headers: res.headers });
       });
     });
     req.on('error', reject);
@@ -160,11 +169,18 @@ module.exports = async function handler(req, res) {
       var origin = parsed.protocol + '//' + parsed.host;
       var results = await Promise.allSettled([fetchUrl(full, 0), fetchUrl(origin + '/robots.txt', 0)]);
       var pageResult = results[0], robotsResult = results[1];
+      // 보안·속도 신호에 필요한 응답 헤더만 선별 반환(전체 헤더 노출 방지).
+      var rawH = (pageResult.status === 'fulfilled' && pageResult.value.headers) ? pageResult.value.headers : {};
+      var pickH = {};
+      ['strict-transport-security','x-content-type-options','x-frame-options','referrer-policy',
+       'content-security-policy','content-encoding','x-xss-protection','permissions-policy']
+        .forEach(function(k){ if (rawH[k] != null) pickH[k] = String(rawH[k]); });
       res.status(200).json({
         html: pageResult.status === 'fulfilled' ? pageResult.value.body : '',
         robots: robotsResult.status === 'fulfilled' ? robotsResult.value.body : '',
         pageStatus: pageResult.status === 'fulfilled' ? pageResult.value.status : 0,
-        isHttps: parsed.protocol === 'https:'
+        isHttps: parsed.protocol === 'https:',
+        headers: pickH
       });
     } catch (e) { res.status(500).json({ error: e.message }); }
     return;
