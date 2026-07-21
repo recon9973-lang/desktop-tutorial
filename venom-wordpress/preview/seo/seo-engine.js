@@ -98,6 +98,9 @@
     var html = input.html || '';
     var robots = input.robots || '';
     var isHttps = (typeof input.isHttps === 'boolean') ? input.isHttps : /^https:/i.test(url);
+    // 응답 헤더(보안·압축 신호). 키는 소문자. 없으면 빈 객체 → 관련 항목은 '정밀필요'로 낮춤.
+    var H = input.headers || null;
+    var hget = function (k) { return (H && H[k] != null) ? String(H[k]) : ''; };
     var doc = parseDoc(html, input.doc);
     var domain = url.replace(/^https?:\/\//i, '').split('/')[0] || url;
 
@@ -215,6 +218,25 @@
     // JS로 흔히 주입되는 신호: 정적에 있으면 pass, 없으면 renderSuspect일 때 pending(null), 아니면 fail
     var jsItem = function (v) { return v === true ? true : (renderSuspect ? null : false); };
 
+    // ── 보안 헤더 · 정적 속도 신호 (NXT 벤치마크 반영) ─────────────
+    // 헤더(H)가 없으면(구버전 프록시·수집 실패) 해당 항목은 '정밀필요(null)'로 둔다(거짓 실패 방지).
+    var hdrItem = function (v) { return H ? (v === true) : null; };
+    var csp = hget('content-security-policy');
+    var hasHsts = /max-age=\s*[1-9]/i.test(hget('strict-transport-security'));
+    var hasNosniff = /nosniff/i.test(hget('x-content-type-options'));
+    var hasFrameGuard = !!hget('x-frame-options') || /frame-ancestors/i.test(csp);
+    var hasReferrer = !!hget('referrer-policy');
+    var hasCSP = !!csp;
+    var enc = hget('content-encoding').toLowerCase();
+    var hasCompression = /gzip|br|deflate|zstd/.test(enc);
+    // 정적 속도: 차세대 이미지(webp/avif)·이미지 지연로딩(loading="lazy")
+    var imgTags = doc ? Array.prototype.slice.call(doc.querySelectorAll('img')) : [];
+    var srcBlob = imgTags.map(function (im) { return (im.getAttribute('src') || '') + ' ' + (im.getAttribute('srcset') || '') + ' ' + (im.getAttribute('data-src') || ''); }).join(' ');
+    var usesNextGen = /\.(webp|avif)(\?|#|\s|$)/i.test(srcBlob) || /\.(webp|avif)["')]/i.test(html) || !!(doc && doc.querySelector('picture source[type="image/webp"],picture source[type="image/avif"]'));
+    var lazyImgs = imgTags.filter(function (im) { return (im.getAttribute('loading') || '').toLowerCase() === 'lazy'; }).length;
+    var hasLazy = imgTags.length === 0 || (lazyImgs / imgTags.length) >= 0.5;
+    var lazyNote = imgTags.length === 0 ? '이미지 없음' : (lazyImgs + '/' + imgTags.length + '개 지연로딩(loading="lazy")');
+
     // ── 신뢰·전문성(E-E-A-T) · 엔티티 신호 — 의료(YMYL) 가중 ─────────
     // 근거: [171]신뢰성 최우선·YMYL(건강) 가중 · [145]기사 author/datePublished/dateModified
     //       [185]Organization(sameAs·주소) · [121]LocalBusiness(주소·영업시간) · [39][1]생성형AI=기존SEO
@@ -284,7 +306,10 @@
         ['인덱싱 허용', 'meta robots noindex 미설정 — 색인 가능성', 8, notNoindex, 'Google'],
         ['Canonical 태그', '중복 URL 정규화 — 대표 주소 지정', 6, !!canonical, 'Google'],
         ['Viewport(모바일)', '모바일 반응형 메타 — 모바일 우선 인덱싱', 8, hasViewport, 'Google'],
-        ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 3, !!lang, 'Google']
+        ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 3, !!lang, 'Google'],
+        ['HTTP 압축', 'gzip/br 압축 — 전송량↓·로딩↑ (' + (enc || '미적용') + ')', 4, hdrItem(hasCompression), '공통'],
+        ['차세대 이미지(WebP)', 'WebP/AVIF 사용 — 이미지 용량↓·속도↑', 3, jsItem(usesNextGen), 'Google'],
+        ['이미지 지연로딩', 'loading="lazy" — 초기 로딩 속도 개선 (' + lazyNote + ')', 2, jsItem(hasLazy), 'Google']
       ],
       // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. 구조화 데이터는 Google이 페이지 이해·
       // 리치결과에 활용하므로 비중을 올리고(5), 나머지 공유·보조 신호는 낮게 유지한다.
@@ -316,6 +341,15 @@
         ['문단 가독성', '지나치게 긴 문단 없음 — 스캔 가능성', 2, jsItem(paraOk), 'Google'],
         ['스캔 구조(목록·표)', '목록·표로 정보 구조화 — AI/사용자 스캔', 2, jsItem(hasScan), 'Google']
       ]),
+      // 보안(응답 헤더) = NXT 벤치마크. 방문자 신뢰·클릭재킹/스니핑 방어. 헤더 미수집 시 정밀필요.
+      security: [
+        ['HTTPS 보안 연결', 'SSL 적용 — 전송 구간 암호화(신뢰 기본)', 4, isHttps, '공통'],
+        ['HSTS 적용', 'Strict-Transport-Security — HTTPS 강제(다운그레이드 공격 방어)', 3, hdrItem(hasHsts), '공통'],
+        ['콘텐츠 스니핑 차단', 'X-Content-Type-Options: nosniff — MIME 스니핑 방어', 3, hdrItem(hasNosniff), '공통'],
+        ['클릭재킹 차단', 'X-Frame-Options 또는 CSP frame-ancestors — iframe 삽입 방어', 3, hdrItem(hasFrameGuard), '공통'],
+        ['Referrer 정책', 'Referrer-Policy — 외부 이동 시 참조정보 제어', 2, hdrItem(hasReferrer), '공통'],
+        ['콘텐츠 보안 정책(CSP)', 'Content-Security-Policy — XSS·주입 방어(보너스)', 2, hdrItem(hasCSP), '공통']
+      ],
       // 속도(Core Web Vitals) = Google PageSpeed Insights / Lighthouse 실측 전용. PSI 없이는
       // 절대 점수를 만들지 않고 pending(정밀 필요) 유지. 배점 합계 10(성능4·LCP3·CLS2·INP1).
       speed: [
@@ -337,6 +371,7 @@
     { key: 'search', label: '검색 노출 강화', icon: '🔍', color: '#8b5cf6' },
     { key: 'trust', label: '신뢰·전문성(E-E-A-T)', icon: '🩺', color: '#10b981' },
     { key: 'writing', label: '콘텐츠 최적화', icon: '✍️', color: '#f43f5e' },
+    { key: 'security', label: '보안(응답 헤더)', icon: '🔒', color: '#0ea5e9' },
     { key: 'speed', label: '속도(CWV)', icon: '⚡', color: '#f59e0b' }
   ];
 
@@ -367,7 +402,15 @@
     '엔티티 신호(sameAs)': '<!-- Organization JSON-LD 안 -->\n"sameAs":["https://blog.naver.com/OO","https://www.instagram.com/OO"]',
     '소제목 구조': '<h2>진료 안내</h2>\n<h3>임플란트</h3>\n<!-- 긴 본문은 H2/H3로 구획 -->',
     '문단 가독성': '<!-- 500자 넘는 문단은 2~3개로 분할, 핵심은 목록으로 -->',
-    '스캔 구조(목록·표)': '<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>'
+    '스캔 구조(목록·표)': '<ul>\n  <li>진료시간 안내</li>\n  <li>비급여 항목 안내</li>\n</ul>',
+    'HSTS 적용': '# 응답 헤더(서버·CDN 설정)\nStrict-Transport-Security: max-age=31536000; includeSubDomains',
+    '콘텐츠 스니핑 차단': '# 응답 헤더\nX-Content-Type-Options: nosniff',
+    '클릭재킹 차단': '# 응답 헤더 (둘 중 하나)\nX-Frame-Options: SAMEORIGIN\n# 또는 CSP: frame-ancestors \'self\'',
+    'Referrer 정책': '# 응답 헤더\nReferrer-Policy: strict-origin-when-cross-origin',
+    '콘텐츠 보안 정책(CSP)': "# 응답 헤더 (예시 — 사이트에 맞게 조정)\nContent-Security-Policy: default-src 'self'; img-src 'self' data: https:",
+    'HTTP 압축': '# 서버/CDN에서 gzip 또는 brotli 압축 켜기\n# Nginx: gzip on;  ·  Vercel/Cloudflare: 기본 제공',
+    '차세대 이미지(WebP)': '<picture>\n  <source srcset="img.webp" type="image/webp">\n  <img src="img.jpg" alt="설명">\n</picture>',
+    '이미지 지연로딩': '<img src="img.webp" alt="설명" loading="lazy">'
   };
   var fixFor = function (name) {
     if (FIX[name]) return FIX[name];
