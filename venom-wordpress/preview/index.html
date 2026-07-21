@@ -5475,7 +5475,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .process-step{padding:20px 16px!important}
 }
 </style>
-<script src="/seo/seo-engine.js?v=2.0.2"></script>
+<script src="/seo/seo-engine.js?v=2.0.3"></script>
 <script src="/assets/infographics.js?v=1.1.0"></script>
 <script src="/assets/glossary.js?v=2.0.0"></script>
 <script>
@@ -5619,15 +5619,21 @@ function runFullDiag(){
   setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},150);
 
   // PSI 병렬 시작 (약 10~15초 — 도착 시 속도 카드 병합)
+  // 응답이 없어도 18초 후 자동 종료 → 무한 '측정 중' 방지(AbortController로 요청도 취소).
   if(url){
-    fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url))
+    var _pDone=false;
+    var _pCtl=(typeof AbortController!=='undefined')?new AbortController():null;
+    var _pFin=function(){ if(_pDone)return; _pDone=true; _orch.done.psi=true; _orchRender(); };
+    var _pT=setTimeout(function(){ if(_pCtl){try{_pCtl.abort();}catch(e){}} _pFin(); }, 18000);
+    fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url), _pCtl?{signal:_pCtl.signal}:undefined)
       .then(function(r){return r.json();})
       .then(function(j){
+        if(_pDone)return; clearTimeout(_pT);
         var c=j.lighthouseResult&&j.lighthouseResult.categories;
         if(c&&c.performance){_orch.psi=Math.round(c.performance.score*100);}
-        _orch.done.psi=true;_orchRender();
+        _pFin();
       })
-      .catch(function(){_orch.done.psi=true;_orchRender();});
+      .catch(function(){ clearTimeout(_pT); _pFin(); });
   }else{_orch.done.psi=true;}
 
   // 1→2: 수집 + SEO 채점
@@ -5640,7 +5646,7 @@ function runFullDiag(){
         _oStep(1,'ok','완료');
         _oStep(2,'run','채점 중…');
         if(typeof SEOEngine==='undefined')throw new Error('엔진 로드 실패');
-        var res=SEOEngine.analyze({url:url,html:data.html||'',robots:data.robots||'',isHttps:data.isHttps,headers:data.headers,robotsStatus:data.robotsStatus});
+        var res=SEOEngine.analyze({url:url,html:data.html||'',robots:data.robots||'',isHttps:data.isHttps,headers:data.headers,robotsStatus:data.robotsStatus,sitemapStatus:data.sitemapStatus,sitemapIsXml:data.sitemapIsXml,faviconStatus:data.faviconStatus});
         _orch.seo=res;
         _oStep(2,'ok',Math.round(res.total/res.max*100)+'점');
       })
@@ -6030,7 +6036,7 @@ function _renderSEO(data,url,domain,el){
   if(typeof SEOEngine==='undefined'){
     el.innerHTML='<div style="padding:20px;text-align:center;color:#dc2626">SEO 엔진 로드 실패 — 새로고침 후 다시 시도해주세요</div>';return;
   }
-  var res=SEOEngine.analyze({url:url,html:data.html||'',robots:data.robots||'',isHttps:data.isHttps,headers:data.headers,robotsStatus:data.robotsStatus});
+  var res=SEOEngine.analyze({url:url,html:data.html||'',robots:data.robots||'',isHttps:data.isHttps,headers:data.headers,robotsStatus:data.robotsStatus,sitemapStatus:data.sitemapStatus,sitemapIsXml:data.sitemapIsXml,faviconStatus:data.faviconStatus});
   if(res.isSPA){
     _seoLast=res;
     el.innerHTML='<div style="padding:26px 20px;text-align:center">'

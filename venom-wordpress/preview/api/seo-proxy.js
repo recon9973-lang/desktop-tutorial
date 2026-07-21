@@ -167,8 +167,16 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: '허용되지 않는 주소입니다.' });
       }
       var origin = parsed.protocol + '//' + parsed.host;
-      var results = await Promise.allSettled([fetchUrl(full, 0), fetchUrl(origin + '/robots.txt', 0)]);
-      var pageResult = results[0], robotsResult = results[1];
+      // 보조 파일(sitemap·favicon)이 느리면 6초로 캡 → 초기 수집(페이지·robots) 지연 방지.
+      var withCap = function (p, ms) { return Promise.race([p, new Promise(function (r) { setTimeout(function () { r(null); }, ms); })]); };
+      // 페이지·robots·sitemap·favicon을 병렬 수집 → 파일 실제 존재(상태코드) 기반 실측.
+      var results = await Promise.allSettled([
+        fetchUrl(full, 0), fetchUrl(origin + '/robots.txt', 0),
+        withCap(fetchUrl(origin + '/sitemap.xml', 0), 6000), withCap(fetchUrl(origin + '/favicon.ico', 0), 6000)
+      ]);
+      var pageResult = results[0], robotsResult = results[1], sitemapResult = results[2], faviconResult = results[3];
+      var _sm = sitemapResult.status === 'fulfilled' ? sitemapResult.value : null;
+      var _fv = faviconResult.status === 'fulfilled' ? faviconResult.value : null;
       // 보안·속도 신호에 필요한 응답 헤더만 선별 반환(전체 헤더 노출 방지).
       var rawH = (pageResult.status === 'fulfilled' && pageResult.value.headers) ? pageResult.value.headers : {};
       var pickH = {};
@@ -181,6 +189,11 @@ module.exports = async function handler(req, res) {
         // robots.txt의 실제 HTTP 상태코드 — 소프트 404(HTML을 200으로 돌려주는 SPA 호스팅) 오탐 방지에 사용.
         robotsStatus: robotsResult.status === 'fulfilled' ? robotsResult.value.status : 0,
         pageStatus: pageResult.status === 'fulfilled' ? pageResult.value.status : 0,
+        // sitemap.xml 실측: 상태코드 + XML 형식 여부(앞부분만 판단, 본문은 미반환).
+        sitemapStatus: _sm ? _sm.status : 0,
+        sitemapIsXml: _sm ? /^\s*(<\?xml|<urlset|<sitemapindex)/i.test(String(_sm.body || '').slice(0, 500)) : false,
+        // favicon 실측: 상태코드(200이면 실제 파일 존재).
+        faviconStatus: _fv ? _fv.status : 0,
         isHttps: parsed.protocol === 'https:',
         headers: pickH
       });
