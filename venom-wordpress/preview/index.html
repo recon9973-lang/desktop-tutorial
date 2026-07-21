@@ -1984,6 +1984,7 @@ summary::-webkit-details-marker{display:none}
             <input type="url" id="seo-url" class="tool-input" placeholder="https://병원홈페이지.com" oninput="toolReady('seo')" onkeydown="if(event.key==='Enter')runSEO()">
             <button class="tool-btn" onclick="runSEO()">분석</button>
           </div>
+          <div id="seo-kwdemand" style="display:none;margin-top:12px"></div>
           <div id="seo-result" class="tool-result" style="display:none"></div>
         </div>
         <!-- GEO -->
@@ -5474,7 +5475,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .process-step{padding:20px 16px!important}
 }
 </style>
-<script src="/seo/seo-engine.js?v=1.9.0"></script>
+<script src="/seo/seo-engine.js?v=2.0.0"></script>
 <script src="/assets/infographics.js?v=1.1.0"></script>
 <script src="/assets/glossary.js?v=2.0.0"></script>
 <script>
@@ -5989,6 +5990,41 @@ function _renderLB(host,d,period){
 }
 try{ loadLeaderboard('all'); }catch(e){}
 
+// 이 페이지 핵심 키워드(제목·H1 자동추출) → 네이버 검색량 조회 → 결과 상단에 '검색 수요' 카드 표시 (NXT 벤치마크)
+function _seoKeywordDemand(){
+  try{
+    var host=document.getElementById('seo-kwdemand'); if(!host) return;
+    var _e=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+    var seeds=(_seoLast&&_seoLast.keywordSeeds)||[];
+    if(!seeds.length){ host.style.display='none'; return; }
+    var kw=seeds[0];
+    host.style.display='block';
+    host.innerHTML='<div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:11px 14px;font-size:12.5px;color:#3730a3;display:flex;align-items:center;gap:8px">'
+      +'<span style="display:inline-block;width:13px;height:13px;border:2px solid #c7d2fe;border-top-color:#533afd;border-radius:50%;animation:spin .8s linear infinite"></span>'
+      +'🔑 이 페이지 핵심 키워드 "'+_e(kw)+'" 검색 수요 조회 중…</div>';
+    fetch(_SEO_PROXY+'?type=keyword&keyword='+encodeURIComponent(kw))
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var list=(d&&d.keywordList)||[];
+        if(!list.length){ host.style.display='none'; return; }
+        list.sort(function(a,b){return (_oNum(b.monthlyPcQcCnt)+_oNum(b.monthlyMobileQcCnt))-(_oNum(a.monthlyPcQcCnt)+_oNum(a.monthlyMobileQcCnt));});
+        var top=list.slice(0,6);
+        var head=top[0];
+        var totalVol=_oNum(head.monthlyPcQcCnt)+_oNum(head.monthlyMobileQcCnt);
+        var cl=function(v){v=(typeof v==='string')?(v==='높음'?0.7:v==='중간'?0.4:0.1):(v||0);return v<0.1?'낮음':v<0.3?'보통':v<0.6?'높음':'매우높음';};
+        var chips=top.map(function(k){var vol=_oNum(k.monthlyPcQcCnt)+_oNum(k.monthlyMobileQcCnt);
+          return '<span style="background:#fff;border:1px solid #c7d2fe;border-radius:999px;padding:4px 10px;font-size:12px;color:#3730a3">'+_e(k.relKeyword)+' <b style="color:#533afd">'+vol.toLocaleString()+'</b></span>';}).join('');
+        host.innerHTML='<div style="background:linear-gradient(135deg,#eef2ff,#faf5ff);border:1px solid #c7d2fe;border-radius:14px;padding:15px 16px">'
+          +'<div style="font-size:11.5px;font-weight:800;color:#4338ca;letter-spacing:.04em">🔑 이 페이지 핵심 키워드 · 검색 수요</div>'
+          +'<div style="display:flex;align-items:baseline;gap:10px;margin:6px 0 4px;flex-wrap:wrap"><strong style="font-size:20px;color:var(--ink)">'+_e(head.relKeyword)+'</strong>'
+          +'<span style="font-size:13px;color:#475569">월 <b style="color:#533afd">'+totalVol.toLocaleString()+'</b>회 검색 · 경쟁 '+cl(head.compIdx)+'</span></div>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">'+chips+'</div>'
+          +'<div style="font-size:11px;color:#94a3b8;margin-top:9px">네이버 검색광고 기준 · 이 페이지 제목·H1에서 자동 추출</div></div>';
+      })
+      .catch(function(){ host.style.display='none'; });
+  }catch(e){ var h=document.getElementById('seo-kwdemand'); if(h)h.style.display='none'; }
+}
+
 // 빠른 분석 결과 → SEOEngine 인포그래픽 렌더 (수치 + SVG 도넛/막대)
 function _renderSEO(data,url,domain,el){
   if(typeof SEOEngine==='undefined'){
@@ -6003,10 +6039,12 @@ function _renderSEO(data,url,domain,el){
       +'<p style="color:var(--mute);font-size:13px;margin:8px auto 16px;line-height:1.6;max-width:420px">원본 HTML이 비어 있어, 정확한 측정을 위해 <strong>Google이 실제 브라우저로 렌더링</strong>하는 정밀 분석으로 측정합니다.</p>'
       +'<div id="seo-psi-section"><button onclick="_runSEOPSI()" class="btn btn-p" style="padding:11px 22px;font-size:13px">🔬 정밀 분석 시작 (약 10초)</button></div></div>';
     setTimeout(_runSEOPSI,500);
+    _seoKeywordDemand();
     return;
   }
   _seoLast=res;
   try{ _lbRecord(res.domain, Math.round(res.total/res.max*100)); }catch(e){}
+  _seoKeywordDemand();
   // 정밀 분석(PSI)을 기본 자동 실행 — 우선 정적 결과(즉시 표시) 후 Google 실제 렌더링 결과로 자동 갱신.
   el.innerHTML=SEOEngine.renderInfographic(res)
     +'<div id="seo-psi-section" style="margin-top:14px;font-size:12.5px;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">'

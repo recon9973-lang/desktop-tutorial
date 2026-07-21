@@ -236,6 +236,25 @@
     var lazyImgs = imgTags.filter(function (im) { return (im.getAttribute('loading') || '').toLowerCase() === 'lazy'; }).length;
     var hasLazy = imgTags.length === 0 || (lazyImgs / imgTags.length) >= 0.5;
     var lazyNote = imgTags.length === 0 ? '이미지 없음' : (lazyImgs + '/' + imgTags.length + '개 지연로딩(loading="lazy")');
+    // 이미지 최적화: 과다 개수·대용량 인라인(base64) 점검
+    var bigInline = imgTags.filter(function (im) { var s = im.getAttribute('src') || ''; return s.indexOf('data:') === 0 && s.length > 30000; }).length;
+    var imgOptOk = imgTags.length <= 50 && bigInline === 0;
+    var imgOptNote = imgTags.length === 0 ? '이미지 없음' : (imgTags.length + '개' + (bigInline ? ' · 대용량 인라인 ' + bigInline + '개' : ''));
+
+    // 페이지 핵심 키워드 시드 자동 추출(제목·H1 기반) → 클라이언트가 검색량 조회에 사용(NXT 벤치마크).
+    var _h1txt = (doc && doc.querySelector('h1')) ? (doc.querySelector('h1').textContent || '').trim() : '';
+    var _KWSTOP = /^(병원|의원|클리닉|치과|한의원|피부과|공식|홈페이지|home|소개|대표|진료|안내|blog|블로그|메인|main|the|and|for|of|www|com|net|kr)$/i;
+    function _kwClean(s) { return String(s || '').replace(/[|·•\-–—:_/()\[\]{}"'~!?,.]/g, ' ').replace(/\s+/g, ' ').trim(); }
+    var keywordSeeds = (function () {
+      var out = [], seen = {};
+      function push(s) { s = _kwClean(s); if (!s || s.length < 2 || s.length > 25 || seen[s]) return; seen[s] = 1; out.push(s); }
+      push((title || '').split(/[|·•\-–—:]/)[0]);
+      push(_h1txt);
+      var toks = _kwClean((title || '') + ' ' + _h1txt).split(' ').filter(function (w) { return w.length >= 2 && !_KWSTOP.test(w) && !/^\d+$/.test(w); });
+      for (var i = 0; i < toks.length - 1 && out.length < 4; i++) push(toks[i] + ' ' + toks[i + 1]);
+      for (var j = 0; j < toks.length && out.length < 5; j++) push(toks[j]);
+      return out.slice(0, 4);
+    })();
 
     // ── 신뢰·전문성(E-E-A-T) · 엔티티 신호 — 의료(YMYL) 가중 ─────────
     // 근거: [171]신뢰성 최우선·YMYL(건강) 가중 · [145]기사 author/datePublished/dateModified
@@ -309,7 +328,8 @@
         ['HTML lang 속성', '페이지 언어 명시 — 검색엔진 언어 인식', 3, !!lang, 'Google'],
         ['HTTP 압축', 'gzip/br 압축 — 전송량↓·로딩↑ (' + (enc || '미적용') + ')', 4, hdrItem(hasCompression), '공통'],
         ['차세대 이미지(WebP)', 'WebP/AVIF 사용 — 이미지 용량↓·속도↑', 3, jsItem(usesNextGen), 'Google'],
-        ['이미지 지연로딩', 'loading="lazy" — 초기 로딩 속도 개선 (' + lazyNote + ')', 2, jsItem(hasLazy), 'Google']
+        ['이미지 지연로딩', 'loading="lazy" — 초기 로딩 속도 개선 (' + lazyNote + ')', 2, jsItem(hasLazy), 'Google'],
+        ['이미지 최적화', '과다 이미지·대용량 인라인 점검 (' + imgOptNote + ')', 2, jsItem(imgOptOk), 'Google']
       ],
       // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. 구조화 데이터는 Google이 페이지 이해·
       // 리치결과에 활용하므로 비중을 올리고(5), 나머지 공유·보조 신호는 낮게 유지한다.
@@ -362,6 +382,7 @@
 
     var _res = buildResult(url, domain, isHttps, isSPA, checks, null);
     _res.renderSuspect = renderSuspect;
+    _res.keywordSeeds = keywordSeeds;
     return _res;
   }
 
@@ -410,7 +431,8 @@
     '콘텐츠 보안 정책(CSP)': "# 응답 헤더 (예시 — 사이트에 맞게 조정)\nContent-Security-Policy: default-src 'self'; img-src 'self' data: https:",
     'HTTP 압축': '# 서버/CDN에서 gzip 또는 brotli 압축 켜기\n# Nginx: gzip on;  ·  Vercel/Cloudflare: 기본 제공',
     '차세대 이미지(WebP)': '<picture>\n  <source srcset="img.webp" type="image/webp">\n  <img src="img.jpg" alt="설명">\n</picture>',
-    '이미지 지연로딩': '<img src="img.webp" alt="설명" loading="lazy">'
+    '이미지 지연로딩': '<img src="img.webp" alt="설명" loading="lazy">',
+    '이미지 최적화': '<!-- 대용량 인라인(data:base64)은 외부 파일로, 이미지 수는 필요한 만큼만 -->\n<img src="/img/photo.webp" alt="설명" loading="lazy" width="800" height="600">'
   };
   var fixFor = function (name) {
     if (FIX[name]) return FIX[name];
@@ -544,7 +566,7 @@
         return [it.name, it.desc, it.points, finalPass, it.source];
       });
     });
-    var merged = buildResult(result.url, result.domain, result.isHttps, result.isSPA, checks, {
+    var _mergedRes = buildResult(result.url, result.domain, result.isHttps, result.isSPA, checks, {
       // 요청하지 않은 카테고리는 null → 게이지에 '—'로 표시(0점 오해 방지).
       seo: cats.seo ? Math.round(cats.seo.score * 100) : null,
       perf: perf,
@@ -552,7 +574,8 @@
       bestPractices: cats['best-practices'] ? Math.round(cats['best-practices'].score * 100) : null,
       crux: crux
     });
-    return merged;
+    _mergedRes.keywordSeeds = result.keywordSeeds; // 키워드 시드 유지(PSI 병합 후에도)
+    return _mergedRes;
   }
 
   // ── 인포그래픽 (SVG, 의존성 0) ─────────────────────────────────
