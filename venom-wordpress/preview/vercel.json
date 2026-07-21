@@ -217,6 +217,10 @@
     "api/seo-proxy.js": {
       "maxDuration": 60
     },
+    "api/keyword-discover.js": {
+      "maxDuration": 30,
+      "includeFiles": "data/**"
+    },
     "api/cron-seo-monitor.js": {
       "maxDuration": 300
     },

@@ -1675,6 +1675,8 @@ summary::-webkit-details-marker{display:none}
       .orch-donut b small{font-size:12px;font-weight:500;color:rgba(255,255,255,.6)}
       .orch-total-txt strong{display:block;font-size:18px;font-weight:800;margin-bottom:5px}
       .orch-total-txt p{font-size:13px;color:rgba(255,255,255,.72);line-height:1.65;margin:0}
+      .orch-kw{background:var(--soft);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-top:12px}
+      .orch-kw h4{font-size:14px;font-weight:800;margin:0 0 4px;color:var(--ink);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
       .orch-rx{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-top:12px}
       .orch-rx h4{font-size:14px;font-weight:800;margin:0 0 12px;color:var(--ink)}
       .orch-rx-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:13px;line-height:1.6;color:var(--ink2)}
@@ -5590,6 +5592,7 @@ function runAeo(){
 }
 
 var _SEO_PROXY='https://venom-new-site.vercel.app/api/seo-proxy';
+var _KWDISC='https://venom-new-site.vercel.app/api/keyword-discover';
 
 // ── 원클릭 종합 진단 오케스트레이터 (무료진단 재설계) ─────────────────────
 // 입력 1회(URL·진료과·지역·병원명) → 수집→SEO→AI실측→검색수요 순차, PSI는 병렬 병합.
@@ -5675,10 +5678,31 @@ function runFullDiag(){
       .catch(function(e){_oStep(3,'fail','측정 불가');});
   });
 
-  // 4: 검색 수요
+  // 4: 검색 수요 — 지역 있으면 키워드 발굴기(조합→검색광고→티어 랭킹), 없으면 단일 키워드 폴백.
   p2.then(function(){
-    _oStep(4,'run','조회 중…');
-    var kw=((region||'')+cat).replace(/\s+/g,'');
+    _oStep(4,'run','키워드 발굴 중…');
+    var done4=function(){
+      _orch.done.main=true;
+      var btn=document.getElementById('fd-start');btn.disabled=false;btn.textContent='다시 진단하기 →';
+      _orchRender();
+    };
+    if(region){
+      return fetch(_KWDISC+'?region='+encodeURIComponent(region)+'&dept='+encodeURIComponent(cat))
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if(d&&d.tiers){
+            _orch.kwdisc=d;
+            var rep=(d.tiers.representative&&d.tiers.representative[0])||(d.flat&&d.flat[0]);
+            if(rep)_orch.kw={kw:rep.keyword,vol:rep.volume,comp:rep.compIdx};
+            var n=d.flat?d.flat.length:0;
+            _oStep(4,'ok',n?(n+'개 키워드'):(d.ok===false?'조합만':'완료'));
+          }else{_oStep(4,'fail','측정 불가');}
+        })
+        .catch(function(e){_oStep(4,'fail','측정 불가');})
+        .then(done4);
+    }
+    // 지역 미입력 폴백: 진료과 단일 키워드 검색량만.
+    var kw=cat.replace(/\s+/g,'');
     return fetch(_SEO_PROXY+'?type=keyword&keyword='+encodeURIComponent(kw))
       .then(function(r){return r.json();})
       .then(function(d){
@@ -5690,12 +5714,43 @@ function runFullDiag(){
         _oStep(4,'ok',_orch.kw?('월 '+_orch.kw.vol.toLocaleString()+'회'):'완료');
       })
       .catch(function(e){_oStep(4,'fail','측정 불가');})
-      .then(function(){
-        _orch.done.main=true;
-        var btn=document.getElementById('fd-start');btn.disabled=false;btn.textContent='다시 진단하기 →';
-        _orchRender();
-      });
+      .then(done4);
   });
+}
+// 핵심 키워드 발굴 결과(티어) → HTML. 데이터 없으면 빈 문자열(카드 미표시).
+var _KWTIER=[
+  ['representative','🏷️','대표 키워드','지역+진료과 — 가장 넓은 수요'],
+  ['subregion','📍','세부 지역','구·역·동 단위로 좁힌 로컬 키워드'],
+  ['procedure','💉','증상·시술','환자가 증상·치료명으로 찾는 키워드'],
+  ['longtail','🔎','롱테일','전환율 높은 구체 검색어']
+];
+function _kwCompBadge(c){
+  var s=String(c==null?'':c);
+  var low=/낮음|low/i.test(s),mid=/중간|mid/i.test(s),high=/높음|high/i.test(s);
+  if(typeof c==='number'){low=c<=33;mid=c>33&&c<=66;high=c>66;s=low?'낮음':mid?'중간':'높음';}
+  if(!low&&!mid&&!high)return '';
+  var col=low?'#10b981':mid?'#f59e0b':'#ef4444';
+  return '<span style="font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:9999px;background:'+col+'1a;color:'+col+'">경쟁 '+s+'</span>';
+}
+function _kwDiscHtml(d){
+  if(!d||!d.tiers)return '';
+  var any=_KWTIER.some(function(t){return (d.tiers[t[0]]||[]).length;});
+  var head='<div class="orch-kw"><h4>🎯 '+(d.region||'')+' '+(d.dept||'')+' 핵심 키워드 발굴 <span style="font-size:11px;font-weight:700;color:var(--mute)">네이버 검색광고 실측 · 기회순</span></h4>';
+  if(!any){
+    // 검색광고 미설정/무응답 — 조합 시드만 노출(검색량 미표시)
+    var seeds=(d.seeds||[]).map(function(s){return '<span style="display:inline-block;background:var(--soft);border-radius:8px;padding:5px 10px;margin:3px 4px 0 0;font-size:12.5px;color:var(--ink)">'+s.keyword+'</span>';}).join('');
+    return head+'<p style="font-size:12.5px;color:var(--ink2);margin:2px 0 10px">'+(d.note||'검색량 데이터를 가져오지 못했습니다.')+' 아래는 공략 후보 조합입니다.</p>'+(seeds||'<p style="color:var(--mute);font-size:13px">후보를 만들 수 없습니다.</p>')+'</div>';
+  }
+  var body=_KWTIER.map(function(t){
+    var rows=d.tiers[t[0]]||[]; if(!rows.length)return '';
+    var items=rows.map(function(x){
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;background:#fff;border:1px solid var(--border);border-radius:10px">'
+        +'<span style="font-weight:700;color:var(--ink);font-size:13px">'+x.keyword+'</span>'
+        +'<span style="display:flex;align-items:center;gap:8px;white-space:nowrap"><span style="font-size:12.5px;color:var(--ink2)">월 <b style="color:var(--p)">'+(x.volume||0).toLocaleString()+'</b></span>'+_kwCompBadge(x.compIdx)+'</span></div>';
+    }).join('');
+    return '<div style="margin-top:12px"><div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px"><span style="font-size:15px">'+t[1]+'</span><b style="font-size:13.5px;color:var(--ink)">'+t[2]+'</b><span style="font-size:11.5px;color:var(--mute)">'+t[3]+'</span></div><div style="display:grid;gap:6px">'+items+'</div></div>';
+  }).join('');
+  return head+'<p style="font-size:12px;color:var(--mute);margin:2px 0 4px">검색량 0 제외 · 기회점수(검색량÷경쟁)로 정렬. 대표→세부지역→증상·시술→롱테일 순으로 공략하세요.</p>'+body+'</div>';
 }
 function _orchRender(){
   if(!_orch.done||!_orch.done.main)return;
@@ -5728,6 +5783,8 @@ function _orchRender(){
     +card('AI 노출','🤖',ai,_orch.ai?('"'+_orch.ai.q+'" 실측 — '+(_orch.ai.cited?'우리 병원이 인용됩니다':(_orch.ai.mentioned?'언급되지만 인용은 없습니다':'AI 답변에 우리 병원이 없습니다'))):'실측 실패')
     +card('검색 기회','📈',null,kwDesc).replace('측정 불가','—')
     +'</div>';
+  // 핵심 키워드 발굴 — 지역+진료과 조합을 검색광고 실측으로 검증·랭킹(티어별)
+  html+=_kwDiscHtml(_orch.kwdisc);
   // 처방
   var rx=[];
   if(seoPct!==null&&seoPct<70)rx.push(['🔧','<b>기술 SEO 정비</b> — 메타·구조화 데이터·헤딩 구조부터 바로잡아야 검색과 AI 모두가 읽을 수 있습니다.']);
