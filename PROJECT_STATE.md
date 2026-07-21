@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-07-21 docs: 세션 체크포인트 s02 — 카드뉴스 파이프라인·컨설팅·SEO진단 정밀감사 문서화 (#201)
-- 2026-07-21 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-21 fix(seo-tool): 검증 항목 실측 강화(sitemap·favicon·JSON-LD) + 정밀분석 무한 '측정중' 수정 (#200)
-- 2026-07-21 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-21 fix(seo-tool): robots.txt 존재 판정 오탐 수정 (소프트 404 감지) (#199)
-- 2026-07-21 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-21 fix(seo-tool): 핵심 키워드 추출 정확도 개선 + 카테고리 '정밀필요' 표기 명확화 (#198)
-- 2026-07-21 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-07-21 feat(diagnose): 키워드 발굴기 경량 MVP — 조합·검색량 검증·티어 랭킹 (#202)
+- 2026-07-21 auto(card): 신규 블로그 카드뉴스 이미지 2건 생성 [skip ci]
+- 2026-07-21 lock: 발행 작업 잠금 해제
+- 2026-07-21 chore: auto-update sitemap.xml
+- 2026-07-21 auto: 포스팅 로그 업데이트
+- 2026-07-21 auto(en): "5 Marketing Strategies for Dermatology Clinics in Incheon: Effective Approaches"
+- 2026-07-21 auto: 발행 "인천 피부과 마케팅 전략 5가지, 효과적 접근법"
+- 2026-07-21 lock: 발행 작업 잠금
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -41,7 +41,7 @@
 - `/api/cron-seo-monitor` · 0 18 * * *
 - `/api/cron-eval` · 0 0 * * 1
 
-## API 엔드포인트 (31)
+## API 엔드포인트 (32)
 - `venom-wordpress/preview/api/analytics.js`
 - `venom-wordpress/preview/api/chatbot.js`
 - `venom-wordpress/preview/api/contact.js`
@@ -55,6 +55,7 @@
 - `venom-wordpress/preview/api/health.js`
 - `venom-wordpress/preview/api/hospital-bot.js`
 - `venom-wordpress/preview/api/insights.js`
+- `venom-wordpress/preview/api/keyword-discover.js`
 - `venom-wordpress/preview/api/posting-settings.js`
 - `venom-wordpress/preview/api/publish-post.js`
 - `venom-wordpress/preview/api/seo-proxy.js`
@@ -71,8 +72,7 @@
 - `your-supplement/apps/web/app/api/safety/route.js`
 - `your-supplement/server/api/kakao.js`
 - `your-supplement/server/api/offers.js`
-- `your-supplement/server/api/recommend.js`
-- `…(+1)`
+- `…(+2)`
 
 ## package 스크립트
 `convert-webp` · `build`  ·  deps 1개
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `…(+31)`
 
 ---
-*생성: 커밋 a93e2c8 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 d1542e9 기준. 값·비밀은 포함하지 않음.*
