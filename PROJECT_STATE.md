@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-07-20 feat(blog): 신규글 이미지 파이프라인을 카드뉴스로 자동 전환 (TODO #31) (#194)
-- 2026-07-20 fix(blog): 카드뉴스 교체 후 발행된 신규 2글 이미지도 카드뉴스로 동기화 (#193)
-- 2026-07-20 lock: 발행 작업 잠금 해제
-- 2026-07-20 chore: auto-update sitemap.xml
-- 2026-07-20 auto: 포스팅 로그 업데이트
-- 2026-07-20 auto(en): "5 Strategies for AEO/GEO Marketing in Daegu Hospitals"
-- 2026-07-20 auto: 발행 "대구 병원마케팅의 AEO/GEO 전략 5가지 방법"
-- 2026-07-20 auto: 포스트 이미지 auto_1784534069865-AEO-GEO-5.jpg
+- 2026-07-21 perf(seo-tool): 정밀진단(PSI) 로딩 단축 — 카테고리 축소 + 상류 타임아웃 (#195)
+- 2026-07-21 auto(card): 신규 블로그 카드뉴스 이미지 2건 생성 [skip ci]
+- 2026-07-21 lock: 발행 작업 잠금 해제
+- 2026-07-21 chore: auto-update sitemap.xml
+- 2026-07-21 auto: 포스팅 로그 업데이트
+- 2026-07-21 auto(en): "5 Essential Strategies and Success Stories for Dental Marketing in Busan"
+- 2026-07-21 auto: 발행 "부산 치과마케팅 5가지 필수 전략과 성공 사례"
+- 2026-07-21 lock: 발행 작업 잠금
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `…(+31)`
 
 ---
-*생성: 커밋 9e4568d 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 edce7af 기준. 값·비밀은 포함하지 않음.*
