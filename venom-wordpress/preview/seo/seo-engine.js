@@ -189,7 +189,10 @@
 
     // 기술·크롤링
     var hasViewport = !!metaByName('viewport');
-    var hasFavicon = !!(doc && doc.querySelector('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]'));
+    // favicon 실측: <link rel=icon> 태그 OR 실제 /favicon.ico(HTTP 200) 존재 → 거짓 음성 방지.
+    var faviconStatus = (typeof input.faviconStatus === 'number') ? input.faviconStatus : null;
+    var hasFaviconTag = !!(doc && doc.querySelector('link[rel~="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]'));
+    var hasFavicon = hasFaviconTag || faviconStatus === 200;
     var canonical = q('link[rel="canonical"]', 'href');
     var lang = doc ? (doc.documentElement.getAttribute('lang') || '').trim() : '';
     var robotsMeta = (metaByName('robots') || metaByName('googlebot'));
@@ -209,10 +212,33 @@
     var crawlOk = robotsAllows(robots, 'Googlebot') && robotsAllows(robots, 'Yeti') && robotsAllows(robots, '*');
 
     // 검색 노출
-    var hasLd = /application\/ld\+json/i.test(html);
+    // 구조화 데이터: 단순 존재가 아니라 JSON-LD가 '파싱 가능'한지 검증(깨진 JSON 거짓 양성 방지).
+    var _ldBlocks = html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    var ldValid = false;
+    for (var _lx = 0; _lx < _ldBlocks.length; _lx++) {
+      try {
+        var _inner = _ldBlocks[_lx].replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '').trim();
+        var _obj = JSON.parse(_inner);
+        if (_obj && (typeof _obj === 'object')) { ldValid = true; break; }
+      } catch (e) {}
+    }
+    var hasLd = ldValid; // 파싱 성공한 JSON-LD가 하나라도 있어야 통과
+    var ldNote = _ldBlocks.length === 0 ? 'JSON-LD 없음 — Schema.org 구조화 데이터 추가 권장'
+      : ldValid ? 'Schema.org JSON-LD — Google 페이지 이해·리치결과'
+      : '⚠ JSON-LD ' + _ldBlocks.length + '개 발견됐지만 파싱 실패(문법 오류) — 검증 필요';
     var ogTitle = metaByProp('og:title'), ogDesc = metaByProp('og:description');
     var ogOk = !!ogTitle && !!ogDesc;
-    var hasSitemap = /^\s*sitemap\s*:/im.test(robots);
+    // sitemap 실측: robots.txt 선언 OR 실제 /sitemap.xml(HTTP 200 + XML) 존재.
+    var sitemapDeclared = /^\s*sitemap\s*:/im.test(robots);
+    var sitemapStatus = (typeof input.sitemapStatus === 'number') ? input.sitemapStatus : null;
+    var sitemapFileOk = sitemapStatus === 200 && input.sitemapIsXml === true;
+    var hasSitemap = sitemapDeclared || sitemapFileOk;
+    var sitemapNote = hasSitemap
+      ? (sitemapFileOk && sitemapDeclared ? '/sitemap.xml 존재 + robots 선언 — 최적'
+        : sitemapFileOk ? '/sitemap.xml 존재(200) — robots.txt에도 선언 권장'
+        : 'robots.txt에 Sitemap 선언됨')
+      : (sitemapStatus && sitemapStatus !== 200 ? ('sitemap.xml 없음 — /sitemap.xml HTTP ' + sitemapStatus)
+        : 'sitemap.xml 없음 — 생성 후 robots.txt에 선언');
 
     // SPA 감지
     var bodyText = doc && doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
@@ -361,9 +387,9 @@
       // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. 구조화 데이터는 Google이 페이지 이해·
       // 리치결과에 활용하므로 비중을 올리고(5), 나머지 공유·보조 신호는 낮게 유지한다.
       search: [
-        ['구조화 데이터', 'Schema.org JSON-LD — Google 페이지 이해·리치결과', 5, jsItem(hasLd), 'Google'],
+        ['구조화 데이터', ldNote, 5, jsItem(hasLd), 'Google'],
         ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 2, jsItem(ogOk), '네이버'],
-        ['sitemap.xml 선언', 'robots.txt에 Sitemap: 선언 — 수집 촉진', 4, hasSitemap, '공통'],
+        ['sitemap.xml 선언', sitemapNote, 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
         ['robots.txt 존재', robotsTxtNote, 3, robotsTxtOk, '공통']
       ],
