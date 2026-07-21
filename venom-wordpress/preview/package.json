@@ -5,7 +5,8 @@
   "scripts": {
     "check:sitemap": "node scripts/check-sitemap.js",
     "fix:sitemap": "node scripts/check-sitemap.js --fix",
-    "test:gsc": "node scripts/test-search-console.js"
+    "test:gsc": "node scripts/test-search-console.js",
+    "test:keywords": "node scripts/test-keyword-discover.js"
   },
   "dependencies": { "linkedom": "^0.18.12" }
 }
