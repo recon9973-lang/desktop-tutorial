@@ -241,18 +241,34 @@
     var imgOptOk = imgTags.length <= 50 && bigInline === 0;
     var imgOptNote = imgTags.length === 0 ? '이미지 없음' : (imgTags.length + '개' + (bigInline ? ' · 대용량 인라인 ' + bigInline + '개' : ''));
 
-    // 페이지 핵심 키워드 시드 자동 추출(제목·H1 기반) → 클라이언트가 검색량 조회에 사용(NXT 벤치마크).
+    // 페이지 핵심 키워드 시드 자동 추출(meta keywords·제목·H1 기반) → 클라이언트가 검색량 조회에 사용(NXT 벤치마크).
+    // seeds[0]만 실제 조회에 쓰이므로 '지역+시술' 2-gram을 최우선으로 뽑는다(브랜드·문장·형용사 배제).
+    var _metaKw = metaByName('keywords');
     var _h1txt = (doc && doc.querySelector('h1')) ? (doc.querySelector('h1').textContent || '').trim() : '';
-    var _KWSTOP = /^(병원|의원|클리닉|치과|한의원|피부과|공식|홈페이지|home|소개|대표|진료|안내|blog|블로그|메인|main|the|and|for|of|www|com|net|kr)$/i;
+    var _KWSTOP = /^(병원|의원|클리닉|치과|한의원|피부과|정형외과|성형외과|내과|안과|가정의학과|공식|공식홈페이지|홈페이지|home|소개|대표|원장|진료|안내|예약|상담|문의|오시는길|비용|가격|후기|추천|전문|전문의|잘하는|최고|국내|대한민국|믿을|나오나요|어때|어디|메인|main|blog|블로그|센터|의료원|마케팅|에이전시|no|the|and|for|of|www|com|net|kr)$/i;
+    var _KWCITY = /(서울|부산|대구|인천|광주|대전|울산|세종|수원|성남|고양|용인|창원|청주|천안|전주|안산|안양|김해|포항|제주)/;
+    var _kwRegion = function (w) { return _KWCITY.test(w) || /(역|구|동|시|군|읍|면)$/.test(w); };
+    var _KWVERB = /(하는|나요|습니다|입니다|하세요|세요|해요|어요|아요|되는|있는|겠다|까요|였|더라|든지|하기|보기)$/;
+    var _KWJOSA = /(으로|에서|에게|까지|부터|이나|을|를)$/; // 명사 끝(과·은·는·이·가·의·와·도·만·로)은 보존
+    var _KWBRAND = /(의원|병원|한의원|의료원|메디컬|메디칼|센터)$/;
     function _kwClean(s) { return String(s || '').replace(/[|·•\-–—:_/()\[\]{}"'~!?,.]/g, ' ').replace(/\s+/g, ' ').trim(); }
+    function _kwNorm(w) { return w.replace(_KWJOSA, ''); }
+    function _kwIsNoun(w) {
+      if (_KWVERB.test(w)) return false;           // 동사/형용사 어미는 원형에서 판정
+      var n = _kwNorm(w);
+      return n.length >= 2 && n.length <= 12 && /[가-힣A-Za-z]/.test(n) && !_KWSTOP.test(n) && !_KWBRAND.test(n) && !/^\d+$/.test(n);
+    }
     var keywordSeeds = (function () {
       var out = [], seen = {};
-      function push(s) { s = _kwClean(s); if (!s || s.length < 2 || s.length > 25 || seen[s]) return; seen[s] = 1; out.push(s); }
-      push((title || '').split(/[|·•\-–—:]/)[0]);
-      push(_h1txt);
-      var toks = _kwClean((title || '') + ' ' + _h1txt).split(' ').filter(function (w) { return w.length >= 2 && !_KWSTOP.test(w) && !/^\d+$/.test(w); });
-      for (var i = 0; i < toks.length - 1 && out.length < 4; i++) push(toks[i] + ' ' + toks[i + 1]);
-      for (var j = 0; j < toks.length && out.length < 5; j++) push(toks[j]);
+      function add(s) { s = _kwClean(s); if (!s || seen[s] || s.length < 2 || s.length > 20) return; seen[s] = 1; out.push(s); }
+      if (_metaKw) _metaKw.split(/[,|]/).slice(0, 4).forEach(function (k) { k = _kwClean(k); if (k && k.length <= 20 && !_KWSTOP.test(k)) add(k); });
+      var h1c = _kwClean(_h1txt);
+      var h1ok = h1c && h1c.split(' ').length <= 5 && !/나요|어때|어디|무엇|인가요|있나요/.test(h1c); // 문장형 H1은 노이즈 → 제외
+      var src = _kwClean((title || '') + ' ' + (h1ok ? h1c : ''));
+      var nouns = []; src.split(' ').forEach(function (w) { if (_kwIsNoun(w)) nouns.push(_kwNorm(w)); });
+      for (var i = 0; i < nouns.length - 1 && out.length < 3; i++) if (_kwRegion(nouns[i])) add(nouns[i] + ' ' + nouns[i + 1]);
+      for (var a = 0; a < nouns.length - 1 && out.length < 4; a++) add(nouns[a] + ' ' + nouns[a + 1]);
+      for (var b = 0; b < nouns.length && out.length < 5; b++) if (!_kwRegion(nouns[b]) || nouns[b].length >= 4) add(nouns[b]);
       return out.slice(0, 4);
     })();
 
@@ -734,7 +750,8 @@
       return '<div style="border:1px solid #e3e8ee;border-radius:12px;overflow:hidden;margin-bottom:12px">' +
         '<div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#f8fafc">' +
           '<span>' + c.icon + '</span><span style="font-weight:700;font-size:14px">' + esc(c.label) + '</span>' +
-          '<span style="margin-left:auto;font-weight:700;color:' + (c.pending ? '#9ca3af' : c.color) + '">' + (c.pending ? '정밀 분석 필요' : c.score + '/' + c.max + '점') + '</span></div>' +
+          '<span style="margin-left:auto;font-weight:700;color:' + (c.pending ? '#9ca3af' : c.color) + '">' +
+            (c.pending ? (c.score > 0 ? (c.score + '/' + c.max + '점 · 일부 정밀필요') : '정밀 분석 필요') : (c.score + '/' + c.max + '점')) + '</span></div>' +
         '<div style="padding:4px 14px 10px">' + rows + '</div></div>';
     }).join('');
   }
