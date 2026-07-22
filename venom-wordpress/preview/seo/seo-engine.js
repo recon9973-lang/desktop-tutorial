@@ -25,7 +25,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.7.0';
+  var VERSION = '1.8.0';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -269,7 +269,9 @@
     // 정적 속도: 차세대 이미지(webp/avif)·이미지 지연로딩(loading="lazy")
     var imgTags = doc ? Array.prototype.slice.call(doc.querySelectorAll('img')) : [];
     var srcBlob = imgTags.map(function (im) { return (im.getAttribute('src') || '') + ' ' + (im.getAttribute('srcset') || '') + ' ' + (im.getAttribute('data-src') || ''); }).join(' ');
-    var usesNextGen = /\.(webp|avif)(\?|#|\s|$)/i.test(srcBlob) || /\.(webp|avif)["')]/i.test(html) || !!(doc && doc.querySelector('picture source[type="image/webp"],picture source[type="image/avif"]'));
+    // 실측 승격(#45): 실제 <img> src/srcset/data-src·<picture> source에 webp/avif가 있는지만 본다.
+    // (과거 html 전체 정규식은 CSS·스크립트 문자열까지 걸려 오탐 → 실측으로 승격하며 제거)
+    var usesNextGen = /\.(webp|avif)(\?|#|\s|$)/i.test(srcBlob) || !!(doc && doc.querySelector('picture source[type="image/webp"],picture source[type="image/avif"]'));
     var lazyImgs = imgTags.filter(function (im) { return (im.getAttribute('loading') || '').toLowerCase() === 'lazy'; }).length;
     var hasLazy = imgTags.length === 0 || (lazyImgs / imgTags.length) >= 0.5;
     var lazyNote = imgTags.length === 0 ? '이미지 없음' : (lazyImgs + '/' + imgTags.length + '개 지연로딩(loading="lazy")');
@@ -320,24 +322,37 @@
     } catch (e) {}
     if (!ldText && html) { var _ldM = html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi); if (_ldM) ldText = _ldM.join(' '); }
     var bodyHead = bodyText.slice(0, 6000);
-    var hasAuthor = !!metaByName('author')
+    // 실측(마크업)과 추정(본문 정규식)을 분리한다. 마크업 신호가 있으면 '실측 통과',
+    // 마크업 없이 본문 단어만 걸리면 '추정 통과'로 표시(estXxx=true) — 정직성·오탐 구분(#45).
+    var hasAuthorMarkup = !!metaByName('author')
       || /"author"\s*:/i.test(ldText)
-      || (doc && !!doc.querySelector('[rel="author"],[itemprop="author"],[class*="author"],[class*="byline"],[class*="writer"]'))
-      || /(작성자|글쓴이|감수|검수|대표원장|전문의|의료진|원장)/.test(bodyHead);
+      || (doc && !!doc.querySelector('[rel="author"],[itemprop="author"],[class*="author"],[class*="byline"],[class*="writer"]'));
+    var hasAuthorText = /(작성자|글쓴이|감수|검수|대표원장|전문의|의료진|원장)/.test(bodyHead);
+    var hasAuthor = hasAuthorMarkup || hasAuthorText;
+    var authorEst = !hasAuthorMarkup && hasAuthorText;
     var hasDates = /"date(Published|Modified)"\s*:/i.test(ldText)
       || (doc && !!doc.querySelector('time[datetime],[itemprop="datePublished"],[itemprop="dateModified"]'))
       || !!metaByProp('article:published_time') || !!metaByProp('article:modified_time');
-    var hasOrg = /"@type"\s*:\s*"?(Organization|LocalBusiness|MedicalOrganization|MedicalClinic|Hospital|Dentist|Physician)"?/i.test(ldText)
-      || /\d{3}-\d{2}-\d{5}/.test(bodyText)
-      || /(상호|대표자|사업자등록번호|의료기관)/.test(bodyHead);
-    var hasContact = (doc && !!doc.querySelector('a[href^="tel:"]'))
-      || /0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/.test(bodyText)
+    // 실측: Organization류 JSON-LD 또는 사업자등록번호 패턴 / 추정: 본문의 상호·대표자 등 단어
+    var hasOrgMarkup = /"@type"\s*:\s*"?(Organization|LocalBusiness|MedicalOrganization|MedicalClinic|Hospital|Dentist|Physician)"?/i.test(ldText)
+      || /\d{3}-\d{2}-\d{5}/.test(bodyText);
+    var hasOrgText = /(상호|대표자|사업자등록번호|의료기관)/.test(bodyHead);
+    var hasOrg = hasOrgMarkup || hasOrgText;
+    var orgEst = !hasOrgMarkup && hasOrgText;
+    // 실측: tel: 링크 또는 JSON-LD telephone/address / 추정: 본문에 전화번호 형태 문자열
+    var hasContactMarkup = (doc && !!doc.querySelector('a[href^="tel:"]'))
       || /"(telephone|address)"\s*:/i.test(ldText);
+    var hasContactText = /0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/.test(bodyText);
+    var hasContact = hasContactMarkup || hasContactText;
+    var contactEst = !hasContactMarkup && hasContactText;
     var extLinks = realAnchors.filter(function (a) {
       var h = a.getAttribute('href') || '';
       return /^https?:\/\//i.test(h) && h.indexOf(domain) === -1;
     }).length;
-    var hasEntity = /"sameAs"\s*:/i.test(ldText) || extLinks >= 2;
+    // 실측: sameAs 구조화 신호 / 추정: 외부링크 2개 이상(엔티티 그라운딩 정황)
+    var hasEntitySameAs = /"sameAs"\s*:/i.test(ldText);
+    var hasEntity = hasEntitySameAs || extLinks >= 2;
+    var entityEst = !hasEntitySameAs && extLinks >= 2;
 
     // ── 콘텐츠 최적화(작성 가이드) — 포커스 키워드 배치·구조·스캔성 ──
     // 근거: [89]서술형 제목·헤딩·사람중심 콘텐츠, [39]구조·스캔 가능성.
@@ -397,11 +412,11 @@
       // YMYL(건강)에 특히 가중([171]). 직접 순위요소는 아니나 병원 사이트엔 전환·품질 신뢰의 핵심.
       // 생성형 AI 노출도 기존 SEO+엔티티 신호로 충분([39][1]) — 별도 AEO 최적화 불필요.
       trust: [
-        ['저자·의료진 정보', '작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]', 5, jsItem(hasAuthor), 'Google'],
-        ['조직·병원 정보', 'Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]', 4, jsItem(hasOrg), 'Google'],
+        ['저자·의료진 정보', '작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]', 5, jsItem(hasAuthor), 'Google', authorEst],
+        ['조직·병원 정보', 'Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]', 4, jsItem(hasOrg), 'Google', orgEst],
         ['발행·수정일(최신성)', 'datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]', 3, jsItem(hasDates), 'Google'],
-        ['연락처·접근성', '전화(tel:)·주소 노출 — 신뢰·전환 [121]', 2, hasContact, '공통'],
-        ['엔티티 신호(sameAs)', 'sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]', 2, jsItem(hasEntity), 'Google']
+        ['연락처·접근성', '전화(tel:)·주소 노출 — 신뢰·전환 [121]', 2, hasContact, '공통', contactEst],
+        ['엔티티 신호(sameAs)', 'sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]', 2, jsItem(hasEntity), 'Google', entityEst]
       ],
       // 콘텐츠 최적화(작성 가이드) = Rank Math류 '글 최적화'를 Google 근거로 안전하게 구현.
       // 포커스 키워드는 keyword 입력 시에만 '배치(위치)'를 평가(밀도/스터핑은 미채택). 구조·스캔성은 상시.
@@ -410,9 +425,9 @@
         ['포커스 키워드 — 본문·소제목', '"' + keyword + '" H1/소제목/첫 문단 반영', 3, jsItem(kwInBody), 'Google'],
         ['포커스 키워드 — 메타·URL', '"' + keyword + '" 메타 설명·URL 반영', 2, jsItem(kwInMeta), 'Google']
       ] : []).concat([
-        ['소제목 구조', longContent ? (hasSubheads ? '긴 본문에 H2/H3 소제목 — 스캔 용이' : '긴 본문에 소제목 부족 — H2/H3 추가 권장') : '본문 분량 적정(소제목 선택)', 3, longContent ? jsItem(hasSubheads) : true, 'Google'],
-        ['문단 가독성', '지나치게 긴 문단 없음 — 스캔 가능성', 2, jsItem(paraOk), 'Google'],
-        ['스캔 구조(목록·표)', '목록·표로 정보 구조화 — AI/사용자 스캔', 2, jsItem(hasScan), 'Google']
+        ['소제목 구조', longContent ? (hasSubheads ? '긴 본문에 H2/H3 소제목 — 스캔 용이' : '긴 본문에 소제목 부족 — H2/H3 추가 권장') : '본문 분량 적정(소제목 선택)', 3, longContent ? jsItem(hasSubheads) : true, 'Google', '추정 기준'],
+        ['문단 가독성', '지나치게 긴 문단 없음 — 스캔 가능성', 2, jsItem(paraOk), 'Google', '추정 기준'],
+        ['스캔 구조(목록·표)', '목록·표로 정보 구조화 — AI/사용자 스캔', 2, jsItem(hasScan), 'Google', '추정 기준']
       ]),
       // 보안(응답 헤더) = NXT 벤치마크. 방문자 신뢰·클릭재킹/스니핑 방어. 헤더 미수집 시 정밀필요.
       security: [
@@ -511,7 +526,7 @@
     // 실패로 단정하지 않고 정밀분석(PSI)·수정으로 회복 가능하게 둔다(정직 + 오탐 방지 균형).
     var categories = CAT_DEF.map(function (cat) {
       var items = checks[cat.key].map(function (it) {
-        return { name: it[0], desc: it[1], points: it[2], pass: it[3], source: it[4], fix: fixFor(it[0]) };
+        return { name: it[0], desc: it[1], points: it[2], pass: it[3], source: it[4], est: it[5] || false, fix: fixFor(it[0]) };
       });
       var rawMax = items.reduce(function (s, it) { return s + it.points; }, 0);
       var earned = items.reduce(function (s, it) { return s + (it.pass === true ? it.points : 0); }, 0);
@@ -536,6 +551,8 @@
     var max = 100;
     var improvable = Math.max(0, 100 - total);                  // 100까지 회복 가능한 점수
     var speedCat = categories.filter(function (c) { return c.key === 'speed'; })[0] || null;
+    // 추정(정황) 기반 항목이 하나라도 있으면 UI에 범례를 노출한다(#45).
+    var hasEstimated = categories.some(function (c) { return c.items.some(function (it) { return !!it.est; }); });
 
     // 항목 단위 집계(통과/미흡/확인필요·통과율)
     var passed = 0, failed = 0, pending = 0;
@@ -557,6 +574,7 @@
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
       categories: categories, baseTotal: total, baseMax: 100, speedCat: speedCat,
       total: total, max: max, hasPSI: !!psi, psi: psi || null,
+      hasEstimated: hasEstimated,
       summary: summary, grade: gradeFor(total, max)
     };
   }
@@ -752,6 +770,8 @@
         '<div style="flex:1;min-width:220px">' + bars +
           (result.summary && result.summary.pending && !result.psi ?
             '<div style="font-size:12px;color:#b45309;margin-top:6px;font-weight:600">※ <b>확인 필요</b> 항목은 정적 수집으로 통과를 입증하지 못한 것(0점 반영) — 이미 적용돼 있으면 <b>정밀 분석(PSI)</b>에서 인정되고, 없으면 각 항목의 수정 코드를 적용하세요.</div>' : '') +
+          (result.hasEstimated ?
+            '<div style="font-size:12px;color:#92400e;margin-top:6px;font-weight:600">※ <span style="background:#fef3c7;border:1px solid #fcd34d;border-radius:5px;padding:1px 5px;font-weight:800">추정</span> 배지는 마크업 등 <b>실측</b>이 아니라 정황(정규식·임계값)으로 판단한 항목입니다 — <b>구조화 데이터(JSON-LD)</b>로 명시하면 실측으로 확정됩니다.</div>' : '') +
           '<div style="font-size:12px;color:#64748b;margin-top:5px">※ 종합점수는 <b>속도(성능) 제외</b>(별도 +α 게이지) — Google이 SEO와 속도를 분리하는 것과 동일 기준.</div>' +
           (result.renderSuspect && !result.psi ?
             '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>확인 필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
@@ -775,6 +795,9 @@
     return result.categories.map(function (c) {
       var rows = c.items.map(function (it) {
         var badge = it.source ? '<span style="font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;margin-left:6px;color:#fff;background:' + srcColor(it.source) + '">' + it.source + '</span>' : '';
+        // '추정' 배지: 마크업 등 실측이 아니라 정황(정규식·임계값)으로 판단한 항목 — 실측과 구분(#45).
+        var estLabel = (it.est === true) ? '추정' : (typeof it.est === 'string' ? it.est : '');
+        if (estLabel) badge += '<span title="정적 수집 기반 추정 — 마크업 등 실측 신호가 아니라 정황(정규식·임계값)으로 판단했습니다. 정밀 분석(PSI)·구조화 데이터로 확정하세요." style="font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;margin-left:5px;color:#92400e;background:#fef3c7;border:1px solid #fcd34d">' + estLabel + '</span>';
         // 항목: 아이콘 + (이름 / 설명 2줄) + 점수. 이름은 크고 진하게, 설명은 대비 있게.
         if (it.pass === null) {
           // '확인 필요' = 정적 수집으로 통과/실패를 단정할 수 없는 항목(JS 주입·헤더 미수집).
