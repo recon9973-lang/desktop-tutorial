@@ -6305,7 +6305,7 @@ function renderGEOResult(url, sig){
     {label:'OG (Open Graph) 태그',              pass:sig.hasOgTags,        score:5,  detail:'소셜·AI 미리보기 메타데이터',                              action:'og:title / og:description / og:image 추가'},
     {label:'캐노니컬 태그',                      pass:sig.hasCanonical,     score:5,  detail:'중복 URL 방지, AI 정규 페이지 인식',                       action:'<link rel="canonical"> 헤드에 추가'},
     {label:'H1 헤딩 구조',                       pass:sig.hasH1,            score:5,  detail:'페이지 주제를 AI에 명확히 전달하는 헤딩 계층',            action:'진료과목·병원명 포함 H1 1개 필수'},
-    {label:'전화번호 구조화(schema.org telephone)', pass:sig.hasTelSchema,  score:3,  detail:'구조화 데이터(JSON-LD)의 schema.org telephone 속성 — 지식패널·AI 엔티티 그라운딩', action:'LocalBusiness/MedicalClinic 구조화 데이터에 telephone 속성 추가'},
+    {label:'전화번호 구조화 (schema.org telephone 속성)', pass:sig.hasTelSchema,  score:3,  detail:'schema.org의 telephone 속성을 JSON-LD 형식으로 표기 — telephone은 JSON-LD 키워드가 아니라 schema.org 속성. AI·지식패널의 전화 엔티티 그라운딩', action:'LocalBusiness/MedicalClinic 타입(JSON-LD)에 schema.org telephone 속성 추가'},
     {label:'주소 정보 노출',                     pass:sig.hasAddress,       score:5,  detail:'페이지에 병원 소재 지역명 포함',                           action:'주소·지역명 footer 또는 본문에 텍스트로 삽입'},
     {label:'SNS·외부 채널 연결',                pass:sig.hasSocialLinks,   score:4,  detail:'다중 채널 언급으로 NAP 확장 인식',                         action:'네이버 블로그·인스타그램·카카오 채널 링크 추가'},
     {label:'GPTBot 크롤 허용 (robots.txt)',     pass:sig.allowsGptBot,     score:4,  detail:'ChatGPT 학습 크롤러 접근 허용 여부',                       action:'robots.txt: User-agent: GPTBot / Allow: /'},
