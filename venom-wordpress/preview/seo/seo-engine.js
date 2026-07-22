@@ -28,7 +28,7 @@
   var VERSION = '1.8.0';
   // 배포 캐시버전(index.html의 seo-engine.js?v=와 동일하게 유지). 결과 푸터에 노출해
   // "새 엔진이 실제로 로드됐는지"를 사용자가 즉시 확인할 수 있게 한다(캐시 오인 방지).
-  var BUILD = '2.1.6';
+  var BUILD = '2.1.7';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -344,7 +344,7 @@
     var hasOrgText = /(상호|대표자|사업자등록번호|의료기관)/.test(bodyHead);
     var hasOrg = hasOrgMarkup || hasOrgText;
     var orgEst = !hasOrgMarkup && hasOrgText;
-    // 실측: tel: 링크 또는 JSON-LD telephone/address / 추정: 본문에 전화번호 형태 문자열
+    // 실측: tel: 링크 또는 JSON-LD의 schema.org telephone/address 속성 / 추정: 본문에 전화번호 형태 문자열
     var hasContactMarkup = (doc && !!doc.querySelector('a[href^="tel:"]'))
       || /"(telephone|address)"\s*:/i.test(ldText);
     var hasContactText = /0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/.test(bodyText);
