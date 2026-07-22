@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784698136084",
+    "title": "부산 치과마케팅: 고품질 치료로 경쟁력 2.4배 상승",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 1904,
+      "totalTokens": 4543,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-22T05:29:39.679Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784685755036",
     "title": "대구 병원마케팅의 핵심: GEO/AEO 전략 5가지",
