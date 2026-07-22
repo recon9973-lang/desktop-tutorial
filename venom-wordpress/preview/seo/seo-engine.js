@@ -530,17 +530,21 @@
       });
       var rawMax = items.reduce(function (s, it) { return s + it.points; }, 0);
       var earned = items.reduce(function (s, it) { return s + (it.pass === true ? it.points : 0); }, 0);
+      var pendingPoints = items.reduce(function (s, it) { return s + (it.pass === null ? it.points : 0); }, 0);
       var pendingCount = items.filter(function (it) { return it.pass === null; }).length;
       var pendingFlag = pendingCount > 0;
       var w = cat.weight || 0;
       var ratio = rawMax ? (earned / rawMax) : 0;               // 0..1 (pending은 미획득)
       var pct = Math.round(ratio * 100);                        // 테마 달성률 %
+      // '확인 필요' 배점이 전체에서 차지하는 비율 — 막대에 별도 구간으로 표시(회복 가능분).
+      var pendPct = rawMax ? Math.round(pendingPoints / rawMax * 100) : 0;
       var isSpeed = (cat.key === 'speed');
       var dispScore = isSpeed ? earned : +(w * ratio).toFixed(1);
       var dispMax = isSpeed ? rawMax : w;
       return {
         key: cat.key, label: cat.label, icon: cat.icon, color: cat.color, weight: w,
-        score: dispScore, max: dispMax, pct: pct, pending: pendingFlag, pendingCount: pendingCount,
+        score: dispScore, max: dispMax, pct: pct, pendPct: pendPct,
+        pending: pendingFlag, pendingCount: pendingCount,
         rawEarned: earned, rawMax: rawMax, items: items
       };
     });
@@ -676,14 +680,25 @@
       '</svg>';
   }
 
-  function bar(label, score, max, color, pending) {
-    var pct = pending ? 0 : (max ? Math.round(score / max * 100) : 0);
+  // 막대 = 통과분(진한 색) + 확인 필요분(빗금 앰버) + 미흡분(회색). 확인 필요가 있어도
+  // 이미 획득한 점수만큼은 반드시 채워 보여준다(예: 6.7/28 → 24% 채움). 오른쪽엔 배점·확인건수.
+  function bar(c) {
+    var earnedPct = c.max ? Math.round(c.score / c.max * 100) : 0;
+    var pendPct = c.pendPct || 0;
+    if (earnedPct + pendPct > 100) pendPct = Math.max(0, 100 - earnedPct); // 반올림 오버플로 방지
+    var pendSeg = pendPct > 0
+      ? '<span title="확인 필요 — 정밀분석(PSI)에서 인정 가능" style="height:100%;width:' + pendPct +
+        '%;background:repeating-linear-gradient(45deg,#fcd34d,#fcd34d 4px,#fef3c7 4px,#fef3c7 8px)"></span>'
+      : '';
+    var pendTag = c.pendingCount
+      ? '<span style="color:#b45309;font-weight:800"> · 확인 ' + c.pendingCount + '</span>' : '';
     return '<div style="display:flex;align-items:center;gap:11px;margin:9px 0;font-size:14px">' +
-      '<span style="width:132px;flex-shrink:0;color:#1e293b;font-weight:700">' + esc(label) + '</span>' +
-      '<span style="flex:1;height:11px;background:#eaeef3;border-radius:9px;overflow:hidden">' +
-      '<span style="display:block;height:100%;width:' + pct + '%;background:' + color + ';border-radius:9px;transition:width .8s ease"></span></span>' +
-      '<span style="width:72px;text-align:right;font-weight:800;font-size:13.5px;color:' + color + '">' +
-      score + '/' + max + '</span></div>';
+      '<span style="width:132px;flex-shrink:0;color:#1e293b;font-weight:700">' + esc(c.label) + '</span>' +
+      '<span style="flex:1;height:11px;background:#eaeef3;border-radius:9px;overflow:hidden;display:flex">' +
+      '<span style="height:100%;width:' + earnedPct + '%;background:' + c.color + ';transition:width .8s ease"></span>' +
+      pendSeg + '</span>' +
+      '<span style="width:88px;text-align:right;font-weight:800;font-size:13.5px;color:' + c.color + '">' +
+      c.score + '/' + c.max + pendTag + '</span></div>';
   }
 
   function renderInfographic(result, opts) {
@@ -692,7 +707,7 @@
     var g = result.grade;
     var gauge = donut(result.total, result.max, g.color, g.label);
     var bars = result.categories.filter(function (c) { return c.key !== 'speed'; })
-      .map(function (c) { return bar(c.label, c.score, c.max, c.color, c.pending); }).join('');
+      .map(function (c) { return bar(c); }).join('');
     // 속도(성능)는 종합점수와 분리된 별도 게이지 — Google 성능 점수와 동일 위상
     var sc = result.speedCat;
     var speedGauge = '';
@@ -737,16 +752,20 @@
       }
     }
 
-    // 집계 수치 스트립
-    var sm = result.summary || { passed: 0, failed: 0, pending: 0, passRate: 0, improvable: 0 };
-    var stat = function (v, l, col) {
-      return '<div style="flex:1;min-width:92px;text-align:center;background:#f8fafc;border:1px solid #e8ecf1;border-radius:12px;padding:14px 8px">' +
+    // 집계 수치 스트립 — 각 수치에 '기준(최대치·분모)'을 함께 표기해 맥락 없이 숫자만 뜨지 않게 한다.
+    var sm = result.summary || { passed: 0, failed: 0, pending: 0, totalItems: 0, passRate: 0, improvable: 0 };
+    var rated = sm.passed + sm.failed;                          // 판정된 항목(확인 필요 제외)
+    var stat = function (v, l, sub, col) {
+      return '<div style="flex:1;min-width:112px;text-align:center;background:#f8fafc;border:1px solid #e8ecf1;border-radius:12px;padding:13px 8px">' +
         '<div style="font-size:26px;font-weight:900;color:' + col + ';line-height:1.1">' + v + '</div>' +
-        '<div style="font-size:12.5px;color:#475569;font-weight:600;margin-top:4px">' + l + '</div></div>';
+        '<div style="font-size:12.5px;color:#334155;font-weight:700;margin-top:5px">' + l + '</div>' +
+        '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px">' + sub + '</div></div>';
     };
     var statsStrip = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
-      stat(sm.passed, '통과 항목', '#16a34a') + stat(sm.failed, '미흡 항목', '#dc2626') +
-      stat('+' + sm.improvable, '개선 시 점수', brand) + stat(sm.passRate + '%', '통과율', '#0ea5e9') + '</div>';
+      stat(sm.passed, '통과 항목', '전체 ' + sm.totalItems + '개 중', '#16a34a') +
+      stat(sm.failed, '미흡 항목', '확인 필요 ' + sm.pending + '건 별도', '#dc2626') +
+      stat(result.total + '<span style="font-size:15px;color:#94a3b8">/100</span>', '현재 종합점수', '개선 시 +' + sm.improvable + ' → 100점', brand) +
+      stat(sm.passRate + '%', '통과율', '통과 ' + sm.passed + ' / 판정 ' + rated + '건', '#0ea5e9') + '</div>';
     // 카테고리 요약 테이블
     var tableRows = result.categories.map(function (c) {
       var passN = c.items.filter(function (it) { return it.pass === true; }).length;
@@ -768,6 +787,12 @@
           '<div style="font-size:12px;color:#64748b;margin-top:1px">종합 SEO 100점 만점</div>' +
           '<div style="font-size:12px;color:#94a3b8;margin-top:1px">' + esc(result.domain) + '</div></div>' +
         '<div style="flex:1;min-width:220px">' + bars +
+          (result.summary && result.summary.pending ?
+            '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:#64748b;font-weight:600">' +
+              '<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:9px;border-radius:3px;background:#533afd"></span>통과(획득)</span>' +
+              '<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:9px;border-radius:3px;background:repeating-linear-gradient(45deg,#fcd34d,#fcd34d 3px,#fef3c7 3px,#fef3c7 6px)"></span>확인 필요(회복 가능)</span>' +
+              '<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:9px;border-radius:3px;background:#eaeef3"></span>미흡</span>' +
+            '</div>' : '') +
           (result.summary && result.summary.pending && !result.psi ?
             '<div style="font-size:12px;color:#b45309;margin-top:6px;font-weight:600">※ <b>확인 필요</b> 항목은 정적 수집으로 통과를 입증하지 못한 것(0점 반영) — 이미 적용돼 있으면 <b>정밀 분석(PSI)</b>에서 인정되고, 없으면 각 항목의 수정 코드를 적용하세요.</div>' : '') +
           (result.hasEstimated ?
