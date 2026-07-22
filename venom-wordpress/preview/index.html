@@ -6200,6 +6200,7 @@ function runGEO(){
         if(Object.prototype.hasOwnProperty.call(node,key) && node[key]!=null && node[key]!=='') return true;
         return Object.keys(node).some(function(k){return ldHasKey(node[k],key);});
       }
+      var ldName=''; // JSON-LD Organization/Medical name(실측 병원명)
       var ldJsonMatches=html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)||[];
       ldJsonMatches.forEach(function(block){
         try{
@@ -6207,7 +6208,13 @@ function runGEO(){
           var obj=JSON.parse(inner);
           if(ldHasKey(obj,'telephone')) hasTelSchema=true; // JSON-LD 블록 안의 schema.org telephone 속성만 인정
           var arr=Array.isArray(obj)?obj:(obj['@graph']?obj['@graph']:[obj]);
-          arr.forEach(function(o){ if(o&&o['@type']) schemaTypes.push([].concat(o['@type']).join(',')); });
+          arr.forEach(function(o){
+            if(o&&o['@type']){
+              var ty=[].concat(o['@type']).join(',');
+              schemaTypes.push(ty);
+              if(!ldName && o.name && /Organization|LocalBusiness|Medical|Clinic|Hospital|Dentist|Physician|Doctor/i.test(ty)) ldName=String(o.name);
+            }
+          });
         }catch(e){}
       });
       var hasMedicalSchema=schemaTypes.some(function(t){return /Medical|Clinic|Hospital|Physician|Dentist|Doctor/i.test(t);});
@@ -6246,7 +6253,22 @@ function runGEO(){
       var allowsAppleBot=checkRobotsAllow(robotsLower,'applebot');
       var aiBotsAllowed=(allowsGptBot?1:0)+(allowsClaudeBot?1:0)+(allowsPerplexityBot?1:0)+(allowsAppleBot?1:0);
 
+      // ── 실측 프리필: 병원명 추출(JSON-LD name → og:site_name → <title>) ──
+      var siteName=ldName;
+      if(!siteName){ var mOg=html.match(/<meta[^>]+property=["']og:site_name["'][^>]*content=["']([^"']+)/i)||html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*property=["']og:site_name["']/i); if(mOg)siteName=mOg[1]; }
+      if(!siteName){ var mT=html.match(/<title[^>]*>([^<]+)/i); if(mT)siteName=mT[1].split(/[|\-–—·:]/)[0].trim(); }
+      siteName=(siteName||'').replace(/\s+/g,' ').trim().slice(0,40);
+      // ── 실측 프리필: 메인 키워드 질문 추정(지역+진료과, 편집 가능) ──
+      var _ttl=(html.match(/<title[^>]*>([^<]+)/i)||[])[1]||'';
+      var _scan=_ttl+' '+html.replace(/<[^>]+>/g,' ').slice(0,3000);
+      var _regs=['서울','부산','대구','인천','광주','대전','울산','세종','수원','성남','용인','고양','창원','청주','전주','천안','포항','김해','제주','안산','안양','평택','시흥','파주','김포'];
+      var _deps=[['임플란트','임플란트'],['치아교정','치아교정'],['한의원','한의원'],['한방','한의원'],['성형','성형외과'],['피부','피부과'],['안과','안과'],['정형외과','정형외과'],['통증','통증'],['비만','비만클리닉'],['다이어트','비만클리닉'],['산부인과','산부인과'],['이비인후','이비인후과'],['비뇨','비뇨의학과'],['교정','치아교정'],['치과','치과'],['한의','한의원']];
+      var _rg=''; for(var _i=0;_i<_regs.length;_i++){ if(_scan.indexOf(_regs[_i])>=0){_rg=_regs[_i];break;} }
+      var _dp=''; for(var _j=0;_j<_deps.length;_j++){ if(_scan.indexOf(_deps[_j][0])>=0){_dp=_deps[_j][1];break;} }
+      var guessQ=_dp?((_rg?_rg+' ':'')+_dp+' 잘하는 곳 추천해줘'):'';
+
       renderGEOResult(rawUrl,{
+        siteName:siteName, guessQ:guessQ,
         isHttps:isHttps,
         hasMedicalSchema:hasMedicalSchema, hasFaqSchema:hasFaqSchema, hasOrgSchema:hasOrgSchema,
         hasSchemaOrg:hasSchemaOrg, schemaTypes:schemaTypes,
@@ -6265,9 +6287,12 @@ function runGEO(){
     });
 }
 
+var _geoCtx={}; // 실측(runGeoAeo)에서 쓰는 현재 GEO 대상 컨텍스트(도메인·병원명)
+function _geoAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function renderGEOResult(url, sig){
   var el=document.getElementById('geo-result');
   var displayUrl=url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  _geoCtx={domain:String(url).replace(/^https?:\/\//,'').split('/')[0], url:url, name:sig.siteName||''};
 
   // Score calculation
   var checks=[
@@ -6396,18 +6421,17 @@ function renderGEOResult(url, sig){
         +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgAiScore>=70?'준비 양호':avgAiScore>=40?'보완 필요':'미흡')+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 4px">AI 플랫폼별 준비도 <span style="font-size:11px;color:var(--mute);font-weight:400">(온페이지 신호 기반)</span></div>'
-    +'<div style="font-size:11px;color:var(--mute);margin-bottom:10px">※ 각 AI가 참고하는 <b>실측 신호(크롤러 허용·Schema·메타 등)의 통과 비율</b>입니다. 실제 답변 노출은 아래 실측으로 확인하세요.</div>'
-    +'<div class="geo-list">'+ais.map(function(a){
-      return '<div class="geo-ai-row">'
-        +'<span class="geo-ai-name">'+a.icon+' '+a.short+'</span>'
-        +'<div class="geo-ai-bar-bg"><div class="geo-ai-bar-fill" style="width:'+a.score+'%;background:'+a.color+'"></div></div>'
-        +'<span class="geo-ai-score" style="color:'+a.color+'">'+a.score+'</span>'
-        +'</div>';
-    }).join('')+'</div>'
-    +'<div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:11px 13px;margin-top:12px;font-size:12px;color:#3730a3;line-height:1.6">'
-      +'🔬 <b>실제 AI 노출 측정</b> — 우리 사이트가 AI 답변에 <b>실제로 인용·언급</b>되는지는 <b>무료 정밀 진단</b>이 Perplexity에 직접 질의해 실측합니다. '
-      +'<a href="javascript:void(0)" onclick="var e=document.getElementById(\'fd-url\');if(e){e.scrollIntoView({behavior:\'smooth\',block:\'center\'});try{e.focus();}catch(x){}}" style="color:#4f46e5;font-weight:700;text-decoration:underline">무료 정밀 진단으로 실측하기 →</a></div>'
+    +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin:18px 0 4px">🔬 메인 키워드 AI 노출 <span style="color:#4f46e5">실측</span> <span style="font-size:11px;color:var(--mute);font-weight:400">(Perplexity 실제 질의)</span></div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:10px">위 <b>준비도</b>는 온페이지 신호(추정)일 뿐입니다. 실제로 AI가 이 병원을 답변에 <b>인용·언급</b>하는지 아래에서 <b>진짜 질문</b>을 던져 확인하세요.</div>'
+    +'<div style="background:var(--soft);border-radius:10px;padding:14px 16px">'
+      +'<input id="geo-aeo-q" type="text" value="'+_geoAttr(sig.guessQ)+'" placeholder="예: 대구 임플란트 잘하는 곳 추천해줘" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:8px" onkeydown="if(event.key===\'Enter\')runGeoAeo()">'
+      +'<div style="display:flex;gap:8px">'
+        +'<input id="geo-aeo-name" type="text" value="'+_geoAttr(sig.siteName)+'" placeholder="우리 병원명" style="flex:1;min-width:0;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" onkeydown="if(event.key===\'Enter\')runGeoAeo()">'
+        +'<button id="geo-aeo-btn" onclick="runGeoAeo()" class="btn btn-p" style="padding:10px 16px;font-size:13px;white-space:nowrap">실측하기</button>'
+      +'</div>'
+      +'<div style="font-size:10.5px;color:var(--mute);margin-top:8px">※ Perplexity에 위 질문을 실제로 던져 <b>답변 원문·인용 출처</b>를 그대로 가져옵니다(질의 1회, 10~20초 소요).</div>'
+      +'<div id="geo-aeo-result" style="display:none;margin-top:12px"></div>'
+    +'</div>'
     +benchHtml
     +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 10px">📋 GEO 최적화 체크리스트 ('+totalScore+'/'+maxScore+'점)</div>'
     +'<div>'+checkRows+'</div>'
@@ -6417,6 +6441,41 @@ function renderGEOResult(url, sig){
       +'<span class="tr-cta-text">GEO 전문가 최적화로 <strong>AI 추천 채널을 3~5배 확대</strong>하세요</span>'
       +'<a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p" style="padding:8px 16px;font-size:13px">상담신청 →</a>'
     +'</div>';
+}
+
+// 메인 키워드 질문을 Perplexity에 실제로 던져 우리 병원 인용/언급/미노출을 '실측'한다.
+// (온페이지 신호 준비도와 달리, 실제 AI 답변 원문·인용 출처를 그대로 가져옴)
+function runGeoAeo(){
+  var q=(document.getElementById('geo-aeo-q').value||'').trim();
+  var name=(document.getElementById('geo-aeo-name').value||'').trim();
+  var el=document.getElementById('geo-aeo-result');
+  if(!q){alert('질문을 입력해주세요');return;}
+  var btn=document.getElementById('geo-aeo-btn'); if(btn){btn.disabled=true;btn.textContent='질의 중…';}
+  el.style.display='block';
+  el.innerHTML=_spin('🤖 Perplexity에 실제 질문 중… (10~20초)');
+  fetch(_INSIGHTS+'?type=aeo&q='+encodeURIComponent(q)+(name?'&name='+encodeURIComponent(name):''))
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(btn){btn.disabled=false;btn.textContent='실측하기';}
+      if(d.error){_err(el,d.error);return;}
+      var ans=String(d.answer||'');
+      var cits=(d.citations||[]).map(String);
+      var dom=_geoCtx.domain||'';
+      var cited=(dom&&cits.some(function(u){return u.indexOf(dom)>=0;}))||(name&&cits.some(function(u){return u.indexOf(name)>=0;}));
+      var mentioned=(name&&(d.mentioned===true||ans.indexOf(name)>=0))||(dom&&ans.indexOf(dom)>=0);
+      var who=name||dom||'이 병원';
+      var vColor=cited?'#16a34a':(mentioned?'#d97706':'#dc2626');
+      var vBg=cited?'#f0fdf4':(mentioned?'#fffbeb':'#fff5f5');
+      var vBd=cited?'#bbf7d0':(mentioned?'#fde68a':'#fecaca');
+      var vIcon=cited?'🟢':(mentioned?'🟡':'🔴');
+      var vMsg=cited?('AI가 답변에 "'+who+'"을(를) 인용까지 합니다'):(mentioned?('AI 답변에 "'+who+'"이(가) 언급되지만 출처 인용은 없습니다'):('AI 답변에 "'+who+'"이(가) 없습니다 — GEO/AEO 최적화가 필요합니다'));
+      var html='<div style="background:'+vBg+';border:1px solid '+vBd+';border-radius:10px;padding:13px 15px;margin-bottom:12px;font-weight:600;color:'+vColor+'">'+vIcon+' '+vMsg+'</div>';
+      html+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">AI 답변 <span style="font-weight:500;color:var(--mute);font-size:11px">(Perplexity 실측 원문 — 표기는 AI 생성 그대로)</span></div><div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12.5px;line-height:1.75;color:var(--ink2);max-height:280px;overflow-y:auto">'+_mdLite(ans||'(응답 없음)')+'</div>';
+      if(cits.length){html+='<div style="font-size:11px;color:var(--mute);margin-top:10px;line-height:1.7"><b style="color:var(--ink2)">AI가 실제 인용한 출처</b><br>'+cits.slice(0,4).map(function(u){var dm=u.replace(/^https?:\/\//,'').split('/')[0];var mine=(dom&&u.indexOf(dom)>=0);return '<a href="'+u+'" target="_blank" rel="nofollow noopener" style="color:'+(mine?'#16a34a':'var(--p)')+';font-weight:'+(mine?'700':'400')+'">'+dm+(mine?' ✓우리':'')+'</a>';}).join(' · ')+'</div>';}
+      html+='<div style="margin-top:14px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-sm">💬 AI 검색에 우리 병원 노출시키기</a></div>';
+      el.innerHTML=html;
+    })
+    .catch(function(e){ if(btn){btn.disabled=false;btn.textContent='실측하기';} _err(el,'요청 실패: '+e.message); });
 }
 
 function runKW(){
