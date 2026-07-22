@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784706921325",
+    "title": "인천 피부과 마케팅 5가지 핵심 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2619,
+      "completionTokens": 1959,
+      "totalTokens": 4578,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-22T07:55:41.134Z"
+  },
+  {
     "action": "cron-en-fail",
     "id": "auto_1784706921325",
     "error": "read ECONNRESET",
