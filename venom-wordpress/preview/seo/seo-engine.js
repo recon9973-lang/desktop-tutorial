@@ -26,6 +26,9 @@
   'use strict';
 
   var VERSION = '1.8.0';
+  // 배포 캐시버전(index.html의 seo-engine.js?v=와 동일하게 유지). 결과 푸터에 노출해
+  // "새 엔진이 실제로 로드됐는지"를 사용자가 즉시 확인할 수 있게 한다(캐시 오인 방지).
+  var BUILD = '2.1.5';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -831,6 +834,7 @@
         '<a href="https://pagespeed.web.dev/" target="_blank" rel="noopener" style="color:#4285F4;font-weight:700">PageSpeed Insights(Lighthouse)</a> · ' +
         '2차: <a href="https://searchadvisor.naver.com/guide" target="_blank" rel="noopener" style="color:#03C75A;font-weight:700">네이버 서치어드바이저</a> · ' +
         '속도는 Google Core Web Vitals 공식 임계값(LCP≤2.5s·CLS≤0.10·INP≤200ms) 기준 · 순위 보장 아님, 1차 데이터는 Search Console 확인 권장' +
+        '<span style="float:right;color:#cbd5e1;font-weight:700">엔진 v' + BUILD + '</span>' +
       '</div></div>';
   }
 
