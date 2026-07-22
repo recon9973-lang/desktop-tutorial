@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-07-23 GEO 실측 파트: Perplexity 단일 → 4개 AI(ChatGPT·Gemini·Claude·Perplexity) 실측 (#218)
+- 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-23 GEO 도구: 중복 준비도 막대 제거 → 메인 키워드 AI 노출 실측 파트 신설 (#217)
 - 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-23 fix(seo-tool): 신뢰 항목 추론 통과 제거 — 마크업 실측만 통과, 본문 정황은 '확인 필요' 강등 (#45) (#216)
 - 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-23 fix(geo-tool): 날조 수치 제거 — 업종 벤치마크→해석 기준구간, 4대 AI→온페이지 준비도(실측 기반) (#215)
-- 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-23 fix(geo-tool): 전화번호 구조화 용어·탐지 정확화 (telephone은 schema.org 속성) (#214)
 - 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (19)
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `…(+31)`
 
 ---
-*생성: 커밋 7f9646b 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 782b4c3 기준. 값·비밀은 포함하지 않음.*
