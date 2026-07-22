@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784715612231",
+    "title": "울산 한의원마케팅 성공 전략 5가지",
+    "tokenUsage": {
+      "promptTokens": 2613,
+      "completionTokens": 1834,
+      "totalTokens": 4447,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-22T10:20:59.548Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784706921325",
     "title": "인천 피부과 마케팅 5가지 핵심 전략과 실행 방안",
     "tokenUsage": {
