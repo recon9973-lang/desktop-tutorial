@@ -6361,9 +6361,9 @@ function renderGEOResult(url, sig){
     return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft)">'
       +'<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:'+(c.pass?'#d1fae5':'#fee2e2')+';color:'+(c.pass?'#059669':'#dc2626')+'">'+(c.pass?'✓':'✗')+'</span>'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:13px;font-weight:'+(c.pass?'400':'600')+';color:var(--ink)">'+c.label+'</div>'
-      +'<div style="font-size:12px;color:var(--mute);margin-top:2px">'+c.detail+'</div>'
-      +(c.pass?'':'<div style="font-size:12px;color:#7c3aed;margin-top:4px">→ <em>'+c.action+'</em></div>')
+      +'<div style="font-size:13px;font-weight:'+(c.pass?'400':'600')+';color:var(--ink)">'+_geoAttr(c.label)+'</div>'
+      +'<div style="font-size:12px;color:var(--mute);margin-top:2px">'+_geoAttr(c.detail)+'</div>'
+      +(c.pass?'':'<div style="font-size:12px;color:#7c3aed;margin-top:4px">→ <em>'+_geoAttr(c.action)+'</em></div>')
       +'</div>'
       +'<span style="font-size:12px;color:'+(c.pass?'#059669':'var(--mute)')+';flex-shrink:0;font-weight:600">'+(c.pass?'+'+c.score+'점':'0/'+c.score)+'</span>'
       +'</div>';
@@ -6375,10 +6375,10 @@ function renderGEOResult(url, sig){
     +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px">🎯 우선순위 개선 항목 ('+failItems.length+'개)</div>'
     +failItems.slice(0,4).map(function(c,i){
       return '<div style="font-size:13px;color:var(--ink2);padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)">'
-        +'<span style="color:var(--p);font-weight:700;margin-right:8px">'+(i+1)+'.</span>'+c.label+' <span style="color:var(--mute)">— '+c.action+'</span></div>';
+        +'<span style="color:var(--p);font-weight:700;margin-right:8px">'+(i+1)+'.</span>'+_geoAttr(c.label)+' <span style="color:var(--mute)">— '+_geoAttr(c.action)+'</span></div>';
     }).join('')+'</div>':'';
 
-  var schemaHtml=sig.schemaTypes.length?'<div style="font-size:11px;color:var(--mute);margin-top:6px">발견된 Schema: '+sig.schemaTypes.join(', ')+'</div>':'';
+  var schemaHtml=sig.schemaTypes.length?'<div style="font-size:11px;color:var(--mute);margin-top:6px">발견된 Schema: '+_geoAttr(sig.schemaTypes.join(', '))+'</div>':'';
 
   var aiGuideHtml='<div style="margin-top:20px"><div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">📘 AI 플랫폼별 최적화 가이드</div>'
     +ais.map(function(a){
