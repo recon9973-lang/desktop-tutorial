@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-07-22 feat(seo-tool): 종합 점수 100점 가중 모델 전환 + 진단 결과 가독성 개선 (#203)
+- 2026-07-22 fix(seo-tool): '정밀필요'→'확인 필요' 명확화 + 설명·수정코드 추가, 점수 정직화 (#204)
 - 2026-07-22 auto(card): 신규 블로그 카드뉴스 이미지 2건 생성 [skip ci]
 - 2026-07-22 lock: 발행 작업 잠금 해제
 - 2026-07-22 chore: auto-update sitemap.xml
 - 2026-07-22 auto: 포스팅 로그 업데이트
-- 2026-07-22 auto: 포스팅 로그 업데이트
-- 2026-07-22 auto: 발행 "인천 피부과 마케팅 5가지 핵심 전략과 실행 방안"
+- 2026-07-22 auto(en): "5 Successful Strategies for Marketing Traditional Medicine Clinics in Ulsan"
+- 2026-07-22 auto: 발행 "울산 한의원마케팅 성공 전략 5가지"
 - 2026-07-22 lock: 발행 작업 잠금
 
 ## 워크플로 (19)
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `…(+31)`
 
 ---
-*생성: 커밋 19844e9 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 e2d5c1b 기준. 값·비밀은 포함하지 않음.*
