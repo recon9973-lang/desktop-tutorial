@@ -439,14 +439,17 @@
     return _res;
   }
 
+  // 종합 100점 = 6개 테마 가중치 합(속도는 별도 +α 게이지, 종합 미포함).
+  // 배점 근거: Google Search Central 우선순위 — 핵심 콘텐츠 신호·기술기반을 가장 무겁게,
+  // E-E-A-T(의료 YMYL) 가중, 리치결과·보안은 보조. weight 합 = 100.
   var CAT_DEF = [
-    { key: 'content', label: '콘텐츠 & 메타', icon: '📝', color: '#533afd' },
-    { key: 'tech', label: '기술·크롤링', icon: '⚙️', color: '#06b6d4' },
-    { key: 'search', label: '검색 노출 강화', icon: '🔍', color: '#8b5cf6' },
-    { key: 'trust', label: '신뢰·전문성(E-E-A-T)', icon: '🩺', color: '#10b981' },
-    { key: 'writing', label: '콘텐츠 최적화', icon: '✍️', color: '#f43f5e' },
-    { key: 'security', label: '보안(응답 헤더)', icon: '🔒', color: '#0ea5e9' },
-    { key: 'speed', label: '속도(CWV)', icon: '⚡', color: '#f59e0b' }
+    { key: 'content', label: '콘텐츠 & 메타', icon: '📝', color: '#533afd', weight: 28 },
+    { key: 'tech', label: '기술·크롤링', icon: '⚙️', color: '#06b6d4', weight: 26 },
+    { key: 'trust', label: '신뢰·전문성(E-E-A-T)', icon: '🩺', color: '#10b981', weight: 14 },
+    { key: 'search', label: '검색 노출 강화', icon: '🔍', color: '#8b5cf6', weight: 12 },
+    { key: 'writing', label: '콘텐츠 최적화', icon: '✍️', color: '#f43f5e', weight: 10 },
+    { key: 'security', label: '보안(응답 헤더)', icon: '🔒', color: '#0ea5e9', weight: 10 },
+    { key: 'speed', label: '속도(CWV) · +α', icon: '⚡', color: '#f59e0b', weight: 0 }
   ];
 
   // 실패(미충족) 항목에 보여줄 '바로 붙여넣는' 수정 코드 스니펫. 검사 항목명(it[0])이 키.
@@ -503,38 +506,55 @@
   }
 
   function buildResult(url, domain, isHttps, isSPA, checks, psi) {
+    // 각 테마를 '가중치(weight)' 기준으로 환산: 테마 기여 = weight × (통과 배점 / 측정된 배점).
+    // 항목별 raw 배점은 '테마 내부 비중'으로만 쓰이고, 종합은 항상 100점 스케일이다.
     var categories = CAT_DEF.map(function (cat) {
       var items = checks[cat.key].map(function (it) {
         return { name: it[0], desc: it[1], points: it[2], pass: it[3], source: it[4], fix: fixFor(it[0]) };
       });
-      var max = items.reduce(function (s, it) { return s + it.points; }, 0);
-      var pending = items.some(function (it) { return it.pass === null; });
-      var score = items.reduce(function (s, it) { return s + (it.pass === true ? it.points : 0); }, 0);
+      var rawMax = items.reduce(function (s, it) { return s + it.points; }, 0);
+      // 측정 가능한(정밀필요 아닌) 항목만으로 테마 달성률 산출.
+      var measured = items.filter(function (it) { return it.pass !== null; });
+      var possible = measured.reduce(function (s, it) { return s + it.points; }, 0);
+      var earned = items.reduce(function (s, it) { return s + (it.pass === true ? it.points : 0); }, 0);
+      var pendingFlag = items.some(function (it) { return it.pass === null; });
+      var measurable = possible > 0;
+      var w = cat.weight || 0;
+      var ratio = measurable ? (earned / possible) : 0;         // 0..1
+      var pct = measurable ? Math.round(ratio * 100) : 0;        // 테마 달성률 %
+      var isSpeed = (cat.key === 'speed');
+      // 표시용 score/max: 헤드라인은 '가중점수/가중치', 속도(+α)는 raw 점수/rawMax.
+      var dispScore = isSpeed ? earned : +(w * ratio).toFixed(1);
+      var dispMax = isSpeed ? rawMax : w;
       return {
-        key: cat.key, label: cat.label, icon: cat.icon, color: cat.color,
-        max: max, score: score, pending: pending,
-        pct: pending ? 0 : Math.round(score / max * 100), items: items
+        key: cat.key, label: cat.label, icon: cat.icon, color: cat.color, weight: w,
+        score: dispScore, max: dispMax, pct: pct, pending: pendingFlag,
+        measurable: measurable, rawEarned: earned, rawPossible: possible, rawMax: rawMax,
+        items: items
       };
     });
-    // 종합 SEO 점수는 속도(성능)를 제외한다 — Google SEO 점수·경쟁사(NXT)와 동일 기준.
-    // Google PSI도 SEO(검색최적화)와 성능(속도)을 별도 게이지로 분리하므로, 속도는 별도 표기한다.
-    var inHeadline = function (c) { return c.key !== 'speed'; };
-    var scored = categories.filter(function (c) { return !c.pending && inHeadline(c); });
-    var baseTotal = scored.reduce(function (s, c) { return s + c.score; }, 0);
-    var baseMax = scored.reduce(function (s, c) { return s + c.max; }, 0);
-    var hasPSI = !!psi;
-    var headlineCats = categories.filter(inHeadline);
-    var total = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.score; }, 0) : baseTotal;
-    var max = hasPSI ? headlineCats.reduce(function (s, c) { return s + c.max; }, 0) : baseMax;
-    // 속도(성능)는 종합점수에서 분리해 별도 게이지로 노출(Google 성능 점수와 동일 위상)
+
+    // 종합 100점 = 속도 제외 + '측정 가능한' 헤드라인 테마의 가중점수를, 측정된 가중치로 정규화.
+    // (정밀필요로 통째 빠진 테마가 있으면 남은 테마 기준 100점 환산 → 항상 /100)
+    var headline = categories.filter(function (c) { return c.key !== 'speed'; });
+    var measHead = headline.filter(function (c) { return c.measurable; });
+    var sumW = measHead.reduce(function (s, c) { return s + c.weight; }, 0);              // 측정된 가중치 합(=커버리지)
+    var sumWScore = measHead.reduce(function (s, c) { return s + c.score; }, 0);          // 획득 가중점수 합
+    var total = sumW > 0 ? Math.round(sumWScore / sumW * 100) : 0;                        // 항상 0~100
+    var max = 100;
+    var coverage = Math.round(sumW);                                                      // 측정 커버리지 %(가중치 합 100 기준)
+    // 개선 시 회복 가능 점수(100 스케일): 측정된 항목 중 미흡분을 정규화.
+    var recover = measHead.reduce(function (s, c) { return s + (c.rawPossible ? c.weight * (c.rawPossible - c.rawEarned) / c.rawPossible : 0); }, 0);
+    var improvable = sumW > 0 ? Math.round(recover / sumW * 100) : 0;
     var speedCat = categories.filter(function (c) { return c.key === 'speed'; })[0] || null;
-    // 다양한 집계 수치
-    var passed = 0, failed = 0, pending = 0, improvable = 0;
+
+    // 항목 단위 집계(통과/미흡/정밀필요·통과율)
+    var passed = 0, failed = 0, pending = 0;
     categories.forEach(function (c) {
       c.items.forEach(function (it) {
         if (it.pass === null) pending++;
         else if (it.pass) passed++;
-        else { failed++; improvable += it.points; }
+        else failed++;
       });
     });
     var rated = passed + failed;
@@ -542,12 +562,12 @@
       passed: passed, failed: failed, pending: pending,
       totalItems: passed + failed + pending,
       passRate: rated ? Math.round(passed / rated * 100) : 0,
-      improvable: improvable
+      improvable: improvable, coverage: coverage
     };
     return {
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
-      categories: categories, baseTotal: baseTotal, baseMax: baseMax, speedCat: speedCat,
-      total: total, max: max, hasPSI: hasPSI, psi: psi || null,
+      categories: categories, baseTotal: total, baseMax: 100, speedCat: speedCat,
+      total: total, max: max, coverage: coverage, hasPSI: !!psi, psi: psi || null,
       summary: summary, grade: gradeFor(total, max)
     };
   }
@@ -651,11 +671,11 @@
 
   function bar(label, score, max, color, pending) {
     var pct = pending ? 0 : (max ? Math.round(score / max * 100) : 0);
-    return '<div style="display:flex;align-items:center;gap:10px;margin:7px 0;font-size:13px">' +
-      '<span style="width:120px;flex-shrink:0;color:#334155;font-weight:600">' + esc(label) + '</span>' +
-      '<span style="flex:1;height:9px;background:#eef0f5;border-radius:9px;overflow:hidden">' +
+    return '<div style="display:flex;align-items:center;gap:11px;margin:9px 0;font-size:14px">' +
+      '<span style="width:132px;flex-shrink:0;color:#1e293b;font-weight:700">' + esc(label) + '</span>' +
+      '<span style="flex:1;height:11px;background:#eaeef3;border-radius:9px;overflow:hidden">' +
       '<span style="display:block;height:100%;width:' + pct + '%;background:' + color + ';border-radius:9px;transition:width .8s ease"></span></span>' +
-      '<span style="width:64px;text-align:right;font-weight:700;color:' + (pending ? '#9ca3af' : color) + '">' +
+      '<span style="width:72px;text-align:right;font-weight:800;font-size:13.5px;color:' + (pending ? '#94a3b8' : color) + '">' +
       (pending ? '정밀필요' : score + '/' + max) + '</span></div>';
   }
 
@@ -713,9 +733,9 @@
     // 집계 수치 스트립
     var sm = result.summary || { passed: 0, failed: 0, pending: 0, passRate: 0, improvable: 0 };
     var stat = function (v, l, col) {
-      return '<div style="flex:1;min-width:84px;text-align:center;background:#f8fafc;border:1px solid #eef0f5;border-radius:10px;padding:10px 6px">' +
-        '<div style="font-size:20px;font-weight:800;color:' + col + '">' + v + '</div>' +
-        '<div style="font-size:11px;color:#64748b;margin-top:2px">' + l + '</div></div>';
+      return '<div style="flex:1;min-width:92px;text-align:center;background:#f8fafc;border:1px solid #e8ecf1;border-radius:12px;padding:14px 8px">' +
+        '<div style="font-size:26px;font-weight:900;color:' + col + ';line-height:1.1">' + v + '</div>' +
+        '<div style="font-size:12.5px;color:#475569;font-weight:600;margin-top:4px">' + l + '</div></div>';
     };
     var statsStrip = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
       stat(sm.passed, '통과 항목', '#16a34a') + stat(sm.failed, '미흡 항목', '#dc2626') +
@@ -723,24 +743,28 @@
     // 카테고리 요약 테이블
     var tableRows = result.categories.map(function (c) {
       var passN = c.items.filter(function (it) { return it.pass === true; }).length;
-      return '<tr><td style="padding:8px 10px;border-top:1px solid #eef0f5">' + c.icon + ' ' + esc(c.label) + '</td>' +
-        '<td style="padding:8px 10px;border-top:1px solid #eef0f5;text-align:center;color:' + (c.pending ? '#9ca3af' : c.color) + ';font-weight:700">' + (c.pending ? '정밀필요' : c.score + '/' + c.max) + '</td>' +
-        '<td style="padding:8px 10px;border-top:1px solid #eef0f5;text-align:center;color:#64748b">' + passN + '/' + c.items.length + '</td>' +
-        '<td style="padding:8px 10px;border-top:1px solid #eef0f5;text-align:center;color:#64748b">' + (c.pending ? '—' : c.pct + '%') + '</td></tr>';
+      var scoreTxt = (c.pending && !c.measurable) ? '정밀필요' : (c.score + '/' + c.max);
+      return '<tr><td style="padding:11px 12px;border-top:1px solid #eef1f5;font-size:14px;font-weight:600;color:#1e293b">' + c.icon + ' ' + esc(c.label) + '</td>' +
+        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:' + (c.pending && !c.measurable ? '#94a3b8' : c.color) + ';font-weight:800;font-size:14px">' + scoreTxt + '</td>' +
+        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:#475569;font-size:13.5px">' + passN + '/' + c.items.length + '</td>' +
+        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:#475569;font-size:13.5px;font-weight:700">' + ((c.pending && !c.measurable) ? '—' : c.pct + '%') + '</td></tr>';
     }).join('');
-    var table = '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;border:1px solid #eef0f5;border-radius:10px;overflow:hidden">' +
-      '<thead><tr style="background:#f4f6fa;font-size:12px;color:#475569">' +
-      '<th style="padding:9px 10px;text-align:left">카테고리</th><th style="padding:9px 10px">점수</th><th style="padding:9px 10px">통과</th><th style="padding:9px 10px">비율</th></tr></thead>' +
+    var table = '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;border:1px solid #e8ecf1;border-radius:12px;overflow:hidden">' +
+      '<thead><tr style="background:#f1f4f8;font-size:12.5px;color:#334155;font-weight:800">' +
+      '<th style="padding:11px 12px;text-align:left">테마 (가중치)</th><th style="padding:11px 12px">가중점수</th><th style="padding:11px 12px">통과</th><th style="padding:11px 12px">달성률</th></tr></thead>' +
       '<tbody>' + tableRows + '</tbody></table>';
 
     return '<div class="seoeng" style="font-family:inherit;color:#0f172a">' +
       '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #e3e8ee;margin-bottom:18px">' +
         '<div style="flex-shrink:0;text-align:center">' + gauge +
-          '<div style="font-size:13px;font-weight:700;color:' + g.color + ';margin-top:2px">' + esc(g.label) + '</div>' +
-          '<div style="font-size:11px;color:#94a3b8">' + esc(result.domain) + ' · ' + esc(g.desc) + '</div></div>' +
+          '<div style="font-size:15px;font-weight:800;color:' + g.color + ';margin-top:4px">' + esc(g.label) + '</div>' +
+          '<div style="font-size:12px;color:#64748b;margin-top:1px">종합 SEO 100점 만점</div>' +
+          '<div style="font-size:12px;color:#94a3b8;margin-top:1px">' + esc(result.domain) + '</div></div>' +
         '<div style="flex:1;min-width:220px">' + bars +
+          (typeof result.coverage === 'number' && result.coverage < 100 ?
+            '<div style="font-size:12px;color:#b45309;margin-top:6px;font-weight:600">※ 측정 커버리지 ' + result.coverage + '% — 일부 테마가 <b>정밀필요</b>(정적 수집 불가)로 제외돼, <b>측정된 영역 기준 100점 환산</b>입니다. 정밀 분석(PSI) 시 재계산됩니다.</div>' : '') +
           (result.categories.some(function (c) { return c.pending; }) && !result.psi ?
-            '<div style="font-size:11px;color:#9ca3af;margin-top:4px">※ 종합 SEO 점수는 속도(성능) 제외 — Google SEO 점수와 동일 기준. 속도는 정밀 분석(PSI) 시 별도 게이지로 측정됩니다</div>' : '') +
+            '<div style="font-size:12px;color:#64748b;margin-top:5px">※ 종합점수는 <b>속도(성능) 제외</b>(별도 +α 게이지) — Google이 SEO와 속도를 분리하는 것과 동일 기준.</div>' : '') +
           (result.renderSuspect && !result.psi ?
             '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>정밀필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
         '</div>' +
@@ -762,34 +786,40 @@
   function renderItems(result) {
     return result.categories.map(function (c) {
       var rows = c.items.map(function (it) {
-        var badge = it.source ? '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px;color:#fff;background:' + srcColor(it.source) + '">' + it.source + '</span>' : '';
+        var badge = it.source ? '<span style="font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;margin-left:6px;color:#fff;background:' + srcColor(it.source) + '">' + it.source + '</span>' : '';
+        // 항목: 아이콘 + (이름 / 설명 2줄) + 점수. 이름은 크고 진하게, 설명은 대비 있게.
         if (it.pass === null) {
-          return '<div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid #f1f3f7">' +
-            '<span style="flex-shrink:0;width:18px;height:18px;border-radius:50%;background:#f3f4f6;color:#9ca3af;font-size:11px;text-align:center;line-height:18px">?</span>' +
-            '<span style="flex:1;font-size:13px;color:#9ca3af">' + esc(it.name) + badge + ' <span style="color:#b0b7c3">— ' + esc(it.desc) + '</span></span>' +
-            '<span style="color:#9ca3af;font-size:12px">—/' + it.points + '</span></div>';
+          return '<div style="display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid #eef1f5">' +
+            '<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#eef1f5;color:#94a3b8;font-size:13px;font-weight:800;text-align:center;line-height:22px">?</span>' +
+            '<span style="flex:1;min-width:0"><span style="font-size:15px;font-weight:700;color:#64748b">' + esc(it.name) + '</span>' + badge +
+              '<div style="font-size:13px;color:#94a3b8;margin-top:2px;line-height:1.5">' + esc(it.desc) + '</div></span>' +
+            '<span style="color:#94a3b8;font-size:13px;font-weight:700;flex-shrink:0">정밀필요</span></div>';
         }
         var ok = it.pass;
-        // 실패(미충족) 항목엔 '문제 진단 + 바로 붙여넣는 수정 코드'를 항목 하단에 노출.
         var codeBlock = '';
         if (!ok && it.fix) {
-          codeBlock = '<div style="margin:2px 0 8px 27px">' +
-            '<div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:4px">🔧 이렇게 고치세요 — 아래 코드를 삽입</div>' +
-            '<pre style="margin:0;background:#0f172a;color:#e2e8f0;border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.55;overflow-x:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">' +
+          codeBlock = '<div style="margin:4px 0 10px 33px">' +
+            '<div style="font-size:12.5px;font-weight:800;color:#dc2626;margin-bottom:5px">🔧 이렇게 고치세요 — 아래 코드를 삽입</div>' +
+            '<pre style="margin:0;background:#0f172a;color:#e2e8f0;border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.6;overflow-x:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">' +
             esc(it.fix) + '</pre></div>';
         }
-        return '<div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid #f1f3f7">' +
-          '<span style="flex-shrink:0;width:18px;height:18px;border-radius:50%;font-size:11px;text-align:center;line-height:18px;color:#fff;background:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '✓' : '✗') + '</span>' +
-          '<span style="flex:1;font-size:13px"><strong style="font-weight:' + (ok ? 600 : 700) + '">' + esc(it.name) + '</strong>' + badge + ' <span style="color:#64748b">— ' + esc(it.desc) + '</span></span>' +
-          '<span style="font-size:12px;font-weight:700;color:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '+' + it.points : '0/' + it.points) + '</span></div>' +
+        return '<div style="display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid #eef1f5">' +
+          '<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;font-size:13px;font-weight:800;text-align:center;line-height:22px;color:#fff;background:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '✓' : '✗') + '</span>' +
+          '<span style="flex:1;min-width:0"><span style="font-size:15px;font-weight:' + (ok ? 700 : 800) + ';color:#0f172a">' + esc(it.name) + '</span>' + badge +
+            '<div style="font-size:13px;color:#5b6675;margin-top:2px;line-height:1.5">' + esc(it.desc) + '</div></span>' +
+          '<span style="font-size:14px;font-weight:800;flex-shrink:0;color:' + (ok ? '#16a34a' : '#dc2626') + '">' + (ok ? '+' + it.points : '0/' + it.points) + '</span></div>' +
           codeBlock;
       }).join('');
-      return '<div style="border:1px solid #e3e8ee;border-radius:12px;overflow:hidden;margin-bottom:12px">' +
-        '<div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#f8fafc">' +
-          '<span>' + c.icon + '</span><span style="font-weight:700;font-size:14px">' + esc(c.label) + '</span>' +
-          '<span style="margin-left:auto;font-weight:700;color:' + (c.pending ? '#9ca3af' : c.color) + '">' +
-            (c.pending ? (c.score > 0 ? (c.score + '/' + c.max + '점 · 일부 정밀필요') : '정밀 분석 필요') : (c.score + '/' + c.max + '점')) + '</span></div>' +
-        '<div style="padding:4px 14px 10px">' + rows + '</div></div>';
+      // 카테고리 헤더: 아이콘·이름 크게, 우측에 가중점수/가중치(+달성률·상태) 명확히.
+      var headRight = c.pending
+        ? (c.measurable ? (c.score + '/' + c.max + '점 · ' + c.pct + '% · 일부 정밀필요') : '정밀 분석 필요')
+        : (c.score + '/' + c.max + '점 · ' + c.pct + '%');
+      return '<div style="border:1px solid #e3e8ee;border-radius:14px;overflow:hidden;margin-bottom:14px">' +
+        '<div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(180deg,#f8fafc,#f1f4f8);border-bottom:1px solid #e8ecf1">' +
+          '<span style="font-size:19px">' + c.icon + '</span>' +
+          '<span style="font-weight:800;font-size:16.5px;color:#0f172a">' + esc(c.label) + '</span>' +
+          '<span style="margin-left:auto;font-weight:800;font-size:14px;color:' + (c.pending && !c.measurable ? '#94a3b8' : c.color) + '">' + headRight + '</span></div>' +
+        '<div style="padding:4px 16px 12px">' + rows + '</div></div>';
     }).join('');
   }
 
