@@ -495,7 +495,7 @@
   ],
   "usage": "GEO 상품은 'AI 전용 마법'이 아니라 '멀티AI 실측 + 공식 근거 기반 처방'으로 포지셔닝. 근거 없는 과장 GEO 업체 대비 신뢰 차별화.",
   "hygiene": {
-   "llms_txt": "llms.txt는 구글 SEO 순위 요인이 아니다(순위 리프트 미약속). 다만 생성형 AI 크롤러 안내용 GEO 위생 신호로, 무료진단 '검색 노출 강화(GEO)' 카테고리에 소량(2점, 전체 100점 중 GEO 12점 내부 배점)으로만 반영한다 — /llms.txt HTTP 200 + text/plain 실측. 자사는 유지·서빙하며(robots.txt에 'LLMs:' 선언), GEO 운영 체크리스트(geo-ops·checklist-templates)에서 Level A로 관리한다.",
+   "llms_txt": "llms.txt는 구글 SEO 순위 요인이 아니라 SEO 점수엔 미반영(순위 리프트 미약속). 생성형 AI 크롤러 안내용 GEO 신호이므로 'GEO 점수 진단' 도구의 AI 최적화 신호 검사에만 2점 반영한다 — /llms.txt HTTP 200 + text/plain 실측. 자사는 유지·서빙하며(robots.txt에 'LLMs:' 선언), GEO 운영 체크리스트(geo-ops·checklist-templates)에서 Level A로 관리한다.",
    "grounds": [39, 189]
   }
  }
