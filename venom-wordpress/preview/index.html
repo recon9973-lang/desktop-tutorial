@@ -6421,15 +6421,15 @@ function renderGEOResult(url, sig){
         +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgAiScore>=70?'준비 양호':avgAiScore>=40?'보완 필요':'미흡')+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin:18px 0 4px">🔬 메인 키워드 AI 노출 <span style="color:#4f46e5">실측</span> <span style="font-size:11px;color:var(--mute);font-weight:400">(Perplexity 실제 질의)</span></div>'
-    +'<div style="font-size:11px;color:var(--mute);margin-bottom:10px">위 <b>준비도</b>는 온페이지 신호(추정)일 뿐입니다. 실제로 AI가 이 병원을 답변에 <b>인용·언급</b>하는지 아래에서 <b>진짜 질문</b>을 던져 확인하세요.</div>'
+    +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin:18px 0 4px">🔬 메인 키워드 4개 AI 노출 <span style="color:#4f46e5">실측</span> <span style="font-size:11px;color:var(--mute);font-weight:400">(ChatGPT·Gemini·Claude·Perplexity)</span></div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:10px">위 <b>준비도</b>는 온페이지 신호(추정)일 뿐입니다. 실제로 4개 AI가 이 병원을 답변에 <b>인용·언급</b>하는지 아래에서 <b>진짜 질문</b>을 던져 확인하세요.</div>'
     +'<div style="background:var(--soft);border-radius:10px;padding:14px 16px">'
       +'<input id="geo-aeo-q" type="text" value="'+_geoAttr(sig.guessQ)+'" placeholder="예: 대구 임플란트 잘하는 곳 추천해줘" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:8px" onkeydown="if(event.key===\'Enter\')runGeoAeo()">'
       +'<div style="display:flex;gap:8px">'
         +'<input id="geo-aeo-name" type="text" value="'+_geoAttr(sig.siteName)+'" placeholder="우리 병원명" style="flex:1;min-width:0;box-sizing:border-box;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" onkeydown="if(event.key===\'Enter\')runGeoAeo()">'
         +'<button id="geo-aeo-btn" onclick="runGeoAeo()" class="btn btn-p" style="padding:10px 16px;font-size:13px;white-space:nowrap">실측하기</button>'
       +'</div>'
-      +'<div style="font-size:10.5px;color:var(--mute);margin-top:8px">※ Perplexity에 위 질문을 실제로 던져 <b>답변 원문·인용 출처</b>를 그대로 가져옵니다(질의 1회, 10~20초 소요).</div>'
+      +'<div style="font-size:10.5px;color:var(--mute);margin-top:8px">※ ChatGPT·Gemini·Claude·Perplexity에 위 질문을 실제로 던져 <b>엔진별 인용/언급/미노출</b>을 실측합니다(약 20~40초, 셀 클릭 시 답변 원문).</div>'
       +'<div id="geo-aeo-result" style="display:none;margin-top:12px"></div>'
     +'</div>'
     +benchHtml
@@ -6443,8 +6443,15 @@ function renderGEOResult(url, sig){
     +'</div>';
 }
 
-// 메인 키워드 질문을 Perplexity에 실제로 던져 우리 병원 인용/언급/미노출을 '실측'한다.
-// (온페이지 신호 준비도와 달리, 실제 AI 답변 원문·인용 출처를 그대로 가져옴)
+// 메인 키워드 질문을 4개 AI(ChatGPT·Gemini·Claude·Perplexity)에 실제로 던져
+// 엔진별 인용(🟢)/언급(🟡)/미노출(🔴)을 '실측'한다. (온페이지 준비도와 달리 실제 답변 근거)
+var _GEO_AI4=[
+  {e:'openai',     label:'ChatGPT',    icon:'🟢'},
+  {e:'gemini',     label:'Gemini',     icon:'🔵'},
+  {e:'claude',     label:'Claude',     icon:'🟡'},
+  {e:'perplexity', label:'Perplexity', icon:'🔷'}
+];
+var _geoAeo={};
 function runGeoAeo(){
   var q=(document.getElementById('geo-aeo-q').value||'').trim();
   var name=(document.getElementById('geo-aeo-name').value||'').trim();
@@ -6452,30 +6459,68 @@ function runGeoAeo(){
   if(!q){alert('질문을 입력해주세요');return;}
   var btn=document.getElementById('geo-aeo-btn'); if(btn){btn.disabled=true;btn.textContent='질의 중…';}
   el.style.display='block';
-  el.innerHTML=_spin('🤖 Perplexity에 실제 질문 중… (10~20초)');
-  fetch(_INSIGHTS+'?type=aeo&q='+encodeURIComponent(q)+(name?'&name='+encodeURIComponent(name):''))
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(btn){btn.disabled=false;btn.textContent='실측하기';}
-      if(d.error){_err(el,d.error);return;}
-      var ans=String(d.answer||'');
-      var cits=(d.citations||[]).map(String);
-      var dom=_geoCtx.domain||'';
-      var cited=(dom&&cits.some(function(u){return u.indexOf(dom)>=0;}))||(name&&cits.some(function(u){return u.indexOf(name)>=0;}));
-      var mentioned=(name&&(d.mentioned===true||ans.indexOf(name)>=0))||(dom&&ans.indexOf(dom)>=0);
-      var who=name||dom||'이 병원';
-      var vColor=cited?'#16a34a':(mentioned?'#d97706':'#dc2626');
-      var vBg=cited?'#f0fdf4':(mentioned?'#fffbeb':'#fff5f5');
-      var vBd=cited?'#bbf7d0':(mentioned?'#fde68a':'#fecaca');
-      var vIcon=cited?'🟢':(mentioned?'🟡':'🔴');
-      var vMsg=cited?('AI가 답변에 "'+who+'"을(를) 인용까지 합니다'):(mentioned?('AI 답변에 "'+who+'"이(가) 언급되지만 출처 인용은 없습니다'):('AI 답변에 "'+who+'"이(가) 없습니다 — GEO/AEO 최적화가 필요합니다'));
-      var html='<div style="background:'+vBg+';border:1px solid '+vBd+';border-radius:10px;padding:13px 15px;margin-bottom:12px;font-weight:600;color:'+vColor+'">'+vIcon+' '+vMsg+'</div>';
-      html+='<div style="font-size:12px;font-weight:600;margin-bottom:6px">AI 답변 <span style="font-weight:500;color:var(--mute);font-size:11px">(Perplexity 실측 원문 — 표기는 AI 생성 그대로)</span></div><div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12.5px;line-height:1.75;color:var(--ink2);max-height:280px;overflow-y:auto">'+_mdLite(ans||'(응답 없음)')+'</div>';
-      if(cits.length){html+='<div style="font-size:11px;color:var(--mute);margin-top:10px;line-height:1.7"><b style="color:var(--ink2)">AI가 실제 인용한 출처</b><br>'+cits.slice(0,4).map(function(u){var dm=u.replace(/^https?:\/\//,'').split('/')[0];var mine=(dom&&u.indexOf(dom)>=0);return '<a href="'+u+'" target="_blank" rel="nofollow noopener" style="color:'+(mine?'#16a34a':'var(--p)')+';font-weight:'+(mine?'700':'400')+'">'+dm+(mine?' ✓우리':'')+'</a>';}).join(' · ')+'</div>';}
-      html+='<div style="margin-top:14px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-sm">💬 AI 검색에 우리 병원 노출시키기</a></div>';
-      el.innerHTML=html;
-    })
-    .catch(function(e){ if(btn){btn.disabled=false;btn.textContent='실측하기';} _err(el,'요청 실패: '+e.message); });
+  el.innerHTML=_spin('🤖 4개 AI에 실제 질문 중… (20~40초)');
+  fetch(_INSIGHTS+'?type=engines').then(function(r){return r.json();}).then(function(av){
+    var engines=_GEO_AI4.filter(function(x){return av[x.e];});
+    if(!engines.length){ if(btn){btn.disabled=false;btn.textContent='실측하기';} _err(el,'사용 가능한 AI 엔진이 없습니다'); return; }
+    _geoAeo={q:q, name:name, dom:_geoCtx.domain||'', cells:{}, total:engines.length, done:0};
+    var head='<div style="font-size:11px;color:var(--mute);margin-bottom:8px">"'+_geoAttr(q)+'" 질문에 대한 '+engines.length+'개 AI 실측 <span style="color:#94a3b8">(행 클릭 시 답변 원문)</span></div>';
+    var rows=engines.map(function(x){
+      return '<div id="ga4-'+x.e+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:#fff">'
+        +'<span style="font-size:13px;font-weight:600;color:var(--ink)">'+x.icon+' '+x.label+'</span>'
+        +'<span id="ga4v-'+x.e+'" style="font-size:12.5px;color:var(--mute)">측정 중…</span>'
+        +'</div>'
+        +'<div id="ga4d-'+x.e+'" style="display:none;padding:11px 13px;margin:-3px 0 8px;background:var(--soft);border-radius:8px"></div>';
+    }).join('');
+    el.innerHTML=head+'<div>'+rows+'</div><div id="geo-aeo-sum" style="margin-top:10px"></div>';
+    engines.forEach(function(x){
+      fetch(_INSIGHTS+'?type=aeo&engine='+x.e+'&q='+encodeURIComponent(q)+(name?'&name='+encodeURIComponent(name):''))
+        .then(function(r){return r.json();})
+        .then(function(d){ _geoAeoCell(x,d); })
+        .catch(function(e){ _geoAeoCell(x,{error:e.message||'요청 실패'}); });
+    });
+  }).catch(function(e){ if(btn){btn.disabled=false;btn.textContent='실측하기';} _err(el,'엔진 조회 실패: '+e.message); });
+}
+function _geoAeoCell(x,d){
+  var name=_geoAeo.name, dom=_geoAeo.dom;
+  var ans=String(d.answer||'');
+  var cits=(d.citations||[]).map(String);
+  var cited=(dom&&cits.some(function(u){return u.indexOf(dom)>=0;}))||(name&&cits.some(function(u){return u.indexOf(name)>=0;}));
+  var mentioned=(name&&(d.mentioned===true||ans.indexOf(name)>=0))||(dom&&ans.indexOf(dom)>=0);
+  var v,label,col;
+  if(d.error){ v='e'; label='⚠️ 측정불가'; col='#94a3b8'; }
+  else if(cited){ v='g'; label='🟢 인용'; col='#16a34a'; }
+  else if(mentioned){ v='y'; label='🟡 언급'; col='#d97706'; }
+  else { v='r'; label='🔴 미노출'; col='#dc2626'; }
+  _geoAeo.cells[x.e]={v:v};
+  var vs=document.getElementById('ga4v-'+x.e);
+  if(vs){ vs.textContent=label; vs.style.color=col; vs.style.fontWeight='700'; }
+  var row=document.getElementById('ga4-'+x.e);
+  if(row){ row.style.cursor='pointer'; row.onclick=function(){ var det=document.getElementById('ga4d-'+x.e); if(det)det.style.display=(det.style.display==='none'?'block':'none'); }; }
+  var det=document.getElementById('ga4d-'+x.e);
+  if(det){
+    if(d.error){ det.innerHTML='<div style="color:#dc2626;font-size:12px">오류: '+_geoAttr(d.error)+'</div>'; }
+    else{
+      var dh='<div style="font-size:12.5px;line-height:1.7;color:var(--ink2);max-height:240px;overflow-y:auto">'+_mdLite(ans||'(응답 없음)')+'</div>';
+      if(cits.length){ dh+='<div style="font-size:11px;color:var(--mute);margin-top:8px;line-height:1.7"><b style="color:var(--ink2)">인용 출처</b><br>'+cits.slice(0,4).map(function(u){var dm=u.replace(/^https?:\/\//,'').split('/')[0];var mine=(dom&&u.indexOf(dom)>=0);return '<a href="'+u+'" target="_blank" rel="nofollow noopener" style="color:'+(mine?'#16a34a':'var(--p)')+';font-weight:'+(mine?'700':'400')+'">'+dm+(mine?' ✓우리':'')+'</a>';}).join(' · ')+'</div>'; }
+      det.innerHTML=dh;
+    }
+  }
+  _geoAeo.done++;
+  if(_geoAeo.done>=_geoAeo.total) _geoAeoFinish();
+}
+function _geoAeoFinish(){
+  var btn=document.getElementById('geo-aeo-btn'); if(btn){btn.disabled=false;btn.textContent='다시 실측';}
+  var cited=0,ment=0,err=0,tot=0;
+  Object.keys(_geoAeo.cells).forEach(function(k){var v=_geoAeo.cells[k].v;tot++;if(v==='g')cited++;else if(v==='y')ment++;else if(v==='e')err++;});
+  var eff=tot-err, exposed=cited+ment, none=eff-exposed;
+  var col=exposed>0?(cited>0?'#16a34a':'#d97706'):'#dc2626';
+  var sum=document.getElementById('geo-aeo-sum');
+  if(sum){
+    sum.innerHTML='<div style="background:'+(exposed>0?'#f0fdf4':'#fff5f5')+';border:1px solid '+(exposed>0?'#bbf7d0':'#fecaca')+';border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--ink2);line-height:1.6">'
+      +'<b style="color:'+col+'">'+eff+'개 AI 중 '+exposed+'곳 노출</b> (🟢 인용 '+cited+' · 🟡 언급 '+ment+' · 🔴 미노출 '+none+(err?' · ⚠️ 측정불가 '+err:'')+')'
+      +'<div style="margin-top:8px;text-align:center"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-sm">💬 미노출 AI에 우리 병원 노출시키기</a></div></div>';
+  }
 }
 
 function runKW(){
