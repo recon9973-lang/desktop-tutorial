@@ -1,5 +1,11 @@
 [
   {
+    "action": "cron-en-fail",
+    "id": "auto_1784706921325",
+    "error": "read ECONNRESET",
+    "ts": "2026-07-22T07:55:40.252Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1784698136084",
     "title": "부산 치과마케팅: 고품질 치료로 경쟁력 2.4배 상승",
