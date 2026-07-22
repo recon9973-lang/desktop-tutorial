@@ -506,49 +506,38 @@
   }
 
   function buildResult(url, domain, isHttps, isSPA, checks, psi) {
-    // 각 테마를 '가중치(weight)' 기준으로 환산: 테마 기여 = weight × (통과 배점 / 측정된 배점).
-    // 항목별 raw 배점은 '테마 내부 비중'으로만 쓰이고, 종합은 항상 100점 스케일이다.
+    // 각 테마 기여 = 가중치 × (통과 배점 / 테마 전체 배점).
+    // '확인 필요(pending)' 항목은 아직 입증 안 된 점수이므로 분모(전체 배점)에 남겨 0점으로 반영하되,
+    // 실패로 단정하지 않고 정밀분석(PSI)·수정으로 회복 가능하게 둔다(정직 + 오탐 방지 균형).
     var categories = CAT_DEF.map(function (cat) {
       var items = checks[cat.key].map(function (it) {
         return { name: it[0], desc: it[1], points: it[2], pass: it[3], source: it[4], fix: fixFor(it[0]) };
       });
       var rawMax = items.reduce(function (s, it) { return s + it.points; }, 0);
-      // 측정 가능한(정밀필요 아닌) 항목만으로 테마 달성률 산출.
-      var measured = items.filter(function (it) { return it.pass !== null; });
-      var possible = measured.reduce(function (s, it) { return s + it.points; }, 0);
       var earned = items.reduce(function (s, it) { return s + (it.pass === true ? it.points : 0); }, 0);
-      var pendingFlag = items.some(function (it) { return it.pass === null; });
-      var measurable = possible > 0;
+      var pendingCount = items.filter(function (it) { return it.pass === null; }).length;
+      var pendingFlag = pendingCount > 0;
       var w = cat.weight || 0;
-      var ratio = measurable ? (earned / possible) : 0;         // 0..1
-      var pct = measurable ? Math.round(ratio * 100) : 0;        // 테마 달성률 %
+      var ratio = rawMax ? (earned / rawMax) : 0;               // 0..1 (pending은 미획득)
+      var pct = Math.round(ratio * 100);                        // 테마 달성률 %
       var isSpeed = (cat.key === 'speed');
-      // 표시용 score/max: 헤드라인은 '가중점수/가중치', 속도(+α)는 raw 점수/rawMax.
       var dispScore = isSpeed ? earned : +(w * ratio).toFixed(1);
       var dispMax = isSpeed ? rawMax : w;
       return {
         key: cat.key, label: cat.label, icon: cat.icon, color: cat.color, weight: w,
-        score: dispScore, max: dispMax, pct: pct, pending: pendingFlag,
-        measurable: measurable, rawEarned: earned, rawPossible: possible, rawMax: rawMax,
-        items: items
+        score: dispScore, max: dispMax, pct: pct, pending: pendingFlag, pendingCount: pendingCount,
+        rawEarned: earned, rawMax: rawMax, items: items
       };
     });
 
-    // 종합 100점 = 속도 제외 + '측정 가능한' 헤드라인 테마의 가중점수를, 측정된 가중치로 정규화.
-    // (정밀필요로 통째 빠진 테마가 있으면 남은 테마 기준 100점 환산 → 항상 /100)
+    // 종합 100점 = 속도 제외한 6개 테마 가중점수의 합(가중치 합 = 100 → 항상 0~100).
     var headline = categories.filter(function (c) { return c.key !== 'speed'; });
-    var measHead = headline.filter(function (c) { return c.measurable; });
-    var sumW = measHead.reduce(function (s, c) { return s + c.weight; }, 0);              // 측정된 가중치 합(=커버리지)
-    var sumWScore = measHead.reduce(function (s, c) { return s + c.score; }, 0);          // 획득 가중점수 합
-    var total = sumW > 0 ? Math.round(sumWScore / sumW * 100) : 0;                        // 항상 0~100
+    var total = Math.round(headline.reduce(function (s, c) { return s + c.score; }, 0));
     var max = 100;
-    var coverage = Math.round(sumW);                                                      // 측정 커버리지 %(가중치 합 100 기준)
-    // 개선 시 회복 가능 점수(100 스케일): 측정된 항목 중 미흡분을 정규화.
-    var recover = measHead.reduce(function (s, c) { return s + (c.rawPossible ? c.weight * (c.rawPossible - c.rawEarned) / c.rawPossible : 0); }, 0);
-    var improvable = sumW > 0 ? Math.round(recover / sumW * 100) : 0;
+    var improvable = Math.max(0, 100 - total);                  // 100까지 회복 가능한 점수
     var speedCat = categories.filter(function (c) { return c.key === 'speed'; })[0] || null;
 
-    // 항목 단위 집계(통과/미흡/정밀필요·통과율)
+    // 항목 단위 집계(통과/미흡/확인필요·통과율)
     var passed = 0, failed = 0, pending = 0;
     categories.forEach(function (c) {
       c.items.forEach(function (it) {
@@ -562,12 +551,12 @@
       passed: passed, failed: failed, pending: pending,
       totalItems: passed + failed + pending,
       passRate: rated ? Math.round(passed / rated * 100) : 0,
-      improvable: improvable, coverage: coverage
+      improvable: improvable
     };
     return {
       version: VERSION, url: url, domain: domain, isHttps: isHttps, isSPA: isSPA,
       categories: categories, baseTotal: total, baseMax: 100, speedCat: speedCat,
-      total: total, max: max, coverage: coverage, hasPSI: !!psi, psi: psi || null,
+      total: total, max: max, hasPSI: !!psi, psi: psi || null,
       summary: summary, grade: gradeFor(total, max)
     };
   }
@@ -675,8 +664,8 @@
       '<span style="width:132px;flex-shrink:0;color:#1e293b;font-weight:700">' + esc(label) + '</span>' +
       '<span style="flex:1;height:11px;background:#eaeef3;border-radius:9px;overflow:hidden">' +
       '<span style="display:block;height:100%;width:' + pct + '%;background:' + color + ';border-radius:9px;transition:width .8s ease"></span></span>' +
-      '<span style="width:72px;text-align:right;font-weight:800;font-size:13.5px;color:' + (pending ? '#94a3b8' : color) + '">' +
-      (pending ? '정밀필요' : score + '/' + max) + '</span></div>';
+      '<span style="width:72px;text-align:right;font-weight:800;font-size:13.5px;color:' + color + '">' +
+      score + '/' + max + '</span></div>';
   }
 
   function renderInfographic(result, opts) {
@@ -743,11 +732,11 @@
     // 카테고리 요약 테이블
     var tableRows = result.categories.map(function (c) {
       var passN = c.items.filter(function (it) { return it.pass === true; }).length;
-      var scoreTxt = (c.pending && !c.measurable) ? '정밀필요' : (c.score + '/' + c.max);
+      var pendMark = c.pendingCount ? ' <span style="color:#b45309;font-weight:700">·확인' + c.pendingCount + '</span>' : '';
       return '<tr><td style="padding:11px 12px;border-top:1px solid #eef1f5;font-size:14px;font-weight:600;color:#1e293b">' + c.icon + ' ' + esc(c.label) + '</td>' +
-        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:' + (c.pending && !c.measurable ? '#94a3b8' : c.color) + ';font-weight:800;font-size:14px">' + scoreTxt + '</td>' +
-        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:#475569;font-size:13.5px">' + passN + '/' + c.items.length + '</td>' +
-        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:#475569;font-size:13.5px;font-weight:700">' + ((c.pending && !c.measurable) ? '—' : c.pct + '%') + '</td></tr>';
+        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:' + c.color + ';font-weight:800;font-size:14px">' + c.score + '/' + c.max + '</td>' +
+        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:#475569;font-size:13.5px">' + passN + '/' + c.items.length + pendMark + '</td>' +
+        '<td style="padding:11px 12px;border-top:1px solid #eef1f5;text-align:center;color:#475569;font-size:13.5px;font-weight:700">' + c.pct + '%</td></tr>';
     }).join('');
     var table = '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;border:1px solid #e8ecf1;border-radius:12px;overflow:hidden">' +
       '<thead><tr style="background:#f1f4f8;font-size:12.5px;color:#334155;font-weight:800">' +
@@ -761,12 +750,11 @@
           '<div style="font-size:12px;color:#64748b;margin-top:1px">종합 SEO 100점 만점</div>' +
           '<div style="font-size:12px;color:#94a3b8;margin-top:1px">' + esc(result.domain) + '</div></div>' +
         '<div style="flex:1;min-width:220px">' + bars +
-          (typeof result.coverage === 'number' && result.coverage < 100 ?
-            '<div style="font-size:12px;color:#b45309;margin-top:6px;font-weight:600">※ 측정 커버리지 ' + result.coverage + '% — 일부 테마가 <b>정밀필요</b>(정적 수집 불가)로 제외돼, <b>측정된 영역 기준 100점 환산</b>입니다. 정밀 분석(PSI) 시 재계산됩니다.</div>' : '') +
-          (result.categories.some(function (c) { return c.pending; }) && !result.psi ?
-            '<div style="font-size:12px;color:#64748b;margin-top:5px">※ 종합점수는 <b>속도(성능) 제외</b>(별도 +α 게이지) — Google이 SEO와 속도를 분리하는 것과 동일 기준.</div>' : '') +
+          (result.summary && result.summary.pending && !result.psi ?
+            '<div style="font-size:12px;color:#b45309;margin-top:6px;font-weight:600">※ <b>확인 필요</b> 항목은 정적 수집으로 통과를 입증하지 못한 것(0점 반영) — 이미 적용돼 있으면 <b>정밀 분석(PSI)</b>에서 인정되고, 없으면 각 항목의 수정 코드를 적용하세요.</div>' : '') +
+          '<div style="font-size:12px;color:#64748b;margin-top:5px">※ 종합점수는 <b>속도(성능) 제외</b>(별도 +α 게이지) — Google이 SEO와 속도를 분리하는 것과 동일 기준.</div>' +
           (result.renderSuspect && !result.psi ?
-            '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>정밀필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
+            '<div style="font-size:11.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5">⚠️ 이 사이트는 <b>JS 렌더링/봇 차단</b>으로 정적 분석이 제한적입니다. 메타·구조화데이터가 자바스크립트로 주입되면 정적 수집으로는 보이지 않아 <b>확인 필요</b>로 표시했습니다. 정확한 점수는 <b>정밀 분석(PSI)</b>을 실행하세요.</div>' : '') +
         '</div>' +
         speedGauge +
       '</div>' +
@@ -789,11 +777,18 @@
         var badge = it.source ? '<span style="font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;margin-left:6px;color:#fff;background:' + srcColor(it.source) + '">' + it.source + '</span>' : '';
         // 항목: 아이콘 + (이름 / 설명 2줄) + 점수. 이름은 크고 진하게, 설명은 대비 있게.
         if (it.pass === null) {
+          // '확인 필요' = 정적 수집으로 통과/실패를 단정할 수 없는 항목(JS 주입·헤더 미수집).
+          // 오탐 방지를 위해 실패로 찍지 않되, 설명 + 수정 코드로 '다른 항목처럼' 조치 가능하게 한다.
+          var pendBlock = it.fix ?
+            '<div style="margin:4px 0 10px 33px">' +
+            '<div style="font-size:12.5px;font-weight:800;color:#b45309;margin-bottom:5px">🔎 정적 수집으로 확인 안 됨 — 이미 있다면 <b>정밀 분석(PSI)</b>에서 인정됩니다. 없다면 아래를 추가하세요</div>' +
+            '<pre style="margin:0;background:#0f172a;color:#e2e8f0;border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.6;overflow-x:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">' +
+            esc(it.fix) + '</pre></div>' : '';
           return '<div style="display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid #eef1f5">' +
-            '<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#eef1f5;color:#94a3b8;font-size:13px;font-weight:800;text-align:center;line-height:22px">?</span>' +
-            '<span style="flex:1;min-width:0"><span style="font-size:15px;font-weight:700;color:#64748b">' + esc(it.name) + '</span>' + badge +
-              '<div style="font-size:13px;color:#94a3b8;margin-top:2px;line-height:1.5">' + esc(it.desc) + '</div></span>' +
-            '<span style="color:#94a3b8;font-size:13px;font-weight:700;flex-shrink:0">정밀필요</span></div>';
+            '<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#fef3c7;color:#b45309;font-size:13px;font-weight:800;text-align:center;line-height:22px">!</span>' +
+            '<span style="flex:1;min-width:0"><span style="font-size:15px;font-weight:700;color:#0f172a">' + esc(it.name) + '</span>' + badge +
+              '<div style="font-size:13px;color:#5b6675;margin-top:2px;line-height:1.5">' + esc(it.desc) + '</div></span>' +
+            '<span style="color:#b45309;font-size:13px;font-weight:800;flex-shrink:0">확인 필요</span></div>' + pendBlock;
         }
         var ok = it.pass;
         var codeBlock = '';
@@ -811,14 +806,13 @@
           codeBlock;
       }).join('');
       // 카테고리 헤더: 아이콘·이름 크게, 우측에 가중점수/가중치(+달성률·상태) 명확히.
-      var headRight = c.pending
-        ? (c.measurable ? (c.score + '/' + c.max + '점 · ' + c.pct + '% · 일부 정밀필요') : '정밀 분석 필요')
-        : (c.score + '/' + c.max + '점 · ' + c.pct + '%');
+      var headRight = (c.score + '/' + c.max + '점 · ' + c.pct + '%')
+        + (c.pendingCount ? ' · 확인 ' + c.pendingCount + '건' : '');
       return '<div style="border:1px solid #e3e8ee;border-radius:14px;overflow:hidden;margin-bottom:14px">' +
         '<div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(180deg,#f8fafc,#f1f4f8);border-bottom:1px solid #e8ecf1">' +
           '<span style="font-size:19px">' + c.icon + '</span>' +
           '<span style="font-weight:800;font-size:16.5px;color:#0f172a">' + esc(c.label) + '</span>' +
-          '<span style="margin-left:auto;font-weight:800;font-size:14px;color:' + (c.pending && !c.measurable ? '#94a3b8' : c.color) + '">' + headRight + '</span></div>' +
+          '<span style="margin-left:auto;font-weight:800;font-size:14px;color:' + c.color + '">' + headRight + '</span></div>' +
         '<div style="padding:4px 16px 12px">' + rows + '</div></div>';
     }).join('');
   }
