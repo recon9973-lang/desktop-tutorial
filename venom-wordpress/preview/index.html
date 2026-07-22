@@ -6293,38 +6293,43 @@ function renderGEOResult(url, sig){
   var gColor=totalScore>=70?'#10a37f':totalScore>=40?'#f59e0b':'#ef4444';
   var scoreLabel=totalScore>=70?'GEO 최적화 양호':totalScore>=40?'개선 필요':'최적화 시급';
 
-  // AI 플랫폼별 추정 노출도 (URL 시그널 기반)
+  // AI 플랫폼별 '준비도' — 각 플랫폼이 실제로 참고하는 온페이지 신호(실측)만으로 산정한다.
+  // 임의계수(예전 totalScore*0.85) 없이, 통과한 관련 신호의 가중 비율(%)로만 계산 → 투명·정직.
+  // 주의: 이는 노출 '측정'이 아니라 준비 신호 기반 값. 실제 노출은 무료 정밀진단(Perplexity 실측)에서 확인.
+  function _readiness(parts){ var got=0,tot=0; parts.forEach(function(p){ tot+=p[1]; if(p[0])got+=p[1]; }); return tot?Math.round(got/tot*100):0; }
   var ais=[
     {name:'Google AI Overview',short:'Google AI',  color:'#4285f4',icon:'🔵',
-     score:Math.min(100,Math.round(totalScore*0.85+(sig.hasMedicalSchema?10:0)+(sig.hasFaqSchema?5:0))),
+     score:_readiness([[sig.hasMedicalSchema,3],[sig.hasFaqSchema,2],[sig.hasOrgSchema,2],[sig.hasMetaDesc,1],[sig.hasCanonical,1],[sig.hasH1,1],[sig.hasTelSchema,1]]),
      tip:'Google Knowledge Graph + 구조화 데이터 + Google 비즈니스 프로필 최적화 필요',
      guide:['Schema.org MedicalClinic JSON-LD 적용','Google 비즈니스 프로필 100% 완성','FAQPage Schema로 환자 Q&A 100개 이상 등록','공신력 있는 사이트(의협·건강보험공단 등)에서 링크 확보']},
     {name:'ChatGPT / GPT-4o',  short:'ChatGPT',   color:'#10a37f',icon:'🟢',
-     score:Math.min(100,Math.round(totalScore*0.78+(sig.allowsGptBot?8:0)+(sig.hasMedicalSchema?7:0))),
+     score:_readiness([[sig.allowsGptBot,3],[sig.hasMedicalSchema,2],[sig.hasMetaDesc,1],[sig.isHttps,1],[sig.hasOrgSchema,1],[sig.hasReviewSchema,1]]),
      tip:'robots.txt에서 GPTBot 허용 + 다수 신뢰 출처에 병원 정보 배포',
      guide:['robots.txt에 User-agent: GPTBot / Allow: / 추가','의료 포털(건강in·약학정보원) 병원 정보 등록','네이버 지식백과·나무위키 병원 정보 등재','월 4편 이상 전문성 콘텐츠(임상 정보) 발행']},
     {name:'Perplexity AI',      short:'Perplexity',color:'#20b2aa',icon:'🔷',
-     score:Math.min(100,Math.round(totalScore*0.72+(sig.allowsPerplexityBot?8:0)+(sig.hasOgTags?5:0))),
+     score:_readiness([[sig.allowsPerplexityBot,3],[sig.hasOgTags,1],[sig.hasSocialLinks,2],[sig.hasMetaDesc,1],[sig.hasMedicalSchema,1]]),
      tip:'Wikipedia·나무위키·뉴스 등 다수 출처에 동일 정보 존재',
      guide:['NAP(이름·주소·전화번호) 전 플랫폼 동일하게 통일','병원 뉴스 보도 자료 배포 (의료 전문지)','지역 의사협회·병원 협회 프로필 등재','의료 관련 커뮤니티(오늘의집 의사 칼럼 등) 기고']},
     {name:'Claude (Anthropic)', short:'Claude',   color:'#d97706',icon:'🟡',
-     score:Math.min(100,Math.round(totalScore*0.68+(sig.allowsClaudeBot?8:0)+(sig.isHttps?5:0))),
+     score:_readiness([[sig.allowsClaudeBot,3],[sig.isHttps,1],[sig.hasMedicalSchema,1],[sig.hasOrgSchema,1],[sig.hasReviewSchema,1]]),
      tip:'robots.txt ClaudeBot 허용 + HTTPS + 신뢰도 높은 전문 콘텐츠',
      guide:['robots.txt에 User-agent: ClaudeBot / Allow: / 추가','HTTPS 전환 및 SSL 인증서 적용','의료진 학력·경력·전문 분야 상세 프로필 페이지 제작','E-E-A-T 기준 — 경험·전문성·권위·신뢰 모두 콘텐츠에 반영']},
     {name:'네이버 AI 검색',     short:'네이버 AI', color:'#03c75a',icon:'🟩',
-     score:Math.min(100,Math.round(totalScore*0.9+(sig.hasSocialLinks?5:0)+(sig.hasMetaDesc?3:0))),
-     tip:'네이버 플레이스·블로그·지식IN 최적화 + 네이버 AI 학습 허용',
+     score:_readiness([[sig.hasSocialLinks,2],[sig.hasMetaDesc,1],[sig.hasMedicalSchema,1],[sig.hasAddress,1],[sig.hasStructuredPhone,1]]),
+     tip:'네이버 플레이스·블로그·지식IN 최적화 + 네이버 AI 학습 허용 (온페이지 신호는 일부 — 실제 노출은 플레이스·블로그 등 오프페이지 비중 큼)',
      guide:['네이버 플레이스 정보 100% 완성 (진료시간·사진 30장 이상)','네이버 블로그 월 16편 이상 전문 포스팅','네이버 지식IN 의료 전문가 답변 참여','네이버 카페·건강정보 채널 콘텐츠 배포']}
   ];
   var avgAiScore=Math.round(ais.reduce(function(a,b){return a+b.score;},0)/ais.length);
 
-  var benchmarks=[
-    {label:'대형 종합병원 (서울아산·세브란스급)',  avg:82, color:'#10a37f'},
-    {label:'강남 클리닉 (개원 5년+, 전문 마케팅)', avg:58, color:'#4285f4'},
-    {label:'일반 개원 병원 평균',                   avg:31, color:'#f59e0b'},
-    {label:'신규 개원 병원 평균',                   avg:14, color:'#ef4444'},
-    {label:'귀 병원 ('+displayUrl+')',               avg:totalScore, color:'#533afd'},
+  // 업계 '평균'은 실측 데이터가 없으므로 날조하지 않는다. 대신 점수 '해석 기준 구간'(rubric)을 제시.
+  var geoBands=[
+    {label:'상위 최적화',  range:'75~100', min:75, color:'#10a37f'},
+    {label:'최적화 진행',  range:'55~74',  min:55, color:'#4285f4'},
+    {label:'기본 대응',    range:'30~54',  min:30, color:'#f59e0b'},
+    {label:'미최적화',     range:'0~29',   min:0,  color:'#ef4444'}
   ];
+  var myBand=geoBands[geoBands.length-1];
+  for(var _bi=0;_bi<geoBands.length;_bi++){ if(totalScore>=geoBands[_bi].min){ myBand=geoBands[_bi]; break; } }
 
   var checkRows=checks.map(function(c){
     return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft)">'
@@ -6354,7 +6359,7 @@ function renderGEOResult(url, sig){
       return '<details style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">'
         +'<summary style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;list-style:none">'
         +'<span>'+a.icon+'</span><span style="flex:1">'+a.name+'</span>'
-        +'<span style="background:'+a.color+';color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700">'+a.score+'점</span>'
+        +'<span style="background:'+a.color+';color:#fff;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700">준비 '+a.score+'%</span>'
         +'</summary>'
         +'<div style="padding:10px 14px 14px;border-top:1px solid var(--border);background:var(--soft)">'
         +'<div style="font-size:12px;color:var(--mute);margin-bottom:8px">'+a.tip+'</div>'
@@ -6364,17 +6369,15 @@ function renderGEOResult(url, sig){
     }).join('')+'</div>';
 
   var benchHtml='<div style="margin-top:20px">'
-    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">📊 업종 벤치마크 비교</div>'
-    +benchmarks.map(function(b){
-      var isMe=b.label.includes('귀 병원');
-      return '<div style="margin-bottom:10px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'
-        +'<span style="color:'+(isMe?'var(--p)':'var(--ink2)')+';font-weight:'+(isMe?'700':'400')+'">'+b.label+'</span>'
-        +'<span style="color:'+b.color+';font-weight:700">'+b.avg+'점</span>'
-        +'</div>'
-        +'<div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden">'
-        +'<div style="height:100%;width:'+Math.min(100,b.avg)+'%;background:'+b.color+';border-radius:99px;transition:width .6s"></div>'
-        +'</div></div>';
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">📊 GEO 준비도 해석 기준</div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:12px">※ 측정된 업계 평균이 아니라 <b>점수 해석 기준 구간</b>입니다. 귀 병원 <b style="color:'+myBand.color+'">'+totalScore+'점 → '+myBand.label+'</b> 구간.</div>'
+    +geoBands.map(function(b){
+      var on=(b.label===myBand.label);
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:8px;margin-bottom:6px;'+(on?'background:'+b.color+'14;border:1px solid '+b.color+'66':'background:var(--soft)')+'">'
+        +'<span style="width:9px;height:9px;border-radius:50%;background:'+b.color+';flex-shrink:0"></span>'
+        +'<span style="flex:1;font-size:12.5px;color:var(--ink2);font-weight:'+(on?'700':'400')+'">'+b.label+(on?' <span style="color:'+b.color+'">← 현재</span>':'')+'</span>'
+        +'<span style="font-size:12px;color:var(--mute);font-weight:600">'+b.range+'점</span>'
+        +'</div>';
     }).join('')+'</div>';
 
   el.innerHTML=
@@ -6388,12 +6391,13 @@ function renderGEOResult(url, sig){
         +schemaHtml
       +'</div>'
       +'<div style="background:var(--soft);border-radius:10px;padding:16px;text-align:center">'
-        +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">AI 노출 종합 점수</div>'
+        +'<div style="font-size:11px;color:var(--mute);margin-bottom:4px">AI 준비도 종합 <span style="font-size:9px">(온페이지 신호)</span></div>'
         +'<div style="font-size:42px;font-weight:800;color:'+gColor+';line-height:1">'+avgAiScore+'</div>'
-        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgAiScore>=70?'AI 노출 양호':avgAiScore>=40?'개선 필요':'낮음')+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:'+gColor+';margin-top:4px">'+(avgAiScore>=70?'준비 양호':avgAiScore>=40?'보완 필요':'미흡')+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 10px">AI 플랫폼별 추정 노출도</div>'
+    +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 4px">AI 플랫폼별 준비도 <span style="font-size:11px;color:var(--mute);font-weight:400">(온페이지 신호 기반)</span></div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-bottom:10px">※ 각 AI가 참고하는 <b>실측 신호(크롤러 허용·Schema·메타 등)의 통과 비율</b>입니다. 실제 답변 노출은 아래 실측으로 확인하세요.</div>'
     +'<div class="geo-list">'+ais.map(function(a){
       return '<div class="geo-ai-row">'
         +'<span class="geo-ai-name">'+a.icon+' '+a.short+'</span>'
@@ -6401,6 +6405,9 @@ function renderGEOResult(url, sig){
         +'<span class="geo-ai-score" style="color:'+a.color+'">'+a.score+'</span>'
         +'</div>';
     }).join('')+'</div>'
+    +'<div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:11px 13px;margin-top:12px;font-size:12px;color:#3730a3;line-height:1.6">'
+      +'🔬 <b>실제 AI 노출 측정</b> — 우리 사이트가 AI 답변에 <b>실제로 인용·언급</b>되는지는 <b>무료 정밀 진단</b>이 Perplexity에 직접 질의해 실측합니다. '
+      +'<a href="javascript:void(0)" onclick="var e=document.getElementById(\'fd-url\');if(e){e.scrollIntoView({behavior:\'smooth\',block:\'center\'});try{e.focus();}catch(x){}}" style="color:#4f46e5;font-weight:700;text-decoration:underline">무료 정밀 진단으로 실측하기 →</a></div>'
     +benchHtml
     +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin:20px 0 10px">📋 GEO 최적화 체크리스트 ('+totalScore+'/'+maxScore+'점)</div>'
     +'<div>'+checkRows+'</div>'
