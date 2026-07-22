@@ -240,6 +240,14 @@
       : (sitemapStatus && sitemapStatus !== 200 ? ('sitemap.xml 없음 — /sitemap.xml HTTP ' + sitemapStatus)
         : 'sitemap.xml 없음 — 생성 후 robots.txt에 선언');
 
+    // llms.txt 실측(GEO 안내 파일): /llms.txt가 HTTP 200 + 텍스트 형식이면 존재로 인정(HTML 소프트404 제외).
+    // 근거: 구글 순위 요인은 아니나(순위 리프트 미약속) 생성형 AI 크롤러 안내용 GEO 위생 신호로 소량 반영.
+    var llmsStatus = (typeof input.llmsStatus === 'number') ? input.llmsStatus : null;
+    var hasLlms = llmsStatus === 200 && input.llmsIsText === true;
+    var llmsNote = hasLlms ? '/llms.txt 존재(200) — AI 크롤러 안내 파일 제공'
+      : (llmsStatus && llmsStatus !== 200 ? ('llms.txt 없음 — /llms.txt HTTP ' + llmsStatus + ' (GEO 위생·순위 요인 아님)')
+        : 'llms.txt 없음 — 핵심 페이지 안내용 /llms.txt 권장 (GEO 위생·순위 요인 아님)');
+
     // SPA 감지
     var bodyText = doc && doc.body ? doc.body.textContent.replace(/\s+/g, ' ').trim() : '';
     var scriptCount = doc ? doc.querySelectorAll('script[src]').length : 0;
@@ -314,7 +322,9 @@
     // ── 신뢰·전문성(E-E-A-T) · 엔티티 신호 — 의료(YMYL) 가중 ─────────
     // 근거: [171]신뢰성 최우선·YMYL(건강) 가중 · [145]기사 author/datePublished/dateModified
     //       [185]Organization(sameAs·주소) · [121]LocalBusiness(주소·영업시간) · [39][1]생성형AI=기존SEO
-    // 주의(공식 문서 반영): FAQ 리치결과 지원중단(2026)·llms.txt 불필요·"단어 수" 순위요인 아님 → 미채택.
+    // 주의(공식 문서 반영): FAQ 리치결과 지원중단(2026)·"단어 수" 순위요인 아님 → 미채택.
+    //   llms.txt는 구글 순위 요인은 아니나, 생성형 AI 크롤러 안내용 GEO 위생 신호로 '검색 노출 강화(GEO)'에
+    //   소량(2점) 반영한다(순위 리프트 미약속). 전화번호 구조화(JSON-LD telephone)도 GEO 엔티티 신호로 3점 반영.
     var ldText = '';
     try {
       var _ldN = doc ? doc.querySelectorAll('script[type="application/ld+json"]') : [];
@@ -345,6 +355,9 @@
     var hasContactText = /0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/.test(bodyText);
     var hasContact = hasContactMarkup || hasContactText;
     var contactEst = !hasContactMarkup && hasContactText;
+    // 전화번호 구조화(GEO): JSON-LD telephone — LocalBusiness/MedicalClinic 등에 전화번호를 구조화.
+    // 지식패널·생성형 AI 엔티티 그라운딩에 쓰이는 실측(마크업) 신호. tel: 링크만으론 인정 안 함(구조화 요구).
+    var hasTelSchema = /"telephone"\s*:/i.test(ldText);
     var extLinks = realAnchors.filter(function (a) {
       var h = a.getAttribute('href') || '';
       return /^https?:\/\//i.test(h) && h.indexOf(domain) === -1;
@@ -399,10 +412,13 @@
         ['이미지 지연로딩', 'loading="lazy" — 초기 로딩 속도 개선 (' + lazyNote + ')', 2, jsItem(hasLazy), 'Google'],
         ['이미지 최적화', '과다 이미지·대용량 인라인 점검 (' + imgOptNote + ')', 2, jsItem(imgOptOk), 'Google']
       ],
-      // 검색 노출 강화 = 리치결과·공유 향상용 '보너스' 신호. 구조화 데이터는 Google이 페이지 이해·
-      // 리치결과에 활용하므로 비중을 올리고(5), 나머지 공유·보조 신호는 낮게 유지한다.
+      // 검색 노출 강화(GEO) = 리치결과·공유·생성형 AI 노출용 신호. 구조화 데이터는 Google이 페이지 이해·
+      // 리치결과에 활용하므로 비중을 올리고(5), 전화번호 구조화(3)·llms.txt(2)는 GEO 엔티티·AI 안내 신호로
+      // 반영한다. llms.txt는 순위 요인이 아니므로 리프트 미약속(위생·보너스). 나머지 보조 신호는 낮게 유지.
       search: [
         ['구조화 데이터', ldNote, 5, jsItem(hasLd), 'Google'],
+        ['전화번호 구조화', 'JSON-LD telephone — 지식패널·생성형 AI 엔티티 그라운딩(구조화 전화번호)', 3, jsItem(hasTelSchema), 'GEO'],
+        ['llms.txt (AI 안내)', llmsNote, 2, hasLlms, 'GEO'],
         ['Open Graph 태그', 'og:title·og:description — 공유 미리보기(보너스)', 2, jsItem(ogOk), '네이버'],
         ['sitemap.xml 선언', sitemapNote, 4, hasSitemap, '공통'],
         ['파비콘', '검색결과에 표시되는 사이트 아이콘', 2, hasFavicon, 'Google'],
@@ -485,6 +501,8 @@
     '구조화 데이터': '<script type="application/ld+json">\n{\n  "@context":"https://schema.org",\n  "@type":"MedicalClinic",\n  "name":"OO병원",\n  "address":"서울시 ...",\n  "telephone":"02-123-4567"\n}\n</script>',
     'Open Graph 태그': '<meta property="og:title" content="OO병원 — 지역 진료과목">\n<meta property="og:description" content="핵심 진료 소개">\n<meta property="og:image" content="https://도메인/og.jpg">',
     'sitemap.xml 선언': '# robots.txt 마지막 줄\nSitemap: https://도메인/sitemap.xml',
+    '전화번호 구조화': '<!-- LocalBusiness/MedicalClinic JSON-LD 안에 전화번호 구조화 -->\n<script type="application/ld+json">\n{"@context":"https://schema.org","@type":"MedicalClinic",\n "name":"OO병원","telephone":"+82-2-123-4567",\n "address":"서울시 OO구 OO로 00"}\n</script>',
+    'llms.txt (AI 안내)': '# /llms.txt (사이트 루트, text/plain) — 생성형 AI에 핵심 페이지 안내\n# 참고: 순위 요인 아님(GEO 위생). robots.txt처럼 루트 경로에 배치.\n# OO병원\n> 지역·진료과목 요약 한 줄\n\n## 핵심 페이지\n- [진료안내](https://도메인/care): 주요 진료과목\n- [의료진](https://도메인/doctors): 대표원장·전문의\n- [오시는 길](https://도메인/location): 주소·전화',
     '파비콘': '<link rel="icon" href="/favicon.ico">',
     'robots.txt 존재': '# /robots.txt 파일 생성\nUser-agent: *\nAllow: /\nSitemap: https://도메인/sitemap.xml',
     '저자·의료진 정보': '<!-- 작성/감수 의료진 명시 (YMYL 신뢰) -->\n<p class="byline">감수: OOO 대표원장 · OO과 전문의</p>',
@@ -664,7 +682,7 @@
 
   // ── 인포그래픽 (SVG, 의존성 0) ─────────────────────────────────
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-  function srcColor(s) { return s === 'Google' ? '#4285F4' : s === '네이버' ? '#03C75A' : '#94a3b8'; }
+  function srcColor(s) { return s === 'Google' ? '#4285F4' : s === '네이버' ? '#03C75A' : s === 'GEO' ? '#8b5cf6' : '#94a3b8'; }
 
   function donut(score, max, color, sub) {
     var r = 54, c = 2 * Math.PI * r, pct = max ? Math.max(0, Math.min(1, score / max)) : 0;
