@@ -6101,7 +6101,7 @@ function _renderSEO(data,url,domain,el){
       +'<strong style="font-size:15px">JavaScript로 렌더링되는 사이트입니다</strong>'
       +'<p style="color:var(--mute);font-size:13px;margin:8px auto 16px;line-height:1.6;max-width:420px">원본 HTML이 비어 있어, 정확한 측정을 위해 <strong>Google이 실제 브라우저로 렌더링</strong>하는 정밀 분석으로 측정합니다.</p>'
       +'<div id="seo-psi-section"><button onclick="_runSEOPSI()" class="btn btn-p" style="padding:11px 22px;font-size:13px">🔬 정밀 분석 시작 (약 10초)</button></div></div>';
-    setTimeout(_runSEOPSI,500);
+    setTimeout(function(){_runSEOPSI(url);},500);
     _seoKeywordDemand();
     return;
   }
@@ -6115,18 +6115,27 @@ function _renderSEO(data,url,domain,el){
     +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영합니다 (최대 15초 · 느리면 자동 생략, 위 정적 결과는 이미 유효)</div>'
     +_seoToolbar()
     +_seoCTA();
-  setTimeout(_runSEOPSI, 400);
+  setTimeout(function(){_runSEOPSI(url);}, 400);
 }
 
 // 정밀 분석(PSI) → 엔진 mergePSI → 100점 만점 재렌더
-function _runSEOPSI(){
-  var url=document.getElementById('seo-url').value.trim();
-  if(!url)return;
+function _psiSkipBox(reason,admin){
+  return '<div style="font-size:12px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px 12px;line-height:1.6">'
+    +'ℹ️ 정밀(속도) 분석 생략 — <b>정적 SEO 결과 기준</b>입니다.'+(reason?' '+reason:'')
+    +' <button onclick="_runSEOPSI()" class="btn btn-p" style="padding:4px 11px;font-size:11px;margin-left:4px">정밀 분석 재시도</button>'+(admin||'')+'</div>';
+}
+function _runSEOPSI(optUrl){
+  // URL 확보 순서: 인자 → 입력창 → 직전 분석결과. 입력창이 비어 있어도 무한 스피너가 되지 않게 한다.
+  // (과거 버그: seo-url이 비면 여기서 조용히 return → 초기 '측정 중' 배너가 영원히 회전.)
+  var url=(typeof optUrl==='string'?optUrl:'').trim();
+  if(!url){ var _inp=document.getElementById('seo-url'); if(_inp)url=_inp.value.trim(); }
+  if(!url && _seoLast && _seoLast.url) url=String(_seoLast.url).trim();
+  var sec=document.getElementById('seo-psi-section');
+  if(!url){ if(sec)sec.innerHTML=_psiSkipBox('(분석 대상 URL을 확인할 수 없음)'); return; }
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var domain=url.replace(/^https?:\/\//,'').split('/')[0];
-  var sec=document.getElementById('seo-psi-section');
   if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','최대 15초 · 느리면 자동 생략');
-  // 무한 스피너 방지: 28초 내 미응답이면 정밀분석 자동 생략(위 정적 결과는 그대로 유효).
+  // 무한 스피너 방지: 15초 내 미응답이면 정밀분석 자동 생략(위 정적 결과는 그대로 유효).
   // AbortController가 없어도 _psiSkip이 UI를 반드시 종료시킨다(진짜 무한 스피너 원천 차단).
   var _psiDone=false;
   var _psiCtl = (typeof AbortController!=='undefined') ? new AbortController() : null;
@@ -6134,11 +6143,9 @@ function _runSEOPSI(){
     if(_psiDone) return; _psiDone=true;
     if(_psiCtl){ try{_psiCtl.abort();}catch(e){} }
     var s2=document.getElementById('seo-psi-section');
-    if(s2)s2.innerHTML='<div style="font-size:12px;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px 12px;line-height:1.6">'
-      +'ℹ️ 정밀(속도) 분석 생략 — <b>정적 SEO 결과 기준</b>입니다.'+(reason?' '+reason:'')
-      +' <button onclick="_runSEOPSI()" class="btn btn-p" style="padding:4px 11px;font-size:11px;margin-left:4px">정밀 분석 재시도</button>'+(admin||'')+'</div>';
+    if(s2)s2.innerHTML=_psiSkipBox(reason,admin);
   }
-  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 16초 내 오지 않음)'); }, 16000);
+  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 15초 내 오지 않음)'); }, 15000);
   fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now(), _psiCtl?{signal:_psiCtl.signal}:undefined)
     .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
     .then(function(resp){
