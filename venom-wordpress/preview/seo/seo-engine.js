@@ -28,7 +28,7 @@
   var VERSION = '1.8.0';
   // 배포 캐시버전(index.html의 seo-engine.js?v=와 동일하게 유지). 결과 푸터에 노출해
   // "새 엔진이 실제로 로드됐는지"를 사용자가 즉시 확인할 수 있게 한다(캐시 오인 방지).
-  var BUILD = '2.1.7';
+  var BUILD = '2.1.8';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -327,14 +327,15 @@
     } catch (e) {}
     if (!ldText && html) { var _ldM = html.match(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi); if (_ldM) ldText = _ldM.join(' '); }
     var bodyHead = bodyText.slice(0, 6000);
-    // 실측(마크업)과 추정(본문 정규식)을 분리한다. 마크업 신호가 있으면 '실측 통과',
-    // 마크업 없이 본문 단어만 걸리면 '추정 통과'로 표시(estXxx=true) — 정직성·오탐 구분(#45).
+    // 정직성·오탐 방지(#45): 마크업(실측)이 있으면 '통과(true)', 마크업 없이 본문 단어·정황만
+    // 있으면 '확인 필요(null)'로 강등(점수 미인정), 둘 다 없으면 미흡(false, JS렌더 의심 시 null).
+    // → 본문에 '전문의' 단어가 있다고 저자 표기를 통과시키던 오탐을 제거한다.
+    function markTri(markup, hint){ return markup ? true : (hint ? null : (renderSuspect ? null : false)); }
     var hasAuthorMarkup = !!metaByName('author')
       || /"author"\s*:/i.test(ldText)
       || (doc && !!doc.querySelector('[rel="author"],[itemprop="author"],[class*="author"],[class*="byline"],[class*="writer"]'));
     var hasAuthorText = /(작성자|글쓴이|감수|검수|대표원장|전문의|의료진|원장)/.test(bodyHead);
-    var hasAuthor = hasAuthorMarkup || hasAuthorText;
-    var authorEst = !hasAuthorMarkup && hasAuthorText;
+    var hasAuthor = markTri(hasAuthorMarkup, hasAuthorText);
     var hasDates = /"date(Published|Modified)"\s*:/i.test(ldText)
       || (doc && !!doc.querySelector('time[datetime],[itemprop="datePublished"],[itemprop="dateModified"]'))
       || !!metaByProp('article:published_time') || !!metaByProp('article:modified_time');
@@ -342,22 +343,19 @@
     var hasOrgMarkup = /"@type"\s*:\s*"?(Organization|LocalBusiness|MedicalOrganization|MedicalClinic|Hospital|Dentist|Physician)"?/i.test(ldText)
       || /\d{3}-\d{2}-\d{5}/.test(bodyText);
     var hasOrgText = /(상호|대표자|사업자등록번호|의료기관)/.test(bodyHead);
-    var hasOrg = hasOrgMarkup || hasOrgText;
-    var orgEst = !hasOrgMarkup && hasOrgText;
+    var hasOrg = markTri(hasOrgMarkup, hasOrgText);
     // 실측: tel: 링크 또는 JSON-LD의 schema.org telephone/address 속성 / 추정: 본문에 전화번호 형태 문자열
     var hasContactMarkup = (doc && !!doc.querySelector('a[href^="tel:"]'))
       || /"(telephone|address)"\s*:/i.test(ldText);
     var hasContactText = /0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/.test(bodyText);
-    var hasContact = hasContactMarkup || hasContactText;
-    var contactEst = !hasContactMarkup && hasContactText;
+    var hasContact = markTri(hasContactMarkup, hasContactText);
     var extLinks = realAnchors.filter(function (a) {
       var h = a.getAttribute('href') || '';
       return /^https?:\/\//i.test(h) && h.indexOf(domain) === -1;
     }).length;
     // 실측: sameAs 구조화 신호 / 추정: 외부링크 2개 이상(엔티티 그라운딩 정황)
     var hasEntitySameAs = /"sameAs"\s*:/i.test(ldText);
-    var hasEntity = hasEntitySameAs || extLinks >= 2;
-    var entityEst = !hasEntitySameAs && extLinks >= 2;
+    var hasEntity = markTri(hasEntitySameAs, extLinks >= 2);
 
     // ── 콘텐츠 최적화(작성 가이드) — 포커스 키워드 배치·구조·스캔성 ──
     // 근거: [89]서술형 제목·헤딩·사람중심 콘텐츠, [39]구조·스캔 가능성.
@@ -418,11 +416,11 @@
       // YMYL(건강)에 특히 가중([171]). 직접 순위요소는 아니나 병원 사이트엔 전환·품질 신뢰의 핵심.
       // 생성형 AI 노출도 기존 SEO+엔티티 신호로 충분([39][1]) — 별도 AEO 최적화 불필요.
       trust: [
-        ['저자·의료진 정보', '작성자/감수 의료진·전문성 표기 — 의료(YMYL) 신뢰 신호 [171·145]', 5, jsItem(hasAuthor), 'Google', authorEst],
-        ['조직·병원 정보', 'Organization/LocalBusiness 또는 상호·사업자번호 — 실체 신뢰 [185·121]', 4, jsItem(hasOrg), 'Google', orgEst],
+        ['저자·의료진 정보', '작성자/감수 의료진 — meta·JSON-LD author 마크업 실측 · 본문 단어만 있으면 확인 필요 [171·145]', 5, hasAuthor, 'Google'],
+        ['조직·병원 정보', 'Organization/LocalBusiness JSON-LD 또는 사업자번호 실측 · 본문 단어만 있으면 확인 필요 [185·121]', 4, hasOrg, 'Google'],
         ['발행·수정일(최신성)', 'datePublished/dateModified·게시일 — 콘텐츠 최신성 [145]', 3, jsItem(hasDates), 'Google'],
-        ['연락처·접근성', '전화(tel:)·주소 노출 — 신뢰·전환 [121]', 2, hasContact, '공통', contactEst],
-        ['엔티티 신호(sameAs)', 'sameAs·권위있는 외부연결 — 생성형 AI/지식패널 그라운딩 [185·39]', 2, jsItem(hasEntity), 'Google', entityEst]
+        ['연락처·접근성', 'tel: 링크 또는 JSON-LD telephone/address 실측 · 본문 번호만 있으면 확인 필요 [121]', 2, hasContact, '공통'],
+        ['엔티티 신호(sameAs)', 'JSON-LD sameAs 실측 · 외부링크 정황만 있으면 확인 필요 [185·39]', 2, hasEntity, 'Google']
       ],
       // 콘텐츠 최적화(작성 가이드) = Rank Math류 '글 최적화'를 Google 근거로 안전하게 구현.
       // 포커스 키워드는 keyword 입력 시에만 '배치(위치)'를 평가(밀도/스터핑은 미채택). 구조·스캔성은 상시.
