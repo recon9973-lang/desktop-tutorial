@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-07-23 fix(seo-tool): 카테고리 막대 빈 채로 렌더되던 버그 + 집계 수치 기준 표기 (#208)
+- 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-22 feat(keyword-discover): 지역·진료과 사전 확장 (#207)
 - 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-22 feat(seo-engine): 추론기반 항목 '추정' 배지 + 실측 승격 (#206)
 - 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-07-22 docs: 세션 체크포인트 s03 — 키워드MVP·100점모델·확인필요·추론감사 문서화 (#205)
 - 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-22 fix(seo-tool): '정밀필요'→'확인 필요' 명확화 + 설명·수정코드 추가, 점수 정직화 (#204)
-- 2026-07-22 auto(card): 신규 블로그 카드뉴스 이미지 2건 생성 [skip ci]
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `…(+31)`
 
 ---
-*생성: 커밋 de3df3d 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 60f2a5e 기준. 값·비밀은 포함하지 않음.*
