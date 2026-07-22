@@ -5477,7 +5477,7 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
   .process-step{padding:20px 16px!important}
 }
 </style>
-<script src="/seo/seo-engine.js?v=2.1.6"></script>
+<script src="/seo/seo-engine.js?v=2.1.7"></script>
 <script src="/assets/infographics.js?v=1.1.0"></script>
 <script src="/assets/glossary.js?v=2.0.0"></script>
 <script>
@@ -6192,11 +6192,20 @@ function runGEO(){
 
       var hasSchemaOrg=/application\/ld\+json/i.test(html);
       var schemaTypes=[];
+      var hasTelSchema=false; // schema.org telephone '속성'이 JSON-LD 구조화 데이터 안에 있는지(실측)
+      // 파싱된 JSON-LD 노드(중첩·@graph 포함)에서 특정 속성 존재를 재귀 확인 — 원문 전체 문자열 정규식보다 정확.
+      function ldHasKey(node,key){
+        if(!node||typeof node!=='object') return false;
+        if(Array.isArray(node)) return node.some(function(n){return ldHasKey(n,key);});
+        if(Object.prototype.hasOwnProperty.call(node,key) && node[key]!=null && node[key]!=='') return true;
+        return Object.keys(node).some(function(k){return ldHasKey(node[k],key);});
+      }
       var ldJsonMatches=html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)||[];
       ldJsonMatches.forEach(function(block){
         try{
           var inner=block.replace(/<script[^>]*>/i,'').replace(/<\/script>/i,'');
           var obj=JSON.parse(inner);
+          if(ldHasKey(obj,'telephone')) hasTelSchema=true; // JSON-LD 블록 안의 schema.org telephone 속성만 인정
           var arr=Array.isArray(obj)?obj:(obj['@graph']?obj['@graph']:[obj]);
           arr.forEach(function(o){ if(o&&o['@type']) schemaTypes.push([].concat(o['@type']).join(',')); });
         }catch(e){}
@@ -6210,7 +6219,6 @@ function runGEO(){
       var hasCanonical=/<link[^>]+rel=["']canonical["']/i.test(html);
       var hasH1=/<h1[\s>]/i.test(html);
       var hasStructuredPhone=/\d{2,4}-\d{3,4}-\d{4}/.test(html);
-      var hasTelSchema=/"telephone"\s*:/i.test(html);            // JSON-LD telephone(실측 구조화)
       var hasLlms=(data.llmsStatus===200 && data.llmsIsText===true); // /llms.txt 실측(200+text)
       var hasAddress=/주소|서울|부산|대구|인천|광주|대전|울산|세종/.test(html);
       var hasSocialLinks=/facebook\.com|instagram\.com|blog\.naver|youtube\.com|pf\.kakao/i.test(html);
@@ -6272,7 +6280,7 @@ function renderGEOResult(url, sig){
     {label:'OG (Open Graph) 태그',              pass:sig.hasOgTags,        score:5,  detail:'소셜·AI 미리보기 메타데이터',                              action:'og:title / og:description / og:image 추가'},
     {label:'캐노니컬 태그',                      pass:sig.hasCanonical,     score:5,  detail:'중복 URL 방지, AI 정규 페이지 인식',                       action:'<link rel="canonical"> 헤드에 추가'},
     {label:'H1 헤딩 구조',                       pass:sig.hasH1,            score:5,  detail:'페이지 주제를 AI에 명확히 전달하는 헤딩 계층',            action:'진료과목·병원명 포함 H1 1개 필수'},
-    {label:'전화번호 구조화',                    pass:sig.hasTelSchema,     score:3,  detail:'JSON-LD telephone 구조화 — 지식패널·AI 엔티티 그라운딩',    action:'LocalBusiness/MedicalClinic JSON-LD에 telephone 추가'},
+    {label:'전화번호 구조화(schema.org telephone)', pass:sig.hasTelSchema,  score:3,  detail:'구조화 데이터(JSON-LD)의 schema.org telephone 속성 — 지식패널·AI 엔티티 그라운딩', action:'LocalBusiness/MedicalClinic 구조화 데이터에 telephone 속성 추가'},
     {label:'주소 정보 노출',                     pass:sig.hasAddress,       score:5,  detail:'페이지에 병원 소재 지역명 포함',                           action:'주소·지역명 footer 또는 본문에 텍스트로 삽입'},
     {label:'SNS·외부 채널 연결',                pass:sig.hasSocialLinks,   score:4,  detail:'다중 채널 언급으로 NAP 확장 인식',                         action:'네이버 블로그·인스타그램·카카오 채널 링크 추가'},
     {label:'GPTBot 크롤 허용 (robots.txt)',     pass:sig.allowsGptBot,     score:4,  detail:'ChatGPT 학습 크롤러 접근 허용 여부',                       action:'robots.txt: User-agent: GPTBot / Allow: /'},
