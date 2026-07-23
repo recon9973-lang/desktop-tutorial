@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-07-23 체크포인트 s04 — SEO/GEO 진단기 실측화 세션 인계 (#222)
-- 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-23 GEO 체크리스트 사라짐 수정 — 항목 label/detail/action HTML 이스케이프 (#221)
-- 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-23 GEO 체크리스트 층위 정리: JSON-LD=형식 별도 항목 + telephone=스키마 속성 귀속 (#220)
-- 2026-07-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-07-23 GEO 전화번호 구조화 문구 명확화 — telephone은 schema.org 속성(JSON-LD 키워드 아님) (#219)
-- 2026-07-23 seo-monitor: 2026-07-23 일일 점수 갱신
+- 2026-07-23 GEO 메인 키워드 질문 자동추정 확장 — 구(區) 단위 + 진료과 대폭 보강 (#223)
+- 2026-07-23 auto(card): 신규 블로그 카드뉴스 이미지 2건 생성 [skip ci]
+- 2026-07-23 lock: 발행 작업 잠금 해제
+- 2026-07-23 chore: auto-update sitemap.xml
+- 2026-07-23 auto: 포스팅 로그 업데이트
+- 2026-07-23 auto(en): "5 Key Strategies and Success Stories in Daejeon Hospital Marketing"
+- 2026-07-23 auto: 발행 "대전 병원마케팅 5가지 핵심 전략과 성공 사례"
+- 2026-07-23 lock: 발행 작업 잠금
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `LB_DISCLOSURE` · `LNHPD_API_URL` · `…(+31)`
 
 ---
-*생성: 커밋 c2cc7ae 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 7fa7571 기준. 값·비밀은 포함하지 않음.*
