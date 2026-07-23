@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784807252111",
+    "title": "울산 한의원 마케팅: 통증 치료 5가지 전략과 효과",
+    "tokenUsage": {
+      "promptTokens": 2613,
+      "completionTokens": 1883,
+      "totalTokens": 4496,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-23T11:48:17.110Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784800494307",
     "title": "인천 피부과 마케팅 5가지 전략, 효과 30% 증대",
     "tokenUsage": {
