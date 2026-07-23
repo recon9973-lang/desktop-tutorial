@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1784781123675",
+    "title": "대구 병원마케팅의 5가지 GEO/AEO 전략과 AI 활용법",
+    "tokenUsage": {
+      "promptTokens": 2611,
+      "completionTokens": 1925,
+      "totalTokens": 4536,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-23T04:32:43.379Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1784768519257",
     "title": "대전 병원마케팅 5가지 핵심 전략과 성공 사례",
