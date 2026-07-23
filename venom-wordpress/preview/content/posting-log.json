@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1784768519257",
+    "title": "대전 병원마케팅 5가지 핵심 전략과 성공 사례",
+    "tokenUsage": {
+      "promptTokens": 2593,
+      "completionTokens": 1981,
+      "totalTokens": 4574,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-23T01:02:53.997Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1784715612231",
     "title": "울산 한의원마케팅 성공 전략 5가지",
     "tokenUsage": {
