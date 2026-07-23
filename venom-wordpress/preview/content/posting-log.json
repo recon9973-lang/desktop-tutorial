@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish",
+    "id": "auto_1784791029204",
+    "title": "부산 치과마케팅: 효과적인 5가지 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 1815,
+      "totalTokens": 4454,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-23T07:18:04.588Z"
+  },
+  {
+    "action": "cron-publish",
     "id": "auto_1784781123675",
     "title": "대구 병원마케팅의 5가지 GEO/AEO 전략과 AI 활용법",
     "tokenUsage": {
