@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VENOM 용어사전 — 임베드 예제</title>
+<style>
+  body{font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;max-width:920px;margin:0 auto;padding:28px 20px 80px;color:#1c1e2e;background:#fafbfc}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:15px;margin:34px 0 10px;color:#533afd}
+  p.desc{color:#64748b;font-size:14px;margin:0 0 8px}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:10px;overflow-x:auto;font-size:12.5px;line-height:1.6}
+  .demo{border:1px solid #e5e8ef;border-radius:12px;padding:18px;background:#fff;margin-top:8px}
+  /* 방식 B: JSON을 직접 렌더링한 미니 데모 */
+  #mini-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+  .mini-card{border:1px solid #e5e8ef;border-radius:10px;padding:12px 13px;background:#fff}
+  .mini-card .t{font-weight:800;font-size:14px}
+  .mini-card .e{font-size:11.5px;color:#533afd;font-weight:700;margin:1px 0 6px}
+  .mini-card .d{font-size:12.5px;color:#475569;line-height:1.55}
+  .mini-card .c{display:inline-block;font-size:10.5px;font-weight:700;color:#0d9488;margin-top:7px}
+  #mini-q{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;width:100%;box-sizing:border-box;font-size:13px;margin-top:6px}
+</style>
+</head>
+<body>
+  <h1>VENOM 용어사전 — 타 사이트 임베드 예제</h1>
+  <p class="desc">두 가지 사용 방식을 한 페이지에서 보여줍니다. 원하는 방식만 골라 복사하세요.</p>
+
+  <h2>방식 A · 위젯 임베드 (가장 간단)</h2>
+  <p class="desc"><code>glossary.js</code> 한 줄이면 검색·초성·카테고리·상세 모달까지 완성됩니다. 자체 CSS 주입 — 의존성 0.</p>
+  <pre>&lt;div id="glossary-root"&gt;&lt;/div&gt;
+&lt;script src="https://venom-new-site.vercel.app/assets/glossary.js"&gt;&lt;/script&gt;
+&lt;script&gt;Glossary.mount('glossary-root');&lt;/script&gt;</pre>
+  <div class="demo">
+    <div id="glossary-root"></div>
+  </div>
+
+  <h2>방식 B · 데이터(JSON)만 가져와 직접 렌더링</h2>
+  <p class="desc"><code>glossary-data.json</code>(723개 용어)을 fetch 해서 원하는 UI로 그립니다. 아래는 20줄짜리 미니 렌더러 데모입니다.</p>
+  <pre>const res = await fetch('https://venom-new-site.vercel.app/assets/glossary-dist/glossary-data.json');
+const { terms } = await res.json();
+// terms[i] = { ko, en, def, category, dict, abbr, detail, example, related[], sources[] }</pre>
+  <div class="demo">
+    <input id="mini-q" placeholder="용어 검색 (예: SERP, RAG, 전환율)">
+    <div id="mini-list"></div>
+  </div>
+
+<!-- 방식 A: 위젯 -->
+<script src="../glossary.js"></script>
+<script>
+  if (window.Glossary) Glossary.mount('glossary-root');
+</script>
+
+<!-- 방식 B: JSON 직접 렌더 (자체 UI 예시) -->
+<script>
+(function () {
+  var listEl = document.getElementById('mini-list');
+  var qEl = document.getElementById('mini-q');
+  var DATA = [];
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function render(q) {
+    q = (q || '').trim().toLowerCase();
+    var rows = DATA.filter(function (t) {
+      if (!q) return true;
+      return (t.ko + ' ' + t.en + ' ' + t.def + ' ' + (t.abbr || '')).toLowerCase().indexOf(q) >= 0;
+    }).slice(0, 24);
+    listEl.innerHTML = rows.map(function (t) {
+      return '<div class="mini-card"><div class="t">' + esc(t.ko) + '</div>'
+        + '<div class="e">' + esc(t.en) + (t.abbr ? ' · ' + esc(t.abbr) : '') + '</div>'
+        + '<div class="d">' + esc(t.def) + '</div>'
+        + '<span class="c">#' + esc(t.category) + ' · ' + esc(t.dict) + '</span></div>';
+    }).join('') || '<p style="color:#94a3b8;font-size:13px">일치하는 용어가 없습니다.</p>';
+  }
+  fetch('./glossary-data.json')
+    .then(function (r) { return r.json(); })
+    .then(function (j) { DATA = j.terms; render(''); })
+    .catch(function () { listEl.innerHTML = '<p style="color:#dc2626;font-size:13px">glossary-data.json 로드 실패</p>'; });
+  qEl.addEventListener('input', function () { render(qEl.value); });
+})();
+</script>
+</body>
+</html>
