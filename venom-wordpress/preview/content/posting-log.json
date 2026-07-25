@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1784941872598",
+    "title": "대전 병원마케팅의 성공을 위한 5가지 핵심 전략",
+    "tokenUsage": {
+      "promptTokens": 2593,
+      "completionTokens": 2073,
+      "totalTokens": 4666,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-25T01:12:01.203Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1784890124436",
     "title": "울산 한의원 마케팅: 통증 치료 3가지 전략과 비급여 포지셔닝",
