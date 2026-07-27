@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1785146871266",
+    "title": "부산 치과마케팅: 성공을 위한 5가지 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2639,
+      "completionTokens": 1843,
+      "totalTokens": 4482,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-27T10:08:52.821Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1785132234446",
     "title": "대구 병원마케팅의 핵심 5가지 전략과 실행 방안",
     "tokenUsage": {
