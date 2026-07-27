@@ -14,8 +14,9 @@ const { URL } = require('url');
 const sa = require('../lib/naver-searchad'); // 검색광고 키워드도구 단일 소스
 
 // 단순 GET → JSON 패스스루 (entity, psi 공용)
-// 상류(구글 PSI 등)가 느릴 때 함수가 무한 대기하지 않도록 20초 타임아웃을 건다
-// → 초과 시 504로 즉시 응답, 클라이언트의 '정밀분석 생략'이 곧바로 동작한다.
+// 상류(구글 PSI 등)가 느릴 때 함수가 무한 대기하지 않도록 55초 타임아웃을 건다.
+// PSI 모바일 실측은 20~40초가 정상이라 과거 20초는 거의 항상 조기 종료돼 정밀분석이 실패했다.
+// seo-proxy maxDuration=60s 안에서 55초까지 대기 → 정상 완료. 초과 시에만 504.
 function getJson(fullUrl, res, withRaw) {
   var done = false;
   var reqObj = https.get(fullUrl, function(r) {
@@ -31,10 +32,10 @@ function getJson(fullUrl, res, withRaw) {
     });
   });
   reqObj.on('error', function(e) { if (done) return; done = true; res.status(500).json({ error: e.message }); });
-  reqObj.setTimeout(20000, function() {
+  reqObj.setTimeout(55000, function() {
     if (done) return; done = true;
     reqObj.destroy();
-    res.status(504).json({ error: '상류 응답 지연(20초 초과) — 정밀분석 생략' });
+    res.status(504).json({ error: '상류 응답 지연(55초 초과) — 정밀분석 생략' });
   });
 }
 
