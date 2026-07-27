@@ -139,7 +139,7 @@ module.exports = async function handler(req, res) {
     hasNaverAd: !!((process.env.NAVER_AD_API_KEY || process.env.NAVER_ACCESS_LICENSE) && (process.env.NAVER_AD_SECRET || process.env.NAVER_SECRET_KEY) && (process.env.NAVER_AD_CUSTOMER_ID || process.env.NAVER_CUSTOMER_ID)),
     hasNaverOpen: !!(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET),
     hasPerplexity: !!process.env.PERPLEXITY_API_KEY,
-    hasPSI: !!process.env.PSI_KEY,
+    hasPSI: !!(process.env.PSI_KEY || process.env.PAGESPEED_API_KEY || process.env.PAGESPEED_KEY || process.env.GOOGLE_PSI_KEY || process.env.PAGESPEEDINSIGHTS_KEY || process.env.GOOGLE_PAGESPEED_KEY),
     hasGSC: (function () { try { return require('../lib/search-console').isConfigured(); } catch { return false; } })(),
     // GSC 진단(비밀값 미노출 — 불리언/형식만). hasGSC:false 원인 특정용.
     gscDiag: (function () {

@@ -13,6 +13,13 @@ const crypto = require('crypto');
 const { URL } = require('url');
 const sa = require('../lib/naver-searchad'); // 검색광고 키워드도구 단일 소스
 
+// PSI/Knowledge Graph용 Google API 키 — 표준 이름 PSI_KEY 외에, 흔히 쓰는 별칭도 인식한다.
+// (키를 넣었는데도 '측정 안 됨'의 흔한 원인 = 환경변수 이름 불일치)
+function _googleKey() {
+  return process.env.PSI_KEY || process.env.PAGESPEED_API_KEY || process.env.PAGESPEED_KEY
+    || process.env.GOOGLE_PSI_KEY || process.env.PAGESPEEDINSIGHTS_KEY || process.env.GOOGLE_PAGESPEED_KEY || '';
+}
+
 // 단순 GET → JSON 패스스루 (entity, psi 공용)
 // 상류(구글 PSI 등)가 느릴 때 함수가 무한 대기하지 않도록 55초 타임아웃을 건다.
 // PSI 모바일 실측은 20~40초가 정상이라 과거 20초는 거의 항상 조기 종료돼 정밀분석이 실패했다.
@@ -122,7 +129,7 @@ module.exports = async function handler(req, res) {
   if (type === 'entity') {
     const query = req.query.query;
     if (!query) { res.status(400).json({ error: 'query parameter required' }); return; }
-    const key = process.env.PSI_KEY;
+    const key = _googleKey();
     if (!key) { res.status(500).json({ error: 'PSI_KEY not configured' }); return; }
     const apiPath = '/v1/entities:search?query=' + encodeURIComponent(query)
       + '&key=' + key + '&limit=5&languages=ko&languages=en';
@@ -133,7 +140,7 @@ module.exports = async function handler(req, res) {
   if (type === 'psi') {
     const url = req.query.url;
     if (!url) { res.status(400).json({ error: 'url parameter required' }); return; }
-    const key = process.env.PSI_KEY;
+    const key = _googleKey();
     if (!key) { res.status(500).json({ error: 'PSI_KEY not configured' }); return; }
     // 속도 개선: 4개 카테고리(20~40s) → 필요한 2개(performance·seo)만 요청.
     // 항목 판정(psiByName)에 쓰는 audit은 seo 카테고리에 포함되고, 접근성·모범사례
