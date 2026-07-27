@@ -1,6 +1,20 @@
 [
   {
     "action": "cron-publish-fixed",
+    "id": "auto_1785132234446",
+    "title": "대구 병원마케팅의 핵심 5가지 전략과 실행 방안",
+    "tokenUsage": {
+      "promptTokens": 2609,
+      "completionTokens": 2174,
+      "totalTokens": 4783,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-27T06:05:03.510Z"
+  },
+  {
+    "action": "cron-publish-fixed",
     "id": "auto_1785118995174",
     "title": "대전 병원마케팅 5가지 전략으로 SEO 최적화하기",
     "tokenUsage": {
