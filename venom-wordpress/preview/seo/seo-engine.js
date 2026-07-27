@@ -28,7 +28,7 @@
   var VERSION = '1.8.0';
   // 배포 캐시버전(index.html의 seo-engine.js?v=와 동일하게 유지). 결과 푸터에 노출해
   // "새 엔진이 실제로 로드됐는지"를 사용자가 즉시 확인할 수 있게 한다(캐시 오인 방지).
-  var BUILD = '2.1.8';
+  var BUILD = '2.2.0';
 
   // ── Core Web Vitals — Google 공식 임계값 (web.dev/vitals, PageSpeed Insights 기준) ──
   //   LCP: good ≤ 2.5s · needs-improvement ≤ 4.0s · poor > 4.0s   (초 단위)
@@ -151,6 +151,33 @@
     var h1Pass = h1Count === 1;
     var h1Note = h1Count === 0 ? 'H1 없음 — 페이지 대표 제목 추가 필요'
       : h1Count > 1 ? ('⚠ H1 ' + h1Count + '개 발견 — 1개만 사용 권장(네이버)') : '대표 제목 1개 — 적정';
+
+    // 헤딩(H1~H6) 계층 구조 — 순서·레벨 건너뜀을 '건수 요약'으로 진단.
+    // (레퍼런스 도구처럼 같은 경고를 매 인스턴스 나열하지 않고, 유형별 건수로 집계)
+    var _heads = doc ? Array.prototype.slice.call(doc.querySelectorAll('h1,h2,h3,h4,h5,h6')) : [];
+    var _lv = _heads.map(function (hh) { return +hh.tagName.charAt(1); });
+    var _hSkips = {}, _hSkipN = 0;
+    for (var _hi = 1; _hi < _lv.length; _hi++) {
+      if (_lv[_hi] - _lv[_hi - 1] >= 2) { // 한 단계 초과 하강 = 레벨 건너뜀
+        _hSkipN++;
+        var _hk = 'H' + _lv[_hi - 1] + '→H' + _lv[_hi];
+        _hSkips[_hk] = (_hSkips[_hk] || 0) + 1;
+      }
+    }
+    var _hStartsWrong = _lv.length > 0 && _lv[0] !== 1;
+    var _hIssues = [];
+    if (_lv.length === 0) _hIssues.push('헤딩(H1~H6) 없음');
+    else {
+      if (_hStartsWrong) _hIssues.push('H1 없이 H' + _lv[0] + '로 시작');
+      if (_hSkipN) {
+        var _hParts = Object.keys(_hSkips).sort().map(function (k) { return k + ' ' + _hSkips[k] + '건'; });
+        _hIssues.push('레벨 건너뜀 ' + _hSkipN + '건(' + _hParts.join(', ') + ')');
+      }
+    }
+    var _hierPass = _lv.length > 0 && !_hStartsWrong && _hSkipN === 0;
+    var _hierNote = _hIssues.length
+      ? ('⚠ ' + _hIssues.join(' · ') + ' — 올바른 순서: H1→H2→H3(레벨 건너뛰기 금지)')
+      : ('헤딩 ' + _lv.length + '개 · 계층 순서 정상');
 
     // 이미지 ALT (속성 누락만 집계, alt=""·추적픽셀 제외, ≤10% 허용)
     var allImgs = doc ? Array.prototype.slice.call(doc.querySelectorAll('img')) : [];
@@ -386,6 +413,7 @@
         ['제목(title) 태그', '검색결과 제목 — ' + titleNote, 12, jsItem(titlePass), 'Google'],
         ['메타 디스크립션', '검색결과 설명문 — ' + descNote, 8, jsItem(descPass), 'Google'],
         ['H1 대표 제목', h1Note, 6, jsItem(h1Pass), '공통'],
+        ['헤딩(H2~H6) 계층 구조', _hierNote, 5, jsItem(_hierPass), 'Google'],
         ['이미지 ALT 텍스트', '이미지 대체 텍스트 (' + imgDesc + ')', 6, imgAltOk, 'Google'],
         ['의미있는 링크 텍스트', '서술형 앵커·내부링크 — "여기 클릭" 류 지양', 6, linkTextOk, 'Google'],
         ['서술형 URL', 'URL에 의미있는 단어 — ' + urlNote, 4, urlOk, 'Google']
@@ -477,6 +505,7 @@
     '제목(title) 태그': '<!-- <head> 안, 페이지당 1개 · 10~60자 -->\n<title>병원명 · 지역 · 진료과목 핵심키워드</title>',
     '메타 디스크립션': '<!-- <head> 안 · 50~160자 · 페이지마다 고유 -->\n<meta name="description" content="지역 진료과목 병원 소개 — 핵심 진료·특장점을 한 문장으로 요약">',
     'H1 대표 제목': '<!-- 페이지 대표 제목, 페이지당 1개만 -->\n<h1>지역 진료과목 — 병원명</h1>',
+    '헤딩(H2~H6) 계층 구조': '<!-- 레벨을 건너뛰지 말 것: H1→H2→H3 순서 -->\n<h1>병원명 — 지역 진료과</h1>\n  <h2>진료 안내</h2>\n    <h3>세부 시술</h3>\n  <h2>오시는 길</h2>',
     '이미지 ALT 텍스트': '<!-- 모든 의미있는 이미지에 alt -->\n<img src="clinic.jpg" alt="OO병원 임플란트 상담 장면">',
     '의미있는 링크 텍스트': '<!-- "여기 클릭"·"더보기" 대신 서술형 -->\n<a href="/implant">임플란트 진료 안내 보기</a>',
     '서술형 URL': '좋음: /implant-consult\n피함: /page?id=12983  (임의 숫자·세션ID)',
