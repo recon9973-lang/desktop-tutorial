@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-20T00:02:21.230Z",
+  "updated": "2026-07-27T00:01:46.011Z",
   "model": {
     "answer": "claude-opus-4-8",
     "judge": "claude-haiku-4-5"
@@ -17,18 +17,12 @@
   },
   "overall": {
     "passRate": 100,
-    "avgGrounding": 4.75,
-    "avgCorrectness": 4.71,
-    "avgCitation": 4.75,
+    "avgGrounding": 4.79,
+    "avgCorrectness": 4.79,
+    "avgCitation": 4.79,
     "hallucinationRate": 0
   },
   "weakestGroups": [
-    {
-      "group": "경험담·전후사진",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 4
-    },
     {
       "group": "골드",
       "n": 1,
@@ -42,7 +36,7 @@
       "avgCorrectness": 4
     },
     {
-      "group": "과장·최상급",
+      "group": "심의대상 매체",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
@@ -58,16 +52,16 @@
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
+    },
+    {
+      "group": "사전심의 예외(정보성)",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
     }
   ],
   "failures": [],
   "allByGroup": [
-    {
-      "group": "경험담·전후사진",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 4
-    },
     {
       "group": "골드",
       "n": 1,
@@ -81,7 +75,7 @@
       "avgCorrectness": 4
     },
     {
-      "group": "과장·최상급",
+      "group": "심의대상 매체",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
@@ -105,13 +99,19 @@
       "avgCorrectness": 5
     },
     {
-      "group": "심의대상 매체",
+      "group": "심의필·유효기간",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
     },
     {
-      "group": "심의필·유효기간",
+      "group": "경험담·전후사진",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "과장·최상급",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
