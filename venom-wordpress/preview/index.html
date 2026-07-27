@@ -5621,13 +5621,14 @@ function runFullDiag(){
   var btn=document.getElementById('fd-start');btn.disabled=true;btn.textContent='진단 중… (약 30초~1분)';
   setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},150);
 
-  // PSI 병렬 시작 (약 10~15초 — 도착 시 속도 카드 병합)
-  // 응답이 없어도 18초 후 자동 종료 → 무한 '측정 중' 방지(AbortController로 요청도 취소).
+  // PSI 병렬 시작 (모바일 실측 20~40초 — 도착 시 속도 카드 병합)
+  // 응답이 없어도 55초 후 자동 종료 → 무한 '측정 중' 방지(AbortController로 요청도 취소).
+  // (과거 18초는 PSI 모바일 실측 시간보다 짧아 속도 카드가 늘 '측정 불가'로 빠졌다.)
   if(url){
     var _pDone=false;
     var _pCtl=(typeof AbortController!=='undefined')?new AbortController():null;
     var _pFin=function(){ if(_pDone)return; _pDone=true; _orch.done.psi=true; _orchRender(); };
-    var _pT=setTimeout(function(){ if(_pCtl){try{_pCtl.abort();}catch(e){}} _pFin(); }, 18000);
+    var _pT=setTimeout(function(){ if(_pCtl){try{_pCtl.abort();}catch(e){}} _pFin(); }, 55000);
     fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url), _pCtl?{signal:_pCtl.signal}:undefined)
       .then(function(r){return r.json();})
       .then(function(j){
@@ -6112,7 +6113,7 @@ function _renderSEO(data,url,domain,el){
   el.innerHTML=SEOEngine.renderInfographic(res)
     +'<div id="seo-psi-section" style="margin-top:14px;font-size:12.5px;color:#475569;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">'
     +'<span style="display:inline-block;width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:#533afd;border-radius:50%;animation:spin .8s linear infinite"></span>'
-    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영합니다 (최대 15초 · 느리면 자동 생략, 위 정적 결과는 이미 유효)</div>'
+    +'🔬 <strong>정밀 분석(PSI) 자동 측정 중</strong> — 실제 브라우저 렌더링·속도까지 반영합니다 (모바일 실측 20~40초 · 최대 55초 · 위 정적 결과는 이미 유효)</div>'
     +_seoToolbar()
     +_seoCTA();
   setTimeout(function(){_runSEOPSI(url);}, 400);
@@ -6134,8 +6135,9 @@ function _runSEOPSI(optUrl){
   if(!url){ if(sec)sec.innerHTML=_psiSkipBox('(분석 대상 URL을 확인할 수 없음)'); return; }
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var domain=url.replace(/^https?:\/\//,'').split('/')[0];
-  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','최대 15초 · 느리면 자동 생략');
-  // 무한 스피너 방지: 15초 내 미응답이면 정밀분석 자동 생략(위 정적 결과는 그대로 유효).
+  if(sec)sec.innerHTML=_seoLoader(domain,'Google PageSpeed 정밀 분석 중','최대 55초 · 모바일 실측은 20~40초 걸립니다 (위 정적 결과는 이미 유효)');
+  // 무한 스피너 방지: 55초 내 미응답이면 정밀분석 자동 생략(위 정적 결과는 그대로 유효).
+  // PSI 모바일은 20~40초가 정상 — 과거 15초는 거의 항상 조기 종료돼 정밀분석이 늘 '생략'됐다.
   // AbortController가 없어도 _psiSkip이 UI를 반드시 종료시킨다(진짜 무한 스피너 원천 차단).
   var _psiDone=false;
   var _psiCtl = (typeof AbortController!=='undefined') ? new AbortController() : null;
@@ -6145,14 +6147,17 @@ function _runSEOPSI(optUrl){
     var s2=document.getElementById('seo-psi-section');
     if(s2)s2.innerHTML=_psiSkipBox(reason,admin);
   }
-  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 15초 내 오지 않음)'); }, 15000);
+  var _psiTimer = setTimeout(function(){ _psiSkip('(응답이 55초 내 오지 않음)'); }, 55000);
   fetch(_SEO_PROXY+'?type=psi&url='+encodeURIComponent(url)+'&nonce='+Date.now(), _psiCtl?{signal:_psiCtl.signal}:undefined)
     .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
     .then(function(resp){
       clearTimeout(_psiTimer);
       if(_psiDone) return; _psiDone=true;
-      if(!resp.ok || (resp.j && resp.j.error) || !(resp.j && resp.j.lighthouseResult)){
-        throw new Error((resp.j && resp.j.error) ? resp.j.error : ('HTTP '+resp.status+' — PSI 응답 없음'));
+      // 구글 PSI 에러는 {error:{code,message,status}} 객체, 프록시 자체 에러는 문자열 → 둘 다 사람이 읽을 메시지로 변환.
+      var _e=resp.j && resp.j.error;
+      if(_e && typeof _e==='object') _e=(_e.message||_e.status||JSON.stringify(_e));
+      if(!resp.ok || _e || !(resp.j && resp.j.lighthouseResult)){
+        throw new Error(_e ? _e : ('HTTP '+resp.status+' — PSI 응답 없음'));
       }
       var psi=resp.j;
       var base=_seoLast||SEOEngine.analyze({url:url,html:'',robots:'',isHttps:/^https/i.test(url)});
@@ -6165,9 +6170,15 @@ function _runSEOPSI(optUrl){
       clearTimeout(_psiTimer);
       if(err && err.name==='AbortError'){ return; } // 이미 _psiSkip이 처리
       var msg=(err&&err.message)||'PSI 오류';
-      // PSI_KEY 미설정이면 관리자 조치를 함께 안내(그 외엔 조용히 생략).
-      var admin = /PSI_KEY/i.test(msg)
-        ? '<div style="margin-top:6px;color:#92400e">⚙️ 관리자: Vercel 환경변수 <b>PSI_KEY</b>(PageSpeed API 키) 설정 후 재배포하면 속도(정밀) 분석이 켜집니다.</div>' : '';
+      // 관리자 조치가 필요한 실패는 원인별로 명확히 안내(그 외 단순 지연/일시오류는 조용히 생략).
+      var admin='';
+      if(/PSI_KEY/i.test(msg)){
+        admin='<div style="margin-top:6px;color:#92400e">⚙️ 관리자: Vercel 환경변수 <b>PSI_KEY</b>(PageSpeed API 키) 미설정입니다. 설정 후 재배포하면 정밀(속도) 분석이 켜집니다. (<b>/api/health</b>의 <b>hasPSI</b>로 확인)</div>';
+      }else if(/not enabled|has not been used|disabled|SERVICE_DISABLED|API_KEY|forbidden|PERMISSION_DENIED|referer|referrer/i.test(msg)){
+        admin='<div style="margin-top:6px;color:#92400e">⚙️ 관리자: PSI_KEY는 있으나 키 설정 문제입니다 — Google Cloud에서 <b>PageSpeed Insights API 사용 설정</b> + 키의 <b>HTTP 리퍼러 제한 해제</b>(서버 호출)가 필요합니다.</div>';
+      }else if(/RESOURCE_EXHAUSTED|quota|rateLimit|429/i.test(msg)){
+        admin='<div style="margin-top:6px;color:#92400e">⚙️ 관리자: PageSpeed API <b>쿼터 소진</b>입니다 — Google Cloud 콘솔에서 해당 키의 일일 쿼터를 확인/상향하세요.</div>';
+      }
       _psiDone=false; _psiSkip('('+msg+')', admin);
     });
 }
