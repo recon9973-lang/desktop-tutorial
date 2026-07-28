@@ -14,7 +14,7 @@
 # =============================================================================
 # 1단계 — 빌더: 가상환경을 만들고 apps/api 를 설치한다.
 # =============================================================================
-FROM python:3.12-slim AS builder
+FROM python:3.14-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -47,7 +47,7 @@ RUN pip install --upgrade pip \
 # =============================================================================
 # 2단계 — 런타임
 # =============================================================================
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 # ASGI 애플리케이션 경로와 헬스체크 경로는 환경변수로 뺀다.
 # 앱 팩토리 모듈(veo.api.app)은 아직 구현 전이라, 이름이 확정되면 이미지를
@@ -83,4 +83,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
     CMD ["python", "-c", "import os, sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('VEO_API_PORT', '8000') + os.environ.get('VEO_HEALTHCHECK_PATH', '/api/health'), timeout=4).status == 200 else 1)"]
 
-CMD ["sh", "-c", "exec uvicorn \"$VEO_ASGI_APP\" --host \"$VEO_API_HOST\" --port \"$VEO_API_PORT\" --proxy-headers"]
+# 포트는 플랫폼이 정한다. Railway·Render 등은 PORT 를 주입하고 그 포트로만 트래픽을
+# 보내므로, 컨테이너가 다른 포트를 열면 배포는 성공하고 접속만 안 되는 상태가 된다.
+# PORT 가 없으면(compose·로컬) 기존 VEO_API_PORT 로 떨어진다.
+CMD ["sh", "-c", "exec uvicorn \"$VEO_ASGI_APP\" --host \"$VEO_API_HOST\" --port \"${PORT:-$VEO_API_PORT}\" --proxy-headers"]
