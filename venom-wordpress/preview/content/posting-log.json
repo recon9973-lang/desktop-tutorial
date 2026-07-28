@@ -1,5 +1,11 @@
 [
   {
+    "action": "cron-en-fail",
+    "id": "auto_1785241599856",
+    "error": "translate timeout",
+    "ts": "2026-07-28T12:28:23.627Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1785235492606",
     "title": "인천 피부과 마케팅 5가지 성공 전략과 효과",
