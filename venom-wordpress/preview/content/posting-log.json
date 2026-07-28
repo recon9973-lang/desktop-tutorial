@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish",
+    "id": "auto_1785206103696",
+    "title": "대전 병원마케팅의 SEO 전략 5가지, 검색량 186,900건",
+    "tokenUsage": {
+      "promptTokens": 2593,
+      "completionTokens": 1867,
+      "totalTokens": 4460,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": false,
+    "ts": "2026-07-28T02:36:12.940Z"
+  },
+  {
     "action": "cron-publish-fixed",
     "id": "auto_1785158467103",
     "title": "인천 피부과 마케팅 5가지 핵심 전략과 성공 사례",
