@@ -221,6 +221,13 @@ class Settings(BaseSettings):
 
     cors_allowed_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
+    #: Where the console is served from — the origin an invitation link points at.
+    #: Deliberately its own setting rather than derived from ``cors_allowed_origins``:
+    #: that list is a security boundary and may hold several entries, and picking one of
+    #: them to build a link would make a change to CORS silently rewrite every invitation
+    #: an administrator sends. Set this to the address staff actually type.
+    console_base_url: str = "http://localhost:3000"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def is_production(self) -> bool:

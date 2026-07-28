@@ -14,6 +14,7 @@ helpers are never used for passwords.
 from __future__ import annotations
 
 import hashlib
+import re
 
 #: Length of every digest this module produces, in hex characters. Matches the
 #: ``String(64)`` columns on ``UserSession`` and ``LoginAttempt``.
@@ -23,6 +24,23 @@ DIGEST_LENGTH = 64
 def sha256_hex(value: str) -> str:
     """SHA-256 of ``value``, hex-encoded."""
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+#: Deliberately not RFC 5322, and deliberately not ``pydantic.EmailStr``.
+#:
+#: The full grammar accepts addresses no mail system in Korea will deliver to, and
+#: ``EmailStr`` would pull in a new runtime dependency to reject the same three mistakes
+#: this catches: a bare username, a stray space, a missing dot in the domain. Delivery is
+#: proven by an invitation link arriving, not by a regular expression — so the job here is
+#: only to stop an obvious typo becoming an account nobody can reach.
+EMAIL_SHAPE_PATTERN = r"[^@\s]+@[^@\s]+\.[^@\s]+"
+
+_EMAIL_SHAPE = re.compile(rf"\A{EMAIL_SHAPE_PATTERN}\Z")
+
+
+def looks_like_email(value: str) -> bool:
+    """Whether ``value`` is shaped like a deliverable address."""
+    return _EMAIL_SHAPE.fullmatch(value.strip()) is not None
 
 
 def normalize_email(email: str) -> str:

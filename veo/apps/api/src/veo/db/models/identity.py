@@ -69,6 +69,40 @@ class RoleAssignment(Base, OrganizationScopedMixin, TimestampMixin):
     )
 
 
+class UserInvitation(Base, OrganizationScopedMixin, TimestampMixin):
+    """A one-time link letting a new colleague set their own password.
+
+    An administrator creates the account but never chooses the password — they would
+    otherwise know a credential belonging to someone else, and every later action by that
+    person would be deniable. The invitation carries the right to set one, once.
+
+    Only the SHA-256 of the token is stored. The link is shown to the administrator at
+    creation and is not recoverable afterwards, so a stolen database yields no usable
+    invitations.
+    """
+
+    __tablename__ = "user_invitations"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    invited_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+
 class Customer(Base, OrganizationScopedMixin, TimestampMixin):
     __tablename__ = "customers"
 

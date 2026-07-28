@@ -32,7 +32,7 @@ from typing import Final, final
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
-from veo.auth.hashing import normalize_email
+from veo.auth.hashing import looks_like_email, normalize_email
 from veo.auth.passwords import PasswordPolicyError, hash_password
 from veo.contracts.enums import Role
 from veo.db.models.identity import Organization, RoleAssignment, User
@@ -49,11 +49,6 @@ __all__ = [
 #: an account they already have. This one governs the single most powerful account in a
 #: deployment, created once, by an operator, with no rate limit in front of it.
 MIN_BOOTSTRAP_PASSWORD_LENGTH: Final = 12
-
-#: Not RFC 5322 — that is not the job here. This rejects the mistakes an operator
-#: actually makes at a prompt (a bare username, a stray space, a missing dot) before they
-#: are baked into the one account that can grant every role.
-_EMAIL_SHAPE = re.compile(r"\A[^@\s]+@[^@\s]+\.[^@\s]+\Z")
 
 _SLUG_SHAPE = re.compile(r"\A[a-z0-9][a-z0-9-]{0,62}[a-z0-9]\Z")
 
@@ -102,7 +97,7 @@ def bootstrap_first_organization(
         )
     if not person_name:
         raise BootstrapRefused("사용자 이름이 비어 있습니다.")
-    if not _EMAIL_SHAPE.fullmatch(address):
+    if not looks_like_email(address):
         raise BootstrapRefused(f"이메일 형식이 올바르지 않습니다: {email!r}")
     if len(password) < MIN_BOOTSTRAP_PASSWORD_LENGTH:
         # The length is named, the password is not — an error message is written to a

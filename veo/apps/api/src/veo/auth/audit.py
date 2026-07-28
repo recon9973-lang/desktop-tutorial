@@ -44,6 +44,16 @@ class AuthAuditAction(StrEnum):
     REFRESH_REUSE_DETECTED = "auth.refresh.reuse_detected"
     SESSION_REVOKED = "auth.session.revoked"
 
+    # Membership. These are the events that answer "who gave this person access, and
+    # when" — the question asked after something has already gone wrong, when nobody
+    # remembers and the person who did it may no longer work here.
+    MEMBER_INVITED = "auth.member.invited"
+    MEMBER_INVITE_REISSUED = "auth.member.invite_reissued"
+    MEMBER_INVITE_ACCEPTED = "auth.member.invite_accepted"
+    MEMBER_ROLE_CHANGED = "auth.member.role_changed"
+    MEMBER_STATUS_CHANGED = "auth.member.status_changed"
+    PASSWORD_CHANGED = "auth.password.changed"  # noqa: S105 - an event name
+
 
 class LoginFailureCode(StrEnum):
     """Why a sign-in failed, for the trail only.

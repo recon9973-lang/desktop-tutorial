@@ -64,6 +64,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 내 비밀번호 변경
+         * @description 현재 비밀번호를 함께 요구합니다. 세션만으로 바꿀 수 있다면 잠기지 않은 화면 하나가 계정을 영구히 빼앗기에 충분해집니다.
+         *
+         *     변경하면 **다른 모든 기기의 세션이 끊깁니다.** 비밀번호를 바꾸는 이유는 대개 누군가 알아냈다고 의심할 때인데, 그 사람의 세션이 남아 있으면 바꾼 의미가 없습니다.
+         */
+        post: operations["change_own_password_api_auth_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/refresh": {
         parameters: {
             query?: never;
@@ -299,6 +321,28 @@ export interface paths {
         get: operations["health_api_health_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invitations/{token}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초대 수락 및 비밀번호 설정 (로그인 불필요)
+         * @description 초대 링크로 처음 비밀번호를 설정합니다. 로그인은 필요하지 않습니다 — 아직 비밀번호가 없기 때문입니다. 토큰은 한 번만 쓸 수 있고 만료됩니다.
+         *
+         *     없는 토큰·만료된 토큰·이미 사용한 토큰은 모두 같은 응답을 돌려줍니다. 어떤 토큰이 실제로 존재했는지 확인해 주는 창구가 되지 않기 위해서입니다.
+         */
+        post: operations["accept_invitation_api_invitations__token__accept_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1083,6 +1127,96 @@ export interface paths {
         patch: operations["update_site_api_sites__site_id__patch"];
         trace?: never;
     };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 구성원 목록
+         * @description 로그인한 조직의 구성원만 반환합니다. 비밀번호는 어떤 형태로도 포함되지 않으며, 초대를 아직 수락하지 않은 구성원은 `has_password=false` 로 표시됩니다.
+         */
+        get: operations["list_members_api_users_get"];
+        put?: never;
+        /**
+         * 구성원 추가 (초대 링크 발급)
+         * @description 계정을 만들고 초대 링크를 발급합니다. **관리자는 비밀번호를 정하지 않습니다** — 본인이 링크에서 직접 설정합니다. 계정은 초대를 수락하기 전까지 비활성 상태이며 로그인할 수 없습니다.
+         *
+         *     초대 링크는 **이 응답에서만** 확인할 수 있고 다시 조회할 수 없습니다. VEO 는 메일을 보내지 않으므로 관리자가 직접 전달해야 합니다.
+         */
+        post: operations["add_member_api_users_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{user_id}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초대 링크 재발급
+         * @description 링크를 잃어버렸거나 만료된 경우, 또는 비밀번호를 잊은 구성원에게 다시 설정하게 할 때 사용합니다. 이전 링크는 즉시 무효가 됩니다.
+         *
+         *     **주의:** 재발급은 해당 계정의 비밀번호를 다시 정할 권한을 넘기는 것과 같습니다. 관리자가 다른 사람의 계정을 넘겨받는 경로이기도 하므로 감사 로그에 남습니다.
+         */
+        post: operations["reissue_invitation_api_users__user_id__invitations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{user_id}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 구성원 역할 변경
+         * @description 마지막 관리자의 역할은 바꿀 수 없습니다 — 조직이 스스로를 잠글 수 없어야 합니다.
+         */
+        patch: operations["change_role_api_users__user_id__role_patch"];
+        trace?: never;
+    };
+    "/api/users/{user_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 구성원 활성/비활성
+         * @description 퇴사 처리는 삭제가 아니라 비활성화입니다. 행을 지우면 감사 기록이 사라진 사용자를 가리키게 되고, 그것은 기록이 아닙니다.
+         *
+         *     비활성화하면 해당 구성원의 모든 세션이 즉시 끊깁니다.
+         */
+        patch: operations["change_status_api_users__user_id__status_patch"];
+        trace?: never;
+    };
     "/public/v1/geo-readiness-scans": {
         parameters: {
             query?: never;
@@ -1187,6 +1321,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AcceptInvitationRequest
+         * @description Setting a password for the first time. Requires no session — the token is the proof.
+         */
+        AcceptInvitationRequest: {
+            /** Password */
+            password: string;
+        };
         /** ActionPayload */
         ActionPayload: {
             /** Domain */
@@ -1281,6 +1423,18 @@ export interface components {
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[InvitationPayload] */
+        ApiResponse_InvitationPayload_: {
+            data?: components["schemas"]["InvitationPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[InvitedMemberPayload] */
+        ApiResponse_InvitedMemberPayload_: {
+            data?: components["schemas"]["InvitedMemberPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[IssueDetailPayload] */
         ApiResponse_IssueDetailPayload_: {
             data?: components["schemas"]["IssueDetailPayload"] | null;
@@ -1314,6 +1468,12 @@ export interface components {
         /** ApiResponse[MePayload] */
         ApiResponse_MePayload_: {
             data?: components["schemas"]["MePayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[MemberPayload] */
+        ApiResponse_MemberPayload_: {
+            data?: components["schemas"]["MemberPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -1453,6 +1613,13 @@ export interface components {
         /** ApiResponse[VerificationRequestedPayload] */
         ApiResponse_VerificationRequestedPayload_: {
             data?: components["schemas"]["VerificationRequestedPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[list[MemberPayload]] */
+        ApiResponse_list_MemberPayload__: {
+            /** Data */
+            data?: components["schemas"]["MemberPayload"][] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -1691,6 +1858,19 @@ export interface components {
             overall_metric_key: string;
             /** Rows */
             rows?: components["schemas"]["CategoryRowPayload"][];
+        };
+        /**
+         * ChangePasswordRequest
+         * @description Changing it later. Requires the current one even though a session is present.
+         *
+         *     A stolen laptop with an open console should not be enough to take the account
+         *     permanently; asking for the current password is what makes the theft recoverable.
+         */
+        ChangePasswordRequest: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
         };
         /** ChangePayload */
         ChangePayload: {
@@ -2865,6 +3045,30 @@ export interface components {
             url: string;
         };
         /**
+         * InvitationPayload
+         * @description The one-time link. Returned once and never retrievable again.
+         */
+        InvitationPayload: {
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Invite Url
+             * @description 초대 링크입니다. 이 응답에서만 확인할 수 있으며 다시 조회할 수 없습니다. VEO 는 메일을 보내지 않으므로, 관리자가 직접 전달해야 합니다.
+             */
+            invite_url: string;
+        };
+        /**
+         * InvitedMemberPayload
+         * @description A newly created colleague, together with the link to hand them.
+         */
+        InvitedMemberPayload: {
+            invitation: components["schemas"]["InvitationPayload"];
+            member: components["schemas"]["MemberPayload"];
+        };
+        /**
          * IssueDetailPayload
          * @description One issue with everything needed to act on it and to audit it.
          */
@@ -3296,6 +3500,54 @@ export interface components {
             conditions: components["schemas"]["DeclaredConditions"];
             score: components["schemas"]["ScoreInput"];
         };
+        /**
+         * MemberPayload
+         * @description One colleague. No password field exists, in either direction.
+         */
+        MemberPayload: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string;
+            /**
+             * Has Password
+             * @description 비밀번호를 설정했는지 여부입니다. 초대를 아직 수락하지 않았으면 false 입니다.
+             */
+            has_password: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Last Login At */
+            last_login_at?: string | null;
+            /** Roles */
+            roles: string[];
+            /** @description PENDING = 초대했으나 아직 비밀번호를 설정하지 않음, ACTIVE = 사용 중, DEACTIVATED = 관리자가 비활성화함. */
+            status: components["schemas"]["MemberStatus"];
+        };
+        /** MemberRoleUpdateRequest */
+        MemberRoleUpdateRequest: {
+            role: components["schemas"]["Role"];
+        };
+        /**
+         * MemberStatus
+         * @description Where a colleague is in their life with the product.
+         *
+         *     ``is_active`` alone could not express this, and conflating the two states hid a real
+         *     bug: a colleague who had just been invited was indistinguishable from one who had
+         *     left, so adding somebody made them disappear from the list until they accepted. The
+         *     administrator's reasonable conclusion would be that it had not worked.
+         * @enum {string}
+         */
+        MemberStatus: "PENDING" | "ACTIVE" | "DEACTIVATED";
+        /** MemberStatusUpdateRequest */
+        MemberStatusUpdateRequest: {
+            /** Is Active */
+            is_active: boolean;
+        };
         /** MetricPayload */
         MetricPayload: {
             /** Domain */
@@ -3316,6 +3568,14 @@ export interface components {
             /** Section */
             section: string;
             value: components["schemas"]["ValuePayload"];
+        };
+        /** NewMemberRequest */
+        NewMemberRequest: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string;
+            role: components["schemas"]["Role"];
         };
         /**
          * ObservedVisibilityInput
@@ -4187,6 +4447,11 @@ export interface components {
             /** Sources */
             sources?: components["schemas"]["SourceAttribution"][];
         };
+        /**
+         * Role
+         * @enum {string}
+         */
+        Role: "SUPER_ADMIN" | "LAB_ADMIN" | "ANALYST" | "DEVELOPER" | "SALES_VIEWER" | "CLIENT_VIEWER";
         /** ScanPayload */
         ScanPayload: {
             /** Evidence */
@@ -5323,6 +5588,39 @@ export interface operations {
             };
         };
     };
+    change_own_password_api_auth_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MemberPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     refresh_api_auth_refresh_post: {
         parameters: {
             query?: never;
@@ -5824,6 +6122,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_HealthPayload_"];
+                };
+            };
+        };
+    };
+    accept_invitation_api_invitations__token__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInvitationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MemberPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -7438,6 +7771,172 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_SitePayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_members_api_users_get: {
+        parameters: {
+            query?: {
+                /** @description 비활성화된 구성원도 함께 조회합니다. */
+                include_deactivated?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_MemberPayload__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_member_api_users_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewMemberRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_InvitedMemberPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reissue_invitation_api_users__user_id__invitations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_InvitationPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_role_api_users__user_id__role_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberRoleUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MemberPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_status_api_users__user_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberStatusUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_MemberPayload_"];
                 };
             };
             /** @description Validation Error */

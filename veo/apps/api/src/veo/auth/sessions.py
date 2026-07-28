@@ -229,6 +229,7 @@ def revoke_all_for_user(
     user_id: uuid.UUID,
     organization_id: uuid.UUID,
     reason: RevocationReason,
+    except_session_id: uuid.UUID | None = None,
     now: datetime | None = None,
 ) -> int:
     """Sign a user out of one organization everywhere at once.
@@ -236,8 +237,16 @@ def revoke_all_for_user(
     Used when a password changes or an administrator withdraws access; every other
     organization the user belongs to is untouched, because those sessions are separate
     by construction.
+
+    ``except_session_id`` spares one session, and exists for the case where the user is
+    doing this to themselves. Someone who changes their own password wants the *other*
+    sessions gone; throwing them out of the tab they are looking at reads as a failure,
+    and the natural response to that is to try again — which is not what anyone wants
+    from a security control. Administrative revocation passes nothing and spares nothing.
     """
     statement = _scoped(organization_id).where(UserSession.user_id == user_id)
+    if except_session_id is not None:
+        statement = statement.where(UserSession.id != except_session_id)
     moment = now or datetime.now(UTC)
     burned = 0
     for row in db.execute(statement).scalars().all():
