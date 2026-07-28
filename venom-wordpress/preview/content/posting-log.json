@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1785216826606",
+    "title": "대구 병원마케팅의 3가지 GEO/AEO 전략과 성공 사례",
+    "tokenUsage": {
+      "promptTokens": 2609,
+      "completionTokens": 2155,
+      "totalTokens": 4764,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-28T05:34:42.628Z"
+  },
+  {
     "action": "cron-publish",
     "id": "auto_1785206103696",
     "title": "대전 병원마케팅의 SEO 전략 5가지, 검색량 186,900건",
