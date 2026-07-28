@@ -1,0 +1,25 @@
+{
+  "target_url": "https://brochure.example.kr/",
+  "primary_url": "https://brochure.example.kr/",
+  "locale": "ko-KR",
+  "robots": "robots.txt",
+  "sitemaps": {
+    "https://brochure.example.kr/sitemap.xml": "sitemap.xml"
+  },
+  "pages": [
+    {
+      "url": "https://brochure.example.kr/",
+      "file": "pages/index.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://brochure.example.kr/company/",
+      "file": "pages/company.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ]
+}

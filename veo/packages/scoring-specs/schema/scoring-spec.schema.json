@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://veo.seokorea.org/schemas/scoring-spec/v1.json",
+  "title": "VEO Scoring Specification",
+  "description": "Versioned, machine-readable scoring specification authored by VEO-LAB and implemented by VENOM. Weights, severities and caps MUST live here and never inside checker code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_id",
+    "domain",
+    "version",
+    "status",
+    "effective_at",
+    "methodology_owner",
+    "implementation_owner",
+    "score_meaning",
+    "severity_coefficients",
+    "confidence_levels",
+    "status_policy",
+    "url_importance",
+    "categories",
+    "bands"
+  ],
+  "properties": {
+    "spec_id": {
+      "type": "string",
+      "pattern": "^veo\\.[a-z0-9_]+(\\.[a-z0-9_]+)*$",
+      "description": "Stable identifier of the specification family, e.g. veo.seo.readiness"
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["SEO_READINESS", "GEO_READINESS"],
+      "description": "GEO_OBSERVATION is deliberately absent: observed AI visibility is measured, not scored by this evaluator."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "RETIRED"]
+    },
+    "effective_at": { "type": "string", "format": "date-time" },
+    "methodology_owner": { "type": "string" },
+    "implementation_owner": { "type": "string" },
+    "approved_by": { "type": ["string", "null"] },
+    "compatible_collector_versions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "score_meaning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ko", "en", "is_rank_prediction"],
+      "properties": {
+        "ko": { "type": "string" },
+        "en": { "type": "string" },
+        "is_rank_prediction": {
+          "type": "boolean",
+          "const": false,
+          "description": "VEO readiness scores are never rank predictions."
+        }
+      }
+    },
+    "changelog": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "date", "summary"],
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string", "format": "date" },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "severity_coefficients": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"],
+      "properties": {
+        "BLOCKER": { "$ref": "#/$defs/unitInterval" },
+        "CRITICAL": { "$ref": "#/$defs/unitInterval" },
+        "MAJOR": { "$ref": "#/$defs/unitInterval" },
+        "MINOR": { "$ref": "#/$defs/unitInterval" },
+        "INFO": { "$ref": "#/$defs/unitInterval" }
+      }
+    },
+    "confidence_levels": {
+      "type": "object",
+      "description": "Evidence strength of a check outcome. Direct observation is the only 1.0.",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/unitInterval" }
+    },
+    "status_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fail_penalty_multiplier",
+        "warning_penalty_multiplier",
+        "pass_penalty_multiplier",
+        "not_applicable",
+        "unknown"
+      ],
+      "properties": {
+        "fail_penalty_multiplier": { "$ref": "#/$defs/unitInterval" },
+        "warning_penalty_multiplier": { "$ref": "#/$defs/unitInterval" },
+        "pass_penalty_multiplier": { "$ref": "#/$defs/unitInterval" },
+        "not_applicable": {
+          "type": "string",
+          "const": "EXCLUDE_FROM_DENOMINATOR",
+          "description": "N/A is not zero. It leaves both numerator and denominator."
+        },
+        "unknown": {
+          "type": "string",
+          "const": "EXCLUDE_FROM_SCORE_REDUCE_COVERAGE",
+          "description": "Unknown is not a failure. It lowers coverage and confidence instead."
+        }
+      }
+    },
+    "url_importance": {
+      "type": "object",
+      "description": "Importance weights used to build coverage denominators for site-level checks.",
+      "minProperties": 1,
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/category" }
+    },
+    "caps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/cap" },
+      "default": []
+    },
+    "gates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/gate" },
+      "default": []
+    },
+    "bands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "min", "max", "label_ko", "label_en"],
+        "properties": {
+          "id": { "type": "string" },
+          "min": { "type": "number", "minimum": 0, "maximum": 100 },
+          "max": { "type": "number", "minimum": 0, "maximum": 100 },
+          "label_ko": { "type": "string" },
+          "label_en": { "type": "string" },
+          "description_ko": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "unitInterval": { "type": "number", "minimum": 0, "maximum": 1 },
+    "checkId": { "type": "string", "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)+$" },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "weight", "name_ko", "name_en", "checks"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "weight": { "type": "number", "exclusiveMinimum": 0 },
+        "name_ko": { "type": "string" },
+        "name_en": { "type": "string" },
+        "description_ko": { "type": "string" },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/check" }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title_ko", "title_en", "severity", "scope", "remediation_owner"],
+      "properties": {
+        "id": { "$ref": "#/$defs/checkId" },
+        "title_ko": { "type": "string" },
+        "title_en": { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"]
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["URL", "SITE"],
+          "description": "URL checks are evaluated per URL; SITE checks aggregate importance-weighted URL coverage."
+        },
+        "remediation_owner": {
+          "type": "string",
+          "enum": ["DEVELOPER", "MARKETER", "BUSINESS_OWNER", "OPERATIONS"]
+        },
+        "applicability_ko": { "type": "string" },
+        "evidence_required": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "engine_scope": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["GOOGLE", "NAVER", "BING", "AI_ANSWER_ENGINE", "GENERIC"] },
+          "default": ["GENERIC"]
+        },
+        "reference_ko": { "type": "string" }
+      }
+    },
+    "cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "max_overall_score", "reason_ko", "release_condition_ko", "trigger"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "max_overall_score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "reason_ko": { "type": "string" },
+        "release_condition_ko": { "type": "string" },
+        "trigger": { "$ref": "#/$defs/trigger" }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "description": "A gate never changes the numeric score. It raises a separate status shown next to it.",
+      "additionalProperties": false,
+      "required": ["id", "status_code", "label_ko", "label_en", "trigger"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "status_code": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+        "label_ko": { "type": "string" },
+        "label_en": { "type": "string" },
+        "description_ko": { "type": "string" },
+        "trigger": { "$ref": "#/$defs/trigger" }
+      }
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["any_of"],
+      "properties": {
+        "any_of": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["check_id", "status"],
+            "properties": {
+              "check_id": { "$ref": "#/$defs/checkId" },
+              "status": {
+                "type": "string",
+                "enum": ["PASS", "WARNING", "FAIL", "NOT_APPLICABLE", "UNKNOWN"]
+              },
+              "min_coverage": {
+                "$ref": "#/$defs/unitInterval",
+                "description": "Optional: only trigger when the affected coverage ratio reaches this value."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /tmp/
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+Sitemap: https://healthy.example.kr/sitemap.xml

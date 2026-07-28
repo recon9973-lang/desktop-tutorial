@@ -1,0 +1,16 @@
+{
+  "name": "veo",
+  "private": true,
+  "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform. Developed by VENOM. Research & Methodology by VEO-LAB.",
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "api-client:generate": "pnpm --filter @veo/api-client generate",
+    "api-client:check": "pnpm --filter @veo/api-client check",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

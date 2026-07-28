@@ -1,0 +1,38 @@
+{
+  "name": "competitor_mentioned",
+  "purpose_ko": "경쟁사만 두 번 등장하고 우리는 없습니다. 경쟁사도 우리와 같은 규칙으로 1건입니다.",
+  "answer_text": "교정 전문으로 알려진 곳은 미소드림치과입니다. 미소드림치과는 투명교정 사례를 공개하고 있어 비교하기 좋습니다.",
+  "citations": [],
+  "brand": {
+    "entity_key": "venom-dental",
+    "display_name": "베놈치과",
+    "aliases": ["VENOM치과"],
+    "own_domains": ["venomdental.co.kr"],
+    "address_terms": ["강남구", "역삼동"],
+    "phone_numbers": ["02-555-1234"],
+    "distinguishing_terms": []
+  },
+  "competitors": [
+    {
+      "entity_key": "misodream-dental",
+      "display_name": "미소드림치과",
+      "competitor_id": "comp-misodream",
+      "own_domains": ["misodream.co.kr"]
+    }
+  ],
+  "expected": {
+    "own": {
+      "verdict": "NOT_FOUND",
+      "raw_occurrence_count": 0,
+      "needs_human_disambiguation": false,
+      "brand_cited": false
+    },
+    "competitors": {
+      "comp-misodream": {
+        "verdict": "CONFIRMED",
+        "raw_occurrence_count": 2,
+        "needs_human_disambiguation": false
+      }
+    }
+  }
+}

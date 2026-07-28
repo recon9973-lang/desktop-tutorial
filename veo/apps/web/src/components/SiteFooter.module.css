@@ -1,0 +1,28 @@
+.footer {
+  border-top: 1px solid var(--veo-color-border);
+  background-color: var(--veo-color-surface);
+  margin-top: var(--veo-space-16);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+  max-width: var(--veo-layout-max);
+  margin: 0 auto;
+  padding: var(--veo-space-8) var(--veo-layout-gutter);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+.credits {
+  margin: 0;
+  font-weight: var(--veo-weight-medium);
+  color: var(--veo-color-text);
+}
+
+.note {
+  margin: 0;
+  max-width: var(--veo-layout-prose);
+  line-height: var(--veo-line-normal);
+}

@@ -1,0 +1,268 @@
+# =============================================================================
+# ★ 이 워크플로는 지금 당장은 실행되지 않습니다 — 반드시 읽어주세요
+#
+# `veo/` 는 현재 더 큰 리포지터리(desktop-tutorial)의 하위 디렉터리입니다.
+# GitHub Actions 는 리포지터리 루트의 `.github/workflows/` 만 읽으므로,
+# 이 파일(`veo/.github/workflows/ci.yml`)은 `veo/` 가 자체 리포지터리의
+# 루트가 되는 순간부터 활성화됩니다.
+#
+# 그전까지 실질적인 게이트는 로컬의 `make ci-local` 입니다.
+#   make ci-local     # lint → typecheck → 단위 테스트
+#   make test-db      # 마이그레이션 up/down 을 실제 PostgreSQL 로 검증
+# 푸시 전에 이 두 개를 돌리는 것이 현재의 유일한 방어선입니다.
+#
+# veo/ 를 분리 리포지터리로 옮길 때 할 일
+#   1) 이 파일을 새 리포지터리의 `.github/workflows/ci.yml` 로 옮긴다.
+#   2) 아래 `defaults.run.working-directory` 와 경로 필터의 `veo/` 접두사를 제거한다.
+#   3) 저장소 설정에서 이 워크플로를 필수 상태 검사(required check)로 지정한다.
+#      지정하지 않으면 CI 는 통과 여부와 무관하게 머지를 막지 못합니다.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+# 같은 브랜치에서 새 푸시가 오면 진행 중인 실행을 취소한다.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# 기본 권한을 읽기로 좁힌다. 필요한 잡에서만 개별적으로 올린다.
+permissions:
+  contents: read
+
+env:
+  # apps/api/pyproject.toml 의 requires-python 및 target-version 과 일치시킨다.
+  PYTHON_VERSION: "3.12"
+  # 스코어링 명세는 데이터다. 경로를 명시해 자동 탐색에 의존하지 않는다.
+  VEO_SCORING_SPECS_DIR: ${{ github.workspace }}/veo/packages/scoring-specs
+
+defaults:
+  run:
+    # veo/ 가 리포지터리 루트가 되면 이 블록을 통째로 지운다.
+    working-directory: veo
+
+jobs:
+  # ===========================================================================
+  # 정적 검사 — 린트와 타입
+  # ===========================================================================
+  static:
+    name: 린트 · 타입체크
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: 의존성 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "apps/api[dev]"
+
+      # 포맷 검사(ruff format --check)는 일부러 넣지 않았다.
+      # 현재 코드베이스가 ruff format 을 채택하지 않은 상태라, 지금 켜면
+      # 실제 결함과 무관한 실패로 게이트의 신뢰도를 떨어뜨린다.
+      # 포맷을 도입하기로 결정하면 한 번에 전체 포맷을 적용한 커밋을 넣고
+      # 그다음 커밋에서 이 단계를 추가한다.
+      - name: ruff (린트)
+        run: ruff check apps/api
+
+      - name: mypy (타입체크)
+        working-directory: veo/apps/api
+        run: mypy
+
+  # ===========================================================================
+  # 단위 테스트 — 외부 의존성 없이, 완전 오프라인
+  # ===========================================================================
+  unit:
+    name: 단위 테스트
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: 의존성 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "apps/api[dev]"
+
+      # VEO_TEST_DATABASE_URL 을 주지 않으므로 DB 테스트는 skip 된다.
+      # 그 커버리지는 아래 database 잡이 책임진다.
+      - name: pytest (apps/api)
+        run: pytest apps/api/tests -q
+
+  # ===========================================================================
+  # 계약 테스트 — 파이썬 열거형과 packages/shared-types 가 어긋나지 않았는지
+  # ===========================================================================
+  contract:
+    name: 계약 테스트
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: 의존성 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "apps/api[dev]"
+
+      - name: pytest (tests/contract)
+        run: |
+          if [ -z "$(find tests/contract -name 'test_*.py' -print -quit 2>/dev/null)" ]; then
+            echo "::warning title=계약 테스트 없음::tests/contract 가 비어 있습니다. 계약이 검증되지 않은 상태입니다."
+            exit 0
+          fi
+          pytest tests/contract -q
+
+  # ===========================================================================
+  # 데이터베이스 — 실제 PostgreSQL 16 에 대고 마이그레이션 up/down 검증
+  #
+  # downgrade 를 반드시 검증한다. 되돌릴 수 없는 마이그레이션은 배포 사고가
+  # 났을 때 롤백 경로를 통째로 막기 때문이다.
+  # ===========================================================================
+  database:
+    name: 마이그레이션 · DB 테스트
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: veo
+          # CI 전용 일회성 인스턴스. 러너 안에서만 살아 있고 외부에 노출되지 않는다.
+          POSTGRES_PASSWORD: veo_ci_ephemeral
+          POSTGRES_DB: veo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U veo -d veo_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      VEO_TEST_DATABASE_URL: postgresql+psycopg://veo:veo_ci_ephemeral@localhost:5432/veo_test
+      VEO_DATABASE_URL: postgresql+psycopg://veo:veo_ci_ephemeral@localhost:5432/veo_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: 의존성 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "apps/api[dev]"
+
+      - name: 마이그레이션 적용 (upgrade head)
+        working-directory: veo/apps/api
+        run: alembic upgrade head
+
+      - name: 마이그레이션 되돌리기 (downgrade base)
+        working-directory: veo/apps/api
+        run: alembic downgrade base
+
+      - name: 되돌린 뒤 재적용 (반복 가능성 확인)
+        working-directory: veo/apps/api
+        run: alembic upgrade head
+
+      # 스키마가 실제로 사라졌다 다시 생기는지는 아래 테스트가 검증한다.
+      # (drift 검사 포함: 모델과 마이그레이션이 어긋나면 실패)
+      - name: DB 테스트 (requires_postgres)
+        run: pytest apps/api/tests -q -m requires_postgres
+
+  # ===========================================================================
+  # 의존성 취약점 감사
+  # ===========================================================================
+  dependency-audit:
+    name: 의존성 감사 (pip-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: pip-audit 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+
+      # 설치된 의존성 트리 전체를 PyPI 취약점 DB(OSV) 와 대조한다.
+      # 취약점이 나오면 실패시킨다. 예외가 필요하면 --ignore-vuln 에
+      # 근거(사유·재평가 날짜)를 주석으로 함께 남긴다.
+      - name: 취약점 스캔
+        run: |
+          pip install -e "apps/api"
+          pip-audit --strict --progress-spinner off
+
+  # ===========================================================================
+  # 비밀값 스캔
+  #
+  # 커밋 이력에 들어간 자격증명을 찾는다. 이미 푸시된 비밀은 되돌릴 수 없으므로
+  # (지워도 이력·포크·캐시에 남는다) 반드시 "폐기 후 재발급"으로 대응한다.
+  # 절차: docs/operations/runbook-credential-rotation.md
+  # ===========================================================================
+  secret-scan:
+    name: 비밀값 스캔 (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 전체 이력을 받아야 과거 커밋에 묻힌 비밀도 검출된다.
+          fetch-depth: 0
+
+      - name: gitleaks 실행
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ===========================================================================
+  # 전체 통과 여부를 한 곳으로 모은다.
+  # 브랜치 보호 규칙에서는 이 잡 하나만 필수 검사로 지정하면 된다.
+  # ===========================================================================
+  ci-passed:
+    name: CI 통과
+    runs-on: ubuntu-latest
+    needs: [static, unit, contract, database, dependency-audit, secret-scan]
+    if: always()
+    steps:
+      - name: 선행 잡 결과 확인
+        run: |
+          echo "static:           ${{ needs.static.result }}"
+          echo "unit:             ${{ needs.unit.result }}"
+          echo "contract:         ${{ needs.contract.result }}"
+          echo "database:         ${{ needs.database.result }}"
+          echo "dependency-audit: ${{ needs.dependency-audit.result }}"
+          echo "secret-scan:      ${{ needs.secret-scan.result }}"
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "::error title=CI 실패::하나 이상의 검사가 실패했습니다."
+            exit 1
+          fi
+          echo "모든 검사를 통과했습니다."

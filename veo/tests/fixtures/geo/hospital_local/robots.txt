@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Sitemap: https://ondam.example.kr/sitemap.xml
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# 학습용 크롤러는 사업 판단에 따라 차단합니다. 검색용 크롤러는 위에서 허용했습니다.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /

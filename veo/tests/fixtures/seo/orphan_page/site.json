@@ -1,0 +1,46 @@
+{
+  "target_url": "https://orphan.example.kr/",
+  "primary_url": "https://orphan.example.kr/",
+  "locale": "ko-KR",
+  "robots": "robots.txt",
+  "sitemaps": {
+    "https://orphan.example.kr/sitemap.xml": "sitemap.xml"
+  },
+  "pages": [
+    {
+      "url": "https://orphan.example.kr/",
+      "file": "pages/index.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://orphan.example.kr/guide/",
+      "file": "pages/guide.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://orphan.example.kr/pricing/",
+      "file": "pages/pricing.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://orphan.example.kr/notice/",
+      "file": "pages/notice.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://orphan.example.kr/notice/page/2/",
+      "file": "pages/notice-page-2.html",
+      "status": 200,
+      "importance": "TAG_OR_FILTER",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ]
+}

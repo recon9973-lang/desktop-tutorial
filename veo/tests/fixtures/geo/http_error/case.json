@@ -1,0 +1,19 @@
+{
+  "name": "http_error",
+  "purpose_ko": "대상 URL이 503을 반환합니다. EXPOSURE_BLOCKED 게이트가 올라와야 합니다.",
+  "target_url": "https://down.example.com/guide",
+  "documents": [
+    {
+      "url": "https://down.example.com/guide",
+      "file": "page.html",
+      "status": 503,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8", "retry-after": "600" }
+    }
+  ],
+  "robots_txt_file": "../no_schema/robots.txt",
+  "sitemap_documents": {},
+  "provider_states": {},
+  "url_importance": { "https://down.example.com/guide": "CONTENT_OR_PRODUCT" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

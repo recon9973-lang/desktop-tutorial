@@ -1,0 +1,29 @@
+{
+  "target_url": "https://jsonld.example.kr/",
+  "primary_url": "https://jsonld.example.kr/",
+  "locale": "ko-KR",
+  "robots": "robots.txt",
+  "pages": [
+    {
+      "url": "https://jsonld.example.kr/",
+      "file": "pages/index.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://jsonld.example.kr/menu/",
+      "file": "pages/menu.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://jsonld.example.kr/story/",
+      "file": "pages/story.html",
+      "status": 200,
+      "importance": "CONTENT_OR_PRODUCT",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ]
+}

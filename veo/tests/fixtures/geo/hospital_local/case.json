@@ -1,0 +1,33 @@
+{
+  "name": "hospital_local",
+  "purpose_ko": "물리적 거점이 있는 지역 의원. 엔터티 그래프·근거·최신성이 모두 갖춰진 기준선입니다.",
+  "target_url": "https://ondam.example.kr/clinic/whitening",
+  "documents": [
+    {
+      "url": "https://ondam.example.kr/clinic/whitening",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8", "server": "nginx" }
+    },
+    {
+      "url": "https://ondam.example.kr/",
+      "file": "home.html",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": { "https://ondam.example.kr/sitemap.xml": "sitemap.xml" },
+  "provider_states": {
+    "geo_external": "ENABLED",
+    "official_records": "ENABLED",
+    "content_history": "ENABLED"
+  },
+  "provider_payloads_file": "providers.json",
+  "url_importance": {
+    "https://ondam.example.kr/": "CONVERSION_OR_HOME",
+    "https://ondam.example.kr/clinic/whitening": "CONTENT_OR_PRODUCT"
+  },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

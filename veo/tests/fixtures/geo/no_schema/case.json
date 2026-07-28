@@ -1,0 +1,21 @@
+{
+  "name": "no_schema",
+  "purpose_ko": "구조화 데이터가 전혀 없는 온라인 전용 블로그 글. geo.sd.* 는 전부 해당 없음이어야 하고 감점되어서는 안 됩니다.",
+  "target_url": "https://noteroutine.example.com/blog/meeting-notes",
+  "documents": [
+    {
+      "url": "https://noteroutine.example.com/blog/meeting-notes",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": {},
+  "provider_states": {},
+  "url_importance": {
+    "https://noteroutine.example.com/blog/meeting-notes": "CONTENT_OR_PRODUCT"
+  },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

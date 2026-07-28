@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://brochure.example.kr/sitemap.xml

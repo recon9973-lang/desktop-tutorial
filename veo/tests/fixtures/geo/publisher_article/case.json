@@ -1,0 +1,20 @@
+{
+  "name": "publisher_article",
+  "purpose_ko": "언론사 기사. 작성자·발행일·원출처가 모두 연결된 사례입니다.",
+  "target_url": "https://report.example.kr/2026/ev-subsidy",
+  "documents": [
+    {
+      "url": "https://report.example.kr/2026/ev-subsidy",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": { "https://report.example.kr/sitemap.xml": "sitemap.xml" },
+  "provider_states": { "geo_external": "ENABLED", "content_history": "ENABLED" },
+  "provider_payloads_file": "providers.json",
+  "url_importance": { "https://report.example.kr/2026/ev-subsidy": "CONTENT_OR_PRODUCT" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

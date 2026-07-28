@@ -1,0 +1,62 @@
+.denied {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-6);
+  border: 1px solid var(--veo-status-na-border);
+  border-left-width: 4px;
+  border-radius: var(--veo-radius-lg);
+  background-color: var(--veo-status-na-bg);
+  color: var(--veo-status-na-fg);
+}
+
+.mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid currentColor;
+  border-radius: var(--veo-radius-pill);
+  font-weight: var(--veo-weight-bold);
+  line-height: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-text);
+}
+
+.description {
+  margin: 0;
+  max-width: var(--veo-layout-prose);
+  font-size: var(--veo-font-size-300);
+  line-height: var(--veo-line-normal);
+  color: var(--veo-color-text-muted);
+}
+
+.permission {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+.token {
+  font-family: var(--veo-font-mono);
+  padding: 2px var(--veo-space-2);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-xs);
+  background-color: var(--veo-color-surface);
+  color: var(--veo-color-text);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,43 @@
+{
+  "target_url": "https://dup.example.kr/",
+  "primary_url": "https://dup.example.kr/",
+  "locale": "ko-KR",
+  "robots": "robots.txt",
+  "pages": [
+    {
+      "url": "https://dup.example.kr/",
+      "file": "pages/index.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://dup.example.kr/list/",
+      "file": "pages/list.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://dup.example.kr/list/page/2/",
+      "file": "pages/list-page-2.html",
+      "status": 200,
+      "importance": "TAG_OR_FILTER",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://dup.example.kr/deep/",
+      "file": "pages/deep.html",
+      "status": 200,
+      "importance": "CONTENT_OR_PRODUCT",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://dup.example.kr/deep/detail/",
+      "file": "pages/deep-detail.html",
+      "status": 200,
+      "importance": "CONTENT_OR_PRODUCT",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ]
+}

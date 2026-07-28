@@ -1,0 +1,29 @@
+{
+  "name": "training_bot_blocked",
+  "purpose_ko": "generic_service와 바이트 단위로 동일한 문서. robots.txt만 학습용 크롤러를 차단합니다. 점수는 generic_service와 완전히 같아야 합니다.",
+  "target_url": "https://best.example.com/",
+  "documents": [
+    {
+      "url": "https://best.example.com/",
+      "file": "../generic_service/page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://best.example.com/service",
+      "file": "../generic_service/services.html",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": { "https://best.example.com/sitemap.xml": "../generic_service/sitemap.xml" },
+  "provider_states": { "geo_external": "ENABLED" },
+  "provider_payloads_file": "../generic_service/providers.json",
+  "url_importance": {
+    "https://best.example.com/": "CONVERSION_OR_HOME",
+    "https://best.example.com/service": "CATEGORY_OR_HUB"
+  },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

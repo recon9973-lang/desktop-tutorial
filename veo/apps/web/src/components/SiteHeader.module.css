@@ -1,0 +1,88 @@
+.header {
+  border-bottom: 1px solid var(--veo-color-border);
+  background-color: var(--veo-color-surface);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--veo-space-6);
+  flex-wrap: wrap;
+  max-width: var(--veo-layout-max);
+  margin: 0 auto;
+  padding: var(--veo-space-4) var(--veo-layout-gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--veo-space-2);
+  text-decoration: none;
+  color: var(--veo-color-text);
+}
+
+.wordmark {
+  font-size: var(--veo-font-size-600);
+  font-weight: var(--veo-weight-bold);
+  letter-spacing: 0.06em;
+  color: var(--veo-color-accent);
+}
+
+.tagline {
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  letter-spacing: var(--veo-tracking-wide);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--veo-space-2);
+  flex-wrap: wrap;
+}
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: var(--veo-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.navLink {
+  display: inline-block;
+  padding: var(--veo-space-2) var(--veo-space-3);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-medium);
+  color: var(--veo-color-text);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background-color: var(--veo-color-bg-subtle);
+  color: var(--veo-color-text);
+}
+
+/* An underline and a heavier weight, so the current page is still identifiable
+   without colour. */
+.navLinkCurrent {
+  font-weight: var(--veo-weight-semibold);
+  box-shadow: inset 0 -2px 0 0 var(--veo-color-accent);
+  border-radius: 0;
+}
+
+.consoleLink {
+  display: inline-block;
+  padding: var(--veo-space-2) var(--veo-space-4);
+  border: 1px solid var(--veo-color-accent-border);
+  border-radius: var(--veo-radius-sm);
+  background-color: var(--veo-color-accent-subtle);
+  color: var(--veo-color-accent);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  text-decoration: none;
+}

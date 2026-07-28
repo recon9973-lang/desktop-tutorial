@@ -1,0 +1,40 @@
+{
+  "name": "no_mention",
+  "purpose_ko": "브랜드도 경쟁사도 없는 일반 답변. 스팬이 하나도 없어야 하고, 판정은 NOT_FOUND 입니다.",
+  "answer_text": "임플란트 비용은 재료와 뼈이식 여부에 따라 달라집니다. 진료 전에 CT 촬영 비용이 포함되는지 확인해 보세요.",
+  "citations": [
+    "https://www.hira.or.kr/notice/implant"
+  ],
+  "brand": {
+    "entity_key": "venom-dental",
+    "display_name": "베놈치과",
+    "aliases": ["VENOM치과"],
+    "own_domains": ["venomdental.co.kr"],
+    "address_terms": ["강남구", "역삼동"],
+    "phone_numbers": ["02-555-1234"],
+    "distinguishing_terms": []
+  },
+  "competitors": [
+    {
+      "entity_key": "misodream-dental",
+      "display_name": "미소드림치과",
+      "competitor_id": "comp-misodream",
+      "own_domains": ["misodream.co.kr"]
+    }
+  ],
+  "expected": {
+    "own": {
+      "verdict": "NOT_FOUND",
+      "raw_occurrence_count": 0,
+      "needs_human_disambiguation": false,
+      "brand_cited": false
+    },
+    "competitors": {
+      "comp-misodream": {
+        "verdict": "NOT_FOUND",
+        "raw_occurrence_count": 0,
+        "needs_human_disambiguation": false
+      }
+    }
+  }
+}

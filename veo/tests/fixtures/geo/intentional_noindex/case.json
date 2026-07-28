@@ -1,0 +1,20 @@
+{
+  "name": "intentional_noindex",
+  "purpose_ko": "noindex_page와 같은 문서지만 URL 중요도가 INTENTIONAL_NOINDEX입니다. 의도된 제외는 실패가 아니라 해당 없음입니다.",
+  "target_url": "https://ondam.example.kr/preview/whitening",
+  "documents": [
+    {
+      "url": "https://ondam.example.kr/preview/whitening",
+      "file": "../noindex_page/page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "../hospital_local/robots.txt",
+  "sitemap_documents": {},
+  "provider_states": { "geo_external": "ENABLED", "official_records": "ENABLED" },
+  "provider_payloads_file": "../hospital_local/providers.json",
+  "url_importance": { "https://ondam.example.kr/preview/whitening": "INTENTIONAL_NOINDEX" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

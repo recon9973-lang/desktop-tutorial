@@ -1,0 +1,28 @@
+{
+  "name": "cited_via_redirect",
+  "purpose_ko": "본문에 이름은 없지만 근거 URL 이 우리 도메인입니다. 리다이렉트 래퍼와 추적 파라미터를 벗기지 못하면 우리 인용이 통째로 남의 것으로 세어집니다.",
+  "answer_text": "강남 임플란트 비용은 병원마다 다릅니다. 아래 자료에 진료 항목별 기준과 뼈이식 포함 여부가 정리되어 있습니다.",
+  "citations": [
+    "https://www.google.com/url?q=https%3A%2F%2Fblog.venomdental.co.kr%2Fimplant-cost&sa=U&ved=2ahUKEw",
+    "https://health.example.co.kr/guide/implant?utm_source=chatgpt.com"
+  ],
+  "brand": {
+    "entity_key": "venom-dental",
+    "display_name": "베놈치과",
+    "aliases": ["VENOM치과"],
+    "own_domains": ["venomdental.co.kr"],
+    "address_terms": ["강남구", "역삼동"],
+    "phone_numbers": ["02-555-1234"],
+    "distinguishing_terms": []
+  },
+  "competitors": [],
+  "expected": {
+    "own": {
+      "verdict": "CONFIRMED",
+      "raw_occurrence_count": 1,
+      "needs_human_disambiguation": false,
+      "brand_cited": true
+    },
+    "competitors": {}
+  }
+}

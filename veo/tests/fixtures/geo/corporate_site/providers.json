@@ -1,0 +1,36 @@
+{
+  "geo_external": {
+    "entity_name": "이랑소프트",
+    "sources": [
+      {
+        "url": "https://www.linkedin.com/company/irangsoft",
+        "source_type": "SOCIAL",
+        "independent": false,
+        "claimed_profile": true,
+        "facts": { "name": "이랑소프트" }
+      },
+      {
+        "url": "https://opendart.example.go.kr/corp/21488011 22",
+        "source_type": "OFFICIAL_REGISTRY",
+        "independent": true,
+        "claimed_profile": false,
+        "facts": {
+          "name": "주식회사 이랑소프트",
+          "address": "경기도 성남시 분당구 판교로 255 8층"
+        }
+      },
+      {
+        "url": "https://news.example.kr/2024/irangsoft-series-a",
+        "source_type": "NEWS",
+        "independent": true,
+        "claimed_profile": false,
+        "facts": { "name": "이랑소프트" }
+      }
+    ]
+  },
+  "official_records": {
+    "name": "주식회사 이랑소프트",
+    "telephone": "031-900-2200",
+    "address": "경기도 성남시 분당구 판교로 255 8층"
+  }
+}

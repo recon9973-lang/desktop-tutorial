@@ -1,0 +1,39 @@
+{
+  "name": "geo-02-noindex-gate",
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.0.0",
+  "purpose_ko": "noindex로 검색 적격성이 없는 페이지. 게이트는 점수를 바꾸지 않고 별도 상태로만 표시된다.",
+  "expected_behaviour_ko": [
+    "EXPOSURE_BLOCKED 게이트가 올라오지만 점수 산식에는 개입하지 않는다.",
+    "화면에서는 점수와 노출 차단 상태를 반드시 함께 보여야 한다.",
+    "학습용 크롤러 차단은 별개이며 감점하지 않는다."
+  ],
+  "default": { "status": "PASS", "confidence": 1.0 },
+  "overrides": [
+    { "check_id": "geo.access.indexable", "status": "FAIL", "confidence": 1.0 },
+    { "check_id": "geo.access.training_bot_policy_declared", "status": "FAIL", "confidence": 1.0 }
+  ],
+  "expected": {
+    "status": "SCORED",
+    "overall_score": 95.555556,
+    "overall_score_before_caps": 95.555556,
+    "band_id": "ready",
+    "coverage": 1.0,
+    "confidence": 1.0,
+    "effective_weight_total": 100.0,
+    "applied_cap_ids": [],
+    "gate_status_codes": ["EXPOSURE_BLOCKED"],
+    "categories": {
+      "access_eligibility": {
+        "status": "SCORED",
+        "score": 77.777778,
+        "budget": 4.5,
+        "penalty_total": 1.0,
+        "failing_check_ids": [
+          "geo.access.indexable",
+          "geo.access.training_bot_policy_declared"
+        ]
+      }
+    }
+  }
+}

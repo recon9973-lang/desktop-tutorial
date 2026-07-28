@@ -1,0 +1,20 @@
+{
+  "name": "js_shell",
+  "purpose_ko": "원본 HTML은 빈 껍데기이고 본문은 JavaScript 실행 후에만 존재합니다.",
+  "target_url": "https://moaplan.example.com/",
+  "documents": [
+    {
+      "url": "https://moaplan.example.com/",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "rendered_dom": { "https://moaplan.example.com/": "rendered.html" },
+  "robots_txt_file": "../no_schema/robots.txt",
+  "sitemap_documents": {},
+  "provider_states": {},
+  "url_importance": { "https://moaplan.example.com/": "CONVERSION_OR_HOME" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

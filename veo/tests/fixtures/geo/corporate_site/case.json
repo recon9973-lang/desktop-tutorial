@@ -1,0 +1,20 @@
+{
+  "name": "corporate_site",
+  "purpose_ko": "기업 소개 페이지. 날짜·자체 수치·외부 인용이 애초에 해당 없는 유형입니다.",
+  "target_url": "https://irang.example.co.kr/about",
+  "documents": [
+    {
+      "url": "https://irang.example.co.kr/about",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": {},
+  "provider_states": { "geo_external": "ENABLED", "official_records": "ENABLED" },
+  "provider_payloads_file": "providers.json",
+  "url_importance": { "https://irang.example.co.kr/about": "CATEGORY_OR_HUB" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

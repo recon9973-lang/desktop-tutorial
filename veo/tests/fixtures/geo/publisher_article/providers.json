@@ -1,0 +1,37 @@
+{
+  "geo_external": {
+    "entity_name": "모빌리티리포트",
+    "sources": [
+      {
+        "url": "https://www.linkedin.com/company/mobility-report-kr",
+        "source_type": "SOCIAL",
+        "independent": false,
+        "claimed_profile": true,
+        "facts": { "name": "모빌리티리포트" }
+      },
+      {
+        "url": "https://press.example.kr/registry/seoul-a01234",
+        "source_type": "OFFICIAL_REGISTRY",
+        "independent": true,
+        "claimed_profile": false,
+        "facts": { "name": "모빌리티리포트" }
+      },
+      {
+        "url": "https://academy.example.ac.kr/papers/ev-media-2026",
+        "source_type": "ACADEMIC",
+        "independent": true,
+        "claimed_profile": false,
+        "facts": { "name": "모빌리티리포트" }
+      }
+    ]
+  },
+  "content_history": {
+    "https://report.example.kr/2026/ev-subsidy": [
+      {
+        "observed_at": "2026-05-20T00:00:00+09:00",
+        "content_hash": "00000000000000000000000000000000000000000000000000000000000000aa",
+        "declared_modified": "2026-05-18"
+      }
+    ]
+  }
+}

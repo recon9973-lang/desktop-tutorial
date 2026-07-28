@@ -1,0 +1,38 @@
+{
+  "name": "plain_mention",
+  "purpose_ko": "조사 없이 이름 그대로 등장한 가장 단순한 경우. 한 번 등장하면 언급 1건입니다.",
+  "answer_text": "서울 강남에서 임플란트를 상담받을 수 있는 곳을 정리했습니다.\n\n1. 베놈치과 — 역삼동에 있으며 임플란트 상담을 무료로 진행합니다.\n2. 미소드림치과 — 교정 중심으로 알려져 있습니다.",
+  "citations": [],
+  "brand": {
+    "entity_key": "venom-dental",
+    "display_name": "베놈치과",
+    "aliases": ["VENOM치과"],
+    "own_domains": ["venomdental.co.kr"],
+    "address_terms": ["강남구", "역삼동"],
+    "phone_numbers": ["02-555-1234"],
+    "distinguishing_terms": ["임플란트 센터"]
+  },
+  "competitors": [
+    {
+      "entity_key": "misodream-dental",
+      "display_name": "미소드림치과",
+      "competitor_id": "comp-misodream",
+      "own_domains": ["misodream.co.kr"]
+    }
+  ],
+  "expected": {
+    "own": {
+      "verdict": "CONFIRMED",
+      "raw_occurrence_count": 1,
+      "needs_human_disambiguation": false,
+      "brand_cited": false
+    },
+    "competitors": {
+      "comp-misodream": {
+        "verdict": "CONFIRMED",
+        "raw_occurrence_count": 1,
+        "needs_human_disambiguation": false
+      }
+    }
+  }
+}

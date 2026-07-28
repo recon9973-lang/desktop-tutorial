@@ -1,0 +1,53 @@
+{
+  "name": "seo-03-na-heavy",
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.0.0",
+  "purpose_ko": "구조화 데이터·페이지네이션·브레드크럼·이미지가 없는 소규모 브로슈어 사이트. 해당 없음(N/A)은 0점이 아니라 분모에서 빠진다.",
+  "expected_behaviour_ko": [
+    "structured_data 카테고리는 전부 N/A이므로 종합 분모에서 제외되고 가중치 10이 재분배된다(100 -> 90).",
+    "onpage_semantics 예산은 1.7에서 1.6으로 줄어들고 H1 실패 1건만 감점된다.",
+    "N/A를 0점으로 처리했다면 점수가 크게 낮아졌겠지만, 실제 결과는 96.875다."
+  ],
+  "default": { "status": "PASS", "confidence": 1.0 },
+  "overrides": [
+    { "check_id": "seo.sd.jsonld_parses", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.sd.required_properties_present", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.sd.matches_visible_content", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.sd.google_supported_type", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.sd.naver_supported_type", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.content.pagination_signals", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.content.breadcrumb_present", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.onpage.image_alt_coverage", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    { "check_id": "seo.perf.inp_field", "status": "NOT_APPLICABLE", "confidence": 1.0 },
+    {
+      "check_id": "seo.onpage.single_meaningful_h1",
+      "status": "FAIL",
+      "confidence": 1.0,
+      "affected_weight": 1.0,
+      "evaluated_weight": 1.0
+    }
+  ],
+  "expected": {
+    "status": "SCORED",
+    "overall_score": 96.875,
+    "overall_score_before_caps": 96.875,
+    "band_id": "ready",
+    "coverage": 1.0,
+    "confidence": 1.0,
+    "effective_weight_total": 90.0,
+    "applied_cap_ids": [],
+    "gate_status_codes": [],
+    "categories": {
+      "onpage_semantics": {
+        "status": "SCORED",
+        "score": 81.25,
+        "budget": 1.6,
+        "penalty_total": 0.3,
+        "failing_check_ids": ["seo.onpage.single_meaningful_h1"]
+      },
+      "content_architecture": { "status": "SCORED", "score": 100.0, "budget": 1.4 },
+      "performance_ux": { "status": "SCORED", "score": 100.0, "budget": 2.0 },
+      "structured_data": { "status": "NOT_APPLICABLE", "score": null, "budget": 0.0 }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "target_url": "https://loop.example.kr/",
+  "primary_url": "https://loop.example.kr/",
+  "locale": "ko-KR",
+  "robots": "robots.txt",
+  "sitemaps": {
+    "https://loop.example.kr/sitemap.xml": "sitemap.xml"
+  },
+  "pages": [
+    {
+      "url": "https://loop.example.kr/",
+      "file": "pages/index.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "hops": [{ "url": "https://loop.example.kr/", "status": 200, "location": null }]
+    },
+    {
+      "url": "https://loop.example.kr/event/",
+      "file": "pages/event.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "hops": [
+        { "url": "https://loop.example.kr/promo/", "status": 301, "location": "/event/" },
+        { "url": "https://loop.example.kr/event/", "status": 302, "location": "/promo/" },
+        { "url": "https://loop.example.kr/promo/", "status": 301, "location": "/event/" },
+        { "url": "https://loop.example.kr/event/", "status": 200, "location": null }
+      ]
+    },
+    {
+      "url": "https://loop.example.kr/gone/",
+      "status": 404,
+      "importance": "CONTENT_OR_PRODUCT",
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "hops": [{ "url": "https://loop.example.kr/gone/", "status": 404, "location": null }]
+    }
+  ]
+}

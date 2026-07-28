@@ -1,0 +1,41 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--veo-space-2);
+  padding: 2px var(--veo-space-2);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  background-color: var(--veo-color-surface-sunken);
+  font-family: var(--veo-font-sans);
+  font-size: var(--veo-font-size-100);
+  line-height: var(--veo-line-snug);
+  color: var(--veo-color-text-muted);
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.icon {
+  flex: 0 0 auto;
+  width: 0.9em;
+  height: 0.9em;
+  color: var(--veo-color-accent);
+}
+
+.source {
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-text);
+}
+
+.separator {
+  color: var(--veo-color-border-strong);
+}
+
+.collectedLabel {
+  letter-spacing: var(--veo-tracking-wide);
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+}

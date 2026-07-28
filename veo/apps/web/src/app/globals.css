@@ -1,0 +1,119 @@
+/* VEO global baseline. Design tokens live in @veo/ui/tokens.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--veo-color-bg);
+  color: var(--veo-color-text);
+  font-family: var(--veo-font-sans);
+  font-size: var(--veo-font-size-400);
+  line-height: var(--veo-line-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--veo-line-tight);
+  letter-spacing: var(--veo-tracking-tight);
+}
+
+a {
+  color: var(--veo-color-accent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--veo-color-accent-hover);
+}
+
+/* Visible focus ring everywhere, on every interactive element. */
+:focus-visible {
+  outline: var(--veo-focus-ring-width) solid var(--veo-color-focus-ring);
+  outline-offset: var(--veo-focus-ring-offset);
+  border-radius: var(--veo-radius-xs);
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.veo-skip-link {
+  position: absolute;
+  left: var(--veo-space-4);
+  top: var(--veo-space-4);
+  z-index: 100;
+  transform: translateY(calc(-100% - var(--veo-space-8)));
+  padding: var(--veo-space-3) var(--veo-space-5);
+  background-color: var(--veo-color-surface);
+  color: var(--veo-color-text);
+  border: 2px solid var(--veo-color-focus-ring);
+  border-radius: var(--veo-radius-sm);
+  font-weight: var(--veo-weight-semibold);
+  text-decoration: none;
+  box-shadow: var(--veo-shadow-2);
+  transition: transform var(--veo-duration-fast) var(--veo-easing-standard);
+}
+
+/*
+ * `:focus`, not `:focus-visible`. The link is only ever reached by keyboard, and
+ * a browser that declines to classify a given focus as "visible" would otherwise
+ * leave it off-screen while it is the focused element — a link nobody can see
+ * but that Enter still follows.
+ */
+.veo-skip-link:focus {
+  transform: translateY(0);
+}
+
+/*
+ * `<main>` carries tabIndex={-1} so that following the skip link moves focus and
+ * not just the scroll position. Ringing the entire page in a 3px outline when it
+ * receives that focus is noise, and the reader already knows where they asked to
+ * go; every genuinely interactive element keeps its own indicator.
+ */
+#veo-main:focus,
+#veo-main:focus-visible {
+  outline: none;
+}
+
+.veo-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

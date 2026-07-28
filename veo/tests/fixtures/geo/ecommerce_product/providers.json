@@ -1,0 +1,28 @@
+{
+  "geo_external": {
+    "entity_name": "하루한잔",
+    "sources": [
+      {
+        "url": "https://smartstore.naver.com/haruhanjan",
+        "source_type": "DIRECTORY",
+        "independent": true,
+        "claimed_profile": true,
+        "facts": { "name": "하루한잔" }
+      },
+      {
+        "url": "https://review.example.com/haruhanjan-tumbler",
+        "source_type": "REVIEW",
+        "independent": true,
+        "claimed_profile": false,
+        "facts": { "name": "하루한잔" }
+      },
+      {
+        "url": "https://news.example.kr/2026/tumbler-market",
+        "source_type": "NEWS",
+        "independent": true,
+        "claimed_profile": false,
+        "facts": { "name": "하루한잔" }
+      }
+    ]
+  }
+}

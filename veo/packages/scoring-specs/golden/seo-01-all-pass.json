@@ -1,0 +1,29 @@
+{
+  "name": "seo-01-all-pass",
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.0.0",
+  "purpose_ko": "모든 검사가 통과하면 정확히 100점이며 상한·게이트가 없다.",
+  "default": { "status": "PASS", "confidence": 1.0 },
+  "overrides": [],
+  "expected": {
+    "status": "SCORED",
+    "overall_score": 100.0,
+    "overall_score_before_caps": 100.0,
+    "band_id": "ready",
+    "coverage": 1.0,
+    "confidence": 1.0,
+    "effective_weight_total": 100.0,
+    "applied_cap_ids": [],
+    "gate_status_codes": [],
+    "categories": {
+      "crawl_indexability": { "status": "SCORED", "score": 100.0, "budget": 5.5 },
+      "onpage_semantics": { "status": "SCORED", "score": 100.0, "budget": 1.7 },
+      "content_architecture": { "status": "SCORED", "score": 100.0, "budget": 1.6 },
+      "performance_ux": { "status": "SCORED", "score": 100.0, "budget": 2.3 },
+      "structured_data": { "status": "SCORED", "score": 100.0, "budget": 1.4 },
+      "search_engine_integration": { "status": "SCORED", "score": 100.0, "budget": 0.7 },
+      "observability_outcomes": { "status": "SCORED", "score": 100.0, "budget": 0.5 },
+      "offpage_entity": { "status": "SCORED", "score": 100.0, "budget": 0.5 }
+    }
+  }
+}

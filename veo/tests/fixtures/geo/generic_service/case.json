@@ -1,0 +1,29 @@
+{
+  "name": "generic_service",
+  "purpose_ko": "얇은 마케팅 페이지. 대부분의 비-PASS 결과가 여기에서 나옵니다.",
+  "target_url": "https://best.example.com/",
+  "documents": [
+    {
+      "url": "https://best.example.com/",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://best.example.com/service",
+      "file": "services.html",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": { "https://best.example.com/sitemap.xml": "sitemap.xml" },
+  "provider_states": { "geo_external": "ENABLED" },
+  "provider_payloads_file": "providers.json",
+  "url_importance": {
+    "https://best.example.com/": "CONVERSION_OR_HOME",
+    "https://best.example.com/service": "CATEGORY_OR_HUB"
+  },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

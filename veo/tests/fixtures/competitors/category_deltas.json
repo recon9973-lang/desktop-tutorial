@@ -1,0 +1,35 @@
+{
+  "_note_ko": "손으로 계산한 카테고리·전체 델타 기대값입니다. 이 숫자는 사람이 먼저 계산했고, 엔진은 이 값을 그대로 재현해야 합니다. 코드를 고쳐서 이 파일을 맞추는 것이 아니라, 이 파일이 코드를 판정합니다.",
+  "_convention_ko": "delta = 우리 점수 - 경쟁사 점수. 음수는 우리가 뒤진다는 뜻입니다.",
+  "category_weights": {
+    "crawl_indexability": 25.0,
+    "onpage_semantics": 15.0,
+    "structured_data": 10.0
+  },
+  "ours": {
+    "overall": 72.5,
+    "coverage": 0.9,
+    "confidence": 0.88,
+    "categories": {
+      "crawl_indexability": { "score": 80.0, "coverage": 1.0 },
+      "onpage_semantics": { "score": 60.0, "coverage": 0.8 },
+      "structured_data": { "score": 100.0, "coverage": 1.0 }
+    }
+  },
+  "theirs": {
+    "overall": 81.0,
+    "coverage": 0.9,
+    "confidence": 0.9,
+    "categories": {
+      "crawl_indexability": { "score": 95.0, "coverage": 1.0 },
+      "onpage_semantics": { "score": 45.0, "coverage": 0.8 },
+      "structured_data": { "score": 100.0, "coverage": 1.0 }
+    }
+  },
+  "expected_category_delta": {
+    "crawl_indexability": -15.0,
+    "onpage_semantics": 15.0,
+    "structured_data": 0.0
+  },
+  "expected_overall_delta": -8.5
+}

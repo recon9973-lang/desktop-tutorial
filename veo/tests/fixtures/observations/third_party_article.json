@@ -1,0 +1,27 @@
+{
+  "name": "third_party_article",
+  "purpose_ko": "우리 브랜드를 다룬 남의 기사가 근거로 붙었습니다. 언급은 우리 것이지만 인용은 그 매체의 것입니다. 둘을 합치면 인용률이 근거 없이 올라갑니다.",
+  "answer_text": "강남 임플란트 후기를 정리한 기사에서는 베놈치과가 사례 수 기준으로 자주 언급됐습니다.",
+  "citations": [
+    "https://news.example.co.kr/health/2026/implant-review?utm_source=chatgpt.com"
+  ],
+  "brand": {
+    "entity_key": "venom-dental",
+    "display_name": "베놈치과",
+    "aliases": ["VENOM치과"],
+    "own_domains": ["venomdental.co.kr"],
+    "address_terms": ["강남구", "역삼동"],
+    "phone_numbers": ["02-555-1234"],
+    "distinguishing_terms": []
+  },
+  "competitors": [],
+  "expected": {
+    "own": {
+      "verdict": "CONFIRMED",
+      "raw_occurrence_count": 1,
+      "needs_human_disambiguation": false,
+      "brand_cited": false
+    },
+    "competitors": {}
+  }
+}

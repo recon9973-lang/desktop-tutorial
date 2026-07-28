@@ -1,0 +1,240 @@
+# =============================================================================
+# VEO 로컬 개발 스택 — 실제 정의부
+#
+# 이 파일을 직접 부르지 말고 리포지터리 루트의 veo/docker-compose.yml 을 쓴다.
+# 루트 파일이 이 파일을 include 하면서 프로젝트 디렉터리를 veo/ 로 잡아주고,
+# 그래야 veo/.env 가 변수 보간(${...})에 자동으로 적용된다.
+#
+#   make up      # docker compose up -d --build
+#   make down    # docker compose down
+#
+# 굳이 이 파일을 직접 지정해야 한다면 반드시 --env-file 을 함께 준다:
+#   docker compose --env-file ../../.env -f infra/docker/docker-compose.yml up -d
+#
+# 비밀값 원칙: 이 파일에는 어떤 자격증명도 하드코딩돼 있지 않다.
+# 값은 전부 veo/.env 에서 온다. 기본값(:-)이 붙은 것은 비밀이 아닌 항목뿐이다.
+# =============================================================================
+
+name: veo
+
+# -----------------------------------------------------------------------------
+# 네트워크
+# -----------------------------------------------------------------------------
+networks:
+  # 애플리케이션 ↔ 데이터스토어. postgres/redis/minio 는 여기에만 붙는다.
+  veo-backend:
+    driver: bridge
+
+  # ---------------------------------------------------------------------------
+  # 렌더러 전용 네트워크 — SSRF 심층 방어(defence in depth)
+  #
+  # VEO 의 Playwright 렌더러는 "고객이 입력한 임의의 URL"을 실제 브라우저로
+  # 연다. 즉 적대적인 페이지의 자바스크립트가 렌더러 컨테이너 안에서 실행된다는
+  # 뜻이다. 그 페이지가 http://postgres:5432, http://minio:9000,
+  # http://169.254.169.254/ (클라우드 메타데이터) 같은 주소로 요청을 쏘면
+  # 애플리케이션 계층의 URL 검증만으로는 늦다.
+  #
+  # 그래서 렌더러 서비스는 아래 규칙을 반드시 지킨다.
+  #   1) veo-renderer 네트워크에만 attach 한다. veo-backend 에 절대 붙이지 않는다.
+  #      → DNS 상으로도 라우팅 상으로도 postgres/redis/minio 에 도달할 수 없다.
+  #   2) 워커는 veo-backend 와 veo-renderer 양쪽에 붙어서 렌더러를 호출한다.
+  #      호출 방향은 워커 → 렌더러 단방향이며, 렌더러는 워커의 DB 자격증명을
+  #      전혀 알지 못한다.
+  #   3) 운영에서는 여기에 더해 egress 프록시 allowlist 를 걸고,
+  #      링크로컬/사설 대역(VEO_URL_BLOCKED_CIDRS)을 방화벽에서 한 번 더 막는다.
+  #   4) 애플리케이션 계층 검증(리디렉션 이후 최종 IP 재확인)은 그대로 유지한다.
+  #      네트워크 분리는 그 검증의 대체재가 아니라 두 번째 방어선이다.
+  #
+  # 렌더러 서비스 자체는 렌더러 담당 워커가 추가한다. 네트워크는 그때 바로
+  # 쓸 수 있도록 지금 미리 만들어 둔다.
+  # ---------------------------------------------------------------------------
+  veo-renderer:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# 볼륨 — 전부 이름 있는 볼륨. 컨테이너를 지워도 데이터는 남는다.
+# -----------------------------------------------------------------------------
+volumes:
+  veo-postgres-data:
+  veo-redis-data:
+  veo-minio-data:
+
+services:
+  # ===========================================================================
+  # PostgreSQL 16 — 단일 진실 저장소
+  # ===========================================================================
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER 가 .env 에 설정돼야 한다}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD 가 .env 에 설정돼야 한다}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB 가 .env 에 설정돼야 한다}
+      # 한국어 데이터 정렬·비교를 예측 가능하게 고정한다.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      # 호스트에 이미 Postgres 가 떠 있으면 .env 에서 POSTGRES_HOST_PORT 를 바꾼다.
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - veo-postgres-data:/var/lib/postgresql/data
+    networks:
+      - veo-backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # Redis 7 — Celery 브로커 + 제공자 응답 캐시
+  # ===========================================================================
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    # appendonly 로 재시작 시 큐를 잃지 않게 한다.
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - veo-redis-data:/data
+    networks:
+      - veo-backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # MinIO — S3 호환 객체 스토리지 (리포트 PDF·크롤 스냅샷·원본 응답 아카이브)
+  #
+  # 태그 주의: MinIO 는 semver major 태그를 발행하지 않고 날짜형
+  # RELEASE.YYYY-MM-DDThh-mm-ssZ 태그만 낸다. 검증하지 않은 릴리스 문자열을
+  # 지어내지 않기 위해 로컬 개발용으로만 :latest 를 쓴다.
+  # 스테이징/운영에 올리기 전에 반드시 확인된 RELEASE 태그로 고정할 것.
+  # (docs/operations/release-checklist.md 참고)
+  # ===========================================================================
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER 가 .env 에 설정돼야 한다}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD 가 .env 에 설정돼야 한다}
+    ports:
+      - "${MINIO_API_HOST_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_HOST_PORT:-9001}:9001"
+    volumes:
+      - veo-minio-data:/data
+    networks:
+      - veo-backend
+    healthcheck:
+      # MinIO 가 문서화한 준비 확인 명령. 구버전 릴리스에서 mc 가 없으면
+      # ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live"] 로 바꾼다.
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # API — FastAPI
+  # ===========================================================================
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    restart: unless-stopped
+    # 비밀값은 이미지가 아니라 여기서 런타임에 주입된다.
+    env_file:
+      - ../../.env
+    environment:
+      VEO_API_HOST: 0.0.0.0
+      VEO_API_PORT: 8000
+      VEO_SCORING_SPECS_DIR: /app/packages/scoring-specs
+      # 컨테이너 네트워크 안에서는 서비스 이름으로 붙는다.
+      # .env 의 localhost 기반 값을 덮어쓴다.
+      VEO_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      VEO_REDIS_URL: redis://redis:6379/0
+      VEO_S3_ENDPOINT_URL: http://minio:9000
+    ports:
+      - "${API_HOST_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - veo-backend
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # 워커 — Celery
+  # ===========================================================================
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/worker.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    environment:
+      VEO_SCORING_SPECS_DIR: /app/packages/scoring-specs
+      VEO_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      VEO_REDIS_URL: redis://redis:6379/0
+      VEO_CELERY_BROKER_URL: redis://redis:6379/0
+      VEO_CELERY_RESULT_BACKEND: redis://redis:6379/1
+      VEO_S3_ENDPOINT_URL: http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      api:
+        condition: service_started
+    networks:
+      # 워커만 두 네트워크에 걸친다. 데이터스토어 접근(veo-backend)과
+      # 렌더러 호출(veo-renderer)을 동시에 해야 하기 때문이다.
+      # 렌더러는 veo-renderer 에만 붙으므로 이 경로는 단방향이다.
+      - veo-backend
+      - veo-renderer
+    security_opt:
+      - no-new-privileges:true
+
+  # ===========================================================================
+  # 웹 콘솔 — Next.js (standalone)
+  # ===========================================================================
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        # 브라우저 번들에 인라인되는 공개 값만 빌드 인자로 넘긴다.
+        NEXT_PUBLIC_VEO_API_BASE_URL: ${NEXT_PUBLIC_VEO_API_BASE_URL:-http://localhost:8000}
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_VEO_API_BASE_URL: ${NEXT_PUBLIC_VEO_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "${WEB_HOST_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - veo-backend
+    security_opt:
+      - no-new-privileges:true

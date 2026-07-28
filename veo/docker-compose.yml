@@ -1,0 +1,24 @@
+# =============================================================================
+# VEO — 루트 compose 진입점 (얇은 래퍼)
+#
+# 실제 서비스 정의는 infra/docker/docker-compose.yml 에 있다.
+# 이 파일이 존재하는 이유는 두 가지다.
+#   1) veo/ 에서 그냥 `docker compose up` 을 칠 수 있게 한다.
+#   2) 프로젝트 디렉터리를 veo/ 로 고정해 veo/.env 가 변수 보간에
+#      자동으로 적용되게 한다. (infra/docker 에서 직접 실행하면 안 되는 이유)
+#
+# include 는 Docker Compose v2.20 이상에서 지원된다.
+#   docker compose version    # 확인
+#
+# 사용:
+#   make up      /  docker compose up -d --build
+#   make down    /  docker compose down
+#   docker compose logs -f api
+#
+# 주의: 이 스택은 Docker 가 설치된 환경에서만 동작한다. Phase 0 개발 장비에는
+# Docker 가 없어 검증되지 않았다. docs/operations/local-development.md 의
+# "알려진 한계" 를 먼저 읽을 것.
+# =============================================================================
+
+include:
+  - path: infra/docker/docker-compose.yml

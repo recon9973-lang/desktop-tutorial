@@ -1,0 +1,24 @@
+{
+  "target_url": "https://render.example.kr/",
+  "primary_url": "https://render.example.kr/",
+  "locale": "ko-KR",
+  "robots": "robots.txt",
+  "pages": [
+    {
+      "url": "https://render.example.kr/",
+      "file": "pages/index.html",
+      "rendered": "rendered/index.html",
+      "status": 200,
+      "importance": "CONVERSION_OR_HOME",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    },
+    {
+      "url": "https://render.example.kr/catalog/",
+      "file": "pages/catalog.html",
+      "rendered": "rendered/catalog.html",
+      "status": 200,
+      "importance": "CATEGORY_OR_HUB",
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ]
+}

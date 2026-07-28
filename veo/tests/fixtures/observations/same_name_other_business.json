@@ -1,0 +1,25 @@
+{
+  "name": "same_name_other_business",
+  "purpose_ko": "'서울치과' 는 전국에 수십 곳입니다. 답변이 가리키는 곳은 부산이고 고객은 강남입니다. 확신에 찬 오귀속은 인정된 모름보다 나쁩니다 — 세지 않고 사람에게 넘깁니다.",
+  "answer_text": "부산 해운대구에서 스케일링이 저렴한 곳을 찾으신다면 서울치과를 참고해 보세요. 평일 저녁 8시까지 진료하고 주말 예약도 받습니다.",
+  "citations": [],
+  "brand": {
+    "entity_key": "seoul-dental-gangnam",
+    "display_name": "서울치과",
+    "aliases": [],
+    "own_domains": ["seouldental-gangnam.co.kr"],
+    "address_terms": ["강남구", "역삼동"],
+    "phone_numbers": ["02-777-8888"],
+    "distinguishing_terms": []
+  },
+  "competitors": [],
+  "expected": {
+    "own": {
+      "verdict": "NEEDS_REVIEW",
+      "raw_occurrence_count": 1,
+      "needs_human_disambiguation": true,
+      "brand_cited": false
+    },
+    "competitors": {}
+  }
+}

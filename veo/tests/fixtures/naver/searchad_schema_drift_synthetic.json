@@ -1,0 +1,17 @@
+{
+  "_veo_fixture": {
+    "synthetic": true,
+    "not_a_real_observation": true,
+    "shape_source": "가상의 스키마 변경 시나리오. 네이버가 실제로 이렇게 바꿨다는 뜻이 아닙니다.",
+    "note_ko": "제공자가 필드 이름을 바꾸거나 새 필드를 추가했을 때 VEO 가 조용히 0 으로 채우지 않고 드러내는지 시험하는 fixture 입니다."
+  },
+  "keywordList": [
+    {
+      "relKeyword": "합성키워드-E",
+      "monthlyPcSearchVolume": 5555,
+      "monthlyMobileSearchVolume": 6666,
+      "compIdx": "높음",
+      "someBrandNewFieldVeoHasNeverSeen": 7777
+    }
+  ]
+}

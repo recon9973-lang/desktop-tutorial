@@ -1,0 +1,20 @@
+{
+  "name": "ecommerce_product",
+  "purpose_ko": "상품 페이지. 작성자 표기는 해당 없음이고, 수치는 표로 구조화되어 있습니다.",
+  "target_url": "https://haru.example.com/products/tumbler-500",
+  "documents": [
+    {
+      "url": "https://haru.example.com/products/tumbler-500",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": {},
+  "provider_states": { "geo_external": "ENABLED" },
+  "provider_payloads_file": "providers.json",
+  "url_importance": { "https://haru.example.com/products/tumbler-500": "CONTENT_OR_PRODUCT" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}

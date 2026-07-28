@@ -1,0 +1,20 @@
+{
+  "name": "contradictory_schema",
+  "purpose_ko": "구조화 데이터가 화면 내용과 다른 상호·전화·주소·가격을 선언한 페이지. STRUCTURED_DATA_MISMATCH 게이트가 올라와야 합니다.",
+  "target_url": "https://deunden.example.kr/care",
+  "documents": [
+    {
+      "url": "https://deunden.example.kr/care",
+      "file": "page.html",
+      "status": 200,
+      "primary": true,
+      "headers": { "content-type": "text/html; charset=utf-8" }
+    }
+  ],
+  "robots_txt_file": "robots.txt",
+  "sitemap_documents": {},
+  "provider_states": { "geo_external": "ENABLED", "official_records": "ENABLED" },
+  "provider_payloads_file": "providers.json",
+  "url_importance": { "https://deunden.example.kr/care": "CONTENT_OR_PRODUCT" },
+  "collected_at": "2026-07-28T09:00:00+09:00"
+}
