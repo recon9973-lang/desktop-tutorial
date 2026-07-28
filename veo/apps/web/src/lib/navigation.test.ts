@@ -6,9 +6,10 @@ import { CONSOLE_NAV, PUBLIC_NAV, visibleConsoleNav } from './navigation';
 import { isPermission } from './permissions';
 
 describe('CONSOLE_NAV', () => {
-  it('names a real permission for every entry', () => {
+  it('names a real permission for every entry that gates on one', () => {
     expect(CONSOLE_NAV.length).toBeGreaterThan(0);
     for (const item of CONSOLE_NAV) {
+      if (item.permission === null) continue;
       expect(isPermission(item.permission), `${item.href} → ${item.permission}`).toBe(true);
     }
   });
@@ -30,14 +31,18 @@ describe('CONSOLE_NAV', () => {
 
   it('only ever asks for a read permission — navigation is not an action', () => {
     for (const item of CONSOLE_NAV) {
+      if (item.permission === null) continue;
       expect(item.permission.endsWith(':read')).toBe(true);
     }
   });
 });
 
 describe('visibleConsoleNav', () => {
-  it('shows nothing to an identity with no permissions', () => {
-    expect(visibleConsoleNav({ permissions: [] })).toEqual([]);
+  it('shows only the signed-in-everyone areas to an identity with no permissions', () => {
+    // Account settings has no permission by design: gating "change my own password"
+    // would hide it from exactly the accounts that hold none.
+    const visible = visibleConsoleNav({ permissions: [] });
+    expect(visible.map((item) => item.href)).toEqual(['/console/account']);
   });
 
   it('shows nothing when there is no identity', () => {
@@ -49,7 +54,9 @@ describe('visibleConsoleNav', () => {
       permissions: ['report:read', 'issue:read'],
     });
 
+    // Account settings is always present for a signed-in person, whatever they hold.
     expect(visible.map((item) => item.href).sort()).toEqual([
+      '/console/account',
       '/console/issues',
       '/console/reports',
     ]);
@@ -62,6 +69,7 @@ describe('visibleConsoleNav', () => {
     expect(visible.map((item) => item.href)).toEqual([
       '/console/projects',
       '/console/scoring-versions',
+      '/console/account',
     ]);
   });
 });

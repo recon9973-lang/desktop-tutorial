@@ -1,0 +1,54 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flowlens-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "flowlens"
+      ],
+      "port": 4311
+    },
+    {
+      "name": "journeymap",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "journeymap",
+        "--",
+        "--port",
+        "4520"
+      ],
+      "port": 4520
+    },
+    {
+      "name": "venom-erp",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "/Users/leejae-hoon/marketing-agency-erp",
+        "dev",
+        "--port",
+        "4530"
+      ],
+      "port": 4530
+    },
+    {
+      "name": "veo-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "/Users/leejae-hoon/Desktop/desktop-tutorial/veo/apps/web",
+        "dev",
+        "--port",
+        "4540"
+      ],
+      "port": 4540
+    }
+  ]
+}

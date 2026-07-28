@@ -45,10 +45,15 @@ describe('ConsoleNav', () => {
     expect(screen.queryByRole('link', { name: /키워드/ })).toBeNull();
   });
 
-  it('says so plainly when nothing is available, rather than showing an empty box', () => {
+  it('still offers account settings to someone holding no permissions at all', () => {
+    // This used to assert an empty menu with an explanation. A person with no
+    // permissions can still change their own password, and leaving them a console
+    // with literally nowhere to go — not even to their own account — was worse than
+    // the empty state it was avoiding.
     render(<ConsoleNav identity={{ ...NARROW, permissions: [] }} />);
-    expect(screen.queryAllByRole('link')).toHaveLength(0);
-    expect(screen.getByText(/열람할 수 있는 메뉴가 없습니다/)).toBeInTheDocument();
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute('href', '/console/account');
   });
 
   it('is a labelled navigation landmark', () => {

@@ -15,7 +15,15 @@ export interface NavItem {
  * area is decided by the API, and gated in the page with `PermissionGate`.
  */
 export interface ConsoleNavItem extends NavItem {
-  readonly permission: Permission;
+  /**
+   * The permission needed to open this area, or `null` for one that belongs to
+   * every signed-in person.
+   *
+   * Account settings is the case that made this nullable: gating "change my own
+   * password" behind a permission would hide it from exactly the accounts that
+   * hold none, which are the ones most likely to need it.
+   */
+  readonly permission: Permission | null;
 }
 
 export const PUBLIC_NAV: readonly NavItem[] = [
@@ -91,6 +99,12 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     description: '적용 중인 채점 명세',
     permission: 'scoring_spec:read',
   },
+  {
+    href: '/console/account',
+    label: '내 계정',
+    description: '비밀번호 변경',
+    permission: null,
+  },
 ];
 
 /**
@@ -102,5 +116,11 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
 export function visibleConsoleNav(
   identity: PermissionHolder | null | undefined,
 ): readonly ConsoleNavItem[] {
-  return CONSOLE_NAV.filter((item) => hasPermission(identity, item.permission));
+  // No identity means no console at all. A `null` permission means "every signed-in
+  // person", not "everyone" — without this guard the account link would show to a
+  // visitor who is not logged in, which is both wrong and confusing.
+  if (identity === null || identity === undefined) return [];
+  return CONSOLE_NAV.filter(
+    (item) => item.permission === null || hasPermission(identity, item.permission),
+  );
 }
