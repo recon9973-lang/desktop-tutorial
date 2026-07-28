@@ -31,7 +31,14 @@ from veo.auth.passwords import (
     verify_password,
 )
 from veo.auth.resolver import BearerPrincipalResolver, bearer_token_from, install_auth, load_roles
-from veo.auth.router import router
+
+# ``veo.auth.router`` is deliberately **not** re-exported here, and this is load-bearing
+# rather than tidiness. The router imports the application's request helpers, which import
+# the application, which includes the router — so re-exporting it made
+# ``import veo.auth.passwords`` (or anything else in this package) fail with a circular
+# import on a cold start, in a way that looked like an unrelated bug wherever it surfaced.
+# The docstring above already says this package mounts nothing; whoever needs the router
+# imports ``veo.auth.router`` directly, as ``veo.api.app`` does.
 from veo.auth.sessions import (
     IssuedSession,
     RevocationReason,
@@ -104,7 +111,6 @@ __all__ = [
     "revoke_family",
     "revoke_session",
     "rotate_session",
-    "router",
     "sha256_hex",
     "successor_of",
     "sweep_expired",
