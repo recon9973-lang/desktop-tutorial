@@ -1,5 +1,19 @@
 [
   {
+    "action": "cron-publish-fixed",
+    "id": "auto_1785241599856",
+    "title": "울산 한의원 마케팅, 통증 치료 효과 3.4배 높이는 법",
+    "tokenUsage": {
+      "promptTokens": 2613,
+      "completionTokens": 1889,
+      "totalTokens": 4502,
+      "model": "gpt-4o-mini"
+    },
+    "imageGenerated": true,
+    "autoFixed": true,
+    "ts": "2026-07-28T12:28:24.548Z"
+  },
+  {
     "action": "cron-en-fail",
     "id": "auto_1785241599856",
     "error": "translate timeout",
