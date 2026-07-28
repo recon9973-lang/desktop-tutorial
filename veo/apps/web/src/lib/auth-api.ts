@@ -267,9 +267,21 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
         return failure('SERVER_ERROR');
       }
 
-      const userId = readString(data, 'user_id');
-      const organizationId = readString(data, 'organization_id');
-      const email = readString(data, 'email');
+      // `MePayload` nests the person and the organization rather than flattening
+      // them. This used to read `user_id` / `organization_id` from the top level,
+      // found nothing, and returned SERVER_ERROR — which the console reads as "no
+      // session" and answers by redirecting to sign-in. The visible symptom was
+      // that signing in appeared to do nothing, while the API had in fact issued a
+      // session and recorded a successful login.
+      const user = asRecord(data['user']);
+      const organization = asRecord(data['organization']);
+      if (user === null || organization === null) {
+        return failure('SERVER_ERROR');
+      }
+
+      const userId = readString(user, 'id');
+      const organizationId = readString(organization, 'id');
+      const email = readString(user, 'email');
       if (userId === null || organizationId === null || email === null) {
         return failure('SERVER_ERROR');
       }
@@ -280,7 +292,7 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
           userId,
           organizationId,
           // An account with no display name shows its email, never a stand-in name.
-          displayName: readString(data, 'display_name') ?? email,
+          displayName: readString(user, 'display_name') ?? email,
           email,
           roles: parseRoles(data['roles']),
           permissions: parsePermissions(data['permissions']),

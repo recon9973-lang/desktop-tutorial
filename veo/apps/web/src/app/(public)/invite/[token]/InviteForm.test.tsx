@@ -72,7 +72,7 @@ describe('InviteForm', () => {
     await user.click(screen.getByRole('button', { name: /비밀번호 설정/ }));
 
     await waitFor(() => expect(doFetch).toHaveBeenCalledTimes(1));
-    const [url, init] = doFetch.mock.calls[0] as [string, RequestInit];
+    const [url, init] = doFetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('/api/invite');
     expect(JSON.parse(String(init.body))).toEqual({ token: TOKEN, password: GOOD });
 

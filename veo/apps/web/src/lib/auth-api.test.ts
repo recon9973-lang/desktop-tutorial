@@ -32,13 +32,25 @@ const LOGIN_OK = envelope({
   expires_in: 3600,
 });
 
+// Shaped like `MePayload` in the committed OpenAPI document — the person and the
+// organization are nested, not flattened. This fixture previously used a flattened
+// shape the API never sent, so every test here agreed with the client and none of
+// them agreed with the server. That is how the parsing bug reached production.
 const IDENTITY_OK = envelope({
-  user_id: '6d1f6e5c-0000-4000-8000-000000000001',
-  organization_id: '6d1f6e5c-0000-4000-8000-000000000002',
-  display_name: '이재훈',
-  email: 'analyst@example.com',
+  user: {
+    id: '6d1f6e5c-0000-4000-8000-000000000001',
+    email: 'analyst@example.com',
+    display_name: '이재훈',
+  },
+  organization: {
+    id: '6d1f6e5c-0000-4000-8000-000000000002',
+    slug: 'venom',
+    name: '베놈',
+  },
   roles: ['ANALYST'],
   permissions: ['project:read', 'issue:write', 'not-a-real-permission'],
+  session_id: '6d1f6e5c-0000-4000-8000-000000000003',
+  session_expires_at: '2026-08-11T00:00:00Z',
 });
 
 describe('resolveAuthApiBaseUrl', () => {
@@ -225,12 +237,12 @@ describe('createAuthApi — me', () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse(
         envelope({
-          user_id: 'u',
-          organization_id: 'o',
-          display_name: 'n',
-          email: 'e@example.com',
+          user: { id: 'u', email: 'e@example.com', display_name: 'n' },
+          organization: { id: 'o', slug: 's', name: 'n' },
           roles: ['ANALYST', 'ROOT'],
           permissions: [],
+          session_id: 'sid',
+          session_expires_at: '2026-08-11T00:00:00Z',
         }),
       ),
     );
@@ -304,5 +316,93 @@ describe('createAuthApi — unconfigured', () => {
     expect(me.ok).toBe(false);
     expect(logout.ok).toBe(false);
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe('me() against the shape the API actually returns', () => {
+  /**
+   * Built from `MePayload` in the committed OpenAPI document, not from what this
+   * client wishes it received.
+   *
+   * The bug this guards against shipped to production: the client read `user_id`
+   * and `organization_id` from the top level, `MePayload` nests them under `user`
+   * and `organization`, so every call returned SERVER_ERROR. The console reads
+   * that as "no session" and redirects to sign-in — so signing in appeared to do
+   * nothing at all, while the API had issued a session and logged a success.
+   *
+   * Every existing test in this file passed throughout, because they all fed the
+   * client the flattened shape it expected. A mock that agrees with the code it
+   * tests cannot find a disagreement with the server.
+   */
+  const ME_PAYLOAD = {
+    data: {
+      user: {
+        id: '11111111-1111-1111-1111-111111111111',
+        email: 'owner@example.test',
+        display_name: '이재훈',
+      },
+      organization: { id: '22222222-2222-2222-2222-222222222222', slug: 'venom', name: '베놈' },
+      roles: ['SUPER_ADMIN'],
+      permissions: ['user:read', 'user:manage'],
+      session_id: '33333333-3333-3333-3333-333333333333',
+      session_expires_at: '2026-08-11T00:00:00Z',
+    },
+    error: null,
+  };
+
+  function apiReturning(body: unknown) {
+    return createAuthApi({
+      baseUrl: 'https://api.example',
+      fetch: (async () =>
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })) as typeof globalThis.fetch,
+    });
+  }
+
+  it('reads the identity out of the nested payload', async () => {
+    const result = await apiReturning(ME_PAYLOAD).me('a-token');
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.userId).toBe('11111111-1111-1111-1111-111111111111');
+    expect(result.value.organizationId).toBe('22222222-2222-2222-2222-222222222222');
+    expect(result.value.email).toBe('owner@example.test');
+    expect(result.value.displayName).toBe('이재훈');
+    expect(result.value.roles).toContain('SUPER_ADMIN');
+    expect(result.value.permissions).toContain('user:manage');
+  });
+
+  it('falls back to the address when the account has no display name', async () => {
+    const withoutName = {
+      ...ME_PAYLOAD,
+      data: { ...ME_PAYLOAD.data, user: { ...ME_PAYLOAD.data.user, display_name: '' } },
+    };
+    const result = await apiReturning(withoutName).me('a-token');
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.displayName).toBe('owner@example.test');
+  });
+
+  it('refuses a flattened payload rather than half-reading it', async () => {
+    // The shape this client used to expect. If the API ever changes to it, that is
+    // a contract change and should fail loudly here, not degrade into a redirect.
+    const flattened = {
+      data: {
+        user_id: '11111111-1111-1111-1111-111111111111',
+        organization_id: '22222222-2222-2222-2222-222222222222',
+        email: 'owner@example.test',
+        roles: ['SUPER_ADMIN'],
+        permissions: [],
+      },
+      error: null,
+    };
+    const result = await apiReturning(flattened).me('a-token');
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe('SERVER_ERROR');
   });
 });
