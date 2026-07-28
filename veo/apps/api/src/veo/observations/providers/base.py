@@ -43,6 +43,7 @@ from typing import Any, ClassVar, Final, Protocol, Self, runtime_checkable
 import httpx
 from pydantic import SecretStr
 
+from veo.common.http import read_capped
 from veo.contracts.enums import ErrorCode, ProviderState
 from veo.core.settings import ProviderCredentials, get_provider_credentials
 from veo.observations.runs import RunConditions, SearchMode
@@ -622,29 +623,12 @@ class HttpAnswerProvider:
                     raise classify_answer_status(
                         response.status_code, retry_after=response.headers.get("retry-after")
                     )
-                return _read_capped(response, self._max_response_bytes)
+                return read_capped(response, self._max_response_bytes, AnswerResponseTooLargeError)
             except httpx.HTTPError as exc:
                 raise classify_answer_transport_exception(exc) from None
             finally:
                 response.close()
 
-
-def _read_capped(response: httpx.Response, max_bytes: int) -> bytes:
-    """Read a body under a byte ceiling, enforced while it arrives rather than after."""
-    chunks: list[bytes] = []
-    total = 0
-    try:
-        for chunk in response.iter_bytes():
-            total += len(chunk)
-            if total > max_bytes:
-                raise AnswerResponseTooLargeError(f"over {max_bytes} bytes")
-            chunks.append(chunk)
-    except httpx.StreamConsumed:
-        body = response.content
-        if len(body) > max_bytes:
-            raise AnswerResponseTooLargeError(f"over {max_bytes} bytes") from None
-        return body
-    return b"".join(chunks)
 
 
 def _decode_json(body: bytes) -> Mapping[str, Any]:

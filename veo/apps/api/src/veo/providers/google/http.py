@@ -18,6 +18,7 @@ from typing import Any, Final, final
 
 import httpx
 
+from veo.common.http import read_capped
 from veo.providers.google.errors import (
     GoogleResponseTooLargeError,
     GoogleSchemaError,
@@ -121,7 +122,9 @@ class GoogleHttpCaller:
                     )
                 return HttpAnswer(
                     status_code=response.status_code,
-                    body=_read_capped(response, self._max_response_bytes),
+                    body=read_capped(
+                        response, self._max_response_bytes, GoogleResponseTooLargeError
+                    ),
                 )
             except httpx.HTTPError as exc:
                 raise classify_transport_exception(exc) from None
@@ -129,23 +132,4 @@ class GoogleHttpCaller:
                 response.close()
 
 
-def _read_capped(response: httpx.Response, max_bytes: int) -> bytes:
-    """Read a body under a byte ceiling, enforced while it arrives rather than after.
 
-    A test double built from a bytes literal is already materialised; that path still
-    charges the whole body against the same ceiling.
-    """
-    chunks: list[bytes] = []
-    total = 0
-    try:
-        for chunk in response.iter_bytes():
-            total += len(chunk)
-            if total > max_bytes:
-                raise GoogleResponseTooLargeError(f"over {max_bytes} bytes")
-            chunks.append(chunk)
-    except httpx.StreamConsumed:
-        body = response.content
-        if len(body) > max_bytes:
-            raise GoogleResponseTooLargeError(f"over {max_bytes} bytes") from None
-        return body
-    return b"".join(chunks)

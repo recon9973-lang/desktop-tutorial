@@ -40,6 +40,7 @@ from typing import Any, Final, final
 import httpx
 from pydantic import SecretStr
 
+from veo.common.http import read_capped
 from veo.contracts.enums import DataSource, ProviderState, ValueQuality
 from veo.providers.naver.errors import (
     UNKNOWN,
@@ -619,34 +620,12 @@ class NaverSearchAdClient:
                     raise classify_status(
                         response.status_code, retry_after=response.headers.get("retry-after")
                     )
-                return _read_capped(response, self._max_response_bytes)
+                return read_capped(response, self._max_response_bytes, NaverResponseTooLargeError)
             except httpx.HTTPError as exc:
                 raise classify_transport_exception(exc) from None
             finally:
                 response.close()
 
-
-def _read_capped(response: httpx.Response, max_bytes: int) -> bytes:
-    """Read a response body under a byte ceiling.
-
-    The ceiling is enforced while the body arrives, not after, so an oversized answer is
-    refused rather than buffered. A test double built from a bytes literal is already
-    materialised; that path still charges the whole body against the same ceiling.
-    """
-    chunks: list[bytes] = []
-    total = 0
-    try:
-        for chunk in response.iter_bytes():
-            total += len(chunk)
-            if total > max_bytes:
-                raise NaverResponseTooLargeError(f"over {max_bytes} bytes")
-            chunks.append(chunk)
-    except httpx.StreamConsumed:
-        body = response.content
-        if len(body) > max_bytes:
-            raise NaverResponseTooLargeError(f"over {max_bytes} bytes") from None
-        return body
-    return b"".join(chunks)
 
 
 def _parse_json(body: bytes) -> Mapping[str, Any]:
