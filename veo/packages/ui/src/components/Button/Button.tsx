@@ -37,14 +37,27 @@ export function Button({
   children,
   ...rest
 }: ButtonProps) {
-  function handleClick(event: MouseEvent<HTMLButtonElement>) {
-    if (busy) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    onClick?.(event);
-  }
+  /**
+   * Swallows the click while busy, so a second submit cannot be sent.
+   *
+   * Built only when it is needed. A handler attached unconditionally is a function
+   * prop, and a Server Component cannot serialise one — every console page that
+   * rendered a Button then failed with "Event handlers cannot be passed to Client
+   * Component props", which surfaced as a 500 on every `/console/*` route while the
+   * public pages carried on working. A button that is neither busy nor given an
+   * `onClick` is a plain button, and must stay serialisable as one.
+   */
+  const handleClick =
+    busy || onClick
+      ? (event: MouseEvent<HTMLButtonElement>) => {
+          if (busy) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          onClick?.(event);
+        }
+      : undefined;
 
   return (
     <button
