@@ -21,6 +21,7 @@ user agent says who is calling.
 from __future__ import annotations
 
 import hashlib
+import ssl
 import time
 import zlib
 from collections.abc import Iterator, Mapping
@@ -104,6 +105,11 @@ class FetchedDocument:
     truncated: bool = False
     user_agent: str = DEFAULT_USER_AGENT
     request_headers: Mapping[str, str] = field(default_factory=dict)
+    tls_expires_at: datetime | None = None
+    """상대 인증서의 만료 시각. 평문 HTTP 이거나 읽지 못했으면 ``None``.
+
+    갱신이 실패한 인증서는 만료되는 순간 사이트가 통째로 열리지 않는다. 핸드셰이크는
+    어차피 일어나므로 그때 한 번 읽어 두면 추가 요청 없이 알 수 있다."""
 
     @property
     def was_redirected(self) -> bool:
@@ -166,6 +172,8 @@ class SafeFetcher:
                     )
 
                     if not _is_redirect(response) or not location:
+                        # 스트림이 아직 열려 있는 동안에만 상대 인증서를 볼 수 있다.
+                        expires_at = _peer_certificate_expiry(response)
                         body, truncated = self._read_body(response)
                         return FetchedDocument(
                             requested_url=url,
@@ -183,6 +191,7 @@ class SafeFetcher:
                             truncated=truncated,
                             user_agent=self._user_agent,
                             request_headers={"user-agent": self._user_agent},
+                            tls_expires_at=expires_at,
                         )
 
                 # A redirect is a brand new decision, resolved from scratch. Its body is
@@ -302,6 +311,44 @@ def _decoder_for(encoding: str) -> zlib._Decompress | None:
     if encoding == "deflate":
         return zlib.decompressobj()
     return None
+
+
+def parse_certificate_expiry(certificate: Mapping[str, object] | None) -> datetime | None:
+    """``getpeercert()`` 의 ``notAfter`` 를 시각으로 옮긴다.
+
+    형식은 ``'Jun  1 12:00:00 2027 GMT'`` 처럼 자리 맞춤 공백이 들어간 C 계열 표기라,
+    직접 파싱하지 않고 표준 라이브러리의 변환기를 쓴다. 읽지 못하면 **None** 이다 —
+    못 읽은 것을 여유 있는 것으로 접으면 만료 직전인 사이트를 정상으로 보고하게 된다.
+    """
+    if not certificate:
+        return None
+    raw = certificate.get("notAfter")
+    if not isinstance(raw, str):
+        return None
+    try:
+        return datetime.fromtimestamp(ssl.cert_time_to_seconds(raw), UTC)
+    except (ValueError, OSError, OverflowError):
+        return None
+
+
+def _peer_certificate_expiry(response: httpx.Response) -> datetime | None:
+    """열려 있는 응답에서 상대 인증서의 만료 시각을 읽는다.
+
+    평문 HTTP, 그리고 테스트에서 쓰는 모의 전송에는 TLS 계층이 없다. 그때는 조용히
+    ``None`` 이고, 그것은 "측정하지 못했다" 로 보고된다.
+    """
+    stream = response.extensions.get("network_stream")
+    if stream is None:
+        return None
+    try:
+        ssl_object = stream.get_extra_info("ssl_object")
+        if ssl_object is None:
+            return None
+        return parse_certificate_expiry(ssl_object.getpeercert())
+    except (AttributeError, ValueError, OSError):
+        # 인증서를 읽지 못하는 것은 진단의 실패이지 수집의 실패가 아니다. 여기서
+        # 예외를 올리면 인증서 하나 때문에 페이지 수집 전체가 무산된다.
+        return None
 
 
 def _is_redirect(response: httpx.Response) -> bool:

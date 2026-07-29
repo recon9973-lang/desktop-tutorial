@@ -14,7 +14,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -99,7 +99,22 @@ def _document(root: Path, page: Mapping[str, Any]) -> FetchedDocument:
         resolved_ips=("203.0.113.10",),
         fetched_at=datetime(2026, 7, 28, 3, 0, tzinfo=UTC),
         elapsed_ms=140,
+        tls_expires_at=_expiry(page),
     )
+
+
+def _expiry(page: Mapping[str, Any]) -> datetime | None:
+    """픽스처의 인증서 만료일.
+
+    고정 날짜를 적으면 그 날이 지나는 순간 테스트가 깨진다. 매니페스트에는 **수집 시각
+    기준 남은 일수**를 적고 여기서 시각으로 옮긴다 — 픽스처가 시간이 지나도 같은 뜻을
+    유지하게 하려는 것이다. 적지 않은 페이지는 만료일을 못 받은 상태이고, 그것은
+    통과가 아니라 측정 불가로 보고된다.
+    """
+    days = page.get("tls_expires_in_days")
+    if days is None:
+        return None
+    return datetime(2026, 7, 28, 3, 0, tzinfo=UTC) + timedelta(days=float(days))
 
 
 def build_context(

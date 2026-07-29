@@ -16,7 +16,8 @@
       "headers": {
         "content-type": "text/html; charset=utf-8",
         "content-encoding": "gzip"
-      }
+      },
+      "tls_expires_in_days": 240
     },
     {
       "url": "https://healthy.example.kr/services/",
@@ -26,7 +27,8 @@
       "headers": {
         "content-type": "text/html; charset=utf-8",
         "content-encoding": "gzip"
-      }
+      },
+      "tls_expires_in_days": 240
     },
     {
       "url": "https://healthy.example.kr/services/laser/",
@@ -36,7 +38,8 @@
       "headers": {
         "content-type": "text/html; charset=utf-8",
         "content-encoding": "gzip"
-      }
+      },
+      "tls_expires_in_days": 240
     },
     {
       "url": "https://healthy.example.kr/contact/",
@@ -46,7 +49,8 @@
       "headers": {
         "content-type": "text/html; charset=utf-8",
         "content-encoding": "gzip"
-      }
+      },
+      "tls_expires_in_days": 240
     }
   ]
 }

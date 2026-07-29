@@ -3814,6 +3814,11 @@ export interface components {
              */
             status: number;
             /**
+             * Tls Expires At
+             * @description 이 URL 을 가져올 때 상대 인증서의 만료 시각입니다. 수집기가 읽지 못했거나 평문 HTTP 라면 비워 두십시오 — 비어 있으면 통과가 아니라 측정 불가로 기록되며, 만료 직전인 사이트를 정상으로 보고하지 않습니다.
+             */
+            tls_expires_at?: string | null;
+            /**
              * Url
              * @description 리다이렉트를 모두 따른 최종 URL입니다.
              */

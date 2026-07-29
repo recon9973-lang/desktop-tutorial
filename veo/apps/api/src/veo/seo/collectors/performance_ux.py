@@ -81,6 +81,7 @@ class PerformanceUxCollector(SeoCollector):
         "seo.perf.text_compression",
         "seo.perf.modern_image_format",
         "seo.perf.resource_hints",
+        "seo.security.certificate_not_expiring",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -111,6 +112,7 @@ class PerformanceUxCollector(SeoCollector):
             _text_compression,
             _modern_image_format,
             _resource_hints,
+            _certificate_expiry,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -784,4 +786,136 @@ def _resource_hints(
     ]
 
 
-__all__ = ["PROVIDER_CRUX", "PROVIDER_PAGESPEED", "PerformanceUxCollector"]
+# --------------------------------------------------------------------------- #
+# seo.security.certificate_not_expiring
+# --------------------------------------------------------------------------- #
+
+#: Let's Encrypt 를 비롯한 자동 갱신은 만료 30일 전에 시작한다. 이 구간에 들어와 있다는
+#: 것은 **첫 갱신 시도가 이미 실패했다** 는 신호다.
+RENEWAL_WINDOW_DAYS = 30
+
+#: 주말이 끼면 손쓸 시간이 없는 구간. 여러 번 실패했다는 뜻이다.
+CERTIFICATE_ALARM_DAYS = 7
+
+
+def _certificate_expiry(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """인증서가 곧 만료되지 않는가.
+
+    자동 갱신이 실패한 인증서는 만료되는 순간 사이트가 통째로 열리지 않는다. 순위가
+    내려가는 것이 아니라 **아무도 못 들어온다.** 핸드셰이크에서 이미 받은 값이므로
+    추가 요청 없이 미리 알 수 있고, 미리 아는 것이 이 검사의 전부다.
+    """
+    check_id = "seo.security.certificate_not_expiring"
+    entry = next((page for page in site.pages if page.url == site.entry_url), site.pages[0])
+
+    if not is_https(entry.url):
+        return (
+            not_applicable_outcome(
+                check_id,
+                "평문 HTTP 로 응답하는 사이트라 확인할 인증서가 없습니다. HTTPS 사용 여부는 "
+                "별도 항목에서 판정합니다.",
+            ),
+            [],
+        )
+
+    # 여러 문서 중 가장 이른 만료일을 본다. 가장 먼저 끊기는 것이 사고 시점이다.
+    moments = [
+        page.document.tls_expires_at
+        for page in site.pages
+        if page.document.tls_expires_at is not None
+    ]
+    if not moments:
+        return (
+            unknown_outcome(
+                check_id,
+                "인증서 만료일을 수집하지 못했습니다. 미리 수집된 자료로 채점하는 경우, "
+                "수집 단계에서 만료일이 함께 전달되어야 판정할 수 있습니다.",
+            ),
+            [],
+        )
+
+    expires_at = min(moments)
+    remaining = (expires_at - context.collected_at).total_seconds() / 86400
+    days = int(remaining) if remaining >= 0 else -int(-remaining // 1 + 1)
+    observed = {"expires_at": expires_at.isoformat(), "days_remaining": round(remaining, 1)}
+    evidence = [
+        ledger.page_snippet(
+            entry, "http_response", f"인증서 만료 {expires_at.isoformat()} (남은 {days}일)"
+        )
+    ]
+
+    if remaining >= RENEWAL_WINDOW_DAYS:
+        return (
+            site_outcome(
+                check_id,
+                passed=True,
+                evidence_ids=evidence,
+                observed_value=observed,
+                note=(
+                    f"인증서 만료까지 {days}일 남았습니다. "
+                    "자동 갱신 구간에 아직 들어오지 않았습니다."
+                ),
+            ),
+            [],
+        )
+
+    expired = remaining <= 0
+    warning = remaining >= CERTIFICATE_ALARM_DAYS
+    if expired:
+        note = (
+            f"인증서가 이미 만료되었습니다({expires_at.isoformat()}). 브라우저가 경고 화면을 "
+            "띄우고 검색엔진은 크롤링하지 못합니다."
+        )
+    elif warning:
+        note = (
+            f"인증서 만료까지 {days}일 남았습니다. 자동 갱신은 보통 30일 전에 시작하므로, "
+            "이 구간에 있다는 것은 첫 갱신 시도가 실패했을 가능성이 큽니다."
+        )
+    else:
+        note = f"인증서 만료까지 {days}일뿐입니다. 갱신이 반복 실패하고 있을 가능성이 큽니다."
+
+    result = site_outcome(
+        check_id,
+        passed=False,
+        evidence_ids=evidence,
+        observed_value=observed,
+        note=note,
+        warning=warning,
+    )
+    return result, [
+        issue(
+            context,
+            check_id,
+            title_ko=(
+                "HTTPS 인증서가 만료되었습니다" if expired else "HTTPS 인증서 만료가 임박했습니다"
+            ),
+            summary_ko=note,
+            affected_urls=[entry.url],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "인증서를 즉시 갱신하고, 자동 갱신이 왜 실패했는지 확인하십시오. "
+                "certbot 을 쓴다면 갱신 타이머가 살아 있는지와 갱신 시 웹서버가 재시작되는지를 "
+                "함께 보십시오. 호스팅 업체가 발급한 인증서라면 관리 화면에서 자동 갱신 설정을 "
+                "확인하십시오."
+            ),
+            reverification_ko=(
+                "갱신 후 재수집해 만료일이 미래로 밀렸는지 확인합니다."
+            ),
+            business_impact_ko=(
+                "만료되는 순간 방문자에게 보안 경고 화면이 뜨고 사이트가 열리지 않습니다. "
+                "순위가 내려가는 정도가 아니라 예약·문의가 전부 끊깁니다."
+            ),
+            fix_example="sudo certbot renew --force-renewal && sudo systemctl reload nginx",
+        )
+    ]
+
+
+__all__ = [
+    "CERTIFICATE_ALARM_DAYS",
+    "PROVIDER_CRUX",
+    "PROVIDER_PAGESPEED",
+    "RENEWAL_WINDOW_DAYS",
+    "PerformanceUxCollector",
+]

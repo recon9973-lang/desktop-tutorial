@@ -396,6 +396,7 @@ def _document(page: PagePayload, collected_at: datetime) -> FetchedDocument:
         resolved_ips=(),
         fetched_at=collected_at,
         elapsed_ms=0,
+        tls_expires_at=page.tls_expires_at,
     )
 
 
