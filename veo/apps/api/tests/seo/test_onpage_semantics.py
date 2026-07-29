@@ -131,3 +131,29 @@ def test_on_page_checks_are_unknown_without_a_single_html_document() -> None:
     result = COLLECTOR.collect(context)
     assert all(outcome.status is CheckStatus.UNKNOWN for outcome in result.outcomes)
     assert all(outcome.note for outcome in result.outcomes)
+
+
+# --------------------------------------------------------------------------- #
+# seo.sd.naver_supported_type — 명세 1.1.0 에서 이 영역으로 옮겨 온 검사
+# --------------------------------------------------------------------------- #
+
+def test_naver_requirements_are_met_when_json_ld_and_open_graph_are_both_present() -> None:
+    assert status_of(run("healthy"), "seo.sd.naver_supported_type") is CheckStatus.PASS
+
+
+# --------------------------------------------------------------------------- #
+# Present and broken
+# --------------------------------------------------------------------------- #
+
+
+def test_structured_data_without_open_graph_does_not_meet_the_naver_requirement() -> None:
+    assert status_of(run("broken_jsonld"), "seo.sd.naver_supported_type") in {
+        CheckStatus.FAIL,
+        CheckStatus.WARNING,
+    }
+
+
+def test_a_site_outside_the_korean_market_skips_the_naver_check() -> None:
+    context = dataclasses.replace(build_context("healthy"), locale="en-US")
+    outcome = by_id(COLLECTOR.collect(context))["seo.sd.naver_supported_type"]
+    assert outcome.status is CheckStatus.NOT_APPLICABLE

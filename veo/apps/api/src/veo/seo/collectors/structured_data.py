@@ -14,7 +14,7 @@ required-properties check reports UNKNOWN. Guessing would invent a finding.
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Final
 
 from veo.collect.contract import (
     CollectionContext,
@@ -94,8 +94,6 @@ GOOGLE_SUPPORTED_TYPES = frozenset(
 )
 
 #: Open Graph properties Naver relies on alongside structured data.
-NAVER_REQUIRED_OG = ("og:title", "og:description", "og:url", "og:image")
-
 NO_STRUCTURED_DATA_KO = (
     "구조화 데이터를 선언하지 않은 사이트입니다. 선택 항목이므로 감점하지 않으며, "
     "도입하면 평가 대상이 됩니다."
@@ -109,7 +107,6 @@ class StructuredDataCollector(SeoCollector):
         "seo.sd.required_properties_present",
         "seo.sd.matches_visible_content",
         "seo.sd.google_supported_type",
-        "seo.sd.naver_supported_type",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -133,7 +130,7 @@ class StructuredDataCollector(SeoCollector):
 
         parsed = {page.url: _parse_blocks(page) for page in declaring}
 
-        for step in (_parses, _required_properties, _matches_visible, _google_type, _naver_type):
+        for step in (_parses, _required_properties, _matches_visible, _google_type):
             produced, produced_issues = step(context, site, ledger, declaring, parsed)
             outcomes.append(produced)
             issues.extend(produced_issues)
@@ -354,6 +351,82 @@ def _required_properties(
 # --------------------------------------------------------------------------- #
 
 
+#: 화면과 대조할 값들. `name`/`headline` 만 보던 시절에는 정작 꾸며지는 값 —
+#: 평점, 후기 수, 전화번호, 주소 — 을 아무도 보지 않았다.
+_CLAIMED_TEXT: Final = ("name", "headline", "telephone", "address")
+_CLAIMED_LABELS_KO: Final = {
+    "telephone": "전화번호",
+    "address": "주소",
+    "ratingvalue": "평점",
+    "reviewcount": "후기 수",
+    "ratingcount": "평가 수",
+}
+
+
+def _digits(text: str) -> str:
+    """숫자만 남긴다. `02-555-1234` 와 `02) 555-1234` 를 같은 것으로 보기 위해서다."""
+    return "".join(ch for ch in text if ch.isdigit())
+
+
+def _national_number(value: str) -> str:
+    """국제 표기를 국내 표기로 맞춘다.
+
+    `+82-2-000-0000` 과 `02-000-0000` 은 같은 번호다 — 국제 표기는 시외국번 앞의 0 을
+    빼고 국가번호 82 를 붙인다. schema.org 는 국제 표기를 권장하므로, 이 둘을 다른
+    값으로 보면 **제대로 만든 사이트일수록 어긋난다고 보고**하게 된다.
+    """
+    digits = _digits(value)
+    if digits.startswith("82"):
+        return "0" + digits[2:]
+    return digits
+
+
+def _flat_text(value: object) -> str:
+    """주소는 문자열일 수도 `PostalAddress` 객체일 수도 있다. 둘 다 사람이 읽는 값으로."""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        parts = [_flat_text(v) for k, v in value.items() if not str(k).startswith("@")]
+        return " ".join(part for part in parts if part)
+    if isinstance(value, list):
+        return " ".join(part for part in (_flat_text(v) for v in value) if part)
+    return ""
+
+
+def _claims(node: dict[str, Any]) -> list[tuple[str, str]]:
+    """이 노드가 주장하는 값들. (사람이 읽을 이름, 값)"""
+    found: list[tuple[str, str]] = []
+    lowered = {str(k).lower(): v for k, v in node.items()}
+
+    for key in _CLAIMED_TEXT:
+        text = _flat_text(lowered.get(key))
+        if text:
+            found.append((_CLAIMED_LABELS_KO.get(key, ""), text))
+
+    # 평점과 후기 수는 화면에 없으면 지어낸 값이다. 구글 정책 위반이자, 병원이라면
+    # 의료법 제56조가 금지하는 환자 후기·평가 광고에 해당한다.
+    rating = lowered.get("aggregaterating")
+    if isinstance(rating, dict):
+        inner = {str(k).lower(): v for k, v in rating.items()}
+        for key in ("ratingvalue", "reviewcount", "ratingcount"):
+            text = _flat_text(inner.get(key))
+            if text:
+                found.append((_CLAIMED_LABELS_KO[key], text))
+    return found
+
+
+def _is_visible(value: str, visible: str, digits_visible: str) -> bool:
+    """화면에서 확인되는가.
+
+    숫자만으로 이루어진 값(전화번호·평점·후기 수)은 표기가 제각각이라 문자열로 맞대면
+    멀쩡한 페이지가 실패한다. 숫자만 뽑아 한 번 더 본다.
+    """
+    if normalise(value) in visible:
+        return True
+    digits = _national_number(value)
+    return bool(digits) and digits in digits_visible
+
+
 def _matches_visible(
     context: CollectionContext,
     site: SiteObservation,
@@ -366,13 +439,18 @@ def _matches_visible(
 
     for page in declaring:
         visible = normalise(page.raw.full_text)
-        claimed: list[str] = []
+        # 화면 쪽도 같은 규칙으로 맞춘다 — 어느 쪽이 국제 표기든 대조되도록.
+        digits_visible = (
+            _digits(page.raw.full_text) + " " + _national_number(page.raw.full_text)
+        )
+        absent: list[str] = []
+
         for node in parsed[page.url].objects:
-            for key in ("name", "headline"):
-                value = node.get(key)
-                if isinstance(value, str) and value.strip():
-                    claimed.append(value.strip())
-        absent = [value for value in claimed if normalise(value) not in visible]
+            for label, value in _claims(node):
+                if _is_visible(value, visible, digits_visible):
+                    continue
+                absent.append(f"{label} {value}" if label else value)
+
         if absent:
             mismatched.append(page)
             problems[page.url] = absent
@@ -399,8 +477,13 @@ def _matches_visible(
         confidence_level=HEURISTIC_MEDIUM,
         evidence_ids=evidence,
         observed_value=problems or None,
-        clean_note_ko="구조화 데이터가 선언한 이름이 화면에서도 확인됩니다.",
-        affected_note_ko=f"{len(mismatched)}개 페이지의 구조화 데이터가 화면 내용과 어긋납니다.",
+        clean_note_ko="구조화 데이터가 선언한 값이 화면에서도 모두 확인됩니다.",
+        affected_note_ko=(
+            f"{len(mismatched)}개 페이지의 구조화 데이터가 화면 내용과 어긋납니다. "
+            # 무엇이 어긋났는지 말하지 않으면 어디를 고쳐야 할지 알 수 없다.
+            + "화면에서 확인되지 않는 값: "
+            + ", ".join(sorted({v for values in problems.values() for v in values})[:6])
+        ),
     )
     if result.status is not CheckStatus.FAIL:
         return result, []
@@ -512,89 +595,3 @@ def _google_type(
 # --------------------------------------------------------------------------- #
 
 
-def _naver_type(
-    context: CollectionContext,
-    site: SiteObservation,
-    ledger: EvidenceLedger,
-    declaring: list[PageObservation],
-    parsed: dict[str, _Blocks],
-) -> tuple[CheckOutcome, list[IssueDraft]]:
-    if not site.is_korean_market():
-        return (
-            not_applicable_outcome(
-                "seo.sd.naver_supported_type",
-                f"대상 로케일이 {context.locale}이라 네이버 노출 요건은 해당하지 않습니다.",
-            ),
-            [],
-        )
-
-    problems: dict[str, list[str]] = {}
-    for page in declaring:
-        absent = [prop for prop in NAVER_REQUIRED_OG if not page.raw.open_graph.get(prop)]
-        if absent:
-            problems[page.url] = absent
-
-    affected = [page for page in declaring if page.url in problems]
-    evidence = [
-        ledger.of(
-            "validator_output",
-            url=page.url,
-            payload=str(dict(page.raw.open_graph)),
-            excerpt=(
-                "누락된 오픈그래프: " + ", ".join(problems[page.url])
-                if page.url in problems
-                else "오픈그래프 요건 충족"
-            ),
-            detail={"missing_open_graph": problems.get(page.url, [])},
-        )
-        for page in (affected or declaring[:1])
-    ]
-
-    result = url_ratio_outcome(
-        "seo.sd.naver_supported_type",
-        affected=affected,
-        evaluated=declaring,
-        confidence_level=DIRECT,
-        evidence_ids=evidence,
-        observed_value=problems or None,
-        clean_note_ko="구조화 데이터와 오픈그래프가 함께 선언되어 네이버 인식 요건을 충족합니다.",
-        affected_note_ko=(
-            f"{len(affected)}개 페이지에 네이버가 요구하는 오픈그래프 항목이 빠져 있습니다."
-        ),
-    )
-    if result.status is not CheckStatus.FAIL:
-        return result, []
-
-    return result, [
-        issue(
-            context,
-            "seo.sd.naver_supported_type",
-            title_ko="네이버 인식에 필요한 오픈그래프 항목이 빠져 있습니다",
-            summary_ko=(
-                "네이버는 구조화 데이터와 함께 오픈그래프 정보를 읽습니다. "
-                + "; ".join(
-                    f"{url} — {', '.join(values)} 없음"
-                    for url, values in list(problems.items())[:5]
-                )
-            ),
-            affected_urls=list(problems),
-            evidence_ids=evidence,
-            remediation_ko=(
-                "head에 og:title, og:description, og:url, og:image를 페이지별 값으로 넣으십시오. "
-                "og:image는 절대 주소여야 하며 가로 600픽셀 이상을 권장합니다."
-            ),
-            reverification_ko="수정 후 재수집해 오픈그래프 네 항목이 모두 채워졌는지 확인합니다.",
-            business_impact_ko=(
-                "네이버 검색과 공유 화면에서 제목·설명·이미지가 엉뚱하게 표시됩니다."
-            ),
-            fix_example='<meta property="og:title" content="레이저 치료 안내">',
-        )
-    ]
-
-
-__all__ = [
-    "GOOGLE_SUPPORTED_TYPES",
-    "NAVER_REQUIRED_OG",
-    "REQUIRED_PROPERTIES",
-    "StructuredDataCollector",
-]

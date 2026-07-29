@@ -7,6 +7,8 @@ collectors read those structures and report observations.
 from veo.seo.parsing.html import Anchor, Image, ParsedPage, parse_html, visible_text
 from veo.seo.parsing.robots import (
     CRAWLER_AGENT_NAME,
+    CRAWLER_LABELS_KO,
+    REPORTED_CRAWLERS,
     RobotsDecision,
     RobotsFile,
     RobotsGroup,
@@ -28,6 +30,8 @@ from veo.seo.parsing.urls import (
 
 __all__ = [
     "CRAWLER_AGENT_NAME",
+    "CRAWLER_LABELS_KO",
+    "REPORTED_CRAWLERS",
     "Anchor",
     "Image",
     "ParsedPage",

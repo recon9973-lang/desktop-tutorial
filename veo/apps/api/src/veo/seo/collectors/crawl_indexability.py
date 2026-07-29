@@ -30,6 +30,8 @@ from veo.seo.collectors.base import (
 from veo.seo.observation import PageObservation, SiteObservation
 from veo.seo.parsing import (
     CRAWLER_AGENT_NAME,
+    CRAWLER_LABELS_KO,
+    REPORTED_CRAWLERS,
     host_of,
     normalise_url,
     path_of,
@@ -43,7 +45,26 @@ from veo.seo.parsing import (
 MAX_SANE_HOPS = 2
 
 #: Directives in ``meta robots`` or ``X-Robots-Tag`` that keep a page out of the index.
-_BLOCKING_DIRECTIVES = ("noindex", "none")
+#: 색인을 막는 지시자. **지시자 하나로 서 있을 때만** 해당한다.
+#:
+#: 부분 문자열로 찾으면 안 된다. `max-image-preview:none` 은 구글이 문서화한 값인데
+#: `none` 을 품고 있어서, 멀쩡한 사이트가 "색인 차단" BLOCKER 판정을 받고 25점 상한에
+#: 걸린다. 실제로 그렇게 동작했다.
+_BLOCKING_DIRECTIVES = frozenset({"noindex", "none"})
+
+
+def _blocks_indexing(value: str) -> bool:
+    """`content` 를 쉼표로 나눠 **지시자 단위**로 본다.
+
+    `key:value` 형태(`max-snippet:-1`, `max-image-preview:none`)는 값이 무엇이든 색인을
+    막지 않는다. 색인을 막는 것은 `noindex` 와 `none` 이 **그 자체로** 하나의 지시자로
+    쓰였을 때뿐이다.
+    """
+    for token in value.lower().split(","):
+        directive = token.strip()
+        if directive in _BLOCKING_DIRECTIVES:
+            return True
+    return False
 
 
 class CrawlIndexabilityCollector(SeoCollector):
@@ -257,15 +278,27 @@ def _robots_allows(
     evidence = [robots_evidence]
     detail: dict[str, dict[str, object]] = {}
 
+    blocked_agents: set[str] = set()
     for page in site.pages:
-        decision = site.robots.decide(path_of(page.url), user_agent=CRAWLER_AGENT_NAME)
-        if decision.allowed:
+        # `veo-bot` 이 들어갈 수 있다는 사실은 고객에게 아무 의미가 없다. 물어야 하는
+        # 것은 **우리가 보고서에 쓰는 검색엔진**이 들어갈 수 있는가다. 특히 Yeti —
+        # 병원 고객의 주력 유입원인 네이버를 통째로 막아 둔 robots.txt 가 "허용" 으로
+        # 통과하던 것이 이 검사의 가장 큰 구멍이었다.
+        refusals = {
+            agent: site.robots.decide(path_of(page.url), user_agent=agent)
+            for agent in REPORTED_CRAWLERS
+        }
+        refused = {agent: d for agent, d in refusals.items() if not d.allowed}
+        if not refused:
             continue
         blocked.append(page)
+        blocked_agents.update(refused)
+        decision = next(iter(refused.values()))
         detail[page.url] = {
             "matched_rule": decision.matched_rule,
             "line": decision.line_number,
             "group": list(decision.group_agents),
+            "blocked_agents": sorted(refused),
         }
         evidence.append(
             ledger.of(
@@ -283,8 +316,17 @@ def _robots_allows(
         evaluated=list(site.pages),
         evidence_ids=evidence,
         observed_value=detail or None,
-        clean_note_ko="robots.txt가 수집한 URL의 크롤링을 막지 않습니다.",
-        affected_note_ko=f"{len(blocked)}개 URL이 robots.txt 규칙으로 차단되어 있습니다.",
+        clean_note_ko=(
+            "robots.txt가 "
+            + "·".join(CRAWLER_LABELS_KO.get(a, a) for a in REPORTED_CRAWLERS)
+            + " 크롤러의 수집을 막지 않습니다."
+        ),
+        # 어느 검색엔진이 막혔는지가 곧 조치 대상이다. "차단됨" 만으로는 어디를 고쳐야
+        # 할지 알 수 없고, 국내 사이트는 대개 한쪽만 막혀 있다.
+        affected_note_ko=(
+            f"{len(blocked)}개 URL이 robots.txt 규칙으로 차단되어 있습니다. 차단된 크롤러: "
+            + ", ".join(CRAWLER_LABELS_KO.get(a, a) for a in sorted(blocked_agents))
+        ),
     )
     if result.status is not CheckStatus.FAIL:
         return result, []
@@ -297,7 +339,9 @@ def _robots_allows(
             title_ko="robots.txt가 주요 URL의 크롤링을 막고 있습니다",
             summary_ko=(
                 f"{len(blocked)}개 URL이 robots.txt 규칙에 걸려 크롤링되지 않습니다. "
-                f"적용된 규칙은 {rules}입니다."
+                + "차단된 크롤러는 "
+                + ", ".join(CRAWLER_LABELS_KO.get(a, a) for a in sorted(blocked_agents))
+                + f"이고, 적용된 규칙은 {rules}입니다."
             ),
             affected_urls=[page.url for page in blocked],
             evidence_ids=evidence,
@@ -341,7 +385,7 @@ def _meta_indexable(
         meta = page.raw.meta_robots or ""
         header = (page.header("x-robots-tag") or "").lower()
         sources = [source for source in (meta, header) if source]
-        if not any(directive in source for source in sources for directive in _BLOCKING_DIRECTIVES):
+        if not any(_blocks_indexing(source) for source in sources):
             continue
         blocked.append(page)
         detail[page.url] = {"meta_robots": meta or None, "x_robots_tag": header or None}

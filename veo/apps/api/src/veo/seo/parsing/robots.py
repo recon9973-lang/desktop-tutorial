@@ -29,6 +29,15 @@ from dataclasses import dataclass, field
 #: why the group selection below has to be right.
 CRAWLER_AGENT_NAME = "veo-bot"
 
+#: 보고서가 이야기하는 검색엔진들. robots.txt 판정은 **이들 기준**으로 한다.
+#:
+#: `veo-bot` 이 들어갈 수 있는지는 우리 수집의 문제이지 고객 사이트의 상태가 아니다.
+#: `Yeti` 는 네이버 크롤러이고, 국내 병원 고객에게는 Googlebot 만큼, 흔히 그보다 중요하다.
+REPORTED_CRAWLERS: tuple[str, ...] = ("Googlebot", "Yeti")
+
+#: 사람에게 보여줄 이름.
+CRAWLER_LABELS_KO: dict[str, str] = {"Googlebot": "구글(Googlebot)", "Yeti": "네이버(Yeti)"}
+
 
 @dataclass(frozen=True, slots=True)
 class RobotsRule:

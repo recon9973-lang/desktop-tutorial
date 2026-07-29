@@ -133,7 +133,6 @@ def test_the_brochure_site_marks_the_inapplicable_checks_not_applicable() -> Non
         "seo.sd.required_properties_present",
         "seo.sd.matches_visible_content",
         "seo.sd.google_supported_type",
-        "seo.sd.naver_supported_type",
         "seo.onpage.image_alt_coverage",
         "seo.content.pagination_signals",
         "seo.content.breadcrumb_present",

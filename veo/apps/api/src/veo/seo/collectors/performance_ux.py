@@ -327,6 +327,31 @@ def _field_metric(
 # --------------------------------------------------------------------------- #
 
 
+def _viewport_directives(value: str) -> dict[str, str]:
+    """`width=device-width,initial-scale=1` 을 키-값으로 나눈다."""
+    directives: dict[str, str] = {}
+    for part in value.split(","):
+        key, _, raw = part.partition("=")
+        directives[key.strip()] = raw.strip()
+    return directives
+
+
+def _blocks_zoom(value: str) -> bool:
+    """확대를 막는 설정인가.
+
+    부분 문자열로 찾으면 안 된다. `"maximum-scale=1" in viewport` 는 **`maximum-scale=10`
+    에도 걸린다** — 확대를 10배까지 허용하는 설정을 확대 금지라고 지적하던 원인이다.
+    값을 숫자로 읽고 1 이하일 때만 확대가 막힌 것으로 본다.
+    """
+    directives = _viewport_directives(value)
+    if directives.get("user-scalable") in {"no", "0"}:
+        return True
+    try:
+        return float(directives["maximum-scale"]) <= 1.0
+    except (KeyError, ValueError):
+        return False
+
+
 def _viewport(
     context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
@@ -337,7 +362,7 @@ def _viewport(
             problems[page.url] = "viewport 메타 태그가 없습니다"
         elif "width=device-width" not in viewport:
             problems[page.url] = "width=device-width가 지정되지 않았습니다"
-        elif "user-scalable=no" in viewport or "maximum-scale=1" in viewport:
+        elif _blocks_zoom(viewport):
             problems[page.url] = "확대를 막는 설정이 들어 있습니다"
 
     affected = [page for page in site.pages if page.url in problems]

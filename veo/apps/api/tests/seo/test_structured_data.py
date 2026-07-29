@@ -15,12 +15,15 @@ from veo.seo.collectors import StructuredDataCollector
 
 COLLECTOR = StructuredDataCollector()
 
+#: 이 수집기가 책임지는 검사. `seo.sd.naver_supported_type` 은 명세 1.1.0 에서
+#: 온페이지 시맨틱으로 옮겼다 — 그 검사가 보는 것은 오픈그래프이지 구조화 데이터가
+#: 아니고, 여기 남겨 두면 구조화 데이터가 없는 사이트에서 유일한 채점 항목이 되어
+#: 경미 항목 하나가 10점 영역을 통째로 0점으로 만든다.
 SD_CHECKS = (
     "seo.sd.jsonld_parses",
     "seo.sd.required_properties_present",
     "seo.sd.matches_visible_content",
     "seo.sd.google_supported_type",
-    "seo.sd.naver_supported_type",
 )
 
 
@@ -33,7 +36,7 @@ def run(fixture: str, **overrides: object):
 # --------------------------------------------------------------------------- #
 
 
-def test_a_site_with_no_structured_data_is_not_applicable_on_all_five_checks() -> None:
+def test_a_site_with_no_structured_data_is_not_applicable_on_every_check() -> None:
     result = run("brochure_na")
     for check_id in SD_CHECKS:
         outcome = by_id(result)[check_id]
@@ -65,14 +68,6 @@ def test_structured_data_matching_the_visible_page_passes() -> None:
 def test_a_google_supported_type_passes() -> None:
     assert status_of(run("healthy"), "seo.sd.google_supported_type") is CheckStatus.PASS
 
-
-def test_naver_requirements_are_met_when_json_ld_and_open_graph_are_both_present() -> None:
-    assert status_of(run("healthy"), "seo.sd.naver_supported_type") is CheckStatus.PASS
-
-
-# --------------------------------------------------------------------------- #
-# Present and broken
-# --------------------------------------------------------------------------- #
 
 
 def test_a_trailing_comma_in_json_ld_fails_the_parse_check() -> None:
@@ -107,17 +102,6 @@ def test_a_type_google_does_not_support_does_not_pass() -> None:
     }
 
 
-def test_structured_data_without_open_graph_does_not_meet_the_naver_requirement() -> None:
-    assert status_of(run("broken_jsonld"), "seo.sd.naver_supported_type") in {
-        CheckStatus.FAIL,
-        CheckStatus.WARNING,
-    }
-
-
-def test_a_site_outside_the_korean_market_skips_the_naver_check() -> None:
-    context = dataclasses.replace(build_context("healthy"), locale="en-US")
-    outcome = by_id(COLLECTOR.collect(context))["seo.sd.naver_supported_type"]
-    assert outcome.status is CheckStatus.NOT_APPLICABLE
 
 
 def test_an_unrecognised_type_is_unknown_rather_than_failed_for_required_properties() -> None:

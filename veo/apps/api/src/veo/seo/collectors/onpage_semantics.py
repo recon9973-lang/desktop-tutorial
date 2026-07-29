@@ -7,6 +7,8 @@ as present would hide the very problem the customer needs to know about.
 
 from __future__ import annotations
 
+import re
+
 from collections import defaultdict
 
 from veo.collect.contract import (
@@ -18,6 +20,7 @@ from veo.collect.contract import (
 )
 from veo.scoring import CheckOutcome, CheckStatus
 from veo.seo.collectors.base import (
+    DIRECT,
     HEURISTIC_HIGH,
     NO_DOCUMENTS_KO,
     EvidenceLedger,
@@ -32,6 +35,14 @@ from veo.seo.parsing import normalise, resolve, same_site
 
 #: Observation bounds for a meta description, taken from what search engines display.
 #: They decide what VEO reports, never how much a finding costs.
+#: 네이버 검색 결과와 카카오톡 공유에서 제목·설명·썸네일이 되는 값들.
+NAVER_REQUIRED_OG = ("og:title", "og:description", "og:url", "og:image")
+
+#: title 길이 범위. 검색 결과에서 잘리는 경계와, 주제를 담을 수 있는 최소치.
+#: 한글은 한 글자가 담는 정보가 많아 라틴 문자 기준보다 짧게 잡는다.
+MIN_TITLE_CHARS = 10
+MAX_TITLE_CHARS = 60
+
 MIN_DESCRIPTION_CHARS = 40
 MAX_DESCRIPTION_CHARS = 200
 
@@ -71,6 +82,7 @@ class OnpageSemanticsCollector(SeoCollector):
         "seo.onpage.image_alt_coverage",
         "seo.onpage.descriptive_anchor_text",
         "seo.onpage.no_duplicate_metadata",
+        "seo.sd.naver_supported_type",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -91,6 +103,7 @@ class OnpageSemanticsCollector(SeoCollector):
             _image_alt,
             _anchor_text,
             _duplicate_metadata,
+            _naver_open_graph,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -120,9 +133,21 @@ def _title(
     repeated = _duplicates({url: title for url, title in titles.items() if title})
     repeated_urls = {url for urls in repeated.values() for url in urls}
 
-    affected = [
-        page for page in site.pages if not titles[page.url] or page.url in repeated_urls
-    ]
+    # 존재와 중복만 보던 검사다. CRITICAL 인데 15자짜리 브랜드 조각도 130자짜리 키워드
+    # 나열도 통과했다 — 바로 아래 MINOR 인 description 은 길이를 두 방향으로 보는데.
+    problems: dict[str, str] = {}
+    for page in site.pages:
+        value = titles[page.url]
+        if not value:
+            problems[page.url] = "title이 비어 있습니다"
+        elif len(value) < MIN_TITLE_CHARS:
+            problems[page.url] = f"{len(value)}자로 너무 짧아 주제가 담기지 않습니다"
+        elif len(value) > MAX_TITLE_CHARS:
+            problems[page.url] = f"{len(value)}자로 너무 길어 검색 결과에서 잘립니다"
+        elif page.url in repeated_urls:
+            problems[page.url] = "다른 페이지와 같은 title입니다"
+
+    affected = [page for page in site.pages if page.url in problems]
     evidence = [
         ledger.page_snippet(page, "dom_snippet", f"<title>{titles[page.url]}</title>")
         for page in (affected or site.pages[:1])
@@ -135,7 +160,10 @@ def _title(
         evidence_ids=evidence,
         observed_value=titles,
         clean_note_ko="모든 페이지에 서로 다른 title이 있습니다.",
-        affected_note_ko=f"{len(affected)}개 페이지의 title이 비어 있거나 다른 페이지와 같습니다.",
+        affected_note_ko=(
+            f"{len(affected)}개 페이지의 title에 문제가 있습니다: "
+            + "; ".join(sorted(set(problems.values()))[:3])
+        ),
     )
     if result.status is not CheckStatus.FAIL:
         return result, []
@@ -353,10 +381,36 @@ def _heading_hierarchy(
 # --------------------------------------------------------------------------- #
 
 
+#: BCP 47 의 최소 형태 — 소문자 두세 글자의 언어, 그 뒤에 하이픈으로 이어지는 하위 태그.
+#: `kr` 은 언어 코드가 아니라 국가 코드이고, 한국어는 `ko` 다. 국내 사이트에서 가장 흔한
+#: 오기이며 선언 여부만 보던 시절에는 통과했다. `ko_KR` 처럼 밑줄을 쓰는 것도 무효다.
+_LANGUAGE_TAG = re.compile(r"^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$")
+
+#: 언어 코드가 아닌데 언어 자리에 자주 들어오는 값.
+_NOT_A_LANGUAGE = frozenset({"kr", "jp", "cn", "uk", "gb"})
+
+
+def _language_problem(value: str) -> str | None:
+    """선언된 값이 언어 태그로 쓸 수 있는가."""
+    tag = value.strip()
+    if not tag:
+        return "html lang 속성이 없습니다"
+    if tag.lower() in _NOT_A_LANGUAGE:
+        return f'lang="{tag}"는 국가 코드입니다. 한국어는 ko 입니다'
+    if not _LANGUAGE_TAG.fullmatch(tag):
+        return f'lang="{tag}"는 언어 태그 형식이 아닙니다'
+    return None
+
+
 def _html_lang(
     context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
-    missing = [page for page in site.pages if not (page.raw.lang or "").strip()]
+    problems = {
+        page.url: problem
+        for page in site.pages
+        if (problem := _language_problem(page.raw.lang or "")) is not None
+    }
+    missing = [page for page in site.pages if page.url in problems]
     evidence = [
         ledger.page_snippet(page, "dom_snippet", f'<html lang="{page.raw.lang or ""}">')
         for page in (missing or site.pages[:1])
@@ -368,8 +422,11 @@ def _html_lang(
         evaluated=list(site.pages),
         evidence_ids=evidence,
         observed_value={page.url: page.raw.lang for page in site.pages},
-        clean_note_ko="모든 페이지에 html lang 속성이 선언되어 있습니다.",
-        affected_note_ko=f"{len(missing)}개 페이지에 html lang 속성이 없습니다.",
+        clean_note_ko="모든 페이지에 올바른 html lang 값이 선언되어 있습니다.",
+        affected_note_ko=(
+            f"{len(missing)}개 페이지의 html lang에 문제가 있습니다: "
+            + "; ".join(sorted(set(problems.values()))[:3])
+        ),
     )
     if result.status is not CheckStatus.FAIL:
         return result, []
@@ -632,4 +689,104 @@ __all__ = [
     "MAX_DESCRIPTION_CHARS",
     "MIN_DESCRIPTION_CHARS",
     "OnpageSemanticsCollector",
+]
+
+
+# --------------------------------------------------------------------------- #
+# seo.sd.naver_supported_type — 네이버 노출에 필요한 오픈그래프
+# --------------------------------------------------------------------------- #
+
+
+def _naver_open_graph(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """네이버 노출에 필요한 오픈그래프가 갖춰졌는가.
+
+    검사 id 는 `seo.sd.*` 로 시작하지만 보는 것은 **오픈그래프**이지 구조화 데이터가
+    아니다. 명세 1.1.0 에서 이 검사를 온페이지 시맨틱으로 옮긴 이유가 그것이다 —
+    구조화 데이터가 없는 사이트에서 이 검사가 그 영역의 유일한 채점 항목으로 남으면,
+    경미 항목 하나가 10점 영역을 통째로 0점으로 만들었다.
+    """
+    pages = list(site.pages)
+    if not site.is_korean_market():
+        return (
+            not_applicable_outcome(
+                "seo.sd.naver_supported_type",
+                f"대상 로케일이 {context.locale}이라 네이버 노출 요건은 해당하지 않습니다.",
+            ),
+            [],
+        )
+
+    problems: dict[str, list[str]] = {}
+    for page in pages:
+        absent = [prop for prop in NAVER_REQUIRED_OG if not page.raw.open_graph.get(prop)]
+        if absent:
+            problems[page.url] = absent
+
+    affected = [page for page in pages if page.url in problems]
+    evidence = [
+        ledger.of(
+            "validator_output",
+            url=page.url,
+            payload=str(dict(page.raw.open_graph)),
+            excerpt=(
+                "누락된 오픈그래프: " + ", ".join(problems[page.url])
+                if page.url in problems
+                else "오픈그래프 요건 충족"
+            ),
+            detail={"missing_open_graph": problems.get(page.url, [])},
+        )
+        for page in (affected or pages[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.sd.naver_supported_type",
+        affected=affected,
+        evaluated=pages,
+        confidence_level=DIRECT,
+        evidence_ids=evidence,
+        observed_value=problems or None,
+        clean_note_ko="네이버 검색 결과와 카카오톡 공유에 필요한 오픈그래프가 모두 선언되어 있습니다.",
+        affected_note_ko=(
+            f"{len(affected)}개 페이지에 오픈그래프가 빠져 있습니다. 누락 항목: "
+            + ", ".join(sorted({prop for values in problems.values() for prop in values}))
+        ),
+    )
+    if result.status is not CheckStatus.FAIL:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.sd.naver_supported_type",
+            title_ko="네이버 인식에 필요한 오픈그래프 항목이 빠져 있습니다",
+            summary_ko=(
+                "네이버 검색 결과와 카카오톡 공유에 뜨는 제목·설명·썸네일이 오픈그래프에서 "
+                "나옵니다. 빠져 있으면 네이버가 본문에서 임의로 골라 쓰거나 아무것도 뜨지 "
+                "않습니다. "
+                + "; ".join(
+                    f"{url} — {', '.join(values)} 없음"
+                    for url, values in list(problems.items())[:5]
+                )
+            ),
+            affected_urls=list(problems),
+            evidence_ids=evidence,
+            remediation_ko=(
+                "head에 og:title, og:description, og:url, og:image를 페이지별 값으로 넣으십시오. "
+                "og:image는 절대 주소여야 하며 가로 600픽셀 이상을 권장합니다."
+            ),
+            reverification_ko="수정 후 재수집해 오픈그래프 네 항목이 모두 채워졌는지 확인합니다.",
+            business_impact_ko=(
+                "네이버 검색과 공유 화면에서 제목·설명·이미지가 엉뚱하게 표시됩니다."
+            ),
+            fix_example='<meta property="og:title" content="레이저 치료 안내">',
+        )
+    ]
+
+
+__all__ = [
+    "GOOGLE_SUPPORTED_TYPES",
+    "NAVER_REQUIRED_OG",
+    "REQUIRED_PROPERTIES",
+    "StructuredDataCollector",
 ]

@@ -14,6 +14,8 @@ from collections.abc import Iterator
 from typing import Any
 
 import pytest
+
+from veo.seo.service import load_seo_spec
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from tests.seo.support import FIXTURE_ROOT
@@ -137,7 +139,9 @@ def test_the_catalogue_lists_all_forty_seven_checks(client: TestClient, caller: 
     data = payload(client.get(CHECKS))
     assert len(data["checks"]) == 47
     assert data["spec_id"] == "veo.seo.readiness"
-    assert data["spec_version"] == "1.0.0"
+    # 명세는 개정된다. 버전을 여기에 적어 두면 개정 때마다 무관한 테스트가 깨진다 —
+    # 이 테스트가 지키는 것은 "목록이 발행 명세와 일치한다" 이지 특정 버전이 아니다.
+    assert data["spec_version"] == load_seo_spec().version
 
 
 def test_the_catalogue_names_the_collector_that_owns_each_check(

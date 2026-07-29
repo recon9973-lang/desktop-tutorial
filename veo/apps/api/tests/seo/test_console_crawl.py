@@ -13,7 +13,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from veo.common.security.url_guard import UrlRejectedError
+from veo.common.security.url_guard import UrlGuard, UrlRejectedError
 from veo.seo.crawl import ConsoleCrawler, CrawlRefusal
 
 
@@ -23,6 +23,16 @@ def _html(title: str) -> bytes:
         f"<meta name='description' content='설명'></head>"
         f"<body><h1>{title}</h1><a href='/b'>다음</a></body></html>"
     ).encode()
+
+
+def _guard() -> UrlGuard:
+    """실제 DNS 를 쓰지 않는 가드.
+
+    기본 가드는 호스트를 진짜로 조회한다. 그대로 두면 이 테스트가 네트워크에 의존하게
+    되어, 단독으로는 통과하고 전체 실행에서는 조회 실패로 깨진다 — 실제로 그랬다.
+    차단 규칙 자체는 그대로 두고 **주소 조회만** 고정한다.
+    """
+    return UrlGuard(resolver=lambda host: ["93.184.216.34"])
 
 
 def _transport(pages: dict[str, bytes]) -> httpx.MockTransport:
@@ -38,6 +48,7 @@ def _transport(pages: dict[str, bytes]) -> httpx.MockTransport:
 class TestScope:
     def test_collects_every_requested_page(self) -> None:
         crawler = ConsoleCrawler(
+            guard=_guard(),
             transport=_transport(
                 {"/": _html("홈"), "/a": _html("가"), "/b": _html("나")}
             )
@@ -51,7 +62,7 @@ class TestScope:
 
     def test_refuses_more_pages_than_the_console_allows(self) -> None:
         """상한이 없으면 한 번의 실수로 남의 사이트를 수백 번 두드리게 된다."""
-        crawler = ConsoleCrawler(transport=_transport({"/": _html("홈")}), max_urls=2)
+        crawler = ConsoleCrawler(guard=_guard(), transport=_transport({"/": _html("홈")}), max_urls=2)
 
         with pytest.raises(CrawlRefusal) as caught:
             crawler.collect([f"https://example.com/{n}" for n in range(3)])
@@ -59,7 +70,7 @@ class TestScope:
         assert caught.value.status_code == 422
 
     def test_refuses_an_empty_list(self) -> None:
-        crawler = ConsoleCrawler(transport=_transport({}))
+        crawler = ConsoleCrawler(guard=_guard(), transport=_transport({}))
 
         with pytest.raises(CrawlRefusal):
             crawler.collect([])
@@ -79,7 +90,7 @@ class TestSafety:
         def dead(_request: httpx.Request) -> httpx.Response:
             raise httpx.ConnectError("연결 불가")
 
-        crawler = ConsoleCrawler(transport=httpx.MockTransport(dead))
+        crawler = ConsoleCrawler(guard=_guard(), transport=httpx.MockTransport(dead))
 
         with pytest.raises(CrawlRefusal) as caught:
             crawler.collect(["https://example.com/"])
