@@ -19,7 +19,7 @@ Arithmetic (VEO-LAB methodology):
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
-from typing import Any
+from typing import Any, Final
 
 from veo.scoring.errors import ScoringSpecError
 from veo.scoring.models import (
@@ -54,6 +54,19 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         category_scores.append(score)
         category_rows.append(row)
         check_rows.extend(traces)
+
+    # 아무것도 재지 못했다면 0점이 아니라 **측정 불가**다. 사이트를 가져오지 못한 것과
+    # 사이트가 나쁜 것은 다른 사실이고, 0점으로 보고하면 없는 실패를 지어내게 된다.
+    # 절대 평가는 "잰 것이 있는데 일부를 못 잰" 경우의 규칙이지, 한 번도 못 본 대상을
+    # 0점으로 만드는 규칙이 아니다.
+    nothing_measured = not any(c.scored_check_ids for c in category_scores)
+    if _is_absolute(spec) and nothing_measured:
+        category_scores = [
+            c.model_copy(update={"status": "UNKNOWN", "score": None})
+            if c.status == "SCORED"
+            else c
+            for c in category_scores
+        ]
 
     scoreable = [c for c in category_scores if c.status == "SCORED"]
     effective_weight_total = sum(c.weight for c in scoreable)
@@ -228,6 +241,19 @@ def _status_multiplier(spec: ScoringSpec, status: CheckStatus) -> float:
     return policy.pass_penalty_multiplier
 
 
+#: 절대 평가 정책. 재지 못한 항목이 배점을 유지한 채 0점이 된다.
+ABSOLUTE_UNKNOWN_POLICY: Final = "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
+
+
+def _is_absolute(spec: ScoringSpec) -> bool:
+    """이 명세가 절대 평가인가.
+
+    명세로 갈라 두는 이유: 규칙이 바뀌어도 그 규칙으로 매긴 과거 점수는 그대로여야 한다.
+    1.1.0 이하로 채점된 결과는 앞으로도 1.1.0 의 규칙으로 설명된다.
+    """
+    return spec.status_policy.unknown == ABSOLUTE_UNKNOWN_POLICY
+
+
 def _score_category(
     spec: ScoringSpec,
     category: SpecCategory,
@@ -245,6 +271,8 @@ def _score_category(
     confidence_accum = 0.0
     plain_confidences: list[float] = []
     rows: list[dict[str, Any]] = []
+
+    absolute = _is_absolute(spec)
 
     for check in category.checks:
         outcome = by_id[check.id]
@@ -281,16 +309,33 @@ def _score_category(
 
         if outcome.status is CheckStatus.UNKNOWN:
             unknown.append(check.id)
-            row.update(
-                {
-                    "status_multiplier": None,
-                    "penalty": 0.0,
-                    "counted_in_budget": False,
-                    "formula": (
-                        "UNKNOWN — no penalty; lowers category coverage and confidence"
-                    ),
-                }
-            )
+            if absolute:
+                # 절대 평가: 재지 못한 항목은 점수를 얻지 못하고, 그 배점은 분모에 남는다.
+                # 빼 버리면 남은 항목의 몫이 부풀려져 "4개 중 1개만 보고 100점" 이 된다.
+                # 실패로 보고하지는 않는다 — 사이트의 결함이 아니라 우리가 못 잰 것이다.
+                budget += coefficient
+                penalty_total += coefficient
+                row.update(
+                    {
+                        "status_multiplier": None,
+                        "penalty": round(coefficient, 6),
+                        "counted_in_budget": True,
+                        "formula": (
+                            f"UNKNOWN — earns nothing; {coefficient} stays in the denominator"
+                        ),
+                    }
+                )
+            else:
+                row.update(
+                    {
+                        "status_multiplier": None,
+                        "penalty": 0.0,
+                        "counted_in_budget": False,
+                        "formula": (
+                            "UNKNOWN — no penalty; lowers category coverage and confidence"
+                        ),
+                    }
+                )
             rows.append(row)
             continue
 
@@ -323,6 +368,13 @@ def _score_category(
     if not applicable:
         status: CategoryStatus = "NOT_APPLICABLE"
         score: float | None = None
+        coverage = 0.0
+        mean_confidence = 0.0
+    elif not scored and absolute:
+        # 한 항목도 재지 못한 영역. 사라지지 않고 0점으로 남는다 — 자격증명이 없어
+        # 못 잰 10점어치가 조용히 분모에서 빠지면 전체 점수가 그만큼 부풀려진다.
+        status = "SCORED"
+        score = 0.0
         coverage = 0.0
         mean_confidence = 0.0
     elif not scored:

@@ -24,6 +24,7 @@ from tests.seo.support import (
 )
 
 from veo.scoring import CheckStatus
+from veo.scoring.spec import load_spec
 from veo.seo import run_seo_scan
 
 FIXTURES = (
@@ -95,26 +96,45 @@ def test_a_healthy_site_raises_no_cap() -> None:
 # --------------------------------------------------------------------------- #
 
 
-def test_turning_every_provider_off_lowers_coverage_but_not_the_score() -> None:
-    connected = scan("healthy", providers=True).score
-    disconnected = scan("healthy").score
+# 아래 세 검사는 **1.1.0 의 상대 평가 규칙**을 고정한다. 1.2.0 부터는 재지 못한 항목이
+# 배점을 유지한 채 0점이 되므로(`tests/scoring/test_absolute_scoring.py`) 결과가 다르다.
+# 그래도 지우지 않는다 — 1.1.0 으로 매긴 과거 점수는 앞으로도 그 규칙으로 설명되어야
+# 하고(기획서 §10), 그 보장을 지키는 것이 이 세 검사다.
+RELATIVE = "1.1.0"
+
+
+def _relative(fixture: str, *, providers: bool = False):
+    context = build_context(fixture)
+    if providers:
+        context = dataclasses.replace(
+            context,
+            provider_states=dict(ALL_PROVIDERS_ENABLED),
+            provider_payloads=healthy_provider_payloads(tuple(context.documents)),
+        )
+    return run_seo_scan(
+        dataclasses.replace(context, spec=load_spec("veo.seo.readiness", RELATIVE))
+    ).score
+
+
+def test_relative_scoring_lowers_coverage_but_not_the_score() -> None:
+    connected = _relative("healthy", providers=True)
+    disconnected = _relative("healthy")
 
     assert disconnected.overall_score == connected.overall_score
     assert disconnected.coverage < connected.coverage
     assert disconnected.confidence < connected.confidence
 
 
-def test_the_categories_that_went_unknown_are_named() -> None:
-    disconnected = scan("healthy").score
-    integration = disconnected.category("search_engine_integration")
+def test_relative_scoring_names_the_categories_that_went_unknown() -> None:
+    integration = _relative("healthy").category("search_engine_integration")
     assert integration.status == "UNKNOWN"
     assert integration.score is None
     assert len(integration.unknown_check_ids) == 4
 
 
-def test_an_unknown_category_leaves_the_effective_weight_total() -> None:
-    connected = scan("healthy", providers=True).score
-    disconnected = scan("healthy").score
+def test_relative_scoring_drops_an_unknown_category_from_the_weight_total() -> None:
+    connected = _relative("healthy", providers=True)
+    disconnected = _relative("healthy")
     assert disconnected.effective_weight_total < connected.effective_weight_total
 
 

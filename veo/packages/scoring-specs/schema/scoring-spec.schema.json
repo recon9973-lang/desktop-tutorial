@@ -115,8 +115,11 @@
         },
         "unknown": {
           "type": "string",
-          "const": "EXCLUDE_FROM_SCORE_REDUCE_COVERAGE",
-          "description": "Unknown is not a failure. It lowers coverage and confidence instead."
+          "enum": [
+            "EXCLUDE_FROM_SCORE_REDUCE_COVERAGE",
+            "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
+          ],
+          "description": "How an unmeasurable check is scored. EXCLUDE_FROM_SCORE_REDUCE_COVERAGE removes it from the budget and lowers coverage instead, so the score is relative to what could be measured. SCORE_AS_ZERO_KEEP_IN_DENOMINATOR keeps its weight in the denominator and earns nothing, so 100 stays a fixed total: a site that could not be measured cannot score as if it had been. Either way the check is never reported as a failure of the site."
         }
       }
     },

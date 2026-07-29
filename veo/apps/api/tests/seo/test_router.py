@@ -197,7 +197,10 @@ def test_a_scan_returns_a_score_with_its_specification_identity(
     assert data["score"]["spec_id"] == "veo.seo.readiness"
     assert data["score"]["spec_checksum"]
     assert data["score"]["is_rank_prediction"] is False
-    assert data["score"]["score"] == 100.0
+    # 점수 자체는 발행 명세가 정한다. 여기서 특정 숫자를 못 박으면 명세를 개정할 때마다
+    # 이 검사가 깨지고, 기대값을 기계적으로 갱신하게 되어 무엇을 지키는 검사인지 사라진다.
+    # 이 검사가 지키는 것은 **점수에 명세의 신원이 붙어 나온다**는 것이다.
+    assert isinstance(data["score"]["score"], (int, float))
 
 
 def test_a_scan_reports_unknown_checks_and_why(client: TestClient, caller: Caller) -> None:

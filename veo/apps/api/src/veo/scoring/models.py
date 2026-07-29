@@ -77,8 +77,21 @@ class StatusPolicy(BaseModel):
     fail_penalty_multiplier: float = Field(ge=0.0, le=1.0)
     warning_penalty_multiplier: float = Field(ge=0.0, le=1.0)
     pass_penalty_multiplier: float = Field(ge=0.0, le=1.0)
+    #: N/A 는 언제나 분모에서 빠진다. "적용되지 않는 항목" 은 "없는 것" 이 아니므로,
+    #: 0점으로 매기면 없는 결함을 만들어 내게 된다.
     not_applicable: Literal["EXCLUDE_FROM_DENOMINATOR"]
-    unknown: Literal["EXCLUDE_FROM_SCORE_REDUCE_COVERAGE"]
+    #: 재지 못한 항목을 어떻게 셀 것인가.
+    #:
+    #: `EXCLUDE_FROM_SCORE_REDUCE_COVERAGE` — 예산에서 빼고 측정 범위만 낮춘다. 점수는
+    #: **잰 것 안에서의 상대값**이 된다. 8개 영역 중 3개를 못 잰 사이트가 남은 80점어치
+    #: 안에서 91.8점을 받고 화면에는 "91.8점 양호" 로만 뜨던 이유다.
+    #:
+    #: `SCORE_AS_ZERO_KEEP_IN_DENOMINATOR` — 배점을 분모에 남기고 점수를 주지 않는다.
+    #: 100점이 고정된 만점이 된다. 20점짜리 영역이 0점이면 나머지가 만점이라도 80점이다.
+    #: 어느 쪽이든 측정 불가를 **사이트의 실패로 보고하지는 않는다.**
+    unknown: Literal[
+        "EXCLUDE_FROM_SCORE_REDUCE_COVERAGE", "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
+    ]
 
 
 class SpecCheck(BaseModel):
