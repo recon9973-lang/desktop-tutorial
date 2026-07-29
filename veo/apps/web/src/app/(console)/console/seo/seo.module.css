@@ -50,3 +50,7 @@
 .historyWho { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
 
 .siteList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--veo-space-3); }
+
+.scanForm { display: flex; flex-direction: column; gap: var(--veo-space-4); max-width: 32rem; }
+.previous { margin-top: var(--veo-space-6); }
+.siteCompany { color: var(--veo-color-text-muted); font-size: var(--veo-font-size-200); }

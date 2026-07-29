@@ -44,8 +44,8 @@ async function DashboardContent() {
         <p className={styles.eyebrow}>콘솔</p>
         <h1 className={styles.title}>대시보드</h1>
         <p className={styles.lede}>
-          진단할 업체와 측정 URL을 등록하고, 결과를 확인합니다. 한 번 잰 결과는 저장되므로
-          다시 열어도 그대로 보이고, 다시 재는 것은 변경을 확인할 때만 하시면 됩니다.
+          주소를 넣으면 바로 진단합니다. 등록은 필요 없습니다 — 결과는 주소를 기준으로
+          자동으로 저장되고, 다시 열어도 그대로 보입니다.
         </p>
       </div>
 
@@ -74,8 +74,8 @@ function SiteSummary({ companies }: { readonly companies: readonly Company[] }) 
   if (sites.length === 0) {
     return (
       <EmptyState
-        description="등록된 측정 URL이 없습니다. 업체와 주소를 등록하면 여기에서 바로 진단할 수 있습니다."
-        action={<Link href="/console/customers">업체 등록하러 가기</Link>}
+        description="아직 진단한 주소가 없습니다."
+        action={<Link href="/console/seo">주소 넣고 진단하기</Link>}
       />
     );
   }

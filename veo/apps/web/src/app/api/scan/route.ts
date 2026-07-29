@@ -1,6 +1,9 @@
+import { randomUUID } from 'node:crypto';
+
 import { NextResponse } from 'next/server';
 
 import { callConsoleApi } from '@/lib/console-api';
+import { findOrCreateSiteByOrigin } from '@/lib/companies';
 
 /**
  * 재측정 — 사람이 버튼을 눌렀을 때만.
@@ -61,12 +64,30 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 export async function POST(request: Request): Promise<NextResponse> {
   let siteId = '';
+  let url = '';
   try {
     const body: unknown = await request.json();
     const parsed = asRecord(body);
     siteId = typeof parsed['siteId'] === 'string' ? parsed['siteId'] : '';
+    url = typeof parsed['url'] === 'string' ? parsed['url'] : '';
   } catch {
     return refuse('INVALID');
+  }
+
+  // 주소만 온 경우: 등록을 먼저 시키지 않는다. 잴 자리를 여기서 만들어 준다.
+  if (siteId === '' && url !== '') {
+    const created = await findOrCreateSiteByOrigin(url, randomUUID().slice(0, 8));
+    if (!created.ok) {
+      if (created.reason !== 'API') {
+        return refuse('INVALID', '주소를 확인해 주십시오. 예: ondam.co.kr');
+      }
+      const failed = created.outcome;
+      return refuse(
+        failed.ok ? 'SERVER_ERROR' : failed.reason,
+        failed.ok ? null : failed.message,
+      );
+    }
+    siteId = created.siteId;
   }
 
   if (siteId === '') return refuse('INVALID', '진단할 주소가 없습니다.');
@@ -86,5 +107,5 @@ export async function POST(request: Request): Promise<NextResponse> {
   });
   if (!outcome.ok) return refuse(outcome.reason, outcome.message);
 
-  return NextResponse.json({ ok: true }, { headers: NO_STORE });
+  return NextResponse.json({ ok: true, siteId }, { headers: NO_STORE });
 }

@@ -32,9 +32,16 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
+/**
+ * 목록 응답의 본문.
+ *
+ * 페이지 응답은 `{ data: [...], page_info }` 이고 `callConsoleApi` 가 이미 `data` 를
+ * 벗겨 주므로, 여기 들어오는 값이 곧 배열이다. 한때 `data.items` 를 찾았는데 그런 키는
+ * 없어서 **모든 목록이 조용히 빈 배열**이 됐다 — 등록은 성공하는데 화면에는 아무것도
+ * 안 나오는, 원인을 찾기 어려운 실패였다.
+ */
 function items(data: unknown): readonly Record<string, unknown>[] {
-  const list = asRecord(data)['items'];
-  return Array.isArray(list) ? list.map(asRecord) : [];
+  return Array.isArray(data) ? data.map(asRecord) : [];
 }
 
 function text(source: Record<string, unknown>, key: string): string {
@@ -221,4 +228,44 @@ export async function addSite(
   if (!site.ok) return { ok: false, reason: 'API', outcome: site };
 
   return { ok: true, customerId, siteId: text(asRecord(site.data), 'id') };
+}
+
+
+/**
+ * 주소로 진단할 자리를 찾거나 만든다.
+ *
+ * 업체를 먼저 등록하게 하지 않는다 — 영업 중에 주소 하나를 넣어 보는 것이 이 도구의
+ * 첫 쓰임인데, 그 앞에 등록 절차를 세우면 쓰지 않게 된다. 주소를 넣으면 잰다. 저장은
+ * 결과가 나온 뒤 **주소를 기준으로** 알아서 된다.
+ *
+ * 업체명은 처음에는 호스트 이름을 쓰고, 나중에 사람이 바꿀 수 있다. 이름을 먼저 물어서
+ * 얻는 것보다, 결과를 보고 나서 정리하는 편이 실제 일하는 순서에 가깝다.
+ */
+export async function findOrCreateSiteByOrigin(
+  rawUrl: string,
+  suffix: string,
+): Promise<CreateCompanyResult> {
+  const origin = toOrigin(rawUrl);
+  if (origin === null) return { ok: false, reason: 'INVALID_URL' };
+
+  const sites = await callConsoleApi('/api/sites?page_size=200');
+  if (!sites.ok) return { ok: false, reason: 'API', outcome: sites };
+
+  const existing = items(sites.data).find((site) => text(site, 'origin') === origin);
+  if (existing !== undefined) {
+    // 같은 주소를 다시 넣었다. 새로 만들지 않는다 — 그러면 이력이 두 갈래로 쪼개진다.
+    return { ok: true, customerId: '', siteId: text(existing, 'id') };
+  }
+
+  const label = hostLabel(origin);
+  return createCompany(label, origin, suffix);
+}
+
+/** `https://www.ondam.co.kr` → `ondam.co.kr`. 사람이 부르는 이름에 가깝게. */
+function hostLabel(origin: string): string {
+  try {
+    return new URL(origin).host.replace(/^www\./, '');
+  } catch {
+    return origin;
+  }
 }

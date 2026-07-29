@@ -10,7 +10,7 @@ import { readBands, readHistory, readSavedReport, type HistoryEntry } from '@/li
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
-import { RescanButton } from './RescanButton';
+import { ScanForm } from './ScanForm';
 import own from './seo.module.css';
 
 export const metadata: Metadata = {
@@ -60,7 +60,7 @@ async function SeoContent({
   readonly runId: string | null;
   readonly view: ReportView;
 }) {
-  if (siteId === null) return <SitePicker />;
+  if (siteId === null) return <NewScan />;
 
   const [history, companies] = await Promise.all([readHistory(siteId), listCompanies()]);
 
@@ -86,7 +86,7 @@ async function SeoContent({
   return (
     <Shell origin={origin}>
       <div className={own.toolbar}>
-        <RescanButton siteId={siteId} />
+        <ScanForm siteId={siteId} />
         {selected === undefined ? null : (
           <ViewSwitch siteId={siteId} runId={selected.scanRunId} view={view} />
         )}
@@ -198,43 +198,47 @@ function ViewSwitch({
   );
 }
 
-async function SitePicker() {
+/**
+ * 첫 화면 — 주소 한 칸.
+ *
+ * 등록을 먼저 시키지 않는다. 넣으면 잰다. 이미 잰 주소는 아래 목록에서 바로 열 수 있고,
+ * 그때는 다시 재지 않는다.
+ */
+async function NewScan() {
   const companies = await listCompanies();
-
-  if (!companies.ok) {
-    return (
-      <Shell>
-        <ErrorState
-          title="목록을 불러오지 못했습니다"
-          description={companies.message ?? '서버에 연결하지 못했습니다.'}
-        />
-      </Shell>
-    );
-  }
-
-  const anySite = companies.data.some((company) => company.sites.length > 0);
+  const measured = companies.ok
+    ? companies.data.flatMap((company) =>
+        company.sites.map((site) => ({ company: company.name, ...site })),
+      )
+    : [];
 
   return (
     <Shell>
-      {anySite ? (
-        <Card title="측정할 주소 선택" headingLevel={2}>
-          <ul className={own.siteList}>
-            {companies.data.map((company) =>
-              company.sites.map((site) => (
-                <li key={site.siteId}>
-                  <Link href={`/console/seo?site=${site.siteId}`}>
-                    {company.name} — {site.origin}
-                  </Link>
-                </li>
-              )),
-            )}
-          </ul>
-        </Card>
-      ) : (
-        <EmptyState
-          description="등록된 측정 URL이 없습니다. 업체 관리에서 업체와 주소를 먼저 등록하십시오."
-          action={<Link href="/console/customers">업체 관리로 이동</Link>}
+      <Card title="주소를 넣으면 바로 진단합니다" headingLevel={2}>
+        <ScanForm />
+      </Card>
+
+      {!companies.ok ? (
+        <ErrorState
+          title="지난 진단 목록을 불러오지 못했습니다"
+          description={companies.message ?? '서버에 연결하지 못했습니다.'}
         />
+      ) : measured.length === 0 ? null : (
+        <section className={own.previous} aria-labelledby="measured-sites">
+          <h2 id="measured-sites" className={own.historyTitle}>
+            이미 진단한 주소
+          </h2>
+          <ul className={own.siteList}>
+            {measured.map((site) => (
+              <li key={site.siteId}>
+                <Link href={`/console/seo?site=${site.siteId}`}>{site.origin}</Link>
+                {site.company === site.origin.replace(/^https?:\/\/(www\.)?/, '') ? null : (
+                  <span className={own.siteCompany}> · {site.company}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </Shell>
   );
