@@ -23,9 +23,11 @@ from tests.seo.support import (
     healthy_provider_payloads,
 )
 
+from veo.collect.contract import run_collectors
 from veo.scoring import CheckStatus
 from veo.scoring.spec import load_spec
 from veo.seo import run_seo_scan
+from veo.seo.service import score_collection, seo_collectors
 
 FIXTURES = (
     "healthy",
@@ -104,6 +106,14 @@ RELATIVE = "1.1.0"
 
 
 def _relative(fixture: str, *, providers: bool = False):
+    """1.1.0 의 규칙으로 채점한다 — 그 판에 있던 항목만 가지고.
+
+    수집기는 명세와 따로 자란다. 오늘의 수집기는 1.1.0 이 알지 못하는 항목까지 판정하고,
+    평가기는 명세에 없는 항목이 들어오면 오타로 보고 거부한다 — 그 거부는 옳다. 그래서
+    옛 규칙을 확인할 때는 옛 명세가 선언한 항목만 넘긴다. 지켜야 하는 보장은 "그때
+    매긴 점수가 그때 규칙으로 설명된다" 이지 "수집기가 영원히 그대로다" 가 아니다.
+    """
+    spec = load_spec("veo.seo.readiness", RELATIVE)
     context = build_context(fixture)
     if providers:
         context = dataclasses.replace(
@@ -111,9 +121,13 @@ def _relative(fixture: str, *, providers: bool = False):
             provider_states=dict(ALL_PROVIDERS_ENABLED),
             provider_payloads=healthy_provider_payloads(tuple(context.documents)),
         )
-    return run_seo_scan(
-        dataclasses.replace(context, spec=load_spec("veo.seo.readiness", RELATIVE))
-    ).score
+    collected = run_collectors(list(seo_collectors(context)), context)
+    declared = set(spec.check_ids)
+    collected = dataclasses.replace(
+        collected,
+        outcomes=tuple(o for o in collected.outcomes if o.check_id in declared),
+    )
+    return score_collection(dataclasses.replace(context, spec=spec), collected).score
 
 
 def test_relative_scoring_lowers_coverage_but_not_the_score() -> None:

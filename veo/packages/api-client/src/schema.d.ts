@@ -3726,10 +3726,23 @@ export interface components {
             /** Weighted Sum */
             weighted_sum: number;
         };
-        /** OutcomeSummary */
+        /**
+         * OutcomeSummary
+         * @description 한 항목의 판정과, **왜 그렇게 판정했는지**.
+         *
+         *     식별자와 상태만 내보내면 화면은 `seo.onpage.heading_hierarchy` 라고 쓸 수밖에 없고,
+         *     그 줄을 본 직원이 할 수 있는 일이 없다. 제목·영역·심각도는 발행 명세에서 가져오고,
+         *     관측값은 수집기가 이미 담아 둔 것을 그대로 흘려보낸다.
+         */
         OutcomeSummary: {
             /** Affected Weight */
             affected_weight: number;
+            /** Availability */
+            availability: string;
+            /** Category Id */
+            category_id: string;
+            /** Category Name Ko */
+            category_name_ko: string;
             /** Check Id */
             check_id: string;
             /** Confidence */
@@ -3742,8 +3755,18 @@ export interface components {
             evidence_ids: string[];
             /** Note */
             note: string | null;
+            /** Observed */
+            observed?: unknown;
+            /** Reference Ko */
+            reference_ko: string | null;
+            /** Remediation Owner */
+            remediation_owner: string;
+            /** Severity */
+            severity: string;
             /** Status */
             status: string;
+            /** Title Ko */
+            title_ko: string;
         };
         /** PageInfo */
         PageInfo: {

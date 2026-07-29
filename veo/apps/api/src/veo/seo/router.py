@@ -18,7 +18,6 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-
 from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
@@ -28,31 +27,30 @@ from veo.common.security.fetcher import FetchedDocument, FetchHop
 from veo.contracts.enums import ProviderState, UrlImportance
 from veo.contracts.envelope import ApiResponse
 from veo.core.settings import get_provider_credentials
+from veo.db.session import get_db
 from veo.organizations.http import guard
 from veo.scoring import ScoreResult, ScoringSpec
 from veo.scoring.improvements import rank_improvements
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
-from veo.db.session import get_db
 from veo.seo.crawl import ConsoleCrawler, CrawlRefusal
 from veo.seo.history import (
-    SiteNotFound,
     read_scan_history,
     read_scan_report,
     save_scan_run,
 )
 from veo.seo.schemas import (
     CapSummary,
-    ImprovementSummary,
     CategorySummary,
     CheckCatalogueEntry,
     CheckCataloguePayload,
     EvidenceSummary,
+    ImprovementSummary,
     IssueSummary,
     OutcomeSummary,
     PagePayload,
-    ScanPayload,
     ScanHistoryEntry,
     ScanHistoryPayload,
+    ScanPayload,
     ScanRequest,
     ScoreSummary,
     SiteScanRequest,
@@ -431,6 +429,13 @@ def _scan_payload(result: SeoScanResult) -> ScanPayload:
         outcomes=[
             OutcomeSummary(
                 check_id=item.check_id,
+                title_ko=spec.check(item.check_id).title_ko,
+                category_id=spec.category_of(item.check_id).id,
+                category_name_ko=spec.category_of(item.check_id).name_ko,
+                severity=str(spec.check(item.check_id).severity),
+                remediation_owner=spec.check(item.check_id).remediation_owner,
+                availability=spec.check(item.check_id).availability,
+                reference_ko=spec.check(item.check_id).reference_ko,
                 status=str(item.status),
                 confidence=item.confidence,
                 confidence_level=item.confidence_level,
@@ -438,6 +443,7 @@ def _scan_payload(result: SeoScanResult) -> ScanPayload:
                 evaluated_weight=item.evaluated_weight,
                 evidence_ids=list(item.evidence_ids),
                 note=item.note,
+                observed=item.observed_value,
             )
             for item in result.score.outcomes
         ],

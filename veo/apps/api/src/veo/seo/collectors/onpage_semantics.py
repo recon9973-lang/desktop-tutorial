@@ -8,7 +8,6 @@ as present would hide the very problem the customer needs to know about.
 from __future__ import annotations
 
 import re
-
 from collections import defaultdict
 
 from veo.collect.contract import (
@@ -83,6 +82,8 @@ class OnpageSemanticsCollector(SeoCollector):
         "seo.onpage.descriptive_anchor_text",
         "seo.onpage.no_duplicate_metadata",
         "seo.sd.naver_supported_type",
+        "seo.onpage.single_title_element",
+        "seo.html.doctype_standards_mode",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -104,6 +105,8 @@ class OnpageSemanticsCollector(SeoCollector):
             _anchor_text,
             _duplicate_metadata,
             _naver_open_graph,
+            _single_title_element,
+            _doctype,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -746,7 +749,9 @@ def _naver_open_graph(
         confidence_level=DIRECT,
         evidence_ids=evidence,
         observed_value=problems or None,
-        clean_note_ko="네이버 검색 결과와 카카오톡 공유에 필요한 오픈그래프가 모두 선언되어 있습니다.",
+        clean_note_ko=(
+            "네이버 검색 결과와 카카오톡 공유에 필요한 오픈그래프가 모두 선언되어 있습니다."
+        ),
         affected_note_ko=(
             f"{len(affected)}개 페이지에 오픈그래프가 빠져 있습니다. 누락 항목: "
             + ", ".join(sorted({prop for values in problems.values() for prop in values}))
@@ -784,9 +789,140 @@ def _naver_open_graph(
     ]
 
 
+# --------------------------------------------------------------------------- #
+# seo.onpage.single_title_element
+# --------------------------------------------------------------------------- #
+
+
+def _single_title_element(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """title 이 두 개면 검색엔진은 어느 것을 쓸지 알 수 없다.
+
+    테마가 하나 넣고 SEO 플러그인이 또 하나 넣는 구성에서 흔하다. 화면에는 아무 문제가
+    없어 보이므로 — 브라우저는 첫 번째만 표시한다 — 운영자가 눈으로 발견하기 어렵다.
+    """
+    counts = {page.url: page.raw.title_count for page in site.pages}
+    affected = [page for page in site.pages if page.raw.title_count > 1]
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            f"title 요소 {page.raw.title_count}개 · 첫 번째: {page.raw.title or '(비어 있음)'}",
+        )
+        for page in (affected or site.pages[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.onpage.single_title_element",
+        affected=affected,
+        evaluated=list(site.pages),
+        evidence_ids=evidence,
+        observed_value=counts,
+        clean_note_ko="모든 페이지가 title 을 하나만 선언했습니다.",
+        affected_note_ko=(
+            f"{len(affected)}개 페이지에 title 이 두 개 이상 선언되어 있습니다 — "
+            "검색엔진이 어느 것을 쓸지 알 수 없습니다."
+        ),
+    )
+    if result.status is not CheckStatus.FAIL:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.onpage.single_title_element",
+            title_ko="title 태그가 여러 개 선언되어 있습니다",
+            summary_ko="; ".join(
+                f"{page.url} — title {page.raw.title_count}개" for page in affected[:5]
+            ),
+            affected_urls=[page.url for page in affected],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "head 안에 title 을 하나만 남기십시오. 테마와 SEO 플러그인이 각각 하나씩 "
+                "넣고 있는 경우가 많으므로, 플러그인 쪽을 쓰기로 정했다면 테마 템플릿의 "
+                "title 출력을 제거합니다."
+            ),
+            reverification_ko="수정 후 재수집해 페이지마다 title 이 하나인지 확인합니다.",
+            business_impact_ko=(
+                "검색 결과에 의도하지 않은 제목이 표시될 수 있고, 어느 쪽이 쓰일지 "
+                "예측할 수 없어 제목 개선 작업의 효과를 확인할 수 없습니다."
+            ),
+            fix_example="<title>레이저 치료 안내 | 온담의원</title>  <!-- 이 하나만 남깁니다 -->",
+        )
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# seo.html.doctype_standards_mode
+# --------------------------------------------------------------------------- #
+
+#: 표준 모드로 렌더링되는 선언. HTML5 는 `<!DOCTYPE html>` 하나뿐이고, 그 외의 옛
+#: 선언은 브라우저에 따라 쿼크 모드나 준표준 모드로 떨어질 수 있다.
+_HTML5_DOCTYPE = "doctype html"
+
+
+def _doctype(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """doctype 이 없으면 브라우저가 쿼크 모드로 그린다.
+
+    구글이 요구하는 항목은 아니다. 다만 렌더링 결과가 달라지면 우리가 렌더링 결과를
+    보고 내리는 판정 — 레이아웃, 화면 노출 여부 — 도 함께 달라지므로 경미로 본다.
+    """
+    observed = {page.url: page.raw.doctype for page in site.pages}
+    affected = [page for page in site.pages if page.raw.doctype != _HTML5_DOCTYPE]
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            f"<!{page.raw.doctype.upper()}>" if page.raw.doctype else "doctype 선언 없음",
+        )
+        for page in (affected or site.pages[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.html.doctype_standards_mode",
+        affected=affected,
+        evaluated=list(site.pages),
+        evidence_ids=evidence,
+        observed_value=observed,
+        clean_note_ko="모든 페이지가 HTML5 doctype 을 선언했습니다.",
+        affected_note_ko=f"{len(affected)}개 페이지에 HTML5 doctype 선언이 없습니다.",
+        # 경미하고, 화면이 실제로 깨졌는지까지는 보지 않았다. 실패가 아니라 주의다.
+        warning=True,
+    )
+    if result.status is not CheckStatus.WARNING:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.html.doctype_standards_mode",
+            title_ko="HTML5 doctype 선언이 없습니다",
+            summary_ko="; ".join(
+                f"{page.url} — {page.raw.doctype or '선언 없음'}" for page in affected[:5]
+            ),
+            affected_urls=[page.url for page in affected],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "문서 맨 첫 줄에 `<!DOCTYPE html>` 을 넣으십시오. 그 앞에는 공백이나 "
+                "주석도 오면 안 됩니다."
+            ),
+            reverification_ko="수정 후 재수집해 첫 줄에 doctype 이 있는지 확인합니다.",
+            business_impact_ko=(
+                "브라우저가 쿼크 모드로 그려 레이아웃이 의도와 달라질 수 있습니다."
+            ),
+            fix_example="<!DOCTYPE html>\n<html lang=\"ko\">",
+        )
+    ]
+
+
 __all__ = [
-    "GOOGLE_SUPPORTED_TYPES",
+    "MAX_DESCRIPTION_CHARS",
+    "MAX_TITLE_CHARS",
+    "MIN_DESCRIPTION_CHARS",
+    "MIN_TITLE_CHARS",
     "NAVER_REQUIRED_OG",
-    "REQUIRED_PROPERTIES",
-    "StructuredDataCollector",
+    "OnpageSemanticsCollector",
 ]

@@ -31,30 +31,47 @@ def spec():  # type: ignore[no-untyped-def]
     return latest_published("veo.seo.readiness")
 
 
-def _scan(fixture: str):  # type: ignore[no-untyped-def]
+def _SCORING_CATEGORIES() -> set[str]:
+    """점수를 이루는 영역들. 연동이 있어야 잴 수 있는 영역은 분모 밖이다."""
     import veo.api.app  # noqa: F401
+    from veo.scoring.spec import latest_published
 
+    spec = latest_published("veo.seo.readiness")
+    return {c.id for c in spec.categories if c.contributes_to_score}
+
+
+def _scan(fixture: str):  # type: ignore[no-untyped-def]
     from tests.seo.support import build_context
+
+    import veo.api.app  # noqa: F401
     from veo.seo.service import run_seo_scan
 
     return run_seo_scan(build_context(fixture)).score
 
 
 class TestUnknownEarnsNothing:
-    def test_a_category_nobody_could_measure_scores_zero_rather_than_vanishing(self) -> None:
-        """자격증명이 없어 통째로 못 잰 영역은 0점이다. 사라지지 않는다."""
+    def test_an_unknown_check_keeps_its_severity_in_the_category_budget(self) -> None:
+        """0점 처리하고 분모에 남긴다 — 그 '남긴다' 가 실제로 일어나는 자리.
+
+        예산에서 빼면 남은 항목들의 몫이 그만큼 부풀고, 못 잰 것이 점수에 아무 영향을
+        주지 않게 된다. 그것이 상대 평가다.
+        """
         score = _scan("healthy")
 
-        unmeasured = [c for c in score.categories if not c.scored_check_ids and c.applicable_check_ids]
-        assert unmeasured, "이 픽스처는 provider 없이 돌아 측정 불가 영역이 있어야 한다"
-        assert all(c.score == 0.0 for c in unmeasured)
+        rows = [r for r in score.trace["checks"] if r["status"] == "UNKNOWN"]
+        assert rows, "이 픽스처는 우리 힘으로 재지 못한 항목을 포함해야 한다"
+        for row in rows:
+            assert row["counted_in_budget"] is True
+            assert row["penalty"] == pytest.approx(row["severity_coefficient"])
 
     def test_the_denominator_is_always_the_declared_total(self) -> None:
         """분모가 줄면 남은 항목의 몫이 부풀려진다. 그것이 상대 평가다."""
         score = _scan("healthy")
 
         applicable_weight = sum(
-            c.weight for c in score.categories if c.status != "NOT_APPLICABLE"
+            c.weight
+            for c in score.categories
+            if c.status != "NOT_APPLICABLE" and c.category_id in _SCORING_CATEGORIES()
         )
         assert score.effective_weight_total == pytest.approx(applicable_weight)
 
@@ -73,24 +90,26 @@ class TestNotApplicableStillLeavesTheDenominator:
         """브로슈어 사이트에 없는 페이지네이션을 결함으로 만들지 않는다."""
         score = _scan("brochure_na")
 
+        scoring = _SCORING_CATEGORIES()
         excluded = sum(
-            c.weight for c in score.categories if c.status == "NOT_APPLICABLE"
+            c.weight
+            for c in score.categories
+            if c.status == "NOT_APPLICABLE" and c.category_id in scoring
         )
         assert score.effective_weight_total == pytest.approx(100.0 - excluded)
 
     def test_a_site_with_nothing_to_fault_can_still_reach_one_hundred(self) -> None:
         """적용되는 항목을 모두 통과했다면 100점이어야 한다 — 절대 평가라도."""
-        import veo.api.app  # noqa: F401
-
         from tests.seo.support import build_context, healthy_provider_payloads
+
+        import veo.api.app  # noqa: F401
         from veo.contracts.enums import ProviderState
         from veo.seo.service import run_seo_scan
 
         context = build_context(
             "healthy",
-            provider_states={
-                name: ProviderState.ENABLED
-                for name in (
+            provider_states=dict.fromkeys(
+                (
                     "GOOGLE_PAGESPEED",
                     "GOOGLE_SEARCH_CONSOLE",
                     "NAVER_SEARCH_ADVISOR",
@@ -98,8 +117,9 @@ class TestNotApplicableStillLeavesTheDenominator:
                     "BACKLINK_INDEX",
                     "BRAND_MENTIONS",
                     "GOOGLE_CRUX",
-                )
-            },
+                ),
+                ProviderState.ENABLED,
+            ),
             provider_payloads=healthy_provider_payloads(
                 tuple(build_context("healthy").documents)
             ),

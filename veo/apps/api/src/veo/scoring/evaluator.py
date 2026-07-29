@@ -42,7 +42,7 @@ _SCORED_STATUSES = frozenset({CheckStatus.PASS, CheckStatus.WARNING, CheckStatus
 
 def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult:
     """Score a set of check outcomes against a published specification."""
-    by_id = _index_outcomes(spec, outcomes)
+    by_id = _gate_unopened_integrations(spec, _index_outcomes(spec, outcomes))
     ordered = [by_id[check_id] for check_id in spec.check_ids]
 
     check_rows: list[dict[str, Any]] = []
@@ -55,22 +55,28 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         category_rows.append(row)
         check_rows.extend(traces)
 
+    # 연동이 있어야만 잴 수 있는 영역은 점수를 이루지 않는다. 판정과 보고는 그대로
+    # 하되 분모에서 빠지므로, 고객이 서치콘솔을 연결하든 안 하든 100점의 뜻이 같다.
+    in_score = {c.id for c in spec.categories if c.contributes_to_score}
+    scoring_categories = [c for c in category_scores if c.category_id in in_score]
+
     # 아무것도 재지 못했다면 0점이 아니라 **측정 불가**다. 사이트를 가져오지 못한 것과
     # 사이트가 나쁜 것은 다른 사실이고, 0점으로 보고하면 없는 실패를 지어내게 된다.
     # 절대 평가는 "잰 것이 있는데 일부를 못 잰" 경우의 규칙이지, 한 번도 못 본 대상을
     # 0점으로 만드는 규칙이 아니다.
-    nothing_measured = not any(c.scored_check_ids for c in category_scores)
+    nothing_measured = not any(c.scored_check_ids for c in scoring_categories)
     if _is_absolute(spec) and nothing_measured:
         category_scores = [
             c.model_copy(update={"status": "UNKNOWN", "score": None})
-            if c.status == "SCORED"
+            if c.status == "SCORED" and c.category_id in in_score
             else c
             for c in category_scores
         ]
+        scoring_categories = [c for c in category_scores if c.category_id in in_score]
 
-    scoreable = [c for c in category_scores if c.status == "SCORED"]
+    scoreable = [c for c in scoring_categories if c.status == "SCORED"]
     effective_weight_total = sum(c.weight for c in scoreable)
-    declared_weight_total = sum(c.weight for c in spec.categories)
+    declared_weight_total = sum(c.weight for c in spec.categories if c.id in in_score)
 
     if scoreable:
         weighted_sum = sum((c.score or 0.0) * c.weight for c in scoreable)
@@ -81,7 +87,7 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         score_before_caps = None
         result_status = (
             "NOT_APPLICABLE"
-            if all(c.status == "NOT_APPLICABLE" for c in category_scores)
+            if all(c.status == "NOT_APPLICABLE" for c in scoring_categories)
             else "UNKNOWN"
         )
 
@@ -96,7 +102,9 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
 
     gates = _raise_gates(spec, by_id)
 
-    measurable = [c for c in category_scores if c.status != "NOT_APPLICABLE"]
+    # 측정 범위도 점수를 이루는 영역에 대해서만 말한다. 연동 지표를 섞으면 "측정 범위
+    # 62%" 가 우리가 못 한 것인지 고객이 아직 권한을 안 준 것인지 구분되지 않는다.
+    measurable = [c for c in scoring_categories if c.status != "NOT_APPLICABLE"]
     measurable_weight = sum(c.weight for c in measurable)
     if measurable_weight > 0:
         coverage = sum(c.coverage * c.weight for c in measurable) / measurable_weight
@@ -215,6 +223,51 @@ def _index_outcomes(
             f"{len(missing)} check(s) in {spec.spec_id}@{spec.version}: {', '.join(missing)}. "
             "Every check needs an explicit outcome — use NOT_APPLICABLE or UNKNOWN rather "
             "than omitting it."
+        )
+    return by_id
+
+
+#: 연동이 열리기 전까지 잴 수 없는 항목에 남기는 사유.
+#:
+#: 상태만 바꾸고 이유를 비우면 화면에서 "해당 없음" 으로만 읽혀, **연결하면 잴 수 있다**
+#: 는 사실이 사라진다. 사용자의 요구는 배점에서 빼되 알려는 주라는 것이었다.
+_UNOPENED_REASONS_KO: Final[dict[str, str]] = {
+    "CUSTOMER_GRANTED": (
+        "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, "
+        "점수를 깎지 않습니다."
+    ),
+    "PAID_PROVIDER": (
+        "유료 데이터 연동이 있어야 측정됩니다. 연동 전까지는 배점에서 제외하며, "
+        "점수를 깎지 않습니다."
+    ),
+}
+
+
+def _gate_unopened_integrations(
+    spec: ScoringSpec, by_id: dict[str, CheckOutcome]
+) -> dict[str, CheckOutcome]:
+    """아직 열리지 않은 연동 때문에 고객의 점수가 깎이지 않게 한다.
+
+    권한이나 유료 계약이 있어야 재는 항목은, 그것이 마련되기 전까지 **진단 범위 밖**이지
+    사이트의 결함이 아니다. 측정 불가로 두면 절대 평가에서 0점이 되어, 아직 요청하지도
+    않은 권한 때문에 점수가 내려간다.
+
+    연동이 살아 있어 실제로 판정이 나온 항목은 건드리지 않는다. 그때는 잰 것이므로 잰
+    대로 채점한다.
+    """
+    for check_id, outcome in list(by_id.items()):
+        check = spec.check(check_id)
+        reason = _UNOPENED_REASONS_KO.get(check.availability)
+        if reason is None or outcome.status is not CheckStatus.UNKNOWN:
+            continue
+        # 수집기가 남긴 사유(자격증명 없음 등)를 지우지 않고 뒤에 붙인다. 정책과 관측을
+        # 둘 다 남겨야 나중에 왜 빠졌는지 되짚을 수 있다.
+        detail = (outcome.note or "").strip()
+        by_id[check_id] = outcome.model_copy(
+            update={
+                "status": CheckStatus.NOT_APPLICABLE,
+                "note": f"{reason} ({detail})" if detail else reason,
+            }
         )
     return by_id
 

@@ -14,11 +14,9 @@ from collections.abc import Iterator
 from typing import Any
 
 import pytest
-
-from veo.seo.service import load_seo_spec
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from tests.seo.support import FIXTURE_ROOT
+from tests.seo.support import scan_bundle
 
 from veo.api.app import create_app
 from veo.authz.deps import get_principal
@@ -27,6 +25,7 @@ from veo.authz.principal import Principal
 from veo.contracts.enums import Role
 from veo.core.settings import get_settings
 from veo.seo.router import router as seo_router
+from veo.seo.service import load_seo_spec
 
 API_PREFIX = get_settings().api_prefix
 CHECKS = f"{API_PREFIX}/seo/checks"
@@ -89,44 +88,7 @@ def payload(response: Any) -> dict[str, Any]:
 
 
 def bundle() -> dict[str, Any]:
-    root = FIXTURE_ROOT / "healthy"
-    return {
-        "target_url": "https://healthy.example.kr/",
-        "locale": "ko-KR",
-        "robots_txt": (root / "robots.txt").read_text(encoding="utf-8"),
-        "sitemaps": {
-            "https://healthy.example.kr/sitemap.xml": (root / "sitemap.xml").read_text(
-                encoding="utf-8"
-            )
-        },
-        "pages": [
-            {
-                "url": "https://healthy.example.kr/",
-                "status": 200,
-                "importance": "CONVERSION_OR_HOME",
-                "html": (root / "pages" / "index.html").read_text(encoding="utf-8"),
-                "rendered_dom": (root / "rendered" / "index.html").read_text(encoding="utf-8"),
-            },
-            {
-                "url": "https://healthy.example.kr/services/",
-                "status": 200,
-                "importance": "CATEGORY_OR_HUB",
-                "html": (root / "pages" / "services.html").read_text(encoding="utf-8"),
-            },
-            {
-                "url": "https://healthy.example.kr/services/laser/",
-                "status": 200,
-                "importance": "CONTENT_OR_PRODUCT",
-                "html": (root / "pages" / "services-laser.html").read_text(encoding="utf-8"),
-            },
-            {
-                "url": "https://healthy.example.kr/contact/",
-                "status": 200,
-                "importance": "CONVERSION_OR_HOME",
-                "html": (root / "pages" / "contact.html").read_text(encoding="utf-8"),
-            },
-        ],
-    }
+    return scan_bundle()
 
 
 # --------------------------------------------------------------------------- #
@@ -134,10 +96,14 @@ def bundle() -> dict[str, Any]:
 # --------------------------------------------------------------------------- #
 
 
-def test_the_catalogue_lists_all_forty_seven_checks(client: TestClient, caller: Caller) -> None:
+def test_the_catalogue_lists_every_check_in_the_specification(
+    client: TestClient, caller: Caller
+) -> None:
     caller.current = _principal(Role.CLIENT_VIEWER)
     data = payload(client.get(CHECKS))
-    assert len(data["checks"]) == 47
+    # 개수를 못 박지 않는다. 명세가 자라면 목록도 자라야 하고, 이 검사가 지키는 것은
+    # **목록이 발행 명세와 정확히 같다** 는 것이다.
+    assert {check["id"] for check in data["checks"]} == set(load_seo_spec().check_ids)
     assert data["spec_id"] == "veo.seo.readiness"
     # 명세는 개정된다. 버전을 여기에 적어 두면 개정 때마다 무관한 테스트가 깨진다 —
     # 이 테스트가 지키는 것은 "목록이 발행 명세와 일치한다" 이지 특정 버전이 아니다.

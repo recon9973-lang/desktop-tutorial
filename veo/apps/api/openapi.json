@@ -6961,10 +6961,23 @@
       },
       "OutcomeSummary": {
         "additionalProperties": false,
+        "description": "한 항목의 판정과, **왜 그렇게 판정했는지**.\n\n식별자와 상태만 내보내면 화면은 `seo.onpage.heading_hierarchy` 라고 쓸 수밖에 없고,\n그 줄을 본 직원이 할 수 있는 일이 없다. 제목·영역·심각도는 발행 명세에서 가져오고,\n관측값은 수집기가 이미 담아 둔 것을 그대로 흘려보낸다.",
         "properties": {
           "affected_weight": {
             "title": "Affected Weight",
             "type": "number"
+          },
+          "availability": {
+            "title": "Availability",
+            "type": "string"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          },
+          "category_name_ko": {
+            "title": "Category Name Ko",
+            "type": "string"
           },
           "check_id": {
             "title": "Check Id",
@@ -7014,13 +7027,46 @@
             ],
             "title": "Note"
           },
+          "observed": {
+            "title": "Observed"
+          },
+          "reference_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Ko"
+          },
+          "remediation_owner": {
+            "title": "Remediation Owner",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
           "status": {
             "title": "Status",
+            "type": "string"
+          },
+          "title_ko": {
+            "title": "Title Ko",
             "type": "string"
           }
         },
         "required": [
           "check_id",
+          "title_ko",
+          "category_id",
+          "category_name_ko",
+          "severity",
+          "remediation_owner",
+          "availability",
+          "reference_ko",
           "status",
           "confidence",
           "confidence_level",

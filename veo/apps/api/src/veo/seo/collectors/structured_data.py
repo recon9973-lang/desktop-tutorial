@@ -25,7 +25,6 @@ from veo.collect.contract import (
 )
 from veo.scoring import CheckOutcome, CheckStatus
 from veo.seo.collectors.base import (
-    DIRECT,
     HEURISTIC_MEDIUM,
     NO_DOCUMENTS_KO,
     EvidenceLedger,

@@ -75,8 +75,13 @@ def test_no_check_id_is_claimed_twice() -> None:
             seen[check_id] = owner
 
 
-def test_there_are_forty_seven_checks_and_all_of_them_are_owned() -> None:
-    assert len(SPEC.check_ids) == 47
+def test_every_check_in_the_specification_has_an_owner() -> None:
+    """항목 수를 못 박지 않는다 — 명세가 자라면 이 검사가 아니라 명세 검사가 말해야 한다.
+
+    여기서 지키는 것은 **선언된 모든 항목에 답할 수집기가 있다** 는 것이다. 없으면
+    평가기가 "missing outcomes" 로 진단 전체를 거부한다.
+    """
+    assert SPEC.check_ids
     owned = {check_id for collector in seo_collectors() for check_id in collector.check_ids}
     assert owned == set(SPEC.check_ids)
 
@@ -234,10 +239,12 @@ def test_rewriting_every_number_in_the_specification_changes_no_observation(
     The severity coefficients, the category weights and the caps are all replaced with
     different values. If any collector consulted one of them, an outcome would move.
     """
-    from veo.scoring import build_spec, load_spec
+    from veo.scoring import build_spec
 
-    original = load_spec("veo.seo.readiness", "1.0.0")
-    document = original.model_dump(mode="json", exclude={"checksum"})
+    # 발행 중인 명세를 고쳐 쓴다. 옛 버전을 고정하면 항목이 늘어날 때마다 수집기가
+    # 그 판에 없던 항목을 판정하려다 KeyError 로 죽고, 정작 지키려던 성질 — 숫자가
+    # 수집기 안에 살지 않는다 — 은 확인되지 않는다.
+    document = SPEC.model_dump(mode="json", exclude={"checksum"})
     document["severity_coefficients"] = {
         "BLOCKER": 0.11,
         "CRITICAL": 0.22,

@@ -103,6 +103,18 @@ class SpecCheck(BaseModel):
     severity: Severity
     scope: Literal["URL", "SITE"]
     remediation_owner: Literal["DEVELOPER", "MARKETER", "BUSINESS_OWNER", "OPERATIONS"]
+    #: 이 검사를 재려면 누가 움직여야 하는가.
+    #:
+    #: `SELF_SERVICE` — VEO 가 스스로 잰다. 우리 크롤이든 우리 API 키든, 고객에게 무엇도
+    #: 요청하지 않고 측정할 수 있다. 언제나 배점에 포함된다: 못 쟀다면 우리가 안 한 것이다.
+    #:
+    #: `CUSTOMER_GRANTED` — 사이트 소유자가 권한을 줘야 한다(서치콘솔, 네이버 서치어드바이저).
+    #: `PAID_PROVIDER` — 유료·별도 구성이 필요한 데이터원.
+    #:
+    #: 뒤의 둘은 마련되기 전까지 **진단 범위 밖**이라 분모에서 빠진다. 아직 요청하지도
+    #: 않은 권한 때문에 고객의 점수가 낮아지면 안 된다. 대신 이름과 "무엇을 연결하면
+    #: 측정되는지" 를 결과에 남긴다 — 빠졌다는 사실 자체는 숨기지 않는다.
+    availability: Literal["SELF_SERVICE", "CUSTOMER_GRANTED", "PAID_PROVIDER"] = "SELF_SERVICE"
     applicability_ko: str | None = None
     evidence_required: tuple[str, ...] = ()
     engine_scope: tuple[str, ...] = ("GENERIC",)
@@ -117,6 +129,18 @@ class SpecCategory(BaseModel):
     name_ko: str
     name_en: str
     description_ko: str | None = None
+    #: 이 영역이 준비도 점수를 이루는가.
+    #:
+    #: `False` 인 영역은 그대로 판정하고 보고하되 **점수에는 넣지 않는다.** 연동이
+    #: 있어야만 잴 수 있는 영역이 그렇다: 서치콘솔·서치어드바이저는 사이트 소유자가
+    #: 권한을 줘야 하고, 백링크·브랜드 언급은 유료 데이터원이 필요하다.
+    #:
+    #: 점수에 넣으면 분모가 고객마다 달라진다. 연동이 없는 고객은 그 영역이 통째로
+    #: 해당 없음이 되어 가중치 합에서 빠지고, 연결한 고객만 더 큰 분모로 채점된다 —
+    #: 연결할수록 불리해지는 셈이라, 진단 도구가 만들면 안 되는 유인이 생긴다.
+    #: 준비도는 VEO 가 스스로 잴 수 있는 것만으로 100점을 이루고, 연동 지표는 그
+    #: 옆에 따로 표시한다.
+    contributes_to_score: bool = True
     checks: tuple[SpecCheck, ...] = Field(min_length=1)
 
 

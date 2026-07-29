@@ -28,12 +28,26 @@ export interface CategoryScore {
   readonly notApplicableCheckIds: readonly string[];
 }
 
+/** 이 항목을 재려면 누가 움직여야 하는가. 뒤의 둘은 배점에서 빠진다. */
+export type Availability = 'SELF_SERVICE' | 'CUSTOMER_GRANTED' | 'PAID_PROVIDER';
+
 export interface Outcome {
   readonly checkId: string;
+  /** 명세가 정한 이름. 이것이 없으면 화면에 `seo.onpage.heading_hierarchy` 가 찍힌다. */
+  readonly title: string;
+  readonly categoryId: string;
+  readonly categoryName: string;
+  readonly severity: string;
+  readonly remediationOwner: string;
+  readonly availability: Availability;
+  /** 왜 이 항목을 보는지. 명세의 근거 문장. */
+  readonly reference: string | null;
   readonly status: CheckStatus;
   readonly confidenceLevel: string | null;
   readonly note: string | null;
   readonly evidenceIds: readonly string[];
+  /** 수집기가 실제로 본 값. 화면의 "원인 상세" 가 여기서 나온다. */
+  readonly observed: unknown;
 }
 
 /** 고쳐야 하는 것 하나 — 무엇을·왜·어떻게·어떻게 확인하는지까지. */
@@ -161,6 +175,19 @@ function status(value: unknown): CheckStatus {
   return STATUSES.includes(value as CheckStatus) ? (value as CheckStatus) : 'UNKNOWN';
 }
 
+const AVAILABILITIES: readonly Availability[] = [
+  'SELF_SERVICE',
+  'CUSTOMER_GRANTED',
+  'PAID_PROVIDER',
+];
+
+function availability(value: unknown): Availability {
+  // 모르는 값이면 우리가 재는 항목으로 본다 — 배점에서 조용히 빼는 쪽이 위험하다.
+  return AVAILABILITIES.includes(value as Availability)
+    ? (value as Availability)
+    : 'SELF_SERVICE';
+}
+
 export function toConsoleScanResult(
   envelope: unknown,
   targetUrl: string,
@@ -214,10 +241,18 @@ export function toConsoleScanResult(
       const item = record(raw);
       return {
         checkId: str(item, 'check_id'),
+        title: str(item, 'title_ko'),
+        categoryId: str(item, 'category_id'),
+        categoryName: str(item, 'category_name_ko'),
+        severity: str(item, 'severity'),
+        remediationOwner: str(item, 'remediation_owner'),
+        availability: availability(item['availability']),
+        reference: strOrNull(item, 'reference_ko'),
         status: status(item['status']),
         confidenceLevel: strOrNull(item, 'confidence_level'),
         note: strOrNull(item, 'note'),
         evidenceIds: strings(item, 'evidence_ids'),
+        observed: item['observed'] ?? null,
       };
     }),
     improvements: list(data['improvements']).map((raw) => {

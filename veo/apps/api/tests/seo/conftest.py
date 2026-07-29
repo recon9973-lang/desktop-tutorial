@@ -126,9 +126,9 @@ def scan_result():  # type: ignore[no-untyped-def]
     상상**과 맞는지만 확인하게 된다. `broken` 픽스처는 실패 항목과 측정 불가 항목을
     함께 만들어 내므로, 이슈 저장과 측정불가 사유 저장을 한 번에 검증할 수 있다.
     """
-    import veo.api.app  # noqa: F401  순환 참조를 피하려면 앱을 먼저 올려야 한다
-
     from tests.seo.support import build_context
+
+    import veo.api.app  # noqa: F401  순환 참조를 피하려면 앱을 먼저 올려야 한다
     from veo.seo.service import run_seo_scan
 
     return run_seo_scan(build_context(FIXTURE_NAME))

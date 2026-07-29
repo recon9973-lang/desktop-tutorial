@@ -23,8 +23,15 @@ def test_expected_specs_are_on_disk() -> None:
 
 @pytest.mark.parametrize(("spec_id", "weight_total"), PUBLISHED)
 def test_category_weights_sum_to_declared_total(spec_id: str, weight_total: float) -> None:
+    """점수를 이루는 영역만으로 100이어야 한다.
+
+    `contributes_to_score: false` 인 영역은 판정하고 표시하되 점수와 분모 양쪽에서
+    빠진다 — 연동이 있어야만 잴 수 있는 영역이 그렇다. 그것까지 더해 100을 맞추면
+    연동이 없는 고객은 영영 그 몫을 얻지 못한다.
+    """
     spec = latest_published(spec_id)
-    assert sum(c.weight for c in spec.categories) == pytest.approx(weight_total)
+    scored = [c for c in spec.categories if c.contributes_to_score]
+    assert sum(c.weight for c in scored) == pytest.approx(weight_total)
 
 
 @pytest.mark.parametrize(("spec_id", "_weight"), PUBLISHED)

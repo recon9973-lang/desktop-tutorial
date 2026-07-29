@@ -57,6 +57,7 @@ class ContentArchitectureCollector(SeoCollector):
         "seo.content.pagination_signals",
         "seo.content.breadcrumb_present",
         "seo.content.js_render_parity",
+        "seo.content.lazy_loading_safe",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -76,6 +77,7 @@ class ContentArchitectureCollector(SeoCollector):
             _pagination,
             _breadcrumb,
             _render_parity,
+            _lazy_loading_safe,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -629,7 +631,131 @@ def _render_parity(
     ]
 
 
+# --------------------------------------------------------------------------- #
+# seo.content.lazy_loading_safe
+# --------------------------------------------------------------------------- #
+
+#: 첫 화면에 들어온다고 볼 이미지의 개수. 레이아웃을 계산하지 않으므로 정확한 접힘선은
+#: 알 수 없고, **문서 순서상 맨 앞** 을 대신 쓴다. 그래서 판정 신뢰도를 직접 관측이
+#: 아닌 휴리스틱으로 낮춰 기록한다.
+#:
+#: 하나로 잡은 이유: 첫 이미지는 대개 LCP 대상이라 거의 확실히 접힘선 위지만, 두 번째
+#: 부터는 화면 크기와 배치에 따라 갈린다. 넓게 잡으면 제대로 만든 사이트를 지적하게
+#: 되고, 그런 지적이 몇 번 반복되면 보고서 전체를 믿지 않게 된다.
+ABOVE_FOLD_IMAGES = 1
+
+
+def _lazy_loading_safe(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """지연 로딩은 속도 기법이 아니라 **색인 위험**이다.
+
+    구글은 잘못 구현한 지연 로딩이 "콘텐츠를 검색에서 숨길 수 있다" 고 명시한다. 여기서
+    보는 것은 두 가지다:
+
+    * 첫 화면 이미지에 `loading="lazy"` 가 걸린 경우 — LCP 가 늦어지고, 대표 이미지가
+      검색 결과의 미리보기로 뽑히지 않을 수 있다.
+    * 본문을 담은 iframe 에 지연 로딩이 걸린 경우 — 크롤러는 스크롤하지 않으므로 그
+      안의 내용을 보지 못할 수 있다.
+
+    지연 로딩을 아예 쓰지 않는 페이지는 이 검사의 대상이 아니다. 안 쓰는 것이 결함은
+    아니므로 해당 없음으로 둔다.
+    """
+    users = [
+        page
+        for page in site.pages
+        if page.raw.lazy_iframes or any(img.loading == "lazy" for img in page.raw.images)
+    ]
+    if not users:
+        return (
+            not_applicable_outcome(
+                "seo.content.lazy_loading_safe",
+                "지연 로딩을 사용하는 페이지가 없어 해당하지 않습니다.",
+            ),
+            [],
+        )
+
+    problems: dict[str, str] = {}
+    for page in users:
+        reasons: list[str] = []
+        early = [
+            img
+            for img in page.raw.images
+            if img.loading == "lazy" and img.order < ABOVE_FOLD_IMAGES
+        ]
+        if early:
+            reasons.append(
+                f"첫 화면에 올 이미지 {len(early)}개에 loading=\"lazy\" 가 걸려 있습니다"
+            )
+        if page.raw.lazy_iframes:
+            reasons.append(
+                f"iframe {page.raw.lazy_iframes}개가 지연 로딩되어 내용이 색인되지 "
+                "않을 수 있습니다"
+            )
+        if reasons:
+            problems[page.url] = " / ".join(reasons)
+
+    affected = [page for page in users if page.url in problems]
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            " / ".join(
+                f'<img src="{img.src}" loading="{img.loading}">'
+                for img in page.raw.images[:3]
+                if img.loading
+            )
+            or f"lazy iframe {page.raw.lazy_iframes}개",
+        )
+        for page in (affected or users[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.content.lazy_loading_safe",
+        affected=affected,
+        evaluated=users,
+        confidence_level=HEURISTIC_MEDIUM,
+        evidence_ids=evidence,
+        observed_value=problems or None,
+        clean_note_ko=(
+            f"지연 로딩을 쓰는 {len(users)}개 페이지 모두, 첫 화면 이미지와 본문 iframe 은 "
+            "지연 로딩 대상이 아닙니다."
+        ),
+        affected_note_ko=(
+            f"{len(affected)}개 페이지의 지연 로딩이 콘텐츠를 숨길 수 있습니다."
+        ),
+    )
+    if result.status is not CheckStatus.FAIL:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.content.lazy_loading_safe",
+            title_ko="지연 로딩이 콘텐츠를 숨길 수 있습니다",
+            summary_ko="; ".join(f"{url} — {why}" for url, why in list(problems.items())[:5]),
+            affected_urls=list(problems),
+            evidence_ids=evidence,
+            remediation_ko=(
+                "첫 화면에 보이는 이미지에서는 loading=\"lazy\" 를 빼고 loading=\"eager\" "
+                "를 쓰십시오. 본문을 담은 iframe 은 지연 로딩 대신 그대로 두거나, 내용을 "
+                "HTML 로 옮겨 크롤러가 스크롤 없이 읽을 수 있게 하십시오."
+            ),
+            reverification_ko=(
+                "수정 후 재수집해 첫 이미지에 lazy 가 없고 본문 iframe 이 즉시 로딩되는지 "
+                "확인합니다."
+            ),
+            business_impact_ko=(
+                "대표 이미지가 검색 결과 미리보기로 뽑히지 않고, iframe 안의 진료 안내가 "
+                "색인에서 빠질 수 있습니다."
+            ),
+            fix_example='<img src="/hero.webp" alt="진료실" loading="eager" fetchpriority="high">',
+        )
+    ]
+
+
 __all__ = [
+    "ABOVE_FOLD_IMAGES",
     "DEEP_HIERARCHY_SEGMENTS",
     "MAX_CLICK_DEPTH",
     "MIN_BODY_CHARS",

@@ -80,6 +80,7 @@ class CrawlIndexabilityCollector(SeoCollector):
         "seo.sitemap.urls_valid",
         "seo.crawl.no_orphan_key_pages",
         "seo.crawl.no_broken_internal_links",
+        "seo.crawl.favicon_declared_and_crawlable",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -103,6 +104,7 @@ class CrawlIndexabilityCollector(SeoCollector):
             _sitemap_urls_valid,
             _orphan_key_pages,
             _broken_internal_links,
+            _favicon,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -959,6 +961,110 @@ def _broken_internal_links(
                 "오류 페이지로 이어지는 링크는 방문자가 이탈하는 지점이 되고 크롤링 예산도 "
                 "낭비합니다."
             ),
+        )
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# seo.crawl.favicon_declared_and_crawlable
+# --------------------------------------------------------------------------- #
+
+
+def _favicon(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """구글은 검색 결과에 파비콘을 표시한다 — 그리고 그 파일을 크롤링할 수 있어야 한다.
+
+    선언만 보고 통과시키면 절반만 본 것이다. 구글이 문서로 요구하는 것은 두 가지고,
+    robots.txt 로 아이콘 경로가 막혀 있으면 선언이 있어도 표시되지 않는다. 실제로
+    `Disallow: /assets/` 한 줄이 파비콘까지 함께 막는 일이 흔하다.
+    """
+    entry = next((page for page in site.pages if page.url == site.entry_url), site.pages[0])
+    declared = entry.raw.icon_hrefs
+    # 선언이 없어도 브라우저와 크롤러는 `/favicon.ico` 를 관례로 찾는다. 우리가 그 파일을
+    # 가져온 적이 없으므로 존재 여부는 알 수 없다 — 없다고 단정하지 않는다.
+    fallback = resolve(entry.url, "/favicon.ico")
+
+    blocked: list[str] = []
+    if site.robots is not None:
+        for href in declared or (fallback,):
+            target = resolve(entry.url, href)
+            if not same_site(target, entry.url):
+                continue  # 외부 CDN 의 아이콘은 이 사이트의 robots.txt 가 막지 않는다
+            if not site.robots.decide(path_of(target)).allowed:
+                blocked.append(target)
+
+    observed = {
+        "declared": list(declared),
+        "checked_path": fallback if not declared else None,
+        "blocked_by_robots": blocked,
+    }
+    excerpt = (
+        " / ".join(f'<link rel="icon" href="{href}">' for href in declared[:3])
+        if declared
+        else "head 에 아이콘 선언 없음"
+    )
+    evidence = [ledger.page_snippet(entry, "dom_snippet", excerpt)]
+
+    if declared and not blocked:
+        return (
+            site_outcome(
+                "seo.crawl.favicon_declared_and_crawlable",
+                passed=True,
+                evidence_ids=evidence,
+                observed_value=observed,
+                note=f"파비콘이 선언되어 있고 크롤링을 막는 규칙이 없습니다 ({declared[0]}).",
+            ),
+            [],
+        )
+
+    if blocked:
+        note = f"파비콘 경로가 robots.txt 로 막혀 있습니다: {', '.join(blocked)}"
+        remediation = (
+            "robots.txt 에서 아이콘 경로의 크롤링을 허용하십시오. 자산 폴더를 통째로 "
+            "막고 있다면 아이콘 파일만 예외로 여는 규칙을 추가합니다."
+        )
+        fix_example = "Disallow: /assets/\nAllow: /assets/favicon.ico"
+    else:
+        note = (
+            "head 에 파비콘 선언이 없습니다. 브라우저는 /favicon.ico 를 관례로 찾지만, "
+            "구글은 선언된 아이콘을 우선합니다."
+        )
+        remediation = (
+            "head 에 `<link rel=\"icon\" href=\"/favicon.ico\">` 를 넣으십시오. "
+            "48픽셀의 배수인 정사각형 이미지를 권장합니다."
+        )
+        fix_example = '<link rel="icon" href="/favicon.ico" sizes="48x48">'
+
+    result = site_outcome(
+        "seo.crawl.favicon_declared_and_crawlable",
+        passed=False,
+        evidence_ids=evidence,
+        observed_value=observed,
+        note=note,
+        # 경미하고, 검색 노출 자체를 막지는 않는다. 실패가 아니라 주의로 남긴다.
+        warning=True,
+    )
+    return result, [
+        issue(
+            context,
+            "seo.crawl.favicon_declared_and_crawlable",
+            title_ko=(
+                "파비콘이 크롤링 차단되어 있습니다" if blocked else "파비콘 선언이 없습니다"
+            ),
+            summary_ko=note,
+            affected_urls=blocked or [entry.url],
+            evidence_ids=evidence,
+            remediation_ko=remediation,
+            reverification_ko=(
+                "수정 후 재수집해 아이콘 선언이 있고 robots.txt 가 그 경로를 막지 않는지 "
+                "확인합니다."
+            ),
+            business_impact_ko=(
+                "구글 검색 결과에서 사이트 이름 옆에 표시되는 아이콘 자리가 비어, "
+                "같은 화면의 경쟁 병원보다 눈에 덜 띕니다."
+            ),
+            fix_example=fix_example,
         )
     ]
 

@@ -24,9 +24,9 @@ pytest.importorskip("pydantic")
 
 @pytest.fixture
 def result():  # type: ignore[no-untyped-def]
-    import veo.api.app  # noqa: F401
-
     from tests.seo.support import build_context
+
+    import veo.api.app  # noqa: F401
     from veo.seo.service import run_seo_scan
 
     return run_seo_scan(build_context("broken_jsonld"))
@@ -74,9 +74,9 @@ class TestArithmetic:
         상한은 "이것을 풀기 전에는 몇 점 이상 줄 수 없다" 는 규칙이다. 그 상태에서
         "+12점" 이라고 쓰면 고쳐도 점수가 그대로여서 거짓말이 된다.
         """
-        import veo.api.app  # noqa: F401
-
         from tests.seo.support import build_context
+
+        import veo.api.app  # noqa: F401
         from veo.scoring.improvements import rank_improvements
         from veo.seo.service import run_seo_scan
 

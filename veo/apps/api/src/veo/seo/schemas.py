@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -225,9 +224,27 @@ class ScoreSummary(BaseModel):
 
 
 class OutcomeSummary(BaseModel):
+    """한 항목의 판정과, **왜 그렇게 판정했는지**.
+
+    식별자와 상태만 내보내면 화면은 `seo.onpage.heading_hierarchy` 라고 쓸 수밖에 없고,
+    그 줄을 본 직원이 할 수 있는 일이 없다. 제목·영역·심각도는 발행 명세에서 가져오고,
+    관측값은 수집기가 이미 담아 둔 것을 그대로 흘려보낸다.
+    """
+
     model_config = _FROZEN
 
     check_id: str
+    #: 명세가 정한 이름. 수집기가 정하게 두면 같은 항목의 이름이 수집기마다 달라진다.
+    title_ko: str
+    category_id: str
+    category_name_ko: str
+    severity: str
+    remediation_owner: str
+    #: 이 항목을 재려면 누가 움직여야 하는가 — SELF_SERVICE / CUSTOMER_GRANTED /
+    #: PAID_PROVIDER. 뒤의 둘은 배점에서 빠지므로, 화면이 그 사실을 함께 알려야 한다.
+    availability: str
+    #: 왜 이 항목을 보는지. 명세의 근거 문장을 그대로 옮긴다.
+    reference_ko: str | None
     status: str
     confidence: float | None
     confidence_level: str | None
@@ -235,6 +252,9 @@ class OutcomeSummary(BaseModel):
     evaluated_weight: float
     evidence_ids: list[str]
     note: str | None
+    #: 수집기가 실제로 본 값. 페이지별 제목 길이, 어긋난 제목 단계, 막힌 크롤러 이름 —
+    #: 화면의 "원인 상세" 가 여기서 나온다. 판정을 내리지 못했으면 ``None``.
+    observed: Any = None
 
 
 class UnknownCheckSummary(BaseModel):

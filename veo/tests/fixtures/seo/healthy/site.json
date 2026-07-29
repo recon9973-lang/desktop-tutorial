@@ -13,28 +13,40 @@
       "rendered": "rendered/index.html",
       "status": 200,
       "importance": "CONVERSION_OR_HOME",
-      "headers": { "content-type": "text/html; charset=utf-8" }
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "content-encoding": "gzip"
+      }
     },
     {
       "url": "https://healthy.example.kr/services/",
       "file": "pages/services.html",
       "status": 200,
       "importance": "CATEGORY_OR_HUB",
-      "headers": { "content-type": "text/html; charset=utf-8" }
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "content-encoding": "gzip"
+      }
     },
     {
       "url": "https://healthy.example.kr/services/laser/",
       "file": "pages/services-laser.html",
       "status": 200,
       "importance": "CONTENT_OR_PRODUCT",
-      "headers": { "content-type": "text/html; charset=utf-8" }
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "content-encoding": "gzip"
+      }
     },
     {
       "url": "https://healthy.example.kr/contact/",
       "file": "pages/contact.html",
       "status": 200,
       "importance": "CONVERSION_OR_HOME",
-      "headers": { "content-type": "text/html; charset=utf-8" }
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "content-encoding": "gzip"
+      }
     }
   ]
 }

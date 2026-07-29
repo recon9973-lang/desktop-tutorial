@@ -29,7 +29,10 @@
     },
     "domain": {
       "type": "string",
-      "enum": ["SEO_READINESS", "GEO_READINESS"],
+      "enum": [
+        "SEO_READINESS",
+        "GEO_READINESS"
+      ],
       "description": "GEO_OBSERVATION is deliberately absent: observed AI visibility is measured, not scored by this evaluator."
     },
     "version": {
@@ -38,24 +41,52 @@
     },
     "status": {
       "type": "string",
-      "enum": ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "RETIRED"]
+      "enum": [
+        "DRAFT",
+        "REVIEW",
+        "APPROVED",
+        "PUBLISHED",
+        "RETIRED"
+      ]
     },
-    "effective_at": { "type": "string", "format": "date-time" },
-    "methodology_owner": { "type": "string" },
-    "implementation_owner": { "type": "string" },
-    "approved_by": { "type": ["string", "null"] },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "methodology_owner": {
+      "type": "string"
+    },
+    "implementation_owner": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "compatible_collector_versions": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "minItems": 1
     },
     "score_meaning": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ko", "en", "is_rank_prediction"],
+      "required": [
+        "ko",
+        "en",
+        "is_rank_prediction"
+      ],
       "properties": {
-        "ko": { "type": "string" },
-        "en": { "type": "string" },
+        "ko": {
+          "type": "string"
+        },
+        "en": {
+          "type": "string"
+        },
         "is_rank_prediction": {
           "type": "boolean",
           "const": false,
@@ -68,31 +99,60 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["version", "date", "summary"],
+        "required": [
+          "version",
+          "date",
+          "summary"
+        ],
         "properties": {
-          "version": { "type": "string" },
-          "date": { "type": "string", "format": "date" },
-          "summary": { "type": "string" }
+          "version": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "summary": {
+            "type": "string"
+          }
         }
       }
     },
     "severity_coefficients": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"],
+      "required": [
+        "BLOCKER",
+        "CRITICAL",
+        "MAJOR",
+        "MINOR",
+        "INFO"
+      ],
       "properties": {
-        "BLOCKER": { "$ref": "#/$defs/unitInterval" },
-        "CRITICAL": { "$ref": "#/$defs/unitInterval" },
-        "MAJOR": { "$ref": "#/$defs/unitInterval" },
-        "MINOR": { "$ref": "#/$defs/unitInterval" },
-        "INFO": { "$ref": "#/$defs/unitInterval" }
+        "BLOCKER": {
+          "$ref": "#/$defs/unitInterval"
+        },
+        "CRITICAL": {
+          "$ref": "#/$defs/unitInterval"
+        },
+        "MAJOR": {
+          "$ref": "#/$defs/unitInterval"
+        },
+        "MINOR": {
+          "$ref": "#/$defs/unitInterval"
+        },
+        "INFO": {
+          "$ref": "#/$defs/unitInterval"
+        }
       }
     },
     "confidence_levels": {
       "type": "object",
       "description": "Evidence strength of a check outcome. Direct observation is the only 1.0.",
       "minProperties": 1,
-      "additionalProperties": { "$ref": "#/$defs/unitInterval" }
+      "additionalProperties": {
+        "$ref": "#/$defs/unitInterval"
+      }
     },
     "status_policy": {
       "type": "object",
@@ -105,9 +165,15 @@
         "unknown"
       ],
       "properties": {
-        "fail_penalty_multiplier": { "$ref": "#/$defs/unitInterval" },
-        "warning_penalty_multiplier": { "$ref": "#/$defs/unitInterval" },
-        "pass_penalty_multiplier": { "$ref": "#/$defs/unitInterval" },
+        "fail_penalty_multiplier": {
+          "$ref": "#/$defs/unitInterval"
+        },
+        "warning_penalty_multiplier": {
+          "$ref": "#/$defs/unitInterval"
+        },
+        "pass_penalty_multiplier": {
+          "$ref": "#/$defs/unitInterval"
+        },
         "not_applicable": {
           "type": "string",
           "const": "EXCLUDE_FROM_DENOMINATOR",
@@ -127,21 +193,30 @@
       "type": "object",
       "description": "Importance weights used to build coverage denominators for site-level checks.",
       "minProperties": 1,
-      "additionalProperties": { "type": "number", "minimum": 0 }
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      }
     },
     "categories": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/category" }
+      "items": {
+        "$ref": "#/$defs/category"
+      }
     },
     "caps": {
       "type": "array",
-      "items": { "$ref": "#/$defs/cap" },
+      "items": {
+        "$ref": "#/$defs/cap"
+      },
       "default": []
     },
     "gates": {
       "type": "array",
-      "items": { "$ref": "#/$defs/gate" },
+      "items": {
+        "$ref": "#/$defs/gate"
+      },
       "default": []
     },
     "bands": {
@@ -150,103 +225,252 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "min", "max", "label_ko", "label_en"],
+        "required": [
+          "id",
+          "min",
+          "max",
+          "label_ko",
+          "label_en"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "min": { "type": "number", "minimum": 0, "maximum": 100 },
-          "max": { "type": "number", "minimum": 0, "maximum": 100 },
-          "label_ko": { "type": "string" },
-          "label_en": { "type": "string" },
-          "description_ko": { "type": "string" }
+          "id": {
+            "type": "string"
+          },
+          "min": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "max": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "label_ko": {
+            "type": "string"
+          },
+          "label_en": {
+            "type": "string"
+          },
+          "description_ko": {
+            "type": "string"
+          }
         }
       }
     }
   },
   "$defs": {
-    "unitInterval": { "type": "number", "minimum": 0, "maximum": 1 },
-    "checkId": { "type": "string", "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)+$" },
+    "unitInterval": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "checkId": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)+$"
+    },
     "category": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "weight", "name_ko", "name_en", "checks"],
+      "required": [
+        "id",
+        "weight",
+        "name_ko",
+        "name_en",
+        "checks"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
-        "weight": { "type": "number", "exclusiveMinimum": 0 },
-        "name_ko": { "type": "string" },
-        "name_en": { "type": "string" },
-        "description_ko": { "type": "string" },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "weight": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "name_ko": {
+          "type": "string"
+        },
+        "name_en": {
+          "type": "string"
+        },
+        "description_ko": {
+          "type": "string"
+        },
+        "contributes_to_score": {
+          "type": "boolean",
+          "description": "이 영역이 준비도 점수를 이루는가. false 인 영역은 판정하고 보고하되 점수와 분모에서 모두 빠진다 — 연동이 있어야만 잴 수 있는 영역이 그렇다.",
+          "default": true
+        },
         "checks": {
           "type": "array",
           "minItems": 1,
-          "items": { "$ref": "#/$defs/check" }
+          "items": {
+            "$ref": "#/$defs/check"
+          }
         }
       }
     },
     "check": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "title_ko", "title_en", "severity", "scope", "remediation_owner"],
+      "required": [
+        "id",
+        "title_ko",
+        "title_en",
+        "severity",
+        "scope",
+        "remediation_owner"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/checkId" },
-        "title_ko": { "type": "string" },
-        "title_en": { "type": "string" },
+        "id": {
+          "$ref": "#/$defs/checkId"
+        },
+        "title_ko": {
+          "type": "string"
+        },
+        "title_en": {
+          "type": "string"
+        },
         "severity": {
           "type": "string",
-          "enum": ["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"]
+          "enum": [
+            "BLOCKER",
+            "CRITICAL",
+            "MAJOR",
+            "MINOR",
+            "INFO"
+          ]
         },
         "scope": {
           "type": "string",
-          "enum": ["URL", "SITE"],
+          "enum": [
+            "URL",
+            "SITE"
+          ],
           "description": "URL checks are evaluated per URL; SITE checks aggregate importance-weighted URL coverage."
         },
         "remediation_owner": {
           "type": "string",
-          "enum": ["DEVELOPER", "MARKETER", "BUSINESS_OWNER", "OPERATIONS"]
+          "enum": [
+            "DEVELOPER",
+            "MARKETER",
+            "BUSINESS_OWNER",
+            "OPERATIONS"
+          ]
         },
-        "applicability_ko": { "type": "string" },
+        "applicability_ko": {
+          "type": "string"
+        },
         "evidence_required": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": []
         },
         "engine_scope": {
           "type": "array",
-          "items": { "type": "string", "enum": ["GOOGLE", "NAVER", "BING", "AI_ANSWER_ENGINE", "GENERIC"] },
-          "default": ["GENERIC"]
+          "items": {
+            "type": "string",
+            "enum": [
+              "GOOGLE",
+              "NAVER",
+              "BING",
+              "AI_ANSWER_ENGINE",
+              "GENERIC"
+            ]
+          },
+          "default": [
+            "GENERIC"
+          ]
         },
-        "reference_ko": { "type": "string" }
+        "reference_ko": {
+          "type": "string"
+        },
+        "availability": {
+          "type": "string",
+          "enum": [
+            "SELF_SERVICE",
+            "CUSTOMER_GRANTED",
+            "PAID_PROVIDER"
+          ],
+          "default": "SELF_SERVICE",
+          "description": "Who must act before this check can be measured. SELF_SERVICE: VEO can measure it on its own, with its own crawl or its own API key — it always counts toward the score. CUSTOMER_GRANTED: the site owner must grant access (Search Console, Naver Search Advisor). PAID_PROVIDER: a paid or separately configured data source. The last two are outside the diagnosis until arranged, so they leave the denominator rather than scoring zero — a score must not be lowered by a permission the customer has not been asked for yet. They are still reported, by name and with what would unlock them."
+        }
       }
     },
     "cap": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "max_overall_score", "reason_ko", "release_condition_ko", "trigger"],
+      "required": [
+        "id",
+        "max_overall_score",
+        "reason_ko",
+        "release_condition_ko",
+        "trigger"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
-        "max_overall_score": { "type": "number", "minimum": 0, "maximum": 100 },
-        "reason_ko": { "type": "string" },
-        "release_condition_ko": { "type": "string" },
-        "trigger": { "$ref": "#/$defs/trigger" }
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "max_overall_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "reason_ko": {
+          "type": "string"
+        },
+        "release_condition_ko": {
+          "type": "string"
+        },
+        "trigger": {
+          "$ref": "#/$defs/trigger"
+        }
       }
     },
     "gate": {
       "type": "object",
       "description": "A gate never changes the numeric score. It raises a separate status shown next to it.",
       "additionalProperties": false,
-      "required": ["id", "status_code", "label_ko", "label_en", "trigger"],
+      "required": [
+        "id",
+        "status_code",
+        "label_ko",
+        "label_en",
+        "trigger"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
-        "status_code": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
-        "label_ko": { "type": "string" },
-        "label_en": { "type": "string" },
-        "description_ko": { "type": "string" },
-        "trigger": { "$ref": "#/$defs/trigger" }
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "status_code": {
+          "type": "string",
+          "pattern": "^[A-Z0-9_]+$"
+        },
+        "label_ko": {
+          "type": "string"
+        },
+        "label_en": {
+          "type": "string"
+        },
+        "description_ko": {
+          "type": "string"
+        },
+        "trigger": {
+          "$ref": "#/$defs/trigger"
+        }
       }
     },
     "trigger": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["any_of"],
+      "required": [
+        "any_of"
+      ],
       "properties": {
         "any_of": {
           "type": "array",
@@ -254,12 +478,23 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["check_id", "status"],
+            "required": [
+              "check_id",
+              "status"
+            ],
             "properties": {
-              "check_id": { "$ref": "#/$defs/checkId" },
+              "check_id": {
+                "$ref": "#/$defs/checkId"
+              },
               "status": {
                 "type": "string",
-                "enum": ["PASS", "WARNING", "FAIL", "NOT_APPLICABLE", "UNKNOWN"]
+                "enum": [
+                  "PASS",
+                  "WARNING",
+                  "FAIL",
+                  "NOT_APPLICABLE",
+                  "UNKNOWN"
+                ]
               },
               "min_coverage": {
                 "$ref": "#/$defs/unitInterval",

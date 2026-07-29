@@ -97,10 +97,98 @@
 .categoryScore { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .categoryMeta { margin: var(--veo-space-2) 0 0; font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); }
 
-.check { display: flex; gap: var(--veo-space-3); align-items: flex-start; }
-.checkBody { display: flex; flex-direction: column; gap: var(--veo-space-1); min-width: 0; }
-.checkId { font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); overflow-wrap: anywhere; }
+/* 항목별 판정 — 접힌 한 줄, 펼치면 근거와 수정 방향. */
+
+.checkGroup { display: flex; flex-direction: column; gap: var(--veo-space-3); }
+.checkGroupTitle {
+  margin: var(--veo-space-4) 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--veo-space-3);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  padding-bottom: var(--veo-space-2);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+.checkGroupCount { font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); font-weight: var(--veo-weight-regular); }
+
+.check {
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+}
+.checkSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-3) var(--veo-space-4);
+  cursor: pointer;
+  /* 기본 삼각형을 지우지 않는다 — 접힘 여부를 알리는 유일한 표시다. */
+  list-style-position: inside;
+}
+.checkSummary:hover { background: var(--veo-color-surface-sunken); }
+.checkSummary:focus-visible { outline: 2px solid var(--veo-color-accent); outline-offset: -2px; }
+.checkTitle { flex: 1 1 auto; min-width: 0; font-weight: var(--veo-weight-medium); }
+.checkSeverity {
+  flex: 0 0 auto;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  white-space: nowrap;
+}
+
+.checkDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-5);
+  padding: 0 var(--veo-space-4) var(--veo-space-4);
+  border-top: 1px solid var(--veo-color-border);
+  padding-top: var(--veo-space-4);
+}
+.checkBlock { display: flex; flex-direction: column; gap: var(--veo-space-2); }
+.checkBlockTitle {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-text-muted);
+  text-transform: none;
+}
 .checkNote { margin: 0; font-size: var(--veo-font-size-200); }
+.checkWhy { margin: 0; font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); }
+.checkMeta {
+  margin: 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  overflow-wrap: anywhere;
+}
+.checkId { font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); overflow-wrap: anywhere; }
+
+/* 관측값. 어디서 무엇을 봤는지 두 칸으로 나눠, 훑을 때 위치가 먼저 잡히게 한다. */
+.causeList {
+  list-style: none;
+  margin: 0;
+  padding: var(--veo-space-3);
+  border-radius: var(--veo-radius-sm);
+  background: var(--veo-color-surface-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  /* 긴 URL 목록이 가로로 새지 않게 한다. */
+  overflow-x: auto;
+}
+.causeList li { display: flex; flex-wrap: wrap; gap: var(--veo-space-2); }
+.causeWhere { color: var(--veo-color-text-muted); overflow-wrap: anywhere; }
+.causeWhat { overflow-wrap: anywhere; }
+
+.gateTag {
+  margin-left: var(--veo-space-2);
+  padding: 0 var(--veo-space-2);
+  border-radius: var(--veo-radius-sm);
+  background: var(--veo-color-surface-sunken);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-regular);
+  color: var(--veo-color-text-muted);
+}
 
 .reasonList li { display: flex; flex-direction: column; gap: var(--veo-space-1); }
 .reasonTitle { font-weight: var(--veo-weight-medium); }

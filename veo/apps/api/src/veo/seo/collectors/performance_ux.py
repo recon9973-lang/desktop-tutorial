@@ -78,6 +78,9 @@ class PerformanceUxCollector(SeoCollector):
         "seo.ux.mobile_viewport",
         "seo.security.https_valid",
         "seo.security.no_mixed_content",
+        "seo.perf.text_compression",
+        "seo.perf.modern_image_format",
+        "seo.perf.resource_hints",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -101,7 +104,14 @@ class PerformanceUxCollector(SeoCollector):
         outcomes.append(produced)
         issues.extend(produced_issues)
 
-        for step in (_viewport, _https, _mixed_content):
+        for step in (
+            _viewport,
+            _https,
+            _mixed_content,
+            _text_compression,
+            _modern_image_format,
+            _resource_hints,
+        ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
             issues.extend(produced_issues)
@@ -529,6 +539,247 @@ def _mixed_content(
             ),
             reverification_ko="수정 후 재수집해 http로 시작하는 리소스가 남아 있는지 확인합니다.",
             business_impact_ko="차단된 이미지나 스크립트 때문에 화면이 깨지고 신뢰도가 떨어집니다.",
+        )
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# seo.perf.text_compression
+# --------------------------------------------------------------------------- #
+
+#: 서버가 텍스트를 압축해 보냈다고 말하는 값들. `identity` 는 압축하지 않았다는 뜻이다.
+_COMPRESSED_ENCODINGS = frozenset({"gzip", "br", "deflate", "zstd", "compress"})
+
+
+def _text_compression(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """압축 전송은 전송량을 줄여 LCP 에 직접 영향을 준다.
+
+    응답 헤더가 말해 주는 사실이므로 추정이 아니다. 다만 우리가 `Accept-Encoding` 을
+    보냈는데도 압축이 오지 않은 경우만 지적할 수 있다 — 서버가 우리에게 압축을 주지
+    않았다는 것 이상은 알 수 없다.
+    """
+    observed: dict[str, str] = {}
+    affected = []
+    for page in site.pages:
+        encoding = (page.header("content-encoding") or "").strip().lower()
+        observed[page.url] = encoding or "(없음)"
+        tokens = {token.strip() for token in encoding.split(",")}
+        if not tokens & _COMPRESSED_ENCODINGS:
+            affected.append(page)
+
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "http_response",
+            f"content-encoding: {observed[page.url]}",
+        )
+        for page in (affected or site.pages[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.perf.text_compression",
+        affected=affected,
+        evaluated=list(site.pages),
+        evidence_ids=evidence,
+        observed_value=observed,
+        clean_note_ko="모든 페이지가 압축되어 전송됩니다.",
+        affected_note_ko=f"{len(affected)}개 페이지가 압축 없이 전송됩니다.",
+        warning=True,
+    )
+    if result.status is not CheckStatus.WARNING:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.perf.text_compression",
+            title_ko="HTML이 압축 없이 전송됩니다",
+            summary_ko="; ".join(
+                f"{page.url} — content-encoding {observed[page.url]}" for page in affected[:5]
+            ),
+            affected_urls=[page.url for page in affected],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "웹서버에서 gzip 또는 brotli 압축을 켜십시오. Nginx 는 gzip on, "
+                "Apache 는 mod_deflate, 카페24·가비아 같은 호스팅은 관리 화면에 "
+                "압축 설정이 있습니다."
+            ),
+            reverification_ko=(
+                "수정 후 재수집해 응답 헤더에 content-encoding 이 오는지 확인합니다."
+            ),
+            business_impact_ko=(
+                "같은 화면을 보여주는 데 전송량이 몇 배로 늘어, 모바일에서 첫 화면이 "
+                "늦게 뜹니다."
+            ),
+            fix_example="gzip on;\ngzip_types text/html text/css application/javascript;",
+        )
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# seo.perf.modern_image_format
+# --------------------------------------------------------------------------- #
+
+_MODERN_IMAGE_SUFFIXES = (".webp", ".avif")
+_LEGACY_IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".gif", ".bmp")
+
+
+def _image_suffix(src: str) -> str:
+    path = src.split("?", 1)[0].split("#", 1)[0].lower()
+    _, _, tail = path.rpartition("/")
+    return tail[tail.rfind(".") :] if "." in tail else ""
+
+
+def _modern_image_format(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """WebP·AVIF 는 같은 화질에서 용량이 작다.
+
+    구글이 특정 포맷을 요구하지는 않는다. 그래서 필수 항목이 아니라 개선 여지로 본다 —
+    실패가 아니라 주의로 남기고, 이미지가 없는 페이지는 대상에서 뺀다.
+    """
+    counted: dict[str, dict[str, int]] = {}
+    candidates = []
+    for page in site.pages:
+        legacy = [
+            img for img in page.raw.images if _image_suffix(img.src) in _LEGACY_IMAGE_SUFFIXES
+        ]
+        modern = [
+            img for img in page.raw.images if _image_suffix(img.src) in _MODERN_IMAGE_SUFFIXES
+        ]
+        if not legacy and not modern:
+            continue  # 이미지가 없거나 확장자를 알 수 없는 페이지는 판단하지 않는다
+        candidates.append(page)
+        counted[page.url] = {"legacy": len(legacy), "modern": len(modern)}
+
+    if not candidates:
+        return (
+            not_applicable_outcome(
+                "seo.perf.modern_image_format",
+                "포맷을 확인할 수 있는 이미지가 없어 해당하지 않습니다.",
+            ),
+            [],
+        )
+
+    affected = [page for page in candidates if counted[page.url]["legacy"] > 0]
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            " / ".join(img.src for img in page.raw.images[:4]) or "(이미지 없음)",
+        )
+        for page in (affected or candidates[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.perf.modern_image_format",
+        affected=affected,
+        evaluated=candidates,
+        evidence_ids=evidence,
+        observed_value=counted,
+        clean_note_ko="이미지가 모두 WebP 또는 AVIF 로 제공됩니다.",
+        affected_note_ko=(
+            f"{len(affected)}개 페이지에 JPEG·PNG 이미지가 남아 있습니다 — "
+            "WebP 로 바꾸면 용량이 줄어듭니다."
+        ),
+        warning=True,
+    )
+    if result.status is not CheckStatus.WARNING:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.perf.modern_image_format",
+            title_ko="이미지가 옛 포맷으로 제공됩니다",
+            summary_ko="; ".join(
+                f"{page.url} — JPEG·PNG {counted[page.url]['legacy']}개" for page in affected[:5]
+            ),
+            affected_urls=[page.url for page in affected],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "이미지를 WebP 로 변환하고, 옛 브라우저를 위해 picture 요소로 원본을 "
+                "함께 두십시오. 워드프레스는 변환 플러그인이 자동으로 처리합니다."
+            ),
+            reverification_ko="변환 후 재수집해 이미지 확장자가 바뀌었는지 확인합니다.",
+            business_impact_ko=(
+                "사진이 많은 병원 홈페이지일수록 전송량이 커져 모바일 첫 화면이 늦어집니다."
+            ),
+            fix_example=(
+                "<picture>\n"
+                '  <source srcset="/hero.webp" type="image/webp">\n'
+                '  <img src="/hero.jpg" alt="진료실">\n'
+                "</picture>"
+            ),
+        )
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# seo.perf.resource_hints
+# --------------------------------------------------------------------------- #
+
+
+def _resource_hints(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """preload·preconnect 는 첫 화면 리소스를 앞당긴다.
+
+    있으면 좋은 것이지 없으면 잘못인 것이 아니므로 주의로 남긴다. 힌트가 실제로 옳은
+    리소스를 가리키는지까지는 보지 않는다 — 그것은 렌더링을 해 봐야 알 수 있고, 여기서
+    말할 수 있는 것은 "선언이 있는가" 뿐이다.
+    """
+    observed = {
+        page.url: [f"{rel}: {href}" for rel, href in page.raw.resource_hints]
+        for page in site.pages
+    }
+    affected = [page for page in site.pages if not page.raw.resource_hints]
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            " / ".join(observed[page.url][:3]) or "리소스 힌트 선언 없음",
+        )
+        for page in (affected or site.pages[:1])
+    ]
+
+    result = url_ratio_outcome(
+        "seo.perf.resource_hints",
+        affected=affected,
+        evaluated=list(site.pages),
+        evidence_ids=evidence,
+        observed_value=observed,
+        clean_note_ko="모든 페이지에 우선 로딩 힌트가 선언되어 있습니다.",
+        affected_note_ko=f"{len(affected)}개 페이지에 우선 로딩 힌트가 없습니다.",
+        warning=True,
+    )
+    if result.status is not CheckStatus.WARNING:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            "seo.perf.resource_hints",
+            title_ko="우선 로딩 힌트가 선언되어 있지 않습니다",
+            summary_ko=(
+                f"{len(affected)}개 페이지에 preload·preconnect 선언이 없습니다. "
+                "첫 화면 이미지와 외부 폰트가 늦게 시작됩니다."
+            ),
+            affected_urls=[page.url for page in affected],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "첫 화면의 대표 이미지에 preload 를, 외부 폰트·분석 도구 도메인에 "
+                "preconnect 를 선언하십시오. 남발하면 오히려 느려지므로 첫 화면에 "
+                "실제로 필요한 것만 넣습니다."
+            ),
+            reverification_ko="수정 후 재수집해 head 에 힌트 선언이 있는지 확인합니다.",
+            business_impact_ko="첫 화면이 뜨는 시점이 늦어져 이탈이 늘어납니다.",
+            fix_example=(
+                '<link rel="preload" as="image" href="/hero.webp">\n'
+                '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+            ),
         )
     ]
 
