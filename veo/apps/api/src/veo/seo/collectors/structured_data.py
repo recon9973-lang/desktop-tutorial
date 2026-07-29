@@ -466,6 +466,9 @@ def _required_properties(
 #: 화면과 대조할 값들. `name`/`headline` 만 보던 시절에는 정작 꾸며지는 값 —
 #: 평점, 후기 수, 전화번호, 주소 — 을 아무도 보지 않았다.
 _CLAIMED_TEXT: Final = ("name", "headline", "telephone", "address")
+
+#: 문서의 제목을 옮겨 적는 자리. 제목이나 제목 계층에서 확인돼도 통과다.
+_TITLE_LIKE: Final = frozenset({"name", "headline"})
 _CLAIMED_LABELS_KO: Final = {
     "telephone": "전화번호",
     "address": "주소",
@@ -505,15 +508,24 @@ def _flat_text(value: object) -> str:
     return ""
 
 
-def _claims(node: dict[str, Any]) -> list[tuple[str, str]]:
-    """이 노드가 주장하는 값들. (사람이 읽을 이름, 값)"""
-    found: list[tuple[str, str]] = []
+def _claims(node: dict[str, Any]) -> list[tuple[str, str, bool]]:
+    """이 노드가 주장하는 값들. (사람이 읽을 이름, 값, 제목으로도 확인 가능한가)
+
+    마지막 값이 참이면 문서의 제목이나 제목 계층에서 확인돼도 통과다. `name` 과
+    `headline` 이 그렇다 — 문서의 제목을 옮겨 적는 자리이고, 워드프레스 SEO 플러그인이
+    자동으로 채운다. 본문에서만 찾으면 `<title>` 은 본문 텍스트에 포함되지 않으므로
+    **제대로 만든 사이트가 통째로 실패한다.**
+
+    전화번호·주소·평점은 다르다. 사용자가 화면에서 확인할 수 있어야 하는 사실이므로
+    제목에 있다고 넘어가지 않는다.
+    """
+    found: list[tuple[str, str, bool]] = []
     lowered = {str(k).lower(): v for k, v in node.items()}
 
     for key in _CLAIMED_TEXT:
         text = _flat_text(lowered.get(key))
         if text:
-            found.append((_CLAIMED_LABELS_KO.get(key, ""), text))
+            found.append((_CLAIMED_LABELS_KO.get(key, ""), text, key in _TITLE_LIKE))
 
     # 평점과 후기 수는 화면에 없으면 지어낸 값이다. 구글 정책 위반이자, 병원이라면
     # 의료법 제56조가 금지하는 환자 후기·평가 광고에 해당한다.
@@ -523,7 +535,9 @@ def _claims(node: dict[str, Any]) -> list[tuple[str, str]]:
         for key in ("ratingvalue", "reviewcount", "ratingcount"):
             text = _flat_text(inner.get(key))
             if text:
-                found.append((_CLAIMED_LABELS_KO[key], text))
+                # 평점은 제목에 있다고 넘어가지 않는다. 사용자가 화면에서 확인할 수
+                # 있어야 하는 값이고, 그것이 이 검사가 존재하는 이유다.
+                found.append((_CLAIMED_LABELS_KO[key], text, False))
     return found
 
 
@@ -555,11 +569,19 @@ def _matches_visible(
         digits_visible = (
             _digits(page.raw.full_text) + " " + _national_number(page.raw.full_text)
         )
+        # 제목과 제목 계층까지 더한 건초더미. `name`·`headline` 만 여기서 찾는다.
+        identity = normalise(
+            " ".join(
+                [page.raw.full_text, page.raw.title or ""]
+                + [text for _, text in page.raw.headings]
+            )
+        )
         absent: list[str] = []
 
         for node in parsed[page.url].objects:
-            for label, value in _claims(node):
-                if _is_visible(value, visible, digits_visible):
+            for label, value, title_like in _claims(node):
+                haystack = identity if title_like else visible
+                if _is_visible(value, haystack, digits_visible):
                     continue
                 absent.append(f"{label} {value}" if label else value)
 

@@ -155,3 +155,74 @@ class TestKoreanPhoneNotation:
         )
 
         assert by_id(result)[_CHECK].status is CheckStatus.FAIL
+
+
+class TestNameAndHeadlineMayMirrorTheTitle:
+    """실제 사이트에서 잡힌 오탐.
+
+    `WebPage.name` 과 `Article.headline` 은 문서의 제목을 옮겨 적는 자리다 — 원래
+    그러라고 있는 필드이고, 워드프레스 SEO 플러그인이 자동으로 채운다. 그런데 화면
+    본문에서만 찾으면 `<title>` 이 본문 텍스트에 포함되지 않으므로 **제대로 만든
+    사이트가 통째로 실패한다.**
+
+    실제로 마산의 한 한의원 사이트를 진단했을 때 7개 페이지가 이 이유로 실패했다.
+    지어낸 값이 하나도 없는데 "구조화 데이터가 화면 내용과 어긋난다" 고 보고했다.
+
+    꾸며지는 값을 잡겠다는 이 검사의 목적은 그대로다. 평점·후기 수·전화번호·주소는
+    사용자가 화면에서 확인할 수 있어야 하고, 그 부분은 계속 엄격하게 본다.
+    """
+
+    def test_a_headline_that_equals_the_title_is_not_a_mismatch(self) -> None:
+        node = {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "오시는 길 - 온담의원",
+            "name": "오시는 길 - 온담의원",
+        }
+        context = _with_json_ld(node, visible="오시는 길 온담의원 진료 안내")
+        documents = {}
+        for url, document in context.documents.items():
+            text = document.body.decode("utf-8", errors="replace")
+            text = text.replace("<title>", "<title>오시는 길 - 온담의원</title><!--", 1)
+            documents[url] = dataclasses.replace(document, body=text.encode("utf-8"))
+        context = dataclasses.replace(
+            context, documents=documents, primary_document=next(iter(documents.values()))
+        )
+
+        assert by_id(COLLECTOR.collect(context))[_CHECK].status is CheckStatus.PASS
+
+    def test_a_name_matching_a_heading_is_not_a_mismatch(self) -> None:
+        node = {**_CLINIC, "name": "온담의원 레이저 클리닉"}
+        context = _with_json_ld(
+            node, visible="서울특별시 강남구 테헤란로 1 02-555-1234"
+        )
+        documents = {}
+        for url, document in context.documents.items():
+            text = document.body.decode("utf-8", errors="replace")
+            text = text.replace("</body>", "<h2>온담의원 레이저 클리닉</h2></body>", 1)
+            documents[url] = dataclasses.replace(document, body=text.encode("utf-8"))
+        context = dataclasses.replace(
+            context, documents=documents, primary_document=next(iter(documents.values()))
+        )
+
+        assert by_id(COLLECTOR.collect(context))[_CHECK].status is CheckStatus.PASS
+
+    def test_a_fabricated_rating_is_still_caught(self) -> None:
+        """느슨해진 것은 제목·제목 계층뿐이다. 꾸며진 평점은 그대로 잡힌다."""
+        node = {**_CLINIC, "aggregateRating": {"ratingValue": "4.9", "reviewCount": "312"}}
+
+        result = COLLECTOR.collect(
+            _with_json_ld(node, visible="온담의원 서울특별시 강남구 테헤란로 1 02-555-1234")
+        )
+
+        assert by_id(result)[_CHECK].status is CheckStatus.FAIL
+
+    def test_a_phone_number_only_in_the_title_is_still_a_mismatch(self) -> None:
+        """전화번호는 제목이 아니라 화면에서 확인되어야 한다."""
+        node = {**_CLINIC, "telephone": "02-999-8888"}
+
+        result = COLLECTOR.collect(
+            _with_json_ld(node, visible="온담의원 서울특별시 강남구 테헤란로 1 02-555-1234")
+        )
+
+        assert by_id(result)[_CHECK].status is CheckStatus.FAIL

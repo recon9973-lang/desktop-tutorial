@@ -81,6 +81,7 @@ class CrawlIndexabilityCollector(SeoCollector):
         "seo.crawl.no_orphan_key_pages",
         "seo.crawl.no_broken_internal_links",
         "seo.crawl.favicon_declared_and_crawlable",
+        "seo.robots.txt_parses_cleanly",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -105,6 +106,7 @@ class CrawlIndexabilityCollector(SeoCollector):
             _orphan_key_pages,
             _broken_internal_links,
             _favicon,
+            _robots_health,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -1065,6 +1067,99 @@ def _favicon(
                 "같은 화면의 경쟁 병원보다 눈에 덜 띕니다."
             ),
             fix_example=fix_example,
+        )
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# seo.robots.txt_parses_cleanly
+# --------------------------------------------------------------------------- #
+
+
+def _robots_health(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """깨진 줄은 조용히 건너뛰어진다 — 그래서 아무도 모른다.
+
+    검색엔진이 파싱하지 못한 줄을 무시하는 것은 규격대로다. 문제는 그 결과가 눈에
+    보이지 않는다는 점이다. `Disallow /admin` 처럼 콜론이 빠진 줄은 차단을 의도했지만
+    걸리지 않고, 화면에는 아무 표시가 없다.
+    """
+    check_id = "seo.robots.txt_parses_cleanly"
+    if site.robots is None:
+        return (
+            not_applicable_outcome(
+                check_id,
+                "robots.txt를 수집하지 못했습니다. 파일이 없는 것은 전부 허용한다는 "
+                "뜻이므로 결함으로 보지 않습니다.",
+            ),
+            [],
+        )
+
+    lines = site.robots.raw.splitlines()
+    broken = {
+        number: lines[number - 1].strip()
+        for number in site.robots.malformed_lines
+        if 0 < number <= len(lines)
+    }
+    entry = next((page for page in site.pages if page.url == site.entry_url), site.pages[0])
+    evidence = [
+        ledger.of(
+            "robots_txt",
+            url=resolve(entry.url, "/robots.txt"),
+            payload=site.robots.raw or "(빈 파일)",
+            excerpt=(
+                " / ".join(f"{n}행: {text}" for n, text in list(broken.items())[:4])
+                if broken
+                else "문법이 어긋난 줄 없음"
+            ),
+        )
+    ]
+
+    if not broken:
+        return (
+            site_outcome(
+                check_id,
+                passed=True,
+                evidence_ids=evidence,
+                observed_value={"lines": len(lines), "malformed": 0},
+                note="robots.txt의 모든 줄이 정상적으로 해석됩니다.",
+            ),
+            [],
+        )
+
+    listed = ", ".join(str(n) for n in list(broken)[:8])
+    note = (
+        f"robots.txt의 {len(broken)}개 줄이 문법에 맞지 않아 검색엔진이 건너뜁니다 "
+        f"({listed}행). 그 줄이 의도한 차단이나 sitemap 선언은 전달되지 않습니다."
+    )
+    result = site_outcome(
+        check_id,
+        passed=False,
+        evidence_ids=evidence,
+        observed_value={f"{n}행": text for n, text in broken.items()},
+        note=note,
+        warning=True,
+    )
+    return result, [
+        issue(
+            context,
+            check_id,
+            title_ko="robots.txt에 해석되지 않는 줄이 있습니다",
+            summary_ko=note,
+            affected_urls=[resolve(entry.url, "/robots.txt")],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "각 줄을 `이름: 값` 형태로 고치십시오. 콜론이 빠지거나 오타가 난 "
+                "지시자가 가장 흔합니다. 고친 뒤에는 그 줄이 의도한 차단이 실제로 "
+                "걸리는지 함께 확인하십시오 — 지금까지는 걸리지 않고 있었습니다."
+            ),
+            reverification_ko="수정 후 재수집해 모든 줄이 해석되는지 확인합니다.",
+            business_impact_ko=(
+                "막으려던 페이지가 막히지 않았거나, 제출하려던 sitemap이 전달되지 "
+                "않았을 수 있습니다. 운영자가 믿고 있는 상태와 실제가 다릅니다."
+            ),
+            fix_example="Disallow: /admin/    # 콜론이 빠져 있었습니다",
         )
     ]
 
