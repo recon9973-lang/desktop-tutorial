@@ -32,20 +32,26 @@ def run(fixture: str, **overrides: object):
 
 
 # --------------------------------------------------------------------------- #
-# N/A is not zero
+# 선언이 없을 때 — 없는 것은 감점하되, 없는 사실을 지어내지는 않는다
 # --------------------------------------------------------------------------- #
 
 
-def test_a_site_with_no_structured_data_is_not_applicable_on_every_check() -> None:
+def test_a_site_with_no_structured_data_is_not_applicable_on_the_derived_checks() -> None:
+    """선언이 없는데 "문법 오류" 라고 적으면 없는 사실을 지어내는 것이다."""
     result = run("brochure_na")
     for check_id in SD_CHECKS:
+        if check_id == "seo.sd.declared":
+            continue
         outcome = by_id(result)[check_id]
         assert outcome.status is CheckStatus.NOT_APPLICABLE, check_id
         assert outcome.note
 
 
-def test_a_site_with_no_structured_data_raises_no_issue() -> None:
-    assert run("brochure_na").issues == ()
+def test_a_site_with_no_structured_data_is_told_to_add_it() -> None:
+    """예전에는 아무 지적도 하지 않았다. 그래서 12.5점이 조용히 분모에서 빠졌다."""
+    result = run("brochure_na")
+
+    assert {draft.check_id for draft in result.issues} == {"seo.sd.declared"}
 
 
 # --------------------------------------------------------------------------- #

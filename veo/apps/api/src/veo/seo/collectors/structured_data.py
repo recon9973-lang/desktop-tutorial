@@ -31,6 +31,7 @@ from veo.seo.collectors.base import (
     SeoCollector,
     all_unknown,
     issue,
+    site_outcome,
     url_ratio_outcome,
 )
 from veo.seo.observation import PageObservation, SiteObservation
@@ -92,40 +93,57 @@ GOOGLE_SUPPORTED_TYPES = frozenset(
     }
 )
 
-#: Open Graph properties Naver relies on alongside structured data.
+#: 선언이 하나도 없을 때 **파생 항목**에 남기는 사유.
+#:
+#: 감점하지 않는 이유는 "선택 항목이라서" 가 아니라 **검증할 대상이 없어서** 다. 선언이
+#: 없다는 사실 자체는 `seo.sd.declared` 가 실패로 잡는다 — 그러지 않으면 12.5점이 통째로
+#: 분모에서 빠져, 스키마를 만든 사이트가 더 어려운 시험을 보게 된다.
 NO_STRUCTURED_DATA_KO = (
-    "구조화 데이터를 선언하지 않은 사이트입니다. 선택 항목이므로 감점하지 않으며, "
-    "도입하면 평가 대상이 됩니다."
+    "구조화 데이터 선언이 없어 검증할 대상이 없습니다. 선언이 없다는 사실은 "
+    "'구조화 데이터가 선언되어 있는가' 항목에서 감점했습니다."
 )
 
 
 class StructuredDataCollector(SeoCollector):
     category_id = "structured_data"
     check_id_list = (
+        "seo.sd.declared",
         "seo.sd.jsonld_parses",
         "seo.sd.required_properties_present",
         "seo.sd.matches_visible_content",
         "seo.sd.google_supported_type",
     )
+    #: 선언이 있어야만 판정할 수 있는 항목들. 선언이 없으면 검증할 대상이 없다.
+    _derived = check_id_list[1:]
 
     def collect(self, context: CollectionContext) -> CollectionResult:
         site = self.observe(context)
         if not site.has_pages:
             return all_unknown(self.check_id_list, NO_DOCUMENTS_KO)
 
+        ledger = EvidenceLedger()
         declaring = [page for page in site.pages if page.raw.json_ld_blocks]
+
+        declared, declared_issues = _declared(context, site, ledger, declaring)
         if not declaring:
+            # 선언이 없다는 사실은 위에서 감점했다. 나머지 넷은 그 대상이 없으므로 해당
+            # 없음으로 둔다 — 한 줄도 없는 사이트에 "문법 오류" 라고 적으면 없는 사실을
+            # 지어내는 것이다.
             return CollectionResult(
-                outcomes=tuple(
-                    not_applicable_outcome(check_id, NO_STRUCTURED_DATA_KO)
-                    for check_id in self.check_id_list
+                outcomes=(
+                    declared,
+                    *(
+                        not_applicable_outcome(check_id, NO_STRUCTURED_DATA_KO)
+                        for check_id in self._derived
+                    ),
                 ),
+                evidence=ledger.records(),
+                issues=tuple(declared_issues),
                 notes_ko=(NO_STRUCTURED_DATA_KO,),
             )
 
-        ledger = EvidenceLedger()
-        outcomes: list[CheckOutcome] = []
-        issues: list[IssueDraft] = []
+        outcomes: list[CheckOutcome] = [declared]
+        issues: list[IssueDraft] = list(declared_issues)
 
         parsed = {page.url: _parse_blocks(page) for page in declaring}
 
@@ -137,6 +155,101 @@ class StructuredDataCollector(SeoCollector):
         return CollectionResult(
             outcomes=tuple(outcomes), evidence=ledger.records(), issues=tuple(issues)
         )
+
+
+# --------------------------------------------------------------------------- #
+# seo.sd.declared
+# --------------------------------------------------------------------------- #
+
+
+def _declared(
+    context: CollectionContext,
+    site: SiteObservation,
+    ledger: EvidenceLedger,
+    declaring: list[PageObservation],
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """선언 자체가 있는가.
+
+    구글이 순위 요소로 요구하지는 않지만, 리치 결과·지식 패널·지역 검색에 쓰이는 값이
+    여기서 나온다. 선언이 없으면 그 기회를 통째로 쓰지 않는 상태이므로 **해당 없음이
+    아니라 얻지 못한 점수**로 본다 — 해당 없음으로 두면 그 배점이 분모에서 빠져, 만든
+    사이트가 안 만든 사이트보다 어려운 시험을 보게 된다.
+    """
+    entry = next((page for page in site.pages if page.url == site.entry_url), site.pages[0])
+    observed = {page.url: len(page.raw.json_ld_blocks) for page in site.pages}
+    evidence = [
+        ledger.page_snippet(
+            entry,
+            "dom_snippet",
+            f"JSON-LD 블록 {len(entry.raw.json_ld_blocks)}개"
+            if entry.raw.json_ld_blocks
+            else "head·body 어디에도 application/ld+json 선언이 없음",
+        )
+    ]
+
+    if declaring:
+        return (
+            site_outcome(
+                "seo.sd.declared",
+                passed=True,
+                evidence_ids=evidence,
+                observed_value=observed,
+                note=(
+                    f"{len(declaring)}개 페이지에 구조화 데이터가 선언되어 있습니다."
+                ),
+            ),
+            [],
+        )
+
+    result = site_outcome(
+        "seo.sd.declared",
+        passed=False,
+        evidence_ids=evidence,
+        observed_value=observed,
+        note=(
+            "수집한 페이지 어디에도 구조화 데이터 선언이 없습니다. 리치 결과·지식 패널·"
+            "지역 검색에 쓸 수 있는 정보를 전달하지 못하는 상태입니다."
+        ),
+    )
+    return result, [
+        issue(
+            context,
+            "seo.sd.declared",
+            title_ko="구조화 데이터가 선언되어 있지 않습니다",
+            summary_ko=(
+                f"수집한 {len(site.pages)}개 페이지 어디에도 application/ld+json 선언이 "
+                "없습니다."
+            ),
+            affected_urls=[page.url for page in site.pages],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "대표 페이지 head 에 병원 정보를 담은 JSON-LD 를 넣으십시오. 진료 과목·"
+                "영업시간·주소·전화번호를 명시하면 지역 검색과 지식 패널에서 쓰입니다. "
+                "화면에 없는 값을 적으면 안 됩니다 — 특히 평점과 후기 수는 구글 정책 "
+                "위반이자 의료법 제56조가 금지하는 광고에 해당합니다."
+            ),
+            reverification_ko=(
+                "수정 후 재수집해 선언이 잡히는지, 그리고 선언한 값이 화면에도 있는지 "
+                "함께 확인합니다."
+            ),
+            business_impact_ko=(
+                "검색 결과에서 진료 과목·영업시간·위치가 자동으로 표시되지 않아, "
+                "같은 화면의 경쟁 병원보다 정보가 적게 노출됩니다."
+            ),
+            fix_example=(
+                '<script type="application/ld+json">\n'
+                "{\n"
+                '  "@context": "https://schema.org",\n'
+                '  "@type": "MedicalClinic",\n'
+                '  "name": "온담의원",\n'
+                '  "address": "서울특별시 강남구 테헤란로 1",\n'
+                '  "telephone": "02-555-1234",\n'
+                '  "openingHours": "Mo-Fr 09:00-18:00"\n'
+                "}\n"
+                "</script>"
+            ),
+        )
+    ]
 
 
 # --------------------------------------------------------------------------- #

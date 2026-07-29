@@ -191,11 +191,18 @@ def test_a_not_applicable_check_scores_better_than_the_same_check_failed() -> No
     assert as_collected.overall_score > if_they_failed.overall_score
 
 
-def test_the_structured_data_category_is_not_applicable_rather_than_zero() -> None:
+def test_a_site_without_structured_data_scores_zero_rather_than_being_excused() -> None:
+    """만들지 않은 것은 해당 없음이 아니다.
+
+    해당 없음으로 두면 12.5점이 분모에서 빠져, 스키마를 만든 사이트가 분모 100 에서
+    채점받는 동안 안 만든 사이트는 87.5 에서 채점받게 된다 — 안 만들수록 유리해진다.
+    선언이 없다는 사실은 `seo.sd.declared` 가 실패로 잡고, 그 영역은 0점이 되되
+    배점은 분모에 남는다.
+    """
     category = scan("brochure_na").score.category("structured_data")
-    assert category.status == "NOT_APPLICABLE"
-    assert category.score is None
-    assert category.penalty_total == 0.0
+    assert category.status == "SCORED"
+    assert category.score == 0.0
+    assert category.penalty_total > 0.0
 
 
 # --------------------------------------------------------------------------- #
