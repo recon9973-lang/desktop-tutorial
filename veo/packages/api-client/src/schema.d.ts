@@ -1075,6 +1075,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/seo/scans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 주소를 받아 직접 수집하고 SEO 준비도 채점
+         * @description 대표 주소를 받아 VEO 가 직접 페이지를 가져온 뒤 47개 항목을 판정하고 발행된 명세로 채점합니다. 수집은 SSRF 차단·대상 호스트 예산·응답 크기와 시간 상한이 걸린 크롤러가 담당하며, 무료 공개 진단과 같은 안전장치를 씁니다. 다른 점은 보는 페이지 수뿐입니다 — 공개 진단은 한 장만 보므로 사이트 전체를 봐야 판정되는 항목이 측정 불가로 남습니다.
+         */
+        post: operations["run_site_scan_api_seo_scans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/seo/scans/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 한 사이트의 진단 이력
+         * @description 최신순으로 돌려줍니다. 각 줄에는 그때 적용된 채점 명세의 버전과 체크섬이 함께 들어 있습니다 — 명세가 개정되면 같은 사이트라도 다른 규칙으로 채점되므로, 버전이 다른 두 점수를 그대로 비교하면 안 됩니다.
+         */
+        get: operations["read_site_scan_history_api_seo_scans_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/seo/scans/{scan_run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 지난 진단 결과를 그대로 다시 보기
+         * @description 저장된 보고서를 그대로 돌려줍니다. 다시 수집하지 않으므로 대상 사이트에 요청이 가지 않습니다. 같은 주소를 하루에 여러 번 다시 재지 않아도 되도록, 변경을 확인하려고 **일부러** 재측정할 때만 새로 수집합니다.
+         */
+        get: operations["read_saved_scan_api_seo_scans__scan_run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sites": {
         parameters: {
             query?: never;
@@ -1540,6 +1600,12 @@ export interface components {
         /** ApiResponse[RescoreSummaryPayload] */
         ApiResponse_RescoreSummaryPayload_: {
             data?: components["schemas"]["RescoreSummaryPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ScanHistoryPayload] */
+        ApiResponse_ScanHistoryPayload_: {
+            data?: components["schemas"]["ScanHistoryPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -3045,6 +3111,29 @@ export interface components {
             url: string;
         };
         /**
+         * ImprovementSummary
+         * @description 고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.
+         *
+         *     `gain_points` 는 채점기가 실제 산식으로 계산한 값이다. 화면이 따로 어림하지 않는다 —
+         *     어림하면 고친 뒤의 실제 점수와 어긋나고, 그러면 우선순위 자체를 믿을 수 없게 된다.
+         */
+        ImprovementSummary: {
+            /** Blocked By Cap */
+            blocked_by_cap: boolean;
+            /** Category Id */
+            category_id: string;
+            /** Check Id */
+            check_id: string;
+            /** Gain Points */
+            gain_points: number;
+            /** Remediation Owner */
+            remediation_owner: string;
+            /** Severity */
+            severity: string;
+            /** Title Ko */
+            title_ko: string;
+        };
+        /**
          * InvitationPayload
          * @description The one-time link. Returned once and never retrievable again.
          */
@@ -4452,10 +4541,58 @@ export interface components {
          * @enum {string}
          */
         Role: "SUPER_ADMIN" | "LAB_ADMIN" | "ANALYST" | "DEVELOPER" | "SALES_VIEWER" | "CLIENT_VIEWER";
+        /**
+         * ScanHistoryEntry
+         * @description 이력 한 줄. 추이 그래프의 점 하나가 된다.
+         */
+        ScanHistoryEntry: {
+            /** Band Id */
+            band_id: string | null;
+            /** Confidence */
+            confidence: number;
+            /** Coverage */
+            coverage: number;
+            /** Finished At */
+            finished_at: string | null;
+            /** Requested By Name */
+            requested_by_name: string | null;
+            /**
+             * Scan Run Id
+             * Format: uuid
+             */
+            scan_run_id: string;
+            /** Score */
+            score: number | null;
+            /** Spec Checksum */
+            spec_checksum: string;
+            /** Spec Version */
+            spec_version: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Status */
+            status: string;
+            /** Urls Collected */
+            urls_collected: number;
+        };
+        /** ScanHistoryPayload */
+        ScanHistoryPayload: {
+            /** Entries */
+            entries: components["schemas"]["ScanHistoryEntry"][];
+            /**
+             * Site Id
+             * Format: uuid
+             */
+            site_id: string;
+        };
         /** ScanPayload */
         ScanPayload: {
             /** Evidence */
             evidence: components["schemas"]["EvidenceSummary"][];
+            /** Improvements */
+            improvements?: components["schemas"]["ImprovementSummary"][];
             /** Issues */
             issues: components["schemas"]["IssueSummary"][];
             /** Notes Ko */
@@ -4894,6 +5031,36 @@ export interface components {
             updated_at: string;
         };
         /**
+         * SiteScanRequest
+         * @description 콘솔 진단 요청 — 주소만 주면 VEO 가 직접 가져와 채점한다.
+         *
+         *     `ScanRequest` 와 나란히 두는 이유: 저쪽은 **이미 수집된 자료**를 채점하는 계약이라
+         *     수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는
+         *     경우를 위한 것이다. 둘은 같은 엔진과 같은 명세로 채점하며, 결과 형식도 같다.
+         */
+        SiteScanRequest: {
+            /**
+             * Locale
+             * @default ko-KR
+             */
+            locale: string;
+            /**
+             * Site Id
+             * @description 등록된 사이트에 결과를 남기려면 지정합니다. 비워 두면 채점은 동일하게 수행하지만 **아무것도 저장하지 않습니다** — 영업 단계의 간편 진단이 그 경우입니다.
+             */
+            site_id?: string | null;
+            /**
+             * Target Url
+             * @description 진단할 사이트의 대표 주소입니다.
+             */
+            target_url: string;
+            /**
+             * Urls
+             * @description 함께 볼 페이지 주소입니다. 비워 두면 대표 주소 한 장만 봅니다. 내부 링크·중복 메타데이터처럼 사이트를 봐야 판정되는 항목은 페이지가 한 장뿐이면 측정 불가로 남습니다.
+             */
+            urls?: string[];
+        };
+        /**
          * SiteUpdateRequest
          * @description 사이트 부분 수정 요청.
          *
@@ -4938,6 +5105,25 @@ export interface components {
              * @description Period the source data covers, e.g. '2026-06'.
              */
             source_period?: string | null;
+        };
+        /**
+         * SpecBandDetail
+         * @description 점수 구간 하나. 화면의 등급표가 이것을 그대로 그린다.
+         *
+         *     등급을 화면에 적어 두지 않는 이유: 명세가 개정되어 구간이 바뀌면 화면만 옛 기준을
+         *     말하게 되고, 그 어긋남은 아무도 눈치채지 못한 채 고객 보고서에 실린다.
+         */
+        SpecBandDetail: {
+            /** Description Ko */
+            description_ko?: string | null;
+            /** Id */
+            id: string;
+            /** Label Ko */
+            label_ko: string;
+            /** Max */
+            max: number;
+            /** Min */
+            min: number;
         };
         /** SpecCapDetail */
         SpecCapDetail: {
@@ -4984,6 +5170,8 @@ export interface components {
         };
         /** SpecDetail */
         SpecDetail: {
+            /** Bands */
+            bands: components["schemas"]["SpecBandDetail"][];
             /** Caps */
             caps: components["schemas"]["SpecCapDetail"][];
             /** Categories */
@@ -7597,6 +7785,103 @@ export interface operations {
                 "application/json": components["schemas"]["ScanRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ScanPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_site_scan_api_seo_scans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteScanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ScanPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_site_scan_history_api_seo_scans_history_get: {
+        parameters: {
+            query: {
+                /** @description 이력을 볼 사이트입니다. */
+                site_id: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ScanHistoryPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_saved_scan_api_seo_scans__scan_run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scan_run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

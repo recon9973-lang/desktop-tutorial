@@ -6,11 +6,12 @@ VEO report ``UNKNOWN`` with a reason — it never causes VEO to invent a plausib
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, computed_field
+from pydantic import Field, SecretStr, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from veo.contracts.enums import ProviderState
@@ -199,6 +200,13 @@ class Settings(BaseSettings):
     #: Per caller — one unit per *scan*, counted against their address and their session.
     public_rate_limit_per_hour: int = 10
     public_max_urls_per_scan: int = 1
+
+    #: 콘솔 진단이 한 번에 가져오는 페이지 수. 공개 진단이 1인 것은 남용을 막기 위해서고,
+    #: 그 값으로는 사이트 전체를 봐야 판정되는 항목이 전부 UNKNOWN 으로 남는다.
+    console_max_urls_per_scan: int = 20
+    #: 콘솔 진단이 한 대상 호스트에 시간당 보낼 수 있는 요청 수. 로그인 여부와 무관하게
+    #: VEO 가 남의 서버를 두드리는 도구가 되지 않도록 가드 안에서 부과한다.
+    console_target_host_limit_per_hour: int = 300
     #: Per target host — one unit per *outbound HTTP request*, counted across the whole
     #: public surface, whoever asks. This is the control that stops VEO being pointed at
     #: a third party, and it deliberately has its own number rather than sharing the
@@ -220,6 +228,37 @@ class Settings(BaseSettings):
     default_geo_spec_id: str = "veo.geo.readiness"
 
     cors_allowed_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+
+    @field_validator("cors_allowed_origins", mode="before")
+    @classmethod
+    def _accept_plain_origins(cls, value: object) -> object:
+        """`https://veo.seokorea.org` 처럼 사람이 실제로 쓰는 형태를 받아 준다.
+
+        pydantic-settings 는 목록형 필드의 환경변수 값을 JSON 으로 읽으므로, 대괄호 없는
+        주소 하나는 `SettingsError` 가 되고 **앱이 시작하지 못한다.** 배포 플랫폼에서는
+        이것이 "빌드 성공 · 배포 성공 · 헬스체크 실패" 로만 보여서 네트워크 문제처럼
+        읽히고, 옛 배포가 계속 서비스되기 때문에 "배포했는데 코드가 안 바뀐다" 가 된다.
+
+        형식만 관대하게 받을 뿐, 목록을 넓히지는 않는다. 빈 값은 기본값으로 되돌리지
+        않고 거부한다 — 조용히 되돌리면 운영 환경에 localhost 가 남는다.
+        """
+        if not isinstance(value, str):
+            return value
+
+        text = value.strip()
+        if text.startswith("["):
+            # 이미 JSON 으로 넣어 둔 배포를 깨뜨리지 않는다. 환경변수 경로에서는
+            # pydantic 이 먼저 파싱해 주지만, 코드에서 직접 넘길 때는 여기서 읽는다.
+            try:
+                return json.loads(text)
+            except json.JSONDecodeError:
+                raise ValueError(f"목록으로 읽을 수 없는 값입니다: {text!r}") from None
+
+        entries = [entry.strip() for entry in text.split(",") if entry.strip()]
+        if not entries:
+            # 빈 값을 기본값으로 되돌리면 운영 환경에 localhost 가 남는다.
+            raise ValueError("빈 값입니다. 허용할 출처를 적거나 변수를 지우십시오.")
+        return entries
 
     #: Where the console is served from — the origin an invitation link points at.
     #: Deliberately its own setting rather than derived from ``cors_allowed_origins``:

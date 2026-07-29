@@ -1078,6 +1078,39 @@
         "title": "ApiResponse[RescoreSummaryPayload]",
         "type": "object"
       },
+      "ApiResponse_ScanHistoryPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanHistoryPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[ScanHistoryPayload]",
+        "type": "object"
+      },
       "ApiResponse_ScanPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -5217,6 +5250,51 @@
         "title": "HopPayload",
         "type": "object"
       },
+      "ImprovementSummary": {
+        "additionalProperties": false,
+        "description": "고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.\n\n`gain_points` 는 채점기가 실제 산식으로 계산한 값이다. 화면이 따로 어림하지 않는다 —\n어림하면 고친 뒤의 실제 점수와 어긋나고, 그러면 우선순위 자체를 믿을 수 없게 된다.",
+        "properties": {
+          "blocked_by_cap": {
+            "title": "Blocked By Cap",
+            "type": "boolean"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          },
+          "check_id": {
+            "title": "Check Id",
+            "type": "string"
+          },
+          "gain_points": {
+            "title": "Gain Points",
+            "type": "number"
+          },
+          "remediation_owner": {
+            "title": "Remediation Owner",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "title_ko": {
+            "title": "Title Ko",
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_id",
+          "category_id",
+          "title_ko",
+          "gain_points",
+          "blocked_by_cap",
+          "severity",
+          "remediation_owner"
+        ],
+        "title": "ImprovementSummary",
+        "type": "object"
+      },
       "InvitationPayload": {
         "additionalProperties": false,
         "description": "The one-time link. Returned once and never retrievable again.",
@@ -8936,6 +9014,130 @@
         "title": "Role",
         "type": "string"
       },
+      "ScanHistoryEntry": {
+        "additionalProperties": false,
+        "description": "이력 한 줄. 추이 그래프의 점 하나가 된다.",
+        "properties": {
+          "band_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Band Id"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "coverage": {
+            "title": "Coverage",
+            "type": "number"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "requested_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested By Name"
+          },
+          "scan_run_id": {
+            "format": "uuid",
+            "title": "Scan Run Id",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "spec_checksum": {
+            "title": "Spec Checksum",
+            "type": "string"
+          },
+          "spec_version": {
+            "title": "Spec Version",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "urls_collected": {
+            "title": "Urls Collected",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "scan_run_id",
+          "started_at",
+          "finished_at",
+          "status",
+          "urls_collected",
+          "score",
+          "band_id",
+          "coverage",
+          "confidence",
+          "spec_version",
+          "spec_checksum",
+          "requested_by_name"
+        ],
+        "title": "ScanHistoryEntry",
+        "type": "object"
+      },
+      "ScanHistoryPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/ScanHistoryEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "site_id": {
+            "format": "uuid",
+            "title": "Site Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "site_id",
+          "entries"
+        ],
+        "title": "ScanHistoryPayload",
+        "type": "object"
+      },
       "ScanPayload": {
         "additionalProperties": false,
         "properties": {
@@ -8944,6 +9146,13 @@
               "$ref": "#/components/schemas/EvidenceSummary"
             },
             "title": "Evidence",
+            "type": "array"
+          },
+          "improvements": {
+            "items": {
+              "$ref": "#/components/schemas/ImprovementSummary"
+            },
+            "title": "Improvements",
             "type": "array"
           },
           "issues": {
@@ -10079,6 +10288,49 @@
         "title": "SitePayload",
         "type": "object"
       },
+      "SiteScanRequest": {
+        "additionalProperties": false,
+        "description": "콘솔 진단 요청 — 주소만 주면 VEO 가 직접 가져와 채점한다.\n\n`ScanRequest` 와 나란히 두는 이유: 저쪽은 **이미 수집된 자료**를 채점하는 계약이라\n수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는\n경우를 위한 것이다. 둘은 같은 엔진과 같은 명세로 채점하며, 결과 형식도 같다.",
+        "properties": {
+          "locale": {
+            "default": "ko-KR",
+            "title": "Locale",
+            "type": "string"
+          },
+          "site_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "등록된 사이트에 결과를 남기려면 지정합니다. 비워 두면 채점은 동일하게 수행하지만 **아무것도 저장하지 않습니다** — 영업 단계의 간편 진단이 그 경우입니다.",
+            "title": "Site Id"
+          },
+          "target_url": {
+            "description": "진단할 사이트의 대표 주소입니다.",
+            "minLength": 1,
+            "title": "Target Url",
+            "type": "string"
+          },
+          "urls": {
+            "description": "함께 볼 페이지 주소입니다. 비워 두면 대표 주소 한 장만 봅니다. 내부 링크·중복 메타데이터처럼 사이트를 봐야 판정되는 항목은 페이지가 한 장뿐이면 측정 불가로 남습니다.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Urls",
+            "type": "array"
+          }
+        },
+        "required": [
+          "target_url"
+        ],
+        "title": "SiteScanRequest",
+        "type": "object"
+      },
       "SiteUpdateRequest": {
         "additionalProperties": false,
         "description": "사이트 부분 수정 요청.\n\n`project_id`는 바꿀 수 없습니다. 사이트를 다른 프로젝트로 옮기면 이미 쌓인 진단 이력이\n엉뚱한 프로젝트에 매달리게 됩니다. 새 프로젝트에 새 사이트를 등록하세요.",
@@ -10213,6 +10465,47 @@
           "source"
         ],
         "title": "SourceAttribution",
+        "type": "object"
+      },
+      "SpecBandDetail": {
+        "additionalProperties": false,
+        "description": "점수 구간 하나. 화면의 등급표가 이것을 그대로 그린다.\n\n등급을 화면에 적어 두지 않는 이유: 명세가 개정되어 구간이 바뀌면 화면만 옛 기준을\n말하게 되고, 그 어긋남은 아무도 눈치채지 못한 채 고객 보고서에 실린다.",
+        "properties": {
+          "description_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ko"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label_ko": {
+            "title": "Label Ko",
+            "type": "string"
+          },
+          "max": {
+            "title": "Max",
+            "type": "number"
+          },
+          "min": {
+            "title": "Min",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "min",
+          "max",
+          "label_ko"
+        ],
+        "title": "SpecBandDetail",
         "type": "object"
       },
       "SpecCapDetail": {
@@ -10353,6 +10646,13 @@
       "SpecDetail": {
         "additionalProperties": false,
         "properties": {
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/SpecBandDetail"
+            },
+            "title": "Bands",
+            "type": "array"
+          },
           "caps": {
             "items": {
               "$ref": "#/components/schemas/SpecCapDetail"
@@ -10458,6 +10758,7 @@
           "score_meaning_ko",
           "is_rank_prediction",
           "category_weights",
+          "bands",
           "categories",
           "caps",
           "gates",
@@ -14792,6 +15093,150 @@
           }
         },
         "summary": "수집된 크롤 자료로 SEO 준비도 채점",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/api/seo/scans": {
+      "post": {
+        "description": "대표 주소를 받아 VEO 가 직접 페이지를 가져온 뒤 47개 항목을 판정하고 발행된 명세로 채점합니다. 수집은 SSRF 차단·대상 호스트 예산·응답 크기와 시간 상한이 걸린 크롤러가 담당하며, 무료 공개 진단과 같은 안전장치를 씁니다. 다른 점은 보는 페이지 수뿐입니다 — 공개 진단은 한 장만 보므로 사이트 전체를 봐야 판정되는 항목이 측정 불가로 남습니다.",
+        "operationId": "run_site_scan_api_seo_scans_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ScanPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "주소를 받아 직접 수집하고 SEO 준비도 채점",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/api/seo/scans/history": {
+      "get": {
+        "description": "최신순으로 돌려줍니다. 각 줄에는 그때 적용된 채점 명세의 버전과 체크섬이 함께 들어 있습니다 — 명세가 개정되면 같은 사이트라도 다른 규칙으로 채점되므로, 버전이 다른 두 점수를 그대로 비교하면 안 됩니다.",
+        "operationId": "read_site_scan_history_api_seo_scans_history_get",
+        "parameters": [
+          {
+            "description": "이력을 볼 사이트입니다.",
+            "in": "query",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "description": "이력을 볼 사이트입니다.",
+              "format": "uuid",
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ScanHistoryPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "한 사이트의 진단 이력",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/api/seo/scans/{scan_run_id}": {
+      "get": {
+        "description": "저장된 보고서를 그대로 돌려줍니다. 다시 수집하지 않으므로 대상 사이트에 요청이 가지 않습니다. 같은 주소를 하루에 여러 번 다시 재지 않아도 되도록, 변경을 확인하려고 **일부러** 재측정할 때만 새로 수집합니다.",
+        "operationId": "read_saved_scan_api_seo_scans__scan_run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scan_run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Scan Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ScanPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "지난 진단 결과를 그대로 다시 보기",
         "tags": [
           "seo"
         ]

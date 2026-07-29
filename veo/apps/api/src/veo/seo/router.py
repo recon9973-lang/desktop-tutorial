@@ -12,22 +12,37 @@ before the request body is parsed.
 from __future__ import annotations
 
 import hashlib
+import uuid
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
 from veo.collect.contract import CollectionContext
 from veo.common.security.fetcher import FetchedDocument, FetchHop
-from veo.contracts.enums import ProviderState
+from veo.contracts.enums import ProviderState, UrlImportance
 from veo.contracts.envelope import ApiResponse
+from veo.core.settings import get_provider_credentials
 from veo.organizations.http import guard
 from veo.scoring import ScoreResult, ScoringSpec
+from veo.scoring.improvements import rank_improvements
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
+from veo.db.session import get_db
+from veo.seo.crawl import ConsoleCrawler, CrawlRefusal
+from veo.seo.history import (
+    SiteNotFound,
+    read_scan_history,
+    read_scan_report,
+    save_scan_run,
+)
 from veo.seo.schemas import (
     CapSummary,
+    ImprovementSummary,
     CategorySummary,
     CheckCatalogueEntry,
     CheckCataloguePayload,
@@ -36,8 +51,11 @@ from veo.seo.schemas import (
     OutcomeSummary,
     PagePayload,
     ScanPayload,
+    ScanHistoryEntry,
+    ScanHistoryPayload,
     ScanRequest,
     ScoreSummary,
+    SiteScanRequest,
     UnknownCheckSummary,
 )
 from veo.seo.service import SeoScanResult, load_seo_spec, run_seo_scan
@@ -128,6 +146,188 @@ def run_scan(
     )
 
 
+@router.post(
+    "/scans",
+    response_model=ApiResponse[ScanPayload],
+    summary="주소를 받아 직접 수집하고 SEO 준비도 채점",
+    description=(
+        "대표 주소를 받아 VEO 가 직접 페이지를 가져온 뒤 47개 항목을 판정하고 "
+        "발행된 명세로 채점합니다. 수집은 SSRF 차단·대상 호스트 예산·응답 크기와 시간 "
+        "상한이 걸린 크롤러가 담당하며, 무료 공개 진단과 같은 안전장치를 씁니다. "
+        "다른 점은 보는 페이지 수뿐입니다 — 공개 진단은 한 장만 보므로 사이트 전체를 "
+        "봐야 판정되는 항목이 측정 불가로 남습니다."
+    ),
+)
+def run_site_scan(
+    payload: SiteScanRequest,
+    principal: ScanRunner,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ScanPayload]:
+    spec = load_seo_spec()
+    # 사이트를 지정했다면 **가져오기 전에** 존재를 확인한다. 없는 사이트를 위해 남의
+    # 서버에 요청을 보내고 나서 404 를 돌려주는 것은 순서가 틀렸다.
+    if payload.site_id is not None:
+        _assert_site_exists(db, principal=principal, site_id=payload.site_id)
+    # 대표 주소가 목록의 맨 앞에 오도록 맞춘다. 중복은 제거하되 순서는 유지한다 —
+    # 첫 문서가 primary 가 되고, 그것이 canonical·robots 판정의 기준점이다.
+    requested = [payload.target_url, *payload.urls]
+    targets = list(dict.fromkeys(url for url in requested if url.strip()))
+
+    try:
+        documents, robots_txt = ConsoleCrawler().collect(targets)
+    except CrawlRefusal as refusal:
+        raise HTTPException(
+            status_code=refusal.status_code, detail=refusal.error.model_dump(mode="json")
+        ) from refusal
+
+    context = _context_from_crawl(
+        target_url=payload.target_url,
+        spec=spec,
+        documents=documents,
+        robots_txt=robots_txt,
+        locale=payload.locale,
+    )
+    result = run_seo_scan(context)
+    report = _scan_payload(result)
+
+    if payload.site_id is not None:
+        # 보여준 것을 그대로 남긴다. 조치 문구는 수집기가 발견한 값을 넣어 만들어 내므로
+        # 명세로부터 되살릴 수 없다 — 스냅샷이 없으면 다시 열었을 때 문장이 달라진다.
+        save_scan_run(
+            db,
+            principal=principal,
+            site_id=payload.site_id,
+            result=result,
+            urls_attempted=len(targets),
+            urls_collected=len(documents),
+            report_snapshot=report.model_dump(mode="json"),
+        )
+
+    return ok(
+        report,
+        request_id,
+        spec_id=spec.spec_id,
+        spec_version=spec.version,
+        spec_checksum=spec.checksum,
+    )
+
+
+@router.get(
+    "/scans/history",
+    response_model=ApiResponse[ScanHistoryPayload],
+    summary="한 사이트의 진단 이력",
+    description=(
+        "최신순으로 돌려줍니다. 각 줄에는 그때 적용된 채점 명세의 버전과 체크섬이 함께 "
+        "들어 있습니다 — 명세가 개정되면 같은 사이트라도 다른 규칙으로 채점되므로, "
+        "버전이 다른 두 점수를 그대로 비교하면 안 됩니다."
+    ),
+)
+def read_site_scan_history(
+    principal: ScanReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+    site_id: Annotated[uuid.UUID, Query(description="이력을 볼 사이트입니다.")],
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> ApiResponse[ScanHistoryPayload]:
+    _assert_site_exists(db, principal=principal, site_id=site_id)
+    entries = read_scan_history(db, principal=principal, site_id=site_id, limit=limit)
+    return ok(
+        ScanHistoryPayload(
+            site_id=site_id,
+            entries=[
+                ScanHistoryEntry(
+                    scan_run_id=entry.scan_run_id,
+                    started_at=entry.started_at,
+                    finished_at=entry.finished_at,
+                    status=entry.status,
+                    urls_collected=entry.urls_collected,
+                    score=entry.score,
+                    band_id=entry.band_id,
+                    coverage=entry.coverage,
+                    confidence=entry.confidence,
+                    spec_version=entry.spec_version,
+                    spec_checksum=entry.spec_checksum,
+                    requested_by_name=entry.requested_by_name,
+                )
+                for entry in entries
+            ],
+        ),
+        request_id,
+    )
+
+
+@router.get(
+    "/scans/{scan_run_id}",
+    response_model=ApiResponse[ScanPayload],
+    summary="지난 진단 결과를 그대로 다시 보기",
+    description=(
+        "저장된 보고서를 그대로 돌려줍니다. 다시 수집하지 않으므로 대상 사이트에 요청이 "
+        "가지 않습니다. 같은 주소를 하루에 여러 번 다시 재지 않아도 되도록, 변경을 "
+        "확인하려고 **일부러** 재측정할 때만 새로 수집합니다."
+    ),
+)
+def read_saved_scan(
+    scan_run_id: uuid.UUID,
+    principal: ScanReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ScanPayload]:
+    report = read_scan_report(db, principal=principal, scan_run_id=scan_run_id)
+    if report is None:
+        raise HTTPException(status_code=404, detail="scan run not found")
+    return ok(ScanPayload.model_validate(report), request_id)
+
+
+def _assert_site_exists(db: Session, *, principal: Principal, site_id: uuid.UUID) -> None:
+    """다른 조직의 사이트는 **없는 것으로** 답한다.
+
+    403 은 "그 사이트가 존재한다" 는 사실을 확인해 주는 답이 된다. 조직 경계 밖에서는
+    존재 여부 자체가 알려줄 것이 아니다.
+    """
+    from veo.seo.history import site_exists
+
+    if not site_exists(db, principal=principal, site_id=site_id):
+        raise HTTPException(status_code=404, detail="site not found")
+
+
+def _context_from_crawl(
+    *,
+    target_url: str,
+    spec: ScoringSpec,
+    documents: Sequence[FetchedDocument],
+    robots_txt: str | None,
+    locale: str,
+) -> CollectionContext:
+    """수집 결과를 채점기가 읽는 형태로 옮긴다.
+
+    provider 상태는 설정에서 그대로 가져온다. 자격증명이 없는 provider 는 DISABLED 로
+    들어가고, 그 항목은 UNKNOWN 이 되어 측정 범위를 낮춘다 — 감점되지도, 지어내지도
+    않는다. 이 값을 ENABLED 로 위장하면 없는 데이터를 있는 것처럼 만들게 된다.
+    """
+    by_url = {document.final_url: document for document in documents}
+    primary = documents[0] if documents else None
+    return CollectionContext(
+        target_url=target_url,
+        spec=spec,
+        documents=by_url,
+        primary_document=primary,
+        robots_txt=robots_txt,
+        sitemap_documents={},
+        # 렌더링 후 DOM 은 아직 수집하지 않는다. 비워 두면 렌더 비교 항목이 UNKNOWN 이
+        # 되고, 원본 HTML 과 같다고 **가정하지 않는다**.
+        rendered_dom={},
+        provider_states=dict(get_provider_credentials().states()),
+        provider_payloads={},
+        url_importance={
+            document.final_url: UrlImportance.CONVERSION_OR_HOME.value
+            for document in documents
+        },
+        locale=locale,
+        collected_at=datetime.now(UTC),
+    )
+
+
 # --------------------------------------------------------------------------- #
 # Request to context
 # --------------------------------------------------------------------------- #
@@ -207,8 +407,26 @@ def _document(page: PagePayload, collected_at: datetime) -> FetchedDocument:
 
 
 def _scan_payload(result: SeoScanResult) -> ScanPayload:
+    spec = load_seo_spec()
+    titles = {
+        check.id: (check.title_ko, str(check.severity), check.remediation_owner)
+        for category in spec.categories
+        for check in category.checks
+    }
     return ScanPayload(
         summary_ko=result.summary_ko,
+        improvements=[
+            ImprovementSummary(
+                check_id=entry.check_id,
+                category_id=entry.category_id,
+                title_ko=titles.get(entry.check_id, ("", "MINOR", "DEVELOPER"))[0],
+                gain_points=entry.gain_points,
+                blocked_by_cap=entry.blocked_by_cap,
+                severity=titles.get(entry.check_id, ("", "MINOR", "DEVELOPER"))[1],
+                remediation_owner=titles.get(entry.check_id, ("", "MINOR", "DEVELOPER"))[2],
+            )
+            for entry in rank_improvements(result.score)
+        ],
         score=_score_summary(result.score),
         outcomes=[
             OutcomeSummary(

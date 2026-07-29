@@ -52,6 +52,12 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     permission: 'scan:read',
   },
   {
+    href: '/console/customers',
+    label: '업체 관리',
+    description: '업체와 측정 URL',
+    permission: 'customer:read',
+  },
+  {
     href: '/console/projects',
     label: '프로젝트',
     description: '측정 대상 사이트 관리',

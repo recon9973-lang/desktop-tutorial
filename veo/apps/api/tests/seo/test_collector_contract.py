@@ -159,7 +159,10 @@ ALLOWED_WEIGHT_NAMES = frozenset({"affected_weight", "evaluated_weight"})
 
 #: The plumbing that carries a finished score back to a caller. It is allowed to say
 #: "score" because that is what it is transporting; nothing in it computes one.
-SCORE_PLUMBING = frozenset({"service.py", "router.py", "schemas.py"})
+# 채점을 **하지 않고** 이미 정해진 점수를 나르기만 하는 모듈들. 규칙이 막으려는 것은
+# 검사기가 스스로 배점·심각도·임계값을 갖는 것이지, 결과를 응답이나 행으로 옮기는 일이
+# 아니다. `history.py` 는 채점 결과를 DB 로 옮기며, 심각도조차 발행된 명세에서만 읽는다.
+SCORE_PLUMBING = frozenset({"service.py", "router.py", "schemas.py", "history.py"})
 
 
 def _python_sources(package: Path) -> list[Path]:

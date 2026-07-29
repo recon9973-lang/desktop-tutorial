@@ -19,6 +19,7 @@ from veo.api.schemas import (
     SpecCapDetail,
     SpecCategoryDetail,
     SpecCheckDetail,
+    SpecBandDetail,
     SpecDetail,
     SpecGateDetail,
     SpecListPayload,
@@ -79,6 +80,16 @@ def get_spec(spec_id: str, version: str, request_id: RequestId) -> ApiResponse[S
     spec = _load_or_404(spec_id, version)
     detail = SpecDetail(
         **_summary(spec).model_dump(),
+        bands=[
+            SpecBandDetail(
+                id=band.id,
+                min=band.min,
+                max=band.max,
+                label_ko=band.label_ko,
+                description_ko=band.description_ko,
+            )
+            for band in spec.bands
+        ],
         categories=[
             SpecCategoryDetail(
                 id=category.id,

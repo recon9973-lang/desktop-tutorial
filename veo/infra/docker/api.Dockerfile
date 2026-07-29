@@ -80,8 +80,13 @@ EXPOSE 8000
 
 # curl 을 설치하지 않기 위해 표준 라이브러리로 확인한다.
 # 200 이 아니면 비정상 종료 코드가 나가고 compose 가 unhealthy 로 표시한다.
+#
+# 포트는 아래 CMD 와 **같은 규칙**으로 고른다. 예전에는 여기만 VEO_API_PORT 를 봤는데,
+# 플랫폼이 PORT 를 주입하면 서버는 그 포트로 뜨고 헬스체크는 8000 을 두드려, 멀쩡한
+# 컨테이너가 스스로를 unhealthy 로 보고했다. 두 곳이 갈라지면 증상이 "배포는 되는데
+# 계속 재시작" 으로 나타나서 원인을 앱에서 찾게 된다.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
-    CMD ["python", "-c", "import os, sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('VEO_API_PORT', '8000') + os.environ.get('VEO_HEALTHCHECK_PATH', '/api/health'), timeout=4).status == 200 else 1)"]
+    CMD ["python", "-c", "import os, sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:' + (os.environ.get('PORT') or os.environ.get('VEO_API_PORT', '8000')) + os.environ.get('VEO_HEALTHCHECK_PATH', '/api/health'), timeout=4).status == 200 else 1)"]
 
 # 포트는 플랫폼이 정한다. Railway·Render 등은 PORT 를 주입하고 그 포트로만 트래픽을
 # 보내므로, 컨테이너가 다른 포트를 열면 배포는 성공하고 접속만 안 되는 상태가 된다.

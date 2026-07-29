@@ -113,9 +113,28 @@ class SpecGateDetail(BaseModel):
     description_ko: str | None
 
 
+class SpecBandDetail(BaseModel):
+    """점수 구간 하나. 화면의 등급표가 이것을 그대로 그린다.
+
+    등급을 화면에 적어 두지 않는 이유: 명세가 개정되어 구간이 바뀌면 화면만 옛 기준을
+    말하게 되고, 그 어긋남은 아무도 눈치채지 못한 채 고객 보고서에 실린다.
+    """
+
+    model_config = _STRICT
+
+    id: str
+    min: float
+    max: float
+    label_ko: str
+    description_ko: str | None = None
+
+
 class SpecDetail(SpecSummary):
     model_config = _STRICT
 
+    #: 점수 구간 전체. 지금 등급만이 아니라 **전부** 보여야 "몇 점을 더 받으면 다음
+    #: 등급인지" 를 읽는 사람이 스스로 알 수 있다.
+    bands: list[SpecBandDetail]
     categories: list[SpecCategoryDetail]
     caps: list[SpecCapDetail]
     gates: list[SpecGateDetail]

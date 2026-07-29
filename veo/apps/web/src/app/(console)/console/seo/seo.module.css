@@ -1,0 +1,52 @@
+/* SEO 결과 화면 — 도구줄, 측정 이력, 주소 선택. */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--veo-space-4);
+  margin-bottom: var(--veo-space-6);
+}
+
+.views { display: flex; gap: var(--veo-space-4); font-size: var(--veo-font-size-200); }
+/* 현재 보기를 색이 아니라 굵기와 밑줄로 표시한다. */
+.views a[aria-current='page'] { font-weight: var(--veo-weight-semibold); }
+
+.history { margin-bottom: var(--veo-space-6); }
+.historyTitle {
+  margin: 0 0 var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  font-weight: var(--veo-weight-medium);
+}
+.historyList {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--veo-space-2);
+  display: flex;
+  gap: var(--veo-space-3);
+  /* 이력이 길어져도 화면 전체가 가로로 밀리지 않게 여기서만 스크롤한다. */
+  overflow-x: auto;
+}
+.historyItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+  min-width: 11rem;
+  padding: var(--veo-space-3) var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  text-decoration: none;
+  color: inherit;
+}
+.historyCurrent { border-color: var(--veo-color-accent-border); background: var(--veo-color-accent-subtle); }
+.historyScore {
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+.historyWhen { font-size: var(--veo-font-size-200); }
+.historyWho { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+
+.siteList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--veo-space-3); }

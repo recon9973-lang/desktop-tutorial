@@ -1,0 +1,80 @@
+/* 업체·측정 URL 관리 화면.
+   목록은 표가 아니라 카드다 — 업체마다 URL 개수가 다르고, 표로 만들면 빈 칸이 많아진다. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+  max-width: 32rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.company {
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-surface);
+  padding: var(--veo-space-5);
+}
+
+.companyHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--veo-space-3);
+  margin-bottom: var(--veo-space-4);
+}
+
+.companyName {
+  margin: 0;
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-text);
+}
+
+.siteCount {
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+}
+
+.sites {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  list-style: none;
+  margin: 0 0 var(--veo-space-4);
+  padding: 0;
+}
+
+.site {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-3) var(--veo-space-4);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+}
+
+.origin {
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text);
+  /* 긴 주소가 카드를 밀어내지 않게. 가로 스크롤은 목록에서 특히 나쁘다. */
+  overflow-wrap: anywhere;
+}
+
+.noSites {
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+  margin: 0 0 var(--veo-space-4);
+}

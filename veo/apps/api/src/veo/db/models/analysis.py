@@ -22,7 +22,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from veo.db.base import (
@@ -162,6 +162,29 @@ class ScanRun(Base, OrganizationScopedMixin, ImmutableMixin):
 
     provider_states: Mapped[JsonObject] = json_column()
     partial_reasons: Mapped[JsonArray] = json_column()
+
+    #: 이 진단을 실행한 사람. 예약 실행처럼 사람이 없는 경우가 있어 nullable 이다.
+    #:
+    #: 사용자가 지워져도 **기록은 남는다**(``ON DELETE SET NULL``). 퇴사자 계정을 정리하다
+    #: 지난 진단 이력이 함께 사라지면, 고객에게 낸 보고서의 출처를 설명할 수 없게 된다.
+    requested_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="진단을 실행한 사용자. 예약 실행이면 NULL.",
+    )
+
+    #: 이 실행이 그때 실제로 돌려준 보고서 전문.
+    #:
+    #: 정규화된 ``check_results``·``issues`` 와 겹치지만, 겹치는 것이 목적이다. 저쪽은
+    #: 추이와 이슈 수명을 **질의**하기 위한 것이고, 이쪽은 "그때 화면에 무엇이 떴는지"
+    #: 를 **그대로** 다시 보여주기 위한 것이다. 조치 문구는 수집기가 발견한 값을 넣어
+    #: 그때그때 만들어 내므로(예: 문제가 된 URL 이 문장 안에 있다) 명세로부터 되살릴 수
+    #: 없다. 스냅샷이 없으면 다시 열었을 때 문장이 달라지거나 사라진다.
+    report_snapshot: Mapped[JsonObject | None] = mapped_column(
+        JSONB, nullable=True, comment="그때 반환한 ScanPayload 전문."
+    )
+
     expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
     )
