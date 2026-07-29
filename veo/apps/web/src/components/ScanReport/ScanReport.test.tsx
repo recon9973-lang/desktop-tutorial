@@ -153,6 +153,74 @@ describe('항목별 판정', () => {
   });
 });
 
+describe('관측값을 읽을 수 있게 편다', () => {
+  it('빈 목록은 이름만 남기지 않고 없다고 말한다', () => {
+    detailed({
+      outcomes: [outcome({ observed: { robots_declared: [], fetched: [] } })],
+    });
+
+    const panel = screen.getByText('제목 단계가 순서대로인가').closest('details');
+    expect(within(panel!).getAllByText('없음')).toHaveLength(2);
+  });
+
+  it('참·거짓을 그대로 내보내지 않는다', () => {
+    detailed({ outcomes: [outcome({ observed: { 'https://a.example.kr/': false } })] });
+
+    expect(screen.getByText('아니오')).toBeInTheDocument();
+  });
+});
+
+describe('영역별 점수', () => {
+  it('배점 밖 영역을 측정 불가로 끼워 넣지 않는다', () => {
+    /**
+     * 나란히 서면 우리가 재려다 실패한 것처럼 읽힌다. 실제로는 애초에 이 점수의
+     * 일부가 아니다 — 그 사실은 아래 전용 구역에서 말한다.
+     */
+    detailed({
+      outcomes: [
+        outcome(),
+        outcome({
+          checkId: 'seo.integration.gsc_verified',
+          categoryId: 'search_engine_integration',
+          categoryName: '검색엔진 연동',
+          availability: 'CUSTOMER_GRANTED',
+          status: 'NOT_APPLICABLE',
+        }),
+      ],
+      categories: [
+        {
+          categoryId: 'onpage_semantics',
+          name: '온페이지 시맨틱',
+          weight: 18.75,
+          status: 'SCORED',
+          score: 80,
+          coverage: 1,
+          confidence: 1,
+          failingCheckIds: [],
+          unknownCheckIds: [],
+          notApplicableCheckIds: [],
+        },
+        {
+          categoryId: 'search_engine_integration',
+          name: '검색엔진 연동',
+          weight: 10,
+          status: 'NOT_APPLICABLE',
+          score: null,
+          coverage: 0,
+          confidence: 0,
+          failingCheckIds: [],
+          unknownCheckIds: [],
+          notApplicableCheckIds: ['seo.integration.gsc_verified'],
+        },
+      ],
+    });
+
+    const section = screen.getByLabelText('영역별 점수');
+    expect(within(section).queryByText('측정 불가')).not.toBeInTheDocument();
+    expect(within(section).queryByText('검색엔진 연동')).not.toBeInTheDocument();
+  });
+});
+
 describe('진단 범위 밖', () => {
   const gated = outcome({
     checkId: 'seo.integration.gsc_verified',

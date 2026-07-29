@@ -159,13 +159,23 @@ function Improvements({ result }: { readonly result: ConsoleScanResult }) {
 }
 
 function Categories({ result }: { readonly result: ConsoleScanResult }) {
+  // 배점 밖 영역은 여기 끼우지 않는다. "측정 불가" 로 나란히 서면 우리가 재려다 실패한
+  // 것처럼 읽히는데, 실제로는 애초에 이 점수의 일부가 아니다. 그 영역들은 아래
+  // "이 진단의 배점 밖" 에서 무엇을 연결하면 되는지와 함께 말한다.
+  const inScore = new Set(
+    result.outcomes
+      .filter((item) => item.availability === 'SELF_SERVICE')
+      .map((item) => item.categoryId),
+  );
+  const categories = result.categories.filter((c) => inScore.has(c.categoryId));
+
   return (
     <section className={styles.section} aria-labelledby="report-categories">
       <h2 id="report-categories" className={styles.sectionTitle}>
         영역별 점수
       </h2>
       <ul className={styles.categoryList}>
-        {result.categories.map((category) => (
+        {categories.map((category) => (
           <li key={category.categoryId} className={styles.category}>
             <div className={styles.categoryHead}>
               <span className={styles.categoryName}>{category.name}</span>
@@ -396,12 +406,18 @@ function describeObserved(observed: unknown): { label: string; detail: string }[
 function plain(value: unknown): string {
   if (value === null || value === undefined) return '없음';
   if (typeof value === 'boolean') return value ? '예' : '아니오';
-  if (typeof value === 'string' || typeof value === 'number') return String(value);
-  if (Array.isArray(value)) return value.map(plain).join(', ');
+  if (typeof value === 'number') return String(value);
+  // 빈 문자열·빈 목록·빈 객체는 "없음" 이다. 그대로 두면 이름만 있고 값은 비어 있는
+  // 줄이 남아, 화면이 무엇을 말하려는지 알 수 없게 된다.
+  if (typeof value === 'string') return value.trim() === '' ? '없음' : value;
+  if (Array.isArray(value)) {
+    return value.length === 0 ? '없음' : value.map(plain).join(', ');
+  }
   if (typeof value === 'object') {
-    return Object.entries(value as Record<string, unknown>)
-      .map(([key, entry]) => `${key}: ${plain(entry)}`)
-      .join(' · ');
+    const entries = Object.entries(value as Record<string, unknown>);
+    return entries.length === 0
+      ? '없음'
+      : entries.map(([key, entry]) => `${key}: ${plain(entry)}`).join(' · ');
   }
   return String(value);
 }
