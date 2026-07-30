@@ -80,7 +80,13 @@ function safeMessage(envelope: unknown): string | null {
 
 export async function callConsoleApi<T = unknown>(
   path: string,
-  init: { method?: string; body?: unknown; timeoutMs?: number } = {},
+  init: {
+    method?: string;
+    body?: unknown;
+    timeoutMs?: number;
+    /** 계약이 정한 헤더만. `Authorization` 은 여기서 덮을 수 없다 — 아래 순서를 볼 것. */
+    headers?: Readonly<Record<string, string>>;
+  } = {},
 ): Promise<ConsoleOutcome<T>> {
   const baseUrl = resolveAuthApiBaseUrl();
   if (baseUrl === null) {
@@ -92,7 +98,10 @@ export async function callConsoleApi<T = unknown>(
     return failed('SIGNED_OUT');
   }
 
+  // 호출자 헤더를 먼저 깔고 우리 것으로 덮는다. 순서가 반대면 호출자가 `Authorization`
+  // 을 갈아끼울 수 있고, 그러면 이 통로가 토큰을 지켜 주지 못한다.
   const headers: Record<string, string> = {
+    ...(init.headers ?? {}),
     Accept: 'application/json',
     Authorization: `Bearer ${token}`,
   };
