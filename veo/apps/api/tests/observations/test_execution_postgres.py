@@ -29,7 +29,7 @@ from sqlalchemy import Engine, create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from veo.authz.principal import Principal
-from veo.contracts.enums import Role
+from veo.contracts.enums import JobType, Role
 from veo.db.models.identity import Organization, Project, RoleAssignment, User
 from veo.db.models.observation import (
     AIAnswer,
@@ -40,12 +40,15 @@ from veo.db.models.observation import (
 from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
+from veo.jobs import service as job_service
+from veo.jobs.execution import JobFailure
 from veo.observations.execution import (
     BrandIdentityMissingError,
     EngineChoice,
     answer_facts,
     execute_observation,
 )
+from veo.observations.jobs import observation_work
 from veo.observations.metrics import visibility_metrics
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import InMemoryAnswerStore
@@ -489,3 +492,117 @@ class TestMetricsFromStoredAnswers:
         assert measured.answers_with_visible_citations == 0
         assert measured.citation_rate.value is None, "0%로 보고하면 사이트 탓처럼 읽힌다"
         assert any("모델" in note for note in measured.caveats_ko)
+
+
+class TestTheJobPath:
+    """관측이 요청 밖에서 도는 경로.
+
+    이 경로가 없어서 관측 실행이 요청 안에서 그대로 돌았다. 질문 여덟 개를 세 번씩,
+    엔진 하나로만 잡아도 스물네 번의 외부 호출이고 그것은 몇 분이다. 게이트웨이가 먼저
+    끊고, 사용자에게는 "기능이 고장났다" 로 보이며, 그 시점에 비용은 이미 나갔다.
+    """
+
+    def test_the_work_produces_a_run_and_says_it_is_complete(
+        self, db: Session, tenant
+    ) -> None:
+        principal, prompt_set = tenant()
+        job, created = job_service.submit(
+            db,
+            principal,
+            job_type=JobType.GEO_OBSERVATION_RUN,
+            parameters={"prompt_set_id": str(prompt_set.id)},
+        )
+        db.commit()
+        assert created
+
+        work = observation_work(
+            organization_id=principal.organization_id,
+            user_id=principal.user_id,
+            roles=principal.roles,
+            session_id=principal.session_id,
+            prompt_set_id=prompt_set.id,
+            choices=[EngineChoice(engine="OPENAI", model=MODEL)],
+            repetitions=3,
+            allow_below_floor=False,
+            registry=_registry(),
+            store=InMemoryAnswerStore(),
+        )
+        outcome = work(db, job.id)
+        db.commit()
+
+        assert outcome.result_run_id is not None
+        assert outcome.is_partial is False
+        stored = db.get(ObservationRunRow, outcome.result_run_id)
+        assert stored is not None
+
+    def test_a_missing_prompt_set_fails_with_a_sentence_a_person_can_read(
+        self, db: Session, tenant
+    ) -> None:
+        """작업 실패 메시지는 그대로 화면에 간다. 예외 원문을 옮기면 내부 정보가 샌다."""
+        principal, _ = tenant()
+        job, _ = job_service.submit(
+            db, principal, job_type=JobType.GEO_OBSERVATION_RUN, parameters={}
+        )
+        db.commit()
+
+        work = observation_work(
+            organization_id=principal.organization_id,
+            user_id=principal.user_id,
+            roles=principal.roles,
+            session_id=principal.session_id,
+            prompt_set_id=uuid.uuid4(),
+            choices=[EngineChoice(engine="OPENAI", model=MODEL)],
+            repetitions=3,
+            allow_below_floor=False,
+            registry=_registry(),
+            store=InMemoryAnswerStore(),
+        )
+
+        with pytest.raises(JobFailure) as caught:
+            work(db, job.id)
+
+        assert caught.value.error_code == "PROMPT_SET_NOT_FOUND"
+        assert "질문 집합" in caught.value.message_ko
+
+    def test_the_same_idempotency_key_does_not_buy_a_second_run(
+        self, db: Session, tenant
+    ) -> None:
+        """관측은 돈이 나간다. 새로고침 한 번이 두 번째 청구가 되면 안 된다."""
+        principal, prompt_set = tenant()
+        parameters = {"prompt_set_id": str(prompt_set.id)}
+
+        first, first_created = job_service.submit(
+            db,
+            principal,
+            job_type=JobType.GEO_OBSERVATION_RUN,
+            parameters=parameters,
+            idempotency_key="same-click",
+        )
+        db.commit()
+        second, second_created = job_service.submit(
+            db,
+            principal,
+            job_type=JobType.GEO_OBSERVATION_RUN,
+            parameters=parameters,
+            idempotency_key="same-click",
+        )
+        db.commit()
+
+        assert first_created is True
+        assert second_created is False
+        assert first.id == second.id
+
+    def test_another_organization_cannot_read_the_job(self, db: Session, tenant) -> None:
+        """남의 조직 작업은 403 이 아니라 **없는 것**이다."""
+        owner, prompt_set = tenant()
+        stranger, _ = tenant()
+        job, _ = job_service.submit(
+            db,
+            owner,
+            job_type=JobType.GEO_OBSERVATION_RUN,
+            parameters={"prompt_set_id": str(prompt_set.id)},
+        )
+        db.commit()
+
+        with pytest.raises(job_service.JobNotFoundError):
+            job_service.read(db, stranger, job.id)

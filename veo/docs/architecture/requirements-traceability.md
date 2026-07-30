@@ -67,7 +67,7 @@
 | 가시성 지표 10종 (마스터 §7.3) | **7/10.** 없는 것: 출처 다양성 · 추천 포함 · 안정성(변동) | grep: `source_diversity`·`recommendation_inclusion` 0건 |
 | 자동 판정과 사람 검수 분리 | 모듈은 완성(`observations/risk/`·`review/`)이나 **`src/` 안에 호출자가 없다.** `ClaimAssessment` 를 db/models 밖에서 쓰는 코드 0건 → 제품에서는 아직 돌지 않는다 (지침서 0-E) | `tests/observations/` 만 부른다 |
 | 관측 SOV 를 실측에서 계산 | **미연결.** `competitors/sov.py` 는 완성됐으나 입력이 요청 본문(`ObservedVisibilityInput`)이라 사람이 숫자를 넣어야 한다 | — |
-| 관측을 비동기로 실행 | **미착수.** 라우터가 `execute_observation()` 을 동기로 부른다 (지침서 0-G) | — |
+| 관측을 비동기로 실행 | **완료.** 202 + `GET /api/jobs/{id}` 로 진행률 조회. 작업 본문은 `observations/jobs.py` | `TestTheJobPath` |
 
 ## 4. 네이버 키워드 (마스터 §8)
 
@@ -88,8 +88,10 @@
 |---|---|---|
 | 9개 작업 상태 | `JobStatus` | `packages/shared-types/src/enums.ts` 생성 + `test_openapi_contract.py::test_every_python_contract_enum_value_reaches_typescript` |
 | idempotency·input_hash·재시도·취소·부분성공 | `jobs` 테이블 + `apps/worker/runtime` (런타임만. 저장소는 아직 프로세스 로컬 — 8.2) | `test_schema_invariants.py::test_jobs_support_idempotency_retry_and_partial_success` + worker 테스트 |
-| 장시간 작업의 동기 실행 금지 | ❌ **지켜지지 않고 있다.** `POST /observations/runs` 와 `POST /seo/scans` 가 요청 안에서 그대로 돈다. `apps/api` 전체에 `celery`·`veo_worker`·`.delay(`·`.apply_async` 참조 0건, `Job` 모델을 db/models 밖에서 쓰는 코드 0건, 워커 태스크는 전부 `NotImplementedError` 스텁 | 없음 — 검사가 없어서 이 상태가 오래 유지됐다 |
-| `GET /api/public/v1/jobs/{job_id}` (마스터 §11) | **없음.** 공개 진단에 진행률 조회 경로가 없다 | — |
+| 장시간 작업의 동기 실행 금지 | **관측은 해소.** `POST /observations/runs` 가 202 를 돌려주고 실행은 `veo/jobs/` 를 통해 요청 밖에서 돈다. **`POST /seo/scans` 는 아직 동기다** — 25장에 4.9초라 지금은 견디지만 100장이면 위험하다 | `tests/resources/test_jobs_api.py` · `test_execution_postgres.py::TestTheJobPath` |
+| 작업 실행 방식 | **배경 스레드**다. Celery 워커가 아니다 — 배포 환경에 브로커(Redis)가 없다. 대가는 프로세스 재시작 시 작업이 죽는 것이고, `STALE_AFTER`(20분)로 **"알 수 없음"** 으로 드러낸다 | `tests/jobs/test_service.py::TestStaleness` |
+| 멱등성 | `Idempotency-Key` 헤더 → 같은 키면 새 실행을 만들지 않는다. 관측은 돈이 나가므로 새로고침이 두 번째 청구가 되면 안 된다 | `TestTheJobPath::test_the_same_idempotency_key_does_not_buy_a_second_run` |
+| `GET /api/public/v1/jobs/{job_id}` (마스터 §11) | **없음.** 내부용 `GET /api/jobs/{job_id}` 만 있다. 공개 진단은 아직 동기라 진행률 조회가 필요 없는 상태 | — |
 
 ## 6. API·계약 (마스터 §11)
 
@@ -209,7 +211,7 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 | 무엇 | 증거 |
 |---|---|
 | 답변 위험 평가 · 사람 검수 | `ClaimAssessment` 를 db/models 밖에서 쓰는 코드 0건 |
-| Celery 워커 | 태스크 전부 스텁, `.delay()` 호출 0건, `Job` 참조 0건 |
+| Celery 워커 | 태스크 전부 스텁, `.delay()` 호출 0건. **작업은 `veo/jobs/` 의 배경 스레드가 돈다** — 브로커가 생기면 이쪽으로 옮긴다 |
 | 관측 SOV | 입력이 요청 본문이라 실측과 연결 안 됨 |
 | 사용량·비용 | `APIUsageEvent` 참조 0건 |
 

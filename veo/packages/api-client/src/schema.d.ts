@@ -469,6 +469,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 최근 작업
+         * @description 최신순입니다. 실패한 작업도 그대로 들어 있습니다 — 빼면 없던 일이 됩니다.
+         */
+        get: operations["index_api_jobs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 작업 하나의 진행 상황
+         * @description **`status` 만 보고 그리지 마십시오.** `is_stale` 이 참이면 그 작업의 소식이 끊긴 것이고, 끝났는지 아닌지 저희도 알지 못합니다. 실행 중과 같게 표시하면 사용자가 오지 않을 결과를 기다리게 됩니다.
+         *
+         *     다른 조직의 작업은 403이 아니라 **404**입니다. 존재 여부 자체를 알려주지 않습니다.
+         */
+        get: operations["read_api_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/keywords/lists": {
         parameters: {
             query?: never;
@@ -860,12 +902,14 @@ export interface paths {
         get: operations["run_index_api_observations_runs_get"];
         put?: never;
         /**
-         * 프롬프트 집합을 AI 엔진에 돌려 실제 노출을 관측
+         * 관측을 시작한다 (즉시 돌아오고, 실행은 뒤에서 돈다)
          * @description 같은 질문을 여러 번 던집니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다.
+         *
+         *     **202 를 돌려주고 즉시 끝납니다.** 질문 곱하기 엔진 곱하기 반복만큼 외부 AI 를 부르므로 실행은 몇 분이 걸릴 수 있고, 그것을 요청 안에서 기다리면 게이트웨이가 먼저 끊습니다. 진행 상황은 `GET /api/jobs/{job_id}`, 결과는 작업이 끝난 뒤 `result_run_id` 로 `GET /api/observations/runs/{run_id}` 에서 봅니다.
          *
          *     **모델을 직접 고르셔야 합니다.** 인용을 돌려주는지가 모델마다 다릅니다 — 실측 결과 `gpt-5`·`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않습니다. 돌려주지 않는 모델로 재면 인용 지표는 0회가 아니라 **측정 불가**로 남습니다.
          *
-         *     응답에는 한 일과 **못 한 일**이 함께 들어 있습니다. `executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다.
+         *     `Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 **새 실행을 만들지 않고** 원래 작업을 돌려줍니다. 관측은 돈이 나가는 일이라, 새로고침 한 번이 두 번 청구되면 안 됩니다.
          */
         post: operations["run_api_observations_runs_post"];
         delete?: never;
@@ -1624,6 +1668,18 @@ export interface components {
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[JobListPayload] */
+        ApiResponse_JobListPayload_: {
+            data?: components["schemas"]["JobListPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[JobPayload] */
+        ApiResponse_JobPayload_: {
+            data?: components["schemas"]["JobPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[KeywordListPayload] */
         ApiResponse_KeywordListPayload_: {
             data?: components["schemas"]["KeywordListPayload"] | null;
@@ -1663,12 +1719,6 @@ export interface components {
         /** ApiResponse[ObservationRunListPayload] */
         ApiResponse_ObservationRunListPayload_: {
             data?: components["schemas"]["ObservationRunListPayload"] | null;
-            error?: components["schemas"]["ApiError"] | null;
-            meta: components["schemas"]["ResponseMeta"];
-        };
-        /** ApiResponse[ObservationRunPayload] */
-        ApiResponse_ObservationRunPayload_: {
-            data?: components["schemas"]["ObservationRunPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -3578,6 +3628,84 @@ export interface components {
             /** Title Ko */
             title_ko: string;
         };
+        /** JobListPayload */
+        JobListPayload: {
+            /** Items */
+            items: components["schemas"]["JobPayload"][];
+            /** Total */
+            total: number;
+        };
+        /**
+         * JobPayload
+         * @description 진행 중이거나 끝난 작업 하나.
+         *
+         *     `status` 만 보고 화면을 그리지 마십시오. **소식이 끊긴 작업도 `RUNNING` 입니다.**
+         *     `is_stale` 이 참이면 그 작업이 아직 도는지 저희도 알지 못합니다 — 그때 "실행 중"
+         *     이라고 표시하면 사용자는 오지 않을 결과를 기다립니다.
+         */
+        JobPayload: {
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current Stage */
+            current_stage: string | null;
+            /** Error Code */
+            error_code: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Is Stale
+             * @description 소식이 끊긴 미완료 작업인가. 참이면 **끝났는지 아닌지 알 수 없다**는 뜻이며, 실행 중과 같게 그리면 안 됩니다.
+             */
+            is_stale: boolean;
+            /**
+             * Note Ko
+             * @description 이 상태를 사람에게 설명하는 문장입니다. 비어 있으면 덧붙일 말이 없습니다.
+             */
+            note_ko: string;
+            /** Partial Result Available */
+            partial_result_available: boolean;
+            /** Progress */
+            progress: number;
+            /**
+             * Result Run Id
+             * @description 끝났다면 결과 행의 id 입니다. 이것으로 결과를 조회합니다.
+             */
+            result_run_id: string | null;
+            /**
+             * Safe Error Message
+             * @description 사용자에게 보여도 되는 문장만 들어갑니다. 공급자 오류 원문은 여기 오지 않습니다 — 자격증명과 내부 주소가 섞여 있기 때문입니다.
+             */
+            safe_error_message: string | null;
+            /**
+             * Stages
+             * @description 이 작업이 거치는 단계들입니다.
+             */
+            stages: string[];
+            /** Started At */
+            started_at: string | null;
+            /**
+             * Status
+             * @description `QUEUED` 대기 · `RUNNING` 실행 중 · `SUCCEEDED` 완료 · `PARTIAL_SUCCESS` 일부만 실행 · `FAILED_FINAL` 실패 · `CANCELLED` 취소.
+             */
+            status: string;
+            /** Type */
+            type: string;
+        };
+        /**
+         * JobType
+         * @enum {string}
+         */
+        JobType: "SEO_SCAN" | "GEO_READINESS_SCAN" | "GEO_OBSERVATION_RUN" | "KEYWORD_LOOKUP" | "SITE_CRAWL" | "COMPETITOR_COMPARISON" | "REPORT_EXPORT" | "REVERIFICATION";
         /** KeywordListPayload */
         KeywordListPayload: {
             /** Created At */
@@ -7148,6 +7276,70 @@ export interface operations {
             };
         };
     };
+    index_api_jobs_get: {
+        parameters: {
+            query?: {
+                /** @description 작업 종류로 거릅니다. */
+                type?: components["schemas"]["JobType"] | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_JobListPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_api_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_JobPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_keyword_lists_api_keywords_lists_get: {
         parameters: {
             query?: {
@@ -7991,7 +8183,10 @@ export interface operations {
     run_api_observations_runs_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 같은 키로 다시 부르면 원래 작업을 돌려줍니다. */
+                "Idempotency-Key"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8002,12 +8197,12 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            201: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiResponse_ObservationRunPayload_"];
+                    "application/json": components["schemas"]["ApiResponse_JobPayload_"];
                 };
             };
             /** @description Validation Error */

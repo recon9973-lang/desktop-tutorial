@@ -583,6 +583,72 @@
         "title": "ApiResponse[IssuePayload]",
         "type": "object"
       },
+      "ApiResponse_JobListPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobListPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[JobListPayload]",
+        "type": "object"
+      },
+      "ApiResponse_JobPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[JobPayload]",
+        "type": "object"
+      },
       "ApiResponse_KeywordListPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -812,39 +878,6 @@
           "meta"
         ],
         "title": "ApiResponse[ObservationRunListPayload]",
-        "type": "object"
-      },
-      "ApiResponse_ObservationRunPayload_": {
-        "additionalProperties": false,
-        "properties": {
-          "data": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ObservationRunPayload"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "error": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ApiError"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "meta": {
-            "$ref": "#/components/schemas/ResponseMeta"
-          }
-        },
-        "required": [
-          "meta"
-        ],
-        "title": "ApiResponse[ObservationRunPayload]",
         "type": "object"
       },
       "ApiResponse_OrganizationPayload_": {
@@ -6159,6 +6192,190 @@
         ],
         "title": "IssueSummary",
         "type": "object"
+      },
+      "JobListPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/JobPayload"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "JobListPayload",
+        "type": "object"
+      },
+      "JobPayload": {
+        "additionalProperties": false,
+        "description": "진행 중이거나 끝난 작업 하나.\n\n`status` 만 보고 화면을 그리지 마십시오. **소식이 끊긴 작업도 `RUNNING` 입니다.**\n`is_stale` 이 참이면 그 작업이 아직 도는지 저희도 알지 못합니다 — 그때 \"실행 중\"\n이라고 표시하면 사용자는 오지 않을 결과를 기다립니다.",
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Stage"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_stale": {
+            "description": "소식이 끊긴 미완료 작업인가. 참이면 **끝났는지 아닌지 알 수 없다**는 뜻이며, 실행 중과 같게 그리면 안 됩니다.",
+            "title": "Is Stale",
+            "type": "boolean"
+          },
+          "note_ko": {
+            "description": "이 상태를 사람에게 설명하는 문장입니다. 비어 있으면 덧붙일 말이 없습니다.",
+            "title": "Note Ko",
+            "type": "string"
+          },
+          "partial_result_available": {
+            "title": "Partial Result Available",
+            "type": "boolean"
+          },
+          "progress": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Progress",
+            "type": "number"
+          },
+          "result_run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "끝났다면 결과 행의 id 입니다. 이것으로 결과를 조회합니다.",
+            "title": "Result Run Id"
+          },
+          "safe_error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "사용자에게 보여도 되는 문장만 들어갑니다. 공급자 오류 원문은 여기 오지 않습니다 — 자격증명과 내부 주소가 섞여 있기 때문입니다.",
+            "title": "Safe Error Message"
+          },
+          "stages": {
+            "description": "이 작업이 거치는 단계들입니다.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Stages",
+            "type": "array"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "description": "`QUEUED` 대기 · `RUNNING` 실행 중 · `SUCCEEDED` 완료 · `PARTIAL_SUCCESS` 일부만 실행 · `FAILED_FINAL` 실패 · `CANCELLED` 취소.",
+            "title": "Status",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "status",
+          "is_stale",
+          "progress",
+          "current_stage",
+          "stages",
+          "created_at",
+          "started_at",
+          "finished_at",
+          "attempts",
+          "error_code",
+          "safe_error_message",
+          "result_run_id",
+          "partial_result_available",
+          "note_ko"
+        ],
+        "title": "JobPayload",
+        "type": "object"
+      },
+      "JobType": {
+        "enum": [
+          "SEO_SCAN",
+          "GEO_READINESS_SCAN",
+          "GEO_OBSERVATION_RUN",
+          "KEYWORD_LOOKUP",
+          "SITE_CRAWL",
+          "COMPETITOR_COMPARISON",
+          "REPORT_EXPORT",
+          "REVERIFICATION"
+        ],
+        "title": "JobType",
+        "type": "string"
       },
       "KeywordListPayload": {
         "additionalProperties": false,
@@ -14191,6 +14408,114 @@
         ]
       }
     },
+    "/api/jobs": {
+      "get": {
+        "description": "최신순입니다. 실패한 작업도 그대로 들어 있습니다 — 빼면 없던 일이 됩니다.",
+        "operationId": "index_api_jobs_get",
+        "parameters": [
+          {
+            "description": "작업 종류로 거릅니다.",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/JobType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "작업 종류로 거릅니다.",
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobListPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "최근 작업",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/jobs/{job_id}": {
+      "get": {
+        "description": "**`status` 만 보고 그리지 마십시오.** `is_stale` 이 참이면 그 작업의 소식이 끊긴 것이고, 끝났는지 아닌지 저희도 알지 못합니다. 실행 중과 같게 표시하면 사용자가 오지 않을 결과를 기다리게 됩니다.\n\n다른 조직의 작업은 403이 아니라 **404**입니다. 존재 여부 자체를 알려주지 않습니다.",
+        "operationId": "read_api_jobs__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "작업 하나의 진행 상황",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
     "/api/keywords/lists": {
       "get": {
         "operationId": "read_keyword_lists_api_keywords_lists_get",
@@ -15527,8 +15852,28 @@
         ]
       },
       "post": {
-        "description": "같은 질문을 여러 번 던집니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다.\n\n**모델을 직접 고르셔야 합니다.** 인용을 돌려주는지가 모델마다 다릅니다 — 실측 결과 `gpt-5`·`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않습니다. 돌려주지 않는 모델로 재면 인용 지표는 0회가 아니라 **측정 불가**로 남습니다.\n\n응답에는 한 일과 **못 한 일**이 함께 들어 있습니다. `executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다.",
+        "description": "같은 질문을 여러 번 던집니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다.\n\n**202 를 돌려주고 즉시 끝납니다.** 질문 곱하기 엔진 곱하기 반복만큼 외부 AI 를 부르므로 실행은 몇 분이 걸릴 수 있고, 그것을 요청 안에서 기다리면 게이트웨이가 먼저 끊습니다. 진행 상황은 `GET /api/jobs/{job_id}`, 결과는 작업이 끝난 뒤 `result_run_id` 로 `GET /api/observations/runs/{run_id}` 에서 봅니다.\n\n**모델을 직접 고르셔야 합니다.** 인용을 돌려주는지가 모델마다 다릅니다 — 실측 결과 `gpt-5`·`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않습니다. 돌려주지 않는 모델로 재면 인용 지표는 0회가 아니라 **측정 불가**로 남습니다.\n\n`Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 **새 실행을 만들지 않고** 원래 작업을 돌려줍니다. 관측은 돈이 나가는 일이라, 새로고침 한 번이 두 번 청구되면 안 됩니다.",
         "operationId": "run_api_observations_runs_post",
+        "parameters": [
+          {
+            "description": "같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -15540,11 +15885,11 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponse_ObservationRunPayload_"
+                  "$ref": "#/components/schemas/ApiResponse_JobPayload_"
                 }
               }
             },
@@ -15561,7 +15906,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "프롬프트 집합을 AI 엔진에 돌려 실제 노출을 관측",
+        "summary": "관측을 시작한다 (즉시 돌아오고, 실행은 뒤에서 돈다)",
         "tags": [
           "observations"
         ]

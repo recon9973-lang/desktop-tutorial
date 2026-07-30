@@ -15,26 +15,25 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
-from veo.contracts.enums import ProviderState
+from veo.contracts.enums import JobType, ProviderState
 from veo.contracts.envelope import ApiResponse
 from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.db.session import get_db
-from veo.observations.execution import (
-    BrandIdentityMissingError,
-    EngineChoice,
-    answer_facts,
-    execute_observation,
-)
+from veo.jobs import service as jobs
+from veo.jobs.execution import run_detached
+from veo.jobs.router import job_payload
+from veo.jobs.schemas import JobPayload
+from veo.observations.execution import EngineChoice, answer_facts
+from veo.observations.jobs import OBSERVATION_STAGES, observation_work
 from veo.observations.metrics import visibility_metrics
 from veo.observations.prompts import PromptSet, PromptSetImbalanceError
-from veo.observations.providers.registry import _STATE_LABELS_KO, UnknownEngineError
-from veo.observations.runner import RepetitionFloorError
+from veo.observations.providers.registry import _STATE_LABELS_KO
 from veo.observations.runs import AccountState, SearchMode
 from veo.observations.schemas import (
     EnginePayload,
@@ -68,7 +67,6 @@ router = APIRouter(prefix="/observations", tags=["observations"])
 
 ObservationReader = Annotated[Principal, Depends(guard(Permission.OBSERVATION_READ))]
 ObservationRunner_ = Annotated[Principal, Depends(guard(Permission.OBSERVATION_RUN))]
-
 
 @router.get(
     "/engines",
@@ -214,17 +212,22 @@ def _payload(row: PromptSetRow, built: PromptSet) -> PromptSetPayload:
 
 @router.post(
     "/runs",
-    response_model=ApiResponse[ObservationRunPayload],
-    status_code=201,
-    summary="프롬프트 집합을 AI 엔진에 돌려 실제 노출을 관측",
+    response_model=ApiResponse[JobPayload],
+    status_code=202,
+    summary="관측을 시작한다 (즉시 돌아오고, 실행은 뒤에서 돈다)",
     description=(
         "같은 질문을 여러 번 던집니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 "
         "결과를 노출률이라고 부를 수 없습니다.\n\n"
+        "**202 를 돌려주고 즉시 끝납니다.** 질문 곱하기 엔진 곱하기 반복만큼 외부 AI 를 부르므로 "
+        "실행은 몇 분이 걸릴 수 있고, 그것을 요청 안에서 기다리면 게이트웨이가 먼저 "
+        "끊습니다. 진행 상황은 `GET /api/jobs/{job_id}`, 결과는 작업이 끝난 뒤 "
+        "`result_run_id` 로 `GET /api/observations/runs/{run_id}` 에서 봅니다.\n\n"
         "**모델을 직접 고르셔야 합니다.** 인용을 돌려주는지가 모델마다 다릅니다 — 실측 "
         "결과 `gpt-5`·`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않습니다. "
         "돌려주지 않는 모델로 재면 인용 지표는 0회가 아니라 **측정 불가**로 남습니다.\n\n"
-        "응답에는 한 일과 **못 한 일**이 함께 들어 있습니다. `executions_valid` 만 보면 "
-        "절반만 실행된 관측이 완전한 측정처럼 읽힙니다."
+        "`Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 **새 실행을 만들지 "
+        "않고** 원래 작업을 돌려줍니다. 관측은 돈이 나가는 일이라, 새로고침 한 번이 두 "
+        "번 청구되면 안 됩니다."
     ),
 )
 def run(
@@ -232,11 +235,20 @@ def run(
     principal: ObservationRunner_,
     request_id: RequestId,
     db: Annotated[Session, Depends(get_db)],
-) -> ApiResponse[ObservationRunPayload]:
+    idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias="Idempotency-Key",
+            description="같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+        ),
+    ] = None,
+) -> ApiResponse[JobPayload]:
     prompt_set_row = get_prompt_set(db, principal, payload.prompt_set_id)
     if prompt_set_row is None:
         raise HTTPException(status_code=404, detail="prompt set not found")
 
+    # 엔진 선택은 **작업을 만들기 전에** 검증한다. 잘못된 엔진 이름 때문에 실패할
+    # 작업을 만들어 두면, 사용자는 202 를 받고 몇 초 뒤 실패를 다시 물어봐야 한다.
     try:
         choices = [
             EngineChoice(
@@ -250,25 +262,48 @@ def run(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    try:
-        row = execute_observation(
-            db,
-            principal,
-            prompt_set_row=prompt_set_row,
-            engines=choices,
-            repetitions=payload.repetitions,
-            allow_below_floor=payload.allow_below_floor,
-        )
-    except BrandIdentityMissingError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
-    except RepetitionFloorError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except UnknownEngineError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
+    job, created = jobs.submit(
+        db,
+        principal,
+        job_type=JobType.GEO_OBSERVATION_RUN,
+        project_id=prompt_set_row.project_id,
+        idempotency_key=idempotency_key,
+        stages=list(OBSERVATION_STAGES),
+        parameters={
+            "prompt_set_id": str(payload.prompt_set_id),
+            "repetitions": payload.repetitions,
+            "allow_below_floor": payload.allow_below_floor,
+            "engines": [
+                {
+                    "engine": choice.engine,
+                    "model": choice.model,
+                    "search_mode": str(choice.search_mode),
+                    "account_state": str(choice.account_state),
+                }
+                for choice in choices
+            ],
+        },
+    )
+    job_id = job.id
     db.commit()
-    db.refresh(row)
-    return ok(_run_payload(row), request_id)
+    db.refresh(job)
+
+    if created:
+        run_detached(
+            job_id,
+            observation_work(
+                organization_id=principal.organization_id,
+                user_id=principal.user_id,
+                roles=principal.roles,
+                session_id=principal.session_id,
+                prompt_set_id=payload.prompt_set_id,
+                choices=choices,
+                repetitions=payload.repetitions,
+                allow_below_floor=payload.allow_below_floor,
+            ),
+        )
+
+    return ok(job_payload(job), request_id)
 
 
 @router.get(
