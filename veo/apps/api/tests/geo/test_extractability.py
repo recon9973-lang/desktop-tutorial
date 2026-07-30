@@ -129,9 +129,15 @@ def test_distinct_pages_pass_the_duplication_check() -> None:
 
 
 def test_a_single_page_crawl_cannot_judge_duplication() -> None:
+    """한 장만 가져온 것은 "중복이 없다" 가 아니라 **못 잰 것**이다.
+
+    해당 없음으로 접으면 배점이 분모에서 빠지고, 그러면 **덜 재는 편이 유리해진다.**
+    SEO 에서 같은 결함을 이미 고쳤는데 GEO 는 그대로였다 — 그때 규칙이
+    `seo/collectors/base.py` 안에만 있어서 이쪽에서는 보이지 않았다.
+    """
     assert (
         run("publisher_article")["geo.extract.no_duplicate_answer_blocks"]
-        is CheckStatus.NOT_APPLICABLE
+        is CheckStatus.UNKNOWN
     )
 
 

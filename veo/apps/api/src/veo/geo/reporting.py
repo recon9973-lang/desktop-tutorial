@@ -12,8 +12,10 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any, Final
 
-from veo.collect.contract import EvidenceRecord, IssueDraft
+from veo.collect.contract import CollectionContext, EvidenceRecord, IssueDraft
+from veo.collect.sample import SampleScope
 from veo.scoring import CheckOutcome, CheckStatus
+from veo.seo.parsing.sitemap import parse_sitemap
 
 #: Named confidence levels defined by ``veo.geo.readiness``. The numbers behind these
 #: names live in the specification and nowhere else.
@@ -123,3 +125,22 @@ __all__ = [
     "snippet_evidence",
     "worst",
 ]
+
+
+def sample_scope(context: CollectionContext) -> SampleScope:
+    """이번 수집이 사이트 전체인지 판단하는 데 필요한 사실을 맥락에서 추린다.
+
+    규칙과 문구는 :mod:`veo.collect.sample` 이 갖는다. SEO 수집기도 같은 것을 쓴다 —
+    한쪽에만 고쳐 두면 다른 쪽이 조용히 틀린 채 남는다. 실제로 그랬다.
+
+    sitemap 이 **선언한 주소 수**를 세는 것이지 sitemap 파일 수를 세는 것이 아니다.
+    "sitemap 하나에 주소가 하나" 라야 한 장짜리 사이트라는 사이트 자신의 선언이 된다.
+    """
+    declared: set[str] = set()
+    for body in context.sitemap_documents.values():
+        declared.update(parse_sitemap(body).locations)
+    return SampleScope(
+        crawl_is_exhaustive=context.crawl_is_exhaustive,
+        page_count=len(context.documents),
+        declared_url_count=len(declared),
+    )

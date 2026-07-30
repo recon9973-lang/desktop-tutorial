@@ -26,10 +26,20 @@ from veo.collect.contract import (
     not_applicable_outcome,
     unknown_outcome,
 )
+from veo.collect.sample import absent_in_sample_outcome
 from veo.geo.entity_graph import EntityGraph
 from veo.geo.pagekind import KINDS_EXPECTING_DATES
 from veo.geo.parsing import PageDocument
-from veo.geo.reporting import DIRECT, HIGH, LOW, MEDIUM, finding, observed, snippet_evidence
+from veo.geo.reporting import (
+    DIRECT,
+    HIGH,
+    LOW,
+    MEDIUM,
+    finding,
+    observed,
+    sample_scope,
+    snippet_evidence,
+)
 from veo.geo.view import TargetView, build_view
 from veo.scoring import CheckOutcome, CheckStatus
 
@@ -269,8 +279,17 @@ class FreshnessSignalsCollector:
         evidence: list[EvidenceRecord],
     ) -> CheckOutcome:
         if not context.sitemap_documents:
-            return not_applicable_outcome(
-                "geo.fresh.sitemap_lastmod_reliable", "sitemap이 수집되지 않았습니다."
+            # "sitemap 이 없다" 와 "우리가 sitemap 을 못 가져왔다" 는 다른 사실이다.
+            # 사이트 전체를 돌고도 못 찾았다면 정말 없는 것이고, 일부만 봤다면 못 잰
+            # 것이다. 뒤쪽을 해당 없음으로 접으면 덜 재는 편이 유리해진다.
+            return absent_in_sample_outcome(
+                sample_scope(context),
+                "geo.fresh.sitemap_lastmod_reliable",
+                absent_ko=(
+                    "사이트 전체를 수집했으나 sitemap이 없어 lastmod를 평가할 "
+                    "대상이 없습니다."
+                ),
+                subject_ko="sitemap",
             )
 
         entries: list[tuple[str, str]] = []

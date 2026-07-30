@@ -19,6 +19,9 @@ from veo.collect.contract import (
     not_applicable_outcome,
     unknown_outcome,
 )
+from veo.collect.sample import SampleScope
+from veo.collect.sample import absent_in_sample_outcome as _absent_in_sample
+from veo.collect.sample import single_page_outcome as _single_page
 from veo.contracts.enums import ProviderState
 from veo.scoring import CheckOutcome, CheckStatus
 from veo.seo.observation import PageObservation, SiteObservation, build_observation
@@ -305,36 +308,23 @@ def all_unknown(check_ids: Sequence[str], reason_ko: str) -> CollectionResult:
     )
 
 
-def sample_is_the_whole_site(context: CollectionContext, site: SiteObservation) -> bool:
-    """우리가 본 것이 이 사이트의 **전부**인가, 아니면 일부인가.
+def scope_of(context: CollectionContext, site: SiteObservation) -> SampleScope:
+    """이 수집이 사이트 전체인지 판단하는 데 필요한 사실만 추린다.
 
-    이 하나의 질문이 ``해당 없음`` 과 ``측정 불가`` 를 가른다. 둘은 점수에서 정반대로
-    움직인다 — 앞은 분모에서 빠지고, 뒤는 분모에 남아 0점이다(ADR 0016). 그래서 근거
-    없이 앞을 고르면 **덜 재는 편이 유리해진다.**
-
-    "수집한 페이지 중에 그런 것이 없다" 와 "이 사이트에 그런 것이 없다" 는 다른 문장이다.
-    홈페이지 한 장만 보고 "이 사이트에는 깊은 URL 이 없다" 거나 "지연 로딩을 쓰는
-    페이지가 없다" 고 단정하면, 없는 사실을 만들어 내는 것이면서 동시에 표본을 좁힌
-    쪽에 점수를 얹어 주는 것이 된다.
-
-    **전부라고 말하려면 두 가지가 필요하다.**
-
-    1. 발견 크롤이 상한·예산에 걸리지 않고 가져올 주소를 다 가져왔다
-       (``crawl_is_exhaustive``).
-    2. 그 크롤이 실제로 작동했다는 증거. 페이지를 둘 이상 가져왔다면 링크 추적이
-       동작한 것이고, 한 장뿐이라면 사이트가 스스로 sitemap 으로 "페이지가 하나다" 라고
-       선언해 주어야 한다.
-
-    두 번째가 필요한 이유는 메뉴를 자바스크립트로만 그리는 사이트다. 원본 HTML 에
-    링크가 없으니 크롤은 "더 볼 것이 없다" 고 판단하지만 실제로는 페이지가 많다. 그때
-    해당 없음으로 접으면 **링크를 숨긴 사이트가 유리해진다.**
+    규칙과 문구는 :mod:`veo.collect.sample` 이 갖는다. GEO 수집기도 같은 규칙을 써야
+    하는데, 이 함수가 `seo/` 안에만 있던 동안 GEO 는 그 사실을 모른 채 같은 실수를
+    갖고 있었다.
     """
-    if not context.crawl_is_exhaustive:
-        return False
-    if len(site.pages) >= 2:
-        return True
-    declared = site.sitemap_locations
-    return bool(declared) and len(declared) < 2
+    return SampleScope(
+        crawl_is_exhaustive=context.crawl_is_exhaustive,
+        page_count=len(site.pages),
+        declared_url_count=len(site.sitemap_locations),
+    )
+
+
+def sample_is_the_whole_site(context: CollectionContext, site: SiteObservation) -> bool:
+    """우리가 본 것이 이 사이트의 **전부**인가, 아니면 일부인가."""
+    return scope_of(context, site).is_whole_site
 
 
 def single_page_outcome(
@@ -344,29 +334,8 @@ def single_page_outcome(
     *,
     subject_ko: str,
 ) -> CheckOutcome:
-    """페이지가 한 장뿐일 때, 페이지 간 비교 검사가 내놓아야 하는 답.
-
-    사유에 무엇을 하면 판정되는지 함께 적는다 — "측정 불가" 만 띄우면 고장으로 읽힌다.
-    """
-    if sample_is_the_whole_site(context, site):
-        return not_applicable_outcome(
-            check_id,
-            f"사이트 전체를 수집했고 sitemap도 페이지가 하나임을 확인해 주므로, "
-            f"{subject_ko}가 성립하지 않습니다.",
-        )
-    if context.crawl_is_exhaustive:
-        return unknown_outcome(
-            check_id,
-            f"수집한 페이지가 하나뿐이어서 {subject_ko}을 판단할 수 없습니다. "
-            "링크를 따라가 봤지만 다른 페이지를 찾지 못했습니다 — 메뉴가 자바스크립트로만 "
-            "그려지는 경우가 흔합니다. sitemap을 두시면 한 장짜리 사이트임을 확인할 수 "
-            "있고, 그때 이 항목은 배점에서 빠집니다.",
-        )
-    return unknown_outcome(
-        check_id,
-        f"수집한 페이지가 하나뿐이어서 {subject_ko}을 판단할 수 없습니다. "
-        "사이트 전체 진단으로 다시 재면 판정됩니다.",
-    )
+    """페이지가 한 장뿐일 때, 페이지 간 비교 검사가 내놓아야 하는 답."""
+    return _single_page(scope_of(context, site), check_id, subject_ko=subject_ko)
 
 
 def absent_in_sample_outcome(
@@ -377,18 +346,9 @@ def absent_in_sample_outcome(
     absent_ko: str,
     subject_ko: str,
 ) -> CheckOutcome:
-    """수집한 페이지 중에 검사 대상이 하나도 없을 때의 답.
-
-    사이트 전체를 봤다면 "이 사이트에는 그것이 없다" 가 사실이고 해당 없음이 맞다.
-    일부만 봤다면 그것은 **표본에 대한 사실**일 뿐이므로 측정 불가다.
-    """
-    if sample_is_the_whole_site(context, site):
-        return not_applicable_outcome(check_id, absent_ko)
-    return unknown_outcome(
-        check_id,
-        f"수집한 페이지 중에는 {subject_ko}이 없었습니다. 다만 사이트 전체를 본 것이 "
-        "아니므로 다른 페이지에 있는지는 확인하지 못했습니다. 사이트 전체 진단으로 다시 "
-        "재면 판정됩니다.",
+    """수집한 페이지 중에 검사 대상이 하나도 없을 때의 답."""
+    return _absent_in_sample(
+        scope_of(context, site), check_id, absent_ko=absent_ko, subject_ko=subject_ko
     )
 
 
@@ -406,6 +366,7 @@ __all__ = [
     "outcome",
     "provider_payload",
     "sample_is_the_whole_site",
+    "scope_of",
     "single_page_outcome",
     "site_outcome",
     "url_ratio_outcome",

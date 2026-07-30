@@ -15,12 +15,21 @@ from veo.collect.contract import (
     IssueDraft,
     not_applicable_outcome,
 )
+from veo.collect.sample import single_page_outcome
 from veo.geo.extractability import (
     ExtractionSignals,
     analyse_extractability,
     repeatable_passages,
 )
-from veo.geo.reporting import HIGH, LOW, MEDIUM, finding, observed, snippet_evidence
+from veo.geo.reporting import (
+    HIGH,
+    LOW,
+    MEDIUM,
+    finding,
+    observed,
+    sample_scope,
+    snippet_evidence,
+)
 from veo.geo.view import build_view, parsed_documents
 from veo.scoring import CheckOutcome, CheckStatus
 
@@ -345,10 +354,14 @@ class AnswerExtractabilityCollector:
     ) -> tuple[CheckOutcome, IssueDraft | None, list[EvidenceRecord]]:
         pages = parsed_documents(context)
         if len(pages) < 2:
+            # 한 장만 가져온 것은 "이 사이트에 비교할 페이지가 없다" 가 아니다. 우리가
+            # 못 잰 것이므로 배점을 분모에 남긴 채 0점이어야 한다 — 해당 없음으로 접으면
+            # 덜 재는 편이 유리해진다.
             return (
-                not_applicable_outcome(
+                single_page_outcome(
+                    sample_scope(context),
                     "geo.extract.no_duplicate_answer_blocks",
-                    "비교할 다른 URL이 수집되지 않아 중복 여부를 판단할 수 없습니다.",
+                    subject_ko="페이지 간 답변 블록 중복 여부",
                 ),
                 None,
                 [],

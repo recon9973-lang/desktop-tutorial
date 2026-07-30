@@ -64,8 +64,14 @@ def test_a_sitemap_stamped_in_the_future_fails() -> None:
     assert run("generic_service")["geo.fresh.sitemap_lastmod_reliable"] is CheckStatus.FAIL
 
 
-def test_no_sitemap_means_the_check_does_not_apply() -> None:
-    assert run("no_schema")["geo.fresh.sitemap_lastmod_reliable"] is CheckStatus.NOT_APPLICABLE
+def test_a_sitemap_we_never_fetched_is_unmeasured_not_absent() -> None:
+    """"sitemap 이 없다" 와 "우리가 못 가져왔다" 는 다른 사실이다.
+
+    픽스처는 사이트 전체를 돈 수집이 아니므로, 사이트에 sitemap 이 정말 없는지는 알 수
+    없다. 그때 해당 없음으로 접으면 없는 사실을 지어내면서 동시에 배점을 분모에서
+    빼 준다.
+    """
+    assert run("no_schema")["geo.fresh.sitemap_lastmod_reliable"] is CheckStatus.UNKNOWN
 
 
 def test_a_claim_anchored_to_an_old_year_fails() -> None:
