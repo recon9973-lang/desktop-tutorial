@@ -9338,8 +9338,19 @@
       },
       "RatePayload": {
         "additionalProperties": false,
-        "description": "비율 하나 — 그리고 그 값을 얼마나 믿을 수 있는가.\n\n`value` 가 `null` 인 것과 `0.0` 인 것은 **정반대의 뜻**입니다. `null` 은 잴 수\n없었다는 뜻이고, `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다. 화면에서 둘을 같게\n그리면 우리가 못 잰 것이 고객 탓으로 보입니다.",
+        "description": "비율 하나 — 그리고 그 값을 얼마나 믿을 수 있는가.\n\n`value` 가 `null` 인 것과 `0.0` 인 것은 **정반대의 뜻**입니다. `null` 은 잴 수\n없었다는 뜻이고, `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다. 화면에서 둘을 같게\n그리면 우리가 못 잰 것이 고객 탓으로 보입니다.\n\n표시할 때는 **`percent_text_ko` 를 그대로 쓰십시오.** `value` 를 직접 퍼센트로\n포맷하면 표본이 3~5회인 값에도 소수점이 붙고, 그 순간 표본이 감당하지 못하는\n정밀도를 주장하게 됩니다.",
         "properties": {
+          "adequacy": {
+            "description": "표본이 감당하는 무게입니다. `NO_DATA` 못 쟀음 · `TOO_SMALL` 3회 미만이라 값 없음 · `DIRECTIONAL` 방향만 · `ADEQUATE` 비율로 읽어도 됨.",
+            "enum": [
+              "NO_DATA",
+              "TOO_SMALL",
+              "DIRECTIONAL",
+              "ADEQUATE"
+            ],
+            "title": "Adequacy",
+            "type": "string"
+          },
           "denominator": {
             "description": "이 비율이 무엇에 대한 값인지. 0이면 잴 수 없었습니다.",
             "title": "Denominator",
@@ -9356,10 +9367,14 @@
             ],
             "title": "High"
           },
-          "is_reportable": {
-            "description": "표본이 충분한가. 거짓이면 이 값을 결론으로 쓰지 마십시오.",
-            "title": "Is Reportable",
+          "is_comparison_grade": {
+            "description": "경쟁사 비교 보고에 실을 수 있는가. 실행 5회 이상이어야 참입니다 (VEO-LAB 표본 방법론).",
+            "title": "Is Comparison Grade",
             "type": "boolean"
+          },
+          "label_ko": {
+            "title": "Label Ko",
+            "type": "string"
           },
           "low": {
             "anyOf": [
@@ -9381,16 +9396,15 @@
             "title": "Numerator",
             "type": "integer"
           },
-          "percent": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Percent"
+          "percent_text_ko": {
+            "description": "화면에 그대로 쓰는 표시 문자열입니다.",
+            "title": "Percent Text Ko",
+            "type": "string"
+          },
+          "summary_ko": {
+            "description": "비율·분모·신뢰구간·주의를 한 줄에 담은 문장입니다. 분모가 빠지지 않습니다.",
+            "title": "Summary Ko",
+            "type": "string"
           },
           "value": {
             "anyOf": [
@@ -9401,18 +9415,22 @@
                 "type": "null"
               }
             ],
+            "description": "실행이 3회 미만이면 `null` 입니다. 경고를 붙여 숫자를 내보내지 않습니다 — 화면에 뜬 숫자는 읽히고 주석은 읽히지 않기 때문입니다.",
             "title": "Value"
           }
         },
         "required": [
+          "label_ko",
           "numerator",
           "denominator",
           "value",
-          "percent",
+          "percent_text_ko",
           "low",
           "high",
-          "is_reportable",
-          "note_ko"
+          "adequacy",
+          "is_comparison_grade",
+          "note_ko",
+          "summary_ko"
         ],
         "title": "RatePayload",
         "type": "object"

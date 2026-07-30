@@ -50,6 +50,7 @@ from veo.observations.metrics import visibility_metrics
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import InMemoryAnswerStore
 from veo.observations.runs import SearchMode
+from veo.observations.sampling import SampleAdequacy
 
 DATABASE_URL = os.environ.get("VEO_TEST_DATABASE_URL")
 
@@ -430,7 +431,10 @@ class TestMetricsFromStoredAnswers:
         )
 
         assert measured.mention_rate.value == 1.0
-        assert measured.mention_rate.is_reportable
+        assert measured.mention_rate.adequacy is SampleAdequacy.ADEQUATE
+        # 24번 모두 언급됐어도 확신은 아니다. 정규 근사라면 여기서 하한도 1.0 이 된다.
+        assert measured.mention_rate.confidence_low is not None
+        assert measured.mention_rate.confidence_low < 1.0
 
     def test_citations_are_only_counted_when_they_are_ours(self, db: Session, tenant) -> None:
         """경쟁사를 인용한 응답은 우리가 인용된 것이 아니다. 여기서 세면 인용률이 부푼다."""
@@ -444,7 +448,7 @@ class TestMetricsFromStoredAnswers:
             run_is_complete=row.is_complete,
         )
 
-        assert measured.citation_rate.denominator > 0
+        assert measured.citation_rate.trials > 0
         assert measured.citation_rate.value == 0.0
 
     def test_our_own_citation_counts(self, db: Session, tenant) -> None:

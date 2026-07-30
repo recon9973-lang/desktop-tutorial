@@ -4828,8 +4828,18 @@ export interface components {
          *     `value` 가 `null` 인 것과 `0.0` 인 것은 **정반대의 뜻**입니다. `null` 은 잴 수
          *     없었다는 뜻이고, `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다. 화면에서 둘을 같게
          *     그리면 우리가 못 잰 것이 고객 탓으로 보입니다.
+         *
+         *     표시할 때는 **`percent_text_ko` 를 그대로 쓰십시오.** `value` 를 직접 퍼센트로
+         *     포맷하면 표본이 3~5회인 값에도 소수점이 붙고, 그 순간 표본이 감당하지 못하는
+         *     정밀도를 주장하게 됩니다.
          */
         RatePayload: {
+            /**
+             * Adequacy
+             * @description 표본이 감당하는 무게입니다. `NO_DATA` 못 쟀음 · `TOO_SMALL` 3회 미만이라 값 없음 · `DIRECTIONAL` 방향만 · `ADEQUATE` 비율로 읽어도 됨.
+             * @enum {string}
+             */
+            adequacy: "NO_DATA" | "TOO_SMALL" | "DIRECTIONAL" | "ADEQUATE";
             /**
              * Denominator
              * @description 이 비율이 무엇에 대한 값인지. 0이면 잴 수 없었습니다.
@@ -4838,10 +4848,12 @@ export interface components {
             /** High */
             high: number | null;
             /**
-             * Is Reportable
-             * @description 표본이 충분한가. 거짓이면 이 값을 결론으로 쓰지 마십시오.
+             * Is Comparison Grade
+             * @description 경쟁사 비교 보고에 실을 수 있는가. 실행 5회 이상이어야 참입니다 (VEO-LAB 표본 방법론).
              */
-            is_reportable: boolean;
+            is_comparison_grade: boolean;
+            /** Label Ko */
+            label_ko: string;
             /**
              * Low
              * @description 95% 신뢰구간 하한입니다.
@@ -4851,9 +4863,20 @@ export interface components {
             note_ko: string;
             /** Numerator */
             numerator: number;
-            /** Percent */
-            percent: number | null;
-            /** Value */
+            /**
+             * Percent Text Ko
+             * @description 화면에 그대로 쓰는 표시 문자열입니다.
+             */
+            percent_text_ko: string;
+            /**
+             * Summary Ko
+             * @description 비율·분모·신뢰구간·주의를 한 줄에 담은 문장입니다. 분모가 빠지지 않습니다.
+             */
+            summary_ko: string;
+            /**
+             * Value
+             * @description 실행이 3회 미만이면 `null` 입니다. 경고를 붙여 숫자를 내보내지 않습니다 — 화면에 뜬 숫자는 읽히고 주석은 읽히지 않기 때문입니다.
+             */
             value: number | null;
         };
         /** RecentKeywordEntryPayload */
