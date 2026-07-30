@@ -21,7 +21,7 @@ from typing import Final, final
 
 from veo.authz import Principal
 from veo.contracts.enums import DataSource, ProviderState
-from veo.keywords.normalize import normalize_keyword
+from veo.keywords.normalize import normalize_keyword, searchad_hint
 from veo.keywords.opportunity import (
     OpportunityInputs,
     OpportunityResult,
@@ -496,8 +496,12 @@ def _split_seed_and_related(
     seed: SearchAdKeywordMetrics | None = None
     related: list[StoredRelated] = []
     rank = 0
+    # 네이버는 띄어쓰기를 뗀 형태로 돌려준다("강남 한의원" → "강남한의원"). 우리 표준형과
+    # 그대로 비교하면 **요청한 키워드 자신이 절대 매칭되지 않고**, 그 자리 수치가
+    # "측정 불가" 로 뜨면서 정작 그 키워드가 연관 키워드 목록에 나타난다.
+    seed_hint = searchad_hint(normalized_seed)
     for row in response.metrics:
-        if seed is None and normalize_keyword(row.keyword) == normalized_seed:
+        if seed is None and searchad_hint(normalize_keyword(row.keyword)) == seed_hint:
             seed = row
             continue
         rank += 1

@@ -42,6 +42,7 @@ from pydantic import SecretStr
 
 from veo.common.http import read_capped
 from veo.contracts.enums import DataSource, ProviderState, ValueQuality
+from veo.keywords.normalize import searchad_hint
 from veo.providers.naver.errors import (
     UNKNOWN,
     CallOutcome,
@@ -561,7 +562,10 @@ class NaverSearchAdClient:
         if credentials is None:
             return self._disabled()
 
-        hints = [keyword.strip() for keyword in keywords if keyword.strip()]
+        # 네이버는 `hintKeywords` 에 띄어쓰기가 들어가면 400 으로 거절한다. 이 한 줄이
+        # 없어서 **띄어쓰기가 들어간 키워드는 전부 조회에 실패하고 있었다** — 한국어
+        # 검색 키워드는 대부분 띄어쓰기가 있으므로 사실상 자연스러운 입력이 다 막혔다.
+        hints = [searchad_hint(keyword.strip()) for keyword in keywords if keyword.strip()]
         if not hints:
             raise ValueError("at least one keyword is required")
         if len(hints) > MAX_KEYWORDS_PER_CALL:

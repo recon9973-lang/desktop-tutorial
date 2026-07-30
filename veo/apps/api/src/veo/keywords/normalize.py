@@ -17,7 +17,7 @@ import re
 import unicodedata
 from typing import Final
 
-__all__ = ["MAX_KEYWORD_LENGTH", "normalize_keyword"]
+__all__ = ["MAX_KEYWORD_LENGTH", "normalize_keyword", "searchad_hint"]
 
 #: ``keyword_queries.normalized_keyword`` is ``VARCHAR(255)``.
 MAX_KEYWORD_LENGTH: Final = 255
@@ -47,3 +47,21 @@ def normalize_keyword(raw: str) -> str:
         raise ValueError(f"키워드는 최대 {MAX_KEYWORD_LENGTH}자까지 입력할 수 있습니다.")
 
     return collapsed.casefold()
+
+
+def searchad_hint(normalized: str) -> str:
+    """네이버 검색광고 `hintKeywords` 가 받는 형태 — **띄어쓰기가 없다.**
+
+    실측: `hintKeywords=강남 한의원` 은 HTTP 400, `hintKeywords=강남한의원` 은 200 이다.
+    그리고 응답의 `relKeyword` 도 띄어쓰기 없는 형태로 돌아온다.
+
+    이것이 `normalize_keyword` 와 다른 함수인 이유: 저쪽은 **우리가 저장하고 보여주는**
+    표준형이고, 사용자가 입력한 "강남 한의원" 은 그 모양 그대로 남아야 한다. 이쪽은
+    **한 공급자가 요구하는** 모양이다. 둘을 하나로 합치면 공급자 사정이 우리 저장
+    형식까지 바꾼다.
+
+    이걸 안 하고 있었다. 그래서 **띄어쓰기가 들어간 키워드는 전부 조회에 실패했다** —
+    한국어 검색 키워드는 대부분 띄어쓰기가 있으므로, 사실상 자연스러운 입력이 다 막혀
+    있었다.
+    """
+    return _WHITESPACE_RUN.sub("", normalized)

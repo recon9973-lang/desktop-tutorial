@@ -45,6 +45,7 @@ __all__ = [
     "NaverForbiddenError",
     "NaverProviderError",
     "NaverRateLimitedError",
+    "NaverRequestRejectedError",
     "NaverResponseTooLargeError",
     "NaverSchemaError",
     "NaverServerError",
@@ -190,6 +191,22 @@ class NaverSchemaError(NaverProviderError):
     )
 
 
+class NaverRequestRejectedError(NaverProviderError):
+    """네이버가 **우리 요청**을 거절했다. 응답 형식 문제가 아니다.
+
+    이 둘을 갈라 놓는 이유는 고치는 사람이 어디를 봐야 하는지가 정반대이기 때문이다.
+    형식 오류라고 적으면 네이버가 계약을 바꿨는지 뒤지게 되는데, 실제로는 우리가 보낸
+    값이 규격에 안 맞는 것이다. 실제로 그렇게 헤맬 뻔했다 — 띄어쓰기가 든 키워드가
+    400 을 받고 있었고, 메시지는 "응답 형식이 다릅니다" 라고 말하고 있었다.
+    """
+
+    retryable: ClassVar[bool] = False
+    message_ko: ClassVar[str] = (
+        "네이버가 이 요청을 받아들이지 않았습니다. 보낸 값이 네이버 규격에 맞지 않는 "
+        "경우이며, 이 항목은 '측정 불가'로 표시됩니다."
+    )
+
+
 class NaverResponseTooLargeError(NaverProviderError):
     retryable: ClassVar[bool] = False
     message_ko: ClassVar[str] = (
@@ -220,6 +237,10 @@ def classify_status(status_code: int, *, retry_after: str | None = None) -> Nave
         )
     if 500 <= status_code <= 599:
         return NaverServerError(f"status={status_code}")
+    if 400 <= status_code <= 499:
+        # 우리가 보낸 것이 거절된 것이다. 응답 **형식**이 달라진 것과 섞으면, 고치는
+        # 사람이 네이버 문서를 뒤지는 동안 원인은 우리 쪽에 그대로 남는다.
+        return NaverRequestRejectedError(f"status={status_code}")
     # Anything else with a non-2xx status is a contract surprise, not a measurement.
     return NaverSchemaError(f"unexpected status={status_code}")
 

@@ -1,0 +1,244 @@
+/* 키워드 화면.
+ *
+ * 이 파일의 핵심은 **검색 건수 구역과 관심도 지수 구역을 눈으로 갈라 놓는 것**이다.
+ * 둘은 단위가 다르다 — 나란히 놓으면 지수가 건수로 읽히고, 그 순간 없는 사실이
+ * 만들어진다. 배지 모양과 구역 테두리를 다르게 두는 이유가 그것이다.
+ *
+ * 색만으로 구분하지 않는다. 배지는 실선/점선/강조로 갈리고, 문구로도 매번 말한다.
+ */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+  max-width: 34rem;
+}
+
+.label {
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+}
+
+.textarea {
+  padding: var(--veo-space-3);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+  color: var(--veo-color-text);
+  font: inherit;
+  font-size: var(--veo-font-size-300);
+  resize: vertical;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-5);
+  margin-top: var(--veo-space-6);
+}
+
+.notices {
+  padding: var(--veo-space-4);
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+}
+
+.noticeList {
+  margin: 0;
+  padding-left: var(--veo-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.sectionLabel {
+  margin: var(--veo-space-4) 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-semibold);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--veo-space-2);
+}
+
+/* 출처 배지 — 셋을 서로 다른 모양으로 둔다. 같은 모양이면 같은 종류의 숫자로 읽힌다. */
+.badge,
+.badgeAlt,
+.badgeOwn {
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-medium);
+  white-space: nowrap;
+}
+
+.badgeAlt {
+  border-style: dashed;
+}
+
+.badgeOwn {
+  border-color: var(--veo-color-accent-border);
+  background: var(--veo-color-accent-subtle);
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--veo-space-4);
+  margin: 0 0 var(--veo-space-3);
+}
+
+.count {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+}
+
+.countLabel {
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+.countValue {
+  margin: 0;
+  font-size: var(--veo-font-size-400);
+  font-weight: var(--veo-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 값이 없는 칸은 큰 숫자 자리를 차지하지 않는다. 큰 자리에 앉으면 숫자로 읽힌다. */
+.countAbsent {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: 1.5;
+}
+
+.countNote {
+  margin: 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+.meta {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+.warning {
+  margin: var(--veo-space-2) 0;
+  padding: var(--veo-space-3);
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.6;
+}
+
+.absent {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+/* 관심도 추세와 기회 점수는 검색 건수와 **테두리로 갈라 놓는다.**
+   경계가 보여야 단위를 섞지 않는다. */
+.trend,
+.chance {
+  margin-top: var(--veo-space-4);
+  padding: var(--veo-space-4);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+}
+
+.trendNote {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+}
+
+.chanceScore {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.disclosure {
+  margin: var(--veo-space-2) 0 0;
+  font-size: var(--veo-font-size-100);
+  line-height: 1.7;
+}
+
+.providerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+}
+
+.providerRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+}
+
+.providerName {
+  font-weight: var(--veo-weight-medium);
+}
+
+.providerNote {
+  color: var(--veo-color-text-muted);
+}
+
+.relatedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+}
+
+.relatedRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--veo-space-4);
+  padding-bottom: var(--veo-space-2);
+  border-bottom: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-200);
+}
+
+.relatedCount {
+  font-variant-numeric: tabular-nums;
+  color: var(--veo-color-text-muted);
+}
+
+.recentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+}
+
+.recentItem {
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-200);
+}
