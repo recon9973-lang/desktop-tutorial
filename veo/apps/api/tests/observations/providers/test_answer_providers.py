@@ -48,7 +48,7 @@ from veo.observations.providers.base import (
     classify_answer_status,
 )
 from veo.observations.providers.gemini import GeminiAnswerProvider
-from veo.observations.providers.openai import OpenAIAnswerProvider
+from veo.observations.providers.openai import OpenAIAnswerProvider, reports_citations
 from veo.observations.providers.perplexity import PerplexityAnswerProvider
 from veo.observations.providers.registry import PROVIDER_CLASSES, build_registry
 from veo.observations.runs import SearchMode
@@ -569,3 +569,84 @@ def test_gemini_records_the_usage_it_was_given() -> None:
     assert outcome.output_tokens == 50
     assert outcome.cost_usd is None
     assert outcome.cost_basis is CostBasis.NO_PRICE_CONFIGURED
+
+
+# --------------------------------------------------------------------------- #
+# 인용을 못 돌려주는 모델은 "인용 0건" 이 아니라 "측정 불가" 다
+# --------------------------------------------------------------------------- #
+
+
+def test_a_model_that_cannot_report_citations_is_not_a_zero() -> None:
+    """실측: gpt-4o-mini 는 web_search 를 붙여도 url_citation 을 하나도 돌려주지 않는다.
+
+    검색 모드이기만 하면 STRUCTURED 로 단정하던 시절, 이 조합은
+    `citation_support=STRUCTURED` + `citations=()` 가 되어 **"찾아봤지만 인용이 없었다"**
+    로 기록됐다. 사실은 **"이 모델은 인용을 알려주지 않는다"** 다. 앞의 것으로 기록되면
+    인용률이 0 으로 계산되어 고객에게 "AI 가 당신을 한 번도 인용하지 않습니다" 라고
+    보고하게 된다 — 지어낸 값보다 나쁘다. 지어낸 줄도 모른다.
+    """
+    provider = openai_provider(ok(openai_payload()))
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o-mini"))
+
+    assert outcome.succeeded
+    assert outcome.value is not None
+    assert outcome.value.citation_support is CitationSupport.NOT_EXPOSED_BY_PROVIDER
+    assert outcome.value.citations == ()
+
+
+def test_an_unverified_model_is_not_assumed_capable() -> None:
+    """확인하지 않은 능력을 있다고 가정하면 그 모델의 모든 답변이 거짓 0 이 된다."""
+    provider = openai_provider(ok(openai_payload()))
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-9-future"))
+
+    assert outcome.value is not None
+    assert outcome.value.citation_support is CitationSupport.NOT_EXPOSED_BY_PROVIDER
+
+
+def test_a_verified_model_still_reports_its_citations() -> None:
+    """고치면서 되는 것을 깨뜨리지 않았는지 — gpt-5 는 실측으로 확인된 모델이다."""
+    provider = openai_provider(ok(openai_payload()))
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-5"))
+
+    assert outcome.value is not None
+    assert outcome.value.citation_support is CitationSupport.STRUCTURED
+
+
+@pytest.mark.parametrize(
+    ("model", "capable"),
+    [
+        ("gpt-4o", True),
+        ("GPT-4O", True),
+        ("gpt-4o-2024-11-20", True),
+        ("gpt-5", True),
+        ("gpt-5-2026-05-01", True),
+        ("gpt-4o-mini", False),
+        ("gpt-4o-mini-2024-07-18", False),
+        ("gpt-4.1", False),
+        ("gpt-5-mini", False),
+        ("", False),
+    ],
+)
+def test_the_prefix_match_separates_a_model_from_its_mini(model: str, capable: bool) -> None:
+    """`gpt-4o-mini` 가 `gpt-4o` 에 걸리면 이 장치가 존재할 이유가 사라진다.
+
+    날짜 변형만 같은 모델로 본다. `-mini` 는 실측에서 인용을 돌려주지 않았고,
+    `gpt-5-mini` 는 아직 재보지 않았으므로 둘 다 능력을 인정하지 않는다.
+    """
+    assert reports_citations(model) is capable
+
+
+def test_no_browsing_is_still_not_a_zero_even_on_a_capable_model() -> None:
+    """검색을 끄면 API 가 인용 객체를 아예 만들지 않는다. 그것도 0건이 아니다."""
+    provider = openai_provider(ok(openai_payload()))
+
+    outcome = provider.ask(
+        "합성 질문",
+        conditions=conditions(model="gpt-5", search_mode=SearchMode.NO_BROWSING),
+    )
+
+    assert outcome.value is not None
+    assert outcome.value.citation_support is CitationSupport.NOT_EXPOSED_BY_PROVIDER

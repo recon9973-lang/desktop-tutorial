@@ -101,10 +101,15 @@ class AnthropicAnswerProvider(HttpAnswerProvider):
         if not text.strip():
             raise AnswerSchemaError("response carries no text block")
 
+        # 검색을 켰다는 것만으로 "인용을 볼 수 있었다" 고 하지 않는다. 모델이 검색을
+        # 쓰지 않기로 했다면 응답에 `web_search_tool_result` 블록이 없고, 그때 어느 출처를
+        # 썼는지는 이 응답으로 답할 수 없다 — 출처가 없었다는 뜻이 아니다.
+        # Gemini·Perplexity 어댑터가 쓰는 것과 같은 판정이다.
         browsing = conditions.search_mode is SearchMode.BROWSING
-        citations = _read_search_result_urls(blocks) if browsing else ()
+        observable = browsing and _has_search_result_block(blocks)
+        citations = _read_search_result_urls(blocks) if observable else ()
         support = (
-            CitationSupport.STRUCTURED if browsing else CitationSupport.NOT_EXPOSED_BY_PROVIDER
+            CitationSupport.STRUCTURED if observable else CitationSupport.NOT_EXPOSED_BY_PROVIDER
         )
 
         usage = payload.get("usage")
@@ -117,6 +122,18 @@ class AnthropicAnswerProvider(HttpAnswerProvider):
             input_tokens=read_token_count(usage, "input_tokens", "prompt_tokens"),
             output_tokens=read_token_count(usage, "output_tokens", "completion_tokens"),
         )
+
+
+def _has_search_result_block(blocks: list[Any]) -> bool:
+    """응답이 검색 결과 블록을 실제로 담고 있는가.
+
+    담고 있지 않다면 이 응답은 출처에 대해 아무 말도 하지 않은 것이다. 그것을 "출처
+    0건" 으로 옮기면 없는 사실을 만들어 낸다.
+    """
+    return any(
+        isinstance(block, dict) and block.get("type") == "web_search_tool_result"
+        for block in blocks
+    )
 
 
 def _read_search_result_urls(blocks: list[Any]) -> tuple[str, ...]:
