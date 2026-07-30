@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
 from veo.core.settings import get_provider_credentials
+from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.observations.pricing import load_price_table
@@ -272,8 +273,42 @@ __all__ = [
     "build_prompt_set",
     "create_prompt_set",
     "engine_registry",
+    "get_observation_run",
     "get_prompt_set",
+    "list_observation_runs",
     "list_prompt_sets",
     "prompt_set_of",
     "prompts_of",
 ]
+
+
+def get_observation_run(
+    session: Session, principal: Principal, run_id: uuid.UUID
+) -> ObservationRunRow | None:
+    statement = tenant_select(ObservationRunRow, principal).where(ObservationRunRow.id == run_id)
+    assert_tenant_scoped(statement, principal.organization_id)
+    return session.scalars(statement).one_or_none()
+
+
+def list_observation_runs(
+    session: Session,
+    principal: Principal,
+    *,
+    project_id: uuid.UUID | None = None,
+    limit: int = 50,
+) -> tuple[list[ObservationRunRow], int]:
+    """최신순. 부분 실행도 그대로 들어 있다 — 목록에서 빼면 그 실행이 없던 일이 된다."""
+    statement = tenant_select(ObservationRunRow, principal)
+    if project_id is not None:
+        statement = statement.where(ObservationRunRow.project_id == project_id)
+    assert_tenant_scoped(statement, principal.organization_id)
+
+    total = session.scalar(select(func.count()).select_from(statement.subquery())) or 0
+    rows = list(
+        session.scalars(
+            statement.order_by(ObservationRunRow.created_at.desc(), ObservationRunRow.id).limit(
+                limit
+            )
+        )
+    )
+    return rows, total

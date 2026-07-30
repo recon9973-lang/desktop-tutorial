@@ -846,6 +846,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 관측 실행 이력
+         * @description 최신순입니다. 부분 실행도 그대로 들어 있습니다 — 빼면 그 실행이 없던 일이 됩니다.
+         */
+        get: operations["run_index_api_observations_runs_get"];
+        put?: never;
+        /**
+         * 프롬프트 집합을 AI 엔진에 돌려 실제 노출을 관측
+         * @description 같은 질문을 여러 번 던집니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다.
+         *
+         *     **모델을 직접 고르셔야 합니다.** 인용을 돌려주는지가 모델마다 다릅니다 — 실측 결과 `gpt-5`·`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않습니다. 돌려주지 않는 모델로 재면 인용 지표는 0회가 아니라 **측정 불가**로 남습니다.
+         *
+         *     응답에는 한 일과 **못 한 일**이 함께 들어 있습니다. `executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다.
+         */
+        post: operations["run_api_observations_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 관측 실행 하나 */
+        get: operations["run_read_api_observations_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizations/current": {
         parameters: {
             query?: never;
@@ -1601,6 +1646,18 @@ export interface components {
         /** ApiResponse[MemberPayload] */
         ApiResponse_MemberPayload_: {
             data?: components["schemas"]["MemberPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ObservationRunListPayload] */
+        ApiResponse_ObservationRunListPayload_: {
+            data?: components["schemas"]["ObservationRunListPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ObservationRunPayload] */
+        ApiResponse_ObservationRunPayload_: {
+            data?: components["schemas"]["ObservationRunPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -2721,6 +2778,39 @@ export interface components {
             summary_ko: string;
         };
         /**
+         * EngineChoiceInput
+         * @description 어느 엔진을 어떤 모델로 돌릴지.
+         *
+         *     모델을 서버가 고르지 않는다. 모델마다 인용을 돌려주는지가 다르고(실측: `gpt-5`·
+         *     `gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않는다), 그 선택이 곧
+         *     무엇을 측정할 수 있는지를 정한다. 기본값을 숨겨 두면 부르는 쪽이 그 사실을 모른 채
+         *     "인용 0회" 를 받아 간다.
+         */
+        EngineChoiceInput: {
+            /**
+             * Account State
+             * @description ANONYMOUS | SIGNED_IN | UNKNOWN
+             * @default ANONYMOUS
+             */
+            account_state: string;
+            /**
+             * Engine
+             * @description OPENAI | ANTHROPIC | GOOGLE_GEMINI | PERPLEXITY
+             */
+            engine: string;
+            /**
+             * Model
+             * @description 그 엔진의 모델 이름입니다.
+             */
+            model: string;
+            /**
+             * Search Mode
+             * @description BROWSING 이면 검색을 켭니다. 인용을 재려면 켜야 하지만, 켠다고 모든 모델이 인용을 돌려주지는 않습니다.
+             * @default BROWSING
+             */
+            search_mode: string;
+        };
+        /**
          * EnginePayload
          * @description VEO 가 아는 모든 엔진. 못 쓰는 것도 이유와 함께 들어 있습니다.
          */
@@ -3792,6 +3882,99 @@ export interface components {
             /** Email */
             email: string;
             role: components["schemas"]["Role"];
+        };
+        /** ObservationRunListPayload */
+        ObservationRunListPayload: {
+            /** Items */
+            items: components["schemas"]["ObservationRunPayload"][];
+            /** Total */
+            total: number;
+        };
+        /**
+         * ObservationRunPayload
+         * @description 한 번의 관측이 **무엇을 했고 무엇을 못 했는가.**
+         *
+         *     `executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다. 그래서
+         *     계획·건너뜀·중단 사유를 같은 자리에 둡니다.
+         */
+        ObservationRunPayload: {
+            /** Engines */
+            engines: string[];
+            /** Executions Attempted */
+            executions_attempted: number;
+            /** Executions Planned */
+            executions_planned: number;
+            /** Executions Skipped */
+            executions_skipped: number;
+            /** Executions Valid */
+            executions_valid: number;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Is Complete
+             * @description 계획한 것을 다 했고 반복 최소치를 넘겼는가. 거짓이면 부분 측정입니다.
+             */
+            is_complete: boolean;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /**
+             * Prompt Set Id
+             * Format: uuid
+             */
+            prompt_set_id: string;
+            /** Repetitions Per Prompt */
+            repetitions_per_prompt: number;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** Stopped Reason */
+            stopped_reason: string | null;
+            /**
+             * Summary Ko
+             * @description 이 실행을 한 문장으로. 못 한 일이 있으면 거기 적힙니다.
+             */
+            summary_ko: string;
+            /**
+             * Total Cost Usd
+             * @description 알 수 있었던 비용의 합(USD)입니다. `unpriced_calls` 가 있으면 이 값은 전체가 아니라 일부입니다.
+             */
+            total_cost_usd: number;
+            /**
+             * Unpriced Calls
+             * @description 비용을 알 수 없는 호출 수입니다. 0원이라는 뜻이 아니라 모른다는 뜻입니다.
+             */
+            unpriced_calls: number;
+        };
+        /** ObservationRunRequest */
+        ObservationRunRequest: {
+            /**
+             * Allow Below Floor
+             * @description 최소 반복 횟수 아래로 돌리는 것을 허용합니다. 결과에 '이 값으로 노출률을 말하지 마세요' 가 함께 기록됩니다. 시험용입니다.
+             * @default false
+             */
+            allow_below_floor: boolean;
+            /** Engines */
+            engines: components["schemas"]["EngineChoiceInput"][];
+            /**
+             * Prompt Set Id
+             * Format: uuid
+             */
+            prompt_set_id: string;
+            /**
+             * Repetitions
+             * @description 프롬프트 하나를 엔진 하나에 던지는 횟수입니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다. 최소 3회이며, 그 아래로 돌리려면 `allow_below_floor` 를 명시해야 합니다.
+             * @default 3
+             */
+            repetitions: number;
         };
         /**
          * ObservedVisibilityInput
@@ -7655,6 +7838,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_PromptSetPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_index_api_observations_runs_get: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ObservationRunListPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_api_observations_runs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ObservationRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ObservationRunPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_read_api_observations_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ObservationRunPayload_"];
                 };
             };
             /** @description Validation Error */

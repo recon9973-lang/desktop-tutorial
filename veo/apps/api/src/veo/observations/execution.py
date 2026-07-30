@@ -1,0 +1,408 @@
+"""관측 실행 — 엔진을 돌리고, 그 결과를 되돌릴 수 없는 기록으로 남긴다.
+
+`ObservationRunner` 는 이미 완성되어 있었고 `src/` 안에서 아무도 부르지 않았다. 이
+모듈이 그것을 부르는 곳이다.
+
+저장에서 지키는 것
+------------------
+**못 한 일을 함께 저장한다.** `RunReport.skipped` 와 `stopped_reason` 을 빼고 `runs` 만
+남기면, 예산에 걸려 절반만 실행된 관측이 **완전한 측정처럼 읽힌다.** 그 위에서 계산한
+노출률은 분모가 틀린 값이고, 틀렸다는 사실이 어디에도 남지 않는다. DB 스키마가
+`executions_planned`·`executions_skipped`·`stopped_reason`·`skipped_detail`·`is_complete`
+를 미리 갖추고 있는 것도 같은 이유다.
+
+**답변 원문은 DB 에 넣지 않는다.** 포인터와 해시만 넣고 원문은 답변 저장소로 간다. 읽을
+때마다 해시를 검증하므로, 바뀐 증거는 돌려주지 않고 거부된다 — 조용히 편집된 답변은
+없는 답변보다 나쁘다. 여전히 증거처럼 보이기 때문이다.
+
+**비용은 잰 단위 그대로.** `cost_usd` 에 넣고 `cost_krw` 는 비워 둔다. 환율을 지어내면
+고객에게 제시하는 금액이 틀리고, 나중에 환율이 바뀌면 과거 기록까지 달라진다.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import uuid
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import final
+from urllib.parse import urlsplit
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from veo.authz import Principal, assert_tenant_scoped, tenant_select
+from veo.core.settings import Settings, get_settings
+from veo.db.models.observation import (
+    AIAnswer,
+    AIEngine,
+    BrandIdentity,
+    Citation,
+    EntityMention,
+)
+from veo.db.models.observation import ObservationRun as ObservationRunRow
+from veo.db.models.observation import Prompt as PromptRow
+from veo.db.models.observation import PromptSet as PromptSetRow
+from veo.observations.answer_store import FilesystemAnswerStore
+from veo.observations.prompts import Funnel, Intent, Prompt, PromptSet, Subject
+from veo.observations.providers.registry import ProviderRegistry
+from veo.observations.providers.storage import RecordedAnswerStore
+from veo.observations.runner import (
+    BrandTarget,
+    ObservationRunner,
+    RunReport,
+    SubstringMentionDetector,
+)
+from veo.observations.runs import AccountState, RunConditions, SearchMode
+from veo.observations.service import engine_registry, prompt_set_of, prompts_of
+
+
+class BrandIdentityMissingError(ValueError):
+    """이 프로젝트에 브랜드 식별자가 없다.
+
+    이름 없이 언급을 셀 수는 없다. 빈 이름으로 돌리면 모든 답변이 "언급 없음" 이 되고,
+    그것은 측정이 아니라 **우리가 무엇을 찾아야 할지 몰랐다는 사실**이다.
+    """
+
+
+@final
+@dataclass(frozen=True, slots=True)
+class EngineChoice:
+    """어느 엔진을, 어떤 모델과 조건으로 돌릴지."""
+
+    engine: str
+    model: str
+    search_mode: SearchMode = SearchMode.BROWSING
+    account_state: AccountState = AccountState.ANONYMOUS
+
+
+def brand_target_for(
+    session: Session, principal: Principal, project_id: uuid.UUID
+) -> tuple[BrandTarget, BrandIdentity]:
+    """이 프로젝트가 자기 브랜드라고 선언한 이름과 도메인.
+
+    경쟁사 식별자(`competitor_id` 가 있는 행)는 제외한다. 자기 브랜드는 하나다.
+    """
+    statement = (
+        tenant_select(BrandIdentity, principal)
+        .where(BrandIdentity.project_id == project_id)
+        .where(BrandIdentity.competitor_id.is_(None))
+        .where(BrandIdentity.is_active.is_(True))
+    )
+    assert_tenant_scoped(statement, principal.organization_id)
+    row = session.scalars(statement).first()
+    if row is None:
+        raise BrandIdentityMissingError(
+            "이 프로젝트에 브랜드 식별자가 등록되어 있지 않습니다. 무엇을 찾아야 하는지 "
+            "모르는 채로 관측을 돌리면 모든 답변이 '언급 없음' 으로 기록되며, 그것은 "
+            "측정이 아닙니다. 상호와 자사 도메인을 먼저 등록해 주십시오."
+        )
+
+    names = (row.display_name, *(str(alias) for alias in row.aliases or ()))
+    domains = tuple(str(domain) for domain in row.own_domains or ())
+    return BrandTarget(names=tuple(dict.fromkeys(names)), domains=domains), row
+
+
+def answer_store(organization_id: uuid.UUID, *, settings: Settings) -> FilesystemAnswerStore:
+    """조직 하나에 묶인 답변 저장소. 다른 조직의 포인터는 이 뿌리 밖으로 나가지 못한다."""
+    return FilesystemAnswerStore(
+        root=Path(settings.observation_answer_store_root),
+        organization_id=str(organization_id),
+    )
+
+
+def _attempt_index(prompt_id: str, fingerprint: str, attempt: int) -> str:
+    """`_Unit.run_id` 와 같은 식. 회차를 되찾기 위해 같은 방식으로 다시 만든다.
+
+    `ObservationRun` 은 회차를 들고 다니지 않는다 — 실행의 신원은 `run_id` 하나이고
+    그것이 `(질문, 조건, 회차)` 로 결정되므로, 되계산해 맞추면 추측 없이 회차를 얻는다.
+    """
+    payload = f"{prompt_id}|{fingerprint}|{attempt}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
+
+
+def _domain_of(url: str) -> str:
+    return (urlsplit(url).hostname or "").lower()
+
+
+def _engine_row(
+    session: Session, *, provider: str, model: str, search_mode: str, state: str
+) -> AIEngine:
+    """엔진 행을 찾거나 만든다.
+
+    `ai_answers.ai_engine_id` 가 이 표를 가리키므로 행이 없으면 답변을 저장할 수 없다.
+    엔진·모델·검색모드 셋이 다르면 다른 조건이고, 다른 조건에서 나온 답변을 한 줄로
+    묶으면 비교가 성립하지 않는다(ADR 0010).
+    """
+    existing = session.scalars(
+        select(AIEngine)
+        .where(AIEngine.provider == provider)
+        .where(AIEngine.model == model)
+        .where(AIEngine.search_mode == search_mode)
+    ).one_or_none()
+    if existing is not None:
+        existing.provider_state = state
+        return existing
+
+    row = AIEngine(
+        provider=provider,
+        model=model,
+        search_mode=search_mode,
+        display_name=f"{provider} {model}",
+        is_enabled=state == "ENABLED",
+        provider_state=state,
+    )
+    session.add(row)
+    session.flush()
+    return row
+
+
+def execute_observation(
+    session: Session,
+    principal: Principal,
+    *,
+    prompt_set_row: PromptSetRow,
+    engines: Sequence[EngineChoice],
+    repetitions: int,
+    allow_below_floor: bool = False,
+    settings: Settings | None = None,
+    registry: ProviderRegistry | None = None,
+    store: RecordedAnswerStore | None = None,
+) -> ObservationRunRow:
+    """프롬프트 집합을 엔진들에 돌리고 결과를 통째로 남긴다.
+
+    한 트랜잭션에 담는다 — 실행은 되돌릴 수 없는 기록이고, **반쯤 저장된 실행이 가장
+    나쁘다.** 절반만 남으면 그 위에서 계산한 비율의 분모가 틀리는데, 틀렸다는 사실이
+    어디에도 없다.
+
+    `registry` 와 `store` 를 밖에서 넣을 수 있는 것은 시험을 위해서만이 아니다. 이 함수가
+    스스로 등록소를 만들면 **네트워크 없이는 저장 경로를 한 번도 확인할 수 없고**, 그러면
+    실제 고객 실행이 첫 시험이 된다. 관측 실행은 되돌릴 수 없는 기록이므로 그것이 첫
+    시험이 되어서는 안 된다.
+    """
+    resolved = settings or get_settings()
+    prompt_rows = prompts_of(session, principal, prompt_set_row.id)
+    prompt_set = prompt_set_of(prompt_set_row, prompt_rows)
+    brand, _identity = brand_target_for(session, principal, prompt_set_row.project_id)
+
+    resolved_registry = registry if registry is not None else engine_registry()
+    runner = ObservationRunner(
+        registry=resolved_registry,
+        store=store
+        if store is not None
+        else answer_store(principal.organization_id, settings=resolved),
+        detector=SubstringMentionDetector(brand),
+        max_concurrency=resolved.observation_max_concurrency,
+        budget_usd=resolved.observation_budget_usd,
+    )
+
+    conditions = {
+        choice.engine: RunConditions(
+            engine=choice.engine,
+            model=choice.model,
+            # 요청 시점에는 모른다. 응답에서 읽은 값이 실행 기록에 들어간다.
+            model_version="요청 시점 미상",
+            search_mode=choice.search_mode,
+            account_state=choice.account_state,
+            locale=prompt_set_row.locale,
+        )
+        for choice in engines
+    }
+
+    started_at = datetime.now(UTC)
+    report = runner.execute(
+        prompt_set,
+        conditions=conditions,
+        repetitions=repetitions,
+        allow_below_floor=allow_below_floor,
+    )
+    finished_at = datetime.now(UTC)
+
+    return _persist(
+        session,
+        principal,
+        prompt_set_row=prompt_set_row,
+        prompt_rows=prompt_rows,
+        prompt_set=prompt_set,
+        report=report,
+        conditions=conditions,
+        engines=engines,
+        brand=brand,
+        started_at=started_at,
+        finished_at=finished_at,
+        registry_states=resolved_registry.states(),
+    )
+
+
+def _persist(
+    session: Session,
+    principal: Principal,
+    *,
+    prompt_set_row: PromptSetRow,
+    prompt_rows: Sequence[PromptRow],
+    prompt_set: PromptSet,
+    report: RunReport,
+    conditions: Mapping[str, RunConditions],
+    engines: Sequence[EngineChoice],
+    brand: BrandTarget,
+    started_at: datetime,
+    finished_at: datetime,
+    registry_states: Mapping[str, object],
+) -> ObservationRunRow:
+    # 엔진이 쓰는 질문 식별자는 내용 해시, DB 는 UUID 다. 저장된 행에서 같은 해시를
+    # 다시 계산해 표를 만든다 — 순서에 기대면 프롬프트가 하나만 바뀌어도 어긋난다.
+    by_hash = {_prompt_hash_of(row): row for row in prompt_rows}
+
+    engine_rows = {
+        choice.engine: _engine_row(
+            session,
+            provider=choice.engine,
+            model=choice.model,
+            search_mode=str(choice.search_mode),
+            state=str(registry_states.get(choice.engine, "UNKNOWN")),
+        )
+        for choice in engines
+    }
+
+    run_row = ObservationRunRow(
+        organization_id=principal.organization_id,
+        project_id=prompt_set_row.project_id,
+        prompt_set_id=prompt_set_row.id,
+        repetitions_per_prompt=report.repetitions,
+        engines=[choice.engine for choice in engines],
+        competitor_ids=[],
+        started_at=started_at,
+        finished_at=finished_at,
+        status="SUCCEEDED" if report.is_complete else "PARTIAL_SUCCESS",
+        executions_attempted=len(report.runs),
+        executions_valid=sum(1 for run in report.runs if run.is_valid_execution),
+        executions_planned=len(report.runs) + len(report.skipped),
+        executions_skipped=len(report.skipped),
+        is_complete=report.is_complete,
+        stopped_reason=str(report.stopped_reason) if report.stopped_reason else None,
+        prompts_below_repetition_floor=(
+            [prompt.prompt_id for prompt in prompt_set.prompts]
+            if report.below_repetition_floor
+            else []
+        ),
+        skipped_detail={
+            "items": [
+                {
+                    "prompt_id": item.prompt_id,
+                    "engine": item.engine,
+                    "attempt": item.attempt,
+                    "reason": str(item.reason),
+                    "reason_ko": item.reason_ko,
+                }
+                for item in report.skipped
+            ],
+            "summary_ko": report.summary_ko,
+            "unpriced_calls": report.unpriced_calls,
+            "total_cost_usd": report.total_cost_usd,
+        },
+        confidence_breakdown={
+            "engine_states": {name: str(state) for name, state in report.engine_states.items()},
+            "below_repetition_floor": report.below_repetition_floor,
+        },
+    )
+    session.add(run_row)
+    session.flush()
+
+    # 회차를 되찾기 위한 표. `run_id` 가 (질문, 조건, 회차) 로 결정되므로 되계산해 맞춘다.
+    attempts: dict[str, int] = {}
+    for prompt in prompt_set.prompts:
+        for engine, condition in conditions.items():
+            del engine
+            for attempt in range(1, report.repetitions + 1):
+                attempts[_attempt_index(prompt.prompt_id, condition.fingerprint, attempt)] = (
+                    attempt
+                )
+
+    for run in report.runs:
+        prompt_row = by_hash.get(run.prompt_id)
+        engine_row = engine_rows.get(run.conditions.engine)
+        if prompt_row is None or engine_row is None:
+            # 저장할 자리가 없는 실행을 조용히 버리면 실행 수가 맞지 않는다. 여기까지
+            # 오면 표를 잘못 만든 것이므로 감춘다기보다 드러나는 편이 낫다.
+            raise ValueError(
+                f"실행 결과를 저장할 대상을 찾지 못했습니다: prompt={run.prompt_id} "
+                f"engine={run.conditions.engine}"
+            )
+
+        answer = AIAnswer(
+            organization_id=principal.organization_id,
+            observation_run_id=run_row.id,
+            prompt_id=prompt_row.id,
+            ai_engine_id=engine_row.id,
+            repetition_index=attempts.get(run.run_id, 0),
+            model_version=run.conditions.model_version,
+            search_mode=str(run.conditions.search_mode),
+            account_state=str(run.conditions.account_state),
+            locale=run.conditions.locale,
+            executed_at=run.executed_at,
+            is_valid_execution=run.is_valid_execution,
+            raw_answer_storage_key=run.raw_answer_ref,
+            # 답변이 없는 실행에도 해시 칸은 비울 수 없다. 빈 문자열은 "원문 없음" 이고,
+            # 그 옆의 `error_code` 가 왜 없는지를 말한다.
+            raw_answer_hash=run.raw_answer_hash or "",
+            error_code=run.error_code,
+            latency_ms=run.latency_ms,
+            cost_usd=run.cost_usd,
+            cost_krw=None,
+        )
+        session.add(answer)
+        session.flush()
+
+        for position, url in enumerate(run.citations, start=1):
+            domain = _domain_of(url)
+            session.add(
+                Citation(
+                    organization_id=principal.organization_id,
+                    ai_answer_id=answer.id,
+                    url=url,
+                    domain=domain,
+                    position=position,
+                    is_own_domain=any(
+                        domain == own or domain.endswith(f".{own}") for own in brand.domains
+                    ),
+                )
+            )
+
+        for entity in run.mentioned_entities:
+            session.add(
+                EntityMention(
+                    organization_id=principal.organization_id,
+                    ai_answer_id=answer.id,
+                    entity_key=entity,
+                    is_own_brand=True,
+                    raw_occurrence_count=1,
+                    match_confidence=1.0,
+                )
+            )
+
+    session.flush()
+    return run_row
+
+
+def _prompt_hash_of(row: PromptRow) -> str:
+    """저장된 행에서 엔진이 쓰는 질문 식별자를 다시 계산한다."""
+    return Prompt(
+        text=row.text,
+        intent=Intent(row.intent),
+        funnel=Funnel(row.funnel),
+        subject=Subject(row.subject_type),
+        business_importance=row.business_importance,
+        locale=row.locale,
+        persona=row.persona,
+    ).prompt_id
+
+
+__all__ = [
+    "BrandIdentityMissingError",
+    "EngineChoice",
+    "answer_store",
+    "brand_target_for",
+    "execute_observation",
+]

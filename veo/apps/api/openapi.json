@@ -748,6 +748,72 @@
         "title": "ApiResponse[MemberPayload]",
         "type": "object"
       },
+      "ApiResponse_ObservationRunListPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservationRunListPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[ObservationRunListPayload]",
+        "type": "object"
+      },
+      "ApiResponse_ObservationRunPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservationRunPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[ObservationRunPayload]",
+        "type": "object"
+      },
       "ApiResponse_OrganizationPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -4098,6 +4164,41 @@
         "title": "DomainPayload",
         "type": "object"
       },
+      "EngineChoiceInput": {
+        "additionalProperties": false,
+        "description": "어느 엔진을 어떤 모델로 돌릴지.\n\n모델을 서버가 고르지 않는다. 모델마다 인용을 돌려주는지가 다르고(실측: `gpt-5`·\n`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않는다), 그 선택이 곧\n무엇을 측정할 수 있는지를 정한다. 기본값을 숨겨 두면 부르는 쪽이 그 사실을 모른 채\n\"인용 0회\" 를 받아 간다.",
+        "properties": {
+          "account_state": {
+            "default": "ANONYMOUS",
+            "description": "ANONYMOUS | SIGNED_IN | UNKNOWN",
+            "title": "Account State",
+            "type": "string"
+          },
+          "engine": {
+            "description": "OPENAI | ANTHROPIC | GOOGLE_GEMINI | PERPLEXITY",
+            "title": "Engine",
+            "type": "string"
+          },
+          "model": {
+            "description": "그 엔진의 모델 이름입니다.",
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "search_mode": {
+            "default": "BROWSING",
+            "description": "BROWSING 이면 검색을 켭니다. 인용을 재려면 켜야 하지만, 켠다고 모든 모델이 인용을 돌려주지는 않습니다.",
+            "title": "Search Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "engine",
+          "model"
+        ],
+        "title": "EngineChoiceInput",
+        "type": "object"
+      },
       "EnginePayload": {
         "additionalProperties": false,
         "description": "VEO 가 아는 모든 엔진. 못 쓰는 것도 이유와 함께 들어 있습니다.",
@@ -6943,6 +7044,194 @@
           "role"
         ],
         "title": "NewMemberRequest",
+        "type": "object"
+      },
+      "ObservationRunListPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationRunPayload"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "ObservationRunListPayload",
+        "type": "object"
+      },
+      "ObservationRunPayload": {
+        "additionalProperties": false,
+        "description": "한 번의 관측이 **무엇을 했고 무엇을 못 했는가.**\n\n`executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다. 그래서\n계획·건너뜀·중단 사유를 같은 자리에 둡니다.",
+        "properties": {
+          "engines": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Engines",
+            "type": "array"
+          },
+          "executions_attempted": {
+            "title": "Executions Attempted",
+            "type": "integer"
+          },
+          "executions_planned": {
+            "title": "Executions Planned",
+            "type": "integer"
+          },
+          "executions_skipped": {
+            "title": "Executions Skipped",
+            "type": "integer"
+          },
+          "executions_valid": {
+            "title": "Executions Valid",
+            "type": "integer"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_complete": {
+            "description": "계획한 것을 다 했고 반복 최소치를 넘겼는가. 거짓이면 부분 측정입니다.",
+            "title": "Is Complete",
+            "type": "boolean"
+          },
+          "project_id": {
+            "format": "uuid",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "prompt_set_id": {
+            "format": "uuid",
+            "title": "Prompt Set Id",
+            "type": "string"
+          },
+          "repetitions_per_prompt": {
+            "title": "Repetitions Per Prompt",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "stopped_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stopped Reason"
+          },
+          "summary_ko": {
+            "description": "이 실행을 한 문장으로. 못 한 일이 있으면 거기 적힙니다.",
+            "title": "Summary Ko",
+            "type": "string"
+          },
+          "total_cost_usd": {
+            "description": "알 수 있었던 비용의 합(USD)입니다. `unpriced_calls` 가 있으면 이 값은 전체가 아니라 일부입니다.",
+            "title": "Total Cost Usd",
+            "type": "number"
+          },
+          "unpriced_calls": {
+            "description": "비용을 알 수 없는 호출 수입니다. 0원이라는 뜻이 아니라 모른다는 뜻입니다.",
+            "title": "Unpriced Calls",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "prompt_set_id",
+          "status",
+          "is_complete",
+          "engines",
+          "repetitions_per_prompt",
+          "executions_planned",
+          "executions_attempted",
+          "executions_valid",
+          "executions_skipped",
+          "stopped_reason",
+          "summary_ko",
+          "unpriced_calls",
+          "total_cost_usd",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "ObservationRunPayload",
+        "type": "object"
+      },
+      "ObservationRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_below_floor": {
+            "default": false,
+            "description": "최소 반복 횟수 아래로 돌리는 것을 허용합니다. 결과에 '이 값으로 노출률을 말하지 마세요' 가 함께 기록됩니다. 시험용입니다.",
+            "title": "Allow Below Floor",
+            "type": "boolean"
+          },
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/EngineChoiceInput"
+            },
+            "minItems": 1,
+            "title": "Engines",
+            "type": "array"
+          },
+          "prompt_set_id": {
+            "format": "uuid",
+            "title": "Prompt Set Id",
+            "type": "string"
+          },
+          "repetitions": {
+            "default": 3,
+            "description": "프롬프트 하나를 엔진 하나에 던지는 횟수입니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다. 최소 3회이며, 그 아래로 돌리려면 `allow_below_floor` 를 명시해야 합니다.",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Repetitions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "prompt_set_id",
+          "engines"
+        ],
+        "title": "ObservationRunRequest",
         "type": "object"
       },
       "ObservedVisibilityInput": {
@@ -14967,6 +15256,152 @@
           }
         },
         "summary": "프롬프트 집합 하나",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
+    "/api/observations/runs": {
+      "get": {
+        "description": "최신순입니다. 부분 실행도 그대로 들어 있습니다 — 빼면 그 실행이 없던 일이 됩니다.",
+        "operationId": "run_index_api_observations_runs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ObservationRunListPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "관측 실행 이력",
+        "tags": [
+          "observations"
+        ]
+      },
+      "post": {
+        "description": "같은 질문을 여러 번 던집니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다.\n\n**모델을 직접 고르셔야 합니다.** 인용을 돌려주는지가 모델마다 다릅니다 — 실측 결과 `gpt-5`·`gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않습니다. 돌려주지 않는 모델로 재면 인용 지표는 0회가 아니라 **측정 불가**로 남습니다.\n\n응답에는 한 일과 **못 한 일**이 함께 들어 있습니다. `executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다.",
+        "operationId": "run_api_observations_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObservationRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ObservationRunPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "프롬프트 집합을 AI 엔진에 돌려 실제 노출을 관측",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
+    "/api/observations/runs/{run_id}": {
+      "get": {
+        "operationId": "run_read_api_observations_runs__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ObservationRunPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "관측 실행 하나",
         "tags": [
           "observations"
         ]

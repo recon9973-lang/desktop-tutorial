@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -143,12 +144,112 @@ class PromptSetListPayload(BaseModel):
 
 
 __all__ = [
+    "EngineChoiceInput",
     "EnginePayload",
     "EngineStatus",
     "ExclusionInput",
+    "ObservationRunListPayload",
+    "ObservationRunPayload",
+    "ObservationRunRequest",
     "PromptInput",
     "PromptSetCreateRequest",
     "PromptSetListPayload",
     "PromptSetPayload",
     "PromptSummary",
 ]
+
+
+# --------------------------------------------------------------------------- #
+# 관측 실행
+# --------------------------------------------------------------------------- #
+
+
+class EngineChoiceInput(BaseModel):
+    """어느 엔진을 어떤 모델로 돌릴지.
+
+    모델을 서버가 고르지 않는다. 모델마다 인용을 돌려주는지가 다르고(실측: `gpt-5`·
+    `gpt-4o` 는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않는다), 그 선택이 곧
+    무엇을 측정할 수 있는지를 정한다. 기본값을 숨겨 두면 부르는 쪽이 그 사실을 모른 채
+    "인용 0회" 를 받아 간다.
+    """
+
+    model_config = _FROZEN
+
+    engine: str = Field(description="OPENAI | ANTHROPIC | GOOGLE_GEMINI | PERPLEXITY")
+    model: str = Field(min_length=1, description="그 엔진의 모델 이름입니다.")
+    search_mode: str = Field(
+        default="BROWSING",
+        description=(
+            "BROWSING 이면 검색을 켭니다. 인용을 재려면 켜야 하지만, 켠다고 모든 모델이 "
+            "인용을 돌려주지는 않습니다."
+        ),
+    )
+    account_state: str = Field(default="ANONYMOUS", description="ANONYMOUS | SIGNED_IN | UNKNOWN")
+
+
+class ObservationRunRequest(BaseModel):
+    model_config = _FROZEN
+
+    prompt_set_id: uuid.UUID
+    engines: list[EngineChoiceInput] = Field(min_length=1)
+    repetitions: int = Field(
+        default=3,
+        ge=1,
+        le=50,
+        description=(
+            "프롬프트 하나를 엔진 하나에 던지는 횟수입니다. AI 답변은 같은 질문에도 "
+            "매번 달라지므로 한 번의 결과를 노출률이라고 부를 수 없습니다. 최소 3회이며, "
+            "그 아래로 돌리려면 `allow_below_floor` 를 명시해야 합니다."
+        ),
+    )
+    allow_below_floor: bool = Field(
+        default=False,
+        description=(
+            "최소 반복 횟수 아래로 돌리는 것을 허용합니다. 결과에 '이 값으로 노출률을 "
+            "말하지 마세요' 가 함께 기록됩니다. 시험용입니다."
+        ),
+    )
+
+
+class ObservationRunPayload(BaseModel):
+    """한 번의 관측이 **무엇을 했고 무엇을 못 했는가.**
+
+    `executions_valid` 만 보면 절반만 실행된 관측이 완전한 측정처럼 읽힙니다. 그래서
+    계획·건너뜀·중단 사유를 같은 자리에 둡니다.
+    """
+
+    model_config = _FROZEN
+
+    id: uuid.UUID
+    project_id: uuid.UUID
+    prompt_set_id: uuid.UUID
+    status: str
+    is_complete: bool = Field(
+        description="계획한 것을 다 했고 반복 최소치를 넘겼는가. 거짓이면 부분 측정입니다."
+    )
+    engines: list[str]
+    repetitions_per_prompt: int
+    executions_planned: int
+    executions_attempted: int
+    executions_valid: int
+    executions_skipped: int
+    stopped_reason: str | None
+    summary_ko: str = Field(description="이 실행을 한 문장으로. 못 한 일이 있으면 거기 적힙니다.")
+    unpriced_calls: int = Field(
+        description="비용을 알 수 없는 호출 수입니다. 0원이라는 뜻이 아니라 모른다는 뜻입니다."
+    )
+    total_cost_usd: float = Field(
+        description=(
+            "알 수 있었던 비용의 합(USD)입니다. `unpriced_calls` 가 있으면 이 값은 "
+            "전체가 아니라 일부입니다."
+        )
+    )
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
+class ObservationRunListPayload(BaseModel):
+    model_config = _FROZEN
+
+    items: list[ObservationRunPayload]
+    total: int

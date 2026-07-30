@@ -1,0 +1,412 @@
+"""관측을 실제로 돌리고 **실제 PostgreSQL 에 저장되는지** 확인한다.
+
+관측 실행은 되돌릴 수 없는 기록이다. 저장 경로를 한 번도 확인하지 않으면 **첫 고객
+실행이 첫 시험**이 되고, 그때 잘못 저장된 것은 고칠 수 없다. 그래서 이 파일은 DB 를
+요구한다.
+
+여기서 고정하는 것 가운데 가장 중요한 것은 **못 한 일이 함께 저장되는가**이다.
+`runs` 만 남기고 `skipped`·`stopped_reason` 을 버리면, 예산에 걸려 절반만 실행된 관측이
+완전한 측정처럼 읽힌다. 그 위에서 계산한 노출률은 분모가 틀린 값이고, 틀렸다는 사실이
+어디에도 남지 않는다.
+
+AI 호출은 하지 않는다. 모의 전송이 합성 응답을 돌려주며, 그 응답은 전부
+``[합성 응답 — 실제 AI 답변 아님]`` 으로 시작한다.
+"""
+
+from __future__ import annotations
+
+import os
+import uuid
+from collections.abc import Callable, Iterator
+from pathlib import Path
+
+import httpx
+import pytest
+from alembic import command
+from alembic.config import Config
+from pydantic import SecretStr
+from sqlalchemy import Engine, create_engine, select
+from sqlalchemy.orm import Session, sessionmaker
+
+from veo.authz.principal import Principal
+from veo.contracts.enums import Role
+from veo.db.models.identity import Organization, Project, RoleAssignment, User
+from veo.db.models.observation import (
+    AIAnswer,
+    BrandIdentity,
+    Citation,
+    EntityMention,
+)
+from veo.db.models.observation import ObservationRun as ObservationRunRow
+from veo.db.models.observation import Prompt as PromptRow
+from veo.db.models.observation import PromptSet as PromptSetRow
+from veo.observations.execution import (
+    BrandIdentityMissingError,
+    EngineChoice,
+    execute_observation,
+)
+from veo.observations.providers.registry import ProviderRegistry
+from veo.observations.providers.storage import InMemoryAnswerStore
+from veo.observations.runs import SearchMode
+
+DATABASE_URL = os.environ.get("VEO_TEST_DATABASE_URL")
+
+pytestmark = [
+    pytest.mark.requires_postgres,
+    pytest.mark.skipif(
+        DATABASE_URL is None,
+        reason="VEO_TEST_DATABASE_URL 을 설정해야 저장 경로를 확인할 수 있습니다",
+    ),
+]
+
+SYNTHETIC_MARKER = "[합성 응답 — 실제 AI 답변 아님]"
+BRAND_NAME = "합성브랜드"
+BRAND_DOMAIN = "synthetic-brand.example"
+MODEL = "gpt-5"
+MODEL_VERSION = "gpt-5-2026-05-01"
+
+#: 균형 검사를 통과하는 최소 질문 집합. 의도 일곱 가지를 모두 덮는다.
+PROMPTS = [
+    ("레이저 토닝이란 무엇인가요?", "DEFINITION", "RESEARCH"),
+    ("레이저 토닝은 어떻게 받나요?", "HOW_TO", "RESEARCH"),
+    ("레이저 토닝 잘하는 곳을 추천해 주세요", "BEST_OR_RECOMMENDED", "RECOMMENDATION"),
+    ("레이저 토닝과 IPL 중 무엇이 나은가요?", "COMPARISON", "COMPARISON"),
+    ("레이저 토닝 가격은 얼마인가요?", "PRICE", "PURCHASE_OR_VISIT"),
+    ("강남역 근처 피부과를 알려주세요", "LOCAL", "PURCHASE_OR_VISIT"),
+    ("레이저 토닝 부작용이 있나요?", "TRUST", "AFTERCARE"),
+    ("레이저 토닝 후기가 궁금합니다", "TRUST", "RESEARCH"),
+]
+
+
+# --------------------------------------------------------------------------- #
+# 자리 만들기
+# --------------------------------------------------------------------------- #
+
+
+@pytest.fixture(scope="module")
+def engine() -> Iterator[Engine]:
+    assert DATABASE_URL is not None
+    root = Path(__file__).resolve().parents[2]
+    config = Config(str(root / "alembic.ini"))
+    config.set_main_option("script_location", str(root / "alembic"))
+    config.set_main_option("sqlalchemy.url", DATABASE_URL)
+    command.upgrade(config, "head")
+
+    created = create_engine(DATABASE_URL, future=True)
+    try:
+        yield created
+    finally:
+        created.dispose()
+
+
+@pytest.fixture
+def db(engine: Engine) -> Iterator[Session]:
+    factory = sessionmaker(bind=engine, expire_on_commit=False, class_=Session)
+    session = factory()
+    try:
+        yield session
+    finally:
+        session.rollback()
+        session.close()
+
+
+@pytest.fixture
+def tenant(db: Session) -> Callable[..., tuple[Principal, PromptSetRow]]:
+    """조직·프로젝트·프롬프트 집합·브랜드 식별자를 한 번에 만든다."""
+
+    def _make(*, with_brand: bool = True) -> tuple[Principal, PromptSetRow]:
+        suffix = uuid.uuid4().hex[:8]
+        organization = Organization(
+            slug=f"veo-obs-{suffix}", name="관측 테스트 조직", is_active=True, settings={}
+        )
+        db.add(organization)
+        user = User(
+            email=f"obs-{suffix}@veo-test.invalid", display_name="관측 담당", is_active=True
+        )
+        db.add(user)
+        db.commit()
+        db.add(
+            RoleAssignment(
+                organization_id=organization.id, user_id=user.id, role=str(Role.ANALYST)
+            )
+        )
+        project = Project(
+            organization_id=organization.id,
+            slug=f"obs-{suffix}",
+            name="관측 프로젝트",
+            locale="ko-KR",
+            settings={},
+        )
+        db.add(project)
+        db.commit()
+
+        if with_brand:
+            db.add(
+                BrandIdentity(
+                    organization_id=organization.id,
+                    project_id=project.id,
+                    entity_key=f"brand-{suffix}",
+                    display_name=BRAND_NAME,
+                    aliases=[],
+                    address_terms=[],
+                    phone_numbers=[],
+                    distinguishing_terms=[],
+                    own_domains=[BRAND_DOMAIN],
+                    is_active=True,
+                )
+            )
+
+        prompt_set = PromptSetRow(
+            organization_id=organization.id,
+            project_id=project.id,
+            name="관측 집합",
+            version="1",
+            locale="ko-KR",
+            is_locked=False,
+        )
+        db.add(prompt_set)
+        db.commit()
+
+        for text, intent, funnel in PROMPTS:
+            db.add(
+                PromptRow(
+                    organization_id=organization.id,
+                    prompt_set_id=prompt_set.id,
+                    text=text,
+                    intent=intent,
+                    funnel=funnel,
+                    locale="ko-KR",
+                    subject_type="NON_BRAND",
+                    business_importance=0.5,
+                    expected_demand_is_estimate=True,
+                )
+            )
+        db.commit()
+
+        principal = Principal(
+            user_id=user.id,
+            organization_id=organization.id,
+            roles=frozenset({Role.ANALYST}),
+            session_id=f"test-{suffix}",
+        )
+        return principal, prompt_set
+
+    return _make
+
+
+# --------------------------------------------------------------------------- #
+# 합성 엔진
+# --------------------------------------------------------------------------- #
+
+
+def _payload(text: str, citation_urls: tuple[str, ...] = ()) -> dict:
+    annotations = [
+        {"type": "url_citation", "url": url, "title": "합성 출처"} for url in citation_urls
+    ]
+    return {
+        "model": MODEL_VERSION,
+        "output": [
+            {
+                "type": "message",
+                "content": [
+                    {"type": "output_text", "text": text, "annotations": annotations}
+                ],
+            }
+        ],
+        "usage": {"input_tokens": 10, "output_tokens": 20},
+    }
+
+
+DEFAULT_ANSWER = f"{SYNTHETIC_MARKER} {BRAND_NAME} 를 추천합니다."
+
+
+def _registry(
+    *, text: str = DEFAULT_ANSWER, citations: tuple[str, ...] = ()
+) -> ProviderRegistry:
+    from veo.core.settings import ProviderCredentials
+    from veo.observations.providers.openai import OpenAIAnswerProvider
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=_payload(text, citations))
+
+    provider = OpenAIAnswerProvider.from_settings(
+        ProviderCredentials(openai_api_key=SecretStr("sk-synthetic-key-for-tests")),
+        transport=httpx.MockTransport(handler),
+    )
+    return ProviderRegistry([provider])
+
+
+def _run(
+    db: Session,
+    principal: Principal,
+    prompt_set: PromptSetRow,
+    *,
+    registry: ProviderRegistry | None = None,
+    repetitions: int = 3,
+) -> ObservationRunRow:
+    row = execute_observation(
+        db,
+        principal,
+        prompt_set_row=prompt_set,
+        engines=[EngineChoice(engine="OPENAI", model=MODEL, search_mode=SearchMode.BROWSING)],
+        repetitions=repetitions,
+        registry=registry if registry is not None else _registry(),
+        store=InMemoryAnswerStore(),
+    )
+    db.commit()
+    return row
+
+
+# --------------------------------------------------------------------------- #
+# 검사
+# --------------------------------------------------------------------------- #
+
+
+class TestTheRunIsRecorded:
+    def test_a_run_row_is_written(self, db: Session, tenant) -> None:
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        assert row.id is not None
+        assert row.prompt_set_id == prompt_set.id
+
+    def test_every_execution_becomes_an_answer_row(self, db: Session, tenant) -> None:
+        """질문 8개, 엔진 1개, 반복 3회 — 모두 24건. 하나라도 빠지면 분모가 틀린다."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set, repetitions=3)
+
+        answers = db.scalars(
+            select(AIAnswer).where(AIAnswer.observation_run_id == row.id)
+        ).all()
+        assert len(answers) == len(PROMPTS) * 3
+        assert row.executions_attempted == len(PROMPTS) * 3
+
+    def test_the_repetition_index_is_recovered_not_guessed(self, db: Session, tenant) -> None:
+        """`ObservationRun` 은 회차를 들고 다니지 않는다. `run_id` 에서 되찾는다."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set, repetitions=3)
+
+        answers = db.scalars(
+            select(AIAnswer).where(AIAnswer.observation_run_id == row.id)
+        ).all()
+        indexes = sorted({answer.repetition_index for answer in answers})
+        assert indexes == [1, 2, 3], f"회차가 복원되지 않았다: {indexes}"
+
+    def test_the_model_version_comes_from_the_response(self, db: Session, tenant) -> None:
+        """요청한 모델 이름이 아니라 **실제로 답한** 판을 기록한다."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        answer = db.scalars(
+            select(AIAnswer).where(AIAnswer.observation_run_id == row.id)
+        ).first()
+        assert answer is not None
+        assert answer.model_version == MODEL_VERSION
+
+
+class TestWhatWasNotDoneIsStoredToo:
+    def test_a_complete_run_says_so(self, db: Session, tenant) -> None:
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set, repetitions=3)
+
+        assert row.is_complete
+        assert row.status == "SUCCEEDED"
+        assert row.executions_skipped == 0
+        assert row.stopped_reason is None
+
+    def test_a_run_below_the_repetition_floor_is_refused(self, db: Session, tenant) -> None:
+        """AI 답변은 매번 달라진다. 한 번의 결과를 노출률이라고 부를 수 없다."""
+        from veo.observations.runner import RepetitionFloorError
+
+        principal, prompt_set = tenant()
+
+        with pytest.raises(RepetitionFloorError):
+            _run(db, principal, prompt_set, repetitions=1)
+
+    def test_the_summary_is_stored_for_reading_later(self, db: Session, tenant) -> None:
+        """숫자만 남기면 왜 부분 측정인지 다시 만들어 낼 수 없다."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        assert row.skipped_detail["summary_ko"]
+        assert "실행" in row.skipped_detail["summary_ko"]
+
+    def test_the_planned_count_sits_beside_the_attempted(self, db: Session, tenant) -> None:
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set, repetitions=3)
+
+        assert row.executions_planned == row.executions_attempted + row.executions_skipped
+
+
+class TestEvidenceAndCost:
+    def test_a_cited_url_is_recorded_with_its_domain(self, db: Session, tenant) -> None:
+        principal, prompt_set = tenant()
+        registry = _registry(citations=(f"https://{BRAND_DOMAIN}/clinic",))
+
+        row = _run(db, principal, prompt_set, registry=registry)
+
+        citations = db.scalars(
+            select(Citation)
+            .join(AIAnswer, Citation.ai_answer_id == AIAnswer.id)
+            .where(AIAnswer.observation_run_id == row.id)
+        ).all()
+        assert citations
+        assert all(citation.domain == BRAND_DOMAIN for citation in citations)
+        assert all(citation.is_own_domain for citation in citations)
+
+    def test_a_mention_is_recorded(self, db: Session, tenant) -> None:
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        mentions = db.scalars(
+            select(EntityMention)
+            .join(AIAnswer, EntityMention.ai_answer_id == AIAnswer.id)
+            .where(AIAnswer.observation_run_id == row.id)
+        ).all()
+        assert mentions
+        assert all(mention.entity_key == BRAND_NAME for mention in mentions)
+
+    def test_the_raw_answer_is_a_pointer_not_the_text(self, db: Session, tenant) -> None:
+        """원문은 답변 저장소로 간다. DB 에는 포인터와 해시만 남는다."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        answer = db.scalars(
+            select(AIAnswer).where(AIAnswer.observation_run_id == row.id)
+        ).first()
+        assert answer is not None
+        assert answer.raw_answer_storage_key
+        assert answer.raw_answer_hash
+        assert SYNTHETIC_MARKER not in (answer.raw_answer_storage_key or "")
+
+    def test_cost_goes_in_the_currency_it_was_measured_in(self, db: Session, tenant) -> None:
+        """가격표가 비어 있으면 비용은 없다 — 0원이 아니라 모른다는 뜻이고, 원화 칸은
+        환율을 알기 전까지 비어 있어야 한다."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        answers = db.scalars(
+            select(AIAnswer).where(AIAnswer.observation_run_id == row.id)
+        ).all()
+        assert all(answer.cost_krw is None for answer in answers)
+
+
+class TestRefusals:
+    def test_a_project_without_a_brand_identity_is_refused(self, db: Session, tenant) -> None:
+        """이름 없이 언급을 세면 모든 답변이 '언급 없음' 이 된다. 그것은 측정이 아니다."""
+        principal, prompt_set = tenant(with_brand=False)
+
+        with pytest.raises(BrandIdentityMissingError) as caught:
+            _run(db, principal, prompt_set)
+
+        assert "브랜드" in str(caught.value)

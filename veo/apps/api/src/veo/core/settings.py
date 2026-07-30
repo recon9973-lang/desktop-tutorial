@@ -260,6 +260,27 @@ class Settings(BaseSettings):
     #: make VEO worth using as a weapon.
     public_target_host_limit_per_hour: int = 60
 
+    #: AI 답변 원문이 보관되는 곳.
+    #:
+    #: VEO 가 보고하는 모든 언급·인용은 그것이 나온 답변으로 뒷받침된다. 답변을 잃으면
+    #: 남는 것은 **확인할 수 없는 주장**뿐이고, 그것은 측정이 아니다. 그래서 기본값이
+    #: 임시 디렉터리가 아니다 — 재시작 한 번에 근거가 사라지면 안 된다.
+    #:
+    #: 운영의 정답은 객체 저장소이고 그 어댑터는 아직 없다. 지금은 파일시스템이며,
+    #: 프로토콜이 같으므로 바꾸는 것은 생성자 인자 하나다.
+    observation_answer_store_root: str = "var/observations/answers"
+
+    #: 한 번의 관측 실행이 쓸 수 있는 금액 상한(USD). 비워 두면 상한 없이 돈다.
+    #:
+    #: 상한을 걸면 **비용을 모르는 호출에서 실행이 멈춘다.** 금액을 모른 채 돈을 쓰는
+    #: 대신 중단하는 쪽이 맞기 때문이다. 가격표가 비어 있는 지금 상한을 걸면 아무것도
+    #: 실행되지 않으므로 기본값은 비워 둔다.
+    observation_budget_usd: float | None = None
+
+    #: 한 관측 실행이 동시에 여는 제공자 호출 수. 대상은 남의 서버가 아니라 우리가 돈을
+    #: 내는 API 이지만, 속도 제한은 그쪽에도 있다.
+    observation_max_concurrency: int = 4
+
     default_seo_spec_id: str = "veo.seo.readiness"
     default_geo_spec_id: str = "veo.geo.readiness"
 
