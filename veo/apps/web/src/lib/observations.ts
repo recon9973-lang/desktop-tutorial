@@ -182,3 +182,61 @@ export async function startObservation(input: {
     },
   });
 }
+
+/* ── GEO 준비도 ─────────────────────────────────────────────────────── */
+
+export interface GeoCategory {
+  readonly category_id: string;
+  readonly name_ko: string;
+  readonly weight: number;
+  readonly status: 'SCORED' | 'NOT_APPLICABLE' | 'UNKNOWN';
+  readonly score: number | null;
+  readonly coverage: number;
+  readonly confidence: number;
+  readonly failing_check_ids: readonly string[];
+  readonly unknown_check_ids: readonly string[];
+  readonly not_applicable_check_ids: readonly string[];
+}
+
+export interface GeoGate {
+  readonly gate_id: string;
+  readonly status_code: string;
+  readonly label_ko: string;
+  readonly description_ko: string | null;
+  readonly triggered_by: readonly string[];
+}
+
+export interface GeoReadiness {
+  readonly target_url: string;
+  readonly readiness: {
+    readonly spec_id: string;
+    readonly spec_version: string;
+    readonly status: 'SCORED' | 'NOT_APPLICABLE' | 'UNKNOWN';
+    readonly score: number | null;
+    readonly band_label_ko: string | null;
+    readonly coverage: number;
+    readonly confidence: number;
+    readonly categories: readonly GeoCategory[];
+  };
+  /** 점수와 **분리된** 블록. 95점이면서 동시에 노출 차단일 수 있다. */
+  readonly exposure: {
+    readonly blocked: boolean;
+    readonly status_codes: readonly string[];
+    readonly gates: readonly GeoGate[];
+  };
+  readonly summary_ko: string;
+  readonly scope_notice_ko: string;
+  readonly notes_ko: readonly string[];
+}
+
+/** 주소 하나로 GEO 준비도를 잰다. SEO 진단과 같은 수집 경로를 쓴다. */
+export async function scanGeoReadiness(
+  targetUrl: string,
+): Promise<ConsoleOutcome<GeoReadiness>> {
+  return callConsoleApi('/api/geo/readiness/scans', {
+    method: 'POST',
+    body: { target_url: targetUrl },
+    // 사이트를 실제로 가져오므로 목록 조회와 시간 감각이 다르다.
+    timeoutMs: 120_000,
+  });
+}

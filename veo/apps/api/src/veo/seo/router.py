@@ -22,10 +22,10 @@ from sqlalchemy.orm import Session
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
 from veo.collect.contract import CollectionContext
+from veo.collect.from_crawl import context_from_crawl
 from veo.common.security.fetcher import FetchedDocument, FetchHop
 from veo.contracts.enums import ProviderState
 from veo.contracts.envelope import ApiResponse
-from veo.core.settings import get_provider_credentials
 from veo.db.session import get_db
 from veo.organizations.http import guard
 from veo.scoring import ScoreResult, ScoringSpec
@@ -37,7 +37,6 @@ from veo.seo.history import (
     read_scan_report,
     save_scan_run,
 )
-from veo.seo.importance import classify_urls
 from veo.seo.schemas import (
     CapSummary,
     CategorySummary,
@@ -186,7 +185,7 @@ def run_site_scan(
             status_code=refusal.status_code, detail=refusal.error.model_dump(mode="json")
         ) from refusal
 
-    context = _context_from_crawl(
+    context = context_from_crawl(
         target_url=payload.target_url,
         spec=spec,
         outcome=outcome,
@@ -293,53 +292,6 @@ def _assert_site_exists(db: Session, *, principal: Principal, site_id: uuid.UUID
 
     if not site_exists(db, principal=principal, site_id=site_id):
         raise HTTPException(status_code=404, detail="site not found")
-
-
-def _context_from_crawl(
-    *,
-    target_url: str,
-    spec: ScoringSpec,
-    outcome: CrawlOutcome,
-    locale: str,
-) -> CollectionContext:
-    """수집 결과를 채점기가 읽는 형태로 옮긴다.
-
-    provider 상태는 설정에서 그대로 가져온다. 자격증명이 없는 provider 는 DISABLED 로
-    들어가고, 그 항목은 UNKNOWN 이 되어 측정 범위를 낮춘다 — 감점되지도, 지어내지도
-    않는다. 이 값을 ENABLED 로 위장하면 없는 데이터를 있는 것처럼 만들게 된다.
-
-    사이트맵도 같은 이유로 여기서 넘긴다. 예전에는 이 자리에 빈 값이 들어가 있어서,
-    사이트맵을 제대로 갖춘 사이트조차 사이트맵 두 항목이 **언제나** 측정 불가로
-    나왔다. 그 배점은 분모에 남으므로 모든 고객의 점수가 우리가 수집을 안 만든 만큼
-    내려가고 있었다 — 대상 사이트의 문제로 보이는 형태로.
-    """
-    documents = outcome.documents
-    by_url = {document.final_url: document for document in documents}
-    primary = documents[0] if documents else None
-    return CollectionContext(
-        target_url=target_url,
-        spec=spec,
-        documents=by_url,
-        primary_document=primary,
-        robots_txt=outcome.robots_txt,
-        sitemap_documents=dict(outcome.sitemaps),
-        # 렌더링 후 DOM 은 아직 수집하지 않는다. 비워 두면 렌더 비교 항목이 UNKNOWN 이
-        # 되고, 원본 HTML 과 같다고 **가정하지 않는다**.
-        rendered_dom={},
-        provider_states=dict(get_provider_credentials().states()),
-        provider_payloads={},
-        # 예전에는 수집한 **모든** 페이지가 `CONVERSION_OR_HOME`(3.0) 이었다. 측정 범위는
-        # 중요도로 가중되므로, 그 상태에서는 태그 페이지 한 장의 결함이 홈페이지 결함과
-        # 같은 무게였다 — 가중치라는 개념이 사실상 없었다.
-        url_importance=dict(
-            classify_urls(
-                (document.final_url for document in documents), entry_url=target_url
-            )
-        ),
-        crawl_is_exhaustive=outcome.discovery_exhausted,
-        locale=locale,
-        collected_at=datetime.now(UTC),
-    )
 
 
 # --------------------------------------------------------------------------- #

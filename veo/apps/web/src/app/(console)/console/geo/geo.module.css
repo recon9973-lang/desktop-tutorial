@@ -328,3 +328,67 @@
 }
 
 .failedText { color: var(--veo-color-text-muted); }
+
+/* ── 준비도 ─────────────────────────────────────────────────────────── */
+
+.scopeNotice {
+  margin: 0;
+  padding: var(--veo-space-3);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+  color: var(--veo-color-text-muted);
+}
+
+/* 노출 차단은 점수와 나란히 있되 섞이지 않는다. 95점이면서 차단일 수 있다. */
+.blocked {
+  padding: var(--veo-space-4);
+  border-left: 3px solid var(--veo-color-danger);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+}
+
+.categoryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+}
+
+.categoryRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+  padding-bottom: var(--veo-space-3);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+
+.categoryHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--veo-space-4);
+  align-items: baseline;
+}
+
+.categoryName { font-weight: var(--veo-weight-medium); }
+
+.categoryScore {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--veo-weight-semibold);
+}
+
+/* 못 잰 영역은 숫자 자리에 숫자를 넣지 않는다. */
+.categoryUnmeasured {
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+.categoryMeta {
+  margin: 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

@@ -290,6 +290,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/geo/readiness/scans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 주소만으로 GEO 준비도 진단
+         * @description 주소를 주면 VEO 가 직접 가져와 채점합니다. `/readiness/analyses` 는 이미 수집된 문서를 받는 계약이고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는 경우를 위한 것입니다.
+         *
+         *     **SEO 진단과 같은 수집 경로를 씁니다.** 같은 가드, 같은 예산, 같은 중요도 분류를 지납니다 — 두 진단이 서로 다른 규칙으로 사이트를 돌면 두 결과를 나란히 놓을 수 없습니다.
+         *
+         *     그렇더라도 **SEO 점수와 GEO 점수는 합치지 않습니다.** 재는 재료가 같다는 것과 뜻이 같다는 것은 다른 이야기입니다.
+         */
+        post: operations["scan_readiness_api_geo_readiness_scans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/geo/readiness/spec": {
         parameters: {
             query?: never;
@@ -3269,6 +3293,46 @@ export interface components {
             summary_ko: string;
             /** Target Url */
             target_url: string;
+        };
+        /**
+         * GeoScanRequest
+         * @description 주소만 주면 VEO 가 직접 가져와 GEO 준비도를 채점한다.
+         *
+         *     `GeoAnalysisRequest` 와 나란히 둔다. 저쪽은 **이미 수집된 자료**를 받는 계약이라
+         *     수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는
+         *     경우를 위한 것이다. 같은 명세, 같은 수집기, 같은 결과 형식이다.
+         *
+         *     SEO 진단과 **같은 수집 경로**를 쓴다. 한 번 가져온 것으로 둘 다 잴 수 있어야 대상
+         *     사이트에 두 번 요청하지 않는다. 다만 재는 재료가 같다고 해서 두 점수를 합치지는
+         *     않는다(ADR 0003).
+         */
+        GeoScanRequest: {
+            /**
+             * Discover
+             * @description 사이트맵과 내부 링크를 따라 VEO 가 스스로 페이지를 찾을지 여부입니다. 끄면 대표 주소와 `urls` 만 봅니다 — 사이트 전체를 봐야 판정되는 항목은 그때 측정 불가로 남고, 그 배점은 분모에 그대로 남습니다.
+             * @default true
+             */
+            discover: boolean;
+            /**
+             * Locale
+             * @default ko-KR
+             */
+            locale: string;
+            /**
+             * Max Urls
+             * @description 이번 진단에서 가져올 최대 페이지 수입니다. 대상 사이트에 보내는 요청 수를 그대로 정하는 값이므로 함부로 올리지 않습니다.
+             */
+            max_urls?: number | null;
+            /**
+             * Target Url
+             * @description 진단할 사이트의 대표 주소입니다.
+             */
+            target_url: string;
+            /**
+             * Urls
+             * @description 반드시 함께 볼 페이지 주소입니다.
+             */
+            urls?: string[];
         };
         /** GeoSpecCategoryPayload */
         GeoSpecCategoryPayload: {
@@ -6965,6 +7029,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["GeoAnalysisRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_GeoReadinessPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    scan_readiness_api_geo_readiness_scans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GeoScanRequest"];
             };
         };
         responses: {

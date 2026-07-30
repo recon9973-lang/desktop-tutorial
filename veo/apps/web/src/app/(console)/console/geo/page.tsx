@@ -17,6 +17,7 @@ import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
 import { JobWatch } from './JobWatch';
+import { ReadinessForm } from './ReadinessForm';
 import { RunForm, type RunnableEngine } from './RunForm';
 import { VisibilityReport } from './VisibilityReport';
 import own from './geo.module.css';
@@ -191,16 +192,8 @@ async function ConsoleGeoContent({
             </p>
           </div>
 
-          <Card title="아직 이 화면에서 실행할 수 없습니다" headingLevel={3} tone="flat">
-            <p className={own.pending}>
-              준비도 검사기 일곱 개는 완성돼 있지만, 지금은 <strong>수집한 문서를 직접
-              넘겨야만</strong> 실행됩니다. 주소만 넣으면 알아서 가져오는 경로가 GEO 쪽에는
-              아직 없습니다 — SEO 진단의 크롤을 GEO 가 쓸 수 있게 잇는 작업이 남아 있습니다.
-            </p>
-            <p className={own.pending}>
-              빈 점수 카드를 대신 띄우지 않는 이유는, 0점과 &lsquo;아직 안 잼&rsquo;이 화면에서
-              같아 보이면 안 되기 때문입니다.
-            </p>
+          <Card title="준비도 진단" headingLevel={3}>
+            <ReadinessForm />
           </Card>
         </section>
       </div>

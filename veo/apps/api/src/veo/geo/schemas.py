@@ -59,6 +59,45 @@ class GeoAnalysisRequest(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
+class GeoScanRequest(BaseModel):
+    """주소만 주면 VEO 가 직접 가져와 GEO 준비도를 채점한다.
+
+    `GeoAnalysisRequest` 와 나란히 둔다. 저쪽은 **이미 수집된 자료**를 받는 계약이라
+    수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는
+    경우를 위한 것이다. 같은 명세, 같은 수집기, 같은 결과 형식이다.
+
+    SEO 진단과 **같은 수집 경로**를 쓴다. 한 번 가져온 것으로 둘 다 잴 수 있어야 대상
+    사이트에 두 번 요청하지 않는다. 다만 재는 재료가 같다고 해서 두 점수를 합치지는
+    않는다(ADR 0003).
+    """
+
+    model_config = _STRICT
+
+    target_url: str = Field(min_length=1, description="진단할 사이트의 대표 주소입니다.")
+    urls: list[str] = Field(
+        default_factory=list,
+        description="반드시 함께 볼 페이지 주소입니다.",
+    )
+    discover: bool = Field(
+        default=True,
+        description=(
+            "사이트맵과 내부 링크를 따라 VEO 가 스스로 페이지를 찾을지 여부입니다. "
+            "끄면 대표 주소와 `urls` 만 봅니다 — 사이트 전체를 봐야 판정되는 항목은 "
+            "그때 측정 불가로 남고, 그 배점은 분모에 그대로 남습니다."
+        ),
+    )
+    max_urls: int | None = Field(
+        default=None,
+        ge=1,
+        le=500,
+        description=(
+            "이번 진단에서 가져올 최대 페이지 수입니다. 대상 사이트에 보내는 요청 수를 "
+            "그대로 정하는 값이므로 함부로 올리지 않습니다."
+        ),
+    )
+    locale: str = "ko-KR"
+
+
 class GeoCategoryPayload(BaseModel):
     model_config = _STRICT
 
@@ -195,6 +234,7 @@ __all__ = [
     "GeoIssuePayload",
     "GeoReadinessBlock",
     "GeoReadinessPayload",
+    "GeoScanRequest",
     "GeoSpecCategoryPayload",
     "GeoSpecPayload",
 ]
