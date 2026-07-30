@@ -53,11 +53,11 @@
 
 | 요구사항 | 구현 | 검증 |
 |---|---|---|
-| 준비도 7영역 20/20/15/15/10/10/10 | `veo.geo.readiness/1.0.0.yaml` | `test_published_specs.py`, golden `geo-01` |
+| 준비도 7영역 | `veo.geo.readiness/1.1.0.yaml` — 점수 영역 6개로 100(외부 검증 가능성은 수집 경로가 없어 점수 밖) | `test_published_specs.py`, golden `geo-01` |
 | 4xx/5xx·인증·noindex·검색봇 차단은 별도 `노출 차단` 상태 | spec `gates` (점수 산식 미개입) | `test_evaluator.py::test_gate_is_reported_without_changing_the_score`, golden `geo-02` |
 | 학습용 봇 차단을 감점하지 않는다 | `geo.access.training_bot_policy_declared` severity `INFO` (계수 0) | `test_evaluator.py::test_info_severity_cannot_reduce_the_score`, golden `geo-02` |
 | 주소만으로 준비도 진단 | **완료.** `POST /geo/readiness/scans` — SEO 와 **같은 수집 경로**(`collect/from_crawl.py`) | `tests/geo/test_scan_from_crawl.py` |
-| GEO 도 절대 평가인가 | ❌ **아니다.** `veo.geo.readiness/1.0.0` 은 `unknown: EXCLUDE_FROM_SCORE_REDUCE_COVERAGE` 로 남아 있다. SEO 는 1.2.0 에서 옮겼는데 GEO 는 옮긴 적이 없다 — 실측 www.seokorea.org 79.86(분모 90) vs 71.88(분모 100) | 미해결 |
+| GEO 도 절대 평가인가 | **완료 (1.1.0).** 1.0.0 은 상대 평가로 남아 있었다 — SEO 는 1.2.0 에서 옮겼는데 GEO 만 안 옮겨졌고, **그 규칙을 검사하는 코드가 없어서** 아무도 몰랐다. 실측 www.seokorea.org 79.86(분모 90) → 75.10(분모 100) | `test_every_published_spec_is_absolute.py` — 앞으로 발행되는 **모든** 명세를 검사한다 |
 | schema 부재만으로 치명적 오류 금지 | 구조화 데이터 check 전부 `applicability_ko`로 N/A 명시 | golden `geo-03-no-schema-online-only` |
 | 허위 schema는 위험으로 처리 | `geo.sd.matches_visible_content` severity `BLOCKER` + gate `STRUCTURED_DATA_MISMATCH` | spec 정의 |
 | 준비도와 실제 가시성 분리 저장·표시 | `score_results` vs `observation_runs`/`ai_answers`/`citations`/`entity_mentions` | `test_schema_invariants.py::test_readiness_scores_and_observed_visibility_live_in_different_tables` |

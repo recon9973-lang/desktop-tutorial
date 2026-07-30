@@ -213,14 +213,37 @@ def test_date_truthfulness_is_unknown_without_history() -> None:
     }
 
 
-def test_unknown_lowers_coverage_rather_than_the_score() -> None:
-    """No provider wired up at all: coverage drops, the score does not collapse."""
+def test_areas_we_cannot_reach_are_declared_outside_the_score() -> None:
+    """외부 출처는 수집 경로가 없다. 그러면 **애초에 점수의 일부가 아니라고 적는다.**
+
+    1.0.0 은 이 영역을 점수 안에 두고, 못 재면 분모에서 빼는 방식이었다. 그러면 잴 수
+    없다는 사실이 조용히 분모를 줄여 점수를 올린다 — 1.1.0 에서 선언으로 옮겼다.
+
+    영역이 사라지는 것은 아니다. "이 진단의 배점 밖" 으로 사유와 함께 계속 보고된다.
+    """
     report = run_geo_readiness(load_case("no_schema").context)
     external = report.score.category("external_verifiability")
-    assert external.unknown_check_ids
-    assert external.status == "UNKNOWN"
-    assert external.score is None
-    assert report.score.coverage < 1.0
+
+    assert external is not None, "점수 밖이어도 보고에서 빠지면 안 된다"
+    assert external.not_applicable_check_ids, "수집 경로가 없는 항목은 해당 없음으로 남는다"
+    assert external.unknown_check_ids == []
+
+
+def test_the_denominator_does_not_shrink_when_we_cannot_measure() -> None:
+    """분모가 움직이는 것이 이 제품에서 가장 비싸게 배운 결함이다.
+
+    못 잰 항목이 배점을 들고 나가면 **적게 잴수록 점수가 오른다.** 그래서 점수를 이루는
+    영역의 배점 합은 무엇을 쟀든 늘 100 이어야 한다.
+    """
+    report = run_geo_readiness(load_case("no_schema").context)
+    spec = report.spec
+
+    scored = sum(
+        category.weight for category in spec.categories if category.contributes_to_score
+    )
+
+    assert scored == pytest.approx(100.0)
+    assert spec.status_policy.unknown == "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
     assert report.score.overall_score is not None
 
 
