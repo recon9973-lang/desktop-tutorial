@@ -99,11 +99,31 @@ class GeoScanRequest(BaseModel):
 
 
 class GeoCategoryPayload(BaseModel):
+    """한 영역의 판정.
+
+    `contributes_to_score` 를 반드시 보십시오. 거짓이면 이 영역은 **애초에 점수의
+    일부가 아닙니다.** 점수 안에 있는데 못 잰 영역과 화면에서 같게 그리면, 참고 항목이
+    감점처럼 읽히거나 반대로 못 잰 것이 참고처럼 읽힙니다.
+    """
+
     model_config = _STRICT
 
     category_id: str
     name_ko: str
-    weight: float
+    weight: float = Field(
+        description=(
+            "이 영역의 배점입니다. `contributes_to_score` 가 거짓이면 **이 배점은 "
+            "분모에 들어가지 않습니다** — 참고용으로 원래 무게를 알려드리는 값입니다."
+        )
+    )
+    contributes_to_score: bool = Field(
+        default=True,
+        description="점수에 반영되는 영역인가. 거짓이면 하단 참고 구역에 표시하십시오.",
+    )
+    outside_score_reason_ko: str | None = Field(
+        default=None,
+        description="점수 밖인 이유입니다. `contributes_to_score` 가 거짓일 때만 채워집니다.",
+    )
     status: Literal["SCORED", "NOT_APPLICABLE", "UNKNOWN"]
     score: float | None
     coverage: float

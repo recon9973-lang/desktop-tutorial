@@ -31,6 +31,8 @@ function report(over: Partial<GeoReadiness> = {}): GeoReadiness {
           name_ko: '접근·검색 적격성',
           weight: 20,
           status: 'SCORED',
+          contributes_to_score: true,
+          outside_score_reason_ko: null,
           score: 88,
           coverage: 1,
           confidence: 1,
@@ -130,5 +132,61 @@ describe('저장되지 않는다는 사실', () => {
     render(<ReadinessReport report={report()} />);
 
     expect(screen.getByText(/저장되지 않습니다/)).toBeInTheDocument();
+  });
+});
+
+describe('참고 · 별도 확인 필요', () => {
+  const reference = {
+    category_id: 'external_verifiability',
+    name_ko: '외부 검증 가능성',
+    weight: 10,
+    contributes_to_score: false,
+    outside_score_reason_ko:
+      '참고 항목입니다. 네이버 한 곳만 조회하고 이름이 비슷한 업체가 섞일 수 있습니다.',
+    status: 'NOT_APPLICABLE' as const,
+    score: null,
+    coverage: 0,
+    confidence: 0,
+    failing_check_ids: [],
+    unknown_check_ids: [],
+    not_applicable_check_ids: ['a', 'b', 'c', 'd'],
+  };
+
+  function withReference() {
+    const base = report();
+    return {
+      ...base,
+      readiness: {
+        ...base.readiness,
+        categories: [...base.readiness.categories, reference],
+      },
+    };
+  }
+
+  it('점수 영역과 섞지 않는다', () => {
+    render(<ReadinessReport report={withReference()} />);
+
+    // 참고 항목이 "영역별" 목록에 끼면 감점처럼 읽힌다.
+    const scoredList = screen.getByText('영역별').closest('section, div');
+    expect(scoredList?.textContent).not.toContain('외부 검증 가능성');
+  });
+
+  it('점수에 반영되지 않는다고 분명히 말한다', () => {
+    render(<ReadinessReport report={withReference()} />);
+
+    expect(screen.getByText('참고 · 별도 확인 필요')).toBeInTheDocument();
+    expect(screen.getByText(/점수에 반영되지 않습니다/)).toBeInTheDocument();
+  });
+
+  it('왜 점수 밖인지 이유를 그대로 보여준다', () => {
+    render(<ReadinessReport report={withReference()} />);
+
+    expect(screen.getByText(/이름이 비슷한 업체가 섞일 수 있습니다/)).toBeInTheDocument();
+  });
+
+  it('참고 항목이 없으면 구역 자체를 띄우지 않는다', () => {
+    render(<ReadinessReport report={report()} />);
+
+    expect(screen.queryByText('참고 · 별도 확인 필요')).toBeNull();
   });
 });

@@ -111,10 +111,21 @@ class SpecCheck(BaseModel):
     #: `CUSTOMER_GRANTED` — 사이트 소유자가 권한을 줘야 한다(서치콘솔, 네이버 서치어드바이저).
     #: `PAID_PROVIDER` — 유료·별도 구성이 필요한 데이터원.
     #:
-    #: 뒤의 둘은 마련되기 전까지 **진단 범위 밖**이라 분모에서 빠진다. 아직 요청하지도
-    #: 않은 권한 때문에 고객의 점수가 낮아지면 안 된다. 대신 이름과 "무엇을 연결하면
-    #: 측정되는지" 를 결과에 남긴다 — 빠졌다는 사실 자체는 숨기지 않는다.
-    availability: Literal["SELF_SERVICE", "CUSTOMER_GRANTED", "PAID_PROVIDER"] = "SELF_SERVICE"
+    #: `REFERENCE_ONLY` — **조회는 되는데 점수로 확정할 수 없다.** 보이는 범위가 일부이거나
+    #: (검색 한 곳만 본다), 우리 고객의 것이라고 단정하기 어렵다(이름이 비슷한 다른 업체).
+    #: 결과는 보여주되 "별도 확인 필요" 로 표시한다.
+    #:
+    #: 이 값이 따로 필요한 이유는 0-A 다. 우리 쪽 한계를 `PAID_PROVIDER` 로 적으면
+    #: **고객이 돈으로 풀어야 할 일처럼** 넘기게 된다. 우리가 못 잰 것과 고객이 권한을
+    #: 안 준 것은 다른 사실이고, 다르게 적혀야 한다.
+    #:
+    #: `SELF_SERVICE` 를 뺀 나머지는 전부 **진단 범위 밖**이라 분모에서 빠진다. 아직
+    #: 요청하지도 않은 권한 때문에, 또 우리 스스로 믿지 못하는 조회 때문에 고객의 점수가
+    #: 낮아지면 안 된다. 대신 이름과 "무엇을 하면 확실해지는지" 를 결과에 남긴다 —
+    #: 빠졌다는 사실 자체는 숨기지 않는다.
+    availability: Literal[
+        "SELF_SERVICE", "CUSTOMER_GRANTED", "PAID_PROVIDER", "REFERENCE_ONLY"
+    ] = "SELF_SERVICE"
     applicability_ko: str | None = None
     evidence_required: tuple[str, ...] = ()
     engine_scope: tuple[str, ...] = ("GENERIC",)

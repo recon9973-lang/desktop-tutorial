@@ -392,3 +392,12 @@
   color: var(--veo-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* 참고 항목의 사유. 접거나 흐리게 두지 않는다 — 왜 점수에 없는지가 본문이다. */
+.referenceReason {
+  margin: var(--veo-space-2) 0 0;
+  padding-left: var(--veo-space-3);
+  border-left: 2px solid var(--veo-color-border-strong);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}

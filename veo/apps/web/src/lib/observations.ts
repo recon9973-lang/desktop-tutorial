@@ -188,7 +188,12 @@ export async function startObservation(input: {
 export interface GeoCategory {
   readonly category_id: string;
   readonly name_ko: string;
+  /** 이 영역의 배점. `contributes_to_score` 가 거짓이면 분모에 들어가지 않는다. */
   readonly weight: number;
+  /** 점수에 반영되는 영역인가. 거짓이면 하단 참고 구역으로. */
+  readonly contributes_to_score: boolean;
+  /** 점수 밖인 이유. 점수 밖일 때만 채워진다. */
+  readonly outside_score_reason_ko: string | null;
   readonly status: 'SCORED' | 'NOT_APPLICABLE' | 'UNKNOWN';
   readonly score: number | null;
   readonly coverage: number;

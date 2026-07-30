@@ -3105,12 +3105,25 @@ export interface components {
                 [key: string]: string;
             };
         };
-        /** GeoCategoryPayload */
+        /**
+         * GeoCategoryPayload
+         * @description 한 영역의 판정.
+         *
+         *     `contributes_to_score` 를 반드시 보십시오. 거짓이면 이 영역은 **애초에 점수의
+         *     일부가 아닙니다.** 점수 안에 있는데 못 잰 영역과 화면에서 같게 그리면, 참고 항목이
+         *     감점처럼 읽히거나 반대로 못 잰 것이 참고처럼 읽힙니다.
+         */
         GeoCategoryPayload: {
             /** Category Id */
             category_id: string;
             /** Confidence */
             confidence: number;
+            /**
+             * Contributes To Score
+             * @description 점수에 반영되는 영역인가. 거짓이면 하단 참고 구역에 표시하십시오.
+             * @default true
+             */
+            contributes_to_score: boolean;
             /** Coverage */
             coverage: number;
             /** Failing Check Ids */
@@ -3119,6 +3132,11 @@ export interface components {
             name_ko: string;
             /** Not Applicable Check Ids */
             not_applicable_check_ids: string[];
+            /**
+             * Outside Score Reason Ko
+             * @description 점수 밖인 이유입니다. `contributes_to_score` 가 거짓일 때만 채워집니다.
+             */
+            outside_score_reason_ko?: string | null;
             /** Score */
             score: number | null;
             /**
@@ -3128,7 +3146,10 @@ export interface components {
             status: "SCORED" | "NOT_APPLICABLE" | "UNKNOWN";
             /** Unknown Check Ids */
             unknown_check_ids: string[];
-            /** Weight */
+            /**
+             * Weight
+             * @description 이 영역의 배점입니다. `contributes_to_score` 가 거짓이면 **이 배점은 분모에 들어가지 않습니다** — 참고용으로 원래 무게를 알려드리는 값입니다.
+             */
             weight: number;
         };
         /** GeoCheckPayload */

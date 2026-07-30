@@ -393,10 +393,11 @@
           "enum": [
             "SELF_SERVICE",
             "CUSTOMER_GRANTED",
-            "PAID_PROVIDER"
+            "PAID_PROVIDER",
+            "REFERENCE_ONLY"
           ],
           "default": "SELF_SERVICE",
-          "description": "Who must act before this check can be measured. SELF_SERVICE: VEO can measure it on its own, with its own crawl or its own API key — it always counts toward the score. CUSTOMER_GRANTED: the site owner must grant access (Search Console, Naver Search Advisor). PAID_PROVIDER: a paid or separately configured data source. The last two are outside the diagnosis until arranged, so they leave the denominator rather than scoring zero — a score must not be lowered by a permission the customer has not been asked for yet. They are still reported, by name and with what would unlock them."
+          "description": "Who must act before this check can be measured, and whether it counts. SELF_SERVICE: VEO measures it on its own, with its own crawl or its own API key — it always counts toward the score. CUSTOMER_GRANTED: the site owner must grant access (Search Console, Naver Search Advisor). PAID_PROVIDER: a paid or separately configured data source. REFERENCE_ONLY: VEO can gather something here, but not well enough to score it — the reading is partial (one search engine, not the whole web) or cannot be attributed with confidence (a similarly named business). It is shown as reference and marked as needing separate human verification. Saying 'a paid service is required' when the real limit is coverage would put the ball in the customer's court for something that is not theirs to fix. Everything except SELF_SERVICE sits outside the diagnosis, so it leaves the denominator rather than scoring zero — a score must not be lowered by a permission the customer has not been asked for, nor by a reading we ourselves do not trust. All of them are still reported, by name and with what would settle them."
         }
       }
     },

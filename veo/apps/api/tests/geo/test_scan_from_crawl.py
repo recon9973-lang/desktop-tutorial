@@ -158,3 +158,74 @@ class TestTheTwoDiagnosticsSeeTheSameSite:
         )
 
         assert seo.spec.spec_id != geo.spec.spec_id
+
+
+class TestWhatTheScreenIsToldAboutAreasOutsideTheScore:
+    """참고 항목과 못 잰 항목을 화면이 구분할 수 있어야 한다.
+
+    둘 다 점수가 없어서 응답만 보면 똑같아 보인다. 같게 그리면 참고 항목이 감점처럼
+    읽히거나, 반대로 우리가 못 잰 것이 "원래 안 재는 항목" 처럼 읽힌다. 뒤쪽이 더 나쁘다.
+    """
+
+    def test_the_reply_says_which_areas_are_outside_the_score(
+        self, outcome: CrawlOutcome
+    ) -> None:
+        from veo.geo.payload import payload_from
+        from veo.geo.service import run_geo_readiness
+
+        spec = latest_published(GEO_SPEC_ID)
+        context = context_from_crawl(
+            target_url="https://clinic.example/",
+            spec=spec,
+            outcome=outcome,
+            locale="ko-KR",
+        )
+        payload = payload_from("https://clinic.example/", run_geo_readiness(context, spec=spec))
+
+        outside = [c for c in payload.readiness.categories if not c.contributes_to_score]
+        inside = [c for c in payload.readiness.categories if c.contributes_to_score]
+
+        assert outside, "점수 밖 영역이 응답에서 사라지면 화면에 띄울 수 없다"
+        assert inside, "점수 안 영역이 하나도 없으면 무언가 크게 잘못된 것이다"
+
+    def test_every_area_outside_the_score_says_why(self, outcome: CrawlOutcome) -> None:
+        """"점수에 안 들어감" 만 띄우면 왜인지 묻게 된다. 사유를 함께 준다."""
+        from veo.geo.payload import payload_from
+        from veo.geo.service import run_geo_readiness
+
+        spec = latest_published(GEO_SPEC_ID)
+        context = context_from_crawl(
+            target_url="https://clinic.example/",
+            spec=spec,
+            outcome=outcome,
+            locale="ko-KR",
+        )
+        payload = payload_from("https://clinic.example/", run_geo_readiness(context, spec=spec))
+
+        for category in payload.readiness.categories:
+            if category.contributes_to_score:
+                assert category.outside_score_reason_ko is None
+            else:
+                assert category.outside_score_reason_ko, category.category_id
+                assert "참고 항목" in category.outside_score_reason_ko
+
+    def test_areas_inside_the_score_are_not_labelled_reference(
+        self, outcome: CrawlOutcome
+    ) -> None:
+        """참고 표시가 점수 영역으로 번지면 감점을 참고로 둔갑시킬 수 있다."""
+        from veo.geo.payload import payload_from
+        from veo.geo.service import run_geo_readiness
+
+        spec = latest_published(GEO_SPEC_ID)
+        context = context_from_crawl(
+            target_url="https://clinic.example/",
+            spec=spec,
+            outcome=outcome,
+            locale="ko-KR",
+        )
+        payload = payload_from("https://clinic.example/", run_geo_readiness(context, spec=spec))
+
+        scored_weight = sum(
+            c.weight for c in payload.readiness.categories if c.contributes_to_score
+        )
+        assert scored_weight == pytest.approx(100.0)

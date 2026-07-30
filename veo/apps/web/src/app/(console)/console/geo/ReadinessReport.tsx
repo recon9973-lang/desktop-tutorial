@@ -14,7 +14,12 @@ import styles from './geo.module.css';
  */
 export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
   const { readiness, exposure } = report;
-  const scored = readiness.score !== null;
+  const hasScore = readiness.score !== null;
+
+  // 점수 영역과 참고 영역을 갈라 놓는다. 한 목록에 섞으면 참고 항목이 감점처럼 읽히거나,
+  // 반대로 우리가 못 잰 것이 "원래 안 재는 항목" 처럼 읽힌다. 뒤쪽이 더 나쁘다.
+  const scored = readiness.categories.filter((one) => one.contributes_to_score);
+  const reference = readiness.categories.filter((one) => !one.contributes_to_score);
 
   return (
     <div className={styles.report}>
@@ -38,10 +43,10 @@ export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
         </section>
       ) : null}
 
-      <div className={scored ? styles.rateCard : styles.rateCardUnmeasured}>
+      <div className={hasScore ? styles.rateCard : styles.rateCardUnmeasured}>
         <p className={styles.rateLabel}>GEO 준비도 · {report.target_url}</p>
-        <p className={scored ? styles.rateValue : styles.rateValueUnmeasured}>
-          {scored ? `${readiness.score?.toFixed(1)}점` : '점수를 낼 수 없습니다'}
+        <p className={hasScore ? styles.rateValue : styles.rateValueUnmeasured}>
+          {hasScore ? `${readiness.score?.toFixed(1)}점` : '점수를 낼 수 없습니다'}
         </p>
         {readiness.band_label_ko === null ? null : (
           <p className={styles.rateDenominator}>{readiness.band_label_ko}</p>
@@ -55,11 +60,39 @@ export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
 
       <Card title="영역별" headingLevel={3} tone="flat">
         <ul className={styles.categoryList}>
-          {readiness.categories.map((category) => (
+          {scored.map((category) => (
             <CategoryRow key={category.category_id} category={category} />
           ))}
         </ul>
       </Card>
+
+      {reference.length === 0 ? null : (
+        <Card title="참고 · 별도 확인 필요" headingLevel={3} tone="flat">
+          <p className={styles.rateNote}>
+            아래 항목은 <strong>점수에 반영되지 않습니다.</strong> 감점된 것도, 통과한 것도
+            아닙니다 — 저희가 확실하게 재지 못하는 영역이라 처음부터 배점에서 빼두었습니다.
+          </p>
+          <ul className={styles.categoryList}>
+            {reference.map((category) => (
+              <li key={category.category_id} className={styles.categoryRow}>
+                <div className={styles.categoryHead}>
+                  <span className={styles.categoryName}>{category.name_ko}</span>
+                  <span className={styles.categoryUnmeasured}>점수 미반영</span>
+                </div>
+                <p className={styles.categoryMeta}>
+                  항목 {category.not_applicable_check_ids.length +
+                    category.unknown_check_ids.length +
+                    category.failing_check_ids.length}
+                  개 · 점수에 들어갔다면 {category.weight}점 몫이었을 영역입니다
+                </p>
+                {category.outside_score_reason_ko === null ? null : (
+                  <p className={styles.referenceReason}>{category.outside_score_reason_ko}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {report.notes_ko.length > 0 ? (
         <section className={styles.caveats} aria-label="함께 알아야 하는 것">
