@@ -24,6 +24,7 @@ SSRF 차단, 대상 호스트 예산, 응답 크기·시간 상한은 공개 진
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import final
 from urllib.parse import urlsplit
@@ -122,7 +123,14 @@ class CrawlOutcome:
 class ConsoleCrawler:
     """진단 대상 페이지·robots.txt·사이트맵을 가져온다. 그 밖의 요청은 보내지 않는다."""
 
-    __slots__ = ("_fetcher", "_max_depth", "_max_sitemaps", "_max_urls", "_settings")
+    __slots__ = (
+        "_concurrency",
+        "_fetcher",
+        "_max_depth",
+        "_max_sitemaps",
+        "_max_urls",
+        "_settings",
+    )
 
     def __init__(
         self,
@@ -138,6 +146,7 @@ class ConsoleCrawler:
         self._max_urls = max_urls or resolved.console_max_urls_per_scan
         self._max_depth = resolved.console_crawl_max_depth
         self._max_sitemaps = resolved.console_crawl_max_sitemaps
+        self._concurrency = max(1, resolved.console_crawl_concurrency)
         # 공개 진단과 같은 조립이다. 호스트 예산은 **가드 안에서** 부과되어야 한다 —
         # 서비스에서 제출된 URL 로 부과하면 리다이렉트가 그 계산을 우회하고, 실제로
         # 10회 제한에 80회를 흘려보내는 것이 재현된 적이 있다.
@@ -301,26 +310,66 @@ class ConsoleCrawler:
     def _fetch_many(
         self, frontier: Sequence[DiscoveredUrl]
     ) -> tuple[tuple[tuple[DiscoveredUrl, FetchedDocument], ...], tuple[CrawlFailure, ...], bool]:
-        """한 단계의 주소들을 가져온다. 한 장의 실패는 그 장만의 실패다.
+        """한 단계의 주소들을 동시에 가져온다. 한 장의 실패는 그 장만의 실패다.
 
-        호스트 예산이 바닥나면 **거기서 멈춘다.** 남은 주소를 계속 시도해 봐야 전부 같은
-        이유로 거절당하고, 그 시도 자체가 예산을 다시 두드리는 일이 된다.
+        수집은 거의 전부 응답을 기다리는 시간이라 병렬이 그대로 이득이다. 동시에 여는
+        수는 `console_crawl_concurrency` 가 정하고, 그것은 우리 속도가 아니라 **대상
+        서버가 한순간에 받는 부하**다.
+
+        **결과 순서는 frontier 순서로 되돌린다.** 먼저 끝난 순서로 두면 같은 사이트를
+        같은 자료로 두 번 진단해도 문서 순서가 달라지고, 그러면 증거 목록과 화면이 흔들려
+        "왜 이 점수가 나왔는가" 에 같은 답을 두 번 줄 수 없다.
+
+        호스트 예산이 바닥나는 것은 실패로 세지 않는다. 예산 검사는 요청을 보내기 **전**에
+        걸리므로 대상 서버는 그 사실을 모르고, 우리가 못 본 것은 페이지의 결함이 아니다.
         """
-        collected: list[tuple[DiscoveredUrl, FetchedDocument]] = []
-        failures: list[CrawlFailure] = []
+        if not frontier:
+            return (), (), False
+        workers = min(self._concurrency, len(frontier))
+        if workers <= 1:
+            return self._fetch_many_serially(frontier)
+
+        slots: list[tuple[DiscoveredUrl, FetchedDocument] | None] = [None] * len(frontier)
+        failed: list[tuple[int, CrawlFailure]] = []
         budget_exhausted = False
 
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="veo-crawl") as pool:
+            pending = {
+                pool.submit(self._fetcher.fetch, record.url): (index, record)
+                for index, record in enumerate(frontier)
+            }
+            for future in as_completed(pending):
+                index, record = pending[future]
+                try:
+                    slots[index] = (record, future.result())
+                except HostBudgetExceeded:
+                    budget_exhausted = True
+                except (UrlRejectedError, FetchLimitError, FetchError, httpx.HTTPError) as exc:
+                    failed.append(
+                        (index, CrawlFailure(url=record.url, reason_ko=_failure_reason(exc)))
+                    )
+
+        collected = tuple(slot for slot in slots if slot is not None)
+        failures = tuple(failure for _, failure in sorted(failed, key=lambda item: item[0]))
+        return collected, failures, budget_exhausted
+
+    def _fetch_many_serially(
+        self, frontier: Sequence[DiscoveredUrl]
+    ) -> tuple[tuple[tuple[DiscoveredUrl, FetchedDocument], ...], tuple[CrawlFailure, ...], bool]:
+        """동시 요청 수가 1일 때의 경로. 병렬 결과를 의심할 때 비교 대상이 된다."""
+        collected: list[tuple[DiscoveredUrl, FetchedDocument]] = []
+        failures: list[CrawlFailure] = []
+
         for record in frontier:
-            if budget_exhausted:
-                break
             try:
                 collected.append((record, self._fetcher.fetch(record.url)))
             except HostBudgetExceeded:
-                budget_exhausted = True
+                # 예산이 바닥났으면 남은 주소도 전부 같은 이유로 거절당한다. 여기서 멈춘다.
+                return tuple(collected), tuple(failures), True
             except (UrlRejectedError, FetchLimitError, FetchError, httpx.HTTPError) as exc:
                 failures.append(CrawlFailure(url=record.url, reason_ko=_failure_reason(exc)))
 
-        return tuple(collected), tuple(failures), budget_exhausted
+        return tuple(collected), tuple(failures), False
 
     def _collect_sitemaps(
         self, entry_url: str, robots: RobotsFile | None

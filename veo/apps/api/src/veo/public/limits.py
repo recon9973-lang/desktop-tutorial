@@ -71,6 +71,7 @@ the window, so the answer is a real wait rather than a guess.
 from __future__ import annotations
 
 import math
+import threading
 import time
 from collections import deque
 from collections.abc import Callable, Sequence
@@ -217,9 +218,18 @@ class InMemoryRateLimiter:
 
     A sliding window rather than a fixed one, because a fixed window lets a caller spend
     the whole allowance at ``:59`` and the whole of the next one at ``:01``.
+
+    **Every counter access holds a lock.** ``acquire`` checks each bucket and then charges
+    it, and those are two separate steps: without a lock, two threads can both pass the
+    check before either charges, and both are allowed. That is not theoretical — forcing
+    thread switches (``sys.setswitchinterval(1e-9)``) with 32 threads against a limit of
+    10 let **14** through, reproducibly. The crawler fetches pages concurrently, so this
+    is the ordinary case rather than an exotic one, and the bucket it would break is the
+    one that stops VEO being pointed at a third party. ``test_limits.py`` keeps the
+    reproduction.
     """
 
-    __slots__ = ("_clock", "_hits", "_last_sweep", "_sweep_interval")
+    __slots__ = ("_clock", "_hits", "_last_sweep", "_lock", "_sweep_interval")
 
     def __init__(
         self,
@@ -231,40 +241,46 @@ class InMemoryRateLimiter:
         self._hits: dict[tuple[LimitScope, str], _Counter] = {}
         self._sweep_interval = sweep_interval_seconds
         self._last_sweep: float | None = None
+        self._lock = threading.Lock()
 
     def acquire(
         self, buckets: Sequence[Bucket], *, now: float | None = None
     ) -> RateLimitDecision:
         moment = self._clock() if now is None else now
-        self._sweep_if_due(moment)
 
-        for bucket in buckets:
-            counter = self._live_counter(bucket, moment)
-            if counter is not None and len(counter.hits) >= bucket.limit:
-                return RateLimitDecision.refuse(
-                    bucket, retry_after_seconds=_retry_after(bucket, counter, moment)
-                )
-            if bucket.limit == 0:
-                return RateLimitDecision.refuse(
-                    bucket, retry_after_seconds=bucket.window_seconds
-                )
+        # 검사와 청구가 한 덩어리여야 한다. 사이에 다른 스레드가 끼면 둘 다 통과한다.
+        with self._lock:
+            self._sweep_if_due(moment)
 
-        for bucket in buckets:
-            counter = self._hits.setdefault(
-                (bucket.scope, bucket.key), _Counter(window_seconds=bucket.window_seconds)
-            )
-            counter.window_seconds = bucket.window_seconds
-            counter.hits.append(moment)
+            for bucket in buckets:
+                counter = self._live_counter(bucket, moment)
+                if counter is not None and len(counter.hits) >= bucket.limit:
+                    return RateLimitDecision.refuse(
+                        bucket, retry_after_seconds=_retry_after(bucket, counter, moment)
+                    )
+                if bucket.limit == 0:
+                    return RateLimitDecision.refuse(
+                        bucket, retry_after_seconds=bucket.window_seconds
+                    )
+
+            for bucket in buckets:
+                counter = self._hits.setdefault(
+                    (bucket.scope, bucket.key), _Counter(window_seconds=bucket.window_seconds)
+                )
+                counter.window_seconds = bucket.window_seconds
+                counter.hits.append(moment)
 
         return RateLimitDecision.allow()
 
     def reset(self) -> None:
-        self._hits.clear()
-        self._last_sweep = None
+        with self._lock:
+            self._hits.clear()
+            self._last_sweep = None
 
     def tracked_key_count(self) -> int:
         """How many keys are currently held. Used by tests to prove the sweep works."""
-        return len(self._hits)
+        with self._lock:
+            return len(self._hits)
 
     # ----------------------------------------------------------------- #
     # Internals

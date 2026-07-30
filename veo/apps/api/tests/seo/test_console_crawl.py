@@ -10,10 +10,14 @@
 
 from __future__ import annotations
 
+import threading
+import time
+
 import httpx
 import pytest
 
 from veo.common.security.url_guard import UrlGuard, UrlRejectedError
+from veo.core.settings import get_settings
 from veo.seo.crawl import ConsoleCrawler, CrawlRefusal
 
 
@@ -308,3 +312,160 @@ class TestPartialFailure:
 
         assert outcome.attempted == 3
         assert len(outcome.documents) == 2
+
+
+class TestParallelFetching:
+    """수집은 거의 전부 기다리는 시간이다. 그래서 병렬이 그대로 이득이 된다.
+
+    다만 병렬은 두 가지를 깨뜨릴 수 있고, 둘 다 여기서 막는다 — 대상 호스트 예산이
+    우회되는 것과, 결과 순서가 실행마다 달라지는 것.
+    """
+
+    def test_pages_are_fetched_concurrently(self) -> None:
+        """동시에 열린 요청 수를 직접 센다. 시간을 재는 방식은 느린 기계에서 흔들린다."""
+        live = 0
+        peak = 0
+        guard = threading.Lock()
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal live, peak
+            with guard:
+                live += 1
+                peak = max(peak, live)
+            time.sleep(0.05)
+            with guard:
+                live -= 1
+            if request.url.path == "/":
+                return httpx.Response(
+                    200,
+                    content=_page("홈", *[f"/{n}" for n in range(8)]),
+                    headers={"content-type": "text/html"},
+                )
+            return httpx.Response(200, content=_page("쪽"), headers={"content-type": "text/html"})
+
+        crawler = ConsoleCrawler(guard=_guard(), transport=httpx.MockTransport(handler))
+        crawler.crawl("https://example.com/", max_urls=9)
+
+        assert peak > 1, "동시에 열린 요청이 하나뿐이다 — 직렬로 돌고 있다"
+
+    def test_concurrency_never_exceeds_the_configured_ceiling(self) -> None:
+        """이 숫자는 우리 속도가 아니라 대상 서버가 한순간에 받는 부하다."""
+        live = 0
+        peak = 0
+        guard = threading.Lock()
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal live, peak
+            with guard:
+                live += 1
+                peak = max(peak, live)
+            time.sleep(0.05)
+            with guard:
+                live -= 1
+            if request.url.path == "/":
+                return httpx.Response(
+                    200,
+                    content=_page("홈", *[f"/{n}" for n in range(20)]),
+                    headers={"content-type": "text/html"},
+                )
+            return httpx.Response(200, content=_page("쪽"), headers={"content-type": "text/html"})
+
+        settings = get_settings().model_copy(update={"console_crawl_concurrency": 3})
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=httpx.MockTransport(handler), settings=settings
+        )
+        crawler.crawl("https://example.com/", max_urls=21)
+
+        assert peak <= 3
+
+    def test_the_host_budget_still_binds_under_concurrency(self) -> None:
+        """예산은 VEO 가 남의 서버를 두드리는 도구가 되지 않게 막는 유일한 통제다.
+
+        락이 없던 제한기는 32스레드·제한 10에서 14개를 통과시켰다. 병렬 수집은 그
+        조건을 평범하게 만들어 내므로, 우회되지 않는지 여기서 고정한다.
+        """
+        sent = 0
+        guard = threading.Lock()
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal sent
+            with guard:
+                sent += 1
+            if request.url.path == "/":
+                return httpx.Response(
+                    200,
+                    content=_page("홈", *[f"/{n}" for n in range(40)]),
+                    headers={"content-type": "text/html"},
+                )
+            return httpx.Response(200, content=_page("쪽"), headers={"content-type": "text/html"})
+
+        budget = 12
+        settings = get_settings().model_copy(
+            update={"console_target_host_limit_per_hour": budget}
+        )
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=httpx.MockTransport(handler), settings=settings
+        )
+
+        outcome = crawler.crawl("https://example.com/", max_urls=41)
+
+        assert sent <= budget, f"예산 {budget} 인데 {sent} 개를 보냈다"
+        assert outcome.budget_exhausted
+
+    def test_a_budget_stop_is_not_reported_as_a_page_failure(self) -> None:
+        """예산 검사는 요청을 보내기 전에 걸린다. 대상 사이트는 그 사실을 모른다."""
+        settings = get_settings().model_copy(
+            update={"console_target_host_limit_per_hour": 6}
+        )
+        pages = {"/": _page("홈", *[f"/{n}" for n in range(20)])}
+        pages.update({f"/{n}": _page(str(n)) for n in range(20)})
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=_site(pages), settings=settings
+        )
+
+        outcome = crawler.crawl("https://example.com/", max_urls=21)
+
+        assert outcome.budget_exhausted
+        assert outcome.failures == ()
+
+    def test_the_document_order_is_the_same_every_run(self) -> None:
+        """먼저 끝난 순서로 두면 같은 자료로 두 번 진단해도 증거 목록이 달라진다."""
+        pages = {"/": _page("홈", *[f"/{n}" for n in range(12)])}
+        pages.update({f"/{n}": _page(str(n)) for n in range(12)})
+
+        def order() -> list[str]:
+            crawler = ConsoleCrawler(guard=_guard(), transport=_site(pages))
+            outcome = crawler.crawl("https://example.com/", max_urls=13)
+            return [document.final_url for document in outcome.documents]
+
+        runs = [order() for _ in range(5)]
+
+        assert all(run == runs[0] for run in runs)
+
+    def test_a_dead_page_among_many_is_still_only_its_own_failure(self) -> None:
+        pages = {"/": _page("홈", *[f"/{n}" for n in range(6)])}
+        pages.update({f"/{n}": _page(str(n)) for n in range(6)})
+        pages["/3"] = _DEAD
+        crawler = ConsoleCrawler(guard=_guard(), transport=_site(pages))
+
+        outcome = crawler.crawl("https://example.com/", max_urls=7)
+
+        assert [failure.url for failure in outcome.failures] == ["https://example.com/3"]
+        assert len(outcome.documents) == 6
+
+    def test_serial_and_parallel_collect_the_same_pages(self) -> None:
+        """병렬 결과를 의심할 때 비교할 수 있어야 한다 — 그래서 1 이 직렬 경로다."""
+        pages = {"/": _page("홈", *[f"/{n}" for n in range(10)])}
+        pages.update({f"/{n}": _page(str(n)) for n in range(10)})
+
+        def collected(concurrency: int) -> list[str]:
+            settings = get_settings().model_copy(
+                update={"console_crawl_concurrency": concurrency}
+            )
+            crawler = ConsoleCrawler(
+                guard=_guard(), transport=_site(pages), settings=settings
+            )
+            outcome = crawler.crawl("https://example.com/", max_urls=11)
+            return [document.final_url for document in outcome.documents]
+
+        assert collected(1) == collected(4)

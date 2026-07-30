@@ -22,6 +22,10 @@ ship: the service refused nothing, because from its own point of view nothing wa
 
 from __future__ import annotations
 
+import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 from public_support import (
     PUBLIC_IP,
@@ -499,3 +503,73 @@ def test_the_two_limits_are_documented_as_different_units() -> None:
     assert limits_module.__doc__ is not None
     assert "public_target_host_limit_per_hour" in limits_module.__doc__
     assert "public_rate_limit_per_hour" in limits_module.__doc__
+
+
+# --------------------------------------------------------------------------- #
+# 병렬 호출 — 검사와 청구 사이가 벌어지면 예산이 무력해진다
+# --------------------------------------------------------------------------- #
+
+
+def test_the_counter_holds_under_concurrent_callers() -> None:
+    """`acquire` 는 검사한 뒤 청구한다. 그 사이에 다른 스레드가 끼면 둘 다 통과한다.
+
+    락이 없던 구현은 이 조건에서 **제한 10에 14개**를 통과시켰다. 재현에는 스레드 전환을
+    강제해야 한다 — GIL 아래에서 이 함수는 짧아서 평소에는 좀처럼 갈라지지 않고, 그래서
+    락 없이도 200회 시도가 조용히 통과했다. 통과한 것은 안전하다는 뜻이 아니었다.
+
+    콘솔 크롤이 페이지를 동시에 가져오므로 이것은 예외적 조건이 아니라 평범한 조건이고,
+    깨지는 것은 **VEO 가 남의 서버를 두드리는 것을 막는 유일한 통제**다.
+    """
+    limit = 10
+    threads = 32
+    original = sys.getswitchinterval()
+    sys.setswitchinterval(1e-9)
+    try:
+        worst = 0
+        for _ in range(200):
+            limiter = InMemoryRateLimiter()
+            gate = threading.Barrier(threads)
+
+            def attempt(
+                _: int,
+                limiter: InMemoryRateLimiter = limiter,
+                gate: threading.Barrier = gate,
+            ) -> bool:
+                bucket = Bucket(
+                    scope=LimitScope.TARGET_HOST,
+                    key="victim.example",
+                    limit=limit,
+                    window_seconds=3600,
+                )
+                gate.wait()
+                return limiter.acquire([bucket]).allowed
+
+            with ThreadPoolExecutor(max_workers=threads) as pool:
+                worst = max(worst, sum(pool.map(attempt, range(threads))))
+    finally:
+        sys.setswitchinterval(original)
+
+    assert worst == limit, f"제한 {limit} 인데 {worst} 개를 통과시켰다"
+
+
+def test_concurrent_callers_are_charged_exactly_once_each() -> None:
+    """허용한 횟수와 기록된 횟수가 같아야 한다. 어긋나면 다음 요청의 판단도 틀린다."""
+    limit = 50
+    threads = 16
+    limiter = InMemoryRateLimiter()
+
+    def attempt(_: int) -> bool:
+        bucket = Bucket(
+            scope=LimitScope.TARGET_HOST,
+            key="victim.example",
+            limit=limit,
+            window_seconds=3600,
+        )
+        return limiter.acquire([bucket]).allowed
+
+    with ThreadPoolExecutor(max_workers=threads) as pool:
+        allowed = sum(pool.map(attempt, range(limit)))
+
+    assert allowed == limit
+    # 예산을 정확히 다 썼으므로 다음 한 번은 반드시 거절돼야 한다.
+    assert not attempt(0)
