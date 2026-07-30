@@ -11,6 +11,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from typing import Any
+
 from veo.collect.contract import EvidenceRecord, IssueDraft
 from veo.geo.schemas import (
     GeoCategoryPayload,
@@ -19,6 +22,7 @@ from veo.geo.schemas import (
     GeoExposureBlock,
     GeoGatePayload,
     GeoIssuePayload,
+    GeoLookupPayload,
     GeoReadinessBlock,
     GeoReadinessPayload,
 )
@@ -32,7 +36,13 @@ SCOPE_NOTICE_KO = (
 )
 
 
-def payload_from(target_url: str, report: GeoReadinessReport) -> GeoReadinessPayload:
+def payload_from(
+    target_url: str,
+    report: GeoReadinessReport,
+    *,
+    extra_notes_ko: Sequence[str] = (),
+    lookup: Mapping[str, Any] | None = None,
+) -> GeoReadinessPayload:
     result = report.score
     band = (
         report.spec.band_for(result.overall_score) if result.overall_score is not None else None
@@ -113,7 +123,10 @@ def payload_from(target_url: str, report: GeoReadinessReport) -> GeoReadinessPay
         ],
         issues=[_issue_payload(issue) for issue in report.issues],
         evidence=[_evidence_payload(record) for record in report.evidence],
-        notes_ko=list(report.notes_ko),
+        # 참고 조회를 왜 못 했는지 같은, 보고서 밖에서 온 안내도 여기에 실린다.
+        # 조용히 빼면 '외부 출처가 없다' 로 읽히는데 그것은 사이트 탓이 아니다.
+        notes_ko=[*report.notes_ko, *extra_notes_ko],
+        lookup=None if lookup is None else GeoLookupPayload.model_validate(lookup),
     )
 
 

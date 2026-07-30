@@ -207,6 +207,32 @@ class GeoCheckPayload(BaseModel):
     evidence_ids: list[str]
 
 
+class GeoLookupPayload(BaseModel):
+    """참고 조회가 실제로 무엇을 보고 무엇을 버렸는가.
+
+    **버린 건수를 함께 줍니다.** 조용히 빼면 "검색하면 많이 나오는데 보고서엔 몇 개
+    없다" 가 설명되지 않고, 읽는 분은 저희가 못 찾았다고 이해하십니다.
+    """
+
+    model_config = _STRICT
+
+    engine: str = Field(description="조회한 검색 서비스입니다. 지금은 네이버뿐입니다.")
+    totals: dict[str, int] = Field(
+        description="검색 종류별로 검색 서비스가 보고한 전체 건수입니다. 가져온 수와 다릅니다."
+    )
+    considered: int
+    accepted: int = Field(description="이 사업자의 것으로 판단해 자료에 넣은 건수입니다.")
+    rejected_as_another_business: int = Field(
+        description=(
+            "이름이 비슷한 **다른 업체**로 보여 제외한 건수입니다. 그대로 세면 없는 "
+            "평판을 만들어 냅니다."
+        )
+    )
+    unavailable: dict[str, str] = Field(
+        description="조회하지 못한 검색 종류와 이유입니다. 비어 있어야 정상입니다."
+    )
+
+
 class GeoReadinessPayload(BaseModel):
     model_config = _STRICT
 
@@ -219,6 +245,13 @@ class GeoReadinessPayload(BaseModel):
     issues: list[GeoIssuePayload]
     evidence: list[GeoEvidencePayload]
     notes_ko: list[str]
+    lookup: GeoLookupPayload | None = Field(
+        default=None,
+        description=(
+            "참고 조회 결과입니다. 점수와는 무관하며, 하단 참고 구역에 표시합니다. "
+            "조회하지 않았거나 못 했으면 `null` 입니다."
+        ),
+    )
 
 
 class GeoSpecCategoryPayload(BaseModel):
@@ -252,6 +285,7 @@ __all__ = [
     "GeoExposureBlock",
     "GeoGatePayload",
     "GeoIssuePayload",
+    "GeoLookupPayload",
     "GeoReadinessBlock",
     "GeoReadinessPayload",
     "GeoScanRequest",

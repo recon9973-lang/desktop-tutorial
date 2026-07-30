@@ -12,6 +12,7 @@ second, unguarded way out of the network.
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -24,6 +25,8 @@ from veo.collect.from_crawl import context_from_crawl
 from veo.common.security.fetcher import FetchedDocument
 from veo.contracts.enums import ProviderState
 from veo.contracts.envelope import ApiResponse
+from veo.geo.collectors.external_verifiability import CORROBORATION_PROVIDER
+from veo.geo.corroboration import look_up_corroboration
 from veo.geo.payload import payload_from
 from veo.geo.schemas import (
     GeoAnalysisRequest,
@@ -35,6 +38,8 @@ from veo.geo.schemas import (
 )
 from veo.geo.service import GEO_SPEC_ID, run_geo_readiness
 from veo.organizations.http import guard
+from veo.providers.naver.credentials import datalab_from_settings
+from veo.providers.naver.search import NaverSearchClient
 from veo.scoring import ScoringSpec, latest_published
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
 
@@ -152,9 +157,28 @@ def scan_readiness(
         outcome=outcome,
         locale=payload.locale,
     )
+    # 참고 조회. 실패해도 진단을 멈추지 않는다 — 못 가져온 것은 측정 불가로 남고,
+    # 그 항목들은 어차피 점수 밖이다.
+    corroboration, provider_state, reason = look_up_corroboration(
+        context, client=NaverSearchClient(credentials=datalab_from_settings())
+    )
+    context = replace(
+        context,
+        provider_states={**context.provider_states, CORROBORATION_PROVIDER: provider_state},
+        provider_payloads=(
+            context.provider_payloads
+            if corroboration is None
+            else {**context.provider_payloads, CORROBORATION_PROVIDER: corroboration}
+        ),
+    )
     report = run_geo_readiness(context, spec=spec)
     return ok(
-        payload_from(payload.target_url, report),
+        payload_from(
+            payload.target_url,
+            report,
+            extra_notes_ko=[reason] if reason else [],
+            lookup=None if corroboration is None else corroboration.get("lookup"),
+        ),
         request_id,
         spec_id=report.score.spec_id,
         spec_version=report.score.spec_version,

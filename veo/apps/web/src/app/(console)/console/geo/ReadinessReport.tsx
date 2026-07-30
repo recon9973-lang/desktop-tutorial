@@ -1,6 +1,6 @@
 import { Card } from '@veo/ui';
 
-import type { GeoCategory, GeoReadiness } from '@/lib/observations';
+import type { GeoCategory, GeoLookup, GeoReadiness } from '@/lib/observations';
 
 import styles from './geo.module.css';
 
@@ -88,6 +88,7 @@ export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
                 {category.outside_score_reason_ko === null ? null : (
                   <p className={styles.referenceReason}>{category.outside_score_reason_ko}</p>
                 )}
+                {report.lookup === null ? null : <Lookup lookup={report.lookup} />}
               </li>
             ))}
           </ul>
@@ -136,5 +137,55 @@ function CategoryRow({ category }: { readonly category: GeoCategory }) {
         {category.not_applicable_check_ids.length}개
       </p>
     </li>
+  );
+}
+
+const CORPUS_LABELS: Record<string, string> = {
+  local: '네이버 지역',
+  blog: '블로그',
+  news: '뉴스',
+  cafearticle: '카페',
+};
+
+/**
+ * 참고 조회가 무엇을 보고 무엇을 버렸는가.
+ *
+ * **버린 건수를 반드시 함께 보여준다.** 검색하면 수백 건인데 보고서에 몇 개뿐이면,
+ * 그 이유를 말해 주지 않는 한 "이 도구가 못 찾았다" 로 읽힌다. 실제로는 이름이 비슷한
+ * 다른 업체를 걸러낸 것이고, 그 판단이야말로 사람이 확인해야 하는 부분이다.
+ */
+function Lookup({ lookup }: { readonly lookup: GeoLookup }) {
+  const corpora = Object.entries(lookup.totals);
+  const unavailable = Object.entries(lookup.unavailable);
+
+  return (
+    <div className={styles.lookup}>
+      <p className={styles.lookupHead}>
+        {lookup.engine === 'NAVER' ? '네이버' : lookup.engine} 검색 결과
+      </p>
+      {corpora.length === 0 ? null : (
+        <p className={styles.categoryMeta}>
+          {corpora
+            .map(([corpus, total]) => `${CORPUS_LABELS[corpus] ?? corpus} ${total}건`)
+            .join(' · ')}
+        </p>
+      )}
+      <p className={styles.categoryMeta}>
+        {lookup.considered}건을 살펴 <strong>{lookup.accepted}건</strong>을 이 사업자의 것으로
+        보았고,{' '}
+        <strong>{lookup.rejected_as_another_business}건</strong>은 이름이 비슷한 다른 업체로 보여
+        제외했습니다.
+      </p>
+      {unavailable.length === 0 ? null : (
+        <p className={styles.categoryMeta}>
+          조회하지 못함: {unavailable.map(([corpus, why]) => `${CORPUS_LABELS[corpus] ?? corpus}(${why})`).join(', ')}
+        </p>
+      )}
+      <p className={styles.referenceReason}>
+        <strong>네이버만 조회했습니다.</strong> 구글·다음은 보지 않았습니다. 그리고 이름이
+        비슷한 업체를 가리는 일은 기계가 완벽히 하지 못합니다 — 위 숫자를 근거로 쓰시기
+        전에 눈으로 한 번 확인해 주십시오.
+      </p>
+    </div>
   );
 }

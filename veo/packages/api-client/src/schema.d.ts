@@ -3268,6 +3268,46 @@ export interface components {
             title_ko: string;
         };
         /**
+         * GeoLookupPayload
+         * @description 참고 조회가 실제로 무엇을 보고 무엇을 버렸는가.
+         *
+         *     **버린 건수를 함께 줍니다.** 조용히 빼면 "검색하면 많이 나오는데 보고서엔 몇 개
+         *     없다" 가 설명되지 않고, 읽는 분은 저희가 못 찾았다고 이해하십니다.
+         */
+        GeoLookupPayload: {
+            /**
+             * Accepted
+             * @description 이 사업자의 것으로 판단해 자료에 넣은 건수입니다.
+             */
+            accepted: number;
+            /** Considered */
+            considered: number;
+            /**
+             * Engine
+             * @description 조회한 검색 서비스입니다. 지금은 네이버뿐입니다.
+             */
+            engine: string;
+            /**
+             * Rejected As Another Business
+             * @description 이름이 비슷한 **다른 업체**로 보여 제외한 건수입니다. 그대로 세면 없는 평판을 만들어 냅니다.
+             */
+            rejected_as_another_business: number;
+            /**
+             * Totals
+             * @description 검색 종류별로 검색 서비스가 보고한 전체 건수입니다. 가져온 수와 다릅니다.
+             */
+            totals: {
+                [key: string]: number;
+            };
+            /**
+             * Unavailable
+             * @description 조회하지 못한 검색 종류와 이유입니다. 비어 있어야 정상입니다.
+             */
+            unavailable: {
+                [key: string]: string;
+            };
+        };
+        /**
          * GeoReadinessBlock
          * @description The number, and only the number.
          */
@@ -3305,6 +3345,8 @@ export interface components {
             exposure: components["schemas"]["GeoExposureBlock"];
             /** Issues */
             issues: components["schemas"]["GeoIssuePayload"][];
+            /** @description 참고 조회 결과입니다. 점수와는 무관하며, 하단 참고 구역에 표시합니다. 조회하지 않았거나 못 했으면 `null` 입니다. */
+            lookup?: components["schemas"]["GeoLookupPayload"] | null;
             /** Notes Ko */
             notes_ko: string[];
             readiness: components["schemas"]["GeoReadinessBlock"];

@@ -46,6 +46,7 @@ function report(over: Partial<GeoReadiness> = {}): GeoReadiness {
     summary_ko: '구조적으로 준비돼 있습니다.',
     scope_notice_ko: '이 점수는 구조적 준비도입니다.',
     notes_ko: [],
+    lookup: null,
     ...over,
   };
 }
@@ -188,5 +189,71 @@ describe('참고 · 별도 확인 필요', () => {
     render(<ReadinessReport report={report()} />);
 
     expect(screen.queryByText('참고 · 별도 확인 필요')).toBeNull();
+  });
+});
+
+describe('참고 조회 결과', () => {
+  const lookup = {
+    engine: 'NAVER',
+    totals: { local: 5, blog: 346, news: 2, cafearticle: 20 },
+    considered: 25,
+    accepted: 7,
+    rejected_as_another_business: 18,
+    unavailable: {},
+  };
+
+  const withReference = () => {
+    const base = report();
+    return {
+      ...base,
+      lookup,
+      readiness: {
+        ...base.readiness,
+        categories: [
+          ...base.readiness.categories,
+          {
+            category_id: 'external_verifiability',
+            name_ko: '외부 검증 가능성',
+            weight: 10,
+            contributes_to_score: false,
+            outside_score_reason_ko: '참고 항목입니다.',
+            status: 'NOT_APPLICABLE' as const,
+            score: null,
+            coverage: 0,
+            confidence: 0,
+            failing_check_ids: [],
+            unknown_check_ids: [],
+            not_applicable_check_ids: ['a'],
+          },
+        ],
+      },
+    };
+  };
+
+  it('무엇을 버렸는지 함께 보여준다', () => {
+    render(<ReadinessReport report={withReference()} />);
+
+    // 검색은 수백 건인데 보고서엔 7건뿐이다. 이유를 말하지 않으면 "못 찾았다" 로 읽힌다.
+    expect(screen.getByText(/18건/)).toBeInTheDocument();
+    expect(screen.getByText(/이름이 비슷한 다른 업체로 보여/)).toBeInTheDocument();
+  });
+
+  it('네이버만 봤다는 사실을 적는다', () => {
+    render(<ReadinessReport report={withReference()} />);
+
+    expect(screen.getByText(/네이버만 조회했습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/구글·다음은 보지 않았습니다/)).toBeInTheDocument();
+  });
+
+  it('눈으로 확인해 달라고 말한다', () => {
+    render(<ReadinessReport report={withReference()} />);
+
+    expect(screen.getByText(/눈으로 한 번 확인/)).toBeInTheDocument();
+  });
+
+  it('조회하지 않았으면 이 구역을 띄우지 않는다', () => {
+    render(<ReadinessReport report={report()} />);
+
+    expect(screen.queryByText(/네이버만 조회했습니다/)).toBeNull();
   });
 });

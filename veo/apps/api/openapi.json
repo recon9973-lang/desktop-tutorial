@@ -5113,6 +5113,57 @@
         "title": "GeoIssuePayload",
         "type": "object"
       },
+      "GeoLookupPayload": {
+        "additionalProperties": false,
+        "description": "참고 조회가 실제로 무엇을 보고 무엇을 버렸는가.\n\n**버린 건수를 함께 줍니다.** 조용히 빼면 \"검색하면 많이 나오는데 보고서엔 몇 개\n없다\" 가 설명되지 않고, 읽는 분은 저희가 못 찾았다고 이해하십니다.",
+        "properties": {
+          "accepted": {
+            "description": "이 사업자의 것으로 판단해 자료에 넣은 건수입니다.",
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "considered": {
+            "title": "Considered",
+            "type": "integer"
+          },
+          "engine": {
+            "description": "조회한 검색 서비스입니다. 지금은 네이버뿐입니다.",
+            "title": "Engine",
+            "type": "string"
+          },
+          "rejected_as_another_business": {
+            "description": "이름이 비슷한 **다른 업체**로 보여 제외한 건수입니다. 그대로 세면 없는 평판을 만들어 냅니다.",
+            "title": "Rejected As Another Business",
+            "type": "integer"
+          },
+          "totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "검색 종류별로 검색 서비스가 보고한 전체 건수입니다. 가져온 수와 다릅니다.",
+            "title": "Totals",
+            "type": "object"
+          },
+          "unavailable": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "조회하지 못한 검색 종류와 이유입니다. 비어 있어야 정상입니다.",
+            "title": "Unavailable",
+            "type": "object"
+          }
+        },
+        "required": [
+          "engine",
+          "totals",
+          "considered",
+          "accepted",
+          "rejected_as_another_business",
+          "unavailable"
+        ],
+        "title": "GeoLookupPayload",
+        "type": "object"
+      },
       "GeoReadinessBlock": {
         "additionalProperties": false,
         "description": "The number, and only the number.",
@@ -5228,6 +5279,17 @@
             },
             "title": "Issues",
             "type": "array"
+          },
+          "lookup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoLookupPayload"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "참고 조회 결과입니다. 점수와는 무관하며, 하단 참고 구역에 표시합니다. 조회하지 않았거나 못 했으면 `null` 입니다."
           },
           "notes_ko": {
             "items": {

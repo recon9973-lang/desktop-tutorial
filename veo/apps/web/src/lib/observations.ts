@@ -211,6 +211,16 @@ export interface GeoGate {
   readonly triggered_by: readonly string[];
 }
 
+export interface GeoLookup {
+  readonly engine: string;
+  readonly totals: Readonly<Record<string, number>>;
+  readonly considered: number;
+  readonly accepted: number;
+  /** 이름이 비슷한 다른 업체로 보여 제외한 건수. 감추면 "우리가 못 찾았다"로 읽힌다. */
+  readonly rejected_as_another_business: number;
+  readonly unavailable: Readonly<Record<string, string>>;
+}
+
 export interface GeoReadiness {
   readonly target_url: string;
   readonly readiness: {
@@ -232,6 +242,8 @@ export interface GeoReadiness {
   readonly summary_ko: string;
   readonly scope_notice_ko: string;
   readonly notes_ko: readonly string[];
+  /** 참고 조회 결과. 점수와 무관하며 하단 참고 구역에만 쓴다. */
+  readonly lookup: GeoLookup | null;
 }
 
 /** 주소 하나로 GEO 준비도를 잰다. SEO 진단과 같은 수집 경로를 쓴다. */

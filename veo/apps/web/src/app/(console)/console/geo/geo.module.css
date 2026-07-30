@@ -401,3 +401,19 @@
   font-size: var(--veo-font-size-200);
   line-height: 1.7;
 }
+
+.lookup {
+  margin-top: var(--veo-space-3);
+  padding: var(--veo-space-3);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+}
+
+.lookupHead {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-semibold);
+}
