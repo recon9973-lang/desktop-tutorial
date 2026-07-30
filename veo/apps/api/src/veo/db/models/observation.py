@@ -21,6 +21,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -221,6 +222,44 @@ class AIAnswer(Base, OrganizationScopedMixin, ImmutableMixin):
             "달라진다. 재는 단위(USD)와 저장 단위를 같게 둔 것이 `cost_usd` 이고, "
             "이 칸은 표시용 환산값이다."
         ),
+    )
+
+
+class AnswerDocument(Base, OrganizationScopedMixin, ImmutableMixin):
+    """원문 AI 답변 자체. `ai_answers` 가 가리키는 실제 내용.
+
+    ## 왜 `ai_answers` 안이 아니라 옆 테이블인가
+
+    원문은 민감하다. 조회·내보내기·로그에 딸려 나가면 안 되므로 분석용 본 테이블에는
+    **가리키는 값(키·해시)만** 둔다(`test_raw_ai_answers_are_referenced_not_inlined`).
+    이 테이블은 그 원문을 담되, 원문이 필요할 때만 따로 읽도록 갈라 놓은 자리다.
+
+    ## 왜 파일이 아니라 DB 인가
+
+    처음에는 로컬 파일에만 저장했다. 배포 환경의 컨테이너 파일시스템은 재배포마다
+    초기화되므로, **다음 배포에서 모든 근거가 사라진다.** `ai_answers` 에는 키와 해시만
+    남으니 "이 판정의 근거를 보여 달라" 에 답할 수 없게 된다 — 0-A 의 마지막 줄이
+    무너지는 지점이다.
+
+    오브젝트 스토리지(S3/MinIO)가 붙으면 그쪽으로 옮기는 것이 맞다. 그때까지는 이미
+    있는 것 중 재배포를 견디는 유일한 자리가 DB 다.
+
+    수정하지 않는다(`ImmutableMixin`). 원문이 바뀌면 그것은 더 이상 그때 받은 답변이
+    아니다. 읽을 때 해시를 다시 계산해 확인한다.
+    """
+
+    __tablename__ = "answer_documents"
+    __table_args__ = (
+        UniqueConstraint("organization_id", "object_key", name="uq_answer_documents_key"),
+    )
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    object_key: Mapped[str] = mapped_column(Text, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    body: Mapped[bytes] = mapped_column(
+        LargeBinary,
+        nullable=False,
+        comment="답변 기록의 정규 JSON 바이트. 해시는 이 바이트에 대해 계산한다.",
     )
 
 

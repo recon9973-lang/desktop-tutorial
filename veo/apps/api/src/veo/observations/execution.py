@@ -46,6 +46,7 @@ from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.observations.answer_store import FilesystemAnswerStore
+from veo.observations.db_answer_store import DatabaseAnswerStore
 from veo.observations.metrics import AnswerFact
 from veo.observations.prompts import Funnel, Intent, Prompt, PromptSet, Subject
 from veo.observations.providers.registry import ProviderRegistry
@@ -106,12 +107,24 @@ def brand_target_for(
     return BrandTarget(names=tuple(dict.fromkeys(names)), domains=domains), row
 
 
-def answer_store(organization_id: uuid.UUID, *, settings: Settings) -> FilesystemAnswerStore:
-    """조직 하나에 묶인 답변 저장소. 다른 조직의 포인터는 이 뿌리 밖으로 나가지 못한다."""
-    return FilesystemAnswerStore(
-        root=Path(settings.observation_answer_store_root),
-        organization_id=str(organization_id),
-    )
+def answer_store(
+    organization_id: uuid.UUID, *, settings: Settings, session: Session | None = None
+) -> RecordedAnswerStore:
+    """조직 하나에 묶인 답변 저장소. 다른 조직의 포인터는 이 범위 밖으로 나가지 못한다.
+
+    **기본은 DB 다.** 로컬 파일은 배포 환경에서 재배포마다 사라지고, 그때 `ai_answers`
+    행은 남는데 가리키는 원문이 없어진다 — "이 판정의 근거를 보여 달라" 에 답할 수
+    없게 된다(0-A).
+
+    `observation_answer_store` 를 `filesystem` 으로 두면 예전 방식으로 돌아간다.
+    개발 장비에서 DB 없이 돌려 볼 때를 위한 것이지, 배포에서 고를 값이 아니다.
+    """
+    if settings.observation_answer_store == "filesystem" or session is None:
+        return FilesystemAnswerStore(
+            root=Path(settings.observation_answer_store_root),
+            organization_id=str(organization_id),
+        )
+    return DatabaseAnswerStore(session=session, organization_id=organization_id)
 
 
 def _attempt_index(prompt_id: str, fingerprint: str, attempt: int) -> str:
@@ -193,7 +206,7 @@ def execute_observation(
         registry=resolved_registry,
         store=store
         if store is not None
-        else answer_store(principal.organization_id, settings=resolved),
+        else answer_store(principal.organization_id, settings=resolved, session=session),
         detector=SubstringMentionDetector(brand),
         max_concurrency=resolved.observation_max_concurrency,
         budget_usd=resolved.observation_budget_usd,

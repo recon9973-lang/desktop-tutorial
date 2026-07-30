@@ -268,6 +268,12 @@ class Settings(BaseSettings):
     #:
     #: 운영의 정답은 객체 저장소이고 그 어댑터는 아직 없다. 지금은 파일시스템이며,
     #: 프로토콜이 같으므로 바꾸는 것은 생성자 인자 하나다.
+    #: 원문 답변을 어디에 두는가. `database` 가 기본이다.
+    #:
+    #: `filesystem` 은 재배포에서 살아남지 못한다 — 개발 장비 전용이다. 배포에서 이
+    #: 값을 바꾸면 다음 배포에 모든 근거가 사라지고, 남은 `ai_answers` 행은 가리킬
+    #: 대상이 없는 해시가 된다.
+    observation_answer_store: Literal["database", "filesystem"] = "database"
     observation_answer_store_root: str = "var/observations/answers"
 
     #: 한 번의 관측 실행이 쓸 수 있는 금액 상한(USD). 비워 두면 상한 없이 돈다.
