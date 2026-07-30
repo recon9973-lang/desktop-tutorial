@@ -64,7 +64,7 @@ describe('LoginForm — structure', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
-  it('reaches email, password and submit by keyboard, in that order', async () => {
+  it('이메일 → 비밀번호 → 보기 → 로그인 순서로 키보드가 닿는다', async () => {
     const user = userEvent.setup();
     render(<LoginForm nextPath={null} />);
 
@@ -72,8 +72,40 @@ describe('LoginForm — structure', () => {
     expect(document.activeElement).toBe(screen.getByLabelText(/이메일/));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText(/비밀번호/));
+    // 보기 버튼도 키보드로 닿아야 한다. 마우스로만 쓸 수 있으면 화면 낭독기나
+    // 키보드만 쓰는 사람은 비밀번호를 확인할 방법이 없다.
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '보기' }));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByRole('button', { name: '로그인' }));
+  });
+
+  it('보기 버튼이 비밀번호를 글자로 바꾼다', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm nextPath={null} />);
+
+    const field = screen.getByLabelText(/비밀번호/);
+    expect(field).toHaveAttribute('type', 'password');
+
+    await user.click(screen.getByRole('button', { name: '보기' }));
+    expect(field).toHaveAttribute('type', 'text');
+    expect(screen.getByRole('button', { name: '숨기기' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await user.click(screen.getByRole('button', { name: '숨기기' }));
+    expect(field).toHaveAttribute('type', 'password');
+  });
+
+  it('보기로 바꿔도 브라우저가 비밀번호 칸으로 알아본다', () => {
+    /** `autocomplete` 를 잃으면 비밀번호 관리자가 저장을 제안하지 않는다. */
+    render(<LoginForm nextPath={null} />);
+
+    expect(screen.getByLabelText(/비밀번호/)).toHaveAttribute(
+      'autocomplete',
+      'current-password',
+    );
   });
 });
 

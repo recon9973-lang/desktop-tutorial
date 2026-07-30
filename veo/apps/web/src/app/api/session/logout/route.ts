@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 
 import { getAuthApi } from '@/lib/auth-api';
 import { LOGIN_PATH } from '@/lib/next-path';
-import { CONSOLE_SESSION_COOKIE, clearedSessionCookieOptions } from '@/lib/session-cookie';
+import {
+  CONSOLE_REFRESH_COOKIE,
+  CONSOLE_SESSION_COOKIE,
+  clearedRefreshCookieOptions,
+  clearedSessionCookieOptions,
+} from '@/lib/session-cookie';
 
 /**
  * Sign-out.
@@ -53,6 +58,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     name: CONSOLE_SESSION_COOKIE,
     value: '',
     ...clearedSessionCookieOptions(),
+  });
+  // 갱신 토큰도 함께 지운다. 남겨 두면 다음 요청에서 미들웨어가 그것으로 새 세션을
+  // 만들어, **로그아웃을 눌렀는데 다시 들어가지는** 상태가 된다.
+  response.cookies.set({
+    name: CONSOLE_REFRESH_COOKIE,
+    value: '',
+    ...clearedRefreshCookieOptions(),
   });
 
   return response;

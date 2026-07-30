@@ -91,7 +91,7 @@ describe('createAuthApi — login', () => {
 
     expect(result).toEqual({
       ok: true,
-      value: { accessToken: 'secret-token-value', expiresInSeconds: 3600 },
+      value: { accessToken: 'secret-token-value', expiresInSeconds: 3600, refreshToken: null },
     });
 
     const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
@@ -201,7 +201,7 @@ describe('createAuthApi — login', () => {
     });
     expect(result).toEqual({
       ok: true,
-      value: { accessToken: 'abc', expiresInSeconds: null },
+      value: { accessToken: 'abc', expiresInSeconds: null, refreshToken: null },
     });
   });
 });

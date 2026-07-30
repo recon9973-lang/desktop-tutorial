@@ -53,6 +53,13 @@ export interface AuthTokenGrant {
   readonly accessToken: string;
   /** `null` when the backend did not state a lifetime. */
   readonly expiresInSeconds: number | null;
+  /**
+   * 접근 토큰이 만료된 뒤 새 것을 받아 오는 열쇠. 엔진이 주지 않으면 `null`.
+   *
+   * 접근 토큰은 15분짜리다. 이것을 버리면 15분마다 로그인 화면으로 튕긴다 —
+   * 실제로 그랬고, 그래서 매번 아이디와 비밀번호를 다시 쳐야 했다.
+   */
+  readonly refreshToken: string | null;
 }
 
 export interface AuthIdentity {
@@ -232,6 +239,7 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
       }
 
       const expires = data['expires_in'];
+      const refresh = data['refresh_token'];
       return {
         ok: true,
         value: {
@@ -240,6 +248,7 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
             typeof expires === 'number' && Number.isFinite(expires) && expires > 0
               ? Math.floor(expires)
               : null,
+          refreshToken: typeof refresh === 'string' && refresh !== '' ? refresh : null,
         },
       };
     },

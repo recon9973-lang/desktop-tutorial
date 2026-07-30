@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 
 import { getAuthApi } from '@/lib/auth-api';
 import { DEFAULT_CONSOLE_PATH, safeNextPath } from '@/lib/next-path';
-import { CONSOLE_SESSION_COOKIE, sessionCookieOptions } from '@/lib/session-cookie';
+import {
+  CONSOLE_REFRESH_COOKIE,
+  CONSOLE_SESSION_COOKIE,
+  refreshCookieOptions,
+  sessionCookieOptions,
+} from '@/lib/session-cookie';
 
 /**
  * Sign-in.
@@ -109,6 +114,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     value: result.value.accessToken,
     ...sessionCookieOptions(result.value.expiresInSeconds),
   });
+
+  // 갱신 토큰을 함께 남긴다. 이것이 없으면 접근 토큰이 만료되는 15분마다 로그인
+  // 화면으로 튕긴다. 미들웨어가 이 값으로 조용히 새 접근 토큰을 받아 온다.
+  if (result.value.refreshToken !== null) {
+    response.cookies.set({
+      name: CONSOLE_REFRESH_COOKIE,
+      value: result.value.refreshToken,
+      ...refreshCookieOptions(),
+    });
+  }
 
   return response;
 }

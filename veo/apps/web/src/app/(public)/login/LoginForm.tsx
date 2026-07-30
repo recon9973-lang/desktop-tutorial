@@ -38,6 +38,8 @@ export function LoginForm({ nextPath }: LoginFormProps) {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  /** 비밀번호를 눈으로 확인할 수 있게 한다. 오타 때문에 반복해 실패하는 것을 막는다. */
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [summaryProblems, setSummaryProblems] = useState<readonly string[]>([]);
@@ -171,20 +173,34 @@ export function LoginForm({ nextPath }: LoginFormProps) {
         }}
       />
 
-      <TextField
-        id={PASSWORD_ID}
-        label="비밀번호"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        required
-        value={password}
-        disabled={pending}
-        error={fieldErrors.password ?? null}
-        onChange={(event) => {
-          setPassword(event.target.value);
-        }}
-      />
+      <div className={styles.passwordField}>
+        <TextField
+          id={PASSWORD_ID}
+          label="비밀번호"
+          name="password"
+          // 보기로 바꿔도 `autocomplete` 는 그대로 둔다. 타입만 바뀌고 의미는 같으므로
+          // 브라우저 비밀번호 관리자가 계속 이 칸을 비밀번호로 알아본다.
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="current-password"
+          required
+          value={password}
+          disabled={pending}
+          error={fieldErrors.password ?? null}
+          onChange={(event) => {
+            setPassword(event.target.value);
+          }}
+        />
+        <button
+          type="button"
+          className={styles.reveal}
+          onClick={() => setShowPassword((on) => !on)}
+          // 글자만으로도 상태를 알 수 있게 하고, 보조기술에도 눌린 상태를 알린다.
+          aria-pressed={showPassword}
+          aria-controls={PASSWORD_ID}
+        >
+          {showPassword ? '숨기기' : '보기'}
+        </button>
+      </div>
 
       <Button type="submit" busy={pending} block>
         로그인
