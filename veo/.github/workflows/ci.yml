@@ -80,6 +80,47 @@ jobs:
         run: mypy
 
   # ===========================================================================
+  # 웹 — 타입체크·린트·테스트, 그리고 **실제 프로덕션 빌드**
+  #
+  # 빌드를 여기서 돌리는 이유가 있다. 타입체크·테스트·린트가 모두 통과했는데
+  # `next build` 만 실패한 일이 실제로 있었다 — Next.js 16 이 `middleware` 규약을
+  # `proxy` 로 바꿨는데 둘 다 존재해서 났고, 그 오류는 빌드 단계에서만 난다.
+  #
+  # 그때 빌드를 돌리는 곳은 Vercel뿐이었고, Vercel 은 **이미 배포한 뒤**에 실패한다.
+  # 화면은 옛 코드로 남고, 고쳤다고 말한 기능은 실제로는 없는 상태가 된다.
+  # ===========================================================================
+  web:
+    name: 웹 · 빌드까지
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 의존성 설치
+        run: pnpm install --frozen-lockfile
+
+      - name: 타입체크
+        run: pnpm -r typecheck
+
+      - name: 린트
+        run: pnpm -r lint
+
+      - name: 단위 테스트
+        run: pnpm -r test
+
+      # 이 단계가 이 작업의 존재 이유다. 앞의 셋이 다 통과해도 여기서 깨질 수 있다.
+      - name: 프로덕션 빌드
+        working-directory: veo/apps/web
+        run: pnpm build
+
+  # ===========================================================================
   # 단위 테스트 — 외부 의존성 없이, 완전 오프라인
   # ===========================================================================
   unit:
