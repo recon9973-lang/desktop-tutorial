@@ -990,7 +990,12 @@ def _favicon(
     blocked: list[str] = []
     if site.robots is not None:
         for href in declared or (fallback,):
-            target = resolve(entry.url, href)
+            target = resolve(entry.url, href) if href is not None else None
+            if target is None:
+                # 가져올 주소가 아닌 선언이다 — `data:` URI 로 넣은 인라인 아이콘이
+                # 대표적이다. 주소가 없으면 robots.txt 가 막을 대상도 없으므로 차단
+                # 여부를 따질 수 없다. 없는 결함을 만들지 않으려면 여기서 멈춘다.
+                continue
             if not same_site(target, entry.url):
                 continue  # 외부 CDN 의 아이콘은 이 사이트의 robots.txt 가 막지 않는다
             if not site.robots.decide(path_of(target)).allowed:
@@ -1147,7 +1152,7 @@ def _robots_health(
             check_id,
             title_ko="robots.txt에 해석되지 않는 줄이 있습니다",
             summary_ko=note,
-            affected_urls=[resolve(entry.url, "/robots.txt")],
+            affected_urls=[resolve(entry.url, "/robots.txt") or entry.url],
             evidence_ids=evidence,
             remediation_ko=(
                 "각 줄을 `이름: 값` 형태로 고치십시오. 콜론이 빠지거나 오타가 난 "

@@ -70,7 +70,9 @@ class TestFabricatedRatings:
         """구글 제재 대상이자 의료법 제56조 위반이다. 지금까지 통과했다."""
         node = {**_CLINIC, "aggregateRating": {"ratingValue": "4.9", "reviewCount": "312"}}
 
-        result = COLLECTOR.collect(_with_json_ld(node, visible="온담의원 서울특별시 강남구 테헤란로 1 02-555-1234"))
+        result = COLLECTOR.collect(
+            _with_json_ld(node, visible="온담의원 서울특별시 강남구 테헤란로 1 02-555-1234")
+        )
 
         assert by_id(result)[_CHECK].status is CheckStatus.FAIL
 
@@ -89,7 +91,9 @@ class TestFabricatedRatings:
     def test_the_fabricated_value_is_named(self) -> None:
         node = {**_CLINIC, "aggregateRating": {"ratingValue": "4.9", "reviewCount": "312"}}
 
-        result = COLLECTOR.collect(_with_json_ld(node, visible="온담의원 서울특별시 강남구 테헤란로 1 02-555-1234"))
+        result = COLLECTOR.collect(
+            _with_json_ld(node, visible="온담의원 서울특별시 강남구 테헤란로 1 02-555-1234")
+        )
 
         note = by_id(result)[_CHECK].note or ""
         assert "4.9" in note or "평점" in note

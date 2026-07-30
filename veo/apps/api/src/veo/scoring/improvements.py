@@ -64,7 +64,12 @@ def rank_improvements(result: ScoreResult) -> tuple[Improvement, ...]:
     # 같다면 상한이 실제로 깎고 있지는 않다는 뜻이므로 정상 계산한다.
     before = result.overall_score_before_caps
     after = result.overall_score
-    capped = bool(result.applied_caps) and before is not None and after is not None and after < before
+    capped = (
+        bool(result.applied_caps)
+        and before is not None
+        and after is not None
+        and after < before
+    )
 
     entries: list[Improvement] = []
     for row in _rows(result):
