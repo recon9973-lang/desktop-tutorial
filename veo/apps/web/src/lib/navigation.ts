@@ -106,6 +106,12 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     permission: 'scoring_spec:read',
   },
   {
+    href: '/console/team',
+    label: '팀원 관리',
+    description: '초대와 역할',
+    permission: 'user:read',
+  },
+  {
     href: '/console/account',
     label: '내 계정',
     description: '비밀번호 변경',
