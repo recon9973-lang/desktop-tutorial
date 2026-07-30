@@ -61,8 +61,8 @@ describe('InviteForm', () => {
     expect(await screen.findAllByText(/서로 다릅니다/)).toHaveLength(2);
   });
 
-  it('sends the token and the password, and then goes to sign-in', async () => {
-    const doFetch = fetchReturning(200, { ok: true });
+  it('sends the token and the password, then names the login id', async () => {
+    const doFetch = fetchReturning(200, { ok: true, email: 'seo@venom.kr' });
     vi.stubGlobal('fetch', doFetch);
     const user = userEvent.setup();
 
@@ -76,9 +76,27 @@ describe('InviteForm', () => {
     expect(url).toBe('/api/invite');
     expect(JSON.parse(String(init.body))).toEqual({ token: TOKEN, password: GOOD });
 
-    // Setting a password is not signing in. Handing back a session here would make
-    // this screen a second way to become authenticated.
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/login'));
+    // 비밀번호를 정한 것은 로그인이 아니다. 여기서 세션을 주면 인증되는 경로가
+    // 둘이 된다. 다만 **곧바로 로그인 화면으로 넘기지도 않는다** — 초대받은 사람은
+    // 자기 아이디가 무엇인지 모르는 상태라, 넘겨 버리면 빈 이메일 칸 앞에서 멈춘다.
+    expect(await screen.findByText('seo@venom.kr')).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: '로그인하러 가기' }));
+    expect(push).toHaveBeenCalledWith('/login');
+  });
+
+  it('이메일을 못 받으면 담당자에게 물어보라고 한다', async () => {
+    /** 지어내지 않는다. 모르면 모른다고 하고, 알 수 있는 사람을 가리킨다. */
+    vi.stubGlobal('fetch', fetchReturning(200, { ok: true, email: null }));
+    const user = userEvent.setup();
+
+    render(<InviteForm token={TOKEN} />);
+    await user.type(screen.getByLabelText('새 비밀번호'), GOOD);
+    await user.type(screen.getByLabelText('새 비밀번호 확인'), GOOD);
+    await user.click(screen.getByRole('button', { name: /비밀번호 설정/ }));
+
+    expect(await screen.findByText(/초대한 담당자에게/)).toBeInTheDocument();
   });
 
   it('tells the reader to ask for a new link when the token is spent', async () => {

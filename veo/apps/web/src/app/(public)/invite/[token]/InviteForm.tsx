@@ -35,6 +35,8 @@ export function InviteForm({ token }: InviteFormProps) {
   const [problems, setProblems] = useState<readonly string[]>([]);
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
+  /** 비밀번호를 정한 뒤 알려 줄 로그인 아이디. 이메일을 못 받았으면 `null`. */
+  const [account, setAccount] = useState<string | null>(null);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const summaryWantsFocus = useRef(false);
@@ -84,12 +86,17 @@ export function InviteForm({ token }: InviteFormProps) {
         body: JSON.stringify({ token, password }),
       });
       if (response.ok) {
+        // 곧바로 로그인 화면으로 넘기지 않는다. 초대받은 사람은 방금 비밀번호를
+        // 정했을 뿐 **자기 아이디가 무엇인지 모른다** — 관리자가 링크만 전달했다면
+        // 더 그렇다. 넘겨 버리면 빈 이메일 칸 앞에서 멈춘다.
+        const body: unknown = await response.json().catch(() => null);
+        const found =
+          typeof body === 'object' && body !== null && 'email' in body
+            ? (body as { email: unknown }).email
+            : null;
+        setAccount(typeof found === 'string' ? found : null);
         setDone(true);
         setPending(false);
-        // Sign-in is a separate act. This screen proves the password was set; it
-        // does not hand out a session, so there is only one way to become
-        // authenticated in the product.
-        router.push('/login');
         return;
       }
       const body: unknown = await response.json().catch(() => null);
@@ -105,6 +112,28 @@ export function InviteForm({ token }: InviteFormProps) {
     setFormError(inviteMessageFor(reason));
     setProblems([]);
     summaryWantsFocus.current = true;
+  }
+
+  if (done) {
+    return (
+      <div role="status">
+        <h2>비밀번호를 설정했습니다</h2>
+        {account === null ? (
+          <p>
+            초대할 때 받은 이메일 주소로 로그인하십시오. 주소를 모르면 초대한 담당자에게
+            확인해 주십시오.
+          </p>
+        ) : (
+          <p>
+            로그인 아이디는 <strong>{account}</strong> 입니다. 방금 정한 비밀번호와 함께
+            사용하십시오.
+          </p>
+        )}
+        <Button type="button" onClick={() => router.push('/login')}>
+          로그인하러 가기
+        </Button>
+      </div>
+    );
   }
 
   return (
