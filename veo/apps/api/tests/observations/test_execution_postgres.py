@@ -43,8 +43,10 @@ from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.observations.execution import (
     BrandIdentityMissingError,
     EngineChoice,
+    answer_facts,
     execute_observation,
 )
+from veo.observations.metrics import visibility_metrics
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import InMemoryAnswerStore
 from veo.observations.runs import SearchMode
@@ -410,3 +412,76 @@ class TestRefusals:
             _run(db, principal, prompt_set)
 
         assert "브랜드" in str(caught.value)
+
+
+class TestMetricsFromStoredAnswers:
+    """저장된 것에서 지표가 나오는가. 특히 **분모**가 맞는가."""
+
+    def test_a_run_that_mentions_every_time_reads_as_full_coverage(
+        self, db: Session, tenant
+    ) -> None:
+        principal, prompt_set = tenant()
+        row = _run(db, principal, prompt_set)
+
+        measured = visibility_metrics(
+            answer_facts(db, principal, row.id),
+            prompts_planned=row.executions_planned,
+            run_is_complete=row.is_complete,
+        )
+
+        assert measured.mention_rate.value == 1.0
+        assert measured.mention_rate.is_reportable
+
+    def test_citations_are_only_counted_when_they_are_ours(self, db: Session, tenant) -> None:
+        """경쟁사를 인용한 응답은 우리가 인용된 것이 아니다. 여기서 세면 인용률이 부푼다."""
+        principal, prompt_set = tenant()
+        registry = _registry(citations=("https://synthetic-rival.example/clinic",))
+
+        row = _run(db, principal, prompt_set, registry=registry)
+        measured = visibility_metrics(
+            answer_facts(db, principal, row.id),
+            prompts_planned=row.executions_planned,
+            run_is_complete=row.is_complete,
+        )
+
+        assert measured.citation_rate.denominator > 0
+        assert measured.citation_rate.value == 0.0
+
+    def test_our_own_citation_counts(self, db: Session, tenant) -> None:
+        principal, prompt_set = tenant()
+        registry = _registry(citations=(f"https://{BRAND_DOMAIN}/clinic",))
+
+        row = _run(db, principal, prompt_set, registry=registry)
+        measured = visibility_metrics(
+            answer_facts(db, principal, row.id),
+            prompts_planned=row.executions_planned,
+            run_is_complete=row.is_complete,
+        )
+
+        assert measured.citation_rate.value == 1.0
+
+    def test_citation_observability_survives_to_the_metric(self, db: Session, tenant) -> None:
+        """검색을 끄면 출처를 볼 수 없다. 그때 인용률은 0%가 아니라 **측정 불가**다."""
+        principal, prompt_set = tenant()
+        row = execute_observation(
+            db,
+            principal,
+            prompt_set_row=prompt_set,
+            engines=[
+                EngineChoice(engine="OPENAI", model=MODEL, search_mode=SearchMode.NO_BROWSING)
+            ],
+            repetitions=3,
+            registry=_registry(),
+            store=InMemoryAnswerStore(),
+        )
+        db.commit()
+
+        measured = visibility_metrics(
+            answer_facts(db, principal, row.id),
+            prompts_planned=row.executions_planned,
+            run_is_complete=row.is_complete,
+        )
+
+        assert measured.answers_with_visible_citations == 0
+        assert measured.citation_rate.value is None, "0%로 보고하면 사이트 탓처럼 읽힌다"
+        assert any("모델" in note for note in measured.caveats_ko)

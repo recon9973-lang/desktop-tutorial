@@ -124,6 +124,18 @@ class ObservationRun:
     error_code: str | None = None
     citations: tuple[str, ...] = field(default=())
     mentioned_entities: tuple[str, ...] = field(default=())
+    citation_support: str | None = None
+    """이 응답에서 **인용을 볼 수 있었는가**. `STRUCTURED` 이거나 아니거나.
+
+    인용률의 분모가 여기 걸려 있다. 인용을 볼 수 없었던 응답을 분모에 넣으면 인용률이
+    낮게 나오고, 그 낮은 값은 **사이트 탓처럼 읽힌다.** 실제로는 그 모델이 출처를
+    알려주지 않은 것이다 — 검색을 껐거나, 켰어도 인용을 돌려주지 않는 모델이거나.
+
+    `None` 은 기록되지 않았다는 뜻이고, 그때도 인용률 분모에 넣으면 안 된다.
+
+    타입이 문자열인 것은 순환 참조 때문이다. `CitationSupport` 는
+    `providers.base` 에 있고 그 모듈이 이 모듈을 가져간다.
+    """
 
     def __post_init__(self) -> None:
         if self.brand_cited and not self.brand_mentioned:
@@ -147,6 +159,7 @@ class ObservationRun:
         return {
             "run_id": self.run_id,
             "prompt_id": self.prompt_id,
+            "citation_support": self.citation_support,
             "conditions": self.conditions.as_dict(),
             "executed_at": self.executed_at.isoformat(),
             "raw_answer_ref": self.raw_answer_ref,

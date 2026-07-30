@@ -28,8 +28,10 @@ from veo.db.session import get_db
 from veo.observations.execution import (
     BrandIdentityMissingError,
     EngineChoice,
+    answer_facts,
     execute_observation,
 )
+from veo.observations.metrics import visibility_metrics
 from veo.observations.prompts import PromptSet, PromptSetImbalanceError
 from veo.observations.providers.registry import _STATE_LABELS_KO, UnknownEngineError
 from veo.observations.runner import RepetitionFloorError
@@ -37,6 +39,7 @@ from veo.observations.runs import AccountState, SearchMode
 from veo.observations.schemas import (
     EnginePayload,
     EngineStatus,
+    ObservationRunDetailPayload,
     ObservationRunListPayload,
     ObservationRunPayload,
     ObservationRunRequest,
@@ -44,6 +47,7 @@ from veo.observations.schemas import (
     PromptSetListPayload,
     PromptSetPayload,
     PromptSummary,
+    VisibilityMetricsPayload,
 )
 from veo.observations.service import (
     ENGINE_NOTE_KO,
@@ -289,19 +293,38 @@ def run_index(
 
 @router.get(
     "/runs/{run_id}",
-    response_model=ApiResponse[ObservationRunPayload],
-    summary="관측 실행 하나",
+    response_model=ApiResponse[ObservationRunDetailPayload],
+    summary="관측 실행 하나와 그 지표",
+    description=(
+        "**`value` 가 `null` 인 것과 `0.0` 인 것은 정반대의 뜻입니다.** `null` 은 잴 수 "
+        "없었다는 뜻이고 `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다.\n\n"
+        "인용률의 분모는 **출처를 확인할 수 있었던 응답**뿐입니다. 엔진이 출처를 밝히지 "
+        "않은 응답을 분모에 넣으면 인용률이 낮게 나오고, 그 낮은 값은 사이트 탓처럼 "
+        "읽힙니다 — 실제로는 그 모델이 출처를 알려주지 않은 것입니다."
+    ),
 )
 def run_read(
     run_id: uuid.UUID,
     principal: ObservationReader,
     request_id: RequestId,
     db: Annotated[Session, Depends(get_db)],
-) -> ApiResponse[ObservationRunPayload]:
+) -> ApiResponse[ObservationRunDetailPayload]:
     row = get_observation_run(db, principal, run_id)
     if row is None:
         raise HTTPException(status_code=404, detail="observation run not found")
-    return ok(_run_payload(row), request_id)
+
+    measured = visibility_metrics(
+        answer_facts(db, principal, row.id),
+        prompts_planned=row.executions_planned,
+        run_is_complete=row.is_complete,
+    )
+    return ok(
+        ObservationRunDetailPayload(
+            run=_run_payload(row),
+            metrics=VisibilityMetricsPayload.model_validate(measured.as_dict()),
+        ),
+        request_id,
+    )
 
 
 def _run_payload(row: ObservationRunRow) -> ObservationRunPayload:

@@ -881,7 +881,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 관측 실행 하나 */
+        /**
+         * 관측 실행 하나와 그 지표
+         * @description **`value` 가 `null` 인 것과 `0.0` 인 것은 정반대의 뜻입니다.** `null` 은 잴 수 없었다는 뜻이고 `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다.
+         *
+         *     인용률의 분모는 **출처를 확인할 수 있었던 응답**뿐입니다. 엔진이 출처를 밝히지 않은 응답을 분모에 넣으면 인용률이 낮게 나오고, 그 낮은 값은 사이트 탓처럼 읽힙니다 — 실제로는 그 모델이 출처를 알려주지 않은 것입니다.
+         */
         get: operations["run_read_api_observations_runs__run_id__get"];
         put?: never;
         post?: never;
@@ -1646,6 +1651,12 @@ export interface components {
         /** ApiResponse[MemberPayload] */
         ApiResponse_MemberPayload_: {
             data?: components["schemas"]["MemberPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ObservationRunDetailPayload] */
+        ApiResponse_ObservationRunDetailPayload_: {
+            data?: components["schemas"]["ObservationRunDetailPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -3883,6 +3894,14 @@ export interface components {
             email: string;
             role: components["schemas"]["Role"];
         };
+        /**
+         * ObservationRunDetailPayload
+         * @description 실행 하나와 그 지표.
+         */
+        ObservationRunDetailPayload: {
+            metrics: components["schemas"]["VisibilityMetricsPayload"];
+            run: components["schemas"]["ObservationRunPayload"];
+        };
         /** ObservationRunListPayload */
         ObservationRunListPayload: {
             /** Items */
@@ -4801,6 +4820,41 @@ export interface components {
             status_code: string;
             /** Triggered By */
             triggered_by: string[];
+        };
+        /**
+         * RatePayload
+         * @description 비율 하나 — 그리고 그 값을 얼마나 믿을 수 있는가.
+         *
+         *     `value` 가 `null` 인 것과 `0.0` 인 것은 **정반대의 뜻**입니다. `null` 은 잴 수
+         *     없었다는 뜻이고, `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다. 화면에서 둘을 같게
+         *     그리면 우리가 못 잰 것이 고객 탓으로 보입니다.
+         */
+        RatePayload: {
+            /**
+             * Denominator
+             * @description 이 비율이 무엇에 대한 값인지. 0이면 잴 수 없었습니다.
+             */
+            denominator: number;
+            /** High */
+            high: number | null;
+            /**
+             * Is Reportable
+             * @description 표본이 충분한가. 거짓이면 이 값을 결론으로 쓰지 마십시오.
+             */
+            is_reportable: boolean;
+            /**
+             * Low
+             * @description 95% 신뢰구간 하한입니다.
+             */
+            low: number | null;
+            /** Note Ko */
+            note_ko: string;
+            /** Numerator */
+            numerator: number;
+            /** Percent */
+            percent: number | null;
+            /** Value */
+            value: number | null;
         };
         /** RecentKeywordEntryPayload */
         RecentKeywordEntryPayload: {
@@ -6066,6 +6120,34 @@ export interface components {
             developer: components["schemas"]["AudienceViewPayload"];
             executive: components["schemas"]["AudienceViewPayload"];
             marketing: components["schemas"]["AudienceViewPayload"];
+        };
+        /**
+         * VisibilityMetricsPayload
+         * @description 이 관측이 말할 수 있는 것과, 말할 수 없는 것.
+         */
+        VisibilityMetricsPayload: {
+            /** Answers Recorded */
+            answers_recorded: number;
+            /**
+             * Answers Valid
+             * @description 응답을 실제로 받은 건수입니다. 언급률의 분모입니다.
+             */
+            answers_valid: number;
+            /**
+             * Answers With Visible Citations
+             * @description 출처를 확인할 수 있었던 건수입니다. **인용률의 분모**이며, 여기 들어가지 않은 응답은 '인용 안 됨'이 아니라 '알 수 없음'입니다.
+             */
+            answers_with_visible_citations: number;
+            /**
+             * Caveats Ko
+             * @description 이 숫자를 읽을 때 함께 알아야 하는 것들입니다. 비어 있어야 정상입니다.
+             */
+            caveats_ko: string[];
+            citation_rate: components["schemas"]["RatePayload"];
+            /** Is Partial Measurement */
+            is_partial_measurement: boolean;
+            mention_rate: components["schemas"]["RatePayload"];
+            prompt_coverage: components["schemas"]["RatePayload"];
         };
         /** WeightChangePayload */
         WeightChangePayload: {
@@ -7933,7 +8015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiResponse_ObservationRunPayload_"];
+                    "application/json": components["schemas"]["ApiResponse_ObservationRunDetailPayload_"];
                 };
             };
             /** @description Validation Error */

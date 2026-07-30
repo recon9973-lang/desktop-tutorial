@@ -46,6 +46,7 @@ from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.observations.answer_store import FilesystemAnswerStore
+from veo.observations.metrics import AnswerFact
 from veo.observations.prompts import Funnel, Intent, Prompt, PromptSet, Subject
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import RecordedAnswerStore
@@ -348,6 +349,7 @@ def _persist(
             # 그 옆의 `error_code` 가 왜 없는지를 말한다.
             raw_answer_hash=run.raw_answer_hash or "",
             error_code=run.error_code,
+            citation_support=run.citation_support,
             latency_ms=run.latency_ms,
             cost_usd=run.cost_usd,
             cost_krw=None,
@@ -402,7 +404,58 @@ def _prompt_hash_of(row: PromptRow) -> str:
 __all__ = [
     "BrandIdentityMissingError",
     "EngineChoice",
+    "answer_facts",
     "answer_store",
     "brand_target_for",
     "execute_observation",
 ]
+
+
+def answer_facts(
+    session: Session, principal: Principal, run_id: uuid.UUID
+) -> tuple[AnswerFact, ...]:
+    """저장된 답변들을 지표 계산이 읽는 형태로.
+
+    `citation_support` 를 그대로 넘긴다. 이 값이 인용률의 분모를 정한다 — 출처를 밝히지
+    않은 응답을 분모에 넣으면 인용률이 낮게 나오고, 그 낮은 값은 사이트 탓처럼 읽힌다.
+    """
+    statement = (
+        tenant_select(AIAnswer, principal)
+        .where(AIAnswer.observation_run_id == run_id)
+        .order_by(AIAnswer.executed_at, AIAnswer.id)
+    )
+    assert_tenant_scoped(statement, principal.organization_id)
+    answers = list(session.scalars(statement))
+
+    answer_ids = [answer.id for answer in answers]
+    if not answer_ids:
+        return ()
+
+    # **우리 도메인 인용만** 센다. 경쟁사를 인용한 응답은 우리가 인용된 것이 아니다.
+    # 여기서 모든 인용을 세면 인용률이 부풀고, 부푼 값은 아무도 의심하지 않는다.
+    cited_ids = set(
+        session.scalars(
+            select(Citation.ai_answer_id)
+            .where(Citation.ai_answer_id.in_(answer_ids))
+            .where(Citation.is_own_domain.is_(True))
+        )
+    )
+    # 같은 이유로 자사 언급만 센다.
+    mentioned_ids = set(
+        session.scalars(
+            select(EntityMention.ai_answer_id)
+            .where(EntityMention.ai_answer_id.in_(answer_ids))
+            .where(EntityMention.is_own_brand.is_(True))
+        )
+    )
+
+    return tuple(
+        AnswerFact(
+            prompt_id=str(answer.prompt_id),
+            is_valid=answer.is_valid_execution,
+            mentioned=answer.id in mentioned_ids,
+            cited=answer.id in cited_ids,
+            citation_support=answer.citation_support,
+        )
+        for answer in answers
+    )

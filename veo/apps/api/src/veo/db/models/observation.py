@@ -193,6 +193,15 @@ class AIAnswer(Base, OrganizationScopedMixin, ImmutableMixin):
     raw_answer_storage_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     raw_answer_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     error_code: Mapped[str | None] = mapped_column(String(48), nullable=True)
+    citation_support: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+        comment=(
+            "이 응답에서 인용을 볼 수 있었는가. STRUCTURED 인 답변만 인용률의 분모에 "
+            "들어간다. 볼 수 없었던 답변을 분모에 넣으면 인용률이 낮게 나오고, 그 낮은 "
+            "값은 사이트 탓처럼 읽힌다 — 실제로는 그 모델이 출처를 알려주지 않은 것이다."
+        ),
+    )
     latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     cost_usd: Mapped[float | None] = mapped_column(
         Float,

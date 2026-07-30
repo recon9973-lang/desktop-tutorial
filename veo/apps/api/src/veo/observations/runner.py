@@ -570,6 +570,9 @@ class ObservationRunner:
             raw_answer_hash=stored.sha256,
             brand_mentioned=verdict.mentioned,
             brand_cited=verdict.cited,
+            # 인용을 볼 수 있었는지는 응답의 성질이다. 여기서 흘리면 인용률의 분모를
+            # 정직하게 만들 수 없다.
+            citation_support=str(record.citation_support),
             latency_ms=record.latency_ms,
             cost_usd=record.cost_usd,
             error_code=None,

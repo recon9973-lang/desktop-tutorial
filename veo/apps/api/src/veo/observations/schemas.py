@@ -148,6 +148,7 @@ __all__ = [
     "EnginePayload",
     "EngineStatus",
     "ExclusionInput",
+    "ObservationRunDetailPayload",
     "ObservationRunListPayload",
     "ObservationRunPayload",
     "ObservationRunRequest",
@@ -156,6 +157,8 @@ __all__ = [
     "PromptSetListPayload",
     "PromptSetPayload",
     "PromptSummary",
+    "RatePayload",
+    "VisibilityMetricsPayload",
 ]
 
 
@@ -246,6 +249,59 @@ class ObservationRunPayload(BaseModel):
     )
     started_at: datetime | None
     finished_at: datetime | None
+
+
+class RatePayload(BaseModel):
+    """비율 하나 — 그리고 그 값을 얼마나 믿을 수 있는가.
+
+    `value` 가 `null` 인 것과 `0.0` 인 것은 **정반대의 뜻**입니다. `null` 은 잴 수
+    없었다는 뜻이고, `0.0` 은 쟀는데 한 번도 없었다는 뜻입니다. 화면에서 둘을 같게
+    그리면 우리가 못 잰 것이 고객 탓으로 보입니다.
+    """
+
+    model_config = _FROZEN
+
+    numerator: int
+    denominator: int = Field(description="이 비율이 무엇에 대한 값인지. 0이면 잴 수 없었습니다.")
+    value: float | None
+    percent: float | None
+    low: float | None = Field(description="95% 신뢰구간 하한입니다.")
+    high: float | None
+    is_reportable: bool = Field(
+        description="표본이 충분한가. 거짓이면 이 값을 결론으로 쓰지 마십시오."
+    )
+    note_ko: str
+
+
+class VisibilityMetricsPayload(BaseModel):
+    """이 관측이 말할 수 있는 것과, 말할 수 없는 것."""
+
+    model_config = _FROZEN
+
+    answers_recorded: int
+    answers_valid: int = Field(description="응답을 실제로 받은 건수입니다. 언급률의 분모입니다.")
+    answers_with_visible_citations: int = Field(
+        description=(
+            "출처를 확인할 수 있었던 건수입니다. **인용률의 분모**이며, 여기 들어가지 "
+            "않은 응답은 '인용 안 됨'이 아니라 '알 수 없음'입니다."
+        )
+    )
+    mention_rate: RatePayload
+    citation_rate: RatePayload
+    prompt_coverage: RatePayload
+    is_partial_measurement: bool
+    caveats_ko: list[str] = Field(
+        description="이 숫자를 읽을 때 함께 알아야 하는 것들입니다. 비어 있어야 정상입니다."
+    )
+
+
+class ObservationRunDetailPayload(BaseModel):
+    """실행 하나와 그 지표."""
+
+    model_config = _FROZEN
+
+    run: ObservationRunPayload
+    metrics: VisibilityMetricsPayload
 
 
 class ObservationRunListPayload(BaseModel):
