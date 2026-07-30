@@ -7,15 +7,20 @@ DB 나 HTTP 없이 검사한다. 여기서 고정하는 것들은 전부 **저�
 
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 
 from veo.contracts.enums import ProviderState
 from veo.core.settings import ProviderCredentials
+from veo.observations.pricing import DatedPriceTable
 from veo.observations.prompts import PromptSet, PromptSetImbalanceError
+from veo.observations.providers.base import CostBasis, ModelPrice
 from veo.observations.providers.registry import _STATE_LABELS_KO, build_registry
 from veo.observations.service import (
     UnknownPromptFieldError,
     build_prompt_set,
+    engine_registry,
 )
 
 
@@ -171,3 +176,51 @@ class TestTheEngineListHidesNothing:
         # 이 환경에 자격증명이 없는 엔진이 하나라도 있다면, 그것은 목록에 남아 있어야 한다.
         assert set(disabled) <= set(states)
         assert len(states) == 4
+
+
+class TestThePriceTableIsAttached:
+    """가격표가 `packages/model-prices/` 에 있는데 등록소에 연결되어 있지 않았다.
+
+    그래서 모든 호출이 `NO_PRICE_CONFIGURED` 로 기록됐다. "공짜" 가 아니라 "모른다" 이지만,
+    예산 상한을 건 실행은 금액을 모르면 돌지 못하므로 예산 기능이 사실상 닫혀 있었다.
+    """
+
+    def test_the_registry_carries_a_dated_price_table(self) -> None:
+        provider = engine_registry().resolve("OPENAI")
+
+        # 연결 여부는 밖에서 볼 방법이 없다. 이 검사가 곧 그 계약이다.
+        table = provider._prices
+
+        assert isinstance(table, DatedPriceTable)
+
+    def test_an_empty_table_reports_no_price_rather_than_zero(self) -> None:
+        """모르는 것과 공짜인 것은 다르다. 표에 값이 없으면 0원이 아니라 '가격 미설정' 이다."""
+        table = engine_registry().resolve("OPENAI")._prices
+
+        cost, basis = table.cost(
+            model="존재하지-않는-모델",
+            model_version="존재하지-않는-모델-2026",
+            input_tokens=1000,
+            output_tokens=500,
+        )
+
+        assert cost is None
+        assert basis is CostBasis.NO_PRICE_CONFIGURED
+
+    def test_a_stale_table_is_passed_through_not_dropped(self) -> None:
+        """오래된 표를 여기서 버리면 '오래됐다' 가 '없다' 로 바뀌어 무엇을 고칠지 알 수 없다."""
+        stale = DatedPriceTable(
+            version="test",
+            as_of=date(2020, 1, 1),
+            stale_after_days=90,
+            currency="USD",
+            prices={"gpt-4o": ModelPrice(input_usd_per_million=1.0, output_usd_per_million=1.0)},
+            today=date(2026, 7, 30),
+        )
+
+        cost, basis = stale.cost(
+            model="gpt-4o", model_version="gpt-4o", input_tokens=1000, output_tokens=0
+        )
+
+        assert cost is None
+        assert basis is CostBasis.PRICE_TABLE_STALE

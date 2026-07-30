@@ -320,6 +320,25 @@ class ModelPrice:
             raise ValueError("a price must not be negative")
 
 
+@runtime_checkable
+class SupportsPricing(Protocol):
+    """한 번의 호출에 든 비용, 또는 그 값이 없는 이유.
+
+    어댑터가 가격표에 요구하는 것은 이 하나뿐이다. 구상 클래스로 묶어 두면 날짜가 붙은
+    가격표(:mod:`veo.observations.pricing`)를 그대로 넘길 수 없고, 실제로 그것 때문에
+    가격표가 연결되지 않은 채 모든 호출이 '가격 미설정' 으로 기록되고 있었다.
+    """
+
+    def cost(
+        self,
+        *,
+        model: str,
+        model_version: str,
+        input_tokens: int | None,
+        output_tokens: int | None,
+    ) -> tuple[float | None, CostBasis]: ...
+
+
 @dataclass(frozen=True, slots=True)
 class PriceTable:
     """Model prices, keyed by dated version first and model family second.
@@ -475,7 +494,7 @@ class HttpAnswerProvider:
         credential: SecretStr | None,
         transport: httpx.BaseTransport | None = None,
         base_url: str | None = None,
-        price_table: PriceTable | None = None,
+        price_table: SupportsPricing | None = None,
         timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
         max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
         monotonic: Callable[[], float] = time.monotonic,

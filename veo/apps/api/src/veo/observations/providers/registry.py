@@ -16,7 +16,11 @@ import httpx
 from veo.contracts.enums import ProviderState
 from veo.core.settings import ProviderCredentials
 from veo.observations.providers.anthropic import AnthropicAnswerProvider
-from veo.observations.providers.base import AnswerProvider, HttpAnswerProvider, PriceTable
+from veo.observations.providers.base import (
+    AnswerProvider,
+    HttpAnswerProvider,
+    SupportsPricing,
+)
 from veo.observations.providers.gemini import GeminiAnswerProvider
 from veo.observations.providers.openai import OpenAIAnswerProvider
 from veo.observations.providers.perplexity import PerplexityAnswerProvider
@@ -104,7 +108,7 @@ def build_registry(
     *,
     credentials: ProviderCredentials | None = None,
     transport: httpx.BaseTransport | None = None,
-    price_table: PriceTable | None = None,
+    price_table: SupportsPricing | None = None,
 ) -> ProviderRegistry:
     """Every engine in :data:`PROVIDER_CLASSES`, wired the same way.
 

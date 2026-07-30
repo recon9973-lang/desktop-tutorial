@@ -23,6 +23,7 @@ from veo.authz import Principal, assert_tenant_scoped, tenant_select
 from veo.core.settings import get_provider_credentials
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
+from veo.observations.pricing import load_price_table
 from veo.observations.prompts import (
     Exclusion,
     Funnel,
@@ -55,8 +56,30 @@ class UnknownPromptFieldError(ValueError):
 
 
 def engine_registry() -> ProviderRegistry:
-    """설정에 들어 있는 자격증명으로 조립한 등록소."""
-    return build_registry(credentials=get_provider_credentials())
+    """설정에 들어 있는 자격증명과 **날짜가 붙은 가격표**로 조립한 등록소.
+
+    가격표는 `packages/model-prices/` 에 있는데 등록소에 연결되어 있지 않아서, 모든
+    호출이 `NO_PRICE_CONFIGURED` 로 기록되고 있었다. 그것은 "공짜" 가 아니라 "모른다"
+    이지만, 예산 상한을 건 실행이 금액을 모른 채 돌 수는 없으므로 실질적으로 예산 기능이
+    닫혀 있었다.
+
+    **표를 못 읽는 것과 표가 오래된 것을 구분한다.**
+
+    * 파일이 없으면 가격표 없이 조립한다. 비용은 `NO_PRICE_CONFIGURED` 로 남는다 —
+      엔진 목록 조회 같은 일이 가격표 때문에 실패하면 안 된다.
+    * 오래된 표는 **그대로 넘긴다.** `DatedPriceTable.cost` 가 스스로 `PRICE_TABLE_STALE`
+      을 돌려주고, 그것이 정직한 답이다. 여기서 걸러 버리면 "가격표가 오래됐다" 가
+      "가격표가 없다" 로 바뀌어, 무엇을 고쳐야 하는지 알 수 없게 된다.
+
+    표 자체는 값이 비어 있을 수 있다. 각 제공자의 공식 가격 페이지에서 사람이 확인해
+    채우도록 되어 있고, 비어 있으면 비용은 계산되지 않는다 — 지어낸 가격을 금액으로
+    제시하지 않기 위해서다.
+    """
+    try:
+        prices = load_price_table()
+    except (FileNotFoundError, ValueError):
+        prices = None
+    return build_registry(credentials=get_provider_credentials(), price_table=prices)
 
 
 # --------------------------------------------------------------------------- #
