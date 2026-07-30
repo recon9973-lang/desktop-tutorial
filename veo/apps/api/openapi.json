@@ -10351,10 +10351,30 @@
         "additionalProperties": false,
         "description": "콘솔 진단 요청 — 주소만 주면 VEO 가 직접 가져와 채점한다.\n\n`ScanRequest` 와 나란히 두는 이유: 저쪽은 **이미 수집된 자료**를 채점하는 계약이라\n수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는\n경우를 위한 것이다. 둘은 같은 엔진과 같은 명세로 채점하며, 결과 형식도 같다.",
         "properties": {
+          "discover": {
+            "default": true,
+            "description": "사이트맵과 내부 링크를 따라 VEO 가 스스로 페이지를 찾을지 여부입니다. 끄면 대표 주소와 `urls` 에 넣은 주소만 봅니다. 한 장만 보면 내부 링크·중복 메타데이터·클릭 깊이처럼 사이트 전체를 봐야 판정되는 항목이 측정 불가로 남고, 그 배점은 분모에 그대로 남습니다.",
+            "title": "Discover",
+            "type": "boolean"
+          },
           "locale": {
             "default": "ko-KR",
             "title": "Locale",
             "type": "string"
+          },
+          "max_urls": {
+            "anyOf": [
+              {
+                "maximum": 500.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "이번 진단에서 가져올 최대 페이지 수입니다. 비워 두면 서버 기본값을 씁니다. 대상 사이트에 보내는 요청 수를 그대로 정하는 값이므로 함부로 올리지 않습니다.",
+            "title": "Max Urls"
           },
           "site_id": {
             "anyOf": [
@@ -10376,7 +10396,7 @@
             "type": "string"
           },
           "urls": {
-            "description": "함께 볼 페이지 주소입니다. 비워 두면 대표 주소 한 장만 봅니다. 내부 링크·중복 메타데이터처럼 사이트를 봐야 판정되는 항목은 페이지가 한 장뿐이면 측정 불가로 남습니다.",
+            "description": "반드시 함께 볼 페이지 주소입니다. 사이트가 링크로 잇지 않은 페이지를 일부러 진단할 때 씁니다. `discover` 가 켜져 있으면 여기 넣은 주소가 가장 먼저 수집되고, 발견한 주소는 그 뒤에 붙습니다.",
             "items": {
               "type": "string"
             },

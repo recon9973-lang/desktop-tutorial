@@ -243,6 +243,100 @@ def test_a_malformed_sitemap_reports_rather_than_raises() -> None:
     assert sitemap.locations == ()
 
 
+# --------------------------------------------------------------------------- #
+# 확장 네임스페이스 — `<image:loc>` 은 페이지가 아니다
+# --------------------------------------------------------------------------- #
+
+IMAGE_SITEMAP = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
+    ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'
+    "<url>"
+    "<loc>https://a.example.kr/clinic/</loc>"
+    "<lastmod>2026-06-11T11:29:44Z</lastmod>"
+    "<image:image><image:loc>https://a.example.kr/uploads/hero.png</image:loc></image:image>"
+    "</url>"
+    "</urlset>"
+)
+
+
+def test_an_image_location_is_not_a_page_location() -> None:
+    """`<image:loc>` 은 그 페이지에 실린 이미지 주소다. 페이지 주소로 세면 오탐이 된다.
+
+    실제 사이트(Jetpack 이미지 사이트맵)에서 페이지 26개 + 이미지 26개를 52개 페이지로
+    읽고 있었다. 이미지는 HTML 이 아니므로 sitemap URL 검사가 '비정상' 으로 판정하고,
+    **이미지 사이트맵을 제대로 갖춘 사이트가 그 때문에 감점됐다.**
+    """
+    sitemap = parse_sitemap(IMAGE_SITEMAP)
+
+    assert sitemap.locations == ("https://a.example.kr/clinic/",)
+
+
+def test_the_page_beside_an_image_keeps_its_lastmod() -> None:
+    """확장 원소를 걸러내면서 그 페이지의 lastmod 까지 잃으면 안 된다."""
+    entry = parse_sitemap(IMAGE_SITEMAP).entries[0]
+
+    assert entry.lastmod == "2026-06-11T11:29:44Z"
+
+
+def test_a_video_location_is_not_a_page_location() -> None:
+    sitemap = parse_sitemap(
+        '<?xml version="1.0"?><urlset xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">'
+        "<url><loc>https://a.example.kr/video-page/</loc>"
+        "<video:video><video:loc>https://a.example.kr/clip.mp4</video:loc></video:video>"
+        "</url></urlset>"
+    )
+
+    assert sitemap.locations == ("https://a.example.kr/video-page/",)
+
+
+def test_an_unprefixed_loc_inside_an_image_element_is_still_rejected() -> None:
+    """접두어를 생략한 사이트맵도 있다. 감싸는 원소로 한 번 더 본다."""
+    sitemap = parse_sitemap(
+        '<?xml version="1.0"?><urlset>'
+        "<url><loc>https://a.example.kr/p/</loc>"
+        "<image><loc>https://a.example.kr/uploads/x.png</loc></image>"
+        "</url></urlset>"
+    )
+
+    assert sitemap.locations == ("https://a.example.kr/p/",)
+
+
+def test_a_prefixed_main_namespace_still_yields_pages() -> None:
+    """`<sm:loc>` 처럼 본문 네임스페이스에 접두어를 붙인 사이트맵을 놓치면 안 된다."""
+    sitemap = parse_sitemap(
+        '<?xml version="1.0"?><sm:urlset xmlns:sm="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        "<sm:url><sm:loc>https://a.example.kr/p/</sm:loc></sm:url></sm:urlset>"
+    )
+
+    assert sitemap.locations == ("https://a.example.kr/p/",)
+
+
+def test_many_pages_each_carrying_images_are_all_counted() -> None:
+    """페이지마다 이미지가 붙은 사이트맵에서 페이지 수가 정확해야 한다."""
+    urls = "".join(
+        f"<url><loc>https://a.example.kr/p{n}/</loc>"
+        f"<image:image><image:loc>https://a.example.kr/i{n}.jpg</image:loc></image:image>"
+        "</url>"
+        for n in range(10)
+    )
+    sitemap = parse_sitemap(f'<?xml version="1.0"?><urlset>{urls}</urlset>')
+
+    assert len(sitemap.locations) == 10
+    assert not [loc for loc in sitemap.locations if loc.endswith(".jpg")]
+
+
+def test_a_truncated_sitemap_still_yields_what_it_had() -> None:
+    """닫는 태그가 빠진 사이트맵은 실제로 흔하다. 스택이 어긋나도 주소를 버리지 않는다."""
+    sitemap = parse_sitemap(
+        '<?xml version="1.0"?><urlset>'
+        "<url><loc>https://a.example.kr/one/</loc>"
+        "<url><loc>https://a.example.kr/two/</loc></url>"
+    )
+
+    assert sitemap.locations == ("https://a.example.kr/one/", "https://a.example.kr/two/")
+
+
 def test_entity_declarations_are_not_expanded() -> None:
     """A sitemap is untrusted input; an entity bomb must not be resolved."""
     bomb = (

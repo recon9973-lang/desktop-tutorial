@@ -23,8 +23,10 @@ from veo.seo.collectors.base import (
     NO_DOCUMENTS_KO,
     EvidenceLedger,
     SeoCollector,
+    absent_in_sample_outcome,
     all_unknown,
     issue,
+    single_page_outcome,
     url_ratio_outcome,
 )
 from veo.seo.observation import PageObservation, SiteObservation
@@ -165,11 +167,23 @@ def _duplicate_bodies(
     context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
     candidates = [page for page in site.pages if page.raw.body_text.strip()]
+    if len(site.pages) < 2:
+        return (
+            single_page_outcome(
+                context,
+                site,
+                "seo.content.no_duplicate_bodies",
+                subject_ko="페이지 간 본문 중복",
+            ),
+            [],
+        )
     if len(candidates) < 2:
+        # 여러 장을 봤는데 본문이 있는 페이지가 둘 미만이다. 이것은 수집 한계가 아니라
+        # 이 사이트에 대한 관측이므로 해당 없음이 맞다.
         return (
             not_applicable_outcome(
                 "seo.content.no_duplicate_bodies",
-                "본문이 있는 페이지가 둘 미만이라 중복을 판단할 수 없습니다.",
+                "본문이 있는 페이지가 둘 미만이라 페이지 간 중복을 판단할 대상이 없습니다.",
             ),
             [],
         )
@@ -315,11 +329,23 @@ def _link_density(
     context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
     candidates = list(site.key_pages)
-    if len(site.pages) < 2 or not candidates:
+    # 두 조건은 사유가 다르므로 나눠서 답한다. 페이지가 하나뿐인 것은 대개 **우리가**
+    # 한 장만 봤다는 뜻이고, 주요 페이지가 없는 것은 이 사이트에 대한 관측이다.
+    if len(site.pages) < 2:
+        return (
+            single_page_outcome(
+                context,
+                site,
+                "seo.content.internal_link_density",
+                subject_ko="내부 링크 밀도",
+            ),
+            [],
+        )
+    if not candidates:
         return (
             not_applicable_outcome(
                 "seo.content.internal_link_density",
-                "수집한 페이지가 하나뿐이라 내부 링크 밀도를 판단할 수 없습니다.",
+                "주요 페이지로 분류된 페이지가 없어 내부 링크를 판단할 대상이 없습니다.",
             ),
             [],
         )
@@ -470,10 +496,15 @@ def _breadcrumb(
     deep = [page for page in site.pages if depth_of(page.url) >= DEEP_HIERARCHY_SEGMENTS]
     if not deep:
         return (
-            not_applicable_outcome(
+            absent_in_sample_outcome(
+                context,
+                site,
                 "seo.content.breadcrumb_present",
-                f"모든 URL이 경로 {DEEP_HIERARCHY_SEGMENTS}단계 미만이라 breadcrumb이 필요한 "
-                "깊이가 아닙니다.",
+                absent_ko=(
+                    f"모든 URL이 경로 {DEEP_HIERARCHY_SEGMENTS}단계 미만이라 breadcrumb이 "
+                    "필요한 깊이가 아닙니다."
+                ),
+                subject_ko=f"경로 {DEEP_HIERARCHY_SEGMENTS}단계 이상인 페이지",
             ),
             [],
         )
@@ -668,9 +699,12 @@ def _lazy_loading_safe(
     ]
     if not users:
         return (
-            not_applicable_outcome(
+            absent_in_sample_outcome(
+                context,
+                site,
                 "seo.content.lazy_loading_safe",
-                "지연 로딩을 사용하는 페이지가 없어 해당하지 않습니다.",
+                absent_ko="지연 로딩을 사용하는 페이지가 없어 해당하지 않습니다.",
+                subject_ko="지연 로딩을 사용하는 페이지",
             ),
             [],
         )

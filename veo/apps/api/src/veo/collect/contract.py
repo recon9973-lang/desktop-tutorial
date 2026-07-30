@@ -122,6 +122,27 @@ class CollectionContext:
     provider_states: Mapping[str, ProviderState] = field(default_factory=dict)
     provider_payloads: Mapping[str, object] = field(default_factory=dict)
     url_importance: Mapping[str, str] = field(default_factory=dict)
+    crawl_is_exhaustive: bool = False
+    """Did the crawl fetch every URL it could discover, before hitting any ceiling?
+
+    This exists to keep a collection limit from masquerading as a fact about the site.
+    Several checks compare pages against each other — duplicate titles, duplicate bodies,
+    internal link density — and none of them can be judged from a single page. The
+    question is *why* there is only one page, and the two answers are not interchangeable:
+
+    * The site has one page. The check does not apply; it leaves the denominator.
+    * We only fetched one page. The check could not be run; it stays in the denominator
+      and scores zero.
+
+    Defaulting to ``False`` is the honest default. A context built from a fixture, or from
+    an explicit list of URLs, has established nothing about how large the site is — and
+    treating "we did not look" as "there is nothing there" is how a denominator starts
+    moving with what we happened to collect, which makes measuring less the better
+    strategy. That mistake has been made three times already; see ADR 0016.
+
+    Only the discovery crawl may set this, and only when it ran out of addresses to
+    fetch before reaching the page ceiling, the depth ceiling or the host budget.
+    """
     locale: str = "ko-KR"
     collected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 

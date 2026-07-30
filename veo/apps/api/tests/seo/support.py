@@ -124,8 +124,14 @@ def build_context(
     provider_payloads: Mapping[str, object] | None = None,
     with_rendered: bool = True,
     spec: ScoringSpec | None = None,
+    crawl_is_exhaustive: bool = True,
 ) -> CollectionContext:
-    """Replay the crawl recorded in ``tests/fixtures/seo/<name>``."""
+    """Replay the crawl recorded in ``tests/fixtures/seo/<name>``.
+
+    ``crawl_is_exhaustive`` defaults to true because a fixture *is* a whole recorded
+    site — every page it has is in the manifest. Tests that need the opposite (a slice
+    of a larger site) pass ``False`` and get the honest ``측정 불가`` answers.
+    """
     fixture = load_manifest(name)
     root, manifest = fixture.root, fixture.manifest
 
@@ -162,6 +168,7 @@ def build_context(
         provider_states=dict(provider_states or ALL_PROVIDERS_DISABLED),
         provider_payloads=dict(provider_payloads or {}),
         url_importance=importance,
+        crawl_is_exhaustive=crawl_is_exhaustive,
         locale=str(manifest.get("locale", "ko-KR")),
         collected_at=datetime(2026, 7, 28, 3, 5, tzinfo=UTC),
     )

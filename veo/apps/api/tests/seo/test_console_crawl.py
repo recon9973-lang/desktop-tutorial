@@ -62,7 +62,9 @@ class TestScope:
 
     def test_refuses_more_pages_than_the_console_allows(self) -> None:
         """상한이 없으면 한 번의 실수로 남의 사이트를 수백 번 두드리게 된다."""
-        crawler = ConsoleCrawler(guard=_guard(), transport=_transport({"/": _html("홈")}), max_urls=2)
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=_transport({"/": _html("홈")}), max_urls=2
+        )
 
         with pytest.raises(CrawlRefusal) as caught:
             crawler.collect([f"https://example.com/{n}" for n in range(3)])
@@ -96,3 +98,213 @@ class TestSafety:
             crawler.collect(["https://example.com/"])
 
         assert caught.value.status_code == 502
+
+
+# --------------------------------------------------------------------------- #
+# 스스로 찾아 도는 크롤
+# --------------------------------------------------------------------------- #
+
+
+def _page(title: str, *links: str) -> bytes:
+    anchors = "".join(f"<a href='{href}'>{href}</a>" for href in links)
+    return (
+        f"<!doctype html><html lang='ko'><head><title>{title}</title></head>"
+        f"<body><h1>{title}</h1>{anchors}</body></html>"
+    ).encode()
+
+
+def _urlset(*locations: str) -> bytes:
+    body = "".join(f"<url><loc>{location}</loc></url>" for location in locations)
+    return f"<?xml version='1.0'?><urlset>{body}</urlset>".encode()
+
+
+def _site(pages: dict[str, bytes]) -> httpx.MockTransport:
+    """경로별 응답. 없는 경로는 404, 지정된 예외는 연결 실패."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = pages.get(request.url.path)
+        if body is None:
+            return httpx.Response(404, content=b"none")
+        if body is _DEAD:
+            raise httpx.ConnectError("연결 불가")
+        media = "application/xml" if request.url.path.endswith(".xml") else "text/html"
+        if request.url.path == "/robots.txt":
+            media = "text/plain"
+        return httpx.Response(200, content=body, headers={"content-type": media})
+
+    return httpx.MockTransport(handler)
+
+
+_DEAD = b"__DEAD__"
+
+
+class TestDiscovery:
+    def test_follows_internal_links_without_being_told(self) -> None:
+        """지금까지는 직원이 주소를 하나하나 넣어야 했다. 그래서 아무도 넣지 않았다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site(
+                {
+                    "/": _page("홈", "/a", "/b"),
+                    "/a": _page("가"),
+                    "/b": _page("나"),
+                }
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert {document.final_url for document in outcome.documents} == {
+            "https://example.com/",
+            "https://example.com/a",
+            "https://example.com/b",
+        }
+
+    def test_goes_deeper_than_one_level(self) -> None:
+        """한 단계만 보면 클릭 깊이라는 개념 자체가 성립하지 않는다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site(
+                {
+                    "/": _page("홈", "/a"),
+                    "/a": _page("가", "/b"),
+                    "/b": _page("나", "/c"),
+                    "/c": _page("다"),
+                }
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert "https://example.com/c" in {d.final_url for d in outcome.documents}
+
+    def test_stops_at_the_configured_depth(self) -> None:
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site(
+                {
+                    "/": _page("홈", "/a"),
+                    "/a": _page("가", "/b"),
+                    "/b": _page("나", "/c"),
+                    "/c": _page("다", "/d"),
+                    "/d": _page("라"),
+                }
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        # 기본 깊이 3 — 홈(0) 다음으로 세 단계까지다.
+        assert "https://example.com/d" not in {d.final_url for d in outcome.documents}
+
+    def test_reads_the_sitemap_and_scores_can_finally_see_it(self) -> None:
+        """이 자리가 비어 있어서 사이트맵 두 항목이 어떤 사이트를 재도 측정 불가였다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site(
+                {
+                    "/": _page("홈"),
+                    "/robots.txt": b"Sitemap: https://example.com/sitemap.xml\n",
+                    "/sitemap.xml": _urlset("https://example.com/", "https://example.com/z"),
+                    "/z": _page("지"),
+                }
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert outcome.sitemaps
+        assert "https://example.com/z" in {d.final_url for d in outcome.documents}
+
+    def test_finds_the_sitemap_at_the_conventional_path(self) -> None:
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site(
+                {
+                    "/": _page("홈"),
+                    "/sitemap.xml": _urlset("https://example.com/z"),
+                    "/z": _page("지"),
+                }
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert "https://example.com/z" in {d.final_url for d in outcome.documents}
+
+    def test_respects_the_page_ceiling(self) -> None:
+        pages = {"/": _page("홈", *[f"/{n}" for n in range(30)])}
+        pages.update({f"/{n}": _page(str(n)) for n in range(30)})
+        crawler = ConsoleCrawler(guard=_guard(), transport=_site(pages))
+
+        outcome = crawler.crawl("https://example.com/", max_urls=5)
+
+        assert len(outcome.documents) == 5
+
+    def test_obeys_the_target_robots_txt_for_its_own_crawling(self) -> None:
+        """SEO 엔진은 robots.txt 를 평가한다. 이것은 VEO 가 그것을 지키는 쪽이다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site(
+                {
+                    "/": _page("홈", "/private/x", "/ok"),
+                    "/robots.txt": b"User-agent: *\nDisallow: /private\n",
+                    "/private/x": _page("비공개"),
+                    "/ok": _page("공개"),
+                }
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        collected = {document.final_url for document in outcome.documents}
+        assert "https://example.com/private/x" not in collected
+        assert "https://example.com/ok" in collected
+        assert outcome.robots_blocked == ("https://example.com/private/x",)
+
+
+class TestPartialFailure:
+    def test_one_dead_page_does_not_kill_the_whole_scan(self) -> None:
+        """사이트가 클수록 한 장쯤은 죽어 있다. 그걸로 진단 전체를 버리면 안 된다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site({"/": _page("홈", "/a", "/dead"), "/a": _page("가"), "/dead": _DEAD}),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert {d.final_url for d in outcome.documents} == {
+            "https://example.com/",
+            "https://example.com/a",
+        }
+        assert [failure.url for failure in outcome.failures] == ["https://example.com/dead"]
+
+    def test_a_failure_carries_a_sentence_a_person_can_read(self) -> None:
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=_site({"/": _page("홈", "/dead"), "/dead": _DEAD})
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert outcome.failures[0].reason_ko
+
+    def test_the_entry_page_is_still_fatal(self) -> None:
+        """대표 페이지를 못 가져오면 채점할 대상 자체가 없다."""
+        crawler = ConsoleCrawler(guard=_guard(), transport=_site({"/": _DEAD}))
+
+        with pytest.raises(CrawlRefusal) as caught:
+            crawler.crawl("https://example.com/")
+
+        assert caught.value.status_code == 502
+
+    def test_attempted_and_collected_are_both_reported(self) -> None:
+        """몇 장을 보려 했고 몇 장을 봤는가. 그 차이가 곧 진단의 신뢰도다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=_site({"/": _page("홈", "/a", "/dead"), "/a": _page("가"), "/dead": _DEAD}),
+        )
+
+        outcome = crawler.crawl("https://example.com/")
+
+        assert outcome.attempted == 3
+        assert len(outcome.documents) == 2

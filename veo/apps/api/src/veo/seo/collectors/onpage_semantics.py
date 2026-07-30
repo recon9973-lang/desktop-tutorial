@@ -27,6 +27,7 @@ from veo.seo.collectors.base import (
     all_unknown,
     issue,
     outcome,
+    single_page_outcome,
     url_ratio_outcome,
 )
 from veo.seo.observation import SiteObservation
@@ -617,9 +618,11 @@ def _duplicate_metadata(
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
     if len(site.pages) < 2:
         return (
-            not_applicable_outcome(
+            single_page_outcome(
+                context,
+                site,
                 "seo.onpage.no_duplicate_metadata",
-                "수집한 페이지가 하나뿐이어서 페이지 간 중복을 판단할 수 없습니다.",
+                subject_ko="페이지 간 title·description 중복",
             ),
             [],
         )

@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import hashlib
 import uuid
-from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -32,7 +31,7 @@ from veo.organizations.http import guard
 from veo.scoring import ScoreResult, ScoringSpec
 from veo.scoring.improvements import rank_improvements
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
-from veo.seo.crawl import ConsoleCrawler, CrawlRefusal
+from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
 from veo.seo.history import (
     read_scan_history,
     read_scan_report,
@@ -172,8 +171,15 @@ def run_site_scan(
     requested = [payload.target_url, *payload.urls]
     targets = list(dict.fromkeys(url for url in requested if url.strip()))
 
+    crawler = ConsoleCrawler()
     try:
-        documents, robots_txt = ConsoleCrawler().collect(targets)
+        if payload.discover:
+            outcome = crawler.crawl(
+                payload.target_url, extra_urls=targets[1:], max_urls=payload.max_urls
+            )
+        else:
+            documents, robots_txt = crawler.collect(targets)
+            outcome = CrawlOutcome(documents=documents, robots_txt=robots_txt)
     except CrawlRefusal as refusal:
         raise HTTPException(
             status_code=refusal.status_code, detail=refusal.error.model_dump(mode="json")
@@ -182,8 +188,7 @@ def run_site_scan(
     context = _context_from_crawl(
         target_url=payload.target_url,
         spec=spec,
-        documents=documents,
-        robots_txt=robots_txt,
+        outcome=outcome,
         locale=payload.locale,
     )
     result = run_seo_scan(context)
@@ -197,8 +202,8 @@ def run_site_scan(
             principal=principal,
             site_id=payload.site_id,
             result=result,
-            urls_attempted=len(targets),
-            urls_collected=len(documents),
+            urls_attempted=outcome.attempted,
+            urls_collected=len(outcome.documents),
             report_snapshot=report.model_dump(mode="json"),
         )
 
@@ -293,8 +298,7 @@ def _context_from_crawl(
     *,
     target_url: str,
     spec: ScoringSpec,
-    documents: Sequence[FetchedDocument],
-    robots_txt: str | None,
+    outcome: CrawlOutcome,
     locale: str,
 ) -> CollectionContext:
     """수집 결과를 채점기가 읽는 형태로 옮긴다.
@@ -302,7 +306,13 @@ def _context_from_crawl(
     provider 상태는 설정에서 그대로 가져온다. 자격증명이 없는 provider 는 DISABLED 로
     들어가고, 그 항목은 UNKNOWN 이 되어 측정 범위를 낮춘다 — 감점되지도, 지어내지도
     않는다. 이 값을 ENABLED 로 위장하면 없는 데이터를 있는 것처럼 만들게 된다.
+
+    사이트맵도 같은 이유로 여기서 넘긴다. 예전에는 이 자리에 빈 값이 들어가 있어서,
+    사이트맵을 제대로 갖춘 사이트조차 사이트맵 두 항목이 **언제나** 측정 불가로
+    나왔다. 그 배점은 분모에 남으므로 모든 고객의 점수가 우리가 수집을 안 만든 만큼
+    내려가고 있었다 — 대상 사이트의 문제로 보이는 형태로.
     """
+    documents = outcome.documents
     by_url = {document.final_url: document for document in documents}
     primary = documents[0] if documents else None
     return CollectionContext(
@@ -310,8 +320,8 @@ def _context_from_crawl(
         spec=spec,
         documents=by_url,
         primary_document=primary,
-        robots_txt=robots_txt,
-        sitemap_documents={},
+        robots_txt=outcome.robots_txt,
+        sitemap_documents=dict(outcome.sitemaps),
         # 렌더링 후 DOM 은 아직 수집하지 않는다. 비워 두면 렌더 비교 항목이 UNKNOWN 이
         # 되고, 원본 HTML 과 같다고 **가정하지 않는다**.
         rendered_dom={},
@@ -321,6 +331,7 @@ def _context_from_crawl(
             document.final_url: UrlImportance.CONVERSION_OR_HOME.value
             for document in documents
         },
+        crawl_is_exhaustive=outcome.discovery_exhausted,
         locale=locale,
         collected_at=datetime.now(UTC),
     )

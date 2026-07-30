@@ -5068,10 +5068,21 @@ export interface components {
          */
         SiteScanRequest: {
             /**
+             * Discover
+             * @description 사이트맵과 내부 링크를 따라 VEO 가 스스로 페이지를 찾을지 여부입니다. 끄면 대표 주소와 `urls` 에 넣은 주소만 봅니다. 한 장만 보면 내부 링크·중복 메타데이터·클릭 깊이처럼 사이트 전체를 봐야 판정되는 항목이 측정 불가로 남고, 그 배점은 분모에 그대로 남습니다.
+             * @default true
+             */
+            discover: boolean;
+            /**
              * Locale
              * @default ko-KR
              */
             locale: string;
+            /**
+             * Max Urls
+             * @description 이번 진단에서 가져올 최대 페이지 수입니다. 비워 두면 서버 기본값을 씁니다. 대상 사이트에 보내는 요청 수를 그대로 정하는 값이므로 함부로 올리지 않습니다.
+             */
+            max_urls?: number | null;
             /**
              * Site Id
              * @description 등록된 사이트에 결과를 남기려면 지정합니다. 비워 두면 채점은 동일하게 수행하지만 **아무것도 저장하지 않습니다** — 영업 단계의 간편 진단이 그 경우입니다.
@@ -5084,7 +5095,7 @@ export interface components {
             target_url: string;
             /**
              * Urls
-             * @description 함께 볼 페이지 주소입니다. 비워 두면 대표 주소 한 장만 봅니다. 내부 링크·중복 메타데이터처럼 사이트를 봐야 판정되는 항목은 페이지가 한 장뿐이면 측정 불가로 남습니다.
+             * @description 반드시 함께 볼 페이지 주소입니다. 사이트가 링크로 잇지 않은 페이지를 일부러 진단할 때 씁니다. `discover` 가 켜져 있으면 여기 넣은 주소가 가장 먼저 수집되고, 발견한 주소는 그 뒤에 붙습니다.
              */
             urls?: string[];
         };
