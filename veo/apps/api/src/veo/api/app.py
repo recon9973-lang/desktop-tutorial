@@ -39,6 +39,7 @@ from veo.geo.router import router as geo_router
 from veo.issues.router import router as issues_router
 from veo.keywords.router import router as keywords_router
 from veo.lab.router import router as lab_router
+from veo.observations.router import router as observations_router
 from veo.organizations.router import router as organizations_router
 from veo.projects.router import router as projects_router
 from veo.public.router import router as public_router
@@ -234,6 +235,7 @@ def create_app() -> FastAPI:
     app.include_router(keywords_router, prefix=api_prefix)
     app.include_router(seo_router, prefix=api_prefix)
     app.include_router(competitors_router, prefix=api_prefix)
+    app.include_router(observations_router, prefix=api_prefix)
     app.include_router(issues_router, prefix=api_prefix)
     app.include_router(lab_router, prefix=api_prefix)
     app.include_router(reports_router, prefix=api_prefix)

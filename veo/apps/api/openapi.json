@@ -286,6 +286,39 @@
         "title": "ApiResponse[CustomerPayload]",
         "type": "object"
       },
+      "ApiResponse_EnginePayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnginePayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[EnginePayload]",
+        "type": "object"
+      },
       "ApiResponse_GeoReadinessPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -779,6 +812,72 @@
           "meta"
         ],
         "title": "ApiResponse[ProjectPayload]",
+        "type": "object"
+      },
+      "ApiResponse_PromptSetListPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PromptSetListPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[PromptSetListPayload]",
+        "type": "object"
+      },
+      "ApiResponse_PromptSetPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PromptSetPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[PromptSetPayload]",
         "type": "object"
       },
       "ApiResponse_ProviderCredentialState_": {
@@ -3999,6 +4098,66 @@
         "title": "DomainPayload",
         "type": "object"
       },
+      "EnginePayload": {
+        "additionalProperties": false,
+        "description": "VEO 가 아는 모든 엔진. 못 쓰는 것도 이유와 함께 들어 있습니다.",
+        "properties": {
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/EngineStatus"
+            },
+            "title": "Engines",
+            "type": "array"
+          },
+          "note_ko": {
+            "title": "Note Ko",
+            "type": "string"
+          },
+          "usable_count": {
+            "title": "Usable Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "engines",
+          "usable_count",
+          "note_ko"
+        ],
+        "title": "EnginePayload",
+        "type": "object"
+      },
+      "EngineStatus": {
+        "additionalProperties": false,
+        "description": "엔진 하나와, 지금 쓸 수 있는지.",
+        "properties": {
+          "engine": {
+            "title": "Engine",
+            "type": "string"
+          },
+          "state": {
+            "description": "ENABLED 이면 호출합니다. 그 밖의 값은 호출하지 않으며 결과가 '측정 불가'로 남습니다.",
+            "title": "State",
+            "type": "string"
+          },
+          "state_label_ko": {
+            "description": "상태를 사람이 읽는 한 문장으로 풀어 쓴 것입니다.",
+            "title": "State Label Ko",
+            "type": "string"
+          },
+          "usable": {
+            "title": "Usable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "engine",
+          "state",
+          "state_label_ko",
+          "usable"
+        ],
+        "title": "EngineStatus",
+        "type": "object"
+      },
       "ErrorCode": {
         "description": "Machine-readable error codes. Messages are localised; codes are not.",
         "enum": [
@@ -4218,6 +4377,29 @@
           "excerpt"
         ],
         "title": "EvidenceSummary",
+        "type": "object"
+      },
+      "ExclusionInput": {
+        "additionalProperties": false,
+        "description": "일부러 뺀 질문과 그 이유.\n\n뺀 것을 기록하지 않으면 집합이 처음부터 그랬던 것처럼 보인다. 불리한 질문을 빼고\n잰 노출률은 실제보다 높다.",
+        "properties": {
+          "reason_ko": {
+            "description": "왜 뺐는지 적습니다. 빈 값은 받지 않습니다.",
+            "minLength": 1,
+            "title": "Reason Ko",
+            "type": "string"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "reason_ko"
+        ],
+        "title": "ExclusionInput",
         "type": "object"
       },
       "FieldError": {
@@ -7816,6 +7998,282 @@
           }
         },
         "title": "ProjectUpdateRequest",
+        "type": "object"
+      },
+      "PromptInput": {
+        "additionalProperties": false,
+        "description": "질문 하나. 분류는 집합의 균형을 재기 위한 것이지 장식이 아닙니다.",
+        "properties": {
+          "business_importance": {
+            "default": 0.5,
+            "description": "이 질문이 사업에 얼마나 중요한지에 대한 **담당자의 판단**입니다. 검색량이 아닙니다 — 추정과 실측이 한 칸에 들어가면 추정이 데이터로 읽힙니다.",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Business Importance",
+            "type": "number"
+          },
+          "funnel": {
+            "description": "퍼널 단계입니다.",
+            "title": "Funnel",
+            "type": "string"
+          },
+          "intent": {
+            "description": "검색 의도입니다.",
+            "title": "Intent",
+            "type": "string"
+          },
+          "locale": {
+            "default": "ko-KR",
+            "title": "Locale",
+            "type": "string"
+          },
+          "persona": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Persona"
+          },
+          "subject": {
+            "description": "BRANDED | NON_BRAND | COMPETITOR | CATEGORY — 질문이 무엇을 향하는지입니다.",
+            "title": "Subject",
+            "type": "string"
+          },
+          "text": {
+            "description": "AI 엔진에 그대로 던질 질문입니다.",
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "intent",
+          "funnel",
+          "subject"
+        ],
+        "title": "PromptInput",
+        "type": "object"
+      },
+      "PromptSetCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "exclusions": {
+            "items": {
+              "$ref": "#/components/schemas/ExclusionInput"
+            },
+            "title": "Exclusions",
+            "type": "array"
+          },
+          "generation_rule_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "질문을 어떻게 골랐고 무엇을 왜 뺐는지. 나중에 이 집합을 검증할 근거입니다.",
+            "title": "Generation Rule Ko"
+          },
+          "locale": {
+            "default": "ko-KR",
+            "title": "Locale",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "prompts": {
+            "items": {
+              "$ref": "#/components/schemas/PromptInput"
+            },
+            "minItems": 1,
+            "title": "Prompts",
+            "type": "array"
+          },
+          "version": {
+            "description": "같은 이름의 다음 판입니다.",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "name",
+          "version",
+          "prompts"
+        ],
+        "title": "PromptSetCreateRequest",
+        "type": "object"
+      },
+      "PromptSetListPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PromptSetPayload"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "PromptSetListPayload",
+        "type": "object"
+      },
+      "PromptSetPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "balance_warnings_ko": {
+            "description": "공정한 비교를 어렵게 만드는 점들입니다. 비어 있어야 정상입니다.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Balance Warnings Ko",
+            "type": "array"
+          },
+          "checksum": {
+            "description": "이 집합의 지문입니다. 비교 두 건이 같은 질문으로 잰 것인지 이 값으로 확인합니다.",
+            "title": "Checksum",
+            "type": "string"
+          },
+          "generation_rule_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generation Rule Ko"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_locked": {
+            "title": "Is Locked",
+            "type": "boolean"
+          },
+          "locale": {
+            "title": "Locale",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "prompts": {
+            "items": {
+              "$ref": "#/components/schemas/PromptSummary"
+            },
+            "title": "Prompts",
+            "type": "array"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "version",
+          "locale",
+          "generation_rule_ko",
+          "is_locked",
+          "checksum",
+          "prompts"
+        ],
+        "title": "PromptSetPayload",
+        "type": "object"
+      },
+      "PromptSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "business_importance": {
+            "title": "Business Importance",
+            "type": "number"
+          },
+          "funnel": {
+            "title": "Funnel",
+            "type": "string"
+          },
+          "intent": {
+            "title": "Intent",
+            "type": "string"
+          },
+          "locale": {
+            "title": "Locale",
+            "type": "string"
+          },
+          "persona": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Persona"
+          },
+          "prompt_id": {
+            "description": "질문 내용에서 나온 안정된 식별자입니다. 판이 달라도 같은 질문이면 같습니다.",
+            "title": "Prompt Id",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prompt_id",
+          "text",
+          "intent",
+          "funnel",
+          "subject",
+          "business_importance",
+          "persona",
+          "locale"
+        ],
+        "title": "PromptSummary",
         "type": "object"
       },
       "ProviderBadge": {
@@ -14353,6 +14811,164 @@
         "summary": "검토 요청 (DRAFT → REVIEW)",
         "tags": [
           "lab"
+        ]
+      }
+    },
+    "/api/observations/engines": {
+      "get": {
+        "description": "쓸 수 있는 엔진만 돌려주지 않습니다. **아는 엔진을 전부** 돌려주고 각각 왜 쓸 수 있는지·없는지를 함께 줍니다. 못 쓰는 엔진을 목록에서 빼면 '여기 있는 게 전부' 로 읽히고, 자격증명만 넣으면 잴 수 있었던 것을 아무도 모른 채 지나갑니다.",
+        "operationId": "list_engines_api_observations_engines_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EnginePayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "VEO 가 아는 AI 답변 엔진과 각각의 상태",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
+    "/api/observations/prompt-sets": {
+      "get": {
+        "operationId": "index_api_observations_prompt_sets_get",
+        "parameters": [
+          {
+            "description": "한 프로젝트로 좁힙니다.",
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "한 프로젝트로 좁힙니다.",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PromptSetListPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "프롬프트 집합 목록",
+        "tags": [
+          "observations"
+        ]
+      },
+      "post": {
+        "description": "질문 목록을 받아 **균형을 먼저 검사하고** 통과한 것만 저장합니다. 브랜드에 불리한 질문을 빼고 만든 집합으로 재면 노출률이 실제보다 높게 나오고, 그것은 고객에게 유리한 방향의 거짓이라 더 오래 살아남습니다. 거부될 때는 무엇이 부족한지 한국어로 그대로 돌려줍니다.",
+        "operationId": "create_api_observations_prompt_sets_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptSetCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PromptSetPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "프롬프트 집합 만들기",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
+    "/api/observations/prompt-sets/{prompt_set_id}": {
+      "get": {
+        "description": "`checksum` 은 이 집합의 지문입니다. 비교 두 건이 같은 질문으로 잰 것인지 이 값으로 확인합니다 — 질문이 다르면 노출률을 나란히 놓을 수 없습니다.",
+        "operationId": "read_api_observations_prompt_sets__prompt_set_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prompt_set_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Prompt Set Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PromptSetPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "프롬프트 집합 하나",
+        "tags": [
+          "observations"
         ]
       }
     },

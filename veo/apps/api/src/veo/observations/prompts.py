@@ -180,6 +180,17 @@ class PromptSet:
             checksum=cls._checksum(name, ordered, tuple(exclusions)),
         )
 
+    @classmethod
+    def rebuild(cls, *, name: str, prompts: Sequence[Prompt]) -> PromptSet:
+        """이미 발행된 집합을 저장소에서 되살린다. 균형은 다시 검사하지 않는다.
+
+        `build` 는 새 집합을 만들 때의 문지기다. 저장된 집합에까지 그것을 적용하면,
+        규칙이 나중에 엄격해졌을 때 **과거에 적법하게 발행된 집합이 소급해서 거부되고**
+        그 집합으로 잰 결과를 다시 열 수 없게 된다. 발행본은 그때의 규칙으로 설명한다.
+        """
+        ordered = tuple(sorted(prompts, key=lambda prompt: prompt.prompt_id))
+        return cls(name=name, prompts=ordered, checksum=cls._checksum(name, ordered, ()))
+
     # ----------------------------------------------------------------- #
     # Balance
     # ----------------------------------------------------------------- #

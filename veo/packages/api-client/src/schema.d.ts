@@ -785,6 +785,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/engines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * VEO 가 아는 AI 답변 엔진과 각각의 상태
+         * @description 쓸 수 있는 엔진만 돌려주지 않습니다. **아는 엔진을 전부** 돌려주고 각각 왜 쓸 수 있는지·없는지를 함께 줍니다. 못 쓰는 엔진을 목록에서 빼면 '여기 있는 게 전부' 로 읽히고, 자격증명만 넣으면 잴 수 있었던 것을 아무도 모른 채 지나갑니다.
+         */
+        get: operations["list_engines_api_observations_engines_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/prompt-sets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 프롬프트 집합 목록 */
+        get: operations["index_api_observations_prompt_sets_get"];
+        put?: never;
+        /**
+         * 프롬프트 집합 만들기
+         * @description 질문 목록을 받아 **균형을 먼저 검사하고** 통과한 것만 저장합니다. 브랜드에 불리한 질문을 빼고 만든 집합으로 재면 노출률이 실제보다 높게 나오고, 그것은 고객에게 유리한 방향의 거짓이라 더 오래 살아남습니다. 거부될 때는 무엇이 부족한지 한국어로 그대로 돌려줍니다.
+         */
+        post: operations["create_api_observations_prompt_sets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/prompt-sets/{prompt_set_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 프롬프트 집합 하나
+         * @description `checksum` 은 이 집합의 지문입니다. 비교 두 건이 같은 질문으로 잰 것인지 이 값으로 확인합니다 — 질문이 다르면 노출률을 나란히 놓을 수 없습니다.
+         */
+        get: operations["read_api_observations_prompt_sets__prompt_set_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizations/current": {
         parameters: {
             query?: never;
@@ -1459,6 +1520,12 @@ export interface components {
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[EnginePayload] */
+        ApiResponse_EnginePayload_: {
+            data?: components["schemas"]["EnginePayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[GeoReadinessPayload] */
         ApiResponse_GeoReadinessPayload_: {
             data?: components["schemas"]["GeoReadinessPayload"] | null;
@@ -1546,6 +1613,18 @@ export interface components {
         /** ApiResponse[ProjectPayload] */
         ApiResponse_ProjectPayload_: {
             data?: components["schemas"]["ProjectPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[PromptSetListPayload] */
+        ApiResponse_PromptSetListPayload_: {
+            data?: components["schemas"]["PromptSetListPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[PromptSetPayload] */
+        ApiResponse_PromptSetPayload_: {
+            data?: components["schemas"]["PromptSetPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -2642,6 +2721,38 @@ export interface components {
             summary_ko: string;
         };
         /**
+         * EnginePayload
+         * @description VEO 가 아는 모든 엔진. 못 쓰는 것도 이유와 함께 들어 있습니다.
+         */
+        EnginePayload: {
+            /** Engines */
+            engines: components["schemas"]["EngineStatus"][];
+            /** Note Ko */
+            note_ko: string;
+            /** Usable Count */
+            usable_count: number;
+        };
+        /**
+         * EngineStatus
+         * @description 엔진 하나와, 지금 쓸 수 있는지.
+         */
+        EngineStatus: {
+            /** Engine */
+            engine: string;
+            /**
+             * State
+             * @description ENABLED 이면 호출합니다. 그 밖의 값은 호출하지 않으며 결과가 '측정 불가'로 남습니다.
+             */
+            state: string;
+            /**
+             * State Label Ko
+             * @description 상태를 사람이 읽는 한 문장으로 풀어 쓴 것입니다.
+             */
+            state_label_ko: string;
+            /** Usable */
+            usable: boolean;
+        };
+        /**
          * ErrorCode
          * @description Machine-readable error codes. Messages are localised; codes are not.
          * @enum {string}
@@ -2731,6 +2842,22 @@ export interface components {
             kind: string;
             /** Url */
             url: string | null;
+        };
+        /**
+         * ExclusionInput
+         * @description 일부러 뺀 질문과 그 이유.
+         *
+         *     뺀 것을 기록하지 않으면 집합이 처음부터 그랬던 것처럼 보인다. 불리한 질문을 빼고
+         *     잰 노출률은 실제보다 높다.
+         */
+        ExclusionInput: {
+            /**
+             * Reason Ko
+             * @description 왜 뺐는지 적습니다. 빈 값은 받지 않습니다.
+             */
+            reason_ko: string;
+            /** Text */
+            text: string;
         };
         /** FieldError */
         FieldError: {
@@ -4009,6 +4136,138 @@ export interface components {
             } | null;
             /** Slug */
             slug?: string | null;
+        };
+        /**
+         * PromptInput
+         * @description 질문 하나. 분류는 집합의 균형을 재기 위한 것이지 장식이 아닙니다.
+         */
+        PromptInput: {
+            /**
+             * Business Importance
+             * @description 이 질문이 사업에 얼마나 중요한지에 대한 **담당자의 판단**입니다. 검색량이 아닙니다 — 추정과 실측이 한 칸에 들어가면 추정이 데이터로 읽힙니다.
+             * @default 0.5
+             */
+            business_importance: number;
+            /**
+             * Funnel
+             * @description 퍼널 단계입니다.
+             */
+            funnel: string;
+            /**
+             * Intent
+             * @description 검색 의도입니다.
+             */
+            intent: string;
+            /**
+             * Locale
+             * @default ko-KR
+             */
+            locale: string;
+            /** Persona */
+            persona?: string | null;
+            /**
+             * Subject
+             * @description BRANDED | NON_BRAND | COMPETITOR | CATEGORY — 질문이 무엇을 향하는지입니다.
+             */
+            subject: string;
+            /**
+             * Text
+             * @description AI 엔진에 그대로 던질 질문입니다.
+             */
+            text: string;
+        };
+        /** PromptSetCreateRequest */
+        PromptSetCreateRequest: {
+            /** Exclusions */
+            exclusions?: components["schemas"]["ExclusionInput"][];
+            /**
+             * Generation Rule Ko
+             * @description 질문을 어떻게 골랐고 무엇을 왜 뺐는지. 나중에 이 집합을 검증할 근거입니다.
+             */
+            generation_rule_ko?: string | null;
+            /**
+             * Locale
+             * @default ko-KR
+             */
+            locale: string;
+            /** Name */
+            name: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Prompts */
+            prompts: components["schemas"]["PromptInput"][];
+            /**
+             * Version
+             * @description 같은 이름의 다음 판입니다.
+             */
+            version: string;
+        };
+        /** PromptSetListPayload */
+        PromptSetListPayload: {
+            /** Items */
+            items: components["schemas"]["PromptSetPayload"][];
+            /** Total */
+            total: number;
+        };
+        /** PromptSetPayload */
+        PromptSetPayload: {
+            /**
+             * Balance Warnings Ko
+             * @description 공정한 비교를 어렵게 만드는 점들입니다. 비어 있어야 정상입니다.
+             */
+            balance_warnings_ko?: string[];
+            /**
+             * Checksum
+             * @description 이 집합의 지문입니다. 비교 두 건이 같은 질문으로 잰 것인지 이 값으로 확인합니다.
+             */
+            checksum: string;
+            /** Generation Rule Ko */
+            generation_rule_ko: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Locked */
+            is_locked: boolean;
+            /** Locale */
+            locale: string;
+            /** Name */
+            name: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Prompts */
+            prompts: components["schemas"]["PromptSummary"][];
+            /** Version */
+            version: string;
+        };
+        /** PromptSummary */
+        PromptSummary: {
+            /** Business Importance */
+            business_importance: number;
+            /** Funnel */
+            funnel: string;
+            /** Intent */
+            intent: string;
+            /** Locale */
+            locale: string;
+            /** Persona */
+            persona: string | null;
+            /**
+             * Prompt Id
+             * @description 질문 내용에서 나온 안정된 식별자입니다. 판이 달라도 같은 질문이면 같습니다.
+             */
+            prompt_id: string;
+            /** Subject */
+            subject: string;
+            /** Text */
+            text: string;
         };
         /**
          * ProviderBadge
@@ -7280,6 +7539,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_ScoringVersionSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_engines_api_observations_engines_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EnginePayload_"];
+                };
+            };
+        };
+    };
+    index_api_observations_prompt_sets_get: {
+        parameters: {
+            query?: {
+                /** @description 한 프로젝트로 좁힙니다. */
+                project_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_PromptSetListPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_observations_prompt_sets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptSetCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_PromptSetPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_api_observations_prompt_sets__prompt_set_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                prompt_set_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_PromptSetPayload_"];
                 };
             };
             /** @description Validation Error */
