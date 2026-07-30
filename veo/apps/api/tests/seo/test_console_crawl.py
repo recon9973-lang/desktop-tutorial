@@ -469,3 +469,78 @@ class TestParallelFetching:
             return [document.final_url for document in outcome.documents]
 
         assert collected(1) == collected(4)
+
+
+class TestRedirectsThatLandOnAPageWeHave:
+    """리다이렉트가 이미 가진 페이지로 데려오면, 그것을 새 페이지로 세지 않는다.
+
+    실측: 25번 가져온 것 중 15번이 같은 페이지로 떨어졌다. 그래도 "25장을 봤다" 고
+    세고 있었다 — 측정 범위를 부풀리는 형태다.
+    """
+
+    @staticmethod
+    def _redirects_home(paths: dict[str, bytes], moved: set[str]) -> httpx.MockTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            path = request.url.path
+            if path in moved:
+                return httpx.Response(301, headers={"location": "https://example.com/"})
+            body = paths.get(path)
+            if body is None:
+                return httpx.Response(404, content=b"none")
+            return httpx.Response(200, content=body, headers={"content-type": "text/html"})
+
+        return httpx.MockTransport(handler)
+
+    def test_the_same_page_is_not_counted_twice(self) -> None:
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=self._redirects_home(
+                {"/": _page("홈", "/a", "/b", "/c"), "/c": _page("다")},
+                moved={"/a", "/b"},
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/", max_urls=10)
+
+        finals = [document.final_url for document in outcome.documents]
+        assert len(finals) == len(set(finals)), f"같은 페이지를 여러 장으로 셌다: {finals}"
+
+    def test_the_collapsed_urls_are_reported(self) -> None:
+        """그 사실 자체가 진단 재료다 — 여러 주소가 한 페이지로 모인다는 것."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=self._redirects_home(
+                {"/": _page("홈", "/a", "/b")}, moved={"/a", "/b"}
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/", max_urls=10)
+
+        assert set(outcome.collapsed_urls) == {
+            "https://example.com/a",
+            "https://example.com/b",
+        }
+
+    def test_a_collapsed_url_is_not_a_failure(self) -> None:
+        """가져오기는 성공했다. 실패로 세면 없는 결함을 만든다."""
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=self._redirects_home({"/": _page("홈", "/a")}, moved={"/a"}),
+        )
+
+        outcome = crawler.crawl("https://example.com/", max_urls=10)
+
+        assert outcome.failures == ()
+
+    def test_real_pages_beside_collapsed_ones_are_still_collected(self) -> None:
+        crawler = ConsoleCrawler(
+            guard=_guard(),
+            transport=self._redirects_home(
+                {"/": _page("홈", "/a", "/real"), "/real": _page("진짜")},
+                moved={"/a"},
+            ),
+        )
+
+        outcome = crawler.crawl("https://example.com/", max_urls=10)
+
+        assert "https://example.com/real" in {d.final_url for d in outcome.documents}

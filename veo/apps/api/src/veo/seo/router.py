@@ -23,7 +23,7 @@ from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
 from veo.collect.contract import CollectionContext
 from veo.common.security.fetcher import FetchedDocument, FetchHop
-from veo.contracts.enums import ProviderState, UrlImportance
+from veo.contracts.enums import ProviderState
 from veo.contracts.envelope import ApiResponse
 from veo.core.settings import get_provider_credentials
 from veo.db.session import get_db
@@ -37,6 +37,7 @@ from veo.seo.history import (
     read_scan_report,
     save_scan_run,
 )
+from veo.seo.importance import classify_urls
 from veo.seo.schemas import (
     CapSummary,
     CategorySummary,
@@ -327,10 +328,14 @@ def _context_from_crawl(
         rendered_dom={},
         provider_states=dict(get_provider_credentials().states()),
         provider_payloads={},
-        url_importance={
-            document.final_url: UrlImportance.CONVERSION_OR_HOME.value
-            for document in documents
-        },
+        # 예전에는 수집한 **모든** 페이지가 `CONVERSION_OR_HOME`(3.0) 이었다. 측정 범위는
+        # 중요도로 가중되므로, 그 상태에서는 태그 페이지 한 장의 결함이 홈페이지 결함과
+        # 같은 무게였다 — 가중치라는 개념이 사실상 없었다.
+        url_importance=dict(
+            classify_urls(
+                (document.final_url for document in documents), entry_url=target_url
+            )
+        ),
         crawl_is_exhaustive=outcome.discovery_exhausted,
         locale=locale,
         collected_at=datetime.now(UTC),

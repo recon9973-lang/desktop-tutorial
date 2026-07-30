@@ -102,6 +102,17 @@ class CrawlOutcome:
     budget_exhausted: bool = False
     """대상 호스트 예산이 바닥나 크롤을 일찍 멈췄는가. 사이트가 작아서 적게 본 것과
     우리가 더 못 본 것은 다른 사실이다."""
+    collapsed_urls: tuple[str, ...] = ()
+    """가져와 보니 **이미 가진 페이지**였던 주소들.
+
+    리다이렉트는 요청을 보내야만 알 수 있다. 실측에서 25번 가져온 것 가운데 15번이 같은
+    페이지(`/`)로 떨어졌고, 그래서 채점기가 실제로 본 것은 11장이었다. 그때 "25장을
+    봤다" 고 세면 측정 범위를 부풀리는 것이 된다 — 우리가 보지 않은 것을 본 것처럼
+    말하는 형태다.
+
+    같은 곳으로 떨어진 주소는 문서로 세지 않고 여기에 남긴다. 그 사실 자체도 진단
+    재료다: 서로 다른 주소 열다섯 개가 한 페이지로 모인다면 그 사이트에 볼 것이 있다.
+    """
     discovery_exhausted: bool = False
     """가져올 주소가 없어져서 멈췄는가 — 상한이나 예산에 걸려 멈춘 것이 아니라.
 
@@ -201,6 +212,10 @@ class ConsoleCrawler:
         }
         failures: list[CrawlFailure] = []
         blocked: list[str] = []
+        collapsed: list[str] = []
+        # 이미 **최종 주소로** 가진 페이지. 요청 주소로만 걸러 내면 리다이렉트가 같은
+        # 페이지를 여러 번 데려온다.
+        collected_finals: set[str] = {entry_url_final}
         seen: set[str] = {entry, entry_url_final}
 
         pending: list[DiscoveredUrl] = [
@@ -235,8 +250,17 @@ class ConsoleCrawler:
             failures.extend(round_failures)
             pending = []
             for record, document in fetched:
+                final = normalise_url(document.final_url)
+                # 리다이렉트가 이미 가진 페이지로 데려왔다. 문서로 세지 않는다 —
+                # 세면 같은 페이지를 여러 장으로 계산해 측정 범위가 부풀려진다.
+                if final in collected_finals:
+                    collapsed.append(record.url)
+                    seen.add(final)
+                    continue
+                collected_finals.add(final)
+                seen.add(final)
                 documents.append(document)
-                discovered[normalise_url(document.final_url)] = record
+                discovered[final] = record
                 pending.extend(links_on_page(document.final_url, document.text()))
         else:
             # 깊이 상한까지 다 썼다. 마지막 판에서 찾은 주소 가운데 아직 안 본 것이
@@ -257,6 +281,7 @@ class ConsoleCrawler:
             discovered=discovered,
             failures=tuple(failures),
             robots_blocked=tuple(blocked),
+            collapsed_urls=tuple(collapsed),
             budget_exhausted=budget_exhausted,
             discovery_exhausted=discovery_exhausted,
         )
