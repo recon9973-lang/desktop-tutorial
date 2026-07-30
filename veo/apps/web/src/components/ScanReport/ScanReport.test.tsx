@@ -16,6 +16,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { ScanReport } from './ScanReport';
 import type { ConsoleScanResult, Outcome } from '@/lib/console-scan';
@@ -249,5 +250,77 @@ describe('진단 범위 밖', () => {
     detailed({ outcomes: [outcome()] });
 
     expect(screen.queryByText(/이 진단의 배점 밖/)).not.toBeInTheDocument();
+  });
+});
+
+describe('좁히기', () => {
+  /**
+   * 실제로 렌더해 재 봤을 때 상세 보기가 화면 7.2개 높이였고 항목이 44개인데 좁힐
+   * 수단이 하나도 없었다. 그중 실패는 5개인데 그 5개를 찾으려면 눈으로 훑어야 했다.
+   */
+  const failing = outcome({ checkId: 'a.b.c', title: '실패한 항목', status: 'FAIL' });
+  const passing = outcome({ checkId: 'd.e.f', title: '통과한 항목', status: 'PASS' });
+
+  it('상태별 칩에 건수가 붙어 있다', () => {
+    detailed({ outcomes: [failing, passing] });
+
+    expect(screen.getByRole('button', { name: /전체/ })).toHaveTextContent('2');
+    expect(screen.getByRole('button', { name: /실패/ })).toHaveTextContent('1');
+  });
+
+  it('칩을 누르면 그 상태만 남는다', async () => {
+    const user = userEvent.setup();
+    detailed({ outcomes: [failing, passing] });
+
+    expect(screen.getByText('통과한 항목')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /실패/ }));
+
+    expect(screen.getByText('실패한 항목')).toBeInTheDocument();
+    expect(screen.queryByText('통과한 항목')).not.toBeInTheDocument();
+  });
+
+  it('0건인 기준은 누를 수 없다', () => {
+    /** 눌러도 빈 화면이 된다. 막아 두고 이유는 숫자가 말한다. */
+    detailed({ outcomes: [passing] });
+
+    expect(screen.getByRole('button', { name: /실패/ })).toBeDisabled();
+  });
+
+  it('선택 상태를 색이 아니라 aria-pressed 로도 알린다', async () => {
+    const user = userEvent.setup();
+    detailed({ outcomes: [failing, passing] });
+
+    const chip = screen.getByRole('button', { name: /실패/ });
+    expect(chip).toHaveAttribute('aria-pressed', 'false');
+    await user.click(chip);
+    expect(chip).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+
+describe('할 일 우선순위', () => {
+  const many = Array.from({ length: 6 }, (_, i) => ({
+    checkId: `c${i}`,
+    categoryId: 'onpage_semantics',
+    title: `할 일 ${i + 1}`,
+    gainPoints: 6 - i,
+    blockedByCap: false,
+    severity: 'MAJOR',
+    remediationOwner: 'DEVELOPER',
+  }));
+
+  it('상위 셋만 펼쳐 두고 나머지는 접는다', () => {
+    /** 열몇 줄을 같은 무게로 늘어놓으면 우선순위가 사라진다. */
+    const { container } = detailed({ improvements: many });
+
+    expect(screen.getByText('할 일 1')).toBeInTheDocument();
+    expect(screen.getByText('나머지 3건 더 보기')).toBeInTheDocument();
+    const rest = container.querySelector('details:has(> summary)');
+    expect(rest).not.toBeNull();
+  });
+
+  it('셋 이하면 더 보기를 만들지 않는다', () => {
+    detailed({ improvements: many.slice(0, 2) });
+
+    expect(screen.queryByText(/나머지 .*더 보기/)).not.toBeInTheDocument();
   });
 });

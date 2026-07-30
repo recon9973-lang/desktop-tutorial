@@ -1,7 +1,9 @@
-import { Card, StatusChip, type CheckStatus } from '@veo/ui';
+import { Card } from '@veo/ui';
 
 import type { Band } from '@/lib/scan-report';
-import type { ConsoleScanResult, Issue, Outcome } from '@/lib/console-scan';
+import type { ConsoleScanResult } from '@/lib/console-scan';
+
+import { CheckExplorer } from './CheckExplorer';
 
 import styles from './ScanReport.module.css';
 
@@ -39,7 +41,11 @@ export function ScanReport({ result, bands, view }: ScanReportProps) {
       <Categories result={result} />
       {/* 상세 보기에서는 항목별 판정 안에 조치 안내가 들어가므로 목록을 두 번 그리지
           않는다. 간소화 보기는 그 반대로, 고칠 것만 골라 보여준다. */}
-      {detailed ? <Checks result={result} /> : <Issues result={result} detailed={false} />}
+      {detailed ? (
+        <CheckExplorer outcomes={result.outcomes} issues={result.issues} />
+      ) : (
+        <Issues result={result} detailed={false} />
+      )}
       {detailed ? <Unmeasured result={result} /> : null}
       {detailed ? <OutOfScope result={result} /> : null}
       {detailed ? <Provenance result={result} /> : null}
@@ -132,6 +138,8 @@ function Improvements({ result }: { readonly result: ConsoleScanResult }) {
   if (result.improvements.length === 0) return null;
 
   const blocked = result.improvements.every((item) => item.blockedByCap);
+  const top = result.improvements.slice(0, 3);
+  const rest = result.improvements.slice(3);
 
   return (
     <section className={styles.section} aria-labelledby="report-todo">
@@ -143,17 +151,37 @@ function Improvements({ result }: { readonly result: ConsoleScanResult }) {
           ? '지금은 상한이 걸려 있어, 아래를 고쳐도 상한이 풀리기 전까지는 점수가 오르지 않습니다.'
           : '위에서부터 처리하면 점수가 가장 빨리 오릅니다. 점수 상승폭은 실제 채점 산식으로 계산한 값입니다.'}
       </p>
-      <ol className={styles.todoList}>
-        {result.improvements.map((item) => (
-          <li key={item.checkId} className={styles.todo}>
-            <span className={styles.todoTitle}>{item.title}</span>
-            <span className={styles.todoMeta}>
-              {item.blockedByCap ? '상한 해제 후 반영' : `+${item.gainPoints.toFixed(1)}점`}
-              <span className={styles.todoOwner}> · {ownerLabel(item.remediationOwner)}</span>
+      {/* 위 셋만 크게 둔다. 열몇 줄을 같은 무게로 늘어놓으면 우선순위가 사라지고,
+          결국 아무것도 먼저 하지 않게 된다. */}
+      <ol className={styles.topThree}>
+        {top.map((item, index) => (
+          <li key={item.checkId} className={styles.topItem}>
+            <span className={styles.topRank}>{index + 1}</span>
+            <span className={styles.topTitle}>{item.title}</span>
+            <span className={styles.topGain}>
+              {item.blockedByCap ? '상한 해제 후' : `+${item.gainPoints.toFixed(1)}점`}
             </span>
+            <span className={styles.topOwner}>{ownerLabel(item.remediationOwner)}</span>
           </li>
         ))}
       </ol>
+
+      {rest.length === 0 ? null : (
+        <details className={styles.restWrap}>
+          <summary className={styles.restSummary}>나머지 {rest.length}건 더 보기</summary>
+          <ol className={styles.todoList} start={top.length + 1}>
+            {rest.map((item) => (
+              <li key={item.checkId} className={styles.todo}>
+                <span className={styles.todoTitle}>{item.title}</span>
+                <span className={styles.todoMeta}>
+                  {item.blockedByCap ? '상한 해제 후 반영' : `+${item.gainPoints.toFixed(1)}점`}
+                  <span className={styles.todoOwner}> · {ownerLabel(item.remediationOwner)}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
     </section>
   );
 }
@@ -186,6 +214,21 @@ function Categories({ result }: { readonly result: ConsoleScanResult }) {
                     `${((category.score * category.weight) / 100).toFixed(1)} / ${category.weight}`}
               </span>
             </div>
+            {/* 막대 길이는 **전체 100점 대비**로 그린다. 영역 안에서의 비율로 그리면
+                12.5점짜리 영역과 31.25점짜리 영역이 같은 길이가 되어, 어디서 많이
+                잃었는지가 사라진다. */}
+            <div
+              className={styles.bar}
+              role="img"
+              aria-label={`${category.name} ${category.score === null ? '측정 불가' : `${((category.score * category.weight) / 100).toFixed(1)}점 획득, 배점 ${category.weight}점`}`}
+            >
+              <span className={styles.barTrack} style={{ width: `${category.weight}%` }}>
+                <span
+                  className={styles.barFill}
+                  style={{ width: `${category.score === null ? 0 : category.score}%` }}
+                />
+              </span>
+            </div>
             <p className={styles.categoryMeta}>
               측정 범위 {percent(category.coverage)}
               {category.failingCheckIds.length > 0
@@ -199,132 +242,6 @@ function Categories({ result }: { readonly result: ConsoleScanResult }) {
         ))}
       </ul>
     </section>
-  );
-}
-
-/**
- * 항목별 판정 — 접혀 있다가, 열면 원인과 수정 방향이 나온다.
- *
- * 54개 항목의 근거를 한꺼번에 펼쳐 두면 화면이 읽히지 않고, 상태만 늘어놓으면 그 줄을
- * 본 직원이 할 수 있는 일이 없다. 그래서 한 줄은 판정과 이름만, 열었을 때 두 가지 —
- * 무엇을 보고 그렇게 판정했는지와, 무엇을 어떻게 바꾸는지.
- *
- * `details`/`summary` 를 쓰는 이유: 자바스크립트 없이 열리고, 키보드로 다룰 수 있으며,
- * 브라우저의 페이지 내 검색이 닫힌 내용까지 찾아 준다. 직접 만든 토글은 셋 다 잃는다.
- */
-function Checks({ result }: { readonly result: ConsoleScanResult }) {
-  const scored = result.outcomes.filter((item) => item.availability === 'SELF_SERVICE');
-  const issues = new Map(result.issues.map((issue) => [issue.checkId, issue]));
-  const groups = groupByCategory(scored);
-
-  return (
-    <section className={styles.section} aria-labelledby="report-checks">
-      <h2 id="report-checks" className={styles.sectionTitle}>
-        항목별 판정 ({scored.length}개)
-      </h2>
-      <p className={styles.sectionNote}>
-        각 항목을 펼치면 그렇게 판정한 근거와, 고칠 항목이라면 수정 방향이 나옵니다.
-      </p>
-
-      {groups.map(([categoryName, items]) => (
-        <div key={categoryName} className={styles.checkGroup}>
-          <h3 className={styles.checkGroupTitle}>
-            {categoryName}
-            <span className={styles.checkGroupCount}>{items.length}개</span>
-          </h3>
-          <ul className={styles.checkList}>
-            {items.map((outcome) => (
-              <li key={outcome.checkId}>
-                <CheckPanel outcome={outcome} issue={issues.get(outcome.checkId)} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-function CheckPanel({
-  outcome,
-  issue,
-}: {
-  readonly outcome: Outcome;
-  readonly issue: Issue | undefined;
-}) {
-  const causes = describeObserved(outcome.observed);
-
-  return (
-    <details className={styles.check}>
-      <summary className={styles.checkSummary}>
-        <StatusChip status={outcome.status as CheckStatus} />
-        <span className={styles.checkTitle}>{outcome.title}</span>
-        <span className={styles.checkSeverity}>{severityLabel(outcome.severity)}</span>
-      </summary>
-
-      <div className={styles.checkDetail}>
-        <section className={styles.checkBlock}>
-          <h4 className={styles.checkBlockTitle}>이렇게 판정한 근거</h4>
-          {outcome.note === null ? null : <p className={styles.checkNote}>{outcome.note}</p>}
-          {causes.length === 0 ? null : (
-            <ul className={styles.causeList}>
-              {causes.map((cause) => (
-                <li key={cause.label}>
-                  {cause.label === '' ? null : (
-                    <code className={styles.causeWhere}>{cause.label}</code>
-                  )}
-                  <span className={styles.causeWhat}>{cause.detail}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {outcome.reference === null ? null : (
-            <p className={styles.checkWhy}>
-              <strong>왜 보는가</strong> {outcome.reference}
-            </p>
-          )}
-          <p className={styles.checkMeta}>
-            <code>{outcome.checkId}</code>
-            {outcome.confidenceLevel === null ? null : ` · 근거 강도 ${outcome.confidenceLevel}`}
-          </p>
-        </section>
-
-        {issue === undefined ? null : (
-          <section className={styles.checkBlock}>
-            <h4 className={styles.checkBlockTitle}>어떻게 고치나</h4>
-            <p className={styles.issueFix}>{issue.remediation}</p>
-            {issue.fixExample === null ? null : (
-              <pre className={styles.code}>
-                <code>{issue.fixExample}</code>
-              </pre>
-            )}
-            {issue.affectedUrls.length === 0 ? null : (
-              <div className={styles.urls}>
-                <strong>대상 URL</strong>
-                <ul>
-                  {issue.affectedUrls.slice(0, 10).map((url) => (
-                    <li key={url}>
-                      <code>{url}</code>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {issue.businessImpact === '' ? null : (
-              <p className={styles.issueImpact}>
-                <strong>이대로 두면</strong> {issue.businessImpact}
-              </p>
-            )}
-            {issue.reverificationNote === '' ? null : (
-              <p className={styles.issueRetest}>
-                <strong>확인 방법</strong> {issue.reverificationNote}
-              </p>
-            )}
-            <p className={styles.issueOwner}>담당 {ownerLabel(issue.remediationOwner)}</p>
-          </section>
-        )}
-      </div>
-    </details>
   );
 }
 
@@ -361,77 +278,6 @@ function OutOfScope({ result }: { readonly result: ConsoleScanResult }) {
       </ul>
     </section>
   );
-}
-
-/** 명세가 준 영역 이름으로 묶는다. 순서는 서버가 준 순서 그대로 — 명세의 순서다. */
-function groupByCategory(outcomes: readonly Outcome[]): [string, Outcome[]][] {
-  const groups = new Map<string, Outcome[]>();
-  for (const outcome of outcomes) {
-    const bucket = groups.get(outcome.categoryName);
-    if (bucket === undefined) {
-      groups.set(outcome.categoryName, [outcome]);
-    } else {
-      bucket.push(outcome);
-    }
-  }
-  return [...groups.entries()];
-}
-
-/**
- * 수집기가 담아 둔 관측값을 화면에 쓸 줄로 편다.
- *
- * 값의 모양은 검사마다 다르다 — URL별 문제 설명(dict), 문제 URL 목록(list), 개수 하나.
- * 여기서 하는 일은 **모양을 읽는 것뿐** 이고, 값을 계산하거나 요약하지 않는다.
- */
-function describeObserved(observed: unknown): { label: string; detail: string }[] {
-  if (observed === null || observed === undefined) return [];
-
-  if (Array.isArray(observed)) {
-    return observed.map((item, index) => ({
-      label: String(index + 1),
-      detail: plain(item),
-    }));
-  }
-
-  if (typeof observed === 'object') {
-    return Object.entries(observed as Record<string, unknown>).map(([key, value]) => ({
-      label: key,
-      detail: plain(value),
-    }));
-  }
-
-  return [{ label: '', detail: plain(observed) }];
-}
-
-function plain(value: unknown): string {
-  if (value === null || value === undefined) return '없음';
-  if (typeof value === 'boolean') return value ? '예' : '아니오';
-  if (typeof value === 'number') return String(value);
-  // 빈 문자열·빈 목록·빈 객체는 "없음" 이다. 그대로 두면 이름만 있고 값은 비어 있는
-  // 줄이 남아, 화면이 무엇을 말하려는지 알 수 없게 된다.
-  if (typeof value === 'string') return value.trim() === '' ? '없음' : value;
-  if (Array.isArray(value)) {
-    return value.length === 0 ? '없음' : value.map(plain).join(', ');
-  }
-  if (typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>);
-    return entries.length === 0
-      ? '없음'
-      : entries.map(([key, entry]) => `${key}: ${plain(entry)}`).join(' · ');
-  }
-  return String(value);
-}
-
-const SEVERITIES: Record<string, string> = {
-  BLOCKER: '치명',
-  CRITICAL: '심각',
-  MAJOR: '중요',
-  MINOR: '경미',
-  INFO: '참고',
-};
-
-function severityLabel(severity: string): string {
-  return SEVERITIES[severity] ?? severity;
 }
 
 const AVAILABILITIES: Record<string, string> = {
