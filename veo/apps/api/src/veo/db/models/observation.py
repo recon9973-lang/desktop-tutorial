@@ -194,7 +194,25 @@ class AIAnswer(Base, OrganizationScopedMixin, ImmutableMixin):
     raw_answer_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     error_code: Mapped[str | None] = mapped_column(String(48), nullable=True)
     latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    cost_krw: Mapped[float | None] = mapped_column(Float, nullable=True)
+    cost_usd: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True,
+        comment=(
+            "제공자에게 실제로 청구되는 통화 그대로. 엔진과 가격표가 모두 USD 이므로 "
+            "여기가 실측값이다. 값이 없는 것은 0원이 아니라 '모른다' 이며, 그 이유는 "
+            "가격표 미설정·사용량 미보고·가격표 만료 중 하나다."
+        ),
+    )
+    cost_krw: Mapped[float | None] = mapped_column(
+        Float,
+        nullable=True,
+        comment=(
+            "환율을 아는 시점에만 채운다. 비어 있는 것이 기본이다 — 환율을 지어내면 "
+            "고객에게 제시하는 금액이 틀리고, 나중에 환율이 바뀌면 과거 기록까지 "
+            "달라진다. 재는 단위(USD)와 저장 단위를 같게 둔 것이 `cost_usd` 이고, "
+            "이 칸은 표시용 환산값이다."
+        ),
+    )
 
 
 class Citation(Base, OrganizationScopedMixin, ImmutableMixin):
