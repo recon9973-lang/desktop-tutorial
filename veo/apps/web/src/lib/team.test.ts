@@ -19,9 +19,8 @@ const call = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/console-api', () => ({ callConsoleApi: call }));
 vi.mock('server-only', () => ({}));
 
-const { changeStatus, inviteMember, listMembers, isRole, ROLES, ROLE_LABELS } = await import(
-  './team'
-);
+const { changeRole, changeStatus, inviteMember, listMembers, reinvite, isRole, ROLES, ROLE_LABELS } =
+  await import('./team');
 
 function ok(data: unknown) {
   return { ok: true as const, data, meta: {} };
@@ -124,7 +123,7 @@ describe('초대', () => {
 
     await inviteMember({ email: '  n@b.kr ', displayName: '  새 직원  ', role: 'ANALYST' });
 
-    expect(call).toHaveBeenCalledWith('/users', {
+    expect(call).toHaveBeenCalledWith('/api/users', {
       method: 'POST',
       body: { email: 'n@b.kr', display_name: '새 직원', role: 'ANALYST' },
     });
@@ -137,7 +136,7 @@ describe('계정 상태', () => {
 
     const outcome = await changeStatus('u1', false);
 
-    expect(call).toHaveBeenCalledWith('/users/u1/status', {
+    expect(call).toHaveBeenCalledWith('/api/users/u1/status', {
       method: 'PATCH',
       body: { is_active: false },
     });
@@ -160,6 +159,31 @@ describe('역할', () => {
     for (const role of ROLES) {
       expect(ROLE_LABELS[role].label).toBeTruthy();
       expect(ROLE_LABELS[role].note).toBeTruthy();
+    }
+  });
+});
+
+describe('엔진 경로', () => {
+  /**
+   * 실제로 배포하고 나서야 잡은 결함. `/users` 로 불렀는데 `callConsoleApi` 는 받은
+   * 경로를 엔진 주소 뒤에 **그대로 잇기만** 한다 — 접두사를 붙여 주지 않는다. 그래서
+   * 엔진이 404 를 돌려줬고 화면에는 영어로 "Not Found" 가 떴다. 목록도 초대도 전부
+   * 죽었는데 화면 자체는 멀쩡해 보여서, 무엇이 틀렸는지 알기 어려웠다.
+   *
+   * 다른 화면들은 처음부터 `/api/customers` 처럼 붙여 부르고 있었다. 나만 빠뜨렸고,
+   * 그 사실을 잡아 줄 검사가 없었다.
+   */
+  it('모든 호출이 /api 로 시작한다', async () => {
+    call.mockResolvedValue(ok([]));
+    await listMembers();
+    await inviteMember({ email: 'a@b.kr', displayName: 'x', role: 'ANALYST' });
+    await reinvite('u1');
+    await changeRole('u1', 'ANALYST');
+    await changeStatus('u1', true);
+
+    expect(call).toHaveBeenCalledTimes(5);
+    for (const [path] of call.mock.calls) {
+      expect(path).toMatch(/^\/api\/users(\/|$)/);
     }
   });
 });

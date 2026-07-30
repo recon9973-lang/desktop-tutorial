@@ -13,6 +13,10 @@ export type { Role } from '@/app/(console)/console/team/roles';
  * 엔진에는 이미 전부 있다 — 초대·역할 변경·계정 비활성·초대 재발송. 없던 것은 화면뿐이라
  * 여기서 하는 일은 **이름만 우리 쪽 표기로 옮기는 것**이고, 아무것도 계산하지 않는다.
  *
+ * 경로에 `/api` 를 반드시 붙인다. `callConsoleApi` 는 받은 경로를 엔진 주소 뒤에
+ * 그대로 잇기만 하므로, 빠뜨리면 엔진의 404 가 화면에 "Not Found" 로 뜬다 — 화면은
+ * 정상으로 보이고 목록만 비어, 무엇이 틀렸는지 알기 어려운 실패다.
+ *
  * 초대 메일은 보내지 않는다. 엔진이 1회용 링크를 돌려주고, 관리자가 그것을 복사해
  * 카톡이든 메일이든 쓰던 방법으로 전달한다. 직원 몇 명을 들이는 데 메일 발송 인프라를
  * 세울 이유가 적고, 필요해지면 그때 이 자리에 붙이면 된다.
@@ -86,7 +90,7 @@ function toInvitation(source: Record<string, unknown>): Invitation {
 
 
 export async function listMembers(): Promise<ConsoleOutcome<readonly Member[]>> {
-  const outcome = await callConsoleApi<unknown>('/users');
+  const outcome = await callConsoleApi<unknown>('/api/users');
   if (!outcome.ok) return outcome;
   return { ...outcome, data: rows(outcome.data).map(toMember) };
 }
@@ -96,7 +100,7 @@ export async function inviteMember(input: {
   readonly displayName: string;
   readonly role: Role;
 }): Promise<ConsoleOutcome<Invitation>> {
-  const outcome = await callConsoleApi<unknown>('/users', {
+  const outcome = await callConsoleApi<unknown>('/api/users', {
     method: 'POST',
     body: {
       email: input.email.trim(),
@@ -110,7 +114,7 @@ export async function inviteMember(input: {
 }
 
 export async function reinvite(userId: string): Promise<ConsoleOutcome<Invitation>> {
-  const outcome = await callConsoleApi<unknown>(`/users/${userId}/invitations`, {
+  const outcome = await callConsoleApi<unknown>(`/api/users/${userId}/invitations`, {
     method: 'POST',
   });
   if (!outcome.ok) return outcome;
@@ -121,7 +125,7 @@ export async function changeRole(
   userId: string,
   role: Role,
 ): Promise<ConsoleOutcome<Member>> {
-  const outcome = await callConsoleApi<unknown>(`/users/${userId}/role`, {
+  const outcome = await callConsoleApi<unknown>(`/api/users/${userId}/role`, {
     method: 'PATCH',
     body: { role },
   });
@@ -133,7 +137,7 @@ export async function changeStatus(
   userId: string,
   isActive: boolean,
 ): Promise<ConsoleOutcome<Member>> {
-  const outcome = await callConsoleApi<unknown>(`/users/${userId}/status`, {
+  const outcome = await callConsoleApi<unknown>(`/api/users/${userId}/status`, {
     method: 'PATCH',
     body: { is_active: isActive },
   });
