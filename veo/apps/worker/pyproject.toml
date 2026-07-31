@@ -15,7 +15,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3,<9.0",
+    # apps/api 와 같은 이유로 9 로 올렸다 — 8.4.2 가 PYSEC-2026-1845 에 걸린다.
+    # 워커 테스트 166건도 9.0.3 에서 그대로 통과한다.
+    "pytest>=9.0.3,<10.0",
     "pytest-cov>=5.0,<8.0",
     "ruff>=0.7,<1.0",
     "mypy>=1.13,<2.0",

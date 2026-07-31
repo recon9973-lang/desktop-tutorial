@@ -230,3 +230,54 @@ def test_no_test_builds_a_connection_url_with_str() -> None:
         "접속 주소를 `str()` 로 만들면 비밀번호가 가려집니다. "
         f"`render_as_string(hide_password=False)` 를 쓰십시오: {offenders}"
     )
+
+
+# --------------------------------------------------------------------------- #
+# 셸 스크립트는 리눅스에서 돈다
+# --------------------------------------------------------------------------- #
+
+SHELL_SCRIPTS = sorted(
+    path
+    for folder in ("infra",)
+    for path in (VEO_ROOT / folder).rglob("*.sh")
+)
+
+
+def test_scripts_do_not_use_bsd_only_mktemp() -> None:
+    """`mktemp -t prefix` 는 macOS 에서만 통한다.
+
+    GNU coreutils 는 서식이 `X` 세 개 이상으로 끝나야 하고, 아니면
+    `too few X's in template` 로 죽는다. 개발은 맥에서 하고 **스크립트는 리눅스
+    서버에서 도므로**, 이 형태는 로컬에서 멀쩡하다가 서버에서만 터진다.
+
+    실제로 복원 스크립트가 그랬다. CI 가 처음 돌면서 잡혔다.
+    """
+    offenders: list[str] = []
+    for path in SHELL_SCRIPTS:
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            found = re.search(r"mktemp\s+(?:-\w+\s+)*-t\s+(\S+)", stripped)
+            if found and not found.group(1).rstrip("\"'").endswith("XXX"):
+                offenders.append(f"{path.relative_to(VEO_ROOT)}:{number}")
+
+    assert offenders == [], (
+        "`mktemp -t 접두사` 는 리눅스에서 실패합니다. "
+        f'`mktemp "${{TMPDIR:-/tmp}}/이름.XXXXXX"` 형태로 바꾸십시오: {offenders}'
+    )
+
+
+def test_every_shell_script_parses() -> None:
+    """문법 오류가 배포 뒤에 드러나면 복구 중에 알게 된다."""
+    import subprocess
+
+    broken = [
+        str(path.relative_to(VEO_ROOT))
+        for path in SHELL_SCRIPTS
+        if subprocess.run(  # noqa: S603 - fixed argv, no shell
+            ["/bin/bash", "-n", str(path)], capture_output=True, check=False
+        ).returncode
+        != 0
+    ]
+    assert broken == [], f"문법이 깨진 스크립트: {broken}"

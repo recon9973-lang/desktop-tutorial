@@ -209,7 +209,10 @@ else
     fail "restored database has $ACTUAL_TABLES public tables, the backup recorded $EXPECTED_TABLES."
 fi
 
-ACTUAL_COUNTS_FILE="$(mktemp -t veo-restore-counts)"
+# `mktemp -t prefix` 는 macOS(BSD)에서만 통한다. GNU coreutils 는 서식이 `X` 세 개
+# 이상으로 끝나야 하고, 아니면 `too few X's in template` 로 죽는다. 이 스크립트는
+# 리눅스 서버에서 도는 것이 본업이므로 **양쪽에서 되는 형태**로 쓴다.
+ACTUAL_COUNTS_FILE="$(mktemp "${TMPDIR:-/tmp}/veo-restore-counts.XXXXXX")"
 trap 'rm -f "$ACTUAL_COUNTS_FILE"' EXIT
 psql_scalar "$DATABASE" "$ROW_COUNTS_SQL" > "$ACTUAL_COUNTS_FILE"
 
