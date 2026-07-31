@@ -28,6 +28,7 @@ from veo.authz import (
     PermissionDeniedError,
     TenantIsolationError,
 )
+from veo.brands.router import router as brands_router
 from veo.competitors.router import router as competitors_router
 from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiError, FieldError
@@ -236,6 +237,7 @@ def create_app() -> FastAPI:
     app.include_router(keywords_router, prefix=api_prefix)
     app.include_router(seo_router, prefix=api_prefix)
     app.include_router(competitors_router, prefix=api_prefix)
+    app.include_router(brands_router, prefix=api_prefix)
     app.include_router(observations_router, prefix=api_prefix)
     app.include_router(jobs_router, prefix=api_prefix)
     app.include_router(issues_router, prefix=api_prefix)

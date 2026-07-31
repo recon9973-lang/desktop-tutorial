@@ -1,0 +1,200 @@
+/* 브랜드 식별.
+ *
+ * 이 화면의 목적은 등록된 값을 나열하는 것이 아니라 **비어 있는 칸을 눈에 띄게 하는
+ * 것**이다. 비어 있으면 그 브랜드의 언급이 전부 검수 대기로 넘어가고, 사용자는 관측을
+ * 돌려 돈을 쓴 뒤에야 그 사실을 알게 된다.
+ *
+ * 그래서 '없음' 은 회색으로 흐리지 않고, 측정 불가 카드는 테두리로 갈라 놓는다.
+ */
+
+.projectTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+  margin-bottom: var(--veo-space-4);
+}
+
+.projectTab,
+.projectTabActive {
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-200);
+  text-decoration: none;
+  color: inherit;
+}
+
+.projectTabActive {
+  border-color: var(--veo-color-accent-border);
+  background: var(--veo-color-accent-subtle);
+  font-weight: var(--veo-weight-medium);
+}
+
+.blocked {
+  margin: 0 0 var(--veo-space-4);
+  padding: var(--veo-space-4);
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+/* 비대칭 경고 — 점유율이 조용히 틀어지는 자리다. 조용히 두면 안 된다. */
+.asymmetry {
+  margin: 0 0 var(--veo-space-5);
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-warning);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+}
+
+.asymmetryTitle {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.asymmetryList {
+  margin: 0;
+  padding-left: var(--veo-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.brandList {
+  list-style: none;
+  margin: 0 0 var(--veo-space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+}
+
+.brand,
+.brandWeak {
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+}
+
+/* 측정이 안 되는 브랜드는 테두리로 갈라 놓는다. 색만으로 구분하지 않는다. */
+.brandWeak {
+  border-left: 3px solid var(--veo-color-warning);
+}
+
+.brandHead {
+  margin: 0 0 var(--veo-space-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--veo-space-2);
+}
+
+.brandName {
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.ok,
+.warn,
+.generic {
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  white-space: nowrap;
+}
+
+.warn {
+  border-color: var(--veo-color-warning);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.generic {
+  border-style: dashed;
+  color: var(--veo-color-text-muted);
+}
+
+.fields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--veo-space-2) var(--veo-space-4);
+  font-size: var(--veo-font-size-200);
+}
+
+.field dt {
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-100);
+}
+
+.field dd {
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* '없음' 을 흐리게 두지 않는다. 비어 있다는 것이 이 화면에서 가장 중요한 정보다. */
+.empty {
+  font-weight: var(--veo-weight-medium);
+}
+
+.gaps {
+  margin: var(--veo-space-3) 0 0;
+  padding-left: var(--veo-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+  max-width: 34rem;
+  padding: var(--veo-space-4);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+}
+
+.required {
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+.input {
+  padding: var(--veo-space-2) var(--veo-space-3);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+  color: var(--veo-color-text);
+  font: inherit;
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-regular);
+}
+
+.hint {
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-regular);
+  line-height: 1.6;
+  color: var(--veo-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--veo-space-3);
+}

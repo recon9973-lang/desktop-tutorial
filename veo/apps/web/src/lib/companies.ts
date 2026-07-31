@@ -24,6 +24,8 @@ export interface Company {
   readonly name: string;
   readonly industry: string | null;
   readonly sites: readonly MeasuredSite[];
+  /** 이 업체의 프로젝트들. 브랜드 식별·관측은 **프로젝트**에 달린다. */
+  readonly projects: readonly { readonly id: string; readonly name: string }[];
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -85,12 +87,17 @@ export async function listCompanies(): Promise<ConsoleOutcome<readonly Company[]
   }
 
   const sitesByCustomer = new Map<string, MeasuredSite[]>();
+  const projectsByCustomer = new Map<string, { id: string; name: string }[]>();
   for (const project of items(projects.data)) {
     const customerId = textOrNull(project, 'customer_id');
     if (customerId === null) continue;
     const list = sitesByCustomer.get(customerId) ?? [];
     list.push(...(sitesByProject.get(text(project, 'id')) ?? []));
     sitesByCustomer.set(customerId, list);
+
+    const owned = projectsByCustomer.get(customerId) ?? [];
+    owned.push({ id: text(project, 'id'), name: text(project, 'name') });
+    projectsByCustomer.set(customerId, owned);
   }
 
   const companies = items(customers.data).map((customer) => {
@@ -100,6 +107,7 @@ export async function listCompanies(): Promise<ConsoleOutcome<readonly Company[]
       name: text(customer, 'name'),
       industry: textOrNull(customer, 'industry'),
       sites: sitesByCustomer.get(customerId) ?? [],
+      projects: projectsByCustomer.get(customerId) ?? [],
     };
   });
 

@@ -1164,6 +1164,54 @@ export interface paths {
         patch: operations["update_project_api_projects__project_id__patch"];
         trace?: never;
     };
+    "/api/projects/{project_id}/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 이 프로젝트가 선언한 브랜드 — 자사와 비교 대상
+         * @description `identity_strength` 가 이 화면의 요점입니다. `INSUFFICIENT` 인 브랜드는 언급이 **전부 검수 대기로 넘어갑니다** — 흔한 상호를 이름만으로 이 업체라고 말할 수 없기 때문입니다.
+         *
+         *     `asymmetry_ko` 는 우리 쪽만 잘 적혀 있을 때 뜹니다. 그 상태의 점유율은 실제 노출 차이가 아니라 등록 정보 차이를 보여줍니다.
+         */
+        get: operations["index_api_projects__project_id__brands_get"];
+        put?: never;
+        /**
+         * 브랜드를 선언한다 (자사 또는 비교 대상)
+         * @description **전화번호가 가장 효과가 큽니다.** 흔한 상호는 이름만으로 확정되지 않고, 소재지만으로도 확정선에 이르지 못합니다.
+         *
+         *     비교 대상도 같은 필드로 등록합니다. 우리 쪽만 채우면 경쟁사 언급이 더 자주 검수 대기로 떨어져 분자에서 빠지고, **산술을 한 글자도 안 고치고** 우리 점유율이 오릅니다.
+         */
+        post: operations["declare_api_projects__project_id__brands_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/brands/{brand_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 빠뜨린 식별 정보를 채운다
+         * @description **식별자는 바뀌지 않습니다.** 지난 관측이 그 값으로 이 브랜드를 가리키고 있어서, 바꾸면 과거와 현재가 다른 브랜드처럼 갈라지고 추이가 조용히 끊깁니다.
+         */
+        patch: operations["update_api_projects__project_id__brands__brand_id__patch"];
+        trace?: never;
+    };
     "/api/providers": {
         parameters: {
             query?: never;
@@ -1716,6 +1764,12 @@ export interface components {
              */
             retryable: boolean;
         };
+        /** ApiResponse[BrandPayload] */
+        ApiResponse_BrandPayload_: {
+            data?: components["schemas"]["BrandPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[CheckCataloguePayload] */
         ApiResponse_CheckCataloguePayload_: {
             data?: components["schemas"]["CheckCataloguePayload"] | null;
@@ -1857,6 +1911,12 @@ export interface components {
         /** ApiResponse[OrganizationPayload] */
         ApiResponse_OrganizationPayload_: {
             data?: components["schemas"]["veo__organizations__schemas__OrganizationPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ProjectBrandsPayload] */
+        ApiResponse_ProjectBrandsPayload_: {
+            data?: components["schemas"]["ProjectBrandsPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -2122,6 +2182,119 @@ export interface components {
              */
             label_ko: string;
             measurement: components["schemas"]["MeasurementInput"];
+        };
+        /** BrandDeclareRequest */
+        BrandDeclareRequest: {
+            /**
+             * Address Terms
+             * @description 행정동·역명·랜드마크처럼 AI 답변이 실제로 말할 만한 소재지 표현입니다. **소재지만으로는 확정에 이르지 못합니다** — 흔한 상호라면 전화번호가 필요합니다.
+             */
+            address_terms?: string[];
+            /**
+             * Aliases
+             * @description 줄임말·옛 상호·영문 표기처럼 답변이 쓸 수 있는 다른 이름입니다.
+             */
+            aliases?: string[];
+            /**
+             * Display Name
+             * @description AI 답변에 나올 법한 **정식 상호**입니다. 간판에 적힌 그대로.
+             */
+            display_name: string;
+            /**
+             * Distinguishing Terms
+             * @description 이 업체만의 표현입니다 — 대표 시술, 남다른 진료시간, 원장 성함 등.
+             */
+            distinguishing_terms?: string[];
+            /**
+             * Homepage Url
+             * @description 비교 대상일 때의 홈페이지. 같은 주소는 두 번 등록되지 않습니다.
+             */
+            homepage_url?: string | null;
+            /**
+             * Is Own Brand
+             * @description 자사 브랜드는 프로젝트당 하나입니다. 나머지는 비교 대상입니다.
+             * @default false
+             */
+            is_own_brand: boolean;
+            /**
+             * Name Is Ambiguous
+             * @description 비워 두면 VEO가 이름만 보고 판단합니다. 여러 업체가 함께 쓰는 이름인 것을 아는 경우에만 직접 지정하십시오.
+             */
+            name_is_ambiguous?: boolean | null;
+            /**
+             * Own Domains
+             * @description 자사 도메인입니다. **도메인은 동명 업체와 공유되지 않으므로**, 답변이 이 주소를 근거로 인용하면 그 언급은 그것만으로 확정됩니다.
+             */
+            own_domains?: string[];
+            /**
+             * Phone Numbers
+             * @description 대표번호입니다. 흔한 상호를 확정선 위로 올리는 **가장 효과가 큰 한 가지**입니다. 저장할 때 숫자만 남겨 정규화하므로 02-1234-5678 로 넣어도 됩니다.
+             */
+            phone_numbers?: string[];
+        };
+        /** BrandPayload */
+        BrandPayload: {
+            /** Address Terms */
+            address_terms: string[];
+            /** Aliases */
+            aliases: string[];
+            /** Display Name */
+            display_name: string;
+            /** Distinguishing Terms */
+            distinguishing_terms: string[];
+            /** Entity Key */
+            entity_key: string;
+            /**
+             * Gaps Ko
+             * @description 무엇을 더 넣으면 측정이 되는지 — **효과가 큰 순서**로.
+             */
+            gaps_ko: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Identity Strength
+             * @description SUFFICIENT | PARTIAL | INSUFFICIENT — **측정이 되느냐**입니다. `INSUFFICIENT` 면 이 브랜드의 언급은 전부 검수 대기로 넘어갑니다.
+             */
+            identity_strength: string;
+            /** Is Own Brand */
+            is_own_brand: boolean;
+            /**
+             * Name Is Generic
+             * @description 여러 업체가 함께 쓰는 이름인지. 그렇다면 이름만으로는 확정되지 않습니다.
+             */
+            name_is_generic: boolean;
+            /** Own Domains */
+            own_domains: string[];
+            /** Phone Numbers */
+            phone_numbers: string[];
+        };
+        /**
+         * BrandUpdateRequest
+         * @description 빠뜨린 값을 채우는 용도. **식별자(`entity_key`)는 바뀌지 않습니다.**
+         *
+         *     지난 관측이 그 값으로 이 브랜드를 가리키고 있어서, 바꾸면 과거와 현재가 다른
+         *     브랜드처럼 갈라지고 추이가 조용히 끊깁니다.
+         */
+        BrandUpdateRequest: {
+            /** Address Terms */
+            address_terms?: string[] | null;
+            /** Aliases */
+            aliases?: string[] | null;
+            /** Display Name */
+            display_name?: string | null;
+            /** Distinguishing Terms */
+            distinguishing_terms?: string[] | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name Is Ambiguous */
+            name_is_ambiguous?: boolean | null;
+            /** Own Domains */
+            own_domains?: string[] | null;
+            /** Phone Numbers */
+            phone_numbers?: string[] | null;
         };
         /** CapChangePayload */
         CapChangePayload: {
@@ -4636,6 +4809,23 @@ export interface components {
             mentioned_answer_count: number;
             /** Won Prompt Count */
             won_prompt_count: number;
+        };
+        /**
+         * ProjectBrandsPayload
+         * @description 한 프로젝트의 브랜드 전부와, 지금 상태로 측정이 되는지.
+         */
+        ProjectBrandsPayload: {
+            /**
+             * Asymmetry Ko
+             * @description 우리 쪽만 잘 적혀 있을 때의 경고입니다. 그 상태로 점유율을 계산하면 **실제 노출 차이가 아니라 등록 정보 차이**가 숫자로 나타납니다. 경고가 떠도 저장은 됩니다 — 막으면 경쟁사를 아예 등록하지 않게 되고, 그러면 점유율 자체가 사라집니다.
+             */
+            asymmetry_ko?: string[];
+            /** Can Observe */
+            can_observe: boolean;
+            /** Competitors */
+            competitors?: components["schemas"]["BrandPayload"][];
+            /** @description 자사 브랜드입니다. **없으면 GEO 관측이 실행되지 않습니다** — 무엇을 찾아야 하는지 모르는 채로 돌리면 모든 답변이 '언급 없음'으로 기록되고, 그것은 측정이 아닙니다. */
+            ours?: components["schemas"]["BrandPayload"] | null;
         };
         /**
          * ProjectCreateRequest
@@ -9066,6 +9256,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_ProjectPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    index_api_projects__project_id__brands_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProjectBrandsPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_api_projects__project_id__brands_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandDeclareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_BrandPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_api_projects__project_id__brands__brand_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                brand_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrandUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_BrandPayload_"];
                 };
             };
             /** @description Validation Error */
