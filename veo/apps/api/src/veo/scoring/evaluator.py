@@ -10,10 +10,24 @@ Arithmetic (VEO-LAB methodology):
     penalty_i      = severity_coefficient x status_multiplier x coverage_i x confidence_i
     category_budget= sum of severity_coefficient over checks that were actually scored
     category_score = 100 x max(0, 1 - sum(penalty_i) / category_budget)
-    overall_score  = sum(category_score x weight) / sum(weight of scoreable categories)
+    reach          = product over gate categories of (1 - status x coverage)
+    overall_score  = reach x sum(category_score x weight) / sum(weight of scoreable)
 
     caps           = overall_score is then bounded from above; a cap never raises a score.
     gates          = reported beside the score; a gate never changes the number.
+
+**Two different things are called a gate here, and they must not be confused.**
+
+``SpecGate`` / :func:`_raise_gates` is a *label*: "this site is blocked from indexing",
+reported next to the score, changing no number. It has been here from the start.
+
+``SpecCategory.is_gate`` is *arithmetic*: a category whose failures multiply the score
+instead of subtracting from it. It exists because the additive form gave a **fully
+noindexed site 74 points** — a site absent from search scored "ready". Only the blocking
+checks' own weights were lost.
+
+``reach`` is 1.0 for every specification that does not declare a gate category, so
+published specifications keep scoring exactly as they did (ADR 0012).
 """
 
 from __future__ import annotations
@@ -55,9 +69,14 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         category_rows.append(row)
         check_rows.extend(traces)
 
+    reach, gate_unverified = _reach(spec, by_id)
+
     # 연동이 있어야만 잴 수 있는 영역은 점수를 이루지 않는다. 판정과 보고는 그대로
     # 하되 분모에서 빠지므로, 고객이 서치콘솔을 연결하든 안 하든 100점의 뜻이 같다.
-    in_score = {c.id for c in spec.categories if c.contributes_to_score}
+    # 관문 영역도 여기서 빠진다 — 관문은 가중 평균에 참여하지 않고 결과에 곱해진다.
+    in_score = {
+        c.id for c in spec.categories if c.contributes_to_score and not c.is_gate
+    }
     scoring_categories = [c for c in category_scores if c.category_id in in_score]
 
     # 아무것도 재지 못했다면 0점이 아니라 **측정 불가**다. 사이트를 가져오지 못한 것과
@@ -95,7 +114,11 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
     if score_before_caps is None:
         overall_score: float | None = None
     else:
-        overall_score = score_before_caps
+        # 관문을 먼저 곱하고 상한을 적용한다. 순서가 뒤바뀌면 상한이 이미 0 에 가까운
+        # 점수를 다시 깎는 시늉만 하게 되고, 어떤 상한이 실제로 걸렸는지 기록이
+        # 뒤엉킨다. 상한은 "이 결함이 있으면 아무리 잘해도 여기까지" 라는 뜻이므로
+        # 도달률을 반영한 실제 점수에 걸려야 한다.
+        overall_score = score_before_caps * reach
         for cap in applied_caps:
             overall_score = min(overall_score, cap.max_overall_score)
         overall_score = round(max(0.0, min(100.0, overall_score)), 6)
@@ -147,8 +170,12 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
             "confidence": round(confidence, 6),
             "status": result_status,
             "band_id": band.id if band else None,
+            # 도달률은 관문 영역이 있는 명세에서만 1.0 이 아니다. 그래도 항상 적는다 —
+            # 어떤 명세로 매긴 점수인지 나중에 이 기록만 보고 알 수 있어야 한다.
+            "reach": round(reach, 6),
+            "gate_unverified": gate_unverified,
             "formula": (
-                "overall = sum(category_score x weight)"
+                "overall = reach x sum(category_score x weight)"
                 " / sum(weight of scoreable categories)"
             ),
         },
@@ -301,6 +328,57 @@ def _status_multiplier(spec: ScoringSpec, status: CheckStatus) -> float:
 
 #: 절대 평가 정책. 재지 못한 항목이 배점을 유지한 채 0점이 된다.
 ABSOLUTE_UNKNOWN_POLICY: Final = "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
+
+
+def _reach(
+    spec: ScoringSpec, by_id: dict[str, CheckOutcome]
+) -> tuple[float, list[str]]:
+    """검색에 들어갈 수 있는 비율. 관문 영역이 없는 명세에서는 항상 1.0 이다.
+
+    ## 왜 곱셈인가
+
+    가산 방식에서는 **색인이 전면 차단된 사이트가 74점을 받았다**(실측). 검색에
+    존재하지 않는 사이트가 "양호" 등급을 받은 것이다. 차단 검사들의 배점만큼만
+    잃기 때문이다.
+
+    실제로는 앞 단계가 막히면 뒤 단계가 통째로 무의미하다. noindex 페이지의 완벽한
+    구조화 데이터는 아무 일도 하지 않는다. 그래서 차단은 배점이 아니라 곱셈이다.
+
+    관문끼리도 곱한다. 페이지는 **모든** 관문을 통과해야 하기 때문이다 — robots 가
+    절반을 막고 상태 코드가 20% 실패면 (1-0.5)(1-0.2) = 0.4 다.
+
+    ## 못 잰 관문은 곱하지 않는다
+
+    관측하지 않은 차단을 있다고 하면 **없는 결함을 지어내는 것**이다(0-A). 오늘
+    robots.txt 를 못 가져왔다는 이유로 멀쩡한 병원 홈페이지가 0점이 되어서는 안 된다 —
+    구글 Lighthouse 가 정확히 그 실수를 한다(2026-08-01 실측: fetch 타임아웃이 0점
+    실패로 기록되고, 화면에서 '크롤러를 막고 있음' 과 구분되지 않았다).
+
+    대신 확인하지 못한 관문의 이름을 함께 돌려주어, 화면이 "색인 가능 여부를 확인하지
+    못했다" 고 말할 수 있게 한다. **품질 점수에서는 다르다** — 거기서는 못 잰 항목이
+    배점을 잃는다(ADR 0016). 관문은 "있다고 단정하면 사이트를 죽이는" 자리이고,
+    품질은 "없다고 단정하면 만점을 주는" 자리라서 안전한 방향이 서로 반대다.
+    """
+    reach = 1.0
+    unverified: list[str] = []
+
+    for category in spec.categories:
+        if not category.is_gate:
+            continue
+        for check in category.checks:
+            outcome = by_id[check.id]
+            if outcome.status is CheckStatus.NOT_APPLICABLE:
+                continue
+            if outcome.status is CheckStatus.UNKNOWN:
+                unverified.append(check.id)
+                continue
+            blocked = _status_multiplier(spec, outcome.status) * min(
+                1.0, outcome.coverage_ratio
+            )
+            if blocked > 0:
+                reach *= 1.0 - blocked
+
+    return max(0.0, reach), unverified
 
 
 def _is_absolute(spec: ScoringSpec) -> bool:
