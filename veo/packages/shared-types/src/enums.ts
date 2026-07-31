@@ -347,6 +347,7 @@ export type Permission =
   | "observation:read"
   | "observation:run"
   | "observation:raw_read"
+  | "observation:review"
   | "issue:read"
   | "issue:write"
   | "report:read"
@@ -382,6 +383,7 @@ export const PERMISSION_VALUES: readonly Permission[] = [
   "observation:read",
   "observation:run",
   "observation:raw_read",
+  "observation:review",
   "issue:read",
   "issue:write",
   "report:read",

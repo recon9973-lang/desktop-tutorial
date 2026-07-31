@@ -54,6 +54,11 @@ class Permission(StrEnum):
     OBSERVATION_RUN = "observation:run"
     # Raw AI answers are sensitive and gated separately from the aggregate metrics.
     OBSERVATION_RAW_READ = "observation:raw_read"
+    # Deciding a risk finding decides what a customer is told about their own
+    # reputation. It is the same class of act as REPORT_WRITE and is kept away from
+    # DEVELOPER for the same reason: reading observations plus fixing sites should not
+    # add up to the ability to confirm a claim about a clinic.
+    OBSERVATION_REVIEW = "observation:review"
 
     ISSUE_READ = "issue:read"
     ISSUE_WRITE = "issue:write"
@@ -141,6 +146,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             Permission.OBSERVATION_READ,
             Permission.OBSERVATION_RUN,
             Permission.OBSERVATION_RAW_READ,
+            Permission.OBSERVATION_REVIEW,
             Permission.ISSUE_READ,
             Permission.ISSUE_WRITE,
             Permission.REPORT_READ,

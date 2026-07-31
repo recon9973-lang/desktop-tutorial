@@ -69,6 +69,37 @@ export interface RiskFindings {
   readonly kinds_not_yet_produced: readonly { readonly kind: string; readonly reason_ko: string }[];
 }
 
+export interface ReviewQueueItem {
+  readonly assessment_id: string;
+  readonly kind: string;
+  readonly band_label_ko: string;
+  readonly severity: string;
+  /** 기계가 답변에서 잘라낸 그 문장. 요약이 아니다 — 그 차이가 판정의 전부다. */
+  readonly claim_text: string;
+  readonly automated_verdict: string;
+  readonly automated_rationale_ko: string;
+  readonly stage: string;
+  readonly stage_label_ko: string;
+  /** 다른 검수자가 맡고 있는지. **누가**인지는 오지 않는다. */
+  readonly is_held_by_someone: boolean;
+  readonly is_mine: boolean;
+}
+
+export interface ReviewQueue {
+  readonly items: readonly ReviewQueueItem[];
+  readonly total: number;
+  readonly rejection_reasons: readonly { readonly value: string; readonly label_ko: string }[];
+}
+
+export interface ReviewedItem {
+  readonly assessment_id: string;
+  readonly stage: string;
+  readonly stage_label_ko: string;
+  readonly stored_as: string;
+  readonly is_reviewed: boolean;
+  readonly disagrees_with_automation: boolean;
+}
+
 export interface ObservationRun {
   readonly id: string;
   readonly project_id: string;
@@ -179,6 +210,32 @@ export async function readRunRisks(
   runId: string,
 ): Promise<ConsoleOutcome<RiskFindings>> {
   return callConsoleApi(`/api/observations/runs/${encodeURIComponent(runId)}/risks`);
+}
+
+export async function readReviewQueue(): Promise<ConsoleOutcome<ReviewQueue>> {
+  return callConsoleApi('/api/observations/review-queue');
+}
+
+/**
+ * 검수 한 걸음 — 착수·반납·판정.
+ *
+ * 셋을 한 함수로 두는 이유는 실패를 읽는 방식이 같아서다. **409 와 422 는 다르다** —
+ * 전자는 지금은 안 되지만 나중엔 될 수 있고(다른 사람이 맡고 있다), 후자는 이 순서로는
+ * 안 된다(맡지도 않고 판정하려 한다). 합치면 검수자가 새로고침만 반복하게 된다.
+ */
+export async function reviewStep(
+  assessmentId: string,
+  step: 'claim' | 'release' | 'decide',
+  body?: {
+    readonly decision: 'CONFIRMED' | 'REJECTED' | 'NEEDS_MORE_EVIDENCE';
+    readonly rejection_reason?: string | null;
+    readonly note_ko?: string | null;
+  },
+): Promise<ConsoleOutcome<ReviewedItem>> {
+  return callConsoleApi(
+    `/api/observations/review-queue/${encodeURIComponent(assessmentId)}/${step}`,
+    { method: 'POST', ...(body === undefined ? {} : { body }) },
+  );
 }
 
 export async function readJob(jobId: string): Promise<ConsoleOutcome<Job>> {

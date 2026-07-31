@@ -68,7 +68,7 @@
 | 노출률 지표 | 언급률·인용률·질문 도달률 + Wilson 구간 | `tests/observations/test_metrics.py` |
 | 가시성 지표 10종 (마스터 §7.3) | **7/10.** 없는 것: 출처 다양성 · 추천 포함 · 안정성(변동) | grep: `source_diversity`·`recommendation_inclusion` 0건 |
 | 자동 판정과 사람 검수 분리 | **연결됨.** 보류된 언급이 `claim_assessments` 행이 되고(`observations/findings.py`), `GET /observations/runs/{id}/risks` 가 **공개 게이트를 지난 뒤** 돌려준다. 다만 재는 위험 유형은 8종 중 1종(동명 업체 혼동)이고 나머지 7종은 이유와 함께 공개한다 | `TestHeldMentionsBecomeReviewableFindings` · `TestWhatTheCustomerDocumentMayContain` |
-| 검수자가 판정을 뒤집는 경로 | **미착수.** 행은 다섯 단계를 저장할 수 있게 됐으나(`review_stage`·`claimed_by`) 단계를 옮기는 API 와 화면이 아직 없다 → 지금은 읽기 전용 큐다 | — |
+| 검수자가 판정을 뒤집는 경로 | **연결됨.** `GET/POST /observations/review-queue/…` 와 `/console/review` 화면. 점유는 DB 행에 있으므로 서버가 두 대여도 같은 건을 두 사람이 판정하지 못한다. 착수 없이 판정하는 길은 전이 표가 막는다 | `test_review_service_postgres.py` · `test_review_queue_api.py` |
 | 관측 SOV 를 실측에서 계산 | **미연결.** `competitors/sov.py` 는 완성됐으나 입력이 요청 본문(`ObservedVisibilityInput`)이라 사람이 숫자를 넣어야 한다 | — |
 | 관측을 비동기로 실행 | **완료.** 202 + `GET /api/jobs/{id}` 로 진행률 조회. 작업 본문은 `observations/jobs.py` | `TestTheJobPath` |
 
@@ -220,7 +220,7 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 
 | 무엇 | 증거 |
 |---|---|
-| 답변 위험 검수 결정 | 저장 자리는 생겼으나 단계를 옮기는 API·화면이 없다 (판정 기록·조회·게이트는 연결됨) |
+| 답변 위험 — 언어모델 판정 | 인용 함의·주장 정확성 등 7종은 어댑터·대조 자료가 없어 아직 만들지 않는다 (이유는 `kinds_not_yet_produced` 가 공개) |
 | Celery 워커 | 태스크 전부 스텁, `.delay()` 호출 0건. **작업은 `veo/jobs/` 의 배경 스레드가 돈다** — 브로커가 생기면 이쪽으로 옮긴다 |
 | 관측 SOV | 입력이 요청 본문이라 실측과 연결 안 됨 |
 | 사용량·비용 | `APIUsageEvent` 참조 0건 |

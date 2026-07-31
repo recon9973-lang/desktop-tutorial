@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -29,10 +29,31 @@ describe('CONSOLE_NAV', () => {
     expect([...CONSOLE_NAV.map((item) => item.href)].sort()).toEqual([...routes].sort());
   });
 
-  it('only ever asks for a read permission — navigation is not an action', () => {
+  /**
+   * 예전에는 "모든 항목은 `:read` 권한으로만 가린다" 를 검사했다. 그 규칙이 지키려던 것은
+   * **볼 수 있는 화면이 메뉴에서 사라지지 않는 것**이었고, 접미사는 그것의 대용이었다.
+   *
+   * 위험 검수 화면에서 대용이 어긋난다. 그 화면은 `observation:review` 로만 열리는데,
+   * 안에 든 것이 **검수 전 지적의 원문**이라 `observation:read` 로 열면 안 된다 —
+   * 그것을 고객 문서에서 막으려고 공개 게이트를 둔 것이다.
+   *
+   * 그래서 대용 대신 원래 지키려던 것을 직접 검사한다. **메뉴가 요구하는 권한은 그 화면이
+   * 스스로 요구하는 권한과 같아야 한다.** 어긋나면 둘 중 하나가 일어난다 — 못 여는 메뉴가
+   * 보이거나, 열 수 있는 화면이 숨는다.
+   */
+  it('asks for exactly the permission the page itself gates on', () => {
+    const consoleDir = path.join(
+      import.meta.dirname,
+      '..',
+      'app',
+      '(console)',
+      'console',
+    );
     for (const item of CONSOLE_NAV) {
-      if (item.permission === null) continue;
-      expect(item.permission.endsWith(':read')).toBe(true);
+      const area = item.href.replace('/console/', '');
+      const source = readFileSync(path.join(consoleDir, area, 'page.tsx'), 'utf8');
+      const declared = /<PermissionGate[^>]*permission="([^"]+)"/.exec(source);
+      expect(declared?.[1] ?? null, `${item.href}`).toBe(item.permission);
     }
   });
 });

@@ -359,3 +359,93 @@ class ObservationRunListPayload(BaseModel):
 
     items: list[ObservationRunPayload]
     total: int
+
+
+class ReviewQueueItem(BaseModel):
+    """검수 대기 한 건 — 기계가 **실제로 본 글자**와 함께."""
+
+    model_config = _FROZEN
+
+    assessment_id: uuid.UUID
+    kind: str
+    band_label_ko: str
+    severity: str
+    claim_text: str = Field(
+        description=(
+            "기계가 답변에서 잘라낸 그 문장입니다. 요약이 아닙니다 — 검수자가 판단하려면 "
+            "'백세온담한의원'과 '온담한의원'의 차이를 직접 봐야 합니다."
+        )
+    )
+    automated_verdict: str
+    automated_rationale_ko: str
+    stage: str
+    stage_label_ko: str
+    is_held_by_someone: bool = Field(
+        description=(
+            "다른 검수자가 맡고 있는지. **누가 맡았는지는 알려주지 않습니다** — 검수 "
+            "화면이 조직원 명단을 흘리는 자리가 되면 안 됩니다."
+        )
+    )
+    is_mine: bool
+
+
+class ReviewQueuePayload(BaseModel):
+    """검수 대기 목록 — 심각한 것부터.
+
+    결론이 난 건은 빠지지만 **근거 보강 대기는 남습니다.** 그것은 끝난 것이 아니라 멈춰
+    있는 것이고, 목록에서 빠지면 영영 아무도 다시 보지 않습니다.
+    """
+
+    model_config = _FROZEN
+
+    items: list[ReviewQueueItem]
+    total: int
+    rejection_reasons: list[dict[str, str]] = Field(
+        description=(
+            "기각 사유는 닫힌 목록입니다. 자유 서술은 셀 수 없고, 기각을 기록하는 이유가 "
+            "**자동 판정이 어디서 빗나가는지 세기 위해서**입니다."
+        )
+    )
+
+
+class ReviewDecisionRequest(BaseModel):
+    """검수자의 결론.
+
+    **자동 판정은 이 요청으로 바뀌지 않습니다.** 사람의 결론은 별도 칸에 쌓이고, 두 기록이
+    어긋나는 경우까지 나란히 남습니다. 사람이 옳다고 해서 기계가 뭐라고 했는지를 지우면
+    자동 판정이 어디서 빗나가는지 셀 수 없게 됩니다.
+    """
+
+    model_config = _FROZEN
+
+    decision: Literal["CONFIRMED", "REJECTED", "NEEDS_MORE_EVIDENCE"]
+    rejection_reason: (
+        Literal[
+            "CLAIM_IS_ACCURATE",
+            "EVIDENCE_INSUFFICIENT",
+            "WRONG_ENTITY",
+            "SPAN_MISREAD",
+            "DUPLICATE",
+            "OUT_OF_SCOPE",
+        ]
+        | None
+    ) = Field(default=None, description="기각할 때는 필수입니다.")
+    note_ko: str | None = Field(default=None, max_length=2000)
+
+
+class ReviewedItemPayload(BaseModel):
+    """한 건의 검수 결과 — 기계가 뭐라고 했는지와 함께."""
+
+    model_config = _FROZEN
+
+    assessment_id: uuid.UUID
+    stage: str
+    stage_label_ko: str
+    stored_as: str
+    is_reviewed: bool
+    disagrees_with_automation: bool = Field(
+        description=(
+            "사람의 결론이 자동 판정과 어긋나는가. 이 값이 쌓이는 곳이 곧 자동 판정을 "
+            "고쳐야 하는 자리입니다."
+        )
+    )

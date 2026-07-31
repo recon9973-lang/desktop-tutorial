@@ -912,6 +912,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/review-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 사람이 확인해야 하는 위험 지적
+         * @description 심각한 것부터 나옵니다. 결론이 난 건은 빠지지만 **근거 보강 대기는 남습니다** — 그것은 끝난 것이 아니라 멈춰 있는 것이고, 목록에서 빠지면 영영 아무도 다시 보지 않습니다.
+         *
+         *     `claim_text` 는 기계가 답변에서 잘라낸 **그 문장 그대로**입니다. 요약하면 '백세온담한의원'과 '온담한의원'의 차이가 사라지고, 그 차이가 이 판정의 전부입니다.
+         */
+        get: operations["review_queue_api_observations_review_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/review-queue/{assessment_id}/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 이 건을 맡는다
+         * @description 자동 판정이 사람 앞에 놓이는 **유일한 입구**입니다. 맡지 않은 건은 판정할 수 없으며, 맡은 뒤 30분 동안 판단이 없으면 점유가 풀려 다른 검수자가 집을 수 있습니다 — 반납을 눌러야만 풀리게 두면 큐가 서서히 잠깁니다.
+         */
+        post: operations["review_claim_api_observations_review_queue__assessment_id__claim_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/review-queue/{assessment_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 검수 결론을 남긴다
+         * @description **자동 판정은 이 요청으로 바뀌지 않습니다.** 사람의 결론은 별도 칸에 쌓이고, 두 기록이 어긋나는 경우까지 나란히 남습니다 — 사람이 옳다고 해서 기계가 뭐라고 했는지를 지우면 자동 판정이 어디서 빗나가는지 셀 수 없게 됩니다.
+         *
+         *     맡지 않은 건은 판정할 수 없습니다. 전이 규칙이 그 간선을 선언하지 않았습니다.
+         */
+        post: operations["review_decide_api_observations_review_queue__assessment_id__decide_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/review-queue/{assessment_id}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 판단하지 않고 반납한다
+         * @description 판단하지 않았다는 사실도 기록으로 남습니다.
+         */
+        post: operations["review_release_api_observations_review_queue__assessment_id__release_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/observations/runs": {
         parameters: {
             query?: never;
@@ -1845,6 +1929,18 @@ export interface components {
         /** ApiResponse[RescoreSummaryPayload] */
         ApiResponse_RescoreSummaryPayload_: {
             data?: components["schemas"]["RescoreSummaryPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ReviewQueuePayload] */
+        ApiResponse_ReviewQueuePayload_: {
+            data?: components["schemas"]["ReviewQueuePayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ReviewedItemPayload] */
+        ApiResponse_ReviewedItemPayload_: {
+            data?: components["schemas"]["ReviewedItemPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -5369,6 +5465,109 @@ export interface components {
             sources?: components["schemas"]["SourceAttribution"][];
         };
         /**
+         * ReviewDecisionRequest
+         * @description 검수자의 결론.
+         *
+         *     **자동 판정은 이 요청으로 바뀌지 않습니다.** 사람의 결론은 별도 칸에 쌓이고, 두 기록이
+         *     어긋나는 경우까지 나란히 남습니다. 사람이 옳다고 해서 기계가 뭐라고 했는지를 지우면
+         *     자동 판정이 어디서 빗나가는지 셀 수 없게 됩니다.
+         */
+        ReviewDecisionRequest: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "CONFIRMED" | "REJECTED" | "NEEDS_MORE_EVIDENCE";
+            /** Note Ko */
+            note_ko?: string | null;
+            /**
+             * Rejection Reason
+             * @description 기각할 때는 필수입니다.
+             */
+            rejection_reason?: ("CLAIM_IS_ACCURATE" | "EVIDENCE_INSUFFICIENT" | "WRONG_ENTITY" | "SPAN_MISREAD" | "DUPLICATE" | "OUT_OF_SCOPE") | null;
+        };
+        /**
+         * ReviewQueueItem
+         * @description 검수 대기 한 건 — 기계가 **실제로 본 글자**와 함께.
+         */
+        ReviewQueueItem: {
+            /**
+             * Assessment Id
+             * Format: uuid
+             */
+            assessment_id: string;
+            /** Automated Rationale Ko */
+            automated_rationale_ko: string;
+            /** Automated Verdict */
+            automated_verdict: string;
+            /** Band Label Ko */
+            band_label_ko: string;
+            /**
+             * Claim Text
+             * @description 기계가 답변에서 잘라낸 그 문장입니다. 요약이 아닙니다 — 검수자가 판단하려면 '백세온담한의원'과 '온담한의원'의 차이를 직접 봐야 합니다.
+             */
+            claim_text: string;
+            /**
+             * Is Held By Someone
+             * @description 다른 검수자가 맡고 있는지. **누가 맡았는지는 알려주지 않습니다** — 검수 화면이 조직원 명단을 흘리는 자리가 되면 안 됩니다.
+             */
+            is_held_by_someone: boolean;
+            /** Is Mine */
+            is_mine: boolean;
+            /** Kind */
+            kind: string;
+            /** Severity */
+            severity: string;
+            /** Stage */
+            stage: string;
+            /** Stage Label Ko */
+            stage_label_ko: string;
+        };
+        /**
+         * ReviewQueuePayload
+         * @description 검수 대기 목록 — 심각한 것부터.
+         *
+         *     결론이 난 건은 빠지지만 **근거 보강 대기는 남습니다.** 그것은 끝난 것이 아니라 멈춰
+         *     있는 것이고, 목록에서 빠지면 영영 아무도 다시 보지 않습니다.
+         */
+        ReviewQueuePayload: {
+            /** Items */
+            items: components["schemas"]["ReviewQueueItem"][];
+            /**
+             * Rejection Reasons
+             * @description 기각 사유는 닫힌 목록입니다. 자유 서술은 셀 수 없고, 기각을 기록하는 이유가 **자동 판정이 어디서 빗나가는지 세기 위해서**입니다.
+             */
+            rejection_reasons: {
+                [key: string]: string;
+            }[];
+            /** Total */
+            total: number;
+        };
+        /**
+         * ReviewedItemPayload
+         * @description 한 건의 검수 결과 — 기계가 뭐라고 했는지와 함께.
+         */
+        ReviewedItemPayload: {
+            /**
+             * Assessment Id
+             * Format: uuid
+             */
+            assessment_id: string;
+            /**
+             * Disagrees With Automation
+             * @description 사람의 결론이 자동 판정과 어긋나는가. 이 값이 쌓이는 곳이 곧 자동 판정을 고쳐야 하는 자리입니다.
+             */
+            disagrees_with_automation: boolean;
+            /** Is Reviewed */
+            is_reviewed: boolean;
+            /** Stage */
+            stage: string;
+            /** Stage Label Ko */
+            stage_label_ko: string;
+            /** Stored As */
+            stored_as: string;
+        };
+        /**
          * RiskFindingsPayload
          * @description 이 실행이 남긴 위험 판정 — **공개 게이트를 지난 뒤의 모습**입니다.
          *
@@ -8357,6 +8556,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_PromptSetPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_queue_api_observations_review_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ReviewQueuePayload_"];
+                };
+            };
+        };
+    };
+    review_claim_api_observations_review_queue__assessment_id__claim_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ReviewedItemPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_decide_api_observations_review_queue__assessment_id__decide_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ReviewedItemPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_release_api_observations_review_queue__assessment_id__release_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assessment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ReviewedItemPayload_"];
                 };
             };
             /** @description Validation Error */

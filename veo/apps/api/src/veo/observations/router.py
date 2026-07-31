@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
@@ -29,12 +30,20 @@ from veo.jobs import service as jobs
 from veo.jobs.execution import run_detached
 from veo.jobs.router import job_payload
 from veo.jobs.schemas import JobPayload
+from veo.observations import review_service
 from veo.observations.execution import EngineChoice, answer_facts
 from veo.observations.findings import assessment_kinds_not_yet_produced, reviews_for_run
 from veo.observations.jobs import OBSERVATION_STAGES, observation_work
 from veo.observations.metrics import visibility_metrics
 from veo.observations.prompts import PromptSet, PromptSetImbalanceError
 from veo.observations.providers.registry import _STATE_LABELS_KO
+from veo.observations.review.decisions import (
+    IllegalReviewTransitionError,
+    RejectionReason,
+    ReviewedAssessment,
+    ReviewStage,
+    describe_stage_ko,
+)
 from veo.observations.review.gating import apply_publication_gate
 from veo.observations.runs import AccountState, SearchMode
 from veo.observations.schemas import (
@@ -48,6 +57,10 @@ from veo.observations.schemas import (
     PromptSetListPayload,
     PromptSetPayload,
     PromptSummary,
+    ReviewDecisionRequest,
+    ReviewedItemPayload,
+    ReviewQueueItem,
+    ReviewQueuePayload,
     RiskFindingsPayload,
     VisibilityMetricsPayload,
 )
@@ -70,6 +83,9 @@ router = APIRouter(prefix="/observations", tags=["observations"])
 
 ObservationReader = Annotated[Principal, Depends(guard(Permission.OBSERVATION_READ))]
 ObservationRunner_ = Annotated[Principal, Depends(guard(Permission.OBSERVATION_RUN))]
+#: 위험 지적을 확정하는 것은 **고객에게 그의 평판에 대해 무엇을 말할지** 정하는 일이다.
+#: 보고서 발행과 같은 급이라 별도 권한으로 둔다.
+ObservationReviewer = Annotated[Principal, Depends(guard(Permission.OBSERVATION_REVIEW))]
 
 @router.get(
     "/engines",
@@ -400,6 +416,176 @@ def run_risks(
             kinds_not_yet_produced=[dict(item) for item in assessment_kinds_not_yet_produced()],
         ),
         request_id,
+    )
+
+
+@router.get(
+    "/review-queue",
+    response_model=ApiResponse[ReviewQueuePayload],
+    summary="사람이 확인해야 하는 위험 지적",
+    description=(
+        "심각한 것부터 나옵니다. 결론이 난 건은 빠지지만 **근거 보강 대기는 남습니다** — "
+        "그것은 끝난 것이 아니라 멈춰 있는 것이고, 목록에서 빠지면 영영 아무도 다시 보지 "
+        "않습니다.\n\n"
+        "`claim_text` 는 기계가 답변에서 잘라낸 **그 문장 그대로**입니다. 요약하면 "
+        "'백세온담한의원'과 '온담한의원'의 차이가 사라지고, 그 차이가 이 판정의 전부입니다."
+    ),
+)
+def review_queue(
+    principal: ObservationReviewer,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ReviewQueuePayload]:
+    items = review_service.pending_for_review(db, principal)
+    return ok(
+        ReviewQueuePayload(
+            items=[_queue_item(db, principal, row_id, review) for row_id, review in items],
+            total=len(items),
+            rejection_reasons=[
+                {"value": reason.value, "label_ko": reason.label_ko}
+                for reason in RejectionReason
+            ],
+        ),
+        request_id,
+    )
+
+
+@router.post(
+    "/review-queue/{assessment_id}/claim",
+    response_model=ApiResponse[ReviewedItemPayload],
+    summary="이 건을 맡는다",
+    description=(
+        "자동 판정이 사람 앞에 놓이는 **유일한 입구**입니다. 맡지 않은 건은 판정할 수 "
+        f"없으며, 맡은 뒤 {int(review_service.CLAIM_EXPIRES_AFTER.total_seconds() // 60)}분 "
+        "동안 판단이 없으면 점유가 풀려 다른 검수자가 집을 수 있습니다 — 반납을 눌러야만 "
+        "풀리게 두면 큐가 서서히 잠깁니다."
+    ),
+)
+def review_claim(
+    assessment_id: uuid.UUID,
+    principal: ObservationReviewer,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ReviewedItemPayload]:
+    return _review_call(
+        db,
+        request_id,
+        lambda: review_service.claim(db, principal, assessment_id, request_id=request_id),
+    )
+
+
+@router.post(
+    "/review-queue/{assessment_id}/release",
+    response_model=ApiResponse[ReviewedItemPayload],
+    summary="판단하지 않고 반납한다",
+    description="판단하지 않았다는 사실도 기록으로 남습니다.",
+)
+def review_release(
+    assessment_id: uuid.UUID,
+    principal: ObservationReviewer,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ReviewedItemPayload]:
+    return _review_call(
+        db,
+        request_id,
+        lambda: review_service.release(db, principal, assessment_id, request_id=request_id),
+    )
+
+
+@router.post(
+    "/review-queue/{assessment_id}/decide",
+    response_model=ApiResponse[ReviewedItemPayload],
+    summary="검수 결론을 남긴다",
+    description=(
+        "**자동 판정은 이 요청으로 바뀌지 않습니다.** 사람의 결론은 별도 칸에 쌓이고, "
+        "두 기록이 어긋나는 경우까지 나란히 남습니다 — 사람이 옳다고 해서 기계가 뭐라고 "
+        "했는지를 지우면 자동 판정이 어디서 빗나가는지 셀 수 없게 됩니다.\n\n"
+        "맡지 않은 건은 판정할 수 없습니다. 전이 규칙이 그 간선을 선언하지 않았습니다."
+    ),
+)
+def review_decide(
+    assessment_id: uuid.UUID,
+    body: ReviewDecisionRequest,
+    principal: ObservationReviewer,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ReviewedItemPayload]:
+    if body.decision == "REJECTED" and body.rejection_reason is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "기각에는 사유가 필요합니다. 사유 없는 기각은 자동 판정이 어디서 "
+                "빗나가는지 세는 데 아무 도움이 되지 않습니다."
+            ),
+        )
+    return _review_call(
+        db,
+        request_id,
+        lambda: review_service.decide(
+            db,
+            principal,
+            assessment_id,
+            target=ReviewStage(body.decision),
+            rejection_reason=(
+                RejectionReason(body.rejection_reason) if body.rejection_reason else None
+            ),
+            note_ko=body.note_ko,
+            request_id=request_id,
+        ),
+    )
+
+
+def _review_call(
+    db: Session, request_id: str, action: Callable[[], ReviewedAssessment]
+) -> ApiResponse[ReviewedItemPayload]:
+    """검수 호출 셋이 공유하는 것: 실패를 어떤 상태 코드로 말하는가.
+
+    409 와 422 를 구분한다. 전자는 **지금은 안 되지만 나중엔 될 수 있다**(다른 사람이
+    맡고 있다), 후자는 **이 순서로는 안 된다**(맡지도 않고 판정하려 한다). 둘을 합치면
+    검수자가 새로고침만 반복하게 된다.
+    """
+    try:
+        moved = action()
+    except review_service.AssessmentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="assessment not found") from exc
+    except review_service.ReviewConflictError as exc:
+        raise HTTPException(status_code=409, detail=exc.message_ko) from exc
+    except IllegalReviewTransitionError as exc:
+        raise HTTPException(status_code=422, detail=exc.message_ko) from exc
+    db.commit()
+    return ok(
+        ReviewedItemPayload(
+            assessment_id=uuid.UUID(moved.assessment.assessment_id),
+            stage=moved.stage.value,
+            stage_label_ko=describe_stage_ko(moved.stage),
+            stored_as=moved.stage.to_contract_state().value,
+            is_reviewed=moved.is_reviewed,
+            disagrees_with_automation=moved.disagrees,
+        ),
+        request_id,
+    )
+
+
+def _queue_item(
+    db: Session, principal: Principal, row_id: uuid.UUID, review: ReviewedAssessment
+) -> ReviewQueueItem:
+    from veo.db.models.observation import ClaimAssessment as ClaimAssessmentRow
+
+    row = db.get(ClaimAssessmentRow, row_id)
+    held_by = row.claimed_by if row is not None else None
+    return ReviewQueueItem(
+        assessment_id=row_id,
+        kind=review.assessment.kind.value,
+        band_label_ko=review.assessment.band.label_ko,
+        severity=review.assessment.severity.value,
+        claim_text=review.assessment.claim_text,
+        automated_verdict=review.assessment.automated.verdict.value,
+        automated_rationale_ko=review.assessment.automated.rationale_ko,
+        stage=review.stage.value,
+        stage_label_ko=describe_stage_ko(review.stage),
+        is_held_by_someone=held_by is not None and held_by != principal.user_id,
+        is_mine=held_by == principal.user_id,
     )
 
 

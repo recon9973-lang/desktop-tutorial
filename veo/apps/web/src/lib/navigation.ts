@@ -76,6 +76,12 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     permission: 'observation:read',
   },
   {
+    href: '/console/review',
+    label: '위험 검수',
+    description: 'AI 답변 지적을 사람이 확인',
+    permission: 'observation:review',
+  },
+  {
     href: '/console/keywords',
     label: '키워드',
     description: '네이버 키워드 인텔리전스',
