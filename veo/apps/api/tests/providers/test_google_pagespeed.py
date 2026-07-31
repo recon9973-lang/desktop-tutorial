@@ -20,7 +20,9 @@ from veo.contracts.enums import DataSource, ProviderState, ValueQuality
 from veo.providers.google.credentials import PageSpeedCredentials
 from veo.providers.google.crux import FieldDataState, FieldMeasurement, FieldMetric
 from veo.providers.google.errors import UNKNOWN
+from veo.providers.google.http import API_KEY_HEADER, DEFAULT_TIMEOUT_SECONDS
 from veo.providers.google.pagespeed import (
+    PAGESPEED_TIMEOUT_SECONDS,
     RUNPAGESPEED_PATH,
     LabAudit,
     LabMeasurement,
@@ -213,7 +215,25 @@ def test_the_client_calls_the_documented_endpoint_with_the_strategy() -> None:
     assert isinstance(params, dict)
     assert params["url"] == SITE_URL
     assert params["strategy"] == "DESKTOP"
-    assert params["key"] == "synthetic-pagespeed-key"
+
+
+def test_the_api_key_travels_in_a_header_and_never_in_the_url() -> None:
+    """The key goes where logs do not reach by default.
+
+    Both halves matter. Asserting only the header would let a query-string copy survive
+    beside it, and the URL is the copy that ends up in access logs and proxy histories —
+    the whole reason for moving it (INTEGRATION_REQUEST.md §5).
+    """
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["header"] = request.headers.get(API_KEY_HEADER)
+        seen["url"] = str(request.url)
+        return httpx.Response(200, json=runpagespeed_response())
+
+    build_client(handler).measure(SITE_URL)
+    assert seen["header"] == "synthetic-pagespeed-key"
+    assert "synthetic-pagespeed-key" not in str(seen["url"])
 
 
 def test_without_a_credential_no_connection_is_opened() -> None:
@@ -329,3 +349,30 @@ def test_the_api_key_never_appears_in_a_repr_or_a_failure() -> None:
     assert "synthetic-pagespeed-key" not in repr(client)
     assert outcome.failure is not None
     assert "synthetic-pagespeed-key" not in outcome.failure.reason_ko
+
+
+def test_pagespeed_waits_longer_than_the_other_google_calls() -> None:
+    """A cold Lighthouse run outlasts the shared timeout, and the shared timeout hides it.
+
+    Measured on 2026-08-01: four first-time URLs took 16.0s, 24.1s, 28.3s and 59.8s. All
+    four exceed DEFAULT_TIMEOUT_SECONDS. The reason this needs a test rather than a
+    comment is that the bug is invisible in development — Google serves a repeat
+    measurement of the same URL from cache in ~0.3s, so any URL already measured once
+    keeps passing while every customer's first scan fails.
+    """
+    assert PAGESPEED_TIMEOUT_SECONDS > DEFAULT_TIMEOUT_SECONDS
+    assert PAGESPEED_TIMEOUT_SECONDS >= 60.0
+
+
+def test_the_client_uses_the_pagespeed_timeout_by_default() -> None:
+    """The constant is only worth anything if the client actually defaults to it."""
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["timeout"] = request.extensions.get("timeout")
+        return httpx.Response(200, json=runpagespeed_response())
+
+    build_client(handler).measure(SITE_URL)
+    timeout = seen["timeout"]
+    assert isinstance(timeout, dict)
+    assert timeout["read"] == PAGESPEED_TIMEOUT_SECONDS

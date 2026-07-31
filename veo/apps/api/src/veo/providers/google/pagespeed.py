@@ -22,9 +22,33 @@ URL are two measurements, not two readings of one. The strategy is recorded on t
 measurement and on every audit inside it, so a stored figure can never be compared against
 one taken on the other form factor without that being visible.
 
-**Unverified.** VEO holds no PageSpeed key, so no field name below has been checked
-against a live response; they follow the published documentation. ``INTEGRATION_REQUEST``
-§A lists precisely what was inferred.
+**Verified against live responses** on 2026-08-01 (Lighthouse 13.4.1, mobile). Every field
+name below was read from a real ``runPagespeed`` payload: ``lighthouseResult.audits``
+carried all four lab audits with the expected ``numericValue``/``numericUnit``/
+``displayValue`` shape, and ``loadingExperience`` carried five CrUX metrics with
+``unmapped_metrics`` empty — nothing in the response was left unexplained. The names had
+been inferred from documentation until then; ``INTEGRATION_REQUEST`` §A records what was
+inferred and is now confirmed.
+
+The mapping was also checked against Google's own web UI for the same URL, which is the
+check that matters: VEO reported a performance score of 60 and "no field sample" for
+``chamsarang1075.com``, and the PageSpeed Insights page reported 60 and 데이터 없음.
+
+Three things the live calls showed that the documentation does not:
+
+* **A cold measurement takes far longer than any other Google call here** — see
+  :data:`PAGESPEED_TIMEOUT_SECONDS`, which exists because of it.
+* **Repeat calls to the same URL are served from Google's cache**, in ~0.3s, with an
+  identical score. Two *cold* runs of one URL, by contrast, returned 0.64 and 0.83. The
+  lab run is a simulation on shared infrastructure and it moves; a single reading is one
+  draw, not the site's speed. Anything built on these numbers — a score, a trend line, a
+  regression alarm — has to survive that spread, and must not mistake a cached repeat for
+  a confirming second opinion.
+* **A rejected key arrives as 400, not 401**, with ``details[].reason ==
+  "API_KEY_INVALID"``. So does a target site Lighthouse could not load
+  (``FAILED_DOCUMENT_REQUEST``). Two unrelated causes, one status, and
+  :func:`~veo.providers.google.errors.classify_status` currently calls both a schema
+  surprise — see the open item in the task list.
 """
 
 from __future__ import annotations
@@ -59,8 +83,8 @@ from veo.providers.google.errors import (
     RetryPolicy,
 )
 from veo.providers.google.http import (
+    API_KEY_HEADER,
     DEFAULT_MAX_RESPONSE_BYTES,
-    DEFAULT_TIMEOUT_SECONDS,
     GoogleHttpCaller,
 )
 
@@ -68,6 +92,7 @@ __all__ = [
     "API_VERSION",
     "LAB_AUDIT_IDS",
     "PAGESPEED_BASE_URL",
+    "PAGESPEED_TIMEOUT_SECONDS",
     "RUNPAGESPEED_PATH",
     "LabAudit",
     "LabMeasurement",
@@ -83,6 +108,19 @@ RUNPAGESPEED_PATH: Final = "/pagespeedonline/v5/runPagespeed"
 
 #: VEO's label for *this mapping*, not a version Google publishes.
 API_VERSION: Final = "google.pagespeed.v5.map.v1"
+
+#: PageSpeed does not answer a question — it *runs Lighthouse* and answers when it is done.
+#:
+#: That makes it unlike every other call in this package, and the shared
+#: :data:`~veo.providers.google.http.DEFAULT_TIMEOUT_SECONDS` (15s) is far too short for
+#: it. Four cold measurements on 2026-08-01 took **16.0s, 24.1s, 28.3s and 59.8s** — every
+#: one of them over the shared default.
+#:
+#: The failure this prevents is the worst kind, because it hides. Google serves a repeat
+#: measurement of the same URL from cache in ~0.3s, so a URL measured once during
+#: development answers instantly forever after. The timeout is only ever hit by a URL
+#: nobody has measured yet — which is precisely every customer's site, on their first scan.
+PAGESPEED_TIMEOUT_SECONDS: Final = 120.0
 
 #: The four Lighthouse audits VEO reads. LCP, CLS and TBT back the three ``*_lab`` checks;
 #: FCP is collected because it is the first thing an operator asks about when LCP is bad,
@@ -351,7 +389,7 @@ class PageSpeedClient:
         sleep: Callable[[float], None] = time.sleep,
         policy: RetryPolicy | None = None,
         breaker: GoogleCircuitBreaker | None = None,
-        timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+        timeout_seconds: float = PAGESPEED_TIMEOUT_SECONDS,
         max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
         locale: str = "ko",
     ) -> None:
@@ -407,11 +445,16 @@ class PageSpeedClient:
                     "strategy": strategy.value,
                     "category": _CATEGORY,
                     "locale": self._locale,
-                    # PageSpeed authenticates an API key through the query string. That is
-                    # the documented form; the trade-off (keys in access logs and proxy
-                    # histories) is recorded in INTEGRATION_REQUEST.md §5.
-                    "key": credentials.api_key.get_secret_value(),
                 },
+                # The key travels in a header, never in the query string. Google documents
+                # `?key=`, and it works — but a URL is the one part of a request that gets
+                # written down by everything it passes through: access logs, proxy
+                # histories, error reports, browser history if a URL is ever pasted. A
+                # header is not immune to logging, but nothing logs it by default.
+                #
+                # Header authentication was an unverified guess until 2026-08-01, when a
+                # live call returned 200 for both forms (INTEGRATION_REQUEST.md §5, §A-1).
+                headers={API_KEY_HEADER: credentials.api_key.get_secret_value()},
             )
             return normalize_runpagespeed(
                 answer.json_object(),

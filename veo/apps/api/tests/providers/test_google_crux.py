@@ -34,6 +34,7 @@ from veo.providers.google.crux import (
     normalize_query_record,
 )
 from veo.providers.google.errors import UNKNOWN
+from veo.providers.google.http import API_KEY_HEADER
 
 COLLECTED_AT = datetime(2026, 7, 28, 3, 5, tzinfo=UTC)
 CREDENTIALS = PageSpeedCredentials(api_key=SecretStr("synthetic-pagespeed-key"))
@@ -173,10 +174,26 @@ def test_the_client_posts_to_the_documented_endpoint() -> None:
     build_client(handler).query_record(SITE_URL)
     assert seen["method"] == "POST"
     assert seen["path"] == QUERY_RECORD_PATH
-    params = seen["params"]
-    assert isinstance(params, dict)
-    assert params["key"] == "synthetic-pagespeed-key"
     assert SITE_URL in str(seen["body"])
+
+
+def test_the_api_key_travels_in_a_header_and_never_in_the_url() -> None:
+    """Same rule as PageSpeed: the key stays out of anything that gets logged by default.
+
+    CrUX is the easier one to forget — its request already carries a JSON body, so a key
+    in the query string looks like it is out of the way. It is not: the URL is still what
+    a proxy writes down.
+    """
+    seen: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["header"] = request.headers.get(API_KEY_HEADER)
+        seen["url"] = str(request.url)
+        return httpx.Response(200, json=crux_query_record_response())
+
+    build_client(handler).query_record(SITE_URL)
+    assert seen["header"] == "synthetic-pagespeed-key"
+    assert "synthetic-pagespeed-key" not in str(seen["url"])
 
 
 def test_an_origin_query_is_a_different_scope_not_a_different_url() -> None:

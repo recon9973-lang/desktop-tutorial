@@ -49,6 +49,7 @@ from veo.providers.google.errors import (
     RetryPolicy,
 )
 from veo.providers.google.http import (
+    API_KEY_HEADER,
     DEFAULT_MAX_RESPONSE_BYTES,
     DEFAULT_TIMEOUT_SECONDS,
     GoogleHttpCaller,
@@ -505,7 +506,7 @@ class CruxClient:
             answer = self._http.request(
                 "POST",
                 f"{self._base_url}{QUERY_RECORD_PATH}",
-                params={"key": credentials.api_key.get_secret_value()},
+                headers={API_KEY_HEADER: credentials.api_key.get_secret_value()},
                 json_body={"origin" if scope is FieldScope.ORIGIN else "url": key},
                 accept_statuses=(200, 404),
             )

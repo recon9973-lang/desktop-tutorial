@@ -27,11 +27,24 @@ from veo.providers.google.errors import (
 )
 
 __all__ = [
+    "API_KEY_HEADER",
     "DEFAULT_MAX_RESPONSE_BYTES",
     "DEFAULT_TIMEOUT_SECONDS",
     "GoogleHttpCaller",
     "HttpAnswer",
 ]
+
+#: Where an API key belongs on a Google request.
+#:
+#: Google documents ``?key=`` as well, and it works. It is not used here: a URL is the one
+#: part of a request that everything it passes through writes down by default — access
+#: logs, proxy histories, error reports. A header is not unloggable, but nothing logs it
+#: without being told to.
+#:
+#: Verified live on 2026-08-01 against both ``pagespeedonline`` (200, identical payload to
+#: the query-string form) and ``chromeuxreport`` (identical status to the query-string
+#: form, so the header is read the same way on both hosts).
+API_KEY_HEADER: Final = "X-goog-api-key"
 
 DEFAULT_TIMEOUT_SECONDS: Final = 15.0
 
