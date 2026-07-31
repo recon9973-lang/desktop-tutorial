@@ -367,7 +367,16 @@ class TestEvidenceAndCost:
         assert all(citation.domain == BRAND_DOMAIN for citation in citations)
         assert all(citation.is_own_domain for citation in citations)
 
-    def test_a_mention_is_recorded(self, db: Session, tenant) -> None:
+    def test_a_mention_is_recorded_under_the_declared_key_not_the_matched_string(
+        self, db: Session, tenant
+    ) -> None:
+        """`entity_key` 는 선언된 식별자이지 답변에서 걸린 글자가 아니다.
+
+        예전에는 맞은 이름 문자열을 그대로 넣었다. 별칭이 둘이면 같은 브랜드가 한
+        답변에서 두 행이 되고, `UniqueConstraint(ai_answer_id, entity_key)` 가 그것을
+        막지 못한다 — 그러면 한 답변이 언급 2회로 세어진다. `brand_identities.entity_key`
+        가 있는 이유가 그것이다.
+        """
         principal, prompt_set = tenant()
 
         row = _run(db, principal, prompt_set)
@@ -378,7 +387,29 @@ class TestEvidenceAndCost:
             .where(AIAnswer.observation_run_id == row.id)
         ).all()
         assert mentions
-        assert all(mention.entity_key == BRAND_NAME for mention in mentions)
+        keys = {mention.entity_key for mention in mentions}
+        assert len(keys) == 1
+        assert BRAND_NAME not in keys, "표면 문자열이 아니라 선언된 식별자여야 한다"
+        assert next(iter(keys)).startswith("brand-")
+
+    def test_a_confirmed_mention_carries_the_confidence_it_was_given(
+        self, db: Session, tenant
+    ) -> None:
+        """예전에는 여기에 1.0 이 박혀 있었다 — 무엇이 들어오든 만점이었다(0-A)."""
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        mention = db.scalars(
+            select(EntityMention)
+            .join(AIAnswer, EntityMention.ai_answer_id == AIAnswer.id)
+            .where(AIAnswer.observation_run_id == row.id)
+        ).first()
+        assert mention is not None
+        assert mention.needs_human_disambiguation is False
+        assert mention.review_state == "NOT_REVIEWED"
+        # 고유한 상호이므로 확정선을 넘지만, 그것이 "확실함" 은 아니다.
+        assert 0.75 <= mention.match_confidence < 1.0
 
     def test_the_raw_answer_is_a_pointer_not_the_text(self, db: Session, tenant) -> None:
         """원문은 답변 저장소로 간다. DB 에는 포인터와 해시만 남는다."""

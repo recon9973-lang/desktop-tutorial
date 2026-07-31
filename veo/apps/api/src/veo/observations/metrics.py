@@ -83,6 +83,12 @@ class AnswerFact:
     mentioned: bool
     cited: bool
     citation_support: str | None
+    mention_pending_review: bool = False
+    """이름은 나왔는데 **이 고객인지 갈리지 않았다.**
+
+    `mentioned=False` 와 뜻이 다르다. 여기서 분자로 세지 않으므로 언급률은 확정
+    하한이 되고, 그 사실은 :func:`visibility_metrics` 가 비율 옆에 적는다.
+    """
 
 
 @final
@@ -93,6 +99,7 @@ class VisibilityMetrics:
     answers_recorded: int
     answers_valid: int
     answers_with_visible_citations: int
+    answers_pending_disambiguation: int
     mention_rate: ObservedRate
     citation_rate: ObservedRate
     prompt_coverage: ObservedRate
@@ -104,6 +111,7 @@ class VisibilityMetrics:
             "answers_recorded": self.answers_recorded,
             "answers_valid": self.answers_valid,
             "answers_with_visible_citations": self.answers_with_visible_citations,
+            "answers_pending_disambiguation": self.answers_pending_disambiguation,
             "mention_rate": rate_payload(self.mention_rate),
             "citation_rate": rate_payload(self.citation_rate),
             "prompt_coverage": rate_payload(self.prompt_coverage),
@@ -160,11 +168,31 @@ def visibility_metrics(
             "못했습니다. 그 건들은 '언급 없음' 이 아니라 분모에서 빠집니다."
         )
 
+    mentioned_count = sum(1 for answer in valid if answer.mentioned)
+    pending = [answer for answer in valid if answer.mention_pending_review]
     mention_rate = ObservedRate.build(
-        successes=sum(1 for answer in valid if answer.mentioned),
+        successes=mentioned_count,
         trials=len(valid),
         label_ko="언급률",
     )
+    if pending:
+        # 보류를 분자에서 뺐다는 사실은 비율과 **같이** 나가야 한다. 빼 놓고 말하지
+        # 않으면 이 값이 확정 하한이라는 것을 읽는 사람이 알 수 없고, 하한을 실측값으로
+        # 읽으면 우리가 고객의 노출을 실제보다 낮게 보고한 것이 된다.
+        ceiling = (mentioned_count + len(pending)) / len(valid)
+        mention_rate = replace(
+            mention_rate,
+            extra_qualifier_ko=(
+                f"같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 응답이 "
+                f"{len(pending)}건 있습니다. 이 값은 확정된 것만 센 하한이며, 보류가 "
+                f"모두 이 고객으로 확인되면 {ceiling * 100:.1f}% 까지 올라갑니다."
+            ),
+        )
+        caveats.append(
+            f"응답 {len(pending)}건은 상호가 나왔지만 같은 이름의 다른 업체와 갈리지 "
+            "않아 판정을 보류했습니다. '언급 없음' 이 아니라 사람이 확인해야 하는 "
+            "건입니다. 소재지·대표번호를 등록하면 대부분 자동으로 갈립니다."
+        )
     citation_rate = _with_denominator_note(
         ObservedRate.build(
             successes=sum(1 for answer in visible if answer.cited),
@@ -184,6 +212,7 @@ def visibility_metrics(
         answers_recorded=len(answers),
         answers_valid=len(valid),
         answers_with_visible_citations=len(visible),
+        answers_pending_disambiguation=len(pending),
         mention_rate=mention_rate,
         citation_rate=citation_rate,
         prompt_coverage=prompt_coverage,

@@ -124,6 +124,19 @@ class ObservationRun:
     error_code: str | None = None
     citations: tuple[str, ...] = field(default=())
     mentioned_entities: tuple[str, ...] = field(default=())
+    mention_pending_review: bool = False
+    """이름은 나왔는데 **이 고객인지 갈리지 않았다.**
+
+    `brand_mentioned=False` 와 같은 칸에 두면 안 된다. "안 나왔다" 와 "누구인지
+    모르겠다" 는 다른 사실이고, 후자는 사람이 보면 풀리는 것이라 큐로 간다.
+    노출률의 분자로 세지 않으므로 그 비율은 **확정 하한**이 되며, 얼마나 하한인지는
+    :func:`aggregate_rate` 가 보류 건수로 함께 말한다.
+    """
+    mention_confidence: float | None = None
+    """귀속 확신도. `None` 은 이름 자체가 안 나왔다는 뜻이다 — 0.0 과 다른 사실이다."""
+    mention_evidence_ko: tuple[str, ...] = field(default=())
+    mention_first_position: int | None = None
+    mention_raw_occurrences: int = 0
     citation_support: str | None = None
     """이 응답에서 **인용을 볼 수 있었는가**. `STRUCTURED` 이거나 아니거나.
 
@@ -149,6 +162,16 @@ class ObservationRun:
             )
         if self.error_code and self.brand_mentioned:
             raise ValueError(f"{self.run_id}: 실패한 실행은 언급을 주장할 수 없습니다")
+        if self.brand_mentioned and self.mention_pending_review:
+            raise ValueError(
+                f"{self.run_id}: 확정된 언급이 동시에 검수 대기일 수 없습니다. "
+                "보류는 아직 언급이 아닙니다"
+            )
+        if self.mention_pending_review and self.raw_answer_ref is None:
+            raise ValueError(
+                f"{self.run_id}: 검수로 넘기려면 원문 답변이 보관되어야 합니다. "
+                "볼 수 없는 답변에 대해서는 사람도 판단할 수 없습니다"
+            )
 
     @property
     def is_valid_execution(self) -> bool:
@@ -166,6 +189,9 @@ class ObservationRun:
             "raw_answer_hash": self.raw_answer_hash,
             "brand_mentioned": self.brand_mentioned,
             "brand_cited": self.brand_cited,
+            "mention_pending_review": self.mention_pending_review,
+            "mention_confidence": self.mention_confidence,
+            "mention_evidence_ko": list(self.mention_evidence_ko),
             "citations": list(self.citations),
             "mentioned_entities": list(self.mentioned_entities),
             "latency_ms": self.latency_ms,
@@ -215,15 +241,32 @@ def aggregate_rate(
 
     rate = ObservedRate.build(successes=successes, trials=len(valid), label_ko=label_ko)
 
+    notes: list[str] = []
+
     if len(groups) > 1:
         # The caller asked for a mixed rate. It is still allowed to exist, but it is not
         # allowed to look like a single clean measurement.
         labels = sorted({item.conditions.label_ko for item in valid})
-        note = (
+        notes.append(
             f"측정 조건이 서로 다른 실행 {len(groups)}종을 합친 값입니다 "
             f"({', '.join(labels)}). 엔진·모델별로 답이 달라 이 비율 하나로 "
             "특정 엔진에서의 노출을 말할 수 없습니다."
         )
-        return dataclasses.replace(rate, extra_qualifier_ko=note)
+
+    # 보류를 분자에서 뺐다는 사실은 비율과 **같이** 나가야 한다. 빼 놓고 말하지 않으면
+    # 이 값이 확정 하한이라는 것을 읽는 사람이 알 방법이 없고, 하한을 실측값으로
+    # 읽으면 우리가 고객의 노출을 실제보다 낮게 보고한 것이 된다.
+    pending = sum(1 for item in valid if item.mention_pending_review)
+    if pending:
+        ceiling = (successes + pending) / len(valid) if valid else 0.0
+        notes.append(
+            f"같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 실행이 {pending}건 "
+            f"있습니다. 이 값은 확정된 것만 센 하한이며, 보류가 모두 이 고객으로 "
+            f"확인되면 {ceiling * 100:.1f}% 까지 올라갑니다. 검수 대기 목록에서 "
+            "확인할 수 있습니다."
+        )
+
+    if notes:
+        return dataclasses.replace(rate, extra_qualifier_ko=" ".join(notes))
 
     return rate

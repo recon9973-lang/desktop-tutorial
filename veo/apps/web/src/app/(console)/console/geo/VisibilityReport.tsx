@@ -121,6 +121,16 @@ function Counts({
           value={metrics.answers_with_visible_citations}
           alarming={metrics.answers_with_visible_citations === 0}
         />
+        {/*
+          보류를 세지 않으면 언급률이 왜 낮은지 화면에서 알 방법이 없다. 이 칸이
+          비어 있는 것과 "이름이 안 나왔다" 는 전혀 다른 조치로 이어진다 —
+          전자는 등록 정보를 채우면 풀리고, 후자는 노출 작업이 필요하다.
+        */}
+        <Count
+          label="같은 이름 때문에 보류"
+          value={metrics.answers_pending_disambiguation}
+          alarming={metrics.answers_pending_disambiguation > 0}
+        />
       </dl>
 
       {run.stopped_reason !== null ? (

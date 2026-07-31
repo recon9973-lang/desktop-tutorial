@@ -21,6 +21,7 @@ from typing import Any
 from pydantic import SecretStr
 
 from veo.core.settings import ProviderCredentials
+from veo.observations.detection.disambiguation import BrandProfile
 from veo.observations.prompts import Funnel, Intent, Prompt, PromptSet, Subject
 from veo.observations.providers.base import ModelPrice, PriceTable
 from veo.observations.providers.registry import PROVIDER_CLASSES
@@ -35,6 +36,16 @@ BRAND_DOMAIN = "synthetic-brand.example"
 RIVAL_DOMAIN = "synthetic-rival.example"
 
 BRAND = BrandTarget(names=(BRAND_NAME,), domains=(BRAND_DOMAIN,))
+
+#: 같은 브랜드를 판별기가 읽는 형태로. `합성브랜드` 는 지역명도 흔한 어간도 아니므로
+#: 이름만으로 확정선을 넘는다 — 이 스위트가 재는 것은 귀속이 아니라 실행기라서, 매 시험이
+#: 검수 대기로 떨어지면 재려던 것을 못 재게 된다. 귀속 자체는
+#: `tests/observations/test_attribution.py` 와 `tests/observations/detection/` 이 잰다.
+BRAND_PROFILE = BrandProfile(
+    entity_key="synthetic-brand",
+    display_name=BRAND_NAME,
+    own_domains=(BRAND_DOMAIN,),
+)
 
 OPENAI_MODEL = "gpt-5"
 OPENAI_MODEL_VERSION = "gpt-5-2026-05-01"

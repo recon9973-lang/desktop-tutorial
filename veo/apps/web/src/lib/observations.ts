@@ -35,6 +35,9 @@ export interface VisibilityMetrics {
   readonly answers_recorded: number;
   readonly answers_valid: number;
   readonly answers_with_visible_citations: number;
+  /** 상호는 나왔지만 같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 응답 수.
+   *  '언급 없음' 과 같은 칸에 두면 안 된다 — 사람이 보면 풀리는 건이다. */
+  readonly answers_pending_disambiguation: number;
   readonly mention_rate: Rate;
   readonly citation_rate: Rate;
   readonly prompt_coverage: Rate;

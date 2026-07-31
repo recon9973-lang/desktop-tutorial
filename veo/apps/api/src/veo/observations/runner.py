@@ -32,11 +32,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
-from urllib.parse import urlsplit
 
 from veo.contracts.enums import ErrorCode, ProviderState
 from veo.observations.prompts import Prompt, PromptSet
-from veo.observations.providers.base import CitationSupport, ProviderAnswer
+from veo.observations.providers.base import ProviderAnswer
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import (
     AnswerRecordKey,
@@ -57,7 +56,6 @@ __all__ = [
     "RunReport",
     "SkippedWork",
     "StopReason",
-    "SubstringMentionDetector",
 ]
 
 LOGGER = logging.getLogger("veo.observations.runner")
@@ -100,15 +98,35 @@ class BrandTarget:
 
 @dataclass(frozen=True, slots=True)
 class MentionVerdict:
-    """What was found in one answer, and what can be evidenced about it."""
+    """What was found in one answer, and what can be evidenced about it.
+
+    Three outcomes, not two. ``mentioned`` and ``needs_review`` are mutually exclusive:
+    a name that appeared but could not be pinned to *this* customer is held, never
+    counted. Guessing at it is wrong in one direction only — upwards — and the customer
+    has no way to see it.
+    """
 
     mentioned: bool
     cited: bool
     matched_entities: tuple[str, ...] = ()
+    needs_review: bool = False
+    confidence: float | None = None
+    """How sure the attribution was. ``None`` means the name did not appear at all —
+    which is a different fact from "appeared, confidence zero" and must not share a cell
+    with it."""
+    evidence_ko: tuple[str, ...] = ()
+    """The reasons, in the words a reviewer will read. A held finding with no reason
+    reads as a malfunction rather than as a question."""
+    first_position: int | None = None
+    raw_occurrence_count: int = 0
 
     def __post_init__(self) -> None:
         if self.cited and not self.mentioned:
             raise ValueError("인용은 언급을 포함합니다")
+        if self.mentioned and self.needs_review:
+            raise ValueError(
+                "확정과 보류를 동시에 주장할 수 없습니다. 보류는 아직 언급이 아닙니다"
+            )
 
 
 @runtime_checkable
@@ -116,54 +134,6 @@ class MentionDetector(Protocol):
     """Decides whether one stored answer mentions or cites the brand."""
 
     def judge(self, record: RecordedAnswer) -> MentionVerdict: ...
-
-
-class SubstringMentionDetector:
-    """Literal, case-insensitive name matching plus structural citation matching.
-
-    Deliberately dumb about the text: it looks for the brand's own strings and nothing
-    else. No stemming, no fuzzy matching, no "probably them" — those turn a measurement
-    into a judgement, and the judgement would be invisible in the resulting percentage.
-
-    A citation is only ever counted when the provider returned citation *objects*
-    (:attr:`CitationSupport.STRUCTURED`). Where the API exposed none, a brand URL sitting
-    in the prose proves nothing about which sources the engine used, and is ignored.
-
-    A cited brand domain implies a mention: the engine reached for the brand's own source
-    even if it did not spell the name out, and the run contract requires citation to
-    imply mention.
-    """
-
-    def __init__(self, brand: BrandTarget) -> None:
-        self._names = tuple(name.strip() for name in brand.names if name.strip())
-        self._domains = tuple(domain.strip().lower().lstrip(".") for domain in brand.domains)
-
-    def judge(self, record: RecordedAnswer) -> MentionVerdict:
-        haystack = record.text.casefold()
-        matched = tuple(name for name in self._names if name.casefold() in haystack)
-
-        cited_domains: tuple[str, ...] = ()
-        if record.citation_support is CitationSupport.STRUCTURED:
-            cited_domains = tuple(
-                domain
-                for domain in self._domains
-                if any(_host_matches(url, domain) for url in record.citations)
-            )
-
-        cited = bool(cited_domains)
-        return MentionVerdict(
-            mentioned=bool(matched) or cited,
-            cited=cited,
-            matched_entities=(*matched, *cited_domains),
-        )
-
-
-def _host_matches(url: str, domain: str) -> bool:
-    host = urlsplit(url).hostname
-    if host is None:
-        return False
-    host = host.casefold()
-    return host == domain or host.endswith(f".{domain}")
 
 
 # --------------------------------------------------------------------------- #
@@ -578,6 +548,11 @@ class ObservationRunner:
             error_code=None,
             citations=record.citations,
             mentioned_entities=verdict.matched_entities,
+            mention_pending_review=verdict.needs_review,
+            mention_confidence=verdict.confidence,
+            mention_evidence_ko=verdict.evidence_ko,
+            mention_first_position=verdict.first_position,
+            mention_raw_occurrences=verdict.raw_occurrence_count,
         )
 
 

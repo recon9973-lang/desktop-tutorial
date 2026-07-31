@@ -20,8 +20,8 @@ import httpx
 import pytest
 from pydantic import SecretStr
 from tests.observations.providers.synthetic import (
-    BRAND,
     BRAND_DOMAIN,
+    BRAND_PROFILE,
     OPENAI_MODEL_VERSION,
     RIVAL_DOMAIN,
     SYNTHETIC_PRICES,
@@ -34,6 +34,7 @@ from tests.observations.providers.synthetic import (
 )
 
 from veo.contracts.enums import ProviderState
+from veo.observations.attribution import DisambiguatingMentionDetector
 from veo.observations.providers.base import PriceTable
 from veo.observations.providers.gemini import GeminiAnswerProvider
 from veo.observations.providers.openai import OpenAIAnswerProvider
@@ -49,7 +50,6 @@ from veo.observations.runner import (
     ObservationRunner,
     RepetitionFloorError,
     StopReason,
-    SubstringMentionDetector,
 )
 from veo.observations.runs import MixedConditionsError, aggregate_rate
 
@@ -114,7 +114,7 @@ def runner(
             ]
         ),
         store=store or InMemoryAnswerStore(),
-        detector=SubstringMentionDetector(BRAND),
+        detector=DisambiguatingMentionDetector(BRAND_PROFILE),
         max_concurrency=max_concurrency,
         budget_usd=budget_usd,
         clock=lambda: NOW,
@@ -537,7 +537,7 @@ def multi_engine_runner(store: InMemoryAnswerStore) -> ObservationRunner:
             ]
         ),
         store=store,
-        detector=SubstringMentionDetector(BRAND),
+        detector=DisambiguatingMentionDetector(BRAND_PROFILE),
         max_concurrency=1,
         clock=lambda: NOW,
     )

@@ -227,6 +227,22 @@ def assess(
             )
         )
 
+    if weak_only:
+        # Above the ``not spans`` guard on purpose. ``weak_only`` means *every* hit had a
+        # weak boundary, and a caller that only forwards its strong spans (see
+        # :func:`veo.observations.detection.mentions.detect_mentions`) therefore arrives
+        # here with ``spans`` empty. Below the guard this signal was unreachable from that
+        # caller, and the reviewer got a held finding with no reason attached — which reads
+        # as a malfunction rather than as a question (0-A).
+        signals.append(
+            Signal(
+                "WEAK_BOUNDARY_ONLY",
+                _W_WEAK_BOUNDARY_ONLY,
+                f"'{profile.display_name}' 앞뒤에 다른 한글이 붙어 있어 더 긴 다른 상호일 수 "
+                "있습니다. 이름만으로는 이 고객이라고 말할 수 없습니다.",
+            )
+        )
+
     if not spans:
         return _finish(0.0, signals)
 
@@ -310,15 +326,6 @@ def assess(
                 _W_RIVAL_ONLY,
                 "이 이름은 경쟁사를 설명하는 문장 안에서만 나옵니다. 여러 업체가 함께 쓰는 "
                 "이름이라 비교 대상으로 스친 것인지 이 고객인지 문장만으로는 갈리지 않습니다.",
-            )
-        )
-
-    if weak_only:
-        signals.append(
-            Signal(
-                "WEAK_BOUNDARY_ONLY",
-                _W_WEAK_BOUNDARY_ONLY,
-                "이름에 알 수 없는 한글이 붙어 있어 더 긴 다른 상호일 수 있습니다.",
             )
         )
 

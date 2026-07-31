@@ -58,6 +58,7 @@ function metrics(over: Partial<VisibilityMetrics> = {}): VisibilityMetrics {
     answers_recorded: 40,
     answers_valid: 40,
     answers_with_visible_citations: 40,
+    answers_pending_disambiguation: 0,
     mention_rate: rate(),
     citation_rate: rate({ label_ko: '인용률' }),
     prompt_coverage: rate({ label_ko: '질문 도달률' }),
@@ -243,5 +244,21 @@ describe('비용', () => {
     const { container } = render(<VisibilityReport run={run()} metrics={metrics()} />);
 
     expect(container.textContent).not.toMatch(/[0-9],[0-9]{3}원/);
+  });
+});
+
+describe('같은 이름 때문에 보류한 응답', () => {
+  it('보류 건수를 따로 센다', () => {
+    // 보류를 "언급 없음" 과 같은 칸에 두면 언급률이 왜 낮은지 알 수 없다.
+    // 전자는 등록 정보를 채우면 풀리고, 후자는 노출 작업이 필요하다 — 다른 조치다.
+    render(
+      <VisibilityReport
+        run={run()}
+        metrics={metrics({ answers_pending_disambiguation: 7 })}
+      />,
+    );
+
+    expect(screen.getByText('같은 이름 때문에 보류')).toBeInTheDocument();
+    expect(screen.getByText('7')).toBeInTheDocument();
   });
 });

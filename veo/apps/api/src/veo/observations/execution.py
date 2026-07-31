@@ -34,6 +34,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
+from veo.contracts.enums import ReviewState
 from veo.core.settings import Settings, get_settings
 from veo.db.models.observation import (
     AIAnswer,
@@ -46,17 +47,15 @@ from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.observations.answer_store import FilesystemAnswerStore
+from veo.observations.attribution import DisambiguatingMentionDetector
+from veo.observations.brand_identity import BrandIdentityRecord, to_brand_profile
 from veo.observations.db_answer_store import DatabaseAnswerStore
+from veo.observations.detection.disambiguation import BrandProfile
 from veo.observations.metrics import AnswerFact
 from veo.observations.prompts import Funnel, Intent, Prompt, PromptSet, Subject
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import RecordedAnswerStore
-from veo.observations.runner import (
-    BrandTarget,
-    ObservationRunner,
-    RunReport,
-    SubstringMentionDetector,
-)
+from veo.observations.runner import BrandTarget, ObservationRunner, RunReport
 from veo.observations.runs import AccountState, RunConditions, SearchMode
 from veo.observations.service import engine_registry, prompt_set_of, prompts_of
 
@@ -105,6 +104,30 @@ def brand_target_for(
     names = (row.display_name, *(str(alias) for alias in row.aliases or ()))
     domains = tuple(str(domain) for domain in row.own_domains or ())
     return BrandTarget(names=tuple(dict.fromkeys(names)), domains=domains), row
+
+
+def brand_profile_for(row: BrandIdentity) -> BrandProfile:
+    """저장된 선언을 판별기가 읽는 형태로 — **전부** 옮긴다.
+
+    이 함수가 생기기 전까지 관측은 이름과 도메인만 읽었다. 고객이 등록 화면에서 넣은
+    소재지·대표번호·구별 표현은 저장은 되고 **측정에는 한 번도 쓰이지 않았다.** 흔한
+    상호를 확정선 위로 올리는 것이 바로 그 전화번호다(`veo.observations.brand_identity`
+    의 실측표). 즉 고객이 시간을 들여 넣은 값이 아무것도 바꾸지 못하고 있었다.
+    """
+    return to_brand_profile(
+        BrandIdentityRecord(
+            entity_key=row.entity_key,
+            display_name=row.display_name,
+            is_own_brand=row.competitor_id is None,
+            competitor_id=str(row.competitor_id) if row.competitor_id else None,
+            aliases=tuple(str(alias) for alias in row.aliases or ()),
+            own_domains=tuple(str(domain) for domain in row.own_domains or ()),
+            address_terms=tuple(str(term) for term in row.address_terms or ()),
+            phone_numbers=tuple(str(number) for number in row.phone_numbers or ()),
+            distinguishing_terms=tuple(str(term) for term in row.distinguishing_terms or ()),
+            name_is_ambiguous=row.name_is_ambiguous,
+        )
+    )
 
 
 def answer_store(
@@ -199,7 +222,8 @@ def execute_observation(
     resolved = settings or get_settings()
     prompt_rows = prompts_of(session, principal, prompt_set_row.id)
     prompt_set = prompt_set_of(prompt_set_row, prompt_rows)
-    brand, _identity = brand_target_for(session, principal, prompt_set_row.project_id)
+    brand, identity = brand_target_for(session, principal, prompt_set_row.project_id)
+    profile = brand_profile_for(identity)
 
     resolved_registry = registry if registry is not None else engine_registry()
     runner = ObservationRunner(
@@ -207,7 +231,7 @@ def execute_observation(
         store=store
         if store is not None
         else answer_store(principal.organization_id, settings=resolved, session=session),
-        detector=SubstringMentionDetector(brand),
+        detector=DisambiguatingMentionDetector(profile),
         max_concurrency=resolved.observation_max_concurrency,
         budget_usd=resolved.observation_budget_usd,
     )
@@ -244,6 +268,7 @@ def execute_observation(
         conditions=conditions,
         engines=engines,
         brand=brand,
+        profile=profile,
         started_at=started_at,
         finished_at=finished_at,
         registry_states=resolved_registry.states(),
@@ -261,6 +286,7 @@ def _persist(
     conditions: Mapping[str, RunConditions],
     engines: Sequence[EngineChoice],
     brand: BrandTarget,
+    profile: BrandProfile,
     started_at: datetime,
     finished_at: datetime,
     registry_states: Mapping[str, object],
@@ -385,15 +411,33 @@ def _persist(
                 )
             )
 
-        for entity in run.mentioned_entities:
+        # 확정된 언급과 **보류된 언급을 모두** 남긴다. 보류를 안 남기면 사람이 볼 자리가
+        # 사라지고, 그 실행은 화면에서 "언급 없음" 과 구별되지 않는다.
+        #
+        # `match_confidence` 는 판별기가 낸 값을 그대로 적는다. 예전에는 여기에 1.0 이
+        # 박혀 있었다 — 그 칸은 "얼마나 확신하는가" 를 묻는 칸인데, 무엇이 들어오든
+        # 만점을 적고 있었다(0-A).
+        entities = run.mentioned_entities or (
+            (profile.entity_key,) if run.mention_pending_review else ()
+        )
+        for entity in entities:
             session.add(
                 EntityMention(
                     organization_id=principal.organization_id,
                     ai_answer_id=answer.id,
                     entity_key=entity,
                     is_own_brand=True,
-                    raw_occurrence_count=1,
-                    match_confidence=1.0,
+                    raw_occurrence_count=max(run.mention_raw_occurrences, 1),
+                    first_position=run.mention_first_position,
+                    match_confidence=run.mention_confidence
+                    if run.mention_confidence is not None
+                    else 0.0,
+                    needs_human_disambiguation=run.mention_pending_review,
+                    review_state=(
+                        ReviewState.PENDING_REVIEW.value
+                        if run.mention_pending_review
+                        else ReviewState.NOT_REVIEWED.value
+                    ),
                 )
             )
 
@@ -419,6 +463,7 @@ __all__ = [
     "EngineChoice",
     "answer_facts",
     "answer_store",
+    "brand_profile_for",
     "brand_target_for",
     "execute_observation",
 ]
@@ -453,12 +498,24 @@ def answer_facts(
             .where(Citation.is_own_domain.is_(True))
         )
     )
-    # 같은 이유로 자사 언급만 센다.
+    # 같은 이유로 자사 언급만 센다. 그리고 **확정된 것만** 센다 — 이름이 같은 다른
+    # 업체인지 갈리지 않은 건은 언급이 아니라 질문이다.
     mentioned_ids = set(
         session.scalars(
             select(EntityMention.ai_answer_id)
             .where(EntityMention.ai_answer_id.in_(answer_ids))
             .where(EntityMention.is_own_brand.is_(True))
+            .where(EntityMention.needs_human_disambiguation.is_(False))
+        )
+    )
+    # 보류된 건은 따로 센다. 이것을 안 넘기면 노출률이 조용히 내려가고, 왜 내려갔는지
+    # 화면에서 알 방법이 없다 — "안 나왔다" 와 "누구인지 모르겠다" 가 같은 모양이 된다.
+    pending_ids = set(
+        session.scalars(
+            select(EntityMention.ai_answer_id)
+            .where(EntityMention.ai_answer_id.in_(answer_ids))
+            .where(EntityMention.is_own_brand.is_(True))
+            .where(EntityMention.needs_human_disambiguation.is_(True))
         )
     )
 
@@ -467,6 +524,7 @@ def answer_facts(
             prompt_id=str(answer.prompt_id),
             is_valid=answer.is_valid_execution,
             mentioned=answer.id in mentioned_ids,
+            mention_pending_review=answer.id in pending_ids,
             cited=answer.id in cited_ids,
             citation_support=answer.citation_support,
         )
