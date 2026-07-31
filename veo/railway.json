@@ -5,6 +5,7 @@
     "dockerfilePath": "infra/docker/api.Dockerfile"
   },
   "deploy": {
+    "preDeployCommand": "alembic upgrade head",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 60,
     "restartPolicyType": "ON_FAILURE",

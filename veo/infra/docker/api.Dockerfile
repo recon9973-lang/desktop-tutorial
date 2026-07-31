@@ -74,6 +74,18 @@ WORKDIR /app
 # root 소유로 두고 veo 사용자에게는 읽기 권한만 준다.
 COPY --chown=root:root packages/scoring-specs /app/packages/scoring-specs
 
+# 마이그레이션 — 이 이미지에 **함께** 들어가야 한다.
+#
+# 예전에는 `alembic` 라이브러리만 설치되고 마이그레이션 파일은 빠져 있었다. 그래서
+# 배포 환경에서 `alembic upgrade head` 를 치면 "설정 파일이 없다" 로 끝났다. 즉
+# 인수인계 문서와 커밋 메시지가 **실행할 수 없는 절차**를 안내하고 있었고, 아무도
+# 실제로 쳐 보지 않아서 그 사실이 드러나지 않았다(0-E).
+#
+# `prepend_sys_path = src` 는 이 이미지에 없는 경로를 가리키지만 해가 없다 — `veo`
+# 패키지는 가상환경에 설치되어 있어서 그대로 import 된다.
+COPY --chown=root:root apps/api/alembic.ini /app/alembic.ini
+COPY --chown=root:root apps/api/alembic /app/alembic
+
 USER veo
 
 EXPOSE 8000
