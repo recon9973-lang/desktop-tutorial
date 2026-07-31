@@ -471,6 +471,8 @@ def _score_summary(result: ScoreResult) -> ScoreSummary:
         band_id=result.band_id,
         coverage=result.coverage,
         confidence=result.confidence,
+        reach=result.reach,
+        gate_unverified=list(result.gate_unverified),
         is_rank_prediction=False,
         categories=[
             CategorySummary(

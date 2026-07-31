@@ -35,6 +35,30 @@
   max-width: 46ch;
 }
 
+/*
+ * 색인 차단 안내. 점수 바로 아래에 두고, 등급 라벨보다 눈에 먼저 들어와야 한다 —
+ * 0점을 받은 고객이 가장 먼저 읽어야 하는 문장이기 때문이다.
+ */
+.blocked {
+  margin: var(--veo-space-3) 0 0;
+  padding: var(--veo-space-3);
+  border-left: 3px solid var(--veo-color-danger, #c0392b);
+  background: var(--veo-color-surface-sunken, rgba(192, 57, 43, 0.06));
+  max-width: 52ch;
+}
+
+.blockedHeadline {
+  margin: 0;
+  font-size: var(--veo-font-size-300);
+  color: var(--veo-color-text, inherit);
+}
+
+.blockedNote {
+  margin: var(--veo-space-2) 0 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
 .figures {
   display: flex;
   flex-wrap: wrap;

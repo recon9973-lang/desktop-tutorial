@@ -12009,6 +12009,14 @@
             "title": "Effective Weight Total",
             "type": "number"
           },
+          "gate_unverified": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Gate Unverified",
+            "type": "array"
+          },
           "gates": {
             "items": {
               "$ref": "#/components/schemas/RaisedGate"
@@ -12044,6 +12052,11 @@
               }
             ],
             "title": "Overall Score Before Caps"
+          },
+          "reach": {
+            "default": 1.0,
+            "title": "Reach",
+            "type": "number"
           },
           "spec_checksum": {
             "title": "Spec Checksum",
@@ -12230,10 +12243,23 @@
             "title": "Coverage",
             "type": "number"
           },
+          "gate_unverified": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Gate Unverified",
+            "type": "array"
+          },
           "is_rank_prediction": {
             "const": false,
             "title": "Is Rank Prediction",
             "type": "boolean"
+          },
+          "reach": {
+            "default": 1.0,
+            "title": "Reach",
+            "type": "number"
           },
           "score": {
             "anyOf": [

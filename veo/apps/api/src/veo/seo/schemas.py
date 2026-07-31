@@ -248,6 +248,14 @@ class ScoreSummary(BaseModel):
     band_id: str | None
     coverage: float
     confidence: float
+    #: 검색에 들어갈 수 있는 비율. 관문이 없는 명세에서는 1.0 이다.
+    #:
+    #: 화면이 이 값을 받아야 **0점의 이유를 읽을 수 있다.** 도달률 0.4 곱하기 품질 85 와
+    #: 도달률 1.0 곱하기 품질 34 는 같은 34점이지만, 앞의 사이트가 고칠 것은 차단이고
+    #: 뒤의 사이트가 고칠 것은 품질이다. 점수 하나로는 둘을 구분할 수 없다.
+    reach: float = 1.0
+    #: 확인하지 못한 관문 검사. 조용히 넘어가면 "확인했고 문제없음" 과 구분되지 않는다.
+    gate_unverified: list[str] = []
     is_rank_prediction: Literal[False]
     categories: list[CategorySummary]
     applied_caps: list[CapSummary]

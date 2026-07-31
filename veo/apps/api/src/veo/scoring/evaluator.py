@@ -214,6 +214,8 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         coverage=round(coverage, 6),
         confidence=round(confidence, 6),
         effective_weight_total=round(effective_weight_total, 6),
+        reach=round(reach, 6),
+        gate_unverified=gate_unverified,
         categories=category_scores,
         applied_caps=applied_caps,
         gates=gates,

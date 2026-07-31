@@ -6255,6 +6255,11 @@ export interface components {
             domain: components["schemas"]["ScoringDomain"];
             /** Effective Weight Total */
             effective_weight_total: number;
+            /**
+             * Gate Unverified
+             * @default []
+             */
+            gate_unverified: string[];
             /** Gates */
             gates: components["schemas"]["RaisedGate"][];
             /** Outcomes */
@@ -6263,6 +6268,11 @@ export interface components {
             overall_score: number | null;
             /** Overall Score Before Caps */
             overall_score_before_caps: number | null;
+            /**
+             * Reach
+             * @default 1
+             */
+            reach: number;
             /** Spec Checksum */
             spec_checksum: string;
             /** Spec Id */
@@ -6330,10 +6340,20 @@ export interface components {
             /** Coverage */
             coverage: number;
             /**
+             * Gate Unverified
+             * @default []
+             */
+            gate_unverified: string[];
+            /**
              * Is Rank Prediction
              * @constant
              */
             is_rank_prediction: false;
+            /**
+             * Reach
+             * @default 1
+             */
+            reach: number;
             /** Score */
             score: number | null;
             /** Score Before Caps */

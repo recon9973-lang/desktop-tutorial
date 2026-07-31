@@ -486,6 +486,19 @@ class ScoreResult(BaseModel):
     coverage: float
     confidence: float
     effective_weight_total: float
+    #: 검색에 들어갈 수 있는 비율. 관문 영역이 없는 명세에서는 언제나 1.0 이다.
+    #:
+    #: 이 값이 응답에 실리는 이유: **관문 때문에 0점이 된 사이트가 화면에서 왜 0점인지
+    #: 읽을 수 없으면 그 계산은 없는 것과 같다.** "0점" 만 보고 무엇을 고쳐야 할지
+    #: 모르는 고객에게 점수는 판결문일 뿐이다. 도달률 0.4 와 품질 85 를 나란히 보여야
+    #: "고칠 것은 품질이 아니라 차단이다" 를 읽을 수 있다.
+    reach: float = 1.0
+    #: 확인하지 못한 관문 검사의 id.
+    #:
+    #: 못 잰 차단은 곱하지 않는다(0-A). 그러나 **조용히 넘어가면 "확인했고 문제없음"
+    #: 과 구분되지 않는다.** 이름을 실어 화면이 "색인 가능 여부를 확인하지 못했습니다"
+    #: 라고 말할 수 있게 한다.
+    gate_unverified: list[str] = []
     categories: list[CategoryScore]
     applied_caps: list[AppliedCap]
     gates: list[RaisedGate]

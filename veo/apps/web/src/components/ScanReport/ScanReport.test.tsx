@@ -58,6 +58,8 @@ function result(overrides: Partial<ConsoleScanResult> = {}): ConsoleScanResult {
     bandId: 'at_risk',
     coverage: 0.8,
     confidence: 0.9,
+    reach: 1,
+    gateUnverified: [],
     categories: [
       {
         categoryId: 'onpage_semantics',
@@ -322,5 +324,54 @@ describe('할 일 우선순위', () => {
     detailed({ improvements: many.slice(0, 2) });
 
     expect(screen.queryByText(/나머지 .*더 보기/)).not.toBeInTheDocument();
+  });
+});
+
+// --------------------------------------------------------------------------- //
+// 색인 차단 — 0점의 이유가 화면에 있는가
+// --------------------------------------------------------------------------- //
+
+describe('색인 차단 안내', () => {
+  it('색인이 막히지 않았으면 아무것도 그리지 않는다', () => {
+    render(<ScanReport result={result()} bands={[]} view="detailed" />);
+    expect(screen.queryByText(/색인에서 빠져/)).not.toBeInTheDocument();
+  });
+
+  it('막힌 비율을 적는다', () => {
+    render(<ScanReport result={result({ reach: 0.4, score: 34 })} bands={[]} view="detailed" />);
+    expect(screen.getByText(/60\.0%/)).toBeInTheDocument();
+  });
+
+  it('차단을 먼저 풀라고 말한다', () => {
+    // 점수만 보여주면 고객은 눈에 띄는 항목부터 고친다. 색인이 막힌 동안은 그
+    // 무엇을 고쳐도 점수가 거의 오르지 않으므로, 순서를 말해 주지 않으면
+    // 헛수고를 시키는 셈이 된다.
+    render(<ScanReport result={result({ reach: 0.4, score: 34 })} bands={[]} view="detailed" />);
+    expect(screen.getByText(/색인 차단을 먼저 풀지 않으면/)).toBeInTheDocument();
+  });
+
+  it('확인하지 못한 관문을 차단과 다르게 적는다', () => {
+    // 못 잰 것을 차단으로 세지 않는다. 그러나 조용히 넘어가면 "확인했고 문제없음"
+    // 과 구분되지 않는다.
+    render(
+      <ScanReport
+        result={result({ gateUnverified: ['seo.robots.txt_allows_url'] })}
+        bands={[]}
+        view="detailed"
+      />,
+    );
+    expect(screen.getByText(/확인하지 못한 항목이 1건/)).toBeInTheDocument();
+    expect(screen.getByText(/차단됐다는 뜻이 아니라/)).toBeInTheDocument();
+  });
+
+  it('점수에서 차감하지 않았다고 밝힌다', () => {
+    render(
+      <ScanReport
+        result={result({ gateUnverified: ['seo.robots.txt_allows_url'] })}
+        bands={[]}
+        view="detailed"
+      />,
+    );
+    expect(screen.getByText(/점수에서 차감하지\s*않았습니다/)).toBeInTheDocument();
   });
 });

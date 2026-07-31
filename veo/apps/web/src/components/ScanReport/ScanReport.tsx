@@ -80,6 +80,7 @@ function Headline({
             )}
           </p>
         )}
+        <Blocked result={result} />
         <p className={styles.meaning}>
           검색 순위 예측이 아니라, 검색엔진과 AI 답변 엔진이 사이트를 발견하고 해석할 수
           있는 상태인지에 대한 값입니다.
@@ -131,6 +132,61 @@ function Headline({
         </p>
       ))}
     </section>
+  );
+}
+
+/**
+ * 색인 차단 — 점수가 왜 이렇게 낮은지.
+ *
+ * 색인이 막힌 사이트는 점수가 곱셈으로 깎인다. 검색에 존재하지 않는 페이지의 완벽한
+ * 구조화 데이터는 아무 일도 하지 않기 때문이다. 그런데 **그 사실이 화면에 없으면
+ * 고객은 "우리 점수가 0점" 만 보고 무엇을 고쳐야 할지 모른다.**
+ *
+ * 도달률 0.4 × 품질 85 와 도달률 1 × 품질 34 는 둘 다 34점이다. 앞의 사이트가 할 일은
+ * 차단을 푸는 것 하나이고, 뒤의 사이트는 여러 항목을 고쳐야 한다. 점수 하나로는 두
+ * 상황이 구분되지 않으므로, 곱해진 경우에만 그 사실을 점수 바로 아래에 적는다.
+ *
+ * 도달률이 1이면 아무것도 그리지 않는다. 늘 보이는 문구는 읽히지 않는다.
+ */
+function Blocked({ result }: { readonly result: ConsoleScanResult }) {
+  const unverified = result.gateUnverified;
+  const blocked = result.reach < 1;
+
+  if (!blocked && unverified.length === 0) return null;
+
+  return (
+    <div className={styles.blocked} role="note">
+      {blocked ? (
+        <>
+          <p className={styles.blockedHeadline}>
+            수집한 페이지의 <strong>{percent(1 - result.reach)}</strong>가 검색엔진의
+            색인에서 빠져 있습니다.
+          </p>
+          <p className={styles.blockedNote}>
+            {/*
+              여기서 '깎였다' 가 아니라 '곱해졌다' 로 적는다. 감점은 항목을 고치면
+              그만큼 돌아오지만, 색인 차단은 **풀기 전까지 나머지를 아무리 고쳐도
+              점수가 오르지 않는다.** 두 상황을 같은 말로 적으면 고객이 순서를
+              잘못 잡는다.
+            */}
+            이 비율만큼 나머지 점수 전체가 줄어듭니다. 색인 차단을 먼저 풀지 않으면
+            다른 항목을 고쳐도 점수가 거의 오르지 않습니다.
+          </p>
+        </>
+      ) : null}
+
+      {unverified.length > 0 ? (
+        <p className={styles.blockedNote}>
+          {/*
+            못 잰 것을 차단으로 세지 않는다(0-A). 그러나 조용히 넘어가면 "확인했고
+            문제없음" 과 구분되지 않으므로, 확인하지 못했다는 사실은 적는다.
+          */}
+          <strong>색인 가능 여부를 확인하지 못한 항목이 {unverified.length}건</strong>{' '}
+          있습니다. 차단됐다는 뜻이 아니라 확인하지 못했다는 뜻이며, 점수에서 차감하지
+          않았습니다.
+        </p>
+      ) : null}
+    </div>
   );
 }
 

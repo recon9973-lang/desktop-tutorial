@@ -115,6 +115,16 @@ export interface ConsoleScanResult {
   readonly bandId: string | null;
   readonly coverage: number;
   readonly confidence: number;
+  /**
+   * 검색에 들어갈 수 있는 비율. 관문이 없는 채점 기준에서는 언제나 1.
+   *
+   * 점수 하나로는 무엇을 고칠지 알 수 없다. 도달률 0.4 × 품질 85 와
+   * 도달률 1 × 품질 34 는 둘 다 34점이지만, 앞은 **차단**을 고쳐야 하고 뒤는
+   * **품질**을 고쳐야 한다.
+   */
+  readonly reach: number;
+  /** 확인하지 못한 관문 검사. 비어 있는 것과 "확인했고 문제없음" 은 다르다. */
+  readonly gateUnverified: readonly string[];
   readonly categories: readonly CategoryScore[];
   readonly appliedCaps: readonly AppliedCap[];
   readonly outcomes: readonly Outcome[];
@@ -212,6 +222,11 @@ export function toConsoleScanResult(
     bandId: strOrNull(score, 'band_id'),
     coverage: num(score, 'coverage'),
     confidence: num(score, 'confidence'),
+    // 옛 응답에는 없는 값이다. 없으면 1 로 둔다 — 관문이 없는 채점 기준의 값과 같다.
+    reach: typeof score.reach === 'number' ? score.reach : 1,
+    gateUnverified: Array.isArray(score.gate_unverified)
+      ? score.gate_unverified.filter((item: unknown): item is string => typeof item === 'string')
+      : [],
     categories: list(score['categories']).map((raw) => {
       const item = record(raw);
       return {
