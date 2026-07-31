@@ -299,6 +299,44 @@ def test_a_crawl_that_collected_nothing_is_unknown_rather_than_broken() -> None:
 # --------------------------------------------------------------------------- #
 
 
+def _rewrite_healthy(transform) -> object:  # type: ignore[no-untyped-def]
+    """healthy 픽스처의 모든 문서 본문에 같은 손질을 가한 사본."""
+    base = build_context("healthy")
+    documents = {}
+    for url, document in base.documents.items():
+        text = transform(document.body.decode("utf-8", errors="replace"))
+        documents[url] = dataclasses.replace(document, body=text.encode("utf-8"))
+    return dataclasses.replace(
+        base, documents=documents, primary_document=next(iter(documents.values()))
+    )
+
+
+def _without_charset() -> object:
+    """인코딩 선언이 문서에도 응답 헤더에도 없는 사이트."""
+    base = _rewrite_healthy(lambda text: text.replace('<meta charset="utf-8">', "", 1))
+    documents = {
+        url: dataclasses.replace(
+            document,
+            charset=None,
+            headers={
+                key: value
+                for key, value in document.headers.items()
+                if key.lower() != "content-type"
+            },
+        )
+        for url, document in base.documents.items()  # type: ignore[attr-defined]
+    }
+    return dataclasses.replace(
+        base, documents=documents, primary_document=next(iter(documents.values()))
+    )
+
+
+def _with_a_javascript_menu() -> object:
+    """메뉴가 onclick 으로만 도는 사이트. 국내 병원 홈페이지에 흔한 형태다."""
+    menu = "<nav><a onclick=\"go('/doctors')\">의료진 소개</a></nav>"
+    return _rewrite_healthy(lambda text: text.replace("</body>", f"{menu}</body>", 1))
+
+
 def _observed_statuses() -> dict[str, set[CheckStatus]]:
     seen: dict[str, set[CheckStatus]] = {check_id: set() for check_id in SPEC.check_ids}
     contexts = []
@@ -313,6 +351,13 @@ def _observed_statuses() -> dict[str, set[CheckStatus]]:
             )
         )
         contexts.append(build_context(fixture, with_rendered=False))
+
+    # 2026-08-01 에 더한 두 검사의 실패 경로. 픽스처 사이트 어디에도 인코딩 선언이
+    # 빠진 페이지나 자바스크립트 전용 메뉴가 없어서, 이 검사들은 모든 픽스처에서
+    # 통과만 했다. 통과만 하는 검사는 판정이 옳은지 아무도 모른다 —
+    # `_is_uncrawlable` 이 항상 False 를 돌려줘도 시험은 초록이다.
+    contexts.append(_without_charset())
+    contexts.append(_with_a_javascript_menu())
 
     # The same healthy site served over plain HTTP. No fixture is stored for it because
     # the only difference is the scheme, and duplicating four pages to change one letter

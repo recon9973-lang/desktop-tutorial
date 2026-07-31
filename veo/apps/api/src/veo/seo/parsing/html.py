@@ -112,6 +112,19 @@ class ParsedPage:
     doctype: str | None = None
     """The raw doctype declaration, lower-cased, or ``None`` when the document had none."""
 
+    declared_charset: str | None = None
+    """The encoding the **document** declares, lower-cased, or ``None``.
+
+    Read from ``<meta charset>`` or ``<meta http-equiv="Content-Type">``. This is not the
+    same fact as :attr:`FetchedDocument.charset`, which is what the *server* declared in
+    its Content-Type header, and a page can have one without the other. Both are worth
+    knowing separately: the header travels with the response, the meta tag travels with
+    the file — a page saved, proxied or served from a CDN that drops the header keeps only
+    the second.
+
+    When neither exists the browser guesses, and a wrong guess on a Korean page turns the
+    entire body into replacement characters. That page then gets indexed as gibberish."""
+
     icon_hrefs: tuple[str, ...] = ()
     """``rel`` values containing ``icon``: favicon, apple-touch-icon, mask-icon."""
 
@@ -309,6 +322,21 @@ class _PageParser(HTMLParser):
         content = attributes.get("content", "").strip()
         name = attributes.get("name", "").strip().lower()
         prop = attributes.get("property", "").strip().lower()
+        equiv = attributes.get("http-equiv", "").strip().lower()
+
+        # 인코딩 선언은 두 가지 형태로 온다. HTML5 의 `<meta charset>` 과, 그 전부터
+        # 쓰이던 `<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">`.
+        # 국내 병원 홈페이지는 오래된 제작 도구가 만든 경우가 많아 후자가 드물지 않고,
+        # 앞의 것만 보면 멀쩡히 선언한 사이트를 결함으로 적게 된다.
+        if self.page.declared_charset is None:
+            if "charset" in attributes:
+                declared = attributes["charset"].strip().lower()
+                if declared:
+                    self.page.declared_charset = declared
+            elif equiv == "content-type" and "charset=" in content.lower():
+                declared = content.lower().split("charset=", 1)[1].strip().strip('"; ')
+                if declared:
+                    self.page.declared_charset = declared
 
         if name == "description" and self.page.meta_description is None:
             self.page.meta_description = content

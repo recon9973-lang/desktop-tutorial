@@ -85,6 +85,7 @@ class OnpageSemanticsCollector(SeoCollector):
         "seo.sd.naver_supported_type",
         "seo.onpage.single_title_element",
         "seo.html.doctype_standards_mode",
+        "seo.html.charset_declared",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -108,6 +109,7 @@ class OnpageSemanticsCollector(SeoCollector):
             _naver_open_graph,
             _single_title_element,
             _doctype,
+            _charset,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -917,6 +919,103 @@ def _doctype(
                 "브라우저가 쿼크 모드로 그려 레이아웃이 의도와 달라질 수 있습니다."
             ),
             fix_example="<!DOCTYPE html>\n<html lang=\"ko\">",
+        )
+    ]
+
+
+def _charset(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """인코딩 선언이 없으면 브라우저와 크롤러가 **추측**한다.
+
+    라틴 문자 페이지라면 추측이 틀려도 대개 읽힌다. 한글은 다르다 — EUC-KR 로 쓴
+    문서를 UTF-8 로 읽으면 본문 전체가 대체 문자가 되고, **그 상태로 색인된다.**
+    제목도 본문도 어떤 검색어와도 맞을 수 없다.
+
+    선언은 두 곳 중 어디에 있어도 된다: 문서 안(``<meta charset>`` 또는
+    ``<meta http-equiv="Content-Type">``)이거나, 응답 헤더의 ``Content-Type`` 이다.
+    **둘 중 하나만 있어도 통과다** — 헤더가 있으면 브라우저는 추측하지 않는다.
+
+    다만 헤더는 응답에만 붙고 파일에는 남지 않으므로, 문서 안 선언이 없으면 그 사실을
+    통과 문구에 적는다. CDN 이나 프록시가 헤더를 떨어뜨리는 순간 같은 파일이 다시
+    추측 대상이 되기 때문이다. 그러나 **지금 깨진 것은 아니므로 감점하지 않는다.**
+    일어날 수 있는 일과 일어난 일을 섞지 않는다.
+
+    바이트 위치(head 앞쪽 1024바이트)는 보지 않는다. 그것은 브라우저가 문서를 다시
+    파싱하느냐는 성능 문제이고, 색인되는 글자가 깨지느냐와는 다른 사안이다.
+    재지 않은 것으로 판정하지 않는다.
+    """
+    check_id = "seo.html.charset_declared"
+
+    observed = {
+        page.url: {"meta": page.raw.declared_charset, "header": page.document.charset}
+        for page in site.pages
+    }
+    affected = [
+        page
+        for page in site.pages
+        if page.raw.declared_charset is None and not page.document.charset
+    ]
+    header_only = [
+        page
+        for page in site.pages
+        if page.raw.declared_charset is None and page.document.charset
+    ]
+
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            (
+                f'<meta charset="{page.raw.declared_charset}">'
+                if page.raw.declared_charset
+                else f"문서 내 인코딩 선언 없음 (응답 헤더: {page.document.charset or '없음'})"
+            ),
+        )
+        for page in (affected or header_only or site.pages[:1])
+    ]
+
+    result = url_ratio_outcome(
+        check_id,
+        affected=affected,
+        evaluated=list(site.pages),
+        evidence_ids=evidence,
+        observed_value=observed,
+        clean_note_ko=(
+            "모든 페이지가 인코딩을 선언했습니다."
+            if not header_only
+            else (
+                f"모든 페이지가 인코딩을 선언했지만, {len(header_only)}개 페이지는 응답 "
+                "헤더에만 있고 문서 안에는 없습니다. 헤더가 빠지는 경로에서는 다시 "
+                "추측 대상이 됩니다."
+            )
+        ),
+        affected_note_ko=(
+            f"{len(affected)}개 페이지에 인코딩 선언이 없습니다. 문서에도 응답 헤더에도 "
+            "없어 브라우저와 크롤러가 추측합니다."
+        ),
+    )
+    if result.status is not CheckStatus.FAIL:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            check_id,
+            title_ko="문자 인코딩 선언이 없습니다",
+            summary_ko="; ".join(f"{page.url} — 선언 없음" for page in affected[:5]),
+            affected_urls=[page.url for page in affected],
+            evidence_ids=evidence,
+            remediation_ko=(
+                "`<head>` 의 **첫 번째 요소**로 아래 한 줄을 넣으십시오. `<title>` 보다 "
+                "앞이어야 합니다 — 제목이 먼저 오면 그 제목부터 추측으로 읽힙니다."
+            ),
+            reverification_ko="수정 후 재수집해 head 에 charset 선언이 있는지 확인합니다.",
+            business_impact_ko=(
+                "인코딩 추측이 틀리면 **한글 본문 전체가 깨진 글자로 색인됩니다.** "
+                "그 상태에서는 어떤 검색어와도 맞지 않습니다."
+            ),
+            fix_example='<head>\n  <meta charset="utf-8">\n  <title>…</title>\n</head>',
         )
     ]
 

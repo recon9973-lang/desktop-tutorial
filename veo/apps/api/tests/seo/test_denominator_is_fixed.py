@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import dataclasses
+from typing import ClassVar
 
 import pytest
 
@@ -142,13 +143,38 @@ class TestScoreDoesNotRewardLookingLess:
         assert budget(one_page) == pytest.approx(budget(whole))
 
 
-class TestSpecVersionIsUntouched:
-    def test_no_new_methodology_version_was_needed(self) -> None:
-        """이것은 수집기의 판정 버그였다. 명세의 숫자는 하나도 바뀌지 않았다(ADR 0012).
+class TestTheFixWasNotADisguisedReweighting:
+    """이것은 수집기의 판정 버그였다. 명세의 숫자로 덮은 것이 아니다(ADR 0012).
 
-        명세를 고쳤다면 새 판을 발행해야 했다. 발행본은 불변이기 때문이다. 배점·심각도·
-        가중치가 그대로라는 것을 여기서 못 박아 둔다.
-        """
+    처음에는 `spec.version == "1.6.0"` 한 줄이었다. 그러나 그 줄이 실제로 막는 것은
+    **명세를 다시 발행하는 일 전부**였고, 그건 아무도 의도한 규칙이 아니다.
+    실제로 2026-08-01 에 검사 두 개를 정당하게 더하면서 이 시험이 깨졌다 —
+    잡아야 할 것을 잡은 게 아니라, 정상적인 발행을 막고 있었다.
+
+    독스트링은 처음부터 "배점·심각도·가중치가 그대로" 를 못 박겠다고 적어 두었는데
+    코드는 버전 문자열만 봤다. 이제 적힌 대로 검사한다. 누가 이 결함을 점수로
+    덮으려 하면 — 예를 들어 교차 페이지 검사들의 심각도를 낮춰 차이를 지우려 하면 —
+    버전을 올려도 여기서 걸린다.
+    """
+
+    #: 이 결함의 무대였던 검사들. 판정이 아니라 배점으로 차이를 지우는 것을 막는다.
+    EXPECTED_SEVERITY: ClassVar[dict[str, str]] = {
+        "seo.onpage.no_duplicate_metadata": "MAJOR",
+        "seo.content.no_duplicate_bodies": "MAJOR",
+        "seo.content.internal_link_density": "MINOR",
+    }
+
+    def test_the_cross_page_checks_keep_their_severity(self) -> None:
         spec = latest_published("veo.seo.readiness")
+        for check_id, severity in self.EXPECTED_SEVERITY.items():
+            assert str(spec.check(check_id).severity).endswith(severity), (
+                f"{check_id} 의 심각도가 바뀌었다. 이 결함은 수집기에서 고친 것이고, "
+                "배점으로 덮는 것은 같은 고침이 아니다."
+            )
 
-        assert spec.version == "1.6.0"
+    def test_the_category_weights_are_unchanged(self) -> None:
+        spec = latest_published("veo.seo.readiness")
+        weights = {category.id: category.weight for category in spec.categories}
+        assert weights["crawl_indexability"] == 31.25
+        assert weights["onpage_semantics"] == 18.75
+        assert weights["content_architecture"] == 18.75

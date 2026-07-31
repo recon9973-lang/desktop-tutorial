@@ -82,6 +82,7 @@ class CrawlIndexabilityCollector(SeoCollector):
         "seo.crawl.no_broken_internal_links",
         "seo.crawl.favicon_declared_and_crawlable",
         "seo.robots.txt_parses_cleanly",
+        "seo.crawl.crawlable_anchors",
     )
 
     def collect(self, context: CollectionContext) -> CollectionResult:
@@ -107,6 +108,7 @@ class CrawlIndexabilityCollector(SeoCollector):
             _broken_internal_links,
             _favicon,
             _robots_health,
+            _crawlable_anchors,
         ):
             produced, produced_issues = step(context, site, ledger)
             outcomes.append(produced)
@@ -1165,6 +1167,141 @@ def _robots_health(
                 "않았을 수 있습니다. 운영자가 믿고 있는 상태와 실제가 다릅니다."
             ),
             fix_example="Disallow: /admin/    # 콜론이 빠져 있었습니다",
+        )
+    ]
+
+
+#: 크롤러가 따라갈 수 없는 href.
+#:
+#: **여기 없는 것이 더 중요하다.** ``tel:`` 과 ``mailto:`` 는 정상적인 링크이고, 국내
+#: 병원 홈페이지에는 전화번호 링크가 거의 모든 페이지에 깔려 있다. 그것을 결함으로
+#: 세면 모든 고객이 실패한다 — 아무 잘못도 하지 않았는데.
+#:
+#: ``#`` 이나 ``#section`` 도 넣지 않는다. 탭·아코디언·본문 앵커의 정상적인 형태이고,
+#: 같은 페이지를 가리키므로 다른 페이지의 발견 가능성을 잃지 않는다.
+_UNCRAWLABLE_SCHEMES = ("javascript:", "data:", "about:")
+
+
+def _is_uncrawlable(href: str) -> bool:
+    value = href.strip().lower()
+    if not value:
+        return True  # href 자체가 없다. 크롤러에게는 링크가 아니라 글자다.
+    return value.startswith(_UNCRAWLABLE_SCHEMES)
+
+
+def _crawlable_anchors(
+    context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """``<a>`` 가 크롤러가 따라갈 수 있는 링크인가.
+
+    ``<a onclick="go('/about')">진료안내</a>`` 는 사람에게는 링크지만 크롤러에게는
+    글자일 뿐이다. 국내 병원 홈페이지는 제작 도구가 만든 자바스크립트 메뉴가 흔해
+    실제로 자주 걸린다.
+
+    **어디에 있느냐로 심각도가 갈린다.** 본문 한가운데의 자바스크립트 버튼 하나와
+    ``<nav>`` 전체가 자바스크립트인 것은 전혀 다른 일이다. 앞은 그 링크 하나를 잃고,
+    뒤는 **그 메뉴로만 연결된 하위 페이지가 통째로 발견되지 않는다.** 그래서 메뉴
+    영역(nav·header·footer)에 있으면 실패로, 본문에만 있으면 주의로 본다. 같은
+    무게로 보고하면 어느 쪽이 급한지 화면에서 알 수 없다.
+
+    구글이 자바스크립트를 실행해 따라가 주는 경우가 있다는 점은 이 판정을 바꾸지
+    않는다. 실행은 보장이 아니라 시도이고, 네이버 크롤러에는 기대하기 어렵다.
+    국내 병원에게 네이버는 구글보다 크다.
+    """
+    check_id = "seo.crawl.crawlable_anchors"
+
+    navigation: dict[str, list[str]] = {}
+    body_only: dict[str, list[str]] = {}
+    for page in site.pages:
+        in_nav = [
+            link.accessible_text or link.href or "(빈 링크)"
+            for link in page.raw.links
+            if link.in_boilerplate and _is_uncrawlable(link.href)
+        ]
+        in_body = [
+            link.accessible_text or link.href or "(빈 링크)"
+            for link in page.raw.links
+            if not link.in_boilerplate and _is_uncrawlable(link.href)
+        ]
+        if in_nav:
+            navigation[page.url] = in_nav
+        elif in_body:
+            body_only[page.url] = in_body
+
+    affected = [page for page in site.pages if page.url in navigation]
+    warned = [page for page in site.pages if page.url in body_only]
+    observed = {"navigation": navigation, "body": body_only}
+
+    evidence = [
+        ledger.page_snippet(
+            page,
+            "dom_snippet",
+            "따라갈 수 없는 링크: "
+            + ", ".join(navigation.get(page.url) or body_only.get(page.url, []))[:200],
+        )
+        for page in ((affected or warned)[:5] or site.pages[:1])
+    ]
+
+    if not affected and warned:
+        return (
+            url_ratio_outcome(
+                check_id,
+                affected=warned,
+                evaluated=list(site.pages),
+                evidence_ids=evidence,
+                observed_value=observed,
+                affected_note_ko=(
+                    f"{len(warned)}개 페이지의 본문에 크롤러가 따라갈 수 없는 링크가 "
+                    "있습니다. 메뉴는 정상이므로 사이트 전체의 발견에는 영향이 없습니다."
+                ),
+                warning=True,
+            ),
+            [],
+        )
+
+    result = url_ratio_outcome(
+        check_id,
+        affected=affected,
+        evaluated=list(site.pages),
+        evidence_ids=evidence,
+        observed_value=observed,
+        clean_note_ko="모든 링크가 href 로 목적지를 가리킵니다.",
+        affected_note_ko=(
+            f"{len(affected)}개 페이지의 메뉴 영역에 크롤러가 따라갈 수 없는 링크가 "
+            "있습니다. 그 링크가 가리키던 페이지는 발견되지 않습니다."
+        ),
+    )
+    if result.status is not CheckStatus.FAIL:
+        return result, []
+
+    return result, [
+        issue(
+            context,
+            check_id,
+            title_ko="메뉴 링크를 검색엔진이 따라갈 수 없습니다",
+            summary_ko="; ".join(
+                f"{url} — {', '.join(texts[:3])}"
+                for url, texts in list(navigation.items())[:5]
+            ),
+            affected_urls=list(navigation),
+            evidence_ids=evidence,
+            remediation_ko=(
+                "메뉴의 각 항목이 `href` 로 실제 주소를 가리키게 바꾸십시오. "
+                "자바스크립트 동작이 필요하면 `href` 를 그대로 두고 onclick 을 함께 "
+                "두면 됩니다 — 사람은 스크립트로, 크롤러는 href 로 갑니다."
+            ),
+            reverification_ko="수정 후 재수집해 메뉴의 모든 링크에 href 가 있는지 확인합니다.",
+            business_impact_ko=(
+                "**메뉴로만 연결된 페이지가 검색에 등록되지 않습니다.** 진료과목·의료진·"
+                "오시는 길처럼 환자가 검색으로 찾는 페이지가 여기 걸리면, 그 페이지는 "
+                "존재하지만 검색 결과에 나오지 않습니다."
+            ),
+            fix_example=(
+                "<!-- 크롤러가 못 따라감 -->\n"
+                "<a onclick=\"go('/doctors')\">의료진 소개</a>\n\n"
+                "<!-- 사람도 크롤러도 갈 수 있음 -->\n"
+                "<a href=\"/doctors\" onclick=\"go('/doctors'); return false;\">의료진 소개</a>"
+            ),
         )
     ]
 
