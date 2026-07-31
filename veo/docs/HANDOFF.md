@@ -211,12 +211,30 @@ VEO GEO 준비도와 겹치므로 판단이 필요하다. 상세는 작업 #38 �
 | --- | --- |
 | 네이버 SearchAd / DataLab | 있음 |
 | OpenAI | 있음 |
-| **Google PageSpeed** | **있음** (2026-08-01 등록·검증 완료) |
+| **Google PageSpeed** | 키는 있음 — **그러나 제품이 부르지 않는다. 아래 참조** |
 | Google Search Console | 없음 |
 | CrUX 단독 API | **켤 필요 없음** — 실사용자 데이터는 PageSpeed 응답에 함께 온다 |
 
-Railway 에 `VEO_GOOGLE_PAGESPEED_API_KEY` 가 들어갔는지 **확인되지 않았다.**
-로컬만 넣으면 실제 서비스는 여전히 성능 4항목이 "측정 불가" 로 나온다.
+### PageSpeed — 키를 넣어도 아무 일도 일어나지 않는다 (작업 #44)
+
+키는 `.env` 와 Railway 양쪽에 있고, 실제로 구글이 받아 준다는 것도 확인했다.
+**그러나 스캔 파이프라인이 PageSpeed 어댑터를 부르지 않는다.**
+
+```
+pagespeed_from_settings  호출 0건
+pagespeed_from_vault     호출 0건
+PageSpeedClient(         생성 0건   (전부 test 제외)
+```
+
+어제 "키가 통한다" 를 확인한 것은 **스크립트에서 구글을 직접 부른 것**이지 제품이
+부른 것이 아니다. 0-E: 부를 수 없는 기능은 없는 기능이다.
+
+이미 `providers/google/INTEGRATION_REQUEST.md` 요청 #8 에 "어댑터는 완성되었고
+테스트도 있지만 스캔 파이프라인이 이들을 부르지 않습니다" 로 적혀 있었다.
+상태 열림, 우선순위 높음.
+
+**이 작업 전까지 "PageSpeed 키가 있으니 성능이 측정된다" 고 말하면 안 된다.**
+화면에 측정 불가로 나오는 것이 지금은 정직한 상태다.
 
 ---
 
