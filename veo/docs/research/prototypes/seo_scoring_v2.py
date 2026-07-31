@@ -105,6 +105,28 @@ STAGES: dict[str, dict] = {
 #   확실성 구글이 문서로 명시한 요건인가, 업계 통설인가
 # --------------------------------------------------------------------------- #
 
+#: 단계별 원배점 총합. **이 숫자는 검사를 추가해도 변하지 않는다.**
+#:
+#: 2026-08-01, 시험 하나가 이 상수를 만들게 했다. 그 전까지 `scale = budget/declared`
+#: 는 선언된 배점이 얼마든 단계 예산에 맞춰 늘여 주었고, 그래서 **검사를 하나 더
+#: 넣으면 그 단계의 기존 실패가 조금씩 싸졌다.** 같은 사이트, 같은 결함, 점수는
+#: 90.97 → 91.42. v1 을 무너뜨린 것과 같은 종류다 — v1 은 6점, 여기는 0.45점.
+#: 작다고 다른 결함이 되지는 않는다.
+#:
+#: 이 상수가 있으면 검사를 추가할 때 **형제 검사에서 덜어내지 않으면 시험이 깨진다.**
+#: 배분은 사람이 근거를 대고 하는 판단이어야지, 나눗셈이 조용히 해 주는 일이 아니다.
+#:
+#: N/A 재분배는 그대로 남는다(ADR 0002). 그것은 "이 사이트에 그 항목이 없다"는
+#: 사실을 반영하는 것이고, 명세에 검사가 하나 늘어난 것과는 다른 일이다.
+STAGE_RAW_BUDGET: dict[str, float] = {
+    "S1_BLOCKED": 30.0,
+    "S2_IDENTITY": 15.0,
+    "S3_MEANING": 20.0,
+    "S4_COMPETE": 20.0,
+    "S5_CLICK": 10.0,
+    "S6_HYGIENE": 5.0,
+}
+
 ALLOCATION: dict[str, tuple[str, float, str]] = {
     # ---- S1 색인 차단 (30) ----
     "seo.http.status_ok": ("S1_BLOCKED", 10, "5xx/4xx 는 색인에서 제거된다. 사이트 전역"),
@@ -126,16 +148,38 @@ ALLOCATION: dict[str, tuple[str, float, str]] = {
     "seo.onpage.html_lang_declared": ("S3_MEANING", 1, "언어 판별. 한국어는 대개 자동 인식"),
     "seo.onpage.image_alt_coverage": ("S3_MEANING", 1, "이미지 의미. 문맥으로 일부 보완됨"),
     # ---- S4 경쟁력 (20) ----
-    "seo.ux.mobile_viewport": ("S4_COMPETE", 4, "모바일 우선 색인. 국내 병원 검색은 모바일 중심"),
-    "seo.security.https_valid": ("S4_COMPETE", 4, "구글이 명시한 순위 요인이자 신뢰 신호"),
+    # 아래 배분은 2026-08-01 에 다시 짰다. CLS(2.0)와 crawlable_anchors(1.5)가
+    # 들어오면서 3.5점이 필요했고, 단계 총합 20 은 고정이므로 형제들에서 덜어냈다.
+    # 무엇을 깎을지가 이번 개정의 진짜 판단이다 — 근거가 얇은 것부터 깎았다.
+    "seo.ux.mobile_viewport": ("S4_COMPETE", 3.5, "모바일 우선 색인. 국내 병원 검색은 모바일 중심"),
+    # 4 → 3. 구글이 명시한 순위 요인인 것은 맞지만 **매우 약한 요인**이고, 지금은
+    # HTTPS 가 사실상 보편이라 이 검사로 갈리는 사이트가 거의 없다. 게다가
+    # no_mixed_content 와 certificate_not_expiring 이 같은 영역을 이미 나눠 본다.
+    "seo.security.https_valid": ("S4_COMPETE", 3, "구글이 명시한 순위 요인. 다만 지금은 보편"),
     "seo.perf.lcp_lab": ("S4_COMPETE", 3, "Core Web Vitals. 동점일 때 갈린다"),
     "seo.perf.inp_field": ("S4_COMPETE", 2, "실사용자 반응성. 필드 데이터"),
-    "seo.crawl.no_orphan_key_pages": ("S4_COMPETE", 2, "내부 링크가 없으면 중요도가 전달 안 됨"),
-    "seo.security.certificate_not_expiring": ("S4_COMPETE", 1, "만료 시 사이트 전체 차단. 예방 항목"),
-    "seo.content.lazy_loading_safe": ("S4_COMPETE", 1, "잘못 걸면 콘텐츠가 숨는다"),
-    "seo.security.no_mixed_content": ("S4_COMPETE", 1, "브라우저 경고로 이탈"),
-    "seo.content.internal_link_density": ("S4_COMPETE", 1, "주제 연결 강화"),
-    "seo.content.click_depth_reasonable": ("S4_COMPETE", 1, "깊으면 크롤 우선순위가 낮아진다"),
+    # 2026-08-01 위생(0.5) 에서 옮겼다. 구글 Lighthouse 는 CLS 에 LCP 와 **동등한**
+    # 25점을 준다(실측). CLS 는 TBT 처럼 다른 지표의 대역이 아니라 Core Web Vitals
+    # 본체이고, 구글이 순위에 쓴다고 공표한 세 지표 중 하나다. 위생에 두면 화면이
+    # 심하게 덜컹거려도 점수가 거의 안 깎인다 — 광고 배너·늦게 뜨는 이미지·팝업으로
+    # 누르려던 버튼이 밀려나는 병원 홈페이지가 그대로 통과한다.
+    # LCP(3)보다는 낮게 둔다. LCP 는 콘텐츠가 보이기까지의 시간이라 이탈에 더 직접적이다.
+    "seo.perf.cls_lab": ("S4_COMPETE", 2, "Core Web Vitals 본체. 구글은 LCP 와 동등 배점"),
+    "seo.crawl.no_orphan_key_pages": ("S4_COMPETE", 1.75, "내부 링크가 없으면 중요도가 전달 안 됨"),
+    # 2026-08-01 신설. 구글 SEO 카테고리 10개 배점 항목 중 하나(crawlable-anchors).
+    # href 없이 onclick 으로만 이동하는 링크는 크롤러가 따라갈 수 없다. 국내 병원
+    # 홈페이지는 제작 도구가 만든 자바스크립트 메뉴가 흔해 실제로 자주 걸린다.
+    # 결과(고아 페이지, 2점)보다 낮게 둔다 — 이것은 원인이고, 원인과 결과에 같은
+    # 배점을 주면 한 문제로 두 번 깎인다.
+    "seo.crawl.crawlable_anchors": ("S4_COMPETE", 1.5, "JS 전용 메뉴는 크롤러가 못 따라간다"),
+    "seo.security.certificate_not_expiring": ("S4_COMPETE", 0.75, "만료 시 사이트 전체 차단. 예방 항목"),
+    "seo.content.lazy_loading_safe": ("S4_COMPETE", 0.75, "잘못 걸면 콘텐츠가 숨는다"),
+    "seo.security.no_mixed_content": ("S4_COMPETE", 0.75, "브라우저 경고로 이탈"),
+    # 아래 둘은 1 → 0.5. 이 단계에서 근거가 가장 얇은 항목들이다. 둘 다 업계 통설이고
+    # 구글이 문서로 명시한 요건이 아니며, Lighthouse 에도 대응 감사가 없다.
+    # 근거가 얇은 것을 먼저 깎는 것이 근거가 두터운 CLS 에 자리를 내주는 방식이다.
+    "seo.content.internal_link_density": ("S4_COMPETE", 0.5, "주제 연결 강화. 업계 통설"),
+    "seo.content.click_depth_reasonable": ("S4_COMPETE", 0.5, "크롤 우선순위 휴리스틱. 업계 통설"),
     # ---- S5 클릭·표현 (10) ----
     "seo.onpage.meta_description_quality": ("S5_CLICK", 2, "검색결과에 그대로 노출되는 문구"),
     "seo.sd.naver_supported_type": ("S5_CLICK", 2, "네이버·카카오 공유 미리보기. 국내 병원 핵심 채널"),
@@ -147,15 +191,30 @@ ALLOCATION: dict[str, tuple[str, float, str]] = {
     # ---- S6 위생 (5) ----
     "seo.sitemap.urls_valid": ("S6_HYGIENE", 0.75, "잘못된 URL 은 무시될 뿐"),
     "seo.http.redirect_chain_sane": ("S6_HYGIENE", 0.75, "길면 크롤 예산 낭비"),
-    "seo.crawl.no_broken_internal_links": ("S6_HYGIENE", 0.5, "사용자 경험. 색인 영향은 작다"),
-    "seo.perf.cls_lab": ("S6_HYGIENE", 0.5, "레이아웃 흔들림"),
+    # CLS(0.5)가 S4 로 나가고 charset(0.3)이 들어와 0.2 가 비었다. 위생 총합 5 는
+    # 고정이므로 남은 것들에 되돌려 준다 — 둘 다 사용자가 실제로 부딪히는 항목이다.
+    "seo.crawl.no_broken_internal_links": ("S6_HYGIENE", 0.6, "사용자 경험. 색인 영향은 작다"),
+    # TBT 가 여기 있는 이유는 '덜 중요해서' 가 아니다. 구글은 TBT 에 30점 — 성능
+    # 카테고리 최대 배점 — 을 준다. 그러나 그것은 **실험실에서는 INP 를 잴 수 없어
+    # TBT 를 대역으로 쓰기 때문**이다. VEO 는 inp_field 로 실사용자 INP 를 직접
+    # 읽는다(S4, 2점). 대역과 원본에 둘 다 배점을 주면 같은 성질을 두 번 센다.
     "seo.perf.tbt_lab": ("S6_HYGIENE", 0.5, "실험실 지표. INP 가 대표값"),
-    "seo.perf.text_compression": ("S6_HYGIENE", 0.5, "전송량"),
-    "seo.onpage.descriptive_anchor_text": ("S6_HYGIENE", 0.4, "링크 맥락"),
+    # 아래 셋(압축·이미지포맷·리소스힌트)은 구글 기준으로 전부 **배점 0** 인 원인
+    # 항목이다. 압축이 안 되면 LCP 가 나빠지고 LCP 에서 이미 깎인다. 그래도 남기는
+    # 이유는 조치가 구체적이어서 — "LCP 를 줄이세요" 보다 "gzip 을 켜세요" 가 훨씬
+    # 실행 가능하다. 중복 채점임을 인정하고 배점을 최소로 둔다.
+    "seo.perf.text_compression": ("S6_HYGIENE", 0.5, "전송량. LCP 의 원인이라 최소 배점"),
+    "seo.onpage.descriptive_anchor_text": ("S6_HYGIENE", 0.5, "링크 맥락. 구글 SEO 감사 link-text 대응"),
     "seo.content.breadcrumb_present": ("S6_HYGIENE", 0.25, "계층 표시"),
     "seo.content.pagination_signals": ("S6_HYGIENE", 0.25, "목록 페이지"),
-    "seo.perf.modern_image_format": ("S6_HYGIENE", 0.15, "전송량"),
-    "seo.perf.resource_hints": ("S6_HYGIENE", 0.15, "로딩 힌트"),
+    # 2026-08-01 신설. 구글 권장사항 카테고리의 charset 감사에 대응한다.
+    # <meta charset> 이 없으면 브라우저와 크롤러가 인코딩을 추측하고, 한글 페이지에서
+    # 추측이 틀리면 **본문 전체가 깨진 글자로 색인된다.** 검사 비용은 head 한 줄이다.
+    # doctype 과 같은 성격의 위생 항목이라 같은 계층에 두되, 실패의 크기가 다르므로
+    # (doctype 은 렌더링 모드가 바뀔 뿐, charset 은 본문이 통째로 못 읽힌다) 더 준다.
+    "seo.html.charset_declared": ("S6_HYGIENE", 0.3, "인코딩 추측 실패 시 본문 전체가 깨져 색인"),
+    "seo.perf.modern_image_format": ("S6_HYGIENE", 0.15, "전송량. LCP 의 원인이라 최소 배점"),
+    "seo.perf.resource_hints": ("S6_HYGIENE", 0.15, "로딩 힌트. LCP 의 원인이라 최소 배점"),
     "seo.robots.txt_parses_cleanly": ("S6_HYGIENE", 0.15, "의도 전달"),
     "seo.crawl.favicon_declared_and_crawlable": ("S6_HYGIENE", 0.1, "검색결과 아이콘"),
     "seo.html.doctype_standards_mode": ("S6_HYGIENE", 0.05, "렌더링 모드"),
@@ -296,15 +355,25 @@ def score(inputs: list[CheckInput], *, breadth_exponent: float = BREADTH_EXPONEN
 
 
 def allocation_report() -> str:
-    lines = ["단계          배점   검사수  합계검증"]
-    grand = 0.0
+    """배점표를 사람이 읽을 수 있게 편다.
+
+    두 가지 단위가 나온다. **원배점**은 배분을 정할 때 쓰는 눈금이고(단계별 고정),
+    **환산배점**은 그것을 100점으로 옮긴 값이다. 이전 판은 이 둘을 맞대어 비교해
+    모든 단계를 '불일치' 로 찍었다 — 서로 다른 자로 잰 숫자였다.
+    """
+    lines = [f"{'단계':<12}{'원배점':>8}{'환산':>8}{'검사':>6}  {'합계검증':<10}"]
+    grand_raw = grand_norm = 0.0
     for stage, meta in STAGES.items():
-        members = [(c, p) for c, (s, p, _) in ALLOCATION.items() if s == stage]
-        total = sum(p for _, p in members)
-        grand += meta["points"]
-        ok = "OK" if abs(total - meta["points"]) < 1e-6 else f"불일치 {total}"
-        lines.append(f"{meta['name_ko']:12} {meta['points']:>5}   {len(members):>3}    {ok}")
-    lines.append(f"{'합계':12} {grand:>5}   {len(ALLOCATION):>3}")
+        members = [p for c, (s, p, _) in ALLOCATION.items() if s == stage]
+        raw = sum(members)
+        expected = STAGE_RAW_BUDGET[stage]
+        grand_raw += raw
+        grand_norm += meta["points"]
+        ok = "OK" if abs(raw - expected) < 1e-9 else f"불일치 (고정값 {expected})"
+        lines.append(
+            f"{meta['name_ko']:<12}{raw:>8.2f}{meta['points']:>8.1f}{len(members):>6}  {ok:<10}"
+        )
+    lines.append(f"{'합계':<12}{grand_raw:>8.2f}{grand_norm:>8.1f}{len(ALLOCATION):>6}")
     return "\n".join(lines)
 
 
