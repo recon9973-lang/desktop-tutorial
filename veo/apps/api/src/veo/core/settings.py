@@ -287,6 +287,19 @@ class Settings(BaseSettings):
     #: 내는 API 이지만, 속도 제한은 그쪽에도 있다.
     observation_max_concurrency: int = 4
 
+    #: **같은 질문**의 다음 반복까지 최소로 기다리는 시간(초).
+    #:
+    #: 3회를 같은 순간에 몰아 던지면 서로 독립적인 표본이 아니다. 그 시각에 그 모델이
+    #: 어떤 상태였는지가 세 번에 똑같이 묻어나는데, 신뢰구간은 셋이 독립이라고 계산되므로
+    #: **실제보다 좁게 나온다.** 좁은 구간은 넓은 구간보다 위험하다 — 더 확신에 차 보인다.
+    #:
+    #: 0 으로 두면 예전처럼 연달아 던진다. 그때도 결과는 나오지만, 비율 옆에 "독립 표본이
+    #: 아니다" 가 붙는다(`RepetitionSpread`). 값을 낮추는 것으로 경고를 지울 수는 없다.
+    #:
+    #: 반복-우선 순서라(`runner._plan`) 이 대기는 질문 수만큼 곱해지지 않는다. 늘어나는
+    #: 총 시간은 대략 `(반복 - 1) x 이 값` 이다.
+    observation_repetition_interval_seconds: int = 120
+
     default_seo_spec_id: str = "veo.seo.readiness"
     default_geo_spec_id: str = "veo.geo.readiness"
 

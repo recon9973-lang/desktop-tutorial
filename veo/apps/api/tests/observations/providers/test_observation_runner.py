@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import threading
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -115,6 +115,10 @@ def runner(
         ),
         store=store or InMemoryAnswerStore(),
         detector=DisambiguatingMentionDetector(BRAND_PROFILE),
+        # 이 스위트가 재는 것은 실행기의 **논리**이지 시계가 아니다. 간격을 0 으로
+        # 두어 실제로 자지 않게 한다. 간격 자체는
+        # `tests/observations/test_repetition_pacing.py` 가 가짜 시계로 잰다.
+        repetition_interval=timedelta(0),
         max_concurrency=max_concurrency,
         budget_usd=budget_usd,
         clock=lambda: NOW,
@@ -538,6 +542,10 @@ def multi_engine_runner(store: InMemoryAnswerStore) -> ObservationRunner:
         ),
         store=store,
         detector=DisambiguatingMentionDetector(BRAND_PROFILE),
+        # 이 스위트가 재는 것은 실행기의 **논리**이지 시계가 아니다. 간격을 0 으로
+        # 두어 실제로 자지 않게 한다. 간격 자체는
+        # `tests/observations/test_repetition_pacing.py` 가 가짜 시계로 잰다.
+        repetition_interval=timedelta(0),
         max_concurrency=1,
         clock=lambda: NOW,
     )

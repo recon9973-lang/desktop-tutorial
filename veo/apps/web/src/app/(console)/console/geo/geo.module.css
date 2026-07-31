@@ -525,3 +525,28 @@
   margin: 0;
   color: var(--veo-color-text-muted);
 }
+
+/* 반복 간격.
+ *
+ * 신뢰구간 **바로 아래**에 둔다. 위쪽 주의사항 문단에만 두면, 숫자만 보고 넘어가는
+ * 사람에게는 없는 것과 같다. 기준 미달일 때는 경고색으로, 넘겼을 때는 조용한 회색으로 —
+ * 둘 다 문장은 나가되 무게가 다르다.
+ */
+.spread,
+.spreadTight {
+  margin: 0 0 var(--veo-space-4);
+  padding: var(--veo-space-3);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.spread {
+  background: var(--veo-color-surface-sunken);
+  color: var(--veo-color-text-muted);
+}
+
+.spreadTight {
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+}

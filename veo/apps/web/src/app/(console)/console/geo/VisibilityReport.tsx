@@ -50,6 +50,22 @@ export function VisibilityReport({
         />
       </div>
 
+      {/*
+        위 신뢰구간은 **반복이 서로 독립이라는 가정** 위에서만 성립한다. 같은 순간에
+        몰아 던진 반복은 그 시각의 엔진 상태가 전부에 똑같이 묻어나므로 독립이 아니고,
+        구간은 실제보다 좁게 나온다. 좁은 구간이 넓은 구간보다 나쁘다 — 더 확신에 차
+        보이기 때문이다. 그래서 이 문장은 구간 **바로 아래**에 둔다.
+      */}
+      {metrics.repetition_spread.caveat_ko !== null ? (
+        <p
+          className={
+            metrics.repetition_spread.is_spread_out ? styles.spread : styles.spreadTight
+          }
+        >
+          {metrics.repetition_spread.caveat_ko}
+        </p>
+      ) : null}
+
       <Counts run={run} metrics={metrics} />
       <Cost run={run} />
     </div>

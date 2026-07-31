@@ -59,6 +59,12 @@ function metrics(over: Partial<VisibilityMetrics> = {}): VisibilityMetrics {
     answers_valid: 40,
     answers_with_visible_citations: 40,
     answers_pending_disambiguation: 0,
+    repetition_spread: {
+      shortest_gap_seconds: null,
+      measured_pairs: 0,
+      is_spread_out: false,
+      caveat_ko: null,
+    },
     mention_rate: rate(),
     citation_rate: rate({ label_ko: '인용률' }),
     prompt_coverage: rate({ label_ko: '질문 도달률' }),
@@ -260,5 +266,51 @@ describe('같은 이름 때문에 보류한 응답', () => {
 
     expect(screen.getByText('같은 이름 때문에 보류')).toBeInTheDocument();
     expect(screen.getByText('7')).toBeInTheDocument();
+  });
+});
+
+describe('반복 간격', () => {
+  it('구간 바로 아래에 "독립 표본이 아니다" 를 적는다', () => {
+    // 위쪽 주의사항 문단에만 두면, 숫자만 보고 넘어가는 사람에게는 없는 것과 같다.
+    render(
+      <VisibilityReport
+        run={run()}
+        metrics={metrics({
+          repetition_spread: {
+            shortest_gap_seconds: 3,
+            measured_pairs: 12,
+            is_spread_out: false,
+            caveat_ko: '3초 만에 연달아 실행됐습니다. 신뢰구간은 실제보다 좁습니다.',
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/신뢰구간은 실제보다 좁습니다/)).toBeInTheDocument();
+  });
+
+  it('간격을 벌렸어도 문장은 남긴다', () => {
+    // 한 실행 안에서 벌린 것은 날짜·시간대가 다른 측정이 아니다.
+    render(
+      <VisibilityReport
+        run={run()}
+        metrics={metrics({
+          repetition_spread: {
+            shortest_gap_seconds: 120,
+            measured_pairs: 12,
+            is_spread_out: true,
+            caveat_ko: '최소 2분 간격으로 실행했습니다. 다만 완전히 독립적이지는 않습니다.',
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/완전히 독립적이지는 않습니다/)).toBeInTheDocument();
+  });
+
+  it('반복이 없으면 없는 경고를 만들지 않는다', () => {
+    render(<VisibilityReport run={run()} metrics={metrics()} />);
+
+    expect(screen.queryByText(/독립/)).toBeNull();
   });
 });

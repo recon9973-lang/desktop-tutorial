@@ -35,11 +35,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
+from datetime import datetime
 from typing import Any, final
 
 from veo.observations.sampling import (
     MIN_RUNS_FOR_COMPARISON,
     ObservedRate,
+    RepetitionSpread,
     SampleAdequacy,
 )
 
@@ -83,6 +85,13 @@ class AnswerFact:
     mentioned: bool
     cited: bool
     citation_support: str | None
+    executed_at: datetime | None = None
+    """이 응답을 **언제** 받았나.
+
+    개수만으로는 부족하다. 같은 질문의 반복이 같은 순간에 몰려 있으면 그것은 독립
+    표본이 아니고, 신뢰구간은 그 사실을 모른 채 좁게 나온다
+    (:class:`veo.observations.sampling.RepetitionSpread`).
+    """
     mention_pending_review: bool = False
     """이름은 나왔는데 **이 고객인지 갈리지 않았다.**
 
@@ -100,6 +109,7 @@ class VisibilityMetrics:
     answers_valid: int
     answers_with_visible_citations: int
     answers_pending_disambiguation: int
+    repetition_spread: RepetitionSpread
     mention_rate: ObservedRate
     citation_rate: ObservedRate
     prompt_coverage: ObservedRate
@@ -112,6 +122,7 @@ class VisibilityMetrics:
             "answers_valid": self.answers_valid,
             "answers_with_visible_citations": self.answers_with_visible_citations,
             "answers_pending_disambiguation": self.answers_pending_disambiguation,
+            "repetition_spread": self.repetition_spread.as_dict(),
             "mention_rate": rate_payload(self.mention_rate),
             "citation_rate": rate_payload(self.citation_rate),
             "prompt_coverage": rate_payload(self.prompt_coverage),
@@ -130,6 +141,12 @@ def _with_denominator_note(rate: ObservedRate, note_ko: str) -> ObservedRate:
     if rate.adequacy is not SampleAdequacy.NO_DATA:
         return rate
     return replace(rate, extra_qualifier_ko=note_ko)
+
+
+def _append_qualifier(rate: ObservedRate, note_ko: str) -> ObservedRate:
+    """이미 붙어 있는 설명을 지우지 않고 뒤에 잇는다."""
+    joined = f"{rate.extra_qualifier_ko} {note_ko}".strip()
+    return replace(rate, extra_qualifier_ko=joined)
 
 
 def visibility_metrics(
@@ -167,6 +184,17 @@ def visibility_metrics(
             f"실행 {len(answers)}건 가운데 {len(answers) - len(valid)}건은 응답을 받지 "
             "못했습니다. 그 건들은 '언급 없음' 이 아니라 분모에서 빠집니다."
         )
+
+    # 같은 질문의 반복이 시간적으로 붙어 있으면 아래 비율들의 신뢰구간은 실제보다 좁다.
+    # 구간을 다시 계산하지는 않는다 — 상관을 얼마나 먹었는지 우리는 모르고, 모르는 값으로
+    # 보정하면 그것도 지어낸 숫자다(0-A). 잰 그대로 적고, 좁게 읽지 말라고 말한다.
+    moments: dict[str, list[datetime]] = {}
+    for answer in valid:
+        if answer.executed_at is not None:
+            moments.setdefault(answer.prompt_id, []).append(answer.executed_at)
+    spread = RepetitionSpread.of(moments)
+    if spread.caveat_ko:
+        caveats.append(spread.caveat_ko)
 
     mentioned_count = sum(1 for answer in valid if answer.mentioned)
     pending = [answer for answer in valid if answer.mention_pending_review]
@@ -208,11 +236,19 @@ def visibility_metrics(
         label_ko="질문 도달률",
     )
 
+    if spread.caveat_ko and not spread.is_spread_out:
+        # 기준 미달일 때만 비율 옆까지 따라간다. 기준을 넘긴 경우의 문장은 위쪽
+        # 주의사항에만 두어, 같은 문단이 숫자마다 세 번 반복되지 않게 한다.
+        mention_rate = _append_qualifier(mention_rate, spread.caveat_ko)
+        citation_rate = _append_qualifier(citation_rate, spread.caveat_ko)
+        prompt_coverage = _append_qualifier(prompt_coverage, spread.caveat_ko)
+
     return VisibilityMetrics(
         answers_recorded=len(answers),
         answers_valid=len(valid),
         answers_with_visible_citations=len(visible),
         answers_pending_disambiguation=len(pending),
+        repetition_spread=spread,
         mention_rate=mention_rate,
         citation_rate=citation_rate,
         prompt_coverage=prompt_coverage,

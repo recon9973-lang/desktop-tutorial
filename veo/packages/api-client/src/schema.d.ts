@@ -5354,6 +5354,33 @@ export interface components {
             /** Source Rank */
             source_rank: number | null;
         };
+        /**
+         * RepetitionSpreadPayload
+         * @description 반복이 실제로 얼마나 벌어져 있었나.
+         *
+         *     `caveat_ko` 는 **기준을 넘겨도 사라지지 않습니다.** 한 번의 실행 안에서 벌릴 수 있는
+         *     것은 분 단위인데 방법론이 요구하는 것은 날짜·시간대 분산이라, 어느 쪽이든 완전한
+         *     독립은 아니기 때문입니다. 문장만 바뀝니다.
+         */
+        RepetitionSpreadPayload: {
+            /** Caveat Ko */
+            caveat_ko?: string | null;
+            /**
+             * Is Spread Out
+             * @default false
+             */
+            is_spread_out: boolean;
+            /**
+             * Measured Pairs
+             * @default 0
+             */
+            measured_pairs: number;
+            /**
+             * Shortest Gap Seconds
+             * @description 같은 질문의 연속한 두 반복 사이 간격 중 **가장 짧은 것**. 평균이 아닙니다.
+             */
+            shortest_gap_seconds?: number | null;
+        };
         /** ReportVersionPayload */
         ReportVersionPayload: {
             /** Audience */
@@ -6687,6 +6714,12 @@ export interface components {
             is_partial_measurement: boolean;
             mention_rate: components["schemas"]["RatePayload"];
             prompt_coverage: components["schemas"]["RatePayload"];
+            /**
+             * @description 같은 질문의 반복이 **시간적으로** 얼마나 벌어져 있었는지입니다.
+             *
+             *     위 신뢰구간은 반복이 서로 독립이라는 가정 위에서만 성립합니다. 같은 순간에 몰아 던진 반복은 그 시각의 엔진 상태가 전부에 똑같이 묻어나므로 독립이 아니고, **구간이 실제보다 좁게 나옵니다.** VEO는 구간을 다시 계산하지 않습니다 — 상관을 얼마나 먹었는지 알 수 없고, 모르는 값으로 보정하면 그것도 지어낸 숫자이기 때문입니다. 대신 잰 그대로 적습니다.
+             */
+            repetition_spread?: components["schemas"]["RepetitionSpreadPayload"];
         };
         /** WeightChangePayload */
         WeightChangePayload: {

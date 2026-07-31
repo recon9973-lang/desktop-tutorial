@@ -30,6 +30,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from veo.authz.principal import Principal
 from veo.contracts.enums import JobType, Role
+from veo.core.settings import get_settings
 from veo.db.models.identity import Organization, Project, RoleAssignment, User
 from veo.db.models.observation import (
     AIAnswer,
@@ -221,6 +222,22 @@ def _payload(text: str, citation_urls: tuple[str, ...] = ()) -> dict:
         ],
         "usage": {"input_tokens": 10, "output_tokens": 20},
     }
+
+
+@pytest.fixture(autouse=True)
+def _no_repetition_wait(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """이 파일이 재는 것은 **무엇이 저장되는가** 이지 시계가 아니다.
+
+    관측은 이제 같은 질문의 반복 사이에 일부러 간격을 둔다(기본 2분). 그대로 두면 이
+    파일 하나가 분 단위로 늘어나므로 여기서는 0 으로 내린다. 간격 자체는
+    `tests/observations/test_repetition_pacing.py` 가 가짜 시계로 잰다.
+
+    `get_settings` 가 캐시를 들고 있어 환경변수만 바꿔서는 안 먹는다 — 앞뒤로 비운다.
+    """
+    monkeypatch.setenv("VEO_OBSERVATION_REPETITION_INTERVAL_SECONDS", "0")
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 DEFAULT_ANSWER = f"{SYNTHETIC_MARKER} {BRAND_NAME} 를 추천합니다."

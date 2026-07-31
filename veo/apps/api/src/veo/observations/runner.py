@@ -26,10 +26,11 @@ import dataclasses
 import hashlib
 import logging
 import threading
+import time
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
@@ -44,7 +45,7 @@ from veo.observations.providers.storage import (
     StoredAnswer,
 )
 from veo.observations.runs import ObservationRun, RunConditions
-from veo.observations.sampling import MIN_RUNS_FOR_EXPLORATION
+from veo.observations.sampling import MIN_RUNS_FOR_EXPLORATION, MIN_SPREAD_BETWEEN_REPETITIONS
 
 __all__ = [
     "MIN_REPETITIONS",
@@ -258,6 +259,15 @@ class _Unit:
         )
 
     @property
+    def repetition_group(self) -> str:
+        """같은 질문·같은 조건의 반복끼리 묶는 축. 간격은 이 축 안에서만 뜻이 있다.
+
+        다른 질문끼리 붙어 나가는 것은 문제가 아니다. 문제는 **같은 질문**을 같은 순간에
+        여러 번 묻는 것이다.
+        """
+        return f"{self.prompt.prompt_id}|{self.requested.fingerprint}"
+
+    @property
     def run_id(self) -> str:
         """Deterministic in ``(prompt_id, requested conditions, attempt)``.
 
@@ -296,19 +306,31 @@ class ObservationRunner:
         detector: MentionDetector,
         max_concurrency: int = 4,
         budget_usd: float | None = None,
+        repetition_interval: timedelta = MIN_SPREAD_BETWEEN_REPETITIONS,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+        sleep: Callable[[float], None] = time.sleep,
+        on_progress: Callable[[int, int], None] | None = None,
         logger: logging.Logger = LOGGER,
     ) -> None:
         if max_concurrency < 1:
             raise ValueError("max_concurrency must be at least 1")
         if budget_usd is not None and budget_usd <= 0:
             raise ValueError("budget_usd must be positive when set")
+        if repetition_interval < timedelta(0):
+            raise ValueError("repetition_interval cannot be negative")
         self._registry = registry
         self._store = store
         self._detector = detector
         self._max_concurrency = max_concurrency
         self._budget = budget_usd
+        #: 같은 질문의 다음 반복까지 최소로 기다리는 시간. 0 이면 예전처럼 연달아
+        #: 던진다 — 그때 비율에 붙는 경고문이 달라진다(`RepetitionSpread`).
+        self._repetition_interval = repetition_interval
         self._clock = clock
+        self._sleep = sleep
+        #: 오래 기다리는 동안 밖에서 "아직 살아 있다" 를 알 수 있게 한다. 이것이 없으면
+        #: 간격을 벌린 실행이 작업 목록에서 **멈춘 것으로** 보인다.
+        self._on_progress = on_progress
         self._logger = logger
 
     def execute(
@@ -387,10 +409,18 @@ class ObservationRunner:
         spend_lock = threading.Lock()
         index = 0
 
+        # 같은 질문·같은 조건의 반복을 언제부터 다시 던져도 되는가.
+        #
+        # 계획이 반복-우선 순서라(`_plan`) 1회차 전체가 먼저 나가고 2회차가 뒤따른다.
+        # 따라서 여기서 기다리는 시간은 질문 수만큼 곱해지지 않고, 회차 사이에 한 번씩만
+        # 든다 — 질문이 여섯이든 스물이든 늘어나는 총 시간은 같다.
+        eligible_at: dict[str, datetime] = {}
+
         with ThreadPoolExecutor(max_workers=self._max_concurrency) as pool:
             pending: dict[Future[_UnitResult], _Unit] = {}
 
             def fill() -> None:
+                """지금 던져도 되는 것만 던진다. 아직 이른 것은 순서를 지킨 채 남긴다."""
                 nonlocal index
                 while (
                     stopped is None
@@ -398,16 +428,57 @@ class ObservationRunner:
                     and len(pending) < self._max_concurrency
                 ):
                     unit = units[index]
+                    ready = eligible_at.get(unit.repetition_group)
+                    if ready is not None and self._clock() < ready:
+                        # 뒤의 단위를 앞질러 보내지 않는다. 반복-우선 순서를 흐트러뜨리면
+                        # 예산으로 잘렸을 때 **회차가 아니라 질문이** 잘려 나간다.
+                        return
                     index += 1
                     pending[pool.submit(self._execute_unit, unit)] = unit
 
+            def wait_until_something_is_eligible() -> None:
+                """던질 것도 기다릴 것도 없을 때, 다음 반복이 익을 때까지 잔다.
+
+                이 대기가 없으면 위 `fill()` 이 아무것도 못 던진 채 루프가 끝나고, 남은
+                회차가 조용히 `skipped` 로 넘어간다 — **간격을 두려다 측정을 잃는다.**
+                """
+                if stopped is not None or index >= len(units):
+                    return
+                ready = eligible_at.get(units[index].repetition_group)
+                if ready is None:
+                    return
+                remaining = (ready - self._clock()).total_seconds()
+                if remaining <= 0:
+                    return
+                if self._on_progress is not None:
+                    self._on_progress(len(results), len(units))
+                self._logger.info(
+                    "반복 간격 대기 %.0f초 (%d/%d 완료)", remaining, len(results), len(units)
+                )
+                self._sleep(remaining)
+
             fill()
-            while pending:
+            while pending or index < len(units):
+                if not pending:
+                    wait_until_something_is_eligible()
+                    fill()
+                    if not pending:
+                        # 잤는데도 못 던졌다면 시계나 sleep 이 우리가 아는 대로 움직이지
+                        # 않는 것이다. 조용히 도는 대신 멈춘다.
+                        break
+                    continue
                 done, _ = wait(set(pending), return_when=FIRST_COMPLETED)
                 for future in done:
-                    pending.pop(future)
+                    unit = pending.pop(future)
                     result = future.result()
                     results.append(result)
+                    # 이 질문의 다음 반복은 여기서부터 잰다. **호출이 끝난 시각**을
+                    # 기준으로 삼는 이유는, 응답이 느린 엔진에서 시작 시각을 쓰면 실제
+                    # 간격이 우리가 요구한 것보다 짧아지기 때문이다.
+                    if self._repetition_interval:
+                        eligible_at[unit.repetition_group] = (
+                            self._clock() + self._repetition_interval
+                        )
                     if stopped is not None or self._budget is None:
                         continue
                     with spend_lock:

@@ -23,9 +23,9 @@ from __future__ import annotations
 
 import hashlib
 import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import final
 from urllib.parse import urlsplit
@@ -209,6 +209,7 @@ def execute_observation(
     settings: Settings | None = None,
     registry: ProviderRegistry | None = None,
     store: RecordedAnswerStore | None = None,
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> ObservationRunRow:
     """프롬프트 집합을 엔진들에 돌리고 결과를 통째로 남긴다.
 
@@ -236,6 +237,10 @@ def execute_observation(
         detector=DisambiguatingMentionDetector(profile),
         max_concurrency=resolved.observation_max_concurrency,
         budget_usd=resolved.observation_budget_usd,
+        repetition_interval=timedelta(
+            seconds=resolved.observation_repetition_interval_seconds
+        ),
+        on_progress=on_progress,
     )
 
     conditions = {
@@ -551,6 +556,9 @@ def answer_facts(
             mention_pending_review=answer.id in pending_ids,
             cited=answer.id in cited_ids,
             citation_support=answer.citation_support,
+            # 반복이 **언제** 일어났는지가 신뢰구간의 전제다. 이 값을 흘리면 같은 순간에
+            # 몰아 던진 반복이 독립 표본처럼 계산된다.
+            executed_at=answer.executed_at,
         )
         for answer in answers
     )

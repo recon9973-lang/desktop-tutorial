@@ -38,6 +38,15 @@ export interface VisibilityMetrics {
   /** 상호는 나왔지만 같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 응답 수.
    *  '언급 없음' 과 같은 칸에 두면 안 된다 — 사람이 보면 풀리는 건이다. */
   readonly answers_pending_disambiguation: number;
+  /** 같은 질문의 반복이 **시간적으로** 얼마나 벌어져 있었나.
+   *  붙어 있으면 위 신뢰구간은 실제보다 좁다 — 반복이 독립이라는 가정 위에서만
+   *  성립하기 때문이다. */
+  readonly repetition_spread: {
+    readonly shortest_gap_seconds: number | null;
+    readonly measured_pairs: number;
+    readonly is_spread_out: boolean;
+    readonly caveat_ko: string | null;
+  };
   readonly mention_rate: Rate;
   readonly citation_rate: Rate;
   readonly prompt_coverage: Rate;

@@ -71,6 +71,24 @@ def observation_work(
             )
 
         jobs.advance(session, job_id, progress=0.1, stage=OBSERVATION_STAGES[1])
+
+        def report(done: int, total: int) -> None:
+            """실행기가 반복 간격을 기다리는 동안 "아직 살아 있다" 를 남긴다.
+
+            같은 질문의 반복은 일부러 간격을 두고 던지므로(`RepetitionSpread`) 실행은
+            분 단위로 길어진다. 그동안 아무 흔적도 안 남기면 `is_stale()` 이 20분 뒤
+            이 작업을 **알 수 없음**으로 표시한다 — 멀쩡히 도는 일이 고장으로 보인다.
+            """
+            if total <= 0:
+                return
+            # 0.1 에서 시작해 0.9 까지. 마지막 0.1 은 저장 몫으로 남긴다.
+            jobs.advance(
+                session,
+                job_id,
+                progress=0.1 + 0.8 * (done / total),
+                stage=f"{OBSERVATION_STAGES[1]} ({done}/{total}, 반복 간격 대기 중)",
+            )
+
         try:
             row = execute_observation(
                 session,
@@ -81,6 +99,7 @@ def observation_work(
                 allow_below_floor=allow_below_floor,
                 registry=registry,
                 store=store,
+                on_progress=report,
             )
         except BrandIdentityMissingError as exc:
             raise JobFailure("BRAND_IDENTITY_MISSING", str(exc)) from exc
