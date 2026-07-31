@@ -239,6 +239,22 @@ def allowed_targets(
     )
 
 
+def human_transitions_from(source: IssueState) -> tuple[Transition, ...]:
+    """The moves a person may make from ``source``, in the order they were declared.
+
+    This exists so that a console can offer buttons without restating the table. A screen
+    that keeps its own list of "what you can do next" drifts from this one, and the drift
+    always goes the same direction: a button appears for a move the machine refuses, and
+    the person clicking it concludes the tool is broken rather than that the move was
+    never allowed. There is one table, and callers read it.
+    """
+    return tuple(
+        edge
+        for edge in _EDGES
+        if edge.source is source and TransitionTrigger.HUMAN in edge.triggers
+    )
+
+
 def is_legal(
     source: IssueState,
     target: IssueState,
@@ -368,6 +384,7 @@ __all__ = [
     "allowed_targets",
     "assert_transition",
     "describe_state_ko",
+    "human_transitions_from",
     "is_legal",
     "is_open",
     "legal_transitions",

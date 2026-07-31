@@ -25,6 +25,7 @@ from veo.issues.lifecycle import (
     allowed_targets,
     assert_transition,
     describe_state_ko,
+    human_transitions_from,
     is_legal,
     legal_transitions,
     state_for_outcome,
@@ -272,3 +273,48 @@ def test_the_rejection_message_names_what_was_possible_instead() -> None:
         assert_transition(IssueState.OPEN, IssueState.FIX_CLAIMED, trigger=HUMAN)
     message = caught.value.message_ko
     assert "IN_PROGRESS" in message or "ACKNOWLEDGED" in message
+
+
+# --------------------------------------------------------------------------- #
+# What a console may offer
+# --------------------------------------------------------------------------- #
+
+
+def test_the_offered_moves_are_exactly_the_human_edges() -> None:
+    """A console reads the table; it does not keep its own copy."""
+    for source in IssueState:
+        offered = {edge.target for edge in human_transitions_from(source)}
+        assert offered == allowed_targets(source, trigger=HUMAN)
+
+
+def test_no_state_ever_offers_resolved() -> None:
+    """The one button that must never exist.
+
+    A screen that offered it would let a person mark a problem gone without measuring
+    anything — the exact artefact this whole module was built to prevent.
+    """
+    for source in IssueState:
+        targets = {edge.target for edge in human_transitions_from(source)}
+        assert IssueState.VERIFIED_RESOLVED not in targets
+
+
+def test_every_offered_move_would_actually_be_permitted() -> None:
+    for source in IssueState:
+        for edge in human_transitions_from(source):
+            assert_transition(source, edge.target, trigger=HUMAN)
+
+
+def test_offered_moves_keep_the_order_they_were_declared_in() -> None:
+    """Declaration order is authored intent: triage first, refusal last."""
+    from_in_progress = [edge.target for edge in human_transitions_from(IssueState.IN_PROGRESS)]
+    assert from_in_progress == [
+        IssueState.ACKNOWLEDGED,
+        IssueState.FIX_CLAIMED,
+        IssueState.WONT_FIX,
+    ]
+
+
+def test_a_closed_measurement_offers_nothing_to_click() -> None:
+    """``VERIFIED_RESOLVED`` is a measurement. Only a new scan may move it."""
+    assert human_transitions_from(IssueState.VERIFIED_RESOLVED) == ()
+    assert human_transitions_from(IssueState.VERIFYING) == ()

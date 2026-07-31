@@ -308,3 +308,24 @@ def test_transitioning_another_organizations_issue_is_a_404(
         f"{ISSUES}/{seeded}/transitions", json={"to_state": IssueState.ACKNOWLEDGED}
     )
     assert response.status_code == 404
+
+
+def test_the_list_row_tells_the_console_which_buttons_to_draw(
+    client: TestClient, act_as: Callable[..., None], org_a: Tenant, seeded: uuid.UUID
+) -> None:
+    """The screen must not keep its own copy of the state table."""
+    act_as(org_a.analyst)
+    row = items(client.get(ISSUES))[0]
+    offered = {move["to_state"] for move in row["human_transitions"]}
+    assert offered == {"ACKNOWLEDGED", "IN_PROGRESS", "WONT_FIX"}
+    for move in row["human_transitions"]:
+        assert not move["label_ko"].isascii()
+        assert not move["reason_ko"].isascii()
+
+
+def test_no_row_ever_offers_a_button_that_marks_a_problem_gone(
+    client: TestClient, act_as: Callable[..., None], org_a: Tenant, seeded: uuid.UUID
+) -> None:
+    act_as(org_a.analyst)
+    for row in items(client.get(ISSUES)):
+        assert all(move["to_state"] != "VERIFIED_RESOLVED" for move in row["human_transitions"])

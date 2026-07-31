@@ -3822,6 +3822,21 @@ export interface components {
             url: string;
         };
         /**
+         * HumanTransitionPayload
+         * @description One move a person may make from where this issue stands right now.
+         *
+         *     The console renders exactly these and nothing else. It is the state table that
+         *     decides, not the screen — so ``VERIFIED_RESOLVED`` can never appear here, because no
+         *     human-triggered edge ends there.
+         */
+        HumanTransitionPayload: {
+            /** Label Ko */
+            label_ko: string;
+            /** Reason Ko */
+            reason_ko: string;
+            to_state: components["schemas"]["IssueState"];
+        };
+        /**
          * ImprovementSummary
          * @description 고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.
          *
@@ -3898,6 +3913,8 @@ export interface components {
             fix_example?: string | null;
             /** History */
             history?: components["schemas"]["HistoryEntryPayload"][];
+            /** Human Transitions */
+            human_transitions?: components["schemas"]["HumanTransitionPayload"][];
             /**
              * Id
              * Format: uuid
@@ -3989,6 +4006,8 @@ export interface components {
             created_at: string;
             /** First Seen Run Id */
             first_seen_run_id?: string | null;
+            /** Human Transitions */
+            human_transitions?: components["schemas"]["HumanTransitionPayload"][];
             /**
              * Id
              * Format: uuid

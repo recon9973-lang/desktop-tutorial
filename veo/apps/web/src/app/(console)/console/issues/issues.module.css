@@ -1,0 +1,142 @@
+/* 이슈.
+ *
+ * 이 화면이 시각적으로 지켜야 하는 것 하나: **'수정했다고 보고됨' 이 '해결' 처럼 보이면
+ * 안 된다.** 그래서 열린 상태는 색이 아니라 테두리와 굵기로도 구분하고, 재측정 대기는
+ * 따로 문장을 단다.
+ */
+
+.projectTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+  margin-bottom: var(--veo-space-4);
+}
+
+.projectTab,
+.projectTabActive {
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-200);
+  text-decoration: none;
+  color: inherit;
+}
+
+.projectTabActive {
+  border-color: var(--veo-color-accent-border);
+  background: var(--veo-color-accent-subtle);
+  font-weight: var(--veo-weight-medium);
+}
+
+.unverifiedTotal {
+  margin: 0 0 var(--veo-space-4);
+  padding: var(--veo-space-3) var(--veo-space-4);
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.issueList {
+  list-style: none;
+  margin: 0 0 var(--veo-space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+}
+
+.issue,
+.issueRecurred {
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+}
+
+/* 재발은 처음 보는 문제와 무게가 다르다. 목록에서 먼저 오고, 여기서 갈라 놓는다. */
+.issueRecurred {
+  border-left: 3px solid var(--veo-color-warning);
+}
+
+.issueHead {
+  margin: 0 0 var(--veo-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--veo-space-2);
+}
+
+.severity {
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  white-space: nowrap;
+}
+
+.issueTitle {
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.state {
+  margin: 0 0 var(--veo-space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+/* 열림·닫힘을 색만으로 구분하지 않는다. */
+.openState {
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-text);
+}
+
+.closedState {
+  font-weight: var(--veo-weight-regular);
+  text-decoration: underline dotted;
+}
+
+.owner,
+.urls {
+  white-space: nowrap;
+}
+
+.check {
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+}
+
+.unverified,
+.recurrence {
+  margin: 0 0 var(--veo-space-3);
+  padding: var(--veo-space-2) var(--veo-space-3);
+  border-left: 2px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.impact {
+  margin: 0 0 var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+}
+
+.noMoves {
+  margin: 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  line-height: 1.6;
+}

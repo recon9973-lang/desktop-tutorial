@@ -6199,6 +6199,30 @@
         "title": "HopPayload",
         "type": "object"
       },
+      "HumanTransitionPayload": {
+        "additionalProperties": false,
+        "description": "One move a person may make from where this issue stands right now.\n\nThe console renders exactly these and nothing else. It is the state table that\ndecides, not the screen — so ``VERIFIED_RESOLVED`` can never appear here, because no\nhuman-triggered edge ends there.",
+        "properties": {
+          "label_ko": {
+            "title": "Label Ko",
+            "type": "string"
+          },
+          "reason_ko": {
+            "title": "Reason Ko",
+            "type": "string"
+          },
+          "to_state": {
+            "$ref": "#/components/schemas/IssueState"
+          }
+        },
+        "required": [
+          "to_state",
+          "label_ko",
+          "reason_ko"
+        ],
+        "title": "HumanTransitionPayload",
+        "type": "object"
+      },
       "ImprovementSummary": {
         "additionalProperties": false,
         "description": "고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.\n\n`gain_points` 는 채점기가 실제 산식으로 계산한 값이다. 화면이 따로 어림하지 않는다 —\n어림하면 고친 뒤의 실제 점수와 어긋나고, 그러면 우선순위 자체를 믿을 수 없게 된다.",
@@ -6370,6 +6394,13 @@
               "$ref": "#/components/schemas/HistoryEntryPayload"
             },
             "title": "History",
+            "type": "array"
+          },
+          "human_transitions": {
+            "items": {
+              "$ref": "#/components/schemas/HumanTransitionPayload"
+            },
+            "title": "Human Transitions",
             "type": "array"
           },
           "id": {
@@ -6615,6 +6646,13 @@
               }
             ],
             "title": "First Seen Run Id"
+          },
+          "human_transitions": {
+            "items": {
+              "$ref": "#/components/schemas/HumanTransitionPayload"
+            },
+            "title": "Human Transitions",
+            "type": "array"
           },
           "id": {
             "format": "uuid",

@@ -233,7 +233,10 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 - 헤드리스 렌더링(Playwright) — `js_render_parity` 상시 측정 불가
 - 가시성 지표 3종: 출처 다양성 · 추천 포함 · 안정성
 - 화면: `/console/sites` · `/console/api-usage` · `/console/admin` (파일 자체 없음)
-- 동작하는 화면: 콘솔 12개 중 4개. 공개 진단 3개는 전부 자리표시자
+- 자리표시자로 남은 콘솔 화면: `/console/reports` 하나. 나머지 12개는 엔진 자료를 읽는다.
+  공개 진단 3개는 전부 자리표시자
+- `/console/scoring-versions` 는 발행 명세를 **웹이 손으로 적어 둔 목록**에서 읽는다
+  (`apps/web/src/lib/scoring.ts`). 엔진의 명세 등록부와 어긋나도 아무도 모른다
 - `tests/contract` · `e2e` · `integration` · `security` 는 **디렉터리가 비어 있고,
   CI 의 계약 잡은 파일이 없으면 경고만 찍고 통과시킨다** — 초록불이 검증을 뜻하지 않는다
 - PDF 내보내기 (HTML/CSV/XLSX 는 있음)

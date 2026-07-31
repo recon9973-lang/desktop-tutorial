@@ -18,13 +18,34 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from veo.db.models.analysis import Issue, VerificationRun
-from veo.issues.lifecycle import IssueState, VerificationOutcome, describe_state_ko, is_open
+from veo.issues.lifecycle import (
+    IssueState,
+    VerificationOutcome,
+    describe_state_ko,
+    human_transitions_from,
+    is_open,
+)
 from veo.issues.service import HistoryEntry, IssueDetail
 from veo.issues.verification import VerificationRequest
 
 _STRICT = ConfigDict(extra="forbid")
 
 RemediationOwner = Literal["DEVELOPER", "MARKETER", "BUSINESS_OWNER", "OPERATIONS"]
+
+
+class HumanTransitionPayload(BaseModel):
+    """One move a person may make from where this issue stands right now.
+
+    The console renders exactly these and nothing else. It is the state table that
+    decides, not the screen — so ``VERIFIED_RESOLVED`` can never appear here, because no
+    human-triggered edge ends there.
+    """
+
+    model_config = _STRICT
+
+    to_state: IssueState
+    label_ko: str
+    reason_ko: str
 
 
 class IssuePayload(BaseModel):
@@ -50,6 +71,7 @@ class IssuePayload(BaseModel):
     created_at: datetime
     updated_at: datetime
     summary_ko: str
+    human_transitions: list[HumanTransitionPayload] = Field(default_factory=list)
 
     @classmethod
     def of(cls, issue: Issue, *, summary_ko: str) -> IssuePayload:
@@ -73,6 +95,14 @@ class IssuePayload(BaseModel):
             created_at=issue.created_at,
             updated_at=issue.updated_at,
             summary_ko=summary_ko,
+            human_transitions=[
+                HumanTransitionPayload(
+                    to_state=edge.target,
+                    label_ko=describe_state_ko(edge.target),
+                    reason_ko=edge.reason_ko,
+                )
+                for edge in human_transitions_from(state)
+            ],
         )
 
 
@@ -274,6 +304,7 @@ class VerificationRecordedPayload(BaseModel):
 __all__ = [
     "AssignRequest",
     "HistoryEntryPayload",
+    "HumanTransitionPayload",
     "IssueDetailPayload",
     "IssuePayload",
     "RecurrenceCyclePayload",
