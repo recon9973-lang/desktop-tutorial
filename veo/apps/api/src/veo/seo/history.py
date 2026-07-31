@@ -297,6 +297,9 @@ def _save_evidence(
             Evidence(
                 organization_id=principal.organization_id,
                 scan_run_id=run.id,
+                # 판정이 부르는 이름을 그대로 남긴다. 이게 없으면 근거를 저장하고도
+                # 어느 지적의 근거인지 되찾을 수 없다.
+                evidence_id=record.evidence_id,
                 kind=record.kind,
                 url=record.url,
                 collected_at=record.collected_at,

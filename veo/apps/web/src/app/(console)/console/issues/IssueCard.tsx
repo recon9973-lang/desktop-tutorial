@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button, FormError } from '@veo/ui';
 
@@ -19,7 +20,14 @@ import styles from './issues.module.css';
  * 않는다. 그렇게 그리는 순간 만들어지는 것이 바뀐 것 없는 사이트 위의 깨끗한
  * 대시보드다.
  */
-export function IssueCard({ issue }: { readonly issue: Issue }) {
+export function IssueCard({
+  issue,
+  linkToDetail = true,
+}: {
+  readonly issue: Issue;
+  /** 상세 화면 자신은 자기 자신으로 가는 링크를 그리지 않는다. */
+  readonly linkToDetail?: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +66,13 @@ export function IssueCard({ issue }: { readonly issue: Issue }) {
     <li className={issue.recurrence_count > 0 ? styles.issueRecurred : styles.issue}>
       <p className={styles.issueHead}>
         <span className={styles.severity}>{issue.severity}</span>
-        <span className={styles.issueTitle}>{issue.title_ko}</span>
+        {linkToDetail ? (
+          <Link href={`/console/issues/${issue.id}`} className={styles.issueTitle}>
+            {issue.title_ko}
+          </Link>
+        ) : (
+          <span className={styles.issueTitle}>{issue.title_ko}</span>
+        )}
       </p>
 
       <p className={styles.state}>

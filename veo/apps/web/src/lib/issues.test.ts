@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { claimedButUnverified, inWorkOrder, ownerLabel, type Issue } from './issues';
+import {
+  claimedButUnverified,
+  evidenceKindLabel,
+  inWorkOrder,
+  ownerLabel,
+  type Issue,
+} from './issues';
 
 /**
  * 이 파일이 지키는 규칙 하나: **수정 보고는 해결이 아니다.**
@@ -97,5 +103,16 @@ describe('담당 직군', () => {
 
   it('모르는 값은 지어내지 않고 그대로 보인다', () => {
     expect(ownerLabel('LEGAL')).toBe('LEGAL');
+  });
+});
+
+describe('근거 종류', () => {
+  it('코드를 사람 말로 바꾼다', () => {
+    expect(evidenceKindLabel('http_response')).toBe('서버 응답');
+  });
+
+  it('모르는 종류는 지어내지 않고 그대로 보인다', () => {
+    // 지어낸 한국어 이름은 근거가 무엇인지에 대한 거짓 정보가 된다.
+    expect(evidenceKindLabel('crux_record')).toBe('crux_record');
   });
 });

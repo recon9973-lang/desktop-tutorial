@@ -17,7 +17,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from veo.db.models.analysis import Issue, VerificationRun
+from veo.db.models.analysis import Evidence, Issue, VerificationRun
 from veo.issues.lifecycle import (
     IssueState,
     VerificationOutcome,
@@ -174,12 +174,45 @@ class HistoryEntryPayload(BaseModel):
         )
 
 
+class EvidencePayload(BaseModel):
+    """실제로 찾아진 근거 한 건.
+
+    `content_hash` 가 함께 나가는 이유는, 반년 뒤에도 **판정된 바이트가 수집된
+    바이트임을** 보일 수 있어야 하기 때문이다.
+    """
+
+    model_config = _STRICT
+
+    evidence_id: str
+    kind: str
+    url: str | None = None
+    collected_at: datetime
+    content_hash: str
+    excerpt: str | None = None
+
+    @classmethod
+    def of(cls, row: Evidence) -> EvidencePayload:
+        return cls(
+            evidence_id=row.evidence_id,
+            kind=row.kind,
+            url=row.url,
+            collected_at=row.collected_at,
+            content_hash=row.content_hash,
+            excerpt=row.excerpt,
+        )
+
+
 class IssueDetailPayload(IssuePayload):
     """One issue with everything needed to act on it and to audit it."""
 
     fingerprint: str
     affected_urls: list[str] = Field(default_factory=list)
     evidence_ids: list[str] = Field(default_factory=list)
+    #: 그 이름들 중 **실제로 찾아진** 근거.
+    evidence: list[EvidencePayload] = Field(default_factory=list)
+    #: 이름은 있는데 찾지 못한 개수. 0 이 아니면 그 사실을 화면이 말해야 한다 —
+    #: 근거를 열 수 없는 지적은 소문이고, 소문임을 숨기면 더 나쁘다.
+    missing_evidence_count: int = 0
     remediation_summary_ko: str | None = None
     remediation_steps_ko: str | None = None
     fix_example: str | None = None
@@ -201,6 +234,10 @@ class IssueDetailPayload(IssuePayload):
             fingerprint=detail.fingerprint,
             affected_urls=list(detail.affected_urls),
             evidence_ids=[str(value) for value in (detail.issue.evidence_ids or [])],
+            evidence=[EvidencePayload.of(row) for row in detail.evidence],
+            missing_evidence_count=max(
+                0, len(detail.issue.evidence_ids or []) - len(detail.evidence)
+            ),
             remediation_summary_ko=recommendation.summary_ko if recommendation else None,
             remediation_steps_ko=recommendation.developer_steps_ko if recommendation else None,
             fix_example=recommendation.code_example if recommendation else None,
@@ -303,6 +340,7 @@ class VerificationRecordedPayload(BaseModel):
 
 __all__ = [
     "AssignRequest",
+    "EvidencePayload",
     "HistoryEntryPayload",
     "HumanTransitionPayload",
     "IssueDetailPayload",

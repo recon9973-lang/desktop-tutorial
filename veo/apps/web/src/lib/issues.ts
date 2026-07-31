@@ -91,3 +91,55 @@ export function claimedButUnverified(issues: readonly Issue[]): number {
   return issues.filter((issue) => issue.state === 'FIX_CLAIMED' || issue.state === 'VERIFYING')
     .length;
 }
+
+/** 지적을 뒷받침한 자료 한 건. */
+export interface EvidenceRecord {
+  readonly evidence_id: string;
+  readonly kind: string;
+  readonly url: string | null;
+  readonly collected_at: string;
+  readonly content_hash: string;
+  readonly excerpt: string | null;
+}
+
+export interface IssueDetail extends Issue {
+  readonly fingerprint: string;
+  readonly affected_urls: readonly string[];
+  readonly evidence_ids: readonly string[];
+  readonly evidence: readonly EvidenceRecord[];
+  /** 이름은 있는데 찾지 못한 근거의 수. 감추지 않는다. */
+  readonly missing_evidence_count: number;
+  readonly remediation_summary_ko: string | null;
+  readonly remediation_steps_ko: string | null;
+  readonly fix_example: string | null;
+  readonly reverification_note_ko: string | null;
+  readonly verification_runs: readonly {
+    readonly id: string;
+    readonly outcome: string;
+    readonly reason_ko: string | null;
+    readonly created_at: string;
+  }[];
+  readonly history: readonly {
+    readonly at: string;
+    readonly action: string;
+    readonly summary_ko: string;
+  }[];
+  readonly recurrence: { readonly count: number; readonly summary_ko: string };
+}
+
+/** 근거 종류를 사람 말로. 모르는 값은 지어내지 않고 그대로 보인다. */
+export const EVIDENCE_KIND_LABELS_KO: Record<string, string> = {
+  http_response: '서버 응답',
+  raw_html: '원본 HTML',
+  rendered_dom: '렌더링된 화면',
+  dom_snippet: '문서 일부',
+  robots_txt: 'robots.txt',
+  sitemap_document: '사이트맵',
+  redirect_chain: '리다이렉트 경로',
+  provider_response: '외부 데이터',
+  screenshot: '화면 이미지',
+};
+
+export function evidenceKindLabel(value: string): string {
+  return EVIDENCE_KIND_LABELS_KO[value] ?? value;
+}

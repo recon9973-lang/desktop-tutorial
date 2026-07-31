@@ -46,8 +46,10 @@ from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
 from veo.collect.contract import IssueDraft
+from veo.collect.evidence import resolve_evidence
 from veo.db.models.analysis import (
     CheckResult,
+    Evidence,
     FixRecommendation,
     Issue,
     ScanRun,
@@ -148,6 +150,11 @@ class IssueDetail:
     history: tuple[HistoryEntry, ...]
     recurrence: RecurrenceHistory
     summary_ko: str
+    #: 이 지적이 부르는 근거 중 **실제로 찾아진** 것.
+    #:
+    #: 요청한 이름과 개수가 다를 수 있고, 그 차이를 감추지 않는다 — 근거가 몇 개
+    #: 사라졌는지는 지적의 신뢰도에 대한 정보다.
+    evidence: tuple[Evidence, ...] = ()
 
 
 # --------------------------------------------------------------------------- #
@@ -315,6 +322,25 @@ def get_issue_detail(
         history=tuple(_history_entry(row) for row in rows),
         recurrence=history,
         summary_ko=summarize_issue(issue),
+        evidence=tuple(_evidence_for(session, principal, issue)),
+    )
+
+
+def _evidence_for(session: Session, principal: Principal, issue: Issue) -> list[Evidence]:
+    """이 지적을 뒷받침한 자료. 마지막으로 이 문제가 관측된 실행에서 찾는다.
+
+    이슈는 실행마다 새로 만들지 않고 이어 붙이므로, 지금 사람이 열어 볼 근거는 **가장
+    최근에 이 문제가 잡힌 실행** 의 것이어야 한다. 처음 잡혔을 때의 자료를 보여주면
+    반년 전 화면을 근거라고 내놓게 된다.
+    """
+    run_id = issue.last_seen_run_id
+    if run_id is None:
+        return []
+    return resolve_evidence(
+        session,
+        principal=principal,
+        scan_run_id=run_id,
+        evidence_ids=[str(value) for value in (issue.evidence_ids or [])],
     )
 
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
+from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -26,7 +27,7 @@ from tests.issues.support import (
 )
 
 from veo.collect.contract import IssueDraft
-from veo.db.models.analysis import ScanRun
+from veo.db.models.analysis import Evidence, ScanRun
 from veo.db.models.identity import URLRecord
 from veo.issues import service
 from veo.issues.lifecycle import IssueState
@@ -56,6 +57,23 @@ def seeded(
     db: Session, org_a: Tenant, make_scan_run: Callable[..., ScanRun], seo_spec: ScoringSpec
 ) -> uuid.UUID:
     run = make_scan_run(org_a)
+    # 지적이 부르는 근거를 실제로 남긴다. 이걸 빼면 "근거를 열 수 있는가" 를 검사하는
+    # 테스트가 항상 통과하는데, 근거가 없어서 통과하는 것이라 아무것도 지키지 못한다.
+    db.add(
+        Evidence(
+            organization_id=org_a.organization_id,
+            scan_run_id=run.id,
+            evidence_id="http_response:deadbeef",
+            kind="http_response",
+            url=PAGE_A,
+            collected_at=datetime.now(UTC),
+            content_hash="d" * 64,
+            excerpt="<html>…</html>",
+            source="COLLECTED",
+            detail={},
+        )
+    )
+    db.flush()
     [result] = service.ingest_drafts(
         db,
         org_a.analyst,
@@ -329,3 +347,40 @@ def test_no_row_ever_offers_a_button_that_marks_a_problem_gone(
     act_as(org_a.analyst)
     for row in items(client.get(ISSUES)):
         assert all(move["to_state"] != "VERIFIED_RESOLVED" for move in row["human_transitions"])
+
+
+def test_the_detail_view_opens_the_evidence_a_finding_cites(
+    client: TestClient, act_as: Callable[..., None], org_a: Tenant, seeded: uuid.UUID
+) -> None:
+    """이름만 돌려주던 자리에 실제 자료가 나온다.
+
+    이름은 저장돼 있었고 근거도 저장돼 있었는데, 그 둘을 잇는 칸이 없어 서로를 찾지
+    못했다. 근거를 열 수 없는 지적은 소문이다.
+    """
+    act_as(org_a.analyst)
+    data = payload(client.get(f"{ISSUES}/{seeded}"))
+    assert data["evidence_ids"]
+    assert len(data["evidence"]) == len(data["evidence_ids"])
+    assert data["missing_evidence_count"] == 0
+    for record in data["evidence"]:
+        assert record["evidence_id"] in data["evidence_ids"]
+        assert len(record["content_hash"]) == 64
+
+
+def test_evidence_that_cannot_be_found_is_counted_not_hidden(
+    client: TestClient,
+    act_as: Callable[..., None],
+    org_a: Tenant,
+    seeded: uuid.UUID,
+    db: Session,
+) -> None:
+    """찾지 못한 근거를 조용히 빼면 지적이 실제보다 튼튼해 보인다."""
+    from veo.db.models.analysis import Issue
+
+    issue = db.get(Issue, seeded)
+    issue.evidence_ids = [*(issue.evidence_ids or []), "http_response:0000000000000000"]
+    db.commit()
+
+    act_as(org_a.analyst)
+    data = payload(client.get(f"{ISSUES}/{seeded}"))
+    assert data["missing_evidence_count"] == 1

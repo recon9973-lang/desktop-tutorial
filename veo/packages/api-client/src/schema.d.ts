@@ -3152,7 +3152,7 @@ export interface components {
             /** Data Sources */
             data_sources?: string[];
             /** Evidence */
-            evidence?: components["schemas"]["EvidencePayload"][];
+            evidence?: components["schemas"]["EvidencePayload-Input"][];
             /** Issues */
             issues?: components["schemas"]["IssuePayload-Input"][];
             /** Key */
@@ -3255,7 +3255,7 @@ export interface components {
             spec_version: string;
         };
         /** EvidencePayload */
-        EvidencePayload: {
+        "EvidencePayload-Input": {
             /**
              * Collected At
              * Format: date-time
@@ -3278,6 +3278,30 @@ export interface components {
             kind: string;
             /** Storage Key */
             storage_key?: string | null;
+            /** Url */
+            url?: string | null;
+        };
+        /**
+         * EvidencePayload
+         * @description 실제로 찾아진 근거 한 건.
+         *
+         *     `content_hash` 가 함께 나가는 이유는, 반년 뒤에도 **판정된 바이트가 수집된
+         *     바이트임을** 보일 수 있어야 하기 때문이다.
+         */
+        "EvidencePayload-Output": {
+            /**
+             * Collected At
+             * Format: date-time
+             */
+            collected_at: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Evidence Id */
+            evidence_id: string;
+            /** Excerpt */
+            excerpt?: string | null;
+            /** Kind */
+            kind: string;
             /** Url */
             url?: string | null;
         };
@@ -3903,6 +3927,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Evidence */
+            evidence?: components["schemas"]["EvidencePayload-Output"][];
             /** Evidence Ids */
             evidence_ids?: string[];
             /** Fingerprint */
@@ -3924,6 +3950,11 @@ export interface components {
             is_open: boolean;
             /** Last Seen Run Id */
             last_seen_run_id?: string | null;
+            /**
+             * Missing Evidence Count
+             * @default 0
+             */
+            missing_evidence_count: number;
             /**
              * Project Id
              * Format: uuid

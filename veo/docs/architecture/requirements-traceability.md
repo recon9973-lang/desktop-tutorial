@@ -176,6 +176,7 @@
 | 데이터 차이 경고 | `describe_differences()` — 차단·비차단 모두 보고 | `tests/compare/` |
 | 측정 조건을 결과와 함께 저장 | `scan_runs.measurement_conditions` — `veo/seo/conditions.py` | `tests/seo/test_scan_history.py` |
 | 조건이 다른 실행은 추이에서 잇지 않는다 | 이력 각 줄의 `comparable_with_latest` · 화면 문구 | `tests/seo/test_scan_history.py` |
+| 지적에서 근거로 갈 수 있다 | `evidence.evidence_id` · `veo/collect/evidence.py` · `/console/issues/[id]` | `tests/seo/test_scan_history.py`, `tests/issues/test_router.py` |
 | 이슈 → 수정 → 재검증 | `veo/issues/lifecycle.py` 상태 기계 | `tests/issues/` |
 | 재발 추적 | 이슈 지문 + `RECURRED` 횟수·주기 | `tests/issues/` |
 | 발행 버전 불변 | `veo/lab/versions.py` — PUBLISHED 수정 거부 | `tests/lab/` |

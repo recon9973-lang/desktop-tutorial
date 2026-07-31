@@ -2,7 +2,7 @@ import 'server-only';
 
 import { callConsoleApi, type ConsoleOutcome } from './console-api';
 
-import type { Issue } from './issues';
+import type { Issue, IssueDetail } from './issues';
 
 /**
  * 이슈를 읽고 쓰는 쪽.
@@ -31,4 +31,9 @@ export async function transitionIssue(
     method: 'POST',
     body: { to_state: toState },
   });
+}
+
+
+export async function readIssue(issueId: string): Promise<ConsoleOutcome<IssueDetail>> {
+  return callConsoleApi(`/api/issues/${encodeURIComponent(issueId)}`);
 }

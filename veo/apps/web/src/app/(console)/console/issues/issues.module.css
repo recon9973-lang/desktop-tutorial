@@ -140,3 +140,97 @@
   color: var(--veo-color-text-muted);
   line-height: 1.6;
 }
+
+/* 근거.
+ *
+ * 발췌를 요약하지 않는다 — 판정이 무엇을 보고 내려졌는지가 요점이고, 다듬는 순간
+ * 그 판정을 반박할 근거가 사라진다. 길면 스크롤한다. */
+
+.evidenceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+}
+
+.evidence {
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+}
+
+.evidenceHead {
+  margin: 0 0 var(--veo-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--veo-space-2);
+}
+
+.evidenceKind {
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  white-space: nowrap;
+}
+
+.evidenceUrl {
+  font-size: var(--veo-font-size-200);
+  overflow-wrap: anywhere;
+}
+
+.excerpt {
+  margin: 0 0 var(--veo-space-2);
+  padding: var(--veo-space-3);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-sm);
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+  line-height: 1.6;
+  /* 가로로는 이 상자 안에서만 흐른다. 본문이 옆으로 밀리면 안 된다. */
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.noExcerpt {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+.evidenceMeta {
+  margin: 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+.hash {
+  font-family: var(--veo-font-mono);
+}
+
+.historyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+}
+
+.historyEntry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.6;
+}
+
+.historyWhen {
+  color: var(--veo-color-text-muted);
+  white-space: nowrap;
+}

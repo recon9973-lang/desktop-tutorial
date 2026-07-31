@@ -575,3 +575,116 @@ class TestMeasurementConditions:
         earlier = next(one for one in entries if one.scan_run_id == healthy.scan_run_id)
         assert earlier.comparable_with_latest is False
         assert "외부 데이터" in (earlier.incomparable_reason_ko or "")
+
+
+class TestEvidenceCanBeReached:
+    """지적이 부르는 근거를 실제로 찾을 수 있어야 한다.
+
+    `check_results.evidence_ids` 와 `issues.evidence_ids` 는
+    `http_response:f98f677064c9d854` 같은 이름을 저장한다. `evidence` 테이블에는 그
+    이름을 담을 칸이 없었다 — 운영 DB 기준 근거 56줄, 부를 수 있는 것 0줄.
+
+    감사할 수 없는 지적은 소문이다.
+    """
+
+    def test_the_name_a_finding_uses_is_stored_on_the_row(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        from veo.db.models.analysis import Evidence
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+
+        stored = {
+            row.evidence_id
+            for row in db_session.query(Evidence).filter_by(scan_run_id=saved.scan_run_id)
+        }
+        assert stored == {record.evidence_id for record in scan_result.evidence}
+        assert all(name for name in stored)
+
+    def test_every_cited_name_resolves(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        """판정이 부른 이름 중 되찾지 못하는 것이 하나도 없어야 한다."""
+        from veo.collect.evidence import resolve_evidence
+        from veo.db.models.analysis import CheckResult
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+
+        cited = {
+            name
+            for row in db_session.query(CheckResult).filter_by(scan_run_id=saved.scan_run_id)
+            for name in (row.evidence_ids or [])
+        }
+        assert cited, "이 픽스처는 근거를 인용하는 판정을 포함해야 한다"
+
+        found = resolve_evidence(
+            db_session, principal=principal,
+            scan_run_id=saved.scan_run_id, evidence_ids=sorted(cited),
+        )
+        assert {row.evidence_id for row in found} == cited
+
+    def test_the_order_a_finding_listed_them_in_is_kept(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        from veo.collect.evidence import resolve_evidence
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+        names = [record.evidence_id for record in scan_result.evidence][:3]
+
+        found = resolve_evidence(
+            db_session, principal=principal,
+            scan_run_id=saved.scan_run_id, evidence_ids=list(reversed(names)),
+        )
+        assert [row.evidence_id for row in found] == list(reversed(names))
+
+    def test_a_name_that_does_not_exist_is_left_out_rather_than_faked(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        from veo.collect.evidence import resolve_evidence
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+
+        found = resolve_evidence(
+            db_session, principal=principal, scan_run_id=saved.scan_run_id,
+            evidence_ids=["http_response:0000000000000000"],
+        )
+        assert found == []
+
+    def test_another_organizations_evidence_is_not_reachable(
+        self, db_session, principal, other_principal, site, scan_result, scan_context
+    ):
+        from veo.collect.evidence import resolve_evidence
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+        names = [record.evidence_id for record in scan_result.evidence]
+
+        found = resolve_evidence(
+            db_session, principal=other_principal,
+            scan_run_id=saved.scan_run_id, evidence_ids=names,
+        )
+        assert found == []

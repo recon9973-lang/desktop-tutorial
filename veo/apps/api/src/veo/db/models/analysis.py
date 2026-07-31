@@ -206,7 +206,10 @@ class Evidence(Base, OrganizationScopedMixin, ImmutableMixin):
     """Raw material behind every finding. Secrets and cookies are excluded on write."""
 
     __tablename__ = "evidence"
-    __table_args__ = (Index("ix_evidence_run_kind", "scan_run_id", "kind"),)
+    __table_args__ = (
+        Index("ix_evidence_run_kind", "scan_run_id", "kind"),
+        Index("ix_evidence_run_evidence_id", "scan_run_id", "evidence_id"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     scan_run_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -214,6 +217,19 @@ class Evidence(Base, OrganizationScopedMixin, ImmutableMixin):
         ForeignKey("scan_runs.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
+    )
+
+    #: 판정과 이슈가 근거를 부를 때 쓰는 이름 (``kind:content_hash 앞 16자``).
+    #:
+    #: 이 칸이 없었다. ``check_results.evidence_ids`` 와 ``issues.evidence_ids`` 는
+    #: 이 이름을 저장하는데 근거 행에는 그 이름이 없어서, **저장된 모든 근거 참조가
+    #: 어디도 가리키지 않았다**. 근거는 56줄 있는데 그중 부를 수 있는 것이 0줄이었다.
+    #: 감사할 수 없는 지적은 소문이다.
+    evidence_id: Mapped[str] = mapped_column(
+        String(96),
+        nullable=False,
+        server_default="",
+        comment="판정·이슈가 근거를 부를 때 쓰는 이름. kind:content_hash[:16].",
     )
     kind: Mapped[str] = mapped_column(
         String(48),
