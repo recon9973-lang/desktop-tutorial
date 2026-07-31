@@ -186,6 +186,12 @@
             "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
           ],
           "description": "How an unmeasurable check is scored. EXCLUDE_FROM_SCORE_REDUCE_COVERAGE removes it from the budget and lowers coverage instead, so the score is relative to what could be measured. SCORE_AS_ZERO_KEEP_IN_DENOMINATOR keeps its weight in the denominator and earns nothing, so 100 stays a fixed total: a site that could not be measured cannot score as if it had been. Either way the check is never reported as a failure of the site."
+        },
+        "breadth_exponent": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "결함이 퍼진 범위를 감점에 반영하는 지수. 1.0 은 선형이고 기본값이다. 1보다 작으면 넓게 퍼진 결함을 선형보다 무겁게 본다 — 웹사이트의 결함은 대개 템플릿 단위로 생기므로 40% 실패는 나머지 60% 도 같은 위험 위에 있다는 뜻이다."
         }
       }
     },
@@ -306,6 +312,11 @@
           "type": "boolean",
           "description": "이 영역이 관문인가. true 이면 점수를 더하지 않고 곱한다 — 도달률 = 곱(1 − 실패 비율). 색인이 막힌 페이지의 완벽한 구조화 데이터는 아무 일도 하지 않으므로, 앞 단계의 차단은 뒤 단계의 점수를 배점만큼 깎는 것이 아니라 통째로 무효로 만든다. 선언하지 않으면 false 이고, 기존 명세는 그대로 가산 방식으로 동작한다."
         },
+        "raw_budget": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "이 영역의 고정 분모. 선언하면 이 영역 검사들의 points 합이 정확히 이 값과 같아야 하며, 검사를 추가할 때 형제에서 덜어내야 한다. 선언하지 않으면 분모는 채점된 검사들의 심각도 계수 합이고 검사를 더할 때마다 자란다."
+        },
         "checks": {
           "type": "array",
           "minItems": 1,
@@ -402,6 +413,11 @@
           ],
           "default": "SELF_SERVICE",
           "description": "Who must act before this check can be measured, and whether it counts. SELF_SERVICE: VEO measures it on its own, with its own crawl or its own API key — it always counts toward the score. CUSTOMER_GRANTED: the site owner must grant access (Search Console, Naver Search Advisor). PAID_PROVIDER: a paid or separately configured data source. REFERENCE_ONLY: VEO can gather something here, but not well enough to score it — the reading is partial (one search engine, not the whole web) or cannot be attributed with confidence (a similarly named business). It is shown as reference and marked as needing separate human verification. Saying 'a paid service is required' when the real limit is coverage would put the ball in the customer's court for something that is not theirs to fix. Everything except SELF_SERVICE sits outside the diagnosis, so it leaves the denominator rather than scoring zero — a score must not be lowered by a permission the customer has not been asked for, nor by a reading we ourselves do not trust. All of them are still reported, by name and with what would settle them."
+        },
+        "points": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "이 검사가 자기 영역 안에서 갖는 명시적 배점. 쓰려면 영역이 raw_budget 을 함께 선언해야 한다. 없으면 배점은 심각도 다섯 단계에서 나온다."
         }
       }
     },

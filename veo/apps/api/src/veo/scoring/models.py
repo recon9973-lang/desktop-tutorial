@@ -77,6 +77,18 @@ class StatusPolicy(BaseModel):
     fail_penalty_multiplier: float = Field(ge=0.0, le=1.0)
     warning_penalty_multiplier: float = Field(ge=0.0, le=1.0)
     pass_penalty_multiplier: float = Field(ge=0.0, le=1.0)
+    #: 결함이 퍼진 **범위**를 감점에 반영하는 지수. 기본값 1.0 은 선형이다.
+    #:
+    #: 선형이 실제와 다른 이유: 웹사이트의 결함은 대개 **템플릿 단위로 생긴다.**
+    #: 100장 중 40장의 title 이 깨졌다면 그것은 40개의 개별 실수가 아니라 템플릿
+    #: 하나의 문제이고, **나머지 60장도 같은 위험 위에 있다.** 40% 실패를 40% 감점으로
+    #: 세면 "절반 이상 멀쩡하다" 는 그림이 되는데, 고쳐야 할 것은 페이지 40개가 아니라
+    #: 템플릿 하나다.
+    #:
+    #: 0.7 승은 40% 를 53% 로 올려 그 구조를 반영한다. 1.0(선형)과 0(범위 무시) 사이
+    #: 어디쯤이 옳은지는 표본이 더 쌓여야 정해지므로, 숫자를 코드에 박지 않고 명세가
+    #: 선언하게 둔다. 선언하지 않은 명세는 지금까지처럼 선형이다.
+    breadth_exponent: float = Field(default=1.0, gt=0.0, le=1.0)
     #: N/A 는 언제나 분모에서 빠진다. "적용되지 않는 항목" 은 "없는 것" 이 아니므로,
     #: 0점으로 매기면 없는 결함을 만들어 내게 된다.
     not_applicable: Literal["EXCLUDE_FROM_DENOMINATOR"]
@@ -130,6 +142,21 @@ class SpecCheck(BaseModel):
     evidence_required: tuple[str, ...] = ()
     engine_scope: tuple[str, ...] = ("GENERIC",)
     reference_ko: str | None = None
+    #: 이 검사가 자기 영역 안에서 갖는 **명시적 배점**.
+    #:
+    #: 이것이 없으면 배점은 심각도 다섯 단계(BLOCKER 1.0 … INFO 0.0)에서 나온다.
+    #: 다섯 칸으로는 "title 이 없다" 와 "canonical 이 없다" 를 구분할 수 없고, 실제로
+    #: 두 검사는 검색 성과에 미치는 영향이 배 이상 다르다.
+    #:
+    #: 배점을 쓰는 영역은 `SpecCategory.raw_budget` 을 함께 선언해야 하고, 그 영역
+    #: 검사들의 배점 합은 그 값과 정확히 같아야 한다(모델이 검사한다). **그래야 검사를
+    #: 추가할 때 형제에서 덜어내게 되고, 무엇을 덜어낼지가 근거를 대야 하는 판단으로
+    #: 드러난다.** 나눗셈이 조용히 대신 결정하지 않는다.
+    #:
+    #: 이 규칙이 없던 판에서 실측한 값: 같은 사이트, 같은 결함인데 검사를 두 개 더한
+    #: 것만으로 점수가 66.7 → 72.7 이 됐다. 아무도 거짓말을 하지 않았고 배점도 정확히
+    #: 매겼다. 분모가 조용히 늘어났을 뿐이다.
+    points: float | None = Field(default=None, gt=0.0)
 
 
 class SpecCategory(BaseModel):
@@ -166,7 +193,49 @@ class SpecCategory(BaseModel):
     #: 발행본은 불변이고(ADR 0012), 1.7.0 이하로 매긴 과거 점수는 앞으로도 그때의
     #: 규칙으로 설명되어야 한다.
     is_gate: bool = False
+    #: 이 영역의 **고정 분모**. 검사를 추가해도 변하지 않는다.
+    #:
+    #: 선언하지 않으면 분모는 지금까지처럼 "채점된 검사들의 심각도 계수 합" 이고,
+    #: 그것은 **검사를 더할 때마다 자란다.** 그래서 같은 사이트의 같은 결함이 점점
+    #: 싸졌다(1.2.0 66.7 → 1.6.0 72.7, 실측).
+    #:
+    #: 선언하면 분모는 이 상수다. 해당 없음(N/A) 검사의 배점만 형제들에게 비례
+    #: 배분된다 — 그것은 "이 사이트에 그 항목이 없다" 는 사실을 반영하는 것이고,
+    #: "명세에 검사가 하나 늘었다" 와는 다른 일이다(ADR 0002).
+    raw_budget: float | None = Field(default=None, gt=0.0)
     checks: tuple[SpecCheck, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _points_must_sum_to_the_declared_budget(self) -> SpecCategory:
+        """배점을 쓰는 영역은 합이 고정값과 맞아야 한다.
+
+        이 검사가 자물쇠다. 없으면 검사를 추가하는 사람이 배점만 적고 형제를 건드리지
+        않게 되고, 그 순간 분모가 다시 늘어난다.
+        """
+        if self.raw_budget is None:
+            if any(check.points is not None for check in self.checks):
+                raise ValueError(
+                    f"영역 {self.id} 의 검사가 배점(points)을 갖는데 raw_budget 이 없다. "
+                    "배점을 쓰려면 고정 분모를 함께 선언해야 한다 — 그러지 않으면 "
+                    "검사를 더할 때마다 분모가 자란다."
+                )
+            return self
+
+        missing = [check.id for check in self.checks if check.points is None]
+        if missing:
+            raise ValueError(
+                f"영역 {self.id} 가 raw_budget 을 선언했는데 배점이 없는 검사가 있다: "
+                f"{', '.join(missing)}"
+            )
+
+        total = sum(check.points or 0.0 for check in self.checks)
+        if abs(total - self.raw_budget) > 1e-9:
+            raise ValueError(
+                f"영역 {self.id} 의 배점 합이 {total} 인데 고정 분모는 {self.raw_budget} "
+                "이다. 검사를 추가했다면 형제 검사에서 그만큼 덜어내야 한다 — "
+                "무엇을 덜어낼지가 이 개정의 판단이고, 나눗셈이 대신 해 줄 일이 아니다."
+            )
+        return self
 
 
 class TriggerCondition(BaseModel):

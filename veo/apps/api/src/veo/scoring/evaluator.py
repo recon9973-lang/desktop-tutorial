@@ -330,6 +330,53 @@ def _status_multiplier(spec: ScoringSpec, status: CheckStatus) -> float:
 ABSOLUTE_UNKNOWN_POLICY: Final = "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
 
 
+def _breadth(spec: ScoringSpec, coverage_ratio: float) -> float:
+    """결함이 퍼진 범위를 감점에 얼마나 반영할지.
+
+    지수가 1.0(기본값)이면 선형이고 지금까지의 계산과 한 글자도 다르지 않다.
+    1보다 작은 지수를 선언한 명세에서만 값이 올라간다 — 웹사이트의 결함은 대개
+    템플릿 단위로 생기므로, 100장 중 40장이 깨졌다는 것은 40개의 개별 실수가 아니라
+    템플릿 하나의 문제이고 나머지 60장도 같은 위험 위에 있다는 뜻이다.
+    """
+    ratio = min(1.0, max(0.0, coverage_ratio))
+    exponent = spec.status_policy.breadth_exponent
+    if exponent == 1.0:
+        return ratio
+    return float(ratio**exponent)
+
+
+def _check_weights(
+    spec: ScoringSpec, category: SpecCategory, by_id: dict[str, CheckOutcome]
+) -> dict[str, float]:
+    """이 영역에서 각 검사가 실제로 갖는 배점.
+
+    영역이 `raw_budget` 을 선언하지 않았으면 지금까지처럼 심각도 계수를 그대로 쓴다.
+    그 경우 분모는 "채점된 검사들의 계수 합" 이 되고, **검사를 더할 때마다 자란다.**
+    발행된 명세들이 그 방식이고, 발행본은 불변이므로 그대로 둔다(ADR 0012).
+
+    선언했으면 분모는 그 상수다. 해당 없음(N/A) 검사의 배점만 형제들에게 비례 배분
+    된다 — 그것은 "이 사이트에 그 항목이 없다" 는 사실을 반영하는 것이고(ADR 0002),
+    "명세에 검사가 하나 늘었다" 와는 전혀 다른 일이다. 후자는 배점표를 다시 짜야 하는
+    일이고, 모델이 그것을 강제한다.
+    """
+    if category.raw_budget is None:
+        return {
+            check.id: spec.severity_coefficient(check.severity) for check in category.checks
+        }
+
+    live = [
+        check
+        for check in category.checks
+        if by_id[check.id].status is not CheckStatus.NOT_APPLICABLE
+    ]
+    declared = sum(check.points or 0.0 for check in live)
+    if declared <= 0.0:
+        return {check.id: 0.0 for check in category.checks}
+
+    scale = category.raw_budget / declared
+    return {check.id: (check.points or 0.0) * scale for check in category.checks}
+
+
 def _reach(
     spec: ScoringSpec, by_id: dict[str, CheckOutcome]
 ) -> tuple[float, list[str]]:
@@ -409,10 +456,11 @@ def _score_category(
     rows: list[dict[str, Any]] = []
 
     absolute = _is_absolute(spec)
+    weight_of = _check_weights(spec, category, by_id)
 
     for check in category.checks:
         outcome = by_id[check.id]
-        coefficient = spec.severity_coefficient(check.severity)
+        coefficient = weight_of[check.id]
         confidence = _resolve_confidence(spec, outcome)
 
         row: dict[str, Any] = {
@@ -478,7 +526,8 @@ def _score_category(
         scored.append(check.id)
         budget += coefficient
         multiplier = _status_multiplier(spec, outcome.status)
-        penalty = coefficient * multiplier * outcome.coverage_ratio * confidence
+        breadth = _breadth(spec, outcome.coverage_ratio)
+        penalty = coefficient * multiplier * breadth * confidence
         penalty_total += penalty
 
         if outcome.status is CheckStatus.FAIL:
@@ -493,9 +542,10 @@ def _score_category(
                 "status_multiplier": multiplier,
                 "penalty": round(penalty, 6),
                 "counted_in_budget": True,
+                "breadth": round(breadth, 6),
                 "formula": (
-                    f"penalty = {coefficient} x {multiplier} x "
-                    f"{round(outcome.coverage_ratio, 6)} x {confidence} = {round(penalty, 6)}"
+                    f"penalty = {round(coefficient, 6)} x {multiplier} x "
+                    f"{round(breadth, 6)} x {confidence} = {round(penalty, 6)}"
                 ),
             }
         )
