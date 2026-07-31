@@ -29,14 +29,22 @@ from veo.authz import CurrentPrincipal, Permission, require
 from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiError, ApiResponse, PagedResponse, PageInfo
 from veo.db.session import get_db
+from veo.reports.from_scan import (
+    ScanNotReportable,
+    diagnosis_from_scan,
+    reportable_runs,
+)
 from veo.reports.render.csv import CSV_CONTENT_TYPE
 from veo.reports.render.html import HTML_CONTENT_TYPE
 from veo.reports.render.xlsx import XLSX_CONTENT_TYPE
 from veo.reports.repository import SqlReportRepository
 from veo.reports.schemas import (
     CreatedVersionPayload,
+    CreateFromScanRequest,
     CreateReportRequest,
     CreateVersionRequest,
+    ReportableRunPayload,
+    ReportSummaryPayload,
     ReportVersionPayload,
     VersionSummaryPayload,
     created_payload,
@@ -112,6 +120,109 @@ def create_report(
             principal=principal,
             project_id=body.project_id,
             diagnosis=body.to_diagnosis(),
+        )
+    except ReportNotFoundError:
+        raise _not_found() from None
+    except ReportVersionConflictError as exc:
+        raise _conflict(str(exc)) from None
+
+    return ok(created_payload(created), request_id, sources=[])
+
+
+@router.get(
+    "",
+    response_model=PagedResponse[ReportSummaryPayload],
+    summary="리포트 목록",
+    description=(
+        "이 조직의 리포트를 최근에 만든 순으로 돌려줍니다. 각 줄에는 최신 버전 번호와 "
+        "그 버전의 내용 해시가 붙습니다 — 고객에게 전달한 문서가 어느 버전이었는지 "
+        "나중에도 맞춰 볼 수 있어야 합니다."
+    ),
+    dependencies=[Depends(require(Permission.REPORT_READ))],
+)
+def list_reports(
+    principal: CurrentPrincipal,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+    project_id: Annotated[uuid.UUID | None, Query(description="특정 프로젝트만")] = None,
+) -> PagedResponse[ReportSummaryPayload]:
+    rows = SqlReportRepository(db).list_reports(principal, project_id)
+    payloads = [ReportSummaryPayload.of(report, latest) for report, latest in rows]
+    return PagedResponse(
+        data=payloads,
+        meta=build_meta(request_id),
+        page_info=PageInfo.build(
+            page=1, page_size=max(1, len(payloads)), total_items=len(payloads)
+        ),
+    )
+
+
+@router.get(
+    "/reportable-runs",
+    response_model=PagedResponse[ReportableRunPayload],
+    summary="리포트로 만들 수 있는 진단 실행",
+    description=(
+        "측정 조건이 기록된 실행만 나옵니다. 조건이 없는 실행은 어떤 조건에서 쟀는지 "
+        "문서에 적을 수 없으므로 애초에 고를 수 없게 합니다 — 골랐다가 거절당하는 것보다 "
+        "낫습니다."
+    ),
+    dependencies=[Depends(require(Permission.REPORT_READ))],
+)
+def list_reportable_runs(
+    principal: CurrentPrincipal,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+    project_id: Annotated[uuid.UUID, Query(description="프로젝트 ID")],
+) -> PagedResponse[ReportableRunPayload]:
+    runs = reportable_runs(db, principal=principal, project_id=project_id)
+    payloads = [ReportableRunPayload.of(run) for run in runs]
+    return PagedResponse(
+        data=payloads,
+        meta=build_meta(request_id),
+        page_info=PageInfo.build(
+            page=1, page_size=max(1, len(payloads)), total_items=len(payloads)
+        ),
+    )
+
+
+@router.post(
+    "/from-scan",
+    response_model=ApiResponse[CreatedVersionPayload],
+    status_code=status.HTTP_201_CREATED,
+    summary="저장된 진단에서 리포트 발행 — 숫자는 실측에서만 온다",
+    description=(
+        "진단 실행 하나를 지목하면 그 실행이 남긴 점수·항목별 판정·근거·측정 조건으로 "
+        "리포트를 만듭니다. 요청 본문에는 **제목 말고는 숫자가 없습니다**. "
+        "`POST /reports` 는 진단 전체를 본문으로 받는데, 그 경로로 만든 문서의 숫자는 "
+        "아무도 재지 않은 값일 수 있습니다.\n\n"
+        "측정 조건이나 채점 결과가 없는 실행은 409로 거절하며, 왜 안 되는지 한국어로 "
+        "알려 줍니다. 빈 리포트를 만들지 않습니다 — 빈 문서는 '잴 것이 없었다'로 "
+        "읽히는데 사실은 '쟀지만 기록으로 문서를 만들 수 없다'입니다."
+    ),
+    dependencies=[
+        Depends(require(Permission.REPORT_READ)),
+        Depends(require(Permission.SCAN_RUN)),
+    ],
+)
+def create_report_from_scan(
+    body: CreateFromScanRequest,
+    service: ServiceDep,
+    principal: CurrentPrincipal,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[CreatedVersionPayload]:
+    try:
+        reportable = diagnosis_from_scan(
+            db, principal=principal, scan_run_id=body.scan_run_id, title_ko=body.title
+        )
+    except ScanNotReportable as exc:
+        raise _conflict(exc.message_ko) from None
+
+    try:
+        created = service.create_report(
+            principal=principal,
+            project_id=reportable.project_id,
+            diagnosis=reportable.diagnosis,
         )
     except ReportNotFoundError:
         raise _not_found() from None

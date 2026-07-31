@@ -37,7 +37,9 @@ from veo.reports.router import router as reports_router
 
 API_ROOT = Path(__file__).resolve().parents[2]
 
-_POSTGRES_MODULES = frozenset({"test_report_router", "test_report_immutability"})
+_POSTGRES_MODULES = frozenset(
+    {"test_report_router", "test_report_immutability", "test_report_from_scan"}
+)
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:

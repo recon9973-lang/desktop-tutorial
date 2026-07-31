@@ -1239,13 +1239,59 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * 리포트 목록
+         * @description 이 조직의 리포트를 최근에 만든 순으로 돌려줍니다. 각 줄에는 최신 버전 번호와 그 버전의 내용 해시가 붙습니다 — 고객에게 전달한 문서가 어느 버전이었는지 나중에도 맞춰 볼 수 있어야 합니다.
+         */
+        get: operations["list_reports_api_reports_get"];
         put?: never;
         /**
          * 리포트 생성 및 1차 버전 발행
          * @description 완료된 진단을 고정 스냅샷으로 동결해 새 버전을 발행합니다. 발행된 버전은 수정할 수 없으며, 재측정 결과는 기존 버전을 덮어쓰지 않고 새 버전으로 추가됩니다. 모든 수치에는 방법론 버전·체크섬·측정 시점·측정 범위·신뢰도가 함께 고정되고, 측정하지 못한 항목은 '측정 불가', 적용되지 않는 항목은 '해당 없음'으로 사유와 함께 남습니다. 어느 쪽도 0으로 바뀌지 않습니다.
          */
         post: operations["create_report_api_reports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/from-scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 저장된 진단에서 리포트 발행 — 숫자는 실측에서만 온다
+         * @description 진단 실행 하나를 지목하면 그 실행이 남긴 점수·항목별 판정·근거·측정 조건으로 리포트를 만듭니다. 요청 본문에는 **제목 말고는 숫자가 없습니다**. `POST /reports` 는 진단 전체를 본문으로 받는데, 그 경로로 만든 문서의 숫자는 아무도 재지 않은 값일 수 있습니다.
+         *
+         *     측정 조건이나 채점 결과가 없는 실행은 409로 거절하며, 왜 안 되는지 한국어로 알려 줍니다. 빈 리포트를 만들지 않습니다 — 빈 문서는 '잴 것이 없었다'로 읽히는데 사실은 '쟀지만 기록으로 문서를 만들 수 없다'입니다.
+         */
+        post: operations["create_report_from_scan_api_reports_from_scan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/reportable-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 리포트로 만들 수 있는 진단 실행
+         * @description 측정 조건이 기록된 실행만 나옵니다. 조건이 없는 실행은 어떤 조건에서 쟀는지 문서에 적을 수 없으므로 애초에 고를 수 없게 합니다 — 골랐다가 거절당하는 것보다 낫습니다.
+         */
+        get: operations["list_reportable_runs_api_reports_reportable_runs_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2808,6 +2854,24 @@ export interface components {
             specification: {
                 [key: string]: unknown;
             };
+        };
+        /**
+         * CreateFromScanRequest
+         * @description 저장된 진단에서 리포트를 만든다.
+         *
+         *     **여기에 숫자가 없는 것이 요점이다.** 제목과 어느 실행인지만 받는다. 점수·판정·
+         *     근거·측정 조건은 그 실행이 남긴 것을 읽는다. `CreateReportRequest` 는 진단 전체를
+         *     본문으로 받는데, 그 경로로 들어온 값은 아무도 재지 않은 숫자일 수 있다.
+         */
+        CreateFromScanRequest: {
+            /**
+             * Scan Run Id
+             * Format: uuid
+             * @description 리포트로 만들 진단 실행 ID입니다.
+             */
+            scan_run_id: string;
+            /** Title */
+            title: string;
         };
         /**
          * CreateReportRequest
@@ -4818,6 +4882,22 @@ export interface components {
             meta: components["schemas"]["ResponseMeta"];
             page_info: components["schemas"]["PageInfo"];
         };
+        /** PagedResponse[ReportSummaryPayload] */
+        PagedResponse_ReportSummaryPayload_: {
+            /** Data */
+            data?: components["schemas"]["ReportSummaryPayload"][];
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+            page_info: components["schemas"]["PageInfo"];
+        };
+        /** PagedResponse[ReportableRunPayload] */
+        PagedResponse_ReportableRunPayload_: {
+            /** Data */
+            data?: components["schemas"]["ReportableRunPayload"][];
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+            page_info: components["schemas"]["PageInfo"];
+        };
         /** PagedResponse[ScoringVersionSummary] */
         PagedResponse_ScoringVersionSummary_: {
             /** Data */
@@ -5634,6 +5714,37 @@ export interface components {
              */
             shortest_gap_seconds?: number | null;
         };
+        /**
+         * ReportSummaryPayload
+         * @description 목록 한 줄.
+         */
+        ReportSummaryPayload: {
+            /** Audience */
+            audience: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Latest Content Hash */
+            latest_content_hash?: string | null;
+            /** Latest Generated At */
+            latest_generated_at?: string | null;
+            /** Latest Version Number */
+            latest_version_number?: number | null;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /** Title */
+            title: string;
+        };
         /** ReportVersionPayload */
         ReportVersionPayload: {
             /** Audience */
@@ -5678,6 +5789,23 @@ export interface components {
             /** Version Number */
             version_number: number;
             views: components["schemas"]["ViewsPayload"];
+        };
+        /**
+         * ReportableRunPayload
+         * @description 리포트로 만들 수 있는 진단 실행 하나.
+         */
+        ReportableRunPayload: {
+            /**
+             * Scan Run Id
+             * Format: uuid
+             */
+            scan_run_id: string;
+            /** Started At */
+            started_at?: string | null;
+            /** Status */
+            status: string;
+            /** Urls Collected */
+            urls_collected: number;
         };
         /**
          * RescoreRequest
@@ -9448,6 +9576,38 @@ export interface operations {
             };
         };
     };
+    list_reports_api_reports_get: {
+        parameters: {
+            query?: {
+                /** @description 특정 프로젝트만 */
+                project_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedResponse_ReportSummaryPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_report_api_reports_post: {
         parameters: {
             query?: never;
@@ -9468,6 +9628,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_CreatedVersionPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_report_from_scan_api_reports_from_scan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFromScanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_CreatedVersionPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reportable_runs_api_reports_reportable_runs_get: {
+        parameters: {
+            query: {
+                /** @description 프로젝트 ID */
+                project_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedResponse_ReportableRunPayload_"];
                 };
             };
             /** @description Validation Error */

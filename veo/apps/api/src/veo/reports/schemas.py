@@ -34,6 +34,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from veo.collect.contract import EvidenceRecord, IssueDraft
 from veo.compare.conditions import MeasurementConditions
+from veo.db.models.analysis import ScanRun
+from veo.db.models.observation import Report
 from veo.reports.repository import StoredVersion
 from veo.reports.service import CreatedVersion, LoadedReport
 from veo.reports.snapshot import (
@@ -52,10 +54,13 @@ from veo.scoring.models import ScoreResult
 
 __all__ = [
     "ChangePayload",
+    "CreateFromScanRequest",
     "CreateReportRequest",
     "CreateVersionRequest",
     "CreatedVersionPayload",
+    "ReportSummaryPayload",
     "ReportVersionPayload",
+    "ReportableRunPayload",
     "ValuePayload",
     "VersionSummaryPayload",
     "created_payload",
@@ -731,6 +736,69 @@ class CreateReportRequest(CreateVersionRequest):
 # --------------------------------------------------------------------------- #
 # Responses
 # --------------------------------------------------------------------------- #
+
+
+class CreateFromScanRequest(BaseModel):
+    """저장된 진단에서 리포트를 만든다.
+
+    **여기에 숫자가 없는 것이 요점이다.** 제목과 어느 실행인지만 받는다. 점수·판정·
+    근거·측정 조건은 그 실행이 남긴 것을 읽는다. `CreateReportRequest` 는 진단 전체를
+    본문으로 받는데, 그 경로로 들어온 값은 아무도 재지 않은 숫자일 수 있다.
+    """
+
+    model_config = _STRICT
+
+    scan_run_id: uuid.UUID = Field(description="리포트로 만들 진단 실행 ID입니다.")
+    title: str = Field(min_length=1, max_length=255)
+
+
+class ReportSummaryPayload(BaseModel):
+    """목록 한 줄."""
+
+    model_config = _STRICT
+
+    report_id: uuid.UUID
+    project_id: uuid.UUID
+    title: str
+    audience: str
+    created_at: datetime
+    #: 최신 버전. 아직 한 번도 발행되지 않았으면 비어 있다 — 감추지 않는다.
+    latest_version_number: int | None = None
+    latest_content_hash: str | None = None
+    latest_generated_at: datetime | None = None
+
+    @classmethod
+    def of(cls, report: Report, latest: StoredVersion | None) -> ReportSummaryPayload:
+        return cls(
+            report_id=report.id,
+            project_id=report.project_id,
+            title=report.title,
+            audience=report.audience,
+            created_at=report.created_at,
+            latest_version_number=None if latest is None else latest.version_number,
+            latest_content_hash=None if latest is None else latest.content_hash,
+            latest_generated_at=None if latest is None else latest.generated_at,
+        )
+
+
+class ReportableRunPayload(BaseModel):
+    """리포트로 만들 수 있는 진단 실행 하나."""
+
+    model_config = _STRICT
+
+    scan_run_id: uuid.UUID
+    started_at: datetime | None = None
+    status: str
+    urls_collected: int
+
+    @classmethod
+    def of(cls, run: ScanRun) -> ReportableRunPayload:
+        return cls(
+            scan_run_id=run.id,
+            started_at=run.started_at,
+            status=run.status,
+            urls_collected=run.urls_collected,
+        )
 
 
 class CreatedVersionPayload(BaseModel):

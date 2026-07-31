@@ -101,6 +101,21 @@ class SqlReportRepository:
         assert_tenant_scoped(statement, principal.organization_id)
         return self._session.scalars(statement).first()
 
+    def list_reports(
+        self, principal: Principal, project_id: uuid.UUID | None = None
+    ) -> list[tuple[Report, StoredVersion | None]]:
+        """이 조직의 리포트들과 각자의 최신 버전. 최근에 만든 것이 먼저.
+
+        버전이 하나도 없는 리포트도 목록에 남긴다. 감추면 "만들다 만 것" 이 흔적 없이
+        사라지고, 왜 안 보이는지 아무도 모른다.
+        """
+        statement = tenant_select(Report, principal).order_by(Report.created_at.desc())
+        if project_id is not None:
+            statement = statement.where(Report.project_id == project_id)
+        assert_tenant_scoped(statement, principal.organization_id)
+        reports = list(self._session.scalars(statement).all())
+        return [(report, self.latest_version(principal, report.id)) for report in reports]
+
     def list_versions(
         self, principal: Principal, report_id: uuid.UUID
     ) -> list[StoredVersion]:

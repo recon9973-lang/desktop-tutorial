@@ -3778,6 +3778,30 @@
         "title": "CreateDraftRequest",
         "type": "object"
       },
+      "CreateFromScanRequest": {
+        "additionalProperties": false,
+        "description": "저장된 진단에서 리포트를 만든다.\n\n**여기에 숫자가 없는 것이 요점이다.** 제목과 어느 실행인지만 받는다. 점수·판정·\n근거·측정 조건은 그 실행이 남긴 것을 읽는다. `CreateReportRequest` 는 진단 전체를\n본문으로 받는데, 그 경로로 들어온 값은 아무도 재지 않은 숫자일 수 있다.",
+        "properties": {
+          "scan_run_id": {
+            "description": "리포트로 만들 진단 실행 ID입니다.",
+            "format": "uuid",
+            "title": "Scan Run Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scan_run_id",
+          "title"
+        ],
+        "title": "CreateFromScanRequest",
+        "type": "object"
+      },
       "CreateReportRequest": {
         "additionalProperties": false,
         "description": "The same diagnosis, plus the project the new report belongs to.",
@@ -8848,6 +8872,74 @@
         "title": "PagedResponse[RelatedKeywordPayload]",
         "type": "object"
       },
+      "PagedResponse_ReportSummaryPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ReportSummaryPayload"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "page_info": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "required": [
+          "page_info",
+          "meta"
+        ],
+        "title": "PagedResponse[ReportSummaryPayload]",
+        "type": "object"
+      },
+      "PagedResponse_ReportableRunPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ReportableRunPayload"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          "page_info": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "required": [
+          "page_info",
+          "meta"
+        ],
+        "title": "PagedResponse[ReportableRunPayload]",
+        "type": "object"
+      },
       "PagedResponse_ScoringVersionSummary_": {
         "additionalProperties": false,
         "properties": {
@@ -10674,6 +10766,78 @@
         "title": "RepetitionSpreadPayload",
         "type": "object"
       },
+      "ReportSummaryPayload": {
+        "additionalProperties": false,
+        "description": "목록 한 줄.",
+        "properties": {
+          "audience": {
+            "title": "Audience",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "latest_content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Content Hash"
+          },
+          "latest_generated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Generated At"
+          },
+          "latest_version_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version Number"
+          },
+          "project_id": {
+            "format": "uuid",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "report_id": {
+            "format": "uuid",
+            "title": "Report Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "report_id",
+          "project_id",
+          "title",
+          "audience",
+          "created_at"
+        ],
+        "title": "ReportSummaryPayload",
+        "type": "object"
+      },
       "ReportVersionPayload": {
         "additionalProperties": false,
         "properties": {
@@ -10784,6 +10948,44 @@
           "views"
         ],
         "title": "ReportVersionPayload",
+        "type": "object"
+      },
+      "ReportableRunPayload": {
+        "additionalProperties": false,
+        "description": "리포트로 만들 수 있는 진단 실행 하나.",
+        "properties": {
+          "scan_run_id": {
+            "format": "uuid",
+            "title": "Scan Run Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "urls_collected": {
+            "title": "Urls Collected",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "scan_run_id",
+          "status",
+          "urls_collected"
+        ],
+        "title": "ReportableRunPayload",
         "type": "object"
       },
       "RescoreRequest": {
@@ -17753,6 +17955,57 @@
       }
     },
     "/api/reports": {
+      "get": {
+        "description": "이 조직의 리포트를 최근에 만든 순으로 돌려줍니다. 각 줄에는 최신 버전 번호와 그 버전의 내용 해시가 붙습니다 — 고객에게 전달한 문서가 어느 버전이었는지 나중에도 맞춰 볼 수 있어야 합니다.",
+        "operationId": "list_reports_api_reports_get",
+        "parameters": [
+          {
+            "description": "특정 프로젝트만",
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "특정 프로젝트만",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse_ReportSummaryPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "리포트 목록",
+        "tags": [
+          "reports"
+        ]
+      },
       "post": {
         "description": "완료된 진단을 고정 스냅샷으로 동결해 새 버전을 발행합니다. 발행된 버전은 수정할 수 없으며, 재측정 결과는 기존 버전을 덮어쓰지 않고 새 버전으로 추가됩니다. 모든 수치에는 방법론 버전·체크섬·측정 시점·측정 범위·신뢰도가 함께 고정되고, 측정하지 못한 항목은 '측정 불가', 적용되지 않는 항목은 '해당 없음'으로 사유와 함께 남습니다. 어느 쪽도 0으로 바뀌지 않습니다.",
         "operationId": "create_report_api_reports_post",
@@ -17789,6 +18042,94 @@
           }
         },
         "summary": "리포트 생성 및 1차 버전 발행",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/reports/from-scan": {
+      "post": {
+        "description": "진단 실행 하나를 지목하면 그 실행이 남긴 점수·항목별 판정·근거·측정 조건으로 리포트를 만듭니다. 요청 본문에는 **제목 말고는 숫자가 없습니다**. `POST /reports` 는 진단 전체를 본문으로 받는데, 그 경로로 만든 문서의 숫자는 아무도 재지 않은 값일 수 있습니다.\n\n측정 조건이나 채점 결과가 없는 실행은 409로 거절하며, 왜 안 되는지 한국어로 알려 줍니다. 빈 리포트를 만들지 않습니다 — 빈 문서는 '잴 것이 없었다'로 읽히는데 사실은 '쟀지만 기록으로 문서를 만들 수 없다'입니다.",
+        "operationId": "create_report_from_scan_api_reports_from_scan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFromScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CreatedVersionPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "저장된 진단에서 리포트 발행 — 숫자는 실측에서만 온다",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/reports/reportable-runs": {
+      "get": {
+        "description": "측정 조건이 기록된 실행만 나옵니다. 조건이 없는 실행은 어떤 조건에서 쟀는지 문서에 적을 수 없으므로 애초에 고를 수 없게 합니다 — 골랐다가 거절당하는 것보다 낫습니다.",
+        "operationId": "list_reportable_runs_api_reports_reportable_runs_get",
+        "parameters": [
+          {
+            "description": "프로젝트 ID",
+            "in": "query",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "description": "프로젝트 ID",
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponse_ReportableRunPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "리포트로 만들 수 있는 진단 실행",
         "tags": [
           "reports"
         ]

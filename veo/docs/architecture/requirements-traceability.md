@@ -182,6 +182,7 @@
 | 발행 버전 불변 | `veo/lab/versions.py` — PUBLISHED 수정 거부 | `tests/lab/` |
 | 재계산 시 원 점수·재계산 점수 병존 | `veo/lab/rescore.py` — 새 행 기록, 원본 무변경 | `tests/lab/` |
 | 보고서는 versioned snapshot | `veo/reports/snapshot.py`, `ReportVersion`(ImmutableMixin) | `tests/reports/` |
+| 리포트 숫자는 실측에서만 | `veo/reports/from_scan.py` · `POST /reports/from-scan` · 화면에 점수 입력칸 없음 | `tests/reports/test_report_from_scan.py` |
 | 역할별 보기(경영진·마케팅·개발자) | `veo/reports/views.py` — 한 스냅샷에서 파생 | `tests/reports/` |
 | HTML/CSV/XLSX 내보내기 | `veo/reports/render/` | `tests/reports/` |
 
@@ -236,8 +237,7 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 - 헤드리스 렌더링(Playwright) — `js_render_parity` 상시 측정 불가
 - 가시성 지표 3종: 출처 다양성 · 추천 포함 · 안정성
 - 화면: `/console/sites` · `/console/api-usage` · `/console/admin` (파일 자체 없음)
-- 자리표시자로 남은 콘솔 화면: `/console/reports` 하나. 나머지 12개는 엔진 자료를 읽는다.
-  공개 진단 3개는 전부 자리표시자
+- 콘솔 13개 화면이 모두 엔진 자료를 읽는다. 공개 진단 3개는 전부 자리표시자
 - `/console/scoring-versions` 는 발행 명세를 **웹이 손으로 적어 둔 목록**에서 읽는다
   (`apps/web/src/lib/scoring.ts`). 엔진의 명세 등록부와 어긋나도 아무도 모른다
 - `tests/contract` · `e2e` · `integration` · `security` 는 **디렉터리가 비어 있고,
