@@ -334,13 +334,26 @@ def _pg_flags(database_url: str) -> list[str]:
 BASH = shutil.which("bash") or "/bin/bash"
 
 
-def _run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
+def _run(
+    script: Path, *args: str, password: str | None = None
+) -> subprocess.CompletedProcess[str]:
+    """백업·복원 스크립트를 돌린다.
+
+    `psql` 과 `pg_dump` 는 명령행으로 비밀번호를 받지 않는다. `PGPASSWORD` 로만
+    받는다 — 그래서 주소에 비밀번호가 있어도 넘겨주지 않으면 스크립트 안에서
+    `no password supplied` 로 죽는다. 로컬 소켓 접속은 비밀번호가 없어 드러나지
+    않고, 비밀번호를 쓰는 CI 에서만 터진다.
+    """
+    env = dict(os.environ)
+    if password:
+        env["PGPASSWORD"] = password
     return subprocess.run(  # noqa: S603 - fixed argv, no shell
         [BASH, str(script), *args],
         capture_output=True,
         text=True,
         check=False,
         cwd=str(REPO_ROOT),
+        env=env,
     )
 
 
@@ -352,13 +365,20 @@ def _backup(
         *_pg_flags(database_url),
         "--out", str(out_dir),
         "--answer-store", str(answers_root),
+        password=_url(database_url).password,
     )
 
 
 def _restore(
     database_url: str, backup_dir: Path, *extra: str
 ) -> subprocess.CompletedProcess[str]:
-    return _run(RESTORE_SH, "--backup", str(backup_dir), *_pg_flags(database_url), *extra)
+    return _run(
+        RESTORE_SH,
+        "--backup", str(backup_dir),
+        *_pg_flags(database_url),
+        *extra,
+        password=_url(database_url).password,
+    )
 
 
 @pytest.fixture(scope="module")
