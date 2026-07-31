@@ -67,7 +67,8 @@
 | 인용 관측 가능성 구분 | `ai_answers.citation_support` — `STRUCTURED` / `NOT_EXPOSED_BY_PROVIDER`. 실측: `gpt-5`·`gpt-4o` 는 인용을 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 안 돌려준다 | `docs/operations/verifying-citation-support.md` |
 | 노출률 지표 | 언급률·인용률·질문 도달률 + Wilson 구간 | `tests/observations/test_metrics.py` |
 | 가시성 지표 10종 (마스터 §7.3) | **7/10.** 없는 것: 출처 다양성 · 추천 포함 · 안정성(변동) | grep: `source_diversity`·`recommendation_inclusion` 0건 |
-| 자동 판정과 사람 검수 분리 | 모듈은 완성(`observations/risk/`·`review/`)이나 **`src/` 안에 호출자가 없다.** `ClaimAssessment` 를 db/models 밖에서 쓰는 코드 0건 → 제품에서는 아직 돌지 않는다 (지침서 0-E) | `tests/observations/` 만 부른다 |
+| 자동 판정과 사람 검수 분리 | **연결됨.** 보류된 언급이 `claim_assessments` 행이 되고(`observations/findings.py`), `GET /observations/runs/{id}/risks` 가 **공개 게이트를 지난 뒤** 돌려준다. 다만 재는 위험 유형은 8종 중 1종(동명 업체 혼동)이고 나머지 7종은 이유와 함께 공개한다 | `TestHeldMentionsBecomeReviewableFindings` · `TestWhatTheCustomerDocumentMayContain` |
+| 검수자가 판정을 뒤집는 경로 | **미착수.** 행은 다섯 단계를 저장할 수 있게 됐으나(`review_stage`·`claimed_by`) 단계를 옮기는 API 와 화면이 아직 없다 → 지금은 읽기 전용 큐다 | — |
 | 관측 SOV 를 실측에서 계산 | **미연결.** `competitors/sov.py` 는 완성됐으나 입력이 요청 본문(`ObservedVisibilityInput`)이라 사람이 숫자를 넣어야 한다 | — |
 | 관측을 비동기로 실행 | **완료.** 202 + `GET /api/jobs/{id}` 로 진행률 조회. 작업 본문은 `observations/jobs.py` | `TestTheJobPath` |
 
@@ -219,7 +220,7 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 
 | 무엇 | 증거 |
 |---|---|
-| 답변 위험 평가 · 사람 검수 | `ClaimAssessment` 를 db/models 밖에서 쓰는 코드 0건 |
+| 답변 위험 검수 결정 | 저장 자리는 생겼으나 단계를 옮기는 API·화면이 없다 (판정 기록·조회·게이트는 연결됨) |
 | Celery 워커 | 태스크 전부 스텁, `.delay()` 호출 0건. **작업은 `veo/jobs/` 의 배경 스레드가 돈다** — 브로커가 생기면 이쪽으로 옮긴다 |
 | 관측 SOV | 입력이 요청 본문이라 실측과 연결 안 됨 |
 | 사용량·비용 | `APIUsageEvent` 참조 0건 |

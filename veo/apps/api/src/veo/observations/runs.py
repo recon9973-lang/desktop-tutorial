@@ -136,6 +136,7 @@ class ObservationRun:
     """귀속 확신도. `None` 은 이름 자체가 안 나왔다는 뜻이다 — 0.0 과 다른 사실이다."""
     mention_evidence_ko: tuple[str, ...] = field(default=())
     mention_first_position: int | None = None
+    mention_quote: str = ""
     mention_raw_occurrences: int = 0
     citation_support: str | None = None
     """이 응답에서 **인용을 볼 수 있었는가**. `STRUCTURED` 이거나 아니거나.

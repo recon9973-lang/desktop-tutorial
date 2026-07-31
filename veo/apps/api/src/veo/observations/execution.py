@@ -51,10 +51,12 @@ from veo.observations.attribution import DisambiguatingMentionDetector
 from veo.observations.brand_identity import BrandIdentityRecord, to_brand_profile
 from veo.observations.db_answer_store import DatabaseAnswerStore
 from veo.observations.detection.disambiguation import BrandProfile
+from veo.observations.findings import assessment_from_held_mention, new_assessment_row
 from veo.observations.metrics import AnswerFact
 from veo.observations.prompts import Funnel, Intent, Prompt, PromptSet, Subject
 from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import RecordedAnswerStore
+from veo.observations.review.decisions import open_review
 from veo.observations.runner import BrandTarget, ObservationRunner, RunReport
 from veo.observations.runs import AccountState, RunConditions, SearchMode
 from veo.observations.service import engine_registry, prompt_set_of, prompts_of
@@ -438,6 +440,28 @@ def _persist(
                         if run.mention_pending_review
                         else ReviewState.NOT_REVIEWED.value
                     ),
+                )
+            )
+
+        # 보류된 언급은 **위험 판정으로도** 남긴다. 답변과 같은 트랜잭션에 담는 것이
+        # 중요하다 — 나중에 따로 훑는 방식이면 그 훑기를 돌리지 않은 실행이 조용히
+        # 검수 큐를 비껴간다. `claim_assessments` 에 쓰는 첫 코드다(#24).
+        if run.mention_pending_review and run.mention_first_position is not None:
+            session.add(
+                new_assessment_row(
+                    open_review(
+                        assessment_from_held_mention(
+                            answer_id=answer.id,
+                            answer_ref=run.raw_answer_ref or "",
+                            answer_hash=run.raw_answer_hash or "",
+                            span_start=run.mention_first_position,
+                            quoted_text=run.mention_quote,
+                            reasons_ko=run.mention_evidence_ko,
+                            decided_at=run.executed_at,
+                        )
+                    ),
+                    organization_id=principal.organization_id,
+                    answer_id=answer.id,
                 )
             )
 

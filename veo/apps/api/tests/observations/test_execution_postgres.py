@@ -637,3 +637,181 @@ class TestTheJobPath:
 
         with pytest.raises(job_service.JobNotFoundError):
             job_service.read(db, stranger, job.id)
+
+
+# --------------------------------------------------------------------------- #
+# #24 — `claim_assessments` 에 쓰는 첫 코드
+# --------------------------------------------------------------------------- #
+#
+# 이 테이블은 지금까지 **쓰는 코드가 0건**이었다. 위험 분류·심각도 표·검수 상태 기계·
+# 공개 게이트가 전부 완성되어 있었는데 아무도 부르지 않았고, 그래서 테이블이 실제로 쓸
+# 수 있는 모양인지도 확인된 적이 없었다(0-E).
+#
+# 여기서 고정하는 것은 셋이다.
+#   1. 보류된 언급이 판정 행으로 남는가
+#   2. 그 행을 **다시 판정 객체로 읽을 수 있는가** — 못 읽으면 근거가 아니라 주장이다
+#   3. 게이트를 지난 뒤 고객 문서에 무엇이 남는가
+
+#: 같은 이름의 더 긴 상호. 판별기가 이 고객이라고 말하지 못한다.
+HELD_ANSWER = f"{SYNTHETIC_MARKER} 부산 해운대구의 백세{BRAND_NAME}이 유명합니다."
+
+
+class TestHeldMentionsBecomeReviewableFindings:
+    def test_a_held_mention_is_written_to_claim_assessments(
+        self, db: Session, tenant
+    ) -> None:
+        from veo.db.models.observation import ClaimAssessment as ClaimAssessmentRow
+
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        found = db.scalars(
+            select(ClaimAssessmentRow)
+            .join(AIAnswer, AIAnswer.id == ClaimAssessmentRow.ai_answer_id)
+            .where(AIAnswer.observation_run_id == row.id)
+        ).all()
+
+        assert found, "보류된 언급이 검수 큐에 도달하지 않으면 아무도 그것을 보지 못한다"
+        assert all(item.assessment_type == "ENTITY_DISAMBIGUATION" for item in found)
+        assert all(item.review_state == "PENDING_REVIEW" for item in found)
+        assert all(item.review_stage == "PENDING_REVIEW" for item in found)
+
+    def test_the_finding_says_it_is_unknown_not_wrong(self, db: Session, tenant) -> None:
+        """"AI 가 당신 병원을 다른 병원과 혼동했습니다" 는 우리가 확인하지 않은 말이다.
+
+        확인한 것은 **우리가 못 가렸다** 는 사실뿐이다. 그래서 판정은 UNKNOWN 이고,
+        게이트가 이것을 지적이 아니라 '확인하지 못한 건' 으로 뺀다.
+        """
+        from veo.db.models.observation import ClaimAssessment as ClaimAssessmentRow
+
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        item = db.scalars(
+            select(ClaimAssessmentRow)
+            .join(AIAnswer, AIAnswer.id == ClaimAssessmentRow.ai_answer_id)
+            .where(AIAnswer.observation_run_id == row.id)
+        ).first()
+        assert item is not None
+        assert item.automated_verdict == "UNKNOWN"
+        assert item.automated_basis == "DETERMINISTIC_RULE"
+        assert item.rule_id == "RISK-R020"
+        assert "갈리지 않았습니다" in (item.automated_rationale or "")
+
+    def test_a_confirmed_mention_produces_no_finding(self, db: Session, tenant) -> None:
+        """멀쩡히 갈린 언급까지 큐에 넣으면 큐가 절대 비지 않고, 비지 않는 큐는 안 읽힌다."""
+        from veo.db.models.observation import ClaimAssessment as ClaimAssessmentRow
+
+        principal, prompt_set = tenant()
+
+        row = _run(db, principal, prompt_set)
+
+        assert not db.scalars(
+            select(ClaimAssessmentRow)
+            .join(AIAnswer, AIAnswer.id == ClaimAssessmentRow.ai_answer_id)
+            .where(AIAnswer.observation_run_id == row.id)
+        ).all()
+
+
+class TestTheFindingCanBeOpenedAgain:
+    def test_the_stored_row_reads_back_as_a_review_record(
+        self, db: Session, tenant
+    ) -> None:
+        """쓰기만 하고 못 읽는 테이블은 근거가 아니다.
+
+        `claim_text` 만으로는 그 문장이 정말 그 답변의 그 자리였는지 확인할 수 없다.
+        포인터·해시·구간이 함께 남아야 나중에 대조할 수 있다(0-A).
+        """
+        from veo.observations.findings import reviews_for_run
+
+        principal, prompt_set = tenant()
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        reviews = reviews_for_run(db, principal, row.id)
+
+        assert reviews
+        evidence = reviews[0].assessment.evidence
+        assert evidence.answer_ref
+        assert len(evidence.answer_hash) == 64
+        assert evidence.span_end - evidence.span_start == len(evidence.quoted_text)
+        assert evidence.quoted_text == BRAND_NAME
+
+    def test_the_span_points_at_the_name_inside_the_longer_business(
+        self, db: Session, tenant
+    ) -> None:
+        """검수자는 기계가 **실제로 본 글자**를 봐야 판단할 수 있다."""
+        from veo.observations.findings import reviews_for_run
+
+        principal, prompt_set = tenant()
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        evidence = reviews_for_run(db, principal, row.id)[0].assessment.evidence
+        assert HELD_ANSWER[evidence.span_start : evidence.span_end] == evidence.quoted_text
+
+    def test_a_row_without_evidence_is_refused_rather_than_guessed(
+        self, db: Session, tenant
+    ) -> None:
+        """빈 자리를 그럴듯한 값으로 메우면 확인할 수 없는 지적이 확인된 것처럼 보인다."""
+        from sqlalchemy import update
+
+        from veo.db.models.observation import ClaimAssessment as ClaimAssessmentRow
+        from veo.observations.findings import UnreadableAssessmentError, reviews_for_run
+
+        principal, prompt_set = tenant()
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        db.execute(
+            update(ClaimAssessmentRow)
+            .where(ClaimAssessmentRow.organization_id == principal.organization_id)
+            .values(evidence_answer_hash=None)
+        )
+        db.commit()
+
+        with pytest.raises(UnreadableAssessmentError):
+            reviews_for_run(db, principal, row.id)
+
+
+class TestWhatTheCustomerDocumentMayContain:
+    def test_an_unknown_verdict_is_not_a_finding_in_the_customer_payload(
+        self, db: Session, tenant
+    ) -> None:
+        from veo.observations.findings import reviews_for_run
+        from veo.observations.review.gating import apply_publication_gate
+
+        principal, prompt_set = tenant()
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        payload = apply_publication_gate(reviews_for_run(db, principal, row.id))
+
+        assert payload.as_customer_payload()["findings"] == []
+        assert payload.as_customer_payload()["not_measured"]["total"] > 0
+
+    def test_the_internal_view_still_carries_the_sentence(
+        self, db: Session, tenant
+    ) -> None:
+        """내부 화면은 봐야 판단한다. 그래서 이 payload 는 공개 경로에 연결하면 안 된다."""
+        from veo.observations.findings import reviews_for_run
+        from veo.observations.review.gating import apply_publication_gate
+
+        principal, prompt_set = tenant()
+        row = _run(db, principal, prompt_set, registry=_registry(text=HELD_ANSWER))
+
+        internal = apply_publication_gate(
+            reviews_for_run(db, principal, row.id)
+        ).as_internal_payload()
+
+        assert internal["items"]
+        assert internal["items"][0]["assessment"]["claim_text"] == BRAND_NAME
+
+    def test_zero_findings_is_reported_with_what_we_do_not_measure(self) -> None:
+        """"위험 0건" 만 보여주면 위험이 없다로 읽힌다. 8종 중 1종만 재고 있다."""
+        from veo.observations.findings import assessment_kinds_not_yet_produced
+
+        missing = assessment_kinds_not_yet_produced()
+
+        assert len(missing) == 7
+        assert all(item["reason_ko"] for item in missing)
+        kinds = {item["kind"] for item in missing}
+        assert "ENTITY_DISAMBIGUATION" not in kinds, "이것 하나는 실제로 재고 있다"

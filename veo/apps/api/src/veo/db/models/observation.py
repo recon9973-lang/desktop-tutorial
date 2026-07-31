@@ -338,15 +338,73 @@ class ClaimAssessment(Base, OrganizationScopedMixin, TimestampMixin):
     assessment_type: Mapped[str] = mapped_column(
         String(48),
         nullable=False,
+        # 8종이다. 예전 주석은 7종이었고 두 쌍이 하나로 합쳐져 있어서
+        # `RiskKind.from_storage("RECOMMENDATION")` 이 되읽기를 거부했다 — "목록에서
+        # 빠졌다" 와 "잘못 추천되었다" 는 대응이 정반대라 추측해서 고를 수 없다.
         comment="CLAIM_ACCURACY | CITATION_ENTAILMENT | CITATION_COMPLETENESS | "
-        "ENTITY_DISAMBIGUATION | RECOMMENDATION | SENTIMENT | STALENESS",
+        "ENTITY_DISAMBIGUATION | RECOMMENDATION_INCLUSION | RECOMMENDATION_EXCLUSION | "
+        "SENTIMENT_WITH_GROUNDS | STALENESS",
+    )
+    claim_domain: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="GENERAL",
+        comment="MEDICAL | LEGAL | PRICING | CONTRACTUAL | IDENTITY | CONTACT | "
+        "REPUTATION | GENERAL — 심각도가 여기서 나온다. 규제 4종은 유형과 무관하게 "
+        "치명이므로, 이 값을 안 남기면 저장된 행에서 심각도를 다시 계산할 수 없다.",
     )
     severity: Mapped[str] = mapped_column(String(16), nullable=False)
     automated_verdict: Mapped[str] = mapped_column(String(32), nullable=False)
+    automated_basis: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="NOT_MEASURED",
+        comment="DETERMINISTIC_RULE | LANGUAGE_MODEL | NOT_MEASURED — 누가 판정했나. "
+        "이것 없이는 행을 다시 판정 객체로 읽을 수 없다.",
+    )
+    rule_id: Mapped[str | None] = mapped_column(
+        String(32),
+        nullable=True,
+        comment="규칙 판정일 때 어떤 규칙이었나. 규칙 판정에는 필수, 모델 판정에는 금지.",
+    )
     automated_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
     llm_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     llm_prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+    # ------------------------------------------------------------------ #
+    # 근거 — 이 지적을 나중에 다시 열어볼 수 있게 하는 값들
+    # ------------------------------------------------------------------ #
+    #
+    # `claim_text` 만으로는 부족하다. 그 문장이 **정말 그 답변의 그 자리** 였는지를
+    # 확인할 방법이 없기 때문이다. 원문은 민감해서 이 테이블에 넣지 않으므로,
+    # 포인터·해시·구간을 남긴다. 해시가 어긋나면 답변이 바뀐 것이고, 바뀐 것을
+    # 근거처럼 돌려주는 것보다 못 읽는 편이 낫다(0-A).
+    evidence_answer_ref: Mapped[str | None] = mapped_column(Text, nullable=True)
+    evidence_answer_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    evidence_span_start: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    evidence_span_end: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     review_state: Mapped[str] = mapped_column(String(32), nullable=False, default="PENDING_REVIEW")
+    review_stage: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="PENDING_REVIEW",
+        comment="PENDING_REVIEW | UNDER_REVIEW | NEEDS_MORE_EVIDENCE | CONFIRMED | "
+        "REJECTED — 검수 기계의 다섯 단계. `review_state` 는 이 가운데 셋을 "
+        "PENDING_REVIEW 로 접으므로, 그 칸만으로는 '누가 잡고 있었는지'·'근거 보강 "
+        "대기인지 손도 안 댄 건인지' 를 재기동 후 복원할 수 없다.",
+    )
+    #: 지금 이 건을 맡고 있는 검수자. `reviewed_by`(판단한 사람)와 다르다 — 둘을 합치면
+    #: 착수만 하고 판단하지 않은 건이 검수 완료로 읽힌다.
+    claimed_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    claimed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    #: enqueue·claim·release·decide 를 순서대로. 끝점만 남기면 어떻게 거기까지 갔는지
+    #: 알 수 없고, 검수 기록에서 그것이 가장 자주 필요한 질문이다.
+    review_history: Mapped[JsonArray] = json_column()
     reviewed_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )

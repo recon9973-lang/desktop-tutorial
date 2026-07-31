@@ -964,6 +964,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/runs/{run_id}/risks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 관측 실행이 남긴 위험 판정 (검수 게이트 통과 후)
+         * @description **`customer` 와 `internal` 은 용도가 다릅니다.** `customer` 는 고객 문서에 실어도 되는 것만 담으며, 검수되지 않은 치명·높음 지적의 문장은 들어 있지 않습니다. `internal` 은 내부 화면 전용이고 보류된 지적의 원문을 포함하므로 공개 리포트 경로에 연결하면 안 됩니다.
+         *
+         *     **`customer.findings` 가 비어 있다고 위험이 없는 것이 아닙니다.** 지금 규칙으로 낼 수 있는 위험 유형은 방법론 8종 가운데 1종(동명 업체 혼동)뿐이고, 나머지 7종이 왜 없는지는 `kinds_not_yet_produced` 가 말합니다.
+         *
+         *     위험 영역에는 종합 점수가 없습니다. 심각도별 건수만 보고합니다.
+         */
+        get: operations["run_risks_api_observations_runs__run_id__risks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizations/current": {
         parameters: {
             query?: never;
@@ -1821,6 +1845,12 @@ export interface components {
         /** ApiResponse[RescoreSummaryPayload] */
         ApiResponse_RescoreSummaryPayload_: {
             data?: components["schemas"]["RescoreSummaryPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[RiskFindingsPayload] */
+        ApiResponse_RiskFindingsPayload_: {
+            data?: components["schemas"]["RiskFindingsPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -5339,6 +5369,32 @@ export interface components {
             sources?: components["schemas"]["SourceAttribution"][];
         };
         /**
+         * RiskFindingsPayload
+         * @description 이 실행이 남긴 위험 판정 — **공개 게이트를 지난 뒤의 모습**입니다.
+         *
+         *     `customer` 는 고객 문서에 실어도 되는 것만 담습니다. 검수되지 않은 치명·높음 지적의
+         *     **문장은 들어 있지 않고**, 건수와 심각도, 그리고 왜 보류되었는지만 들어 있습니다.
+         *     `internal` 은 내부 화면 전용이며 보류된 지적의 원문을 포함하므로, 공개 리포트 토큰
+         *     경로에 연결하면 안 됩니다.
+         *
+         *     `kinds_not_yet_produced` 를 빼고 "위험 0건" 만 보여주면 **위험이 없다**로 읽힙니다.
+         *     실제로는 방법론 8종 가운데 규칙으로 낼 수 있는 1종만 재고 있습니다.
+         */
+        RiskFindingsPayload: {
+            /** Customer */
+            customer: {
+                [key: string]: unknown;
+            };
+            /** Internal */
+            internal: {
+                [key: string]: unknown;
+            };
+            /** Kinds Not Yet Produced */
+            kinds_not_yet_produced: {
+                [key: string]: string;
+            }[];
+        };
+        /**
          * Role
          * @enum {string}
          */
@@ -6404,6 +6460,12 @@ export interface components {
          * @description 이 관측이 말할 수 있는 것과, 말할 수 없는 것.
          */
         VisibilityMetricsPayload: {
+            /**
+             * Answers Pending Disambiguation
+             * @description 상호가 나왔지만 같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 건수입니다. **'언급 없음'이 아닙니다** — 언급률은 이 건들을 분자에서 뺀 확정 하한이며, 소재지·대표번호를 등록하면 대부분 자동으로 갈립니다.
+             * @default 0
+             */
+            answers_pending_disambiguation: number;
             /** Answers Recorded */
             answers_recorded: number;
             /**
@@ -8394,6 +8456,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_ObservationRunDetailPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_risks_api_observations_runs__run_id__risks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_RiskFindingsPayload_"];
                 };
             };
             /** @description Validation Error */

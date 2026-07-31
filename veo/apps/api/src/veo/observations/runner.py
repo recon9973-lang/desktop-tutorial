@@ -118,6 +118,16 @@ class MentionVerdict:
     """The reasons, in the words a reviewer will read. A held finding with no reason
     reads as a malfunction rather than as a question."""
     first_position: int | None = None
+    """The offset of the first hit in the answer text. Also the start of the span a
+    reviewer will be shown, which is why ``evidence_quote`` must be the text at exactly
+    this offset."""
+    evidence_quote: str = ""
+    """The exact characters at ``first_position`` — not a paraphrase, not a window.
+
+    A reviewer deciding whether ``백세온담한의원`` is this customer needs the string the
+    machine actually matched. Widening or trimming it here breaks the offset invariant
+    that lets the finding be checked against the stored answer later.
+    """
     raw_occurrence_count: int = 0
 
     def __post_init__(self) -> None:
@@ -552,6 +562,7 @@ class ObservationRunner:
             mention_confidence=verdict.confidence,
             mention_evidence_ko=verdict.evidence_ko,
             mention_first_position=verdict.first_position,
+            mention_quote=verdict.evidence_quote,
             mention_raw_occurrences=verdict.raw_occurrence_count,
         )
 

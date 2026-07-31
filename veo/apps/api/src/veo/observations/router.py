@@ -30,10 +30,12 @@ from veo.jobs.execution import run_detached
 from veo.jobs.router import job_payload
 from veo.jobs.schemas import JobPayload
 from veo.observations.execution import EngineChoice, answer_facts
+from veo.observations.findings import assessment_kinds_not_yet_produced, reviews_for_run
 from veo.observations.jobs import OBSERVATION_STAGES, observation_work
 from veo.observations.metrics import visibility_metrics
 from veo.observations.prompts import PromptSet, PromptSetImbalanceError
 from veo.observations.providers.registry import _STATE_LABELS_KO
+from veo.observations.review.gating import apply_publication_gate
 from veo.observations.runs import AccountState, SearchMode
 from veo.observations.schemas import (
     EnginePayload,
@@ -46,6 +48,7 @@ from veo.observations.schemas import (
     PromptSetListPayload,
     PromptSetPayload,
     PromptSummary,
+    RiskFindingsPayload,
     VisibilityMetricsPayload,
 )
 from veo.observations.service import (
@@ -357,6 +360,44 @@ def run_read(
         ObservationRunDetailPayload(
             run=_run_payload(row),
             metrics=VisibilityMetricsPayload.model_validate(measured.as_dict()),
+        ),
+        request_id,
+    )
+
+
+@router.get(
+    "/runs/{run_id}/risks",
+    response_model=ApiResponse[RiskFindingsPayload],
+    summary="관측 실행이 남긴 위험 판정 (검수 게이트 통과 후)",
+    description=(
+        "**`customer` 와 `internal` 은 용도가 다릅니다.** `customer` 는 고객 문서에 실어도 "
+        "되는 것만 담으며, 검수되지 않은 치명·높음 지적의 문장은 들어 있지 않습니다. "
+        "`internal` 은 내부 화면 전용이고 보류된 지적의 원문을 포함하므로 공개 리포트 "
+        "경로에 연결하면 안 됩니다.\n\n"
+        "**`customer.findings` 가 비어 있다고 위험이 없는 것이 아닙니다.** 지금 규칙으로 "
+        "낼 수 있는 위험 유형은 방법론 8종 가운데 1종(동명 업체 혼동)뿐이고, 나머지 7종이 "
+        "왜 없는지는 `kinds_not_yet_produced` 가 말합니다.\n\n"
+        "위험 영역에는 종합 점수가 없습니다. 심각도별 건수만 보고합니다."
+    ),
+)
+def run_risks(
+    run_id: uuid.UUID,
+    principal: ObservationReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[RiskFindingsPayload]:
+    row = get_observation_run(db, principal, run_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="observation run not found")
+
+    # 게이트를 반드시 지난다. 자동 판정을 그대로 내보내면 검수되지 않은 지적이 고객
+    # 문서에 실린다 — `risk/INTEGRATION_REQUEST.md` 요청 #5 가 요구하는 것이 이것이다.
+    gated = apply_publication_gate(reviews_for_run(db, principal, run_id))
+    return ok(
+        RiskFindingsPayload(
+            customer=gated.as_customer_payload(),
+            internal=gated.as_internal_payload(),
+            kinds_not_yet_produced=[dict(item) for item in assessment_kinds_not_yet_produced()],
         ),
         request_id,
     )

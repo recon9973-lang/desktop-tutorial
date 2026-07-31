@@ -51,7 +51,7 @@ from typing import final
 from veo.observations.detection.citations import match_citations, own_citations
 from veo.observations.detection.disambiguation import BrandProfile
 from veo.observations.detection.mentions import MentionVerdict as DetectionVerdict
-from veo.observations.detection.mentions import detect_mentions
+from veo.observations.detection.mentions import SpanSource, detect_mentions
 from veo.observations.providers.base import CitationSupport
 from veo.observations.providers.storage import RecordedAnswer
 from veo.observations.runner import MentionVerdict
@@ -82,6 +82,12 @@ class DisambiguatingMentionDetector:
         confirmed = event.verdict is DetectionVerdict.CONFIRMED
         pending = event.verdict is DetectionVerdict.NEEDS_REVIEW
 
+        # 본문에서 걸린 자리만 근거로 쓴다. 인용 구간의 좌표는 URL 문자열을 가리키므로
+        # 원문 답변에 대고 잘라내면 엉뚱한 글자가 나온다.
+        prose = next(
+            (span for span in event.spans if span.source is SpanSource.ANSWER_TEXT), None
+        )
+
         return MentionVerdict(
             mentioned=confirmed,
             # 확정되지 않은 언급 위에 인용을 세울 수 없다. 누구인지 모르는 이름에
@@ -91,6 +97,7 @@ class DisambiguatingMentionDetector:
             needs_review=pending,
             confidence=event.match_confidence if event.spans else None,
             evidence_ko=event.evidence_ko,
-            first_position=event.first_position,
+            first_position=prose.start if prose else None,
+            evidence_quote=prose.quote if prose else "",
             raw_occurrence_count=event.raw_occurrence_count if event.spans else 0,
         )

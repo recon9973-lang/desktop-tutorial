@@ -9,6 +9,7 @@ import {
   readObservationJobs,
   readPromptSets,
   readRun,
+  readRunRisks,
   readRuns,
   type EngineStatus,
   type Job,
@@ -19,6 +20,7 @@ import styles from '@/styles/page.module.css';
 import { JobWatch } from './JobWatch';
 import { ReadinessForm } from './ReadinessForm';
 import { RunForm, type RunnableEngine } from './RunForm';
+import { RiskReport } from './RiskReport';
 import { VisibilityReport } from './VisibilityReport';
 import own from './geo.module.css';
 
@@ -90,7 +92,10 @@ async function ConsoleGeoContent({
   const watched = jobId === null ? null : await readJob(jobId);
   const watchedJob = watched !== null && watched.ok ? watched.data : null;
   const targetRunId = runId ?? watchedJob?.result_run_id ?? null;
-  const detail = targetRunId === null ? null : await readRun(targetRunId);
+  const [detail, risks] = await Promise.all([
+    targetRunId === null ? null : readRun(targetRunId),
+    targetRunId === null ? null : readRunRisks(targetRunId),
+  ]);
 
   const usable: RunnableEngine[] = engines.ok
     ? engines.data.engines
@@ -163,7 +168,14 @@ async function ConsoleGeoContent({
           )}
 
           {detail !== null && detail.ok ? (
-            <VisibilityReport run={detail.data.run} metrics={detail.data.metrics} />
+            <>
+              <VisibilityReport run={detail.data.run} metrics={detail.data.metrics} />
+              {/*
+                위험을 못 불러왔다고 결과 전체를 에러로 덮지 않는다. 노출률은 멀쩡히
+                재어졌고, 그것을 못 보게 하는 것이 더 나쁘다.
+              */}
+              {risks !== null && risks.ok ? <RiskReport findings={risks.data} /> : null}
+            </>
           ) : detail !== null ? (
             <ErrorState
               title="결과를 불러오지 못했습니다"

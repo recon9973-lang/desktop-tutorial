@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -309,6 +309,14 @@ class VisibilityMetricsPayload(BaseModel):
             "않은 응답은 '인용 안 됨'이 아니라 '알 수 없음'입니다."
         )
     )
+    answers_pending_disambiguation: int = Field(
+        default=0,
+        description=(
+            "상호가 나왔지만 같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 건수입니다. "
+            "**'언급 없음'이 아닙니다** — 언급률은 이 건들을 분자에서 뺀 확정 하한이며, "
+            "소재지·대표번호를 등록하면 대부분 자동으로 갈립니다."
+        ),
+    )
     mention_rate: RatePayload
     citation_rate: RatePayload
     prompt_coverage: RatePayload
@@ -325,6 +333,25 @@ class ObservationRunDetailPayload(BaseModel):
 
     run: ObservationRunPayload
     metrics: VisibilityMetricsPayload
+
+
+class RiskFindingsPayload(BaseModel):
+    """이 실행이 남긴 위험 판정 — **공개 게이트를 지난 뒤의 모습**입니다.
+
+    `customer` 는 고객 문서에 실어도 되는 것만 담습니다. 검수되지 않은 치명·높음 지적의
+    **문장은 들어 있지 않고**, 건수와 심각도, 그리고 왜 보류되었는지만 들어 있습니다.
+    `internal` 은 내부 화면 전용이며 보류된 지적의 원문을 포함하므로, 공개 리포트 토큰
+    경로에 연결하면 안 됩니다.
+
+    `kinds_not_yet_produced` 를 빼고 "위험 0건" 만 보여주면 **위험이 없다**로 읽힙니다.
+    실제로는 방법론 8종 가운데 규칙으로 낼 수 있는 1종만 재고 있습니다.
+    """
+
+    model_config = _FROZEN
+
+    customer: dict[str, Any]
+    internal: dict[str, Any]
+    kinds_not_yet_produced: list[dict[str, str]]
 
 
 class ObservationRunListPayload(BaseModel):

@@ -45,6 +45,30 @@ export interface VisibilityMetrics {
   readonly caveats_ko: readonly string[];
 }
 
+export interface GatedItem {
+  readonly assessment_id: string;
+  readonly outcome: string;
+  readonly explanation_ko: string;
+  readonly assessment: {
+    readonly kind: string;
+    readonly band_label_ko: string;
+    readonly claim_text: string;
+    readonly automated: { readonly rationale_ko: string; readonly verdict: string };
+  };
+  readonly review: { readonly stage_label_ko: string; readonly is_reviewed: boolean };
+}
+
+export interface RiskFindings {
+  readonly customer: {
+    readonly findings: readonly unknown[];
+    readonly withheld: { readonly total: number; readonly explanation_ko: string };
+    readonly not_measured: { readonly total: number; readonly explanation_ko: string };
+  };
+  readonly internal: { readonly items: readonly GatedItem[] };
+  /** 아직 재지 않는 위험 유형과 그 이유. 이것 없이 "0건" 만 보이면 위험이 없다로 읽힌다. */
+  readonly kinds_not_yet_produced: readonly { readonly kind: string; readonly reason_ko: string }[];
+}
+
 export interface ObservationRun {
   readonly id: string;
   readonly project_id: string;
@@ -143,6 +167,18 @@ export async function readRun(
   runId: string,
 ): Promise<ConsoleOutcome<{ run: ObservationRun; metrics: VisibilityMetrics }>> {
   return callConsoleApi(`/api/observations/runs/${encodeURIComponent(runId)}`);
+}
+
+/**
+ * 이 관측이 남긴 위험 판정 — **공개 게이트를 지난 뒤의 모습.**
+ *
+ * `customer` 는 고객 문서용, `internal` 은 내부 화면 전용이다. 후자에는 검수되지 않은
+ * 지적의 원문이 들어 있으므로 공개 리포트 경로에서 부르면 안 된다.
+ */
+export async function readRunRisks(
+  runId: string,
+): Promise<ConsoleOutcome<RiskFindings>> {
+  return callConsoleApi(`/api/observations/runs/${encodeURIComponent(runId)}/risks`);
 }
 
 export async function readJob(jobId: string): Promise<ConsoleOutcome<Job>> {

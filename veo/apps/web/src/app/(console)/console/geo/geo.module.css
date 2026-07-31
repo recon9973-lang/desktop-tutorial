@@ -417,3 +417,111 @@
   font-size: var(--veo-font-size-200);
   font-weight: var(--veo-weight-semibold);
 }
+
+/* 답변 위험.
+ *
+ * 여기서 가장 중요한 것은 **"아직 재지 않는 항목" 이 눈에 띄는 것**이다. 위험 목록이
+ * 비어 있을 때 그 0 이 "문제 없음" 으로 읽히면, 우리가 안 재는 것을 없다고 보고한
+ * 셈이 된다. 그래서 이 구역은 접히지 않고, 목록이 비어 있을수록 더 잘 보인다.
+ */
+.riskList {
+  list-style: none;
+  margin: 0 0 var(--veo-space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+}
+
+.riskItem {
+  padding: var(--veo-space-4);
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+}
+
+.riskHead {
+  margin: 0 0 var(--veo-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+}
+
+.riskBand {
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.riskStage {
+  padding: 0 var(--veo-space-2);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  color: var(--veo-color-text-muted);
+}
+
+/* 기계가 실제로 본 글자. 요약하면 "백세온담한의원" 과 "온담한의원" 의 차이가 사라진다. */
+.riskQuote {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-medium);
+}
+
+.riskWhy,
+.riskGate {
+  margin: 0 0 var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+  color: var(--veo-color-text-muted);
+}
+
+.riskNoScore {
+  margin: 0 0 var(--veo-space-4);
+  font-size: var(--veo-font-size-100);
+  line-height: 1.7;
+  color: var(--veo-color-text-muted);
+}
+
+.riskGaps {
+  padding: var(--veo-space-4);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+}
+
+.riskGapsTitle {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.riskGapsLede {
+  margin: 0 0 var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.riskGapList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+  line-height: 1.6;
+}
+
+.riskGapRow {
+  display: grid;
+  grid-template-columns: minmax(10rem, auto) 1fr;
+  gap: var(--veo-space-3);
+}
+
+.riskGapRow dt {
+  font-weight: var(--veo-weight-medium);
+}
+
+.riskGapRow dd {
+  margin: 0;
+  color: var(--veo-color-text-muted);
+}

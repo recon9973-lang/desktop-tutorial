@@ -1309,6 +1309,39 @@
         "title": "ApiResponse[RescoreSummaryPayload]",
         "type": "object"
       },
+      "ApiResponse_RiskFindingsPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskFindingsPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[RiskFindingsPayload]",
+        "type": "object"
+      },
       "ApiResponse_ScanHistoryPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -10307,6 +10340,39 @@
         "title": "ResponseMeta",
         "type": "object"
       },
+      "RiskFindingsPayload": {
+        "additionalProperties": false,
+        "description": "이 실행이 남긴 위험 판정 — **공개 게이트를 지난 뒤의 모습**입니다.\n\n`customer` 는 고객 문서에 실어도 되는 것만 담습니다. 검수되지 않은 치명·높음 지적의\n**문장은 들어 있지 않고**, 건수와 심각도, 그리고 왜 보류되었는지만 들어 있습니다.\n`internal` 은 내부 화면 전용이며 보류된 지적의 원문을 포함하므로, 공개 리포트 토큰\n경로에 연결하면 안 됩니다.\n\n`kinds_not_yet_produced` 를 빼고 \"위험 0건\" 만 보여주면 **위험이 없다**로 읽힙니다.\n실제로는 방법론 8종 가운데 규칙으로 낼 수 있는 1종만 재고 있습니다.",
+        "properties": {
+          "customer": {
+            "additionalProperties": true,
+            "title": "Customer",
+            "type": "object"
+          },
+          "internal": {
+            "additionalProperties": true,
+            "title": "Internal",
+            "type": "object"
+          },
+          "kinds_not_yet_produced": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Kinds Not Yet Produced",
+            "type": "array"
+          }
+        },
+        "required": [
+          "customer",
+          "internal",
+          "kinds_not_yet_produced"
+        ],
+        "title": "RiskFindingsPayload",
+        "type": "object"
+      },
       "Role": {
         "enum": [
           "SUPER_ADMIN",
@@ -12926,6 +12992,12 @@
         "additionalProperties": false,
         "description": "이 관측이 말할 수 있는 것과, 말할 수 없는 것.",
         "properties": {
+          "answers_pending_disambiguation": {
+            "default": 0,
+            "description": "상호가 나왔지만 같은 이름의 다른 업체와 갈리지 않아 판정을 보류한 건수입니다. **'언급 없음'이 아닙니다** — 언급률은 이 건들을 분자에서 뺀 확정 하한이며, 소재지·대표번호를 등록하면 대부분 자동으로 갈립니다.",
+            "title": "Answers Pending Disambiguation",
+            "type": "integer"
+          },
           "answers_recorded": {
             "title": "Answers Recorded",
             "type": "integer"
@@ -16125,6 +16197,50 @@
           }
         },
         "summary": "관측 실행 하나와 그 지표",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
+    "/api/observations/runs/{run_id}/risks": {
+      "get": {
+        "description": "**`customer` 와 `internal` 은 용도가 다릅니다.** `customer` 는 고객 문서에 실어도 되는 것만 담으며, 검수되지 않은 치명·높음 지적의 문장은 들어 있지 않습니다. `internal` 은 내부 화면 전용이고 보류된 지적의 원문을 포함하므로 공개 리포트 경로에 연결하면 안 됩니다.\n\n**`customer.findings` 가 비어 있다고 위험이 없는 것이 아닙니다.** 지금 규칙으로 낼 수 있는 위험 유형은 방법론 8종 가운데 1종(동명 업체 혼동)뿐이고, 나머지 7종이 왜 없는지는 `kinds_not_yet_produced` 가 말합니다.\n\n위험 영역에는 종합 점수가 없습니다. 심각도별 건수만 보고합니다.",
+        "operationId": "run_risks_api_observations_runs__run_id__risks_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RiskFindingsPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "관측 실행이 남긴 위험 판정 (검수 게이트 통과 후)",
         "tags": [
           "observations"
         ]
