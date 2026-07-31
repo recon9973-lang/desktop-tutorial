@@ -49,6 +49,7 @@ from veo.observations.sampling import MIN_RUNS_FOR_EXPLORATION, MIN_SPREAD_BETWE
 
 __all__ = [
     "MIN_REPETITIONS",
+    "BrandSighting",
     "BrandTarget",
     "MentionDetector",
     "MentionVerdict",
@@ -98,6 +99,35 @@ class BrandTarget:
 
 
 @dataclass(frozen=True, slots=True)
+class BrandSighting:
+    """한 답변에서 **한 브랜드**에 대해 확인된 것. 우리 것과 경쟁사 것이 같은 모양이다.
+
+    같은 모양인 것이 요점이다. 점유율은 비율이고, 우리 쪽만 풍부하게 기록하고 경쟁사는
+    이름만 남기면 나중에 비교를 만들 때 두 쪽이 다른 근거 위에 서게 된다.
+    """
+
+    entity_key: str
+    is_own_brand: bool
+    competitor_id: str | None
+    mentioned: bool
+    cited: bool
+    needs_review: bool
+    confidence: float | None
+    evidence_ko: tuple[str, ...]
+    first_position: int | None
+    evidence_quote: str
+    raw_occurrence_count: int
+
+    def __post_init__(self) -> None:
+        if self.mentioned and self.needs_review:
+            raise ValueError(
+                f"{self.entity_key}: 확정과 보류를 동시에 주장할 수 없습니다"
+            )
+        if self.cited and not self.mentioned:
+            raise ValueError(f"{self.entity_key}: 인용은 언급을 포함합니다")
+
+
+@dataclass(frozen=True, slots=True)
 class MentionVerdict:
     """What was found in one answer, and what can be evidenced about it.
 
@@ -130,6 +160,12 @@ class MentionVerdict:
     that lets the finding be checked against the stored answer later.
     """
     raw_occurrence_count: int = 0
+    sightings: tuple[BrandSighting, ...] = ()
+    """선언된 브랜드 **전부** — 우리 것과 경쟁사 것.
+
+    위의 낱개 필드들은 우리 브랜드의 값을 그대로 되풀이한다. 실행기와 저장 경로가
+    이미 그 모양에 기대고 있어서 남겨 두었고, 점유율은 이 목록에서 나온다.
+    """
 
     def __post_init__(self) -> None:
         if self.cited and not self.mentioned:
@@ -635,6 +671,7 @@ class ObservationRunner:
             mention_first_position=verdict.first_position,
             mention_quote=verdict.evidence_quote,
             mention_raw_occurrences=verdict.raw_occurrence_count,
+            sightings=verdict.sightings,
         )
 
 

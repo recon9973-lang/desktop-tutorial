@@ -137,6 +137,15 @@ class ObservationRun:
     mention_evidence_ko: tuple[str, ...] = field(default=())
     mention_first_position: int | None = None
     mention_quote: str = ""
+    sightings: tuple[Any, ...] = field(default=())
+    """선언된 브랜드 전부에 대한 결과 — 우리 것과 경쟁사 것.
+
+    점유율(SOV)이 여기서 나온다. 우리 것만 남기면 나중에 비교를 만들 때 경쟁사
+    숫자를 **사람이 손으로 넣게** 되고, 손으로 넣은 값은 잰 값처럼 보이지만 아니다.
+
+    타입이 `Any` 인 것은 순환 참조 때문이다. `BrandSighting` 은 `runner` 에 있고
+    그 모듈이 이 모듈을 가져간다 — `citation_support` 가 문자열인 것과 같은 이유다.
+    """
     mention_raw_occurrences: int = 0
     citation_support: str | None = None
     """이 응답에서 **인용을 볼 수 있었는가**. `STRUCTURED` 이거나 아니거나.

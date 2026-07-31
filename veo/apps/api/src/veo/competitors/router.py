@@ -26,6 +26,10 @@ from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
+from veo.competitors.from_observation import (
+    ComparisonSetTooSmallError,
+    observed_visibility_from_run,
+)
 from veo.competitors.schemas import (
     ComparisonCreateRequest,
     ComparisonPayload,
@@ -97,11 +101,24 @@ def create(
     directory: Directory,
     store: Store,
     request_id: RequestId,
+    db: DbSession,
 ) -> ApiResponse[ComparisonPayload]:
     try:
         record = create_comparison(
-            principal, payload, directory=directory, store=store
+            principal,
+            payload,
+            directory=directory,
+            store=store,
+            observed_visibility=lambda actor, run_id: observed_visibility_from_run(
+                db, actor, run_id
+            ),
         )
+    except ComparisonSetTooSmallError as exc:
+        # 측정이 거부된 것이 아니라 **비교 집합이 성립하지 않는** 경우다. 화면에서
+        # 안내할 말이 다르다 — "경쟁사를 먼저 등록해 주십시오".
+        raise api_error(422, ErrorCode.VALIDATION_FAILED, str(exc)) from exc
+    except LookupError as exc:
+        raise not_found(str(exc)) from exc
     except ReferenceNotFoundError as exc:
         raise not_found(exc.message_ko) from exc
     except MeasurementRejected as exc:

@@ -48,15 +48,37 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import final
 
-from veo.observations.detection.citations import match_citations, own_citations
+from veo.observations.detection.competitors import detect_answer
 from veo.observations.detection.disambiguation import BrandProfile
+from veo.observations.detection.mentions import MentionEvent, SpanSource
 from veo.observations.detection.mentions import MentionVerdict as DetectionVerdict
-from veo.observations.detection.mentions import SpanSource, detect_mentions
 from veo.observations.providers.base import CitationSupport
 from veo.observations.providers.storage import RecordedAnswer
-from veo.observations.runner import MentionVerdict
+from veo.observations.runner import BrandSighting, MentionVerdict
 
 __all__ = ["DisambiguatingMentionDetector"]
+
+
+def _sighting(event: MentionEvent) -> BrandSighting:
+    """탐지 결과 하나를 실행 기록이 들고 다니는 모양으로."""
+    # 본문에서 걸린 자리만 근거로 쓴다. 인용 구간의 좌표는 URL 문자열을 가리키므로
+    # 원문 답변에 대고 잘라내면 엉뚱한 글자가 나온다.
+    prose = next(
+        (span for span in event.spans if span.source is SpanSource.ANSWER_TEXT), None
+    )
+    return BrandSighting(
+        entity_key=event.entity_key,
+        is_own_brand=event.is_own_brand,
+        competitor_id=event.competitor_id,
+        mentioned=event.verdict is DetectionVerdict.CONFIRMED,
+        cited=event.is_cited,
+        needs_review=event.verdict is DetectionVerdict.NEEDS_REVIEW,
+        confidence=event.match_confidence if event.spans else None,
+        evidence_ko=event.evidence_ko,
+        first_position=prose.start if prose else None,
+        evidence_quote=prose.quote if prose else "",
+        raw_occurrence_count=event.raw_occurrence_count if event.spans else 0,
+    )
 
 
 @final
@@ -66,38 +88,51 @@ class DisambiguatingMentionDetector:
 
     이 클래스가 하는 일은 어댑터뿐이다. 판단은 전부 `detection` 안에 있고, 여기서
     다시 하지 않는다 — 규칙이 두 곳에 생기는 순간 다시 갈라지기 시작한다.
+
+    ## 경쟁사도 **같은 호출**로 본다
+
+    점유율은 비율이고, 비율은 그것을 이루는 두 숫자만큼만 정직하다. 우리 브랜드를
+    후하게 세고 경쟁사를 깐깐하게 세면 **산술을 한 글자도 안 고치고** 모든 점유율이
+    우리 쪽으로 기운다. 그리고 누가 감사를 한다면 들여다볼 곳은 산술이다.
+
+    그래서 `detect_answer` 하나를 부른다. 우리 쪽만 따로 부르는 경로를 남겨 두면
+    언젠가 두 쪽이 다른 규칙으로 갈라진다 — "경쟁사를 설명하는 문장 안에서만 나왔다"
+    같은 감점 신호는 양쪽에 대칭으로 걸려야 뜻이 있다.
     """
 
     profile: BrandProfile
+    #: 이 프로젝트가 선언한 경쟁사들. 비어 있으면 점유율을 낼 수 없다 — 그때는 낼 수
+    #: 없다고 말하지, 우리만 있는 100% 를 만들지 않는다.
+    competitors: tuple[BrandProfile, ...] = ()
 
     def judge(self, record: RecordedAnswer) -> MentionVerdict:
-        structured = record.citation_support is CitationSupport.STRUCTURED
-
         # 인용은 **구조화된 인용을 돌려준 응답에서만** 센다. 본문에 우리 주소가 적혀
-        # 있는 것은 그 엔진이 우리를 근거로 삼았다는 증거가 아니다. 이 규칙은 옛
-        # 판별기에서도 지키고 있었고, 여기서도 그대로 둔다.
-        matches = match_citations(record.citations, self.profile) if structured else ()
-
-        event = detect_mentions(record.text, self.profile, citations=matches)
-        confirmed = event.verdict is DetectionVerdict.CONFIRMED
-        pending = event.verdict is DetectionVerdict.NEEDS_REVIEW
-
-        # 본문에서 걸린 자리만 근거로 쓴다. 인용 구간의 좌표는 URL 문자열을 가리키므로
-        # 원문 답변에 대고 잘라내면 엉뚱한 글자가 나온다.
-        prose = next(
-            (span for span in event.spans if span.source is SpanSource.ANSWER_TEXT), None
+        # 있는 것은 그 엔진이 우리를 근거로 삼았다는 증거가 아니다.
+        citations = (
+            record.citations
+            if record.citation_support is CitationSupport.STRUCTURED
+            else ()
         )
 
+        detected = detect_answer(
+            record.text,
+            own=self.profile,
+            competitors=self.competitors,
+            citations=citations,
+        )
+        own = _sighting(detected.own)
+
         return MentionVerdict(
-            mentioned=confirmed,
+            mentioned=own.mentioned,
             # 확정되지 않은 언급 위에 인용을 세울 수 없다. 누구인지 모르는 이름에
             # 붙은 인용은 그 사람의 인용이 아니다.
-            cited=confirmed and bool(own_citations(matches)),
-            matched_entities=(event.entity_key,) if confirmed else (),
-            needs_review=pending,
-            confidence=event.match_confidence if event.spans else None,
-            evidence_ko=event.evidence_ko,
-            first_position=prose.start if prose else None,
-            evidence_quote=prose.quote if prose else "",
-            raw_occurrence_count=event.raw_occurrence_count if event.spans else 0,
+            cited=own.cited,
+            matched_entities=(own.entity_key,) if own.mentioned else (),
+            needs_review=own.needs_review,
+            confidence=own.confidence,
+            evidence_ko=own.evidence_ko,
+            first_position=own.first_position,
+            evidence_quote=own.evidence_quote,
+            raw_occurrence_count=own.raw_occurrence_count,
+            sightings=(own, *(_sighting(event) for event in detected.competitors)),
         )

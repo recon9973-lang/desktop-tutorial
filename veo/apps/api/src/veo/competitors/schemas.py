@@ -126,7 +126,14 @@ class ParticipantVisibilityInput(BaseModel):
 
 
 class ObservedVisibilityInput(BaseModel):
-    """Optional: what the answer engines actually said, kept apart from the score."""
+    """**손으로 넣는** 가시성 수치. 잰 값이 아니다.
+
+    이 경로는 관측을 아직 못 돌린 경우를 위해 남겨 둔다. 넣은 값은 그대로 계산되지만,
+    결과에 **사람이 넣은 값**이라는 표시가 함께 나간다 — 손으로 적은 숫자는 잰 값처럼
+    보이지만 대조할 원본이 없고, 틀려도 아무도 모른다(0-A).
+
+    잰 값을 쓰려면 `observation_run_id` 를 넘겨라.
+    """
 
     model_config = _STRICT
 
@@ -149,11 +156,34 @@ class ComparisonCreateRequest(BaseModel):
         "제공자·측정 시점 차이는 이 옵션으로도 통과하지 않습니다. 허용해도 그 차이는 "
         "결과에 그대로 남습니다.",
     )
+    observation_run_id: uuid.UUID | None = Field(
+        default=None,
+        description="점유율을 **이 관측 실행에서 계산합니다.** 응답 단위로 세고, 동명 "
+        "업체와 갈리지 않아 보류된 언급은 분자에 넣지 않으며, 한 프롬프트에서 최다가 "
+        "둘 이상이면 승자를 판정하지 않습니다.\n\n"
+        "경쟁사가 하나도 등록돼 있지 않으면 거부합니다 — 참여자가 우리뿐이면 점유율이 "
+        "언제나 100%로 나오는데, 그 값은 측정이 아니라 비교 대상이 없다는 사실입니다.",
+    )
     observed_visibility: ObservedVisibilityInput | None = Field(
         default=None,
-        description="관측된 AI 가시성입니다. 준비도 점수와 합산되지 않고 별도 블록으로 "
-        "반환됩니다.",
+        description="**사람이 손으로 넣는** 가시성 수치입니다. 관측을 아직 못 돌린 경우를 "
+        "위해 남겨 두었으며, 결과에 '사람이 넣은 값' 표시가 함께 나갑니다. 잰 값을 쓰려면 "
+        "`observation_run_id` 를 쓰십시오.",
     )
+
+    @model_validator(mode="after")
+    def _one_source_of_visibility(self) -> ComparisonCreateRequest:
+        """둘 다 주면 어느 쪽이 계산됐는지 결과만 보고는 알 수 없다.
+
+        잰 값과 손으로 넣은 값이 한 요청에 함께 오면, 읽는 사람은 화면의 숫자가 어디서
+        왔는지 물을 자리가 없어진다. 하나만 받는다.
+        """
+        if self.observation_run_id is not None and self.observed_visibility is not None:
+            raise ValueError(
+                "관측 실행과 손으로 넣은 수치를 동시에 줄 수 없습니다. 둘 다 주면 화면의 "
+                "숫자가 잰 값인지 적은 값인지 구분할 수 없습니다."
+            )
+        return self
 
     @model_validator(mode="after")
     def _reject_repeated_competitors(self) -> ComparisonCreateRequest:

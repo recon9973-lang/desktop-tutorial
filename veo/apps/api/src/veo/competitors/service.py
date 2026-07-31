@@ -27,7 +27,7 @@ Two integrity rules live in this module, both of which refuse rather than repair
 from __future__ import annotations
 
 import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Protocol
@@ -347,6 +347,7 @@ def create_comparison(
     *,
     directory: CompetitorDirectory,
     store: ComparisonStore,
+    observed_visibility: Callable[[Principal, uuid.UUID], ObservedVisibility] | None = None,
 ) -> ComparisonRecord:
     """Resolve, compare, and keep the result.
 
@@ -394,11 +395,21 @@ def create_comparison(
     except ValueError as exc:
         raise MeasurementRejected(str(exc)) from exc
 
-    visibility = (
-        share_of_voice(build_observation(request.observed_visibility))
-        if request.observed_visibility is not None
-        else None
-    )
+    # 점유율의 출처를 결과에 못 박는다. 이 표시가 없으면 손으로 적은 숫자가 잰 값과
+    # 같은 모양으로 화면에 서고, 읽는 사람은 물을 자리조차 없다(0-A).
+    visibility = None
+    visibility_source = None
+    if request.observation_run_id is not None:
+        if observed_visibility is None:
+            raise MeasurementRejected(
+                "관측 실행에서 점유율을 계산할 수 없습니다. 이 배포에는 관측 조회 경로가 "
+                "연결되어 있지 않습니다."
+            )
+        visibility = share_of_voice(observed_visibility(principal, request.observation_run_id))
+        visibility_source = "OBSERVED"
+    elif request.observed_visibility is not None:
+        visibility = share_of_voice(build_observation(request.observed_visibility))
+        visibility_source = "HAND_ENTERED"
 
     return store.save(
         ComparisonRecord(
@@ -407,7 +418,7 @@ def create_comparison(
             project_id=request.project_id,
             created_at=datetime.now(UTC),
             created_by=principal.user_id,
-            payload=comparison_payload(result, visibility),
+            payload=comparison_payload(result, visibility, visibility_source),
         )
     )
 
@@ -432,11 +443,19 @@ def get_comparison(
 
 
 def comparison_payload(
-    result: ComparisonResult, visibility: ShareOfVoiceReport | None
+    result: ComparisonResult,
+    visibility: ShareOfVoiceReport | None,
+    source: str | None = None,
 ) -> dict[str, Any]:
-    """The stored, returned document. Readiness and observation stay in separate blocks."""
+    """The stored, returned document. Readiness and observation stay in separate blocks.
+
+    ``source`` 는 점유율 숫자가 **어디서 왔는지** 다 — `OBSERVED`(관측 실행에서 계산)
+    인지 `HAND_ENTERED`(사람이 적어 넣음)인지. 이 표시가 없으면 손으로 적은 숫자가 잰
+    값과 같은 모양으로 화면에 서고, 읽는 사람은 물을 자리조차 없다(0-A).
+    """
     document = result.as_dict()
     document["share_of_voice"] = visibility.as_dict() if visibility is not None else None
+    document["share_of_voice_source"] = source
     document["separation_note_ko"] = SEPARATION_NOTE_KO
     return document
 

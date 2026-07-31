@@ -108,6 +108,27 @@ def brand_target_for(
     return BrandTarget(names=tuple(dict.fromkeys(names)), domains=domains), row
 
 
+def competitor_profiles_for(
+    session: Session, principal: Principal, project_id: uuid.UUID
+) -> tuple[BrandProfile, ...]:
+    """이 프로젝트가 선언한 경쟁사들 — **우리와 같은 표, 같은 모양**으로 읽는다.
+
+    점유율은 비율이고, 비율은 그것을 이루는 두 숫자만큼만 정직하다. 우리 브랜드에는
+    주소·전화번호를 다 채워 두고 경쟁사는 이름만 적어 두면, 경쟁사 쪽이 더 자주 검수
+    보류로 떨어져 **분자에서 빠진다.** 산술을 한 글자도 안 고치고 우리 점유율이 오른다.
+    `describe_identity_asymmetry_ko` 가 그 비대칭을 말하라고 있는 이유다.
+    """
+    statement = (
+        tenant_select(BrandIdentity, principal)
+        .where(BrandIdentity.project_id == project_id)
+        .where(BrandIdentity.competitor_id.is_not(None))
+        .where(BrandIdentity.is_active.is_(True))
+        .order_by(BrandIdentity.entity_key)
+    )
+    assert_tenant_scoped(statement, principal.organization_id)
+    return tuple(brand_profile_for(row) for row in session.scalars(statement))
+
+
 def brand_profile_for(row: BrandIdentity) -> BrandProfile:
     """저장된 선언을 판별기가 읽는 형태로 — **전부** 옮긴다.
 
@@ -227,6 +248,7 @@ def execute_observation(
     prompt_set = prompt_set_of(prompt_set_row, prompt_rows)
     brand, identity = brand_target_for(session, principal, prompt_set_row.project_id)
     profile = brand_profile_for(identity)
+    rivals = competitor_profiles_for(session, principal, prompt_set_row.project_id)
 
     resolved_registry = registry if registry is not None else engine_registry()
     runner = ObservationRunner(
@@ -234,7 +256,7 @@ def execute_observation(
         store=store
         if store is not None
         else answer_store(principal.organization_id, settings=resolved, session=session),
-        detector=DisambiguatingMentionDetector(profile),
+        detector=DisambiguatingMentionDetector(profile, rivals),
         max_concurrency=resolved.observation_max_concurrency,
         budget_usd=resolved.observation_budget_usd,
         repetition_interval=timedelta(
@@ -424,25 +446,30 @@ def _persist(
         # `match_confidence` 는 판별기가 낸 값을 그대로 적는다. 예전에는 여기에 1.0 이
         # 박혀 있었다 — 그 칸은 "얼마나 확신하는가" 를 묻는 칸인데, 무엇이 들어오든
         # 만점을 적고 있었다(0-A).
-        entities = run.mentioned_entities or (
-            (profile.entity_key,) if run.mention_pending_review else ()
-        )
-        for entity in entities:
+        # **경쟁사도 같은 표에 같은 모양으로** 남긴다. 우리 것만 남기면 나중에 점유율을
+        # 낼 때 경쟁사 숫자를 사람이 손으로 넣게 되고(#23), 손으로 넣은 값은 잰 값처럼
+        # 보이지만 아니다. 탐지는 이미 한 번의 호출로 양쪽을 함께 봤다.
+        for sighting in run.sightings:
+            if not (sighting.mentioned or sighting.needs_review):
+                continue  # 이름이 아예 안 나온 브랜드는 남길 것이 없다.
             session.add(
                 EntityMention(
                     organization_id=principal.organization_id,
                     ai_answer_id=answer.id,
-                    entity_key=entity,
-                    is_own_brand=True,
-                    raw_occurrence_count=max(run.mention_raw_occurrences, 1),
-                    first_position=run.mention_first_position,
-                    match_confidence=run.mention_confidence
-                    if run.mention_confidence is not None
-                    else 0.0,
-                    needs_human_disambiguation=run.mention_pending_review,
+                    entity_key=sighting.entity_key,
+                    is_own_brand=sighting.is_own_brand,
+                    competitor_id=(
+                        uuid.UUID(sighting.competitor_id) if sighting.competitor_id else None
+                    ),
+                    raw_occurrence_count=max(sighting.raw_occurrence_count, 1),
+                    first_position=sighting.first_position,
+                    match_confidence=(
+                        sighting.confidence if sighting.confidence is not None else 0.0
+                    ),
+                    needs_human_disambiguation=sighting.needs_review,
                     review_state=(
                         ReviewState.PENDING_REVIEW.value
-                        if run.mention_pending_review
+                        if sighting.needs_review
                         else ReviewState.NOT_REVIEWED.value
                     ),
                 )
@@ -494,6 +521,7 @@ __all__ = [
     "answer_store",
     "brand_profile_for",
     "brand_target_for",
+    "competitor_profiles_for",
     "execute_observation",
 ]
 

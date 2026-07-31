@@ -69,7 +69,8 @@
 | 가시성 지표 10종 (마스터 §7.3) | **7/10.** 없는 것: 출처 다양성 · 추천 포함 · 안정성(변동) | grep: `source_diversity`·`recommendation_inclusion` 0건 |
 | 자동 판정과 사람 검수 분리 | **연결됨.** 보류된 언급이 `claim_assessments` 행이 되고(`observations/findings.py`), `GET /observations/runs/{id}/risks` 가 **공개 게이트를 지난 뒤** 돌려준다. 다만 재는 위험 유형은 8종 중 1종(동명 업체 혼동)이고 나머지 7종은 이유와 함께 공개한다 | `TestHeldMentionsBecomeReviewableFindings` · `TestWhatTheCustomerDocumentMayContain` |
 | 검수자가 판정을 뒤집는 경로 | **연결됨.** `GET/POST /observations/review-queue/…` 와 `/console/review` 화면. 점유는 DB 행에 있으므로 서버가 두 대여도 같은 건을 두 사람이 판정하지 못한다. 착수 없이 판정하는 길은 전이 표가 막는다 | `test_review_service_postgres.py` · `test_review_queue_api.py` |
-| 관측 SOV 를 실측에서 계산 | **미연결.** `competitors/sov.py` 는 완성됐으나 입력이 요청 본문(`ObservedVisibilityInput`)이라 사람이 숫자를 넣어야 한다 | — |
+| 관측 SOV 를 실측에서 계산 | **연결됨.** `observation_run_id` 를 주면 `competitors/from_observation.py` 가 실행에서 센다 — 응답 단위, 보류 제외, 비긴 프롬프트는 분모에서도 제외. 손으로 넣는 경로는 남아 있으나 결과에 `share_of_voice_source=HAND_ENTERED` 가 붙는다 | `test_sov_from_observation_postgres.py` |
+| 경쟁사를 답변에서 탐지 | **연결됨.** `detect_answer` 한 번으로 우리와 경쟁사를 같은 규칙·같은 호출로 본다. 경쟁사 인용은 아직 못 잰다 — `citations.is_own_domain` 이 자사 기준이라 경쟁사 도메인은 구분되지 않는다 | `test_sov_from_observation_postgres.py` |
 | 관측을 비동기로 실행 | **완료.** 202 + `GET /api/jobs/{id}` 로 진행률 조회. 작업 본문은 `observations/jobs.py` | `TestTheJobPath` |
 
 ## 4. 네이버 키워드 (마스터 §8)
