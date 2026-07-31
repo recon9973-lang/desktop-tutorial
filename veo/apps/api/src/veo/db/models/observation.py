@@ -224,6 +224,29 @@ class AIAnswer(Base, OrganizationScopedMixin, ImmutableMixin):
         ),
     )
 
+    #: `cost_usd` 가 비어 있을 때 **왜** 비었는지.
+    #:
+    #: 위 주석은 이미 "이유는 셋 중 하나" 라고 적어 두었지만, 그 이유를 담는 칸이
+    #: 없었다. 제공자 어댑터가 계산해 원문 저장소에는 실었는데 DB 까지 오지 못했다.
+    #: 그래서 "이번 달 얼마 썼나" 에 "모른다" 까지는 답해도 **무엇을 고쳐야 하는지**
+    #: 는 답할 수 없었다 — 가격표에 모델이 없는 것과 호출이 실패한 것은 처방이 다르다.
+    cost_basis: Mapped[str | None] = mapped_column(
+        String(48),
+        nullable=True,
+        comment=(
+            "CALCULATED_FROM_USAGE | NO_PRICE_CONFIGURED | NO_USAGE_REPORTED | "
+            "PRICE_TABLE_STALE"
+        ),
+    )
+
+    #: 실제로 오간 토큰.
+    #:
+    #: 가격표가 비어 있어도 이건 잴 수 있다. 가격을 모른다고 사용량까지 모르는 것은
+    #: 아니고, 토큰 수는 지출을 가늠할 수 있는 유일한 확실한 숫자다. 제공자 응답에서
+    #: 이미 읽고 있었는데 버리고 있었다.
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
 
 class AnswerDocument(Base, OrganizationScopedMixin, ImmutableMixin):
     """원문 AI 답변 자체. `ai_answers` 가 가리키는 실제 내용.

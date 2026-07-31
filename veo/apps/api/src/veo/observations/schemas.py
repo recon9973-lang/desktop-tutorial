@@ -147,6 +147,7 @@ class PromptSetListPayload(BaseModel):
 __all__ = [
     "EngineChoiceInput",
     "EnginePayload",
+    "EngineSpendPayload",
     "EngineStatus",
     "ExclusionInput",
     "ObservationRunDetailPayload",
@@ -159,6 +160,7 @@ __all__ = [
     "PromptSetPayload",
     "PromptSummary",
     "RatePayload",
+    "SpendPayload",
     "VisibilityMetricsPayload",
 ]
 
@@ -479,3 +481,42 @@ class ReviewedItemPayload(BaseModel):
             "고쳐야 하는 자리입니다."
         )
     )
+
+class EngineSpendPayload(BaseModel):
+    """엔진 하나가 이 달에 쓴 만큼."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    engine: str
+    calls: int
+    input_tokens: int
+    output_tokens: int
+    measured_cost_usd: float
+    #: 이 엔진에서 금액을 낼 수 없었던 호출 수.
+    unmeasurable_calls: int
+
+
+class SpendPayload(BaseModel):
+    """이번 달 지출 — 잰 것과 못 잰 것을 나눠서.
+
+    `measured_cost_usd` 에 못 잰 호출을 0으로 더하지 않는다. 더하면 합계가 "예산 안"
+    처럼 보이는데 자료가 그걸 뒷받침하지 않는다. 그래서 `unmeasurable_calls` 와
+    `remedies_ko` 가 같은 무게로 함께 나간다.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    month: str
+    total_calls: int
+    measured_calls: int
+    unmeasurable_calls: int
+    measured_cost_usd: float
+    input_tokens: int
+    output_tokens: int
+    #: COMPLETE | PARTIAL | NONE — 금액이 얼마나 실측인지.
+    measurement: str
+    engines: list[EngineSpendPayload] = Field(default_factory=list)
+    #: 금액을 알 수 있게 하려면 지금 무엇을 해야 하는지. 해당하는 것만.
+    remedies_ko: list[str] = Field(default_factory=list)
+    summary_ko: str
+

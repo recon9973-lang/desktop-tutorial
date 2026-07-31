@@ -362,3 +362,49 @@ export async function scanGeoReadiness(
     timeoutMs: 120_000,
   });
 }
+
+/**
+ * 이번 달 AI 호출 사용량과 비용.
+ *
+ * `measured_cost_usd` 에 **금액을 못 낸 호출이 0원으로 더해져 있지 않다.** 더하면
+ * 합계가 "예산 안" 처럼 보이는데 자료가 그것을 뒷받침하지 않는다. 그래서
+ * `unmeasurable_calls` 와 `remedies_ko` 를 같은 무게로 함께 보인다.
+ */
+export interface EngineSpend {
+  readonly engine: string;
+  readonly calls: number;
+  readonly input_tokens: number;
+  readonly output_tokens: number;
+  readonly measured_cost_usd: number;
+  readonly unmeasurable_calls: number;
+}
+
+export interface Spend {
+  readonly month: string;
+  readonly total_calls: number;
+  readonly measured_calls: number;
+  readonly unmeasurable_calls: number;
+  readonly measured_cost_usd: number;
+  readonly input_tokens: number;
+  readonly output_tokens: number;
+  /** COMPLETE | PARTIAL | NONE — 금액이 얼마나 실측인지. */
+  readonly measurement: string;
+  readonly engines: readonly EngineSpend[];
+  readonly remedies_ko: readonly string[];
+  readonly summary_ko: string;
+}
+
+export const MEASUREMENT_LABELS_KO: Record<string, string> = {
+  COMPLETE: '모든 호출에 가격이 적용되었습니다',
+  PARTIAL: '일부 호출만 금액을 낼 수 있었습니다',
+  NONE: '금액을 낸 호출이 하나도 없습니다',
+};
+
+export function measurementLabel(value: string): string {
+  return MEASUREMENT_LABELS_KO[value] ?? value;
+}
+
+export async function readSpend(month: string | null): Promise<ConsoleOutcome<Spend>> {
+  const query = month === null ? '' : `?month=${encodeURIComponent(month)}`;
+  return callConsoleApi(`/api/observations/spend${query}`);
+}

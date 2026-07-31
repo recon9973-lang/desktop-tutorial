@@ -324,6 +324,10 @@ class _UnitResult:
     latency_ms: int
     cost_usd: float | None
     called_provider: bool
+    #: 값을 못 낸 이유. 실패한 호출에도 붙는다 — 실패도 과금될 수 있다.
+    cost_basis: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -555,6 +559,9 @@ class ObservationRunner:
                 latency_ms=record.latency_ms,
                 cost_usd=record.cost_usd,
                 called_provider=False,
+                cost_basis=str(record.cost_basis),
+                input_tokens=record.input_tokens,
+                output_tokens=record.output_tokens,
             )
 
         provider = self._registry.resolve(unit.engine)
@@ -574,6 +581,11 @@ class ObservationRunner:
                 latency_ms=outcome.latency_ms,
                 cost_usd=outcome.cost_usd,
                 called_provider=True,
+                # 실패한 호출도 시간을 썼고 과금됐을 수 있다. 아무것도 안 남기면
+                # 성공한 호출의 비용만으로 다음 실행이 승인된다.
+                cost_basis=str(outcome.cost_basis),
+                input_tokens=outcome.input_tokens,
+                output_tokens=outcome.output_tokens,
             )
 
         record = RecordedAnswer(
@@ -641,6 +653,9 @@ class ObservationRunner:
                 brand_cited=False,
                 latency_ms=result.latency_ms,
                 cost_usd=result.cost_usd,
+                cost_basis=result.cost_basis,
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
                 error_code=result.error_code,
             )
 
@@ -662,6 +677,9 @@ class ObservationRunner:
             citation_support=str(record.citation_support),
             latency_ms=record.latency_ms,
             cost_usd=record.cost_usd,
+            cost_basis=str(record.cost_basis),
+            input_tokens=record.input_tokens,
+            output_tokens=record.output_tokens,
             error_code=None,
             citations=record.citations,
             mentioned_entities=verdict.matched_entities,

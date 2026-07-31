@@ -121,6 +121,19 @@ class ObservationRun:
     brand_cited: bool
     latency_ms: int | None = None
     cost_usd: float | None = None
+    #: 비용을 못 냈다면 **왜** 못 냈는지. 다섯 가지고, 처방이 각각 다르다.
+    #:
+    #: 이 값은 제공자 어댑터가 계산해 놓고 여기까지 오지 못했다. 그래서 저장된 실행을
+    #: 두고 "이번 달 얼마 썼나" 를 물으면 "모른다" 까지는 답할 수 있어도 "가격표에
+    #: 모델이 없어서" 인지 "호출이 실패해서" 인지는 답할 수 없었다 — 고쳐야 할 것이
+    #: 완전히 다른데도.
+    cost_basis: str | None = None
+    #: 실제로 오간 토큰. 가격표가 비어 있어도 **이건 잴 수 있다.**
+    #:
+    #: 가격이 없다고 사용량까지 모르는 것은 아니다. 토큰 수는 지금 유일하게 확실한
+    #: 지출 신호이고, 제공자 응답에서 이미 읽고 있었다.
+    input_tokens: int | None = None
+    output_tokens: int | None = None
     error_code: str | None = None
     citations: tuple[str, ...] = field(default=())
     mentioned_entities: tuple[str, ...] = field(default=())
@@ -206,6 +219,9 @@ class ObservationRun:
             "mentioned_entities": list(self.mentioned_entities),
             "latency_ms": self.latency_ms,
             "cost_usd": self.cost_usd,
+            "cost_basis": self.cost_basis,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
             "error_code": self.error_code,
             "is_valid_execution": self.is_valid_execution,
         }

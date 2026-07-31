@@ -1,0 +1,115 @@
+/* 사용량·비용.
+ *
+ * 이 화면이 절대 하지 말아야 하는 것: **$0.00 을 크게, 혼자 보이는 것.** 그러면 그것이
+ * 이 달의 지출 전부라는 뜻으로 읽힌다. 금액 옆에는 늘 '얼마나 실측인지' 가 붙고, 못 잰
+ * 호출이 있으면 그 사실이 같은 무게로 나온다.
+ */
+
+.totals {
+  margin: 0 0 var(--veo-space-4);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--veo-space-3);
+}
+
+.figure,
+.figureWarn {
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+}
+
+/* 금액을 다 재지 못했으면 그 칸을 갈라 놓는다. 색만으로 구분하지 않는다. */
+.figureWarn {
+  border-left: 3px solid var(--veo-color-warning);
+}
+
+.figure dt,
+.figureWarn dt {
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+.figureValue {
+  margin: var(--veo-space-1) 0 0;
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.figureNote {
+  margin: var(--veo-space-1) 0 0;
+  font-size: var(--veo-font-size-100);
+  line-height: 1.5;
+}
+
+.unmeasured {
+  margin: 0;
+  padding: var(--veo-space-4);
+  border-left: 3px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.remedies {
+  margin: 0;
+  padding-left: var(--veo-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.engineList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+}
+
+.engine {
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+}
+
+.engineHead {
+  margin: 0 0 var(--veo-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--veo-space-2);
+}
+
+.engineName {
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.engineCalls {
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.engineMeta {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.engineWarn {
+  margin: var(--veo-space-2) 0 0;
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  line-height: 1.6;
+}

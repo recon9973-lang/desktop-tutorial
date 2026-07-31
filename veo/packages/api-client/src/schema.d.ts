@@ -1072,6 +1072,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/spend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 이번 달 AI 호출 사용량과 비용
+         * @description 저장된 답변에서 셉니다. **금액을 못 낸 호출을 0원으로 더하지 않습니다** — 더하면 합계가 '예산 안'처럼 보이는데 자료가 그것을 뒷받침하지 않습니다.
+         *
+         *     가격표가 비어 있어도 이 응답은 쓸모가 있습니다. 호출 수와 토큰 수는 언제나 실측이고, 금액을 못 낸 이유마다 무엇을 하면 되는지가 함께 나옵니다.
+         */
+        get: operations["spend_api_observations_spend_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/organizations/current": {
         parameters: {
             query?: never;
@@ -2107,6 +2129,12 @@ export interface components {
         /** ApiResponse[SpecListPayload] */
         ApiResponse_SpecListPayload_: {
             data?: components["schemas"]["SpecListPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[SpendPayload] */
+        ApiResponse_SpendPayload_: {
+            data?: components["schemas"]["SpendPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -3276,6 +3304,24 @@ export interface components {
             note_ko: string;
             /** Usable Count */
             usable_count: number;
+        };
+        /**
+         * EngineSpendPayload
+         * @description 엔진 하나가 이 달에 쓴 만큼.
+         */
+        EngineSpendPayload: {
+            /** Calls */
+            calls: number;
+            /** Engine */
+            engine: string;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Measured Cost Usd */
+            measured_cost_usd: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Unmeasurable Calls */
+            unmeasurable_calls: number;
         };
         /**
          * EngineStatus
@@ -6742,6 +6788,38 @@ export interface components {
             version: string;
         };
         /**
+         * SpendPayload
+         * @description 이번 달 지출 — 잰 것과 못 잰 것을 나눠서.
+         *
+         *     `measured_cost_usd` 에 못 잰 호출을 0으로 더하지 않는다. 더하면 합계가 "예산 안"
+         *     처럼 보이는데 자료가 그걸 뒷받침하지 않는다. 그래서 `unmeasurable_calls` 와
+         *     `remedies_ko` 가 같은 무게로 함께 나간다.
+         */
+        SpendPayload: {
+            /** Engines */
+            engines?: components["schemas"]["EngineSpendPayload"][];
+            /** Input Tokens */
+            input_tokens: number;
+            /** Measured Calls */
+            measured_calls: number;
+            /** Measured Cost Usd */
+            measured_cost_usd: number;
+            /** Measurement */
+            measurement: string;
+            /** Month */
+            month: string;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Remedies Ko */
+            remedies_ko?: string[];
+            /** Summary Ko */
+            summary_ko: string;
+            /** Total Calls */
+            total_calls: number;
+            /** Unmeasurable Calls */
+            unmeasurable_calls: number;
+        };
+        /**
          * StoreCredentialRequest
          * @description The one model that carries a secret, and only inbound.
          *
@@ -9224,6 +9302,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_RiskFindingsPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    spend_api_observations_spend_get: {
+        parameters: {
+            query?: {
+                /** @description 예: 2026-07 */
+                month?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SpendPayload_"];
                 };
             };
             /** @description Validation Error */

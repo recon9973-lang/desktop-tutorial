@@ -182,6 +182,7 @@
 | 발행 버전 불변 | `veo/lab/versions.py` — PUBLISHED 수정 거부 | `tests/lab/` |
 | 재계산 시 원 점수·재계산 점수 병존 | `veo/lab/rescore.py` — 새 행 기록, 원본 무변경 | `tests/lab/` |
 | 보고서는 versioned snapshot | `veo/reports/snapshot.py`, `ReportVersion`(ImmutableMixin) | `tests/reports/` |
+| 호출 사용량과 비용 | `ai_answers.cost_basis`·`input_tokens`·`output_tokens` · `veo/observability/spend.py` · `/console/usage` | `tests/observability/test_spend_postgres.py` |
 | 리포트 숫자는 실측에서만 | `veo/reports/from_scan.py` · `POST /reports/from-scan` · 화면에 점수 입력칸 없음 | `tests/reports/test_report_from_scan.py` |
 | 역할별 보기(경영진·마케팅·개발자) | `veo/reports/views.py` — 한 스냅샷에서 파생 | `tests/reports/` |
 | HTML/CSV/XLSX 내보내기 | `veo/reports/render/` | `tests/reports/` |
@@ -230,7 +231,7 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 | 답변 위험 — 언어모델 판정 | 인용 함의·주장 정확성 등 7종은 어댑터·대조 자료가 없어 아직 만들지 않는다 (이유는 `kinds_not_yet_produced` 가 공개) |
 | Celery 워커 | 태스크 전부 스텁, `.delay()` 호출 0건. **작업은 `veo/jobs/` 의 배경 스레드가 돈다** — 브로커가 생기면 이쪽으로 옮긴다 |
 | 관측 SOV | 입력이 요청 본문이라 실측과 연결 안 됨 |
-| 사용량·비용 | `APIUsageEvent` 참조 0건 |
+| 사용량·비용 | AI 호출은 `ai_answers` 에 기록되고 `/console/usage` 가 읽는다. **네이버·PageSpeed 호출은 아직 기록되지 않는다** (`APIUsageEvent` 참조 0건) |
 
 **아직 없다**
 

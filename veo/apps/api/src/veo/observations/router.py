@@ -30,6 +30,7 @@ from veo.jobs import service as jobs
 from veo.jobs.execution import run_detached
 from veo.jobs.router import job_payload
 from veo.jobs.schemas import JobPayload
+from veo.observability.spend import spend_for_month
 from veo.observations import review_service
 from veo.observations.execution import EngineChoice, answer_facts
 from veo.observations.findings import assessment_kinds_not_yet_produced, reviews_for_run
@@ -48,6 +49,7 @@ from veo.observations.review.gating import apply_publication_gate
 from veo.observations.runs import AccountState, SearchMode
 from veo.observations.schemas import (
     EnginePayload,
+    EngineSpendPayload,
     EngineStatus,
     ObservationRunDetailPayload,
     ObservationRunListPayload,
@@ -62,6 +64,7 @@ from veo.observations.schemas import (
     ReviewQueueItem,
     ReviewQueuePayload,
     RiskFindingsPayload,
+    SpendPayload,
     VisibilityMetricsPayload,
 )
 from veo.observations.service import (
@@ -86,6 +89,7 @@ ObservationRunner_ = Annotated[Principal, Depends(guard(Permission.OBSERVATION_R
 #: 위험 지적을 확정하는 것은 **고객에게 그의 평판에 대해 무엇을 말할지** 정하는 일이다.
 #: 보고서 발행과 같은 급이라 별도 권한으로 둔다.
 ObservationReviewer = Annotated[Principal, Depends(guard(Permission.OBSERVATION_REVIEW))]
+UsageReader = Annotated[Principal, Depends(guard(Permission.USAGE_READ))]
 
 @router.get(
     "/engines",
@@ -323,6 +327,53 @@ def run(
         )
 
     return ok(job_payload(job), request_id)
+
+
+@router.get(
+    "/spend",
+    response_model=ApiResponse[SpendPayload],
+    summary="이번 달 AI 호출 사용량과 비용",
+    description=(
+        "저장된 답변에서 셉니다. **금액을 못 낸 호출을 0원으로 더하지 않습니다** — "
+        "더하면 합계가 '예산 안'처럼 보이는데 자료가 그것을 뒷받침하지 않습니다.\n\n"
+        "가격표가 비어 있어도 이 응답은 쓸모가 있습니다. 호출 수와 토큰 수는 언제나 "
+        "실측이고, 금액을 못 낸 이유마다 무엇을 하면 되는지가 함께 나옵니다."
+    ),
+)
+def spend(
+    principal: UsageReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+    month: Annotated[str | None, Query(pattern=r"^\d{4}-\d{2}$", description="예: 2026-07")] = None,
+) -> ApiResponse[SpendPayload]:
+    report = spend_for_month(db, principal=principal, month=month)
+    budget = report.budget
+    return ok(
+        SpendPayload(
+            month=budget.month,
+            total_calls=report.total_calls,
+            measured_calls=budget.measured_calls,
+            unmeasurable_calls=budget.unmeasurable_calls,
+            measured_cost_usd=budget.spent_usd,
+            input_tokens=report.input_tokens,
+            output_tokens=report.output_tokens,
+            measurement=str(budget.measurement),
+            engines=[
+                EngineSpendPayload(
+                    engine=usage.engine,
+                    calls=usage.calls,
+                    input_tokens=usage.input_tokens,
+                    output_tokens=usage.output_tokens,
+                    measured_cost_usd=usage.measured_cost_usd,
+                    unmeasurable_calls=usage.unmeasurable_calls,
+                )
+                for usage in report.engines
+            ],
+            remedies_ko=list(report.remedies_ko()),
+            summary_ko=budget.alert_line_ko(),
+        ),
+        request_id,
+    )
 
 
 @router.get(

@@ -106,6 +106,12 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     permission: 'report:read',
   },
   {
+    href: '/console/usage',
+    label: '사용량·비용',
+    description: 'AI 호출과 이번 달 지출',
+    permission: 'usage:read',
+  },
+  {
     href: '/console/scoring-versions',
     label: '채점 기준 버전',
     description: '적용 중인 채점 명세',

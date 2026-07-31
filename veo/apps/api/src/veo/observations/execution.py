@@ -421,6 +421,10 @@ def _persist(
             latency_ms=run.latency_ms,
             cost_usd=run.cost_usd,
             cost_krw=None,
+            # 값을 못 낸 이유와 실제 토큰 수. 가격표가 비어 있어도 사용량은 남는다.
+            cost_basis=run.cost_basis,
+            input_tokens=run.input_tokens,
+            output_tokens=run.output_tokens,
         )
         session.add(answer)
         session.flush()
