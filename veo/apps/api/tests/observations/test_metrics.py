@@ -26,6 +26,9 @@ def _answer(
     mentioned: bool = False,
     cited: bool = False,
     support: str | None = "STRUCTURED",
+    engine: str = "OPENAI",
+    intent: str = "",
+    domains: tuple[str, ...] = (),
 ) -> AnswerFact:
     return AnswerFact(
         prompt_id=prompt,
@@ -33,6 +36,9 @@ def _answer(
         mentioned=mentioned,
         cited=cited,
         citation_support=support,
+        engine=engine,
+        intent=intent,
+        cited_domains=domains,
     )
 
 
@@ -258,3 +264,155 @@ class TestTheShapeOfTheAnswer:
         assert result.answers_recorded == 3
         assert result.answers_valid == 2
         assert result.answers_with_visible_citations == 1
+
+
+class TestSourceDiversity:
+    """엔진이 **몇 곳을** 인용하는가.
+
+    우리가 인용됐는지와 다른 질문이고, 인용률을 읽는 방법을 바꾼다. 두 곳만 인용하는
+    엔진에서의 20% 와 마흔 곳을 인용하는 엔진에서의 20% 는 같은 뜻이 아니다.
+    """
+
+    def test_it_counts_every_cited_domain_not_only_ours(self) -> None:
+        answers = [
+            _answer(prompt="q1", domains=("ondam.example", "blog.naver.com")),
+            _answer(prompt="q2", domains=("ondam.example", "news.example")),
+            _answer(prompt="q3", domains=("blog.naver.com",)),
+        ]
+
+        diversity = _metrics(answers).source_diversity
+
+        assert diversity.distinct_domains == 3
+        assert diversity.total_citations == 5
+        assert diversity.top_domains[0] == ("blog.naver.com", 2)
+
+    def test_a_narrow_source_set_says_so(self) -> None:
+        """인용 자리가 좁다는 것은 그 자체로 알아야 할 사실이다."""
+        answers = [_answer(prompt=f"q{index}", domains=("a.example",)) for index in range(3)]
+
+        diversity = _metrics(answers).source_diversity
+
+        assert diversity.caveat_ko is not None
+        assert "1곳뿐" in diversity.caveat_ko
+
+    def test_no_visible_citations_is_unmeasurable_not_zero(self) -> None:
+        """0곳이 아니라 측정 불가다. 둘을 같게 그리면 우리가 못 잰 것이 사실이 된다."""
+        answers = [
+            _answer(prompt="q1", support="NOT_EXPOSED_BY_PROVIDER"),
+            _answer(prompt="q2", support="NOT_EXPOSED_BY_PROVIDER"),
+        ]
+
+        diversity = _metrics(answers).source_diversity
+
+        assert diversity.is_measurable is False
+        assert diversity.caveat_ko is not None
+        assert "측정 불가" in diversity.caveat_ko
+
+    def test_a_failed_answer_contributes_no_sources(self) -> None:
+        answers = [_answer(prompt="q1", valid=False, domains=("ghost.example",))]
+
+        assert _metrics(answers).source_diversity.distinct_domains == 0
+
+
+class TestStability:
+    """같은 질문을 다시 물었을 때 답이 같았나.
+
+    언급률 50% 는 두 가지 전혀 다른 사실일 수 있다. 절반의 질문이 늘 우리를 말했거나,
+    모든 질문이 물을 때마다 뒤집혔거나. 고쳐야 할 것이 전혀 다르다.
+    """
+
+    def test_repeats_that_agree_are_consistent(self) -> None:
+        answers = [
+            _answer(prompt="q1", mentioned=True),
+            _answer(prompt="q1", mentioned=True),
+            _answer(prompt="q2", mentioned=False),
+            _answer(prompt="q2", mentioned=False),
+        ]
+
+        stability = _metrics(answers).stability
+
+        assert stability.repeated_groups == 2
+        assert stability.consistent_groups == 2
+        assert stability.unstable_groups == ()
+
+    def test_a_flipping_prompt_is_named(self) -> None:
+        answers = [
+            _answer(prompt="q1", mentioned=True),
+            _answer(prompt="q1", mentioned=False),
+            _answer(prompt="q2", mentioned=True),
+            _answer(prompt="q2", mentioned=True),
+        ]
+
+        stability = _metrics(answers).stability
+
+        assert stability.unstable_groups == (("q1", "OPENAI"),)
+        assert stability.consistent_groups == 1
+
+    def test_engines_are_not_pooled(self) -> None:
+        """한 엔진이 늘 말하고 다른 엔진이 한 번도 말하지 않으면, 합친 값은 두 사실을
+        모두 지운다."""
+        answers = [
+            _answer(prompt="q1", engine="OPENAI", mentioned=True),
+            _answer(prompt="q1", engine="OPENAI", mentioned=True),
+            _answer(prompt="q1", engine="ANTHROPIC", mentioned=False),
+            _answer(prompt="q1", engine="ANTHROPIC", mentioned=False),
+        ]
+
+        stability = _metrics(answers).stability
+
+        assert stability.repeated_groups == 2
+        assert stability.unstable_groups == ()
+
+    def test_asking_once_is_not_stability(self) -> None:
+        """한 번 물은 답은 흔들렸는지 알 수 없다. 안정적이라고 세지 않는다."""
+        answers = [_answer(prompt="q1", mentioned=True), _answer(prompt="q2", mentioned=True)]
+
+        stability = _metrics(answers).stability
+
+        assert stability.repeated_groups == 0
+        assert stability.is_measurable is False
+        assert stability.rate.value is None
+
+    def test_a_failed_answer_is_not_a_repetition(self) -> None:
+        answers = [
+            _answer(prompt="q1", mentioned=True),
+            _answer(prompt="q1", valid=False),
+        ]
+
+        assert _metrics(answers).stability.repeated_groups == 0
+
+
+class TestRecommendationPrompts:
+    """추천을 묻는 질문에서의 언급률.
+
+    이름 그대로여야 한다. "AI 가 우리를 추천했나" 가 아니다 — 그건 답변 문장을 읽어야
+    알 수 있고, 이름만 그렇게 붙이면 재지 않은 것을 잰 것처럼 보고하게 된다.
+    """
+
+    def test_only_recommendation_prompts_are_counted(self) -> None:
+        answers = [
+            _answer(prompt="q1", intent="RECOMMENDATION", mentioned=True),
+            _answer(prompt="q2", intent="RECOMMENDATION", mentioned=False),
+            _answer(prompt="q3", intent="INFORMATIONAL", mentioned=True),
+            _answer(prompt="q4", intent="INFORMATIONAL", mentioned=True),
+        ]
+
+        rate = _metrics(answers).recommendation_prompt_mention_rate
+
+        assert rate.successes == 1
+        assert rate.trials == 2
+
+    def test_it_says_what_it_does_not_measure(self) -> None:
+        answers = [_answer(prompt="q1", intent="RECOMMENDATION", mentioned=True)]
+
+        rate = _metrics(answers).recommendation_prompt_mention_rate
+
+        assert "추천했는지는" in rate.extra_qualifier_ko
+
+    def test_no_recommendation_prompts_is_no_data(self) -> None:
+        answers = [_answer(prompt="q1", intent="INFORMATIONAL", mentioned=True)]
+
+        rate = _metrics(answers).recommendation_prompt_mention_rate
+
+        assert rate.trials == 0
+        assert rate.value is None

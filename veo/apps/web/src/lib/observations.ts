@@ -50,6 +50,37 @@ export interface VisibilityMetrics {
   readonly mention_rate: Rate;
   readonly citation_rate: Rate;
   readonly prompt_coverage: Rate;
+  /**
+   * 추천을 묻는 질문에서 상호가 나온 비율.
+   *
+   * **AI 가 우리를 추천했는지가 아니다.** 그건 답변 문장을 읽어야 알 수 있고 아직
+   * 재지 않는다. 화면에서 이름을 줄여 '추천률' 로 쓰면 재지 않은 것을 잰 것처럼
+   * 보고하게 된다.
+   */
+  readonly recommendation_prompt_mention_rate: Rate;
+  /**
+   * 엔진이 이번 실행에서 몇 곳을 인용했나.
+   *
+   * 인용률을 읽는 방법을 바꾼다 — 두 곳만 인용하는 엔진에서의 20% 와 마흔 곳을
+   * 인용하는 엔진에서의 20% 는 같은 뜻이 아니다.
+   */
+  readonly source_diversity: {
+    readonly answers_with_visible_citations: number;
+    readonly distinct_domains: number;
+    readonly total_citations: number;
+    readonly top_domains: readonly { readonly domain: string; readonly citations: number }[];
+    /** 거짓이면 위 숫자는 0곳이 아니라 **측정 불가**다. */
+    readonly is_measurable: boolean;
+  };
+  /** 같은 질문을 같은 엔진에 다시 물었을 때 답이 같았나. */
+  readonly stability: {
+    readonly repeated_groups: number;
+    readonly consistent_groups: number;
+    readonly unstable_group_count: number;
+    /** 2회 이상 물은 조합이 없으면 거짓. 한 번 물은 답은 흔들렸는지 알 수 없다. */
+    readonly is_measurable: boolean;
+    readonly rate: Rate;
+  };
   readonly is_partial_measurement: boolean;
   readonly caveats_ko: readonly string[];
 }

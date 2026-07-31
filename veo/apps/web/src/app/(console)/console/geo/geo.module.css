@@ -550,3 +550,34 @@
   border-left: 3px solid var(--veo-color-warning);
   background: var(--veo-color-surface-sunken);
 }
+
+/* 인용된 곳.
+ *
+ * 우리 것만 크게 그리지 않는다. 엔진이 어디를 보고 있는지 전체가 보여야 인용률을
+ * 제대로 읽을 수 있다. */
+.domainList {
+  list-style: none;
+  margin: var(--veo-space-3) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+}
+
+.domain {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.6;
+}
+
+.domainName {
+  overflow-wrap: anywhere;
+}
+
+.domainCount {
+  white-space: nowrap;
+  color: var(--veo-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

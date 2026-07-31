@@ -48,7 +48,22 @@ export function VisibilityReport({
           rate={metrics.prompt_coverage}
           meaning="던진 질문 가운데 한 번이라도 언급이 확인된 질문의 비율입니다."
         />
+        {/*
+          이름을 줄이지 않는다. '추천률' 로 적으면 AI 가 우리를 추천했다는 뜻이 되는데
+          그건 답변 문장을 읽어야 알 수 있고 아직 재지 않는다.
+        */}
+        <RateCard
+          rate={metrics.recommendation_prompt_mention_rate}
+          meaning="추천을 묻는 질문에서 상호가 나온 비율입니다."
+        />
+        <RateCard
+          rate={metrics.stability.rate}
+          meaning="같은 질문을 같은 엔진에 다시 물었을 때 답이 같았던 비율입니다."
+        />
       </div>
+
+      <Diversity metrics={metrics} />
+      <Instability metrics={metrics} />
 
       {/*
         위 신뢰구간은 **반복이 서로 독립이라는 가정** 위에서만 성립한다. 같은 순간에
@@ -69,6 +84,75 @@ export function VisibilityReport({
       <Counts run={run} metrics={metrics} />
       <Cost run={run} />
     </div>
+  );
+}
+
+/**
+ * 출처 다양성.
+ *
+ * 인용률 옆에 있어야 하는 숫자다. 엔진이 두 곳만 인용한다면 그 두 곳에 드는 것이
+ * 사실상 전부이고, 마흔 곳을 인용한다면 한 곳에 드는 것의 무게가 다르다. 같은 20%
+ * 라도 뜻이 같지 않은데, 이 숫자가 없으면 화면에서 그 차이를 알 수 없다.
+ */
+function Diversity({ metrics }: { readonly metrics: VisibilityMetrics }) {
+  const diversity = metrics.source_diversity;
+
+  return (
+    <Card title="엔진이 인용한 곳" headingLevel={3} tone="flat">
+      {!diversity.is_measurable ? (
+        // 0곳이 아니다. 0으로 그리면 우리가 못 잰 것이 사실이 된다.
+        <p className={styles.rateNote}>
+          출처를 확인할 수 있었던 응답이 없어 <strong>측정 불가</strong>입니다. 0곳이라는
+          뜻이 아닙니다.
+        </p>
+      ) : (
+        <>
+          <p className={styles.cost}>
+            서로 다른 <strong>{diversity.distinct_domains}곳</strong> · 인용 총{' '}
+            {diversity.total_citations}건
+          </p>
+          <ul className={styles.domainList}>
+            {diversity.top_domains.map((entry) => (
+              <li key={entry.domain} className={styles.domain}>
+                <span className={styles.domainName}>{entry.domain}</span>
+                <span className={styles.domainCount}>{entry.citations}건</span>
+              </li>
+            ))}
+          </ul>
+          <p className={styles.rateNote}>
+            우리 사이트만이 아니라 <strong>인용된 모든 곳</strong>입니다. 인용 자리가
+            좁을수록 그 자리에 드는 것의 무게가 커집니다.
+          </p>
+        </>
+      )}
+    </Card>
+  );
+}
+
+/**
+ * 흔들린 조합.
+ *
+ * 언급률 50%는 '질문의 절반은 늘 나온다'일 수도 '모든 질문이 물을 때마다 뒤집힌다'일
+ * 수도 있다. 고쳐야 할 것이 전혀 다르므로, 비율만 두고 이 숫자를 감추면 안 된다.
+ */
+function Instability({ metrics }: { readonly metrics: VisibilityMetrics }) {
+  const stability = metrics.stability;
+  if (!stability.is_measurable) {
+    return (
+      <p className={styles.rateNote}>
+        같은 질문을 같은 엔진에 두 번 이상 물은 경우가 없어 안정성을 잴 수 없습니다. 한 번
+        물은 답은 흔들렸는지 알 수 없습니다.
+      </p>
+    );
+  }
+  if (stability.unstable_group_count === 0) return null;
+
+  return (
+    <p className={styles.spreadTight}>
+      질문·엔진 조합 {stability.repeated_groups}개 가운데{' '}
+      <strong>{stability.unstable_group_count}개</strong>는 물을 때마다 답이 갈렸습니다. 이
+      조합들의 언급 여부는 한 번의 결과로 말할 수 없습니다.
+    </p>
   );
 }
 

@@ -68,6 +68,21 @@ function metrics(over: Partial<VisibilityMetrics> = {}): VisibilityMetrics {
     mention_rate: rate(),
     citation_rate: rate({ label_ko: '인용률' }),
     prompt_coverage: rate({ label_ko: '질문 도달률' }),
+    recommendation_prompt_mention_rate: rate({ label_ko: '추천형 질문 언급률' }),
+    source_diversity: {
+      answers_with_visible_citations: 40,
+      distinct_domains: 6,
+      total_citations: 52,
+      top_domains: [{ domain: 'blog.naver.com', citations: 20 }],
+      is_measurable: true,
+    },
+    stability: {
+      repeated_groups: 8,
+      consistent_groups: 8,
+      unstable_group_count: 0,
+      is_measurable: true,
+      rate: rate({ label_ko: '노출 안정성' }),
+    },
     is_partial_measurement: false,
     caveats_ko: [],
     ...over,
@@ -312,5 +327,83 @@ describe('반복 간격', () => {
     render(<VisibilityReport run={run()} metrics={metrics()} />);
 
     expect(screen.queryByText(/독립/)).toBeNull();
+  });
+});
+
+describe('출처 다양성', () => {
+  it('인용된 곳의 수를 보인다 — 우리 것만이 아니다', () => {
+    render(<VisibilityReport run={run()} metrics={metrics()} />);
+
+    expect(screen.getByText('blog.naver.com')).toBeInTheDocument();
+    expect(screen.getByText(/인용된 모든 곳/)).toBeInTheDocument();
+  });
+
+  it('출처를 못 본 실행은 0곳이 아니라 측정 불가로 적는다', () => {
+    // 0곳으로 그리면 우리가 못 잰 것이 사실이 된다.
+    render(
+      <VisibilityReport
+        run={run()}
+        metrics={metrics({
+          source_diversity: {
+            answers_with_visible_citations: 0,
+            distinct_domains: 0,
+            total_citations: 0,
+            top_domains: [],
+            is_measurable: false,
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/0곳이라는\s*뜻이 아닙니다/)).toBeInTheDocument();
+  });
+});
+
+describe('안정성', () => {
+  it('물을 때마다 갈린 조합이 있으면 숫자로 말한다', () => {
+    render(
+      <VisibilityReport
+        run={run()}
+        metrics={metrics({
+          stability: {
+            repeated_groups: 8,
+            consistent_groups: 5,
+            unstable_group_count: 3,
+            is_measurable: true,
+            rate: rate({ label_ko: '노출 안정성' }),
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/물을 때마다 답이 갈렸습니다/)).toBeInTheDocument();
+  });
+
+  it('한 번만 물었으면 안정적이라고 하지 않는다', () => {
+    render(
+      <VisibilityReport
+        run={run()}
+        metrics={metrics({
+          stability: {
+            repeated_groups: 0,
+            consistent_groups: 0,
+            unstable_group_count: 0,
+            is_measurable: false,
+            rate: rate({ label_ko: '노출 안정성' }),
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/흔들렸는지 알 수 없습니다/)).toBeInTheDocument();
+  });
+});
+
+describe('추천형 질문', () => {
+  it('AI 가 추천했다고 적지 않는다', () => {
+    render(<VisibilityReport run={run()} metrics={metrics()} />);
+
+    expect(screen.getByText('추천형 질문 언급률')).toBeInTheDocument();
+    expect(screen.getByText(/추천을 묻는 질문에서 상호가 나온 비율/)).toBeInTheDocument();
   });
 });

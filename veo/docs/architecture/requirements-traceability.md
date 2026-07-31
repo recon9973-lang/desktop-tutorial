@@ -66,7 +66,7 @@
 | 관측 실행 (실제 LLM 호출) | **완료.** `observations/execution.py` + `POST /observations/runs`. OpenAI 키 등록됨 | `tests/observations/test_execution_postgres.py` |
 | 인용 관측 가능성 구분 | `ai_answers.citation_support` — `STRUCTURED` / `NOT_EXPOSED_BY_PROVIDER`. 실측: `gpt-5`·`gpt-4o` 는 인용을 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 안 돌려준다 | `docs/operations/verifying-citation-support.md` |
 | 노출률 지표 | 언급률·인용률·질문 도달률 + Wilson 구간 | `tests/observations/test_metrics.py` |
-| 가시성 지표 10종 (마스터 §7.3) | **7/10.** 없는 것: 출처 다양성 · 추천 포함 · 안정성(변동) | grep: `source_diversity`·`recommendation_inclusion` 0건 |
+| 가시성 지표 10종 (마스터 §7.3) | **9/10 + 1 대체.** 출처 다양성·안정성 추가, '추천 포함' 은 답변 문장 판정이 필요해 **추천형 질문 언급률**로 대체하고 그 사실을 화면에 적는다 | `tests/observations/test_metrics.py` |
 | 자동 판정과 사람 검수 분리 | **연결됨.** 보류된 언급이 `claim_assessments` 행이 되고(`observations/findings.py`), `GET /observations/runs/{id}/risks` 가 **공개 게이트를 지난 뒤** 돌려준다. 다만 재는 위험 유형은 8종 중 1종(동명 업체 혼동)이고 나머지 7종은 이유와 함께 공개한다 | `TestHeldMentionsBecomeReviewableFindings` · `TestWhatTheCustomerDocumentMayContain` |
 | 검수자가 판정을 뒤집는 경로 | **연결됨.** `GET/POST /observations/review-queue/…` 와 `/console/review` 화면. 점유는 DB 행에 있으므로 서버가 두 대여도 같은 건을 두 사람이 판정하지 못한다. 착수 없이 판정하는 길은 전이 표가 막는다 | `test_review_service_postgres.py` · `test_review_queue_api.py` |
 | 관측 SOV 를 실측에서 계산 | **연결됨.** `observation_run_id` 를 주면 `competitors/from_observation.py` 가 실행에서 센다 — 응답 단위, 보류 제외, 비긴 프롬프트는 분모에서도 제외. 손으로 넣는 경로는 남아 있으나 결과에 `share_of_voice_source=HAND_ENTERED` 가 붙는다 | `test_sov_from_observation_postgres.py` |
@@ -236,7 +236,9 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 **아직 없다**
 
 - 헤드리스 렌더링(Playwright) — `js_render_parity` 상시 측정 불가
-- 가시성 지표 3종: 출처 다양성 · 추천 포함 · 안정성
+- **추천 포함(recommendation inclusion)** — AI 가 우리를 *추천했는지*는 답변 문장을
+  읽어야 알 수 있어 언어모델 판정이 필요하다(§7.4 미구현 7종 중 하나). 대신 저장된
+  질문 의도로 셀 수 있는 **추천형 질문 언급률**을 그 이름 그대로 낸다
 - 화면: `/console/sites` · `/console/api-usage` · `/console/admin` (파일 자체 없음)
 - 콘솔 13개 화면이 모두 엔진 자료를 읽는다. 공개 진단 3개는 전부 자리표시자
 - `/console/scoring-versions` 는 발행 명세를 **웹이 손으로 적어 둔 목록**에서 읽는다

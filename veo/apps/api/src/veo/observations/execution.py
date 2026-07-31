@@ -580,6 +580,40 @@ def answer_facts(
         )
     )
 
+    # 출처 다양성은 **우리 것이 아닌 인용도** 세야 한다. 엔진이 몇 곳을 인용하는지가
+    # 인용률을 읽는 방법을 바꾸기 때문이다 — 두 곳만 인용하는 엔진에서의 20% 와 마흔
+    # 곳을 인용하는 엔진에서의 20% 는 같은 뜻이 아니다.
+    domains_by_answer: dict[uuid.UUID, list[str]] = {}
+    for answer_id, domain in session.execute(
+        select(Citation.ai_answer_id, Citation.domain).where(
+            Citation.ai_answer_id.in_(answer_ids)
+        )
+    ):
+        if domain:
+            domains_by_answer.setdefault(answer_id, []).append(domain)
+
+    # 안정성은 엔진마다, 질문 의도는 프롬프트에서. 둘 다 조인 한 번으로 가져온다 —
+    # 답변마다 따로 부르면 답변 수만큼 왕복이 늘어난다.
+    #
+    # `dict(...)` 로 줄이지 않는다. SQLAlchemy 는 2-튜플이 아니라 `Row` 를 돌려주고,
+    # `dict()` 는 그것을 받아 주지 않는다 — 시험에서 실제로 터졌다.
+    engines: dict[uuid.UUID, str] = {  # noqa: C416
+        answer_id: provider
+        for answer_id, provider in session.execute(
+            select(AIAnswer.id, AIEngine.provider)
+            .join(AIEngine, AIEngine.id == AIAnswer.ai_engine_id)
+            .where(AIAnswer.id.in_(answer_ids))
+        )
+    }
+    intents: dict[uuid.UUID, str] = {  # noqa: C416
+        prompt_id: intent
+        for prompt_id, intent in session.execute(
+            select(PromptRow.id, PromptRow.intent).where(
+                PromptRow.id.in_({answer.prompt_id for answer in answers})
+            )
+        )
+    }
+
     return tuple(
         AnswerFact(
             prompt_id=str(answer.prompt_id),
@@ -588,6 +622,9 @@ def answer_facts(
             mention_pending_review=answer.id in pending_ids,
             cited=answer.id in cited_ids,
             citation_support=answer.citation_support,
+            engine=engines.get(answer.id, ""),
+            intent=intents.get(answer.prompt_id, ""),
+            cited_domains=tuple(domains_by_answer.get(answer.id, ())),
             # 반복이 **언제** 일어났는지가 신뢰구간의 전제다. 이 값을 흘리면 같은 순간에
             # 몰아 던진 반복이 독립 표본처럼 계산된다.
             executed_at=answer.executed_at,

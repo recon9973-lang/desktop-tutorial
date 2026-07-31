@@ -2676,6 +2676,13 @@ export interface components {
          * @enum {string}
          */
         CheckStatus: "PASS" | "WARNING" | "FAIL" | "NOT_APPLICABLE" | "UNKNOWN";
+        /** CitedDomainPayload */
+        CitedDomainPayload: {
+            /** Citations */
+            citations: number;
+            /** Domain */
+            domain: string;
+        };
         /** ComparisonCreateRequest */
         ComparisonCreateRequest: {
             /**
@@ -6636,6 +6643,22 @@ export interface components {
             source_period?: string | null;
         };
         /**
+         * SourceDiversityPayload
+         * @description 엔진이 인용한 곳의 넓이.
+         */
+        SourceDiversityPayload: {
+            /** Answers With Visible Citations */
+            answers_with_visible_citations: number;
+            /** Distinct Domains */
+            distinct_domains: number;
+            /** Is Measurable */
+            is_measurable: boolean;
+            /** Top Domains */
+            top_domains?: components["schemas"]["CitedDomainPayload"][];
+            /** Total Citations */
+            total_citations: number;
+        };
+        /**
          * SpecBandDetail
          * @description 점수 구간 하나. 화면의 등급표가 이것을 그대로 그린다.
          *
@@ -6818,6 +6841,21 @@ export interface components {
             total_calls: number;
             /** Unmeasurable Calls */
             unmeasurable_calls: number;
+        };
+        /**
+         * StabilityPayload
+         * @description 같은 질문을 다시 물었을 때 답이 같았나.
+         */
+        StabilityPayload: {
+            /** Consistent Groups */
+            consistent_groups: number;
+            /** Is Measurable */
+            is_measurable: boolean;
+            rate: components["schemas"]["RatePayload"];
+            /** Repeated Groups */
+            repeated_groups: number;
+            /** Unstable Group Count */
+            unstable_group_count: number;
         };
         /**
          * StoreCredentialRequest
@@ -7180,12 +7218,18 @@ export interface components {
             is_partial_measurement: boolean;
             mention_rate: components["schemas"]["RatePayload"];
             prompt_coverage: components["schemas"]["RatePayload"];
+            /** @description 추천을 묻는 질문에서 상호가 나온 비율입니다. **AI 가 우리를 추천했는지가 아닙니다** — 그건 답변 문장을 읽어야 알 수 있고 아직 재지 않습니다. */
+            recommendation_prompt_mention_rate: components["schemas"]["RatePayload"];
             /**
              * @description 같은 질문의 반복이 **시간적으로** 얼마나 벌어져 있었는지입니다.
              *
              *     위 신뢰구간은 반복이 서로 독립이라는 가정 위에서만 성립합니다. 같은 순간에 몰아 던진 반복은 그 시각의 엔진 상태가 전부에 똑같이 묻어나므로 독립이 아니고, **구간이 실제보다 좁게 나옵니다.** VEO는 구간을 다시 계산하지 않습니다 — 상관을 얼마나 먹었는지 알 수 없고, 모르는 값으로 보정하면 그것도 지어낸 숫자이기 때문입니다. 대신 잰 그대로 적습니다.
              */
             repetition_spread?: components["schemas"]["RepetitionSpreadPayload"];
+            /** @description 엔진이 이번 실행에서 몇 곳을 인용했는지입니다. 인용률을 읽는 방법을 바꿉니다 — 두 곳만 인용하는 엔진에서의 20%와 마흔 곳을 인용하는 엔진에서의 20%는 같은 뜻이 아닙니다. */
+            source_diversity: components["schemas"]["SourceDiversityPayload"];
+            /** @description 같은 질문을 같은 엔진에 다시 물었을 때 답이 같았는지입니다. 언급률 50%는 '질문의 절반은 늘 나온다'일 수도 '모든 질문이 물을 때마다 뒤집힌다'일 수도 있고, 고쳐야 할 것이 전혀 다릅니다. */
+            stability: components["schemas"]["StabilityPayload"];
         };
         /** WeightChangePayload */
         WeightChangePayload: {

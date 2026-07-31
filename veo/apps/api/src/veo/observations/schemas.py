@@ -145,6 +145,7 @@ class PromptSetListPayload(BaseModel):
 
 
 __all__ = [
+    "CitedDomainPayload",
     "EngineChoiceInput",
     "EnginePayload",
     "EngineSpendPayload",
@@ -160,7 +161,9 @@ __all__ = [
     "PromptSetPayload",
     "PromptSummary",
     "RatePayload",
+    "SourceDiversityPayload",
     "SpendPayload",
+    "StabilityPayload",
     "VisibilityMetricsPayload",
 ]
 
@@ -317,6 +320,39 @@ class RepetitionSpreadPayload(BaseModel):
     caveat_ko: str | None = None
 
 
+class CitedDomainPayload(BaseModel):
+    model_config = _FROZEN
+
+    domain: str
+    citations: int
+
+
+class SourceDiversityPayload(BaseModel):
+    """엔진이 인용한 곳의 넓이."""
+
+    model_config = _FROZEN
+
+    answers_with_visible_citations: int
+    distinct_domains: int
+    total_citations: int
+    top_domains: list[CitedDomainPayload] = Field(default_factory=list)
+    #: 거짓이면 위 숫자는 0이 아니라 **측정 불가**입니다.
+    is_measurable: bool
+
+
+class StabilityPayload(BaseModel):
+    """같은 질문을 다시 물었을 때 답이 같았나."""
+
+    model_config = _FROZEN
+
+    repeated_groups: int
+    consistent_groups: int
+    unstable_group_count: int
+    #: 2회 이상 물은 조합이 없으면 거짓입니다. 한 번 물은 답은 흔들렸는지 알 수 없습니다.
+    is_measurable: bool
+    rate: RatePayload
+
+
 class VisibilityMetricsPayload(BaseModel):
     """이 관측이 말할 수 있는 것과, 말할 수 없는 것."""
 
@@ -352,6 +388,26 @@ class VisibilityMetricsPayload(BaseModel):
     mention_rate: RatePayload
     citation_rate: RatePayload
     prompt_coverage: RatePayload
+    recommendation_prompt_mention_rate: RatePayload = Field(
+        description=(
+            "추천을 묻는 질문에서 상호가 나온 비율입니다. **AI 가 우리를 추천했는지가 "
+            "아닙니다** — 그건 답변 문장을 읽어야 알 수 있고 아직 재지 않습니다."
+        ),
+    )
+    source_diversity: SourceDiversityPayload = Field(
+        description=(
+            "엔진이 이번 실행에서 몇 곳을 인용했는지입니다. 인용률을 읽는 방법을 "
+            "바꿉니다 — 두 곳만 인용하는 엔진에서의 20%와 마흔 곳을 인용하는 엔진에서의 "
+            "20%는 같은 뜻이 아닙니다."
+        ),
+    )
+    stability: StabilityPayload = Field(
+        description=(
+            "같은 질문을 같은 엔진에 다시 물었을 때 답이 같았는지입니다. 언급률 50%는 "
+            "'질문의 절반은 늘 나온다'일 수도 '모든 질문이 물을 때마다 뒤집힌다'일 "
+            "수도 있고, 고쳐야 할 것이 전혀 다릅니다."
+        ),
+    )
     is_partial_measurement: bool
     caveats_ko: list[str] = Field(
         description="이 숫자를 읽을 때 함께 알아야 하는 것들입니다. 비어 있어야 정상입니다."

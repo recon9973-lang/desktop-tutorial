@@ -48,6 +48,9 @@ from veo.observations.sampling import (
 #: 인용을 구조적으로 볼 수 있었던 응답에만 붙는 값.
 STRUCTURED = "STRUCTURED"
 
+#: 추천을 묻는 질문의 의도 값. 프롬프트 집합이 저장할 때 정한다.
+RECOMMENDATION_INTENT = "RECOMMENDATION"
+
 
 def rate_payload(rate: ObservedRate) -> dict[str, Any]:
     """비율 하나를 화면·API 가 오해할 수 없는 모양으로 편다.
@@ -92,12 +95,148 @@ class AnswerFact:
     표본이 아니고, 신뢰구간은 그 사실을 모른 채 좁게 나온다
     (:class:`veo.observations.sampling.RepetitionSpread`).
     """
+    engine: str = ""
+    """어느 엔진이 답했나. 안정성은 **엔진마다 따로** 재야 한다 — 한 엔진이 늘 우리를
+    말하고 다른 엔진이 한 번도 말하지 않으면, 둘을 합친 값은 '가끔 나온다' 가 되어
+    두 사실을 모두 지운다."""
+
+    intent: str = ""
+    """이 질문이 무엇을 묻는가. `RECOMMENDATION` 이면 추천을 묻는 질문이다."""
+
+    cited_domains: tuple[str, ...] = ()
+    """이 응답이 인용한 **모든** 도메인. 우리 것만이 아니다.
+
+    출처 다양성은 우리가 인용됐는지와 다른 질문이다. 엔진이 두 곳만 인용한다면 그 두
+    곳에 드는 것이 전부이고, 마흔 곳을 인용한다면 한 곳에 드는 것의 무게가 다르다.
+    """
+
     mention_pending_review: bool = False
     """이름은 나왔는데 **이 고객인지 갈리지 않았다.**
 
     `mentioned=False` 와 뜻이 다르다. 여기서 분자로 세지 않으므로 언급률은 확정
     하한이 되고, 그 사실은 :func:`visibility_metrics` 가 비율 옆에 적는다.
     """
+
+
+@final
+@dataclass(frozen=True, slots=True)
+class SourceDiversity:
+    """엔진이 이번 실행에서 **몇 곳을 인용했나.**
+
+    우리가 인용됐는지와는 다른 질문이고, 인용률을 읽는 방법을 바꾼다. 엔진이 두 곳만
+    인용한다면 그 두 곳에 드는 것이 사실상 전부이고, 마흔 곳을 인용한다면 한 곳에 드는
+    것의 무게가 다르다. 같은 인용률 20% 라도 뜻이 같지 않다.
+    """
+
+    #: 인용을 실제로 볼 수 있었던 응답 수. 이것이 0 이면 아래 값들은 전부 '측정 불가'다.
+    answers_with_visible_citations: int
+    #: 서로 다른 도메인 수.
+    distinct_domains: int
+    #: 인용 총 건수. 도메인 수와 함께 봐야 한다 — 한 곳을 열 번 인용한 것과 열 곳을 한
+    #: 번씩 인용한 것은 다르다.
+    total_citations: int
+    #: 가장 많이 인용된 도메인들, 많은 순. 우리 것이 아닐 수 있다.
+    top_domains: tuple[tuple[str, int], ...]
+
+    @property
+    def is_measurable(self) -> bool:
+        return self.answers_with_visible_citations > 0
+
+    @property
+    def caveat_ko(self) -> str | None:
+        if not self.is_measurable:
+            return (
+                "출처를 확인할 수 있었던 응답이 없어 출처 다양성을 잴 수 없습니다. "
+                "0곳이 아니라 측정 불가입니다."
+            )
+        if self.distinct_domains <= 3:
+            return (
+                f"이 실행에서 엔진이 인용한 곳은 {self.distinct_domains}곳뿐입니다. "
+                "인용 자리가 좁다는 뜻이고, 그 자리에 드는 것이 사실상 전부입니다."
+            )
+        return None
+
+    @classmethod
+    def of(cls, answers: Sequence[AnswerFact]) -> SourceDiversity:
+        visible = [answer for answer in answers if answer.citation_support == STRUCTURED]
+        counts: dict[str, int] = {}
+        for answer in visible:
+            for domain in answer.cited_domains:
+                counts[domain] = counts.get(domain, 0) + 1
+        ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+        return cls(
+            answers_with_visible_citations=len(visible),
+            distinct_domains=len(counts),
+            total_citations=sum(counts.values()),
+            top_domains=tuple(ranked[:10]),
+        )
+
+
+@final
+@dataclass(frozen=True, slots=True)
+class MentionStability:
+    """같은 질문을 같은 엔진에 다시 물었을 때 **답이 같았나.**
+
+    언급률 50% 는 두 가지 전혀 다른 사실일 수 있다. 질문의 절반은 늘 우리를 말하고
+    나머지 절반은 한 번도 말하지 않았거나, 모든 질문이 물을 때마다 뒤집혔거나. 앞의
+    경우 고칠 대상은 특정 질문이고, 뒤의 경우 애초에 노출이 불안정한 것이다. 같은
+    비율로 뭉뜽그리면 무엇을 해야 하는지 알 수 없다.
+
+    2회 미만으로 물은 조합은 세지 않는다. 한 번 물은 것은 흔들렸는지 알 수 없다.
+    """
+
+    #: 2회 이상 물은 (질문, 엔진) 조합 수. 안정성의 분모다.
+    repeated_groups: int
+    #: 그중 반복이 **모두 같은 답**을 준 조합 수.
+    consistent_groups: int
+    #: 물을 때마다 답이 갈린 (질문, 엔진) 조합.
+    unstable_groups: tuple[tuple[str, str], ...]
+
+    @property
+    def is_measurable(self) -> bool:
+        return self.repeated_groups > 0
+
+    @property
+    def rate(self) -> ObservedRate:
+        return ObservedRate.build(
+            successes=self.consistent_groups,
+            trials=self.repeated_groups,
+            label_ko="노출 안정성",
+        )
+
+    @property
+    def caveat_ko(self) -> str | None:
+        if not self.is_measurable:
+            return (
+                "같은 질문을 같은 엔진에 두 번 이상 물은 경우가 없어 안정성을 잴 수 "
+                "없습니다. 한 번 물은 답은 흔들렸는지 알 수 없습니다."
+            )
+        flipped = self.repeated_groups - self.consistent_groups
+        if flipped:
+            return (
+                f"질문·엔진 조합 {self.repeated_groups}개 가운데 {flipped}개는 물을 "
+                "때마다 답이 갈렸습니다. 이 조합들의 언급 여부는 한 번의 결과로 "
+                "말할 수 없습니다."
+            )
+        return None
+
+    @classmethod
+    def of(cls, answers: Sequence[AnswerFact]) -> MentionStability:
+        groups: dict[tuple[str, str], list[bool]] = {}
+        for answer in answers:
+            if not answer.is_valid:
+                continue
+            groups.setdefault((answer.prompt_id, answer.engine), []).append(answer.mentioned)
+
+        repeated = {key: values for key, values in groups.items() if len(values) >= 2}
+        unstable = tuple(
+            sorted(key for key, values in repeated.items() if len(set(values)) > 1)
+        )
+        return cls(
+            repeated_groups=len(repeated),
+            consistent_groups=len(repeated) - len(unstable),
+            unstable_groups=unstable,
+        )
 
 
 @final
@@ -113,6 +252,15 @@ class VisibilityMetrics:
     mention_rate: ObservedRate
     citation_rate: ObservedRate
     prompt_coverage: ObservedRate
+    #: 추천을 묻는 질문에서의 언급률.
+    #:
+    #: 이름은 `추천형 질문 언급률` 이지 `추천 포함률` 이 아니다. 이 값은 "AI 가 우리를
+    #: 추천했나" 를 재지 않는다 — 그건 답변 문장을 읽어야 알 수 있고 언어모델 판정이
+    #: 필요하다(§7.4, 아직 없음). 여기서 재는 것은 **추천을 묻는 자리에 우리가 나왔나**
+    #: 이고, 그것은 저장된 질문 의도만으로 정확히 셀 수 있다.
+    recommendation_prompt_mention_rate: ObservedRate
+    source_diversity: SourceDiversity
+    stability: MentionStability
     is_partial_measurement: bool
     caveats_ko: tuple[str, ...]
 
@@ -126,6 +274,28 @@ class VisibilityMetrics:
             "mention_rate": rate_payload(self.mention_rate),
             "citation_rate": rate_payload(self.citation_rate),
             "prompt_coverage": rate_payload(self.prompt_coverage),
+            "recommendation_prompt_mention_rate": rate_payload(
+                self.recommendation_prompt_mention_rate
+            ),
+            "source_diversity": {
+                "answers_with_visible_citations": (
+                    self.source_diversity.answers_with_visible_citations
+                ),
+                "distinct_domains": self.source_diversity.distinct_domains,
+                "total_citations": self.source_diversity.total_citations,
+                "top_domains": [
+                    {"domain": domain, "citations": count}
+                    for domain, count in self.source_diversity.top_domains
+                ],
+                "is_measurable": self.source_diversity.is_measurable,
+            },
+            "stability": {
+                "repeated_groups": self.stability.repeated_groups,
+                "consistent_groups": self.stability.consistent_groups,
+                "unstable_group_count": len(self.stability.unstable_groups),
+                "is_measurable": self.stability.is_measurable,
+                "rate": rate_payload(self.stability.rate),
+            },
             "is_partial_measurement": self.is_partial_measurement,
             "caveats_ko": list(self.caveats_ko),
         }
@@ -243,6 +413,29 @@ def visibility_metrics(
         citation_rate = _append_qualifier(citation_rate, spread.caveat_ko)
         prompt_coverage = _append_qualifier(prompt_coverage, spread.caveat_ko)
 
+    # 추천을 묻는 질문만 따로. 이름 그대로 **그 질문들에서의 언급률**이고, AI 가 우리를
+    # 추천했는지가 아니다. 후자는 답변 문장을 읽어야 알 수 있다(§7.4, 아직 없음).
+    recommendation = [answer for answer in valid if answer.intent == RECOMMENDATION_INTENT]
+    recommendation_rate = ObservedRate.build(
+        successes=sum(1 for answer in recommendation if answer.mentioned),
+        trials=len(recommendation),
+        label_ko="추천형 질문 언급률",
+    )
+    if recommendation:
+        recommendation_rate = replace(
+            recommendation_rate,
+            extra_qualifier_ko=(
+                "추천을 묻는 질문에서 상호가 나온 비율입니다. AI 가 우리를 추천했는지는 "
+                "답변 문장을 읽어야 알 수 있으며 아직 재지 않습니다."
+            ),
+        )
+
+    diversity = SourceDiversity.of(valid)
+    stability = MentionStability.of(valid)
+    for note in (diversity.caveat_ko, stability.caveat_ko):
+        if note:
+            caveats.append(note)
+
     return VisibilityMetrics(
         answers_recorded=len(answers),
         answers_valid=len(valid),
@@ -252,14 +445,20 @@ def visibility_metrics(
         mention_rate=mention_rate,
         citation_rate=citation_rate,
         prompt_coverage=prompt_coverage,
+        recommendation_prompt_mention_rate=recommendation_rate,
+        source_diversity=diversity,
+        stability=stability,
         is_partial_measurement=not run_is_complete,
         caveats_ko=tuple(caveats),
     )
 
 
 __all__ = [
+    "RECOMMENDATION_INTENT",
     "STRUCTURED",
     "AnswerFact",
+    "MentionStability",
+    "SourceDiversity",
     "VisibilityMetrics",
     "rate_payload",
     "visibility_metrics",
