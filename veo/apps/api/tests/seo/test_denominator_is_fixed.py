@@ -172,9 +172,16 @@ class TestTheFixWasNotADisguisedReweighting:
                 "배점으로 덮는 것은 같은 고침이 아니다."
             )
 
-    def test_the_category_weights_are_unchanged(self) -> None:
+    def test_the_scored_weights_still_add_up_to_one_hundred(self) -> None:
+        """가중치 총합은 100 이다.
+
+        처음에는 개별 영역의 가중치(crawl_indexability 31.25 …)를 못 박았다.
+        그 영역들은 명세 1.8.0 에서 검색 여정 단계로 재편되며 사라졌고, 시험은
+        **결함을 지킨 게 아니라 정상적인 재편을 막고 있었다.** 오늘만 세 번째다.
+
+        재편으로도 깨지면 안 되는 것은 이것이다: 점수를 이루는 영역만으로 100 이다.
+        80 이면 남은 20 은 어디서 오는가. 그리고 심각도(위)는 그대로여야 한다 —
+        이 결함은 수집기에서 고친 것이고 배점으로 덮는 것은 같은 고침이 아니다.
+        """
         spec = latest_published("veo.seo.readiness")
-        weights = {category.id: category.weight for category in spec.categories}
-        assert weights["crawl_indexability"] == 31.25
-        assert weights["onpage_semantics"] == 18.75
-        assert weights["content_architecture"] == 18.75
+        assert spec.scoring_weight_total == pytest.approx(100.0)

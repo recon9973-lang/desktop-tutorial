@@ -76,9 +76,8 @@ def test_the_scored_areas_add_up_to_the_declared_total(spec_id: str) -> None:
     때문에 **모든 고객의 점수가 내려간다.**
     """
     spec = latest_published(spec_id)
-    scored = sum(
-        category.weight for category in spec.categories if category.contributes_to_score
-    )
+    # 관문은 더해지지 않고 곱해지므로 이 합에 들어가지 않는다.
+    scored = spec.scoring_weight_total
 
     assert scored == pytest.approx(100.0), (
         f"{spec_id}/{spec.version} 의 점수 영역 합이 {scored} 입니다. 100 이어야 합니다."

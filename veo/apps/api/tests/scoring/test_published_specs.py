@@ -30,8 +30,7 @@ def test_category_weights_sum_to_declared_total(spec_id: str, weight_total: floa
     연동이 없는 고객은 영영 그 몫을 얻지 못한다.
     """
     spec = latest_published(spec_id)
-    scored = [c for c in spec.categories if c.contributes_to_score]
-    assert sum(c.weight for c in scored) == pytest.approx(weight_total)
+    assert spec.scoring_weight_total == pytest.approx(weight_total)
 
 
 @pytest.mark.parametrize(("spec_id", "_weight"), PUBLISHED)

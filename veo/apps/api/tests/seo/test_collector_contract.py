@@ -21,7 +21,7 @@ from tests.seo.support import SPEC, build_context
 from veo.collect.contract import CollectionResult, Collector, run_collectors, verify_complete
 from veo.scoring import CheckStatus
 from veo.seo import seo_collectors
-from veo.seo.collectors import CATEGORY_COLLECTORS
+from veo.seo.collectors import SEO_COLLECTORS
 
 SEO_PACKAGE = Path(__file__).resolve().parents[2] / "src" / "veo" / "seo"
 
@@ -86,21 +86,44 @@ def test_every_check_in_the_specification_has_an_owner() -> None:
     assert owned == set(SPEC.check_ids)
 
 
-def test_each_collector_owns_exactly_one_specification_category() -> None:
-    """A collector maps to a category so an issue can be traced back to a section."""
-    for category_id, factory in CATEGORY_COLLECTORS.items():
-        declared = set(factory().check_ids)
-        spec_ids = {
-            check.id
-            for category in SPEC.categories
-            if category.id == category_id
-            for check in category.checks
-        }
-        assert declared == spec_ids, f"{category_id} collector does not match its category"
+def test_every_specification_check_has_exactly_one_collector() -> None:
+    """명세의 모든 검사에 재는 사람이 하나씩 있다.
+
+    2026-08-01 이전에는 이 시험이 "수집기 하나가 채점 영역 하나를 통째로 소유한다"
+    였다. 그때는 둘이 1:1 이었지만 그것은 우연이었다 — 수집기는 **무엇을 어떻게
+    재는가**로 묶이고, 채점 영역은 **결함이 검색에 어떻게 작용하는가**로 묶인다.
+    명세 1.8.0 이 채점을 검색 여정의 여섯 단계로 다시 나누면서 둘이 갈라졌다.
+    같은 성능 수집기가 재는 CLS 는 '경쟁력' 단계에, TBT 는 '위생' 단계에 속한다.
+
+    갈라져도 잃으면 안 되는 것은 이것이다: **재는 사람이 없는 검사가 없고, 두 번
+    재는 검사도 없다.**
+    """
+    owners: dict[str, list[str]] = {}
+    for name, factory in SEO_COLLECTORS.items():
+        for check_id in factory().check_ids:
+            owners.setdefault(check_id, []).append(name)
+
+    spec_ids = {check.id for category in SPEC.categories for check in category.checks}
+
+    unmeasured = sorted(spec_ids - set(owners))
+    assert not unmeasured, f"명세에 있는데 재는 수집기가 없다: {unmeasured}"
+
+    unknown = sorted(set(owners) - spec_ids)
+    assert not unknown, f"수집기가 재는데 명세에 없다: {unknown}"
+
+    duplicated = {check: names for check, names in owners.items() if len(names) > 1}
+    assert not duplicated, f"두 수집기가 같은 검사를 잰다: {duplicated}"
 
 
-def test_every_specification_category_has_a_collector() -> None:
-    assert {category.id for category in SPEC.categories} == set(CATEGORY_COLLECTORS)
+def test_every_check_a_collector_declares_lands_in_a_scoring_category() -> None:
+    """수집기가 재는 검사는 명세가 어느 영역에 넣을지 알아야 한다.
+
+    `spec.category_of` 가 화면 묶기와 이력에 쓰인다. 여기서 빠지면 판정은 나오는데
+    화면 어디에도 붙지 못한다.
+    """
+    for name, factory in SEO_COLLECTORS.items():
+        for check_id in factory().check_ids:
+            assert SPEC.category_of(check_id) is not None, f"{name}: {check_id}"
 
 
 # --------------------------------------------------------------------------- #

@@ -329,6 +329,30 @@ class ScoringSpec(BaseModel):
         return self._category_index[check_id]
 
     @property
+    def scoring_categories(self) -> tuple[SpecCategory, ...]:
+        """가중 평균에 실제로 참여하는 영역들.
+
+        두 가지가 빠진다.
+
+        `contributes_to_score: false` — 연동이 있어야만 잴 수 있는 영역. 판정하고
+        표시하되 점수와 분모 양쪽에서 빠진다. 그렇지 않으면 서치콘솔을 연결하지 않은
+        고객이 영영 그 몫을 얻지 못한다.
+
+        `is_gate: true` — 관문. **점수에 영향을 주지만 더해지지 않고 곱해진다.**
+        가중치 합에 넣으면 100 이 130 이 되고, 그 130 은 아무 뜻도 없는 숫자다.
+        관문의 `weight` 는 그 단계가 얼마짜리 관문인지 읽기 위한 표시일 뿐이다.
+
+        이 속성이 있는 이유는 **합을 세는 곳이 여럿이었기 때문**이다. 평가기와 시험
+        셋이 각자 `sum(c.weight for c in ...)` 을 다시 썼고, 관문이 생기자 넷 중
+        하나만 고쳐도 나머지가 조용히 틀린 답을 냈다.
+        """
+        return tuple(c for c in self.categories if c.contributes_to_score and not c.is_gate)
+
+    @property
+    def scoring_weight_total(self) -> float:
+        return sum(category.weight for category in self.scoring_categories)
+
+    @property
     def check_ids(self) -> tuple[str, ...]:
         return tuple(self._check_index)
 

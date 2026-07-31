@@ -37,7 +37,8 @@ def _SCORING_CATEGORIES() -> set[str]:
     from veo.scoring.spec import latest_published
 
     spec = latest_published("veo.seo.readiness")
-    return {c.id for c in spec.categories if c.contributes_to_score}
+    # 관문은 더해지지 않고 곱해지므로 가중 평균의 분모에 들어가지 않는다.
+    return {c.id for c in spec.scoring_categories}
 
 
 def _scan(fixture: str):  # type: ignore[no-untyped-def]

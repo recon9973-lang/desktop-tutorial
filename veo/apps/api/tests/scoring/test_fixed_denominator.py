@@ -263,15 +263,47 @@ class TestBreadthExponent:
         assert score(curved) == 100.0
 
 
-class TestPublishedSpecsAreUntouched:
-    """발행본은 불변이다(ADR 0012)."""
+class TestASpecWithoutPointsIsUnaffected:
+    """배점을 선언하지 않은 명세는 지금까지처럼 심각도 계수로 채점된다(ADR 0012).
 
-    def test_no_published_spec_declares_points_or_a_budget(self) -> None:
+    처음에는 "발행된 명세는 배점을 쓰지 않는다" 였다. 그것은 성질이 아니라 그날의
+    상태였고, 1.8.0 이 정당하게 배점을 쓰자 깨졌다. 지켜야 할 성질은 "선언하지 않은
+    명세가 그대로 동작한다" 이고 그것은 선언하지 않은 명세로만 확인할 수 있다.
+    """
+
+    def test_severity_coefficients_still_decide_the_cost(
+        self, tiny_spec_dict
+    ) -> None:  # type: ignore[no-untyped-def]
+        spec = uncapped(tiny_spec_dict)
+        assert all(c.get("raw_budget") is None for c in spec["categories"])
+
+        expensive = score(spec, **{"test.a.blocker": CheckStatus.FAIL})
+        cheap = score(spec, **{"test.a.major": CheckStatus.FAIL})
+        assert expensive is not None and cheap is not None
+        assert expensive < cheap < 100.0
+
+    def test_the_breadth_default_is_linear(self, tiny_spec_dict) -> None:  # type: ignore[no-untyped-def]
+        assert build_spec(uncapped(tiny_spec_dict)).status_policy.breadth_exponent == 1.0
+
+
+class TestThePublishedSpecUsesTheFixedDenominator:
+    """1.8.0 부터 발행된 SEO 명세가 고정 분모와 배점을 쓴다.
+
+    누가 되돌리면 검사를 더할 때마다 기존 결함이 다시 싸진다.
+    """
+
+    def test_every_scoring_stage_declares_a_fixed_budget(self) -> None:
         spec = latest_published("veo.seo.readiness")
-        assert all(category.raw_budget is None for category in spec.categories)
-        assert all(
-            check.points is None for category in spec.categories for check in category.checks
-        )
+        for category in spec.scoring_categories:
+            assert category.raw_budget is not None, f"{category.id} 에 고정 분모가 없다"
 
-    def test_the_published_spec_scores_linearly(self) -> None:
-        assert latest_published("veo.seo.readiness").status_policy.breadth_exponent == 1.0
+    def test_every_scored_check_carries_explicit_points(self) -> None:
+        spec = latest_published("veo.seo.readiness")
+        for category in spec.categories:
+            if category.raw_budget is None:
+                continue
+            for check in category.checks:
+                assert check.points is not None, f"{check.id} 에 배점이 없다"
+
+    def test_the_published_spec_weighs_breadth_sublinearly(self) -> None:
+        assert latest_published("veo.seo.readiness").status_policy.breadth_exponent == 0.7

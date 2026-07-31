@@ -177,16 +177,46 @@ class TestTheQualitySideIsUnchanged:
         assert without < 100.0
 
 
-class TestExistingSpecsAreUntouched:
-    """관문을 선언하지 않은 명세는 하나도 바뀌지 않는다(ADR 0012)."""
+class TestASpecWithoutGatesIsUnaffected:
+    """관문을 선언하지 않은 명세는 계산이 한 글자도 달라지지 않는다(ADR 0012).
 
-    def test_the_published_seo_spec_declares_no_gate(self) -> None:
-        published = latest_published("veo.seo.readiness")
-        assert not any(category.is_gate for category in published.categories)
+    이 시험은 처음에 "발행된 SEO 명세는 관문을 선언하지 않는다" 였다. 그날은 사실
+    이었지만 **성질이 아니라 그 시점의 상태**를 못 박은 것이었고, 명세 1.8.0 이
+    정당하게 관문을 선언하자 깨졌다. 잡아야 할 것을 잡은 게 아니라 정상적인 발행을
+    막고 있었다. 상태를 못 박는 시험은 반드시 이렇게 된다.
 
-    def test_a_spec_without_gates_always_has_a_reach_of_one(self) -> None:
-        published = latest_published("veo.seo.readiness")
-        built = [outcome(check_id, CheckStatus.FAIL) for check_id in published.check_ids]
-        trace = evaluate(published, built).trace["overall"]
+    지켜야 할 성질은 "관문 **없는** 명세는 그대로 동작한다" 이고, 그것은 관문 없는
+    명세로만 확인할 수 있다.
+    """
+
+    def test_reach_is_one_when_no_category_is_a_gate(
+        self, tiny_spec_dict
+    ) -> None:  # type: ignore[no-untyped-def]
+        spec = ungated(tiny_spec_dict)
+        assert not any(category.is_gate for category in spec.categories)
+
+        built = [outcome(check_id, CheckStatus.FAIL) for check_id in spec.check_ids]
+        trace = evaluate(spec, built).trace["overall"]
         assert trace["reach"] == 1.0
         assert trace["gate_unverified"] == []
+
+
+class TestThePublishedSpecUsesTheGate:
+    """1.8.0 부터 발행된 SEO 명세가 관문을 쓴다.
+
+    누가 실수로 지우면 색인이 전면 차단된 사이트가 다시 74점을 받게 된다.
+    """
+
+    def test_the_indexing_stage_is_declared_as_a_gate(self) -> None:
+        published = latest_published("veo.seo.readiness")
+        gates = [category for category in published.categories if category.is_gate]
+        assert len(gates) == 1, "관문은 색인 차단 단계 하나여야 한다"
+        assert gates[0].id == "s1_blocked"
+
+    def test_the_gate_holds_the_checks_that_actually_block_indexing(self) -> None:
+        published = latest_published("veo.seo.readiness")
+        gate = next(c for c in published.categories if c.is_gate)
+        ids = {check.id for check in gate.checks}
+        assert "seo.robots.txt_allows_url" in ids
+        assert "seo.robots.meta_indexable" in ids
+        assert "seo.http.status_ok" in ids

@@ -196,13 +196,19 @@ def test_a_site_without_structured_data_scores_zero_rather_than_being_excused() 
 
     해당 없음으로 두면 12.5점이 분모에서 빠져, 스키마를 만든 사이트가 분모 100 에서
     채점받는 동안 안 만든 사이트는 87.5 에서 채점받게 된다 — 안 만들수록 유리해진다.
-    선언이 없다는 사실은 `seo.sd.declared` 가 실패로 잡고, 그 영역은 0점이 되되
-    배점은 분모에 남는다.
+    선언이 없다는 사실은 `seo.sd.declared` 가 실패로 잡고, 그 배점은 분모에 남는다.
+
+    영역 점수로 보지 않는다. 명세 1.8.0 이 채점을 검색 여정 단계로 다시 나누면서
+    `structured_data` 영역이 사라졌고 그 검사들은 다른 검사와 같은 단계에 섞였다.
+    영역 점수는 재편으로 바뀌지만 **분모에 남아 점수를 잃는다** 는 사실은 바뀌면
+    안 된다 — 그것이 원래 지키려던 것이다.
     """
-    category = scan("brochure_na").score.category("structured_data")
-    assert category.status == "SCORED"
-    assert category.score == 0.0
-    assert category.penalty_total > 0.0
+    rows = {row["check_id"]: row for row in scan("brochure_na").score.trace["checks"]}
+    declared = rows["seo.sd.declared"]
+
+    assert declared["status"] == "FAIL"
+    assert declared["counted_in_budget"] is True
+    assert declared["penalty"] > 0.0
 
 
 # --------------------------------------------------------------------------- #

@@ -65,13 +65,23 @@ class TestAbsenceIsAFailureNotAnExemption:
 
 
 class TestTheBudgetNoLongerVanishes:
-    def test_the_category_stays_in_the_denominator(self) -> None:
-        """이 검사가 존재하는 이유. 12.5점이 사라지면 안 된다."""
-        score = run_seo_scan(build_context("brochure_na")).score
+    def test_the_structured_data_checks_stay_in_the_denominator(self) -> None:
+        """이 검사가 존재하는 이유. 구조화 데이터 몫이 사라지면 안 된다.
 
-        structured = next(c for c in score.categories if c.category_id == "structured_data")
-        assert structured.status == "SCORED"
-        assert structured.score == 0.0
+        처음에는 `structured_data` **영역 점수가 0** 인지 봤다. 명세 1.8.0 이 채점을
+        검색 여정 단계로 다시 나누면서 그 영역이 사라졌고, 구조화 데이터 검사들은
+        다른 검사와 같은 단계('클릭·표현')에 섞였다. 단계 점수는 이제 0 이 아니다 —
+        같은 단계의 다른 검사들이 통과하기 때문이고, 그것은 옳다.
+
+        영역 점수는 재편으로 바뀌지만 **검사가 분모에 남아 점수를 잃는다** 는 사실은
+        바뀌면 안 된다. 그것이 원래 지키려던 것이고, 이제 그것을 직접 본다.
+        """
+        score = run_seo_scan(build_context("brochure_na")).score
+        rows = {row["check_id"]: row for row in score.trace["checks"]}
+
+        declared = rows["seo.sd.declared"]
+        assert declared["counted_in_budget"] is True, "선언 없음이 분모에서 빠졌다"
+        assert declared["penalty"] > 0.0, "선언이 없는데 잃은 점수가 없다"
 
     def test_a_site_without_schema_is_scored_out_of_one_hundred(self) -> None:
         score = run_seo_scan(build_context("brochure_na")).score
@@ -88,15 +98,18 @@ class TestTheBudgetNoLongerVanishes:
     def test_a_broken_declaration_costs_less_than_no_declaration(self) -> None:
         """선언은 했는데 타입이 어긋난 것과, 아예 없는 것은 같은 무게가 아니다.
 
-        선언이 있으면 네 항목이 함께 채점되므로 하나가 어긋나도 영역 점수의 일부만
-        잃는다. 아예 없으면 채점되는 항목이 선언 검사 하나뿐이라 영역이 0이 된다.
+        선언이 있으면 나머지 구조화 데이터 검사들이 함께 채점되므로 하나가 어긋나도
+        일부만 잃는다. 아예 없으면 그 검사들이 전부 해당 없음이 되고 선언 검사 하나가
+        온전히 실패한다.
         """
         broken = run_seo_scan(build_context("broken_jsonld")).score
         absent = run_seo_scan(build_context("brochure_na")).score
 
-        broken_sd = next(c for c in broken.categories if c.category_id == "structured_data")
-        absent_sd = next(c for c in absent.categories if c.category_id == "structured_data")
+        def lost(score) -> float:  # type: ignore[no-untyped-def]
+            return sum(
+                row["penalty"]
+                for row in score.trace["checks"]
+                if row["check_id"].startswith("seo.sd.")
+            )
 
-        assert broken_sd.score is not None
-        assert absent_sd.score == 0.0
-        assert broken_sd.score > absent_sd.score
+        assert lost(absent) > lost(broken)

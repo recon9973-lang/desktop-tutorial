@@ -39,9 +39,8 @@ def spec():  # type: ignore[no-untyped-def]
 class TestTheScoredCategoriesMakeAHundredOnTheirOwn:
     def test_the_categories_that_carry_the_score_sum_to_one_hundred(self, spec) -> None:  # type: ignore[no-untyped-def]
         """점수를 이루는 영역만으로 100이어야 한다. 80이면 남은 20은 어디서 오는가."""
-        scored = [c for c in spec.categories if c.contributes_to_score]
-
-        assert sum(c.weight for c in scored) == pytest.approx(100.0)
+        # 관문은 더해지지 않고 곱해지므로 이 합에 들어가지 않는다.
+        assert spec.scoring_weight_total == pytest.approx(100.0)
 
     def test_the_integration_categories_are_declared_outside_the_score(self, spec) -> None:  # type: ignore[no-untyped-def]
         """고객이 권한을 주기 전에는 잴 수 없는 영역들이다."""
