@@ -106,6 +106,43 @@ class StatusPolicy(BaseModel):
     ]
 
 
+class PerfLabSampling(BaseModel):
+    """실험실 성능을 몇 장까지 잴 것인가, 그리고 못 잰 것을 어떻게 셀 것인가."""
+
+    model_config = _FROZEN
+
+    #: 잴 페이지 수의 상한. 중요도가 높은 순으로 고른다.
+    max_urls: int = Field(gt=0)
+    #: 계획한 표본 중 **실제로 값을 받은** 최소 비율. 이 아래면 검사는 측정 불가다.
+    #:
+    #: 이 문턱이 없으면 **너무 느려서 로드에 실패한 페이지가 분모에서 빠져 사이트가
+    #: 더 빨라 보인다.** 2026-08-01 실측에서 Lighthouse 가 FAILED_DOCUMENT_REQUEST 로
+    #: 페이지를 못 연 사례가 실제로 나왔고, 느린 페이지일수록 그렇게 될 확률이 높다 —
+    #: 즉 편향이 우리에게 유리한 방향으로 걸린다.
+    min_measured_ratio: float = Field(gt=0.0, le=1.0)
+    rationale_ko: str | None = None
+
+
+class PerfFieldSampling(BaseModel):
+    """실사용자 성능은 표본을 고를 필요가 없다."""
+
+    model_config = _FROZEN
+
+    #: 사이트 전체(origin) 값을 우선 쓴다.
+    #:
+    #: 구글이 크롬 사용자에게서 이미 모아 둔 값이라 한 번 물으면 사이트 전체 값이 함께
+    #: 온다. 페이지마다 부를 이유가 없고, 따라서 이 지표에는 표본 문제 자체가 없다.
+    prefer_origin_scope: bool = True
+    rationale_ko: str | None = None
+
+
+class SamplingPolicy(BaseModel):
+    model_config = _FROZEN
+
+    perf_lab: PerfLabSampling | None = None
+    perf_field: PerfFieldSampling | None = None
+
+
 class SpecCheck(BaseModel):
     model_config = _FROZEN
 
@@ -316,6 +353,14 @@ class ScoringSpec(BaseModel):
     confidence_levels: dict[str, float]
     status_policy: StatusPolicy
     url_importance: dict[str, float]
+    #: 비싸거나 느린 측정을 어디까지 할 것인가.
+    #:
+    #: 코드가 정하면 그 숫자를 나중에 아무도 변호하지 못한다. "왜 5장이냐" 에 답할 수
+    #: 있어야 하고, 그 답은 명세의 `rationale_ko` 에 실측과 함께 적혀 있다.
+    #:
+    #: 선언하지 않은 명세는 표본을 쓰지 않는다 — 있는 것을 다 잰다는 뜻이고, 그것이
+    #: 기존 명세들의 동작이다(ADR 0012).
+    sampling: SamplingPolicy | None = None
     categories: tuple[SpecCategory, ...] = Field(min_length=1)
     caps: tuple[SpecCap, ...] = ()
     gates: tuple[SpecGate, ...] = ()

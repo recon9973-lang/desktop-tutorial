@@ -175,6 +175,30 @@ url_importance:
   CONTENT_OR_PRODUCT: 1.0
   TAG_OR_FILTER: 0.5
   INTENTIONAL_NOINDEX: 0.0
+sampling:
+  perf_lab:
+    max_urls: 5
+    min_measured_ratio: 0.6
+    rationale_ko: >-
+      실험실 성능(LCP·CLS·TBT)은 페이지 하나를 실제로 브라우저에 띄워 재는 것이라
+      한 장에 16~60초가 걸린다(2026-08-01 실측: 16.0 / 24.1 / 28.3 / 59.8초). 100장을
+      전부 재면 한 시간이 넘어 진단이 끝나지 않는다. 그래서 중요도 상위 max_urls 장만
+      잰다 — 어느 페이지가 중요한지는 이 명세의 url_importance 가 이미 정하고 있다.
+      min_measured_ratio 는 계획한 표본 중 실제로 값을 받은 최소 비율이다. 이 아래로
+      떨어지면 그 검사는 측정 불가로 보고하고 배점을 잃는다. 없으면 **너무 느려서
+      로드에 실패한 페이지가 분모에서 빠져 사이트가 더 빨라 보인다** — 2026-08-01
+      실측에서 Lighthouse 가 FAILED_DOCUMENT_REQUEST 로 페이지를 못 연 사례가 실제로
+      나왔고, 느린 페이지일수록 그렇게 될 확률이 높다.
+  perf_field:
+    prefer_origin_scope: true
+    rationale_ko: >-
+      실사용자 성능(INP)은 구글이 크롬 사용자에게서 이미 모아 둔 값이라 한 번 물으면
+      사이트 전체 값이 함께 온다(originLoadingExperience). 2026-08-01 실측:
+      seoul.go.kr 은 페이지 값 LCP 1041ms·INP 96ms 와 사이트 전체 값 LCP 1011ms·INP
+      122ms 를 같은 응답에 담아 줬다. 따라서 이 지표에는 표본 문제가 없다 —
+      페이지마다 부를 이유가 없다. 방문자가 적어 구글이 공개하지 않는 사이트에서는
+      둘 다 비어 있고, 그것은 해당 없음이지 느리다는 뜻이 아니다(실측: 동네 병원
+      홈페이지는 페이지 값도 사이트 값도 없었다).
 categories:
 - id: s1_blocked
   weight: 30.0

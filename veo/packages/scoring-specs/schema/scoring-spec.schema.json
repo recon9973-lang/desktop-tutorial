@@ -263,6 +263,47 @@
           }
         }
       }
+    },
+    "sampling": {
+      "type": "object",
+      "description": "비싸거나 느린 측정을 어디까지 할 것인가. 코드가 정하면 그 숫자를 나중에 아무도 변호하지 못하므로 명세가 정한다.",
+      "properties": {
+        "perf_lab": {
+          "type": "object",
+          "required": [
+            "max_urls",
+            "min_measured_ratio"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "max_urls": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "min_measured_ratio": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "rationale_ko": {
+              "type": "string"
+            }
+          }
+        },
+        "perf_field": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "prefer_origin_scope": {
+              "type": "boolean"
+            },
+            "rationale_ko": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "$defs": {

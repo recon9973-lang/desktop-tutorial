@@ -37,6 +37,7 @@ from veo.seo.collectors.base import (
     SeoCollector,
     all_unknown,
     issue,
+    outcome,
     provider_payload,
     site_outcome,
     url_ratio_outcome,
@@ -128,6 +129,69 @@ class PerformanceUxCollector(SeoCollector):
 # --------------------------------------------------------------------------- #
 
 
+def lab_sample(context: CollectionContext, site: SiteObservation) -> list[str]:
+    """실험실 성능을 잴 페이지 목록. 중요도가 높은 순으로 명세가 정한 수만큼.
+
+    **표본을 고르는 곳이 여기 하나뿐이어야 한다.** 수집기와 파이프라인이 각자 고르면
+    "잰 페이지" 와 "재려던 페이지" 가 어긋나고, 그 어긋남은 조용히 점수를 올린다 —
+    잰 것만 분모에 넣게 되기 때문이다. 그래서 실제로 호출하는 쪽도 이 함수를 쓴다.
+
+    명세가 `sampling.perf_lab` 을 선언하지 않으면 전 페이지를 돌려준다. 표본을 쓰지
+    않는다는 뜻이고, 그것이 기존 명세들의 동작이다(ADR 0012).
+    """
+    policy = getattr(context.spec, "sampling", None)
+    lab = getattr(policy, "perf_lab", None) if policy else None
+    urls = [page.url for page in site.pages]
+    if lab is None:
+        return urls
+
+    ranked = sorted(site.pages, key=lambda page: (-page.importance_value, page.url))
+    return [page.url for page in ranked[: lab.max_urls]]
+
+
+def _too_thin(
+    context: CollectionContext, planned: list[str], measured: Mapping[str, Any]
+) -> str | None:
+    """표본이 너무 얇으면 그 이유를 돌려준다. 충분하면 ``None``.
+
+    이 문턱이 왜 필요한지는 실측이 말해 준다. 2026-08-01, Lighthouse 가
+    ``FAILED_DOCUMENT_REQUEST`` 로 페이지를 못 여는 사례가 실제로 나왔다. 그리고
+    **못 여는 이유는 대개 그 페이지가 느려서**다. 못 잰 페이지를 분모에서 빼면
+    느린 페이지만 골라 빼는 셈이고, 사이트는 실제보다 빨라 보인다.
+
+    문턱을 못 넘으면 검사는 측정 불가다. 측정 불가는 배점을 잃으므로(ADR 0016),
+    **덜 재서 이득을 볼 수 없다.**
+    """
+    policy = getattr(context.spec, "sampling", None)
+    lab = getattr(policy, "perf_lab", None) if policy else None
+    if lab is None or not planned:
+        return None
+
+    hit = sum(1 for url in planned if url in measured)
+    ratio = hit / len(planned)
+    if ratio >= lab.min_measured_ratio:
+        return None
+
+    return (
+        f"측정하려던 대표 페이지 {len(planned)}장 가운데 {hit}장만 {{label_ko}} 값을 "
+        f"받았습니다(기준 {lab.min_measured_ratio:.0%}). 표본이 얇아 사이트 전체를 "
+        "대표한다고 볼 수 없어 측정 불가로 보고합니다 — 값을 받지 못한 페이지는 대개 "
+        "느려서 열리지 않은 것이므로, 그것을 빼고 계산하면 실제보다 빠르게 나옵니다."
+    )
+
+
+def _sample_note(site: SiteObservation, measured: Mapping[str, Any]) -> str:
+    """"몇 장 중 몇 장을 쟀는지" 를 한 문장으로. 전부 쟀으면 빈 문자열."""
+    total = len(site.pages)
+    hit = sum(1 for page in site.pages if page.url in measured)
+    if hit >= total:
+        return ""
+    return (
+        f" 수집한 {total}장 가운데 중요도가 높은 {hit}장을 측정한 값입니다 — "
+        "나머지 페이지의 속도는 이 숫자에 포함되지 않았습니다."
+    )
+
+
 def _lab_metric(
     context: CollectionContext,
     site: SiteObservation,
@@ -162,6 +226,11 @@ def _lab_metric(
             ),
             [],
         )
+
+    planned = lab_sample(context, site)
+    thin = _too_thin(context, planned, measured)
+    if thin is not None:
+        return unknown_outcome(check_id, thin.format(label_ko=label_ko)), []
 
     evaluated = [page for page in site.pages if page.url in measured]
     failing = [
@@ -198,8 +267,14 @@ def _lab_metric(
             url: {"score": value["score"], "display_value": value.get("display_value")}
             for url, value in measured.items()
         },
-        clean_note_ko=f"{label_ko}이(가) 제공자 기준으로 양호합니다.",
-        affected_note_ko=f"{len(affected)}개 URL의 {label_ko}이(가) 제공자 기준에 미치지 못합니다.",
+        # 표본으로 쟀다는 사실을 숫자와 **같은 문장**에 적는다. 따로 떼어 놓으면
+        # 읽히지 않고, 읽히지 않으면 "사이트 전체가 양호하다" 로 오해된다.
+        # 전 페이지를 잰 경우에는 붙이지 않는다 — 늘 붙는 단서는 무시된다.
+        clean_note_ko=f"{label_ko}이(가) 제공자 기준으로 양호합니다.{_sample_note(site, measured)}",
+        affected_note_ko=(
+            f"{len(affected)}개 URL의 {label_ko}이(가) 제공자 기준에 미치지 못합니다."
+            f"{_sample_note(site, measured)}"
+        ),
         warning=not failing,
     )
     if result.status is CheckStatus.PASS:
@@ -247,6 +322,74 @@ _LAB_REMEDIATION_KO = {
 # --------------------------------------------------------------------------- #
 
 
+def _origin_category(
+    context: CollectionContext, payload: Mapping[str, Any]
+) -> tuple[str, str] | None:
+    """사이트 전체 범위의 INP 구간. 없으면 ``None``.
+
+    명세가 `sampling.perf_field.prefer_origin_scope` 를 켜지 않았으면 쓰지 않는다 —
+    기존 명세는 페이지 값만 보던 동작 그대로다(ADR 0012).
+    """
+    policy = getattr(context.spec, "sampling", None)
+    field = getattr(policy, "perf_field", None) if policy else None
+    if field is None or not field.prefer_origin_scope:
+        return None
+
+    for key, entry in payload.items():
+        if not isinstance(entry, Mapping) or entry.get("scope") != "ORIGIN":
+            continue
+        metrics = entry.get("metrics")
+        if not isinstance(metrics, Mapping):
+            continue
+        metric = metrics.get(_CRUX_METRIC)
+        if not isinstance(metric, Mapping):
+            continue
+        category = str(metric.get("category", "")).upper()
+        if category in _CRUX_STATUS:
+            return str(key), category
+    return None
+
+
+def _origin_outcome(
+    context: CollectionContext,
+    ledger: EvidenceLedger,
+    check_id: str,
+    origin: tuple[str, str],
+) -> tuple[CheckOutcome, list[IssueDraft]]:
+    """사이트 전체 값 하나로 판정한다. 범위를 문구에 반드시 적는다."""
+    key, category = origin
+    evidence = [
+        ledger.of(
+            "crux_record",
+            url=key,
+            payload=f"{_CRUX_METRIC}={category} (scope=ORIGIN)",
+            excerpt=f"INP(field) 사이트 전체 구간: {category}",
+            detail={"metric": _CRUX_METRIC, "category": category, "scope": "ORIGIN"},
+        )
+    ]
+    note = (
+        f"페이지별 CrUX 표본이 없어 **사이트 전체** 실사용자 값으로 판정했습니다"
+        f"(구간 {category}). 특정 페이지의 값이 아니라 방문이 많은 페이지가 지배하는 "
+        "사이트 평균입니다."
+    )
+    status = _CRUX_STATUS[category]
+    return (
+        outcome(
+            check_id,
+            status,
+            confidence_level=OFFICIAL_API,
+            # 사이트 전체 값은 페이지 비율이 아니다. 하나의 사실이므로 1/1 로 센다 —
+            # 여기에 페이지 수를 넣으면 있지도 않은 페이지별 판정을 지어내는 것이 된다.
+            affected=1.0 if status is not CheckStatus.PASS else 0.0,
+            evaluated=1.0,
+            evidence_ids=evidence,
+            observed_value={key: {"category": category, "scope": "ORIGIN"}},
+            note=note,
+        ),
+        [],
+    )
+
+
 def _field_metric(
     context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
@@ -271,13 +414,27 @@ def _field_metric(
             categories[page.url] = category
 
     if not categories:
-        # CrUX only publishes a URL that has enough real-user samples. No sample is a
-        # fact about traffic volume, not a fault in the site.
+        # 페이지별 표본이 없으면 **사이트 전체(origin) 값**을 본다.
+        #
+        # 구글은 크롬 사용자에게서 모은 값을 두 범위로 준다: 이 URL 과 이 사이트 전체.
+        # 2026-08-01 실측(seoul.go.kr) — 페이지 값 LCP 1041ms·INP 96ms, 사이트 전체 값
+        # LCP 1011ms·INP 122ms 가 **같은 응답**에 함께 왔다. 페이지마다 부를 이유가
+        # 없고, 따라서 이 지표에는 표본 문제가 없다.
+        #
+        # 범위를 섞지는 않는다. 사이트 전체 값은 방문이 많은 페이지가 지배하므로 특정
+        # URL 에 갖다 붙이면 그 URL 이 겪지 않은 트래픽으로 칭찬하거나 깎게 된다.
+        # 그래서 페이지 값이 하나라도 있으면 그것만 쓰고, 하나도 없을 때만 사이트 값을
+        # 쓰되 **문구에 그렇게 적는다.**
+        origin = _origin_category(context, payload)
+        if origin is not None:
+            return _origin_outcome(context, ledger, check_id, origin)
+
+        # 페이지 값도 사이트 값도 없다. 방문자 수에 관한 사실이지 사이트의 결함이 아니다.
         return (
             not_applicable_outcome(
                 check_id,
-                "수집한 URL에 CrUX 표본이 없어 field 값이 존재하지 않습니다. 실제 방문자 "
-                "표본이 쌓이면 자동으로 평가 대상이 됩니다.",
+                "수집한 URL에도 사이트 전체에도 CrUX 표본이 없어 field 값이 존재하지 "
+                "않습니다. 실제 방문자 표본이 쌓이면 자동으로 평가 대상이 됩니다.",
             ),
             [],
         )
