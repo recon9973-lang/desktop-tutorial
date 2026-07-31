@@ -28,6 +28,7 @@
 
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 
@@ -195,4 +196,37 @@ def test_the_unit_job_runs_without_a_database() -> None:
     # 주석에서 이 이름을 언급하는 것은 괜찮다. **설정으로** 주면 안 된다.
     assert "VEO_TEST_DATABASE_URL" not in settings, (
         "단위 잡에 DB 주소를 주면 DB 없이 도는 경로가 사라집니다"
+    )
+
+
+def test_no_test_builds_a_connection_url_with_str() -> None:
+    """`str(url)` 은 비밀번호를 `***` 로 가린다.
+
+    그 문자열로 접속하면 비밀번호가 literal `***` 이 되어 인증에 실패한다. 로컬에서는
+    소켓 접속이라 비밀번호가 없어 드러나지 않고, **비밀번호를 쓰는 CI 에서만** 터진다 —
+    로컬 초록불이 구조적으로 잡을 수 없는 종류다.
+
+    옆 데이터베이스를 가리키는 주소를 만들 때는 `render_as_string(hide_password=False)`
+    를 쓴다.
+
+    글자 찾기가 아니라 **구문 나무**로 본다. 설명하는 문장 안의 `str(url)` 까지 잡으면
+    이 규칙을 문서로 남길 수가 없다.
+    """
+    offenders: list[str] = []
+    for path in TESTS_ROOT.rglob("test_*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if not (isinstance(node.func, ast.Name) and node.func.id == "str"):
+                continue
+            if not node.args:
+                continue
+            source = ast.dump(node.args[0])
+            if "make_url" in source or "'set'" in source:
+                offenders.append(f"{path.relative_to(VEO_ROOT)}:{node.lineno}")
+
+    assert offenders == [], (
+        "접속 주소를 `str()` 로 만들면 비밀번호가 가려집니다. "
+        f"`render_as_string(hide_password=False)` 를 쓰십시오: {offenders}"
     )

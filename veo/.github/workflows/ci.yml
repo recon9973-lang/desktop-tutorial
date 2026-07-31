@@ -259,10 +259,16 @@ jobs:
       # 설치된 의존성 트리 전체를 PyPI 취약점 DB(OSV) 와 대조한다.
       # 취약점이 나오면 실패시킨다. 예외가 필요하면 --ignore-vuln 에
       # 근거(사유·재평가 날짜)를 주석으로 함께 남긴다.
+      # `--skip-editable`: 편집 설치된 `veo-api` 자신은 PyPI 에 없어 감사할 수 없다.
+      # 없으면 "Dependency not found on PyPI" 로 잡 전체가 실패한다. 이 도구는 우리
+      # 코드가 아니라 **의존성**을 보는 것이므로 빼는 것이 맞다.
+      #
+      # `--strict` 는 함께 못 쓴다. 건너뛴 항목을 전부 실패로 치므로 위의 제외와
+      # 정면으로 부딪힌다. 취약점이 나오면 어차피 종료코드가 1 이라 게이트는 선다.
       - name: 취약점 스캔
         run: |
           pip install -e "apps/api"
-          pip-audit --strict --progress-spinner off
+          pip-audit --skip-editable --progress-spinner off
 
   # ===========================================================================
   # 비밀값 스캔

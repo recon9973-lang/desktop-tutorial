@@ -23,7 +23,9 @@ dependencies = [
     "argon2-cffi>=23.1,<26.0",
     # AES-256-GCM for the provider-credential vault. Hand-rolling authenticated
     # encryption is not an option for a store of customer API secrets.
-    "cryptography>=43.0,<47.0",
+    # 46.0.7 이하는 GHSA-537c-gmf6-5ccf 에 걸린다. 48.0.1 에서 고쳐졌고, 그 버전은
+    # 옛 상한(<47.0) 밖이라 상한도 함께 올렸다. CI 의 의존성 감사가 잡아 준 것이다.
+    "cryptography>=48.0.1,<49.0",
     "structlog>=24.4,<26.0",
     "python-multipart>=0.0.12,<1.0",
     "uvicorn[standard]>=0.32,<1.0",

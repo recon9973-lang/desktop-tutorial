@@ -93,10 +93,17 @@ ANSWER_KEY = AnswerRecordKey(
 
 
 def _derive(suffix: str) -> str | None:
+    """옆 데이터베이스를 가리키는 주소.
+
+    `str(url)` 을 쓰면 안 된다. SQLAlchemy 의 `URL.__str__` 은 비밀번호를 `***` 로
+    가리므로, 그 문자열로 접속하면 **비밀번호가 literal `***`** 이 되어 인증에
+    실패한다. 로컬에서는 소켓 접속이라 비밀번호가 없어 드러나지 않았고, CI 의
+    PostgreSQL 컨테이너에서 처음 터졌다.
+    """
     if not SHARED_DATABASE_URL:
         return None
     url = make_url(SHARED_DATABASE_URL)
-    return str(url.set(database=f"{url.database}{suffix}"))
+    return url.set(database=f"{url.database}{suffix}").render_as_string(hide_password=False)
 
 
 SOURCE_URL = _derive("_ops_backup_src")
@@ -121,7 +128,11 @@ def _url(raw: str) -> URL:
 
 
 def _admin_engine(raw: str) -> Engine:
-    return create_engine(str(_url(raw).set(database="postgres")), isolation_level="AUTOCOMMIT")
+    return create_engine(
+        # `str()` 로 만들면 비밀번호가 `***` 로 가려져 인증에 실패한다.
+        _url(raw).set(database="postgres").render_as_string(hide_password=False),
+        isolation_level="AUTOCOMMIT",
+    )
 
 
 def _recreate(raw: str) -> None:
@@ -759,7 +770,11 @@ def test_backup_refuses_a_database_that_is_not_a_migrated_veo_database(
 ) -> None:
     """Backing up the wrong, empty database is only discovered during a restore."""
     assert TARGET_URL is not None
-    scratch = str(make_url(TARGET_URL).set(database="veo_ops_backup_not_veo"))
+    scratch = (
+        make_url(TARGET_URL)
+        .set(database="veo_ops_backup_not_veo")
+        .render_as_string(hide_password=False)
+    )
     _recreate(scratch)
     try:
         result = _backup(scratch, tmp_path / "out", tmp_path)

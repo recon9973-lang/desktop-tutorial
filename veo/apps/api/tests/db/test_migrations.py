@@ -39,7 +39,8 @@ def _migration_database_url() -> str | None:
     if not SHARED_DATABASE_URL:
         return None
     url = make_url(SHARED_DATABASE_URL)
-    return str(url.set(database=f"{url.database}_migrations"))
+    # `str(url)` 은 비밀번호를 `***` 로 가린다. 그 문자열로 접속하면 인증에 실패한다.
+    return url.set(database=f"{url.database}_migrations").render_as_string(hide_password=False)
 
 
 DATABASE_URL = _migration_database_url()
@@ -58,7 +59,10 @@ def migration_database() -> Iterator[None]:
     """Create the throwaway database for this module, and drop it afterwards."""
     assert DATABASE_URL is not None
     url = make_url(DATABASE_URL)
-    admin = create_engine(str(url.set(database="postgres")), isolation_level="AUTOCOMMIT")
+    admin = create_engine(
+        url.set(database="postgres").render_as_string(hide_password=False),
+        isolation_level="AUTOCOMMIT",
+    )
     name = url.database
     try:
         with admin.connect() as connection:
