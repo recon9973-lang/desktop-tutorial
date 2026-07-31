@@ -37,13 +37,26 @@ from veo.contracts.enums import Role
 from veo.db.models.identity import AuditLog, Organization, User
 from veo.db.session import get_db
 
+#: 이 파일이 사는 디렉터리. 아래 훅이 자기 것만 표시하도록 하는 기준이다.
+_PACKAGE = Path(__file__).resolve().parent
+
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """Every test in this package talks to PostgreSQL — mark them all in one place."""
+    """이 **패키지의** 테스트만 PostgreSQL 필요로 표시한다.
+
+    한동안 `for item in items:` 를 조건 없이 돌았다. 이 훅은 자기 디렉터리가 아니라
+    **세션 전체의 항목**을 받으므로, 그 한 줄이 리포지터리의 모든 테스트를
+    `requires_postgres` 로 만들고 DB 주소가 없으면 전부 건너뛰게 했다.
+
+    결과: DB 없이 도는 CI 의 `단위 테스트` 잡이 4,261건을 전부 skip 하고 초록불을
+    냈다. **한 건도 실행하지 않은 채로.** 지침서 0-F 가 말하는 그대로다.
+    """
     skip = pytest.mark.skip(
         reason="set VEO_TEST_DATABASE_URL to run resource tests against PostgreSQL"
     )
     for item in items:
+        if _PACKAGE not in Path(str(item.fspath)).resolve().parents:
+            continue
         item.add_marker(pytest.mark.requires_postgres)
         if not DATABASE_URL:
             item.add_marker(skip)

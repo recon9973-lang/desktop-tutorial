@@ -243,7 +243,12 @@ HMAC-SHA256은 빠르고 행마다 salt가 없어, 네이버 `customer_id`처럼
 - 콘솔 13개 화면이 모두 엔진 자료를 읽는다. 공개 진단 3개는 전부 자리표시자
 - `/console/scoring-versions` 는 발행 명세를 **웹이 손으로 적어 둔 목록**에서 읽는다
   (`apps/web/src/lib/scoring.ts`). 엔진의 명세 등록부와 어긋나도 아무도 모른다
-- `tests/contract` · `e2e` · `integration` · `security` 는 **디렉터리가 비어 있고,
-  CI 의 계약 잡은 파일이 없으면 경고만 찍고 통과시킨다** — 초록불이 검증을 뜻하지 않는다
+- 루트의 `tests/e2e` · `tests/integration` 은 비어 있다 (계약·보안은
+  `apps/api/tests/contract`·`security` 에 있다). 전 과정 시나리오 검증은 미착수
+- **CI 는 2026-07-31 까지 모든 푸시에서 전부 실패했고 아무도 보지 않았다.**
+  `working-directory: veo` 가 남아 배포된 리포지터리에서 셸이 시작조차 못 했다.
+  같은 날 고쳤고 `tests/release/test_ci_paths.py` 가 재발을 막는다
+- **CI 를 필수 상태 검사(required check)로 지정해야 한다.** 저장소 설정이라 코드로
+  할 수 없다. 지정 전까지 CI 는 빨간불이어도 머지를 막지 못한다
 - PDF 내보내기 (HTML/CSV/XLSX 는 있음)
 - PageSpeed · Search Console · Anthropic · Gemini · Perplexity 자격증명
