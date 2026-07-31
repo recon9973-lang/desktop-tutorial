@@ -49,6 +49,18 @@
 .historyWhen { font-size: var(--veo-font-size-200); }
 .historyWho { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
 
+/* 나란히 놓을 수 없는 점. 점수를 지우지는 않는다 — 그 실행은 실제로 일어났다.
+   다만 위의 점과 이어서 읽으면 안 된다는 것을 말한다. */
+.historyIncomparable {
+  margin: var(--veo-space-1) 0 var(--veo-space-2);
+  padding: var(--veo-space-2) var(--veo-space-3);
+  border-left: 2px solid var(--veo-color-warning);
+  background: var(--veo-color-surface-sunken);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  line-height: 1.6;
+}
+
 .siteList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--veo-space-3); }
 
 .scanForm { display: flex; flex-direction: column; gap: var(--veo-space-4); max-width: 32rem; }

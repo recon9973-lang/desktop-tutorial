@@ -26,10 +26,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
+from veo.collect.contract import CollectionContext
+from veo.compare.conditions import MeasurementConditions, describe_differences
 from veo.contracts.enums import IssueState, ScanScope, Surface
 from veo.db.models.analysis import CheckResult, Evidence, Issue, Scan, ScanRun, ScoreResult
 from veo.db.models.identity import Site, User
 from veo.scoring.models import CheckStatus
+from veo.seo.conditions import (
+    DEFAULT_USER_AGENT,
+    DEVICE_PROFILE,
+    conditions_for_scan,
+    conditions_from_stored,
+)
 from veo.seo.service import SeoScanResult, load_seo_spec
 
 #: 이 코드가 만든 결과임을 나중에 알아볼 수 있게 하는 표식. 수집 방식이 바뀌면 올린다.
@@ -77,6 +85,15 @@ class HistoryEntry:
     spec_checksum: str
     #: 실행한 사람. 계정이 지워졌거나 예약 실행이면 ``None`` — 기록 자체는 남는다.
     requested_by_name: str | None
+    #: 이 점을 목록의 **가장 최근 실행과** 나란히 놓아도 되는가.
+    #:
+    #: 추이 그래프는 점을 선으로 잇는다. 조건이 다른 두 점을 이으면 그 선은 사이트가
+    #: 변했다는 뜻으로 읽히는데, 실제로 변한 것은 재는 방법이다. 최신 실행 자신은 항상
+    #: ``True`` 이고, 조건이 기록되지 않은 옛 실행은 ``False`` 다 — 어떻게 쟀는지 모르는
+    #: 것과 같게 쟀다는 것은 다르다.
+    comparable_with_latest: bool = True
+    #: 왜 나란히 놓을 수 없는지. 놓을 수 있으면 ``None``.
+    incomparable_reason_ko: str | None = None
 
 
 def _severity_index() -> dict[str, str]:
@@ -144,16 +161,24 @@ def save_scan_run(
     principal: Principal,
     site_id: uuid.UUID,
     result: SeoScanResult,
+    context: CollectionContext,
     urls_attempted: int,
     urls_collected: int,
     started_at: datetime | None = None,
     report_snapshot: dict[str, object] | None = None,
 ) -> SavedScan:
-    """한 번의 진단을 남긴다 — 실행·점수·항목별 판정·근거·이슈까지."""
+    """한 번의 진단을 남긴다 — 실행·점수·항목별 판정·근거·이슈, 그리고 **측정 조건**까지.
+
+    ``context`` 가 필수인 이유. 이 함수는 한동안 조건 칸을 상수로 채웠다 —
+    ``device_profile="DESKTOP"``(데스크톱 브라우저는 관여하지 않는다),
+    ``provider_states={}``(맥락이 알고 있던 것을 버렸다). 기본값을 주면 호출자가 그냥
+    안 넘기고, 그러면 같은 일이 조용히 반복된다.
+    """
     site = _site_for(db, principal=principal, site_id=site_id)
     scan = _scan_for(db, principal=principal, site=site)
 
     finished = datetime.now(UTC)
+    conditions = conditions_for_scan(result, context, collector_version=COLLECTOR_VERSION)
     run = ScanRun(
         organization_id=principal.organization_id,
         scan_id=scan.id,
@@ -164,11 +189,15 @@ def save_scan_run(
         started_at=started_at or finished,
         finished_at=finished,
         collector_version=COLLECTOR_VERSION,
-        device_profile="DESKTOP",
+        user_agent=DEFAULT_USER_AGENT,
+        device_profile=DEVICE_PROFILE,
         urls_attempted=urls_attempted,
         urls_collected=urls_collected,
-        provider_states={},
+        # 상태를 그대로 남긴다. DEGRADED 는 ENABLED 와 같은 측정이 아니다 — 한쪽의
+        # 공급자가 흔들려 생긴 UNKNOWN 이 사이트 품질 차이로 읽히면 안 된다.
+        provider_states={name: str(state) for name, state in context.provider_states.items()},
         partial_reasons=[],
+        measurement_conditions=conditions.as_dict(),
         requested_by_user_id=principal.user_id,
         report_snapshot=report_snapshot,
     )
@@ -356,6 +385,10 @@ def read_scan_history(
     )
     assert_tenant_scoped(statement, principal.organization_id)
 
+    rows = db.execute(statement).all()
+    # 목록은 최신순이므로 첫 줄이 기준이다. 기준 자신은 늘 자기와 비교 가능하다.
+    latest = conditions_from_stored(rows[0][0].measurement_conditions) if rows else None
+
     return [
         HistoryEntry(
             scan_run_id=run.id,
@@ -370,9 +403,57 @@ def read_scan_history(
             spec_version=score.spec_version,
             spec_checksum=score.spec_checksum,
             requested_by_name=display_name,
+            comparable_with_latest=verdict.ok,
+            incomparable_reason_ko=verdict.reason_ko,
         )
-        for run, score, display_name in db.execute(statement).all()
+        for index, (run, score, display_name) in enumerate(rows)
+        if (verdict := _comparability(latest, run, is_latest=index == 0)) is not None
     ]
+
+
+@dataclass(frozen=True, slots=True)
+class _Comparability:
+    ok: bool
+    reason_ko: str | None
+
+
+_COMPARABLE = _Comparability(ok=True, reason_ko=None)
+
+
+def _comparability(
+    latest: MeasurementConditions | None, run: ScanRun, *, is_latest: bool
+) -> _Comparability:
+    """이 실행을 최신 실행과 나란히 놓아도 되는지, 안 되면 왜 안 되는지.
+
+    조건이 없는 쪽은 **비교 불가**로 둔다. 비교 가능으로 두면 기록이 없다는 사실이
+    "같은 조건이었다" 는 주장으로 바뀌는데, 그 둘은 전혀 다른 말이다.
+    """
+    if is_latest:
+        return _COMPARABLE
+
+    mine = conditions_from_stored(run.measurement_conditions)
+    if latest is None or mine is None:
+        return _Comparability(
+            ok=False,
+            reason_ko=(
+                "이 실행은 측정 조건이 기록되기 전에 저장되어, 최근 실행과 같은 조건에서 "
+                "쟀는지 확인할 수 없습니다."
+            ),
+        )
+
+    blocking = [
+        difference for difference in describe_differences(mine, latest) if difference.blocking
+    ]
+    if not blocking:
+        return _COMPARABLE
+
+    return _Comparability(
+        ok=False,
+        reason_ko=(
+            "최근 실행과 측정 조건이 다릅니다 — "
+            + " / ".join(difference.explanation_ko for difference in blocking)
+        ),
+    )
 
 
 def read_scan_report(

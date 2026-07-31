@@ -135,6 +135,18 @@ def scan_result():  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
+def scan_context():  # type: ignore[no-untyped-def]
+    """그 결과를 만들어 낸 수집 맥락.
+
+    ``save_scan_run`` 은 이제 이것을 요구한다. 측정 조건은 여기에만 있고, 저장하는 쪽이
+    추측하면 상수가 사실 자리에 앉는다 — 실제로 그렇게 되어 있었다.
+    """
+    from tests.seo.support import build_context
+
+    return build_context(FIXTURE_NAME)
+
+
+@pytest.fixture
 def user(db_session, organization):  # type: ignore[no-untyped-def]
     """진단을 실행하는 직원 한 명."""
     from veo.db.models.identity import User

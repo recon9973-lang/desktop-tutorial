@@ -165,6 +165,11 @@ class ScanHistoryEntry(BaseModel):
     spec_checksum: str
     #: 실행한 사람. 계정이 지워졌거나 예약 실행이면 비어 있다 — 기록 자체는 남는다.
     requested_by_name: str | None
+    #: 이 점을 목록의 가장 최근 실행과 나란히 놓아도 되는가. 조건이 기록되지 않은 옛
+    #: 실행은 `false` 다 — 어떻게 쟀는지 모르는 것과 같게 쟀다는 것은 다른 말이다.
+    comparable_with_latest: bool = True
+    #: 왜 나란히 놓을 수 없는지. 놓을 수 있으면 비어 있다.
+    incomparable_reason_ko: str | None = None
 
 
 class ScanHistoryPayload(BaseModel):

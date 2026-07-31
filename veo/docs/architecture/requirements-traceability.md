@@ -174,6 +174,8 @@
 | 경쟁사는 동일 수집 범위·규칙으로 측정 | `veo/compare/conditions.py` — `assert_comparable()` | `tests/compare/` (25건) |
 | 비교군이 바뀌면 SOV도 바뀜을 표시 | SOV 값에 비교군·안내 동봉 | `tests/competitors/` |
 | 데이터 차이 경고 | `describe_differences()` — 차단·비차단 모두 보고 | `tests/compare/` |
+| 측정 조건을 결과와 함께 저장 | `scan_runs.measurement_conditions` — `veo/seo/conditions.py` | `tests/seo/test_scan_history.py` |
+| 조건이 다른 실행은 추이에서 잇지 않는다 | 이력 각 줄의 `comparable_with_latest` · 화면 문구 | `tests/seo/test_scan_history.py` |
 | 이슈 → 수정 → 재검증 | `veo/issues/lifecycle.py` 상태 기계 | `tests/issues/` |
 | 재발 추적 | 이슈 지문 + `RECURRED` 횟수·주기 | `tests/issues/` |
 | 발행 버전 불변 | `veo/lab/versions.py` — PUBLISHED 수정 거부 | `tests/lab/` |

@@ -5854,12 +5854,19 @@ export interface components {
         ScanHistoryEntry: {
             /** Band Id */
             band_id: string | null;
+            /**
+             * Comparable With Latest
+             * @default true
+             */
+            comparable_with_latest: boolean;
             /** Confidence */
             confidence: number;
             /** Coverage */
             coverage: number;
             /** Finished At */
             finished_at: string | null;
+            /** Incomparable Reason Ko */
+            incomparable_reason_ko?: string | null;
             /** Requested By Name */
             requested_by_name: string | null;
             /**

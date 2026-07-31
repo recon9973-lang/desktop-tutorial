@@ -11151,6 +11151,11 @@
             ],
             "title": "Band Id"
           },
+          "comparable_with_latest": {
+            "default": true,
+            "title": "Comparable With Latest",
+            "type": "boolean"
+          },
           "confidence": {
             "title": "Confidence",
             "type": "number"
@@ -11170,6 +11175,17 @@
               }
             ],
             "title": "Finished At"
+          },
+          "incomparable_reason_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incomparable Reason Ko"
           },
           "requested_by_name": {
             "anyOf": [

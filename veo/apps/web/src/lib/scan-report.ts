@@ -23,6 +23,15 @@ export interface HistoryEntry {
   readonly specVersion: string;
   /** 실행한 사람. 계정이 지워졌거나 예약 실행이면 비어 있다. */
   readonly requestedByName: string | null;
+  /**
+   * 이 점을 가장 최근 실행과 나란히 놓아도 되는가.
+   *
+   * 이력 목록은 점을 세로로 늘어놓아 사람이 눈으로 잇게 만든다. 조건이 다른 두 점을
+   * 이으면 그 선은 **사이트가 변했다** 는 뜻으로 읽히는데, 실제로 변한 것은 재는
+   * 방법이다. 그래서 못 잇는 점에는 이유를 붙인다.
+   */
+  readonly comparableWithLatest: boolean;
+  readonly incomparableReasonKo: string | null;
 }
 
 /** 명세가 정한 점수 구간. 화면에 적어 두지 않는다 — 명세가 바뀌면 화면이 거짓말을 한다. */
@@ -85,6 +94,9 @@ export async function readHistory(
       confidence: num(item, 'confidence'),
       specVersion: str(item, 'spec_version'),
       requestedByName: strOrNull(item, 'requested_by_name'),
+      // 없으면 비교 불가로 읽는다. 모르는 것을 '같은 조건' 으로 바꾸지 않는다.
+      comparableWithLatest: item['comparable_with_latest'] === true,
+      incomparableReasonKo: strOrNull(item, 'incomparable_reason_ko'),
     };
   });
 

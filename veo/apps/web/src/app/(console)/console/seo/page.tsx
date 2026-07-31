@@ -168,6 +168,16 @@ function HistoryStrip({
                   {entry.requestedByName ?? '실행자 기록 없음'} · {entry.urlsCollected}페이지
                 </span>
               </Link>
+              {/*
+                점을 나란히 놓으면 사람은 눈으로 잇는다. 조건이 다른 두 점을 이은 선은
+                사이트가 변했다는 뜻으로 읽히는데, 변한 것은 재는 방법이다.
+              */}
+              {!entry.comparableWithLatest ? (
+                <p className={own.historyIncomparable}>
+                  {entry.incomparableReasonKo ??
+                    '최근 실행과 같은 조건에서 쟀는지 확인할 수 없습니다.'}
+                </p>
+              ) : null}
             </li>
           );
         })}

@@ -202,6 +202,9 @@ def run_site_scan(
             principal=principal,
             site_id=payload.site_id,
             result=result,
+            # 맥락째 넘긴다. 어떤 조건에서 쟀는지는 여기서만 알 수 있고, 저장하는 쪽에서
+            # 추측하면 상수가 사실 자리에 앉는다.
+            context=context,
             urls_attempted=outcome.attempted,
             urls_collected=len(outcome.documents),
             report_snapshot=report.model_dump(mode="json"),
@@ -252,6 +255,8 @@ def read_site_scan_history(
                     spec_version=entry.spec_version,
                     spec_checksum=entry.spec_checksum,
                     requested_by_name=entry.requested_by_name,
+                    comparable_with_latest=entry.comparable_with_latest,
+                    incomparable_reason_ko=entry.incomparable_reason_ko,
                 )
                 for entry in entries
             ],

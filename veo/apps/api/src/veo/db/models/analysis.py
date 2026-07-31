@@ -185,6 +185,18 @@ class ScanRun(Base, OrganizationScopedMixin, ImmutableMixin):
         JSONB, nullable=True, comment="그때 반환한 ScanPayload 전문."
     )
 
+    #: 이 점수가 **어떤 조건에서** 나왔는지.
+    #:
+    #: 명세·수집기 판·본 페이지 수·언어·기기·렌더링 방식·응답한 공급자·측정 시각. 이것이
+    #: 없으면 점수는 단위 없는 숫자이고, 두 실행을 나란히 놓을 수 있는지 판단할 근거가
+    #: 없다 — 조건이 달라서 생긴 차이가 사이트가 나아졌다는 뜻으로 읽힌다.
+    #:
+    #: 이 칸이 생기기 전에 저장된 실행은 ``NULL`` 이다. 그럴듯한 값으로 채우지 않는다.
+    #: 어떻게 쟀는지 모르는 실행은 실제로 비교할 수 없다.
+    measurement_conditions: Mapped[JsonObject | None] = mapped_column(
+        JSONB, nullable=True, comment="MeasurementConditions.as_dict(). 옛 실행은 NULL."
+    )
+
     expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
     )
