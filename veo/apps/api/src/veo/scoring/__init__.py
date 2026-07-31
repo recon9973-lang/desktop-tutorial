@@ -22,6 +22,7 @@ from veo.scoring.models import (
     SpecGate,
     SpecStatus,
 )
+from veo.scoring.severity import SEVERITY_VOCABULARY, SeverityTerm
 from veo.scoring.spec import (
     available_specs,
     build_spec,
@@ -34,6 +35,7 @@ from veo.scoring.spec import (
 )
 
 __all__ = [
+    "SEVERITY_VOCABULARY",
     "AppliedCap",
     "CategoryScore",
     "CheckOutcome",
@@ -44,6 +46,7 @@ __all__ = [
     "ScoringSpec",
     "ScoringSpecError",
     "Severity",
+    "SeverityTerm",
     "SpecCap",
     "SpecCategory",
     "SpecCheck",
