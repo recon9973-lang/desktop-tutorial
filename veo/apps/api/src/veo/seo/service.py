@@ -32,6 +32,7 @@ from veo.scoring import (
 )
 from veo.seo.collectors import CATEGORY_COLLECTORS
 from veo.seo.observation import build_observation
+from veo.seo.parsing.sitemap import parse_sitemap
 
 SPEC_ID = "veo.seo.readiness"
 
@@ -90,9 +91,36 @@ def score_collection(context: CollectionContext, collected: CollectionResult) ->
         score=result,
         issues=collected.issues,
         evidence=_deduplicate(collected.evidence),
-        notes_ko=collected.notes_ko,
+        notes_ko=_scope_notice(context) + collected.notes_ko,
         summary_ko=summarise(context.spec, result),
         unknown_checks=_unknown_checks(context.spec, result.outcomes),
+    )
+
+
+def _scope_notice(context: CollectionContext) -> tuple[str, ...]:
+    """측정 범위가 사이트 전체가 아니면 그 사실을 결과 맨 앞에 적는다.
+
+    범위 밖 페이지는 이번 점수에 존재하지 않는다 — 그 사실을 숨기면 "이 점수가
+    사이트 전체" 로 읽히고, 그것이 우리가 타사에서 잡아낸 그럴듯한 완결성이다.
+    사이트맵이 선언한 주소 수를 함께 적어, 사이트가 대략 얼마나 더 큰지 읽는 사람이
+    가늠할 수 있게 한다. 배점은 건드리지 않는다 — 범위 밖이라고 분모에서 빼면
+    큰 사이트일수록 덜 재서 유리해진다.
+    """
+    if context.crawl_is_exhaustive:
+        return ()
+    measured = len(context.documents)
+    declared = 0
+    for body in context.sitemap_documents.values():
+        declared += len(parse_sitemap(body).locations)
+    size_hint = (
+        f" 사이트맵은 약 {declared:,}개 주소를 선언하고 있습니다."
+        if declared > measured
+        else ""
+    )
+    return (
+        f"이번 진단은 {measured}장을 측정했으며, 사이트 전체를 본 것으로 확인되지 "
+        f"않았습니다.{size_hint} 측정하지 못한 페이지는 이번 점수의 범위 밖입니다. "
+        "페이지 간 비교 검사(중복·고아 페이지·깨진 링크)는 전체를 재야 판정됩니다.",
     )
 
 

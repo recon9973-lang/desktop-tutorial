@@ -35,8 +35,15 @@ export type ConsoleOutcome<T> =
       readonly retryAfterSeconds: number | null;
     };
 
-/** 진단은 대상 사이트를 실제로 가져오므로 목록 조회와 시간 감각이 다르다. */
-const SCAN_TIMEOUT_MS = 120_000;
+/**
+ * 진단은 대상 사이트를 실제로 가져오므로 목록 조회와 시간 감각이 다르다.
+ *
+ * 240초인 이유: 크롤 상한이 200장이고, 느린 사이트 실측이 100장에 크롤 약 50초 +
+ * 성능 측정 약 30초였다. 200장이면 최악 ~130초라 120초 제한으로는 느린 사이트의
+ * 진단이 완주 직전에 끊긴다 — 서버는 일을 다 했는데 화면만 실패하는 형태라
+ * 원인을 찾기 어렵다.
+ */
+const SCAN_TIMEOUT_MS = 240_000;
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 function classify(status: number): ConsoleFailure {

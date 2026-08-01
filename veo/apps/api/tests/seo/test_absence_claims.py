@@ -83,6 +83,27 @@ class TestAFoundViolationStaysAFailure:
         assert outcome.status is CheckStatus.FAIL
 
 
+class TestATruncatedScanSaysSoUpFront:
+    """범위 밖 페이지는 이번 점수에 존재하지 않는다 — 그 사실이 결과 맨 앞에 있어야 한다."""
+
+    def test_a_truncated_crawl_carries_a_scope_notice(self) -> None:
+        result = run_seo_scan(build_context("healthy", crawl_is_exhaustive=False))
+
+        assert result.notes_ko, "잘린 크롤인데 아무 고지가 없다"
+        first = result.notes_ko[0]
+        assert "사이트 전체를 본 것으로 확인되지 않았습니다" in first
+        assert "범위 밖" in first
+
+    def test_a_whole_site_crawl_carries_no_scope_notice(self) -> None:
+        """여유 있을 때까지 띄우면 고지가 배경이 되어 급할 때 아무도 읽지 않는다."""
+        result = run_seo_scan(build_context("healthy", crawl_is_exhaustive=True))
+
+        assert all(
+            "사이트 전체를 본 것으로 확인되지 않았습니다" not in note
+            for note in result.notes_ko
+        )
+
+
 class TestSeeingFewerPagesNeverRaisesTheScore:
     def test_the_truncated_crawl_scores_at_most_the_whole_crawl(self) -> None:
         """덜 재서 점수가 오르면 진단 도구가 만들면 안 되는 유인이 생긴다.

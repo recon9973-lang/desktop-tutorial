@@ -37,6 +37,7 @@ export function ScanReport({ result, bands, view }: ScanReportProps) {
   return (
     <div className={styles.report}>
       <Headline result={result} bands={bands} />
+      <Notes result={result} />
       <Improvements result={result} />
       <Categories result={result} />
       {/* 상세 보기에서는 항목별 판정 안에 조치 안내가 들어가므로 목록을 두 번 그리지
@@ -50,6 +51,29 @@ export function ScanReport({ result, bands, view }: ScanReportProps) {
       {detailed ? <OutOfScope result={result} /> : null}
       {detailed ? <Provenance result={result} /> : null}
     </div>
+  );
+}
+
+/**
+ * 측정에 대한 주의 — 점수 바로 아래, 접지 않고 그린다.
+ *
+ * 엔진은 이 자리에 "이번 진단은 N장을 측정했고 사이트 전체가 아니다" 같은 범위
+ * 고지를 싣는다. 데이터에는 있는데 화면이 안 그리면, 점수가 사이트 전체를 본
+ * 것처럼 읽힌다 — 우리가 타사에서 잡아낸 그럴듯한 완결성이다. GEO 화면의 규칙과
+ * 같다: 접힌 것은 읽히지 않고, 읽히지 않을 주의사항은 없는 것과 같다.
+ */
+function Notes({ result }: { readonly result: ConsoleScanResult }) {
+  if (result.notes.length === 0) {
+    return null;
+  }
+  return (
+    <section className={styles.notes} aria-label="측정 주의사항">
+      <ul>
+        {result.notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

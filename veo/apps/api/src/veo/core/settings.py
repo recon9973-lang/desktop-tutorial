@@ -212,10 +212,18 @@ class Settings(BaseSettings):
     #: 발견 크롤이 한 번에 가져오는 페이지 수(진입 페이지 포함).
     #:
     #: **``console_target_host_limit_per_hour`` 와 함께 읽어야 한다.** 한 번의 크롤은
-    #: 페이지 수 + robots.txt + 사이트맵 문서 수만큼 요청을 쓴다. 기본값 100 이면 한
-    #: 사이트를 한 시간에 두 번 남짓 크롤할 수 있고, 세 번째는 호스트 예산에 막힌다.
-    #: 막히면 조용히 적게 가져오는 대신 결과에 "예산 때문에 여기서 멈췄다" 고 남긴다.
-    console_crawl_max_urls: int = 100
+    #: 페이지 수 + robots.txt + 사이트맵 문서 수만큼 요청을 쓴다. 이 값과 호스트
+    #: 예산은 "한 시간에 전체 크롤 두 번" 이 유지되게 함께 움직여야 한다 — 한쪽만
+    #: 올리면 재측정이 예산에 잘려 부분 크롤이 되고, 부재형 검사가 측정 불가로
+    #: 떨어져 **재측정했더니 점수가 내려가는** 혼란이 생긴다.
+    #:
+    #: 100 → 200 (2026-08-01, 사용자 결정): 실도메인 8개 실측에서 8개 전부가 100장
+    #: 상한에 잘렸다. 200 이면 대부분의 병원 사이트가 전체 크롤이 되어 부재형 검사가
+    #: 정직하게 판정된다. 200 을 넘는 사이트는 범위 밖 고지와 함께 측정 불가로
+    #: 남는다 — 배점에서 빼지 않는다(빼면 큰 사이트일수록 덜 재서 유리해진다).
+    #: 측정 시간은 실측 기준 크롤 ~50초(느린 사이트 100장)의 2배 + 성능 ~30초로,
+    #: 콘솔 진단 제한 시간(SCAN_TIMEOUT_MS)도 함께 240초로 올렸다.
+    console_crawl_max_urls: int = 200
 
     #: 링크를 따라 들어가는 최대 단계. 진입 페이지가 0단계다.
     #:
@@ -242,7 +250,12 @@ class Settings(BaseSettings):
     console_crawl_concurrency: int = 4
     #: 콘솔 진단이 한 대상 호스트에 시간당 보낼 수 있는 요청 수. 로그인 여부와 무관하게
     #: VEO 가 남의 서버를 두드리는 도구가 되지 않도록 가드 안에서 부과한다.
-    console_target_host_limit_per_hour: int = 300
+    #:
+    #: 300 → 450 (2026-08-01): 크롤 상한이 100 → 200 이 되면서 함께 올렸다. 전체
+    #: 크롤 한 번이 약 200 + 사이트맵·robots 요청을 쓰므로, 450 이면 예전과 같은
+    #: "한 시간에 전체 크롤 두 번" 이 유지된다. 시간당 450 은 평균 초당 0.13회 —
+    #: 순간 부하는 위의 동시성 4 가 따로 막는다.
+    console_target_host_limit_per_hour: int = 450
     #: Per target host — one unit per *outbound HTTP request*, counted across the whole
     #: public surface, whoever asks. This is the control that stops VEO being pointed at
     #: a third party, and it deliberately has its own number rather than sharing the
