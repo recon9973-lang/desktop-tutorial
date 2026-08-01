@@ -191,7 +191,11 @@ apps/web 전역 26곳을 실제 토큰(`--veo-status-*-border` / `-fg`)으로 �
 + GEO 하나(no_duplicate_answer_blocks)가 거친다. 문지기 시험 15개
 (`tests/seo/test_absence_claims.py`). 옛 동작을 지키던 GEO 시험 둘을 이름째
 바꿨고, GEO 픽스처 로더의 crawl_is_exhaustive 기본값을 SEO 와 같게 True 로 맞췄다.
-다음: ③ page_results 저장 ④ 평가기 NOT_SAMPLED + 명세 1.9.0 ⑤ 페이지 API
+~~③ page_results 저장~~ **완료(2026-08-02, `5c87bde`)** — CheckOutcome 이
+affected/evaluated_urls 를 싣고 check_results 두 칸(JSONB, 옛 실행 NULL)에 남는다.
+페이지 P 의 검사 C: P∈affected 실패 / P∈evaluated 통과 / 없으면 미측정.
+다음: ④ 평가기 NOT_SAMPLED + 명세 1.9.0(측정 범위 기준 판정·템플릿 그룹 일반화
+포함 — 한 판) ⑤ 페이지 API(저장된 실행에서 재크롤 없이 재집계)
 ⑥ 화면(차이 뺄셈 설명·SITE 값 날짜 표기·페이지↔사이트 비교 UI 금지).
 
 **블로그형 템플릿 그룹 표본 — 적용 완료(2026-08-02, `6ccd7fb`):**
