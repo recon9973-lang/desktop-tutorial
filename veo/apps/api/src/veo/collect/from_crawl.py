@@ -68,9 +68,31 @@ def context_from_crawl(
             )
         ),
         crawl_is_exhaustive=outcome.discovery_exhausted,
+        sampling_notes_ko=_sampling_notes(outcome),
         locale=locale,
         collected_at=datetime.now(UTC),
     )
+
+
+def _sampling_notes(outcome: CrawlOutcome) -> tuple[str, ...]:
+    """템플릿 그룹 표본이 쓰였다면 그 사실을 문장으로.
+
+    그룹 키(`/칼럼/?mod,pageid,uid` 같은 내부 표기)를 그대로 내보내지 않는다 —
+    읽는 사람에게는 경로가 이름이다. 표본 수와 건너뛴 수를 함께 적어 "몇 장 중
+    몇 장을 본 판단인가" 에 답할 수 있게 한다.
+    """
+    if not outcome.sampled_out:
+        return ()
+    lines = []
+    for key, skipped in sorted(outcome.sampled_out.items(), key=lambda kv: -kv[1]):
+        fetched = outcome.group_fetched.get(key, 0)
+        label = key.split("?")[0] or "/"
+        lines.append(
+            f"자동 생성 문서 그룹 '{label}' 은 발견한 {fetched + skipped}장 중 "
+            f"{fetched}장을 표본으로 측정했습니다. 같은 틀로 생성되는 문서라 틀의 "
+            "문제는 표본에서 잡히지만, 개별 문서만의 문제는 이번 측정 범위 밖입니다."
+        )
+    return tuple(lines)
 
 
 __all__ = ["context_from_crawl"]

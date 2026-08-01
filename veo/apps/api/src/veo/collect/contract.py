@@ -143,6 +143,11 @@ class CollectionContext:
     Only the discovery crawl may set this, and only when it ran out of addresses to
     fetch before reaching the page ceiling, the depth ceiling or the host budget.
     """
+    sampling_notes_ko: tuple[str, ...] = ()
+    """수집 단계가 표본을 쓴 사실의 고지 — 예: "칼럼 그룹 추정 103장 중 12장 표본".
+
+    수집이 정한 범위는 수집만이 알고, 채점기는 그것을 알 길이 없다. 여기 실어 두면
+    결과 노트 맨 앞에 그대로 나간다. 비어 있으면 표본 없이 다 본 것이다."""
     locale: str = "ko-KR"
     collected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 

@@ -107,7 +107,9 @@ def _scope_notice(context: CollectionContext) -> tuple[str, ...]:
     큰 사이트일수록 덜 재서 유리해진다.
     """
     if context.crawl_is_exhaustive:
-        return ()
+        # 표본을 썼다면 전체 선언이 불가능하므로(크롤러가 보장) 이 갈래에서 표본
+        # 고지가 사라질 일은 없다 — 그래도 방어적으로 함께 내보낸다.
+        return context.sampling_notes_ko
     measured = len(context.documents)
     declared = 0
     for body in context.sitemap_documents.values():
@@ -121,6 +123,7 @@ def _scope_notice(context: CollectionContext) -> tuple[str, ...]:
         f"이번 진단은 {measured}장을 측정했으며, 사이트 전체를 본 것으로 확인되지 "
         f"않았습니다.{size_hint} 측정하지 못한 페이지는 이번 점수의 범위 밖입니다. "
         "페이지 간 비교 검사(중복·고아 페이지·깨진 링크)는 전체를 재야 판정됩니다.",
+        *context.sampling_notes_ko,
     )
 
 

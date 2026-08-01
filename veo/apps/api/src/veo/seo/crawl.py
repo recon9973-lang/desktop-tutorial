@@ -55,11 +55,41 @@ from veo.seo.discovery import (
 )
 from veo.seo.parsing.robots import RobotsFile, parse_robots
 from veo.seo.parsing.urls import normalise_url
+from veo.seo.template_groups import group_key
 
 _UNREACHABLE_KO = (
     "대상 사이트에서 응답을 받지 못했습니다. 주소와 사이트 상태를 확인해 주십시오. "
     "이 결과는 VEO 의 오류가 아니라 대상 쪽 상태입니다."
 )
+
+
+def _apply_group_sampling(
+    frontier: Sequence[DiscoveredUrl],
+    group_fetched: Mapping[str, int],
+    sample_cap: int,
+) -> tuple[tuple[DiscoveredUrl, ...], dict[str, int]]:
+    """그룹당 표본 상한을 넘는 주소를 프런티어에서 덜어낸다.
+
+    사람이 직접 지정한 주소(SEED)는 덜어내지 않는다 — 시킨 일이지 우리가 넓힌
+    범위가 아니고, 직원이 특정 글을 진단하려는 경우가 실제로 있다.
+
+    같은 배치 안의 같은 그룹도 함께 센다. 배치 단위로만 세면 첫 배치에 그룹 전체가
+    들어올 때 상한이 무의미해진다.
+    """
+    kept: list[DiscoveredUrl] = []
+    skipped: dict[str, int] = {}
+    planned: dict[str, int] = dict(group_fetched)
+    for record in frontier:
+        key = None if record.source is DiscoverySource.SEED else group_key(record.url)
+        if key is None:
+            kept.append(record)
+            continue
+        if planned.get(key, 0) >= sample_cap:
+            skipped[key] = skipped.get(key, 0) + 1
+            continue
+        planned[key] = planned.get(key, 0) + 1
+        kept.append(record)
+    return tuple(kept), skipped
 
 
 class CrawlRefusal(Exception):
@@ -119,7 +149,19 @@ class CrawlOutcome:
     이 값이 페이지 간 비교 검사의 판정을 가른다. 한 장만 있을 때 그것이 "사이트가 한
     장짜리" 인지 "우리가 한 장만 봤는지" 를 여기서만 알 수 있고, 두 답은 점수에서
     정반대로 움직인다(ADR 0016). 기본값이 거짓인 것은 의도한 것이다 — 확인하지 않은
-    것을 확인한 것으로 접으면 안 된다."""
+    것을 확인한 것으로 접으면 안 된다.
+
+    템플릿 그룹 표본으로 건너뛴 주소가 하나라도 있으면 이 값은 참이 될 수 없다 —
+    표본은 수집 전략이지 "다 봤다" 가 아니다."""
+    sampled_out: Mapping[str, int] = field(default_factory=dict)
+    """템플릿 그룹 표본 상한에 걸려 **가져오지 않은** 주소 수, 그룹 키별.
+
+    블로그형 자동 생성 페이지는 그룹당 표본 몇 장이면 템플릿 결함이 잡히므로
+    (docs/research/SEO_SCORING_V3_PAGES.md §9), 나머지는 요청을 보내지 않고 여기
+    수를 남긴다. 실패도 차단도 아니다 — 우리가 안 본 것이고, 그 사실이 결과에
+    고지로 나간다."""
+    group_fetched: Mapping[str, int] = field(default_factory=dict)
+    """그룹 키별로 실제 가져온 표본 수. ``sampled_out`` 과 짝으로 읽는다."""
 
     @property
     def attempted(self) -> int:
@@ -137,6 +179,7 @@ class ConsoleCrawler:
     __slots__ = (
         "_concurrency",
         "_fetcher",
+        "_group_sample",
         "_max_depth",
         "_max_sitemaps",
         "_max_urls",
@@ -157,6 +200,7 @@ class ConsoleCrawler:
         self._max_urls = max_urls or resolved.console_max_urls_per_scan
         self._max_depth = resolved.console_crawl_max_depth
         self._max_sitemaps = resolved.console_crawl_max_sitemaps
+        self._group_sample = max(1, resolved.console_crawl_group_sample)
         self._concurrency = max(1, resolved.console_crawl_concurrency)
         # 공개 진단과 같은 조립이다. 호스트 예산은 **가드 안에서** 부과되어야 한다 —
         # 서비스에서 제출된 URL 로 부과하면 리다이렉트가 그 계산을 우회하고, 실제로
@@ -213,6 +257,8 @@ class ConsoleCrawler:
         failures: list[CrawlFailure] = []
         blocked: list[str] = []
         collapsed: list[str] = []
+        group_fetched: dict[str, int] = {}
+        sampled_out: dict[str, int] = {}
         # 이미 **최종 주소로** 가진 페이지. 요청 주소로만 걸러 내면 리다이렉트가 같은
         # 페이지를 여러 번 데려온다.
         collected_finals: set[str] = {entry_url_final}
@@ -231,18 +277,41 @@ class ConsoleCrawler:
         for depth in range(1, self._max_depth + 1):
             if budget_exhausted or len(documents) >= limit:
                 break  # 상한에 걸렸다 — 아직 볼 것이 남아 있을 수 있다
+            remaining_budget = limit - len(documents)
+            # 상한으로 자르지 않고 후보 전체를 본다 — 잘린 프런티어로는 "더
+            # 있었는가" 도, 그룹마다 몇 장을 건너뛰는가도 셀 수 없다. 가져오는
+            # 것은 아래에서 상한까지만 자른다.
             frontier, blocked_now = build_frontier(
                 entry_url_final,
                 seeds=seeds if depth == 1 else (),
                 discovered=pending,
                 robots=robots,
-                limit=limit - len(documents),
+                limit=max(remaining_budget + 1, len(pending) + len(seeds)),
                 seen=seen,
             )
             blocked.extend(blocked_now)
             seen.update(blocked_now)
+            # 템플릿 그룹 표본 — **페이지 상한을 넘길 사이트에서만** 켠다.
+            #
+            # 상한 안에 드는 사이트는 전부 본다. 전량을 볼 수 있는데 표본을 쓰면
+            # 결함 비율이 희석된다 — 실측(2026-08-02, chamsarang)에서 게시판 결함
+            # canonical 60% 가 표본 후 23% 로 왜곡되며 점수가 71.8→77.6 으로 올랐다.
+            # 덜 재서 점수가 오르는 것은 이 제품이 금지하는 방향이다. 표본은 전량의
+            # 대체가 아니라 **잘림(무작정 앞에서 자르기)의 대체**다: 어차피 다 못 볼
+            # 사이트에서 블로그형 그룹을 표본으로 줄이고, 아낀 예산으로 고정 페이지를
+            # 전부 본다. 표본 판정의 그룹 일반화는 명세 1.9.0 의 몫이다.
+            would_overflow = len(frontier) > remaining_budget
+            if would_overflow or sampled_out:
+                frontier, skipped_now = _apply_group_sampling(
+                    frontier, group_fetched, self._group_sample
+                )
+                for key, count in skipped_now.items():
+                    sampled_out[key] = sampled_out.get(key, 0) + count
+            # 여유분 하나는 넘침 감지용이었다. 실제로 가져올 것은 상한까지다.
+            frontier = frontier[:remaining_budget]
             if not frontier:
-                discovery_exhausted = True
+                # 표본 상한 때문에 비었다면 "다 봤다" 가 아니다 — 안 본 주소가 있다.
+                discovery_exhausted = not sampled_out
                 break
             seen.update(record.url for record in frontier)
 
@@ -251,6 +320,9 @@ class ConsoleCrawler:
             pending = []
             for record, document in fetched:
                 final = normalise_url(document.final_url)
+                group = group_key(record.url)
+                if group is not None:
+                    group_fetched[group] = group_fetched.get(group, 0) + 1
                 # 리다이렉트가 이미 가진 페이지로 데려왔다. 문서로 세지 않는다 —
                 # 세면 같은 페이지를 여러 장으로 계산해 측정 범위가 부풀려진다.
                 if final in collected_finals:
@@ -264,7 +336,8 @@ class ConsoleCrawler:
                 pending.extend(links_on_page(document.final_url, document.text()))
         else:
             # 깊이 상한까지 다 썼다. 마지막 판에서 찾은 주소 가운데 아직 안 본 것이
-            # 하나도 없으면 결과적으로는 다 본 것이다.
+            # 하나도 없으면 결과적으로는 다 본 것이다. 표본으로 건너뛴 주소가 있다면
+            # 결과적으로도 다 본 것이 아니다.
             remaining, _ = build_frontier(
                 entry_url_final,
                 discovered=pending,
@@ -272,7 +345,9 @@ class ConsoleCrawler:
                 limit=1,
                 seen=seen,
             )
-            discovery_exhausted = not remaining and not budget_exhausted
+            discovery_exhausted = (
+                not remaining and not budget_exhausted and not sampled_out
+            )
 
         return CrawlOutcome(
             documents=tuple(documents),
@@ -284,6 +359,8 @@ class ConsoleCrawler:
             collapsed_urls=tuple(collapsed),
             budget_exhausted=budget_exhausted,
             discovery_exhausted=discovery_exhausted,
+            sampled_out=sampled_out,
+            group_fetched=group_fetched,
         )
 
     # ------------------------------------------------------------- 내부

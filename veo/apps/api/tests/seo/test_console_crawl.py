@@ -183,6 +183,14 @@ class TestDiscovery:
         assert "https://example.com/c" in {d.final_url for d in outcome.documents}
 
     def test_stops_at_the_configured_depth(self) -> None:
+        """설정된 깊이에서 멈춘다 — 기본값이 얼마인지는 이 시험의 관심이 아니다.
+
+        앞판은 기본값 3 을 그대로 단언하고 있었고, 기본값이 4 로 오르자(2026-08-02,
+        목록 2쪽까지 덮기 위해) 정상적인 조정을 막았다. 시험은 상태가 아니라 성질을
+        지켜야 한다.
+        """
+        from veo.core.settings import Settings
+
         crawler = ConsoleCrawler(
             guard=_guard(),
             transport=_site(
@@ -194,11 +202,13 @@ class TestDiscovery:
                     "/d": _page("라"),
                 }
             ),
+            settings=Settings(console_crawl_max_depth=3),
         )
 
         outcome = crawler.crawl("https://example.com/")
 
-        # 기본 깊이 3 — 홈(0) 다음으로 세 단계까지다.
+        # 깊이 3 — 홈(0) 다음으로 세 단계까지. /d 는 4단계라 범위 밖이다.
+        assert "https://example.com/c" in {d.final_url for d in outcome.documents}
         assert "https://example.com/d" not in {d.final_url for d in outcome.documents}
 
     def test_reads_the_sitemap_and_scores_can_finally_see_it(self) -> None:
