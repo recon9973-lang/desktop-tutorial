@@ -1,0 +1,655 @@
+{
+ "target": "https://chamsarang1075.com/",
+ "measured_at": "2026-08-01T13:30:48.703347+00:00",
+ "pages": 100,
+ "crawl_seconds": 49.6,
+ "perf_seconds": 26.1,
+ "perf_calls": 5,
+ "discovery_exhausted": false,
+ "score": 76.421193,
+ "reach": 1.0,
+ "gate_unverified": [
+  "seo.content.js_render_parity"
+ ],
+ "applied_caps": [],
+ "gates": [],
+ "categories": {
+  "s1_blocked": {
+   "status": "SCORED",
+   "score": 86.666667,
+   "weight": 30.0
+  },
+  "s2_identity": {
+   "status": "SCORED",
+   "score": 69.172402,
+   "weight": 21.4
+  },
+  "s3_meaning": {
+   "status": "SCORED",
+   "score": 70.176661,
+   "weight": 28.6
+  },
+  "s4_compete": {
+   "status": "SCORED",
+   "score": 79.072469,
+   "weight": 28.6
+  },
+  "s5_click": {
+   "status": "SCORED",
+   "score": 84.92633,
+   "weight": 14.3
+  },
+  "s6_hygiene": {
+   "status": "SCORED",
+   "score": 95.613837,
+   "weight": 7.1
+  },
+  "search_engine_integration": {
+   "status": "NOT_APPLICABLE",
+   "score": null,
+   "weight": 10.0
+  },
+  "observability_outcomes": {
+   "status": "NOT_APPLICABLE",
+   "score": null,
+   "weight": 5.0
+  },
+  "offpage_entity": {
+   "status": "NOT_APPLICABLE",
+   "score": null,
+   "weight": 5.0
+  }
+ },
+ "outcomes": [
+  {
+   "check_id": "seo.http.status_ok",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "수집한 모든 URL이 2xx로 응답했습니다."
+  },
+  {
+   "check_id": "seo.robots.meta_indexable",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "색인을 막는 meta robots나 X-Robots-Tag가 없습니다."
+  },
+  {
+   "check_id": "seo.robots.txt_allows_url",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "robots.txt가 구글(Googlebot)·네이버(Yeti) 크롤러의 수집을 막지 않습니다."
+  },
+  {
+   "check_id": "seo.content.js_render_parity",
+   "scope": "URL",
+   "status": "UNKNOWN",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "렌더러가 실행되지 않아 원본 HTML과 렌더링 DOM을 비교하지 못했습니다. 일치한다고 가정하지 않습니다."
+  },
+  {
+   "check_id": "seo.canonical.declared_and_consistent",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 40.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "40개 URL의 canonical이 누락되었거나 다른 신호와 어긋납니다."
+  },
+  {
+   "check_id": "seo.canonical.not_cross_domain",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "canonical이 모두 자사 도메인을 가리킵니다."
+  },
+  {
+   "check_id": "seo.content.no_duplicate_bodies",
+   "scope": "SITE",
+   "status": "FAIL",
+   "affected": 5.0,
+   "evaluated": 99.0,
+   "confidence": null,
+   "confidence_level": "HEURISTIC_HIGH",
+   "note": "4쌍의 페이지 본문이 근접 중복입니다."
+  },
+  {
+   "check_id": "seo.onpage.no_duplicate_metadata",
+   "scope": "SITE",
+   "status": "FAIL",
+   "affected": 53.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "title 1건, description 1건이 여러 페이지에 걸쳐 중복됩니다."
+  },
+  {
+   "check_id": "seo.onpage.title_present_and_unique",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 55.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "55개 페이지의 title에 문제가 있습니다: 69자로 너무 길어 검색 결과에서 잘립니다; 79자로 너무 길어 검색 결과에서 잘립니다; 다른 페이지와 같은 title입니다"
+  },
+  {
+   "check_id": "seo.content.no_thin_signal",
+   "scope": "SITE",
+   "status": "FAIL",
+   "affected": 2.0,
+   "evaluated": 99.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "2개 주요 페이지의 본문이 300자에 못 미칩니다."
+  },
+  {
+   "check_id": "seo.onpage.single_meaningful_h1",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 44.5,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "44개 페이지의 H1 구성에 문제가 있습니다."
+  },
+  {
+   "check_id": "seo.onpage.single_title_element",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지가 title 을 하나만 선언했습니다."
+  },
+  {
+   "check_id": "seo.sd.matches_visible_content",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "HEURISTIC_MEDIUM",
+   "note": "구조화 데이터가 선언한 값이 화면에서도 모두 확인됩니다."
+  },
+  {
+   "check_id": "seo.onpage.heading_hierarchy",
+   "scope": "URL",
+   "status": "WARNING",
+   "affected": 6.5,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "6개 페이지에서 제목 단계가 건너뜁니다."
+  },
+  {
+   "check_id": "seo.onpage.html_lang_declared",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지에 올바른 html lang 값이 선언되어 있습니다."
+  },
+  {
+   "check_id": "seo.onpage.image_alt_coverage",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "의미 있는 이미지에 모두 alt 속성이 있습니다."
+  },
+  {
+   "check_id": "seo.ux.mobile_viewport",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지에 모바일 viewport가 올바르게 선언되어 있습니다."
+  },
+  {
+   "check_id": "seo.perf.lcp_lab",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 7.0,
+   "evaluated": 7.0,
+   "confidence": null,
+   "confidence_level": "OFFICIAL_API",
+   "note": "5개 URL의 LCP(최대 콘텐츠 표시 시간)이(가) 제공자 기준에 미치지 못합니다. 수집한 100장 가운데 중요도가 높은 5장을 측정한 값입니다 — 나머지 페이지의 속도는 이 숫자에 포함되지 않았습니다."
+  },
+  {
+   "check_id": "seo.security.https_valid",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 1.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "수집한 모든 URL이 HTTPS로 응답했고 인증서 검증을 통과했습니다."
+  },
+  {
+   "check_id": "seo.perf.cls_lab",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 7.0,
+   "confidence": null,
+   "confidence_level": "OFFICIAL_API",
+   "note": "CLS(누적 레이아웃 이동)이(가) 제공자 기준으로 양호합니다. 수집한 100장 가운데 중요도가 높은 5장을 측정한 값입니다 — 나머지 페이지의 속도는 이 숫자에 포함되지 않았습니다."
+  },
+  {
+   "check_id": "seo.perf.inp_field",
+   "scope": "URL",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 1.0,
+   "confidence_level": null,
+   "note": "수집한 URL에도 사이트 전체에도 CrUX 표본이 없어 field 값이 존재하지 않습니다. 실제 방문자 표본이 쌓이면 자동으로 평가 대상이 됩니다."
+  },
+  {
+   "check_id": "seo.crawl.no_orphan_key_pages",
+   "scope": "SITE",
+   "status": "FAIL",
+   "affected": 43.0,
+   "evaluated": 96.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "43개 주요 페이지로 향하는 내부 링크가 없습니다."
+  },
+  {
+   "check_id": "seo.crawl.crawlable_anchors",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 링크가 href 로 목적지를 가리킵니다."
+  },
+  {
+   "check_id": "seo.content.lazy_loading_safe",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 1.0,
+   "evaluated": 32.0,
+   "confidence": null,
+   "confidence_level": "HEURISTIC_MEDIUM",
+   "note": "1개 페이지의 지연 로딩이 콘텐츠를 숨길 수 있습니다."
+  },
+  {
+   "check_id": "seo.security.certificate_not_expiring",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 1.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "인증서 만료까지 35일 남았습니다. 자동 갱신 구간에 아직 들어오지 않았습니다."
+  },
+  {
+   "check_id": "seo.security.no_mixed_content",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "HTTPS 페이지가 평문 HTTP 리소스를 불러오지 않습니다."
+  },
+  {
+   "check_id": "seo.content.click_depth_reasonable",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 4.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "주요 페이지가 모두 3번 이내 클릭으로 도달 가능합니다."
+  },
+  {
+   "check_id": "seo.content.internal_link_density",
+   "scope": "SITE",
+   "status": "WARNING",
+   "affected": 4.0,
+   "evaluated": 99.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "2개 주요 페이지의 내부 링크가 2개에 못 미칩니다."
+  },
+  {
+   "check_id": "seo.onpage.meta_description_quality",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 60.5,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "62개 페이지의 meta description에 문제가 있습니다."
+  },
+  {
+   "check_id": "seo.sd.declared",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 1.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "100개 페이지에 구조화 데이터가 선언되어 있습니다."
+  },
+  {
+   "check_id": "seo.sd.naver_supported_type",
+   "scope": "URL",
+   "status": "FAIL",
+   "affected": 1.5,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "3개 페이지에 오픈그래프가 빠져 있습니다. 누락 항목: og:description"
+  },
+  {
+   "check_id": "seo.sd.google_supported_type",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "Google이 리치 결과로 지원하는 타입을 선언하고 있습니다."
+  },
+  {
+   "check_id": "seo.sd.jsonld_parses",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "선언된 JSON-LD가 모두 문법 오류 없이 파싱됩니다."
+  },
+  {
+   "check_id": "seo.sd.required_properties_present",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "선언한 타입의 필수 속성이 모두 채워져 있습니다."
+  },
+  {
+   "check_id": "seo.sitemap.discoverable",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 1.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "robots.txt 또는 관례 경로에서 사이트맵을 확인했습니다."
+  },
+  {
+   "check_id": "seo.http.redirect_chain_sane",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "리다이렉트 체인이 짧고 루프가 없습니다."
+  },
+  {
+   "check_id": "seo.sitemap.urls_valid",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 40.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "사이트맵에 등록된 40개 URL이 모두 유효합니다."
+  },
+  {
+   "check_id": "seo.crawl.no_broken_internal_links",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 54.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "내부 링크가 모두 정상 응답하는 URL을 가리킵니다."
+  },
+  {
+   "check_id": "seo.onpage.descriptive_anchor_text",
+   "scope": "SITE",
+   "status": "WARNING",
+   "affected": 200.0,
+   "evaluated": 16772.0,
+   "confidence": null,
+   "confidence_level": "HEURISTIC_HIGH",
+   "note": "내부 링크 16772개 가운데 200개의 앵커 텍스트가 목적지를 설명하지 않습니다."
+  },
+  {
+   "check_id": "seo.perf.tbt_lab",
+   "scope": "URL",
+   "status": "WARNING",
+   "affected": 3.0,
+   "evaluated": 7.0,
+   "confidence": null,
+   "confidence_level": "OFFICIAL_API",
+   "note": "3개 URL의 TBT(총 차단 시간)이(가) 제공자 기준에 미치지 못합니다. 수집한 100장 가운데 중요도가 높은 5장을 측정한 값입니다 — 나머지 페이지의 속도는 이 숫자에 포함되지 않았습니다."
+  },
+  {
+   "check_id": "seo.perf.text_compression",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지가 압축되어 전송됩니다."
+  },
+  {
+   "check_id": "seo.html.charset_declared",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지가 인코딩을 선언했습니다."
+  },
+  {
+   "check_id": "seo.content.breadcrumb_present",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 11.5,
+   "confidence": null,
+   "confidence_level": "HEURISTIC_HIGH",
+   "note": "계층이 깊은 페이지에 breadcrumb이 제공됩니다."
+  },
+  {
+   "check_id": "seo.content.pagination_signals",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 1.0,
+   "confidence_level": null,
+   "note": "페이지네이션 표시가 없는 사이트라 해당하지 않습니다."
+  },
+  {
+   "check_id": "seo.perf.modern_image_format",
+   "scope": "URL",
+   "status": "WARNING",
+   "affected": 100.5,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "100개 페이지에 JPEG·PNG 이미지가 남아 있습니다 — WebP 로 바꾸면 용량이 줄어듭니다."
+  },
+  {
+   "check_id": "seo.perf.resource_hints",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지에 우선 로딩 힌트가 선언되어 있습니다."
+  },
+  {
+   "check_id": "seo.robots.txt_parses_cleanly",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 1.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "robots.txt의 모든 줄이 정상적으로 해석됩니다."
+  },
+  {
+   "check_id": "seo.crawl.favicon_declared_and_crawlable",
+   "scope": "SITE",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 1.0,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "파비콘이 선언되어 있고 크롤링을 막는 규칙이 없습니다 (https://chamsarang1075.com/wp-content/plugins/uicore-framework/assets/img/favicon.png)."
+  },
+  {
+   "check_id": "seo.html.doctype_standards_mode",
+   "scope": "URL",
+   "status": "PASS",
+   "affected": 0.0,
+   "evaluated": 100.5,
+   "confidence": null,
+   "confidence_level": "DIRECT_OBSERVATION",
+   "note": "모든 페이지가 HTML5 doctype 을 선언했습니다."
+  },
+  {
+   "check_id": "seo.integration.gsc_verified",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (Google Search Console 연동 상태가 자격증명 없음이라 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.integration.naver_swa_registered",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (네이버 서치어드바이저 연동이 구성되어 있지 않아 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.integration.sitemap_submitted",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (Google Search Console 연동 상태가 자격증명 없음이라 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.integration.indexnow_configured",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "유료 데이터 연동이 있어야 측정됩니다. 연동 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (IndexNow 연동이 구성되어 있지 않아 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.outcome.impressions_available",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (Google Search Console 연동 상태가 자격증명 없음이라 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.outcome.index_coverage_healthy",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (Google Search Console 연동 상태가 자격증명 없음이라 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.outcome.data_freshness",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "사이트 소유자가 권한을 연결해야 측정됩니다. 연결 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (Google Search Console 연동 상태가 자격증명 없음이라 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.offpage.referring_domains_present",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "유료 데이터 연동이 있어야 측정됩니다. 연동 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (백링크 색인 연동이 구성되어 있지 않아 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.offpage.brand_name_consistency",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "유료 데이터 연동이 있어야 측정됩니다. 연동 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (브랜드 언급 수집 연동이 구성되어 있지 않아 측정하지 못했습니다.)"
+  },
+  {
+   "check_id": "seo.offpage.no_spam_signal",
+   "scope": "SITE",
+   "status": "NOT_APPLICABLE",
+   "affected": 1.0,
+   "evaluated": 1.0,
+   "confidence": 0.0,
+   "confidence_level": null,
+   "note": "유료 데이터 연동이 있어야 측정됩니다. 연동 전까지는 배점에서 제외하며, 점수를 깎지 않습니다. (백링크 색인 연동이 구성되어 있지 않아 측정하지 못했습니다.)"
+  }
+ ]
+}

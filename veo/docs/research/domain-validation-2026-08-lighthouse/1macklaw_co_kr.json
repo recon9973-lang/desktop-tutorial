@@ -1,0 +1,21 @@
+{
+ "target": "https://www.1macklaw.co.kr/",
+ "measured_at": "2026-08-01T13:31:49.669014+00:00",
+ "status_code": 200,
+ "lighthouse_version": "13.4.1",
+ "seo_score": 0.92,
+ "performance_score": 0.78,
+ "seo_audits": {
+  "is-crawlable": 1,
+  "document-title": 1,
+  "meta-description": 1,
+  "http-status-code": 1,
+  "link-text": 1,
+  "crawlable-anchors": 1,
+  "robots-txt": 0,
+  "image-alt": 1,
+  "hreflang": 1,
+  "canonical": 1
+ },
+ "final_url": "https://www.1macklaw.co.kr/?ckattempt=2"
+}

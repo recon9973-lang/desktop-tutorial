@@ -1,0 +1,19 @@
+{
+ "target": "https://venomad.com/",
+ "measured_at": "2026-08-01T13:30:36.253159+00:00",
+ "status_code": 200,
+ "lighthouse_version": "13.4.1",
+ "seo_score": 0.73,
+ "performance_score": 0.97,
+ "seo_audits": {
+  "is-crawlable": 1,
+  "document-title": 1,
+  "meta-description": 0,
+  "http-status-code": 0,
+  "link-text": 1,
+  "crawlable-anchors": 1,
+  "robots-txt": 0,
+  "hreflang": 1
+ },
+ "final_url": "https://www.venomad.com/?ckattempt=3"
+}

@@ -1,0 +1,21 @@
+{
+ "target": "https://next-t.co.kr/",
+ "measured_at": "2026-08-01T13:32:04.873963+00:00",
+ "status_code": 200,
+ "lighthouse_version": "13.4.1",
+ "seo_score": 0.92,
+ "performance_score": 0.54,
+ "seo_audits": {
+  "is-crawlable": 1,
+  "document-title": 1,
+  "meta-description": 1,
+  "http-status-code": 1,
+  "link-text": 1,
+  "crawlable-anchors": 0,
+  "robots-txt": 1,
+  "image-alt": 1,
+  "hreflang": 1,
+  "canonical": 1
+ },
+ "final_url": "https://www.next-t.co.kr/"
+}
