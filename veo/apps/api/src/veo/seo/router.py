@@ -57,6 +57,7 @@ from veo.seo.schemas import (
     UnknownCheckSummary,
 )
 from veo.seo.service import SeoScanResult, load_seo_spec, run_seo_scan
+from veo.usage import record_pagespeed_calls
 
 router = APIRouter(prefix="/seo", tags=["seo"])
 
@@ -195,9 +196,20 @@ def run_site_scan(
     # 성능은 크롤로 알 수 없다. 구글에 따로 물어야 하고, 그래서 여기서 한 번 더 나간다.
     # 자격증명이 없으면 문맥을 손대지 않고 그대로 돌려주므로, 키가 없는 배포에서는
     # 이 줄이 아무 일도 하지 않는다 — 소켓도 열리지 않는다.
-    context = with_performance(context)
+    context, performance = with_performance(context)
     result = run_seo_scan(context)
     report = _scan_payload(result)
+
+    # 유료 한도를 쓴 것은 사실이므로 사이트를 지정하지 않은 진단에서도 남긴다.
+    # PageSpeed 는 하루 25,000회이고 진단 한 번에 최대 5회가 나간다. 기록이 없으면
+    # 어느 날 갑자기 모든 고객의 성능이 측정 불가가 되고 이유를 알 수 없다.
+    if performance is not None and performance.calls:
+        record_pagespeed_calls(
+            db,
+            performance.calls,
+            organization_id=principal.organization_id,
+            request_id=str(request_id),
+        )
 
     if payload.site_id is not None:
         # 보여준 것을 그대로 남긴다. 조치 문구는 수집기가 발견한 값을 넣어 만들어 내므로

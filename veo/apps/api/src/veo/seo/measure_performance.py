@@ -34,6 +34,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -73,6 +74,46 @@ STRATEGY: Final = Strategy.MOBILE
 
 
 @dataclass(frozen=True, slots=True)
+class CallRecord:
+    """한 번의 PageSpeed 호출에 대해 **관측한** 사실.
+
+    비용이 아니라 **횟수**가 위험이다. PageSpeed 는 하루 25,000회까지 무료이고 돈은
+    들지 않지만, 한도를 넘기면 그날의 모든 고객 진단에서 성능이 측정 불가가 된다.
+    그래서 이 기록의 목적은 청구서가 아니라 **한도까지 얼마나 남았는가**다.
+
+    캐시 여부는 추측하지 않는다. 응답이 빨랐다고 캐시라고 적으면 그것은 추론이지
+    관측이 아니다(0-A). 대신 구글이 응답에 담아 주는 `analysisUTCTimestamp` 를 본다 —
+    우리가 요청을 보내기 **전에** 분석된 것이면 새로 돌린 것이 아니다.
+    """
+
+    url: str
+    latency_ms: int
+    #: 값을 받았는가. 실패도 호출이고 한도를 쓴다.
+    succeeded: bool
+    #: 실패 사유. 성공이면 ``None``.
+    failure_code: str | None = None
+    #: 구글이 이 분석을 언제 돌렸는가. 우리 요청보다 앞서면 캐시된 결과다.
+    analysed_at: str | None = None
+    #: 요청을 보낸 시각. 위 값과 비교하는 기준이라 함께 남긴다.
+    requested_at: datetime | None = None
+
+    @property
+    def was_cache_hit(self) -> bool | None:
+        """캐시된 결과였는가. 판단할 근거가 없으면 ``None``.
+
+        ``False`` 로 단정하지 않는다 — "새로 쟀다" 와 "모른다" 는 다른 사실이고,
+        모르는 것을 아는 것처럼 적으면 나중에 그 기록을 아무도 믿을 수 없다.
+        """
+        if self.analysed_at is None or self.requested_at is None:
+            return None
+        try:
+            analysed = datetime.fromisoformat(self.analysed_at.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        return analysed < self.requested_at
+
+
+@dataclass(frozen=True, slots=True)
 class PerformanceMeasurement:
     """성능 측정 결과. 제공자 상태와 payload 를 함께 들고 다닌다.
 
@@ -91,6 +132,12 @@ class PerformanceMeasurement:
     #: 조용히 빼면 "느려서 열리지 않았다" 와 "우리 쪽이 터졌다" 가 구분되지 않는다.
     #: 앞은 고객에게 알릴 사실이고 뒤는 우리가 고칠 일이라 같은 자리에 두면 안 된다.
     failures: Mapping[str, str] = field(default_factory=dict)
+    #: 호출 하나하나의 기록. 사용량을 남기는 쪽이 읽는다.
+    #:
+    #: 여기서 DB 에 쓰지 않는다. 호출은 스레드에서 병렬로 일어나고 세션은 스레드
+    #: 안전하지 않다 — 세션을 넘기면 언젠가 조용히 깨진다. 사실만 들고 나오고,
+    #: 쓰는 일은 세션을 가진 쪽이 한 번에 한다.
+    calls: tuple[CallRecord, ...] = ()
 
     @property
     def attempted(self) -> int:
@@ -123,7 +170,7 @@ def measure_performance(
         )
 
     caller = client or PageSpeedClient(credentials=credentials)
-    results, failures = _measure_all(caller, urls, budget_seconds)
+    results, failures, calls = _measure_all(caller, urls, budget_seconds)
 
     lab = lab_payload(result.lab for result in results.values())
     field = field_payload(_field_measurements(results))
@@ -137,12 +184,13 @@ def measure_performance(
         planned=tuple(urls),
         measured=tuple(results),
         failures=dict(failures),
+        calls=tuple(calls),
     )
 
 
 def _measure_all(
     client: PageSpeedClient, urls: list[str], budget_seconds: float
-) -> tuple[dict[str, PageSpeedResult], dict[str, str]]:
+) -> tuple[dict[str, PageSpeedResult], dict[str, str], list[CallRecord]]:
     """병렬로 재고, 예산 안에 돌아온 것만 모은다.
 
     한 페이지의 실패가 나머지를 죽이지 않는다. 그리고 **실패를 값으로 바꾸지 않는다** —
@@ -150,6 +198,10 @@ def _measure_all(
     """
     measured: dict[str, PageSpeedResult] = {}
     failures: dict[str, str] = {}
+    calls: list[CallRecord] = []
+    requested_at = datetime.now(UTC)
+    started = time.monotonic()
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as pool:
         futures = {
             pool.submit(client.measure, url, strategy=STRATEGY): url for url in urls
@@ -164,18 +216,71 @@ def _measure_all(
                     # "우리 쪽이 터졌다" 가 구분되지 않는다. 앞은 고객에게 알릴
                     # 사실이고 뒤는 우리가 고칠 일이라 같은 자리에 두면 안 된다.
                     failures[url] = type(exc).__name__
+                    calls.append(
+                        _record(url, started, requested_at, ok=False, code=type(exc).__name__)
+                    )
                     continue
                 if outcome.succeeded and isinstance(outcome.value, PageSpeedResult):
                     measured[url] = outcome.value
+                    calls.append(
+                        _record(
+                            url,
+                            started,
+                            requested_at,
+                            ok=True,
+                            analysed_at=outcome.value.lab.analysis_timestamp,
+                        )
+                    )
                 elif outcome.failure is not None:
                     failures[url] = str(outcome.failure.error_code)
+                    calls.append(
+                        _record(
+                            url,
+                            started,
+                            requested_at,
+                            ok=False,
+                            code=str(outcome.failure.error_code),
+                        )
+                    )
         except TimeoutError:
             # 예산을 넘긴 페이지는 못 잰 것으로 남는다. 여기서 기다림을 늘리면
             # 진단 요청 자체가 끊기고, 비용은 이미 나간 뒤다(0-G).
             for url in urls:
                 if url not in measured and url not in failures:
                     failures[url] = "BUDGET_EXHAUSTED"
-    return measured, failures
+                    # 예산을 넘겼어도 **요청은 나갔다.** 한도를 쓴 것은 사실이므로
+                    # 기록에서 빼면 안 된다 — 빼면 남은 한도를 실제보다 많게 센다.
+                    calls.append(
+                        _record(
+                            url, started, requested_at, ok=False, code="BUDGET_EXHAUSTED"
+                        )
+                    )
+    return measured, failures, calls
+
+
+def _record(
+    url: str,
+    started: float,
+    requested_at: datetime,
+    *,
+    ok: bool,
+    code: str | None = None,
+    analysed_at: str | None = None,
+) -> CallRecord:
+    """호출 하나의 사실을 담는다. 지연 시간은 **묶음 시작부터**의 경과다.
+
+    개별 호출의 시작 시각을 스레드 안에서 재지 않는 이유는, 재려면 스레드에서
+    공유 자료를 건드려야 하고 그 순간 이 함수가 동시성 문제를 갖게 되기 때문이다.
+    한도 관리에 필요한 것은 정확한 개별 지연이 아니라 **호출이 몇 번 나갔는가**다.
+    """
+    return CallRecord(
+        url=url,
+        latency_ms=int((time.monotonic() - started) * 1000),
+        succeeded=ok,
+        failure_code=code,
+        analysed_at=analysed_at,
+        requested_at=requested_at,
+    )
 
 
 def _field_measurements(results: Mapping[str, PageSpeedResult]) -> list[Any]:
@@ -218,8 +323,12 @@ def with_performance(
     *,
     credentials: PageSpeedCredentials | None = _UNSET,
     client: PageSpeedClient | None = None,
-) -> Any:
+) -> tuple[Any, PerformanceMeasurement | None]:
     """수집 문맥에 성능 측정을 채워 돌려준다. 못 재면 문맥을 그대로 돌려준다.
+
+    측정 결과를 **함께** 돌려주는 이유는 사용량 기록 때문이다. 호출은 여기서 일어나고
+    DB 세션은 라우터가 가지고 있다. 세션을 여기로 끌어오면 스레드 안에서 쓰이게 되고
+    (SQLAlchemy 세션은 스레드 안전하지 않다) 언젠가 조용히 깨진다. 사실만 넘긴다.
 
     순서가 이 함수의 전부다.
 
@@ -245,22 +354,23 @@ def with_performance(
     # 그 시험은 네트워크가 없는 CI 에서 다르게 행동한다(0-F).
     resolved = pagespeed_from_settings().credentials if credentials is _UNSET else credentials
     if resolved is None:
-        return context
+        return context, None
 
     # 표본을 고르려면 관측이 필요하고, 관측은 수집기가 만든다. 여기서 다시 만들지
     # 않는다 — 두 벌이 서로 다른 페이지 목록을 갖는 순간 표본 정책이 깨진다(0-D).
     site = PerformanceUxCollector().observe(context)
     if not site.has_pages:
-        return context
+        return context, None
 
     measurement = measure_performance(
         lab_sample(context, site), credentials=resolved, client=client
     )
     if not measurement.payloads:
-        return context
+        return context, measurement
 
-    return dataclasses.replace(
+    filled = dataclasses.replace(
         context,
         provider_states={**context.provider_states, **measurement.states},
         provider_payloads={**context.provider_payloads, **measurement.payloads},
     )
+    return filled, measurement

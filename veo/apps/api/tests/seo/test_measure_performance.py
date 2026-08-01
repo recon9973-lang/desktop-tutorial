@@ -250,10 +250,91 @@ class TestTheContextActuallyChanges:
     def test_without_a_credential_the_context_is_untouched(self) -> None:
         """키 없는 배포에서 이 줄은 아무 일도 하지 않아야 한다."""
         context = build_context("healthy")
-        assert with_performance(context, credentials=None) is context
+        filled, measurement = with_performance(context, credentials=None)
+        assert filled is context
+        assert measurement is None
 
 
 def test_the_real_client_type_is_what_we_wired() -> None:
     """가짜로만 시험하면 진짜 클라이언트의 서명이 바뀌어도 초록불이 유지된다(0-F)."""
     assert hasattr(PageSpeedClient, "measure")
     assert isinstance(PerformanceMeasurement.attempted, property)
+
+
+# --------------------------------------------------------------------------- #
+# 사용량 — 한도를 쓴 것은 사실이다
+# --------------------------------------------------------------------------- #
+
+
+class TestEveryCallIsRecorded:
+    """PageSpeed 는 하루 25,000회다. 넘기면 그날의 모든 고객 진단에서 성능이 사라진다.
+
+    돈이 아니라 **그날 하루**가 위험이라, 이 기록의 목적은 청구서가 아니라
+    "한도까지 얼마나 남았는가" 다.
+    """
+
+    def test_a_successful_call_leaves_a_record(self) -> None:
+        result = measure_performance(
+            ["https://a.example.kr/"],
+            credentials=CREDENTIALS,  # type: ignore[arg-type]
+            client=FakeClient(),
+        )
+        assert len(result.calls) == 1
+        assert result.calls[0].succeeded is True
+
+    def test_a_failed_call_is_recorded_too(self) -> None:
+        """실패해도 요청은 나갔고 한도를 썼다. 빼면 남은 한도를 실제보다 많게 센다."""
+        url = "https://a.example.kr/"
+        result = measure_performance(
+            [url],
+            credentials=CREDENTIALS,  # type: ignore[arg-type]
+            client=FakeClient(fail={url}),
+        )
+        assert len(result.calls) == 1
+        assert result.calls[0].succeeded is False
+        assert result.calls[0].failure_code
+
+    def test_the_record_count_matches_the_sample_size(self) -> None:
+        urls = [f"https://a.example.kr/{n}/" for n in range(4)]
+        result = measure_performance(
+            urls,
+            credentials=CREDENTIALS,  # type: ignore[arg-type]
+            client=FakeClient(fail={urls[0], urls[2]}),
+        )
+        assert len(result.calls) == len(urls)
+
+    def test_a_cache_hit_is_measured_not_guessed(self) -> None:
+        """응답이 빨랐다고 캐시라고 적으면 그것은 추론이지 관측이 아니다(0-A).
+
+        구글이 응답에 담아 주는 분석 시각을 본다 — 우리가 요청을 보내기 **전에**
+        분석된 것이면 새로 돌린 것이 아니다.
+        """
+        from veo.seo.measure_performance import CallRecord
+
+        requested = datetime(2026, 8, 1, 12, 0, tzinfo=UTC)
+        cached = CallRecord(
+            url="https://a.example.kr/",
+            latency_ms=300,
+            succeeded=True,
+            analysed_at="2026-08-01T11:00:00Z",
+            requested_at=requested,
+        )
+        fresh = CallRecord(
+            url="https://a.example.kr/",
+            latency_ms=24_000,
+            succeeded=True,
+            analysed_at="2026-08-01T12:00:30Z",
+            requested_at=requested,
+        )
+        assert cached.was_cache_hit is True
+        assert fresh.was_cache_hit is False
+
+    def test_without_a_timestamp_the_cache_answer_is_unknown_not_false(self) -> None:
+        """"새로 쟀다" 와 "모른다" 는 다른 사실이다.
+
+        False 로 단정하면 나중에 그 기록을 아무도 믿을 수 없다.
+        """
+        from veo.seo.measure_performance import CallRecord
+
+        record = CallRecord(url="https://a.example.kr/", latency_ms=100, succeeded=True)
+        assert record.was_cache_hit is None
