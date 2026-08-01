@@ -256,6 +256,10 @@ VEO GEO 준비도와 겹치므로 판단이 필요하다.
 
 - 다른 제공자(OpenAI·네이버)도 사용량 기록. OpenAI 는 토큰·비용이 실제로 들어
   `input_tokens`/`output_tokens`/`cost_krw` 를 채워야 한다.
+- **인증서 불능 사이트의 http 자동 폴백** — grand1.co.kr 실측(2026-08-01)에서
+  자체 서명 인증서 사이트를 사람이 `http://` 로 다시 넣어야 잴 수 있었다. NXT 는
+  자동으로 완주한다. "https 접속 불가 — http 로 측정" 을 관문 라벨로 명시하는
+  자동 폴백이면 정직성을 잃지 않는다. 근거: DOMAIN_VALIDATION_2026-08.md §11.
 - #29 tests/contract·e2e·integration·security 디렉터리 검증
 - #9 추이·회귀 알림 / #10 담당자 배정 / #11 인쇄·PDF / #12 목차 고정
 
