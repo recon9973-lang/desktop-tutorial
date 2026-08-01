@@ -93,4 +93,4 @@
 .rowNote, .rowInvite, .rowError { margin: 0; font-size: var(--veo-font-size-200); }
 .rowNote { color: var(--veo-color-text-muted); }
 .rowInvite { overflow-wrap: anywhere; }
-.rowError { color: var(--veo-color-danger, #c0392b); font-weight: var(--veo-weight-medium); }
+.rowError { color: var(--veo-status-fail-fg); font-weight: var(--veo-weight-medium); }

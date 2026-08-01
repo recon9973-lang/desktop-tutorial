@@ -42,7 +42,7 @@
 .blocked {
   margin: var(--veo-space-3) 0 0;
   padding: var(--veo-space-3);
-  border-left: 3px solid var(--veo-color-danger, #c0392b);
+  border-left: 3px solid var(--veo-status-fail-border);
   background: var(--veo-color-surface-sunken, rgba(192, 57, 43, 0.06));
   max-width: 52ch;
 }
@@ -271,9 +271,9 @@
    가장 중요한 신호가 오른쪽 끝 흐린 글씨였다. 왼쪽으로 옮기고 두께를 준다.
    색만으로 전달하지 않는다 — 같은 줄에 상태 칩과 심각도 글자가 함께 있다. */
 
-.sevBlocker { border-left: 4px solid var(--veo-color-danger, #c0392b); }
-.sevCritical { border-left: 4px solid var(--veo-color-danger, #c0392b); }
-.sevMajor { border-left: 4px solid var(--veo-color-warning, #b7791f); }
+.sevBlocker { border-left: 4px solid var(--veo-status-fail-border); }
+.sevCritical { border-left: 4px solid var(--veo-status-fail-border); }
+.sevMajor { border-left: 4px solid var(--veo-status-warning-border); }
 .sevMinor { border-left: 4px solid var(--veo-color-border); }
 .sevInfo { border-left: 4px solid var(--veo-color-border); }
 

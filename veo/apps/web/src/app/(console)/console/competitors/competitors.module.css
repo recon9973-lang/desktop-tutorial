@@ -33,7 +33,7 @@
 .blocked {
   margin: 0 0 var(--veo-space-4);
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
   font-size: var(--veo-font-size-200);
@@ -44,7 +44,7 @@
 .asymmetry {
   margin: 0 0 var(--veo-space-5);
   padding: var(--veo-space-4);
-  border: 1px solid var(--veo-color-warning);
+  border: 1px solid var(--veo-status-warning-border);
   border-radius: var(--veo-radius-md);
   background: var(--veo-color-surface-sunken);
 }
@@ -84,7 +84,7 @@
 
 /* 측정이 안 되는 브랜드는 테두리로 갈라 놓는다. 색만으로 구분하지 않는다. */
 .brandWeak {
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
 }
 
 .brandHead {
@@ -111,7 +111,7 @@
 }
 
 .warn {
-  border-color: var(--veo-color-warning);
+  border-color: var(--veo-status-warning-border);
   font-weight: var(--veo-weight-semibold);
 }
 

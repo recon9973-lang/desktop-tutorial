@@ -31,7 +31,7 @@
 .unverifiedTotal {
   margin: 0 0 var(--veo-space-4);
   padding: var(--veo-space-3) var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
   font-size: var(--veo-font-size-200);
@@ -57,7 +57,7 @@
 
 /* 재발은 처음 보는 문제와 무게가 다르다. 목록에서 먼저 오고, 여기서 갈라 놓는다. */
 .issueRecurred {
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
 }
 
 .issueHead {
@@ -115,7 +115,7 @@
 .recurrence {
   margin: 0 0 var(--veo-space-3);
   padding: var(--veo-space-2) var(--veo-space-3);
-  border-left: 2px solid var(--veo-color-warning);
+  border-left: 2px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-sm);
   font-size: var(--veo-font-size-200);

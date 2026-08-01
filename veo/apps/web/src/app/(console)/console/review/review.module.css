@@ -18,7 +18,7 @@
 .card {
   padding: var(--veo-space-5);
   border: 1px solid var(--veo-color-border);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   border-radius: var(--veo-radius-md);
   background: var(--veo-color-surface);
 }

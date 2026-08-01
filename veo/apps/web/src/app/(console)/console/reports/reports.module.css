@@ -30,7 +30,7 @@
 .blocked {
   margin: 0;
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
   font-size: var(--veo-font-size-200);
@@ -123,7 +123,7 @@
 /* 발행된 버전이 없다는 사실을 흐리게 두지 않는다. */
 .unpublished {
   padding: 0 var(--veo-space-2);
-  border: 1px solid var(--veo-color-warning);
+  border: 1px solid var(--veo-status-warning-border);
   border-radius: var(--veo-radius-sm);
   font-size: var(--veo-font-size-100);
   font-weight: var(--veo-weight-semibold);

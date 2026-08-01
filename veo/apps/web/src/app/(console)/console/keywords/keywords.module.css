@@ -45,7 +45,7 @@
 
 .notices {
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
 }
@@ -139,7 +139,7 @@
 .warning {
   margin: var(--veo-space-2) 0;
   padding: var(--veo-space-3);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   font-size: var(--veo-font-size-200);
   line-height: 1.6;

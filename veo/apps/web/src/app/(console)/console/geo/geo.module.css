@@ -47,7 +47,7 @@
 .warning {
   margin: 0;
   padding: var(--veo-space-3);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   font-size: var(--veo-font-size-200);
   line-height: 1.6;
@@ -70,7 +70,7 @@
   background: var(--veo-color-surface-raised);
 }
 
-.jobPanelFailed { border-left: 3px solid var(--veo-color-danger); }
+.jobPanelFailed { border-left: 3px solid var(--veo-status-fail-border); }
 
 .jobHeadline {
   margin: 0 0 var(--veo-space-2);
@@ -123,7 +123,7 @@
 /* 주의사항은 접지 않는다. 접힌 것은 읽히지 않는다. */
 .caveats {
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
 }
@@ -244,12 +244,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-.countValueAlarming { color: var(--veo-color-danger); }
+.countValueAlarming { color: var(--veo-status-fail-fg); }
 
 .stopped {
   margin: var(--veo-space-4) 0 0;
   padding: var(--veo-space-3);
-  border-left: 3px solid var(--veo-color-danger);
+  border-left: 3px solid var(--veo-status-fail-border);
   background: var(--veo-color-surface-sunken);
   font-size: var(--veo-font-size-200);
   line-height: 1.6;
@@ -344,7 +344,7 @@
 /* 노출 차단은 점수와 나란히 있되 섞이지 않는다. 95점이면서 차단일 수 있다. */
 .blocked {
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-danger);
+  border-left: 3px solid var(--veo-status-fail-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
 }
@@ -435,7 +435,7 @@
 
 .riskItem {
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
 }
@@ -547,7 +547,7 @@
 }
 
 .spreadTight {
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
 }
 
