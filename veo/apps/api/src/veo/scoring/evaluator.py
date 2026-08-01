@@ -4,17 +4,31 @@ Every SEO and GEO readiness score in the product goes through :func:`evaluate`.
 No checker, API handler or report template may compute a score of its own, and no
 language model is allowed to produce or adjust one.
 
-Arithmetic (VEO-LAB methodology):
+Arithmetic (VEO-LAB methodology). The prose explanation lives in
+``docs/scoring/methodology.md`` §2 and is not repeated here:
 
     coverage_i     = affected_importance_weight / evaluated_importance_weight
-    penalty_i      = severity_coefficient x status_multiplier x coverage_i x confidence_i
-    category_budget= sum of severity_coefficient over checks that were actually scored
+    breadth_i      = coverage_i ** breadth_exponent      (1.0 = linear)
+    weight_i       = points_i x (raw_budget / sum of points over live checks)
+                     -- or the severity coefficient, when the category declares no
+                        raw_budget; published specs predating fixed budgets keep that
+                        form unchanged (ADR 0012)
+    penalty_i      = weight_i x status_multiplier x breadth_i x confidence_i
+    category_budget= sum of weight_i over checks that were scored, plus UNKNOWN checks
+                     under the absolute policy (they keep their weight and earn nothing)
     category_score = 100 x max(0, 1 - sum(penalty_i) / category_budget)
     reach          = product over gate categories of (1 - status x coverage)
     overall_score  = reach x sum(category_score x weight) / sum(weight of scoreable)
 
     caps           = overall_score is then bounded from above; a cap never raises a score.
     gates          = reported beside the score; a gate never changes the number.
+
+``category_budget`` was once "the sum of severity coefficients over checks that were
+actually scored", which **grew every time a check was added** — the same site with the
+same defects scored 66.7 under 1.2.0 and 72.7 under 1.6.0 after two on-page checks
+landed. A category that declares ``raw_budget`` has a constant denominator instead, so
+adding a check means taking points away from a sibling, and *which* sibling becomes a
+judgement someone has to justify.
 
 **Two different things are called a gate here, and they must not be confused.**
 

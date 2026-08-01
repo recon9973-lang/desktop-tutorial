@@ -76,30 +76,12 @@ e89b8eb  구글 Lighthouse 158개 감사를 VEO 명세와 대조했다
 
 ### 점수 체계가 바뀌었다 — 명세 1.8.0
 
-채점 영역이 **검색 여정 여섯 단계**로 재편됐다. 앞 단계일수록 손실이 크다.
+채점 영역이 **검색 여정 여섯 단계**로 재편됐다(색인 차단 → 대표 URL 혼란 → 해석 불가
+→ 경쟁력 → 클릭·표현 → 위생). 앞 단계일수록 손실이 크고, 첫 단계는 **관문이라 빼지
+않고 곱한다.**
 
-| 단계 | 원배점 | 환산 | 성격 |
-| --- | ---: | ---: | --- |
-| `s1_blocked` 색인 차단 | 30 | — | **관문. 곱한다** |
-| `s2_identity` 대표 URL 혼란 | 15 | 21.4 | |
-| `s3_meaning` 해석 불가 | 20 | 28.6 | |
-| `s4_compete` 경쟁력 | 20 | 28.6 | |
-| `s5_click` 클릭·표현 | 10 | 14.3 | |
-| `s6_hygiene` 위생 | 5 | 7.1 | |
-
-연동이 있어야 잴 수 있는 세 영역(`search_engine_integration`, `observability_outcomes`,
-`offpage_entity`)은 그대로 **점수 밖**이다.
-
-계산식:
-
-```
-도달률 = 관문 영역의 곱(1 - 상태배수 × 범위)
-점수   = 도달률 × Σ(영역점수 × 가중치) / Σ(채점 가능 가중치)
-그 뒤 상한(cap) 적용
-```
-
-**못 잰 관문은 곱하지 않는다**(없는 차단을 지어내지 않는다, 0-A).
-**못 잰 품질 항목은 배점을 잃는다**(ADR 0016). 방향이 반대인 것이 설계의 핵심이다.
+**산식·배점·PageSpeed 연결은 여기 적지 않는다 — `docs/scoring/methodology.md` 가
+그 주제의 기준 문서다.** 한때 이 문서가 그것까지 적었고, 두 벌이 갈라졌다(0-D).
 
 ### 픽스처 점수 (1.7.0 → 1.8.0)
 
@@ -418,6 +400,7 @@ pnpm --filter @veo/web verify
 
 | 파일 | 무엇 |
 | --- | --- |
+| **`docs/scoring/methodology.md`** | **산식·배점·PageSpeed 연결의 기준 문서. 먼저 본다** |
 | `docs/research/SEO_SCORING_ALGORITHM_V2.md` | v2 설계·검증·결정 (부록 C 가 최신) |
 | `docs/research/LIGHTHOUSE_COMPARISON.md` | 구글 158개 감사 대조, 배점 근거 |
 | `docs/research/prototypes/seo_scoring_v2.py` | 배점표 참조 구현 |
