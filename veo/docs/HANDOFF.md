@@ -186,10 +186,17 @@ apps/web 전역 26곳을 실제 토큰(`--veo-status-*-border` / `-fg`)으로 �
   (●실측/◐문서/○VEO 판단), §7 구현 순서.
 - 프로토타입: `docs/research/prototypes/seo_scoring_v3_pages.py` + 시험.
 
-**구현 순서(§7)**: ① 수집기 부재검사 경로 — **지금도 틀리고 있는 결함**(잘린
-크롤이 "중복 없음" PASS 를 단정, 0-A 위반) ② sample.py 에 absence_claim 단일
-구현 ③ page_results 저장 ④ 평가기 NOT_SAMPLED + 명세 1.9.0 ⑤ 페이지 API
+**구현 순서(§7)**: ~~① 수집기 부재검사 경로~~ ~~② sample.py 단일 구현~~
+**①·② 완료(2026-08-01, `10f5327`)** — `unproven_absence_outcome` 하나를 SEO 넷
++ GEO 하나(no_duplicate_answer_blocks)가 거친다. 문지기 시험 15개
+(`tests/seo/test_absence_claims.py`). 옛 동작을 지키던 GEO 시험 둘을 이름째
+바꿨고, GEO 픽스처 로더의 crawl_is_exhaustive 기본값을 SEO 와 같게 True 로 맞췄다.
+다음: ③ page_results 저장 ④ 평가기 NOT_SAMPLED + 명세 1.9.0 ⑤ 페이지 API
 ⑥ 화면(차이 뺄셈 설명·SITE 값 날짜 표기·페이지↔사이트 비교 UI 금지).
+
+주의(파급): 실사이트 진단에서 크롤이 100장 상한에 잘리면 부재형 검사 다섯이
+측정 불가가 되어 **점수가 이전 측정보다 내려간다.** 결함 수정이지 회귀가 아니다.
+실측 8개 도메인의 재측정 점수는 전부 하락할 것이다.
 
 **결정 필요(§6)**: 단계 전체가 N/A 인 모서리에서 v2 프로토타입(가중치 상실)과
 실코드 evaluator(재정규화)가 모순된다. 1.9.0 발행 전에 통일해야 한다.
