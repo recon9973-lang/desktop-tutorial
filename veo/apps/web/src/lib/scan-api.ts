@@ -12,64 +12,32 @@ import { resolveAuthApiBaseUrl } from '@/lib/auth-api';
  * 빈 값을 0점으로 바꾸는 순간, 사이트가 나쁜 것인지 우리가 못 잰 것인지 구분이 사라진다.
  */
 
-/** 한 항목의 판정. 엔진의 `status` 와 같은 어휘를 쓴다. */
-export type ScanVerdict = 'PASS' | 'WARNING' | 'FAIL' | 'NOT_APPLICABLE' | 'UNKNOWN';
-
-export type ScanKind = 'SEO' | 'GEO';
-
-export interface ScanFinding {
-  readonly checkId: string;
-  readonly title: string;
-  readonly categoryId: string;
-  readonly categoryName: string;
-  readonly severity: string;
-  /** 누가 고치는 항목인가 — 개발자 몫과 마케터 몫을 섞으면 아무도 안 고친다. */
-  readonly owner: string;
-  readonly verdict: ScanVerdict;
-}
-
-export interface ScanScore {
-  readonly specId: string;
-  readonly specVersion: string;
-  readonly specChecksum: string;
-  /** 채점되지 않았으면 `null`. 0 이 아니다. */
-  readonly value: number | null;
-  readonly bandLabel: string | null;
-  readonly coverage: number;
-  readonly confidence: number;
-  readonly meaning: string;
-}
-
-export interface ScanResult {
-  readonly kind: ScanKind;
-  readonly targetUrl: string;
-  readonly summary: string;
-  readonly scopeNotice: string;
-  readonly score: ScanScore;
-  readonly findings: readonly ScanFinding[];
-  readonly findingCount: number;
-  /** 판정에 필요한 근거를 못 모은 항목 수. 감점이 아니라 측정 범위에 반영된다. */
-  readonly unmeasuredCount: number;
-  /** 결과 공유 링크의 토큰. 만료된다. */
-  readonly resultToken: string;
-  readonly resultExpiresAt: string;
-}
-
-export type ScanFailureReason =
-  | 'INVALID_URL'
-  | 'RATE_LIMITED'
-  | 'UNREACHABLE'
-  | 'UNAVAILABLE'
-  | 'NOT_CONFIGURED'
-  | 'SERVER_ERROR';
-
-export type ScanOutcome =
-  | { readonly ok: true; readonly result: ScanResult }
-  | {
-      readonly ok: false;
-      readonly reason: ScanFailureReason;
-      readonly retryAfterSeconds: number | null;
-    };
+export type {
+  ScanVerdict,
+  ScanKind,
+  ScanFinding,
+  ScanScore,
+  ScanStage,
+  ScanCheckRow,
+  ScanCounts,
+  ScanPreviews,
+  ScanResult,
+  ScanFailureReason,
+  ScanOutcome,
+} from '@/lib/scan-api-types';
+import type {
+  ScanVerdict,
+  ScanKind,
+  ScanFinding,
+  ScanScore,
+  ScanStage,
+  ScanCheckRow,
+  ScanCounts,
+  ScanPreviews,
+  ScanResult,
+  ScanFailureReason,
+  ScanOutcome,
+} from '@/lib/scan-api-types';
 
 const ENDPOINTS: Record<ScanKind, string> = {
   SEO: '/public/v1/seo-scans',
@@ -142,6 +110,70 @@ function toScore(raw: Record<string, unknown>): ScanScore {
   };
 }
 
+function toStage(raw: unknown): ScanStage | null {
+  const source = asRecord(raw);
+  if (source === null) {
+    return null;
+  }
+  return {
+    categoryId: readString(source, 'category_id'),
+    name: readString(source, 'name_ko'),
+    score: readNumber(source, 'score'),
+    weight: readNumber(source, 'weight') ?? 0,
+    isGate: source['is_gate'] === true,
+  };
+}
+
+function toCheckRow(raw: unknown): ScanCheckRow | null {
+  const source = asRecord(raw);
+  if (source === null) {
+    return null;
+  }
+  const checkId = readString(source, 'check_id');
+  if (checkId === '') {
+    return null;
+  }
+  return {
+    checkId,
+    title: readString(source, 'title_ko'),
+    categoryId: readString(source, 'category_id'),
+    categoryName: readString(source, 'category_name_ko'),
+    severity: readString(source, 'severity'),
+    owner: readString(source, 'remediation_owner'),
+    verdict: readVerdict(source['status']),
+    note: readString(source, 'note_ko') || null,
+    gainPoints: readNumber(source, 'gain_points'),
+    blockedByCap: source['blocked_by_cap'] === true,
+    outsideScore: source['outside_score'] === true,
+    codeExample: readString(source, 'code_example') || null,
+  };
+}
+
+function toCounts(raw: unknown): ScanCounts {
+  const source = asRecord(raw) ?? {};
+  return {
+    failed: readNumber(source, 'failed') ?? 0,
+    warned: readNumber(source, 'warned') ?? 0,
+    passed: readNumber(source, 'passed') ?? 0,
+    unknown: readNumber(source, 'unknown') ?? 0,
+    notApplicable: readNumber(source, 'not_applicable') ?? 0,
+  };
+}
+
+function toPreviews(raw: unknown): ScanPreviews | null {
+  const source = asRecord(raw);
+  if (source === null) {
+    return null;
+  }
+  return {
+    serpTitle: readString(source, 'serp_title') || null,
+    serpDescription: readString(source, 'serp_description') || null,
+    ogTitle: readString(source, 'og_title') || null,
+    ogDescription: readString(source, 'og_description') || null,
+    hasOgImage: source['has_og_image'] === true,
+  };
+}
+
 function toResult(raw: Record<string, unknown>, kind: ScanKind): ScanResult | null {
   const score = asRecord(raw['score']);
   if (score === null) {
@@ -157,6 +189,15 @@ function toResult(raw: Record<string, unknown>, kind: ScanKind): ScanResult | nu
     summary: readString(raw, 'summary_ko'),
     scopeNotice: readString(raw, 'scope_notice_ko'),
     score: toScore(score),
+    reach: readNumber(raw, 'reach') ?? 1,
+    stages: Array.isArray(raw['stages'])
+      ? raw['stages'].map(toStage).filter((item): item is ScanStage => item !== null)
+      : [],
+    checks: Array.isArray(raw['checks'])
+      ? raw['checks'].map(toCheckRow).filter((item): item is ScanCheckRow => item !== null)
+      : [],
+    counts: toCounts(raw['counts']),
+    previews: toPreviews(raw['previews']),
     findings,
     findingCount: readNumber(raw, 'total_finding_count') ?? findings.length,
     unmeasuredCount: readNumber(raw, 'unmeasured_check_count') ?? 0,

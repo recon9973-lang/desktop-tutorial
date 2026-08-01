@@ -5474,6 +5474,49 @@ export interface components {
             providers: components["schemas"]["ProviderStatus"][];
         };
         /**
+         * PublicCheckRow
+         * @description 검사 하나의 판정 전체 — 무료 화면의 체크리스트 한 줄.
+         *
+         *     ``gain_points`` 는 채점기가 실제 산식으로 계산한 "고치면 오르는 폭"이다. 화면이
+         *     따로 어림하지 않는다. ``code_example`` 은 붙여넣을 수 있는 조치 코드 — 정답
+         *     코드가 하나로 정해지는 검사에만 있고, 없으면 문장 설명(note_ko)만 나간다.
+         */
+        PublicCheckRow: {
+            /**
+             * Blocked By Cap
+             * @default false
+             */
+            blocked_by_cap: boolean;
+            /** Category Id */
+            category_id: string;
+            /** Category Name Ko */
+            category_name_ko: string;
+            /** Check Id */
+            check_id: string;
+            /** Code Example */
+            code_example?: string | null;
+            /** Gain Points */
+            gain_points?: number | null;
+            /** Note Ko */
+            note_ko?: string | null;
+            /**
+             * Outside Score
+             * @default false
+             */
+            outside_score: boolean;
+            /** Remediation Owner */
+            remediation_owner: string;
+            /** Severity */
+            severity: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PASS" | "WARNING" | "FAIL" | "NOT_APPLICABLE" | "UNKNOWN";
+            /** Title Ko */
+            title_ko: string;
+        };
+        /**
          * PublicExposureBlock
          * @description Whether anything blocks the page from being reached at all.
          *
@@ -5660,6 +5703,28 @@ export interface components {
             site_url?: string | null;
         };
         /**
+         * PublicPreviews
+         * @description 이 페이지가 검색결과·공유 카드에서 실제로 어떻게 보이는가.
+         *
+         *     값이 ``None`` 이면 **그 태그가 없다**는 뜻이다. 화면은 그 부재 자체를 그린다 —
+         *     "설명 없음" 이라고 쓰는 것이 아니라 없는 채로 깨져 보이는 미리보기가 설득한다.
+         */
+        PublicPreviews: {
+            /**
+             * Has Og Image
+             * @default false
+             */
+            has_og_image: boolean;
+            /** Og Description */
+            og_description?: string | null;
+            /** Og Title */
+            og_title?: string | null;
+            /** Serp Description */
+            serp_description?: string | null;
+            /** Serp Title */
+            serp_title?: string | null;
+        };
+        /**
          * PublicScanRequest
          * @description One or more URLs to diagnose. The ceiling is enforced by the service, not here,
          *     so the refusal can name the configured maximum in Korean rather than emit a
@@ -5712,12 +5777,21 @@ export interface components {
         };
         /** PublicSeoScanPayload */
         PublicSeoScanPayload: {
+            /** Checks */
+            checks?: components["schemas"]["PublicCheckRow"][];
+            counts?: components["schemas"]["PublicStatusCounts"];
             /**
              * Kind
              * @default SEO
              * @constant
              */
             kind: "SEO";
+            previews?: components["schemas"]["PublicPreviews"] | null;
+            /**
+             * Reach
+             * @default 1
+             */
+            reach: number;
             /**
              * Result Expires At
              * Format: date-time
@@ -5733,6 +5807,8 @@ export interface components {
              */
             scope_notice_ko: string;
             score: components["schemas"]["PublicScoreBlock"];
+            /** Stages */
+            stages?: components["schemas"]["PublicStage"][];
             /** Summary Ko */
             summary_ko: string;
             /** Target Url */
@@ -5749,6 +5825,56 @@ export interface components {
              * @default 0
              */
             unmeasured_check_count: number;
+        };
+        /**
+         * PublicStage
+         * @description 검색 여정 한 단계의 점수. 관문(is_gate)은 가중 평균이 아니라 곱셈이다.
+         */
+        PublicStage: {
+            /** Category Id */
+            category_id: string;
+            /**
+             * Is Gate
+             * @default false
+             */
+            is_gate: boolean;
+            /** Name Ko */
+            name_ko: string;
+            /** Score */
+            score: number | null;
+            /** Weight */
+            weight: number;
+        };
+        /**
+         * PublicStatusCounts
+         * @description 상태별 검사 수 — 필터 칩의 숫자. 화면이 세지 않고 서버가 센다.
+         */
+        PublicStatusCounts: {
+            /**
+             * Failed
+             * @default 0
+             */
+            failed: number;
+            /**
+             * Not Applicable
+             * @default 0
+             */
+            not_applicable: number;
+            /**
+             * Passed
+             * @default 0
+             */
+            passed: number;
+            /**
+             * Unknown
+             * @default 0
+             */
+            unknown: number;
+            /**
+             * Warned
+             * @default 0
+             */
+            warned: number;
         };
         /** RaisedGate */
         RaisedGate: {

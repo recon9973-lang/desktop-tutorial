@@ -451,3 +451,78 @@ def test_the_clock_used_for_expiry_is_timezone_aware() -> None:
     )
     assert payload.result_expires_at.tzinfo is not None
     assert payload.result_expires_at.astimezone(UTC) == payload.result_expires_at
+
+
+# --------------------------------------------------------------------------- #
+# 확정 화면(2026-08-02)이 요구하는 필드 — 전체 검사·단계·카운트·미리보기·조치 코드
+# --------------------------------------------------------------------------- #
+
+
+class TestTheFullChecklistPayload:
+    """무료 결과가 상위 몇 건이 아니라 **전체**를 내보낸다 — 화면 확정의 결정.
+
+    페이지 간 비교 항목이 여기서 측정 불가로 남는 것 자체가 전체 진단(콘솔)의
+    이유가 되므로, 숨겨서 얻는 전환 대신 다 보여주는 쪽을 택했다.
+    """
+
+    def _payload(self):  # type: ignore[no-untyped-def]
+        return build_service().run_seo_scan(
+            urls=["https://clinic.example/"], client_ip="203.0.113.9", session_id="s-1"
+        )
+
+    def test_every_evaluated_check_appears_exactly_once(self) -> None:
+        payload = self._payload()
+
+        spec = latest_published("veo.seo.readiness")
+        declared = {check.id for category in spec.categories for check in category.checks}
+        listed = [row.check_id for row in payload.checks]
+
+        assert set(listed) <= declared
+        assert len(listed) == len(set(listed)), "같은 검사가 두 번 실렸다"
+        assert len(listed) == sum(
+            (
+                payload.counts.failed,
+                payload.counts.warned,
+                payload.counts.passed,
+                payload.counts.unknown,
+                payload.counts.not_applicable,
+            )
+        ), "필터 칩의 합과 목록 길이가 다르면 화면이 세다가 틀린다"
+
+    def test_stages_are_the_scoring_categories_in_spec_order(self) -> None:
+        payload = self._payload()
+
+        spec = latest_published("veo.seo.readiness")
+        expected = [c.id for c in spec.categories if c.contributes_to_score]
+        assert [stage.category_id for stage in payload.stages] == expected
+        assert any(stage.is_gate for stage in payload.stages), "관문 표시가 사라졌다"
+
+    def test_a_failing_check_with_a_canonical_fix_carries_code(self) -> None:
+        """더보기가 보여줄 코드 — 정답이 하나로 정해지는 검사에만 실린다."""
+        payload = self._payload()
+        rows = {row.check_id: row for row in payload.checks}
+
+        fixable = [
+            row
+            for row in payload.checks
+            if row.status in ("FAIL", "WARNING") and row.code_example is not None
+        ]
+        assert fixable, "실패 항목 중 코드 예시가 하나도 없다 — 배선이 끊겼다"
+        for row in rows.values():
+            if row.status in ("PASS", "NOT_APPLICABLE", "UNKNOWN"):
+                assert row.code_example is None, (
+                    f"{row.check_id}: 통과·미측정 항목에 조치 코드가 실렸다"
+                )
+
+    def test_previews_reflect_what_the_page_actually_declares(self) -> None:
+        payload = self._payload()
+
+        assert payload.previews is not None
+        # 픽스처 홈페이지에는 title 이 있다 — 있는 것은 값으로, 없는 것은 None 으로.
+        assert payload.previews.serp_title
+        assert isinstance(payload.previews.has_og_image, bool)
+
+    def test_reach_travels_with_the_score(self) -> None:
+        payload = self._payload()
+
+        assert 0.0 <= payload.reach <= 1.0

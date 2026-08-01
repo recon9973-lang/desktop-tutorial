@@ -59,19 +59,26 @@ from veo.public.limits import (
 )
 from veo.public.schemas import (
     MAX_PUBLIC_FINDINGS,
+    PublicCheckRow,
     PublicExposureBlock,
     PublicFinding,
     PublicGeoScanPayload,
     PublicKeywordEntry,
     PublicKeywordLookupPayload,
+    PublicPreviews,
     PublicResultPayload,
     PublicScoreBlock,
     PublicSeoScanPayload,
+    PublicStage,
+    PublicStatusCounts,
 )
 from veo.public.tokens import IssuedToken, fingerprint, issue_token, looks_like_token
 from veo.scoring import CheckOutcome, CheckStatus, ScoreResult, ScoringSpec, latest_published
+from veo.scoring.improvements import rank_improvements
+from veo.seo.fix_examples import code_example_for
+from veo.seo.parsing.html import parse_html
 from veo.seo.service import SPEC_ID as SEO_SPEC_ID
-from veo.seo.service import run_seo_scan
+from veo.seo.service import SeoScanResult, run_seo_scan
 
 __all__ = [
     "MAX_PUBLIC_KEYWORDS",
@@ -297,6 +304,11 @@ class PublicScanService:
             scanned_url_count=len(documents),
             summary_ko=result.summary_ko,
             score=_score_block(spec, result.score),
+            reach=result.score.reach,
+            stages=_stages(spec, result.score),
+            checks=_check_rows(spec, result),
+            counts=_status_counts(spec, result.score.outcomes),
+            previews=_previews(documents[0] if documents else None),
             top_findings=_findings(spec, result.score.outcomes),
             total_finding_count=_finding_total(result.score.outcomes),
             unmeasured_check_count=len(result.unknown_checks),
@@ -580,6 +592,103 @@ def _score_block(spec: ScoringSpec, result: ScoreResult) -> PublicScoreBlock:
         band_label_ko=band.label_ko if band else None,
         coverage=result.coverage,
         confidence=result.confidence,
+    )
+
+
+def _stages(spec: ScoringSpec, result: ScoreResult) -> list[PublicStage]:
+    """점수를 이루는 영역만, 명세 선언 순서대로. 연동 영역은 점수 밖이라 싣지 않는다."""
+    by_id = {category.category_id: category for category in result.categories}
+    rows: list[PublicStage] = []
+    for declared in spec.categories:
+        if not declared.contributes_to_score:
+            continue
+        scored = by_id.get(declared.id)
+        rows.append(
+            PublicStage(
+                category_id=declared.id,
+                name_ko=declared.name_ko,
+                score=None if scored is None else scored.score,
+                weight=declared.weight,
+                is_gate=declared.is_gate,
+            )
+        )
+    return rows
+
+
+def _check_rows(spec: ScoringSpec, result: SeoScanResult) -> list[PublicCheckRow]:
+    """전체 검사 목록 — 명세가 아는 모든 검사에 판정·이유·이득·조치 코드를 붙인다.
+
+    무료 결과가 상위 몇 건만 보여주던 것에서 전체 공개로 바꾼 것은 화면 확정
+    (2026-08-02)의 결정이다. 숨겨서 얻는 전환보다 다 보여주고 "사이트 전체 진단"
+    으로 넘어오게 하는 쪽을 택했다 — 페이지 간 비교 항목은 어차피 여기서 측정
+    불가로 남아, 전체 진단의 이유가 화면 자체에 있다.
+    """
+    outcome_by_id = {outcome.check_id: outcome for outcome in result.score.outcomes}
+    unknown_reason = {item.check_id: item.reason_ko for item in result.unknown_checks}
+    improvement_by_id = {
+        entry.check_id: entry for entry in rank_improvements(result.score)
+    }
+
+    rows: list[PublicCheckRow] = []
+    for category in spec.categories:
+        for check in category.checks:
+            outcome = outcome_by_id.get(check.id)
+            if outcome is None:
+                continue
+            status = str(outcome.status.value)
+            gain = improvement_by_id.get(check.id)
+            rows.append(
+                PublicCheckRow(
+                    check_id=check.id,
+                    title_ko=check.title_ko,
+                    category_id=category.id,
+                    category_name_ko=category.name_ko,
+                    severity=str(check.severity),
+                    remediation_owner=check.remediation_owner,
+                    status=status,  # type: ignore[arg-type]
+                    note_ko=unknown_reason.get(check.id) or outcome.note,
+                    gain_points=None if gain is None else gain.gain_points,
+                    blocked_by_cap=False if gain is None else gain.blocked_by_cap,
+                    outside_score=not category.contributes_to_score,
+                    code_example=(
+                        code_example_for(check.id)
+                        if status in ("FAIL", "WARNING")
+                        else None
+                    ),
+                )
+            )
+    return rows
+
+
+def _status_counts(
+    spec: ScoringSpec, outcomes: Sequence[CheckOutcome]
+) -> PublicStatusCounts:
+    counts = dict.fromkeys(("FAIL", "WARNING", "PASS", "UNKNOWN", "NOT_APPLICABLE"), 0)
+    known = {check.id for category in spec.categories for check in category.checks}
+    for outcome in outcomes:
+        if outcome.check_id in known:
+            counts[str(outcome.status.value)] = counts.get(str(outcome.status.value), 0) + 1
+    return PublicStatusCounts(
+        failed=counts["FAIL"],
+        warned=counts["WARNING"],
+        passed=counts["PASS"],
+        unknown=counts["UNKNOWN"],
+        not_applicable=counts["NOT_APPLICABLE"],
+    )
+
+
+def _previews(document: FetchedDocument | None) -> PublicPreviews | None:
+    """검색결과·공유 카드 미리보기 재료. 값이 없으면 없는 채로 — 부재가 곧 진단이다."""
+    if document is None:
+        return None
+    page = parse_html(document.text())
+    og = page.open_graph
+    return PublicPreviews(
+        serp_title=page.title,
+        serp_description=page.meta_description,
+        og_title=og.get("og:title"),
+        og_description=og.get("og:description"),
+        has_og_image=bool((og.get("og:image") or "").strip()),
     )
 
 

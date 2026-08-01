@@ -10151,6 +10151,101 @@
         "title": "ProviderStatusPayload",
         "type": "object"
       },
+      "PublicCheckRow": {
+        "additionalProperties": false,
+        "description": "검사 하나의 판정 전체 — 무료 화면의 체크리스트 한 줄.\n\n``gain_points`` 는 채점기가 실제 산식으로 계산한 \"고치면 오르는 폭\"이다. 화면이\n따로 어림하지 않는다. ``code_example`` 은 붙여넣을 수 있는 조치 코드 — 정답\n코드가 하나로 정해지는 검사에만 있고, 없으면 문장 설명(note_ko)만 나간다.",
+        "properties": {
+          "blocked_by_cap": {
+            "default": false,
+            "title": "Blocked By Cap",
+            "type": "boolean"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          },
+          "category_name_ko": {
+            "title": "Category Name Ko",
+            "type": "string"
+          },
+          "check_id": {
+            "title": "Check Id",
+            "type": "string"
+          },
+          "code_example": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Example"
+          },
+          "gain_points": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gain Points"
+          },
+          "note_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note Ko"
+          },
+          "outside_score": {
+            "default": false,
+            "title": "Outside Score",
+            "type": "boolean"
+          },
+          "remediation_owner": {
+            "title": "Remediation Owner",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "WARNING",
+              "FAIL",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "title_ko": {
+            "title": "Title Ko",
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_id",
+          "title_ko",
+          "category_id",
+          "category_name_ko",
+          "severity",
+          "remediation_owner",
+          "status"
+        ],
+        "title": "PublicCheckRow",
+        "type": "object"
+      },
       "PublicExposureBlock": {
         "additionalProperties": false,
         "description": "Whether anything blocks the page from being reached at all.\n\nKept beside the readiness score and never merged into it: a page can be structurally\nexcellent and completely invisible, and those are different jobs to fix.",
@@ -10533,6 +10628,63 @@
         "title": "PublicLeadRequest",
         "type": "object"
       },
+      "PublicPreviews": {
+        "additionalProperties": false,
+        "description": "이 페이지가 검색결과·공유 카드에서 실제로 어떻게 보이는가.\n\n값이 ``None`` 이면 **그 태그가 없다**는 뜻이다. 화면은 그 부재 자체를 그린다 —\n\"설명 없음\" 이라고 쓰는 것이 아니라 없는 채로 깨져 보이는 미리보기가 설득한다.",
+        "properties": {
+          "has_og_image": {
+            "default": false,
+            "title": "Has Og Image",
+            "type": "boolean"
+          },
+          "og_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Description"
+          },
+          "og_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Og Title"
+          },
+          "serp_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serp Description"
+          },
+          "serp_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serp Title"
+          }
+        },
+        "title": "PublicPreviews",
+        "type": "object"
+      },
       "PublicScanRequest": {
         "additionalProperties": false,
         "description": "One or more URLs to diagnose. The ceiling is enforced by the service, not here,\nso the refusal can name the configured maximum in Korean rather than emit a\nvalidation error that says ``too_long``.",
@@ -10646,11 +10798,36 @@
       "PublicSeoScanPayload": {
         "additionalProperties": false,
         "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/PublicCheckRow"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/PublicStatusCounts"
+          },
           "kind": {
             "const": "SEO",
             "default": "SEO",
             "title": "Kind",
             "type": "string"
+          },
+          "previews": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PublicPreviews"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reach": {
+            "default": 1.0,
+            "title": "Reach",
+            "type": "number"
           },
           "result_expires_at": {
             "format": "date-time",
@@ -10672,6 +10849,13 @@
           },
           "score": {
             "$ref": "#/components/schemas/PublicScoreBlock"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/PublicStage"
+            },
+            "title": "Stages",
+            "type": "array"
           },
           "summary_ko": {
             "title": "Summary Ko",
@@ -10708,6 +10892,81 @@
           "result_expires_at"
         ],
         "title": "PublicSeoScanPayload",
+        "type": "object"
+      },
+      "PublicStage": {
+        "additionalProperties": false,
+        "description": "검색 여정 한 단계의 점수. 관문(is_gate)은 가중 평균이 아니라 곱셈이다.",
+        "properties": {
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          },
+          "is_gate": {
+            "default": false,
+            "title": "Is Gate",
+            "type": "boolean"
+          },
+          "name_ko": {
+            "title": "Name Ko",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "category_id",
+          "name_ko",
+          "score",
+          "weight"
+        ],
+        "title": "PublicStage",
+        "type": "object"
+      },
+      "PublicStatusCounts": {
+        "additionalProperties": false,
+        "description": "상태별 검사 수 — 필터 칩의 숫자. 화면이 세지 않고 서버가 센다.",
+        "properties": {
+          "failed": {
+            "default": 0,
+            "title": "Failed",
+            "type": "integer"
+          },
+          "not_applicable": {
+            "default": 0,
+            "title": "Not Applicable",
+            "type": "integer"
+          },
+          "passed": {
+            "default": 0,
+            "title": "Passed",
+            "type": "integer"
+          },
+          "unknown": {
+            "default": 0,
+            "title": "Unknown",
+            "type": "integer"
+          },
+          "warned": {
+            "default": 0,
+            "title": "Warned",
+            "type": "integer"
+          }
+        },
+        "title": "PublicStatusCounts",
         "type": "object"
       },
       "RaisedGate": {

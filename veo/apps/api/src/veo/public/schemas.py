@@ -145,6 +145,72 @@ class PublicFinding(BaseModel):
     status: Literal["FAIL", "WARNING"]
 
 
+class PublicStage(BaseModel):
+    """검색 여정 한 단계의 점수. 관문(is_gate)은 가중 평균이 아니라 곱셈이다."""
+
+    model_config = _STRICT
+
+    category_id: str
+    name_ko: str
+    score: float | None
+    weight: float
+    is_gate: bool = False
+
+
+class PublicCheckRow(BaseModel):
+    """검사 하나의 판정 전체 — 무료 화면의 체크리스트 한 줄.
+
+    ``gain_points`` 는 채점기가 실제 산식으로 계산한 "고치면 오르는 폭"이다. 화면이
+    따로 어림하지 않는다. ``code_example`` 은 붙여넣을 수 있는 조치 코드 — 정답
+    코드가 하나로 정해지는 검사에만 있고, 없으면 문장 설명(note_ko)만 나간다.
+    """
+
+    model_config = _STRICT
+
+    check_id: str
+    title_ko: str
+    category_id: str
+    category_name_ko: str
+    severity: str
+    remediation_owner: str
+    status: Literal["PASS", "WARNING", "FAIL", "NOT_APPLICABLE", "UNKNOWN"]
+    note_ko: str | None = None
+    gain_points: float | None = None
+    blocked_by_cap: bool = False
+    #: 점수를 이루지 않는 영역(연동 필요·보안 헤더류)의 검사. 화면은 "점수 밖" 으로
+    #: 갈라 그린다 — 섞으면 순위와 무관한 일을 하고 점수가 오르는 착시가 생긴다.
+    outside_score: bool = False
+    code_example: str | None = None
+
+
+class PublicStatusCounts(BaseModel):
+    """상태별 검사 수 — 필터 칩의 숫자. 화면이 세지 않고 서버가 센다."""
+
+    model_config = _STRICT
+
+    failed: int = 0
+    warned: int = 0
+    passed: int = 0
+    unknown: int = 0
+    not_applicable: int = 0
+
+
+class PublicPreviews(BaseModel):
+    """이 페이지가 검색결과·공유 카드에서 실제로 어떻게 보이는가.
+
+    값이 ``None`` 이면 **그 태그가 없다**는 뜻이다. 화면은 그 부재 자체를 그린다 —
+    "설명 없음" 이라고 쓰는 것이 아니라 없는 채로 깨져 보이는 미리보기가 설득한다.
+    """
+
+    model_config = _STRICT
+
+    serp_title: str | None = None
+    serp_description: str | None = None
+    og_title: str | None = None
+    og_description: str | None = None
+    has_og_image: bool = False
+
+
 class PublicExposureBlock(BaseModel):
     """Whether anything blocks the page from being reached at all.
 
@@ -173,6 +239,12 @@ class PublicSeoScanPayload(BaseModel):
     summary_ko: str
     scope_notice_ko: str = PUBLIC_SCOPE_NOTICE_KO
     score: PublicScoreBlock
+    #: 검색에 들어갈 수 있는 비율. 화면의 "도달률x품질" 줄이 이 값으로 그려진다.
+    reach: float = 1.0
+    stages: list[PublicStage] = Field(default_factory=list)
+    checks: list[PublicCheckRow] = Field(default_factory=list)
+    counts: PublicStatusCounts = Field(default_factory=PublicStatusCounts)
+    previews: PublicPreviews | None = None
     top_findings: list[PublicFinding] = Field(default_factory=list)
     total_finding_count: int = 0
     unmeasured_check_count: int = 0
