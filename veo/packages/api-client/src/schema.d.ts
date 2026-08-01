@@ -2626,6 +2626,11 @@ export interface components {
          */
         CheckOutcome: {
             /**
+             * Affected Urls
+             * @default []
+             */
+            affected_urls: string[];
+            /**
              * Affected Weight
              * @default 1
              */
@@ -2636,6 +2641,11 @@ export interface components {
             confidence?: number | null;
             /** Confidence Level */
             confidence_level?: string | null;
+            /**
+             * Evaluated Urls
+             * @default []
+             */
+            evaluated_urls: string[];
             /**
              * Evaluated Weight
              * @default 1

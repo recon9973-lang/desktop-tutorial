@@ -311,6 +311,21 @@ class CheckResult(Base, OrganizationScopedMixin, ImmutableMixin):
     unknown_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     observed_value: Mapped[JsonObject] = json_column()
     evidence_ids: Mapped[JsonArray] = json_column()
+    #: 이 검사에 걸린 / 판정한 페이지 URL 목록 — 페이지별 점수 재집계의 기반.
+    #:
+    #: "canonical 문제 103장" 만 저장하면 **어느** 103장인지가 사라져, 페이지별 점수를
+    #: 내려면 재크롤이 필요해진다. 수집기가 이미 아는 목록을 여기 남긴다.
+    #: NULL 은 이 칸이 생기기 전의 실행이다 — 채워 넣지 않는다(모른다 ≠ 없었다).
+    affected_urls: Mapped[JsonArray | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="이 검사에 걸린 페이지 URL 목록. 옛 실행은 NULL(기록되지 않음).",
+    )
+    evaluated_urls: Mapped[JsonArray | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        comment="이 검사가 판정한 페이지 URL 목록. 옛 실행은 NULL(기록되지 않음).",
+    )
 
 
 class ScoreResult(Base, OrganizationScopedMixin, ImmutableMixin):

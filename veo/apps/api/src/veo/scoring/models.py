@@ -443,6 +443,12 @@ class CheckOutcome(BaseModel):
     evidence_ids: tuple[str, ...] = ()
     observed_value: Any = None
     note: str | None = None
+    #: 이 검사에 걸린 / 판정한 페이지 URL. 평가기는 읽지 않는다 — 무게(affected/
+    #: evaluated_weight)가 점수를 정하고, 이 목록은 **어느 페이지였는지**를 기억해
+    #: 페이지별 재집계를 가능하게 한다. 목록 없이 무게만 저장하면 "103장" 은 남고
+    #: "어느 103장" 은 사라진다 — 그것이 실제로 일어나고 있던 유실이다.
+    affected_urls: tuple[str, ...] = ()
+    evaluated_urls: tuple[str, ...] = ()
 
     @model_validator(mode="after")
     def _validate(self) -> CheckOutcome:

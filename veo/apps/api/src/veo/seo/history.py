@@ -284,6 +284,11 @@ def _save_outcomes(
                 ),
                 observed_value={},
                 evidence_ids=list(outcome.evidence_ids),
+                # 어느 페이지였는지 — 페이지별 점수 재집계의 기반. 빈 목록도 그대로
+                # 남긴다: "판정에 페이지가 없었다"(SITE 검사 등)와 이 칸이 생기기
+                # 전의 NULL("기록되지 않았다")은 다른 사실이다.
+                affected_urls=list(outcome.affected_urls),
+                evaluated_urls=list(outcome.evaluated_urls),
             )
         )
 

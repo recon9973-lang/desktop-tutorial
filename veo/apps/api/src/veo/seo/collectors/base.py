@@ -112,6 +112,8 @@ def outcome(
     evidence_ids: Sequence[str] = (),
     observed_value: Any = None,
     note: str | None = None,
+    affected_urls: Sequence[str] = (),
+    evaluated_urls: Sequence[str] = (),
 ) -> CheckOutcome:
     """A plain observation. No severity, no points — the evaluator supplies both."""
     return CheckOutcome(
@@ -123,6 +125,8 @@ def outcome(
         evidence_ids=tuple(evidence_ids),
         observed_value=observed_value,
         note=note,
+        affected_urls=tuple(affected_urls),
+        evaluated_urls=tuple(evaluated_urls),
     )
 
 
@@ -155,6 +159,8 @@ def url_ratio_outcome(
             check_id, "평가 대상 URL이 모두 의도된 색인 제외 페이지입니다."
         )
 
+    # 어느 페이지였는지를 무게와 함께 남긴다. 무게만 저장하면 "103장" 은 남고
+    # "어느 103장" 은 사라져, 페이지별 점수를 내려면 재크롤이 필요해진다.
     if not affected:
         return outcome(
             check_id,
@@ -165,6 +171,7 @@ def url_ratio_outcome(
             evidence_ids=evidence_ids,
             observed_value=observed_value,
             note=clean_note_ko,
+            evaluated_urls=[page.url for page in evaluated],
         )
 
     return outcome(
@@ -176,6 +183,8 @@ def url_ratio_outcome(
         evidence_ids=evidence_ids,
         observed_value=observed_value,
         note=affected_note_ko,
+        affected_urls=[page.url for page in affected],
+        evaluated_urls=[page.url for page in evaluated],
     )
 
 

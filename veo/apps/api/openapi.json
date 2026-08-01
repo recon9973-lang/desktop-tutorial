@@ -3194,6 +3194,14 @@
         "additionalProperties": false,
         "description": "What a collector observed for one check on one target.\n\n``affected_weight`` / ``evaluated_weight`` carry the importance-weighted URL counts\nfor site-scope checks. For a single-URL check both default to 1.0, which makes the\ncoverage ratio 1.0 — a failure on one page costs that page's full severity.",
         "properties": {
+          "affected_urls": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Affected Urls",
+            "type": "array"
+          },
           "affected_weight": {
             "default": 1.0,
             "minimum": 0.0,
@@ -3227,6 +3235,14 @@
               }
             ],
             "title": "Confidence Level"
+          },
+          "evaluated_urls": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Evaluated Urls",
+            "type": "array"
           },
           "evaluated_weight": {
             "default": 1.0,

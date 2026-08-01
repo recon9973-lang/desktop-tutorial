@@ -100,6 +100,44 @@ class TestSavingOneRun:
         rows = db_session.query(CheckResult).filter_by(scan_run_id=saved.scan_run_id).all()
         assert len(rows) == len(scan_result.score.outcomes)
 
+    def test_the_pages_a_check_judged_survive_into_storage(
+        self,
+        db_session,
+        principal,
+        site,
+        scan_result,
+        scan_context,
+    ):
+        """"canonical 문제 103장" 만 남으면 **어느** 103장인지가 사라진다.
+
+        수집기는 목록을 알고 있었고 저장 직전에 버려지고 있었다 — 비용 근거·측정
+        조건과 같은 "저장할 때 흘림" 의 다섯 번째 사례. 이 목록이 페이지별 점수
+        재집계(v3 §7-③)의 기반이므로, URL 무게가 있는 판정은 판정한 페이지 목록을
+        반드시 함께 남겨야 한다.
+        """
+        from veo.db.models.analysis import CheckResult
+        from veo.seo.history import save_scan_run
+
+        source = {o.check_id: o for o in scan_result.score.outcomes}
+        with_urls = [c for c, o in source.items() if o.evaluated_urls]
+        assert with_urls, "픽스처에 URL 목록을 실은 판정이 하나도 없다 — 배선이 끊겼다"
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+
+        rows = {
+            row.check_id: row
+            for row in db_session.query(CheckResult)
+            .filter_by(scan_run_id=saved.scan_run_id)
+            .all()
+        }
+        for check_id in with_urls:
+            assert rows[check_id].evaluated_urls == list(source[check_id].evaluated_urls)
+            assert rows[check_id].affected_urls == list(source[check_id].affected_urls)
+
     def test_the_reason_a_check_was_unmeasurable_survives(
         self,
         db_session,
