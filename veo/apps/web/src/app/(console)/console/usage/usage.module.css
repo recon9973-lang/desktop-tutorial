@@ -5,6 +5,50 @@
  * 호출이 있으면 그 사실이 같은 무게로 나온다.
  */
 
+/* 오늘의 한도.
+ *
+ * 여유·경고·소진을 **색만으로** 구분하지 않는다. 색을 못 보는 사람에게도 문장이
+ * 이미 다르고, 왼쪽 띠의 두께와 배경으로 한 번 더 갈라 놓는다.
+ */
+.quotaCalm,
+.quotaWarning,
+.quotaExhausted {
+  margin: 0 0 var(--veo-space-4);
+  padding: var(--veo-space-4);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+  font-size: var(--veo-font-size-300);
+  line-height: 1.7;
+}
+
+.quotaCalm {
+  border-left: 3px solid var(--veo-color-border);
+}
+
+.quotaWarning {
+  border-left: 3px solid var(--veo-status-warning-border);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.quotaExhausted {
+  border-left: 6px solid var(--veo-status-fail-border);
+  font-weight: var(--veo-weight-semibold);
+}
+
+/* 조직 몫을 남은 양으로 읽으면 화면이 확신 있게 틀린 말을 한다. 접어 두지 않는다. */
+.caveat {
+  margin: var(--veo-space-4) 0 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  line-height: 1.7;
+}
+
+.sectionLede {
+  margin: 0 0 var(--veo-space-4);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
 .totals {
   margin: 0 0 var(--veo-space-4);
   display: grid;
@@ -22,7 +66,7 @@
 
 /* 금액을 다 재지 못했으면 그 칸을 갈라 놓는다. 색만으로 구분하지 않는다. */
 .figureWarn {
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
 }
 
 .figure dt,
@@ -47,7 +91,7 @@
 .unmeasured {
   margin: 0;
   padding: var(--veo-space-4);
-  border-left: 3px solid var(--veo-color-warning);
+  border-left: 3px solid var(--veo-status-warning-border);
   background: var(--veo-color-surface-sunken);
   border-radius: var(--veo-radius-md);
   font-size: var(--veo-font-size-200);

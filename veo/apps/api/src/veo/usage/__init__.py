@@ -4,10 +4,16 @@
 않지만, 넘기면 그날의 모든 고객 진단에서 성능이 측정 불가가 된다.
 """
 
-from veo.usage.quota import PAGESPEED_DAILY_QUOTA, QuotaUsage, pagespeed_quota
+from veo.usage.quota import (
+    CALLS_PER_SCAN,
+    PAGESPEED_DAILY_QUOTA,
+    QuotaUsage,
+    pagespeed_quota,
+)
 from veo.usage.record import record_pagespeed_calls
 
 __all__ = [
+    "CALLS_PER_SCAN",
     "PAGESPEED_DAILY_QUOTA",
     "QuotaUsage",
     "pagespeed_quota",

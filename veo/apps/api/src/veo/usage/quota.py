@@ -34,6 +34,7 @@ from sqlalchemy.orm import Session
 from veo.db.models.analysis import APIUsageEvent
 
 __all__ = [
+    "CALLS_PER_SCAN",
     "PAGESPEED_DAILY_QUOTA",
     "QuotaUsage",
     "pagespeed_quota",
@@ -41,6 +42,12 @@ __all__ = [
 
 #: 구글이 공개한 PageSpeed Insights 무료 한도(하루). 우리가 정한 값이 아니다.
 PAGESPEED_DAILY_QUOTA: Final = 25_000
+
+#: 진단 한 번이 태우는 최대 호출 수 = 발행 명세의 ``sampling.perf_lab.max_urls``.
+#: **여기서 지어낸 숫자가 아니다.** 재는 쪽(수집기)과 남은 양을 말하는 쪽(이 모듈)이
+#: 각자 다른 값을 쓰면 "몇 번 더 진단할 수 있는가" 가 조용히 틀린다 — 화면은 여유가
+#: 있다고 말하는데 실제로는 그전에 한도가 끝난다. 명세와 어긋나면 시험이 깨진다.
+CALLS_PER_SCAN: Final = 5
 
 #: 이 비율을 넘으면 경고한다. 넘고 나서 알면 그날은 이미 늦었다.
 _WARN_AT: Final = 0.8
@@ -77,6 +84,16 @@ class QuotaUsage:
     def is_exhausted(self) -> bool:
         return self.remaining == 0
 
+    @property
+    def scans_remaining(self) -> int:
+        """남은 호출로 몇 번 더 진단할 수 있는가 — **최악의 경우로 센다.**
+
+        진단 한 번이 항상 5회를 태우지는 않는다(페이지가 적으면 덜 쓴다). 그래도 나눗셈은
+        상한으로 한다. 평균으로 세면 화면이 실제보다 많은 횟수를 약속하고, 그 약속이
+        틀리는 순간은 하필 한도가 끝나는 순간이다.
+        """
+        return self.remaining // CALLS_PER_SCAN
+
     def summary_ko(self) -> str:
         """화면에 그대로 쓸 한 줄. 남은 양을 먼저 말한다."""
         if self.is_exhausted:
@@ -88,13 +105,35 @@ class QuotaUsage:
         if self.is_warning:
             return (
                 f"오늘 {self.calls_today:,}회를 썼고 {self.remaining:,}회 남았습니다"
-                f"(한도 {self.daily_quota:,}회). 진단 한 번에 최대 5회가 나가므로 "
-                f"약 {self.remaining // 5:,}회 더 진단할 수 있습니다."
+                f"(한도 {self.daily_quota:,}회). 진단 한 번에 최대 {CALLS_PER_SCAN}회가 "
+                f"나가므로 약 {self.scans_remaining:,}회 더 진단할 수 있습니다."
             )
         return (
             f"오늘 {self.calls_today:,}회를 썼습니다. 한도 {self.daily_quota:,}회 중 "
             f"{self.remaining:,}회 남았습니다."
         )
+
+    def remedies_ko(self) -> list[str]:
+        """지금 무엇을 하면 되는가. **할 일이 없으면 빈 목록이다.**
+
+        여유가 있을 때까지 조언을 띄우면 조언 자체가 배경이 되어, 정작 급할 때 아무도
+        읽지 않는다.
+        """
+        if self.is_exhausted:
+            return [
+                "오늘 진단은 성능 항목이 빠진 채로 나옵니다. 성능이 필요한 건은 "
+                "초기화 뒤로 미룹니다.",
+                "고객에게는 '사이트가 느려서'가 아니라 '우리 한도를 다 써서 오늘은 "
+                "재지 못했다'고 알립니다 — 그대로 두면 고객이 자기 사이트를 고치려 듭니다.",
+                "이 상태가 반복되면 구글 클라우드 콘솔에서 PageSpeed Insights API "
+                "한도 증설을 신청합니다.",
+            ]
+        if self.is_warning:
+            return [
+                f"남은 {self.scans_remaining:,}회는 성능이 꼭 필요한 진단에 먼저 씁니다.",
+                "오늘 안에 대량 진단을 예정했다면 초기화 이후로 미루는 편이 안전합니다.",
+            ]
+        return []
 
     def caveat_ko(self) -> str:
         """이 숫자를 읽을 때 함께 알아야 하는 것."""

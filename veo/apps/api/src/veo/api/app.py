@@ -48,6 +48,7 @@ from veo.public.router import router as public_router
 from veo.reports.router import router as reports_router
 from veo.seo.router import router as seo_router
 from veo.sites.router import router as sites_router
+from veo.usage.router import router as usage_router
 from veo.users.router import router as users_router
 
 DESCRIPTION = """\
@@ -244,6 +245,7 @@ def create_app() -> FastAPI:
     app.include_router(lab_router, prefix=api_prefix)
     app.include_router(reports_router, prefix=api_prefix)
     app.include_router(users_router, prefix=api_prefix)
+    app.include_router(usage_router, prefix=api_prefix)
 
     # The public surface is mounted at its own root, deliberately outside ``api_prefix``.
     # Every router above requires a principal and belongs to a tenant; this one has

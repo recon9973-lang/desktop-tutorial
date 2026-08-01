@@ -946,6 +946,39 @@
         "title": "ApiResponse[OrganizationPayload]",
         "type": "object"
       },
+      "ApiResponse_PageSpeedQuotaPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageSpeedQuotaPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[PageSpeedQuotaPayload]",
+        "type": "object"
+      },
       "ApiResponse_ProjectBrandsPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -8758,6 +8791,95 @@
           "url"
         ],
         "title": "PagePayload",
+        "type": "object"
+      },
+      "PageSpeedQuotaPayload": {
+        "additionalProperties": false,
+        "description": "오늘 PageSpeed 를 몇 번 불렀고 얼마나 남았는가.\n\n**`calls_by_this_organization` 은 남은 양을 말해 주지 않는다.** 한도는 API 키 하나에\n걸리고 키는 하나이므로, 다른 조직이 태운 것도 같은 한도를 쓴다. 두 숫자를 같은 크기로\n나란히 그리면 화면이 \"우리는 200회밖에 안 썼는데요\" 라고 말하는 동안 키는 이미 막혀\n있게 된다. 그래서 `remaining`·`is_exhausted` 는 전체에서만 나온다.",
+        "properties": {
+          "calls_by_this_organization": {
+            "title": "Calls By This Organization",
+            "type": "integer"
+          },
+          "calls_per_scan": {
+            "title": "Calls Per Scan",
+            "type": "integer"
+          },
+          "calls_today": {
+            "title": "Calls Today",
+            "type": "integer"
+          },
+          "caveat_ko": {
+            "title": "Caveat Ko",
+            "type": "string"
+          },
+          "daily_quota": {
+            "title": "Daily Quota",
+            "type": "integer"
+          },
+          "is_exhausted": {
+            "title": "Is Exhausted",
+            "type": "boolean"
+          },
+          "is_warning": {
+            "title": "Is Warning",
+            "type": "boolean"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "remaining": {
+            "title": "Remaining",
+            "type": "integer"
+          },
+          "remedies_ko": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Remedies Ko",
+            "type": "array"
+          },
+          "scans_remaining": {
+            "title": "Scans Remaining",
+            "type": "integer"
+          },
+          "summary_ko": {
+            "title": "Summary Ko",
+            "type": "string"
+          },
+          "used_ratio": {
+            "title": "Used Ratio",
+            "type": "number"
+          },
+          "window_end": {
+            "format": "date-time",
+            "title": "Window End",
+            "type": "string"
+          },
+          "window_start": {
+            "format": "date-time",
+            "title": "Window Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "calls_today",
+          "calls_by_this_organization",
+          "daily_quota",
+          "remaining",
+          "used_ratio",
+          "is_warning",
+          "is_exhausted",
+          "scans_remaining",
+          "calls_per_scan",
+          "window_start",
+          "window_end",
+          "summary_ko",
+          "caveat_ko"
+        ],
+        "title": "PageSpeedQuotaPayload",
         "type": "object"
       },
       "PagedResponse_ComparisonSummaryPayload_": {
@@ -19293,6 +19415,28 @@
         "summary": "사이트 수정",
         "tags": [
           "sites"
+        ]
+      }
+    },
+    "/api/usage/pagespeed-quota": {
+      "get": {
+        "description": "PageSpeed 는 하루 25,000회까지 무료라 **청구서가 아니라 하루가 위험합니다.** 넘기면 그날의 모든 고객 진단에서 성능이 측정 불가가 되고, 화면에는 사이트의 문제처럼 보이는 형태로 나타납니다.\n\n`calls_by_this_organization` 은 참고용입니다. **남은 양은 전체로만 답할 수 있습니다** — 한도는 API 키 하나에 걸리고 키는 하나라, 다른 조직이 태운 것도 같은 한도를 씁니다.\n\n실패한 호출도 셉니다. 요청은 나갔고 한도를 썼기 때문입니다. 초기화 시각은 구글이 태평양 시간 자정으로 정하는데 이 집계는 UTC 하루 기준이라 최대 몇 시간 어긋날 수 있고, 그 사실을 `caveat_ko` 에 적어 보냅니다.",
+        "operationId": "pagespeed_quota_today_api_usage_pagespeed_quota_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PageSpeedQuotaPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "오늘 PageSpeed 를 몇 번 불렀고 얼마나 남았는가",
+        "tags": [
+          "usage"
         ]
       }
     },

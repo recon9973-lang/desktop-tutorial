@@ -1590,6 +1590,30 @@ export interface paths {
         patch: operations["update_site_api_sites__site_id__patch"];
         trace?: never;
     };
+    "/api/usage/pagespeed-quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 오늘 PageSpeed 를 몇 번 불렀고 얼마나 남았는가
+         * @description PageSpeed 는 하루 25,000회까지 무료라 **청구서가 아니라 하루가 위험합니다.** 넘기면 그날의 모든 고객 진단에서 성능이 측정 불가가 되고, 화면에는 사이트의 문제처럼 보이는 형태로 나타납니다.
+         *
+         *     `calls_by_this_organization` 은 참고용입니다. **남은 양은 전체로만 답할 수 있습니다** — 한도는 API 키 하나에 걸리고 키는 하나라, 다른 조직이 태운 것도 같은 한도를 씁니다.
+         *
+         *     실패한 호출도 셉니다. 요청은 나갔고 한도를 썼기 때문입니다. 초기화 시각은 구글이 태평양 시간 자정으로 정하는데 이 집계는 UTC 하루 기준이라 최대 몇 시간 어긋날 수 있고, 그 사실을 `caveat_ko` 에 적어 보냅니다.
+         */
+        get: operations["pagespeed_quota_today_api_usage_pagespeed_quota_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users": {
         parameters: {
             query?: never;
@@ -1979,6 +2003,12 @@ export interface components {
         /** ApiResponse[OrganizationPayload] */
         ApiResponse_OrganizationPayload_: {
             data?: components["schemas"]["veo__organizations__schemas__OrganizationPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[PageSpeedQuotaPayload] */
+        ApiResponse_PageSpeedQuotaPayload_: {
+            data?: components["schemas"]["PageSpeedQuotaPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -4886,6 +4916,53 @@ export interface components {
              * @description 리다이렉트를 모두 따른 최종 URL입니다.
              */
             url: string;
+        };
+        /**
+         * PageSpeedQuotaPayload
+         * @description 오늘 PageSpeed 를 몇 번 불렀고 얼마나 남았는가.
+         *
+         *     **`calls_by_this_organization` 은 남은 양을 말해 주지 않는다.** 한도는 API 키 하나에
+         *     걸리고 키는 하나이므로, 다른 조직이 태운 것도 같은 한도를 쓴다. 두 숫자를 같은 크기로
+         *     나란히 그리면 화면이 "우리는 200회밖에 안 썼는데요" 라고 말하는 동안 키는 이미 막혀
+         *     있게 된다. 그래서 `remaining`·`is_exhausted` 는 전체에서만 나온다.
+         */
+        PageSpeedQuotaPayload: {
+            /** Calls By This Organization */
+            calls_by_this_organization: number;
+            /** Calls Per Scan */
+            calls_per_scan: number;
+            /** Calls Today */
+            calls_today: number;
+            /** Caveat Ko */
+            caveat_ko: string;
+            /** Daily Quota */
+            daily_quota: number;
+            /** Is Exhausted */
+            is_exhausted: boolean;
+            /** Is Warning */
+            is_warning: boolean;
+            /** Provider */
+            provider: string;
+            /** Remaining */
+            remaining: number;
+            /** Remedies Ko */
+            remedies_ko?: string[];
+            /** Scans Remaining */
+            scans_remaining: number;
+            /** Summary Ko */
+            summary_ko: string;
+            /** Used Ratio */
+            used_ratio: number;
+            /**
+             * Window End
+             * Format: date-time
+             */
+            window_end: string;
+            /**
+             * Window Start
+             * Format: date-time
+             */
+            window_start: string;
         };
         /** PagedResponse[ComparisonSummaryPayload] */
         PagedResponse_ComparisonSummaryPayload_: {
@@ -10421,6 +10498,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pagespeed_quota_today_api_usage_pagespeed_quota_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_PageSpeedQuotaPayload_"];
                 };
             };
         };

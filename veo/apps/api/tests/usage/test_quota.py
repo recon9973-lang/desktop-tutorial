@@ -104,6 +104,44 @@ class TestTheQuotaIsGooglesNumberNotOurs:
         assert PAGESPEED_DAILY_QUOTA == 25_000
 
 
+class TestTheEstimateUsesTheCapTheScannerActuallyUses:
+    """"몇 번 더 진단할 수 있는가" 는 실제 표본 상한 위에서만 참이다.
+
+    재는 쪽(수집기)은 발행 명세의 `sampling.perf_lab.max_urls` 로 표본을 고른다. 여기서
+    다른 숫자로 나누면 화면이 여유를 실제보다 많게 말하고, 그 말이 틀리는 순간은 하필
+    한도가 끝나는 순간이다. 명세가 바뀌면 이 시험이 먼저 깨져야 한다.
+    """
+
+    def test_the_divisor_matches_the_published_sampling_cap(self) -> None:
+        from veo.scoring.spec import latest_published
+        from veo.usage.quota import CALLS_PER_SCAN
+
+        sampling = latest_published("veo.seo.readiness").sampling
+        assert sampling is not None, "명세가 표본 정책을 선언하지 않으면 상한을 알 수 없다"
+        assert sampling.perf_lab is not None
+        assert sampling.perf_lab.max_urls == CALLS_PER_SCAN
+
+    def test_the_estimate_rounds_down(self) -> None:
+        """4회가 남았는데 "1번 더 가능" 이라고 하면 그 진단은 도중에 끊긴다."""
+        from veo.usage.quota import CALLS_PER_SCAN
+
+        almost = usage(calls=PAGESPEED_DAILY_QUOTA - (CALLS_PER_SCAN - 1))
+        assert almost.remaining == CALLS_PER_SCAN - 1
+        assert almost.scans_remaining == 0
+
+
+class TestAdviceAppearsOnlyWhenThereIsSomethingToDo:
+    def test_a_quiet_day_offers_no_advice(self) -> None:
+        """여유 있을 때까지 띄우면 조언이 배경이 되어 급할 때 아무도 읽지 않는다."""
+        assert usage(calls=10).remedies_ko() == []
+
+    def test_exhaustion_tells_us_what_to_say_to_the_customer(self) -> None:
+        lines = " ".join(usage(calls=PAGESPEED_DAILY_QUOTA).remedies_ko())
+
+        assert lines != ""
+        assert "우리 한도" in lines
+
+
 def test_the_query_counts_failed_calls_too() -> None:
     """실패한 호출도 한도를 쓴다.
 
