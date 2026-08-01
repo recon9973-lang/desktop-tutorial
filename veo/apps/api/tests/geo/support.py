@@ -50,7 +50,19 @@ def iter_cases() -> Iterator[GeoCase]:
         yield load_case(name)
 
 
-def load_case(name: str, *, spec: ScoringSpec | None = None) -> GeoCase:
+def load_case(
+    name: str, *, spec: ScoringSpec | None = None, crawl_is_exhaustive: bool = True
+) -> GeoCase:
+    """Replay one recorded GEO case.
+
+    ``crawl_is_exhaustive`` defaults to true for the same reason the SEO support does:
+    a fixture *is* a whole recorded site — every page it has is in the manifest.
+    Before this default existed the flag silently stayed false, which meant every GEO
+    fixture was treated as a truncated sample; the duplication check's clean PASS was
+    an unproven absence claim, and no test could see it because the collector never
+    asked. Tests that need a truncated crawl pass ``False`` and get the honest
+    측정 불가 answers.
+    """
     directory = FIXTURE_ROOT / name
     manifest: dict[str, Any] = json.loads((directory / "case.json").read_text(encoding="utf-8"))
     collected_at = datetime.fromisoformat(manifest["collected_at"])
@@ -85,6 +97,7 @@ def load_case(name: str, *, spec: ScoringSpec | None = None) -> GeoCase:
         },
         provider_payloads=payloads,
         url_importance=manifest.get("url_importance", {}),
+        crawl_is_exhaustive=crawl_is_exhaustive,
         collected_at=collected_at,
     )
     return GeoCase(name=manifest["name"], purpose_ko=manifest["purpose_ko"], context=context)

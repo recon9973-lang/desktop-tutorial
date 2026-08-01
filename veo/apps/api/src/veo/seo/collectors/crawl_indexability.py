@@ -25,6 +25,7 @@ from veo.seo.collectors.base import (
     issue,
     outcome,
     site_outcome,
+    unproven_absence_outcome,
     url_ratio_outcome,
 )
 from veo.seo.observation import PageObservation, SiteObservation
@@ -840,6 +841,15 @@ def _orphan_key_pages(
         )
 
     orphans = [page for page in candidates if not site.inbound.get(page.url)]
+    if not orphans:
+        # 위반이 없을 때만 표본을 묻는다. 잘린 크롤에서 "고아 없음" 은 부재 주장이고,
+        # 링크 그래프의 밖(못 본 페이지)에 고아가 있는지는 이 표본이 답하지 못한다.
+        guard = unproven_absence_outcome(
+            context, site, "seo.crawl.no_orphan_key_pages",
+            subject_ko="내부 링크가 없는 주요 페이지",
+        )
+        if guard is not None:
+            return guard, []
     evidence = [
         ledger.of(
             "link_graph",
@@ -902,6 +912,17 @@ def _broken_internal_links(
             ),
             [],
         )
+
+    if not site.broken_targets:
+        # 확인한 링크 대상 중에는 오류가 없었다 — 그러나 잘린 크롤이라면 못 따라간
+        # 링크가 남아 있다. 2026-08-01 실측에서 도메인 8개 전부가 이 자리에서
+        # 100장 표본으로 "깨진 링크 없음" 을 단정하고 있었다.
+        guard = unproven_absence_outcome(
+            context, site, "seo.crawl.no_broken_internal_links",
+            subject_ko="오류로 응답하는 내부 링크 대상",
+        )
+        if guard is not None:
+            return guard, []
 
     evidence = [
         ledger.of(

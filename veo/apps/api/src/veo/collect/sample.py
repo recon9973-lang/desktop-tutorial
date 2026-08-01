@@ -100,4 +100,36 @@ def absent_in_sample_outcome(
     )
 
 
-__all__ = ["SampleScope", "absent_in_sample_outcome", "single_page_outcome"]
+def unproven_absence_outcome(
+    scope: SampleScope, check_id: str, *, subject_ko: str, seen_pages: int
+) -> CheckOutcome | None:
+    """부재를 주장하기 직전에 묻는다 — 이 표본으로 "없다" 를 말할 수 있는가.
+
+    위반이 **발견**됐다면 이 함수를 부를 일이 없다. 존재는 표본으로도 증명된다.
+    위반이 없을 때만 갈림길이 생긴다:
+
+    * 사이트 전체를 봤다 → ``None``. 부재가 실제로 증명됐으니 PASS 를 내면 된다.
+    * 일부만 봤다 → **측정 불가.** 본 것에 없었다는 사실은 표본에 대한 사실이지
+      사이트에 대한 사실이 아니다.
+
+    2026-08-01 실측에서 이 질문이 빠진 채 도메인 8개 전부가 잘린 크롤(100장 상한)로
+    "깨진 내부 링크 없음" 을 단정했다(0-A 위반). 측정 불가는 분모에 남아 0점이므로
+    (ADR 0016) 이 경로에서는 **덜 재서 점수가 오르지 않는다** — 1장 52.23 > 25장
+    50.11 이 나오던 바로 그 구멍이다.
+    """
+    if scope.is_whole_site:
+        return None
+    return unknown_outcome(
+        check_id,
+        f"수집한 {seen_pages}장 중에는 {subject_ko}이(가) 없었습니다. 다만 사이트 "
+        "전체를 본 것이 아니므로 나머지 페이지는 확인하지 못했습니다. 크롤 범위를 "
+        "넓혀 전체를 재면 판정됩니다.",
+    )
+
+
+__all__ = [
+    "SampleScope",
+    "absent_in_sample_outcome",
+    "single_page_outcome",
+    "unproven_absence_outcome",
+]

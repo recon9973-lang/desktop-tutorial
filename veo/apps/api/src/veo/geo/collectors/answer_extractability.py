@@ -15,7 +15,7 @@ from veo.collect.contract import (
     IssueDraft,
     not_applicable_outcome,
 )
-from veo.collect.sample import single_page_outcome
+from veo.collect.sample import single_page_outcome, unproven_absence_outcome
 from veo.geo.extractability import (
     ExtractionSignals,
     analyse_extractability,
@@ -375,6 +375,16 @@ class AnswerExtractabilityCollector:
         repeated = {p: urls for p, urls in by_passage.items() if len(urls) > 1}
         evaluated = float(len(pages))
         if not repeated:
+            # 부재 주장은 표본이 전체일 때만 PASS 다. SEO 쪽과 같은 함수가 가른다 —
+            # 규칙이 두 벌이면 한쪽만 고쳐지고, 실제로 그랬던 적이 있다(sample.py 모듈 문서).
+            guard = unproven_absence_outcome(
+                sample_scope(context),
+                "geo.extract.no_duplicate_answer_blocks",
+                subject_ko="페이지 간 답변 블록 중복",
+                seen_pages=len(pages),
+            )
+            if guard is not None:
+                return guard, None, []
             return (
                 observed(
                     "geo.extract.no_duplicate_answer_blocks",

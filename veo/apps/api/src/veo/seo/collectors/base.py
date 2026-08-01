@@ -22,6 +22,7 @@ from veo.collect.contract import (
 from veo.collect.sample import SampleScope
 from veo.collect.sample import absent_in_sample_outcome as _absent_in_sample
 from veo.collect.sample import single_page_outcome as _single_page
+from veo.collect.sample import unproven_absence_outcome as _unproven_absence
 from veo.contracts.enums import ProviderState
 from veo.scoring import CheckOutcome, CheckStatus
 from veo.seo.observation import PageObservation, SiteObservation, build_observation
@@ -338,6 +339,23 @@ def single_page_outcome(
     return _single_page(scope_of(context, site), check_id, subject_ko=subject_ko)
 
 
+def unproven_absence_outcome(
+    context: CollectionContext,
+    site: SiteObservation,
+    check_id: str,
+    *,
+    subject_ko: str,
+) -> CheckOutcome | None:
+    """부재("~가 없다")를 PASS 로 내기 직전의 관문. ``None`` 이면 PASS 가 정당하다.
+
+    부재형 검사(`no_*`)는 위반이 없을 때 이 함수를 **반드시** 거친다. 표본이 사이트
+    전체가 아니면 부재는 증명되지 않았고, 그때의 정답은 PASS 가 아니라 측정 불가다.
+    """
+    return _unproven_absence(
+        scope_of(context, site), check_id, subject_ko=subject_ko, seen_pages=len(site.pages)
+    )
+
+
 def absent_in_sample_outcome(
     context: CollectionContext,
     site: SiteObservation,
@@ -369,5 +387,6 @@ __all__ = [
     "scope_of",
     "single_page_outcome",
     "site_outcome",
+    "unproven_absence_outcome",
     "url_ratio_outcome",
 ]

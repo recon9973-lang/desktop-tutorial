@@ -27,6 +27,7 @@ from veo.seo.collectors.base import (
     all_unknown,
     issue,
     single_page_outcome,
+    unproven_absence_outcome,
     url_ratio_outcome,
 )
 from veo.seo.observation import PageObservation, SiteObservation
@@ -198,6 +199,14 @@ def _duplicate_bodies(
                 duplicated.update({left.url, right.url})
 
     affected = [page for page in candidates if page.url in duplicated]
+    if not affected:
+        # 표본 안에서 겹치는 본문이 없었다 — 전체를 본 것이 아니면 부재는 미증명이다.
+        guard = unproven_absence_outcome(
+            context, site, "seo.content.no_duplicate_bodies",
+            subject_ko="페이지 간 본문 근접 중복",
+        )
+        if guard is not None:
+            return guard, []
     evidence = [
         ledger.of(
             "similarity_matrix",

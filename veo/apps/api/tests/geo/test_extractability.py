@@ -124,21 +124,53 @@ def test_a_block_repeated_on_two_urls_is_reported() -> None:
     }
 
 
-def test_distinct_pages_pass_the_duplication_check() -> None:
+def test_distinct_pages_pass_the_duplication_check_when_the_crawl_saw_the_whole_site() -> None:
+    """부재("중복 없음")는 표본이 전체일 때만 증명된다.
+
+    이 시험의 옛 이름에는 뒷조건이 없었다 — 잘린 크롤이 부재를 단정하는 결함을
+    이름이 그대로 지키고 있었다(0-I). 2026-08-01 실도메인 8개 실측에서 같은 유형의
+    결함이 SEO 쪽에 실제로 나왔다.
+    """
     assert run("hospital_local")["geo.extract.no_duplicate_answer_blocks"] is CheckStatus.PASS
 
 
-def test_a_single_page_crawl_cannot_judge_duplication() -> None:
-    """한 장만 가져온 것은 "중복이 없다" 가 아니라 **못 잰 것**이다.
+def test_a_truncated_crawl_cannot_assert_the_absence_of_duplicates() -> None:
+    """100장 상한에 잘린 크롤에서 "중복 없음" 은 표본에 대한 사실일 뿐이다."""
+    result = AnswerExtractabilityCollector().collect(
+        load_case("hospital_local", crawl_is_exhaustive=False).context
+    )
+    by_id = {o.check_id: o for o in result.outcomes}
+    outcome = by_id["geo.extract.no_duplicate_answer_blocks"]
 
-    해당 없음으로 접으면 배점이 분모에서 빠지고, 그러면 **덜 재는 편이 유리해진다.**
-    SEO 에서 같은 결함을 이미 고쳤는데 GEO 는 그대로였다 — 그때 규칙이
-    `seo/collectors/base.py` 안에만 있어서 이쪽에서는 보이지 않았다.
+    assert outcome.status is CheckStatus.UNKNOWN
+    assert "확인하지 못했습니다" in (outcome.note or "")
+
+
+def test_a_confirmed_single_page_site_is_not_applicable_for_duplication() -> None:
+    """진짜 1장짜리 사이트에는 중복의 상대가 없다 — 해당 없음이 사실이다.
+
+    publisher_article 은 문서가 하나이고 **sitemap 이 스스로 "페이지가 하나"라고
+    선언**한다. 그 두 가지가 모두 있을 때만 해당 없음이 허락된다.
     """
     assert (
         run("publisher_article")["geo.extract.no_duplicate_answer_blocks"]
-        is CheckStatus.UNKNOWN
+        is CheckStatus.NOT_APPLICABLE
     )
+
+
+def test_a_truncated_single_page_crawl_cannot_judge_duplication() -> None:
+    """한 장만 **가져온** 것은 "중복이 없다" 가 아니라 못 잰 것이다.
+
+    해당 없음으로 접으면 배점이 분모에서 빠지고, 그러면 **덜 재는 편이 유리해진다.**
+    이 시험의 앞판은 크롤 잘림 플래그가 조용히 False 로 남던 시절의 결과(UNKNOWN)를
+    픽스처 전체에 단정하고 있었다 — 진짜 1장짜리 사이트까지 못 잰 것으로 세면서(0-I).
+    """
+    result = AnswerExtractabilityCollector().collect(
+        load_case("publisher_article", crawl_is_exhaustive=False).context
+    )
+    by_id = {o.check_id: o for o in result.outcomes}
+
+    assert by_id["geo.extract.no_duplicate_answer_blocks"].status is CheckStatus.UNKNOWN
 
 
 def test_extractability_never_claims_direct_observation() -> None:

@@ -28,6 +28,7 @@ from veo.seo.collectors.base import (
     issue,
     outcome,
     single_page_outcome,
+    unproven_absence_outcome,
     url_ratio_outcome,
 )
 from veo.seo.observation import SiteObservation
@@ -644,6 +645,15 @@ def _duplicate_metadata(
         url for urls in descriptions.values() for url in urls
     }
     affected = [page for page in site.pages if page.url in affected_urls]
+    if not affected:
+        # 본 페이지들 사이에 중복이 없다는 것과 이 사이트에 중복이 없다는 것은
+        # 표본이 전체일 때만 같은 말이다.
+        guard = unproven_absence_outcome(
+            context, site, "seo.onpage.no_duplicate_metadata",
+            subject_ko="페이지 간 title·description 중복",
+        )
+        if guard is not None:
+            return guard, []
 
     evidence = [
         ledger.page_snippet(
