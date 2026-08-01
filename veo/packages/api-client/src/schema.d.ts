@@ -1404,6 +1404,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/scoring/severities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 심각도 어휘 — 이름과 뜻만, 감점 계수는 명세에
+         * @description 화면이 심각도 목록을 스스로 적어 두면 엔진이 새 심각도를 들여도 그대로 옛 목록을 보여 주고, 빠진 항목은 없는 것처럼 보이므로 아무도 알아채지 못합니다. 심각도별 감점 계수는 버전이 붙은 명세에만 있으며 여기서 내보내지 않습니다.
+         */
+        get: operations["list_severities_api_scoring_severities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/scoring/specs": {
         parameters: {
             query?: never;
@@ -1411,7 +1431,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 발행된 점수 명세 목록 */
+        /**
+         * 점수 명세 목록 — 지금 적용 중인 버전과 지나간 버전
+         * @description 명세 ID 별로 디스크에 있는 모든 버전을 오래된 것부터 돌려줍니다. 지금 점수를 내고 있는 버전에는 `is_current` 가 붙습니다. 어느 버전이 현재인지 화면이 버전 번호를 비교해 정하지 않게 하려는 것입니다.
+         */
         get: operations["list_specs_api_scoring_specs_get"];
         put?: never;
         post?: never;
@@ -2111,6 +2134,12 @@ export interface components {
         /** ApiResponse[SessionPayload] */
         ApiResponse_SessionPayload_: {
             data?: components["schemas"]["SessionPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[SeverityVocabularyPayload] */
+        ApiResponse_SeverityVocabularyPayload_: {
+            data?: components["schemas"]["SeverityVocabularyPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -6510,6 +6539,23 @@ export interface components {
             title_ko: string;
         };
         /**
+         * SeverityTermPayload
+         * @description 심각도 한 가지의 이름과 뜻. 감점 계수는 여기 없다 — 명세에만 있다.
+         */
+        SeverityTermPayload: {
+            /** Id */
+            id: string;
+            /** Label Ko */
+            label_ko: string;
+            /** Meaning Ko */
+            meaning_ko: string;
+        };
+        /** SeverityVocabularyPayload */
+        SeverityVocabularyPayload: {
+            /** Severities */
+            severities: components["schemas"]["SeverityTermPayload"][];
+        };
+        /**
          * SiteCreateRequest
          * @description 새 사이트 등록 요청. `project_id`는 같은 조직의 프로젝트여야 합니다.
          */
@@ -6766,6 +6812,11 @@ export interface components {
             gates: components["schemas"]["SpecGateDetail"][];
             /** Implementation Owner */
             implementation_owner: string;
+            /**
+             * Is Current
+             * @description 이 명세 ID 에서 지금 점수를 내고 있는 발행본이면 true. 어느 버전이 현재인지는 엔진이 판정한다 — 화면이 버전 번호를 비교해 스스로 고르면 발행 규칙이 두 곳에 생기고, 규칙이 갈라져도 화면은 확신에 찬 얼굴로 옛 버전을 현재라고 말한다.
+             */
+            is_current: boolean;
             /** Is Rank Prediction */
             is_rank_prediction: boolean;
             /** Methodology Owner */
@@ -6817,6 +6868,11 @@ export interface components {
             effective_at: string;
             /** Implementation Owner */
             implementation_owner: string;
+            /**
+             * Is Current
+             * @description 이 명세 ID 에서 지금 점수를 내고 있는 발행본이면 true. 어느 버전이 현재인지는 엔진이 판정한다 — 화면이 버전 번호를 비교해 스스로 고르면 발행 규칙이 두 곳에 생기고, 규칙이 갈라져도 화면은 확신에 찬 얼굴로 옛 버전을 현재라고 말한다.
+             */
+            is_current: boolean;
             /** Is Rank Prediction */
             is_rank_prediction: boolean;
             /** Methodology Owner */
@@ -10053,6 +10109,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_severities_api_scoring_severities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SeverityVocabularyPayload_"];
                 };
             };
         };

@@ -14,6 +14,7 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
+    "@veo/api-client": "workspace:^",
     "@veo/shared-types": "workspace:^",
     "@veo/ui": "link:../../packages/ui",
     "next": "^16.2.12",

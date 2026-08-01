@@ -5,7 +5,7 @@ import { Card, EmptyState, ErrorState } from '@veo/ui';
 import { claimedButUnverified, inWorkOrder, type Issue } from '@/lib/issues';
 import { readIssues } from '@/lib/issues-api';
 import { listCompanies } from '@/lib/companies';
-import { SEVERITIES } from '@/lib/scoring';
+import { readSeverities } from '@/lib/scoring-api';
 import styles from '@/styles/page.module.css';
 import { PermissionGate } from '@/components/PermissionGate';
 import { requireConsoleIdentity } from '@/lib/session';
@@ -42,6 +42,10 @@ async function ConsoleIssuesContent({ projectId }: { readonly projectId: string 
       )
     : [];
   const found = await readIssues(projectId);
+  // 심각도 어휘는 채점 명세를 쥐고 있는 엔진이 정의한다. 화면이 목록을 들고 있으면
+  // 엔진이 어휘를 늘려도 그대로 옛 목록을 보여 주고, 빠진 항목은 애초에 없는 것처럼
+  // 보이므로 아무도 알아채지 못한다.
+  const severities = await readSeverities();
   const issues: readonly Issue[] = found.ok ? inWorkOrder(found.data) : [];
   const open = issues.filter((issue) => issue.is_open);
   const unverified = claimedButUnverified(issues);
@@ -139,18 +143,28 @@ async function ConsoleIssuesContent({ projectId }: { readonly projectId: string 
         <h2 id="issues-severity-heading" className={styles.sectionTitle}>
           심각도 구분
         </h2>
-        <Card title="채점 명세가 정의하는 심각도" headingLevel={3}>
-          <dl className={styles.definitionList}>
-            {SEVERITIES.map((severity) => (
-              <div key={severity.id} className={styles.definitionRow}>
-                <dt>
-                  {severity.label} <span className={styles.token}>{severity.id}</span>
-                </dt>
-                <dd>{severity.meaning}</dd>
-              </div>
-            ))}
-          </dl>
-        </Card>
+        {!severities.ok ? (
+          <ErrorState
+            title="심각도 구분을 불러오지 못했습니다"
+            description={
+              severities.message ??
+              '채점 명세를 쥐고 있는 엔진에 연결하지 못했습니다. 임의로 적어 둔 목록을 대신 보여 주지 않습니다.'
+            }
+          />
+        ) : (
+          <Card title="채점 명세가 정의하는 심각도" headingLevel={3}>
+            <dl className={styles.definitionList}>
+              {severities.data.map((severity) => (
+                <div key={severity.id} className={styles.definitionRow}>
+                  <dt>
+                    {severity.label_ko} <span className={styles.token}>{severity.id}</span>
+                  </dt>
+                  <dd>{severity.meaning_ko}</dd>
+                </div>
+              ))}
+            </dl>
+          </Card>
+        )}
         <p className={styles.callout}>
           심각도별 감점 계수는 프론트엔드가 아니라 채점 명세에만 정의되어 있습니다. 화면은 계산
           결과와 그 근거만 표시합니다.

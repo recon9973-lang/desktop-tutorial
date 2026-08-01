@@ -64,12 +64,36 @@ class SpecSummary(BaseModel):
     score_meaning_ko: str
     is_rank_prediction: bool
     category_weights: dict[str, float]
+    is_current: bool = Field(
+        description=(
+            "이 명세 ID 에서 지금 점수를 내고 있는 발행본이면 true. "
+            "어느 버전이 현재인지는 엔진이 판정한다 — 화면이 버전 번호를 비교해 스스로 "
+            "고르면 발행 규칙이 두 곳에 생기고, 규칙이 갈라져도 화면은 확신에 찬 얼굴로 "
+            "옛 버전을 현재라고 말한다."
+        ),
+    )
 
 
 class SpecListPayload(BaseModel):
     model_config = _STRICT
 
     specs: list[SpecSummary]
+
+
+class SeverityTermPayload(BaseModel):
+    """심각도 한 가지의 이름과 뜻. 감점 계수는 여기 없다 — 명세에만 있다."""
+
+    model_config = _STRICT
+
+    id: str
+    label_ko: str
+    meaning_ko: str
+
+
+class SeverityVocabularyPayload(BaseModel):
+    model_config = _STRICT
+
+    severities: list[SeverityTermPayload]
 
 
 class SpecCheckDetail(BaseModel):
