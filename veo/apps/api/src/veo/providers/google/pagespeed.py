@@ -242,6 +242,12 @@ class PageSpeedResult:
 
     lab: LabMeasurement
     field: FieldMeasurement
+    #: 사이트 전체(origin) 범위의 실사용자 값. 표본이 없으면 ``None``.
+    #:
+    #: URL 범위와 **다른 사실**이라 자리를 따로 둔다. 사이트 전체 값은 방문이 많은
+    #: 페이지가 지배하므로 특정 URL 에 갖다 붙이면 그 URL 이 겪지 않은 트래픽으로
+    #: 칭찬하거나 깎게 된다. 합치는 접근자를 만들지 않는 이유도 같다.
+    origin_field: FieldMeasurement | None = None
 
 
 def lab_payload(measurements: Iterable[LabMeasurement]) -> dict[str, Any]:
@@ -301,7 +307,24 @@ def normalize_runpagespeed(
         # statement about visitor numbers, not about the page.
         measurement = not_applicable(url=url, scope=FieldScope.URL, collected_at=collected_at)
 
-    return PageSpeedResult(lab=lab, field=measurement)
+    # 같은 응답에 **사이트 전체(origin) 값**이 함께 온다. 2026-08-01 실측(seoul.go.kr):
+    # 페이지 값 LCP 1041ms·INP 96ms / 사이트 전체 값 LCP 1011ms·INP 122ms.
+    #
+    # 이것을 읽으면 실사용자 지표에는 표본 문제가 사라진다 — 페이지마다 부를 이유가
+    # 없어지기 때문이다. 그동안 버리고 있었다.
+    origin_block = payload.get("originLoadingExperience")
+    origin = (
+        normalize_loading_experience(
+            origin_block,
+            url=_text(origin_block.get("id")) or url,
+            scope=FieldScope.ORIGIN,
+            collected_at=collected_at,
+        )
+        if isinstance(origin_block, Mapping)
+        else None
+    )
+
+    return PageSpeedResult(lab=lab, field=measurement, origin_field=origin)
 
 
 def _audit(raw_audits: Mapping[str, Any], audit_id: str) -> LabAudit:

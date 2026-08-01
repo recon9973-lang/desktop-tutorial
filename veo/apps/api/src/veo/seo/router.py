@@ -37,6 +37,7 @@ from veo.seo.history import (
     read_scan_report,
     save_scan_run,
 )
+from veo.seo.measure_performance import with_performance
 from veo.seo.schemas import (
     CapSummary,
     CategorySummary,
@@ -191,6 +192,10 @@ def run_site_scan(
         outcome=outcome,
         locale=payload.locale,
     )
+    # 성능은 크롤로 알 수 없다. 구글에 따로 물어야 하고, 그래서 여기서 한 번 더 나간다.
+    # 자격증명이 없으면 문맥을 손대지 않고 그대로 돌려주므로, 키가 없는 배포에서는
+    # 이 줄이 아무 일도 하지 않는다 — 소켓도 열리지 않는다.
+    context = with_performance(context)
     result = run_seo_scan(context)
     report = _scan_payload(result)
 
