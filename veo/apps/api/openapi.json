@@ -946,6 +946,39 @@
         "title": "ApiResponse[OrganizationPayload]",
         "type": "object"
       },
+      "ApiResponse_PageDetailPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageDetailPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[PageDetailPayload]",
+        "type": "object"
+      },
       "ApiResponse_PageSpeedQuotaPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -1538,6 +1571,39 @@
           "meta"
         ],
         "title": "ApiResponse[ScanHistoryPayload]",
+        "type": "object"
+      },
+      "ApiResponse_ScanPagesPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanPagesPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[ScanPagesPayload]",
         "type": "object"
       },
       "ApiResponse_ScanPayload_": {
@@ -8685,6 +8751,81 @@
         "title": "OutcomeSummary",
         "type": "object"
       },
+      "PageChecksSummary": {
+        "additionalProperties": false,
+        "description": "한 페이지에서 실제로 판정된 검사들.\n\n**점수가 없는 것은 의도다.** 페이지 점수 산식은 명세 1.9.0 이 발행되기 전이라\n(SEO_SCORING_V3_PAGES.md), 지금은 판정 사실만 내보낸다 — 고칠 페이지를 특정하는\n데는 그것으로 충분하다.",
+        "properties": {
+          "failed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed",
+            "type": "array"
+          },
+          "passed_count": {
+            "title": "Passed Count",
+            "type": "integer"
+          },
+          "problem_count": {
+            "title": "Problem Count",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "warned": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warned",
+            "type": "array"
+          }
+        },
+        "required": [
+          "url",
+          "passed_count",
+          "problem_count"
+        ],
+        "title": "PageChecksSummary",
+        "type": "object"
+      },
+      "PageDetailPayload": {
+        "additionalProperties": false,
+        "description": "페이지 하나의 전체 판정 — 통과 목록까지.",
+        "properties": {
+          "failed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed",
+            "type": "array"
+          },
+          "passed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Passed",
+            "type": "array"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "warned": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warned",
+            "type": "array"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "PageDetailPayload",
+        "type": "object"
+      },
       "PageInfo": {
         "additionalProperties": false,
         "properties": {
@@ -11773,6 +11914,61 @@
         "title": "ScanHistoryPayload",
         "type": "object"
       },
+      "ScanPagesPayload": {
+        "additionalProperties": false,
+        "description": "한 실행의 판정을 페이지 축으로 — 재크롤 없이 저장된 것에서.\n\n`site_checks` 는 반드시 `measured_at` 과 함께 그려야 한다. 날짜 없이 페이지\n화면에 섞으면 사이트 전체의 사실이 \"이 페이지의 문제\" 로 잘못 읽힌다.",
+        "properties": {
+          "measured_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured At"
+          },
+          "notes_ko": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes Ko",
+            "type": "array"
+          },
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/PageChecksSummary"
+            },
+            "title": "Pages",
+            "type": "array"
+          },
+          "recorded_before_page_lists": {
+            "default": false,
+            "title": "Recorded Before Page Lists",
+            "type": "boolean"
+          },
+          "scan_run_id": {
+            "format": "uuid",
+            "title": "Scan Run Id",
+            "type": "string"
+          },
+          "site_checks": {
+            "items": {
+              "$ref": "#/components/schemas/SiteCheckSummary"
+            },
+            "title": "Site Checks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "scan_run_id",
+          "measured_at"
+        ],
+        "title": "ScanPagesPayload",
+        "type": "object"
+      },
       "ScanPayload": {
         "additionalProperties": false,
         "properties": {
@@ -12851,6 +13047,37 @@
           "after"
         ],
         "title": "SeverityChangePayload",
+        "type": "object"
+      },
+      "SiteCheckSummary": {
+        "additionalProperties": false,
+        "description": "사이트 전체 단위의 판정. 페이지에 귀속되지 않는다.",
+        "properties": {
+          "check_id": {
+            "title": "Check Id",
+            "type": "string"
+          },
+          "reason_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Ko"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_id",
+          "status"
+        ],
+        "title": "SiteCheckSummary",
         "type": "object"
       },
       "SiteCreateRequest": {
@@ -19171,6 +19398,106 @@
           }
         },
         "summary": "지난 진단 결과를 그대로 다시 보기",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/api/seo/scans/{scan_run_id}/pages": {
+      "get": {
+        "description": "저장된 판정을 페이지별로 뒤집어 돌려줍니다. 다시 수집하지 않습니다.\n\n**페이지 점수는 아직 없습니다** — 점수 산식은 채점 명세 1.9.0 발행과 함께 옵니다. 지금은 판정 사실(실패·주의·통과)만 내보내며, 고칠 페이지를 특정하는 데는 그것으로 충분합니다.\n\n`site_checks` 는 페이지가 아니라 **사이트 전체**의 판정입니다. 화면에 실을 때는 반드시 `measured_at` 날짜와 함께 표기하십시오 — 날짜 없이 페이지 화면에 섞으면 '이 페이지의 문제' 로 잘못 읽힙니다.",
+        "operationId": "read_scan_pages_api_seo_scans__scan_run_id__pages_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scan_run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Scan Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ScanPagesPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "지난 진단을 페이지 축으로 — 어느 페이지에 무엇이 걸렸나",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/api/seo/scans/{scan_run_id}/pages/detail": {
+      "get": {
+        "description": "주소는 쿼리로 받습니다(경로에 넣으면 한글·쿼리스트링 주소가 부서집니다). 이 페이지에서 잰 적 없는 검사는 응답에 나오지 않습니다 — '통과' 와 '안 쟀다' 를 섞으면 페이지가 실제보다 건강해 보입니다.",
+        "operationId": "read_scan_page_detail_api_seo_scans__scan_run_id__pages_detail_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scan_run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Scan Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "살펴볼 페이지의 최종 URL입니다.",
+            "in": "query",
+            "name": "url",
+            "required": true,
+            "schema": {
+              "description": "살펴볼 페이지의 최종 URL입니다.",
+              "minLength": 1,
+              "title": "Url",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PageDetailPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "페이지 하나의 전체 판정 — 통과 목록까지",
         "tags": [
           "seo"
         ]

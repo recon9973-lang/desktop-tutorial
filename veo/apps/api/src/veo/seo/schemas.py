@@ -345,6 +345,65 @@ class ScanPayload(BaseModel):
     notes_ko: list[str]
 
 
+class PageChecksSummary(BaseModel):
+    """한 페이지에서 실제로 판정된 검사들.
+
+    **점수가 없는 것은 의도다.** 페이지 점수 산식은 명세 1.9.0 이 발행되기 전이라
+    (SEO_SCORING_V3_PAGES.md), 지금은 판정 사실만 내보낸다 — 고칠 페이지를 특정하는
+    데는 그것으로 충분하다.
+    """
+
+    model_config = _FROZEN
+
+    url: str
+    failed: list[str] = Field(default_factory=list)
+    warned: list[str] = Field(default_factory=list)
+    #: 목록이 아니라 수인 이유: 목록 화면에서 통과 항목명까지 실으면 페이지 200장에
+    #: 검사 30개씩이 매 응답에 실린다. 전체 목록은 페이지 상세에서 준다.
+    passed_count: int
+    problem_count: int
+
+
+class PageDetailPayload(BaseModel):
+    """페이지 하나의 전체 판정 — 통과 목록까지."""
+
+    model_config = _FROZEN
+
+    url: str
+    failed: list[str] = Field(default_factory=list)
+    warned: list[str] = Field(default_factory=list)
+    passed: list[str] = Field(default_factory=list)
+    #: 이 페이지에서 잰 적 없는 검사는 여기 나오지 않는다. "통과" 와 "안 쟀다" 를
+    #: 섞으면 페이지가 실제보다 건강해 보인다.
+
+
+class SiteCheckSummary(BaseModel):
+    """사이트 전체 단위의 판정. 페이지에 귀속되지 않는다."""
+
+    model_config = _FROZEN
+
+    check_id: str
+    status: str
+    reason_ko: str | None = None
+
+
+class ScanPagesPayload(BaseModel):
+    """한 실행의 판정을 페이지 축으로 — 재크롤 없이 저장된 것에서.
+
+    `site_checks` 는 반드시 `measured_at` 과 함께 그려야 한다. 날짜 없이 페이지
+    화면에 섞으면 사이트 전체의 사실이 "이 페이지의 문제" 로 잘못 읽힌다.
+    """
+
+    model_config = _FROZEN
+
+    scan_run_id: uuid.UUID
+    measured_at: datetime | None
+    pages: list[PageChecksSummary] = Field(default_factory=list)
+    site_checks: list[SiteCheckSummary] = Field(default_factory=list)
+    recorded_before_page_lists: bool = False
+    notes_ko: list[str] = Field(default_factory=list)
+
+
 __all__ = [
     "CapSummary",
     "CategorySummary",
@@ -354,9 +413,13 @@ __all__ = [
     "HopPayload",
     "IssueSummary",
     "OutcomeSummary",
+    "PageChecksSummary",
+    "PageDetailPayload",
     "PagePayload",
+    "ScanPagesPayload",
     "ScanPayload",
     "ScanRequest",
     "ScoreSummary",
+    "SiteCheckSummary",
     "UnknownCheckSummary",
 ]

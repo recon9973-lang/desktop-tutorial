@@ -38,6 +38,7 @@ from veo.seo.history import (
     save_scan_run,
 )
 from veo.seo.measure_performance import with_performance
+from veo.seo.pages import page_breakdown
 from veo.seo.schemas import (
     CapSummary,
     CategorySummary,
@@ -47,12 +48,16 @@ from veo.seo.schemas import (
     ImprovementSummary,
     IssueSummary,
     OutcomeSummary,
+    PageChecksSummary,
+    PageDetailPayload,
     PagePayload,
     ScanHistoryEntry,
     ScanHistoryPayload,
+    ScanPagesPayload,
     ScanPayload,
     ScanRequest,
     ScoreSummary,
+    SiteCheckSummary,
     SiteScanRequest,
     UnknownCheckSummary,
 )
@@ -302,6 +307,90 @@ def read_saved_scan(
     if report is None:
         raise HTTPException(status_code=404, detail="scan run not found")
     return ok(ScanPayload.model_validate(report), request_id)
+
+
+@router.get(
+    "/scans/{scan_run_id}/pages",
+    response_model=ApiResponse[ScanPagesPayload],
+    summary="지난 진단을 페이지 축으로 — 어느 페이지에 무엇이 걸렸나",
+    description=(
+        "저장된 판정을 페이지별로 뒤집어 돌려줍니다. 다시 수집하지 않습니다.\n\n"
+        "**페이지 점수는 아직 없습니다** — 점수 산식은 채점 명세 1.9.0 발행과 함께 "
+        "옵니다. 지금은 판정 사실(실패·주의·통과)만 내보내며, 고칠 페이지를 특정하는 "
+        "데는 그것으로 충분합니다.\n\n"
+        "`site_checks` 는 페이지가 아니라 **사이트 전체**의 판정입니다. 화면에 실을 "
+        "때는 반드시 `measured_at` 날짜와 함께 표기하십시오 — 날짜 없이 페이지 화면에 "
+        "섞으면 '이 페이지의 문제' 로 잘못 읽힙니다."
+    ),
+)
+def read_scan_pages(
+    scan_run_id: uuid.UUID,
+    principal: ScanReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ScanPagesPayload]:
+    breakdown = page_breakdown(db, principal=principal, scan_run_id=scan_run_id)
+    if breakdown is None:
+        raise HTTPException(status_code=404, detail="scan run not found")
+    return ok(
+        ScanPagesPayload(
+            scan_run_id=breakdown.scan_run_id,
+            measured_at=breakdown.measured_at,
+            pages=[
+                PageChecksSummary(
+                    url=page.url,
+                    failed=list(page.failed),
+                    warned=list(page.warned),
+                    passed_count=len(page.passed),
+                    problem_count=page.problem_count,
+                )
+                for page in breakdown.pages
+            ],
+            site_checks=[
+                SiteCheckSummary(
+                    check_id=check.check_id, status=check.status, reason_ko=check.reason_ko
+                )
+                for check in breakdown.site_checks
+            ],
+            recorded_before_page_lists=breakdown.recorded_before_page_lists,
+            notes_ko=list(breakdown.notes_ko),
+        ),
+        request_id,
+    )
+
+
+@router.get(
+    "/scans/{scan_run_id}/pages/detail",
+    response_model=ApiResponse[PageDetailPayload],
+    summary="페이지 하나의 전체 판정 — 통과 목록까지",
+    description=(
+        "주소는 쿼리로 받습니다(경로에 넣으면 한글·쿼리스트링 주소가 부서집니다). "
+        "이 페이지에서 잰 적 없는 검사는 응답에 나오지 않습니다 — '통과' 와 '안 쟀다' "
+        "를 섞으면 페이지가 실제보다 건강해 보입니다."
+    ),
+)
+def read_scan_page_detail(
+    scan_run_id: uuid.UUID,
+    principal: ScanReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+    url: Annotated[str, Query(min_length=1, description="살펴볼 페이지의 최종 URL입니다.")],
+) -> ApiResponse[PageDetailPayload]:
+    breakdown = page_breakdown(db, principal=principal, scan_run_id=scan_run_id)
+    if breakdown is None:
+        raise HTTPException(status_code=404, detail="scan run not found")
+    page = next((p for p in breakdown.pages if p.url == url), None)
+    if page is None:
+        raise HTTPException(status_code=404, detail="page not found in this scan run")
+    return ok(
+        PageDetailPayload(
+            url=page.url,
+            failed=list(page.failed),
+            warned=list(page.warned),
+            passed=list(page.passed),
+        ),
+        request_id,
+    )
 
 
 def _assert_site_exists(db: Session, *, principal: Principal, site_id: uuid.UUID) -> None:

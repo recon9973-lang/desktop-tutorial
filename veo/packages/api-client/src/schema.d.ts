@@ -1538,6 +1538,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/seo/scans/{scan_run_id}/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 지난 진단을 페이지 축으로 — 어느 페이지에 무엇이 걸렸나
+         * @description 저장된 판정을 페이지별로 뒤집어 돌려줍니다. 다시 수집하지 않습니다.
+         *
+         *     **페이지 점수는 아직 없습니다** — 점수 산식은 채점 명세 1.9.0 발행과 함께 옵니다. 지금은 판정 사실(실패·주의·통과)만 내보내며, 고칠 페이지를 특정하는 데는 그것으로 충분합니다.
+         *
+         *     `site_checks` 는 페이지가 아니라 **사이트 전체**의 판정입니다. 화면에 실을 때는 반드시 `measured_at` 날짜와 함께 표기하십시오 — 날짜 없이 페이지 화면에 섞으면 '이 페이지의 문제' 로 잘못 읽힙니다.
+         */
+        get: operations["read_scan_pages_api_seo_scans__scan_run_id__pages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/seo/scans/{scan_run_id}/pages/detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 페이지 하나의 전체 판정 — 통과 목록까지
+         * @description 주소는 쿼리로 받습니다(경로에 넣으면 한글·쿼리스트링 주소가 부서집니다). 이 페이지에서 잰 적 없는 검사는 응답에 나오지 않습니다 — '통과' 와 '안 쟀다' 를 섞으면 페이지가 실제보다 건강해 보입니다.
+         */
+        get: operations["read_scan_page_detail_api_seo_scans__scan_run_id__pages_detail_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sites": {
         parameters: {
             query?: never;
@@ -2006,6 +2050,12 @@ export interface components {
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[PageDetailPayload] */
+        ApiResponse_PageDetailPayload_: {
+            data?: components["schemas"]["PageDetailPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[PageSpeedQuotaPayload] */
         ApiResponse_PageSpeedQuotaPayload_: {
             data?: components["schemas"]["PageSpeedQuotaPayload"] | null;
@@ -2111,6 +2161,12 @@ export interface components {
         /** ApiResponse[ScanHistoryPayload] */
         ApiResponse_ScanHistoryPayload_: {
             data?: components["schemas"]["ScanHistoryPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ScanPagesPayload] */
+        ApiResponse_ScanPagesPayload_: {
+            data?: components["schemas"]["ScanPagesPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -4871,6 +4927,40 @@ export interface components {
             /** Title Ko */
             title_ko: string;
         };
+        /**
+         * PageChecksSummary
+         * @description 한 페이지에서 실제로 판정된 검사들.
+         *
+         *     **점수가 없는 것은 의도다.** 페이지 점수 산식은 명세 1.9.0 이 발행되기 전이라
+         *     (SEO_SCORING_V3_PAGES.md), 지금은 판정 사실만 내보낸다 — 고칠 페이지를 특정하는
+         *     데는 그것으로 충분하다.
+         */
+        PageChecksSummary: {
+            /** Failed */
+            failed?: string[];
+            /** Passed Count */
+            passed_count: number;
+            /** Problem Count */
+            problem_count: number;
+            /** Url */
+            url: string;
+            /** Warned */
+            warned?: string[];
+        };
+        /**
+         * PageDetailPayload
+         * @description 페이지 하나의 전체 판정 — 통과 목록까지.
+         */
+        PageDetailPayload: {
+            /** Failed */
+            failed?: string[];
+            /** Passed */
+            passed?: string[];
+            /** Url */
+            url: string;
+            /** Warned */
+            warned?: string[];
+        };
         /** PageInfo */
         PageInfo: {
             /** Has Next */
@@ -6199,6 +6289,33 @@ export interface components {
              */
             site_id: string;
         };
+        /**
+         * ScanPagesPayload
+         * @description 한 실행의 판정을 페이지 축으로 — 재크롤 없이 저장된 것에서.
+         *
+         *     `site_checks` 는 반드시 `measured_at` 과 함께 그려야 한다. 날짜 없이 페이지
+         *     화면에 섞으면 사이트 전체의 사실이 "이 페이지의 문제" 로 잘못 읽힌다.
+         */
+        ScanPagesPayload: {
+            /** Measured At */
+            measured_at: string | null;
+            /** Notes Ko */
+            notes_ko?: string[];
+            /** Pages */
+            pages?: components["schemas"]["PageChecksSummary"][];
+            /**
+             * Recorded Before Page Lists
+             * @default false
+             */
+            recorded_before_page_lists: boolean;
+            /**
+             * Scan Run Id
+             * Format: uuid
+             */
+            scan_run_id: string;
+            /** Site Checks */
+            site_checks?: components["schemas"]["SiteCheckSummary"][];
+        };
         /** ScanPayload */
         ScanPayload: {
             /** Evidence */
@@ -6595,6 +6712,18 @@ export interface components {
             check_id: string;
             /** Title Ko */
             title_ko: string;
+        };
+        /**
+         * SiteCheckSummary
+         * @description 사이트 전체 단위의 판정. 페이지에 귀속되지 않는다.
+         */
+        SiteCheckSummary: {
+            /** Check Id */
+            check_id: string;
+            /** Reason Ko */
+            reason_ko?: string | null;
+            /** Status */
+            status: string;
         };
         /**
          * SiteCreateRequest
@@ -10333,6 +10462,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_ScanPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_scan_pages_api_seo_scans__scan_run_id__pages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scan_run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ScanPagesPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_scan_page_detail_api_seo_scans__scan_run_id__pages_detail_get: {
+        parameters: {
+            query: {
+                /** @description 살펴볼 페이지의 최종 URL입니다. */
+                url: string;
+            };
+            header?: never;
+            path: {
+                scan_run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_PageDetailPayload_"];
                 };
             };
             /** @description Validation Error */
