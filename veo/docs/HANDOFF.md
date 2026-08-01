@@ -48,6 +48,7 @@
 ### 이번 세션에 한 일
 
 ```
+826d4b2  정의되지 않은 --veo-color-* 를 실제 토큰으로 교체 (26곳)
 f39a1b9  400 하나에 원인이 둘이었다 — 갈라서 다른 문장을 내보낸다
 6b6fd9f  인수인계 갱신 — 한도는 화면에 붙었고 경보만 남았다
 42dad14  한도를 화면에 붙인다 — 세는 법은 있었고 볼 곳이 없었다
@@ -178,6 +179,17 @@ FAILED_DOCUMENT_REQUEST  → 고객 페이지를 못 열었다. 우리 설정은
 배점 비율을 재려던 시험 둘이 25점 상한에 눌려 6점짜리와 3점짜리가 같은 값이었다.
 배점을 재는 시험은 상한 없는 사본에서 재야 한다.
 
+### 없는 CSS 변수를 쓰면 화면은 멀쩡한데 경고만 사라진다
+
+`--veo-color-warning`·`--veo-color-danger` 는 `packages/ui/src/tokens.css` 에 **정의된
+적이 없다.** 정의되지 않은 커스텀 프로퍼티를 쓰면 그 선언이 계산 시점에 통째로 무효가
+되고 초기값으로 떨어지는데, `border-color` 의 초기값은 `currentcolor` 다. 즉 호박색·
+적색 경고 테두리가 **본문 글자색으로 조용히 렌더링되고 있었다** — 화면이 깨지지 않으니
+아무도 눈치채지 못한다.
+
+apps/web 전역 26곳을 실제 토큰(`--veo-status-*-border` / `-fg`)으로 교체했다.
+새 화면을 만들 때는 tokens.css 에 그 이름이 실제로 있는지부터 본다.
+
 ---
 
 ## 4. 남은 일 (우선순위 순)
@@ -244,12 +256,6 @@ VEO GEO 준비도와 겹치므로 판단이 필요하다.
 
 - 다른 제공자(OpenAI·네이버)도 사용량 기록. OpenAI 는 토큰·비용이 실제로 들어
   `input_tokens`/`output_tokens`/`cost_krw` 를 채워야 한다.
-- **없는 CSS 토큰을 쓰는 곳이 남아 있다.** `--veo-color-warning`·`--veo-color-danger`
-  는 `packages/ui/src/tokens.css` 에 **정의되어 있지 않다.** 실제 이름은
-  `--veo-status-warning-border`·`--veo-status-fail-border` 다. 없는 변수를 쓰면 선언이
-  통째로 무효가 되어 테두리가 글자색으로 그려지고, **경고 표시가 조용히 사라진다** —
-  화면은 멀쩡해 보여서 아무도 눈치채지 못한다. `usage.module.css` 는 고쳤고,
-  `console/geo/geo.module.css` 에 아직 4곳 남아 있다.
 - #29 tests/contract·e2e·integration·security 디렉터리 검증
 - #9 추이·회귀 알림 / #10 담당자 배정 / #11 인쇄·PDF / #12 목차 고정
 
