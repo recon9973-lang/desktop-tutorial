@@ -46,9 +46,13 @@ Three things the live calls showed that the documentation does not:
   a confirming second opinion.
 * **A rejected key arrives as 400, not 401**, with ``details[].reason ==
   "API_KEY_INVALID"``. So does a target site Lighthouse could not load
-  (``FAILED_DOCUMENT_REQUEST``). Two unrelated causes, one status, and
-  :func:`~veo.providers.google.errors.classify_status` currently calls both a schema
-  surprise — see the open item in the task list.
+  (``FAILED_DOCUMENT_REQUEST``). Two unrelated causes on one status, and they point in
+  opposite directions: the first is ours to fix and the customer can do nothing about it,
+  the second is information the customer needs. :func:`~veo.providers.google.http._error_reason`
+  reads the reason token out of the error body so
+  :func:`~veo.providers.google.errors.classify_status` can tell them apart; before that
+  both left as "응답 형식이 다릅니다", which sends whoever reads it hunting through
+  Google's changelog for a schema change that never happened.
 """
 
 from __future__ import annotations
@@ -85,6 +89,7 @@ from veo.providers.google.errors import (
 from veo.providers.google.http import (
     API_KEY_HEADER,
     DEFAULT_MAX_RESPONSE_BYTES,
+    ERROR_BODY_MAX_BYTES,
     GoogleHttpCaller,
 )
 
@@ -414,6 +419,7 @@ class PageSpeedClient:
         breaker: GoogleCircuitBreaker | None = None,
         timeout_seconds: float = PAGESPEED_TIMEOUT_SECONDS,
         max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
+        max_error_bytes: int = ERROR_BODY_MAX_BYTES,
         locale: str = "ko",
     ) -> None:
         if credentials is not None and (
@@ -429,6 +435,7 @@ class PageSpeedClient:
             transport=transport,
             timeout_seconds=timeout_seconds,
             max_response_bytes=max_response_bytes,
+            max_error_bytes=max_error_bytes,
         )
         self._caller = ResilientCaller(
             policy=policy or RetryPolicy(),

@@ -20,16 +20,19 @@ import httpx
 
 from veo.common.http import read_capped
 from veo.providers.google.errors import (
+    GoogleProviderError,
     GoogleResponseTooLargeError,
     GoogleSchemaError,
     classify_status,
     classify_transport_exception,
+    reason_from_error_body,
 )
 
 __all__ = [
     "API_KEY_HEADER",
     "DEFAULT_MAX_RESPONSE_BYTES",
     "DEFAULT_TIMEOUT_SECONDS",
+    "ERROR_BODY_MAX_BYTES",
     "GoogleHttpCaller",
     "HttpAnswer",
 ]
@@ -52,6 +55,12 @@ DEFAULT_TIMEOUT_SECONDS: Final = 15.0
 #: is why this ceiling is higher than the Naver adapters'. It is still a ceiling: an answer
 #: that keeps arriving is refused rather than buffered.
 DEFAULT_MAX_RESPONSE_BYTES: Final = 8 * 1024 * 1024
+
+#: 오류 본문을 읽을 때의 상한. 성공 응답의 상한과 **따로** 둔다.
+#:
+#: 오류 설명은 작다. 실패한 요청에 8MB 를 허용할 이유가 없고, 그만큼 오는 것이 있다면
+#: 그것은 오류 설명이 아니다. 여기서 꺼내는 것은 원인 토큰 하나뿐이라 이 정도면 넉넉하다.
+ERROR_BODY_MAX_BYTES: Final = 64 * 1024
 
 
 @final
@@ -77,6 +86,20 @@ class HttpAnswer:
         return payload
 
 
+def _error_reason(response: httpx.Response, max_bytes: int) -> str | None:
+    """실패 응답에서 원인 토큰만 꺼낸다. 못 꺼내면 ``None``.
+
+    **여기서 나는 어떤 실패도 위로 올리지 않는다.** 이 값은 분류를 좁히는 데만 쓰이고,
+    본문을 읽다 만 것 때문에 400 이 전송 오류로 둔갑하면 남는 것은 상태 코드마저 잃은
+    진단이다. 못 읽었으면 원인 없이 상태만으로 분류한다 — 지금까지 하던 그대로다.
+    """
+    try:
+        body = read_capped(response, max_bytes, GoogleResponseTooLargeError)
+    except (httpx.HTTPError, GoogleProviderError):
+        return None
+    return reason_from_error_body(body)
+
+
 class GoogleHttpCaller:
     """Sends one request and returns its bytes, or raises a typed error."""
 
@@ -86,10 +109,12 @@ class GoogleHttpCaller:
         transport: httpx.BaseTransport | None = None,
         timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
         max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
+        max_error_bytes: int = ERROR_BODY_MAX_BYTES,
     ) -> None:
         self._transport = transport
         self._timeout = timeout_seconds
         self._max_response_bytes = max_response_bytes
+        self._max_error_bytes = max_error_bytes
 
     def request(
         self,
@@ -132,6 +157,10 @@ class GoogleHttpCaller:
                     raise classify_status(
                         response.status_code,
                         retry_after=response.headers.get("retry-after"),
+                        # 구글은 400 하나에 서로 반대인 두 사건을 담는다. 본문을 읽지
+                        # 않으면 둘을 가를 수 없고, 가르지 못하면 우리 키가 죽은 날에도
+                        # 화면은 고객 사이트를 탓하는 문장을 내보낸다.
+                        reason=_error_reason(response, self._max_error_bytes),
                     )
                 return HttpAnswer(
                     status_code=response.status_code,
