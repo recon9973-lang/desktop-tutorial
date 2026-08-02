@@ -341,6 +341,7 @@ class PublicScanService:
                 spec,
                 result.score,
                 {item.check_id: item.reason_ko for item in result.unknown_checks},
+                issues=result.issues,
             ),
             counts=_status_counts(spec, result.score.outcomes),
             previews=_previews(documents[0] if documents else None),
@@ -380,7 +381,7 @@ class PublicScanService:
             readiness=_score_block(spec, report.score),
             reach=report.score.reach,
             stages=_stages(spec, report.score),
-            checks=_check_rows(spec, report.score),
+            checks=_check_rows(spec, report.score, issues=report.issues),
             counts=_status_counts(spec, report.score.outcomes),
             exposure=_exposure_block(report),
             top_findings=_findings(spec, report.score.outcomes),
@@ -658,6 +659,7 @@ def _check_rows(
     spec: ScoringSpec,
     score: ScoreResult,
     unknown_reasons: Mapping[str, str] | None = None,
+    issues: Sequence[Any] = (),
 ) -> list[PublicCheckRow]:
     """전체 검사 목록 — 명세가 아는 모든 검사에 판정·이유·이득·조치 코드를 붙인다.
 
@@ -669,6 +671,9 @@ def _check_rows(
     outcome_by_id = {outcome.check_id: outcome for outcome in score.outcomes}
     unknown_reason = dict(unknown_reasons or {})
     improvement_by_id = {entry.check_id: entry for entry in rank_improvements(score)}
+    # 수집기의 진단·조치 문장. 같은 검사에 초안이 여럿이면 첫 번째 — 공개는 1장이라
+    # 사실상 하나다. 문장이 언급하는 URL 은 호출자가 직접 입력한 그 페이지다.
+    draft_by_id = {draft.check_id: draft for draft in reversed(list(issues))}
 
     rows: list[PublicCheckRow] = []
     for category in spec.categories:
@@ -678,6 +683,7 @@ def _check_rows(
                 continue
             status = str(outcome.status.value)
             gain = improvement_by_id.get(check.id)
+            draft = draft_by_id.get(check.id) if status in ("FAIL", "WARNING") else None
             rows.append(
                 PublicCheckRow(
                     check_id=check.id,
@@ -688,11 +694,15 @@ def _check_rows(
                     remediation_owner=check.remediation_owner,
                     status=status,  # type: ignore[arg-type]
                     note_ko=unknown_reason.get(check.id) or outcome.note,
+                    detail_ko=None if draft is None else (draft.summary_ko or None),
+                    fix_ko=None if draft is None else (draft.remediation_ko or None),
                     gain_points=None if gain is None else gain.gain_points,
                     blocked_by_cap=False if gain is None else gain.blocked_by_cap,
                     outside_score=not category.contributes_to_score,
                     code_example=(
-                        code_example_for(check.id)
+                        # 수집기가 그 자리에서 만든 코드(실측값 포함)가 등록부의
+                        # 일반 예시보다 우선한다.
+                        (getattr(draft, "fix_example", None) or code_example_for(check.id))
                         if status in ("FAIL", "WARNING")
                         else None
                     ),

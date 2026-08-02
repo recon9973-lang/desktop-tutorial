@@ -12,12 +12,25 @@
  * - 점수 밖 영역(연동 필요 등)은 갈라 그린다 — 순위와 무관한 일을 하고 점수가
  *   오르는 착시를 만들지 않는다.
  * - GEO 는 숫자를 지어내지 않는다 — 같은 주소로 GEO 진단을 여는 링크만 둔다.
+ *
+ * 측정 이력(2026-08-02): 완료된 진단은 이 브라우저의 localStorage 에 자동으로
+ * 남는다 — 서버에는 아무것도 저장하지 않는다(익명 방문자의 URL 을 수집하지 않는
+ * 공개 표면의 경계). 같은 주소를 다시 재면 지난 점수와의 차이를 보여준다.
+ * 직원 전체가 공유하는 이력은 콘솔(로그인) 스캔이 맡는다 — 그쪽은 DB 에 남는다.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 
 import type { ScanCheckRow, ScanResult, ScanVerdict } from '@/lib/scan-api-types';
+import {
+  HISTORY_LIMIT,
+  getHistorySnapshot,
+  getServerHistorySnapshot,
+  subscribeHistory,
+  writeHistory,
+  type HistoryEntry,
+} from '@/lib/scan-history';
 
 import styles from './public-checker.module.css';
 
@@ -25,6 +38,14 @@ type Filter = 'ALL' | ScanVerdict;
 
 interface ScanError {
   readonly message: string;
+}
+
+function shortDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 const VERDICT_ICON: Record<ScanVerdict, { readonly mark: string; readonly className: string; readonly label: string }> = {
@@ -77,6 +98,14 @@ export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
   const [error, setError] = useState<ScanError | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [filter, setFilter] = useState<Filter>('ALL');
+  const [previous, setPrevious] = useState<HistoryEntry | null>(null);
+  // 이력은 외부 스토어다 — 서버 렌더에서는 빈 목록으로 그려 hydration 을 맞추고,
+  // 마운트 뒤 스토리지 값으로 갈아탄다. writeHistory 가 알림을 쏘면 다시 그린다.
+  const history = useSyncExternalStore(
+    subscribeHistory,
+    getHistorySnapshot,
+    getServerHistorySnapshot,
+  );
   const reportRef = useRef<HTMLDivElement | null>(null);
 
   // 인쇄(PDF 저장) 직전에 접힌 항목을 전부 연다 — 닫힌 details 는 인쇄되지 않는다.
@@ -115,8 +144,26 @@ export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
         });
         return;
       }
-      setResult(record.result as ScanResult);
+      const scanned = record.result as ScanResult;
+      setResult(scanned);
       setFilter('ALL');
+      // 따로 저장 버튼 없이 기록된다. 지난 측정(같은 주소·같은 종류)이 있으면
+      // 이번 점수 옆에 차이로 나온다 — 최신이 맨 앞이므로 첫 일치가 직전 기록이다.
+      setPrevious(
+        history.find((entry) => entry.kind === kind && entry.url === scanned.targetUrl) ?? null,
+      );
+      writeHistory(
+        [
+          {
+            url: scanned.targetUrl,
+            kind,
+            score: scanned.score.value,
+            band: scanned.score.bandLabel,
+            at: new Date().toISOString(),
+          },
+          ...history,
+        ].slice(0, HISTORY_LIMIT),
+      );
     } catch {
       setResult(null);
       setError({ message: '진단 중 연결이 끊겼습니다. 다시 시도해 주십시오.' });
@@ -184,7 +231,33 @@ export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
           filter={filter}
           onFilter={setFilter}
           reportRef={reportRef}
+          previous={previous}
         />
+      ) : history.length > 0 ? (
+        <section className={styles.history} aria-label="최근 측정 기록">
+          <h2 className={styles.historyTitle}>최근 측정 기록</h2>
+          <p className={styles.historySub}>
+            이 브라우저에만 저장됩니다 — 주소를 누르면 다시 진단할 수 있습니다.
+          </p>
+          <ul className={styles.historyList}>
+            {history.slice(0, 8).map((entry) => (
+              <li key={`${entry.at}-${entry.url}`}>
+                <button
+                  type="button"
+                  className={styles.historyRow}
+                  onClick={() => setUrl(entry.url)}
+                >
+                  <span className={styles.historyKind}>{entry.kind}</span>
+                  <span className={styles.historyUrl}>{entry.url}</span>
+                  <span className={`${styles.historyScore} ${styles.mono}`}>
+                    {entry.score === null ? '—' : entry.score.toFixed(1)}
+                  </span>
+                  <span className={styles.historyDate}>{shortDate(entry.at)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
     </div>
   );
@@ -196,12 +269,14 @@ function Report({
   filter,
   onFilter,
   reportRef,
+  previous,
 }: {
   readonly result: ScanResult;
   readonly kind: 'SEO' | 'GEO';
   readonly filter: Filter;
   readonly onFilter: (next: Filter) => void;
   readonly reportRef: React.RefObject<HTMLDivElement | null>;
+  readonly previous: HistoryEntry | null;
 }) {
   const copy = COPY[kind];
   const quality =
@@ -231,6 +306,21 @@ function Report({
               <div>
                 도달률 <b className={styles.mono}>{result.reach.toFixed(2)}</b> × 품질{' '}
                 <b className={styles.mono}>{quality.toFixed(1)}</b>
+              </div>
+            ) : null}
+            {previous?.score != null && result.score.value !== null ? (
+              <div className={styles.prevLine}>
+                지난 측정({shortDate(previous.at)}){' '}
+                <b className={styles.mono}>{previous.score.toFixed(1)}</b>
+                {' → '}
+                <b
+                  className={`${styles.mono} ${
+                    result.score.value >= previous.score ? styles.deltaUp : styles.deltaDown
+                  }`}
+                >
+                  {result.score.value >= previous.score ? '▲' : '▼'}
+                  {Math.abs(result.score.value - previous.score).toFixed(1)}
+                </b>
               </div>
             ) : null}
             <button type="button" className={styles.pdfButton} onClick={() => window.print()}>
@@ -490,7 +580,10 @@ function CheckSections({
 
 function CheckItem({ row }: { readonly row: ScanCheckRow }) {
   const icon = VERDICT_ICON[row.verdict];
-  const hasDetail = Boolean(row.note || row.codeExample);
+  const broken = row.verdict === 'FAIL' || row.verdict === 'WARNING';
+  // 진단 문장은 수집기의 것을 그대로 — 없으면 판정 요약(note)으로.
+  const diagnosis = row.detail ?? row.note;
+  const hasDetail = Boolean(diagnosis || row.fix || row.codeExample);
   const gain =
     row.blockedByCap && row.verdict !== 'PASS'
       ? '상한에 막힘'
@@ -521,23 +614,60 @@ function CheckItem({ row }: { readonly row: ScanCheckRow }) {
     return <div className={styles.itemStatic}>{summary}</div>;
   }
 
+  // 실패·주의는 처음부터 열려 있다 — 진단과 조치가 "더보기" 뒤에 숨지 않는다.
   return (
-    <details className={styles.item}>
+    <details className={styles.item} open={broken}>
       <summary>
         {summary}
         <span className={styles.moreButton} aria-hidden="true">
-          <span className={styles.moreClosed}>더보기 ▾</span>
+          <span className={styles.moreClosed}>자세히 ▾</span>
           <span className={styles.moreOpen}>접기 ▴</span>
         </span>
       </summary>
       <div className={styles.fixPane}>
-        {row.note ? <p className={styles.fixWhy}>{row.note}</p> : null}
-        {row.codeExample ? <pre className={styles.code}>{row.codeExample}</pre> : null}
+        {diagnosis ? (
+          <>
+            <h4 className={styles.paneLabel}>진단 결과</h4>
+            <p className={styles.fixWhy}>{diagnosis}</p>
+          </>
+        ) : null}
+        {row.fix ? (
+          <>
+            <h4 className={styles.paneLabel}>이렇게 고치세요</h4>
+            <p className={styles.fixWhy}>{row.fix}</p>
+          </>
+        ) : null}
+        {row.codeExample ? <CodeBlock code={row.codeExample} /> : null}
         <p className={styles.fixOwner}>
           담당: <b>{row.owner === 'DEVELOPER' ? '개발' : row.owner === 'CONTENT' ? '콘텐츠' : row.owner === 'HOSTING' ? '호스팅' : row.owner}</b>
           {' · '}심각도 {row.severity}
         </p>
       </div>
     </details>
+  );
+}
+
+function CodeBlock({ code }: { readonly code: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className={styles.codeWrap}>
+      <h4 className={styles.paneLabel}>붙여넣을 코드</h4>
+      <button
+        type="button"
+        className={styles.copyButton}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(code);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1600);
+          } catch {
+            // 클립보드 권한이 없으면 조용히 둔다 — 코드는 화면에 있으니 직접 긁으면 된다.
+          }
+        }}
+      >
+        {copied ? '복사됨 ✓' : '코드 복사'}
+      </button>
+      <pre className={styles.code}>{code}</pre>
+    </div>
   );
 }

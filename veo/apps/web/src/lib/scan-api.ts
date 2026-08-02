@@ -142,6 +142,8 @@ function toCheckRow(raw: unknown): ScanCheckRow | null {
     owner: readString(source, 'remediation_owner'),
     verdict: readVerdict(source['status']),
     note: readString(source, 'note_ko') || null,
+    detail: readString(source, 'detail_ko') || null,
+    fix: readString(source, 'fix_ko') || null,
     gainPoints: readNumber(source, 'gain_points'),
     blockedByCap: source['blocked_by_cap'] === true,
     outsideScore: source['outside_score'] === true,

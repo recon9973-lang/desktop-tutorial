@@ -3,9 +3,12 @@
  *
  * 1. 화면은 숫자를 만들지 않는다 — 점수·카운트·+N점 전부 서버 값 그대로 그린다.
  * 2. 필터 칩은 서버 카운트를 보여주고, 누르면 그 상태만 남는다.
- * 3. "더보기" 를 열면 조치 코드가 나온다. 통과·측정 불가에는 코드가 없다.
+ * 3. 실패·주의는 처음부터 열려 있고, 수집기의 진단·조치 문장과 붙여넣을 코드가
+ *    그대로 나온다. 통과·측정 불가에는 코드가 없다.
  * 4. 측정 불가는 이유와 함께 나온다 — 통과처럼 보이면 안 된다.
  * 5. 점수 밖 항목은 "점수 밖" 배지를 단다.
+ * 6. 완료된 진단은 localStorage 에 자동 기록되고, 같은 주소를 다시 재면
+ *    지난 점수와의 차이가 나온다. 서버에는 아무것도 저장하지 않는다.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,6 +17,7 @@ import userEvent from '@testing-library/user-event';
 
 import { PublicChecker } from './PublicChecker';
 import type { ScanCheckRow, ScanResult } from '@/lib/scan-api-types';
+import { readHistory, resetHistoryForTests, writeHistory } from '@/lib/scan-history';
 
 function checkRow(overrides: Partial<ScanCheckRow>): ScanCheckRow {
   return {
@@ -25,6 +29,8 @@ function checkRow(overrides: Partial<ScanCheckRow>): ScanCheckRow {
     owner: 'DEVELOPER',
     verdict: 'PASS',
     note: null,
+    detail: null,
+    fix: null,
     gainPoints: null,
     blockedByCap: false,
     outsideScore: false,
@@ -61,6 +67,8 @@ const RESULT: ScanResult = {
       categoryName: '기술 SEO',
       verdict: 'FAIL',
       note: '모바일 우선 색인에서 축소 화면으로 보입니다.',
+      detail: 'https://grand1.co.kr/ 에 viewport 메타 태그가 없습니다.',
+      fix: '<head> 안에 viewport 메타 태그를 한 줄 추가하세요.',
       gainPoints: 5.1,
       codeExample: '<meta name="viewport" content="width=device-width, initial-scale=1">',
     }),
@@ -123,6 +131,7 @@ async function runScanThroughForm() {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  resetHistoryForTests();
 });
 
 describe('점수 밴드', () => {
@@ -159,15 +168,21 @@ describe('필터 칩', () => {
   });
 });
 
-describe('더보기', () => {
-  it('실패 항목을 열면 조치 코드가 나온다', async () => {
+describe('진단·조치 표시', () => {
+  it('실패 항목은 열려 있고 — 진단 문장·조치 문장·코드가 그대로 나온다', async () => {
     mockScan();
-    const user = await runScanThroughForm();
+    await runScanThroughForm();
 
-    await user.click(screen.getByText('모바일 뷰포트 선언 없음'));
-
+    // 클릭 없이 바로 보인다: 실패는 처음부터 열려 있다.
+    expect(
+      screen.getByText('https://grand1.co.kr/ 에 viewport 메타 태그가 없습니다.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('<head> 안에 viewport 메타 태그를 한 줄 추가하세요.'),
+    ).toBeInTheDocument();
     expect(screen.getByText(/width=device-width/)).toBeInTheDocument();
     expect(screen.getByText(/\+5\.1점/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '코드 복사' })).toBeInTheDocument();
   });
 
   it('측정 불가는 이유가 보이고 통과처럼 그려지지 않는다', async () => {
@@ -218,5 +233,33 @@ describe('미리보기', () => {
 
     expect(screen.getByText('(제목 없음)')).toBeInTheDocument();
     expect(screen.getByText('og:image 없음')).toBeInTheDocument();
+  });
+});
+
+describe('측정 기록', () => {
+  it('완료된 진단이 자동으로 기록되고, 같은 주소를 다시 재면 차이가 나온다', async () => {
+    mockScan();
+    const user = await runScanThroughForm();
+
+    expect(readHistory().length).toBe(1);
+
+    // 두 번째 측정 — 점수가 오른 결과를 준다.
+    mockScan({ ...RESULT, score: { ...RESULT.score, value: 40.0 } });
+    await user.click(screen.getByRole('button', { name: '진단하기' }));
+    await screen.findByText(/지난 측정/);
+
+    expect(screen.getByText(/▲8\.5/)).toBeInTheDocument();
+  });
+
+  it('결과가 없을 때 최근 기록이 목록으로 나오고, 누르면 주소가 채워진다', async () => {
+    writeHistory([
+      { url: 'https://clinic.example/', kind: 'SEO', score: 72.8, band: '주의', at: '2026-08-01T09:00:00Z' },
+    ]);
+    const user = userEvent.setup();
+    render(<PublicChecker kind="SEO" />);
+
+    expect(await screen.findByText('최근 측정 기록')).toBeInTheDocument();
+    await user.click(screen.getByText('https://clinic.example/'));
+    expect(screen.getByLabelText('진단할 주소')).toHaveValue('https://clinic.example/');
   });
 });

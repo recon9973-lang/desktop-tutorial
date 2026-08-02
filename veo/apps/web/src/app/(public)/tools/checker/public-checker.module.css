@@ -180,16 +180,16 @@
 
 .item, .itemStatic { border-top: 1px solid var(--veo-color-bg-subtle); }
 .item:first-of-type, .itemStatic:first-of-type { border-top: 0; }
-.itemStatic { display: flex; gap: 12px; align-items: flex-start; padding: 12px 18px; }
+.itemStatic { display: flex; gap: 12px; align-items: flex-start; padding: 13px 18px; }
 .item summary {
-  display: flex; gap: 12px; align-items: flex-start; padding: 12px 18px;
+  display: flex; gap: 12px; align-items: flex-start; padding: 13px 18px;
   cursor: pointer; list-style: none;
 }
 .item summary::-webkit-details-marker { display: none; }
 .item summary:focus-visible { outline: 2px solid var(--veo-color-focus-ring); outline-offset: -2px; }
 .itemBody { flex: 1; min-width: 0; }
-.itemTitle { display: block; font-weight: var(--veo-weight-semibold); font-size: 13.5px; }
-.itemNote { display: block; font-size: 12.5px; color: var(--veo-color-text-muted); margin-top: 1px; }
+.itemTitle { display: block; font-weight: var(--veo-weight-semibold); font-size: 14.5px; }
+.itemNote { display: block; font-size: 13px; color: var(--veo-color-text-muted); margin-top: 2px; line-height: 1.55; }
 .itemRight { display: flex; gap: 8px; align-items: center; flex: none; margin-top: 1px; }
 .gain {
   font-size: 11.5px; font-weight: var(--veo-weight-bold); color: var(--veo-color-accent);
@@ -209,18 +209,32 @@
 .item:not([open]) .moreOpen { display: none; }
 
 .fixPane {
-  margin: 0 18px 14px 49px; border-left: 3px solid var(--veo-color-accent);
+  margin: 0 18px 15px 49px; border-left: 3px solid var(--veo-color-accent);
   background: var(--veo-color-surface-sunken);
-  border-radius: 0 var(--veo-radius-md) var(--veo-radius-md) 0; padding: 12px 16px;
+  border-radius: 0 var(--veo-radius-md) var(--veo-radius-md) 0; padding: 13px 17px;
 }
-.fixWhy { font-size: 12.6px; color: var(--veo-color-text); margin: 0 0 8px; }
+@media (max-width: 720px) { .fixPane { margin-left: 18px; } }
+.paneLabel {
+  margin: 12px 0 4px; font-size: 11px; font-weight: var(--veo-weight-bold);
+  letter-spacing: .08em; color: var(--veo-color-text-muted); text-transform: uppercase;
+}
+.fixPane > .paneLabel:first-child, .codeWrap > .paneLabel:first-child { margin-top: 0; }
+.fixWhy { font-size: 13.5px; line-height: 1.6; color: var(--veo-color-text); margin: 0; }
+.codeWrap { position: relative; margin-top: 12px; }
+.copyButton {
+  position: absolute; top: 26px; right: 8px;
+  font-size: 11px; font-weight: var(--veo-weight-bold);
+  background: var(--veo-color-surface); color: var(--veo-color-text);
+  border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-md);
+  padding: 4px 10px; cursor: pointer;
+}
 .code {
   background: var(--veo-color-surface-inverse); color: var(--veo-color-text-inverse);
-  border-radius: var(--veo-radius-md); padding: 10px 14px;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.6px; line-height: 1.65;
-  margin: 8px 0 4px; overflow-x: auto; white-space: pre;
+  border-radius: var(--veo-radius-md); padding: 12px 15px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.3px; line-height: 1.7;
+  margin: 0; overflow-x: auto; white-space: pre;
 }
-.fixOwner { font-size: 11.3px; color: var(--veo-color-text-muted); margin: 6px 0 0; }
+.fixOwner { font-size: 11.5px; color: var(--veo-color-text-muted); margin: 10px 0 0; }
 
 .cta {
   background: var(--veo-color-surface-inverse); color: var(--veo-color-text-inverse);
@@ -235,9 +249,34 @@
   font-weight: var(--veo-weight-bold); white-space: nowrap; text-decoration: none;
 }
 
+/* ---------- 지난 측정 비교 ---------- */
+.prevLine { margin-top: 5px; font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+.deltaUp { color: var(--veo-status-pass-fg); }
+.deltaDown { color: var(--veo-status-fail-fg); }
+
+/* ---------- 최근 측정 기록 (localStorage — 이 브라우저에만) ---------- */
+.history { max-width: 720px; margin: var(--veo-space-6) auto 0; }
+.historyTitle { margin: 0; font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-bold); }
+.historySub { margin: 4px 0 12px; font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+.historyList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.historyRow {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface); padding: 10px 14px; cursor: pointer; font: inherit;
+}
+.historyRow:hover { border-color: var(--veo-color-accent); }
+.historyKind {
+  flex: none; font-size: 10.5px; font-weight: var(--veo-weight-bold);
+  color: var(--veo-color-accent); background: var(--veo-color-accent-subtle);
+  border-radius: 999px; padding: 2px 9px;
+}
+.historyUrl { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.historyScore { flex: none; font-size: 14px; font-weight: var(--veo-weight-bold); }
+.historyDate { flex: none; font-size: 11.5px; color: var(--veo-color-text-muted); }
+
 /* ---------- 인쇄 (PDF 저장) ---------- */
 @media print {
-  .hero, .filters, .cta, .pdfButton, .moreButton { display: none !important; }
+  .hero, .filters, .cta, .pdfButton, .moreButton, .copyButton, .history { display: none !important; }
   .scoreband, .checkSection, .preview { break-inside: avoid; box-shadow: none; }
   .code { white-space: pre-wrap; }
 }

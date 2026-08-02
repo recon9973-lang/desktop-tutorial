@@ -12,9 +12,14 @@ page URL beyond the one the caller typed. The reasons are separate and both bind
   URL that travels. Anything in the payload is a permanent copy for whoever holds it.
 * Collector-authored strings — ``IssueDraft.summary_ko`` and friends — interpolate URLs
   and observed values. They are the right thing to show a paying customer inside their
-  own console and the wrong thing to hand an anonymous caller, so the public finding is
-  built from the **specification's** static wording instead: check id, Korean title,
-  severity, category, who fixes it. The specification is published; it cannot leak.
+  own console, so the public finding is built from the **specification's** static
+  wording: check id, Korean title, severity, category, who fixes it.
+
+2026-08-02 제품 결정으로 경계가 한 뼘 옮겨졌다: 검사 행(PublicCheckRow)에는 수집기의
+**진단 문장(detail_ko)·조치 문장(fix_ko)·조치 코드**를 싣는다. 공개 진단은 호출자가
+직접 입력한 한 페이지만 재므로, 이 문장들이 언급하는 URL 은 호출자 자신의 것이다.
+여전히 싣지 않는 것: 페이지 본문 발췌(evidence excerpt), 콘텐츠 해시, 저장 키.
+공유 토큰은 여행하는 URL 이고, 본문 인용은 실리는 순간 영구 사본이 된다.
 
 Every model forbids unknown fields. On the request side that is what makes personal-data
 minimisation enforceable rather than aspirational: a field nobody designed cannot be
@@ -175,6 +180,10 @@ class PublicCheckRow(BaseModel):
     remediation_owner: str
     status: Literal["PASS", "WARNING", "FAIL", "NOT_APPLICABLE", "UNKNOWN"]
     note_ko: str | None = None
+    #: 수집기의 진단 문장 그대로 — 무엇이, 어디서, 어떻게 어긋났는가. 실패·주의에만.
+    detail_ko: str | None = None
+    #: 수집기의 조치 문장 그대로 — 무엇을 하면 되는가.
+    fix_ko: str | None = None
     gain_points: float | None = None
     blocked_by_cap: bool = False
     #: 점수를 이루지 않는 영역(연동 필요·보안 헤더류)의 검사. 화면은 "점수 밖" 으로

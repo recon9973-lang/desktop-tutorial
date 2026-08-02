@@ -53,12 +53,35 @@ describe('the source tree', () => {
   });
 });
 
+/**
+ * 웹 스토리지를 만질 수 있는 유일한 모듈. 2026-08-02 제품 결정 — 공개 진단의
+ * 측정 이력(주소·점수·날짜)을 브라우저에만 남긴다. 이 목록에 파일을 더하려면
+ * 아래 "the storage module cannot hold a token" 시험이 그 파일에도 성립해야 한다.
+ */
+const STORAGE_ALLOWLIST = ['lib/scan-history.ts'];
+
 describe('the access token never reaches the browser', () => {
   it('is never written to web storage anywhere in the app', () => {
     const offenders = PRODUCTION.filter((file) =>
       /\b(localStorage|sessionStorage|indexedDB)\b/.test(file.code),
-    ).map((file) => file.relativePath);
+    )
+      .map((file) => file.relativePath)
+      .filter((relativePath) => !STORAGE_ALLOWLIST.includes(relativePath));
     expect(offenders).toEqual([]);
+  });
+
+  it('the storage module cannot hold a token', () => {
+    for (const allowed of STORAGE_ALLOWLIST) {
+      const file = PRODUCTION.find((candidate) => candidate.relativePath === allowed);
+      // 목록에 있는데 파일이 없으면 허용 목록이 죽은 항목을 들고 있는 것이다.
+      expect(file, allowed).toBeDefined();
+      // 토큰이라는 단어 자체가 등장하지 않는다 — 실수로도 저장할 수 없다.
+      expect(/token/i.test(file!.code), `${allowed} mentions a token`).toBe(false);
+      // 토큰을 쥐는 서버 전용 모듈을 임포트하지 않는다.
+      for (const serverModule of SERVER_ONLY_MODULES) {
+        expect(file!.code.includes(serverModule), `${allowed} imports ${serverModule}`).toBe(false);
+      }
+    }
   });
 
   it('is never written to a client-readable cookie', () => {

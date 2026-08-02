@@ -5495,6 +5495,10 @@ export interface components {
             check_id: string;
             /** Code Example */
             code_example?: string | null;
+            /** Detail Ko */
+            detail_ko?: string | null;
+            /** Fix Ko */
+            fix_ko?: string | null;
             /** Gain Points */
             gain_points?: number | null;
             /** Note Ko */

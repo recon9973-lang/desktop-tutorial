@@ -52,6 +52,10 @@ export interface ScanCheckRow {
   readonly owner: string;
   readonly verdict: ScanVerdict;
   readonly note: string | null;
+  /** 수집기의 진단 문장 그대로 — 무엇이, 어디서 어긋났는가. 실패·주의에만 온다. */
+  readonly detail: string | null;
+  /** 수집기의 조치 문장 그대로 — 무엇을 하면 되는가. */
+  readonly fix: string | null;
   /** 고치면 오르는 폭 — 채점기가 실제 산식으로 계산. 화면이 어림하지 않는다. */
   readonly gainPoints: number | null;
   readonly blockedByCap: boolean;

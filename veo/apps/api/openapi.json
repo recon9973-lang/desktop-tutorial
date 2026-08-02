@@ -10183,6 +10183,28 @@
             ],
             "title": "Code Example"
           },
+          "detail_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail Ko"
+          },
+          "fix_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fix Ko"
+          },
           "gain_points": {
             "anyOf": [
               {

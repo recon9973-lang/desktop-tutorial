@@ -190,8 +190,21 @@ def test_the_response_body_contains_no_evidence_and_no_foreign_url(client: TestC
         if len(stripped) > 25:
             assert stripped not in strings
 
-    urls = [text for text in strings if text.startswith(("http://", "https://"))]
-    assert set(urls) <= {TARGET}
+    # 문장 속 URL 까지 전부 — 남의 호스트가 하나라도 나가면 실패한다.
+    import re
+    from urllib.parse import urlsplit
+
+    found = [url for text in strings for url in re.findall(r"https?://[^\s\u201d\u201c\"']+", text)]
+    page_hosts = {
+        urlsplit(url).hostname
+        for url in re.findall(r"https?://[^\s\"'<>]+", CLINIC_HTML)
+    }
+    # 수집기의 고정 조치 문구가 언급하는 잘 알려진 인프라 호스트. 여기 없는
+    # 호스트가 나오면 시험이 이름을 대며 실패한다 — 추가는 의식적 결정이어야 한다.
+    well_known = {"schema.org", "www.w3.org", "fonts.gstatic.com", "fonts.googleapis.com"}
+    assert {urlsplit(url).hostname for url in found} <= (
+        {urlsplit(TARGET).hostname} | page_hosts | well_known
+    )
 
 
 def test_a_geo_readiness_scan_separates_readiness_from_exposure(client: TestClient) -> None:

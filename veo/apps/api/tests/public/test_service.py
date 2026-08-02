@@ -230,9 +230,26 @@ def test_a_public_payload_carries_no_evidence_excerpt_and_no_page_urls() -> None
         if len(stripped) > 25:
             assert stripped not in strings
 
-    # The only URL a public answer may repeat is the one the caller typed.
-    urls = [text for text in strings if text.startswith(("http://", "https://"))]
-    assert set(urls) <= {"https://clinic.example/"}
+    # 답에 등장하는 모든 URL 은 호출자가 입력한 그 호스트여야 한다. 수집기 문장이
+    # 실리면서(2026-08-02) URL 이 문장 안에도 나타난다 — 문자열 전체가 아니라
+    # 문장 속 URL 을 뽑아 host 를 본다. 지키는 성질은 같다: 남의 주소는 없다.
+    import re
+    from urllib.parse import urlsplit
+
+    found = [url for text in strings for url in re.findall(r"https?://[^\s\u201d\u201c\"']+", text)]
+    page_hosts = {
+        urlsplit(url).hostname
+        for url in re.findall(r"https?://[^\s\"'<>]+", CLINIC_HTML)
+    }
+    assert found, "URL 이 하나도 없다면 target_url 마저 사라진 것이다"
+    # 호출자의 호스트, 그리고 호출자 페이지가 스스로 참조하는 리소스 호스트까지만.
+    # 그 밖의 호스트가 나오면 남의 것이 샌 것이다.
+    # 수집기의 고정 조치 문구가 언급하는 잘 알려진 인프라 호스트. 여기 없는
+    # 호스트가 나오면 시험이 이름을 대며 실패한다 — 추가는 의식적 결정이어야 한다.
+    well_known = {"schema.org", "www.w3.org", "fonts.gstatic.com", "fonts.googleapis.com"}
+    assert {urlsplit(url).hostname for url in found} <= (
+        {"clinic.example"} | page_hosts | well_known
+    )
 
 
 def test_a_public_payload_carries_the_methodology_version() -> None:
@@ -518,6 +535,24 @@ class TestTheFullChecklistPayload:
             if row.status in ("PASS", "NOT_APPLICABLE", "UNKNOWN"):
                 assert row.code_example is None, (
                     f"{row.check_id}: 통과·미측정 항목에 조치 코드가 실렸다"
+                )
+
+    def test_a_failing_check_carries_the_collectors_diagnosis_and_fix(self) -> None:
+        """진단 문장과 조치 문장은 수집기의 것 그대로 — 화면이 다시 쓰지 않는다.
+
+        2026-08-02 제품 결정: 공개 진단은 호출자가 직접 입력한 한 페이지만 재므로,
+        그 페이지에 대한 수집기 문장은 호출자 자신의 것이다. 본문 발췌·증거 키는
+        여전히 나가지 않는다(위의 no_evidence 시험이 지킨다).
+        """
+        payload = self._payload()
+        broken = [row for row in payload.checks if row.status in ("FAIL", "WARNING")]
+        assert broken, "픽스처에 실패·주의가 하나도 없다"
+        carried = [row for row in broken if row.detail_ko or row.fix_ko]
+        assert carried, "수집기 진단·조치 문장이 한 줄도 실리지 않았다 — 배선이 끊겼다"
+        for row in payload.checks:
+            if row.status not in ("FAIL", "WARNING"):
+                assert row.detail_ko is None and row.fix_ko is None, (
+                    f"{row.check_id}: 통과·미측정 항목에 진단 문장이 실렸다"
                 )
 
     def test_previews_reflect_what_the_page_actually_declares(self) -> None:
