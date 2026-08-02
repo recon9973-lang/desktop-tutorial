@@ -255,6 +255,17 @@ def _index_outcomes(
                 f"check '{item.check_id}' is not defined in specification "
                 f"{spec.spec_id}@{spec.version}"
             )
+        if (
+            item.status is CheckStatus.NOT_SAMPLED
+            and item.check_id not in spec.sampled_check_ids
+        ):
+            # NOT_SAMPLED 는 절대 평가의 예외이고, 예외는 명세가 선언한 곳에만 있다.
+            # 이 경계가 없으면 "안 재기로 했다" 가 아무 검사에서나 분모를 비우는
+            # 뒷문이 된다(SEO_SCORING_V3_PAGES.md §3.3 의 반론 그대로).
+            raise ScoringSpecError(
+                f"check '{item.check_id}' may not be NOT_SAMPLED: specification "
+                f"{spec.spec_id}@{spec.version} declares no sampling policy for it"
+            )
         if item.check_id in by_id:
             raise ScoringSpecError(f"duplicate outcome supplied for check '{item.check_id}'")
         by_id[item.check_id] = item
@@ -383,7 +394,8 @@ def _check_weights(
     live = [
         check
         for check in category.checks
-        if by_id[check.id].status is not CheckStatus.NOT_APPLICABLE
+        if by_id[check.id].status
+        not in (CheckStatus.NOT_APPLICABLE, CheckStatus.NOT_SAMPLED)
     ]
     declared = sum(check.points or 0.0 for check in live)
     if declared <= 0.0:
@@ -430,7 +442,7 @@ def _reach(
             continue
         for check in category.checks:
             outcome = by_id[check.id]
-            if outcome.status is CheckStatus.NOT_APPLICABLE:
+            if outcome.status in (CheckStatus.NOT_APPLICABLE, CheckStatus.NOT_SAMPLED):
                 continue
             if outcome.status is CheckStatus.UNKNOWN:
                 unverified.append(check.id)
@@ -461,6 +473,7 @@ def _score_category(
     applicable: list[str] = []
     scored: list[str] = []
     not_applicable: list[str] = []
+    not_sampled: list[str] = []
     unknown: list[str] = []
     failing: list[str] = []
 
@@ -500,6 +513,25 @@ def _score_category(
                     "penalty": 0.0,
                     "counted_in_budget": False,
                     "formula": "N/A — excluded from both the numerator and the denominator",
+                }
+            )
+            rows.append(row)
+            continue
+
+        if outcome.status is CheckStatus.NOT_SAMPLED:
+            # 분모·측정 범위 모두에서 빠진다. N/A 와 셈은 같고 이름이 다르다 —
+            # "이 페이지에 그 항목이 없다" 와 "명세가 재지 않기로 했다" 는 다른
+            # 사실이고, 화면은 이 목록으로 "표본 밖 — 요청 시 측정" 을 단다.
+            not_sampled.append(check.id)
+            row.update(
+                {
+                    "status_multiplier": None,
+                    "penalty": 0.0,
+                    "counted_in_budget": False,
+                    "formula": (
+                        "NOT_SAMPLED — the spec's sampling policy skipped this target; "
+                        "excluded from the denominator and from coverage"
+                    ),
                 }
             )
             rows.append(row)
@@ -613,6 +645,7 @@ def _score_category(
         applicable_check_ids=applicable,
         scored_check_ids=scored,
         not_applicable_check_ids=not_applicable,
+        not_sampled_check_ids=not_sampled,
         unknown_check_ids=unknown,
         failing_check_ids=failing,
     )

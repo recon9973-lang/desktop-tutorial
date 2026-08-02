@@ -295,6 +295,8 @@ def score(inputs: list[CheckInput], *, breadth_exponent: float = BREADTH_EXPONEN
     reach = 1.0
     quality = 0.0
 
+    live_budget = 0.0  # 살아 있는(전부 N/A 가 아닌) 품질 단계들의 배점 합
+
     for stage, members in stage_members.items():
         is_gate = STAGES[stage].get("is_gate", False)
         live = [c for c in members if by_id.get(c) and by_id[c].status != "NOT_APPLICABLE"]
@@ -321,6 +323,7 @@ def score(inputs: list[CheckInput], *, breadth_exponent: float = BREADTH_EXPONEN
         if not live:
             stage_scores[stage] = (0.0, 0.0)
             continue
+        live_budget += budget
         declared = sum(ALLOCATION[c][1] for c in live)
         scale = budget / declared
 
@@ -345,6 +348,16 @@ def score(inputs: list[CheckInput], *, breadth_exponent: float = BREADTH_EXPONEN
 
         stage_scores[stage] = (round(budget - stage_lost, 2), budget)
         quality += budget - stage_lost
+
+    # 단계 전체가 해당 없음이면 그 배점은 살아 있는 단계들로 재정규화된다.
+    # 해당 없음은 결함이 아니다(ADR 0002) — 가중치를 잃게 두면 그 단계가 통째로
+    # 0점인 것과 같은 산수가 된다. 실코드 평가기가 처음부터 이렇게 계산했고,
+    # 이 프로토타입만 어긋나 있었다(§6). 1.9.0 이 재정규화를 공식 규칙으로 발행했다.
+    total_quality_budget = sum(
+        meta["points"] for meta in STAGES.values() if not meta.get("is_gate", False)
+    )
+    if 0.0 < live_budget < total_quality_budget:
+        quality *= total_quality_budget / live_budget
 
     losses.sort(key=lambda x: -x.lost)
     result = Result(round(reach * quality, 2), losses, stage_scores, unmeasured)

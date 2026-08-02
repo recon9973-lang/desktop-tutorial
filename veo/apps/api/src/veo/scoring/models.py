@@ -23,6 +23,14 @@ class CheckStatus(StrEnum):
     * ``UNKNOWN`` — the check applies but could not be measured (no credential, provider
       outage, collector limit). It scores nothing and instead lowers coverage and
       confidence, so the gap stays visible.
+    * ``NOT_SAMPLED`` — 명세의 표본 정책이 이 대상을 재지 않기로 했다(1.9.0 신설).
+      분모·측정 범위 모두에서 빠지고 "표본 밖 — 요청 시 측정" 으로 따로 표기된다.
+      UNKNOWN 과 다른 이유: 우리 정책으로 안 잰 것이 그 페이지의 감점이 되면 못 하는
+      이유를 고객 탓으로 돌리는 것이다(0-J). N/A 와 다른 이유: 항목이 없는 것이
+      아니라 **정책상 재지 않은** 것이므로, 이름을 섞으면 그 사실이 사라진다.
+      절대 평가의 예외이므로 경계를 코드가 지킨다 — 명세가 표본 정책을 선언한
+      검사(sampling.*.check_ids)에만 허용되고, 다른 검사에 붙이면 평가기가 오류를
+      낸다. "안 재기로 했다" 가 절대평가를 비껴가는 뒷문이 되지 않는다.
     """
 
     PASS = "PASS"  # noqa: S105 - a check status, not a credential
@@ -30,6 +38,7 @@ class CheckStatus(StrEnum):
     FAIL = "FAIL"
     NOT_APPLICABLE = "NOT_APPLICABLE"
     UNKNOWN = "UNKNOWN"
+    NOT_SAMPLED = "NOT_SAMPLED"
 
 
 class Severity(StrEnum):
@@ -104,6 +113,9 @@ class StatusPolicy(BaseModel):
     unknown: Literal[
         "EXCLUDE_FROM_SCORE_REDUCE_COVERAGE", "SCORE_AS_ZERO_KEEP_IN_DENOMINATOR"
     ]
+    #: 표본 정책이 재지 않기로 한 대상. 선언하지 않은 명세(1.8.0 이하)에서는
+    #: NOT_SAMPLED 판정 자체가 허용되지 않는다 — 발행본은 불변이다(ADR 0012).
+    not_sampled: Literal["EXCLUDE_FROM_DENOMINATOR"] | None = None
 
 
 class PerfLabSampling(BaseModel):
@@ -120,6 +132,10 @@ class PerfLabSampling(BaseModel):
     #: 페이지를 못 연 사례가 실제로 나왔고, 느린 페이지일수록 그렇게 될 확률이 높다 —
     #: 즉 편향이 우리에게 유리한 방향으로 걸린다.
     min_measured_ratio: float = Field(gt=0.0, le=1.0)
+    #: 이 표본 정책이 적용되는 검사. **NOT_SAMPLED 가 허용되는 유일한 목록이다** —
+    #: 여기 없는 검사에 NOT_SAMPLED 를 붙이면 평가기가 오류를 낸다(절대평가의 예외를
+    #: 명세가 선언한 곳으로만 좁힌다). 선언하지 않은 판(1.8.0 이하)에서는 빈 목록이다.
+    check_ids: tuple[str, ...] = ()
     rationale_ko: str | None = None
 
 
@@ -133,6 +149,10 @@ class PerfFieldSampling(BaseModel):
     #: 구글이 크롬 사용자에게서 이미 모아 둔 값이라 한 번 물으면 사이트 전체 값이 함께
     #: 온다. 페이지마다 부를 이유가 없고, 따라서 이 지표에는 표본 문제 자체가 없다.
     prefer_origin_scope: bool = True
+    #: origin 값만 쓰는 검사 — 페이지 점수에서는 어느 페이지에서도 NOT_SAMPLED 다.
+    #: 사이트 전체 값은 방문 많은 페이지가 지배하므로, 특정 페이지에 붙이면 그
+    #: 페이지가 겪지도 않은 트래픽으로 칭찬하게 된다(범위 혼합 금지).
+    check_ids: tuple[str, ...] = ()
     rationale_ko: str | None = None
 
 
@@ -141,6 +161,40 @@ class SamplingPolicy(BaseModel):
 
     perf_lab: PerfLabSampling | None = None
     perf_field: PerfFieldSampling | None = None
+
+    @property
+    def sampled_check_ids(self) -> frozenset[str]:
+        """NOT_SAMPLED 가 허용되는 검사 전부."""
+        ids: set[str] = set()
+        if self.perf_lab is not None:
+            ids.update(self.perf_lab.check_ids)
+        if self.perf_field is not None:
+            ids.update(self.perf_field.check_ids)
+        return frozenset(ids)
+
+
+class MeasurementScope(BaseModel):
+    """이 명세가 무엇을 얼마나 재는가 — 크롤 범위의 발행 선언(1.9.0 신설).
+
+    상한이 코드 설정에만 있으면 "몇 장을 봤는가" 가 명세 밖의 사정이 된다. 점수의
+    분모가 무엇이었는지는 점수의 일부다 — 그래서 여기 적는다. 셋은 연동이다:
+    상한을 올리면 호스트 예산과 콘솔 타임아웃도 함께 올려야 한다(settings 주석).
+    """
+
+    model_config = _FROZEN
+
+    #: 한 진단이 가져오는 페이지 수 상한.
+    max_pages: int = Field(gt=0)
+    #: 시드에서 몇 번 이동까지 따라가는가.
+    max_depth: int = Field(gt=0)
+    #: 상한 초과가 예상될 때만 템플릿(게시판형) 그룹당 남기는 표본 수.
+    #: 전량을 볼 수 있으면 표본을 쓰지 않는다 — 표본은 잘림의 대체이지 기본이 아니다
+    #: (무조건 표본은 결함률을 희석해 점수를 올린다. 2026-08-02 실측: 71.8→77.6).
+    template_group_sample: int = Field(gt=0)
+    #: 잘린 크롤에서 "없다" 는 주장(중복 없음·고아 없음 등)을 어떻게 판정하는가.
+    #: 본 것이 전부가 아니면 부재를 단정할 수 없다 — UNKNOWN 이다(0-A).
+    truncated_absence: Literal["UNKNOWN"]
+    rationale_ko: str | None = None
 
 
 class SpecCheck(BaseModel):
@@ -361,6 +415,9 @@ class ScoringSpec(BaseModel):
     #: 선언하지 않은 명세는 표본을 쓰지 않는다 — 있는 것을 다 잰다는 뜻이고, 그것이
     #: 기존 명세들의 동작이다(ADR 0012).
     sampling: SamplingPolicy | None = None
+    #: 크롤 범위의 발행 선언(1.9.0 신설). 없는 판(1.8.0 이하)은 코드 설정이 정하던
+    #: 시절의 판이고, 발행본은 불변이므로 그대로 둔다(ADR 0012).
+    measurement_scope: MeasurementScope | None = None
     categories: tuple[SpecCategory, ...] = Field(min_length=1)
     caps: tuple[SpecCap, ...] = ()
     gates: tuple[SpecGate, ...] = ()
@@ -408,6 +465,36 @@ class ScoringSpec(BaseModel):
     @property
     def _category_index(self) -> dict[str, SpecCategory]:
         return {c.id: cat for cat in self.categories for c in cat.checks}
+
+    @property
+    def sampled_check_ids(self) -> frozenset[str]:
+        """NOT_SAMPLED 가 허용되는 검사. 표본 정책이 없는 명세에서는 빈 집합이다."""
+        if self.sampling is None:
+            return frozenset()
+        return self.sampling.sampled_check_ids
+
+    @model_validator(mode="after")
+    def _sampling_targets_must_exist_and_have_a_policy(self) -> ScoringSpec:
+        """표본 정책이 가리키는 검사는 실재해야 하고, 셈법도 선언돼 있어야 한다.
+
+        오타 난 검사 id 는 조용히 아무것도 허용하지 않는 목록이 된다 — 검사가 있는
+        규칙에는 검사가 있어야 한다(0-H). 그리고 어떤 검사를 안 재기로 선언했다면
+        그 판정을 어떻게 셀지(status_policy.not_sampled)도 같은 판에 있어야 한다.
+        """
+        declared = self.sampled_check_ids
+        if not declared:
+            return self
+        known = {check.id for category in self.categories for check in category.checks}
+        missing = sorted(declared - known)
+        if missing:
+            raise ValueError(
+                f"sampling.check_ids 가 명세에 없는 검사를 가리킨다: {missing}"
+            )
+        if self.status_policy.not_sampled is None:
+            raise ValueError(
+                "sampling.*.check_ids 를 선언했으면 status_policy.not_sampled 도 선언해야 한다"
+            )
+        return self
 
     def severity_coefficient(self, severity: Severity) -> float:
         return self.severity_coefficients[severity]
@@ -513,6 +600,8 @@ class CategoryScore(BaseModel):
     applicable_check_ids: list[str]
     scored_check_ids: list[str]
     not_applicable_check_ids: list[str]
+    #: 표본 정책이 재지 않기로 한 검사 — "표본 밖 — 요청 시 측정" 표기의 근거.
+    not_sampled_check_ids: list[str] = Field(default_factory=list)
     unknown_check_ids: list[str]
     failing_check_ids: list[str]
 

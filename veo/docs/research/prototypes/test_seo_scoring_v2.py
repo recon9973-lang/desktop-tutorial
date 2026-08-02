@@ -234,13 +234,17 @@ def test_not_applicable_checks_leave_the_denominator(
     assert score(inputs).score == 100.0
 
 
-def test_a_site_where_only_one_stage_applies_still_scores_out_of_100() -> None:
+def test_an_all_na_stage_renormalises_instead_of_costing_its_weight() -> None:
+    """이전 시험은 위생 단계만 살아남은 사이트가 7.1점이라고 못박았다 — 해당 없음이
+    결함처럼 구는 산수였고, 실코드 평가기와도 어긋났다(§6). 1.9.0 이 재정규화를
+    공식 규칙으로 발행하며 시험을 이름째 바꾼다(0-I): 살아 있는 단계 안에서 전부
+    통과면 100점이다. 해당 없음은 잘못이 아니다."""
     hygiene = [c for c, (s, _, _) in ALLOCATION.items() if s == "S6_HYGIENE"]
     inputs = [
         CheckInput(c, "PASS" if c in hygiene or c in GATE_CHECKS else "NOT_APPLICABLE")
         for c in ALL_CHECKS
     ]
-    assert score(inputs).score == pytest.approx(STAGES["S6_HYGIENE"]["points"], abs=0.01)
+    assert score(inputs).score == pytest.approx(100.0, abs=0.01)
 
 
 # --------------------------------------------------------------------------- #

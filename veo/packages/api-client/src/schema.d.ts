@@ -2513,6 +2513,8 @@ export interface components {
             name_ko: string;
             /** Not Applicable Check Ids */
             not_applicable_check_ids: string[];
+            /** Not Sampled Check Ids */
+            not_sampled_check_ids?: string[];
             /** Penalty Total */
             penalty_total: number;
             /** Score */
@@ -2769,9 +2771,17 @@ export interface components {
          *     * ``UNKNOWN`` — the check applies but could not be measured (no credential, provider
          *       outage, collector limit). It scores nothing and instead lowers coverage and
          *       confidence, so the gap stays visible.
+         *     * ``NOT_SAMPLED`` — 명세의 표본 정책이 이 대상을 재지 않기로 했다(1.9.0 신설).
+         *       분모·측정 범위 모두에서 빠지고 "표본 밖 — 요청 시 측정" 으로 따로 표기된다.
+         *       UNKNOWN 과 다른 이유: 우리 정책으로 안 잰 것이 그 페이지의 감점이 되면 못 하는
+         *       이유를 고객 탓으로 돌리는 것이다(0-J). N/A 와 다른 이유: 항목이 없는 것이
+         *       아니라 **정책상 재지 않은** 것이므로, 이름을 섞으면 그 사실이 사라진다.
+         *       절대 평가의 예외이므로 경계를 코드가 지킨다 — 명세가 표본 정책을 선언한
+         *       검사(sampling.*.check_ids)에만 허용되고, 다른 검사에 붙이면 평가기가 오류를
+         *       낸다. "안 재기로 했다" 가 절대평가를 비껴가는 뒷문이 되지 않는다.
          * @enum {string}
          */
-        CheckStatus: "PASS" | "WARNING" | "FAIL" | "NOT_APPLICABLE" | "UNKNOWN";
+        CheckStatus: "PASS" | "WARNING" | "FAIL" | "NOT_APPLICABLE" | "UNKNOWN" | "NOT_SAMPLED";
         /** CitedDomainPayload */
         CitedDomainPayload: {
             /** Citations */

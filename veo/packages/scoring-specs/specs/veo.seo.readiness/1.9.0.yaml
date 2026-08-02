@@ -1,0 +1,996 @@
+# VEO SEO Technical Readiness Scoring Specification
+# Methodology: VEO-LAB / Implementation: VENOM
+# This file is the single source of truth for SEO weights, severities and caps.
+# Checker code MUST NOT hard-code any number that appears here.
+spec_id: veo.seo.readiness
+domain: SEO_READINESS
+version: 1.9.0
+status: PUBLISHED
+effective_at: '2026-08-02T21:00:00+09:00'
+methodology_owner: VEO-LAB
+implementation_owner: VENOM
+approved_by: VEO-LAB
+compatible_collector_versions:
+- seo-collector/1.x
+score_meaning:
+  ko: 검색엔진이 사이트를 발견·크롤링·해석·제공할 수 있는 기술·운영 준비도입니다. 검색 순위 예측값이 아니며, 실제 검색 성과(노출·클릭·순위)는 별도 지표로 표시합니다.
+  en: >-
+    Technical and operational readiness for search engines to discover, crawl, interpret and serve the
+    site. It is not a rank prediction; observed search performance is reported separately.
+  is_rank_prediction: false
+changelog:
+- version: 1.9.0
+  date: '2026-08-02'
+  summary: >-
+    숫자를 하나도 바꾸지 않은 판이다. 배점·심각도·관문·판정 기준은 1.8.0 과 같고, 같은 판정이면 같은 점수가 나온다. 이 판이 하는 일은 셋 다 선언이다 — 지금까지
+    코드 설정에만 있던 사실을 명세로 올려, "몇 장을 봤고 무엇을 안 쟀는가" 가 점수의 일부로 발행되게 한다. 하나. 측정 범위(measurement_scope). 한 진단은
+    최대 200장, 깊이 4까지 가져온다(2026-08-02 실측: 참사랑한의원 100장 상한에서 76.4 가 172장에서 71.8 — 상한이 낮으면 게시판 103장의 템플릿 결함을
+    못 보고 점수가 부풀었다). 게시판형(자동 생성) 페이지는 상한 초과가 예상될 때만 템플릿 그룹당 12장 표본으로 줄인다 — 전량을 볼 수 있으면 전량을 본다. 무조건
+    표본을 쓰면 결함률이 희석되어 점수가 올라간다(실측: 71.8→77.6). 그리고 잘린 크롤에서는 "없다" 는 주장(중복 없음·고아 없음)을 UNKNOWN 으로 판정한다 —
+    본 것이 전부가 아니면 부재를 단정할 수 없다(0-A). 이 세 값은 서버 설정과 시험으로 묶여 있어 한쪽만 바뀌면 시험이 깨진다. 둘. 표본 정책의 대상 목록과
+    NOT_SAMPLED. 실험실 성능 6개(lcp_lab·cls_lab·tbt_lab·text_compression·modern_image_format·resource_hints)는 중요도
+    상위 5장만 실측하고, 실사용자 성능 1개(inp_field)는 사이트 전체(origin) 값만 쓴다 — 페이지 점수를 만들 때 표본 밖 페이지의 이 항목들은 UNKNOWN(감점)이
+    아니라 NOT_SAMPLED(분모 제외 + "표본 밖 — 요청 시 측정" 표기)다. 우리 정책으로 안 잰 것이 그 페이지의 감점이 되면 못 하는 이유를 고객 탓으로 돌리는
+    것이다(0-J). 절대평가의 예외이므로 경계를 평가기가 지킨다: 여기 선언된 7개 밖의 검사에 NOT_SAMPLED 를 붙이면 오류다. 사이트 점수에는 이 상태가 등장하지
+    않으므로 사이트 점수는 변하지 않는다. 셋. 전 영역 해당 없음 모서리의 통일. v2 연구 프로토타입은 전부 해당 없음인 영역의 가중치를 잃게 두었고(재분배 없음),
+    실코드 평가기는 그 영역을 분모에서 빼고 재정규화한다 — 서로 모순이었다(SEO_SCORING_V3_PAGES.md §6). 이 판부터 재정규화가 공식 규칙이다. 근거는
+    ADR 0002 와 같다: 해당 없음은 결함이 아니므로 0점처럼 굴어서는 안 되는데, 가중치를 잃게 두면 그 영역이 통째로 0점인 것과 같은 산수가 된다. 실무에서 점수가
+    갈린 사례는 아직 없다 — 이것은 수정이 아니라 이미 발행본이 하던 계산을 규칙으로 못박는 것이다. 근거: docs/research/SEO_SCORING_V3_PAGES.md §3.3·§6·§9,
+    docs/scoring/methodology.md §2.9, apps/api/src/veo/core/settings.py 의 연동 주석.
+- version: 1.8.0
+  date: '2026-08-01'
+  summary: >-
+    점수를 매기는 방식 자체를 바꾼 판이다. 항목을 더하거나 판정을 고친 것이 아니라, 같은 판정으로 다른 점수가 나온다. 이유는 셋이고 전부 실측이 근거다. 하나. 색인이 전면
+    차단된 사이트가 74점을 받았다. 검색에 존재하지 않는 사이트가 "양호" 등급을 받은 것이다. 가산 방식에서는 차단 검사들의 배점만큼만 잃기 때문이다. 실제로는 앞이 막히면
+    뒤가 통째로 무의미하다 — noindex 페이지의 완벽한 구조화 데이터는 아무 일도 하지 않는다. 그래서 색인 차단 단계를 관문(is_gate)으로 두고 점수에 곱한다. 관문끼리도
+    곱한다: 페이지는 모든 관문을 통과해야 하므로 robots 가 절반, 상태 코드가 20% 실패면 (1-0.5)(1-0.2) = 0.4 다. 못 잰 관문은 곱하지 않는다. 관측하지
+    않은 차단을 있다고 하면 없는 결함을 지어내는 것이고(0-A), 우리 쪽 네트워크 사정으로 멀쩡한 병원 홈페이지가 0점이 된다. 구글 Lighthouse 가 정확히 그 실수를
+    한다 — 2026-08-01 실측에서 robots.txt fetch 타임아웃이 0점 실패로 기록됐고 화면에서 "크롤러를 막고 있음" 과 구분되지 않았다. 같은 사이트가 잴
+    때마다 SEO 1.00 과 0.92 를 오갔다. 둘. 검사를 더하면 기존 결함이 싸졌다. 1.2.0 에서 66.7 이던 사이트가 1.6.0 에서 72.7 이 됐다. 같은 사이트,
+    같은 결함, 온페이지 검사 두 개 추가. 분모가 "채점된 검사들의 심각도 계수 합" 이라 검사를 더할 때마다 자랐기 때문이다. 이 판부터 단계마다 고정 분모(raw_budget)를
+    두고 검사마다 명시적 배점(points)을 적는다. 배점 합이 고정 분모와 다르면 명세를 만들 수 없다 — 검사를 추가하려면 형제에서 덜어내야 하고, 무엇을 덜어낼지가 근거를
+    대야 하는 판단으로 드러난다. 해당 없음 재분배는 그대로다. "이 사이트에 그 항목이 없다" 와 "명세에 검사가 하나 늘었다" 는 다른 일이다(ADR 0002). 셋. 넓게
+    퍼진 결함을 선형으로 셌다. 100장 중 40장의 title 이 깨졌다면 40개의 개별 실수가 아니라 템플릿 하나의 문제이고, 나머지 60장도 같은 위험 위에 있다. 40%
+    를 40% 로 세면 "절반 이상 멀쩡하다" 는 그림이 되는데 고쳐야 할 것은 페이지 40개가 아니라 템플릿 하나다. breadth_exponent 0.7 이 40% 를 53%
+    로 올린다. 영역 재편: 여덟 영역 중 점수를 이루던 다섯을 검색 여정의 여섯 단계로 다시 나눴다. 같은 검사를 다른 이름으로 묶은 것이 아니라 막히는 순서로 묶었다. 색인
+    차단 → 대표 URL 혼란 → 해석 불가 → 경쟁력 → 클릭·표현 → 위생. 앞 단계일수록 손실이 크다. 연동이 있어야 잴 수 있는 세 영역은 그대로 점수 밖이다. 배점은
+    2026-08-01 구글 Lighthouse 158개 감사와 대조해 정했다. 가장 크게 바뀐 것은 CLS 다 — 위생 0.5 에서 경쟁력 2.0 으로 올렸다. 구글은 CLS
+    에 LCP 와 동등한 25점을 준다. CLS 는 TBT 처럼 다른 지표의 대역이 아니라 Core Web Vitals 본체이고, 구글이 순위에 쓴다고 공표한 세 지표 중 하나다.
+    위생에 두면 광고 배너와 늦게 뜨는 이미지로 버튼이 밀려나는 홈페이지가 그대로 통과한다. 반대로 TBT 는 위생에 남겼다 — 구글이 TBT 에 성능 최고 배점을 주는 것은
+    실험실에서 INP 를 못 재서 쓰는 대역이기 때문이고, VEO 는 INP 를 실사용자 데이터로 직접 읽으므로 둘 다 채점하면 같은 성질을 두 번 센다. 3.5점은 근거가 얇은
+    것에서 덜어냈다: https_valid 4→3(순위 요인이지만 매우 약하고 지금은 보편), internal_link_density 와 click_depth 는 1→0.5(둘
+    다 업계 통설이고 Lighthouse 대응 감사도 없다). 판정 기준과 검사 문구는 하나도 바꾸지 않았다. 1.7.0 과 같은 수집기가 같은 판정을 내리고, 달라지는 것은
+    그 판정에 붙는 숫자뿐이다. 1.7.0 이하로 매긴 과거 점수는 앞으로도 그때의 규칙으로 설명된다(ADR 0012). 근거: docs/research/SEO_SCORING_ALGORITHM_V2.md,
+    docs/research/LIGHTHOUSE_COMPARISON.md, docs/research/prototypes/seo_scoring_v2.py
+- version: 1.7.0
+  date: '2026-08-01'
+  summary: >-
+    구글 PageSpeed 키가 처음 도착해 Lighthouse 감사 158개를 전부 받아 배점을 직접 읽고 이 명세 57개와 대조했다. 넣을 만한 것은 **둘뿐이었다.**
+
+    `seo.crawl.crawlable_anchors` — 구글 SEO 카테고리의 배점 10개 중 하나 (crawlable-anchors). href 없이 onclick 으로만
+    도는 링크는 크롤러가 따라갈 수 없다. 국내 병원 홈페이지는 제작 도구가 만든 자바스크립트 메뉴가 흔해 실제로 자주 걸린다. **판정 기준은 구글을 그대로 옮기지 않았다**
+    — tel: 과 mailto: 는 정상 링크이고 병원 홈페이지의 거의 모든 페이지에 있다. 그것을 세면 모든 고객이 아무 잘못 없이 실패한다. 같은 이유로 `#` 과 `#section`
+    도 세지 않는다. 메뉴 영역(nav·header·footer)에 있으면 실패, 본문에만 있으면 주의로 본다 — 앞은 그 링크 하나를 잃고 뒤는 그 메뉴로만 연결된 하위 페이지를
+    통째로 잃는다.
+
+    `seo.html.charset_declared` — 구글 권장사항 카테고리의 charset 감사. 인코딩 선언이 없으면 브라우저와 크롤러가 추측하고, **한글 페이지에서
+    추측이 틀리면 본문 전체가 깨진 글자로 색인된다.** 문서 안(meta) 이든 응답 헤더든 한 곳에만 있어도 통과다. 헤더에만 있는 경우는 통과시키되 문구로 남긴다 — CDN
+    이 헤더를 떨어뜨리면 다시 추측 대상이 되지만, 그것은 일어날 수 있는 일이지 일어난 일이 아니다.
+
+    **넣지 않기로 한 것도 근거와 함께 남긴다.** hreflang 은 다국어 사이트 전용이라 국내 병원 대상에서는 대부분 해당 없음이고, 넣으면 N/A 처리 부담만 는다.
+    접근성 21항목은 검색 순위 신호가 아니다. llms.txt 와 WebMCP 는 구글 자신이 정상 경로에서 배점 0 으로 두고 "개발 중이며 변경될 수 있다" 고 명시했다
+    — GEO 준비도 쪽에서 따로 판단한다.
+
+    영역 가중치와 기존 항목의 심각도는 바꾸지 않았다. 크롤링·색인 영역이 12개에서 13개로, 온페이지 영역이 11개에서 12개로 늘어난다. 항목이 늘면 같은 결함의 상대 비중이
+    줄어드는 구조적 문제가 이 평가 방식에 남아 있다 — docs/research/SEO_SCORING_ALGORITHM_V2.md 부록 C-2 에 실측과 함께 적었고, v2
+    평가기에서 고친다. 이 판에서는 항목 두 개만큼의 이동이 있다는 사실을 여기에 적어 두는 것으로 갈음한다.
+- version: 1.6.0
+  date: '2026-07-30'
+  summary: >-
+    robots.txt 에 문법이 어긋난 줄이 있어도 점수가 정상과 같았다. 파싱 불가한 줄을 건너뛰는 것은 구글도 하는 일이라 판정 자체는 맞지만, 그래서 고객은 **자기 robots.txt
+    가 망가져 있다는 사실을 영영 모른다.** 건너뛴 줄이 `Disallow: /admin` 을 의도한 것이었다면 의도한 차단이 걸리지 않은 것이고, `Sitemap:` 을 의도한
+    것이었다면 사이트맵이 전달되지 않은 것이다 — 어느 쪽이든 운영자가 믿고 있는 상태와 실제가 다르다.
+
+    경미로 둔다. 크롤링을 막는 문제가 아니라 의도가 전달되지 않는 문제이고, 실제로 무엇이 막혔는지는 seo.robots.txt_allows_url 이 따로 판정한다. robots.txt
+    가 아예 없는 것은 전부 허용한다는 뜻이므로 해당 없음이다 — 없는 결함을 지어내지 않는다. 파서는 이미 깨진 줄 번호를 세고 있었고, 아무도 보지 않았을 뿐이다.
+
+    영역 가중치와 다른 항목의 심각도는 바꾸지 않았다. 크롤링·색인 영역의 항목이 11개에서 12개로 늘어난다.
+- version: 1.5.0
+  date: '2026-07-30'
+  summary: >-
+    HTTPS 인증서 만료 임박을 넣는다. 1.3.0 에서 미뤄 둔 항목이다 — 값어치가 없어서가 아니라 크롤러가 만료일을 수집하지 않았기 때문이었고, 잴 수 없는 항목을 절대
+    평가에 넣으면 우리가 만들지 않은 기능 때문에 모든 고객의 점수가 내려간다. 이제 TLS 핸드셰이크에서 만료일을 읽어 오므로 실제로 잰다.
+
+    심각도를 CRITICAL 로 두는 이유: 다른 항목은 발견되거나 해석되는 정도의 문제지만, 만료된 인증서는 **사이트가 통째로 열리지 않게** 만든다. 순위가 내려가는 것이
+    아니라 아무도 못 들어온다. 판정은 남은 기간으로 가른다 — 만료됐거나 7일 미만이면 실패, 30일 미만이면 주의, 그 외 통과. 30일을 경계로 삼은 것은 Let's Encrypt
+    를 비롯한 자동 갱신이 만료 30일 전에 시작하기 때문이다. 그 구간에 들어와 있다는 것은 첫 갱신 시도가 이미 실패했다는 신호다.
+
+    만료일을 받지 못하면 측정 불가로 남긴다. 통과로 접으면 만료 직전인 사이트를 정상이라고 보고하게 된다. 평문 HTTP 사이트는 확인할 인증서가 없으므로 해당 없음이며, HTTPS
+    사용 여부 자체는 seo.security.https_valid 가 이미 판정한다.
+
+    영역 가중치와 다른 항목의 심각도는 바꾸지 않았다. 성능·사용자 경험 영역의 항목이 10개에서 11개로 늘어난다.
+- version: 1.4.0
+  date: '2026-07-30'
+  summary: >-
+    구조화 데이터를 아예 만들지 않은 사이트가 그 배점을 통째로 면제받고 있었다. JSON-LD 가 한 줄도 없으면 네 항목이 모두 해당 없음이 되어 12.5점이 분모에서 빠졌고,
+    그래서 **스키마를 만든 사이트가 더 어려운 시험을 봤다** — 만든 쪽은 분모 100 에서 그 12.5점을 걸고 채점받고, 안 만든 쪽은 분모 87.5 에서 나머지로 100점을
+    받을 수 있었다. 1.3.0 에서 연동 영역을 두고 고친 것과 똑같은 유인이며, "없는 것은 0점 처리하고 그것을 빼고 환산하지 않는다" 는 원칙에 어긋난다. 같은 영역의
+    오픈그래프는 없으면 실패로 감점하는데 JSON-LD 만 면제였다는 점에서 일관성도 없었다.
+
+    고치는 방향은 네 항목을 실패로 바꾸는 것이 아니다. 선언이 하나도 없는 사이트에 "JSON-LD 문법 오류" 라고 적으면 없는 사실을 지어내는 것이다. 대신 선언 자체를
+    묻는 `seo.sd.declared` 를 새로 두고, 나머지 넷은 검증할 대상이 없으므로 해당 없음으로 남긴다. 선언이 없으면 그 영역에서 채점되는 항목은 이 하나뿐이라 영역
+    점수가 0이 되고, 배점 12.5점은 분모에 그대로 남는다.
+
+    선언이 있는 사이트에서는 다섯 항목이 함께 채점되므로, 타입 하나가 어긋나도 영역 점수의 일부만 잃는다. 아예 없는 것과 잘못 만든 것의 무게를 다르게 두기 위해서다. 영역
+    가중치와 다른 항목의 심각도는 바꾸지 않았다.
+
+    실측 영향: 국내 병원 사이트 대부분이 스키마가 없어, 그런 사이트의 점수가 8~10점 내려간다. 진단이 가장 큰 개선 기회를 숨기지 않게 하려는 것이 목적이다.
+- version: 1.3.0
+  date: '2026-07-30'
+  summary: >-
+    경쟁 도구(NXT)가 보는데 우리가 보지 않던 항목 7개를 넣는다. 그중 하나는 실질적인 구멍이었다 — title 태그 중복 선언. 플러그인·테마가 각각 하나씩 넣는 경우가
+    흔한데 검색엔진은 어느 것을 쓸지 알 수 없다. 지연 로딩은 속도 기법이 아니라 색인 위험으로 넣는다 — 구글이 "잘못 구현하면 콘텐츠가 검색에서 숨겨질 수 있다" 고 명시한다.
+    파비콘은 구글이 문서화한 검색 노출 요건이고 크롤 차단 여부까지 본다. doctype·압축· 최신 이미지 포맷·리소스 힌트는 구글이 요구하는 항목은 아니지만, 실측 지표에
+    앞서 확인 가능한 개선 여지라 경미로 넣는다.
+
+    그리고 검사마다 `availability` 를 선언한다. 고객의 권한이 있어야 볼 수 있는 것과 유료 데이터가 있어야 볼 수 있는 것은 **배점에서 빠진다** — 아직 요청하지도
+    않은 권한 때문에 고객의 점수가 낮아지면 안 된다. 대신 이름과 함께 "무엇을 연결하면 측정되는지" 를 결과에 남긴다. 우리가 우리 키로 잴 수 있는 것(PageSpeed·CrUX)은
+    그대로 배점에 남는다 — 그건 우리가 안 한 것이지 고객이 안 준 것이 아니다.
+
+    그 결과 **영역 가중치를 다시 맞춘다.** 배점에서 빼기로 한 열 개 항목은 세 영역 (검색엔진 연동 10 · 관측·성과 5 · 오프페이지 5, 합 20)에 통째로 모여
+    있다. 이 영역들을 그냥 두면 분모가 고객마다 달라진다 — 연동이 없는 고객은 80점어치 안에서 채점되고, 서치콘솔을 연결한 고객만 90점어치 안에서 채점되어, **연결할수록
+    불리한** 유인이 생긴다. 그래서 세 영역에 `contributes_to_score: false` 를 선언해 점수와 분모 양쪽에서 빼고(판정과 표시는 그대로 한다), 남은
+    다섯 영역의 배점을 1.25배 해 자기들끼리 100을 이루게 한다: 크롤링·색인 25→31.25, 온페이지 15→18.75, 콘텐츠·정보구조 15→18.75, 성능·사용자
+    경험 15→18.75, 구조화 데이터 10→12.5. 영역 간 상대 중요도(비율)는 그대로다. 바뀐 것은 분모가 고객의 연동 상태와 무관하게 고정된다는 점뿐이다. 명세 자체가
+    이미 그렇게 말하고 있었다 — 관측·성과 영역의 설명에 "검색 성과 데이터는 기술 준비도와 분리해 표시" 라고 적혀 있는데, 정작 채점에서는 분리되지 않고 있었다.
+
+    HTTPS 인증서 만료 임박(seo.security.certificate_not_expiring)은 **넣지 않는다.** 넣을 값어치가 없어서가 아니라 — 자동 갱신이 실패한
+    인증서는 만료되는 순간 사이트가 통째로 열리지 않으므로 오히려 심각도가 높다 — 지금 크롤러가 인증서 만료일을 수집하지 않기 때문이다. 절대 평가에서 잴 수 없는 항목을 선언하면
+    그 배점은 분모에 남은 채 0점이 되어, **우리가 아직 만들지 않은 기능 때문에 모든 고객의 점수가 내려간다.** 수집 경로(TLS 핸드셰이크에서 만료일 확보)를 먼저 만들고
+    다음 판에 넣는다.
+- version: 1.2.0
+  date: '2026-07-29'
+  summary: >-
+    상대 평가에서 절대 평가로 바꾼다. 재지 못한 항목은 배점을 분모에 남긴 채 점수를 얻지 못한다. 이전에는 예산에서 빠져, 8개 영역 중 3개(20점어치)를 하나도 재지 못한
+    사이트가 남은 80점어치 안에서 91.8점을 받고 화면에는 "91.8점 양호" 로만 떴다. 성능·사용자 경험은 5개 중 4개를 못 쟀는데 남은 하나로 100점이었다 — PageSpeed
+    연동이 없어서였는데 화면에는 "성능 100점" 이라고 적혔다. 이제 100점은 고정된 만점이다: 20점짜리 영역이 0점이면 나머지가 만점이라도 80점이다. 측정 불가를 사이트의
+    실패로 보고하지는 않는다 — 못 잰 이유는 항목마다 그대로 남는다. 배점·심각도·영역 가중치·검사 항목은 하나도 바꾸지 않았다.
+- version: 1.1.0
+  date: '2026-07-29'
+  summary: >-
+    seo.sd.naver_supported_type 을 structured_data 에서 onpage_semantics 로 옮긴다. 이 검사가 보는 것은 오픈그래프이지 구조화
+    데이터가 아니다. 구조화 데이터가 없는 사이트에서 네 검사가 해당 없음이 되면 이 검사가 그 영역의 유일한 채점 항목으로 남고, 예산이 계수 0.10 하나가 되어 경미 항목
+    하나의 실패가 10점 영역을 통째로 0점으로 만들었다. 국내 병원 사이트 대부분이 구조화 데이터가 없는 상태여서 이 왜곡이 곧 표준 결과가 된다. 배점·심각도·영역 가중치는
+    바꾸지 않았고, 옮긴 항목의 제목만 실제로 보는 것에 맞게 고쳤다.
+- version: 1.0.0
+  date: '2026-07-28'
+  summary: >-
+    최초 발행. SEO_RESEARCH_KIT/07_audit_tools/RECOMMENDED_SCORING_MODEL.md v0.1의 카테고리 가중치·심각도 계수·사이트 전역
+    상한·URL 중요도를 그대로 채택하고, N/A 분모 재정규화와 unknown 신뢰도 반영 규칙을 명시화.
+severity_coefficients:
+  BLOCKER: 1.0
+  CRITICAL: 0.6
+  MAJOR: 0.3
+  MINOR: 0.1
+  INFO: 0.0
+confidence_levels:
+  DIRECT_OBSERVATION: 1.0
+  OFFICIAL_API: 0.9
+  HEURISTIC_HIGH: 0.8
+  HEURISTIC_MEDIUM: 0.65
+  HEURISTIC_LOW: 0.5
+  EXTERNAL_ESTIMATE: 0.4
+status_policy:
+  fail_penalty_multiplier: 1.0
+  warning_penalty_multiplier: 0.5
+  pass_penalty_multiplier: 0.0
+  not_applicable: EXCLUDE_FROM_DENOMINATOR
+  unknown: SCORE_AS_ZERO_KEEP_IN_DENOMINATOR
+  breadth_exponent: 0.7
+  not_sampled: EXCLUDE_FROM_DENOMINATOR
+url_importance:
+  CONVERSION_OR_HOME: 3.0
+  CATEGORY_OR_HUB: 2.0
+  CONTENT_OR_PRODUCT: 1.0
+  TAG_OR_FILTER: 0.5
+  INTENTIONAL_NOINDEX: 0.0
+sampling:
+  perf_lab:
+    max_urls: 5
+    min_measured_ratio: 0.6
+    check_ids:
+    - seo.perf.lcp_lab
+    - seo.perf.cls_lab
+    - seo.perf.tbt_lab
+    - seo.perf.text_compression
+    - seo.perf.modern_image_format
+    - seo.perf.resource_hints
+    rationale_ko: >-
+      실험실 성능(LCP·CLS·TBT)은 페이지 하나를 실제로 브라우저에 띄워 재는 것이라
+      한 장에 16~60초가 걸린다(2026-08-01 실측: 16.0 / 24.1 / 28.3 / 59.8초). 100장을
+      전부 재면 한 시간이 넘어 진단이 끝나지 않는다. 그래서 중요도 상위 max_urls 장만
+      잰다 — 어느 페이지가 중요한지는 이 명세의 url_importance 가 이미 정하고 있다.
+      min_measured_ratio 는 계획한 표본 중 실제로 값을 받은 최소 비율이다. 이 아래로
+      떨어지면 그 검사는 측정 불가로 보고하고 배점을 잃는다. 없으면 **너무 느려서
+      로드에 실패한 페이지가 분모에서 빠져 사이트가 더 빨라 보인다** — 2026-08-01
+      실측에서 Lighthouse 가 FAILED_DOCUMENT_REQUEST 로 페이지를 못 연 사례가 실제로
+      나왔고, 느린 페이지일수록 그렇게 될 확률이 높다.
+  perf_field:
+    prefer_origin_scope: true
+    check_ids:
+    - seo.perf.inp_field
+    rationale_ko: >-
+      실사용자 성능(INP)은 구글이 크롬 사용자에게서 이미 모아 둔 값이라 한 번 물으면
+      사이트 전체 값이 함께 온다(originLoadingExperience). 2026-08-01 실측:
+      seoul.go.kr 은 페이지 값 LCP 1041ms·INP 96ms 와 사이트 전체 값 LCP 1011ms·INP
+      122ms 를 같은 응답에 담아 줬다. 따라서 이 지표에는 표본 문제가 없다 —
+      페이지마다 부를 이유가 없다. 방문자가 적어 구글이 공개하지 않는 사이트에서는
+      둘 다 비어 있고, 그것은 해당 없음이지 느리다는 뜻이 아니다(실측: 동네 병원
+      홈페이지는 페이지 값도 사이트 값도 없었다).
+measurement_scope:
+  max_pages: 200
+  max_depth: 4
+  template_group_sample: 12
+  truncated_absence: UNKNOWN
+  rationale_ko: >-
+    상한 100장 시절 참사랑한의원이 76.4, 200장(실제 172장)에서 71.8 — 게시판 103장의
+    템플릿 결함(동일 title)이 상한 밖에 있었다(2026-08-02 실측). 게시판형 페이지는
+    상한 초과가 예상될 때만 그룹당 12장 표본으로 줄인다. 전량을 볼 수 있으면 전량을
+    본다 — 무조건 표본은 결함률을 희석해 점수를 올린다(실측 71.8→77.6). 잘린
+    크롤에서 부재 주장은 UNKNOWN 이다. 본 N장 중에 없었다는 것과 없다는 것은 다르다.
+    이 값들은 호스트 예산(450/h)·콘솔 타임아웃(240s)과 연동이다 — 서버 설정 주석과
+    시험이 함께 움직인다.
+
+categories:
+- id: s1_blocked
+  weight: 30.0
+  name_ko: 색인 차단
+  name_en: Blocked from indexing
+  description_ko: 실패하면 페이지가 검색 결과에 존재하지 않는다. 이후 모든 항목이 무의미해지므로 다른 어떤 것으로도 보상할 수 없다. 그래서 최대 배점이다.
+  raw_budget: 30.0
+  checks:
+  - id: seo.http.status_ok
+    title_ko: HTTP 상태 코드가 정상(2xx)인가
+    title_en: HTTP status is successful
+    severity: BLOCKER
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - http_response
+    engine_scope:
+    - GENERIC
+    points: 10
+  - id: seo.robots.meta_indexable
+    title_ko: meta robots / X-Robots-Tag가 색인을 막지 않는가
+    title_en: meta robots or X-Robots-Tag does not block indexing
+    severity: BLOCKER
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 의도된 noindex 페이지는 해당 없음으로 처리합니다.
+    evidence_required:
+    - http_headers
+    - dom_snippet
+    points: 8
+  - id: seo.robots.txt_allows_url
+    title_ko: robots.txt가 대상 URL의 크롤링을 허용하는가
+    title_en: robots.txt allows crawling of the URL
+    severity: BLOCKER
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - robots_txt
+    - matched_rule
+    points: 8
+  - id: seo.content.js_render_parity
+    title_ko: JS 렌더링 전후 핵심 콘텐츠가 일치하는가
+    title_en: core content matches before and after JS rendering
+    severity: CRITICAL
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - raw_html
+    - rendered_dom
+    points: 4
+  is_gate: true
+- id: s2_identity
+  weight: 21.4
+  name_ko: 대표 URL 혼란
+  name_en: Ambiguous canonical identity
+  description_ko: 색인은 되지만 어느 주소가 대표인지 엔진이 임의로 고른다. 트래픽이 엉뚱한 주소로 가거나 여러 주소로 쪼개져 어느 쪽도 순위를 못 얻는다.
+  raw_budget: 15.0
+  checks:
+  - id: seo.canonical.declared_and_consistent
+    title_ko: canonical이 선언되고 다른 신호와 일치하는가
+    title_en: canonical is declared and consistent with other signals
+    severity: CRITICAL
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - dom_snippet
+    - http_headers
+    points: 6
+  - id: seo.canonical.not_cross_domain
+    title_ko: canonical이 외부 도메인을 가리키지 않는가
+    title_en: canonical does not point to an external domain
+    severity: CRITICAL
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - dom_snippet
+    points: 5
+  - id: seo.content.no_duplicate_bodies
+    title_ko: 본문 중복·근접 중복이 과도하지 않은가
+    title_en: body content is not excessively duplicated
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - text_extract
+    - similarity_matrix
+    points: 2
+  - id: seo.onpage.no_duplicate_metadata
+    title_ko: title/description이 사이트 내에서 중복되지 않는가
+    title_en: title and description are not duplicated across the site
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - dom_snippet
+    points: 2
+- id: s3_meaning
+  weight: 28.6
+  name_ko: 해석 불가
+  name_en: Uninterpretable
+  description_ko: 색인은 되지만 무엇에 대한 페이지인지 엔진이 모른다. 검색어와 연결되지 않으므로 노출 자체가 일어나지 않는다. 차단 다음으로 큰 손실이다.
+  raw_budget: 20.0
+  checks:
+  - id: seo.onpage.title_present_and_unique
+    title_ko: title이 존재하고 중복되지 않는가
+    title_en: title exists and is unique
+    severity: CRITICAL
+    scope: URL
+    remediation_owner: MARKETER
+    evidence_required:
+    - dom_snippet
+    points: 6
+  - id: seo.content.no_thin_signal
+    title_ko: 주요 페이지에 실질 콘텐츠가 충분한가
+    title_en: key pages carry substantive content
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - text_extract
+    points: 4
+  - id: seo.onpage.single_meaningful_h1
+    title_ko: 의미 있는 H1이 하나 있는가
+    title_en: exactly one meaningful H1 exists
+    severity: MAJOR
+    scope: URL
+    remediation_owner: MARKETER
+    evidence_required:
+    - dom_snippet
+    points: 3
+  - id: seo.onpage.single_title_element
+    title_ko: title 태그가 하나만 선언됐는가
+    title_en: A single title element
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 모든 HTML 페이지에 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: title 이 여러 개면 검색엔진이 어느 것을 쓸지 알 수 없고, 플러그인·테마가 각각 하나씩 넣어 두는 경우가 흔합니다.
+    points: 2
+  - id: seo.sd.matches_visible_content
+    title_ko: 구조화 데이터가 화면에 보이는 내용과 일치하는가
+    title_en: structured data matches visible content
+    severity: CRITICAL
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 선언이 없는 페이지는 검증할 대상이 없어 해당 없음입니다. 선언이 없다는 사실 자체는 seo.sd.declared 에서 감점합니다.
+    evidence_required:
+    - dom_snippet
+    - text_extract
+    points: 2
+  - id: seo.onpage.heading_hierarchy
+    title_ko: 제목 계층이 논리적으로 구성됐는가
+    title_en: heading hierarchy is logical
+    severity: MINOR
+    scope: URL
+    remediation_owner: MARKETER
+    evidence_required:
+    - dom_snippet
+    points: 1
+  - id: seo.onpage.html_lang_declared
+    title_ko: html lang 속성이 선언됐는가
+    title_en: html lang attribute is declared
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - dom_snippet
+    points: 1
+  - id: seo.onpage.image_alt_coverage
+    title_ko: 의미 있는 이미지에 alt가 제공되는가
+    title_en: meaningful images provide alt text
+    severity: MINOR
+    scope: URL
+    remediation_owner: MARKETER
+    applicability_ko: 이미지가 없는 페이지는 해당 없음입니다.
+    evidence_required:
+    - dom_snippet
+    points: 1
+- id: s4_compete
+  weight: 28.6
+  name_ko: 경쟁력
+  name_en: Competitiveness
+  description_ko: 노출은 되지만 더 나은 페이지에 밀린다. 즉시 손실은 아니지만 장기적으로 트래픽 차이가 가장 크게 벌어지는 구간이다.
+  raw_budget: 20.0
+  checks:
+  - id: seo.ux.mobile_viewport
+    title_ko: 모바일 viewport가 올바르게 선언됐는가
+    title_en: mobile viewport is declared correctly
+    severity: CRITICAL
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - dom_snippet
+    points: 3.5
+  - id: seo.perf.lcp_lab
+    title_ko: LCP(lab)가 기준 이내인가
+    title_en: LCP (lab) is within threshold
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - lighthouse_run
+    points: 3
+  - id: seo.security.https_valid
+    title_ko: HTTPS가 유효하고 인증서 문제가 없는가
+    title_en: HTTPS is valid without certificate problems
+    severity: CRITICAL
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - tls_handshake
+    points: 3
+  - id: seo.perf.cls_lab
+    title_ko: CLS(lab)가 기준 이내인가
+    title_en: CLS (lab) is within threshold
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - lighthouse_run
+    points: 2
+  - id: seo.perf.inp_field
+    title_ko: INP(field, CrUX)가 기준 이내인가
+    title_en: INP (field, CrUX) is within threshold
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: CrUX 표본이 없는 URL은 해당 없음입니다.
+    evidence_required:
+    - crux_record
+    engine_scope:
+    - GOOGLE
+    points: 2
+  - id: seo.crawl.no_orphan_key_pages
+    title_ko: 주요 페이지가 내부 링크로 도달 가능한가
+    title_en: key pages are reachable through internal links
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - link_graph
+    points: 1.75
+  - id: seo.crawl.crawlable_anchors
+    title_ko: 링크를 크롤러가 따라갈 수 있는가
+    title_en: anchors are crawlable
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: >-
+      링크가 하나 이상 있는 HTML 페이지에 적용됩니다. tel:·mailto: 는 목적지가 웹 페이지가 아니므로 대상이 아니고, 같은 페이지를 가리키는 #·#section
+      도 다른 페이지의 발견에 영향이 없으므로 대상이 아닙니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: >-
+      href 없이 onclick 으로만 이동하는 링크는 검색엔진이 따라갈 수 없어, 그 링크로만 연결된 페이지가 발견되지 않습니다. 메뉴 영역에 있으면 하위 페이지가 통째로
+      누락되므로 실패로, 본문에만 있으면 해당 링크만 잃으므로 주의로 판정합니다. 구글이 자바스크립트를 실행해 따라가는 경우가 있으나 보장이 아니며, 네이버 크롤러에는 기대하기
+      어렵습니다.
+    points: 1.5
+  - id: seo.content.lazy_loading_safe
+    title_ko: 지연 로딩이 콘텐츠를 숨기지 않는가
+    title_en: Lazy loading does not hide content
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 지연 로딩을 쓰는 페이지에만 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: 구글은 지연 로딩을 잘못 구현하면 콘텐츠가 검색에서 숨겨질 수 있다고 명시합니다. 첫 화면에 보이는 이미지에 지연 로딩을 걸거나, 스크롤·클릭에만
+      반응하는 방식은 색인 누락으로 이어집니다.
+    points: 0.75
+  - id: seo.security.certificate_not_expiring
+    title_ko: HTTPS 인증서가 곧 만료되지 않는가
+    title_en: TLS certificate is not about to expire
+    severity: CRITICAL
+    scope: SITE
+    remediation_owner: OPERATIONS
+    applicability_ko: HTTPS 사이트에 적용됩니다. 평문 HTTP 는 확인할 인증서가 없어 해당 없음이며, 만료일을 수집하지 못하면 측정 불가입니다.
+    evidence_required:
+    - http_response
+    reference_ko: 자동 갱신이 실패한 인증서는 만료되는 순간 사이트가 통째로 열리지 않습니다. 브라우저가 경고 화면을 띄우고 검색엔진은 크롤링하지 못합니다. 남은 기간을
+      미리 알면 사고가 되기 전에 막을 수 있습니다.
+    points: 0.75
+  - id: seo.security.no_mixed_content
+    title_ko: 혼합 콘텐츠가 없는가
+    title_en: no mixed content is loaded
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - rendered_dom
+    - network_log
+    points: 0.75
+  - id: seo.content.click_depth_reasonable
+    title_ko: 주요 페이지의 클릭 깊이가 과도하지 않은가
+    title_en: click depth to key pages is reasonable
+    severity: MINOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - link_graph
+    points: 0.5
+  - id: seo.content.internal_link_density
+    title_ko: 주제 클러스터 내부 링크가 충분한가
+    title_en: topical internal linking is sufficient
+    severity: MINOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - link_graph
+    points: 0.5
+- id: s5_click
+  weight: 14.3
+  name_ko: 클릭·표현
+  name_en: Click and presentation
+  description_ko: 순위는 나오지만 덜 눌린다. 검색 결과에 보이는 문구와 리치 결과가 여기서 결정된다. 순위를 올리는 것보다 싸게 트래픽을 늘리는 구간이다.
+  raw_budget: 10.0
+  checks:
+  - id: seo.onpage.meta_description_quality
+    title_ko: meta description이 존재하고 중복·길이 문제가 없는가
+    title_en: meta description exists without duplication or length issues
+    severity: MINOR
+    scope: URL
+    remediation_owner: MARKETER
+    evidence_required:
+    - dom_snippet
+    points: 2
+  - id: seo.sd.declared
+    title_ko: 구조화 데이터가 선언되어 있는가
+    title_en: Structured data is declared
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    applicability_ko: 모든 사이트에 적용됩니다. 선언이 없으면 감점합니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: >-
+      구글이 순위 요소로 요구하는 항목은 아니지만, 리치 결과·지식 패널·지역 검색에 쓰이는 값이 여기서 나옵니다. 병원은 MedicalClinic·LocalBusiness
+      로 진료 과목·영업시간·위치를 명시할 수 있어 얻을 것이 특히 많습니다. 선언이 없으면 그 기회를 통째로 쓰지 않는 상태이므로, 해당 없음이 아니라 얻지 못한 점수로 봅니다.
+    points: 2
+  - id: seo.sd.naver_supported_type
+    title_ko: 네이버 노출에 필요한 오픈그래프가 선언됐는가
+    title_en: declares the Open Graph tags Naver needs
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 네이버 대상이 아닌 사이트는 해당 없음입니다.
+    engine_scope:
+    - NAVER
+    evidence_required:
+    - validator_output
+    points: 2
+  - id: seo.sd.google_supported_type
+    title_ko: Google이 지원하는 리치 결과 타입인가
+    title_en: type is supported by Google rich results
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 선언이 없는 페이지는 검증할 대상이 없어 해당 없음입니다. 선언이 없다는 사실 자체는 seo.sd.declared 에서 감점합니다.
+    engine_scope:
+    - GOOGLE
+    evidence_required:
+    - validator_output
+    points: 1
+  - id: seo.sd.jsonld_parses
+    title_ko: JSON-LD가 문법적으로 파싱되는가
+    title_en: JSON-LD parses without syntax errors
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 선언이 없는 페이지는 검증할 대상이 없어 해당 없음입니다. 선언이 없다는 사실 자체는 seo.sd.declared 에서 감점합니다.
+    evidence_required:
+    - dom_snippet
+    points: 1
+  - id: seo.sd.required_properties_present
+    title_ko: 선언한 타입의 필수 속성이 있는가
+    title_en: required properties of the declared type are present
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 선언이 없는 페이지는 검증할 대상이 없어 해당 없음입니다. 선언이 없다는 사실 자체는 seo.sd.declared 에서 감점합니다.
+    evidence_required:
+    - dom_snippet
+    - validator_output
+    points: 1
+  - id: seo.sitemap.discoverable
+    title_ko: sitemap을 robots.txt 또는 관례 경로에서 발견할 수 있는가
+    title_en: sitemap is discoverable
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - robots_txt
+    - http_response
+    points: 1
+- id: s6_hygiene
+  weight: 7.1
+  name_ko: 위생
+  name_en: Hygiene
+  description_ko: 검색 성과에 직접 영향이 확인되지 않은 항목. 고쳐서 나쁠 것은 없지만 이것 때문에 순위가 바뀌지는 않는다. 그래서 배점이 작다.
+  raw_budget: 5.0
+  checks:
+  - id: seo.http.redirect_chain_sane
+    title_ko: 리다이렉트 체인이 짧고 루프가 없는가
+    title_en: Redirect chain is short and loop-free
+    severity: MAJOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - http_response
+    - redirect_chain
+    points: 0.75
+  - id: seo.sitemap.urls_valid
+    title_ko: sitemap의 URL이 색인 가능한 정상 URL인가
+    title_en: sitemap URLs are valid and indexable
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - sitemap_document
+    - http_response
+    points: 0.75
+  - id: seo.crawl.no_broken_internal_links
+    title_ko: 내부 링크에 4xx/5xx 대상이 없는가
+    title_en: internal links do not target 4xx/5xx
+    severity: MINOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - link_graph
+    - http_response
+    points: 0.6
+  - id: seo.onpage.descriptive_anchor_text
+    title_ko: 내부 링크의 앵커 텍스트가 설명적인가
+    title_en: internal anchor text is descriptive
+    severity: MINOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - link_graph
+    points: 0.5
+  - id: seo.perf.tbt_lab
+    title_ko: TBT(lab)가 기준 이내인가
+    title_en: TBT (lab) is within threshold
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - lighthouse_run
+    points: 0.5
+  - id: seo.perf.text_compression
+    title_ko: 텍스트 리소스가 압축 전송되는가
+    title_en: Text resources are compressed
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 모든 페이지에 적용됩니다.
+    evidence_required:
+    - http_response
+    reference_ko: gzip·brotli 압축은 전송량을 크게 줄여 LCP 에 직접 영향을 줍니다.
+    points: 0.5
+  - id: seo.html.charset_declared
+    title_ko: 문자 인코딩이 선언됐는가
+    title_en: character encoding is declared
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 모든 HTML 페이지에 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: >-
+      선언이 없으면 브라우저와 크롤러가 인코딩을 추측합니다. 한글 페이지에서 추측이 틀리면 본문 전체가 대체 문자로 바뀐 채 색인되어 어떤 검색어와도 맞지 않게 됩니다. 문서
+      안(meta charset 또는 meta http-equiv)이든 응답 헤더의 Content-Type 이든 한 곳에만 있어도 목적은 달성되므로 통과로 봅니다.
+    points: 0.3
+  - id: seo.content.breadcrumb_present
+    title_ko: 계층이 깊은 사이트에 breadcrumb이 제공되는가
+    title_en: breadcrumbs are provided on deep hierarchies
+    severity: MINOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    applicability_ko: 계층이 얕은 사이트는 해당 없음입니다.
+    evidence_required:
+    - dom_snippet
+    points: 0.25
+  - id: seo.content.pagination_signals
+    title_ko: 페이지네이션 신호가 올바른가
+    title_en: pagination signals are correct
+    severity: MINOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    applicability_ko: 페이지네이션이 없는 사이트는 해당 없음입니다.
+    evidence_required:
+    - dom_snippet
+    points: 0.25
+  - id: seo.perf.modern_image_format
+    title_ko: 이미지가 최신 포맷으로 제공되는가
+    title_en: Images use a modern format
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 이미지가 있는 페이지에만 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: WebP·AVIF 는 같은 화질에서 용량이 작아 LCP 에 유리합니다. 구글은 특정 포맷을 요구하지 않으므로 필수가 아니라 개선 여지로 봅니다.
+    points: 0.15
+  - id: seo.perf.resource_hints
+    title_ko: 주요 리소스에 우선 로딩 힌트가 있는가
+    title_en: Resource hints for critical assets
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 모든 페이지에 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: preload·preconnect·dns-prefetch 는 첫 화면 리소스를 앞당겨 LCP 를 개선합니다.
+    points: 0.15
+  - id: seo.robots.txt_parses_cleanly
+    title_ko: robots.txt에 문법이 깨진 줄이 없는가
+    title_en: robots.txt has no malformed lines
+    severity: MINOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    applicability_ko: robots.txt를 수집한 경우에만 적용됩니다. 파일이 없는 것은 전부 허용한다는 뜻이므로 해당 없음입니다.
+    evidence_required:
+    - robots_txt
+    reference_ko: >-
+      검색엔진은 파싱하지 못한 줄을 조용히 건너뜁니다. 그래서 문법이 어긋난 차단 규칙은 걸리지 않고, 어긋난 Sitemap 선언은 전달되지 않는데도 화면에는 아무 표시가 없습니다.
+      운영자가 믿고 있는 상태와 실제가 달라집니다.
+    points: 0.15
+  - id: seo.crawl.favicon_declared_and_crawlable
+    title_ko: 파비콘이 선언되고 크롤링 가능한가
+    title_en: Favicon declared and crawlable
+    severity: MINOR
+    scope: SITE
+    remediation_owner: DEVELOPER
+    applicability_ko: 대표 페이지에 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: 구글은 검색 결과에 파비콘을 표시하며, Googlebot-Image 가 그 파일을 크롤링할 수 있어야 합니다. robots.txt 로 막혀 있으면
+      선언해도 표시되지 않습니다.
+    points: 0.1
+  - id: seo.html.doctype_standards_mode
+    title_ko: HTML5 doctype 이 선언됐는가
+    title_en: HTML5 doctype declared
+    severity: MINOR
+    scope: URL
+    remediation_owner: DEVELOPER
+    applicability_ko: 모든 HTML 페이지에 적용됩니다.
+    evidence_required:
+    - dom_snippet
+    reference_ko: doctype 이 없으면 브라우저가 쿼크 모드로 렌더링해 레이아웃이 의도와 달라질 수 있습니다. 구글이 요구하는 항목은 아니지만 렌더링 결과가 달라지면
+      판정도 달라집니다.
+    points: 0.05
+- id: search_engine_integration
+  weight: 10
+  contributes_to_score: false
+  name_ko: 검색엔진 연동
+  name_en: Search Engine Integration
+  description_ko: 연동 자격증명이 없으면 unknown으로 기록하고 실패로 판정하지 않습니다.
+  checks:
+  - id: seo.integration.gsc_verified
+    availability: CUSTOMER_GRANTED
+    title_ko: Google Search Console 소유권이 확인됐는가
+    title_en: Google Search Console ownership is verified
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: OPERATIONS
+    engine_scope:
+    - GOOGLE
+    evidence_required:
+    - provider_response
+  - id: seo.integration.naver_swa_registered
+    availability: CUSTOMER_GRANTED
+    title_ko: 네이버 서치어드바이저에 사이트가 등록됐는가
+    title_en: site is registered in Naver Search Advisor
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: OPERATIONS
+    engine_scope:
+    - NAVER
+    evidence_required:
+    - provider_response
+  - id: seo.integration.sitemap_submitted
+    availability: CUSTOMER_GRANTED
+    title_ko: sitemap이 검색엔진에 제출되고 처리됐는가
+    title_en: sitemap is submitted and processed
+    severity: MINOR
+    scope: SITE
+    remediation_owner: OPERATIONS
+    evidence_required:
+    - provider_response
+  - id: seo.integration.indexnow_configured
+    availability: PAID_PROVIDER
+    title_ko: IndexNow 등 변경 통지가 구성됐는가
+    title_en: change notification such as IndexNow is configured
+    severity: INFO
+    scope: SITE
+    remediation_owner: DEVELOPER
+    evidence_required:
+    - http_response
+- id: observability_outcomes
+  weight: 5
+  contributes_to_score: false
+  name_ko: 관측·성과
+  name_en: Observability & Outcomes
+  description_ko: 검색 성과 데이터는 기술 준비도와 분리해 표시하며, 연동이 없으면 unknown입니다.
+  checks:
+  - id: seo.outcome.impressions_available
+    availability: CUSTOMER_GRANTED
+    title_ko: 노출 데이터가 수집되고 있는가
+    title_en: impression data is being collected
+    severity: MINOR
+    scope: SITE
+    remediation_owner: OPERATIONS
+    evidence_required:
+    - provider_response
+  - id: seo.outcome.index_coverage_healthy
+    availability: CUSTOMER_GRANTED
+    title_ko: 색인 커버리지에 급격한 악화가 없는가
+    title_en: index coverage shows no sharp deterioration
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: OPERATIONS
+    evidence_required:
+    - provider_response
+  - id: seo.outcome.data_freshness
+    availability: CUSTOMER_GRANTED
+    title_ko: 성과 데이터의 최신성이 확보됐는가
+    title_en: performance data is sufficiently fresh
+    severity: MINOR
+    scope: SITE
+    remediation_owner: OPERATIONS
+    evidence_required:
+    - provider_response
+- id: offpage_entity
+  weight: 5
+  contributes_to_score: false
+  name_ko: 오프페이지·엔터티 신호
+  name_en: Off-page & Entity Signals
+  checks:
+  - id: seo.offpage.referring_domains_present
+    availability: PAID_PROVIDER
+    title_ko: 참조 도메인이 존재하는가
+    title_en: referring domains exist
+    severity: MINOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - provider_response
+  - id: seo.offpage.brand_name_consistency
+    availability: PAID_PROVIDER
+    title_ko: 브랜드 표기가 외부 채널과 일치하는가
+    title_en: brand naming is consistent across external channels
+    severity: MINOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - external_source
+  - id: seo.offpage.no_spam_signal
+    availability: PAID_PROVIDER
+    title_ko: 명백한 스팸 링크 신호가 없는가
+    title_en: no obvious spam link signals
+    severity: MAJOR
+    scope: SITE
+    remediation_owner: MARKETER
+    evidence_required:
+    - provider_response
+caps:
+- id: sitewide_index_block
+  max_overall_score: 25
+  reason_ko: 홈페이지 또는 사이트 전체가 robots 또는 noindex로 색인 차단되어 있습니다.
+  release_condition_ko: 차단 규칙을 제거하고 재검증하면 상한이 자동 해제됩니다.
+  trigger:
+    any_of:
+    - check_id: seo.robots.txt_allows_url
+      status: FAIL
+      min_coverage: 0.9
+    - check_id: seo.robots.meta_indexable
+      status: FAIL
+      min_coverage: 0.9
+- id: key_template_server_error
+  max_overall_score: 35
+  reason_ko: 주요 템플릿이 5xx이거나 렌더링되지 않습니다.
+  release_condition_ko: 해당 템플릿이 2xx로 응답하고 핵심 콘텐츠가 렌더링되면 해제됩니다.
+  trigger:
+    any_of:
+    - check_id: seo.http.status_ok
+      status: FAIL
+      min_coverage: 0.3
+    - check_id: seo.content.js_render_parity
+      status: FAIL
+      min_coverage: 0.5
+- id: mass_cross_domain_canonical
+  max_overall_score: 40
+  reason_ko: 다수 URL의 canonical이 다른 도메인을 가리킵니다.
+  release_condition_ko: canonical을 자사 도메인으로 정정하고 재검증하면 해제됩니다.
+  trigger:
+    any_of:
+    - check_id: seo.canonical.not_cross_domain
+      status: FAIL
+      min_coverage: 0.5
+- id: sitemap_majority_invalid
+  max_overall_score: 55
+  reason_ko: sitemap에 등록된 URL의 과반이 비정상이거나 색인 불가입니다.
+  release_condition_ko: sitemap을 정리해 유효 URL 비중을 과반 이상으로 올리면 해제됩니다.
+  trigger:
+    any_of:
+    - check_id: seo.sitemap.urls_valid
+      status: FAIL
+      min_coverage: 0.5
+- id: https_or_mobile_failure
+  max_overall_score: 60
+  reason_ko: HTTPS 또는 모바일 접근에 중대한 실패가 있습니다.
+  release_condition_ko: 인증서와 모바일 viewport 문제를 해결하면 해제됩니다.
+  trigger:
+    any_of:
+    - check_id: seo.security.https_valid
+      status: FAIL
+    - check_id: seo.ux.mobile_viewport
+      status: FAIL
+      min_coverage: 0.5
+bands:
+- id: ready
+  min: 90
+  max: 100
+  label_ko: 준비 완료
+  label_en: Ready
+  description_ko: 치명적 장애가 없으며 잔여 개선 중심입니다.
+- id: good
+  min: 75
+  max: 89.999999
+  label_ko: 양호
+  label_en: Good
+  description_ko: 주요 템플릿 일부에 개선이 필요합니다.
+- id: at_risk
+  min: 50
+  max: 74.999999
+  label_ko: 주의
+  label_en: At risk
+  description_ko: 색인·품질에 영향을 줄 수 있는 문제가 넓게 존재합니다.
+- id: poor
+  min: 25
+  max: 49.999999
+  label_ko: 취약
+  label_en: Poor
+  description_ko: 주요 기술 장애 또는 광범위한 오류가 있습니다.
+- id: blocked
+  min: 0
+  max: 24.999999
+  label_ko: 차단
+  label_en: Blocked
+  description_ko: 발견·크롤링·색인에 치명적 차단 가능성이 있습니다.

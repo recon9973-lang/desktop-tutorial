@@ -288,7 +288,8 @@ export type CheckStatus =
   | "WARNING"
   | "FAIL"
   | "NOT_APPLICABLE"
-  | "UNKNOWN";
+  | "UNKNOWN"
+  | "NOT_SAMPLED";
 
 export const CHECK_STATUS_VALUES: readonly CheckStatus[] = [
   "PASS",
@@ -296,6 +297,7 @@ export const CHECK_STATUS_VALUES: readonly CheckStatus[] = [
   "FAIL",
   "NOT_APPLICABLE",
   "UNKNOWN",
+  "NOT_SAMPLED",
 ] as const;
 
 /** Severity coefficients are defined in the scoring specification. */
