@@ -20,7 +20,7 @@ import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Final
+from typing import Any, Final, Protocol
 
 from pydantic_core import to_jsonable_python
 from sqlalchemy import select
@@ -39,12 +39,31 @@ from veo.seo.conditions import (
     conditions_for_scan,
     conditions_from_stored,
 )
-from veo.seo.service import SeoScanResult, load_seo_spec
+from veo.seo.service import load_seo_spec
+
+
+class PersistableScanResult(Protocol):
+    """저장 계층이 결과에서 읽는 전부 — SEO 와 GEO 가 같은 뼈대를 공유한다.
+
+    unknown_checks 는 선택이다(SEO 만 있다): 없으면 측정 불가 사유는 판정의
+    note 로 남는다. summary 류는 report_snapshot 이 통째로 나른다.
+    """
+
+    @property
+    def score(self) -> Any: ...
+
+    @property
+    def issues(self) -> Any: ...
+
+    @property
+    def evidence(self) -> Any: ...
+
 
 #: 이 코드가 만든 결과임을 나중에 알아볼 수 있게 하는 표식. 수집 방식이 바뀌면 올린다.
 COLLECTOR_VERSION: Final = "console-crawl/1"
 
 SEO_KIND: Final = "SEO"
+GEO_KIND: Final = "GEO"
 
 #: 이슈로 올릴 판정. 통과·해당없음·측정불가는 조치 대상이 아니다 — 측정불가를 이슈로
 #: 만들면 "우리가 못 잰 것" 이 "고객이 고칠 것" 으로 둔갑한다.
@@ -129,11 +148,13 @@ def site_exists(db: Session, *, principal: Principal, site_id: uuid.UUID) -> boo
     return True
 
 
-def _scan_for(db: Session, *, principal: Principal, site: Site) -> Scan:
-    """이 사이트의 SEO 진단 묶음. 없으면 만든다 — 이력이 매달리는 축이다."""
+def _scan_for(
+    db: Session, *, principal: Principal, site: Site, kind: str = SEO_KIND
+) -> Scan:
+    """이 사이트의 해당 종류 진단 묶음. 없으면 만든다 — 이력이 매달리는 축이다."""
     statement = (
         tenant_select(Scan, principal)
-        .where(Scan.site_id == site.id, Scan.kind == SEO_KIND, Scan.is_active.is_(True))
+        .where(Scan.site_id == site.id, Scan.kind == kind, Scan.is_active.is_(True))
         .limit(1)
     )
     assert_tenant_scoped(statement, principal.organization_id)
@@ -145,7 +166,7 @@ def _scan_for(db: Session, *, principal: Principal, site: Site) -> Scan:
         organization_id=principal.organization_id,
         project_id=site.project_id,
         site_id=site.id,
-        kind=SEO_KIND,
+        kind=kind,
         scope=ScanScope.SITE.value,
         target_url=site.origin,
         configuration={},
@@ -161,12 +182,13 @@ def save_scan_run(
     *,
     principal: Principal,
     site_id: uuid.UUID,
-    result: SeoScanResult,
+    result: PersistableScanResult,
     context: CollectionContext,
     urls_attempted: int,
     urls_collected: int,
     started_at: datetime | None = None,
     report_snapshot: dict[str, object] | None = None,
+    kind: str = SEO_KIND,
 ) -> SavedScan:
     """한 번의 진단을 남긴다 — 실행·점수·항목별 판정·근거·이슈, 그리고 **측정 조건**까지.
 
@@ -176,7 +198,7 @@ def save_scan_run(
     안 넘기고, 그러면 같은 일이 조용히 반복된다.
     """
     site = _site_for(db, principal=principal, site_id=site_id)
-    scan = _scan_for(db, principal=principal, site=site)
+    scan = _scan_for(db, principal=principal, site=site, kind=kind)
 
     finished = datetime.now(UTC)
     conditions = conditions_for_scan(result, context, collector_version=COLLECTOR_VERSION)
@@ -250,7 +272,7 @@ def save_scan_run(
 
 
 def _save_outcomes(
-    db: Session, *, principal: Principal, run: ScanRun, result: SeoScanResult
+    db: Session, *, principal: Principal, run: ScanRun, result: PersistableScanResult
 ) -> None:
     """항목별 판정. 못 잰 항목은 **이유와 함께** 남긴다."""
     category_of = {
@@ -260,7 +282,10 @@ def _save_outcomes(
         + category.not_applicable_check_ids
         + category.unknown_check_ids
     }
-    unknown_reason_of = {item.check_id: item.reason_ko for item in result.unknown_checks}
+    unknown_reason_of = {
+        item.check_id: item.reason_ko
+        for item in getattr(result, "unknown_checks", ())
+    }
     severity_of = _severity_index()
 
     for outcome in result.score.outcomes:
@@ -314,7 +339,7 @@ def _observed_value_json(value: object) -> dict[str, object]:
 
 
 def _save_evidence(
-    db: Session, *, principal: Principal, run: ScanRun, result: SeoScanResult
+    db: Session, *, principal: Principal, run: ScanRun, result: PersistableScanResult
 ) -> None:
     """판정의 근거. 감사할 수 없는 지적은 소문이다."""
     for record in result.evidence:
@@ -339,7 +364,7 @@ def _save_evidence(
 
 
 def _upsert_issues(
-    db: Session, *, principal: Principal, run: ScanRun, site: Site, result: SeoScanResult
+    db: Session, *, principal: Principal, run: ScanRun, site: Site, result: PersistableScanResult
 ) -> None:
     """같은 검사 항목의 문제는 하나의 이슈로 이어 붙인다."""
     actionable = {

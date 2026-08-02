@@ -27,6 +27,7 @@ from veo.common.security.fetcher import FetchedDocument, FetchHop
 from veo.contracts.enums import ProviderState
 from veo.contracts.envelope import ApiResponse
 from veo.db.session import get_db
+from veo.geo.companion import score_and_save_geo_companion
 from veo.organizations.http import guard
 from veo.scoring import ScoreResult, ScoringSpec
 from veo.scoring.improvements import rank_improvements
@@ -48,6 +49,7 @@ from veo.seo.schemas import (
     CheckCatalogueEntry,
     CheckCataloguePayload,
     EvidenceSummary,
+    GeoCompanionSummary,
     ImprovementSummary,
     IssueSummary,
     OutcomeSummary,
@@ -245,6 +247,30 @@ def run_site_scan(
             site_id=payload.site_id,
             origin=payload.target_url,
             scan_run_id=saved.scan_run_id,
+        )
+        # 같은 크롤로 GEO 도 채점해 별도 실행으로 저장한다 — 페이지를 두 번 가져올
+        # 이유가 없다(콘솔 재설계 ①). 실패해도 SEO 결과는 그대로이고, 실패 사실이
+        # 응답에 실린다.
+        companion = score_and_save_geo_companion(
+            db,
+            principal=principal,
+            site_id=payload.site_id,
+            target_url=payload.target_url,
+            outcome=outcome,
+            locale=payload.locale,
+            urls_attempted=outcome.attempted,
+            urls_collected=len(outcome.documents),
+        )
+        report = report.model_copy(
+            update={
+                "geo": GeoCompanionSummary(
+                    scan_run_id=companion.scan_run_id,
+                    score=companion.score,
+                    band_id=companion.band_id,
+                    spec_version=companion.spec_version,
+                    failure_note_ko=companion.failure_note_ko,
+                )
+            }
         )
 
     return ok(

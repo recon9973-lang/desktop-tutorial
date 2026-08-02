@@ -109,6 +109,17 @@ NOT_SAMPLED·§6 재정규화 통일) ③ 공개 진단 3차 개선(PageSpeed �
 
 **진행 중(별도 세션 2)**: 공유 리포트 살리기(task_e4bcc406), 순환 임포트
 (api/__init__ 미커밋 수정이 그 세션 몫).
+**콘솔 재설계 구현 ① 완료(2026-08-03)**: 동시 채점 — 콘솔 SEO 진단(사이트 저장)이
+같은 크롤로 GEO 도 채점해 **별도 실행**(Scan.kind=GEO)으로 저장한다
+(veo/geo/companion.py, 재크롤·추가 PageSpeed 비용 없음). 응답 ScanPayload.geo 에
+요약(scan_run_id·score·band·spec_version, 실패 시 failure_note_ko — "재려다 실패"
+와 "잰 적 없음" 구분). 저장 계층은 kind 매개변수로 일반화(PersistableScanResult
+프로토콜), 하락 경보의 '직전' 질의에 spec_id 필터 추가 — GEO 행이 끼면 버전
+불일치로 경보가 영원히 침묵하던 함정을 시험과 함께 막음. GEO 콘솔 단독 진단이
+저장되지 않던 상태도 이로써 사실상 해소(동반 저장 경로가 이력을 만든다).
+다음 증분: ② 우측 레일+SEO|GEO 전환기(웹 — 저장된 두 실행을 읽는 화면),
+③ 작업 큐, ④ 거래처 레일·이슈 배선.
+
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb
 **사용자 액션 1**: Railway 에 VEO_ALERT_WEBHOOK_URL(경보 활성화).

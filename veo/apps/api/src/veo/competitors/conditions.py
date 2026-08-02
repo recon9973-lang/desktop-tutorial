@@ -33,13 +33,13 @@ arguments become derivations like the rest.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, Protocol
 
 from veo.collect.contract import CollectionContext
 from veo.compare import MeasurementConditions
 from veo.contracts.enums import ProviderState
 from veo.geo.service import GeoReadinessReport
 from veo.scoring import ScoreResult
-from veo.seo.service import SeoScanResult
 
 #: Fields VEO cannot yet derive and therefore refuses to guess.
 DECLARED_FIELDS = ("collector_version", "device", "renderer")
@@ -95,8 +95,15 @@ def conditions_from_score(
     )
 
 
+class HasScore(Protocol):
+    """이 모듈이 결과에서 읽는 전부 — score 하나. SEO 와 GEO 가 같은 뼈대다."""
+
+    @property
+    def score(self) -> Any: ...
+
+
 def conditions_from_seo_scan(
-    result: SeoScanResult,
+    result: HasScore,
     context: CollectionContext,
     *,
     collector_version: str,

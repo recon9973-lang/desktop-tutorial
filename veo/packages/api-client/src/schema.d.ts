@@ -3721,6 +3721,25 @@ export interface components {
             title_ko: string;
         };
         /**
+         * GeoCompanionSummary
+         * @description 같은 크롤로 함께 채점된 GEO 의 요약 — 전환기가 읽는 최소한.
+         *
+         *     ``scan_run_id`` 가 None 이면 동반 채점이 실패한 것이고 ``failure_note_ko`` 가
+         *     그 사실을 말한다. 점수는 SEO 와 합치지 않는다 — 눈금이 다른 두 답이다.
+         */
+        GeoCompanionSummary: {
+            /** Band Id */
+            band_id?: string | null;
+            /** Failure Note Ko */
+            failure_note_ko?: string | null;
+            /** Scan Run Id */
+            scan_run_id?: string | null;
+            /** Score */
+            score?: number | null;
+            /** Spec Version */
+            spec_version?: string | null;
+        };
+        /**
          * GeoDocumentInput
          * @description One already-fetched document. This endpoint never fetches anything itself.
          */
@@ -6540,6 +6559,7 @@ export interface components {
         ScanPayload: {
             /** Evidence */
             evidence: components["schemas"]["EvidenceSummary"][];
+            geo?: components["schemas"]["GeoCompanionSummary"] | null;
             /** Improvements */
             improvements?: components["schemas"]["ImprovementSummary"][];
             /** Issues */

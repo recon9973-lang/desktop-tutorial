@@ -82,6 +82,10 @@ def maybe_alert_score_drop(
                 Scan.site_id == site_id,
                 ScoreResult.status == "SCORED",
                 ScoreResult.scan_run_id != scan_run_id,
+                # 같은 명세(SEO 는 SEO 끼리)만. 동반 GEO 실행이 생기면서(companion)
+                # 같은 사이트에 두 눈금의 점수가 쌓인다 — 이 필터가 없으면 '직전' 이
+                # GEO 행이 되고, 버전 불일치로 경보가 영원히 침묵한다.
+                ScoreResult.spec_id == current.spec_id,
             )
             .order_by(ScanRun.started_at.desc())
             .limit(1)

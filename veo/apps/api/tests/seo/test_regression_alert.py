@@ -131,6 +131,51 @@ class TestTheWiring:
         )
         assert len(sent) == 1 and "clinic.example" in sent[0]
 
+    def test_a_companion_geo_run_never_becomes_the_previous(
+        self, db_session, principal, site, scan_result, scan_context, monkeypatch
+    ):
+        """같은 사이트에 GEO 실행이 끼어도 SEO 는 SEO 끼리만 비교한다 — 이 필터가
+        없으면 '직전' 이 GEO 행이 되고 버전 불일치로 경보가 영원히 침묵한다."""
+        from tests.seo.test_geo_companion import _crawl_outcome
+
+        import veo.seo.regression as regression
+        from veo.geo.companion import score_and_save_geo_companion
+        from veo.seo.history import save_scan_run
+        from veo.seo.regression import maybe_alert_score_drop
+
+        sent: list[str] = []
+        monkeypatch.setattr(
+            regression, "send_alert", lambda **kwargs: sent.append(kwargs["title_ko"])
+        )
+        monkeypatch.setattr(
+            regression,
+            "get_settings",
+            lambda: SimpleNamespace(alert_score_drop_threshold=0.0),
+        )
+
+        save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+        outcome = _crawl_outcome()
+        score_and_save_geo_companion(
+            db_session, principal=principal, site_id=site.id,
+            target_url=site.origin, outcome=outcome, locale="ko-KR",
+            urls_attempted=1, urls_collected=1,
+        )
+        second = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+        maybe_alert_score_drop(
+            db_session, principal=principal, site_id=site.id,
+            origin="https://clinic.example", scan_run_id=second.scan_run_id,
+        )
+        # GEO 행이 사이 끼었지만 SEO 직전(첫 실행)과 비교되어 경보가 나간다.
+        assert len(sent) == 1
+
     def test_a_broken_query_never_breaks_the_save(
         self, db_session, principal, site, monkeypatch
     ):

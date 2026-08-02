@@ -5638,6 +5638,70 @@
         "title": "GeoCheckPayload",
         "type": "object"
       },
+      "GeoCompanionSummary": {
+        "additionalProperties": false,
+        "description": "같은 크롤로 함께 채점된 GEO 의 요약 — 전환기가 읽는 최소한.\n\n``scan_run_id`` 가 None 이면 동반 채점이 실패한 것이고 ``failure_note_ko`` 가\n그 사실을 말한다. 점수는 SEO 와 합치지 않는다 — 눈금이 다른 두 답이다.",
+        "properties": {
+          "band_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Band Id"
+          },
+          "failure_note_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Note Ko"
+          },
+          "scan_run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Run Id"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "spec_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spec Version"
+          }
+        },
+        "title": "GeoCompanionSummary",
+        "type": "object"
+      },
       "GeoDocumentInput": {
         "additionalProperties": false,
         "description": "One already-fetched document. This endpoint never fetches anything itself.",
@@ -12494,6 +12558,16 @@
             },
             "title": "Evidence",
             "type": "array"
+          },
+          "geo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GeoCompanionSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "improvements": {
             "items": {

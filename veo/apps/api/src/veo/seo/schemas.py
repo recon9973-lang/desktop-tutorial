@@ -343,6 +343,24 @@ class ScanPayload(BaseModel):
     improvements: list[ImprovementSummary] = Field(default_factory=list)
     evidence: list[EvidenceSummary]
     notes_ko: list[str]
+    #: 같은 크롤로 함께 채점된 GEO 요약(사이트 저장 진단에서만). 합산 금지.
+    geo: GeoCompanionSummary | None = None
+
+
+class GeoCompanionSummary(BaseModel):
+    """같은 크롤로 함께 채점된 GEO 의 요약 — 전환기가 읽는 최소한.
+
+    ``scan_run_id`` 가 None 이면 동반 채점이 실패한 것이고 ``failure_note_ko`` 가
+    그 사실을 말한다. 점수는 SEO 와 합치지 않는다 — 눈금이 다른 두 답이다.
+    """
+
+    model_config = _FROZEN
+
+    scan_run_id: uuid.UUID | None = None
+    score: float | None = None
+    band_id: str | None = None
+    spec_version: str | None = None
+    failure_note_ko: str | None = None
 
 
 class PageStageSummary(BaseModel):
@@ -462,6 +480,7 @@ __all__ = [
     "CheckCatalogueEntry",
     "CheckCataloguePayload",
     "EvidenceSummary",
+    "GeoCompanionSummary",
     "HopPayload",
     "IssueSummary",
     "OutcomeSummary",

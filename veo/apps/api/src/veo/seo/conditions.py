@@ -28,8 +28,7 @@ from typing import Any
 from veo.collect.contract import CollectionContext
 from veo.common.security.fetcher import DEFAULT_USER_AGENT
 from veo.compare.conditions import MeasurementConditions
-from veo.competitors.conditions import conditions_from_seo_scan
-from veo.seo.service import SeoScanResult
+from veo.competitors.conditions import HasScore, conditions_from_seo_scan
 
 #: How VEO presents itself to the site being measured.
 #:
@@ -57,7 +56,7 @@ def renderer_for(context: CollectionContext) -> str:
 
 
 def conditions_for_scan(
-    result: SeoScanResult,
+    result: HasScore,
     context: CollectionContext,
     *,
     collector_version: str,
