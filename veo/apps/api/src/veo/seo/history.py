@@ -23,6 +23,7 @@ from datetime import UTC, datetime
 from typing import Final
 
 from sqlalchemy import select
+from pydantic_core import to_jsonable_python
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
@@ -282,7 +283,7 @@ def _save_outcomes(
                     if outcome.status is CheckStatus.UNKNOWN
                     else None
                 ),
-                observed_value={},
+                observed_value=_observed_value_json(outcome.observed_value),
                 evidence_ids=list(outcome.evidence_ids),
                 # 어느 페이지였는지 — 페이지별 점수 재집계의 기반. 빈 목록도 그대로
                 # 남긴다: "판정에 페이지가 없었다"(SITE 검사 등)와 이 칸이 생기기
@@ -291,6 +292,25 @@ def _save_outcomes(
                 evaluated_urls=list(outcome.evaluated_urls),
             )
         )
+
+
+def _observed_value_json(value: object) -> dict[str, object]:
+    """수집기의 실측값을 저장 가능한 JSON 객체로.
+
+    2026-08-03 전까지 이 자리에는 ``{}`` 상수가 있었다 — 수집기 139곳이 실측값
+    (LCP ms·중복 제목 수·발견 개수 등)을 만들어 넘기는데 저장이 전부 버렸고,
+    회차 간 "값이 어떻게 변했나" 비교가 원리적으로 불가능했다. 빈 객체는 이제
+    "수집기가 값을 남기지 않았다" 는 사실만 뜻한다.
+
+    datetime·튜플 같은 비 JSON 값은 pydantic 인코더로 옮기고, 그래도 안 되는
+    것은 문자열로 남긴다 — 값이 이상하다고 저장(=진단)이 죽으면 안 된다.
+    """
+    if value is None:
+        return {}
+    encoded = to_jsonable_python(value, fallback=str)
+    if isinstance(encoded, dict):
+        return encoded
+    return {"value": encoded}
 
 
 def _save_evidence(

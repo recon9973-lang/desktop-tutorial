@@ -138,6 +138,50 @@ class TestSavingOneRun:
             assert rows[check_id].evaluated_urls == list(source[check_id].evaluated_urls)
             assert rows[check_id].affected_urls == list(source[check_id].affected_urls)
 
+    def test_what_a_check_actually_measured_survives_into_storage(
+        self,
+        db_session,
+        principal,
+        site,
+        scan_result,
+        scan_context,
+    ):
+        """실측값이 남아야 회차 간 "값이 어떻게 변했나" 를 비교할 수 있다.
+
+        수집기 139곳이 observed_value 를 만들어 넘기는데 저장이 ``{}`` 상수로
+        전부 버리고 있었다 — "저장할 때 흘림" 의 여섯 번째 사례(2026-08-03).
+        """
+        from pydantic_core import to_jsonable_python
+
+        from veo.db.models.analysis import CheckResult
+        from veo.seo.history import save_scan_run
+
+        source = {o.check_id: o for o in scan_result.score.outcomes}
+        with_values = [c for c, o in source.items() if o.observed_value is not None]
+        assert with_values, "픽스처에 실측값을 실은 판정이 하나도 없다 — 배선이 끊겼다"
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+        )
+
+        rows = {
+            row.check_id: row
+            for row in db_session.query(CheckResult)
+            .filter_by(scan_run_id=saved.scan_run_id)
+            .all()
+        }
+        for check_id in with_values:
+            stored = rows[check_id].observed_value
+            original = to_jsonable_python(source[check_id].observed_value, fallback=str)
+            expected = original if isinstance(original, dict) else {"value": original}
+            assert stored == expected, check_id
+        # 값을 남기지 않은 판정은 빈 객체 그대로 — 지어내지 않는다.
+        without = next((c for c, o in source.items() if o.observed_value is None), None)
+        if without is not None:
+            assert rows[without].observed_value == {}
+
     def test_the_reason_a_check_was_unmeasurable_survives(
         self,
         db_session,
