@@ -81,6 +81,16 @@
   font-size: var(--veo-font-size-100); font-weight: var(--veo-weight-bold);
   background: var(--veo-color-surface); cursor: pointer;
 }
+.share { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; }
+.shareButton {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--veo-color-accent); color: var(--veo-color-accent);
+  border-radius: var(--veo-radius-md); padding: 6px 14px;
+  font-size: var(--veo-font-size-100); font-weight: var(--veo-weight-bold);
+  background: var(--veo-color-surface); cursor: pointer;
+}
+.shareUrl { font-size: 11px; word-break: break-all; max-width: 260px; user-select: all; }
+.shareNote { font-size: 11px; color: var(--veo-color-text-muted); max-width: 260px; line-height: 1.5; }
 .twincol { display: flex; flex-direction: row; gap: 9px; }
 .twincol > * { flex: 1; }
 @media (max-width: 960px) { .twincol { flex-direction: column; } }
@@ -283,7 +293,7 @@
 
 /* ---------- 인쇄 (PDF 저장) ---------- */
 @media print {
-  .hero, .filters, .cta, .pdfButton, .moreButton, .copyButton, .history { display: none !important; }
+  .hero, .filters, .cta, .pdfButton, .share, .moreButton, .copyButton, .history { display: none !important; }
   .scoreband, .checkSection, .preview { break-inside: avoid; box-shadow: none; }
   .code { white-space: pre-wrap; }
 }

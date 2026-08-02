@@ -236,6 +236,28 @@ describe('미리보기', () => {
   });
 });
 
+describe('결과 공유', () => {
+  it('공유 버튼이 /results/{token} 주소를 복사하고, 만료일과 조기 만료 한계를 말한다', async () => {
+    mockScan();
+    const user = await runScanThroughForm();
+
+    await user.click(screen.getByRole('button', { name: /결과 공유 링크 복사/ }));
+
+    expect(await navigator.clipboard.readText()).toBe('https://console.veo.test/results/t');
+    expect(screen.getByText('복사됨 ✓')).toBeInTheDocument();
+    // 만료일은 서버 값 그대로(표기 시간대만 로컬), 저장소가 메모리라는 한계도 숨기지 않는다.
+    expect(screen.getByText(/2026\.8\.\d+까지 열람 가능/)).toBeInTheDocument();
+    expect(screen.getByText(/더 일찍 만료될 수 있습니다/)).toBeInTheDocument();
+  });
+
+  it('토큰이 없으면 공유 버튼을 그리지 않는다 — 죽은 링크를 만들지 않는다', async () => {
+    mockScan({ ...RESULT, resultToken: '', resultExpiresAt: '' });
+    await runScanThroughForm();
+
+    expect(screen.queryByRole('button', { name: /공유 링크/ })).not.toBeInTheDocument();
+  });
+});
+
 describe('측정 기록', () => {
   it('완료된 진단이 자동으로 기록되고, 같은 주소를 다시 재면 차이가 나온다', async () => {
     mockScan();

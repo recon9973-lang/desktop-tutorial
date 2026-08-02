@@ -24,6 +24,8 @@ export type {
   ScanResult,
   ScanFailureReason,
   ScanOutcome,
+  SharedResultFailureReason,
+  SharedResultOutcome,
 } from '@/lib/scan-api-types';
 import type {
   ScanVerdict,
@@ -37,6 +39,7 @@ import type {
   ScanResult,
   ScanFailureReason,
   ScanOutcome,
+  SharedResultOutcome,
 } from '@/lib/scan-api-types';
 
 const ENDPOINTS: Record<ScanKind, string> = {
@@ -300,4 +303,57 @@ export async function runScan(
 
   const result = toResult(data, kind);
   return result === null ? failed('SERVER_ERROR') : { ok: true, result };
+}
+
+/** 저장된 결과 읽기는 수집이 없다 — 진단(60초)과 달리 짧게 기다린다. */
+const SHARED_RESULT_TIMEOUT_MS = 10_000;
+
+/**
+ * 공유 토큰으로 저장된 진단 결과를 다시 읽는다.
+ *
+ * 엔진은 "없는 토큰"과 "만료된 토큰"을 같은 404 로 돌려준다 — 어떤 토큰이 실재했는지
+ * 확인해 주지 않기 위해서다. 화면도 그 구분을 만들지 않고 NOT_FOUND 하나로 받는다.
+ * 종류(SEO/GEO)는 저장된 응답의 키로 판별한다: GEO 만 `readiness` 를 갖는다.
+ */
+export async function readSharedResult(
+  token: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<SharedResultOutcome> {
+  const baseUrl = resolveAuthApiBaseUrl();
+  if (baseUrl === null) {
+    return { ok: false, reason: 'NOT_CONFIGURED' };
+  }
+
+  let response: Response;
+  try {
+    response = await fetchImpl(
+      `${baseUrl}/public/v1/results/${encodeURIComponent(token)}`,
+      { cache: 'no-store', signal: AbortSignal.timeout(SHARED_RESULT_TIMEOUT_MS) },
+    );
+  } catch {
+    return { ok: false, reason: 'UNAVAILABLE' };
+  }
+
+  if (response.status === 404) {
+    return { ok: false, reason: 'NOT_FOUND' };
+  }
+  if (!response.ok) {
+    return { ok: false, reason: 'SERVER_ERROR' };
+  }
+
+  let envelope: unknown;
+  try {
+    envelope = await response.json();
+  } catch {
+    return { ok: false, reason: 'SERVER_ERROR' };
+  }
+
+  const body = asRecord(envelope);
+  const data = body === null ? null : asRecord(body['data']);
+  if (data === null) {
+    return { ok: false, reason: 'SERVER_ERROR' };
+  }
+
+  const result = toResult(data, asRecord(data['readiness']) !== null ? 'GEO' : 'SEO');
+  return result === null ? { ok: false, reason: 'SERVER_ERROR' } : { ok: true, result };
 }

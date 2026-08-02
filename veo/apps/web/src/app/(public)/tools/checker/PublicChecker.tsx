@@ -48,6 +48,15 @@ function shortDate(iso: string): string {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
+/** 만료일은 연도까지 그대로 — 링크는 브라우저 밖으로 나가므로 "8/10"만으로는 모자란다. */
+function expiryDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
+}
+
 const VERDICT_ICON: Record<ScanVerdict, { readonly mark: string; readonly className: string; readonly label: string }> = {
   FAIL: { mark: '✕', className: styles.iconFail ?? '', label: '실패' },
   WARNING: { mark: '–', className: styles.iconWarn ?? '', label: '주의' },
@@ -263,7 +272,46 @@ export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
   );
 }
 
-function Report({
+/**
+ * 결과 공유 — 이 진단을 그대로 다시 보여주는 `/results/{token}` 주소를 복사한다.
+ *
+ * 만료일은 서버가 발급한 값 그대로다. 그 아래 "더 일찍 만료될 수 있다"는 문구는
+ * 결과 저장소가 아직 서버 메모리라는 실제 한계다(재배포·재시작이면 링크가 죽는다).
+ * 지속 저장소가 붙기 전까지 이 문장을 지우면 화면이 거짓말을 하게 된다.
+ */
+function ShareLink({ token, expiresAt }: { readonly token: string; readonly expiresAt: string }) {
+  const [copied, setCopied] = useState(false);
+  const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
+  const expiry = expiryDate(expiresAt);
+  return (
+    <div className={styles.share}>
+      <button
+        type="button"
+        className={styles.shareButton}
+        onClick={async () => {
+          const shareUrl = `${window.location.origin}/results/${token}`;
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1600);
+          } catch {
+            // 클립보드 권한이 없으면 주소를 화면에 꺼내 준다 — 직접 긁을 수 있게.
+            setFallbackUrl(shareUrl);
+          }
+        }}
+      >
+        {copied ? '복사됨 ✓' : '🔗 결과 공유 링크 복사'}
+      </button>
+      {fallbackUrl ? <span className={styles.shareUrl}>{fallbackUrl}</span> : null}
+      <span className={styles.shareNote}>
+        {expiry !== '' ? `${expiry}까지 열람 가능` : '일정 기간 뒤 만료됩니다'} · 서버 재시작
+        시 더 일찍 만료될 수 있습니다
+      </span>
+    </div>
+  );
+}
+
+export function Report({
   result,
   kind,
   filter,
@@ -326,6 +374,9 @@ function Report({
             <button type="button" className={styles.pdfButton} onClick={() => window.print()}>
               ⬇ PDF 보고서
             </button>
+            {result.resultToken !== '' ? (
+              <ShareLink token={result.resultToken} expiresAt={result.resultExpiresAt} />
+            ) : null}
           </div>
           {result.exposure?.isBlocked ? (
             <p className={styles.exposure} role="alert">

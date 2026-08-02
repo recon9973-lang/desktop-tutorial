@@ -104,6 +104,17 @@ export interface ScanResult {
   readonly resultExpiresAt: string;
 }
 
+/** 공유 링크로 저장된 결과를 다시 읽을 때의 실패 사유. */
+export type SharedResultFailureReason =
+  | 'NOT_FOUND'
+  | 'UNAVAILABLE'
+  | 'NOT_CONFIGURED'
+  | 'SERVER_ERROR';
+
+export type SharedResultOutcome =
+  | { readonly ok: true; readonly result: ScanResult }
+  | { readonly ok: false; readonly reason: SharedResultFailureReason };
+
 export type ScanFailureReason =
   | 'INVALID_URL'
   | 'RATE_LIMITED'
