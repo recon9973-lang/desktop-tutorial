@@ -237,6 +237,10 @@ def test_the_fetcher_is_the_only_way_out() -> None:
         "fetcher.py",  # the guarded fetcher itself
         "url_guard.py",
         "limits.py",
+        # 알림 웹훅(veo/notify). SSRF 가 막는 것은 **고객이 고른 URL** 인데, 이
+        # URL 은 요청이 아니라 운영자 설정(VEO_ALERT_WEBHOOK_URL)에서만 온다.
+        # https 전용·요청 데이터 미사용은 tests/notify 가 따로 지킨다.
+        "webhook.py",
     }
     offenders: list[str] = []
     for path in PYTHON_SOURCES:

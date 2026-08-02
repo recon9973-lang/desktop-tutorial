@@ -173,6 +173,10 @@ class Settings(BaseSettings):
 
     api_prefix: str = "/api"
     database_url: str = "postgresql+psycopg://localhost:5432/veo"
+
+    #: 운영 알림 웹훅(슬랙 호환, https 전용). 비어 있으면 알림은 비활성이고
+    #: 그 사실이 결과(DISABLED)로 드러난다 — 보낸 척하지 않는다. veo/notify 참조.
+    alert_webhook_url: SecretStr | None = None
     redis_url: str = "redis://localhost:6379/0"
 
     # Secrets. Absent in local/test; required at startup in staging and production.

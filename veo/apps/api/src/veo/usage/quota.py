@@ -36,6 +36,7 @@ from veo.db.models.analysis import APIUsageEvent
 __all__ = [
     "CALLS_PER_SCAN",
     "PAGESPEED_DAILY_QUOTA",
+    "WARN_RATIO",
     "QuotaUsage",
     "pagespeed_quota",
 ]
@@ -50,7 +51,9 @@ PAGESPEED_DAILY_QUOTA: Final = 25_000
 CALLS_PER_SCAN: Final = 5
 
 #: 이 비율을 넘으면 경고한다. 넘고 나서 알면 그날은 이미 늦었다.
-_WARN_AT: Final = 0.8
+#: 화면(is_warning)과 경보(usage/alerts.py)가 **같은 값**을 읽는다 — 화면은 80% 에
+#: 노랗게 되는데 알림은 다른 비율에서 울리면 둘 중 하나는 거짓말이 된다.
+WARN_RATIO: Final = 0.8
 
 _PROVIDER: Final = "GOOGLE_PAGESPEED"
 
@@ -78,7 +81,7 @@ class QuotaUsage:
 
     @property
     def is_warning(self) -> bool:
-        return self.used_ratio >= _WARN_AT
+        return self.used_ratio >= WARN_RATIO
 
     @property
     def is_exhausted(self) -> bool:

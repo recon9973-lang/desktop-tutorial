@@ -100,4 +100,10 @@ def record_pagespeed_calls(
         db.rollback()
         return 0
 
+    # 경보는 기록 지점에서만 판단한다 — 한도는 호출이 있을 때만 넘을 수 있으므로,
+    # 여기 하나면 콘솔·공개 어느 경로든 덮인다. 실패해도 기록은 유지된다.
+    from veo.usage.alerts import maybe_alert_pagespeed_quota
+
+    maybe_alert_pagespeed_quota(db, recorded=len(rows))
+
     return len(rows)
