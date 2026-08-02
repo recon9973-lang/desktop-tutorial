@@ -117,8 +117,28 @@ NOT_SAMPLED·§6 재정규화 통일) ③ 공개 진단 3차 개선(PageSpeed �
 프로토콜), 하락 경보의 '직전' 질의에 spec_id 필터 추가 — GEO 행이 끼면 버전
 불일치로 경보가 영원히 침묵하던 함정을 시험과 함께 막음. GEO 콘솔 단독 진단이
 저장되지 않던 상태도 이로써 사실상 해소(동반 저장 경로가 이력을 만든다).
-다음 증분: ② 우측 레일+SEO|GEO 전환기(웹 — 저장된 두 실행을 읽는 화면),
-③ 작업 큐, ④ 거래처 레일·이슈 배선.
+**P0 수리 3건 완료(2026-08-03, 전수조사 기획서 docs/PLAN-2026-08-total-review.md)**:
+E1 — 소비자 없는 `POST /seo/scan`(요청 본문 provider_states 신뢰) 폐쇄, 직렬화
+성질 시험은 서비스 경계(tests/seo/test_scan_payload.py)로 이동, 닫힌 문 시험이 지킴.
+E3 — 공개 네이버 키워드 도구 실배선(/tools/naver-keyword, lib/public-keywords)·
+**띄어쓰기 키워드 값 유실 수리**(public/service.py — 네이버가 공백 없이 답한 행을
+공백 있는 표준형과 대조해 "강남 피부과"류가 전부 '값 없음'이 되던 결함, hint 매칭
+으로 수리+시험, 콘솔 조회의 교훈을 공개 경로에 적용). E7 — 발행 리포트 버전
+목록·HTML 열람(inline+sandbox)·CSV/XLSX 내보내기 배선(/console/reports/[id],
+/api/report-export 프록시).
+
+**콘솔 재설계 구현 ② 완료(2026-08-03)**: SEO|GEO 전환기 + 우측 요약 레일.
+- 저장 순서 재배치: 동반 GEO 채점을 **SEO 저장보다 먼저** 해서 SEO 스냅샷에 geo
+  블록(동반 실행 식별자 포함)이 실린다 — 지난 실행을 다시 열어도 전환기가 짝을
+  찾는다(스냅샷 짝 시험 있음). 하락 경보는 여전히 저장 후 비교.
+- 저장된 GEO 를 여는 문: `GET /geo/readiness/scans/{id}`(kind=GEO 만, SEO id 는
+  404). read_scan_report 가 kind 를 알게 됨 — SEO 문(`GET /seo/scans/{id}`)도
+  kind=SEO 로 잠가 축이 섞이지 않는다(축 분리 시험).
+- 웹: /console/seo 에 axis 매개변수(SEO|GEO 전환기, GEO 점수 칩), GEO 축은
+  기존 ReadinessReport 재사용, 우측 요약 레일(두 눈금 나란히·합산 금지, 직전
+  대비 — 같은 명세 버전끼리만 뺄셈, 이번 측정 정보, 바로가기). 960px 미만에서
+  레일이 본문 아래로.
+다음 증분: ③ 작업 큐(+N점 정렬·담당 칩, 시안 v2.2), ④ 거래처 레일·이슈 배선.
 
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb

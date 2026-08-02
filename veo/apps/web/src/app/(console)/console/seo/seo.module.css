@@ -159,3 +159,130 @@
 .scanProgressHole span { font-size: 10.5px; color: var(--veo-color-text-muted); margin-top: 3px; }
 .scanProgressPhase { font-size: 12.5px; font-weight: var(--veo-weight-semibold); margin: 10px 0 2px; }
 .scanProgressEta { font-size: 11.5px; color: var(--veo-color-text-muted); margin: 0; line-height: 1.55; }
+
+/* ---------- 재설계 ②: 본문 + 우측 요약 레일 ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  gap: var(--veo-space-5);
+  align-items: start;
+}
+
+.main { min-width: 0; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  /* 좁은 화면에서는 레일이 본문 아래로 — 본문(판정)이 먼저다. */
+  .rail { order: 2; }
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+  position: sticky;
+  top: var(--veo-space-4);
+}
+
+.railBlock {
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+  padding: var(--veo-space-3) var(--veo-space-4);
+}
+
+.railTitle {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  letter-spacing: 0.06em;
+  color: var(--veo-color-text-muted);
+}
+
+.railScores {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+}
+
+.railScore,
+.railScoreOn {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--veo-space-1) var(--veo-space-2);
+  border-radius: var(--veo-radius-sm);
+}
+
+.railScoreOn { background: var(--veo-color-accent-subtle); }
+
+.railScore dt,
+.railScoreOn dt { font-size: var(--veo-font-size-100); }
+
+.railScore dd,
+.railScoreOn dd {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-bold);
+}
+
+.railNote {
+  margin: var(--veo-space-2) 0 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  line-height: 1.6;
+}
+
+.railDelta {
+  margin: 0;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.railFacts,
+.railLinks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+}
+
+/* ---------- SEO|GEO 전환기 ---------- */
+
+.axes {
+  display: inline-flex;
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  overflow: hidden;
+}
+
+.axisTab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--veo-space-1);
+  padding: var(--veo-space-1) var(--veo-space-4);
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-semibold);
+  text-decoration: none;
+  color: var(--veo-color-text-muted);
+  background: var(--veo-color-surface);
+}
+
+.axisOn {
+  background: var(--veo-color-accent);
+  color: var(--veo-color-text-on-accent);
+}
+
+.axisScore {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--veo-font-size-100);
+}

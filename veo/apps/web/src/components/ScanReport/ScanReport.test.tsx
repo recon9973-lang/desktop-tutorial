@@ -82,6 +82,7 @@ function result(overrides: Partial<ConsoleScanResult> = {}): ConsoleScanResult {
     unknownChecks: [],
     notes: [],
     generatedAt: '2026-07-30T09:00:00+09:00',
+    geo: null,
     ...overrides,
   };
 }

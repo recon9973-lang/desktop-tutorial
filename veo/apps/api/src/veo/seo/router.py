@@ -31,6 +31,7 @@ from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
 from veo.seo.fix_examples import code_example_for
 from veo.seo.history import (
+    SEO_KIND,
     read_scan_history,
     read_scan_report,
     save_scan_run,
@@ -192,6 +193,32 @@ def run_site_scan(
         )
 
     if payload.site_id is not None:
+        # 같은 크롤로 GEO 도 채점해 별도 실행으로 저장한다 — 페이지를 두 번 가져올
+        # 이유가 없다(콘솔 재설계 ①). 실패해도 SEO 결과는 그대로이고, 실패 사실이
+        # 응답에 실린다. **SEO 저장보다 먼저** 하는 이유: 아래 스냅샷에 동반 실행의
+        # 식별자가 실려야, 지난 SEO 결과를 다시 열 때 화면(SEO|GEO 전환기)이 짝이
+        # 되는 GEO 실행을 찾을 수 있다(재설계 ②).
+        companion = score_and_save_geo_companion(
+            db,
+            principal=principal,
+            site_id=payload.site_id,
+            target_url=payload.target_url,
+            outcome=outcome,
+            locale=payload.locale,
+            urls_attempted=outcome.attempted,
+            urls_collected=len(outcome.documents),
+        )
+        report = report.model_copy(
+            update={
+                "geo": GeoCompanionSummary(
+                    scan_run_id=companion.scan_run_id,
+                    score=companion.score,
+                    band_id=companion.band_id,
+                    spec_version=companion.spec_version,
+                    failure_note_ko=companion.failure_note_ko,
+                )
+            }
+        )
         # 보여준 것을 그대로 남긴다. 조치 문구는 수집기가 발견한 값을 넣어 만들어 내므로
         # 명세로부터 되살릴 수 없다 — 스냅샷이 없으면 다시 열었을 때 문장이 달라진다.
         saved = save_scan_run(
@@ -214,30 +241,6 @@ def run_site_scan(
             site_id=payload.site_id,
             origin=payload.target_url,
             scan_run_id=saved.scan_run_id,
-        )
-        # 같은 크롤로 GEO 도 채점해 별도 실행으로 저장한다 — 페이지를 두 번 가져올
-        # 이유가 없다(콘솔 재설계 ①). 실패해도 SEO 결과는 그대로이고, 실패 사실이
-        # 응답에 실린다.
-        companion = score_and_save_geo_companion(
-            db,
-            principal=principal,
-            site_id=payload.site_id,
-            target_url=payload.target_url,
-            outcome=outcome,
-            locale=payload.locale,
-            urls_attempted=outcome.attempted,
-            urls_collected=len(outcome.documents),
-        )
-        report = report.model_copy(
-            update={
-                "geo": GeoCompanionSummary(
-                    scan_run_id=companion.scan_run_id,
-                    score=companion.score,
-                    band_id=companion.band_id,
-                    spec_version=companion.spec_version,
-                    failure_note_ko=companion.failure_note_ko,
-                )
-            }
         )
 
     return ok(
@@ -311,7 +314,11 @@ def read_saved_scan(
     request_id: RequestId,
     db: Annotated[Session, Depends(get_db)],
 ) -> ApiResponse[ScanPayload]:
-    report = read_scan_report(db, principal=principal, scan_run_id=scan_run_id)
+    # 축을 말한다 — 동반 저장(companion)으로 같은 조직에 GEO 실행이 쌓이기 시작했고,
+    # 이 문은 SEO 모양의 스냅샷만 돌려줄 수 있다. GEO 는 /geo/readiness/scans/{id} 로.
+    report = read_scan_report(
+        db, principal=principal, scan_run_id=scan_run_id, kind=SEO_KIND
+    )
     if report is None:
         raise HTTPException(status_code=404, detail="scan run not found")
     return ok(ScanPayload.model_validate(report), request_id)

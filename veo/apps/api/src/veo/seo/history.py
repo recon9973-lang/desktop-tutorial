@@ -510,15 +510,24 @@ def _comparability(
 
 
 def read_scan_report(
-    db: Session, *, principal: Principal, scan_run_id: uuid.UUID
+    db: Session, *, principal: Principal, scan_run_id: uuid.UUID, kind: str | None = None
 ) -> dict[str, object] | None:
     """그때 보여준 보고서를 그대로 돌려준다. 없거나 남의 것이면 ``None``.
 
     다시 재지 않고 지난 결과를 여는 길이다. 같은 도메인을 하루에 몇 번씩 다시 재는 것은
     대상 사이트에도 우리 비용에도 부담이고, 변경을 확인하려는 것이 아니면 다시 잴 이유가
     없다.
+
+    ``kind`` 를 주면 그 축의 실행만 돌려준다. 스냅샷의 모양은 축마다 다르다 — SEO 문으로
+    GEO 스냅샷을 열면 응답 모델 검증에서 터지거나, 더 나쁘게는 비슷한 필드끼리 조용히
+    맞물린다. 축을 아는 호출자는 축을 말해야 한다.
     """
     statement = tenant_select(ScanRun, principal).where(ScanRun.id == scan_run_id)
+    if kind is not None:
+        statement = statement.join(Scan, Scan.id == ScanRun.scan_id).where(
+            Scan.organization_id == principal.organization_id,
+            Scan.kind == kind,
+        )
     assert_tenant_scoped(statement, principal.organization_id)
     run = db.execute(statement).scalar_one_or_none()
     if run is None or run.report_snapshot is None:

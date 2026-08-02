@@ -135,6 +135,21 @@ export interface ConsoleScanResult {
   readonly unknownChecks: readonly UnknownCheck[];
   readonly notes: readonly string[];
   readonly generatedAt: string;
+  /**
+   * 같은 크롤로 함께 저장된 동반 GEO 실행. 없으면 이 실행에는 GEO 결과가 없다는
+   * 뜻이고(동반 저장 이전의 실행), 그 사실을 감추지 않는다 — 전환기가 이 값으로
+   * 짝이 되는 GEO 실행을 찾는다(재설계 ②).
+   */
+  readonly geo: GeoCompanionRef | null;
+}
+
+export interface GeoCompanionRef {
+  readonly scanRunId: string | null;
+  readonly score: number | null;
+  readonly bandId: string | null;
+  readonly specVersion: string | null;
+  /** GEO 채점이 실패한 실행이면 그 사실. "재려다 실패"와 "잰 적 없음"은 다르다. */
+  readonly failureNote: string | null;
 }
 
 const STATUSES: readonly CheckStatus[] = [
@@ -319,5 +334,20 @@ export function toConsoleScanResult(
     }),
     notes: strings(data, 'notes_ko'),
     generatedAt: str(meta, 'generated_at'),
+    geo: toGeoCompanion(data['geo']),
+  };
+}
+
+function toGeoCompanion(value: unknown): GeoCompanionRef | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return null;
+  }
+  const source = value as Record<string, unknown>;
+  return {
+    scanRunId: strOrNull(source, 'scan_run_id'),
+    score: numOrNull(source, 'score'),
+    bandId: strOrNull(source, 'band_id'),
+    specVersion: strOrNull(source, 'spec_version'),
+    failureNote: strOrNull(source, 'failure_note_ko'),
   };
 }

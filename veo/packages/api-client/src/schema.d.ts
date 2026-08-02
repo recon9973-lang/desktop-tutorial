@@ -314,6 +314,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/geo/readiness/scans/{scan_run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 지난 GEO 진단 결과를 그대로 다시 보기
+         * @description 저장된 보고서를 그대로 돌려줍니다. 다시 수집하지 않으므로 대상 사이트에 요청이 가지 않습니다. 콘솔 SEO 진단이 같은 크롤로 함께 저장한 GEO 실행(동반 채점)을 여는 문이며, SEO 실행의 식별자를 넣으면 404 입니다 — 축이 다르면 스냅샷의 모양이 다르고, 비슷한 필드끼리 조용히 맞물리는 것이 가장 나쁜 결과이기 때문입니다.
+         */
+        get: operations["read_saved_readiness_scan_api_geo_readiness_scans__scan_run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/geo/readiness/spec": {
         parameters: {
             query?: never;
@@ -8377,6 +8397,37 @@ export interface operations {
                 "application/json": components["schemas"]["GeoScanRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_GeoReadinessPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_saved_readiness_scan_api_geo_readiness_scans__scan_run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scan_run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

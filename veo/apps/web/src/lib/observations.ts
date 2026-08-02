@@ -395,6 +395,16 @@ export async function scanGeoReadiness(
 }
 
 /**
+ * 저장된 GEO 실행(동반 채점)을 그대로 다시 읽는다. 대상 사이트에 요청이 가지 않는다.
+ * SEO 실행의 식별자를 넣으면 404 다 — 축이 다르면 스냅샷의 모양이 다르다.
+ */
+export async function readSavedGeoReadiness(
+  scanRunId: string,
+): Promise<ConsoleOutcome<GeoReadiness>> {
+  return callConsoleApi(`/api/geo/readiness/scans/${encodeURIComponent(scanRunId)}`);
+}
+
+/**
  * 이번 달 AI 호출 사용량과 비용.
  *
  * `measured_cost_usd` 에 **금액을 못 낸 호출이 0원으로 더해져 있지 않다.** 더하면

@@ -13,11 +13,13 @@ second, unguarded way out of the network.
 from __future__ import annotations
 
 import hashlib
+import uuid
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
@@ -26,6 +28,7 @@ from veo.collect.from_crawl import context_from_crawl
 from veo.common.security.fetcher import FetchedDocument
 from veo.contracts.enums import ProviderState
 from veo.contracts.envelope import ApiResponse
+from veo.db.session import get_db
 from veo.geo.collectors.external_verifiability import CORROBORATION_PROVIDER
 from veo.geo.corroboration import look_up_corroboration
 from veo.geo.payload import payload_from
@@ -43,6 +46,7 @@ from veo.providers.naver.credentials import datalab_from_settings
 from veo.providers.naver.search import NaverSearchClient
 from veo.scoring import ScoringSpec, latest_published
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
+from veo.seo.history import GEO_KIND, read_scan_report
 
 router = APIRouter(prefix="/geo", tags=["geo"])
 
@@ -185,6 +189,32 @@ def scan_readiness(
         spec_version=report.score.spec_version,
         spec_checksum=report.score.spec_checksum,
     )
+
+
+@router.get(
+    "/readiness/scans/{scan_run_id}",
+    response_model=ApiResponse[GeoReadinessPayload],
+    summary="지난 GEO 진단 결과를 그대로 다시 보기",
+    description=(
+        "저장된 보고서를 그대로 돌려줍니다. 다시 수집하지 않으므로 대상 사이트에 요청이 "
+        "가지 않습니다. 콘솔 SEO 진단이 같은 크롤로 함께 저장한 GEO 실행(동반 채점)을 "
+        "여는 문이며, SEO 실행의 식별자를 넣으면 404 입니다 — 축이 다르면 스냅샷의 "
+        "모양이 다르고, 비슷한 필드끼리 조용히 맞물리는 것이 가장 나쁜 결과이기 "
+        "때문입니다."
+    ),
+)
+def read_saved_readiness_scan(
+    scan_run_id: uuid.UUID,
+    principal: Reader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[GeoReadinessPayload]:
+    report = read_scan_report(
+        db, principal=principal, scan_run_id=scan_run_id, kind=GEO_KIND
+    )
+    if report is None:
+        raise HTTPException(status_code=404, detail="scan run not found")
+    return ok(GeoReadinessPayload.model_validate(report), request_id)
 
 
 # --------------------------------------------------------------------------- #

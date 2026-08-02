@@ -6,10 +6,13 @@ import { Card, EmptyState, ErrorState } from '@veo/ui';
 import { PermissionGate } from '@/components/PermissionGate';
 import { ScanReport, type ReportView } from '@/components/ScanReport/ScanReport';
 import { listCompanies } from '@/lib/companies';
+import type { ConsoleScanResult, GeoCompanionRef } from '@/lib/console-scan';
+import { readSavedGeoReadiness } from '@/lib/observations';
 import { readBands, readHistory, readSavedReport, type HistoryEntry } from '@/lib/scan-report';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
+import { ReadinessReport } from '../geo/ReadinessReport';
 import { PagesSection } from './PagesSection';
 import { ScanForm } from './ScanForm';
 import own from './seo.module.css';
@@ -43,6 +46,7 @@ export default async function SeoPage({
         runId={single(params['run'])}
         view={toView(single(params['view']))}
         pageUrl={single(params['page'])}
+        axis={toAxis(single(params['axis']))}
       />
     </PermissionGate>
   );
@@ -61,16 +65,25 @@ function toView(value: string | null): ConsoleView {
   return 'detailed';
 }
 
+/** 결과의 축 — 한 크롤로 두 눈금을 쟀고(동반 채점), 화면은 번갈아 볼 뿐 합치지 않는다. */
+type Axis = 'seo' | 'geo';
+
+function toAxis(value: string | null): Axis {
+  return value === 'geo' ? 'geo' : 'seo';
+}
+
 async function SeoContent({
   siteId,
   runId,
   view,
   pageUrl,
+  axis,
 }: {
   readonly siteId: string | null;
   readonly runId: string | null;
   readonly view: ConsoleView;
   readonly pageUrl: string | null;
+  readonly axis: Axis;
 }) {
   if (siteId === null) return <NewScan />;
 
@@ -94,12 +107,23 @@ async function SeoContent({
 
   const entries = history.data;
   const selected = runId === null ? entries[0] : entries.find((e) => e.scanRunId === runId);
+  // 레일과 GEO 전환기가 둘 다 저장된 본문(geo 블록 포함)을 읽으므로 한 번만 가져온다.
+  const saved =
+    selected === undefined ? null : await readSavedReport(selected.scanRunId, origin);
 
   return (
     <Shell origin={origin}>
       <div className={own.toolbar}>
         <ScanForm siteId={siteId} />
         {selected === undefined ? null : (
+          <AxisSwitch
+            siteId={siteId}
+            runId={selected.scanRunId}
+            axis={axis}
+            geo={saved?.geo ?? null}
+          />
+        )}
+        {selected === undefined || axis === 'geo' ? null : (
           <ViewSwitch siteId={siteId} runId={selected.scanRunId} view={view} />
         )}
       </div>
@@ -107,39 +131,72 @@ async function SeoContent({
       {entries.length === 0 ? (
         <EmptyState description="아직 진단하지 않았습니다. 위의 진단 실행을 누르면 결과가 여기에 쌓입니다." />
       ) : (
-        <>
-          <HistoryStrip
-            entries={entries}
-            siteId={siteId}
-            selectedId={selected?.scanRunId ?? null}
-            view={view}
-          />
-          {selected === undefined ? null : view === 'pages' ? (
-            <PagesSection
-              scanRunId={selected.scanRunId}
+        <div className={own.layout}>
+          <div className={own.main}>
+            <HistoryStrip
+              entries={entries}
               siteId={siteId}
-              pageUrl={pageUrl}
+              selectedId={selected?.scanRunId ?? null}
+              view={view}
+              axis={axis}
             />
-          ) : (
-            <SavedReport scanRunId={selected.scanRunId} origin={origin} view={view} />
+            {selected === undefined ? null : axis === 'geo' ? (
+              <SavedGeoReport geo={saved?.geo ?? null} savedMissing={saved === null} />
+            ) : view === 'pages' ? (
+              <PagesSection
+                scanRunId={selected.scanRunId}
+                siteId={siteId}
+                pageUrl={pageUrl}
+              />
+            ) : saved === null ? (
+              <ErrorState
+                title="저장된 결과를 불러오지 못했습니다"
+                description="이 진단은 결과 본문이 남아 있지 않습니다. 다시 측정하면 이후로는 그대로 다시 열 수 있습니다."
+              />
+            ) : (
+              <SavedSeoReport saved={saved} view={view} />
+            )}
+          </div>
+          {selected === undefined ? null : (
+            <SummaryRail
+              siteId={siteId}
+              selected={selected}
+              entries={entries}
+              saved={saved}
+              axis={axis}
+            />
           )}
-        </>
+        </div>
       )}
     </Shell>
   );
 }
 
-async function SavedReport({
-  scanRunId,
-  origin,
+async function SavedSeoReport({
+  saved,
   view,
 }: {
-  readonly scanRunId: string;
-  readonly origin: string;
+  readonly saved: ConsoleScanResult;
   readonly view: ReportView;
 }) {
-  const result = await readSavedReport(scanRunId, origin);
-  if (result === null) {
+  const bands = await readBands(saved.specId, saved.specVersion);
+  return <ScanReport result={saved} bands={bands} view={view} />;
+}
+
+/**
+ * GEO 축 — 같은 크롤로 함께 저장된 동반 실행을 그대로 다시 연다.
+ *
+ * 동반 저장 이전의 실행에는 geo 블록이 없다. 그 사실을 감추지 않는다 — "잰 적 없음"
+ * 과 "재려다 실패"(failureNote)는 다른 문장으로 나온다.
+ */
+async function SavedGeoReport({
+  geo,
+  savedMissing,
+}: {
+  readonly geo: GeoCompanionRef | null;
+  readonly savedMissing: boolean;
+}) {
+  if (savedMissing) {
     return (
       <ErrorState
         title="저장된 결과를 불러오지 못했습니다"
@@ -147,9 +204,27 @@ async function SavedReport({
       />
     );
   }
+  if (geo === null || geo.scanRunId === null) {
+    return (
+      <EmptyState
+        description={
+          geo?.failureNote ??
+          '이 실행에는 GEO 결과가 저장되어 있지 않습니다 — 동반 저장이 생기기 전의 실행입니다. 다시 측정하면 SEO·GEO 가 함께 계산됩니다.'
+        }
+      />
+    );
+  }
 
-  const bands = await readBands(result.specId, result.specVersion);
-  return <ScanReport result={result} bands={bands} view={view} />;
+  const outcome = await readSavedGeoReadiness(geo.scanRunId);
+  if (!outcome.ok) {
+    return (
+      <ErrorState
+        title="GEO 결과를 불러오지 못했습니다"
+        description={outcome.message ?? '서버에 연결하지 못했습니다.'}
+      />
+    );
+  }
+  return <ReadinessReport report={outcome.data} />;
 }
 
 function HistoryStrip({
@@ -157,11 +232,13 @@ function HistoryStrip({
   siteId,
   selectedId,
   view,
+  axis,
 }: {
   readonly entries: readonly HistoryEntry[];
   readonly siteId: string;
   readonly selectedId: string | null;
   readonly view: ConsoleView;
+  readonly axis: Axis;
 }) {
   return (
     <section className={own.history} aria-labelledby="scan-history">
@@ -174,7 +251,7 @@ function HistoryStrip({
           return (
             <li key={entry.scanRunId}>
               <Link
-                href={`/console/seo?site=${siteId}&run=${entry.scanRunId}&view=${view}`}
+                href={`/console/seo?site=${siteId}&run=${entry.scanRunId}&view=${view}&axis=${axis}`}
                 className={current ? `${own.historyItem} ${own.historyCurrent}` : own.historyItem}
                 aria-current={current ? 'true' : undefined}
               >
@@ -204,6 +281,47 @@ function HistoryStrip({
   );
 }
 
+/**
+ * SEO|GEO 전환기 — 한 크롤, 두 눈금. 점수는 합치지 않고 번갈아 볼 뿐이다.
+ *
+ * GEO 점수가 있으면 숫자를 칩에 함께 보여 "다른 축에도 결과가 있다"는 사실이
+ * 클릭 전에 보인다. 없으면 숫자 없이 축 이름만 — 없는 점수를 만들지 않는다.
+ */
+function AxisSwitch({
+  siteId,
+  runId,
+  axis,
+  geo,
+}: {
+  readonly siteId: string;
+  readonly runId: string;
+  readonly axis: Axis;
+  readonly geo: GeoCompanionRef | null;
+}) {
+  const base = `/console/seo?site=${siteId}&run=${runId}`;
+  return (
+    <nav className={own.axes} aria-label="결과의 축">
+      <Link
+        href={`${base}&axis=seo`}
+        className={axis === 'seo' ? `${own.axisTab} ${own.axisOn}` : own.axisTab}
+        aria-current={axis === 'seo' ? 'page' : undefined}
+      >
+        SEO
+      </Link>
+      <Link
+        href={`${base}&axis=geo`}
+        className={axis === 'geo' ? `${own.axisTab} ${own.axisOn}` : own.axisTab}
+        aria-current={axis === 'geo' ? 'page' : undefined}
+      >
+        GEO
+        {geo?.score !== null && geo?.score !== undefined ? (
+          <span className={own.axisScore}>{geo.score.toFixed(1)}</span>
+        ) : null}
+      </Link>
+    </nav>
+  );
+}
+
 function ViewSwitch({
   siteId,
   runId,
@@ -226,6 +344,111 @@ function ViewSwitch({
         페이지별 · 어디를 고칠까
       </Link>
     </nav>
+  );
+}
+
+/**
+ * 우측 요약 레일 (재설계 ②) — 담당자가 본문을 읽는 동안 잃지 않아야 할 맥락.
+ *
+ * 레일이 지키는 것:
+ * - 숫자는 전부 서버 값 그대로. 여기서 계산하는 것은 두 실측 점수의 뺄셈 하나뿐이고,
+ *   그마저 같은 명세 버전끼리만 한다 — 판이 다르면 차이는 하락이 아니다.
+ * - SEO·GEO 는 나란히 놓되 합치지 않는다.
+ */
+function SummaryRail({
+  siteId,
+  selected,
+  entries,
+  saved,
+  axis,
+}: {
+  readonly siteId: string;
+  readonly selected: HistoryEntry;
+  readonly entries: readonly HistoryEntry[];
+  readonly saved: ConsoleScanResult | null;
+  readonly axis: Axis;
+}) {
+  const geo = saved?.geo ?? null;
+  const index = entries.findIndex((entry) => entry.scanRunId === selected.scanRunId);
+  const previous = index >= 0 ? entries[index + 1] : undefined;
+  const delta =
+    previous !== undefined &&
+    previous.score !== null &&
+    selected.score !== null &&
+    previous.specVersion === selected.specVersion
+      ? selected.score - previous.score
+      : null;
+
+  return (
+    <aside className={own.rail} aria-label="진단 요약">
+      <section className={own.railBlock}>
+        <h2 className={own.railTitle}>두 눈금</h2>
+        <dl className={own.railScores}>
+          <div className={axis === 'seo' ? own.railScoreOn : own.railScore}>
+            <dt>SEO 준비도</dt>
+            <dd>{selected.score === null ? '측정 불가' : selected.score.toFixed(1)}</dd>
+          </div>
+          <div className={axis === 'geo' ? own.railScoreOn : own.railScore}>
+            <dt>GEO 준비도</dt>
+            <dd>
+              {geo === null || geo.scanRunId === null
+                ? '결과 없음'
+                : geo.score === null
+                  ? '측정 불가'
+                  : geo.score.toFixed(1)}
+            </dd>
+          </div>
+        </dl>
+        <p className={own.railNote}>같은 크롤로 잰 두 눈금입니다. 합산하지 않습니다.</p>
+      </section>
+
+      <section className={own.railBlock}>
+        <h2 className={own.railTitle}>직전 대비</h2>
+        {previous === undefined ? (
+          <p className={own.railNote}>비교할 직전 실행이 없습니다.</p>
+        ) : delta === null ? (
+          <p className={own.railNote}>
+            직전 실행과 명세 버전이 다르거나 점수가 없어 비교하지 않습니다 — 판이 다르면
+            차이는 하락이 아닙니다.
+          </p>
+        ) : (
+          <p className={own.railDelta}>
+            {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {Math.abs(delta).toFixed(1)}점{' '}
+            <span className={own.railNote}>
+              ({previous.score?.toFixed(1)} → {selected.score?.toFixed(1)}, 명세{' '}
+              {selected.specVersion})
+            </span>
+          </p>
+        )}
+      </section>
+
+      <section className={own.railBlock}>
+        <h2 className={own.railTitle}>이번 측정</h2>
+        <ul className={own.railFacts}>
+          <li>{formatWhen(selected.startedAt)}</li>
+          <li>{selected.urlsCollected}페이지 수집</li>
+          <li>{selected.requestedByName ?? '실행자 기록 없음'}</li>
+          <li>명세 {selected.specVersion}</li>
+        </ul>
+      </section>
+
+      <section className={own.railBlock}>
+        <h2 className={own.railTitle}>바로가기</h2>
+        <ul className={own.railLinks}>
+          <li>
+            <Link href={`/console/seo?site=${siteId}&run=${selected.scanRunId}&view=pages`}>
+              페이지별로 보기
+            </Link>
+          </li>
+          <li>
+            <Link href="/console/scoring-versions">채점 기준·알고리즘 설계도</Link>
+          </li>
+          <li>
+            <Link href="/console/geo">GEO AI 관측(실제 답변 확인)</Link>
+          </li>
+        </ul>
+      </section>
+    </aside>
   );
 }
 
