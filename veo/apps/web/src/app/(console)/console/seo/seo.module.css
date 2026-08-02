@@ -138,3 +138,24 @@
 .siteCheckList li { display: flex; gap: 9px; align-items: baseline; font-size: 13px; flex-wrap: wrap; }
 .siteCheckList em { font-style: normal; font-size: 11px; font-weight: var(--veo-weight-bold); color: var(--veo-color-text-muted); }
 .siteCheckList small { color: var(--veo-color-text-muted); }
+
+/* ---------- 진단 진행 표시 (폼 우측 빈칸) ---------- */
+.scanFormRow { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+.scanFormRow > form { flex: 1; min-width: 280px; }
+.scanProgress {
+  flex: none; width: 220px; text-align: center;
+  padding: 10px 6px;
+}
+.scanProgressRing {
+  width: 116px; height: 116px; border-radius: 50%; margin: 0 auto;
+  display: grid; place-items: center;
+}
+.scanProgressHole {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: var(--veo-color-surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.scanProgressHole b { font-size: 26px; font-variant-numeric: tabular-nums; line-height: 1; }
+.scanProgressHole span { font-size: 10.5px; color: var(--veo-color-text-muted); margin-top: 3px; }
+.scanProgressPhase { font-size: 12.5px; font-weight: var(--veo-weight-semibold); margin: 10px 0 2px; }
+.scanProgressEta { font-size: 11.5px; color: var(--veo-color-text-muted); margin: 0; line-height: 1.55; }

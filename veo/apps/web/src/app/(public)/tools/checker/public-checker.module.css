@@ -249,6 +249,13 @@
   font-weight: var(--veo-weight-bold); white-space: nowrap; text-decoration: none;
 }
 
+.collapseBottom {
+  display: block; margin: 12px 0 0; padding: 5px 14px;
+  font-size: 11.5px; font-weight: var(--veo-weight-bold);
+  color: var(--veo-color-accent); background: var(--veo-color-surface);
+  border: 1px solid var(--veo-color-accent-border); border-radius: 999px; cursor: pointer;
+}
+
 /* ---------- 지난 측정 비교 ---------- */
 .prevLine { margin-top: 5px; font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
 .deltaUp { color: var(--veo-status-pass-fg); }

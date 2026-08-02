@@ -642,8 +642,31 @@ function CheckItem({ row }: { readonly row: ScanCheckRow }) {
           담당: <b>{row.owner === 'DEVELOPER' ? '개발' : row.owner === 'CONTENT' ? '콘텐츠' : row.owner === 'HOSTING' ? '호스팅' : row.owner}</b>
           {' · '}심각도 {row.severity}
         </p>
+        <CollapseButton />
       </div>
     </details>
+  );
+}
+
+/**
+ * 긴 상세를 다 읽고 나면 접기 버튼이 손 밑에 있어야 한다 — 다시 맨 위로
+ * 올라가서 닫게 하면 항목이 길수록 화면이 벌을 준다(사용자 지적, 2026-08-03).
+ */
+function CollapseButton() {
+  return (
+    <button
+      type="button"
+      className={styles.collapseBottom}
+      onClick={(event) => {
+        const pane = event.currentTarget.closest('details');
+        if (pane) {
+          pane.open = false;
+          pane.scrollIntoView({ block: 'nearest' });
+        }
+      }}
+    >
+      접기 ▴
+    </button>
   );
 }
 
