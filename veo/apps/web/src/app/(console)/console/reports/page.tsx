@@ -153,6 +153,17 @@ function ReportItem({ report }: { readonly report: ReportRow }) {
       {report.latest_content_hash !== null ? (
         <p className={own.hash}>{report.latest_content_hash.slice(0, 23)}…</p>
       ) : null}
+      {/* 발행된 버전이 있어야 볼 것이 있다 — 없는 문에 링크를 달지 않는다. */}
+      {report.latest_version_number !== null ? (
+        <p className={own.versionActions}>
+          <Link
+            href={`/console/reports/${encodeURIComponent(report.report_id)}`}
+            className={own.reportLink}
+          >
+            버전 열람·내보내기 →
+          </Link>
+        </p>
+      ) : null}
     </li>
   );
 }

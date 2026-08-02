@@ -143,3 +143,36 @@
   color: var(--veo-color-text-muted);
   overflow-wrap: anywhere;
 }
+
+/* 버전 행의 동작들 — 열람이 먼저, 내려받기가 그 뒤. */
+.versionActions {
+  margin: var(--veo-space-2) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+}
+
+.versionOpen,
+.versionExport {
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  text-decoration: none;
+}
+
+.versionOpen {
+  background: var(--veo-color-accent);
+  color: var(--veo-color-text-on-accent);
+  font-weight: var(--veo-weight-semibold);
+}
+
+.versionExport {
+  border: 1px solid var(--veo-color-border-strong);
+  color: inherit;
+}
+
+/* 목록에서 버전 화면으로 가는 길 — 카드 전체가 아니라 명시적 링크 하나. */
+.reportLink {
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+}

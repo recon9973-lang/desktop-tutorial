@@ -49,6 +49,27 @@ export async function listReportableRuns(
   );
 }
 
+export interface ReportVersionRow {
+  readonly report_id: string;
+  readonly version_number: number;
+  readonly title_ko: string;
+  readonly audience: string;
+  readonly generated_at: string;
+  readonly content_hash: string;
+  /** 엔진이 이 버전에 허용한 내보내기 형식 — 화면은 이 목록에 있는 것만 그린다. */
+  readonly export_formats: readonly string[];
+  readonly measurement_window_start: string | null;
+  readonly measurement_window_end: string | null;
+}
+
+export async function listReportVersions(
+  reportId: string,
+): Promise<ConsoleOutcome<readonly ReportVersionRow[]>> {
+  return callConsoleApi(
+    `/api/reports/${encodeURIComponent(reportId)}/versions?page_size=200`,
+  );
+}
+
 export async function publishFromScan(
   scanRunId: string,
   title: string,
