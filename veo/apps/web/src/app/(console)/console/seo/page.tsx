@@ -10,6 +10,7 @@ import { readBands, readHistory, readSavedReport, type HistoryEntry } from '@/li
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
+import { PagesSection } from './PagesSection';
 import { ScanForm } from './ScanForm';
 import own from './seo.module.css';
 
@@ -40,7 +41,8 @@ export default async function SeoPage({
       <SeoContent
         siteId={single(params['site'])}
         runId={single(params['run'])}
-        view={single(params['view']) === 'simple' ? 'simple' : 'detailed'}
+        view={toView(single(params['view']))}
+        pageUrl={single(params['page'])}
       />
     </PermissionGate>
   );
@@ -51,14 +53,24 @@ function single(value: string | string[] | undefined): string | null {
   return value ?? null;
 }
 
+/** 결과 보기 방식. 모르는 값은 상세로 — 조용히 다른 화면을 열지 않는다. */
+type ConsoleView = ReportView | 'pages';
+
+function toView(value: string | null): ConsoleView {
+  if (value === 'simple' || value === 'pages') return value;
+  return 'detailed';
+}
+
 async function SeoContent({
   siteId,
   runId,
   view,
+  pageUrl,
 }: {
   readonly siteId: string | null;
   readonly runId: string | null;
-  readonly view: ReportView;
+  readonly view: ConsoleView;
+  readonly pageUrl: string | null;
 }) {
   if (siteId === null) return <NewScan />;
 
@@ -102,7 +114,13 @@ async function SeoContent({
             selectedId={selected?.scanRunId ?? null}
             view={view}
           />
-          {selected === undefined ? null : (
+          {selected === undefined ? null : view === 'pages' ? (
+            <PagesSection
+              scanRunId={selected.scanRunId}
+              siteId={siteId}
+              pageUrl={pageUrl}
+            />
+          ) : (
             <SavedReport scanRunId={selected.scanRunId} origin={origin} view={view} />
           )}
         </>
@@ -143,7 +161,7 @@ function HistoryStrip({
   readonly entries: readonly HistoryEntry[];
   readonly siteId: string;
   readonly selectedId: string | null;
-  readonly view: ReportView;
+  readonly view: ConsoleView;
 }) {
   return (
     <section className={own.history} aria-labelledby="scan-history">
@@ -193,7 +211,7 @@ function ViewSwitch({
 }: {
   readonly siteId: string;
   readonly runId: string;
-  readonly view: ReportView;
+  readonly view: ConsoleView;
 }) {
   const base = `/console/seo?site=${siteId}&run=${runId}`;
   return (
@@ -203,6 +221,9 @@ function ViewSwitch({
       </Link>
       <Link href={`${base}&view=detailed`} aria-current={view === 'detailed' ? 'page' : undefined}>
         상세 · 직원용
+      </Link>
+      <Link href={`${base}&view=pages`} aria-current={view === 'pages' ? 'page' : undefined}>
+        페이지별 · 어디를 고칠까
       </Link>
     </nav>
   );

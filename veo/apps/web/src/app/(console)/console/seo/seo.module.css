@@ -66,3 +66,75 @@
 .scanForm { display: flex; flex-direction: column; gap: var(--veo-space-4); max-width: 32rem; }
 .previous { margin-top: var(--veo-space-6); }
 .siteCompany { color: var(--veo-color-text-muted); font-size: var(--veo-font-size-200); }
+
+/* ---------- 페이지별 보기 (⑥) ---------- */
+.pagesNote {
+  font-size: 12.5px; color: var(--veo-status-warning-fg);
+  background: var(--veo-status-warning-bg); border: 1px solid var(--veo-status-warning-border);
+  border-radius: var(--veo-radius-md); padding: 9px 13px; margin: 0 0 12px;
+}
+.pagesEmpty { color: var(--veo-color-text-muted); font-size: 13.5px; }
+.pageList { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.pageRow {
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface); padding: 10px 14px;
+  text-decoration: none; color: inherit;
+}
+.pageRow:hover { border-color: var(--veo-color-accent); }
+.pageScore {
+  flex: none; min-width: 52px; text-align: right;
+  font-size: 16px; font-weight: var(--veo-weight-bold); font-variant-numeric: tabular-nums;
+}
+.pageUrl { flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pageCounts { flex: none; display: flex; gap: 7px; }
+.pageCounts em, .pageFail, .pageWarn, .pagePass {
+  font-style: normal; font-size: 11px; font-weight: var(--veo-weight-bold);
+  border-radius: 999px; padding: 2px 9px;
+}
+.pageFail { background: var(--veo-status-fail-bg); color: var(--veo-status-fail-fg); }
+.pageWarn { background: var(--veo-status-warning-bg); color: var(--veo-status-warning-fg); }
+.pagePass { background: var(--veo-status-pass-bg); color: var(--veo-status-pass-fg); }
+.pagesFootnote { font-size: 12px; color: var(--veo-color-text-muted); margin: 14px 0 0; }
+.pageBack { font-size: 13px; color: var(--veo-color-accent); text-decoration: none; }
+.pageDetailUrl { font-size: 16px; margin: 6px 0 12px; overflow-wrap: anywhere; }
+.pageScoreCard {
+  border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-surface); padding: 16px 18px; margin-bottom: 16px;
+}
+.pageScoreBig b { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.pageScoreBig span { display: block; font-size: 11.5px; color: var(--veo-color-text-muted); }
+.pageFormula { font-size: 12.5px; color: var(--veo-color-text-muted); margin: 6px 0 0; }
+.pageGateNote {
+  font-size: 12.5px; color: var(--veo-status-warning-fg); margin: 8px 0 0;
+}
+.pageStages { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.pageStages li {
+  border: 1px solid var(--veo-color-bg-subtle); border-radius: var(--veo-radius-md);
+  padding: 8px 11px; display: flex; flex-direction: column; gap: 2px;
+}
+.pageStages span { font-size: 11px; font-weight: var(--veo-weight-bold); }
+.pageStages b { font-size: 14.5px; }
+.pageSubhead { font-size: 13px; margin: 16px 0 6px; }
+.pageLosses { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.pageLosses li {
+  display: flex; justify-content: space-between; gap: 10px; font-size: 13px;
+  border-bottom: 1px dashed var(--veo-color-bg-subtle); padding: 4px 0;
+}
+.pageLosses b { color: var(--veo-status-fail-fg); white-space: nowrap; }
+.pageNotSampled {
+  font-size: 12.5px; margin: 12px 0 0; padding: 9px 12px;
+  background: var(--veo-color-bg-subtle); border-radius: var(--veo-radius-md);
+  color: var(--veo-color-text-muted);
+}
+.pageUnmeasured { font-size: 12.5px; color: var(--veo-color-text-muted); margin: 8px 0 0; }
+.pageCheckGroup { margin: 10px 0; }
+.pageCheckGroup summary { cursor: pointer; }
+.pageCheckGroup ul { margin: 7px 0 0; padding-left: 20px; font-size: 13px; line-height: 1.7; }
+.siteChecks { margin-top: 20px; }
+.siteChecksWhen { font-weight: 600; color: var(--veo-color-text-muted); font-size: 12px; }
+.siteChecksNote { font-size: 12px; color: var(--veo-color-text-muted); margin: 4px 0 8px; }
+.siteCheckList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.siteCheckList li { display: flex; gap: 9px; align-items: baseline; font-size: 13px; flex-wrap: wrap; }
+.siteCheckList em { font-style: normal; font-size: 11px; font-weight: var(--veo-weight-bold); color: var(--veo-color-text-muted); }
+.siteCheckList small { color: var(--veo-color-text-muted); }
