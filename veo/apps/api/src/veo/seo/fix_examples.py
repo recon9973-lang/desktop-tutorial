@@ -165,6 +165,27 @@ _EXAMPLES: Final[dict[str, str]] = {
         '<time datetime="2026-08-02">2026년 8월 2일 작성</time>\n'
         '<meta property="article:modified_time" content="2026-08-02T09:00:00+09:00">'
     ),
+    "geo.access.training_bot_policy_declared": (
+        "# robots.txt — 학습용 크롤러 방침을 명시 (허용·차단은 사업 판단)\n"
+        "User-agent: GPTBot\n"
+        "Allow: /\n"
+        "\n"
+        "User-agent: Google-Extended\n"
+        "Allow: /"
+    ),
+    "geo.extract.heading_structure_semantic": (
+        "<!-- 본문 주제를 담은 h1 하나 — 로고는 h1이 아니라 이미지·링크로 -->\n"
+        "<h1>불면증 치료 안내</h1>\n"
+        "<h2>치료 방법</h2>"
+    ),
+    "geo.sd.matches_visible_content": (
+        '<!-- 구조화 데이터 값은 화면에 보이는 것과 같아야 한다 -->\n'
+        "<h1>참사랑한의원</h1>\n"
+        '<script type="application/ld+json">\n'
+        '{"@context": "https://schema.org", "@type": "MedicalClinic",\n'
+        ' "name": "참사랑한의원"}  <!-- ✓ 화면의 이름 그대로 -->\n'
+        "</script>"
+    ),
     "geo.meta.opengraph_present": (
         '<meta property="og:title" content="페이지 제목">\n'
         '<meta property="og:description" content="한 줄 소개">\n'
