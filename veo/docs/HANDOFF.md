@@ -206,6 +206,21 @@ fix_examples.py 가 백로그 "붙여넣을 코드" 구현(정답이 하나로 �
 컴포넌트는 PublicChecker 하나(kind 매개변수), GEO 는 노출 차단 게이트 박스만 다르다
 (점수와 별개 경고 — 합치지 않는 것을 시험이 지킨다). 웹 파서가 GEO 의 readiness
 키를 못 읽던 잠복 결함도 수정.
+~~⑧ 공개 진단 마감 셋(사용자 지적)~~ **완료(2026-08-02)** —
+(1) **공개 스캔도 PageSpeed 를 잰다**: 라이브에서 성능 4항목이 상시 측정 불가였다.
+`with_performance` 호출자가 콘솔에만 있었던 배선 결함. 공개 패키지는 격리 불변식
+(tests/public/test_isolation.py — 익명 표면은 DB 임포트 금지) 때문에 기록을 직접
+못 하므로, `get_usage_recorder` 의존성을 조립 지점(veo/api/app.py 의
+`build_public_usage_recorder`)이 덮어써서 주입한다. 익명이라 organization_id 는
+NULL. 배선 자체는 `tests/contract/test_public_usage_wiring.py` 가 지킨다.
+로컬 실측: 참사랑 75%→82.5% coverage, LCP FAIL·CLS/TBT PASS 실제값, 사용량
+이벤트(org NULL) DB 확인.
+(2) fix_examples 14→27개(SEO 10 + GEO 4 추가) — 여전히 "정답이 하나로 정해지는
+검사만". 명세 대조 스크립트로 id 전수 확인.
+(3) 점수 밴드 폭을 본문(930px)과 통일 — `.report` 컨테이너 하나로 감싸고 밴드를
+2단 그리드(게이지 좌 2행 · 우측 위 SEO/GEO 카드 가로 · 아래 6단계)로 재배치.
+주의: `import veo.public.router` 단독 순환 임포트는 **선재 결함**(순서 의존,
+HEAD 에서 재현) — 별도 과제로 남김.
 다음: ④ 평가기 NOT_SAMPLED + 명세 1.9.0(측정 범위 기준 판정·템플릿 그룹 일반화·
 페이지 점수 발행 — 한 판) ⑥ 콘솔 절반(페이지 목록 화면·차이 뺄셈 설명·SITE 값
 날짜 표기·페이지↔사이트 비교 UI 금지).

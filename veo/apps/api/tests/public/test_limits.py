@@ -253,6 +253,9 @@ def amplification_service(
         settings=settings,
         clock=ServiceClock(),
         searchad=NaverSearchAdClient(credentials=None),
+        # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
+        # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
+        performance=lambda context: (context, None),
     )
 
 

@@ -7,6 +7,7 @@ contract test fails the build if the committed document and the running app disa
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -16,7 +17,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from veo import __version__
-from veo.api.deps import REQUEST_ID_HEADER, build_meta, get_request_id
+from veo.api.deps import REQUEST_ID_HEADER, RequestId, build_meta, get_request_id
 from veo.api.routes import meta as meta_routes
 from veo.api.routes import scoring as scoring_routes
 from veo.auth.resolver import install_auth
@@ -44,6 +45,7 @@ from veo.lab.router import router as lab_router
 from veo.observations.router import router as observations_router
 from veo.organizations.router import router as organizations_router
 from veo.projects.router import router as projects_router
+from veo.public.router import get_usage_recorder
 from veo.public.router import router as public_router
 from veo.reports.router import router as reports_router
 from veo.seo.router import router as seo_router
@@ -255,7 +257,38 @@ def create_app() -> FastAPI:
     # having to enumerate route names.
     app.include_router(public_router)
 
+    # 무료 진단도 PageSpeed 를 쓴다 — 쓴 호출은 여기서 기록한다. 공개 패키지는
+    # 격리 불변식(test_isolation) 때문에 DB 를 임포트할 수 없으므로, DB 로 적는
+    # 구현은 이 조립 지점이 주입한다. 세션은 요청의 것이 아니라 그 자리에서 열고
+    # 닫는다 — 기록 실패가 이미 완성된 진단 응답을 죽여서는 안 되기 때문이기도 하다.
+    app.dependency_overrides[get_usage_recorder] = build_public_usage_recorder
+
     return app
+
+
+def build_public_usage_recorder(request_id: RequestId) -> Callable[[Sequence[Any]], None]:
+    """공개 진단이 쓴 PageSpeed 호출을 사용량 이벤트로 적는 콜백.
+
+    조직은 없다 — 익명 호출이므로 ``organization_id`` 는 NULL 로 남는다. 기록에
+    실패해도 예외를 밖으로 내지 않는다: 진단은 이미 끝났고, 그 결과를 사용량
+    장부 문제로 버리는 것이 더 큰 거짓이다. 대신 로그에 남긴다.
+    """
+
+    def record(calls: Sequence[Any]) -> None:
+        from veo.db.session import session_scope
+        from veo.usage import record_pagespeed_calls
+
+        try:
+            with session_scope() as db:
+                record_pagespeed_calls(
+                    db, calls, organization_id=None, request_id=str(request_id)
+                )
+        except Exception:
+            logging.getLogger(__name__).exception(
+                "public scan usage recording failed (calls=%d)", len(calls)
+            )
+
+    return record
 
 
 def _error_response(status_code: int, error: ApiError, request_id: str) -> JSONResponse:

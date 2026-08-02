@@ -210,7 +210,7 @@ function Report({
       : result.score.value / result.reach;
 
   return (
-    <div ref={reportRef}>
+    <div ref={reportRef} className={styles.report}>
       <section className={styles.scoreband} aria-label="점수 요약">
         <div>
           <div className={styles.gauge}>

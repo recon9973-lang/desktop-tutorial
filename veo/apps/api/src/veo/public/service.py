@@ -32,7 +32,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Final, Protocol, final, runtime_checkable
+from typing import Any, Final, Protocol, final, runtime_checkable
 from urllib.parse import urlsplit
 
 import httpx
@@ -76,6 +76,7 @@ from veo.public.tokens import IssuedToken, fingerprint, issue_token, looks_like_
 from veo.scoring import CheckOutcome, CheckStatus, ScoreResult, ScoringSpec, latest_published
 from veo.scoring.improvements import rank_improvements
 from veo.seo.fix_examples import code_example_for
+from veo.seo.measure_performance import with_performance
 from veo.seo.parsing.html import parse_html
 from veo.seo.service import SPEC_ID as SEO_SPEC_ID
 from veo.seo.service import run_seo_scan
@@ -88,12 +89,22 @@ __all__ = [
     "PublicResultStore",
     "PublicScanService",
     "StoredPublicResult",
+    "UsageRecorder",
     "build_public_context",
 ]
+
+#: 무료 진단이 쓴 외부 API 호출을 적는 콜백의 형태. 구현은 이 패키지 밖에 산다 —
+#: 익명 표면은 DB 를 임포트조차 하지 못한다(test_isolation).
+UsageRecorder = Callable[[Sequence[Any]], None]
 
 #: Every provider the engines can read, switched off. An anonymous caller does not get
 #: VEO's paid API quota spent on them, and the checks that need a provider answer
 #: ``UNKNOWN`` with a stated reason rather than being quietly skipped.
+#:
+#: 예외 하나 — GOOGLE_PAGESPEED. 하루 25,000회까지 정말 0원이고(usage/record.py),
+#: 공개 진단은 1장이라 호출도 1회다. 그래서 SEO 스캔은 여기 DISABLED 를 초기값으로
+#: 두되 ``with_performance`` 가 실측에 성공하면 그 상태로 덮어쓴다. 서버에 키가
+#: 없으면 이 초기값 그대로가 정직한 결과다.
 PUBLIC_PROVIDER_STATES: Final[Mapping[str, ProviderState]] = {
     "GOOGLE_PAGESPEED": ProviderState.DISABLED_NO_CREDENTIAL,
     "GOOGLE_CRUX": ProviderState.DISABLED_NO_CREDENTIAL,
@@ -251,12 +262,16 @@ class PublicScanService:
         settings: Settings | None = None,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
         searchad: NaverSearchAdClient | None = None,
+        performance: Callable[[Any], tuple[Any, Any | None]] = with_performance,
     ) -> None:
         self._limiter = limiter
         self._results = results
         self._settings = settings or get_settings()
         self._clock = clock
         self._searchad = searchad or NaverSearchAdClient(credentials=searchad_from_settings())
+        # 주입 지점인 이유: 기본값(설정에서 키 읽기)을 시험이 그대로 쓰면 개발자
+        # 컴퓨터의 .env 를 타고 진짜 구글로 나간다 — 실제로 있었던 사고다(0-F).
+        self._performance = performance
 
         # The service builds its own fetcher rather than accepting one, and it is worth
         # saying why: the target-host budget is charged inside the guard, so a caller who
@@ -280,9 +295,21 @@ class PublicScanService:
     # ------------------------------------------------------------- scans
 
     def run_seo_scan(
-        self, *, urls: Sequence[str], client_ip: str, session_id: str
+        self,
+        *,
+        urls: Sequence[str],
+        client_ip: str,
+        session_id: str,
+        record_usage: UsageRecorder | None = None,
     ) -> PublicSeoScanPayload:
-        """SEO readiness for at most ``public_max_urls_per_scan`` pages."""
+        """SEO readiness for at most ``public_max_urls_per_scan`` pages.
+
+        성능(PageSpeed)도 잰다 — 콘솔만 배선하고 공개 경로를 빼먹어서, 키가 있는데도
+        무료 진단의 성능 4항목이 상시 측정 불가였다(2026-08-02 라이브에서 확인).
+        공개 진단은 1장이므로 호출도 1회다. 유료 한도를 쓴 사실은 ``record_usage``
+        콜백으로 라우터에 넘긴다 — DB 세션은 라우터의 것이고, 여기로 끌어오면
+        스레드 밖에서 쓰이게 된다(measure_performance 모듈 문서와 같은 이유).
+        """
         targets = self._accept_targets(urls)
         self._charge_caller(client_ip=client_ip, session_id=session_id)
 
@@ -296,8 +323,12 @@ class PublicScanService:
             robots_txt=robots_txt,
             collected_at=collected_at,
         )
+        context, performance = self._performance(context)
         result = run_seo_scan(context)
         issued = self._issue()
+
+        if performance is not None and performance.calls and record_usage is not None:
+            record_usage(performance.calls)
 
         payload = PublicSeoScanPayload(
             target_url=targets[0],

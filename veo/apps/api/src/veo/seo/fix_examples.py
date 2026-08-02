@@ -83,6 +83,93 @@ _EXAMPLES: Final[dict[str, str]] = {
         '<img src="http://도메인/img.jpg">   <!-- ✕ -->\n'
         '<img src="https://도메인/img.jpg">  <!-- ✓ -->'
     ),
+    "seo.onpage.title_present_and_unique": (
+        "<!-- 페이지마다 다른 제목 — [페이지 주제] + 병원명 -->\n"
+        "<title>불면증 클리닉 — ○○한의원</title>\n"
+        "<title>오시는 길 — ○○한의원</title>"
+    ),
+    "seo.onpage.heading_hierarchy": (
+        "<!-- 계층을 건너뛰지 않는다: h2 다음은 h3 -->\n"
+        "<h2>진료 안내</h2>\n"
+        "  <h3>내과</h3>   <!-- ✓ h2→h3 -->\n"
+        "  <h5>내과</h5>   <!-- ✕ h2→h5 건너뜀 -->"
+    ),
+    "seo.canonical.not_cross_domain": (
+        "<!-- canonical 은 자기 도메인의 주소여야 한다 -->\n"
+        '<link rel="canonical" href="https://남의도메인.com/…">   <!-- ✕ -->\n'
+        '<link rel="canonical" href="https://내도메인/이_페이지/"> <!-- ✓ -->'
+    ),
+    "seo.content.lazy_loading_safe": (
+        '<!-- 첫 화면에 보이는 큰 이미지에는 lazy 를 걸지 않는다 -->\n'
+        '<img src="hero.jpg" loading="lazy">   <!-- ✕ 첫 화면 이미지 -->\n'
+        '<img src="hero.jpg" fetchpriority="high">  <!-- ✓ -->\n'
+        '<img src="footer-map.jpg" loading="lazy">  <!-- ✓ 화면 아래 이미지 -->'
+    ),
+    "seo.sd.declared": (
+        '<!-- 병원 기본 정보 구조화 데이터 — <head> 안에 -->\n'
+        '<script type="application/ld+json">\n'
+        '{\n'
+        '  "@context": "https://schema.org",\n'
+        '  "@type": "MedicalClinic",\n'
+        '  "name": "병원명",\n'
+        '  "address": {"@type": "PostalAddress",\n'
+        '              "addressLocality": "지역", "streetAddress": "주소"},\n'
+        '  "telephone": "+82-00-000-0000",\n'
+        '  "openingHours": "Mo-Fr 09:00-18:00"\n'
+        '}\n'
+        "</script>"
+    ),
+    "seo.sitemap.discoverable": (
+        "# robots.txt 마지막 줄에 사이트맵 위치를 선언\n"
+        "Sitemap: https://도메인/sitemap.xml"
+    ),
+    "seo.http.redirect_chain_sane": (
+        "# 리다이렉트는 한 번에 최종 주소로\n"
+        "http://a → https://a → https://www.a → 페이지   # ✕ 3단계\n"
+        "http://a → https://www.a/페이지                  # ✓ 1단계"
+    ),
+    "seo.onpage.descriptive_anchor_text": (
+        '<!-- 링크 문구에 목적지의 주제를 담는다 -->\n'
+        '<a href="/불면증/">자세히 보기</a>        <!-- ✕ -->\n'
+        '<a href="/불면증/">불면증 치료 안내 보기</a>  <!-- ✓ -->'
+    ),
+    "seo.content.breadcrumb_present": (
+        '<script type="application/ld+json">\n'
+        '{\n'
+        '  "@context": "https://schema.org",\n'
+        '  "@type": "BreadcrumbList",\n'
+        '  "itemListElement": [\n'
+        '    {"@type": "ListItem", "position": 1, "name": "홈", "item": "https://도메인/"},\n'
+        '    {"@type": "ListItem", "position": 2, "name": "진료안내", "item": "https://도메인/진료안내/"}\n'
+        '  ]\n'
+        '}\n'
+        "</script>"
+    ),
+    # ---- GEO — AI 답변 엔진이 인용할 수 있는 구조 ----
+    "geo.extract.direct_answer_present": (
+        "<!-- 첫 문단이 곧 답이 되게 — AI 는 이 문장을 그대로 인용한다 -->\n"
+        "<p>○○한의원은 △△역 도보 3분 거리의 불면증·수면장애 전문 한의원으로,\n"
+        "비약물 치료 프로그램을 운영합니다.</p>"
+    ),
+    "geo.evidence.author_identified": (
+        '<!-- 의료 콘텐츠는 누가 썼는지가 인용 신뢰의 핵심 -->\n'
+        '<p class="author">글쓴이: 홍길동 원장 (한방신경정신과 전문의)</p>\n'
+        '<script type="application/ld+json">\n'
+        '{"@context": "https://schema.org", "@type": "Person",\n'
+        ' "name": "홍길동", "jobTitle": "한의사",\n'
+        ' "worksFor": {"@type": "MedicalClinic", "name": "병원명"}}\n'
+        "</script>"
+    ),
+    "geo.fresh.dates_present": (
+        '<!-- 작성·수정 날짜를 기계가 읽을 수 있게 -->\n'
+        '<time datetime="2026-08-02">2026년 8월 2일 작성</time>\n'
+        '<meta property="article:modified_time" content="2026-08-02T09:00:00+09:00">'
+    ),
+    "geo.meta.opengraph_present": (
+        '<meta property="og:title" content="페이지 제목">\n'
+        '<meta property="og:description" content="한 줄 소개">\n'
+        '<meta property="og:image" content="https://도메인/공유이미지.jpg">'
+    ),
 }
 
 

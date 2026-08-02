@@ -47,14 +47,22 @@
   font-size: var(--veo-font-size-200); text-align: left;
 }
 
-/* ---------- 점수 밴드 (상단 전폭) ---------- */
+/* ---------- 보고서 컨테이너 — 점수 밴드와 체크리스트가 같은 폭을 쓴다 ---------- */
+.report { max-width: 930px; margin: 0 auto; }
+
+/* ---------- 점수 밴드 (본문과 같은 폭) ---------- */
 .scoreband {
-  display: grid; grid-template-columns: 250px 250px 1fr; gap: var(--veo-space-5);
+  display: grid; grid-template-columns: 250px 1fr; gap: var(--veo-space-5);
   align-items: center; padding: var(--veo-space-5);
   border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-lg);
   background: var(--veo-color-surface); margin-bottom: var(--veo-space-4);
 }
-@media (max-width: 960px) { .scoreband { grid-template-columns: 1fr; } }
+/* 게이지가 왼쪽 한 칸을 세로로 다 쓰고, 오른쪽에 점수 카드(위)·단계(아래)가 쌓인다 */
+.scoreband > div:first-child { grid-row: span 2; }
+@media (max-width: 960px) {
+  .scoreband { grid-template-columns: 1fr; }
+  .scoreband > div:first-child { grid-row: auto; }
+}
 .gauge { width: 210px; height: 114px; margin: 0 auto; position: relative; overflow: hidden; }
 .gaugeArc { width: 210px; height: 210px; border-radius: 50%; }
 .gaugeHole { position: absolute; inset: 24px 24px -24px; background: var(--veo-color-surface); border-radius: 50%; }
@@ -73,7 +81,9 @@
   font-size: var(--veo-font-size-100); font-weight: var(--veo-weight-bold);
   background: var(--veo-color-surface); cursor: pointer;
 }
-.twincol { display: flex; flex-direction: column; gap: 9px; }
+.twincol { display: flex; flex-direction: row; gap: 9px; }
+.twincol > * { flex: 1; }
+@media (max-width: 960px) { .twincol { flex-direction: column; } }
 .twin {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
   border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-md);
@@ -101,8 +111,8 @@
 .stageValue { font-size: 14.5px; font-weight: var(--veo-weight-bold); }
 .stageValue small { font-size: 9.5px; color: var(--veo-color-text-muted); font-weight: 600; }
 
-/* ---------- 본문 ---------- */
-.body { max-width: 930px; margin: 0 auto; }
+/* ---------- 본문 — 폭은 .report 가 정한다 ---------- */
+.body { margin: 0 auto; }
 .scope {
   font-size: var(--veo-font-size-100); color: var(--veo-status-warning-fg);
   background: var(--veo-status-warning-bg); border: 1px solid var(--veo-status-warning-border);

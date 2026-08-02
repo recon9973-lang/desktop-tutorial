@@ -50,14 +50,17 @@ from veo.public.service import (
     PublicRefusal,
     PublicResultStore,
     PublicScanService,
+    UsageRecorder,
 )
 
 __all__ = [
     "SESSION_HEADER",
+    "UsageRecorder",
     "get_lead_store",
     "get_public_service",
     "get_rate_limiter",
     "get_result_store",
+    "get_usage_recorder",
     "router",
 ]
 
@@ -92,6 +95,18 @@ def get_lead_store() -> LeadStore:
     return _LEADS
 
 
+def get_usage_recorder() -> UsageRecorder | None:
+    """무료 진단이 쓴 외부 API 호출(PageSpeed)을 적을 곳.
+
+    공개 패키지는 DB 를 모른다 — 익명 표면이 고객 데이터에 닿을 수 없다는 격리
+    불변식(test_isolation)이 임포트 수준에서 강제된다. 그래서 기본값은 "기록할 곳
+    없음"이고, DB 로 적는 실제 구현은 조립 지점(veo.api.app)이 이 의존성을
+    덮어써서 주입한다. 기록이 끊기면 무료 트래픽이 소모한 한도가 보이지 않게
+    되므로, 배선 여부는 veo.api 쪽 시험이 지킨다.
+    """
+    return None
+
+
 def get_public_service(
     limiter: Annotated[RateLimiter, Depends(get_rate_limiter)],
     results: Annotated[PublicResultStore, Depends(get_result_store)],
@@ -111,6 +126,7 @@ def get_public_service(
 
 
 ServiceDep = Annotated[PublicScanService, Depends(get_public_service)]
+UsageRecorderDep = Annotated[UsageRecorder | None, Depends(get_usage_recorder)]
 LeadStoreDep = Annotated[LeadStore, Depends(get_lead_store)]
 LimiterDep = Annotated[RateLimiter, Depends(get_rate_limiter)]
 
@@ -206,10 +222,16 @@ def run_public_seo_scan(
     client_ip: ClientIp,
     session_id: SessionId,
     request_id: RequestId,
+    usage_recorder: UsageRecorderDep = None,
 ) -> ApiResponse[PublicSeoScanPayload] | JSONResponse:
     try:
         result = service.run_seo_scan(
-            urls=payload.urls, client_ip=client_ip, session_id=session_id
+            urls=payload.urls,
+            client_ip=client_ip,
+            session_id=session_id,
+            # 익명 호출에도 한도는 소모된다. 기록하지 않으면 어느 날 모든 고객의
+            # 성능이 측정 불가가 되고 이유를 알 수 없다.
+            record_usage=usage_recorder,
         )
     except PublicRefusal as refusal:
         return refusal_response(refusal, request_id)

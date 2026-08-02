@@ -69,6 +69,9 @@ def build_service(
         # Explicitly credential-less: a test must not depend on whatever happens to sit
         # in the deployment's .env, and a client with no credential opens no connection.
         searchad=NaverSearchAdClient(credentials=None),
+        # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
+        # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
+        performance=lambda context: (context, None),
     )
 
 
@@ -435,6 +438,9 @@ def test_a_site_that_refuses_the_connection_is_answered_not_raised() -> None:
         results=InMemoryPublicResultStore(),
         clock=ServiceClock(),
         searchad=NaverSearchAdClient(credentials=None),
+        # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
+        # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
+        performance=lambda context: (context, None),
     )
     with pytest.raises(PublicRefusal) as caught:
         service.run_seo_scan(
@@ -526,3 +532,83 @@ class TestTheFullChecklistPayload:
         payload = self._payload()
 
         assert 0.0 <= payload.reach <= 1.0
+
+
+# --------------------------------------------------------------------------- #
+# PageSpeed wiring
+# --------------------------------------------------------------------------- #
+
+
+class _FakeMeasurement:
+    """with_performance 가 돌려주는 것 중 서비스가 읽는 두 가지만 흉내낸다."""
+
+    def __init__(self, calls: list[str]) -> None:
+        self.calls = calls
+
+
+class TestPublicPerformanceWiring:
+    """공개 SEO 스캔도 성능을 잰다 — 콘솔만 배선하고 공개를 빼먹었던 결함의 회귀 시험.
+
+    2026-08-02 라이브에서 확인된 결함: 서버에 키가 있는데도 무료 진단의 성능 4항목이
+    상시 "측정 불가" 였다. 원인은 코드가 아니라 배선 — ``with_performance`` 의
+    호출자가 콘솔 경로에만 있었다.
+    """
+
+    def test_the_scan_scores_the_context_the_performance_step_returned(self) -> None:
+        seen: list[object] = []
+
+        def fake_performance(context: object) -> tuple[object, None]:
+            seen.append(context)
+            return context, None
+
+        site = clinic_site()
+        service = PublicScanService(
+            guard=public_guard(PUBLIC_IP),
+            transport=site_transport(site),
+            limiter=InMemoryRateLimiter(),
+            results=InMemoryPublicResultStore(),
+            clock=ServiceClock(),
+            searchad=NaverSearchAdClient(credentials=None),
+            performance=fake_performance,
+        )
+        service.run_seo_scan(
+            urls=["https://clinic.example/"], client_ip="203.0.113.9", session_id="s-1"
+        )
+
+        assert len(seen) == 1, "성능 측정 단계가 스캔당 정확히 한 번 불려야 한다"
+
+    def test_spent_calls_reach_the_usage_callback(self) -> None:
+        recorded: list[object] = []
+        measurement = _FakeMeasurement(calls=["pagespeed-call-1"])
+
+        site = clinic_site()
+        service = PublicScanService(
+            guard=public_guard(PUBLIC_IP),
+            transport=site_transport(site),
+            limiter=InMemoryRateLimiter(),
+            results=InMemoryPublicResultStore(),
+            clock=ServiceClock(),
+            searchad=NaverSearchAdClient(credentials=None),
+            performance=lambda context: (context, measurement),
+        )
+        service.run_seo_scan(
+            urls=["https://clinic.example/"],
+            client_ip="203.0.113.9",
+            session_id="s-1",
+            record_usage=recorded.extend,
+        )
+
+        assert recorded == ["pagespeed-call-1"], "쓴 호출이 기록 콜백에 닿지 않았다"
+
+    def test_nothing_measured_records_nothing(self) -> None:
+        """키가 없어 측정하지 못했으면 기록도 없어야 한다 — 0건 이벤트는 소음이다."""
+        recorded: list[object] = []
+        service = build_service()
+        service.run_seo_scan(
+            urls=["https://clinic.example/"],
+            client_ip="203.0.113.9",
+            session_id="s-1",
+            record_usage=recorded.extend,
+        )
+
+        assert recorded == []
