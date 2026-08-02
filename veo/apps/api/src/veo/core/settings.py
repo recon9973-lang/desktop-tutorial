@@ -177,6 +177,10 @@ class Settings(BaseSettings):
     #: 운영 알림 웹훅(슬랙 호환, https 전용). 비어 있으면 알림은 비활성이고
     #: 그 사실이 결과(DISABLED)로 드러난다 — 보낸 척하지 않는다. veo/notify 참조.
     alert_webhook_url: SecretStr | None = None
+    #: 이만큼 떨어지면 사람을 부른다(같은 명세 버전끼리만 비교). 채점 숫자가 아니라
+    #: "언제 알릴 것인가" 라는 운영 판단이라 명세가 아니라 여기 산다. 1.0 미만의
+    #: 잔떨림(반올림·표본 차이)로 채널이 시끄러워지면 알림은 꺼지고 없는 기능이 된다.
+    alert_score_drop_threshold: float = 1.0
     redis_url: str = "redis://localhost:6379/0"
 
     # Secrets. Absent in local/test; required at startup in staging and production.

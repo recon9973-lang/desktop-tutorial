@@ -73,13 +73,9 @@ def record_pagespeed_calls(
                 # 상태 코드는 우리가 못 본다. 어댑터가 이미 분류해 오류 코드로 바꿔
                 # 주기 때문이다. 숫자를 지어내지 않고 비워 둔다.
                 status_code=None,
-                # **알려진 한계.** 이 컬럼은 NOT NULL 이라 "모른다" 를 담을 수 없다.
-                # 근거가 있을 때만 True 이고, 근거가 없으면 False 가 들어가는데 그
-                # False 는 "새로 쟀다" 가 아니라 "판단할 수 없었다" 는 뜻이다. 둘을
-                # 구분하려면 컬럼을 nullable 로 바꾸는 마이그레이션이 필요하고,
-                # 지금 세는 것이 캐시 비율이 아니라 **호출 횟수**라 미뤄 둔다.
-                # 캐시 비율을 지표로 쓰기 시작하면 그때 반드시 먼저 고쳐야 한다.
-                was_cache_hit=bool(cache_hit),
+                # 어댑터가 판단하지 못했으면 그대로 NULL — "모른다" 와 "새로 쟀다"
+                # 는 다른 사실이다(2026-08-03 마이그레이션으로 담을 수 있게 됐다).
+                was_cache_hit=cache_hit,
                 latency_ms=call.latency_ms,
                 cost_krw=_FREE_WITHIN_QUOTA_KRW,
                 request_id=request_id,

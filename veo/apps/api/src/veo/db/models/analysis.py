@@ -485,7 +485,11 @@ class APIUsageEvent(Base, ImmutableMixin):
     provider: Mapped[str] = mapped_column(String(48), nullable=False, index=True)
     operation: Mapped[str] = mapped_column(String(80), nullable=False)
     status_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    was_cache_hit: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    was_cache_hit: Mapped[bool | None] = mapped_column(
+        Boolean,
+        nullable=True,
+        comment="캐시 응답이었는가. NULL 은 판단 근거가 없었다는 뜻 — False(새로 잼)와 다르다.",
+    )
     latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)

@@ -22,8 +22,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Final
 
-from sqlalchemy import select
 from pydantic_core import to_jsonable_python
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select

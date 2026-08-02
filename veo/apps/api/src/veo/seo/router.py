@@ -33,6 +33,7 @@ from veo.scoring.improvements import rank_improvements
 from veo.scoring.page import PageScore
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
+from veo.seo.fix_examples import code_example_for
 from veo.seo.history import (
     read_scan_history,
     read_scan_report,
@@ -40,6 +41,7 @@ from veo.seo.history import (
 )
 from veo.seo.measure_performance import with_performance
 from veo.seo.pages import page_breakdown
+from veo.seo.regression import maybe_alert_score_drop
 from veo.seo.schemas import (
     CapSummary,
     CategorySummary,
@@ -223,7 +225,7 @@ def run_site_scan(
     if payload.site_id is not None:
         # 보여준 것을 그대로 남긴다. 조치 문구는 수집기가 발견한 값을 넣어 만들어 내므로
         # 명세로부터 되살릴 수 없다 — 스냅샷이 없으면 다시 열었을 때 문장이 달라진다.
-        save_scan_run(
+        saved = save_scan_run(
             db,
             principal=principal,
             site_id=payload.site_id,
@@ -234,6 +236,15 @@ def run_site_scan(
             urls_attempted=outcome.attempted,
             urls_collected=len(outcome.documents),
             report_snapshot=report.model_dump(mode="json"),
+        )
+        # 저장이 끝난 뒤에만 비교한다 — 이 진단이 '직전' 과 비교 가능한 최신이
+        # 되는 시점이 지금이다. 실패해도 저장·응답은 그대로다.
+        maybe_alert_score_drop(
+            db,
+            principal=principal,
+            site_id=payload.site_id,
+            origin=payload.target_url,
+            scan_run_id=saved.scan_run_id,
         )
 
     return ok(
@@ -591,7 +602,10 @@ def _scan_payload(result: SeoScanResult) -> ScanPayload:
                 remediation_ko=item.remediation_ko,
                 remediation_owner=item.remediation_owner,
                 business_impact_ko=item.business_impact_ko,
-                fix_example=item.fix_example,
+                # 수집기가 현장 코드를 만들었으면 그것(실측값 포함)이 우선,
+                # 없으면 등록부의 표준 예시 — 무료 화면과 같은 폴백이다. 콘솔이
+                # 무료 화면보다 정보가 적던 반쪽 연결의 수선(2026-08-03 감사).
+                fix_example=item.fix_example or code_example_for(item.check_id),
                 reverification_note_ko=item.reverification_note_ko,
             )
             for item in result.issues
