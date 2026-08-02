@@ -71,8 +71,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
         <h1 className={styles.title}>{result.targetUrl}</h1>
         <p className={styles.lede}>
           공유 링크로 열람하는 읽기 전용 리포트입니다. 진단 시점의 결과를 그대로
-          보여줍니다{expiry !== '' ? ` — ${expiry}까지 열람할 수 있고, 서버 재시작 시 더
-          일찍 만료될 수 있습니다` : ''}.
+          보여줍니다{expiry !== '' ? ` — ${expiry}까지 열람할 수 있습니다` : ''}.
         </p>
       </div>
       <SharedReport result={result} />

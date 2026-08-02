@@ -69,12 +69,12 @@ describe('readSharedResult', () => {
 
   it('readiness 키가 있으면 GEO 로 판별한다', async () => {
     vi.stubEnv('VEO_API_BASE_URL', 'https://engine.example');
-    const { score: _score, ...rest } = SEO_DATA;
-    const geoData = {
-      ...rest,
+    const geoData: Record<string, unknown> = {
+      ...SEO_DATA,
       readiness: SCORE_BLOCK,
       exposure: { is_blocked: false, status_codes: [], labels_ko: [] },
     };
+    delete geoData['score'];
 
     const outcome = await readSharedResult('tok', engineResponds(200, { data: geoData }));
 

@@ -275,9 +275,9 @@ export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
 /**
  * 결과 공유 — 이 진단을 그대로 다시 보여주는 `/results/{token}` 주소를 복사한다.
  *
- * 만료일은 서버가 발급한 값 그대로다. 그 아래 "더 일찍 만료될 수 있다"는 문구는
- * 결과 저장소가 아직 서버 메모리라는 실제 한계다(재배포·재시작이면 링크가 죽는다).
- * 지속 저장소가 붙기 전까지 이 문장을 지우면 화면이 거짓말을 하게 된다.
+ * 만료일은 서버가 발급한 값 그대로다. 결과는 DB 에 저장되므로(2026-08-03,
+ * public_shared_results) 서버가 재시작해도 링크는 만료일까지 산다 — 그 전의
+ * 인메모리 시절에 있던 "더 일찍 만료될 수 있다" 문구는 그래서 지웠다.
  */
 function ShareLink({ token, expiresAt }: { readonly token: string; readonly expiresAt: string }) {
   const [copied, setCopied] = useState(false);
@@ -304,8 +304,8 @@ function ShareLink({ token, expiresAt }: { readonly token: string; readonly expi
       </button>
       {fallbackUrl ? <span className={styles.shareUrl}>{fallbackUrl}</span> : null}
       <span className={styles.shareNote}>
-        {expiry !== '' ? `${expiry}까지 열람 가능` : '일정 기간 뒤 만료됩니다'} · 서버 재시작
-        시 더 일찍 만료될 수 있습니다
+        링크를 아는 사람은 누구나 볼 수 있습니다 ·{' '}
+        {expiry !== '' ? `${expiry}까지 열람 가능` : '일정 기간 뒤 만료됩니다'}
       </span>
     </div>
   );

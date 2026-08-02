@@ -237,7 +237,7 @@ describe('미리보기', () => {
 });
 
 describe('결과 공유', () => {
-  it('공유 버튼이 /results/{token} 주소를 복사하고, 만료일과 조기 만료 한계를 말한다', async () => {
+  it('공유 버튼이 /results/{token} 주소를 복사하고, 만료일과 공개 범위를 말한다', async () => {
     mockScan();
     const user = await runScanThroughForm();
 
@@ -245,9 +245,9 @@ describe('결과 공유', () => {
 
     expect(await navigator.clipboard.readText()).toBe('https://console.veo.test/results/t');
     expect(screen.getByText('복사됨 ✓')).toBeInTheDocument();
-    // 만료일은 서버 값 그대로(표기 시간대만 로컬), 저장소가 메모리라는 한계도 숨기지 않는다.
+    // 만료일은 서버 값 그대로(표기 시간대만 로컬), 링크가 곧 열람 권한이라는 사실도 말한다.
     expect(screen.getByText(/2026\.8\.\d+까지 열람 가능/)).toBeInTheDocument();
-    expect(screen.getByText(/더 일찍 만료될 수 있습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/링크를 아는 사람은 누구나/)).toBeInTheDocument();
   });
 
   it('토큰이 없으면 공유 버튼을 그리지 않는다 — 죽은 링크를 만들지 않는다', async () => {
