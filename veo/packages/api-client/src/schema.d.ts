@@ -7148,12 +7148,24 @@ export interface components {
         SpecCategoryDetail: {
             /** Checks */
             checks: components["schemas"]["SpecCheckDetail"][];
+            /**
+             * Contributes To Score
+             * @default true
+             */
+            contributes_to_score: boolean;
             /** Description Ko */
             description_ko: string | null;
             /** Id */
             id: string;
+            /**
+             * Is Gate
+             * @default false
+             */
+            is_gate: boolean;
             /** Name Ko */
             name_ko: string;
+            /** Raw Budget */
+            raw_budget?: number | null;
             /** Weight */
             weight: number;
         };
@@ -7167,6 +7179,8 @@ export interface components {
             evidence_required: string[];
             /** Id */
             id: string;
+            /** Points */
+            points?: number | null;
             /** Remediation Owner */
             remediation_owner: string;
             /** Scope */
@@ -7204,8 +7218,10 @@ export interface components {
             implementation_owner: string;
             /** Is Rank Prediction */
             is_rank_prediction: boolean;
+            measurement_scope?: components["schemas"]["SpecScopeDetail"] | null;
             /** Methodology Owner */
             methodology_owner: string;
+            sampling?: components["schemas"]["SpecSamplingDetail"] | null;
             /** Score Meaning Ko */
             score_meaning_ko: string;
             /** Severity Coefficients */
@@ -7216,6 +7232,7 @@ export interface components {
             spec_id: string;
             /** Status */
             status: string;
+            status_policy: components["schemas"]["SpecStatusPolicyDetail"];
             /** Url Importance */
             url_importance: {
                 [key: string]: number;
@@ -7238,6 +7255,60 @@ export interface components {
         SpecListPayload: {
             /** Specs */
             specs: components["schemas"]["SpecSummary"][];
+        };
+        /**
+         * SpecSamplingDetail
+         * @description 표본 정책 — 무엇을 몇 장만 재는지, NOT_SAMPLED 가 허용되는 검사 목록.
+         */
+        SpecSamplingDetail: {
+            /** Perf Field Check Ids */
+            perf_field_check_ids?: string[];
+            /** Perf Field Rationale Ko */
+            perf_field_rationale_ko?: string | null;
+            /** Perf Lab Check Ids */
+            perf_lab_check_ids?: string[];
+            /** Perf Lab Max Urls */
+            perf_lab_max_urls?: number | null;
+            /** Perf Lab Min Measured Ratio */
+            perf_lab_min_measured_ratio?: number | null;
+            /** Perf Lab Rationale Ko */
+            perf_lab_rationale_ko?: string | null;
+        };
+        /**
+         * SpecScopeDetail
+         * @description 측정 범위 선언(1.9.0+). 몇 장을 봤는가는 점수의 분모이고, 분모는 점수의 일부다.
+         */
+        SpecScopeDetail: {
+            /** Max Depth */
+            max_depth: number;
+            /** Max Pages */
+            max_pages: number;
+            /** Rationale Ko */
+            rationale_ko?: string | null;
+            /** Template Group Sample */
+            template_group_sample: number;
+            /** Truncated Absence */
+            truncated_absence: string;
+        };
+        /**
+         * SpecStatusPolicyDetail
+         * @description 판정 상태를 점수로 바꾸는 규칙 — 설계도의 셈법 칸.
+         */
+        SpecStatusPolicyDetail: {
+            /** Breadth Exponent */
+            breadth_exponent: number;
+            /** Fail Penalty Multiplier */
+            fail_penalty_multiplier: number;
+            /** Not Applicable */
+            not_applicable: string;
+            /** Not Sampled */
+            not_sampled?: string | null;
+            /** Pass Penalty Multiplier */
+            pass_penalty_multiplier: number;
+            /** Unknown */
+            unknown: string;
+            /** Warning Penalty Multiplier */
+            warning_penalty_multiplier: number;
         };
         /** SpecSummary */
         SpecSummary: {

@@ -140,6 +140,20 @@ NOT_SAMPLED 실발행) → ⑥ 콘솔 페이지 화면(페이지 목록·SITE �
 
 ---
 
+### 채점 기준 화면 결함 + 알고리즘 설계도 (2026-08-02, 사용자 발견·요청)
+
+콘솔 "채점 기준 버전" 화면이 **하드코딩된 1.0.0 목록**(lib/scoring.ts)을 그리고
+있었다 — 실제 발행본이 1.9.0 인데 화면은 계속 1.0.0. "같은 값 두 곳" 결함의 화면판.
+고침: lib/scoring-specs.ts 가 /api/scoring/specs(목록→최신 발행판 선별, 버전은
+숫자 비교) + /specs/{id}/{version}(상세)를 실시간으로 읽는다. 하드코딩 배열은
+제거하고 제자리에 경고 주석. **알고리즘 설계도** 섹션 신설 — 산식 한 줄(도달률x품질),
+단계 표(관문/품질·가중치·검사 수), 셈법(N/A·UNKNOWN·NOT_SAMPLED·breadth 0.7·주의
+50%), 측정 범위(200장 등 + 명세의 rationale_ko 그대로), 성능 표본 정책, 상한, 등급
+구간, 개정 이력 3판 — **전부 발행 명세에서 읽은 값**(화면 파일에 숫자 0개).
+이를 위해 SpecDetail API 확장: is_gate/raw_budget/contributes_to_score/points/
+status_policy/measurement_scope/sampling. 계약 시험
+tests/contract/test_spec_detail_design_fields.py 가 설계도 재료가 끊기지 않게 지킨다.
+
 ## 3. 이번 세션에서 배운 것 (반복하지 말 것)
 
 ### 상태를 못 박는 시험은 반드시 정상적인 개정을 막는다

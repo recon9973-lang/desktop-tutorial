@@ -1,0 +1,34 @@
+/* 알고리즘 설계도 — 채점 기준 버전 화면 전용 */
+
+.formula {
+  font-size: 15px; font-weight: var(--veo-weight-semibold);
+  border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface); padding: 12px 16px; margin: 0 0 8px;
+}
+.formulaNote { font-size: 13px; color: var(--veo-color-text-muted); line-height: 1.7; margin: 0 0 14px; }
+
+.subhead { font-size: 14px; margin: 18px 0 8px; }
+
+.stageTable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.stageTable th, .stageTable td {
+  text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--veo-color-bg-subtle);
+}
+.stageTable thead th { font-size: 11.5px; color: var(--veo-color-text-muted); }
+.stageTable tbody th { font-weight: var(--veo-weight-semibold); }
+
+.outsideNote { font-size: 12.5px; color: var(--veo-color-text-muted); margin: 8px 0 0; }
+
+.rationale { margin: 8px 0; font-size: 13px; }
+.rationale summary { cursor: pointer; color: var(--veo-color-accent); font-weight: var(--veo-weight-semibold); }
+.rationale p { margin: 8px 0 0; line-height: 1.75; color: var(--veo-color-text-muted); white-space: pre-line; }
+
+.changelogBody { max-width: 72ch; }
+
+.bands { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.bands li {
+  border: 1px solid var(--veo-color-border); border-radius: var(--veo-radius-md);
+  padding: 7px 12px; font-size: 12.5px; display: flex; flex-direction: column; gap: 1px;
+}
+.bands span { color: var(--veo-color-text-muted); font-variant-numeric: tabular-nums; }
+
+.designFootnote { font-size: 11.5px; color: var(--veo-color-text-muted); margin: 16px 0 0; }

@@ -14008,6 +14008,11 @@
             "title": "Checks",
             "type": "array"
           },
+          "contributes_to_score": {
+            "default": true,
+            "title": "Contributes To Score",
+            "type": "boolean"
+          },
           "description_ko": {
             "anyOf": [
               {
@@ -14023,9 +14028,25 @@
             "title": "Id",
             "type": "string"
           },
+          "is_gate": {
+            "default": false,
+            "title": "Is Gate",
+            "type": "boolean"
+          },
           "name_ko": {
             "title": "Name Ko",
             "type": "string"
+          },
+          "raw_budget": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Budget"
           },
           "weight": {
             "title": "Weight",
@@ -14073,6 +14094,17 @@
           "id": {
             "title": "Id",
             "type": "string"
+          },
+          "points": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Points"
           },
           "remediation_owner": {
             "title": "Remediation Owner",
@@ -14172,9 +14204,29 @@
             "title": "Is Rank Prediction",
             "type": "boolean"
           },
+          "measurement_scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecScopeDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "methodology_owner": {
             "title": "Methodology Owner",
             "type": "string"
+          },
+          "sampling": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpecSamplingDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "score_meaning_ko": {
             "title": "Score Meaning Ko",
@@ -14194,6 +14246,9 @@
           "status": {
             "title": "Status",
             "type": "string"
+          },
+          "status_policy": {
+            "$ref": "#/components/schemas/SpecStatusPolicyDetail"
           },
           "url_importance": {
             "additionalProperties": {
@@ -14225,6 +14280,7 @@
           "gates",
           "severity_coefficients",
           "url_importance",
+          "status_policy",
           "changelog"
         ],
         "title": "SpecDetail",
@@ -14281,6 +14337,164 @@
           "specs"
         ],
         "title": "SpecListPayload",
+        "type": "object"
+      },
+      "SpecSamplingDetail": {
+        "additionalProperties": false,
+        "description": "표본 정책 — 무엇을 몇 장만 재는지, NOT_SAMPLED 가 허용되는 검사 목록.",
+        "properties": {
+          "perf_field_check_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Perf Field Check Ids",
+            "type": "array"
+          },
+          "perf_field_rationale_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perf Field Rationale Ko"
+          },
+          "perf_lab_check_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Perf Lab Check Ids",
+            "type": "array"
+          },
+          "perf_lab_max_urls": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perf Lab Max Urls"
+          },
+          "perf_lab_min_measured_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perf Lab Min Measured Ratio"
+          },
+          "perf_lab_rationale_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perf Lab Rationale Ko"
+          }
+        },
+        "title": "SpecSamplingDetail",
+        "type": "object"
+      },
+      "SpecScopeDetail": {
+        "additionalProperties": false,
+        "description": "측정 범위 선언(1.9.0+). 몇 장을 봤는가는 점수의 분모이고, 분모는 점수의 일부다.",
+        "properties": {
+          "max_depth": {
+            "title": "Max Depth",
+            "type": "integer"
+          },
+          "max_pages": {
+            "title": "Max Pages",
+            "type": "integer"
+          },
+          "rationale_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale Ko"
+          },
+          "template_group_sample": {
+            "title": "Template Group Sample",
+            "type": "integer"
+          },
+          "truncated_absence": {
+            "title": "Truncated Absence",
+            "type": "string"
+          }
+        },
+        "required": [
+          "max_pages",
+          "max_depth",
+          "template_group_sample",
+          "truncated_absence"
+        ],
+        "title": "SpecScopeDetail",
+        "type": "object"
+      },
+      "SpecStatusPolicyDetail": {
+        "additionalProperties": false,
+        "description": "판정 상태를 점수로 바꾸는 규칙 — 설계도의 셈법 칸.",
+        "properties": {
+          "breadth_exponent": {
+            "title": "Breadth Exponent",
+            "type": "number"
+          },
+          "fail_penalty_multiplier": {
+            "title": "Fail Penalty Multiplier",
+            "type": "number"
+          },
+          "not_applicable": {
+            "title": "Not Applicable",
+            "type": "string"
+          },
+          "not_sampled": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Not Sampled"
+          },
+          "pass_penalty_multiplier": {
+            "title": "Pass Penalty Multiplier",
+            "type": "number"
+          },
+          "unknown": {
+            "title": "Unknown",
+            "type": "string"
+          },
+          "warning_penalty_multiplier": {
+            "title": "Warning Penalty Multiplier",
+            "type": "number"
+          }
+        },
+        "required": [
+          "fail_penalty_multiplier",
+          "warning_penalty_multiplier",
+          "pass_penalty_multiplier",
+          "breadth_exponent",
+          "not_applicable",
+          "unknown"
+        ],
+        "title": "SpecStatusPolicyDetail",
         "type": "object"
       },
       "SpecSummary": {

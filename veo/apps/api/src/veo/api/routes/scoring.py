@@ -23,6 +23,9 @@ from veo.api.schemas import (
     SpecDetail,
     SpecGateDetail,
     SpecListPayload,
+    SpecSamplingDetail,
+    SpecScopeDetail,
+    SpecStatusPolicyDetail,
     SpecSummary,
 )
 from veo.contracts.enums import ErrorCode
@@ -96,6 +99,9 @@ def get_spec(spec_id: str, version: str, request_id: RequestId) -> ApiResponse[S
                 name_ko=category.name_ko,
                 weight=category.weight,
                 description_ko=category.description_ko,
+                is_gate=category.is_gate,
+                raw_budget=category.raw_budget,
+                contributes_to_score=category.contributes_to_score,
                 checks=[
                     SpecCheckDetail(
                         id=check.id,
@@ -106,6 +112,7 @@ def get_spec(spec_id: str, version: str, request_id: RequestId) -> ApiResponse[S
                         applicability_ko=check.applicability_ko,
                         evidence_required=list(check.evidence_required),
                         engine_scope=list(check.engine_scope),
+                        points=check.points,
                     )
                     for check in category.checks
                 ],
@@ -132,6 +139,60 @@ def get_spec(spec_id: str, version: str, request_id: RequestId) -> ApiResponse[S
         ],
         severity_coefficients={str(k): v for k, v in spec.severity_coefficients.items()},
         url_importance=dict(spec.url_importance),
+        status_policy=SpecStatusPolicyDetail(
+            fail_penalty_multiplier=spec.status_policy.fail_penalty_multiplier,
+            warning_penalty_multiplier=spec.status_policy.warning_penalty_multiplier,
+            pass_penalty_multiplier=spec.status_policy.pass_penalty_multiplier,
+            breadth_exponent=spec.status_policy.breadth_exponent,
+            not_applicable=spec.status_policy.not_applicable,
+            unknown=spec.status_policy.unknown,
+            not_sampled=spec.status_policy.not_sampled,
+        ),
+        measurement_scope=(
+            None
+            if spec.measurement_scope is None
+            else SpecScopeDetail(
+                max_pages=spec.measurement_scope.max_pages,
+                max_depth=spec.measurement_scope.max_depth,
+                template_group_sample=spec.measurement_scope.template_group_sample,
+                truncated_absence=spec.measurement_scope.truncated_absence,
+                rationale_ko=spec.measurement_scope.rationale_ko,
+            )
+        ),
+        sampling=(
+            None
+            if spec.sampling is None
+            else SpecSamplingDetail(
+                perf_lab_max_urls=(
+                    None if spec.sampling.perf_lab is None else spec.sampling.perf_lab.max_urls
+                ),
+                perf_lab_min_measured_ratio=(
+                    None
+                    if spec.sampling.perf_lab is None
+                    else spec.sampling.perf_lab.min_measured_ratio
+                ),
+                perf_lab_check_ids=(
+                    []
+                    if spec.sampling.perf_lab is None
+                    else list(spec.sampling.perf_lab.check_ids)
+                ),
+                perf_lab_rationale_ko=(
+                    None
+                    if spec.sampling.perf_lab is None
+                    else spec.sampling.perf_lab.rationale_ko
+                ),
+                perf_field_check_ids=(
+                    []
+                    if spec.sampling.perf_field is None
+                    else list(spec.sampling.perf_field.check_ids)
+                ),
+                perf_field_rationale_ko=(
+                    None
+                    if spec.sampling.perf_field is None
+                    else spec.sampling.perf_field.rationale_ko
+                ),
+            )
+        ),
         changelog=[entry.model_dump() for entry in spec.changelog],
     )
     return ok(

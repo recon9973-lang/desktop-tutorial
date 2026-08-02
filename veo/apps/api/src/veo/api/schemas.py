@@ -83,6 +83,8 @@ class SpecCheckDetail(BaseModel):
     applicability_ko: str | None
     evidence_required: list[str]
     engine_scope: list[str]
+    #: 명시 배점(1.8.0+). 없으면 심각도 계수로 계산되던 판이다.
+    points: float | None = None
 
 
 class SpecCategoryDetail(BaseModel):
@@ -92,6 +94,12 @@ class SpecCategoryDetail(BaseModel):
     name_ko: str
     weight: float
     description_ko: str | None
+    #: 관문 영역 — 가중 평균이 아니라 점수에 곱해진다(설계도 화면의 근거).
+    is_gate: bool = False
+    #: 고정 분모. 없으면 1.7.0 이하의 가변 분모 판이다.
+    raw_budget: float | None = None
+    #: 점수를 이루지 않는 영역(연동 필요 등) — 화면이 갈라 그린다.
+    contributes_to_score: bool = True
     checks: list[SpecCheckDetail]
 
 
@@ -129,6 +137,45 @@ class SpecBandDetail(BaseModel):
     description_ko: str | None = None
 
 
+class SpecStatusPolicyDetail(BaseModel):
+    """판정 상태를 점수로 바꾸는 규칙 — 설계도의 셈법 칸."""
+
+    model_config = _STRICT
+
+    fail_penalty_multiplier: float
+    warning_penalty_multiplier: float
+    pass_penalty_multiplier: float
+    breadth_exponent: float
+    not_applicable: str
+    unknown: str
+    not_sampled: str | None = None
+
+
+class SpecScopeDetail(BaseModel):
+    """측정 범위 선언(1.9.0+). 몇 장을 봤는가는 점수의 분모이고, 분모는 점수의 일부다."""
+
+    model_config = _STRICT
+
+    max_pages: int
+    max_depth: int
+    template_group_sample: int
+    truncated_absence: str
+    rationale_ko: str | None = None
+
+
+class SpecSamplingDetail(BaseModel):
+    """표본 정책 — 무엇을 몇 장만 재는지, NOT_SAMPLED 가 허용되는 검사 목록."""
+
+    model_config = _STRICT
+
+    perf_lab_max_urls: int | None = None
+    perf_lab_min_measured_ratio: float | None = None
+    perf_lab_check_ids: list[str] = Field(default_factory=list)
+    perf_lab_rationale_ko: str | None = None
+    perf_field_check_ids: list[str] = Field(default_factory=list)
+    perf_field_rationale_ko: str | None = None
+
+
 class SpecDetail(SpecSummary):
     model_config = _STRICT
 
@@ -140,6 +187,9 @@ class SpecDetail(SpecSummary):
     gates: list[SpecGateDetail]
     severity_coefficients: dict[str, float]
     url_importance: dict[str, float]
+    status_policy: SpecStatusPolicyDetail
+    measurement_scope: SpecScopeDetail | None = None
+    sampling: SpecSamplingDetail | None = None
     changelog: list[dict[str, str]]
 
 
