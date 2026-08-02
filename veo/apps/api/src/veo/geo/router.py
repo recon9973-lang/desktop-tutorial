@@ -1,7 +1,8 @@
-"""``/geo`` — GEO readiness endpoints. **Not mounted.**
+"""``/geo`` — GEO readiness endpoints.
 
-``veo.api.app`` belongs to the integration maintainer, so this router is defined and
-tested here and included there when the integrator is ready. See ``INTEGRATION_REQUEST.md``.
+(2026-08-03 정정: 이 머리글은 오랫동안 "Not mounted" 라고 말했지만 실제로는
+``veo.api.app`` 이 마운트하고 있었다 — 화면의 1.0.0 하드코딩과 같은 "문서가
+현실을 안 따라온" 사례라 기록을 남기고 고친다.)
 
 The analysis endpoint takes material that has already been fetched rather than a URL to
 fetch. Crawling belongs to the collection pipeline, which owns the SSRF guard and the
