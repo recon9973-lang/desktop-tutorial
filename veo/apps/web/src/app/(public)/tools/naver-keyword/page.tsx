@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
-import { Card, DATA_SOURCES, DATA_SOURCE_DESCRIPTIONS_KO, DATA_SOURCE_LABELS_KO, EmptyState } from '@veo/ui';
+import { Card, DATA_SOURCES, DATA_SOURCE_DESCRIPTIONS_KO, DATA_SOURCE_LABELS_KO } from '@veo/ui';
 
 import styles from '@/styles/page.module.css';
+
+import { KeywordLookupForm } from './KeywordLookupForm';
 
 export const metadata: Metadata = {
   title: '네이버 키워드 점검',
@@ -21,11 +23,11 @@ export default function NaverKeywordToolPage() {
         </p>
       </div>
 
-      <section className={styles.section} aria-labelledby="keyword-result-heading">
-        <h2 id="keyword-result-heading" className={styles.sectionTitle}>
-          조회 결과
+      <section className={styles.section} aria-labelledby="keyword-lookup-heading">
+        <h2 id="keyword-lookup-heading" className={styles.sectionTitle}>
+          키워드 조회
         </h2>
-        <EmptyState description="이 화면은 아직 키워드 수집기와 연결되어 있지 않습니다. 연결되면 조회한 키워드의 값이 출처·수집 시각과 함께 이곳에 표시됩니다." />
+        <KeywordLookupForm />
       </section>
 
       <section className={styles.section} aria-labelledby="keyword-sources-heading">

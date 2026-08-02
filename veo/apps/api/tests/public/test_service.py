@@ -52,6 +52,7 @@ def build_service(
     store: InMemoryPublicResultStore | None = None,
     log: RequestLog | None = None,
     serve_unknown_hosts: bool = False,
+    searchad: object | None = None,
 ) -> PublicScanService:
     """The service under test.
 
@@ -68,7 +69,7 @@ def build_service(
         clock=clock or ServiceClock(),
         # Explicitly credential-less: a test must not depend on whatever happens to sit
         # in the deployment's .env, and a client with no credential opens no connection.
-        searchad=NaverSearchAdClient(credentials=None),
+        searchad=searchad if searchad is not None else NaverSearchAdClient(credentials=None),
         # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
         # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
         performance=lambda context: (context, None),
@@ -409,6 +410,48 @@ def test_a_keyword_lookup_with_no_credential_returns_states_and_no_numbers() -> 
     assert entry.normalized_keyword
     assert entry.monthly_total_searches is None
     assert payload.notices_ko
+
+
+def test_a_spaced_keyword_still_gets_its_numbers() -> None:
+    """네이버는 띄어쓰기를 뗀 형태로 답한다("강남 피부과" → "강남피부과").
+
+    응답을 우리 표준형과 그대로 비교하면 띄어쓰기 있는 키워드가 전부 "값 없음"이
+    된다 — 조회는 성공했는데 값이 경계에서 버려진다. 한국어 검색 키워드는 대부분
+    띄어쓰기가 있으므로, 이 매칭이 무너지면 무료 도구는 사실상 빈 표만 그린다.
+    (콘솔 조회가 같은 결함을 먼저 잡았다 — tests/keywords/test_keywords_with_spaces.py)
+    """
+    from datetime import UTC, datetime
+
+    from tests.keywords.test_keywords_with_spaces import keywordstool_response
+
+    from veo.contracts.enums import ProviderState
+    from veo.providers.naver.errors import CallOutcome
+    from veo.providers.naver.searchad import normalize_keywordstool
+
+    response = normalize_keywordstool(
+        keywordstool_response(
+            [{"relKeyword": "강남피부과", "monthlyPcQcCnt": 940, "monthlyMobileQcCnt": 1830}]
+        ),
+        collected_at=datetime(2026, 8, 3, tzinfo=UTC),
+        raw_bytes=b"{}",
+    )
+
+    class StubSearchAd:
+        state = ProviderState.ENABLED
+
+        def lookup(self, keywords):  # type: ignore[no-untyped-def]
+            return CallOutcome(value=response, failure=None, attempts=1)
+
+    service = build_service(searchad=StubSearchAd())
+    payload = service.lookup_keywords(
+        keywords=["강남 피부과"], client_ip="203.0.113.9", session_id="s-1"
+    )
+
+    entry = payload.keywords[0]
+    assert entry.monthly_total_searches == 940 + 1830, (
+        "공급자가 준 값이 매칭 실패로 '값 없음'이 되었다"
+    )
+    assert entry.monthly_total_quality == "EXACT"
 
 
 def test_a_keyword_lookup_records_nothing() -> None:

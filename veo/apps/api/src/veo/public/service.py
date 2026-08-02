@@ -45,7 +45,7 @@ from veo.contracts.enums import ErrorCode, ProviderState, UrlImportance, ValueQu
 from veo.contracts.envelope import ApiError
 from veo.core.settings import Settings, get_settings
 from veo.geo.service import GEO_SPEC_ID, GeoReadinessReport, run_geo_readiness
-from veo.keywords.normalize import normalize_keyword
+from veo.keywords.normalize import normalize_keyword, searchad_hint
 from veo.providers.naver.credentials import searchad_from_settings
 from veo.providers.naver.errors import UnknownValue
 from veo.providers.naver.searchad import NaverSearchAdClient, SearchAdKeywordMetrics, SearchCount
@@ -415,11 +415,19 @@ class PublicScanService:
             if outcome.failure is not None:
                 notices.append(outcome.failure.reason_ko)
         else:
+            # 네이버는 띄어쓰기를 뗀 형태로 돌려준다("강남 피부과" → "강남피부과").
+            # 우리 표준형과 그대로 비교하면 띄어쓰기 있는 키워드가 전부 "값 없음"이
+            # 된다 — 조회는 성공했는데 값이 경계에서 버려지는 것이다. 그래서 양쪽을
+            # 공급자의 모양(hint)으로 맞춰 비교한다(콘솔 조회의 seed 매칭과 같은 교훈).
             for metric in outcome.value.metrics:
-                metrics_by_keyword.setdefault(normalize_keyword(metric.keyword), metric)
+                metrics_by_keyword.setdefault(
+                    searchad_hint(normalize_keyword(metric.keyword)), metric
+                )
 
         entries = [
-            _keyword_entry(original, normalized, metrics_by_keyword.get(normalized))
+            _keyword_entry(
+                original, normalized, metrics_by_keyword.get(searchad_hint(normalized))
+            )
             for original, normalized in cleaned
         ]
         state = self._searchad.state
