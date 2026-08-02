@@ -5559,6 +5559,9 @@ export interface components {
         };
         /** PublicGeoScanPayload */
         PublicGeoScanPayload: {
+            /** Checks */
+            checks?: components["schemas"]["PublicCheckRow"][];
+            counts?: components["schemas"]["PublicStatusCounts"];
             exposure: components["schemas"]["PublicExposureBlock"];
             /**
              * Kind
@@ -5566,6 +5569,11 @@ export interface components {
              * @constant
              */
             kind: "GEO";
+            /**
+             * Reach
+             * @default 1
+             */
+            reach: number;
             readiness: components["schemas"]["PublicScoreBlock"];
             /**
              * Result Expires At
@@ -5581,6 +5589,8 @@ export interface components {
              * @default 무료 진단은 페이지 수와 외부 연동을 제한한 축소 범위로 실행됩니다. 채점 방식과 명세는 유료 진단과 동일하며, 측정하지 못한 항목은 감점 대신 측정 범위(coverage)에 반영됩니다.
              */
             scope_notice_ko: string;
+            /** Stages */
+            stages?: components["schemas"]["PublicStage"][];
             /** Summary Ko */
             summary_ko: string;
             /** Target Url */

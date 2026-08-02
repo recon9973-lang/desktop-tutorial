@@ -78,7 +78,7 @@ from veo.scoring.improvements import rank_improvements
 from veo.seo.fix_examples import code_example_for
 from veo.seo.parsing.html import parse_html
 from veo.seo.service import SPEC_ID as SEO_SPEC_ID
-from veo.seo.service import SeoScanResult, run_seo_scan
+from veo.seo.service import run_seo_scan
 
 __all__ = [
     "MAX_PUBLIC_KEYWORDS",
@@ -306,7 +306,11 @@ class PublicScanService:
             score=_score_block(spec, result.score),
             reach=result.score.reach,
             stages=_stages(spec, result.score),
-            checks=_check_rows(spec, result),
+            checks=_check_rows(
+                spec,
+                result.score,
+                {item.check_id: item.reason_ko for item in result.unknown_checks},
+            ),
             counts=_status_counts(spec, result.score.outcomes),
             previews=_previews(documents[0] if documents else None),
             top_findings=_findings(spec, result.score.outcomes),
@@ -343,6 +347,10 @@ class PublicScanService:
             scanned_url_count=len(documents),
             summary_ko=report.summary_ko(),
             readiness=_score_block(spec, report.score),
+            reach=report.score.reach,
+            stages=_stages(spec, report.score),
+            checks=_check_rows(spec, report.score),
+            counts=_status_counts(spec, report.score.outcomes),
             exposure=_exposure_block(report),
             top_findings=_findings(spec, report.score.outcomes),
             total_finding_count=_finding_total(report.score.outcomes),
@@ -615,7 +623,11 @@ def _stages(spec: ScoringSpec, result: ScoreResult) -> list[PublicStage]:
     return rows
 
 
-def _check_rows(spec: ScoringSpec, result: SeoScanResult) -> list[PublicCheckRow]:
+def _check_rows(
+    spec: ScoringSpec,
+    score: ScoreResult,
+    unknown_reasons: Mapping[str, str] | None = None,
+) -> list[PublicCheckRow]:
     """전체 검사 목록 — 명세가 아는 모든 검사에 판정·이유·이득·조치 코드를 붙인다.
 
     무료 결과가 상위 몇 건만 보여주던 것에서 전체 공개로 바꾼 것은 화면 확정
@@ -623,11 +635,9 @@ def _check_rows(spec: ScoringSpec, result: SeoScanResult) -> list[PublicCheckRow
     으로 넘어오게 하는 쪽을 택했다 — 페이지 간 비교 항목은 어차피 여기서 측정
     불가로 남아, 전체 진단의 이유가 화면 자체에 있다.
     """
-    outcome_by_id = {outcome.check_id: outcome for outcome in result.score.outcomes}
-    unknown_reason = {item.check_id: item.reason_ko for item in result.unknown_checks}
-    improvement_by_id = {
-        entry.check_id: entry for entry in rank_improvements(result.score)
-    }
+    outcome_by_id = {outcome.check_id: outcome for outcome in score.outcomes}
+    unknown_reason = dict(unknown_reasons or {})
+    improvement_by_id = {entry.check_id: entry for entry in rank_improvements(score)}
 
     rows: list[PublicCheckRow] = []
     for category in spec.categories:

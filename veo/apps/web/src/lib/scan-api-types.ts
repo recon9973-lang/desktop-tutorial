@@ -89,6 +89,8 @@ export interface ScanResult {
   readonly checks: readonly ScanCheckRow[];
   readonly counts: ScanCounts;
   readonly previews: ScanPreviews | null;
+  /** GEO 전용 — 노출 차단 상태. 준비도 점수와 절대 합치지 않는다. */
+  readonly exposure: { readonly isBlocked: boolean; readonly labels: readonly string[] } | null;
   readonly findings: readonly ScanFinding[];
   readonly findingCount: number;
   /** 판정에 필요한 근거를 못 모은 항목 수. 감점이 아니라 측정 범위에 반영된다. */

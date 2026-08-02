@@ -10327,6 +10327,16 @@
       "PublicGeoScanPayload": {
         "additionalProperties": false,
         "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/PublicCheckRow"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/PublicStatusCounts"
+          },
           "exposure": {
             "$ref": "#/components/schemas/PublicExposureBlock"
           },
@@ -10335,6 +10345,11 @@
             "default": "GEO",
             "title": "Kind",
             "type": "string"
+          },
+          "reach": {
+            "default": 1.0,
+            "title": "Reach",
+            "type": "number"
           },
           "readiness": {
             "$ref": "#/components/schemas/PublicScoreBlock"
@@ -10356,6 +10371,13 @@
             "default": "무료 진단은 페이지 수와 외부 연동을 제한한 축소 범위로 실행됩니다. 채점 방식과 명세는 유료 진단과 동일하며, 측정하지 못한 항목은 감점 대신 측정 범위(coverage)에 반영됩니다.",
             "title": "Scope Notice Ko",
             "type": "string"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/PublicStage"
+            },
+            "title": "Stages",
+            "type": "array"
           },
           "summary_ko": {
             "title": "Summary Ko",

@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { SeoChecker } from './SeoChecker';
+import { PublicChecker } from './PublicChecker';
 import type { ScanCheckRow, ScanResult } from '@/lib/scan-api-types';
 
 function checkRow(overrides: Partial<ScanCheckRow>): ScanCheckRow {
@@ -90,6 +90,7 @@ const RESULT: ScanResult = {
     }),
   ],
   counts: { failed: 1, warned: 0, passed: 1, unknown: 2, notApplicable: 0 },
+  exposure: null,
   previews: {
     serpTitle: null,
     serpDescription: null,
@@ -113,7 +114,7 @@ function mockScan(result: ScanResult = RESULT) {
 
 async function runScanThroughForm() {
   const user = userEvent.setup();
-  render(<SeoChecker />);
+  render(<PublicChecker kind="SEO" />);
   await user.type(screen.getByLabelText('진단할 주소'), 'https://grand1.co.kr/');
   await user.click(screen.getByRole('button', { name: '진단하기' }));
   await screen.findByText('취약');
@@ -185,6 +186,28 @@ describe('더보기', () => {
     await runScanThroughForm();
 
     expect(screen.getAllByText('점수 밖').length).toBeGreaterThan(0);
+  });
+});
+
+describe('GEO', () => {
+  it('노출 차단은 점수와 별개의 경고로 나온다 — 합치지 않는다', async () => {
+    mockScan({
+      ...RESULT,
+      kind: 'GEO',
+      previews: null,
+      exposure: { isBlocked: true, labels: ['인증서 경고'] },
+    });
+    const user = userEvent.setup();
+    render(<PublicChecker kind="GEO" />);
+    await user.type(screen.getByLabelText('진단할 주소'), 'https://grand1.co.kr/');
+    await user.click(screen.getByRole('button', { name: '진단하기' }));
+    await screen.findByText('취약');
+
+    expect(screen.getByRole('alert')).toHaveTextContent('노출 차단');
+    expect(screen.getByRole('alert')).toHaveTextContent('인증서 경고');
+    // 점수는 점수대로 그려진다 — 차단이 점수를 바꾸지 않는다.
+    expect(screen.getAllByText('31.5').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('GEO 준비도').length).toBeGreaterThan(0);
   });
 });
 

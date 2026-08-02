@@ -261,6 +261,10 @@ class PublicGeoScanPayload(BaseModel):
     summary_ko: str
     scope_notice_ko: str = PUBLIC_SCOPE_NOTICE_KO
     readiness: PublicScoreBlock
+    reach: float = 1.0
+    stages: list[PublicStage] = Field(default_factory=list)
+    checks: list[PublicCheckRow] = Field(default_factory=list)
+    counts: PublicStatusCounts = Field(default_factory=PublicStatusCounts)
     exposure: PublicExposureBlock
     top_findings: list[PublicFinding] = Field(default_factory=list)
     total_finding_count: int = 0

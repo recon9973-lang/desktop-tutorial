@@ -174,8 +174,23 @@ function toPreviews(raw: unknown): ScanPreviews | null {
   };
 }
 
+function toExposure(raw: unknown): ScanResult['exposure'] {
+  const source = asRecord(raw);
+  if (source === null) {
+    return null;
+  }
+  return {
+    isBlocked: source['is_blocked'] === true,
+    labels: Array.isArray(source['labels_ko'])
+      ? source['labels_ko'].filter((item): item is string => typeof item === 'string')
+      : [],
+  };
+}
+
 function toResult(raw: Record<string, unknown>, kind: ScanKind): ScanResult | null {
-  const score = asRecord(raw['score']);
+  // SEO 는 score, GEO 는 readiness — 준비도와 노출 차단을 합치지 않는다는 서버
+  // 설계가 키 이름에 그대로 있다.
+  const score = asRecord(raw['score']) ?? asRecord(raw['readiness']);
   if (score === null) {
     return null;
   }
@@ -198,6 +213,7 @@ function toResult(raw: Record<string, unknown>, kind: ScanKind): ScanResult | nu
       : [],
     counts: toCounts(raw['counts']),
     previews: toPreviews(raw['previews']),
+    exposure: toExposure(raw['exposure']),
     findings,
     findingCount: readNumber(raw, 'total_finding_count') ?? findings.length,
     unmeasuredCount: readNumber(raw, 'unmeasured_check_count') ?? 0,

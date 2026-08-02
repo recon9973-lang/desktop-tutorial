@@ -19,7 +19,7 @@ import Link from 'next/link';
 
 import type { ScanCheckRow, ScanResult, ScanVerdict } from '@/lib/scan-api-types';
 
-import styles from './seo-checker.module.css';
+import styles from './public-checker.module.css';
 
 type Filter = 'ALL' | ScanVerdict;
 
@@ -43,7 +43,35 @@ function gaugeStyle(score: number | null): React.CSSProperties {
   };
 }
 
-export function SeoChecker() {
+export interface CheckerCopy {
+  readonly scoreLabel: string;
+  readonly activeLabel: string;
+  readonly activeSub: string;
+  readonly otherHref: string;
+  readonly otherLabel: string;
+  readonly otherSub: string;
+}
+
+const COPY: Record<'SEO' | 'GEO', CheckerCopy> = {
+  SEO: {
+    scoreLabel: 'SEO 준비도',
+    activeLabel: 'SEO',
+    activeSub: '검색엔진 준비도',
+    otherHref: '/tools/geo',
+    otherLabel: 'GEO',
+    otherSub: '같은 주소로 AI 답변 엔진 준비도 확인 →',
+  },
+  GEO: {
+    scoreLabel: 'GEO 준비도',
+    activeLabel: 'GEO',
+    activeSub: 'AI 답변 엔진 준비도',
+    otherHref: '/tools/seo',
+    otherLabel: 'SEO',
+    otherSub: '같은 주소로 검색엔진 준비도 확인 →',
+  },
+};
+
+export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ScanError | null>(null);
@@ -73,7 +101,7 @@ export function SeoChecker() {
       const response = await fetch('/api/public-scan', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url: url.trim(), kind: 'SEO' }),
+        body: JSON.stringify({ url: url.trim(), kind }),
       });
       const body: unknown = await response.json();
       const record = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
@@ -118,12 +146,24 @@ export function SeoChecker() {
           </button>
         </div>
         <div className={styles.modes} role="tablist" aria-label="진단 종류">
-          <span className={`${styles.mode} ${styles.modeOn}`} role="tab" aria-selected="true">
-            SEO 점수
-          </span>
-          <Link className={styles.mode} href="/tools/geo" role="tab" aria-selected="false">
-            GEO 점수
-          </Link>
+          {kind === 'SEO' ? (
+            <span className={`${styles.mode} ${styles.modeOn}`} role="tab" aria-selected="true">
+              SEO 점수
+            </span>
+          ) : (
+            <Link className={styles.mode} href="/tools/seo" role="tab" aria-selected="false">
+              SEO 점수
+            </Link>
+          )}
+          {kind === 'GEO' ? (
+            <span className={`${styles.mode} ${styles.modeOn}`} role="tab" aria-selected="true">
+              GEO 점수
+            </span>
+          ) : (
+            <Link className={styles.mode} href="/tools/geo" role="tab" aria-selected="false">
+              GEO 점수
+            </Link>
+          )}
         </div>
         {busy ? (
           <p className={styles.progress} role="status">
@@ -137,22 +177,33 @@ export function SeoChecker() {
         ) : null}
       </form>
 
-      {result ? <Report result={result} filter={filter} onFilter={setFilter} reportRef={reportRef} /> : null}
+      {result ? (
+        <Report
+          result={result}
+          kind={kind}
+          filter={filter}
+          onFilter={setFilter}
+          reportRef={reportRef}
+        />
+      ) : null}
     </div>
   );
 }
 
 function Report({
   result,
+  kind,
   filter,
   onFilter,
   reportRef,
 }: {
   readonly result: ScanResult;
+  readonly kind: 'SEO' | 'GEO';
   readonly filter: Filter;
   readonly onFilter: (next: Filter) => void;
   readonly reportRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const copy = COPY[kind];
   const quality =
     result.score.value === null || result.reach === 0
       ? null
@@ -167,7 +218,7 @@ function Report({
             <div className={styles.gaugeHole} />
             <div className={styles.gaugeVal}>
               <b>{result.score.value === null ? '—' : result.score.value.toFixed(1)}</b>
-              <span>SEO 준비도</span>
+              <span>{copy.scoreLabel}</span>
             </div>
           </div>
           <div className={styles.gaugeSub}>
@@ -186,27 +237,36 @@ function Report({
               ⬇ PDF 보고서
             </button>
           </div>
+          {result.exposure?.isBlocked ? (
+            <p className={styles.exposure} role="alert">
+              ⚠ 노출 차단 — {result.exposure.labels.join(' · ') || '접근이 막혀 있습니다'}.
+              구조 점수와 별개로, 지금은 어떤 엔진도 이 페이지에 닿지 못합니다.
+            </p>
+          ) : null}
         </div>
 
         <div className={styles.twincol}>
           <div className={`${styles.twin} ${styles.twinOn}`}>
             <span>
-              <span className={styles.twinLabel}>SEO</span>
-              <span className={styles.twinSub}>검색엔진 준비도</span>
+              <span className={styles.twinLabel}>{copy.activeLabel}</span>
+              <span className={styles.twinSub}>{copy.activeSub}</span>
             </span>
             <b className={styles.mono}>
               {result.score.value === null ? '—' : result.score.value.toFixed(1)}
             </b>
           </div>
-          <Link className={styles.twin} href="/tools/geo">
+          <Link className={styles.twin} href={copy.otherHref}>
             <span>
-              <span className={styles.twinLabel}>GEO</span>
-              <span className={styles.twinSub}>같은 주소로 AI 답변 엔진 준비도 확인 →</span>
+              <span className={styles.twinLabel}>{copy.otherLabel}</span>
+              <span className={styles.twinSub}>{copy.otherSub}</span>
             </span>
           </Link>
         </div>
 
-        <ul className={styles.stagegrid} aria-label="검색 여정 단계별 점수">
+        <ul
+          className={styles.stagegrid}
+          aria-label={kind === 'SEO' ? '검색 여정 단계별 점수' : '영역별 점수'}
+        >
           {result.stages.map((stage) => (
             <li key={stage.categoryId} className={stage.isGate ? styles.stageGate : styles.stage}>
               <span className={styles.stageName}>

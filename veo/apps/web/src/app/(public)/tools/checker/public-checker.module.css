@@ -235,3 +235,12 @@
 @media (prefers-reduced-motion: reduce) {
   .searchbar button, .filterChip, .moreButton { transition: none; }
 }
+
+/* GEO 노출 차단 — 점수 옆의 별개 경고. 점수와 절대 합치지 않는다. */
+.exposure {
+  margin: 10px auto 0; max-width: 230px;
+  font-size: 11.5px; font-weight: var(--veo-weight-semibold); line-height: 1.55;
+  color: var(--veo-status-fail-fg); background: var(--veo-status-fail-bg);
+  border: 1px solid var(--veo-status-fail-border);
+  border-radius: var(--veo-radius-md); padding: 8px 11px; text-align: left;
+}
