@@ -36,7 +36,7 @@ EXPECTED_MOUNTS = {
     "credentials": "/api/credentials",
     "geo": "/api/geo/readiness/analyses",
     "keywords": "/api/keywords/lookups",
-    "seo": "/api/seo/scan",
+    "seo": "/api/seo/scans",
     "competitors": "/api/competitors/comparisons",
     "issues": "/api/issues",
     "lab": "/api/lab/scoring-versions",

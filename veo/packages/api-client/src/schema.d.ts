@@ -1458,26 +1458,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/seo/scan": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 수집된 크롤 자료로 SEO 준비도 채점
-         * @description 이미 수집이 끝난 자료를 받아 47개 항목을 판정하고 발행된 명세로 채점합니다. 이 엔드포인트는 외부에 요청을 보내지 않습니다. 수집은 SSRF 방어와 크기 제한이 들어 있는 크롤러가 한 곳에서 담당합니다. `rendered_dom`을 비워 두면 렌더링 비교 항목은 UNKNOWN이 되며, 원본 HTML과 일치한다고 가정하지 않습니다.
-         */
-        post: operations["run_scan_api_seo_scan_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/seo/scans": {
         parameters: {
             query?: never;
@@ -4078,15 +4058,6 @@ export interface components {
             /** Trigger */
             trigger?: string | null;
         };
-        /** HopPayload */
-        HopPayload: {
-            /** Location */
-            location?: string | null;
-            /** Status */
-            status: number;
-            /** Url */
-            url: string;
-        };
         /**
          * HumanTransitionPayload
          * @description One move a person may make from where this issue stands right now.
@@ -5023,47 +4994,6 @@ export interface components {
             lost: number;
             /** Status */
             status: string;
-        };
-        /** PagePayload */
-        PagePayload: {
-            /** Headers */
-            headers?: {
-                [key: string]: string;
-            };
-            /** Hops */
-            hops?: components["schemas"]["HopPayload"][];
-            /**
-             * Html
-             * @description 크롤러가 받은 원본 HTML입니다.
-             * @default
-             */
-            html: string;
-            /**
-             * Importance
-             * @default CONTENT_OR_PRODUCT
-             * @enum {string}
-             */
-            importance: "CONVERSION_OR_HOME" | "CATEGORY_OR_HUB" | "CONTENT_OR_PRODUCT" | "TAG_OR_FILTER" | "INTENTIONAL_NOINDEX";
-            /**
-             * Rendered Dom
-             * @description 자바스크립트 실행 후의 DOM입니다. 렌더러가 돌지 않았다면 비워 두십시오. 비어 있으면 렌더링 비교 항목은 UNKNOWN이 되며, 일치한다고 가정하지 않습니다.
-             */
-            rendered_dom?: string | null;
-            /**
-             * Status
-             * @default 200
-             */
-            status: number;
-            /**
-             * Tls Expires At
-             * @description 이 URL 을 가져올 때 상대 인증서의 만료 시각입니다. 수집기가 읽지 못했거나 평문 HTTP 라면 비워 두십시오 — 비어 있으면 통과가 아니라 측정 불가로 기록되며, 만료 직전인 사이트를 정상으로 보고하지 않습니다.
-             */
-            tls_expires_at?: string | null;
-            /**
-             * Url
-             * @description 리다이렉트를 모두 따른 최종 URL입니다.
-             */
-            url: string;
         };
         /**
          * PageScoreSummary
@@ -6574,37 +6504,6 @@ export interface components {
             /** Unknown Checks */
             unknown_checks: components["schemas"]["UnknownCheckSummary"][];
         };
-        /** ScanRequest */
-        ScanRequest: {
-            /**
-             * Locale
-             * @default ko-KR
-             */
-            locale: string;
-            /** Pages */
-            pages: components["schemas"]["PagePayload"][];
-            /** Primary Url */
-            primary_url?: string | null;
-            /** Provider Payloads */
-            provider_payloads?: {
-                [key: string]: unknown;
-            };
-            /** Provider States */
-            provider_states?: {
-                [key: string]: string;
-            };
-            /**
-             * Robots Txt
-             * @description 수집하지 못했다면 null로 두십시오. 빈 문자열은 '내용이 없는 파일'이라는 뜻입니다.
-             */
-            robots_txt?: string | null;
-            /** Sitemaps */
-            sitemaps?: {
-                [key: string]: string;
-            };
-            /** Target Url */
-            target_url: string;
-        };
         /**
          * ScoreInput
          * @description A finished readiness score, as produced by the SEO or GEO engine.
@@ -7035,9 +6934,9 @@ export interface components {
          * SiteScanRequest
          * @description 콘솔 진단 요청 — 주소만 주면 VEO 가 직접 가져와 채점한다.
          *
-         *     `ScanRequest` 와 나란히 두는 이유: 저쪽은 **이미 수집된 자료**를 채점하는 계약이라
-         *     수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는
-         *     경우를 위한 것이다. 둘은 같은 엔진과 같은 명세로 채점하며, 결과 형식도 같다.
+         *     수집과 채점은 분리하지 않는다. 수집물을 본문으로 받는 계약(`/seo/scan`)이 한때
+         *     있었지만, 요청자가 만든 provider 자료를 명세의 이름으로 채점하게 되므로 닫았다 —
+         *     채점의 입력은 VEO 의 수집기가 SSRF 방어와 함께 직접 가져온 것뿐이다.
          */
         SiteScanRequest: {
             /**
@@ -10652,39 +10551,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_CheckCataloguePayload_"];
-                };
-            };
-        };
-    };
-    run_scan_api_seo_scan_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ScanRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_ScanPayload_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

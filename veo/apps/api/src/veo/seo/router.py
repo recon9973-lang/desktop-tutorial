@@ -11,9 +11,7 @@ before the request body is parsed.
 
 from __future__ import annotations
 
-import hashlib
 import uuid
-from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -21,15 +19,12 @@ from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
-from veo.collect.contract import CollectionContext
 from veo.collect.from_crawl import context_from_crawl
-from veo.common.security.fetcher import FetchedDocument, FetchHop
-from veo.contracts.enums import ProviderState
 from veo.contracts.envelope import ApiResponse
 from veo.db.session import get_db
 from veo.geo.companion import score_and_save_geo_companion
 from veo.organizations.http import guard
-from veo.scoring import ScoreResult, ScoringSpec
+from veo.scoring import ScoreResult
 from veo.scoring.improvements import rank_improvements
 from veo.scoring.page import PageScore
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
@@ -56,14 +51,12 @@ from veo.seo.schemas import (
     PageChecksSummary,
     PageDetailPayload,
     PageLossSummary,
-    PagePayload,
     PageScoreSummary,
     PageStageSummary,
     ScanHistoryEntry,
     ScanHistoryPayload,
     ScanPagesPayload,
     ScanPayload,
-    ScanRequest,
     ScoreSummary,
     SiteCheckSummary,
     SiteScanRequest,
@@ -125,32 +118,6 @@ def list_checks(
     )
     return ok(
         payload,
-        request_id,
-        spec_id=spec.spec_id,
-        spec_version=spec.version,
-        spec_checksum=spec.checksum,
-    )
-
-
-@router.post(
-    "/scan",
-    response_model=ApiResponse[ScanPayload],
-    summary="수집된 크롤 자료로 SEO 준비도 채점",
-    description=(
-        "이미 수집이 끝난 자료를 받아 47개 항목을 판정하고 발행된 명세로 채점합니다. "
-        "이 엔드포인트는 외부에 요청을 보내지 않습니다. 수집은 SSRF 방어와 크기 제한이 "
-        "들어 있는 크롤러가 한 곳에서 담당합니다. `rendered_dom`을 비워 두면 렌더링 비교 "
-        "항목은 UNKNOWN이 되며, 원본 HTML과 일치한다고 가정하지 않습니다."
-    ),
-)
-def run_scan(
-    payload: ScanRequest, principal: ScanRunner, request_id: RequestId
-) -> ApiResponse[ScanPayload]:
-    spec = load_seo_spec()
-    context = _context_from(payload, spec)
-    result = run_seo_scan(context)
-    return ok(
-        _scan_payload(result),
         request_id,
         spec_id=spec.spec_id,
         spec_version=spec.version,
@@ -485,80 +452,6 @@ def _assert_site_exists(db: Session, *, principal: Principal, site_id: uuid.UUID
 
     if not site_exists(db, principal=principal, site_id=site_id):
         raise HTTPException(status_code=404, detail="site not found")
-
-
-# --------------------------------------------------------------------------- #
-# Request to context
-# --------------------------------------------------------------------------- #
-
-
-def _context_from(payload: ScanRequest, spec: ScoringSpec) -> CollectionContext:
-    collected_at = datetime.now(UTC)
-
-    documents = {page.url: _document(page, collected_at) for page in payload.pages}
-    rendered = {
-        page.url: page.rendered_dom for page in payload.pages if page.rendered_dom is not None
-    }
-    importance = {page.url: page.importance for page in payload.pages}
-    primary = payload.primary_url or payload.target_url
-
-    states = {
-        name: ProviderState(value)
-        for name, value in payload.provider_states.items()
-        if value in set(ProviderState)
-    }
-
-    return CollectionContext(
-        target_url=payload.target_url,
-        spec=spec,
-        documents=documents,
-        primary_document=documents.get(primary),
-        robots_txt=payload.robots_txt,
-        sitemap_documents=dict(payload.sitemaps),
-        rendered_dom=rendered,
-        provider_states=states,
-        provider_payloads=dict(payload.provider_payloads),
-        url_importance=importance,
-        locale=payload.locale,
-        collected_at=collected_at,
-    )
-
-
-def _document(page: PagePayload, collected_at: datetime) -> FetchedDocument:
-    body = page.html.encode("utf-8")
-    hops = (
-        tuple(
-            FetchHop(
-                url=hop.url,
-                status=hop.status,
-                resolved_ip="",
-                location=hop.location,
-                elapsed_ms=0,
-            )
-            for hop in page.hops
-        )
-        if page.hops
-        else (
-            FetchHop(
-                url=page.url, status=page.status, resolved_ip="", location=None, elapsed_ms=0
-            ),
-        )
-    )
-    return FetchedDocument(
-        requested_url=hops[0].url,
-        final_url=page.url,
-        status=page.status,
-        headers={key.lower(): value for key, value in page.headers.items()},
-        body=body,
-        content_hash=hashlib.sha256(body).hexdigest(),
-        content_type="text/html",
-        charset="utf-8",
-        hops=hops,
-        resolved_ips=(),
-        fetched_at=collected_at,
-        elapsed_ms=0,
-        tls_expires_at=page.tls_expires_at,
-    )
 
 
 # --------------------------------------------------------------------------- #

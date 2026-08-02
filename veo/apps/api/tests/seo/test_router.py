@@ -1,10 +1,16 @@
-"""``/seo`` — reading the check catalogue and running a scan over a collected bundle.
+"""``/seo`` — reading the check catalogue, and the permission line in front of a scan.
 
 The router is not mounted by this package; ``veo.api.app`` belongs to the integrator.
 The test app therefore includes it explicitly, which is also how the integrator will.
 
 Permissions are the point of most of these tests: ``scan:read`` to look, ``scan:run`` to
 run, and a caller holding neither gets 403 before any work happens.
+
+The bundle-scoring endpoint (``POST /seo/scan``) is **gone on purpose** and one test
+keeps it gone: it let the caller submit ``provider_states`` and get them scored under
+the published spec's name. Scoring input now comes only from VEO's own crawler.
+Payload-shape properties that used to ride on that endpoint live on in
+``test_scan_payload.py`` at the service boundary.
 """
 
 from __future__ import annotations
@@ -16,7 +22,6 @@ from typing import Any
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from tests.seo.support import scan_bundle
 
 from veo.api.app import create_app
 from veo.authz.deps import get_principal
@@ -29,7 +34,7 @@ from veo.seo.service import load_seo_spec
 
 API_PREFIX = get_settings().api_prefix
 CHECKS = f"{API_PREFIX}/seo/checks"
-SCAN = f"{API_PREFIX}/seo/scan"
+SCANS = f"{API_PREFIX}/seo/scans"
 
 
 def _principal(*roles: Role) -> Principal:
@@ -85,10 +90,6 @@ def payload(response: Any) -> dict[str, Any]:
     assert body["error"] is None, body["error"]
     data: dict[str, Any] = body["data"]
     return data
-
-
-def bundle() -> dict[str, Any]:
-    return scan_bundle()
 
 
 # --------------------------------------------------------------------------- #
@@ -151,74 +152,29 @@ def test_an_anonymous_caller_is_refused(client: TestClient, caller: Caller) -> N
 
 
 # --------------------------------------------------------------------------- #
-# Running a scan
+# The scan boundary
 # --------------------------------------------------------------------------- #
-
-
-def test_a_scan_returns_a_score_with_its_specification_identity(
-    client: TestClient, caller: Caller
-) -> None:
-    caller.current = _principal(Role.ANALYST)
-    data = payload(client.post(SCAN, json=bundle()))
-    assert data["score"]["spec_id"] == "veo.seo.readiness"
-    assert data["score"]["spec_checksum"]
-    assert data["score"]["is_rank_prediction"] is False
-    # 점수 자체는 발행 명세가 정한다. 여기서 특정 숫자를 못 박으면 명세를 개정할 때마다
-    # 이 검사가 깨지고, 기대값을 기계적으로 갱신하게 되어 무엇을 지키는 검사인지 사라진다.
-    # 이 검사가 지키는 것은 **점수에 명세의 신원이 붙어 나온다**는 것이다.
-    assert isinstance(data["score"]["score"], (int, float))
-
-
-def test_a_scan_reports_unknown_checks_and_why(client: TestClient, caller: Caller) -> None:
-    caller.current = _principal(Role.ANALYST)
-    data = payload(client.post(SCAN, json=bundle()))
-    unknown = {item["check_id"]: item for item in data["unknown_checks"]}
-    assert "seo.perf.lcp_lab" in unknown
-    assert unknown["seo.perf.lcp_lab"]["reason_ko"]
-
-
-def test_a_scan_summary_is_written_in_korean(client: TestClient, caller: Caller) -> None:
-    caller.current = _principal(Role.ANALYST)
-    data = payload(client.post(SCAN, json=bundle()))
-    assert data["summary_ko"]
-    assert any("가" <= ch <= "힣" for ch in data["summary_ko"])
-
-
-def test_a_scan_on_a_broken_site_returns_issues_with_evidence(
-    client: TestClient, caller: Caller
-) -> None:
-    caller.current = _principal(Role.ANALYST)
-    body = bundle()
-    body["robots_txt"] = "User-agent: *\nDisallow: /\n"
-    data = payload(client.post(SCAN, json=body))
-
-    assert data["issues"]
-    evidence_ids = {record["evidence_id"] for record in data["evidence"]}
-    for issue in data["issues"]:
-        assert set(issue["evidence_ids"]) <= evidence_ids
-        assert issue["title_ko"]
-        assert issue["remediation_owner"] in {
-            "DEVELOPER",
-            "MARKETER",
-            "BUSINESS_OWNER",
-            "OPERATIONS",
-        }
 
 
 def test_running_a_scan_needs_scan_run_not_only_scan_read(
     client: TestClient, caller: Caller
 ) -> None:
+    """권한 거절은 본작업보다 먼저다 — 이 요청은 크롤을 한 발짝도 시작하지 못한다."""
     caller.current = _principal(Role.CLIENT_VIEWER)
-    response = client.post(SCAN, json=bundle())
+    response = client.post(SCANS, json={"target_url": "https://clinic.example"})
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "PERMISSION_DENIED"
 
 
-def test_a_scan_with_no_pages_is_rejected(client: TestClient, caller: Caller) -> None:
+def test_the_bundle_scoring_endpoint_stays_closed(
+    client: TestClient, caller: Caller
+) -> None:
+    """``POST /seo/scan`` 은 요청자가 넣은 provider 자료를 명세의 이름으로 채점하게
+    했으므로 닫았다. 채점의 입력은 VEO 의 수집기가 가져온 것뿐이다 — 이 검사는
+    그 문이 다시 열리지 않게 지킨다."""
     caller.current = _principal(Role.ANALYST)
-    body = bundle()
-    body["pages"] = []
-    assert client.post(SCAN, json=body).status_code == 422
+    response = client.post(f"{API_PREFIX}/seo/scan", json={})
+    assert response.status_code in {404, 405}
 
 
 def test_the_router_is_not_mounted_by_this_package() -> None:

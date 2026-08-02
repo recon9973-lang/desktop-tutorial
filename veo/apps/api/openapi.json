@@ -6523,38 +6523,6 @@
         "title": "HistoryEntryPayload",
         "type": "object"
       },
-      "HopPayload": {
-        "additionalProperties": false,
-        "properties": {
-          "location": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Location"
-          },
-          "status": {
-            "maximum": 599.0,
-            "minimum": 100.0,
-            "title": "Status",
-            "type": "integer"
-          },
-          "url": {
-            "title": "Url",
-            "type": "string"
-          }
-        },
-        "required": [
-          "url",
-          "status"
-        ],
-        "title": "HopPayload",
-        "type": "object"
-      },
       "HumanTransitionPayload": {
         "additionalProperties": false,
         "description": "One move a person may make from where this issue stands right now.\n\nThe console renders exactly these and nothing else. It is the state table that\ndecides, not the screen — so ``VERIFIED_RESOLVED`` can never appear here, because no\nhuman-triggered edge ends there.",
@@ -9002,86 +8970,6 @@
           "lost"
         ],
         "title": "PageLossSummary",
-        "type": "object"
-      },
-      "PagePayload": {
-        "additionalProperties": false,
-        "properties": {
-          "headers": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Headers",
-            "type": "object"
-          },
-          "hops": {
-            "items": {
-              "$ref": "#/components/schemas/HopPayload"
-            },
-            "title": "Hops",
-            "type": "array"
-          },
-          "html": {
-            "default": "",
-            "description": "크롤러가 받은 원본 HTML입니다.",
-            "title": "Html",
-            "type": "string"
-          },
-          "importance": {
-            "default": "CONTENT_OR_PRODUCT",
-            "enum": [
-              "CONVERSION_OR_HOME",
-              "CATEGORY_OR_HUB",
-              "CONTENT_OR_PRODUCT",
-              "TAG_OR_FILTER",
-              "INTENTIONAL_NOINDEX"
-            ],
-            "title": "Importance",
-            "type": "string"
-          },
-          "rendered_dom": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "자바스크립트 실행 후의 DOM입니다. 렌더러가 돌지 않았다면 비워 두십시오. 비어 있으면 렌더링 비교 항목은 UNKNOWN이 되며, 일치한다고 가정하지 않습니다.",
-            "title": "Rendered Dom"
-          },
-          "status": {
-            "default": 200,
-            "maximum": 599.0,
-            "minimum": 100.0,
-            "title": "Status",
-            "type": "integer"
-          },
-          "tls_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "이 URL 을 가져올 때 상대 인증서의 만료 시각입니다. 수집기가 읽지 못했거나 평문 HTTP 라면 비워 두십시오 — 비어 있으면 통과가 아니라 측정 불가로 기록되며, 만료 직전인 사이트를 정상으로 보고하지 않습니다.",
-            "title": "Tls Expires At"
-          },
-          "url": {
-            "description": "리다이렉트를 모두 따른 최종 URL입니다.",
-            "minLength": 1,
-            "title": "Url",
-            "type": "string"
-          }
-        },
-        "required": [
-          "url"
-        ],
-        "title": "PagePayload",
         "type": "object"
       },
       "PageScoreSummary": {
@@ -12624,77 +12512,6 @@
         "title": "ScanPayload",
         "type": "object"
       },
-      "ScanRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "locale": {
-            "default": "ko-KR",
-            "title": "Locale",
-            "type": "string"
-          },
-          "pages": {
-            "items": {
-              "$ref": "#/components/schemas/PagePayload"
-            },
-            "minItems": 1,
-            "title": "Pages",
-            "type": "array"
-          },
-          "primary_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Primary Url"
-          },
-          "provider_payloads": {
-            "additionalProperties": true,
-            "title": "Provider Payloads",
-            "type": "object"
-          },
-          "provider_states": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Provider States",
-            "type": "object"
-          },
-          "robots_txt": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "수집하지 못했다면 null로 두십시오. 빈 문자열은 '내용이 없는 파일'이라는 뜻입니다.",
-            "title": "Robots Txt"
-          },
-          "sitemaps": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Sitemaps",
-            "type": "object"
-          },
-          "target_url": {
-            "minLength": 1,
-            "title": "Target Url",
-            "type": "string"
-          }
-        },
-        "required": [
-          "target_url",
-          "pages"
-        ],
-        "title": "ScanRequest",
-        "type": "object"
-      },
       "ScoreInput": {
         "additionalProperties": false,
         "description": "A finished readiness score, as produced by the SEO or GEO engine.",
@@ -13768,7 +13585,7 @@
       },
       "SiteScanRequest": {
         "additionalProperties": false,
-        "description": "콘솔 진단 요청 — 주소만 주면 VEO 가 직접 가져와 채점한다.\n\n`ScanRequest` 와 나란히 두는 이유: 저쪽은 **이미 수집된 자료**를 채점하는 계약이라\n수집기를 따로 돌리는 파이프라인이 쓰고, 이쪽은 사람이 콘솔에서 주소 하나를 넣는\n경우를 위한 것이다. 둘은 같은 엔진과 같은 명세로 채점하며, 결과 형식도 같다.",
+        "description": "콘솔 진단 요청 — 주소만 주면 VEO 가 직접 가져와 채점한다.\n\n수집과 채점은 분리하지 않는다. 수집물을 본문으로 받는 계약(`/seo/scan`)이 한때\n있었지만, 요청자가 만든 provider 자료를 명세의 이름으로 채점하게 되므로 닫았다 —\n채점의 입력은 VEO 의 수집기가 SSRF 방어와 함께 직접 가져온 것뿐이다.",
         "properties": {
           "discover": {
             "default": true,
@@ -20016,48 +19833,6 @@
           }
         },
         "summary": "SEO 준비도 검사 항목 전체",
-        "tags": [
-          "seo"
-        ]
-      }
-    },
-    "/api/seo/scan": {
-      "post": {
-        "description": "이미 수집이 끝난 자료를 받아 47개 항목을 판정하고 발행된 명세로 채점합니다. 이 엔드포인트는 외부에 요청을 보내지 않습니다. 수집은 SSRF 방어와 크기 제한이 들어 있는 크롤러가 한 곳에서 담당합니다. `rendered_dom`을 비워 두면 렌더링 비교 항목은 UNKNOWN이 되며, 원본 HTML과 일치한다고 가정하지 않습니다.",
-        "operationId": "run_scan_api_seo_scan_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScanRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse_ScanPayload_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "수집된 크롤 자료로 SEO 준비도 채점",
         "tags": [
           "seo"
         ]

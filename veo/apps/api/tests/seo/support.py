@@ -186,54 +186,6 @@ def issues_for(result: CollectionResult, check_id: str) -> tuple[Any, ...]:
     return tuple(issue for issue in result.issues if issue.check_id == check_id)
 
 
-def scan_bundle(**overrides: Any) -> dict[str, Any]:
-    """The ``POST /seo/scan`` request body for the healthy fixture.
-
-    The router takes a pre-collected bundle rather than a URL, so a test that exercises
-    the API boundary has to hand it the same pages ``build_context`` would replay.
-    """
-    root = FIXTURE_ROOT / "healthy"
-    body: dict[str, Any] = {
-        "target_url": "https://healthy.example.kr/",
-        "locale": "ko-KR",
-        "robots_txt": (root / "robots.txt").read_text(encoding="utf-8"),
-        "sitemaps": {
-            "https://healthy.example.kr/sitemap.xml": (root / "sitemap.xml").read_text(
-                encoding="utf-8"
-            )
-        },
-        "pages": [
-            {
-                "url": "https://healthy.example.kr/",
-                "status": 200,
-                "importance": "CONVERSION_OR_HOME",
-                "html": (root / "pages" / "index.html").read_text(encoding="utf-8"),
-                "rendered_dom": (root / "rendered" / "index.html").read_text(encoding="utf-8"),
-            },
-            {
-                "url": "https://healthy.example.kr/services/",
-                "status": 200,
-                "importance": "CATEGORY_OR_HUB",
-                "html": (root / "pages" / "services.html").read_text(encoding="utf-8"),
-            },
-            {
-                "url": "https://healthy.example.kr/services/laser/",
-                "status": 200,
-                "importance": "CONTENT_OR_PRODUCT",
-                "html": (root / "pages" / "services-laser.html").read_text(encoding="utf-8"),
-            },
-            {
-                "url": "https://healthy.example.kr/contact/",
-                "status": 200,
-                "importance": "CONVERSION_OR_HOME",
-                "html": (root / "pages" / "contact.html").read_text(encoding="utf-8"),
-            },
-        ],
-    }
-    body.update(overrides)
-    return body
-
-
 # --------------------------------------------------------------------------- #
 # Provider payloads used by the "credential present" half of the tests
 # --------------------------------------------------------------------------- #
