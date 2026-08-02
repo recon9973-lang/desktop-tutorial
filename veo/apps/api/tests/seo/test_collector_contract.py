@@ -190,7 +190,11 @@ ALLOWED_WEIGHT_NAMES = frozenset({"affected_weight", "evaluated_weight"})
 # 채점을 **하지 않고** 이미 정해진 점수를 나르기만 하는 모듈들. 규칙이 막으려는 것은
 # 검사기가 스스로 배점·심각도·임계값을 갖는 것이지, 결과를 응답이나 행으로 옮기는 일이
 # 아니다. `history.py` 는 채점 결과를 DB 로 옮기며, 심각도조차 발행된 명세에서만 읽는다.
-SCORE_PLUMBING = frozenset({"service.py", "router.py", "schemas.py", "history.py"})
+# `pages.py` 는 저장된 판정을 페이지 축으로 뒤집고 **채점은 veo.scoring.evaluate_page
+# 에 위임**한다 — 배점·심각도·임계값은 한 글자도 갖지 않는다(1.9.0, ④ 후반부).
+SCORE_PLUMBING = frozenset(
+    {"service.py", "router.py", "schemas.py", "history.py", "pages.py"}
+)
 
 
 def _python_sources(package: Path) -> list[Path]:

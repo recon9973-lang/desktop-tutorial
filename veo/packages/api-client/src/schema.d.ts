@@ -1549,7 +1549,7 @@ export interface paths {
          * 지난 진단을 페이지 축으로 — 어느 페이지에 무엇이 걸렸나
          * @description 저장된 판정을 페이지별로 뒤집어 돌려줍니다. 다시 수집하지 않습니다.
          *
-         *     **페이지 점수는 아직 없습니다** — 점수 산식은 채점 명세 1.9.0 발행과 함께 옵니다. 지금은 판정 사실(실패·주의·통과)만 내보내며, 고칠 페이지를 특정하는 데는 그것으로 충분합니다.
+         *     명세 1.9.0 이후 실행에는 **페이지 점수**가 함께 옵니다(그 페이지의 URL 범위 검사만, 페이지 관문 곱셈, 표본 밖 성능은 감점 없이 별도 표기). 1.9.0 이전 실행은 판정 사실만 내보냅니다 — 그 판의 규칙에 없던 산수를 그 판의 이름으로 하지 않습니다.
          *
          *     `site_checks` 는 페이지가 아니라 **사이트 전체**의 판정입니다. 화면에 실을 때는 반드시 `measured_at` 날짜와 함께 표기하십시오 — 날짜 없이 페이지 화면에 섞으면 '이 페이지의 문제' 로 잘못 읽힙니다.
          */
@@ -4939,11 +4939,11 @@ export interface components {
         };
         /**
          * PageChecksSummary
-         * @description 한 페이지에서 실제로 판정된 검사들.
+         * @description 한 페이지에서 실제로 판정된 검사들, 그리고 (1.9.0+ 실행이면) 점수.
          *
-         *     **점수가 없는 것은 의도다.** 페이지 점수 산식은 명세 1.9.0 이 발행되기 전이라
-         *     (SEO_SCORING_V3_PAGES.md), 지금은 판정 사실만 내보낸다 — 고칠 페이지를 특정하는
-         *     데는 그것으로 충분하다.
+         *     ``score`` 가 ``None`` 인 것은 두 경우다: 1.9.0 이전 명세로 저장된 실행(그 판의
+         *     규칙에 없던 산수를 하지 않는다, ADR 0012), 또는 이 페이지에 판정이 하나도 없는
+         *     경우. 어느 쪽인지는 실행 단위 ``notes_ko`` 가 말한다.
          */
         PageChecksSummary: {
             /** Failed */
@@ -4952,6 +4952,10 @@ export interface components {
             passed_count: number;
             /** Problem Count */
             problem_count: number;
+            /** Score */
+            score?: number | null;
+            /** Score Status */
+            score_status?: string | null;
             /** Url */
             url: string;
             /** Warned */
@@ -4959,13 +4963,14 @@ export interface components {
         };
         /**
          * PageDetailPayload
-         * @description 페이지 하나의 전체 판정 — 통과 목록까지.
+         * @description 페이지 하나의 전체 판정 — 통과 목록과 점수 전체까지.
          */
         PageDetailPayload: {
             /** Failed */
             failed?: string[];
             /** Passed */
             passed?: string[];
+            score?: components["schemas"]["PageScoreSummary"] | null;
             /** Url */
             url: string;
             /** Warned */
@@ -4985,6 +4990,20 @@ export interface components {
             total_items: number;
             /** Total Pages */
             total_pages: number;
+        };
+        /**
+         * PageLossSummary
+         * @description 이 페이지가 잃은 점수 한 건 — 고치면 그만큼 돌아온다.
+         */
+        PageLossSummary: {
+            /** Category Id */
+            category_id: string;
+            /** Check Id */
+            check_id: string;
+            /** Lost */
+            lost: number;
+            /** Status */
+            status: string;
         };
         /** PagePayload */
         PagePayload: {
@@ -5026,6 +5045,41 @@ export interface components {
              * @description 리다이렉트를 모두 따른 최종 URL입니다.
              */
             url: string;
+        };
+        /**
+         * PageScoreSummary
+         * @description 페이지 점수 전체 — 명세 1.9.0 부터, 산식 출처와 함께.
+         *
+         *     항등식 ``quality == 100 - Σ(losses.lost)`` · ``score == reach x quality`` 가
+         *     응답 안에서 성립한다 — 화면이 숫자를 검산할 수 있다.
+         */
+        PageScoreSummary: {
+            /** Gate Unverified */
+            gate_unverified?: string[];
+            /** Losses */
+            losses?: components["schemas"]["PageLossSummary"][];
+            /** Not Applicable */
+            not_applicable?: string[];
+            /** Not Sampled */
+            not_sampled?: string[];
+            /** Not Sampled Note Ko */
+            not_sampled_note_ko: string;
+            /** Quality */
+            quality: number | null;
+            /** Reach */
+            reach: number;
+            /** Score */
+            score: number | null;
+            /** Spec Id */
+            spec_id: string;
+            /** Spec Version */
+            spec_version: string;
+            /** Stages */
+            stages?: components["schemas"]["PageStageSummary"][];
+            /** Status */
+            status: string;
+            /** Unmeasured */
+            unmeasured?: string[];
         };
         /**
          * PageSpeedQuotaPayload
@@ -5073,6 +5127,22 @@ export interface components {
              * Format: date-time
              */
             window_start: string;
+        };
+        /**
+         * PageStageSummary
+         * @description 검색 여정 한 단계의, 이 페이지에서의 점수.
+         */
+        PageStageSummary: {
+            /** Category Id */
+            category_id: string;
+            /** Is Gate */
+            is_gate: boolean;
+            /** Name Ko */
+            name_ko: string;
+            /** Score */
+            score: number | null;
+            /** Weight */
+            weight: number;
         };
         /** PagedResponse[ComparisonSummaryPayload] */
         PagedResponse_ComparisonSummaryPayload_: {

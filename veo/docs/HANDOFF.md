@@ -292,9 +292,17 @@ tests/scoring/test_not_sampled.py 12개.
 사용자 질문("채점기준 버전 예전거?")에 대한 답: 1.8.0 이 최신 발행본이었던 것이
 맞고, 이 판이 1.9.0 이다. 배포되면 공개/콘솔 결과의 spec_version 이 1.9.0 으로
 나온다.
-다음: ④(후반부) 페이지 점수 evaluate_page 실코드(v3 프로토 이식) + 수집기가
-표본 밖 페이지에 NOT_SAMPLED 를 실제로 내게 하기(지금은 상태만 존재), ⑥ 콘솔
-페이지 화면(측정 범위 기준 판정·템플릿 그룹 일반화·
+~~④(후반부) 페이지 점수 실코드~~ **완료(2026-08-02)** —
+`veo/scoring/page.py::evaluate_page`: 그 페이지의 URL 검사만, 페이지 관문 곱셈,
+채점 가능한 단계로 재정규화(템플릿 종류로 순위가 갈리지 않게), SITE 검사는 오류로
+거부, 항등식(quality=100-Σlost, score=reach x quality)이 응답 안에서 성립.
+`seo/pages.py` 가 저장 목록→페이지 CheckOutcome 변환을 맡고 여기서 **NOT_SAMPLED
+가 처음 실발행**된다(표본 정책 검사 ∧ evaluated 목록에 없음). 1.9.0 이전 명세로
+저장된 실행은 점수 없이 이유를 말한다(ADR 0012). API: pages 목록에 score/status,
+detail 에 PageScoreSummary 전체(단계·손실·표본 밖 문구). 시험: scoring 10 +
+seo 변환 3 + 갱신 2(만료된 "점수 필드 없음" 시험은 이름째 교체, 0-I).
+수집기 계약의 SCORE_PLUMBING 에 pages.py 추가(채점은 위임, 어휘만 운반).
+다음: ⑥ 콘솔 페이지 화면(측정 범위 기준 판정·템플릿 그룹 일반화·
 페이지 점수 발행 — 한 판) ⑥ 콘솔 절반(페이지 목록 화면·차이 뺄셈 설명·SITE 값
 날짜 표기·페이지↔사이트 비교 UI 금지).
 

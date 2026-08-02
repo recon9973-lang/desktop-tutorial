@@ -345,12 +345,61 @@ class ScanPayload(BaseModel):
     notes_ko: list[str]
 
 
-class PageChecksSummary(BaseModel):
-    """한 페이지에서 실제로 판정된 검사들.
+class PageStageSummary(BaseModel):
+    """검색 여정 한 단계의, 이 페이지에서의 점수."""
 
-    **점수가 없는 것은 의도다.** 페이지 점수 산식은 명세 1.9.0 이 발행되기 전이라
-    (SEO_SCORING_V3_PAGES.md), 지금은 판정 사실만 내보낸다 — 고칠 페이지를 특정하는
-    데는 그것으로 충분하다.
+    model_config = _FROZEN
+
+    category_id: str
+    name_ko: str
+    weight: float
+    is_gate: bool
+    score: float | None
+
+
+class PageLossSummary(BaseModel):
+    """이 페이지가 잃은 점수 한 건 — 고치면 그만큼 돌아온다."""
+
+    model_config = _FROZEN
+
+    check_id: str
+    category_id: str
+    status: str
+    lost: float
+
+
+class PageScoreSummary(BaseModel):
+    """페이지 점수 전체 — 명세 1.9.0 부터, 산식 출처와 함께.
+
+    항등식 ``quality == 100 - Σ(losses.lost)`` · ``score == reach x quality`` 가
+    응답 안에서 성립한다 — 화면이 숫자를 검산할 수 있다.
+    """
+
+    model_config = _FROZEN
+
+    spec_id: str
+    spec_version: str
+    status: str  # SCORED | UNKNOWN | NOT_APPLICABLE
+    score: float | None
+    reach: float
+    quality: float | None
+    stages: list[PageStageSummary] = Field(default_factory=list)
+    losses: list[PageLossSummary] = Field(default_factory=list)
+    gate_unverified: list[str] = Field(default_factory=list)
+    unmeasured: list[str] = Field(default_factory=list)
+    #: 표본 정책이 이 페이지를 재지 않은 검사 — 감점이 아니다. 화면은
+    #: ``not_sampled_note_ko`` 를 그대로 단다.
+    not_sampled: list[str] = Field(default_factory=list)
+    not_applicable: list[str] = Field(default_factory=list)
+    not_sampled_note_ko: str
+
+
+class PageChecksSummary(BaseModel):
+    """한 페이지에서 실제로 판정된 검사들, 그리고 (1.9.0+ 실행이면) 점수.
+
+    ``score`` 가 ``None`` 인 것은 두 경우다: 1.9.0 이전 명세로 저장된 실행(그 판의
+    규칙에 없던 산수를 하지 않는다, ADR 0012), 또는 이 페이지에 판정이 하나도 없는
+    경우. 어느 쪽인지는 실행 단위 ``notes_ko`` 가 말한다.
     """
 
     model_config = _FROZEN
@@ -362,10 +411,12 @@ class PageChecksSummary(BaseModel):
     #: 검사 30개씩이 매 응답에 실린다. 전체 목록은 페이지 상세에서 준다.
     passed_count: int
     problem_count: int
+    score: float | None = None
+    score_status: str | None = None
 
 
 class PageDetailPayload(BaseModel):
-    """페이지 하나의 전체 판정 — 통과 목록까지."""
+    """페이지 하나의 전체 판정 — 통과 목록과 점수 전체까지."""
 
     model_config = _FROZEN
 
@@ -375,6 +426,7 @@ class PageDetailPayload(BaseModel):
     passed: list[str] = Field(default_factory=list)
     #: 이 페이지에서 잰 적 없는 검사는 여기 나오지 않는다. "통과" 와 "안 쟀다" 를
     #: 섞으면 페이지가 실제보다 건강해 보인다.
+    score: PageScoreSummary | None = None
 
 
 class SiteCheckSummary(BaseModel):
@@ -415,7 +467,10 @@ __all__ = [
     "OutcomeSummary",
     "PageChecksSummary",
     "PageDetailPayload",
+    "PageLossSummary",
     "PagePayload",
+    "PageScoreSummary",
+    "PageStageSummary",
     "ScanPagesPayload",
     "ScanPayload",
     "ScanRequest",

@@ -4,13 +4,21 @@
 축으로 뒤집는다. 대행사가 실제로 고치는 대상은 검사가 아니라 **페이지**다 — "canonical
 문제 103장" 을 페이지 축으로 뒤집어야 "이 페이지의 문제 목록" 이 된다.
 
-## 여기서 점수를 내지 않는 이유
+## 페이지 점수 (1.9.0 부터)
 
-페이지 **점수** 산식(단계별 URL 고정분모·페이지 관문·NOT_SAMPLED)은 설계됐지만
-(SEO_SCORING_V3_PAGES.md) 아직 발행 명세가 아니다. 모든 숫자는 발행 명세에서만
-나온다는 규칙에 따라, 명세 1.9.0 이 발행되기 전까지 이 모듈은 **판정 사실**만
-돌려준다: 이 페이지에서 무엇이 실패했고, 무엇을 확인했고, 무엇은 재지 않았는가.
-그것만으로 "고칠 페이지 특정" 이라는 용도는 성립한다.
+명세 1.9.0 발행으로 페이지 점수 산식이 발행 명세가 됐다 — 계산은
+:func:`veo.scoring.page.evaluate_page` 가 하고, 이 모듈은 저장된 판정 목록을
+페이지 하나의 CheckOutcome 들로 변환해 넘길 뿐이다. 숫자는 여기서 만들지 않는다.
+
+1.9.0 이전 명세로 저장된 실행에는 점수를 내지 않는다: 그 판의 규칙에는
+NOT_SAMPLED 가 없어서, 표본 밖 성능 검사가 페이지마다 빠진 채 계산되면 그 판의
+이름으로 그 판에 없던 산수를 하게 된다(ADR 0012). 점수 없이 판정 사실만 나간다.
+
+## NOT_SAMPLED 가 실제로 발행되는 곳
+
+표본 정책 검사(spec.sampled_check_ids)가 이 페이지의 evaluated 목록에 없으면 —
+즉 명세가 이 페이지를 재지 않기로 했으면 — 여기서 NOT_SAMPLED 판정이 만들어진다.
+사이트 점수 경로에는 이 상태가 등장하지 않는다.
 
 ## 판정 규칙 (저장된 목록 → 페이지 한 장의 사실)
 
@@ -35,19 +43,25 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
-from veo.db.models.analysis import CheckResult, ScanRun
+from veo.db.models.analysis import CheckResult, ScanRun, ScoreResult
+from veo.scoring import CheckOutcome, CheckStatus, ScoringSpec, load_spec
+from veo.scoring.errors import SpecNotFoundError
+from veo.scoring.page import PageScore, evaluate_page
 
 __all__ = ["PageBreakdown", "PageChecks", "SiteCheck", "page_breakdown"]
 
 
 @dataclass(frozen=True, slots=True)
 class PageChecks:
-    """한 페이지에서 실제로 판정된 검사들."""
+    """한 페이지에서 실제로 판정된 검사들, 그리고 (1.9.0+ 실행이면) 그 페이지의 점수."""
 
     url: str
     failed: tuple[str, ...] = ()
     warned: tuple[str, ...] = ()
     passed: tuple[str, ...] = ()
+    #: 이 페이지의 점수 전체(산식 출처·항등식 포함). 1.9.0 이전 실행이면 ``None`` —
+    #: 그 판의 규칙에 없던 산수를 그 판의 이름으로 하지 않는다(ADR 0012).
+    score: PageScore | None = None
 
     @property
     def problem_count(self) -> int:
@@ -81,6 +95,84 @@ class PageBreakdown:
 
 #: 페이지 축 뒤집기가 의미 있는 상태. UNKNOWN·N/A 행은 페이지 목록을 싣지 않는다.
 _PAGE_STATUSES = frozenset({"FAIL", "WARNING", "PASS"})
+
+
+def _spec_for_page_scores(
+    db: Session, *, principal: Principal, scan_run_id: uuid.UUID
+) -> ScoringSpec | None:
+    """이 실행이 채점된 명세 — 페이지 점수를 낼 수 있는 판이면 돌려준다.
+
+    어느 판으로 채점됐는지는 실행의 ScoreResult 행이 알고 있다(불변 기록).
+    measurement_scope 는 1.9.0 이 처음 선언했다. 그 전 판으로 저장된 실행에
+    1.9.0 의 산수(NOT_SAMPLED)를 적용하면 그 판의 이름으로 그 판에 없던 계산을
+    하게 된다 — 점수 없이 판정 사실만 나간다(ADR 0012).
+    """
+    statement = tenant_select(ScoreResult, principal).where(
+        ScoreResult.scan_run_id == scan_run_id
+    )
+    assert_tenant_scoped(statement, principal.organization_id)
+    score_row = db.execute(statement).scalars().first()
+    if score_row is None:
+        return None
+    try:
+        spec = load_spec(score_row.spec_id, score_row.spec_version)
+    except SpecNotFoundError:
+        return None
+    if spec.measurement_scope is None:
+        return None
+    return spec
+
+
+def _score_page(
+    spec: ScoringSpec, rows: list[CheckResult], url: str
+) -> PageScore | None:
+    """저장된 판정 목록을 페이지 하나의 CheckOutcome 들로 바꿔 채점한다.
+
+    변환 규칙 (모듈 머리 주석의 판정 규칙에 셈만 더한 것):
+
+    - ``url ∈ affected``       → 그 행의 상태 그대로 (FAIL/WARNING)
+    - ``url ∈ evaluated``      → PASS
+    - 표본 정책 검사인데 목록에 없다 → **NOT_SAMPLED** (여기서 처음 발행된다)
+    - 행 전체가 UNKNOWN(재려다 실패) → 이 페이지에서도 UNKNOWN — 분모에 남는다
+    - 그 밖에 목록에 없다        → 판정 없음(공급하지 않음) — 그 페이지에 그 항목이
+      없었다는 뜻과 같은 셈이 된다
+    """
+    check_scope = {
+        check.id: check.scope
+        for category in spec.categories
+        for check in category.checks
+    }
+    outcomes: list[CheckOutcome] = []
+    for row in rows:
+        if check_scope.get(row.check_id) != "URL":
+            continue
+        status: CheckStatus | None = None
+        if row.status == "UNKNOWN":
+            status = CheckStatus.UNKNOWN
+        elif row.status == "NOT_APPLICABLE":
+            status = None
+        elif row.evaluated_urls is None:
+            # 목록이 기록되기 전의 행 — 페이지 귀속을 지어내지 않는다.
+            status = None
+        elif url in set(row.affected_urls or []):
+            status = CheckStatus(row.status)
+        elif url in set(row.evaluated_urls):
+            status = CheckStatus.PASS
+        elif row.check_id in spec.sampled_check_ids:
+            status = CheckStatus.NOT_SAMPLED
+        if status is None:
+            continue
+        outcomes.append(
+            CheckOutcome(
+                check_id=row.check_id,
+                status=status,
+                confidence=row.confidence,
+                evidence_ids=tuple(row.evidence_ids or []),
+            )
+        )
+    if not outcomes:
+        return None
+    return evaluate_page(spec, outcomes)
 
 
 def page_breakdown(
@@ -132,6 +224,7 @@ def page_breakdown(
                 passed.setdefault(url, []).append(row.check_id)
 
     urls = sorted(set(failed) | set(warned) | set(passed))
+    spec = _spec_for_page_scores(db, principal=principal, scan_run_id=scan_run_id)
     pages = tuple(
         sorted(
             (
@@ -140,6 +233,7 @@ def page_breakdown(
                     failed=tuple(sorted(failed.get(url, []))),
                     warned=tuple(sorted(warned.get(url, []))),
                     passed=tuple(sorted(passed.get(url, []))),
+                    score=_score_page(spec, rows, url) if spec is not None else None,
                 )
                 for url in urls
             ),
@@ -148,13 +242,20 @@ def page_breakdown(
     )
 
     legacy = bool(rows) and not any_lists
-    notes: tuple[str, ...] = ()
+    notes_list: list[str] = []
     if legacy:
-        notes = (
+        notes_list.append(
             "이 실행은 페이지별 판정 목록이 기록되기 전(2026-08-02 이전)에 저장된 "
             "것입니다. 페이지별 보기가 필요하면 사이트를 다시 진단하십시오 — 이후 "
-            "실행부터는 자동으로 기록됩니다.",
+            "실행부터는 자동으로 기록됩니다."
         )
+    if spec is None and pages:
+        notes_list.append(
+            "이 실행은 채점 명세 1.9.0 이전 판으로 저장되어 페이지 점수가 없습니다. "
+            "판정 사실(실패·주의·통과)은 그대로 유효합니다 — 점수가 필요하면 사이트를 "
+            "다시 진단하십시오."
+        )
+    notes: tuple[str, ...] = tuple(notes_list)
 
     return PageBreakdown(
         scan_run_id=scan_run_id,

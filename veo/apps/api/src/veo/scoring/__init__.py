@@ -22,6 +22,7 @@ from veo.scoring.models import (
     SpecGate,
     SpecStatus,
 )
+from veo.scoring.page import PageLoss, PageScore, PageStageScore, evaluate_page
 from veo.scoring.spec import (
     available_specs,
     build_spec,
@@ -38,6 +39,9 @@ __all__ = [
     "CategoryScore",
     "CheckOutcome",
     "CheckStatus",
+    "PageLoss",
+    "PageScore",
+    "PageStageScore",
     "RaisedGate",
     "ScoreResult",
     "ScoringDomain",
@@ -55,6 +59,7 @@ __all__ = [
     "canonical_json",
     "compute_checksum",
     "evaluate",
+    "evaluate_page",
     "find_specs_root",
     "latest_published",
     "load_spec",

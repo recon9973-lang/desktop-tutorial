@@ -30,6 +30,7 @@ from veo.db.session import get_db
 from veo.organizations.http import guard
 from veo.scoring import ScoreResult, ScoringSpec
 from veo.scoring.improvements import rank_improvements
+from veo.scoring.page import PageScore
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
 from veo.seo.history import (
@@ -50,7 +51,10 @@ from veo.seo.schemas import (
     OutcomeSummary,
     PageChecksSummary,
     PageDetailPayload,
+    PageLossSummary,
     PagePayload,
+    PageScoreSummary,
+    PageStageSummary,
     ScanHistoryEntry,
     ScanHistoryPayload,
     ScanPagesPayload,
@@ -315,9 +319,10 @@ def read_saved_scan(
     summary="지난 진단을 페이지 축으로 — 어느 페이지에 무엇이 걸렸나",
     description=(
         "저장된 판정을 페이지별로 뒤집어 돌려줍니다. 다시 수집하지 않습니다.\n\n"
-        "**페이지 점수는 아직 없습니다** — 점수 산식은 채점 명세 1.9.0 발행과 함께 "
-        "옵니다. 지금은 판정 사실(실패·주의·통과)만 내보내며, 고칠 페이지를 특정하는 "
-        "데는 그것으로 충분합니다.\n\n"
+        "명세 1.9.0 이후 실행에는 **페이지 점수**가 함께 옵니다(그 페이지의 URL 범위 "
+        "검사만, 페이지 관문 곱셈, 표본 밖 성능은 감점 없이 별도 표기). 1.9.0 이전 "
+        "실행은 판정 사실만 내보냅니다 — 그 판의 규칙에 없던 산수를 그 판의 이름으로 "
+        "하지 않습니다.\n\n"
         "`site_checks` 는 페이지가 아니라 **사이트 전체**의 판정입니다. 화면에 실을 "
         "때는 반드시 `measured_at` 날짜와 함께 표기하십시오 — 날짜 없이 페이지 화면에 "
         "섞으면 '이 페이지의 문제' 로 잘못 읽힙니다."
@@ -343,6 +348,8 @@ def read_scan_pages(
                     warned=list(page.warned),
                     passed_count=len(page.passed),
                     problem_count=page.problem_count,
+                    score=None if page.score is None else page.score.score,
+                    score_status=None if page.score is None else page.score.status,
                 )
                 for page in breakdown.pages
             ],
@@ -388,8 +395,46 @@ def read_scan_page_detail(
             failed=list(page.failed),
             warned=list(page.warned),
             passed=list(page.passed),
+            score=_page_score_summary(page.score),
         ),
         request_id,
+    )
+
+
+def _page_score_summary(score: PageScore | None) -> PageScoreSummary | None:
+    if score is None:
+        return None
+    return PageScoreSummary(
+        spec_id=score.spec_id,
+        spec_version=score.spec_version,
+        status=score.status,
+        score=score.score,
+        reach=score.reach,
+        quality=score.quality,
+        stages=[
+            PageStageSummary(
+                category_id=stage.category_id,
+                name_ko=stage.name_ko,
+                weight=stage.weight,
+                is_gate=stage.is_gate,
+                score=stage.score,
+            )
+            for stage in score.stages
+        ],
+        losses=[
+            PageLossSummary(
+                check_id=loss.check_id,
+                category_id=loss.category_id,
+                status=loss.status,
+                lost=loss.lost,
+            )
+            for loss in score.losses
+        ],
+        gate_unverified=list(score.gate_unverified),
+        unmeasured=list(score.unmeasured),
+        not_sampled=list(score.not_sampled),
+        not_applicable=list(score.not_applicable),
+        not_sampled_note_ko=score.not_sampled_note_ko,
     )
 
 
