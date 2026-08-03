@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.20',
+    date: '2026-08-04',
+    title: '거래처가 200곳을 넘어도 전부 보인다',
+    items: [
+      '업체·프로젝트·사이트 목록이 200개에서 경고 없이 잘리던 문제 — 끝까지 읽는다',
+      '총 개수는 서버가 준 값을 쓴다 — 화면이 세지 않는다',
+      '중간에 실패하면 절반을 전부인 척하지 않고 실패로 말한다',
+    ],
+  },
+  {
     version: '0.3.19',
     date: '2026-08-04',
     title: '공개 도구가 거래처 한도를 쓰지 않는다',

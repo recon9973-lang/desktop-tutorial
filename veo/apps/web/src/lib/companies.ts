@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { callConsoleApi, type ConsoleOutcome } from '@/lib/console-api';
+import { callConsoleApi, type ConsoleOutcome, readAllPages } from '@/lib/console-api';
 
 /**
  * 업체와 그 업체의 측정 URL.
@@ -66,13 +66,13 @@ function textOrNull(source: Record<string, unknown>, key: string): string | null
  * 화면 로딩 전체를 좌우한다.
  */
 export async function listCompanies(): Promise<ConsoleOutcome<readonly Company[]>> {
-  const customers = await callConsoleApi('/api/customers?page_size=200');
+  const customers = await readAllPages('/api/customers');
   if (!customers.ok) return customers;
 
-  const projects = await callConsoleApi('/api/projects?page_size=200');
+  const projects = await readAllPages('/api/projects');
   if (!projects.ok) return projects;
 
-  const sites = await callConsoleApi('/api/sites?page_size=200');
+  const sites = await readAllPages('/api/sites');
   if (!sites.ok) return sites;
 
   const sitesByProject = new Map<string, MeasuredSite[]>();
@@ -259,7 +259,7 @@ export async function findOrCreateSiteByOrigin(
   const origin = toOrigin(rawUrl);
   if (origin === null) return { ok: false, reason: 'INVALID_URL' };
 
-  const sites = await callConsoleApi('/api/sites?page_size=200');
+  const sites = await readAllPages('/api/sites');
   if (!sites.ok) return { ok: false, reason: 'API', outcome: sites };
 
   const existing = items(sites.data).find((site) => text(site, 'origin') === origin);

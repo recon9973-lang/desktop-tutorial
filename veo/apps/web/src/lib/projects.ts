@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { callConsoleApi, type ConsoleOutcome } from '@/lib/console-api';
+import { readAllPages, type ConsoleOutcome } from '@/lib/console-api';
 
 /**
  * 프로젝트 — 측정이 실제로 매달리는 단위.
@@ -58,13 +58,13 @@ function textOrNull(source: Record<string, unknown>, key: string): string | null
  * 프로젝트 수만큼 왕복이 늘어난다.
  */
 export async function listProjects(): Promise<ConsoleOutcome<readonly ProjectRow[]>> {
-  const projects = await callConsoleApi('/api/projects?page_size=200');
+  const projects = await readAllPages('/api/projects');
   if (!projects.ok) return projects;
 
-  const customers = await callConsoleApi('/api/customers?page_size=200');
+  const customers = await readAllPages('/api/customers');
   if (!customers.ok) return customers;
 
-  const sites = await callConsoleApi('/api/sites?page_size=200');
+  const sites = await readAllPages('/api/sites');
   if (!sites.ok) return sites;
 
   const nameByCustomer = new Map<string, string>();

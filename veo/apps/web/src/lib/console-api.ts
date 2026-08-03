@@ -26,7 +26,18 @@ export type ConsoleFailure =
   | 'SERVER_ERROR';
 
 export type ConsoleOutcome<T> =
-  | { readonly ok: true; readonly data: T; readonly meta: Record<string, unknown> }
+  | {
+      readonly ok: true;
+      readonly data: T;
+      readonly meta: Record<string, unknown>;
+      /**
+       * 목록 응답이 함께 준 쪽 정보 — 전체가 몇 건이고 지금 몇 건을 받았는가.
+       *
+       * 이 값을 버리던 동안 화면은 "받은 것이 전부" 라고 가정했고, 200건을 넘는 목록은
+       * **경고도 없이 잘렸다**. 없는 응답(목록이 아닌 것)에서는 `undefined` 다.
+       */
+      readonly pageInfo?: Record<string, unknown>;
+    }
   | {
       readonly ok: false;
       readonly reason: ConsoleFailure;
@@ -150,7 +161,15 @@ export async function callConsoleApi<T = unknown>(
   }
 
   const body = asRecord(envelope);
-  return { ok: true, data: body['data'] as T, meta: asRecord(body['meta']) };
+  const pageInfo = body['page_info'];
+  return {
+    ok: true,
+    data: body['data'] as T,
+    meta: asRecord(body['meta']),
+    ...(pageInfo === undefined || pageInfo === null
+      ? {}
+      : { pageInfo: asRecord(pageInfo) }),
+  };
 }
 
 /** 진단 실행. 목록 조회보다 훨씬 오래 걸리므로 제한 시간을 따로 준다. */
@@ -163,4 +182,62 @@ export async function runConsoleScan(
     body: { target_url: targetUrl, urls },
     timeoutMs: SCAN_TIMEOUT_MS,
   });
+}
+
+/** 한 쪽에 담기는 최대치. 서버가 200 을 넘겨 주지 않는다(MAX_PAGE_SIZE). */
+const PAGE_SIZE = 200;
+
+/**
+ * 목록을 **끝까지** 읽는다.
+ *
+ * 예전에는 `?page_size=200` 한 번만 부르고 그것을 전부라고 여겼다. 거래처가 200곳을
+ * 넘는 날 목록은 **경고도 없이 잘리고**, 화면은 여전히 "전부" 라고 말한다. 지금 12곳이라
+ * 당장 문제가 없다는 것이 이 결함의 위험한 점이다 — 넘는 날 아무도 모른다.
+ *
+ * 서버가 한 쪽에 200개까지만 주므로(더 큰 쪽은 서비스 거부의 지렛대다) 여러 번 부른다.
+ * 총 개수는 서버가 `page_info.total_items` 로 알려 준다 — 화면이 세지 않는다.
+ *
+ * **끝을 못 찾으면 멈춘다.** 서버가 이상한 값을 주더라도 무한히 부르지 않는다. 그때는
+ * 받은 만큼만 돌려주되, 그것이 전부인 척하지 않도록 `pageInfo` 를 함께 넘긴다.
+ */
+export async function readAllPages(
+  path: string,
+  {
+    maxPages = 25,
+    fetchPage = callConsoleApi,
+  }: {
+    maxPages?: number;
+    /**
+     * 한 쪽을 가져오는 방법. 시험이 여기를 바꾼다 — 모듈 안에서 곧바로 부르면 밖에서
+     * 가로챌 수 없고, 그러면 이 함수의 규칙을 시험할 방법이 없다.
+     */
+    fetchPage?: (path: string) => Promise<ConsoleOutcome<unknown>>;
+  } = {},
+): Promise<ConsoleOutcome<unknown[]>> {
+  const separator = path.includes('?') ? '&' : '?';
+  const collected: unknown[] = [];
+  let page = 1;
+  let lastPageInfo: Record<string, unknown> | undefined;
+
+  while (page <= maxPages) {
+    const outcome = await fetchPage(`${path}${separator}page=${page}&page_size=${PAGE_SIZE}`);
+    if (!outcome.ok) return outcome;
+
+    const rows = Array.isArray(outcome.data) ? outcome.data : [];
+    collected.push(...rows);
+    lastPageInfo = outcome.pageInfo;
+
+    const total = Number(lastPageInfo?.['total_items']);
+    // 총계를 모르면 한 쪽이 덜 찬 것을 끝으로 본다 — 그 이상 물어볼 근거가 없다.
+    const done = Number.isFinite(total) ? collected.length >= total : rows.length < PAGE_SIZE;
+    if (done) break;
+    page += 1;
+  }
+
+  return {
+    ok: true,
+    data: collected,
+    meta: {},
+    ...(lastPageInfo === undefined ? {} : { pageInfo: lastPageInfo }),
+  };
 }
