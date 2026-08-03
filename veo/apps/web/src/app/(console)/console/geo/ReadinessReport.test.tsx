@@ -74,9 +74,7 @@ describe('점수와 노출 차단', () => {
     );
 
     // 점수는 그대로 95.2 다. 차단 때문에 깎지 않는다.
-    // (표기는 게이지로 바뀌었다 — 숫자와 등급이 나뉘어 있다. 지키는 뜻은 그대로:
-    //  차단이 점수를 건드리지 않는다.)
-    expect(screen.getByText('95.2')).toBeInTheDocument();
+    expect(screen.getByText('95.2점')).toBeInTheDocument();
     expect(screen.getByText(/robots.txt 가 검색봇을 막고 있습니다/)).toBeInTheDocument();
     expect(screen.getByText(/별개의 사실/)).toBeInTheDocument();
   });
@@ -450,21 +448,22 @@ describe('GEO 작업 큐', () => {
 });
 
 /**
- * 점수를 게이지로 — SEO 화면과 같은 문법.
+ * 본문은 큰 숫자, 게이지는 우측 레일 — SEO 와 같다.
  *
- * 두 화면이 다른 방식으로 점수를 그리면 같은 사람이 두 번 배워야 한다. 값도 방법도
- * SEO 쪽과 같은 것을 쓴다(conic-gradient, 이미지·라이브러리 없음).
+ * v0.3.18 에서 본문에도 게이지를 넣었는데, 레일에 이미 하나가 있어 **같은 값이 한
+ * 화면에 두 번** 나왔다. 게다가 SEO 본문은 큰 숫자라 두 축이 서로 다르게 보였다.
+ * 게이지는 한 곳에만 둔다.
  */
-describe('GEO 점수 게이지', () => {
+describe('GEO 점수 표기', () => {
   it('점수와 등급을 한국어 라벨로 보여준다', () => {
     render(<ReadinessReport report={report()} />);
 
-    expect(screen.getByText('95.2')).toBeInTheDocument();
+    expect(screen.getByText('95.2점')).toBeInTheDocument();
     expect(screen.getByText('우수')).toBeInTheDocument();
   });
 
-  it('점수를 낼 수 없으면 게이지를 그리지 않는다', () => {
-    /** 잴 수 없었던 것을 0점짜리 게이지로 그리면 "0점" 으로 읽힌다. 그것은 거짓이다. */
+  it('점수를 낼 수 없으면 숫자 대신 그렇다고 말한다', () => {
+    /** 잴 수 없었던 것을 0 으로 그리면 "0점" 으로 읽힌다. 그것은 거짓이다. */
     render(
       <ReadinessReport
         report={{

@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.25',
+    date: '2026-08-04',
+    title: '진단 화면 제목·표기 정리',
+    items: [
+      '제목을 "진단"으로 — 한 번 재면 SEO·GEO 두 눈금이 나오는데 제목은 SEO 만 말했습니다',
+      'GEO 본문에 게이지가 두 번 나오던 문제 — 본문은 큰 숫자, 게이지는 우측 레일 (SEO 와 동일)',
+    ],
+  },
+  {
     version: '0.3.24',
     date: '2026-08-04',
     title: '전환기 일관성 · 진단이 워커에서 돌 준비',

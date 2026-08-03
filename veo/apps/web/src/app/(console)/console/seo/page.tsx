@@ -25,7 +25,7 @@ import { ScanForm } from './ScanForm';
 import own from './seo.module.css';
 
 export const metadata: Metadata = {
-  title: 'SEO 기술 준비도',
+  title: '진단 — SEO·GEO 준비도',
   robots: { index: false, follow: false },
 };
 
@@ -971,11 +971,15 @@ function Shell({ origin, children }: { readonly origin?: string; readonly childr
     <div className={styles.page}>
       <div className={styles.header}>
         <p className={styles.eyebrow}>콘솔</p>
-        <h1 className={styles.title}>SEO 기술 준비도</h1>
+        {/* 한 번 재면 두 눈금이 나온다. 제목이 "SEO" 라고만 말하면 GEO 탭을 보는
+            동안에도 SEO 화면에 있는 것으로 읽힌다(사용자 지적). */}
+        <h1 className={styles.title}>진단</h1>
         <p className={styles.lede}>
           {origin === undefined || origin === '' ? '' : `${origin} · `}
-          검색엔진이 사이트를 발견·크롤링·해석·제공할 수 있는 상태인지 항목별로 확인합니다.
-          순위 예측이 아니라 준비도입니다.
+          검색엔진과 AI 답변 엔진이 사이트를 발견·해석·인용할 수 있는 상태인지 항목별로
+          확인합니다. 한 번 측정하면 <strong>SEO·GEO 두 눈금</strong>이 함께 나오고,
+          위의 전환기로 오갑니다. 순위 예측이 아니라 준비도이며, 눈금이 다르므로 두 점수를
+          합치지 않습니다.
         </p>
       </div>
       {children}
