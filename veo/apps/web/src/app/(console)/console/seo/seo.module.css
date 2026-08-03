@@ -274,6 +274,14 @@
   font-size: var(--veo-font-size-200);
 }
 
+/* 채점 규칙 버전 밑의 한 줄 각주 — 앱 버전과 다른 축임을 그 자리에서 말한다 */
+.railFactNote {
+  display: block;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-normal);
+}
+
 /* ---------- SEO|GEO 전환기 ---------- */
 
 .axes {

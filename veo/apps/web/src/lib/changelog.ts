@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.16',
+    date: '2026-08-03',
+    title: '버전 축 구분 표시',
+    items: [
+      '"명세 1.9.0" 을 "채점 규칙 1.9.0" 으로 바꾸고, 이번 측정 칸에 "앱 버전과는 다른 축" 각주 추가 — 앱 버전(v0.3.x)과 점수 계산 규칙 버전이 같은 것으로 읽히던 혼동 수정 (사용자 질문)',
+      '푸터 표기를 "앱 버전 v… · 변경 이력" 으로 명확화',
+    ],
+  },
+  {
     version: '0.3.15',
     date: '2026-08-03',
     title: '고치고 다시 재면 반드시 새로 잰다',

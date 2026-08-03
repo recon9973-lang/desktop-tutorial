@@ -15,6 +15,7 @@ import {
   readSavedReport,
   type HistoryEntry,
 } from '@/lib/scan-report';
+import { APP_VERSION } from '@/lib/changelog';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
@@ -759,7 +760,15 @@ async function SummaryRail({
           <li>{formatWhen(selected.startedAt)}</li>
           <li>{selected.urlsCollected}페이지 수집</li>
           <li>{selected.requestedByName ?? '실행자 기록 없음'}</li>
-          <li>명세 {selected.specVersion}</li>
+          {/* "명세" 만 적으면 하단 푸터의 앱 버전(v0.3.x)과 같은 축으로 읽힌다(사용자 혼동
+              보고). 이것은 점수 계산 규칙의 판이고, 앱이 업데이트돼도 규칙이 그대로면
+              바뀌지 않는다 — 그 구분을 화면이 직접 말하게 한다. */}
+          <li>
+            채점 규칙 {selected.specVersion}
+            <span className={own.railFactNote}>
+              점수 계산 명세의 버전 — 하단의 앱 버전(v{APP_VERSION})과는 다른 축입니다
+            </span>
+          </li>
         </ul>
       </section>
 

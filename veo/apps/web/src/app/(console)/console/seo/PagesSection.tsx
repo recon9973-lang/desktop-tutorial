@@ -147,7 +147,7 @@ function PageDetailView({
         <div className={own.pageScoreCard}>
           <div className={own.pageScoreBig}>
             <b>{score.score === null ? '—' : score.score.toFixed(1)}</b>
-            <span>페이지 점수 · 명세 {score.specVersion}</span>
+            <span>페이지 점수 · 채점 규칙 {score.specVersion}</span>
           </div>
           {score.score !== null && score.quality !== null ? (
             <p className={own.pageFormula}>

@@ -11,7 +11,7 @@ export function SiteFooter() {
           VEO — 개발 VENOM · 연구 및 방법론 VEO-LAB ·{' '}
           {/* 어느 판을 쓰는지 사람이 읽는 자리. 커밋 SHA 는 구분이 안 된다. */}
           <Link href="/console/changelog" className={styles.versionLink}>
-            v{APP_VERSION} 변경 이력
+            앱 버전 v{APP_VERSION} · 변경 이력
           </Link>
         </p>
         <p className={styles.note}>
