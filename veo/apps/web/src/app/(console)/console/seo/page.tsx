@@ -471,12 +471,16 @@ async function SummaryRail({
   readonly axis: Axis;
   readonly otherSites: readonly (MeasuredSite & { readonly company: string })[];
 }) {
+  // 밴드는 **한국어 라벨**로 보여준다. 식별자(at_risk)를 그대로 그리면 화면에 내부
+  // 이름이 새어 나오고, 읽는 사람에게는 아무 뜻도 없는 영어가 된다.
+  const bands = saved === null ? [] : await readBands(saved.specId, saved.specVersion);
   const clients = await otherClientRows(otherSites);
   const geo = saved?.geo ?? null;
   const verdicts = verdictSpread(saved);
   // 게이지는 지금 보고 있는 눈금을 그린다 — 전환기가 GEO 면 GEO 점수다.
   const gaugeScore = axis === 'geo' ? (geo?.score ?? null) : selected.score;
-  const bandLabel = axis === 'geo' ? (geo?.bandId ?? null) : (saved?.bandId ?? null);
+  const bandId = axis === 'geo' ? (geo?.bandId ?? null) : (saved?.bandId ?? null);
+  const bandLabel = bands.find((band) => band.id === bandId)?.label ?? null;
   const coverage = saved?.coverage ?? 1;
   const spark = sparkline(entries, selected);
   const miniBars = (saved?.categories ?? [])
@@ -551,6 +555,24 @@ async function SummaryRail({
               </p>
             </>
           )}
+          {/* 선만 보면 "언제 얼마였나" 를 읽을 수 없다. 점의 값을 날짜와 함께 적는다. */}
+          <ol className={own.runLog}>
+            {entries.slice(0, 5).map((entry) => (
+              <li
+                key={entry.scanRunId}
+                className={entry.scanRunId === selected.scanRunId ? own.runLogOn : own.runLogRow}
+              >
+                <span className={own.runLogWhen}>{formatWhen(entry.startedAt)}</span>
+                <span className={own.runLogScore}>
+                  {entry.score === null ? '측정 불가' : entry.score.toFixed(1)}
+                </span>
+                {/* 명세가 다르면 위 선에 잇지 않았다는 것을 여기서도 말한다. */}
+                {entry.specVersion === selected.specVersion ? null : (
+                  <span className={own.runLogSpec}>명세 {entry.specVersion}</span>
+                )}
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 

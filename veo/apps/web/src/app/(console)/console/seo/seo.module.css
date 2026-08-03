@@ -490,3 +490,22 @@
 /* 병목만 다른 색 — 전부 같은 색이면 어디가 문제인지 다시 읽어야 한다. */
 .miniBarFillLow { display: block; height: 100%; background: var(--veo-status-warning-fg); }
 .miniBarVal { text-align: right; font-weight: var(--veo-weight-semibold); font-variant-numeric: tabular-nums; }
+
+/* 회차 기록 — 추이선이 "언제 얼마였나" 를 말하지 못해서 값을 날짜와 함께 적는다. */
+.runLog { list-style: none; margin: var(--veo-space-3) 0 0; padding: 0; display: flex; flex-direction: column; }
+.runLogRow, .runLogOn {
+  display: flex;
+  align-items: baseline;
+  gap: var(--veo-space-2);
+  padding: 4px 0;
+  border-top: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-100);
+  font-variant-numeric: tabular-nums;
+}
+.runLogRow:first-child, .runLogOn:first-child { border-top: 0; }
+/* 지금 보고 있는 회차 — 색이 아니라 굵기로 표시한다. */
+.runLogOn { font-weight: var(--veo-weight-semibold); }
+.runLogWhen { flex: 1 1 auto; color: var(--veo-color-text-muted); }
+.runLogOn .runLogWhen { color: var(--veo-color-text); }
+.runLogScore { flex: none; }
+.runLogSpec { flex: none; color: var(--veo-color-text-muted); }

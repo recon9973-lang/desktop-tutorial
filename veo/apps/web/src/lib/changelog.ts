@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.9',
+    date: '2026-08-03',
+    title: '게이지 라벨 수리 · 회차 기록',
+    items: [
+      '게이지에 내부 식별자(at_risk)가 그대로 나오던 문제 — 한국어 등급 라벨로',
+      '추이선 아래에 날짜·시간별 점수 기록 — 선만으로는 "언제 얼마였나" 를 읽을 수 없다',
+      '명세가 달라 선에 잇지 않은 회차는 기록에서 그 사실을 함께 적는다',
+    ],
+  },
+  {
     version: '0.3.8',
     date: '2026-08-03',
     title: '공개 화면도 같은 톤으로',
