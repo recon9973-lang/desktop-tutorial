@@ -77,14 +77,40 @@ _SESSION_SHAPE = re.compile(r"\A[A-Za-z0-9_-]{4,64}\Z")
 # Process-wide singletons
 # --------------------------------------------------------------------------- #
 
+#: 프로세스 안의 리미터. Redis 주소가 없는 배포(로컬·시험)가 이것으로 떨어진다.
 _LIMITER = InMemoryRateLimiter()
+
+#: 서버가 여럿일 때 하나의 한도를 함께 세는 리미터. 첫 요청에서 한 번 만든다 —
+#: 임포트 시점에 연결하면 Redis 가 늦게 뜨는 배포에서 API 가 못 뜬다.
+_SHARED_LIMITER: RateLimiter | None = None
 _RESULTS = InMemoryPublicResultStore()
 _LEADS = InMemoryLeadStore()
 
 
 def get_rate_limiter() -> RateLimiter:
-    """One limiter per process. See the module's limitation note in ``limits.py``."""
-    return _LIMITER
+    """이 배포가 쓸 리미터.
+
+    `VEO_REDIS_URL` 이 있으면 **여러 서버가 한 한도를 함께 세는** 구현을 쓴다. 없으면
+    프로세스 안에서만 세는 구현으로 떨어진다 — 로컬과 시험이 Redis 없이 돌아야 한다.
+
+    한 번 만들어 재사용한다. 요청마다 연결하면 연결 수가 요청 수만큼 늘어난다.
+
+    **연결을 만들지 못하면 인메모리로 떨어지지 않는다.** 그렇게 하면 Redis 가 죽은 동안
+    한도가 조용히 워커 수만큼 늘어나고, 아무도 모른다 — 리미터가 있다고 믿는 채로 없는
+    상태가 가장 나쁘다. 대신 그 리미터가 요청을 거절하고, 거절 사유가 로그에 남는다.
+    """
+    global _SHARED_LIMITER
+
+    url = get_settings().redis_url.strip()
+    if not url:
+        return _LIMITER
+    if _SHARED_LIMITER is None:
+        from redis import Redis
+
+        from veo.public.redis_limits import RedisRateLimiter
+
+        _SHARED_LIMITER = RedisRateLimiter(Redis.from_url(url))
+    return _SHARED_LIMITER
 
 
 def get_result_store() -> PublicResultStore:

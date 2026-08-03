@@ -258,7 +258,13 @@ class Settings(BaseSettings):
     #: 월간 리포트 자동 발행일 — 0 이면 꺼짐(기본), 1~28 이면 매월 그날 발행.
     #: 29 이상은 없는 달이 있어 받지 않는 것이 정직하다(검증은 사용처에서 day<=0 무시).
     report_auto_publish_day: int = 0
-    redis_url: str = "redis://localhost:6379/0"
+    #: 여러 서버가 한도를 함께 셀 때 쓰는 Redis. **비어 있으면 설정 안 됨**이고, 그때는
+    #: 리미터가 프로세스 안에서만 센다(로컬·시험이 Redis 없이 돌아야 한다).
+    #:
+    #: 기본값이 한때 `redis://localhost:6379/0` 이었다. 그것은 개발자 컴퓨터에서만
+    #: 뜻이 있는 주소라, 설정하지 않은 배포가 "설정됐다" 고 말하는 셈이었다 — 이 파일의
+    #: 규칙(빈 값 = 설정 안 됨)과도 어긋난다.
+    redis_url: str = ""
 
     # Secrets. Absent in local/test; required at startup in staging and production.
     jwt_secret: SecretStr | None = None

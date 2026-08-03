@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.22',
+    date: '2026-08-04',
+    title: '서버가 여럿이어도 한도를 하나로 센다',
+    items: [
+      '공개 진단 한도가 프로세스마다 따로 세던 문제 — Redis 를 넣으면 서버 전체가 한 한도를 공유',
+      'Redis 주소가 없으면 예전처럼 프로세스 안에서 — 로컬·시험이 Redis 없이 돈다',
+      'Redis 에 닿지 못하면 통과시키지 않고 거절한다 — 장애 시간이 남용 창구가 되면 남의 서버가 피해를 본다',
+    ],
+  },
+  {
     version: '0.3.21',
     date: '2026-08-04',
     title: '채점 기준을 화면에서 검증하고 발행한다',
