@@ -4,7 +4,9 @@
   justify-content: center;
   gap: var(--veo-space-2);
   border: 1px solid transparent;
-  border-radius: var(--veo-radius-sm);
+  /* 감싼 화면이 --veo-radius-button 으로 모양을 정할 수 있다(콘솔의 알약 버튼 —
+     DESIGN-stripe). 정의가 없으면 기존 그대로 — 공개 화면은 바뀌지 않는다. */
+  border-radius: var(--veo-radius-button, var(--veo-radius-sm));
   font-family: var(--veo-font-sans);
   font-weight: var(--veo-weight-semibold);
   line-height: var(--veo-line-snug);

@@ -29,6 +29,25 @@
   --veo-color-bg-subtle: #f6f9fc; /* {colors.canvas-soft} */
   --veo-color-surface: #ffffff;
   --veo-color-surface-sunken: #f6f9fc;
+
+  /* 형태 — {rounded.*}: 카드 12px·컴팩트 8px·버튼은 알약. */
+  --veo-radius-md: 8px;
+  --veo-radius-lg: 12px;
+  --veo-radius-xl: 16px;
+  --veo-radius-button: var(--veo-radius-pill);
+
+  /* 타이포 — 얇은 본문(300)이 시안의 서명이다. 강조(semibold·bold)는 그대로 두어
+     제목·라벨의 위계는 유지된다. */
+  --veo-weight-regular: 300;
+
+  /* 숫자는 전부 표 정렬 — 계기판의 조용한 신호({tnum} 전역 적용). */
+  font-variant-numeric: tabular-nums;
+}
+
+/* 화면 제목 — {typography.display}: 얇은 굵기 + 음수 자간. */
+.stripe :global(h1) {
+  font-weight: 300;
+  letter-spacing: -0.02em;
 }
 
 @media (prefers-color-scheme: dark) {
