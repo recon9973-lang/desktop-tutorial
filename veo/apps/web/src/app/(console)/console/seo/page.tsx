@@ -7,7 +7,7 @@ import { PermissionGate } from '@/components/PermissionGate';
 import { ScanReport, type ReportView } from '@/components/ScanReport/ScanReport';
 import { listCompanies, type MeasuredSite } from '@/lib/companies';
 import type { ConsoleScanResult, GeoCompanionRef } from '@/lib/console-scan';
-import { readSavedGeoReadiness } from '@/lib/observations';
+import { readSavedGeoReadiness, type GeoCheck } from '@/lib/observations';
 import { readBands, readHistory, readSavedReport, type HistoryEntry } from '@/lib/scan-report';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
@@ -456,6 +456,44 @@ function sparkline(entries: readonly HistoryEntry[], selected: HistoryEntry) {
   };
 }
 
+/**
+ * GEO 판정 분포 — SEO 와 같은 규칙을 GEO 자료 모양에 맞춘 것.
+ *
+ * GEO 판정에는 `availability`(연동이 필요한 항목인지)가 없다. 그 구분은 SEO 쪽 개념이고,
+ * 없는 필드를 있는 척 읽으면 전부 배점 안으로 들어온다. 그래서 걸러내지 않고 전부 센다 —
+ * 대신 측정 불가는 여기서도 분모 밖이다.
+ */
+function geoVerdictSpread(checks: readonly GeoCheck[] | null) {
+  if (checks === null || checks.length === 0) return null;
+
+  const tally: Record<string, number> = {};
+  for (const check of checks) tally[check.status] = (tally[check.status] ?? 0) + 1;
+
+  const total = checks.length;
+  const unknown = tally.UNKNOWN ?? 0;
+  const scored = total - unknown;
+  const pass = tally.PASS ?? 0;
+  const todo = (tally.FAIL ?? 0) + (tally.WARNING ?? 0);
+  const segments = [
+    { id: 'FAIL', label: '실패', count: tally.FAIL ?? 0, className: own.segFail ?? '' },
+    { id: 'WARNING', label: '주의', count: tally.WARNING ?? 0, className: own.segWarn ?? '' },
+    { id: 'PASS', label: '통과', count: pass, className: own.segPass ?? '' },
+    { id: 'UNKNOWN', label: '측정 불가', count: unknown, className: own.segUnknown ?? '' },
+  ]
+    .filter((segment) => segment.count > 0)
+    .map((segment) => ({ ...segment, percent: (segment.count / total) * 100 }));
+
+  return {
+    segments,
+    scored,
+    pass,
+    todo,
+    unknown,
+    passPercent: scored === 0 ? 0 : (pass / scored) * 100,
+    aria: segments.map((segment) => `${segment.label} ${segment.count}`).join(', '),
+  };
+}
+
 async function SummaryRail({
   siteId,
   selected,
@@ -476,14 +514,38 @@ async function SummaryRail({
   const bands = saved === null ? [] : await readBands(saved.specId, saved.specVersion);
   const clients = await otherClientRows(otherSites);
   const geo = saved?.geo ?? null;
-  const verdicts = verdictSpread(saved);
+  // GEO 축에서는 **GEO 자료**를 읽는다. 이 줄이 없던 동안 레일은 GEO 게이지 아래에
+  // SEO 의 분포와 영역 막대를 그렸다 — 축을 바꿨는데 아래 숫자는 그대로여서, 보는
+  // 사람은 그것이 GEO 의 숫자라고 읽는다. 조용히 틀리는 종류의 화면이다.
+  const geoReport =
+    axis === 'geo' && geo !== null && geo.scanRunId !== null
+      ? await readSavedGeoReadiness(geo.scanRunId)
+      : null;
+  const geoData = geoReport !== null && geoReport.ok ? geoReport.data : null;
+
+  const verdicts =
+    axis === 'geo' ? geoVerdictSpread(geoData?.checks ?? null) : verdictSpread(saved);
   // 게이지는 지금 보고 있는 눈금을 그린다 — 전환기가 GEO 면 GEO 점수다.
   const gaugeScore = axis === 'geo' ? (geo?.score ?? null) : selected.score;
   const bandId = axis === 'geo' ? (geo?.bandId ?? null) : (saved?.bandId ?? null);
   const bandLabel = bands.find((band) => band.id === bandId)?.label ?? null;
   const coverage = saved?.coverage ?? 1;
   const spark = sparkline(entries, selected);
-  const miniBars = (saved?.categories ?? [])
+  const miniBars = (
+    axis === 'geo'
+      ? (geoData?.readiness.categories ?? []).map((category) => ({
+          categoryId: category.category_id,
+          name: category.name_ko,
+          status: category.status,
+          score: category.score,
+        }))
+      : (saved?.categories ?? []).map((category) => ({
+          categoryId: category.categoryId,
+          name: category.name,
+          status: category.status,
+          score: category.score,
+        }))
+  )
     // 채점하지 못한 영역은 0% 막대로 그리면 "0점" 으로 읽힌다. 그것은 거짓이다.
     .filter((category) => category.status === 'SCORED' && category.score !== null)
     .map((category) => ({
@@ -578,7 +640,7 @@ async function SummaryRail({
 
       {miniBars.length === 0 ? null : (
         <section className={own.railBlock}>
-          <h2 className={own.railTitle}>영역별</h2>
+          <h2 className={own.railTitle}>영역별 — {axis === 'geo' ? 'GEO' : 'SEO'}</h2>
           <ul className={own.miniBars}>
             {miniBars.map((bar) => (
               <li key={bar.categoryId} className={own.miniBar}>
@@ -641,7 +703,9 @@ async function SummaryRail({
 
       {verdicts === null ? null : (
         <section className={own.railBlock}>
-          <h2 className={own.railTitle}>판정 분포</h2>
+          {/* 어느 눈금의 분포인지 제목이 말한다 — 전환기로 축을 바꾸면 숫자가 통째로
+              바뀌는데, 제목이 같으면 바뀐 줄 모른다. */}
+          <h2 className={own.railTitle}>판정 분포 — {axis === 'geo' ? 'GEO' : 'SEO'}</h2>
           {/* 확정 시안 v2.2 — 한 줄 막대와 범례. 색만으로 말하지 않게 숫자를 함께 둔다. */}
           <div className={own.verdictBar} role="img" aria-label={verdicts.aria}>
             {verdicts.segments.map((segment) => (

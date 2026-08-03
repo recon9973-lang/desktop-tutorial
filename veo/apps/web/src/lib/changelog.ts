@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.10',
+    date: '2026-08-03',
+    title: 'GEO 탭 레일이 GEO 숫자를 읽는다',
+    items: [
+      'GEO 탭에서 판정 분포·영역 막대가 SEO 자료를 그리던 문제 — 축에 맞는 자료로',
+      '레일 제목이 어느 눈금인지 말한다 — 전환해도 제목이 같으면 바뀐 줄 모른다',
+    ],
+  },
+  {
     version: '0.3.9',
     date: '2026-08-03',
     title: '게이지 라벨 수리 · 회차 기록',
