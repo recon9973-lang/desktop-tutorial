@@ -1,0 +1,97 @@
+/* VEO 팔레트·형태·타이포 — DESIGN-stripe.md(저장소 루트)와 확정 시안 v2.2 의 이행.
+ *
+ * **공개 화면과 콘솔이 이 한 파일을 함께 쓴다.** 처음에는 콘솔에만 덮었다 — 공개
+ * 도구(/tools)에 잉크 남색·시그널 틸로 따로 확정된 시안이 있었기 때문이다. 그러나 두
+ * 화면이 같은 제품으로 보이지 않았고(사용자 지적: "메인화면도 톤앤매너 적용"), 한 제품이
+ * 두 얼굴을 갖는 것보다 확정을 갱신하는 편이 낫다고 판단했다.
+ *
+ * 구조는 토큰을 통해서만 색을 읽으므로(--veo-color-*), 컴포넌트 코드는 한 줄도 바뀌지
+ * 않는다. 상태색(--veo-status-*)은 건드리지 않는다 — 의미색은 브랜드색과 별개다.
+ * 다크 스킴은 액센트 계열만 인디고로 — 시안은 화이트 기준이라 다크의 면·글자까지
+ * 규정하지 않았고, 없는 규정을 지어내지 않는다.
+ */
+
+.stripe {
+  /* {colors.primary} 계열 — 틸을 대체하는 시안의 인디고. */
+  --veo-color-accent: #533afd;
+  --veo-color-accent-hover: #4434d4; /* {colors.primary-deep} */
+  --veo-color-accent-active: #2e2b8c; /* {colors.primary-press} */
+  --veo-color-accent-subtle: #efedff; /* 시안 v2.2 의 +N점 알약 배경 그대로 */
+  --veo-color-accent-border: #b9b9f9; /* {colors.primary-bg-subdued-hover} */
+
+  /* {colors.ink} 계열 — 글자와 선. */
+  --veo-color-text: #0d253d; /* {colors.ink} */
+  --veo-color-text-muted: #64748d; /* {colors.ink-mute} */
+  --veo-color-border: #e3e8ee; /* {colors.hairline} */
+  --veo-color-border-strong: #a8c3de; /* {colors.hairline-input} */
+
+  /* 면 — 흰 캔버스와 한 톤 가라앉은 보조면. */
+  --veo-color-bg: #ffffff; /* {colors.canvas} */
+  --veo-color-bg-subtle: #f6f9fc; /* {colors.canvas-soft} */
+  --veo-color-surface: #ffffff;
+  --veo-color-surface-sunken: #f6f9fc;
+
+  /* 형태 — {rounded.*}: 카드 12px·컴팩트 8px·버튼은 알약. */
+  --veo-radius-md: 8px;
+  --veo-radius-lg: 12px;
+  --veo-radius-xl: 16px;
+  --veo-radius-button: var(--veo-radius-pill);
+
+  /* 타이포 — 얇은 본문(300)이 시안의 서명이다. 강조(semibold·bold)는 그대로 두어
+     제목·라벨의 위계는 유지된다. */
+  --veo-weight-regular: 300;
+
+  /* 숫자는 전부 표 정렬 — 계기판의 조용한 신호({tnum} 전역 적용). */
+  font-variant-numeric: tabular-nums;
+
+  /* 그림자 — 시안의 두 단계. 카드가 면 위에 떠 있다는 것을 선이 아니라 깊이로 말한다. */
+  --veo-shadow-1: 0 1px 3px rgb(0 55 112 / 8%);
+  --veo-shadow-2: 0 8px 24px rgb(0 55 112 / 8%), 0 2px 6px rgb(0 55 112 / 4%);
+
+  /* 바탕은 한 톤 가라앉은 면({colors.canvas-soft}). 카드가 흰색이라 대비가 생긴다 —
+     전부 흰 바탕이면 카드 경계가 실선 하나뿐이라 묶음이 눈에 들어오지 않는다. */
+  background-color: var(--veo-color-bg-subtle);
+  min-height: 100vh;
+}
+
+/* 카드 계열은 면 위에 얕게 띄운다. 테두리는 그대로 두고 깊이만 더한다 — 시안의
+   그림자는 경계를 대신하는 것이 아니라 겹쳐 쓰는 값이다. */
+.stripe :global(article),
+.stripe :global(aside) > :global(section) {
+  box-shadow: var(--veo-shadow-1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .stripe {
+    /* 다크에서는 그림자가 보이지 않는다 — 검정 위의 검정이다. 지우지 않고 낮춘다. */
+    --veo-shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+    --veo-shadow-2: 0 8px 24px rgb(0 0 0 / 45%);
+  }
+}
+
+/* 화면 제목 — {typography.display}: 얇은 굵기 + 음수 자간. */
+.stripe :global(h1) {
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .stripe {
+    /* 다크 셸의 면·글자·선은 전역 다크 토큰 그대로 두고, 액센트만 인디고로.
+       #8a80ff 는 다크 잉크 글자(text-on-accent)와 5:1 이상을 유지한다. */
+    --veo-color-accent: #8a80ff;
+    --veo-color-accent-hover: #9d94ff;
+    --veo-color-accent-active: #b3acff;
+    --veo-color-accent-subtle: #221d4f;
+    --veo-color-accent-border: #4434d4;
+
+    --veo-color-text: var(--veo-ink-050, #e6f1f5);
+    --veo-color-text-muted: #a4bfcd;
+    --veo-color-border: #1c4257;
+    --veo-color-border-strong: #4a86a4;
+    --veo-color-bg: var(--veo-ink-950, #05141d);
+    --veo-color-bg-subtle: #0a2635;
+    --veo-color-surface: #0a2635;
+    --veo-color-surface-sunken: #05141d;
+  }
+}

@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.8',
+    date: '2026-08-03',
+    title: '공개 화면도 같은 톤으로',
+    items: [
+      '메인·무료 도구가 콘솔과 같은 팔레트·형태·타이포 — 한 제품이 두 얼굴을 갖지 않게',
+      '팔레트 값은 파일 하나에만 — 두 벌로 두면 한쪽만 고쳐진다',
+    ],
+  },
+  {
     version: '0.3.7',
     date: '2026-08-03',
     title: 'GEO 화면도 측정값과 고침 방법을',
