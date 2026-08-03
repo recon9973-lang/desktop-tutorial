@@ -81,7 +81,7 @@ export function PublishForm({ runs }: { readonly runs: readonly RunChoice[] }) {
           className={styles.input}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="온담한의원 7월 진단"
+          placeholder="○○한의원 7월 진단"
           required
         />
       </label>

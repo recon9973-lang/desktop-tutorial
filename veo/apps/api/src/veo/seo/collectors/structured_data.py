@@ -241,7 +241,7 @@ def _declared(
                 "{\n"
                 '  "@context": "https://schema.org",\n'
                 '  "@type": "MedicalClinic",\n'
-                '  "name": "온담의원",\n'
+                '  "name": "업체명",\n'
                 '  "address": "서울특별시 강남구 테헤란로 1",\n'
                 '  "telephone": "02-555-1234",\n'
                 '  "openingHours": "Mo-Fr 09:00-18:00"\n'

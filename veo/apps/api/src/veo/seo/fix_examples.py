@@ -11,13 +11,22 @@
 
 플레이스홀더는 대문자 한글로 표시한다(예: 페이지주소) — 그대로 붙여넣으면 동작하지
 않는다는 것이 눈에 보여야 한다.
+
+상호 자리는 :data:`BRAND_PLACEHOLDER` 하나로 통일한다. 예전에는 가상의 병원 이름
+("온담의원")이 박혀 있었는데, 복사해 쓰라고 내놓은 코드에 **남의 상호**가 들어 있으니
+읽는 사람은 그것이 자기 사이트에서 측정된 값인 줄 알았다. 아는 업체명이 있으면
+:func:`with_brand` 가 이 자리에만 갈아 끼운다 — 모르면 자리표시자 그대로 두고, 없는
+이름을 지어내지 않는다.
 """
 
 from __future__ import annotations
 
 from typing import Final
 
-__all__ = ["code_example_for"]
+__all__ = ["BRAND_PLACEHOLDER", "code_example_for", "with_brand"]
+
+#: 예시 코드 안의 상호 자리. 다른 자리표시자(페이지주소·도메인)와 같은 관례다.
+BRAND_PLACEHOLDER: Final = "업체명"
 
 _EXAMPLES: Final[dict[str, str]] = {
     "seo.ux.mobile_viewport": (
@@ -38,12 +47,12 @@ _EXAMPLES: Final[dict[str, str]] = {
     ),
     "seo.onpage.meta_description_quality": (
         "<!-- 80~120자, 페이지 내용 요약 -->\n"
-        '<meta name="description" content="지역명 + 병원명. 핵심 진료·검사 안내. '
+        '<meta name="description" content="지역명 + 업체명. 핵심 진료·검사 안내. '
         '예약 및 진료시간 정보.">'
     ),
     "seo.onpage.single_title_element": (
         "<!-- <title> 은 문서에 하나만 -->\n"
-        "<title>페이지 주제 — 병원명</title>"
+        "<title>페이지 주제 — 업체명</title>"
     ),
     "seo.onpage.single_meaningful_h1": (
         "<!-- 페이지 주제 하나만 h1, 나머지는 h2 로 -->\n"
@@ -84,9 +93,9 @@ _EXAMPLES: Final[dict[str, str]] = {
         '<img src="https://도메인/img.jpg">  <!-- ✓ -->'
     ),
     "seo.onpage.title_present_and_unique": (
-        "<!-- 페이지마다 다른 제목 — [페이지 주제] + 병원명 -->\n"
-        "<title>불면증 클리닉 — ○○한의원</title>\n"
-        "<title>오시는 길 — ○○한의원</title>"
+        "<!-- 페이지마다 다른 제목 — [페이지 주제] + 업체명 -->\n"
+        "<title>불면증 클리닉 — 업체명</title>\n"
+        "<title>오시는 길 — 업체명</title>"
     ),
     "seo.onpage.heading_hierarchy": (
         "<!-- 계층을 건너뛰지 않는다: h2 다음은 h3 -->\n"
@@ -111,7 +120,7 @@ _EXAMPLES: Final[dict[str, str]] = {
         '{\n'
         '  "@context": "https://schema.org",\n'
         '  "@type": "MedicalClinic",\n'
-        '  "name": "병원명",\n'
+        '  "name": "업체명",\n'
         '  "address": {"@type": "PostalAddress",\n'
         '              "addressLocality": "지역", "streetAddress": "주소"},\n'
         '  "telephone": "+82-00-000-0000",\n'
@@ -148,7 +157,7 @@ _EXAMPLES: Final[dict[str, str]] = {
     # ---- GEO — AI 답변 엔진이 인용할 수 있는 구조 ----
     "geo.extract.direct_answer_present": (
         "<!-- 첫 문단이 곧 답이 되게 — AI 는 이 문장을 그대로 인용한다 -->\n"
-        "<p>○○한의원은 △△역 도보 3분 거리의 불면증·수면장애 전문 한의원으로,\n"
+        "<p>업체명은 △△역 도보 3분 거리의 불면증·수면장애 전문 한의원으로,\n"
         "비약물 치료 프로그램을 운영합니다.</p>"
     ),
     "geo.evidence.author_identified": (
@@ -157,7 +166,7 @@ _EXAMPLES: Final[dict[str, str]] = {
         '<script type="application/ld+json">\n'
         '{"@context": "https://schema.org", "@type": "Person",\n'
         ' "name": "홍길동", "jobTitle": "한의사",\n'
-        ' "worksFor": {"@type": "MedicalClinic", "name": "병원명"}}\n'
+        ' "worksFor": {"@type": "MedicalClinic", "name": "업체명"}}\n'
         "</script>"
     ),
     "geo.fresh.dates_present": (
@@ -180,10 +189,10 @@ _EXAMPLES: Final[dict[str, str]] = {
     ),
     "geo.sd.matches_visible_content": (
         '<!-- 구조화 데이터 값은 화면에 보이는 것과 같아야 한다 -->\n'
-        "<h1>참사랑한의원</h1>\n"
+        "<h1>업체명</h1>\n"
         '<script type="application/ld+json">\n'
         '{"@context": "https://schema.org", "@type": "MedicalClinic",\n'
-        ' "name": "참사랑한의원"}  <!-- ✓ 화면의 이름 그대로 -->\n'
+        ' "name": "업체명"}  <!-- ✓ 화면의 이름 그대로 -->\n'
         "</script>"
     ),
     "geo.meta.opengraph_present": (
@@ -197,3 +206,21 @@ _EXAMPLES: Final[dict[str, str]] = {
 def code_example_for(check_id: str) -> str | None:
     """이 검사의 조치 코드 예시. 정답 코드가 하나로 정해지지 않는 검사는 ``None``."""
     return _EXAMPLES.get(check_id)
+
+
+def with_brand(example: str | None, brand: str | None) -> str | None:
+    """예시 코드의 상호 자리를 **실제 업체명**으로 바꾼다.
+
+    담당자는 이 코드를 그대로 복사해 붙여넣는다. 그 자리에 자리표시자가 남아 있으면
+    한 번 더 손봐야 하고, 손보는 것을 잊으면 자리표시자가 그대로 사이트에 올라간다.
+
+    다만 **아는 이름만** 넣는다. 등록된 브랜드가 없으면 자리표시자를 그대로 둔다 —
+    도메인이나 제목에서 상호를 추측해 넣으면, 틀린 이름을 확신을 가지고 붙여넣게 만든다.
+    그것은 자리표시자보다 나쁘다.
+    """
+    if example is None or brand is None:
+        return example
+    name = brand.strip()
+    if not name:
+        return example
+    return example.replace(BRAND_PLACEHOLDER, name)

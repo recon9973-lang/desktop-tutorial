@@ -45,6 +45,15 @@ const SEVERITY_LABELS: Record<string, string> = {
   INFO: '참고',
 };
 
+/** 심각도 배지. 무게가 세 단계로만 보이게 묶는다 — 다섯 색은 색이 아니라 소음이다. */
+const SEVERITY_BADGE: Record<string, string> = {
+  BLOCKER: styles.sevBadgeHigh ?? '',
+  CRITICAL: styles.sevBadgeHigh ?? '',
+  MAJOR: styles.sevBadgeMid ?? '',
+  MINOR: styles.sevBadgeLow ?? '',
+  INFO: styles.sevBadgeLow ?? '',
+};
+
 /** 심각도별 색 띠의 클래스. 이름이 아니라 무게 순서로 읽히게 한다. */
 const SEVERITY_CLASS: Record<string, string> = {
   BLOCKER: styles.sevBlocker ?? '',
@@ -110,21 +119,70 @@ export function CheckExplorer({ outcomes, issues }: CheckExplorerProps) {
         <p className={styles.sectionNote}>이 기준에 해당하는 항목이 없습니다.</p>
       ) : (
         groups.map(([categoryName, items]) => (
-          <div key={categoryName} className={styles.checkGroup}>
-            <h3 className={styles.checkGroupTitle}>
-              {categoryName}
-              <span className={styles.checkGroupCount}>{items.length}개</span>
-            </h3>
-            <ul className={styles.checkList}>
-              {items.map((outcome) => (
-                <li key={outcome.checkId}>
-                  <CheckPanel outcome={outcome} issue={issueOf.get(outcome.checkId)} />
-                </li>
-              ))}
-            </ul>
-          </div>
+          <CheckGroup
+            key={categoryName}
+            name={categoryName}
+            items={items}
+            issueOf={issueOf}
+          />
         ))
       )}
+    </section>
+  );
+}
+
+/**
+ * 한 영역(카테고리) — 카드 하나.
+ *
+ * 예전에는 영역 이름이 **밑줄 하나**였고 그 아래 항목들이 각자 흰 카드로 떠 있었다.
+ * 44개가 같은 무게로 늘어서니 어디서 어디까지가 한 영역인지 눈으로 잡히지 않았고,
+ * 멀쩡한 영역을 통째로 건너뛸 방법도 없어 전부 훑어야 했다.
+ *
+ * 그래서 두 가지를 바꾼다. **영역을 진짜 카드로** 묶어 경계를 만들고, **머리줄에 이 영역의
+ * 상태를 요약**한다 — "실패 2 · 주의 1" 이 보이면 볼지 말지 그 자리에서 정할 수 있고,
+ * "모두 통과" 면 접힌 채로 지나가면 된다. 항목은 카드 안에서 실선으로만 나뉜다:
+ * 카드 안의 카드는 테두리가 두 겹이 되어 오히려 읽기 어려웠다.
+ */
+function CheckGroup({
+  name,
+  items,
+  issueOf,
+}: {
+  readonly name: string;
+  readonly items: readonly Outcome[];
+  readonly issueOf: ReadonlyMap<string, Issue>;
+}) {
+  const tally = { FAIL: 0, WARNING: 0, UNKNOWN: 0, PASS: 0 } as Record<string, number>;
+  for (const item of items) tally[item.status] = (tally[item.status] ?? 0) + 1;
+  const needsWork = (tally.FAIL ?? 0) + (tally.WARNING ?? 0);
+
+  return (
+    <section className={styles.checkGroup} aria-label={name}>
+      <h3 className={styles.checkGroupTitle}>
+        <span className={styles.checkGroupName}>{name}</span>
+        <span className={styles.checkGroupTally}>
+          {/* 색만으로 알리지 않는다(기획서 §12.1) — 배지마다 글자가 함께 있다. */}
+          {tally.FAIL ? <span className={styles.tallyFail}>실패 {tally.FAIL}</span> : null}
+          {tally.WARNING ? (
+            <span className={styles.tallyWarning}>주의 {tally.WARNING}</span>
+          ) : null}
+          {tally.UNKNOWN ? (
+            <span className={styles.tallyUnknown}>측정 불가 {tally.UNKNOWN}</span>
+          ) : null}
+          {needsWork === 0 && tally.PASS ? (
+            <span className={styles.tallyPass}>모두 통과 {tally.PASS}</span>
+          ) : (
+            <span className={styles.checkGroupCount}>{items.length}개</span>
+          )}
+        </span>
+      </h3>
+      <ul className={styles.checkList}>
+        {items.map((outcome) => (
+          <li key={outcome.checkId}>
+            <CheckPanel outcome={outcome} issue={issueOf.get(outcome.checkId)} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -144,7 +202,10 @@ function CheckPanel({
       <summary className={styles.checkSummary}>
         <StatusChip status={outcome.status as CheckStatus} />
         <span className={styles.checkTitle}>{outcome.title}</span>
-        <span className={styles.checkSeverity}>
+        {/* 심각도는 이 줄에서 가장 중요한 신호인데 오른쪽 끝 흐린 회색 글씨였다 —
+            통과한 경미 항목과 실패한 치명 항목이 같은 무게로 보였다. 무게에 따라
+            배지로 세운다. */}
+        <span className={SEVERITY_BADGE[outcome.severity] ?? styles.sevBadgeLow}>
           {SEVERITY_LABELS[outcome.severity] ?? outcome.severity}
         </span>
       </summary>

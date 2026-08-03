@@ -70,7 +70,7 @@ export function CompanyForm({ customerId, companyName }: CompanyFormProps) {
           name="name"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="온담의원"
+          placeholder="○○의원"
           autoComplete="organization"
           required
         />

@@ -389,3 +389,75 @@ describe('색인 차단 안내', () => {
     expect(screen.getByText(/점수에서 차감하지\s*않았습니다/)).toBeInTheDocument();
   });
 });
+
+/**
+ * 영역(카테고리)이 눈으로 잡히는가.
+ *
+ * 44개 항목이 같은 무게로 늘어서면 어디까지가 한 영역인지 보이지 않고, 멀쩡한 영역을
+ * 건너뛸 방법이 없어 전부 훑게 된다. 그래서 영역을 카드로 묶고 **머리줄에 이 영역의
+ * 상태를 요약**한다 — 볼지 말지를 그 자리에서 정할 수 있어야 한다.
+ *
+ * 여기서 지키는 것은 모양이 아니라 **판단에 필요한 정보가 머리줄에 있다**는 것이다.
+ */
+describe('영역 머리줄이 볼지 말지를 먼저 말한다', () => {
+  it('고칠 것이 있으면 실패·주의 건수를 머리줄에 세운다', () => {
+    detailed({
+      outcomes: [
+        outcome({ checkId: 'a', status: 'FAIL' }),
+        outcome({ checkId: 'b', status: 'FAIL' }),
+        outcome({ checkId: 'c', status: 'WARNING' }),
+        outcome({ checkId: 'd', status: 'PASS' }),
+      ],
+    });
+
+    const group = screen.getByRole('region', { name: '온페이지 시맨틱' });
+
+    expect(within(group).getByText('실패 2')).toBeInTheDocument();
+    expect(within(group).getByText('주의 1')).toBeInTheDocument();
+  });
+
+  it('전부 통과한 영역은 그렇다고 말한다 — 열어 보지 않아도 된다', () => {
+    detailed({
+      outcomes: [
+        outcome({ checkId: 'a', status: 'PASS' }),
+        outcome({ checkId: 'b', status: 'PASS' }),
+      ],
+    });
+
+    const group = screen.getByRole('region', { name: '온페이지 시맨틱' });
+
+    expect(within(group).getByText('모두 통과 2')).toBeInTheDocument();
+    expect(within(group).queryByText(/실패/)).not.toBeInTheDocument();
+  });
+
+  it('색만으로 알리지 않는다 — 배지마다 글자가 함께 있다', () => {
+    detailed({ outcomes: [outcome({ status: 'FAIL', severity: 'BLOCKER' })] });
+
+    const group = screen.getByRole('region', { name: '온페이지 시맨틱' });
+
+    // 심각도도 글자로 읽힌다(색 배지로만 바뀌지 않았다).
+    expect(within(group).getByText('치명')).toBeInTheDocument();
+    expect(within(group).getByText('실패 1')).toBeInTheDocument();
+  });
+
+  it('영역이 여럿이면 각각 자기 요약을 가진다', () => {
+    detailed({
+      outcomes: [
+        outcome({ checkId: 'a', status: 'FAIL' }),
+        outcome({
+          checkId: 'b',
+          status: 'PASS',
+          categoryId: 'crawl',
+          categoryName: '크롤 접근',
+        }),
+      ],
+    });
+
+    expect(
+      within(screen.getByRole('region', { name: '온페이지 시맨틱' })).getByText('실패 1'),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('region', { name: '크롤 접근' })).getByText('모두 통과 1'),
+    ).toBeInTheDocument();
+  });
+});

@@ -123,22 +123,83 @@
 
 /* 항목별 판정 — 접힌 한 줄, 펼치면 근거와 수정 방향. */
 
-.checkGroup { display: flex; flex-direction: column; gap: var(--veo-space-3); }
-.checkGroupTitle {
-  margin: var(--veo-space-4) 0 0;
+/* 영역 = 카드 하나. 경계가 있어야 "여기까지가 이 영역" 이 눈으로 잡힌다.
+   예전에는 밑줄 하나였고, 그 아래 항목들이 각자 흰 카드로 떠 있어 44개가 같은 무게로
+   늘어섰다. */
+.checkGroup {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-surface);
+  /* 카드 안 항목의 모서리가 밖으로 새지 않게. */
+  overflow: hidden;
+}
+.checkGroup + .checkGroup { margin-top: var(--veo-space-4); }
+
+/* 머리줄 — 영역 이름과 이 영역의 상태 요약. 볼지 말지를 여기서 정한다. */
+.checkGroupTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--veo-space-3);
-  font-size: var(--veo-font-size-300);
-  font-weight: var(--veo-weight-semibold);
-  padding-bottom: var(--veo-space-2);
+  padding: var(--veo-space-3) var(--veo-space-4);
+  background: var(--veo-color-surface-sunken);
   border-bottom: 1px solid var(--veo-color-border);
 }
-.checkGroupCount { font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); font-weight: var(--veo-weight-regular); }
+/* 항목 제목(300)보다 한 단 크게 — 위계가 크기로도 보여야 한다. */
+.checkGroupName { font-size: var(--veo-font-size-400); font-weight: var(--veo-weight-semibold); }
+.checkGroupTally { display: flex; align-items: center; gap: var(--veo-space-2); flex-wrap: wrap; }
+.checkGroupCount {
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  font-weight: var(--veo-weight-regular);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 요약 배지 — 색과 글자를 함께 준다(§12.1). 숫자는 표 정렬. */
+.tallyFail,
+.tallyWarning,
+.tallyUnknown,
+.tallyPass {
+  padding: 2px var(--veo-space-2);
+  border-radius: var(--veo-radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tallyFail {
+  background: var(--veo-status-fail-bg);
+  color: var(--veo-status-fail-fg);
+  border-color: var(--veo-status-fail-border);
+}
+.tallyWarning {
+  background: var(--veo-status-warning-bg);
+  color: var(--veo-status-warning-fg);
+  border-color: var(--veo-status-warning-border);
+}
+.tallyUnknown {
+  background: var(--veo-color-surface);
+  color: var(--veo-color-text-muted);
+  border-color: var(--veo-color-border-strong);
+}
+.tallyPass {
+  background: var(--veo-status-pass-bg);
+  color: var(--veo-status-pass-fg);
+  border-color: var(--veo-status-pass-border);
+}
+
+/* 카드 안에서는 실선으로만 나눈다 — 카드 안의 카드는 테두리가 두 겹이 되어 더 읽기 어렵다. */
+.checkList { gap: 0; }
+.checkList > li + li { border-top: 1px solid var(--veo-color-border); }
 
 .check {
-  border: 1px solid var(--veo-color-border);
-  border-radius: var(--veo-radius-md);
+  border: none;
+  border-radius: 0;
   background: var(--veo-color-surface);
 }
 .checkSummary {
@@ -158,6 +219,37 @@
   font-size: var(--veo-font-size-200);
   color: var(--veo-color-text-muted);
   white-space: nowrap;
+}
+
+/* 심각도 배지 — 세 단계. 다섯 색으로 나누면 색이 신호가 아니라 소음이 된다.
+   치명·심각은 같은 무게로 세우고, 경미·참고는 조용히 둔다. */
+.sevBadgeHigh,
+.sevBadgeMid,
+.sevBadgeLow {
+  flex: 0 0 auto;
+  padding: 2px var(--veo-space-2);
+  border-radius: var(--veo-radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  white-space: nowrap;
+}
+.sevBadgeHigh {
+  background: var(--veo-status-fail-bg);
+  color: var(--veo-status-fail-fg);
+  border-color: var(--veo-status-fail-border);
+}
+.sevBadgeMid {
+  background: var(--veo-status-warning-bg);
+  color: var(--veo-status-warning-fg);
+  border-color: var(--veo-status-warning-border);
+}
+/* 경미·참고는 테두리만 — 고칠 것이 아닌데 눈을 끌면 안 된다. */
+.sevBadgeLow {
+  background: transparent;
+  color: var(--veo-color-text-muted);
+  border-color: var(--veo-color-border);
+  font-weight: var(--veo-weight-regular);
 }
 
 .checkDetail {

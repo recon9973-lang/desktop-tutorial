@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal, tenant_select
+from veo.brands.service import list_brands
 from veo.collect.from_crawl import context_from_crawl
 from veo.contracts.enums import JobType
 from veo.contracts.envelope import ApiResponse
@@ -35,7 +36,7 @@ from veo.scoring.improvements import rank_improvements
 from veo.scoring.page import PageScore
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
-from veo.seo.fix_examples import code_example_for
+from veo.seo.fix_examples import code_example_for, with_brand
 from veo.seo.history import (
     SEO_KIND,
     read_scan_history,
@@ -287,7 +288,9 @@ def run_console_scan(
     # 이 줄이 아무 일도 하지 않는다 — 소켓도 열리지 않는다.
     context, performance = with_performance(context)
     result = run_seo_scan(context)
-    report = _scan_payload(result)
+    report = _scan_payload(
+        result, brand_name=_registered_brand_name(db, principal, site_id=payload.site_id)
+    )
 
     # 유료 한도를 쓴 것은 사실이므로 사이트를 지정하지 않은 진단에서도 남긴다.
     # PageSpeed 는 하루 25,000회이고 진단 한 번에 최대 5회가 나간다. 기록이 없으면
@@ -564,12 +567,41 @@ def _assert_site_exists(db: Session, *, principal: Principal, site_id: uuid.UUID
         raise HTTPException(status_code=404, detail="site not found")
 
 
+def _registered_brand_name(
+    db: Session, principal: Principal, *, site_id: uuid.UUID | None
+) -> str | None:
+    """이 사이트를 가진 프로젝트에 **등록된** 우리 브랜드 이름.
+
+    예시 코드의 상호 자리를 채우는 데 쓴다. 사람이 직접 등록한 값만 쓴다 — 도메인이나
+    페이지 제목에서 상호를 뽑아내면 그럴듯하게 틀린 이름이 나오고, 담당자는 그것을
+    그대로 사이트에 붙여넣는다. 자리표시자가 남는 편이 낫다.
+
+    사이트를 지정하지 않은 간편 진단, 브랜드를 아직 등록하지 않은 프로젝트, 조회 중
+    생기는 어떤 문제든 ``None`` 이다 — 이름을 못 채우는 것이 진단을 실패시킬 이유는 없다.
+    """
+    if site_id is None:
+        return None
+    site = db.execute(tenant_select(Site, principal).where(Site.id == site_id)).scalar_one_or_none()
+    if site is None:
+        return None
+    brands = list_brands(db, principal, site.project_id)
+    if brands.ours is None:
+        return None
+    return brands.ours.row.display_name
+
+
 # --------------------------------------------------------------------------- #
 # Result to payload
 # --------------------------------------------------------------------------- #
 
 
-def _scan_payload(result: SeoScanResult) -> ScanPayload:
+def _scan_payload(result: SeoScanResult, *, brand_name: str | None = None) -> ScanPayload:
+    """판정을 응답 본문으로.
+
+    ``brand_name`` 은 **등록된 업체명이 있을 때만** 넘어온다. 예시 코드의 상호 자리를
+    실제 이름으로 채워, 담당자가 그대로 복사해 붙여넣을 수 있게 한다. 없으면 자리표시자가
+    남는다 — 도메인에서 상호를 추측해 넣으면 틀린 이름을 확신 있게 붙여넣게 만든다.
+    """
     spec = load_seo_spec()
     titles = {
         check.id: (check.title_ko, str(check.severity), check.remediation_owner)
@@ -634,7 +666,9 @@ def _scan_payload(result: SeoScanResult) -> ScanPayload:
                 # 수집기가 현장 코드를 만들었으면 그것(실측값 포함)이 우선,
                 # 없으면 등록부의 표준 예시 — 무료 화면과 같은 폴백이다. 콘솔이
                 # 무료 화면보다 정보가 적던 반쪽 연결의 수선(2026-08-03 감사).
-                fix_example=item.fix_example or code_example_for(item.check_id),
+                fix_example=with_brand(
+                    item.fix_example or code_example_for(item.check_id), brand_name
+                ),
                 reverification_note_ko=item.reverification_note_ko,
             )
             for item in result.issues

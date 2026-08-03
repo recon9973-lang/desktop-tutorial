@@ -193,7 +193,7 @@ def _title(
             ),
             reverification_ko="수정 후 재수집해 title이 모두 채워지고 서로 다른지 확인합니다.",
             business_impact_ko="검색 결과에 표시되는 첫 줄이므로 클릭률에 직접 영향을 줍니다.",
-            fix_example="<title>레이저 치료 안내 — 회복 기간과 주의 사항 | 온담의원</title>",
+            fix_example="<title>레이저 치료 안내 — 회복 기간과 주의 사항 | 업체명</title>",
         )
     ]
 
@@ -520,7 +520,7 @@ def _image_alt(
             business_impact_ko=(
                 "이미지 검색 유입이 줄고 화면 낭독기 사용자가 내용을 알 수 없습니다."
             ),
-            fix_example='<img src="/img/clinic.jpg" alt="온담의원 1층 접수 데스크">',
+            fix_example='<img src="/img/clinic.jpg" alt="업체명 1층 접수 데스크">',
         )
     ]
 
@@ -863,7 +863,7 @@ def _single_title_element(
                 "검색 결과에 의도하지 않은 제목이 표시될 수 있고, 어느 쪽이 쓰일지 "
                 "예측할 수 없어 제목 개선 작업의 효과를 확인할 수 없습니다."
             ),
-            fix_example="<title>레이저 치료 안내 | 온담의원</title>  <!-- 이 하나만 남깁니다 -->",
+            fix_example="<title>레이저 치료 안내 | 업체명</title>  <!-- 이 하나만 남깁니다 -->",
         )
     ]
 
