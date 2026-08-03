@@ -426,3 +426,67 @@
   font-variant-numeric: tabular-nums;
 }
 .progressCap b { color: var(--veo-color-text); }
+
+/* ── 점수 게이지 · 추이 · 영역별 미니 바 (확정 시안 v2.2 레일) ──────────────── */
+
+.scoreRow { display: flex; align-items: center; gap: var(--veo-space-4); }
+
+/* conic-gradient 로 그린 원형 게이지 — 이미지도 라이브러리도 쓰지 않는다.
+   채운 각도는 인라인 스타일의 --veo-gauge-deg 가 정한다(점수는 서버가 준 값). */
+.gauge {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  flex: none;
+  background: conic-gradient(
+    var(--veo-color-accent) 0 var(--veo-gauge-deg, 0deg),
+    var(--veo-color-border) var(--veo-gauge-deg, 0deg) 360deg
+  );
+  display: grid;
+  place-items: center;
+}
+.gaugeIn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--veo-color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.gaugeIn b { font-size: 22px; font-weight: var(--veo-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; }
+.gaugeIn span { font-size: 9.5px; color: var(--veo-color-text-muted); margin-top: 2px; }
+
+.scoreSide { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); font-variant-numeric: tabular-nums; }
+.scoreSide p { margin: 0 0 2px; }
+.scoreSide b { font-weight: var(--veo-weight-bold); }
+/* 하락은 실패색, 상승은 통과색 — 화살표 글자가 함께 있어 색만으로 말하지 않는다. */
+.deltaDown { color: var(--veo-status-fail-fg); }
+.deltaUp { color: var(--veo-status-pass-fg); }
+
+.spark { display: block; width: 100%; height: 36px; margin-top: var(--veo-space-2); }
+.spark polyline { stroke: var(--veo-color-accent); }
+.spark circle { fill: var(--veo-color-accent); }
+.sparkCap { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); margin: 2px 0 0; }
+
+.miniBars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--veo-space-2); }
+.miniBar {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 2rem;
+  gap: var(--veo-space-2);
+  align-items: center;
+  font-size: var(--veo-font-size-100);
+}
+.miniBarName { color: var(--veo-color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.miniBarTrack {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--veo-color-surface-sunken);
+  border: 1px solid var(--veo-color-border);
+  overflow: hidden;
+}
+.miniBarFill { display: block; height: 100%; background: var(--veo-color-accent); }
+/* 병목만 다른 색 — 전부 같은 색이면 어디가 문제인지 다시 읽어야 한다. */
+.miniBarFillLow { display: block; height: 100%; background: var(--veo-status-warning-fg); }
+.miniBarVal { text-align: right; font-weight: var(--veo-weight-semibold); font-variant-numeric: tabular-nums; }

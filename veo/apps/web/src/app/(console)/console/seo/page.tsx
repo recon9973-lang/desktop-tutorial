@@ -417,6 +417,45 @@ function verdictSpread(saved: ConsoleScanResult | null) {
   };
 }
 
+/**
+ * 최근 점수 추이 — 확정 시안 v2.2 의 스파크라인.
+ *
+ * **같은 명세끼리만 잇는다.** 눈금이 바뀐 회차를 이으면 사이트는 그대로인데 선이 꺾이고,
+ * 그 꺾임은 우리가 채점 기준을 바꾼 흔적이지 사이트에서 일어난 일이 아니다. 다른 화면의
+ * "직전 대비" 가 지키는 규칙과 같다.
+ *
+ * 점이 둘 미만이면 그리지 않는다 — 한 점을 잇는 선은 추이가 아니다.
+ */
+function sparkline(entries: readonly HistoryEntry[], selected: HistoryEntry) {
+  const comparable = entries
+    .filter((entry) => entry.specVersion === selected.specVersion && entry.score !== null)
+    .slice(0, 5)
+    // 이력은 최신이 앞이다. 왼쪽이 과거가 되도록 뒤집는다.
+    .reverse();
+  if (comparable.length < 2) return null;
+
+  const scores = comparable.map((entry) => entry.score ?? 0);
+  const low = Math.min(...scores);
+  const high = Math.max(...scores);
+  // 전부 같은 점수면 폭이 0이라 나눌 수 없다. 그때는 가운데 수평선이 정직하다.
+  const span = high - low === 0 ? 1 : high - low;
+  const width = 280;
+  const step = width / (scores.length - 1);
+  const points = scores.map((score, index) => ({
+    x: Math.round(index * step),
+    y: Math.round(30 - ((score - low) / span) * 24),
+  }));
+  const last = points[points.length - 1];
+
+  return {
+    width,
+    points,
+    line: points.map((point) => `${point.x},${point.y}`).join(' '),
+    lastX: last?.x ?? 0,
+    lastY: last?.y ?? 0,
+  };
+}
+
 async function SummaryRail({
   siteId,
   selected,
@@ -435,6 +474,20 @@ async function SummaryRail({
   const clients = await otherClientRows(otherSites);
   const geo = saved?.geo ?? null;
   const verdicts = verdictSpread(saved);
+  // 게이지는 지금 보고 있는 눈금을 그린다 — 전환기가 GEO 면 GEO 점수다.
+  const gaugeScore = axis === 'geo' ? (geo?.score ?? null) : selected.score;
+  const bandLabel = axis === 'geo' ? (geo?.bandId ?? null) : (saved?.bandId ?? null);
+  const coverage = saved?.coverage ?? 1;
+  const spark = sparkline(entries, selected);
+  const miniBars = (saved?.categories ?? [])
+    // 채점하지 못한 영역은 0% 막대로 그리면 "0점" 으로 읽힌다. 그것은 거짓이다.
+    .filter((category) => category.status === 'SCORED' && category.score !== null)
+    .map((category) => ({
+      categoryId: category.categoryId,
+      name: category.name,
+      score: category.score ?? 0,
+      low: (category.score ?? 0) < 80,
+    }));
   const index = entries.findIndex((entry) => entry.scanRunId === selected.scanRunId);
   const previous = index >= 0 ? entries[index + 1] : undefined;
   const delta =
@@ -447,6 +500,82 @@ async function SummaryRail({
 
   return (
     <aside className={own.rail} aria-label="진단 요약">
+      {gaugeScore === null ? null : (
+        <section className={own.railBlock}>
+          <h2 className={own.railTitle}>이번 측정 — {axis === 'geo' ? 'GEO' : 'SEO'}</h2>
+          {/* 확정 시안 v2.2 — 원형 게이지. 숫자 하나보다 "어디까지 찼는가" 가 먼저 읽힌다.
+              conic-gradient 로 그린다: 이미지도 라이브러리도 없이 토큰 색 그대로 쓴다. */}
+          <div className={own.scoreRow}>
+            <div
+              className={own.gauge}
+              style={{ ['--veo-gauge-deg' as string]: `${(gaugeScore / 100) * 360}deg` }}
+              role="img"
+              aria-label={`${gaugeScore.toFixed(1)}점`}
+            >
+              <div className={own.gaugeIn}>
+                <b>{gaugeScore.toFixed(1)}</b>
+                <span>{bandLabel ?? '점'}</span>
+              </div>
+            </div>
+            <div className={own.scoreSide}>
+              {delta === null ? (
+                <p>비교할 직전 실행 없음</p>
+              ) : (
+                <p>
+                  직전 대비{' '}
+                  <b className={delta < 0 ? own.deltaDown : own.deltaUp}>
+                    {delta > 0 ? '▲' : delta < 0 ? '▼' : ''}
+                    {Math.abs(delta).toFixed(1)}
+                  </b>
+                </p>
+              )}
+              <p>측정 범위 {Math.round(coverage * 100)}%</p>
+              <p>명세 {selected.specVersion}</p>
+            </div>
+          </div>
+          {spark === null ? null : (
+            <>
+              <svg
+                className={own.spark}
+                viewBox={`0 0 ${spark.width} 36`}
+                preserveAspectRatio="none"
+                role="img"
+                aria-label={`최근 ${spark.points.length}회 점수 추이`}
+              >
+                <polyline points={spark.line} fill="none" strokeWidth="2" />
+                <circle cx={spark.lastX} cy={spark.lastY} r="3.5" />
+              </svg>
+              {/* 같은 명세끼리만 잇는다 — 눈금이 바뀐 점을 이으면 없는 변화가 그려진다. */}
+              <p className={own.sparkCap}>
+                최근 {spark.points.length}회 · 같은 명세({selected.specVersion})끼리만 잇습니다
+              </p>
+            </>
+          )}
+        </section>
+      )}
+
+      {miniBars.length === 0 ? null : (
+        <section className={own.railBlock}>
+          <h2 className={own.railTitle}>영역별</h2>
+          <ul className={own.miniBars}>
+            {miniBars.map((bar) => (
+              <li key={bar.categoryId} className={own.miniBar}>
+                <span className={own.miniBarName}>{bar.name}</span>
+                <span className={own.miniBarTrack}>
+                  <span
+                    className={bar.low ? own.miniBarFillLow : own.miniBarFill}
+                    style={{ width: `${bar.score}%` }}
+                  />
+                </span>
+                <b className={own.miniBarVal}>{Math.round(bar.score)}</b>
+              </li>
+            ))}
+          </ul>
+          {/* 병목만 다른 색으로. 전부 같은 색이면 어디가 문제인지 다시 읽어야 한다. */}
+          <p className={own.railNote}>낮은 영역은 다른 색입니다. 가중치는 영역마다 다릅니다.</p>
+        </section>
+      )}
+
       <section className={own.railBlock}>
         <h2 className={own.railTitle}>두 눈금</h2>
         <dl className={own.railScores}>

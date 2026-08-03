@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.6',
+    date: '2026-08-03',
+    title: '확정 시안 정합 2 — 게이지·추이·영역 막대',
+    items: [
+      '점수를 원형 게이지로, 최근 회차를 추이선으로 — 같은 명세끼리만 잇는다',
+      '영역별 점수를 막대로, 낮은 영역만 다른 색 — 어디가 병목인지 다시 읽지 않아도 된다',
+      '콘솔 바탕을 한 톤 낮추고 카드에 그림자 — 카드 묶음이 눈에 들어온다',
+    ],
+  },
+  {
     version: '0.3.5',
     date: '2026-08-03',
     title: '확정 시안 정합 — 실측값 인라인·판정 분포',

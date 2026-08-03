@@ -42,6 +42,30 @@
 
   /* 숫자는 전부 표 정렬 — 계기판의 조용한 신호({tnum} 전역 적용). */
   font-variant-numeric: tabular-nums;
+
+  /* 그림자 — 시안의 두 단계. 카드가 면 위에 떠 있다는 것을 선이 아니라 깊이로 말한다. */
+  --veo-shadow-1: 0 1px 3px rgb(0 55 112 / 8%);
+  --veo-shadow-2: 0 8px 24px rgb(0 55 112 / 8%), 0 2px 6px rgb(0 55 112 / 4%);
+
+  /* 바탕은 한 톤 가라앉은 면({colors.canvas-soft}). 카드가 흰색이라 대비가 생긴다 —
+     전부 흰 바탕이면 카드 경계가 실선 하나뿐이라 묶음이 눈에 들어오지 않는다. */
+  background-color: var(--veo-color-bg-subtle);
+  min-height: 100vh;
+}
+
+/* 카드 계열은 면 위에 얕게 띄운다. 테두리는 그대로 두고 깊이만 더한다 — 시안의
+   그림자는 경계를 대신하는 것이 아니라 겹쳐 쓰는 값이다. */
+.stripe :global(article),
+.stripe :global(aside) > :global(section) {
+  box-shadow: var(--veo-shadow-1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .stripe {
+    /* 다크에서는 그림자가 보이지 않는다 — 검정 위의 검정이다. 지우지 않고 낮춘다. */
+    --veo-shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+    --veo-shadow-2: 0 8px 24px rgb(0 0 0 / 45%);
+  }
 }
 
 /* 화면 제목 — {typography.display}: 얇은 굵기 + 음수 자간. */
