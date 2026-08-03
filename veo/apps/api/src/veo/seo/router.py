@@ -45,7 +45,7 @@ from veo.seo.history import (
 from veo.seo.jobs import SCAN_STAGES, scan_work
 from veo.seo.measure_performance import with_performance
 from veo.seo.pages import page_breakdown
-from veo.seo.regression import maybe_alert_score_drop
+from veo.seo.regression import maybe_alert_regression
 from veo.seo.schemas import (
     CapSummary,
     CategorySummary,
@@ -343,7 +343,7 @@ def run_console_scan(
         )
         # 저장이 끝난 뒤에만 비교한다 — 이 진단이 '직전' 과 비교 가능한 최신이
         # 되는 시점이 지금이다. 실패해도 저장·응답은 그대로다.
-        maybe_alert_score_drop(
+        maybe_alert_regression(
             db,
             principal=principal,
             site_id=payload.site_id,

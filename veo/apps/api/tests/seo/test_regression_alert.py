@@ -89,6 +89,109 @@ class TestTheDecision:
         )
 
 
+class TestIssueDiff:
+    """새 이슈 감지 (P1-7a) — 점수가 안 떨어져도 새로 깨진 것은 새로 깨진 것이다."""
+
+    def test_appeared_and_resolved_are_kept_apart(self) -> None:
+        from veo.seo.regression import issue_diff
+
+        before = [{"check_id": "seo.a", "title_ko": "가"}, {"check_id": "seo.b", "title_ko": "나"}]
+        after = [{"check_id": "seo.b", "title_ko": "나"}, {"check_id": "seo.c", "title_ko": "다"}]
+        diff = issue_diff({"issues": before}, {"issues": after})
+
+        assert diff is not None
+        assert diff.appeared_titles_ko == ("다",)
+        assert diff.resolved_count == 1
+
+    def test_a_missing_snapshot_means_no_comparison_not_an_empty_one(self) -> None:
+        """스냅샷 없는 옛 실행 — "그때 무엇이 있었는지" 모르면 "새로 생겼다"고 못 한다."""
+        from veo.seo.regression import issue_diff
+
+        assert issue_diff(None, {"issues": []}) is None
+        assert issue_diff({"issues": []}, None) is None
+
+    def test_new_issues_alert_even_without_a_score_drop(
+        self, db_session, principal, site, scan_result, scan_context, monkeypatch
+    ):
+        import veo.seo.regression as regression
+        from veo.seo.history import save_scan_run
+        from veo.seo.regression import maybe_alert_regression
+
+        sent: list[tuple[str, str]] = []
+        monkeypatch.setattr(
+            regression,
+            "send_alert",
+            lambda **kwargs: sent.append((kwargs["title_ko"], kwargs["body_ko"])),
+        )
+        # 문턱을 크게 — 점수 하락으로는 절대 울리지 않게 해 두고, 이슈만으로 우는지 본다.
+        monkeypatch.setattr(
+            regression,
+            "get_settings",
+            lambda: SimpleNamespace(alert_score_drop_threshold=1000.0),
+        )
+
+        save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+            report_snapshot={"issues": []},
+        )
+        second = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+            report_snapshot={
+                "issues": [{"check_id": "seo.meta.title_present", "title_ko": "제목이 없습니다"}]
+            },
+        )
+        maybe_alert_regression(
+            db_session, principal=principal, site_id=site.id,
+            origin="https://clinic.example", scan_run_id=second.scan_run_id,
+        )
+
+        assert len(sent) == 1
+        title, body = sent[0]
+        assert "새 이슈 1건" in title
+        assert "제목이 없습니다" in body
+
+    def test_resolved_only_stays_quiet(
+        self, db_session, principal, site, scan_result, scan_context, monkeypatch
+    ):
+        """좋아진 것만 있는 진단으로 울리면, 채널은 곧 꺼진다."""
+        import veo.seo.regression as regression
+        from veo.seo.history import save_scan_run
+        from veo.seo.regression import maybe_alert_regression
+
+        sent: list[str] = []
+        monkeypatch.setattr(
+            regression, "send_alert", lambda **kwargs: sent.append(kwargs["title_ko"])
+        )
+        monkeypatch.setattr(
+            regression,
+            "get_settings",
+            lambda: SimpleNamespace(alert_score_drop_threshold=1000.0),
+        )
+
+        save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+            report_snapshot={"issues": [{"check_id": "seo.a", "title_ko": "가"}]},
+        )
+        second = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1,
+            report_snapshot={"issues": []},
+        )
+        maybe_alert_regression(
+            db_session, principal=principal, site_id=site.id,
+            origin="https://clinic.example", scan_run_id=second.scan_run_id,
+        )
+
+        assert sent == []
+
+
 class TestTheWiring:
     def test_two_saved_runs_reach_the_alert_path(
         self, db_session, principal, site, scan_result, scan_context, monkeypatch
@@ -97,7 +200,7 @@ class TestTheWiring:
         배선 전체(질의→판단→발송)가 실제로 이어져 있는지를 이것으로 확인한다."""
         import veo.seo.regression as regression
         from veo.seo.history import save_scan_run
-        from veo.seo.regression import maybe_alert_score_drop
+        from veo.seo.regression import maybe_alert_regression
 
         sent: list[str] = []
         monkeypatch.setattr(
@@ -114,7 +217,7 @@ class TestTheWiring:
             result=scan_result, context=scan_context,
             urls_attempted=1, urls_collected=1,
         )
-        maybe_alert_score_drop(
+        maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,
             origin="https://clinic.example", scan_run_id=first.scan_run_id,
         )
@@ -125,7 +228,7 @@ class TestTheWiring:
             result=scan_result, context=scan_context,
             urls_attempted=1, urls_collected=1,
         )
-        maybe_alert_score_drop(
+        maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,
             origin="https://clinic.example", scan_run_id=second.scan_run_id,
         )
@@ -141,7 +244,7 @@ class TestTheWiring:
         import veo.seo.regression as regression
         from veo.geo.companion import score_and_save_geo_companion
         from veo.seo.history import save_scan_run
-        from veo.seo.regression import maybe_alert_score_drop
+        from veo.seo.regression import maybe_alert_regression
 
         sent: list[str] = []
         monkeypatch.setattr(
@@ -169,7 +272,7 @@ class TestTheWiring:
             result=scan_result, context=scan_context,
             urls_attempted=1, urls_collected=1,
         )
-        maybe_alert_score_drop(
+        maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,
             origin="https://clinic.example", scan_run_id=second.scan_run_id,
         )
@@ -180,7 +283,7 @@ class TestTheWiring:
         self, db_session, principal, site, monkeypatch
     ):
         import veo.seo.regression as regression
-        from veo.seo.regression import maybe_alert_score_drop
+        from veo.seo.regression import maybe_alert_regression
 
         def explode(*args, **kwargs):  # type: ignore[no-untyped-def]
             raise RuntimeError("질의 실패")
@@ -188,7 +291,7 @@ class TestTheWiring:
         monkeypatch.setattr(regression, "tenant_select", explode)
         import uuid
 
-        maybe_alert_score_drop(
+        maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,
             origin="https://clinic.example", scan_run_id=uuid.uuid4(),
         )
