@@ -19,6 +19,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.23',
+    date: '2026-08-04',
+    title: '진단은 한 곳에서 — 메뉴를 성격대로 나눔',
+    items: [
+      'GEO 메뉴에서 준비도 진단을 없앴습니다 — 같은 사이트를 두 번 크롤하고, 그 결과는 이력에 남지도 않았습니다',
+      'SEO 메뉴가 "진단"이 됩니다 — 한 번 측정, SEO·GEO 두 눈금',
+      'GEO 메뉴가 "AI 가시성"이 됩니다 — 밖에서 관측되는 것만',
+      '무료 공개 도구는 그대로입니다',
+    ],
+  },
+  {
     version: '0.3.22',
     date: '2026-08-04',
     title: '서버가 여럿이어도 한도를 하나로 센다',

@@ -18,7 +18,6 @@ import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
 import { JobWatch } from './JobWatch';
-import { ReadinessForm } from './ReadinessForm';
 import { RunForm, type RunnableEngine } from './RunForm';
 import { RiskReport } from './RiskReport';
 import { VisibilityReport } from './VisibilityReport';
@@ -126,6 +125,10 @@ async function ConsoleGeoContent({
 
       <div className={styles.separatedSections}>
 
+        {/* 준비도는 여기서 재지 않는다.
+            같은 크롤로 SEO 와 함께 재고 함께 저장되므로(동반 채점), 여기서 또 재면
+            거래처 서버에 두 번 요청하고 그 결과는 이력에 남지도 않는다 — 고쳤는지
+            비교할 수 없다. 재는 곳을 하나로 둔다(0-D). */}
         <section aria-labelledby="geo-readiness-heading">
           <div className={styles.header}>
             <p className={styles.eyebrow}>1 / 2 · 구조 평가</p>
@@ -138,8 +141,15 @@ async function ConsoleGeoContent({
             </p>
           </div>
 
-          <Card title="준비도 진단" headingLevel={3}>
-            <ReadinessForm />
+          <Card title="어디서 보나" headingLevel={3}>
+            <p className={styles.sectionLede}>
+              <strong>진단 화면에서 SEO 와 함께 봅니다.</strong> 한 번 측정하면 SEO·GEO
+              두 눈금이 함께 계산되어 저장되고, 화면 위 전환기로 오갑니다 — 다시 재지
+              않습니다.
+            </p>
+            <p className={styles.sectionLede}>
+              <Link href="/console/seo">진단 화면으로 가기 →</Link>
+            </p>
           </Card>
         </section>
 

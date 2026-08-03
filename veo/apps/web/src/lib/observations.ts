@@ -435,18 +435,6 @@ export interface GeoIssue {
   readonly reverification_note_ko: string;
 }
 
-/** 주소 하나로 GEO 준비도를 잰다. SEO 진단과 같은 수집 경로를 쓴다. */
-export async function scanGeoReadiness(
-  targetUrl: string,
-): Promise<ConsoleOutcome<GeoReadiness>> {
-  return callConsoleApi('/api/geo/readiness/scans', {
-    method: 'POST',
-    body: { target_url: targetUrl },
-    // 사이트를 실제로 가져오므로 목록 조회와 시간 감각이 다르다.
-    timeoutMs: 120_000,
-  });
-}
-
 /**
  * 저장된 GEO 실행(동반 채점)을 그대로 다시 읽는다. 대상 사이트에 요청이 가지 않는다.
  * SEO 실행의 식별자를 넣으면 404 다 — 축이 다르면 스냅샷의 모양이 다르다.

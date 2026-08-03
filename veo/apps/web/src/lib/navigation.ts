@@ -65,14 +65,17 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
   },
   {
     href: '/console/seo',
-    label: 'SEO',
-    description: 'SEO 기술 준비도',
+    label: '진단',
+    // 한 번 재면 SEO·GEO 두 눈금이 함께 나온다. 메뉴를 눈금별로 나누면 "두 번 재야
+    // 하나" 로 읽히고, 실제로 그렇게 두 번 재던 화면이 있었다.
+    description: 'SEO·GEO 준비도 — 한 번 측정, 두 눈금',
     permission: 'scan:read',
   },
   {
     href: '/console/geo',
-    label: 'GEO',
-    description: 'GEO 준비도와 AI 가시성 관측',
+    label: 'AI 가시성',
+    // 준비도와 성격이 다르다: 밖에서 관측되고, 건당 비용이 나가고, 사람이 검수한다.
+    description: 'AI 답변에 우리가 나오는지 관측',
     permission: 'observation:read',
   },
   {
