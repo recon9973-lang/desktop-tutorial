@@ -1,0 +1,56 @@
+/**
+ * 앱 버전과 버전별 변경 이력 — 단일 원본.
+ *
+ * 커밋 SHA 는 사람이 구분할 수 없다(사용자 요청: "버전마다 모두 저장 — 그래야 구분 가능").
+ * 규칙: 사용자 눈에 보이는 변경이 쌓여 한 판이 되면 맨 앞에 항목을 추가하고, 그 버전이
+ * 곧 APP_VERSION 이 된다. `apps/api/src/veo/__init__.py` 의 `__version__` 도 같은 값으로
+ * 맞춘다 — 화면과 API 가 서로 다른 판을 말하면 그 순간부터 버전 표시가 거짓말이 된다.
+ *
+ * 여기 있는 것은 앱(콘솔·API)의 버전이다. 진단 화면의 "명세 1.9.0" 은 점수 계산
+ * 규칙(채점 명세)의 버전으로, 서로 다른 축이므로 섞지 않는다.
+ */
+
+export interface ChangelogEntry {
+  readonly version: string;
+  readonly date: string; // YYYY-MM-DD
+  readonly title: string;
+  readonly items: readonly string[];
+}
+
+export const CHANGELOG: readonly ChangelogEntry[] = [
+  {
+    version: '0.3.0',
+    date: '2026-08-03',
+    title: '콘솔 재설계 + 운영 자동화',
+    items: [
+      '콘솔 재설계 — 작업 큐, 거래처 레일, SEO|GEO 전환기, 우측 요약 레일',
+      '진단이 요청을 붙들지 않는다 — 작업으로 돌고 화면이 진행을 물어본다',
+      '진단 간 이슈 차이를 회귀 경보로, 담당자가 잊어도 정기 재진단이 이어간다',
+      '발행한 리포트 열람·CSV/XLSX 내보내기, 거래처 전달 링크, 월간 리포트 자동 발행',
+      '의료광고 원고 검수기 — 사람이 반드시 읽어야 할 문장을 놓치지 않는다',
+      '리드 DB 지속화, 요청 기록·/metrics 노출',
+    ],
+  },
+  {
+    version: '0.2.0',
+    date: '2026-08-02',
+    title: '채점 명세 1.9.0 + 공개 진단 화면',
+    items: [
+      '채점 명세 1.9.0 발행 — 잰 범위와 안 잰 것을 함께 발행',
+      '페이지 점수와 페이지별 보기 — 어느 페이지를 고칠까',
+      '공개 SEO·GEO 진단 화면, 무료 진단 성능 측정(PageSpeed) 배선',
+      '크롤 상한 200장과 블로그형 템플릿 그룹 표본, 한도 경보',
+    ],
+  },
+  {
+    version: '0.1.0',
+    date: '2026-08-01',
+    title: '기반',
+    items: [
+      '회원·조직·권한, SEO/GEO 채점 엔진, 네이버 키워드 인텔리전스',
+      '경쟁사·이슈·리포트·사용량 화면 뼈대',
+    ],
+  },
+];
+
+export const APP_VERSION: string = CHANGELOG[0]?.version ?? '0.0.0';

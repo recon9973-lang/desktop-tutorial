@@ -21,6 +21,17 @@
   color: var(--veo-color-text);
 }
 
+.versionLink {
+  color: var(--veo-color-text-muted);
+  font-weight: var(--veo-weight-regular);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.versionLink:hover {
+  color: var(--veo-color-text);
+}
+
 .note {
   margin: 0;
   max-width: var(--veo-layout-prose);

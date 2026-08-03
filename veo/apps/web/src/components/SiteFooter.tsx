@@ -1,3 +1,6 @@
+import Link from 'next/link';
+
+import { APP_VERSION } from '@/lib/changelog';
 import styles from './SiteFooter.module.css';
 
 export function SiteFooter() {
@@ -5,7 +8,11 @@ export function SiteFooter() {
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <p className={styles.credits}>
-          VEO — 개발 VENOM · 연구 및 방법론 VEO-LAB
+          VEO — 개발 VENOM · 연구 및 방법론 VEO-LAB ·{' '}
+          {/* 어느 판을 쓰는지 사람이 읽는 자리. 커밋 SHA 는 구분이 안 된다. */}
+          <Link href="/console/changelog" className={styles.versionLink}>
+            v{APP_VERSION} 변경 이력
+          </Link>
         </p>
         <p className={styles.note}>
           VEO가 계산하는 점수는 검색엔진과 AI 답변 엔진이 사이트를 읽을 수 있는 기술·구조
