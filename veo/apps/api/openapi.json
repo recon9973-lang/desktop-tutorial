@@ -5692,7 +5692,18 @@
       },
       "GeoCheckPayload": {
         "additionalProperties": false,
+        "description": "한 항목의 판정과, **왜 그렇게 판정했는지**.\n\n필드 이름을 SEO 의 ``OutcomeSummary`` 와 맞춘다. 두 화면이 같은 부품을 쓰기 때문이다 —\n이름이 갈리면 화면도 두 벌이 되고, 두 벌이 되면 한쪽만 고쳐지는 날이 온다.\n\n영역·심각도·담당은 발행 명세에서 가져오고, 관측값은 수집기가 이미 담아 둔 것을 그대로\n흘려보낸다. 예전에는 상태와 제목만 실어서, 화면이 \"그렇게 판정했다\" 고만 말하고 근거를\n보여줄 수 없었다.",
         "properties": {
+          "category_id": {
+            "default": "",
+            "title": "Category Id",
+            "type": "string"
+          },
+          "category_name_ko": {
+            "default": "",
+            "title": "Category Name Ko",
+            "type": "string"
+          },
           "check_id": {
             "title": "Check Id",
             "type": "string"
@@ -5725,6 +5736,14 @@
               }
             ],
             "title": "Note Ko"
+          },
+          "observed": {
+            "title": "Observed"
+          },
+          "remediation_owner": {
+            "default": "DEVELOPER",
+            "title": "Remediation Owner",
+            "type": "string"
           },
           "status": {
             "title": "Status",
@@ -15715,7 +15734,7 @@
     "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform\n\nDeveloped by VENOM. Research & Methodology by VEO-LAB.\n\n측정 원칙\n- SEO 준비도, GEO 준비도, 실제 AI 가시성, 네이버 키워드 수요는 각각 별도의 지표입니다.\n  하나의 불투명한 총점으로 합치지 않습니다.\n- 준비도 점수는 검색 순위 예측값이 아닙니다.\n- 모든 점수에는 방법론 버전, 체크섬, 적용 분모, 계산 과정, 신뢰도가 함께 제공됩니다.\n- '해당 없음'은 0점이 아니라 분모에서 제외되고, '측정 불가'는 실패가 아니라\n  coverage와 confidence에 반영됩니다.\n- 외부 제공자 자격증명이 없으면 해당 항목은 '측정 불가'가 되며, VEO는 추정값을\n  실제 데이터처럼 표시하지 않습니다.\n",
     "summary": "SEO · GEO · Naver Keyword Intelligence Platform",
     "title": "VEO API",
-    "version": "0.3.6"
+    "version": "0.3.7"
   },
   "openapi": "3.1.0",
   "paths": {

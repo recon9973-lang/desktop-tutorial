@@ -378,8 +378,49 @@ export interface GeoReadiness {
   readonly summary_ko: string;
   readonly scope_notice_ko: string;
   readonly notes_ko: readonly string[];
+  /**
+   * 항목별 판정 — 무엇을 보고 그렇게 판정했는지까지.
+   *
+   * 엔진은 처음부터 이것을 보내고 있었는데 화면이 읽지 않아, GEO 는 영역 점수만 보이고
+   * "왜" 와 "어떻게 고치나" 가 없었다. SEO 와 같은 이름을 쓴다 — 같은 화면 부품이 읽는다.
+   */
+  readonly checks?: readonly GeoCheck[];
+  /**
+   * 고칠 것과 고치는 법. 붙여넣을 코드까지 들어 있다.
+   *
+   * 선택 필드다 — 이 필드가 생기기 **전에 저장된 실행**에는 없다. 없는 것을 빈 목록으로
+   * 꾸미지 않고, 화면이 "없다" 를 그대로 다루게 둔다.
+   */
+  readonly issues?: readonly GeoIssue[];
   /** 참고 조회 결과. 점수와 무관하며 하단 참고 구역에만 쓴다. */
   readonly lookup: GeoLookup | null;
+}
+
+export interface GeoCheck {
+  readonly check_id: string;
+  readonly title_ko: string;
+  readonly category_id: string;
+  readonly category_name_ko: string;
+  readonly remediation_owner: string;
+  readonly status: string;
+  readonly confidence_level: string | null;
+  readonly note_ko: string | null;
+  readonly evidence_ids: readonly string[];
+  /** 수집기가 실제로 본 값. 판정을 내리지 못했으면 `null`. */
+  readonly observed: unknown;
+}
+
+export interface GeoIssue {
+  readonly check_id: string;
+  readonly title_ko: string;
+  readonly summary_ko: string;
+  readonly remediation_ko: string;
+  readonly remediation_owner: string;
+  readonly business_impact_ko: string;
+  readonly affected_urls: readonly string[];
+  readonly evidence_ids: readonly string[];
+  readonly fix_example: string | null;
+  readonly reverification_note_ko: string;
 }
 
 /** 주소 하나로 GEO 준비도를 잰다. SEO 진단과 같은 수집 경로를 쓴다. */

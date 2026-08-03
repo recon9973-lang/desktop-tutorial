@@ -55,6 +55,13 @@ def payload_from(
         for category in report.spec.categories
         for check in category.checks
     }
+    # 영역·심각도·담당은 결과 행이 아니라 **명세**가 정한다. 화면이 항목을 영역별로
+    # 묶고 무게를 세우려면 이 셋이 함께 가야 한다(SEO 응답과 같은 이름).
+    declared_by_check = {
+        check.id: (category, check)
+        for category in report.spec.categories
+        for check in category.checks
+    }
 
     readiness = GeoReadinessBlock(
         spec_id=result.spec_id,
@@ -110,17 +117,7 @@ def payload_from(
         exposure=exposure,
         summary_ko=report.summary_ko(),
         scope_notice_ko=SCOPE_NOTICE_KO,
-        checks=[
-            GeoCheckPayload(
-                check_id=outcome.check_id,
-                title_ko=titles.get(outcome.check_id, outcome.check_id),
-                status=str(outcome.status),
-                confidence_level=outcome.confidence_level,
-                note_ko=outcome.note,
-                evidence_ids=list(outcome.evidence_ids),
-            )
-            for outcome in result.outcomes
-        ],
+        checks=[_check_payload(outcome, declared_by_check) for outcome in result.outcomes],
         issues=[_issue_payload(issue) for issue in report.issues],
         evidence=[_evidence_payload(record) for record in report.evidence],
         # 참고 조회를 왜 못 했는지 같은, 보고서 밖에서 온 안내도 여기에 실린다.
@@ -157,3 +154,26 @@ def _evidence_payload(record: EvidenceRecord) -> GeoEvidencePayload:
 
 
 __all__ = ["SCOPE_NOTICE_KO", "payload_from"]
+
+
+def _check_payload(outcome: Any, declared: dict[str, tuple[Any, Any]]) -> GeoCheckPayload:
+    """판정 한 줄 — 근거까지 함께.
+
+    명세에 없는 검사가 결과에 있으면(수집기가 앞서 나간 경우) 이름 대신 식별자를 쓰고
+    영역은 비운다. 지어낸 영역에 끼워 넣으면 화면의 묶음이 조용히 틀린다.
+    """
+    entry = declared.get(outcome.check_id)
+    category = None if entry is None else entry[0]
+    check = None if entry is None else entry[1]
+    return GeoCheckPayload(
+        check_id=outcome.check_id,
+        title_ko=outcome.check_id if check is None else check.title_ko,
+        category_id="" if category is None else category.id,
+        category_name_ko="" if category is None else category.name_ko,
+        remediation_owner="DEVELOPER" if check is None else str(check.remediation_owner),
+        status=str(outcome.status),
+        confidence_level=outcome.confidence_level,
+        note_ko=outcome.note,
+        evidence_ids=list(outcome.evidence_ids),
+        observed=outcome.observed_value,
+    )

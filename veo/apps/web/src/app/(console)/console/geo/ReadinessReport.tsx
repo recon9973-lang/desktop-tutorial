@@ -2,6 +2,8 @@ import { Card } from '@veo/ui';
 
 import type { GeoCategory, GeoLookup, GeoReadiness } from '@/lib/observations';
 
+import { ReadinessChecks } from './ReadinessChecks';
+
 import styles from './geo.module.css';
 
 /**
@@ -65,6 +67,9 @@ export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
           ))}
         </ul>
       </Card>
+
+      {/* 영역 점수만으로는 무엇을 고칠지 알 수 없다 — 판정과 고침 방법이 이어져야 한다. */}
+      <ReadinessChecks checks={report.checks ?? []} issues={report.issues ?? []} />
 
       {reference.length === 0 ? null : (
         <Card title="참고 · 별도 확인 필요" headingLevel={3} tone="flat">

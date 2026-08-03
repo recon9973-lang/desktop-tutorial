@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.7',
+    date: '2026-08-03',
+    title: 'GEO 화면도 측정값과 고침 방법을',
+    items: [
+      'GEO 항목별 판정 — 영역별 카드, 줄에 실측값, 펼치면 근거와 고침 방법·붙여넣을 코드',
+      '엔진은 처음부터 보내던 자료였다 — 화면이 읽지 않아 영역 점수만 보였다',
+      'SEO 화면과 같은 문법 — 같은 사람이 두 번 배우지 않게',
+    ],
+  },
+  {
     version: '0.3.6',
     date: '2026-08-03',
     title: '확정 시안 정합 2 — 게이지·추이·영역 막대',

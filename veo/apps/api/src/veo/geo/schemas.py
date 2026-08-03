@@ -197,14 +197,30 @@ class GeoEvidencePayload(BaseModel):
 
 
 class GeoCheckPayload(BaseModel):
+    """한 항목의 판정과, **왜 그렇게 판정했는지**.
+
+    필드 이름을 SEO 의 ``OutcomeSummary`` 와 맞춘다. 두 화면이 같은 부품을 쓰기 때문이다 —
+    이름이 갈리면 화면도 두 벌이 되고, 두 벌이 되면 한쪽만 고쳐지는 날이 온다.
+
+    영역·심각도·담당은 발행 명세에서 가져오고, 관측값은 수집기가 이미 담아 둔 것을 그대로
+    흘려보낸다. 예전에는 상태와 제목만 실어서, 화면이 "그렇게 판정했다" 고만 말하고 근거를
+    보여줄 수 없었다.
+    """
+
     model_config = _STRICT
 
     check_id: str
     title_ko: str
+    #: 명세가 정한 영역. 화면이 항목을 영역별로 묶는 근거다.
+    category_id: str = ""
+    category_name_ko: str = ""
+    remediation_owner: str = "DEVELOPER"
     status: str
     confidence_level: str | None
     note_ko: str | None
     evidence_ids: list[str]
+    #: 수집기가 실제로 본 값. 판정을 내리지 못했으면 ``None``.
+    observed: Any = None
 
 
 class GeoLookupPayload(BaseModel):

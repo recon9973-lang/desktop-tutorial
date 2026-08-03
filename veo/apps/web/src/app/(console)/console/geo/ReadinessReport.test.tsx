@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import type { GeoReadiness } from '@/lib/observations';
 
@@ -255,5 +255,85 @@ describe('참고 조회 결과', () => {
     render(<ReadinessReport report={report()} />);
 
     expect(screen.queryByText(/네이버만 조회했습니다/)).toBeNull();
+  });
+});
+
+/**
+ * 항목별 판정 — GEO 도 SEO 처럼 "무엇을 보고 그렇게 판정했나" 와 "어떻게 고치나" 를 준다.
+ *
+ * 엔진은 처음부터 이 자료를 보내고 있었는데 화면이 읽지 않아, GEO 는 영역 점수만 보이고
+ * 담당자가 그 화면을 보고 할 수 있는 일이 없었다. 여기서 지키는 것은 **판정과 근거와
+ * 고침 방법이 한 화면에서 이어진다**는 것이다.
+ */
+describe('GEO 항목별 판정', () => {
+  const check = {
+    check_id: 'geo.sd.declared',
+    title_ko: '구조화 데이터가 선언돼 있는가',
+    category_id: 'geo.sd',
+    category_name_ko: '구조화 데이터·메타',
+    remediation_owner: 'DEVELOPER',
+    status: 'FAIL',
+    confidence_level: 'DIRECT_OBSERVATION',
+    note_ko: 'JSON-LD 를 찾지 못했습니다.',
+    evidence_ids: [],
+    observed: { 'https://clinic.example/': '없음' },
+  };
+
+  it('판정과 실측값을 함께 보여준다 — 펼치지 않아도', () => {
+    render(<ReadinessReport report={report({ checks: [check] })} />);
+
+    const row = screen
+      .getByText('구조화 데이터가 선언돼 있는가')
+      .closest('summary') as HTMLElement;
+
+    // 실측값이 **줄에** 함께 올라온다(확정 시안 v2.2 §11). 펼친 상세에도 같은 값이
+    // 있으므로 화면 전체가 아니라 줄 안에서 찾는다.
+    expect(within(row).getByText('없음')).toBeInTheDocument();
+  });
+
+  it('영역 머리줄이 볼지 말지를 먼저 말한다', () => {
+    render(<ReadinessReport report={report({ checks: [check] })} />);
+
+    const group = screen.getByRole('region', { name: '구조화 데이터·메타' });
+
+    expect(screen.getByText('실패 1')).toBeInTheDocument();
+    expect(group).toBeInTheDocument();
+  });
+
+  it('고침 방법과 붙여넣을 코드가 판정 옆에 있다', () => {
+    render(
+      <ReadinessReport
+        report={report({
+          checks: [check],
+          issues: [
+            {
+              check_id: 'geo.sd.declared',
+              title_ko: '구조화 데이터 없음',
+              summary_ko: 'JSON-LD 가 없습니다.',
+              remediation_ko: 'MedicalClinic 스키마를 head 에 넣으십시오.',
+              remediation_owner: 'DEVELOPER',
+              business_impact_ko: 'AI 가 병원 정보를 확인하지 못합니다.',
+              affected_urls: ['https://clinic.example/'],
+              evidence_ids: [],
+              fix_example: '<script type="application/ld+json">…</script>',
+              reverification_note_ko: '다시 진단해 확인합니다.',
+            },
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.getByText('MedicalClinic 스키마를 head 에 넣으십시오.')).toBeInTheDocument();
+    // 예시 코드가 실데이터로 읽히지 않게 라벨이 함께 있다(v0.3.2 에서 고친 오해).
+    expect(
+      screen.getByText('예시 코드 — 업체명·내용은 우리 것으로 바꿔 쓰세요'),
+    ).toBeInTheDocument();
+  });
+
+  it('판정이 없던 예전 실행은 그 구역을 그리지 않는다', () => {
+    /** 없는 것을 빈 목록으로 꾸미지 않는다 — 필드가 생기기 전에 저장된 실행이 있다. */
+    render(<ReadinessReport report={report()} />);
+
+    expect(screen.queryByText(/항목별 판정/)).not.toBeInTheDocument();
   });
 });
