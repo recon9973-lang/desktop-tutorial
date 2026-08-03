@@ -384,9 +384,24 @@ def read_site_scan_history(
     db: Annotated[Session, Depends(get_db)],
     site_id: Annotated[uuid.UUID, Query(description="이력을 볼 사이트입니다.")],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    kind: Annotated[
+        str,
+        Query(
+            description=(
+                "어느 눈금의 이력인가 — `SEO` 또는 `GEO`. 한 번의 진단이 두 눈금을 각각 "
+                "저장하므로 이력도 눈금마다 따로 있습니다. 기본값은 `SEO` 입니다."
+            ),
+            pattern="^(SEO|GEO)$",
+        ),
+    ] = SEO_KIND,
 ) -> ApiResponse[ScanHistoryPayload]:
     _assert_site_exists(db, principal=principal, site_id=site_id)
-    entries = read_scan_history(db, principal=principal, site_id=site_id, limit=limit)
+    # 저장은 처음부터 눈금별로 하고 있었는데(companion 이 kind=GEO 로 남긴다) 꺼낼 길이
+    # 없었다. 그래서 GEO 탭이 SEO 이력과 SEO 증감을 그렸다 — 화면은 GEO 라고 말하면서
+    # SEO 숫자를 보여주는 상태였다(사용자 지적).
+    entries = read_scan_history(
+        db, principal=principal, site_id=site_id, limit=limit, kind=kind
+    )
     return ok(
         ScanHistoryPayload(
             site_id=site_id,

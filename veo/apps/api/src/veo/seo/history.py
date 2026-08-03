@@ -417,9 +417,20 @@ def _upsert_issues(
 
 
 def read_scan_history(
-    db: Session, *, principal: Principal, site_id: uuid.UUID, limit: int = 50
+    db: Session,
+    *,
+    principal: Principal,
+    site_id: uuid.UUID,
+    limit: int = 50,
+    kind: str = SEO_KIND,
 ) -> Sequence[HistoryEntry]:
-    """이 사이트의 진단 이력을 최신순으로. 다른 조직의 것은 보이지 않는다."""
+    """이 사이트의 진단 이력을 최신순으로. 다른 조직의 것은 보이지 않는다.
+
+    ``kind`` 로 눈금을 고른다. 한 번의 진단이 SEO 와 GEO 를 **각각** 저장하므로
+    (동반 채점, `veo.geo.companion`) 이력도 눈금마다 따로 있다. 여기가 열려 있지 않던
+    동안 화면은 GEO 탭에서도 SEO 이력과 SEO 증감을 그렸다 — 저장은 제대로 되고 있었는데
+    꺼낼 길이 없어서, 화면이 GEO 라고 말하며 SEO 숫자를 보여줬다.
+    """
     statement = (
         select(ScanRun, ScoreResult, User.display_name)
         .join(Scan, Scan.id == ScanRun.scan_id)
@@ -433,7 +444,7 @@ def read_scan_history(
             Scan.organization_id == principal.organization_id,
             ScoreResult.organization_id == principal.organization_id,
             Scan.site_id == site_id,
-            Scan.kind == SEO_KIND,
+            Scan.kind == kind,
         )
         .order_by(ScanRun.started_at.desc())
         .limit(limit)

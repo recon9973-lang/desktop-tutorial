@@ -75,9 +75,13 @@ function numOrNull(source: Record<string, unknown>, key: string): number | null 
 
 export async function readHistory(
   siteId: string,
+  kind: 'SEO' | 'GEO' = 'SEO',
 ): Promise<ConsoleOutcome<readonly HistoryEntry[]>> {
+  // 한 번의 진단이 두 눈금을 **각각** 저장하므로 이력도 눈금마다 따로다. 이 인자가
+  // 없던 동안 GEO 탭은 SEO 이력과 SEO 증감을 그렸다 — 화면이 GEO 라고 말하면서
+  // SEO 숫자를 보여주는 상태였다.
   const outcome = await callConsoleApi(
-    `/api/seo/scans/history?site_id=${encodeURIComponent(siteId)}`,
+    `/api/seo/scans/history?site_id=${encodeURIComponent(siteId)}&kind=${kind}`,
   );
   if (!outcome.ok) return outcome;
 

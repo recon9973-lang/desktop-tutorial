@@ -94,7 +94,13 @@ async function SeoContent({
 }) {
   if (siteId === null) return <NewScan />;
 
-  const [history, companies] = await Promise.all([readHistory(siteId), listCompanies()]);
+  // GEO 탭이면 GEO 이력을 읽는다. 회차 선택은 SEO 실행 식별자로 하므로 SEO 이력도
+  // 함께 필요하다 — 두 눈금은 같은 진단의 두 기록이고, 화면은 보는 눈금의 숫자를 쓴다.
+  const [history, geoHistory, companies] = await Promise.all([
+    readHistory(siteId),
+    axis === 'geo' ? readHistory(siteId, 'GEO') : Promise.resolve(null),
+    listCompanies(),
+  ]);
 
   if (!history.ok) {
     return (
@@ -128,6 +134,10 @@ async function SeoContent({
     : [];
 
   const entries = history.data;
+  // 화면이 그리는 숫자는 **보는 눈금의 것**이어야 한다. 회차 선택(run 파라미터)은 SEO
+  // 실행 식별자로 하므로 그쪽은 계속 SEO 이력을 쓴다.
+  const shownEntries =
+    axis === 'geo' && geoHistory !== null && geoHistory.ok ? geoHistory.data : entries;
   const selected = runId === null ? entries[0] : entries.find((e) => e.scanRunId === runId);
   // 레일과 GEO 전환기가 둘 다 저장된 본문(geo 블록 포함)을 읽으므로 한 번만 가져온다.
   const saved =
@@ -156,7 +166,7 @@ async function SeoContent({
         <div className={own.layout}>
           <div className={own.main}>
             <HistoryStrip
-              entries={entries}
+              entries={shownEntries}
               siteId={siteId}
               selectedId={selected?.scanRunId ?? null}
               view={view}
@@ -183,7 +193,7 @@ async function SeoContent({
             <SummaryRail
               siteId={siteId}
               selected={selected}
-              entries={entries}
+              entries={shownEntries}
               saved={saved}
               axis={axis}
               otherSites={otherSites}
@@ -535,6 +545,14 @@ async function SummaryRail({
       : null;
   const geoData = geoReport !== null && geoReport.ok ? geoReport.data : null;
 
+  // 보는 눈금의 **그 회차**를 짚는다. GEO 실행은 SEO 와 다른 식별자를 갖고, 둘을 잇는
+  // 것이 동반 실행 참조(geo.scanRunId)다. 못 찾으면 null 이고, 그때는 증감·추이를
+  // 그리지 않는다 — 다른 눈금의 숫자를 대신 그리느니 없는 편이 낫다.
+  const shown =
+    axis === 'geo'
+      ? (entries.find((entry) => entry.scanRunId === geo?.scanRunId) ?? null)
+      : selected;
+
   const verdicts =
     axis === 'geo' ? geoVerdictSpread(geoData?.checks ?? null) : verdictSpread(saved);
   // 게이지는 지금 보고 있는 눈금을 그린다 — 전환기가 GEO 면 GEO 점수다.
@@ -542,7 +560,7 @@ async function SummaryRail({
   const bandId = axis === 'geo' ? (geo?.bandId ?? null) : (saved?.bandId ?? null);
   const bandLabel = bands.find((band) => band.id === bandId)?.label ?? null;
   const coverage = saved?.coverage ?? 1;
-  const spark = sparkline(entries, selected);
+  const spark = shown === null ? null : sparkline(entries, shown);
   const miniBars = (
     axis === 'geo'
       ? (geoData?.readiness.categories ?? []).map((category) => ({
@@ -566,14 +584,16 @@ async function SummaryRail({
       score: category.score ?? 0,
       low: (category.score ?? 0) < 80,
     }));
-  const index = entries.findIndex((entry) => entry.scanRunId === selected.scanRunId);
+  const index =
+    shown === null ? -1 : entries.findIndex((entry) => entry.scanRunId === shown.scanRunId);
   const previous = index >= 0 ? entries[index + 1] : undefined;
   const delta =
+    shown !== null &&
     previous !== undefined &&
     previous.score !== null &&
-    selected.score !== null &&
-    previous.specVersion === selected.specVersion
-      ? selected.score - previous.score
+    shown.score !== null &&
+    previous.specVersion === shown.specVersion
+      ? shown.score - previous.score
       : null;
 
   return (
@@ -608,7 +628,7 @@ async function SummaryRail({
                 </p>
               )}
               <p>측정 범위 {Math.round(coverage * 100)}%</p>
-              <p>명세 {selected.specVersion}</p>
+              <p>명세 {shown?.specVersion ?? '—'}</p>
             </div>
           </div>
           {spark === null ? null : (
@@ -625,7 +645,7 @@ async function SummaryRail({
               </svg>
               {/* 같은 명세끼리만 잇는다 — 눈금이 바뀐 점을 이으면 없는 변화가 그려진다. */}
               <p className={own.sparkCap}>
-                최근 {spark.points.length}회 · 같은 명세({selected.specVersion})끼리만 잇습니다
+                최근 {spark.points.length}회 · 같은 명세({shown?.specVersion})끼리만 잇습니다
               </p>
             </>
           )}
@@ -634,14 +654,14 @@ async function SummaryRail({
             {entries.slice(0, 5).map((entry) => (
               <li
                 key={entry.scanRunId}
-                className={entry.scanRunId === selected.scanRunId ? own.runLogOn : own.runLogRow}
+                className={entry.scanRunId === shown?.scanRunId ? own.runLogOn : own.runLogRow}
               >
                 <span className={own.runLogWhen}>{formatWhen(entry.startedAt)}</span>
                 <span className={own.runLogScore}>
                   {entry.score === null ? '측정 불가' : entry.score.toFixed(1)}
                 </span>
                 {/* 명세가 다르면 위 선에 잇지 않았다는 것을 여기서도 말한다. */}
-                {entry.specVersion === selected.specVersion ? null : (
+                {entry.specVersion === shown?.specVersion ? null : (
                   <span className={own.runLogSpec}>명세 {entry.specVersion}</span>
                 )}
               </li>
