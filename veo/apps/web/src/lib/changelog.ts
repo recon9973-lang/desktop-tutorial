@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.17',
+    date: '2026-08-04',
+    title: '진단이 어디서 시간을 쓰는지 남는다',
+    items: [
+      '수집·성능 측정·채점·저장 각 단계의 소요 시간을 기록 — /metrics 와 로그에',
+      '실패한 단계도 시간을 남긴다 — "왜 오래 걸리고 실패했나" 에 답하려면 필요하다',
+      '기록이 실패해도 진단은 계속된다 — 시간을 못 적는 것과 진단이 죽는 것은 다르다',
+    ],
+  },
+  {
     version: '0.3.16',
     date: '2026-08-03',
     title: 'GEO 탭이 GEO 이력을 본다',

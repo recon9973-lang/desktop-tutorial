@@ -11,6 +11,7 @@ before the request body is parsed.
 
 from __future__ import annotations
 
+import logging
 import uuid
 from typing import Annotated
 
@@ -73,7 +74,10 @@ from veo.seo.schemas import (
     UnknownCheckSummary,
 )
 from veo.seo.service import SeoScanResult, load_seo_spec, run_seo_scan
+from veo.seo.timing import ScanTimings, stage
 from veo.usage import record_pagespeed_calls
+
+_log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/seo", tags=["seo"])
 
@@ -278,14 +282,20 @@ def run_console_scan(
     perf_cache = PerformanceCache()
     prewarm(payload.target_url, cache=perf_cache)
 
+    # 어느 단계가 시간을 쓰는지 남긴다. 남기지 않으면 "느려졌다" 는 말에 답할 수 없고,
+    # 고친 뒤 빨라졌는지도 확인할 수 없다(2026-08-03 에 이 내역을 알아내려고 크롤러를
+    # 따로 돌려야 했다).
+    timings = ScanTimings()
+
     crawler = ConsoleCrawler()
-    if payload.discover:
-        outcome = crawler.crawl(
-            payload.target_url, extra_urls=targets[1:], max_urls=payload.max_urls
-        )
-    else:
-        documents, robots_txt = crawler.collect(targets)
-        outcome = CrawlOutcome(documents=documents, robots_txt=robots_txt)
+    with stage("수집", timings):
+        if payload.discover:
+            outcome = crawler.crawl(
+                payload.target_url, extra_urls=targets[1:], max_urls=payload.max_urls
+            )
+        else:
+            documents, robots_txt = crawler.collect(targets)
+            outcome = CrawlOutcome(documents=documents, robots_txt=robots_txt)
 
     context = context_from_crawl(
         target_url=payload.target_url,
@@ -296,8 +306,10 @@ def run_console_scan(
     # 성능은 크롤로 알 수 없다. 구글에 따로 물어야 하고, 그래서 여기서 한 번 더 나간다.
     # 자격증명이 없으면 문맥을 손대지 않고 그대로 돌려주므로, 키가 없는 배포에서는
     # 이 줄이 아무 일도 하지 않는다 — 소켓도 열리지 않는다.
-    context, performance = with_performance(context, cache=perf_cache)
-    result = run_seo_scan(context)
+    with stage("성능 측정", timings):
+        context, performance = with_performance(context, cache=perf_cache)
+    with stage("채점", timings):
+        result = run_seo_scan(context)
     report = _scan_payload(
         result, brand_name=_registered_brand_name(db, principal, site_id=payload.site_id)
     )
@@ -342,18 +354,20 @@ def run_console_scan(
         )
         # 보여준 것을 그대로 남긴다. 조치 문구는 수집기가 발견한 값을 넣어 만들어 내므로
         # 명세로부터 되살릴 수 없다 — 스냅샷이 없으면 다시 열었을 때 문장이 달라진다.
-        saved = save_scan_run(
-            db,
-            principal=principal,
-            site_id=payload.site_id,
-            result=result,
-            # 맥락째 넘긴다. 어떤 조건에서 쟀는지는 여기서만 알 수 있고, 저장하는 쪽에서
-            # 추측하면 상수가 사실 자리에 앉는다.
-            context=context,
-            urls_attempted=outcome.attempted,
-            urls_collected=len(outcome.documents),
-            report_snapshot=report.model_dump(mode="json"),
-        )
+        # 저장까지가 진단이다. 여기서 끝내야 "180초" 의 마지막 조각이 빠지지 않는다.
+        with stage("저장", timings):
+            saved = save_scan_run(
+                db,
+                principal=principal,
+                site_id=payload.site_id,
+                result=result,
+                # 맥락째 넘긴다. 어떤 조건에서 쟀는지는 여기서만 알 수 있고, 저장하는
+                # 쪽에서 추측하면 상수가 사실 자리에 앉는다.
+                context=context,
+                urls_attempted=outcome.attempted,
+                urls_collected=len(outcome.documents),
+                report_snapshot=report.model_dump(mode="json"),
+            )
         # 저장이 끝난 뒤에만 비교한다 — 이 진단이 '직전' 과 비교 가능한 최신이
         # 되는 시점이 지금이다. 실패해도 저장·응답은 그대로다.
         maybe_alert_regression(
@@ -363,8 +377,20 @@ def run_console_scan(
             origin=payload.target_url,
             scan_run_id=saved.scan_run_id,
         )
+        _log.info(
+            "seo.scan.timings total=%dms %s",
+            round(timings.total_ms),
+            timings.summary_ko(),
+            extra={"stages_ms": {k: round(v) for k, v in timings.elapsed_ms.items()}},
+        )
         return report, saved.scan_run_id
 
+    _log.info(
+        "seo.scan.timings total=%dms %s",
+        round(timings.total_ms),
+        timings.summary_ko(),
+        extra={"stages_ms": {k: round(v) for k, v in timings.elapsed_ms.items()}},
+    )
     return report, None
 
 
