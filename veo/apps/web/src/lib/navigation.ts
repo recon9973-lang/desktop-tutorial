@@ -130,6 +130,13 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     permission: 'user:read',
   },
   {
+    href: '/console/changelog',
+    label: '변경 이력',
+    description: '버전별로 무엇이 바뀌었나',
+    // 릴리스 노트는 콘솔에 들어온 모두가 본다 — 권한 게이트 없음(화면과 동일).
+    permission: null,
+  },
+  {
     href: '/console/account',
     label: '내 계정',
     description: '비밀번호 변경',

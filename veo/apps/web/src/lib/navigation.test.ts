@@ -61,9 +61,13 @@ describe('CONSOLE_NAV', () => {
 describe('visibleConsoleNav', () => {
   it('shows only the signed-in-everyone areas to an identity with no permissions', () => {
     // Account settings has no permission by design: gating "change my own password"
-    // would hide it from exactly the accounts that hold none.
+    // would hide it from exactly the accounts that hold none. The changelog is the
+    // same class — release notes are for everyone who signed in.
     const visible = visibleConsoleNav({ permissions: [] });
-    expect(visible.map((item) => item.href)).toEqual(['/console/account']);
+    expect(visible.map((item) => item.href)).toEqual([
+      '/console/changelog',
+      '/console/account',
+    ]);
   });
 
   it('shows nothing when there is no identity', () => {
@@ -75,9 +79,10 @@ describe('visibleConsoleNav', () => {
       permissions: ['report:read', 'issue:read'],
     });
 
-    // Account settings is always present for a signed-in person, whatever they hold.
+    // Account settings and the changelog are always present for a signed-in person.
     expect(visible.map((item) => item.href).sort()).toEqual([
       '/console/account',
+      '/console/changelog',
       '/console/issues',
       '/console/reports',
     ]);
@@ -90,6 +95,7 @@ describe('visibleConsoleNav', () => {
     expect(visible.map((item) => item.href)).toEqual([
       '/console/projects',
       '/console/scoring-versions',
+      '/console/changelog',
       '/console/account',
     ]);
   });

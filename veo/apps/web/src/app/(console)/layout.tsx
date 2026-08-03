@@ -12,6 +12,8 @@ import {
 import type { ConsoleSession } from '@/lib/session';
 import styles from '@/components/ConsoleNav.module.css';
 
+import theme from './console-theme.module.css';
+
 /**
  * Auth-guard boundary for every `/console/*` route.
  *
@@ -41,7 +43,9 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
   const identity = toPublicIdentity(session);
 
   return (
-    <>
+    // 콘솔 팔레트(시안 v2.2 · DESIGN-stripe.md)는 이 래퍼의 토큰 오버라이드로만
+    // 들어간다 — 공개 도구의 확정 시안(틸)은 전역 토큰 그대로 남는다.
+    <div className={theme.stripe}>
       <ConsoleTopbar identity={identity} />
       <div className={styles.shell}>
         <ConsoleNav identity={identity} />
@@ -52,6 +56,6 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
         </main>
       </div>
       <SiteFooter />
-    </>
+    </div>
   );
 }

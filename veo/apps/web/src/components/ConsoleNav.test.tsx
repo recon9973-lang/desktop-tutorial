@@ -52,8 +52,12 @@ describe('ConsoleNav', () => {
     // the empty state it was avoiding.
     render(<ConsoleNav identity={{ ...NARROW, permissions: [] }} />);
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(1);
-    expect(links[0]).toHaveAttribute('href', '/console/account');
+    // 계정과 변경 이력 — 권한이 하나도 없어도 갈 곳이 있다.
+    expect(links).toHaveLength(2);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/console/changelog',
+      '/console/account',
+    ]);
   });
 
   it('is a labelled navigation landmark', () => {
