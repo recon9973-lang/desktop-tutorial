@@ -5993,6 +5993,41 @@
         "title": "GeoGatePayload",
         "type": "object"
       },
+      "GeoImprovementPayload": {
+        "additionalProperties": false,
+        "description": "고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.\n\n``gain_points`` 는 채점기가 실제 산식으로 계산한 값이다. 화면이 어림하지 않는다 —\n어림하면 고친 뒤의 실제 점수와 어긋나고, 그러면 우선순위 자체를 믿을 수 없게 된다.\n\n**무게 관련 값은 여기 없다.** 그것은 발행 명세가 정하고, 화면이 명세를 읽어 잇는다\n(`readCheckSeverities`). 이 패키지는 관측하고, 채점기가 낸 값을 그대로 옮길 뿐이다.",
+        "properties": {
+          "blocked_by_cap": {
+            "title": "Blocked By Cap",
+            "type": "boolean"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          },
+          "check_id": {
+            "title": "Check Id",
+            "type": "string"
+          },
+          "gain_points": {
+            "title": "Gain Points",
+            "type": "number"
+          },
+          "title_ko": {
+            "title": "Title Ko",
+            "type": "string"
+          }
+        },
+        "required": [
+          "check_id",
+          "category_id",
+          "title_ko",
+          "gain_points",
+          "blocked_by_cap"
+        ],
+        "title": "GeoImprovementPayload",
+        "type": "object"
+      },
       "GeoIssuePayload": {
         "additionalProperties": false,
         "properties": {
@@ -6223,6 +6258,13 @@
           },
           "exposure": {
             "$ref": "#/components/schemas/GeoExposureBlock"
+          },
+          "improvements": {
+            "items": {
+              "$ref": "#/components/schemas/GeoImprovementPayload"
+            },
+            "title": "Improvements",
+            "type": "array"
           },
           "issues": {
             "items": {
@@ -15734,7 +15776,7 @@
     "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform\n\nDeveloped by VENOM. Research & Methodology by VEO-LAB.\n\n측정 원칙\n- SEO 준비도, GEO 준비도, 실제 AI 가시성, 네이버 키워드 수요는 각각 별도의 지표입니다.\n  하나의 불투명한 총점으로 합치지 않습니다.\n- 준비도 점수는 검색 순위 예측값이 아닙니다.\n- 모든 점수에는 방법론 버전, 체크섬, 적용 분모, 계산 과정, 신뢰도가 함께 제공됩니다.\n- '해당 없음'은 0점이 아니라 분모에서 제외되고, '측정 불가'는 실패가 아니라\n  coverage와 confidence에 반영됩니다.\n- 외부 제공자 자격증명이 없으면 해당 항목은 '측정 불가'가 되며, VEO는 추정값을\n  실제 데이터처럼 표시하지 않습니다.\n",
     "summary": "SEO · GEO · Naver Keyword Intelligence Platform",
     "title": "VEO API",
-    "version": "0.3.12"
+    "version": "0.3.13"
   },
   "openapi": "3.1.0",
   "paths": {

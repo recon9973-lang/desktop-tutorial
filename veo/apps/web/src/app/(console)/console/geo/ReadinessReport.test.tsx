@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 
-import type { GeoReadiness } from '@/lib/observations';
+import type { GeoImprovement, GeoReadiness } from '@/lib/observations';
 
 import { ReadinessReport } from './ReadinessReport';
 
@@ -383,5 +383,66 @@ describe('GEO 심각도 배지', () => {
     render(<ReadinessReport report={report({ checks: [check] })} />);
 
     expect(screen.getByText('구조화 데이터가 선언돼 있는가')).toBeInTheDocument();
+  });
+});
+
+/**
+ * 오늘 고칠 것 — 확정 시안 v2.2 §1.
+ *
+ * 이 목록의 약속은 하나다: **위에서부터 하면 점수가 가장 빨리 오른다.** 그 약속이
+ * 깨지는 순간 목록은 쓸모가 없어지고, 담당자는 다시 전체를 훑게 된다.
+ */
+describe('GEO 작업 큐', () => {
+  function gain(over: Partial<GeoImprovement> = {}): GeoImprovement {
+    return {
+      check_id: 'geo.sd.declared',
+      category_id: 'geo.sd',
+      title_ko: '구조화 데이터를 선언하세요',
+      gain_points: 5.9,
+      blocked_by_cap: false,
+      ...over,
+    };
+  }
+
+  it('고치면 오르는 점수를 함께 보여준다', () => {
+    render(<ReadinessReport report={report({ improvements: [gain()] })} />);
+
+    expect(screen.getByText('구조화 데이터를 선언하세요')).toBeInTheDocument();
+    expect(screen.getByText('+5.9점')).toBeInTheDocument();
+  });
+
+  it('상한에 걸려 지금은 오르지 않는 항목은 이 목록에 넣지 않는다', () => {
+    /** 0점짜리를 섞으면 "이걸 하면 오른다" 는 약속이 깨진다. */
+    render(
+      <ReadinessReport
+        report={{
+          ...report(),
+          improvements: [gain({ gain_points: 0, blocked_by_cap: true })],
+        }}
+      />,
+    );
+
+    expect(screen.queryByText(/오늘 고칠 것/)).not.toBeInTheDocument();
+  });
+
+  it('이득이 0인 항목도 넣지 않는다', () => {
+    render(<ReadinessReport report={report({ improvements: [gain({ gain_points: 0 })] })} />);
+
+    expect(screen.queryByText(/오늘 고칠 것/)).not.toBeInTheDocument();
+  });
+
+  it('줄을 누르면 그 영역 카드로 간다', () => {
+    const { container } = render(
+      <ReadinessReport report={report({ improvements: [gain()] })} />,
+    );
+
+    const link = container.querySelector('a[href="#check-geo.sd"]');
+    expect(link).not.toBeNull();
+  });
+
+  it('개선 목록이 없던 예전 실행은 이 구역을 그리지 않는다', () => {
+    render(<ReadinessReport report={report()} />);
+
+    expect(screen.queryByText(/오늘 고칠 것/)).not.toBeInTheDocument();
   });
 });

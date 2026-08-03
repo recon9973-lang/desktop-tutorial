@@ -223,6 +223,26 @@ class GeoCheckPayload(BaseModel):
     observed: Any = None
 
 
+class GeoImprovementPayload(BaseModel):
+    """고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.
+
+    ``gain_points`` 는 채점기가 실제 산식으로 계산한 값이다. 화면이 어림하지 않는다 —
+    어림하면 고친 뒤의 실제 점수와 어긋나고, 그러면 우선순위 자체를 믿을 수 없게 된다.
+
+    **무게 관련 값은 여기 없다.** 그것은 발행 명세가 정하고, 화면이 명세를 읽어 잇는다
+    (`readCheckSeverities`). 이 패키지는 관측하고, 채점기가 낸 값을 그대로 옮길 뿐이다.
+    """
+
+    model_config = _STRICT
+
+    check_id: str
+    category_id: str
+    title_ko: str
+    gain_points: float
+    #: 상한에 걸려 지금은 고쳐도 점수가 오르지 않는 상태. 이때 ``gain_points`` 는 0이다.
+    blocked_by_cap: bool
+
+
 class GeoLookupPayload(BaseModel):
     """참고 조회가 실제로 무엇을 보고 무엇을 버렸는가.
 
@@ -258,6 +278,8 @@ class GeoReadinessPayload(BaseModel):
     summary_ko: str
     scope_notice_ko: str
     checks: list[GeoCheckPayload]
+    #: 조치 우선순위 — 이득이 큰 것부터. 채점기가 낸 값을 그대로 싣는다.
+    improvements: list[GeoImprovementPayload] = Field(default_factory=list)
     issues: list[GeoIssuePayload]
     evidence: list[GeoEvidencePayload]
     notes_ko: list[str]

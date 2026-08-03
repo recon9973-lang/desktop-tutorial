@@ -385,6 +385,8 @@ export interface GeoReadiness {
    * "왜" 와 "어떻게 고치나" 가 없었다. SEO 와 같은 이름을 쓴다 — 같은 화면 부품이 읽는다.
    */
   readonly checks?: readonly GeoCheck[];
+  /** 조치 우선순위 — 이득이 큰 것부터. 채점기가 낸 값이며 화면은 어림하지 않는다. */
+  readonly improvements?: readonly GeoImprovement[];
   /**
    * 고칠 것과 고치는 법. 붙여넣을 코드까지 들어 있다.
    *
@@ -408,6 +410,16 @@ export interface GeoCheck {
   readonly evidence_ids: readonly string[];
   /** 수집기가 실제로 본 값. 판정을 내리지 못했으면 `null`. */
   readonly observed: unknown;
+}
+
+export interface GeoImprovement {
+  readonly check_id: string;
+  readonly category_id: string;
+  readonly title_ko: string;
+  /** 이 항목을 통과로 바꿨을 때 전체 점수가 오르는 폭. */
+  readonly gain_points: number;
+  /** 상한에 걸려 지금은 고쳐도 점수가 오르지 않는 상태. 이때 `gain_points` 는 0이다. */
+  readonly blocked_by_cap: boolean;
 }
 
 export interface GeoIssue {

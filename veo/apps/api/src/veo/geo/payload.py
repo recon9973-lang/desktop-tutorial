@@ -21,12 +21,14 @@ from veo.geo.schemas import (
     GeoEvidencePayload,
     GeoExposureBlock,
     GeoGatePayload,
+    GeoImprovementPayload,
     GeoIssuePayload,
     GeoLookupPayload,
     GeoReadinessBlock,
     GeoReadinessPayload,
 )
 from veo.geo.service import GeoReadinessReport
+from veo.scoring.improvements import rank_improvements
 
 #: 준비도 응답마다 그대로 되풀이한다. 준비도는 AI 노출이 아니며, 그렇게 적지 않은
 #: 보고서는 ADR 0003 이 금지한 혼동을 부른다.
@@ -118,6 +120,18 @@ def payload_from(
         summary_ko=report.summary_ko(),
         scope_notice_ko=SCOPE_NOTICE_KO,
         checks=[_check_payload(outcome, declared_by_check) for outcome in result.outcomes],
+        # 순위 산식은 명세와 무관한 일반 계산이고, 이 패키지는 이미 채점기(evaluate)를
+        # 불러 점수를 받는다 — 그 결과를 옮길 뿐 여기서 무게를 정하지 않는다.
+        improvements=[
+            GeoImprovementPayload(
+                check_id=item.check_id,
+                category_id=item.category_id,
+                title_ko=titles.get(item.check_id, item.check_id),
+                gain_points=item.gain_points,
+                blocked_by_cap=item.blocked_by_cap,
+            )
+            for item in rank_improvements(result)
+        ],
         issues=[_issue_payload(issue) for issue in report.issues],
         evidence=[_evidence_payload(record) for record in report.evidence],
         # 참고 조회를 왜 못 했는지 같은, 보고서 밖에서 온 안내도 여기에 실린다.

@@ -19,6 +19,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.13',
+    date: '2026-08-03',
+    title: 'GEO 작업 큐 — 무엇부터 고칠까',
+    items: [
+      'GEO 에도 "오늘 고칠 것" — 고치면 오르는 점수(+N점) 큰 순으로',
+      '+N점은 채점기가 낸 값 — 화면이 어림하지 않는다',
+      '상한에 걸려 지금은 오르지 않는 항목은 이 목록에 넣지 않는다',
+      '줄을 누르면 그 영역 카드로 이동 — 순서를 정하고 바로 고침 방법을 읽는다',
+    ],
+  },
+  {
     version: '0.3.12',
     date: '2026-08-03',
     title: '레일이 목차가 된다',

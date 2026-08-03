@@ -3,6 +3,7 @@ import { Card } from '@veo/ui';
 import type { GeoCategory, GeoLookup, GeoReadiness } from '@/lib/observations';
 
 import { ReadinessChecks } from './ReadinessChecks';
+import { ReadinessQueue } from './ReadinessQueue';
 
 import styles from './geo.module.css';
 
@@ -74,6 +75,9 @@ export function ReadinessReport({
           ))}
         </ul>
       </Card>
+
+      {/* "무엇부터" 가 먼저다. 판정 목록은 상태를 말하고, 이 목록은 순서를 말한다. */}
+      <ReadinessQueue improvements={report.improvements ?? []} />
 
       {/* 영역 점수만으로는 무엇을 고칠지 알 수 없다 — 판정과 고침 방법이 이어져야 한다. */}
       <ReadinessChecks
