@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.11',
+    date: '2026-08-03',
+    title: 'GEO 심각도 배지',
+    items: [
+      'GEO 항목에도 심각도 배지 — 무엇부터 고칠지가 줄에서 읽힌다',
+      '심각도는 발행 명세에서 읽어 온다 — 화면이 지어내지 않고, 명세에 없으면 배지도 없다',
+    ],
+  },
+  {
     version: '0.3.10',
     date: '2026-08-03',
     title: 'GEO 탭 레일이 GEO 숫자를 읽는다',

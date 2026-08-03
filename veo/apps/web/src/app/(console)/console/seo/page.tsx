@@ -8,7 +8,13 @@ import { ScanReport, type ReportView } from '@/components/ScanReport/ScanReport'
 import { listCompanies, type MeasuredSite } from '@/lib/companies';
 import type { ConsoleScanResult, GeoCompanionRef } from '@/lib/console-scan';
 import { readSavedGeoReadiness, type GeoCheck } from '@/lib/observations';
-import { readBands, readHistory, readSavedReport, type HistoryEntry } from '@/lib/scan-report';
+import {
+  readBands,
+  readCheckSeverities,
+  readHistory,
+  readSavedReport,
+  type HistoryEntry,
+} from '@/lib/scan-report';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
@@ -242,7 +248,12 @@ async function SavedGeoReport({
       />
     );
   }
-  return <ReadinessReport report={outcome.data} />;
+  // 심각도는 GEO 응답에 없다(엔진 경계) — 발행 명세에서 읽어 화면에서 잇는다.
+  const severities = await readCheckSeverities(
+    outcome.data.readiness.spec_id,
+    outcome.data.readiness.spec_version,
+  );
+  return <ReadinessReport report={outcome.data} severities={severities} />;
 }
 
 function HistoryStrip({

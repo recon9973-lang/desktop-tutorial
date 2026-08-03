@@ -21,6 +21,23 @@ import styles from './geo.module.css';
  * 고쳐지는 날이 온다.
  */
 
+const SEVERITY_LABELS: Record<string, string> = {
+  BLOCKER: '치명',
+  CRITICAL: '심각',
+  MAJOR: '중요',
+  MINOR: '경미',
+  INFO: '참고',
+};
+
+/** 심각도 배지. 무게가 세 단계로만 보이게 묶는다 — 다섯 색은 색이 아니라 소음이다. */
+const SEVERITY_BADGE: Record<string, string> = {
+  BLOCKER: styles.sevBadgeHigh ?? '',
+  CRITICAL: styles.sevBadgeHigh ?? '',
+  MAJOR: styles.sevBadgeMid ?? '',
+  MINOR: styles.sevBadgeLow ?? '',
+  INFO: styles.sevBadgeLow ?? '',
+};
+
 const OWNERS: Record<string, string> = {
   DEVELOPER: '개발',
   CONTENT: '콘텐츠',
@@ -44,9 +61,17 @@ function glance(causes: readonly { label: string; detail: string }[]): string | 
 export function ReadinessChecks({
   checks,
   issues,
+  severities,
 }: {
   readonly checks: readonly GeoCheck[];
   readonly issues: readonly GeoIssue[];
+  /**
+   * 검사별 심각도 — **발행 명세에서 읽어 온 것**만 온다.
+   *
+   * GEO 응답에는 심각도가 없다. 일부러 없다(엔진 경계). 없는 검사는 배지를 그리지
+   * 않는다 — 지어낸 심각도는 없는 것보다 나쁘다.
+   */
+  readonly severities?: ReadonlyMap<string, string>;
 }) {
   const issueOf = useMemo(
     () => new Map(issues.map((issue) => [issue.check_id, issue])),
@@ -67,7 +92,13 @@ export function ReadinessChecks({
       </p>
 
       {groups.map(([name, items]) => (
-        <CheckGroup key={name} name={name} items={items} issueOf={issueOf} />
+        <CheckGroup
+          key={name}
+          name={name}
+          items={items}
+          issueOf={issueOf}
+          severities={severities}
+        />
       ))}
     </section>
   );
@@ -77,10 +108,12 @@ function CheckGroup({
   name,
   items,
   issueOf,
+  severities,
 }: {
   readonly name: string;
   readonly items: readonly GeoCheck[];
   readonly issueOf: ReadonlyMap<string, GeoIssue>;
+  readonly severities?: ReadonlyMap<string, string>;
 }) {
   const tally: Record<string, number> = {};
   for (const item of items) tally[item.status] = (tally[item.status] ?? 0) + 1;
@@ -109,7 +142,11 @@ function CheckGroup({
       <ul className={styles.checkList}>
         {items.map((check) => (
           <li key={check.check_id}>
-            <CheckPanel check={check} issue={issueOf.get(check.check_id)} />
+            <CheckPanel
+              check={check}
+              issue={issueOf.get(check.check_id)}
+              severity={severities?.get(check.check_id) ?? null}
+            />
           </li>
         ))}
       </ul>
@@ -120,9 +157,11 @@ function CheckGroup({
 function CheckPanel({
   check,
   issue,
+  severity,
 }: {
   readonly check: GeoCheck;
   readonly issue: GeoIssue | undefined;
+  readonly severity: string | null;
 }) {
   const causes = describeObserved(check.observed);
   const shown = glance(causes);
@@ -134,6 +173,12 @@ function CheckPanel({
         <span className={styles.checkTitle}>{check.title_ko}</span>
         {/* 확정 시안 v2.2 §11 — "통과" 라는 판정보다 실제로 본 값이 신뢰를 만든다. */}
         {shown === null ? null : <span className={styles.checkObserved}>{shown}</span>}
+        {/* 명세가 심각도를 정한 검사만 배지를 단다. 화면은 지어내지 않는다. */}
+        {severity === null ? null : (
+          <span className={SEVERITY_BADGE[severity] ?? styles.sevBadgeLow}>
+            {SEVERITY_LABELS[severity] ?? severity}
+          </span>
+        )}
       </summary>
 
       <div className={styles.checkDetail}>

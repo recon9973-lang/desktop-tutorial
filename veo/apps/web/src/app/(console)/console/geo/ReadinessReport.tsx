@@ -14,7 +14,14 @@ import styles from './geo.module.css';
  * 정확히 그 모습이다. 차단을 점수에 반영해 깎아 버리면 "무엇을 고쳐야 하는가" 가
  * 사라진다. 하나는 설정 한 줄이고 다른 하나는 몇 주짜리 작업이다.
  */
-export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
+export function ReadinessReport({
+  report,
+  severities,
+}: {
+  readonly report: GeoReadiness;
+  /** 검사별 심각도 — 발행 명세에서 읽어 온 것. 없으면 배지를 그리지 않는다. */
+  readonly severities?: ReadonlyMap<string, string>;
+}) {
   const { readiness, exposure } = report;
   const hasScore = readiness.score !== null;
 
@@ -69,7 +76,11 @@ export function ReadinessReport({ report }: { readonly report: GeoReadiness }) {
       </Card>
 
       {/* 영역 점수만으로는 무엇을 고칠지 알 수 없다 — 판정과 고침 방법이 이어져야 한다. */}
-      <ReadinessChecks checks={report.checks ?? []} issues={report.issues ?? []} />
+      <ReadinessChecks
+        checks={report.checks ?? []}
+        issues={report.issues ?? []}
+        severities={severities}
+      />
 
       {reference.length === 0 ? null : (
         <Card title="참고 · 별도 확인 필요" headingLevel={3} tone="flat">

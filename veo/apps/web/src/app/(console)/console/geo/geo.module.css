@@ -719,3 +719,23 @@
 .urls { font-size: var(--veo-font-size-200); }
 .urls ul { margin: var(--veo-space-2) 0 0; padding-left: var(--veo-space-5); }
 .urls code { overflow-wrap: anywhere; }
+
+/* 심각도 배지 — SEO 화면과 같은 세 단계. 값은 발행 명세에서 온다. */
+.sevBadgeHigh, .sevBadgeMid, .sevBadgeLow {
+  flex: 0 0 auto;
+  padding: 2px var(--veo-space-2);
+  border-radius: var(--veo-radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  white-space: nowrap;
+}
+.sevBadgeHigh { background: var(--veo-status-fail-bg); color: var(--veo-status-fail-fg); border-color: var(--veo-status-fail-border); }
+.sevBadgeMid { background: var(--veo-status-warning-bg); color: var(--veo-status-warning-fg); border-color: var(--veo-status-warning-border); }
+/* 경미·참고는 테두리만 — 고칠 것이 아닌데 눈을 끌면 안 된다. */
+.sevBadgeLow {
+  background: transparent;
+  color: var(--veo-color-text-muted);
+  border-color: var(--veo-color-border);
+  font-weight: var(--veo-weight-regular);
+}

@@ -337,3 +337,51 @@ describe('GEO 항목별 판정', () => {
     expect(screen.queryByText(/항목별 판정/)).not.toBeInTheDocument();
   });
 });
+
+/**
+ * 심각도 배지 — **발행 명세에서 읽어 온 것만** 그린다.
+ *
+ * GEO 응답에는 심각도가 없다. 일부러 없다: GEO 엔진은 관측만 하고 점수를 정하지 않는다는
+ * 경계가 있고(`tests/geo/test_engine_boundaries.py`), 심각도는 채점 어휘다. 그렇다고
+ * 화면이 대신 지어내면 경계를 우회한 것이 된다 — 명세가 말하지 않은 검사는 배지가 없다.
+ */
+describe('GEO 심각도 배지', () => {
+  const check = {
+    check_id: 'geo.sd.declared',
+    title_ko: '구조화 데이터가 선언돼 있는가',
+    category_id: 'geo.sd',
+    category_name_ko: '구조화 데이터·메타',
+    remediation_owner: 'DEVELOPER',
+    status: 'FAIL',
+    confidence_level: 'DIRECT_OBSERVATION',
+    note_ko: null,
+    evidence_ids: [],
+    observed: null,
+  };
+
+  it('명세가 정한 심각도를 한국어로 단다', () => {
+    render(
+      <ReadinessReport
+        report={report({ checks: [check] })}
+        severities={new Map([['geo.sd.declared', 'BLOCKER']])}
+      />,
+    );
+
+    expect(screen.getByText('치명')).toBeInTheDocument();
+  });
+
+  it('명세에 없는 검사는 배지를 그리지 않는다 — 지어내지 않는다', () => {
+    render(<ReadinessReport report={report({ checks: [check] })} severities={new Map()} />);
+
+    for (const label of ['치명', '심각', '중요', '경미', '참고']) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
+  });
+
+  it('심각도를 아예 넘기지 않아도 화면은 그려진다', () => {
+    /** 예전 화면·시험이 이 값을 모른다. 없다고 판정 목록이 사라지면 안 된다. */
+    render(<ReadinessReport report={report({ checks: [check] })} />);
+
+    expect(screen.getByText('구조화 데이터가 선언돼 있는가')).toBeInTheDocument();
+  });
+});

@@ -135,3 +135,36 @@ export async function readBands(
     };
   });
 }
+
+/**
+ * 명세가 정한 검사별 심각도 — 발행 명세에서 그대로 읽어 온다.
+ *
+ * GEO 판정 응답에는 심각도가 없다. 일부러 없다: GEO 엔진은 **관측만 하고 점수를 정하지
+ * 않는다**는 경계가 있고(`tests/geo/test_engine_boundaries.py`), 심각도는 채점 어휘라
+ * 그 안에 둘 수 없다. 그렇다고 화면이 심각도를 지어내서도 안 된다.
+ *
+ * 그래서 **발행 명세를 직접 읽는다.** 심각도가 사는 곳은 처음부터 여기 하나뿐이고,
+ * 화면은 그것을 옮겨 적기만 한다.
+ */
+export async function readCheckSeverities(
+  specId: string,
+  version: string,
+): Promise<ReadonlyMap<string, string>> {
+  const outcome = await callConsoleApi(
+    `/api/scoring/specs/${encodeURIComponent(specId)}/${encodeURIComponent(version)}`,
+  );
+  if (!outcome.ok) return new Map();
+
+  const pairs: [string, string][] = [];
+  for (const rawCategory of list(record(outcome.data)['categories'])) {
+    for (const rawCheck of list(record(rawCategory)['checks'])) {
+      const check = record(rawCheck);
+      const id = str(check, 'id');
+      const severity = str(check, 'severity');
+      // 명세에 심각도가 비어 있으면 넣지 않는다 — 없는 것을 기본값으로 채우면
+      // 화면이 명세보다 많이 아는 척하게 된다.
+      if (id !== '' && severity !== '') pairs.push([id, severity]);
+    }
+  }
+  return new Map(pairs);
+}
