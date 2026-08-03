@@ -46,6 +46,7 @@ from veo.seo.history import (
 from veo.seo.jobs import SCAN_STAGES, scan_work
 from veo.seo.measure_performance import prewarm, with_performance
 from veo.seo.pages import page_breakdown
+from veo.seo.perf_cache import PerformanceCache
 from veo.seo.regression import maybe_alert_regression
 from veo.seo.schemas import (
     CapSummary,
@@ -272,7 +273,10 @@ def run_console_scan(
     # 한 번 묻는 데 20~60초가 걸린다 — 크롤이 끝나기를 기다릴 이유가 없다.
     # 결과는 캐시로 가고 아래 with_performance 가 집어 간다. 실패하면 원래대로 나중에
     # 잰다(덤이라 진단을 멈추지 않는다).
-    prewarm(payload.target_url)
+    # 캐시는 **이 진단 하나**가 만들어 쓰고 버린다. 전역에 두면 고치고 다시 재는 사람이
+    # 옛 값을 보게 되고, 그 순간 이 도구는 "고쳐도 안 바뀐다" 는 거짓을 말한다.
+    perf_cache = PerformanceCache()
+    prewarm(payload.target_url, cache=perf_cache)
 
     crawler = ConsoleCrawler()
     if payload.discover:
@@ -292,7 +296,7 @@ def run_console_scan(
     # 성능은 크롤로 알 수 없다. 구글에 따로 물어야 하고, 그래서 여기서 한 번 더 나간다.
     # 자격증명이 없으면 문맥을 손대지 않고 그대로 돌려주므로, 키가 없는 배포에서는
     # 이 줄이 아무 일도 하지 않는다 — 소켓도 열리지 않는다.
-    context, performance = with_performance(context)
+    context, performance = with_performance(context, cache=perf_cache)
     result = run_seo_scan(context)
     report = _scan_payload(
         result, brand_name=_registered_brand_name(db, principal, site_id=payload.site_id)

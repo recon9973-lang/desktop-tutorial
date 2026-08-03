@@ -50,7 +50,7 @@ from veo.providers.google.pagespeed import (
     Strategy,
     lab_payload,
 )
-from veo.seo.perf_cache import PERFORMANCE_CACHE, PerformanceCache
+from veo.seo.perf_cache import PerformanceCache
 
 __all__ = [
     "PerformanceMeasurement",
@@ -161,9 +161,9 @@ def measure_performance(
     보고 "측정 불가 — 자격증명 없음" 이라고 적는다. 없는 값을 그럴듯하게 지어내는
     경로가 아예 없다.
 
-    ``cache`` 는 기본이 **꺼짐**이다. 전역 기억을 기본값으로 두면 이 함수를 직접 부르는
-    시험들이 서로의 값을 보게 되고, 그때부터 실패가 실행 순서에 따라 달라진다. 캐시는
-    운영 경로(:func:`with_performance`)가 명시적으로 건넨다.
+    ``cache`` 는 **한 진단이 만든 임시 기억**이다. 진단과 진단 사이에는 넘어가지 않는다 —
+    고치고 다시 재는 사람에게 옛 값을 주면 도구가 거짓말을 하게 된다. 전역 기본값이 없는
+    것이 그 규칙의 이행이다.
     """
     if credentials is None or not urls:
         return PerformanceMeasurement(
@@ -354,6 +354,7 @@ def with_performance(
     *,
     credentials: PageSpeedCredentials | None = _UNSET,
     client: PageSpeedClient | None = None,
+    cache: PerformanceCache | None = None,
 ) -> tuple[Any, PerformanceMeasurement | None]:
     """수집 문맥에 성능 측정을 채워 돌려준다. 못 재면 문맥을 그대로 돌려준다.
 
@@ -393,9 +394,10 @@ def with_performance(
     if not site.has_pages:
         return context, None
 
-    # 여기서만 기억을 켠다 — 크롤과 동시에 미리 잰 대표 주소가 이 자리에서 걸린다.
+    # 이번 진단이 미리 재 둔 대표 주소가 이 자리에서 걸린다. 진단 밖에서 온 값은
+    # 여기 없다 — 캐시는 진단 하나가 만들어 넘겨준 것이다.
     measurement = measure_performance(
-        lab_sample(context, site), credentials=resolved, client=client, cache=PERFORMANCE_CACHE
+        lab_sample(context, site), credentials=resolved, client=client, cache=cache
     )
     if not measurement.payloads:
         return context, measurement
@@ -408,8 +410,12 @@ def with_performance(
     return filled, measurement
 
 
-def prewarm(target_url: str, *, credentials: PageSpeedCredentials | None = _UNSET,
-            cache: PerformanceCache | None = PERFORMANCE_CACHE) -> threading.Thread | None:
+def prewarm(
+    target_url: str,
+    *,
+    cache: PerformanceCache,
+    credentials: PageSpeedCredentials | None = _UNSET,
+) -> threading.Thread | None:
     """대표 주소의 성능 측정을 **크롤과 동시에** 시작한다.
 
     지금까지 순서는 크롤을 끝내고 → 성능을 쟀다. 실측(2026-08-03)으로 172장 크롤이
@@ -436,7 +442,7 @@ def prewarm(target_url: str, *, credentials: PageSpeedCredentials | None = _UNSE
     from veo.providers.google.credentials import pagespeed_from_settings
 
     resolved = pagespeed_from_settings().credentials if credentials is _UNSET else credentials
-    if resolved is None or cache is None or not target_url.strip():
+    if resolved is None or not target_url.strip():
         return None
 
     def _work() -> None:

@@ -1,11 +1,12 @@
-"""성능 측정 캐시 — 같은 값을 두 번 재지 않되, 오래된 값을 쓰지도 않는다.
+"""성능 측정은 **한 진단 안에서만** 나눠 쓴다.
 
-진단 180초 중 약 130초가 구글 PageSpeed 를 기다리는 시간이다(2026-08-03 실측). 우리가
-줄일 수 있는 것은 같은 값을 두 번 재지 않는 것뿐이라 캐시를 뒀다.
+가장 중요한 규칙 하나: **진단과 진단 사이에는 재사용하지 않는다.** 담당자는 사이트를
+고치고 다시 재서 확인하려고 진단을 누른다. 그 순간 옛 값을 돌려주면 고쳤는데 점수가
+그대로인 화면을 보게 되고, "고쳐도 안 바뀌네" 라는 잘못된 결론에 이른다. 빨라진 대가로
+도구가 거짓말을 하는 것이라 어떤 시간 단축과도 바꿀 수 없다.
 
-캐시는 **틀린 값을 빠르게 주는 장치가 되기 쉽다.** 그래서 여기서 지키는 것은 속도가
-아니라 정직성이다: 수명이 지난 값은 없는 것과 같고, 캐시에서 온 값이 수명을 스스로
-연장하지 못한다.
+그 규칙을 **수명이 아니라 범위**로 지킨다: 캐시는 진단 하나가 만들고 진단이 끝나면
+버려진다. 전역 기억이 없으니 옛 값이 살아남을 자리 자체가 없다.
 """
 
 from __future__ import annotations
@@ -18,98 +19,83 @@ MOMENT = datetime(2026, 8, 3, 9, 0, tzinfo=UTC)
 MOBILE = "MOBILE"
 
 
-def _cache(hours: int = 6) -> PerformanceCache:
-    # 전역을 쓰지 않는다 — 시험끼리 서로의 값을 보면 실패가 순서에 따라 달라진다.
-    return PerformanceCache(ttl=timedelta(hours=hours))
+class TestThereIsNoSharedMemoryBetweenScans:
+    def test_the_module_offers_no_global_cache(self) -> None:
+        """전역 객체가 있으면 누군가 반드시 쓰게 되고, 그날 이 규칙이 깨진다."""
+        import veo.seo.perf_cache as module
+
+        assert not hasattr(module, "PERFORMANCE_CACHE")
+
+    def test_a_new_scan_starts_empty(self) -> None:
+        first = PerformanceCache()
+        first.put("https://a.example/", MOBILE, {"lcp": 4.1}, now=MOMENT)
+
+        # 다음 진단은 자기 것을 만든다 — 앞 진단의 값이 보이지 않는다.
+        second = PerformanceCache()
+
+        assert second.get("https://a.example/", MOBILE) is None
+        assert second.size() == 0
+
+    def test_a_fix_is_visible_on_the_next_scan(self) -> None:
+        """고친 뒤 다시 재면 새 값이 나와야 한다 — 이 도구의 존재 이유다."""
+        before = PerformanceCache()
+        before.put("https://a.example/", MOBILE, {"lcp": 4.1}, now=MOMENT)
+
+        after = PerformanceCache()
+        after.put("https://a.example/", MOBILE, {"lcp": 1.9}, now=MOMENT + timedelta(minutes=10))
+
+        found = after.get("https://a.example/", MOBILE)
+        assert found is not None
+        assert found.value == {"lcp": 1.9}
 
 
-class TestKeepsWhatItJustMeasured:
-    def test_returns_the_stored_value(self) -> None:
-        cache = _cache()
+class TestWithinOneScanItSharesTheValue:
+    def test_the_prewarmed_value_is_found(self) -> None:
+        """크롤과 동시에 재 둔 대표 주소를, 몇십 초 뒤 표본 측정이 집어 간다."""
+        cache = PerformanceCache()
         cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
 
-        found = cache.get("https://a.example/", MOBILE, now=MOMENT)
+        found = cache.get("https://a.example/", MOBILE)
 
         assert found is not None
         assert found.value == {"lcp": 2.1}
 
     def test_a_different_url_is_a_different_value(self) -> None:
-        cache = _cache()
+        cache = PerformanceCache()
         cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
 
-        assert cache.get("https://b.example/", MOBILE, now=MOMENT) is None
+        assert cache.get("https://b.example/", MOBILE) is None
 
     def test_a_different_form_factor_is_a_different_value(self) -> None:
         """모바일과 데스크톱은 다른 측정이다. 같은 칸에 두면 조용히 섞인다."""
-        cache = _cache()
+        cache = PerformanceCache()
         cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
 
-        assert cache.get("https://a.example/", "DESKTOP", now=MOMENT) is None
+        assert cache.get("https://a.example/", "DESKTOP") is None
 
-
-class TestNeverServesAStaleValue:
-    def test_expired_value_is_gone(self) -> None:
-        cache = _cache(hours=6)
+    def test_it_reports_when_the_value_was_measured(self) -> None:
+        cache = PerformanceCache()
         cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
 
-        later = MOMENT + timedelta(hours=6, minutes=1)
-
-        assert cache.get("https://a.example/", MOBILE, now=later) is None
-
-    def test_value_still_inside_its_life_is_served(self) -> None:
-        cache = _cache(hours=6)
-        cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
-
-        assert cache.get("https://a.example/", MOBILE, now=MOMENT + timedelta(hours=5)) is not None
-
-    def test_expiry_frees_the_slot(self) -> None:
-        """수명이 지난 값은 읽는 자리에서 버린다 — 메모리에 계속 남지 않게."""
-        cache = _cache(hours=1)
-        cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
-
-        cache.get("https://a.example/", MOBILE, now=MOMENT + timedelta(hours=2))
-
-        assert cache.size() == 0
-
-    def test_it_reports_how_old_the_value_is(self) -> None:
-        """언제 잰 값인지 함께 준다 — 부르는 쪽이 그 사실을 결과에 실을 수 있어야 한다."""
-        cache = _cache()
-        cache.put("https://a.example/", MOBILE, {"lcp": 2.1}, now=MOMENT)
-
-        found = cache.get("https://a.example/", MOBILE, now=MOMENT + timedelta(minutes=30))
+        found = cache.get("https://a.example/", MOBILE)
 
         assert found is not None
-        assert found.age_seconds(now=MOMENT + timedelta(minutes=30)) == 1800
+        assert found.age_seconds(now=MOMENT + timedelta(minutes=1)) == 60
 
 
-class TestItDoesNotGrowForever:
-    def test_oldest_is_dropped_past_the_limit(self) -> None:
-        cache = PerformanceCache(ttl=timedelta(hours=6), max_entries=2)
-        cache.put("https://a.example/", MOBILE, 1, now=MOMENT)
-        cache.put("https://b.example/", MOBILE, 2, now=MOMENT + timedelta(minutes=1))
-        cache.put("https://c.example/", MOBILE, 3, now=MOMENT + timedelta(minutes=2))
+class TestMeasurementUsesTheScanCache:
+    """`measure_performance` 가 이번 진단의 값을 실제로 집어 가는가."""
 
-        assert cache.size() == 2
-        # 가장 오래 전에 잰 것이 나간다.
-        assert cache.get("https://a.example/", MOBILE, now=MOMENT + timedelta(minutes=2)) is None
-        newest = cache.get("https://c.example/", MOBILE, now=MOMENT + timedelta(minutes=2))
-        assert newest is not None
-
-
-class TestMeasurementUsesTheCache:
-    """`measure_performance` 가 캐시를 실제로 쓰는가 — 이것이 시간을 줄이는 자리다."""
-
-    def test_a_cached_url_is_not_measured_again(self) -> None:
+    def test_a_prewarmed_url_is_not_measured_again(self) -> None:
         from veo.providers.google.credentials import PageSpeedCredentials
         from veo.seo.measure_performance import STRATEGY, measure_performance
 
-        cache = _cache()
-        # 미리 재 둔 값이 있다고 해 둔다(크롤과 동시에 잰 대표 주소가 이 모습이다).
-        cache.put("https://a.example/", str(STRATEGY), _fake_result(), now=datetime.now(UTC))
+        cache = PerformanceCache()
+        cache.put("https://a.example/", str(STRATEGY), _fake_result())
 
         class NeverCalled:
             def measure(self, url: str, **_: object) -> object:  # pragma: no cover
-                raise AssertionError(f"캐시가 있는데 {url} 을 다시 쟀습니다")
+                raise AssertionError(f"이번 진단에서 이미 잰 {url} 을 다시 쟀습니다")
 
         outcome = measure_performance(
             ["https://a.example/"],
@@ -120,36 +106,34 @@ class TestMeasurementUsesTheCache:
 
         assert outcome.measured == ("https://a.example/",)
 
-    def test_cache_hits_do_not_extend_their_own_life(self) -> None:
-        """캐시에서 온 값을 다시 넣으면 값은 그대로인데 수명만 늘어난다 — 그러면
-        오래된 값이 영원히 산다."""
+    def test_without_a_cache_every_url_is_measured(self) -> None:
+        """캐시를 건네지 않으면 아무것도 재사용하지 않는다 — 기본이 그쪽이다."""
         from veo.providers.google.credentials import PageSpeedCredentials
-        from veo.seo.measure_performance import STRATEGY, measure_performance
+        from veo.seo.measure_performance import measure_performance
 
-        cache = _cache(hours=6)
-        stored_at = datetime.now(UTC) - timedelta(hours=5)
-        cache.put("https://a.example/", str(STRATEGY), _fake_result(), now=stored_at)
+        asked: list[str] = []
 
-        class NeverCalled:
-            def measure(self, url: str, **_: object) -> object:  # pragma: no cover
-                raise AssertionError("다시 재면 안 됩니다")
+        class Recording:
+            def measure(self, url: str, **_: object) -> object:
+                asked.append(url)
+
+                class Ok:
+                    succeeded = True
+                    value = _fake_result()
+
+                return Ok()
 
         measure_performance(
             ["https://a.example/"],
             credentials=PageSpeedCredentials(api_key="k"),
-            client=NeverCalled(),  # type: ignore[arg-type]
-            cache=cache,
+            client=Recording(),  # type: ignore[arg-type]
         )
 
-        found = cache.get("https://a.example/", str(STRATEGY))
-        assert found is not None
-        # 잰 시각이 그대로여야 한다(오차 몇 초는 시험 실행 시간).
-        assert abs((found.measured_at - stored_at).total_seconds()) < 5
+        assert asked == ["https://a.example/"]
 
 
 def _fake_result() -> object:
-    """수집기가 읽는 최소한의 모양. 실제 구글 응답을 흉내 내지 않는다 — 여기서 재는
-    것은 캐시의 동작이지 응답 해석이 아니다."""
+    """수집기가 읽는 최소한의 모양. 여기서 재는 것은 캐시의 동작이지 응답 해석이 아니다."""
     from veo.providers.google.crux import FieldDataState, FieldMeasurement, FieldScope
     from veo.providers.google.pagespeed import LabMeasurement, PageSpeedResult
     from veo.seo.measure_performance import STRATEGY
