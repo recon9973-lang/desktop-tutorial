@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.1',
+    date: '2026-08-03',
+    title: '초대 링크 수리',
+    items: [
+      '팀원 초대·재발송에서 링크 칸이 비던 문제 — 화면이 읽는 이름이 응답과 어긋나 있었다',
+      '링크를 받지 못하면 성공 문구 대신 실패라고 말한다',
+      '운영에서 콘솔 주소(VEO_CONSOLE_BASE_URL)가 없으면 못 쓰는 링크를 만드는 대신 거절한다',
+    ],
+  },
+  {
     version: '0.3.0',
     date: '2026-08-03',
     title: '콘솔 재설계 + 운영 자동화',

@@ -31,7 +31,7 @@ from veo.authz import Permission, Principal
 from veo.authz.deps import get_principal
 from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiResponse
-from veo.core.settings import get_settings
+from veo.core.settings import ConsoleBaseUrlNotSet, get_settings
 from veo.db.models.identity import User
 from veo.db.session import get_db
 from veo.organizations.http import api_error, guard, not_found
@@ -59,6 +59,21 @@ MEMBER_NOT_FOUND_KO = "구성원을 찾을 수 없습니다."
 
 def _refused(message_ko: str) -> Exception:
     return api_error(status.HTTP_409_CONFLICT, ErrorCode.CONFLICT, message_ko)
+
+
+def _invitation_base_url() -> str:
+    """The origin an invitation link points at, or a refusal an admin can act on.
+
+    A misconfigured server is not the administrator's mistake, but it is the
+    administrator who is standing in front of the screen — so the message names the
+    variable to set instead of saying "처리하지 못했습니다".
+    """
+    try:
+        return get_settings().invitation_base_url()
+    except ConsoleBaseUrlNotSet as exc:
+        raise api_error(
+            status.HTTP_503_SERVICE_UNAVAILABLE, ErrorCode.INTERNAL_ERROR, str(exc)
+        ) from exc
 
 
 def _source_ip_hash(request: Request) -> str | None:
@@ -116,6 +131,10 @@ def add_member(
     request_id: RequestId,
     request: Request,
 ) -> ApiResponse[InvitedMemberPayload]:
+    # 주소부터 확인한다 — 계정을 만들고 토큰을 태운 다음 거절하면, 그 초대는 1회용이라
+    # 그대로 버려지고 관리자는 이유도 모른 채 재발송을 눌러야 한다.
+    base_url = _invitation_base_url()
+
     try:
         member = service.add_member(
             session,
@@ -149,7 +168,7 @@ def add_member(
         InvitedMemberPayload(
             member=MemberPayload.of(member),
             invitation=InvitationPayload(
-                invite_url=issued.link(get_settings().console_base_url),
+                invite_url=issued.link(base_url),
                 expires_at=issued.expires_at,
             ),
         ),
@@ -175,6 +194,8 @@ def reissue_invitation(
     request_id: RequestId,
     request: Request,
 ) -> ApiResponse[InvitationPayload]:
+    base_url = _invitation_base_url()
+
     member = service.load_member(session, principal, user_id)
     if member is None:
         raise not_found(MEMBER_NOT_FOUND_KO)
@@ -197,7 +218,7 @@ def reissue_invitation(
     )
     return ok(
         InvitationPayload(
-            invite_url=issued.link(get_settings().console_base_url),
+            invite_url=issued.link(base_url),
             expires_at=issued.expires_at,
         ),
         request_id,

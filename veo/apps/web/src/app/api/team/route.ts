@@ -7,6 +7,7 @@ import {
   isRole,
   reinvite,
 } from '@/lib/team';
+import type { InviteWire } from '@/app/(console)/console/team/invite-wire';
 
 /**
  * 팀원 관리 — 브라우저와 엔진 사이.
@@ -33,7 +34,8 @@ export async function POST(request: Request) {
   const userId = typeof input['userId'] === 'string' ? input['userId'] : '';
   if (userId !== '') {
     const outcome = await reinvite(userId);
-    return outcome.ok ? NextResponse.json(outcome.data) : failure(outcome);
+    // 응답 모양을 타입으로 못 박는다 — 화면이 읽는 이름과 어긋나면 여기서 컴파일이 깨진다.
+    return outcome.ok ? NextResponse.json<InviteWire>(outcome.data) : failure(outcome);
   }
 
   const email = typeof input['email'] === 'string' ? input['email'] : '';
@@ -50,7 +52,7 @@ export async function POST(request: Request) {
   }
 
   const outcome = await inviteMember({ email, displayName, role });
-  return outcome.ok ? NextResponse.json(outcome.data) : failure(outcome);
+  return outcome.ok ? NextResponse.json<InviteWire>(outcome.data) : failure(outcome);
 }
 
 export async function PATCH(request: Request) {

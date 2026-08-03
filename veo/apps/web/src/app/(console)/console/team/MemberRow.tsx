@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@veo/ui';
 
+import { readInvite } from './invite-wire';
 import { ROLES, ROLE_LABELS, isRole, type Role } from './roles';
 
 import styles from './team.module.css';
@@ -62,8 +63,13 @@ export function MemberRow(member: MemberRowProps) {
         return;
       }
       if (what === 'invite') {
-        const data = (payload ?? {}) as { invite_url?: string };
-        setInvite(data.invite_url ?? '');
+        const issued = readInvite(payload).inviteUrl;
+        // 빈 링크는 전달할 수 없다. 성공으로 보이는 빈 칸 대신 실패라고 말한다.
+        if (issued === '') {
+          setError('초대 링크를 받지 못했습니다. 다시 시도해 주십시오.');
+          return;
+        }
+        setInvite(issued);
       }
       router.refresh();
     } catch {

@@ -23,6 +23,29 @@ _REPO_ROOT = Path(__file__).resolve().parents[5]
 _ENV_FILE = _REPO_ROOT / ".env"
 
 
+class ConsoleBaseUrlNotSet(RuntimeError):
+    """운영인데 초대 링크에 넣을 콘솔 주소가 개발용 기본값 그대로다."""
+
+
+#: Hosts that only mean anything on the machine that types them.
+#:
+#: S104 flags ``0.0.0.0`` as binding to every interface. This is the opposite — a list of
+#: addresses to **refuse**, so that one never reaches an invitation link.
+_LOOPBACK_HOSTS = frozenset(
+    {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "::1"}  # noqa: S104
+)
+
+
+def _is_loopback_origin(origin: str) -> bool:
+    """Is this address only reachable from the server itself?
+
+    Host-only comparison, deliberately: ``http://localhost:3000`` and
+    ``https://127.0.0.1`` are the same mistake at different ports.
+    """
+    without_scheme = origin.split("://", 1)[-1]
+    host = without_scheme.split("/", 1)[0].rsplit(":", 1)[0] if without_scheme else ""
+    return host.lower() in _LOOPBACK_HOSTS or origin.strip() == ""
+
 
 #: Strings that occupy a credential slot without being a credential.
 #:
@@ -397,6 +420,27 @@ class Settings(BaseSettings):
     #: them to build a link would make a change to CORS silently rewrite every invitation
     #: an administrator sends. Set this to the address staff actually type.
     console_base_url: str = "http://localhost:3000"
+
+    def invitation_base_url(self) -> str:
+        """The origin to stamp into an invitation link — or a refusal.
+
+        The default is a developer's machine. Handing that out in production would
+        mint ``http://localhost:3000/invite/...``: a link that looks right, copies
+        fine, and is useless to everyone who receives it. Worse, the invitation is
+        already spent by then — the token is single-use, so the administrator has
+        to reissue and never learns why the first one failed.
+
+        So production refuses instead. An unset ``VEO_CONSOLE_BASE_URL`` becomes a
+        message naming the variable, not a broken link.
+        """
+        origin = self.console_base_url.strip()
+        if self.is_production and _is_loopback_origin(origin):
+            raise ConsoleBaseUrlNotSet(
+                "초대 링크에 넣을 콘솔 주소가 설정되지 않았습니다. 서버 환경변수 "
+                "VEO_CONSOLE_BASE_URL 에 콘솔 주소(예: https://veo.seokorea.org)를 "
+                "넣은 뒤 다시 시도해 주십시오."
+            )
+        return origin
 
     @computed_field  # type: ignore[prop-decorator]
     @property

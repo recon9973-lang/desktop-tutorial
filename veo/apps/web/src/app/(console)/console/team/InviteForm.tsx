@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { Button, FormError, TextField } from '@veo/ui';
 
+import { readInvite } from './invite-wire';
 import { ROLES, ROLE_LABELS, type Role } from './roles';
 
 import styles from './team.module.css';
@@ -51,8 +52,15 @@ export function InviteForm() {
         return;
       }
 
-      const data = (body ?? {}) as { invite_url?: string; expires_at?: string };
-      setInvite({ url: data.invite_url ?? '', expiresAt: data.expires_at ?? '' });
+      const issued = readInvite(body);
+      if (issued.inviteUrl === '') {
+        // 빈 링크를 성공처럼 그리지 않는다. 예전에 그렇게 해서, 발급 문구와 복사 버튼은
+        // 멀쩡한데 링크 칸만 빈 화면이 나왔다 — 관리자가 빈 값을 복사해 전달했다.
+        setError('계정은 만들어졌지만 초대 링크를 받지 못했습니다. 목록에서 재발송을 눌러 주십시오.');
+        router.refresh();
+        return;
+      }
+      setInvite({ url: issued.inviteUrl, expiresAt: issued.expiresAt });
       setCopied(false);
       setDisplayName('');
       setEmail('');
