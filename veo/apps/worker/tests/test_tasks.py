@@ -43,8 +43,15 @@ class TestRegistration:
         assert tasks.DEAD_LETTER_TASK_NAME in celery_app.tasks
 
 
+#: 진짜로 도는 태스크. 껍데기 규칙에서 빼되 **목록으로 남긴다** — 다음 사람이 "왜 이건
+#: 빠졌지" 를 코드에서 읽을 수 있어야 하고, 하나씩 채울 때마다 여기서 한 줄이 옮겨간다.
+IMPLEMENTED: set[JobType] = {JobType.SEO_SCAN}
+
+
 class TestPhaseZeroStubs:
-    @pytest.mark.parametrize("job_type", list(JobType))
+    @pytest.mark.parametrize(
+        "job_type", [one for one in JobType if one not in IMPLEMENTED]
+    )
     def test_analysis_is_an_honest_not_implemented(self, job_type: JobType) -> None:
         payload = submit(f"job-{job_type.value}", job_type, url="https://example.kr")
         task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[job_type]]
@@ -56,15 +63,17 @@ class TestPhaseZeroStubs:
         assert "Phase" in message, "the stub must say which phase delivers the real work"
         assert message.strip(), "an empty NotImplementedError tells nobody anything"
 
-    def test_seo_scan_names_phase_two(self) -> None:
-        payload = submit("job-seo", JobType.SEO_SCAN, url="https://example.kr")
-        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SEO_SCAN]]
-        with pytest.raises(NotImplementedError, match="SEO collector lands in Phase 2"):
+    def test_a_remaining_stub_names_its_phase(self) -> None:
+        """SEO 는 이제 진짜로 돈다(2026-08-04). 이 규칙이 지키는 것은 SEO 가 아니라
+        **아직 껍데기인 태스크가 정직하게 말하는가** 이므로, 남아 있는 껍데기로 옮긴다."""
+        payload = submit("job-crawl", JobType.SITE_CRAWL, url="https://example.kr")
+        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SITE_CRAWL]]
+        with pytest.raises(NotImplementedError, match="Site crawler lands in Phase 2"):
             task.apply(kwargs=payload, throw=True)
 
     def test_no_fabricated_result_is_written(self) -> None:
-        payload = submit("job-seo", JobType.SEO_SCAN, url="https://example.kr")
-        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SEO_SCAN]]
+        payload = submit("job-seo", JobType.SITE_CRAWL, url="https://example.kr")
+        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SITE_CRAWL]]
         with pytest.raises(NotImplementedError):
             task.apply(kwargs=payload, throw=True)
 
@@ -76,8 +85,8 @@ class TestPhaseZeroStubs:
 
 class TestPlumbingRunsEndToEnd:
     def _run_seo(self, job_id: str = "job-1") -> JobDescriptor:
-        payload = submit(job_id, JobType.SEO_SCAN, url="https://example.kr")
-        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SEO_SCAN]]
+        payload = submit(job_id, JobType.SITE_CRAWL, url="https://example.kr")
+        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SITE_CRAWL]]
         with pytest.raises(NotImplementedError):
             task.apply(kwargs=payload, throw=True)
         descriptor = JOB_STORE.get(job_id)
@@ -128,8 +137,8 @@ class TestPlumbingRunsEndToEnd:
 class TestCooperativeCancellation:
     def test_a_cancel_requested_before_the_run_lands_as_cancelled(self) -> None:
         CANCELLATION_REGISTRY.request_cancel_ahead_of_time("job-c", reason="user stopped it")
-        payload = submit("job-c", JobType.SEO_SCAN, url="https://example.kr")
-        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SEO_SCAN]]
+        payload = submit("job-c", JobType.SITE_CRAWL, url="https://example.kr")
+        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SITE_CRAWL]]
 
         result = task.apply(kwargs=payload, throw=True)
 
@@ -151,8 +160,8 @@ class TestCooperativeCancellation:
 
     def test_the_token_is_released_after_the_run(self) -> None:
         CANCELLATION_REGISTRY.request_cancel_ahead_of_time("job-c3")
-        payload = submit("job-c3", JobType.SEO_SCAN, url="https://example.kr")
-        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SEO_SCAN]]
+        payload = submit("job-c3", JobType.SITE_CRAWL, url="https://example.kr")
+        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.SITE_CRAWL]]
         task.apply(kwargs=payload, throw=True)
         assert CANCELLATION_REGISTRY.get("job-c3") is None
 

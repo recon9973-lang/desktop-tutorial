@@ -266,6 +266,12 @@ class Settings(BaseSettings):
     #: 규칙(빈 값 = 설정 안 됨)과도 어긋난다.
     redis_url: str = ""
 
+    #: 작업 큐의 브로커. 비어 있으면 ``redis_url`` 을 쓰고, 그것도 비어 있으면 **큐가
+    #: 없는 배포**다 — 진단은 예전처럼 API 프로세스의 배경 스레드에서 돈다.
+    #:
+    #: 큐가 없는데 큐로 보내면 아무도 집어가지 않은 채 영원히 대기한다. 지금보다 나쁘다.
+    celery_broker_url: str = ""
+
     # Secrets. Absent in local/test; required at startup in staging and production.
     jwt_secret: SecretStr | None = None
     access_token_ttl_seconds: int = 900

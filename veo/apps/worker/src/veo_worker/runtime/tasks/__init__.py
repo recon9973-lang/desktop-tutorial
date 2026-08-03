@@ -152,6 +152,38 @@ def _run_phase_zero_skeleton(
 
 
 # --------------------------------------------------------------------------------------
+def _run_scan(execute: Any, scan_work: Any, **kwargs: Any) -> dict[str, Any]:
+    """큐로 건너온 값을 파이프라인이 받는 모양으로 되돌리고 돌린다.
+
+    **함수는 프로세스를 건너지 못한다.** 그래서 API 는 값만 보내고, 여기서 그 값으로
+    작업을 다시 만든다 — `scan_work` 가 처음부터 값만 받도록 만들어져 있어서 가능하다
+    (요청 객체의 수명이 요청보다 길어지면 안 된다는 규칙의 부수 효과다).
+
+    모르는 값이 오면 여기서 멈춘다. 빠진 자리를 기본값으로 채우면 **엉뚱한 조직의 일을
+    엉뚱한 권한으로** 돌리게 된다.
+    """
+    import uuid as _uuid
+
+    from veo.contracts.enums import Role
+
+    job_id = _uuid.UUID(str(kwargs["job_id"]))
+    work = scan_work(
+        organization_id=_uuid.UUID(str(kwargs["organization_id"])),
+        user_id=_uuid.UUID(str(kwargs["user_id"])),
+        roles=frozenset(Role(one) for one in kwargs["roles"]),
+        session_id=str(kwargs["session_id"]),
+        target_url=str(kwargs["target_url"]),
+        site_id=_uuid.UUID(str(kwargs["site_id"])),
+        urls=tuple(kwargs.get("urls") or ()),
+        discover=bool(kwargs["discover"]),
+        max_urls=kwargs.get("max_urls"),
+        locale=str(kwargs.get("locale") or "ko-KR"),
+        is_service_account=bool(kwargs.get("is_service_account", False)),
+    )
+    outcome = execute(job_id, work)
+    return {"job_id": str(job_id), "status": getattr(outcome, "status", None)}
+
+
 # Registered tasks. Thin on purpose: each one names its job type and delegates.
 # --------------------------------------------------------------------------------------
 
@@ -163,7 +195,22 @@ def site_crawl(**kwargs: Any) -> dict[str, Any]:
 
 @celery_app.task(name=TASK_NAME_BY_JOB_TYPE[JobType.SEO_SCAN], bind=False)
 def seo_scan(**kwargs: Any) -> dict[str, Any]:
-    return _run_phase_zero_skeleton(JobType.SEO_SCAN, **kwargs)
+    """진단을 실제로 돈다 — **API 가 쓰는 그 파이프라인 그대로**.
+
+    Phase 0 에서 여기는 `NotImplementedError` 였다. 수집기가 없어서였는데, 그 사이
+    API 쪽에 파이프라인이 생겼고 지금은 API 프로세스의 배경 스레드가 그것을 돌린다.
+    데몬 스레드라 재배포하면 진행 중인 작업이 사라진다(기획서 E5).
+
+    그래서 여기서 **같은 함수를 부른다.** 파이프라인을 워커용으로 다시 쓰지 않는다 —
+    두 벌이 되면 한쪽만 고쳐지는 날이 오고, 그날 두 경로가 다른 점수를 낸다(0-D).
+
+    임포트를 함수 안에서 하는 이유는 API 쪽과 같다: 모듈 상단에서 당기면 `veo.api` 를
+    거쳐 돌아오는 임포트 고리를 밟는다.
+    """
+    from veo.jobs.execution import execute
+    from veo.seo.jobs import scan_work
+
+    return _run_scan(execute, scan_work, **kwargs)
 
 
 @celery_app.task(name=TASK_NAME_BY_JOB_TYPE[JobType.REVERIFICATION], bind=False)

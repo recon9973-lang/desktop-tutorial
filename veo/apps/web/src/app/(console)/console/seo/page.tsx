@@ -153,6 +153,7 @@ async function SeoContent({
             runId={selected.scanRunId}
             axis={axis}
             geo={saved?.geo ?? null}
+            seoScore={saved?.score ?? null}
           />
         )}
         {selected === undefined || axis === 'geo' ? null : (
@@ -332,14 +333,20 @@ function AxisSwitch({
   runId,
   axis,
   geo,
+  seoScore,
 }: {
   readonly siteId: string;
   readonly runId: string;
   readonly axis: Axis;
   readonly geo: GeoCompanionRef | null;
+  /** 이 회차의 SEO 점수. 없으면(측정 불가) 숫자를 붙이지 않는다. */
+  readonly seoScore: number | null;
 }) {
   const base = `/console/seo?site=${siteId}&run=${runId}`;
   return (
+    // 두 점수를 **함께** 보여준다(확정 시안 v2.2 §9). 한쪽에만 숫자가 붙어 있으면
+    // 어느 쪽이 지금 보는 값인지 헷갈리고, 실제로 그렇게 보였다(사용자 지적).
+    // 합산하지 않는다 — 눈금이 다른 두 점수다.
     <nav className={own.axes} aria-label="결과의 축">
       <Link
         href={`${base}&axis=seo`}
@@ -347,6 +354,9 @@ function AxisSwitch({
         aria-current={axis === 'seo' ? 'page' : undefined}
       >
         SEO
+        {seoScore === null ? null : (
+          <span className={own.axisScore}>{seoScore.toFixed(1)}</span>
+        )}
       </Link>
       <Link
         href={`${base}&axis=geo`}

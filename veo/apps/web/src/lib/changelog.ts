@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.24',
+    date: '2026-08-04',
+    title: '전환기 일관성 · 진단이 워커에서 돌 준비',
+    items: [
+      'SEO|GEO 전환기가 두 점수를 함께 보여줍니다 — 한쪽에만 숫자가 붙어 헷갈리던 문제',
+      '탭을 눌러도 전환기 자리가 움직이지 않습니다 — 보기 링크가 사라지면 오른쪽 끝으로 밀려났습니다',
+      '진단을 워커에서 돌릴 수 있게 배선 — 큐를 설정하지 않으면 지금과 똑같이 동작합니다',
+    ],
+  },
+  {
     version: '0.3.23',
     date: '2026-08-04',
     title: '진단은 한 곳에서 — 메뉴를 성격대로 나눔',

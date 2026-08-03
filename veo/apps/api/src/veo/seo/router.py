@@ -28,7 +28,7 @@ from veo.db.models.identity import Site
 from veo.db.session import get_db
 from veo.geo.companion import score_and_save_geo_companion
 from veo.jobs import service as jobs_service
-from veo.jobs.execution import run_detached
+from veo.jobs.dispatch import dispatch
 from veo.jobs.router import job_payload
 from veo.jobs.schemas import JobPayload
 from veo.organizations.http import guard
@@ -227,7 +227,10 @@ def submit_scan_job(
     db.refresh(job)
 
     if created:
-        run_detached(
+        # 큐가 설정돼 있으면 워커로, 없으면 예전처럼 배경 스레드로. 설정하지 않은
+        # 배포는 오늘과 똑같이 동작한다 — 워커가 아직 안 떴는데 큐에만 넣으면 작업이
+        # 아무도 집어가지 않은 채 대기하고, 그것은 지금보다 나쁘다.
+        dispatch(
             job_id,
             scan_work(
                 organization_id=principal.organization_id,
@@ -241,6 +244,22 @@ def submit_scan_job(
                 max_urls=payload.max_urls,
                 locale=payload.locale,
             ),
+            job_type=JobType.SEO_SCAN,
+            # 큐로 갈 때 건너가는 값들. 함수는 프로세스를 못 건너므로, 워커가 이 값으로
+            # 같은 작업을 다시 만든다. 실행자 정보가 빠지면 워커가 **엉뚱한 조직의 일을
+            # 엉뚱한 권한으로** 돌리게 되므로 여기 전부 실린다.
+            parameters={
+                "organization_id": str(principal.organization_id),
+                "user_id": str(principal.user_id),
+                "roles": [str(role) for role in principal.roles],
+                "session_id": principal.session_id,
+                "target_url": payload.target_url,
+                "site_id": str(payload.site_id),
+                "urls": list(payload.urls),
+                "discover": payload.discover,
+                "max_urls": payload.max_urls,
+                "locale": payload.locale,
+            },
         )
 
     return ok(job_payload(job), request_id)
