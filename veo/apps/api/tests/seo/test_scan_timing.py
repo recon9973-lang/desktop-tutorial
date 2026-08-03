@@ -55,9 +55,8 @@ class TestAFailedStageStillLeavesItsTime:
     def test_the_exception_passes_through(self) -> None:
         timings = ScanTimings()
 
-        with pytest.raises(RuntimeError):
-            with stage("성능 측정", timings):
-                raise RuntimeError("구글이 답하지 않음")
+        with pytest.raises(RuntimeError), stage("성능 측정", timings):
+            raise RuntimeError("구글이 답하지 않음")
 
         # 예외는 그대로 올라가되, 붙들고 있던 시간은 남는다.
         assert "성능 측정" in timings.elapsed_ms

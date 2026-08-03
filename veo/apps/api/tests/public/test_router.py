@@ -82,7 +82,7 @@ def service(clock: ServiceClock, limiter: InMemoryRateLimiter) -> PublicScanServ
         searchad=NaverSearchAdClient(credentials=None),
         # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
         # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
-        performance=lambda context: (context, None),
+        performance=lambda context, **_: (context, None),
     )
 
 
@@ -253,7 +253,7 @@ def test_a_private_target_is_refused_with_target_url_rejected(app: FastAPI) -> N
         searchad=NaverSearchAdClient(credentials=None),
         # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
         # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
-        performance=lambda context: (context, None),
+        performance=lambda context, **_: (context, None),
     )
     with TestClient(app, client=("203.0.113.9", 44321)) as client:
         response = scan(client)

@@ -43,9 +43,10 @@ from veo.common.security.limits import FetchLimitError
 from veo.common.security.url_guard import UrlGuard, UrlRejectedError
 from veo.contracts.enums import ErrorCode, ProviderState, UrlImportance, ValueQuality
 from veo.contracts.envelope import ApiError
-from veo.core.settings import Settings, get_settings
+from veo.core.settings import Settings, get_provider_credentials, get_settings
 from veo.geo.service import GEO_SPEC_ID, GeoReadinessReport, run_geo_readiness
 from veo.keywords.normalize import normalize_keyword, searchad_hint
+from veo.providers.google.credentials import pagespeed_from_settings
 from veo.providers.naver.credentials import searchad_from_settings
 from veo.providers.naver.errors import UnknownValue
 from veo.providers.naver.searchad import NaverSearchAdClient, SearchAdKeywordMetrics, SearchCount
@@ -268,7 +269,17 @@ class PublicScanService:
         self._results = results
         self._settings = settings or get_settings()
         self._clock = clock
-        self._searchad = searchad or NaverSearchAdClient(credentials=searchad_from_settings())
+        # 공개 도구는 **자기 키**를 쓴다. 거래처 진단과 같은 키를 쓰면 방문자가 하루
+        # 한도를 다 썼을 때 그 대가를 고객이 치른다 — 다음 날 아침 거래처 진단에서
+        # 성능·키워드가 "측정 불가" 로 나온다. 전용 키가 없으면 예전처럼 공용으로
+        # 떨어지므로, 설정하지 않은 배포가 갑자기 죽지는 않는다.
+        public_credentials = get_provider_credentials().for_public_tools()
+        # 성능 측정에 넘길 해석된 자격증명. 여기서 한 번 풀어 두면 진단마다 설정을
+        # 다시 읽지 않는다.
+        self._public_pagespeed = pagespeed_from_settings(public_credentials).credentials
+        self._searchad = searchad or NaverSearchAdClient(
+            credentials=searchad_from_settings(public_credentials)
+        )
         # 주입 지점인 이유: 기본값(설정에서 키 읽기)을 시험이 그대로 쓰면 개발자
         # 컴퓨터의 .env 를 타고 진짜 구글로 나간다 — 실제로 있었던 사고다(0-F).
         self._performance = performance
@@ -323,7 +334,11 @@ class PublicScanService:
             robots_txt=robots_txt,
             collected_at=collected_at,
         )
-        context, performance = self._performance(context)
+        # 성능도 공개 전용 키로. 여기를 빠뜨리면 크롤은 나뉘고 구글 한도만 계속
+        # 붙어 있어, 정작 문제였던 그 한도가 그대로 남는다.
+        context, performance = self._performance(
+            context, credentials=self._public_pagespeed
+        )
         result = run_seo_scan(context)
         issued = self._issue()
 

@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.19',
+    date: '2026-08-04',
+    title: '공개 도구가 거래처 한도를 쓰지 않는다',
+    items: [
+      '무료 공개 진단이 거래처 진단과 같은 API 키를 쓰던 문제 — 전용 키를 넣을 수 있게',
+      '방문자가 하루 한도를 다 써도 거래처 진단은 자기 한도를 그대로 갖는다',
+      '전용 키를 넣지 않으면 예전처럼 공용 키 — 설정 안 한 배포가 갑자기 죽지 않게',
+    ],
+  },
+  {
     version: '0.3.18',
     date: '2026-08-04',
     title: 'GEO 화면 — 고칠 수 있는 것이 먼저',

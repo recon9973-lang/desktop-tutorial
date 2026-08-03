@@ -137,6 +137,46 @@ class ProviderCredentials(BaseSettings):
     google_pagespeed_api_key: SecretStr | None = None
     google_search_console_credentials_json: SecretStr | None = None
 
+    # ── 공개 도구 전용 키 ────────────────────────────────────────────────
+    #
+    # 공개 진단과 거래처 진단은 **같은 키를 쓰고 있었다.** 돈이 나가지는 않지만 하루
+    # 한도를 나눠 쓰므로, 방문자가 한도를 다 쓰면 다음 날 거래처 진단에서 성능이
+    # "측정 불가" 로 나온다. 남용의 대가를 고객이 치르는 구조였다(사용자 지적).
+    #
+    # 여기 값을 넣으면 공개 도구가 그 키를 쓰고, 비워 두면 예전처럼 공용 키로 떨어진다 —
+    # 설정하지 않은 배포가 갑자기 "자격증명 없음" 이 되지 않게.
+    public_google_pagespeed_api_key: SecretStr | None = None
+    public_naver_searchad_api_key: SecretStr | None = None
+    public_naver_searchad_secret_key: SecretStr | None = None
+    public_naver_searchad_customer_id: str | None = None
+
+    def for_public_tools(self) -> ProviderCredentials:
+        """공개 도구가 쓸 자격증명 — 전용 키가 있으면 그것, 없으면 공용 키.
+
+        **한도를 나누는 것이 목적이다.** 공개 쪽이 아무리 써도 거래처 진단은 자기 한도를
+        그대로 갖고 있어야 한다. 키를 나누지 않으면 리미터를 아무리 조여도 이 문제는
+        남는다 — 리미터는 속도를 늦출 뿐 한도를 나누지 못한다.
+
+        빈 슬롯은 공용으로 떨어진다. 없는 키를 "없음" 으로 만들면, 설정을 안 한 배포에서
+        공개 도구가 조용히 죽는다.
+        """
+        return self.model_copy(
+            update={
+                "google_pagespeed_api_key": (
+                    self.public_google_pagespeed_api_key or self.google_pagespeed_api_key
+                ),
+                "naver_searchad_api_key": (
+                    self.public_naver_searchad_api_key or self.naver_searchad_api_key
+                ),
+                "naver_searchad_secret_key": (
+                    self.public_naver_searchad_secret_key or self.naver_searchad_secret_key
+                ),
+                "naver_searchad_customer_id": (
+                    self.public_naver_searchad_customer_id or self.naver_searchad_customer_id
+                ),
+            }
+        )
+
     def naver_searchad_state(self) -> ProviderState:
         return _state_of(
             self.naver_searchad_api_key,

@@ -72,7 +72,7 @@ def build_service(
         searchad=searchad if searchad is not None else NaverSearchAdClient(credentials=None),
         # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
         # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
-        performance=lambda context: (context, None),
+        performance=lambda context, **_: (context, None),
     )
 
 
@@ -500,7 +500,7 @@ def test_a_site_that_refuses_the_connection_is_answered_not_raised() -> None:
         searchad=NaverSearchAdClient(credentials=None),
         # 성능 실측도 마찬가지다: 기본값은 설정에서 키를 읽으므로, 여기서 막지
         # 않으면 시험이 개발자 .env 를 타고 진짜 구글로 나간다(0-F).
-        performance=lambda context: (context, None),
+        performance=lambda context, **_: (context, None),
     )
     with pytest.raises(PublicRefusal) as caught:
         service.run_seo_scan(
@@ -635,7 +635,7 @@ class TestPublicPerformanceWiring:
     def test_the_scan_scores_the_context_the_performance_step_returned(self) -> None:
         seen: list[object] = []
 
-        def fake_performance(context: object) -> tuple[object, None]:
+        def fake_performance(context: object, **_: object) -> tuple[object, None]:
             seen.append(context)
             return context, None
 
@@ -667,7 +667,7 @@ class TestPublicPerformanceWiring:
             results=InMemoryPublicResultStore(),
             clock=ServiceClock(),
             searchad=NaverSearchAdClient(credentials=None),
-            performance=lambda context: (context, measurement),
+            performance=lambda context, **_: (context, measurement),
         )
         service.run_seo_scan(
             urls=["https://clinic.example/"],
