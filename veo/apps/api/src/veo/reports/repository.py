@@ -195,7 +195,9 @@ class SqlReportRepository:
             organization_id=principal.organization_id,
             report_id=report.id,
             version_number=version_number,
-            generated_by=principal.user_id,
+            # 예약 발행(서비스 계정)의 자리표시 id 는 users 에 없다 — 기록하면 FK
+            # 위반이고, 어찌 통과돼도 거짓 기록이다("예약 실행이면 NULL" 규칙 그대로).
+            generated_by=None if principal.is_service_account else principal.user_id,
             measurement_window_start=measurement_window_start,
             measurement_window_end=measurement_window_end,
             included_run_ids=list(included_run_ids),

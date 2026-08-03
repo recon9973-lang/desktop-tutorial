@@ -43,6 +43,7 @@ _POSTGRES_MODULES = frozenset(
         "test_report_immutability",
         "test_report_from_scan",
         "test_shared_report_links",
+        "test_auto_publish",
     }
 )
 

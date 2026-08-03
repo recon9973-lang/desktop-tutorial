@@ -89,11 +89,13 @@ _request_log = get_logger("veo.api")
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # 정기 재진단(P1-7b). 기본은 꺼짐(rescan_after_days=0)이라 시험의 TestClient 가
-    # 앱을 열 때마다 스레드가 생기지 않는다 — 켜는 것은 배포의 운영 판단이다.
+    # 배경 청소부들 — 기본은 전부 꺼짐이라 시험의 TestClient 가 앱을 열 때마다
+    # 스레드가 생기지 않는다. 켜는 것은 배포의 운영 판단이다.
+    from veo.reports.auto_publish import start_report_scheduler
     from veo.seo.rescan import start_rescan_scheduler
 
-    start_rescan_scheduler()
+    start_rescan_scheduler()  # 정기 재진단(P1-7b, rescan_after_days)
+    start_report_scheduler()  # 월간 리포트 자동 발행(P2-10b, report_auto_publish_day)
     yield
 
 

@@ -220,6 +220,19 @@ simple 로 이동, 상세=작업 큐 시험 추가.
 - 웹: 버전 화면에 "거래처 전달 링크" 버튼(복사·만료일·불변 안내 문구).
 - 다음 P2-10 증분: 화이트라벨(로고·색상), 월간 자동 발행(재진단 스케줄러와 결합).
 
+**P2-10b 완료(2026-08-03): 월간 리포트 자동 발행 — 재고 → 발행의 월간 순환.**
+- `veo/reports/auto_publish.py`: 설정한 날(report_auto_publish_day, 기본 0=꺼짐,
+  1~28)에 리포트마다 최신 실측 실행으로 새 버전을 시스템 실행자로 발행. 발행하지
+  않는 경우가 절반이다 — 이달 버전이 이미 있으면(사람 발행과 겹침 방지), 지난 버전
+  이후 새 진단이 없으면(같은 실행 재굳힘은 복사본) 건너뛴다. 손 발행과 같은 경로
+  (diagnosis_from_scan)라 숫자는 실측뿐. 앱 lifespan 이 두 번째 청소부로 시작.
+- **결함 수리**: ReportVersion.generated_by 가 시스템 자리표시 id 로 FK 위반을 내고,
+  그것이 except IntegrityError → "버전 충돌" 문구로 뭉뚱그려져 원인이 숨었다 —
+  예약 실행 NULL 규칙을 add_version 에도 적용(+시험). 켜려면 Railway 에
+  `VEO_REPORT_AUTO_PUBLISH_DAY`(예: 1). 재진단(P1-7b)과 함께 켜면
+  "월초에 다시 재고 → 새 문서 발행"이 자동 순환한다.
+- 남은 P2-10 증분: 화이트라벨(로고·색상), 자동 발행 후 공유 링크 자동 갱신(선택).
+
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb
 **사용자 액션 1**: Railway 에 VEO_ALERT_WEBHOOK_URL(경보 활성화).

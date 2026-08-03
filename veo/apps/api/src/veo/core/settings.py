@@ -192,6 +192,9 @@ class Settings(BaseSettings):
     #: 리포트 공유 링크의 수명(일). 거래처가 문서를 읽는 데 충분히 길되, 잊힌 링크가
     #: 영원히 살아 있지는 않게 — 운영 판단이므로 설정에 산다.
     report_share_ttl_days: int = 90
+    #: 월간 리포트 자동 발행일 — 0 이면 꺼짐(기본), 1~28 이면 매월 그날 발행.
+    #: 29 이상은 없는 달이 있어 받지 않는 것이 정직하다(검증은 사용처에서 day<=0 무시).
+    report_auto_publish_day: int = 0
     redis_url: str = "redis://localhost:6379/0"
 
     # Secrets. Absent in local/test; required at startup in staging and production.
