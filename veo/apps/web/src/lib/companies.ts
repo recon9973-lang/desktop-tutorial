@@ -17,6 +17,8 @@ export interface MeasuredSite {
   readonly origin: string;
   readonly displayName: string;
   readonly isPrimary: boolean;
+  /** 이 사이트가 달린 프로젝트 — 이슈·브랜드가 프로젝트에 달리므로 화면이 건너갈 때 쓴다. */
+  readonly projectId: string;
 }
 
 export interface Company {
@@ -82,6 +84,7 @@ export async function listCompanies(): Promise<ConsoleOutcome<readonly Company[]
       origin: text(site, 'origin'),
       displayName: text(site, 'display_name'),
       isPrimary: site['is_primary'] === true,
+      projectId,
     });
     sitesByProject.set(projectId, list);
   }

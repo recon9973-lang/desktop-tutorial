@@ -158,6 +158,25 @@ describe('담당 칩', () => {
   });
 });
 
+describe('이슈 배선', () => {
+  it('링크 밑그림이 있으면 행 본문에 "이슈로 추적"이 검사 식별자와 함께 나온다', async () => {
+    render(<WorkQueue result={FIXTURE} issuesHrefBase="/console/issues?project=p1&check=" />);
+
+    await userEvent.click(screen.getByRole('button', { name: /게시판 제목 중복/ }));
+
+    const link = screen.getByRole('link', { name: '→ 이슈로 추적' });
+    expect(link).toHaveAttribute('href', '/console/issues?project=p1&check=seo.a');
+  });
+
+  it('밑그림이 없으면 링크를 만들지 않는다 — 갈 곳 없는 문은 그리지 않는다', async () => {
+    render(<WorkQueue result={FIXTURE} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /게시판 제목 중복/ }));
+
+    expect(screen.queryByRole('link', { name: '→ 이슈로 추적' })).not.toBeInTheDocument();
+  });
+});
+
 describe('행 확장', () => {
   it('열면 진단·조치·코드가 나오고, 본문 아래 접기로 닫힌다', async () => {
     render(<WorkQueue result={FIXTURE} />);

@@ -215,3 +215,11 @@
   color: var(--veo-color-text-muted);
   cursor: pointer;
 }
+
+.issueLink {
+  color: var(--veo-color-accent);
+  text-decoration: none;
+  font-weight: var(--veo-weight-semibold);
+}
+
+.issueLink:hover { text-decoration: underline; }

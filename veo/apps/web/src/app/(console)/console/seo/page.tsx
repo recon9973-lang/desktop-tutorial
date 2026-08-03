@@ -5,7 +5,7 @@ import { Card, EmptyState, ErrorState } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
 import { ScanReport, type ReportView } from '@/components/ScanReport/ScanReport';
-import { listCompanies } from '@/lib/companies';
+import { listCompanies, type MeasuredSite } from '@/lib/companies';
 import type { ConsoleScanResult, GeoCompanionRef } from '@/lib/console-scan';
 import { readSavedGeoReadiness } from '@/lib/observations';
 import { readBands, readHistory, readSavedReport, type HistoryEntry } from '@/lib/scan-report';
@@ -104,6 +104,21 @@ async function SeoContent({
     ? companies.data.flatMap((company) => company.sites).find((one) => one.siteId === siteId)
     : undefined;
   const origin = site?.origin ?? '';
+  // 이슈는 프로젝트에 달린다 — 작업 큐의 "이슈로 추적"이 이 프로젝트의 이슈 화면으로 간다.
+  const issuesHrefBase =
+    site === undefined
+      ? '/console/issues?check='
+      : `/console/issues?project=${encodeURIComponent(site.projectId)}&check=`;
+  // 다른 거래처 레일 — 하락·방치가 다음 일감을 제안한다. 사이트마다 이력을 한 번씩
+  // 읽으므로 수를 묶는다(최대 6곳 조회, 4곳 표시).
+  const otherSites = companies.ok
+    ? companies.data
+        .flatMap((company) =>
+          company.sites.map((one) => ({ ...one, company: company.name })),
+        )
+        .filter((one) => one.siteId !== siteId)
+        .slice(0, 6)
+    : [];
 
   const entries = history.data;
   const selected = runId === null ? entries[0] : entries.find((e) => e.scanRunId === runId);
@@ -154,7 +169,7 @@ async function SeoContent({
                 description="이 진단은 결과 본문이 남아 있지 않습니다. 다시 측정하면 이후로는 그대로 다시 열 수 있습니다."
               />
             ) : (
-              <SavedSeoReport saved={saved} view={view} />
+              <SavedSeoReport saved={saved} view={view} issuesHrefBase={issuesHrefBase} />
             )}
           </div>
           {selected === undefined ? null : (
@@ -164,6 +179,7 @@ async function SeoContent({
               entries={entries}
               saved={saved}
               axis={axis}
+              otherSites={otherSites}
             />
           )}
         </div>
@@ -175,12 +191,14 @@ async function SeoContent({
 async function SavedSeoReport({
   saved,
   view,
+  issuesHrefBase,
 }: {
   readonly saved: ConsoleScanResult;
   readonly view: ReportView;
+  readonly issuesHrefBase: string;
 }) {
   const bands = await readBands(saved.specId, saved.specVersion);
-  return <ScanReport result={saved} bands={bands} view={view} />;
+  return <ScanReport result={saved} bands={bands} view={view} issuesHrefBase={issuesHrefBase} />;
 }
 
 /**
@@ -355,19 +373,22 @@ function ViewSwitch({
  *   그마저 같은 명세 버전끼리만 한다 — 판이 다르면 차이는 하락이 아니다.
  * - SEO·GEO 는 나란히 놓되 합치지 않는다.
  */
-function SummaryRail({
+async function SummaryRail({
   siteId,
   selected,
   entries,
   saved,
   axis,
+  otherSites,
 }: {
   readonly siteId: string;
   readonly selected: HistoryEntry;
   readonly entries: readonly HistoryEntry[];
   readonly saved: ConsoleScanResult | null;
   readonly axis: Axis;
+  readonly otherSites: readonly (MeasuredSite & { readonly company: string })[];
 }) {
+  const clients = await otherClientRows(otherSites);
   const geo = saved?.geo ?? null;
   const index = entries.findIndex((entry) => entry.scanRunId === selected.scanRunId);
   const previous = index >= 0 ? entries[index + 1] : undefined;
@@ -448,8 +469,106 @@ function SummaryRail({
           </li>
         </ul>
       </section>
+
+      {clients.length === 0 ? null : (
+        <section className={own.railBlock}>
+          <h2 className={own.railTitle}>다른 거래처</h2>
+          <ul className={own.railClients}>
+            {clients.map((client) => (
+              <li key={client.siteId}>
+                <Link href={`/console/seo?site=${client.siteId}`} className={own.railClient}>
+                  <span className={own.railClientName}>{client.label}</span>
+                  {client.badge === null ? null : (
+                    <span
+                      className={
+                        client.badge.kind === 'drop'
+                          ? own.badgeDown
+                          : client.badge.kind === 'rise'
+                            ? own.badgeUp
+                            : own.badgeStale
+                      }
+                    >
+                      {client.badge.text}
+                    </span>
+                  )}
+                  <span className={own.railClientScore}>
+                    {client.score === null ? '—' : client.score.toFixed(1)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/console/customers" className={own.railClientsAll}>
+                전체 거래처 보기 →
+              </Link>
+            </li>
+          </ul>
+        </section>
+      )}
     </aside>
   );
+}
+
+interface ClientRow {
+  readonly siteId: string;
+  readonly label: string;
+  readonly score: number | null;
+  readonly badge:
+    | { readonly kind: 'drop' | 'rise'; readonly text: string }
+    | { readonly kind: 'stale'; readonly text: string }
+    | null;
+}
+
+/**
+ * 다른 거래처의 최근 상태 — 하락·방치가 먼저다 (다음 일감 제안, 시안 v2.2).
+ *
+ * 숫자 규칙은 레일의 "직전 대비"와 같다: 같은 명세 버전끼리만 뺄셈, 아니면 배지 없음.
+ * "N일 경과"는 마지막 측정 이후의 경과일 — 값이 없는 사이트는 "—"로 남는다.
+ */
+async function otherClientRows(
+  sites: readonly (MeasuredSite & { readonly company: string })[],
+): Promise<readonly ClientRow[]> {
+  const histories = await Promise.all(
+    sites.map(async (site) => ({ site, history: await readHistory(site.siteId) })),
+  );
+
+  const now = Date.now();
+  const rows = histories.map(({ site, history }): ClientRow => {
+    const entries = history.ok ? history.data : [];
+    const latest = entries[0];
+    const previous = entries[1];
+    const label = site.displayName !== '' ? site.displayName : site.origin;
+
+    if (latest === undefined) {
+      return { siteId: site.siteId, label, score: null, badge: null };
+    }
+
+    let badge: ClientRow['badge'] = null;
+    if (
+      previous !== undefined &&
+      previous.score !== null &&
+      latest.score !== null &&
+      previous.specVersion === latest.specVersion
+    ) {
+      const delta = latest.score - previous.score;
+      if (delta <= -0.1) badge = { kind: 'drop', text: `▼${Math.abs(delta).toFixed(1)}` };
+      else if (delta >= 0.1) badge = { kind: 'rise', text: `▲${delta.toFixed(1)}` };
+    }
+    if (badge === null) {
+      const measuredAt = new Date(latest.startedAt).getTime();
+      if (Number.isFinite(measuredAt)) {
+        const days = Math.floor((now - measuredAt) / 86_400_000);
+        if (days >= 14) badge = { kind: 'stale', text: `${days}일 경과` };
+      }
+    }
+
+    return { siteId: site.siteId, label, score: latest.score, badge };
+  });
+
+  // 하락이 먼저, 그다음 오래 방치된 곳 — 담당자의 다음 일감 순서다.
+  const rank = (row: ClientRow): number =>
+    row.badge?.kind === 'drop' ? 0 : row.badge?.kind === 'stale' ? 1 : 2;
+  return [...rows].sort((a, b) => rank(a) - rank(b)).slice(0, 4);
 }
 
 /**

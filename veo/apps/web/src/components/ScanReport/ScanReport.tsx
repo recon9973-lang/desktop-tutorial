@@ -25,6 +25,8 @@ interface ScanReportProps {
   readonly result: ConsoleScanResult;
   readonly bands: readonly Band[];
   readonly view: ReportView;
+  /** 작업 큐의 "이슈로 추적" 링크 앞부분(끝에 check_id 가 붙는다). 없으면 링크를 그리지 않는다. */
+  readonly issuesHrefBase?: string | null;
 }
 
 /** 0~1 비율을 백분율 문자열로. 반올림은 한 자리까지 — 그 이상은 정밀해 보이기만 한다. */
@@ -32,7 +34,7 @@ function percent(ratio: number): string {
   return `${(ratio * 100).toFixed(1)}%`;
 }
 
-export function ScanReport({ result, bands, view }: ScanReportProps) {
+export function ScanReport({ result, bands, view, issuesHrefBase = null }: ScanReportProps) {
   const detailed = view === 'detailed';
 
   return (
@@ -41,7 +43,11 @@ export function ScanReport({ result, bands, view }: ScanReportProps) {
       <Notes result={result} />
       {/* 상세(직원용)에서는 작업 큐가 조치 목록의 정본이다(재설계 ③) — 같은 목록을
           Improvements 로 한 번 더 그리지 않는다. 간소화(업체 전달용)는 기존 그대로. */}
-      {detailed ? <WorkQueue result={result} /> : <Improvements result={result} />}
+      {detailed ? (
+        <WorkQueue result={result} issuesHrefBase={issuesHrefBase} />
+      ) : (
+        <Improvements result={result} />
+      )}
       <Categories result={result} />
       {/* 상세 보기에서는 항목별 판정 안에 조치 안내가 들어가므로 목록을 두 번 그리지
           않는다. 간소화 보기는 그 반대로, 고칠 것만 골라 보여준다. */}

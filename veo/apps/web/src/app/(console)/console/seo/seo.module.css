@@ -286,3 +286,68 @@
   font-variant-numeric: tabular-nums;
   font-size: var(--veo-font-size-100);
 }
+
+/* ---------- 재설계 ④: 다른 거래처 레일 ---------- */
+
+.railClients {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.railClient {
+  display: flex;
+  align-items: baseline;
+  gap: var(--veo-space-2);
+  padding: 6px 0;
+  text-decoration: none;
+  color: inherit;
+  border-top: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-200);
+}
+
+.railClients li:first-child .railClient { border-top: 0; }
+.railClient:hover .railClientName { text-decoration: underline; }
+
+.railClientName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.railClientScore {
+  margin-left: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--veo-weight-semibold);
+}
+
+.badgeDown,
+.badgeUp,
+.badgeStale {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: var(--veo-weight-bold);
+  border-radius: var(--veo-radius-sm);
+  padding: 1px 6px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.badgeDown { background: var(--veo-status-fail-bg); color: var(--veo-status-fail-fg); }
+.badgeUp { background: var(--veo-status-pass-bg); color: var(--veo-status-pass-fg); }
+.badgeStale { background: var(--veo-status-warning-bg); color: var(--veo-status-warning-fg); }
+
+.railClientsAll {
+  display: block;
+  padding-top: 8px;
+  border-top: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  text-decoration: none;
+}
+
+.railClientsAll:hover { text-decoration: underline; }

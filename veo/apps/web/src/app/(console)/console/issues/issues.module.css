@@ -234,3 +234,14 @@
   color: var(--veo-color-text-muted);
   white-space: nowrap;
 }
+
+/* 작업 큐에서 검사 하나로 좁혀 들어온 상태 — 걸러진 사실이 화면에 남는다. */
+.checkFilter {
+  margin: 0 0 var(--veo-space-4);
+  padding: 8px 14px;
+  border: 1px solid var(--veo-color-border);
+  border-left: 3px solid var(--veo-color-accent);
+  border-radius: 0 var(--veo-radius-md) var(--veo-radius-md) 0;
+  background: var(--veo-color-surface-sunken);
+  font-size: var(--veo-font-size-200);
+}

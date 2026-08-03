@@ -22,19 +22,25 @@ export const dynamic = 'force-dynamic';
 export default async function ConsoleIssuesPage({
   searchParams,
 }: {
-  readonly searchParams: Promise<{ readonly project?: string }>;
+  readonly searchParams: Promise<{ readonly project?: string; readonly check?: string }>;
 }) {
   const identity = await requireConsoleIdentity();
-  const { project } = await searchParams;
+  const { project, check } = await searchParams;
 
   return (
     <PermissionGate identity={identity} permission="issue:read">
-      <ConsoleIssuesContent projectId={project ?? null} />
+      <ConsoleIssuesContent projectId={project ?? null} checkId={check ?? null} />
     </PermissionGate>
   );
 }
 
-async function ConsoleIssuesContent({ projectId }: { readonly projectId: string | null }) {
+async function ConsoleIssuesContent({
+  projectId,
+  checkId,
+}: {
+  readonly projectId: string | null;
+  readonly checkId: string | null;
+}) {
   const companies = await listCompanies();
   const projects = companies.ok
     ? companies.data.flatMap((company) =>
@@ -42,7 +48,10 @@ async function ConsoleIssuesContent({ projectId }: { readonly projectId: string 
       )
     : [];
   const found = await readIssues(projectId);
-  const issues: readonly Issue[] = found.ok ? inWorkOrder(found.data) : [];
+  const all: readonly Issue[] = found.ok ? inWorkOrder(found.data) : [];
+  // 작업 큐의 "이슈로 추적"이 검사 하나로 좁혀 들어온다. 필터는 세는 것뿐이고,
+  // 걸러진 사실과 해제 링크가 화면에 남는다 — 조용히 좁힌 목록은 전체로 읽힌다.
+  const issues = checkId === null ? all : all.filter((issue) => issue.check_id === checkId);
   const open = issues.filter((issue) => issue.is_open);
   const unverified = claimedButUnverified(issues);
 
@@ -77,6 +86,22 @@ async function ConsoleIssuesContent({ projectId }: { readonly projectId: string 
           ))}
         </nav>
       ) : null}
+
+      {checkId === null ? null : (
+        <p className={own.checkFilter}>
+          검사 <code>{checkId}</code> 의 이슈만 보고 있습니다 ({issues.length}건 /{' '}
+          전체 {all.length}건) ·{' '}
+          <Link
+            href={
+              projectId === null
+                ? '/console/issues'
+                : `/console/issues?project=${encodeURIComponent(projectId)}`
+            }
+          >
+            필터 해제
+          </Link>
+        </p>
+      )}
 
       {!found.ok ? (
         <ErrorState

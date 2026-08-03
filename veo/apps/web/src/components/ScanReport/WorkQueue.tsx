@@ -50,7 +50,17 @@ function whereOf(row: QueueRow): string {
   return urls.length === 1 ? first : `${first} 외 ${urls.length - 1}장`;
 }
 
-export function WorkQueue({ result }: { readonly result: ConsoleScanResult }) {
+export function WorkQueue({
+  result,
+  issuesHrefBase = null,
+}: {
+  readonly result: ConsoleScanResult;
+  /**
+   * "이슈로 추적" 링크의 앞부분(끝에 check_id 가 붙는다). 이슈는 진단 저장이 이미
+   * 만들어 두므로 여기서 새로 만들지 않는다 — 같은 검사의 이슈 화면으로 건너갈 뿐이다.
+   */
+  readonly issuesHrefBase?: string | null;
+}) {
   const [owner, setOwner] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -112,6 +122,7 @@ export function WorkQueue({ result }: { readonly result: ConsoleScanResult }) {
           <QueueItem
             key={row.improvement.checkId}
             row={row}
+            issuesHrefBase={issuesHrefBase}
             open={openId === row.improvement.checkId}
             onToggle={() =>
               setOpenId(openId === row.improvement.checkId ? null : row.improvement.checkId)
@@ -125,10 +136,12 @@ export function WorkQueue({ result }: { readonly result: ConsoleScanResult }) {
 
 function QueueItem({
   row,
+  issuesHrefBase,
   open,
   onToggle,
 }: {
   readonly row: QueueRow;
+  readonly issuesHrefBase: string | null;
   readonly open: boolean;
   readonly onToggle: () => void;
 }) {
@@ -199,6 +212,17 @@ function QueueItem({
             <span className={styles.meta}>
               심각도 {improvement.severity}
               {issue.affectedUrls.length > 0 ? ` · 걸린 페이지 ${issue.affectedUrls.length}장` : ''}
+              {issuesHrefBase === null ? null : (
+                <>
+                  {' '}
+                  <a
+                    className={styles.issueLink}
+                    href={`${issuesHrefBase}${encodeURIComponent(improvement.checkId)}`}
+                  >
+                    → 이슈로 추적
+                  </a>
+                </>
+              )}
             </span>
             {/* 긴 본문을 다 읽고 나서 위로 되돌아가지 않아도 닫힌다. */}
             <button type="button" className={styles.fold} onClick={onToggle}>
