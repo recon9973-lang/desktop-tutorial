@@ -183,6 +183,25 @@
   gap: var(--veo-space-4);
   position: sticky;
   top: var(--veo-space-4);
+  /* 요약·직전 대비·다른 거래처가 쌓이면 레일은 쉽게 화면보다 길어진다. 그때 **레일 안에서**
+     스크롤되지 않으면, 아래쪽(다른 거래처)을 보려고 본문을 끝까지 내려야 한다 —
+     레일 위에서 굴려도 본문만 움직이니 스크롤이 고장 난 것처럼 보인다.
+     짧을 때는 막대가 생기지 않으므로(auto) 지금 모양 그대로다. */
+  max-height: calc(100vh - var(--veo-space-4) * 2);
+  overflow-y: auto;
+  /* 레일 끝에서 본문이 딸려 튀지 않게. */
+  overscroll-behavior: contain;
+}
+
+/* 좁은 화면 규칙은 **기본 규칙 뒤에** 둔다 — 특이도가 같아서 앞에 두면 위 블록이
+   그대로 덮어쓴다(같은 파일 위쪽의 `order: 2` 는 기본 규칙이 건드리지 않아 살아 있다). */
+@media (max-width: 960px) {
+  .rail {
+    /* 세로로 쌓이면 잘라낼 이유가 없다 — 페이지가 통째로 스크롤된다. */
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
 }
 
 .railBlock {

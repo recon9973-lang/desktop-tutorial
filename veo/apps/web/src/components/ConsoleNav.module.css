@@ -18,6 +18,16 @@
 .sidebar {
   position: sticky;
   top: var(--veo-space-6);
+  /* 화면보다 길면 **레일 안에서** 스크롤한다.
+     이 두 줄이 없으면 sticky 가 위에 고정된 채 아래쪽 메뉴가 화면 밖에 남고, 그것을
+     보려면 본문을 끝까지 내리는 수밖에 없다 — 레일 위에 마우스를 올려 굴려도 본문만
+     움직이니, 스크롤이 고장 난 것처럼 보인다. 메뉴가 화면에 다 들어가면 스크롤 막대는
+     생기지 않으므로(auto) 짧은 목록의 모양은 그대로다. */
+  max-height: calc(100vh - var(--veo-space-6) * 2);
+  overflow-y: auto;
+  /* 레일 끝에서 페이지가 딸려 스크롤되지 않게 — 메뉴를 끝까지 내렸을 뿐인데 본문이
+     튀어 나가면 어디를 보고 있었는지 잃는다. */
+  overscroll-behavior: contain;
   padding: var(--veo-space-4);
   border: 1px solid var(--veo-color-border);
   border-radius: var(--veo-radius-lg);
@@ -27,6 +37,9 @@
 @media (max-width: 900px) {
   .sidebar {
     position: static;
+    /* 세로로 쌓이는 좁은 화면에서는 잘라낼 이유가 없다 — 페이지가 통째로 스크롤된다. */
+    max-height: none;
+    overflow-y: visible;
   }
 }
 

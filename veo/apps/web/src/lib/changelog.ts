@@ -19,6 +19,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.3',
+    date: '2026-08-03',
+    title: '레일 스크롤',
+    items: [
+      '좌측 메뉴·우측 요약 레일이 화면보다 길면 레일 안에서 스크롤된다 — 아래쪽을 보려고 본문을 끝까지 내리지 않아도 된다',
+    ],
+  },
+  {
     version: '0.3.2',
     date: '2026-08-03',
     title: '예시 코드 오해 방지',
