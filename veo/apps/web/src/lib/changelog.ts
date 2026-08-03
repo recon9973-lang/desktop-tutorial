@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.5',
+    date: '2026-08-03',
+    title: '확정 시안 정합 — 실측값 인라인·판정 분포',
+    items: [
+      '항목 줄에 실측값을 함께 보여준다 — 펼치지 않아도 "무엇을 보고 그렇게 판정했나" 가 읽힌다 (시안 v2.2 §11)',
+      '우측 레일에 판정 분포 막대와 점검 진행률 — 몇 개가 남았는지 점수 하나로는 안 보였다',
+      '측정 불가는 진행률 분모 밖 — 못 잰 것을 사이트 탓으로 돌리지 않는다',
+    ],
+  },
+  {
     version: '0.3.4',
     date: '2026-08-03',
     title: '판정 화면 가독성 · 예시 코드에 실제 업체명',

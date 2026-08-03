@@ -115,7 +115,39 @@ describe('항목별 판정', () => {
   it('열면 수집기가 실제로 본 값을 보여준다', () => {
     detailed();
 
-    expect(screen.getByText(/H2 다음에 H5가 옵니다/)).toBeInTheDocument();
+    // 접힌 줄에도 같은 값이 요약으로 올라간다(확정 시안 v2.2 §11). 그래서 근거 구역
+    // 안에서 찾는다 — 화면 어딘가에 있다가 아니라 **근거로서** 있어야 한다.
+    const reason = screen.getByRole('heading', { name: '이렇게 판정한 근거' })
+      .parentElement as HTMLElement;
+
+    expect(within(reason).getByText(/H2 다음에 H5가 옵니다/)).toBeInTheDocument();
+  });
+
+  it('펼치지 않아도 실측값이 줄에 함께 보인다', () => {
+    /**
+     * 확정 시안 v2.2 §11 — "통과" 라는 판정보다 "200 · 리다이렉트 1회" 라는 사실이
+     * 신뢰를 만든다. 펼쳐야만 근거가 보이면, 펼치지 않은 40여 줄은 근거 없는 단정이다.
+     */
+    detailed();
+
+    const row = screen.getByText('제목 단계가 순서대로인가').closest('summary') as HTMLElement;
+
+    expect(within(row).getByText(/H2 다음에 H5가 옵니다/)).toBeInTheDocument();
+  });
+
+  it('값이 여럿이면 줄에는 개수로 말한다', () => {
+    /** 스무 곳의 URL 을 한 줄에 이어 붙이면 읽히지 않는다 — 자세한 것은 펼치면 있다. */
+    detailed({
+      outcomes: [
+        outcome({
+          observed: { 'https://a.example.kr/': '건너뜀', 'https://b.example.kr/': '건너뜀' },
+        }),
+      ],
+    });
+
+    const row = screen.getByText('제목 단계가 순서대로인가').closest('summary') as HTMLElement;
+
+    expect(within(row).getByText('2건')).toBeInTheDocument();
   });
 
   it('원인과 수정 방향을 각각 이름 붙여 나눈다', () => {
@@ -174,7 +206,11 @@ describe('관측값을 읽을 수 있게 편다', () => {
   it('참·거짓을 그대로 내보내지 않는다', () => {
     detailed({ outcomes: [outcome({ observed: { 'https://a.example.kr/': false } })] });
 
-    expect(screen.getByText('아니오')).toBeInTheDocument();
+    // 값이 하나뿐이면 접힌 줄에도 같은 글자가 올라간다 — 둘 다 사람 말이어야 한다.
+    for (const shown of screen.getAllByText('아니오')) {
+      expect(shown).toBeInTheDocument();
+    }
+    expect(screen.queryByText('false')).not.toBeInTheDocument();
   });
 });
 

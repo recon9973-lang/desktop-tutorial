@@ -196,15 +196,17 @@ function CheckPanel({
 }) {
   const causes = describeObserved(outcome.observed);
   const band = SEVERITY_CLASS[outcome.severity] ?? '';
+  const glance = glanceValue(causes);
 
   return (
     <details className={`${styles.check} ${band}`}>
       <summary className={styles.checkSummary}>
         <StatusChip status={outcome.status as CheckStatus} />
         <span className={styles.checkTitle}>{outcome.title}</span>
-        {/* 심각도는 이 줄에서 가장 중요한 신호인데 오른쪽 끝 흐린 회색 글씨였다 —
-            통과한 경미 항목과 실패한 치명 항목이 같은 무게로 보였다. 무게에 따라
-            배지로 세운다. */}
+        {/* 확정 시안 v2.2 §11 — 실측값을 행에 인라인으로. "통과" 라는 판정보다
+            "200 · 리다이렉트 1회" 라는 사실이 신뢰를 만든다. 펼쳐야만 보이면,
+            펼치지 않은 40여 줄은 근거 없는 단정으로 남는다. */}
+        {glance === null ? null : <span className={styles.checkObserved}>{glance}</span>}
         <span className={SEVERITY_BADGE[outcome.severity] ?? styles.sevBadgeLow}>
           {SEVERITY_LABELS[outcome.severity] ?? outcome.severity}
         </span>
@@ -296,6 +298,30 @@ function groupByCategory(outcomes: readonly Outcome[]): [string, Outcome[]][] {
  * 값의 모양은 검사마다 다르다 — URL별 문제 설명(dict), 문제 URL 목록(list), 개수 하나.
  * 여기서 하는 일은 **모양을 읽는 것뿐** 이고, 값을 계산하거나 요약하지 않는다.
  */
+/** 행에 한 줄로 얹을 실측값. 길면 접힌 줄을 밀어내므로 자른다. */
+const GLANCE_MAX = 42;
+
+/**
+ * 접힌 줄에 얹을 실측값 요약 — 확정 시안 v2.2 §11 "실측값 인라인".
+ *
+ * 펼쳐야만 근거가 보이면, 펼치지 않은 40여 줄은 근거 없는 단정으로 남는다. 그렇다고
+ * 전부 늘어놓으면 NXT 처럼 화면 절반이 값이 된다(시안이 "두고 온 것" 으로 적은 실패).
+ * 그래서 **한 줄만**, 길면 자른다 — 자세한 것은 펼치면 그대로 있다.
+ *
+ * 값이 여럿이면 개수로 말한다. 페이지 스무 곳의 URL 을 한 줄에 이어 붙이면 읽히지 않고,
+ * "20곳" 이 더 정확한 요약이다.
+ */
+function glanceValue(causes: readonly { label: string; detail: string }[]): string | null {
+  if (causes.length === 0) return null;
+  if (causes.length > 1) return `${causes.length}건`;
+
+  const only = causes[0];
+  if (only === undefined) return null;
+  const text = only.detail.trim();
+  if (text === '') return null;
+  return text.length > GLANCE_MAX ? `${text.slice(0, GLANCE_MAX)}…` : text;
+}
+
 export function describeObserved(observed: unknown): { label: string; detail: string }[] {
   if (observed === null || observed === undefined) return [];
 

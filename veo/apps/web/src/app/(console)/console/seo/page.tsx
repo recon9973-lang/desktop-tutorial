@@ -373,6 +373,50 @@ function ViewSwitch({
  *   그마저 같은 명세 버전끼리만 한다 — 판이 다르면 차이는 하락이 아니다.
  * - SEO·GEO 는 나란히 놓되 합치지 않는다.
  */
+/**
+ * 판정 분포와 점검 진행률 — 확정 시안 v2.2 의 레일 카드 둘.
+ *
+ * 점수 하나로는 "얼마나 남았나" 가 안 보인다. 70.9 점이 실패 2개 때문인지 스무 개
+ * 때문인지가 다르고, 담당자가 알고 싶은 것은 후자다.
+ *
+ * **측정 불가는 분모 밖이다.** 연동이 없어 재지 못한 항목을 실패로 세면 우리가 못 잰
+ * 것을 사이트 탓으로 돌리게 된다 — 그것은 다른 화면들과 같은 규칙이고 여기서도 지킨다.
+ * 대신 몇 개가 분모 밖인지는 적는다: 조용히 빼면 개수가 맞지 않는 것으로 읽힌다.
+ */
+function verdictSpread(saved: ConsoleScanResult | null) {
+  if (saved === null) return null;
+  const scoredOutcomes = saved.outcomes.filter((item) => item.availability === 'SELF_SERVICE');
+  if (scoredOutcomes.length === 0) return null;
+
+  const tally = { FAIL: 0, WARNING: 0, PASS: 0, UNKNOWN: 0 } as Record<string, number>;
+  for (const item of scoredOutcomes) tally[item.status] = (tally[item.status] ?? 0) + 1;
+
+  const total = scoredOutcomes.length;
+  const unknown = tally.UNKNOWN ?? 0;
+  const scored = total - unknown;
+  const pass = tally.PASS ?? 0;
+  const todo = (tally.FAIL ?? 0) + (tally.WARNING ?? 0);
+  const segments = [
+    { id: 'FAIL', label: '실패', count: tally.FAIL ?? 0, className: own.segFail ?? '' },
+    { id: 'WARNING', label: '주의', count: tally.WARNING ?? 0, className: own.segWarn ?? '' },
+    { id: 'PASS', label: '통과', count: pass, className: own.segPass ?? '' },
+    { id: 'UNKNOWN', label: '측정 불가', count: unknown, className: own.segUnknown ?? '' },
+  ]
+    .filter((segment) => segment.count > 0)
+    .map((segment) => ({ ...segment, percent: (segment.count / total) * 100 }));
+
+  return {
+    segments,
+    scored,
+    pass,
+    todo,
+    unknown,
+    // 채점한 것 중 통과 비율. 잰 적 없는 항목은 여기에도 들어오지 않는다.
+    passPercent: scored === 0 ? 0 : (pass / scored) * 100,
+    aria: segments.map((segment) => `${segment.label} ${segment.count}`).join(', '),
+  };
+}
+
 async function SummaryRail({
   siteId,
   selected,
@@ -390,6 +434,7 @@ async function SummaryRail({
 }) {
   const clients = await otherClientRows(otherSites);
   const geo = saved?.geo ?? null;
+  const verdicts = verdictSpread(saved);
   const index = entries.findIndex((entry) => entry.scanRunId === selected.scanRunId);
   const previous = index >= 0 ? entries[index + 1] : undefined;
   const delta =
@@ -442,6 +487,39 @@ async function SummaryRail({
           </p>
         )}
       </section>
+
+      {verdicts === null ? null : (
+        <section className={own.railBlock}>
+          <h2 className={own.railTitle}>판정 분포</h2>
+          {/* 확정 시안 v2.2 — 한 줄 막대와 범례. 색만으로 말하지 않게 숫자를 함께 둔다. */}
+          <div className={own.verdictBar} role="img" aria-label={verdicts.aria}>
+            {verdicts.segments.map((segment) => (
+              <i
+                key={segment.id}
+                className={segment.className}
+                style={{ width: `${segment.percent}%` }}
+              />
+            ))}
+          </div>
+          <p className={own.verdictLegend}>
+            {verdicts.segments.map((segment) => (
+              <span key={segment.id}>
+                <i className={segment.className} aria-hidden="true" />
+                {segment.label} <b>{segment.count}</b>
+              </span>
+            ))}
+          </p>
+          {/* 측정 불가는 분모 밖이다 — 우리 원칙 그대로, 진행률에 섞지 않는다. */}
+          <div className={own.progressTrack}>
+            <i style={{ width: `${verdicts.passPercent}%` }} />
+          </div>
+          <p className={own.progressCap}>
+            채점 {verdicts.scored}개 중 <b>통과 {verdicts.pass}</b> · 남은 조치{' '}
+            {verdicts.todo}
+            {verdicts.unknown === 0 ? null : ` · 측정 불가 ${verdicts.unknown}은 분모 밖`}
+          </p>
+        </section>
+      )}
 
       <section className={own.railBlock}>
         <h2 className={own.railTitle}>이번 측정</h2>
