@@ -50,6 +50,7 @@ from veo.db.models.observation import (
     Report,
     ReportVersion,
 )
+from veo.db.models.public_leads import PublicLead
 from veo.db.models.public_results import PublicSharedResult
 from veo.db.models.security import (
     LoginAttempt,
@@ -86,6 +87,7 @@ __all__ = [
     "Prompt",
     "PromptSet",
     "ProviderCredential",
+    "PublicLead",
     "PublicSharedResult",
     "RelatedKeyword",
     "Report",

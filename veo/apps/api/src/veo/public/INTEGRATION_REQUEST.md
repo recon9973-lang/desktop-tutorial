@@ -162,8 +162,15 @@ public_leads
 No `organization_id`: a lead has no tenant yet, which is the whole point of the surface.
 Whoever converts a lead into a customer is the one who attaches it to an organization.
 
-**Until then:** leads survive only until the process restarts. Do not launch a paid
-campaign against this endpoint before the table exists.
+**Fulfilled (2026-08-03, E2):** the integrator provides `public_leads`
+(`veo/db/models/public_leads.py`, migration `20260803_2140`) and wires
+`veo.api.public_lead_store.DbLeadStore` via `dependency_overrides[get_lead_store]`.
+One deliberate difference from the requested shape: no check constraint forcing
+phone-or-email — the request schema already enforces it at the boundary, and a lead
+that somehow arrived without either is still a name someone left on purpose; refusing
+to store it at the last moment loses the record without telling anyone. Write failures
+raise rather than being swallowed — "저장했습니다" must never be false
+(`tests/contract/test_public_lead_wiring.py`).
 
 ---
 

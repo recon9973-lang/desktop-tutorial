@@ -189,7 +189,16 @@ simple 로 이동, 상세=작업 큐 시험 추가.
 - 앱 lifespan 이 스레드 시작(인프로세스 — jobs.execution 과 같은 정직성 규칙).
   **기본 꺼짐**: 켜려면 Railway 에 `VEO_RESCAN_AFTER_DAYS`(예: 7) — 배포 단위
   설정이라 전 조직 공통 주기(문서화됨). 사용자 액션 2가 됨(웹훅 + 이 값).
-- 남은 P1: 리드 DB 지속화·리미터 외부화, Sentry/메트릭.
+**E2 완료(2026-08-03): 리드가 재시작을 견딘다.**
+- `public_leads` 테이블(모델 public_leads.py, 마이그레이션 20260803_2140 — StoredLead
+  다섯 필드 그대로, organization_id 없음: 리드는 아직 어떤 고객도 아니다) +
+  `veo/api/public_lead_store.DbLeadStore` 를 app 조립에서 get_lead_store 로 주입
+  (공유 결과 저장소와 같은 계열, 격리 불변식 유지).
+- **실패 방향이 공유 결과와 반대**: 리드의 쓰기 실패는 던진다 — 저장 못 했으면서
+  "저장했습니다" 라고 답하는 것이 최악의 거짓이다(배선 계약 시험이 고정).
+- INTEGRATION_REQUEST §6 이행 표시(요청된 check constraint 는 의도적으로 생략 —
+  경계 스키마가 이미 강제, 마지막 순간의 거부는 기록만 잃는다).
+- 남은 P1: 리미터 외부화(E6), Sentry/메트릭(E9).
 
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb

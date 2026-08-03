@@ -94,13 +94,13 @@ class LeadStore(Protocol):
 
 @final
 class InMemoryLeadStore:
-    """Leads held in this process.
+    """Leads held in this process — the un-wired default, not what production runs.
 
-    **Limitation, stated plainly:** a restart loses every lead, and several API
-    processes each keep their own. That is unacceptable for a sales pipeline and it is
-    the honest state of this module — durable lead storage needs a table this worker
-    does not own, and it is filed as a contract request. Anything durable built here
-    would be a schema the integrator did not agree to.
+    A restart loses every lead, and several API processes each keep their own. The
+    contract request for a durable table was **fulfilled (2026-08-03)**: the integrator
+    wires ``veo.api.public_lead_store.DbLeadStore`` over ``get_lead_store`` at app
+    assembly, and ``tests/contract/test_public_lead_wiring.py`` keeps that true. This
+    class remains for tests and for running the package without a database.
     """
 
     __slots__ = ("_leads",)

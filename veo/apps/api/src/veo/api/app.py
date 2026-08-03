@@ -19,6 +19,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from veo import __version__
 from veo.api.deps import REQUEST_ID_HEADER, RequestId, build_meta, get_request_id
+from veo.api.public_lead_store import build_lead_store
 from veo.api.public_result_store import build_public_result_store
 from veo.api.routes import meta as meta_routes
 from veo.api.routes import scoring as scoring_routes
@@ -47,7 +48,7 @@ from veo.lab.router import router as lab_router
 from veo.observations.router import router as observations_router
 from veo.organizations.router import router as organizations_router
 from veo.projects.router import router as projects_router
-from veo.public.router import get_result_store, get_usage_recorder
+from veo.public.router import get_lead_store, get_result_store, get_usage_recorder
 from veo.public.router import router as public_router
 from veo.reports.router import router as reports_router
 from veo.seo.router import router as seo_router
@@ -279,6 +280,10 @@ def create_app() -> FastAPI:
     # 공유 결과도 같은 이유로 여기서 주입한다 — 인메모리 저장소는 재시작이 곧
     # 전 링크 만료였다. DB 구현은 격리 불변식 밖(veo.api)에 살고, 여기서만 걸린다.
     app.dependency_overrides[get_result_store] = build_public_result_store
+
+    # 리드도 같은 계열 — 재시작이 방문자의 연락처를 지우면 "저장했습니다" 가
+    # 거짓이 된다(E2). 쓰기 실패는 삼키지 않는다: public_lead_store 머리글 참조.
+    app.dependency_overrides[get_lead_store] = build_lead_store
 
     return app
 

@@ -28,6 +28,8 @@ GLOBAL_TABLES = frozenset(
         "api_usage_events",
         # 익명 방문자의 공유 진단 결과 — 어떤 고객에게도 속하지 않는다.
         "public_shared_results",
+        # 무료 진단의 상담 요청 — 리드는 아직 어떤 고객도 아니다.
+        "public_leads",
     }
 )
 
