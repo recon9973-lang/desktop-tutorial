@@ -725,7 +725,9 @@ function CodeBlock({ code }: { readonly code: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className={styles.codeWrap}>
-      <h4 className={styles.paneLabel}>붙여넣을 코드</h4>
+      {/* 예시임을 라벨에 못 박는다 — 예시 속 브랜드(온담의원 등)는 가상의 것인데,
+          "붙여넣을 코드" 라고만 적으면 측정한 사이트의 실데이터로 읽힌다(사용자 보고). */}
+      <h4 className={styles.paneLabel}>예시 코드 — 업체명·내용은 우리 것으로 바꿔 쓰세요</h4>
       <button
         type="button"
         className={styles.copyButton}

@@ -19,6 +19,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.2',
+    date: '2026-08-03',
+    title: '예시 코드 오해 방지',
+    items: [
+      '작업 큐·공개 진단의 고침 예시 라벨을 "예시 코드 — 업체명·내용은 우리 것으로 바꿔 쓰세요" 로 — 예시 속 가상 브랜드(온담의원)가 측정 사이트의 실데이터로 읽히던 오해 수정',
+    ],
+  },
+  {
     version: '0.3.1',
     date: '2026-08-03',
     title: '초대 링크 수리',
