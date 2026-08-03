@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { callConsoleApi } from '@/lib/console-api';
 import { findOrCreateSiteByOrigin } from '@/lib/companies';
+import { readJob } from '@/lib/observations';
 
 /**
  * 재측정 — 사람이 버튼을 눌렀을 때만.
@@ -19,9 +20,6 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
-
-/** 진단은 대상 사이트를 여러 장 가져온다. 목록 조회와 시간 감각이 다르다. */
-const SCAN_TIMEOUT_MS = 180_000;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -100,12 +98,28 @@ export async function POST(request: Request): Promise<NextResponse> {
   const origin = asRecord(site.data)['origin'];
   if (typeof origin !== 'string' || origin === '') return refuse('NOT_FOUND');
 
-  const outcome = await callConsoleApi('/api/seo/scans', {
+  // 진단은 **작업**으로 돈다(P1-6) — 이 요청은 작업 표만 받고 즉시 돌아가고,
+  // 화면이 아래 GET 으로 진행을 물어본다. 240초짜리 HTTP 요청에 기대던 시절의
+  // 타임아웃 문제(느린 사이트가 완주 직전에 끊김)가 여기서 사라진다.
+  const outcome = await callConsoleApi('/api/seo/scan-jobs', {
     method: 'POST',
     body: { target_url: origin, site_id: siteId },
-    timeoutMs: SCAN_TIMEOUT_MS,
   });
   if (!outcome.ok) return refuse(outcome.reason, outcome.message);
 
-  return NextResponse.json({ ok: true, siteId }, { headers: NO_STORE });
+  const jobId = asRecord(outcome.data)['id'];
+  return NextResponse.json(
+    { ok: true, siteId, jobId: typeof jobId === 'string' ? jobId : null },
+    { headers: NO_STORE },
+  );
+}
+
+/** 도는 진단의 진행 조회 — 폴링 한 번이 잡 표 한 장이다. */
+export async function GET(request: Request): Promise<NextResponse> {
+  const jobId = new URL(request.url).searchParams.get('job') ?? '';
+  if (jobId === '') return refuse('INVALID', '조회할 작업이 없습니다.');
+
+  const outcome = await readJob(jobId);
+  if (!outcome.ok) return refuse(outcome.reason, outcome.message);
+  return NextResponse.json({ job: outcome.data }, { headers: NO_STORE });
 }

@@ -18,11 +18,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
-from veo.authz import Permission, Principal
+from veo.authz import Permission, Principal, tenant_select
 from veo.collect.from_crawl import context_from_crawl
+from veo.contracts.enums import JobType
 from veo.contracts.envelope import ApiResponse
+from veo.db.models.identity import Site
 from veo.db.session import get_db
 from veo.geo.companion import score_and_save_geo_companion
+from veo.jobs import service as jobs_service
+from veo.jobs.execution import run_detached
+from veo.jobs.router import job_payload
+from veo.jobs.schemas import JobPayload
 from veo.organizations.http import guard
 from veo.scoring import ScoreResult
 from veo.scoring.improvements import rank_improvements
@@ -36,6 +42,7 @@ from veo.seo.history import (
     read_scan_report,
     save_scan_run,
 )
+from veo.seo.jobs import SCAN_STAGES, scan_work
 from veo.seo.measure_performance import with_performance
 from veo.seo.pages import page_breakdown
 from veo.seo.regression import maybe_alert_score_drop
@@ -145,6 +152,112 @@ def run_site_scan(
     db: Annotated[Session, Depends(get_db)],
 ) -> ApiResponse[ScanPayload]:
     spec = load_seo_spec()
+    try:
+        report, _saved_run_id = run_console_scan(
+            db, principal=principal, payload=payload, request_id=str(request_id)
+        )
+    except CrawlRefusal as refusal:
+        raise HTTPException(
+            status_code=refusal.status_code, detail=refusal.error.model_dump(mode="json")
+        ) from refusal
+    return ok(
+        report,
+        request_id,
+        spec_id=spec.spec_id,
+        spec_version=spec.version,
+        spec_checksum=spec.checksum,
+    )
+
+
+@router.post(
+    "/scan-jobs",
+    response_model=ApiResponse[JobPayload],
+    status_code=202,
+    summary="진단을 작업으로 등록하고 즉시 돌아온다",
+    description=(
+        "동기 진단(`POST /seo/scans`)과 같은 파이프라인을 배경 작업으로 돌립니다. "
+        "응답은 작업 표이며, 진행은 `GET /jobs/{id}` 로 물어봅니다. 끝나면 "
+        "`result_run_id` 로 저장된 실행을 엽니다. 결과가 남아야 하므로 `site_id` 없이는 "
+        "받지 않습니다 — 등록 없이 잠깐 재보는 간편 진단은 동기 경로를 쓰십시오."
+    ),
+)
+def submit_scan_job(
+    payload: SiteScanRequest,
+    principal: ScanRunner,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[JobPayload]:
+    if payload.site_id is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "site_id 없이는 작업으로 돌릴 수 없습니다 — 저장할 자리가 없어 "
+                "결과가 사라집니다."
+            ),
+        )
+    # 잘못된 요청 때문에 실패할 작업을 만들어 두지 않는다 — 등록 전에 거른다.
+    _assert_site_exists(db, principal=principal, site_id=payload.site_id)
+    project_id = db.execute(
+        tenant_select(Site, principal).where(Site.id == payload.site_id)
+    ).scalar_one().project_id
+
+    job, created = jobs_service.submit(
+        db,
+        principal,
+        job_type=JobType.SEO_SCAN,
+        project_id=project_id,
+        stages=list(SCAN_STAGES),
+        parameters={
+            "target_url": payload.target_url,
+            "site_id": str(payload.site_id),
+            "urls": list(payload.urls),
+            "discover": payload.discover,
+            "max_urls": payload.max_urls,
+            "locale": payload.locale,
+        },
+    )
+    job_id = job.id
+    db.commit()
+    db.refresh(job)
+
+    if created:
+        run_detached(
+            job_id,
+            scan_work(
+                organization_id=principal.organization_id,
+                user_id=principal.user_id,
+                roles=principal.roles,
+                session_id=principal.session_id,
+                target_url=payload.target_url,
+                site_id=payload.site_id,
+                urls=tuple(payload.urls),
+                discover=payload.discover,
+                max_urls=payload.max_urls,
+                locale=payload.locale,
+            ),
+        )
+
+    return ok(job_payload(job), request_id)
+
+
+def run_console_scan(
+    db: Session,
+    *,
+    principal: Principal,
+    payload: SiteScanRequest,
+    request_id: str,
+) -> tuple[ScanPayload, uuid.UUID | None]:
+    """콘솔 진단 파이프라인 — 수집→채점→(동반 GEO)→저장→하락 경보.
+
+    동기 엔드포인트(위)와 배경 작업(:mod:`veo.seo.jobs`)이 **같은 이 함수를** 쓴다.
+    두 벌로 갈라지는 순간 한쪽만 고쳐지는 날이 온다. 수집 거절은
+    :class:`CrawlRefusal` 로, 없는 사이트는 404 :class:`HTTPException` 으로 올린다 —
+    HTTP 로 옮길지 작업 실패로 옮길지는 호출자가 정한다.
+
+    반환은 (응답 본문, 저장된 실행 id). 사이트를 지정하지 않은 진단은 저장하지
+    않으므로 id 가 ``None`` 이다.
+    """
+    spec = load_seo_spec()
     # 사이트를 지정했다면 **가져오기 전에** 존재를 확인한다. 없는 사이트를 위해 남의
     # 서버에 요청을 보내고 나서 404 를 돌려주는 것은 순서가 틀렸다.
     if payload.site_id is not None:
@@ -155,18 +268,13 @@ def run_site_scan(
     targets = list(dict.fromkeys(url for url in requested if url.strip()))
 
     crawler = ConsoleCrawler()
-    try:
-        if payload.discover:
-            outcome = crawler.crawl(
-                payload.target_url, extra_urls=targets[1:], max_urls=payload.max_urls
-            )
-        else:
-            documents, robots_txt = crawler.collect(targets)
-            outcome = CrawlOutcome(documents=documents, robots_txt=robots_txt)
-    except CrawlRefusal as refusal:
-        raise HTTPException(
-            status_code=refusal.status_code, detail=refusal.error.model_dump(mode="json")
-        ) from refusal
+    if payload.discover:
+        outcome = crawler.crawl(
+            payload.target_url, extra_urls=targets[1:], max_urls=payload.max_urls
+        )
+    else:
+        documents, robots_txt = crawler.collect(targets)
+        outcome = CrawlOutcome(documents=documents, robots_txt=robots_txt)
 
     context = context_from_crawl(
         target_url=payload.target_url,
@@ -189,7 +297,7 @@ def run_site_scan(
             db,
             performance.calls,
             organization_id=principal.organization_id,
-            request_id=str(request_id),
+            request_id=request_id,
         )
 
     if payload.site_id is not None:
@@ -242,14 +350,9 @@ def run_site_scan(
             origin=payload.target_url,
             scan_run_id=saved.scan_run_id,
         )
+        return report, saved.scan_run_id
 
-    return ok(
-        report,
-        request_id,
-        spec_id=spec.spec_id,
-        spec_version=spec.version,
-        spec_checksum=spec.checksum,
-    )
+    return report, None
 
 
 @router.get(

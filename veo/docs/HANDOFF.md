@@ -156,6 +156,21 @@ simple 로 이동, 상세=작업 큐 시험 추가.
 시안 v2.2 의 증분 ①~④ 모두 배선 완료 — 남은 시안 요소(단계 섹션 인라인 실측값,
 미니 추이 바 등)는 별도 다듬기 백로그로.
 
+**P1-6 완료(2026-08-03): 콘솔 진단의 작업 이행 — 요청이 크롤을 붙들지 않는다.**
+- 파이프라인을 `run_console_scan` 하나로 추출(seo/router.py) — 동기 엔드포인트와
+  배경 작업이 **같은 함수**를 쓴다. 수집 거절은 CrawlRefusal 로 올리고, HTTP 로
+  옮길지 작업 실패로 옮길지는 호출자가 정한다.
+- `POST /seo/scan-jobs`(202) — site_id 필수(저장할 자리가 없으면 결과가 사라짐),
+  등록 전에 사이트 존재 검증, JobType.SEO_SCAN + 기존 jobs 인프라(run_detached,
+  STALE 감지) 재사용. veo/seo/jobs.py 의 scan_work 가 본문(라우터는 지연 임포트 —
+  순환 고리 회피). 수집 거절 문장은 JobFailure 로 그대로 실린다.
+- 웹: /api/scan 이 작업 제출로 전환(+GET ?job= 폴링), ScanForm 이 4초 폴링으로
+  진행(서버 단계 표시)→성공 시 저장된 실행으로 이동, 실패는 서버 문장, is_stale 은
+  "실행 중인 척하지 않는다". 240초 타임아웃 의존 제거 — 기획서 E4 해소, E5 는
+  STALE 드러내기로 부분 완화(완전 해소는 브로커 도입 때).
+- 간편 진단(site 미지정)은 동기 경로 유지. 다음 P1: 정기 재진단+자동 diff(스케줄러),
+  리드 DB 지속화·리미터 외부화, Sentry/메트릭.
+
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb
 **사용자 액션 1**: Railway 에 VEO_ALERT_WEBHOOK_URL(경보 활성화).

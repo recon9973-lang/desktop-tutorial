@@ -1478,6 +1478,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/seo/scan-jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 진단을 작업으로 등록하고 즉시 돌아온다
+         * @description 동기 진단(`POST /seo/scans`)과 같은 파이프라인을 배경 작업으로 돌립니다. 응답은 작업 표이며, 진행은 `GET /jobs/{id}` 로 물어봅니다. 끝나면 `result_run_id` 로 저장된 실행을 엽니다. 결과가 남아야 하므로 `site_id` 없이는 받지 않습니다 — 등록 없이 잠깐 재보는 간편 진단은 동기 경로를 쓰십시오.
+         */
+        post: operations["submit_scan_job_api_seo_scan_jobs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/seo/scans": {
         parameters: {
             query?: never;
@@ -10602,6 +10622,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_CheckCataloguePayload_"];
+                };
+            };
+        };
+    };
+    submit_scan_job_api_seo_scan_jobs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteScanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_JobPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

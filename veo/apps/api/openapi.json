@@ -19882,6 +19882,48 @@
         ]
       }
     },
+    "/api/seo/scan-jobs": {
+      "post": {
+        "description": "동기 진단(`POST /seo/scans`)과 같은 파이프라인을 배경 작업으로 돌립니다. 응답은 작업 표이며, 진행은 `GET /jobs/{id}` 로 물어봅니다. 끝나면 `result_run_id` 로 저장된 실행을 엽니다. 결과가 남아야 하므로 `site_id` 없이는 받지 않습니다 — 등록 없이 잠깐 재보는 간편 진단은 동기 경로를 쓰십시오.",
+        "operationId": "submit_scan_job_api_seo_scan_jobs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "진단을 작업으로 등록하고 즉시 돌아온다",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
     "/api/seo/scans": {
       "post": {
         "description": "대표 주소를 받아 VEO 가 직접 페이지를 가져온 뒤 47개 항목을 판정하고 발행된 명세로 채점합니다. 수집은 SSRF 차단·대상 호스트 예산·응답 크기와 시간 상한이 걸린 크롤러가 담당하며, 무료 공개 진단과 같은 안전장치를 씁니다. 다른 점은 보는 페이지 수뿐입니다 — 공개 진단은 한 장만 보므로 사이트 전체를 봐야 판정되는 항목이 측정 불가로 남습니다.",
