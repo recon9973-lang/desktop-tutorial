@@ -6,6 +6,7 @@ import { readLatestSpecDesigns, type SpecDesign } from '@/lib/scoring-specs';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
+import { SpecLifecycle } from './SpecLifecycle';
 import own from './scoring-versions.module.css';
 
 export const metadata: Metadata = {
@@ -45,6 +46,10 @@ async function ConsoleScoringVersionsContent() {
           리포트에는 계산에 사용한 버전이 항상 함께 기록됩니다.
         </p>
       </div>
+
+      {/* 발행 이전의 단계까지 — 초안·검토·승인이 여기서 보이고 여기서 넘어간다.
+          이 기능은 처음부터 완성돼 있었는데 부를 화면이 없어 "없는 기능" 이었다(0-E). */}
+      <SpecLifecycle />
 
       {!outcome.ok ? (
         <ErrorState
