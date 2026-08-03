@@ -91,6 +91,10 @@ function detailed(overrides: Partial<ConsoleScanResult> = {}) {
   return render(<ScanReport result={result(overrides)} bands={BANDS} view="detailed" />);
 }
 
+function simple(overrides: Partial<ConsoleScanResult> = {}) {
+  return render(<ScanReport result={result(overrides)} bands={BANDS} view="simple" />);
+}
+
 describe('항목별 판정', () => {
   it('식별자가 아니라 사람이 읽는 이름을 보여준다', () => {
     detailed();
@@ -311,9 +315,11 @@ describe('할 일 우선순위', () => {
     remediationOwner: 'DEVELOPER',
   }));
 
-  it('상위 셋만 펼쳐 두고 나머지는 접는다', () => {
+  // 상세(직원용)의 조치 목록은 재설계 ③ 부터 작업 큐가 정본이다 — 그 성질은
+  // WorkQueue.test.tsx 가 지킨다. 아래 접기 규칙은 간소화(업체 전달용)의 것.
+  it('간소화 보기는 상위 셋만 펼쳐 두고 나머지는 접는다', () => {
     /** 열몇 줄을 같은 무게로 늘어놓으면 우선순위가 사라진다. */
-    const { container } = detailed({ improvements: many });
+    const { container } = simple({ improvements: many });
 
     expect(screen.getByText('할 일 1')).toBeInTheDocument();
     expect(screen.getByText('나머지 3건 더 보기')).toBeInTheDocument();
@@ -322,9 +328,16 @@ describe('할 일 우선순위', () => {
   });
 
   it('셋 이하면 더 보기를 만들지 않는다', () => {
-    detailed({ improvements: many.slice(0, 2) });
+    simple({ improvements: many.slice(0, 2) });
 
     expect(screen.queryByText(/나머지 .*더 보기/)).not.toBeInTheDocument();
+  });
+
+  it('상세 보기의 조치 목록은 작업 큐다', () => {
+    detailed({ improvements: many });
+
+    expect(screen.getByText('작업 큐')).toBeInTheDocument();
+    expect(screen.queryByText('나머지 3건 더 보기')).not.toBeInTheDocument();
   });
 });
 

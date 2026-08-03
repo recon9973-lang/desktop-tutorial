@@ -4,6 +4,7 @@ import type { Band } from '@/lib/scan-report';
 import type { ConsoleScanResult } from '@/lib/console-scan';
 
 import { CheckExplorer } from './CheckExplorer';
+import { WorkQueue } from './WorkQueue';
 
 import styles from './ScanReport.module.css';
 
@@ -38,7 +39,9 @@ export function ScanReport({ result, bands, view }: ScanReportProps) {
     <div className={styles.report}>
       <Headline result={result} bands={bands} />
       <Notes result={result} />
-      <Improvements result={result} />
+      {/* 상세(직원용)에서는 작업 큐가 조치 목록의 정본이다(재설계 ③) — 같은 목록을
+          Improvements 로 한 번 더 그리지 않는다. 간소화(업체 전달용)는 기존 그대로. */}
+      {detailed ? <WorkQueue result={result} /> : <Improvements result={result} />}
       <Categories result={result} />
       {/* 상세 보기에서는 항목별 판정 안에 조치 안내가 들어가므로 목록을 두 번 그리지
           않는다. 간소화 보기는 그 반대로, 고칠 것만 골라 보여준다. */}
