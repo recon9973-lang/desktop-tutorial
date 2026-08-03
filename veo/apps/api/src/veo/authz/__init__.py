@@ -24,7 +24,7 @@ from veo.authz.errors import (
     TenantIsolationError,
 )
 from veo.authz.permissions import ROLE_PERMISSIONS, Permission, permissions_for
-from veo.authz.principal import Principal
+from veo.authz.principal import SYSTEM_USER_ID, Principal, system_principal
 from veo.authz.tenancy import (
     assert_tenant_scoped,
     is_tenant_scoped_model,
@@ -34,6 +34,7 @@ from veo.authz.tenancy import (
 
 __all__ = [
     "ROLE_PERMISSIONS",
+    "SYSTEM_USER_ID",
     "AuthenticationError",
     "AuthorizationError",
     "CurrentPrincipal",
@@ -54,6 +55,7 @@ __all__ = [
     "require_any",
     "require_same_organization",
     "set_principal_resolver",
+    "system_principal",
     "tenant_select",
     "tenant_table_names",
 ]

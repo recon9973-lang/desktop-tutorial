@@ -96,7 +96,8 @@ def submit(
     row = JobRow(
         organization_id=principal.organization_id,
         project_id=project_id,
-        requested_by=principal.user_id,
+        # 예약 실행(서비스 계정)은 사람이 아니다 — 실행자 칸을 비운다(FK·거짓 기록 방지).
+        requested_by=None if principal.is_service_account else principal.user_id,
         type=str(job_type),
         surface=str(surface),
         status=str(JobStatus.QUEUED),

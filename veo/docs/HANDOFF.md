@@ -177,8 +177,19 @@ simple 로 이동, 상세=작업 큐 시험 추가.
 - diff 는 저장 스냅샷(report_snapshot.issues)의 check_id 대조 — 같은 명세끼리만,
   스냅샷 없는 옛 실행과는 비교하지 않음("기록 없음"≠"이슈 없음"). 좋아진 것만
   있는 진단은 조용히 지나간다.
-- 남은 P1: **정기 재진단(스케줄 트리거)** — 시스템 실행자(requested_by 없는 잡)
-  설계 필요, 리드 DB 지속화·리미터 외부화, Sentry/메트릭.
+**P1-7b 완료(2026-08-03): 정기 재진단 스케줄러 — 방치된 사이트를 스케줄이 다시 잰다.**
+- `system_principal(org_id)`(authz) — is_service_account 참, user_id 는 자리표시
+  (uuid 0). **저장 경로가 실행자 칸을 비운다**(history·jobs — "예약 실행이면 NULL"
+  이라는 스키마 주석을 코드가 이행). scan_work 에 is_service_account 전달.
+- `veo/seo/rescan.py`: sweep_once — 마지막 SEO 진단이 rescan_after_days 를 넘긴
+  사이트(진단 0회 사이트는 제외 — 부르지 않은 크롤 금지)를 오래된 순으로 최대
+  rescan_max_sites_per_sweep 건, **일별 멱등키**로 하루 한 번만, 기존 scan_work
+  경로로 실행 → diff 경보(P1-7a)도 스케줄 실행에서 그대로 울린다. 청소부는 조직
+  경계를 넘어 보되 사이트마다 그 조직의 system_principal 로 다시 갇힌다.
+- 앱 lifespan 이 스레드 시작(인프로세스 — jobs.execution 과 같은 정직성 규칙).
+  **기본 꺼짐**: 켜려면 Railway 에 `VEO_RESCAN_AFTER_DAYS`(예: 7) — 배포 단위
+  설정이라 전 조직 공통 주기(문서화됨). 사용자 액션 2가 됨(웹훅 + 이 값).
+- 남은 P1: 리드 DB 지속화·리미터 외부화, Sentry/메트릭.
 
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb

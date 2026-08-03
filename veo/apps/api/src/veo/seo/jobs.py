@@ -45,11 +45,14 @@ def scan_work(
     discover: bool,
     max_urls: int | None,
     locale: str,
+    is_service_account: bool = False,
 ) -> JobWork:
     """배경에서 돌 진단 작업을 만든다.
 
     요청의 :class:`Principal` 객체를 그대로 넘기지 않고 **값으로 풀어서 다시 만든다** —
     요청 객체의 수명이 요청보다 길어지면 안 된다(관측 작업과 같은 규칙).
+    ``is_service_account`` 도 값의 일부다: 이것이 빠지면 예약 실행(정기 재진단)의
+    자리표시 user_id 가 실행자 칸에 기록되려다 FK 에서 터진다.
     """
 
     def work(session: Session, job_id: uuid.UUID) -> JobOutcome:
@@ -63,6 +66,7 @@ def scan_work(
             organization_id=organization_id,
             roles=roles,
             session_id=session_id,
+            is_service_account=is_service_account,
         )
         jobs_service.advance(session, job_id, progress=0.1, stage=SCAN_STAGES[0])
 

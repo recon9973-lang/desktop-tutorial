@@ -181,6 +181,14 @@ class Settings(BaseSettings):
     #: "언제 알릴 것인가" 라는 운영 판단이라 명세가 아니라 여기 산다. 1.0 미만의
     #: 잔떨림(반올림·표본 차이)로 채널이 시끄러워지면 알림은 꺼지고 없는 기능이 된다.
     alert_score_drop_threshold: float = 1.0
+    #: 정기 재진단 — 0 이면 꺼짐(기본). 마지막 SEO 진단이 이 일수보다 오래된 사이트를
+    #: 스케줄 실행한다. 언제 다시 잴 것인가는 운영 판단이므로 명세가 아니라 설정에
+    #: 산다. 주의: 배포 단위 설정이라 모든 조직에 같은 주기가 적용된다.
+    rescan_after_days: int = 0
+    rescan_sweep_interval_seconds: int = 3600
+    #: 한 번의 청소에서 시작할 최대 진단 수 — 밀린 사이트가 많아도 동시 크롤이
+    #: 폭주하지 않게 묶는다. 다음 청소가 나머지를 이어 간다.
+    rescan_max_sites_per_sweep: int = 3
     redis_url: str = "redis://localhost:6379/0"
 
     # Secrets. Absent in local/test; required at startup in staging and production.

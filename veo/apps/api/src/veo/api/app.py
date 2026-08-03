@@ -7,7 +7,8 @@ contract test fails the build if the committed document and the running app disa
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -71,6 +72,16 @@ Developed by VENOM. Research & Methodology by VEO-LAB.
 """
 
 
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # 정기 재진단(P1-7b). 기본은 꺼짐(rescan_after_days=0)이라 시험의 TestClient 가
+    # 앱을 열 때마다 스레드가 생기지 않는다 — 켜는 것은 배포의 운영 판단이다.
+    from veo.seo.rescan import start_rescan_scheduler
+
+    start_rescan_scheduler()
+    yield
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
 
@@ -83,6 +94,7 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url=None,
         contact={"name": "VENOM"},
+        lifespan=_lifespan,
     )
 
     app.add_middleware(

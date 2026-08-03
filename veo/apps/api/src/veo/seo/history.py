@@ -221,7 +221,9 @@ def save_scan_run(
         provider_states={name: str(state) for name, state in context.provider_states.items()},
         partial_reasons=[],
         measurement_conditions=conditions.as_dict(),
-        requested_by_user_id=principal.user_id,
+        # 예약 실행(서비스 계정)의 자리표시 id 는 users 에 없다 — 기록하면 FK 위반이고,
+        # 어찌 통과돼도 거짓 기록이다. 스키마가 말하는 그대로: "예약 실행이면 NULL".
+        requested_by_user_id=None if principal.is_service_account else principal.user_id,
         report_snapshot=report_snapshot,
     )
     db.add(run)
