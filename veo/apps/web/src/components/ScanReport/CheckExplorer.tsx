@@ -152,12 +152,19 @@ function CheckGroup({
   readonly items: readonly Outcome[];
   readonly issueOf: ReadonlyMap<string, Issue>;
 }) {
+  // 레일의 영역 막대가 이 자리로 온다(확정 시안 v2.2 §12 "레일이 목차가 된다").
+  // 영역 id 는 서버가 준 값을 그대로 쓴다 — 이름으로 만들면 이름이 바뀔 때 링크가 끊긴다.
+  const anchor = items[0]?.categoryId;
   const tally = { FAIL: 0, WARNING: 0, UNKNOWN: 0, PASS: 0 } as Record<string, number>;
   for (const item of items) tally[item.status] = (tally[item.status] ?? 0) + 1;
   const needsWork = (tally.FAIL ?? 0) + (tally.WARNING ?? 0);
 
   return (
-    <section className={styles.checkGroup} aria-label={name}>
+    <section
+      className={styles.checkGroup}
+      aria-label={name}
+      id={anchor === undefined ? undefined : `check-${anchor}`}
+    >
       <h3 className={styles.checkGroupTitle}>
         <span className={styles.checkGroupName}>{name}</span>
         <span className={styles.checkGroupTally}>

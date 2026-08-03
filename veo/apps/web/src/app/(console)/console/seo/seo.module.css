@@ -478,7 +478,16 @@
   align-items: center;
   font-size: var(--veo-font-size-100);
 }
-.miniBarName { color: var(--veo-color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.miniBarName {
+  color: var(--veo-color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* 목차 링크지만 밑줄로 요란하게 굴지 않는다 — 누르면 반응한다는 것만 알리면 된다. */
+  text-decoration: none;
+}
+.miniBarName:hover { color: var(--veo-color-accent); text-decoration: underline; }
+.miniBarName:focus-visible { outline: 2px solid var(--veo-color-accent); outline-offset: 2px; }
 .miniBarTrack {
   height: 7px;
   border-radius: 4px;

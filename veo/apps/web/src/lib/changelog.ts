@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.12',
+    date: '2026-08-03',
+    title: '레일이 목차가 된다',
+    items: [
+      '우측 레일의 영역 이름을 누르면 그 영역 카드로 이동 — 긴 판정 목록에서 찾아 내려가지 않아도 된다',
+      'SEO·GEO 양쪽 동일하게 적용',
+    ],
+  },
+  {
     version: '0.3.11',
     date: '2026-08-03',
     title: 'GEO 심각도 배지',

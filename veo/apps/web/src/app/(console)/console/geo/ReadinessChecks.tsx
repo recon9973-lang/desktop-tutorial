@@ -118,9 +118,15 @@ function CheckGroup({
   const tally: Record<string, number> = {};
   for (const item of items) tally[item.status] = (tally[item.status] ?? 0) + 1;
   const needsWork = (tally.FAIL ?? 0) + (tally.WARNING ?? 0);
+  // 레일의 영역 막대가 이 자리로 온다. SEO 화면과 같은 규칙(check-<영역 id>)이다.
+  const anchor = items[0]?.category_id;
 
   return (
-    <section className={styles.checkGroup} aria-label={name}>
+    <section
+      className={styles.checkGroup}
+      aria-label={name}
+      id={anchor === undefined || anchor === '' ? undefined : `check-${anchor}`}
+    >
       <h4 className={styles.checkGroupTitle}>
         <span className={styles.checkGroupName}>{name}</span>
         <span className={styles.checkGroupTally}>

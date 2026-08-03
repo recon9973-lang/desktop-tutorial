@@ -593,6 +593,7 @@
 .checkGroup {
   display: flex;
   flex-direction: column;
+  scroll-margin-top: var(--veo-space-4);
   border: 1px solid var(--veo-color-border);
   border-radius: var(--veo-radius-lg);
   background: var(--veo-color-surface);

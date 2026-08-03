@@ -655,7 +655,13 @@ async function SummaryRail({
           <ul className={own.miniBars}>
             {miniBars.map((bar) => (
               <li key={bar.categoryId} className={own.miniBar}>
-                <span className={own.miniBarName}>{bar.name}</span>
+                {/* 확정 시안 v2.2 §12 — 레일이 목차가 된다. 긴 페이지에서 영역 이름을
+                    누르면 그 영역 카드로 간다. 새 화면을 여는 것이 아니라 같은 문서 안의
+                    자리이므로 `a href="#"` 이면 충분하다 — 자바스크립트가 필요 없고
+                    브라우저의 뒤로 가기도 그대로 동작한다. */}
+                <a className={own.miniBarName} href={`#check-${bar.categoryId}`}>
+                  {bar.name}
+                </a>
                 <span className={own.miniBarTrack}>
                   <span
                     className={bar.low ? own.miniBarFillLow : own.miniBarFill}

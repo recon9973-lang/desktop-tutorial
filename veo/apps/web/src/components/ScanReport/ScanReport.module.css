@@ -129,6 +129,9 @@
 .checkGroup {
   display: flex;
   flex-direction: column;
+  /* 레일에서 눌러 이 카드로 올 때, 머리줄이 화면 맨 끝에 딱 붙으면 어디로 왔는지
+     알기 어렵다. 조금 띄워 둔다. */
+  scroll-margin-top: var(--veo-space-4);
   border: 1px solid var(--veo-color-border);
   border-radius: var(--veo-radius-lg);
   background: var(--veo-color-surface);

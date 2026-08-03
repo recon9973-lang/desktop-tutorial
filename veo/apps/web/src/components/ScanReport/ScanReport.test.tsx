@@ -497,3 +497,36 @@ describe('영역 머리줄이 볼지 말지를 먼저 말한다', () => {
     ).toBeInTheDocument();
   });
 });
+
+/**
+ * 레일이 목차가 된다 — 확정 시안 v2.2 §12.
+ *
+ * 긴 페이지에서 우측 레일의 영역 막대를 누르면 그 영역 카드로 간다. 링크가 가리키는
+ * 자리가 실제로 있어야 하고, 그 자리는 **영역 id** 로 잡아야 한다 — 이름으로 만들면
+ * 명세가 이름을 다듬는 날 링크가 조용히 끊긴다.
+ */
+describe('영역 카드가 레일에서 찾아올 수 있는 자리를 가진다', () => {
+  it('영역 id 로 된 자리가 카드에 붙어 있다', () => {
+    const { container } = detailed({
+      outcomes: [outcome({ categoryId: 'onpage_semantics' })],
+    });
+
+    expect(container.querySelector('#check-onpage_semantics')).not.toBeNull();
+  });
+
+  it('영역이 여럿이면 각자 자기 자리를 가진다', () => {
+    const { container } = detailed({
+      outcomes: [
+        outcome({ checkId: 'a', categoryId: 'onpage_semantics' }),
+        outcome({
+          checkId: 'b',
+          categoryId: 'crawl',
+          categoryName: '크롤 접근',
+        }),
+      ],
+    });
+
+    expect(container.querySelector('#check-onpage_semantics')).not.toBeNull();
+    expect(container.querySelector('#check-crawl')).not.toBeNull();
+  });
+});
