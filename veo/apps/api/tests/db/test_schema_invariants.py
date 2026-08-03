@@ -30,6 +30,8 @@ GLOBAL_TABLES = frozenset(
         "public_shared_results",
         # 무료 진단의 상담 요청 — 리드는 아직 어떤 고객도 아니다.
         "public_leads",
+        # 거래처 전달 링크의 복사본 — 링크를 받은 사람의 문서이지 조회 창구가 아니다.
+        "public_shared_reports",
     }
 )
 

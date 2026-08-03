@@ -25,6 +25,7 @@ from veo.api.public_lead_store import build_lead_store
 from veo.api.public_result_store import build_public_result_store
 from veo.api.routes import meta as meta_routes
 from veo.api.routes import scoring as scoring_routes
+from veo.api.routes import shared_reports as shared_report_routes
 from veo.auth.resolver import install_auth
 from veo.auth.router import router as auth_router
 from veo.auth.throttle import AccountLockedError
@@ -300,6 +301,10 @@ def create_app() -> FastAPI:
     app.include_router(issues_router, prefix=api_prefix)
     app.include_router(lab_router, prefix=api_prefix)
     app.include_router(reports_router, prefix=api_prefix)
+    # 리포트 공유(P2-10a): 만드는 문은 콘솔(접두사 아래), 여는 문은 익명(맨 위) —
+    # 익명 읽기는 공유 시점의 복사본만 본다(shared_reports 머리글).
+    app.include_router(shared_report_routes.console_router, prefix=api_prefix)
+    app.include_router(shared_report_routes.anonymous_router)
     app.include_router(users_router, prefix=api_prefix)
     app.include_router(usage_router, prefix=api_prefix)
 

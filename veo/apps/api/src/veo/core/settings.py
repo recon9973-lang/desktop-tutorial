@@ -189,6 +189,9 @@ class Settings(BaseSettings):
     #: 한 번의 청소에서 시작할 최대 진단 수 — 밀린 사이트가 많아도 동시 크롤이
     #: 폭주하지 않게 묶는다. 다음 청소가 나머지를 이어 간다.
     rescan_max_sites_per_sweep: int = 3
+    #: 리포트 공유 링크의 수명(일). 거래처가 문서를 읽는 데 충분히 길되, 잊힌 링크가
+    #: 영원히 살아 있지는 않게 — 운영 판단이므로 설정에 산다.
+    report_share_ttl_days: int = 90
     redis_url: str = "redis://localhost:6379/0"
 
     # Secrets. Absent in local/test; required at startup in staging and production.

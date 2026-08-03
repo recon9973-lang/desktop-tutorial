@@ -1424,6 +1424,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/versions/{version_number}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 리포트 버전의 거래처 전달 링크 발급
+         * @description 이 버전의 HTML 문서를 **지금 이 순간의 복사본**으로 굳혀 저장하고, 로그인 없이 열리는 링크를 돌려줍니다. 이후 무엇이 바뀌어도 링크가 여는 것은 보낸 그날의 그 문서입니다. 같은 버전에 다시 부르면 새 링크가 나옵니다 — 이전 링크도 만료까지 그대로 살아 있습니다.
+         */
+        post: operations["share_report_version_api_reports__report_id__versions__version_number__share_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/scoring/evaluate": {
         parameters: {
             query?: never;
@@ -2237,6 +2257,12 @@ export interface components {
         /** ApiResponse[SessionPayload] */
         ApiResponse_SessionPayload_: {
             data?: components["schemas"]["SessionPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[SharedReportLinkPayload] */
+        ApiResponse_SharedReportLinkPayload_: {
+            data?: components["schemas"]["SharedReportLinkPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -6913,6 +6939,21 @@ export interface components {
             title_ko: string;
         };
         /**
+         * SharedReportLinkPayload
+         * @description 만든 링크에 대해 화면이 알아야 할 전부.
+         */
+        SharedReportLinkPayload: {
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Note Ko */
+            note_ko: string;
+            /** Share Path */
+            share_path: string;
+        };
+        /**
          * SiteCheckSummary
          * @description 사이트 전체 단위의 판정. 페이지에 귀속되지 않는다.
          */
@@ -10548,6 +10589,38 @@ export interface operations {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": unknown;
                     "text/csv; charset=utf-8": unknown;
                     "text/html; charset=utf-8": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    share_report_version_api_reports__report_id__versions__version_number__share_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                version_number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SharedReportLinkPayload_"];
                 };
             };
             /** @description Validation Error */

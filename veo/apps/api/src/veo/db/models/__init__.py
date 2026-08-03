@@ -57,6 +57,7 @@ from veo.db.models.security import (
     ProviderCredential,
     UserSession,
 )
+from veo.db.models.shared_reports import PublicSharedReport
 
 __all__ = [
     "AIAnswer",
@@ -88,6 +89,7 @@ __all__ = [
     "PromptSet",
     "ProviderCredential",
     "PublicLead",
+    "PublicSharedReport",
     "PublicSharedResult",
     "RelatedKeyword",
     "Report",

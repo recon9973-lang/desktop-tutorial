@@ -1771,6 +1771,39 @@
         "title": "ApiResponse[SessionPayload]",
         "type": "object"
       },
+      "ApiResponse_SharedReportLinkPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SharedReportLinkPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[SharedReportLinkPayload]",
+        "type": "object"
+      },
       "ApiResponse_SitePayload_": {
         "additionalProperties": false,
         "properties": {
@@ -13456,6 +13489,31 @@
         "title": "SeverityChangePayload",
         "type": "object"
       },
+      "SharedReportLinkPayload": {
+        "description": "만든 링크에 대해 화면이 알아야 할 전부.",
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "note_ko": {
+            "title": "Note Ko",
+            "type": "string"
+          },
+          "share_path": {
+            "title": "Share Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "share_path",
+          "expires_at",
+          "note_ko"
+        ],
+        "title": "SharedReportLinkPayload",
+        "type": "object"
+      },
       "SiteCheckSummary": {
         "additionalProperties": false,
         "description": "사이트 전체 단위의 판정. 페이지에 귀속되지 않는다.",
@@ -19763,6 +19821,59 @@
           }
         },
         "summary": "리포트 버전 내보내기 (HTML / CSV / XLSX)",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/reports/{report_id}/versions/{version_number}/share": {
+      "post": {
+        "description": "이 버전의 HTML 문서를 **지금 이 순간의 복사본**으로 굳혀 저장하고, 로그인 없이 열리는 링크를 돌려줍니다. 이후 무엇이 바뀌어도 링크가 여는 것은 보낸 그날의 그 문서입니다. 같은 버전에 다시 부르면 새 링크가 나옵니다 — 이전 링크도 만료까지 그대로 살아 있습니다.",
+        "operationId": "share_report_version_api_reports__report_id__versions__version_number__share_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Report Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_number",
+            "required": true,
+            "schema": {
+              "title": "Version Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_SharedReportLinkPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "리포트 버전의 거래처 전달 링크 발급",
         "tags": [
           "reports"
         ]

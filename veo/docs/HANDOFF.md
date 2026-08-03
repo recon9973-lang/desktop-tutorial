@@ -209,6 +209,17 @@ simple 로 이동, 상세=작업 큐 시험 추가.
 - Sentry 는 별도 백로그(새 의존성+DSN 사용자 액션) — 로그 JSON+메트릭이 우선 커버.
 - 남은 P1: 리미터 외부화(E6 — 수평 확장 전까지 실해 없음), /readyz(§5, DB 점검 배선).
 
+**P2-10a 완료(2026-08-03): 리포트 거래처 전달 링크 — 공유는 복사본의 발행이다.**
+- `POST /reports/{id}/versions/{n}/share`(REPORT_READ+EXPORT) — 그 순간의 HTML
+  내보내기를 통째로 굳혀 `public_shared_reports`(전역, 지문 키, 마이그레이션
+  20260803_2320)에 저장하고 90일(설정 report_share_ttl_days) 토큰 링크 반환.
+- `GET /shared/reports/{token}`(익명, 스키마 밖) — 복사본만 서빙(inline+sandbox
+  CSP), 없는·만료된·모양 아닌 토큰은 같은 404, 만료 행은 읽는 자리에서 삭제.
+  익명 표면이 요청 시점에 고객 데이터에 닿지 않는다(공유 진단 결과와 같은 계열)
+  + 발행 불변 원칙 유지. 라우터는 통합 소유(veo/api/routes/shared_reports.py).
+- 웹: 버전 화면에 "거래처 전달 링크" 버튼(복사·만료일·불변 안내 문구).
+- 다음 P2-10 증분: 화이트라벨(로고·색상), 월간 자동 발행(재진단 스케줄러와 결합).
+
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb
 **사용자 액션 1**: Railway 에 VEO_ALERT_WEBHOOK_URL(경보 활성화).

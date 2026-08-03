@@ -9,6 +9,8 @@ import { requireConsoleIdentity } from '@/lib/session';
 
 import own from '../reports.module.css';
 
+import { ShareLinkButton } from './ShareLinkButton';
+
 /**
  * 리포트 버전 목록 — "발행했는데 볼 수 없는" 상태를 끝내는 화면 (E7).
  *
@@ -114,6 +116,8 @@ function VersionItem({ version }: { readonly version: ReportVersionRow }) {
               {FORMAT_LABELS[format] ?? format.toUpperCase()} 내려받기
             </a>
           ))}
+        {/* 거래처 전달 — 로그인 없이 열리는 링크. 지금 이 순간의 문서가 굳는다. */}
+        <ShareLinkButton reportId={version.report_id} version={version.version_number} />
       </p>
     </li>
   );

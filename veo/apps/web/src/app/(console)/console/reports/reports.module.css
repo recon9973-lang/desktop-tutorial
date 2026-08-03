@@ -176,3 +176,32 @@
   font-size: var(--veo-font-size-200);
   font-weight: var(--veo-weight-medium);
 }
+
+/* 거래처 전달 링크의 결과 표시. */
+.shareResult {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--veo-space-2);
+  min-width: 0;
+}
+
+.shareUrl {
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+  background: var(--veo-color-surface-sunken);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  padding: 2px 8px;
+  overflow-wrap: anywhere;
+}
+
+.shareNote {
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+.shareError {
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-status-fail-fg);
+}
