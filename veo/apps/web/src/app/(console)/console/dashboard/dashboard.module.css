@@ -1,0 +1,161 @@
+/* 대시보드 — 오늘 어디부터 볼까.
+   값은 콘솔의 다른 화면과 같은 토큰을 쓴다(0-D: 팔레트를 두 벌로 두지 않는다). */
+
+.sectionTitle {
+  margin: 0 0 var(--veo-space-3);
+  font-size: var(--veo-font-size-400);
+  font-weight: var(--veo-weight-semibold);
+}
+
+/* ── 숫자 넷 ─────────────────────────────────────────────────────────── */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--veo-space-4);
+  margin-bottom: var(--veo-space-8);
+}
+.figure,
+.figureWarn,
+.figureFail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--veo-space-4) var(--veo-space-5);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-surface);
+}
+/* 0이 아닐 때만 색을 준다 — 늘 물들어 있으면 색이 신호가 아니라 배경이 된다. */
+.figureWarn { border-color: var(--veo-status-warning-border); }
+.figureFail { border-color: var(--veo-status-fail-border); }
+
+.figureLabel { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+.figureValue {
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: var(--veo-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.figureNote { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+
+/* ── 점수 분포 ───────────────────────────────────────────────────────── */
+.spread { margin-bottom: var(--veo-space-8); }
+.spreadList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+}
+.spreadRow {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 2rem;
+  gap: var(--veo-space-3);
+  align-items: center;
+  font-size: var(--veo-font-size-200);
+}
+.spreadLabel { color: var(--veo-color-text-muted); font-variant-numeric: tabular-nums; }
+.spreadTrack {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--veo-color-surface-sunken);
+  border: 1px solid var(--veo-color-border);
+  overflow: hidden;
+}
+.bandLow,
+.bandMid,
+.bandGood,
+.bandHigh { display: block; height: 100%; }
+.bandLow { background: var(--veo-status-fail-fg); }
+.bandMid { background: var(--veo-status-warning-fg); }
+.bandGood { background: var(--veo-color-accent); }
+.bandHigh { background: var(--veo-status-pass-fg); }
+.spreadCount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--veo-weight-semibold);
+}
+.spreadNote {
+  margin: var(--veo-space-3) 0 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+/* ── 거래처별 ────────────────────────────────────────────────────────── */
+.tableSection { margin-bottom: var(--veo-space-8); }
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-surface);
+  overflow: hidden;
+}
+.rows > li + li { border-top: 1px solid var(--veo-color-border); }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--veo-space-4);
+  padding: var(--veo-space-3) var(--veo-space-4);
+  text-decoration: none;
+  color: inherit;
+}
+.row:hover { background: var(--veo-color-surface-sunken); }
+.row:focus-visible { outline: 2px solid var(--veo-color-accent); outline-offset: -2px; }
+
+.rowScore {
+  flex: none;
+  min-width: 3.5rem;
+  text-align: right;
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+.rowWho { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.rowName {
+  font-weight: var(--veo-weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowCompany { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+
+.rowMarks {
+  flex: none;
+  display: flex;
+  gap: var(--veo-space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.markDrop,
+.markRise,
+.markStale,
+.markNever {
+  padding: 2px var(--veo-space-2);
+  border-radius: var(--veo-radius-pill);
+  border: 1px solid transparent;
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.markDrop {
+  background: var(--veo-status-fail-bg);
+  color: var(--veo-status-fail-fg);
+  border-color: var(--veo-status-fail-border);
+}
+.markRise {
+  background: var(--veo-status-pass-bg);
+  color: var(--veo-status-pass-fg);
+  border-color: var(--veo-status-pass-border);
+}
+.markStale {
+  background: var(--veo-status-warning-bg);
+  color: var(--veo-status-warning-fg);
+  border-color: var(--veo-status-warning-border);
+}
+/* 잰 적 없는 것은 나쁜 것이 아니라 **아직 안 한 것**이다. 상태색을 쓰지 않는다. */
+.markNever { color: var(--veo-color-text-muted); border-color: var(--veo-color-border-strong); }
