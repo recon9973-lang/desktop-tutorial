@@ -34,6 +34,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import threading
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -49,6 +50,7 @@ from veo.providers.google.pagespeed import (
     Strategy,
     lab_payload,
 )
+from veo.seo.perf_cache import PERFORMANCE_CACHE, PerformanceCache
 
 __all__ = [
     "PerformanceMeasurement",
@@ -151,12 +153,17 @@ def measure_performance(
     unavailable_state: ProviderState = ProviderState.DISABLED_NO_CREDENTIAL,
     client: PageSpeedClient | None = None,
     budget_seconds: float = TOTAL_BUDGET_SECONDS,
+    cache: PerformanceCache | None = None,
 ) -> PerformanceMeasurement:
     """표본 URL 들의 성능을 재고, 수집기가 읽는 payload 로 만든다.
 
     자격증명이 없으면 **소켓을 열지 않는다.** 상태만 돌려주고, 수집기는 그 상태를
     보고 "측정 불가 — 자격증명 없음" 이라고 적는다. 없는 값을 그럴듯하게 지어내는
     경로가 아예 없다.
+
+    ``cache`` 는 기본이 **꺼짐**이다. 전역 기억을 기본값으로 두면 이 함수를 직접 부르는
+    시험들이 서로의 값을 보게 되고, 그때부터 실패가 실행 순서에 따라 달라진다. 캐시는
+    운영 경로(:func:`with_performance`)가 명시적으로 건넨다.
     """
     if credentials is None or not urls:
         return PerformanceMeasurement(
@@ -170,7 +177,26 @@ def measure_performance(
         )
 
     caller = client or PageSpeedClient(credentials=credentials)
-    results, failures, calls = _measure_all(caller, urls, budget_seconds)
+
+    # 이미 재 둔 값은 다시 재지 않는다. 크롤과 동시에 미리 잰 대표 주소가 여기서
+    # 걸리고(같은 진단 안), 몇 분 전 진단에서 잰 값도 여기서 걸린다(진단 사이).
+    # 구글 한 번 호출이 20~60초라, 한 건만 걸려도 체감이 크게 달라진다.
+    cached: dict[str, PageSpeedResult] = {}
+    to_measure: list[str] = []
+    for url in urls:
+        hit = None if cache is None else cache.get(url, str(STRATEGY))
+        if hit is None:
+            to_measure.append(url)
+        else:
+            cached[url] = hit.value
+
+    results, failures, calls = _measure_all(caller, to_measure, budget_seconds)
+    # 새로 잰 것만 기억에 넣는다 — 캐시에서 온 값을 다시 넣으면 잰 시각이 갱신되어
+    # 값은 그대로인데 수명만 늘어난다. 그러면 오래된 값이 영원히 살아남는다.
+    if cache is not None:
+        for url, value in results.items():
+            cache.put(url, str(STRATEGY), value)
+    results = {**cached, **results}
 
     lab = lab_payload(result.lab for result in results.values())
     field = field_payload(_field_measurements(results))
@@ -199,6 +225,11 @@ def _measure_all(
     measured: dict[str, PageSpeedResult] = {}
     failures: dict[str, str] = {}
     calls: list[CallRecord] = []
+    # 잴 것이 없으면 스레드 풀을 만들지 않는다. 캐시가 전부 받아 준 경우가 그렇고,
+    # 캐시가 잘 들을수록 자주 오는 길이다 — max_workers=0 은 예외를 던진다.
+    if not urls:
+        return measured, failures, calls
+
     requested_at = datetime.now(UTC)
     started = time.monotonic()
 
@@ -362,8 +393,9 @@ def with_performance(
     if not site.has_pages:
         return context, None
 
+    # 여기서만 기억을 켠다 — 크롤과 동시에 미리 잰 대표 주소가 이 자리에서 걸린다.
     measurement = measure_performance(
-        lab_sample(context, site), credentials=resolved, client=client
+        lab_sample(context, site), credentials=resolved, client=client, cache=PERFORMANCE_CACHE
     )
     if not measurement.payloads:
         return context, measurement
@@ -374,3 +406,48 @@ def with_performance(
         provider_payloads={**context.provider_payloads, **measurement.payloads},
     )
     return filled, measurement
+
+
+def prewarm(target_url: str, *, credentials: PageSpeedCredentials | None = _UNSET,
+            cache: PerformanceCache | None = PERFORMANCE_CACHE) -> threading.Thread | None:
+    """대표 주소의 성능 측정을 **크롤과 동시에** 시작한다.
+
+    지금까지 순서는 크롤을 끝내고 → 성능을 쟀다. 실측(2026-08-03)으로 172장 크롤이
+    47초, 성능이 약 130초였고 둘이 나란히 이어져 180초가 됐다. 그런데 대표 주소는
+    크롤이 시작되는 순간 이미 알고 있다 — 기다릴 이유가 없다.
+
+    **효과의 한계를 분명히 한다.** 표본 다섯 장은 이미 병렬로 잰다. 그래서 다섯 중
+    하나를 미리 재 둬도 전체 시간은 *가장 느린 한 장*이 정하고, 미리 잰 그 장이 마침
+    가장 느렸을 때만 줄어든다(2026-08-03 실측으로 확인). 이 함수의 확실한 이득은
+    **재진단**이다 — 캐시에 남은 값이 다음 진단에서 그대로 쓰인다.
+
+    표본 전체를 미리 재지는 않는다. 나머지 네 장은 **어느 페이지가 중요한지**를 크롤이
+    알려 준 뒤에야 정해지고, 그 선택은 채점하는 쪽과 같은 함수가 해야 한다(0-D). 여기서
+    미리 골라 버리면 "잰 페이지" 와 "재려던 페이지" 가 어긋난다.
+
+    실패해도 조용하다. 미리 재기는 **덤**이라, 실패하면 원래 순서대로 나중에 재면 된다 —
+    그래서 여기서 나는 문제로 진단을 멈추지 않는다.
+
+    돌려주는 스레드를 기다릴 필요는 없다. 결과는 캐시에 들어가고, 나중 측정이 그것을
+    집어 간다. 아직 안 끝났으면 그때 그냥 다시 잰다.
+    """
+    # `with_performance` 와 같은 이유로 함수 안에서 읽는다: 기본값이 "설정에서 읽기" 면
+    # 시험이 개발자 컴퓨터의 .env 를 타고 진짜 구글로 나간다(0-F).
+    from veo.providers.google.credentials import pagespeed_from_settings
+
+    resolved = pagespeed_from_settings().credentials if credentials is _UNSET else credentials
+    if resolved is None or cache is None or not target_url.strip():
+        return None
+
+    def _work() -> None:
+        try:
+            client = PageSpeedClient(credentials=resolved)
+            outcome = client.measure(target_url, strategy=STRATEGY)
+            if outcome.succeeded and isinstance(outcome.value, PageSpeedResult):
+                cache.put(target_url, str(STRATEGY), outcome.value)
+        except Exception:
+            return
+
+    thread = threading.Thread(target=_work, name="veo-perf-prewarm", daemon=True)
+    thread.start()
+    return thread

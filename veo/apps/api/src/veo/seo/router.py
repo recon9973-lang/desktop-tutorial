@@ -44,7 +44,7 @@ from veo.seo.history import (
     save_scan_run,
 )
 from veo.seo.jobs import SCAN_STAGES, scan_work
-from veo.seo.measure_performance import with_performance
+from veo.seo.measure_performance import prewarm, with_performance
 from veo.seo.pages import page_breakdown
 from veo.seo.regression import maybe_alert_regression
 from veo.seo.schemas import (
@@ -267,6 +267,12 @@ def run_console_scan(
     # 첫 문서가 primary 가 되고, 그것이 canonical·robots 판정의 기준점이다.
     requested = [payload.target_url, *payload.urls]
     targets = list(dict.fromkeys(url for url in requested if url.strip()))
+
+    # 성능 측정을 **크롤과 동시에** 시작한다. 대표 주소는 지금 이미 알고 있고, 구글에
+    # 한 번 묻는 데 20~60초가 걸린다 — 크롤이 끝나기를 기다릴 이유가 없다.
+    # 결과는 캐시로 가고 아래 with_performance 가 집어 간다. 실패하면 원래대로 나중에
+    # 잰다(덤이라 진단을 멈추지 않는다).
+    prewarm(payload.target_url)
 
     crawler = ConsoleCrawler()
     if payload.discover:

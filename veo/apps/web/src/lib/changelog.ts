@@ -19,6 +19,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.14',
+    date: '2026-08-03',
+    title: '재진단이 빨라진다 — 성능 측정 재사용',
+    items: [
+      '몇 시간 안에 다시 진단하면 성능 측정을 다시 하지 않는다 — 진단 시간의 약 70%가 그 대기였다',
+      '대표 주소 성능 측정을 크롤과 동시에 시작 (효과는 제한적 — 아래 주석 참조)',
+      '오래된 값은 쓰지 않는다 — 6시간이 지나면 다시 잰다',
+    ],
+  },
+  {
     version: '0.3.13',
     date: '2026-08-03',
     title: 'GEO 작업 큐 — 무엇부터 고칠까',
