@@ -7,6 +7,7 @@ contract test fails the build if the committed document and the running app disa
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
 from typing import Any
@@ -19,6 +20,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from veo import __version__
 from veo.api.deps import REQUEST_ID_HEADER, RequestId, build_meta, get_request_id
+from veo.api.metrics import METRICS_SINK
 from veo.api.public_lead_store import build_lead_store
 from veo.api.public_result_store import build_public_result_store
 from veo.api.routes import meta as meta_routes
@@ -45,6 +47,14 @@ from veo.issues.router import router as issues_router
 from veo.jobs.router import router as jobs_router
 from veo.keywords.router import router as keywords_router
 from veo.lab.router import router as lab_router
+from veo.observability import (
+    configure_logging,
+    get_logger,
+    get_metric_sink,
+    log_request_completed,
+    record_http_request,
+    set_metric_sink,
+)
 from veo.observations.router import router as observations_router
 from veo.organizations.router import router as organizations_router
 from veo.projects.router import router as projects_router
@@ -72,6 +82,9 @@ Developed by VENOM. Research & Methodology by VEO-LAB.
   실제 데이터처럼 표시하지 않습니다.
 """
 
+#: 요청 종료 로그 한 줄의 로거 — 미들웨어마다 만들지 않는다.
+_request_log = get_logger("veo.api")
+
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -85,6 +98,11 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+
+    # 관측 배선(E9, 계약 요청 §4-1·§9): 로그는 시작 시 한 번 구성하고, 기본 Null
+    # 싱크 대신 숫자를 실제로 쥐는 싱크를 건다 — /metrics 가 그것을 읽는다.
+    configure_logging()
+    set_metric_sink(METRICS_SINK)
 
     app = FastAPI(
         title="VEO API",
@@ -110,7 +128,29 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def attach_request_id(request: Request, call_next: Any) -> Any:
         request_id = get_request_id(request)
+        started = time.perf_counter()
         response = await call_next(request)
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        # 반드시 경로 "템플릿"(call_next 뒤에만 채워진다) — 해석된 경로를 넣으면
+        # 카디널리티가 고객 수만큼 늘고, 고객 식별자가 접근통제 없는 메트릭 저장소로
+        # 흘러간다(관측 패키지 계약 요청 §4-2 그대로).
+        route = getattr(request.scope.get("route"), "path", None) or "unmatched"
+        log_request_completed(
+            _request_log,
+            correlation_id=request_id,
+            route=route,
+            method=request.method,
+            status_code=response.status_code,
+            latency_ms=int(elapsed_ms),
+            outcome="OK" if response.status_code < 400 else "ERROR",
+        )
+        record_http_request(
+            get_metric_sink(),
+            route=route,
+            method=request.method,
+            status_code=response.status_code,
+            duration_ms=elapsed_ms,
+        )
         response.headers[REQUEST_ID_HEADER] = request_id
         return response
 

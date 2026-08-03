@@ -198,7 +198,16 @@ simple 로 이동, 상세=작업 큐 시험 추가.
   "저장했습니다" 라고 답하는 것이 최악의 거짓이다(배선 계약 시험이 고정).
 - INTEGRATION_REQUEST §6 이행 표시(요청된 check constraint 는 의도적으로 생략 —
   경계 스키마가 이미 강제, 마지막 순간의 거부는 기록만 잃는다).
-- 남은 P1: 리미터 외부화(E6), Sentry/메트릭(E9).
+**E9 완료(2026-08-03): 계기판에 드디어 선이 이어졌다.**
+- 관측 패키지 계약 요청 §4·§9 이행: configure_logging + 요청 종료 로그 한 줄
+  (경로 템플릿 — 이 FastAPI 판은 마운트 접두사 없는 하위 경로) + record_http_request
+  미들웨어 배선, 기본 Null 싱크 → InMemoryMetricSink(veo/api/metrics.METRICS_SINK).
+- `GET /api/metrics`(Prometheus 텍스트, 의존성 없음): 요청·오류·지연, 크롤·제공자·
+  비용 시리즈 + 싱크 자체 손실 계수. 분포는 버킷 없이 count/sum/min/max — 있는 것을
+  있는 그대로. 테넌트는 해시로만이라 /health 급 공개.
+- InMemoryMetricSink 에 snapshot()(잠금 아래 일관 사본) 추가.
+- Sentry 는 별도 백로그(새 의존성+DSN 사용자 액션) — 로그 JSON+메트릭이 우선 커버.
+- 남은 P1: 리미터 외부화(E6 — 수평 확장 전까지 실해 없음), /readyz(§5, DB 점검 배선).
 
 **확정 대기 1**: 콘솔 재설계 시안 v2.2(화이트·DESIGN-stripe.md·SEO|GEO 전환기·
 NXT 벤치마킹) — https://claude.ai/code/artifact/23b75266-5ebc-4492-9677-9fca4634f2eb

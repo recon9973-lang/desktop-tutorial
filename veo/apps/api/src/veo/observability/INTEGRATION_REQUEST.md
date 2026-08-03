@@ -123,7 +123,13 @@ IPv6 패턴은 ISO 타임스탬프의 `12:00:00`을 주소로 오인하지 않�
 
 ---
 
-## 4. `veo/api/app.py` 배선 (필수 · 이 패키지는 이 파일을 수정하지 않았습니다)
+## 4. ~~`veo/api/app.py` 배선~~ — **이행됨 (2026-08-03, E9)**
+
+통합 담당자가 §4-1(configure_logging)·§4-2(요청 종료 로그 + record_http_request, 경로
+템플릿 규칙 포함)를 `create_app` 에 그대로 배선했습니다. 주의: 이 FastAPI 판에서
+`scope["route"].path` 는 마운트 접두사 없는 하위 경로(`/health`)입니다 — 템플릿이라는
+성질은 같습니다. 배선 사실은 `tests/contract/test_metrics_wiring.py` 가 지킵니다.
+원문 요청은 아래에 남깁니다.
 
 ### 4-1. 시작 시 로깅 구성
 
@@ -264,7 +270,12 @@ def readyz() -> dict:
 
 ---
 
-## 9. 메트릭 익스포터 (미래 작업, 이 패키지 소유 아님)
+## 9. ~~메트릭 익스포터~~ — **이행됨 (2026-08-03, E9)**
+
+통합 담당자가 `InMemoryMetricSink` 에 `snapshot()`(익스포터가 읽는 문)을 더하고,
+`veo/api/metrics.py` 가 의존성 없이 Prometheus 텍스트로 그려 `GET /api/metrics` 로
+노출합니다(분포는 버킷 없이 count/sum/min/max — 있는 것을 있는 그대로). 요청하신
+원칙 그대로 `prometheus_client` 의존성은 추가되지 않았습니다. 원문은 아래에.
 
 `MetricSink`는 3개 메서드짜리 프로토콜입니다. Prometheus/OTLP/StatsD 어댑터는 이 프로토콜을
 구현하고 `set_metric_sink(...)`로 설치하면 되며, 호출 지점은 한 줄도 바뀌지 않습니다.

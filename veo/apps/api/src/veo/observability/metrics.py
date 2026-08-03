@@ -44,6 +44,7 @@ __all__ = [
     "InMemoryMetricSink",
     "MetricName",
     "MetricSink",
+    "MetricsSnapshot",
     "NullMetricSink",
     "SafeMetricSink",
     "get_metric_sink",
@@ -175,6 +176,20 @@ class HistogramSummary:
 
 _Series = tuple[str, tuple[tuple[str, str], ...]]
 
+#: 시리즈 하나의 라벨 묶음 — 정렬돼 있어 순서가 두 번째 시리즈를 만들지 못한다.
+SeriesLabels = tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class MetricsSnapshot:
+    """한 순간의 모든 시리즈 — 익스포터가 읽는 형태."""
+
+    counters: tuple[tuple[str, SeriesLabels, float], ...]
+    gauges: tuple[tuple[str, SeriesLabels, float], ...]
+    histograms: tuple[tuple[str, SeriesLabels, HistogramSummary], ...]
+    dropped_series: int
+    rejected_samples: int
+
 
 def _series_key(name: str, labels: Mapping[str, str] | None) -> _Series:
     """Label order must not create a second series, so the key is sorted."""
@@ -220,6 +235,40 @@ class InMemoryMetricSink:
         """Samples refused as nonsense — negative counter steps, NaN, infinity."""
         with self._lock:
             return self._rejected_samples
+
+    def snapshot(self) -> MetricsSnapshot:
+        """모든 시리즈의 일관된 사본 — 익스포터가 읽는 문.
+
+        잠금 아래에서 통째로 복사한다. 시리즈별로 따로 읽으면 카운터와 분포가 서로
+        다른 순간을 말하게 되고, 그 불일치는 그래프에서 원인 불명의 튐으로 나타난다.
+        """
+        with self._lock:
+            return MetricsSnapshot(
+                counters=tuple(
+                    (name, labels, value)
+                    for (name, labels), value in sorted(self._counters.items())
+                ),
+                gauges=tuple(
+                    (name, labels, value)
+                    for (name, labels), value in sorted(self._gauges.items())
+                ),
+                histograms=tuple(
+                    (
+                        name,
+                        labels,
+                        HistogramSummary(
+                            count=len(samples),
+                            total=math.fsum(samples),
+                            minimum=min(samples),
+                            maximum=max(samples),
+                        ),
+                    )
+                    for (name, labels), samples in sorted(self._histograms.items())
+                    if samples
+                ),
+                dropped_series=self._dropped_series,
+                rejected_samples=self._rejected_samples,
+            )
 
     def counter_value(self, name: str, **labels: str) -> float:
         """A counter that was never incremented reads as ``0``, which is true of it."""

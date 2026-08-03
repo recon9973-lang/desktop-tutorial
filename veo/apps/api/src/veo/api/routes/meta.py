@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
+from fastapi.responses import PlainTextResponse
 
 from veo import __version__
 from veo.api.deps import RequestId, ok
@@ -40,6 +41,26 @@ _STATE_REASONS_KO: dict[ProviderState, str] = {
 #: Adding a ProviderState without a reason here used to 500 this endpoint. A status page
 #: that dies because it met a status it did not recognise is the wrong failure.
 _UNKNOWN_STATE_REASON_KO = "이 상태에 대한 설명이 아직 등록되지 않았습니다."
+
+
+@router.get(
+    "/metrics",
+    summary="프로세스 메트릭 (Prometheus 텍스트)",
+    description=(
+        "요청·오류·지연, 크롤·제공자·비용 시리즈를 Prometheus 텍스트 형식으로 "
+        "내보냅니다. 테넌트 식별자는 설계상 들어 있지 않습니다(조직은 해시로만) — "
+        "그래서 /health 와 같은 급으로 공개됩니다. 분포는 버킷 없이 "
+        "count/sum/min/max 네 값으로 나갑니다."
+    ),
+    response_class=PlainTextResponse,
+)
+def metrics() -> PlainTextResponse:
+    from veo.api.metrics import METRICS_SINK, render_prometheus
+
+    return PlainTextResponse(
+        render_prometheus(METRICS_SINK.snapshot()),
+        media_type="text/plain; version=0.0.4; charset=utf-8",
+    )
 
 
 @router.get("/health", response_model=ApiResponse[HealthPayload], summary="서비스 상태 확인")

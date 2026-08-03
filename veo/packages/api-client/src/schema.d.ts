@@ -871,6 +871,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 프로세스 메트릭 (Prometheus 텍스트)
+         * @description 요청·오류·지연, 크롤·제공자·비용 시리즈를 Prometheus 텍스트 형식으로 내보냅니다. 테넌트 식별자는 설계상 들어 있지 않습니다(조직은 해시로만) — 그래서 /health 와 같은 급으로 공개됩니다. 분포는 버킷 없이 count/sum/min/max 네 값으로 나갑니다.
+         */
+        get: operations["metrics_api_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/observations/engines": {
         parameters: {
             query?: never;
@@ -9509,6 +9529,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    metrics_api_metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
                 };
             };
         };

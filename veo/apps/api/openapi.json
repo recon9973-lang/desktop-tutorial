@@ -18218,6 +18218,28 @@
         ]
       }
     },
+    "/api/metrics": {
+      "get": {
+        "description": "요청·오류·지연, 크롤·제공자·비용 시리즈를 Prometheus 텍스트 형식으로 내보냅니다. 테넌트 식별자는 설계상 들어 있지 않습니다(조직은 해시로만) — 그래서 /health 와 같은 급으로 공개됩니다. 분포는 버킷 없이 count/sum/min/max 네 값으로 나갑니다.",
+        "operationId": "metrics_api_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "프로세스 메트릭 (Prometheus 텍스트)",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
     "/api/observations/engines": {
       "get": {
         "description": "쓸 수 있는 엔진만 돌려주지 않습니다. **아는 엔진을 전부** 돌려주고 각각 왜 쓸 수 있는지·없는지를 함께 줍니다. 못 쓰는 엔진을 목록에서 빼면 '여기 있는 게 전부' 로 읽히고, 자격증명만 넣으면 잴 수 있었던 것을 아무도 모른 채 지나갑니다.",
