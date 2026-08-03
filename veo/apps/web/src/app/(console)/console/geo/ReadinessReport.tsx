@@ -55,16 +55,30 @@ export function ReadinessReport({
 
       <div className={hasScore ? styles.rateCard : styles.rateCardUnmeasured}>
         <p className={styles.rateLabel}>GEO 준비도 · {report.target_url}</p>
-        <p className={hasScore ? styles.rateValue : styles.rateValueUnmeasured}>
-          {hasScore ? `${readiness.score?.toFixed(1)}점` : '점수를 낼 수 없습니다'}
-        </p>
-        {readiness.band_label_ko === null ? null : (
-          <p className={styles.rateDenominator}>{readiness.band_label_ko}</p>
-        )}
-        <p className={styles.interval}>
-          측정 범위 {(readiness.coverage * 100).toFixed(0)}% · 신뢰도{' '}
-          {(readiness.confidence * 100).toFixed(0)}% · 채점 규칙 {readiness.spec_version}
-        </p>
+        {/* SEO 화면과 같은 게이지. 숫자 하나보다 "어디까지 찼는가" 가 먼저 읽히고,
+            두 화면이 같은 문법을 쓰면 같은 사람이 두 번 배우지 않는다. */}
+        <div className={styles.scoreRow}>
+          {hasScore ? (
+            <div
+              className={styles.gauge}
+              style={{ ['--veo-gauge-deg' as string]: `${((readiness.score ?? 0) / 100) * 360}deg` }}
+              role="img"
+              aria-label={`${readiness.score?.toFixed(1)}점`}
+            >
+              <div className={styles.gaugeIn}>
+                <b>{readiness.score?.toFixed(1)}</b>
+                <span>{readiness.band_label_ko ?? '점'}</span>
+              </div>
+            </div>
+          ) : (
+            <p className={styles.rateValueUnmeasured}>점수를 낼 수 없습니다</p>
+          )}
+          <div className={styles.scoreSide}>
+            <p>측정 범위 {(readiness.coverage * 100).toFixed(0)}%</p>
+            <p>신뢰도 {(readiness.confidence * 100).toFixed(0)}%</p>
+            <p>명세 {readiness.spec_version}</p>
+          </div>
+        </div>
         <p className={styles.rateMeaning}>{report.summary_ko}</p>
       </div>
 

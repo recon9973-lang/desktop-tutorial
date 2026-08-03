@@ -781,3 +781,33 @@
   padding: 3px 11px;
   font-variant-numeric: tabular-nums;
 }
+
+/* 점수 게이지 — SEO 화면과 같은 값·같은 방법(conic-gradient). 두 화면이 다른 문법을
+   쓰면 같은 사람이 두 번 배워야 한다. */
+.scoreRow { display: flex; align-items: center; gap: var(--veo-space-5); flex-wrap: wrap; }
+.gauge {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  flex: none;
+  background: conic-gradient(
+    var(--veo-color-accent) 0 var(--veo-gauge-deg, 0deg),
+    var(--veo-color-border) var(--veo-gauge-deg, 0deg) 360deg
+  );
+  display: grid;
+  place-items: center;
+}
+.gaugeIn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--veo-color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.gaugeIn b { font-size: 22px; font-weight: var(--veo-weight-semibold); line-height: 1; font-variant-numeric: tabular-nums; }
+.gaugeIn span { font-size: 9.5px; color: var(--veo-color-text-muted); margin-top: 2px; }
+.scoreSide { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); font-variant-numeric: tabular-nums; }
+.scoreSide p { margin: 0 0 2px; }

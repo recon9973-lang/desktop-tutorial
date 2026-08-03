@@ -125,9 +125,28 @@ async function ConsoleGeoContent({
       </p>
 
       <div className={styles.separatedSections}>
+
+        <section aria-labelledby="geo-readiness-heading">
+          <div className={styles.header}>
+            <p className={styles.eyebrow}>1 / 2 · 구조 평가</p>
+            <h2 id="geo-readiness-heading" className={styles.sectionTitle}>
+              GEO 준비도
+            </h2>
+            <p className={styles.sectionLede}>
+              AI 답변 엔진이 페이지에 접근하고, 본문을 추출하고, 근거를 검증할 수 있는
+              구조인지를 채점 명세에 따라 평가합니다. 우리가 고칠 수 있는 영역입니다.
+            </p>
+          </div>
+
+          <Card title="준비도 진단" headingLevel={3}>
+            <ReadinessForm />
+          </Card>
+        </section>
+
+        <hr className={styles.divider} />
         <section aria-labelledby="geo-observation-heading">
           <div className={styles.header}>
-            <p className={styles.eyebrow}>1 / 2 · 외부 관측</p>
+            <p className={styles.eyebrow}>2 / 2 · 외부 관측</p>
             <h2 id="geo-observation-heading" className={styles.sectionTitle}>
               AI 가시성 관측
             </h2>
@@ -188,25 +207,6 @@ async function ConsoleGeoContent({
             jobs={jobs.ok ? jobs.data.items : []}
             currentRunId={targetRunId}
           />
-        </section>
-
-        <hr className={styles.divider} />
-
-        <section aria-labelledby="geo-readiness-heading">
-          <div className={styles.header}>
-            <p className={styles.eyebrow}>2 / 2 · 구조 평가</p>
-            <h2 id="geo-readiness-heading" className={styles.sectionTitle}>
-              GEO 준비도
-            </h2>
-            <p className={styles.sectionLede}>
-              AI 답변 엔진이 페이지에 접근하고, 본문을 추출하고, 근거를 검증할 수 있는
-              구조인지를 채점 명세에 따라 평가합니다. 우리가 고칠 수 있는 영역입니다.
-            </p>
-          </div>
-
-          <Card title="준비도 진단" headingLevel={3}>
-            <ReadinessForm />
-          </Card>
         </section>
       </div>
     </div>

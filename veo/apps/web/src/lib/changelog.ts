@@ -19,6 +19,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.18',
+    date: '2026-08-04',
+    title: 'GEO 화면 — 고칠 수 있는 것이 먼저',
+    items: [
+      'GEO 준비도(우리가 고침)를 위로, AI 가시성 관측(밖에서 봄)을 아래로',
+      '점수를 SEO 와 같은 원형 게이지로 — 두 화면이 같은 문법을 쓴다',
+    ],
+  },
+  {
     version: '0.3.17',
     date: '2026-08-04',
     title: '진단이 어디서 시간을 쓰는지 남는다',
