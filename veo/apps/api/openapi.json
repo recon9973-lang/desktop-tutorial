@@ -220,6 +220,39 @@
         "title": "ApiResponse[ComparisonPayload]",
         "type": "object"
       },
+      "ApiResponse_CopyReviewPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CopyReviewPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[CopyReviewPayload]",
+        "type": "object"
+      },
       "ApiResponse_CreatedVersionPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -3940,6 +3973,48 @@
           "measured_at"
         ],
         "title": "ConditionsPayload",
+        "type": "object"
+      },
+      "CopyReviewPayload": {
+        "properties": {
+          "disclaimer_ko": {
+            "title": "Disclaimer Ko",
+            "type": "string"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/MedicalFindingPayload"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "reviewed_chars": {
+            "title": "Reviewed Chars",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "findings",
+          "disclaimer_ko",
+          "reviewed_chars"
+        ],
+        "title": "CopyReviewPayload",
+        "type": "object"
+      },
+      "CopyReviewRequest": {
+        "properties": {
+          "text": {
+            "description": "검수할 원고 전문입니다.",
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "CopyReviewRequest",
         "type": "object"
       },
       "CreateDraftRequest": {
@@ -8119,6 +8194,51 @@
           "score"
         ],
         "title": "MeasurementInput",
+        "type": "object"
+      },
+      "MedicalFindingPayload": {
+        "properties": {
+          "category_ko": {
+            "title": "Category Ko",
+            "type": "string"
+          },
+          "excerpt": {
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "guidance_ko": {
+            "title": "Guidance Ko",
+            "type": "string"
+          },
+          "offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offset"
+          },
+          "reference_ko": {
+            "title": "Reference Ko",
+            "type": "string"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_id",
+          "category_ko",
+          "guidance_ko",
+          "reference_ko",
+          "excerpt",
+          "offset"
+        ],
+        "title": "MedicalFindingPayload",
         "type": "object"
       },
       "MemberPayload": {
@@ -18273,6 +18393,48 @@
         "summary": "검토 요청 (DRAFT → REVIEW)",
         "tags": [
           "lab"
+        ]
+      }
+    },
+    "/api/medical/copy-reviews": {
+      "post": {
+        "description": "원고 텍스트를 의료법 제56조의 금지 유형 규칙에 대고, 사람이 반드시 읽어 봐야 할 표현을 근거 조항과 함께 표시합니다. 점수는 없습니다 — 숫자를 붙이는 순간 '몇 점이면 안전'이라는, 누구도 보증할 수 없는 읽기가 생깁니다. 원고는 저장하지 않습니다.",
+        "operationId": "review_medical_copy_api_medical_copy_reviews_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CopyReviewPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "의료광고 원고 검수 — 위반 판정이 아니라 검토 신호",
+        "tags": [
+          "medical"
         ]
       }
     },

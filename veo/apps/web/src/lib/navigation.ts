@@ -106,6 +106,12 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     permission: 'report:read',
   },
   {
+    href: '/console/medical',
+    label: '의료광고 검수',
+    description: '원고의 검토 필요 표현 표시',
+    permission: 'scan:read',
+  },
+  {
     href: '/console/usage',
     label: '사용량·비용',
     description: 'AI 호출과 이번 달 지출',

@@ -871,6 +871,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/medical/copy-reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 의료광고 원고 검수 — 위반 판정이 아니라 검토 신호
+         * @description 원고 텍스트를 의료법 제56조의 금지 유형 규칙에 대고, 사람이 반드시 읽어 봐야 할 표현을 근거 조항과 함께 표시합니다. 점수는 없습니다 — 숫자를 붙이는 순간 '몇 점이면 안전'이라는, 누구도 보증할 수 없는 읽기가 생깁니다. 원고는 저장하지 않습니다.
+         */
+        post: operations["review_medical_copy_api_medical_copy_reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/metrics": {
         parameters: {
             query?: never;
@@ -1978,6 +1998,12 @@ export interface components {
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[CopyReviewPayload] */
+        ApiResponse_CopyReviewPayload_: {
+            data?: components["schemas"]["CopyReviewPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[CreatedVersionPayload] */
         ApiResponse_CreatedVersionPayload_: {
             data?: components["schemas"]["CreatedVersionPayload"] | null;
@@ -3037,6 +3063,23 @@ export interface components {
             spec_id: string;
             /** Spec Version */
             spec_version: string;
+        };
+        /** CopyReviewPayload */
+        CopyReviewPayload: {
+            /** Disclaimer Ko */
+            disclaimer_ko: string;
+            /** Findings */
+            findings: components["schemas"]["MedicalFindingPayload"][];
+            /** Reviewed Chars */
+            reviewed_chars: number;
+        };
+        /** CopyReviewRequest */
+        CopyReviewRequest: {
+            /**
+             * Text
+             * @description 검수할 원고 전문입니다.
+             */
+            text: string;
         };
         /**
          * CreateDraftRequest
@@ -4726,6 +4769,21 @@ export interface components {
         MeasurementInput: {
             conditions: components["schemas"]["DeclaredConditions"];
             score: components["schemas"]["ScoreInput"];
+        };
+        /** MedicalFindingPayload */
+        MedicalFindingPayload: {
+            /** Category Ko */
+            category_ko: string;
+            /** Excerpt */
+            excerpt: string;
+            /** Guidance Ko */
+            guidance_ko: string;
+            /** Offset */
+            offset: number | null;
+            /** Reference Ko */
+            reference_ko: string;
+            /** Rule Id */
+            rule_id: string;
         };
         /**
          * MemberPayload
@@ -9561,6 +9619,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_ScoringVersionSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_medical_copy_api_medical_copy_reviews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopyReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_CopyReviewPayload_"];
                 };
             };
             /** @description Validation Error */
