@@ -108,7 +108,9 @@ class UserInvitation(Base, OrganizationScopedMixin, TimestampMixin):
 class Customer(Base, OrganizationScopedMixin, TimestampMixin):
     __tablename__ = "customers"
     # 거래처 목록은 늘 조직 + 등록 여부로 걸러 읽는다.
-    __table_args__ = (Index("ix_customers_organization_registered", "organization_id", "is_registered"),)
+    __table_args__ = (
+        Index("ix_customers_organization_registered", "organization_id", "is_registered"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(200), nullable=False)

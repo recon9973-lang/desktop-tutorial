@@ -812,15 +812,15 @@ def _sitemap_location_problem(location: str, site: SiteObservation) -> str | Non
         decision = site.robots.decide(path_of(location), user_agent=CRAWLER_AGENT_NAME)
         if not decision.allowed:
             return f"robots.txt에서 차단되어 있습니다 ({decision.matched_rule})"
-    if page is not None:
-        # 부분 문자열로 찾으면 `max-image-preview:none` 이 걸린다 — 구글이 문서화한
-        # 값인데 `none` 을 품고 있다. 이 파일 위쪽(_BLOCKING_DIRECTIVES 주석)에 그
-        # 사고가 기록돼 있고 `_blocks_indexing()` 이 이미 토큰 단위로 올바르게 본다.
-        # 그런데 이 함수만 옛 방식으로 남아 있었다 — 같은 결함을 한 곳만 고친 것이다.
-        if _blocks_indexing(page.raw.meta_robots or "") or _blocks_indexing(
-            page.header("x-robots-tag") or ""
-        ):
-            return "noindex로 색인에서 제외되어 있습니다"
+    # 부분 문자열로 찾으면 `max-image-preview:none` 이 걸린다 — 구글이 문서화한 값인데
+    # `none` 을 품고 있다. 이 파일 위쪽(_BLOCKING_DIRECTIVES 주석)에 그 사고가 기록돼
+    # 있고 `_blocks_indexing()` 이 이미 토큰 단위로 올바르게 본다. 그런데 이 함수만 옛
+    # 방식으로 남아 있었다 — 같은 결함을 한 곳만 고친 것이다.
+    if page is not None and (
+        _blocks_indexing(page.raw.meta_robots or "")
+        or _blocks_indexing(page.header("x-robots-tag") or "")
+    ):
+        return "noindex로 색인에서 제외되어 있습니다"
     return None
 
 

@@ -22,7 +22,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from veo.collect.contract import CollectionContext
-from veo.collect.readable import ReadFailure, read_failure
+from veo.collect.readable import read_failure
 from veo.core.settings import get_provider_credentials
 from veo.scoring import ScoringSpec
 from veo.seo.crawl import CrawlOutcome

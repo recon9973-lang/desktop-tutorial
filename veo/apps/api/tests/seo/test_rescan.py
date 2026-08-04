@@ -13,12 +13,17 @@
 from __future__ import annotations
 
 import datetime as dt
+from datetime import UTC, datetime
 
 import pytest
 
 pytest.importorskip("pydantic")
 
 from tests.seo.test_regression_alert import project, site  # noqa: F401  (지역 픽스처 재사용)
+
+#: 진단이 시작한 시각. 저장되는 종료 시각보다 앞서야 소요 시간이 0 이 아니다 —
+#: 근거는 tests/seo/test_scan_history.py 의 TestHowLongTheScanTook 에 적혀 있다.
+SCAN_STARTED_AT = datetime(2026, 8, 4, 0, 0, tzinfo=UTC)
 
 
 def _age_latest_run(db_session, site_row, *, days: int) -> None:
@@ -43,7 +48,7 @@ def _save_run(db_session, principal, site_row, scan_result, scan_context):  # ty
     return save_scan_run(
         db_session, principal=principal, site_id=site_row.id,
         result=scan_result, context=scan_context,
-        urls_attempted=1, urls_collected=1,
+        urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
     )
 
 
@@ -134,7 +139,7 @@ class TestTheSystemActor:
         saved = save_scan_run(
             db_session, principal=actor, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
 
         run = db_session.get(ScanRun, saved.scan_run_id)

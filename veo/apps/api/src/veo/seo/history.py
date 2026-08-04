@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import logging
-
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -191,7 +190,7 @@ def save_scan_run(
     context: CollectionContext,
     urls_attempted: int,
     urls_collected: int,
-    started_at: datetime | None = None,
+    started_at: datetime,
     report_snapshot: dict[str, object] | None = None,
     kind: str = SEO_KIND,
 ) -> SavedScan:
@@ -201,6 +200,14 @@ def save_scan_run(
     ``device_profile="DESKTOP"``(데스크톱 브라우저는 관여하지 않는다),
     ``provider_states={}``(맥락이 알고 있던 것을 버렸다). 기본값을 주면 호출자가 그냥
     안 넘기고, 그러면 같은 일이 조용히 반복된다.
+
+    ``started_at`` 이 필수인 이유는 **바로 그 일이 실제로 일어났기 때문**이다. 이 칸은
+    ``started_at: datetime | None = None`` 이었고 본문은 ``started_at or finished`` 로
+    받았다. 부르는 곳 두 군데 모두 넘기지 않았고, 그래서 운영에 쌓인 39건이 전부
+    시작=종료, 소요 0초로 남았다(2026-08-04 확인). 로그에는 단계별 시간이 찍히고 있어서
+    이 사실이 드러나지 않았다 — "진단이 얼마나 걸리나" 를 물어보고서야 알았다.
+
+    기본값을 지운다. 안 넘기면 이제 부르는 쪽이 깨진다.
     """
     site = _site_for(db, principal=principal, site_id=site_id)
     scan = _scan_for(db, principal=principal, site=site, kind=kind)
@@ -214,7 +221,7 @@ def save_scan_run(
         # 측정하지 못한 항목이 있어도 실행 자체는 성공이다. 부분 성공은 수집을 **못 한**
         # 경우를 위한 상태이지, 자격증명이 없어 UNKNOWN 이 난 경우가 아니다.
         status="SUCCEEDED" if urls_collected == urls_attempted else "PARTIAL_SUCCESS",
-        started_at=started_at or finished,
+        started_at=started_at,
         finished_at=finished,
         collector_version=COLLECTOR_VERSION,
         user_agent=DEFAULT_USER_AGENT,
@@ -279,7 +286,7 @@ def save_scan_run(
                 run_id=run.id,
                 context=context,
             )
-    except Exception:  # noqa: BLE001 - 보관 실패가 진단 실패가 되면 안 된다
+    except Exception:
         _log.warning("fetch captures were not stored for run %s", run.id, exc_info=True)
     _upsert_issues(db, principal=principal, run=run, site=site, result=result)
     db.flush()
@@ -469,7 +476,14 @@ def read_scan_history(
             Scan.site_id == site_id,
             Scan.kind == kind,
         )
-        .order_by(ScanRun.started_at.desc())
+        # 잰 순서대로. 첫 줄이 "최신" 이고 나머지가 그것과 비교되므로, 순서가 흔들리면
+        # 비교 가능 여부까지 흔들린다.
+        #
+        # `created_at` 은 **다른 요청끼리의** 동점만 가른다. 같은 트랜잭션에서 저장된
+        # 행들은 이 값마저 같다 — PostgreSQL 의 `now()` 는 문장 시각이 아니라 트랜잭션
+        # 시각이다. 한 요청이 저장하는 SEO·GEO 두 실행이 그 경우인데, 저 둘은 `kind` 로
+        # 이미 갈라져 여기서 만나지 않는다.
+        .order_by(ScanRun.started_at.desc(), ScanRun.created_at.desc())
         .limit(limit)
     )
     assert_tenant_scoped(statement, principal.organization_id)

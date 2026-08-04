@@ -35,6 +35,7 @@ from veo.organizations.http import guard
 from veo.scoring import ScoreResult
 from veo.scoring.improvements import rank_improvements
 from veo.scoring.page import PageScore
+from veo.seo.captures import read_captures
 from veo.seo.collectors import CATEGORY_COLLECTORS, PROVIDER_BACKED_CHECKS
 from veo.seo.crawl import ConsoleCrawler, CrawlOutcome, CrawlRefusal
 from veo.seo.fix_examples import code_example_for, with_brand
@@ -55,6 +56,7 @@ from veo.seo.schemas import (
     CheckCatalogueEntry,
     CheckCataloguePayload,
     EvidenceSummary,
+    FetchCaptureSummary,
     GeoCompanionSummary,
     ImprovementSummary,
     IssueSummary,
@@ -64,10 +66,9 @@ from veo.seo.schemas import (
     PageLossSummary,
     PageScoreSummary,
     PageStageSummary,
+    ScanCapturesPayload,
     ScanHistoryEntry,
     ScanHistoryPayload,
-    FetchCaptureSummary,
-    ScanCapturesPayload,
     ScanPagesPayload,
     ScanPayload,
     ScoreSummary,
@@ -284,6 +285,15 @@ def run_console_scan(
     반환은 (응답 본문, 저장된 실행 id). 사이트를 지정하지 않은 진단은 저장하지
     않으므로 id 가 ``None`` 이다.
     """
+    # 어느 단계가 시간을 쓰는지, 그리고 **언제 시작했는지** 남긴다. 남기지 않으면
+    # "느려졌다" 는 말에 답할 수 없고, 고친 뒤 빨라졌는지도 확인할 수 없다(2026-08-03 에
+    # 이 내역을 알아내려고 크롤러를 따로 돌려야 했다).
+    #
+    # 파이프라인 **맨 앞**에서 만든다. 예전에는 크롤 직전에 만들었는데, 그러면 명세를
+    # 읽고 성능 측정을 미리 띄우는 시간이 진단 시간에서 빠진다. 그 시간도 고객이 기다리는
+    # 시간이다.
+    timings = ScanTimings()
+
     spec = load_seo_spec()
     # 사이트를 지정했다면 **가져오기 전에** 존재를 확인한다. 없는 사이트를 위해 남의
     # 서버에 요청을 보내고 나서 404 를 돌려주는 것은 순서가 틀렸다.
@@ -302,11 +312,6 @@ def run_console_scan(
     # 옛 값을 보게 되고, 그 순간 이 도구는 "고쳐도 안 바뀐다" 는 거짓을 말한다.
     perf_cache = PerformanceCache()
     prewarm(payload.target_url, cache=perf_cache)
-
-    # 어느 단계가 시간을 쓰는지 남긴다. 남기지 않으면 "느려졌다" 는 말에 답할 수 없고,
-    # 고친 뒤 빨라졌는지도 확인할 수 없다(2026-08-03 에 이 내역을 알아내려고 크롤러를
-    # 따로 돌려야 했다).
-    timings = ScanTimings()
 
     crawler = ConsoleCrawler()
     with stage("수집", timings):
@@ -361,6 +366,10 @@ def run_console_scan(
             locale=payload.locale,
             urls_attempted=outcome.attempted,
             urls_collected=len(outcome.documents),
+            # 같은 크롤을 나눠 쓰므로 시작 시각도 같다. GEO 는 SEO 보다 **먼저** 저장되니
+            # 종료 시각만 더 이르다 — 두 실행이 한 요청 안에서 겹쳐 돌았다는 사실이
+            # 그대로 남는다.
+            started_at=timings.started_at,
         )
         report = report.model_copy(
             update={
@@ -388,6 +397,7 @@ def run_console_scan(
                 urls_attempted=outcome.attempted,
                 urls_collected=len(outcome.documents),
                 report_snapshot=report.model_dump(mode="json"),
+                started_at=timings.started_at,
             )
         # 저장이 끝난 뒤에만 비교한다 — 이 진단이 '직전' 과 비교 가능한 최신이
         # 되는 시점이 지금이다. 실패해도 저장·응답은 그대로다.

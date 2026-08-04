@@ -17,10 +17,25 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 import pytest
 
 pytest.importorskip("sqlalchemy")
+
+#: 진단이 시작한 시각. 저장되는 종료 시각보다 **앞선다** — 그래야 소요 시간이 0 이
+#: 아니다. 2026-08-04 운영 DB 에는 39건이 전부 시작=종료로 남아 있었다: 저장하는 쪽이
+#: 이 값을 못 받아 종료 시각으로 채웠고, 부르는 곳 두 군데 모두 넘기지 않았다.
+#: 고정 시각을 쓰는 이유는 시험이 시계에 흔들리지 않게 하기 위해서다.
+STARTED = datetime(2026, 8, 4, 0, 0, tzinfo=UTC)
+
+#: 그보다 **먼저** 잰 실행. 두 실행을 나란히 놓는 시험이 쓴다.
+#:
+#: 같은 시각을 주면 안 된다. 이력은 잰 순서로 정렬되는데, 동점이면 어느 쪽이 '최신'
+#: 인지 그때그때 달라진다 — 같은 트랜잭션에서 저장된 행은 `created_at` 마저 같아서
+#: (PostgreSQL 의 `now()` 는 트랜잭션 시각이다) 가를 기준이 남지 않는다. 실제로도
+#: 두 진단은 다른 시각에 시작한다.
+EARLIER = datetime(2026, 8, 3, 0, 0, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -73,7 +88,7 @@ class TestSavingOneRun:
             site_id=site.id,
             result=scan_result, context=scan_context,
             urls_attempted=3,
-            urls_collected=3,
+            urls_collected=3, started_at=STARTED,
         )
 
         assert saved.score is not None
@@ -94,7 +109,7 @@ class TestSavingOneRun:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         rows = db_session.query(CheckResult).filter_by(scan_run_id=saved.scan_run_id).all()
@@ -125,7 +140,7 @@ class TestSavingOneRun:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         rows = {
@@ -163,7 +178,7 @@ class TestSavingOneRun:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         rows = {
@@ -197,7 +212,7 @@ class TestSavingOneRun:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         unknown = (
@@ -224,7 +239,7 @@ class TestHistory:
             save_scan_run(
                 db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-                urls_attempted=1, urls_collected=1,
+                urls_attempted=1, urls_collected=1, started_at=STARTED,
             )
 
         history = read_scan_history(db_session, principal=principal, site_id=site.id)
@@ -246,7 +261,7 @@ class TestHistory:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         assert read_scan_history(db_session, principal=other_principal, site_id=site.id) == []
@@ -268,12 +283,12 @@ class TestIssueLifecycle:
         first = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
         second = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         issues = db_session.query(Issue).filter_by(project_id=project.id).all()
@@ -299,7 +314,7 @@ class TestIssueLifecycle:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
         resolved = db_session.query(Issue).filter_by(project_id=project.id).first()
         assert resolved is not None
@@ -309,7 +324,7 @@ class TestIssueLifecycle:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
         db_session.refresh(resolved)
 
@@ -339,7 +354,7 @@ class TestReadingAPastRunBack:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1, report_snapshot=snapshot,
+            urls_attempted=1, urls_collected=1, started_at=STARTED, report_snapshot=snapshot,
         )
 
         assert read_scan_report(
@@ -360,7 +375,8 @@ class TestReadingAPastRunBack:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1, report_snapshot={"summary_ko": "비밀"},
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
+            report_snapshot={"summary_ko": "비밀"},
         )
 
         assert read_scan_report(
@@ -384,7 +400,7 @@ class TestWhoRanIt:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         entry = read_scan_history(db_session, principal=principal, site_id=site.id)[0]
@@ -405,7 +421,7 @@ class TestWhoRanIt:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
         db_session.delete(db_session.get(User, user.id))
         db_session.flush()
@@ -440,7 +456,7 @@ class TestMeasurementConditions:
 
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         run = db_session.get(ScanRun, saved.scan_run_id)
@@ -469,7 +485,7 @@ class TestMeasurementConditions:
 
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         run = db_session.get(ScanRun, saved.scan_run_id)
@@ -506,14 +522,14 @@ class TestMeasurementConditions:
 
         older = save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=EARLIER,
         )
         # 이 칸이 생기기 전에 저장된 실행을 흉내 낸다.
         db_session.get(ScanRun, older.scan_run_id).measurement_conditions = None
         db_session.flush()
         save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         entries = read_scan_history(db_session, principal=principal, site_id=site.id)
@@ -534,7 +550,7 @@ class TestMeasurementConditions:
 
         save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         entries = read_scan_history(db_session, principal=principal, site_id=site.id)
@@ -554,7 +570,7 @@ class TestMeasurementConditions:
         for _ in range(2):
             save_scan_run(
                 db_session, principal=principal, site_id=site.id, result=scan_result,
-                context=scan_context, urls_attempted=1, urls_collected=1,
+                context=scan_context, urls_attempted=1, urls_collected=1, started_at=STARTED,
             )
 
         entries = read_scan_history(db_session, principal=principal, site_id=site.id)
@@ -574,7 +590,7 @@ class TestMeasurementConditions:
 
         older = save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=EARLIER,
         )
         run = db_session.get(ScanRun, older.scan_run_id)
         run.measurement_conditions = {
@@ -585,7 +601,7 @@ class TestMeasurementConditions:
         db_session.flush()
         save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=scan_context, urls_attempted=1, urls_collected=1,
+            context=scan_context, urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         entries = read_scan_history(db_session, principal=principal, site_id=site.id)
@@ -617,7 +633,7 @@ class TestMeasurementConditions:
         )
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
-            context=context, urls_attempted=1, urls_collected=1,
+            context=context, urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         run = db_session.get(ScanRun, saved.scan_run_id)
@@ -645,12 +661,12 @@ class TestMeasurementConditions:
         healthy = save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
             context=replace(scan_context, provider_states={"naver": ProviderState.ENABLED}),
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=EARLIER,
         )
         save_scan_run(
             db_session, principal=principal, site_id=site.id, result=scan_result,
             context=replace(scan_context, provider_states={"naver": ProviderState.DEGRADED}),
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         entries = read_scan_history(db_session, principal=principal, site_id=site.id)
@@ -678,7 +694,7 @@ class TestEvidenceCanBeReached:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         stored = {
@@ -699,7 +715,7 @@ class TestEvidenceCanBeReached:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         cited = {
@@ -724,7 +740,7 @@ class TestEvidenceCanBeReached:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
         names = [record.evidence_id for record in scan_result.evidence][:3]
 
@@ -743,7 +759,7 @@ class TestEvidenceCanBeReached:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
 
         found = resolve_evidence(
@@ -761,7 +777,7 @@ class TestEvidenceCanBeReached:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
         )
         names = [record.evidence_id for record in scan_result.evidence]
 
@@ -770,3 +786,92 @@ class TestEvidenceCanBeReached:
             scan_run_id=saved.scan_run_id, evidence_ids=names,
         )
         assert found == []
+
+
+class TestHowLongTheScanTook:
+    """진단이 얼마나 걸렸는지가 **DB 에** 남는가.
+
+    2026-08-04, 운영 DB 의 `scan_runs` 39건이 전부 `started_at == finished_at` 이었다.
+    마이크로초까지 같았다. 원인은 두 줄이다: 저장하는 쪽이
+    `started_at: datetime | None = None` 을 받아 `started_at or finished` 로 채웠고,
+    부르는 곳 두 군데(`seo/router.py`, `geo/companion.py`) 모두 그 값을 넘기지 않았다.
+
+    로그에는 단계별 시간이 멀쩡히 찍히고 있었다. 그래서 "느려졌다" 는 눈에 보였지만
+    **"진단 한 번이 몇 초냐"** 에는 답할 수 없었고, 오픈 후 사용량이 몇 배로 늘 때
+    서버를 얼마나 키워야 하는지 숫자로 말할 근거가 없었다.
+
+    아래 시험은 그 두 줄을 각각 지킨다.
+    """
+
+    def test_the_duration_is_not_zero(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        """저장된 실행에서 소요 시간을 실제로 뽑을 수 있어야 한다."""
+        from veo.db.models.analysis import ScanRun
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
+        )
+
+        run = db_session.get(ScanRun, saved.scan_run_id)
+        assert run.started_at is not None
+        assert run.finished_at is not None
+        # 이것이 결함의 정체다 — 두 값이 같으면 소요가 0 이 된다.
+        assert run.finished_at > run.started_at
+
+    def test_the_start_time_is_the_one_we_were_given(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        """저장하는 쪽이 시작 시각을 **만들어 내지 않는다.**
+
+        진단은 수집부터 시작하고 저장은 맨 마지막이다. 저장 시점에 시작 시각을 찍으면
+        정작 시간을 쓴 구간이 전부 기록에서 빠진다.
+        """
+        from veo.db.models.analysis import ScanRun
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id,
+            result=scan_result, context=scan_context,
+            urls_attempted=1, urls_collected=1, started_at=STARTED,
+        )
+
+        run = db_session.get(ScanRun, saved.scan_run_id)
+        assert run.started_at == STARTED
+
+    def test_the_start_time_cannot_be_omitted(self) -> None:
+        """넘기지 않으면 **깨져야 한다.**
+
+        결함이 조용했던 이유가 기본값이었다. 기본값을 되살리면 부르는 쪽이 다시 안
+        넘기고, 그러면 운영에 또 0초가 쌓이는데 아무도 모른다. 서명에 못을 박는다.
+        """
+        import inspect
+
+        from veo.seo.history import save_scan_run
+
+        parameter = inspect.signature(save_scan_run).parameters["started_at"]
+        assert parameter.default is inspect.Parameter.empty
+
+
+class TestTheTimerCarriesAWallClock:
+    """시작 시각의 출처는 `ScanTimings` 하나다 — 두 벌로 두면 갈라진다(0-D)."""
+
+    def test_the_timer_knows_when_it_started(self) -> None:
+        from datetime import UTC, datetime
+
+        from veo.seo.timing import ScanTimings
+
+        before = datetime.now(UTC)
+        timings = ScanTimings()
+        after = datetime.now(UTC)
+
+        assert before <= timings.started_at <= after
+
+    def test_the_start_time_is_timezone_aware(self) -> None:
+        """순진한 시각을 넣으면 `DateTime(timezone=True)` 칸에서 비교가 어긋난다."""
+        from veo.seo.timing import ScanTimings
+
+        assert ScanTimings().started_at.tzinfo is not None

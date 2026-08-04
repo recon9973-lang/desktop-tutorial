@@ -180,3 +180,27 @@ def test_the_bundle_scoring_endpoint_stays_closed(
 def test_the_router_is_not_mounted_by_this_package() -> None:
     """The integrator owns ``veo.api.app``; this package only offers the router."""
     assert _seo_paths(create_app()) == []
+
+
+# --------------------------------------------------------------------------- #
+# 보관본 열람 — 창구가 실제로 열리는가
+# --------------------------------------------------------------------------- #
+
+
+def test_the_capture_window_actually_opens(client: TestClient, caller: Caller) -> None:
+    """`GET /seo/scans/{id}/captures` 를 **부른다.**
+
+    이 창구는 v0.3.34("잰 것을 남긴다") 에서 만들어 배포했는데, 본문이 부르는
+    ``read_captures`` 의 import 가 빠져 있었다. 즉 누구든 이 화면을 여는 순간
+    ``NameError`` 로 500 이 났다. 배포는 성공했고 시험도 전부 초록이었다 — **아무도 이
+    창구를 열어 보지 않았기 때문이다**(0-E: 부를 수 없는 기능은 없는 기능, 0-F: 초록불은
+    동작이 아니다).
+
+    그래서 이 시험이 지키는 것은 응답 내용이 아니라 **부를 수 있다는 사실** 하나다.
+    없는 실행을 물어도 좋다. import 가 빠지면 여기서 500 이 난다.
+    """
+    caller.current = _principal(Role.CLIENT_VIEWER)
+
+    response = client.get(f"{SCANS}/{uuid.uuid4()}/captures")
+
+    assert response.status_code != 500, response.text

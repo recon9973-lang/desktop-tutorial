@@ -10,11 +10,17 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 
 pytest.importorskip("pydantic")
 
 from tests.seo.test_regression_alert import project, site  # noqa: F401  (지역 픽스처 재사용)
+
+#: 진단이 시작한 시각. 근거는 tests/seo/test_scan_history.py 의
+#: TestHowLongTheScanTook 에 적혀 있다.
+SCAN_STARTED_AT = datetime(2026, 8, 4, 0, 0, tzinfo=UTC)
 
 
 def _crawl_outcome():  # type: ignore[no-untyped-def]
@@ -55,7 +61,7 @@ class TestCompanionSaves:
             outcome=outcome,
             locale="ko-KR",
             urls_attempted=len(outcome.documents),
-            urls_collected=len(outcome.documents),
+            urls_collected=len(outcome.documents), started_at=SCAN_STARTED_AT,
         )
 
         assert companion.failure_note_ko is None
@@ -93,7 +99,7 @@ class TestCompanionSaves:
             outcome=outcome,
             locale="ko-KR",
             urls_attempted=len(outcome.documents),
-            urls_collected=len(outcome.documents),
+            urls_collected=len(outcome.documents), started_at=SCAN_STARTED_AT,
         )
         assert companion.scan_run_id is not None
 
@@ -178,7 +184,7 @@ class TestCompanionSaves:
             outcome=outcome,
             locale="ko-KR",
             urls_attempted=len(outcome.documents),
-            urls_collected=len(outcome.documents),
+            urls_collected=len(outcome.documents), started_at=SCAN_STARTED_AT,
         )
 
         assert companion.scan_run_id is None

@@ -728,11 +728,10 @@ def test_the_fetch_summary_reads_the_bytes_not_the_verdicts() -> None:
     채점 결과에서 값을 가져오면, 채점이 틀렸을 때 이 칸도 같이 틀린다. 그러면 대조할
     것이 없어지고 이 칸의 존재 이유가 사라진다. 여기서만은 두 벌이어야 한다.
     """
-    from veo.public.service import _fetched
-
     from datetime import UTC, datetime
 
     from veo.common.security.fetcher import FetchedDocument
+    from veo.public.service import _fetched
 
     fetched = _fetched(
         FetchedDocument(

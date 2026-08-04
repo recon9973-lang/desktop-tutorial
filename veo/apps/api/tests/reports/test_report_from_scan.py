@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
@@ -26,6 +27,11 @@ from fastapi.testclient import TestClient
 from report_support import REPORTS, Tenant
 
 pytest.importorskip("sqlalchemy")
+
+
+#: 진단이 시작한 시각. 저장되는 종료 시각보다 앞서야 소요 시간이 0 이 아니다 —
+#: 근거는 tests/seo/test_scan_history.py 의 TestHowLongTheScanTook 에 적혀 있다.
+SCAN_STARTED_AT = datetime(2026, 8, 4, 0, 0, tzinfo=UTC)
 
 
 def _data(response: Any) -> dict[str, Any]:
@@ -68,7 +74,7 @@ def measured_run(db, org_a: Tenant):  # type: ignore[no-untyped-def]
         result=result,
         context=context,
         urls_attempted=len(context.documents),
-        urls_collected=len(context.documents),
+        urls_collected=len(context.documents), started_at=SCAN_STARTED_AT,
     )
     db.commit()
     return saved, result

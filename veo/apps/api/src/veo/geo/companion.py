@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass, replace
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -57,8 +58,14 @@ def score_and_save_geo_companion(
     locale: str,
     urls_attempted: int,
     urls_collected: int,
+    started_at: datetime,
 ) -> GeoCompanion:
-    """이미 가져온 크롤로 GEO 를 채점해 저장한다. 예외는 결과로 바꾼다."""
+    """이미 가져온 크롤로 GEO 를 채점해 저장한다. 예외는 결과로 바꾼다.
+
+    ``started_at`` 은 **SEO 진단이 시작한 시각**이다. 여기서 새로 찍지 않는다 — 이
+    실행은 SEO 가 가져온 크롤을 그대로 쓰므로, 지금을 시작으로 적으면 정작 시간을 쓴
+    수집 구간이 기록에서 빠진다.
+    """
     try:
         spec = latest_published(GEO_SPEC_ID)
         context = context_from_crawl(
@@ -94,6 +101,7 @@ def score_and_save_geo_companion(
             urls_collected=urls_collected,
             report_snapshot=snapshot,
             kind=GEO_KIND,
+            started_at=started_at,
         )
         return GeoCompanion(
             scan_run_id=saved.scan_run_id,

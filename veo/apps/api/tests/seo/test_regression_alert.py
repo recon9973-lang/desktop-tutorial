@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -12,6 +13,10 @@ import pytest
 pytest.importorskip("pydantic")
 
 from veo.seo.regression import should_alert
+
+#: 진단이 시작한 시각. 저장되는 종료 시각보다 앞서야 소요 시간이 0 이 아니다 —
+#: 근거는 tests/seo/test_scan_history.py 의 TestHowLongTheScanTook 에 적혀 있다.
+SCAN_STARTED_AT = datetime(2026, 8, 4, 0, 0, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -133,13 +138,13 @@ class TestIssueDiff:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
             report_snapshot={"issues": []},
         )
         second = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
             report_snapshot={
                 "issues": [{"check_id": "seo.meta.title_present", "title_ko": "제목이 없습니다"}]
             },
@@ -175,13 +180,13 @@ class TestIssueDiff:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
             report_snapshot={"issues": [{"check_id": "seo.a", "title_ko": "가"}]},
         )
         second = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
             report_snapshot={"issues": []},
         )
         maybe_alert_regression(
@@ -215,7 +220,7 @@ class TestTheWiring:
         first = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,
@@ -226,7 +231,7 @@ class TestTheWiring:
         second = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,
@@ -259,18 +264,18 @@ class TestTheWiring:
         save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         outcome = _crawl_outcome()
         score_and_save_geo_companion(
             db_session, principal=principal, site_id=site.id,
             target_url=site.origin, outcome=outcome, locale="ko-KR",
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         second = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         maybe_alert_regression(
             db_session, principal=principal, site_id=site.id,

@@ -14,6 +14,16 @@
 
 `monotonic` 을 쓰는 이유: 벽시계는 NTP 보정으로 뒤로 갈 수 있고, 그러면 음수 소요가
 나온다. 그것은 "빨랐다" 가 아니라 "시계가 움직였다" 인데 구분되지 않는다.
+
+**벽시계도 하나 든다**(`started_at`). 2026-08-04 에 운영 DB 를 열어 보니 `scan_runs`
+39건이 전부 `started_at == finished_at` 이었다 — 마이크로초까지 같았다. 저장하는 쪽이
+시작 시각을 못 받아 종료 시각으로 채우고 있었고, 부르는 쪽 두 군데 모두 그 값을 넘기지
+않았다. 로그에는 단계별 시간이 멀쩡히 찍히는데 **DB 에는 0초로 남는다**. 그래서 "진단이
+얼마나 걸리나" 에 답할 수 없었고, 오픈 후 사용량이 몇 배로 늘 때 필요한 서버 사양을
+숫자로 말할 근거가 없었다.
+
+소요를 재는 데는 `monotonic` 을 그대로 쓴다. `started_at` 은 **저장용 시각**이지 소요
+계산에 쓰지 않는다 — 두 시계를 섞으면 위에 적은 음수 소요가 돌아온다.
 """
 
 from __future__ import annotations
@@ -22,6 +32,7 @@ import logging
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from typing import Final
 
 from veo.observability import get_metric_sink
@@ -41,10 +52,22 @@ class ScanTimings:
     분포라 "이번 진단이 왜 느렸나" 에는 답하지 못한다 — 그 답은 이 객체가 한다.
     """
 
-    __slots__ = ("_elapsed_ms",)
+    __slots__ = ("_elapsed_ms", "_started_at")
 
     def __init__(self) -> None:
         self._elapsed_ms: dict[str, float] = {}
+        # 이 객체가 생기는 순간이 진단이 시작한 순간이다 — 파이프라인 맨 앞에서 만든다.
+        # 별도의 "시작 시각" 변수를 하나 더 두지 않는 이유: 두 벌이 되면 언젠가 한쪽만
+        # 옮겨지고, 그때 소요 시간이 다시 조용히 틀어진다(0-D).
+        self._started_at = datetime.now(UTC)
+
+    @property
+    def started_at(self) -> datetime:
+        """진단이 시작한 **벽시계** 시각. 저장용이다.
+
+        소요를 구할 때 이 값을 쓰지 말 것 — 그 답은 :attr:`total_ms` 가 한다.
+        """
+        return self._started_at
 
     def record(self, name: str, elapsed_ms: float) -> None:
         # 같은 단계가 두 번 돌면 더한다. 덮어쓰면 앞의 시간이 사라지는데, 그것도

@@ -70,7 +70,10 @@ def _latest_scored_run(session: Session, project_id: object) -> ScanRun | None:
             Scan.kind == SEO_KIND,
             ScoreResult.status == "SCORED",
         )
-        .order_by(ScanRun.started_at.desc())
+        # 결과가 나온 순서다. 시작 시각으로 고르면 오래 걸린 진단이 나중에 시작해 먼저
+        # 끝난 진단보다 최신으로 뽑힌다 — 발행되는 것은 결과이므로 결과가 늦게 나온 쪽이
+        # 최신이다. 동점은 저장 순서로 가른다.
+        .order_by(ScanRun.finished_at.desc(), ScanRun.created_at.desc())
         .limit(1)
     )
     return session.execute(statement).scalars().first()
@@ -106,8 +109,13 @@ def sweep_reports_once(session: Session, *, now: dt.datetime | None = None) -> i
         run = _latest_scored_run(session, report.project_id)
         if run is None:
             continue
-        if last_at is not None and run.started_at is not None and run.started_at <= last_at:
+        if last_at is not None and run.finished_at is not None and run.finished_at <= last_at:
             # 새 측정이 없다 — 같은 실행을 다시 굳히면 복사본이 새 측정처럼 읽힌다.
+            #
+            # **끝난 시각**으로 본다. 예전에는 `started_at` 을 봤는데, 그때는 그 칸에
+            # 저장 시각이 들어 있어서 둘이 같은 값이었다(2026-08-04 에 고친 결함). 이제
+            # `started_at` 은 진단이 시작한 시각이라, 지난 발행 **전에 시작해 후에 끝난**
+            # 진단이 "새 측정이 없다" 로 걸러진다. 그 진단의 결과는 분명히 새것이다.
             continue
 
         principal = system_principal(report.organization_id, session_id=SESSION_ID)

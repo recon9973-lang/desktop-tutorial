@@ -16,10 +16,16 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 import pytest
 
 pytest.importorskip("pydantic")
+
+
+#: 진단이 시작한 시각. 저장되는 종료 시각보다 앞서야 소요 시간이 0 이 아니다 —
+#: 근거는 tests/seo/test_scan_history.py 의 TestHowLongTheScanTook 에 적혀 있다.
+SCAN_STARTED_AT = datetime(2026, 8, 4, 0, 0, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -65,7 +71,7 @@ class TestFlippingJudgementsToPages:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         breakdown = page_breakdown(
             db_session, principal=principal, scan_run_id=saved.scan_run_id
@@ -91,7 +97,7 @@ class TestFlippingJudgementsToPages:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         breakdown = page_breakdown(
             db_session, principal=principal, scan_run_id=saved.scan_run_id
@@ -111,7 +117,7 @@ class TestFlippingJudgementsToPages:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         breakdown = page_breakdown(
             db_session, principal=principal, scan_run_id=saved.scan_run_id
@@ -143,7 +149,7 @@ class TestFlippingJudgementsToPages:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         # ScoreResult 는 불변 기록이라 ORM 으로 못 고친다 — "1.8.0 으로 채점된 옛
         # 실행" 을 흉내내는 시험이므로 SQL 로 직접 되돌린다.
@@ -170,7 +176,7 @@ class TestFlippingJudgementsToPages:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         breakdown = page_breakdown(
             db_session, principal=principal, scan_run_id=saved.scan_run_id
@@ -194,7 +200,7 @@ class TestLegacyRunsDoNotInventPages:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
         # 이 칸이 생기기 전의 실행을 재현한다 — NULL 로 되돌린다.
         db_session.query(CheckResult).filter_by(scan_run_id=saved.scan_run_id).update(
@@ -222,7 +228,7 @@ class TestAnotherOrganisationSeesNothing:
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
             result=scan_result, context=scan_context,
-            urls_attempted=1, urls_collected=1,
+            urls_attempted=1, urls_collected=1, started_at=SCAN_STARTED_AT,
         )
 
         assert (

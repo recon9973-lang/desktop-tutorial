@@ -284,6 +284,11 @@ def _unknown_penalty(spec: ScoringSpec, result: ScoreResult) -> float | None:
         if not isinstance(row, dict) or row.get("status") != CheckStatus.UNKNOWN.value:
             continue
         category_id = row.get("category_id")
+        if not isinstance(category_id, str):
+            # 저장된 판정에서 꺼낸 값이라 무엇이든 들어올 수 있다. 문자열이 아니면 이
+            # 항목이 어느 영역인지 모르는 것이고, 모르는 채로 영역 가중치를 찾으면
+            # 엉뚱한 값이 곱해진다 — 그냥 넘긴다.
+            continue
         weight = in_score.get(category_id)
         budget = budget_of.get(category_id)
         penalty = row.get("penalty")

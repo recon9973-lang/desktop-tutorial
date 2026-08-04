@@ -62,11 +62,11 @@ from veo.public.schemas import (
     MAX_PUBLIC_FINDINGS,
     PublicCheckRow,
     PublicExposureBlock,
+    PublicFetchSummary,
     PublicFinding,
     PublicGeoScanPayload,
     PublicKeywordEntry,
     PublicKeywordLookupPayload,
-    PublicFetchSummary,
     PublicPreviews,
     PublicResultPayload,
     PublicScoreBlock,
@@ -264,7 +264,11 @@ class PublicScanService:
         settings: Settings | None = None,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
         searchad: NaverSearchAdClient | None = None,
-        performance: Callable[[Any], tuple[Any, Any | None]] = with_performance,
+        # 표기는 `with_performance` 의 실제 서명을 따른다. 예전 표기는 위치 인자 하나만
+        # 받는 것으로 되어 있어서, 실제로 넘기는 `credentials=` 를 타입 검사가 오류로
+        # 짚었다 — 코드가 아니라 표기가 틀렸던 것이고, 그 오류 하나가 CI 의 타입체크
+        # 단계를 계속 빨간불로 만들고 있었다.
+        performance: Callable[..., tuple[Any, Any | None]] = with_performance,
     ) -> None:
         self._limiter = limiter
         self._results = results
