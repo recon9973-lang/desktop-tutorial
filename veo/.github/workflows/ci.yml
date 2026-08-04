@@ -28,7 +28,10 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    # `deploy-candidate` 는 배포 전 채점을 받는 자리다(`scripts/deploy.sh`). 여기서
+    # 초록불이 나야 같은 커밋이 main 으로 간다. 이 목록에서 빠지면 후보 가지에서
+    # 워크플로가 돌지 않고, 관문은 "실행을 찾지 못했습니다" 로 멈춘다.
+    branches: ["main", "deploy-candidate"]
   pull_request:
   workflow_dispatch:
 

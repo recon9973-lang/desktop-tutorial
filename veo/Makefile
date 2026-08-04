@@ -5,6 +5,7 @@
 #   make help          사용 가능한 명령 보기
 #   make setup         파이썬 가상환경 + apps/api[dev] 설치
 #   make ci-local      lint → typecheck → 테스트 (푸시 전에 이것부터)
+#   make deploy        배포 — 후보 가지에서 CI 를 받고, 초록불일 때만 main 으로
 #
 # Docker 없이 돌아가는 것과 Docker 가 필요한 것을 명확히 나눠 뒀다.
 # 현재 개발 장비에는 Docker 가 없어 up/down 계열은 이 장비에서 검증되지 않았다.
@@ -53,7 +54,8 @@ import-credentials: ## 다른 프로젝트 .env 에서 제공자 키를 가져�
 .PHONY: help setup test-api test-db test-contract lint-api typecheck-api \
         db-test-create db-test-drop migrate migrate-down migrate-history \
         migrate-revision ci-local up down logs ps clean check-docker \
-        test-worker lint-worker typecheck-worker check-contracts test-all
+        test-worker lint-worker typecheck-worker check-contracts test-all \
+        deploy
 
 # -----------------------------------------------------------------------------
 help:
@@ -72,7 +74,8 @@ help:
 	@echo "    make typecheck-api     mypy 검사 (api)"
 	@echo "    make typecheck-worker  mypy 검사 (worker)"
 	@echo "    make check-contracts   OpenAPI·공유타입·TS클라이언트 드리프트 검사"
-	@echo "    make ci-local          위 전부 실행 (푸시 전 실질적 게이트)"
+	@echo "    make ci-local          위 전부 실행 (푸시 전 손검사)"
+	@echo "    make deploy            ★ 배포 — CI 초록불일 때만 main 에 닿는다"
 	@echo "    make db-test-create    로컬 PostgreSQL 에 $(TEST_DB) 데이터베이스 생성"
 	@echo "    make db-test-drop      $(TEST_DB) 데이터베이스 삭제"
 	@echo "    make migrate           마이그레이션 최신까지 적용"
@@ -180,14 +183,29 @@ test-all: db-test-create
 		VEO_SCORING_SPECS_DIR="$(SPECS_DIR)" \
 		$(PY) -m pytest -q
 
-# 푸시 전에 실행하는 실제 게이트.
-# veo/ 가 아직 상위 저장소의 하위 디렉터리라 GitHub Actions 워크플로가 동작하지 않는다.
-# 그래서 이 타깃이 유일한 게이트이며, CI 가 검사할 것을 전부 포함해야 한다.
+# 푸시 전에 손으로 돌리는 검사.
+#
+# 예전 주석은 "veo/ 가 상위 저장소의 하위 디렉터리라 워크플로가 동작하지 않는다. 그래서
+# 이 타깃이 **유일한** 게이트" 라고 적혀 있었다. 지금은 사실이 아니다 — subtree 로 밀린
+# veo-platform 에서 CI 가 실제로 돈다. 그런데 그 주석을 믿고 여기만 초록이면 배포한
+# 결과, CI 가 12번 연속 빨간불인 것을 아무도 보지 않았다(2026-08-04).
+#
+# **여기가 초록인 것과 CI 가 초록인 것은 다르다.** 이 장비에는 Docker 도 Redis 도 없고,
+# 프론트엔드 빌드도 여기서 돌지 않는다. 진짜 게이트는 `make deploy` 다.
 ci-local: lint-api lint-worker typecheck-api typecheck-worker check-contracts test-all
 	@echo ""
 	@echo "==> [ci-local] lint · typecheck · 계약 드리프트 · 전체 테스트 통과."
 	@echo "    검증하지 않은 것: Docker 이미지 빌드(이 장비에 Docker 없음),"
 	@echo "    Redis 실브로커 테스트(미설치), 프론트엔드(pnpm -r test 로 별도 실행)."
+	@echo "    ※ 이것은 배포 관문이 아닙니다. 배포는 make deploy 로 하십시오."
+
+# 배포 — CI 가 초록불일 때만 main 에 닿는다.
+#
+# 후보 가지에 먼저 밀어 채점을 받고, 통과했을 때만 같은 커밋을 main 으로 옮긴다.
+# GitHub 의 가지 보호는 비공개 저장소 + 무료 요금제에서 적용되지 않으므로(403),
+# 관문을 여기에 둔다. 자세한 사정은 scripts/deploy.sh 머리말에 적혀 있다.
+deploy:
+	@bash "$(ROOT)/scripts/deploy.sh"
 
 # -----------------------------------------------------------------------------
 # 테스트 데이터베이스 — 로컬 psql 사용 (Docker 불필요)
