@@ -38,8 +38,10 @@ from urllib.parse import urlsplit
 import httpx
 
 from veo.collect.contract import CollectionContext
+from veo.common.security.egress_kr import korean_egress
 from veo.common.security.fetcher import FetchedDocument, FetchError, SafeFetcher
 from veo.common.security.limits import FetchLimitError
+from veo.common.security.retry_via_kr import RetryViaKorea
 from veo.common.security.url_guard import UrlGuard, UrlRejectedError
 from veo.contracts.enums import ErrorCode, ProviderState, UrlImportance, ValueQuality
 from veo.contracts.envelope import ApiError
@@ -298,14 +300,19 @@ class PublicScanService:
         # ``public_target_host_limit_per_hour``, not ``public_rate_limit_per_hour``. The
         # two count different units — the caller buckets charge once per scan, this one
         # charges once per outbound request — so one setting could never have meant both.
-        self._fetcher = SafeFetcher(
-            guard=HostBudgetGuard(
-                guard or UrlGuard(),
-                limiter=limiter,
-                limit=self._settings.public_target_host_limit_per_hour,
-                window_seconds=TARGET_HOST_WINDOW_SECONDS,
-            ),
-            transport=transport,
+        budgeted = HostBudgetGuard(
+            guard or UrlGuard(),
+            limiter=limiter,
+            limit=self._settings.public_target_host_limit_per_hour,
+            window_seconds=TARGET_HOST_WINDOW_SECONDS,
+        )
+        # 무료 진단도 콘솔과 **같은 것을 본다.** 관문 페이지를 만나면 한국 관측점에서
+        # 한 번 더 받는다 — 한쪽만 달면 같은 사이트가 창구에 따라 다른 점수를 받고,
+        # 그것은 이 제품이 파는 값 자체를 무너뜨린다(0-D).
+        self._fetcher = RetryViaKorea(
+            SafeFetcher(guard=budgeted, transport=transport),
+            egress=korean_egress(self._settings),
+            guard=budgeted,
         )
 
     # ------------------------------------------------------------- scans
