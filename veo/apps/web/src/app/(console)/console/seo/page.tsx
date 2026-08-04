@@ -541,18 +541,24 @@ async function SummaryRail({
   readonly axis: Axis;
   readonly otherSites: readonly (MeasuredSite & { readonly company: string })[];
 }) {
+  const geo = saved?.geo ?? null;
+
+  // 셋은 서로를 필요로 하지 않는다. 줄을 세워 기다리면 왕복이 세 번이고, 그동안 화면
+  // 전체가 멈춘다 — 그중 거래처 레일은 거래처 수만큼 읽으므로 가장 오래 걸린다.
+  //
   // 밴드는 **한국어 라벨**로 보여준다. 식별자(at_risk)를 그대로 그리면 화면에 내부
   // 이름이 새어 나오고, 읽는 사람에게는 아무 뜻도 없는 영어가 된다.
-  const bands = saved === null ? [] : await readBands(saved.specId, saved.specVersion);
-  const clients = await otherClientRows(otherSites);
-  const geo = saved?.geo ?? null;
+  //
   // GEO 축에서는 **GEO 자료**를 읽는다. 이 줄이 없던 동안 레일은 GEO 게이지 아래에
   // SEO 의 분포와 영역 막대를 그렸다 — 축을 바꿨는데 아래 숫자는 그대로여서, 보는
   // 사람은 그것이 GEO 의 숫자라고 읽는다. 조용히 틀리는 종류의 화면이다.
-  const geoReport =
+  const [bands, clients, geoReport] = await Promise.all([
+    saved === null ? Promise.resolve([]) : readBands(saved.specId, saved.specVersion),
+    otherClientRows(otherSites),
     axis === 'geo' && geo !== null && geo.scanRunId !== null
-      ? await readSavedGeoReadiness(geo.scanRunId)
-      : null;
+      ? readSavedGeoReadiness(geo.scanRunId)
+      : Promise.resolve(null),
+  ]);
   const geoData = geoReport !== null && geoReport.ok ? geoReport.data : null;
 
   // 보는 눈금의 **그 회차**를 짚는다. GEO 실행은 SEO 와 다른 식별자를 갖고, 둘을 잇는
