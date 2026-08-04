@@ -115,3 +115,57 @@ class TestWhatMustStillBeScored:
 
     def test_a_normal_page_passes(self) -> None:
         assert judge() is None
+
+
+class TestTheInterstitial:
+    """스크립트만 든 관문 페이지를 알아보는가 (0-K, 한국 경유 판단의 근거).
+
+    2026-08-05 실측. 운영 서버(싱가포르)가 거래처 두 곳에서 받은 759·760바이트는
+    차단 페이지가 아니라 **자바스크립트 쿠키 검사**였다. 브라우저는 스크립트를 실행해
+    쿠키를 굽고 다시 요청하지만 우리 크롤러는 자바스크립트를 실행하지 않는다.
+    한국 IP 에는 이 검사가 제시되지 않으므로, 알아채면 한국 관측점으로 다시 받는다.
+
+    아래 첫 시험의 바이트는 **지어낸 것이 아니라 그날 실제로 받은 응답**이다.
+    """
+
+    #: 운영 서버가 venomad.com 에서 받은 응답 전문(759바이트).
+    REAL = (
+        b'<html><body><script type="text/javascript" src="/cupid.js" ></script>'
+        b"<script>function toNumbers(d){var e=[];d.replace(/(..)/g,function(d){"
+        b'e.push(parseInt(d,16))});return e}var a=toNumbers("599f6051f834efe9");'
+        b'document.cookie="CUPID="+toHex(slowAES.decrypt(c,2,a,b))+"; path=/";'
+        b'location.href="https://venomad.com/?ckattempt=1";</script></body></html>'
+    )
+
+    def test_the_real_challenge_is_recognised(self) -> None:
+        from veo.collect.readable import looks_like_interstitial
+
+        assert looks_like_interstitial(self.REAL) is True
+
+    def test_a_page_with_a_title_is_a_document_even_with_scripts(self) -> None:
+        """제목이 있으면 문서다. 스크립트가 있다는 이유로 다시 받으러 가지 않는다."""
+        from veo.collect.readable import looks_like_interstitial
+
+        body = b"<html><head><title>\xed\x81\xb4\xeb\xa6\xac\xeb\x8b\x89</title>" \
+               b"<script src='/a.js'></script></head><body>\xec\x86\x8c\xea\xb0\x9c</body></html>"
+        assert looks_like_interstitial(body) is False
+
+    def test_a_thin_page_without_scripts_is_still_scored(self) -> None:
+        """스크립트가 없으면 관문이 아니다 — 얇은 페이지는 이 제품이 잡아야 할 결함이다."""
+        from veo.collect.readable import looks_like_interstitial
+
+        thin = b"<html><body><p>\xec\xa4\x80\xeb\xb9\x84\xec\xa4\x91</p></body></html>"
+        assert looks_like_interstitial(thin) is False
+
+    def test_a_large_scripted_page_is_not_an_interstitial(self) -> None:
+        """관문은 작다. 큰 문서는 제목이 없어도 진짜 결함이고, 다시 받아도 그대로다."""
+        from veo.collect.readable import MAX_SHELL_BYTES, looks_like_interstitial
+
+        body = b"<html><body><script>x()</script>" + b"a" * MAX_SHELL_BYTES + b"</body></html>"
+        assert looks_like_interstitial(body) is False
+
+    def test_an_empty_body_is_not_an_interstitial(self) -> None:
+        """빈 응답은 관문이 아니라 수집 실패다 — `read_failure` 가 답할 몫이다."""
+        from veo.collect.readable import looks_like_interstitial
+
+        assert looks_like_interstitial(b"") is False

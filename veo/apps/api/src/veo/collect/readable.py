@@ -31,9 +31,16 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
-__all__ = ["MAX_SHELL_BYTES", "MIN_DOCUMENT_BYTES", "ReadFailure", "read_failure"]
+__all__ = [
+    "MAX_SHELL_BYTES",
+    "MIN_DOCUMENT_BYTES",
+    "ReadFailure",
+    "looks_like_interstitial",
+    "read_failure",
+]
 
 #: 알맹이가 하나도 없을 때, 이보다 작으면 문서로 보지 않는다.
 #:
@@ -51,6 +58,48 @@ MAX_SHELL_BYTES = 2048
 
 #: (옛 이름) 아래 호환을 위해 남긴다. 새 코드는 `MAX_SHELL_BYTES` 를 쓴다.
 MIN_DOCUMENT_BYTES = MAX_SHELL_BYTES
+
+
+#: 스크립트만 든 작은 응답인가 — 사람이 볼 문서가 아니라 **관문 페이지**인가.
+#:
+#: 2026-08-05, 운영 서버(싱가포르)가 거래처 두 곳에서 받은 759·760바이트의 정체가
+#: 이것이었다. 차단 페이지가 아니라 **자바스크립트 쿠키 검사**다:
+#:
+#:     <html><body><script src="/cupid.js"></script><script>
+#:       document.cookie="CUPID="+toHex(slowAES.decrypt(...));
+#:       location.href="https://venomad.com/?ckattempt=1";
+#:     </script></body></html>
+#:
+#: 브라우저는 이 스크립트를 실행해 쿠키를 굽고 다시 요청해 진짜 페이지를 받는다. 우리
+#: 크롤러는 자바스크립트를 실행하지 않으므로 여기서 멈춘다. 한국 IP 에는 이 검사가
+#: 제시되지 않는다(실측) — 그래서 이것을 알아채면 한국 관측점으로 한 번 더 받아 본다.
+#:
+#: `read_failure` 와 묻는 것이 다르다. 저쪽은 **파싱된 신호**를 보고 "이 응답으로 채점해도
+#: 되는가" 를 묻고, 이쪽은 **받은 바이트**를 보고 "다시 받아 보면 달라질 것인가" 를 묻는다.
+#: 그래서 층이 다르고, 같은 파일에 둔다 — "우리가 문서를 받았는가" 는 한 곳이 답한다(0-D).
+_TITLE = re.compile(rb"<\s*title[\s>]", re.IGNORECASE)
+_SCRIPT = re.compile(rb"<\s*script[\s>]", re.IGNORECASE)
+
+
+def looks_like_interstitial(body: bytes) -> bool:
+    """이 응답이 **스크립트뿐인 관문 페이지**로 보이는가.
+
+    셋을 모두 만족할 때만 참이다. 하나라도 어긋나면 그냥 채점한다 — 실제로 부실한
+    페이지를 "관문" 으로 오인해 다시 받으러 가면, 이 제품이 팔아야 할 판정을 스스로
+    버리는 것이 된다.
+
+    1. **작다** — 관문 페이지는 실물이 759·760바이트였다. 문턱은 `MAX_SHELL_BYTES`.
+    2. **스크립트가 있다** — 관문은 스크립트로 쿠키를 굽고 되돌린다.
+    3. **제목이 없다** — 제목이 있으면 그것은 문서다. 스크립트가 있든 없든.
+
+    크기만으로 거르지 않는 이유는 `read_failure` 쪽에 적어 두었다: 제목 있는
+    80바이트짜리 정상 문서를 한 번 버렸다.
+    """
+    if len(body) >= MAX_SHELL_BYTES:
+        return False
+    if not _SCRIPT.search(body):
+        return False
+    return not _TITLE.search(body)
 
 
 @dataclass(frozen=True, slots=True)

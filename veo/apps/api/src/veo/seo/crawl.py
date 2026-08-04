@@ -31,8 +31,10 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from veo.common.security.egress_kr import korean_egress
 from veo.common.security.fetcher import FetchedDocument, FetchError, SafeFetcher
 from veo.common.security.limits import FetchLimitError
+from veo.common.security.retry_via_kr import RetryViaKorea
 from veo.common.security.url_guard import UrlGuard, UrlRejectedError
 from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiError
@@ -205,14 +207,21 @@ class ConsoleCrawler:
         # 공개 진단과 같은 조립이다. 호스트 예산은 **가드 안에서** 부과되어야 한다 —
         # 서비스에서 제출된 URL 로 부과하면 리다이렉트가 그 계산을 우회하고, 실제로
         # 10회 제한에 80회를 흘려보내는 것이 재현된 적이 있다.
-        self._fetcher = SafeFetcher(
-            guard=HostBudgetGuard(
-                guard or UrlGuard(),
-                limiter=limiter or InMemoryRateLimiter(),
-                limit=resolved.console_target_host_limit_per_hour,
-                window_seconds=TARGET_HOST_WINDOW_SECONDS,
+        #
+        # 바깥의 `RetryViaKorea` 는 **관문 페이지를 만났을 때만** 한국 관측점으로 한 번
+        # 더 받는다(실측 근거는 그 모듈에 있다). 설정이 없으면 감싸도 아무 일도 하지
+        # 않으므로, 이 줄이 꺼진 배포의 동작을 바꾸지 않는다.
+        self._fetcher = RetryViaKorea(
+            SafeFetcher(
+                guard=HostBudgetGuard(
+                    guard or UrlGuard(),
+                    limiter=limiter or InMemoryRateLimiter(),
+                    limit=resolved.console_target_host_limit_per_hour,
+                    window_seconds=TARGET_HOST_WINDOW_SECONDS,
+                ),
+                transport=transport,
             ),
-            transport=transport,
+            egress=korean_egress(resolved),
         )
 
     # ------------------------------------------------------------- 주소를 받아 가져오기
