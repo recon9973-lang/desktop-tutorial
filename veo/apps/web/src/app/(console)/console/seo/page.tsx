@@ -449,6 +449,9 @@ function verdictSpread(saved: ConsoleScanResult | null) {
   };
 }
 
+/** 세로 눈금에 숫자를 적는 자리 — 100점 만점이므로 위·가운데·아래가 그대로 100·50·0 이다. */
+const TREND_TICKS = [100, 50, 0] as const;
+
 /**
  * 최근 점수 추이 — 확정 시안 v2.2 의 스파크라인.
  *
@@ -457,8 +460,18 @@ function verdictSpread(saved: ConsoleScanResult | null) {
  * "직전 대비" 가 지키는 규칙과 같다.
  *
  * 점이 둘 미만이면 그리지 않는다 — 한 점을 잇는 선은 추이가 아니다.
+ *
+ * **세로는 0–100점 고정이다.** 예전에는 다섯 점의 최저~최고를 위아래로 꽉 채워 그렸다.
+ * 그러면 22.7 → 80.0 처럼 크게 오른 회차나 17.6 → 27.3 처럼 조금 움직인 회차나 선의
+ * 모양이 같아진다 — 눈금이 매번 달라지므로 기울기가 아무 뜻도 갖지 못한다. 실제로
+ * 사용자가 본 화면이 그랬다: 57점이 오른 날의 선이 거의 평평했다. 100점 만점을 그대로
+ * 세로로 쓰면 오른 만큼 올라간다. 대신 좁은 폭의 변화는 작게 보이므로, 그것을 읽을 수
+ * 있도록 가로·세로 눈금의 숫자를 화면에 함께 적는다(아래 회차 목록에도 값이 남는다).
+ *
+ * 좌표는 0–100 의 백분율이다. 그래야 같은 값으로 SVG 선도 그리고, 늘어난 좌표계에서
+ * 타원이 되어 버리는 점(dot)은 HTML 로 얹을 수 있다.
  */
-function sparkline(entries: readonly HistoryEntry[], selected: HistoryEntry) {
+function scoreTrend(entries: readonly HistoryEntry[], selected: HistoryEntry) {
   const comparable = entries
     .filter((entry) => entry.specVersion === selected.specVersion && entry.score !== null)
     .slice(0, 5)
@@ -466,25 +479,31 @@ function sparkline(entries: readonly HistoryEntry[], selected: HistoryEntry) {
     .reverse();
   if (comparable.length < 2) return null;
 
-  const scores = comparable.map((entry) => entry.score ?? 0);
-  const low = Math.min(...scores);
-  const high = Math.max(...scores);
-  // 전부 같은 점수면 폭이 0이라 나눌 수 없다. 그때는 가운데 수평선이 정직하다.
-  const span = high - low === 0 ? 1 : high - low;
-  const width = 280;
-  const step = width / (scores.length - 1);
-  const points = scores.map((score, index) => ({
-    x: Math.round(index * step),
-    y: Math.round(30 - ((score - low) / span) * 24),
-  }));
+  const points = comparable.map((entry, index) => {
+    const score = entry.score ?? 0;
+    // 명세가 100점을 넘겨 주는 일은 없어야 하지만, 넘어오면 선이 상자 밖으로 나간다.
+    const bounded = Math.min(Math.max(score, 0), 100);
+    return {
+      scanRunId: entry.scanRunId,
+      startedAt: entry.startedAt,
+      score,
+      x: Number(((index / (comparable.length - 1)) * 100).toFixed(2)),
+      y: Number((100 - bounded).toFixed(2)),
+    };
+  });
+
+  const first = points[0];
   const last = points[points.length - 1];
+  if (first === undefined || last === undefined) return null;
 
   return {
-    width,
     points,
+    first,
+    last,
     line: points.map((point) => `${point.x},${point.y}`).join(' '),
-    lastX: last?.x ?? 0,
-    lastY: last?.y ?? 0,
+    label: `최근 ${points.length}회 점수 추이 — 세로 눈금 0점부터 100점. ${points
+      .map((point) => `${formatWhenShort(point.startedAt)} ${point.score.toFixed(1)}점`)
+      .join(', ')}`,
   };
 }
 
@@ -576,7 +595,7 @@ async function SummaryRail({
   const bandId = axis === 'geo' ? (geo?.bandId ?? null) : (saved?.bandId ?? null);
   const bandLabel = bands.find((band) => band.id === bandId)?.label ?? null;
   const coverage = saved?.coverage ?? 1;
-  const spark = shown === null ? null : sparkline(entries, shown);
+  const trend = shown === null ? null : scoreTrend(entries, shown);
   const miniBars = (
     axis === 'geo'
       ? (geoData?.readiness.categories ?? []).map((category) => ({
@@ -647,23 +666,62 @@ async function SummaryRail({
               <p>명세 {shown?.specVersion ?? '—'}</p>
             </div>
           </div>
-          {spark === null ? null : (
-            <>
-              <svg
-                className={own.spark}
-                viewBox={`0 0 ${spark.width} 36`}
-                preserveAspectRatio="none"
-                role="img"
-                aria-label={`최근 ${spark.points.length}회 점수 추이`}
-              >
-                <polyline points={spark.line} fill="none" strokeWidth="2" />
-                <circle cx={spark.lastX} cy={spark.lastY} r="3.5" />
-              </svg>
+          {trend === null ? null : (
+            <figure className={own.trend}>
+              {/* 세로 눈금의 숫자. 선이 어디까지 올라간 것인지 이 숫자 없이는 못 읽는다. */}
+              <div className={own.trendY} aria-hidden="true">
+                {TREND_TICKS.map((tick) => (
+                  <span key={tick} className={own.trendYTick} style={{ top: `${100 - tick}%` }}>
+                    {tick}
+                  </span>
+                ))}
+              </div>
+              <div className={own.trendPlot}>
+                <svg
+                  className={own.trendSvg}
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  role="img"
+                  aria-label={trend.label}
+                >
+                  {TREND_TICKS.map((tick) => (
+                    <line
+                      key={tick}
+                      className={own.trendGrid}
+                      x1="0"
+                      x2="100"
+                      y1={100 - tick}
+                      y2={100 - tick}
+                      // 좌표계가 가로로 늘어나므로, 늘어나지 않는 선 두께를 쓴다.
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
+                  <polyline
+                    className={own.trendLine}
+                    points={trend.line}
+                    fill="none"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+                {/* 점은 HTML 로 얹는다 — 늘어난 좌표계 안에서 원(circle)은 타원이 된다. */}
+                {trend.points.map((point) => (
+                  <span
+                    key={point.scanRunId}
+                    className={point === trend.last ? own.trendDotOn : own.trendDot}
+                    style={{ left: `${point.x}%`, top: `${point.y}%` }}
+                  />
+                ))}
+              </div>
+              {/* 가로 눈금의 숫자 — 이 선이 걸쳐 있는 기간. 회차별 값은 아래 목록에 있다. */}
+              <div className={own.trendX} aria-hidden="true">
+                <span>{formatWhenShort(trend.first.startedAt)}</span>
+                <span>{formatWhenShort(trend.last.startedAt)}</span>
+              </div>
               {/* 같은 명세끼리만 잇는다 — 눈금이 바뀐 점을 이으면 없는 변화가 그려진다. */}
-              <p className={own.sparkCap}>
-                최근 {spark.points.length}회 · 같은 명세({shown?.specVersion})끼리만 잇습니다
-              </p>
-            </>
+              <figcaption className={own.trendCap}>
+                최근 {trend.points.length}회 · 같은 명세({shown?.specVersion})끼리만 잇습니다
+              </figcaption>
+            </figure>
           )}
           {/* 선만 보면 "언제 얼마였나" 를 읽을 수 없다. 점의 값을 날짜와 함께 적는다. */}
           <ol className={own.runLog}>
@@ -1000,6 +1058,25 @@ function formatWhen(iso: string): string {
   return new Intl.DateTimeFormat('ko-KR', {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone: 'Asia/Seoul',
+  }).format(when);
+}
+
+/**
+ * 추이 그래프의 가로 눈금용 짧은 시각 — "8. 4. 15:17".
+ *
+ * 레일은 264px 다. 여기에 긴 형식을 양끝에 놓으면 두 글자가 서로를 밀어낸다.
+ * 오전/오후 대신 24시간을 쓰는 것도 같은 이유다.
+ */
+function formatWhenShort(iso: string): string {
+  const when = new Date(iso);
+  if (Number.isNaN(when.getTime())) return iso;
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
     timeZone: 'Asia/Seoul',
   }).format(when);
 }

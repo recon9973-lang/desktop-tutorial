@@ -481,10 +481,60 @@
 .deltaDown { color: var(--veo-status-fail-fg); }
 .deltaUp { color: var(--veo-status-pass-fg); }
 
-.spark { display: block; width: 100%; height: 36px; margin-top: var(--veo-space-2); }
-.spark polyline { stroke: var(--veo-color-accent); }
-.spark circle { fill: var(--veo-color-accent); }
-.sparkCap { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); margin: 2px 0 0; }
+/* 최근 추이 — 왼쪽에 세로 눈금(0·50·100), 아래에 가로 눈금(기간).
+   36px 짜리 납작한 선이던 시절에는 57점이 오른 날도 거의 평평해 보였다. 세로가 0–100점
+   고정이 된 지금은 높이가 곧 점수이므로, 읽을 수 있는 높이를 준다. */
+.trend {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 6px;
+  margin: var(--veo-space-3) 0 0;
+}
+.trendY {
+  position: relative;
+  height: 116px;
+  min-width: 1.4rem;
+  font-size: 10px;
+  color: var(--veo-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* 눈금선의 한가운데에 숫자를 맞춘다 — 글자 상자의 위가 아니라 가운데가 기준선이다. */
+.trendYTick { position: absolute; right: 0; transform: translateY(-50%); line-height: 1; }
+.trendPlot { position: relative; height: 116px; }
+.trendSvg { display: block; width: 100%; height: 100%; overflow: visible; }
+.trendGrid { stroke: var(--veo-color-border); stroke-width: 1; }
+.trendLine {
+  stroke: var(--veo-color-accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.trendDot, .trendDotOn {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--veo-color-accent);
+  transform: translate(-50%, -50%);
+}
+/* 이번 회차만 크게 — 색이 아니라 크기로 짚는다. */
+.trendDotOn { width: 9px; height: 9px; box-shadow: 0 0 0 2px var(--veo-color-surface); }
+.trendX {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--veo-space-2);
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--veo-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.trendCap {
+  grid-column: 1 / -1;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  margin: 4px 0 0;
+}
 
 .miniBars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--veo-space-2); }
 .miniBar {

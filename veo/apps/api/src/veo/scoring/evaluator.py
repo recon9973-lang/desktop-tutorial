@@ -331,7 +331,18 @@ def _gate_unopened_integrations(
     return by_id
 
 
-def _resolve_confidence(spec: ScoringSpec, outcome: CheckOutcome) -> float:
+def resolve_confidence(spec: ScoringSpec, outcome: CheckOutcome) -> float:
+    """이 판정에 실제로 곱해지는 확신도.
+
+    판정은 숫자(`confidence`) 또는 등급(`confidence_level`) 중 하나로 온다 — 계약이
+    둘 중 하나를 **반드시** 요구한다. 등급은 명세의 `confidence_levels` 로 숫자가 된다
+    (1.9.0 기준 DIRECT_OBSERVATION 1.0 … EXTERNAL_ESTIMATE 0.4).
+
+    **저장하는 쪽도 이 함수를 써야 한다.** 예전에는 `outcome.confidence or 0.0` 으로
+    원본만 챙겨서, 등급으로 온 판정이 전부 0.0 으로 저장됐다(운영 1,767건). 페이지
+    점수는 손실에 확신도를 곱하므로 그 판정들은 점수에 아무 영향을 못 줬고, **모든
+    페이지가 100점**으로 나갔다. 채점에 쓴 값과 저장한 값이 달랐던 것이다(0-D).
+    """
     if outcome.confidence is not None:
         return outcome.confidence
     level = outcome.confidence_level
@@ -490,7 +501,7 @@ def _score_category(
     for check in category.checks:
         outcome = by_id[check.id]
         coefficient = weight_of[check.id]
-        confidence = _resolve_confidence(spec, outcome)
+        confidence = resolve_confidence(spec, outcome)
 
         row: dict[str, Any] = {
             "check_id": check.id,

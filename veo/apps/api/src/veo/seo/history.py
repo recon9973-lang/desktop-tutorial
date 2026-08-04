@@ -33,6 +33,8 @@ from veo.compare.conditions import MeasurementConditions, describe_differences
 from veo.contracts.enums import IssueState, ScanScope, Surface
 from veo.db.models.analysis import CheckResult, Evidence, Issue, Scan, ScanRun, ScoreResult
 from veo.db.models.identity import Site, User
+from veo.scoring import ScoringSpec
+from veo.scoring.evaluator import resolve_confidence
 from veo.scoring.models import CheckStatus
 from veo.seo.captures import save_captures
 from veo.seo.conditions import (
@@ -268,7 +270,7 @@ def save_scan_run(
         )
     )
 
-    _save_outcomes(db, principal=principal, run=run, result=result)
+    _save_outcomes(db, principal=principal, run=run, result=result, spec=context.spec)
     _save_evidence(db, principal=principal, run=run, result=result)
     # 잰 것을 남긴다. 판정이 아니라 **받은 응답 그대로** — 점수가 이상할 때 열어 볼
     # 것이 없어서 하루를 썼다(0-K). 실패해도 진단을 죽이지 않는다: 보관은 조사용이지
@@ -304,9 +306,19 @@ def save_scan_run(
 
 
 def _save_outcomes(
-    db: Session, *, principal: Principal, run: ScanRun, result: PersistableScanResult
+    db: Session,
+    *,
+    principal: Principal,
+    run: ScanRun,
+    result: PersistableScanResult,
+    spec: ScoringSpec,
 ) -> None:
-    """항목별 판정. 못 잰 항목은 **이유와 함께** 남긴다."""
+    """항목별 판정. 못 잰 항목은 **이유와 함께** 남긴다.
+
+    ``spec`` 이 필요한 이유는 확신도 때문이다. 판정은 숫자 또는 등급으로 오고, 등급을
+    숫자로 바꾸는 표는 명세에 있다. 명세 없이 저장하면 등급으로 온 판정의 확신도를
+    잃는다 — 실제로 잃었고, 그래서 모든 페이지가 100점이 됐다.
+    """
     category_of = {
         check_id: category.category_id
         for category in result.score.categories
@@ -329,7 +341,11 @@ def _save_outcomes(
                 category_id=category_of.get(outcome.check_id, ""),
                 status=str(outcome.status),
                 severity=severity_of.get(outcome.check_id, "INFO"),
-                confidence=outcome.confidence or 0.0,
+                # **채점에 실제로 쓴 값**을 남긴다. 예전에는 `outcome.confidence or 0.0`
+                # 이라 등급(`confidence_level`)으로 온 판정이 전부 0.0 이 됐고, 페이지
+                # 점수가 손실에 그것을 곱해 **모든 페이지가 100점**으로 나갔다.
+                # 채점한 숫자와 저장한 숫자가 다르면 저장은 기록이 아니라 거짓이 된다.
+                confidence=resolve_confidence(spec, outcome),
                 affected_weight=outcome.affected_weight,
                 evaluated_weight=outcome.evaluated_weight,
                 not_applicable_reason=(

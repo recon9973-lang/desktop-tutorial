@@ -310,3 +310,103 @@ class TestTurningRowsIntoPageOutcomes:
             ),
         ]
         assert _score_page(spec, rows, "https://clinic.example/") is None
+
+
+class TestAPageWithFailuresIsNotPerfect:
+    """실패가 있는 페이지가 100점으로 나가지 않는다.
+
+    2026-08-05, 화면에서 **실패 5건인 페이지가 100.0점**으로 표시됐다. 원인은 두 줄이다:
+
+      * `check_results.confidence` 가 `NOT NULL` 이라 "확신도를 안 매겼다" 를 담을 자리가
+        없었고, 저장이 `outcome.confidence or 0.0` 으로 접었다.
+      * 페이지 산식은 손실에 확신도를 곱한다 — `손실 = 배점 x 계수 x 폭 x 0.0 = 0`.
+
+    운영 실측: 1,767건이 0.0, 248건이 1.0. 즉 대부분의 판정이 점수에 아무 영향을 못 줬다.
+
+    사이트 점수는 처음부터 `None → 1.0` 으로 옳게 읽고 있었다. **저장이 그 `None` 을
+    없애서** 읽는 쪽이 손쓸 수 없었던 것이다.
+    """
+
+    def test_a_failing_page_scores_below_100(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        """**이 시험이 이 결함의 본체다.** 실패가 있는데 100점이면 실패다.
+
+        화면에서 실패 5건짜리 페이지가 100.0 으로 나왔다. 시험 4,869건이 전부
+        초록이었는데도 이 숫자를 아무도 검사하지 않았기 때문이다.
+        """
+        from veo.scoring.models import CheckStatus
+        from veo.seo.history import save_scan_run
+        from veo.seo.pages import page_breakdown
+
+        failing = [o for o in scan_result.score.outcomes if o.status is CheckStatus.FAIL]
+        if not failing:
+            pytest.skip("이 표본에는 실패 판정이 없어 이 성질을 확인할 수 없다")
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id, result=scan_result,
+            context=scan_context, urls_attempted=1, urls_collected=1,
+            started_at=SCAN_STARTED_AT,
+        )
+        breakdown = page_breakdown(db_session, principal=principal, scan_run_id=saved.scan_run_id)
+        if breakdown is None or not breakdown.pages:
+            pytest.skip("이 표본에서는 페이지 단위 점수가 계산되지 않는다")
+
+        for page in breakdown.pages:
+            if page.score is None:
+                continue
+            if page.failed:
+                assert page.score.score < 100.0, (
+                    f"{page.url}: 실패 {len(page.failed)}건인데 {page.score.score}점"
+                )
+
+    def test_confidence_is_stored_as_unknown_not_zero(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        """확신도를 매기지 않은 판정은 **NULL** 로 남는다. 0.0 은 다른 뜻이다."""
+        from veo.db.models.analysis import CheckResult
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id, result=scan_result,
+            context=scan_context, urls_attempted=1, urls_collected=1,
+            started_at=SCAN_STARTED_AT,
+        )
+
+        rows = db_session.query(CheckResult).filter_by(scan_run_id=saved.scan_run_id).all()
+        assert rows, "판정이 하나도 저장되지 않았다면 이 시험은 아무것도 지키지 못한다"
+
+        # **측정 불가(UNKNOWN)는 예외다.** 못 잰 항목에 확신도가 없는 것은 사실이고,
+        # 페이지 산식도 UNKNOWN 은 배점 전액 손실로 따로 다룬다 — 확신도를 곱하지 않는다.
+        # 문제는 **실제로 판정한 항목**이 0.0 으로 저장되던 것이었다: 그러면 손실에 0 이
+        # 곱해져 그 판정이 점수에서 통째로 사라지고, 페이지가 100점이 된다.
+        judged = [row for row in rows if row.status in ("PASS", "WARNING", "FAIL")]
+        assert judged, "판정된 항목이 없으면 이 시험은 아무것도 지키지 못한다"
+        zeros = [row.check_id for row in judged if row.confidence == 0.0]
+        assert not zeros, f"판정했는데 확신도가 0.0 으로 저장된 항목: {zeros[:6]}"
+
+    def test_the_saved_confidence_matches_what_was_scored(
+        self, db_session, principal, site, scan_result, scan_context
+    ):
+        """저장된 값이 채점기가 쓴 값과 같아야 한다 — 접거나 바꾸지 않는다."""
+        from veo.db.models.analysis import CheckResult
+        from veo.seo.history import save_scan_run
+
+        saved = save_scan_run(
+            db_session, principal=principal, site_id=site.id, result=scan_result,
+            context=scan_context, urls_attempted=1, urls_collected=1,
+            started_at=SCAN_STARTED_AT,
+        )
+
+        from veo.scoring.evaluator import resolve_confidence
+
+        stored = {
+            row.check_id: row.confidence
+            for row in db_session.query(CheckResult).filter_by(scan_run_id=saved.scan_run_id)
+        }
+        for outcome in scan_result.score.outcomes:
+            if outcome.confidence is None and outcome.confidence_level is None:
+                continue
+            # 등급으로 온 판정은 명세가 정한 숫자로 저장된다. 원본(None)이 아니라
+            # **채점기가 실제로 곱한 값**이어야 한다 — 두 숫자가 갈리면 저장은 거짓이다.
+            assert stored[outcome.check_id] == resolve_confidence(scan_context.spec, outcome)

@@ -287,11 +287,9 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
     # 페이지 종합 = 도달률 x (채점 가능한 단계들의 가중 평균). 재정규화 — 판정된
     # 단계가 적은 페이지가 그 이유만으로 감점되지 않는다.
     weight_total = sum(category.weight for category, _, _ in scoreable)
-    quality = 100.0
     losses: list[PageLoss] = []
-    for category, fraction_lost, loss_rows in scoreable:
+    for category, _fraction_lost, loss_rows in scoreable:
         stage_share = category.weight / weight_total * 100.0
-        quality -= stage_share * fraction_lost
         budget = sum(check.points or 0.0 for check in _url_checks(category))
         for check_id, lost, status_value in loss_rows:
             losses.append(
@@ -304,7 +302,19 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
             )
 
     losses.sort(key=lambda loss: -loss.lost)
-    quality = max(0.0, quality)
+    # **품질을 화면에 내보내는 손실들에서 그대로 뺀다.**
+    #
+    # 예전에는 품질을 단계별 합계에서 빼고(`quality -= stage_share * fraction_lost`),
+    # 손실은 항목마다 따로 반올림해 내보냈다. 수학적으로는 같은 값이지만 반올림이 서로
+    # 달라 `품질 == 100 - Σ손실` 이 미세하게 어긋났다(실측 73.257706 vs 73.257703).
+    #
+    # 모든 손실이 0 이던 동안에는 이 어긋남이 드러나지 않았다 — 확신도 결함으로 손실이
+    # 전부 0 이었기 때문이다(2026-08-05). 그 결함을 고치자마자 항등식이 깨졌다.
+    #
+    # 화면은 이 항등식으로 숫자를 검산한다. 그러니 **설명이 곧 숫자여야** 한다: 보여주는
+    # 손실을 더한 것이 정확히 깎인 만큼이다. 반대로 두면 "왜 이 점수인가" 를 설명한 표가
+    # 그 점수와 맞지 않는다.
+    quality = max(0.0, 100.0 - sum(loss.lost for loss in losses))
     return PageScore(
         spec_id=spec.spec_id,
         spec_version=spec.version,

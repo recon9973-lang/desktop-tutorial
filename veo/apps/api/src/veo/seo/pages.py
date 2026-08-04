@@ -166,7 +166,12 @@ def _score_page(
             CheckOutcome(
                 check_id=row.check_id,
                 status=status,
-                confidence=row.confidence,
+                # 확신도가 비어 있는 것은 **옛 실행**이다(2026-08-05 이전). 그때는 저장이
+                # 등급으로 온 판정의 확신도를 버렸고, 그 칸을 NULL 로 되돌려 두었다.
+                # 모르는 확신도는 1.0 으로 읽는다 — 채점기가 처음부터 쓰던 규칙과 같고
+                # (`scoring/page.py`), 그것은 "깎지 않는다" 는 뜻이다. 임의의 숫자를
+                # 지어내 손실을 부풀리거나 없애지 않는다.
+                confidence=1.0 if row.confidence is None else row.confidence,
                 evidence_ids=tuple(row.evidence_ids or []),
             )
         )

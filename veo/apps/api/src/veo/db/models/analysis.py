@@ -353,7 +353,23 @@ class CheckResult(Base, OrganizationScopedMixin, ImmutableMixin):
         String(20), nullable=False, comment="PASS | WARNING | FAIL | NOT_APPLICABLE | UNKNOWN"
     )
     severity: Mapped[str] = mapped_column(String(16), nullable=False)
-    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    #: 이 판정을 우리가 얼마나 확신하는가. **모르면 NULL 이다.**
+    #:
+    #: 예전에는 `nullable=False` 였고 저장하는 쪽이 `outcome.confidence or 0.0` 으로
+    #: 접었다. 그래서 확신도를 매기지 않는 검사(대부분)가 전부 **0.0** 으로 저장됐고
+    #: (운영 실측 2026-08-05: 1,767건이 0.0, 248건이 1.0), 페이지 점수 산식이 손실에
+    #: 그 값을 곱하는 바람에
+    #:
+    #:     손실 = 배점 x 계수 x 폭 x 0.0 = 0
+    #:
+    #: **모든 페이지가 100점**으로 나갔다. 실패 5건인 페이지도 100.0 이었다.
+    #:
+    #: "확신도를 안 적었다" 와 "확신이 0 이다" 는 다른 사실이다. 사이트 점수 쪽은 처음부터
+    #: `None → 1.0` 으로 옳게 읽고 있었는데(`scoring/page.py`), 저장이 그 `None` 을
+    #: 없애 버려서 읽는 쪽이 손쓸 수 없었다. 빈칸을 숫자로 채우면 그 순간 거짓이 된다.
+    confidence: Mapped[float | None] = mapped_column(
+        Float, nullable=True, comment="확신도. 매기지 않은 검사는 NULL — 0.0 이 아니다."
+    )
     affected_weight: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
     evaluated_weight: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
     not_applicable_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
