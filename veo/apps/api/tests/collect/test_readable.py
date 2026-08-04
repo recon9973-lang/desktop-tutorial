@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from veo.collect.readable import MIN_DOCUMENT_BYTES, read_failure
+from veo.collect.readable import MAX_SHELL_BYTES, read_failure
 
 
 def judge(**overrides: object) -> object:
@@ -40,12 +40,24 @@ class TestWhatWeCouldNotRead:
     없다는 것까지** 명시한다 — 크기만 작다는 이유로는 더 이상 걸리지 않는다.
     """
 
-    def test_a_blocked_shell_is_not_a_site_without_a_title(self) -> None:
-        """봇 차단 페이지: 200 이고 HTML 구조도 있지만 알맹이가 없다."""
-        failure = judge(has_any_head_signal=False, body_text_length=0)
+    def test_the_real_blocked_page_is_caught(self) -> None:
+        """**실물이다.** 2026-08-04, 운영 서버가 venomad.com 에서 받은 응답:
+        763바이트, HTTP 200, title·description·canonical 없음, 링크와 짧은 글자만 있음.
+
+        같은 주소를 한국에서 받으면 59,976바이트에 전부 들어 있다. 이것을 "이 사이트에
+        제목이 없다" 로 채점해서 15~27점을 고객에게 보냈다.
+
+        앞선 두 판의 규칙은 이것을 통과시켰다 — 본문 글자가 있다는 이유로."""
+        failure = judge(body_length=763, has_any_head_signal=False, body_text_length=40)
 
         assert failure is not None
-        assert "받지 못한" in failure.reason_ko  # type: ignore[union-attr]
+        assert "763바이트" in failure.reason_ko  # type: ignore[union-attr]
+        assert "차단" in failure.reason_ko  # type: ignore[union-attr]
+
+    def test_a_blocked_shell_is_not_a_site_without_a_title(self) -> None:
+        failure = judge(body_length=300, has_any_head_signal=False, body_text_length=0)
+
+        assert failure is not None
 
     def test_an_empty_body_is_a_collection_failure(self) -> None:
         failure = judge(body_length=0, has_any_head_signal=False, body_text_length=0)
@@ -79,12 +91,13 @@ class TestWhatMustStillBeScored:
         # 제목만 있고 본문이 비어 있는 페이지 — 실제로 얇은 페이지다. 채점되어야 한다.
         assert judge(has_any_head_signal=True, body_text_length=0) is None
 
-    def test_a_page_with_only_body_text_is_still_scored(self) -> None:
-        # head 가 전부 비었지만 본문은 있다 — 제목 없는 진짜 결함이다. 채점되어야 한다.
-        assert judge(has_any_head_signal=False, body_text_length=400) is None
+    def test_a_long_page_without_a_title_is_still_scored(self) -> None:
+        # head 가 전부 비었지만 문서가 충분히 크다 — 제목 없는 진짜 결함이고, 그것이
+        # 이 제품이 잡아야 할 값이다. 763바이트 차단 페이지와 갈리는 자리다.
+        assert judge(body_length=8000, has_any_head_signal=False, body_text_length=2000) is None
 
     def test_a_small_but_real_document_is_scored(self) -> None:
-        assert judge(body_length=MIN_DOCUMENT_BYTES) is None
+        assert judge(body_length=MAX_SHELL_BYTES) is None
 
     def test_a_tiny_document_with_real_content_is_scored(self) -> None:
         """80바이트짜리 정상 문서를 버렸던 결함.
@@ -98,7 +111,7 @@ class TestWhatMustStillBeScored:
 
     def test_size_never_overrides_real_content(self) -> None:
         """본문 글자만 있어도(제목이 없어도) 읽은 것이다."""
-        assert judge(body_length=50, has_any_head_signal=False, body_text_length=10) is None
+        assert judge(body_length=50, has_any_head_signal=True, body_text_length=0) is None
 
     def test_a_normal_page_passes(self) -> None:
         assert judge() is None
