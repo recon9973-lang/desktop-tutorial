@@ -66,13 +66,16 @@ function textOrNull(source: Record<string, unknown>, key: string): string | null
  * 화면 로딩 전체를 좌우한다.
  */
 export async function listCompanies(): Promise<ConsoleOutcome<readonly Company[]>> {
-  const customers = await readAllPages('/api/customers');
+  // 세 벌은 서로를 필요로 하지 않는다. 줄을 세우면 왕복이 세 번이고, 서버가 한국에서
+  // 멀 때 그 두 번이 그대로 화면 대기 시간이 된다 — 이어 붙이는 일은 셋이 다 온 뒤에
+  // 해도 똑같다.
+  const [customers, projects, sites] = await Promise.all([
+    readAllPages('/api/customers'),
+    readAllPages('/api/projects'),
+    readAllPages('/api/sites'),
+  ]);
   if (!customers.ok) return customers;
-
-  const projects = await readAllPages('/api/projects');
   if (!projects.ok) return projects;
-
-  const sites = await readAllPages('/api/sites');
   if (!sites.ok) return sites;
 
   const sitesByProject = new Map<string, MeasuredSite[]>();
@@ -150,7 +153,36 @@ function slugFor(name: string, suffix: string): string {
 export type CreateCompanyFailure =
   | { readonly reason: 'INVALID_NAME' }
   | { readonly reason: 'INVALID_URL' }
+  /** 그 주소는 이미 누군가에게 달려 있다. `owner` 는 그 업체명 — 어디 있는지 말해 준다. */
+  | { readonly reason: 'DUPLICATE'; readonly owner: string; readonly siteId: string }
   | { readonly reason: 'API'; readonly outcome: ConsoleOutcome<unknown> };
+
+/**
+ * 이 주소가 이미 등록돼 있는가.
+ *
+ * 주소만 넣고 재는 길(`findOrCreateSiteByOrigin`)에는 이 검사가 처음부터 있었는데, 업체
+ * 관리에서 손으로 등록하는 길에는 없었다. 그래서 진단이 자동으로 만들어 둔 업체와 사람이
+ * 등록한 업체가 **같은 주소로 나란히** 남았다(사용자 지적: 참사랑한의원이 두 번).
+ *
+ * 엔진에도 중복 거절이 있지만 그것은 프로젝트 안에서만 본다 — 프로젝트가 다르면 통과한다.
+ * 조직 전체에서 한 주소는 한 자리여야 이력이 갈라지지 않는다.
+ *
+ * 못 읽으면 `null` 을 돌려준다. 읽지 못한 것을 "없다" 로 삼아 새로 만들면 중복이 생기고,
+ * "있다" 로 삼아 막으면 멀쩡한 등록이 거절된다 — 판단을 부르는 쪽에 넘긴다.
+ */
+async function ownerOfOrigin(origin: string): Promise<CreateCompanyFailure | null> {
+  const companies = await listCompanies();
+  // 못 읽었다. 이것을 "없다" 로 삼아 새로 만들면 중복이 생긴다 — 실패로 돌려보낸다.
+  if (!companies.ok) return { reason: 'API', outcome: companies };
+
+  for (const company of companies.data) {
+    const site = company.sites.find((one) => one.origin === origin);
+    if (site !== undefined) {
+      return { reason: 'DUPLICATE', owner: company.name, siteId: site.siteId };
+    }
+  }
+  return null;
+}
 
 export type CreateCompanyResult =
   | { readonly ok: true; readonly customerId: string; readonly siteId: string }
@@ -173,6 +205,10 @@ export async function createCompany(
 
   const origin = toOrigin(rawUrl);
   if (origin === null) return { ok: false, reason: 'INVALID_URL' };
+
+  // 만들기 **전에** 본다. 만든 뒤에 되돌리려 하면 절반만 지워진 상태가 남는다.
+  const taken = await ownerOfOrigin(origin);
+  if (taken !== null) return { ok: false, ...taken };
 
   const customer = await callConsoleApi('/api/customers', {
     method: 'POST',
@@ -214,6 +250,11 @@ export async function addSite(
 ): Promise<CreateCompanyResult> {
   const origin = toOrigin(rawUrl);
   if (origin === null) return { ok: false, reason: 'INVALID_URL' };
+
+  // 다른 업체에 이미 달린 주소는 여기서도 막는다. 한 주소가 두 업체에 달리면 어느 쪽
+  // 이력이 그 사이트의 이력인지 말할 수 없게 된다.
+  const taken = await ownerOfOrigin(origin);
+  if (taken !== null) return { ok: false, ...taken };
 
   const projects = await callConsoleApi(
     `/api/projects?customer_id=${encodeURIComponent(customerId)}&page_size=1`,

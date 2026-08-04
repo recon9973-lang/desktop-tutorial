@@ -78,6 +78,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  // 어디에 이미 있는지 말한다. "이미 등록된 주소입니다" 만으로는 어느 업체를 열어 봐야
+  // 하는지 알 수 없어, 결국 목록을 눈으로 훑게 된다.
+  if (result.reason === 'DUPLICATE') {
+    return refuse('CONFLICT', `이미 "${result.owner}" 에 등록된 주소입니다.`);
+  }
+
   if (result.reason === 'API') {
     // 엔진이 사람에게 보여도 되는 문장을 줬다면 그것을 쓴다. 우리 쪽 일반 문구로 덮으면
     // "이미 등록된 주소입니다" 같은 구체적인 이유가 사라진다.
