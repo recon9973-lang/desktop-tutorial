@@ -78,3 +78,10 @@
   font-size: var(--veo-font-size-200);
   margin: 0 0 var(--veo-space-4);
 }
+
+/* 하위 화면(프로젝트 설정)으로 가는 본문 링크 */
+.projectsLink {
+  color: var(--veo-color-accent, inherit);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

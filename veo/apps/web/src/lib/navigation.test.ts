@@ -89,11 +89,12 @@ describe('visibleConsoleNav', () => {
   });
 
   it('preserves the declared order', () => {
+    // 프로젝트는 업체 관리의 하위 화면으로 옮겨져 메뉴에 없다 — project:read 만으로는
+    // 상위 메뉴가 늘지 않는다.
     const visible = visibleConsoleNav({
       permissions: ['scoring_spec:read', 'project:read'],
     });
     expect(visible.map((item) => item.href)).toEqual([
-      '/console/projects',
       '/console/scoring-versions',
       '/console/changelog',
       '/console/account',

@@ -44,7 +44,14 @@ async function CustomersContent() {
         <h1 className={styles.title}>업체 관리</h1>
         <p className={styles.lede}>
           진단할 업체와 측정 URL을 등록합니다. 한 업체에 주소를 여러 개 둘 수 있고, 진단
-          결과는 주소마다 따로 쌓입니다.
+          결과는 주소마다 따로 쌓입니다.{' '}
+          {/* 프로젝트는 별도 메뉴였다가 이 화면의 하위로 들어왔다 — 두 메뉴가 같은 일
+              (측정 대상 등록)로 읽혀 서로를 가렸다(사용자 감사). */}
+          측정 단위(브랜드 식별·GEO 관측)의 세부 설정은{' '}
+          <Link href="/console/customers/projects" className={own.projectsLink}>
+            프로젝트 설정
+          </Link>
+          에서 합니다.
         </p>
       </div>
 

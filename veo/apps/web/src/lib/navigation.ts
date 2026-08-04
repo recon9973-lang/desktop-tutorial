@@ -57,12 +57,9 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
     description: '업체와 측정 URL',
     permission: 'customer:read',
   },
-  {
-    href: '/console/projects',
-    label: '프로젝트',
-    description: '측정 대상 사이트 관리',
-    permission: 'project:read',
-  },
+  // 프로젝트(측정 단위 설정)는 업체 관리의 하위 화면(/console/customers/projects)으로
+  // 옮겼다 — 사용자에게 "업체 관리" 와 "프로젝트" 는 같은 일(측정 대상 등록)로 읽혀
+  // 메뉴 둘이 서로를 가렸다(사용자 감사). 업체 관리 화면 안에서 연결한다.
   {
     href: '/console/seo',
     label: '진단',
@@ -80,7 +77,9 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
   },
   {
     href: '/console/review',
-    label: '위험 검수',
+    // "위험 검수" 와 "의료광고 검수" 는 이름이 비슷해 같은 일로 읽혔다(사용자 감사).
+    // 대상을 이름에 넣는다 — 이쪽은 AI 답변, 저쪽은 우리 원고.
+    label: 'AI 답변 검수',
     description: 'AI 답변 지적을 사람이 확인',
     permission: 'observation:review',
   },
@@ -92,8 +91,10 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
   },
   {
     href: '/console/competitors',
-    label: '경쟁사',
-    description: '비교 대상 사이트',
+    // 화면의 실제 일은 경쟁사 분석이 아니라 "AI 답변 속 어느 상호가 이 고객인가" 의
+    // 식별 정보 등록이다 — 화면 제목(브랜드 식별)은 먼저 바뀌었는데 메뉴만 옛 이름이었다.
+    label: '브랜드 식별',
+    description: 'AI 답변에서 우리 상호 가려내기',
     permission: 'competitor:read',
   },
   {
@@ -110,8 +111,8 @@ export const CONSOLE_NAV: readonly ConsoleNavItem[] = [
   },
   {
     href: '/console/medical',
-    label: '의료광고 검수',
-    description: '원고의 검토 필요 표현 표시',
+    label: '원고 표현 검수',
+    description: '원고의 의료광고법 검토 필요 표현 표시',
     permission: 'scan:read',
   },
   {

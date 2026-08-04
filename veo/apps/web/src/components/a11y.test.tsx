@@ -130,14 +130,16 @@ describe('ConsoleNav · SC 4.1.2 current page, SC 1.3.1 headings', () => {
   });
 
   it('treats a nested route as being inside its area', () => {
-    pathname.mockReturnValue('/console/projects/42');
+    // 프로젝트 화면이 업체 관리 하위로 이동해 /console/projects 는 더 이상 메뉴에 없다.
+    // 같은 성질(하위 경로 → 상위 메뉴 강조)을 ANALYST 가 볼 수 있는 영역으로 검사한다.
+    pathname.mockReturnValue('/console/issues/42');
     render(<ConsoleNav identity={ANALYST} />);
 
     const current = screen
       .getAllByRole('link')
       .filter((link) => link.getAttribute('aria-current') === 'page');
     expect(current).toHaveLength(1);
-    expect(current[0]).toHaveAttribute('href', '/console/projects');
+    expect(current[0]).toHaveAttribute('href', '/console/issues');
   });
 
   it('does not mark /console/scoring-versions as current from /console/scan', () => {

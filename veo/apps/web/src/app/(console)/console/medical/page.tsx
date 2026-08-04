@@ -7,7 +7,7 @@ import styles from '@/styles/page.module.css';
 import { CopyReviewForm } from './CopyReviewForm';
 
 export const metadata: Metadata = {
-  title: '의료광고 검수',
+  title: '원고 표현 검수',
   robots: { index: false, follow: false },
 };
 
@@ -28,7 +28,7 @@ export default async function MedicalReviewPage() {
       <div className={styles.page}>
         <div className={styles.header}>
           <p className={styles.eyebrow}>콘솔</p>
-          <h1 className={styles.title}>의료광고 검수</h1>
+          <h1 className={styles.title}>원고 표현 검수</h1>
           <p className={styles.lede}>
             블로그 원고·페이지 문안을 붙여 넣으면 의료법 제56조의 금지 유형에 해당할 수
             있는 표현을 근거 조항과 함께 표시합니다. <strong>위반 판정이 아니라 검토

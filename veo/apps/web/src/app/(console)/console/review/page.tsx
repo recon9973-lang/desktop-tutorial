@@ -10,7 +10,7 @@ import { ReviewCard } from './ReviewCard';
 import own from './review.module.css';
 
 export const metadata: Metadata = {
-  title: '위험 검수',
+  title: 'AI 답변 검수',
   robots: { index: false, follow: false },
 };
 
@@ -33,7 +33,7 @@ async function ConsoleReviewContent() {
     <div className={styles.page}>
       <div className={styles.header}>
         <p className={styles.eyebrow}>콘솔</p>
-        <h1 className={styles.title}>위험 검수</h1>
+        <h1 className={styles.title}>AI 답변 검수</h1>
         <p className={styles.lede}>
           AI 답변에 대한 자동 지적 가운데 <strong>사람이 확인해야 하는 것</strong>들입니다.
           심각한 것부터 나옵니다. 여기서 확정되기 전에는 고객 문서에 문장이 실리지 않습니다.
