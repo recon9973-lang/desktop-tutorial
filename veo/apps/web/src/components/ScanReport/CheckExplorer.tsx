@@ -212,8 +212,18 @@ function CheckPanel({
         <span className={styles.checkTitle}>{outcome.title}</span>
         {/* 확정 시안 v2.2 §11 — 실측값을 행에 인라인으로. "통과" 라는 판정보다
             "200 · 리다이렉트 1회" 라는 사실이 신뢰를 만든다. 펼쳐야만 보이면,
-            펼치지 않은 40여 줄은 근거 없는 단정으로 남는다. */}
-        {glance === null ? null : <span className={styles.checkObserved}>{glance}</span>}
+            펼치지 않은 40여 줄은 근거 없는 단정으로 남는다.
+
+            관측값이 없으면 **비워 두지 않고 그렇게 적는다.** 비워 두면 근거를 보여준
+            줄과 아무것도 못 본 줄이 똑같이 생긴다 — 그 상태로 venomad 진단이 "제목이
+            비어 있습니다" 를 고객에게 내보냈고, 화면 어디에도 우리가 아무것도 읽지
+            못했다는 표시가 없었다(0-K). 판정을 지우지는 않는다. 판정 옆에 근거가
+            없다는 사실을 함께 두는 것이 이 자리의 일이다. */}
+        {glance === null ? (
+          <span className={styles.checkNoObserved}>관측값 없음</span>
+        ) : (
+          <span className={styles.checkObserved}>{glance}</span>
+        )}
         <span className={SEVERITY_BADGE[outcome.severity] ?? styles.sevBadgeLow}>
           {SEVERITY_LABELS[outcome.severity] ?? outcome.severity}
         </span>
@@ -223,7 +233,15 @@ function CheckPanel({
         <section className={styles.checkBlock}>
           <h4 className={styles.checkBlockTitle}>이렇게 판정한 근거</h4>
           {outcome.note === null ? null : <p className={styles.checkNote}>{outcome.note}</p>}
-          {causes.length === 0 ? null : (
+          {causes.length === 0 ? (
+            // 판정은 있는데 근거로 보여줄 관측값이 없다. 그 사실을 적는다 —
+            // 여기가 비어 있으면 읽는 사람은 근거를 못 본 것이 아니라 근거가 있는데
+            // 화면이 생략했다고 여긴다.
+            <p className={styles.checkNote}>
+              이 항목에서 실제로 읽은 값이 기록되지 않았습니다. 판정의 근거를 이 화면에서
+              확인할 수 없습니다.
+            </p>
+          ) : (
             <ul className={styles.causeList}>
               {causes.map((cause) => (
                 <li key={cause.label}>

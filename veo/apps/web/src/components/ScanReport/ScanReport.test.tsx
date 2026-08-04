@@ -530,3 +530,48 @@ describe('영역 카드가 레일에서 찾아올 수 있는 자리를 가진다
     expect(container.querySelector('#check-crawl')).not.toBeNull();
   });
 });
+
+/**
+ * 판정 옆에 근거가 없으면, 없다고 적는다 (0-K).
+ *
+ * venomad.com 진단이 "title 이 비어 있습니다" 를 고객에게 내보냈다. 실제로는 title 이
+ * 멀쩡히 있었고, 우리가 문서를 못 받은 것이었다. 그런데 화면 어디에도 **우리가 아무것도
+ * 읽지 못했다**는 표시가 없었다 — 관측값 자리가 그냥 비어 있었고, 근거를 보여준 줄과
+ * 아무것도 못 본 줄이 똑같이 생겼다. 그래서 몇 달 동안 아무도 알아채지 못했다.
+ *
+ * 판정을 지우는 것은 이 시험의 일이 아니다. 판정 **옆에 근거가 없다는 사실**을 함께
+ * 두는 것이 전부다.
+ */
+describe('관측값이 없으면 없다고 적는다', () => {
+  it('줄에 "관측값 없음" 이 보인다', () => {
+    detailed({ outcomes: [outcome({ observed: null })] });
+
+    expect(screen.getByText('관측값 없음')).toBeInTheDocument();
+  });
+
+  it('관측값이 있으면 그 값이 보이고 "관측값 없음" 은 나오지 않는다', () => {
+    detailed({
+      outcomes: [outcome({ observed: { 'https://a.example.kr/': '200 · 리다이렉트 1회' } })],
+    });
+
+    // 줄에 한 번(요약), 펼친 안에 한 번(근거) — 두 자리 모두에 나온다.
+    expect(screen.getAllByText('200 · 리다이렉트 1회').length).toBeGreaterThan(0);
+    expect(screen.queryByText('관측값 없음')).not.toBeInTheDocument();
+  });
+
+  it('빈 객체도 관측값 없음으로 본다 — 이름만 있고 값이 없으면 근거가 아니다', () => {
+    detailed({ outcomes: [outcome({ observed: {} })] });
+
+    expect(screen.getByText('관측값 없음')).toBeInTheDocument();
+  });
+
+  it('펼치면 왜 근거를 볼 수 없는지 문장으로 말한다', async () => {
+    detailed({ outcomes: [outcome({ observed: null })] });
+
+    await userEvent.click(screen.getByText('제목 단계가 순서대로인가'));
+
+    expect(
+      screen.getByText(/실제로 읽은 값이 기록되지 않았습니다/),
+    ).toBeInTheDocument();
+  });
+});

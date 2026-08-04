@@ -231,11 +231,25 @@
   text-overflow: ellipsis;
   font-variant-numeric: tabular-nums;
 }
+/* 관측값이 없는 줄. 값 자리를 비워 두지 않고 **없다고 적는다** — 비워 두면 근거를
+   보여준 줄과 아무것도 못 본 줄이 똑같이 생기고, 그 상태로 "제목이 비어 있습니다" 가
+   고객에게 나갔다(0-K). 상태색을 쓰지 않는다: 결함이 아니라 우리 기록의 공백이다. */
+.checkNoObserved {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  text-align: right;
+  white-space: nowrap;
+  font-style: italic;
+  opacity: 0.75;
+}
 /* 좁은 화면에서는 제목과 값이 한 줄에 못 들어간다. 값을 숨기지는 않고 줄을 접는다 —
    숨기면 그 화면에서는 근거가 다시 사라진다. */
 @media (max-width: 720px) {
   .checkSummary { flex-wrap: wrap; }
   .checkObserved { flex-basis: 100%; text-align: left; white-space: normal; }
+  .checkNoObserved { flex-basis: 100%; text-align: left; white-space: normal; }
 }
 .checkSeverity {
   flex: 0 0 auto;

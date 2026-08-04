@@ -177,10 +177,33 @@ def summarise(spec: ScoringSpec, result: ScoreResult) -> str:
     sentences = [
         f"기술 준비도 {result.overall_score:.1f}점({band_label}), "
         f"측정 범위 {result.coverage * 100:.0f}%입니다.",
-        f"전체 {len(result.outcomes)}개 항목 가운데 {measured}개를 채점했고, "
-        f"{counts[CheckStatus.NOT_APPLICABLE]}개는 해당 없음으로 분모에서 제외했으며, "
-        f"{counts[CheckStatus.UNKNOWN]}개는 측정하지 못해 점수에 반영하지 않았습니다.",
     ]
+
+    # 못 잰 항목이 점수에 **얼마나** 영향을 줬는지 숫자로 적는다.
+    #
+    # 여기에는 "측정하지 못해 점수에 반영하지 않았습니다" 라고 적혀 있었다. 사실이
+    # 아니다 — 절대 평가에서 UNKNOWN 은 배점을 분모에 남긴 채 전액을 잃는다
+    # (evaluator.py 의 `budget += coefficient; penalty_total += coefficient`).
+    # 실측 예: venomad.com 진단에서 6개 항목이 12.2점을 가져갔는데 화면은
+    # "반영하지 않았다" 고 말하고 있었다.
+    #
+    # 정책 자체는 바꾸지 않는다(발행 명세 1.9.0 의 결정이다). 바꾸는 것은 **문장이
+    # 산수와 일치하는가** 하나다. 고객에게 깎지 않았다고 적어 보내면서 깎는 것은
+    # 채점 기준의 문제가 아니라 정직성의 문제다.
+    unknown_count = counts[CheckStatus.UNKNOWN]
+    sentences.append(
+        f"전체 {len(result.outcomes)}개 항목 가운데 {measured}개를 채점했고, "
+        f"{counts[CheckStatus.NOT_APPLICABLE]}개는 해당 없음으로 분모에서 제외했습니다."
+    )
+    if unknown_count:
+        lost = _unknown_penalty(result)
+        # 숫자는 **채점기가 실제로 계산한 값**에서만 가져온다. 못 가져왔으면 지어내지
+        # 않고 문장에서 뺀다 — 고객에게 나가는 숫자를 추정으로 채우지 않는다.
+        detail = "" if lost is None else f" 그 배점 {lost:.1f}점을 얻지 못한 것으로 계산했습니다."
+        sentences.append(
+            f"{unknown_count}개는 측정하지 못했습니다. 사이트의 결함은 아니지만 "
+            f"점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다.{detail}"
+        )
 
     failing = counts[CheckStatus.FAIL]
     if failing:
@@ -195,6 +218,30 @@ def summarise(spec: ScoringSpec, result: ScoreResult) -> str:
         "대한 값입니다."
     )
     return " ".join(sentences)
+
+
+def _unknown_penalty(result: ScoreResult) -> float | None:
+    """못 잰 항목들이 실제로 가져간 점수. 알 수 없으면 ``None``.
+
+    채점기가 남긴 계산 기록(`trace`)에서만 읽는다. 여기서 다시 계산하면 두 벌이 되고,
+    언젠가 한쪽만 바뀐다(0-D). 기록이 없거나 모양이 다르면 **지어내지 않고** ``None``
+    을 돌려주며, 부르는 쪽은 그 문장을 통째로 뺀다 — 고객에게 나가는 숫자다.
+    """
+    checks = result.trace.get("checks") if isinstance(result.trace, dict) else None
+    if not isinstance(checks, list):
+        return None
+
+    total = 0.0
+    seen = False
+    for row in checks:
+        if not isinstance(row, dict) or row.get("status") != CheckStatus.UNKNOWN.value:
+            continue
+        penalty = row.get("penalty")
+        if not isinstance(penalty, int | float):
+            continue
+        total += float(penalty)
+        seen = True
+    return total if seen else None
 
 
 def _status_counts(outcomes: Sequence[CheckOutcome]) -> dict[CheckStatus, int]:
