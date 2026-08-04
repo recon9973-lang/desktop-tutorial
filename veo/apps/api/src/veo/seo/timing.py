@@ -112,3 +112,7 @@ def stage(name: str, timings: ScanTimings | None = None) -> Iterator[None]:
             # 넘기지는 않는다 — 그래프가 비어 있는데 이유를 모르면, 안 잰 것과 못 잰
             # 것이 섞인다.
             _log.warning("scan stage timing was not recorded: %s", name, exc_info=True)
+
+
+# 관문 시험용 — 곧 되돌립니다.
+_ = 이_이름은_없습니다
