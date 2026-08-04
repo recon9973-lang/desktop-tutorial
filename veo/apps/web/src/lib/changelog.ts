@@ -19,6 +19,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.31',
+    date: '2026-08-04',
+    title: '대시보드가 같은 목록을 두 번 읽던 것',
+    items: [
+      '대시보드가 업체 목록을 두 번 읽고 있었습니다 — 한 번으로 줄였습니다 (왕복 6회 → 3회)',
+    ],
+  },
+  {
     version: '0.3.30',
     date: '2026-08-04',
     title: '거래처는 등록한 곳만 · 대시보드는 밀린 것을 말한다',

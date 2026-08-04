@@ -50,8 +50,16 @@ export interface DashboardData {
 const STALE_DAYS = 14;
 const DAY = 86_400_000;
 
-/** 진단 — 맡은 곳의 점수와, 아직 재지 않았거나 오래된 곳. */
-async function diagnosisRow(now: number): Promise<AreaRow> {
+/**
+ * 진단 — 맡은 곳의 점수와, 아직 재지 않았거나 오래된 곳.
+ *
+ * 업체 목록을 **넘겨받는다.** 여기서 다시 부르면 같은 목록을 두 번 읽게 되고, 그 한 번이
+ * 세 왕복(고객·프로젝트·사이트)이다. 서버가 한국에서 멀 때 그것이 그대로 대기 시간이다.
+ */
+async function diagnosisRow(
+  now: number,
+  sites: readonly { readonly siteId: string }[],
+): Promise<AreaRow> {
   const base = {
     key: 'seo',
     label: '진단',
@@ -60,12 +68,6 @@ async function diagnosisRow(now: number): Promise<AreaRow> {
     unit: '점',
   } as const;
 
-  const companies = await listCompanies({ registered: true });
-  if (!companies.ok) {
-    return { ...base, value: null, note: '현황을 불러오지 못했습니다', tone: 'plain' };
-  }
-
-  const sites = companies.data.flatMap((company) => company.sites);
   if (sites.length === 0) {
     return { ...base, value: null, note: '등록된 측정 주소가 없습니다', tone: 'plain' };
   }
@@ -172,21 +174,26 @@ async function usageRow(): Promise<AreaRow> {
 }
 
 export async function readDashboard(now: number = Date.now()): Promise<DashboardData | null> {
+  // 맡은 곳만 센다. 영업 중에 한 번 재 본 주소가 "14일 방치" 로 잡히면, 하지 않아도
+  // 될 일이 할 일 목록에 올라온다.
+  //
+  // 목록은 **한 번만** 읽고 진단 줄에 넘긴다. 두 번 읽으면 세 왕복을 두 번 낸다.
+  const companies = await listCompanies({ registered: true });
+  if (!companies.ok) return null;
+  const sites = companies.data.flatMap((company) => company.sites);
+
   // 영역끼리는 서로를 필요로 하지 않는다. 줄을 세우면 영역 수만큼 왕복이 늘어난다.
   const [diagnosis, issues, reports, usage] = await Promise.all([
-    diagnosisRow(now),
+    diagnosisRow(now, sites),
     issuesRow(),
     reportsRow(),
     usageRow(),
   ]);
 
-  const companies = await listCompanies({ registered: true });
-  if (!companies.ok) return null;
-
   return {
     // 밀린 것이 있는 영역이 위로. 같은 급이면 정해진 순서대로 — 매번 자리가 바뀌면
     // 눈이 위치를 기억하지 못한다.
     areas: [diagnosis, issues, reports, usage],
-    siteCount: companies.data.flatMap((company) => company.sites).length,
+    siteCount: sites.length,
   };
 }
