@@ -46,7 +46,7 @@ if [ -n "$(git status --porcelain -- "$PREFIX")" ]; then
     exit 1
 fi
 
-REPO="$(git remote get-url "$REMOTE" | sed -E 's#.*github\.com[:/]##; s/\.git$##')"
+REPO="$(git remote get-url "$REMOTE" | sed -E 's#.*github\.com[:/]##; s#\.git$##')"
 
 echo "==> [1/4] $PREFIX/ 를 떼어낸 커밋을 만듭니다"
 SHA="$(git subtree split --prefix="$PREFIX" HEAD)"
