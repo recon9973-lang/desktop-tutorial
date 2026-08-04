@@ -143,8 +143,12 @@ class CollectionContext:
     Only the discovery crawl may set this, and only when it ran out of addresses to
     fetch before reaching the page ceiling, the depth ceiling or the host budget.
     """
-    unread_documents: tuple[tuple[str, str], ...] = ()
-    """받았지만 **문서로 읽지 못한** 주소와 그 사유 (url, reason_ko).
+    unread_documents: tuple[tuple[FetchedDocument, str], ...] = ()
+    """받았지만 **문서로 읽지 못한** 응답과 그 사유 (document, reason_ko).
+
+    주소만이 아니라 **응답 자체**를 들고 다닌다. 무엇을 받았길래 못 읽었는지는
+    받은 것을 봐야 알 수 있고, 그것을 버리면 나중에 아무도 확인할 수 없다 —
+    실제로 그래서 하루를 썼다.
 
     이 자리는 사이트에 대한 사실이 아니라 **우리 수집에 대한 사실**을 담는다. 여기
     들어온 주소는 채점 대상(`documents`)에서 빠진다 — 못 받은 것을 "그 페이지에

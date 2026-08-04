@@ -106,10 +106,27 @@ def _scope_notice(context: CollectionContext) -> tuple[str, ...]:
     가늠할 수 있게 한다. 배점은 건드리지 않는다 — 범위 밖이라고 분모에서 빼면
     큰 사이트일수록 덜 재서 유리해진다.
     """
+    # 못 읽은 응답이 있으면 **맨 앞에** 적는다. 이 사실이 나가지 않으면, 점수가 낮거나
+    # 없는 이유를 읽는 사람이 사이트에서 찾게 된다 — 원인은 우리 수집에 있는데.
+    #
+    # 이 값은 `context.unread_documents` 에 기록되고 있었지만 읽는 코드가 저장소
+    # 어디에도 없었다(감사 지적). 기록만 되고 한 번도 나가지 않는 사실은 없는 것과 같다.
+    unread = tuple(
+        f"{document.final_url} — {reason}" for document, reason in context.unread_documents
+    )
+    if unread:
+        head = (
+            f"{len(unread)}개 주소에서 응답은 받았지만 문서를 읽지 못해 채점 대상에서 "
+            "제외했습니다. 사이트의 결함이 아니라 우리 수집의 상태입니다.",
+            *unread,
+        )
+    else:
+        head = ()
+
     if context.crawl_is_exhaustive:
         # 표본을 썼다면 전체 선언이 불가능하므로(크롤러가 보장) 이 갈래에서 표본
         # 고지가 사라질 일은 없다 — 그래도 방어적으로 함께 내보낸다.
-        return context.sampling_notes_ko
+        return head + context.sampling_notes_ko
     measured = len(context.documents)
     declared = 0
     for body in context.sitemap_documents.values():
@@ -120,6 +137,7 @@ def _scope_notice(context: CollectionContext) -> tuple[str, ...]:
         else ""
     )
     return (
+        *head,
         f"이번 진단은 {measured}장을 측정했으며, 사이트 전체를 본 것으로 확인되지 "
         f"않았습니다.{size_hint} 측정하지 못한 페이지는 이번 점수의 범위 밖입니다. "
         "페이지 간 비교 검사(중복·고아 페이지·깨진 링크)는 전체를 재야 판정됩니다.",
@@ -196,7 +214,7 @@ def summarise(spec: ScoringSpec, result: ScoreResult) -> str:
         f"{counts[CheckStatus.NOT_APPLICABLE]}개는 해당 없음으로 분모에서 제외했습니다."
     )
     if unknown_count:
-        lost = _unknown_penalty(result)
+        lost = _unknown_penalty(spec, result)
         # 숫자는 **채점기가 실제로 계산한 값**에서만 가져온다. 못 가져왔으면 지어내지
         # 않고 문장에서 뺀다 — 고객에게 나가는 숫자를 추정으로 채우지 않는다.
         detail = "" if lost is None else f" 그 배점 {lost:.1f}점을 얻지 못한 것으로 계산했습니다."
@@ -220,26 +238,60 @@ def summarise(spec: ScoringSpec, result: ScoreResult) -> str:
     return " ".join(sentences)
 
 
-def _unknown_penalty(result: ScoreResult) -> float | None:
-    """못 잰 항목들이 실제로 가져간 점수. 알 수 없으면 ``None``.
+def _unknown_penalty(spec: ScoringSpec, result: ScoreResult) -> float | None:
+    """못 잰 항목들이 **종합 점수에서** 실제로 가져간 몫. 알 수 없으면 ``None``.
 
-    채점기가 남긴 계산 기록(`trace`)에서만 읽는다. 여기서 다시 계산하면 두 벌이 되고,
-    언젠가 한쪽만 바뀐다(0-D). 기록이 없거나 모양이 다르면 **지어내지 않고** ``None``
-    을 돌려주며, 부르는 쪽은 그 문장을 통째로 뺀다 — 고객에게 나가는 숫자다.
+    처음에는 검사별 `penalty` 를 그냥 더했다. 틀렸다 — `penalty` 는 그 **영역의**
+    배점 단위(s1=30, s3=20, s6=5)이지 0~100 종합 단위가 아니다. 감사가 실측으로
+    잡았다: 실제 손실 14.3점인데 문장은 "10.0점" 이라고 적고 있었다. 정직하게
+    적으려고 넣은 문장이 정직하지 않았다.
+
+    영역 하나의 감점이 종합에 미치는 몫은 `영역가중치 x (감점/배점)` 이다. 점수에
+    기여하지 않는 영역(관문·연동 3영역)은 애초에 종합에 안 들어가므로 세지 않는다.
+
+    값은 채점기가 남긴 계산 기록에서만 읽는다. 기록이 없거나 모양이 다르면
+    **지어내지 않고** ``None`` 을 돌려주며, 부르는 쪽은 그 문장을 통째로 뺀다 —
+    고객에게 나가는 숫자다.
     """
-    checks = result.trace.get("checks") if isinstance(result.trace, dict) else None
-    if not isinstance(checks, list):
+    trace = result.trace
+    if not isinstance(trace, dict):
         return None
+    checks = trace.get("checks")
+    categories = trace.get("categories")
+    if not isinstance(checks, list) or not isinstance(categories, list):
+        return None
+
+    # 종합에 들어가는 영역만. 가중치 합은 명세가 세는 값을 쓴다 — 여기서 다시 세면
+    # 두 벌이 되고, 언젠가 한쪽만 바뀐다(0-D).
+    in_score = {
+        category.id: category.weight
+        for category in spec.categories
+        if category.contributes_to_score and not category.is_gate
+    }
+    weight_total = spec.scoring_weight_total
+    if weight_total <= 0:
+        return None
+
+    budget_of = {
+        row.get("category_id"): row.get("budget")
+        for row in categories
+        if isinstance(row, dict)
+    }
 
     total = 0.0
     seen = False
     for row in checks:
         if not isinstance(row, dict) or row.get("status") != CheckStatus.UNKNOWN.value:
             continue
+        category_id = row.get("category_id")
+        weight = in_score.get(category_id)
+        budget = budget_of.get(category_id)
         penalty = row.get("penalty")
+        if weight is None or not isinstance(budget, int | float) or budget <= 0:
+            continue
         if not isinstance(penalty, int | float):
             continue
-        total += float(penalty)
+        total += weight * (float(penalty) / float(budget)) / weight_total * 100.0
         seen = True
     return total if seen else None
 

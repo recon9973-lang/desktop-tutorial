@@ -18,6 +18,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -247,6 +248,54 @@ class Evidence(Base, OrganizationScopedMixin, ImmutableMixin):
     byte_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source: Mapped[str] = mapped_column(String(48), nullable=False, default="VEO_CRAWLER")
     detail: Mapped[JsonObject] = json_column()
+
+
+class FetchCapture(Base, OrganizationScopedMixin, ImmutableMixin):
+    """진단이 **실제로 받은 응답**. 판정이 아니라 원자료다.
+
+    이것이 없어서 하루를 썼다. venomad.com 이 15~27점으로 나왔는데, "무엇을 받았길래
+    그 점수인가" 에 답할 방법이 없었다. 남아 있던 것은 sha256 해시 64자와 수집기가
+    고른 2,000자 발췌뿐이었다 — 사람이 열어 볼 수 있는 것이 아니었다. 그래서 코드를
+    읽고 판정에서 거꾸로 추측하는 데 감사관 넷과 하루가 들었고, 그러고도 확정하지
+    못했다.
+
+    아무 AI에게 주소를 주면 페이지를 열어 보고 답한다. 우리는 측정기라면서 측정한
+    것을 안 갖고 있었다.
+
+    `evidence.storage_key`("큰 자료는 객체 저장소에") 가 처음부터 선언돼 있었지만
+    채우는 코드가 없었다. 객체 저장소를 붙이는 것은 별건이므로, 여기서는 **DB 에 상한을
+    두고 그대로 담는다.** 상한을 넘으면 앞부분만 담고 `truncated` 로 그 사실을 남긴다 —
+    잘린 것을 전부인 척하지 않는다.
+
+    보관 기간: 사이트마다 가장 최근 진단 한 번분. 문제를 볼 수 있으면서 용량은 최소다.
+    """
+
+    __tablename__ = "fetch_captures"
+    __table_args__ = (Index("ix_fetch_captures_run_url", "scan_run_id", "url"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    scan_run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("scan_runs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    #: 요청한 주소와 최종 도달한 주소. 리다이렉트로 다른 곳에 떨어졌으면 여기서 보인다.
+    final_url: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: 응답 헤더. 자격증명·쿠키는 수집 단계에서 이미 걸러진 것만 온다.
+    headers: Mapped[JsonObject] = json_column()
+    #: 우리가 **보낸** 헤더. 봇 차단을 만났을 때 무엇을 보내서 그랬는지 알아야 한다.
+    request_headers: Mapped[JsonObject] = json_column()
+    body: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    #: 원본의 실제 크기. `len(body)` 와 다르면 잘린 것이다.
+    byte_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    truncated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    #: 이 응답을 문서로 읽었는가. 못 읽었으면 그 사유(0-K).
+    read_failure_ko: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class ScoringVersion(Base, ImmutableMixin):

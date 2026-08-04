@@ -1618,6 +1618,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/seo/scans/{scan_run_id}/captures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 이 진단이 실제로 받은 응답 — 판정이 아니라 원자료
+         * @description 진단이 서버로부터 **받은 그대로**를 돌려줍니다. 다시 수집하지 않습니다.
+         *
+         *     점수가 이해되지 않을 때 여기부터 보십시오. 판정은 이 바이트에서 나왔으므로, 판정이 틀렸다면 둘 중 하나입니다 — 이 바이트가 그 페이지가 아니거나(수집 문제), 이 바이트를 잘못 읽었거나(채점 문제). 어느 쪽인지는 이 화면에서만 갈립니다.
+         *
+         *     **못 읽은 응답이 앞에 옵니다.** 잘 읽은 페이지는 점수가 설명해 주지만, 못 읽은 응답은 아무것도 말해 주지 않기 때문입니다.
+         *
+         *     보관은 대상마다 **가장 최근 진단 한 번분**입니다. 본문은 응답당 64KB 까지이며, 넘으면 앞부분만 담고 `truncated` 로 그 사실을 알립니다.
+         */
+        get: operations["read_scan_captures_api_seo_scans__scan_run_id__captures_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/seo/scans/{scan_run_id}/pages": {
         parameters: {
             query?: never;
@@ -2241,6 +2267,12 @@ export interface components {
         /** ApiResponse[RiskFindingsPayload] */
         ApiResponse_RiskFindingsPayload_: {
             data?: components["schemas"]["RiskFindingsPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ScanCapturesPayload] */
+        ApiResponse_ScanCapturesPayload_: {
+            data?: components["schemas"]["ScanCapturesPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -3304,6 +3336,12 @@ export interface components {
             contact_note?: string | null;
             /** Industry */
             industry?: string | null;
+            /**
+             * Is Registered
+             * @description 거래처로 등록하는 것이면 true(기본값)입니다. 주소만 넣고 재 보려고 자리를 만드는 경우에만 false를 보냅니다.
+             * @default true
+             */
+            is_registered: boolean;
             /** Name */
             name: string;
         };
@@ -3331,6 +3369,11 @@ export interface components {
              * @description false면 삭제 처리된 고객사입니다. 이력은 남습니다.
              */
             is_active: boolean;
+            /**
+             * Is Registered
+             * @description 사람이 거래처로 등록했으면 true입니다. 주소만 넣고 한 번 재 본 자리는 false로 만들어지며, 거래처 목록에 나오지 않습니다. is_active와는 다른 축입니다 — 저것은 지웠는가, 이것은 우리 거래처인가입니다.
+             */
+            is_registered: boolean;
             /** Name */
             name: string;
             /**
@@ -3348,6 +3391,8 @@ export interface components {
             contact_note?: string | null;
             /** Industry */
             industry?: string | null;
+            /** Is Registered */
+            is_registered?: boolean | null;
             /** Name */
             name?: string | null;
         };
@@ -3696,6 +3741,44 @@ export interface components {
             /** Text */
             text: string;
         };
+        /**
+         * FetchCaptureSummary
+         * @description 진단이 **실제로 받은 응답** 한 건.
+         *
+         *     판정이 아니라 원자료다. 점수가 이상할 때 열어 볼 것이 여기 있다 — 이 자리가 없어서
+         *     venomad 진단의 원인을 확정하는 데 하루가 들었다(0-K).
+         */
+        FetchCaptureSummary: {
+            /** Body */
+            body: string;
+            /** Byte Size */
+            byte_size: number;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Final Url */
+            final_url: string;
+            /** Headers */
+            headers: {
+                [key: string]: string;
+            };
+            /** Read Failure Ko */
+            read_failure_ko: string | null;
+            /** Request Headers */
+            request_headers: {
+                [key: string]: string;
+            };
+            /** Status */
+            status: number;
+            /** Truncated */
+            truncated: boolean;
+            /** Url */
+            url: string;
+        };
         /** FieldError */
         FieldError: {
             /** Code */
@@ -3814,8 +3897,28 @@ export interface components {
              */
             weight: number;
         };
-        /** GeoCheckPayload */
+        /**
+         * GeoCheckPayload
+         * @description 한 항목의 판정과, **왜 그렇게 판정했는지**.
+         *
+         *     필드 이름을 SEO 의 ``OutcomeSummary`` 와 맞춘다. 두 화면이 같은 부품을 쓰기 때문이다 —
+         *     이름이 갈리면 화면도 두 벌이 되고, 두 벌이 되면 한쪽만 고쳐지는 날이 온다.
+         *
+         *     영역·심각도·담당은 발행 명세에서 가져오고, 관측값은 수집기가 이미 담아 둔 것을 그대로
+         *     흘려보낸다. 예전에는 상태와 제목만 실어서, 화면이 "그렇게 판정했다" 고만 말하고 근거를
+         *     보여줄 수 없었다.
+         */
         GeoCheckPayload: {
+            /**
+             * Category Id
+             * @default
+             */
+            category_id: string;
+            /**
+             * Category Name Ko
+             * @default
+             */
+            category_name_ko: string;
             /** Check Id */
             check_id: string;
             /** Confidence Level */
@@ -3824,6 +3927,13 @@ export interface components {
             evidence_ids: string[];
             /** Note Ko */
             note_ko: string | null;
+            /** Observed */
+            observed?: unknown;
+            /**
+             * Remediation Owner
+             * @default DEVELOPER
+             */
+            remediation_owner: string;
             /** Status */
             status: string;
             /** Title Ko */
@@ -3921,6 +4031,28 @@ export interface components {
             status_code: string;
             /** Triggered By */
             triggered_by: string[];
+        };
+        /**
+         * GeoImprovementPayload
+         * @description 고치면 얼마나 오르는가 — 위에서부터 처리하면 점수가 가장 빨리 오른다.
+         *
+         *     ``gain_points`` 는 채점기가 실제 산식으로 계산한 값이다. 화면이 어림하지 않는다 —
+         *     어림하면 고친 뒤의 실제 점수와 어긋나고, 그러면 우선순위 자체를 믿을 수 없게 된다.
+         *
+         *     **무게 관련 값은 여기 없다.** 그것은 발행 명세가 정하고, 화면이 명세를 읽어 잇는다
+         *     (`readCheckSeverities`). 이 패키지는 관측하고, 채점기가 낸 값을 그대로 옮길 뿐이다.
+         */
+        GeoImprovementPayload: {
+            /** Blocked By Cap */
+            blocked_by_cap: boolean;
+            /** Category Id */
+            category_id: string;
+            /** Check Id */
+            check_id: string;
+            /** Gain Points */
+            gain_points: number;
+            /** Title Ko */
+            title_ko: string;
         };
         /** GeoIssuePayload */
         GeoIssuePayload: {
@@ -4024,6 +4156,8 @@ export interface components {
             /** Evidence */
             evidence: components["schemas"]["GeoEvidencePayload"][];
             exposure: components["schemas"]["GeoExposureBlock"];
+            /** Improvements */
+            improvements?: components["schemas"]["GeoImprovementPayload"][];
             /** Issues */
             issues: components["schemas"]["GeoIssuePayload"][];
             /** @description 참고 조회 결과입니다. 점수와는 무관하며, 하단 참고 구역에 표시합니다. 조회하지 않았거나 못 했으면 `null` 입니다. */
@@ -6550,6 +6684,21 @@ export interface components {
          */
         Role: "SUPER_ADMIN" | "LAB_ADMIN" | "ANALYST" | "DEVELOPER" | "SALES_VIEWER" | "CLIENT_VIEWER";
         /**
+         * ScanCapturesPayload
+         * @description 이 실행이 받은 응답들. 못 읽은 것이 앞에 온다.
+         */
+        ScanCapturesPayload: {
+            /** Captures */
+            captures: components["schemas"]["FetchCaptureSummary"][];
+            /** Note Ko */
+            note_ko: string;
+            /**
+             * Scan Run Id
+             * Format: uuid
+             */
+            scan_run_id: string;
+        };
+        /**
          * ScanHistoryEntry
          * @description 이력 한 줄. 추이 그래프의 점 하나가 된다.
          */
@@ -8330,6 +8479,8 @@ export interface operations {
                 include_inactive?: boolean;
                 /** @description 고객사명 부분 일치 검색어입니다. */
                 q?: string | null;
+                /** @description true면 거래처로 등록된 곳만, false면 주소만 넣고 재 본 자리만 반환합니다. 생략하면 둘 다 반환합니다. */
+                registered?: boolean | null;
                 /** @description 1부터 시작하는 페이지 번호입니다. */
                 page?: number;
                 /** @description 한 페이지에 담을 항목 수입니다. 최대 200개입니다. */
@@ -10902,6 +11053,8 @@ export interface operations {
                 /** @description 이력을 볼 사이트입니다. */
                 site_id: string;
                 limit?: number;
+                /** @description 어느 눈금의 이력인가 — `SEO` 또는 `GEO`. 한 번의 진단이 두 눈금을 각각 저장하므로 이력도 눈금마다 따로 있습니다. 기본값은 `SEO` 입니다. */
+                kind?: string;
             };
             header?: never;
             path?: never;
@@ -10947,6 +11100,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_ScanPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_scan_captures_api_seo_scans__scan_run_id__captures_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scan_run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ScanCapturesPayload_"];
                 };
             };
             /** @description Validation Error */

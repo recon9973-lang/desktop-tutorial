@@ -244,6 +244,42 @@ class OutcomeSummary(BaseModel):
     observed: Any = None
 
 
+class FetchCaptureSummary(BaseModel):
+    """진단이 **실제로 받은 응답** 한 건.
+
+    판정이 아니라 원자료다. 점수가 이상할 때 열어 볼 것이 여기 있다 — 이 자리가 없어서
+    venomad 진단의 원인을 확정하는 데 하루가 들었다(0-K).
+    """
+
+    model_config = _FROZEN
+
+    url: str
+    final_url: str
+    status: int
+    #: 응답 헤더 중 남긴 것. 쿠키·인증 값은 애초에 담지 않는다.
+    headers: dict[str, str]
+    #: 우리가 **보낸** 헤더. 봇 차단을 만났을 때 무엇을 보내서 그랬는지 알아야 한다.
+    request_headers: dict[str, str]
+    #: 받은 본문. 상한을 넘으면 앞부분만이고 `truncated` 가 참이다.
+    body: str
+    byte_size: int
+    truncated: bool
+    content_hash: str
+    fetched_at: datetime
+    #: 문서로 읽지 못했으면 그 사유. 읽었으면 비어 있다.
+    read_failure_ko: str | None
+
+
+class ScanCapturesPayload(BaseModel):
+    """이 실행이 받은 응답들. 못 읽은 것이 앞에 온다."""
+
+    model_config = _FROZEN
+
+    scan_run_id: uuid.UUID
+    captures: list[FetchCaptureSummary]
+    note_ko: str
+
+
 class UnknownCheckSummary(BaseModel):
     model_config = _FROZEN
 

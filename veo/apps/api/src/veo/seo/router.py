@@ -66,6 +66,8 @@ from veo.seo.schemas import (
     PageStageSummary,
     ScanHistoryEntry,
     ScanHistoryPayload,
+    FetchCaptureSummary,
+    ScanCapturesPayload,
     ScanPagesPayload,
     ScanPayload,
     ScoreSummary,
@@ -498,6 +500,67 @@ def read_saved_scan(
     if report is None:
         raise HTTPException(status_code=404, detail="scan run not found")
     return ok(ScanPayload.model_validate(report), request_id)
+
+
+@router.get(
+    "/scans/{scan_run_id}/captures",
+    response_model=ApiResponse[ScanCapturesPayload],
+    summary="이 진단이 실제로 받은 응답 — 판정이 아니라 원자료",
+    description=(
+        "진단이 서버로부터 **받은 그대로**를 돌려줍니다. 다시 수집하지 않습니다.\n\n"
+        "점수가 이해되지 않을 때 여기부터 보십시오. 판정은 이 바이트에서 나왔으므로, "
+        "판정이 틀렸다면 둘 중 하나입니다 — 이 바이트가 그 페이지가 아니거나(수집 문제), "
+        "이 바이트를 잘못 읽었거나(채점 문제). 어느 쪽인지는 이 화면에서만 갈립니다.\n\n"
+        "**못 읽은 응답이 앞에 옵니다.** 잘 읽은 페이지는 점수가 설명해 주지만, 못 읽은 "
+        "응답은 아무것도 말해 주지 않기 때문입니다.\n\n"
+        "보관은 대상마다 **가장 최근 진단 한 번분**입니다. 본문은 응답당 64KB 까지이며, "
+        "넘으면 앞부분만 담고 `truncated` 로 그 사실을 알립니다."
+    ),
+)
+def read_scan_captures(
+    scan_run_id: uuid.UUID,
+    principal: ScanReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[ScanCapturesPayload]:
+    rows = read_captures(
+        db, organization_id=principal.organization_id, run_id=scan_run_id
+    )
+    unread = sum(1 for row in rows if row.read_failure_ko)
+    if not rows:
+        note = (
+            "이 실행의 보관본이 없습니다. 보관은 대상마다 가장 최근 진단 한 번분이므로, "
+            "그 뒤에 다시 진단했거나 보관 기능이 생기기 전의 실행입니다."
+        )
+    elif unread:
+        note = f"{len(rows)}건 중 {unread}건은 문서로 읽지 못한 응답입니다. 그것이 앞에 옵니다."
+    else:
+        note = f"{len(rows)}건 모두 문서로 읽었습니다."
+    return ok(
+        ScanCapturesPayload(
+            scan_run_id=scan_run_id,
+            captures=[
+                FetchCaptureSummary(
+                    url=row.url,
+                    final_url=row.final_url,
+                    status=row.status,
+                    headers=dict(row.headers or {}),
+                    request_headers=dict(row.request_headers or {}),
+                    # 바이트를 그대로 보여 준다. 못 읽은 응답일수록 원문이 중요하므로
+                    # 깨진 글자도 지우지 않고 대체 문자로 남긴다.
+                    body=bytes(row.body).decode("utf-8", errors="replace"),
+                    byte_size=row.byte_size,
+                    truncated=row.truncated,
+                    content_hash=row.content_hash,
+                    fetched_at=row.fetched_at,
+                    read_failure_ko=row.read_failure_ko,
+                )
+                for row in rows
+            ],
+            note_ko=note,
+        ),
+        request_id,
+    )
 
 
 @router.get(

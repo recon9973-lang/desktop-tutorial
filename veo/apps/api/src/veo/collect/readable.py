@@ -68,6 +68,17 @@ def read_failure(
         # 바이트로 다른 항목을 채점해도 되는가" 이다.
         return ReadFailure(url=url, reason_ko=f"HTTP {status} 응답이라 문서를 읽지 못했습니다.")
 
+    # **알맹이가 하나라도 있으면 읽은 것이다.** 크기도 구조도 묻지 않는다.
+    #
+    # 처음에는 크기(200바이트)를 앞세워 걸렀는데, 그것이 제목·h1·lang 을 갖춘 80바이트
+    # 짜리 정상 문서를 버렸다(GEO 시험이 잡았다). 크기는 알맹이의 **대리 지표**일 뿐이고,
+    # 알맹이를 직접 볼 수 있는 자리에서 대리 지표로 판단할 이유가 없다. 문턱을 낮게
+    # 두겠다고 적어 놓고 정작 코드가 그 반대였다.
+    if has_any_head_signal or body_text_length > 0:
+        return None
+
+    # 알맹이가 하나도 없다. 이제야 "왜 없는가" 를 나눈다 — 사유 문장이 달라야 다음
+    # 사람이 무엇을 확인할지 안다.
     if body_length < MIN_DOCUMENT_BYTES:
         return ReadFailure(
             url=url,
@@ -83,16 +94,11 @@ def read_failure(
             reason_ko="응답에 HTML 문서 구조가 없어 읽지 못했습니다.",
         )
 
-    # 여기까지 왔으면 크기도 구조도 있다. 그런데도 head 신호가 하나도 없고 본문 글자도
-    # 없다면, 그것은 "아무것도 없는 페이지" 가 아니라 **껍데기를 받은 것**이다.
-    # 셋 중 하나라도 있으면 통과시킨다 — 진짜로 부실한 페이지는 채점되어야 한다.
-    if not has_any_head_signal and body_text_length == 0:
-        return ReadFailure(
-            url=url,
-            reason_ko=(
-                "응답에 제목·설명·본문이 모두 없어 문서를 받지 못한 것으로 봅니다. "
-                "봇 차단 페이지이거나 화면에서 그려지는 사이트일 수 있습니다."
-            ),
-        )
-
-    return None
+    # 크기도 있고 HTML 구조도 있는데 알맹이만 없다 — 껍데기를 받은 것이다.
+    return ReadFailure(
+        url=url,
+        reason_ko=(
+            "응답에 제목·설명·본문이 모두 없어 문서를 받지 못한 것으로 봅니다. "
+            "봇 차단 페이지이거나 화면에서 그려지는 사이트일 수 있습니다."
+        ),
+    )

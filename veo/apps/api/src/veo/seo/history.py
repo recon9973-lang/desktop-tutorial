@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -33,6 +35,7 @@ from veo.contracts.enums import IssueState, ScanScope, Surface
 from veo.db.models.analysis import CheckResult, Evidence, Issue, Scan, ScanRun, ScoreResult
 from veo.db.models.identity import Site, User
 from veo.scoring.models import CheckStatus
+from veo.seo.captures import save_captures
 from veo.seo.conditions import (
     DEFAULT_USER_AGENT,
     DEVICE_PROFILE,
@@ -61,6 +64,8 @@ class PersistableScanResult(Protocol):
 
 #: 이 코드가 만든 결과임을 나중에 알아볼 수 있게 하는 표식. 수집 방식이 바뀌면 올린다.
 COLLECTOR_VERSION: Final = "console-crawl/1"
+
+_log = logging.getLogger(__name__)
 
 SEO_KIND: Final = "SEO"
 GEO_KIND: Final = "GEO"
@@ -258,6 +263,24 @@ def save_scan_run(
 
     _save_outcomes(db, principal=principal, run=run, result=result)
     _save_evidence(db, principal=principal, run=run, result=result)
+    # 잰 것을 남긴다. 판정이 아니라 **받은 응답 그대로** — 점수가 이상할 때 열어 볼
+    # 것이 없어서 하루를 썼다(0-K). 실패해도 진단을 죽이지 않는다: 보관은 조사용이지
+    # 결과의 일부가 아니다. 다만 조용히 넘기지는 않는다.
+    #
+    # **저장점(savepoint) 안에서** 한다. 예외만 잡고 넘기면 트랜잭션이 망가진 채로
+    # 남아서, 정작 진단 결과를 쓰는 뒤쪽이 전부 죽는다 — "진단을 죽이지 않는다" 고
+    # 해 놓고 정반대가 된다. 시험이 그것을 잡았다.
+    try:
+        with db.begin_nested():
+            save_captures(
+                db,
+                organization_id=principal.organization_id,
+                scan_id=scan.id,
+                run_id=run.id,
+                context=context,
+            )
+    except Exception:  # noqa: BLE001 - 보관 실패가 진단 실패가 되면 안 된다
+        _log.warning("fetch captures were not stored for run %s", run.id, exc_info=True)
     _upsert_issues(db, principal=principal, run=run, site=site, result=result)
     db.flush()
 

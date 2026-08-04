@@ -1573,6 +1573,39 @@
         "title": "ApiResponse[RiskFindingsPayload]",
         "type": "object"
       },
+      "ApiResponse_ScanCapturesPayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanCapturesPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[ScanCapturesPayload]",
+        "type": "object"
+      },
       "ApiResponse_ScanHistoryPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -5458,6 +5491,85 @@
           "reason_ko"
         ],
         "title": "ExclusionInput",
+        "type": "object"
+      },
+      "FetchCaptureSummary": {
+        "additionalProperties": false,
+        "description": "진단이 **실제로 받은 응답** 한 건.\n\n판정이 아니라 원자료다. 점수가 이상할 때 열어 볼 것이 여기 있다 — 이 자리가 없어서\nvenomad 진단의 원인을 확정하는 데 하루가 들었다(0-K).",
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "byte_size": {
+            "title": "Byte Size",
+            "type": "integer"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          },
+          "final_url": {
+            "title": "Final Url",
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Headers",
+            "type": "object"
+          },
+          "read_failure_ko": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read Failure Ko"
+          },
+          "request_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Request Headers",
+            "type": "object"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "final_url",
+          "status",
+          "headers",
+          "request_headers",
+          "body",
+          "byte_size",
+          "truncated",
+          "content_hash",
+          "fetched_at",
+          "read_failure_ko"
+        ],
+        "title": "FetchCaptureSummary",
         "type": "object"
       },
       "FieldError": {
@@ -12479,6 +12591,35 @@
         "title": "Role",
         "type": "string"
       },
+      "ScanCapturesPayload": {
+        "additionalProperties": false,
+        "description": "이 실행이 받은 응답들. 못 읽은 것이 앞에 온다.",
+        "properties": {
+          "captures": {
+            "items": {
+              "$ref": "#/components/schemas/FetchCaptureSummary"
+            },
+            "title": "Captures",
+            "type": "array"
+          },
+          "note_ko": {
+            "title": "Note Ko",
+            "type": "string"
+          },
+          "scan_run_id": {
+            "format": "uuid",
+            "title": "Scan Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scan_run_id",
+          "captures",
+          "note_ko"
+        ],
+        "title": "ScanCapturesPayload",
+        "type": "object"
+      },
       "ScanHistoryEntry": {
         "additionalProperties": false,
         "description": "이력 한 줄. 추이 그래프의 점 하나가 된다.",
@@ -15799,7 +15940,7 @@
     "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform\n\nDeveloped by VENOM. Research & Methodology by VEO-LAB.\n\n측정 원칙\n- SEO 준비도, GEO 준비도, 실제 AI 가시성, 네이버 키워드 수요는 각각 별도의 지표입니다.\n  하나의 불투명한 총점으로 합치지 않습니다.\n- 준비도 점수는 검색 순위 예측값이 아닙니다.\n- 모든 점수에는 방법론 버전, 체크섬, 적용 분모, 계산 과정, 신뢰도가 함께 제공됩니다.\n- '해당 없음'은 0점이 아니라 분모에서 제외되고, '측정 불가'는 실패가 아니라\n  coverage와 confidence에 반영됩니다.\n- 외부 제공자 자격증명이 없으면 해당 항목은 '측정 불가'가 되며, VEO는 추정값을\n  실제 데이터처럼 표시하지 않습니다.\n",
     "summary": "SEO · GEO · Naver Keyword Intelligence Platform",
     "title": "VEO API",
-    "version": "0.3.33"
+    "version": "0.3.34"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -20473,6 +20614,50 @@
           }
         },
         "summary": "지난 진단 결과를 그대로 다시 보기",
+        "tags": [
+          "seo"
+        ]
+      }
+    },
+    "/api/seo/scans/{scan_run_id}/captures": {
+      "get": {
+        "description": "진단이 서버로부터 **받은 그대로**를 돌려줍니다. 다시 수집하지 않습니다.\n\n점수가 이해되지 않을 때 여기부터 보십시오. 판정은 이 바이트에서 나왔으므로, 판정이 틀렸다면 둘 중 하나입니다 — 이 바이트가 그 페이지가 아니거나(수집 문제), 이 바이트를 잘못 읽었거나(채점 문제). 어느 쪽인지는 이 화면에서만 갈립니다.\n\n**못 읽은 응답이 앞에 옵니다.** 잘 읽은 페이지는 점수가 설명해 주지만, 못 읽은 응답은 아무것도 말해 주지 않기 때문입니다.\n\n보관은 대상마다 **가장 최근 진단 한 번분**입니다. 본문은 응답당 64KB 까지이며, 넘으면 앞부분만 담고 `truncated` 로 그 사실을 알립니다.",
+        "operationId": "read_scan_captures_api_seo_scans__scan_run_id__captures_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scan_run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Scan Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ScanCapturesPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "이 진단이 실제로 받은 응답 — 판정이 아니라 원자료",
         "tags": [
           "seo"
         ]

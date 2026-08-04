@@ -77,7 +77,7 @@ def context_from_crawl(
             )
         ),
         crawl_is_exhaustive=outcome.discovery_exhausted,
-        unread_documents=tuple((item.url, item.reason_ko) for item in unread),
+        unread_documents=unread,
         sampling_notes_ko=_sampling_notes(outcome),
         locale=locale,
         collected_at=datetime.now(UTC),
@@ -86,7 +86,7 @@ def context_from_crawl(
 
 def _split_by_readability(
     documents: Sequence[FetchedDocument],
-) -> tuple[list[FetchedDocument], list[ReadFailure]]:
+) -> tuple[list[FetchedDocument], tuple[tuple[FetchedDocument, str], ...]]:
     """받은 것을 **읽은 것**과 **못 읽은 것**으로 가른다.
 
     파싱은 여기서 한 번만 한다. 관측 단계가 다시 파싱하지만 그것은 판정을 위한 것이고,
@@ -96,7 +96,7 @@ def _split_by_readability(
     from veo.seo.parsing.html import parse_html
 
     readable: list[FetchedDocument] = []
-    unread: list[ReadFailure] = []
+    unread: list[tuple[FetchedDocument, str]] = []
     for document in documents:
         parsed = parse_html(document.body, charset=document.charset)
         failure = read_failure(
@@ -118,8 +118,8 @@ def _split_by_readability(
         if failure is None:
             readable.append(document)
         else:
-            unread.append(failure)
-    return readable, unread
+            unread.append((document, failure.reason_ko))
+    return readable, tuple(unread)
 
 
 def _sampling_notes(outcome: CrawlOutcome) -> tuple[str, ...]:
