@@ -1,142 +1,192 @@
 import 'server-only';
 
-import { listCompanies, type MeasuredSite } from '@/lib/companies';
-import { readHistory, type HistoryEntry } from '@/lib/scan-report';
+import { listCompanies } from '@/lib/companies';
+import { readIssues } from '@/lib/issues-api';
+import { listReports } from '@/lib/reports';
+import { readHistory } from '@/lib/scan-report';
+import { readPageSpeedQuota } from '@/lib/usage';
 
 /**
- * 전 거래처의 지금 상태 — 한 화면에서.
+ * 대시보드 — **뭐가 밀려 있나**.
  *
- * 대시보드는 "전체 현황 요약" 이라고 적혀 있었지만 실제로는 **업체 이름과 주소만**
- * 보여줬다. 담당자가 아침에 열어서 "오늘 어디부터 볼까" 를 정할 수 없는 화면이었다.
+ * 이 화면은 두 번 방향을 틀었다. 처음에는 업체 이름과 주소만 있어 업체 관리와 같은
+ * 일을 했고, 다음에는 SEO 점수만 모아서 나머지 여섯 영역이 눌러 보기 전에는 보이지
+ * 않았다. 지금은 **영역마다 자기 숫자를 하나씩** 들고 있다(사용자 결정).
  *
- * 여기서 모으는 것은 **이미 다른 탭이 갖고 있는 값들**이다. 새로 재지 않는다 — 대시보드가
- * 자기만의 측정을 하면 진단 화면의 숫자와 어긋나는 날이 오고, 그때 어느 쪽을 믿어야 할지
- * 알 수 없다(0-D).
+ * 왼쪽 사이드바를 한 벌 더 만들지 않는다. 이름만 나열하면 두 벌이 되고 반드시 어긋난다 —
+ * 각 줄은 사이드바가 말할 수 없는 **숫자**를 하나 들고 있어야 자리값을 한다(0-D).
  *
- * **못 읽은 사이트를 0으로 만들지 않는다.** 점수가 `null` 인 것은 "0점" 이 아니라
- * "아직 재지 않았거나 못 읽었다" 이고, 그 둘을 같은 칸에 두면 평균이 조용히 내려간다.
+ * 새로 재지 않는다. 다른 탭이 이미 가진 값만 모은다. 대시보드가 자기만의 측정을 하면
+ * 그 탭의 숫자와 어긋나는 날이 오고, 그때 어느 쪽을 믿을지 알 수 없다.
+ *
+ * **없는 숫자를 지어내지 않는다.** 못 읽었거나 아직 없으면 `value` 가 `null` 이고
+ * 화면에는 "—" 가 나온다. 0 과 모름은 다른 말이고, 0 으로 적으면 "다 처리했다" 로
+ * 읽힌다.
  */
 
-export interface SiteStatus {
-  readonly siteId: string;
+export type AreaTone = 'plain' | 'warn' | 'fail';
+
+export interface AreaRow {
+  readonly key: string;
+  /** 사이드바와 **같은 이름**을 쓴다. 여기서만 다르게 부르면 같은 화면이 둘로 보인다. */
   readonly label: string;
-  readonly origin: string;
-  readonly company: string;
-  /** 최근 SEO 점수. 잰 적 없거나 못 읽었으면 `null` — 0이 아니다. */
-  readonly score: number | null;
-  /** 직전 대비 증감. 같은 명세끼리만 뺀다. 비교할 수 없으면 `null`. */
-  readonly delta: number | null;
-  /** 마지막 측정 이후 지난 날 수. 잰 적 없으면 `null`. */
-  readonly daysSince: number | null;
-  readonly measuredAt: string | null;
+  readonly href: string;
+  /** 이 영역이 무엇에 답하는지 한 줄. */
+  readonly hint: string;
+  /** 큰 숫자. 못 읽었거나 아직 없으면 `null` — 0 이 아니다. */
+  readonly value: number | null;
+  readonly unit: string;
+  /** 숫자 밑에 붙는 사정. 밀린 것이 있으면 그것을 말한다. */
+  readonly note: string;
+  readonly tone: AreaTone;
 }
 
 export interface DashboardData {
-  readonly sites: readonly SiteStatus[];
-  readonly companyCount: number;
-  /** 점수를 아는 사이트 수. 평균의 분모다. */
-  readonly measuredCount: number;
-  /** 한 번도 재지 않은 사이트 수. 0점이 아니라 **모름**이다. */
-  readonly unmeasuredCount: number;
-  readonly averageScore: number | null;
-  /** 14일 넘게 방치된 사이트. 다음 일감의 후보다. */
-  readonly staleCount: number;
-  readonly droppedCount: number;
-  readonly improvedCount: number;
+  readonly areas: readonly AreaRow[];
+  /** 맡은 거래처 수. 머리말에 쓴다. */
+  readonly siteCount: number;
 }
 
 const STALE_DAYS = 14;
-/** 이 미만의 변화는 반올림·표본 차이일 수 있다. 회귀 경보와 같은 문턱을 쓴다. */
-const MEANINGFUL_DELTA = 0.1;
+const DAY = 86_400_000;
 
-function statusOf(
-  site: MeasuredSite & { readonly company: string },
-  entries: readonly HistoryEntry[],
-  now: number,
-): SiteStatus {
-  const label = site.displayName !== '' ? site.displayName : site.origin;
-  const latest = entries[0];
-  const previous = entries[1];
+/** 진단 — 맡은 곳의 점수와, 아직 재지 않았거나 오래된 곳. */
+async function diagnosisRow(now: number): Promise<AreaRow> {
+  const base = {
+    key: 'seo',
+    label: '진단',
+    href: '/console/seo',
+    hint: 'SEO·GEO 준비도',
+    unit: '점',
+  } as const;
 
-  if (latest === undefined) {
-    return {
-      siteId: site.siteId,
-      label,
-      origin: site.origin,
-      company: site.company,
-      score: null,
-      delta: null,
-      daysSince: null,
-      measuredAt: null,
-    };
+  const companies = await listCompanies({ registered: true });
+  if (!companies.ok) {
+    return { ...base, value: null, note: '현황을 불러오지 못했습니다', tone: 'plain' };
   }
 
-  // 명세가 다르면 빼지 않는다 — 사이트는 그대로인데 채점 규칙이 바뀐 차이다.
-  const comparable =
-    previous !== undefined &&
-    previous.score !== null &&
-    latest.score !== null &&
-    previous.specVersion === latest.specVersion;
-  const delta = comparable ? (latest.score ?? 0) - (previous?.score ?? 0) : null;
+  const sites = companies.data.flatMap((company) => company.sites);
+  if (sites.length === 0) {
+    return { ...base, value: null, note: '등록된 측정 주소가 없습니다', tone: 'plain' };
+  }
 
-  const measuredAt = new Date(latest.startedAt).getTime();
-  const daysSince = Number.isFinite(measuredAt)
-    ? Math.floor((now - measuredAt) / 86_400_000)
-    : null;
+  const histories = await Promise.all(sites.map((site) => readHistory(site.siteId)));
+  const latest = histories.map((history) => (history.ok ? history.data[0] : undefined));
+
+  // 잰 곳만 분모에 넣는다. 재지 않은 곳을 0 으로 세면 평균이 조용히 내려가고, 아무도
+  // 그 이유를 모른다.
+  const scored = latest.filter((entry) => entry?.score != null);
+  const total = scored.reduce((sum, entry) => sum + (entry?.score ?? 0), 0);
+  const unmeasured = latest.length - scored.length;
+  const stale = latest.filter((entry) => {
+    if (entry === undefined) return false;
+    const at = new Date(entry.startedAt).getTime();
+    return Number.isFinite(at) && now - at >= STALE_DAYS * DAY;
+  }).length;
+
+  // "한 번도 안 잼" 과 "오래됨" 은 다른 일이다. 접으면 다른 일이 같은 일이 된다.
+  const pending: string[] = [];
+  if (unmeasured > 0) pending.push(`미측정 ${unmeasured}곳`);
+  if (stale > 0) pending.push(`${STALE_DAYS}일 경과 ${stale}곳`);
 
   return {
-    siteId: site.siteId,
-    label,
-    origin: site.origin,
-    company: site.company,
-    score: latest.score,
-    delta,
-    daysSince,
-    measuredAt: latest.startedAt,
+    ...base,
+    value: scored.length === 0 ? null : Math.round((total / scored.length) * 10) / 10,
+    note: pending.length > 0 ? pending.join(' · ') : `맡은 ${sites.length}곳 모두 최신입니다`,
+    tone: unmeasured > 0 || stale > 0 ? 'warn' : 'plain',
+  };
+}
+
+async function issuesRow(): Promise<AreaRow> {
+  const base = {
+    key: 'issues',
+    label: '이슈',
+    href: '/console/issues',
+    hint: '조치가 필요한 항목',
+    unit: '건',
+  } as const;
+
+  const found = await readIssues(null);
+  if (!found.ok) {
+    return { ...base, value: null, note: '불러오지 못했습니다', tone: 'plain' };
+  }
+
+  const open = found.data.filter((issue) => issue.is_open);
+  // 재발한 것은 처음 보는 것과 같은 무게가 아니다 — 고쳤다고 믿고 넘어간 자리다.
+  const recurring = open.filter((issue) => issue.recurrence_count > 0).length;
+
+  return {
+    ...base,
+    value: open.length,
+    note: recurring > 0 ? `재발 ${recurring}건 포함` : '재발 없음',
+    tone: recurring > 0 ? 'fail' : open.length > 0 ? 'warn' : 'plain',
+  };
+}
+
+async function reportsRow(): Promise<AreaRow> {
+  const base = {
+    key: 'reports',
+    label: '리포트',
+    href: '/console/reports',
+    hint: '공유용 리포트',
+    unit: '건',
+  } as const;
+
+  const found = await listReports(null);
+  if (!found.ok) {
+    return { ...base, value: null, note: '불러오지 못했습니다', tone: 'plain' };
+  }
+
+  // 만들어 두고 한 번도 발행하지 않은 것 — 거래처에 아직 가지 않은 리포트다.
+  const unpublished = found.data.filter((row) => row.latest_version_number === null).length;
+
+  return {
+    ...base,
+    value: found.data.length,
+    note: unpublished > 0 ? `미발행 ${unpublished}건` : '모두 발행됨',
+    tone: unpublished > 0 ? 'warn' : 'plain',
+  };
+}
+
+async function usageRow(): Promise<AreaRow> {
+  const base = {
+    key: 'usage',
+    label: '사용량',
+    href: '/console/usage',
+    hint: '외부 API 한도',
+    unit: '%',
+  } as const;
+
+  const quota = await readPageSpeedQuota();
+  if (!quota.ok) {
+    return { ...base, value: null, note: '불러오지 못했습니다', tone: 'plain' };
+  }
+
+  return {
+    ...base,
+    value: Math.round(quota.data.used_ratio * 100),
+    // 남은 양이 아니라 **전체에서 나간 양**이다. 한도는 키에 걸리고 키는 하나다.
+    note: `오늘 ${quota.data.calls_today}/${quota.data.daily_quota}회 · 우리 몫 ${quota.data.calls_by_this_organization}회`,
+    tone: quota.data.is_exhausted ? 'fail' : quota.data.is_warning ? 'warn' : 'plain',
   };
 }
 
 export async function readDashboard(now: number = Date.now()): Promise<DashboardData | null> {
-  const companies = await listCompanies();
+  // 영역끼리는 서로를 필요로 하지 않는다. 줄을 세우면 영역 수만큼 왕복이 늘어난다.
+  const [diagnosis, issues, reports, usage] = await Promise.all([
+    diagnosisRow(now),
+    issuesRow(),
+    reportsRow(),
+    usageRow(),
+  ]);
+
+  const companies = await listCompanies({ registered: true });
   if (!companies.ok) return null;
 
-  const sites = companies.data.flatMap((company) =>
-    company.sites.map((site) => ({ ...site, company: company.name })),
-  );
-
-  // 사이트마다 이력을 한 번씩 읽는다. 거래처가 많아지면 이 자리가 먼저 느려지므로,
-  // 그때는 서버에 요약 엔드포인트를 두는 것이 맞다 — 화면에서 더 잘게 나누는 것이 아니라.
-  const histories = await Promise.all(
-    sites.map(async (site) => ({ site, history: await readHistory(site.siteId) })),
-  );
-
-  const rows = histories.map(({ site, history }) =>
-    statusOf(site, history.ok ? history.data : [], now),
-  );
-
-  const measured = rows.filter((row) => row.score !== null);
-  const total = measured.reduce((sum, row) => sum + (row.score ?? 0), 0);
-
   return {
-    // 낮은 점수가 위로 — 대시보드를 여는 이유는 "어디부터 볼까" 이다.
-    // 점수를 모르는 사이트는 맨 아래가 아니라 **맨 위**에 온다: 재지 않은 것이야말로
-    // 가장 먼저 처리할 일이다.
-    sites: [...rows].sort((a, b) => {
-      if (a.score === null && b.score === null) return a.label.localeCompare(b.label);
-      if (a.score === null) return -1;
-      if (b.score === null) return 1;
-      return a.score - b.score;
-    }),
-    companyCount: companies.data.length,
-    measuredCount: measured.length,
-    unmeasuredCount: rows.length - measured.length,
-    averageScore: measured.length === 0 ? null : total / measured.length,
-    staleCount: rows.filter(
-      (row) => row.daysSince !== null && row.daysSince >= STALE_DAYS,
-    ).length,
-    droppedCount: rows.filter((row) => row.delta !== null && row.delta <= -MEANINGFUL_DELTA)
-      .length,
-    improvedCount: rows.filter((row) => row.delta !== null && row.delta >= MEANINGFUL_DELTA)
-      .length,
+    // 밀린 것이 있는 영역이 위로. 같은 급이면 정해진 순서대로 — 매번 자리가 바뀌면
+    // 눈이 위치를 기억하지 못한다.
+    areas: [diagnosis, issues, reports, usage],
+    siteCount: companies.data.flatMap((company) => company.sites).length,
   };
 }

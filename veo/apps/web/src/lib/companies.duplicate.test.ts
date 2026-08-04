@@ -20,15 +20,19 @@ const readAllPages = vi.fn();
 vi.mock('server-only', () => ({}));
 vi.mock('@/lib/console-api', () => ({ callConsoleApi, readAllPages }));
 
-const { createCompany, addSite } = await import('./companies');
+const { createCompany, addSite, findOrCreateSiteByOrigin } = await import('./companies');
 
 const TAKEN = 'https://chamsarang1075.com';
 
 /** 참사랑한의원이 그 주소를 이미 갖고 있는 상태. */
-function registryHas(origin: string) {
+function registryHas(origin: string, { registered = true } = {}) {
   readAllPages.mockImplementation((path: string) => {
     if (path.startsWith('/api/customers')) {
-      return Promise.resolve({ ok: true, data: [{ id: 'c1', name: '참사랑한의원' }], meta: {} });
+      return Promise.resolve({
+        ok: true,
+        data: [{ id: 'c1', name: '참사랑한의원', is_registered: registered }],
+        meta: {},
+      });
     }
     if (path.startsWith('/api/projects')) {
       return Promise.resolve({
@@ -124,6 +128,59 @@ describe('막지 않아야 할 것은 막지 않는다', () => {
     expect(result.ok).toBe(true);
     // 고객 → 프로젝트 → 사이트 세 번.
     expect(callConsoleApi).toHaveBeenCalledTimes(3);
+  });
+});
+
+/**
+ * 등록 폼이 곧 "거래처로 등록" 이다.
+ *
+ * 재 본 자리를 올리는 별도 버튼을 두지 않는다 — 사람이 하는 일은 "이 주소를 우리 거래처로
+ * 잡는다" 하나이고, 그 자리가 이미 있었는지는 구현 사정이다.
+ */
+describe('재 보기만 한 자리는 새로 만들지 않고 올린다', () => {
+  it('새 업체를 만들지 않는다 — 이력이 갈라지지 않게', async () => {
+    registryHas(TAKEN, { registered: false });
+
+    const result = await createCompany('참사랑한의원', TAKEN, 'abcd1234');
+
+    expect(result.ok).toBe(true);
+    // POST /api/customers 가 아니라 그 자리를 고치는 PATCH 한 번.
+    expect(callConsoleApi).toHaveBeenCalledTimes(1);
+    expect(callConsoleApi.mock.calls[0]?.[0]).toBe('/api/customers/c1');
+    expect(callConsoleApi.mock.calls[0]?.[1]?.method).toBe('PATCH');
+  });
+
+  it('사람이 적은 이름으로 바꿔 준다 — 호스트 이름으로 남지 않게', async () => {
+    registryHas(TAKEN, { registered: false });
+
+    await createCompany('참사랑한의원', TAKEN, 'abcd1234');
+
+    expect(callConsoleApi.mock.calls[0]?.[1]?.body).toEqual({
+      name: '참사랑한의원',
+      is_registered: true,
+    });
+  });
+
+  it('올린 자리의 사이트를 그대로 돌려준다 — 진단 이력이 붙어 있는 그 자리다', async () => {
+    registryHas(TAKEN, { registered: false });
+
+    const result = await createCompany('참사랑한의원', TAKEN, 'abcd1234');
+
+    if (result.ok) expect(result.siteId).toBe('s1');
+    else expect.unreachable('올렸어야 한다');
+  });
+});
+
+describe('주소만 넣고 재는 자리는 거래처 목록에 넣지 않는다', () => {
+  it('진단이 만드는 자리는 미등록으로 만들어진다', async () => {
+    registryEmpty();
+
+    await findOrCreateSiteByOrigin('https://ondam.co.kr', 'abcd1234');
+
+    const created = callConsoleApi.mock.calls.find(
+      (call) => call[0] === '/api/customers' && call[1]?.method === 'POST',
+    );
+    expect(created?.[1]?.body).toEqual({ name: 'ondam.co.kr', is_registered: false });
   });
 });
 

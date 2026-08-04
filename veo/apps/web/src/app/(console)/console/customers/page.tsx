@@ -35,7 +35,11 @@ export default async function CustomersPage() {
 }
 
 async function CustomersContent() {
-  const outcome = await listCompanies();
+  // **등록된 거래처만.** 주소만 넣고 한 번 재 본 자리는 여기 오지 않는다 — 영업 중에
+  // 넣어 본 주소가 섞이면 이 목록이 "우리가 맡은 곳"을 말하지 못한다(사용자 지적).
+  // 재 본 자리를 거래처로 올리는 길은 아래 등록 폼이다: 같은 주소를 넣으면 새로 만들지
+  // 않고 그 자리가 올라간다.
+  const outcome = await listCompanies({ registered: true });
 
   return (
     <div className={styles.page}>

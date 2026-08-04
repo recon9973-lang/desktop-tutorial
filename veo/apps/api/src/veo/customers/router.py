@@ -51,6 +51,15 @@ def list_customers(
     q: Annotated[
         str | None, Query(max_length=200, description="고객사명 부분 일치 검색어입니다.")
     ] = None,
+    registered: Annotated[
+        bool | None,
+        Query(
+            description=(
+                "true면 거래처로 등록된 곳만, false면 주소만 넣고 재 본 자리만 "
+                "반환합니다. 생략하면 둘 다 반환합니다."
+            )
+        ),
+    ] = None,
 ) -> PagedResponse[CustomerPayload]:
     customers, total = service.list_customers(
         session,
@@ -59,6 +68,7 @@ def list_customers(
         page_size=pagination.page_size,
         include_inactive=include_inactive,
         name_query=q,
+        registered=registered,
     )
     return paged(
         [CustomerPayload.of(customer) for customer in customers],
@@ -87,6 +97,7 @@ def create_customer(
         name=payload.name,
         industry=payload.industry,
         contact_note=payload.contact_note,
+        is_registered=payload.is_registered,
         request_id=request_id,
     )
     return ok(CustomerPayload.of(customer), request_id)

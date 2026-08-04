@@ -24,7 +24,9 @@ TARGET_TYPE = "customer"
 
 #: Fields a PATCH may set. Anything else in a change map is a programming error, not
 #: caller input — the request schema has already rejected unknown keys.
-UPDATABLE = frozenset({"name", "industry", "contact_note"})
+#: 부분 수정으로 바꿀 수 있는 칸. `is_registered` 가 여기 있어야 "거래처로 등록"
+#: 이 같은 창구를 쓴다 — 등록만을 위한 두 번째 길을 내면 감사 기록이 두 갈래가 된다.
+UPDATABLE = frozenset({"name", "industry", "contact_note", "is_registered"})
 
 
 def list_customers(
@@ -35,11 +37,20 @@ def list_customers(
     page_size: int,
     include_inactive: bool = False,
     name_query: str | None = None,
+    registered: bool | None = None,
 ) -> tuple[list[Customer], int]:
-    """One page of customers, plus the total the page was taken from."""
+    """One page of customers, plus the total the page was taken from.
+
+    ``registered`` 는 세 값을 갖는다: True 면 거래처만, False 면 재 보기만 한 자리만,
+    ``None`` 이면 둘 다. 기본을 True 로 두지 않는 이유는, 이 함수를 부르는 곳이 여럿이고
+    그중 하나라도 "전부"를 뜻했다면 조용히 절반만 받게 되기 때문이다 — 무엇을 원하는지는
+    부르는 쪽이 말한다.
+    """
     statement = tenant_select(Customer, principal)
     if not include_inactive:
         statement = statement.where(Customer.is_active.is_(True))
+    if registered is not None:
+        statement = statement.where(Customer.is_registered.is_(registered))
     if name_query:
         statement = statement.where(
             Customer.name.ilike(f"%{_escape_like(name_query)}%", escape="\\")
@@ -73,12 +84,17 @@ def create_customer(
     name: str,
     industry: str | None = None,
     contact_note: str | None = None,
+    is_registered: bool = True,
     request_id: str | None = None,
 ) -> Customer:
     values = {"name": name, "industry": industry, "contact_note": contact_note}
     customer = Customer(
         organization_id=principal.organization_id,
         is_active=True,
+        # 기본은 거래처다. 주소만 넣고 재 보려고 자리를 만드는 쪽이 예외이고, 그쪽이
+        # 명시적으로 False 를 보낸다 — 기본을 False 로 두면 손으로 등록한 업체가
+        # 어딘가에서 값을 빠뜨렸을 때 목록에서 사라진다.
+        is_registered=is_registered,
         **values,
     )
     session.add(customer)

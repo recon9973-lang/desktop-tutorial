@@ -4549,6 +4549,12 @@
             ],
             "title": "Industry"
           },
+          "is_registered": {
+            "default": true,
+            "description": "거래처로 등록하는 것이면 true(기본값)입니다. 주소만 넣고 재 보려고 자리를 만드는 경우에만 false를 보냅니다.",
+            "title": "Is Registered",
+            "type": "boolean"
+          },
           "name": {
             "maxLength": 200,
             "minLength": 1,
@@ -4603,6 +4609,11 @@
             "title": "Is Active",
             "type": "boolean"
           },
+          "is_registered": {
+            "description": "사람이 거래처로 등록했으면 true입니다. 주소만 넣고 한 번 재 본 자리는 false로 만들어지며, 거래처 목록에 나오지 않습니다. is_active와는 다른 축입니다 — 저것은 지웠는가, 이것은 우리 거래처인가입니다.",
+            "title": "Is Registered",
+            "type": "boolean"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -4619,6 +4630,7 @@
           "industry",
           "contact_note",
           "is_active",
+          "is_registered",
           "created_at",
           "updated_at"
         ],
@@ -4654,6 +4666,17 @@
               }
             ],
             "title": "Industry"
+          },
+          "is_registered": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Registered"
           },
           "name": {
             "anyOf": [
@@ -15776,7 +15799,7 @@
     "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform\n\nDeveloped by VENOM. Research & Methodology by VEO-LAB.\n\n측정 원칙\n- SEO 준비도, GEO 준비도, 실제 AI 가시성, 네이버 키워드 수요는 각각 별도의 지표입니다.\n  하나의 불투명한 총점으로 합치지 않습니다.\n- 준비도 점수는 검색 순위 예측값이 아닙니다.\n- 모든 점수에는 방법론 버전, 체크섬, 적용 분모, 계산 과정, 신뢰도가 함께 제공됩니다.\n- '해당 없음'은 0점이 아니라 분모에서 제외되고, '측정 불가'는 실패가 아니라\n  coverage와 confidence에 반영됩니다.\n- 외부 제공자 자격증명이 없으면 해당 항목은 '측정 불가'가 되며, VEO는 추정값을\n  실제 데이터처럼 표시하지 않습니다.\n",
     "summary": "SEO · GEO · Naver Keyword Intelligence Platform",
     "title": "VEO API",
-    "version": "0.3.28"
+    "version": "0.3.30"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -16335,6 +16358,24 @@
               ],
               "description": "고객사명 부분 일치 검색어입니다.",
               "title": "Q"
+            }
+          },
+          {
+            "description": "true면 거래처로 등록된 곳만, false면 주소만 넣고 재 본 자리만 반환합니다. 생략하면 둘 다 반환합니다.",
+            "in": "query",
+            "name": "registered",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "true면 거래처로 등록된 곳만, false면 주소만 넣고 재 본 자리만 반환합니다. 생략하면 둘 다 반환합니다.",
+              "title": "Registered"
             }
           },
           {

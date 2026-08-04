@@ -9,10 +9,12 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
     UniqueConstraint,
+    true,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -105,12 +107,22 @@ class UserInvitation(Base, OrganizationScopedMixin, TimestampMixin):
 
 class Customer(Base, OrganizationScopedMixin, TimestampMixin):
     __tablename__ = "customers"
+    # 거래처 목록은 늘 조직 + 등록 여부로 걸러 읽는다.
+    __table_args__ = (Index("ix_customers_organization_registered", "organization_id", "is_registered"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     industry: Mapped[str | None] = mapped_column(String(120), nullable=True)
     contact_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    #: 사람이 거래처로 등록했는가. 주소만 넣고 재 본 자리는 False 로 만들어진다 —
+    #: 영업 중에 한 번 재 본 주소가 거래처 목록에 섞이면 목록이 일감을 말하지 못한다.
+    #: `is_active` 와 다른 축이다: 저것은 지웠는가, 이것은 우리 거래처인가.
+    #: `server_default` 는 이 칸이 생기기 전부터 있던 행을 채우기 위해 필요하고,
+    #: 모델에도 적어 둬야 마이그레이션과 어긋나지 않는다(드리프트 검사).
+    is_registered: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=true()
+    )
 
 
 class Project(Base, OrganizationScopedMixin, TimestampMixin):
