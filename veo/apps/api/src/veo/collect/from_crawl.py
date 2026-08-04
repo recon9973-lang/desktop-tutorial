@@ -17,13 +17,19 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from veo.collect.contract import CollectionContext
+from veo.collect.readable import ReadFailure, read_failure
 from veo.core.settings import get_provider_credentials
 from veo.scoring import ScoringSpec
 from veo.seo.crawl import CrawlOutcome
 from veo.seo.importance import classify_urls
+
+if TYPE_CHECKING:
+    from veo.common.security.fetcher import FetchedDocument
 
 
 def context_from_crawl(
@@ -44,7 +50,10 @@ def context_from_crawl(
     나왔다. 그 배점은 분모에 남으므로 모든 고객의 점수가 우리가 수집을 안 만든 만큼
     내려가고 있었다 — 대상 사이트의 문제로 보이는 형태로.
     """
-    documents = outcome.documents
+    # **읽었는가를 먼저 묻는다.** 여기를 통과하지 못한 응답은 채점 대상이 아니다 —
+    # 200 은 "서버가 답했다" 이지 "우리가 문서를 받았다" 가 아니다(0-K).
+    readable, unread = _split_by_readability(outcome.documents)
+    documents = readable
     by_url = {document.final_url: document for document in documents}
     primary = documents[0] if documents else None
     return CollectionContext(
@@ -68,10 +77,49 @@ def context_from_crawl(
             )
         ),
         crawl_is_exhaustive=outcome.discovery_exhausted,
+        unread_documents=tuple((item.url, item.reason_ko) for item in unread),
         sampling_notes_ko=_sampling_notes(outcome),
         locale=locale,
         collected_at=datetime.now(UTC),
     )
+
+
+def _split_by_readability(
+    documents: Sequence[FetchedDocument],
+) -> tuple[list[FetchedDocument], list[ReadFailure]]:
+    """받은 것을 **읽은 것**과 **못 읽은 것**으로 가른다.
+
+    파싱은 여기서 한 번만 한다. 관측 단계가 다시 파싱하지만 그것은 판정을 위한 것이고,
+    여기서 보는 것은 "판정할 자격이 있는가" 다. 문턱이 낮으므로(readable.py 참조) 진짜로
+    부실한 페이지는 걸러지지 않고 그대로 채점된다.
+    """
+    from veo.seo.parsing.html import parse_html
+
+    readable: list[FetchedDocument] = []
+    unread: list[ReadFailure] = []
+    for document in documents:
+        parsed = parse_html(document.body, charset=document.charset)
+        failure = read_failure(
+            url=document.final_url,
+            status=document.status,
+            body_length=len(document.body or b""),
+            has_html_root=b"<html" in (document.body or b"").lower(),
+            has_any_head_signal=any(
+                (
+                    parsed.title,
+                    parsed.meta_description,
+                    parsed.canonical,
+                    parsed.viewport,
+                    parsed.headings,
+                )
+            ),
+            body_text_length=len(parsed.body_text.strip()),
+        )
+        if failure is None:
+            readable.append(document)
+        else:
+            unread.append(failure)
+    return readable, unread
 
 
 def _sampling_notes(outcome: CrawlOutcome) -> tuple[str, ...]:

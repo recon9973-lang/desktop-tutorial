@@ -143,6 +143,16 @@ class CollectionContext:
     Only the discovery crawl may set this, and only when it ran out of addresses to
     fetch before reaching the page ceiling, the depth ceiling or the host budget.
     """
+    unread_documents: tuple[tuple[str, str], ...] = ()
+    """받았지만 **문서로 읽지 못한** 주소와 그 사유 (url, reason_ko).
+
+    이 자리는 사이트에 대한 사실이 아니라 **우리 수집에 대한 사실**을 담는다. 여기
+    들어온 주소는 채점 대상(`documents`)에서 빠진다 — 못 받은 것을 "그 페이지에
+    제목이 없다" 로 채점하면, 그 숫자는 사이트가 아니라 우리 네트워크 사정을
+    보고하는 값이 된다(0-K).
+
+    비어 있는 것이 정상이다. 채워졌다면 결과에 그 사실이 함께 나가야 한다.
+    """
     sampling_notes_ko: tuple[str, ...] = ()
     """수집 단계가 표본을 쓴 사실의 고지 — 예: "칼럼 그룹 추정 103장 중 12장 표본".
 

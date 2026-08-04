@@ -616,7 +616,7 @@ def _render_parity(
             ledger.of(
                 "raw_html",
                 url=page.url,
-                payload=page.document.body or b"",
+                payload=page.document.body,
                 excerpt=page.raw.body_text[:300] or "(원본 HTML에 본문 없음)",
                 detail={"characters": content_length(page.raw.body_text)},
             )

@@ -227,7 +227,9 @@ def evidence_for_document(document: FetchedDocument, kind: str, excerpt: str) ->
     return EvidenceRecord.of(
         kind,
         url=document.final_url,
-        payload=document.body or document.final_url.encode("utf-8"),
+        # 본문이 없으면 URL 해시를 본문 해시인 척하지 않는다 — 감사가 가장 필요한
+        # 경우에만 발동하던 폴백이었다.
+        payload=document.body,
         excerpt=excerpt,
         collected_at=document.fetched_at,
         detail={"status": document.status, "content_hash": document.content_hash},

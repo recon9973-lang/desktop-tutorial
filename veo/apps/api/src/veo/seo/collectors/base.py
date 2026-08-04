@@ -62,7 +62,11 @@ class EvidenceLedger:
         return self.of(
             kind,
             url=page.url,
-            payload=page.document.body or page.url.encode("utf-8"),
+            # 본문이 없으면 **증거를 만들지 않는다.** 예전에는 URL 문자열의 해시가
+            # "판정된 바이트의 해시" 자리에 들어갔다 — 나중에 "정말 없었나" 를 확인하러
+            # 온 사람이 본문이 아니라 주소의 해시를 보게 되고, 하필 감사가 가장 필요한
+            # 경우(본문이 빈 경우)에만 그렇게 됐다.
+            payload=page.document.body,
             excerpt=excerpt,
             detail={"status": page.status, "importance": page.importance},
         )
