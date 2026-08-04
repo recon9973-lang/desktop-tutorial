@@ -23,7 +23,6 @@ from veo.api.deps import REQUEST_ID_HEADER, RequestId, build_meta, get_request_i
 from veo.api.metrics import METRICS_SINK
 from veo.api.public_lead_store import build_lead_store
 from veo.api.public_result_store import build_public_result_store
-from veo.api.routes import egress_probe as egress_probe_routes  # 임시 점검 — 확인 후 제거
 from veo.api.routes import meta as meta_routes
 from veo.api.routes import scoring as scoring_routes
 from veo.api.routes import shared_reports as shared_report_routes
@@ -288,7 +287,6 @@ def create_app() -> FastAPI:
 
     api_prefix = settings.api_prefix
     app.include_router(meta_routes.router, prefix=api_prefix)
-    app.include_router(egress_probe_routes.router, prefix=api_prefix)  # 임시 점검 — 확인 후 제거
     app.include_router(scoring_routes.router, prefix=api_prefix)
     app.include_router(auth_router, prefix=api_prefix)
     app.include_router(organizations_router, prefix=api_prefix)
