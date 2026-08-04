@@ -211,17 +211,18 @@ class ConsoleCrawler:
         # 바깥의 `RetryViaKorea` 는 **관문 페이지를 만났을 때만** 한국 관측점으로 한 번
         # 더 받는다(실측 근거는 그 모듈에 있다). 설정이 없으면 감싸도 아무 일도 하지
         # 않으므로, 이 줄이 꺼진 배포의 동작을 바꾸지 않는다.
+        budgeted = HostBudgetGuard(
+            guard or UrlGuard(),
+            limiter=limiter or InMemoryRateLimiter(),
+            limit=resolved.console_target_host_limit_per_hour,
+            window_seconds=TARGET_HOST_WINDOW_SECONDS,
+        )
         self._fetcher = RetryViaKorea(
-            SafeFetcher(
-                guard=HostBudgetGuard(
-                    guard or UrlGuard(),
-                    limiter=limiter or InMemoryRateLimiter(),
-                    limit=resolved.console_target_host_limit_per_hour,
-                    window_seconds=TARGET_HOST_WINDOW_SECONDS,
-                ),
-                transport=transport,
-            ),
+            SafeFetcher(guard=budgeted, transport=transport),
             egress=korean_egress(resolved),
+            # 경유해도 홉마다 **같은 가드**가 다시 본다. 경유가 재검증을 건너뛰는
+            # 통로가 되면 안 되고, 예산도 실제 보낸 요청만큼 차감되어야 한다.
+            guard=budgeted,
         )
 
     # ------------------------------------------------------------- 주소를 받아 가져오기

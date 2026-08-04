@@ -19,7 +19,7 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
-    version: '0.3.38',
+    version: '0.3.39',
     date: '2026-08-05',
     title: '해외에서 막히던 사이트를 한국에서 다시 받아 잽니다',
     items: [
@@ -28,6 +28,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
       '타사가 같은 사이트를 문제없이 재던 이유도 확인했습니다: 그쪽 서버가 AWS 서울입니다. 우리 엔진이 못한 것이 아니라 서버가 다른 나라에 있었습니다',
       'Googlebot인 척해서 검사를 피하는 방법은 쓰지 않았습니다 — 그 면제는 사이트가 구글에게 준 것이고, 속이는 순간 이 진단기의 근거가 무너집니다',
       '경유가 실패하면 원래 응답을 그대로 씁니다. 관측점 고장이 사이트 판정을 바꾸지 않습니다',
+      '한국에서 오는 리다이렉트도 우리가 직접 따라갑니다 — 홉마다 안전 검사를 다시 통과시킵니다. 이게 없으면 232바이트짜리 리다이렉트가 최종 문서가 되어 오히려 나빠집니다',
     ],
   },
   {
