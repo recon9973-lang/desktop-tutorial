@@ -5843,6 +5843,46 @@ export interface components {
             status_codes?: string[];
         };
         /**
+         * PublicFetchSummary
+         * @description 진단이 **실제로 받은 것.** 판정이 아니라 원자료다.
+         *
+         *     점수가 이해되지 않을 때 여기부터 본다. 판정은 이 바이트에서 나왔으므로, 판정이
+         *     틀렸다면 둘 중 하나다 — 이 바이트가 그 페이지가 아니거나(수집 문제), 이 바이트를
+         *     잘못 읽었거나(채점 문제). 어느 쪽인지는 이 칸에서만 갈린다.
+         *
+         *     이 칸이 없어서 venomad.com 진단이 왜 15~27점인지 확정하는 데 하루가 들었다.
+         *     아무 AI에게 주소를 주면 페이지를 열어 보고 답하는데, 우리는 측정기라면서 측정한
+         *     것을 돌려주지 않고 있었다(0-L).
+         */
+        PublicFetchSummary: {
+            /** Byte Size */
+            byte_size: number;
+            /** Content Type */
+            content_type?: string | null;
+            /**
+             * Found Canonical
+             * @default false
+             */
+            found_canonical: boolean;
+            /**
+             * Found Description
+             * @default false
+             */
+            found_description: boolean;
+            /**
+             * Found H1
+             * @default false
+             */
+            found_h1: boolean;
+            /**
+             * Found Title
+             * @default false
+             */
+            found_title: boolean;
+            /** Status */
+            status: number;
+        };
+        /**
          * PublicFinding
          * @description One problem worth naming, in the specification's own words.
          *
@@ -6101,6 +6141,7 @@ export interface components {
             /** Checks */
             checks?: components["schemas"]["PublicCheckRow"][];
             counts?: components["schemas"]["PublicStatusCounts"];
+            fetched?: components["schemas"]["PublicFetchSummary"] | null;
             /**
              * Kind
              * @default SEO

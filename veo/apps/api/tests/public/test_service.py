@@ -690,3 +690,67 @@ class TestPublicPerformanceWiring:
         )
 
         assert recorded == []
+
+
+def test_the_fetch_summary_reports_what_we_received_without_echoing_it() -> None:
+    """받은 것을 **판정과 따로** 돌려준다 — 다만 내용은 되돌려주지 않는다 (0-L).
+
+    점수가 이해되지 않을 때, 판정이 틀렸는지 수집이 틀렸는지 가를 자리가 필요하다.
+    실제 페이지에 제목이 있는데 `found_title` 이 거짓이면 그것이 곧 우리가 그 페이지를
+    못 받았다는 증거다 — venomad.com 사태를 하루가 아니라 한눈에 가르는 값이다.
+
+    동시에 공개 창구는 누구나 아무 주소나 넣을 수 있으므로, 받은 **내용**은 돌려주지
+    않는다. 돌려주면 우리 서버가 남의 페이지를 대신 읽어 주는 중계기가 된다.
+    참·거짓 몇 개와 크기만으로 대조에는 충분하다.
+    """
+    payload = build_service().run_seo_scan(
+        urls=["https://clinic.example/"], client_ip="203.0.113.9", session_id="s-1"
+    )
+
+    fetched = payload.fetched
+    assert fetched is not None
+    # 받은 사실은 그대로 말한다.
+    assert fetched.status == 200
+    assert fetched.byte_size == len(CLINIC_HTML.encode("utf-8"))
+    assert fetched.found_title is True
+
+    # 그러나 내용은 한 조각도 나가지 않는다.
+    strings = payload_strings(payload.model_dump(mode="json"))
+    for line in CLINIC_HTML.splitlines():
+        stripped = line.strip()
+        if len(stripped) > 25:
+            assert stripped not in strings
+
+
+def test_the_fetch_summary_reads_the_bytes_not_the_verdicts() -> None:
+    """판정을 다시 쓰지 않는다.
+
+    채점 결과에서 값을 가져오면, 채점이 틀렸을 때 이 칸도 같이 틀린다. 그러면 대조할
+    것이 없어지고 이 칸의 존재 이유가 사라진다. 여기서만은 두 벌이어야 한다.
+    """
+    from veo.public.service import _fetched
+
+    from datetime import UTC, datetime
+
+    from veo.common.security.fetcher import FetchedDocument
+
+    fetched = _fetched(
+        FetchedDocument(
+            requested_url="https://clinic.example/",
+            final_url="https://clinic.example/",
+            status=200,
+            headers={"content-type": "text/html"},
+            body=b"<html><head><title>x</title></head></html>",
+            content_hash="0" * 64,
+            content_type="text/html",
+            charset="utf-8",
+            hops=(),
+            resolved_ips=(),
+            fetched_at=datetime.now(UTC),
+            elapsed_ms=1,
+        )
+    )
+
+    assert fetched is not None
+    assert fetched.found_title is True
+    assert fetched.found_h1 is False

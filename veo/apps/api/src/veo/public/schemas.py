@@ -204,6 +204,45 @@ class PublicStatusCounts(BaseModel):
     not_applicable: int = 0
 
 
+class PublicFetchSummary(BaseModel):
+    """진단이 **실제로 받은 것.** 판정이 아니라 원자료다.
+
+    점수가 이해되지 않을 때 여기부터 본다. 판정은 이 바이트에서 나왔으므로, 판정이
+    틀렸다면 둘 중 하나다 — 이 바이트가 그 페이지가 아니거나(수집 문제), 이 바이트를
+    잘못 읽었거나(채점 문제). 어느 쪽인지는 이 칸에서만 갈린다.
+
+    이 칸이 없어서 venomad.com 진단이 왜 15~27점인지 확정하는 데 하루가 들었다.
+    아무 AI에게 주소를 주면 페이지를 열어 보고 답하는데, 우리는 측정기라면서 측정한
+    것을 돌려주지 않고 있었다(0-L).
+    """
+
+    model_config = _STRICT
+
+    status: int
+    #: 받은 본문의 크기. 0 이면 서버가 답만 하고 내용을 주지 않은 것이다.
+    byte_size: int
+    content_type: str | None = None
+    #: 받은 바이트 **안에** 이 태그가 실제로 있었는가. 판정과 따로 적는다 — 둘이
+    #: 어긋나면 그것이 곧 채점 결함의 증거다.
+    found_title: bool = False
+    found_description: bool = False
+    found_h1: bool = False
+    found_canonical: bool = False
+    #
+    # 본문 발췌는 **여기 넣지 않는다.** 공개 창구는 누구나 아무 주소나 넣을 수
+    # 있어서, 받은 내용을 돌려주면 우리 서버가 남의 페이지를 대신 읽어 주는
+    # 중계기가 된다. 그 규칙은 시험이 지키고 있고(2026-08-02), 이 칸을 만들면서
+    # 한 번 어겼다가 시험이 잡았다.
+    #
+    # 위 네 개의 참·거짓만으로도 대조에는 충분하다 — 실제 페이지에 제목이 있는데
+    # `found_title` 이 거짓이면, 그것이 곧 우리가 그 페이지를 못 받았다는 증거다.
+    # 전문이 필요하면 콘솔의 `/api/seo/scans/{id}/captures` 를 본다(로그인 필요).
+    # 우리가 보낸 헤더도 여기 넣지 않는다. 봇 UA 문자열에 우리 주소가 들어 있어서,
+    # "답에 등장하는 URL 은 호출자가 입력한 호스트뿐" 이라는 규칙을 깬다. 그 값은
+    # 우리가 이미 아는 상수이므로 공개 응답에서 얻을 것이 없다 — 콘솔 보관본에는
+    # 그대로 남는다.
+
+
 class PublicPreviews(BaseModel):
     """이 페이지가 검색결과·공유 카드에서 실제로 어떻게 보이는가.
 
@@ -254,6 +293,8 @@ class PublicSeoScanPayload(BaseModel):
     checks: list[PublicCheckRow] = Field(default_factory=list)
     counts: PublicStatusCounts = Field(default_factory=PublicStatusCounts)
     previews: PublicPreviews | None = None
+    #: 우리가 받은 것 그대로. 판정과 나란히 두어 대조할 수 있게 한다(0-L).
+    fetched: PublicFetchSummary | None = None
     top_findings: list[PublicFinding] = Field(default_factory=list)
     total_finding_count: int = 0
     unmeasured_check_count: int = 0

@@ -66,6 +66,7 @@ from veo.public.schemas import (
     PublicGeoScanPayload,
     PublicKeywordEntry,
     PublicKeywordLookupPayload,
+    PublicFetchSummary,
     PublicPreviews,
     PublicResultPayload,
     PublicScoreBlock,
@@ -360,6 +361,7 @@ class PublicScanService:
             ),
             counts=_status_counts(spec, result.score.outcomes),
             previews=_previews(documents[0] if documents else None),
+            fetched=_fetched(documents[0] if documents else None),
             top_findings=_findings(spec, result.score.outcomes),
             total_finding_count=_finding_total(result.score.outcomes),
             unmeasured_check_count=len(result.unknown_checks),
@@ -748,6 +750,31 @@ def _status_counts(
         passed=counts["PASS"],
         unknown=counts["UNKNOWN"],
         not_applicable=counts["NOT_APPLICABLE"],
+    )
+
+
+def _fetched(document: FetchedDocument | None) -> PublicFetchSummary | None:
+    """받은 것을 그대로 요약한다. 판정을 거치지 않는다.
+
+    태그가 있는지는 **받은 바이트에서 직접** 찾는다. 채점 결과를 다시 쓰면 채점이
+    틀렸을 때 이 칸도 같이 틀리고, 그러면 대조할 것이 없어진다 — 이 칸의 존재 이유가
+    사라진다(0-D 와 반대되는 경우: 여기서는 두 벌이어야 한다).
+    """
+    if document is None:
+        return None
+
+    body = document.body or b""
+    text = body.decode(document.charset or "utf-8", errors="replace")
+    lowered = text.lower()
+
+    return PublicFetchSummary(
+        status=document.status,
+        byte_size=len(body),
+        content_type=document.content_type,
+        found_title="<title" in lowered,
+        found_description='name="description"' in lowered or "name='description'" in lowered,
+        found_h1="<h1" in lowered,
+        found_canonical='rel="canonical"' in lowered or "rel='canonical'" in lowered,
     )
 
 
