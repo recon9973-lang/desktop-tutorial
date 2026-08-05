@@ -27,7 +27,16 @@ from dataclasses import dataclass, field
 #: The product token VEO's crawler presents. Naver's crawler is ``Yeti``; a Korean site
 #: frequently has a group for it that differs from the wildcard group, which is exactly
 #: why the group selection below has to be right.
-CRAWLER_AGENT_NAME = "veo-bot"
+#:
+#: **이 값은 우리가 실제로 보내는 User-Agent 의 토큰과 같아야 한다.** 2026-08-06 실측:
+#: UA 는 `VEO-Bot/1.0`(하이픈), 이 값은 `veo-bot`, 작업의뢰서 §5.2 의 요구는 `VEOBot/1.0`
+#: — 셋이 전부 달랐다. 거래처가 `User-agent: VEOBot` 으로 우리를 막아도 매칭이 안 돼
+#: **robots.txt 준수가 이름 불일치로 무너지는** 상태였다. 남의 서버가 우리를 거절할
+#: 방법을 우리가 없애 놓은 셈이다.
+#:
+#: 두 값을 잇는 검사가 없어서 아무도 알아채지 못했다. `tests/seo/test_robots.py` 가
+#: 이제 그 연결을 고정한다(0-H).
+CRAWLER_AGENT_NAME = "veobot"
 
 #: 보고서가 이야기하는 검색엔진들. robots.txt 판정은 **이들 기준**으로 한다.
 #:

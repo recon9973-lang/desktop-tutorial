@@ -79,6 +79,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, final, runtime_checkable
 
+from veo.common.security.pacing import HostPacer
 from veo.common.security.url_guard import UrlDecision, UrlGuard
 from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiError
@@ -383,7 +384,7 @@ class HostBudgetGuard(UrlGuard):
     used to burn a third party's budget.
     """
 
-    __slots__ = ("_inner", "_limit", "_limiter", "_window_seconds")
+    __slots__ = ("_inner", "_limit", "_limiter", "_pacer", "_window_seconds")
 
     def __init__(
         self,
@@ -392,6 +393,7 @@ class HostBudgetGuard(UrlGuard):
         limiter: RateLimiter,
         limit: int,
         window_seconds: int = TARGET_HOST_WINDOW_SECONDS,
+        pacer: HostPacer | None = None,
     ) -> None:
         # The policy is mirrored so ``SafeFetcher`` reads the same redirect ceiling and
         # port allowlist it would have read from ``inner``. The inherited resolver is
@@ -401,6 +403,9 @@ class HostBudgetGuard(UrlGuard):
         self._limiter = limiter
         self._limit = limit
         self._window_seconds = window_seconds
+        # 시간당 총량과 **다른 것을 막는다** — 저것은 한 시간의 총량, 이것은 한순간의
+        # 밀도다. 총량만 있으면 450회를 1분에 몰아 쓸 수 있다(의뢰서 §5.2).
+        self._pacer = pacer
 
     def validate(self, raw_url: str, *, hop: int = 0) -> UrlDecision:
         decision = self._inner.validate(raw_url, hop=hop)
@@ -419,4 +424,12 @@ class HostBudgetGuard(UrlGuard):
         )
         if not budget.allowed:
             raise HostBudgetExceeded(budget)
+
+        # **보낼 것이 확정된 뒤에만** 기다린다. 예산 초과로 거절할 요청까지 재우면
+        # 아무 요청도 안 보내면서 진단만 느려진다.
+        #
+        # 여기가 요청 직전이라는 것이 중요하다 — 리다이렉트도 재시도도 이 지점을
+        # 다시 지나므로, 간격이 그 경로들로 새지 않는다.
+        if self._pacer is not None:
+            self._pacer.wait_for(decision.host)
         return decision

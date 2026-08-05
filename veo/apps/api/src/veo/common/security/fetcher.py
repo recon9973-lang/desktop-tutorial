@@ -49,7 +49,17 @@ from veo.common.security.url_guard import (
 # The URL has to resolve to a real page. A site owner who finds an unfamiliar bot in
 # their logs looks it up, and a dead link makes VEO an anonymous crawler worth blocking.
 # See docs/operations/bot-identification.md.
-DEFAULT_USER_AGENT = "VEO-Bot/1.0 (+https://veo.seokorea.org/bot; SEO/GEO diagnostics by VENOM)"
+#: 우리가 남의 서버에 밝히는 신원. 작업의뢰서 §5.2 가 정한 형태 그대로다.
+#:
+#: 괄호 앞의 토큰(`VEOBot`)이 robots.txt 매칭에 쓰이는 이름이다 —
+#: `veo.seo.parsing.robots.CRAWLER_AGENT_NAME` 과 **반드시 같아야 한다.** 2026-08-06
+#: 이전에는 UA 가 `VEO-Bot/1.0`, 매칭이 `veo-bot`, 의뢰서 요구가 `VEOBot/1.0` 으로
+#: 셋이 달라, 거래처가 `User-agent: VEOBot` 으로 막아도 걸리지 않았다.
+DEFAULT_USER_AGENT = "VEOBot/1.0 (+https://veo.seokorea.org/bot)"
+
+#: 사이트 운영자가 로그를 보고 연락할 곳. 의뢰서 §5.2 가 요구하는 헤더다.
+#: 대행사 서비스라 **클라이언트 웹 담당자가 로그를 보고 문의할 상황이 반드시 생긴다.**
+CRAWLER_FROM = "bot@seokorea.org"
 
 #: Response headers that must never be written into evidence as-is.
 REDACTED_RESPONSE_HEADERS = frozenset(
@@ -190,7 +200,10 @@ class SafeFetcher:
                             elapsed_ms=int((time.monotonic() - started) * 1000),
                             truncated=truncated,
                             user_agent=self._user_agent,
-                            request_headers={"user-agent": self._user_agent},
+                            request_headers={
+                                "user-agent": self._user_agent,
+                                "from": CRAWLER_FROM,
+                            },
                             tls_expires_at=expires_at,
                         )
 
@@ -209,11 +222,18 @@ class SafeFetcher:
     def _client(self) -> httpx.Client:
         return httpx.Client(
             transport=self._transport,
-            timeout=httpx.Timeout(self._limits.max_total_seconds),
+            # 연결 10초 / 전체 30초 — 의뢰서 §5.2. 죽은 호스트에 30초를 매달려 있지
+            # 않는다. 예전에는 전체 값 하나만 있었다.
+            timeout=httpx.Timeout(
+                self._limits.max_total_seconds, connect=self._limits.connect_seconds
+            ),
             follow_redirects=False,  # never: following one means resolving one
             cookies=None,
             headers={
                 "user-agent": self._user_agent,
+                # 사이트 운영자가 로그를 보고 연락할 곳(의뢰서 §5.2). 대행사 서비스라
+                # 클라이언트 웹 담당자가 로그를 보고 문의할 상황이 반드시 생긴다.
+                "from": CRAWLER_FROM,
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.1",
                 "accept-encoding": "gzip, deflate",
             },

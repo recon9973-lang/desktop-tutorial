@@ -34,6 +34,7 @@ import httpx
 from veo.common.security.egress_kr import korean_egress
 from veo.common.security.fetcher import FetchedDocument, FetchError, SafeFetcher
 from veo.common.security.limits import FetchLimitError
+from veo.common.security.pacing import HostPacer
 from veo.common.security.retry_via_kr import RetryViaKorea
 from veo.common.security.url_guard import UrlGuard, UrlRejectedError
 from veo.contracts.enums import ErrorCode
@@ -216,6 +217,9 @@ class ConsoleCrawler:
             limiter=limiter or InMemoryRateLimiter(),
             limit=resolved.console_target_host_limit_per_hour,
             window_seconds=TARGET_HOST_WINDOW_SECONDS,
+            # 같은 호스트에 몰아치지 않는다(의뢰서 §5.2, 최소 1초). 시간당 총량과 다른
+            # 것을 막는다 — 저것은 한 시간의 총량, 이것은 한순간의 밀도다.
+            pacer=HostPacer(min_interval_seconds=resolved.crawl_min_interval_seconds),
         )
         self._fetcher = RetryViaKorea(
             SafeFetcher(guard=budgeted, transport=transport),

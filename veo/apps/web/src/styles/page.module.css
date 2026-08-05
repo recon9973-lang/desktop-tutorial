@@ -282,3 +282,19 @@
     gap: var(--veo-space-2);
   }
 }
+
+/* 사이트 운영자가 그대로 복사해 쓰는 값(User-Agent · robots.txt 규칙).
+   손으로 옮겨 적다 오타가 나면 차단이 안 걸리므로, 읽고 복사하기 쉬워야 한다. */
+.code {
+  margin: 0;
+  padding: var(--veo-space-3);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+  border: 1px solid var(--veo-color-border);
+  color: var(--veo-color-text);
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+  line-height: var(--veo-line-normal);
+  overflow-x: auto;
+  white-space: pre;
+}

@@ -90,11 +90,29 @@ class ContentTypeNotAllowedError(FetchLimitError):
 class FetchLimits:
     """The budget for a single outbound fetch."""
 
-    max_response_bytes: int = 8 * 1024 * 1024
-    """Bytes on the wire, compressed. Enforced continuously while streaming."""
+    max_response_bytes: int = 2 * 1024 * 1024
+    """Bytes on the wire, compressed. Enforced continuously while streaming.
+
+    작업의뢰서 §5.2: **HTML 최대 2MB**. 예전 값은 8MB 였다 — 우리가 감당할 수 있는
+    크기였지 상대 서버가 우리에게 내주기로 한 크기가 아니었다. 진단에 필요한 것은
+    문서의 머리와 본문이지, 남의 대역폭을 8MB 씩 쓸 이유가 없다.
+
+    실측(2026-08-06): 거래처 4곳에서 받은 문서는 51KB·64KB·240KB·298KB 로 전부 2MB
+    아래다. 이 문턱이 정상 진단을 자르지 않는다.
+    """
 
     max_total_seconds: float = 30.0
-    """Wall clock for the whole response, not per-read — slow-drip defence."""
+    """Wall clock for the whole response, not per-read — slow-drip defence.
+
+    작업의뢰서 §5.2 의 "전체 30초" 와 같다.
+    """
+
+    connect_seconds: float = 10.0
+    """연결이 열릴 때까지. 의뢰서 §5.2 는 연결 10초 / 전체 30초로 나눠 정한다.
+
+    예전에는 전체 30초만 있었다. 죽은 호스트에 30초를 매달려 있으면 그만큼 진단이
+    느려지고, 배치에서는 한 도메인이 창을 먹는다.
+    """
 
     max_decompressed_bytes: int = 32 * 1024 * 1024
     """Absolute ceiling after decompression."""

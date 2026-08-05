@@ -19,6 +19,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    version: '0.3.44',
+    date: '2026-08-06',
+    title: '우리 크롤러가 자기 신원을 제대로 밝히도록',
+    items: [
+      'veo.seokorea.org/bot 안내 페이지를 만들었습니다 — 우리 크롤러가 그 주소를 안내하면서 정작 페이지가 404였습니다. 사이트 운영자가 로그에서 낯선 봇을 보고 찾아올 곳입니다',
+      '봇 이름이 세 곳에서 달랐습니다: 보내는 이름 VEO-Bot, robots.txt 매칭 veo-bot, 규격 VEOBot. 거래처가 robots.txt로 우리를 막아도 걸리지 않는 상태였습니다 — VEOBot으로 통일했습니다',
+      '연락처(From: bot@seokorea.org)를 요청에 함께 보냅니다. 로그를 보고 문의할 곳이 있어야 합니다',
+      '같은 사이트에 최소 1초 간격을 두고, 동시 연결을 4개에서 2개로 줄였습니다 — 131페이지를 2.5초에 받아가던 것을 상대 서버 기준으로 늦췄습니다',
+      '받는 문서 크기를 8MB에서 2MB로, 연결 대기를 10초로 분리했습니다',
+    ],
+  },
+  {
     version: '0.3.43',
     date: '2026-08-05',
     title: '"고치면 몇 점 오르는지"가 실제와 달랐습니다',

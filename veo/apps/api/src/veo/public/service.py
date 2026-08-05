@@ -41,6 +41,7 @@ from veo.collect.contract import CollectionContext
 from veo.common.security.egress_kr import korean_egress
 from veo.common.security.fetcher import FetchedDocument, FetchError, SafeFetcher
 from veo.common.security.limits import FetchLimitError
+from veo.common.security.pacing import HostPacer
 from veo.common.security.retry_via_kr import RetryViaKorea
 from veo.common.security.url_guard import UrlGuard, UrlRejectedError
 from veo.contracts.enums import ErrorCode, ProviderState, UrlImportance, ValueQuality
@@ -305,6 +306,8 @@ class PublicScanService:
             limiter=limiter,
             limit=self._settings.public_target_host_limit_per_hour,
             window_seconds=TARGET_HOST_WINDOW_SECONDS,
+            # 콘솔과 같은 규칙이다. 무료라고 남의 서버를 더 세게 두드릴 이유가 없다.
+            pacer=HostPacer(min_interval_seconds=self._settings.crawl_min_interval_seconds),
         )
         # 무료 진단도 콘솔과 **같은 것을 본다.** 관문 페이지를 만나면 한국 관측점에서
         # 한 번 더 받는다 — 한쪽만 달면 같은 사이트가 창구에 따라 다른 점수를 받고,

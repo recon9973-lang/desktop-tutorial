@@ -358,6 +358,48 @@ class TestParallelFetching:
 
         assert peak > 1, "동시에 열린 요청이 하나뿐이다 — 직렬로 돌고 있다"
 
+    def test_the_host_interval_stops_requests_overlapping(self) -> None:
+        """**간격을 켜면 같은 호스트 요청이 겹치지 않는다.**
+
+        작업의뢰서 §5.2 는 동일 호스트에 최소 1초 간격을 요구한다. 간격이 응답 시간보다
+        길면 병렬로 띄워도 실제로는 한 번에 하나씩 나간다 — 그것이 의도다. 부하는 우리
+        편의가 아니라 상대 서버 기준으로 정한다.
+
+        위 시험은 간격을 끈 상태(conftest 기본값 0)에서 병렬 장치가 살아 있음을 보고,
+        이 시험은 간격을 켠 상태에서 그 장치가 **상대 서버에게는 보이지 않음**을 본다.
+        둘 다 있어야 "빠르게 만들되 남에게 부담을 주지 않는다" 가 확인된다.
+
+        간격은 0.05초로 줄여 시험이 잠들지 않게 하되, 응답(0.02초)보다 길게 둔다 —
+        확인하는 것은 초의 크기가 아니라 겹치는가 여부다.
+        """
+        live = 0
+        peak = 0
+        guard_lock = threading.Lock()
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal live, peak
+            with guard_lock:
+                live += 1
+                peak = max(peak, live)
+            time.sleep(0.02)
+            with guard_lock:
+                live -= 1
+            if request.url.path == "/":
+                return httpx.Response(
+                    200,
+                    content=_page("홈", *[f"/{n}" for n in range(8)]),
+                    headers={"content-type": "text/html"},
+                )
+            return httpx.Response(200, content=_page("쪽"), headers={"content-type": "text/html"})
+
+        settings = get_settings().model_copy(update={"crawl_min_interval_seconds": 0.05})
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=httpx.MockTransport(handler), settings=settings
+        )
+        crawler.crawl("https://example.com/", max_urls=9)
+
+        assert peak == 1, f"간격이 있는데 요청이 {peak}개까지 겹쳤다"
+
     def test_concurrency_never_exceeds_the_configured_ceiling(self) -> None:
         """이 숫자는 우리 속도가 아니라 대상 서버가 한순간에 받는 부하다."""
         live = 0
