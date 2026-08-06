@@ -31,6 +31,7 @@ from datetime import UTC, datetime
 
 import httpx
 
+from veo.common.encoding import DEFAULT_ENCODING, decode_html
 from veo.common.security.limits import (
     FetchLimits,
     ResponseBudget,
@@ -126,8 +127,18 @@ class FetchedDocument:
         return len(self.hops) > 1
 
     def text(self, fallback: str = "utf-8") -> str:
-        """Decode the body, never raising — a mis-declared charset is a finding, not a crash."""
-        return self.body.decode(self.charset or fallback, errors="replace")
+        """Decode the body, never raising — a mis-declared charset is a finding, not a crash.
+
+        ``self.charset`` 은 **서버 헤더가 말한 것**이고, 헤더가 없어도 문서가
+        ``<meta charset>`` 으로 스스로 밝힌 인코딩이 있다. 그것을 안 보면 euc-kr
+        페이지의 제목·본문이 통째로 깨진 채 채점된다(2026-08-06 실측).
+        무엇으로 읽을지는 :mod:`veo.common.encoding` 한 곳이 정한다.
+        """
+        return self.decoded(fallback)[0]
+
+    def decoded(self, fallback: str = DEFAULT_ENCODING) -> tuple[str, str]:
+        """``(본문, 실제로 쓴 인코딩)``. 무엇으로 읽었는지가 필요한 곳에서 쓴다."""
+        return decode_html(self.body, header_charset=self.charset, fallback=fallback)
 
 
 class SafeFetcher:

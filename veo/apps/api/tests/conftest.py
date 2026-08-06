@@ -35,6 +35,23 @@ TESTS_ROOT = Path(__file__).resolve().parent
 # `setdefault` 인 이유: 특정 시험이 스스로 값을 정하고 싶을 때 그 값을 존중한다.
 os.environ.setdefault("VEO_CRAWL_MIN_INTERVAL_SECONDS", "0")
 
+# 한국 경유는 **시험에서 꺼 둔다.** setdefault 가 아니라 덮어쓴다.
+#
+# 왜 이것만 강하게 끄는가. 설정은 `apps/api/.env` 를 자동으로 읽고(core/settings.py),
+# 개발 장비의 그 파일에는 경유 주소와 열쇠가 들어 있다. 그래서 시험이 받은 응답이
+# `looks_like_interstitial` 이면 `RetryViaKorea` 가 발동하고, 그 경로는 `SafeFetcher` 에
+# **주입한 transport 를 쓰지 않으므로 진짜 바깥으로 나간다.**
+#
+# 실측(2026-08-06): 모의 전송에 428바이트를 넣어 두었는데 수집 결과가 실제 남의 사이트
+# 본문 559바이트였다. 시험이 조용히 인터넷을 다녀온 것이다. `.env` 가 없는 CI 에서는
+# 안 나가므로 **로컬과 CI 의 동작이 달랐다** — 그 상태에서는 "시험 통과" 가 아무것도
+# 보증하지 않는다(0-F).
+#
+# 경유가 켜진 상태를 확인해야 하는 시험은 가짜 경유를 직접 끼워 넣는다
+# (`tests/common/test_retry_via_kr.py`). 진짜 바깥으로 나가는 시험은 없다.
+os.environ["VEO_EGRESS_KR_URL"] = ""
+os.environ["VEO_EGRESS_KR_TOKEN"] = ""
+
 
 def _expose_suite_helper_modules() -> None:
     """Let each suite import its own sibling helpers by plain module name."""

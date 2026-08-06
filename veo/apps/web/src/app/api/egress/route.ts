@@ -31,11 +31,18 @@ import { NextResponse } from 'next/server';
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 
+import { fetchPinned, type PinnedResponse } from '@/lib/pinned-fetch';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-const MAX_BODY_BYTES = 4 * 1024 * 1024;
+//: 직접 수집(`veo.common.security.limits.FetchLimits.max_response_bytes`)과 **같은 값**으로
+//: 둔다. 다르면 같은 사이트가 경로에 따라 다르게 잘리고, 어느 쪽이 진짜인지 알 수 없게 된다.
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
+
+//: API 쪽 응답 대기(30초)보다 짧아야 한다 — 우리가 먼저 포기해야 사유가 남는다.
+const FETCH_TIMEOUT_MS = 25_000;
 const NO_STORE = { 'cache-control': 'no-store' } as const;
 
 /** 돌려줄 헤더. 목록에 없으면 버린다 — 새 헤더가 생겨도 자동으로 새어 나가지 않는다. */
@@ -112,40 +119,38 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   // 이름을 여기서 다시 푼다. API 가 검증한 주소와 여기서 닿는 주소는 다를 수 있고,
   // 그 틈으로 내부망을 두드리게 하는 것이 SSRF 다.
+  let pinned: string;
   try {
     const addresses = await lookup(parsed.hostname, { all: true });
     if (addresses.length === 0) return deny(400, 'unresolvable host');
     if (!addresses.every((entry) => isPublicAddress(entry.address))) {
       return deny(403, 'destination is not a public address');
     }
+    // **검사한 바로 그 주소로 간다.** 이름을 한 번 더 풀게 두면 검사한 주소와 접속한
+    // 주소가 달라질 수 있고(DNS 재바인딩), 그 순간 위의 검사는 아무것도 막지 못한다.
+    pinned = addresses[0]!.address;
   } catch {
     return deny(400, 'unresolvable host');
   }
 
-  let response: Response;
+  let response: PinnedResponse;
   try {
-    response = await fetch(parsed.toString(), {
-      method: 'GET',
-      headers: {
-        'user-agent': userAgent,
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.1',
-      },
-      // 절대 따라가지 않는다. 다음 홉은 API 쪽 가드가 다시 본다.
-      redirect: 'manual',
-      cache: 'no-store',
+    response = await fetchPinned({
+      address: pinned,
+      hostname: parsed.hostname,
+      url: parsed,
+      userAgent,
+      maxBytes: MAX_BODY_BYTES,
+      timeoutMs: FETCH_TIMEOUT_MS,
     });
   } catch (error) {
     return deny(502, `upstream failed: ${String(error)}`);
   }
 
-  const raw = new Uint8Array(await response.arrayBuffer());
-  const truncated = raw.byteLength > MAX_BODY_BYTES;
-  const kept = truncated ? raw.subarray(0, MAX_BODY_BYTES) : raw;
-
   const headers: Record<string, string> = {};
   for (const name of KEPT_HEADERS) {
-    const value = response.headers.get(name);
-    if (value !== null) headers[name] = value;
+    const value = response.headers[name];
+    if (value !== undefined) headers[name] = value;
   }
 
   return NextResponse.json(
@@ -153,8 +158,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       status: response.status,
       finalUrl: parsed.toString(),
       headers,
-      bodyBase64: Buffer.from(kept).toString('base64'),
-      truncated,
+      bodyBase64: Buffer.from(response.body).toString('base64'),
+      truncated: response.truncated,
     },
     { headers: NO_STORE },
   );

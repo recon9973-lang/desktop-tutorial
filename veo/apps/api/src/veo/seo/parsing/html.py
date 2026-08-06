@@ -21,6 +21,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 
+from veo.common.encoding import decode_html
+
 #: Elements whose text is markup or styling, never content.
 _INVISIBLE = frozenset({"script", "style", "template", "noscript", "svg", "head"})
 
@@ -443,9 +445,14 @@ def _looks_like_breadcrumb(tag: str, attributes: dict[str, str]) -> bool:
 
 
 def parse_html(source: str | bytes, *, charset: str | None = None) -> ParsedPage:
-    """Parse ``source`` into a :class:`ParsedPage`, never raising on malformed markup."""
+    """Parse ``source`` into a :class:`ParsedPage`, never raising on malformed markup.
+
+    ``charset`` 은 **서버 헤더가 말한 것**이다. 헤더가 없으면 문서 안의
+    ``<meta charset>`` 을 바이트에서 찾아 쓴다 — 디코딩한 뒤에 찾으면 늦기 때문이다.
+    무엇으로 읽을지는 :mod:`veo.common.encoding` 한 곳이 정한다(0-D).
+    """
     if isinstance(source, bytes):
-        source = source.decode(charset or "utf-8", errors="replace")
+        source = decode_html(source, header_charset=charset)[0]
 
     parser = _PageParser()
     try:
