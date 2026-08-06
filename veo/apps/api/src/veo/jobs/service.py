@@ -143,11 +143,18 @@ def succeed(
     *,
     result_run_id: uuid.UUID | None = None,
     partial: bool = False,
+    scoring_spec_id: str | None = None,
+    scoring_spec_version: str | None = None,
 ) -> None:
     """끝났다. `partial` 이면 **부분 성공**이지 성공이 아니다.
 
     절반만 실행된 관측을 `SUCCEEDED` 로 적으면 그 위에서 계산한 노출률이 완전한
     측정처럼 읽힌다. 분모가 틀렸다는 사실이 어디에도 남지 않는다.
+
+    **어느 명세로 채점했는지도 여기서 남긴다.** 잡을 만드는 시점에는 아직 모르고,
+    끝나는 시점에는 안다. 표에 칸이 있는데 운영 17건이 전부 비어 있었다
+    (2026-08-06 실측) — 명세가 바뀌면 점수가 바뀌는데, 그 잡이 어느 판으로
+    채점됐는지 되짚을 수 없었다.
     """
     row = session.get(JobRow, job_id)
     if row is None:
@@ -157,6 +164,10 @@ def succeed(
     row.finished_at = datetime.now(UTC)
     row.result_run_id = result_run_id
     row.partial_result_available = partial
+    if scoring_spec_id is not None:
+        row.scoring_spec_id = scoring_spec_id
+    if scoring_spec_version is not None:
+        row.scoring_spec_version = scoring_spec_version
 
 
 def fail(

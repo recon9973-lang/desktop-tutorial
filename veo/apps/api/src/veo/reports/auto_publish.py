@@ -91,9 +91,37 @@ def sweep_reports_once(session: Session, *, now: dt.datetime | None = None) -> i
         return 0
 
     published = 0
-    reports = session.execute(select(Report)).scalars().all()
+    # **오래 안 나간 것부터.** 정렬 없이 읽고 MAX_PER_SWEEP 에서 끊으면 DB 가
+    # 돌려주는 순서에 따라 매달 같은 일부만 발행되고 나머지는 영영 밀린다 —
+    # 리포트가 상한을 넘는 순간부터 조용히 그렇게 된다(2026-08-06 감사).
+    #
+    # 마지막 발행이 없는 리포트(한 번도 안 나간 것)가 가장 앞이다.
+    last_published = (
+        select(
+            ReportVersion.report_id.label("report_id"),
+            func.max(ReportVersion.created_at).label("last_at"),
+        )
+        .group_by(ReportVersion.report_id)
+        .subquery()
+    )
+    reports = (
+        session.execute(
+            select(Report)
+            .outerjoin(last_published, last_published.c.report_id == Report.id)
+            .order_by(last_published.c.last_at.asc().nulls_first(), Report.id)
+        )
+        .scalars()
+        .all()
+    )
     for report in reports:
         if published >= MAX_PER_SWEEP:
+            # **말없이 자르지 않는다.** 이 줄이 없으면 "전부 발행했다" 와 "상한에
+            # 걸려 일부만 했다" 가 화면에서 똑같이 보인다.
+            _log.warning(
+                "월간 자동 발행이 이번 회차 상한(%d건)에 걸렸습니다. 남은 리포트는 "
+                "다음 회차로 밀립니다 — 오래 안 나간 것부터 처리하므로 순서는 돌아옵니다.",
+                MAX_PER_SWEEP,
+            )
             break
 
         last_at = _latest_version_at(session, report.id)

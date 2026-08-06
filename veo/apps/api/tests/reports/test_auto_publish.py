@@ -58,6 +58,26 @@ def _report_with_v1(db, org: Tenant, measured) -> Report:  # type: ignore[no-unt
     return report
 
 
+
+def _report_without_versions(db, org: Tenant, measured) -> Report:  # type: ignore[no-untyped-def]
+    """아직 한 번도 발행되지 않은 리포트. 자동 발행이 가장 먼저 집어야 할 대상이다."""
+    from veo.db.models.observation import Report as ReportRow
+    from veo.reports.from_scan import diagnosis_from_scan
+
+    saved, _ = measured
+    reportable = diagnosis_from_scan(
+        db, principal=org.analyst, scan_run_id=saved.scan_run_id, title_ko="아직 안 나간 보고"
+    )
+    row = ReportRow(
+        organization_id=org.analyst.organization_id,
+        project_id=reportable.project_id,
+        title="아직 안 나간 보고",
+    )
+    db.add(row)
+    db.commit()
+    return row
+
+
 def _next_month_day_one() -> dt.datetime:
     """다음 달 1일 — 버전은 불변이라 과거로 옮길 수 없으므로, 시계를 앞으로 돌린다."""
     today = dt.datetime.now(dt.UTC)
@@ -179,3 +199,45 @@ class TestTheCycle:
         sweep_reports_once(db, now=this_month_day_one)
         versions = SqlReportRepository(db).list_versions(org_a.analyst, report.id)
         assert [one.version_number for one in versions] == [1]
+
+
+class TestNobodyIsLeftBehind:
+    """상한에 걸릴 때 **누가** 밀리는지가 정해져 있어야 한다.
+
+    2026-08-06 감사: `select(Report)` 를 정렬 없이 읽고 20건에서 끊고 있었다.
+    DB 가 돌려주는 순서는 보장이 없으므로, 리포트가 상한을 넘는 순간부터 매달 같은
+    일부만 발행되고 나머지 거래처는 영영 밀릴 수 있었다. 지금은 리포트가 0행이라
+    발동하지 않았을 뿐이다.
+
+    규칙은 **오래 안 나간 것부터**, 한 번도 안 나간 것이 가장 앞. 그러면 밀려도
+    다음 달에 순서가 돌아온다.
+
+    발행본을 과거로 옮겨 이력을 꾸밀 수는 없다 — ORM 이벤트와 DB 트리거가 둘 다
+    막는다(그 방어는 옳다). 그래서 **한 번도 발행 안 된 리포트**로 확인한다.
+    """
+
+    def test_a_report_that_never_went_out_goes_before_one_that_did(
+        self, db, org_a: Tenant, measured_run, publish_on_day_one  # noqa: F811
+    ) -> None:  # type: ignore[no-untyped-def]
+        import veo.reports.auto_publish as auto_publish
+        from veo.reports.auto_publish import sweep_reports_once
+        from veo.reports.repository import SqlReportRepository
+
+        already_published = _report_with_v1(db, org_a, measured_run)
+        never_published = _report_without_versions(db, org_a, measured_run)
+        _second_run(db, org_a, measured_run)
+
+        # 상한을 1로 낮춰 **누가 잘리는가**를 드러낸다.
+        original = auto_publish.MAX_PER_SWEEP
+        auto_publish.MAX_PER_SWEEP = 1
+        try:
+            sweep_reports_once(db, now=_next_month_day_one())
+        finally:
+            auto_publish.MAX_PER_SWEEP = original
+
+        repository = SqlReportRepository(db)
+        fresh = repository.list_versions(org_a.analyst, never_published.id)
+        stale = repository.list_versions(org_a.analyst, already_published.id)
+
+        assert len(fresh) == 1, "한 번도 안 나간 리포트가 먼저 나가지 않았다"
+        assert len(stale) == 1, "상한이 1인데 이미 나간 리포트까지 또 나갔다"

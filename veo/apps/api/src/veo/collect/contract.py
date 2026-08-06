@@ -59,6 +59,13 @@ class EvidenceRecord:
     """A short, human-readable extract. Never the whole document, never a credential."""
     storage_key: str | None = None
     """Where the full artefact lives in object storage, when it was kept."""
+    byte_size: int | None = None
+    """근거로 삼은 원자료의 실제 길이(바이트).
+
+    `of()` 는 해시를 내려고 이미 바이트를 손에 쥐고 있다. 그런데 저장하는 쪽이
+    `byte_size=None` 을 하드코딩해서 **운영 3,148건이 전부 비어 있었다**(2026-08-06 실측).
+    발췌 2,000자와 해시 64자만으로는 "이 판정의 근거가 얼마짜리 문서였나" 에 답할 수
+    없다. 80바이트를 보고 내린 판정과 200KB 를 보고 내린 판정은 같은 무게가 아니다."""
     detail: Mapping[str, object] = field(default_factory=dict)
 
     @classmethod
@@ -83,6 +90,8 @@ class EvidenceRecord:
             content_hash=content_hash,
             excerpt=excerpt[:2000],
             storage_key=storage_key,
+            # 해시를 내려고 이미 손에 쥔 바이트다. 여기서 재지 않으면 다시 잴 방법이 없다.
+            byte_size=len(raw),
             detail=dict(detail or {}),
         )
 

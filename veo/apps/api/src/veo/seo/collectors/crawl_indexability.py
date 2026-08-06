@@ -1140,14 +1140,20 @@ def _robots_health(
     """
     check_id = "seo.robots.txt_parses_cleanly"
     if site.robots is None:
-        return (
-            not_applicable_outcome(
-                check_id,
-                "robots.txt를 수집하지 못했습니다. 파일이 없는 것은 전부 허용한다는 "
-                "뜻이므로 결함으로 보지 않습니다.",
-            ),
-            [],
-        )
+        # 문장이 관측과 어긋나지 않게 한다. 예전에는 어느 경우든 "수집하지 못했습니다"
+        # 로 시작해 놓고 뒤에서 "파일이 없는 것은" 을 설명해, 한 문장 안에서 앞뒤가
+        # 맞지 않았다. 판정(NOT_APPLICABLE)은 두 경우 모두 같지만 **이유가 다르다.**
+        if site.context.robots_state == "ABSENT":
+            reason_ko = (
+                "robots.txt 파일이 없습니다. 검사할 규칙 자체가 없으므로 "
+                "문법 결함도 있을 수 없습니다."
+            )
+        else:
+            reason_ko = (
+                "robots.txt를 수집하지 못해 문법을 검사하지 못했습니다. "
+                "파일이 잘못됐다는 뜻은 아닙니다."
+            )
+        return (not_applicable_outcome(check_id, reason_ko), [])
 
     lines = site.robots.raw.splitlines()
     broken = {

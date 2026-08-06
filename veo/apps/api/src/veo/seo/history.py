@@ -404,7 +404,9 @@ def _save_evidence(
                 content_hash=record.content_hash,
                 storage_key=record.storage_key,
                 excerpt=record.excerpt or None,
-                byte_size=None,
+                # 수집기가 실제로 잰 길이. 예전에는 여기서 `None` 을 박아 넣어
+                # 운영 3,148건이 전부 비어 있었다(2026-08-06 실측).
+                byte_size=record.byte_size,
                 source="COLLECTED",
                 detail=dict(record.detail),
             )

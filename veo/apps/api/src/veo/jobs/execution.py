@@ -50,6 +50,15 @@ class JobOutcome:
 
     result_run_id: uuid.UUID | None = None
     is_partial: bool = False
+    scoring_spec_id: str | None = None
+    scoring_spec_version: str | None = None
+    """어느 채점 명세로 매긴 결과인가.
+
+    `jobs` 표에 칸이 처음부터 있었는데 **운영 17건이 전부 비어 있었다**(2026-08-06 실측).
+    채우는 코드가 없었기 때문이다. 명세가 바뀌면 점수가 바뀌므로, 그 잡이 어느 판으로
+    채점됐는지 되짚을 수 없으면 지난 결과를 설명할 수 없다(ADR 0012).
+
+    잡을 **만드는** 시점에는 아직 모른다. 끝나는 시점에는 안다 — 그래서 여기다."""
 
 
 #: 작업 본문. 세션과 작업 id 를 받고 결과를 돌려준다.
@@ -122,6 +131,8 @@ def execute(job_id: uuid.UUID, work: JobWork) -> None:
             job_id,
             result_run_id=outcome.result_run_id,
             partial=outcome.is_partial,
+            scoring_spec_id=outcome.scoring_spec_id,
+            scoring_spec_version=outcome.scoring_spec_version,
         )
 
 

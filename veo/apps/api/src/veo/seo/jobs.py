@@ -18,10 +18,12 @@ import uuid
 from typing import Final
 
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal
 from veo.contracts.enums import Role
+from veo.db.models.analysis import ScoreResult as StoredScore
 from veo.jobs import service as jobs_service
 from veo.jobs.execution import JobFailure, JobOutcome, JobWork
 from veo.seo.crawl import CrawlRefusal
@@ -98,6 +100,33 @@ def scan_work(
             raise
 
         jobs_service.advance(session, job_id, progress=0.95, stage=SCAN_STAGES[1])
-        return JobOutcome(result_run_id=saved_run_id)
+        # 어느 명세로 매겼는지를 잡에 남긴다(2026-08-06 실측: 운영 17건 전부 NULL).
+        #
+        # 응답에서 꺼내지 않고 **저장된 행에서 읽는다.** 두 가지 이유다. 하나, 이
+        # 모듈은 채점 어휘를 쓰지 못한다(test_no_checker_module_names_a_scoring_concept) —
+        # 잡 껍데기가 채점을 아는 순간 그 규칙이 무너진다. 둘, 남길 값은 "화면에
+        # 보여준 것" 이 아니라 **실제로 저장된 것**이어야 한다.
+        stored = _stored_spec(session, saved_run_id)
+        return JobOutcome(
+            result_run_id=saved_run_id,
+            scoring_spec_id=stored[0],
+            scoring_spec_version=stored[1],
+        )
 
     return work
+
+
+def _stored_spec(session: Session, run_id: uuid.UUID | None) -> tuple[str | None, str | None]:
+    """저장된 실행이 **어느 명세로** 매겨졌는지. 없으면 (None, None).
+
+    잡 기록에 남길 값은 실제로 저장된 것이어야 한다. 저장에 실패했는데 잡에는
+    명세가 적혀 있으면, 그 기록이 없는 것보다 나쁘다.
+    """
+    if run_id is None:
+        return None, None
+    row = session.execute(
+        select(StoredScore.spec_id, StoredScore.spec_version).where(
+            StoredScore.scan_run_id == run_id
+        )
+    ).first()
+    return (row[0], row[1]) if row is not None else (None, None)

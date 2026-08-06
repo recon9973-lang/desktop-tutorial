@@ -76,6 +76,60 @@ class TestTheWork:
         run = db_session.get(ScanRun, result.result_run_id)
         assert run is not None and run.report_snapshot is not None
 
+    def test_the_finished_job_records_which_specification_scored_it(
+        self, db_session, principal, site, monkeypatch  # noqa: F811
+    ):
+        """명세가 바뀌면 점수가 바뀐다. 어느 판으로 매겼는지 없으면 지난 결과를 설명할 수 없다.
+
+        2026-08-06 실측: 운영 `jobs` 17건이 전부 `scoring_spec_id` ·
+        `scoring_spec_version` 이 NULL 이었다. 표에 칸은 처음부터 있었고 채우는
+        코드가 없었다(0-E).
+        """
+        import veo.seo.router as router_module
+        from veo.jobs import service as jobs_service
+        from veo.seo.jobs import scan_work
+
+        outcome = _crawl_outcome()
+
+        class StubCrawler:
+            def crawl(self, target_url, *, extra_urls=(), max_urls=None):  # type: ignore[no-untyped-def]
+                return outcome
+
+            def collect(self, targets):  # type: ignore[no-untyped-def]
+                return outcome.documents, outcome.robots_txt
+
+        monkeypatch.setattr(router_module, "ConsoleCrawler", StubCrawler)
+
+        job = _submit(db_session, principal, site)
+        work = scan_work(
+            organization_id=principal.organization_id,
+            user_id=principal.user_id,
+            roles=principal.roles,
+            session_id=principal.session_id,
+            target_url=site.origin,
+            site_id=site.id,
+            urls=(),
+            discover=False,
+            max_urls=None,
+            locale="ko-KR",
+        )
+
+        result = work(db_session, job.id)
+        # 잡을 실제로 닫아 본다 — 닫는 자리가 기록하는 자리이므로, 여기까지 와야
+        # "기록된다" 를 확인한 것이 된다(0-E).
+        jobs_service.succeed(
+            db_session,
+            job.id,
+            result_run_id=result.result_run_id,
+            partial=result.is_partial,
+            scoring_spec_id=result.scoring_spec_id,
+            scoring_spec_version=result.scoring_spec_version,
+        )
+        db_session.flush()
+
+        assert job.scoring_spec_id, "어느 명세로 채점했는지 잡에 남지 않았다"
+        assert job.scoring_spec_version, "명세 판이 잡에 남지 않았다"
+
     def test_a_crawl_refusal_becomes_a_job_failure_with_the_same_sentence(
         self, db_session, principal, site, monkeypatch  # noqa: F811
     ):

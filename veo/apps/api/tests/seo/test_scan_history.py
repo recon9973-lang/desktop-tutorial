@@ -875,3 +875,27 @@ class TestTheTimerCarriesAWallClock:
         from veo.seo.timing import ScanTimings
 
         assert ScanTimings().started_at.tzinfo is not None
+
+
+class TestWhatWeMeasuredGetsStored:
+    """잰 값을 저장하지 않으면 잰 적이 없는 것과 같다.
+
+    2026-08-06 운영 DB 전수 스윕에서 나왔다: `evidence.byte_size` 3,148행 전부 NULL.
+    저장하는 코드가 `byte_size=None` 을 하드코딩하고 있었고, `EvidenceRecord.of()` 는
+    해시를 내려고 이미 바이트를 손에 쥐고 있었다.
+    """
+
+    def test_evidence_keeps_the_size_of_what_it_judged(self) -> None:
+        from veo.collect.contract import EvidenceRecord
+
+        record = EvidenceRecord.of("robots_txt", url=None, payload=b"User-agent: *\n")
+
+        assert record.byte_size == 14
+
+    def test_the_size_is_the_real_byte_length_not_the_character_count(self) -> None:
+        """한글은 글자 수와 바이트 수가 다르다. 저장할 것은 바이트다."""
+        from veo.collect.contract import EvidenceRecord
+
+        record = EvidenceRecord.of("http_response", url=None, payload="가나다")
+
+        assert record.byte_size == 9
