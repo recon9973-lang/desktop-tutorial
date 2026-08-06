@@ -33,9 +33,9 @@ import httpx
 
 from veo.common.encoding import DEFAULT_ENCODING, decode_html
 from veo.common.security.limits import (
+    DecompressionLimitError,
     FetchLimits,
     ResponseBudget,
-    ResponseTooLargeError,
 )
 from veo.common.security.url_guard import (
     UrlDecision,
@@ -294,46 +294,81 @@ class SafeFetcher:
             ) from exc
 
     def _read_body(self, response: httpx.Response) -> tuple[bytes, bool]:
-        """Stream the body under budget, refusing anything oversized or bomb-shaped."""
+        """Stream the body under budget. **Oversized is cut, not refused.**
+
+        크기 상한을 넘는 것과 압축 폭탄은 다르게 다룬다.
+
+        *크기* — 앞부분만 담고 ``truncated`` 로 그 사실을 남긴다. 상한을 넘었다고
+        진단을 통째로 버리면 **그 사이트는 영원히 진단할 수 없다.** 2026-08-06
+        시뮬레이션에서 2MB 를 넘는 응답이 `CrawlRefusal` 로 진단 전체를 실패시켰다 —
+        점수도, 부분 결과도 없었다. `FetchCapture` 모델은 처음부터 "상한을 넘으면
+        앞부분만 담고 truncated 로 남긴다" 고 적어 두었는데 코드가 그러지 않았다.
+        인라인 데이터가 많은 국내 병원 홈페이지는 2MB 를 넘을 수 있다.
+
+        앞부분 2MB 로도 제목·설명·canonical·구조화 데이터는 거의 다 읽힌다. 그것들은
+        ``<head>`` 에 있다. 잘린 사실은 결과에 실려 나가므로 "다 보고 내린 판정" 인
+        척하지 않는다.
+
+        *압축 폭탄* — 그대로 거절한다. 작은 응답이 수십 MB 로 부풀도록 만든 것은
+        사이트의 사실이 아니라 우리를 넘어뜨리려는 입력이고, 그 앞부분도 믿을 것이
+        못 된다.
+
+        ``check_declared_length`` 를 더는 부르지 않는다. "5MB 라고 선언했다" 는 이유로
+        읽기도 전에 거절하면, 우리가 기꺼이 읽을 수 있는 앞 2MB 까지 버리게 된다.
+        실제 상한은 아래 흐름이 바이트를 세면서 건다.
+        """
         budget = ResponseBudget(self._limits)
         budget.check_content_type(response.headers.get("content-type"))
-        budget.check_declared_length(response.headers.get("content-length"))
 
         encoding = (response.headers.get("content-encoding") or "").lower()
         decoder = _decoder_for(encoding)
 
         chunks: list[bytes] = []
+        truncated = False
         try:
             for chunk in response.iter_raw():
                 budget.check_deadline()
+                room = budget.remaining_bytes
+                if room <= 0:
+                    truncated = True
+                    break
+                if len(chunk) > room:
+                    chunk = chunk[:room]
+                    truncated = True
                 budget.add_wire_bytes(len(chunk))
                 if decoder is None:
                     budget.add_decompressed_bytes(len(chunk))
                     chunks.append(chunk)
-                    continue
-                expanded = decoder.decompress(chunk, self._limits.max_decompressed_bytes)
-                budget.add_decompressed_bytes(len(expanded))
-                chunks.append(expanded)
-                if decoder.unconsumed_tail:
-                    # More output was available than the ceiling allows: that is the bomb.
-                    raise ResponseTooLargeError("decompressed body over budget")
+                else:
+                    expanded = decoder.decompress(chunk, self._limits.max_decompressed_bytes)
+                    budget.add_decompressed_bytes(len(expanded))
+                    chunks.append(expanded)
+                    if decoder.unconsumed_tail:
+                        # 작은 입력이 상한을 넘겨 부푼다 — 폭탄이다. 이건 거절한다.
+                        raise DecompressionLimitError("decompressed body over budget")
+                if truncated:
+                    break
         except httpx.StreamConsumed:
             # The body was already materialised before we could stream it. Real network
             # transports never do this; test doubles built from a bytes literal always
             # do. The budget still applies — it just charges the whole body at once
             # instead of refusing it partway through.
-            return self._charge_materialised_body(response, budget), False
+            return self._charge_materialised_body(response, budget)
 
-        return b"".join(chunks), False
+        return b"".join(chunks), truncated
 
     def _charge_materialised_body(
         self, response: httpx.Response, budget: ResponseBudget
-    ) -> bytes:
+    ) -> tuple[bytes, bool]:
         """Apply the budget to a body that is already in memory."""
         body = response.content  # httpx has decoded any content-encoding by this point
+        room = budget.limits.max_response_bytes
+        truncated = len(body) > room
+        if truncated:
+            body = body[:room]
         budget.add_wire_bytes(len(body))
         budget.add_decompressed_bytes(len(body))
-        return body
+        return body, truncated
 
 
 def _decoder_for(encoding: str) -> zlib._Decompress | None:

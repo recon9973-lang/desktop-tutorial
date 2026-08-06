@@ -268,15 +268,23 @@ def test_no_cookie_survives_a_redirect_to_another_host() -> None:
 # --------------------------------------------------------------------------- #
 
 
-def test_an_oversized_body_is_refused() -> None:
+def test_an_oversized_body_stops_at_the_ceiling() -> None:
+    """상한은 **읽기를 멈추는 선**이지 진단을 버리는 선이 아니다.
+
+    예전에는 여기서 `ResponseTooLargeError` 를 냈고, 그러면 2MB 를 넘는 사이트는
+    통째로 진단 불가가 됐다(2026-08-06 시뮬레이션). 지키려던 것 — 5GB 응답을
+    메모리에 올리지 않는 것 — 은 그대로다. 상한만큼만 읽고 멈춘다.
+    """
     limits = FetchLimits(max_response_bytes=1024)
     transport = RecordingTransport(
         [httpx.Response(200, content=b"x" * 5000, headers={"content-type": "text/html"})]
     )
     fetcher = fetcher_for({"example.com": [PUBLIC_IP]}, transport, limits=limits)
 
-    with pytest.raises(ResponseTooLargeError):
-        fetcher.fetch("https://example.com/")
+    document = fetcher.fetch("https://example.com/")
+
+    assert len(document.body) == 1024, "상한을 넘겨 읽으면 상한이 아니다"
+    assert document.truncated is True
 
 
 def test_a_decompression_bomb_is_refused() -> None:
@@ -458,3 +466,88 @@ def test_a_transport_failure_while_the_body_arrives_is_contained_too() -> None:
 
     with pytest.raises(FetchError):
         fetcher.fetch("https://example.com/")
+
+
+class TestAnOversizedPageIsCutNotRefused:
+    """상한을 넘는다고 진단을 통째로 버리지 않는다.
+
+    2026-08-06 시뮬레이션: 2MB 를 넘는 응답이 `CrawlRefusal` 로 진단 전체를
+    실패시켰다 — 점수도, 부분 결과도 없었다. **그 사이트는 영원히 진단할 수 없다.**
+    `FetchCapture` 모델은 처음부터 "상한을 넘으면 앞부분만 담고 truncated 로 남긴다"
+    고 적어 두었는데 코드가 그러지 않았다.
+
+    앞부분만으로도 제목·설명·canonical 은 거의 다 읽힌다 — 그것들은 `<head>` 에 있다.
+    잘린 사실이 함께 나가므로 "다 보고 내린 판정" 인 척하지도 않는다.
+    """
+
+    def _fetch(self, body: bytes, *, limits: FetchLimits | None = None) -> FetchedDocument:
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=body, headers={"content-type": "text/html"})
+
+        fetcher = SafeFetcher(
+            guard=UrlGuard(resolver=lambda host: [PUBLIC_IP]),
+            transport=httpx.MockTransport(handler),
+            limits=limits or FetchLimits(),
+        )
+        return fetcher.fetch("https://example.com/")
+
+    def test_an_oversized_body_still_produces_a_document(self) -> None:
+        limits = FetchLimits(max_response_bytes=1024)
+        head = "<!doctype html><html lang='ko'><head><title>큰 문서</title></head><body>".encode()
+
+        document = self._fetch(head + b"<p>x</p>" * 5000, limits=limits)
+
+        assert document.body, "상한을 넘었다고 아무것도 안 돌려주면 그 사이트는 진단할 수 없다"
+        assert len(document.body) == 1024
+
+    def test_it_says_that_it_was_cut(self) -> None:
+        limits = FetchLimits(max_response_bytes=1024)
+
+        document = self._fetch(b"y" * 5000, limits=limits)
+
+        assert document.truncated is True, "잘린 것을 전부인 척하면 안 된다"
+
+    def test_a_body_within_budget_is_not_marked_cut(self) -> None:
+        limits = FetchLimits(max_response_bytes=1024)
+
+        document = self._fetch(b"y" * 100, limits=limits)
+
+        assert document.truncated is False
+        assert len(document.body) == 100
+
+    def test_the_head_survives_the_cut(self) -> None:
+        """자르는 자리는 뒤쪽이다. 제목·설명은 `<head>` 에 있으므로 남는다."""
+        limits = FetchLimits(max_response_bytes=2048)
+        head = (
+            "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
+            "<title>참사랑의원</title>"
+            "<meta name='description' content='진료 안내입니다.'></head><body>"
+        ).encode()
+
+        document = self._fetch(head + b"<p>x</p>" * 5000, limits=limits)
+
+        assert b"<title>" in document.body
+        assert "참사랑의원".encode() in document.body
+
+    def test_a_declared_length_over_budget_no_longer_refuses_outright(self) -> None:
+        """"5MB 라고 선언했다" 는 이유로 읽기도 전에 거절하면, 우리가 기꺼이 읽을 수
+        있는 앞부분까지 버리게 된다."""
+        limits = FetchLimits(max_response_bytes=1024)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=b"z" * 5000,
+                headers={"content-type": "text/html", "content-length": "5000"},
+            )
+
+        fetcher = SafeFetcher(
+            guard=UrlGuard(resolver=lambda host: [PUBLIC_IP]),
+            transport=httpx.MockTransport(handler),
+            limits=limits,
+        )
+
+        document = fetcher.fetch("https://example.com/")
+
+        assert len(document.body) == 1024
+        assert document.truncated is True
