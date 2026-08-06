@@ -36,10 +36,19 @@ WORKDIR /build
 
 COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
 COPY apps/api/src ./apps/api/src
+COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
+COPY apps/worker/src ./apps/worker/src
 
 # 워커는 API 와 같은 veo 패키지를 쓴다. celery 는 이미 런타임 의존성에 있다.
+#
+# **apps/worker 도 설치한다.** 이 줄이 없던 동안 이미지 안에 `veo_worker` 모듈이
+# 아예 없었고, ENTRYPOINT 가 가리키는 `veo_worker.runtime.app:celery_app` 을 찾지
+# 못해 컨테이너가 뜨자마자 죽었다. 아래 검증 줄이 그 사실을 빌드 시점에 드러낸다 —
+# 뜨지 못하는 이미지를 만들어 배포까지 가는 것보다 빌드가 깨지는 편이 낫다.
 RUN pip install --upgrade pip \
-    && pip install ./apps/api
+    && pip install ./apps/api \
+    && pip install --no-deps ./apps/worker \
+    && python -c "from veo_worker.runtime.app import celery_app; import veo_worker.runtime.tasks"
 
 # =============================================================================
 # 2단계 — 런타임

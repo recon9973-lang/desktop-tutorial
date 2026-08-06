@@ -295,6 +295,10 @@ class Settings(BaseSettings):
     #: 큐가 없는데 큐로 보내면 아무도 집어가지 않은 채 영원히 대기한다. 지금보다 나쁘다.
     celery_broker_url: str = ""
 
+    #: 결과 백엔드. 비어 있으면 브로커와 같은 곳을 쓰지 않는다 — 결과를 저장할 곳이
+    #: 없다는 뜻이고, 우리는 결과를 `jobs` 표에 적으므로 그것으로 충분하다.
+    celery_result_backend: str = ""
+
     # Secrets. Absent in local/test; required at startup in staging and production.
     jwt_secret: SecretStr | None = None
     access_token_ttl_seconds: int = 900
@@ -424,6 +428,17 @@ class Settings(BaseSettings):
         "안 켜졌다" 로 보이는 편이 낫다(0-E: 부를 수 없는 기능은 없는 기능).
         """
         return bool(self.egress_kr_url.strip()) and bool(self.egress_kr_token.strip())
+
+    def resolved_broker_url(self) -> str:
+        """작업 큐의 브로커 주소. 빈 문자열이면 **큐가 없는 배포**다.
+
+        보내는 쪽(API)과 받는 쪽(워커)이 **이 한 함수로 같은 답을 얻는다.** 예전에는
+        API 가 ``VEO_CELERY_BROKER_URL`` 을, 워커가 ``VEO_BROKER_URL`` 을 각자 읽었다.
+        한쪽만 채운 배포는 "API 는 큐로 보내는데 워커는 eager 모드" 가 되고, 그때 잡은
+        아무도 집어가지 않은 채 `QUEUED` 로 남는다 — 화면은 계속 "대기 중" 이라고 한다.
+        """
+        return (self.celery_broker_url or self.redis_url or "").strip()
+
     #: 콘솔 진단이 한 대상 호스트에 시간당 보낼 수 있는 요청 수. 로그인 여부와 무관하게
     #: VEO 가 남의 서버를 두드리는 도구가 되지 않도록 가드 안에서 부과한다.
     #:

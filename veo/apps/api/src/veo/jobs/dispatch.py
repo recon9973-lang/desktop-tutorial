@@ -11,6 +11,10 @@
 그래서 여기서 고른다: **브로커가 설정돼 있으면 큐로, 없으면 예전처럼 배경 스레드로.**
 설정하지 않은 배포는 오늘과 똑같이 동작한다.
 
+보내는 일 자체는 :mod:`veo.jobs.producer` 가 한다 — 예전에는 여기서 `current_app` 을
+바로 썼는데, 그것이 우리 앱이 아니라 Celery 의 기본 앱이라 큐 경로가 애초에 동작할 수
+없었다. 그 이야기는 그 모듈에 적었다.
+
 **보내지 못하면 배경 스레드로 떨어진다.** 리미터에서는 반대로 했다(닿지 못하면 거절) —
 거기서는 통과시키는 것이 남의 서버를 때리는 문이 되기 때문이다. 여기서는 못 보낸 대가가
 "작업이 아무 데서도 안 돈다" 이고, 그것보다는 예전 방식으로라도 도는 편이 낫다. 다만
@@ -27,22 +31,26 @@ from veo.contracts.enums import JobType
 from veo.core.settings import get_settings
 from veo.jobs.execution import JobWork, run_detached
 
-__all__ = ["dispatch", "queue_is_configured"]
+__all__ = ["QUEUEABLE", "dispatch", "queue_is_configured"]
 
 _log = logging.getLogger(__name__)
 
-#: 작업 종류별 큐의 태스크 이름. 워커가 같은 이름으로 등록한다 — 이름이 갈리면 메시지가
-#: 아무도 듣지 않는 큐에 쌓인다.
-TASK_NAMES: Final[dict[JobType, str]] = {
-    JobType.SEO_SCAN: "veo.jobs.seo_scan",
-}
+#: 큐로 **보내도 되는** 작업 종류.
+#:
+#: 이름은 여덟 종류가 다 있지만(:mod:`veo.jobs.queues`), 워커에서 실제로 일을 하는 것은
+#: SEO 진단 하나다. 나머지는 Phase 0 의 뼈대라 `NotImplementedError` 를 던진다. 이름이
+#: 있다는 것과 받는 사람이 있다는 것은 다른 이야기다(0-E) — 그래서 목록을 따로 둔다.
+QUEUEABLE: Final[frozenset[JobType]] = frozenset({JobType.SEO_SCAN})
 
 
 def queue_is_configured() -> bool:
-    """브로커 주소가 있는가. 없으면 큐가 없는 배포다."""
-    settings = get_settings()
-    broker = (settings.celery_broker_url or settings.redis_url or "").strip()
-    return broker != ""
+    """브로커 주소가 있는가. 없으면 큐가 없는 배포다.
+
+    **워커도 같은 함수로 같은 답을 얻는다**(:meth:`Settings.resolved_broker_url`).
+    보내는 쪽과 받는 쪽이 다른 환경변수를 읽으면, 한쪽만 채운 배포에서 잡이 아무도
+    집어가지 않은 채 `QUEUED` 로 남는다.
+    """
+    return get_settings().resolved_broker_url() != ""
 
 
 def dispatch(
@@ -57,13 +65,12 @@ def dispatch(
     ``work`` 는 배경 스레드로 떨어질 때 쓴다. 큐로 갈 때는 ``parameters`` 만 건너간다 —
     함수는 프로세스를 건너지 못하고, 값만 건널 수 있다.
     """
-    task_name = TASK_NAMES.get(job_type)
-
-    if task_name is not None and queue_is_configured():
+    if job_type in QUEUEABLE and queue_is_configured():
         try:
-            from celery import current_app
+            # 모듈 상단에서 당기면 celery·kombu 를 큐 없는 배포에서도 매번 읽는다.
+            from veo.jobs.producer import publish
 
-            current_app.send_task(task_name, kwargs={"job_id": str(job_id), **parameters})
+            queue = publish(job_id, job_type=job_type, parameters=parameters)
         except Exception:
             # 못 보낸 대가는 "작업이 아무 데서도 안 돈다" 이다. 예전 방식으로라도 도는
             # 편이 낫다 — 다만 조용히 떨어지지는 않는다.
@@ -71,6 +78,7 @@ def dispatch(
                 "could not enqueue job %s; running in-process instead", job_id, exc_info=True
             )
         else:
+            _log.info("job %s queued on %s", job_id, queue)
             return "queue"
 
     run_detached(job_id, work)

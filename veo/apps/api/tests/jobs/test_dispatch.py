@@ -17,6 +17,7 @@ import pytest
 
 from veo.contracts.enums import JobType
 from veo.jobs import dispatch as module
+from veo.jobs import producer
 
 
 def _work(_session: Any, _job_id: uuid.UUID) -> Any:  # pragma: no cover - 부르지 않는다
@@ -64,15 +65,26 @@ class TestWithoutAQueueNothingChanges:
 
 
 class TestWithAQueueItGoesToTheWorker:
+    """**`celery.current_app` 을 바꿔치기하지 않는다.**
+
+    예전 시험이 그렇게 했고, 그래서 초록이었다. 진짜 `current_app` 은 우리 앱이 아니라
+    Celery 의 기본 앱이었다(2026-08-06 실측: `main='default'`, `broker_url=None`).
+    바꿔치기한 자리에서는 그 사실이 보이지 않는다(0-F).
+
+    여기서는 **우리 producer 앱의** `send_task` 만 가로챈다. 누군가 다시
+    `current_app` 으로 돌리면 이 시험은 배경 스레드로 떨어져 실패한다.
+    """
+
     def test_it_sends_the_task(self, monkeypatch: pytest.MonkeyPatch, spy: list) -> None:
         _with_queue(monkeypatch)
         sent: list[dict[str, Any]] = []
 
-        class _App:
-            def send_task(self, name: str, **kwargs: Any) -> None:
-                sent.append({"name": name, **kwargs})
-
-        monkeypatch.setattr("celery.current_app", _App(), raising=False)
+        producer.producer_app.cache_clear()
+        monkeypatch.setattr(
+            producer.producer_app(),
+            "send_task",
+            lambda name, **kwargs: sent.append({"name": name, **kwargs}),
+        )
         job_id = uuid.uuid4()
 
         where = module.dispatch(
@@ -83,6 +95,8 @@ class TestWithAQueueItGoesToTheWorker:
         # 배경 스레드로는 가지 않았다 — 두 곳에서 같은 작업이 돌면 두 번 크롤한다.
         assert spy == []
         assert sent[0]["name"] == "veo.jobs.seo_scan"
+        # 기본 큐가 아니라 워커가 듣는 큐로 갔다.
+        assert sent[0]["queue"] == "seo"
         assert sent[0]["kwargs"]["job_id"] == str(job_id)
         assert sent[0]["kwargs"]["target_url"] == "https://a/"
 

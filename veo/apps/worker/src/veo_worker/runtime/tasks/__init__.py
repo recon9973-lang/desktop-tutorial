@@ -17,6 +17,10 @@ from typing import Any
 
 from veo.contracts import JobType, Surface
 
+# 태스크 이름은 **보내는 쪽과 같은 표**에서 읽는다. 이름이 갈리면 메시지가 아무도 듣지
+# 않는 큐로 간다 — 그때 잡은 `QUEUED` 인 채 남고 화면은 계속 "대기 중" 이라고 말한다.
+from veo.jobs.queues import TASK_NAME_BY_JOB_TYPE
+
 from veo_worker.runtime.app import celery_app, queue_for_job_type, register_task_queue
 from veo_worker.runtime.cancellation import JobCancelledError
 from veo_worker.runtime.errors import redact
@@ -64,17 +68,6 @@ PHASE_NOTES: dict[JobType, str] = {
     JobType.KEYWORD_LOOKUP: "Naver keyword collector lands in Phase 4",
     JobType.COMPETITOR_COMPARISON: "Competitor comparison collector lands in Phase 4",
     JobType.REPORT_EXPORT: "Report exporter lands in Phase 5",
-}
-
-TASK_NAME_BY_JOB_TYPE: dict[JobType, str] = {
-    JobType.SITE_CRAWL: "veo.jobs.site_crawl",
-    JobType.SEO_SCAN: "veo.jobs.seo_scan",
-    JobType.REVERIFICATION: "veo.jobs.reverification",
-    JobType.COMPETITOR_COMPARISON: "veo.jobs.competitor_comparison",
-    JobType.GEO_READINESS_SCAN: "veo.jobs.geo_readiness_scan",
-    JobType.GEO_OBSERVATION_RUN: "veo.jobs.geo_observation_run",
-    JobType.KEYWORD_LOOKUP: "veo.jobs.keyword_lookup",
-    JobType.REPORT_EXPORT: "veo.jobs.report_export",
 }
 
 DEAD_LETTER_TASK_NAME = "veo.dead_letter.record"

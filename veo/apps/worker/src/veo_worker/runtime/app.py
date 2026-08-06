@@ -21,7 +21,17 @@ from dataclasses import dataclass, field
 
 from celery import Celery
 from kombu import Queue
-from veo.contracts import JobType
+
+# 큐 지형도는 **보내는 쪽과 나눠 갖는다**. 원래 이 파일에만 있었는데, 메시지를 보내는
+# 것은 API 다. 보내는 쪽이 이 표를 못 보면 이름을 손으로 옮겨 적게 되고, 한쪽만
+# 고쳐지는 날 메시지는 아무도 듣지 않는 큐에 쌓인다(0-D). `veo_worker` 가 `veo` 에
+# 의존하므로 공용 표는 아래쪽에 둔다.
+from veo.jobs.queues import (
+    DEAD_LETTER_QUEUE,
+    JOB_TYPE_QUEUES,
+    QUEUE_NAMES,
+    queue_for_job_type,
+)
 
 __all__ = [
     "DEAD_LETTER_QUEUE",
@@ -38,36 +48,8 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-#: One queue per job-type family.
-QUEUE_NAMES: tuple[str, ...] = ("crawl", "seo", "geo", "keyword", "report")
-
-#: Where messages go when nothing claims them. Nothing is silently dropped.
-DEAD_LETTER_QUEUE = "dead_letter"
-
-#: Exhaustive map from job type to queue. A new JobType without an entry fails the
-#: contract test in ``tests/test_app.py`` rather than quietly landing in a default queue.
-JOB_TYPE_QUEUES: dict[JobType, str] = {
-    JobType.SITE_CRAWL: "crawl",
-    JobType.SEO_SCAN: "seo",
-    JobType.REVERIFICATION: "seo",
-    JobType.COMPETITOR_COMPARISON: "seo",
-    JobType.GEO_READINESS_SCAN: "geo",
-    JobType.GEO_OBSERVATION_RUN: "geo",
-    JobType.KEYWORD_LOOKUP: "keyword",
-    JobType.REPORT_EXPORT: "report",
-}
-
 #: Task name -> queue, populated by :func:`register_task_queue` as tasks are declared.
 TASK_QUEUE_OVERRIDES: dict[str, str] = {}
-
-
-def queue_for_job_type(job_type: JobType) -> str:
-    try:
-        return JOB_TYPE_QUEUES[job_type]
-    except KeyError:  # pragma: no cover - guarded by an exhaustiveness test
-        raise KeyError(
-            f"{job_type} has no queue. Add it to JOB_TYPE_QUEUES rather than relying on a default."
-        ) from None
 
 
 def register_task_queue(task_name: str, queue: str) -> None:
@@ -107,6 +89,21 @@ def _env_str(name: str) -> str | None:
     return raw.strip() if raw and raw.strip() else None
 
 
+def _shared_broker_url() -> str | None:
+    """API 가 쓰는 것과 같은 브로커 주소. 읽을 수 없으면 ``None``.
+
+    설정을 읽다 터지는 것만으로 워커가 못 뜨게 만들지는 않는다 — 그때는 예전처럼
+    ``VEO_BROKER_URL`` 만 보고 판단하고, eager 모드라는 사실은 아래에서 크게 알린다.
+    """
+    try:
+        from veo.core.settings import get_settings
+
+        return get_settings().resolved_broker_url() or None
+    except Exception:  # pragma: no cover - 설정이 깨진 환경에서만
+        logger.warning("Could not read shared settings for the broker URL.", exc_info=True)
+        return None
+
+
 @dataclass(frozen=True, slots=True)
 class WorkerSettings:
     """Runtime configuration, read from the environment.
@@ -142,8 +139,18 @@ class WorkerSettings:
 
     @classmethod
     def from_env(cls) -> WorkerSettings:
+        """환경에서 읽는다. 브로커 주소는 **API 와 같은 규칙**으로 정한다.
+
+        예전에는 여기만 ``VEO_BROKER_URL`` 을 읽었다. API 는 ``VEO_CELERY_BROKER_URL``
+        이나 ``VEO_REDIS_URL`` 을 읽는다. 그래서 후자만 채운 배포에서는 **API 는 큐로
+        보내는데 워커는 eager 모드**가 됐다 — 워커가 떠 있는데 아무것도 안 듣는다.
+        운영 로그에는 "워커 정상" 으로 보이고, 잡은 `QUEUED` 인 채 남는다.
+
+        ``VEO_BROKER_URL`` 은 계속 받는다. 이미 그 이름으로 설정한 곳(부하 시험·
+        런북)을 깨지 않기 위해서고, 명시한 값이 있으면 그쪽이 우선이다.
+        """
         return cls(
-            broker_url=_env_str("VEO_BROKER_URL"),
+            broker_url=_env_str("VEO_BROKER_URL") or _shared_broker_url(),
             result_backend_url=_env_str("VEO_RESULT_BACKEND_URL"),
             task_time_limit=_env_int("VEO_WORKER_TASK_TIME_LIMIT", 1800),
             task_soft_time_limit=_env_int("VEO_WORKER_TASK_SOFT_TIME_LIMIT", 1500),

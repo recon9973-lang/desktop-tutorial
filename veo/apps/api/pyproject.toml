@@ -97,8 +97,9 @@ disallow_untyped_defs = true
 # 실패**한다. 그 실패가 뒤따르는 검사를 가려서 진짜 결함(2026-08-04 의 `read_captures`
 # 미정의)이 세 판의 배포를 그대로 통과했다.
 #
-# 이 예외는 celery 모듈에만 준다. `dispatch.py` 는 celery 를 함수 안에서 늦게 import
-# 하고 실패하면 예전 방식으로 떨어지므로, 여기서 잃는 검사는 그 한 줄뿐이다.
+# 이 예외는 celery 와 그 전송 계층(kombu)에만 준다. `dispatch.py` 는 큐로 보내는
+# 모듈을 함수 안에서 늦게 import 하고 실패하면 예전 방식으로 떨어지므로, 여기서 잃는
+# 검사는 `producer.py` 의 앱 구성 몇 줄뿐이다.
 [[tool.mypy.overrides]]
-module = ["celery.*"]
+module = ["celery.*", "kombu.*"]
 ignore_missing_imports = true
