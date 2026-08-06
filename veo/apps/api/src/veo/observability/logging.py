@@ -30,6 +30,7 @@ be bypassed by whichever one the incident happens in.
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import re
 import sys
@@ -359,6 +360,69 @@ def build_processors(*, json_output: bool) -> list[Processor]:
     ]
 
 
+def _install_stdlib_bridge(*, json_output: bool, threshold: int, target: TextIO) -> None:
+    """Route the standard library's ``logging`` through this module's chain too.
+
+    ## Why this exists
+
+    :func:`configure_logging` used to configure structlog and nothing else. But almost
+    nothing in VEO logs *through* structlog — measured 2026-08-06: **22 modules call
+    ``logging.getLogger``, one calls :func:`get_logger`.** Those 22 fell through to
+    Python's ``lastResort`` handler, and that handler has two properties that matter:
+
+    * It emits **WARNING and above only.** Every ``logger.info`` in the codebase was
+      invisible in production. The line ``job %s queued on %s`` — added specifically so
+      an operator could tell whether work reached the worker — never printed once.
+    * It writes the record **raw**. No allowlist, no scrubber. So the half that did
+      print was the half most likely to carry a secret: ``logger.exception`` in
+      :mod:`veo.jobs.execution` renders a provider traceback, and the modules that talk
+      to providers (:mod:`veo.common.security.egress_kr`,
+      :mod:`veo.common.security.retry_via_kr`, :mod:`veo.notify.webhook`) are all on
+      this path.
+
+    The module docstring says the emitted line is the boundary that has to hold. It held
+    for one caller out of twenty-three.
+
+    ## Where redaction sits
+
+    :func:`redact_processor` runs **after** ``remove_processors_meta`` and immediately
+    before the renderer — the same position it holds in :func:`build_processors`. It has
+    to be after the meta step because ``ProcessorFormatter`` carries ``_record`` and
+    ``_from_structlog`` through the chain, and the allowlist would drop them.
+    """
+    formatter = structlog.stdlib.ProcessorFormatter(
+        # Runs on records that came from the standard library rather than structlog.
+        foreign_pre_chain=[
+            structlog.contextvars.merge_contextvars,
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso", utc=True),
+            structlog.processors.StackInfoRenderer(),
+            # Turns ``exc_info`` into the rendered traceback string that the scrubber
+            # below then goes through. Without it the traceback reaches the renderer
+            # unscrubbed.
+            structlog.processors.format_exc_info,
+        ],
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            redact_processor,
+            structlog.processors.JSONRenderer(ensure_ascii=False)
+            if json_output
+            else structlog.dev.ConsoleRenderer(colors=False),
+        ],
+    )
+
+    handler = logging.StreamHandler(target)
+    handler.setFormatter(formatter)
+
+    root = logging.getLogger()
+    # Replace rather than append. Configuring twice must not double every line, and a
+    # bootstrap handler installed before this call is a handler without the scrubber.
+    for existing in list(root.handlers):
+        root.removeHandler(existing)
+    root.addHandler(handler)
+    root.setLevel(threshold)
+
+
 def configure_logging(
     *,
     json_output: bool | None = None,
@@ -370,6 +434,9 @@ def configure_logging(
     ``json_output`` defaults to the ``VEO_LOG_FORMAT`` environment variable and, failing
     that, to whether the stream is a terminal: JSON where a machine will read it,
     human-readable where a person will.
+
+    Configures **both** logging paths — structlog and the standard library — through the
+    same processors, because the codebase uses both. See :func:`_install_stdlib_bridge`.
     """
     target = stream if stream is not None else sys.stderr
     if json_output is None:
@@ -388,6 +455,7 @@ def configure_logging(
         # the chain without the redaction processor in it.
         cache_logger_on_first_use=False,
     )
+    _install_stdlib_bridge(json_output=json_output, threshold=threshold, target=target)
 
 
 def _json_output_default(stream: TextIO) -> bool:
