@@ -7,19 +7,43 @@ import { Button, FormError, TextField } from '@veo/ui';
 import styles from './seo.module.css';
 
 /**
- * 통상 소요 시간(초). 약속이 아니라 추정이다 — 실측 근거: 전체 크롤(최대 200장)
- * 수십 초 + 성능 실측 상위 5장(장당 16~60초, 2026-08-01 실측). 진단은 이제
- * 배경 작업으로 돌므로(P1-6) HTTP 타임아웃 상한은 없다 — 이 숫자는 추정 표시용이다.
+ * 이 사이트가 몇 초쯤 걸릴지. **페이지 수를 모르면 추정하지 않는다.**
+ *
+ * 예전에는 사이트와 무관하게 120초 고정이었다. 154페이지짜리 거래처를 재는 동안
+ * 화면이 "예상(120초)보다 오래 걸리고 있습니다" 를 띄웠고, 사장님이 "무슨 문제지?"
+ * 라고 물었다 — 정상 동작인데 고장으로 읽힌 것이다. 틀린 추정은 없느니만 못하다.
+ *
+ * 실측 근거(2026-08-07, venomad.com 154페이지, 워커): 총 154초 =
+ * 수집 84.6 · 성능 측정 35.7 · 채점 20.9 · 저장 2.1. 수집이 장당 0.55초쯤이고
+ * 나머지가 60초 안팎이라 `60 + 페이지수 × 0.6` 이 154페이지에서 152초로 맞는다.
+ *
+ * 처음 재는 사이트는 페이지 수를 **재기 전에는 알 수 없다.** 그때는 숫자를 지어내지
+ * 않고 "얼마나 걸릴지는 페이지 수에 달렸다" 고 말한다.
  */
-const TYPICAL_SECONDS = 120;
+function estimateSeconds(expectedPages: number | undefined): number | null {
+  if (expectedPages === undefined || expectedPages <= 0) return null;
+  return Math.round(60 + expectedPages * 0.6);
+}
 
 function phaseFor(elapsed: number): string {
   if (elapsed < 10) return '페이지를 가져오는 중';
-  if (elapsed < 70) return '사이트 전체를 크롤하는 중 (최대 200장)';
+  if (elapsed < 70) return '사이트 전체를 크롤하는 중';
   return '성능 실측 중 (페이지당 16~60초)';
 }
 
 const POLL_MS = 4_000;
+
+/**
+ * 진행을 이만큼 연달아 못 물어보면 그만둔다.
+ *
+ * 예전에는 물어보기가 실패하면 그냥 `continue` 였다 — 탈출구가 없었다. 로그인이
+ * 풀리거나 서버가 답을 못 주면 화면은 **영원히** 돌았고, 사용자는 오지 않을 결과를
+ * 기다렸다. 죽은 작업을 "실행 중" 으로 보여주지 않겠다고 `is_stale` 까지 만들어 놓고,
+ * 그 신호를 받으러 가는 길이 막히면 아무 소용이 없다.
+ *
+ * 15회 × 4초 = 1분. 잠깐의 네트워크 끊김은 넘기고, 진짜 고장은 1분 안에 말한다.
+ */
+const MAX_CONSECUTIVE_FAILURES = 15;
 
 const TERMINAL = new Set([
   'SUCCEEDED',
@@ -48,11 +72,19 @@ function jobFrom(body: unknown): JobView | null {
 /**
  * 진단이 도는 동안 오른쪽 빈칸을 채우는 진행 표시.
  *
- * "남은 시간" 은 추정이고 추정이라고 말한다(약 N초). 추정을 넘기면 0초에서 멈춘
- * 채 거짓말하는 대신 "예상보다 오래 걸리고 있다" 로 바꿔 말한다 — 페이지 수는
- * 사이트마다 다르고, 우리는 재기 전에 그 수를 모른다.
+ * "남은 시간" 은 추정이고 추정이라고 말한다(약 N초). **근거가 없으면 아예 말하지
+ * 않는다** — 지난번 페이지 수를 모르는 첫 진단에서는 숫자도 고리도 내보내지 않는다.
+ * 추정을 넘기면 0초에서 멈춘 채 거짓말하는 대신 "예상보다 오래 걸리고 있다" 로
+ * 바꿔 말한다.
  */
-function ScanProgress({ stage }: { readonly stage: string | null }) {
+function ScanProgress({
+  stage,
+  expectedPages,
+}: {
+  readonly stage: string | null;
+  /** 지난번에 이 사이트에서 실제로 수집한 페이지 수. 처음 재는 곳이면 없다. */
+  readonly expectedPages?: number;
+}) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -63,9 +95,10 @@ function ScanProgress({ stage }: { readonly stage: string | null }) {
     return () => window.clearInterval(timer);
   }, []);
 
-  const remaining = TYPICAL_SECONDS - elapsed;
-  const ratio = Math.min(1, elapsed / TYPICAL_SECONDS);
-  const degrees = Math.round(ratio * 360);
+  const estimate = estimateSeconds(expectedPages);
+  const remaining = estimate === null ? null : estimate - elapsed;
+  // 추정이 없으면 고리를 채우지 않는다 — 채울 근거가 없는데 채우면 그림이 거짓말한다.
+  const degrees = estimate === null ? 0 : Math.round(Math.min(1, elapsed / estimate) * 360);
 
   return (
     <aside className={styles.scanProgress} role="status" aria-live="polite">
@@ -83,9 +116,11 @@ function ScanProgress({ stage }: { readonly stage: string | null }) {
       {/* 서버가 말한 단계가 있으면 그것이 사실이고, 없으면 경과 기반 추정이다. */}
       <p className={styles.scanProgressPhase}>{stage ?? phaseFor(elapsed)}</p>
       <p className={styles.scanProgressEta}>
-        {remaining > 0
-          ? `남은 시간 약 ${remaining}초`
-          : `예상(${TYPICAL_SECONDS}초)보다 오래 걸리고 있습니다 — 페이지가 많은 사이트입니다. 작업은 계속 돌고 있고, 끝나면 자동으로 열립니다.`}
+        {estimate === null
+          ? '얼마나 걸릴지는 페이지 수에 달렸습니다 — 처음 재는 곳이라 아직 알 수 없습니다. 끝나면 자동으로 열립니다.'
+          : remaining !== null && remaining > 0
+            ? `남은 시간 약 ${remaining}초 (지난번 ${expectedPages}페이지 기준)`
+            : `예상(${estimate}초)보다 오래 걸리고 있습니다 — 지난번보다 페이지가 늘었을 수 있습니다. 작업은 계속 돌고 있고, 끝나면 자동으로 열립니다.`}
       </p>
     </aside>
   );
@@ -100,9 +135,12 @@ function ScanProgress({ stage }: { readonly stage: string | null }) {
  */
 export function ScanForm({
   siteId,
+  expectedPages,
   pollMs = POLL_MS,
 }: {
   readonly siteId?: string;
+  /** 지난번에 이 사이트에서 실제로 수집한 페이지 수 — 소요 시간 추정의 유일한 근거다. */
+  readonly expectedPages?: number;
   /** 시험에서만 줄인다 — 성질은 주기와 무관하다. */
   readonly pollMs?: number;
 }) {
@@ -116,19 +154,39 @@ export function ScanForm({
 
   /** 작업이 끝날 때까지 진행을 물어본다. 끝난 방식에 맞는 다음 행동을 돌려준다. */
   async function watch(jobId: string, nextSiteId: string): Promise<void> {
+    let failures = 0;
+
     for (;;) {
       await new Promise((resolve) => window.setTimeout(resolve, pollMs));
       let job: JobView | null = null;
       try {
         const response = await fetch(`/api/scan?job=${encodeURIComponent(jobId)}`);
+        if (response.status === 401 || response.status === 403) {
+          // 다시 물어봐야 계속 같은 답이다. 사용자가 할 일을 바로 말해 준다.
+          setError('로그인이 풀렸습니다. 다시 로그인하시면 진행 상황을 볼 수 있습니다.');
+          return;
+        }
         if (response.ok) {
           job = jobFrom(await response.json().catch(() => null));
         }
       } catch {
-        // 한 번 못 물어본 것은 실패가 아니다. 다음 주기에 다시 묻는다.
+        // 한 번 못 물어본 것은 실패가 아니다 — 아래에서 세고 넘어간다.
+      }
+
+      if (job === null) {
+        failures += 1;
+        if (failures >= MAX_CONSECUTIVE_FAILURES) {
+          // 여기가 없으면 화면이 영원히 돈다. 진단 자체는 서버에서 계속 돌 수 있으므로
+          // "실패했다" 가 아니라 "물어볼 수 없다" 라고 말한다(0-A).
+          setError(
+            '진행 상황을 물어볼 수 없습니다. 진단은 서버에서 계속 돌고 있을 수 있으니, ' +
+              '잠시 후 이 화면을 새로 고쳐 결과가 있는지 확인해 주십시오.',
+          );
+          return;
+        }
         continue;
       }
-      if (job === null) continue;
+      failures = 0;
 
       setStage(job.current_stage);
 
@@ -223,7 +281,7 @@ export function ScanForm({
         </Button>
         <FormError message={error} />
       </form>
-      {busy ? <ScanProgress stage={stage} /> : null}
+      {busy ? <ScanProgress stage={stage} expectedPages={expectedPages} /> : null}
     </div>
   );
 }

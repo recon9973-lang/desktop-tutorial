@@ -146,7 +146,9 @@ async function SeoContent({
   return (
     <Shell origin={origin}>
       <div className={own.toolbar}>
-        <ScanForm siteId={siteId} />
+        {/* 소요 시간 추정의 근거는 **지난번 실측 페이지 수** 하나다. 없으면 추정하지
+            않는다 — 고정 120초가 154페이지 사이트에서 "고장난 것처럼" 보였다. */}
+        <ScanForm siteId={siteId} expectedPages={entries[0]?.urlsCollected} />
         {selected === undefined ? null : (
           <AxisSwitch
             siteId={siteId}
