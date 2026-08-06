@@ -237,6 +237,29 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
     database_url: str = "postgresql+psycopg://localhost:5432/veo"
 
+    #: 이 프로세스가 DB 에 **동시에 열어 두는 연결의 상한**(대기 없이 쓰는 몫).
+    #:
+    #: 왜 명시하는가. 안 적으면 SQLAlchemy 기본값(pool_size 5 + max_overflow 10)이
+    #: 붙어 프로세스당 최대 15개가 된다. 그 숫자를 아무도 정하지 않았고 아무도 몰랐다.
+    #:
+    #: 실측(2026-08-06): 이 DB 는 Neon 한 대이고 **최대 연결 112개를 세 제품이
+    #: 나눠 쓴다** — VEO, flowlens, 그리고 `neondb`(실제 영업에 쓰는 ERP). 지금은
+    #: 전체 14개뿐이라 여유가 있지만, VEO 가 열면 사용량이 5~20배가 되고 워커까지
+    #: 뜬다. VEO 가 연결을 다 먹으면 **ERP 가 먼저 죽는다** — 우리 테스트 도구 때문에
+    #: 영업이 멈추는 순서다.
+    #:
+    #: 상한을 정해 두면 우리 몫이 얼마인지 숫자로 말할 수 있다:
+    #: (pool_size + max_overflow) x 프로세스 수.
+    db_pool_size: int = 5
+    db_max_overflow: int = 5
+    #: 연결을 기다리는 시간. 이 시간을 넘으면 **기다리지 않고 실패한다** — 무한정
+    #: 기다리면 응답이 영원히 안 오는 화면이 되고, 그것이 고장보다 나쁘다.
+    db_pool_timeout_seconds: float = 10.0
+    #: 이보다 오래된 연결은 버리고 새로 연다. Neon 은 유휴 연결을 스스로 끊는데,
+    #: 끊긴 줄 모르고 쓰면 첫 질의가 실패한다. `pool_pre_ping` 이 대부분 잡지만
+    #: 왕복이 한 번 더 드는 자리라 재활용 주기를 함께 둔다.
+    db_pool_recycle_seconds: int = 900
+
     #: 운영 알림 웹훅(슬랙 호환, https 전용). 비어 있으면 알림은 비활성이고
     #: 그 사실이 결과(DISABLED)로 드러난다 — 보낸 척하지 않는다. veo/notify 참조.
     alert_webhook_url: SecretStr | None = None
