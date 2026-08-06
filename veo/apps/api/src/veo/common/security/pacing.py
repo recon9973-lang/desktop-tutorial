@@ -25,7 +25,26 @@ __all__ = ["HostPacer"]
 
 
 class HostPacer:
-    """호스트별로 마지막 요청 시각을 기억해, 최소 간격이 지날 때까지 기다린다.
+    """호스트별로 **연결 자리마다** 마지막 요청 시각을 기억해, 최소 간격이 지날 때까지
+    기다린다.
+
+    ## 왜 자리가 여러 개인가 — 2026-08-06 시뮬레이션에서 나왔다
+
+    처음에는 호스트마다 자리를 하나만 두었다. 그러면 같은 호스트로 가는 요청이 전부
+    한 줄로 서고, **동시 연결 수 설정이 아무 효과가 없어진다.** 실측: 30쪽을 받는 데
+    동시 연결 1·2·4·8 이 전부 31.0초로 같았다. 설정 화면에 있는 숫자가 아무것도 바꾸지
+    않는 상태였다.
+
+    작업의뢰서 §5.2 는 **두 가지**를 요구한다 — "동일 호스트 동시 연결 2 이하" 와
+    "동일 호스트 요청 간격 최소 1초". 두 문장이 따로 있는 것은 둘 다 뜻이 있어야 한다는
+    말이다. 자리를 하나만 두면 앞 문장이 죽은 글자가 된다.
+
+    그래서 자리를 동시 연결 수만큼 둔다. **한 연결은 같은 호스트에 1초에 한 번보다 빨리
+    요청하지 않고, 동시에 열리는 연결은 설정된 수를 넘지 않는다.** 초당 요청 수는
+    자리 수만큼(기본 2회)이다 — 고치기 전 실측이 초당 50회였으니 25배 느슨해진 것이 아니라
+    25배 조인 상태를 유지하면서 설정을 되살린 것이다.
+
+    자리 수를 1 로 주면 이전과 똑같이 동작한다.
 
     스레드 안전하다. 콘솔 크롤은 여러 스레드가 동시에 도는데, 잠금 없이 두면 두
     스레드가 같은 "마지막 시각" 을 보고 함께 통과한다 — 그러면 간격이 없는 것과 같다.
@@ -35,17 +54,22 @@ class HostPacer:
     지금은 API 가 한 대이고(실측), 늘리는 시점에 함께 옮긴다.
     """
 
-    __slots__ = ("_last", "_lock", "_min_interval", "_now", "_sleep")
+    __slots__ = ("_lock", "_min_interval", "_now", "_seats", "_sleep", "_slots")
 
     def __init__(
         self,
         *,
         min_interval_seconds: float,
+        slots: int = 1,
         now: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self._min_interval = max(0.0, min_interval_seconds)
-        self._last: dict[str, float] = {}
+        #: 한 호스트에 동시에 둘 수 있는 연결 자리 수. 최소 1 이다 — 0 이면 아무도
+        #: 통과하지 못해 진단이 멈춘다.
+        self._slots = max(1, slots)
+        #: 호스트 → 자리마다의 마지막 요청 시각.
+        self._seats: dict[str, list[float]] = {}
         self._lock = threading.Lock()
         self._now = now
         self._sleep = sleep
@@ -61,18 +85,21 @@ class HostPacer:
 
         with self._lock:
             now = self._now()
-            earliest = self._last.get(host)
-            if earliest is None:
-                # 이 호스트의 첫 요청은 기다리지 않는다. 기다릴 이유가 없다.
-                self._last[host] = now
+            seats = self._seats.setdefault(host, [])
+            if len(seats) < self._slots:
+                # 아직 안 쓴 자리가 있다. 동시 연결 상한 안이므로 기다리지 않는다.
+                seats.append(now)
                 return 0.0
-            target = earliest + self._min_interval
+
+            # 가장 먼저 비는 자리에 선다. 그래야 자리들이 고르게 돌아간다.
+            index = min(range(len(seats)), key=lambda i: seats[i])
+            target = seats[index] + self._min_interval
             if target <= now:
-                self._last[host] = now
+                seats[index] = now
                 return 0.0
             # **자리를 먼저 잡고 잠금을 놓는다.** 잠금을 쥔 채 자면 다른 호스트로 가는
             # 요청까지 멈춘다. 자리를 잡아 두면 뒤따르는 스레드는 그 뒤로 줄을 선다.
-            self._last[host] = target
+            seats[index] = target
             waited = target - now
 
         self._sleep(waited)

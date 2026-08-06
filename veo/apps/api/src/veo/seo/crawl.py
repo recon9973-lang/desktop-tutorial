@@ -219,7 +219,12 @@ class ConsoleCrawler:
             window_seconds=TARGET_HOST_WINDOW_SECONDS,
             # 같은 호스트에 몰아치지 않는다(의뢰서 §5.2, 최소 1초). 시간당 총량과 다른
             # 것을 막는다 — 저것은 한 시간의 총량, 이것은 한순간의 밀도다.
-            pacer=HostPacer(min_interval_seconds=resolved.crawl_min_interval_seconds),
+            # 자리 수 = 동시 연결 상한. 하나만 두면 그 설정이 아무것도 바꾸지 못한다
+            # (2026-08-06 실측: 동시 1·2·4·8 이 전부 같은 시간).
+            pacer=HostPacer(
+                min_interval_seconds=resolved.crawl_min_interval_seconds,
+                slots=resolved.console_crawl_concurrency,
+            ),
         )
         self._fetcher = RetryViaKorea(
             SafeFetcher(guard=budgeted, transport=transport),

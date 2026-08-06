@@ -32,8 +32,9 @@
 | From | `bot@seokorea.org` | 같은 파일 `CRAWLER_FROM` |
 | robots 매칭 | `veobot` | `seo/parsing/robots.py` `CRAWLER_AGENT_NAME` |
 | 안내 페이지 | `/bot` | `apps/web/src/app/(public)/bot/page.tsx` |
-| 요청 간격 | 1초 | `settings.crawl_min_interval_seconds` |
+| 연결당 요청 간격 | 1초 | `settings.crawl_min_interval_seconds` |
 | 동시 연결 | 2 | `settings.console_crawl_concurrency` |
+| **호스트가 실제로 받는 밀도** | **초당 최대 2회** | 위 두 값의 곱 — `HostPacer` 가 호스트마다 연결 수만큼 자리를 둔다 |
 | 시간당 요청 | 450 | `settings.console_target_host_limit_per_hour` |
 | 연결 / 전체 대기 | 10초 / 30초 | `common/security/limits.py` |
 | 문서 크기 | 2MB | 같은 파일 `max_response_bytes` |
@@ -69,3 +70,32 @@
 
 서버를 옮길 때 함께 해결한다. 그때까지 운영자는 IP 가 아니라 **User-Agent 로** 우리를
 식별해야 하며, 안내 페이지가 그 점을 분명히 한다.
+
+---
+
+## 2026-08-06 — 간격과 동시 연결이 함께 뜻을 갖게 했다
+
+v0.3.44 에서 `HostPacer` 는 호스트마다 자리를 **하나만** 두었다. 그러면 같은 호스트로
+가는 요청이 전부 한 줄로 서고, 동시 연결 설정이 아무것도 바꾸지 않는다.
+
+실측(2026-08-06, 30쪽 수집):
+
+| 동시 연결 설정 | 고치기 전 | 고친 뒤 |
+|---|---|---|
+| 1 | 31.0초 | 31.0초 |
+| 2 | 31.0초 | **15.0초** |
+| 4 | 31.0초 | **7.0초** |
+| 8 | 31.0초 | **3.0초** |
+
+고치기 전에는 설정 값이 무엇이든 결과가 같았다 — 화면에 있는 숫자가 아무것도 하지
+않는 상태였다. 의뢰서 §5.2 는 "동시 연결 2 이하" 와 "요청 간격 최소 1초" 를 **따로**
+적어 두었고, 두 문장이 따로 있다는 것은 둘 다 뜻이 있어야 한다는 말이다.
+
+지금은 **한 연결이 같은 호스트에 1초에 한 번보다 빨리 요청하지 않고, 연결은 2개까지
+연다.** 호스트가 받는 것은 초당 최대 2회다. v0.3.44 이전에는 초당 50회였다(실측:
+venomad 131장 2.5초).
+
+`/bot` 안내 페이지도 이 사실을 그대로 적는다 — "최소 1초 간격" 만 적으면 초당 2회가
+나가는 사실이 가려진다. 더 조여야 할 곳이 생기면 `console_crawl_concurrency` 를 1 로
+두면 예전과 똑같이 동작하고, 그 성질을 시험이 지킨다
+(`test_one_connection_slot_makes_requests_strictly_serial`).

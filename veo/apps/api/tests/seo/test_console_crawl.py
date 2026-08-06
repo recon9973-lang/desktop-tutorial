@@ -358,19 +358,76 @@ class TestParallelFetching:
 
         assert peak > 1, "동시에 열린 요청이 하나뿐이다 — 직렬로 돌고 있다"
 
-    def test_the_host_interval_stops_requests_overlapping(self) -> None:
-        """**간격을 켜면 같은 호스트 요청이 겹치지 않는다.**
+    def test_the_host_never_receives_more_than_the_allowed_rate(self) -> None:
+        """**간격을 켜면 상대 서버가 받는 요청 밀도가 상한 안에 있다.**
 
-        작업의뢰서 §5.2 는 동일 호스트에 최소 1초 간격을 요구한다. 간격이 응답 시간보다
-        길면 병렬로 띄워도 실제로는 한 번에 하나씩 나간다 — 그것이 의도다. 부하는 우리
-        편의가 아니라 상대 서버 기준으로 정한다.
+        작업의뢰서 §5.2 는 두 가지를 요구한다 — 동일 호스트 **동시 연결 2 이하**,
+        **요청 간격 최소 1초**. 두 문장이 따로 있으므로 둘 다 뜻이 있어야 한다:
+        연결은 두 개까지 열되, 한 연결은 1초에 한 번보다 빨리 요청하지 않는다.
+        상대 서버가 보는 것은 결국 **1초 안에 몇 번 두드렸는가**이므로, 그것을 잰다.
 
-        위 시험은 간격을 끈 상태(conftest 기본값 0)에서 병렬 장치가 살아 있음을 보고,
-        이 시험은 간격을 켠 상태에서 그 장치가 **상대 서버에게는 보이지 않음**을 본다.
-        둘 다 있어야 "빠르게 만들되 남에게 부담을 주지 않는다" 가 확인된다.
+        이 시험은 한때 `peak == 1` 을 요구했다. 그 상태에서는 동시 연결 설정이
+        아무것도 바꾸지 않았고(2026-08-06 실측: 동시 1·2·4·8 이 전부 같은 시간),
+        §5.2 의 앞 문장이 죽은 글자였다. 지금은 상한 자체를 잰다.
 
         간격은 0.05초로 줄여 시험이 잠들지 않게 하되, 응답(0.02초)보다 길게 둔다 —
-        확인하는 것은 초의 크기가 아니라 겹치는가 여부다.
+        확인하는 것은 초의 크기가 아니라 밀도다.
+        """
+        interval = 0.2
+        allowed = 2
+        live = 0
+        peak = 0
+        starts: list[float] = []
+        guard_lock = threading.Lock()
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal live, peak
+            with guard_lock:
+                live += 1
+                peak = max(peak, live)
+                starts.append(time.monotonic())
+            time.sleep(0.02)
+            with guard_lock:
+                live -= 1
+            if request.url.path == "/":
+                return httpx.Response(
+                    200,
+                    content=_page("홈", *[f"/{n}" for n in range(8)]),
+                    headers={"content-type": "text/html"},
+                )
+            return httpx.Response(200, content=_page("쪽"), headers={"content-type": "text/html"})
+
+        settings = get_settings().model_copy(
+            update={
+                "crawl_min_interval_seconds": interval,
+                "console_crawl_concurrency": allowed,
+            }
+        )
+        crawler = ConsoleCrawler(
+            guard=_guard(), transport=httpx.MockTransport(handler), settings=settings
+        )
+        crawler.crawl("https://example.com/", max_urls=9)
+
+        assert peak <= allowed, f"동시 연결 상한이 {allowed} 인데 {peak}개가 겹쳤다"
+
+        # 자리가 `allowed` 개이므로, n 번째 요청은 `allowed` 개 앞의 요청이 쓴 자리를
+        # 다시 쓴다. 그 둘 사이가 간격보다 좁으면 한 연결이 1초에 두 번 두드린 것이다.
+        #
+        # 시각은 응답 처리기 안에서 재므로 페이서가 자리를 놓아준 순간보다 조금 뒤다.
+        # 그래서 아주 작은 여유를 둔다 — 재는 것은 밀도이지 시계의 정밀도가 아니다.
+        tolerance = 0.01
+        ordered = sorted(starts)
+        for index in range(allowed, len(ordered)):
+            gap = ordered[index] - ordered[index - allowed]
+            assert gap >= interval - tolerance, (
+                f"같은 연결 자리가 {gap:.3f}초 만에 다시 요청했다 — 최소 {interval}초여야 한다"
+            )
+
+    def test_one_connection_slot_makes_requests_strictly_serial(self) -> None:
+        """자리를 하나로 두면 예전처럼 한 번에 하나씩 나간다.
+
+        느슨하게 바꾼 것이 아니라 **설정이 뜻을 갖게** 한 것임을 여기서 못박는다.
+        상대 서버를 더 아껴야 하는 곳이 생기면 이 값 하나로 조일 수 있다.
         """
         live = 0
         peak = 0
@@ -392,13 +449,15 @@ class TestParallelFetching:
                 )
             return httpx.Response(200, content=_page("쪽"), headers={"content-type": "text/html"})
 
-        settings = get_settings().model_copy(update={"crawl_min_interval_seconds": 0.05})
+        settings = get_settings().model_copy(
+            update={"crawl_min_interval_seconds": 0.05, "console_crawl_concurrency": 1}
+        )
         crawler = ConsoleCrawler(
             guard=_guard(), transport=httpx.MockTransport(handler), settings=settings
         )
         crawler.crawl("https://example.com/", max_urls=9)
 
-        assert peak == 1, f"간격이 있는데 요청이 {peak}개까지 겹쳤다"
+        assert peak == 1, f"자리가 하나인데 요청이 {peak}개까지 겹쳤다"
 
     def test_concurrency_never_exceeds_the_configured_ceiling(self) -> None:
         """이 숫자는 우리 속도가 아니라 대상 서버가 한순간에 받는 부하다."""

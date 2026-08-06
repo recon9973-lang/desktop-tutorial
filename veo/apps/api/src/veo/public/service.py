@@ -307,7 +307,12 @@ class PublicScanService:
             limit=self._settings.public_target_host_limit_per_hour,
             window_seconds=TARGET_HOST_WINDOW_SECONDS,
             # 콘솔과 같은 규칙이다. 무료라고 남의 서버를 더 세게 두드릴 이유가 없다.
-            pacer=HostPacer(min_interval_seconds=self._settings.crawl_min_interval_seconds),
+            # 무료 진단은 한 장만 보므로 자리 수가 결과를 바꾸지 않는다. 그래도
+            # 같은 값을 쓴다 — 두 경로가 다른 규칙으로 남의 서버를 두드리면 안 된다.
+            pacer=HostPacer(
+                min_interval_seconds=self._settings.crawl_min_interval_seconds,
+                slots=self._settings.console_crawl_concurrency,
+            ),
         )
         # 무료 진단도 콘솔과 **같은 것을 본다.** 관문 페이지를 만나면 한국 관측점에서
         # 한 번 더 받는다 — 한쪽만 달면 같은 사이트가 창구에 따라 다른 점수를 받고,

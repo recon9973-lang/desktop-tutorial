@@ -104,3 +104,77 @@ class TestConcurrentCallersQueue:
 
         # 첫 호출 0초, 나머지는 1·2·3·4초 — 겹치는 값이 있으면 함께 빠져나간 것이다.
         assert sorted(waits) == pytest.approx([0.0, 1.0, 2.0, 3.0, 4.0])
+
+
+class TestConnectionSlots:
+    """자리 수는 §5.2 의 "동시 연결 2 이하" 다.
+
+    자리를 하나만 두면 그 요구가 죽은 글자가 된다 — 요청이 전부 한 줄로 서므로
+    설정을 1 로 두든 8 로 두든 결과가 같다(2026-08-06 실측: 30쪽 수집이 동시
+    1·2·4·8 에서 전부 31.0초).
+    """
+
+    def test_the_first_requests_fill_the_slots_without_waiting(self) -> None:
+        clock = FakeClock()
+        pacer = HostPacer(
+            min_interval_seconds=1.0, slots=2, now=lambda: clock.now, sleep=clock.sleep
+        )
+
+        assert pacer.wait_for("a.example") == 0.0
+        assert pacer.wait_for("a.example") == 0.0
+        assert clock.slept == []
+
+    def test_the_request_after_the_slots_are_full_waits(self) -> None:
+        """자리가 다 찼으면 가장 먼저 비는 자리를 기다린다."""
+        clock = FakeClock()
+        pacer = HostPacer(
+            min_interval_seconds=1.0, slots=2, now=lambda: clock.now, sleep=clock.sleep
+        )
+        pacer.wait_for("a.example")
+        pacer.wait_for("a.example")
+
+        assert pacer.wait_for("a.example") == pytest.approx(1.0)
+
+    def test_two_slots_let_through_twice_as_many_in_the_same_time(self) -> None:
+        """자리 수가 실제로 밀도를 바꾸는지 — 이것이 고친 이유다."""
+        one = FakeClock()
+        two = FakeClock()
+        serial = HostPacer(min_interval_seconds=1.0, slots=1, now=lambda: one.now, sleep=one.sleep)
+        paired = HostPacer(min_interval_seconds=1.0, slots=2, now=lambda: two.now, sleep=two.sleep)
+
+        for _ in range(6):
+            serial.wait_for("a.example")
+            paired.wait_for("a.example")
+
+        assert one.now - 1000.0 == pytest.approx(5.0)
+        assert two.now - 1000.0 == pytest.approx(2.0)
+
+    def test_one_slot_behaves_exactly_as_before(self) -> None:
+        """더 조여야 할 곳이 생기면 이 값 하나로 돌아갈 수 있어야 한다."""
+        clock = FakeClock()
+        pacer = HostPacer(
+            min_interval_seconds=1.0, slots=1, now=lambda: clock.now, sleep=clock.sleep
+        )
+        pacer.wait_for("a.example")
+
+        assert pacer.wait_for("a.example") == pytest.approx(1.0)
+
+    def test_a_nonsense_slot_count_does_not_stop_the_scan(self) -> None:
+        """0 이나 음수를 설정하면 아무도 통과하지 못한다 — 최소 1 로 받는다."""
+        clock = FakeClock()
+        pacer = HostPacer(
+            min_interval_seconds=1.0, slots=0, now=lambda: clock.now, sleep=clock.sleep
+        )
+
+        assert pacer.wait_for("a.example") == 0.0
+
+    def test_slots_are_counted_per_host(self) -> None:
+        """다른 사이트를 함께 진단한다고 해서 서로의 자리를 뺏으면 안 된다."""
+        clock = FakeClock()
+        pacer = HostPacer(
+            min_interval_seconds=1.0, slots=2, now=lambda: clock.now, sleep=clock.sleep
+        )
+        pacer.wait_for("a.example")
+        pacer.wait_for("a.example")
+
+        assert pacer.wait_for("b.example") == 0.0
