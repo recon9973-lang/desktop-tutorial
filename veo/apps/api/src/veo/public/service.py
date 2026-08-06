@@ -37,7 +37,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from veo.collect.contract import CollectionContext
+from veo.collect.contract import CollectionContext, RobotsState
 from veo.common.security.egress_kr import korean_egress
 from veo.common.security.fetcher import FetchedDocument, FetchError, SafeFetcher
 from veo.common.security.limits import FetchLimitError
@@ -219,6 +219,7 @@ def build_public_context(
     documents: Sequence[FetchedDocument],
     robots_txt: str | None,
     collected_at: datetime,
+    robots_state: RobotsState = "UNREADABLE",
     locale: str = "ko-KR",
 ) -> CollectionContext:
     """Assemble the collection context a public scan is scored from.
@@ -235,6 +236,10 @@ def build_public_context(
         documents=by_url,
         primary_document=primary,
         robots_txt=robots_txt,
+        # 무료 진단도 콘솔과 **같은 사실**을 나른다. 여기만 빠지면 같은 사이트가
+        # 창구에 따라 "규칙 파일이 없다" 와 "못 읽었다" 를 다르게 듣는다(0-D).
+        # 실제로 v0.3.48 을 콘솔에만 배선해 배포했다가 운영에서 그 증상이 나왔다.
+        robots_state=robots_state,
         sitemap_documents={},
         rendered_dom={},
         provider_states=dict(PUBLIC_PROVIDER_STATES),
@@ -346,12 +351,13 @@ class PublicScanService:
 
         spec = latest_published(SEO_SPEC_ID)
         collected_at = self._now()
-        documents, robots_txt = self._collect(targets)
+        documents, robots_txt, robots_state = self._collect(targets)
         context = build_public_context(
             target_url=targets[0],
             spec=spec,
             documents=documents,
             robots_txt=robots_txt,
+            robots_state=robots_state,
             collected_at=collected_at,
         )
         # 성능도 공개 전용 키로. 여기를 빠뜨리면 크롤은 나뉘고 구글 한도만 계속
@@ -399,12 +405,13 @@ class PublicScanService:
 
         spec = latest_published(GEO_SPEC_ID)
         collected_at = self._now()
-        documents, robots_txt = self._collect(targets)
+        documents, robots_txt, robots_state = self._collect(targets)
         context = build_public_context(
             target_url=targets[0],
             spec=spec,
             documents=documents,
             robots_txt=robots_txt,
+            robots_state=robots_state,
             collected_at=collected_at,
         )
         report = run_geo_readiness(context, spec=spec)
@@ -586,10 +593,11 @@ class PublicScanService:
 
     def _collect(
         self, targets: Sequence[str]
-    ) -> tuple[tuple[FetchedDocument, ...], str | None]:
+    ) -> tuple[tuple[FetchedDocument, ...], str | None, RobotsState]:
         """Fetch the pages and the site's robots.txt, through the guard, and nothing else."""
         documents = tuple(self._fetch(url) for url in targets)
-        return documents, self._fetch_robots(documents[0].final_url)
+        robots_txt, robots_state = self._fetch_robots(documents[0].final_url)
+        return documents, robots_txt, robots_state
 
     def _fetch(self, url: str) -> FetchedDocument:
         try:
@@ -625,7 +633,7 @@ class PublicScanService:
                 ),
             ) from exc
 
-    def _fetch_robots(self, page_url: str) -> str | None:
+    def _fetch_robots(self, page_url: str) -> tuple[str | None, RobotsState]:
         """Best effort, from the URL the page fetch actually **landed on**.
 
         Two things are deliberate. The host comes from ``final_url``, so a redirected
@@ -640,7 +648,7 @@ class PublicScanService:
         """
         parts = urlsplit(page_url)
         if not parts.scheme or not parts.netloc:
-            return None
+            return None, "UNREADABLE"
         try:
             document = self._fetcher.fetch(f"{parts.scheme}://{parts.netloc}/robots.txt")
         except (
@@ -650,10 +658,13 @@ class PublicScanService:
             FetchError,
             httpx.HTTPError,
         ):
-            return None
+            return None, "UNREADABLE"
+        if document.status in (404, 410):
+            # 규칙 파일이 없다 = 표준상 모든 크롤러에게 허용. 못 읽은 것과 다른 사실이다.
+            return None, "ABSENT"
         if document.status != 200:
-            return None
-        return document.text()
+            return None, "UNREADABLE"
+        return document.text(), "PRESENT"
 
     def _not_found(self) -> PublicRefusal:
         return PublicRefusal(404, ApiError.of(ErrorCode.NOT_FOUND, _RESULT_NOT_FOUND_KO))

@@ -787,3 +787,34 @@ def test_the_fetch_summary_reads_the_bytes_not_the_verdicts() -> None:
     assert fetched is not None
     assert fetched.found_title is True
     assert fetched.found_h1 is False
+
+
+def test_the_free_scan_tells_the_same_robots_story_as_the_console() -> None:
+    """무료 진단도 robots.txt 의 **없음 / 못 읽음**을 구분한다.
+
+    2026-08-06 에 이것을 놓쳤다. 수집 계약에 `robots_state` 를 싣고 콘솔 경로만
+    배선한 채 배포했더니, 운영에서 무료 진단이 여전히 "robots.txt를 수집하지
+    못했습니다" 를 냈다 — 대상 사이트의 robots.txt 는 404 였는데도.
+
+    같은 실수를 한 번 더 한 것이다(v0.3.40 의 한국 경유도 콘솔에만 달았다가
+    같은 증상을 냈다). 그래서 이 시험은 **공개 경로에서** 확인한다.
+    """
+    from veo.scoring import CheckStatus
+
+    def status_when_robots(status: int) -> CheckStatus:
+        site = dict(clinic_site())
+        site["https://clinic.example/robots.txt"] = Page(
+            body=b"Not Found", status=status, headers={"content-type": "text/html"}
+        )
+        payload = build_service(pages=site).run_seo_scan(
+            urls=["https://clinic.example/"], client_ip="203.0.113.9", session_id="s-1"
+        )
+        row = next(r for r in payload.checks if r.check_id == "seo.robots.txt_allows_url")
+        return CheckStatus(row.status)
+
+    assert status_when_robots(404) is CheckStatus.PASS, (
+        "규칙 파일이 없는 사이트에게 못 잰 것처럼 말하고 있다"
+    )
+    assert status_when_robots(500) is CheckStatus.UNKNOWN, (
+        "못 잰 것을 잰 것처럼 만들면 안 된다(0-A)"
+    )
