@@ -55,7 +55,7 @@ from veo.db.models.analysis import (
     ScanRun,
     VerificationRun,
 )
-from veo.db.models.identity import AuditLog, Project, RoleAssignment, URLRecord
+from veo.db.models.identity import AuditLog, Project, RoleAssignment
 from veo.issues import recurrence as recurrence_module
 from veo.issues.identity import fingerprint_of_draft, issue_fingerprint, normalize_affected_urls
 from veo.issues.lifecycle import (
@@ -780,18 +780,30 @@ def _measurements_for(
 ) -> list[MeasuredCheck]:
     """The re-scan's persisted outcomes for this issue's one check, with their URLs.
 
-    The organization filter on ``url_records`` sits in the JOIN condition rather than the
-    WHERE clause: in the WHERE it would turn the outer join into an inner one and quietly
-    drop every site-scope result, which has no URL record at all.
+    ## 어느 칸에서 주소를 읽는가 — 2026-08-06 에 고쳤다
+
+    이 함수는 `check_results.url_record_id` → `url_records` 를 조인해 주소를 얻고
+    있었다. 그런데 **그 두 칸은 한 번도 채워진 적이 없다** — 운영 실측:
+    `url_records` 0행, `url_record_id` 는 2,111행 중 0행.
+
+    결과가 무엇이었나. 조인은 언제나 `NULL` 을 냈고, `derive_outcome` 은
+    "재측정한 주소" 를 빈 집합으로 보게 된다. 그러면 영향 URL 이 전부
+    "재측정하지 못함" 으로 남아 **판정이 구조적으로 절대 RESOLVED 가 될 수 없다.**
+    고객이 문제를 다 고치고 재검사를 눌러도 화면은 늘 "확인 못 함" 이었다.
+
+    주소는 사라진 적이 없다. `check_results.evaluated_urls` 에 들어 있다(실측:
+    한 판정에 84·120·122개). 판정마다 주소 **목록**을 갖는 지금 구조에서
+    "판정 하나 = 주소 하나" 를 전제한 `url_record_id` 는 옛 설계의 잔재다.
+
+    ``evaluated_urls`` 를 쓰는 이유(``affected_urls`` 가 아니라): 물어야 하는 것은
+    "이번에 이 주소를 **재 봤는가**" 이지 "이번에도 실패했는가" 가 아니다. 실패
+    여부는 `status` 가 이미 말하고, `derive_outcome` 이 그것을 먼저 본다.
+
+    사이트 전체 검사처럼 주소가 없는 판정은 주소 없는 측정 하나로 남긴다 —
+    빼 버리면 "이 검사가 재실행에 아예 없었다" 와 구분되지 않는다.
     """
     statement = (
-        select(CheckResult, URLRecord.normalized_url)
-        .join(
-            URLRecord,
-            (CheckResult.url_record_id == URLRecord.id)
-            & (URLRecord.organization_id == principal.organization_id),
-            isouter=True,
-        )
+        select(CheckResult)
         .where(CheckResult.organization_id == principal.organization_id)
         .where(CheckResult.scan_run_id == scan_run.id)
         .where(CheckResult.check_id == issue.check_id)
@@ -799,14 +811,26 @@ def _measurements_for(
     assert_tenant_scoped(statement, principal.organization_id)
 
     measurements: list[MeasuredCheck] = []
-    for result, normalized_url in session.execute(statement):
-        measurements.append(
+    for result in session.execute(statement).scalars():
+        urls = [str(url) for url in (result.evaluated_urls or []) if str(url).strip()]
+        if not urls:
+            measurements.append(
+                MeasuredCheck(
+                    check_id=result.check_id,
+                    status=CheckStatus(result.status),
+                    url=None,
+                    check_result_id=result.id,
+                )
+            )
+            continue
+        measurements.extend(
             MeasuredCheck(
                 check_id=result.check_id,
                 status=CheckStatus(result.status),
-                url=normalized_url,
+                url=url,
                 check_result_id=result.id,
             )
+            for url in urls
         )
     return measurements
 

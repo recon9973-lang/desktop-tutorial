@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import os
 import uuid
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -356,7 +356,17 @@ def make_url_record(db: Session) -> Callable[..., URLRecord]:
 
 @pytest.fixture
 def make_check_result(db: Session, seo_spec: ScoringSpec) -> Callable[..., CheckResult]:
-    """One persisted check outcome inside a scan run — what a re-measurement looks like."""
+    """One persisted check outcome inside a scan run — what a re-measurement looks like.
+
+    **`evaluated_urls` 를 채우는 것이 요점이다.** 저장 경로(`seo/history.py`)가 실제로
+    쓰는 칸이 이것이고, 재검증은 여기서 "이번에 어느 주소를 다시 봤는가" 를 읽는다.
+
+    이 픽스처는 한때 `url_record` 를 받아 `url_record_id` 를 채웠다. 그런데 운영에서
+    그 칸은 **한 번도 채워진 적이 없다**(실측 2026-08-06: `url_records` 0행,
+    `url_record_id` 2,111행 중 0행). 시험이 운영에 없는 데이터를 스스로 만들어
+    넣고 통과했고, 그래서 재검증이 **절대 RESOLVED 를 낼 수 없다**는 사실이
+    시험에 걸리지 않았다.
+    """
 
     def _make(
         tenant: Tenant,
@@ -364,13 +374,12 @@ def make_check_result(db: Session, seo_spec: ScoringSpec) -> Callable[..., Check
         check_id: str,
         status: CheckStatus,
         *,
-        url_record: URLRecord | None = None,
+        urls: Sequence[str] = (),
     ) -> CheckResult:
         check = seo_spec.check(check_id)
         result = CheckResult(
             organization_id=tenant.organization_id,
             scan_run_id=run.id,
-            url_record_id=None if url_record is None else url_record.id,
             check_id=check_id,
             category_id=seo_spec.category_of(check_id).id,
             status=str(status),
@@ -380,6 +389,12 @@ def make_check_result(db: Session, seo_spec: ScoringSpec) -> Callable[..., Check
             evaluated_weight=1.0,
             observed_value={},
             evidence_ids=[],
+            # 저장 경로가 쓰는 그대로. 실패한 주소는 `affected_urls`, 이번에 본
+            # 주소 전부는 `evaluated_urls` 다.
+            affected_urls=(
+                list(urls) if status in (CheckStatus.FAIL, CheckStatus.WARNING) else []
+            ),
+            evaluated_urls=list(urls),
         )
         db.add(result)
         db.commit()

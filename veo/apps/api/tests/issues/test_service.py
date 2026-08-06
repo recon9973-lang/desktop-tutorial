@@ -23,7 +23,7 @@ from tests.issues.support import (
 
 from veo.collect.contract import IssueDraft
 from veo.db.models.analysis import FixRecommendation, Issue, ScanRun, VerificationRun
-from veo.db.models.identity import AuditLog, URLRecord
+from veo.db.models.identity import AuditLog
 from veo.issues import service
 from veo.issues.identity import issue_fingerprint
 from veo.issues.lifecycle import IllegalTransitionError, IssueState
@@ -317,7 +317,6 @@ def test_a_passing_re_scan_is_what_resolves_an_issue(
     db: Session,
     org_a: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
@@ -326,8 +325,7 @@ def test_a_passing_re_scan_is_what_resolves_an_issue(
     drive_to_verifying(db, org_a, result.issue.id)
 
     rescan = make_scan_run(org_a)
-    record = make_url_record(org_a, PAGE_A)
-    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.PASS, url_record=record)
+    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.PASS, urls=[PAGE_A])
 
     issue, verification = service.record_verification_outcome(
         db, org_a.analyst, result.issue.id, scan_run_id=rescan.id, request_id="r"
@@ -344,7 +342,6 @@ def test_a_failing_re_scan_lands_in_verification_failed_not_open(
     db: Session,
     org_a: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
@@ -353,8 +350,7 @@ def test_a_failing_re_scan_lands_in_verification_failed_not_open(
     drive_to_verifying(db, org_a, result.issue.id)
 
     rescan = make_scan_run(org_a)
-    record = make_url_record(org_a, PAGE_A)
-    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.FAIL, url_record=record)
+    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.FAIL, urls=[PAGE_A])
 
     issue, verification = service.record_verification_outcome(
         db, org_a.analyst, result.issue.id, scan_run_id=rescan.id, request_id="r"
@@ -389,7 +385,6 @@ def test_an_outcome_cannot_be_recorded_before_verification_was_requested(
     db: Session,
     org_a: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
@@ -397,8 +392,7 @@ def test_an_outcome_cannot_be_recorded_before_verification_was_requested(
     [result] = ingest(db, org_a, run, seo_spec, draft(CRITICAL_CHECK, PAGE_A))
 
     rescan = make_scan_run(org_a)
-    record = make_url_record(org_a, PAGE_A)
-    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.PASS, url_record=record)
+    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.PASS, urls=[PAGE_A])
 
     with pytest.raises(IllegalTransitionError):
         service.record_verification_outcome(
@@ -416,7 +410,6 @@ def test_another_tenants_scan_run_cannot_be_used_as_evidence(
     org_a: Tenant,
     org_b: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
@@ -425,8 +418,7 @@ def test_another_tenants_scan_run_cannot_be_used_as_evidence(
     drive_to_verifying(db, org_a, result.issue.id)
 
     foreign = make_scan_run(org_b)
-    record = make_url_record(org_b, PAGE_A)
-    make_check_result(org_b, foreign, CRITICAL_CHECK, CheckStatus.PASS, url_record=record)
+    make_check_result(org_b, foreign, CRITICAL_CHECK, CheckStatus.PASS, urls=[PAGE_A])
 
     with pytest.raises(ReferenceNotFoundError):
         service.record_verification_outcome(
@@ -461,13 +453,11 @@ def resolve_once(
     tenant: Tenant,
     issue_id: uuid.UUID,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
 ) -> None:
     drive_to_verifying(db, tenant, issue_id)
     rescan = make_scan_run(tenant)
-    record = make_url_record(tenant, PAGE_A)
-    make_check_result(tenant, rescan, CRITICAL_CHECK, CheckStatus.PASS, url_record=record)
+    make_check_result(tenant, rescan, CRITICAL_CHECK, CheckStatus.PASS, urls=[PAGE_A])
     service.record_verification_outcome(
         db, tenant.analyst, issue_id, scan_run_id=rescan.id, request_id="r"
     )
@@ -478,13 +468,12 @@ def test_a_resolved_issue_found_again_recurs_and_increments_the_count(
     db: Session,
     org_a: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
     run = make_scan_run(org_a)
     [result] = ingest(db, org_a, run, seo_spec, draft(CRITICAL_CHECK, PAGE_A))
-    resolve_once(db, org_a, result.issue.id, make_scan_run, make_url_record, make_check_result)
+    resolve_once(db, org_a, result.issue.id, make_scan_run, make_check_result)
 
     later = make_scan_run(org_a)
     [again] = ingest(db, org_a, later, seo_spec, draft(CRITICAL_CHECK, PAGE_A))
@@ -499,7 +488,6 @@ def test_three_recurrences_are_a_different_conversation_from_one(
     db: Session,
     org_a: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
@@ -508,7 +496,7 @@ def test_three_recurrences_are_a_different_conversation_from_one(
     issue_id = result.issue.id
 
     for _ in range(3):
-        resolve_once(db, org_a, issue_id, make_scan_run, make_url_record, make_check_result)
+        resolve_once(db, org_a, issue_id, make_scan_run, make_check_result)
         later = make_scan_run(org_a)
         ingest(db, org_a, later, seo_spec, draft(CRITICAL_CHECK, PAGE_A))
 
@@ -593,13 +581,12 @@ def test_the_detail_view_carries_the_full_history(
     db: Session,
     org_a: Tenant,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
     seo_spec: ScoringSpec,
 ) -> None:
     run = make_scan_run(org_a)
     [result] = ingest(db, org_a, run, seo_spec, draft(CRITICAL_CHECK, PAGE_A))
-    resolve_once(db, org_a, result.issue.id, make_scan_run, make_url_record, make_check_result)
+    resolve_once(db, org_a, result.issue.id, make_scan_run, make_check_result)
 
     detail = service.get_issue_detail(db, org_a.analyst, result.issue.id)
     assert detail is not None

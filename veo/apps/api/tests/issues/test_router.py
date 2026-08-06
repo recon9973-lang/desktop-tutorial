@@ -28,7 +28,6 @@ from tests.issues.support import (
 
 from veo.collect.contract import IssueDraft
 from veo.db.models.analysis import Evidence, ScanRun
-from veo.db.models.identity import URLRecord
 from veo.issues import service
 from veo.issues.lifecycle import IssueState
 from veo.scoring import CheckStatus, ScoringSpec
@@ -238,7 +237,6 @@ def test_the_happy_path_ends_at_verified_resolved_only_through_a_passing_re_scan
     org_a: Tenant,
     seeded: uuid.UUID,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
 ) -> None:
     act_as(org_a.analyst)
@@ -251,8 +249,7 @@ def test_the_happy_path_ends_at_verified_resolved_only_through_a_passing_re_scan
     assert requested["request"]["target_urls"] == [PAGE_A]
 
     rescan = make_scan_run(org_a)
-    record = make_url_record(org_a, PAGE_A)
-    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.PASS, url_record=record)
+    make_check_result(org_a, rescan, CRITICAL_CHECK, CheckStatus.PASS, urls=[PAGE_A])
 
     resolved = payload(
         client.post(
@@ -270,7 +267,6 @@ def test_a_verification_result_pointing_at_another_tenants_run_is_a_404(
     org_b: Tenant,
     seeded: uuid.UUID,
     make_scan_run: Callable[..., ScanRun],
-    make_url_record: Callable[..., URLRecord],
     make_check_result: Callable[..., object],
 ) -> None:
     act_as(org_a.analyst)
@@ -279,8 +275,7 @@ def test_a_verification_result_pointing_at_another_tenants_run_is_a_404(
     client.post(f"{ISSUES}/{seeded}/verification-requests")
 
     foreign = make_scan_run(org_b)
-    record = make_url_record(org_b, PAGE_A)
-    make_check_result(org_b, foreign, CRITICAL_CHECK, CheckStatus.PASS, url_record=record)
+    make_check_result(org_b, foreign, CRITICAL_CHECK, CheckStatus.PASS, urls=[PAGE_A])
 
     response = client.post(
         f"{ISSUES}/{seeded}/verification-results", json={"scan_run_id": str(foreign.id)}
