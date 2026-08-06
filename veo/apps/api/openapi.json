@@ -16001,7 +16001,7 @@
     "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform\n\nDeveloped by VENOM. Research & Methodology by VEO-LAB.\n\n측정 원칙\n- SEO 준비도, GEO 준비도, 실제 AI 가시성, 네이버 키워드 수요는 각각 별도의 지표입니다.\n  하나의 불투명한 총점으로 합치지 않습니다.\n- 준비도 점수는 검색 순위 예측값이 아닙니다.\n- 모든 점수에는 방법론 버전, 체크섬, 적용 분모, 계산 과정, 신뢰도가 함께 제공됩니다.\n- '해당 없음'은 0점이 아니라 분모에서 제외되고, '측정 불가'는 실패가 아니라\n  coverage와 confidence에 반영됩니다.\n- 외부 제공자 자격증명이 없으면 해당 항목은 '측정 불가'가 되며, VEO는 추정값을\n  실제 데이터처럼 표시하지 않습니다.\n",
     "summary": "SEO · GEO · Naver Keyword Intelligence Platform",
     "title": "VEO API",
-    "version": "0.3.52"
+    "version": "0.3.53"
   },
   "openapi": "3.1.0",
   "paths": {

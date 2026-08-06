@@ -183,6 +183,31 @@ pnpm --filter @veo/web verify
 - [ ] `VEO_CORS_ALLOWED_ORIGINS` 에 와일드카드가 없다
 - [ ] 저장소·이미지·로그 어디에도 자격증명이 평문으로 없다
 
+### 4-1. 기본값이 "꺼짐" 인 기능 — **오픈할 때 켜야 한다**
+
+만들어 두고 켜지 않으면 없는 기능이다(0-E). 아래는 **기본값이 꺼짐이고, 꺼져 있어도
+아무 소리가 나지 않는** 것들이다. 실측(2026-08-06 운영 DB): 넷 다 실행 이력 0건 —
+서비스 전이므로 그것이 정상이지만, **오픈 시점에 켜지 않으면 조용히 안 도는 것도
+똑같이 0건으로 보인다.** 구분되지 않는다는 것이 이 칸의 존재 이유다.
+
+- [ ] `VEO_RESCAN_AFTER_DAYS` — 정기 재진단. **0 이면 안 돈다.**
+      거래처 사이트를 며칠마다 다시 잴 것인가. 이 값이 0 이면 진단은 사람이
+      누를 때만 일어나고, "지난달보다 나빠졌습니다" 를 우리가 먼저 말해 줄 수 없다.
+- [ ] `VEO_REPORT_AUTO_PUBLISH_DAY` — 월간 리포트 자동 발행일(1~28). **0 이면 안 돈다.**
+- [ ] `VEO_ALERT_WEBHOOK_URL` — 점수 급락·회귀 알림. **비어 있으면 알림이 안 간다.**
+      비어 있는 것 자체는 결과에 DISABLED 로 드러나지만, 아무도 그 화면을 안 보면
+      모른다.
+- [ ] AI 관측 엔진 키 4종(OpenAI·Gemini·Perplexity·Anthropic).
+      **하나도 없으면 GEO 관측이 통째로 안 돈다** (`observation_runs` 0건).
+
+확인 방법 — 켠 뒤에 **실제로 돌았는지**를 본다. 설정만 보고 넘어가지 않는다:
+
+```sql
+select count(*) from scan_runs where requested_by_user_id is null;  -- 정기 재진단
+select count(*) from report_versions;                               -- 자동 발행
+select count(*) from observation_runs;                              -- AI 관측
+```
+
 ## 5. 컨테이너 이미지
 
 - [ ] 모든 이미지가 비루트로 실행된다
