@@ -381,7 +381,7 @@ class PublicScanService:
             counts=_status_counts(spec, result.score.outcomes),
             previews=_previews(documents[0] if documents else None),
             fetched=_fetched(documents[0] if documents else None),
-            top_findings=_findings(spec, result.score.outcomes),
+            top_findings=_findings(spec, result.score),
             total_finding_count=_finding_total(result.score.outcomes),
             unmeasured_check_count=len(result.unknown_checks),
             result_token=issued.token,
@@ -420,7 +420,7 @@ class PublicScanService:
             checks=_check_rows(spec, report.score, issues=report.issues),
             counts=_status_counts(spec, report.score.outcomes),
             exposure=_exposure_block(report),
-            top_findings=_findings(spec, report.score.outcomes),
+            top_findings=_findings(spec, report.score),
             total_finding_count=_finding_total(report.score.outcomes),
             unmeasured_check_count=_unknown_total(report.score.outcomes),
             result_token=issued.token,
@@ -820,16 +820,29 @@ def _exposure_block(report: GeoReadinessReport) -> PublicExposureBlock:
     )
 
 
-def _findings(spec: ScoringSpec, outcomes: Sequence[CheckOutcome]) -> list[PublicFinding]:
+def _findings(spec: ScoringSpec, score: ScoreResult) -> list[PublicFinding]:
     """The most serious problems, described in the specification's own published words.
 
     Nothing a collector wrote reaches this list. A collector's ``summary_ko`` reads
     "https://clinic.example/about — 제목 없음", which is exactly right in a console and
     exactly wrong in a payload anyone holding a share link can read.
+
+    **순서는 "고치면 실제로 오르는 점수" 다.** 예전에는 심각도(severity)로 줄을
+    세웠는데, 고객이 얻는 것은 심각도가 아니라 점수다. 2026-08-06 실측: 상위 8건의
+    실제 상승폭이 8.56 → 10.09 → 5.20 → 2.28 → 2.85 → 4.09 로 흘렀고, 순서가
+    뒤집힌 쌍이 66쌍 중 **12쌍**이었다. 위에서부터 고친 고객은 "왜 예상만큼 안 오르지"
+    를 겪게 된다.
+
+    콘솔의 작업 큐는 이미 이 순서를 쓴다. 같은 진단이 창구에 따라 다른 순서를
+    말하면 안 된다(0-D).
     """
+    # 상승폭은 명세를 다시 불러 실제로 재본다 — 어림하지 않는다(대장 6.2).
+    gain_of = {entry.check_id: entry.gain_points for entry in rank_improvements(score)}
     ranked = sorted(
-        (item for item in outcomes if item.status in _REPORTABLE),
+        (item for item in score.outcomes if item.status in _REPORTABLE),
         key=lambda item: (
+            -gain_of.get(item.check_id, 0.0),
+            # 상승폭이 같으면 예전 기준으로 가른다. 심각한 것이 먼저다.
             -spec.severity_coefficient(spec.check(item.check_id).severity),
             0 if item.status is CheckStatus.FAIL else 1,
             item.check_id,

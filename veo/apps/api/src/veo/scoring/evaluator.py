@@ -46,7 +46,7 @@ published specifications keep scoring exactly as they did (ADR 0012).
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any, Final
 
 from veo.scoring.errors import ScoringSpecError
@@ -451,18 +451,43 @@ def _reach(
     for category in spec.categories:
         if not category.is_gate:
             continue
-        for check in category.checks:
-            outcome = by_id[check.id]
-            if outcome.status in (CheckStatus.NOT_APPLICABLE, CheckStatus.NOT_SAMPLED):
-                continue
-            if outcome.status is CheckStatus.UNKNOWN:
-                unverified.append(check.id)
-                continue
-            blocked = _status_multiplier(spec, outcome.status) * min(
-                1.0, outcome.coverage_ratio
-            )
-            if blocked > 0:
-                reach *= 1.0 - blocked
+        stage, stage_unverified = category_reach(spec, category, by_id)
+        reach *= stage
+        unverified.extend(stage_unverified)
+
+    return max(0.0, reach), unverified
+
+
+def category_reach(
+    spec: ScoringSpec, category: SpecCategory, by_id: Mapping[str, CheckOutcome]
+) -> tuple[float, list[str]]:
+    """관문 영역 **하나**가 남기는 도달률과, 확인하지 못한 검사의 이름.
+
+    사이트 점수와 페이지 점수가 **같은 관문을 서로 다른 산식으로** 보여 주고 있었다.
+    2026-08-06 실측: 같은 진단 하나에서 관문 영역 `s1_blocked` 가 사이트 화면에서는
+    60.0점, 페이지 화면에서는 100.0점이었다. 사이트 쪽은 관문을 보통 영역처럼 통과
+    비율로 매겼는데, 그 숫자는 종합 점수에 쓰이지도 않는다(관문은 가중 평균에서
+    빠지고 결과에 곱해진다) — 화면에만 나가는 뜻 없는 값이었다.
+
+    관문 영역의 점수는 **그 관문을 통과하는 비율**이다. 여기서 한 번만 계산하고
+    양쪽이 그것을 쓴다(0-D).
+    """
+    reach = 1.0
+    unverified: list[str] = []
+
+    for check in category.checks:
+        outcome = by_id.get(check.id)
+        if outcome is None or outcome.status in (
+            CheckStatus.NOT_APPLICABLE,
+            CheckStatus.NOT_SAMPLED,
+        ):
+            continue
+        if outcome.status is CheckStatus.UNKNOWN:
+            unverified.append(check.id)
+            continue
+        blocked = _status_multiplier(spec, outcome.status) * min(1.0, outcome.coverage_ratio)
+        if blocked > 0:
+            reach *= 1.0 - blocked
 
     return max(0.0, reach), unverified
 
@@ -641,6 +666,13 @@ def _score_category(
             mean_confidence = sum(plain_confidences) / len(plain_confidences)
 
     confidence_value = round(coverage * mean_confidence, 6)
+
+    if category.is_gate and score is not None:
+        # 관문 영역의 점수는 통과 비율이 아니라 **도달률**이다. 위에서 매긴 값은 보통
+        # 영역의 산식이고, 관문은 가중 평균에 참여하지 않으므로 그 숫자는 종합 점수에
+        # 쓰이지도 않는다 — 화면에만 나가는 뜻 없는 값이었다(2026-08-06 실측: 사이트
+        # 60.0 / 페이지 100.0). 페이지 쪽과 같은 함수로 다시 매긴다(0-D).
+        score = round(category_reach(spec, category, by_id)[0] * 100.0, 6)
 
     category_score = CategoryScore(
         category_id=category.id,

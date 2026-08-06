@@ -274,6 +274,40 @@ def test_findings_name_the_check_but_never_a_page() -> None:
         assert "http" not in finding.title_ko
 
 
+def test_findings_are_ordered_by_what_fixing_them_actually_gains() -> None:
+    """**위에서부터 고치면 점수가 그 순서로 올라야 한다.**
+
+    예전에는 심각도(severity)로 줄을 세웠다. 고객이 얻는 것은 심각도가 아니라 점수다.
+    2026-08-06 실측: 상위 8건의 실제 상승폭이 8.56 → 10.09 → 5.20 → 2.28 → 2.85 →
+    4.09 로 흘렀고, 순서가 뒤집힌 쌍이 66쌍 중 12쌍이었다. 위에서부터 고친 고객은
+    "왜 예상만큼 안 오르지" 를 겪는다.
+
+    콘솔의 작업 큐는 이미 이 순서를 쓴다. 같은 진단이 창구에 따라 다른 순서를
+    말하면 안 된다(0-D).
+    """
+    from veo.public.service import _findings
+    from veo.scoring.improvements import rank_improvements
+
+    spec = latest_published("veo.seo.readiness")
+    document = make_fetcher(clinic_site()).fetch("https://clinic.example/")
+    context = build_public_context(
+        target_url="https://clinic.example/",
+        spec=spec,
+        documents=(document,),
+        robots_txt=ROBOTS_TXT,
+        collected_at=FIXED_NOW,
+    )
+    internal = run_seo_scan(context)
+
+    gains = {e.check_id: e.gain_points for e in rank_improvements(internal.score)}
+    shown = [gains.get(f.check_id, 0.0) for f in _findings(spec, internal.score)]
+
+    assert shown, "지적이 하나도 없으면 이 시험은 아무것도 지키지 못한다"
+    assert shown == sorted(shown, reverse=True), (
+        f"공개 리포트 순서가 실제 상승폭과 어긋난다: {shown}"
+    )
+
+
 # --------------------------------------------------------------------------- #
 # Limits
 # --------------------------------------------------------------------------- #

@@ -220,3 +220,51 @@ class TestThePublishedSpecUsesTheGate:
         assert "seo.robots.txt_allows_url" in ids
         assert "seo.robots.meta_indexable" in ids
         assert "seo.http.status_ok" in ids
+
+
+class TestTheGateAreaShowsItsReachNotAPassRatio:
+    """관문 영역의 점수는 **그 관문을 통과하는 비율**이어야 한다.
+
+    2026-08-06 실측: 같은 진단 하나에서 관문 영역 `s1_blocked` 가 사이트 화면에서는
+    60.0점, 페이지 화면에서는 100.0점이었다. 사이트 쪽이 관문을 보통 영역처럼 통과
+    비율로 매겼기 때문이다. 그 숫자는 종합 점수에 쓰이지도 않는다 — 관문은 가중 평균에서
+    빠지고 결과에 곱해지므로, 화면에만 나가는 뜻 없는 값이었다.
+
+    더 나쁜 예: **전면 noindex 사이트**가 "차단" 영역에서 **33.3점**을 받고 있었다.
+    검색에 아예 없는 사이트인데 그 영역이 3분의 1은 괜찮아 보였다.
+    """
+
+    def _gate_score(self, spec, **overrides: object) -> float | None:  # type: ignore[no-untyped-def]
+        result = evaluate(spec, outcomes_for(dict(overrides)))
+        gate_ids = {c.id for c in spec.categories if c.is_gate}
+        return next(c.score for c in result.categories if c.category_id in gate_ids)
+
+    def test_a_clean_gate_area_is_a_hundred(self, tiny_spec_dict) -> None:  # type: ignore[no-untyped-def]
+        spec = gated(tiny_spec_dict)
+
+        assert self._gate_score(spec) == 100.0
+
+    def test_a_fully_blocked_gate_area_is_zero(self, tiny_spec_dict) -> None:  # type: ignore[no-untyped-def]
+        """검색에 없는 사이트의 차단 영역은 0 이다. 33.3 이 아니다."""
+        spec = gated(tiny_spec_dict)
+
+        assert self._gate_score(spec, **{"test.a.blocker": CheckStatus.FAIL}) == 0.0
+
+    def test_the_gate_area_equals_the_reach_it_produced(self, tiny_spec_dict) -> None:  # type: ignore[no-untyped-def]
+        """관문이 하나뿐인 명세에서는 영역 점수 = 도달률 x 100 이다."""
+        spec = gated(tiny_spec_dict)
+        result = evaluate(spec, outcomes_for({"test.a.blocker": (CheckStatus.FAIL, 0.4)}))
+        gate_ids = {c.id for c in spec.categories if c.is_gate}
+        shown = next(c.score for c in result.categories if c.category_id in gate_ids)
+
+        assert shown == pytest.approx(result.reach * 100.0)
+
+    def test_showing_it_honestly_does_not_move_the_overall_score(
+        self, tiny_spec_dict
+    ) -> None:  # type: ignore[no-untyped-def]
+        """관문 영역은 가중 평균에서 빠진다. 표시를 고쳤다고 점수가 움직이면
+        그것은 표시를 고친 것이 아니라 채점을 바꾼 것이다."""
+        spec = gated(tiny_spec_dict)
+
+        assert score(spec) == 100.0
+        assert score(spec, **{"test.a.blocker": (CheckStatus.FAIL, 0.5)}) == pytest.approx(50.0)
