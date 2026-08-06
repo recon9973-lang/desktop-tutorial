@@ -195,6 +195,7 @@ def save_scan_run(
     started_at: datetime,
     report_snapshot: dict[str, object] | None = None,
     kind: str = SEO_KIND,
+    job_id: uuid.UUID | None = None,
 ) -> SavedScan:
     """한 번의 진단을 남긴다 — 실행·점수·항목별 판정·근거·이슈, 그리고 **측정 조건**까지.
 
@@ -219,6 +220,11 @@ def save_scan_run(
     run = ScanRun(
         organization_id=principal.organization_id,
         scan_id=scan.id,
+        # 어느 작업이 이 실행을 만들었는가. 칸은 처음부터 있었는데 넘기는 코드가
+        # 없어 운영 41행이 전부 NULL 이었다(실측 2026-08-06). 이것이 없으면
+        # "이 작업의 결과" 와 "이 결과를 만든 작업" 을 서로 되짚을 수 없다 —
+        # 작업이 실패했을 때 어디까지 갔는지 확인할 방법이 사라진다.
+        job_id=job_id,
         surface=Surface.CONSOLE.value,
         # 측정하지 못한 항목이 있어도 실행 자체는 성공이다. 부분 성공은 수집을 **못 한**
         # 경우를 위한 상태이지, 자격증명이 없어 UNKNOWN 이 난 경우가 아니다.

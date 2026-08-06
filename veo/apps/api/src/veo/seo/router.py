@@ -15,7 +15,7 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
@@ -195,6 +195,13 @@ def submit_scan_job(
     principal: ScanRunner,
     request_id: RequestId,
     db: Annotated[Session, Depends(get_db)],
+    idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias="Idempotency-Key",
+            description="같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+        ),
+    ] = None,
 ) -> ApiResponse[JobPayload]:
     if payload.site_id is None:
         raise HTTPException(
@@ -215,6 +222,10 @@ def submit_scan_job(
         principal,
         job_type=JobType.SEO_SCAN,
         project_id=project_id,
+        # 관측 실행(`observations/router.py`)이 진작 받던 것을 여기만 안 받고 있었다.
+        # 열쇠가 없어도 `submit` 이 "같은 입력으로 돌고 있는 작업" 을 돌려주지만,
+        # 부르는 쪽이 명시할 길은 열어 둔다 — 그쪽이 더 정확하다.
+        idempotency_key=idempotency_key,
         stages=list(SCAN_STAGES),
         parameters={
             "target_url": payload.target_url,
@@ -274,6 +285,7 @@ def run_console_scan(
     principal: Principal,
     payload: SiteScanRequest,
     request_id: str,
+    job_id: uuid.UUID | None = None,
 ) -> tuple[ScanPayload, uuid.UUID | None]:
     """콘솔 진단 파이프라인 — 수집→채점→(동반 GEO)→저장→하락 경보.
 
@@ -398,6 +410,7 @@ def run_console_scan(
                 urls_collected=len(outcome.documents),
                 report_snapshot=report.model_dump(mode="json"),
                 started_at=timings.started_at,
+                job_id=job_id,
             )
         # 저장이 끝난 뒤에만 비교한다 — 이 진단이 '직전' 과 비교 가능한 최신이
         # 되는 시점이 지금이다. 실패해도 저장·응답은 그대로다.

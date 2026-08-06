@@ -11025,7 +11025,10 @@ export interface operations {
     submit_scan_job_api_seo_scan_jobs_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 같은 키로 다시 부르면 원래 작업을 돌려줍니다. */
+                "Idempotency-Key"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };

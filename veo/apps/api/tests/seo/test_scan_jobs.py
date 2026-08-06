@@ -190,3 +190,120 @@ class TestTheSubmitGate:
             )
 
         assert refused.value.status_code == 422
+
+
+class TestTheJobAndItsResultStayConnected:
+    """작업과 그 작업이 만든 진단 실행이 서로를 가리켜야 한다.
+
+    2026-08-06 실측: `scan_runs.job_id` 운영 41행이 **전부 NULL** 이었다. 칸은
+    처음부터 있었고 넘기는 코드가 없었다(0-E). 그 상태에서는 작업이 실패했을 때
+    "어디까지 갔는가" 를 되짚을 방법이 없다.
+    """
+
+    def test_a_background_scan_records_the_job_that_made_it(
+        self, db_session, principal, site, monkeypatch  # noqa: F811
+    ):
+        import veo.seo.router as router_module
+        from veo.db.models.analysis import ScanRun
+        from veo.seo.jobs import scan_work
+
+        outcome = _crawl_outcome()
+
+        class StubCrawler:
+            def crawl(self, target_url, *, extra_urls=(), max_urls=None):  # type: ignore[no-untyped-def]
+                return outcome
+
+            def collect(self, targets):  # type: ignore[no-untyped-def]
+                return outcome.documents, outcome.robots_txt
+
+        monkeypatch.setattr(router_module, "ConsoleCrawler", StubCrawler)
+
+        job = _submit(db_session, principal, site)
+        work = scan_work(
+            organization_id=principal.organization_id,
+            user_id=principal.user_id,
+            roles=principal.roles,
+            session_id=principal.session_id,
+            target_url=site.origin,
+            site_id=site.id,
+            urls=(),
+            discover=False,
+            max_urls=None,
+            locale="ko-KR",
+        )
+
+        result = work(db_session, job.id)
+        run = db_session.get(ScanRun, result.result_run_id)
+
+        assert run is not None
+        assert run.job_id == job.id, "작업이 만든 실행인데 어느 작업인지 남지 않았다"
+
+
+class TestPressingTwiceDoesNotCrawlTwice:
+    """진단 버튼을 실수로 두 번 누르면 **거래처 사이트를 두 번 긁는다.**
+
+    2026-08-06 실측: 운영 `jobs` 17건 전부 `idempotency_key` 가 NULL 이었다 —
+    콘솔 진단이 열쇠를 한 번도 넘기지 않았고, 넘기지 않으면 중복 방지가 아예
+    동작하지 않는다. 부담을 지는 쪽은 우리가 아니라 남의 서버다.
+    """
+
+    def test_the_same_input_while_still_running_returns_the_first_job(
+        self, db_session, principal, site  # noqa: F811
+    ):
+        from veo.contracts.enums import JobType
+        from veo.jobs import service as jobs_service
+
+        parameters = {"target_url": site.origin, "site_id": str(site.id)}
+        first, created_first = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+        second, created_second = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+
+        assert created_first is True
+        assert created_second is False, "같은 입력이 아직 도는데 두 번째 작업이 만들어졌다"
+        assert second.id == first.id
+
+    def test_a_different_target_still_starts_its_own_job(
+        self, db_session, principal, site  # noqa: F811
+    ):
+        """막는 것은 **같은 입력**뿐이다. 다른 사이트 진단까지 막으면 제품이 멈춘다."""
+        from veo.contracts.enums import JobType
+        from veo.jobs import service as jobs_service
+
+        jobs_service.submit(
+            db_session,
+            principal,
+            job_type=JobType.SEO_SCAN,
+            parameters={"target_url": "https://a.example/", "site_id": str(site.id)},
+        )
+        _, created = jobs_service.submit(
+            db_session,
+            principal,
+            job_type=JobType.SEO_SCAN,
+            parameters={"target_url": "https://b.example/", "site_id": str(site.id)},
+        )
+
+        assert created is True
+
+    def test_a_finished_job_does_not_block_a_re_scan(
+        self, db_session, principal, site  # noqa: F811
+    ):
+        """"고쳤으니 다시 재 주세요" 는 막으면 안 되는 일이다."""
+        from veo.contracts.enums import JobType
+        from veo.jobs import service as jobs_service
+
+        parameters = {"target_url": site.origin, "site_id": str(site.id)}
+        first, _ = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+        jobs_service.succeed(db_session, first.id)
+        db_session.flush()
+
+        second, created = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+
+        assert created is True, "끝난 작업이 재진단을 막고 있다"
+        assert second.id != first.id

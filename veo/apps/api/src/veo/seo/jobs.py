@@ -85,6 +85,7 @@ def scan_work(
                     locale=locale,
                 ),
                 request_id=str(job_id),
+                job_id=job_id,
             )
         except CrawlRefusal as refusal:
             # 수집 거절의 문장은 원래 사용자에게 그대로 가는 값이다(동기 경로와 동일).

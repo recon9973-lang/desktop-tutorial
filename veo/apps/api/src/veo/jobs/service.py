@@ -83,6 +83,18 @@ def submit(
 
     같은 `idempotency_key` 로 다시 부르면 **새 작업을 만들지 않고 원래 것을 돌려준다.**
     관측은 돈이 나가는 일이라, 새로고침 한 번이 두 번 청구되면 안 된다.
+
+    ## 열쇠를 안 준 호출도 지켜 준다
+
+    열쇠는 **부르는 쪽이 줘야** 동작한다. 그런데 콘솔 진단은 한 번도 주지 않았다
+    (실측 2026-08-06: 운영 `jobs` 17건 전부 `idempotency_key` NULL). 즉 진단 버튼을
+    실수로 두 번 누르면 **거래처 사이트를 두 번 긁는다.** 우리 편의가 아니라 남의
+    서버 부담이므로, 부르는 쪽의 성의에 맡길 일이 아니다.
+
+    그래서 열쇠가 없으면 **같은 입력으로 아직 돌고 있는 작업**을 찾아 그것을 돌려준다.
+    시간 창을 두지 않는다 — 조건은 "아직 안 끝났는가" 하나다. 같은 입력의 진단을
+    동시에 두 번 돌려서 얻을 것이 없기 때문이고, 끝난 뒤의 재진단은 정당하므로
+    막지 않는다("고쳤으니 다시 재 주세요" 는 막으면 안 되는 일이다).
     """
     if idempotency_key is not None:
         existing = session.scalars(
@@ -92,6 +104,16 @@ def submit(
         ).first()
         if existing is not None:
             return existing, False
+    else:
+        running = session.scalars(
+            tenant_select(JobRow, principal)
+            .where(JobRow.type == str(job_type))
+            .where(JobRow.input_hash == input_hash(job_type, parameters))
+            .where(JobRow.status.in_([str(state) for state in _OPEN_STATUSES]))
+            .order_by(JobRow.created_at.desc())
+        ).first()
+        if running is not None:
+            return running, False
 
     row = JobRow(
         organization_id=principal.organization_id,
