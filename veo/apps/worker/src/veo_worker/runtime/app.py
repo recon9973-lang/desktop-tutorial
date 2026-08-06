@@ -195,6 +195,18 @@ def create_celery_app(settings: WorkerSettings | None = None) -> Celery:
         task_default_routing_key=DEAD_LETTER_QUEUE,
         task_create_missing_queues=False,
         # --- misc ------------------------------------------------------------
+        # --- 작업 등록 -------------------------------------------------------
+        # **이 줄이 없으면 워커는 아무 일도 할 줄 모른다.**
+        #
+        # 배포는 `celery --app veo_worker.runtime.app:celery_app` 로 뜬다. 그 명령은
+        # 이 모듈만 불러온다 — 태스크는 `veo_worker.runtime.tasks` 에서 데코레이터로
+        # 등록되는데, 아무도 그 모듈을 부르지 않으니 등록이 일어나지 않았다.
+        #
+        # 증상이 고약했다(운영 실측 2026-08-06 23:31). 워커는 `ready.` 를 찍고,
+        # 큐 여섯 개를 듣는다고 배너에 적고, `Online` 으로 보였다. 큐 목록은 이 설정
+        # 에서 오니까 태스크가 하나도 없어도 그대로 나온다. 그러다 메시지가 오면
+        # `Received unregistered task of type 'veo.jobs.seo_scan'` 로 버렸다.
+        include=["veo_worker.runtime.tasks"],
         timezone="Asia/Seoul",
         enable_utc=True,
         task_track_started=True,
