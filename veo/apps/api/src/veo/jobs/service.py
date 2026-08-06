@@ -30,6 +30,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any, Final
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from veo.authz.principal import Principal
@@ -92,9 +93,24 @@ def submit(
     서버 부담이므로, 부르는 쪽의 성의에 맡길 일이 아니다.
 
     그래서 열쇠가 없으면 **같은 입력으로 아직 돌고 있는 작업**을 찾아 그것을 돌려준다.
-    시간 창을 두지 않는다 — 조건은 "아직 안 끝났는가" 하나다. 같은 입력의 진단을
-    동시에 두 번 돌려서 얻을 것이 없기 때문이고, 끝난 뒤의 재진단은 정당하므로
-    막지 않는다("고쳤으니 다시 재 주세요" 는 막으면 안 되는 일이다).
+    끝난 뒤의 재진단은 정당하므로 막지 않는다("고쳤으니 다시 재 주세요" 는 막으면 안
+    되는 일이다).
+
+    ## "아직 안 끝났다" 와 "아직 돌고 있다" 는 다르다
+
+    처음에는 조건이 "아직 안 끝났는가" 하나였다. 그것이 **덫이 됐다**(운영 실측
+    2026-08-07 00:18). 워커가 태스크를 등록하지 못해 버린 잡 하나가 `QUEUED` 인 채
+    남았고, 그 뒤로 그 사이트는 **다시 진단할 방법이 없어졌다.** 버튼을 누를 때마다
+    죽은 잡을 돌려받았고, 화면은 매번 "20분 넘게 소식이 끊겼습니다" 를 띄웠다.
+
+    죽은 잡을 `RUNNING`/`QUEUED` 로 되돌릴 사람이 아무도 없으므로, 그 상태는 영원하다.
+    그래서 여기서도 :func:`is_stale` 과 **같은 잣대**를 쓴다 — 소식이 끊긴 잡은 도는
+    중이 아니므로 새로 시작할 길을 막지 않는다.
+
+    **명시한 열쇠(`idempotency_key`)에는 이 완화를 적용하지 않는다.** 그쪽은 부르는
+    쪽이 "이 열쇠로는 딱 한 번" 을 요구한 것이고, 그 약속을 우리가 임의로 깨면 안 된다.
+    여기 완화는 열쇠를 안 준 호출을 우리가 알아서 지켜 주는 편의이므로, 편의가 덫이
+    되지 않게 하는 것도 우리 몫이다.
     """
     if idempotency_key is not None:
         existing = session.scalars(
@@ -105,11 +121,15 @@ def submit(
         if existing is not None:
             return existing, False
     else:
+        alive_since = datetime.now(UTC) - STALE_AFTER
         running = session.scalars(
             tenant_select(JobRow, principal)
             .where(JobRow.type == str(job_type))
             .where(JobRow.input_hash == input_hash(job_type, parameters))
             .where(JobRow.status.in_([str(state) for state in _OPEN_STATUSES]))
+            # 소식이 끊긴 잡은 도는 중이 아니다. 이 줄이 없으면 죽은 잡 하나가
+            # 그 사이트의 재진단을 영원히 막는다.
+            .where(func.coalesce(JobRow.updated_at, JobRow.created_at) > alive_since)
             .order_by(JobRow.created_at.desc())
         ).first()
         if running is not None:

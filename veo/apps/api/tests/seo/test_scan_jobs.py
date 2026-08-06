@@ -307,3 +307,53 @@ class TestPressingTwiceDoesNotCrawlTwice:
 
         assert created is True, "끝난 작업이 재진단을 막고 있다"
         assert second.id != first.id
+
+    def test_a_dead_job_does_not_block_a_re_scan_forever(
+        self, db_session, principal, site  # noqa: F811
+    ):
+        """**이 중복 방지가 덫이 됐던 자리다** (운영 실측 2026-08-07 00:18).
+
+        워커가 태스크를 등록하지 못해 버린 잡 하나가 `QUEUED` 인 채 남았다. 그 뒤로
+        그 사이트는 진단할 방법이 없어졌다 — 버튼을 누를 때마다 죽은 잡을 돌려받았고,
+        화면은 매번 "20분 넘게 소식이 끊겼습니다" 를 띄웠다. 죽은 잡을 되살릴 사람은
+        아무도 없으므로 그 상태는 영원하다.
+        """
+        import datetime as _dt
+
+        from veo.contracts.enums import JobType
+        from veo.jobs import service as jobs_service
+
+        parameters = {"target_url": site.origin, "site_id": str(site.id)}
+        dead, _ = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+        db_session.flush()
+        # 소식이 끊긴 지 오래됐다 — `is_stale` 이 참이 되는 그 상태 그대로.
+        dead.updated_at = _dt.datetime.now(_dt.UTC) - jobs_service.STALE_AFTER * 2
+        db_session.flush()
+        assert jobs_service.is_stale(dead) is True, "시험이 만들려던 상태가 아니다"
+
+        second, created = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+
+        assert created is True, "죽은 작업이 재진단을 영원히 막고 있다"
+        assert second.id != dead.id
+
+    def test_a_live_job_still_blocks(self, db_session, principal, site):  # noqa: F811
+        """완화가 지나쳐서 원래 막던 것까지 뚫리면 안 된다 — 방금 시작한 것은 막는다."""
+        from veo.contracts.enums import JobType
+        from veo.jobs import service as jobs_service
+
+        parameters = {"target_url": site.origin, "site_id": str(site.id)}
+        first, _ = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+        db_session.flush()
+
+        second, created = jobs_service.submit(
+            db_session, principal, job_type=JobType.SEO_SCAN, parameters=parameters
+        )
+
+        assert created is False
+        assert second.id == first.id
