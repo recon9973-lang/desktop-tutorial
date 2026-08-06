@@ -43,7 +43,18 @@ const POLICY: readonly { readonly label: string; readonly value: string }[] = [
   { label: '연결 대기', value: '10초' },
   { label: '응답 대기(전체)', value: '30초' },
   { label: '받는 문서 크기', value: '최대 2MB' },
-  { label: 'robots.txt', value: 'VEOBot 대상 Disallow 를 지킵니다' },
+  // 예외를 적지 않으면 이 줄이 거짓말이 된다. 진단 의뢰인이 직접 지정한 대표 주소
+  // 한 장은 robots.txt 와 무관하게 가져온다 — 그것이 의뢰받은 일이고, "모든 봇을
+  // 막아 두었다" 는 사실 자체가 우리가 보고해야 할 진단 결과이기 때문이다
+  // (근거: apps/api/src/veo/seo/discovery.py 머리말).
+  //
+  // 대신 그 한 장에서 멈춘다. 우리가 **찾아서 넓힌** 주소는 전부 robots.txt 를 따른다.
+  {
+    label: 'robots.txt',
+    value:
+      'VEOBot 대상 Disallow 를 지킵니다. 다만 의뢰인이 직접 지정한 대표 주소 1장은 ' +
+      '진단 목적으로 가져오며, 우리가 찾아서 넓힌 주소는 예외 없이 규칙을 따릅니다',
+  },
   { label: '쿠키·로그인', value: '보내지 않습니다. 공개된 페이지만 읽습니다' },
 ];
 

@@ -264,6 +264,29 @@ def _robots_allows(
     context: CollectionContext, site: SiteObservation, ledger: EvidenceLedger
 ) -> tuple[CheckOutcome, list[IssueDraft]]:
     if site.robots is None:
+        if site.context.robots_state == "ABSENT":
+            # **규칙 파일이 없는 것은 정상이다.** 표준이 그렇게 정한다 — robots.txt 가
+            # 없으면 모든 크롤러에게 허용이다. 이것을 "못 쟀다" 로 접으면 멀쩡한 사이트가
+            # 우리 관측 실패와 같은 취급을 받고 측정 범위만 깎인다.
+            #
+            # 이 갈래는 2026-08-06 감사 전까지 없었다. 수집기가 404 와 서버 오류와
+            # 타임아웃을 전부 `None` 하나로 접어 놓아서, 위 문장("파일이 없는 것과
+            # 확인하지 못한 것은 다르므로")이 **지킬 수 없는 약속**이었다. 실측에서
+            # 셋이 완전히 같은 결과를 냈다.
+            return (
+                url_ratio_outcome(
+                    "seo.robots.txt_allows_url",
+                    affected=[],
+                    evaluated=list(site.pages),
+                    evidence_ids=[],
+                    observed_value=None,
+                    clean_note_ko=(
+                        "robots.txt 파일이 없습니다. 규칙 파일이 없으면 모든 크롤러에게 "
+                        "허용된 상태이므로 수집을 막는 규칙도 없습니다."
+                    ),
+                ),
+                [],
+            )
         return (
             unknown_outcome(
                 "seo.robots.txt_allows_url",

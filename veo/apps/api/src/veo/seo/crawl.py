@@ -31,6 +31,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from veo.collect.contract import RobotsState
 from veo.common.security.egress_kr import korean_egress
 from veo.common.security.fetcher import FetchedDocument, FetchError, SafeFetcher
 from veo.common.security.limits import FetchLimitError
@@ -128,6 +129,11 @@ class CrawlOutcome:
 
     documents: tuple[FetchedDocument, ...]
     robots_txt: str | None = None
+    robots_state: RobotsState = "UNREADABLE"
+    """robots.txt 가 **어떻게 됐는가** — 있음 · 없음 · 못 읽음.
+
+    ``robots_txt`` 가 ``None`` 인 것만으로는 셋을 구분할 수 없고, 구분하지 않으면
+    규칙 파일이 없는 정상 사이트가 우리 관측 실패와 같은 취급을 받는다."""
     sitemaps: Mapping[str, str] = field(default_factory=dict)
     discovered: Mapping[str, DiscoveredUrl] = field(default_factory=dict)
     failures: tuple[CrawlFailure, ...] = ()
@@ -247,7 +253,8 @@ class ConsoleCrawler:
         """
         targets = self._accept(urls)
         documents = tuple(self._fetch(url) for url in targets)
-        return documents, self._fetch_robots(documents[0].final_url)
+        robots_txt, _state = self._fetch_robots(documents[0].final_url)
+        return documents, robots_txt
 
     # ------------------------------------------------------------- 스스로 찾아 돌기
 
@@ -264,7 +271,7 @@ class ConsoleCrawler:
         primary = self._fetch(entry)
         entry_url_final = normalise_url(primary.final_url)
 
-        robots_txt = self._fetch_robots(primary.final_url)
+        robots_txt, robots_state = self._fetch_robots(primary.final_url)
         robots = parse_robots(robots_txt) if robots_txt is not None else None
 
         sitemaps, budget_exhausted = self._collect_sitemaps(entry_url_final, robots)
@@ -371,6 +378,7 @@ class ConsoleCrawler:
         return CrawlOutcome(
             documents=tuple(documents),
             robots_txt=robots_txt,
+            robots_state=robots_state,
             sitemaps=sitemaps,
             discovered=discovered,
             failures=tuple(failures),
@@ -533,8 +541,17 @@ class ConsoleCrawler:
 
         return found, budget_exhausted
 
-    def _fetch_robots(self, page_url: str) -> str | None:
-        """robots.txt 는 없을 수 있다. 없다는 사실과 못 읽었다는 사실을 구분한다.
+    def _fetch_robots(self, page_url: str) -> tuple[str | None, RobotsState]:
+        """robots.txt 는 없을 수 있다. **없다는 사실과 못 읽었다는 사실을 구분한다.**
+
+        이 주석은 한동안 사실이 아니었다. 돌려주는 값이 ``str | None`` 하나뿐이라
+        404(없음) · 5xx(서버 오류) · 타임아웃(응답 없음)이 전부 ``None`` 으로 접혔고,
+        2026-08-06 실측에서 셋이 완전히 같은 결과를 냈다 —
+        `txt_allows_url` UNKNOWN, 점수 29.081753.
+
+        구분이 왜 중요한가. **robots.txt 가 없는 것은 사실상 정상**이다(모든 크롤러에게
+        허용). 못 읽은 것은 **우리 관측의 실패**다. 접어 두면 멀쩡한 사이트가 우리
+        네트워크 사정과 같은 취급을 받고, 진짜 서버 장애는 "정상" 에 묻힌다.
 
         호스트는 페이지가 **실제로 도착한** 주소에서 뽑는다. 리다이렉트된 진단이 원래
         입력한 호스트의 robots.txt 를 읽으면 엉뚱한 사이트의 규칙으로 판정하게 된다.
@@ -545,7 +562,7 @@ class ConsoleCrawler:
         """
         parts = urlsplit(page_url)
         if not parts.scheme or not parts.netloc:
-            return None
+            return None, "UNREADABLE"
         try:
             document = self._fetcher.fetch(f"{parts.scheme}://{parts.netloc}/robots.txt")
         except (
@@ -556,11 +573,15 @@ class ConsoleCrawler:
             httpx.HTTPError,
         ):
             # 읽지 못한 것은 `None`. 빈 문자열은 "내용이 없는 파일" 이라는 다른 뜻이다.
-            return None
+            return None, "UNREADABLE"
+        if document.status in (404, 410):
+            # 규칙 파일이 없다. "모든 것이 막혀 있다" 도 아니고 "못 읽었다" 도 아니다 —
+            # 표준대로 **모든 크롤러에게 허용**이라는 뜻이다.
+            return None, "ABSENT"
         if document.status != 200:
-            # 404 는 "규칙 파일이 없다" 이지 "모든 것이 막혀 있다" 가 아니다.
-            return None
-        return document.text()
+            # 5xx·403 따위. 파일이 있는지조차 알 수 없다.
+            return None, "UNREADABLE"
+        return document.text(), "PRESENT"
 
 
 def _failure_reason(exc: Exception) -> str:

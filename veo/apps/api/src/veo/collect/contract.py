@@ -19,11 +19,18 @@ import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 from veo.common.security.fetcher import FetchedDocument
 from veo.contracts.enums import ProviderState
 from veo.scoring import CheckOutcome, CheckStatus, ScoringSpec
+
+#: robots.txt 를 **관측한 결과**. 내용이 아니라 "어떻게 됐는가" 다.
+#:
+#: ``PRESENT``    200 으로 받았다. 내용은 ``robots_txt`` 에 있다.
+#: ``ABSENT``     404/410 — 규칙 파일이 없다. **사실상 정상**이고, 모든 크롤러에게 허용이다.
+#: ``UNREADABLE`` 그 밖 — 서버 오류·타임아웃·차단. **우리가 못 잰 것**이다.
+RobotsState = Literal["PRESENT", "ABSENT", "UNREADABLE"]
 
 
 class CollectorError(Exception):
@@ -115,6 +122,17 @@ class CollectionContext:
     """Fetched pages, keyed by their final URL."""
     primary_document: FetchedDocument | None = None
     robots_txt: str | None = None
+    robots_state: RobotsState = "UNREADABLE"
+    """robots.txt 를 **어떻게 됐는지**. 내용만으로는 셋을 구분할 수 없다.
+
+    ``robots_txt`` 가 ``None`` 인 것은 세 가지 서로 다른 사실을 한 모양으로 만든다:
+    파일이 없다(404), 서버가 오류를 냈다(5xx), 응답을 못 받았다(타임아웃).
+
+    2026-08-06 실측: 같은 사이트에서 robots 만 바꿔 봤더니 404·500·타임아웃이
+    **전부 같은 결과**(`txt_allows_url` UNKNOWN · 점수 29.081753)를 냈다. 그런데
+    파일이 없는 것은 **사실상 정상**(모든 크롤러에게 허용)이고, 못 읽은 것은 **우리
+    관측의 실패**다. 정상 사이트가 우리 관측 실패와 같은 취급을 받고 있었다.
+    """
     sitemap_documents: Mapping[str, str] = field(default_factory=dict)
     rendered_dom: Mapping[str, str] = field(default_factory=dict)
     """DOM after JavaScript execution, when a renderer ran. Kept apart from raw HTML

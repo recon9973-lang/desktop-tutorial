@@ -62,6 +62,7 @@ def context_from_crawl(
         documents=by_url,
         primary_document=primary,
         robots_txt=outcome.robots_txt,
+        robots_state=outcome.robots_state,
         sitemap_documents=dict(outcome.sitemaps),
         # 렌더링 후 DOM 은 아직 수집하지 않는다. 비워 두면 렌더 비교 항목이 UNKNOWN 이
         # 되고, 원본 HTML 과 같다고 **가정하지 않는다**.
