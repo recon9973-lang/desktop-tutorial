@@ -15,6 +15,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from veo.collect.contract import EvidenceRecord, IssueDraft
+from veo.geo.fix_examples import code_example_for
 from veo.geo.schemas import (
     GeoCategoryPayload,
     GeoCheckPayload,
@@ -29,6 +30,7 @@ from veo.geo.schemas import (
 )
 from veo.geo.service import GeoReadinessReport
 from veo.scoring.improvements import rank_improvements
+from veo.seo.fix_examples import with_brand
 
 #: 준비도 응답마다 그대로 되풀이한다. 준비도는 AI 노출이 아니며, 그렇게 적지 않은
 #: 보고서는 ADR 0003 이 금지한 혼동을 부른다.
@@ -44,6 +46,7 @@ def payload_from(
     *,
     extra_notes_ko: Sequence[str] = (),
     lookup: Mapping[str, Any] | None = None,
+    brand_name: str | None = None,
 ) -> GeoReadinessPayload:
     result = report.score
     band = (
@@ -132,7 +135,7 @@ def payload_from(
             )
             for item in rank_improvements(result)
         ],
-        issues=[_issue_payload(issue) for issue in report.issues],
+        issues=[_issue_payload(issue, brand_name) for issue in report.issues],
         evidence=[_evidence_payload(record) for record in report.evidence],
         # 참고 조회를 왜 못 했는지 같은, 보고서 밖에서 온 안내도 여기에 실린다.
         # 조용히 빼면 '외부 출처가 없다' 로 읽히는데 그것은 사이트 탓이 아니다.
@@ -141,7 +144,7 @@ def payload_from(
     )
 
 
-def _issue_payload(issue: IssueDraft) -> GeoIssuePayload:
+def _issue_payload(issue: IssueDraft, brand_name: str | None = None) -> GeoIssuePayload:
     return GeoIssuePayload(
         check_id=issue.check_id,
         title_ko=issue.title_ko,
@@ -151,7 +154,13 @@ def _issue_payload(issue: IssueDraft) -> GeoIssuePayload:
         business_impact_ko=issue.business_impact_ko,
         affected_urls=list(issue.affected_urls),
         evidence_ids=list(issue.evidence_ids),
-        fix_example=issue.fix_example,
+        # 수집기가 현장 코드를 만들었으면 그것(실측값 포함)이 우선, 없으면 등록부의
+        # 표준 예시 — SEO 쪽과 같은 폴백이다(`seo/router.py`). 실측 2026-08-07:
+        # GEO 는 37개 검사 중 하나만 예시가 있었고, SEO 는 30개가 있었다. 두 화면이
+        # 나란히 놓이는데 한쪽만 코드가 나오면 GEO 는 고칠 방법이 없어 보인다.
+        fix_example=with_brand(
+            issue.fix_example or code_example_for(issue.check_id), brand_name
+        ),
         reverification_note_ko=issue.reverification_note_ko,
     )
 

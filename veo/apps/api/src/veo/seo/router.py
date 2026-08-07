@@ -348,9 +348,10 @@ def run_console_scan(
         context, performance = with_performance(context, cache=perf_cache)
     with stage("채점", timings):
         result = run_seo_scan(context)
-    report = _scan_payload(
-        result, brand_name=_registered_brand_name(db, principal, site_id=payload.site_id)
-    )
+    # 한 번만 조회해서 SEO·GEO 양쪽에 **같은 값**을 쓴다. 두 번 조회하면 언젠가
+    # 한쪽만 바뀌고, 같은 진단의 두 화면이 다른 상호를 붙여넣으라고 말하게 된다.
+    brand_name = _registered_brand_name(db, principal, site_id=payload.site_id)
+    report = _scan_payload(result, brand_name=brand_name)
 
     # 유료 한도를 쓴 것은 사실이므로 사이트를 지정하지 않은 진단에서도 남긴다.
     # PageSpeed 는 하루 25,000회이고 진단 한 번에 최대 5회가 나간다. 기록이 없으면
@@ -382,6 +383,7 @@ def run_console_scan(
             # 종료 시각만 더 이르다 — 두 실행이 한 요청 안에서 겹쳐 돌았다는 사실이
             # 그대로 남는다.
             started_at=timings.started_at,
+            brand_name=brand_name,
         )
         report = report.model_copy(
             update={

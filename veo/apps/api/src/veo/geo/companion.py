@@ -59,6 +59,7 @@ def score_and_save_geo_companion(
     urls_attempted: int,
     urls_collected: int,
     started_at: datetime,
+    brand_name: str | None = None,
 ) -> GeoCompanion:
     """이미 가져온 크롤로 GEO 를 채점해 저장한다. 예외는 결과로 바꾼다.
 
@@ -90,7 +91,12 @@ def score_and_save_geo_companion(
         )
 
         report = run_geo_readiness(context, spec=spec)
-        snapshot = payload_from(target_url, report).model_dump(mode="json")
+        # 예시 코드의 상호 자리에 **등록된 업체명**만 넣는다. 없으면 자리표시자
+        # 그대로 — 도메인에서 이름을 추측해 넣으면 담당자가 틀린 상호를 확신을
+        # 가지고 붙여넣게 된다(seo/fix_examples.with_brand 의 판단과 같다).
+        snapshot = payload_from(
+            target_url, report, brand_name=brand_name
+        ).model_dump(mode="json")
         saved = save_scan_run(
             db,
             principal=principal,
