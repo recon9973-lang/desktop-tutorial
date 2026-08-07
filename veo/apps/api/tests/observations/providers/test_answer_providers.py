@@ -595,6 +595,60 @@ def test_a_model_that_cannot_report_citations_is_not_a_zero() -> None:
     assert outcome.value.citations == ()
 
 
+def test_an_answer_written_without_searching_is_not_a_zero() -> None:
+    """도구를 붙였다고 검색이 도는 것이 아니다.
+
+    실측 2026-08-08 · gpt-4o · 같은 `web_search` 도구를 붙인 채:
+
+        "임플란트 수술 후 붓기는 며칠 가나요?"  output=['message']
+                                               입력 319 토큰 · annotation 0
+        "베놈애드는 어떤 회사인가요?" 3회 반복   output=['web_search_call','message']
+                                               입력 17,286 / 17,310 / 21,504 토큰
+
+    모델이 그때그때 정한다. 검색을 건너뛴 답변을 `STRUCTURED` + `citations=()` 로 적으면
+    **"AI 가 찾아봤지만 당신을 인용하지 않았다"** 가 된다. 사실은 "AI 가 찾아보지도
+    않았다" 이고, 거래처에 주는 지시가 정반대다 — 앞은 "경쟁사에 밀렸으니 콘텐츠를
+    고쳐라", 뒤는 "이 질문은 애초에 검색으로 가지 않는다" 이다.
+    """
+    provider = openai_provider(ok(openai_payload(web_search_ran=False)))
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o"))
+
+    assert outcome.succeeded
+    assert outcome.value is not None
+    assert outcome.value.citation_support is CitationSupport.NOT_EXPOSED_BY_PROVIDER
+    assert outcome.value.citations == ()
+
+
+def test_citations_are_dropped_when_no_search_ran() -> None:
+    """검색이 안 돌았는데 annotation 이 붙어 있으면 그것은 우리가 모르는 경로로 온
+    값이다. 인용으로 세면 근거 없는 인용을 만들어 낸다 — 비운다."""
+    provider = openai_provider(
+        ok(
+            openai_payload(
+                web_search_ran=False, citation_urls=("https://a.example/x",)
+            )
+        )
+    )
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o"))
+
+    assert outcome.value is not None
+    assert outcome.value.citations == ()
+
+
+def test_a_search_that_ran_but_cited_nobody_is_still_a_zero() -> None:
+    """반대 방향도 지킨다. **검색이 실제로 돌았는데** 아무도 인용하지 않았다면 그것은
+    진짜 0 이고, 측정 불가로 접으면 거래처가 알아야 할 사실을 지우는 것이다."""
+    provider = openai_provider(ok(openai_payload(web_search_ran=True)))
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o"))
+
+    assert outcome.value is not None
+    assert outcome.value.citation_support is CitationSupport.STRUCTURED
+    assert outcome.value.citations == ()
+
+
 def test_an_unverified_model_is_not_assumed_capable() -> None:
     """확인하지 않은 능력을 있다고 가정하면 그 모델의 모든 답변이 거짓 0 이 된다."""
     provider = openai_provider(ok(openai_payload()))

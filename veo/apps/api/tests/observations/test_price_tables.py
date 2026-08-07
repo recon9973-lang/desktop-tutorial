@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
+import yaml
 
 from veo.observations.pricing import (
     PriceTableStaleError,
@@ -123,19 +124,111 @@ def test_a_fresh_table_passes_the_up_front_check() -> None:
 # --------------------------------------------------------------------------- #
 
 
+def _shipped():  # type: ignore[no-untyped-def]
+    """가장 최신 가격표를, **그 표의 기준일에** 읽는다.
+
+    고정 날짜를 쓰면 90일 뒤 이 시험이 "만료됐다" 며 깨진다. 그것은 가격표를 갱신하라는
+    신호로는 옳지만, 여기서 확인하려는 것(값이 실려 있는가·출처가 붙어 있는가)과는
+    상관이 없다. 만료 자체는 위의 시험들이 이미 지킨다.
+    """
+    from veo.observations.pricing import find_prices_root
+
+    newest = sorted(
+        (p for p in find_prices_root().iterdir() if p.suffix in {".yaml", ".yml"}),
+        key=lambda p: p.stem,
+    )[-1]
+    document = yaml.safe_load(newest.read_text(encoding="utf-8"))
+    return document, load_price_table(today=date.fromisoformat(str(document["as_of"])))
+
+
 def test_the_shipped_table_loads() -> None:
     table = load_price_table(today=TODAY)
     assert table.version.startswith("model-prices/")
 
 
-def test_the_shipped_table_ships_empty_and_says_so() -> None:
-    """Nobody verified these prices, so none are claimed. Empty beats wrong."""
-    table = load_price_table(today=TODAY)
+def test_the_shipped_table_prices_the_models_observation_actually_calls() -> None:
+    """빈 표는 안전한 기본값이 아니라 **자물쇠**였다.
+
+    실측 2026-08-08: `runner.py` 는 예산 상한이 걸린 실행에서 비용을 못 재면 그 자리에서
+    멈춘다(``StopReason.COST_UNMEASURABLE``). 표가 비어 있으면 모든 호출의 비용이 None
+    이므로 **첫 호출에서 중단**된다 — 상한을 걸면 아무것도 못 돌고, 안 걸면 얼마 나가는지
+    모르는 채로 돈을 쓴다. 둘 다 쓸 수 없었다.
+
+    인용을 돌려주는 계열만 지킨다. 그것이 관측이 실제로 부르는 모델이다.
+    """
+    _, table = _shipped()
+
+    for model in ("gpt-5", "gpt-4o"):
+        cost, basis = table.cost(
+            model=model, model_version=model, input_tokens=1_000_000, output_tokens=0
+        )
+        assert cost is not None, f"{model} 단가가 없어 예산 상한을 걸 수 없습니다"
+        assert str(basis) == "CALCULATED_FROM_USAGE"
+
+
+def test_a_dated_build_falls_back_to_its_model_price() -> None:
+    """관측 기록의 `model_version` 은 `gpt-4o-mini-2024-07-18` 처럼 날짜가 붙은 실제
+    빌드다. 그 키가 표에 없다고 비용을 포기하면, 실제로 부르는 모든 호출이 측정 불가가
+    된다 — 표를 채운 의미가 사라진다."""
+    _, table = _shipped()
+
     cost, basis = table.cost(
-        model="gpt-5", model_version="gpt-5", input_tokens=1000, output_tokens=1000
+        model="gpt-4o-mini",
+        model_version="gpt-4o-mini-2024-07-18",
+        input_tokens=1_000_000,
+        output_tokens=0,
     )
+
+    assert cost == pytest.approx(0.15)
+    assert str(basis) == "CALCULATED_FROM_USAGE"
+
+
+def test_an_unknown_model_is_still_not_free() -> None:
+    """표를 채웠다고 해서 모르는 모델까지 0원이 되어서는 안 된다."""
+    _, table = _shipped()
+
+    cost, basis = table.cost(
+        model="some-model-nobody-priced",
+        model_version="v1",
+        input_tokens=1000,
+        output_tokens=1000,
+    )
+
     assert cost is None
     assert str(basis) == "NO_PRICE_CONFIGURED"
+
+
+def test_every_shipped_price_carries_where_it_came_from() -> None:
+    """출처 없는 단가는 다음 사람이 확인할 방법이 없다.
+
+    파서는 `source_url`·`verified_on` 을 요구하지 않는다 — 시험 문서까지 그것을 달아야
+    하면 시험이 무거워진다. 대신 **실제로 발행되는 표**에만 이 관문을 건다. 값을 지어내
+    넣으면 여기서 걸린다.
+    """
+    document, _ = _shipped()
+
+    for key, entry in (document.get("prices") or {}).items():
+        assert entry.get("source_url"), f"{key} 에 출처(source_url)가 없습니다"
+        assert entry.get("verified_on"), f"{key} 에 확인 날짜(verified_on)가 없습니다"
+
+
+def test_output_is_never_cheaper_than_input() -> None:
+    """뒤집힌 값을 걸러낸다.
+
+    실측 2026-08-08: 검색 요약이 gpt-5 를 입력 $2.50 / 출력 $0.25 로 알려 왔다. 실제는
+    입력 $1.25 / 출력 $10.00 이었다 — 출력이 입력의 8배인데 10분의 1로 적혀 있었다.
+    그대로 넣었으면 **실제 비용의 40분의 1**을 예산으로 세고 상한을 넘겨 썼을 것이다.
+
+    현재 주요 제공자는 전부 출력이 입력보다 비싸다. 이것은 물리 법칙이 아니라 관측된
+    시장 관행이므로, 언젠가 뒤집힌 값이 진짜가 되면 이 시험을 근거와 함께 고친다 —
+    그때는 고치는 사람이 근거를 대야 한다는 것이 이 관문의 값어치다.
+    """
+    document, _ = _shipped()
+
+    for key, entry in (document.get("prices") or {}).items():
+        assert entry["output_usd_per_million"] >= entry["input_usd_per_million"], (
+            f"{key} 의 출력 단가가 입력보다 쌉니다 — 입·출력이 뒤바뀐 값일 수 있습니다"
+        )
 
 
 def test_a_price_entry_must_carry_both_directions() -> None:

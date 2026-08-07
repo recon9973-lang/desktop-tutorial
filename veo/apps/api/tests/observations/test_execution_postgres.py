@@ -206,20 +206,31 @@ def tenant(db: Session) -> Callable[..., tuple[Principal, PromptSetRow]]:
 # --------------------------------------------------------------------------- #
 
 
-def _payload(text: str, citation_urls: tuple[str, ...] = ()) -> dict:
+def _payload(
+    text: str, citation_urls: tuple[str, ...] = (), *, web_search_ran: bool = True
+) -> dict:
+    """OpenAI Responses API 모양의 손으로 지어낸 응답.
+
+    `web_search_call` 을 함께 넣는 이유: 실측 2026-08-08 로, 검색이 실제로 돈 응답에만
+    이 항목이 붙는다(입력 17k~21k 토큰). 검색을 건너뛴 응답에는 없다(319 토큰). 어댑터는
+    이 항목이 있을 때만 인용을 세므로, 빼 두면 이 파일이 재려는 것("인용이 저장되는가")이
+    검색 판정 때문에 조용히 0 이 된다 — 재려던 것과 다른 것을 재게 된다.
+    """
     annotations = [
         {"type": "url_citation", "url": url, "title": "합성 출처"} for url in citation_urls
     ]
+    output: list[dict] = []
+    if web_search_ran:
+        output.append({"type": "web_search_call", "id": "ws_synthetic", "status": "completed"})
+    output.append(
+        {
+            "type": "message",
+            "content": [{"type": "output_text", "text": text, "annotations": annotations}],
+        }
+    )
     return {
         "model": MODEL_VERSION,
-        "output": [
-            {
-                "type": "message",
-                "content": [
-                    {"type": "output_text", "text": text, "annotations": annotations}
-                ],
-            }
-        ],
+        "output": output,
         "usage": {"input_tokens": 10, "output_tokens": 20},
     }
 

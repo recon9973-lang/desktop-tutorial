@@ -94,27 +94,37 @@ def openai_payload(
     citation_urls: tuple[str, ...] = (),
     input_tokens: int | None = 1000,
     output_tokens: int | None = 500,
+    web_search_ran: bool = True,
 ) -> dict[str, Any]:
-    """A hand-written body in the documented shape of the OpenAI Responses API."""
+    """A hand-written body in the documented shape of the OpenAI Responses API.
+
+    ``web_search_ran`` 은 응답에 ``web_search_call`` 항목을 넣을지다. 기본이 참인 것은
+    이 합성 응답들이 전부 "검색을 켜고 물었고 검색이 돌았다" 를 뜻하기 때문이다.
+
+    실측 2026-08-08 · gpt-4o: 도구를 붙여도 모델이 검색을 건너뛰면 ``output`` 에
+    ``web_search_call`` 이 아예 없다(입력 319 토큰). 검색이 돌면 있다(17k~21k 토큰).
+    거짓으로 두면 그 응답이 재현된다.
+    """
     annotations = [
         {"type": "url_citation", "url": url, "title": "합성 출처"} for url in citation_urls
     ]
-    payload: dict[str, Any] = {
-        "id": "resp_synthetic",
-        "output": [
-            {
-                "type": "message",
-                "role": "assistant",
-                "content": [
-                    {
-                        "type": "output_text",
-                        "text": text if text is not None else mentioning_answer(),
-                        "annotations": annotations,
-                    }
-                ],
-            }
-        ],
-    }
+    output: list[dict[str, Any]] = []
+    if web_search_ran:
+        output.append({"type": "web_search_call", "id": "ws_synthetic", "status": "completed"})
+    output.append(
+        {
+            "type": "message",
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "output_text",
+                    "text": text if text is not None else mentioning_answer(),
+                    "annotations": annotations,
+                }
+            ],
+        }
+    )
+    payload: dict[str, Any] = {"id": "resp_synthetic", "output": output}
     if model_version is not None:
         payload["model"] = model_version
     if input_tokens is not None or output_tokens is not None:

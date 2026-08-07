@@ -29,10 +29,26 @@ Two decisions in here are worth reading before changing anything:
 인용하지 않습니다" 라고 보고하게 된다 — 지어낸 값보다 나쁘다. 지어낸 줄도 모른다.
 
 Gemini·Perplexity 어댑터는 **응답에 인용 구조가 실제로 있는지** 보고 판정하는데, OpenAI
-에서는 그 방법이 통하지 않는다. ``annotations`` 키가 두 경우 모두 존재하고(mini 는 빈
-배열, 4o 는 채워짐) 둘 다 ``web_search_call`` 을 남기므로, 응답 모양으로는 "못 하는
-모델" 과 "인용할 것이 없던 답변" 을 가를 수 없다. 그래서 여기서는 능력을
-**선언**한다 — :data:`CITATION_CAPABLE_MODELS`.
+에서는 그 방법이 통하지 않는다. ``annotations`` 키가 두 경우 모두 존재하므로(mini 는 빈
+배열, 4o 는 채워짐) 응답 모양으로는 "못 하는 모델" 과 "인용할 것이 없던 답변" 을 가를
+수 없다. 그래서 **모델의 능력은 선언**한다 — :data:`CITATION_CAPABLE_MODEL_PREFIXES`.
+
+세 번째 사실 (2026-08-08 실측)
+------------------------------
+위 두 가지 말고 하나가 더 있었다. **도구를 붙였다고 검색이 도는 것이 아니다.**
+
+    "임플란트 수술 후 붓기는 며칠 가나요?"  →  output=['message']
+                                              입력 319 토큰 · annotation 0
+    "베놈애드는 어떤 회사인가요?" (3회)     →  output=['web_search_call','message']
+                                              입력 17,286 / 17,310 / 21,504 토큰
+
+같은 모델·같은 도구인데 모델이 그때그때 정한다. 검색을 안 한 답변을 ``STRUCTURED`` +
+``citations=()`` 로 적으면 **"AI 가 찾아봤지만 당신을 인용하지 않았다"** 가 된다. 사실은
+"AI 가 찾아보지도 않았다" 이고, 거래처에 주는 지시가 정반대다.
+
+그래서 :func:`_search_ran` 이 응답에서 ``web_search_call`` 을 확인한다. 위의 옛 설명은
+"둘 다 web_search_call 을 남긴다" 고 적고 있었는데 **오늘 재보니 아니었다** — 검색이 안
+돈 응답에는 그 항목 자체가 없다. 그때 사실이던 것이 오늘도 사실이라고 두지 않는다.
 """
 
 from __future__ import annotations
@@ -142,11 +158,18 @@ class OpenAIAnswerProvider(HttpAnswerProvider):
         if not text.strip():
             raise AnswerSchemaError("response carries no output_text")
 
-        # 검색을 켰다는 것과 그 모델이 인용을 돌려준다는 것은 다른 사실이다. 둘을
-        # 하나로 묶으면 인용을 못 돌려주는 모델의 답변이 "인용 0건" 으로 기록된다.
+        # 인용을 "0건" 으로 셀 수 있으려면 **세 가지가 모두** 참이어야 한다.
+        #
+        #   1. 우리가 검색을 켜서 요청했는가        (search_mode)
+        #   2. 그 모델이 인용을 돌려주는 모델인가    (reports_citations)
+        #   3. **그 호출에서 검색이 실제로 돌았는가** (_search_ran)
+        #
+        # 셋 중 하나라도 아니면 "인용 0건" 이 아니라 **인용을 물을 수 없는 답변**이다.
+        # 하나라도 빠뜨리면 그 답변이 인용률의 분모에 들어가 0으로 세어진다.
         observable = (
             conditions.search_mode is SearchMode.BROWSING
             and reports_citations(conditions.model)
+            and _search_ran(payload)
         )
         citations = _read_url_citations(annotations) if observable else ()
         support = (
@@ -163,6 +186,42 @@ class OpenAIAnswerProvider(HttpAnswerProvider):
             input_tokens=read_token_count(usage, "input_tokens", "prompt_tokens"),
             output_tokens=read_token_count(usage, "output_tokens", "completion_tokens"),
         )
+
+
+def _search_ran(payload: Mapping[str, Any]) -> bool:
+    """이 호출에서 웹 검색이 **실제로** 돌았는가.
+
+    도구를 붙였다고 검색이 도는 것이 아니다. 모델이 그때그때 정한다.
+
+    실측 2026-08-08 · gpt-4o · 같은 도구(`web_search`)를 붙인 채:
+
+        "임플란트 수술 후 붓기는 며칠 가나요?"   output=['message']
+                                                입력 319 토큰 · annotation 0
+        "베놈애드는 어떤 회사인가요?" 3회 반복    output=['web_search_call','message']
+                                                입력 17,286 / 17,310 / 21,504 토큰
+                                                annotation 7 / 7 / 10
+
+    앞의 것은 모델이 **자기 기억으로 답한** 경우다. 검색을 안 했으니 인용할 출처도
+    없다. 그런데 고치기 전 코드는 그것을 `STRUCTURED` + `citations=()` 로 적었고,
+    그것은 **"AI 가 검색해 봤지만 당신을 인용하지 않았다"** 로 읽힌다. 사실은
+    "AI 가 검색조차 하지 않았다" 이며, 둘은 거래처에 정반대의 지시를 준다 — 앞은
+    "경쟁사에 밀렸다", 뒤는 "이 질문은 애초에 검색으로 안 간다" 이다.
+
+    **이 모듈 앞머리의 설명은 오늘 실측과 다르다.** 거기엔 "`annotations` 키가 두 경우
+    모두 존재하고 둘 다 `web_search_call` 을 남기므로 응답 모양으로는 가를 수 없다" 고
+    적혀 있다(2026-07-30 기준). 오늘 재보니 검색이 안 돈 응답에는 `web_search_call`
+    자체가 **없다.** API 가 바뀌었거나 그때의 관측이 좁았다. 그때 사실이었던 것이
+    오늘도 사실이라고 가정하지 않는다.
+
+    없는 쪽으로 틀리는 것이 안전하다: 검색이 돈 것을 안 돌았다고 보면 인용이 있는
+    답변 하나를 '측정 불가' 로 버릴 뿐이지만, 반대로 틀리면 없는 0을 만들어 낸다.
+    """
+    output = payload.get("output")
+    if not isinstance(output, list):
+        return False
+    return any(
+        isinstance(item, dict) and item.get("type") == "web_search_call" for item in output
+    )
 
 
 def _read_output(payload: Mapping[str, Any]) -> tuple[str, list[Any]]:
