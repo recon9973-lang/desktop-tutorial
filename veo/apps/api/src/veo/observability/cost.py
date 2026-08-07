@@ -81,6 +81,12 @@ class UnmeasurableReason(StrEnum):
     #: a calculation with no number attached. A caller bug, recorded rather than raised —
     #: instrumentation does not get to fail a customer's scan.
     INVALID_COST_REPORTED = "INVALID_COST_REPORTED"
+    #: 검색에 호출당 요금을 받는 모델인데, 검색이 몇 번 돌았는지를 어댑터가 세지 않았다.
+    #: 토큰만 더하면 청구서보다 싸다 — 고칠 곳은 그 제공자의 어댑터다.
+    SEARCH_USAGE_UNKNOWN = "SEARCH_USAGE_UNKNOWN"
+    #: 검색으로 딸려온 토큰이 공짜인 모델의 검색 호출. 제공자가 프롬프트와 검색 결과를
+    #: 합친 입력 토큰 하나만 주므로 가를 수 없다. 고칠 곳은 코드가 아니라 **모델 선택**이다.
+    SEARCH_CONTENT_NOT_SEPARABLE = "SEARCH_CONTENT_NOT_SEPARABLE"
     #: No cost and no basis. The caller said nothing, so neither does the report.
     UNSPECIFIED = "UNSPECIFIED"
 
@@ -89,6 +95,10 @@ _BASIS_TO_REASON: Mapping[CostBasis, UnmeasurableReason] = {
     CostBasis.PRICE_TABLE_STALE: UnmeasurableReason.PRICE_TABLE_STALE,
     CostBasis.NO_PRICE_CONFIGURED: UnmeasurableReason.NO_PRICE_CONFIGURED,
     CostBasis.NO_USAGE_REPORTED: UnmeasurableReason.NO_USAGE_REPORTED,
+    CostBasis.SEARCH_USAGE_UNKNOWN: UnmeasurableReason.SEARCH_USAGE_UNKNOWN,
+    CostBasis.SEARCH_CONTENT_NOT_SEPARABLE: (
+        UnmeasurableReason.SEARCH_CONTENT_NOT_SEPARABLE
+    ),
     # A basis of CALCULATED_FROM_USAGE with no figure attached contradicts itself.
     CostBasis.CALCULATED_FROM_USAGE: UnmeasurableReason.INVALID_COST_REPORTED,
 }

@@ -166,10 +166,11 @@ class OpenAIAnswerProvider(HttpAnswerProvider):
         #
         # 셋 중 하나라도 아니면 "인용 0건" 이 아니라 **인용을 물을 수 없는 답변**이다.
         # 하나라도 빠뜨리면 그 답변이 인용률의 분모에 들어가 0으로 세어진다.
+        searches = _search_calls(payload)
         observable = (
             conditions.search_mode is SearchMode.BROWSING
             and reports_citations(conditions.model)
-            and _search_ran(payload)
+            and searches > 0
         )
         citations = _read_url_citations(annotations) if observable else ()
         support = (
@@ -185,11 +186,16 @@ class OpenAIAnswerProvider(HttpAnswerProvider):
             citation_support=support,
             input_tokens=read_token_count(usage, "input_tokens", "prompt_tokens"),
             output_tokens=read_token_count(usage, "output_tokens", "completion_tokens"),
+            search_calls=searches,
         )
 
 
-def _search_ran(payload: Mapping[str, Any]) -> bool:
-    """이 호출에서 웹 검색이 **실제로** 돌았는가.
+def _search_calls(payload: Mapping[str, Any]) -> int:
+    """이 호출에서 웹 검색이 **몇 번** 돌았는가.
+
+    개수까지 세는 이유는 돈이다. OpenAI 는 검색에 호출당 요금을 따로 받는다
+    (2026-08-08 공식 문서: 추론 모델 $10 / 1k, 비추론 $25 / 1k). 한 응답에서 검색이
+    두 번 돌면 두 번 청구된다 — 참/거짓으로 두면 그 차이가 사라진다.
 
     도구를 붙였다고 검색이 도는 것이 아니다. 모델이 그때그때 정한다.
 
@@ -218,9 +224,9 @@ def _search_ran(payload: Mapping[str, Any]) -> bool:
     """
     output = payload.get("output")
     if not isinstance(output, list):
-        return False
-    return any(
-        isinstance(item, dict) and item.get("type") == "web_search_call" for item in output
+        return 0
+    return sum(
+        1 for item in output if isinstance(item, dict) and item.get("type") == "web_search_call"
     )
 
 

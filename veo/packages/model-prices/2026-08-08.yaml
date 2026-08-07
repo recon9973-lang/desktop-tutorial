@@ -70,11 +70,25 @@ prices:
   gpt-5:
     input_usd_per_million: 1.25
     output_usd_per_million: 10.00
+    # 추론 모델의 웹 검색 요금. 검색으로 딸려온 토큰도 함께 과금되므로 입력 토큰을
+    # 그대로 세면 된다 — 금액이 정확히 나온다.
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/models/gpt-5"
     verified_on: "2026-08-08"
   gpt-4o:
     input_usd_per_million: 2.50
     output_usd_per_million: 10.00
+    # 비추론 모델은 요금이 더 비싸고(=$25/1k), 대신 검색으로 딸려온 토큰이 **무료**다.
+    # 그런데 제공자는 프롬프트 토큰과 검색 토큰을 합친 하나의 input_tokens 만 준다.
+    # 가를 방법이 없으므로 **이 모델의 검색 호출은 금액을 낼 수 없다** —
+    # 전부 과금으로 치면 과대, 전부 공짜로 치면 과소다. 지어내지 않는다.
+    #
+    # 실측 2026-08-08: 같은 질문에 입력 17,264 토큰. 이 중 얼마가 검색 결과인지
+    # 응답 어디에도 없다.
+    #
+    # → 관측에는 gpt-5 를 쓴다. 금액이 정확히 나오는 쪽이다.
+    search_usd_per_1k_calls: 25.00
+    search_content_tokens_free: true
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"
 
@@ -84,16 +98,20 @@ prices:
   gpt-5-mini:
     input_usd_per_million: 0.25
     output_usd_per_million: 2.00
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"
   gpt-5-nano:
     input_usd_per_million: 0.05
     output_usd_per_million: 0.40
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"
   gpt-4o-mini:
     input_usd_per_million: 0.15
     output_usd_per_million: 0.60
+    search_usd_per_1k_calls: 25.00
+    search_content_tokens_free: true
     source_url: "https://developers.openai.com/api/docs/models/gpt-4o-mini"
     verified_on: "2026-08-08"
 
@@ -101,20 +119,24 @@ prices:
   gpt-5.5:
     input_usd_per_million: 5.00
     output_usd_per_million: 30.00
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"
   gpt-5.6-sol:
     input_usd_per_million: 5.00
     output_usd_per_million: 30.00
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"
   gpt-5.6-terra:
     input_usd_per_million: 2.00
     output_usd_per_million: 12.00
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"
   gpt-5.6-luna:
     input_usd_per_million: 0.20
     output_usd_per_million: 1.20
+    search_usd_per_1k_calls: 10.00
     source_url: "https://developers.openai.com/api/docs/pricing"
     verified_on: "2026-08-08"

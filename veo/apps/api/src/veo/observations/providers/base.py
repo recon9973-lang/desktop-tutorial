@@ -306,18 +306,48 @@ class CostBasis(StrEnum):
     #: A price table exists but is past its expiry. Its numbers are no longer evidence
     #: of anything, so no figure is produced — see :mod:`veo.observations.pricing`.
     PRICE_TABLE_STALE = "PRICE_TABLE_STALE"
+    #: 이 모델은 검색에 호출당 요금을 따로 받는데, 이 호출에서 검색이 몇 번 돌았는지를
+    #: 어댑터가 알려주지 않았다. 토큰만으로 더하면 **청구서보다 싸게 나온다.**
+    SEARCH_USAGE_UNKNOWN = "SEARCH_USAGE_UNKNOWN"
+    #: 이 모델은 검색으로 딸려온 토큰을 공짜로 처리하는데, 제공자가 주는 `input_tokens`
+    #: 는 프롬프트와 검색 결과를 **합쳐서** 준다. 둘을 가를 수 없으므로 정확한 금액을
+    #: 만들 수 없다. 전부 과금으로 치면 과대, 전부 공짜로 치면 과소다.
+    SEARCH_CONTENT_NOT_SEPARABLE = "SEARCH_CONTENT_NOT_SEPARABLE"
 
 
 @dataclass(frozen=True, slots=True)
 class ModelPrice:
-    """USD per million tokens, as supplied by whoever is paying the bill."""
+    """한 모델의 단가.
+
+    토큰 단가만으로는 청구서가 맞지 않는다. 실측 2026-08-08 기준으로 주요 제공자
+    다섯 곳 중 넷이 **웹 검색에 호출당 요금을 따로** 받는다:
+
+        OpenAI      추론 $10 / 1k호출 · 비추론 $25 / 1k호출
+        Anthropic   $10 / 1k
+        Gemini      $14 / 1k (월 5,000회 무료)
+        Perplexity  $5~14 / 1k (모델·컨텍스트별)
+        xAI         공식 문서에 없음
+
+    토큰만 세면 검색을 돌린 호출마다 그만큼 적게 잡히고, 예산 상한이 실제보다 늦게
+    걸린다. 예산은 늦게 걸리면 없는 것과 같다.
+    """
 
     input_usd_per_million: float
     output_usd_per_million: float
+    #: 웹 검색 1,000회당 요금. 검색을 안 쓰는 모델은 0.
+    search_usd_per_1k_calls: float = 0.0
+    #: 검색으로 딸려온 토큰을 제공자가 공짜로 처리하는가.
+    #:
+    #: 참이면 이 모델의 **검색 호출은 금액을 낼 수 없다.** 제공자가 주는 입력 토큰
+    #: 수에 프롬프트와 검색 결과가 섞여 있고 가를 방법이 없기 때문이다. 지어낸 값을
+    #: 내는 대신 :attr:`CostBasis.SEARCH_CONTENT_NOT_SEPARABLE` 로 남긴다.
+    search_content_tokens_free: bool = False
 
     def __post_init__(self) -> None:
         if self.input_usd_per_million < 0 or self.output_usd_per_million < 0:
             raise ValueError("a price must not be negative")
+        if self.search_usd_per_1k_calls < 0:
+            raise ValueError("a search fee must not be negative")
 
 
 @runtime_checkable
@@ -336,6 +366,7 @@ class SupportsPricing(Protocol):
         model_version: str,
         input_tokens: int | None,
         output_tokens: int | None,
+        search_calls: int | None = None,
     ) -> tuple[float | None, CostBasis]: ...
 
 
@@ -358,15 +389,44 @@ class PriceTable:
         model_version: str,
         input_tokens: int | None,
         output_tokens: int | None,
+        search_calls: int | None = None,
     ) -> tuple[float | None, CostBasis]:
         if input_tokens is None and output_tokens is None:
             return None, CostBasis.NO_USAGE_REPORTED
         price = self.prices.get(model_version) or self.prices.get(model)
         if price is None:
             return None, CostBasis.NO_PRICE_CONFIGURED
-        total = (input_tokens or 0) / 1_000_000 * price.input_usd_per_million
-        total += (output_tokens or 0) / 1_000_000 * price.output_usd_per_million
-        return total, CostBasis.CALCULATED_FROM_USAGE
+        return priced_call(price, input_tokens, output_tokens, search_calls)
+
+
+def priced_call(
+    price: ModelPrice,
+    input_tokens: int | None,
+    output_tokens: int | None,
+    search_calls: int | None,
+) -> tuple[float | None, CostBasis]:
+    """토큰 단가와 검색 요금을 합친 한 호출의 금액, 또는 못 내는 이유.
+
+    **두 가격표가 이 함수를 함께 쓴다** — :class:`PriceTable` 과 날짜가 붙은
+    :class:`~veo.observations.pricing.DatedPriceTable`. 산식이 두 벌이 되면 언젠가
+    한쪽만 고쳐지고, 화면과 예산이 서로 다른 금액을 말하게 된다(0-D).
+
+    금액을 안 내는 두 경우가 있고, 둘 다 **0원이 아니라 '모른다'** 다:
+
+    * 검색 요금을 받는 모델인데 검색 횟수를 모를 때 — 더하면 청구서보다 싸다.
+    * 검색 토큰이 공짜인 모델의 검색 호출 — 제공자가 프롬프트와 검색 결과를 합친
+      입력 토큰 하나로 주므로, 어느 쪽이 얼마인지 가를 수 없다.
+    """
+    charges_for_search = price.search_usd_per_1k_calls > 0 or price.search_content_tokens_free
+    if charges_for_search and search_calls is None:
+        return None, CostBasis.SEARCH_USAGE_UNKNOWN
+    if price.search_content_tokens_free and (search_calls or 0) > 0:
+        return None, CostBasis.SEARCH_CONTENT_NOT_SEPARABLE
+
+    total = (input_tokens or 0) / 1_000_000 * price.input_usd_per_million
+    total += (output_tokens or 0) / 1_000_000 * price.output_usd_per_million
+    total += (search_calls or 0) / 1_000 * price.search_usd_per_1k_calls
+    return total, CostBasis.CALCULATED_FROM_USAGE
 
 
 #: The shipped table. Empty on purpose — see :class:`PriceTable`.
@@ -404,10 +464,19 @@ class ProviderAnswer:
     citation_support: CitationSupport
     input_tokens: int | None
     output_tokens: int | None
+    #: 이 호출에서 웹 검색이 **몇 번** 돌았는가. ``None`` 은 "이 어댑터가 아직 세지
+    #: 않는다" 이지 0이 아니다.
+    #:
+    #: 검색에 호출당 요금을 받는 모델(대부분이 그렇다)은 이 값이 없으면 금액을 낼 수
+    #: 없다 — 토큰만 더하면 청구서보다 싸게 나온다. 0으로 두면 그 사실이 조용히
+    #: 사라지므로 기본값은 ``None`` 이다.
+    search_calls: int | None = None
 
     def __post_init__(self) -> None:
         if not self.text.strip():
             raise ValueError("빈 문자열은 답변이 아닙니다")
+        if self.search_calls is not None and self.search_calls < 0:
+            raise ValueError("검색 횟수는 음수일 수 없습니다")
         if not self.model_version.strip():
             raise ValueError("모델 버전은 응답에서 읽어야 하며 비워둘 수 없습니다")
         if self.citation_support is CitationSupport.NOT_EXPOSED_BY_PROVIDER and self.citations:
@@ -575,6 +644,7 @@ class HttpAnswerProvider:
             model_version=answer.model_version,
             input_tokens=answer.input_tokens,
             output_tokens=answer.output_tokens,
+            search_calls=answer.search_calls,
         )
         return MeteredOutcome(
             value=answer,

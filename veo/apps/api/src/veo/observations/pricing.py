@@ -26,7 +26,7 @@ from typing import Any
 
 import yaml
 
-from veo.observations.providers.base import CostBasis, ModelPrice
+from veo.observations.providers.base import CostBasis, ModelPrice, priced_call
 
 _PRICES_DIR_ENV = "VEO_MODEL_PRICES_DIR"
 _PACKAGE_RELATIVE = Path("packages") / "model-prices"
@@ -72,10 +72,13 @@ class DatedPriceTable:
         model_version: str,
         input_tokens: int | None,
         output_tokens: int | None,
+        search_calls: int | None = None,
     ) -> tuple[float | None, CostBasis]:
         """The cost of one call, or the reason there isn't one.
 
         Signature-compatible with the adapters' own ``PriceTable`` so it drops in.
+        만료 확인만 여기서 하고, 산식은 :func:`priced_call` 하나를 함께 쓴다 — 두 벌이
+        되면 언젠가 한쪽만 고쳐진다(0-D).
         """
         if input_tokens is None and output_tokens is None:
             return None, CostBasis.NO_USAGE_REPORTED
@@ -86,9 +89,7 @@ class DatedPriceTable:
         if price is None:
             return None, CostBasis.NO_PRICE_CONFIGURED
 
-        total = (input_tokens or 0) / 1_000_000 * price.input_usd_per_million
-        total += (output_tokens or 0) / 1_000_000 * price.output_usd_per_million
-        return total, CostBasis.CALCULATED_FROM_USAGE
+        return priced_call(price, input_tokens, output_tokens, search_calls)
 
 
 def price_table_from_document(
@@ -115,8 +116,17 @@ def price_table_from_document(
             ) from exc
         if input_price < 0 or output_price < 0:
             raise ValueError(f"가격 항목 {key}에 음수 단가가 있습니다")
+        # 검색 요금은 없어도 된다 — 검색을 안 쓰는 모델이 있고, 아직 확인 못 한
+        # 제공자도 있다. 다만 **적지 않은 것과 0은 다르다.** 적지 않으면 0으로 두되,
+        # `search_content_tokens_free` 가 참이면 그 모델의 검색 호출은 금액을 못 낸다.
+        search_fee = float(entry.get("search_usd_per_1k_calls", 0.0) or 0.0)
+        if search_fee < 0:
+            raise ValueError(f"가격 항목 {key}에 음수 검색 요금이 있습니다")
         prices[str(key)] = ModelPrice(
-            input_usd_per_million=input_price, output_usd_per_million=output_price
+            input_usd_per_million=input_price,
+            output_usd_per_million=output_price,
+            search_usd_per_1k_calls=search_fee,
+            search_content_tokens_free=bool(entry.get("search_content_tokens_free", False)),
         )
 
     stale_after = int(document.get("stale_after_days", 90))

@@ -159,8 +159,14 @@ def test_the_shipped_table_prices_the_models_observation_actually_calls() -> Non
     _, table = _shipped()
 
     for model in ("gpt-5", "gpt-4o"):
+        # 검색이 안 돈 호출로 잰다 — 여기서 확인하려는 것은 **토큰 단가가 실려 있는가**
+        # 하나다. 검색이 돈 호출의 셈은 TestTheSearchFeeIsCounted 가 따로 지킨다.
         cost, basis = table.cost(
-            model=model, model_version=model, input_tokens=1_000_000, output_tokens=0
+            model=model,
+            model_version=model,
+            input_tokens=1_000_000,
+            output_tokens=0,
+            search_calls=0,
         )
         assert cost is not None, f"{model} 단가가 없어 예산 상한을 걸 수 없습니다"
         assert str(basis) == "CALCULATED_FROM_USAGE"
@@ -177,6 +183,7 @@ def test_a_dated_build_falls_back_to_its_model_price() -> None:
         model_version="gpt-4o-mini-2024-07-18",
         input_tokens=1_000_000,
         output_tokens=0,
+        search_calls=0,
     )
 
     assert cost == pytest.approx(0.15)
@@ -210,6 +217,144 @@ def test_every_shipped_price_carries_where_it_came_from() -> None:
     for key, entry in (document.get("prices") or {}).items():
         assert entry.get("source_url"), f"{key} 에 출처(source_url)가 없습니다"
         assert entry.get("verified_on"), f"{key} 에 확인 날짜(verified_on)가 없습니다"
+
+
+class TestTheSearchFeeIsCounted:
+    """토큰만 세면 청구서와 다르다.
+
+    실측 2026-08-08 공식 문서: 주요 제공자 다섯 곳 중 넷이 웹 검색에 **호출당** 요금을
+    따로 받는다(OpenAI $10~25/1k · Anthropic $10/1k · Gemini $14/1k · Perplexity
+    $5~14/1k). 우리 계산은 입력·출력 토큰만 더하고 있었다 — 검색을 돌린 호출마다
+    그만큼 적게 잡히고, **예산 상한이 실제보다 늦게 걸린다.** 늦게 걸리는 상한은
+    없는 것과 같다.
+    """
+
+    def _table(self, **overrides):  # type: ignore[no-untyped-def]
+        entry = {"input_usd_per_million": 1.25, "output_usd_per_million": 10.0}
+        entry.update(overrides)
+        return price_table_from_document(document(prices={"gpt-5": entry}), today=TODAY)
+
+    def test_the_fee_is_added_per_search(self) -> None:
+        table = self._table(search_usd_per_1k_calls=10.0)
+
+        cost, basis = table.cost(
+            model="gpt-5",
+            model_version="gpt-5",
+            input_tokens=1_000_000,
+            output_tokens=0,
+            search_calls=2,
+        )
+
+        # 토큰 $1.25 + 검색 2회 x $0.01
+        assert cost == pytest.approx(1.27)
+        assert str(basis) == "CALCULATED_FROM_USAGE"
+
+    def test_no_search_means_no_fee(self) -> None:
+        """검색을 켠 채 물어도 모델이 건너뛸 수 있다(2026-08-08 실측). 안 돌았으면
+        요금도 없다 — 있지도 않은 비용을 세면 그것도 지어낸 값이다."""
+        table = self._table(search_usd_per_1k_calls=10.0)
+
+        cost, _ = table.cost(
+            model="gpt-5",
+            model_version="gpt-5",
+            input_tokens=1_000_000,
+            output_tokens=0,
+            search_calls=0,
+        )
+
+        assert cost == pytest.approx(1.25)
+
+    def test_an_unknown_search_count_is_not_zero(self) -> None:
+        """검색 요금을 받는 모델인데 몇 번 돌았는지 모르면 **금액을 낼 수 없다.**
+
+        0으로 두면 청구서보다 싼 값이 '측정된 금액' 으로 화면에 뜬다. 그것이 이
+        제품이 만들지 않기로 한 종류의 숫자다.
+        """
+        table = self._table(search_usd_per_1k_calls=10.0)
+
+        cost, basis = table.cost(
+            model="gpt-5", model_version="gpt-5", input_tokens=1000, output_tokens=500
+        )
+
+        assert cost is None
+        assert str(basis) == "SEARCH_USAGE_UNKNOWN"
+
+    def test_a_model_with_no_search_fee_is_unaffected(self) -> None:
+        """검색 요금이 없는 모델은 예전과 똑같이 계산된다. 검색 횟수를 안 넘겨도 된다."""
+        table = self._table()
+
+        cost, basis = table.cost(
+            model="gpt-5", model_version="gpt-5", input_tokens=1_000_000, output_tokens=0
+        )
+
+        assert cost == pytest.approx(1.25)
+        assert str(basis) == "CALCULATED_FROM_USAGE"
+
+    def test_free_search_content_cannot_be_priced(self) -> None:
+        """OpenAI 비추론 모델은 검색으로 딸려온 토큰이 무료다. 그런데 제공자는
+        프롬프트와 검색 결과를 **합친** input_tokens 하나만 준다(실측: 17,264).
+
+        가를 방법이 없다. 전부 과금으로 치면 과대, 전부 공짜로 치면 과소다.
+        어느 쪽으로도 지어내지 않고 못 낸다고 말한다.
+        """
+        table = self._table(search_usd_per_1k_calls=25.0, search_content_tokens_free=True)
+
+        cost, basis = table.cost(
+            model="gpt-5",
+            model_version="gpt-5",
+            input_tokens=17_264,
+            output_tokens=1_119,
+            search_calls=1,
+        )
+
+        assert cost is None
+        assert str(basis) == "SEARCH_CONTENT_NOT_SEPARABLE"
+
+    def test_the_same_model_is_priceable_when_it_did_not_search(self) -> None:
+        """검색을 안 한 호출에는 섞인 토큰이 없다. 그때는 정확히 낼 수 있다."""
+        table = self._table(search_usd_per_1k_calls=25.0, search_content_tokens_free=True)
+
+        cost, basis = table.cost(
+            model="gpt-5",
+            model_version="gpt-5",
+            input_tokens=319,
+            output_tokens=130,
+            search_calls=0,
+        )
+
+        assert cost is not None
+        assert str(basis) == "CALCULATED_FROM_USAGE"
+
+    def test_a_negative_search_fee_is_refused(self) -> None:
+        with pytest.raises(ValueError):
+            self._table(search_usd_per_1k_calls=-1.0)
+
+
+class TestTheShippedTableCarriesSearchFees:
+    def test_the_models_we_observe_with_declare_a_search_fee(self) -> None:
+        """실제로 관측에 쓰는 모델에 검색 요금이 없으면, 그 모델로 돈 실행은
+        조용히 싸게 집계된다."""
+        document_, _ = _shipped()
+
+        for model in ("gpt-5", "gpt-4o"):
+            entry = document_["prices"][model]
+            assert entry.get("search_usd_per_1k_calls"), f"{model} 에 검색 요금이 없습니다"
+
+    def test_the_shipped_gpt5_prices_a_searching_call(self) -> None:
+        """gpt-5 를 고른 이유가 이것이다 — 검색 호출의 금액이 정확히 나온다."""
+        _, table = _shipped()
+
+        cost, basis = table.cost(
+            model="gpt-5",
+            model_version="gpt-5",
+            input_tokens=17_264,
+            output_tokens=1_119,
+            search_calls=1,
+        )
+
+        # 17,264 x $1.25/M + 1,119 x $10/M + $10/1k
+        assert cost == pytest.approx(0.042770, rel=1e-4)
+        assert str(basis) == "CALCULATED_FROM_USAGE"
 
 
 def test_output_is_never_cheaper_than_input() -> None:

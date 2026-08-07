@@ -649,6 +649,64 @@ def test_a_search_that_ran_but_cited_nobody_is_still_a_zero() -> None:
     assert outcome.value.citations == ()
 
 
+def test_the_adapter_counts_the_searches_it_saw() -> None:
+    """검색 횟수는 **돈** 때문에 센다.
+
+    OpenAI 는 검색에 호출당 요금을 따로 받는다(2026-08-08 공식 문서: 추론 $10/1k,
+    비추론 $25/1k). 한 응답에 검색이 두 번 돌면 두 번 청구되므로 참/거짓이 아니라
+    개수여야 한다. 어댑터가 세지 않으면 가격표는 셀 방법이 없다.
+    """
+    payload = openai_payload()
+    payload["output"].insert(
+        0, {"type": "web_search_call", "id": "ws_second", "status": "completed"}
+    )
+
+    provider = openai_provider(ok(payload))
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o"))
+
+    assert outcome.value is not None
+    assert outcome.value.search_calls == 2
+
+
+def test_a_call_without_search_reports_zero_not_none() -> None:
+    """0과 '모른다' 는 다르다. 검색이 안 돈 것을 **봤으면** 0이고, 그때는 검색 요금이
+    없는 것이 확실하므로 금액을 낼 수 있다."""
+    provider = openai_provider(ok(openai_payload(web_search_ran=False)))
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o"))
+
+    assert outcome.value is not None
+    assert outcome.value.search_calls == 0
+
+
+def test_the_search_count_reaches_the_price_table() -> None:
+    """세 놓고 안 넘기면 세지 않은 것과 같다(0-E). 요금이 붙는 모델로 확인한다."""
+    from veo.observations.providers.base import ModelPrice, PriceTable
+
+    provider = OpenAIAnswerProvider(
+        credential=KEY,
+        transport=httpx.MockTransport(ok(openai_payload())),  # type: ignore[arg-type]
+        price_table=PriceTable(
+            prices={
+                OPENAI_MODEL_VERSION: ModelPrice(
+                    input_usd_per_million=0.0,
+                    output_usd_per_million=0.0,
+                    search_usd_per_1k_calls=10.0,
+                )
+            }
+        ),
+        monotonic=FakeMonotonic(),
+        sleep=lambda seconds: None,
+        now=lambda: NOW,
+    )
+
+    outcome = provider.ask("합성 질문", conditions=conditions(model="gpt-4o"))
+
+    # 토큰 단가 0 · 검색 1회 → 순수하게 검색 요금만 남는다
+    assert outcome.cost_usd == pytest.approx(0.01)
+    assert outcome.cost_basis is CostBasis.CALCULATED_FROM_USAGE
+
+
 def test_an_unverified_model_is_not_assumed_capable() -> None:
     """확인하지 않은 능력을 있다고 가정하면 그 모델의 모든 답변이 거짓 0 이 된다."""
     provider = openai_provider(ok(openai_payload()))
