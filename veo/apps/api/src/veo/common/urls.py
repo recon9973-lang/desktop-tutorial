@@ -61,6 +61,67 @@ DEFAULT_PORTS: dict[str, int] = {
 }
 
 MAX_URL_LENGTH = 4096
+
+#: 페이지를 가리키지 않고 **어디서 왔는지만** 적는 매개변수. 정규화에서 떨어뜨린다.
+#:
+#: 이것이 필요한 이유는 실측으로 확인됐다(2026-08-07). OpenAI 는 인용 주소마다
+#: ``?utm_source=openai`` 를 붙여 준다 — 실제 관측 4건 중 3건이 그랬다. 그대로 두면::
+#:
+#:     인용된 주소   https://www.venomad.com/service/geo-seo/?utm_source=openai
+#:     크롤한 주소   https://www.venomad.com/service/geo-seo/
+#:     같은 페이지인가 → 아니오
+#:
+#: "AI 가 우리를 인용했다" 는 도메인으로 판정하므로 영향이 없다. 그러나 **"우리 어느
+#: 페이지가 인용됐나"** 를 그 페이지의 진단 판정과 잇는 일은 전부 어긋난다. 그러면
+#: "이 페이지를 고쳤더니 인용이 늘었다" 를 영영 증명할 수 없다.
+#:
+#: **목록은 닫아 둔다.** 접두사로 뭉뚱그려 지우면 ``page`` · ``id`` · ``category``
+#: 같은 진짜 매개변수를 지울 위험이 있고, 그때는 서로 다른 페이지가 한 주소로
+#: 합쳐진다 — 지금 고치려는 것보다 나쁜 고장이다. 광고·유입 추적으로 널리 쓰이는
+#: 이름만 넣고, 새 이름은 실물을 보고 추가한다.
+TRACKING_QUERY_KEYS: frozenset[str] = frozenset(
+    {
+        # Google Analytics 계열 (utm_source·utm_medium·utm_campaign·utm_term·utm_content
+        # 및 GA4 가 붙이는 utm_id·utm_source_platform 등)
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "utm_id",
+        "utm_source_platform",
+        "utm_creative_format",
+        "utm_marketing_tactic",
+        # 광고 클릭 식별자 — 값이 매 클릭 달라서 같은 페이지를 무한히 쪼갠다.
+        "gclid",
+        "gbraid",
+        "wbraid",
+        "dclid",
+        "fbclid",
+        "msclkid",
+        "yclid",
+        "twclid",
+        "ttclid",
+        "igshid",
+        "mc_eid",
+        "mc_cid",
+        "_hsenc",
+        "_hsmi",
+        "vero_id",
+        "oly_enc_id",
+        "oly_anon_id",
+        # 국내 유입 추적
+        "n_media",
+        "n_query",
+        "n_rank",
+        "n_ad_group",
+        "n_ad",
+        "n_keyword_id",
+        "n_keyword",
+        "n_campaign_type",
+        "NaPm",
+    }
+)
 MAX_HOST_LENGTH = 253
 MAX_LABEL_LENGTH = 63
 
@@ -165,7 +226,7 @@ def normalize_url(raw: str) -> NormalizedUrl:
     port = explicit_port if explicit_port is not None else default_port
 
     path = _encode_component(split.path)
-    query = _encode_component(split.query)
+    query = _drop_tracking_keys(_encode_component(split.query))
 
     if host:
         path = _remove_dot_segments(path) if path else "/"
@@ -333,6 +394,30 @@ def _validate_ascii_host(host: str) -> None:
             raise UrlNormalizationError("ILLEGAL_HOST", "label too long")
         if _LABEL_RE.match(label) is None:
             raise UrlNormalizationError("ILLEGAL_HOST", "illegal character in label")
+
+
+def _drop_tracking_keys(query: str) -> str:
+    """유입 추적 매개변수를 뺀 질의 문자열. 남은 것의 **순서는 건드리지 않는다.**
+
+    순서를 정렬하면 페이지가 달라질 수 있다 — 어떤 서버는 매개변수 순서를 보고 다르게
+    응답한다. 우리가 고치려는 것은 "같은 페이지가 다른 주소로 보이는 것" 이지
+    "주소를 예쁘게 만드는 것" 이 아니다.
+
+    이름 비교는 대소문자를 무시한다(``UTM_SOURCE`` 도 같은 것이다). 값이 없는
+    ``?utm_source`` 형태도 같이 떨어진다.
+    """
+    if not query:
+        return ""
+    kept = [
+        pair
+        for pair in query.split("&")
+        if pair and pair.split("=", 1)[0].lower() not in _TRACKING_KEYS_LOWER
+    ]
+    return "&".join(kept)
+
+
+#: 비교용 소문자 사본. 매 호출마다 만들지 않는다.
+_TRACKING_KEYS_LOWER: frozenset[str] = frozenset(k.lower() for k in TRACKING_QUERY_KEYS)
 
 
 def _encode_component(value: str) -> str:

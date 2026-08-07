@@ -210,3 +210,84 @@ def test_normalized_url_is_frozen() -> None:
     parsed = normalize_url("http://example.com/")
     with pytest.raises((AttributeError, TypeError)):
         parsed.host = "evil.example"  # type: ignore[misc]
+
+
+# --------------------------------------------------------------------------- #
+# 유입 추적 매개변수
+# --------------------------------------------------------------------------- #
+
+
+class TestTrackingKeysAreDropped:
+    """**같은 페이지가 다른 주소로 보이면 짝을 맞출 수 없다.**
+
+    실측 2026-08-07. OpenAI 에 실제 질문을 던져 받은 인용 4건 중 3건에
+    ``?utm_source=openai`` 가 붙어 있었다. 그대로 두면::
+
+        인용된 주소   https://www.venomad.com/service/geo-seo/?utm_source=openai
+        크롤한 주소   https://www.venomad.com/service/geo-seo/
+        같은 페이지인가 → 아니오
+
+    "AI 가 우리를 인용했다" 는 도메인으로 판정하므로 영향이 없다. 그러나 **"우리 어느
+    페이지가 인용됐나"** 를 그 페이지의 진단 판정과 잇는 일이 전부 어긋난다. 그러면
+    "이 페이지를 고쳤더니 인용이 늘었다" 를 영영 증명할 수 없다.
+
+    `observations/detection/citations.py` 의 첫 문단은 ``utm_*`` 을 처리한다고 이미
+    적어 두었다. 적혀만 있고 하지는 않았다 — 규칙에는 그것을 확인하는 시험이 붙어야
+    한다(0-H).
+    """
+
+    @pytest.mark.parametrize(
+        ("cited", "crawled"),
+        [
+            (
+                "https://www.venomad.com/service/geo-seo/?utm_source=openai",
+                "https://www.venomad.com/service/geo-seo/",
+            ),
+            ("https://www.sungyou.co.kr/?utm_source=openai", "https://www.sungyou.co.kr/"),
+            ("https://a.example/x?gclid=abc123", "https://a.example/x"),
+            ("https://a.example/x?fbclid=zzz", "https://a.example/x"),
+        ],
+    )
+    def test_a_cited_url_joins_the_crawled_page(self, cited: str, crawled: str) -> None:
+        assert normalize_url(cited).canonical == normalize_url(crawled).canonical
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            # 게시판 — 이것이 지워지면 글 154개가 한 주소로 합쳐진다.
+            "https://www.venomad.com/board/?type=noti&mode=view&code=78",
+            # 페이지 넘김·식별자·검색어
+            "https://a.example/?page=2&id=7",
+            "https://a.example/?q=hello",
+            "https://a.example/?p=56617&kw=",
+        ],
+    )
+    def test_real_parameters_survive(self, raw: str) -> None:
+        """**이쪽이 더 위험하다.** 진짜 매개변수를 지우면 서로 다른 페이지가 한 주소로
+        합쳐지고, 그것은 지금 고치려는 것보다 나쁜 고장이다. 그래서 목록을 닫아 뒀다."""
+        assert normalize_url(raw).canonical == normalize_url(raw).raw.strip()
+
+    def test_mixed_query_keeps_order_of_survivors(self) -> None:
+        """남은 것의 순서는 건드리지 않는다 — 순서를 보고 다르게 응답하는 서버가 있다."""
+        result = normalize_url("https://a.example/?page=2&utm_medium=email&id=7")
+
+        assert result.canonical == "https://a.example/?page=2&id=7"
+
+    def test_the_name_is_matched_case_insensitively(self) -> None:
+        assert normalize_url("https://a.example/?UTM_SOURCE=X&q=1").canonical == (
+            "https://a.example/?q=1"
+        )
+
+    def test_a_valueless_tracking_key_goes_too(self) -> None:
+        assert normalize_url("https://a.example/?utm_source").canonical == "https://a.example/"
+
+    def test_dropping_a_key_cannot_change_the_host(self) -> None:
+        """이 모듈의 단단한 규칙 — 정규화가 막힌 주소를 열린 주소로 바꿀 수 없다.
+
+        질의를 지우는 것은 호스트를 건드리지 않으므로 그 규칙을 깨지 않는다. 판정은
+        호스트·주소로 하고 질의로 하지 않는다.
+        """
+        blocked = normalize_url("http://127.0.0.1/x?utm_source=openai")
+
+        assert blocked.host == "127.0.0.1"
+        assert normalize_url("http://127.0.0.1/x").host == blocked.host
