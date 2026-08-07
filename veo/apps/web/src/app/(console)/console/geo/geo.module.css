@@ -811,3 +811,70 @@
 .gaugeIn span { font-size: 9.5px; color: var(--veo-color-text-muted); margin-top: 2px; }
 .scoreSide { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); font-variant-numeric: tabular-nums; }
 .scoreSide p { margin: 0 0 2px; }
+
+/* ── 질문 집합 만들기 ─────────────────────────────────────────────────────
+   질문 한 줄이 곧 한 행이다. 좁은 화면에서는 세로로 쌓인다 — 분류 칸이 잘리면
+   사람은 기본값 그대로 저장하고, 그러면 균형이 기본값 쪽으로 쏠린다. */
+.promptRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+}
+
+.promptRow {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: var(--veo-space-2);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .promptRow { grid-template-columns: 1fr; }
+}
+
+/* 저장 전 균형 미리보기. 통과·보완을 색으로만 구분하지 않는다 — 각 줄이 글머리에
+   '확인' / '보완' 이라는 낱말을 달고 나간다(기획서 §12.1). */
+.balance {
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  padding: var(--veo-space-3);
+  background: var(--veo-color-surface-sunken);
+}
+
+.balance ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--veo-space-1); }
+
+.balanceTitle {
+  margin: 0 0 var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+  font-weight: 600;
+}
+
+.balanceOk { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); }
+
+.balanceBad { font-size: var(--veo-font-size-100); color: var(--veo-color-danger, #b42318); font-weight: 600; }
+.projectTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+  margin-bottom: var(--veo-space-4);
+}
+
+.projectTab,
+.projectTabActive {
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-200);
+  text-decoration: none;
+  color: inherit;
+}
+
+.projectTabActive {
+  border-color: var(--veo-color-accent-border);
+  background: var(--veo-color-accent-subtle);
+  font-weight: var(--veo-weight-medium);
+}
+

@@ -14,10 +14,12 @@ import {
   type EngineStatus,
   type Job,
 } from '@/lib/observations';
+import { listCompanies } from '@/lib/companies';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
 import { JobWatch } from './JobWatch';
+import { PromptSetForm } from './PromptSetForm';
 import { RunForm, type RunnableEngine } from './RunForm';
 import { RiskReport } from './RiskReport';
 import { VisibilityReport } from './VisibilityReport';
@@ -62,7 +64,11 @@ export default async function ConsoleGeoPage({
 
   return (
     <PermissionGate identity={identity} permission="observation:read">
-      <ConsoleGeoContent jobId={single(params['job'])} runId={single(params['run'])} />
+      <ConsoleGeoContent
+        jobId={single(params['job'])}
+        runId={single(params['run'])}
+        projectId={single(params['project'])}
+      />
     </PermissionGate>
   );
 }
@@ -75,16 +81,28 @@ function single(value: string | string[] | undefined): string | null {
 async function ConsoleGeoContent({
   jobId,
   runId,
+  projectId,
 }: {
   readonly jobId: string | null;
   readonly runId: string | null;
+  readonly projectId: string | null;
 }) {
-  const [engines, promptSets, runs, jobs] = await Promise.all([
+  const [engines, promptSets, runs, jobs, companies] = await Promise.all([
     readEngines(),
     readPromptSets(),
     readRuns(),
     readObservationJobs(),
+    listCompanies(),
   ]);
+
+  // 질문 집합은 **프로젝트에 속한다.** 어느 거래처의 질문인지 정하지 않으면 만들 수
+  // 없다. 하나뿐이면 고르는 화면을 그리지 않는다 — 선택지가 하나인 선택은 방해다.
+  const projects = companies.ok
+    ? companies.data.flatMap((company) =>
+        company.projects.map((one) => ({ ...one, company: company.name })),
+      )
+    : [];
+  const selectedProject = projectId ?? projects[0]?.id ?? null;
 
   // 작업 번호로 들어왔는데 이미 끝났다면 결과로 바로 넘어간다. 사용자가 "완료" 만 보고
   // 결과를 다시 찾아 헤매게 두지 않는다.
@@ -194,6 +212,30 @@ async function ConsoleGeoContent({
               hasPromptSets={promptSets.ok && promptSets.data.items.length > 0}
               hasEngines={usable.length > 0}
             />
+          )}
+
+          {/*
+            "질문 집합을 먼저 만들어 주십시오" 라고 적어 두고 만드는 자리를 두지 않아,
+            관측이 한 번도 돌지 못했다. 만들라는 안내 바로 아래에 만드는 칸을 둔다 —
+            서버에는 처음부터 길이 있었고 화면에서 부를 수가 없었을 뿐이다(0-E).
+          */}
+          {selectedProject === null ? null : (
+            <Card title="질문 집합" headingLevel={3}>
+              {projects.length > 1 ? (
+                <nav className={own.projectTabs} aria-label="프로젝트 선택">
+                  {projects.map((one) => (
+                    <Link
+                      key={one.id}
+                      href={`/console/geo?project=${encodeURIComponent(one.id)}`}
+                      className={one.id === selectedProject ? own.projectTabActive : own.projectTab}
+                    >
+                      {one.company} · {one.name}
+                    </Link>
+                  ))}
+                </nav>
+              ) : null}
+              <PromptSetForm projectId={selectedProject} />
+            </Card>
           )}
 
           {detail !== null && detail.ok ? (
