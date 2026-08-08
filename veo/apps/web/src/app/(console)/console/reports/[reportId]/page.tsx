@@ -104,9 +104,19 @@ function VersionItem({ version }: { readonly version: ReportVersionRow }) {
       </p>
       <p className={own.hash}>{version.content_hash}</p>
       <p className={own.versionActions}>
+        {/*
+          본문을 화면에서 읽는 자리. 예전에는 내보내기(HTML 파일)뿐이라 문서를 보려면
+          내려받아야 했다 — 서버에는 창구가 있었는데 부르는 곳이 없었다(0-E).
+        */}
+        <Link
+          href={`/console/reports/${version.report_id}/${version.version_number}`}
+          className={own.versionOpen}
+        >
+          본문 읽기
+        </Link>
         {version.export_formats.includes('html') ? (
           <a href={openHref} target="_blank" rel="noreferrer" className={own.versionOpen}>
-            문서 열람
+            HTML 로 열기
           </a>
         ) : null}
         {version.export_formats

@@ -79,3 +79,108 @@ export async function publishFromScan(
     body: { scan_run_id: scanRunId, title },
   });
 }
+
+/* ── 발행된 버전 본문 ─────────────────────────────────────────────── */
+
+/**
+ * 숫자 하나, 또는 **숫자가 없다는 명시**.
+ *
+ * `value` 가 `null` 인 것과 `0` 인 것은 정반대의 사실이다 — 못 쟀다와 쟀는데 0이다.
+ * 그래서 화면은 `value` 를 직접 포맷하지 않고 서버가 준 `display` 를 그대로 쓴다.
+ * 스키마가 그렇게 못박아 두었다: *"모든 화면·내보내기가 동일하게 출력하는 표기입니다."*
+ * 화면이 따로 포맷하면 같은 버전이 화면과 내려받은 파일에서 다르게 보인다.
+ */
+export interface ReportValue {
+  readonly display: string;
+  readonly value: number | null;
+  readonly unit: string;
+  readonly status: string;
+  readonly status_ko: string;
+  readonly reason_ko: string | null;
+  readonly source: string;
+}
+
+export interface ReportMetric {
+  readonly metric_key: string;
+  readonly label_ko: string;
+  readonly section: string;
+  readonly note_ko: string;
+  readonly value: ReportValue;
+}
+
+export interface ReportAction {
+  readonly rank: number;
+  readonly title_ko: string;
+  readonly why_ko: string;
+  readonly owner_ko: string;
+  readonly severity: string;
+  readonly domain: string;
+}
+
+/** 판정하지 못한 검사. **감추지 않는다** — 빼면 문서가 실제보다 튼튼해 보인다. */
+export interface ReportUnmeasured {
+  readonly check_id: string;
+  readonly title_ko: string;
+  readonly status: string;
+  readonly status_ko: string;
+  readonly reason_ko: string | null;
+  readonly domain: string;
+}
+
+/** 이 문서가 무엇을 어떻게 쟀는지. 숫자 옆에 늘 함께 나가야 하는 것들이다. */
+export interface ReportDisclosure {
+  readonly scope_ko: string;
+  readonly coverage_ko: string;
+  readonly confidence_ko: string;
+  readonly measured_at_ko: string;
+  readonly methodology_ko: string;
+  readonly rank_prediction_notice_ko: string;
+  readonly lines_ko: readonly string[];
+}
+
+/** 한 독자를 위한 한 판. 셋이 같은 모양이라 화면이 하나로 그린다. */
+export interface ReportAudienceView {
+  readonly audience: string;
+  readonly audience_ko: string;
+  readonly title_ko: string;
+  readonly summary_ko: string;
+  readonly status_ko: string | null;
+  readonly metrics: readonly ReportMetric[];
+  readonly top_actions: readonly ReportAction[];
+  readonly unmeasured_checks: readonly ReportUnmeasured[];
+  readonly changes_ko: readonly string[];
+  readonly reverification_ko: readonly string[];
+  readonly disclosure: ReportDisclosure;
+}
+
+export interface ReportVersionDetail {
+  readonly report_id: string;
+  readonly version_number: number;
+  readonly title_ko: string;
+  readonly generated_at: string;
+  readonly content_hash: string;
+  readonly measurement_window_start: string | null;
+  readonly measurement_window_end: string | null;
+  readonly disclosures_ko: readonly string[];
+  readonly views: {
+    readonly executive: ReportAudienceView;
+    readonly marketing: ReportAudienceView;
+    readonly developer: ReportAudienceView;
+  };
+}
+
+/**
+ * 발행된 버전 하나의 **본문**.
+ *
+ * 지금까지 화면에는 목록·내보내기·공유 링크만 있었다. 본문을 보려면 파일로
+ * 내려받아야 했다 — 서버에는 처음부터 이 창구가 있었는데 부르는 곳이 없었다
+ * (`docs/audit/2026-08-08-server-ui-gap.md` §A-3).
+ */
+export async function readReportVersion(
+  reportId: string,
+  versionNumber: number,
+): Promise<ConsoleOutcome<ReportVersionDetail>> {
+  return callConsoleApi(
+    `/api/reports/${encodeURIComponent(reportId)}/versions/${versionNumber}`,
+  );
+}

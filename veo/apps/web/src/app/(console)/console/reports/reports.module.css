@@ -205,3 +205,146 @@
   font-size: var(--veo-font-size-100);
   color: var(--veo-status-fail-fg);
 }
+
+/* ── 발행본 본문 (독자 3종) ─────────────────────────────────────────── */
+
+/* 독자 탭. 링크라서 주소를 그대로 보낼 수 있고 자바스크립트 없이 넘어간다. */
+.audienceTabs {
+  display: flex;
+  gap: var(--veo-space-2);
+  margin-bottom: var(--veo-space-4);
+  flex-wrap: wrap;
+}
+
+.audienceTab,
+.audienceTabCurrent {
+  padding: var(--veo-space-2) var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  text-decoration: none;
+  color: var(--veo-color-text);
+}
+
+/* 지금 보는 판은 테두리와 굵기로도 말한다 — 색만으로 가르지 않는다. */
+.audienceTabCurrent {
+  border-color: var(--veo-color-text);
+  font-weight: var(--veo-weight-bold);
+  background: var(--veo-color-surface-sunken);
+}
+
+.versionFacts {
+  margin: 0 0 var(--veo-space-5);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--veo-space-2);
+  align-items: baseline;
+}
+
+.metricList,
+.unmeasuredList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+}
+
+.metric,
+.unmeasured {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-3);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+
+.metricLabel,
+.unmeasuredTitle { flex: 1; min-width: 12rem; font-size: var(--veo-font-size-300); }
+
+.metricValue {
+  font-size: var(--veo-font-size-400);
+  font-weight: var(--veo-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 못 잰 값. **0 과 같은 모양으로 그리면 안 된다** — 쟀는데 0 인 것과 못 잰 것은
+ * 정반대의 사실이다. 색만으로 가르지 않고 점선 테두리와 작은 글씨를 함께 쓴다.
+ */
+.metricValueUnknown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: var(--veo-space-3);
+  border-left: 2px dashed var(--veo-color-border-strong);
+  font-size: var(--veo-font-size-300);
+  color: var(--veo-color-text-muted);
+}
+
+.metricWhy,
+.metricNote,
+.unmeasuredWhy {
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: 1.6;
+}
+
+.metricNote { flex-basis: 100%; }
+
+.unmeasuredStatus {
+  font-size: var(--veo-font-size-200);
+  padding: 0 var(--veo-space-2);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  color: var(--veo-color-text-muted);
+}
+
+.unmeasuredWhy { flex-basis: 100%; }
+
+.actionList {
+  margin: 0;
+  padding-left: var(--veo-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+}
+
+.action { padding-left: var(--veo-space-2); }
+
+.actionHead {
+  margin: 0 0 var(--veo-space-2);
+  display: flex;
+  align-items: baseline;
+  gap: var(--veo-space-3);
+  flex-wrap: wrap;
+}
+
+.severity {
+  font-size: var(--veo-font-size-100);
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+}
+
+.actionTitle { font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-medium); }
+.actionWhy { margin: 0; font-size: var(--veo-font-size-200); line-height: 1.7; }
+.actionOwner { margin: var(--veo-space-2) 0 0; font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); }
+
+.disclosureList { margin: 0; display: flex; flex-direction: column; gap: var(--veo-space-3); }
+
+.disclosureRow {
+  display: flex;
+  gap: var(--veo-space-4);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.disclosureRow dt { flex: none; width: 6rem; color: var(--veo-color-text-muted); }
+.disclosureRow dd { margin: 0; flex: 1; }
+
+.noMoves { margin: 0; font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); }
