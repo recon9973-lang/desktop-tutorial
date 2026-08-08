@@ -58,7 +58,7 @@ from veo.observations.providers.registry import ProviderRegistry
 from veo.observations.providers.storage import RecordedAnswerStore
 from veo.observations.review.decisions import open_review
 from veo.observations.runner import BrandTarget, ObservationRunner, RunReport
-from veo.observations.runs import AccountState, RunConditions, SearchMode
+from veo.observations.runs import AccountState, RunConditions, RunKind, SearchMode
 from veo.observations.service import engine_registry, prompt_set_of, prompts_of
 
 
@@ -296,6 +296,9 @@ def execute_observation(
         detector=DisambiguatingMentionDetector(profile, rivals),
         max_concurrency=resolved.observation_max_concurrency,
         budget_usd=resolved.observation_budget_usd,
+        # 집합의 종류가 곧 실행의 종류다. 여기서 갈라 받지 않는다 — 갈라 받으면 즉석
+        # 집합을 정기 측정으로 돌릴 길이 생긴다.
+        kind=RunKind(prompt_set_row.kind),
         repetition_interval=timedelta(
             seconds=resolved.observation_repetition_interval_seconds
         ),
@@ -367,6 +370,10 @@ def _persist(
         organization_id=principal.organization_id,
         project_id=prompt_set_row.project_id,
         prompt_set_id=prompt_set_row.id,
+        # 종류는 질문 집합에서 그대로 따라온다. 실행 쪽에서 따로 받으면 즉석 집합(균형
+        # 검사를 안 거친 것)을 정기 측정이라고 저장할 길이 생긴다 — 그 길을 아예 두지
+        # 않는다. 집합이 MANUAL 이면 그것으로 만든 실행은 반드시 MANUAL 이다.
+        kind=prompt_set_row.kind,
         repetitions_per_prompt=report.repetitions,
         # 엔진 **이름**의 목록이다(칸 이름이 아니다). `competitors/from_observation.py`
         # 가 이 값으로 `ai_engines.provider` 를 조회하므로 모드를 붙이면 조회가 빈다.

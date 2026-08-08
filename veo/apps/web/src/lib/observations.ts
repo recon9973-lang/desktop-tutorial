@@ -144,6 +144,14 @@ export interface ObservationRun {
   readonly id: string;
   readonly project_id: string;
   readonly prompt_set_id: string;
+  /**
+   * `SCHEDULED` 인가 `MANUAL` 인가.
+   *
+   * 수동 측정은 사람이 그 순간 고른 검색어를 잰 것이라 **추이에 올라가지 않는다.**
+   * 조건이 같아도 정기 측정과 하나의 비율로 합쳐지지 않는다 — 섞으면 잘 나오는 검색어를
+   * 골라 재는 것만으로 그래프가 올라간다.
+   */
+  readonly kind: string;
   readonly status: string;
   readonly is_complete: boolean;
   readonly engines: readonly string[];
@@ -322,6 +330,89 @@ export async function startObservation(input: {
     headers: { 'Idempotency-Key': input.idempotencyKey },
     body: {
       prompt_set_id: input.promptSetId,
+      repetitions: input.repetitions,
+      engines: input.searchModes.map((mode) => ({
+        engine: input.engine,
+        model: input.model,
+        search_mode: mode,
+      })),
+    },
+  });
+}
+
+/** 한 칸(엔진·모델·검색모드)의 예상 규모. */
+export interface SlotEstimate {
+  readonly slot: string;
+  readonly engine: string;
+  readonly model: string;
+  readonly search_mode: string;
+  readonly calls: number;
+  /** 이 칸의 예상 금액(USD). `null` 은 0원이 아니라 **모른다**는 뜻이다. */
+  readonly amount_usd: number | null;
+  readonly basis: string;
+  /** 금액의 근거가 된 과거 답변 수. 0이면 근거가 없다. */
+  readonly baseline_samples: number;
+  readonly reason_ko: string;
+}
+
+/**
+ * 누르기 전 예상 규모.
+ *
+ * **호출 수는 언제나 정확하고, 금액은 근거가 있을 때만 있다.** 금액은 단가 × 토큰인데
+ * 토큰은 재 봐야 안다. 같은 조건으로 이미 잰 답변이 없으면 `amount_usd` 는 `null` 이고,
+ * 무엇이 있어야 알 수 있는지는 `remedies_ko` 에 적힌다.
+ */
+export interface WorkEstimate {
+  readonly total_calls: number;
+  readonly amount_usd: number | null;
+  readonly measurement: string;
+  readonly slots: readonly SlotEstimate[];
+  readonly remedies_ko: readonly string[];
+  readonly summary_ko: string;
+}
+
+export async function estimateObservation(input: {
+  readonly questionCount: number;
+  readonly engine: string;
+  readonly model: string;
+  readonly searchModes: readonly string[];
+  readonly repetitions: number;
+}): Promise<ConsoleOutcome<WorkEstimate>> {
+  return callConsoleApi('/api/observations/estimates', {
+    method: 'POST',
+    body: {
+      question_count: input.questionCount,
+      repetitions: input.repetitions,
+      engines: input.searchModes.map((mode) => ({
+        engine: input.engine,
+        model: input.model,
+        search_mode: mode,
+      })),
+    },
+  });
+}
+
+/**
+ * 관리자가 그 자리에서 고른 검색어를 잰다.
+ *
+ * 정기 관측(`startObservation`)과 갈라 둔 이유는 둘이 다른 측정이기 때문이다. 이쪽으로
+ * 만들어진 실행은 `kind=MANUAL` 로 남고 추이에 올라가지 않는다.
+ */
+export async function startManualObservation(input: {
+  readonly projectId: string;
+  readonly questions: readonly string[];
+  readonly engine: string;
+  readonly model: string;
+  readonly searchModes: readonly string[];
+  readonly repetitions: number;
+  readonly idempotencyKey: string;
+}): Promise<ConsoleOutcome<Job>> {
+  return callConsoleApi('/api/observations/runs/manual', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': input.idempotencyKey },
+    body: {
+      project_id: input.projectId,
+      questions: input.questions,
       repetitions: input.repetitions,
       engines: input.searchModes.map((mode) => ({
         engine: input.engine,

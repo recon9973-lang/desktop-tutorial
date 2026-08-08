@@ -225,7 +225,10 @@ __all__ = [
     "EnginePayload",
     "EngineSpendPayload",
     "EngineStatus",
+    "EstimatePayload",
+    "EstimateRequest",
     "ExclusionInput",
+    "ManualRunRequest",
     "ObservationRunDetailPayload",
     "ObservationRunListPayload",
     "ObservationRunPayload",
@@ -236,6 +239,7 @@ __all__ = [
     "PromptSetPayload",
     "PromptSummary",
     "RatePayload",
+    "SlotEstimatePayload",
     "SourceDiversityPayload",
     "SpendPayload",
     "StabilityPayload",
@@ -295,6 +299,102 @@ class ObservationRunRequest(BaseModel):
     )
 
 
+class ManualRunRequest(BaseModel):
+    """관리자가 그 자리에서 고른 검색어를 잰다.
+
+    정기 관측(`POST /runs`)과 갈라 둔 이유는 **둘이 다른 측정이기 때문**입니다. 정기
+    관측은 발행된 질문 집합을 정해진 주기로 돌립니다. 이쪽은 사람이 그 순간 검색어를
+    고릅니다 — 조건(엔진·모델·검색모드)이 똑같아도 고른 사람이 다르게 만듭니다.
+
+    그래서 이 요청으로 만들어진 실행은 `kind=MANUAL` 로 남고, **추이에 올라가지
+    않으며 정기 측정과 하나의 비율로 합쳐지지 않습니다**(ADR 0015).
+
+    질문의 의도·단계·대상은 받지 않습니다. 고르게 하는 것은 군더더기이고, 서버가 대신
+    고르면 분석가가 판단한 것처럼 저장됩니다 — `UNCLASSIFIED` 로 남깁니다.
+    """
+
+    model_config = _FROZEN
+
+    project_id: uuid.UUID
+    questions: list[str] = Field(
+        min_length=1,
+        max_length=20,
+        description="잴 검색어입니다. 한 줄에 하나씩, 최대 20개.",
+    )
+    engines: list[EngineChoiceInput] = Field(min_length=1)
+    repetitions: int = Field(
+        default=3,
+        ge=1,
+        le=50,
+        description=(
+            "검색어 하나를 엔진 하나에 던지는 횟수입니다. AI 답변은 같은 질문에도 매번 "
+            "달라지므로 한 번의 결과로는 말할 수 없습니다."
+        ),
+    )
+    allow_below_floor: bool = Field(
+        default=False,
+        description="최소 반복 횟수 아래로 돌리는 것을 허용합니다. 결과에 그 사실이 남습니다.",
+    )
+    locale: str = Field(default="ko-KR", max_length=16)
+
+
+class EstimateRequest(BaseModel):
+    """누르기 전에 규모를 묻는다."""
+
+    model_config = _FROZEN
+
+    question_count: int = Field(
+        ge=1, le=500, description="던질 질문(검색어)의 개수입니다."
+    )
+    engines: list[EngineChoiceInput] = Field(min_length=1)
+    repetitions: int = Field(default=3, ge=1, le=50)
+
+
+class SlotEstimatePayload(BaseModel):
+    model_config = _FROZEN
+
+    slot: str = Field(description="엔진·모델·검색모드. 이 셋이 하나라도 다르면 다른 측정입니다.")
+    engine: str
+    model: str
+    search_mode: str
+    calls: int
+    amount_usd: float | None = Field(
+        description="이 칸의 예상 금액(USD). `null` 은 0원이 아니라 **모른다**는 뜻입니다."
+    )
+    basis: str = Field(
+        description=(
+            "MEASURED | NO_TOKEN_BASELINE | PRICE_TABLE_STALE | NO_PRICE_CONFIGURED "
+            "| SEARCH_CONTENT_NOT_SEPARABLE | UNMAPPED_REASON"
+        )
+    )
+    baseline_samples: int = Field(
+        description="금액의 근거가 된 과거 답변 수입니다. 0이면 근거가 없다는 뜻입니다."
+    )
+    reason_ko: str
+
+
+class EstimatePayload(BaseModel):
+    """예상 규모 — **호출 수는 언제나 정확하고, 금액은 근거가 있을 때만 있습니다.**
+
+    금액은 단가 x 토큰인데, 토큰은 재 봐야 압니다. 같은 조건으로 이미 잰 답변이 있으면
+    그 중앙값으로 계산하고, 없으면 **금액을 내지 않습니다.** 지어낸 평균으로 낸 금액은
+    실측과 화면에서 구별되지 않고, 그 값에 맞춰 예산을 잡게 됩니다.
+
+    일부 칸만 계산되면 합계도 내지 않습니다. 부분 합계는 전체처럼 읽힙니다.
+    """
+
+    model_config = _FROZEN
+
+    total_calls: int
+    amount_usd: float | None
+    measurement: str = Field(description="COMPLETE | PARTIAL | NONE — 금액이 얼마나 실측인가.")
+    slots: list[SlotEstimatePayload] = Field(default_factory=list)
+    remedies_ko: list[str] = Field(
+        default_factory=list, description="금액을 낼 수 있게 하려면 무엇이 필요한지."
+    )
+    summary_ko: str
+
+
 class ObservationRunPayload(BaseModel):
     """한 번의 관측이 **무엇을 했고 무엇을 못 했는가.**
 
@@ -307,6 +407,13 @@ class ObservationRunPayload(BaseModel):
     id: uuid.UUID
     project_id: uuid.UUID
     prompt_set_id: uuid.UUID
+    kind: str = Field(
+        default="SCHEDULED",
+        description=(
+            "SCHEDULED | MANUAL. MANUAL 은 관리자가 그 자리에서 고른 검색어를 잰 것이라 "
+            "추이에 올라가지 않고 정기 측정과 합쳐지지 않습니다."
+        ),
+    )
     status: str
     is_complete: bool = Field(
         description="계획한 것을 다 했고 반복 최소치를 넘겼는가. 거짓이면 부분 측정입니다."

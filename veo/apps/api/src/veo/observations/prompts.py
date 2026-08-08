@@ -71,9 +71,17 @@ class Intent(StrEnum):
     LOCAL = "LOCAL"
     #: 부작용, 후기, 안전 — the questions a brand most wants left out.
     TRUST = "TRUST"
+    #: 아무도 분류하지 않았다. **비교용 집합에서는 거부된다** — `describe_balance` 를 볼 것.
+    #:
+    #: 이 값이 있는 이유는 수동 측정 때문이다. 관리자가 "지금 이 검색어로 우리가 나오나"
+    #: 를 물을 때 의도를 함께 고르게 하는 것은 군더더기이고, 그렇다고 서버가 대신 골라
+    #: 넣으면 **분석가가 판단한 것처럼 저장된다.** 모르는 것은 모른다고 적는다.
+    UNCLASSIFIED = "UNCLASSIFIED"
 
 
 class Funnel(StrEnum):
+    #: 위 `Intent.UNCLASSIFIED` 와 같은 이유. 비교용 집합에서는 거부된다.
+    UNCLASSIFIED = "UNCLASSIFIED"
     PROBLEM_AWARE = "PROBLEM_AWARE"
     RESEARCH = "RESEARCH"
     COMPARISON = "COMPARISON"
@@ -83,6 +91,11 @@ class Funnel(StrEnum):
 
 
 class Subject(StrEnum):
+    #: 위 `Intent.UNCLASSIFIED` 와 같은 이유. 비교용 집합에서는 거부된다.
+    #:
+    #: 특히 여기서 함부로 `NON_BRAND` 를 넣으면 안 된다. 관리자가 넣은 검색어가 브랜드명일
+    #: 수도 있고, 그러면 브랜드 질문 비중 상한이 실제보다 낮게 계산된다.
+    UNCLASSIFIED = "UNCLASSIFIED"
     BRAND = "BRAND"
     NON_BRAND = "NON_BRAND"
     COMPETITOR = "COMPETITOR"
@@ -103,6 +116,7 @@ _INTENT_LABELS_KO = {
     Intent.PRICE: "가격",
     Intent.LOCAL: "지역",
     Intent.TRUST: "신뢰·안전",
+    Intent.UNCLASSIFIED: "분류 안 함",
 }
 
 
@@ -206,6 +220,27 @@ class PromptSet:
         )
 
     @classmethod
+    def ad_hoc(cls, *, name: str, prompts: Sequence[Prompt]) -> PromptSet:
+        """관리자가 그 자리에서 고른 검색어 몇 개. **균형을 검사하지 않는다.**
+
+        `build` 의 관문을 무르는 것이 아니다. 그 관문은 **비교와 추이**를 지키는 것이고,
+        이 집합은 둘 중 어디에도 못 들어간다 — 이 집합으로 만든 실행은
+        `kind=MANUAL` 이 되고, `runs.aggregate_rate` 가 정기 측정과 섞이는 것을 거부한다.
+
+        검사할 것이 없어서 안 하는 것도 아니다. 질문 한 개짜리 집합에 "한 의도가 50%를
+        넘을 수 없다" 를 적용하면 언제나 실패한다. 규칙이 지키려는 것(고른 질문으로
+        결론을 만들지 못하게)은 여기서 **다른 방법으로** 지켜진다: 이 값은 애초에
+        결론이 되는 자리에 못 간다.
+
+        빈 집합은 여전히 거부한다. 질문이 없으면 잴 것이 없다.
+        """
+        if not prompts:
+            raise PromptSetImbalanceError("질문이 하나도 없습니다. 잴 것이 없습니다")
+
+        ordered = tuple(sorted(prompts, key=lambda prompt: prompt.prompt_id))
+        return cls(name=name, prompts=ordered, checksum=cls._checksum(name, ordered, ()))
+
+    @classmethod
     def rebuild(cls, *, name: str, prompts: Sequence[Prompt]) -> PromptSet:
         """이미 발행된 집합을 저장소에서 되살린다. 균형은 다시 검사하지 않는다.
 
@@ -229,6 +264,22 @@ class PromptSet:
         if total < MIN_PROMPTS_PER_SET:
             problems.append(f"질문이 {total}개뿐입니다. 최소 {MIN_PROMPTS_PER_SET}개가 필요합니다")
             return problems
+
+        # 분류가 안 된 질문이 하나라도 있으면 이 집합은 균형을 말할 수 없다. 비중을
+        # 세는 계산이 전부 분류 위에 서 있기 때문이다 — 모르는 것을 한쪽으로 접어 세면
+        # 그 순간 비중이 사실이 아니게 된다.
+        unclassified = sum(
+            1
+            for p in prompts
+            if p.intent is Intent.UNCLASSIFIED
+            or p.funnel is Funnel.UNCLASSIFIED
+            or p.subject is Subject.UNCLASSIFIED
+        )
+        if unclassified:
+            problems.append(
+                f"분류하지 않은 질문이 {unclassified}개 있습니다. 의도·단계·대상을 매기지 "
+                "않으면 균형을 잴 수 없습니다"
+            )
 
         present = {p.intent for p in prompts}
         missing = sorted(REQUIRED_INTENTS - present, key=lambda i: i.value)

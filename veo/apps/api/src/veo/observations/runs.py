@@ -48,8 +48,34 @@ class AccountState(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
+class RunKind(StrEnum):
+    """왜 이 측정이 일어났는가. 조건이 같아도 이것이 다르면 합칠 수 없다.
+
+    ``SCHEDULED`` 는 발행된 질문 집합을 정해진 주기로 돌린 것이다. 무엇을 언제 묻는지가
+    사람 손을 떠나 있어 추이의 점이 될 수 있다.
+
+    ``MANUAL`` 은 사람이 그 순간 고른 검색어 하나를 잰 것이다. 조건(엔진·모델·검색모드)이
+    정기 측정과 똑같아도 **고른 사람이 다르게 만든다** — 이것이 ADR 0015 가 막는 바로
+    그 자리다:
+
+        "경쟁 비교를 조작하는 데 숫자를 위조할 필요가 없다. **질문만 고르면 된다.**"
+        (docs/adr/0015-prompt-sets-are-audited-artefacts.md:8)
+
+    수동 측정은 그 자체로 쓸모가 있다 — "지금 이 검색어로 우리가 나오나" 는 정당한
+    질문이다. 다만 그 답을 추이에 섞으면, 잘 나오는 검색어를 골라 재는 것만으로 그래프가
+    올라간다. 그래서 섞이지 않게 하는 것이 코드의 일이다(:func:`aggregate_rate`).
+    """
+
+    SCHEDULED = "SCHEDULED"
+    MANUAL = "MANUAL"
+
+
 class MixedConditionsError(ValueError):
     """Runs from different setups were about to be pooled into one rate."""
+
+
+class MixedRunKindsError(ValueError):
+    """정기 측정과 수동 측정이 하나의 비율로 합쳐지려던 참이었다."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,6 +160,9 @@ class ObservationRun:
     prompt_id: str
     conditions: RunConditions
     executed_at: datetime
+    #: 정기 측정인가, 사람이 그 자리에서 고른 수동 측정인가. 기본값이 ``SCHEDULED`` 인
+    #: 것은 이 필드가 생기기 전의 모든 실행이 정기 측정이었기 때문이다.
+    kind: RunKind = field(default=RunKind.SCHEDULED, kw_only=True)
     raw_answer_ref: str | None
     raw_answer_hash: str | None
     brand_mentioned: bool
@@ -226,6 +255,7 @@ class ObservationRun:
             "prompt_id": self.prompt_id,
             "citation_support": self.citation_support,
             "conditions": self.conditions.as_dict(),
+            "kind": str(self.kind),
             "executed_at": self.executed_at.isoformat(),
             "raw_answer_ref": self.raw_answer_ref,
             "raw_answer_hash": self.raw_answer_hash,
@@ -271,6 +301,17 @@ def aggregate_rate(
     """
     valid = [item for item in runs if item.is_valid_execution]
 
+    # 조건보다 먼저 본다. 정기와 수동은 조건이 완전히 같아도 서로 다른 측정이고,
+    # 이쪽은 `allow_mixed_conditions` 같은 예외 통로를 두지 않는다 — 예외를 두면
+    # 부르는 쪽이 켤 것이고, 켜는 순간 사람이 고른 검색어가 추이에 들어간다.
+    kinds = {item.kind for item in valid}
+    if len(kinds) > 1:
+        raise MixedRunKindsError(
+            "정기 측정과 수동 측정을 하나의 비율로 합칠 수 없습니다. 수동 측정은 사람이 "
+            "그 순간 고른 검색어라, 섞으면 검색어를 고르는 것만으로 비율이 움직입니다 "
+            "(ADR 0015). 따로 세십시오."
+        )
+
     groups = group_by_conditions(valid)
     if len(groups) > 1 and not allow_mixed_conditions:
         labels = sorted({item.conditions.label_ko for item in valid})
@@ -287,6 +328,14 @@ def aggregate_rate(
     rate = ObservedRate.build(successes=successes, trials=len(valid), label_ko=label_ko)
 
     notes: list[str] = []
+
+    # 수동 측정만 모은 비율도 값 자체는 옳다. 다만 **추이의 점으로 쓰이면 안 된다**는
+    # 사실이 비율과 같이 다녀야 한다 — 숫자만 떼어 가면 구별할 방법이 없어진다.
+    if kinds == {RunKind.MANUAL}:
+        notes.append(
+            "사람이 그 자리에서 고른 검색어를 잰 수동 측정입니다. 이 값은 그 검색어에 "
+            "대해서만 참이며, 추이에 올리거나 정기 측정과 비교할 수 없습니다."
+        )
 
     if len(groups) > 1:
         # The caller asked for a mixed rate. It is still allowed to exist, but it is not

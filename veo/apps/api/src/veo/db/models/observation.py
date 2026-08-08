@@ -80,6 +80,16 @@ class PromptSet(Base, OrganizationScopedMixin, TimestampMixin):
         Text, nullable=True, comment="How prompts were chosen, and what was excluded and why."
     )
     is_locked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    kind: Mapped[str] = mapped_column(
+        String(16),
+        nullable=False,
+        default="SCHEDULED",
+        server_default="SCHEDULED",
+        comment=(
+            "SCHEDULED | MANUAL. MANUAL 은 사람이 그 자리에서 만든 즉석 집합이라 "
+            "ADR 0015 의 균형 검사를 거치지 않았다 — 비교와 추이에 쓸 수 없다."
+        ),
+    )
 
 
 class Prompt(Base, OrganizationScopedMixin, TimestampMixin):
@@ -114,7 +124,11 @@ class ObservationRun(Base, OrganizationScopedMixin, ImmutableMixin):
     """One batch of repeated prompt executions under fixed conditions."""
 
     __tablename__ = "observation_runs"
-    __table_args__ = (Index("ix_observation_runs_project_created", "project_id", "created_at"),)
+    __table_args__ = (
+        Index("ix_observation_runs_project_created", "project_id", "created_at"),
+        # 수동 측정만 골라 보는 일이 잦다 — 목록 화면이 종류로 거른다.
+        Index("ix_observation_runs_project_kind", "project_id", "kind"),
+    )
 
     id: Mapped[uuid.UUID] = uuid_pk()
     project_id: Mapped[uuid.UUID] = mapped_column(
@@ -128,6 +142,16 @@ class ObservationRun(Base, OrganizationScopedMixin, ImmutableMixin):
     )
     job_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("jobs.id", ondelete="SET NULL"), nullable=True
+    )
+    # 왜 이 실행이 일어났는가. 조건이 같아도 이것이 다르면 하나의 비율로 못 합친다 —
+    # 수동 측정은 사람이 그 순간 고른 검색어라, 섞으면 검색어를 고르는 것만으로 추이가
+    # 움직인다(ADR 0015). 거부는 `observations/runs.py` 의 `aggregate_rate` 가 한다.
+    kind: Mapped[str] = mapped_column(
+        String(16),
+        nullable=False,
+        default="SCHEDULED",
+        server_default="SCHEDULED",
+        comment="SCHEDULED | MANUAL. MANUAL 은 추이·비교에서 제외된다.",
     )
     repetitions_per_prompt: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     engines: Mapped[JsonArray] = json_column()

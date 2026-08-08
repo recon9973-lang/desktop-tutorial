@@ -142,20 +142,27 @@ caps        그 위에 상한. 상한은 점수를 올리지 않는다
 **분모는 100.0 고정이다.** 연동(서치콘솔 등) 3영역은 `contributes_to_score: false` 로
 점수 밖이라, **연결하든 안 하든 100점의 뜻이 같다.**
 
-자세히: `docs/scoring/methodology.md` · `docs/research/SEO_SCORING_ALGORITHM_V2.md`
+자세히: `docs/scoring/methodology.md`(SEO) · `docs/scoring/geo-methodology.md`(GEO) ·
+`docs/research/SEO_SCORING_ALGORITHM_V2.md`
 ③ AI 답변 관측은 채점이 아니라 관측이다 — `docs/observation-engine.md`
 
-## 4-A. 문서가 낡거나 없는 곳 (2026-08-08 확인)
-
-**세 영역의 문서 깊이가 고르지 않다.** 알고 읽어야 한다.
+## 4-A. 세 영역의 기준 문서 (2026-08-08 확인)
 
 | 영역 | 기준 문서 | 상태 |
 |---|---|---|
-| ① SEO | `scoring/methodology.md` | ⚠️ 본문이 **1.8.0** 기준 (운영 1.9.0). 1.9.0 변경은 뒤에 따로. 문서 앞에 경고를 달아 두었다 |
-| ② GEO 준비도 | — | ❌ **발행본 1.3.0 설명 문서가 없다.** `GEO_RECOMMENDED_SCORING_MODEL.md` 는 처음 권장안이지 발행본 설명이 아니다 |
+| ① SEO | `scoring/methodology.md` | ✅ 본문 **1.9.0** 기준 (운영과 같음). 2026-08-08 갱신 |
+| ② GEO 준비도 | `scoring/geo-methodology.md` | ✅ 본문 **1.3.0** 기준. 2026-08-08 신규 |
 | ③ AI 답변 관측 | `observation-engine.md` | ✅ 2026-08-08 신규 |
 
-남은 일: ① 본문을 1.9.0 으로 다시 쓰기 · ② GEO 발행본 설명 신규.
+`research/GEO_RECOMMENDED_SCORING_MODEL.md` 와 `research/SEO_*` 는 **처음 권장안**이지
+발행본 설명이 아니다. 운영이 무엇을 쓰는지는 위 두 문서를 본다.
+
+**표의 숫자는 손으로 옮겨 적은 것이다.** 명세와 어긋났는지 의심되면 세어 본다:
+
+```bash
+python3 scripts/spec_weights.py                # SEO 발행본
+python3 scripts/spec_weights.py --domain geo   # GEO 발행본
+```
 
 ---
 

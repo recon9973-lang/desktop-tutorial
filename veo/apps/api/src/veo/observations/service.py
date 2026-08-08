@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import hashlib
 import uuid
+from collections.abc import Sequence
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -21,10 +23,12 @@ from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
 from veo.core.settings import get_provider_credentials
+from veo.db.models.observation import AIAnswer, AIEngine
 from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
-from veo.observations.pricing import load_price_table
+from veo.observations.estimate import TokenBaseline, median_baseline
+from veo.observations.pricing import DatedPriceTable, load_price_table
 from veo.observations.prompts import (
     Exclusion,
     Funnel,
@@ -82,11 +86,22 @@ def engine_registry() -> ProviderRegistry:
     채우도록 되어 있고, 비어 있으면 비용은 계산되지 않는다 — 지어낸 가격을 금액으로
     제시하지 않기 위해서다.
     """
+    return build_registry(
+        credentials=get_provider_credentials(), price_table=price_table_for_estimates()
+    )
+
+
+def price_table_for_estimates() -> DatedPriceTable | None:
+    """날짜가 붙은 가격표, 또는 못 읽었다는 뜻의 ``None``.
+
+    **오래된 표는 그대로 넘긴다.** `DatedPriceTable.cost` 가 스스로 `PRICE_TABLE_STALE`
+    을 돌려주고 그것이 정직한 답이다. 여기서 걸러 버리면 "가격표가 오래됐다" 가
+    "가격표가 없다" 로 바뀌어, 무엇을 고쳐야 하는지 알 수 없게 된다.
+    """
     try:
-        prices = load_price_table()
+        return load_price_table()
     except (FileNotFoundError, ValueError):
-        prices = None
-    return build_registry(credentials=get_provider_credentials(), price_table=prices)
+        return None
 
 
 # --------------------------------------------------------------------------- #
@@ -231,6 +246,144 @@ def create_prompt_set(
     return row
 
 
+#: 수동 측정용 즉석 집합에 붙는 이름. 목록에서 정기 집합과 눈으로 갈리게 한다.
+MANUAL_SET_NAME = "수동 측정"
+
+
+def create_manual_prompt_set(
+    session: Session,
+    principal: Principal,
+    *,
+    project_id: uuid.UUID,
+    questions: Sequence[str],
+    locale: str = "ko-KR",
+) -> tuple[PromptSetRow, PromptSet]:
+    """관리자가 그 자리에서 고른 검색어로 즉석 집합을 만든다.
+
+    **균형 검사를 하지 않는다.** 이 집합으로 만든 실행은 `kind=MANUAL` 이 되고,
+    `runs.aggregate_rate` 가 정기 측정과 섞이는 것을 거부한다 — 관문은 저기 있다
+    (`prompts.PromptSet.ad_hoc` 의 설명).
+
+    분류(의도·단계·대상)는 `UNCLASSIFIED` 로 둔다. 관리자에게 고르게 하는 것은 군더더기이고,
+    서버가 대신 고르면 **분석가가 판단한 것처럼 저장된다.** 모르는 것은 모른다고 적는다.
+    그 값이 들어간 집합은 `PromptSet.build` 가 거부하므로 비교용으로 새어 나가지 않는다.
+    """
+    from veo.projects.service import require_project
+
+    require_project(session, principal, project_id)
+
+    cleaned = [text.strip() for text in questions if text.strip()]
+    if not cleaned:
+        raise PromptSetImbalanceError("검색어가 하나도 없습니다. 잴 것이 없습니다")
+
+    built = PromptSet.ad_hoc(
+        name=MANUAL_SET_NAME,
+        prompts=[
+            Prompt(
+                text=text,
+                intent=Intent.UNCLASSIFIED,
+                funnel=Funnel.UNCLASSIFIED,
+                subject=Subject.UNCLASSIFIED,
+                locale=locale,
+            )
+            for text in cleaned
+        ],
+    )
+
+    # 판 번호는 만든 시각이다. 같은 검색어를 다른 날 다시 재는 것은 다른 측정이고,
+    # 그 둘이 같은 행을 덮어쓰면 앞의 결과가 사라진다.
+    version = datetime.now(UTC).strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6]
+
+    row = PromptSetRow(
+        organization_id=principal.organization_id,
+        project_id=project_id,
+        name=MANUAL_SET_NAME,
+        version=version,
+        locale=locale,
+        generation_rule_ko=(
+            "관리자가 화면에서 직접 입력한 검색어입니다. 균형 검사(ADR 0015)를 거치지 "
+            "않았으므로 비교와 추이에 쓸 수 없습니다."
+        ),
+        is_locked=True,
+        kind="MANUAL",
+    )
+    session.add(row)
+    try:
+        session.flush()
+    except IntegrityError as exc:  # pragma: no cover - 판 번호에 난수가 붙어 사실상 안 걸린다
+        session.rollback()
+        raise DuplicateResourceError(DUPLICATE_KO) from exc
+
+    for prompt in built.prompts:
+        session.add(
+            PromptRow(
+                organization_id=principal.organization_id,
+                prompt_set_id=row.id,
+                text=prompt.text,
+                intent=str(prompt.intent),
+                funnel=str(prompt.funnel),
+                persona=prompt.persona,
+                locale=prompt.locale,
+                subject_type=str(prompt.subject),
+                business_importance=prompt.business_importance,
+                expected_demand=None,
+                expected_demand_is_estimate=True,
+            )
+        )
+    session.flush()
+    return row, built
+
+
+def token_baselines(
+    session: Session,
+    principal: Principal,
+    *,
+    max_samples_per_slot: int = 200,
+) -> dict[str, TokenBaseline]:
+    """칸(엔진·모델·검색모드)마다 이미 잰 토큰의 중앙값.
+
+    예상 비용은 이것 없이는 나오지 않는다. **없으면 없는 대로 비워 둔다** — 없는 칸을
+    다른 칸의 값으로 메우면 그 순간 예상치가 추측이 되고, 추측은 화면에서 실측과 구별
+    되지 않는다.
+
+    조회는 조직 안으로 갇힌다(`tenant_select`). 다른 조직이 무엇을 얼마나 재는지가
+    이 값으로 새어 나가면 안 된다.
+    """
+    statement = (
+        tenant_select(AIAnswer, principal)
+        .join(AIEngine, AIEngine.id == AIAnswer.ai_engine_id)
+        .where(
+            AIAnswer.is_valid_execution.is_(True),
+            AIAnswer.input_tokens.is_not(None),
+            AIAnswer.output_tokens.is_not(None),
+        )
+        .with_only_columns(
+            AIEngine.provider,
+            AIAnswer.model_version,
+            AIAnswer.search_mode,
+            AIAnswer.input_tokens,
+            AIAnswer.output_tokens,
+        )
+        .order_by(AIAnswer.executed_at.desc())
+    )
+    assert_tenant_scoped(statement, principal.organization_id)
+
+    collected: dict[str, list[tuple[int | None, int | None]]] = {}
+    for provider, model, search_mode, input_tokens, output_tokens in session.execute(statement):
+        slot = f"{str(provider).upper()}:{model}:{search_mode}"
+        samples = collected.setdefault(slot, [])
+        # 오래된 것부터 버린다 — 모델이 바뀌면 답변 길이도 바뀐다.
+        if len(samples) < max_samples_per_slot:
+            samples.append((input_tokens, output_tokens))
+
+    baselines: dict[str, TokenBaseline] = {}
+    for slot, samples in collected.items():
+        baseline = median_baseline(samples)
+        if baseline is not None:
+            baselines[slot] = baseline
+    return baselines
+
+
 def get_prompt_set(
     session: Session, principal: Principal, prompt_set_id: uuid.UUID
 ) -> PromptSetRow | None:
@@ -302,12 +455,19 @@ def list_observation_runs(
     principal: Principal,
     *,
     project_id: uuid.UUID | None = None,
+    kind: str | None = None,
     limit: int = 50,
 ) -> tuple[list[ObservationRunRow], int]:
-    """최신순. 부분 실행도 그대로 들어 있다 — 목록에서 빼면 그 실행이 없던 일이 된다."""
+    """최신순. 부분 실행도 그대로 들어 있다 — 목록에서 빼면 그 실행이 없던 일이 된다.
+
+    `kind` 도 같은 이유로 **기본이 '거르지 않음'** 이다. 수동 측정을 기본으로 감추면
+    사장님이 방금 돌린 것이 목록에 없다.
+    """
     statement = tenant_select(ObservationRunRow, principal)
     if project_id is not None:
         statement = statement.where(ObservationRunRow.project_id == project_id)
+    if kind is not None:
+        statement = statement.where(ObservationRunRow.kind == kind)
     assert_tenant_scoped(statement, principal.organization_id)
 
     total = session.scalar(select(func.count()).select_from(statement.subquery())) or 0

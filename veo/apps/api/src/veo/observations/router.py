@@ -33,6 +33,7 @@ from veo.jobs.router import job_payload
 from veo.jobs.schemas import JobPayload
 from veo.observability.spend import spend_for_month
 from veo.observations import review_service
+from veo.observations.estimate import estimate_work, plan_slots
 from veo.observations.execution import EngineChoice, answer_facts
 from veo.observations.findings import assessment_kinds_not_yet_produced, reviews_for_run
 from veo.observations.jobs import OBSERVATION_STAGES, observation_work
@@ -54,6 +55,9 @@ from veo.observations.schemas import (
     EnginePayload,
     EngineSpendPayload,
     EngineStatus,
+    EstimatePayload,
+    EstimateRequest,
+    ManualRunRequest,
     ObservationRunDetailPayload,
     ObservationRunListPayload,
     ObservationRunPayload,
@@ -70,6 +74,7 @@ from veo.observations.schemas import (
     ReviewQueueItem,
     ReviewQueuePayload,
     RiskFindingsPayload,
+    SlotEstimatePayload,
     SpendPayload,
     VisibilityMetricsPayload,
 )
@@ -78,14 +83,17 @@ from veo.observations.service import (
     SEARCH_OFF_UNAVAILABLE_KO,
     UnknownPromptFieldError,
     build_prompt_set,
+    create_manual_prompt_set,
     create_prompt_set,
     engine_registry,
     get_observation_run,
     get_prompt_set,
     list_observation_runs,
     list_prompt_sets,
+    price_table_for_estimates,
     prompt_set_of,
     prompts_of,
+    token_baselines,
 )
 from veo.organizations.http import guard
 from veo.providers.naver.credentials import datalab_from_settings
@@ -413,6 +421,170 @@ def run(
     return ok(job_payload(job), request_id)
 
 
+@router.post(
+    "/runs/manual",
+    response_model=ApiResponse[JobPayload],
+    status_code=202,
+    summary="검색어를 직접 잰다 (수동 측정)",
+    description=(
+        "관리자가 그 자리에서 고른 검색어를 잽니다. 발행된 질문 집합이 필요 없습니다.\n\n"
+        "**이 실행은 추이에 올라가지 않습니다.** 정기 관측과 조건(엔진·모델·검색모드)이 "
+        "똑같아도 서로 다른 측정입니다 — 정기 관측은 무엇을 언제 물을지가 사람 손을 떠나 "
+        "있고, 이쪽은 사람이 그 순간 고릅니다. 섞으면 잘 나오는 검색어를 골라 재는 것만으로 "
+        "그래프가 올라갑니다(ADR 0015). 코드가 섞는 것을 거부합니다.\n\n"
+        "**돈이 나갑니다.** 누르기 전에 `POST /api/observations/estimates` 로 몇 번 부르는지 "
+        "확인하십시오.\n\n"
+        "`Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 새 실행을 만들지 않습니다."
+    ),
+)
+def run_manual(
+    payload: ManualRunRequest,
+    principal: ObservationRunner_,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+    idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias="Idempotency-Key",
+            description="같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+        ),
+    ] = None,
+) -> ApiResponse[JobPayload]:
+    # 엔진을 먼저 검증한다. 잘못된 엔진 이름 때문에 실패할 작업을 만들어 두면, 부르는
+    # 쪽은 202 를 받고 몇 초 뒤 실패를 다시 물어봐야 한다. 즉석 집합도 남는다.
+    try:
+        choices = [
+            EngineChoice(
+                engine=item.engine,
+                model=item.model,
+                search_mode=SearchMode(item.search_mode),
+                account_state=AccountState(item.account_state),
+            )
+            for item in payload.engines
+        ]
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    try:
+        prompt_set_row, _ = create_manual_prompt_set(
+            db,
+            principal,
+            project_id=payload.project_id,
+            questions=payload.questions,
+            locale=payload.locale,
+        )
+    except PromptSetImbalanceError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    job, created = jobs.submit(
+        db,
+        principal,
+        job_type=JobType.GEO_OBSERVATION_RUN,
+        project_id=payload.project_id,
+        idempotency_key=idempotency_key,
+        stages=list(OBSERVATION_STAGES),
+        parameters={
+            "prompt_set_id": str(prompt_set_row.id),
+            "kind": "MANUAL",
+            "repetitions": payload.repetitions,
+            "allow_below_floor": payload.allow_below_floor,
+            "engines": [
+                {
+                    "engine": choice.engine,
+                    "model": choice.model,
+                    "search_mode": str(choice.search_mode),
+                    "account_state": str(choice.account_state),
+                }
+                for choice in choices
+            ],
+        },
+    )
+    job_id = job.id
+    prompt_set_id = prompt_set_row.id
+    db.commit()
+    db.refresh(job)
+
+    if created:
+        run_detached(
+            job_id,
+            observation_work(
+                organization_id=principal.organization_id,
+                user_id=principal.user_id,
+                roles=principal.roles,
+                session_id=principal.session_id,
+                prompt_set_id=prompt_set_id,
+                choices=choices,
+                repetitions=payload.repetitions,
+                allow_below_floor=payload.allow_below_floor,
+            ),
+        )
+
+    return ok(job_payload(job), request_id)
+
+
+@router.post(
+    "/estimates",
+    response_model=ApiResponse[EstimatePayload],
+    summary="누르기 전에 얼마나 드는가",
+    description=(
+        "**호출 수는 정확합니다** — 질문 수 x 조건 수 x 반복 수입니다.\n\n"
+        "**금액은 근거가 있을 때만 냅니다.** 금액은 단가 x 토큰인데, 토큰은 재 봐야 "
+        "압니다. 같은 조건(엔진·모델·검색모드)으로 이미 잰 답변이 있으면 그 중앙값으로 "
+        "계산하고, 없으면 금액 자리를 `null` 로 둡니다. 그 `null` 은 0원이 아니라 "
+        "**모른다**는 뜻이고, 무엇이 있어야 알 수 있는지는 `remedies_ko` 에 적힙니다.\n\n"
+        "일부 조건만 계산되면 합계도 내지 않습니다. 부분 합계는 전체처럼 읽히고, 그 값에 "
+        "맞춰 예산을 잡게 됩니다."
+    ),
+)
+def estimate(
+    payload: EstimateRequest,
+    principal: UsageReader,
+    request_id: RequestId,
+    db: Annotated[Session, Depends(get_db)],
+) -> ApiResponse[EstimatePayload]:
+    try:
+        slots = [
+            (item.engine, item.model, SearchMode(item.search_mode)) for item in payload.engines
+        ]
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    plans = plan_slots(
+        prompt_count=payload.question_count,
+        slots=slots,
+        repetitions=payload.repetitions,
+    )
+    result = estimate_work(
+        plans,
+        prices=price_table_for_estimates(),
+        baselines=token_baselines(db, principal),
+    )
+    return ok(
+        EstimatePayload(
+            total_calls=result.total_calls,
+            amount_usd=result.amount_usd,
+            measurement=result.measurement,
+            slots=[
+                SlotEstimatePayload(
+                    slot=item.slot,
+                    engine=item.engine,
+                    model=item.model,
+                    search_mode=item.search_mode,
+                    calls=item.calls,
+                    amount_usd=item.amount_usd,
+                    basis=item.basis,
+                    baseline_samples=item.baseline_samples,
+                    reason_ko=item.reason_ko,
+                )
+                for item in result.slots
+            ],
+            remedies_ko=list(result.remedies_ko),
+            summary_ko=result.summary_ko,
+        ),
+        request_id,
+    )
+
+
 @router.get(
     "/spend",
     response_model=ApiResponse[SpendPayload],
@@ -471,9 +643,21 @@ def run_index(
     request_id: RequestId,
     db: Annotated[Session, Depends(get_db)],
     project_id: Annotated[uuid.UUID | None, Query()] = None,
+    kind: Annotated[
+        str | None,
+        Query(
+            pattern="^(SCHEDULED|MANUAL)$",
+            description=(
+                "종류로 거릅니다. 비워 두면 **둘 다** 나옵니다 — 목록에서 조용히 빼면 "
+                "그 실행이 없던 일이 되므로, 거르는 것은 부르는 쪽이 정합니다."
+            ),
+        ),
+    ] = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
 ) -> ApiResponse[ObservationRunListPayload]:
-    rows, total = list_observation_runs(db, principal, project_id=project_id, limit=limit)
+    rows, total = list_observation_runs(
+        db, principal, project_id=project_id, kind=kind, limit=limit
+    )
     return ok(
         ObservationRunListPayload(items=[_run_payload(row) for row in rows], total=total),
         request_id,
@@ -730,6 +914,7 @@ def _run_payload(row: ObservationRunRow) -> ObservationRunPayload:
         id=row.id,
         project_id=row.project_id,
         prompt_set_id=row.prompt_set_id,
+        kind=row.kind,
         status=row.status,
         is_complete=row.is_complete,
         engines=[str(engine) for engine in row.engines or ()],

@@ -44,10 +44,14 @@ def prompt(
 
 
 def balanced_prompts() -> list[Prompt]:
-    """One prompt per intent, spread across funnel stages and subjects."""
-    intents = list(Intent)
-    funnels = list(Funnel)
-    subjects = list(Subject)
+    """One prompt per intent, spread across funnel stages and subjects.
+
+    `UNCLASSIFIED` 는 뺀다. 균형 잡힌 집합에는 분류 안 한 질문이 있을 수 없다 — 비중을
+    세는 계산이 전부 분류 위에 서 있다. 그 값은 수동 측정 전용이다.
+    """
+    intents = [item for item in Intent if item is not Intent.UNCLASSIFIED]
+    funnels = [item for item in Funnel if item is not Funnel.UNCLASSIFIED]
+    subjects = [item for item in Subject if item is not Subject.UNCLASSIFIED]
     return [
         prompt(
             f"질문 {index}",
@@ -229,3 +233,56 @@ def test_a_narrowed_set_is_not_the_same_set() -> None:
     ours = PromptSet.build(name="치과 기본", prompts=balanced_prompts())
     theirs = ours.excluding(ours.prompts[0].prompt_id, reason_ko="사유 있음")
     assert not ours.is_same_set_as(theirs)
+
+
+# --------------------------------------------------------------------------- #
+# 즉석 집합 — 수동 측정 전용이고, 비교로 새어 나가지 않는다
+# --------------------------------------------------------------------------- #
+
+
+def test_an_ad_hoc_set_accepts_a_single_unclassified_question() -> None:
+    """관리자가 검색어 하나만 재는 것은 정당하다. 균형은 여기서 잴 것이 아니다."""
+    built = PromptSet.ad_hoc(
+        name="수동 측정",
+        prompts=[
+            prompt(
+                "강남 임플란트",
+                intent=Intent.UNCLASSIFIED,
+                funnel=Funnel.UNCLASSIFIED,
+                subject=Subject.UNCLASSIFIED,
+            )
+        ],
+    )
+    assert len(built.prompts) == 1
+    assert built.checksum
+
+
+def test_an_ad_hoc_set_still_refuses_to_be_empty() -> None:
+    with pytest.raises(PromptSetImbalanceError):
+        PromptSet.ad_hoc(name="수동 측정", prompts=[])
+
+
+def test_the_same_ad_hoc_question_keeps_the_same_prompt_id_across_runs() -> None:
+    """같은 검색어를 다시 재면 두 결과가 이어져야 한다."""
+    first = PromptSet.ad_hoc(name="수동 측정", prompts=[prompt("강남 임플란트")])
+    second = PromptSet.ad_hoc(name="수동 측정", prompts=[prompt("강남 임플란트")])
+    assert first.prompts[0].prompt_id == second.prompts[0].prompt_id
+
+
+def test_an_unclassified_question_cannot_reach_a_comparison_set() -> None:
+    """`build` 는 관문이다 — 즉석 집합용 값이 비교용으로 새면 비중이 거짓이 된다."""
+    prompts = balanced_prompts()
+    prompts.append(prompt("분류 안 한 질문", intent=Intent.UNCLASSIFIED))
+
+    with pytest.raises(PromptSetImbalanceError) as caught:
+        PromptSet.build(name="치과 기본", prompts=prompts)
+
+    assert "분류하지 않은 질문" in str(caught.value)
+
+
+def test_an_unclassified_subject_is_refused_too_because_it_could_be_the_brand() -> None:
+    prompts = balanced_prompts()
+    prompts.append(prompt("분류 안 한 대상", subject=Subject.UNCLASSIFIED))
+
+    with pytest.raises(PromptSetImbalanceError):
+        PromptSet.build(name="치과 기본", prompts=prompts)

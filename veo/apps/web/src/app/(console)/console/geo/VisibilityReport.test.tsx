@@ -35,6 +35,7 @@ function run(over: Partial<ObservationRun> = {}): ObservationRun {
     id: 'run-1',
     project_id: 'p-1',
     prompt_set_id: 'ps-1',
+    kind: 'SCHEDULED',
     status: 'SUCCEEDED',
     is_complete: true,
     engines: ['OPENAI'],

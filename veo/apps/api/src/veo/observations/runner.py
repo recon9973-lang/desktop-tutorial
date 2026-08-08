@@ -44,7 +44,7 @@ from veo.observations.providers.storage import (
     RecordedAnswerStore,
     StoredAnswer,
 )
-from veo.observations.runs import ObservationRun, RunConditions
+from veo.observations.runs import ObservationRun, RunConditions, RunKind
 from veo.observations.sampling import MIN_RUNS_FOR_EXPLORATION, MIN_SPREAD_BETWEEN_REPETITIONS
 
 __all__ = [
@@ -352,6 +352,9 @@ class ObservationRunner:
         detector: MentionDetector,
         max_concurrency: int = 4,
         budget_usd: float | None = None,
+        #: 이 실행이 정기 측정인가 수동 측정인가. 실행기가 만드는 모든 `ObservationRun`
+        #: 에 그대로 찍힌다 — 나중에 비율을 낼 때 섞이는 것을 거부할 수 있게.
+        kind: RunKind = RunKind.SCHEDULED,
         repetition_interval: timedelta = MIN_SPREAD_BETWEEN_REPETITIONS,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
         sleep: Callable[[float], None] = time.sleep,
@@ -369,6 +372,7 @@ class ObservationRunner:
         self._detector = detector
         self._max_concurrency = max_concurrency
         self._budget = budget_usd
+        self._kind = kind
         #: 같은 질문의 다음 반복까지 최소로 기다리는 시간. 0 이면 예전처럼 연달아
         #: 던진다 — 그때 비율에 붙는 경고문이 달라진다(`RepetitionSpread`).
         self._repetition_interval = repetition_interval
@@ -660,6 +664,7 @@ class ObservationRunner:
                 prompt_id=unit.prompt.prompt_id,
                 conditions=unit.requested,
                 executed_at=self._clock(),
+                kind=self._kind,
                 raw_answer_ref=None,
                 raw_answer_hash=None,
                 brand_mentioned=False,
@@ -681,6 +686,7 @@ class ObservationRunner:
                 unit.requested, model_version=record.model_version
             ),
             executed_at=record.executed_at,
+            kind=self._kind,
             raw_answer_ref=stored.ref,
             raw_answer_hash=stored.sha256,
             brand_mentioned=verdict.mentioned,

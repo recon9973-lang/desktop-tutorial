@@ -940,3 +940,49 @@ fieldset.field { margin: 0; padding: 0; border: 0; }
 
 .harvestList li { display: flex; gap: var(--veo-space-2); align-items: baseline; }
 .harvestList label { display: flex; gap: var(--veo-space-1); align-items: baseline; flex: 1; }
+
+/* ── 수동 측정 ──────────────────────────────────────────────────────── */
+
+/* 검색어를 한 줄에 하나씩 받는 칸. 여러 개를 붙여 넣는 일이 흔하다. */
+.questions {
+  padding: var(--veo-space-3);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+  color: var(--veo-color-text);
+  font: inherit;
+  font-size: var(--veo-font-size-300);
+  line-height: 1.7;
+  min-height: 7rem;
+  resize: vertical;
+}
+
+/* 누르기 전 예상 규모. 호출 수는 확정값이라 눌러 두지 않는다. */
+.estimate {
+  margin: 0;
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+/* 금액을 못 낸 이유. 0원으로 보이면 안 되므로 값 자리와 다른 모양으로 둔다. */
+.estimateUnknown {
+  margin: var(--veo-space-2) 0 0;
+  padding-left: var(--veo-space-3);
+  border-left: 2px dashed var(--veo-color-border-strong);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+}
+
+/* 실행 목록에서 수동 측정을 갈라 보이게 하는 표시. 색만으로 말하지 않는다. */
+.manualBadge {
+  display: inline-block;
+  padding: 0 var(--veo-space-2);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}

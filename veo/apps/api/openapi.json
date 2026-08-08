@@ -385,6 +385,39 @@
         "title": "ApiResponse[EnginePayload]",
         "type": "object"
       },
+      "ApiResponse_EstimatePayload_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimatePayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "meta"
+        ],
+        "title": "ApiResponse[EstimatePayload]",
+        "type": "object"
+      },
       "ApiResponse_GeoReadinessPayload_": {
         "additionalProperties": false,
         "properties": {
@@ -5288,6 +5321,93 @@
         "title": "ErrorCode",
         "type": "string"
       },
+      "EstimatePayload": {
+        "additionalProperties": false,
+        "description": "예상 규모 — **호출 수는 언제나 정확하고, 금액은 근거가 있을 때만 있습니다.**\n\n금액은 단가 x 토큰인데, 토큰은 재 봐야 압니다. 같은 조건으로 이미 잰 답변이 있으면\n그 중앙값으로 계산하고, 없으면 **금액을 내지 않습니다.** 지어낸 평균으로 낸 금액은\n실측과 화면에서 구별되지 않고, 그 값에 맞춰 예산을 잡게 됩니다.\n\n일부 칸만 계산되면 합계도 내지 않습니다. 부분 합계는 전체처럼 읽힙니다.",
+        "properties": {
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Usd"
+          },
+          "measurement": {
+            "description": "COMPLETE | PARTIAL | NONE — 금액이 얼마나 실측인가.",
+            "title": "Measurement",
+            "type": "string"
+          },
+          "remedies_ko": {
+            "description": "금액을 낼 수 있게 하려면 무엇이 필요한지.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Remedies Ko",
+            "type": "array"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/SlotEstimatePayload"
+            },
+            "title": "Slots",
+            "type": "array"
+          },
+          "summary_ko": {
+            "title": "Summary Ko",
+            "type": "string"
+          },
+          "total_calls": {
+            "title": "Total Calls",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_calls",
+          "amount_usd",
+          "measurement",
+          "summary_ko"
+        ],
+        "title": "EstimatePayload",
+        "type": "object"
+      },
+      "EstimateRequest": {
+        "additionalProperties": false,
+        "description": "누르기 전에 규모를 묻는다.",
+        "properties": {
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/EngineChoiceInput"
+            },
+            "minItems": 1,
+            "title": "Engines",
+            "type": "array"
+          },
+          "question_count": {
+            "description": "던질 질문(검색어)의 개수입니다.",
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Question Count",
+            "type": "integer"
+          },
+          "repetitions": {
+            "default": 3,
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Repetitions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "question_count",
+          "engines"
+        ],
+        "title": "EstimateRequest",
+        "type": "object"
+      },
       "EvaluateScoreRequest": {
         "additionalProperties": false,
         "description": "Evaluate raw check outcomes against a published specification.\n\nExists so a customer, an analyst or a test can reproduce any VEO score from its\npublished inputs. There is one evaluator, and this is it.",
@@ -8319,6 +8439,62 @@
         "title": "LogoutPayload",
         "type": "object"
       },
+      "ManualRunRequest": {
+        "additionalProperties": false,
+        "description": "관리자가 그 자리에서 고른 검색어를 잰다.\n\n정기 관측(`POST /runs`)과 갈라 둔 이유는 **둘이 다른 측정이기 때문**입니다. 정기\n관측은 발행된 질문 집합을 정해진 주기로 돌립니다. 이쪽은 사람이 그 순간 검색어를\n고릅니다 — 조건(엔진·모델·검색모드)이 똑같아도 고른 사람이 다르게 만듭니다.\n\n그래서 이 요청으로 만들어진 실행은 `kind=MANUAL` 로 남고, **추이에 올라가지\n않으며 정기 측정과 하나의 비율로 합쳐지지 않습니다**(ADR 0015).\n\n질문의 의도·단계·대상은 받지 않습니다. 고르게 하는 것은 군더더기이고, 서버가 대신\n고르면 분석가가 판단한 것처럼 저장됩니다 — `UNCLASSIFIED` 로 남깁니다.",
+        "properties": {
+          "allow_below_floor": {
+            "default": false,
+            "description": "최소 반복 횟수 아래로 돌리는 것을 허용합니다. 결과에 그 사실이 남습니다.",
+            "title": "Allow Below Floor",
+            "type": "boolean"
+          },
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/EngineChoiceInput"
+            },
+            "minItems": 1,
+            "title": "Engines",
+            "type": "array"
+          },
+          "locale": {
+            "default": "ko-KR",
+            "maxLength": 16,
+            "title": "Locale",
+            "type": "string"
+          },
+          "project_id": {
+            "format": "uuid",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "questions": {
+            "description": "잴 검색어입니다. 한 줄에 하나씩, 최대 20개.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Questions",
+            "type": "array"
+          },
+          "repetitions": {
+            "default": 3,
+            "description": "검색어 하나를 엔진 하나에 던지는 횟수입니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과로는 말할 수 없습니다.",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Repetitions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "project_id",
+          "questions",
+          "engines"
+        ],
+        "title": "ManualRunRequest",
+        "type": "object"
+      },
       "MePayload": {
         "additionalProperties": false,
         "description": "The caller, the organization they signed into, and what they may do.",
@@ -8778,6 +8954,12 @@
             "description": "계획한 것을 다 했고 반복 최소치를 넘겼는가. 거짓이면 부분 측정입니다.",
             "title": "Is Complete",
             "type": "boolean"
+          },
+          "kind": {
+            "default": "SCHEDULED",
+            "description": "SCHEDULED | MANUAL. MANUAL 은 관리자가 그 자리에서 고른 검색어를 잰 것이라 추이에 올라가지 않고 정기 측정과 합쳐지지 않습니다.",
+            "title": "Kind",
+            "type": "string"
           },
           "project_id": {
             "format": "uuid",
@@ -14357,6 +14539,71 @@
         "title": "SiteUpdateRequest",
         "type": "object"
       },
+      "SlotEstimatePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "이 칸의 예상 금액(USD). `null` 은 0원이 아니라 **모른다**는 뜻입니다.",
+            "title": "Amount Usd"
+          },
+          "baseline_samples": {
+            "description": "금액의 근거가 된 과거 답변 수입니다. 0이면 근거가 없다는 뜻입니다.",
+            "title": "Baseline Samples",
+            "type": "integer"
+          },
+          "basis": {
+            "description": "MEASURED | NO_TOKEN_BASELINE | PRICE_TABLE_STALE | NO_PRICE_CONFIGURED | SEARCH_CONTENT_NOT_SEPARABLE | UNMAPPED_REASON",
+            "title": "Basis",
+            "type": "string"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "engine": {
+            "title": "Engine",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "reason_ko": {
+            "title": "Reason Ko",
+            "type": "string"
+          },
+          "search_mode": {
+            "title": "Search Mode",
+            "type": "string"
+          },
+          "slot": {
+            "description": "엔진·모델·검색모드. 이 셋이 하나라도 다르면 다른 측정입니다.",
+            "title": "Slot",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slot",
+          "engine",
+          "model",
+          "search_mode",
+          "calls",
+          "amount_usd",
+          "basis",
+          "baseline_samples",
+          "reason_ko"
+        ],
+        "title": "SlotEstimatePayload",
+        "type": "object"
+      },
       "SourceAttribution": {
         "additionalProperties": false,
         "description": "Provenance for a value. Attached wherever VEO shows a number it did not compute.",
@@ -16192,7 +16439,7 @@
     "description": "VEO — SEO · GEO · Naver Keyword Intelligence Platform\n\nDeveloped by VENOM. Research & Methodology by VEO-LAB.\n\n측정 원칙\n- SEO 준비도, GEO 준비도, 실제 AI 가시성, 네이버 키워드 수요는 각각 별도의 지표입니다.\n  하나의 불투명한 총점으로 합치지 않습니다.\n- 준비도 점수는 검색 순위 예측값이 아닙니다.\n- 모든 점수에는 방법론 버전, 체크섬, 적용 분모, 계산 과정, 신뢰도가 함께 제공됩니다.\n- '해당 없음'은 0점이 아니라 분모에서 제외되고, '측정 불가'는 실패가 아니라\n  coverage와 confidence에 반영됩니다.\n- 외부 제공자 자격증명이 없으면 해당 항목은 '측정 불가'가 되며, VEO는 추정값을\n  실제 데이터처럼 표시하지 않습니다.\n",
     "summary": "SEO · GEO · Naver Keyword Intelligence Platform",
     "title": "VEO API",
-    "version": "0.3.71"
+    "version": "0.3.72"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -18977,6 +19224,48 @@
         ]
       }
     },
+    "/api/observations/estimates": {
+      "post": {
+        "description": "**호출 수는 정확합니다** — 질문 수 x 조건 수 x 반복 수입니다.\n\n**금액은 근거가 있을 때만 냅니다.** 금액은 단가 x 토큰인데, 토큰은 재 봐야 압니다. 같은 조건(엔진·모델·검색모드)으로 이미 잰 답변이 있으면 그 중앙값으로 계산하고, 없으면 금액 자리를 `null` 로 둡니다. 그 `null` 은 0원이 아니라 **모른다**는 뜻이고, 무엇이 있어야 알 수 있는지는 `remedies_ko` 에 적힙니다.\n\n일부 조건만 계산되면 합계도 내지 않습니다. 부분 합계는 전체처럼 읽히고, 그 값에 맞춰 예산을 잡게 됩니다.",
+        "operationId": "estimate_api_observations_estimates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstimateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_EstimatePayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "누르기 전에 얼마나 드는가",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
     "/api/observations/prompt-sets": {
       "get": {
         "operationId": "index_api_observations_prompt_sets_get",
@@ -19342,6 +19631,25 @@
             }
           },
           {
+            "description": "종류로 거릅니다. 비워 두면 **둘 다** 나옵니다 — 목록에서 조용히 빼면 그 실행이 없던 일이 되므로, 거르는 것은 부르는 쪽이 정합니다.",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(SCHEDULED|MANUAL)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "종류로 거릅니다. 비워 두면 **둘 다** 나옵니다 — 목록에서 조용히 빼면 그 실행이 없던 일이 되므로, 거르는 것은 부르는 쪽이 정합니다.",
+              "title": "Kind"
+            }
+          },
+          {
             "in": "query",
             "name": "limit",
             "required": false,
@@ -19437,6 +19745,68 @@
           }
         },
         "summary": "관측을 시작한다 (즉시 돌아오고, 실행은 뒤에서 돈다)",
+        "tags": [
+          "observations"
+        ]
+      }
+    },
+    "/api/observations/runs/manual": {
+      "post": {
+        "description": "관리자가 그 자리에서 고른 검색어를 잽니다. 발행된 질문 집합이 필요 없습니다.\n\n**이 실행은 추이에 올라가지 않습니다.** 정기 관측과 조건(엔진·모델·검색모드)이 똑같아도 서로 다른 측정입니다 — 정기 관측은 무엇을 언제 물을지가 사람 손을 떠나 있고, 이쪽은 사람이 그 순간 고릅니다. 섞으면 잘 나오는 검색어를 골라 재는 것만으로 그래프가 올라갑니다(ADR 0015). 코드가 섞는 것을 거부합니다.\n\n**돈이 나갑니다.** 누르기 전에 `POST /api/observations/estimates` 로 몇 번 부르는지 확인하십시오.\n\n`Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 새 실행을 만들지 않습니다.",
+        "operationId": "run_manual_api_observations_runs_manual_post",
+        "parameters": [
+          {
+            "description": "같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "같은 키로 다시 부르면 원래 작업을 돌려줍니다.",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_JobPayload_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "검색어를 직접 잰다 (수동 측정)",
         "tags": [
           "observations"
         ]

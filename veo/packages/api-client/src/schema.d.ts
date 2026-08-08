@@ -931,6 +931,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/estimates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 누르기 전에 얼마나 드는가
+         * @description **호출 수는 정확합니다** — 질문 수 x 조건 수 x 반복 수입니다.
+         *
+         *     **금액은 근거가 있을 때만 냅니다.** 금액은 단가 x 토큰인데, 토큰은 재 봐야 압니다. 같은 조건(엔진·모델·검색모드)으로 이미 잰 답변이 있으면 그 중앙값으로 계산하고, 없으면 금액 자리를 `null` 로 둡니다. 그 `null` 은 0원이 아니라 **모른다**는 뜻이고, 무엇이 있어야 알 수 있는지는 `remedies_ko` 에 적힙니다.
+         *
+         *     일부 조건만 계산되면 합계도 내지 않습니다. 부분 합계는 전체처럼 읽히고, 그 값에 맞춰 예산을 잡게 됩니다.
+         */
+        post: operations["estimate_api_observations_estimates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/observations/prompt-sets": {
         parameters: {
             query?: never;
@@ -1104,6 +1128,32 @@ export interface paths {
          *     `Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 **새 실행을 만들지 않고** 원래 작업을 돌려줍니다. 관측은 돈이 나가는 일이라, 새로고침 한 번이 두 번 청구되면 안 됩니다.
          */
         post: operations["run_api_observations_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/observations/runs/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 검색어를 직접 잰다 (수동 측정)
+         * @description 관리자가 그 자리에서 고른 검색어를 잽니다. 발행된 질문 집합이 필요 없습니다.
+         *
+         *     **이 실행은 추이에 올라가지 않습니다.** 정기 관측과 조건(엔진·모델·검색모드)이 똑같아도 서로 다른 측정입니다 — 정기 관측은 무엇을 언제 물을지가 사람 손을 떠나 있고, 이쪽은 사람이 그 순간 고릅니다. 섞으면 잘 나오는 검색어를 골라 재는 것만으로 그래프가 올라갑니다(ADR 0015). 코드가 섞는 것을 거부합니다.
+         *
+         *     **돈이 나갑니다.** 누르기 전에 `POST /api/observations/estimates` 로 몇 번 부르는지 확인하십시오.
+         *
+         *     `Idempotency-Key` 헤더를 주시면 같은 키로 다시 불러도 새 실행을 만들지 않습니다.
+         */
+        post: operations["run_manual_api_observations_runs_manual_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2075,6 +2125,12 @@ export interface components {
         /** ApiResponse[EnginePayload] */
         ApiResponse_EnginePayload_: {
             data?: components["schemas"]["EnginePayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[EstimatePayload] */
+        ApiResponse_EstimatePayload_: {
+            data?: components["schemas"]["EstimatePayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -3674,6 +3730,54 @@ export interface components {
          */
         ErrorCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "PERMISSION_DENIED" | "NOT_FOUND" | "CONFLICT" | "RATE_LIMITED" | "QUOTA_EXCEEDED" | "TARGET_URL_REJECTED" | "PROVIDER_UNAVAILABLE" | "PROVIDER_RATE_LIMITED" | "JOB_CANCELLED" | "JOB_EXPIRED" | "SCORING_SPEC_INVALID" | "INTERNAL_ERROR";
         /**
+         * EstimatePayload
+         * @description 예상 규모 — **호출 수는 언제나 정확하고, 금액은 근거가 있을 때만 있습니다.**
+         *
+         *     금액은 단가 x 토큰인데, 토큰은 재 봐야 압니다. 같은 조건으로 이미 잰 답변이 있으면
+         *     그 중앙값으로 계산하고, 없으면 **금액을 내지 않습니다.** 지어낸 평균으로 낸 금액은
+         *     실측과 화면에서 구별되지 않고, 그 값에 맞춰 예산을 잡게 됩니다.
+         *
+         *     일부 칸만 계산되면 합계도 내지 않습니다. 부분 합계는 전체처럼 읽힙니다.
+         */
+        EstimatePayload: {
+            /** Amount Usd */
+            amount_usd: number | null;
+            /**
+             * Measurement
+             * @description COMPLETE | PARTIAL | NONE — 금액이 얼마나 실측인가.
+             */
+            measurement: string;
+            /**
+             * Remedies Ko
+             * @description 금액을 낼 수 있게 하려면 무엇이 필요한지.
+             */
+            remedies_ko?: string[];
+            /** Slots */
+            slots?: components["schemas"]["SlotEstimatePayload"][];
+            /** Summary Ko */
+            summary_ko: string;
+            /** Total Calls */
+            total_calls: number;
+        };
+        /**
+         * EstimateRequest
+         * @description 누르기 전에 규모를 묻는다.
+         */
+        EstimateRequest: {
+            /** Engines */
+            engines: components["schemas"]["EngineChoiceInput"][];
+            /**
+             * Question Count
+             * @description 던질 질문(검색어)의 개수입니다.
+             */
+            question_count: number;
+            /**
+             * Repetitions
+             * @default 3
+             */
+            repetitions: number;
+        };
+        /**
          * EvaluateScoreRequest
          * @description Evaluate raw check outcomes against a published specification.
          *
@@ -4909,6 +5013,51 @@ export interface components {
             revoked: boolean;
         };
         /**
+         * ManualRunRequest
+         * @description 관리자가 그 자리에서 고른 검색어를 잰다.
+         *
+         *     정기 관측(`POST /runs`)과 갈라 둔 이유는 **둘이 다른 측정이기 때문**입니다. 정기
+         *     관측은 발행된 질문 집합을 정해진 주기로 돌립니다. 이쪽은 사람이 그 순간 검색어를
+         *     고릅니다 — 조건(엔진·모델·검색모드)이 똑같아도 고른 사람이 다르게 만듭니다.
+         *
+         *     그래서 이 요청으로 만들어진 실행은 `kind=MANUAL` 로 남고, **추이에 올라가지
+         *     않으며 정기 측정과 하나의 비율로 합쳐지지 않습니다**(ADR 0015).
+         *
+         *     질문의 의도·단계·대상은 받지 않습니다. 고르게 하는 것은 군더더기이고, 서버가 대신
+         *     고르면 분석가가 판단한 것처럼 저장됩니다 — `UNCLASSIFIED` 로 남깁니다.
+         */
+        ManualRunRequest: {
+            /**
+             * Allow Below Floor
+             * @description 최소 반복 횟수 아래로 돌리는 것을 허용합니다. 결과에 그 사실이 남습니다.
+             * @default false
+             */
+            allow_below_floor: boolean;
+            /** Engines */
+            engines: components["schemas"]["EngineChoiceInput"][];
+            /**
+             * Locale
+             * @default ko-KR
+             */
+            locale: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /**
+             * Questions
+             * @description 잴 검색어입니다. 한 줄에 하나씩, 최대 20개.
+             */
+            questions: string[];
+            /**
+             * Repetitions
+             * @description 검색어 하나를 엔진 하나에 던지는 횟수입니다. AI 답변은 같은 질문에도 매번 달라지므로 한 번의 결과로는 말할 수 없습니다.
+             * @default 3
+             */
+            repetitions: number;
+        };
+        /**
          * MePayload
          * @description The caller, the organization they signed into, and what they may do.
          */
@@ -5098,6 +5247,12 @@ export interface components {
              * @description 계획한 것을 다 했고 반복 최소치를 넘겼는가. 거짓이면 부분 측정입니다.
              */
             is_complete: boolean;
+            /**
+             * Kind
+             * @description SCHEDULED | MANUAL. MANUAL 은 관리자가 그 자리에서 고른 검색어를 잰 것이라 추이에 올라가지 않고 정기 측정과 합쳐지지 않습니다.
+             * @default SCHEDULED
+             */
+            kind: string;
             /**
              * Project Id
              * Format: uuid
@@ -7459,6 +7614,39 @@ export interface components {
             is_primary?: boolean | null;
             /** Origin */
             origin?: string | null;
+        };
+        /** SlotEstimatePayload */
+        SlotEstimatePayload: {
+            /**
+             * Amount Usd
+             * @description 이 칸의 예상 금액(USD). `null` 은 0원이 아니라 **모른다**는 뜻입니다.
+             */
+            amount_usd: number | null;
+            /**
+             * Baseline Samples
+             * @description 금액의 근거가 된 과거 답변 수입니다. 0이면 근거가 없다는 뜻입니다.
+             */
+            baseline_samples: number;
+            /**
+             * Basis
+             * @description MEASURED | NO_TOKEN_BASELINE | PRICE_TABLE_STALE | NO_PRICE_CONFIGURED | SEARCH_CONTENT_NOT_SEPARABLE | UNMAPPED_REASON
+             */
+            basis: string;
+            /** Calls */
+            calls: number;
+            /** Engine */
+            engine: string;
+            /** Model */
+            model: string;
+            /** Reason Ko */
+            reason_ko: string;
+            /** Search Mode */
+            search_mode: string;
+            /**
+             * Slot
+             * @description 엔진·모델·검색모드. 이 셋이 하나라도 다르면 다른 측정입니다.
+             */
+            slot: string;
         };
         /**
          * SourceAttribution
@@ -10018,6 +10206,39 @@ export interface operations {
             };
         };
     };
+    estimate_api_observations_estimates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EstimateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EstimatePayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     index_api_observations_prompt_sets_get: {
         parameters: {
             query?: {
@@ -10268,6 +10489,8 @@ export interface operations {
         parameters: {
             query?: {
                 project_id?: string | null;
+                /** @description 종류로 거릅니다. 비워 두면 **둘 다** 나옵니다 — 목록에서 조용히 빼면 그 실행이 없던 일이 되므로, 거르는 것은 부르는 쪽이 정합니다. */
+                kind?: string | null;
                 limit?: number;
             };
             header?: never;
@@ -10309,6 +10532,42 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ObservationRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_JobPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_manual_api_observations_runs_manual_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 같은 키로 다시 부르면 원래 작업을 돌려줍니다. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualRunRequest"];
             };
         };
         responses: {

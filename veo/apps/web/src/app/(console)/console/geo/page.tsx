@@ -20,6 +20,7 @@ import styles from '@/styles/page.module.css';
 
 import { JobWatch } from './JobWatch';
 import { PromptSetForm } from './PromptSetForm';
+import { ManualRunForm } from './ManualRunForm';
 import { RunForm, type RunnableEngine } from './RunForm';
 import { RiskReport } from './RiskReport';
 import { VisibilityReport } from './VisibilityReport';
@@ -219,6 +220,23 @@ async function ConsoleGeoContent({
           )}
 
           {/*
+            수동 측정은 정기 관측 **뒤에** 둔다. 앞에 두면 즉석 측정이 기본처럼 읽히고,
+            그러면 추이에 안 올라가는 값만 쌓인다. 질문 집합이 없어도 쓸 수 있어야 한다 —
+            "지금 이 검색어로 우리가 나오나" 는 집합을 만들기 전에 나오는 질문이다.
+          */}
+          {projects.length > 0 && usable.length > 0 ? (
+            <Card title="검색어 하나만 지금 재보기 (수동 측정)" headingLevel={3}>
+              <ManualRunForm
+                projects={projects.map((one) => ({
+                  id: one.id,
+                  label: `${one.company} · ${one.name}`,
+                }))}
+                engines={usable}
+              />
+            </Card>
+          ) : null}
+
+          {/*
             "질문 집합을 먼저 만들어 주십시오" 라고 적어 두고 만드는 자리를 두지 않아,
             관측이 한 번도 돌지 못했다. 만들라는 안내 바로 아래에 만드는 칸을 둔다 —
             서버에는 처음부터 길이 있었고 화면에서 부를 수가 없었을 뿐이다(0-E).
@@ -331,7 +349,12 @@ function History({
   jobs,
   currentRunId,
 }: {
-  readonly runs: readonly { id: string; summary_ko: string; is_complete: boolean }[];
+  readonly runs: readonly {
+    id: string;
+    summary_ko: string;
+    is_complete: boolean;
+    kind: string;
+  }[];
   readonly jobs: readonly Job[];
   readonly currentRunId: string | null;
 }) {
@@ -351,6 +374,13 @@ function History({
             <Link href={`/console/geo?run=${run.id}`} className={own.historyLink}>
               {run.summary_ko}
             </Link>
+            {/*
+              수동 측정을 같은 모양으로 그리면 목록에서 구별이 사라지고, 그러면 추이에
+              안 올라가는 값을 추이의 점으로 읽게 된다.
+            */}
+            {run.kind === 'MANUAL' ? (
+              <span className={own.manualBadge}>수동 · 추이 제외</span>
+            ) : null}
             {!run.is_complete ? <span className={own.partialTag}>부분 측정</span> : null}
             {run.id === currentRunId ? <span className={own.currentTag}>보는 중</span> : null}
           </li>
