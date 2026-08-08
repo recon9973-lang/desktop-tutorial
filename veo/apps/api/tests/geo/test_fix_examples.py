@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import glob
+import re
 from pathlib import Path
 
 import pytest
@@ -123,6 +124,72 @@ class TestTheExamplesAreSafeToPaste:
 
         for banned in ("온담의원", "베놈애드", "venomad"):
             assert banned not in example, f"{check_id} 에 실제 상호가 박혀 있습니다"
+
+    @pytest.mark.parametrize("check_id", sorted(_spec_check_ids()))
+    def test_no_invented_fact_is_shipped(self, check_id: str) -> None:
+        """**이 시험이 없어서 지어낸 사실이 운영까지 나갔다.**
+
+        실측 2026-08-08 — v0.3.62 로 배포된 예시 안에 내가 만든 값이 들어 있었다:
+
+            "붓기는 보통 2~3일째 가장 심하고 5~7일 안에 대부분 가라앉습니다"
+            "국산 임플란트 100만원~ / 수입 150만원~ / 3~4개월"
+            "임플란트 10년 생존율은 약 95%로 보고됩니다 (대한구강악안면학회, 2024)"
+            "환자 412명을 대상으로 … 검진에 오지 않은 37명은 제외했습니다"
+            "들안로 209, 2층 · 대구광역시 수성구 · 053-000-0000"
+
+        전부 출처가 없다. 그런데 화면에는 **"복사해서 붙여넣으세요"** 라고 적혀 있다.
+        병원이 그대로 올리면 (1) 우리가 지어낸 비급여 진료비를 게시하고,
+        (2) 하지 않은 조사를 자기 이름으로 발표하고, (3) 없는 연구를 실재하는 학회가
+        발표한 것처럼 만든다. 그리고 **AI 가 그것을 인용한다** — 우리가 파는 것이
+        정확히 그것이다.
+
+        기존 시험은 실제 상호와 `example.com` 만 막았다. 지어낸 **사실**은 막을
+        생각을 안 했다. 내가 지어낸 줄 몰랐기 때문이다.
+
+        규칙: 예시는 **구조를 가르치고 내용은 비운다.** 금액·기간·수량·백분율·날짜·
+        주소·전화가 나오려면 `[ ]` 로 묶여 있어야 한다 — 그러면 그대로 붙여넣었을 때
+        동작하지 않는 것이 눈에 보인다.
+        """
+        example = code_example_for(check_id)
+        if example is None:
+            pytest.skip("예시가 없는 검사")
+
+        # `[...]` 안은 자리표시자다. 그것을 지우고 남은 곳에 사실이 있으면 지어낸 것이다.
+        outside = re.sub(r"\[[^\]]*\]", "", example)
+
+        facts = re.findall(
+            r"\d[\d,]*\s*(?:만원|원|명|일째|개월|주일|년|%)"  # 금액·기간·수량·비율
+            r"|\d{4}-\d{2}-\d{2}"  # 날짜
+            r"|\d{2,4}-\d{3,4}-\d{4}"  # 전화번호
+            r"|[가-힣]+(?:로|길)\s*\d+",  # 도로명 주소
+            outside,
+        )
+
+        assert not facts, (
+            f"{check_id} 의 예시에 출처 없는 사실이 있습니다: {facts}. "
+            "예시는 구조만 가르치고 내용은 `[대괄호]` 자리표시자로 비웁니다 — "
+            "금액·기간·통계·주소는 병원 것이지 우리 것이 아닙니다. "
+            "docs/CORRECTIONS.md 참조."
+        )
+
+    @pytest.mark.parametrize("check_id", sorted(_spec_check_ids()))
+    def test_no_named_institution_is_cited(self, check_id: str) -> None:
+        """실재하는 기관 이름을 출처로 적으면, 하지 않은 발표를 그 기관이 한 것이 된다.
+
+        실측: "대한구강악안면임플란트학회, 2024" 를 예시 출처로 적어 배포했다.
+        그런 발표가 있는지 확인한 적이 없다.
+        """
+        example = code_example_for(check_id)
+        if example is None:
+            pytest.skip("예시가 없는 검사")
+
+        outside = re.sub(r"\[[^\]]*\]", "", example)
+        institutions = re.findall(r"[가-힣]{2,}(?:학회|협회|재단|연구원|청|부|처)", outside)
+
+        assert not institutions, (
+            f"{check_id} 의 예시가 실재 기관을 출처로 인용합니다: {institutions}. "
+            "확인하지 않은 인용은 그 기관이 하지 않은 발표를 한 것으로 만듭니다."
+        )
 
     @pytest.mark.parametrize("check_id", sorted(_spec_check_ids()))
     def test_placeholders_are_visibly_placeholders(self, check_id: str) -> None:

@@ -76,60 +76,70 @@ _EXAMPLES: Final[dict[str, str]] = {
     "geo.extract.direct_answer_present": (
         "<!-- 질문을 제목으로 두고, **바로 다음 문단**에 답을 완결해서 쓴다.\n"
         "     AI 는 이 한 문단만 떼어 인용한다 — 앞뒤를 읽어야 뜻이 통하면 못 쓴다. -->\n"
-        "<h2>임플란트 수술 후 붓기는 며칠 가나요?</h2>\n"
-        "<p>임플란트 수술 후 붓기는 보통 2~3일째 가장 심하고 5~7일 안에 대부분\n"
-        "가라앉습니다. 일주일이 지나도 붓기와 통증이 함께 심해지면 감염 가능성이\n"
-        "있으므로 내원해 확인해야 합니다.</p>\n"
+        "<h2>[환자가 실제로 묻는 질문을 그대로]</h2>\n"
+        "<p>[한 문장으로 결론부터]. [이어서 근거나 조건 한두 문장].\n"
+        "[이럴 때는 예외다 — 예외가 있으면 여기서 밝힌다].</p>\n"
         "\n"
-        "<!-- 첫 문단 안에 '무엇이 · 얼마나 · 언제까지 · 예외는' 이 들어가면 좋다 -->"
+        "<!-- 첫 문단 안에 '무엇이 · 얼마나 · 언제까지 · 예외는' 이 들어가면 좋다.\n"
+        "     **내용은 반드시 의료진이 씁니다.** VEO 는 자리와 순서만 알려줍니다 —\n"
+        "     의학적 사실을 진단 도구가 채워 주면 그것이 그대로 환자에게 나갑니다. -->"
     ),
     "geo.extract.passage_self_contained": (
         "<!-- 나쁜 예 — '위에서 말한' 이 있으면 그 문단만 떼어냈을 때 뜻이 끊긴다 -->\n"
         "<p>위에서 말한 방법으로 관리하시면 됩니다.</p>\n"
         "\n"
         "<!-- 좋은 예 — 주어와 대상을 문단 안에서 다시 밝힌다 -->\n"
-        f"<p>{_B}에서는 임플란트 수술 후 첫 일주일 동안 찬 찜질과 처방된 항생제\n"
-        "복용을 권합니다. 흡연과 빨대 사용은 잇몸 회복을 늦추므로 피하십시오.</p>"
+        f"<p>{_B}에서는 [무엇을] [언제] [어떻게 하라고] 안내합니다.\n"
+        "[피해야 할 것]은 [이유] 때문에 피하십시오.</p>\n"
+        "\n"
+        "<!-- 요령은 **주어와 대상을 문단 안에서 다시 밝히는 것** 하나다.\n"
+        "     내용은 의료진이 씁니다 — 진단 도구가 의학적 조언을 채워 주면\n"
+        "     그것이 그대로 환자에게 나갑니다. -->"
     ),
     "geo.extract.heading_structure_semantic": (
         "<!-- 제목은 '질문 하나 = 제목 하나' 로 나눈다. 글자 크기 때문에 쓰지 않는다. -->\n"
-        "<h1>임플란트</h1>\n"
-        "  <h2>임플란트 수술은 얼마나 아픈가요?</h2>\n"
-        "  <h2>임플란트 비용은 얼마인가요?</h2>\n"
-        "    <h3>보험이 적용되는 경우</h3>\n"
-        "  <h2>임플란트 수명은 몇 년인가요?</h2>\n"
+        "<h1>[시술·진료명]</h1>\n"
+        "  <h2>[환자가 묻는 질문 1]</h2>\n"
+        "  <h2>[환자가 묻는 질문 2]</h2>\n"
+        "    <h3>[그 질문의 하위 갈래]</h3>\n"
+        "  <h2>[환자가 묻는 질문 3]</h2>\n"
         "\n"
         "<!-- h1 은 한 장에 하나. h2 를 건너뛰고 h3 로 가지 않는다. -->"
     ),
     "geo.extract.tables_lists_machine_readable": (
         "<!-- 비교·수치는 문장에 풀어 쓰지 말고 표로. AI 가 값을 그대로 읽어 간다. -->\n"
         "<table>\n"
-        "  <caption>임플란트 종류별 비용과 기간</caption>\n"
+        "  <caption>[무엇을 비교하는 표인지]</caption>\n"
         "  <thead>\n"
-        "    <tr><th>종류</th><th>비용(1개)</th><th>치료 기간</th></tr>\n"
+        "    <tr><th>[항목]</th><th>[값1]</th><th>[값2]</th></tr>\n"
         "  </thead>\n"
         "  <tbody>\n"
-        "    <tr><td>국산 임플란트</td><td>100만원~</td><td>3~4개월</td></tr>\n"
-        "    <tr><td>수입 임플란트</td><td>150만원~</td><td>3~4개월</td></tr>\n"
+        "    <tr><td>[종류]</td><td>[값]</td><td>[값]</td></tr>\n"
+        "    <tr><td>[종류]</td><td>[값]</td><td>[값]</td></tr>\n"
         "  </tbody>\n"
         "</table>\n"
         "\n"
-        "<!-- 이미지로 만든 표는 읽히지 않는다. 반드시 글자로 된 표여야 한다. -->"
+        "<!-- 이미지로 만든 표는 읽히지 않는다. 반드시 글자로 된 표여야 한다.\n"
+        "     **값은 병원이 채웁니다.** 특히 비급여 진료비는 의료법이 게시 방법을\n"
+        "     정하고 있으므로, 진단 도구가 임의로 넣은 금액을 그대로 올리면 안 됩니다. -->"
     ),
     # ------------------------------------------------------------------ 근거·출처 투명성
     "geo.evidence.claims_have_sources": (
         "<!-- 검증이 필요한 주장 바로 옆에 출처를 붙인다. 글 맨 끝에 몰아 두지 않는다. -->\n"
-        "<p>임플란트 10년 생존율은 약 95%로 보고됩니다\n"
-        '(<a href="https://출처주소" rel="nofollow">대한구강악안면임플란트학회, 2024</a>).</p>\n'
+        "<p>[검증이 필요한 주장을 한 문장으로]\n"
+        '(<a href="https://출처주소" rel="nofollow">[발표한 곳], [연도]</a>).</p>\n'
         "\n"
-        "<!-- 출처에는 '누가 · 언제' 가 들어가야 한다. '전문가에 따르면' 은 출처가 아니다. -->"
+        "<!-- 출처에는 '누가 · 언제' 가 들어가야 한다. '전문가에 따르면' 은 출처가 아니다.\n"
+        "     **주장과 출처는 반드시 실제로 확인한 것이어야 합니다.** 여기에 예시 숫자와\n"
+        "     학회 이름을 넣어 두면, 그것이 그대로 병원 홈페이지에 올라가 없는 연구를\n"
+        "     실재하는 학회가 발표한 것처럼 만듭니다. 그래서 비워 둡니다. -->"
     ),
     "geo.evidence.author_identified": (
         "<!-- ① 화면에 보이게 -->\n"
         '<div class="byline">\n'
         "  <span>작성 · 감수</span>\n"
-        '  <a href="/doctors/hong">홍길동 원장 (치과보철과 전문의)</a>\n'
-        "  <time datetime=\"2026-08-07\">2026년 8월 7일</time>\n"
+        '  <a href="/doctors/[식별자]">[이름] [직함] ([전문과목])</a>\n'
+        "  <time datetime=\"[YYYY-MM-DD]\">[감수한 날]</time>\n"
         "</div>\n"
         "\n"
         "<!-- ② 구조화 데이터에도 같은 사람을 적는다 -->\n"
@@ -137,8 +147,8 @@ _EXAMPLES: Final[dict[str, str]] = {
         "{\n"
         '  "@context": "https://schema.org",\n'
         '  "@type": "MedicalWebPage",\n'
-        '  "author":  { "@type": "Person", "name": "홍길동", "jobTitle": "치과보철과 전문의" },\n'
-        '  "reviewedBy": { "@type": "Person", "name": "홍길동" }\n'
+        '  "author":  { "@type": "Person", "name": "[이름]", "jobTitle": "[전문과목]" },\n'
+        '  "reviewedBy": { "@type": "Person", "name": "[감수자 이름]" }\n'
         "}\n"
         "</script>"
     ),
@@ -152,11 +162,11 @@ _EXAMPLES: Final[dict[str, str]] = {
         f'    "name": "{_B}",\n'
         '    "url": "https://도메인/",\n'
         '    "logo": { "@type": "ImageObject", "url": "https://도메인/logo.png" },\n'
-        '    "telephone": "+82-53-000-0000",\n'
+        '    "telephone": "[+82-지역번호-국번-번호]",\n'
         '    "address": {\n'
         '      "@type": "PostalAddress",\n'
-        '      "streetAddress": "들안로 209, 2층",\n'
-        '      "addressLocality": "대구광역시 수성구",\n'
+        '      "streetAddress": "[도로명 주소 · 상세주소]",\n'
+        '      "addressLocality": "[시·도 시·군·구]",\n'
         '      "addressCountry": "KR"\n'
         "    }\n"
         "  }\n"
@@ -166,11 +176,12 @@ _EXAMPLES: Final[dict[str, str]] = {
     "geo.evidence.method_disclosed": (
         "<!-- 자체 수치를 냈으면 어떻게 셌는지 같은 페이지에 밝힌다. -->\n"
         "<h3>산출 방법</h3>\n"
-        f"<p>2025년 1월~12월 {_B}에서 임플란트 식립을 받은 환자 412명을 대상으로,\n"
-        "식립 12개월 후 정기 검진에서 확인한 값입니다. 검진에 오지 않은 37명은\n"
-        "집계에서 제외했습니다.</p>\n"
+        f"<p>[기간]에 {_B}에서 [무엇]을 받은 [대상] [N]명을 대상으로,\n"
+        "[언제·어떻게] 확인한 값입니다. [제외한 대상]은 집계에서 제외했습니다.</p>\n"
         "\n"
-        "<!-- '기간 · 대상 수 · 세는 방법 · 제외한 것' 넷이 있으면 충분하다. -->"
+        "<!-- '기간 · 대상 수 · 세는 방법 · 제외한 것' 넷이 있으면 충분하다.\n"
+        "     **실제로 센 것만 적습니다.** 숫자를 예시로라도 넣어 두면 하지 않은 조사를\n"
+        "     한 것처럼 발표하게 됩니다. -->"
     ),
     # ------------------------------------------------------------------ 엔터티 명확성
     "geo.entity.organization_identified": (
@@ -181,15 +192,15 @@ _EXAMPLES: Final[dict[str, str]] = {
         '  "@id": "https://도메인/#organization",\n'
         f'  "name": "{_B}",\n'
         '  "url": "https://도메인/",\n'
-        '  "telephone": "+82-53-000-0000",\n'
+        '  "telephone": "[+82-지역번호-국번-번호]",\n'
         '  "address": {\n'
         '    "@type": "PostalAddress",\n'
-        '    "streetAddress": "들안로 209, 2층",\n'
-        '    "addressLocality": "대구광역시 수성구",\n'
-        '    "postalCode": "42111",\n'
+        '    "streetAddress": "[도로명 주소 · 상세주소]",\n'
+        '    "addressLocality": "[시·도 시·군·구]",\n'
+        '    "postalCode": "[우편번호]",\n'
         '    "addressCountry": "KR"\n'
         "  },\n"
-        '  "openingHours": "Mo-Fr 09:00-18:00"\n'
+        '  "openingHours": "[Mo-Fr 09:00-18:00 형식으로 실제 진료시간]"\n'
         "}\n"
         "</script>\n"
         "\n"
@@ -243,13 +254,13 @@ _EXAMPLES: Final[dict[str, str]] = {
         '<div itemscope itemtype="https://schema.org/MedicalClinic">\n'
         f'  <span itemprop="name">{_B}</span>\n'
         '  <div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">\n'
-        '    <span itemprop="streetAddress">들안로 209, 2층</span>\n'
-        '    <span itemprop="addressLocality">대구광역시 수성구</span>\n'
+        '    <span itemprop="streetAddress">[도로명 주소 · 상세주소]</span>\n'
+        '    <span itemprop="addressLocality">[시·도 시·군·구]</span>\n'
         "  </div>\n"
-        '  <span itemprop="telephone">053-000-0000</span>\n'
+        '  <span itemprop="telephone">[대표번호]</span>\n'
         "</div>\n"
         "\n"
-        "<!-- 전화번호 표기(053-000-0000 / 0530000000)도 통일한다. -->"
+        "<!-- 전화번호 표기 방식(하이픈 유무)도 모든 채널에서 통일한다. -->"
     ),
     # ------------------------------------------------------------------ 구조화 데이터·메타
     "geo.sd.valid_syntax": (
@@ -278,25 +289,25 @@ _EXAMPLES: Final[dict[str, str]] = {
         "\n"
         '<script type="application/ld+json">\n'
         '{ "@context": "https://schema.org", "@type": "MedicalProcedure",\n'
-        '  "name": "임플란트", "bodyLocation": "구강",\n'
-        '  "howPerformed": "치조골에 인공 치근을 식립한 뒤 보철물을 연결합니다." }\n'
+        '  "name": "[시술명]", "bodyLocation": "[부위]",\n'
+        '  "howPerformed": "[어떻게 하는 시술인지 — 의료진이 씁니다]" }\n'
         "</script>"
     ),
     "geo.meta.title_description_descriptive": (
         "<!-- 제목과 설명은 그 페이지에만 맞는 문장이어야 한다.\n"
         "     사이트 전체에 같은 문장을 돌려 쓰면 AI 가 페이지를 구분하지 못한다. -->\n"
-        "<title>임플란트 비용과 치료 기간 안내 | " + _B + "</title>\n"
+        "<title>[이 페이지가 답하는 것] | " + _B + "</title>\n"
         '<meta name="description"\n'
-        '      content="임플란트 1개 100만원부터, 치료 기간 3~4개월. 보험 적용 조건과\n'
-        '               수술 후 관리 방법을 정리했습니다.">\n'
+        '      content="[이 페이지에서만 알 수 있는 내용을 한두 문장으로.\n'
+        '               다른 페이지에 그대로 복사되지 않는 문장이어야 합니다]">\n'
         "\n"
         "<!-- 제목 25~35자, 설명 70~90자가 잘리지 않는다. -->"
     ),
     "geo.meta.opengraph_present": (
         "<!-- <head> 안. AI 답변과 메신저 공유가 같은 값을 읽는다. -->\n"
         '<meta property="og:type" content="article">\n'
-        '<meta property="og:title" content="임플란트 비용과 치료 기간 안내">\n'
-        '<meta property="og:description" content="임플란트 1개 100만원부터, 치료 기간 3~4개월.">\n'
+        '<meta property="og:title" content="[이 페이지가 답하는 것]">\n'
+        '<meta property="og:description" content="[한 문장 요약]">\n'
         '<meta property="og:url" content="페이지주소">\n'
         '<meta property="og:image" content="https://도메인/공유이미지.jpg">\n'
         f'<meta property="og:site_name" content="{_B}">'
@@ -305,8 +316,8 @@ _EXAMPLES: Final[dict[str, str]] = {
     "geo.fresh.dates_present": (
         "<!-- ① 화면에 보이게 — 사람이 읽는 자리 -->\n"
         '<p class="dates">\n'
-        '  발행 <time datetime="2026-03-02">2026년 3월 2일</time> ·\n'
-        '  수정 <time datetime="2026-08-07">2026년 8월 7일</time>\n'
+        '  발행 <time datetime="[YYYY-MM-DD]">[발행일]</time> ·\n'
+        '  수정 <time datetime="[YYYY-MM-DD]">[마지막으로 실제 고친 날]</time>\n'
         "</p>\n"
         "\n"
         "<!-- ② 구조화 데이터에도 같은 날짜를 -->\n"
@@ -314,8 +325,8 @@ _EXAMPLES: Final[dict[str, str]] = {
         "{\n"
         '  "@context": "https://schema.org",\n'
         '  "@type": "MedicalWebPage",\n'
-        '  "datePublished": "2026-03-02",\n'
-        '  "dateModified": "2026-08-07"\n'
+        '  "datePublished": "[YYYY-MM-DD 발행일]",\n'
+        '  "dateModified": "[YYYY-MM-DD 실제로 고친 날]"\n'
         "}\n"
         "</script>\n"
         "\n"
@@ -328,7 +339,7 @@ _EXAMPLES: Final[dict[str, str]] = {
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         "  <url>\n"
         "    <loc>페이지주소</loc>\n"
-        "    <lastmod>2026-08-07</lastmod>\n"
+        "    <lastmod>[YYYY-MM-DD 실제로 고친 날]</lastmod>\n"
         "  </url>\n"
         "</urlset>\n"
         "\n"
