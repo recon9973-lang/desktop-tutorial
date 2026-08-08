@@ -245,3 +245,100 @@
   background: var(--veo-color-surface-sunken);
   font-size: var(--veo-font-size-200);
 }
+
+/* ── 재측정 — 이슈가 닫히는 유일한 길 ──────────────────────────────── */
+
+.verification {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-5);
+}
+
+.verificationLede {
+  margin: 0;
+  padding: var(--veo-space-3);
+  border-left: 3px solid var(--veo-status-warning-border);
+  background: var(--veo-color-surface-sunken);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.verificationStep {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-4);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+}
+
+.verificationStepHead {
+  margin: 0;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-medium);
+}
+
+.verificationHint {
+  margin: 0;
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: 1.7;
+}
+
+.verificationSelect {
+  padding: var(--veo-space-3);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface);
+  color: var(--veo-color-text);
+  font: inherit;
+  font-size: var(--veo-font-size-300);
+  max-width: 32rem;
+}
+
+/* 무엇을 다시 재는지. 판정이 아니라 범위라 값과 다른 모양으로 둔다. */
+.verificationTarget {
+  width: 100%;
+  padding: var(--veo-space-3);
+  border-left: 2px dashed var(--veo-color-border-strong);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.verificationTarget p { margin: 0 0 var(--veo-space-2); }
+
+.verificationUrls {
+  margin: 0 0 var(--veo-space-2);
+  padding-left: var(--veo-space-4);
+  word-break: break-all;
+}
+
+/* 통과와 미통과를 색만으로 가르지 않는다 — 문구가 먼저 말하고, 테두리가 거든다. */
+.verificationPassed,
+.verificationFailed {
+  margin: 0;
+  padding: var(--veo-space-3);
+  border-radius: var(--veo-radius-md);
+  font-size: var(--veo-font-size-200);
+  line-height: 1.7;
+}
+
+.verificationPassed {
+  border: 1px solid var(--veo-status-pass-border);
+  background: var(--veo-color-surface-sunken);
+}
+
+.verificationFailed {
+  border: 1px dashed var(--veo-status-warning-border);
+  background: var(--veo-color-surface-sunken);
+}
+
+/* 담당자 고르는 칸. 상태 카드 바로 아래에 붙어 같은 덩어리로 읽힌다. */
+.assignee {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  margin-top: var(--veo-space-4);
+  max-width: 32rem;
+}

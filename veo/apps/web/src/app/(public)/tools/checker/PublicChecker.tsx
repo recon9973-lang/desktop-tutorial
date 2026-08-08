@@ -32,6 +32,7 @@ import {
   type HistoryEntry,
 } from '@/lib/scan-history';
 
+import { ConsultationForm } from './ConsultationForm';
 import styles from './public-checker.module.css';
 
 type Filter = 'ALL' | ScanVerdict;
@@ -459,6 +460,12 @@ export function Report({
             콘솔에서 진단하기
           </Link>
         </div>
+
+        {/*
+          결과를 다 본 자리에 상담 문을 둔다. 접수 창구는 처음부터 서버에 있었는데
+          누를 자리가 없어서, 무료 진단이 돌아도 영업으로 이어지지 않았다.
+        */}
+        <ConsultationForm siteUrl={result.targetUrl} />
       </div>
     </div>
   );

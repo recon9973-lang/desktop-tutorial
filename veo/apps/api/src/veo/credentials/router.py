@@ -1,7 +1,21 @@
 """HTTP surface for stored provider credentials.
 
-**This router is deliberately not mounted.** ``veo.api.app`` belongs to the integrator;
-including it there is their call, not this worker's. See ``INTEGRATION_REQUEST.md``.
+**This router is mounted** — ``veo.api.app`` includes it at the API prefix
+(``api/app.py``). It said "deliberately not mounted" until 2026-08-08; that line was
+written before the integrator wired it up and then outlived the fact. A comment that
+outlives its fact is worse than no comment: the next reader trusts it.
+
+Two things it is still fair to say about how far this reaches:
+
+* **The vault is not yet the source of truth for outbound calls.** Every provider call
+  still reads deployment-wide environment variables through
+  ``core.settings.get_provider_credentials``. The per-organization resolvers exist
+  (``providers/*/credentials.py``'s ``*_from_vault``) and nothing in ``src`` calls them.
+  Switching changes boot conditions, so it is an open decision — see
+  ``keywords/INTEGRATION_REQUEST.md`` request #5.
+* **The AI answer engines are not in this vault.** ``CredentialProvider`` covers five
+  providers; ``ProviderCredentials.states()`` knows eight. Gemini, Perplexity and
+  Anthropic have settings fields but no vault slot.
 
 Four endpoints, and a conspicuous absence: there is no way to read a credential back.
 That is not an oversight to be filled in later — the permission matrix has no

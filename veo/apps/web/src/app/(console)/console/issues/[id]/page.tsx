@@ -3,14 +3,19 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Card, ErrorState } from '@veo/ui';
 
+import { listCompanies } from '@/lib/companies';
 import { evidenceKindLabel, ownerLabel } from '@/lib/issues';
 import { readIssue } from '@/lib/issues-api';
+import { readHistory } from '@/lib/scan-report';
+import { listMembers } from '@/lib/team';
 import styles from '@/styles/page.module.css';
 import { PermissionGate } from '@/components/PermissionGate';
 import { requireConsoleIdentity } from '@/lib/session';
 
 import { IssueCard } from '../IssueCard';
 import own from '../issues.module.css';
+import { AssigneePicker, type AssignableMember } from './AssigneePicker';
+import { VerificationPanel, type SelectableScanRun } from './VerificationPanel';
 
 export const metadata: Metadata = {
   title: '이슈 상세',
@@ -49,6 +54,10 @@ async function IssueDetailContent({ issueId }: { readonly issueId: string }) {
   }
 
   const issue = found.data;
+  const [scanRuns, members] = await Promise.all([
+    selectableScanRuns(issue.project_id),
+    assignableMembers(),
+  ]);
 
   return (
     <div className={styles.page}>
@@ -67,6 +76,11 @@ async function IssueDetailContent({ issueId }: { readonly issueId: string }) {
         <ul className={own.issueList}>
           <IssueCard issue={issue} linkToDetail={false} />
         </ul>
+        <AssigneePicker
+          issueId={issue.id}
+          assignedTo={issue.assigned_to}
+          members={members}
+        />
       </section>
 
       <section className={styles.section} aria-labelledby="issue-evidence-heading">
@@ -149,6 +163,29 @@ async function IssueDetailContent({ issueId }: { readonly issueId: string }) {
         </section>
       ) : null}
 
+      <section className={styles.section} aria-labelledby="issue-verify-heading">
+        <h2 id="issue-verify-heading" className={styles.sectionTitle}>
+          재측정 — 이 지적을 닫는 유일한 길
+        </h2>
+        <VerificationPanel issueId={issue.id} state={issue.state} scanRuns={scanRuns} />
+
+        {issue.verification_runs.length > 0 ? (
+          <ul className={own.historyList}>
+            {issue.verification_runs.map((run) => (
+              <li key={run.id} className={own.historyEntry}>
+                <span className={own.historyWhen}>{formatWhen(run.created_at)}</span>
+                <span>
+                  {run.outcome}
+                  {run.reason_ko !== null && run.reason_ko !== '' ? ` · ${run.reason_ko}` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className={own.noMoves}>아직 재측정한 기록이 없습니다.</p>
+        )}
+      </section>
+
       <section className={styles.section} aria-labelledby="issue-history-heading">
         <h2 id="issue-history-heading" className={styles.sectionTitle}>
           이력
@@ -176,4 +213,54 @@ function formatWhen(value: string): string {
     timeStyle: 'short',
     timeZone: 'Asia/Seoul',
   }).format(at);
+}
+
+/**
+ * 이 이슈가 속한 프로젝트에서 **고를 수 있는 진단들.**
+ *
+ * 이슈는 프로젝트에 달리고 진단 이력은 사이트에 달리므로, 프로젝트의 사이트를 찾아
+ * 그 이력을 모은다. 못 가져오면 **빈 목록**이다 — 목록이 비면 화면이 "고를 진단이
+ * 없다" 고 말하고, 그것이 지어낸 항목을 보여주는 것보다 낫다.
+ */
+async function selectableScanRuns(projectId: string): Promise<SelectableScanRun[]> {
+  const companies = await listCompanies();
+  if (!companies.ok) return [];
+
+  const sites = companies.data
+    .flatMap((company) => company.sites)
+    .filter((site) => site.projectId === projectId);
+  if (sites.length === 0) return [];
+
+  const histories = await Promise.all(sites.map((site) => readHistory(site.siteId)));
+
+  const runs: SelectableScanRun[] = [];
+  for (const [index, history] of histories.entries()) {
+    if (!history.ok) continue;
+    const site = sites[index];
+    for (const entry of history.data) {
+      runs.push({
+        id: entry.scanRunId,
+        // 점수는 있을 때만 적는다. 없는 것을 0 으로 적으면 "0점짜리 진단" 으로 읽힌다.
+        label:
+          `${formatWhen(entry.startedAt)} · ${site?.origin ?? ''} · ` +
+          `${entry.urlsCollected}장` +
+          (entry.score === null ? '' : ` · ${entry.score.toFixed(1)}점`),
+      });
+    }
+  }
+  return runs;
+}
+
+/**
+ * 지정할 수 있는 구성원.
+ *
+ * **비활성 계정은 뺀다** — 떠난 사람에게 일을 맡길 수는 없다. 못 가져오면 빈 목록이고,
+ * 그때 화면은 "지정할 수 있는 구성원이 없다" 고 말한다.
+ */
+async function assignableMembers(): Promise<AssignableMember[]> {
+  const members = await listMembers();
+  if (!members.ok) return [];
+  return members.data
+    .filter((member) => member.isActive)
+    .map((member) => ({ id: member.id, label: `${member.displayName} · ${member.email}` }));
 }

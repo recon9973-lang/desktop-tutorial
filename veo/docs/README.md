@@ -164,6 +164,19 @@ python3 scripts/spec_weights.py                # SEO 발행본
 python3 scripts/spec_weights.py --domain geo   # GEO 발행본
 ```
 
+## 4-B. 서버에 있는데 화면에서 못 부르는 것
+
+만들어 놓고 화면에 버튼을 안 달면, 사장님 입장에서는 **없는 기능**이다. 전수로 세어
+`docs/audit/2026-08-08-server-ui-gap.md` 에 남겼다. 다시 세는 명령:
+
+```bash
+python3 scripts/ui_gap.py
+```
+
+**[실측] 2026-08-08** 후보 29개 → **26개** (이슈 3개를 v0.3.73 에서 붙였다).
+남은 것 중 큰 것 넷: 리포트 본문 열람 · 경쟁사 비교 · 무료 진단 상담 폼 ·
+AI 엔진 열쇠(이건 화면만으로 안 된다 — 감사 문서 §A-2).
+
 ---
 
 # 5. 문서 지도 — 무엇을 언제 읽나

@@ -35,6 +35,8 @@ export interface Issue {
   readonly remediation_owner: string;
   readonly recurrence_count: number;
   readonly summary_ko: string;
+  /** 지금 이 건을 맡은 사람. `null` 이면 아무도 안 맡았다. */
+  readonly assigned_to: string | null;
   readonly human_transitions: readonly HumanTransition[];
 }
 

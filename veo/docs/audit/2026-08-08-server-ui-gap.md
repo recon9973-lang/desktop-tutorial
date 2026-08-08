@@ -25,9 +25,17 @@ python3 scripts/ui_gap.py --all    # 115개 전부와 판정
 
 ---
 
+> **갱신 2026-08-08** — 둘을 고쳤다. 후보 수 **29 → 25**(`python3 scripts/ui_gap.py`).
+>
+> * A-1 이슈 3개 → v0.3.73
+> * A-5 상담 요청 폼 → v0.3.74
+>
+> A-2 는 화면만 붙여서는 안 된다는 것이 드러났다 — 아래 A-2 를 볼 것.
+> A-3(리포트 본문)·A-4(경쟁사 비교)는 그대로다.
+
 ## A. 진짜 구멍 — 일이 막힌다 (12개 엔드포인트 · 5가지)
 
-### A-1. 이슈를 "해결" 로 옮길 방법이 화면에 없다
+### A-1. ~~이슈를 "해결" 로 옮길 방법이 화면에 없다~~ → 고침 (v0.3.73)
 
 ```
 POST /api/issues/{id}/verification-requests    표적 재검사 요청
@@ -35,7 +43,10 @@ POST /api/issues/{id}/verification-results     재측정 결과 반영
 POST /api/issues/{id}/assignee                 담당자 지정
 ```
 
-화면은 `POST /api/issues/{id}/transitions` 만 부른다(`lib/issues.ts`).
+**고쳤다.** 이슈 상세에 재측정 칸(`VerificationPanel`)과 담당자 칸(`AssigneePicker`)을
+달았다. 아래는 무엇이 문제였는지의 기록이다.
+
+화면은 `POST /api/issues/{id}/transitions` 만 불렀다(`lib/issues.ts`).
 그런데 서버 규칙상 **해결 상태로 가는 문은 재측정 결과뿐이다.**
 
 > "해결(VERIFIED_RESOLVED)은 표적 재측정에서 해당 검사가 통과했을 때만 기록됩니다."
@@ -45,7 +56,29 @@ POST /api/issues/{id}/assignee                 담당자 지정
 **빠진 것은 그 규칙을 밟을 화면이다.** 지금 이슈는 열리고 진행되지만 닫히지 않는다.
 담당자 지정도 마찬가지로 서버에만 있다.
 
-### A-2. AI 엔진 열쇠를 화면에서 넣을 수 없다
+### A-2. AI 엔진 열쇠를 화면에서 넣을 수 없다 — **화면만으로는 안 된다**
+
+> **2026-08-08 추가 조사.** 손대려다 더 깊은 것을 찾았다. 셋 다 실측이다.
+>
+> 1. **금고에 AI 엔진이 없다.** `CredentialProvider` 는 5개뿐이다 —
+>    `NAVER_SEARCH_AD`·`NAVER_DATALAB`·`OPENAI`·`GOOGLE_PAGESPEED`·`GOOGLE_SEARCH_CONSOLE`.
+>    #64 에 필요한 **Gemini·Perplexity·Anthropic 은 없다**(`credentials/providers.py:43`).
+>    `ProviderCredentials.states()` 는 8개를 아는데(`core/settings.py:212`) 금고는 5개다.
+>    `providers.py:38` 의 "Values match ... one for one" 은 **더 이상 사실이 아니다.**
+> 2. **금고를 읽어 실제 호출에 쓰는 코드가 없다.** `*_from_vault()` 는 만들어져 있는데
+>    `apps/api/src/veo` 안에서 부르는 곳이 0곳이다(시험에서만 돈다). 모든 호출은
+>    환경변수(`get_provider_credentials()`)로 간다.
+> 3. **그래서 화면만 만들면 거짓말이 된다.** 열쇠를 넣고 "됐다" 고 믿는데 아무 호출도
+>    그 값을 안 쓴다.
+>
+> 그리고 이것은 **이미 열려 있던 결정**이다:
+>
+> > "vault 방식으로 바꾸면 `credential_encryption_key` 가 없을 때 키워드 엔드포인트가
+> > 기동 시점부터 막히는 등 부팅 조건이 바뀌므로, 통합 담당의 결정이 필요합니다."
+> > (`keywords/INTEGRATION_REQUEST.md` 요청 #5, 상태: 열림)
+>
+> **순서:** ① 부팅 조건 결정 → ② 금고에 AI 엔진 셋 추가 → ③ 호출 경로를 금고로 →
+> ④ 화면. ①이 사장님 결정이다.
 
 ```
 GET    /api/credentials                  연동 상태 (값은 안 돌려준다 — 지문·끝 4자만)
@@ -83,14 +116,19 @@ GET  /api/competitors/comparisons/{id}
 `console/competitors/` 화면은 **브랜드 선언**(자사·비교 대상)까지만 한다.
 같은 조건에서 잰 비교(ADR 0010)를 만들고 읽는 세 엔드포인트는 아무도 안 부른다.
 
-### A-5. 무료 진단에 상담 요청 폼이 없다
+### A-5. ~~무료 진단에 상담 요청 폼이 없다~~ → 고침 (v0.3.74)
 
 ```
 POST /public/v1/leads    무료 진단 상담 요청 접수
 ```
 
-무료 진단(SEO·GEO·키워드)은 화면이 있고 결과 공유 링크도 있다. 그런데 **"상담
-받겠다" 를 누를 자리가 없다.** 접수 창구는 서버에 이미 서 있다.
+무료 진단(SEO·GEO·키워드)은 화면이 있고 결과 공유 링크도 있었다. 그런데 **"상담
+받겠다" 를 누를 자리가 없었다.** 접수 창구는 서버에 이미 서 있었다.
+
+**고쳤다.** 진단 결과 아래에 `ConsultationForm` 을 달았다. 받는 것은 이름과 연락처
+하나뿐이고, **광고 수신 동의 칸은 없다** — 서버가 받지도 저장하지도 않으므로 화면에
+두면 받은 것처럼 보인다. 저장한 항목은 우리가 적지 않고 **서버가 돌려준 목록을 그대로**
+보인다. 우리가 따로 적으면 실제 저장한 것과 갈라지고, 갈라진 쪽이 개인정보 안내문이다.
 
 ---
 

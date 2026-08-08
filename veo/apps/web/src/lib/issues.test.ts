@@ -29,7 +29,8 @@ function issue(over: Partial<Issue> = {}): Issue {
     affected_url_count: 3,
     remediation_owner: 'DEVELOPER',
     recurrence_count: 0,
-    summary_ko: '요약',
+    assigned_to: null,
+  summary_ko: '요약',
     human_transitions: [],
     ...over,
   };

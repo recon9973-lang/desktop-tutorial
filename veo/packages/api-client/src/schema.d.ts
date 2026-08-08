@@ -3411,9 +3411,19 @@ export interface components {
          * CredentialProvider
          * @description An external provider VEO stores a secret for.
          *
-         *     Values match the keys of ``ProviderCredentials.states()`` in ``core/settings.py``
-         *     one for one, so ``/api/providers`` and ``/api/credentials`` never disagree about
-         *     what a provider is called.
+         *     Names that appear here match ``ProviderCredentials.states()`` in ``core/settings.py``
+         *     exactly, so ``/api/providers`` and ``/api/credentials`` never disagree about what a
+         *     provider is *called*.
+         *
+         *     **They are not the same set.** ``states()`` knows eight providers; this enum has
+         *     five. ``GOOGLE_GEMINI``, ``PERPLEXITY`` and ``ANTHROPIC`` — the AI answer engines —
+         *     have settings fields and no vault slot, so their keys can only come from deployment
+         *     environment variables today. Adding them here is item ② of the sequence recorded in
+         *     ``docs/audit/2026-08-08-server-ui-gap.md`` §A-2; item ① (should outbound calls read
+         *     the vault at all?) is an open decision that changes boot conditions.
+         *
+         *     The docstring used to claim the two sets matched "one for one". They did when it was
+         *     written. Checked 2026-08-08: they do not.
          * @enum {string}
          */
         CredentialProvider: "NAVER_SEARCH_AD" | "NAVER_DATALAB" | "OPENAI" | "GOOGLE_PAGESPEED" | "GOOGLE_SEARCH_CONSOLE";
