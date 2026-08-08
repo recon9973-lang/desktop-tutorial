@@ -17,57 +17,39 @@
 
 ---
 
-## 1. 지금 딱 하나 막혀 있다 — GitHub 결제
-
-**v0.3.71 코드는 끝났고 검사도 전부 통과했는데 배포가 안 됐다.**
+## 1. 막혀 있던 것은 풀렸다 — 배포 완료 (2026-08-08)
 
 ```
-운영 버전     0.3.70   (그대로. 아무것도 안 망가졌다)
-main 가지     그대로   (관문이 막아서 안 밀었다)
-작업 가지     claude/compassionate-hypatia-5wwn4d
-              e10d52a3 docs(veo): 오류 대장 15번
-              0164a8e7 feat(veo): 검색 켬·끔을 한 실행에서 나란히 잰다 (v0.3.71)
-              둘 다 원격에 밀어둠 · 안 올린 변경 없음
+운영 버전     0.3.74   ← /api/health 로 확인함
+main          d3848f3f
+막힘          해소
 ```
 
-**사유 원문** (GitHub check-run 주석):
+**원인은 결제 실패가 아니라 `Actions` 예산 `$0` 이었다.** 인계 문서가 "결제 실패" 라고
+적어 둔 것은 틀렸다(`docs/CORRECTIONS.md` 16번). GitHub 오류 문구가 *"결제 실패했거나
+**또는** 지출 한도"* 두 가지를 한 문장에 담고 있었고 앞쪽만 읽었다.
 
-> "The job was not started because recent account payments have failed or your
-> spending limit needs to be increased. Please check the 'Billing & plans'
-> section in your settings"
+**[실측]** 세 번 실제로 돌려서 갈랐다:
 
-`veo-platform` 은 **비공개 저장소**라 Actions 시간이 무료 한도(월 2,000분)에서
-차감된다. 이번 달 실행 100건 이상, 한 건에 약 9분.
+```
+09:18 · 12:54   예산 $0 · 카드 없음   → 실패
+14:16           예산 $0 · 카드 있음   → 실패   ← 결제가 원인이면 여기서 풀렸어야 한다
+예산 $5 로 올린 뒤                    → 성공
+```
 
-**사장님이 하실 것** — https://github.com/settings/billing
-카드가 살아 있는지 · Spending limit 이 `$0` 인지. 되돌리기는 언제든 `$0` 으로.
+**지금 설정** — `Actions` 예산 `$5` · `Stop usage: Yes`. 최대 손실이 $5 에서 잘린다.
+나머지 넷(Codespaces·Packages·Git LFS·AI 크레딧)은 `$0` 그대로 두었다 — 안 쓰는 것들이다.
 
-**[실측] 2026-08-08 12:54 에 또 확인했다** (09:18 에 이어 두 번째). 관문 잡을 재실행
-했더니 attempt 4 도 같은 사유로 시작하지 못했다. 아래는 첫 확인 기록이다.
+**[실측]** 8월 1~8일 청구액은 **매일 $0** 이었다. 쓴 $14.23 을 무료 한도가 전액 덮었다.
 
-**[실측] 2026-08-08 09:18.** 실패한 실행의 관문 잡만 재실행했더니
-(attempt 3, job 93085460961) **같은 사유로 또 시작하지 못했다.** 아직 안 풀렸다.
-나머지 검사 7개는 이번에도 전부 통과했다 — 코드 문제가 아니다.
-
-결제 상태를 내가 직접 못 읽는다: `gh api /users/.../settings/billing/actions` 는 404 +
-`"user" 스코프 필요`. 스코프를 열려면 사장님이 `gh auth refresh -h github.com -s user`
-를 대화형으로 돌려야 한다.
-
-**해결되면 할 것**
+**같은 일이 또 나면** — 짐작하지 말고 이 순서로 갈른다:
 
 ```bash
-cd ~/Desktop/desktop-tutorial/veo && make deploy
+gh api repos/recon9973-lang/veo-platform/check-runs/<잡ID>/annotations   # 사유 원문
+# 문구에 `or` 가 있으면 사유가 아니라 후보 목록이다. 한쪽만 바꿔서 다시 돌려 본다.
 ```
 
-그 뒤 운영 확인 — `/api/health` 의 `version` 이 **`0.3.73`** 이어야 한다
-(0.3.71·0.3.72·0.3.73 이 함께 밀린다).
-**절대 우회하지 않는다.** 배포는 `make deploy` 뿐이다.
-
-**진단 명령** (CI 잡이 단계 기록 없이 실패하면 짐작하지 말고 이것부터):
-
-```bash
-gh api repos/recon9973-lang/veo-platform/check-runs/<잡ID>/annotations
-```
+그리고 사용량을 줄여 두었다 — 아래 §1-A 의 CI 중복 제거.
 
 ---
 
@@ -151,6 +133,19 @@ PromptSet.build  UNCLASSIFIED 가 든 집합을 거부한다 (즉석 집합 전�
 보인다(우리가 적으면 실제와 갈라지고, 갈라진 쪽이 개인정보 안내문이다).
 
 **[실측]** `python3 scripts/ui_gap.py` 후보 수 26 → **25**.
+
+### CI 중복 제거 — 같은 커밋을 두 번 검사하던 것
+
+**[실측]** 8/1~8/8 veo-platform: 실행 153건 · 서로 다른 커밋 117개 ·
+**두 가지에서 중복 실행된 커밋 36개** · 실행당 잡 시간 약 8.9분 → 약 320분 낭비.
+
+`make deploy` 가 후보 가지에서 초록불 받은 **그 SHA** 를 main 으로 미는데, main 에서
+워크플로가 처음부터 다시 돌았다. 같은 입력에 같은 답이다. `push.branches` 에서 `main` 을
+뺐다.
+
+**관문은 안 약해진다** — main 에 닿는 유일한 길이 `deploy.sh` 이고 그것이 후보 가지
+초록불을 먼저 본다(`deploy.sh:66`, 확인함). PR 은 `pull_request` 로 그대로 검사한다.
+되돌아가지 않게 시험 둘을 붙였다(`tests/release/test_ci_paths.py`).
 
 ### #66 · #67 채점 설명 문서
 
