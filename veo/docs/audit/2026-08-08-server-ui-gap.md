@@ -188,3 +188,68 @@ POST /public/v1/leads    무료 진단 상담 요청 접수
 `apps/api/src/veo/credentials/router.py:3` 의 *"This router is deliberately not
 mounted."* 는 사실과 다르다 — `api/app.py:296` 이 마운트한다. 설명이 코드보다
 낡았다. A-2 를 할 때 같이 고친다.
+
+---
+
+# 2026-08-09 재조사 — 남은 24건을 한 건씩 갈랐다
+
+사장님 지시: *"미사용 엔드포인트 확인하고 이미 있거나 필요없는 것까지 상세 파악."*
+
+**[실측]** `scripts/ui_gap.py` → 엔드포인트 118개 중 후보 24개. 그 24개를 각각
+`apps/web/src` 에서 **경로 문자열로 다시 확인**했다 — 시험 파일 제외, 부분 일치 포함.
+**오탐 0건.** 24개 전부 화면이 실제로 부르지 않는다.
+
+부르지 않는 것과 필요한 것은 다르다. 다섯으로 갈랐다.
+
+## 가. 이미 다른 길이 있다 — 5개 (만들 필요 없음)
+
+| 엔드포인트 | 화면이 대신 쓰는 것 |
+|---|---|
+| `POST /api/geo/readiness/scans` | 콘솔은 작업 큐(`POST /api/seo/scan-jobs`), 무료 진단은 `POST /public/v1/geo-readiness-scans` (`lib/scan-api.ts:47`) |
+| `POST /api/geo/readiness/analyses` | 위와 같은 축 — 크롤 결과를 넣어 채점하는 변형 |
+| `GET /api/geo/readiness/spec` | 화면은 `GET /api/scoring/specs/{id}/{version}` 로 명세를 읽는다 (`lib/scan-report.ts:127`) |
+| `GET /api/observations/prompt-sets/{id}` | 목록이 이미 항목 전체를 준다 — `PromptSetListPayload.items` 가 `PromptSetPayload` 배열이다 |
+| `GET /api/projects/{id}` | 목록(`GET /api/projects`)을 끝까지 읽어 쓴다 (`lib/projects.ts:61`) |
+
+## 나. 화면이 부를 이유가 없다 — 1개
+
+| 엔드포인트 | 왜 |
+|---|---|
+| `POST /api/scoring/evaluate` | 검사 결과를 명세에 대입해 점수를 재현하는 **도구**다. 제품 흐름에서 같은 일을 하는 것은 `POST /api/lab/scoring-versions/{id}/golden-run` 과 `.../rescore` 이고 그쪽은 화면이 있다 |
+
+## 다. 요청받은 적이 없다 — 3개 (손대지 않는다)
+
+`GET·POST /api/competitors/comparisons` · `GET /api/competitors/comparisons/{id}`
+
+이 셋을 근거로 §A-4 "경쟁사 비교 화면" 을 과제로 올렸던 것은 **내가 만들어 낸 항목**
+이다(`docs/CORRECTIONS.md` 17번). `competitors/INTEGRATION_REQUEST.md` §0 은 이 라우터를
+붙이지 말라고 적고 있고, 저장은 메모리(`_STORE`)이며 `competitor_comparisons` 표도 없다.
+
+## 라. 사장님 결정이 앞에 있다 — 5개 (#69)
+
+`GET /api/credentials` · `PUT·DELETE /api/credentials/{provider}/{field}` ·
+`POST /api/credentials/{provider}/verify` · `GET /api/providers`
+
+열쇠가 없는 상태에서 화면만 만들면 "연결됨" 이 거짓말이 된다. `/api/providers` 는 같은
+화면에 붙을 연동 상태라 같은 묶음이다.
+
+## 마. 정말 없는 기능 — 10개
+
+| 묶음 | 엔드포인트 | 지금 어떻게 되나 |
+|---|---|---|
+| **키워드 목록** (5) | `GET·POST /api/keywords/lists`, `GET·PUT·DELETE /api/keywords/lists/{id}` | 조사할 키워드를 **저장할 곳이 없다.** 볼 때마다 다시 친다 |
+| **키워드 기록** (3) | `GET /api/keywords/lookups/{id}`, `.../export`, `.../related` | 지난 조회를 **다시 열 수 없고**, 결과를 거래처에 보내려면 화면을 긁어야 한다. 연관 키워드도 못 본다 |
+| 프로젝트 수정 (1) | `PATCH /api/projects/{id}` | 프로젝트 화면은 목록 전용이다(`customers/projects/page.tsx`). 이름 오타를 못 고친다 |
+| 진단 원자료 (1) | `GET /api/seo/scans/{id}/captures` | 판정은 보이는데 **무엇을 받아서 그렇게 판정했는지**는 화면에서 못 본다 |
+
+**값이 가장 큰 것은 키워드 8개**로 보인다 — 다른 것들은 불편이고, 이쪽은 같은 일을
+매번 처음부터 다시 하게 만든다. 다만 이것도 사장님이 원하시는지 먼저 여쭙는다.
+
+## 셈이 맞는가
+
+```
+가 5 + 나 1 + 다 3 + 라 5 + 마 10 = 24
+```
+
+즉 **"만들다 만 것" 은 10개**이고, 나머지 14개는 이미 되거나·부를 이유가 없거나·
+요청받은 적이 없다.
