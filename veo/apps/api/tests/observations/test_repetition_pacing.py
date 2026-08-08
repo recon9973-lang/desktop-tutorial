@@ -108,7 +108,7 @@ def run_with(interval: timedelta, *, repetitions: int = 3) -> tuple[FakeTime, ob
     )
     report = runner.execute(
         balanced_prompt_set(),
-        conditions={"OPENAI": conditions()},
+        conditions=[conditions()],
         repetitions=repetitions,
     )
     return fake, report

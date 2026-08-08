@@ -75,6 +75,7 @@ from veo.observations.schemas import (
 )
 from veo.observations.service import (
     ENGINE_NOTE_KO,
+    SEARCH_OFF_UNAVAILABLE_KO,
     UnknownPromptFieldError,
     build_prompt_set,
     create_prompt_set,
@@ -110,13 +111,19 @@ UsageReader = Annotated[Principal, Depends(guard(Permission.USAGE_READ))]
     ),
 )
 def list_engines(principal: ObservationReader, request_id: RequestId) -> ApiResponse[EnginePayload]:
-    states = engine_registry().states()
+    registry = engine_registry()
+    states = registry.states()
+    search_off = registry.search_off_support()
     engines = [
         EngineStatus(
             engine=engine,
             state=str(state),
             state_label_ko=_STATE_LABELS_KO.get(state, str(state)),
             usable=state is ProviderState.ENABLED,
+            supports_search_off=search_off.get(engine, True),
+            search_off_note_ko=(
+                "" if search_off.get(engine, True) else SEARCH_OFF_UNAVAILABLE_KO
+            ),
         )
         for engine, state in states.items()
     ]

@@ -46,12 +46,14 @@ class PerplexityAnswerProvider(HttpAnswerProvider):
     base_url: ClassVar[str] = PERPLEXITY_BASE_URL
     settings_field: ClassVar[str] = "perplexity_api_key"
 
+    #: Perplexity 는 요청마다 검색한다 — 끄는 요청 자체가 없다. 예전에는 호출자가 말한
+    #: 모드를 그대로 기록했는데, 그러면 검색하고 답한 것이 "검색 끔" 으로 남는다.
+    #: 이제 그 요청은 :meth:`HttpAnswerProvider.ask` 에서 거절된다.
+    supports_search_off: ClassVar[bool] = False
+
     def _build_request(
         self, credential: SecretStr, prompt_text: str, conditions: RunConditions
     ) -> tuple[str, Mapping[str, str], Mapping[str, Any]]:
-        # Perplexity retrieves on every request; there is no "browsing off" mode to
-        # request, so the search mode recorded on the run is whatever the caller stated
-        # and this adapter does not pretend to switch it.
         return (
             f"{self._base_url}{PERPLEXITY_CHAT_PATH}",
             {

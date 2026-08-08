@@ -46,6 +46,12 @@ ENGINE_NOTE_KO = (
     "읽히고, 자격증명만 넣으면 잴 수 있었던 것을 모른 채 지나가게 됩니다."
 )
 
+#: 검색을 끌 수 없는 엔진 옆에 붙는 문장. 엔진 자체는 쓸 수 있으므로 목록에서 빼지 않는다.
+SEARCH_OFF_UNAVAILABLE_KO = (
+    "이 엔진은 검색을 끌 수 없습니다. 물을 때마다 검색해서 답하므로 '검색 끔' 으로는 "
+    "잴 수 없고, 켬 모드로만 측정합니다."
+)
+
 
 class UnknownPromptFieldError(ValueError):
     """분류 값이 VEO 가 아는 값이 아니다. 조용히 기본값으로 떨어뜨리지 않는다."""
@@ -267,6 +273,7 @@ def list_prompt_sets(
 __all__ = [
     "DUPLICATE_KO",
     "ENGINE_NOTE_KO",
+    "SEARCH_OFF_UNAVAILABLE_KO",
     "TARGET_TYPE",
     "PromptSetImbalanceError",
     "UnknownPromptFieldError",

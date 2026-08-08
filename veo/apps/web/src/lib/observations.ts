@@ -165,6 +165,16 @@ export interface EngineStatus {
   readonly state: string;
   readonly state_label_ko: string;
   readonly usable: boolean;
+  /**
+   * 검색을 **끄고** 물어볼 수 있는 엔진인가.
+   *
+   * 거짓인 엔진(예: Perplexity)은 물을 때마다 검색해서 답한다. 끔으로 요청하면 서버가
+   * 거절한다 — 검색해서 나온 답을 "검색 끔" 으로 저장하면 아무도 재지 않은 숫자가
+   * 생기기 때문이다. 목록에서 빼지 말고 끔만 못 고르게 한다.
+   */
+  readonly supports_search_off: boolean;
+  /** 끔을 못 쓰는 엔진일 때만 채워진다. 화면이 그대로 보여 준다. */
+  readonly search_off_note_ko: string;
 }
 
 export interface PromptSummary {
@@ -298,7 +308,12 @@ export async function startObservation(input: {
   readonly promptSetId: string;
   readonly engine: string;
   readonly model: string;
-  readonly searchMode: string;
+  /**
+   * 이 실행에서 잴 검색 모드들. 하나만 주면 그 모드만 재고, 둘을 주면 한 실행에서
+   * 나란히 잰다 — 켬은 "지금 검색하면 나오는가", 끔은 "AI 가 학습으로 우리를 아는가"
+   * 이고 둘은 서로를 대신하지 못한다.
+   */
+  readonly searchModes: readonly string[];
   readonly repetitions: number;
   readonly idempotencyKey: string;
 }): Promise<ConsoleOutcome<Job>> {
@@ -308,13 +323,11 @@ export async function startObservation(input: {
     body: {
       prompt_set_id: input.promptSetId,
       repetitions: input.repetitions,
-      engines: [
-        {
-          engine: input.engine,
-          model: input.model,
-          search_mode: input.searchMode,
-        },
-      ],
+      engines: input.searchModes.map((mode) => ({
+        engine: input.engine,
+        model: input.model,
+        search_mode: mode,
+      })),
     },
   });
 }

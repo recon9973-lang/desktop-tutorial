@@ -185,6 +185,44 @@ def test_a_configured_engine_is_enabled_and_sends_its_key() -> None:
     assert provider.ask("합성 질문", conditions=conditions(engine="PERPLEXITY")).succeeded
 
 
+def test_perplexity_refuses_the_search_off_mode_instead_of_mislabelling_it() -> None:
+    """끌 수 없는 엔진에 끔을 요청하면 거절한다 — 검색한 답을 "검색 끔" 으로 남기지 않는다.
+
+    Perplexity 는 요청마다 검색한다. 전에는 호출자가 말한 모드를 그대로 기록했으므로,
+    끔으로 요청하면 검색해서 나온 답변이 "검색 끔" 조건으로 저장됐다. 그 위에서 계산한
+    "검색 없이도 우리가 나오는 비율" 은 아무도 재지 않은 숫자다.
+    """
+    called = False
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal called
+        called = True
+        return httpx.Response(200, json=perplexity_payload())
+
+    provider = PerplexityAnswerProvider(
+        credential=SecretStr("synthetic-perplexity-key"),
+        transport=httpx.MockTransport(handler),
+        monotonic=FakeMonotonic(),
+        sleep=lambda seconds: None,
+        now=lambda: NOW,
+    )
+
+    assert provider.supports_search_off is False
+    with pytest.raises(ValueError, match="검색을 끌 수 없는"):
+        provider.ask(
+            "합성 질문",
+            conditions=conditions(engine="PERPLEXITY", search_mode=SearchMode.NO_BROWSING),
+        )
+    assert not called, "거절은 호출 전에 일어나야 한다 — 안 쓸 답변에 돈을 쓰지 않는다"
+
+
+def test_engines_that_can_turn_search_off_say_so() -> None:
+    """켬/끔을 고를 수 있는 엔진은 기본이 '끌 수 있음' 이다. 하나씩 확인해 둔다."""
+    assert OpenAIAnswerProvider.supports_search_off
+    assert AnthropicAnswerProvider.supports_search_off
+    assert GeminiAnswerProvider.supports_search_off
+
+
 def test_anthropic_sends_its_documented_headers() -> None:
     seen: dict[str, str] = {}
 

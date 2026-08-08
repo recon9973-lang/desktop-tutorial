@@ -121,6 +121,10 @@ async function ConsoleGeoContent({
           engine: one.engine,
           label: ENGINE_LABELS[one.engine] ?? one.engine,
           models: MODELS_BY_ENGINE[one.engine] ?? [],
+          // 어느 엔진이 검색을 끌 수 있는지는 서버가 안다. 여기서 목록으로 적어 두면
+          // 엔진이 늘 때 조용히 틀리고, 틀린 결과는 "검색 끔" 이라 적힌 검색한 답변이다.
+          supportsSearchOff: one.supports_search_off,
+          searchOffNote: one.search_off_note_ko,
         }))
         .filter((one) => one.models.length > 0)
     : [];

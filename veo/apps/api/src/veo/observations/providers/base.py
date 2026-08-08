@@ -542,6 +542,14 @@ class HttpAnswerProvider:
     #: engine cannot quietly arrive without a credential slot.
     settings_field: ClassVar[str] = ""
 
+    #: 이 엔진에 **검색을 끄고** 물어볼 수 있는가.
+    #:
+    #: 끌 수 없는 엔진에 끔을 요청하면 엔진은 평소대로 검색해 답하고, VEO 는 그 답을
+    #: "검색 끔" 으로 기록한다. 그러면 "검색 없이도 우리가 나온다" 라는, 재지 않은 문장이
+    #: 만들어진다 — 거래처에 그대로 보이는 자리다. 어댑터마다 스스로 밝히게 해서, 화면이
+    #: 고를 수 있는 것과 엔진이 할 수 있는 것을 같은 곳에서 읽게 한다.
+    supports_search_off: ClassVar[bool] = True
+
     @classmethod
     def from_settings(
         cls, credentials: ProviderCredentials | None = None, **kwargs: Any
@@ -611,6 +619,13 @@ class HttpAnswerProvider:
             raise ValueError(
                 "검색 사용 여부를 UNKNOWN 으로 두고 호출할 수 없습니다. "
                 "BROWSING 또는 NO_BROWSING 중 하나를 지정하세요"
+            )
+        if conditions.search_mode is SearchMode.NO_BROWSING and not self.supports_search_off:
+            # 끌 수 없는 엔진은 평소대로 검색해 답한다. 그 답을 "검색 끔" 으로 저장하면
+            # 재지 않은 조건의 숫자가 생긴다. 같은 이유로 UNKNOWN 과 나란히 거절한다.
+            raise ValueError(
+                f"{self.engine} 은 검색을 끌 수 없는 엔진입니다. 끔으로 요청한 답변을 "
+                "'검색 끔' 으로 기록하면 재지 않은 조건의 숫자가 됩니다"
             )
 
         started = self._monotonic()

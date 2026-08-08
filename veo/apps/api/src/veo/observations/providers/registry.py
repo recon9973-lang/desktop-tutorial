@@ -91,6 +91,17 @@ class ProviderRegistry:
         """Every engine's state — including the ones that cannot answer."""
         return {name: provider.state for name, provider in sorted(self._providers.items())}
 
+    def search_off_support(self) -> dict[str, bool]:
+        """엔진마다 **검색을 끄고** 물어볼 수 있는가.
+
+        화면이 엔진 이름으로 이것을 알아맞히면 안 된다. 알아맞히는 목록은 엔진이 늘어날
+        때 조용히 틀리고, 틀린 결과는 "검색 끔" 이라고 적힌 검색한 답변이다.
+        """
+        return {
+            name: bool(getattr(provider, "supports_search_off", True))
+            for name, provider in sorted(self._providers.items())
+        }
+
     def enabled_engines(self) -> tuple[str, ...]:
         return tuple(
             name for name, state in self.states().items() if state is ProviderState.ENABLED

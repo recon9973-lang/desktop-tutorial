@@ -99,6 +99,13 @@ class AnswerFact:
     """어느 엔진이 답했나. 안정성은 **엔진마다 따로** 재야 한다 — 한 엔진이 늘 우리를
     말하고 다른 엔진이 한 번도 말하지 않으면, 둘을 합친 값은 '가끔 나온다' 가 되어
     두 사실을 모두 지운다."""
+    search_mode: str = ""
+    """검색을 켜고 물었나 끄고 물었나.
+
+    엔진과 **같은 이유로** 따로 재야 한다. 검색을 켜면 늘 나오고 끄면 한 번도 안 나오는
+    업체는 흔하다(홈페이지는 잘 만들었는데 학습 자료에는 안 잡힌 경우다). 두 모드를 한
+    묶음으로 세면 그 업체의 답은 '물을 때마다 갈린다' 가 되어, **엔진이 불안정한 것으로
+    읽힌다.** 사실은 갈린 것이 아니라 두 조건이 각각 일관됐다."""
 
     intent: str = ""
     """이 질문이 무엇을 묻는가. `RECOMMENDATION` 이면 추천을 묻는 질문이다."""
@@ -190,7 +197,8 @@ class MentionStability:
     #: 그중 반복이 **모두 같은 답**을 준 조합 수.
     consistent_groups: int
     #: 물을 때마다 답이 갈린 (질문, 엔진) 조합.
-    unstable_groups: tuple[tuple[str, str], ...]
+    unstable_groups: tuple[tuple[str, str, str], ...]
+    """갈린 묶음들. 각 원소는 (질문, 엔진, 검색모드) 다."""
 
     @property
     def is_measurable(self) -> bool:
@@ -222,11 +230,15 @@ class MentionStability:
 
     @classmethod
     def of(cls, answers: Sequence[AnswerFact]) -> MentionStability:
-        groups: dict[tuple[str, str], list[bool]] = {}
+        # 묶는 축은 (질문, 엔진, 검색모드) 다. 검색 모드를 빼면 켬에서 늘 나오고 끔에서
+        # 한 번도 안 나오는 업체가 "물을 때마다 갈린다" 로 집계된다 — 갈린 것이 아니라
+        # 두 조건이 각각 일관된 것이다.
+        groups: dict[tuple[str, str, str], list[bool]] = {}
         for answer in answers:
             if not answer.is_valid:
                 continue
-            groups.setdefault((answer.prompt_id, answer.engine), []).append(answer.mentioned)
+            key = (answer.prompt_id, answer.engine, answer.search_mode)
+            groups.setdefault(key, []).append(answer.mentioned)
 
         repeated = {key: values for key, values in groups.items() if len(values) >= 2}
         unstable = tuple(

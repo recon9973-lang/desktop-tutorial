@@ -12,6 +12,10 @@ export interface RunnableEngine {
   readonly engine: string;
   readonly label: string;
   readonly models: readonly { readonly id: string; readonly citesSources: boolean }[];
+  /** 검색을 끄고 물어볼 수 있는 엔진인가. 서버가 알려준다 — 화면이 알아맞히지 않는다. */
+  readonly supportsSearchOff: boolean;
+  /** 끌 수 없을 때 서버가 보내는 설명. 그대로 보여 준다. */
+  readonly searchOffNote: string;
 }
 
 export interface SelectablePromptSet {
@@ -32,6 +36,11 @@ export interface SelectablePromptSet {
  *
  * **반복 횟수는 표본 크기다.** 3회 미만이면 비율을 아예 내지 않고, 경쟁사 비교 보고에
  * 실으려면 5회가 필요하다. 이 숫자를 "성능 옵션"처럼 두면 사람은 늘 낮은 쪽을 고른다.
+ *
+ * **검색 켬과 끔은 서로 다른 질문이다.** 켬은 "지금 검색하면 우리가 나오는가", 끔은
+ * "AI 가 학습한 것만으로 우리를 아는가" 다. 둘은 서로를 대신하지 못하므로 한쪽만 재고
+ * "AI 답변에 나온다" 고 말할 수 없다. 그래서 둘 다 켜는 것이 기본값이고, 호출 수가
+ * 두 배가 된다는 사실을 아래 비용 줄에 함께 적는다.
  */
 export function RunForm({
   promptSets,
@@ -45,6 +54,8 @@ export function RunForm({
   const [engine, setEngine] = useState(engines[0]?.engine ?? '');
   const [model, setModel] = useState(engines[0]?.models[0]?.id ?? '');
   const [repetitions, setRepetitions] = useState(MIN_RUNS_FOR_COMPARISON);
+  const [browsing, setBrowsing] = useState(true);
+  const [searchOff, setSearchOff] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +67,14 @@ export function RunForm({
   const models = chosen?.models ?? [];
   const promptCount = promptSets.find((one) => one.id === promptSetId)?.promptCount ?? 0;
 
+  // 끌 수 없는 엔진에서는 끔이 고른 것으로 남아 있어도 보내지 않는다. 보내면 서버가
+  // 거절하고, 그 전에 화면이 "끔도 잰다" 고 말한 셈이 된다.
+  const canTurnSearchOff = chosen?.supportsSearchOff ?? true;
+  const modes = [
+    ...(browsing ? ['BROWSING'] : []),
+    ...(searchOff && canTurnSearchOff ? ['NO_BROWSING'] : []),
+  ];
+
   function pickEngine(next: string): void {
     setEngine(next);
     const first = engines.find((one) => one.engine === next)?.models[0]?.id ?? '';
@@ -65,6 +84,10 @@ export function RunForm({
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     if (busy) return;
+    if (modes.length === 0) {
+      setError('검색 켬·끔 중 적어도 하나는 재야 합니다.');
+      return;
+    }
 
     setBusy(true);
     setError(null);
@@ -76,6 +99,7 @@ export function RunForm({
           promptSetId,
           engine,
           model,
+          searchModes: modes,
           repetitions,
           idempotencyKey: attemptKey.current,
         }),
@@ -112,7 +136,8 @@ export function RunForm({
 
   if (promptSets.length === 0 || engines.length === 0) return null;
 
-  const calls = promptCount * repetitions;
+  // 모드마다 따로 부른다. 모드 수를 빼고 세면 두 모드를 골라도 절반으로 보인다.
+  const calls = promptCount * repetitions * modes.length;
 
   return (
     <form className={styles.runForm} onSubmit={submit} noValidate>
@@ -178,6 +203,37 @@ export function RunForm({
         ) : null}
       </div>
 
+      <fieldset className={styles.field}>
+        <legend className={styles.label}>검색 모드</legend>
+        <label className={styles.modeChoice}>
+          <input
+            type="checkbox"
+            checked={browsing}
+            onChange={(event) => setBrowsing(event.target.checked)}
+          />
+          검색 켬 — 지금 검색하면 우리가 나오는가
+        </label>
+        <label className={styles.modeChoice}>
+          <input
+            type="checkbox"
+            checked={searchOff && canTurnSearchOff}
+            disabled={!canTurnSearchOff}
+            onChange={(event) => setSearchOff(event.target.checked)}
+          />
+          검색 끔 — AI 가 학습한 것만으로 우리를 아는가
+        </label>
+        {!canTurnSearchOff && chosen !== undefined ? (
+          <p className={styles.warning}>{chosen.searchOffNote}</p>
+        ) : null}
+        {modes.length === 1 ? (
+          <p className={styles.hint}>
+            한 모드만 재면 <strong>다른 모드의 숫자는 없습니다.</strong> 검색을 켰을 때
+            나오는 것과 학습만으로 아는 것은 서로 다른 사실이라, 한쪽으로 다른 쪽을 말할
+            수 없습니다.
+          </p>
+        ) : null}
+      </fieldset>
+
       <div className={styles.field}>
         <label className={styles.label} htmlFor="repetitions">
           질문당 반복 횟수
@@ -210,7 +266,8 @@ export function RunForm({
       </div>
 
       <p className={styles.cost}>
-        이 조건이면 AI 를 <strong>{calls}번</strong> 부릅니다. 실행은 몇 분 걸릴 수 있고,
+        이 조건이면 AI 를 <strong>{calls}번</strong> 부릅니다
+        {modes.length === 2 ? ' (검색 켬·끔 각각)' : ''}. 실행은 몇 분 걸릴 수 있고,
         시작하면 이 화면을 닫아도 계속 돕니다.
       </p>
 

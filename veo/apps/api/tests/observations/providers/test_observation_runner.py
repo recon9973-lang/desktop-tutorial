@@ -51,7 +51,7 @@ from veo.observations.runner import (
     RepetitionFloorError,
     StopReason,
 )
-from veo.observations.runs import MixedConditionsError, aggregate_rate
+from veo.observations.runs import MixedConditionsError, SearchMode, aggregate_rate
 
 NOW = datetime(2026, 7, 28, 9, 0, tzinfo=UTC)
 KEY = SecretStr("synthetic-openai-key")
@@ -157,7 +157,7 @@ def counting(handler: object) -> tuple[object, list[int]]:
 def test_a_full_pass_runs_every_prompt_at_every_repetition() -> None:
     prompt_set = balanced_prompt_set()
     report = runner(answering()).execute(
-        prompt_set, conditions={"OPENAI": conditions()}, repetitions=3
+        prompt_set, conditions=[conditions()], repetitions=3
     )
     assert len(report.runs) == len(prompt_set.prompts) * 3
     assert report.skipped == ()
@@ -166,7 +166,7 @@ def test_a_full_pass_runs_every_prompt_at_every_repetition() -> None:
 
 def test_the_report_totals_what_the_pass_cost() -> None:
     report = runner(answering()).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert report.total_cost_usd == pytest.approx(COST_PER_CALL * 18)
     assert report.unpriced_calls == 0
@@ -175,10 +175,10 @@ def test_the_report_totals_what_the_pass_cost() -> None:
 def test_run_ids_are_deterministic_for_the_same_prompt_conditions_and_attempt() -> None:
     prompt_set = balanced_prompt_set()
     first = runner(answering()).execute(
-        prompt_set, conditions={"OPENAI": conditions()}, repetitions=3
+        prompt_set, conditions=[conditions()], repetitions=3
     )
     second = runner(answering()).execute(
-        prompt_set, conditions={"OPENAI": conditions()}, repetitions=3
+        prompt_set, conditions=[conditions()], repetitions=3
     )
     assert [run.run_id for run in first.runs] == [run.run_id for run in second.runs]
     assert len({run.run_id for run in first.runs}) == len(first.runs)
@@ -192,7 +192,7 @@ def test_run_ids_are_deterministic_for_the_same_prompt_conditions_and_attempt() 
 def test_the_raw_answer_never_appears_in_the_run_payload() -> None:
     text = f"{mentioning_answer()} 고유표식-QZX"
     report = runner(answering(text)).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     serialised = json.dumps([run.as_dict() for run in report.runs], ensure_ascii=False)
     assert "고유표식-QZX" not in serialised
@@ -204,7 +204,7 @@ def test_the_pointer_and_hash_match_what_is_in_the_store() -> None:
 
     store = InMemoryAnswerStore()
     report = runner(answering(), store=store).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     run = report.runs[0]
     assert run.raw_answer_ref is not None
@@ -220,7 +220,7 @@ def test_the_pointer_and_hash_match_what_is_in_the_store() -> None:
 def test_the_recorded_conditions_carry_the_model_version_from_the_response() -> None:
     report = runner(answering()).execute(
         balanced_prompt_set(),
-        conditions={"OPENAI": conditions(model_version="요청 시점 미상")},
+        conditions=[conditions(model_version="요청 시점 미상")],
         repetitions=3,
     )
     assert {run.conditions.model_version for run in report.runs} == {OPENAI_MODEL_VERSION}
@@ -228,11 +228,11 @@ def test_the_recorded_conditions_carry_the_model_version_from_the_response() -> 
 
 def test_runs_from_two_engines_are_not_pooled_into_one_rate() -> None:
     report = runner(answering()).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     other = runner(answering()).execute(
         balanced_prompt_set(),
-        conditions={"OPENAI": conditions(model="gpt-5-mini")},
+        conditions=[conditions(model="gpt-5-mini")],
         repetitions=3,
     ).runs
     with pytest.raises(MixedConditionsError):
@@ -249,7 +249,7 @@ def test_a_timeout_produces_an_error_coded_run_that_leaves_the_denominator() -> 
         raise httpx.ReadTimeout("합성 지연", request=request)
 
     report = runner(handler).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert len(report.runs) == 18
     assert all(run.error_code is not None for run in report.runs)
@@ -267,7 +267,7 @@ def test_a_failed_run_still_records_latency_and_an_explained_cost() -> None:
         raise httpx.ReadTimeout("합성 지연", request=request)
 
     report = runner(handler).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert all(run.latency_ms is not None and run.latency_ms > 0 for run in report.runs)
     assert all(run.cost_usd is None for run in report.runs)
@@ -277,7 +277,7 @@ def test_a_failed_run_still_records_latency_and_an_explained_cost() -> None:
 def test_an_engine_without_a_credential_yields_error_runs_and_never_dials() -> None:
     handler, calls = counting(answering())
     report = runner(handler, credential=None).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert calls[0] == 0
     assert len(report.runs) == 18
@@ -294,7 +294,7 @@ def test_a_mention_is_not_recorded_when_the_answer_could_not_be_stored() -> None
             raise OSError("합성 저장소 장애")
 
     report = runner(answering(), store=RefusingStore()).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert all(run.error_code is not None for run in report.runs)
     assert all(run.brand_mentioned is False for run in report.runs)
@@ -308,7 +308,7 @@ def test_a_mention_is_not_recorded_when_the_answer_could_not_be_stored() -> None
 
 def test_a_brand_named_in_the_answer_is_a_mention() -> None:
     report = runner(answering(mentioning_answer())).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert all(run.brand_mentioned for run in report.runs)
     assert all(run.brand_cited is False for run in report.runs)
@@ -316,7 +316,7 @@ def test_a_brand_named_in_the_answer_is_a_mention() -> None:
 
 def test_an_answer_that_does_not_name_the_brand_is_not_a_mention() -> None:
     report = runner(answering(silent_answer())).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert not any(run.brand_mentioned for run in report.runs)
     assert all(run.is_valid_execution for run in report.runs)
@@ -325,7 +325,7 @@ def test_an_answer_that_does_not_name_the_brand_is_not_a_mention() -> None:
 def test_a_cited_brand_domain_implies_a_mention() -> None:
     report = runner(
         answering(silent_answer(), citation_urls=(f"https://{BRAND_DOMAIN}/evidence",))
-    ).execute(balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3)
+    ).execute(balanced_prompt_set(), conditions=[conditions()], repetitions=3)
     assert all(run.brand_cited for run in report.runs)
     assert all(run.brand_mentioned for run in report.runs)
 
@@ -333,7 +333,7 @@ def test_a_cited_brand_domain_implies_a_mention() -> None:
 def test_a_rival_citation_is_not_a_brand_citation() -> None:
     report = runner(
         answering(mentioning_answer(), citation_urls=(f"https://{RIVAL_DOMAIN}/x",))
-    ).execute(balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3)
+    ).execute(balanced_prompt_set(), conditions=[conditions()], repetitions=3)
     assert all(run.brand_cited is False for run in report.runs)
     assert all(run.citations == (f"https://{RIVAL_DOMAIN}/x",) for run in report.runs)
 
@@ -345,7 +345,7 @@ def test_a_url_in_prose_is_never_promoted_to_a_citation() -> None:
 
     report = runner(answering(text)).execute(
         balanced_prompt_set(),
-        conditions={"OPENAI": conditions(search_mode=SearchMode.NO_BROWSING)},
+        conditions=[conditions(search_mode=SearchMode.NO_BROWSING)],
         repetitions=3,
     )
     assert all(run.brand_mentioned for run in report.runs)
@@ -365,14 +365,14 @@ def test_the_floor_is_the_methodology_minimum() -> None:
 def test_fewer_repetitions_than_the_floor_is_refused() -> None:
     with pytest.raises(RepetitionFloorError, match="3"):
         runner(answering()).execute(
-            balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=2
+            balanced_prompt_set(), conditions=[conditions()], repetitions=2
         )
 
 
 def test_below_the_floor_can_be_asked_for_and_is_then_marked_on_the_report() -> None:
     report = runner(answering()).execute(
         balanced_prompt_set(),
-        conditions={"OPENAI": conditions()},
+        conditions=[conditions()],
         repetitions=1,
         allow_below_floor=True,
     )
@@ -385,7 +385,7 @@ def test_zero_repetitions_is_always_refused() -> None:
     with pytest.raises(RepetitionFloorError):
         runner(answering()).execute(
             balanced_prompt_set(),
-            conditions={"OPENAI": conditions()},
+            conditions=[conditions()],
             repetitions=0,
             allow_below_floor=True,
         )
@@ -399,7 +399,7 @@ def test_zero_repetitions_is_always_refused() -> None:
 def test_the_budget_ceiling_stops_the_run_and_names_what_was_skipped() -> None:
     handler, calls = counting(answering())
     report = runner(handler, budget_usd=COST_PER_CALL * 2).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert calls[0] == 2
     assert len(report.runs) == 2
@@ -415,7 +415,7 @@ def test_the_skipped_work_is_logged_rather_than_only_returned(
 ) -> None:
     with caplog.at_level(logging.WARNING, logger="veo.observations.runner"):
         runner(answering(), budget_usd=COST_PER_CALL * 2).execute(
-            balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+            balanced_prompt_set(), conditions=[conditions()], repetitions=3
         )
     messages = " ".join(record.getMessage() for record in caplog.records)
     assert "16" in messages
@@ -423,7 +423,7 @@ def test_the_skipped_work_is_logged_rather_than_only_returned(
 
 def test_the_summary_says_the_pass_was_truncated() -> None:
     report = runner(answering(), budget_usd=COST_PER_CALL * 2).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert "예산" in report.summary_ko
     assert "16" in report.summary_ko
@@ -432,7 +432,7 @@ def test_the_summary_says_the_pass_was_truncated() -> None:
 def test_a_budget_cannot_be_enforced_against_an_unpriced_engine() -> None:
     handler, calls = counting(answering())
     report = runner(handler, budget_usd=1.0, price_table=PriceTable()).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert report.stopped_reason is StopReason.COST_UNMEASURABLE
     assert calls[0] == 1
@@ -442,7 +442,7 @@ def test_a_budget_cannot_be_enforced_against_an_unpriced_engine() -> None:
 
 def test_without_a_budget_an_unpriced_engine_runs_to_completion() -> None:
     report = runner(answering(), price_table=PriceTable()).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert len(report.runs) == 18
     assert report.unpriced_calls == 18
@@ -460,7 +460,7 @@ def test_a_second_pass_over_recorded_work_calls_nothing_and_repeats_itself() -> 
     handler, calls = counting(answering())
     prompt_set = balanced_prompt_set()
     execute = lambda: runner(handler, store=store).execute(  # noqa: E731
-        prompt_set, conditions={"OPENAI": conditions()}, repetitions=3
+        prompt_set, conditions=[conditions()], repetitions=3
     )
 
     first = execute()
@@ -481,13 +481,13 @@ def test_a_failed_unit_is_not_memoised_as_done() -> None:
         return httpx.Response(200, json=openai_payload())
 
     first = runner(handler, store=store).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert all(run.error_code for run in first.runs)
 
     state["fail"] = False
     second = runner(handler, store=store).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert all(run.is_valid_execution for run in second.runs)
 
@@ -508,7 +508,7 @@ def test_concurrency_is_limited_to_the_configured_ceiling() -> None:
         return httpx.Response(200, json=openai_payload())
 
     report = runner(handler, max_concurrency=3, monotonic=None).execute(
-        balanced_prompt_set(), conditions={"OPENAI": conditions()}, repetitions=3
+        balanced_prompt_set(), conditions=[conditions()], repetitions=3
     )
     assert len(report.runs) == 18
     assert peak[0] == 3
@@ -554,10 +554,7 @@ def multi_engine_runner(store: InMemoryAnswerStore) -> ObservationRunner:
 def test_two_engines_are_measured_separately_and_never_pooled() -> None:
     report = multi_engine_runner(InMemoryAnswerStore()).execute(
         balanced_prompt_set(),
-        conditions={
-            "OPENAI": conditions(),
-            "GOOGLE_GEMINI": conditions(engine="GOOGLE_GEMINI", model="gemini-synthetic"),
-        },
+        conditions=[conditions(), conditions(engine="GOOGLE_GEMINI", model="gemini-synthetic")],
         repetitions=3,
     )
     assert len(report.runs) == 36
@@ -573,10 +570,45 @@ def test_two_engines_are_measured_separately_and_never_pooled() -> None:
     assert aggregate_rate(gemini_runs, label_ko="합성 노출률").successes == 0
 
 
-def test_an_engine_key_must_match_the_conditions_it_carries() -> None:
-    with pytest.raises(ValueError, match="엔진"):
+def test_one_engine_runs_both_search_modes_in_a_single_pass() -> None:
+    """검색 켬과 끔은 **다른 조건**이다. 한 실행에 둘 다 들어가야 한다.
+
+    이 시험이 없을 때 조건표가 엔진 이름을 열쇠로 잡고 있었고, 같은 엔진을 두 모드로
+    넣으면 뒤엣것이 앞엣것을 덮었다. 실행은 절반만 되는데 요청은 두 모드였으므로,
+    화면에는 "검색 끔에서도 쟀다" 가 남고 그 숫자는 켬 모드의 것이었다.
+    """
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=openai_payload(text=mentioning_answer()))
+
+    report = runner(handler).execute(
+        balanced_prompt_set(),
+        conditions=[
+            conditions(search_mode=SearchMode.BROWSING),
+            conditions(search_mode=SearchMode.NO_BROWSING),
+        ],
+        repetitions=3,
+    )
+
+    modes = {run.conditions.search_mode for run in report.runs}
+    assert modes == {SearchMode.BROWSING, SearchMode.NO_BROWSING}
+    browsing = [run for run in report.runs if run.conditions.search_mode is SearchMode.BROWSING]
+    off = [run for run in report.runs if run.conditions.search_mode is SearchMode.NO_BROWSING]
+    assert len(browsing) == len(off) == len(report.runs) // 2
+
+    # 두 모드가 한 줄로 합쳐지면 안 된다. 합쳐진 노출률은 어느 조건의 것도 아니다.
+    with pytest.raises(MixedConditionsError):
+        aggregate_rate(report.runs, label_ko="합성 노출률")
+
+
+def test_the_same_condition_twice_is_refused_rather_than_silently_merged() -> None:
+    """같은 칸을 두 번 적어도 조용히 한 번으로 합치지 않는다.
+
+    합치면 요청한 것보다 적게 돌고도 계획을 다 채운 것으로 기록된다. 반복은
+    `repetitions` 로 늘리는 것이다.
+    """
+    with pytest.raises(ValueError, match="두 번"):
         multi_engine_runner(InMemoryAnswerStore()).execute(
             balanced_prompt_set(),
-            conditions={"GOOGLE_GEMINI": conditions(engine="OPENAI")},
+            conditions=[conditions(), conditions()],
             repetitions=3,
         )

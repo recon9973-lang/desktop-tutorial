@@ -27,6 +27,7 @@ def _answer(
     cited: bool = False,
     support: str | None = "STRUCTURED",
     engine: str = "OPENAI",
+    search_mode: str = "BROWSING",
     intent: str = "",
     domains: tuple[str, ...] = (),
 ) -> AnswerFact:
@@ -37,6 +38,7 @@ def _answer(
         cited=cited,
         citation_support=support,
         engine=engine,
+        search_mode=search_mode,
         intent=intent,
         cited_domains=domains,
     )
@@ -345,7 +347,7 @@ class TestStability:
 
         stability = _metrics(answers).stability
 
-        assert stability.unstable_groups == (("q1", "OPENAI"),)
+        assert stability.unstable_groups == (("q1", "OPENAI", "BROWSING"),)
         assert stability.consistent_groups == 1
 
     def test_engines_are_not_pooled(self) -> None:
@@ -362,6 +364,25 @@ class TestStability:
 
         assert stability.repeated_groups == 2
         assert stability.unstable_groups == ()
+
+    def test_search_modes_are_not_pooled(self) -> None:
+        """검색 켬에서 늘 나오고 끔에서 한 번도 안 나오는 것은 **갈린 것이 아니다.**
+
+        홈페이지는 잘 만들었는데 학습 자료에는 안 잡힌 업체의 모양이다. 두 모드를 한
+        묶음으로 세면 '물을 때마다 답이 갈립니다' 가 되어, 엔진이 불안정한 것으로 읽히고
+        정작 고쳐야 할 것(학습 자료에 안 잡힘)은 화면 어디에도 안 나온다.
+        """
+        answers = [
+            _answer(prompt="q1", search_mode="BROWSING", mentioned=True),
+            _answer(prompt="q1", search_mode="BROWSING", mentioned=True),
+            _answer(prompt="q1", search_mode="NO_BROWSING", mentioned=False),
+            _answer(prompt="q1", search_mode="NO_BROWSING", mentioned=False),
+        ]
+
+        stability = _metrics(answers).stability
+
+        assert stability.repeated_groups == 2, "모드마다 한 묶음이다"
+        assert stability.unstable_groups == (), "각 모드 안에서는 일관됐다"
 
     def test_asking_once_is_not_stability(self) -> None:
         """한 번 물은 답은 흔들렸는지 알 수 없다. 안정적이라고 세지 않는다."""

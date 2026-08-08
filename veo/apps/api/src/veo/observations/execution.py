@@ -219,6 +219,43 @@ def _engine_row(
     return row
 
 
+class DuplicateEngineSlotError(ValueError):
+    """같은 엔진·같은 모델·같은 검색 모드를 두 번 요청했다.
+
+    조용히 하나로 합치면 **요청한 만큼 안 돌고도 다 돈 것처럼 보인다.** 반복 횟수는
+    `repetitions` 로 정하는 것이지 같은 칸을 두 번 적어서 늘리는 것이 아니다.
+    """
+
+
+def _conditions_of(
+    engines: Sequence[EngineChoice], *, locale: str
+) -> dict[str, RunConditions]:
+    """엔진 선택들을 실행 계획의 칸으로 만든다 — 칸 하나가 (엔진, 모델, 검색 모드) 하나다.
+
+    엔진 이름만으로 칸을 잡으면 검색 켬과 끔 중 뒤엣것이 앞엣것을 덮는다. 그러면 실행은
+    한 모드만 되는데 화면에는 두 모드를 고른 것으로 남아, **끔 모드의 노출률이 켬 모드의
+    숫자로 채워진다.** 두 모드를 나란히 재는 것이 이 관측의 목적이므로 여기서 갈라야 한다.
+    """
+    built: dict[str, RunConditions] = {}
+    for choice in engines:
+        condition = RunConditions(
+            engine=choice.engine,
+            model=choice.model,
+            # 요청 시점에는 모른다. 응답에서 읽은 값이 실행 기록에 들어간다.
+            model_version="요청 시점 미상",
+            search_mode=choice.search_mode,
+            account_state=choice.account_state,
+            locale=locale,
+        )
+        if condition.slot in built:
+            raise DuplicateEngineSlotError(
+                f"같은 조건을 두 번 요청했습니다: {choice.engine} / {choice.model} / "
+                f"{choice.search_mode}. 여러 번 돌리려면 반복 횟수를 올리십시오."
+            )
+        built[condition.slot] = condition
+    return built
+
+
 def execute_observation(
     session: Session,
     principal: Principal,
@@ -265,23 +302,12 @@ def execute_observation(
         on_progress=on_progress,
     )
 
-    conditions = {
-        choice.engine: RunConditions(
-            engine=choice.engine,
-            model=choice.model,
-            # 요청 시점에는 모른다. 응답에서 읽은 값이 실행 기록에 들어간다.
-            model_version="요청 시점 미상",
-            search_mode=choice.search_mode,
-            account_state=choice.account_state,
-            locale=prompt_set_row.locale,
-        )
-        for choice in engines
-    }
+    conditions = _conditions_of(engines, locale=prompt_set_row.locale)
 
     started_at = datetime.now(UTC)
     report = runner.execute(
         prompt_set,
-        conditions=conditions,
+        conditions=list(conditions.values()),
         repetitions=repetitions,
         allow_below_floor=allow_below_floor,
     )
@@ -324,15 +350,17 @@ def _persist(
     # 다시 계산해 표를 만든다 — 순서에 기대면 프롬프트가 하나만 바뀌어도 어긋난다.
     by_hash = {_prompt_hash_of(row): row for row in prompt_rows}
 
+    # 칸(엔진·모델·검색모드)마다 한 행이다. 엔진 이름으로 묶으면 검색 끔으로 나온 답변이
+    # 검색 켬 행에 붙어, 나중에 "검색을 켰는데 인용이 0건" 이라는 없는 사실이 만들어진다.
     engine_rows = {
-        choice.engine: _engine_row(
+        condition.slot: _engine_row(
             session,
-            provider=choice.engine,
-            model=choice.model,
-            search_mode=str(choice.search_mode),
-            state=str(registry_states.get(choice.engine, "UNKNOWN")),
+            provider=condition.engine,
+            model=condition.model,
+            search_mode=str(condition.search_mode),
+            state=str(registry_states.get(condition.engine, "UNKNOWN")),
         )
-        for choice in engines
+        for condition in conditions.values()
     }
 
     run_row = ObservationRunRow(
@@ -340,7 +368,10 @@ def _persist(
         project_id=prompt_set_row.project_id,
         prompt_set_id=prompt_set_row.id,
         repetitions_per_prompt=report.repetitions,
-        engines=[choice.engine for choice in engines],
+        # 엔진 **이름**의 목록이다(칸 이름이 아니다). `competitors/from_observation.py`
+        # 가 이 값으로 `ai_engines.provider` 를 조회하므로 모드를 붙이면 조회가 빈다.
+        # 한 엔진을 두 모드로 돌리면 이름이 두 번 들어오므로 여기서 한 번으로 줄인다.
+        engines=list(dict.fromkeys(choice.engine for choice in engines)),
         competitor_ids=[],
         started_at=started_at,
         finished_at=finished_at,
@@ -361,6 +392,7 @@ def _persist(
                 {
                     "prompt_id": item.prompt_id,
                     "engine": item.engine,
+                    "search_mode": item.search_mode,
                     "attempt": item.attempt,
                     "reason": str(item.reason),
                     "reason_ko": item.reason_ko,
@@ -382,8 +414,7 @@ def _persist(
     # 회차를 되찾기 위한 표. `run_id` 가 (질문, 조건, 회차) 로 결정되므로 되계산해 맞춘다.
     attempts: dict[str, int] = {}
     for prompt in prompt_set.prompts:
-        for engine, condition in conditions.items():
-            del engine
+        for condition in conditions.values():
             for attempt in range(1, report.repetitions + 1):
                 attempts[_attempt_index(prompt.prompt_id, condition.fingerprint, attempt)] = (
                     attempt
@@ -391,7 +422,7 @@ def _persist(
 
     for run in report.runs:
         prompt_row = by_hash.get(run.prompt_id)
-        engine_row = engine_rows.get(run.conditions.engine)
+        engine_row = engine_rows.get(run.conditions.slot)
         if prompt_row is None or engine_row is None:
             # 저장할 자리가 없는 실행을 조용히 버리면 실행 수가 맞지 않는다. 여기까지
             # 오면 표를 잘못 만든 것이므로 감춘다기보다 드러나는 편이 낫다.
@@ -623,6 +654,9 @@ def answer_facts(
             cited=answer.id in cited_ids,
             citation_support=answer.citation_support,
             engine=engines.get(answer.id, ""),
+            # 답변 행에 이미 저장돼 있는데 지표로 넘기지 않고 있었다. 없으면 안정성이
+            # 검색 켬·끔을 한 묶음으로 세고, 두 조건의 차이가 엔진의 불안정으로 읽힌다.
+            search_mode=answer.search_mode or "",
             intent=intents.get(answer.prompt_id, ""),
             cited_domains=tuple(domains_by_answer.get(answer.id, ())),
             # 반복이 **언제** 일어났는지가 신뢰구간의 전제다. 이 값을 흘리면 같은 순간에

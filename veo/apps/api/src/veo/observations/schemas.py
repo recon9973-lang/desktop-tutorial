@@ -35,6 +35,18 @@ class EngineStatus(BaseModel):
     )
     state_label_ko: str = Field(description="상태를 사람이 읽는 한 문장으로 풀어 쓴 것입니다.")
     usable: bool
+    supports_search_off: bool = Field(
+        default=True,
+        description=(
+            "검색을 **끄고** 물어볼 수 있는 엔진인가. 거짓이면 이 엔진은 늘 검색해서 "
+            "답하므로 끔 모드로 잴 수 없습니다. 목록에서 빼지 말고 끔만 못 고르게 "
+            "하십시오 — 빼면 '이 엔진은 아예 못 쓴다' 로 읽힙니다."
+        ),
+    )
+    search_off_note_ko: str = Field(
+        default="",
+        description="끔 모드를 못 쓰는 엔진일 때만 채워집니다. 화면이 그대로 보여줍니다.",
+    )
 
 
 class EnginePayload(BaseModel):

@@ -190,13 +190,19 @@ class MentionDetector(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class SkippedWork:
-    """One unit of planned work that was not executed, and why."""
+    """One unit of planned work that was not executed, and why.
+
+    엔진 이름만으로는 무엇을 못 했는지 알 수 없다. 같은 엔진을 검색 켬·끔 두 번 돌리므로,
+    모드가 빠지면 "OPENAI 30건 건너뜀" 이 두 모드에서 15건씩인지 한 모드가 통째로
+    빠진 것인지 구분되지 않는다. 뒤쪽이면 그 모드의 노출률은 아예 없는 것이다.
+    """
 
     prompt_id: str
     engine: str
     attempt: int
     reason: StopReason
     reason_ko: str
+    search_mode: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -377,11 +383,15 @@ class ObservationRunner:
         self,
         prompt_set: PromptSet,
         *,
-        conditions: Mapping[str, RunConditions],
+        conditions: Sequence[RunConditions],
         repetitions: int,
         allow_below_floor: bool = False,
     ) -> RunReport:
-        """Ask every prompt of every engine ``repetitions`` times.
+        """Ask every prompt under every condition ``repetitions`` times.
+
+        조건은 **목록**이지 엔진 이름을 열쇠로 하는 표가 아니다. 표였을 때는 같은 엔진의
+        검색 켬·끔이 한 열쇠로 겹쳐 뒤엣것만 남았고, 겹쳤다는 사실이 아무 데도 남지
+        않았다 — 반쪽만 돌고 두 모드를 다 잰 것처럼 읽혔다. 목록에는 겹칠 열쇠가 없다.
 
         Raises :class:`RepetitionFloorError` below the exploration minimum unless
         ``allow_below_floor`` is set, in which case the shortfall is carried on the
@@ -398,12 +408,14 @@ class ObservationRunner:
                 "그래도 실행하려면 allow_below_floor 를 명시하세요."
             )
 
-        for engine, condition in conditions.items():
-            self._registry.resolve(engine)
-            if condition.engine.upper() != engine.upper():
-                raise ValueError(
-                    f"엔진 키({engine})와 조건의 엔진({condition.engine})이 다릅니다"
-                )
+        seen: set[str] = set()
+        for condition in conditions:
+            self._registry.resolve(condition.engine)
+            if condition.slot in seen:
+                # 조용히 합치면 요청한 것보다 적게 돌고도 다 돈 것으로 보인다. 반복은
+                # `repetitions` 로 늘리는 것이지 같은 조건을 두 번 적어서 늘리지 않는다.
+                raise ValueError(f"같은 조건이 두 번 들어왔습니다: {condition.label_ko}")
+            seen.add(condition.slot)
 
         units = _plan(prompt_set, conditions, repetitions)
         results, skipped, stopped, spent = self._run_units(units)
@@ -537,6 +549,7 @@ class ObservationRunner:
             SkippedWork(
                 prompt_id=unit.prompt.prompt_id,
                 engine=unit.engine,
+                search_mode=str(unit.requested.search_mode),
                 attempt=unit.attempt,
                 reason=stopped or StopReason.BUDGET_EXCEEDED,
                 reason_ko=_SKIP_REASONS_KO[stopped or StopReason.BUDGET_EXCEEDED],
@@ -705,23 +718,26 @@ _SKIP_REASONS_KO: Mapping[StopReason, str] = {
 
 
 def _plan(
-    prompt_set: PromptSet, conditions: Mapping[str, RunConditions], repetitions: int
+    prompt_set: PromptSet, conditions: Sequence[RunConditions], repetitions: int
 ) -> tuple[_Unit, ...]:
     """Repetition-major order, so a truncated pass loses whole rounds.
 
     Prompt-major order would give the first prompts every repetition and the last ones
     none, turning a budget stop into a silently narrowed prompt set — the exact failure
     :mod:`veo.observations.prompts` exists to prevent.
+
+    조건 안에서는 칸 이름 순으로 돈다. 예산이 중간에 끊겨도 같은 회차 안에서 어느 조건이
+    먼저였는지가 실행마다 달라지지 않는다.
     """
-    engines = sorted(conditions)
+    ordered = sorted(conditions, key=lambda condition: condition.slot)
     return tuple(
         _Unit(
             prompt=prompt,
-            engine=engine,
+            engine=condition.engine,
             attempt=attempt,
-            requested=conditions[engine],
+            requested=condition,
         )
         for attempt in range(1, repetitions + 1)
         for prompt in prompt_set.prompts
-        for engine in engines
+        for condition in ordered
     )

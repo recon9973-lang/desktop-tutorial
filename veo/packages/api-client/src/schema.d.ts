@@ -3643,6 +3643,12 @@ export interface components {
             /** Engine */
             engine: string;
             /**
+             * Search Off Note Ko
+             * @description 끔 모드를 못 쓰는 엔진일 때만 채워집니다. 화면이 그대로 보여줍니다.
+             * @default
+             */
+            search_off_note_ko: string;
+            /**
              * State
              * @description ENABLED 이면 호출합니다. 그 밖의 값은 호출하지 않으며 결과가 '측정 불가'로 남습니다.
              */
@@ -3652,6 +3658,12 @@ export interface components {
              * @description 상태를 사람이 읽는 한 문장으로 풀어 쓴 것입니다.
              */
             state_label_ko: string;
+            /**
+             * Supports Search Off
+             * @description 검색을 **끄고** 물어볼 수 있는 엔진인가. 거짓이면 이 엔진은 늘 검색해서 답하므로 끔 모드로 잴 수 없습니다. 목록에서 빼지 말고 끔만 못 고르게 하십시오 — 빼면 '이 엔진은 아예 못 쓴다' 로 읽힙니다.
+             * @default true
+             */
+            supports_search_off: boolean;
             /** Usable */
             usable: boolean;
         };

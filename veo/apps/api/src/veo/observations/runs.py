@@ -81,6 +81,25 @@ class RunConditions:
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
 
     @property
+    def slot(self) -> str:
+        """실행 계획에서 이 조건이 차지하는 칸의 이름.
+
+        엔진 이름만으로는 부족하다. **검색 켬과 끔은 서로 다른 조건이고**, 같은 엔진을
+        두 모드로 돌리는 것이 이 관측의 목적이다 — 검색을 켜야 인용이 나오고, 끄면 모델이
+        학습으로 아는 것만 나온다. 둘을 엔진 이름 하나로 묶으면 나중에 넣은 쪽이 앞의 것을
+        덮어 **한 모드만 실행되고도 두 모드를 쟀다고 읽힌다.**
+
+        모델도 칸을 가른다. 모델마다 인용을 돌려주는지가 다르므로(실측: `gpt-5`·`gpt-4o`
+        는 돌려주고 `gpt-4.1`·`gpt-4o-mini` 는 돌려주지 않는다) 두 모델을 한 칸으로
+        묶으면 "인용 0건" 이 모델 탓인지 검색 탓인지 갈라낼 수 없다.
+
+        저장 쪽은 이미 셋을 구분한다 — `ai_engines` 는 (제공자, 모델, 검색모드) 로
+        유일하다(ADR 0010). 여기가 그 셋과 같은 축이다. 나뉘지 않던 곳은 실행 계획의
+        표뿐이었다.
+        """
+        return f"{self.engine.upper()}:{self.model}:{self.search_mode}"
+
+    @property
     def label_ko(self) -> str:
         mode = {
             SearchMode.BROWSING: "검색 사용",

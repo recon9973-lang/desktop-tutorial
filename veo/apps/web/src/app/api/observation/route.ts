@@ -54,6 +54,22 @@ function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
 }
 
+/** VEO 가 아는 검색 모드. `UNKNOWN` 은 관측을 **시작할 때** 고를 수 있는 값이 아니다. */
+const SEARCH_MODES = new Set(['BROWSING', 'NO_BROWSING']);
+
+/**
+ * 고른 검색 모드들을 읽는다. 하나도 없거나 모르는 값이 섞이면 `null` 이다.
+ *
+ * 모르는 값을 조용히 `BROWSING` 으로 떨어뜨리지 않는다. 그러면 화면이 끔을 보냈다고
+ * 믿는데 실제로는 켬으로 돌아, 검색해서 나온 답이 "검색 끔" 자리에 앉는다.
+ */
+function readSearchModes(value: unknown): string[] | null {
+  if (!Array.isArray(value)) return null;
+  const chosen = [...new Set(value.filter((one): one is string => typeof one === 'string'))];
+  if (chosen.length === 0 || chosen.some((one) => !SEARCH_MODES.has(one))) return null;
+  return chosen;
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   let body: unknown = null;
   try {
@@ -77,13 +93,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.');
   }
 
+  const searchModes = readSearchModes(input['searchModes']);
+  if (searchModes === null) {
+    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.');
+  }
+
   const outcome = await startObservation({
     promptSetId,
     engine,
     model,
-    // 검색을 끄면 엔진이 출처를 밝히지 않아 인용률이 0%가 아니라 **측정 불가**가 된다.
-    // 그래서 화면에서는 켠 상태만 보낸다.
-    searchMode: 'BROWSING',
+    searchModes,
     repetitions,
     idempotencyKey,
   });

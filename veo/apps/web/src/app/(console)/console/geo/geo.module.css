@@ -19,6 +19,18 @@
 
 .field { display: flex; flex-direction: column; gap: var(--veo-space-2); }
 
+/* `fieldset` 의 기본 테두리·여백은 옆 칸들과 줄이 안 맞는다. `.field` 와 같게 만든다. */
+fieldset.field { margin: 0; padding: 0; border: 0; }
+
+/* 검색 켬·끔 고르는 줄. 끌 수 없는 엔진에서는 끔 쪽이 disabled 로 흐려진다. */
+.modeChoice {
+  display: flex;
+  align-items: center;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+}
+.modeChoice:has(input:disabled) { color: var(--veo-color-text-muted); }
+
 .label {
   font-size: var(--veo-font-size-200);
   font-weight: var(--veo-weight-medium);
