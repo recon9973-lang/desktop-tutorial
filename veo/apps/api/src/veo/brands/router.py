@@ -22,9 +22,13 @@ from veo.brands.schemas import (
     BrandDeclareRequest,
     BrandPayload,
     BrandUpdateRequest,
+    IdentityCandidatePayload,
     ProjectBrandsPayload,
+    SiteIdentityDraftPayload,
+    SiteIdentityDraftRequest,
 )
 from veo.brands.service import SharedDomainError
+from veo.brands.site_lookup import SiteIdentityReader
 from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiResponse
 from veo.db.session import get_db
@@ -185,6 +189,56 @@ def update(
         raise not_found(exc.message_ko) from exc
     db.commit()
     return ok(_payload(view), request_id)
+
+
+@router.post(
+    "/identity-draft",
+    response_model=ApiResponse[SiteIdentityDraftPayload],
+    summary="홈페이지에서 식별 정보를 읽어 후보로 돌려준다",
+    description=(
+        "**아무것도 저장하지 않습니다.** 사람이 고른 값을 등록·수정 요청으로 다시 보내야 "
+        "저장됩니다.\n\n"
+        "자동으로 채우지 않는 이유는 하나입니다 — 식별 값이 하나 더해지면 확신도가 "
+        "올라가고, 확정선을 넘으면 **사람 검수를 건너뜁니다.** 틀린 값을 자동으로 넣는 "
+        "것은 틀린 판정을 검수 없이 확정시키는 일입니다.\n\n"
+        "`source` 가 `DECLARED` 인 것만 `preselected` 가 `true` 입니다. 본문에서 찾은 "
+        "값은 실측에서 오검출이 나왔으므로 사람이 직접 골라야 합니다.\n\n"
+        "홈페이지를 읽지 못해도 오류가 아닙니다. 후보가 비고 `notes_ko` 에 사유가 "
+        "담깁니다 — 사이트가 안 열리는 것은 등록을 막을 일이 아닙니다."
+    ),
+)
+def identity_draft(
+    project_id: uuid.UUID,
+    payload: SiteIdentityDraftRequest,
+    principal: Writer,
+    request_id: RequestId,
+    db: DbSession,
+) -> ApiResponse[SiteIdentityDraftPayload]:
+    # 프로젝트가 이 조직 것인지 확인한다. 확인하지 않으면 남의 프로젝트 번호를 붙여
+    # **아무 주소나 우리 서버로 받아 보는 창구**가 된다.
+    try:
+        service.list_brands(db, principal, project_id)
+    except ReferenceNotFoundError as exc:
+        raise not_found(exc.message_ko) from exc
+
+    draft = SiteIdentityReader().read(payload.url)
+    return ok(
+        SiteIdentityDraftPayload(
+            url=draft.url,
+            candidates=[
+                IdentityCandidatePayload(
+                    field=str(one.field),
+                    value=one.value,
+                    source=str(one.source),
+                    preselected=one.preselected,
+                    note_ko=one.note_ko,
+                )
+                for one in draft.candidates
+            ],
+            notes_ko=list(draft.notes_ko),
+        ),
+        request_id,
+    )
 
 
 __all__ = ["router"]

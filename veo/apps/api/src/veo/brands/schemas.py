@@ -104,6 +104,57 @@ class BrandPayload(BaseModel):
     )
 
 
+class SiteIdentityDraftRequest(BaseModel):
+    """읽어 볼 홈페이지 주소. 한 장만 받습니다 — 크롤이 아닙니다."""
+
+    model_config = _STRICT
+
+    url: NonBlank = Field(
+        description="거래처 홈페이지 주소입니다. 등록된 사이트 주소를 그대로 넣으면 됩니다."
+    )
+
+
+class IdentityCandidatePayload(BaseModel):
+    """홈페이지에서 읽어 낸 값 하나. **아직 저장된 것이 아닙니다.**"""
+
+    model_config = _FROZEN
+
+    field: str = Field(
+        description="DISPLAY_NAME | OWN_DOMAIN | PHONE | ADDRESS | REPRESENTATIVE | "
+        "BUSINESS_NUMBER — 어느 칸에 들어갈 값인지."
+    )
+    value: str
+    source: str = Field(
+        description="DECLARED 는 사이트가 구조화 데이터로 스스로 선언한 값, "
+        "FOUND_IN_TEXT 는 본문 글자에서 찾아낸 값, FROM_URL 은 등록한 주소에서 나온 값."
+    )
+    preselected: bool = Field(
+        description="미리 체크해 둘지 여부입니다. **본문에서 찾은 값은 항상 `false`** "
+        "입니다 — 틀린 것이 섞이고, 미리 체크된 값은 사람이 그대로 저장하기 때문입니다."
+    )
+    note_ko: str
+
+
+class SiteIdentityDraftPayload(BaseModel):
+    """홈페이지 한 장에서 읽어 낸 후보 전부.
+
+    이 응답은 **아무것도 바꾸지 않습니다.** 사람이 고른 값을 등록 요청으로 다시 보내야
+    저장됩니다. 자동으로 채우지 않는 이유는 하나입니다 — 식별 값이 하나 더해지면
+    확신도가 올라가고, 확정선을 넘으면 **사람 검수를 건너뜁니다.** 틀린 값을 자동으로
+    넣는 것은 틀린 판정을 검수 없이 확정시키는 일입니다.
+    """
+
+    model_config = _FROZEN
+
+    url: str
+    candidates: list[IdentityCandidatePayload] = Field(default_factory=list)
+    notes_ko: list[str] = Field(
+        default_factory=list,
+        description="구조화 데이터가 없었다거나, 홈페이지를 읽지 못했다는 사유입니다. "
+        "비어 있는 후보 목록만 돌려주면 '사이트에 정보가 없다'로 잘못 읽힙니다.",
+    )
+
+
 class ProjectBrandsPayload(BaseModel):
     """한 프로젝트의 브랜드 전부와, 지금 상태로 측정이 되는지."""
 

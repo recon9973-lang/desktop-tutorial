@@ -7,6 +7,11 @@ import { Button, FormError } from '@veo/ui';
 import type { Brand } from '@/lib/brands';
 
 import styles from './competitors.module.css';
+import {
+  SiteIdentityPicker,
+  type PickedValues,
+  type SiteIdentityDraft,
+} from './SiteIdentityPicker';
 
 /**
  * 브랜드를 등록하는 칸.
@@ -19,9 +24,19 @@ export function BrandForm({
   projectId,
   isOwnBrand,
   brand,
+  siteOrigin = '',
 }: {
   readonly projectId: string;
   readonly isOwnBrand: boolean;
+  /**
+   * 이 프로젝트에 **이미 등록된** 홈페이지 주소. 있으면 "홈페이지에서 불러오기" 칸에
+   * 미리 넣는다.
+   *
+   * 거래처 등록에서 받은 주소를 여기서 또 손으로 치게 두면, 손으로 치는 만큼 안 친다.
+   * 비교 대상에는 넘기지 않는다 — 우리 사이트를 경쟁사 칸에 미리 넣으면 그것을 그대로
+   * 눌러 **경쟁사에 우리 도메인이 저장된다.**
+   */
+  readonly siteOrigin?: string;
   /**
    * 주면 **수정**, 안 주면 등록.
    *
@@ -54,9 +69,62 @@ export function BrandForm({
     aliases: (brand?.aliases ?? []).join(', '),
   });
 
+  /** 홈페이지에서 읽어 온 후보. 고르기 전까지는 폼에 들어가지 않는다. */
+  const [draft, setDraft] = useState<SiteIdentityDraft | null>(null);
+  const [reading, setReading] = useState(false);
+  const [readError, setReadError] = useState<string | null>(null);
+
   function set(key: keyof typeof values) {
     return (event: { target: { value: string } }) =>
       setValues((current) => ({ ...current, [key]: event.target.value }));
+  }
+
+  async function loadFromSite(url: string): Promise<void> {
+    if (reading) return;
+    if (url === '') {
+      setReadError('홈페이지 주소를 입력해 주십시오.');
+      return;
+    }
+    setReading(true);
+    setReadError(null);
+    setDraft(null);
+    try {
+      const response = await fetch('/api/brand-identity-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, url }),
+      });
+      const body: unknown = await response.json().catch(() => null);
+      const record =
+        typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
+      if (!response.ok) {
+        setReadError(
+          typeof record['message'] === 'string' ? record['message'] : '홈페이지를 읽지 못했습니다.',
+        );
+        return;
+      }
+      setDraft(record['draft'] as SiteIdentityDraft);
+    } catch {
+      setReadError('서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주십시오.');
+    } finally {
+      setReading(false);
+    }
+  }
+
+  /**
+   * 고른 값을 칸에 넣는다. **이미 적혀 있는 것은 덮지 않는다** — 사람이 손으로 쓴
+   * 값이 자동으로 읽어 온 값에 밀리면, 무엇이 저장될지 사람이 알 수 없게 된다.
+   */
+  function applyPicked(picked: PickedValues): void {
+    setValues((current) => {
+      const next = { ...current };
+      for (const [key, value] of Object.entries(picked) as [keyof typeof values, string][]) {
+        if (value !== undefined && value !== '' && current[key].trim() === '') {
+          next[key] = value;
+        }
+      }
+      return next;
+    });
   }
 
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -130,6 +198,16 @@ export function BrandForm({
 
   return (
     <form className={styles.form} onSubmit={submit} noValidate>
+      {/* 칸 위에 둔다. 손으로 다 채운 뒤에 보이면 아무도 안 쓴다. */}
+      <SiteIdentityPicker
+        draft={draft}
+        busy={reading}
+        error={readError}
+        initialUrl={siteOrigin}
+        onLoad={(url) => void loadFromSite(url)}
+        onApply={applyPicked}
+      />
+
       <label className={styles.label}>
         상호 <span className={styles.required}>필수</span>
         <input

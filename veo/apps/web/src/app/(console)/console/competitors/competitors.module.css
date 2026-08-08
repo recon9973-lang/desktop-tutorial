@@ -237,3 +237,74 @@
 }
 
 .modalBody { margin: 0; white-space: pre-wrap; line-height: 1.6; }
+
+/* 홈페이지에서 읽어 온 후보를 고르는 칸.
+   폼 안에 있지만 성격이 다르다 — 여기서 고른 것이 아래 칸으로 들어갈 뿐,
+   이 칸 자체는 아무것도 저장하지 않는다. 테두리로 그 경계를 보인다. */
+.fromSite {
+  border: 1px dashed var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  padding: var(--veo-space-3);
+  display: grid;
+  gap: var(--veo-space-2);
+  background: var(--veo-color-surface-muted, transparent);
+}
+
+.fromSiteTitle {
+  margin: 0;
+  font-size: var(--veo-font-size-sm);
+  font-weight: 600;
+}
+
+.fromSiteLede {
+  margin: 0;
+  font-size: var(--veo-font-size-sm);
+  color: var(--veo-color-text-muted);
+  line-height: 1.6;
+}
+
+.fromSiteRow {
+  display: flex;
+  gap: var(--veo-space-2);
+  align-items: center;
+}
+
+.fromSiteRow .input { flex: 1 1 auto; }
+
+.fromSiteNote {
+  margin: 0;
+  font-size: var(--veo-font-size-sm);
+  color: var(--veo-color-text-muted);
+  line-height: 1.6;
+}
+
+.fromSiteGroup {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--veo-space-1);
+}
+
+.fromSiteLegend {
+  padding: 0;
+  font-size: var(--veo-font-size-sm);
+  font-weight: 600;
+}
+
+.fromSiteChoice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--veo-space-2);
+  align-items: baseline;
+  font-size: var(--veo-font-size-sm);
+}
+
+.fromSiteValue { word-break: break-all; }
+
+/* 어디서 나온 값인지. 고르기 전에 읽혀야 하므로 값 바로 아래 둔다. */
+.fromSiteWhy {
+  grid-column: 2;
+  font-size: var(--veo-font-size-xs);
+  color: var(--veo-color-text-muted);
+}

@@ -1348,6 +1348,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{project_id}/brands/identity-draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 홈페이지에서 식별 정보를 읽어 후보로 돌려준다
+         * @description **아무것도 저장하지 않습니다.** 사람이 고른 값을 등록·수정 요청으로 다시 보내야 저장됩니다.
+         *
+         *     자동으로 채우지 않는 이유는 하나입니다 — 식별 값이 하나 더해지면 확신도가 올라가고, 확정선을 넘으면 **사람 검수를 건너뜁니다.** 틀린 값을 자동으로 넣는 것은 틀린 판정을 검수 없이 확정시키는 일입니다.
+         *
+         *     `source` 가 `DECLARED` 인 것만 `preselected` 가 `true` 입니다. 본문에서 찾은 값은 실측에서 오검출이 나왔으므로 사람이 직접 골라야 합니다.
+         *
+         *     홈페이지를 읽지 못해도 오류가 아닙니다. 후보가 비고 `notes_ko` 에 사유가 담깁니다 — 사이트가 안 열리는 것은 등록을 막을 일이 아닙니다.
+         */
+        post: operations["identity_draft_api_projects__project_id__brands_identity_draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{project_id}/brands/{brand_id}": {
         parameters: {
             query?: never;
@@ -2407,6 +2433,12 @@ export interface components {
         /** ApiResponse[SharedReportLinkPayload] */
         ApiResponse_SharedReportLinkPayload_: {
             data?: components["schemas"]["SharedReportLinkPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[SiteIdentityDraftPayload] */
+        ApiResponse_SiteIdentityDraftPayload_: {
+            data?: components["schemas"]["SiteIdentityDraftPayload"] | null;
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
@@ -4506,6 +4538,31 @@ export interface components {
             /** Reason Ko */
             reason_ko: string;
             to_state: components["schemas"]["IssueState"];
+        };
+        /**
+         * IdentityCandidatePayload
+         * @description 홈페이지에서 읽어 낸 값 하나. **아직 저장된 것이 아닙니다.**
+         */
+        IdentityCandidatePayload: {
+            /**
+             * Field
+             * @description DISPLAY_NAME | OWN_DOMAIN | PHONE | ADDRESS | REPRESENTATIVE | BUSINESS_NUMBER — 어느 칸에 들어갈 값인지.
+             */
+            field: string;
+            /** Note Ko */
+            note_ko: string;
+            /**
+             * Preselected
+             * @description 미리 체크해 둘지 여부입니다. **본문에서 찾은 값은 항상 `false`** 입니다 — 틀린 것이 섞이고, 미리 체크된 값은 사람이 그대로 저장하기 때문입니다.
+             */
+            preselected: boolean;
+            /**
+             * Source
+             * @description DECLARED 는 사이트가 구조화 데이터로 스스로 선언한 값, FOUND_IN_TEXT 는 본문 글자에서 찾아낸 값, FROM_URL 은 등록한 주소에서 나온 값.
+             */
+            source: string;
+            /** Value */
+            value: string;
         };
         /**
          * ImprovementSummary
@@ -7525,6 +7582,37 @@ export interface components {
              * Format: uuid
              */
             project_id: string;
+        };
+        /**
+         * SiteIdentityDraftPayload
+         * @description 홈페이지 한 장에서 읽어 낸 후보 전부.
+         *
+         *     이 응답은 **아무것도 바꾸지 않습니다.** 사람이 고른 값을 등록 요청으로 다시 보내야
+         *     저장됩니다. 자동으로 채우지 않는 이유는 하나입니다 — 식별 값이 하나 더해지면
+         *     확신도가 올라가고, 확정선을 넘으면 **사람 검수를 건너뜁니다.** 틀린 값을 자동으로
+         *     넣는 것은 틀린 판정을 검수 없이 확정시키는 일입니다.
+         */
+        SiteIdentityDraftPayload: {
+            /** Candidates */
+            candidates?: components["schemas"]["IdentityCandidatePayload"][];
+            /**
+             * Notes Ko
+             * @description 구조화 데이터가 없었다거나, 홈페이지를 읽지 못했다는 사유입니다. 비어 있는 후보 목록만 돌려주면 '사이트에 정보가 없다'로 잘못 읽힙니다.
+             */
+            notes_ko?: string[];
+            /** Url */
+            url: string;
+        };
+        /**
+         * SiteIdentityDraftRequest
+         * @description 읽어 볼 홈페이지 주소. 한 장만 받습니다 — 크롤이 아닙니다.
+         */
+        SiteIdentityDraftRequest: {
+            /**
+             * Url
+             * @description 거래처 홈페이지 주소입니다. 등록된 사이트 주소를 그대로 넣으면 됩니다.
+             */
+            url: string;
         };
         /** SitePayload */
         SitePayload: {
@@ -10965,6 +11053,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_BrandPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    identity_draft_api_projects__project_id__brands_identity_draft_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteIdentityDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_SiteIdentityDraftPayload_"];
                 };
             };
             /** @description Validation Error */

@@ -44,6 +44,18 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
   const selected = projectId ?? projects[0]?.id ?? null;
   const brands = selected === null ? null : await readBrands(selected);
 
+  // 이 프로젝트에 등록된 홈페이지. **자사 브랜드 폼의 "홈페이지에서 불러오기" 칸에
+  // 미리 넣는다** — 거래처 등록 때 이미 받은 주소를, 브랜드 식별에서 또 손으로 치게
+  // 두지 않는다. 여러 개면 대표 사이트를 쓴다.
+  const projectSites =
+    selected === null || !companies.ok
+      ? []
+      : companies.data.flatMap((company) =>
+          company.sites.filter((site) => site.projectId === selected),
+        );
+  const ownSiteOrigin =
+    projectSites.find((site) => site.isPrimary)?.origin ?? projectSites[0]?.origin ?? '';
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -109,7 +121,7 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
             {brands.data.ours === null ? (
               <>
                 <EmptyState description="자사 브랜드가 아직 등록되지 않았습니다." />
-                <BrandForm projectId={selected} isOwnBrand />
+                <BrandForm projectId={selected} isOwnBrand siteOrigin={ownSiteOrigin} />
               </>
             ) : (
               <ul className={own.brandList}>
@@ -119,7 +131,12 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
             {brands.data.ours === null ? null : (
               /* 한 번 저장하면 오타 하나도 못 고치던 자리. 서버에는 처음부터 고치는
                  길이 있었고 화면에 단추가 없었을 뿐이다(0-E). */
-              <BrandForm projectId={selected} isOwnBrand brand={brands.data.ours} />
+              <BrandForm
+                projectId={selected}
+                isOwnBrand
+                siteOrigin={ownSiteOrigin}
+                brand={brands.data.ours}
+              />
             )}
           </section>
 
