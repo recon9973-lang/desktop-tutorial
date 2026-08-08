@@ -145,6 +145,47 @@ def test_the_gate_job_waits_for_every_other_job(workflow: str) -> None:
     assert missing == set(), f"`ci-passed` 가 기다리지 않는 잡: {sorted(missing)}"
 
 
+def test_the_workflow_runs_on_the_branch_the_deploy_gate_watches() -> None:
+    """`deploy.sh` 는 후보 가지의 실행을 기다린다. 거기서 워크플로가 안 돌면 배포가 멈춘다.
+
+    관문은 `gh run list --branch deploy-candidate` 로 초록불을 확인한 뒤에만 main 으로
+    민다(`scripts/deploy.sh:66`). 그러니 `push.branches` 에서 후보 가지가 빠지면 관문은
+    영원히 "실행을 찾지 못했습니다" 가 된다.
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    branches = re.search(r"^    branches:\s*\[([^\]]*)\]", text, flags=re.MULTILINE)
+    assert branches is not None, "push.branches 를 읽지 못했습니다"
+
+    named = {piece.strip().strip("\"'") for piece in branches[1].split(",")}
+    assert "deploy-candidate" in named, (
+        "`deploy-candidate` 가 push.branches 에 없습니다 — 배포 관문이 기다릴 실행이 "
+        f"만들어지지 않습니다. 지금: {sorted(named)}"
+    )
+
+
+def test_the_workflow_does_not_re_run_the_same_commit_on_main() -> None:
+    """main 에서 같은 커밋을 다시 검사하면 알아내는 것 없이 시간만 두 배로 쓴다.
+
+    `deploy.sh` 는 후보 가지에서 **초록불을 받은 그 SHA 를** main 으로 민다. 그래서
+    main 의 실행은 같은 입력에 같은 답이다. 실측(2026-08-01~08): 실행 153건 중 서로
+    다른 커밋 117개, 두 가지에서 중복 실행된 커밋 36개.
+
+    비공개 저장소라 그 시간은 무료 한도에서 깎이고, 한도가 막히면 **배포 자체가 멈춘다** —
+    v0.3.71 이 실제로 그렇게 막혔다. 그래서 이것은 취향이 아니라 관문의 가용성 문제다.
+
+    관문은 약해지지 않는다: main 에 닿는 유일한 길이 `deploy.sh` 이고 그 앞에 검사가 있다.
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    branches = re.search(r"^    branches:\s*\[([^\]]*)\]", text, flags=re.MULTILINE)
+    assert branches is not None
+
+    named = {piece.strip().strip("\"'") for piece in branches[1].split(",")}
+    assert "main" not in named, (
+        "`main` 이 push.branches 에 있습니다 — 후보 가지에서 이미 통과한 커밋을 다시 "
+        "검사하게 됩니다. 되돌리려면 이 시험과 워크플로 주석을 함께 고치십시오."
+    )
+
+
 # --------------------------------------------------------------------------- #
 # 잡이 실제로 테스트를 도는가
 # --------------------------------------------------------------------------- #
