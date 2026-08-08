@@ -28,13 +28,35 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
-#: Fewer than this and the set cannot span the intents, so a rate over it means little.
+# ─────────────────────────────────────────────────────────────────────────────
+# 아래 넷의 근거: docs/adr/0015-prompt-sets-are-audited-artefacts.md (ADR 0015, 2026-07-28)
+#
+# ADR 이 대는 이유는 조작 방지다:
+#
+#   > 경쟁 비교를 조작하는 데 숫자를 위조할 필요가 없다. **질문만 고르면 된다.**
+#   > 고객이 잘 나오는 "서초 임플란트 잘하는 곳"은 묻고, 잘 안 나오는 "임플란트
+#   > 부작용"은 뺀다. 이후 모든 계산은 산술적으로 완벽하고 결론은 거짓이다.
+#   > 그리고 이 실패는 데이터에 아무 흔적을 남기지 않는다.
+#
+# **이 숫자들은 통계나 외부 연구에서 나온 값이 아니다.** 우리가 그날 정한 바닥값이고,
+# ADR 도 왜 5이고 왜 50%인지는 적지 않았다. 바꾸려면 ADR 을 고쳐야 하고, 고칠 때는
+# 그 숫자여야 하는 이유를 대야 한다.
+#
+# 여기 근거를 적어 두는 것 자체가 관문이다 — 2026-08-08 에 나는 이 규칙이 참인 것은
+# 확인하고서 **왜 그런지는 지어내서** 설명했다("3개로는 균형을 맞출 수 없다" — 실제로는
+# 맞출 수 있고 개수만 걸린다). ADR 을 찾아보지 않았기 때문이다.
+# `tests/test_thresholds_cite_a_decision.py` 가 이 인용이 사라지지 않게 지킨다.
+# 사례: docs/CORRECTIONS.md 7·8번.
+# ─────────────────────────────────────────────────────────────────────────────
+
+#: 최소 질문 수. 이보다 적으면 그 몇 개가 곧 결론이 된다. [ADR 0015]
 MIN_PROMPTS_PER_SET = 5
 
-#: No single intent may exceed this share of the set.
+#: No single intent may exceed this share of the set. [ADR 0015]
 MAX_SINGLE_INTENT_SHARE = 0.5
 
 #: Brand-name questions almost guarantee a mention; they measure recall, not visibility.
+#: [ADR 0015]
 MAX_BRAND_SUBJECT_SHARE = 0.5
 
 
@@ -68,6 +90,9 @@ class Subject(StrEnum):
 
 
 #: Intents a set may not omit. Leaving these out is the cheapest way to flatter a brand.
+#:
+#: 근거 [ADR 0015]: "신뢰·안전(부작용·후기)과 비교 의도는 필수다. 브랜드가 가장 빼고
+#: 싶어 하는 질문이고, 빼면 노출률이 실제보다 높게 나온다."
 REQUIRED_INTENTS = frozenset({Intent.TRUST, Intent.COMPARISON})
 
 _INTENT_LABELS_KO = {

@@ -878,3 +878,31 @@
   font-weight: var(--veo-weight-medium);
 }
 
+
+/* 의도별 예시 목록. 예시를 보여주기만 하면 사람은 손으로 옮겨 적다가 그만두므로,
+   줄마다 '넣기' 단추를 둔다 — 넣으면 바로 편집칸이 생겨 고치는 것이 다음 동작이 된다. */
+.exampleList {
+  list-style: none;
+  margin: 0 0 var(--veo-space-2);
+  padding: 0;
+  display: grid;
+  gap: var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+}
+
+.exampleList li {
+  display: grid;
+  gap: var(--veo-space-1);
+  padding-bottom: var(--veo-space-2);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+
+.balanceFix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--veo-space-2);
+  margin-top: var(--veo-space-1);
+  font-weight: 400;
+  color: var(--veo-color-text-muted);
+}

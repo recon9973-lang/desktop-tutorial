@@ -7,7 +7,9 @@ import { Button, FormError } from '@veo/ui';
 import {
   FUNNELS,
   INTENTS,
+  MIN_PROMPTS,
   SUBJECTS,
+  exampleFor,
   previewBalance,
   splitPastedQuestions,
   type DraftPrompt,
@@ -86,6 +88,26 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
     setPasted('');
   }
 
+  /**
+   * 모자란 의도의 예시 질문을 그대로 목록에 넣는다.
+   *
+   * 예시를 **그대로 쓰라는 뜻이 아니다.** `○○` 자리에 지역·시술을 넣어 고쳐 쓰라는
+   * 것이고, 넣자마자 편집칸이 생기므로 고치는 것이 자연스러운 다음 동작이 된다.
+   * 예시를 보여주기만 하면 사람은 그것을 손으로 옮겨 적다가 그만둔다.
+   */
+  function addExample(intent: string): void {
+    setRows((current) => [
+      ...current,
+      {
+        key: newKey(),
+        text: exampleFor(intent),
+        intent,
+        funnel: intent === 'TRUST' ? 'RESEARCH' : 'COMPARISON',
+        subject: 'NON_BRAND',
+      },
+    ]);
+  }
+
   function update(key: string, field: 'text' | 'intent' | 'funnel' | 'subject', value: string) {
     setRows((current) =>
       current.map((one) => (one.key === key ? { ...one, [field]: value } : one)),
@@ -160,8 +182,15 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
           onChange={(event) => setName(event.target.value)}
         />
         <p className={styles.hint}>
-          핵심 질문은 자주(주 1회), 확장 질문은 드물게(월 1회) 재는 것을 전제로 나눕니다.
-          집합을 나눠 두면 주기를 따로 줄 수 있습니다.
+          핵심 질문은 자주(주 1회) <strong>5~8개</strong>, 확장 질문은 드물게(월 1회){' '}
+          <strong>20개 안팎</strong>을 권합니다. 집합을 나눠 두면 주기를 따로 줄 수 있습니다.
+        </p>
+        <p className={styles.hint}>
+          <strong>한 집합에 최소 {MIN_PROMPTS}개가 필요합니다.</strong> 질문을 몇 개만 골라
+          두면 그 몇 개가 곧 결론이 되기 때문입니다 — 잘 나오는 질문만 남기는 것이 숫자를
+          위조하지 않고 결과를 바꾸는 가장 쉬운 방법입니다. 이 <strong>{MIN_PROMPTS}이라는
+          숫자는 통계에서 나온 값이 아니라 2026-07-28에 우리가 정한 바닥값</strong>입니다
+          (설계 기록 ADR 0015). 바꾸려면 그 문서를 고쳐야 합니다.
         </p>
       </div>
 
@@ -202,6 +231,33 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
           목록에 추가
         </Button>
       </div>
+
+      {/*
+        분류 이름만 보여 주고 채우라고 하면, 채우는 사람은 자기가 이미 쓴 질문을 아무
+        칸에나 넣는다. 그러면 균형은 통과하는데 실제로 잰 것은 한 종류뿐이다.
+        일곱 가지가 각각 어떻게 생긴 질문인지 먼저 보인다(사장님 지적 2026-08-08).
+      */}
+      <section className={styles.balance} aria-label="의도별 질문 예시">
+        <h3 className={styles.balanceTitle}>어떤 질문을 넣나 — 일곱 가지</h3>
+        <ul className={styles.exampleList}>
+          {INTENTS.map((item) => (
+            <li key={item.id}>
+              <b>{item.label}</b> <span className={styles.hint}>{item.hint}</span>
+              <br />
+              {item.examples[0]}
+              <Button type="button" onClick={() => addExample(item.id)}>
+                넣기
+              </Button>
+            </li>
+          ))}
+        </ul>
+        <p className={styles.hint}>
+          <code>○○</code> 자리에 지역이나 시술 이름을 넣어 고쳐 쓰십시오. 넣으면 바로
+          편집할 수 있습니다. <strong>&lsquo;신뢰·안전&rsquo;과 &lsquo;비교&rsquo;는 반드시
+          있어야 합니다</strong> — 브랜드에 불리해서 제일 먼저 빠지는 질문이고, 빼고 재면
+          노출률이 실제보다 높게 나옵니다.
+        </p>
+      </section>
 
       {rows.length > 0 ? (
         <ul className={styles.promptRows}>
@@ -262,7 +318,19 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
         <ul>
           {notes.map((note) => (
             <li key={note.message} className={note.ok ? styles.balanceOk : styles.balanceBad}>
-              {note.ok ? '확인' : '보완'} · {note.message}
+              <span>
+                {note.ok ? '확인' : '보완'} · {note.message}
+              </span>
+              {/* 지적만 하고 고칠 방법을 안 주면, 읽는 사람은 자기가 이미 쓴 질문의
+                  분류만 바꾼다 — 균형은 통과하는데 잰 것은 그대로다. */}
+              {note.fix === undefined ? null : (
+                <span className={styles.balanceFix}>
+                  예: <strong>{note.fix.example}</strong>
+                  <Button type="button" onClick={() => addExample(note.fix!.intent)}>
+                    이런 질문 넣기
+                  </Button>
+                </span>
+              )}
             </li>
           ))}
         </ul>

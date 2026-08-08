@@ -12,15 +12,71 @@
  * "이 둘을 빼는 것이 브랜드를 띄우는 가장 싼 방법이다."
  */
 
+/**
+ * 검색 의도 일곱 가지와 **그 의도의 질문이 실제로 어떻게 생겼는지.**
+ *
+ * 예시가 없으면 "'비교' 의도가 없습니다" 는 무슨 말인지 알 수 없는 지적이 된다.
+ * 사장님 지적(2026-08-08): "비교 신뢰 안전 추천 이런게 없으니까 넣으라는거야?
+ * 어려워 예시를 미리 보여 주면 좋겠어." 정확한 지적이다 — 분류 이름만 보여 주고
+ * 채우라고 하면, 채우는 사람은 자기가 이미 쓴 질문을 아무 칸에나 넣게 된다.
+ *
+ * 예시는 병의원 현장 말투로 쓴다. `○○` 는 지역이나 시술 이름이 들어갈 자리다.
+ */
 export const INTENTS = [
-  { id: 'DEFINITION', label: '정의', hint: '이게 뭔가요' },
-  { id: 'HOW_TO', label: '방법', hint: '어떻게 하나요' },
-  { id: 'BEST_OR_RECOMMENDED', label: '추천', hint: '어디가 잘하나요' },
-  { id: 'COMPARISON', label: '비교', hint: 'A와 B 중 어느 쪽' },
-  { id: 'PRICE', label: '가격', hint: '얼마인가요' },
-  { id: 'LOCAL', label: '지역', hint: '○○에 있는 곳' },
-  { id: 'TRUST', label: '신뢰·안전', hint: '부작용·후기·안전' },
+  {
+    id: 'DEFINITION',
+    label: '정의',
+    hint: '이게 뭔가요',
+    examples: ['도수치료는 어떤 치료인가요?', '임플란트는 어떤 시술인가요?'],
+  },
+  {
+    id: 'HOW_TO',
+    label: '방법',
+    hint: '어떻게 하나요',
+    examples: ['교통사고 후 한방 치료는 어떻게 받나요?', '임플란트 후 관리는 어떻게 하나요?'],
+  },
+  {
+    id: 'BEST_OR_RECOMMENDED',
+    label: '추천',
+    hint: '어디가 잘하나요',
+    examples: ['○○ 교통사고 한의원 추천해줘', '○○에 임플란트 잘하는 치과 알려줘'],
+  },
+  {
+    id: 'COMPARISON',
+    label: '비교',
+    hint: 'A와 B 중 어느 쪽',
+    examples: [
+      '교통사고 치료는 한의원과 정형외과 중 어디가 나은가요?',
+      '다이어트 한약과 식욕억제제 중 뭐가 나은가요?',
+    ],
+  },
+  {
+    id: 'PRICE',
+    label: '가격',
+    hint: '얼마인가요',
+    examples: ['○○ 다이어트 한약 가격이 얼마인가요?', '교통사고 한방 치료는 보험이 되나요?'],
+  },
+  {
+    id: 'LOCAL',
+    label: '지역',
+    hint: '○○에 있는 곳',
+    examples: ['○○역 근처에 일요일 진료하는 한의원 있나요?', '○○에서 야간 진료되는 곳 알려줘'],
+  },
+  {
+    id: 'TRUST',
+    label: '신뢰·안전',
+    hint: '부작용·후기·안전',
+    examples: [
+      '다이어트 한약 부작용은 어떤 게 있나요?',
+      '불면증 한약 오래 먹어도 괜찮나요?',
+    ],
+  },
 ] as const;
+
+/** 의도 하나의 예시 질문 첫 줄. 없으면 빈 문자열. */
+export function exampleFor(intent: string): string {
+  return INTENTS.find((one) => one.id === intent)?.examples[0] ?? '';
+}
 
 export const FUNNELS = [
   { id: 'PROBLEM_AWARE', label: '문제 인식' },
@@ -38,7 +94,22 @@ export const SUBJECTS = [
   { id: 'CATEGORY', label: '업종·분류' },
 ] as const;
 
-/** 이보다 적으면 의도를 고루 담을 수 없어 비율이 뜻을 잃는다. */
+/**
+ * 아래 넷은 전부 **[설계 판단]** 이다 — 통계나 외부 연구에서 나온 값이 아니라
+ * 2026-07-28 에 우리가 정했다. 근거 문서는 `docs/adr/0015-prompt-sets-are-audited-artefacts.md`.
+ *
+ * ADR 이 대는 이유는 조작 방지다:
+ *
+ * > 경쟁 비교를 조작하는 데 숫자를 위조할 필요가 없다. **질문만 고르면 된다.**
+ * > 고객이 잘 나오는 "서초 임플란트 잘하는 곳"은 묻고, 잘 안 나오는 "임플란트 부작용"은
+ * > 뺀다. 이후 모든 계산은 산술적으로 완벽하고 결론은 거짓이다.
+ *
+ * 그 논리는 타당하다. 다만 **왜 5개이고 왜 50%인지는 문서에 근거가 없다** — 4개나
+ * 40%가 아니어야 할 이유가 적혀 있지 않다. 바꾸려면 ADR 을 고쳐야 하고, 고칠 때는
+ * 그 숫자여야 하는 이유를 대야 한다. 화면 문구도 이 사실을 숨기지 않는다.
+ */
+
+/** 최소 질문 수. 이보다 적으면 그 몇 개가 곧 결론이 된다. */
 export const MIN_PROMPTS = 5;
 
 /** 한 의도가 집합의 절반을 넘으면 그 집합은 그 의도 하나를 잰 것이다. */
@@ -61,6 +132,14 @@ export interface DraftPrompt {
 export interface BalanceNote {
   readonly ok: boolean;
   readonly message: string;
+  /**
+   * 이 지적을 **한 번에 고칠 수 있는** 예시 질문. 없으면 사람이 판단해야 하는 지적이다.
+   *
+   * 지적만 하고 고칠 방법을 안 주면, 읽는 사람은 무엇을 넣어야 하는지 모르는 채로
+   * 자기가 이미 쓴 질문의 분류만 바꾸게 된다 — 그러면 균형은 통과하는데 실제로 잰
+   * 것은 그대로다. 숫자만 맞추고 뜻은 안 맞추는 것이 가장 나쁜 결과다.
+   */
+  readonly fix?: { readonly intent: string; readonly example: string };
 }
 
 /**
@@ -87,11 +166,13 @@ export function previewBalance(prompts: readonly DraftPrompt[]): BalanceNote[] {
   const intents = new Set(prompts.map((one) => one.intent));
   for (const required of REQUIRED_INTENTS) {
     const label = INTENTS.find((one) => one.id === required)?.label ?? required;
+    const has = intents.has(required);
     notes.push({
-      ok: intents.has(required),
-      message: intents.has(required)
+      ok: has,
+      message: has
         ? `'${label}' 의도가 들어 있습니다`
-        : `'${label}' 의도가 없습니다 — 브랜드에 불리해서 제일 먼저 빠지는 질문입니다. 빼고 재면 노출률이 실제보다 높게 나옵니다`,
+        : `'${label}' 질문이 없습니다 — 브랜드에 불리해서 제일 먼저 빠지는 질문입니다. 빼고 재면 노출률이 실제보다 높게 나옵니다`,
+      ...(has ? {} : { fix: { intent: required, example: exampleFor(required) } }),
     });
   }
 
