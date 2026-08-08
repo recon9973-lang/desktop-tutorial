@@ -56,6 +56,15 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
   const ownSiteOrigin =
     projectSites.find((site) => site.isPrimary)?.origin ?? projectSites[0]?.origin ?? '';
 
+  // 거래처 대장에 적어 둔 소재지. 자사 브랜드를 처음 등록할 때 소재지 칸에 넣는다 —
+  // **이미 아는 것을 다시 묻지 않는다.** 수정할 때는 넣지 않는다: 그때 칸이 비어
+  // 있다면 사람이 일부러 지운 것이고, 되살리면 지운 일이 없던 일이 된다.
+  const ownerAddress = !companies.ok
+    ? ''
+    : (companies.data.find((company) =>
+        company.projects.some((one) => one.id === selected),
+      )?.address ?? '');
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -121,7 +130,12 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
             {brands.data.ours === null ? (
               <>
                 <EmptyState description="자사 브랜드가 아직 등록되지 않았습니다." />
-                <BrandForm projectId={selected} isOwnBrand siteOrigin={ownSiteOrigin} />
+                <BrandForm
+                  projectId={selected}
+                  isOwnBrand
+                  siteOrigin={ownSiteOrigin}
+                  ownerAddress={ownerAddress}
+                />
               </>
             ) : (
               <ul className={own.brandList}>

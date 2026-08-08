@@ -25,6 +25,14 @@ export interface Company {
   readonly customerId: string;
   readonly name: string;
   readonly industry: string | null;
+  /**
+   * 소재지. **상호는 식별자가 아니다** — 서울치과는 수십 곳이라, 목록에 이름만
+   * 있으면 어느 곳을 맡고 있는지 사람이 가리지 못한다.
+   *
+   * 측정에 쓰는 값이 아니다. AI 답변과 대조하는 소재지 표현은 브랜드 식별의
+   * `address_terms` 에 따로 있다.
+   */
+  readonly address: string | null;
   /** 사람이 거래처로 등록했는가. 주소만 넣고 재 본 자리는 false 다. */
   readonly isRegistered: boolean;
   readonly sites: readonly MeasuredSite[];
@@ -127,6 +135,7 @@ export async function listCompanies(
       customerId,
       name: text(customer, 'name'),
       industry: textOrNull(customer, 'industry'),
+      address: textOrNull(customer, 'address'),
       // 서버가 값을 안 주면 등록된 것으로 본다. 예전 응답을 읽는 동안 멀쩡한 업체가
       // 목록에서 사라지느니, 재 본 자리가 잠깐 섞이는 편이 낫다.
       isRegistered: customer['is_registered'] !== false,
@@ -222,6 +231,13 @@ export async function createCompany(
   rawUrl: string,
   suffix: string,
   /**
+   * 소재지. 비워도 등록은 된다 — 필수로 만들면 모르는 채로 아무거나 적는다.
+   *
+   * 재 보기만 하던 자리를 거래처로 올릴 때도 함께 채운다. 그때가 소재지를 처음
+   * 아는 시점인 경우가 많다.
+   */
+  address: string = '',
+  /**
    * 거래처로 등록하는 것인가.
    *
    * 기본은 참이다 — 이 함수를 부르는 곳 대부분이 사람이 누른 등록이고, 기본을 뒤집으면
@@ -256,7 +272,12 @@ export async function createCompany(
     // 이 등록 폼이 곧 "거래처로 등록" 이다.
     const promoted = await callConsoleApi(`/api/customers/${found.company.customerId}`, {
       method: 'PATCH',
-      body: { name: companyName, is_registered: true },
+      // 소재지는 **보낼 때만** 보낸다. 빈 값을 보내면 이미 적어 둔 소재지가 지워진다.
+      body: {
+        name: companyName,
+        is_registered: true,
+        ...(address.trim() === '' ? {} : { address: address.trim() }),
+      },
     });
     if (!promoted.ok) return { ok: false, reason: 'API', outcome: promoted };
     return { ok: true, customerId: found.company.customerId, siteId: found.site.siteId };
@@ -264,7 +285,11 @@ export async function createCompany(
 
   const customer = await callConsoleApi('/api/customers', {
     method: 'POST',
-    body: { name: companyName, is_registered: registered },
+    body: {
+      name: companyName,
+      is_registered: registered,
+      ...(address.trim() === '' ? {} : { address: address.trim() }),
+    },
   });
   if (!customer.ok) return { ok: false, reason: 'API', outcome: customer };
   const customerId = text(asRecord(customer.data), 'id');
@@ -374,7 +399,9 @@ export async function findOrCreateSiteByOrigin(
   // 섞이면 목록이 "우리가 맡은 곳"을 말하지 못한다(사용자 지적). 업체 관리의 등록
   // 폼에 같은 주소를 넣으면 이 자리가 그대로 거래처로 올라간다.
   const label = hostLabel(origin);
-  return createCompany(label, origin, suffix, false);
+  // 소재지는 빈 값이다. 재 보려고 만드는 자리라 아는 것이 주소 하나뿐이고,
+  // **모르는 것을 지어내지 않는다.** 거래처로 올릴 때 사람이 채운다.
+  return createCompany(label, origin, suffix, '', false);
 }
 
 /** `https://www.ondam.co.kr` → `ondam.co.kr`. 사람이 부르는 이름에 가깝게. */

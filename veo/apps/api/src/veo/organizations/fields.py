@@ -31,6 +31,10 @@ ShortLabel = Annotated[
 FreeNote = Annotated[
     str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)
 ]
+#: 도로명 주소 한 줄. 건물명·층수까지 들어가도 300자를 넘지 않는다.
+Address = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=300)
+]
 Slug = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=2, max_length=80, pattern=SLUG_PATTERN),

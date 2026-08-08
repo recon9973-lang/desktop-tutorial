@@ -26,7 +26,7 @@ TARGET_TYPE = "customer"
 #: caller input — the request schema has already rejected unknown keys.
 #: 부분 수정으로 바꿀 수 있는 칸. `is_registered` 가 여기 있어야 "거래처로 등록"
 #: 이 같은 창구를 쓴다 — 등록만을 위한 두 번째 길을 내면 감사 기록이 두 갈래가 된다.
-UPDATABLE = frozenset({"name", "industry", "contact_note", "is_registered"})
+UPDATABLE = frozenset({"name", "industry", "address", "contact_note", "is_registered"})
 
 
 def list_customers(
@@ -83,11 +83,17 @@ def create_customer(
     *,
     name: str,
     industry: str | None = None,
+    address: str | None = None,
     contact_note: str | None = None,
     is_registered: bool = True,
     request_id: str | None = None,
 ) -> Customer:
-    values = {"name": name, "industry": industry, "contact_note": contact_note}
+    values = {
+        "name": name,
+        "industry": industry,
+        "address": address,
+        "contact_note": contact_note,
+    }
     customer = Customer(
         organization_id=principal.organization_id,
         is_active=True,

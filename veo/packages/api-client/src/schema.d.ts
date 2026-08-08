@@ -3475,6 +3475,8 @@ export interface components {
          *     그 값이 곧 다른 조직에 행을 심는 통로가 됩니다.
          */
         CustomerCreateRequest: {
+            /** Address */
+            address?: string | null;
             /** Contact Note */
             contact_note?: string | null;
             /** Industry */
@@ -3490,6 +3492,11 @@ export interface components {
         };
         /** CustomerPayload */
         CustomerPayload: {
+            /**
+             * Address
+             * @description 소재지입니다. 상호는 식별자가 아니라서 — 서울치과는 수십 곳입니다 — 이름만으로는 목록에서 어느 곳인지 가려지지 않습니다. 측정에 쓰는 값이 아닙니다: AI 답변과 대조하는 소재지 표현은 브랜드 식별의 address_terms 입니다.
+             */
+            address?: string | null;
             /**
              * Contact Note
              * @description 담당자 메모입니다. 감사 로그에는 이 값이 기록되지 않습니다.
@@ -3530,6 +3537,8 @@ export interface components {
          * @description 고객사 부분 수정 요청. 보낸 항목만 바뀝니다.
          */
         CustomerUpdateRequest: {
+            /** Address */
+            address?: string | null;
             /** Contact Note */
             contact_note?: string | null;
             /** Industry */

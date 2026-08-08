@@ -115,6 +115,13 @@ class Customer(Base, OrganizationScopedMixin, TimestampMixin):
     id: Mapped[uuid.UUID] = uuid_pk()
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     industry: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    #: 소재지. **상호는 식별자가 아니다** — 서울치과는 수십 곳이고, 대장에 이름만
+    #: 적혀 있으면 어느 서울치과를 맡고 있는지 사람이 목록에서 가리지 못한다.
+    #:
+    #: 측정에 쓰는 값이 아니다. AI 답변과 글자로 대조하는 소재지 표현은
+    #: `brand_identities.address_terms` 에 따로 있다 — 저것은 "답변이 말할 만한 표현"
+    #: 이고 이것은 "우편물이 가는 곳"이라, 한 칸으로 합치면 둘 중 하나가 망가진다.
+    address: Mapped[str | None] = mapped_column(String(300), nullable=True)
     contact_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     #: 사람이 거래처로 등록했는가. 주소만 넣고 재 본 자리는 False 로 만들어진다 —

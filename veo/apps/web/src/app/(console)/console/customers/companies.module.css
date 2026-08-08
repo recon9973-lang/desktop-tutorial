@@ -85,3 +85,16 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* 소재지. 이름 바로 아래에 둔다 — 상호가 겹칠 때 이 줄이 어느 업체인지 말한다. */
+.address {
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+  margin: 0 0 var(--veo-space-3);
+}
+
+/* 비었으면 비었다고 말한다. 조용히 빼면 "적을 것이 없는 업체" 로 읽힌다. */
+.noAddress {
+  composes: address;
+  font-style: italic;
+}

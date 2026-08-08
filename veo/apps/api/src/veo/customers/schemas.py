@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, model_validator
 from veo.db.models.identity import Customer
 from veo.organizations.fields import (
     STRICT,
+    Address,
     DisplayName,
     FreeNote,
     ShortLabel,
@@ -25,6 +26,15 @@ class CustomerPayload(BaseModel):
     id: uuid.UUID
     name: str
     industry: str | None
+    address: str | None = Field(
+        default=None,
+        description=(
+            "소재지입니다. 상호는 식별자가 아니라서 — 서울치과는 수십 곳입니다 — "
+            "이름만으로는 목록에서 어느 곳인지 가려지지 않습니다. 측정에 쓰는 값이 "
+            "아닙니다: AI 답변과 대조하는 소재지 표현은 브랜드 식별의 address_terms "
+            "입니다."
+        ),
+    )
     contact_note: str | None = Field(
         description="담당자 메모입니다. 감사 로그에는 이 값이 기록되지 않습니다."
     )
@@ -45,6 +55,7 @@ class CustomerPayload(BaseModel):
             id=customer.id,
             name=customer.name,
             industry=customer.industry,
+            address=customer.address,
             contact_note=customer.contact_note,
             is_active=customer.is_active,
             is_registered=customer.is_registered,
@@ -64,6 +75,7 @@ class CustomerCreateRequest(BaseModel):
 
     name: DisplayName
     industry: ShortLabel | None = None
+    address: Address | None = None
     contact_note: FreeNote | None = None
     is_registered: bool = Field(
         default=True,
@@ -81,6 +93,7 @@ class CustomerUpdateRequest(BaseModel):
 
     name: DisplayName | None = None
     industry: ShortLabel | None = None
+    address: Address | None = None
     contact_note: FreeNote | None = None
     #: 재 보기만 하던 자리를 거래처로 올리는 길. 되돌리는 것도 같은 자리에서 한다.
     is_registered: bool | None = None

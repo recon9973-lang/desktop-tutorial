@@ -106,6 +106,18 @@ function CompanyList({ companies }: { companies: readonly Company[] }) {
             </span>
           </div>
 
+          {/*
+            소재지를 이름 바로 아래 둔다. **상호는 식별자가 아니다** — `서울치과` 는
+            수십 곳이고, 이름만 늘어놓은 목록에서는 어느 곳을 맡고 있는지 가려지지
+            않는다. 비어 있으면 비어 있다고 말한다. 조용히 빼면 "적을 것이 없는
+            업체" 로 읽히고, 그러면 아무도 채우지 않는다.
+          */}
+          {company.address === null || company.address === '' ? (
+            <p className={own.noAddress}>소재지가 비어 있습니다 — 이름이 겹치면 가려낼 수 없습니다.</p>
+          ) : (
+            <p className={own.address}>{company.address}</p>
+          )}
+
           {company.sites.length === 0 ? (
             <p className={own.noSites}>
               측정 URL이 없습니다. 아래에서 추가하면 진단할 수 있습니다.

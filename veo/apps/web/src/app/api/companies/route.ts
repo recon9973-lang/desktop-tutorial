@@ -54,12 +54,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   let name = '';
   let url = '';
   let customerId = '';
+  let address = '';
   try {
     const body: unknown = await request.json();
     const parsed = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
     name = typeof parsed['name'] === 'string' ? parsed['name'] : '';
     url = typeof parsed['url'] === 'string' ? parsed['url'] : '';
     customerId = typeof parsed['customerId'] === 'string' ? parsed['customerId'] : '';
+    address = typeof parsed['address'] === 'string' ? parsed['address'] : '';
   } catch {
     return refuse('INVALID');
   }
@@ -68,7 +70,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const suffix = randomUUID().slice(0, 8);
   const result =
     customerId === ''
-      ? await createCompany(name, url, suffix)
+      ? await createCompany(name, url, suffix, address)
       : await addSite(customerId, name, url, suffix);
 
   if (result.ok) {

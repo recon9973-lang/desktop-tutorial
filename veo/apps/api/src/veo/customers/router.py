@@ -96,6 +96,7 @@ def create_customer(
         principal,
         name=payload.name,
         industry=payload.industry,
+        address=payload.address,
         contact_note=payload.contact_note,
         is_registered=payload.is_registered,
         request_id=request_id,

@@ -89,13 +89,34 @@ xn--9m1bm…kr          선언    ✓       1개(선언)    2개(1 선언)  권�
 저장할 자리가 필요하다는 판단이 서면 `customers` 에 칸을 만드는 것이 맞다 — 브랜드
 식별이 아니라 거래처 대장의 값이다.
 
+## 거래처 대장의 소재지 (이어서 함, 같은 날)
+
+`customers` 에 주소 칸이 없었다. 소재지가 브랜드 식별의 `address_terms` 에만 살아서,
+**대장 목록에서는 어느 서울치과인지 사람이 가려낼 수 없었다.**
+
+`customers.address` 를 만들었다(마이그레이션 `b7e2f04c91a5`, 운영 DB 에서 up·down·up
+확인). 두 칸을 **합치지 않은** 이유:
+
+| | 무엇인가 | 어디에 쓰나 |
+|---|---|---|
+| `customers.address` | 우편물이 가는 곳 | 사람이 대장에서 업체를 가려낼 때 |
+| `brand_identities.address_terms` | 답변이 말할 만한 표현(행정동·역명·랜드마크) | AI 답변 본문과 글자로 대조할 때 |
+
+한 칸으로 합치면 둘 중 하나가 망가진다. 다만 **자사 브랜드를 처음 등록할 때** 대장의
+소재지가 `address_terms` 칸의 시작값으로 들어간다 — 아는 것을 다시 묻지 않되, 사람이
+표현을 다듬을 수 있게 한다. 수정할 때는 넣지 않는다: 그때 칸이 비어 있다면 사람이
+일부러 지운 것이고, 되살리면 지운 일이 없던 일이 된다.
+
+비워도 등록된다. 필수 칸은 모를 때 아무거나 채워지고, **지어낸 소재지는 없는 것보다
+나쁘다.** 대신 목록에서 비어 있으면 비어 있다고 말한다 — 조용히 빼면 "적을 것이 없는
+업체" 로 읽히고, 그러면 아무도 채우지 않는다.
+
 ## 아직 없는 것
 
-* **`customers` 에 주소 칸이 없다.** 소재지는 브랜드 식별의 `address_terms` 로만 산다.
-  거래처 대장에서 "이 서울치과가 어느 서울치과인지" 를 사람이 눈으로 보려면 그 칸이
-  있어야 한다. 이번 작업 범위 밖.
-* 비교 대상(경쟁사) 폼에는 홈페이지 주소를 미리 채우지 않는다. 우리 사이트 주소를 그
+* 비교 대상(경쟁사) 폼에는 홈페이지 주소·소재지를 미리 채우지 않는다. 우리 것을 그
   칸에 넣어 두면 그대로 눌러 **경쟁사에 우리 도메인이 저장된다.**
+* 이미 등록된 거래처 8곳의 소재지는 비어 있다. **우리가 모르는 값이라 지어내지
+  않았다.** 화면에서 한 곳씩 채우면 된다.
 
 ## 만든 것
 
@@ -105,7 +126,13 @@ apps/api/src/veo/brands/site_lookup.py        한 장 받아 오기 (가드·예
 apps/api/src/veo/brands/router.py             POST …/brands/identity-draft
 apps/web/…/competitors/SiteIdentityPicker.tsx 고르는 화면
 apps/web/…/api/brand-identity-draft/route.ts  콘솔 프록시
+
+alembic/versions/20260809_0900_…py            customers.address (b7e2f04c91a5)
+apps/api/src/veo/customers/{schemas,service,router}.py
+apps/web/…/customers/CompanyForm.tsx          소재지 칸
+apps/web/…/customers/page.tsx                 목록에 소재지 표시
+apps/web/src/lib/companies.ts                 소재지를 읽고 보낸다
 ```
 
-새 시험 API 29개 · 웹 16개. `make lint-api typecheck-api check-contracts` 통과,
-파이썬 5,219 통과, 웹 577 통과, `next build` 성공.
+새 시험 API 37개 · 웹 24개. `make lint-api typecheck-api check-contracts` 통과,
+웹 585 통과, `next build` 성공. v0.3.76.

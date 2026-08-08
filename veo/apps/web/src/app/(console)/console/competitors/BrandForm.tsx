@@ -25,6 +25,7 @@ export function BrandForm({
   isOwnBrand,
   brand,
   siteOrigin = '',
+  ownerAddress = '',
 }: {
   readonly projectId: string;
   readonly isOwnBrand: boolean;
@@ -37,6 +38,13 @@ export function BrandForm({
    * 눌러 **경쟁사에 우리 도메인이 저장된다.**
    */
   readonly siteOrigin?: string;
+  /**
+   * 거래처 대장에 적어 둔 소재지. **새로 등록할 때만** 소재지 칸의 시작값이 된다.
+   *
+   * 수정할 때 넣지 않는 이유: 그때 칸이 비어 있다면 사람이 일부러 지운 것이다.
+   * 되살리면 지운 일이 없던 일이 된다.
+   */
+  readonly ownerAddress?: string;
   /**
    * 주면 **수정**, 안 주면 등록.
    *
@@ -59,7 +67,7 @@ export function BrandForm({
     displayName: brand?.display_name ?? '',
     homepageUrl: '',
     phoneNumbers: (brand?.phone_numbers ?? []).join(', '),
-    addressTerms: (brand?.address_terms ?? []).join(', '),
+    addressTerms: (brand?.address_terms ?? []).join(', ') || (editing ? '' : ownerAddress),
     ownDomains: (brand?.own_domains ?? []).join(', '),
     // 저장은 목록 하나로 하므로, 되읽을 때 셋으로 다시 가를 수 없다. 통째로 첫 칸에
     // 넣으면 원장명이 아닌 것이 원장명 칸에 앉는다 — 마지막 칸에 담고 옮기게 한다.
