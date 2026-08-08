@@ -47,6 +47,69 @@ class EnginePayload(BaseModel):
     note_ko: str
 
 
+class QuestionSourceRequest(BaseModel):
+    """무엇으로 질문을 찾을지. 업체명이든 지역+진료든 사람이 넣은 말 그대로 던집니다."""
+
+    model_config = _FROZEN
+
+    query: str = Field(
+        min_length=2,
+        max_length=100,
+        description=(
+            "예: `마산 교통사고 한의원`. **넣은 말을 그대로 던집니다** — 지역을 붙일지, "
+            "진료명을 넣을지는 넣는 사람이 정합니다."
+        ),
+    )
+
+
+class CollectedQuestionPayload(BaseModel):
+    """사람이 실제로 쓴 질문 한 줄과 그 출처."""
+
+    model_config = _FROZEN
+
+    text: str
+    source: str
+    url: str = Field(
+        description="원문 주소. 없으면 빈 문자열입니다 — 구글 관련 질문은 주소를 주지 않습니다."
+    )
+
+
+class QuestionSourcePayload(BaseModel):
+    """출처 하나의 수집 결과, 또는 왜 못 했는지."""
+
+    model_config = _FROZEN
+
+    source: str
+    label_ko: str
+    state: str = Field(
+        description=(
+            "ENABLED 면 조회했습니다. DISABLED_NO_CREDENTIAL 이면 **열쇠만 넣으면 "
+            "켜집니다** — 못 쓴다고 목록에서 빼지 않습니다."
+        )
+    )
+    state_reason_ko: str
+    questions: list[CollectedQuestionPayload] = Field(default_factory=list)
+    total: int = Field(description="출처가 보고한 전체 건수입니다. 가져온 개수와 다릅니다.")
+    dropped: int = Field(description="너무 짧거나 글자가 똑같아 뺀 개수입니다.")
+    failure_reason_ko: str | None = None
+    notes_ko: list[str] = Field(default_factory=list)
+
+
+class QuestionHarvestPayload(BaseModel):
+    """한 번의 수집. **아는 출처를 전부** 담습니다.
+
+    쓸 수 있는 출처만 돌려주지 않습니다. 못 쓰는 출처를 목록에서 빼면 '여기 있는 게
+    전부' 로 읽히고, 열쇠만 넣으면 얻을 수 있었던 질문을 아무도 모른 채 지나갑니다.
+    """
+
+    model_config = _FROZEN
+
+    query: str
+    sources: list[QuestionSourcePayload]
+    total_questions: int = Field(description="출처를 가로질러 중복을 뺀 개수입니다.")
+    note_ko: str
+
+
 class PromptInput(BaseModel):
     """질문 하나. 분류는 집합의 균형을 재기 위한 것이지 장식이 아닙니다."""
 

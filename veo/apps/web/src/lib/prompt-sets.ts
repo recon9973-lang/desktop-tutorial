@@ -13,70 +13,35 @@
  */
 
 /**
- * 검색 의도 일곱 가지와 **그 의도의 질문이 실제로 어떻게 생겼는지.**
+ * 검색 의도 일곱 가지 — **서버 열거형을 그대로 옮긴 것.**
  *
- * 예시가 없으면 "'비교' 의도가 없습니다" 는 무슨 말인지 알 수 없는 지적이 된다.
- * 사장님 지적(2026-08-08): "비교 신뢰 안전 추천 이런게 없으니까 넣으라는거야?
- * 어려워 예시를 미리 보여 주면 좋겠어." 정확한 지적이다 — 분류 이름만 보여 주고
- * 채우라고 하면, 채우는 사람은 자기가 이미 쓴 질문을 아무 칸에나 넣게 된다.
+ * 이름(`label`)과 뜻(`hint`)은 서버의 `observations/prompts.py` 에 적힌 낱말을 그대로
+ * 쓴다. 특히 `신뢰·안전` 의 뜻은 그 파일의 주석 원문이다:
  *
- * 예시는 병의원 현장 말투로 쓴다. `○○` 는 지역이나 시술 이름이 들어갈 자리다.
+ *     #: 부작용, 후기, 안전 — the questions a brand most wants left out.
+ *
+ * **예시 질문을 여기 두지 않는다.** 2026-08-08 까지 내가 지어낸 질문 14개가 여기
+ * 있었다(`docs/CORRECTIONS.md`). 실제 사람이 쓴 질문은 화면에서 지식iN·구글로
+ * 찾아온다 — 지어낸 문장을 예시라고 보여주면 그것을 그대로 쓰게 된다.
+ *
+ * `searchWord` 는 그 의도의 질문을 **다시 찾을 때 질의에 덧붙이는 낱말**이다. 예시
+ * 문장이 아니라 검색어이고, 결과는 실제 조회에서 나온다.
  */
 export const INTENTS = [
-  {
-    id: 'DEFINITION',
-    label: '정의',
-    hint: '이게 뭔가요',
-    examples: ['도수치료는 어떤 치료인가요?', '임플란트는 어떤 시술인가요?'],
-  },
-  {
-    id: 'HOW_TO',
-    label: '방법',
-    hint: '어떻게 하나요',
-    examples: ['교통사고 후 한방 치료는 어떻게 받나요?', '임플란트 후 관리는 어떻게 하나요?'],
-  },
-  {
-    id: 'BEST_OR_RECOMMENDED',
-    label: '추천',
-    hint: '어디가 잘하나요',
-    examples: ['○○ 교통사고 한의원 추천해줘', '○○에 임플란트 잘하는 치과 알려줘'],
-  },
-  {
-    id: 'COMPARISON',
-    label: '비교',
-    hint: 'A와 B 중 어느 쪽',
-    examples: [
-      '교통사고 치료는 한의원과 정형외과 중 어디가 나은가요?',
-      '다이어트 한약과 식욕억제제 중 뭐가 나은가요?',
-    ],
-  },
-  {
-    id: 'PRICE',
-    label: '가격',
-    hint: '얼마인가요',
-    examples: ['○○ 다이어트 한약 가격이 얼마인가요?', '교통사고 한방 치료는 보험이 되나요?'],
-  },
-  {
-    id: 'LOCAL',
-    label: '지역',
-    hint: '○○에 있는 곳',
-    examples: ['○○역 근처에 일요일 진료하는 한의원 있나요?', '○○에서 야간 진료되는 곳 알려줘'],
-  },
-  {
-    id: 'TRUST',
-    label: '신뢰·안전',
-    hint: '부작용·후기·안전',
-    examples: [
-      '다이어트 한약 부작용은 어떤 게 있나요?',
-      '불면증 한약 오래 먹어도 괜찮나요?',
-    ],
-  },
+  { id: 'DEFINITION', label: '정의', hint: '이게 뭔가요', searchWord: '이란' },
+  { id: 'HOW_TO', label: '방법', hint: '어떻게 하나요', searchWord: '방법' },
+  { id: 'BEST_OR_RECOMMENDED', label: '추천', hint: '어디가 잘하나요', searchWord: '추천' },
+  { id: 'COMPARISON', label: '비교', hint: 'A와 B 중 어느 쪽', searchWord: '비교' },
+  { id: 'PRICE', label: '가격', hint: '얼마인가요', searchWord: '가격' },
+  { id: 'LOCAL', label: '지역', hint: '○○에 있는 곳', searchWord: '근처' },
+  { id: 'TRUST', label: '신뢰·안전', hint: '부작용·후기·안전', searchWord: '부작용' },
 ] as const;
 
-/** 의도 하나의 예시 질문 첫 줄. 없으면 빈 문자열. */
-export function exampleFor(intent: string): string {
-  return INTENTS.find((one) => one.id === intent)?.examples[0] ?? '';
+/** 그 의도의 질문을 다시 찾을 때 질의에 덧붙일 낱말. */
+export function searchWordFor(intent: string): string {
+  return INTENTS.find((one) => one.id === intent)?.searchWord ?? '';
 }
+
 
 export const FUNNELS = [
   { id: 'PROBLEM_AWARE', label: '문제 인식' },
@@ -133,13 +98,13 @@ export interface BalanceNote {
   readonly ok: boolean;
   readonly message: string;
   /**
-   * 이 지적을 **한 번에 고칠 수 있는** 예시 질문. 없으면 사람이 판단해야 하는 지적이다.
+   * 이 지적을 고치러 가는 길 — **다시 검색할 낱말.**
    *
-   * 지적만 하고 고칠 방법을 안 주면, 읽는 사람은 무엇을 넣어야 하는지 모르는 채로
-   * 자기가 이미 쓴 질문의 분류만 바꾸게 된다 — 그러면 균형은 통과하는데 실제로 잰
-   * 것은 그대로다. 숫자만 맞추고 뜻은 안 맞추는 것이 가장 나쁜 결과다.
+   * 예시 문장을 주지 않는다. 예시를 주면 사람이 그것을 그대로 쓰고, 그러면 지어낸
+   * 질문으로 재게 된다(`docs/CORRECTIONS.md`). 대신 그 의도의 질문이 실제로 있는
+   * 곳으로 데려간다 — 질의에 `searchWord` 를 붙여 다시 찾으면 사람이 쓴 문장이 나온다.
    */
-  readonly fix?: { readonly intent: string; readonly example: string };
+  readonly fix?: { readonly intent: string; readonly searchWord: string };
 }
 
 /**
@@ -172,7 +137,7 @@ export function previewBalance(prompts: readonly DraftPrompt[]): BalanceNote[] {
       message: has
         ? `'${label}' 의도가 들어 있습니다`
         : `'${label}' 질문이 없습니다 — 브랜드에 불리해서 제일 먼저 빠지는 질문입니다. 빼고 재면 노출률이 실제보다 높게 나옵니다`,
-      ...(has ? {} : { fix: { intent: required, example: exampleFor(required) } }),
+      ...(has ? {} : { fix: { intent: required, searchWord: searchWordFor(required) } }),
     });
   }
 

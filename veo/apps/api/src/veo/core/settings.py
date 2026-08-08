@@ -136,6 +136,9 @@ class ProviderCredentials(BaseSettings):
     anthropic_api_key: SecretStr | None = None
     google_pagespeed_api_key: SecretStr | None = None
     google_search_console_credentials_json: SecretStr | None = None
+    # 구글 '관련 질문'(People Also Ask)을 읽는 통로. 없으면 그 출처는 목록에
+    # 남되 '열쇠를 넣으면 켜집니다' 로 표시된다 — 빼지 않는다.
+    serpapi_key: SecretStr | None = None
 
     # ── 공개 도구 전용 키 ────────────────────────────────────────────────
     #

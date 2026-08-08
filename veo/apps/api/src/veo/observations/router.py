@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
-from typing import Annotated
+from typing import Annotated, Final
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -23,6 +23,7 @@ from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
 from veo.contracts.enums import JobType, ProviderState
 from veo.contracts.envelope import ApiResponse
+from veo.core.settings import get_provider_credentials
 from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.db.session import get_db
@@ -38,6 +39,7 @@ from veo.observations.jobs import OBSERVATION_STAGES, observation_work
 from veo.observations.metrics import visibility_metrics
 from veo.observations.prompts import PromptSet, PromptSetImbalanceError
 from veo.observations.providers.registry import _STATE_LABELS_KO
+from veo.observations.question_sources import harvest_questions
 from veo.observations.review.decisions import (
     IllegalReviewTransitionError,
     RejectionReason,
@@ -48,6 +50,7 @@ from veo.observations.review.decisions import (
 from veo.observations.review.gating import apply_publication_gate
 from veo.observations.runs import AccountState, SearchMode
 from veo.observations.schemas import (
+    CollectedQuestionPayload,
     EnginePayload,
     EngineSpendPayload,
     EngineStatus,
@@ -59,6 +62,9 @@ from veo.observations.schemas import (
     PromptSetListPayload,
     PromptSetPayload,
     PromptSummary,
+    QuestionHarvestPayload,
+    QuestionSourcePayload,
+    QuestionSourceRequest,
     ReviewDecisionRequest,
     ReviewedItemPayload,
     ReviewQueueItem,
@@ -81,6 +87,8 @@ from veo.observations.service import (
     prompts_of,
 )
 from veo.organizations.http import guard
+from veo.providers.naver.credentials import datalab_from_settings
+from veo.providers.naver.search import NaverSearchClient
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
@@ -117,6 +125,75 @@ def list_engines(principal: ObservationReader, request_id: RequestId) -> ApiResp
             engines=engines,
             usable_count=sum(1 for entry in engines if entry.usable),
             note_ko=ENGINE_NOTE_KO,
+        ),
+        request_id,
+    )
+
+
+#: 이 문장은 화면이 늘 함께 보여준다. 목록이 "환자가 묻는 질문 전부" 로 읽히면 안 된다.
+HARVEST_NOTE_KO: Final = (
+    "사람이 실제로 쓴 질문만 가져옵니다. 지어낸 문장은 하나도 없습니다. "
+    "다만 이것이 전부는 아닙니다 — 출처마다 한 번에 가져올 수 있는 상한이 있고, "
+    "무엇으로 찾았느냐에 따라 결과가 달라집니다."
+)
+
+
+@router.post(
+    "/question-sources",
+    response_model=ApiResponse[QuestionHarvestPayload],
+    summary="질문을 실제로 모은다 — 지어내지 않는다",
+    description=(
+        "업체명이나 키워드를 주면 **사람이 실제로 쓴 질문**을 모아 돌려줍니다. "
+        "지금은 네이버 지식iN 을 조회합니다.\n\n"
+        "**쓸 수 있는 출처만 돌려주지 않습니다.** 아는 출처를 전부 돌려주고 각각 왜 쓸 수 "
+        "있는지·없는지를 함께 줍니다 — 구글 관련 질문은 SerpAPI 열쇠가 있어야 켜지고, "
+        "없으면 `DISABLED_NO_CREDENTIAL` 로 목록에 남습니다. 목록에서 빼면 열쇠만 넣으면 "
+        "얻을 수 있었던 질문을 아무도 모른 채 지나갑니다.\n\n"
+        "**의도·퍼널을 자동으로 붙이지 않습니다.** 질문은 실제로 수집한 것인데 분류를 "
+        "기계가 지어내면, 그 분류가 집합의 균형 판정을 통과시킵니다. 고르고 분류하는 "
+        "것은 사람이 합니다."
+    ),
+)
+def question_sources(
+    payload: QuestionSourceRequest,
+    principal: ObservationRunner_,
+    request_id: RequestId,
+) -> ApiResponse[QuestionHarvestPayload]:
+    credentials = get_provider_credentials()
+    client = NaverSearchClient(credentials=datalab_from_settings(credentials))
+    harvest = harvest_questions(
+        payload.query,
+        naver_client=client,
+        serpapi_key=(
+            credentials.serpapi_key.get_secret_value()
+            if credentials.serpapi_key is not None
+            else None
+        ),
+    )
+    return ok(
+        QuestionHarvestPayload(
+            query=harvest.query,
+            sources=[
+                QuestionSourcePayload(
+                    source=source.source,
+                    label_ko=source.label_ko,
+                    state=str(source.state),
+                    state_reason_ko=source.state_reason_ko,
+                    questions=[
+                        CollectedQuestionPayload(
+                            text=question.text, source=question.source, url=question.url
+                        )
+                        for question in source.questions
+                    ],
+                    total=source.total,
+                    dropped=source.dropped,
+                    failure_reason_ko=source.failure_reason_ko,
+                    notes_ko=list(source.notes_ko),
+                )
+                for source in harvest.sources
+            ],
+            total_questions=len(harvest.questions),
+            note_ko=HARVEST_NOTE_KO,
         ),
         request_id,
     )

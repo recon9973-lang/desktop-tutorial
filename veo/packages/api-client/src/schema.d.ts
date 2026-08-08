@@ -972,6 +972,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/observations/question-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 질문을 실제로 모은다 — 지어내지 않는다
+         * @description 업체명이나 키워드를 주면 **사람이 실제로 쓴 질문**을 모아 돌려줍니다. 지금은 네이버 지식iN 을 조회합니다.
+         *
+         *     **쓸 수 있는 출처만 돌려주지 않습니다.** 아는 출처를 전부 돌려주고 각각 왜 쓸 수 있는지·없는지를 함께 줍니다 — 구글 관련 질문은 SerpAPI 열쇠가 있어야 켜지고, 없으면 `DISABLED_NO_CREDENTIAL` 로 목록에 남습니다. 목록에서 빼면 열쇠만 넣으면 얻을 수 있었던 질문을 아무도 모른 채 지나갑니다.
+         *
+         *     **의도·퍼널을 자동으로 붙이지 않습니다.** 질문은 실제로 수집한 것인데 분류를 기계가 지어내면, 그 분류가 집합의 균형 판정을 통과시킵니다. 고르고 분류하는 것은 사람이 합니다.
+         */
+        post: operations["question_sources_api_observations_question_sources_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/observations/review-queue": {
         parameters: {
             query?: never;
@@ -2234,6 +2258,12 @@ export interface components {
             error?: components["schemas"]["ApiError"] | null;
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[QuestionHarvestPayload] */
+        ApiResponse_QuestionHarvestPayload_: {
+            data?: components["schemas"]["QuestionHarvestPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[RecentKeywordsPayload] */
         ApiResponse_RecentKeywordsPayload_: {
             data?: components["schemas"]["RecentKeywordsPayload"] | null;
@@ -2912,6 +2942,21 @@ export interface components {
             citations: number;
             /** Domain */
             domain: string;
+        };
+        /**
+         * CollectedQuestionPayload
+         * @description 사람이 실제로 쓴 질문 한 줄과 그 출처.
+         */
+        CollectedQuestionPayload: {
+            /** Source */
+            source: string;
+            /** Text */
+            text: string;
+            /**
+             * Url
+             * @description 원문 주소. 없으면 빈 문자열입니다 — 구글 관련 질문은 주소를 주지 않습니다.
+             */
+            url: string;
         };
         /** ComparisonCreateRequest */
         ComparisonCreateRequest: {
@@ -6237,6 +6282,70 @@ export interface components {
              * @default 0
              */
             warned: number;
+        };
+        /**
+         * QuestionHarvestPayload
+         * @description 한 번의 수집. **아는 출처를 전부** 담습니다.
+         *
+         *     쓸 수 있는 출처만 돌려주지 않습니다. 못 쓰는 출처를 목록에서 빼면 '여기 있는 게
+         *     전부' 로 읽히고, 열쇠만 넣으면 얻을 수 있었던 질문을 아무도 모른 채 지나갑니다.
+         */
+        QuestionHarvestPayload: {
+            /** Note Ko */
+            note_ko: string;
+            /** Query */
+            query: string;
+            /** Sources */
+            sources: components["schemas"]["QuestionSourcePayload"][];
+            /**
+             * Total Questions
+             * @description 출처를 가로질러 중복을 뺀 개수입니다.
+             */
+            total_questions: number;
+        };
+        /**
+         * QuestionSourcePayload
+         * @description 출처 하나의 수집 결과, 또는 왜 못 했는지.
+         */
+        QuestionSourcePayload: {
+            /**
+             * Dropped
+             * @description 너무 짧거나 글자가 똑같아 뺀 개수입니다.
+             */
+            dropped: number;
+            /** Failure Reason Ko */
+            failure_reason_ko?: string | null;
+            /** Label Ko */
+            label_ko: string;
+            /** Notes Ko */
+            notes_ko?: string[];
+            /** Questions */
+            questions?: components["schemas"]["CollectedQuestionPayload"][];
+            /** Source */
+            source: string;
+            /**
+             * State
+             * @description ENABLED 면 조회했습니다. DISABLED_NO_CREDENTIAL 이면 **열쇠만 넣으면 켜집니다** — 못 쓴다고 목록에서 빼지 않습니다.
+             */
+            state: string;
+            /** State Reason Ko */
+            state_reason_ko: string;
+            /**
+             * Total
+             * @description 출처가 보고한 전체 건수입니다. 가져온 개수와 다릅니다.
+             */
+            total: number;
+        };
+        /**
+         * QuestionSourceRequest
+         * @description 무엇으로 질문을 찾을지. 업체명이든 지역+진료든 사람이 넣은 말 그대로 던집니다.
+         */
+        QuestionSourceRequest: {
+            /**
+             * Query
+             * @description 예: `마산 교통사고 한의원`. **넣은 말을 그대로 던집니다** — 지역을 붙일지, 진료명을 넣을지는 넣는 사람이 정합니다.
+             */
+            query: string;
         };
         /** RaisedGate */
         RaisedGate: {
@@ -9980,6 +10089,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_PromptSetPayload_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    question_sources_api_observations_question_sources_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionSourceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_QuestionHarvestPayload_"];
                 };
             };
             /** @description Validation Error */

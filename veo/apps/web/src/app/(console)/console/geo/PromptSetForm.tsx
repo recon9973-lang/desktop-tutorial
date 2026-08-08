@@ -9,11 +9,16 @@ import {
   INTENTS,
   MIN_PROMPTS,
   SUBJECTS,
-  exampleFor,
   previewBalance,
   splitPastedQuestions,
   type DraftPrompt,
 } from '@/lib/prompt-sets';
+import {
+  harvestQuestions,
+  isUsable,
+  type CollectedQuestion,
+  type QuestionHarvest,
+} from '@/lib/question-sources';
 
 import styles from './geo.module.css';
 
@@ -61,6 +66,11 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
   const [rule, setRule] = useState('');
   const [pasted, setPasted] = useState('');
   const [rows, setRows] = useState<DraftPrompt[]>([]);
+  const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [harvest, setHarvest] = useState<QuestionHarvest | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   /** 이 집합을 몇 주에 한 번 돌릴 계획인지. 저장되는 값이 아니라 금액 셈에만 쓴다. */
   const [perMonth, setPerMonth] = useState(WEEKS_PER_MONTH);
 
@@ -89,23 +99,57 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
   }
 
   /**
-   * 모자란 의도의 예시 질문을 그대로 목록에 넣는다.
+   * 실제로 사람이 쓴 질문을 찾아온다.
    *
-   * 예시를 **그대로 쓰라는 뜻이 아니다.** `○○` 자리에 지역·시술을 넣어 고쳐 쓰라는
-   * 것이고, 넣자마자 편집칸이 생기므로 고치는 것이 자연스러운 다음 동작이 된다.
-   * 예시를 보여주기만 하면 사람은 그것을 손으로 옮겨 적다가 그만둔다.
+   * 예시 문장을 보여주지 않는 이유: 2026-08-08 까지 여기 있던 예시 14개는 **내가 지어낸
+   * 것**이었다(`docs/CORRECTIONS.md`). 지어낸 문장을 예시라고 내놓으면 사람은 그것을
+   * 그대로 쓰고, 그러면 지어낸 세계의 노출률을 재게 된다.
    */
-  function addExample(intent: string): void {
+  async function search(term: string): Promise<void> {
+    const q = term.trim();
+    if (q.length < 2 || searching) return;
+    setSearching(true);
+    setSearchError(null);
+    setQuery(q);
+    try {
+      const outcome = await harvestQuestions(q);
+      if (!outcome.ok) {
+        setSearchError(outcome.message);
+        setHarvest(null);
+        return;
+      }
+      setHarvest(outcome.harvest);
+      setPicked(new Set());
+    } catch {
+      setSearchError('서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주십시오.');
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  /** 고른 질문을 목록에 담는다. 분류는 기본값으로 두고 사람이 화면에서 고친다. */
+  function addPicked(): void {
+    if (harvest === null) return;
+    const chosen = harvest.sources
+      .flatMap((s) => s.questions)
+      .filter((q: CollectedQuestion) => picked.has(q.text));
+    if (chosen.length === 0) return;
+    const existing = new Set(rows.map((r) => r.text));
     setRows((current) => [
       ...current,
-      {
-        key: newKey(),
-        text: exampleFor(intent),
-        intent,
-        funnel: intent === 'TRUST' ? 'RESEARCH' : 'COMPARISON',
-        subject: 'NON_BRAND',
-      },
+      ...chosen
+        .filter((q) => !existing.has(q.text))
+        .map((q) => ({
+          key: newKey(),
+          text: q.text,
+          // 분류는 **자동으로 붙이지 않는다.** 질문은 실제로 수집한 것인데 분류를
+          // 기계가 지어내면 그 분류가 균형 판정을 통과시킨다(ADR 0015).
+          intent: 'BEST_OR_RECOMMENDED',
+          funnel: 'RECOMMENDATION',
+          subject: 'NON_BRAND',
+        })),
     ]);
+    setPicked(new Set());
   }
 
   function update(key: string, field: 'text' | 'intent' | 'funnel' | 'subject', value: string) {
@@ -233,31 +277,100 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
       </div>
 
       {/*
-        분류 이름만 보여 주고 채우라고 하면, 채우는 사람은 자기가 이미 쓴 질문을 아무
-        칸에나 넣는다. 그러면 균형은 통과하는데 실제로 잰 것은 한 종류뿐이다.
-        일곱 가지가 각각 어떻게 생긴 질문인지 먼저 보인다(사장님 지적 2026-08-08).
+        예시 문장을 보여주지 않는다. 여기 있던 예시 14개는 내가 지어낸 것이었고
+        (docs/CORRECTIONS.md), 지어낸 문장을 예시로 내놓으면 사람은 그것을 그대로 쓴다.
+        대신 사람이 실제로 쓴 질문이 있는 곳으로 데려간다.
       */}
-      <section className={styles.balance} aria-label="의도별 질문 예시">
-        <h3 className={styles.balanceTitle}>어떤 질문을 넣나 — 일곱 가지</h3>
-        <ul className={styles.exampleList}>
-          {INTENTS.map((item) => (
-            <li key={item.id}>
-              <b>{item.label}</b> <span className={styles.hint}>{item.hint}</span>
-              <br />
-              {item.examples[0]}
-              <Button type="button" onClick={() => addExample(item.id)}>
-                넣기
-              </Button>
-            </li>
-          ))}
-        </ul>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="set-search">
+          업체명·키워드로 실제 질문 찾기
+        </label>
+        <div className={styles.searchRow}>
+          <input
+            id="set-search"
+            className={styles.select}
+            value={query}
+            placeholder="마산 교통사고 한의원"
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                void search(query);
+              }
+            }}
+          />
+          <Button type="button" busy={searching} onClick={() => void search(query)}>
+            {searching ? '찾는 중…' : '질문 가져오기'}
+          </Button>
+        </div>
         <p className={styles.hint}>
-          <code>○○</code> 자리에 지역이나 시술 이름을 넣어 고쳐 쓰십시오. 넣으면 바로
-          편집할 수 있습니다. <strong>&lsquo;신뢰·안전&rsquo;과 &lsquo;비교&rsquo;는 반드시
-          있어야 합니다</strong> — 브랜드에 불리해서 제일 먼저 빠지는 질문이고, 빼고 재면
-          노출률이 실제보다 높게 나옵니다.
+          네이버 지식iN 에서 <strong>사람이 실제로 쓴 질문</strong>을 가져옵니다. 넣은 말을
+          그대로 던지므로, 지역을 붙일지 진료명을 넣을지는 직접 정하십시오.
         </p>
-      </section>
+        <FormError message={searchError} />
+      </div>
+
+      {harvest === null ? null : (
+        <section className={styles.balance} aria-label="찾아온 질문">
+          <h3 className={styles.balanceTitle}>
+            &ldquo;{harvest.query}&rdquo; — {harvest.total_questions}개
+          </h3>
+          <p className={styles.hint}>{harvest.note_ko}</p>
+
+          {harvest.sources.map((source) => (
+            <div key={source.source} className={styles.harvestSource}>
+              <p className={isUsable(source) ? styles.balanceOk : styles.balanceBad}>
+                <b>{source.label_ko}</b>
+                {isUsable(source)
+                  ? ` · ${source.questions.length}개`
+                  : ` · ${source.state_reason_ko}`}
+              </p>
+              {source.failure_reason_ko === null ? null : (
+                <p className={styles.warning}>{source.failure_reason_ko}</p>
+              )}
+              {source.notes_ko.map((note) => (
+                <p key={note} className={styles.hint}>
+                  {note}
+                </p>
+              ))}
+              <ul className={styles.harvestList}>
+                {source.questions.map((question) => (
+                  <li key={`${source.source}:${question.text}`}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={picked.has(question.text)}
+                        onChange={(event) =>
+                          setPicked((current) => {
+                            const next = new Set(current);
+                            if (event.target.checked) next.add(question.text);
+                            else next.delete(question.text);
+                            return next;
+                          })
+                        }
+                      />{' '}
+                      {question.text}
+                    </label>
+                    {question.url === '' ? null : (
+                      <a href={question.url} target="_blank" rel="noreferrer noopener">
+                        원문
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <Button type="button" onClick={addPicked} disabled={picked.size === 0}>
+            고른 {picked.size}개를 목록에 담기
+          </Button>
+          <p className={styles.hint}>
+            담은 뒤 <strong>의도·퍼널·대상을 직접 고르십시오.</strong> 기계가 자동으로
+            붙이면 그 분류가 지어낸 값이 되고, 그 값이 균형 판정을 통과시킵니다.
+          </p>
+        </section>
+      )}
 
       {rows.length > 0 ? (
         <ul className={styles.promptRows}>
@@ -323,11 +436,14 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
               </span>
               {/* 지적만 하고 고칠 방법을 안 주면, 읽는 사람은 자기가 이미 쓴 질문의
                   분류만 바꾼다 — 균형은 통과하는데 잰 것은 그대로다. */}
-              {note.fix === undefined ? null : (
+              {note.fix === undefined || query.trim() === '' ? null : (
                 <span className={styles.balanceFix}>
-                  예: <strong>{note.fix.example}</strong>
-                  <Button type="button" onClick={() => addExample(note.fix!.intent)}>
-                    이런 질문 넣기
+                  <Button
+                    type="button"
+                    busy={searching}
+                    onClick={() => void search(`${query} ${note.fix!.searchWord}`)}
+                  >
+                    &ldquo;{query} {note.fix.searchWord}&rdquo; 로 다시 찾기
                   </Button>
                 </span>
               )}

@@ -906,3 +906,25 @@
   font-weight: 400;
   color: var(--veo-color-text-muted);
 }
+
+/* 질문 찾기 — 입력칸과 단추를 한 줄에. 좁은 화면에서는 쌓인다. */
+.searchRow { display: flex; gap: var(--veo-space-2); align-items: center; flex-wrap: wrap; }
+.searchRow input { flex: 1 1 18rem; }
+
+.harvestSource { margin-top: var(--veo-space-3); }
+
+/* 찾아온 질문 목록. 원문 주소를 옆에 둔다 — 어디서 온 질문인지 확인할 수 있어야
+   수집한 것과 지어낸 것이 구분된다. */
+.harvestList {
+  list-style: none;
+  margin: var(--veo-space-2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--veo-space-1);
+  max-height: 24rem;
+  overflow-y: auto;
+  font-size: var(--veo-font-size-100);
+}
+
+.harvestList li { display: flex; gap: var(--veo-space-2); align-items: baseline; }
+.harvestList label { display: flex; gap: var(--veo-space-1); align-items: baseline; flex: 1; }
