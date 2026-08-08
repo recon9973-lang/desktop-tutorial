@@ -143,6 +143,19 @@ caps        그 위에 상한. 상한은 점수를 올리지 않는다
 점수 밖이라, **연결하든 안 하든 100점의 뜻이 같다.**
 
 자세히: `docs/scoring/methodology.md` · `docs/research/SEO_SCORING_ALGORITHM_V2.md`
+③ AI 답변 관측은 채점이 아니라 관측이다 — `docs/observation-engine.md`
+
+## 4-A. 문서가 낡거나 없는 곳 (2026-08-08 확인)
+
+**세 영역의 문서 깊이가 고르지 않다.** 알고 읽어야 한다.
+
+| 영역 | 기준 문서 | 상태 |
+|---|---|---|
+| ① SEO | `scoring/methodology.md` | ⚠️ 본문이 **1.8.0** 기준 (운영 1.9.0). 1.9.0 변경은 뒤에 따로. 문서 앞에 경고를 달아 두었다 |
+| ② GEO 준비도 | — | ❌ **발행본 1.3.0 설명 문서가 없다.** `GEO_RECOMMENDED_SCORING_MODEL.md` 는 처음 권장안이지 발행본 설명이 아니다 |
+| ③ AI 답변 관측 | `observation-engine.md` | ✅ 2026-08-08 신규 |
+
+남은 일: ① 본문을 1.9.0 으로 다시 쓰기 · ② GEO 발행본 설명 신규.
 
 ---
 
@@ -170,7 +183,7 @@ caps        그 위에 상한. 상한은 점수를 올리지 않는다
 | 워커를 만진다 | `operations/worker-deployment.md` |
 | 사고가 났다 | `operations/runbook-incident-response.md` · `runbook-backup-restore.md` |
 | 봇 정책 | `operations/bot-identification.md` |
-| GEO 관측을 만진다 | `adr/0014` · `research/GEO_PROMPT_SAMPLING_AND_CONFIDENCE.md` · `research/GEO_METRIC_DICTIONARY.md` |
+| **AI 답변 관측(③)을 만진다** | **`observation-engine.md`** ← 기준 문서. 그다음 `adr/0014·0015` |
 | 인용 지원 모델을 넓힌다 | `operations/verifying-citation-support.md` |
 | 콘텐츠 프로그램을 만든다 | `research/CONTENT-PROGRAM-NOTES.md` |
 | 용어가 헷갈린다 | `architecture/glossary.md` |

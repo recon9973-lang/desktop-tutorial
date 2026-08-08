@@ -1,5 +1,12 @@
 # 권장 GEO 점수·지표 모델
 
+> **읽기 전에 — 이 문서는 처음 설계할 때의 *권장안*이다.**
+> 실제 발행본은 **`veo.geo.readiness` 1.3.0**(영역 7 · 검사 37 · 총점 상한 0, 2026-08-08
+> 확인)이고, 이 문서의 배점·구조와 같지 않을 수 있다. 발행본의 정본은 명세 YAML
+> (`packages/scoring-specs/specs/veo.geo.readiness/1.3.0.yaml`) 이며, 계산 규칙은
+> `docs/scoring/methodology.md`, 관측(③)은 `docs/observation-engine.md` 를 본다.
+> **SEO 의 methodology.md 에 해당하는 GEO 준비도 설명 문서는 아직 없다** — 남은 일이다.
+
 ## 원칙: 한 점수로 합치지 않는다
 
 대시보드 첫 화면에는 다음 5개 카드를 나란히 표시한다.
