@@ -184,6 +184,15 @@ def test_a_url_with_no_field_sample_is_not_applicable_end_to_end() -> None:
     assert produced["seo.perf.inp_field"].status is CheckStatus.NOT_APPLICABLE
     assert produced["seo.perf.lcp_lab"].status is CheckStatus.PASS
 
+    # 상태만으로는 부족하다. 사장님이 이 줄을 **"CrUX 실패"** 로 읽으셨다(2026-08-09).
+    # 앞의 문구가 "…측정하지 못했습니다" 로 끝나서, 우리가 뭔가 못 한 것처럼 읽혔다.
+    # 실제로 일어난 일은 **구글이 아직 이 사이트의 값을 공개하지 않는 것**이고, 우리가
+    # 할 수 있는 일이 하나도 없다. 고장으로 읽히면 사람은 없는 원인을 찾으러 간다.
+    note = produced["seo.perf.inp_field"].note or ""
+    assert "구글" in note and "공개" in note, note
+    assert "결함이 아니" in note and "점수도 깎지 않" in note, note
+    assert "측정하지 못했습니다" not in note, note
+
 
 def test_a_slow_field_category_reaches_the_field_check_and_not_the_lab_ones() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
