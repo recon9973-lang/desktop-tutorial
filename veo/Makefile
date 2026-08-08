@@ -76,6 +76,7 @@ help:
 	@echo "    make check-contracts   OpenAPI·공유타입·TS클라이언트 드리프트 검사"
 	@echo "    make ci-local          위 전부 실행 (푸시 전 손검사)"
 	@echo "    make deploy            ★ 배포 — CI 초록불일 때만 main 에 닿는다"
+	@echo "                             (2026-08 한정: 하루 2회까지. 무료 Actions 시간 보호)"
 	@echo "    make db-test-create    로컬 PostgreSQL 에 $(TEST_DB) 데이터베이스 생성"
 	@echo "    make db-test-drop      $(TEST_DB) 데이터베이스 삭제"
 	@echo "    make migrate           마이그레이션 최신까지 적용"

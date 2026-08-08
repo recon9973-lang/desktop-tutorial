@@ -37,6 +37,33 @@ PREFIX="veo"
 TIMEOUT_SECONDS=1200
 POLL_SECONDS=15
 
+# --------------------------------------------------------------------------- #
+# 하루 배포 횟수 상한 — 무료 Actions 시간을 지키는 관문
+#
+# **왜 있는가.** 2026-08-08 전수 집계(실행 206건, 잡별 분 단위 올림):
+#
+#     2026-07   실행  52건    455분
+#     2026-08   실행 154건  2,155분   ← 무료 2,000분을 8일 만에 넘겼다
+#
+#     main             1,500분 (114건)   ← 같은 커밋 재검사. 워크플로에서 없앴다
+#     deploy-candidate   655분 ( 40건)   ← 남는 것. 배포 1회당 16.4분
+#
+# 남은 것만으로 계산하면 655 ÷ 8일 = 81.9분/일, 31일이면 2,538분이다. 2,000분을
+# 27% 넘는다. 배포 1회가 16.4분이므로 무료로 감당되는 것은 2,000 ÷ 16.4 = 122회/월,
+# 하루 3.9회다. 8월 첫 8일의 실제 속도는 하루 5.0회였다.
+#
+# 사장님 지시(2026-08-09): **이번 달 배포는 하루 1~2회로 제한.**
+#
+# 상한을 글로 적어 두면 지켜지지 않는다(사장님 CLAUDE.md). 그래서 여기 둔다 —
+# 넘기려면 다른 행동을 해야 하는 자리에.
+#
+# **후보 가지로 밀기 전에 센다.** 밀고 나면 CI 가 돌기 시작하고 분은 이미 나간다.
+#: 하루에 허용하는 배포 횟수.
+DEPLOY_LIMIT_PER_DAY="${VEO_DEPLOY_LIMIT_PER_DAY:-2}"
+#: 이 날짜부터는 상한을 적용하지 않는다. 9월 1일에 무료 2,000분이 다시 채워진다.
+#: 조용히 사라지지 않게, 지난 뒤에는 한 줄로 알리고 통과시킨다.
+DEPLOY_LIMIT_UNTIL="2026-09-01"
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
@@ -47,6 +74,53 @@ if [ -n "$(git status --porcelain -- "$PREFIX")" ]; then
 fi
 
 REPO="$(git remote get-url "$REMOTE" | sed -E 's#.*github\.com[:/]##; s#\.git$##')"
+
+# --------------------------------------------------------------------------- #
+# 하루 상한 검사 — 미는 것보다 먼저
+# --------------------------------------------------------------------------- #
+
+# 한국 날짜로 센다. GitHub 은 UTC 로 기록하므로 오늘 0시(KST)를 UTC 로 옮겨 묻는다.
+# 그냥 UTC 날짜로 세면 아침 9시 전에 한 배포가 어제 것으로 잡힌다.
+today_kst="$(TZ=Asia/Seoul date +%Y-%m-%d)"
+since_utc="$(python3 - <<'PY'
+from datetime import datetime, timedelta, timezone
+kst = timezone(timedelta(hours=9))
+midnight = datetime.now(kst).replace(hour=0, minute=0, second=0, microsecond=0)
+print(midnight.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+PY
+)"
+
+if [[ "$today_kst" < "$DEPLOY_LIMIT_UNTIL" ]]; then
+    # 실패한 실행도 분을 쓴다. 그러니 결과를 가리지 않고 전부 센다.
+    today_count="$(gh api \
+        "repos/$REPO/actions/runs?branch=$CANDIDATE&created=%3E%3D$since_utc&per_page=100" \
+        --jq '[.workflow_runs[]] | length' 2>/dev/null || echo 0)"
+
+    echo "==> [0/4] 오늘($today_kst) 배포 $today_count / $DEPLOY_LIMIT_PER_DAY 회"
+
+    if [ "$today_count" -ge "$DEPLOY_LIMIT_PER_DAY" ]; then
+        cat >&2 <<MSG
+✗ 오늘 배포 상한($DEPLOY_LIMIT_PER_DAY회)에 이미 닿았습니다. 밀지 않았습니다.
+
+  왜 막나 — 무료 Actions 2,000분을 8월 8일 만에 다 썼습니다(전수 실측 2,155분).
+  배포 1회가 약 16.4분입니다. 하루 1~2회로 두면 무료 안에서 돌아갑니다.
+
+  급하면 — 여러 커밋을 **한 번에** 묶어서 미십시오. 오늘처럼 네 판을 한 번에
+  올리면 배포 한 번입니다. 그것이 이 상한이 바라는 행동입니다.
+
+  그래도 지금 밀어야 한다면(장애 대응 등) 이렇게 하십시오:
+
+      VEO_DEPLOY_LIMIT_PER_DAY=99 make deploy
+
+  이 상한은 $DEPLOY_LIMIT_UNTIL 부터 자동으로 풀립니다(무료 분량 초기화).
+MSG
+        exit 1
+    fi
+else
+    echo "==> [0/4] 배포 상한 기간($DEPLOY_LIMIT_UNTIL)이 지났습니다 — 세지 않습니다."
+    echo "    무료 분량이 초기화됐을 것입니다. 계속 제한할지 다시 정하십시오."
+    echo "    (근거와 숫자: scripts/deploy.sh 위쪽 주석)"
+fi
 
 echo "==> [1/4] $PREFIX/ 를 떼어낸 커밋을 만듭니다"
 SHA="$(git subtree split --prefix="$PREFIX" HEAD)"

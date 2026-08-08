@@ -186,6 +186,56 @@ def test_the_workflow_does_not_re_run_the_same_commit_on_main() -> None:
     )
 
 
+DEPLOY_SH = VEO_ROOT / "scripts" / "deploy.sh"
+
+
+def test_the_daily_deploy_limit_is_checked_before_anything_is_pushed() -> None:
+    """세는 일이 미는 일보다 **먼저** 와야 한다.
+
+    밀고 나면 CI 가 돌기 시작하고 분은 이미 나간다. 그 뒤에 "상한 초과" 라고 말해 봐야
+    막은 것이 아니라 알린 것이다.
+    """
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+
+    limit_at = text.index('-ge "$DEPLOY_LIMIT_PER_DAY"')  # 실제 비교가 일어나는 자리
+    push_at = text.index("git push --force")
+
+    assert limit_at < push_at, (
+        "상한 검사가 후보 가지 push 뒤에 있습니다 — 그때는 이미 분이 나갑니다."
+    )
+
+
+def test_the_limit_refusal_tells_the_reader_how_to_proceed_anyway() -> None:
+    """막기만 하고 길을 안 알려주면 사람은 스크립트를 고쳐서 뚫는다.
+
+    뚫는 길을 **한 줄로** 열어 두되, 그것이 의도된 행동이 되게 한다 — 환경변수를
+    직접 적어야 하므로 실수로는 넘을 수 없다.
+    """
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert "VEO_DEPLOY_LIMIT_PER_DAY=99" in text, "넘는 방법이 거부 문구에 없습니다"
+    assert "묶어서" in text, "묶어서 배포하라는 권유가 없습니다 — 그것이 바라는 행동이다"
+
+
+def test_the_limit_expires_on_a_named_date_rather_than_living_forever() -> None:
+    """9월 1일에 무료 분량이 다시 채워진다. 그 뒤로도 조용히 막고 있으면 안 된다.
+
+    날짜가 지나면 **세지 않고 통과**시키되 한 줄로 알린다. 조용히 사라지면 왜 있었는지
+    아무도 모르게 되고, 조용히 남아 있으면 이유 없이 막는다.
+    """
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    assert 'DEPLOY_LIMIT_UNTIL="2026-09-01"' in text, "상한 만료일이 없습니다"
+    assert "다시 정하십시오" in text, "만료 뒤 무엇을 해야 하는지 안 알려줍니다"
+
+
+def test_the_limit_counts_failed_runs_too() -> None:
+    """실패한 실행도 분을 쓴다. 성공만 세면 상한이 새 나간다."""
+    text = DEPLOY_SH.read_text(encoding="utf-8")
+    counting = text[text.index("today_count=") : text.index("echo \"==> [0/4] 오늘")]
+    assert "conclusion" not in counting, (
+        "실행을 셀 때 conclusion 으로 거르고 있습니다 — 실패도 분을 씁니다"
+    )
+
+
 # --------------------------------------------------------------------------- #
 # 잡이 실제로 테스트를 도는가
 # --------------------------------------------------------------------------- #
