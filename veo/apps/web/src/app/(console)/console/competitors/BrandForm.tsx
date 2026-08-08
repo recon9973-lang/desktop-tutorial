@@ -4,6 +4,8 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, FormError } from '@veo/ui';
 
+import type { Brand } from '@/lib/brands';
+
 import styles from './competitors.module.css';
 
 /**
@@ -16,24 +18,36 @@ import styles from './competitors.module.css';
 export function BrandForm({
   projectId,
   isOwnBrand,
+  brand,
 }: {
   readonly projectId: string;
   readonly isOwnBrand: boolean;
+  /**
+   * 주면 **수정**, 안 주면 등록.
+   *
+   * 서버에는 처음부터 고치는 길이 있었고(`PATCH /projects/{id}/brands/{brandId}`),
+   * 프록시도 `brandId` 를 받고 있었다. **화면에 단추가 없었을 뿐이다** — 한 번 저장하면
+   * 오타 하나도 못 고쳤다. 부를 수 없는 기능은 없는 기능이다(0-E).
+   */
+  readonly brand?: Brand;
 }) {
   const router = useRouter();
+  const editing = brand !== undefined;
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [values, setValues] = useState({
-    displayName: '',
+    displayName: brand?.display_name ?? '',
     homepageUrl: '',
-    phoneNumbers: '',
-    addressTerms: '',
-    ownDomains: '',
+    phoneNumbers: (brand?.phone_numbers ?? []).join(', '),
+    addressTerms: (brand?.address_terms ?? []).join(', '),
+    ownDomains: (brand?.own_domains ?? []).join(', '),
+    // 저장은 목록 하나로 하므로, 되읽을 때 셋으로 다시 가를 수 없다. 통째로 첫 칸에
+    // 넣으면 원장명이 아닌 것이 원장명 칸에 앉는다 — 마지막 칸에 담고 옮기게 한다.
     doctorNames: '',
     treatments: '',
-    otherTerms: '',
-    aliases: '',
+    otherTerms: (brand?.distinguishing_terms ?? []).join(', '),
+    aliases: (brand?.aliases ?? []).join(', '),
   });
 
   function set(key: keyof typeof values) {
@@ -56,6 +70,7 @@ export function BrandForm({
         body: JSON.stringify({
           projectId,
           isOwnBrand,
+          ...(editing ? { brandId: brand.id } : {}),
           ...values,
           distinguishingTerms: [values.doctorNames, values.treatments, values.otherTerms]
             .filter((one) => one.trim() !== '')
@@ -71,17 +86,19 @@ export function BrandForm({
         );
         return;
       }
-      setValues({
-        displayName: '',
-        homepageUrl: '',
-        phoneNumbers: '',
-        addressTerms: '',
-        ownDomains: '',
-        doctorNames: '',
-        treatments: '',
-        otherTerms: '',
-        aliases: '',
-      });
+      if (!editing) {
+        setValues({
+          displayName: '',
+          homepageUrl: '',
+          phoneNumbers: '',
+          addressTerms: '',
+          ownDomains: '',
+          doctorNames: '',
+          treatments: '',
+          otherTerms: '',
+          aliases: '',
+        });
+      }
       setOpen(false);
       router.refresh();
     } catch {
@@ -94,7 +111,7 @@ export function BrandForm({
   if (!open) {
     return (
       <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
-        {isOwnBrand ? '자사 브랜드 등록' : '비교 대상 추가'}
+        {editing ? '수정' : isOwnBrand ? '자사 브랜드 등록' : '비교 대상 추가'}
       </Button>
     );
   }
@@ -110,6 +127,13 @@ export function BrandForm({
           placeholder="간판에 적힌 정식 상호"
           required
         />
+        {editing ? (
+          <span className={styles.hint}>
+            오타는 여기서 고칩니다. 다만 <strong>내부 식별자는 바뀌지 않습니다</strong> —
+            지난 관측이 그 값으로 이 브랜드를 가리키고 있어서, 바꾸면 추이가 조용히
+            끊깁니다.
+          </span>
+        ) : null}
       </label>
 
       {/* 가장 위에 둔다 — 흔한 상호를 확정선 위로 올리는 유일한 항목이다. */}
@@ -210,6 +234,13 @@ export function BrandForm({
           대조하는 데 쓰는데, 답변에 &ldquo;월~금 09:00-18:00&rdquo; 이 나올 일은 거의
           없어 대조에 걸리지 않습니다.
         </span>
+        {editing ? (
+          <span className={styles.hint}>
+            저장은 목록 하나로 하므로 되읽을 때 셋으로 다시 가를 수 없습니다. 이미 넣으신
+            값이 전부 이 칸에 담겨 있습니다 — <strong>원장 성함은 위 칸으로 옮겨
+            주십시오.</strong>
+          </span>
+        ) : null}
       </label>
 
       <label className={styles.label}>

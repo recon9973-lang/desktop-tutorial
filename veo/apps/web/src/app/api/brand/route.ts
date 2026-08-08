@@ -96,7 +96,13 @@ export async function POST(request: Request): Promise<NextResponse> {
         })
       : await callConsoleApi(
           `/api/projects/${encodeURIComponent(projectId)}/brands/${encodeURIComponent(brandId)}`,
-          { method: 'PATCH', body: fields },
+          {
+            method: 'PATCH',
+            // 상호도 함께 보낸다. 오타를 못 고치면 수정 화면이 반쪽이다.
+            // 식별자(entity_key)는 서버가 바꾸지 않는다 — 지난 관측이 그 값으로 이
+            // 브랜드를 가리키고 있어서, 바꾸면 추이가 조용히 끊긴다.
+            body: { ...fields, ...(displayName === null ? {} : { display_name: displayName }) },
+          },
         );
 
   if (!outcome.ok) {

@@ -198,3 +198,12 @@
   display: flex;
   gap: var(--veo-space-3);
 }
+
+/* 카드 하나와 그 수정 단추. 카드 안에 단추를 넣지 않는 이유는 카드가 표시 전용이고
+   (서버 컴포넌트), 단추는 열고 닫는 상태를 들기 때문이다. */
+.brandRow {
+  list-style: none;
+  display: grid;
+  gap: var(--veo-space-2);
+  margin-bottom: var(--veo-space-3);
+}

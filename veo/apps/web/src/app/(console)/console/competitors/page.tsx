@@ -116,6 +116,11 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
                 <BrandCard brand={brands.data.ours} />
               </ul>
             )}
+            {brands.data.ours === null ? null : (
+              /* 한 번 저장하면 오타 하나도 못 고치던 자리. 서버에는 처음부터 고치는
+                 길이 있었고 화면에 단추가 없었을 뿐이다(0-E). */
+              <BrandForm projectId={selected} isOwnBrand brand={brands.data.ours} />
+            )}
           </section>
 
           <section className={styles.section} aria-labelledby="brands-rivals-heading">
@@ -129,7 +134,12 @@ async function ConsoleCompetitorsContent({ projectId }: { readonly projectId: st
             {brands.data.competitors.length > 0 ? (
               <ul className={own.brandList}>
                 {brands.data.competitors.map((brand) => (
-                  <BrandCard key={brand.id} brand={brand} />
+                  <li key={brand.id} className={own.brandRow}>
+                    <ul className={own.brandList}>
+                      <BrandCard brand={brand} />
+                    </ul>
+                    <BrandForm projectId={selected} isOwnBrand={false} brand={brand} />
+                  </li>
                 ))}
               </ul>
             ) : null}
