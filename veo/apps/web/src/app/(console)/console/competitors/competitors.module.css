@@ -207,3 +207,33 @@
   gap: var(--veo-space-2);
   margin-bottom: var(--veo-space-3);
 }
+
+/* 틀린 칸. 색만으로 알리지 않는다 — aria-invalid 가 함께 붙는다(기획서 §12.1). */
+.inputInvalid {
+  composes: input;
+  border-color: #b42318;
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.12);
+}
+
+/* 왜 안 되는지는 틀렸을 때만 말한다. 칸 아래에 미리 적어 두면 아무도 안 읽는다. */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 18, 27, 0.45);
+  display: grid;
+  place-items: center;
+  padding: var(--veo-space-4);
+  z-index: 50;
+}
+
+.modal {
+  background: var(--veo-color-surface);
+  border-radius: var(--veo-radius-lg);
+  padding: var(--veo-space-4);
+  max-width: 34rem;
+  display: grid;
+  gap: var(--veo-space-3);
+  box-shadow: 0 20px 60px rgba(16, 18, 27, 0.25);
+}
+
+.modalBody { margin: 0; white-space: pre-wrap; line-height: 1.6; }

@@ -24,10 +24,12 @@ from veo.brands.schemas import (
     BrandUpdateRequest,
     ProjectBrandsPayload,
 )
+from veo.brands.service import SharedDomainError
+from veo.contracts.enums import ErrorCode
 from veo.contracts.envelope import ApiResponse
 from veo.db.session import get_db
 from veo.organizations.errors import DuplicateResourceError, ReferenceNotFoundError
-from veo.organizations.http import conflict, guard, not_found
+from veo.organizations.http import api_error, conflict, guard, not_found
 
 router = APIRouter(prefix="/projects/{project_id}/brands", tags=["brands"])
 
@@ -127,6 +129,14 @@ def declare(
         )
     except ReferenceNotFoundError as exc:
         raise not_found(exc.message_ko) from exc
+    except SharedDomainError as exc:
+        # 중복(409)이 아니라 입력 오류(422)다. 화면이 어느 칸을 빨갛게 칠할지 알아야
+        # 하므로 코드를 따로 둔다 — 설명은 화면이 아니라 모달이 한다.
+        raise api_error(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            ErrorCode.VALIDATION_FAILED,
+            exc.message_ko,
+        ) from exc
     except DuplicateResourceError as exc:
         raise conflict(exc.message_ko) from exc
     db.commit()
@@ -165,6 +175,12 @@ def update(
             name_is_ambiguous=payload.name_is_ambiguous,
             is_active=payload.is_active,
         )
+    except SharedDomainError as exc:
+        raise api_error(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            ErrorCode.VALIDATION_FAILED,
+            exc.message_ko,
+        ) from exc
     except ReferenceNotFoundError as exc:
         raise not_found(exc.message_ko) from exc
     db.commit()
