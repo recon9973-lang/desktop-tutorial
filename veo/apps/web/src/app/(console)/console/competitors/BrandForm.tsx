@@ -30,7 +30,9 @@ export function BrandForm({
     phoneNumbers: '',
     addressTerms: '',
     ownDomains: '',
-    distinguishingTerms: '',
+    doctorNames: '',
+    treatments: '',
+    otherTerms: '',
     aliases: '',
   });
 
@@ -48,7 +50,17 @@ export function BrandForm({
       const response = await fetch('/api/brand', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, isOwnBrand, ...values }),
+        // 화면에서는 셋으로 나눠 받고, 보낼 때 하나로 합친다. 서버의 구별 표현은
+        // 목록 하나이고(brand_identities.distinguishing_terms), 나누는 것은 사람이
+        // 채우기 쉬우라는 것이지 뜻이 다른 값이라서가 아니다.
+        body: JSON.stringify({
+          projectId,
+          isOwnBrand,
+          ...values,
+          distinguishingTerms: [values.doctorNames, values.treatments, values.otherTerms]
+            .filter((one) => one.trim() !== '')
+            .join(', '),
+        }),
       });
       const body: unknown = await response.json().catch(() => null);
       const record =
@@ -65,7 +77,9 @@ export function BrandForm({
         phoneNumbers: '',
         addressTerms: '',
         ownDomains: '',
-        distinguishingTerms: '',
+        doctorNames: '',
+        treatments: '',
+        otherTerms: '',
         aliases: '',
       });
       setOpen(false);
@@ -132,22 +146,70 @@ export function BrandForm({
           className={styles.input}
           value={values.ownDomains}
           onChange={set('ownDomains')}
-          placeholder="ondam.example"
+          placeholder="ondam.kr"
         />
         <span className={styles.hint}>
-          도메인은 동명 업체와 공유되지 않습니다. 답변이 이 주소를 근거로 인용하면 그것만으로
-          확정됩니다.
+          주소를 통째로 붙여 넣어도 됩니다 — <code>https://ondam.kr/about</code> 은{' '}
+          <code>ondam.kr</code> 로 저장됩니다.
+        </span>
+        <span className={styles.hint}>
+          <strong>네이버 블로그·인스타그램 주소는 넣지 마십시오.</strong>{' '}
+          <code>blog.naver.com</code> 은 모든 블로그가 함께 쓰는 주소라, 넣으면 남의 글이
+          인용돼도 우리 업체로 잡힙니다. 자기 도메인이 없으면 비워 두고 상호·대표번호·
+          소재지로 가리십시오 — 저장할 때 서버가 한 번 더 막습니다.
+        </span>
+      </label>
+
+      {/*
+        한 칸에 원장명·시술·진료시간을 다 넣게 두면 채우기 힘들고, 무엇을 넣어야
+        하는지도 안 보인다(사장님 지적 2026-08-08). 셋으로 나눠 받고 보낼 때 합친다.
+
+        **진료시간은 여기 두지 않는다.** 이 값들은 AI 답변 본문과 글자로 대조해 "이
+        언급이 우리 업체인가" 를 가리는 데 쓴다(`detection/disambiguation.py`).
+        답변에 "월~금 09:00-18:00" 이 나올 일은 거의 없어서, 넣어도 대조에 안 걸리고
+        칸만 채운다.
+      */}
+      <label className={styles.label}>
+        원장·의료진 이름
+        <input
+          className={styles.input}
+          value={values.doctorNames}
+          onChange={set('doctorNames')}
+          placeholder="정세현, 홍길동"
+        />
+        <span className={styles.hint}>
+          <strong>상호 다음으로 효과가 큽니다.</strong> AI 답변이 &ldquo;○○ 원장&rdquo;
+          이라고 말하면 그것으로 동명 병원과 갈립니다. 여러 명이면 쉼표로.
         </span>
       </label>
 
       <label className={styles.label}>
-        구별 표현
+        진료과목·대표 시술
         <input
           className={styles.input}
-          value={values.distinguishingTerms}
-          onChange={set('distinguishingTerms')}
-          placeholder="대표 시술, 원장 성함, 남다른 진료시간"
+          value={values.treatments}
+          onChange={set('treatments')}
+          placeholder="추나요법, 다이어트, 교통사고"
         />
+        <span className={styles.hint}>
+          AI 답변에 실제로 나올 만한 말로. &ldquo;한방내과&rdquo; 같은 분류명보다
+          &ldquo;추나요법&rdquo; 처럼 환자가 쓰는 말이 잘 걸립니다.
+        </span>
+      </label>
+
+      <label className={styles.label}>
+        그 밖의 구별 표현
+        <input
+          className={styles.input}
+          value={values.otherTerms}
+          onChange={set('otherTerms')}
+          placeholder="건물명, 층수, 함께 쓰는 별칭"
+        />
+        <span className={styles.hint}>
+          <strong>진료시간은 넣지 마십시오.</strong> 이 값들은 AI 답변 본문과 글자로
+          대조하는 데 쓰는데, 답변에 &ldquo;월~금 09:00-18:00&rdquo; 이 나올 일은 거의
+          없어 대조에 걸리지 않습니다.
+        </span>
       </label>
 
       <label className={styles.label}>
@@ -162,13 +224,18 @@ export function BrandForm({
 
       {!isOwnBrand ? (
         <label className={styles.label}>
-          홈페이지 주소
+          홈페이지 주소 (전체)
           <input
             className={styles.input}
             value={values.homepageUrl}
             onChange={set('homepageUrl')}
-            placeholder="https://example.com"
+            placeholder="https://competitor.kr"
           />
+          <span className={styles.hint}>
+            비교 대상은 이 주소로 같은 곳을 두 번 등록하지 않게 막습니다. 위 도메인 칸과
+            달리 <strong>주소 전체</strong>를 넣으며, 블로그 주소여도 됩니다 — 여기 값은
+            인용 대조에 쓰지 않습니다.
+          </span>
         </label>
       ) : null}
 

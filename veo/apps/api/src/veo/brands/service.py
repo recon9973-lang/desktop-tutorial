@@ -35,6 +35,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
+from veo.brands.domains import (
+    SHARED_DOMAIN_MESSAGE_KO,
+    normalise_domain,
+    reject_shared_domains,
+)
 from veo.db.models.identity import Competitor, Project
 from veo.db.models.observation import BrandIdentity
 from veo.observations.brand_identity import (
@@ -46,6 +51,15 @@ from veo.observations.brand_identity import (
 from veo.organizations.errors import DuplicateResourceError, ReferenceNotFoundError
 
 _NON_KEY = re.compile(r"[^a-z0-9]+")
+
+
+class SharedDomainError(DuplicateResourceError):
+    """여러 업체가 함께 쓰는 주소를 자사 도메인으로 두려 했다.
+
+    실측 2026-08-08: `blog.naver.com/momedn1` 이 자사 도메인으로 입력됐다. 그대로
+    두면 아무 네이버 블로그 인용이 우리 업체 인용으로 잡힌다 — **없는 노출을 만들어
+    내고, 그것도 고객에게 유리한 방향이라 아무도 이의를 제기하지 않는다.**
+    """
 
 
 class BrandIdentityConflictError(DuplicateResourceError):
@@ -152,6 +166,20 @@ def list_brands(
     )
 
 
+def _checked_domains(values: list[str]) -> list[str]:
+    """자사 도메인을 정리하고, 공유 플랫폼이면 거부한다.
+
+    주소를 통째로 붙여 넣어도 받는다 — `https://ondam.kr/about` 이 `ondam.kr` 이 된다.
+    사람이 규칙을 외워야 하는 칸은 결국 잘못 채워진다.
+    """
+    shared = reject_shared_domains(values)
+    if shared:
+        raise SharedDomainError(
+            SHARED_DOMAIN_MESSAGE_KO.format(hosts=", ".join(sorted(set(shared))))
+        )
+    return [host for one in values if (host := normalise_domain(one))]
+
+
 def declare_brand(
     session: Session,
     principal: Principal,
@@ -213,7 +241,7 @@ def declare_brand(
         entity_key=_entity_key(display_name, {one.entity_key for one in existing}),
         display_name=display_name.strip(),
         aliases=[one.strip() for one in aliases if one.strip()],
-        own_domains=[one.strip().lower() for one in own_domains if one.strip()],
+        own_domains=_checked_domains(own_domains),
         address_terms=[one.strip() for one in address_terms if one.strip()],
         # 전화번호는 **저장할 때** 정규화한다. 02-1234-5678 과 0212345678 을 한 값으로
         # 두지 않으면 같은 번호가 답변에서 다른 모양으로 나올 때 못 맞춘다.
@@ -261,7 +289,9 @@ def update_brand(
     if aliases is not None:
         row.aliases = [one.strip() for one in aliases if one.strip()]
     if own_domains is not None:
-        row.own_domains = [one.strip().lower() for one in own_domains if one.strip()]
+        # 보완(PATCH)에도 같은 검사가 걸린다. 만들 때만 막으면 나중에 채워 넣는 경로로
+        # 그대로 들어온다.
+        row.own_domains = _checked_domains(own_domains)
     if address_terms is not None:
         row.address_terms = [one.strip() for one in address_terms if one.strip()]
     if phone_numbers is not None:
