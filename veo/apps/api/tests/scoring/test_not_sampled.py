@@ -129,13 +129,21 @@ class TestTheArithmetic:
 
 
 class TestThePublishedSpec:
-    def test_1_9_0_changes_no_number(self) -> None:
-        """같은 판정이면 1.8.0 과 1.9.0 의 점수가 같다 — 선언만 더한 판이다."""
+    @pytest.mark.parametrize(("older", "newer"), [("1.8.0", "1.9.0"), ("1.9.0", "1.9.1")])
+    def test_a_text_only_version_changes_no_number(self, older: str, newer: str) -> None:
+        """글자만 더한 판은 **점수를 한 점도 바꾸지 않는다.**
+
+        `latest_published()` 를 붙잡지 않는다 — 그렇게 두면 판을 올릴 때마다 이 시험이
+        깨지고, 깨진 시험을 고치느라 숫자가 바뀌었는지는 아무도 안 본다. 지켜야 하는
+        것은 "최신 판이 무엇인가" 가 아니라 **"이 두 판이 같은 점수를 내는가"** 다.
+
+        1.9.1 은 상한 다섯 개의 **사유 문구**만 고쳤다. 앞의 문구는 관측하지 않은 범위를
+        단정했다 — 평가한 URL 이 1장인데 "사이트 전체가 색인 차단" 이라고 말했다.
+        """
         from veo.scoring import load_spec
 
-        old = load_spec("veo.seo.readiness", "1.8.0")
-        new = latest_published("veo.seo.readiness")
-        assert new.version == "1.9.0"
+        old = load_spec("veo.seo.readiness", older)
+        new = load_spec("veo.seo.readiness", newer)
 
         outcomes = [outcome(cid, CheckStatus.PASS) for cid in new.check_ids]
         warned = [
@@ -147,6 +155,22 @@ class TestThePublishedSpec:
                 evaluate(old, supplied).overall_score
                 == evaluate(new, supplied).overall_score
             )
+
+    def test_a_cap_reason_states_what_was_looked_at(self) -> None:
+        """상한 사유는 **본 것**을 말해야 한다 — 안 본 범위를 단정하면 거짓이 된다.
+
+        실측 2026-08-09: `good-tour.kr/member/login.php` 한 장을 진단하자 0.0점 "차단"
+        이 나왔고 사유가 "홈페이지 또는 사이트 전체가 색인 차단" 이었다. 그 사이트
+        robots.txt 는 `Allow: /` 이고 로그인 페이지만 일부러 막아 둔 것이다.
+        **사실이 아닌 말을 거래처에 낼 뻔했다.**
+        """
+        spec = latest_published("veo.seo.readiness")
+        reasons = {cap.id: cap.reason_ko for cap in spec.caps}
+
+        assert reasons, "상한이 하나도 없으면 이 시험은 아무것도 안 지킨다"
+        for cap_id, reason in reasons.items():
+            assert "사이트 전체" not in reason, f"{cap_id}: 보지 않은 범위를 단정한다 — {reason}"
+            assert "평가한" in reason, f"{cap_id}: 무엇을 보고 말하는지가 없다 — {reason}"
 
     def test_the_declared_scope_matches_the_server_settings(self) -> None:
         """같은 값이 명세와 설정 두 곳에 있다 — 한쪽만 바뀌면 여기서 깨진다."""

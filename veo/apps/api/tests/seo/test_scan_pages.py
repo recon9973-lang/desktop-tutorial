@@ -110,9 +110,18 @@ class TestFlippingJudgementsToPages:
         self, db_session, principal, site, scan_result, scan_context
     ):
         """이전 시험은 "점수 필드가 없다" 를 못박았다 — 1.9.0 발행 전의 사실이었고,
-        발행과 함께 이름째 바꾼다(0-I): 이제 점수가 있고, 항등식이 성립해야 한다."""
+        발행과 함께 이름째 바꾼다(0-I): 이제 점수가 있고, 항등식이 성립해야 한다.
+
+        판 번호를 `"1.9.0"` 으로 박지 않는다. 이 시험이 지키는 것은 **"지금 발행된 판이
+        무엇인가"** 가 아니라 **"페이지 점수가 실려 오고 항등식이 성립하는가"** 다.
+        박아 두면 판을 올릴 때마다 여기가 깨지고, 깨진 시험을 고치느라 정작 항등식이
+        살아 있는지는 아무도 안 본다(2026-08-09, 1.9.1 발행 때 실제로 깨졌다).
+        """
+        from veo.scoring import latest_published
         from veo.seo.history import save_scan_run
         from veo.seo.pages import page_breakdown
+
+        published = latest_published("veo.seo.readiness").version
 
         saved = save_scan_run(
             db_session, principal=principal, site_id=site.id,
@@ -124,10 +133,10 @@ class TestFlippingJudgementsToPages:
         )
 
         scored = [p for p in breakdown.pages if p.score is not None]
-        assert scored, "1.9.0 실행인데 점수가 하나도 없다"
+        assert scored, f"{published} 실행인데 점수가 하나도 없다"
         for page in scored:
             score = page.score
-            assert score.spec_version == "1.9.0"
+            assert score.spec_version == published
             if score.status == "SCORED":
                 assert score.quality == pytest.approx(
                     100.0 - sum(loss.lost for loss in score.losses), abs=1e-6
