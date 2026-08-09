@@ -34,7 +34,7 @@ vi.mock('@/lib/issues-api', () => ({ readIssues }));
 vi.mock('@/lib/reports', () => ({ listReports, listReportableRuns }));
 vi.mock('@/lib/observations', () => ({ readEngines, readPromptSets, readRuns }));
 
-const { readClientBoard } = await import('./client-dashboard');
+const { readClientBoard, issuesHref, reportsHref } = await import('./client-dashboard');
 
 const CUSTOMER = 'cus-1';
 const PROJECT = 'prj-1';
@@ -345,5 +345,36 @@ describe('업체를 못 찾으면 자료를 지어내지 않는다', () => {
     listCompanies.mockResolvedValue({ ok: false, message: '연결 실패' });
     const board = await readClientBoard(CUSTOMER);
     expect(board).toBeNull();
+  });
+});
+
+describe('링크는 이 거래처로 걸러서 보낸다', () => {
+  it('프로젝트가 하나면 그 프로젝트로 거른다', async () => {
+    const board = await readClientBoard(CUSTOMER);
+    expect(board).not.toBeNull();
+    expect(issuesHref(board!)).toBe(`/console/issues?project=${PROJECT}`);
+    expect(reportsHref(board!)).toBe(`/console/reports?project=${PROJECT}`);
+  });
+
+  it('프로젝트가 여럿이면 거르지 않는다 — 하나만 골라 보내면 나머지가 조용히 빠진다', async () => {
+    const board = await readClientBoard(CUSTOMER);
+    const two = {
+      ...board!,
+      company: {
+        ...board!.company,
+        projects: [
+          { id: PROJECT, name: '기본' },
+          { id: 'prj-2', name: '두번째' },
+        ],
+      },
+    };
+    expect(issuesHref(two)).toBe('/console/issues');
+    expect(reportsHref(two)).toBe('/console/reports');
+  });
+
+  it('프로젝트가 없으면 거르지 않는다', async () => {
+    const board = await readClientBoard(CUSTOMER);
+    const none = { ...board!, company: { ...board!.company, projects: [] } };
+    expect(issuesHref(none)).toBe('/console/issues');
   });
 });

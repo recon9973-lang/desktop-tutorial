@@ -5,7 +5,9 @@ import { Card, EmptyState, ErrorState, formatCount, formatScore, NOT_MEASURED } 
 
 import { PermissionGate } from '@/components/PermissionGate';
 import {
+  issuesHref,
   readClientBoard,
+  reportsHref,
   type ClientBoard,
   type ObservationSlot,
   type ScaleTrack,
@@ -216,7 +218,15 @@ function IssuesSection({ board }: { readonly board: ClientBoard }) {
         headingLevel={3}
         footer={
           <div className={own.actions}>
-            <Link href="/console/issues">이슈 보기</Link>
+            {/*
+              **이 거래처로 걸러서 보낸다.** 그냥 `/console/issues` 로 보내면 맡은 곳
+              전부의 이슈가 나오고, 방금 "열림 12건" 을 읽은 사람이 165건짜리 목록을
+              마주한다 — 어느 12건인지 다시 찾아야 한다.
+
+              프로젝트가 여럿인 업체는 거르지 않고 보낸다. 하나만 골라 보내면 나머지가
+              조용히 빠지고, 그것이 이 화면의 합계와 어긋난다.
+            */}
+            <Link href={issuesHref(board)}>이슈 보기</Link>
           </div>
         }
       >
@@ -348,7 +358,7 @@ function OutputSection({ board }: { readonly board: ClientBoard }) {
         headingLevel={3}
         footer={
           <div className={own.actions}>
-            <Link href="/console/reports">리포트 화면</Link>
+            <Link href={reportsHref(board)}>리포트 화면</Link>
           </div>
         }
       >

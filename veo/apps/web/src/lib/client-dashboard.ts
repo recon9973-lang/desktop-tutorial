@@ -298,3 +298,25 @@ async function tallyReportable(projectIds: readonly string[]): Promise<number | 
     0,
   );
 }
+
+/**
+ * 이 거래처의 이슈만 보여 주는 주소.
+ *
+ * 프로젝트가 정확히 하나일 때만 거른다. 여럿인데 하나만 골라 보내면 나머지가 조용히
+ * 빠지고, 그 화면의 건수가 이 카드의 합계와 어긋난다 — 두 숫자가 다르면 사람은 어느
+ * 쪽도 믿지 않는다.
+ */
+export function issuesHref(board: ClientBoard): string {
+  const only = board.company.projects.length === 1 ? board.company.projects[0] : undefined;
+  return only === undefined
+    ? '/console/issues'
+    : `/console/issues?project=${encodeURIComponent(only.id)}`;
+}
+
+/** 리포트도 같은 규칙. 하나일 때만 거른다. */
+export function reportsHref(board: ClientBoard): string {
+  const only = board.company.projects.length === 1 ? board.company.projects[0] : undefined;
+  return only === undefined
+    ? '/console/reports'
+    : `/console/reports?project=${encodeURIComponent(only.id)}`;
+}
