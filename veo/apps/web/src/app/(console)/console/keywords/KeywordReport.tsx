@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, formatPercent, formatScore } from '@veo/ui';
+import { Card, formatCount, formatPercent, formatScore } from '@veo/ui';
 
 import type {
   KeywordLookup,
@@ -252,9 +252,9 @@ function qualityText(quality: string): string {
 
 function countText(measured: MeasuredCount): string {
   if (measured.value === null) return qualityText(measured.quality);
-  const formatted = measured.value.toLocaleString('ko-KR');
+  const formatted = formatCount(measured.value);
   if (measured.quality === 'RANGE' && measured.upper_bound_exclusive !== null) {
-    return `${formatted}~${(measured.upper_bound_exclusive - 1).toLocaleString('ko-KR')}회`;
+    return `${formatted}~${formatCount(measured.upper_bound_exclusive - 1)}회`;
   }
   if (measured.quality === 'ROUNDED') return `약 ${formatted}회`;
   return `${formatted}회`;

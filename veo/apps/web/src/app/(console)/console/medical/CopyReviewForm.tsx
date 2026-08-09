@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { formatCount } from '@veo/ui';
 
 import styles from './medical.module.css';
 
@@ -93,7 +94,7 @@ export function CopyReviewForm() {
         <section className={styles.results} aria-label="검수 결과">
           {result.findings.length === 0 ? (
             <p className={styles.clean}>
-              {result.reviewed_chars.toLocaleString('ko-KR')}자에서 표시할 표현을 찾지
+              {formatCount(result.reviewed_chars)}자에서 표시할 표현을 찾지
               못했습니다 — 이것이 적법하다는 뜻은 아닙니다. 아래 안내를 확인하십시오.
             </p>
           ) : (

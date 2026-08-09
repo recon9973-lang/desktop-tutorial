@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { formatCount } from '@veo/ui';
 
 import type {
   KeywordFigure,
@@ -37,7 +38,7 @@ function FigureCell({ figure }: { readonly figure: KeywordFigure }) {
   return (
     <td className={styles.num}>
       {approximate ? '약 ' : ''}
-      {figure.value.toLocaleString('ko-KR')}
+      {formatCount(figure.value)}
     </td>
   );
 }

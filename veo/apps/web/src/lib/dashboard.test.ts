@@ -231,3 +231,123 @@ describe('현황을 못 읽으면 빈 화면으로 꾸미지 않는다', () => {
     expect(await readDashboard(NOW)).toBeNull();
   });
 });
+
+/**
+ * 거래처 레일 — **평균에 가려진 이름을 되살린다.**
+ *
+ * 영역 줄은 맡은 곳 전부를 숫자 하나로 뭉갠다. 그것은 "뭐가 밀렸나" 에는 답하지만
+ * "어느 거래처가" 에는 답하지 못한다. 이 묶음이 지키는 것은 셋이다 —
+ * 업체 안에서 **또 평균 내지 않기**, 밀린 곳을 **위로**, 그리고 여기서도 **0 을 만들지
+ * 않기**.
+ */
+describe('거래처 레일', () => {
+  function withCompanies(
+    companies: readonly {
+      id: string;
+      name: string;
+      sites: readonly { siteId: string; isPrimary?: boolean }[];
+    }[],
+  ) {
+    listCompanies.mockResolvedValue({
+      ok: true,
+      data: companies.map((company) => ({
+        customerId: company.id,
+        name: company.name,
+        isRegistered: true,
+        projects: [],
+        sites: company.sites.map((site) => ({
+          siteId: site.siteId,
+          origin: `https://${site.siteId}.example/`,
+          displayName: site.siteId,
+          projectId: 'p',
+          isPrimary: site.isPrimary ?? false,
+        })),
+      })),
+      meta: {},
+    });
+  }
+
+  /** 사이트별로 다른 이력을 준다. 목록에 없는 사이트는 한 번도 안 잰 것으로 친다. */
+  function historyBySite(map: Record<string, ReturnType<typeof entry> | undefined>) {
+    readHistory.mockImplementation((siteId: string) =>
+      Promise.resolve({ ok: true, data: map[siteId] ? [map[siteId]] : [], meta: {} }),
+    );
+  }
+
+  it('업체 안에서 주소를 평균 내지 않는다 — 주 사이트 하나를 쓴다', async () => {
+    withCompanies([
+      { id: 'c1', name: '온담', sites: [{ siteId: 'a' }, { siteId: 'b', isPrimary: true }] },
+    ]);
+    historyBySite({ a: entry(20, 1), b: entry(90, 1) });
+
+    const data = await readDashboard(NOW);
+
+    // 평균이었다면 55. 뭉개기를 고치겠다면서 한 겹 안에서 다시 하면 안 된다.
+    expect(data?.clients[0]?.score).toBe(90);
+  });
+
+  it('주 사이트 지정이 없으면 첫 주소를 쓴다', async () => {
+    withCompanies([{ id: 'c1', name: '온담', sites: [{ siteId: 'a' }, { siteId: 'b' }] }]);
+    historyBySite({ a: entry(20, 1), b: entry(90, 1) });
+
+    expect((await readDashboard(NOW))?.clients[0]?.score).toBe(20);
+  });
+
+  it('한 번도 안 잰 곳을 0 점으로 만들지 않는다', async () => {
+    withCompanies([{ id: 'c1', name: '온담', sites: [{ siteId: 'a' }] }]);
+    historyBySite({});
+
+    const row = (await readDashboard(NOW))?.clients[0];
+    expect(row?.score).toBeNull();
+    expect(row?.ageDays).toBeNull();
+  });
+
+  it('안 잰 주소가 있는 곳이 맨 위', async () => {
+    withCompanies([
+      { id: 'c1', name: '가나', sites: [{ siteId: 'a' }] },
+      { id: 'c2', name: '다라', sites: [{ siteId: 'b' }, { siteId: 'c' }] },
+    ]);
+    historyBySite({ a: entry(80, 1), b: entry(80, 1) });
+
+    const clients = (await readDashboard(NOW))?.clients ?? [];
+    expect(clients[0]?.customerId).toBe('c2');
+    expect(clients[0]?.unmeasuredSites).toBe(1);
+  });
+
+  it('둘 다 재 놓았으면 오래 방치된 곳이 위', async () => {
+    withCompanies([
+      { id: 'c1', name: '가나', sites: [{ siteId: 'a' }] },
+      { id: 'c2', name: '다라', sites: [{ siteId: 'b' }] },
+    ]);
+    historyBySite({ a: entry(80, 2), b: entry(80, 30) });
+
+    const clients = (await readDashboard(NOW))?.clients ?? [];
+    expect(clients[0]?.customerId).toBe('c2');
+    expect(clients[0]?.ageDays).toBe(30);
+  });
+
+  it('점수 낮은 순으로 세우지 않는다 — 낮은 점수는 일이 남았다는 뜻이지 밀렸다는 뜻이 아니다', async () => {
+    withCompanies([
+      { id: 'c1', name: '가나', sites: [{ siteId: 'a' }] },
+      { id: 'c2', name: '다라', sites: [{ siteId: 'b' }] },
+    ]);
+    historyBySite({ a: entry(10, 1), b: entry(95, 1) });
+
+    // 같은 날 잰 두 곳이면 이름순. 10 점짜리가 위로 올라오지 않는다.
+    expect((await readDashboard(NOW))?.clients.map((row) => row.customerId)).toEqual([
+      'c1',
+      'c2',
+    ]);
+  });
+
+  it('진단 줄과 레일이 같은 이력을 본다 — 사이트마다 한 번만 읽는다', async () => {
+    withCompanies([{ id: 'c1', name: '온담', sites: [{ siteId: 'a' }, { siteId: 'b' }] }]);
+    historyBySite({ a: entry(60, 1), b: entry(80, 1) });
+
+    await readDashboard(NOW);
+
+    // 따로 읽으면 왕복이 두 배가 되고, 그 사이에 진단이 하나 끝나면 두 칸이 서로 다른
+    // 말을 한다.
+    expect(readHistory).toHaveBeenCalledTimes(2);
+  });
+});

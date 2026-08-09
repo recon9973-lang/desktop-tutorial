@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ErrorState, formatScore } from '@veo/ui';
+import { ErrorState, formatCount, formatScore, NOT_MEASURED } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
 import { readDashboard, type AreaRow } from '@/lib/dashboard';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
+import { ClientRail } from './ClientRail';
 import own from './dashboard.module.css';
 
 /**
@@ -61,19 +62,40 @@ async function DashboardContent() {
           description="서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주십시오."
         />
       ) : (
-        <ul className={own.areas}>
-          {data.areas.map((area) => (
-            <li key={area.key}>
-              <Area row={area} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className={own.areas}>
+            {data.areas.map((area) => (
+              <li key={area.key}>
+                <Area row={area} />
+              </li>
+            ))}
+          </ul>
+          <ClientRail rows={data.clients} />
+        </>
       )}
     </div>
   );
 }
 
+
 const TONE_CLASS = { plain: 'rowPlain', warn: 'rowWarn', fail: 'rowFail' } as const;
+
+/**
+ * 큰 숫자 한 칸 — 단위마다 자릿수 규칙이 다르다.
+ *
+ * **`toLocaleString` 을 쓰지 않는다.** 정수에는 무해하지만 소수에는 조용히 반올림을
+ * 한다 — 사용량 `12.34567%` 가 `12.346` 으로, `82.999%` 가 `82.999` 로 나갔다. 부르는
+ * 자리에서는 그 값이 정수인지 아닌지 보이지 않기 때문에, "여기는 정수니까 괜찮다" 는
+ * 판단 자체가 다음 사람에게 전달되지 않는다.
+ *
+ * 그래서 세 함수만 쓴다 — 셋 다 자르고, 반올림하지 않는다(사장님 지시 2026-08-09
+ * *"모든 값 동일하게 자르기로"*).
+ */
+function figureText(row: AreaRow): string {
+  if (row.value === null) return NOT_MEASURED;
+  // 점수와 백분율은 소수점 두 자리까지. 건수는 정수로 자른 뒤 천 단위만 끊는다.
+  return row.unit === '건' ? formatCount(row.value) : formatScore(row.value);
+}
 
 function Area({ row }: { readonly row: AreaRow }) {
   return (
@@ -84,16 +106,8 @@ function Area({ row }: { readonly row: AreaRow }) {
       </span>
 
       <span className={own.figure}>
-        {/* 못 읽었거나 아직 없으면 "—". 0 과 모름을 같은 칸에 두지 않는다. */}
-        {/* 점수는 자릿수를 `formatScore` 가 정한다 — 자르고, 반올림하지 않는다.
-            건수·백분율은 세는 값이라 천 단위만 끊어 그대로 보인다. */}
-        <b className={own.value}>
-          {row.value === null
-            ? '—'
-            : row.unit === '점'
-              ? formatScore(row.value)
-              : row.value.toLocaleString('ko-KR')}
-        </b>
+        {/* 못 읽었거나 아직 없으면 "—"(`NOT_MEASURED`). 0 과 모름을 같은 칸에 두지 않는다. */}
+        <b className={own.value}>{figureText(row)}</b>
         {row.value === null ? null : <span className={own.unit}>{row.unit}</span>}
       </span>
 

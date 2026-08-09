@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Card, EmptyState, ErrorState, formatPercent, formatScore } from '@veo/ui';
+import { Card, EmptyState, ErrorState, formatCount, formatPercent, formatScore } from '@veo/ui';
 
 import { measurementLabel, readSpend } from '@/lib/observations';
 import { readPageSpeedQuota, type PageSpeedQuota } from '@/lib/usage';
@@ -106,18 +106,18 @@ function PageSpeedQuotaSection({
         */}
         <Figure
           label="남은 호출"
-          value={`${quota.remaining.toLocaleString('ko-KR')}회`}
-          note={`진단 한 번에 최대 ${quota.calls_per_scan}회 · 약 ${quota.scans_remaining.toLocaleString('ko-KR')}번 더 진단 가능`}
+          value={`${formatCount(quota.remaining)}회`}
+          note={`진단 한 번에 최대 ${quota.calls_per_scan}회 · 약 ${formatCount(quota.scans_remaining)}번 더 진단 가능`}
           warn={quota.is_warning}
         />
         <Figure
           label="오늘 쓴 호출 (전체)"
-          value={`${quota.calls_today.toLocaleString('ko-KR')}회`}
-          note={`한도 ${quota.daily_quota.toLocaleString('ko-KR')}회 중 ${percent(quota.used_ratio)}`}
+          value={`${formatCount(quota.calls_today)}회`}
+          note={`한도 ${formatCount(quota.daily_quota)}회 중 ${percent(quota.used_ratio)}`}
         />
         <Figure
           label="이 조직이 쓴 몫"
-          value={`${quota.calls_by_this_organization.toLocaleString('ko-KR')}회`}
+          value={`${formatCount(quota.calls_by_this_organization)}회`}
           note="참고용입니다. 남은 양은 이 숫자로 알 수 없습니다."
         />
       </dl>
@@ -187,14 +187,14 @@ function SpendSection({ found }: { readonly found: Awaited<ReturnType<typeof rea
         ) : (
           <>
             <dl className={own.totals}>
-              <Figure label="호출" value={`${spend.total_calls.toLocaleString('ko-KR')}회`} />
+              <Figure label="호출" value={`${formatCount(spend.total_calls)}회`} />
               <Figure
                 label="입력 토큰"
-                value={spend.input_tokens.toLocaleString('ko-KR')}
+                value={formatCount(spend.input_tokens)}
               />
               <Figure
                 label="출력 토큰"
-                value={spend.output_tokens.toLocaleString('ko-KR')}
+                value={formatCount(spend.output_tokens)}
               />
               {/*
                 금액과 '얼마나 실측인지' 를 떼어 놓지 않는다. $0.00 만 크게 보이면
@@ -210,7 +210,7 @@ function SpendSection({ found }: { readonly found: Awaited<ReturnType<typeof rea
 
             {spend.unmeasurable_calls > 0 ? (
               <p className={own.unmeasured}>
-                이 중 <strong>{spend.unmeasurable_calls.toLocaleString('ko-KR')}회</strong>는
+                이 중 <strong>{formatCount(spend.unmeasurable_calls)}회</strong>는
                 금액을 낼 수 없어 위 합계에 들어 있지 않습니다.{' '}
                 <strong>실제 지출은 위 금액보다 큽니다.</strong>
               </p>
@@ -243,17 +243,17 @@ function SpendSection({ found }: { readonly found: Awaited<ReturnType<typeof rea
                 <p className={own.engineHead}>
                   <span className={own.engineName}>{engine.engine}</span>
                   <span className={own.engineCalls}>
-                    {engine.calls.toLocaleString('ko-KR')}회
+                    {formatCount(engine.calls)}회
                   </span>
                 </p>
                 <p className={own.engineMeta}>
-                  입력 {engine.input_tokens.toLocaleString('ko-KR')} · 출력{' '}
-                  {engine.output_tokens.toLocaleString('ko-KR')} 토큰 · 측정된 금액 $
+                  입력 {formatCount(engine.input_tokens)} · 출력{' '}
+                  {formatCount(engine.output_tokens)} 토큰 · 측정된 금액 $
                   {formatScore(engine.measured_cost_usd)}
                 </p>
                 {engine.unmeasurable_calls > 0 ? (
                   <p className={own.engineWarn}>
-                    금액 미측정 {engine.unmeasurable_calls.toLocaleString('ko-KR')}회
+                    금액 미측정 {formatCount(engine.unmeasurable_calls)}회
                   </p>
                 ) : null}
               </li>
