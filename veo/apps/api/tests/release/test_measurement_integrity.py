@@ -42,8 +42,13 @@ AI_MARKERS = ("openai", "anthropic", "google.generativeai", "litellm", "langchai
 #: 값을 다듬는 호출.
 ROUNDING_CALLS = ("round",)
 
-#: 여기까지는 부동소수점 잡음 정리로 본다. 그보다 짧게 깎으면 측정값 훼손이다.
-MIN_DIGITS = 6
+#: 점수를 만드는 파일. 여기서는 **자릿수를 얼마로 주든** 반올림하지 않는다.
+SCORE_MODULES = (
+    "scoring/evaluator.py",
+    "scoring/page.py",
+    "scoring/improvements.py",
+    "observations/detection/disambiguation.py",
+)
 
 
 def python_files(package: str) -> list[pathlib.Path]:
@@ -94,34 +99,31 @@ class TestNoModelTouchesTheScore:
 class TestTheScoreIsNotTidiedUp:
     """잰 값은 잰 값이다. 보기 좋게 만들려고 자릿수를 줄이지 않는다."""
 
-    def test_the_evaluator_never_rounds_below_six_digits(self) -> None:
-        """소수점 여섯 자리는 **부동소수점 잡음 정리**다. 그보다 줄이면 측정값 훼손이다.
+    @pytest.mark.parametrize("module", SCORE_MODULES)
+    def test_no_score_is_rounded_at_all(self, module: str) -> None:
+        """사장님 지시(2026-08-09): **"모든 점수는 반올림이나 절삭 없다."**
 
-        `round(x, 6)` 은 78.911122 를 78.911122 로 둔다 — 같은 계산이 실행마다 15번째
-        자리에서 달라지는 것을 막아 **두 진단을 대조할 수 있게** 하는 장치다.
-        `round(x, 2)` 나 자릿수 없는 `round(x)` 는 다르다. 그것은 사람이 보기 좋으라고
-        값을 깎는 것이고, 그 순간 화면과 원자료가 다른 값을 말한다.
+        앞서 나는 여섯 자리까지는 "부동소수점 잡음 정리" 라며 남겨 두자고 했다. 그것도
+        결국 값을 깎는 일이고, 깎아야 할 이유가 코드 어디에도 적혀 있지 않았다 —
+        DB 열도 `Float`(배정밀도)라 자릿수 제약이 없다. 47곳을 전부 걷어냈고 시험
+        5,256개가 그대로 통과했다. 남길 이유가 없었다는 뜻이다.
+
+        표기는 표기하는 쪽에서 정한다. **여기서는 잰 값을 그대로 싣는다.**
         """
-        path = SRC / "scoring" / "evaluator.py"
+        path = SRC / module
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
 
-        offenders: list[str] = []
-        for node in ast.walk(tree):
-            if not (
-                isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Name)
-                and node.func.id in ROUNDING_CALLS
-            ):
-                continue
-            digits = node.args[1] if len(node.args) > 1 else None
-            value = digits.value if isinstance(digits, ast.Constant) else None
-            if value is None or value < MIN_DIGITS:
-                offenders.append(f"줄 {node.lineno} (자릿수 {value})")
+        offenders = [
+            f"줄 {node.lineno}"
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id in ROUNDING_CALLS
+        ]
 
         assert not offenders, (
-            "scoring/evaluator.py 가 값을 여섯 자리보다 짧게 깎는다: "
-            + ", ".join(offenders)
-            + ". 잰 값은 그대로 싣고, 표기는 표기하는 쪽에서 정한다."
+            f"{module} 가 점수를 반올림한다: " + ", ".join(offenders)
+            + ". 모든 점수는 반올림이나 절삭 없이 그대로 싣는다."
         )
 
     def test_the_public_payload_carries_the_score_as_measured(self) -> None:

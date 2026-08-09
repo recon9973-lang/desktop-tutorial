@@ -339,7 +339,7 @@ def assess(
 
 def _finish(start: float, signals: Sequence[Signal]) -> Attribution:
     total = start + sum(signal.delta for signal in signals)
-    confidence = round(min(1.0, max(0.0, total)), 4)
+    confidence = min(1.0, max(0.0, total))
     if confidence >= CONFIRMATION_THRESHOLD:
         band = ConfidenceBand.HIGH
     elif confidence >= 0.5:

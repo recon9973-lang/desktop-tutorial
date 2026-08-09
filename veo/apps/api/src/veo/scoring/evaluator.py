@@ -135,7 +135,7 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         overall_score = score_before_caps * reach
         for cap in applied_caps:
             overall_score = min(overall_score, cap.max_overall_score)
-        overall_score = round(max(0.0, min(100.0, overall_score)), 6)
+        overall_score = max(0.0, min(100.0, overall_score))
 
     gates = _raise_gates(spec, by_id)
 
@@ -174,19 +174,19 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         "checks": check_rows,
         "categories": category_rows,
         "overall": {
-            "declared_weight_total": round(declared_weight_total, 6),
-            "effective_weight_total": round(effective_weight_total, 6),
+            "declared_weight_total": declared_weight_total,
+            "effective_weight_total": effective_weight_total,
             "renormalised": abs(effective_weight_total - declared_weight_total) > 1e-9,
-            "weighted_sum": round(weighted_sum, 6),
-            "score_before_caps": None if score_before_caps is None else round(score_before_caps, 6),
+            "weighted_sum": weighted_sum,
+            "score_before_caps": None if score_before_caps is None else score_before_caps,
             "score": overall_score,
-            "coverage": round(coverage, 6),
-            "confidence": round(confidence, 6),
+            "coverage": coverage,
+            "confidence": confidence,
             "status": result_status,
             "band_id": band.id if band else None,
             # 도달률은 관문 영역이 있는 명세에서만 1.0 이 아니다. 그래도 항상 적는다 —
             # 어떤 명세로 매긴 점수인지 나중에 이 기록만 보고 알 수 있어야 한다.
-            "reach": round(reach, 6),
+            "reach": reach,
             "gate_unverified": gate_unverified,
             "formula": (
                 "overall = reach x sum(category_score x weight)"
@@ -222,13 +222,13 @@ def evaluate(spec: ScoringSpec, outcomes: Iterable[CheckOutcome]) -> ScoreResult
         status=result_status,
         overall_score=overall_score,
         overall_score_before_caps=(
-            None if score_before_caps is None else round(score_before_caps, 6)
+            None if score_before_caps is None else score_before_caps
         ),
         band_id=band.id if band else None,
-        coverage=round(coverage, 6),
-        confidence=round(confidence, 6),
-        effective_weight_total=round(effective_weight_total, 6),
-        reach=round(reach, 6),
+        coverage=coverage,
+        confidence=confidence,
+        effective_weight_total=effective_weight_total,
+        reach=reach,
         gate_unverified=gate_unverified,
         categories=category_scores,
         applied_caps=applied_caps,
@@ -536,7 +536,7 @@ def _score_category(
             "severity_coefficient": coefficient,
             "affected_weight": outcome.affected_weight,
             "evaluated_weight": outcome.evaluated_weight,
-            "coverage_ratio": round(outcome.coverage_ratio, 6),
+            "coverage_ratio": outcome.coverage_ratio,
             "confidence": confidence,
             "evidence_ids": list(outcome.evidence_ids),
         }
@@ -586,7 +586,7 @@ def _score_category(
                 row.update(
                     {
                         "status_multiplier": None,
-                        "penalty": round(coefficient, 6),
+                        "penalty": coefficient,
                         "counted_in_budget": True,
                         "formula": (
                             f"UNKNOWN — earns nothing; {coefficient} stays in the denominator"
@@ -624,12 +624,12 @@ def _score_category(
         row.update(
             {
                 "status_multiplier": multiplier,
-                "penalty": round(penalty, 6),
+                "penalty": penalty,
                 "counted_in_budget": True,
-                "breadth": round(breadth, 6),
+                "breadth": breadth,
                 "formula": (
-                    f"penalty = {round(coefficient, 6)} x {multiplier} x "
-                    f"{round(breadth, 6)} x {confidence} = {round(penalty, 6)}"
+                    f"penalty = {coefficient} x {multiplier} x "
+                    f"{breadth} x {confidence} = {penalty}"
                 ),
             }
         )
@@ -658,21 +658,21 @@ def _score_category(
         # A zero budget means only zero-coefficient (INFO) checks were scored:
         # there is nothing that could have been lost, so the category is intact.
         score = (
-            round(100.0 * max(0.0, 1.0 - penalty_total / budget), 6) if budget > 0 else 100.0
+            100.0 * max(0.0, 1.0 - penalty_total / budget) if budget > 0 else 100.0
         )
         if confidence_weight > 0:
             mean_confidence = confidence_accum / confidence_weight
         else:
             mean_confidence = sum(plain_confidences) / len(plain_confidences)
 
-    confidence_value = round(coverage * mean_confidence, 6)
+    confidence_value = coverage * mean_confidence
 
     if category.is_gate and score is not None:
         # 관문 영역의 점수는 통과 비율이 아니라 **도달률**이다. 위에서 매긴 값은 보통
         # 영역의 산식이고, 관문은 가중 평균에 참여하지 않으므로 그 숫자는 종합 점수에
         # 쓰이지도 않는다 — 화면에만 나가는 뜻 없는 값이었다(2026-08-06 실측: 사이트
         # 60.0 / 페이지 100.0). 페이지 쪽과 같은 함수로 다시 매긴다(0-D).
-        score = round(category_reach(spec, category, by_id)[0] * 100.0, 6)
+        score = category_reach(spec, category, by_id)[0] * 100.0
 
     category_score = CategoryScore(
         category_id=category.id,
@@ -681,9 +681,9 @@ def _score_category(
         weight=category.weight,
         status=status,
         score=score,
-        budget=round(budget, 6),
-        penalty_total=round(penalty_total, 6),
-        coverage=round(coverage, 6),
+        budget=budget,
+        penalty_total=penalty_total,
+        coverage=coverage,
         confidence=confidence_value,
         applicable_check_ids=applicable,
         scored_check_ids=scored,
@@ -698,10 +698,10 @@ def _score_category(
         "name_ko": category.name_ko,
         "weight": category.weight,
         "status": status,
-        "budget": round(budget, 6),
-        "penalty_total": round(penalty_total, 6),
+        "budget": budget,
+        "penalty_total": penalty_total,
         "score": score,
-        "coverage": round(coverage, 6),
+        "coverage": coverage,
         "confidence": confidence_value,
         "applicable_check_ids": applicable,
         "scored_check_ids": scored,

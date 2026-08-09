@@ -102,7 +102,7 @@ class ScoreShift:
     def delta(self) -> float | None:
         if self.before_score is None or self.after_score is None:
             return None
-        return round(self.after_score - self.before_score, 6)
+        return self.after_score - self.before_score
 
     def to_record(self) -> dict[str, Any]:
         return {
@@ -161,7 +161,7 @@ class RescoreSummary:
     @property
     def mean_delta(self) -> float:
         values = self.deltas
-        return round(sum(values) / len(values), 6) if values else 0.0
+        return sum(values) / len(values) if values else 0.0
 
     @property
     def max_rise(self) -> float:

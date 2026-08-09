@@ -40,7 +40,7 @@ WEIGHT_TOLERANCE = 1e-6
 
 def _num(value: float) -> str:
     """Render a number the way a reviewer writes it: 70, not 70.0; 12.5 stays 12.5."""
-    rounded = round(value, 6)
+    rounded = value
     if abs(rounded - round(rounded)) < 1e-9:
         return str(round(rounded))
     return f"{rounded:g}"
@@ -218,7 +218,7 @@ class SpecDiff:
                     "name_ko": change.name_ko,
                     "before": change.before,
                     "after": change.after,
-                    "delta": round(change.delta, 6),
+                    "delta": change.delta,
                 }
                 for change in self.weight_changes
             ],
@@ -385,7 +385,7 @@ class ValidationReport:
             "ok": self.ok,
             "errors_ko": list(self.errors_ko),
             "warnings_ko": list(self.warnings_ko),
-            "category_weight_total": round(self.category_weight_total, 6),
+            "category_weight_total": self.category_weight_total,
         }
 
 

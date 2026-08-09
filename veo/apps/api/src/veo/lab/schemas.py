@@ -133,7 +133,7 @@ class DiffPayload(BaseModel):
                     name_ko=change.name_ko,
                     before=change.before,
                     after=change.after,
-                    delta=round(change.delta, 6),
+                    delta=change.delta,
                 )
                 for change in diff.weight_changes
             ],
@@ -177,7 +177,7 @@ class ValidationPayload(BaseModel):
             ok=report.ok,
             errors_ko=list(report.errors_ko),
             warnings_ko=list(report.warnings_ko),
-            category_weight_total=round(report.category_weight_total, 6),
+            category_weight_total=report.category_weight_total,
         )
 
 

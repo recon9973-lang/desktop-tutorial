@@ -114,7 +114,7 @@ def rank_improvements(result: ScoreResult) -> tuple[Improvement, ...]:
             Improvement(
                 check_id=outcome.check_id,
                 category_id=category_id,
-                gain_points=round(gain, 2),
+                gain_points=gain,
                 # 다시 채점해도 안 올랐고, 상한이 실제로 깎고 있다 — 그때만 참이다.
                 blocked_by_cap=capping and gain <= 0.0,
             )

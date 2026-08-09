@@ -193,7 +193,7 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
                     # **이 관문 하나**의 도달률이다. 여태까지 곱해 온 값(reach)을 넣으면
                     # 관문이 둘 이상인 명세에서 두 번째 칸이 첫 칸의 손실까지 자기 것으로
                     # 보여 준다. 사이트 쪽도 같은 값을 쓴다(0-D).
-                    score=round(stage_reach * 100.0, 6),
+                    score=stage_reach * 100.0,
                 )
             )
             continue
@@ -259,7 +259,7 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
                 name_ko=category.name_ko,
                 weight=category.weight,
                 is_gate=False,
-                score=round(100.0 * max(0.0, (budget - stage_lost) / budget), 6),
+                score=100.0 * max(0.0, (budget - stage_lost) / budget),
             )
         )
         scoreable.append((category, stage_lost / budget, loss_rows))
@@ -280,7 +280,7 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
             spec_checksum=spec.checksum,
             status=status,
             score=None,
-            reach=round(reach, 6),
+            reach=reach,
             quality=None,
             stages=tuple(stages),
             gate_unverified=tuple(gate_unverified),
@@ -302,7 +302,7 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
                     check_id=check_id,
                     category_id=category.id,
                     status=status_value,
-                    lost=round(stage_share * (lost / budget), 6),
+                    lost=stage_share * (lost / budget),
                 )
             )
 
@@ -325,9 +325,9 @@ def evaluate_page(spec: ScoringSpec, outcomes: list[CheckOutcome]) -> PageScore:
         spec_version=spec.version,
         spec_checksum=spec.checksum,
         status="SCORED",
-        score=round(reach * quality, 6),
-        reach=round(reach, 6),
-        quality=round(quality, 6),
+        score=reach * quality,
+        reach=reach,
+        quality=quality,
         stages=tuple(stages),
         losses=tuple(losses),
         gate_unverified=tuple(gate_unverified),
