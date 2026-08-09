@@ -68,6 +68,7 @@ export default async function ConsoleGeoPage({
       <ConsoleGeoContent
         jobId={single(params['job'])}
         runId={single(params['run'])}
+        seed={single(params['seed'])}
         projectId={single(params['project'])}
       />
     </PermissionGate>
@@ -82,10 +83,13 @@ function single(value: string | string[] | undefined): string | null {
 async function ConsoleGeoContent({
   jobId,
   runId,
+  seed,
   projectId,
 }: {
   readonly jobId: string | null;
   readonly runId: string | null;
+  /** 키워드 화면에서 넘어온 씨앗 키워드. `?seed=` 로 온다. */
+  readonly seed: string | null;
   readonly projectId: string | null;
 }) {
   const [engines, promptSets, runs, jobs, companies] = await Promise.all([
@@ -256,7 +260,7 @@ async function ConsoleGeoContent({
                   ))}
                 </nav>
               ) : null}
-              <PromptSetForm projectId={selectedProject} />
+              <PromptSetForm projectId={selectedProject} seed={seed} />
             </Card>
           )}
 

@@ -242,3 +242,16 @@
   border-radius: var(--veo-radius-sm);
   font-size: var(--veo-font-size-200);
 }
+
+/* 키워드 → 질문 수집으로 가는 길 (③ 축의 앞단).
+   연관 키워드 줄에서는 검색량 뒤에 붙으므로 줄바꿈되지 않게 둔다. */
+.askLink {
+  flex: none;
+  white-space: nowrap;
+  color: var(--veo-color-accent);
+  font-size: var(--veo-font-size-100);
+}
+
+.askLink:hover {
+  color: var(--veo-color-accent-hover);
+}

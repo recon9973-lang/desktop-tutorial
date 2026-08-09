@@ -55,9 +55,26 @@ function newKey(): string {
   return crypto.randomUUID();
 }
 
-export function PromptSetForm({ projectId }: { readonly projectId: string }) {
+export function PromptSetForm({
+  projectId,
+  seed,
+}: {
+  readonly projectId: string;
+  /**
+   * 키워드 화면에서 넘어온 **씨앗 키워드**.
+   *
+   * ③ 축의 질문은 하늘에서 오지 않는다 — 키워드에서 온다(사장님 2026-08-09). 그런데
+   * 키워드 조사와 질문 수집 사이에 길이 없어서, 사람이 조사 화면에서 본 키워드를
+   * **눈으로 읽고 여기에 다시 타이핑**하고 있었다.
+   *
+   * 씨앗이 오면 폼을 열어 두고 입력칸을 채운다. **자동으로 수집하지는 않는다** —
+   * 수집은 외부 API 를 부르는 일이고, 화면을 여는 것만으로 남의 서버를 두드리면 안
+   * 된다. 사람이 「질문 가져오기」를 누르는 순간까지 기다린다.
+   */
+  readonly seed?: string | null;
+}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(seed != null && seed !== '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +83,7 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
   const [rule, setRule] = useState('');
   const [pasted, setPasted] = useState('');
   const [rows, setRows] = useState<DraftPrompt[]>([]);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(seed ?? '');
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [harvest, setHarvest] = useState<QuestionHarvest | null>(null);

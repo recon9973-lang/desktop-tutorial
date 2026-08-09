@@ -78,7 +78,11 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 function KeywordCard({ snapshot }: { readonly snapshot: KeywordSnapshot }) {
   return (
-    <Card title={snapshot.original_keyword} headingLevel={3}>
+    <Card
+      title={snapshot.original_keyword}
+      headingLevel={3}
+      aside={<AskWithKeyword keyword={snapshot.original_keyword} />}
+    >
       {snapshot.metrics === null ? (
         <p className={styles.absent}>
           검색 건수를 받지 못했습니다. 위 자료 출처에서 검색광고 상태를 확인해 주십시오.
@@ -133,6 +137,7 @@ function KeywordCard({ snapshot }: { readonly snapshot: KeywordSnapshot }) {
                 <span className={styles.relatedCount}>
                   {countText(one.monthly_total_searches)}
                 </span>
+                <AskWithKeyword keyword={one.related_keyword} />
               </li>
             ))}
           </ul>
@@ -258,4 +263,35 @@ function countText(measured: MeasuredCount): string {
   }
   if (measured.quality === 'ROUNDED') return `약 ${formatted}회`;
   return `${formatted}회`;
+}
+
+/**
+ * 이 키워드로 **질문을 찾으러 간다** — ③ 축의 앞단을 잇는 길.
+ *
+ * ## 왜 이 링크가 필요했나
+ *
+ * 사장님이 그린 사슬은 이렇다(2026-08-09):
+ *
+ * > *"키워드에서 관련 질문이 나오고 키워드 마인드맵이 나오고 관련 PAA 지식iN 같은
+ * > 곳에서 질문을 추출하게 만들고 싶었어."*
+ *
+ * 양쪽 끝은 다 있었다 — 여기서 키워드를 조사하고, GEO 화면에서 지식iN·PAA 로 질문을
+ * 모은다. **가운데가 없었다.** 사람이 이 화면에서 키워드를 눈으로 읽고 저쪽 입력칸에
+ * 다시 타이핑하고 있었다(`CORRECTIONS.md` #23).
+ *
+ * ## 연관 키워드에도 붙이는 이유
+ *
+ * 연관 키워드는 **네이버가 준 실측**이다. 규칙으로 만들어 낸 시드가 아니다. 검색량이
+ * 함께 있으니 **사람이 많이 찾는 말부터** 질문을 모을 수 있다 — 그것이 이 화면이
+ * 질문 수집보다 앞에 있어야 하는 이유다.
+ */
+function AskWithKeyword({ keyword }: { readonly keyword: string }) {
+  return (
+    <a
+      className={styles.askLink}
+      href={`/console/geo?seed=${encodeURIComponent(keyword)}`}
+    >
+      이 키워드로 질문 찾기
+    </a>
+  );
 }
