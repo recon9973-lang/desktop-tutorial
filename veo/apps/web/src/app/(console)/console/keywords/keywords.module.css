@@ -255,3 +255,15 @@
 .askLink:hover {
   color: var(--veo-color-accent-hover);
 }
+
+/* ERP journeymap 안내. 다른 시스템으로 나가는 길이라 눈에 띄되 조용하게. */
+.mindmapNote {
+  margin: 0 0 var(--veo-space-2);
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+}
+
+.mindmapLink {
+  color: var(--veo-color-accent);
+  font-weight: var(--veo-weight-semibold);
+}
