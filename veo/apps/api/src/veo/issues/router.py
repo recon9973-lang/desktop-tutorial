@@ -17,15 +17,16 @@ persisted outcomes of a re-scan and derives the verdict itself.
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from veo.api.deps import RequestId, ok
-from veo.authz import Permission, Principal
-from veo.contracts.enums import IssueSeverity
+from veo.authz import Permission, Principal, tenant_select
+from veo.contracts.enums import IssueSeverity, JobType
 from veo.contracts.envelope import ApiResponse, PagedResponse
+from veo.db.models.identity import Site
 from veo.db.session import get_db
 from veo.issues import service
 from veo.issues.lifecycle import (
@@ -34,6 +35,7 @@ from veo.issues.lifecycle import (
     VerificationOutcome,
     describe_state_ko,
 )
+from veo.issues.reverify import REVERIFY_STAGES, reverification_work
 from veo.issues.schemas import (
     AssignRequest,
     IssueDetailPayload,
@@ -46,6 +48,8 @@ from veo.issues.schemas import (
     VerificationResultRequest,
 )
 from veo.issues.verification import VerificationScopeError
+from veo.jobs import service as jobs_service
+from veo.jobs.dispatch import dispatch
 from veo.organizations.errors import ReferenceNotFoundError
 from veo.organizations.http import PageParams, conflict, guard, not_found, paged
 
@@ -201,6 +205,14 @@ def request_verification(
     except VerificationScopeError as exc:
         raise conflict(exc.message_ko) from exc
 
+    # **여기가 비어 있었다.** 지금까지 이 창구는 상태를 `VERIFYING` 으로 옮기고
+    # 요청서를 돌려줄 뿐 아무것도 실행하지 않았다. 그래서 사람이 "재검사" 를 눌러도
+    # 재측정이 시작되지 않았고, 이슈는 영영 닫히지 않았다 —
+    # 실측 2026-08-09: 운영 이슈 165건이 전부 `OPEN`, `verification_runs` 0행.
+    job = _start_reverification(session, principal, issue=issue, request=request)
+    session.commit()
+    session.refresh(issue)
+
     state = IssueState(issue.state)
     payload = VerificationRequestedPayload(
         id=issue.id,
@@ -208,8 +220,70 @@ def request_verification(
         state_label_ko=describe_state_ko(state),
         summary_ko=service.summarize_issue(issue),
         request=VerificationRequestPayload.of(request),
+        job_id=job.id if job is not None else None,
     )
     return ok(payload, request_id)
+
+
+def _start_reverification(
+    session: DbSession,
+    principal: Principal,
+    *,
+    issue: Any,
+    request: Any,
+) -> Any:
+    """이슈의 URL 만 다시 재는 작업을 걸고, 그 작업 행을 돌려준다.
+
+    사이트를 못 찾으면 **작업 없이** 넘어간다. 상태는 이미 `VERIFYING` 이고, 그 사실은
+    사실이다 — 사람이 재검사를 요청했다. 여기서 예외를 던지면 그 요청까지 되돌아가는데,
+    되돌릴 이유가 없다. 대신 작업 번호가 비어 화면이 "재측정이 시작되지 않았습니다" 를
+    말할 수 있다.
+    """
+    site = session.execute(
+        tenant_select(Site, principal)
+        .where(Site.project_id == issue.project_id)
+        .order_by(Site.is_primary.desc())
+    ).scalars().first()
+    if site is None or not request.target_urls:
+        return None
+
+    job, created = jobs_service.submit(
+        session,
+        principal,
+        job_type=JobType.REVERIFICATION,
+        project_id=issue.project_id,
+        stages=list(REVERIFY_STAGES),
+        parameters={
+            "issue_id": str(issue.id),
+            "site_id": str(site.id),
+            "check_id": request.check_id,
+            "urls": list(request.target_urls),
+        },
+    )
+    if created:
+        dispatch(
+            job.id,
+            reverification_work(
+                organization_id=principal.organization_id,
+                user_id=principal.user_id,
+                roles=principal.roles,
+                session_id=principal.session_id,
+                is_service_account=principal.is_service_account,
+                issue_id=issue.id,
+                site_id=site.id,
+                target_url=site.origin,
+                urls=tuple(request.target_urls),
+            ),
+            job_type=JobType.REVERIFICATION,
+            # 큐로는 가지 않는다(`QUEUEABLE` 에 없다) — 워커의 재검증 태스크는 아직
+            # 뼈대다. 배경 스레드로 도는 것이 지금 유일하게 **실제로 도는** 길이다.
+            parameters={
+                "organization_id": str(principal.organization_id),
+                "issue_id": str(issue.id),
+                "site_id": str(site.id),
+            },
+        )
+    return job
 
 
 @router.post(

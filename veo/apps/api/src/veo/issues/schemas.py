@@ -310,6 +310,14 @@ class VerificationRequestedPayload(BaseModel):
     state_label_ko: str
     summary_ko: str
     request: VerificationRequestPayload
+    job_id: uuid.UUID | None = Field(
+        default=None,
+        description=(
+            "재측정 작업 번호입니다. 이 값이 있으면 재측정이 **실제로 시작됐다**는 뜻이고, "
+            "끝나면 이슈 상태가 측정 결과대로 바뀝니다. `null`이면 상태만 옮겨졌고 "
+            "재측정은 시작되지 않았습니다 — 사이트나 대상 URL을 찾지 못한 경우입니다."
+        ),
+    )
 
 
 class VerificationResultRequest(BaseModel):
