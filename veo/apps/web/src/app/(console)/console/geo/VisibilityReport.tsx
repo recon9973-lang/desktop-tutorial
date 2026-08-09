@@ -1,4 +1,4 @@
-import { Card } from '@veo/ui';
+import { Card, formatPercent, formatScore } from '@veo/ui';
 
 import type { ObservationRun, Rate, VisibilityMetrics } from '@/lib/observations';
 
@@ -175,7 +175,7 @@ function RateCard({ rate, meaning }: { readonly rate: Rate; readonly meaning: st
 
       {rate.low !== null && rate.high !== null && !unmeasured ? (
         <p className={styles.interval}>
-          95% 신뢰구간 {(rate.low * 100).toFixed(1)}% ~ {(rate.high * 100).toFixed(1)}%
+          95% 신뢰구간 {formatPercent(rate.low)} ~ {formatPercent(rate.high)}
         </p>
       ) : null}
 
@@ -273,7 +273,7 @@ function Cost({ run }: { readonly run: ObservationRun }) {
   return (
     <Card title="비용" headingLevel={3} tone="flat">
       <p className={styles.cost}>
-        확인된 비용 <strong>${run.total_cost_usd.toFixed(4)}</strong> (USD)
+        확인된 비용 <strong>${formatScore(run.total_cost_usd)}</strong> (USD)
       </p>
       {run.unpriced_calls > 0 ? (
         <p className={styles.rateNote}>

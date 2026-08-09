@@ -59,6 +59,32 @@ export function formatScore(value: number | null | undefined): string {
   return body;
 }
 
+/**
+ * 정수로 보이는 값(횟수·초·원)의 표기. **여기서도 반올림하지 않고 버린다.**
+ *
+ * `Math.round(4.7)` 은 `5` 다 — 4.7 번 잰 것을 5 번이라고 말하는 셈이다. 자르면 `4`
+ * 이고, 그것은 "4 번은 확실히 그렇다" 는 뜻이라 값을 넘어서지 않는다.
+ *
+ * 천 단위는 끊어 읽기 좋게 둔다 — 자릿수를 바꾸는 것이 아니라 사이에 쉼표를 넣는 것뿐이다.
+ */
+export function formatCount(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return NOT_MEASURED;
+  }
+  return Math.trunc(value).toLocaleString('ko-KR');
+}
+
+/**
+ * 비율을 백분율로 보인다. 값은 그대로, 자릿수만 둘까지 — **자른다.**
+ *
+ * `0.8246153846153846` -> `"82.46%"`. 앞의 판은 `toFixed(0)` 으로 `"82%"` 였고,
+ * 그것은 반올림이라 `0.825` 가 `"83%"` 로 나갔다 — 재지 않은 값이다.
+ */
+export function formatPercent(value: number | null | undefined): string {
+  const shown = formatScore(value === null || value === undefined ? value : value * 100);
+  return shown === NOT_MEASURED ? shown : `${shown}%`;
+}
+
 /** 점수 뒤에 `점` 을 붙인 표기. 못 잰 값에는 붙이지 않는다. */
 export function formatScoreWithUnit(value: number | null | undefined): string {
   const shown = formatScore(value);

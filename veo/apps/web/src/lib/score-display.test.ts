@@ -4,6 +4,7 @@
  * 사장님 지시(2026-08-09):
  *   "모든 점수는 반올림이나 절삭 없다."
  *   "소수점 두자리까지만 표기. 반올림 절삭 없이 표기만 소수점 두 자리까지."
+ *   **"모든 값 동일하게 자르기로."** — 점수만이 아니라 비율·금액·횟수까지 같은 규칙이다.
  *
  * 값은 재어진 그대로 저장되고 전달된다(`tests/release/test_measurement_integrity.py`
  * 가 채점 경로의 `round()` 를 막는다). 화면에서 몇 자리를 보일지만 `formatScore` 가
@@ -15,9 +16,8 @@
  * 화면만 조용히 반올림하고, `80.579` 가 `80.6` 으로 나간다 — 재지 않은 값이다.
  * 어기려면 이 시험을 고쳐야 하고, 고친 것은 커밋에 남는다.
  *
- * `%` 로 보이는 비율(도달 범위·확신도)은 여기서 막지 않는다. 사장님 지시는 **점수**에
- * 대한 것이고, 비율까지 두 자리로 바꾸면 화면 뜻이 달라진다. 남은 자리는
- * `ScoreCard.tsx` 의 `(clamped * 100).toFixed(1)%` 하나이며 별도로 여쭙는다.
+ * 비율도 금액도 횟수도 같은 규칙이다 — `formatPercent` 는 `0.82999` 를 `82.99%` 로 내고
+ * (반올림했다면 `83%`), `formatCount` 는 `4.7` 을 `4` 로 낸다(반올림했다면 `5`).
  */
 
 import { describe, expect, it } from 'vitest';
@@ -26,8 +26,14 @@ import { join } from 'node:path';
 
 const ROOT = join(import.meta.dirname, '..');
 
-/** 점수를 그리는 자리라고 보는 이름. 이 낱말 옆의 `toFixed` 는 반올림이다. */
-const SCORE_WORDS = /score|gainpoints|gain_points|quality|reach/i;
+/**
+ * 표기가 아닌 자리 — 여기서는 `Math.round` 를 막지 않는다.
+ *
+ * SVG 좌표·회전 각도·진행 막대 폭은 **사람이 읽는 값이 아니라 그리는 치수**다. 화면에
+ * 숫자로 나오지 않으므로 자릿수 규칙의 대상이 아니고, 여기까지 막으면 규칙이 무슨 뜻인지
+ * 흐려진다.
+ */
+const NOT_A_DISPLAYED_VALUE = /degrees|percent =|\bx:|\by:|expectedPages/;
 
 function sourceFiles(dir: string): string[] {
   const found: string[] = [];
@@ -43,23 +49,24 @@ function sourceFiles(dir: string): string[] {
   return found;
 }
 
-describe('점수 표기는 formatScore 만 쓴다', () => {
-  it('점수 옆에서 toFixed·Math.round 를 쓰지 않는다', () => {
+describe('표기는 formatScore · formatPercent · formatCount 만 쓴다', () => {
+  it('화면에 나가는 값을 toFixed·Math.round 로 그리지 않는다', () => {
     const offenders: string[] = [];
 
     for (const path of sourceFiles(ROOT)) {
       const lines = readFileSync(path, 'utf-8').split('\n');
       lines.forEach((line, index) => {
         if (!/toFixed\(|Math\.round\(/.test(line)) return;
-        if (!SCORE_WORDS.test(line)) return;
+        if (NOT_A_DISPLAYED_VALUE.test(line)) return;
         offenders.push(`${path.replace(ROOT, 'src')}:${index + 1}  ${line.trim()}`);
       });
     }
 
     expect(
       offenders,
-      '점수를 toFixed 로 그리면 반올림된다 — 80.579 가 80.6 이 되고, 그것은 재지 않은 ' +
-        '값이다. `formatScore` 를 쓴다:\n  ' + offenders.join('\n  '),
+      'toFixed·Math.round 는 **반올림**한다 — 80.579 가 80.6 이 되고, 그것은 재지 않은 ' +
+        '값이다. 표기는 `formatScore`(점수) · `formatPercent`(비율) · `formatCount`(정수) ' +
+        '셋으로만 한다. 셋 다 자르고, 반올림하지 않는다:\n  ' + offenders.join('\n  '),
     ).toEqual([]);
   });
 });

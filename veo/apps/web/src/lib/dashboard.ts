@@ -167,7 +167,8 @@ async function usageRow(): Promise<AreaRow> {
 
   return {
     ...base,
-    value: Math.round(quota.data.used_ratio * 100),
+    // 자료 층에서 깎지 않는다. 표기는 화면이 정한다.
+    value: quota.data.used_ratio * 100,
     // 남은 양이 아니라 **전체에서 나간 양**이다. 한도는 키에 걸리고 키는 하나다.
     note: `오늘 ${quota.data.calls_today}/${quota.data.daily_quota}회 · 우리 몫 ${quota.data.calls_by_this_organization}회`,
     tone: quota.data.is_exhausted ? 'fail' : quota.data.is_warning ? 'warn' : 'plain',

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { formatScore } from '../../utils/formatScore';
+import { formatPercent, formatScore } from '../../utils/formatScore';
 import { cx } from '../../utils/cx';
 import styles from './ScoreCard.module.css';
 
@@ -26,7 +26,7 @@ function formatRatio(value: number): string {
     return '측정 불가';
   }
   const clamped = Math.min(Math.max(value, 0), 1);
-  return `${(clamped * 100).toFixed(1)}%`;
+  return formatPercent(clamped);
 }
 
 export function ScoreCard({

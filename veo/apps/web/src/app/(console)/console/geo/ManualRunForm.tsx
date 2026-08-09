@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Button, FormError } from '@veo/ui';
+import { Button, FormError, formatScore } from '@veo/ui';
 
 import { MIN_RUNS_FOR_EXPLORATION } from '@/lib/sampling';
 
@@ -327,7 +327,7 @@ export function ManualRunForm({
         </p>
         {estimate !== null && estimate.amount_usd !== null ? (
           <p style={{ margin: 'var(--veo-space-2) 0 0' }}>
-            예상 비용 <strong>약 ${estimate.amount_usd.toFixed(2)}</strong> — 같은 조건에서
+            예상 비용 <strong>약 ${formatScore(estimate.amount_usd)}</strong> — 같은 조건에서
             이미 잰 토큰으로 계산했습니다.
           </p>
         ) : (

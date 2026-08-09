@@ -1,4 +1,4 @@
-import { Card, formatScoreWithUnit } from '@veo/ui';
+import { Card, formatPercent, formatScoreWithUnit } from '@veo/ui';
 
 import type { GeoCategory, GeoLookup, GeoReadiness } from '@/lib/observations';
 
@@ -66,8 +66,8 @@ export function ReadinessReport({
           <p className={styles.rateDenominator}>{readiness.band_label_ko}</p>
         )}
         <p className={styles.interval}>
-          측정 범위 {(readiness.coverage * 100).toFixed(0)}% · 신뢰도{' '}
-          {(readiness.confidence * 100).toFixed(0)}% · 채점 규칙 {readiness.spec_version}
+          측정 범위 {formatPercent(readiness.coverage)} · 신뢰도{' '}
+          {formatPercent(readiness.confidence)} · 채점 규칙 {readiness.spec_version}
         </p>
         <p className={styles.rateMeaning}>{report.summary_ko}</p>
       </div>

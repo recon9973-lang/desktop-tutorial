@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, type FormEvent } from 'react';
-import { Button, FormError } from '@veo/ui';
+import { Button, FormError, formatCount, formatScore } from '@veo/ui';
 
 import {
   FUNNELS,
@@ -459,6 +459,7 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
         <label className={styles.label} htmlFor="set-cadence">
           측정 주기 — 한 달에 몇 번
         </label>
+        {/* 입력 칸이라 정수여야 한다. 반올림이 아니라 자른다 — 표기 규칙과 같다. */}
         <input
           id="set-cadence"
           className={styles.number}
@@ -466,7 +467,7 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
           min={1}
           max={31}
           step={1}
-          value={Math.round(perMonth)}
+          value={Math.trunc(perMonth)}
           onChange={(event) => setPerMonth(Math.max(1, Number(event.target.value)))}
         />
         <p className={styles.hint}>
@@ -476,9 +477,9 @@ export function PromptSetForm({ projectId }: { readonly projectId: string }) {
       </div>
 
       <p className={styles.cost}>
-        질문 <strong>{rows.length}개</strong>를 한 달에 <strong>{Math.round(perMonth)}번</strong>{' '}
-        재면 약 <strong>${monthlyUsd.toFixed(2)}</strong> (
-        {Math.round(monthlyUsd * KRW_PER_USD).toLocaleString('ko-KR')}원) 입니다. 반복 3회 ·
+        질문 <strong>{rows.length}개</strong>를 한 달에 <strong>{formatCount(perMonth)}번</strong>{' '}
+        재면 약 <strong>${formatScore(monthlyUsd)}</strong> (
+        {formatCount(monthlyUsd * KRW_PER_USD)}원) 입니다. 반복 3회 ·
         검색 켬/끔 · 엔진 5개 기준이며, 제공자 공식 단가와 실측 토큰으로 셈한{' '}
         <strong>추정</strong>입니다.
       </p>

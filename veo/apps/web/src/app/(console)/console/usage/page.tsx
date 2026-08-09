@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Card, EmptyState, ErrorState } from '@veo/ui';
+import { Card, EmptyState, ErrorState, formatPercent, formatScore } from '@veo/ui';
 
 import { measurementLabel, readSpend } from '@/lib/observations';
 import { readPageSpeedQuota, type PageSpeedQuota } from '@/lib/usage';
@@ -147,7 +147,7 @@ function statusClass(quota: PageSpeedQuota): string | undefined {
 }
 
 function percent(ratio: number): string {
-  return `${(ratio * 100).toFixed(1)}%`;
+  return formatPercent(ratio);
 }
 
 /* ── 이 달의 AI 호출 ─────────────────────────────────────────────────── */
@@ -202,7 +202,7 @@ function SpendSection({ found }: { readonly found: Awaited<ReturnType<typeof rea
               */}
               <Figure
                 label="측정된 금액"
-                value={`$${spend.measured_cost_usd.toFixed(2)}`}
+                value={`$${formatScore(spend.measured_cost_usd)}`}
                 note={measurementLabel(spend.measurement)}
                 warn={!priced}
               />
@@ -249,7 +249,7 @@ function SpendSection({ found }: { readonly found: Awaited<ReturnType<typeof rea
                 <p className={own.engineMeta}>
                   입력 {engine.input_tokens.toLocaleString('ko-KR')} · 출력{' '}
                   {engine.output_tokens.toLocaleString('ko-KR')} 토큰 · 측정된 금액 $
-                  {engine.measured_cost_usd.toFixed(2)}
+                  {formatScore(engine.measured_cost_usd)}
                 </p>
                 {engine.unmeasurable_calls > 0 ? (
                   <p className={own.engineWarn}>

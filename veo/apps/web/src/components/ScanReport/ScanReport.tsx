@@ -1,4 +1,4 @@
-import { Card, formatScore, formatScoreWithUnit } from '@veo/ui';
+import { Card, formatCount, formatPercent, formatScore, formatScoreWithUnit } from '@veo/ui';
 
 import type { Band } from '@/lib/scan-report';
 import type { ConsoleScanResult } from '@/lib/console-scan';
@@ -31,7 +31,7 @@ interface ScanReportProps {
 
 /** 0~1 비율을 백분율 문자열로. 반올림은 한 자리까지 — 그 이상은 정밀해 보이기만 한다. */
 function percent(ratio: number): string {
-  return `${(ratio * 100).toFixed(1)}%`;
+  return formatPercent(ratio);
 }
 
 export function ScanReport({ result, bands, view, issuesHrefBase = null }: ScanReportProps) {
@@ -149,7 +149,7 @@ function Headline({
                     {current ? <span className={styles.bandMark}> · 현재</span> : null}
                   </th>
                   <td>
-                    {item.min}~{Math.round(item.max)}점
+                    {item.min}~{formatCount(item.max)}점
                   </td>
                 </tr>
               );

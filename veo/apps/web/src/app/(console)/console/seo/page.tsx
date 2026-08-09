@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, EmptyState, ErrorState, formatScore, formatScoreWithUnit } from '@veo/ui';
+import { Card, EmptyState, ErrorState, formatPercent, formatScore, formatScoreWithUnit } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
 import { ScanReport, type ReportView } from '@/components/ScanReport/ScanReport';
@@ -660,11 +660,11 @@ async function SummaryRail({
                   직전 대비{' '}
                   <b className={delta < 0 ? own.deltaDown : own.deltaUp}>
                     {delta > 0 ? '▲' : delta < 0 ? '▼' : ''}
-                    {Math.abs(delta).toFixed(1)}
+                    {formatScore(Math.abs(delta))}
                   </b>
                 </p>
               )}
-              <p>측정 범위 {Math.round(coverage * 100)}%</p>
+              <p>측정 범위 {formatPercent(coverage)}</p>
               <p>명세 {shown?.specVersion ?? '—'}</p>
             </div>
           </div>
@@ -806,7 +806,7 @@ async function SummaryRail({
           </p>
         ) : (
           <p className={own.railDelta}>
-            {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {Math.abs(delta).toFixed(1)}점{' '}
+            {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {formatScore(Math.abs(delta))}점{' '}
             <span className={own.railNote}>
               ({formatScore(previous.score)} → {formatScore(selected.score)}, 명세{' '}
               {selected.specVersion})
@@ -966,8 +966,8 @@ async function otherClientRows(
       previous.specVersion === latest.specVersion
     ) {
       const delta = latest.score - previous.score;
-      if (delta <= -0.1) badge = { kind: 'drop', text: `▼${Math.abs(delta).toFixed(1)}` };
-      else if (delta >= 0.1) badge = { kind: 'rise', text: `▲${delta.toFixed(1)}` };
+      if (delta <= -0.1) badge = { kind: 'drop', text: `▼${formatScore(Math.abs(delta))}` };
+      else if (delta >= 0.1) badge = { kind: 'rise', text: `▲${formatScore(delta)}` };
     }
     if (badge === null) {
       const measuredAt = new Date(latest.startedAt).getTime();

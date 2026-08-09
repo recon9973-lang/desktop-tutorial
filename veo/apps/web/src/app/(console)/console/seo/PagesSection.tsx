@@ -179,7 +179,7 @@ function PageDetailView({
                 {score.losses.map((loss) => (
                   <li key={loss.checkId}>
                     <span>{name(loss.checkId)}</span>
-                    <b>-{loss.lost.toFixed(1)}점</b>
+                    <b>-{formatScore(loss.lost)}점</b>
                   </li>
                 ))}
               </ul>

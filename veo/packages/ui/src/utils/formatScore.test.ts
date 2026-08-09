@@ -12,7 +12,13 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { NOT_MEASURED, formatScore, formatScoreWithUnit } from './formatScore';
+import {
+  NOT_MEASURED,
+  formatCount,
+  formatPercent,
+  formatScore,
+  formatScoreWithUnit,
+} from './formatScore';
 
 describe('자르되 반올림하지 않는다', () => {
   it.each([
@@ -84,5 +90,42 @@ describe('음수', () => {
 describe('아주 작은 값', () => {
   it('지수 표기가 와도 자릿수를 센다', () => {
     expect(formatScore(1e-7)).toBe('0.00');
+  });
+});
+
+describe('백분율 — 값은 그대로, 자릿수만 둘까지 자른다', () => {
+  it.each([
+    [0.8246153846153846, '82.46%'],
+    [0.8015090637793579, '80.15%'],
+    [1, '100.00%'],
+    [0, '0.00%'],
+  ])('%s -> %s', (given, expected) => {
+    expect(formatPercent(given)).toBe(expected);
+  });
+
+  it('반올림하지 않는다 — 0.82999 는 83% 가 아니다', () => {
+    expect(formatPercent(0.82999)).toBe('82.99%');
+  });
+
+  it('못 잰 비율은 0% 가 아니다', () => {
+    expect(formatPercent(null)).toBe(NOT_MEASURED);
+  });
+});
+
+describe('정수 표기 — 여기서도 버린다', () => {
+  it.each([
+    [4.7, '4'],
+    [30.99, '30'],
+    [0.9, '0'],
+  ])('%s -> %s (반올림했다면 올라갔을 값)', (given, expected) => {
+    expect(formatCount(given)).toBe(expected);
+  });
+
+  it('천 단위는 끊어 읽는다 — 자릿수를 바꾸는 것이 아니다', () => {
+    expect(formatCount(1234567.8)).toBe('1,234,567');
+  });
+
+  it('못 잰 값은 0 이 아니다', () => {
+    expect(formatCount(null)).toBe(NOT_MEASURED);
   });
 });

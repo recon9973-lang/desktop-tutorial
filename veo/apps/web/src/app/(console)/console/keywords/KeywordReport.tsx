@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, formatScore } from '@veo/ui';
+import { Card, formatPercent, formatScore } from '@veo/ui';
 
 import type {
   KeywordLookup,
@@ -160,7 +160,7 @@ function Trend({ trend }: { readonly trend: KeywordTrend }) {
       ) : (
         <p className={styles.meta}>
           {trend.period_start} ~ {trend.period_end} · 마지막 지점{' '}
-          <strong>{latest.relative_index.toFixed(1)}</strong> ({trend.unit})
+          <strong>{formatScore(latest.relative_index)}</strong> ({trend.unit})
         </p>
       )}
       <p className={styles.warning}>
@@ -186,9 +186,9 @@ function Chance({ opportunity }: { readonly opportunity: Opportunity }) {
         <p className={styles.chanceScore}>{formatScore(opportunity.score)}</p>
       )}
       <p className={styles.meta}>
-        자료 충족 {(opportunity.coverage * 100).toFixed(0)}% · 최신성{' '}
-        {(opportunity.freshness * 100).toFixed(0)}% · 신뢰도{' '}
-        {(opportunity.confidence * 100).toFixed(0)}%
+        자료 충족 {formatPercent(opportunity.coverage)} · 최신성{' '}
+        {formatPercent(opportunity.freshness)} · 신뢰도{' '}
+        {formatPercent(opportunity.confidence)}
       </p>
       {opportunity.missing_components.length === 0 ? null : (
         <p className={styles.warning}>
@@ -231,8 +231,8 @@ function Ratio({
         {missing
           ? qualityText(measured.quality)
           : percent
-            ? `${measured.value.toFixed(2)}%`
-            : measured.value.toFixed(1)}
+            ? `${formatScore(measured.value)}%`
+            : formatScore(measured.value)}
       </dd>
     </div>
   );

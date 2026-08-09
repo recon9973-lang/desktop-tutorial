@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Card, DataSourceBadge, ErrorState } from '@veo/ui';
+import { Card, DataSourceBadge, ErrorState, formatPercent } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
 import { readLatestSpecDesigns, type SpecDesign } from '@/lib/scoring-specs';
@@ -163,7 +163,7 @@ function DesignSection({ spec }: { readonly spec: SpecDesign }) {
             템플릿 하나의 결함이 여러 장에 퍼지는 구조를 반영합니다.{' '}
           </>
         )}
-        주의는 실패의 <b>{Math.round(spec.warningPenaltyMultiplier * 100)}%</b>만큼
+        주의는 실패의 <b>{formatPercent(spec.warningPenaltyMultiplier)}</b>만큼
         잃습니다.
       </p>
 

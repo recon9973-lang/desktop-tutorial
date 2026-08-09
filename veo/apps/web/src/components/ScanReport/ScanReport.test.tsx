@@ -389,7 +389,7 @@ describe('색인 차단 안내', () => {
 
   it('막힌 비율을 적는다', () => {
     render(<ScanReport result={result({ reach: 0.4, score: 34 })} bands={[]} view="detailed" />);
-    expect(screen.getByText(/60\.0%/)).toBeInTheDocument();
+    expect(screen.getByText(/60\.00%/)).toBeInTheDocument();
   });
 
   it('차단을 먼저 풀라고 말한다', () => {

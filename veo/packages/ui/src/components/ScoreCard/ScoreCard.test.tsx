@@ -33,8 +33,8 @@ describe('ScoreCard', () => {
     // 96.875 를 **자른** 값이다. 반올림했다면 96.88 이 나온다 — 재지 않은 값이다.
     expect(screen.getByText('96.87')).toBeInTheDocument();
     expect(screen.getByText('veo.geo.readiness 1.0.0')).toBeInTheDocument();
-    expect(screen.getByText('100.0%')).toBeInTheDocument();
-    expect(screen.getByText('90.0%')).toBeInTheDocument();
+    expect(screen.getByText('100.00%')).toBeInTheDocument();
+    expect(screen.getByText('90.00%')).toBeInTheDocument();
     expect(screen.getByText('기준 버전')).toBeInTheDocument();
     expect(screen.getByText('측정 범위')).toBeInTheDocument();
     expect(screen.getByText('신뢰도')).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('ScoreCard', () => {
     expect(screen.getByText('기준 버전')).toBeInTheDocument();
     expect(screen.getByText('측정 범위')).toBeInTheDocument();
     expect(screen.getByText('신뢰도')).toBeInTheDocument();
-    expect(screen.getAllByText('0.0%')).toHaveLength(2);
+    expect(screen.getAllByText('0.00%')).toHaveLength(2);
   });
 
   it('states that the score is not a ranking guarantee', () => {

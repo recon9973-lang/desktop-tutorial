@@ -27,6 +27,8 @@
  * `searchWord` 는 그 의도의 질문을 **다시 찾을 때 질의에 덧붙이는 낱말**이다. 예시
  * 문장이 아니라 검색어이고, 결과는 실제 조회에서 나온다.
  */
+import { formatPercent } from '@veo/ui';
+
 export const INTENTS = [
   { id: 'DEFINITION', label: '정의', hint: '이게 뭔가요', searchWord: '이란' },
   { id: 'HOW_TO', label: '방법', hint: '어떻게 하나요', searchWord: '방법' },
@@ -157,8 +159,8 @@ export function previewBalance(prompts: readonly DraftPrompt[]): BalanceNote[] {
     ok: share <= MAX_SINGLE_INTENT_SHARE,
     message:
       share <= MAX_SINGLE_INTENT_SHARE
-        ? `가장 많은 의도가 '${worstLabel}' ${worstCount}개 (${Math.round(share * 100)}%)`
-        : `'${worstLabel}' 이 ${Math.round(share * 100)}% 입니다. 절반을 넘으면 그 의도 하나를 잰 것이 됩니다`,
+        ? `가장 많은 의도가 '${worstLabel}' ${worstCount}개 (${formatPercent(share)})`
+        : `'${worstLabel}' 이 ${formatPercent(share)} 입니다. 절반을 넘으면 그 의도 하나를 잰 것이 됩니다`,
   });
 
   const branded = prompts.filter((one) => one.subject === 'BRAND').length;
@@ -167,8 +169,8 @@ export function previewBalance(prompts: readonly DraftPrompt[]): BalanceNote[] {
     ok: brandShare <= MAX_BRAND_SUBJECT_SHARE,
     message:
       brandShare <= MAX_BRAND_SUBJECT_SHARE
-        ? `상호를 넣은 질문 ${branded}개 (${Math.round(brandShare * 100)}%)`
-        : `상호를 넣은 질문이 ${Math.round(brandShare * 100)}% 입니다. 그런 질문은 언급이 거의 보장되어 노출이 아니라 회상을 잽니다`,
+        ? `상호를 넣은 질문 ${branded}개 (${formatPercent(brandShare)})`
+        : `상호를 넣은 질문이 ${formatPercent(brandShare)} 입니다. 그런 질문은 언급이 거의 보장되어 노출이 아니라 회상을 잽니다`,
   });
 
   return notes;
