@@ -20,6 +20,7 @@ import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
 import { ReadinessReport } from '../geo/ReadinessReport';
+import { CapturesSection } from './CapturesSection';
 import { PagesSection } from './PagesSection';
 import { ScanForm } from './ScanForm';
 import own from './seo.module.css';
@@ -65,10 +66,10 @@ function single(value: string | string[] | undefined): string | null {
 }
 
 /** 결과 보기 방식. 모르는 값은 상세로 — 조용히 다른 화면을 열지 않는다. */
-type ConsoleView = ReportView | 'pages';
+type ConsoleView = ReportView | 'pages' | 'captures';
 
 function toView(value: string | null): ConsoleView {
-  if (value === 'simple' || value === 'pages') return value;
+  if (value === 'simple' || value === 'pages' || value === 'captures') return value;
   return 'detailed';
 }
 
@@ -177,6 +178,8 @@ async function SeoContent({
             />
             {selected === undefined ? null : axis === 'geo' ? (
               <SavedGeoReport geo={saved?.geo ?? null} savedMissing={saved === null} />
+            ) : view === 'captures' ? (
+              <CapturesSection scanRunId={selected.scanRunId} />
             ) : view === 'pages' ? (
               <PagesSection
                 scanRunId={selected.scanRunId}
@@ -394,6 +397,17 @@ function ViewSwitch({
       </Link>
       <Link href={`${base}&view=pages`} aria-current={view === 'pages' ? 'page' : undefined}>
         페이지별 · 어디를 고칠까
+      </Link>
+      {/*
+        원자료는 맨 뒤다. 평소에 볼 것이 아니라 **점수가 이상할 때** 여는 자리다
+        (`CapturesSection` 머리말). 앞에 두면 판정보다 먼저 읽히고, 그러면 화면이
+        "우리 판정을 못 믿겠으면 직접 보라" 고 말하는 셈이 된다.
+      */}
+      <Link
+        href={`${base}&view=captures`}
+        aria-current={view === 'captures' ? 'page' : undefined}
+      >
+        원자료 · 무엇을 받았나
       </Link>
     </nav>
   );

@@ -172,3 +172,84 @@ export async function readCheckSeverities(
   }
   return new Map(pairs);
 }
+
+/**
+ * 이 진단이 **실제로 받은 응답** — 판정이 아니라 원자료.
+ *
+ * ## 왜 화면이 필요했나
+ *
+ * 점수가 이상할 때 열어 볼 자리가 없었다. 서버는 처음부터 이 값을 남기고 있었고
+ * (`GET /api/seo/scans/{id}/captures`), 그 자리가 없어서 venomad 진단의 원인을
+ * 확정하는 데 하루가 들었다(`seo/schemas.py:250`). 화면만 안 붙어 있었다
+ * (`audit/2026-08-08-server-ui-gap.md` §B — *"판정은 보이는데 무엇을 받아서 그렇게
+ * 판정했는지는 화면에서 못 본다"*).
+ *
+ * 새로 재지 않는다. **저장된 것만 읽는다** — 거래처 서버에 요청이 나가지 않는다.
+ */
+export interface FetchCapture {
+  readonly url: string;
+  readonly finalUrl: string;
+  readonly status: number;
+  readonly headers: Readonly<Record<string, string>>;
+  /** 우리가 **보낸** 헤더. 봇 차단을 만났을 때 무엇을 보내서 그랬는지 알아야 한다. */
+  readonly requestHeaders: Readonly<Record<string, string>>;
+  /** 받은 본문. 상한을 넘으면 앞부분만이고 `truncated` 가 참이다. */
+  readonly body: string;
+  readonly byteSize: number;
+  readonly truncated: boolean;
+  readonly contentHash: string;
+  readonly fetchedAt: string;
+  /** 문서로 읽지 못했으면 그 사유. 읽었으면 `null`. */
+  readonly readFailureKo: string | null;
+}
+
+export interface ScanCaptures {
+  readonly scanRunId: string;
+  readonly captures: readonly FetchCapture[];
+  readonly noteKo: string;
+}
+
+export async function readCaptures(
+  scanRunId: string,
+): Promise<ConsoleOutcome<ScanCaptures>> {
+  const outcome = await callConsoleApi(
+    `/api/seo/scans/${encodeURIComponent(scanRunId)}/captures`,
+  );
+  if (!outcome.ok) return outcome;
+
+  const data = record(outcome.data);
+  return {
+    ok: true,
+    data: {
+      scanRunId: str(data, 'scan_run_id'),
+      noteKo: str(data, 'note_ko'),
+      captures: list(data['captures']).map((raw) => {
+        const item = record(raw);
+        return {
+          url: str(item, 'url'),
+          finalUrl: str(item, 'final_url'),
+          status: num(item, 'status'),
+          headers: headerMap(item['headers']),
+          requestHeaders: headerMap(item['request_headers']),
+          body: str(item, 'body'),
+          byteSize: num(item, 'byte_size'),
+          truncated: item['truncated'] === true,
+          contentHash: str(item, 'content_hash'),
+          fetchedAt: str(item, 'fetched_at'),
+          readFailureKo: strOrNull(item, 'read_failure_ko'),
+        };
+      }),
+    },
+    meta: outcome.meta,
+  };
+}
+
+/** 헤더는 문자열 짝만 남긴다. 모양이 다른 값을 화면으로 흘리지 않는다. */
+function headerMap(value: unknown): Record<string, string> {
+  const source = record(value);
+  const out: Record<string, string> = {};
+  for (const [key, item] of Object.entries(source)) {
+    if (typeof item === 'string') out[key] = item;
+  }
+  return out;
+}

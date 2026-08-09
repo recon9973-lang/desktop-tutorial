@@ -584,3 +584,94 @@
 .runLogOn .runLogWhen { color: var(--veo-color-text); }
 .runLogScore { flex: none; }
 .runLogSpec { flex: none; color: var(--veo-color-text-muted); }
+
+/* 원자료 — 진단이 실제로 받은 응답.
+   본문은 남의 사이트 글자다. 폭을 넘기지 않게 감싸고, 세로로만 흐르게 둔다. */
+
+.captures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-4);
+}
+
+.capturesNote {
+  margin: 0;
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+}
+
+.captureFailure {
+  margin: 0 0 var(--veo-space-3);
+  padding: var(--veo-space-3);
+  border-left: 3px solid var(--veo-status-fail-fg);
+  background: var(--veo-status-fail-bg);
+  color: var(--veo-status-fail-fg);
+}
+
+.captureFacts {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  gap: var(--veo-space-1) var(--veo-space-3);
+  margin: 0 0 var(--veo-space-3);
+  font-size: var(--veo-font-size-200);
+}
+
+.captureFact {
+  display: contents;
+}
+
+.captureFact dt {
+  color: var(--veo-color-text-muted);
+}
+
+.captureFact dd {
+  margin: 0;
+  color: var(--veo-color-text);
+  word-break: break-all;
+}
+
+.captureHeaders,
+.captureBody {
+  margin-top: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+}
+
+.captureHeaders summary,
+.captureBody summary {
+  cursor: pointer;
+  color: var(--veo-color-accent);
+}
+
+/* 받은 본문. 가로 스크롤을 이 상자 안에 가둔다 — 페이지가 옆으로 밀리면 안 된다. */
+.captureText {
+  max-height: 24rem;
+  overflow: auto;
+  margin: var(--veo-space-2) 0 0;
+  padding: var(--veo-space-3);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+  color: var(--veo-color-text);
+  font-family: var(--veo-font-mono, ui-monospace, monospace);
+  font-size: var(--veo-font-size-100);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.captureCut {
+  margin: var(--veo-space-2) 0 0;
+  color: var(--veo-status-warning-fg);
+  font-size: var(--veo-font-size-100);
+}
+
+.statusOk,
+.statusWarn,
+.statusFail {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--veo-weight-semibold);
+}
+
+.statusOk { color: var(--veo-color-text-muted); }
+.statusWarn { color: var(--veo-status-warning-fg); }
+.statusFail { color: var(--veo-status-fail-fg); }
