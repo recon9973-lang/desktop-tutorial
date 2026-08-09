@@ -1,0 +1,3218 @@
+[
+ {
+  "n": 1,
+  "site": "참사랑한의원",
+  "url": "https://chamsarang1075.com",
+  "page": "홈",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:11:00.101841+00:00",
+  "ok": true,
+  "elapsed_s": 26.9,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 78.911122,
+  "band": "양호",
+  "coverage": 0.824615,
+  "confidence": 0.800676,
+  "counts": {
+   "failed": 2,
+   "warned": 3,
+   "passed": 34,
+   "unknown": 8,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 8,
+  "total_finding_count": 5,
+  "summary_ko": "기술 준비도 78.9점(양호), 측정 범위 82%입니다. 전체 59개 항목 가운데 39개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 8개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 11.7점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 2개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.onpage.single_meaningful_h1",
+    "title_ko": "의미 있는 H1이 하나 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.heading_hierarchy",
+    "title_ko": "제목 계층이 논리적으로 구성됐는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.modern_image_format",
+    "title_ko": "이미지가 최신 포맷으로 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.descriptive_anchor_text",
+    "title_ko": "내부 링크의 앵커 텍스트가 설명적인가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 2,
+  "site": "참사랑한의원",
+  "url": "https://chamsarang1075.com",
+  "page": "홈",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:11:28.539869+00:00",
+  "ok": true,
+  "elapsed_s": 1.7,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 80.938978,
+  "band": "양호",
+  "coverage": 0.90001,
+  "confidence": 0.689121,
+  "counts": {
+   "failed": 3,
+   "warned": 3,
+   "passed": 21,
+   "unknown": 3,
+   "not_applicable": 7
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 6,
+  "summary_ko": "GEO 준비도 80.9점 (양호). 노출 상태: 위험 — 구조화 데이터 불일치.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.tables_lists_machine_readable",
+    "title_ko": "비교·수치 정보가 표·목록으로 구조화됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.claims_have_sources",
+    "title_ko": "검증이 필요한 주장에 출처가 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.method_disclosed",
+    "title_ko": "수치·비교의 산출 방법이 공개되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "severity": "BLOCKER",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.heading_structure_semantic",
+    "title_ko": "제목 구조가 질문·주제 단위로 나뉘어 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.primary_source_linked",
+    "title_ko": "2차 인용 대신 원출처가 연결되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.page_type_appropriate",
+    "title_ko": "페이지 의도에 맞는 타입을 사용하는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 3,
+  "site": "참사랑한의원",
+  "url": "https://chamsarang1075.com/건선/",
+  "page": "하위",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:11:31.717144+00:00",
+  "ok": true,
+  "elapsed_s": 21.2,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 81.589155,
+  "band": "양호",
+  "coverage": 0.798615,
+  "confidence": 0.779605,
+  "counts": {
+   "failed": 2,
+   "warned": 3,
+   "passed": 33,
+   "unknown": 9,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 9,
+  "total_finding_count": 5,
+  "summary_ko": "기술 준비도 81.6점(양호), 측정 범위 80%입니다. 전체 59개 항목 가운데 38개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 9개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 10.9점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 2개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.lazy_loading_safe",
+    "title_ko": "지연 로딩이 콘텐츠를 숨기지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.click_depth_reasonable",
+    "title_ko": "주요 페이지의 클릭 깊이가 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.tbt_lab",
+    "title_ko": "TBT(lab)가 기준 이내인가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.modern_image_format",
+    "title_ko": "이미지가 최신 포맷으로 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.descriptive_anchor_text",
+    "title_ko": "내부 링크의 앵커 텍스트가 설명적인가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 4,
+  "site": "참사랑한의원",
+  "url": "https://chamsarang1075.com/건선/",
+  "page": "하위",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:11:54.469800+00:00",
+  "ok": true,
+  "elapsed_s": 1.6,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 82.917947,
+  "band": "양호",
+  "coverage": 0.90001,
+  "confidence": 0.689121,
+  "counts": {
+   "failed": 2,
+   "warned": 4,
+   "passed": 21,
+   "unknown": 3,
+   "not_applicable": 7
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 6,
+  "summary_ko": "GEO 준비도 82.9점 (양호). 노출 상태: 위험 — 구조화 데이터 불일치.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.tables_lists_machine_readable",
+    "title_ko": "비교·수치 정보가 표·목록으로 구조화됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.claims_have_sources",
+    "title_ko": "검증이 필요한 주장에 출처가 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.method_disclosed",
+    "title_ko": "수치·비교의 산출 방법이 공개되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "severity": "BLOCKER",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.low_boilerplate_ratio",
+    "title_ko": "보일러플레이트 대비 본문 비중이 충분한가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.primary_source_linked",
+    "title_ko": "2차 인용 대신 원출처가 연결되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.page_type_appropriate",
+    "title_ko": "페이지 의도에 맞는 타입을 사용하는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 5,
+  "site": "굿투어(여행)",
+  "url": "https://good-tour.kr",
+  "page": "홈",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:11:57.561274+00:00",
+  "ok": true,
+  "elapsed_s": 9.7,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 83.211329,
+  "band": "양호",
+  "coverage": 0.824615,
+  "confidence": 0.800676,
+  "counts": {
+   "failed": 2,
+   "warned": 3,
+   "passed": 34,
+   "unknown": 8,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 8,
+  "total_finding_count": 5,
+  "summary_ko": "기술 준비도 83.2점(양호), 측정 범위 82%입니다. 전체 59개 항목 가운데 39개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 8개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 11.7점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 2개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.crawl.crawlable_anchors",
+    "title_ko": "링크를 크롤러가 따라갈 수 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면에 보이는 내용과 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.image_alt_coverage",
+    "title_ko": "의미 있는 이미지에 alt가 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.modern_image_format",
+    "title_ko": "이미지가 최신 포맷으로 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.descriptive_anchor_text",
+    "title_ko": "내부 링크의 앵커 텍스트가 설명적인가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 6,
+  "site": "굿투어(여행)",
+  "url": "https://good-tour.kr",
+  "page": "홈",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:12:08.759229+00:00",
+  "ok": true,
+  "elapsed_s": 0.2,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 69.315624,
+  "band": "주의",
+  "coverage": 0.925933,
+  "confidence": 0.696982,
+  "counts": {
+   "failed": 8,
+   "warned": 5,
+   "passed": 17,
+   "unknown": 2,
+   "not_applicable": 5
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 2,
+  "total_finding_count": 13,
+  "summary_ko": "GEO 준비도 69.3점 (주의). 노출 상태: 위험 — 구조화 데이터 불일치.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "severity": "BLOCKER",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.direct_answer_present",
+    "title_ko": "핵심 질문에 대한 직접적인 답변 문단이 있는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_present",
+    "title_ko": "발행일과 수정일이 표시되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.claims_have_sources",
+    "title_ko": "검증이 필요한 주장에 출처가 연결되는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 7,
+  "site": "굿투어(여행)",
+  "url": "https://good-tour.kr/member/join.php",
+  "page": "하위",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:12:10.498453+00:00",
+  "ok": true,
+  "elapsed_s": 10.2,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 77.950219,
+  "band": "양호",
+  "coverage": 0.804077,
+  "confidence": 0.7836,
+  "counts": {
+   "failed": 3,
+   "warned": 4,
+   "passed": 32,
+   "unknown": 8,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 8,
+  "total_finding_count": 7,
+  "summary_ko": "기술 준비도 78.0점(양호), 측정 범위 80%입니다. 전체 59개 항목 가운데 39개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 8개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 12.5점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 3개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.lazy_loading_safe",
+    "title_ko": "지연 로딩이 콘텐츠를 숨기지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.onpage.single_meaningful_h1",
+    "title_ko": "의미 있는 H1이 하나 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.crawlable_anchors",
+    "title_ko": "링크를 크롤러가 따라갈 수 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면에 보이는 내용과 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.image_alt_coverage",
+    "title_ko": "의미 있는 이미지에 alt가 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 8,
+  "site": "굿투어(여행)",
+  "url": "https://good-tour.kr/member/join.php",
+  "page": "하위",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:12:22.185745+00:00",
+  "ok": true,
+  "elapsed_s": 0.3,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 78.243058,
+  "band": "양호",
+  "coverage": 0.925933,
+  "confidence": 0.705019,
+  "counts": {
+   "failed": 5,
+   "warned": 4,
+   "passed": 20,
+   "unknown": 2,
+   "not_applicable": 6
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 2,
+  "total_finding_count": 9,
+  "summary_ko": "GEO 준비도 78.2점 (양호). 노출 차단 상태는 확인되지 않았습니다.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.claims_have_sources",
+    "title_ko": "검증이 필요한 주장에 출처가 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.extract.direct_answer_present",
+    "title_ko": "핵심 질문에 대한 직접적인 답변 문단이 있는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_present",
+    "title_ko": "발행일과 수정일이 표시되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.heading_structure_semantic",
+    "title_ko": "제목 구조가 질문·주제 단위로 나뉘어 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.primary_source_linked",
+    "title_ko": "2차 인용 대신 원출처가 연결되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 9,
+  "site": "코리아H병원",
+  "url": "https://koreahhospital.com",
+  "page": "홈",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:12:23.975755+00:00",
+  "ok": true,
+  "elapsed_s": 38.3,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 60.0,
+  "band": "주의",
+  "coverage": 0.798615,
+  "confidence": 0.789081,
+  "counts": {
+   "failed": 6,
+   "warned": 7,
+   "passed": 21,
+   "unknown": 9,
+   "not_applicable": 16
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 9,
+  "total_finding_count": 13,
+  "summary_ko": "기술 준비도 60.0점(주의), 측정 범위 80%입니다. 전체 59개 항목 가운데 34개를 채점했고, 16개는 해당 없음으로 분모에서 제외했습니다. 9개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 12.9점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 6개입니다. 상한이 적용되었습니다: HTTPS 또는 모바일 접근에 중대한 실패가 있습니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면에 보이는 내용과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.lazy_loading_safe",
+    "title_ko": "지연 로딩이 콘텐츠를 숨기지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.google_supported_type",
+    "title_ko": "Google이 지원하는 리치 결과 타입인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.jsonld_parses",
+    "title_ko": "JSON-LD가 문법적으로 파싱되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.required_properties_present",
+    "title_ko": "선언한 타입의 필수 속성이 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.ux.mobile_viewport",
+    "title_ko": "모바일 viewport가 올바르게 선언됐는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.declared",
+    "title_ko": "구조화 데이터가 선언되어 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.discoverable",
+    "title_ko": "sitemap을 robots.txt 또는 관례 경로에서 발견할 수 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.crawlable_anchors",
+    "title_ko": "링크를 크롤러가 따라갈 수 있는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 10,
+  "site": "코리아H병원",
+  "url": "https://koreahhospital.com",
+  "page": "홈",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:13:03.761228+00:00",
+  "ok": true,
+  "elapsed_s": 0.6,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 71.765234,
+  "band": "양호",
+  "coverage": 0.892593,
+  "confidence": 0.645172,
+  "counts": {
+   "failed": 4,
+   "warned": 6,
+   "passed": 15,
+   "unknown": 3,
+   "not_applicable": 9
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 10,
+  "summary_ko": "GEO 준비도 71.8점 (양호). 노출 차단 상태는 확인되지 않았습니다.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.valid_syntax",
+    "title_ko": "구조화 데이터가 유효하게 파싱되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.page_type_appropriate",
+    "title_ko": "페이지 의도에 맞는 타입을 사용하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.extract.direct_answer_present",
+    "title_ko": "핵심 질문에 대한 직접적인 답변 문단이 있는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_present",
+    "title_ko": "발행일과 수정일이 표시되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.organization_identified",
+    "title_ko": "조직 엔터티가 명확히 식별되는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.author_identified",
+    "title_ko": "작성자 또는 감수자가 식별되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.heading_structure_semantic",
+    "title_ko": "제목 구조가 질문·주제 단위로 나뉘어 있는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 11,
+  "site": "코리아H병원",
+  "url": "https://koreahhospital.com/index.php",
+  "page": "하위",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:13:05.851330+00:00",
+  "ok": true,
+  "elapsed_s": 50.7,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 60.0,
+  "band": "주의",
+  "coverage": 0.798615,
+  "confidence": 0.789081,
+  "counts": {
+   "failed": 6,
+   "warned": 7,
+   "passed": 21,
+   "unknown": 9,
+   "not_applicable": 16
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 9,
+  "total_finding_count": 13,
+  "summary_ko": "기술 준비도 60.0점(주의), 측정 범위 80%입니다. 전체 59개 항목 가운데 34개를 채점했고, 16개는 해당 없음으로 분모에서 제외했습니다. 9개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 12.9점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 6개입니다. 상한이 적용되었습니다: HTTPS 또는 모바일 접근에 중대한 실패가 있습니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면에 보이는 내용과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.lazy_loading_safe",
+    "title_ko": "지연 로딩이 콘텐츠를 숨기지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.google_supported_type",
+    "title_ko": "Google이 지원하는 리치 결과 타입인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.jsonld_parses",
+    "title_ko": "JSON-LD가 문법적으로 파싱되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.required_properties_present",
+    "title_ko": "선언한 타입의 필수 속성이 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.ux.mobile_viewport",
+    "title_ko": "모바일 viewport가 올바르게 선언됐는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.declared",
+    "title_ko": "구조화 데이터가 선언되어 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.discoverable",
+    "title_ko": "sitemap을 robots.txt 또는 관례 경로에서 발견할 수 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.crawlable_anchors",
+    "title_ko": "링크를 크롤러가 따라갈 수 있는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 12,
+  "site": "코리아H병원",
+  "url": "https://koreahhospital.com/index.php",
+  "page": "하위",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:13:58.053842+00:00",
+  "ok": true,
+  "elapsed_s": 1.0,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 71.765234,
+  "band": "양호",
+  "coverage": 0.892593,
+  "confidence": 0.645172,
+  "counts": {
+   "failed": 4,
+   "warned": 6,
+   "passed": 15,
+   "unknown": 3,
+   "not_applicable": 9
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 10,
+  "summary_ko": "GEO 준비도 71.8점 (양호). 노출 차단 상태는 확인되지 않았습니다.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.valid_syntax",
+    "title_ko": "구조화 데이터가 유효하게 파싱되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.page_type_appropriate",
+    "title_ko": "페이지 의도에 맞는 타입을 사용하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.extract.direct_answer_present",
+    "title_ko": "핵심 질문에 대한 직접적인 답변 문단이 있는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_present",
+    "title_ko": "발행일과 수정일이 표시되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.organization_identified",
+    "title_ko": "조직 엔터티가 명확히 식별되는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.author_identified",
+    "title_ko": "작성자 또는 감수자가 식별되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.heading_structure_semantic",
+    "title_ko": "제목 구조가 질문·주제 단위로 나뉘어 있는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 13,
+  "site": "베놈애드(광고)",
+  "url": "https://venomad.com",
+  "page": "홈",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:14:00.515726+00:00",
+  "ok": true,
+  "elapsed_s": 12.5,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 85.533878,
+  "band": "양호",
+  "coverage": 0.824615,
+  "confidence": 0.801509,
+  "counts": {
+   "failed": 2,
+   "warned": 2,
+   "passed": 35,
+   "unknown": 8,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 8,
+  "total_finding_count": 4,
+  "summary_ko": "기술 준비도 85.5점(양호), 측정 범위 82%입니다. 전체 59개 항목 가운데 39개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 8개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 9.7점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 2개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.click_depth_reasonable",
+    "title_ko": "주요 페이지의 클릭 깊이가 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면에 보이는 내용과 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.modern_image_format",
+    "title_ko": "이미지가 최신 포맷으로 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.descriptive_anchor_text",
+    "title_ko": "내부 링크의 앵커 텍스트가 설명적인가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 14,
+  "site": "베놈애드(광고)",
+  "url": "https://venomad.com",
+  "page": "홈",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:14:14.491689+00:00",
+  "ok": true,
+  "elapsed_s": 0.2,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 81.103019,
+  "band": "양호",
+  "coverage": 0.907417,
+  "confidence": 0.677736,
+  "counts": {
+   "failed": 4,
+   "warned": 3,
+   "passed": 23,
+   "unknown": 3,
+   "not_applicable": 4
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 7,
+  "summary_ko": "GEO 준비도 81.1점 (양호). 노출 상태: 위험 — 구조화 데이터 불일치.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "severity": "BLOCKER",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.method_disclosed",
+    "title_ko": "수치·비교의 산출 방법이 공개되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.primary_source_linked",
+    "title_ko": "2차 인용 대신 원출처가 연결되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 15,
+  "site": "베놈애드(광고)",
+  "url": "https://venomad.com/?service=sec03",
+  "page": "하위",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:14:16.236826+00:00",
+  "ok": true,
+  "elapsed_s": 15.9,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 83.102878,
+  "band": "양호",
+  "coverage": 0.824615,
+  "confidence": 0.801509,
+  "counts": {
+   "failed": 2,
+   "warned": 2,
+   "passed": 35,
+   "unknown": 8,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 8,
+  "total_finding_count": 4,
+  "summary_ko": "기술 준비도 83.1점(양호), 측정 범위 82%입니다. 전체 59개 항목 가운데 39개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 8개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 9.7점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 2개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.click_depth_reasonable",
+    "title_ko": "주요 페이지의 클릭 깊이가 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.modern_image_format",
+    "title_ko": "이미지가 최신 포맷으로 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.descriptive_anchor_text",
+    "title_ko": "내부 링크의 앵커 텍스트가 설명적인가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 16,
+  "site": "베놈애드(광고)",
+  "url": "https://venomad.com/?service=sec03",
+  "page": "하위",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:14:33.651671+00:00",
+  "ok": true,
+  "elapsed_s": 0.2,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 81.343736,
+  "band": "양호",
+  "coverage": 0.907417,
+  "confidence": 0.677736,
+  "counts": {
+   "failed": 4,
+   "warned": 2,
+   "passed": 24,
+   "unknown": 3,
+   "not_applicable": 4
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 6,
+  "summary_ko": "GEO 준비도 81.3점 (양호). 노출 상태: 위험 — 구조화 데이터 불일치.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "severity": "BLOCKER",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.method_disclosed",
+    "title_ko": "수치·비교의 산출 방법이 공개되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.primary_source_linked",
+    "title_ko": "2차 인용 대신 원출처가 연결되는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 17,
+  "site": "더바른한의원",
+  "url": "https://xn--9m1bm0ji9bd0qotax68d.kr",
+  "page": "홈",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:14:35.390094+00:00",
+  "ok": true,
+  "elapsed_s": 19.1,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 67.781922,
+  "band": "주의",
+  "coverage": 0.798615,
+  "confidence": 0.779071,
+  "counts": {
+   "failed": 3,
+   "warned": 5,
+   "passed": 30,
+   "unknown": 9,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 9,
+  "total_finding_count": 8,
+  "summary_ko": "기술 준비도 67.8점(주의), 측정 범위 80%입니다. 전체 59개 항목 가운데 38개를 채점했고, 12개는 해당 없음으로 분모에서 제외했습니다. 9개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 12.9점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 3개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.lazy_loading_safe",
+    "title_ko": "지연 로딩이 콘텐츠를 숨기지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.breadcrumb_present",
+    "title_ko": "계층이 깊은 사이트에 breadcrumb이 제공되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.onpage.title_present_and_unique",
+    "title_ko": "title이 존재하고 중복되지 않는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.single_meaningful_h1",
+    "title_ko": "의미 있는 H1이 하나 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.crawlable_anchors",
+    "title_ko": "링크를 크롤러가 따라갈 수 있는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.image_alt_coverage",
+    "title_ko": "의미 있는 이미지에 alt가 제공되는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 18,
+  "site": "더바른한의원",
+  "url": "https://xn--9m1bm0ji9bd0qotax68d.kr",
+  "page": "홈",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:14:55.967367+00:00",
+  "ok": true,
+  "elapsed_s": 0.2,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 63.520737,
+  "band": "주의",
+  "coverage": 0.890743,
+  "confidence": 0.684729,
+  "counts": {
+   "failed": 9,
+   "warned": 1,
+   "passed": 16,
+   "unknown": 3,
+   "not_applicable": 8
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 10,
+  "summary_ko": "GEO 준비도 63.5점 (주의). 노출 상태: 위험 — 구조화 데이터 불일치.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.tables_lists_machine_readable",
+    "title_ko": "비교·수치 정보가 표·목록으로 구조화됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.claims_have_sources",
+    "title_ko": "검증이 필요한 주장에 출처가 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.method_disclosed",
+    "title_ko": "수치·비교의 산출 방법이 공개되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.name_consistent_across_pages",
+    "title_ko": "브랜드·지점·제품 명칭이 사이트 전체에서 일관되는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "severity": "BLOCKER",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.direct_answer_present",
+    "title_ko": "핵심 질문에 대한 직접적인 답변 문단이 있는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_present",
+    "title_ko": "발행일과 수정일이 표시되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.author_identified",
+    "title_ko": "작성자 또는 감수자가 식별되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.heading_structure_semantic",
+    "title_ko": "제목 구조가 질문·주제 단위로 나뉘어 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 19,
+  "site": "더바른한의원",
+  "url": "https://xn--9m1bm0ji9bd0qotax68d.kr/bbs/board.php%3Fbo_table=news",
+  "page": "하위",
+  "axis": "SEO",
+  "started_at": "2026-08-09T04:14:57.673049+00:00",
+  "ok": true,
+  "elapsed_s": 13.6,
+  "spec_id": "veo.seo.readiness",
+  "spec_version": "1.9.0",
+  "status": "SCORED",
+  "score": 68.660227,
+  "band": "주의",
+  "coverage": 0.804077,
+  "confidence": 0.79361,
+  "counts": {
+   "failed": 4,
+   "warned": 5,
+   "passed": 26,
+   "unknown": 8,
+   "not_applicable": 16
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 8,
+  "total_finding_count": 9,
+  "summary_ko": "기술 준비도 68.7점(주의), 측정 범위 80%입니다. 전체 59개 항목 가운데 35개를 채점했고, 16개는 해당 없음으로 분모에서 제외했습니다. 8개는 측정하지 못했습니다. 사이트의 결함은 아니지만 점수에는 반영됩니다 — 잴 수 있게 되면 그만큼 오릅니다. 그 배점 12.5점을 얻지 못한 것으로 계산했습니다. 조치가 필요한 실패 항목은 4개입니다. 이 점수는 검색 순위 예측이 아니라 검색엔진이 사이트를 발견·해석할 수 있는 상태인지에 대한 값입니다.",
+  "unmeasured": [
+   {
+    "check_id": "seo.content.js_render_parity",
+    "title_ko": "JS 렌더링 전후 핵심 콘텐츠가 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.no_duplicate_bodies",
+    "title_ko": "본문 중복·근접 중복이 과도하지 않은가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.no_duplicate_metadata",
+    "title_ko": "title/description이 사이트 내에서 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면에 보이는 내용과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.inp_field",
+    "title_ko": "INP(field, CrUX)가 기준 이내인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_orphan_key_pages",
+    "title_ko": "주요 페이지가 내부 링크로 도달 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.lazy_loading_safe",
+    "title_ko": "지연 로딩이 콘텐츠를 숨기지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.internal_link_density",
+    "title_ko": "주제 클러스터 내부 링크가 충분한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.google_supported_type",
+    "title_ko": "Google이 지원하는 리치 결과 타입인가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.jsonld_parses",
+    "title_ko": "JSON-LD가 문법적으로 파싱되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.required_properties_present",
+    "title_ko": "선언한 타입의 필수 속성이 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sitemap.urls_valid",
+    "title_ko": "sitemap의 URL이 색인 가능한 정상 URL인가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.no_broken_internal_links",
+    "title_ko": "내부 링크에 4xx/5xx 대상이 없는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "seo.content.pagination_signals",
+    "title_ko": "페이지네이션 신호가 올바른가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.gsc_verified",
+    "title_ko": "Google Search Console 소유권이 확인됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.naver_swa_registered",
+    "title_ko": "네이버 서치어드바이저에 사이트가 등록됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.sitemap_submitted",
+    "title_ko": "sitemap이 검색엔진에 제출되고 처리됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.integration.indexnow_configured",
+    "title_ko": "IndexNow 등 변경 통지가 구성됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.impressions_available",
+    "title_ko": "노출 데이터가 수집되고 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.index_coverage_healthy",
+    "title_ko": "색인 커버리지에 급격한 악화가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.outcome.data_freshness",
+    "title_ko": "성과 데이터의 최신성이 확보됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.referring_domains_present",
+    "title_ko": "참조 도메인이 존재하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.brand_name_consistency",
+    "title_ko": "브랜드 표기가 외부 채널과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "seo.offpage.no_spam_signal",
+    "title_ko": "명백한 스팸 링크 신호가 없는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "seo.onpage.single_meaningful_h1",
+    "title_ko": "의미 있는 H1이 하나 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.perf.lcp_lab",
+    "title_ko": "LCP(lab)가 기준 이내인가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.sd.declared",
+    "title_ko": "구조화 데이터가 선언되어 있는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.onpage.meta_description_quality",
+    "title_ko": "meta description이 존재하고 중복·길이 문제가 없는가",
+    "severity": "MINOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "seo.crawl.crawlable_anchors",
+    "title_ko": "링크를 크롤러가 따라갈 수 있는가",
+    "severity": "MAJOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ },
+ {
+  "n": 20,
+  "site": "더바른한의원",
+  "url": "https://xn--9m1bm0ji9bd0qotax68d.kr/bbs/board.php%3Fbo_table=news",
+  "page": "하위",
+  "axis": "GEO",
+  "started_at": "2026-08-09T04:15:12.825391+00:00",
+  "ok": true,
+  "elapsed_s": 0.1,
+  "spec_id": "veo.geo.readiness",
+  "spec_version": "1.3.0",
+  "status": "SCORED",
+  "score": 61.254117,
+  "band": "주의",
+  "coverage": 0.885187,
+  "confidence": 0.651199,
+  "counts": {
+   "failed": 7,
+   "warned": 3,
+   "passed": 12,
+   "unknown": 3,
+   "not_applicable": 12
+  },
+  "scanned_url_count": 1,
+  "unmeasured_check_count": 3,
+  "total_finding_count": 10,
+  "summary_ko": "GEO 준비도 61.3점 (주의). 노출 차단 상태는 확인되지 않았습니다.",
+  "unmeasured": [
+   {
+    "check_id": "geo.extract.tables_lists_machine_readable",
+    "title_ko": "비교·수치 정보가 표·목록으로 구조화됐는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.extract.no_duplicate_answer_blocks",
+    "title_ko": "같은 답변 블록이 여러 URL에 중복되지 않는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.claims_have_sources",
+    "title_ko": "검증이 필요한 주장에 출처가 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.method_disclosed",
+    "title_ko": "수치·비교의 산출 방법이 공개되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.stable_id_graph",
+    "title_ko": "구조화 데이터의 @id가 엔터티 간에 연결되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.nap_consistent",
+    "title_ko": "상호·주소·연락처가 공식 정보와 일치하는가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.valid_syntax",
+    "title_ko": "구조화 데이터가 유효하게 파싱되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.matches_visible_content",
+    "title_ko": "구조화 데이터가 화면 내용과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.sd.page_type_appropriate",
+    "title_ko": "페이지 의도에 맞는 타입을 사용하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_truthful",
+    "title_ko": "표시된 수정일이 실제 변경과 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.sitemap_lastmod_reliable",
+    "title_ko": "sitemap lastmod가 신뢰 가능한가",
+    "status": "UNKNOWN",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.independent_sources_exist",
+    "title_ko": "독립적인 외부 출처에서 확인되는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.official_profiles_claimed",
+    "title_ko": "공식 프로필이 확보·정비돼 있는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.source_type_diversity",
+    "title_ko": "출처 유형이 다양한가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   },
+   {
+    "check_id": "geo.external.facts_agree_across_sources",
+    "title_ko": "외부 출처의 핵심 사실이 자사 정보와 일치하는가",
+    "status": "NOT_APPLICABLE",
+    "note": ""
+   }
+  ],
+  "findings": [
+   {
+    "check_id": "geo.extract.direct_answer_present",
+    "title_ko": "핵심 질문에 대한 직접적인 답변 문단이 있는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.fresh.dates_present",
+    "title_ko": "발행일과 수정일이 표시되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.evidence.author_identified",
+    "title_ko": "작성자 또는 감수자가 식별되는가",
+    "severity": "MAJOR",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.entity.organization_identified",
+    "title_ko": "조직 엔터티가 명확히 식별되는가",
+    "severity": "CRITICAL",
+    "status": "FAIL",
+    "note": ""
+   },
+   {
+    "check_id": "geo.meta.title_description_descriptive",
+    "title_ko": "title과 description이 페이지 내용을 정확히 설명하는가",
+    "severity": "MINOR",
+    "status": "WARNING",
+    "note": ""
+   }
+  ]
+ }
+]
