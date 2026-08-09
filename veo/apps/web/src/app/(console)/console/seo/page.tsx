@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, EmptyState, ErrorState } from '@veo/ui';
+import { Card, EmptyState, ErrorState, formatScore, formatScoreWithUnit } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
 import { ScanReport, type ReportView } from '@/components/ScanReport/ScanReport';
@@ -299,7 +299,7 @@ function HistoryStrip({
                 aria-current={current ? 'true' : undefined}
               >
                 <span className={own.historyScore}>
-                  {entry.score === null ? '—' : entry.score.toFixed(1)}
+                  {formatScore(entry.score)}
                 </span>
                 <span className={own.historyWhen}>{formatWhen(entry.startedAt)}</span>
                 <span className={own.historyWho}>
@@ -357,7 +357,7 @@ function AxisSwitch({
       >
         SEO
         {seoScore === null ? null : (
-          <span className={own.axisScore}>{seoScore.toFixed(1)}</span>
+          <span className={own.axisScore}>{formatScore(seoScore)}</span>
         )}
       </Link>
       <Link
@@ -367,7 +367,7 @@ function AxisSwitch({
       >
         GEO
         {geo?.score !== null && geo?.score !== undefined ? (
-          <span className={own.axisScore}>{geo.score.toFixed(1)}</span>
+          <span className={own.axisScore}>{formatScore(geo.score)}</span>
         ) : null}
       </Link>
     </nav>
@@ -504,7 +504,7 @@ function scoreTrend(entries: readonly HistoryEntry[], selected: HistoryEntry) {
     last,
     line: points.map((point) => `${point.x},${point.y}`).join(' '),
     label: `최근 ${points.length}회 점수 추이 — 세로 눈금 0점부터 100점. ${points
-      .map((point) => `${formatWhenShort(point.startedAt)} ${point.score.toFixed(1)}점`)
+      .map((point) => `${formatWhenShort(point.startedAt)} ${formatScore(point.score)}점`)
       .join(', ')}`,
   };
 }
@@ -645,10 +645,10 @@ async function SummaryRail({
               className={own.gauge}
               style={{ ['--veo-gauge-deg' as string]: `${(gaugeScore / 100) * 360}deg` }}
               role="img"
-              aria-label={`${gaugeScore.toFixed(1)}점`}
+              aria-label={formatScoreWithUnit(gaugeScore)}
             >
               <div className={own.gaugeIn}>
-                <b>{gaugeScore.toFixed(1)}</b>
+                <b>{formatScore(gaugeScore)}</b>
                 <span>{bandLabel ?? '점'}</span>
               </div>
             </div>
@@ -734,7 +734,7 @@ async function SummaryRail({
               >
                 <span className={own.runLogWhen}>{formatWhen(entry.startedAt)}</span>
                 <span className={own.runLogScore}>
-                  {entry.score === null ? '측정 불가' : entry.score.toFixed(1)}
+                  {entry.score === null ? '측정 불가' : formatScore(entry.score)}
                 </span>
                 {/* 명세가 다르면 위 선에 잇지 않았다는 것을 여기서도 말한다. */}
                 {entry.specVersion === shown?.specVersion ? null : (
@@ -765,7 +765,7 @@ async function SummaryRail({
                     style={{ width: `${bar.score}%` }}
                   />
                 </span>
-                <b className={own.miniBarVal}>{Math.round(bar.score)}</b>
+                <b className={own.miniBarVal}>{formatScore(bar.score)}</b>
               </li>
             ))}
           </ul>
@@ -779,7 +779,7 @@ async function SummaryRail({
         <dl className={own.railScores}>
           <div className={axis === 'seo' ? own.railScoreOn : own.railScore}>
             <dt>SEO 준비도</dt>
-            <dd>{selected.score === null ? '측정 불가' : selected.score.toFixed(1)}</dd>
+            <dd>{selected.score === null ? '측정 불가' : formatScore(selected.score)}</dd>
           </div>
           <div className={axis === 'geo' ? own.railScoreOn : own.railScore}>
             <dt>GEO 준비도</dt>
@@ -788,7 +788,7 @@ async function SummaryRail({
                 ? '결과 없음'
                 : geo.score === null
                   ? '측정 불가'
-                  : geo.score.toFixed(1)}
+                  : formatScore(geo.score)}
             </dd>
           </div>
         </dl>
@@ -808,7 +808,7 @@ async function SummaryRail({
           <p className={own.railDelta}>
             {delta > 0 ? '▲' : delta < 0 ? '▼' : '—'} {Math.abs(delta).toFixed(1)}점{' '}
             <span className={own.railNote}>
-              ({previous.score?.toFixed(1)} → {selected.score?.toFixed(1)}, 명세{' '}
+              ({formatScore(previous.score)} → {formatScore(selected.score)}, 명세{' '}
               {selected.specVersion})
             </span>
           </p>
@@ -907,7 +907,7 @@ async function SummaryRail({
                     </span>
                   )}
                   <span className={own.railClientScore}>
-                    {client.score === null ? '—' : client.score.toFixed(1)}
+                    {formatScore(client.score)}
                   </span>
                 </Link>
               </li>

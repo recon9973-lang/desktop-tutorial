@@ -133,7 +133,7 @@ describe('순서와 숫자는 엔진의 것', () => {
     expect(rows[0]!.textContent).toContain('게시판 제목 중복');
     expect(rows[1]!.textContent).toContain('메타 설명 짧음');
     expect(rows[2]!.textContent).toContain('상한에 걸린 항목');
-    expect(titles.join(' ')).toContain('+5.9점');
+    expect(titles.join(' ')).toContain('+5.90점');
   });
 
   it('상한에 막힌 항목은 +0점이 아니라 "상한 해제 후"', () => {

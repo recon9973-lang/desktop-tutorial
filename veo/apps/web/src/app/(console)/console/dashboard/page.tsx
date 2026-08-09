@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ErrorState } from '@veo/ui';
+import { ErrorState, formatScore } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
 import { readDashboard, type AreaRow } from '@/lib/dashboard';
@@ -85,7 +85,15 @@ function Area({ row }: { readonly row: AreaRow }) {
 
       <span className={own.figure}>
         {/* 못 읽었거나 아직 없으면 "—". 0 과 모름을 같은 칸에 두지 않는다. */}
-        <b className={own.value}>{row.value === null ? '—' : row.value.toLocaleString('ko-KR')}</b>
+        {/* 점수는 자릿수를 `formatScore` 가 정한다 — 자르고, 반올림하지 않는다.
+            건수·백분율은 세는 값이라 천 단위만 끊어 그대로 보인다. */}
+        <b className={own.value}>
+          {row.value === null
+            ? '—'
+            : row.unit === '점'
+              ? formatScore(row.value)
+              : row.value.toLocaleString('ko-KR')}
+        </b>
         {row.value === null ? null : <span className={own.unit}>{row.unit}</span>}
       </span>
 

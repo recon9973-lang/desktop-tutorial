@@ -74,7 +74,7 @@ describe('점수와 노출 차단', () => {
     );
 
     // 점수는 그대로 95.2 다. 차단 때문에 깎지 않는다.
-    expect(screen.getByText('95.2점')).toBeInTheDocument();
+    expect(screen.getByText('95.20점')).toBeInTheDocument();
     expect(screen.getByText(/robots.txt 가 검색봇을 막고 있습니다/)).toBeInTheDocument();
     expect(screen.getByText(/별개의 사실/)).toBeInTheDocument();
   });
@@ -408,7 +408,7 @@ describe('GEO 작업 큐', () => {
     render(<ReadinessReport report={report({ improvements: [gain()] })} />);
 
     expect(screen.getByText('구조화 데이터를 선언하세요')).toBeInTheDocument();
-    expect(screen.getByText('+5.9점')).toBeInTheDocument();
+    expect(screen.getByText('+5.90점')).toBeInTheDocument();
   });
 
   it('상한에 걸려 지금은 오르지 않는 항목은 이 목록에 넣지 않는다', () => {
@@ -458,7 +458,7 @@ describe('GEO 점수 표기', () => {
   it('점수와 등급을 한국어 라벨로 보여준다', () => {
     render(<ReadinessReport report={report()} />);
 
-    expect(screen.getByText('95.2점')).toBeInTheDocument();
+    expect(screen.getByText('95.20점')).toBeInTheDocument();
     expect(screen.getByText('우수')).toBeInTheDocument();
   });
 

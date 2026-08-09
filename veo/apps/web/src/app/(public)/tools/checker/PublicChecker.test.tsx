@@ -139,7 +139,7 @@ describe('점수 밴드', () => {
     mockScan();
     await runScanThroughForm();
 
-    expect(screen.getAllByText('31.5').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('31.50').length).toBeGreaterThan(0);
     expect(screen.getByText('0.99')).toBeInTheDocument();
     expect(screen.getByText('색인 차단')).toBeInTheDocument();
     expect(screen.getByText('· 관문')).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe('진단·조치 표시', () => {
       screen.getByText('<head> 안에 viewport 메타 태그를 한 줄 추가하세요.'),
     ).toBeInTheDocument();
     expect(screen.getByText(/width=device-width/)).toBeInTheDocument();
-    expect(screen.getByText(/\+5\.1점/)).toBeInTheDocument();
+    expect(screen.getByText(/\+5\.10점/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '코드 복사' })).toBeInTheDocument();
   });
 
@@ -221,7 +221,7 @@ describe('GEO', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('노출 차단');
     expect(screen.getByRole('alert')).toHaveTextContent('인증서 경고');
     // 점수는 점수대로 그려진다 — 차단이 점수를 바꾸지 않는다.
-    expect(screen.getAllByText('31.5').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('31.50').length).toBeGreaterThan(0);
     expect(screen.getAllByText('GEO 준비도').length).toBeGreaterThan(0);
   });
 });

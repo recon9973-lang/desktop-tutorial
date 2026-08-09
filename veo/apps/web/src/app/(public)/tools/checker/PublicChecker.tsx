@@ -20,6 +20,7 @@
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { formatScore, formatScoreWithUnit } from '@veo/ui';
 import Link from 'next/link';
 
 import type { ScanCheckRow, ScanResult, ScanVerdict } from '@/lib/scan-api-types';
@@ -260,7 +261,7 @@ export function PublicChecker({ kind }: { readonly kind: 'SEO' | 'GEO' }) {
                   <span className={styles.historyKind}>{entry.kind}</span>
                   <span className={styles.historyUrl}>{entry.url}</span>
                   <span className={`${styles.historyScore} ${styles.mono}`}>
-                    {entry.score === null ? '—' : entry.score.toFixed(1)}
+                    {formatScore(entry.score)}
                   </span>
                   <span className={styles.historyDate}>{shortDate(entry.at)}</span>
                 </button>
@@ -341,7 +342,7 @@ export function Report({
             <div className={styles.gaugeArc} style={gaugeStyle(result.score.value)} />
             <div className={styles.gaugeHole} />
             <div className={styles.gaugeVal}>
-              <b>{result.score.value === null ? '—' : result.score.value.toFixed(1)}</b>
+              <b>{formatScore(result.score.value)}</b>
               <span>{copy.scoreLabel}</span>
             </div>
           </div>
@@ -353,14 +354,14 @@ export function Report({
             )}
             {result.score.value !== null && quality !== null ? (
               <div>
-                도달률 <b className={styles.mono}>{result.reach.toFixed(2)}</b> × 품질{' '}
-                <b className={styles.mono}>{quality.toFixed(1)}</b>
+                도달률 <b className={styles.mono}>{formatScore(result.reach)}</b> × 품질{' '}
+                <b className={styles.mono}>{formatScore(quality)}</b>
               </div>
             ) : null}
             {previous?.score != null && result.score.value !== null ? (
               <div className={styles.prevLine}>
                 지난 측정({shortDate(previous.at)}){' '}
-                <b className={styles.mono}>{previous.score.toFixed(1)}</b>
+                <b className={styles.mono}>{formatScore(previous.score)}</b>
                 {' → '}
                 <b
                   className={`${styles.mono} ${
@@ -368,7 +369,7 @@ export function Report({
                   }`}
                 >
                   {result.score.value >= previous.score ? '▲' : '▼'}
-                  {Math.abs(result.score.value - previous.score).toFixed(1)}
+                  {formatScore(Math.abs(result.score.value - previous.score))}
                 </b>
               </div>
             ) : null}
@@ -394,7 +395,7 @@ export function Report({
               <span className={styles.twinSub}>{copy.activeSub}</span>
             </span>
             <b className={styles.mono}>
-              {result.score.value === null ? '—' : result.score.value.toFixed(1)}
+              {formatScore(result.score.value)}
             </b>
           </div>
           <Link className={styles.twin} href={copy.otherHref}>
@@ -419,7 +420,7 @@ export function Report({
                 <i style={{ width: `${stage.score ?? 0}%` }} />
               </span>
               <span className={`${styles.stageValue} ${styles.mono}`}>
-                {stage.score === null ? '—' : Math.round(stage.score)}
+                {formatScore(stage.score)}
                 <small>/100</small>
               </span>
             </li>
@@ -646,7 +647,7 @@ function CheckItem({ row }: { readonly row: ScanCheckRow }) {
     row.blockedByCap && row.verdict !== 'PASS'
       ? '상한에 막힘'
       : row.gainPoints !== null && row.gainPoints > 0
-        ? `+${row.gainPoints.toFixed(1)}점`
+        ? `+${formatScoreWithUnit(row.gainPoints)}`
         : null;
 
   const summary = (

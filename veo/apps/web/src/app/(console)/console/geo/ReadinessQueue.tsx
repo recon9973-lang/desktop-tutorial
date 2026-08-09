@@ -1,4 +1,5 @@
 import type { GeoImprovement } from '@/lib/observations';
+import { formatScore } from '@veo/ui';
 
 import styles from './geo.module.css';
 
@@ -40,7 +41,7 @@ export function ReadinessQueue({
             >
               {item.title_ko}
             </a>
-            <span className={styles.queueGain}>+{item.gain_points.toFixed(1)}점</span>
+            <span className={styles.queueGain}>+{formatScore(item.gain_points)}점</span>
           </li>
         ))}
       </ol>

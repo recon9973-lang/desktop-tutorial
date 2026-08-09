@@ -93,7 +93,8 @@ async function diagnosisRow(
 
   return {
     ...base,
-    value: scored.length === 0 ? null : Math.round((total / scored.length) * 10) / 10,
+    // 자료 층에서 깎지 않는다. 표기는 화면이 `formatScore` 로 정한다.
+    value: scored.length === 0 ? null : total / scored.length,
     note: pending.length > 0 ? pending.join(' · ') : `맡은 ${sites.length}곳 모두 최신입니다`,
     tone: unmeasured > 0 || stale > 0 ? 'warn' : 'plain',
   };

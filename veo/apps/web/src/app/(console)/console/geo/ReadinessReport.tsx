@@ -1,4 +1,4 @@
-import { Card } from '@veo/ui';
+import { Card, formatScoreWithUnit } from '@veo/ui';
 
 import type { GeoCategory, GeoLookup, GeoReadiness } from '@/lib/observations';
 
@@ -60,7 +60,7 @@ export function ReadinessReport({
             한 화면에 두 번** 나왔다. 게다가 SEO 본문은 큰 숫자라 두 축이 서로 다르게
             보였다(사용자 지적). 게이지는 한 곳에만 둔다. */}
         <p className={hasScore ? styles.rateValue : styles.rateValueUnmeasured}>
-          {hasScore ? `${readiness.score?.toFixed(1)}점` : '점수를 낼 수 없습니다'}
+          {hasScore ? formatScoreWithUnit(readiness.score) : '점수를 낼 수 없습니다'}
         </p>
         {readiness.band_label_ko === null ? null : (
           <p className={styles.rateDenominator}>{readiness.band_label_ko}</p>
@@ -152,7 +152,7 @@ function CategoryRow({ category }: { readonly category: GeoCategory }) {
       <div className={styles.categoryHead}>
         <span className={styles.categoryName}>{category.name_ko}</span>
         <span className={scored ? styles.categoryScore : styles.categoryUnmeasured}>
-          {scored ? `${category.score?.toFixed(1)}점` : '측정 불가'}
+          {scored ? formatScoreWithUnit(category.score) : '측정 불가'}
         </span>
       </div>
       <p className={styles.categoryMeta}>

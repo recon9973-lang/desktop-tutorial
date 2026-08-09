@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Card, ErrorState } from '@veo/ui';
+import { Card, ErrorState, formatScoreWithUnit } from '@veo/ui';
 
 import { listCompanies } from '@/lib/companies';
 import { evidenceKindLabel, ownerLabel } from '@/lib/issues';
@@ -244,7 +244,7 @@ async function selectableScanRuns(projectId: string): Promise<SelectableScanRun[
         label:
           `${formatWhen(entry.startedAt)} · ${site?.origin ?? ''} · ` +
           `${entry.urlsCollected}장` +
-          (entry.score === null ? '' : ` · ${entry.score.toFixed(1)}점`),
+          (entry.score === null ? '' : ` · ${formatScoreWithUnit(entry.score)}`),
       });
     }
   }

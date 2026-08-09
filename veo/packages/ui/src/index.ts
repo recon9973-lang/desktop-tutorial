@@ -54,3 +54,5 @@ export type { UserMenuProps } from './components/UserMenu/UserMenu';
 
 export { cx } from './utils/cx';
 export type { ClassValue } from './utils/cx';
+
+export { NOT_MEASURED, formatScore, formatScoreWithUnit } from './utils/formatScore';

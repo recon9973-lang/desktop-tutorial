@@ -182,7 +182,7 @@ describe('ScoreCard · SC 1.4.1 use of colour', () => {
         confidence={0.8}
       />,
     );
-    expect(screen.getByText(/100점 만점에 72\.4점/)).toBeInTheDocument();
+    expect(screen.getByText(/100점 만점에 72\.40점/)).toBeInTheDocument();
   });
 });
 

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ErrorState } from '@veo/ui';
+import { ErrorState, formatScore } from '@veo/ui';
 
 import {
   readCheckTitles,
@@ -92,7 +92,7 @@ function PageListView({
                 href={`${base}&page=${encodeURIComponent(page.url)}`}
               >
                 <span className={own.pageScore}>
-                  {page.score === null ? '—' : page.score.toFixed(1)}
+                  {formatScore(page.score)}
                 </span>
                 <span className={own.pageUrl}>{page.url}</span>
                 <span className={own.pageCounts}>
@@ -146,13 +146,13 @@ function PageDetailView({
       ) : (
         <div className={own.pageScoreCard}>
           <div className={own.pageScoreBig}>
-            <b>{score.score === null ? '—' : score.score.toFixed(1)}</b>
+            <b>{formatScore(score.score)}</b>
             <span>페이지 점수 · 채점 규칙 {score.specVersion}</span>
           </div>
           {score.score !== null && score.quality !== null ? (
             <p className={own.pageFormula}>
-              도달률 <b>{score.reach.toFixed(2)}</b> x 품질{' '}
-              <b>{score.quality.toFixed(1)}</b> — 손실 합계를 빼면 그대로 검산됩니다
+              도달률 <b>{formatScore(score.reach)}</b> x 품질{' '}
+              <b>{formatScore(score.quality)}</b> — 손실 합계를 빼면 그대로 검산됩니다
             </p>
           ) : null}
           {score.gateUnverified.length > 0 ? (
@@ -168,7 +168,7 @@ function PageDetailView({
                   {stage.nameKo}
                   {stage.isGate ? ' · 관문' : ''}
                 </span>
-                <b>{stage.score === null ? '판정 없음' : Math.round(stage.score)}</b>
+                <b>{stage.score === null ? '판정 없음' : formatScore(stage.score)}</b>
               </li>
             ))}
           </ul>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@veo/ui';
+import { Card, formatScore } from '@veo/ui';
 
 import type {
   KeywordLookup,
@@ -183,7 +183,7 @@ function Chance({ opportunity }: { readonly opportunity: Opportunity }) {
           {opportunity.unavailable_reason_ko ?? '계산에 필요한 자료가 부족합니다.'}
         </p>
       ) : (
-        <p className={styles.chanceScore}>{opportunity.score.toFixed(1)}</p>
+        <p className={styles.chanceScore}>{formatScore(opportunity.score)}</p>
       )}
       <p className={styles.meta}>
         자료 충족 {(opportunity.coverage * 100).toFixed(0)}% · 최신성{' '}

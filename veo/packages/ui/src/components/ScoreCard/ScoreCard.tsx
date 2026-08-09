@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { formatScore } from '../../utils/formatScore';
 import { cx } from '../../utils/cx';
 import styles from './ScoreCard.module.css';
 
@@ -65,12 +66,12 @@ export function ScoreCard({
         {hasScore ? (
           <>
             <span className={styles.score} aria-hidden="true">
-              {score.toFixed(1)}
+              {formatScore(score)}
             </span>
             <span className={styles.scale} aria-hidden="true">
               ／ 100점
             </span>
-            <span className={styles.srOnly}>{`100점 만점에 ${score.toFixed(1)}점`}</span>
+            <span className={styles.srOnly}>{`100점 만점에 ${formatScore(score)}점`}</span>
           </>
         ) : (
           <span className={styles.unmeasured}>측정 불가</span>

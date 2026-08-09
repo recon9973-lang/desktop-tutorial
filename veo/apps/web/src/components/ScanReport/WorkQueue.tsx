@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { formatScoreWithUnit } from '@veo/ui';
 
 import type { ConsoleScanResult, Improvement, Issue, Outcome } from '@/lib/console-scan';
 
@@ -164,7 +165,7 @@ function QueueItem({
         {where === '' ? null : <span className={styles.where}>{where}</span>}
         <span className={styles.owner}>{ownerLabel(improvement.remediationOwner)}</span>
         <span className={styles.gain}>
-          {improvement.blockedByCap ? '상한 해제 후' : `+${improvement.gainPoints.toFixed(1)}점`}
+          {improvement.blockedByCap ? '상한 해제 후' : `+${formatScoreWithUnit(improvement.gainPoints)}`}
         </span>
       </button>
 

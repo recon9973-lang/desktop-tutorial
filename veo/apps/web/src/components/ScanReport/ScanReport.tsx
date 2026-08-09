@@ -1,4 +1,4 @@
-import { Card } from '@veo/ui';
+import { Card, formatScore, formatScoreWithUnit } from '@veo/ui';
 
 import type { Band } from '@/lib/scan-report';
 import type { ConsoleScanResult } from '@/lib/console-scan';
@@ -102,7 +102,7 @@ function Headline({
           SEO 기술 준비도
         </h2>
         <p className={styles.score}>
-          {result.score === null ? '측정 불가' : result.score.toFixed(1)}
+          {result.score === null ? '측정 불가' : formatScore(result.score)}
           {result.score === null ? null : <span className={styles.scoreUnit}>점</span>}
         </p>
         {band === undefined ? null : (
@@ -248,7 +248,7 @@ function Improvements({ result }: { readonly result: ConsoleScanResult }) {
             <span className={styles.topRank}>{index + 1}</span>
             <span className={styles.topTitle}>{item.title}</span>
             <span className={styles.topGain}>
-              {item.blockedByCap ? '상한 해제 후' : `+${item.gainPoints.toFixed(1)}점`}
+              {item.blockedByCap ? '상한 해제 후' : `+${formatScoreWithUnit(item.gainPoints)}`}
             </span>
             <span className={styles.topOwner}>{ownerLabel(item.remediationOwner)}</span>
           </li>
@@ -263,7 +263,7 @@ function Improvements({ result }: { readonly result: ConsoleScanResult }) {
               <li key={item.checkId} className={styles.todo}>
                 <span className={styles.todoTitle}>{item.title}</span>
                 <span className={styles.todoMeta}>
-                  {item.blockedByCap ? '상한 해제 후 반영' : `+${item.gainPoints.toFixed(1)}점`}
+                  {item.blockedByCap ? '상한 해제 후 반영' : `+${formatScoreWithUnit(item.gainPoints)}`}
                   <span className={styles.todoOwner}> · {ownerLabel(item.remediationOwner)}</span>
                 </span>
               </li>
@@ -300,7 +300,7 @@ function Categories({ result }: { readonly result: ConsoleScanResult }) {
                 {category.score === null
                   ? '측정 불가'
                   : /* 배점 대비로 보여준다. 백분율만 쓰면 어느 영역이 무거운지 알 수 없다. */
-                    `${((category.score * category.weight) / 100).toFixed(1)} / ${category.weight}`}
+                    `${formatScore((category.score * category.weight) / 100)} / ${category.weight}`}
               </span>
             </div>
             {/* 막대 길이는 **전체 100점 대비**로 그린다. 영역 안에서의 비율로 그리면
@@ -309,7 +309,7 @@ function Categories({ result }: { readonly result: ConsoleScanResult }) {
             <div
               className={styles.bar}
               role="img"
-              aria-label={`${category.name} ${category.score === null ? '측정 불가' : `${((category.score * category.weight) / 100).toFixed(1)}점 획득, 배점 ${category.weight}점`}`}
+              aria-label={`${category.name} ${category.score === null ? '측정 불가' : `${formatScore((category.score * category.weight) / 100)}점 획득, 배점 ${category.weight}점`}`}
             >
               <span className={styles.barTrack} style={{ width: `${category.weight}%` }}>
                 <span

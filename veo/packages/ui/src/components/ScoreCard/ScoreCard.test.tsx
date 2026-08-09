@@ -30,7 +30,8 @@ describe('ScoreCard', () => {
       />,
     );
 
-    expect(screen.getByText('96.9')).toBeInTheDocument();
+    // 96.875 를 **자른** 값이다. 반올림했다면 96.88 이 나온다 — 재지 않은 값이다.
+    expect(screen.getByText('96.87')).toBeInTheDocument();
     expect(screen.getByText('veo.geo.readiness 1.0.0')).toBeInTheDocument();
     expect(screen.getByText('100.0%')).toBeInTheDocument();
     expect(screen.getByText('90.0%')).toBeInTheDocument();
