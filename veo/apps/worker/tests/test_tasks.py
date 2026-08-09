@@ -45,7 +45,16 @@ class TestRegistration:
 
 #: 진짜로 도는 태스크. 껍데기 규칙에서 빼되 **목록으로 남긴다** — 다음 사람이 "왜 이건
 #: 빠졌지" 를 코드에서 읽을 수 있어야 하고, 하나씩 채울 때마다 여기서 한 줄이 옮겨간다.
-IMPLEMENTED: set[JobType] = {JobType.SEO_SCAN}
+#: 워커에서 **실제로 일을 하는** 종류. 나머지는 Phase 0 의 껍데기다.
+#:
+#: 이 집합은 `veo.jobs.dispatch.QUEUEABLE` 과 짝이어야 한다 — 큐로 보내는데 껍데기면
+#: 잡이 아무도 집어가지 않은 채 `QUEUED` 로 남고, 그것은 배경 스레드로 도는 것보다
+#: 나쁘다. 그 짝을 `apps/api/tests/issues/test_reverification_actually_runs.py` 가
+#: 지킨다.
+#:
+#: REVERIFICATION 이 2026-08-09 에 들어왔다 — 이슈를 닫는 재측정(v0.3.78)이 API 의
+#: 데몬 스레드로만 돌아 재배포하면 사라지고 있었다(기획서 E5).
+IMPLEMENTED: set[JobType] = {JobType.SEO_SCAN, JobType.REVERIFICATION}
 
 
 class TestPhaseZeroStubs:

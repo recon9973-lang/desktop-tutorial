@@ -173,8 +173,20 @@ def _run_scan(execute: Any, scan_work: Any, **kwargs: Any) -> dict[str, Any]:
         locale=str(kwargs.get("locale") or "ko-KR"),
         is_service_account=bool(kwargs.get("is_service_account", False)),
     )
-    outcome = execute(job_id, work)
-    return {"job_id": str(job_id), "status": getattr(outcome, "status", None)}
+    # `execute` 는 아무것도 돌려주지 않는다 — 상태는 **잡 표**에 적힌다. 예전에는 여기서
+    # `getattr(outcome, "status", None)` 를 실어 보냈는데, 그 값은 언제나 `None` 이었다.
+    # 언제나 비어 있는 칸을 상태라고 부르면 그것이 곧 "상태를 못 읽었다" 로 읽힌다.
+    execute(job_id, work)
+    return _handed_off(job_id)
+
+
+def _handed_off(job_id: Any) -> dict[str, Any]:
+    """태스크의 반환값 — **여기에 결과를 담지 않는다.**
+
+    켈러리 결과는 사라질 수 있고(백엔드 만료), 진실은 잡 표 하나여야 한다. 그래서
+    돌려주는 것은 "어느 잡을 돌렸는가" 뿐이고, 상태는 `GET /jobs/{id}` 로 묻는다.
+    """
+    return {"job_id": str(job_id), "result_in": "jobs table"}
 
 
 # Registered tasks. Thin on purpose: each one names its job type and delegates.
@@ -208,7 +220,41 @@ def seo_scan(**kwargs: Any) -> dict[str, Any]:
 
 @celery_app.task(name=TASK_NAME_BY_JOB_TYPE[JobType.REVERIFICATION], bind=False)
 def reverification(**kwargs: Any) -> dict[str, Any]:
-    return _run_phase_zero_skeleton(JobType.REVERIFICATION, **kwargs)
+    """이슈를 닫는 재측정을 돈다 — **진단과 같은 파이프라인, 좁힌 범위로.**
+
+    이 자리는 `seo_scan` 과 같은 이유로 채워졌다. 재측정은 v0.3.78 에 생겼지만 API
+    프로세스의 배경 스레드로만 돌았고, 데몬 스레드라 **재배포하면 진행 중인 재측정이
+    사라진다**(기획서 E5). 이슈가 `VERIFYING` 인 채로 남고 아무도 다시 걸지 않는다.
+
+    `reverification_work` 는 처음부터 값만 받도록 만들어져 있다 — 요청 객체의 수명이
+    요청보다 길어지면 안 된다는 규칙 때문이었는데, 그 덕에 프로세스를 건널 수 있다.
+
+    **판정은 여기서도 정하지 않는다.** 그 함수가 저장된 실행 번호만 넘기고, 받는 쪽이
+    `check_results` 를 읽어 결론을 낸다(ADR 0011).
+    """
+    import uuid as _uuid
+
+    from veo.contracts.enums import Role
+    from veo.issues.reverify import reverification_work
+    from veo.jobs.execution import execute
+
+    job_id = _uuid.UUID(str(kwargs["job_id"]))
+    # 빠진 자리를 기본값으로 채우지 않는다 — 엉뚱한 조직의 일을 엉뚱한 권한으로
+    # 돌리게 된다(`_run_scan` 과 같은 규칙).
+    work = reverification_work(
+        organization_id=_uuid.UUID(str(kwargs["organization_id"])),
+        user_id=_uuid.UUID(str(kwargs["user_id"])),
+        roles=frozenset(Role(one) for one in kwargs["roles"]),
+        session_id=str(kwargs["session_id"]),
+        is_service_account=bool(kwargs.get("is_service_account", False)),
+        issue_id=_uuid.UUID(str(kwargs["issue_id"])),
+        site_id=_uuid.UUID(str(kwargs["site_id"])),
+        target_url=str(kwargs["target_url"]),
+        urls=tuple(kwargs["urls"]),
+        locale=str(kwargs.get("locale") or "ko-KR"),
+    )
+    execute(job_id, work)
+    return _handed_off(job_id)
 
 
 @celery_app.task(name=TASK_NAME_BY_JOB_TYPE[JobType.COMPETITOR_COMPARISON], bind=False)

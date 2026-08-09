@@ -38,9 +38,19 @@ _log = logging.getLogger(__name__)
 #: 큐로 **보내도 되는** 작업 종류.
 #:
 #: 이름은 여덟 종류가 다 있지만(:mod:`veo.jobs.queues`), 워커에서 실제로 일을 하는 것은
-#: SEO 진단 하나다. 나머지는 Phase 0 의 뼈대라 `NotImplementedError` 를 던진다. 이름이
-#: 있다는 것과 받는 사람이 있다는 것은 다른 이야기다(0-E) — 그래서 목록을 따로 둔다.
-QUEUEABLE: Final[frozenset[JobType]] = frozenset({JobType.SEO_SCAN})
+#: **둘**이다 — SEO 진단과 이슈 재측정. 나머지 여섯은 Phase 0 의 뼈대라
+#: `NotImplementedError` 를 던진다. 이름이 있다는 것과 받는 사람이 있다는 것은 다른
+#: 이야기다(0-E) — 그래서 목록을 따로 둔다.
+#:
+#: 여기에 한 종류를 더할 때 지켜야 하는 것 둘:
+#:
+#: 1. 워커의 그 태스크가 **실제로 일을 한다.** 뼈대인 채로 넣으면 잡이 아무도 집어가지
+#:    않은 채 `QUEUED` 로 남고, 그것은 배경 스레드로 도는 것보다 나쁘다.
+#: 2. `dispatch(parameters=...)` 가 **그 작업을 다시 만들 값을 전부** 싣는다. 함수는
+#:    프로세스를 건너지 못한다.
+QUEUEABLE: Final[frozenset[JobType]] = frozenset(
+    {JobType.SEO_SCAN, JobType.REVERIFICATION}
+)
 
 
 def queue_is_configured() -> bool:

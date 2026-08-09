@@ -92,17 +92,91 @@ class TestTheVerdictStaysWithTheMeasurement:
         assert "RUN_NOT_SAVED" in source
 
 
-class TestItDoesNotGoToAQueueThatCannotDoTheWork:
-    def test_reverification_is_not_queueable_while_the_worker_is_a_stub(self) -> None:
-        """워커의 재검증 태스크는 아직 뼈대다(`Phase 2 에 온다`).
+class TestItGoesToTheQueueNowThatTheWorkerCanDoTheWork:
+    """**이 묶음은 의도적으로 뒤집혔다** (2026-08-09).
 
-        큐로 보내면 아무도 집어가지 않은 채 대기하고, 그것은 지금보다 나쁘다.
-        워커가 실제로 일을 하게 되는 날 이 시험을 **의도적으로** 고치면 된다.
-        """
+    앞선 판에서 여기는 `REVERIFICATION not in QUEUEABLE` 을 지켰다. 이유가 적혀
+    있었다 — *"워커의 재검증 태스크는 아직 뼈대다. 큐로 보내면 아무도 집어가지 않은 채
+    대기하고, 그것은 지금보다 나쁘다. 워커가 실제로 일을 하게 되는 날 이 시험을
+    의도적으로 고치면 된다."*
+
+    그날이 왔다. 워커가 `reverification_work` 를 부른다. 배경 스레드는 데몬이라
+    재배포하면 진행 중인 재측정이 사라지고, 이슈는 `VERIFYING` 인 채 남는다(E5).
+    """
+
+    def test_reverification_is_queueable(self) -> None:
         from veo.contracts.enums import JobType
         from veo.jobs.dispatch import QUEUEABLE
 
-        assert JobType.REVERIFICATION not in QUEUEABLE
+        assert JobType.REVERIFICATION in QUEUEABLE
+
+    def test_the_worker_task_is_no_longer_a_skeleton(self) -> None:
+        """큐에 넣기 전에 **받는 사람이 있는지** 본다. 없으면 QUEUED 로 영영 남는다."""
+        worker = _worker_tasks_source()
+        if worker is None:  # pragma: no cover - 워커가 없는 검사 환경
+            pytest.skip("워커 소스가 이 환경에 없다")
+
+        body = worker.split("def reverification(")[1].split("@celery_app.task")[0]
+        assert "reverification_work" in body, "워커가 그 작업을 부르지 않는다"
+        assert "_run_phase_zero_skeleton" not in body, "아직 뼈대다 — 큐로 보내면 안 된다"
+
+    def test_every_queueable_type_has_a_real_worker_task(self) -> None:
+        """`QUEUEABLE` 에 뼈대가 섞여 들어오는 것을 막는다."""
+        from veo.contracts.enums import JobType
+        from veo.jobs.dispatch import QUEUEABLE
+
+        worker = _worker_tasks_source()
+        if worker is None:  # pragma: no cover
+            pytest.skip("워커 소스가 이 환경에 없다")
+
+        skeletons = {
+            job_type
+            for job_type in JobType
+            if f"_run_phase_zero_skeleton(JobType.{job_type.name}" in worker
+        }
+        assert QUEUEABLE.isdisjoint(skeletons), (
+            f"뼈대인데 큐로 보내는 종류가 있다: {sorted(one.name for one in QUEUEABLE & skeletons)}"
+        )
+
+
+class TestTheQueueCarriesEnoughToRebuildTheWork:
+    """함수는 프로세스를 건너지 못한다. **값이 하나라도 빠지면 워커가 KeyError 로 죽는다.**"""
+
+    def test_the_dispatch_parameters_name_every_argument_the_work_needs(self) -> None:
+        from veo.issues import router
+
+        source = pathlib.Path(router.__file__).read_text(encoding="utf-8")
+        # `submit(...)` 에도 같은 `job_type=` 이 있다. 우리가 볼 것은 **큐로 건너가는**
+        # 쪽이므로 `dispatch(` 뒤에서 자른다.
+        block = source.split("dispatch(")[1].split("parameters={")[1].split("},")[0]
+        for key in (
+            "organization_id",
+            "user_id",
+            "roles",
+            "session_id",
+            "is_service_account",
+            "issue_id",
+            "site_id",
+            "target_url",
+            "urls",
+            "locale",
+        ):
+            assert f'"{key}"' in block, (
+                f"큐로 건너갈 값에 {key} 가 없다 — 워커가 작업을 다시 만들지 못한다"
+            )
+
+
+def _worker_tasks_source() -> str | None:
+    worker = (
+        pathlib.Path(__file__).resolve().parents[3]
+        / "worker"
+        / "src"
+        / "veo_worker"
+        / "runtime"
+        / "tasks"
+        / "__init__.py"
+    )
+    return worker.read_text(encoding="utf-8") if worker.exists() else None
 
 
 class TestTheResponseSaysWhetherItStarted:
@@ -120,20 +194,16 @@ class TestTheResponseSaysWhetherItStarted:
         assert field.default is None
 
 
-class TestTheWorkerStubIsStillMarked:
-    """뼈대를 뼈대라고 적어 두는 것도 지켜야 하는 사실이다."""
+class TestTheWorkerReusesTheOneScoringPipeline:
+    """워커가 자기 파이프라인을 따로 갖지 않는다 — 두 벌이 되면 한쪽만 고쳐진다."""
 
-    def test_the_worker_task_still_says_it_is_not_implemented(self) -> None:
-        worker = (
-            pathlib.Path(__file__).resolve().parents[3]
-            / "worker"
-            / "src"
-            / "veo_worker"
-            / "runtime"
-            / "tasks"
-            / "__init__.py"
-        )
-        if not worker.exists():  # pragma: no cover - 워커가 없는 검사 환경
+    def test_the_worker_never_names_a_verdict(self) -> None:
+        worker = _worker_tasks_source()
+        if worker is None:  # pragma: no cover
             pytest.skip("워커 소스가 이 환경에 없다")
-        source = worker.read_text(encoding="utf-8")
-        assert "REVERIFICATION" in source
+
+        body = worker.split("def reverification(")[1].split("@celery_app.task")[0]
+        for forbidden in ("VerificationOutcome", "RESOLVED"):
+            assert forbidden not in body, (
+                f"워커가 결론을 직접 쓴다({forbidden}) — 판정은 측정에서만 나온다"
+            )

@@ -275,12 +275,21 @@ def _start_reverification(
                 urls=tuple(request.target_urls),
             ),
             job_type=JobType.REVERIFICATION,
-            # 큐로는 가지 않는다(`QUEUEABLE` 에 없다) — 워커의 재검증 태스크는 아직
-            # 뼈대다. 배경 스레드로 도는 것이 지금 유일하게 **실제로 도는** 길이다.
+            # **큐로 갈 때는 이 값들만 건넌다.** 함수는 프로세스를 건너지 못한다.
+            # 위 `reverification_work(...)` 의 인자와 하나씩 짝이 맞아야 하고, 하나라도
+            # 빠지면 워커에서 `KeyError` 로 멈춘다 — 기본값으로 때우는 것보다 낫다.
+            # 큐가 없는 배포에서는 `dispatch` 가 배경 스레드로 떨어뜨린다.
             parameters={
                 "organization_id": str(principal.organization_id),
+                "user_id": str(principal.user_id),
+                "roles": [str(role) for role in principal.roles],
+                "session_id": principal.session_id,
+                "is_service_account": principal.is_service_account,
                 "issue_id": str(issue.id),
                 "site_id": str(site.id),
+                "target_url": site.origin,
+                "urls": list(request.target_urls),
+                "locale": "ko-KR",
             },
         )
     return job
