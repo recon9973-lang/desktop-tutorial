@@ -7,6 +7,7 @@ import styles from '@/styles/page.module.css';
 import { PermissionGate } from '@/components/PermissionGate';
 import { requireConsoleIdentity } from '@/lib/session';
 
+import { ProjectNameForm } from './ProjectNameForm';
 import own from './projects.module.css';
 
 export const metadata: Metadata = {
@@ -100,6 +101,11 @@ async function ConsoleProjectsContent() {
                   <Link href={`/console/issues?project=${encodeURIComponent(project.id)}`}>
                     이슈
                   </Link>
+                  {/*
+                    이름을 고치는 길. 서버에는 처음부터 있었는데 화면이 없어 오타 하나도
+                    못 고쳤다 — 브랜드에서 두 번 나온 같은 구멍이다(v0.3.69).
+                  */}
+                  <ProjectNameForm projectId={project.id} projectName={project.name} />
                 </p>
               </li>
             ))}

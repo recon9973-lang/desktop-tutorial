@@ -78,3 +78,33 @@
   gap: var(--veo-space-4);
   font-size: var(--veo-font-size-200);
 }
+
+/* 이름 고치기 — 평소에는 링크 하나, 누르면 열린다.
+   목록에 입력칸을 늘 펼쳐 두면 프로젝트 다섯 개가 입력칸 다섯 개가 된다. */
+
+.renameOpen {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--veo-color-accent);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.renameOpen:hover {
+  color: var(--veo-color-accent-hover);
+}
+
+.renameForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-3);
+  max-width: 24rem;
+  margin-top: var(--veo-space-3);
+}
+
+.renameActions {
+  display: flex;
+  gap: var(--veo-space-2);
+}

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { readAllPages, type ConsoleOutcome } from '@/lib/console-api';
+import { callConsoleApi, readAllPages, type ConsoleOutcome } from '@/lib/console-api';
 import { record, text, textOrNull } from '@/lib/json';
 
 /**
@@ -88,4 +88,33 @@ export async function listProjects(): Promise<ConsoleOutcome<readonly ProjectRow
   });
 
   return { ok: true, data: rows, meta: projects.meta };
+}
+
+/**
+ * 프로젝트 이름을 고친다 — **만들면 못 고치던 것**(v0.3.83).
+ *
+ * 서버에는 `PATCH /api/projects/{id}` 가 처음부터 있었다. 화면이 없어서 오타 하나도
+ * 못 고쳤다(`audit/2026-08-08-server-ui-gap.md` §B). 브랜드에서 같은 모양의 구멍이
+ * 이미 두 번 나왔다(v0.3.69).
+ *
+ * **이름만 보낸다.** 서버는 slug·업체·지역·명세 판까지 받지만, 그것들은 측정 조건이라
+ * 바꾸면 지난 진단과 비교가 끊긴다(ADR 0010). 화면에서 무심코 바뀌면 안 되는 값이다 —
+ * 필요해지면 그때 따로 연다.
+ */
+export async function updateProject(
+  projectId: string,
+  changes: { readonly name: string },
+): Promise<ConsoleOutcome<{ readonly id: string; readonly name: string }>> {
+  const outcome = await callConsoleApi(`/api/projects/${encodeURIComponent(projectId)}`, {
+    method: 'PATCH',
+    body: { name: changes.name },
+  });
+  if (!outcome.ok) return outcome;
+
+  const row = record(outcome.data);
+  return {
+    ok: true,
+    data: { id: text(row, 'id'), name: text(row, 'name') },
+    meta: outcome.meta,
+  };
 }
