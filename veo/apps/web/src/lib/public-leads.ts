@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { resolveAuthApiBaseUrl } from '@/lib/auth-api';
+import { recordOrNull } from '@/lib/json';
 
 /**
  * 무료 진단 상담 요청 — 공개 화면이 접수 창구에 말을 거는 통로.
@@ -51,11 +52,6 @@ export interface LeadInput {
   readonly siteUrl: string | null;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
 
 function classify(status: number): LeadFailureReason {
   if (status === 422 || status === 400) return 'INVALID';
@@ -122,14 +118,14 @@ export async function submitPublicLead(
       : failed(classify(response.status), null, retryAfterFrom(response));
   }
 
-  const record = asRecord(envelope);
+  const record = recordOrNull(envelope);
   if (!response.ok || record === null) {
-    const error = asRecord(record?.['error']);
+    const error = recordOrNull(record?.['error']);
     const message = typeof error?.['message'] === 'string' ? error['message'] : null;
     return failed(classify(response.status), message, retryAfterFrom(response));
   }
 
-  const data = asRecord(record['data']);
+  const data = recordOrNull(record['data']);
   if (data === null) return failed('SERVER_ERROR');
 
   const stored = data['stored_fields_ko'];

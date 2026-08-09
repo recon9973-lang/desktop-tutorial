@@ -53,6 +53,7 @@ from veo.providers.google.http import (
     DEFAULT_MAX_RESPONSE_BYTES,
     DEFAULT_TIMEOUT_SECONDS,
     GoogleHttpCaller,
+    as_number,
 )
 
 __all__ = [
@@ -301,7 +302,7 @@ def normalize_loading_experience(
         if not isinstance(raw, Mapping):
             continue
         category = _category(raw.get("category"))
-        percentile = _number(raw.get("percentile"))
+        percentile = as_number(raw.get("percentile"))
         metrics[str(metric_id)] = FieldMetric(
             metric_id=str(metric_id),
             category=category,
@@ -363,7 +364,7 @@ def normalize_query_record(
         if not isinstance(raw, Mapping):
             continue
         percentiles = raw.get("percentiles")
-        p75 = _number(percentiles.get("p75")) if isinstance(percentiles, Mapping) else None
+        p75 = as_number(percentiles.get("p75")) if isinstance(percentiles, Mapping) else None
         metrics[metric_id] = FieldMetric(
             metric_id=metric_id,
             category=None,
@@ -405,17 +406,6 @@ def _category(value: Any) -> str | None:
     return candidate if candidate in FIELD_CATEGORIES else None
 
 
-def _number(value: Any) -> float | None:
-    if isinstance(value, bool) or value is None:
-        return None
-    if isinstance(value, int | float):
-        return float(value)
-    if isinstance(value, str):
-        try:
-            return float(value.strip())
-        except ValueError:
-            return None
-    return None
 
 
 def _histogram(value: Any) -> tuple[Mapping[str, float], ...]:
@@ -427,7 +417,7 @@ def _histogram(value: Any) -> tuple[Mapping[str, float], ...]:
             continue
         # The last bin has no ``end`` — it is the open-ended "poor" bucket — so a missing
         # key is expected here and simply does not appear.
-        bounds = {key: _number(entry.get(key)) for key in ("start", "end", "density")}
+        bounds = {key: as_number(entry.get(key)) for key in ("start", "end", "density")}
         bins.append({key: bound for key, bound in bounds.items() if bound is not None})
     return tuple(bins)
 

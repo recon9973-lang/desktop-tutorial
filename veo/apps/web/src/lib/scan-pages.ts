@@ -14,6 +14,7 @@
 import 'server-only';
 
 import { callConsoleApi, type ConsoleOutcome } from '@/lib/console-api';
+import { record, textOrNull } from '@/lib/json';
 
 export interface PageRow {
   readonly url: string;
@@ -78,11 +79,6 @@ export interface PageDetail {
   readonly score: PageScoreDetail | null;
 }
 
-function record(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 function list(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
@@ -97,10 +93,6 @@ function str(source: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-function strOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 function num(source: Record<string, unknown>, key: string): number {
   const value = source[key];
@@ -116,7 +108,7 @@ function numOrNull(source: Record<string, unknown>, key: string): number | null 
 export function toScanPages(raw: unknown): ScanPages {
   const source = record(raw);
   return {
-    measuredAt: strOrNull(source, 'measured_at'),
+    measuredAt: textOrNull(source, 'measured_at'),
     pages: list(source['pages']).map((entry) => {
       const item = record(entry);
       return {
@@ -126,7 +118,7 @@ export function toScanPages(raw: unknown): ScanPages {
         passedCount: num(item, 'passed_count'),
         problemCount: num(item, 'problem_count'),
         score: numOrNull(item, 'score'),
-        scoreStatus: strOrNull(item, 'score_status'),
+        scoreStatus: textOrNull(item, 'score_status'),
       };
     }),
     siteChecks: list(source['site_checks']).map((entry) => {
@@ -134,7 +126,7 @@ export function toScanPages(raw: unknown): ScanPages {
       return {
         checkId: str(item, 'check_id'),
         status: str(item, 'status'),
-        reasonKo: strOrNull(item, 'reason_ko'),
+        reasonKo: textOrNull(item, 'reason_ko'),
       };
     }),
     recordedBeforePageLists: source['recorded_before_page_lists'] === true,

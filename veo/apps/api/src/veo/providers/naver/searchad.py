@@ -30,7 +30,6 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
-import json
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -55,6 +54,7 @@ from veo.providers.naver.errors import (
     RetryPolicy,
     classify_status,
     classify_transport_exception,
+    parse_json_object,
 )
 
 __all__ = [
@@ -576,7 +576,7 @@ class NaverSearchAdClient:
         def operation() -> SearchAdKeywordResponse:
             collected_at = self._clock()
             body = self._request(credentials, hints)
-            payload = _parse_json(body)
+            payload = parse_json_object(body)
             return normalize_keywordstool(payload, collected_at=collected_at, raw_bytes=body)
 
         return self._caller.call(operation)
@@ -632,11 +632,3 @@ class NaverSearchAdClient:
 
 
 
-def _parse_json(body: bytes) -> Mapping[str, Any]:
-    try:
-        payload = json.loads(body.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError) as exc:
-        raise NaverSchemaError(f"body is not JSON: {type(exc).__name__}") from None
-    if not isinstance(payload, dict):
-        raise NaverSchemaError("body is not a JSON object")
-    return payload

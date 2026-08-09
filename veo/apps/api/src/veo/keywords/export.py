@@ -30,6 +30,7 @@ from datetime import UTC, datetime
 from typing import Final
 from xml.sax.saxutils import escape, quoteattr
 
+from veo.common.spreadsheet import cell_reference
 from veo.keywords.service import KeywordLookupResult
 
 __all__ = [
@@ -213,19 +214,8 @@ _WORKBOOK = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sheets><sheet name="keywords" sheetId="1" r:id="rId1"/></sheets>
 </workbook>"""
 
-_COLUMN_LETTERS: Final = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-def _cell_reference(column_index: int, row_index: int) -> str:
-    """``A1``-style reference for a zero-based column and a one-based row."""
-    letters = ""
-    remaining = column_index
-    while True:
-        letters = _COLUMN_LETTERS[remaining % 26] + letters
-        remaining = remaining // 26 - 1
-        if remaining < 0:
-            break
-    return f"{letters}{row_index}"
 
 
 def _sheet_xml(header: Sequence[str], rows: Iterable[dict[str, str]]) -> str:
@@ -239,7 +229,7 @@ def _sheet_xml(header: Sequence[str], rows: Iterable[dict[str, str]]) -> str:
         cells = "".join(
             # Inline strings throughout: every cell is text, so a keyword that looks like
             # a number or a date cannot be re-typed by the spreadsheet on open.
-            f'<c r={quoteattr(_cell_reference(index, row_index))} t="inlineStr">'
+            f'<c r={quoteattr(cell_reference(index, row_index))} t="inlineStr">'
             f"<is><t xml:space=\"preserve\">{escape(value)}</t></is></c>"
             for index, value in enumerate(values)
         )

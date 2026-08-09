@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 
 import { resolveAuthApiBaseUrl } from '@/lib/auth-api';
 import { CONSOLE_SESSION_COOKIE } from '@/lib/session-cookie';
+import { record } from '@/lib/json';
 
 /**
  * 콘솔이 로그인한 상태로 엔진에 말을 거는 통로.
@@ -77,11 +78,6 @@ function failed<T>(
   return { ok: false, reason, message, retryAfterSeconds };
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 /**
  * 엔진이 준 한국어 오류 문장만 통과시킨다.
@@ -91,7 +87,7 @@ function asRecord(value: unknown): Record<string, unknown> {
  * `message` 로 명시한 값만 쓰고, 그 밖의 필드는 보지 않는다.
  */
 function safeMessage(envelope: unknown): string | null {
-  const error = asRecord(asRecord(envelope)['error']);
+  const error = record(record(envelope)['error']);
   const message = error['message'];
   return typeof message === 'string' && message !== '' ? message : null;
 }
@@ -160,15 +156,15 @@ export async function callConsoleApi<T = unknown>(
     );
   }
 
-  const body = asRecord(envelope);
+  const body = record(envelope);
   const pageInfo = body['page_info'];
   return {
     ok: true,
     data: body['data'] as T,
-    meta: asRecord(body['meta']),
+    meta: record(body['meta']),
     ...(pageInfo === undefined || pageInfo === null
       ? {}
-      : { pageInfo: asRecord(pageInfo) }),
+      : { pageInfo: record(pageInfo) }),
   };
 }
 

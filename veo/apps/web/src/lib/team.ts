@@ -3,6 +3,7 @@ import 'server-only';
 import { callConsoleApi, type ConsoleOutcome } from '@/lib/console-api';
 // 역할 상수는 화면(브라우저)과 함께 쓰므로 server-only 가 아닌 자리에 둔다.
 import type { Role } from '@/app/(console)/console/team/roles';
+import { record, textOrNull } from '@/lib/json';
 
 export { ROLES, ROLE_LABELS, isRole } from '@/app/(console)/console/team/roles';
 export type { Role } from '@/app/(console)/console/team/roles';
@@ -39,11 +40,6 @@ export interface Invitation {
   readonly expiresAt: string;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 /**
  * 목록 응답의 본문.
@@ -53,7 +49,7 @@ function asRecord(value: unknown): Record<string, unknown> {
  * 등록은 성공하는데 화면에는 아무것도 안 나오는, 원인을 찾기 어려운 실패였다.
  */
 function rows(data: unknown): readonly Record<string, unknown>[] {
-  return Array.isArray(data) ? data.map(asRecord) : [];
+  return Array.isArray(data) ? data.map(record) : [];
 }
 
 function text(source: Record<string, unknown>, key: string): string {
@@ -61,10 +57,6 @@ function text(source: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-function textOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 function toMember(source: Record<string, unknown>): Member {
   return {
@@ -110,7 +102,7 @@ export async function inviteMember(input: {
   });
   if (!outcome.ok) return outcome;
   // 응답은 `{ member, invitation }` 이다. 화면이 당장 필요한 것은 링크뿐이다.
-  return { ...outcome, data: toInvitation(asRecord(asRecord(outcome.data)['invitation'])) };
+  return { ...outcome, data: toInvitation(record(record(outcome.data)['invitation'])) };
 }
 
 export async function reinvite(userId: string): Promise<ConsoleOutcome<Invitation>> {
@@ -118,7 +110,7 @@ export async function reinvite(userId: string): Promise<ConsoleOutcome<Invitatio
     method: 'POST',
   });
   if (!outcome.ok) return outcome;
-  return { ...outcome, data: toInvitation(asRecord(outcome.data)) };
+  return { ...outcome, data: toInvitation(record(outcome.data)) };
 }
 
 export async function changeRole(
@@ -130,7 +122,7 @@ export async function changeRole(
     body: { role },
   });
   if (!outcome.ok) return outcome;
-  return { ...outcome, data: toMember(asRecord(outcome.data)) };
+  return { ...outcome, data: toMember(record(outcome.data)) };
 }
 
 export async function changeStatus(
@@ -142,5 +134,5 @@ export async function changeStatus(
     body: { is_active: isActive },
   });
   if (!outcome.ok) return outcome;
-  return { ...outcome, data: toMember(asRecord(outcome.data)) };
+  return { ...outcome, data: toMember(record(outcome.data)) };
 }

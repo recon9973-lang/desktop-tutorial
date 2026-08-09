@@ -173,5 +173,27 @@ class GoogleHttpCaller:
             finally:
                 response.close()
 
+def as_number(value: Any) -> float | None:
+    """제공자가 준 값을 실수로 — **못 읽으면 `0.0` 이 아니라 `None`.**
 
+    구글 세 어댑터(PageSpeed·CrUX·Search Console)가 이 함수를 한 벌씩 갖고 있었다
+    (2026-08-09 실측, 본문은 글자까지 같았다). 중복은 낭비로 끝나지 않는다 — 나중에
+    만든 쪽이 원본의 제약을 모른 채 더 관대해진다(지침서 0-D).
 
+    지키는 것 둘:
+
+    * ``bool`` 은 숫자가 아니다. 파이썬에서 ``True`` 는 ``1`` 이라 걸러 두지 않으면
+      "켜져 있음" 이 점수 ``1.0`` 으로 흘러간다.
+    * 못 읽으면 ``None``. ``0.0`` 으로 접으면 **재지 못한 것이 "0 점" 이 된다** —
+      정반대의 사실이다(ADR 0002).
+    """
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except ValueError:
+            return None
+    return None

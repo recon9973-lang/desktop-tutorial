@@ -19,6 +19,7 @@ from collections.abc import Iterable, Sequence
 from typing import Final
 from xml.sax.saxutils import escape, quoteattr
 
+from veo.common.spreadsheet import cell_reference
 from veo.reports.render.rows import COLUMNS, SHEET_NAME, report_rows
 from veo.reports.snapshot import ReportSnapshot
 
@@ -57,24 +58,13 @@ _WORKBOOK = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sheets><sheet name="{SHEET_NAME}" sheetId="1" r:id="rId1"/></sheets>
 </workbook>"""
 
-_COLUMN_LETTERS: Final = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-def _cell_reference(column_index: int, row_index: int) -> str:
-    """``A1``-style reference for a zero-based column and a one-based row."""
-    letters = ""
-    remaining = column_index
-    while True:
-        letters = _COLUMN_LETTERS[remaining % 26] + letters
-        remaining = remaining // 26 - 1
-        if remaining < 0:
-            break
-    return f"{letters}{row_index}"
 
 
 def _row_xml(values: Sequence[str], row_index: int) -> str:
     cells = "".join(
-        f'<c r={quoteattr(_cell_reference(index, row_index))} t="inlineStr">'
+        f'<c r={quoteattr(cell_reference(index, row_index))} t="inlineStr">'
         f'<is><t xml:space="preserve">{escape(value)}</t></is></c>'
         for index, value in enumerate(values)
     )

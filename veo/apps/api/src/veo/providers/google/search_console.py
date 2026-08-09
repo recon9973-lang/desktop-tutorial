@@ -67,6 +67,7 @@ from veo.providers.google.http import (
     DEFAULT_MAX_RESPONSE_BYTES,
     DEFAULT_TIMEOUT_SECONDS,
     GoogleHttpCaller,
+    as_number,
 )
 
 __all__ = [
@@ -354,7 +355,7 @@ def _required_number(entry: Mapping[str, Any], key: str) -> float:
     understand into a report saying nobody saw the site — the exact substitution this
     product exists to refuse. A row that is not the documented shape stops the call.
     """
-    value = _number(entry.get(key))
+    value = as_number(entry.get(key))
     if value is None:
         raise GoogleSchemaError(f"search analytics row has no readable {key}")
     return value
@@ -403,17 +404,6 @@ def _int(value: Any) -> int | None:
     return None
 
 
-def _number(value: Any) -> float | None:
-    if isinstance(value, bool) or value is None:
-        return None
-    if isinstance(value, int | float):
-        return float(value)
-    if isinstance(value, str):
-        try:
-            return float(value.strip())
-        except ValueError:
-            return None
-    return None
 
 
 def _text(value: Any) -> str | None:
@@ -735,7 +725,7 @@ class SearchConsoleClient:
         if not isinstance(token, str) or not token.strip():
             raise GoogleSchemaError("token response has no access_token")
 
-        lifetime = _number(payload.get("expires_in")) or float(_JWT_LIFETIME_SECONDS)
+        lifetime = as_number(payload.get("expires_in")) or float(_JWT_LIFETIME_SECONDS)
         self._access_token = token
         self._token_expires_at = now + timedelta(
             seconds=max(lifetime - _TOKEN_EXPIRY_MARGIN_SECONDS, 0.0)

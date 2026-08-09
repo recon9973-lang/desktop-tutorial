@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { callConsoleApi } from '@/lib/console-api';
 import { findOrCreateSiteByOrigin } from '@/lib/companies';
 import { readJob } from '@/lib/observations';
+import { record } from '@/lib/json';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 재측정 — 사람이 버튼을 눌렀을 때만.
@@ -19,7 +21,6 @@ import { readJob } from '@/lib/observations';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -47,29 +48,18 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 export async function POST(request: Request): Promise<NextResponse> {
   let siteId = '';
   let url = '';
   try {
     const body: unknown = await request.json();
-    const parsed = asRecord(body);
+    const parsed = record(body);
     siteId = typeof parsed['siteId'] === 'string' ? parsed['siteId'] : '';
     url = typeof parsed['url'] === 'string' ? parsed['url'] : '';
   } catch {
-    return refuse('INVALID');
+    return refuse('INVALID', null, MESSAGES, STATUS);
   }
 
   // 주소만 온 경우: 등록을 먼저 시키지 않는다. 잴 자리를 여기서 만들어 준다.
@@ -77,26 +67,28 @@ export async function POST(request: Request): Promise<NextResponse> {
     const created = await findOrCreateSiteByOrigin(url, randomUUID().slice(0, 8));
     if (!created.ok) {
       if (created.reason !== 'API') {
-        return refuse('INVALID', '주소를 확인해 주십시오. 예: ondam.co.kr');
+        return refuse('INVALID', '주소를 확인해 주십시오. 예: ondam.co.kr', MESSAGES, STATUS);
       }
       const failed = created.outcome;
       return refuse(
         failed.ok ? 'SERVER_ERROR' : failed.reason,
         failed.ok ? null : failed.message,
+        MESSAGES,
+        STATUS,
       );
     }
     siteId = created.siteId;
   }
 
-  if (siteId === '') return refuse('INVALID', '진단할 주소가 없습니다.');
+  if (siteId === '') return refuse('INVALID', '진단할 주소가 없습니다.', MESSAGES, STATUS);
 
   // 잴 주소는 **등록된 값**에서 가져온다. 화면이 보낸 주소를 그대로 믿으면, 목록에
   // 보이는 주소와 실제로 잰 주소가 어긋난 채 이력에 쌓일 수 있다.
   const site = await callConsoleApi(`/api/sites/${encodeURIComponent(siteId)}`);
-  if (!site.ok) return refuse(site.reason, site.message);
+  if (!site.ok) return refuse(site.reason, site.message, MESSAGES, STATUS);
 
-  const origin = asRecord(site.data)['origin'];
-  if (typeof origin !== 'string' || origin === '') return refuse('NOT_FOUND');
+  const origin = record(site.data)['origin'];
+  if (typeof origin !== 'string' || origin === '') return refuse('NOT_FOUND', null, MESSAGES, STATUS);
 
   // 진단은 **작업**으로 돈다(P1-6) — 이 요청은 작업 표만 받고 즉시 돌아가고,
   // 화면이 아래 GET 으로 진행을 물어본다. 240초짜리 HTTP 요청에 기대던 시절의
@@ -105,9 +97,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     method: 'POST',
     body: { target_url: origin, site_id: siteId },
   });
-  if (!outcome.ok) return refuse(outcome.reason, outcome.message);
+  if (!outcome.ok) return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
 
-  const jobId = asRecord(outcome.data)['id'];
+  const jobId = record(outcome.data)['id'];
   return NextResponse.json(
     { ok: true, siteId, jobId: typeof jobId === 'string' ? jobId : null },
     { headers: NO_STORE },
@@ -117,9 +109,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 /** 도는 진단의 진행 조회 — 폴링 한 번이 잡 표 한 장이다. */
 export async function GET(request: Request): Promise<NextResponse> {
   const jobId = new URL(request.url).searchParams.get('job') ?? '';
-  if (jobId === '') return refuse('INVALID', '조회할 작업이 없습니다.');
+  if (jobId === '') return refuse('INVALID', '조회할 작업이 없습니다.', MESSAGES, STATUS);
 
   const outcome = await readJob(jobId);
-  if (!outcome.ok) return refuse(outcome.reason, outcome.message);
+  if (!outcome.ok) return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   return NextResponse.json({ job: outcome.data }, { headers: NO_STORE });
 }

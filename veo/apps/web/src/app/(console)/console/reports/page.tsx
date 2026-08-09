@@ -10,6 +10,7 @@ import { requireConsoleIdentity } from '@/lib/session';
 
 import { PublishForm } from './PublishForm';
 import own from './reports.module.css';
+import { formatWhen } from '@/lib/when';
 
 export const metadata: Metadata = {
   title: '리포트',
@@ -169,13 +170,3 @@ function ReportItem({ report }: { readonly report: ReportRow }) {
 }
 
 /** 서버에서 그린다. 시간대를 한국 기준으로 고정해 두 곳에서 다른 시각이 보이지 않게 한다. */
-function formatWhen(value: string | null): string {
-  if (value === null) return '시각 기록 없음';
-  const at = new Date(value);
-  if (Number.isNaN(at.getTime())) return value;
-  return new Intl.DateTimeFormat('ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  }).format(at);
-}

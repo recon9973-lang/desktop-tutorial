@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { recordVerificationResult, requestVerification } from '@/lib/issues-api';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 재측정 — 이슈가 닫히는 **유일한 길**의 통로.
@@ -23,7 +24,6 @@ import { recordVerificationResult, requestVerification } from '@/lib/issues-api'
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -51,12 +51,6 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
@@ -67,28 +61,28 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json();
   } catch {
-    return refuse('INVALID', '요청을 읽지 못했습니다.');
+    return refuse('INVALID', '요청을 읽지 못했습니다.', MESSAGES, STATUS);
   }
 
   const input = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
   const issueId = text(input['issueId']);
   const step = text(input['step']);
   if (issueId === null || (step !== 'request' && step !== 'result')) {
-    return refuse('INVALID');
+    return refuse('INVALID', null, MESSAGES, STATUS);
   }
 
   if (step === 'request') {
     const outcome = await requestVerification(issueId);
-    if (!outcome.ok) return refuse(outcome.reason, outcome.message);
+    if (!outcome.ok) return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
     return NextResponse.json({ ok: true, requested: outcome.data }, { headers: NO_STORE });
   }
 
   const scanRunId = text(input['scanRunId']);
   if (scanRunId === null) {
-    return refuse('INVALID', '어느 진단으로 확인할지 골라 주십시오.');
+    return refuse('INVALID', '어느 진단으로 확인할지 골라 주십시오.', MESSAGES, STATUS);
   }
 
   const outcome = await recordVerificationResult(issueId, scanRunId);
-  if (!outcome.ok) return refuse(outcome.reason, outcome.message);
+  if (!outcome.ok) return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   return NextResponse.json({ ok: true, recorded: outcome.data }, { headers: NO_STORE });
 }

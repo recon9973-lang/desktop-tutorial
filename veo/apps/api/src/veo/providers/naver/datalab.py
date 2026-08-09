@@ -45,6 +45,7 @@ from veo.providers.naver.errors import (
     RetryPolicy,
     classify_status,
     classify_transport_exception,
+    parse_json_object,
 )
 
 __all__ = [
@@ -304,7 +305,7 @@ class NaverDataLabClient:
         def operation() -> tuple[KeywordTrendSeries, ...]:
             collected_at = self._clock()
             body = self._request(credentials, cleaned, start_date, end_date, time_unit, device)
-            payload = _parse_json(body)
+            payload = parse_json_object(body)
             return normalize_datalab(payload, collected_at=collected_at, device=device)
 
         return self._caller.call(operation)
@@ -368,11 +369,3 @@ class NaverDataLabClient:
 
 
 
-def _parse_json(body: bytes) -> Mapping[str, Any]:
-    try:
-        payload = json.loads(body.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError) as exc:
-        raise NaverSchemaError(f"body is not JSON: {type(exc).__name__}") from None
-    if not isinstance(payload, dict):
-        raise NaverSchemaError("body is not a JSON object")
-    return payload

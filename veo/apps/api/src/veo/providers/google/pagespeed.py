@@ -91,6 +91,7 @@ from veo.providers.google.http import (
     DEFAULT_MAX_RESPONSE_BYTES,
     ERROR_BODY_MAX_BYTES,
     GoogleHttpCaller,
+    as_number,
 )
 
 __all__ = [
@@ -339,7 +340,7 @@ def _audit(raw_audits: Mapping[str, Any], audit_id: str) -> LabAudit:
         # Lighthouse means "as bad as this metric gets".
         return _missing_audit(audit_id)
 
-    score = _number(raw.get("score"))
+    score = as_number(raw.get("score"))
     if score is None:
         # ``scoreDisplayMode`` of ``notApplicable``/``informative``/``error`` all land
         # here. Lighthouse declined to score it; VEO does not score it either.
@@ -349,7 +350,7 @@ def _audit(raw_audits: Mapping[str, Any], audit_id: str) -> LabAudit:
         audit_id=audit_id,
         score=score,
         display_value=_text(raw.get("displayValue")),
-        numeric_value=_number(raw.get("numericValue")),
+        numeric_value=as_number(raw.get("numericValue")),
         numeric_unit=_text(raw.get("numericUnit")),
         quality=ValueQuality.EXACT,
     )
@@ -373,20 +374,9 @@ def _performance_score(lighthouse: Mapping[str, Any]) -> float | None:
     performance = categories.get("performance")
     if not isinstance(performance, Mapping):
         return None
-    return _number(performance.get("score"))
+    return as_number(performance.get("score"))
 
 
-def _number(value: Any) -> float | None:
-    if isinstance(value, bool) or value is None:
-        return None
-    if isinstance(value, int | float):
-        return float(value)
-    if isinstance(value, str):
-        try:
-            return float(value.strip())
-        except ValueError:
-            return None
-    return None
 
 
 def _text(value: Any) -> str | None:

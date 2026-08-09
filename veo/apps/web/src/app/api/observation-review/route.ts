@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { reviewStep } from '@/lib/observations';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 검수 한 걸음 — 브라우저가 엔진에 직접 말을 걸지 않도록 하는 통로.
@@ -15,7 +16,6 @@ import { reviewStep } from '@/lib/observations';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -46,12 +46,6 @@ const STATUS: Record<string, number> = {
 const STEPS = new Set(['claim', 'release', 'decide']);
 const DECISIONS = new Set(['CONFIRMED', 'REJECTED', 'NEEDS_MORE_EVIDENCE']);
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
@@ -62,14 +56,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json();
   } catch {
-    return refuse('INVALID', '요청을 읽지 못했습니다.');
+    return refuse('INVALID', '요청을 읽지 못했습니다.', MESSAGES, STATUS);
   }
 
   const input = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
   const assessmentId = text(input['assessmentId']);
   const step = text(input['step']);
   if (assessmentId === null || step === null || !STEPS.has(step)) {
-    return refuse('INVALID', '요청 내용을 확인해 주십시오.');
+    return refuse('INVALID', '요청 내용을 확인해 주십시오.', MESSAGES, STATUS);
   }
 
   let payload:
@@ -83,14 +77,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (step === 'decide') {
     const decision = text(input['decision']);
     if (decision === null || !DECISIONS.has(decision)) {
-      return refuse('INVALID', '검수 결론을 선택해 주십시오.');
+      return refuse('INVALID', '검수 결론을 선택해 주십시오.', MESSAGES, STATUS);
     }
     const reason = text(input['rejectionReason']);
     // 기각에 사유가 없으면 엔진이 422 로 막지만, 여기서 먼저 막는 편이 낫다. 왕복 한 번을
     // 아끼자는 것이 아니라, 사유 없는 기각은 자동 판정이 어디서 빗나가는지 세는 데
     // 아무 도움이 안 되기 때문이다.
     if (decision === 'REJECTED' && reason === null) {
-      return refuse('INVALID', '기각에는 사유가 필요합니다.');
+      return refuse('INVALID', '기각에는 사유가 필요합니다.', MESSAGES, STATUS);
     }
     payload = {
       decision: decision as 'CONFIRMED' | 'REJECTED' | 'NEEDS_MORE_EVIDENCE',
@@ -105,7 +99,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     payload,
   );
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, item: outcome.data }, { headers: NO_STORE });
 }

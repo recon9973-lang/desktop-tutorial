@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { resolveAuthApiBaseUrl } from '@/lib/auth-api';
+import { recordOrNull } from '@/lib/json';
+import { retryAfterFrom } from '@/lib/http';
 
 /**
  * 무료 네이버 키워드 조회 — 공개 화면이 측정 엔진에 말을 거는 유일한 통로.
@@ -44,11 +46,6 @@ export type KeywordLookupOutcome =
 /** 외부 제공자(네이버 검색광고)를 한 번 거치므로 로그인보다 여유 있게 기다린다. */
 const LOOKUP_TIMEOUT_MS = 15_000;
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
 
 const QUALITIES: readonly KeywordValueQuality[] = [
   'EXACT',
@@ -75,7 +72,7 @@ function figure(source: Record<string, unknown>, prefix: string): KeywordFigure 
 }
 
 function toRow(value: unknown): PublicKeywordRow | null {
-  const source = asRecord(value);
+  const source = recordOrNull(value);
   if (source === null || typeof source['keyword'] !== 'string') {
     return null;
   }
@@ -133,14 +130,6 @@ function failed(
   return { ok: false, reason, message, retryAfterSeconds };
 }
 
-function retryAfterFrom(response: Response): number | null {
-  const header = response.headers.get('retry-after');
-  if (header === null) {
-    return null;
-  }
-  const seconds = Number.parseInt(header, 10);
-  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
-}
 
 export async function lookupPublicKeywords(
   keywords: readonly string[],
@@ -173,16 +162,16 @@ export async function lookupPublicKeywords(
       : failed(classify(response.status), null, retryAfterFrom(response));
   }
 
-  const body = asRecord(envelope);
+  const body = recordOrNull(envelope);
   if (!response.ok) {
     // 엔진의 거절에는 사람이 읽을 사유가 실려 있다 ("최대 5개까지" 등) — 버리지 않는다.
-    const error = body === null ? null : asRecord(body['error']);
+    const error = body === null ? null : recordOrNull(body['error']);
     const message =
       error !== null && typeof error['message'] === 'string' ? error['message'] : null;
     return failed(classify(response.status), message, retryAfterFrom(response));
   }
 
-  const data = body === null ? null : asRecord(body['data']);
+  const data = body === null ? null : recordOrNull(body['data']);
   if (data === null) {
     return failed('SERVER_ERROR');
   }

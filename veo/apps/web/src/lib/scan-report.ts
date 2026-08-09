@@ -2,6 +2,7 @@ import 'server-only';
 
 import { callConsoleApi, type ConsoleOutcome } from '@/lib/console-api';
 import { toConsoleScanResult, type ConsoleScanResult } from '@/lib/console-scan';
+import { record, textOrNull } from '@/lib/json';
 
 /**
  * 저장된 진단 결과와 이력을 읽는다.
@@ -43,11 +44,6 @@ export interface Band {
   readonly description: string | null;
 }
 
-function record(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 function list(value: unknown): readonly unknown[] {
   return Array.isArray(value) ? value : [];
@@ -58,10 +54,6 @@ function str(source: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-function strOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 function num(source: Record<string, unknown>, key: string): number {
   const value = source[key];
@@ -93,14 +85,14 @@ export async function readHistory(
       status: str(item, 'status'),
       urlsCollected: num(item, 'urls_collected'),
       score: numOrNull(item, 'score'),
-      bandId: strOrNull(item, 'band_id'),
+      bandId: textOrNull(item, 'band_id'),
       coverage: num(item, 'coverage'),
       confidence: num(item, 'confidence'),
       specVersion: str(item, 'spec_version'),
-      requestedByName: strOrNull(item, 'requested_by_name'),
+      requestedByName: textOrNull(item, 'requested_by_name'),
       // 없으면 비교 불가로 읽는다. 모르는 것을 '같은 조건' 으로 바꾸지 않는다.
       comparableWithLatest: item['comparable_with_latest'] === true,
-      incomparableReasonKo: strOrNull(item, 'incomparable_reason_ko'),
+      incomparableReasonKo: textOrNull(item, 'incomparable_reason_ko'),
     };
   });
 
@@ -135,7 +127,7 @@ export async function readBands(
       min: num(item, 'min'),
       max: num(item, 'max'),
       label: str(item, 'label_ko'),
-      description: strOrNull(item, 'description_ko'),
+      description: textOrNull(item, 'description_ko'),
     };
   });
 }
@@ -236,7 +228,7 @@ export async function readCaptures(
           truncated: item['truncated'] === true,
           contentHash: str(item, 'content_hash'),
           fetchedAt: str(item, 'fetched_at'),
-          readFailureKo: strOrNull(item, 'read_failure_ko'),
+          readFailureKo: textOrNull(item, 'read_failure_ko'),
         };
       }),
     },

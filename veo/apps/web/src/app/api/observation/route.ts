@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { readJob, startObservation } from '@/lib/observations';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 관측 시작과 진행 상황 조회 — 브라우저가 엔진에 직접 말을 걸지 않도록 하는 통로.
@@ -15,7 +16,6 @@ import { readJob, startObservation } from '@/lib/observations';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -43,12 +43,6 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
@@ -75,7 +69,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json();
   } catch {
-    return refuse('INVALID', '요청을 읽지 못했습니다.');
+    return refuse('INVALID', '요청을 읽지 못했습니다.', MESSAGES, STATUS);
   }
 
   const input = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
@@ -85,17 +79,17 @@ export async function POST(request: Request): Promise<NextResponse> {
   const idempotencyKey = text(input['idempotencyKey']);
 
   if (promptSetId === null || engine === null || model === null || idempotencyKey === null) {
-    return refuse('INVALID', '질문 집합과 엔진, 모델을 모두 고르셔야 합니다.');
+    return refuse('INVALID', '질문 집합과 엔진, 모델을 모두 고르셔야 합니다.', MESSAGES, STATUS);
   }
 
   const repetitions = Number(input['repetitions']);
   if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 20) {
-    return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.');
+    return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.', MESSAGES, STATUS);
   }
 
   const searchModes = readSearchModes(input['searchModes']);
   if (searchModes === null) {
-    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.');
+    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.', MESSAGES, STATUS);
   }
 
   const outcome = await startObservation({
@@ -108,7 +102,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   });
 
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, job: outcome.data }, { headers: NO_STORE });
 }
@@ -116,12 +110,12 @@ export async function POST(request: Request): Promise<NextResponse> {
 export async function GET(request: Request): Promise<NextResponse> {
   const jobId = new URL(request.url).searchParams.get('job');
   if (jobId === null || jobId === '') {
-    return refuse('INVALID', '작업 번호가 없습니다.');
+    return refuse('INVALID', '작업 번호가 없습니다.', MESSAGES, STATUS);
   }
 
   const outcome = await readJob(jobId);
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, job: outcome.data }, { headers: NO_STORE });
 }

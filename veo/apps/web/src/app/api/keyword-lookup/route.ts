@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { lookUpKeywords } from '@/lib/keywords';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 키워드 조회 — 사람이 버튼을 눌렀을 때만.
@@ -12,7 +13,6 @@ import { lookUpKeywords } from '@/lib/keywords';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -40,12 +40,6 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 /** 한 번에 부를 수 있는 키워드 수. 네이버에 보내는 요청 수를 그대로 정하는 값이다. */
 const MAX_KEYWORDS = 20;
@@ -55,7 +49,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json();
   } catch {
-    return refuse('INVALID', '요청을 읽지 못했습니다.');
+    return refuse('INVALID', '요청을 읽지 못했습니다.', MESSAGES, STATUS);
   }
 
   const input = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
@@ -66,15 +60,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     .filter((one) => one !== '');
 
   if (keywords.length === 0) {
-    return refuse('INVALID', '키워드를 하나 이상 입력해 주십시오.');
+    return refuse('INVALID', '키워드를 하나 이상 입력해 주십시오.', MESSAGES, STATUS);
   }
   if (keywords.length > MAX_KEYWORDS) {
-    return refuse('INVALID', `한 번에 최대 ${MAX_KEYWORDS}개까지 조회합니다.`);
+    return refuse('INVALID', `한 번에 최대 ${MAX_KEYWORDS}개까지 조회합니다.`, MESSAGES, STATUS);
   }
 
   const outcome = await lookUpKeywords(keywords);
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, lookup: outcome.data }, { headers: NO_STORE });
 }

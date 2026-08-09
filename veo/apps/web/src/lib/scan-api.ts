@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { resolveAuthApiBaseUrl } from '@/lib/auth-api';
+import { recordOrNull } from '@/lib/json';
+import { retryAfterFrom } from '@/lib/http';
 
 /**
  * 진단 실행 — 콘솔이 측정 엔진에 말을 거는 유일한 통로.
@@ -50,11 +52,6 @@ const ENDPOINTS: Record<ScanKind, string> = {
 /** 진단은 외부 사이트를 실제로 가져오므로 로그인보다 훨씬 오래 걸린다. */
 const SCAN_TIMEOUT_MS = 60_000;
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
 
 function readString(source: Record<string, unknown>, key: string): string {
   const value = source[key];
@@ -80,7 +77,7 @@ function readVerdict(value: unknown): ScanVerdict {
 }
 
 function toFinding(raw: unknown): ScanFinding | null {
-  const source = asRecord(raw);
+  const source = recordOrNull(raw);
   if (source === null) {
     return null;
   }
@@ -114,7 +111,7 @@ function toScore(raw: Record<string, unknown>): ScanScore {
 }
 
 function toStage(raw: unknown): ScanStage | null {
-  const source = asRecord(raw);
+  const source = recordOrNull(raw);
   if (source === null) {
     return null;
   }
@@ -128,7 +125,7 @@ function toStage(raw: unknown): ScanStage | null {
 }
 
 function toCheckRow(raw: unknown): ScanCheckRow | null {
-  const source = asRecord(raw);
+  const source = recordOrNull(raw);
   if (source === null) {
     return null;
   }
@@ -155,7 +152,7 @@ function toCheckRow(raw: unknown): ScanCheckRow | null {
 }
 
 function toCounts(raw: unknown): ScanCounts {
-  const source = asRecord(raw) ?? {};
+  const source = recordOrNull(raw) ?? {};
   return {
     failed: readNumber(source, 'failed') ?? 0,
     warned: readNumber(source, 'warned') ?? 0,
@@ -166,7 +163,7 @@ function toCounts(raw: unknown): ScanCounts {
 }
 
 function toPreviews(raw: unknown): ScanPreviews | null {
-  const source = asRecord(raw);
+  const source = recordOrNull(raw);
   if (source === null) {
     return null;
   }
@@ -180,7 +177,7 @@ function toPreviews(raw: unknown): ScanPreviews | null {
 }
 
 function toExposure(raw: unknown): ScanResult['exposure'] {
-  const source = asRecord(raw);
+  const source = recordOrNull(raw);
   if (source === null) {
     return null;
   }
@@ -195,7 +192,7 @@ function toExposure(raw: unknown): ScanResult['exposure'] {
 function toResult(raw: Record<string, unknown>, kind: ScanKind): ScanResult | null {
   // SEO 는 score, GEO 는 readiness — 준비도와 노출 차단을 합치지 않는다는 서버
   // 설계가 키 이름에 그대로 있다.
-  const score = asRecord(raw['score']) ?? asRecord(raw['readiness']);
+  const score = recordOrNull(raw['score']) ?? recordOrNull(raw['readiness']);
   if (score === null) {
     return null;
   }
@@ -250,14 +247,6 @@ function classify(status: number): ScanFailureReason {
   return 'SERVER_ERROR';
 }
 
-function retryAfterFrom(response: Response): number | null {
-  const header = response.headers.get('retry-after');
-  if (header === null) {
-    return null;
-  }
-  const seconds = Number.parseInt(header, 10);
-  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
-}
 
 export async function runScan(
   kind: ScanKind,
@@ -295,8 +284,8 @@ export async function runScan(
     return failed('SERVER_ERROR');
   }
 
-  const body = asRecord(envelope);
-  const data = body === null ? null : asRecord(body['data']);
+  const body = recordOrNull(envelope);
+  const data = body === null ? null : recordOrNull(body['data']);
   if (data === null) {
     return failed('SERVER_ERROR');
   }
@@ -348,12 +337,12 @@ export async function readSharedResult(
     return { ok: false, reason: 'SERVER_ERROR' };
   }
 
-  const body = asRecord(envelope);
-  const data = body === null ? null : asRecord(body['data']);
+  const body = recordOrNull(envelope);
+  const data = body === null ? null : recordOrNull(body['data']);
   if (data === null) {
     return { ok: false, reason: 'SERVER_ERROR' };
   }
 
-  const result = toResult(data, asRecord(data['readiness']) !== null ? 'GEO' : 'SEO');
+  const result = toResult(data, recordOrNull(data['readiness']) !== null ? 'GEO' : 'SEO');
   return result === null ? { ok: false, reason: 'SERVER_ERROR' } : { ok: true, result };
 }

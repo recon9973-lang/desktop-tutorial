@@ -9,6 +9,7 @@ import type {
 import styles from '@/styles/page.module.css';
 
 import own from '../../reports.module.css';
+import { formatWhen } from '@/lib/when';
 
 /** 읽을 수 있는 독자 셋. 주소에 없는 값이 오면 경영진으로 본다. */
 export const AUDIENCES = ['executive', 'marketing', 'developer'] as const;
@@ -302,13 +303,3 @@ function Disclosure({
 }
 
 /** 서버에서 그린다. 시간대를 한국 기준으로 고정해 두 곳에서 다른 시각이 보이지 않게 한다. */
-export function formatWhen(value: string | null): string {
-  if (value === null) return '시각 기록 없음';
-  const at = new Date(value);
-  if (Number.isNaN(at.getTime())) return value;
-  return new Intl.DateTimeFormat('ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Seoul',
-  }).format(at);
-}

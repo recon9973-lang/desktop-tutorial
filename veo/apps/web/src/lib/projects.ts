@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { readAllPages, type ConsoleOutcome } from '@/lib/console-api';
+import { record, text, textOrNull } from '@/lib/json';
 
 /**
  * 프로젝트 — 측정이 실제로 매달리는 단위.
@@ -31,25 +32,12 @@ export interface ProjectRow {
   readonly geoSpecVersion: string | null;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 function items(data: unknown): readonly Record<string, unknown>[] {
-  return Array.isArray(data) ? data.map(asRecord) : [];
+  return Array.isArray(data) ? data.map(record) : [];
 }
 
-function text(source: Record<string, unknown>, key: string): string {
-  const value = source[key];
-  return typeof value === 'string' ? value : '';
-}
 
-function textOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 /**
  * 프로젝트 목록.

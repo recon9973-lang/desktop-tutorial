@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { callConsoleApi } from '@/lib/console-api';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 브랜드 등록·수정 — 브라우저가 엔진에 직접 말을 걸지 않도록 하는 통로.
@@ -11,7 +12,6 @@ import { callConsoleApi } from '@/lib/console-api';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -39,12 +39,6 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
@@ -64,14 +58,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json();
   } catch {
-    return refuse('INVALID', '요청을 읽지 못했습니다.');
+    return refuse('INVALID', '요청을 읽지 못했습니다.', MESSAGES, STATUS);
   }
 
   const input = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
   const projectId = text(input['projectId']);
   const displayName = text(input['displayName']);
   if (projectId === null) {
-    return refuse('INVALID', '프로젝트를 선택해 주십시오.');
+    return refuse('INVALID', '프로젝트를 선택해 주십시오.', MESSAGES, STATUS);
   }
 
   const fields = {
@@ -106,7 +100,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         );
 
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, brand: outcome.data }, { headers: NO_STORE });
 }

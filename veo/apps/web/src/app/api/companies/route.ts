@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 
 import { addSite, createCompany } from '@/lib/companies';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 업체 등록 — 업체명과 측정 URL 한 벌.
@@ -14,7 +15,6 @@ import { addSite, createCompany } from '@/lib/companies';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   INVALID_NAME: '업체명을 입력해 주십시오.',
@@ -43,12 +43,6 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 export async function POST(request: Request): Promise<NextResponse> {
   let name = '';
@@ -63,7 +57,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     customerId = typeof parsed['customerId'] === 'string' ? parsed['customerId'] : '';
     address = typeof parsed['address'] === 'string' ? parsed['address'] : '';
   } catch {
-    return refuse('INVALID');
+    return refuse('INVALID', null, MESSAGES, STATUS);
   }
 
   // 프로젝트 식별자에 붙일 접미사. 같은 이름의 업체가 둘 있어도 충돌하지 않게 한다.
@@ -83,14 +77,14 @@ export async function POST(request: Request): Promise<NextResponse> {
   // 어디에 이미 있는지 말한다. "이미 등록된 주소입니다" 만으로는 어느 업체를 열어 봐야
   // 하는지 알 수 없어, 결국 목록을 눈으로 훑게 된다.
   if (result.reason === 'DUPLICATE') {
-    return refuse('CONFLICT', `이미 "${result.owner}" 에 등록된 주소입니다.`);
+    return refuse('CONFLICT', `이미 "${result.owner}" 에 등록된 주소입니다.`, MESSAGES, STATUS);
   }
 
   if (result.reason === 'API') {
     // 엔진이 사람에게 보여도 되는 문장을 줬다면 그것을 쓴다. 우리 쪽 일반 문구로 덮으면
     // "이미 등록된 주소입니다" 같은 구체적인 이유가 사라진다.
     return refuse(result.outcome.ok ? 'SERVER_ERROR' : result.outcome.reason,
-      result.outcome.ok ? null : result.outcome.message);
+      result.outcome.ok ? null : result.outcome.message, MESSAGES, STATUS);
   }
-  return refuse(result.reason);
+  return refuse(result.reason, null, MESSAGES, STATUS);
 }

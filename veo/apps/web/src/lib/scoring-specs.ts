@@ -10,6 +10,7 @@
 import 'server-only';
 
 import { callConsoleApi, type ConsoleOutcome } from '@/lib/console-api';
+import { record } from '@/lib/json';
 
 export interface SpecStageRow {
   readonly id: string;
@@ -69,11 +70,6 @@ export interface SpecDesign {
   readonly changelog: readonly SpecChangelogRow[];
 }
 
-function record(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 function list(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];

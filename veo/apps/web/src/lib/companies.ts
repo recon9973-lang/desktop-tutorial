@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { callConsoleApi, type ConsoleOutcome, readAllPages } from '@/lib/console-api';
+import { record, text, textOrNull } from '@/lib/json';
 
 /**
  * 업체와 그 업체의 측정 URL.
@@ -40,11 +41,6 @@ export interface Company {
   readonly projects: readonly { readonly id: string; readonly name: string }[];
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 /**
  * 목록 응답의 본문.
@@ -55,18 +51,10 @@ function asRecord(value: unknown): Record<string, unknown> {
  * 안 나오는, 원인을 찾기 어려운 실패였다.
  */
 function items(data: unknown): readonly Record<string, unknown>[] {
-  return Array.isArray(data) ? data.map(asRecord) : [];
+  return Array.isArray(data) ? data.map(record) : [];
 }
 
-function text(source: Record<string, unknown>, key: string): string {
-  const value = source[key];
-  return typeof value === 'string' ? value : '';
-}
 
-function textOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 /**
  * 화면에 그릴 업체 목록.
@@ -292,7 +280,7 @@ export async function createCompany(
     },
   });
   if (!customer.ok) return { ok: false, reason: 'API', outcome: customer };
-  const customerId = text(asRecord(customer.data), 'id');
+  const customerId = text(record(customer.data), 'id');
 
   const project = await callConsoleApi('/api/projects', {
     method: 'POST',
@@ -307,7 +295,7 @@ export async function createCompany(
   const site = await callConsoleApi('/api/sites', {
     method: 'POST',
     body: {
-      project_id: text(asRecord(project.data), 'id'),
+      project_id: text(record(project.data), 'id'),
       origin,
       display_name: companyName,
       is_primary: true,
@@ -315,7 +303,7 @@ export async function createCompany(
   });
   if (!site.ok) return { ok: false, reason: 'API', outcome: site };
 
-  return { ok: true, customerId, siteId: text(asRecord(site.data), 'id') };
+  return { ok: true, customerId, siteId: text(record(site.data), 'id') };
 }
 
 /** 이미 있는 업체에 측정 URL 을 더한다. */
@@ -356,7 +344,7 @@ export async function addSite(
       body: { customer_id: customerId, slug: slugFor(companyName, suffix), name: companyName },
     });
     if (!created.ok) return { ok: false, reason: 'API', outcome: created };
-    projectId = text(asRecord(created.data), 'id');
+    projectId = text(record(created.data), 'id');
   }
 
   const site = await callConsoleApi('/api/sites', {
@@ -365,7 +353,7 @@ export async function addSite(
   });
   if (!site.ok) return { ok: false, reason: 'API', outcome: site };
 
-  return { ok: true, customerId, siteId: text(asRecord(site.data), 'id') };
+  return { ok: true, customerId, siteId: text(record(site.data), 'id') };
 }
 
 

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { callConsoleApi, readAllPages, type ConsoleOutcome } from '@/lib/console-api';
+import { record, textOrNull } from '@/lib/json';
 
 /**
  * 채점 명세의 수명주기 — 초안에서 발행까지.
@@ -38,21 +39,12 @@ export interface SpecVersionDetail extends SpecVersion {
   readonly diffSummary: string | null;
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 function text(source: Record<string, unknown>, key: string): string {
   const value = source[key];
   return typeof value === 'string' ? value : '';
 }
 
-function textOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 /** 참·거짓·모름 셋을 구분한다. 안 돌린 검증을 실패로 접으면 안 된다. */
 function boolOrNull(source: Record<string, unknown>, key: string): boolean | null {
@@ -80,7 +72,7 @@ function toVersion(source: Record<string, unknown>): SpecVersion {
 export async function listSpecVersions(): Promise<ConsoleOutcome<readonly SpecVersion[]>> {
   const outcome = await readAllPages('/api/lab/scoring-versions');
   if (!outcome.ok) return outcome;
-  return { ...outcome, data: outcome.data.map((raw) => toVersion(asRecord(raw))) };
+  return { ...outcome, data: outcome.data.map((raw) => toVersion(record(raw))) };
 }
 
 export async function readSpecVersion(
@@ -91,9 +83,9 @@ export async function readSpecVersion(
   );
   if (!outcome.ok) return outcome;
 
-  const source = asRecord(outcome.data);
-  const validation = asRecord(source['validation']);
-  const diff = asRecord(source['diff']);
+  const source = record(outcome.data);
+  const validation = record(source['validation']);
+  const diff = record(source['diff']);
   const transitions = source['allowed_transitions'];
 
   return {

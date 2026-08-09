@@ -1,4 +1,5 @@
 import 'server-only';
+import { record, textOrNull } from '@/lib/json';
 
 /**
  * 콘솔 진단 결과의 형태.
@@ -160,11 +161,6 @@ const STATUSES: readonly CheckStatus[] = [
   'UNKNOWN',
 ];
 
-function record(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 function list(value: unknown): readonly unknown[] {
   return Array.isArray(value) ? value : [];
@@ -175,10 +171,6 @@ function str(source: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-function strOrNull(source: Record<string, unknown>, key: string): string | null {
-  const value = source[key];
-  return typeof value === 'string' && value !== '' ? value : null;
-}
 
 function num(source: Record<string, unknown>, key: string): number {
   const value = source[key];
@@ -234,7 +226,7 @@ export function toConsoleScanResult(
     status: str(score, 'status'),
     score: numOrNull(score, 'score'),
     scoreBeforeCaps: numOrNull(score, 'score_before_caps'),
-    bandId: strOrNull(score, 'band_id'),
+    bandId: textOrNull(score, 'band_id'),
     coverage: num(score, 'coverage'),
     confidence: num(score, 'confidence'),
     // 옛 응답에는 없는 값이다. 없으면 1 로 둔다 — 관문이 없는 채점 기준의 값과 같다.
@@ -277,10 +269,10 @@ export function toConsoleScanResult(
         severity: str(item, 'severity'),
         remediationOwner: str(item, 'remediation_owner'),
         availability: availability(item['availability']),
-        reference: strOrNull(item, 'reference_ko'),
+        reference: textOrNull(item, 'reference_ko'),
         status: status(item['status']),
-        confidenceLevel: strOrNull(item, 'confidence_level'),
-        note: strOrNull(item, 'note'),
+        confidenceLevel: textOrNull(item, 'confidence_level'),
+        note: textOrNull(item, 'note'),
         evidenceIds: strings(item, 'evidence_ids'),
         observed: item['observed'] ?? null,
       };
@@ -308,7 +300,7 @@ export function toConsoleScanResult(
         remediation: str(item, 'remediation_ko'),
         remediationOwner: str(item, 'remediation_owner'),
         businessImpact: str(item, 'business_impact_ko'),
-        fixExample: strOrNull(item, 'fix_example'),
+        fixExample: textOrNull(item, 'fix_example'),
         reverificationNote: str(item, 'reverification_note_ko'),
       };
     }),
@@ -317,7 +309,7 @@ export function toConsoleScanResult(
       return {
         evidenceId: str(item, 'evidence_id'),
         kind: str(item, 'kind'),
-        url: strOrNull(item, 'url'),
+        url: textOrNull(item, 'url'),
         collectedAt: str(item, 'collected_at'),
         contentHash: str(item, 'content_hash'),
         excerpt: str(item, 'excerpt'),
@@ -344,10 +336,10 @@ function toGeoCompanion(value: unknown): GeoCompanionRef | null {
   }
   const source = value as Record<string, unknown>;
   return {
-    scanRunId: strOrNull(source, 'scan_run_id'),
+    scanRunId: textOrNull(source, 'scan_run_id'),
     score: numOrNull(source, 'score'),
-    bandId: strOrNull(source, 'band_id'),
-    specVersion: strOrNull(source, 'spec_version'),
-    failureNote: strOrNull(source, 'failure_note_ko'),
+    bandId: textOrNull(source, 'band_id'),
+    specVersion: textOrNull(source, 'spec_version'),
+    failureNote: textOrNull(source, 'failure_note_ko'),
   };
 }

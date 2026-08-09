@@ -24,13 +24,14 @@ further than a debug log line.
 
 from __future__ import annotations
 
+import json
 import random
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import ClassVar, Self, final
+from typing import Any, ClassVar, Self, final
 
 from veo.contracts.enums import ErrorCode, ProviderState
 from veo.providers.errors import CircuitOpenError, ProviderError
@@ -507,3 +508,19 @@ class ResilientCaller:
             failure=ProviderFailure.from_error(last, occurred_at=self._now()),
             attempts=attempts,
         )
+
+def parse_json_object(body: bytes) -> Mapping[str, Any]:
+    """네이버가 준 본문을 객체로 — **아니면 그 자리에서 멈춘다.**
+
+    검색광고와 데이터랩 어댑터가 이 함수를 한 벌씩 갖고 있었다(2026-08-09 실측).
+
+    객체가 아닐 때 빈 사전으로 넘기지 않는다. 그러면 뒤쪽 코드가 "값이 없다" 로 읽고,
+    **응답을 못 읽은 것이 "검색량 0" 이 되어** 그대로 거래처 화면까지 간다.
+    """
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise NaverSchemaError(f"body is not JSON: {type(exc).__name__}") from None
+    if not isinstance(payload, dict):
+        raise NaverSchemaError("body is not a JSON object")
+    return payload

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { estimateObservation, startManualObservation } from '@/lib/observations';
+import { NO_STORE, refuse } from '@/lib/route-reply';
 
 /**
  * 수동 측정 — 관리자가 그 자리에서 고른 검색어를 잰다.
@@ -18,7 +19,6 @@ import { estimateObservation, startManualObservation } from '@/lib/observations'
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const NO_STORE = { 'Cache-Control': 'no-store, private' } as const;
 
 const MESSAGES: Record<string, string> = {
   SIGNED_OUT: '로그인이 만료되었습니다. 다시 로그인해 주십시오.',
@@ -46,12 +46,6 @@ const STATUS: Record<string, number> = {
   SERVER_ERROR: 500,
 };
 
-function refuse(reason: string, message?: string | null): NextResponse {
-  return NextResponse.json(
-    { ok: false, reason, message: message ?? MESSAGES[reason] ?? MESSAGES['SERVER_ERROR'] },
-    { status: STATUS[reason] ?? 500, headers: NO_STORE },
-  );
-}
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
@@ -98,7 +92,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     body = await request.json();
   } catch {
-    return refuse('INVALID', '요청을 읽지 못했습니다.');
+    return refuse('INVALID', '요청을 읽지 못했습니다.', MESSAGES, STATUS);
   }
 
   const input = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {};
@@ -108,22 +102,22 @@ export async function POST(request: Request): Promise<NextResponse> {
   const idempotencyKey = text(input['idempotencyKey']);
 
   if (projectId === null || engine === null || model === null || idempotencyKey === null) {
-    return refuse('INVALID', '프로젝트와 엔진, 모델을 모두 고르셔야 합니다.');
+    return refuse('INVALID', '프로젝트와 엔진, 모델을 모두 고르셔야 합니다.', MESSAGES, STATUS);
   }
 
   const questions = readQuestions(input['questions']);
   if (questions === null) {
-    return refuse('INVALID', `검색어를 1개에서 ${MAX_QUESTIONS}개 사이로 넣어 주십시오.`);
+    return refuse('INVALID', `검색어를 1개에서 ${MAX_QUESTIONS}개 사이로 넣어 주십시오.`, MESSAGES, STATUS);
   }
 
   const repetitions = readRepetitions(input['repetitions']);
   if (repetitions === null) {
-    return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.');
+    return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.', MESSAGES, STATUS);
   }
 
   const searchModes = readSearchModes(input['searchModes']);
   if (searchModes === null) {
-    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.');
+    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.', MESSAGES, STATUS);
   }
 
   const outcome = await startManualObservation({
@@ -137,7 +131,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   });
 
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, job: outcome.data }, { headers: NO_STORE });
 }
@@ -148,22 +142,22 @@ export async function GET(request: Request): Promise<NextResponse> {
   const engine = text(params.get('engine'));
   const model = text(params.get('model'));
   if (engine === null || model === null) {
-    return refuse('INVALID', '엔진과 모델이 필요합니다.');
+    return refuse('INVALID', '엔진과 모델이 필요합니다.', MESSAGES, STATUS);
   }
 
   const questionCount = Number(params.get('questions'));
   if (!Number.isInteger(questionCount) || questionCount < 1 || questionCount > MAX_QUESTIONS) {
-    return refuse('INVALID', '검색어 개수를 확인해 주십시오.');
+    return refuse('INVALID', '검색어 개수를 확인해 주십시오.', MESSAGES, STATUS);
   }
 
   const repetitions = readRepetitions(params.get('repetitions'));
   if (repetitions === null) {
-    return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.');
+    return refuse('INVALID', '반복 횟수는 1에서 20 사이여야 합니다.', MESSAGES, STATUS);
   }
 
   const searchModes = readSearchModes(params.getAll('mode'));
   if (searchModes === null) {
-    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.');
+    return refuse('INVALID', '검색 모드는 켬·끔 중 적어도 하나를 고르셔야 합니다.', MESSAGES, STATUS);
   }
 
   const outcome = await estimateObservation({
@@ -175,7 +169,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   });
 
   if (!outcome.ok) {
-    return refuse(outcome.reason, outcome.message);
+    return refuse(outcome.reason, outcome.message, MESSAGES, STATUS);
   }
   return NextResponse.json({ ok: true, estimate: outcome.data }, { headers: NO_STORE });
 }

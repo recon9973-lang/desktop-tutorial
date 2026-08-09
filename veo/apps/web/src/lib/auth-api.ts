@@ -4,6 +4,7 @@ import type { Role } from '@veo/shared-types';
 
 import { parsePermissions, parseRoles } from './permissions';
 import type { Permission } from './permissions';
+import { recordOrNull } from '@/lib/json';
 
 /**
  * ────────────────────────────────────────────────────────────────────────────
@@ -178,11 +179,6 @@ function readString(source: Record<string, unknown>, key: string): string | null
   return typeof value === 'string' && value !== '' ? value : null;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
 
 export function createAuthApi(options: AuthApiOptions): AuthApi {
   const { baseUrl } = options;
@@ -227,7 +223,7 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
       }
 
       const envelope = await readEnvelope(response);
-      const data = asRecord(envelope?.data);
+      const data = recordOrNull(envelope?.data);
       if (data === null) {
         // A 200 we cannot read is a server fault, never a sign-in.
         return failure('SERVER_ERROR');
@@ -271,7 +267,7 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
       }
 
       const envelope = await readEnvelope(response);
-      const data = asRecord(envelope?.data);
+      const data = recordOrNull(envelope?.data);
       if (data === null) {
         return failure('SERVER_ERROR');
       }
@@ -282,8 +278,8 @@ export function createAuthApi(options: AuthApiOptions): AuthApi {
       // session" and answers by redirecting to sign-in. The visible symptom was
       // that signing in appeared to do nothing, while the API had in fact issued a
       // session and recorded a successful login.
-      const user = asRecord(data['user']);
-      const organization = asRecord(data['organization']);
+      const user = recordOrNull(data['user']);
+      const organization = recordOrNull(data['organization']);
       if (user === null || organization === null) {
         return failure('SERVER_ERROR');
       }
