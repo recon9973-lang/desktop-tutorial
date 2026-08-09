@@ -400,3 +400,50 @@ function hostLabel(origin: string): string {
     return origin;
   }
 }
+
+/**
+ * 같은 주소를 쓰는 업체가 여럿인가 — **이미 들어간 중복을 눈에 보이게 한다.**
+ *
+ * ## 왜 필요한가
+ *
+ * 중복을 **막는** 관문은 위에 있다(`findCompanyByOrigin`). 그런데 그 관문은
+ * 2026-08-08 에 생겼고, 그 전에 들어간 것은 그대로 남아 있다 — 참사랑한의원이 같은
+ * 주소로 세 번 등록되어 있다(2026-07-29).
+ *
+ * 엔진의 유일성 제약은 `(project_id, origin)` 이라 **프로젝트가 다르면 통과한다.**
+ * 그래서 DB 는 이것을 오류로 보지 않는다. 사람이 목록을 눈으로 훑어야 찾는데,
+ * 업체가 늘면 못 찾는다.
+ *
+ * ## 합치지는 않는다
+ *
+ * 여기서 하는 일은 **보이게 하는 것뿐**이다. 어느 쪽을 남길지는 사람이 정한다 —
+ * 각 업체에 진단 이력·이슈·리포트가 따로 붙어 있고, 잘못 합치면 잰 값이 사라진다.
+ * 지우는 일에 되돌리기가 없으므로 화면이 대신 결정하지 않는다.
+ */
+export interface DuplicateOrigin {
+  readonly origin: string;
+  /** 이 주소를 쓰는 업체들. 둘 이상일 때만 만들어진다. */
+  readonly companies: readonly { readonly customerId: string; readonly name: string }[];
+}
+
+export function findDuplicateOrigins(
+  companies: readonly Company[],
+): readonly DuplicateOrigin[] {
+  const byOrigin = new Map<string, { customerId: string; name: string }[]>();
+
+  for (const company of companies) {
+    // 한 업체가 같은 주소를 두 번 갖고 있어도 그것은 이 함수가 볼 일이 아니다 —
+    // 엔진의 (project_id, origin) 제약이 그 안에서 막는다. 여기서 찾는 것은
+    // **업체를 건너뛴** 중복이다.
+    for (const origin of new Set(company.sites.map((site) => site.origin))) {
+      const found = byOrigin.get(origin) ?? [];
+      found.push({ customerId: company.customerId, name: company.name });
+      byOrigin.set(origin, found);
+    }
+  }
+
+  return [...byOrigin.entries()]
+    .filter(([, found]) => found.length > 1)
+    .map(([origin, found]) => ({ origin, companies: found }))
+    .sort((a, b) => b.companies.length - a.companies.length);
+}

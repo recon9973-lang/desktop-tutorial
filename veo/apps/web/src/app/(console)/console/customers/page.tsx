@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Card, EmptyState, ErrorState } from '@veo/ui';
 
 import { PermissionGate } from '@/components/PermissionGate';
-import { listCompanies, type Company } from '@/lib/companies';
+import { findDuplicateOrigins, listCompanies, type Company } from '@/lib/companies';
 import { requireConsoleIdentity } from '@/lib/session';
 import styles from '@/styles/page.module.css';
 
@@ -67,6 +67,8 @@ async function CustomersContent() {
           <CompanyForm />
         </Card>
       </section>
+
+      {outcome.ok ? <DuplicateWarning companies={outcome.data} /> : null}
 
       <section className={styles.section} aria-labelledby="company-list">
         <h2 id="company-list" className={styles.sectionTitle}>
@@ -146,5 +148,54 @@ function CompanyList({ companies }: { companies: readonly Company[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * 같은 주소가 여러 업체에 걸려 있으면 알린다.
+ *
+ * 새로 생기는 것은 등록 폼이 막는다(`findCompanyByOrigin`, 2026-08-08). 그 전에 들어간
+ * 것은 그대로 남아 있고, 엔진의 유일성 제약은 `(project_id, origin)` 이라 **프로젝트가
+ * 다르면 통과**하므로 DB 도 오류로 보지 않는다.
+ *
+ * **합치는 단추를 두지 않는다.** 업체마다 진단 이력·이슈·리포트가 따로 붙어 있어서,
+ * 잘못 합치면 잰 값이 사라진다. 지우는 일에는 되돌리기가 없다 — 어느 쪽을 남길지는
+ * 사람이 정한다. 화면은 **어디에 있는지만** 말한다.
+ */
+function DuplicateWarning({ companies }: { companies: readonly Company[] }) {
+  const duplicates = findDuplicateOrigins(companies);
+  if (duplicates.length === 0) return null;
+
+  return (
+    <section className={styles.section} aria-labelledby="duplicate-heading">
+      <h2 id="duplicate-heading" className={styles.sectionTitle}>
+        같은 주소가 여러 업체에 걸려 있습니다
+      </h2>
+      <Card title={`주소 ${duplicates.length}개`} headingLevel={3} tone="flat">
+        <p className={own.duplicateNote}>
+          같은 주소를 여러 업체가 나눠 갖고 있으면 진단 이력과 이슈가 흩어집니다. 지금은
+          새로 등록할 때 막고 있으나, 그 전에 들어간 것은 남아 있습니다.
+          <strong> 어느 쪽을 남길지는 사람이 정합니다</strong> — 업체마다 이력이 따로
+          붙어 있어 잘못 합치면 잰 값이 사라집니다.
+        </p>
+        <ul className={own.duplicateList}>
+          {duplicates.map((one) => (
+            <li key={one.origin} className={own.duplicateRow}>
+              <span className={own.duplicateOrigin}>{one.origin}</span>
+              <span className={own.duplicateWho}>
+                {one.companies.map((company, index) => (
+                  <span key={company.customerId}>
+                    {index === 0 ? '' : ' · '}
+                    <Link href={`/console/customers/${company.customerId}`}>
+                      {company.name}
+                    </Link>
+                  </span>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </section>
   );
 }

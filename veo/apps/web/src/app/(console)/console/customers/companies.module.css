@@ -98,3 +98,38 @@
   composes: address;
   font-style: italic;
 }
+
+/* 같은 주소가 여러 업체에 걸려 있을 때. 경고이되 소란스럽지 않게 — 고칠지는 사람이 정한다. */
+.duplicateNote {
+  margin: 0 0 var(--veo-space-3);
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+}
+
+.duplicateList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--veo-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.duplicateRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--veo-space-2) var(--veo-space-3);
+  border-left: 3px solid var(--veo-status-warning-fg);
+  padding-left: var(--veo-space-3);
+}
+
+.duplicateOrigin {
+  font-weight: var(--veo-weight-semibold);
+  word-break: break-all;
+}
+
+.duplicateWho {
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+}
