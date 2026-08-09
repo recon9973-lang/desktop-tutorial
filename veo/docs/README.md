@@ -219,6 +219,7 @@ AI 엔진 열쇠(이건 화면만으로 안 된다 — 감사 문서 §A-2).
 | 콘텐츠 프로그램을 만든다 | `research/CONTENT-PROGRAM-NOTES.md` |
 | 용어가 헷갈린다 | `architecture/glossary.md` |
 | 무엇이 틀렸었나 | **`CORRECTIONS.md`** |
+| **무엇이 이미 정해졌나 · 뭐가 남았나** | **`WORKLIST.md`** ← 사장님께 여쭙기 **전에** 여기부터 |
 
 ## 참고만 하는 것 (지난 판단의 기록)
 

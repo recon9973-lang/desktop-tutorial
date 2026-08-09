@@ -100,7 +100,15 @@ function CompanyList({ companies }: { companies: readonly Company[] }) {
       {companies.map((company) => (
         <li key={company.customerId} className={own.company}>
           <div className={own.companyHead}>
-            <h3 className={own.companyName}>{company.name}</h3>
+            {/*
+              업체명이 곧 현황 화면으로 가는 문이다. 이 목록은 **관리**(등록·수정)를
+              하는 자리이고, 진단 결과를 거래처 단위로 모아 보는 자리는 따로 있다.
+              두 일을 한 화면에 겹치면 등록 폼 사이에 점수가 끼어 어느 쪽도 읽히지
+              않는다.
+            */}
+            <h3 className={own.companyName}>
+              <Link href={`/console/customers/${company.customerId}`}>{company.name}</Link>
+            </h3>
             <span className={own.siteCount}>
               측정 URL {company.sites.length}개
             </span>
