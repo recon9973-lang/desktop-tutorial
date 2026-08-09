@@ -36,6 +36,7 @@ from sqlalchemy.orm import Session
 from veo.authz import Principal, assert_tenant_scoped, tenant_select
 from veo.contracts.enums import ReviewState
 from veo.core.settings import Settings, get_settings
+from veo.db.models.identity import Project
 from veo.db.models.observation import (
     AIAnswer,
     AIEngine,
@@ -46,6 +47,7 @@ from veo.db.models.observation import (
 from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import Prompt as PromptRow
 from veo.db.models.observation import PromptSet as PromptSetRow
+from veo.observations.alerts import ObservationRunFacts, alert_if_incomplete
 from veo.observations.answer_store import FilesystemAnswerStore
 from veo.observations.attribution import DisambiguatingMentionDetector
 from veo.observations.brand_identity import BrandIdentityRecord, to_brand_profile
@@ -540,7 +542,39 @@ def _persist(
             )
 
     session.flush()
+
+    # **덜 잰 정기 관측을 알린다.** 실패는 위에 다 저장돼 있지만 아무도 그 화면을 보고
+    # 있지 않다 — 주 1회 자동으로 도는 측정이라 사람이 그 시각에 앉아 있을 이유가 없다.
+    # 알림이 실패해도 여기서 멈추지 않는다: 잰 값은 이미 저장됐다.
+    alert_if_incomplete(
+        ObservationRunFacts(
+            kind=str(prompt_set_row.kind),
+            # **사람이 읽을 이름으로.** 여기에 UUID 조각을 넣으면 알림을 받은 사람이
+            # 어느 거래처인지 알 수 없어 콘솔을 뒤져야 한다 — 그러면 알림이 일을
+            # 줄이지 않고 늘린다. 이름을 못 찾으면 그때만 식별자로 떨어진다.
+            project_name=_project_name_of(session, principal, prompt_set_row.project_id),
+            prompt_set_name=prompt_set_row.name,
+            executions_planned=len(report.runs) + len(report.skipped),
+            executions_valid=sum(1 for run in report.runs if run.is_valid_execution),
+            executions_skipped=len(report.skipped),
+            stopped_reason=str(report.stopped_reason) if report.stopped_reason else None,
+            cost_usd=report.total_cost_usd,
+            unpriced_calls=report.unpriced_calls,
+        )
+    )
     return run_row
+
+
+def _project_name_of(session: Session, principal: Principal, project_id: uuid.UUID) -> str:
+    """알림에 쓸 프로젝트 이름. 못 찾으면 식별자 앞자리.
+
+    **테넌트 밖을 보지 않는다** — `tenant_select` 를 거친다. 알림 한 줄 때문에 남의
+    조직 이름이 새는 길을 열지 않는다.
+    """
+    name = session.scalars(
+        tenant_select(Project, principal).where(Project.id == project_id)
+    ).first()
+    return name.name if name is not None else project_id.hex[:8]
 
 
 def _prompt_hash_of(row: PromptRow) -> str:
