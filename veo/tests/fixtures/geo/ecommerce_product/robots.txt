@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /cart
-Sitemap: https://haru.example.com/sitemap.xml
-
-User-agent: GPTBot
-Disallow: /

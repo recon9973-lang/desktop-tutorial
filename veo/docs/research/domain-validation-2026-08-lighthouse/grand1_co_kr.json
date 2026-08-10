@@ -1,8 +1,0 @@
-{
- "target": "http://grand1.co.kr/",
- "measured_at": "2026-08-01T13:35:51.080170+00:00",
- "status_code": 400,
- "error_reasons": [
-  "lighthouseUserError"
- ]
-}

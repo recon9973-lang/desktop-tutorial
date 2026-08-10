@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://loop.example.kr/</loc></url>
-  <url><loc>https://loop.example.kr/event/</loc></url>
-  <url><loc>https://loop.example.kr/gone/</loc></url>
-  <url><loc>https://cdn.other-domain.com/loop/legacy</loc></url>
-</urlset>
