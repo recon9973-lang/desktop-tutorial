@@ -11,7 +11,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-__all__ = ["PageSpeedQuotaPayload"]
+__all__ = ["AlertTestPayload", "PageSpeedQuotaPayload"]
 
 
 class PageSpeedQuotaPayload(BaseModel):
@@ -50,3 +50,18 @@ class PageSpeedQuotaPayload(BaseModel):
     caveat_ko: str
     #: 한도가 끝났을 때 무엇을 하라고 할지. 끝나지 않았으면 비어 있다.
     remedies_ko: list[str] = Field(default_factory=list)
+
+
+class AlertTestPayload(BaseModel):
+    """경보 통로가 실제로 닿는가 — **비밀값은 여기 없다.**
+
+    주소 자체를 돌려주지 않는다. 사람이 알아야 하는 것은 "닿았다/안 닿았다/설정 안 됨"
+    셋뿐이고, 주소를 화면에 실으면 그 화면을 열 수 있는 사람 모두가 그것을 갖는다.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    outcome: str = Field(
+        description="SENT(닿았다) · DISABLED(주소가 설정되지 않았다) · FAILED(보냈으나 실패)"
+    )
+    message_ko: str = Field(description="사람이 읽고 다음에 무엇을 할지 아는 한 문장.")

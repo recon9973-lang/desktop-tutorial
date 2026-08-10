@@ -28,9 +28,10 @@ from veo.api.deps import RequestId, ok
 from veo.authz import Permission, Principal
 from veo.contracts.envelope import ApiResponse
 from veo.db.session import get_db
+from veo.notify import AlertOutcome, send_alert
 from veo.organizations.http import guard
 from veo.usage.quota import CALLS_PER_SCAN, pagespeed_quota
-from veo.usage.schemas import PageSpeedQuotaPayload
+from veo.usage.schemas import AlertTestPayload, PageSpeedQuotaPayload
 
 router = APIRouter(prefix="/usage", tags=["usage"])
 
@@ -79,5 +80,49 @@ def pagespeed_quota_today(
             caveat_ko=usage.caveat_ko(),
             remedies_ko=usage.remedies_ko(),
         ),
+        request_id,
+    )
+
+
+#: 시험 발송의 결과를 사람 말로. 주소는 어디에도 싣지 않는다.
+_ALERT_MESSAGES_KO: dict[AlertOutcome, str] = {
+    AlertOutcome.SENT: (
+        "보냈습니다. 받는 채널을 확인해 주십시오. 도착하지 않았다면 주소는 맞지만 "
+        "받는 쪽(채널 삭제·권한)에 문제가 있는 것입니다."
+    ),
+    AlertOutcome.DISABLED: (
+        "알림 주소가 설정되어 있지 않습니다. 지금은 모든 경보가 조용히 버려집니다 — "
+        "Railway 환경변수 VEO_ALERT_WEBHOOK_URL 에 https 주소를 넣어 주십시오."
+    ),
+    AlertOutcome.FAILED: (
+        "보내지 못했습니다. 주소가 https 인지, 받는 쪽이 살아 있는지 확인해 주십시오. "
+        "서버 로그에 사유가 남습니다."
+    ),
+}
+
+
+@router.post(
+    "/alert-test",
+    response_model=ApiResponse[AlertTestPayload],
+    summary="경보가 실제로 닿는지 한 번 보내 본다",
+    description=(
+        "알림 통로가 살아 있는지 확인하는 **유일한 방법**입니다. 경보는 사고가 났을 때만 "
+        "울리므로, 주소를 넣고도 맞는지 알 방법이 없었습니다.\n\n"
+        "실제 경보와 같은 통로로 보냅니다 — 시험용 우회로를 따로 두면 그 우회로만 "
+        "동작하는 상태를 못 잡습니다. 본문에 **시험 발송**이라고 적혀 나갑니다.\n\n"
+        "응답에 주소는 들어 있지 않습니다."
+    ),
+)
+def send_test_alert(principal: UsageReader, request_id: RequestId) -> ApiResponse[AlertTestPayload]:
+    outcome = send_alert(
+        title_ko="VEO 경보 시험 발송",
+        body_ko=(
+            "이 메시지가 보이면 알림 통로가 살아 있습니다. 실제 경보(사용량 한도·진단 "
+            "하락·관측 미완료)도 같은 곳으로 옵니다."
+        ),
+        source="usage.alert_test",
+    )
+    return ok(
+        AlertTestPayload(outcome=str(outcome.value), message_ko=_ALERT_MESSAGES_KO[outcome]),
         request_id,
     )

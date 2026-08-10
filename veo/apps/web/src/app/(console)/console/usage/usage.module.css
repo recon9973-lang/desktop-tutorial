@@ -157,3 +157,26 @@
   font-weight: var(--veo-weight-semibold);
   line-height: 1.6;
 }
+
+/* 경보 시험 발송. 주소는 화면 어디에도 그리지 않는다 — 결과 한 줄만. */
+.alertTest {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--veo-space-3);
+}
+
+.alertTestNote {
+  margin: 0;
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+}
+
+.alertTestResult {
+  margin: 0;
+  padding: var(--veo-space-3);
+  border-left: 3px solid var(--veo-color-accent);
+  background: var(--veo-color-accent-subtle);
+  color: var(--veo-color-text);
+  font-size: var(--veo-font-size-200);
+}

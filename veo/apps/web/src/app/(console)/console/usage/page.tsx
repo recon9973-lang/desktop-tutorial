@@ -7,6 +7,7 @@ import styles from '@/styles/page.module.css';
 import { PermissionGate } from '@/components/PermissionGate';
 import { requireConsoleIdentity } from '@/lib/session';
 
+import { AlertTestButton } from './AlertTestButton';
 import own from './usage.module.css';
 
 export const metadata: Metadata = {
@@ -49,6 +50,7 @@ async function ConsoleUsageContent({ month }: { readonly month: string | null })
 
       <PageSpeedQuotaSection found={quotaFound} />
       <SpendSection found={spendFound} />
+      <AlertSection />
     </div>
   );
 }
@@ -302,5 +304,27 @@ function Figure({
       <dd className={own.figureValue}>{value}</dd>
       {note !== undefined ? <dd className={own.figureNote}>{note}</dd> : null}
     </div>
+  );
+}
+
+/* ── 경보 ────────────────────────────────────────────────────────────── */
+
+/**
+ * 경보가 실제로 닿는가.
+ *
+ * 이 자리가 사용량 화면에 있는 이유는, 여기가 **한도가 보이는 곳**이기 때문이다.
+ * 한도를 넘으면 경보가 울려야 하는데 그 경보가 닿지 않으면 이 화면도 소용이 없다 —
+ * 아무도 안 보고 있을 때를 위한 것이 경보다.
+ */
+function AlertSection() {
+  return (
+    <section className={styles.section} aria-labelledby="alert-heading">
+      <h2 id="alert-heading" className={styles.sectionTitle}>
+        경보
+      </h2>
+      <Card title="알림이 닿는지 확인" headingLevel={3} tone="flat">
+        <AlertTestButton />
+      </Card>
+    </section>
   );
 }

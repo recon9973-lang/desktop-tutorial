@@ -1840,6 +1840,30 @@ export interface paths {
         patch: operations["update_site_api_sites__site_id__patch"];
         trace?: never;
     };
+    "/api/usage/alert-test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 경보가 실제로 닿는지 한 번 보내 본다
+         * @description 알림 통로가 살아 있는지 확인하는 **유일한 방법**입니다. 경보는 사고가 났을 때만 울리므로, 주소를 넣고도 맞는지 알 방법이 없었습니다.
+         *
+         *     실제 경보와 같은 통로로 보냅니다 — 시험용 우회로를 따로 두면 그 우회로만 동작하는 상태를 못 잡습니다. 본문에 **시험 발송**이라고 적혀 나갑니다.
+         *
+         *     응답에 주소는 들어 있지 않습니다.
+         */
+        post: operations["send_test_alert_api_usage_alert_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/usage/pagespeed-quota": {
         parameters: {
             query?: never;
@@ -2082,6 +2106,25 @@ export interface components {
             why_ko: string;
         };
         /**
+         * AlertTestPayload
+         * @description 경보 통로가 실제로 닿는가 — **비밀값은 여기 없다.**
+         *
+         *     주소 자체를 돌려주지 않는다. 사람이 알아야 하는 것은 "닿았다/안 닿았다/설정 안 됨"
+         *     셋뿐이고, 주소를 화면에 실으면 그 화면을 열 수 있는 사람 모두가 그것을 갖는다.
+         */
+        AlertTestPayload: {
+            /**
+             * Message Ko
+             * @description 사람이 읽고 다음에 무엇을 할지 아는 한 문장.
+             */
+            message_ko: string;
+            /**
+             * Outcome
+             * @description SENT(닿았다) · DISABLED(주소가 설정되지 않았다) · FAILED(보냈으나 실패)
+             */
+            outcome: string;
+        };
+        /**
          * ApiError
          * @description The only error shape VEO returns.
          *
@@ -2105,6 +2148,12 @@ export interface components {
              * @default false
              */
             retryable: boolean;
+        };
+        /** ApiResponse[AlertTestPayload] */
+        ApiResponse_AlertTestPayload_: {
+            data?: components["schemas"]["AlertTestPayload"] | null;
+            error?: components["schemas"]["ApiError"] | null;
+            meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[BrandPayload] */
         ApiResponse_BrandPayload_: {
@@ -11975,6 +12024,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_test_alert_api_usage_alert_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AlertTestPayload_"];
                 };
             };
         };
