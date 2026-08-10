@@ -38,9 +38,14 @@ _log = logging.getLogger(__name__)
 #: 큐로 **보내도 되는** 작업 종류.
 #:
 #: 이름은 여덟 종류가 다 있지만(:mod:`veo.jobs.queues`), 워커에서 실제로 일을 하는 것은
-#: **둘**이다 — SEO 진단과 이슈 재측정. 나머지 여섯은 Phase 0 의 뼈대라
-#: `NotImplementedError` 를 던진다. 이름이 있다는 것과 받는 사람이 있다는 것은 다른
-#: 이야기다(0-E) — 그래서 목록을 따로 둔다.
+#: **셋**이다 — SEO 진단 · 이슈 재측정 · AI 답변 관측.
+#:
+#: [실측 2026-08-10] 나머지 다섯(SITE_CRAWL · GEO_READINESS_SCAN · KEYWORD_LOOKUP ·
+#: COMPETITOR_COMPARISON · REPORT_EXPORT)은 **아무도 잡을 만들지 않는다.** 이름과
+#: 계약 문서에만 있다. 그래서 워커 쪽 껍데기를 채우지 않는다 — 부르는 사람이 없는
+#: 코드를 지으면 그것이 곧 `CORRECTIONS.md` #17 이 말한 "목록이 만들어 낸 과제" 다.
+#:
+#: 이름이 있다는 것과 받는 사람이 있다는 것은 다른 이야기다(0-E) — 그래서 목록을 따로 둔다.
 #:
 #: 여기에 한 종류를 더할 때 지켜야 하는 것 둘:
 #:
@@ -49,7 +54,7 @@ _log = logging.getLogger(__name__)
 #: 2. `dispatch(parameters=...)` 가 **그 작업을 다시 만들 값을 전부** 싣는다. 함수는
 #:    프로세스를 건너지 못한다.
 QUEUEABLE: Final[frozenset[JobType]] = frozenset(
-    {JobType.SEO_SCAN, JobType.REVERIFICATION}
+    {JobType.SEO_SCAN, JobType.REVERIFICATION, JobType.GEO_OBSERVATION_RUN}
 )
 
 

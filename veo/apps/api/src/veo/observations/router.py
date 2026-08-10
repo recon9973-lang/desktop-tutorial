@@ -28,7 +28,7 @@ from veo.db.models.observation import ObservationRun as ObservationRunRow
 from veo.db.models.observation import PromptSet as PromptSetRow
 from veo.db.session import get_db
 from veo.jobs import service as jobs
-from veo.jobs.execution import run_detached
+from veo.jobs.dispatch import dispatch
 from veo.jobs.router import job_payload
 from veo.jobs.schemas import JobPayload
 from veo.observability.spend import spend_for_month
@@ -385,6 +385,14 @@ def run(
         idempotency_key=idempotency_key,
         stages=list(OBSERVATION_STAGES),
         parameters={
+            # **큐로 갈 때는 이 값들만 건넌다.** 함수는 프로세스를 건너지 못한다.
+            # `observation_work(...)` 의 인자와 하나씩 짝이 맞아야 하고, 하나라도
+            # 빠지면 워커가 `KeyError` 로 멈춘다 — 기본값으로 때우면 엉뚱한 조직의
+            # 일을 엉뚱한 권한으로 돌린다.
+            "organization_id": str(principal.organization_id),
+            "user_id": str(principal.user_id),
+            "roles": [str(role) for role in principal.roles],
+            "session_id": principal.session_id,
             "prompt_set_id": str(payload.prompt_set_id),
             "repetitions": payload.repetitions,
             "allow_below_floor": payload.allow_below_floor,
@@ -404,7 +412,7 @@ def run(
     db.refresh(job)
 
     if created:
-        run_detached(
+        dispatch(
             job_id,
             observation_work(
                 organization_id=principal.organization_id,
@@ -416,6 +424,8 @@ def run(
                 repetitions=payload.repetitions,
                 allow_below_floor=payload.allow_below_floor,
             ),
+            job_type=JobType.GEO_OBSERVATION_RUN,
+            parameters=job.parameters,
         )
 
     return ok(job_payload(job), request_id)
@@ -484,6 +494,14 @@ def run_manual(
         idempotency_key=idempotency_key,
         stages=list(OBSERVATION_STAGES),
         parameters={
+            # **큐로 갈 때는 이 값들만 건넌다.** 함수는 프로세스를 건너지 못한다.
+            # `observation_work(...)` 의 인자와 하나씩 짝이 맞아야 하고, 하나라도
+            # 빠지면 워커가 `KeyError` 로 멈춘다 — 기본값으로 때우면 엉뚱한 조직의
+            # 일을 엉뚱한 권한으로 돌린다.
+            "organization_id": str(principal.organization_id),
+            "user_id": str(principal.user_id),
+            "roles": [str(role) for role in principal.roles],
+            "session_id": principal.session_id,
             "prompt_set_id": str(prompt_set_row.id),
             "kind": "MANUAL",
             "repetitions": payload.repetitions,
@@ -505,7 +523,7 @@ def run_manual(
     db.refresh(job)
 
     if created:
-        run_detached(
+        dispatch(
             job_id,
             observation_work(
                 organization_id=principal.organization_id,
@@ -517,6 +535,8 @@ def run_manual(
                 repetitions=payload.repetitions,
                 allow_below_floor=payload.allow_below_floor,
             ),
+            job_type=JobType.GEO_OBSERVATION_RUN,
+            parameters=job.parameters,
         )
 
     return ok(job_payload(job), request_id)

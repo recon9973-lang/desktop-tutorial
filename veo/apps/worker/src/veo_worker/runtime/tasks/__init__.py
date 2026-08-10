@@ -269,7 +269,47 @@ def geo_readiness_scan(**kwargs: Any) -> dict[str, Any]:
 
 @celery_app.task(name=TASK_NAME_BY_JOB_TYPE[JobType.GEO_OBSERVATION_RUN], bind=False)
 def geo_observation_run(**kwargs: Any) -> dict[str, Any]:
-    return _run_phase_zero_skeleton(JobType.GEO_OBSERVATION_RUN, **kwargs)
+    """AI 답변 관측을 돈다 — **돈이 나가는 축이라 여기 있어야 한다.**
+
+    관측은 이 제품에서 유일하게 호출마다 돈이 나가는 축이다(질문 1개 1회 854원).
+    그런데 API 프로세스의 **데몬 스레드**로만 돌고 있었다 — 관측 도중에 새 판을 올리면
+    그 실행이 사라진다. **이미 부른 호출은 청구되고 결과는 없다**(기획서 E5).
+
+    `observation_work` 는 처음부터 값만 받도록 만들어져 있다 — 요청 객체의 수명이
+    요청보다 길어지면 안 된다는 규칙 때문이었는데, 그 덕에 프로세스를 건널 수 있다.
+    """
+    import uuid as _uuid
+
+    from veo.contracts.enums import Role
+    from veo.jobs.execution import execute
+    from veo.observations.execution import EngineChoice
+    from veo.observations.jobs import observation_work
+    from veo.observations.runs import AccountState, SearchMode
+
+    job_id = _uuid.UUID(str(kwargs["job_id"]))
+    # 빠진 자리를 기본값으로 채우지 않는다 — 엉뚱한 조직의 일을 엉뚱한 권한으로
+    # 돌리게 된다(`_run_scan` 과 같은 규칙).
+    choices = [
+        EngineChoice(
+            engine=str(one["engine"]),
+            model=str(one["model"]),
+            search_mode=SearchMode(one["search_mode"]),
+            account_state=AccountState(one["account_state"]),
+        )
+        for one in kwargs["engines"]
+    ]
+    work = observation_work(
+        organization_id=_uuid.UUID(str(kwargs["organization_id"])),
+        user_id=_uuid.UUID(str(kwargs["user_id"])),
+        roles=frozenset(Role(one) for one in kwargs["roles"]),
+        session_id=str(kwargs["session_id"]),
+        prompt_set_id=_uuid.UUID(str(kwargs["prompt_set_id"])),
+        choices=choices,
+        repetitions=int(kwargs["repetitions"]),
+        allow_below_floor=bool(kwargs["allow_below_floor"]),
+    )
+    execute(job_id, work)
+    return _handed_off(job_id)
 
 
 @celery_app.task(name=TASK_NAME_BY_JOB_TYPE[JobType.KEYWORD_LOOKUP], bind=False)

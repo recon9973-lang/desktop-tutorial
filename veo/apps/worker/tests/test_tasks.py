@@ -52,9 +52,16 @@ class TestRegistration:
 #: 나쁘다. 그 짝을 `apps/api/tests/issues/test_reverification_actually_runs.py` 가
 #: 지킨다.
 #:
+#: GEO_OBSERVATION_RUN 이 2026-08-10 에 들어왔다 — 돈이 나가는 축인데 데몬
+#: 스레드로만 돌고 있었다.
+#:
 #: REVERIFICATION 이 2026-08-09 에 들어왔다 — 이슈를 닫는 재측정(v0.3.78)이 API 의
 #: 데몬 스레드로만 돌아 재배포하면 사라지고 있었다(기획서 E5).
-IMPLEMENTED: set[JobType] = {JobType.SEO_SCAN, JobType.REVERIFICATION}
+IMPLEMENTED: set[JobType] = {
+    JobType.SEO_SCAN,
+    JobType.REVERIFICATION,
+    JobType.GEO_OBSERVATION_RUN,
+}
 
 
 class TestPhaseZeroStubs:
@@ -159,9 +166,12 @@ class TestCooperativeCancellation:
         assert descriptor.finished_at is not None
 
     def test_cancellation_preempts_the_not_implemented_stub(self) -> None:
+        # GEO_OBSERVATION_RUN 을 쓰다가 옮겼다(2026-08-10) — 그것은 이제 진짜로 돈다.
+        # 이 시험이 지키는 것은 **껍데기가 취소를 먼저 본다**는 것이므로 남아 있는
+        # 껍데기로 옮긴다.
         CANCELLATION_REGISTRY.request_cancel_ahead_of_time("job-c2")
-        payload = submit("job-c2", JobType.GEO_OBSERVATION_RUN, brand="베놈")
-        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.GEO_OBSERVATION_RUN]]
+        payload = submit("job-c2", JobType.KEYWORD_LOOKUP, keyword="베놈")
+        task = celery_app.tasks[tasks.TASK_NAME_BY_JOB_TYPE[JobType.KEYWORD_LOOKUP]]
         task.apply(kwargs=payload, throw=True)
         descriptor = JOB_STORE.get("job-c2")
         assert descriptor is not None
