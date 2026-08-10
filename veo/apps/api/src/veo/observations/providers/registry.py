@@ -120,6 +120,7 @@ def build_registry(
     credentials: ProviderCredentials | None = None,
     transport: httpx.BaseTransport | None = None,
     price_table: SupportsPricing | None = None,
+    timeout_seconds: float | None = None,
 ) -> ProviderRegistry:
     """Every engine in :data:`PROVIDER_CLASSES`, wired the same way.
 
@@ -128,10 +129,16 @@ def build_registry(
     that difference is the whole point — a report that silently drops Gemini reads as
     "we looked everywhere".
     """
+    # 제한 시간은 **비워 두면 기본값**이다. 여기서 숫자를 박으면 두 곳이 되고, 언젠가
+    # 한쪽만 고쳐진다(0-D). 넘기는 자리는 점검 도구뿐이다 —
+    # `veo.observations.probe` 가 "느려서 못 쟀다" 와 "안 된다" 를 가를 때 쓴다.
+    extra: dict[str, object] = {} if timeout_seconds is None else {
+        "timeout_seconds": timeout_seconds
+    }
     return ProviderRegistry(
         [
             provider_class.from_settings(
-                credentials, transport=transport, price_table=price_table
+                credentials, transport=transport, price_table=price_table, **extra
             )
             for provider_class in PROVIDER_CLASSES
         ]
