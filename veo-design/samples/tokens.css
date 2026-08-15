@@ -1,0 +1,192 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * veo-design 샘플 전용 토큰.
+ *
+ * 출처: veo/packages/ui/src/tokens.css (2026-08-09 복사). 라이트 스킴만 가져왔다 —
+ * 샘플은 비교용이라 보는 사람의 OS 설정에 따라 모양이 달라지면 안 된다.
+ *
+ * 되살린 것 하나 — 원본 토큰 머리말(:6~9)이 규정한 2색 체계.
+ *   signal(teal)  = 준비도 · 측정        → SEO 표면
+ *   beam(violet)  = AI 관측              → GEO 표면
+ * 지금 제품은 stripe-theme 가 둘 다 인디고 하나로 덮어 두 눈금이 같은 색이다.
+ *
+ * 규칙: 이 파일 밖의 어떤 CSS 도 hex 색과 px 글자 크기를 쓰지 않는다.
+ *       판정 명령은 veo-design/README.md 의 "판정" 절에 적어 두었다
+ *       (여기에 글롭 패턴을 적었더니 별표+슬래시가 이 주석을 조기 종료시켰다).
+ * ───────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* ── 원색 · ink (구조) ── */
+  --veo-ink-950: #04121a;
+  --veo-ink-900: #072030;
+  --veo-ink-800: #0d3145;
+  --veo-ink-700: #16465e;
+  --veo-ink-600: #245f7c;
+  --veo-ink-500: #3d7d9b;
+  --veo-ink-400: #6ba2ba;
+  --veo-ink-300: #a3c6d6;
+  --veo-ink-200: #cbdfe9;
+  --veo-ink-100: #e3eef3;
+  --veo-ink-050: #f2f7f9;
+
+  /* ── 원색 · signal (측정 / SEO) ── */
+  --veo-signal-900: #023c38;
+  --veo-signal-800: #05534d;
+  --veo-signal-700: #0a6b64;
+  --veo-signal-600: #0e847b;
+  --veo-signal-500: #159c92;
+  --veo-signal-400: #2fbcaf;
+  --veo-signal-300: #62d4c7;
+  --veo-signal-200: #a2e8df;
+  --veo-signal-100: #d3f4ef;
+  --veo-signal-050: #edfbf9;
+
+  /* ── 원색 · beam (AI 관측 / GEO) ── */
+  --veo-beam-900: #1e1670;
+  --veo-beam-800: #2c2196;
+  --veo-beam-700: #3b2fb8;
+  --veo-beam-600: #4d40d4;
+  --veo-beam-400: #8a80ec;
+  --veo-beam-200: #cdc8f9;
+  --veo-beam-100: #e7e4fd;
+  --veo-beam-050: #f4f2ff;
+
+  /* ── 원색 · 상태 ── */
+  --veo-green-800: #0f5132;
+  --veo-green-700: #145c38;
+  --veo-green-300: #7fd6a4;
+  --veo-green-100: #dff2e7;
+
+  --veo-amber-800: #6b4205;
+  --veo-amber-700: #85520a;
+  --veo-amber-300: #f0c05a;
+  --veo-amber-100: #fbeed4;
+
+  --veo-red-800: #8a1f1a;
+  --veo-red-700: #a52a22;
+  --veo-red-300: #f09a92;
+  --veo-red-100: #fae3e1;
+
+  --veo-slate-700: #40525e;
+  --veo-slate-100: #e9edf0;
+
+  --veo-quartz-700: #3b487c;
+  --veo-quartz-300: #a9b3e0;
+  --veo-quartz-100: #e7eaf7;
+
+  /* ── 의미색 · 면과 글자 ── */
+  --veo-color-bg: var(--veo-ink-050);
+  --veo-color-bg-subtle: var(--veo-ink-100);
+  --veo-color-surface: #ffffff;
+  --veo-color-surface-sunken: var(--veo-ink-050);
+  --veo-color-surface-inverse: var(--veo-ink-900);
+
+  --veo-color-border: var(--veo-ink-200);
+  --veo-color-border-strong: #5c8ea6;
+
+  --veo-color-text: var(--veo-ink-900);
+  --veo-color-text-muted: #47606e;
+  --veo-color-text-inverse: #f2f7f9;
+  --veo-color-text-on-accent: #ffffff;
+
+  /* ── 눈금색 — 화면이 어느 눈금인지에 따라 [data-gauge] 로 갈린다 ── */
+  --veo-color-accent: var(--veo-signal-700);
+  --veo-color-accent-strong: var(--veo-signal-800);
+  --veo-color-accent-subtle: var(--veo-signal-050);
+  --veo-color-accent-border: var(--veo-signal-200);
+  --veo-color-accent-mid: var(--veo-signal-400);
+
+  --veo-color-focus-ring: var(--veo-beam-600);
+
+  /* ── 상태색 ── */
+  --veo-status-pass-fg: var(--veo-green-700);
+  --veo-status-pass-bg: var(--veo-green-100);
+  --veo-status-pass-border: #38855c;
+
+  --veo-status-warning-fg: var(--veo-amber-700);
+  --veo-status-warning-bg: var(--veo-amber-100);
+  --veo-status-warning-border: #9d7020;
+
+  --veo-status-fail-fg: var(--veo-red-700);
+  --veo-status-fail-bg: var(--veo-red-100);
+  --veo-status-fail-border: #bd524a;
+
+  --veo-status-na-fg: var(--veo-slate-700);
+  --veo-status-na-bg: var(--veo-slate-100);
+  --veo-status-na-border: #6d7d88;
+
+  --veo-status-unknown-fg: var(--veo-quartz-700);
+  --veo-status-unknown-bg: var(--veo-quartz-100);
+  --veo-status-unknown-border: #6e77ab;
+
+  /* ── 간격 (4px 기준) ── */
+  --veo-space-1: 0.25rem;
+  --veo-space-2: 0.5rem;
+  --veo-space-3: 0.75rem;
+  --veo-space-4: 1rem;
+  --veo-space-5: 1.25rem;
+  --veo-space-6: 1.5rem;
+  --veo-space-8: 2rem;
+  --veo-space-10: 2.5rem;
+  --veo-space-12: 3rem;
+  --veo-space-16: 4rem;
+
+  /* ── 모서리 ── */
+  --veo-radius-xs: 3px;
+  --veo-radius-sm: 6px;
+  --veo-radius-md: 10px;
+  --veo-radius-lg: 16px;
+  --veo-radius-xl: 24px;
+  --veo-radius-pill: 999px;
+
+  /* ── 글자 ── */
+  --veo-font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', 'Segoe UI', 'Noto Sans KR', system-ui, sans-serif;
+  --veo-font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  --veo-font-size-100: 0.75rem;   /* 12 — 메타 */
+  --veo-font-size-200: 0.8125rem; /* 13 — 칩·배지 */
+  --veo-font-size-300: 0.875rem;  /* 14 — 조밀한 UI */
+  --veo-font-size-400: 1rem;      /* 16 — 본문 */
+  --veo-font-size-500: 1.125rem;  /* 18 — 리드 */
+  --veo-font-size-600: 1.375rem;  /* 22 — 절 제목 */
+  --veo-font-size-700: 1.75rem;   /* 28 — 화면 제목 */
+  --veo-font-size-800: 2.25rem;   /* 36 — 히어로 */
+  --veo-font-size-900: 3rem;      /* 48 — 점수 */
+
+  --veo-line-tight: 1.2;
+  --veo-line-snug: 1.4;
+  --veo-line-normal: 1.65;
+
+  --veo-weight-regular: 400;
+  --veo-weight-medium: 500;
+  --veo-weight-semibold: 600;
+  --veo-weight-bold: 700;
+
+  --veo-tracking-tight: -0.015em;
+  --veo-tracking-wide: 0.04em;
+
+  /* ── 깊이 ── */
+  --veo-shadow-1: 0 1px 2px rgba(7, 32, 48, 0.06), 0 1px 1px rgba(7, 32, 48, 0.04);
+  --veo-shadow-2: 0 2px 6px rgba(7, 32, 48, 0.08), 0 8px 20px rgba(7, 32, 48, 0.06);
+  --veo-shadow-3: 0 6px 16px rgba(7, 32, 48, 0.1), 0 20px 44px rgba(7, 32, 48, 0.1);
+
+  /* ── 어두운 면 위에 얹는 옅은 판 (등급 사다리의 빈 칸 등) ── */
+  --veo-overlay-soft: rgba(255, 255, 255, 0.07);
+
+  /* ── 초점 ── */
+  --veo-focus-ring-width: 3px;
+  --veo-focus-ring-offset: 2px;
+}
+
+/* GEO 표면 — 액센트를 beam 으로 갈아 끼운다. 구조는 한 줄도 안 바뀐다. */
+[data-gauge='geo'] {
+  --veo-color-accent: var(--veo-beam-700);
+  --veo-color-accent-strong: var(--veo-beam-800);
+  --veo-color-accent-subtle: var(--veo-beam-050);
+  --veo-color-accent-border: var(--veo-beam-200);
+  --veo-color-accent-mid: var(--veo-beam-400);
+}

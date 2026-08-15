@@ -1,0 +1,144 @@
+/* 샘플 공통 뼈대. 방향 3안이 모두 이 위에 얹힌다.
+   색·글자 크기는 tokens.css 의 변수로만 쓴다 — 보고서 §5 원칙 7. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--veo-color-bg);
+  color: var(--veo-color-text);
+  font-family: var(--veo-font-sans);
+  font-size: var(--veo-font-size-400);
+  line-height: var(--veo-line-normal);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  line-height: var(--veo-line-tight);
+  letter-spacing: var(--veo-tracking-tight);
+  font-weight: var(--veo-weight-semibold);
+}
+
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: var(--veo-color-accent); text-underline-offset: 0.2em; }
+
+:focus-visible {
+  outline: var(--veo-focus-ring-width) solid var(--veo-color-focus-ring);
+  outline-offset: var(--veo-focus-ring-offset);
+  border-radius: var(--veo-radius-xs);
+}
+
+/* ── 샘플임을 화면에 적는다 ─────────────────────────────────────────
+   보고서 §6-1: "숫자는 지어내되 지어낸 숫자라고 화면에 적는다." */
+.sampleFlag {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: var(--veo-space-2);
+  align-items: baseline;
+  padding: var(--veo-space-2) var(--veo-space-4);
+  background: var(--veo-ink-900);
+  color: var(--veo-ink-100);
+  font-size: var(--veo-font-size-100);
+  letter-spacing: var(--veo-tracking-wide);
+}
+.sampleFlag b { color: var(--veo-color-text-inverse); font-weight: var(--veo-weight-semibold); }
+.sampleFlag span { color: var(--veo-ink-300); }
+
+/* ── 화면 틀 ───────────────────────────────────────────────────── */
+.shell { max-width: 30rem; margin: 0 auto; padding-bottom: var(--veo-space-16); }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-4);
+  background: var(--veo-color-surface);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+.wordmark {
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-bold);
+  letter-spacing: var(--veo-tracking-tight);
+  color: var(--veo-color-text);
+}
+.topbarLink {
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+  color: var(--veo-color-text-muted);
+  text-decoration: none;
+}
+
+/* 도구 전환 — 한 벌만 둔다. 상단 메뉴와 페이지 안 탭을 겹쳐 두지 않는다(보고서 §2-3). */
+.toolSwitch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--veo-space-1);
+  margin: var(--veo-space-4) var(--veo-space-4) 0;
+  padding: var(--veo-space-1);
+  background: var(--veo-color-bg-subtle);
+  border-radius: var(--veo-radius-pill);
+}
+.toolSwitch a {
+  padding: var(--veo-space-2) var(--veo-space-1);
+  border-radius: var(--veo-radius-pill);
+  text-align: center;
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+  color: var(--veo-color-text-muted);
+  text-decoration: none;
+}
+.toolSwitch a[aria-current] {
+  background: var(--veo-color-surface);
+  color: var(--veo-color-accent-strong);
+  box-shadow: var(--veo-shadow-1);
+}
+
+.section { margin: var(--veo-space-8) var(--veo-space-4) 0; }
+.sectionHead { margin-bottom: var(--veo-space-3); }
+.sectionHead h2 { font-size: var(--veo-font-size-500); }
+.sectionHead p {
+  margin-top: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+
+.card {
+  background: var(--veo-color-surface);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  box-shadow: var(--veo-shadow-1);
+}
+
+.eyebrow {
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  letter-spacing: var(--veo-tracking-wide);
+  color: var(--veo-color-accent);
+  text-transform: uppercase;
+}
+
+.foot {
+  margin: var(--veo-space-12) var(--veo-space-4) 0;
+  padding-top: var(--veo-space-5);
+  border-top: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+.foot dl { display: grid; grid-template-columns: auto 1fr; gap: var(--veo-space-1) var(--veo-space-3); margin: var(--veo-space-3) 0 0; }
+.foot dt { color: var(--veo-color-text-muted); }
+.foot dd { margin: 0; color: var(--veo-color-text); font-variant-numeric: tabular-nums; }

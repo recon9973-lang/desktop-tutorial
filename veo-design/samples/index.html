@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VEO 화면 샘플 — 480px</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * , *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: var(--veo-space-6) var(--veo-space-5) var(--veo-space-12);
+    background: var(--veo-color-bg-subtle);
+    color: var(--veo-color-text);
+    font-family: var(--veo-font-sans);
+    line-height: var(--veo-line-normal);
+    word-break: keep-all;
+  }
+  h1 { margin: 0; font-size: var(--veo-font-size-700); letter-spacing: var(--veo-tracking-tight); }
+  .sub { margin: var(--veo-space-2) 0 0; font-size: var(--veo-font-size-300); color: var(--veo-color-text-muted); }
+
+  .gates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--veo-space-2);
+    margin-top: var(--veo-space-4);
+  }
+  .gate {
+    padding: var(--veo-space-1) var(--veo-space-3);
+    border-radius: var(--veo-radius-pill);
+    background: var(--veo-status-pass-bg);
+    border: 1px solid var(--veo-status-pass-border);
+    color: var(--veo-status-pass-fg);
+    font-size: var(--veo-font-size-100);
+    font-weight: var(--veo-weight-semibold);
+  }
+
+  .row {
+    display: flex;
+    gap: var(--veo-space-6);
+    margin-top: var(--veo-space-8);
+    padding-bottom: var(--veo-space-4);
+    overflow-x: auto;
+  }
+  figure { flex: none; width: 480px; margin: 0; }
+  figcaption { margin-bottom: var(--veo-space-3); }
+  figcaption b { display: block; font-size: var(--veo-font-size-500); letter-spacing: var(--veo-tracking-tight); }
+  figcaption span {
+    display: block;
+    margin-top: var(--veo-space-1);
+    font-size: var(--veo-font-size-200);
+    color: var(--veo-color-text-muted);
+  }
+  iframe {
+    width: 480px;
+    height: 1180px;
+    border: 1px solid var(--veo-color-border);
+    border-radius: var(--veo-radius-lg);
+    background: var(--veo-color-surface);
+    box-shadow: var(--veo-shadow-2);
+  }
+
+  .diff { margin-top: var(--veo-space-10); max-width: var(--veo-layout-prose); }
+  .diff h2 { margin: 0 0 var(--veo-space-4); font-size: var(--veo-font-size-600); letter-spacing: var(--veo-tracking-tight); }
+  .diff table { width: 100%; border-collapse: collapse; font-size: var(--veo-font-size-300); }
+  .diff th, .diff td {
+    padding: var(--veo-space-3);
+    border-bottom: 1px solid var(--veo-color-border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .diff th { font-size: var(--veo-font-size-100); color: var(--veo-color-text-muted); font-weight: var(--veo-weight-semibold); }
+  .diff td:first-child { color: var(--veo-color-text-muted); white-space: nowrap; }
+  .diff b { color: var(--veo-beam-700); }
+</style>
+</head>
+<body>
+
+<h1>B안 — 진단서</h1>
+<p class="sub">
+  방향 3안 중 첫째. 파는 것은 <b>신뢰</b>. 폭 480px 기준으로 그렸습니다.
+  숫자는 지어낸 값이고, 채점 영역·가중치·등급은 실제 명세
+  <b>veo.geo.readiness 1.3.0</b> 에서 그대로 가져왔습니다.
+</p>
+
+<div class="gates">
+  <span class="gate">토큰 우회 0줄</span>
+  <span class="gate">hex·rgba·px 글자크기 0개</span>
+  <span class="gate">veo/ 코드 수정 0줄</span>
+</div>
+
+<div class="row">
+  <figure>
+    <figcaption>
+      <b>화면 1 — 빈 화면</b>
+      <span>지금은 본문 83자. 여기는 2,000자 남짓 — 채점 기준을 진단 전에 먼저 공개합니다.</span>
+    </figcaption>
+    <iframe src="b-clinical/empty.html" title="B안 빈 화면" loading="lazy"></iframe>
+  </figure>
+
+  <figure>
+    <figcaption>
+      <b>화면 2 — 결과</b>
+      <span>점수보다 할 일이 먼저. 근거·고칠 코드는 접어 두고 펼치면 나옵니다.</span>
+    </figcaption>
+    <iframe src="b-clinical/result.html" title="B안 결과 화면" loading="lazy"></iframe>
+  </figure>
+</div>
+
+<section class="diff">
+  <h2>지금 제품과 무엇이 다른가</h2>
+  <table>
+    <thead>
+      <tr><th>자리</th><th>지금</th><th>B안</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>빈 화면</td>
+        <td>본문 83자</td>
+        <td><b>채점 기준 6영역 + 참고 1영역을 진단 전에 공개</b>. 결과 미리보기·FAQ</td>
+      </tr>
+      <tr>
+        <td>제목</td>
+        <td>GEO 페이지인데 "SEO·GEO 점수 체크"</td>
+        <td><b>화면마다 자기 이름</b> — "GEO 점수 체크"</td>
+      </tr>
+      <tr>
+        <td>길 안내</td>
+        <td>상단 메뉴 + 페이지 안 탭, 두 벌</td>
+        <td><b>한 벌</b>. 모바일에서 머리말이 한 줄</td>
+      </tr>
+      <tr>
+        <td>결과 첫 덩어리</td>
+        <td>체크리스트</td>
+        <td><b>"양호(70점)까지 — 할 일 3건" · +12 / +8 / +5점</b></td>
+      </tr>
+      <tr>
+        <td>변화</td>
+        <td>없음</td>
+        <td><b>지난 진단 34점 → +7</b></td>
+      </tr>
+      <tr>
+        <td>등급</td>
+        <td>이름 한 줄</td>
+        <td><b>5단계 전부 표시</b>, 현재 칸만 강조</td>
+      </tr>
+      <tr>
+        <td>근거</td>
+        <td>결론과 같은 크기로 나란히</td>
+        <td><b>접어 둔다.</b> 펼치면 원자료 → 고칠 코드 → 재측정 규칙</td>
+      </tr>
+      <tr>
+        <td>못 잰 항목</td>
+        <td>통과와 섞임</td>
+        <td><b>측정 불가 / 해당 없음을 갈라 표시</b>하고 분모에서 뺀 개수를 적음</td>
+      </tr>
+      <tr>
+        <td>두 눈금 색</td>
+        <td>SEO·GEO 둘 다 인디고</td>
+        <td><b>SEO=teal · GEO=violet</b> — 원본 토큰의 의도 복구</td>
+      </tr>
+      <tr>
+        <td>합계</td>
+        <td>백분율만</td>
+        <td><b>얻은 점수 / 배점</b>을 늘 함께. 점수에 안 들어가는 영역은 면을 갈라 놓음</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

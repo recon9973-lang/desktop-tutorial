@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VEO 화면 샘플 — B안 진단서 · 480px</title>
+<style>
+/* ===== tokens.css ===== */
+/* ─────────────────────────────────────────────────────────────────────
+ * veo-design 샘플 전용 토큰.
+ *
+ * 출처: veo/packages/ui/src/tokens.css (2026-08-09 복사). 라이트 스킴만 가져왔다 —
+ * 샘플은 비교용이라 보는 사람의 OS 설정에 따라 모양이 달라지면 안 된다.
+ *
+ * 되살린 것 하나 — 원본 토큰 머리말(:6~9)이 규정한 2색 체계.
+ *   signal(teal)  = 준비도 · 측정        → SEO 표면
+ *   beam(violet)  = AI 관측              → GEO 표면
+ * 지금 제품은 stripe-theme 가 둘 다 인디고 하나로 덮어 두 눈금이 같은 색이다.
+ *
+ * 규칙: 이 파일 밖의 어떤 CSS 도 hex 색과 px 글자 크기를 쓰지 않는다.
+ *       판정 명령은 veo-design/README.md 의 "판정" 절에 적어 두었다
+ *       (여기에 글롭 패턴을 적었더니 별표+슬래시가 이 주석을 조기 종료시켰다).
+ * ───────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* ── 원색 · ink (구조) ── */
+  --veo-ink-950: #04121a;
+  --veo-ink-900: #072030;
+  --veo-ink-800: #0d3145;
+  --veo-ink-700: #16465e;
+  --veo-ink-600: #245f7c;
+  --veo-ink-500: #3d7d9b;
+  --veo-ink-400: #6ba2ba;
+  --veo-ink-300: #a3c6d6;
+  --veo-ink-200: #cbdfe9;
+  --veo-ink-100: #e3eef3;
+  --veo-ink-050: #f2f7f9;
+
+  /* ── 원색 · signal (측정 / SEO) ── */
+  --veo-signal-900: #023c38;
+  --veo-signal-800: #05534d;
+  --veo-signal-700: #0a6b64;
+  --veo-signal-600: #0e847b;
+  --veo-signal-500: #159c92;
+  --veo-signal-400: #2fbcaf;
+  --veo-signal-300: #62d4c7;
+  --veo-signal-200: #a2e8df;
+  --veo-signal-100: #d3f4ef;
+  --veo-signal-050: #edfbf9;
+
+  /* ── 원색 · beam (AI 관측 / GEO) ── */
+  --veo-beam-900: #1e1670;
+  --veo-beam-800: #2c2196;
+  --veo-beam-700: #3b2fb8;
+  --veo-beam-600: #4d40d4;
+  --veo-beam-400: #8a80ec;
+  --veo-beam-200: #cdc8f9;
+  --veo-beam-100: #e7e4fd;
+  --veo-beam-050: #f4f2ff;
+
+  /* ── 원색 · 상태 ── */
+  --veo-green-800: #0f5132;
+  --veo-green-700: #145c38;
+  --veo-green-300: #7fd6a4;
+  --veo-green-100: #dff2e7;
+
+  --veo-amber-800: #6b4205;
+  --veo-amber-700: #85520a;
+  --veo-amber-300: #f0c05a;
+  --veo-amber-100: #fbeed4;
+
+  --veo-red-800: #8a1f1a;
+  --veo-red-700: #a52a22;
+  --veo-red-300: #f09a92;
+  --veo-red-100: #fae3e1;
+
+  --veo-slate-700: #40525e;
+  --veo-slate-100: #e9edf0;
+
+  --veo-quartz-700: #3b487c;
+  --veo-quartz-300: #a9b3e0;
+  --veo-quartz-100: #e7eaf7;
+
+  /* ── 의미색 · 면과 글자 ── */
+  --veo-color-bg: var(--veo-ink-050);
+  --veo-color-bg-subtle: var(--veo-ink-100);
+  --veo-color-surface: #ffffff;
+  --veo-color-surface-sunken: var(--veo-ink-050);
+  --veo-color-surface-inverse: var(--veo-ink-900);
+
+  --veo-color-border: var(--veo-ink-200);
+  --veo-color-border-strong: #5c8ea6;
+
+  --veo-color-text: var(--veo-ink-900);
+  --veo-color-text-muted: #47606e;
+  --veo-color-text-inverse: #f2f7f9;
+  --veo-color-text-on-accent: #ffffff;
+
+  /* ── 눈금색 — 화면이 어느 눈금인지에 따라 [data-gauge] 로 갈린다 ── */
+  --veo-color-accent: var(--veo-signal-700);
+  --veo-color-accent-strong: var(--veo-signal-800);
+  --veo-color-accent-subtle: var(--veo-signal-050);
+  --veo-color-accent-border: var(--veo-signal-200);
+  --veo-color-accent-mid: var(--veo-signal-400);
+
+  --veo-color-focus-ring: var(--veo-beam-600);
+
+  /* ── 상태색 ── */
+  --veo-status-pass-fg: var(--veo-green-700);
+  --veo-status-pass-bg: var(--veo-green-100);
+  --veo-status-pass-border: #38855c;
+
+  --veo-status-warning-fg: var(--veo-amber-700);
+  --veo-status-warning-bg: var(--veo-amber-100);
+  --veo-status-warning-border: #9d7020;
+
+  --veo-status-fail-fg: var(--veo-red-700);
+  --veo-status-fail-bg: var(--veo-red-100);
+  --veo-status-fail-border: #bd524a;
+
+  --veo-status-na-fg: var(--veo-slate-700);
+  --veo-status-na-bg: var(--veo-slate-100);
+  --veo-status-na-border: #6d7d88;
+
+  --veo-status-unknown-fg: var(--veo-quartz-700);
+  --veo-status-unknown-bg: var(--veo-quartz-100);
+  --veo-status-unknown-border: #6e77ab;
+
+  /* ── 간격 (4px 기준) ── */
+  --veo-space-1: 0.25rem;
+  --veo-space-2: 0.5rem;
+  --veo-space-3: 0.75rem;
+  --veo-space-4: 1rem;
+  --veo-space-5: 1.25rem;
+  --veo-space-6: 1.5rem;
+  --veo-space-8: 2rem;
+  --veo-space-10: 2.5rem;
+  --veo-space-12: 3rem;
+  --veo-space-16: 4rem;
+
+  /* ── 모서리 ── */
+  --veo-radius-xs: 3px;
+  --veo-radius-sm: 6px;
+  --veo-radius-md: 10px;
+  --veo-radius-lg: 16px;
+  --veo-radius-xl: 24px;
+  --veo-radius-pill: 999px;
+
+  /* ── 글자 ── */
+  --veo-font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', 'Segoe UI', 'Noto Sans KR', system-ui, sans-serif;
+  --veo-font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  --veo-font-size-100: 0.75rem;   /* 12 — 메타 */
+  --veo-font-size-200: 0.8125rem; /* 13 — 칩·배지 */
+  --veo-font-size-300: 0.875rem;  /* 14 — 조밀한 UI */
+  --veo-font-size-400: 1rem;      /* 16 — 본문 */
+  --veo-font-size-500: 1.125rem;  /* 18 — 리드 */
+  --veo-font-size-600: 1.375rem;  /* 22 — 절 제목 */
+  --veo-font-size-700: 1.75rem;   /* 28 — 화면 제목 */
+  --veo-font-size-800: 2.25rem;   /* 36 — 히어로 */
+  --veo-font-size-900: 3rem;      /* 48 — 점수 */
+
+  --veo-line-tight: 1.2;
+  --veo-line-snug: 1.4;
+  --veo-line-normal: 1.65;
+
+  --veo-weight-regular: 400;
+  --veo-weight-medium: 500;
+  --veo-weight-semibold: 600;
+  --veo-weight-bold: 700;
+
+  --veo-tracking-tight: -0.015em;
+  --veo-tracking-wide: 0.04em;
+
+  /* ── 깊이 ── */
+  --veo-shadow-1: 0 1px 2px rgba(7, 32, 48, 0.06), 0 1px 1px rgba(7, 32, 48, 0.04);
+  --veo-shadow-2: 0 2px 6px rgba(7, 32, 48, 0.08), 0 8px 20px rgba(7, 32, 48, 0.06);
+  --veo-shadow-3: 0 6px 16px rgba(7, 32, 48, 0.1), 0 20px 44px rgba(7, 32, 48, 0.1);
+
+  /* ── 어두운 면 위에 얹는 옅은 판 (등급 사다리의 빈 칸 등) ── */
+  --veo-overlay-soft: rgba(255, 255, 255, 0.07);
+
+  /* ── 초점 ── */
+  --veo-focus-ring-width: 3px;
+  --veo-focus-ring-offset: 2px;
+}
+
+/* GEO 표면 — 액센트를 beam 으로 갈아 끼운다. 구조는 한 줄도 안 바뀐다. */
+[data-gauge='geo'] {
+  --veo-color-accent: var(--veo-beam-700);
+  --veo-color-accent-strong: var(--veo-beam-800);
+  --veo-color-accent-subtle: var(--veo-beam-050);
+  --veo-color-accent-border: var(--veo-beam-200);
+  --veo-color-accent-mid: var(--veo-beam-400);
+}
+
+
+/* ===== base.css ===== */
+/* 샘플 공통 뼈대. 방향 3안이 모두 이 위에 얹힌다.
+   색·글자 크기는 tokens.css 의 변수로만 쓴다 — 보고서 §5 원칙 7. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--veo-color-bg);
+  color: var(--veo-color-text);
+  font-family: var(--veo-font-sans);
+  font-size: var(--veo-font-size-400);
+  line-height: var(--veo-line-normal);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  line-height: var(--veo-line-tight);
+  letter-spacing: var(--veo-tracking-tight);
+  font-weight: var(--veo-weight-semibold);
+}
+
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: var(--veo-color-accent); text-underline-offset: 0.2em; }
+
+:focus-visible {
+  outline: var(--veo-focus-ring-width) solid var(--veo-color-focus-ring);
+  outline-offset: var(--veo-focus-ring-offset);
+  border-radius: var(--veo-radius-xs);
+}
+
+/* ── 샘플임을 화면에 적는다 ─────────────────────────────────────────
+   보고서 §6-1: "숫자는 지어내되 지어낸 숫자라고 화면에 적는다." */
+.sampleFlag {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: var(--veo-space-2);
+  align-items: baseline;
+  padding: var(--veo-space-2) var(--veo-space-4);
+  background: var(--veo-ink-900);
+  color: var(--veo-ink-100);
+  font-size: var(--veo-font-size-100);
+  letter-spacing: var(--veo-tracking-wide);
+}
+.sampleFlag b { color: var(--veo-color-text-inverse); font-weight: var(--veo-weight-semibold); }
+.sampleFlag span { color: var(--veo-ink-300); }
+
+/* ── 화면 틀 ───────────────────────────────────────────────────── */
+.shell { max-width: 30rem; margin: 0 auto; padding-bottom: var(--veo-space-16); }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-4);
+  background: var(--veo-color-surface);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+.wordmark {
+  font-size: var(--veo-font-size-500);
+  font-weight: var(--veo-weight-bold);
+  letter-spacing: var(--veo-tracking-tight);
+  color: var(--veo-color-text);
+}
+.topbarLink {
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+  color: var(--veo-color-text-muted);
+  text-decoration: none;
+}
+
+/* 도구 전환 — 한 벌만 둔다. 상단 메뉴와 페이지 안 탭을 겹쳐 두지 않는다(보고서 §2-3). */
+.toolSwitch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--veo-space-1);
+  margin: var(--veo-space-4) var(--veo-space-4) 0;
+  padding: var(--veo-space-1);
+  background: var(--veo-color-bg-subtle);
+  border-radius: var(--veo-radius-pill);
+}
+.toolSwitch a {
+  padding: var(--veo-space-2) var(--veo-space-1);
+  border-radius: var(--veo-radius-pill);
+  text-align: center;
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-medium);
+  color: var(--veo-color-text-muted);
+  text-decoration: none;
+}
+.toolSwitch a[aria-current] {
+  background: var(--veo-color-surface);
+  color: var(--veo-color-accent-strong);
+  box-shadow: var(--veo-shadow-1);
+}
+
+.section { margin: var(--veo-space-8) var(--veo-space-4) 0; }
+.sectionHead { margin-bottom: var(--veo-space-3); }
+.sectionHead h2 { font-size: var(--veo-font-size-500); }
+.sectionHead p {
+  margin-top: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+
+.card {
+  background: var(--veo-color-surface);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  box-shadow: var(--veo-shadow-1);
+}
+
+.eyebrow {
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  letter-spacing: var(--veo-tracking-wide);
+  color: var(--veo-color-accent);
+  text-transform: uppercase;
+}
+
+.foot {
+  margin: var(--veo-space-12) var(--veo-space-4) 0;
+  padding-top: var(--veo-space-5);
+  border-top: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+.foot dl { display: grid; grid-template-columns: auto 1fr; gap: var(--veo-space-1) var(--veo-space-3); margin: var(--veo-space-3) 0 0; }
+.foot dt { color: var(--veo-color-text-muted); }
+.foot dd { margin: 0; color: var(--veo-color-text); font-variant-numeric: tabular-nums; }
+
+
+/* ===== b-clinical/clinical.css ===== */
+/* B안 — 진단서(Clinical Report). 파는 것: 신뢰.
+   결론을 위에, 근거를 접어서 아래. 모든 숫자에 분모를 붙인다. */
+
+/* ── 입력 ─────────────────────────────────────────────────────── */
+.hero { margin: var(--veo-space-6) var(--veo-space-4) 0; }
+.hero h1 { font-size: var(--veo-font-size-700); }
+.hero .lede {
+  margin-top: var(--veo-space-2);
+  font-size: var(--veo-font-size-300);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+
+.searchbar {
+  display: flex;
+  margin-top: var(--veo-space-5);
+  background: var(--veo-color-surface);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-pill);
+  box-shadow: var(--veo-shadow-1);
+  overflow: hidden;
+}
+.searchbar input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--veo-space-3) var(--veo-space-5);
+  border: 0;
+  background: transparent;
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-300);
+  color: var(--veo-color-text);
+}
+.searchbar input::placeholder { color: var(--veo-ink-400); }
+.searchbar button {
+  flex: none;
+  padding: var(--veo-space-3) var(--veo-space-5);
+  border: 0;
+  background: var(--veo-color-accent);
+  color: var(--veo-color-text-on-accent);
+  font-family: inherit;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  cursor: pointer;
+}
+.searchNote {
+  margin-top: var(--veo-space-2);
+  padding-left: var(--veo-space-2);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+/* ── 이 진단이 답하는 것 ──────────────────────────────────────── */
+.qList { display: grid; gap: var(--veo-space-2); }
+.qList li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--veo-space-3);
+  align-items: start;
+  padding: var(--veo-space-4);
+}
+.qNum {
+  display: grid;
+  place-items: center;
+  width: var(--veo-space-6);
+  height: var(--veo-space-6);
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-color-accent-subtle);
+  color: var(--veo-color-accent-strong);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-bold);
+}
+.qList b { display: block; font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-semibold); }
+.qList span {
+  display: block;
+  margin-top: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+
+/* ── 100점 분해 ───────────────────────────────────────────────── */
+.weights { padding: var(--veo-space-5) var(--veo-space-4); }
+.weightRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--veo-space-1) var(--veo-space-3);
+  align-items: baseline;
+  padding: var(--veo-space-2) 0;
+}
+.weightRow dt { font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-medium); }
+.weightRow dd {
+  margin: 0;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-accent-strong);
+}
+.bar {
+  grid-column: 1 / -1;
+  height: var(--veo-space-2);
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-color-border);
+  overflow: hidden;
+}
+.bar i { display: block; height: 100%; background: var(--veo-color-accent); border-radius: inherit; }
+
+.weightTotal {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--veo-space-3);
+  padding-top: var(--veo-space-3);
+  border-top: 1px solid var(--veo-color-border);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-bold);
+}
+
+/* 점수에 안 들어가는 영역은 면 자체를 갈라 놓는다 —
+   같은 표에 두면 합이 110 인 것처럼 읽힌다. */
+.asideArea {
+  margin-top: var(--veo-space-3);
+  padding: var(--veo-space-4);
+  border: 1px dashed var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+}
+.asideArea b { font-size: var(--veo-font-size-300); }
+.asideArea p {
+  margin-top: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+.tagNoScore {
+  display: inline-block;
+  margin-left: var(--veo-space-2);
+  padding: 0 var(--veo-space-2);
+  border: 1px solid var(--veo-status-na-border);
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-status-na-bg);
+  color: var(--veo-status-na-fg);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+}
+
+/* ── 결과 미리보기 ────────────────────────────────────────────── */
+.preview { padding: var(--veo-space-4); }
+.previewShot {
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-md);
+  background: var(--veo-color-surface-sunken);
+  padding: var(--veo-space-4);
+}
+.previewTop { display: flex; align-items: center; gap: var(--veo-space-4); }
+.previewScore {
+  font-size: var(--veo-font-size-800);
+  font-weight: var(--veo-weight-bold);
+  line-height: 1;
+  letter-spacing: var(--veo-tracking-tight);
+  color: var(--veo-color-accent-strong);
+}
+.previewScore small { font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-medium); }
+.previewTodo { display: grid; gap: var(--veo-space-2); margin-top: var(--veo-space-4); }
+.previewTodo div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--veo-space-3);
+  padding: var(--veo-space-2) var(--veo-space-3);
+  background: var(--veo-color-surface);
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-sm);
+  font-size: var(--veo-font-size-200);
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────── */
+.faq details {
+  padding: var(--veo-space-4);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+.faq details:last-child { border-bottom: 0; }
+.faq summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--veo-space-3);
+  align-items: center;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  cursor: pointer;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: '+';
+  display: grid;
+  place-items: center;
+  width: var(--veo-space-5);
+  height: var(--veo-space-5);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-pill);
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-regular);
+}
+.faq details[open] summary::after { content: '–'; }
+.faq p {
+  margin-top: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-color-text-muted);
+  line-height: var(--veo-line-snug);
+}
+
+/* ═══ 결과 화면 ═══════════════════════════════════════════════ */
+
+.subject {
+  margin: var(--veo-space-4) var(--veo-space-4) 0;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+.subject b {
+  display: block;
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  color: var(--veo-color-text);
+}
+
+/* 점수 머리 — 결론 한 덩어리 */
+.scoreHead {
+  margin: var(--veo-space-3) var(--veo-space-4) 0;
+  padding: var(--veo-space-5);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-surface-inverse);
+  color: var(--veo-color-text-inverse);
+}
+.scoreTop { display: flex; align-items: flex-end; gap: var(--veo-space-4); }
+.scoreNum {
+  font-size: var(--veo-font-size-900);
+  font-weight: var(--veo-weight-bold);
+  line-height: 0.9;
+  letter-spacing: var(--veo-tracking-tight);
+}
+.scoreNum small { font-size: var(--veo-font-size-400); font-weight: var(--veo-weight-medium); }
+.scoreMeta { padding-bottom: var(--veo-space-1); }
+.scoreBand {
+  display: inline-block;
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-status-fail-bg);
+  color: var(--veo-status-fail-fg);
+  font-size: var(--veo-font-size-200);
+  font-weight: var(--veo-weight-bold);
+}
+.scoreDelta {
+  margin-top: var(--veo-space-2);
+  font-size: var(--veo-font-size-200);
+  color: var(--veo-ink-300);
+}
+.scoreDelta b { color: var(--veo-signal-300); }
+.scoreDesc {
+  margin-top: var(--veo-space-4);
+  font-size: var(--veo-font-size-200);
+  line-height: var(--veo-line-snug);
+  color: var(--veo-ink-200);
+}
+
+/* 등급 사다리 — 다섯 칸을 다 보인다. 현재 칸만 밝다. */
+.ladder { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--veo-space-1); margin-top: var(--veo-space-4); }
+.ladder div {
+  padding: var(--veo-space-2) var(--veo-space-1);
+  border-radius: var(--veo-radius-sm);
+  background: var(--veo-overlay-soft);
+  text-align: center;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-ink-300);
+  line-height: var(--veo-line-tight);
+}
+.ladder div b { display: block; font-weight: var(--veo-weight-semibold); }
+.ladder div span { font-size: var(--veo-font-size-100); opacity: 0.75; }
+.ladder div[aria-current] {
+  background: var(--veo-status-fail-bg);
+  color: var(--veo-status-fail-fg);
+}
+
+/* 할 일 — 화면에서 제일 먼저 읽히는 덩어리 */
+.todo { margin: var(--veo-space-6) var(--veo-space-4) 0; border-color: var(--veo-color-accent-border); }
+.todoHead {
+  padding: var(--veo-space-4) var(--veo-space-4) var(--veo-space-3);
+  border-bottom: 1px solid var(--veo-color-border);
+  background: var(--veo-color-accent-subtle);
+  border-radius: var(--veo-radius-lg) var(--veo-radius-lg) 0 0;
+}
+.todoHead h2 { font-size: var(--veo-font-size-500); }
+.todoHead p { margin-top: var(--veo-space-1); font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); }
+.todoList li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--veo-space-1) var(--veo-space-3);
+  align-items: center;
+  padding: var(--veo-space-4);
+  border-bottom: 1px solid var(--veo-color-border);
+}
+.todoList li:last-child { border-bottom: 0; }
+.todoList b { font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-semibold); }
+.todoList .who {
+  grid-column: 1 / 2;
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+.gain {
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+  align-self: center;
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-color-accent);
+  color: var(--veo-color-text-on-accent);
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-bold);
+  white-space: nowrap;
+}
+
+/* 영역별 점수 — 분모를 늘 함께 */
+.areas { padding: var(--veo-space-2) var(--veo-space-4) var(--veo-space-4); }
+.areaRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--veo-space-1) var(--veo-space-3);
+  align-items: baseline;
+  padding: var(--veo-space-3) 0;
+  border-bottom: 1px solid var(--veo-color-border);
+}
+.areaRow:last-of-type { border-bottom: 0; }
+.areaRow dt { font-size: var(--veo-font-size-300); }
+.areaRow dd { margin: 0; font-size: var(--veo-font-size-200); font-weight: var(--veo-weight-semibold); }
+.areaRow dd em { font-style: normal; color: var(--veo-color-text-muted); font-weight: var(--veo-weight-regular); }
+
+/* 검사 목록 — 기본은 접힘. 결론만 보이고 근거는 펼쳐야 나온다. */
+.checks .row { border-bottom: 1px solid var(--veo-color-border); }
+.checks .row:last-child { border-bottom: 0; }
+.checks summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: var(--veo-space-3);
+  align-items: center;
+  padding: var(--veo-space-3) var(--veo-space-4);
+  cursor: pointer;
+  list-style: none;
+}
+.checks summary::-webkit-details-marker { display: none; }
+.checks summary::after {
+  content: '+';
+  color: var(--veo-color-text-muted);
+  font-size: var(--veo-font-size-300);
+}
+.checks details[open] summary::after { content: '–'; }
+.checks summary b { font-size: var(--veo-font-size-300); font-weight: var(--veo-weight-medium); }
+.mark {
+  display: grid;
+  place-items: center;
+  width: var(--veo-space-5);
+  height: var(--veo-space-5);
+  border-radius: var(--veo-radius-pill);
+  border: 1px solid;
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-bold);
+}
+.mark[data-v='pass'] { background: var(--veo-status-pass-bg); color: var(--veo-status-pass-fg); border-color: var(--veo-status-pass-border); }
+.mark[data-v='fail'] { background: var(--veo-status-fail-bg); color: var(--veo-status-fail-fg); border-color: var(--veo-status-fail-border); }
+.mark[data-v='warn'] { background: var(--veo-status-warning-bg); color: var(--veo-status-warning-fg); border-color: var(--veo-status-warning-border); border-radius: var(--veo-radius-xs); }
+.mark[data-v='na']   { background: var(--veo-status-na-bg); color: var(--veo-status-na-fg); border-color: var(--veo-status-na-border); border-radius: 0; }
+.mark[data-v='unk']  { background: var(--veo-status-unknown-bg); color: var(--veo-status-unknown-fg); border-color: var(--veo-status-unknown-border); border-style: dashed; }
+.pts { font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); white-space: nowrap; }
+
+.checkBody { padding: 0 var(--veo-space-4) var(--veo-space-4) var(--veo-space-12); }
+.checkBody h3 {
+  margin-top: var(--veo-space-3);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+  letter-spacing: var(--veo-tracking-wide);
+  color: var(--veo-color-text-muted);
+  text-transform: uppercase;
+}
+.checkBody p {
+  margin-top: var(--veo-space-1);
+  font-size: var(--veo-font-size-200);
+  line-height: var(--veo-line-snug);
+  color: var(--veo-color-text);
+}
+.evidence {
+  margin-top: var(--veo-space-2);
+  padding: var(--veo-space-3);
+  border-left: 2px solid var(--veo-color-border-strong);
+  background: var(--veo-color-surface-sunken);
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+  line-height: var(--veo-line-snug);
+  color: var(--veo-color-text-muted);
+  white-space: pre-wrap;
+}
+.fix {
+  margin-top: var(--veo-space-2);
+  padding: var(--veo-space-3);
+  border-radius: var(--veo-radius-sm);
+  background: var(--veo-color-surface-inverse);
+  color: var(--veo-ink-100);
+  font-family: var(--veo-font-mono);
+  font-size: var(--veo-font-size-100);
+  line-height: var(--veo-line-snug);
+  overflow-x: auto;
+  white-space: pre;
+}
+.recheck {
+  display: inline-block;
+  margin-top: var(--veo-space-3);
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border: 1px solid var(--veo-color-border-strong);
+  border-radius: var(--veo-radius-pill);
+  font-size: var(--veo-font-size-100);
+  color: var(--veo-color-text-muted);
+}
+
+/* 상담 */
+.cta {
+  margin: var(--veo-space-8) var(--veo-space-4) 0;
+  padding: var(--veo-space-5);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-accent-subtle);
+  border: 1px solid var(--veo-color-accent-border);
+}
+.cta h2 { font-size: var(--veo-font-size-500); }
+.cta p { margin-top: var(--veo-space-2); font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); line-height: var(--veo-line-snug); }
+.cta button {
+  width: 100%;
+  margin-top: var(--veo-space-4);
+  padding: var(--veo-space-3);
+  border: 0;
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-color-accent);
+  color: var(--veo-color-text-on-accent);
+  font-family: inherit;
+  font-size: var(--veo-font-size-300);
+  font-weight: var(--veo-weight-semibold);
+  cursor: pointer;
+}
+
+
+/* ── 이 배포본에만 있는 겉틀. 화면 자체의 CSS 는 위에서 끝났다. ── */
+html { background: var(--veo-color-bg-subtle); }
+body {
+  margin: 0;
+  padding: var(--veo-space-6) var(--veo-space-5) var(--veo-space-12);
+  background: var(--veo-color-bg-subtle);
+}
+.pageHead { max-width: var(--veo-layout-prose); }
+.pageHead h1 { font-size: var(--veo-font-size-700); }
+.pageHead p { margin-top: var(--veo-space-2); font-size: var(--veo-font-size-300); color: var(--veo-color-text-muted); }
+.gates { display: flex; flex-wrap: wrap; gap: var(--veo-space-2); margin-top: var(--veo-space-4); }
+.gates span {
+  padding: var(--veo-space-1) var(--veo-space-3);
+  border-radius: var(--veo-radius-pill);
+  background: var(--veo-status-pass-bg);
+  border: 1px solid var(--veo-status-pass-border);
+  color: var(--veo-status-pass-fg);
+  font-size: var(--veo-font-size-100);
+  font-weight: var(--veo-weight-semibold);
+}
+.deck { display: flex; flex-wrap: wrap; gap: var(--veo-space-8); margin-top: var(--veo-space-8); }
+.frame { flex: none; width: 480px; max-width: 100%; margin: 0; }
+.frame figcaption { margin-bottom: var(--veo-space-3); }
+.frame figcaption b { display: block; font-size: var(--veo-font-size-500); letter-spacing: var(--veo-tracking-tight); }
+.frame figcaption span { display: block; margin-top: var(--veo-space-1); font-size: var(--veo-font-size-200); color: var(--veo-color-text-muted); }
+/* 480px 폭을 실제로 강제한다 — 화면 안의 반응형 규칙이 이 폭 기준으로 걸리게. */
+.viewport {
+  width: 480px;
+  max-width: 100%;
+  border: 1px solid var(--veo-color-border);
+  border-radius: var(--veo-radius-lg);
+  background: var(--veo-color-bg);
+  box-shadow: var(--veo-shadow-2);
+  overflow: hidden;
+}
+.viewport .sampleFlag { position: static; }
+</style>
+</head>
+<body>
+
+<header class="pageHead">
+  <h1>B안 — 진단서</h1>
+  <p>
+    방향 3안 중 첫째. 파는 것은 <b>신뢰</b>. 폭 480px 기준으로 그렸다.
+    숫자는 지어낸 값이고, 채점 영역·가중치·등급은 실제 명세
+    <b>veo.geo.readiness 1.3.0</b> 에서 그대로 가져왔다.
+  </p>
+  <div class="gates">
+    <span>토큰 우회 0줄</span>
+    <span>hex·rgba·px 글자크기 0개</span>
+    <span>veo/ 코드 수정 0줄</span>
+  </div>
+</header>
+
+<div class="deck">
+<figure class="frame">
+  <figcaption><b>화면 1 — 빈 화면</b><span>지금은 본문 83자. 여기는 채점 기준을 진단 전에 먼저 공개한다.</span></figcaption>
+  <div class="viewport" data-gauge="geo">
+<div class="sampleFlag">
+  <b>샘플</b><span>B안 진단서 · 화면 1/4 · 빈 화면 · 숫자는 지어낸 값</span>
+</div>
+
+<div class="shell">
+
+  <header class="topbar">
+    <span class="wordmark">VEO</span>
+    <a class="topbarLink" href="#">콘솔 →</a>
+  </header>
+
+  <!-- 도구 전환은 여기 한 벌뿐이다. 상단 메뉴에 같은 링크를 또 두지 않는다. -->
+  <nav class="toolSwitch" aria-label="진단 도구">
+    <a href="#">SEO 점수</a>
+    <a href="#" aria-current="page">GEO 점수</a>
+    <a href="#">키워드</a>
+  </nav>
+
+  <section class="hero">
+    <!-- 제목이 화면과 일치한다. 지금 제품은 GEO 페이지에서도 "SEO·GEO" 라고 적혀 있다. -->
+    <h1>GEO 점수 체크</h1>
+    <p class="lede">
+      주소를 넣으면 <b>AI 답변 엔진이 이 페이지를 읽고 인용할 수 있는지</b>를
+      37개 검사로 100점 환산해 드립니다.
+    </p>
+
+    <form class="searchbar" onsubmit="return false">
+      <input type="url" placeholder="https://example.co.kr" aria-label="진단할 주소">
+      <button type="submit">진단</button>
+    </form>
+    <p class="searchNote">로그인 없이 무료 · 보통 20초 · 결과 링크는 7일간 유효</p>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>이 진단이 답하는 것</h2>
+      <p>검색 순위를 예측하지 않습니다. AI 가 이 페이지를 쓸 수 있느냐만 봅니다.</p>
+    </div>
+    <ul class="qList">
+      <li class="card">
+        <span class="qNum">1</span>
+        <div>
+          <b>AI 크롤러가 들어올 수 있나</b>
+          <span>차단·인증·오류로 문 앞에서 막히면 나머지는 의미가 없습니다.</span>
+        </div>
+      </li>
+      <li class="card">
+        <span class="qNum">2</span>
+        <div>
+          <b>들어와서 답을 뽑아낼 수 있나</b>
+          <span>질문에 바로 대응하는 문단이 있는지, 화면에서 글자로 읽히는지 봅니다.</span>
+        </div>
+      </li>
+      <li class="card">
+        <span class="qNum">3</span>
+        <div>
+          <b>그 답을 인용할 근거가 있나</b>
+          <span>주장에 출처가 붙어 있는지, 우리 상호가 하나로 식별되는지 봅니다.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>100점이 어떻게 나뉘나</h2>
+      <p>채점 명세 <b>veo.geo.readiness 1.3.0</b> 의 값 그대로입니다. 진단 전에 먼저 공개합니다.</p>
+    </div>
+
+    <div class="card weights">
+      <dl>
+        <div class="weightRow">
+          <dt>접근·검색 적격성</dt><dd>22.22</dd>
+          <div class="bar"><i style="width:22.22%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>답변 추출성</dt><dd>22.22</dd>
+          <div class="bar"><i style="width:22.22%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>근거·출처 투명성</dt><dd>16.67</dd>
+          <div class="bar"><i style="width:16.67%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>엔터티 명확성·일관성</dt><dd>16.67</dd>
+          <div class="bar"><i style="width:16.67%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>구조화 데이터·메타</dt><dd>11.11</dd>
+          <div class="bar"><i style="width:11.11%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>최신성·변경 신호</dt><dd>11.11</dd>
+          <div class="bar"><i style="width:11.11%"></i></div>
+        </div>
+      </dl>
+      <p class="weightTotal"><span>합계</span><span>100.00</span></p>
+
+      <div class="asideArea">
+        <b>외부 검증 가능성<span class="tagNoScore">점수 없음</span></b>
+        <p>
+          다른 사이트에서 이 사업자가 어떻게 언급되는지 보는 영역입니다.
+          국내 검색 한 곳만으로는 웹 전체를 대표하지 못하고 동명 업체가 섞일 수 있어
+          <b>점수로 확정하지 않고 참고로만</b> 보여 드립니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>결과는 이렇게 나옵니다</h2>
+      <p>점수보다 <b>할 일</b>이 먼저 옵니다. 항목마다 몇 점이 오르는지 함께 드립니다.</p>
+    </div>
+    <div class="card preview">
+      <div class="previewShot">
+        <div class="previewTop">
+          <span class="previewScore">41<small>/100</small></span>
+          <span class="scoreBand">취약</span>
+        </div>
+        <div class="previewTodo">
+          <div><span>답변 문단을 페이지 위쪽에 둔다</span><b>+12점</b></div>
+          <div><span>발행일·수정일을 표시한다</span><b>+8점</b></div>
+          <div><span>대표 주장 3건에 출처를 연결한다</span><b>+5점</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead"><h2>자주 묻는 것</h2></div>
+    <div class="card faq">
+      <details open>
+        <summary>점수가 높으면 AI 가 우리를 추천하나요?</summary>
+        <p>
+          아닙니다. 이 점수는 <b>준비도</b>입니다 — AI 가 우리 페이지를 읽고 쓸 수 있는
+          상태인지까지만 잽니다. 실제로 답변에 등장하는지는 별도로 관측해야 하고,
+          VEO 는 그 둘을 절대 합치지 않습니다.
+        </p>
+      </details>
+      <details>
+        <summary>"해당 없음" 은 0점인가요?</summary>
+        <p>
+          아닙니다. 해당 없는 검사는 <b>분모에서 뺍니다.</b> 블로그가 없는 사이트에
+          블로그 항목으로 감점하면 없는 결함을 만들어 내는 것이 됩니다.
+        </p>
+      </details>
+      <details>
+        <summary>측정 못 한 항목은 어떻게 되나요?</summary>
+        <p>
+          통과와 섞지 않고 <b>측정 불가</b>로 따로 표시하며, 왜 못 쟀는지 사유를 함께 적습니다.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>VEO — 개발 VENOM · 연구 및 방법론 VEO-LAB</p>
+    <dl>
+      <dt>채점 명세</dt><dd>veo.geo.readiness 1.3.0</dd>
+      <dt>검사 항목</dt><dd>37개</dd>
+      <dt>측정 범위</dt><dd>최대 200페이지 · 깊이 4</dd>
+    </dl>
+  </footer>
+
+</div>
+  </div>
+</figure>
+
+<figure class="frame">
+  <figcaption><b>화면 2 — 결과</b><span>점수보다 할 일이 먼저. 근거·고칠 코드는 접어 두고 펼치면 나온다.</span></figcaption>
+  <div class="viewport" data-gauge="geo">
+<div class="sampleFlag">
+  <b>샘플</b><span>B안 진단서 · 화면 2/4 · 결과 · 숫자는 지어낸 값</span>
+</div>
+
+<div class="shell">
+
+  <header class="topbar">
+    <span class="wordmark">VEO</span>
+    <a class="topbarLink" href="#">다시 진단 →</a>
+  </header>
+
+  <p class="subject">
+    <b>good-tour.kr</b>
+    2026년 8월 9일 14:32 측정 · 명세 veo.geo.readiness 1.3.0
+  </p>
+
+  <!-- 결론 한 덩어리: 점수 · 등급 · 변화 · 등급 사다리 전체 -->
+  <section class="scoreHead">
+    <div class="scoreTop">
+      <span class="scoreNum">41<small>/100</small></span>
+      <span class="scoreMeta">
+        <span class="scoreBand">취약</span>
+        <span class="scoreDelta">지난 진단 34점 → <b>+7</b></span>
+      </span>
+    </div>
+    <p class="scoreDesc">접근성 또는 추출성에 광범위한 문제가 있습니다.</p>
+
+    <div class="ladder">
+      <div><b>차단</b><span>0–19</span></div>
+      <div aria-current="true"><b>취약</b><span>20–44</span></div>
+      <div><b>주의</b><span>45–69</span></div>
+      <div><b>양호</b><span>70–84</span></div>
+      <div><b>준비 완료</b><span>85–100</span></div>
+    </div>
+  </section>
+
+  <!-- 화면에서 제일 먼저 읽혀야 하는 것 — 점수가 아니라 할 일 -->
+  <section class="card todo">
+    <div class="todoHead">
+      <h2>양호(70점)까지 — 할 일 3건</h2>
+      <p>이 셋만 하면 <b>+25점</b>. 나머지 34개 검사는 그대로 둬도 됩니다.</p>
+    </div>
+    <ul class="todoList">
+      <li>
+        <b>답변 문단을 페이지 위쪽에 둔다</b>
+        <span class="who">담당 · 마케터 &nbsp;|&nbsp; 답변 추출성</span>
+        <span class="gain">+12점</span>
+      </li>
+      <li>
+        <b>발행일·수정일을 표시한다</b>
+        <span class="who">담당 · 개발자 &nbsp;|&nbsp; 최신성·변경 신호</span>
+        <span class="gain">+8점</span>
+      </li>
+      <li>
+        <b>대표 주장 3건에 출처를 연결한다</b>
+        <span class="who">담당 · 마케터 &nbsp;|&nbsp; 근거·출처 투명성</span>
+        <span class="gain">+5점</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>영역별</h2>
+      <p>얻은 점수와 배점을 늘 함께 적습니다.</p>
+    </div>
+    <div class="card areas">
+      <dl>
+        <div class="areaRow">
+          <dt>접근·검색 적격성</dt><dd>20.4 <em>/ 22.22</em></dd>
+          <div class="bar"><i style="width:92%"></i></div>
+        </div>
+        <div class="areaRow">
+          <dt>엔터티 명확성·일관성</dt><dd>8.1 <em>/ 16.67</em></dd>
+          <div class="bar"><i style="width:49%"></i></div>
+        </div>
+        <div class="areaRow">
+          <dt>답변 추출성</dt><dd>6.2 <em>/ 22.22</em></dd>
+          <div class="bar"><i style="width:28%"></i></div>
+        </div>
+        <div class="areaRow">
+          <dt>근거·출처 투명성</dt><dd>2.8 <em>/ 16.67</em></dd>
+          <div class="bar"><i style="width:17%"></i></div>
+        </div>
+        <div class="areaRow">
+          <dt>구조화 데이터·메타</dt><dd>2.2 <em>/ 11.11</em></dd>
+          <div class="bar"><i style="width:20%"></i></div>
+        </div>
+        <div class="areaRow">
+          <dt>최신성·변경 신호</dt><dd>1.3 <em>/ 11.11</em></dd>
+          <div class="bar"><i style="width:12%"></i></div>
+        </div>
+      </dl>
+      <p class="weightTotal"><span>합계</span><span>41.0 / 100.00</span></p>
+
+      <div class="asideArea">
+        <b>외부 검증 가능성<span class="tagNoScore">점수 없음</span></b>
+        <p>네이버에서 상호 언급 4건 확인. 동명 업체가 섞일 수 있어 점수로 확정하지 않습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>검사 37개</h2>
+      <p>결론만 보입니다. 근거·고칠 코드는 항목을 펼치면 나옵니다.</p>
+    </div>
+
+    <div class="card checks">
+
+      <details class="row" open>
+        <summary>
+          <span class="mark" data-v="fail" aria-hidden="true">✕</span>
+          <b>핵심 질문에 대한 직접적인 답변 문단이 있는가</b>
+          <span class="pts">0 / 8</span>
+        </summary>
+        <div class="checkBody">
+          <h3>무엇이 문제인가</h3>
+          <p>
+            첫 화면에서 글자로 읽히는 본문이 <b>83자</b>입니다. AI 가 인용할 문단을
+            찾지 못하면 이 페이지 대신 다른 곳을 씁니다.
+          </p>
+
+          <h3>근거 — 우리가 실제로 받은 것</h3>
+          <p class="evidence">GET https://good-tour.kr/ → 200
+본문 추출 83자 · 문단 0개
+"강릉 여행의 모든 것 · 예약 문의 033-***-****"</p>
+
+          <h3>이렇게 고칩니다</h3>
+          <pre class="fix">&lt;h2&gt;강릉 당일치기 코스, 어디부터 가나요?&lt;/h2&gt;
+&lt;p&gt;
+  경포대 → 안목해변 → 초당순두부 순서가 가장 짧습니다.
+  총 이동 4.2km, 도보 55분. 주차는 경포대 공영주차장
+  (1일 2,000원)에 한 번만 대면 됩니다.
+&lt;/p&gt;</pre>
+
+          <span class="recheck">고친 뒤 이 항목만 다시 잽니다 · 반영까지 약 1분</span>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="mark" data-v="fail" aria-hidden="true">✕</span>
+          <b>발행일과 수정일이 표시되는가</b>
+          <span class="pts">0 / 6</span>
+        </summary>
+        <div class="checkBody">
+          <h3>무엇이 문제인가</h3>
+          <p>날짜 표기가 없어 AI 가 이 정보를 최신으로 볼 근거가 없습니다.</p>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="mark" data-v="warn" aria-hidden="true">–</span>
+          <b>검증이 필요한 주장에 출처가 연결되는가</b>
+          <span class="pts">2 / 7</span>
+        </summary>
+        <div class="checkBody">
+          <h3>무엇이 문제인가</h3>
+          <p>주장 9건 중 2건에만 출처가 붙어 있습니다.</p>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="mark" data-v="pass" aria-hidden="true">✓</span>
+          <b>HTTP 상태가 정상인가</b>
+          <span class="pts">5 / 5</span>
+        </summary>
+        <div class="checkBody"><h3>확인</h3><p>200 OK · 응답 0.4초</p></div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="mark" data-v="pass" aria-hidden="true">✓</span>
+          <b>인증 없이 콘텐츠에 접근할 수 있는가</b>
+          <span class="pts">5 / 5</span>
+        </summary>
+        <div class="checkBody"><h3>확인</h3><p>로그인 벽 없음</p></div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="mark" data-v="unk" aria-hidden="true">?</span>
+          <b>구조화 데이터가 유효하게 파싱되는가</b>
+          <span class="pts">측정 불가</span>
+        </summary>
+        <div class="checkBody">
+          <h3>왜 못 쟀나</h3>
+          <p>
+            자바스크립트로 나중에 넣는 JSON-LD 라 3초 안에 확정되지 않았습니다.
+            <b>통과도 실패도 아니며, 이 항목은 분모에서 뺐습니다.</b>
+          </p>
+        </div>
+      </details>
+
+      <details class="row">
+        <summary>
+          <span class="mark" data-v="na" aria-hidden="true">·</span>
+          <b>제품 가격 정보가 구조화되어 있는가</b>
+          <span class="pts">해당 없음</span>
+        </summary>
+        <div class="checkBody">
+          <h3>왜 해당 없나</h3>
+          <p>판매 페이지가 없는 사이트입니다. 없는 결함으로 감점하지 않습니다.</p>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>이 3건, 저희가 해도 됩니다</h2>
+    <p>연락처만 남기시면 담당자가 확인 후 연락드립니다. 광고 수신 동의는 받지 않습니다.</p>
+    <button type="button">상담 요청하기</button>
+  </section>
+
+  <footer class="foot">
+    <p>VEO 점수는 검색 순위를 예측하거나 보장하지 않습니다. AI 답변 엔진이 사이트를 읽을 수 있는 기술·구조 준비도입니다.</p>
+    <dl>
+      <dt>측정 시각</dt><dd>2026-08-09 14:32 KST</dd>
+      <dt>채점 명세</dt><dd>veo.geo.readiness 1.3.0</dd>
+      <dt>분모에서 뺀 항목</dt><dd>2개 (측정 불가 1 · 해당 없음 1)</dd>
+    </dl>
+  </footer>
+
+</div>
+  </div>
+</figure>
+</div>
+
+</body>
+</html>

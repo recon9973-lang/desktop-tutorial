@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko" data-gauge="geo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B안 · GEO 점수 체크 — 빈 화면</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../base.css">
+<link rel="stylesheet" href="clinical.css">
+</head>
+<body>
+
+<div class="sampleFlag">
+  <b>샘플</b><span>B안 진단서 · 화면 1/4 · 빈 화면 · 숫자는 지어낸 값</span>
+</div>
+
+<div class="shell">
+
+  <header class="topbar">
+    <span class="wordmark">VEO</span>
+    <a class="topbarLink" href="#">콘솔 →</a>
+  </header>
+
+  <!-- 도구 전환은 여기 한 벌뿐이다. 상단 메뉴에 같은 링크를 또 두지 않는다. -->
+  <nav class="toolSwitch" aria-label="진단 도구">
+    <a href="#">SEO 점수</a>
+    <a href="#" aria-current="page">GEO 점수</a>
+    <a href="#">키워드</a>
+  </nav>
+
+  <section class="hero">
+    <!-- 제목이 화면과 일치한다. 지금 제품은 GEO 페이지에서도 "SEO·GEO" 라고 적혀 있다. -->
+    <h1>GEO 점수 체크</h1>
+    <p class="lede">
+      주소를 넣으면 <b>AI 답변 엔진이 이 페이지를 읽고 인용할 수 있는지</b>를
+      37개 검사로 100점 환산해 드립니다.
+    </p>
+
+    <form class="searchbar" onsubmit="return false">
+      <input type="url" placeholder="https://example.co.kr" aria-label="진단할 주소">
+      <button type="submit">진단</button>
+    </form>
+    <p class="searchNote">로그인 없이 무료 · 보통 20초 · 결과 링크는 7일간 유효</p>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>이 진단이 답하는 것</h2>
+      <p>검색 순위를 예측하지 않습니다. AI 가 이 페이지를 쓸 수 있느냐만 봅니다.</p>
+    </div>
+    <ul class="qList">
+      <li class="card">
+        <span class="qNum">1</span>
+        <div>
+          <b>AI 크롤러가 들어올 수 있나</b>
+          <span>차단·인증·오류로 문 앞에서 막히면 나머지는 의미가 없습니다.</span>
+        </div>
+      </li>
+      <li class="card">
+        <span class="qNum">2</span>
+        <div>
+          <b>들어와서 답을 뽑아낼 수 있나</b>
+          <span>질문에 바로 대응하는 문단이 있는지, 화면에서 글자로 읽히는지 봅니다.</span>
+        </div>
+      </li>
+      <li class="card">
+        <span class="qNum">3</span>
+        <div>
+          <b>그 답을 인용할 근거가 있나</b>
+          <span>주장에 출처가 붙어 있는지, 우리 상호가 하나로 식별되는지 봅니다.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>100점이 어떻게 나뉘나</h2>
+      <p>채점 명세 <b>veo.geo.readiness 1.3.0</b> 의 값 그대로입니다. 진단 전에 먼저 공개합니다.</p>
+    </div>
+
+    <div class="card weights">
+      <dl>
+        <div class="weightRow">
+          <dt>접근·검색 적격성</dt><dd>22.22</dd>
+          <div class="bar"><i style="width:22.22%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>답변 추출성</dt><dd>22.22</dd>
+          <div class="bar"><i style="width:22.22%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>근거·출처 투명성</dt><dd>16.67</dd>
+          <div class="bar"><i style="width:16.67%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>엔터티 명확성·일관성</dt><dd>16.67</dd>
+          <div class="bar"><i style="width:16.67%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>구조화 데이터·메타</dt><dd>11.11</dd>
+          <div class="bar"><i style="width:11.11%"></i></div>
+        </div>
+        <div class="weightRow">
+          <dt>최신성·변경 신호</dt><dd>11.11</dd>
+          <div class="bar"><i style="width:11.11%"></i></div>
+        </div>
+      </dl>
+      <p class="weightTotal"><span>합계</span><span>100.00</span></p>
+
+      <div class="asideArea">
+        <b>외부 검증 가능성<span class="tagNoScore">점수 없음</span></b>
+        <p>
+          다른 사이트에서 이 사업자가 어떻게 언급되는지 보는 영역입니다.
+          국내 검색 한 곳만으로는 웹 전체를 대표하지 못하고 동명 업체가 섞일 수 있어
+          <b>점수로 확정하지 않고 참고로만</b> 보여 드립니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead">
+      <h2>결과는 이렇게 나옵니다</h2>
+      <p>점수보다 <b>할 일</b>이 먼저 옵니다. 항목마다 몇 점이 오르는지 함께 드립니다.</p>
+    </div>
+    <div class="card preview">
+      <div class="previewShot">
+        <div class="previewTop">
+          <span class="previewScore">41<small>/100</small></span>
+          <span class="scoreBand">취약</span>
+        </div>
+        <div class="previewTodo">
+          <div><span>답변 문단을 페이지 위쪽에 둔다</span><b>+12점</b></div>
+          <div><span>발행일·수정일을 표시한다</span><b>+8점</b></div>
+          <div><span>대표 주장 3건에 출처를 연결한다</span><b>+5점</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sectionHead"><h2>자주 묻는 것</h2></div>
+    <div class="card faq">
+      <details open>
+        <summary>점수가 높으면 AI 가 우리를 추천하나요?</summary>
+        <p>
+          아닙니다. 이 점수는 <b>준비도</b>입니다 — AI 가 우리 페이지를 읽고 쓸 수 있는
+          상태인지까지만 잽니다. 실제로 답변에 등장하는지는 별도로 관측해야 하고,
+          VEO 는 그 둘을 절대 합치지 않습니다.
+        </p>
+      </details>
+      <details>
+        <summary>"해당 없음" 은 0점인가요?</summary>
+        <p>
+          아닙니다. 해당 없는 검사는 <b>분모에서 뺍니다.</b> 블로그가 없는 사이트에
+          블로그 항목으로 감점하면 없는 결함을 만들어 내는 것이 됩니다.
+        </p>
+      </details>
+      <details>
+        <summary>측정 못 한 항목은 어떻게 되나요?</summary>
+        <p>
+          통과와 섞지 않고 <b>측정 불가</b>로 따로 표시하며, 왜 못 쟀는지 사유를 함께 적습니다.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>VEO — 개발 VENOM · 연구 및 방법론 VEO-LAB</p>
+    <dl>
+      <dt>채점 명세</dt><dd>veo.geo.readiness 1.3.0</dd>
+      <dt>검사 항목</dt><dd>37개</dd>
+      <dt>측정 범위</dt><dd>최대 200페이지 · 깊이 4</dd>
+    </dl>
+  </footer>
+
+</div>
+</body>
+</html>
