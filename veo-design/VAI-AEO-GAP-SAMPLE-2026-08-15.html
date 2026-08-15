@@ -1,0 +1,188 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VAI AEO — 빈 곳 3개 시안 (실측 데이터)</title><style>
+:root{--bg:#04121a;--panel:#0a2635;--panel2:#0d2c3d;--line:#12384c;--line2:#1a4a63;
+--ink:#e6f1f5;--dim:#7d99a6;--dim2:#6f92a2;
+--teal:#2fbcaf;--beam:#8b7ff0;--beam3:#b3aaf7;--beamdk:#241d54;
+--green:#7fd6a4;--amber:#f0c05a;--red:#e8887c;--miss:#7a2e24;
+--mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace}
+*{margin:0;box-sizing:border-box}
+body{font-family:'Pretendard Variable',Pretendard,'Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--ink);font-size:13.5px;line-height:1.55}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 20px 60px}
+h1{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.note{font-family:var(--mono);font-size:11px;color:var(--dim);margin:4px 0 16px}
+.note b{color:var(--amber)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-top:14px}
+.ph{display:flex;align-items:baseline;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--line)}
+.ph h2{font-size:11.5px;font-weight:700;letter-spacing:.05em;color:var(--dim)}
+.ph .f{font-size:11px;color:var(--teal);cursor:pointer}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{font-size:10px;font-weight:600;letter-spacing:.05em;color:var(--dim2);text-align:left;padding:7px 14px;border-bottom:1px solid var(--line2)}
+.tbl td{padding:7px 14px;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl th.n,.tbl td.n{text-align:right;font-family:var(--mono)}
+.tbl tr:hover td{background:var(--panel2)}
+.stamp{padding:9px 16px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--dim2);line-height:1.7}
+.chip{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:3px;font-family:var(--mono)}
+.c-own{background:var(--beamdk);color:var(--beam3)}
+.c-comp{background:#2b2b33;color:#c9c4bd}
+.c-3rd{background:#12303f;color:var(--dim2)}
+.c-unk{background:#3d3213;color:var(--amber)}
+.c-target{background:#3d1f1a;color:var(--red)}
+.eng{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.btn-s{border:1px solid var(--line2);background:transparent;color:var(--beam3);font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer}
+.ico{color:var(--dim2);font-size:11px;cursor:pointer;padding:0 3px}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;align-items:start}
+@media(max-width:980px){.grid2{grid-template-columns:1fr}}
+.cell{display:inline-block;width:26px;height:15px;border-radius:3px;margin-left:4px}
+.y{background:var(--beam)}.n2{background:var(--miss)}.na2{background:#22404f}
+.qrow{display:flex;align-items:center;padding:8px 16px;border-top:1px solid var(--line);cursor:pointer}
+.qrow:hover{background:var(--panel2)}
+.qrow .q{flex:1;font-size:12.5px}
+.qrow .cnt{font-family:var(--mono);font-size:11.5px;color:var(--dim);width:52px;text-align:right;margin-right:10px}
+.open{background:var(--panel2);border-top:1px dashed var(--line2);padding:12px 16px 12px 28px;font-size:12px}
+.open .line{margin:3px 0;color:var(--dim)}
+.open .line b{color:var(--ink);font-weight:600}
+.open .rx{margin-top:8px;padding:8px 12px;border-left:2px solid var(--beam);background:var(--panel);font-size:12px;border-radius:0 6px 6px 0}
+.tag{font-size:9.5px;font-family:var(--mono);color:var(--dim2);border:1px solid var(--line2);border-radius:9px;padding:1px 7px;margin-left:6px}
+.warn2{color:var(--amber);font-family:var(--mono);font-size:10.5px}
+.toggle{display:inline-flex;border:1px solid var(--line2);border-radius:7px;overflow:hidden;font-size:11px}
+.toggle span{padding:4px 12px;cursor:pointer;color:var(--dim)}
+.toggle .on{background:var(--beamdk);color:var(--beam3);font-weight:700}
+</style></head><body><div class="wrap">
+
+<h1>AEO 빈 곳 시안 — 4장 (참사랑한의원 · 첫 관측 실측)</h1>
+<p class="note">veo-design 연구 산출물 · v3 디자인 언어(docs/design/2026-08-16-v3-04) 를 따름 ·
+<b>숫자는 전부 2026-08-15 첫 관측 실측값</b> (답변 135 · 자사 언급 25 · 인용 656건 · 도메인 99) ·
+경쟁 이름만 ○○ 로 가림 — 운영 DB 에 실명 있음</p>
+
+<!-- ═══ 빈곳③ 우리가 빠진 답변엔 누가 나오나 ═══ -->
+<div class="panel">
+<div class="ph"><h2>우리가 빠진 답변엔 누가 나오나 <span class="tag">표면 이름 기준 · 측정 아님</span></h2><span class="f">전체 보기 →</span></div>
+<table class="tbl"><thead><tr>
+<th>이름 (표면)</th><th class="n">빠진 답변</th><th class="n">동반 등장</th><th>주로 나온 질문</th><th></th></tr></thead><tbody>
+<tr><td>○○한의원 <span class="eng">mokhuri.com 연결 추정</span></td><td class="n" style="color:var(--beam3)">12/110</td><td class="n">2/25</td><td style="font-size:12px">교통사고 후유증 <span class="warn2">★빈 질문</span></td><td class="n"><button class="btn-s">경쟁사로 등록 →</button></td></tr>
+<tr><td>○○한방병원 <span class="eng">전국구 · jaseng.co.kr</span></td><td class="n" style="color:var(--beam3)">3/110</td><td class="n">0/25</td><td style="font-size:12px">한방 재활</td><td class="n"><button class="btn-s">경쟁사로 등록 →</button></td></tr>
+<tr><td>○○한의원 (창원)</td><td class="n" style="color:var(--beam3)">9/110</td><td class="n">1/25</td><td style="font-size:12px">침 잘 놓는 곳</td><td class="n"><button class="btn-s">경쟁사로 등록 →</button></td></tr>
+<tr><td style="color:var(--dim)">▽▽한의원</td><td class="n">1/110</td><td class="n" style="color:var(--dim)">3/25</td><td style="font-size:12px;color:var(--dim)">마산 교통사고 — 동반&gt;빠진: 나열 동급, 탈환 대상 아님</td><td class="n"></td></tr>
+</tbody></table>
+<div class="stamp">빠진 답변 = 자사 미언급 110/135건 · 검토 대기 답변은 분모 제외(이번 회차 0건) ·
+「표면 기준」= 이름이 글자로 나온 횟수 — 동명 업체 미구분 · 자사 확정 언급률과 나란한 점유율 막대는 등록(신원 대칭) 후에만 ·
+이 표는 내부 판단용 — 병원 광고물에 타 기관 비교 게시는 의료법 제56조 금지</div>
+</div>
+
+<div class="grid2"><div>
+
+<!-- ═══ 빈곳② 출처 카드 1층 — 목록 ═══ -->
+<div class="panel" style="margin-top:14px">
+<div class="ph"><h2>AI 가 근거로 쓴 출처 — 656건 · 도메인 99</h2>
+<span class="toggle"><span class="on">목록</span><span>유형으로 묶기</span></span></div>
+<div style="padding:8px 16px 0;font-size:11px;color:var(--dim2)">
+필터: <span class="toggle" style="margin-left:6px"><span class="on">전체 135건</span><span>우리가 빠진 답변(110건)만</span></span></div>
+<table class="tbl"><thead><tr>
+<th>출처</th><th class="n">인용</th><th>엔진</th><th class="n">평균 순번</th><th>귀속</th><th></th></tr></thead><tbody>
+<tr><td style="font-family:var(--mono);font-size:11.5px">chamsarang1075.com/교통사고-후유증…</td><td class="n">19</td><td class="eng">Px·GPT·xAI·Gm</td><td class="n" style="color:var(--beam3)">1.4위</td><td><span class="chip c-own">자사</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">chamsarang1075.com/참사랑한의원…</td><td class="n">19</td><td class="eng">Px·xAI</td><td class="n" style="color:var(--beam3)">1.6위</td><td><span class="chip c-own">자사</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">naver.com (블로그·지도 57건 묶음)</td><td class="n">57</td><td class="eng">Px·xAI</td><td class="n">8.8위</td><td><span class="chip c-3rd">제3자</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">a-ha.io (지식 Q&amp;A)</td><td class="n">26</td><td class="eng">Cl·Gm·Px</td><td class="n">7.5위</td><td><span class="chip c-3rd">제3자</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">mokhuri.com (○○한의원 자체 사이트)</td><td class="n">27</td><td class="eng">Cl·Gm·Px·xAI</td><td class="n">9.4위</td><td><span class="chip c-comp">경쟁*</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">jaseng.co.kr</td><td class="n">15</td><td class="eng">Cl·Gm</td><td class="n" style="color:var(--beam3)">3.5위</td><td><span class="chip c-comp">경쟁*</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">donga.com (기사)</td><td class="n">11</td><td class="eng">Gm·Px·xAI</td><td class="n" style="color:var(--beam3)">2.2위</td><td><span class="chip c-3rd">제3자</span></td><td class="n"><span class="ico">⧉</span><span class="ico">↗</span></td></tr>
+<tr><td style="font-family:var(--mono);font-size:11.5px">bit.ly/3xk… (단축 URL)</td><td class="n">1</td><td class="eng">Cl</td><td class="n" style="color:var(--dim2)">—</td><td><span class="chip c-unk">미확인</span></td><td class="n"><span class="ico">⧉</span></td></tr>
+</tbody></table>
+<div class="stamp">줄마다 ⧉ 복사 · ↗ 새창 (GPTO 1편 ④ 문법) · 평균 순번 3.5위 이내는 보라 강조 — 앞 순번 인용이 답변 본문을 만든다 ·
+* 경쟁 귀속은 U7 에서 등록된 브랜드의 citations.competitor_id 만 — 이름 유사 추정 귀속 금지 · 미확인(단축 URL)은 풀지 않고 그대로 둔다</div>
+</div>
+
+<!-- ═══ 빈곳① 질문 × AI 격자 + 빈 질문 펼침 ═══ -->
+<div class="panel" style="margin-top:14px">
+<div class="ph"><h2>질문별 언급 — 빈 질문부터 <span class="tag">행 클릭 = 처방 펼침</span></h2></div>
+<div class="qrow" style="border-top:0"><span class="q" style="color:var(--dim2);font-size:10px">질문 (언급 적은 순)</span><span class="cnt" style="font-size:9px">언급</span><span style="font-size:9px;color:var(--dim2);font-family:var(--mono)">GPT·NAV·PPX·CLD·GEM·GRK</span></div>
+<div class="qrow"><span class="q">교통사고 후유증 잘 보는 한의원은? <span class="warn2">★빈 질문</span></span><span class="cnt">0/27</span><span><i class="cell n2"></i><i class="cell na2"></i><i class="cell n2"></i><i class="cell n2"></i><i class="cell n2"></i><i class="cell n2"></i></span></div>
+<div class="open">
+<div class="line">이 질문의 답변에 나온 이름 — <b>○○한의원 6회</b> · ○○한방병원 2회 <span class="tag">빈곳③ 데이터</span></div>
+<div class="line">이 질문에서 AI 가 인용한 출처 — <b>지식 Q&amp;A(a-ha.io) 2 · 카페 글 1 · mokhuri.com 1</b> <span class="tag">빈곳② 데이터</span></div>
+<div class="rx">탈환 재료: 지면은 ○○한의원이 갖고 있고, 근거 문서는 문답형이 많다 —
+우리 문서가 실릴 자리는 <b>문답형(Q&amp;A) · 지역 카페</b> 유형이다. <span style="color:var(--dim2)">(유형 근거: 이 질문의 인용 출처 그대로 — 지어낸 이유 아님)</span>
+&nbsp; <button class="btn-s">인용 문서 해부 보기 →</button></div>
+</div>
+<div class="qrow"><span class="q">한방 재활 잘하는 곳 알려줘 <span class="warn2">★빈 질문</span></span><span class="cnt">0/27</span><span><i class="cell n2"></i><i class="cell n2"></i><i class="cell n2"></i><i class="cell na2"></i><i class="cell n2"></i><i class="cell n2"></i></span></div>
+<div class="qrow"><span class="q">야간 진료 되는 한의원 있어? <span class="warn2">★빈 질문</span></span><span class="cnt">0/27</span><span><i class="cell n2"></i><i class="cell n2"></i><i class="cell n2"></i><i class="cell n2"></i><i class="cell na2"></i><i class="cell n2"></i></span></div>
+<div class="qrow"><span class="q">월영동 침 잘 놓는 곳</span><span class="cnt">11/27</span><span><i class="cell y"></i><i class="cell y"></i><i class="cell y"></i><i class="cell n2"></i><i class="cell y"></i><i class="cell n2"></i></span></div>
+<div class="qrow"><span class="q">마산 교통사고 한의원 추천</span><span class="cnt">14/27</span><span><i class="cell y"></i><i class="cell y"></i><i class="cell y"></i><i class="cell y"></i><i class="cell n2"></i><i class="cell y"></i></span></div>
+<div class="stamp">보라 = 등장 · 검붉음 = 재서 미등장 · 청회색 = 답변 없음(분모 제외 · 0 아님) ·
+★빈 질문 = 어느 AI 도 우리를 언급 안 함 — 인용 출처에 우리 문서가 없다는 뜻이므로 <b>움직이기 쉬운 자리</b> ·
+정렬 고정: 언급 오름차순(빈 질문 위) · [실측] 일반 질문 3개 전부 0/27 — 지역 표지 없는 질문의 한계(질문 세트 v2 에 반영)</div>
+</div>
+
+</div><div>
+
+<!-- ═══ 빈곳② 출처 카드 2층 — 유형 묶음 ═══ -->
+<div class="panel" style="margin-top:14px">
+<div class="ph"><h2>유형으로 묶기 — 배포 목표 찾기</h2><span class="tag">2층 (전환 상태)</span></div>
+<table class="tbl"><thead><tr>
+<th>유형</th><th class="n">인용</th><th class="n">우리 문서</th><th class="n">빠진 답변에서</th><th></th></tr></thead><tbody>
+<tr><td>지식 Q&amp;A <span class="eng">a-ha.io 외</span></td><td class="n">26</td><td class="n" style="color:var(--red)">0</td><td class="n">22</td><td><span class="chip c-target">배포 목표 1순위</span></td></tr>
+<tr><td>플랫폼 블로그 <span class="eng">naver·tistory</span></td><td class="n">80</td><td class="n" style="color:var(--amber)">4</td><td class="n">55</td><td><span class="chip c-target">배포 목표</span></td></tr>
+<tr><td>경쟁 병원 사이트</td><td class="n">96</td><td class="n" style="color:var(--dim2)">—</td><td class="n">73</td><td><span class="eng">우리가 실릴 수 없는 유형</span></td></tr>
+<tr><td>뉴스 <span class="eng">donga·joins</span></td><td class="n">19</td><td class="n" style="color:var(--red)">0</td><td class="n">17</td><td><span class="chip c-target">배포 목표</span></td></tr>
+<tr><td>병원 디렉토리 <span class="eng">modoodoc 외</span></td><td class="n">18</td><td class="n" style="color:var(--green)">6</td><td class="n">9</td><td><span class="eng">보강</span></td></tr>
+<tr><td>영상 <span class="eng">youtube</span></td><td class="n">32</td><td class="n" style="color:var(--red)">0</td><td class="n">32</td><td><span class="eng">판단 보류</span></td></tr>
+<tr><td style="color:var(--dim2)">미분류 (도메인 7)</td><td class="n">14</td><td class="n">—</td><td class="n">9</td><td><span class="eng">규칙표에 없음 — 그대로 둠</span></td></tr>
+</tbody></table>
+<div class="stamp">배포 목표 = AI 가 근거로 쓰는 유형 × 우리 문서 0~적음 × 빠진 답변 집중 ·
+유형은 도메인 규칙표로만 분류 — 없는 도메인은 미분류 유지(지어내지 않음) ·
+콘텐츠 발행은 의료 검수 관문 설계 후 (U-plan §U4 주의)</div>
+</div>
+
+<!-- ═══ U9 인용 문서 해부 ═══ -->
+<div class="panel" style="margin-top:14px;border-color:var(--line2)">
+<div class="ph"><h2>인용 문서 해부 — 「교통사고 후유증」 질문에서 인용된 4건
+<span class="tag">진입: 빈 질문 펼침의 「해부 보기」 · 출처 줄의 문서 아이콘</span></h2>
+<span class="f">닫기 ✕</span></div>
+
+<table class="tbl"><thead><tr>
+<th>구조 요소</th>
+<th style="text-align:center">a-ha.io<br><span class="eng">Q&amp;A · 2회 인용</span></th>
+<th style="text-align:center">카페 글<br><span class="eng">1회 인용</span></th>
+<th style="text-align:center">mokhuri.com<br><span class="eng">경쟁 · 1회 인용</span></th>
+<th style="text-align:center;border-left:2px solid var(--beam)">우리 글<br><span class="eng">이 질문 인용 0</span></th>
+</tr></thead><tbody>
+<tr><td>질문형 제목</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--dim2)">✗</td><td style="text-align:center;border-left:2px solid var(--beamdk)"><span style="color:var(--amber)">✗ ⚠</span></td></tr>
+<tr><td>첫 문단 직답</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--dim2)">✗</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;border-left:2px solid var(--beamdk)"><span style="color:var(--amber)">✗ ⚠</span></td></tr>
+<tr><td>문답(FAQ) 구획</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--dim2)">✗</td><td style="text-align:center;color:var(--dim2)">✗</td><td style="text-align:center;border-left:2px solid var(--beamdk)"><span style="color:var(--dim2)">✗</span></td></tr>
+<tr><td>지역 표지 (마산·창원)</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;border-left:2px solid var(--beamdk);color:var(--green)">✓</td></tr>
+<tr><td>비용·기간 숫자</td><td style="text-align:center;color:var(--dim2)">✗</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;color:var(--green)">✓</td><td style="text-align:center;border-left:2px solid var(--beamdk)"><span style="color:var(--amber)">✗ ⚠</span></td></tr>
+<tr><td>본문 길이</td><td class="n" style="text-align:center">1,800자</td><td class="n" style="text-align:center">950자</td><td class="n" style="text-align:center">2,400자</td><td class="n" style="text-align:center;border-left:2px solid var(--beamdk)">1,200자</td></tr>
+<tr><td style="color:var(--dim2)">robots 차단 문서 1건</td><td colspan="4" style="text-align:center;color:var(--dim2);font-family:var(--mono);font-size:11px">못 잼 — VEOBot 차단 · 표에서 제외하고 이렇게 적는다 (0 아님)</td></tr>
+</tbody></table>
+
+<div style="padding:10px 16px;border-top:1px solid var(--line)">
+<div style="font-size:11px;color:var(--dim2);margin-bottom:6px">발췌 — 문서당 1문장 + 원문 링크 (전문은 저장·표시하지 않는다)</div>
+<div style="font-size:12px;color:var(--dim);font-style:italic">"교통사고 후유증은 사고 직후보다 며칠 뒤 나타나는 경우가 많아 조기 침·추나 병행이…" <span class="eng">— a-ha.io ↗</span></div>
+</div>
+
+<div style="margin:10px 16px;padding:10px 14px;border-left:2px solid var(--beam);background:var(--panel2);border-radius:0 6px 6px 0;font-size:12.5px">
+<b style="color:var(--beam3)">이 질문의 글 설계 체크리스트</b> <span class="eng">(⚠ 요소를 그대로 목록화 — 지어낸 항목 없음)</span><br>
+<span style="color:var(--dim)">□ 질문형 제목 &nbsp; □ 첫 문단 직답 &nbsp; □ 비용·기간 숫자 &nbsp; ✓ 지역 표지(이미 있음)</span>
+<button class="btn-s" style="margin-left:10px">콘텐츠 브리프로 복사</button>
+</div>
+
+<div class="stamp">⚠ = 인용된 문서 다수가 갖고 있는데 우리 글에 없는 요소 · <b>배치 예시 — 해부 크롤은 아직 안 돌림</b>(✓✗ 는 예시, 656건·도메인은 실측) ·
+✎ 구조 참고용 — 문장 복사는 저작권·의료광고 심의 위반 · 크롤은 남의 서버 관문(settings 가드) 경유 · 캐시 우선 · 회차 인용 URL 만</div>
+</div>
+
+<!-- 표현 문법 요약 -->
+<div class="panel" style="margin-top:14px">
+<div class="ph"><h2>이 시안이 지키는 표현 문법</h2></div>
+<div style="padding:12px 16px;font-size:12px;color:var(--dim);line-height:2">
+① 모든 비율에 분모 — <b style="color:var(--ink)">12/110</b>, 분모 없는 % 없음<br>
+② 색은 의미에만 — 경쟁사는 전부 <span class="chip c-comp">중립 회색</span>, 30색점 장식 없음<br>
+③ 미등장(검붉음)과 답변 없음(청회색)은 <b style="color:var(--ink)">다른 사실 · 다른 색</b><br>
+④ 표면 기준과 확정 검출을 문구로 가름 — 점유율 막대는 등록 후에만<br>
+⑤ 각주(stamp)는 접지 않음 · 처방 문구에는 근거를 붙임<br>
+⑥ 강조 패널 없음 — 헤드라인(기존→현재)은 v3-04 에 이미 있고, 이 카드들은 그 아래 증거층
+</div>
+</div>
+
+</div></div>
+</div></body></html>
