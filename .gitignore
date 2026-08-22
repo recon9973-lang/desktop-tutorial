@@ -14,3 +14,6 @@ venom-wordpress/preview/chatbot/data/eval/questions-full.jsonl
 
 # IG 카드 렌더 임시 산출물
 persona-nami/ig/*.html
+
+# unlazy 스킬 훅 상태(로컬 전용)
+.unlazy-hook-state.json
