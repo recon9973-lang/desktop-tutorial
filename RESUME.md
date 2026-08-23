@@ -1,9 +1,9 @@
-# RESUME — 다음 세션 이어가기 (2026-08-23 · s08 배포 대기)
+# RESUME — 다음 세션 이어가기 (2026-08-23 · s08 마감 · 배포만 남음)
 
-> 새 세션은 이 파일을 **가장 먼저** 읽는다. 이번 세션 상세는
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 상세는
 > `docs/session-logs/2026-08-23-s08.md`, 현황은 `PROJECT_STATE.md`.
 
-## 🚀 지금 할 일은 **배포** — 런북이 따로 있다
+## 🚀 남은 일은 **배포 하나뿐이다**
 
 > ### 👉 [`docs/ANSEO-배포-인계.md`](docs/ANSEO-배포-인계.md)
 >
@@ -11,13 +11,16 @@
 > 샌드박스 재구성. **배포 이야기는 그 문서 하나만 읽으면 된다.**
 
 ```
-veo-platform  claude/anseo-ui-v3   41b17a9   판 0.3.303 · 0.3.304   2커밋
-main                               b5e35b6   판 0.3.302             ← 아직 안 나감
+veo-platform  claude/anseo-ui-v3  41b17a9  판 0.3.303 · 0.3.304  미배포 2커밋
+              main                b5e35b6  판 0.3.302
 ```
 
-**나갈 그 커밋에서 preflight 전체 초록**(ci-local 6,572 · 웹 1,843 · build · smoke ·
-계약 판 일치). **이 방에서는 배포를 끝까지 못 한다** — `gh` 가 없고 운영 API curl 이
-403 이다. `gh` 있는 방에서 `make deploy`.
+**나갈 그 커밋에서 preflight 전체 초록** — `준비됨 — make deploy 로 나갈 수 있습니다.`
+(ci-local 6,572 · test-db · typecheck · lint · 웹 1,843 · build · smoke · 계약 판 일치)
+
+**이 방에서는 배포를 끝까지 못 한다** — `gh` 가 없고 운영 API curl 이 403 이다.
+`gh` 있는 방에서 `make deploy`. **preflight ⑤ 의 「오늘 CI 0건 · 상한 2회 남음」은
+측정값이 아니다**(gh 가 없어 나온 0 · 바로 윗줄이 「못 읽었다」).
 
 ## ✅ ANSEO 개편(요구 9건)은 이미 나갔다 — 다시 배포하지 말 것
 
@@ -66,12 +69,16 @@ desktop-tutorial  문서. 가지 claude/anseo-screenshot-analysis-9qkxno
 ## 대기/차단 (사용자 액션)
 
 - **veo-platform 0.3.303~0.3.304 배포** — 준비 끝. `gh` 있는 방에서 `make deploy`.
-- **이월은 하나만 남았다** — #36 GSC env 입력(사장님이 Vercel 에 값 넣고 Redeploy).
-  - `#37 erp-v1 PR` 은 **이미 라이브였다**(2026-08-23 실측). `erp-v1` 의
-    `EditorClient.tsx` 에 `exportZip`(1x·2x) · `exportPdf` · 「PDF 전체 페이지」가
-    다 있다. 옛 커밋 `7cbb5f7` 은 **다른 구현**이고 311 커밋 뒤처져 있어, 합치면
-    라이브가 되레 내려간다. 목록에서 뺀다.
-  - `#40 misojin v3 Drive` 는 **원본이 어디에도 안 남아 있어** 사장님 지시로 지웠다.
+- **이월은 전부 정리됐다** (2026-08-23 실측 + 사장님 판단).
+  - `#36 GSC env` — **접었다.** 사장님 판단: *"이 서비스는 거래처 관리를 위한거니까
+    거래처마다 다 해야하는데 복잡하니까, 나중에 필요하면 말할게."*
+    코드가 그 판단을 뒷받침한다 — `diagnose.js` 의 `domainMatches` 가 **등록된 속성
+    하나만** 재고, 다른 도메인은 「관리(연결) 고객만 실측」으로 빠진다. 거래처마다
+    그쪽 Search Console 에 우리 서비스계정을 초대받아야 한다.
+    **코드는 그대로 둔다** — 꺼져 있어도 조용히 강등될 뿐 오류가 아니다.
+    필요해지면 `venom-wordpress/preview/docs/GSC_SETUP.md` 부터 본다.
+  - `#37 erp-v1 PR` — 이미 라이브였다(`erp-v1` 에 `exportZip`·`exportPdf` 다 있음).
+  - `#40 misojin v3 Drive` — 원본이 없어 지웠다.
 
 ## 주의·제약 (반드시)
 
