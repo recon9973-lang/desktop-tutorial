@@ -66,7 +66,12 @@ desktop-tutorial  문서. 가지 claude/anseo-screenshot-analysis-9qkxno
 ## 대기/차단 (사용자 액션)
 
 - **veo-platform 0.3.303~0.3.304 배포** — 준비 끝. `gh` 있는 방에서 `make deploy`.
-- 이월: #36 GSC env 입력 · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
+- **이월은 하나만 남았다** — #36 GSC env 입력(사장님이 Vercel 에 값 넣고 Redeploy).
+  - `#37 erp-v1 PR` 은 **이미 라이브였다**(2026-08-23 실측). `erp-v1` 의
+    `EditorClient.tsx` 에 `exportZip`(1x·2x) · `exportPdf` · 「PDF 전체 페이지」가
+    다 있다. 옛 커밋 `7cbb5f7` 은 **다른 구현**이고 311 커밋 뒤처져 있어, 합치면
+    라이브가 되레 내려간다. 목록에서 뺀다.
+  - `#40 misojin v3 Drive` 는 **원본이 어디에도 안 남아 있어** 사장님 지시로 지웠다.
 
 ## 주의·제약 (반드시)
 
