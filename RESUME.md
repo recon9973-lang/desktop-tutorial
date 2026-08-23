@@ -1,7 +1,23 @@
-# RESUME — 다음 세션 이어가기 (2026-08-23 19:2x KST · s06 마감)
+# RESUME — 다음 세션 이어가기 (2026-08-23 · s07 배포 인계)
 
-> 새 세션은 이 파일을 **가장 먼저** 읽는다. 상세는 `docs/session-logs/2026-08-23-s05.md`,
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 상세는 `docs/session-logs/2026-08-23-s06.md`,
 > 현황은 `PROJECT_STATE.md`, 지도는 `핵심두뇌_MASTER.md`.
+
+## 🚀 지금 할 일은 **배포** — 인계 문서가 따로 있다
+
+> ### 👉 [`docs/ANSEO-배포-인계.md`](docs/ANSEO-배포-인계.md)
+>
+> ANSEO 방에서 함께 밀기 위한 런북. **무엇이 나가나 · `make deploy` 절차 ·
+> `gh` 없는 방의 한계 · 어긋났을 때 · 샌드박스 재구성 · 일부러 뺀 것**이 다 있다.
+> 배포 이야기는 그 문서 하나만 읽으면 된다.
+
+```
+veo-platform   claude/anseo-ui-v3   판 0.3.294   13커밋 (a905da5 … b806623)
+main           0.3.293 (a864261)    ← 아직 아무것도 안 나갔다
+```
+
+**이 방에서는 끝까지 못 민다** — `gh` 가 없고 운영 API curl 이 403 이다.
+`gh` 가 있는 방에서 `make deploy` 를 돌린다.
 
 ## ⚠ 작업 저장소가 다르다
 
@@ -26,7 +42,8 @@ desktop-tutorial  claude/anseo-screenshot-analysis-9qkxno   ← 문서 (PR #229)
 +    이슈·리포트·검수 첫 그림          a3dc831
 +    그림을 자료 성질에 맞게 고침       55818ce
 +    사용량·프로젝트 첫 그림 · 등급 색   2bb076f
-+    추이 그래프 칸 풍선(툴팁)          (s06 마지막 커밋)
++    추이 그래프 칸 풍선(툴팁)          77ed01d
++    판 0.3.294 (changelog·openapi·대장)  b806623
 ```
 
 **요구 3(각 화면 첫 그림) 마감.** 화면 전수 대조로 `usage`·`customers/projects` 까지
@@ -43,13 +60,7 @@ desktop-tutorial  claude/anseo-screenshot-analysis-9qkxno   ← 문서 (PR #229)
 자사 색     지금 **강조색 유지**. 참고 화면(GPTO)은 흰색이지만 밝은 판에서 묻힌다
 ```
 
-## 바로 이어갈 작업
-
-**배포가 첫 순위다.** PR #1 에 12 커밋이 쌓였고 preflight 는 초록인데 아직 main 에
-없다 — 라이브에는 아무것도 안 보인다. `make deploy` 가 유일한 길이다(후보 가지 →
-CI 초록 → 같은 SHA 를 main).
-
-그다음 남은 것 둘:
+## 배포 뒤에 남은 것 둘
 
 ```
 ① 리포트 본문의 등급 3색      `reports/[reportId]/[version]/ReportBody.tsx`
@@ -59,9 +70,12 @@ CI 초록 → 같은 SHA 를 main).
 ② 툴팁을 다른 그림으로 넓힐지  지금은 추이 그래프(MultiTrendChart)만
 ```
 
+배포 절차·환경·실패 대응은 여기 다시 적지 않는다 — `docs/ANSEO-배포-인계.md` 에 있다.
+같은 규칙을 두 곳에 두면 한쪽이 낡는다.
+
 ## 대기/차단 (사용자 액션)
 
-- **veo-platform PR #1 배포 여부** — 사장님 판단. 아직 main 병합 안 됨.
+- **veo-platform PR #1 배포** — 준비 끝. `gh` 있는 방에서 `make deploy` (인계 문서 §2).
 - 이월: #36 GSC env 입력 · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
 
 ## 주의·제약 (반드시)
@@ -79,19 +93,13 @@ CI 초록 → 같은 SHA 를 main).
 - **그려 보고 확인한다.** 시험은 글자를 세지 배치를 안 잰다 — s05 에서 브라우저로만
   보인 배치 결함이 넷이었다.
 
-## 개발 환경 (샌드박스 재구성 방법)
+## 개발 환경
 
-```
-PostgreSQL   /usr/lib/postgresql/16/bin/pg_ctl -D /var/lib/postgresql/veo-test \
-             -o '-p 5432 -k /var/run/postgresql' start      (postgres 사용자로)
-             DB 이름 veo_test · 기본 소켓·포트여야 백업·복원 시험까지 돈다
-파이썬       /home/user/veo-platform/.venv
-시험         VEO_TEST_DATABASE_URL=postgresql+psycopg://postgres@/veo_test?host=/var/run/postgresql&port=5432
-브라우저      PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers · playwright 는 /opt/node22 전역
-```
+`docs/ANSEO-배포-인계.md` §6 에 있다(PostgreSQL·venv·환경변수·`pip install -e apps/worker`).
 
 ## 참고
 
-- 이번 세션 상세 `docs/session-logs/2026-08-23-s05.md`
+- **배포 런북 `docs/ANSEO-배포-인계.md`** ← 배포는 이것만 읽으면 된다
+- 세션 상세 `docs/session-logs/2026-08-23-s05.md` · `-s06.md`
 - GPTO 역설계 `docs/GPTO-벤치마크-ANSEO-적용리포트.md` · 제안서 `docs/ANSEO-개편-비교제안서.md`
-- veo-platform 대장 `docs/WORKLIST.md` §1-C3~§1-C7 이 이번 판들의 기록
+- veo-platform 대장 `docs/WORKLIST.md` §1-C3~§1-C13 · §2 배포 대기 · `WORKLIST-HISTORY.md` 2026-08-23
