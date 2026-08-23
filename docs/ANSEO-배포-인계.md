@@ -108,25 +108,29 @@ gh                 없음 (command -v gh → 없음)
 
 ## 4. 마지막 검증 결과 (실측)
 
-`e947748` 직전 커밋 `77ed01d` 에서 `scripts/preflight.sh` 전체 초록:
+**나갈 바로 그 커밋 `e947748` 에서** `scripts/preflight.sh` 전체 초록:
 
 ```
 준비됨 — make deploy 로 나갈 수 있습니다.
 
-① 나무    미커밋 0건 · 미배포 12커밋
-② 계약    openapi 드리프트 0 · 계약 판 = 서버 판
+① 나무    미커밋 0건 · 미배포 13 커밋 · main 0.3.293 → 0.3.294
+② 계약    openapi.json 이 앱과 일치 · 계약 판 0.3.294 = 서버 판 0.3.294
 ③ 관문    make ci-local     6,541 passed
+          make test-db      통과
+          pnpm -r typecheck · pnpm -r lint
           pnpm -r test      1,777 passed
-          test-db · typecheck · lint · next build · smoke  전부 통과
+          pnpm build · pnpm smoke (화면이 실제로 뜨나)
 ④ 리눅스  파일 이름 대소문자 이상 없음
-⑤ GitHub  (이 방에서 못 잼 — §3)
+⑤ GitHub  ! 최근 실행을 못 읽었다 — 지출 한도 상태를 모른다
+          ✓ 오늘(KST) CI 0건 · 상한 2회 중 2회 남음   ← §3. 측정값이 아니다
 ```
 
-`e947748` 은 판 번호·문서만 건드렸고, 그 판에서 관문 시험
-(`apps/web/src/lib/worklist.test.ts` 6건 — 대장·changelog·배포대기 표 정합)을 다시
-돌려 통과했다. **배포하는 방에서 preflight 를 한 번 더 돌린다** — `make deploy` 가 알아서
-돌리므로 따로 칠 필요는 없다. 관문 규칙 그대로다: *앞에서 초록이었던 것은 그때의
-나무다. 배포는 지금의 나무를 내보낸다.*
+**⑤ 의 초록 한 줄은 믿지 않는다.** `gh` 가 없어서 나온 0 이다. 그 바로 위 줄이
+「못 읽었다」라고 말하고 있는데 아래 줄만 초록인 것이 그 증거다.
+
+**배포하는 방에서 preflight 를 한 번 더 돌린다** — `make deploy` 가 알아서 돌리므로
+따로 칠 필요는 없다. 관문 규칙 그대로다: *앞에서 초록이었던 것은 그때의 나무다.
+배포는 지금의 나무를 내보낸다.*
 
 > ⚠ **preflight 를 동시에 두 개 돌리지 않는다.** 각자의 `test-db` 단계가 상대의
 > 시험 DB 를 지운다 — 한 번 964건이 그렇게 빨간불이 됐다. 코드 결함이 아니었다.
