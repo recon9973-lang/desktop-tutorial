@@ -1,33 +1,101 @@
-# RESUME — 다음 세션 이어가기 (2026-07-22 s04 마감)
+# RESUME — 다음 세션 이어가기 (2026-08-23 · s08 배포 대기)
 
-> 새 세션은 이 파일을 **가장 먼저** 읽고 여기서 이어간다. 상세는 `docs/session-logs/2026-07-22-s04.md`, 현황은 `PROJECT_STATE.md`, 지도는 `핵심두뇌_MASTER.md`.
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 이번 세션 상세는
+> `docs/session-logs/2026-08-23-s08.md`, 현황은 `PROJECT_STATE.md`.
 
-## 지금까지 (핵심만)
-- **SEO 진단 추론항목 실측화 완료(#216)** — `markTri()`로 저자/조직/연락처/엔티티는 마크업 실측만 통과, 본문 단어 정황은 '확인 필요' 강등. seo-engine **v2.1.8**.
-- **GEO 도구 실측 중심 재편(#217·#218)** — 온페이지 준비도 막대(중복) 제거, `📘 가이드` 유지. 막대 자리에 **메인 키워드 4개 AI(ChatGPT·Gemini·Claude·Perplexity) 실제 질의** 실측 파트 신설(인용/언급/미노출/측정불가 + 원문·인용출처 ✓우리 + 노출 요약). 병원명·질문 자동 프리필. `runGeoAeo`/`_geoAeoCell`/`_geoAeoFinish`/`_GEO_AI4`/`_geoCtx`.
-- **스키마/JSON-LD 층위 정리(#219·#220)** — telephone=schema.org 속성임을 명확화하고 조직 스키마 하위(└)로 귀속, `구조화 데이터 JSON-LD 형식`을 별도 항목으로 신설. 총점 100 유지.
-- **체크리스트 사라짐 버그 수정(#221)** — 리터럴 `<script>` 미이스케이프 주입 → `_geoAttr` 이스케이프. 17항목 전부 렌더.
+## 🚀 지금 할 일은 **배포** — 런북이 따로 있다
 
-## 바로 이어갈 작업 (우선순위)
-> **명시적으로 지시된 다음 작업 없음.** 아래는 후보/여력 항목. 새 세션은 사용자 신규 오더를 우선한다.
-1. (여력) GEO 실측 파트 **라이브 스모크 테스트** — 배포 반영 후 실제 병원 URL로 4엔진 실측이 정상 동작하는지 사용자와 함께 1회 확인(egress 차단으로 에이전트 단독 확인 불가).
-2. (여력) 메인 키워드 질문 자동추정 사전(`_regs`/`_deps` in `runGEO`) 확장 — 현재 주요 도시+대표 진료과만. 구 단위·세부 진료과 보강 여지.
-3. (여력) SEO 남은 추론항목 = 콘텐츠 구조 임계값(소제목·문단·스캔)뿐 — DOM 실측이라 '추정 기준' 라벨만 유지 중. 추가 실측화는 불필요(이미 정직).
+> ### 👉 [`docs/ANSEO-배포-인계.md`](docs/ANSEO-배포-인계.md)
+>
+> 무엇이 나가나 · `make deploy` 절차 · `gh` 없는 방의 한계 · 어긋났을 때 ·
+> 샌드박스 재구성. **배포 이야기는 그 문서 하나만 읽으면 된다.**
 
-## 대기/차단 (사용자 액션 · 이월)
-- **#36** GSC env 입력·Redeploy → `/api/health` `hasGSC:true` 확인.
-- **#37** 디자인 스튜디오 `marketing-agency-erp` erp-v1 PR 허락.
-- **#40** misojin v3 → Google Drive 업로드(Drive MCP 불안정).
+```
+veo-platform  claude/anseo-ui-v3   41b17a9   판 0.3.303 · 0.3.304   2커밋
+main                               b5e35b6   판 0.3.302             ← 아직 안 나감
+```
+
+**나갈 그 커밋에서 preflight 전체 초록**(ci-local 6,572 · 웹 1,843 · build · smoke ·
+계약 판 일치). **이 방에서는 배포를 끝까지 못 한다** — `gh` 가 없고 운영 API curl 이
+403 이다. `gh` 있는 방에서 `make deploy`.
+
+## ✅ ANSEO 개편(요구 9건)은 이미 나갔다 — 다시 배포하지 말 것
+
+2026-08-23, main `b5e35b6` · 판 0.3.302 · CI run 32635627880 초록.
+GPTO 스크린샷 13장에서 나온 요구 9건 + 화면 전수 + 그림 문법 + 툴팁이 전부 라이브다.
+
+## 이번 세션에 한 것 (s08)
+
+```
+0.3.303  발행 리포트 등급 색에 「표기 규칙 판」 — 새 판은 밝기 단, 지난 판은 옛 색
+         (화면·인쇄본 둘 다) · 현황판 추이 썸네일에 회차 풍선
+0.3.304  사장님이 화면에서 짚으신 넷 — 인용 세부 링크가 자기 자신으로 가던 것 ·
+         채널 막대가 배경색이라 안 보이던 것(1.21:1) · 엔진×채널 표 디자인 ·
+         엔진 상태·정기 진단을 맨 아래 「설정」 한 자리로 + 결과 쪽 한 줄 요약
+```
+
+무효였던 `e947748`(판 0.3.294)은 새 작업을 main 위에 올리면서 정리됐다.
+
+## 저장소 둘
+
+```
+veo-platform      구현. 0.3.303·0.3.304 는 아직 main 밖(배포 대기)
+desktop-tutorial  문서. 가지 claude/anseo-screenshot-analysis-9qkxno
+```
+
+`veo-platform` 이 세션에 안 붙어 있으면 `add_repo` 로 붙이고 클론한다.
+
+## 배포 뒤에 남은 것 — 사장님 오더 대기
+
+앞 인계에서 「남았다」고 적었던 둘(발행본 등급 색 · 툴팁)은 **이번에 끝났다.**
+새 오더가 없으면 이월 셋뿐이다.
+
+**툴팁을 더 안 넓힌 것은 판단이다** — 전수로 다시 보니 산점도·막대점·깎인 배점·
+기울기·구성비는 값이 이미 글자로 나와 있었다. 이미 화면에 있는 값을 손을 올려야
+다시 보여 주는 것은 정보가 아니라 장식이다.
+
+## 사장님 확정 (2026-08-23) — 되묻지 말 것
+
+```
+메뉴 구조   지금 탭 구조 유지. SEO·GEO·AEO 는 거래처 상세의 탭이고
+            최상위 메뉴로 안 올린다
+툴팁        붙인다 · 추이 그래프부터
+자사 색     지금 강조색 유지. 참고 화면(GPTO)은 흰색이지만 밝은 판에서 묻힌다
+```
+
+## 대기/차단 (사용자 액션)
+
+- **veo-platform 0.3.303~0.3.304 배포** — 준비 끝. `gh` 있는 방에서 `make deploy`.
+- 이월: #36 GSC env 입력 · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
 
 ## 주의·제약 (반드시)
-- **브랜치**: 작업 `claude/session-review-prep-an0to9`, 라이브 `main`(venom-new-site 자동배포). 파이프라인: implement→검증(node 구문 + Playwright 기능테스트)→commit→PR→squash-merge→`git checkout -B <branch> origin/main`→force-with-lease.
-- **비밀키 값·모델 ID**를 커밋/PR/코드/문서/채팅에 넣지 않는다. 커밋 트레일러 준수(Co-Authored-By: Claude Opus 4.8 / Claude-Session).
-- **캐시**: GEO 도구는 `index.html`(no-cache)이라 새로고침 즉시 반영. **seo-engine.js 로직 변경 시에만** `?v=` 올림(현재 **v2.1.8**). 엔진 변경은 Playwright 기능테스트로 검증.
-- **실측 원칙**: 실측(파싱·실제 AI 답변) > 추론(정규식·임의계수) > **통계 날조 금지**. GEO 실측·관리자 AI 매트릭스는 동일 `_INSIGHTS?type=aeo&engine=` 소스.
-- **HTML 주입 주의**: 체크 항목 문자열에 코드 예시(`<script>` 등)를 넣을 땐 반드시 `_geoAttr` 이스케이프(그 버그로 #221 발생).
-- egress: 컨테이너에서 vercel.app 라이브 직접 확인 불가(프록시 403). 소스+Playwright로 검증, 라이브는 사용자 새로고침 확인.
-- 자동블로그 정적 글(_AI_HERO 12개)은 실사진 유지 — 카드뉴스로 바꾸지 말 것.
+
+- **말**: 사장님께 나가는 글은 「커밋」과 「배포」 **두 단어만** 쓴다. 「민다·푸시」
+  계열 금지 — `two-words-only.test.ts` 가 문서를 막지만 **대화는 못 막는다.**
+  s07 에서 대화와 문서 열 곳에서 어겼다.
+- **판 번호**: 고르기 전에 `git fetch`. 다른 방이 같은 저장소에 배포한다(s07 에서
+  이미 나간 0.3.294 를 골랐다). §2 머리말도 그때마다 낡아 있으니 함께 실측한다.
+- **브랜치**: veo-platform 은 `claude/anseo-ui-v3`, desktop-tutorial 은
+  `claude/anseo-screenshot-analysis-9qkxno`. 다른 가지에 올리지 않는다.
+- **비밀키 값·모델 ID**를 커밋/PR/코드/문서/채팅에 넣지 않는다.
+  커밋 트레일러 준수(Co-Authored-By / Claude-Session).
+- **실측 원칙**: 실측 > 추론 > 통계 날조 금지. 못 잰 값은 `0` 이 아니라 `—`(ADR 0002).
+- **관문을 무력화하지 않는다.** 기준선을 고칠 땐 **왜 바뀌었는지 그 자리에 적는다.**
+- **계약을 다시 뽑는다.** 서버 창구를 더하면
+  `apps/api/scripts/export_openapi.py` → `pnpm --filter @veo/api-client generate`.
+- **그려 보고 확인한다.** 시험은 글자를 세지 배치를 안 잰다.
+- **이 방의 한계**: `gh` 없음 · 운영 API curl 403. 그래서 preflight ⑤ 의
+  「오늘 CI 0건 · 상한 2회 남음」은 **측정값이 아니다.** 배포는 `gh` 있는 방에서.
+
+## 개발 환경
+
+`docs/ANSEO-배포-인계.md` §6 (PostgreSQL·venv·환경변수·`pip install -e apps/worker`).
+DB 가 꺼져 있으면 `ci-local`·`test-db` 가 한꺼번에 `connection refused` 로 죽는다 —
+코드 결함이 아니다.
 
 ## 참고
-- 이번 세션 상세 `docs/session-logs/2026-07-22-s04.md` · 현황 `PROJECT_STATE.md` · 지도 `핵심두뇌_MASTER.md`.
-- GEO 도구 핵심 함수: `runGEO`/`renderGEOResult`/`runGeoAeo`(모두 `venom-wordpress/preview/index.html`). SEO 엔진: `venom-wordpress/preview/seo/seo-engine.js`.
+
+- 세션 상세 `docs/session-logs/2026-08-23-s05.md` · `-s06.md` · `-s07.md`
+- 배포 런북 `docs/ANSEO-배포-인계.md` (다음 배포 때도 이것부터)
+- GPTO 역설계 `docs/GPTO-벤치마크-ANSEO-적용리포트.md` · 제안서 `docs/ANSEO-개편-비교제안서.md`
+- veo-platform 대장 `docs/WORKLIST.md` §2 · `WORKLIST-HISTORY.md`
