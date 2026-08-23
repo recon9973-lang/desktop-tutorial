@@ -7,16 +7,16 @@
 
 > ### 👉 [`docs/ANSEO-배포-인계.md`](docs/ANSEO-배포-인계.md)
 >
-> ANSEO 방에서 함께 밀기 위한 런북. **무엇이 나가나 · `make deploy` 절차 ·
+> ANSEO 방에서 함께 배포하기 위한 런북. **무엇이 나가나 · `make deploy` 절차 ·
 > `gh` 없는 방의 한계 · 어긋났을 때 · 샌드박스 재구성 · 일부러 뺀 것**이 다 있다.
 > 배포 이야기는 그 문서 하나만 읽으면 된다.
 
 ```
-veo-platform   claude/anseo-ui-v3   판 0.3.294   13커밋 (a905da5 … b806623)
+veo-platform   claude/anseo-ui-v3   판 0.3.294   13커밋 (a905da5 … e947748)
 main           0.3.293 (a864261)    ← 아직 아무것도 안 나갔다
 ```
 
-**이 방에서는 끝까지 못 민다** — `gh` 가 없고 운영 API curl 이 403 이다.
+**이 방에서는 배포를 끝까지 못 한다** — `gh` 가 없고 운영 API curl 이 403 이다.
 `gh` 가 있는 방에서 `make deploy` 를 돌린다.
 
 ## ⚠ 작업 저장소가 다르다
@@ -43,7 +43,7 @@ desktop-tutorial  claude/anseo-screenshot-analysis-9qkxno   ← 문서 (PR #229)
 +    그림을 자료 성질에 맞게 고침       55818ce
 +    사용량·프로젝트 첫 그림 · 등급 색   2bb076f
 +    추이 그래프 칸 풍선(툴팁)          77ed01d
-+    판 0.3.294 (changelog·openapi·대장)  b806623
++    판 0.3.294 (changelog·openapi·대장)  e947748
 ```
 
 **요구 3(각 화면 첫 그림) 마감.** 화면 전수 대조로 `usage`·`customers/projects` 까지
