@@ -1,0 +1,13 @@
+{
+  "name": "juso-search-webview",
+  "version": "1.0.0",
+  "private": true,
+  "description": "행안부 주소검색 오픈 API 팝업 결과를 받아 Flutter WebView(james.postMessage)로 전달하는 최소 브릿지 서버",
+  "main": "adNodeJs.js",
+  "scripts": {
+    "start": "node adNodeJs.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
