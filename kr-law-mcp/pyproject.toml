@@ -1,0 +1,20 @@
+[project]
+name = "kr-law-mcp"
+version = "0.1.0"
+description = "국가법령정보센터 오픈 API를 활용한 MCP 서버"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.0",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

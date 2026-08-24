@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
+.pytest_cache/
+_test_*.txt
+_api_test*.txt
+_my_ip.txt
