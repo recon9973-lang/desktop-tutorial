@@ -1,4 +1,4 @@
-# ANSEO 배포 인계 — 열세 판 (0.3.356~0.3.368)
+# ANSEO 배포 인계 — 열네 판 (0.3.356~0.3.369)
 
 > 2026-08-28 갱신(s09). 이 문서 하나로 **다시 탐색하지 않고** 배포까지 간다.
 > 구현은 전부 `veo-platform` 에 있다. 이 저장소(`desktop-tutorial`)에는 문서만 있다.
@@ -23,9 +23,9 @@ curl -s https://veo-platform-production.up.railway.app/api/health | head -c 300
 
 ```
 저장소   veo-platform
-가지     claude/wonderful-einstein-1qiqm5     HEAD 9ff5ed5
+가지     claude/wonderful-einstein-1qiqm5     HEAD dc2696f
 main     aaa76e4 (판 0.3.364) — 우리 가지의 조상이다(빨리감기 가능, 충돌 없음)
-이 가지가 더하는 것   4커밋 · 판 0.3.365~0.3.368
+이 가지가 더하는 것   5커밋 · 판 0.3.365~0.3.369
 ```
 
 | 커밋 | 판 | 무엇 |
@@ -34,6 +34,7 @@ main     aaa76e4 (판 0.3.364) — 우리 가지의 조상이다(빨리감기 �
 | `08545be` | 0.3.366 | **등급 A+~F 아홉 칸** (명세 SEO 1.11.0 · GEO 1.5.0). 점수 계산은 그대로, GEO 경계를 SEO 와 통일 |
 | `dd55f6e` | 0.3.367 | **크롬 워커** — 페이지를 실제로 그려 본다. 기본 꺼짐(`VEO_RENDERER_ENABLED`). **워커 이미지가 크롬을 싣기 시작한다** ← 이번 배포의 위험 지점 |
 | `9ff5ed5` | 0.3.368 | 우리 자 ↔ 구글 자 비교 도구(`scripts/compare_lab_measurements.py`) |
+| `dc2696f` | 0.3.369 | 탭 전환 지연의 둘 더 — 안 보는 탭의 주간·월간 추이를 안 부른다 |
 
 ## 2. 배포 절차 — `make deploy` 가 유일한 길
 
@@ -53,7 +54,7 @@ make deploy
 [2/4] deploy-candidate 가지에 올린다                  ← main 은 아직 그대로
 [3/4] CI 가 그 커밋을 채점할 때까지 기다린다 (최대 20분) ← gh 필요
 [4/5] 초록불일 때만 같은 커밋을 main 에 올린다 = 배포
-[5/5] 운영 진단 서버·워커가 실제로 0.3.368 을 서비스하는지 확인 (최대 15분)
+[5/5] 운영 진단 서버·워커가 실제로 0.3.369 를 서비스하는지 확인 (최대 15분)
 ```
 
 순서를 바꾸지 않는다. CI 는 `deploy-candidate` 에서만 돈다(main 에서는 일부러 안 돈다).
@@ -102,7 +103,7 @@ curl -s -o /dev/null -w "scan=%{http_code}\n" -X POST https://veo-platform-produ
 
 ## 5. 검증 상태 — 이 방에서 잰 것과 못 잰 것
 
-나갈 커밋 `9ff5ed5` 에서:
+나갈 커밋 기준(마지막 전수는 `9ff5ed5`, 0.3.369 는 웹 전용 — vitest 1,987·typecheck 0 로 검증):
 
 ```
 잰 것     pytest 6,445 통과 · 0 실패     ← 단, DB 시험 제외(이 방에 DB 없음)
