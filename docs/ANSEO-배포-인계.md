@@ -23,7 +23,7 @@ curl -s https://veo-platform-production.up.railway.app/api/health | head -c 300
 
 ```
 저장소   veo-platform
-가지     claude/wonderful-einstein-1qiqm5     HEAD dc2696f
+가지     claude/wonderful-einstein-1qiqm5     판 0.3.369 (코드 커밋 dc2696f · 그 뒤 문서 커밋이 얹힐 수 있다)
 main     aaa76e4 (판 0.3.364) — 우리 가지의 조상이다(빨리감기 가능, 충돌 없음)
 이 가지가 더하는 것   5커밋 · 판 0.3.365~0.3.369
 ```
@@ -42,7 +42,8 @@ main     aaa76e4 (판 0.3.364) — 우리 가지의 조상이다(빨리감기 �
 cd veo-platform
 git fetch origin
 git checkout claude/wonderful-einstein-1qiqm5
-git pull origin claude/wonderful-einstein-1qiqm5     # dc2696f 인지 확인
+git pull origin claude/wonderful-einstein-1qiqm5
+grep __version__ apps/api/src/veo/__init__.py          # 0.3.369 인지 확인
 make deploy
 ```
 
