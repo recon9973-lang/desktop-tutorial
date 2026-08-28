@@ -42,7 +42,7 @@ main     aaa76e4 (판 0.3.364) — 우리 가지의 조상이다(빨리감기 �
 cd veo-platform
 git fetch origin
 git checkout claude/wonderful-einstein-1qiqm5
-git pull origin claude/wonderful-einstein-1qiqm5     # 9ff5ed5 인지 확인
+git pull origin claude/wonderful-einstein-1qiqm5     # dc2696f 인지 확인
 make deploy
 ```
 
