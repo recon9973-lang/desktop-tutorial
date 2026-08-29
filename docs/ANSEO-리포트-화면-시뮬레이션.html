@@ -1,0 +1,295 @@
+<title>ANSEO 리포트 화면 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-top:16px;}
+.tabs button{border:0; background:none; color:var(--ink-faint); font:inherit; font-size:13.5px; padding:8px 14px; cursor:pointer; border-bottom:2px solid transparent; translate:0 1px;}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--signal); font-weight:500;}
+.tabs button:hover{color:var(--ink-dim);}
+.pane[hidden]{display:none;}
+
+/* 등급 톤 — 확정 4단 (90+ 통과 · 75~89 기본 · 60~74 주의 · <60 실패) */
+.tPass{color:var(--mint);} .tBase{color:var(--ink);} .tWarn{color:var(--ember);} .tFail{color:var(--destructive);}
+.gradechip{display:inline-flex; align-items:baseline; gap:6px; border:1px solid var(--border); border-radius:7px; padding:3px 9px; background:var(--card2);}
+.gradechip b{font-size:15px; font-weight:700; letter-spacing:-.01em;}
+.gradechip .num{font-size:11px; color:var(--ink-faint);}
+.gradechip.cPass{border-color:color-mix(in oklab,var(--mint) 45%,transparent); background:var(--mint-soft);}
+.gradechip.cWarn{border-color:color-mix(in oklab,var(--ember) 45%,transparent); background:var(--ember-soft);}
+.gradechip.cFail{border-color:color-mix(in oklab,var(--destructive) 45%,transparent); background:var(--destructive-soft);}
+
+/* 화면 A — 목록 */
+table.list{border-collapse:collapse; width:100%; min-width:720px; font-size:13px;}
+table.list th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.list td{padding:9px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+table.list tr:hover td{background:var(--card2);}
+.immutable{font-size:11.5px; color:var(--ink-faint); border-left:2px solid var(--border); padding:2px 0 2px 10px; margin-top:12px;}
+.issuebar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px;}
+.issuebar select,.issuebar .btn{font:inherit; font-size:12.5px; color:var(--ink); background:var(--card2); border:1px solid var(--border); border-radius:7px; padding:6px 10px;}
+.btn.primary{background:var(--signal-soft); color:var(--signal); border-color:color-mix(in oklab,var(--signal) 45%,transparent); font-weight:500; cursor:pointer;}
+
+/* 화면 B — 발행본 */
+.verband{display:flex; flex-wrap:wrap; gap:5px 16px; font-size:11.5px; color:var(--ink-faint); border:1px solid var(--border); background:var(--card2); border-radius:8px; padding:7px 12px;}
+.verband b{color:var(--ink-dim); font-weight:500;}
+.heroes{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+@media(max-width:760px){.heroes{grid-template-columns:1fr;}}
+.hero{border:1px solid var(--border); border-radius:11px; padding:16px 18px; background:var(--card2);}
+.hero .metric{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint);}
+.hero .band{font-size:46px; font-weight:700; letter-spacing:-.03em; line-height:1.05; margin-top:4px;}
+.hero .score{font-size:14px; color:var(--ink-dim); margin-top:2px;}
+.hero .score b{font-weight:600; color:var(--ink-dim);}
+.hero .delta{font-size:12px; margin-top:6px;}
+.hero .bandnote{font-size:11px; color:var(--ink-faint); margin-top:8px; line-height:1.6;}
+.goalstrip{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+@media(max-width:760px){.goalstrip{grid-template-columns:1fr;}}
+.goal{border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:12px; color:var(--ink-dim); background:var(--card);}
+.goal i{display:inline-block; width:16px; height:0; border-top:2px dashed currentColor; translate:0 -3px; margin-right:7px;}
+.chain{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:12px;}
+.chain .cell{border:1px solid var(--border); border-radius:8px; padding:7px 11px; background:var(--card2);}
+.chain dt{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint);}
+.chain dd{margin:3px 0 0; font-size:12.5px; color:var(--ink-dim); overflow-wrap:anywhere;}
+.firstdo{margin-top:12px; border-collapse:collapse; width:100%; min-width:640px; font-size:12.5px;}
+.firstdo th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 7px; border-bottom:1px solid var(--border);}
+.firstdo td{padding:8px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+.sev{display:inline-block; font-size:10.5px; border-radius:4px; padding:1px 7px; letter-spacing:.03em;}
+.sev.s1{background:var(--destructive-soft); color:var(--destructive);}
+.sev.s2{background:var(--ember-soft); color:var(--ember);}
+.sev.s3{background:var(--signal-soft); color:var(--signal);}
+.lawnote{margin-top:12px; font-size:11.5px; color:var(--ink-faint); border:1px dashed var(--border); border-radius:8px; padding:8px 12px; line-height:1.65;}
+
+/* 화면 C — 공유 */
+.sharehead{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;}
+.scale11{display:grid; grid-template-columns:repeat(11,1fr); gap:4px; margin-top:12px; min-width:640px;}
+.scale11 .g{border:1px solid var(--border); border-radius:6px; text-align:center; padding:7px 2px 6px; background:var(--card2);}
+.scale11 .g b{display:block; font-size:15px; font-weight:700; letter-spacing:-.01em;}
+.scale11 .g span{font-size:9px; color:var(--ink-faint); letter-spacing:.02em;}
+.scale11 .g.onTone{outline:1.5px solid currentColor;}
+.fixnote{margin-top:10px; font-size:11.5px; color:var(--ink-dim); line-height:1.65; border-left:2px solid var(--ember); padding-left:10px;}
+.gaptable{border-collapse:collapse; width:100%; min-width:680px; font-size:12.5px; margin-top:4px;}
+.gaptable th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 7px; border-bottom:1px solid var(--border);}
+.gaptable td{padding:8px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:top;}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 1 — 리포트 (대조표 #1)</p>
+    <h1>리포트 — 목록 · 발행본 · 공유 링크</h1>
+    <p class="sub">업체에 전달하는 문서. <b>숫자는 진단 실행에서만 온다</b> — 점수를 손으로 넣는 칸은 없고,
+    발행본은 못 고친다(고치려면 새 버전). 이 시뮬은 확정 문법(등급 크게·점수 작게, 등급 색 4단,
+    근거 사슬)을 발행 축 세 화면에 편다.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="리포트 세 화면">
+    <button role="tab" id="tabA" aria-selected="true" aria-controls="paneA">A · 목록·발행</button>
+    <button role="tab" id="tabB" aria-selected="false" aria-controls="paneB">B · 발행본 (업체 전달)</button>
+    <button role="tab" id="tabC" aria-selected="false" aria-controls="paneC">C · 공유 링크 (공개)</button>
+  </div>
+
+  <!-- ── A. 목록·발행 ─────────────────────────────────────────── -->
+  <section class="pane" id="paneA" role="tabpanel" aria-labelledby="tabA">
+    <div class="card stage">
+      <div class="card-head">
+        <h2>새 리포트 발행</h2><span class="srcchip">실물 /console/reports 재구성</span>
+      </div>
+      <div class="issuebar">
+        <select aria-label="거래처"><option>미소진의원 (misojin.co.kr)</option></select>
+        <select aria-label="진단 회차"><option>7회차 · 2026-08-29 · 명세 SEO 1.12.0</option></select>
+        <select aria-label="수신 대상"><option>업체용 (마케팅 문구 포함)</option><option>내부용</option></select>
+        <button class="btn primary" type="button">이 회차로 발행</button>
+      </div>
+      <p class="immutable">발행하면 그 순간의 진단·명세·표기 규칙이 <b>판으로 얼어붙는다.</b> 나중에 명세가
+      바뀌어도 이 발행본의 숫자·색은 그대로다 — 8월에 인쇄한 문서와 10월에 다시 연 화면이 같아야 하므로.</p>
+    </div>
+
+    <div class="card stage" style="animation-delay:.08s">
+      <div class="card-head"><h2>발행된 리포트</h2></div>
+      <div class="overflow">
+      <table class="list">
+        <thead><tr><th>버전</th><th>발행</th><th>대상</th><th>SEO</th><th>AEO 준비도</th><th>표기 규칙</th><th>열람</th></tr></thead>
+        <tbody>
+          <tr><td class="num">v3</td><td class="num">2026-08-29 22:10</td><td>업체용</td>
+            <td><span class="gradechip"><b class="tBase">B</b><span class="num">84.2</span></span></td>
+            <td><span class="gradechip cWarn"><b class="tWarn">C</b><span class="num">71.5</span></span></td>
+            <td class="num">판 2</td><td>업체 열람 2회</td></tr>
+          <tr><td class="num">v2</td><td class="num">2026-07-14 18:02</td><td>업체용</td>
+            <td><span class="gradechip"><b class="tBase">C+</b><span class="num">78.4</span></span></td>
+            <td><span class="gradechip cWarn"><b class="tWarn">D+</b><span class="num">66.9</span></span></td>
+            <td class="num">판 2</td><td>미열람</td></tr>
+          <tr><td class="num">v1</td><td class="num">2026-06-02 10:31</td><td>내부용</td>
+            <td><span class="gradechip cFail"><b class="tFail">E+</b><span class="num">57.0</span></span></td>
+            <td><span class="gradechip cFail"><b class="tFail">F</b><span class="num">44.1</span></span></td>
+            <td class="num">판 1</td><td>—</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="foot">목록에서부터 <b>등급 칩이 먼저, 점수는 보조</b>(축소판 문법). 판(명세·표기 규칙)이 다른
+      버전끼리는 비교 문장을 만들지 않는다 — v1↔v3 차이는 실력 변화가 아니라 자(尺)의 변화일 수 있다.</p>
+    </div>
+  </section>
+
+  <!-- ── B. 발행본 ─────────────────────────────────────────────── -->
+  <section class="pane" id="paneB" role="tabpanel" aria-labelledby="tabB" hidden>
+    <div class="card stage">
+      <div class="card-head"><h2>미소진의원 — 진단 리포트 v3</h2><span class="srcchip">실물 ReportBody 재구성</span></div>
+      <div class="verband num">발행 <b>2026-08-29 22:10 (서울)</b> · 진단 7회차 · 명세 <b>SEO 1.12.0 · GEO 1.6.0</b> ·
+        표기 규칙 <b>판 2</b> · 체크섬 <b>9f3a…c21</b></div>
+
+      <div class="heroes">
+        <div class="hero">
+          <p class="metric">SEO — 이 판의 점수</p>
+          <p class="band tBase">B</p>
+          <p class="score num"><b>84.2</b> / 100 · 배점 49항목</p>
+          <p class="delta num">직전 v2 대비 <b class="tPass">▲5.8</b> — 같은 명세로 잰 구간만 비교</p>
+          <p class="bandnote">등급이 판정, 점수는 근거다. 관리 목표 A(90)까지 <b class="num">5.8</b>.</p>
+        </div>
+        <div class="hero">
+          <p class="metric">AEO 준비도 — 이 판의 점수</p>
+          <p class="band tWarn">C</p>
+          <p class="score num"><b>71.5</b> / 100</p>
+          <p class="delta num">직전 대비 <b>—</b> <span style="font-size:11px">(명세 1.5.0→1.6.0 — 판이 달라 비교하지 않음)</span></p>
+          <p class="bandnote">60~74 구간은 <b class="tWarn">주의</b> — 색과 낱말을 함께 적는다.</p>
+        </div>
+      </div>
+
+      <div class="goalstrip">
+        <div class="goal"><i class="tWarn"></i>취약 탈출 <b class="num">50</b> — 둘 다 통과</div>
+        <div class="goal"><i class="tPass"></i>관리 목표 <b class="num">90</b> — 최신 판 실측 기울기로는 SEO <b class="num">2027-01</b> 무렵 도달 예상. <b>관측값이며 보장이 아닙니다.</b></div>
+      </div>
+
+      <h3 style="margin-top:18px">이 점수는 어디서 왔나 — 근거 사슬</h3>
+      <dl class="chain">
+        <div class="cell"><dt>채점 명세</dt><dd class="num">veo.seo.readiness 1.12.0 · 체크섬 9f3a…c21</dd></div>
+        <div class="cell"><dt>수집</dt><dd class="num">2026-08-29 21:40~21:58 · 출처 6종</dd></div>
+        <div class="cell"><dt>판정하지 못한 것</dt><dd><b class="num">4건</b> — 0점이 아니라 「—」. 분모에서 제외</dd></div>
+        <div class="cell"><dt>신뢰도</dt><dd>높음 — 표본 12/12 페이지 응답</dd></div>
+      </dl>
+
+      <h3 style="margin-top:18px">먼저 할 것 3개 — 심각도순</h3>
+      <div class="overflow">
+      <table class="firstdo">
+        <thead><tr><th>심각도</th><th>항목</th><th>어디에</th><th>닫히는 조건</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sev s1">심각</span></td><td>대표 시술 페이지 3장 <code class="num">noindex</code></td><td>/silifting 외 2</td><td>재진단이 해제를 관측하면</td></tr>
+          <tr><td><span class="sev s2">중요</span></td><td>의료진 프로필에 구조화 데이터 없음</td><td>/doctors</td><td>재진단이 Physician 스키마를 관측하면</td></tr>
+          <tr><td><span class="sev s3">경미</span></td><td>이미지 대체 텍스트 12/41장 비어 있음</td><td>시술 갤러리</td><td>재진단 통과</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="foot">심각도 색은 <b>이슈 축</b>의 색이다 — 점수 등급 색과 다른 축이며 섞지 않는다.
+      이슈는 사람이 닫지 않는다: <b>재진단이 관측해야 닫힌다.</b></p>
+
+      <p class="lawnote">의료광고법 준수 — 이 문서는 치료 효과를 보장하지 않으며, 전후사진·최상급 표현을 싣지 않습니다.
+      점수는 검색·AI 답변 엔진이 사이트를 읽을 수 있는 기술·구조 준비도이며 순위·내원을 보장하지 않습니다.</p>
+    </div>
+  </section>
+
+  <!-- ── C. 공유 링크 ──────────────────────────────────────────── -->
+  <section class="pane" id="paneC" role="tabpanel" aria-labelledby="tabC" hidden>
+    <div class="card stage">
+      <div class="card-head sharehead">
+        <h2>공유 링크 — 업체가 로그인 없이 보는 화면</h2>
+        <span class="srcchip">실물 /results/[token] · 공개 체커 정정</span>
+      </div>
+      <p class="sub">발행본 v3와 <b>같은 문법, 같은 숫자</b> — 겉(콘솔)과 속(공유·인쇄)이 갈리지 않는다.
+      링크는 만료가 있고, 만료 화면은 «다시 요청하십시오» 한 줄로 끝난다.</p>
+
+      <div class="overflow">
+      <div class="scale11 num" role="img" aria-label="등급 11단 척도 — 현재 SEO B, AEO 준비도 C">
+        <div class="g"><b class="tPass">A+</b><span>95+</span></div>
+        <div class="g"><b class="tPass">A</b><span>90</span></div>
+        <div class="g"><b class="tBase">B+</b><span>85</span></div>
+        <div class="g onTone tBase"><b class="tBase">B</b><span>80 · SEO</span></div>
+        <div class="g"><b class="tBase">C+</b><span>75</span></div>
+        <div class="g onTone tWarn"><b class="tWarn">C</b><span>70 · AEO</span></div>
+        <div class="g"><b class="tWarn">D+</b><span>65</span></div>
+        <div class="g"><b class="tWarn">D</b><span>60</span></div>
+        <div class="g"><b class="tFail">E+</b><span>55</span></div>
+        <div class="g"><b class="tFail">E</b><span>50</span></div>
+        <div class="g"><b class="tFail">F</b><span>0~49</span></div>
+      </div>
+      </div>
+
+      <p class="fixnote"><b>실물 결함 정정이 이 화면의 존재 이유다</b> — 지금 공개 체커·공유 링크의 등급 칩은
+      실패색이 하드코딩되어 <b>95점 A+도 빨간 칩</b>으로 나간다(전수 감사 #1). 여기서는 톤 4단
+      (90+ 통과 · 75~89 기본 · 60~74 주의 · 60 미만 실패)을 서버 밴드에서 받아 칠하고, 항상 낱말과 병용한다.</p>
+    </div>
+
+    <div class="card stage" style="animation-delay:.08s">
+      <div class="card-head"><h2>실물과의 격차 — 이 시뮬이 고치는 것</h2></div>
+      <div class="overflow">
+      <table class="gaptable">
+        <thead><tr><th>자리</th><th>실물 현재 (v0.3.386 실측)</th><th>이 시뮬의 처방</th></tr></thead>
+        <tbody>
+          <tr><td>발행본 헤드라인</td><td>점수 3.4rem 지배 · <b>등급 없음</b> (감사 #3)</td><td>등급 46px 주인공 + 점수 보조 + 톤. 서버가 밴드를 함께 발행</td></tr>
+          <tr><td>공유·공개 체커 칩</td><td>실패색 하드코딩 — 등급 무관 빨강 (감사 #1)</td><td>톤 4단 + 낱말 병용. 인쇄본도 같은 표기 규칙 판</td></tr>
+          <tr><td>목록</td><td>버전·날짜만</td><td>등급 칩(축소판 문법) 열 추가 — 목록에서 판정이 먼저 읽힌다</td></tr>
+          <tr><td>목표선</td><td>발행본에 없음</td><td>취약 탈출 50 · 관리 목표 90 + 도달 예상(보장 아님 단서 분리 불가)</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <p class="badge stage" style="animation-delay:.14s"><b>표본</b> 수치·업체명은 테스트용 표본이다
+  <b>규율</b> 등급 11단(발행 완료 SEO 1.12.0·GEO 1.6.0) · 등급 크게·점수 작게 · 색+글자 병용 ·
+  못 잰 값 — · 판 다르면 비교 금지 · 발행본 불변 · 의료광고법 준수</p>
+</div>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('[role="tab"]');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(one){
+        var on = one === tab;
+        one.setAttribute('aria-selected', String(on));
+        document.getElementById(one.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+})();
+</script>
