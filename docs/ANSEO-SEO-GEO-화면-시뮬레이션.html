@@ -204,7 +204,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
             <p class="gv"><span id="ggrade" style="font-size:31px;font-weight:700;letter-spacing:-.02em">F</span><br><span class="num" style="font-size:12px;color:var(--ink-faint)"><span id="gnum">32.6</span> /100</span></p>
           </div>
           <dl class="rescells" aria-label="재채점 결과">
-  <div class="cell"><dt>받은 / 배점</dt><dd class="num"><span id="graw">41.7</span> / <span id="gweight">128</span></dd></div>
+  <div class="cell" title="100점 환산 기준. 원점수·배점(예: 41.7/128)은 영역별 분석에서만 씁니다."><dt>깎인 점수</dt><dd class="num" id="glost" style="color:var(--destructive)">−67.4</dd></div>
   <div class="cell"><dt>직전 대비</dt><dd class="num" id="gdelta" style="color:var(--mint)">▲ 5.04</dd></div>
   <div class="cell"><dt>판정 못 함</dt><dd class="num" style="color:var(--unknown)">2건 · <span id="gunm">4</span>점</dd></div>
   <div class="cell"><dt>명세</dt><dd class="num" id="gspec">1.10.0</dd></div>
@@ -407,7 +407,7 @@ function renderSEO(spec,t){
   const maxW=Math.max(...rows.map(r=>r[2]));
   // 게이지
   gfill.style.strokeDashoffset=GLEN*(1-norm/100);
-  $("#gnum").textContent=norm.toFixed(1); $("#graw").textContent=E.toFixed(1); $("#gweight").textContent=Math.round(W);
+  $("#gnum").textContent=norm.toFixed(1); $("#glost").textContent="−"+(100-norm).toFixed(1);
   const gg=$("#ggrade"); gg.textContent=gradeOf(norm); gg.style.color=gradeColor(norm);
   gfill.style.stroke=gradeColor(norm);
   const isA=Math.abs(W-128)<2;
