@@ -1,0 +1,460 @@
+<title>ANSEO 전체 이식 통합 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3; --violet:#9d7bff;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13); --ember-soft:rgba(233,177,62,.14);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10); --ember-soft:rgba(168,111,16,.12);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10); --ember-soft:rgba(168,111,16,.12);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1120px; margin:0 auto; padding:26px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:19px; font-weight:700; letter-spacing:-.02em; margin:0;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+.foot{margin-top:12px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:84ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .55s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(12px);}}
+.fadein{animation:fadein .4s ease-out backwards;}
+@keyframes fadein{from{opacity:0;}}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+/* 전역 네비 (B7 IA) */
+.topnav{display:flex; align-items:center; gap:18px; border:1px solid var(--border); background:var(--card); border-radius:12px; padding:10px 16px; flex-wrap:wrap;}
+.topnav .brand{font-weight:700; letter-spacing:.02em; color:var(--ink); font-size:15px;}
+.topnav .menu{display:flex; gap:2px;}
+.topnav .menu span{font-size:13px; color:var(--ink-faint); padding:4px 11px; border-radius:7px;}
+.topnav .menu span.on{color:var(--ink); background:var(--signal-soft);}
+.topnav .who{margin-left:auto; font-size:11.5px; color:var(--ink-faint);}
+.segtoggle{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+.segtoggle button{border:0; background:transparent; color:var(--ink-dim); font:inherit; font-size:12px; padding:5px 13px; cursor:pointer;}
+.segtoggle button[aria-pressed="true"]{background:var(--signal-soft); color:var(--signal); font-weight:500;}
+.crumb{font-size:12px; color:var(--ink-faint); margin-top:14px;}
+.crumb button{border:0; background:none; color:var(--signal); font:inherit; font-size:12px; cursor:pointer; padding:0;}
+
+/* KPI */
+.kpis{display:flex; gap:8px; flex-wrap:wrap;}
+.kpi{border:1px solid var(--border); background:var(--card2); border-radius:8px; padding:7px 13px; min-width:96px;}
+.kpi dt{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint);}
+.kpi dd{margin:2px 0 0; font-size:16px;}
+
+/* 현황판 */
+table.roster{border-collapse:collapse; width:100%; min-width:880px; font-size:13px;}
+table.roster th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+table.roster th.r, table.roster td.r{text-align:right;}
+table.roster td{padding:8px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+tr.rrow{cursor:pointer;}
+tr.rrow:hover td{background:var(--card2);}
+.gr{font-size:16px; font-weight:700; letter-spacing:-.02em;}
+.gs{font-size:11px; color:var(--ink-faint);}
+.sovmini{display:flex; height:11px; width:110px; border-radius:99px; overflow:hidden; outline:1px solid var(--border);}
+.sovmini i{box-shadow:inset -1px 0 0 var(--card);}
+.cyc{font-size:10.5px; border:1px solid var(--border); border-radius:99px; padding:2px 9px; white-space:nowrap; color:var(--ink-dim);}
+.cyc.hot{border-color:color-mix(in oklab,var(--ember) 55%,transparent); color:var(--ember); background:var(--ember-soft);}
+.cyc.late{border-color:color-mix(in oklab,var(--destructive) 55%,transparent); color:var(--destructive); background:var(--destructive-soft);}
+.sortbtns button{border:1px solid var(--border); background:none; color:var(--ink-dim); font:inherit; font-size:11.5px; border-radius:7px; padding:4px 10px; cursor:pointer;}
+.sortbtns button[aria-pressed="true"]{color:var(--signal); border-color:color-mix(in oklab,var(--signal) 55%,transparent); background:var(--signal-soft);}
+
+/* TOP5 */
+.top5{display:grid; grid-template-columns:24px 1fr auto auto; gap:8px 12px; align-items:center; font-size:12.5px;}
+.top5>*{padding:5px 0; border-bottom:1px solid var(--border);}
+.t5bar{height:11px; border-radius:99px; background:var(--track); position:relative; min-width:150px;}
+.t5bar i{position:absolute; inset:1.5px auto 1.5px 0; border-radius:99px; display:block;}
+.us{background:var(--signal-soft); border-radius:7px;}
+
+/* 관리자 산점 (C11) */
+.duo{display:grid; grid-template-columns:1.35fr 1fr; gap:22px;}
+@media(max-width:900px){.duo{grid-template-columns:1fr;}}
+.scwrap{position:relative;}
+.sctip{position:absolute; pointer-events:none; background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:11px; line-height:1.55; color:var(--ink-dim); box-shadow:0 8px 22px rgba(0,0,0,.3); white-space:nowrap; z-index:2; translate:-50% calc(-100% - 10px);}
+.loadrow{display:grid; grid-template-columns:74px 1fr 96px; gap:12px; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+.loadrow:last-child{border-bottom:0;}
+.loadrail{display:flex; height:16px; border-radius:5px; overflow:hidden;}
+.loadrail i{box-shadow:inset -1px 0 0 var(--card);}
+
+/* 거래처 상세 탭 */
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-top:10px; flex-wrap:wrap;}
+.tabs button{border:0; background:none; color:var(--ink-faint); font:inherit; font-size:13.5px; padding:8px 14px; cursor:pointer; border-bottom:2px solid transparent; translate:0 1px;}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--signal); font-weight:500;}
+.tabs button:hover{color:var(--ink-dim);}
+.tabpane{padding-top:16px;}
+/* 순환 스트립 */
+.cycle{display:flex; gap:6px; align-items:stretch; flex-wrap:wrap; margin-top:4px;}
+.cnode{border:1px solid var(--border); border-radius:9px; padding:7px 11px; font-size:11.5px; color:var(--ink-dim); min-width:96px;}
+.cnode b{display:block; font-size:12px; color:var(--ink); font-weight:500;}
+.cnode small{display:block; font-size:10px; color:var(--ink-faint); margin-top:2px;}
+.cnode.now{border-color:color-mix(in oklab,var(--ember) 60%,transparent); background:var(--ember-soft);}
+.cnode.now b{color:var(--ember);}
+.cnode.next{border-style:dashed;}
+.carrow{align-self:center; color:var(--ink-faint); font-size:11px;}
+/* 미니 위젯 */
+.minigrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px;}
+.mini{border:1px solid var(--border); border-radius:10px; background:var(--card2); padding:13px 15px;}
+.mini h4{margin:0 0 8px; font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+.bullet{padding:5px 0; border-bottom:1px solid var(--border); font-size:12px;}
+.bullet:last-child{border-bottom:0;}
+.bullet .track{position:relative; height:7px; border-radius:99px; background:var(--track); margin-top:4px;}
+.bullet .fill{position:absolute; inset:1px auto 1px 0; border-radius:99px; background:var(--mint);}
+.bullet .tgt{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--ink);}
+.issue{display:grid; grid-template-columns:64px 1fr auto; gap:10px; align-items:baseline; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+.issue:last-child{border-bottom:0;}
+.vbadge{font-size:10px; letter-spacing:.05em; border:1px solid; border-radius:4px; padding:1px 6px; text-align:center; white-space:nowrap;}
+.v-open{color:var(--destructive); border-color:color-mix(in oklab,var(--destructive) 50%,transparent);}
+.v-wait{color:var(--ember); border-color:color-mix(in oklab,var(--ember) 50%,transparent);}
+.v-fixed{color:var(--mint); border-color:color-mix(in oklab,var(--mint) 50%,transparent);}
+pre.hash{background:var(--codebg); border:1px solid var(--border); border-radius:7px; padding:7px 10px; font-size:11px; margin:6px 0 0; overflow-x:auto;}
+footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; font-size:12px; color:var(--ink-faint); line-height:1.7;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important;}}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow" style="margin-bottom:8px">ANSEO · 이식 4단계 · 전체 통합 시뮬레이션</p>
+    <nav class="topnav" aria-label="전역 네비게이션">
+      <span class="brand">ANSEO</span>
+      <div class="menu"><span class="on">거래처</span><span>파이프라인</span><span>리포트</span><span>설정</span></div>
+      <span class="who">담당: 베놈 A (콘텐츠) · 거래처 10곳</span>
+      <div class="segtoggle" role="group" aria-label="관점 전환">
+        <button id="vw-op" aria-pressed="true">담당자 뷰</button><button id="vw-mg" aria-pressed="false">최고 관리자 뷰</button>
+      </div>
+    </nav>
+    <p class="crumb" id="crumb">거래처 목록</p>
+  </header>
+
+  <!-- ═══════ 담당자 뷰 ═══════ -->
+  <div id="view-op">
+    <section class="card stage" style="animation-delay:.06s">
+      <div class="card-head">
+        <div><p class="eyebrow">담당 현황 · 2026-08-29</p><h2>오늘, 어느 거래처부터 여나</h2></div>
+        <span class="srcchip">D1 카운트업 · A9 결정적 표본</span>
+      </div>
+      <dl class="kpis">
+        <div class="kpi"><dt>담당 거래처</dt><dd class="num" data-cu="10">0</dd></div>
+        <div class="kpi"><dt>열린 이슈</dt><dd class="num" data-cu="119" style="color:var(--destructive)">0</dd></div>
+        <div class="kpi"><dt>제안 대기</dt><dd class="num" data-cu="4" style="color:var(--ember)">0</dd></div>
+        <div class="kpi"><dt>이번 주 재관측</dt><dd class="num" data-cu="2">0</dd></div>
+        <div class="kpi"><dt>수집 지연</dt><dd class="num" data-cu="1" style="color:var(--destructive)">0</dd></div>
+      </dl>
+    </section>
+
+    <section class="card stage" style="animation-delay:.12s">
+      <div class="card-head">
+        <div><p class="eyebrow">거래처 현황판 — 10곳</p><h2>등급·순환 위치·다음 액션이 한 줄에</h2></div>
+        <div class="sortbtns" role="group" aria-label="정렬">
+          <button data-s="seo" aria-pressed="true">SEO 낮은 순</button>
+          <button data-s="issues" aria-pressed="false">이슈 많은 순</button>
+          <button data-s="sov" aria-pressed="false">인용 점유 낮은 순</button>
+        </div>
+      </div>
+      <div class="overflow"><table class="roster">
+        <thead><tr><th>거래처</th><th>SEO</th><th>GEO</th><th>AEO 인용 점유</th><th>순환 위치</th><th class="r">열린 이슈</th><th>다음 액션</th></tr></thead>
+        <tbody id="roster"></tbody>
+      </table></div>
+      <p class="foot">행을 누르면 그 거래처 상세로 들어갑니다 — 모든 화면은 클릭 경로로 도달합니다(«부를 수 없는 기능은 없는 기능»). 등급은 크게, 점수는 작게. AEO 막대는 민트=자사·주황=경쟁·회색=무인용 점유입니다. 순환 위치 칩이 주황이면 사람 액션 대기, 빨강이면 지연입니다.</p>
+    </section>
+
+    <section class="card stage" style="animation-delay:.18s">
+      <div class="card-head">
+        <div><p class="eyebrow">경쟁 지형 — 강남 · 피부과 (NXT 이관)</p><h2>SEO 점수 TOP 5와 자사의 자리</h2></div>
+        <span class="srcchip">C6 막대+분모 · 등급제</span>
+      </div>
+      <div class="top5" id="top5"></div>
+      <p class="foot">같은 지역·업종 경쟁 도메인의 SEO 점수 순위입니다. 점수는 기술·구조 준비도이며 검색 순위를 보장하지 않습니다 — 격차는 «따라잡을 거리»로만 읽습니다.</p>
+    </section>
+  </div>
+
+  <!-- ═══════ 관리자 뷰 ═══════ -->
+  <div id="view-mg" hidden>
+    <section class="card stage">
+      <div class="card-head">
+        <div><p class="eyebrow">전체 진단·관측 · 2026-08-29</p><h2>42개 거래처, 어디에 개입하나</h2></div>
+        <span class="srcchip">C11 중앙값 사분면 산점 · A9 시드</span>
+      </div>
+      <dl class="kpis" style="margin-bottom:14px">
+        <div class="kpi"><dt>전체 거래처</dt><dd class="num">42</dd></div>
+        <div class="kpi"><dt>콘텐츠 담당자</dt><dd class="num">4</dd></div>
+        <div class="kpi"><dt>이번 주 진단</dt><dd class="num" style="color:var(--mint)">38 <span style="font-size:11px;color:var(--ink-faint)">/ 42</span></dd></div>
+        <div class="kpi"><dt>재진단 지연</dt><dd class="num" style="color:var(--destructive)">3</dd></div>
+        <div class="kpi"><dt>파이프라인 실패</dt><dd class="num">0</dd></div>
+      </dl>
+      <div class="duo">
+        <div class="scwrap" id="scwrap"></div>
+        <div>
+          <div class="mini" style="margin-bottom:14px">
+            <h4>담당자 부하 — 거래처 수 · 지연</h4>
+            <div id="loads"></div>
+          </div>
+          <div class="mini">
+            <h4>순환 건강도</h4>
+            <div class="bullet"><div style="display:flex;justify-content:space-between"><span>재진단 주기 준수</span><b class="num" style="color:var(--mint)">93%</b></div><div class="track"><div class="fill" style="width:93%"></div><div class="tgt" style="left:90%"></div></div></div>
+            <div class="bullet"><div style="display:flex;justify-content:space-between"><span>제안 → 실행 전환</span><b class="num" style="color:var(--ember)">61%</b></div><div class="track"><div class="fill" style="width:61%;background:var(--ember)"></div><div class="tgt" style="left:70%"></div></div></div>
+            <div class="bullet"><div style="display:flex;justify-content:space-between"><span>실행 → 재관측 상승 확인</span><b class="num" style="color:var(--mint)">78%</b></div><div class="track"><div class="fill" style="width:78%"></div><div class="tgt" style="left:70%"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <p class="foot">가로=SEO 환산 점수, 세로=AEO 자사 인용 점유, 원 면적=열린 이슈 수(면적 스케일 — 반지름 왜곡 금지). 십자는 42곳의 중앙값입니다. 좌하(둘 다 낮음)가 개입 1순위, 좌상은 기술 진단 우선, 우하는 콘텐츠 우선입니다. 색은 담당자입니다 — 점에 손을 올리면 거래처가 열립니다.</p>
+    </section>
+  </div>
+
+  <!-- ═══════ 거래처 상세 (드릴인) ═══════ -->
+  <div id="view-detail" hidden>
+    <section class="card">
+      <div class="card-head" style="margin-bottom:6px">
+        <div>
+          <p class="eyebrow">거래처 상세 · 병원·의원 · grand4.co.kr</p>
+          <h2>그랜드아름다운의원 <span class="gs" style="font-weight:400">열린 이슈 <span class="num">26</span>건 · 담당 베놈 A</span></h2>
+        </div>
+        <span class="srcchip">D4 탭 재키잉 · B7 enteredFrom</span>
+      </div>
+      <div class="cycle" id="cycle" aria-label="순환 상태"></div>
+      <div class="tabs" role="tablist" id="dtabs"></div>
+      <div id="dpane" class="tabpane"></div>
+      <p class="foot" id="dfoot">순환 스트립이 이 거래처의 현재 위치입니다 — 지금은 <b style="color:var(--ember)">4c 제안 3건이 채택 대기</b>. 제안을 채택하면 5(실행) 작업 큐로 가고, 발행 후 재관측(09-07)과 재진단(09-10)이 자동 예약돼 있습니다. 이슈는 사람이 닫지 않습니다 — 재진단·재관측 통과가 닫습니다.</p>
+    </section>
+  </div>
+
+  <footer class="stage" style="animation-delay:.3s">
+    <p>이식 4단계 검증 요약 — 전역 홈(담당자·관리자 2관점, D4 재키잉 전환) ↔ 거래처 상세(탭 6종 전부 활성 + 순환 스트립) 드릴인·복귀(B7 enteredFrom), 현황판 정렬, C11 중앙값 사분면 산점(면적 스케일·A9 mulberry32 시드), 담당 부하 레일(C8), TOP5 경쟁 카드(NXT 이관), B8 발행 불변(리포트 탭). 1~3단계 화면 문법(등급제·이력·SOV·여정·판 규율)을 축약판으로 결합. C13 팬 차트·D6 생키 모프는 «선택» 자산으로 이번 판에 미투입 — 데이터 누적(회차 8+) 뒤 검토. · 표본 데이터 시뮬레이션</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const easeOut=t=>1-Math.pow(1-t,3);
+const GRADES=[["A+",95],["A",90],["B+",85],["B",80],["C+",75],["C",70],["D+",65],["D",60],["E+",55],["E",50],["F",0]];
+const gradeOf=v=>GRADES.find(g=>v>=g[1])[0];
+const gradeColor=v=>v>=90?"var(--mint)":v>=75?"var(--signal)":v>=50?"var(--ember)":"var(--destructive)";
+function countUp(el,to,dur=1400){
+  if(reduced){el.textContent=to;return;}
+  const t0=performance.now();
+  (function tick(now){const t=Math.min(1,(now-t0)/dur);el.textContent=Math.round(to*easeOut(t));
+    if(t<1)requestAnimationFrame(tick);})(t0);
+}
+document.querySelectorAll("[data-cu]").forEach((el,i)=>setTimeout(()=>countUp(el,+el.dataset.cu),220+i*110));
+
+/* ═════ 표본 (A9: 우리 10곳 고정 + 관리자 32곳 시드 생성) ═════ */
+// [이름, 업종, seo, geo, sov자사%, sov경쟁%, 순환칩, 칩톤, 이슈, 다음 액션]
+const MINE=[
+ ["그랜드아름다운의원","피부과",32.6,71.5,22,40,"4c 제안","hot",26,"제안 3건 채택 대기"],
+ ["다솜재활의학과","재활",52.4,68.2,9,44,"2 채점","",21,"진단 결과 확인"],
+ ["미래아동병원","소아",61.5,74.0,12,38,"1 수집","late",17,"수집 지연 2일 — 복구 확인"],
+ ["강남숲한의원","한방",57.9,78.1,18,35,"3 질문","",14,"질문 보강 6건 검수"],
+ ["세로토닌정신건강의학과","정신",75.2,83.4,26,31,"4c 제안","hot",10,"제안 1건 채택 대기"],
+ ["라온정형외과","정형",66.2,81.0,31,29,"5 실행","",9,"발행 2건 검수"],
+ ["리버뷰산부인과","산부",72.8,80.2,29,33,"4b 분석","",8,"격차 확인"],
+ ["서초밝은치과","치과",76.4,86.1,38,27,"재관측","",7,"09-02 재관측 예정"],
+ ["한빛안과","안과",82.1,90.4,44,22,"6 보고","",4,"월간 리포트 발행"],
+ ["온유내과","내과",85.3,92.0,41,24,"유지","",3,"—"]];
+
+/* ═════ 현황판 ═════ */
+(function(){
+  const host=$("#roster");
+  function row(c,i){
+    const none=100-c[4]-c[5];
+    return `<tr class="rrow" data-i="${i}" tabindex="0">
+      <td style="color:var(--ink)">${c[0]} <span class="gs">${c[1]}</span></td>
+      <td><b class="gr" style="color:${gradeColor(c[2])}">${gradeOf(c[2])}</b> <span class="num gs">${c[2].toFixed(1)}</span></td>
+      <td><b class="gr" style="color:${gradeColor(c[3])}">${gradeOf(c[3])}</b> <span class="num gs">${c[3].toFixed(1)}</span></td>
+      <td><div style="display:flex;gap:8px;align-items:center"><span class="sovmini"><i style="width:${c[4]}%;background:var(--mint)"></i><i style="width:${c[5]}%;background:var(--ember)"></i><i style="width:${none}%;background:var(--track)"></i></span><span class="num gs">${c[4]}%</span></div></td>
+      <td><span class="cyc ${c[7]}">${c[6]}</span></td>
+      <td class="r num" style="color:${c[8]>=15?"var(--destructive)":c[8]>=8?"var(--ember)":"var(--ink-dim)"}">${c[8]}</td>
+      <td style="font-size:12px">${c[9]}</td></tr>`;
+  }
+  const SORTS={seo:(a,b)=>a[2]-b[2], issues:(a,b)=>b[8]-a[8], sov:(a,b)=>a[4]-b[4]};
+  function render(key){
+    const rows=MINE.map((c,i)=>[c,i]).sort((x,y)=>SORTS[key](x[0],y[0]));
+    host.innerHTML=rows.map(([c,i])=>row(c,i)).join("");
+    host.querySelectorAll(".rrow").forEach(tr=>{
+      const open=()=>openDetail(+tr.dataset.i,"거래처 목록");
+      tr.addEventListener("click",open);
+      tr.addEventListener("keydown",e=>{if(e.key==="Enter")open();});
+    });
+  }
+  document.querySelectorAll(".sortbtns button").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(".sortbtns button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render(b.dataset.s);
+  });
+  render("seo");
+})();
+
+/* ═════ TOP5 경쟁 (NXT 이관) ═════ */
+(function(){
+  const T=[["misojin-derma.co.kr — 미소진피부과",91.2],["yourskin.kr — 유어스킨의원",88.7],["cheongdam-la.co.kr",84.1],["gangnamglow.com",79.8],["newbornskin.co.kr",77.3]];
+  const US=["grand4.co.kr — 자사",32.6,12];
+  const MAX=T[0][1];
+  $("#top5").innerHTML=T.map((r,i)=>`
+    <span class="num" style="color:var(--ink-faint)">${i+1}</span>
+    <span style="color:var(--ink)">${r[0]}</span>
+    <span class="t5bar"><i style="width:${r[1]/MAX*100}%;background:var(--ember)"></i></span>
+    <span class="num"><b class="gr" style="font-size:14px;color:${gradeColor(r[1])}">${gradeOf(r[1])}</b> <span class="gs">${r[1].toFixed(1)}</span></span>`).join("")
+   +`<span class="num us" style="color:var(--signal);text-align:center">${US[2]}</span>
+    <span class="us" style="color:var(--ink);padding-left:6px">${US[0]}</span>
+    <span class="t5bar us"><i style="width:${US[1]/MAX*100}%;background:var(--mint)"></i></span>
+    <span class="num us"><b class="gr" style="font-size:14px;color:${gradeColor(US[1])}">${gradeOf(US[1])}</b> <span class="gs">${US[1].toFixed(1)}</span></span>`;
+})();
+
+/* ═════ 관리자 산점 (C11 · A9 시드) ═════ */
+(function(){
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  const rnd=mulberry32(20260829); // 결정적 시드 — 렌더마다 동일
+  const OWNERS=[["베놈 A","var(--signal)"],["베놈 B","var(--mint)"],["베놈 C","var(--violet)"],["베놈 D","var(--ember)"]];
+  const pts=MINE.map(c=>({n:c[0],seo:c[2],sov:c[4],iss:c[8],o:0}));
+  for(let i=0;i<32;i++){
+    const seo=18+rnd()*72, sov=Math.max(2,Math.min(55,seo*.45+(rnd()-.5)*26));
+    pts.push({n:`거래처 ${String.fromCharCode(66+(i%3))}-${i+1}`,seo,sov,iss:Math.round(2+rnd()*22),o:1+i%3});
+  }
+  const med=a=>{const s=a.slice().sort((x,y)=>x-y);return (s[20]+s[21])/2;};
+  const mSeo=med(pts.map(p=>p.seo)), mSov=med(pts.map(p=>p.sov));
+  const W=560,H=330,PL=40,PR=14,PT=16,PB=34;
+  const X=v=>PL+v/100*(W-PL-PR), Y=v=>PT+(1-v/60)*(H-PT-PB);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="거래처 42곳 — SEO 점수 대 AEO 인용 점유">`;
+  [0,25,50,75,100].forEach(v=>{s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${PT}" y2="${H-PB}" stroke="var(--grid)" stroke-dasharray="3 5"/><text x="${X(v)}" y="${H-16}" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="num">${v}</text>`;});
+  [0,20,40,60].forEach(v=>{s+=`<line x1="${PL}" x2="${W-PR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" stroke-dasharray="3 5"/><text x="${PL-6}" y="${Y(v)+3.5}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" class="num">${v}</text>`;});
+  s+=`<text x="${W-PR}" y="${H-4}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)">SEO 환산 점수 →</text>`;
+  s+=`<text x="12" y="${PT+2}" font-size="9.5" fill="var(--ink-faint)">AEO 자사 인용 점유% ↑</text>`;
+  // 중앙값 십자 + 코너 힌트
+  s+=`<line x1="${X(mSeo)}" x2="${X(mSeo)}" y1="${PT}" y2="${H-PB}" stroke="var(--ink)" stroke-opacity=".3"/>`;
+  s+=`<line x1="${PL}" x2="${W-PR}" y1="${Y(mSov)}" y2="${Y(mSov)}" stroke="var(--ink)" stroke-opacity=".3"/>`;
+  [[W-PR-4,PT+12,"end","유지·확산"],[PL+4,PT+12,"start","기술 진단 우선"],[W-PR-4,H-PB-8,"end","콘텐츠 우선"],[PL+4,H-PB-8,"start","집중 개입"]]
+    .forEach(([x,y,a,t])=>{s+=`<text x="${x}" y="${y}" text-anchor="${a}" font-size="9.5" fill="var(--ink-faint)" opacity=".8">${t}</text>`;});
+  pts.forEach((p,i)=>{
+    const r=Math.sqrt(p.iss)*2.1; // 면적 스케일
+    s+=`<circle class="fadein" style="animation-delay:${i*18}ms" data-i="${i}" cx="${X(p.seo)}" cy="${Y(p.sov)}" r="${r.toFixed(1)}" fill="${OWNERS[p.o][1]}" fill-opacity="${p.o===0?.85:.5}" ${p.o===0?'stroke="var(--card)" stroke-width="1.2"':""}/>`;
+  });
+  s+="</svg>";
+  $("#scwrap").innerHTML=s+`<div class="sctip" id="sctip" hidden></div>`;
+  const tip=$("#sctip");
+  $("#scwrap").addEventListener("pointerover",e=>{
+    const c=e.target.closest("circle[data-i]"); if(!c){tip.hidden=true;return;}
+    const p=pts[+c.dataset.i];
+    tip.innerHTML=`<b style="color:var(--ink)">${p.n}</b> <span style="color:${OWNERS[p.o][1]}">· ${OWNERS[p.o][0]}</span><br>SEO <b class="num" style="color:${gradeColor(p.seo)}">${gradeOf(p.seo)}</b> <span class="num">${p.seo.toFixed(1)}</span> · 점유 <span class="num">${p.sov.toFixed(0)}%</span> · 이슈 <span class="num">${p.iss}</span>`;
+    tip.style.left=(+c.getAttribute("cx")/W*100)+"%"; tip.style.top=(+c.getAttribute("cy")/H*100)+"%"; tip.hidden=false;
+  });
+  $("#scwrap").addEventListener("pointerleave",()=>tip.hidden=true);
+  // 담당자 부하 레일 (C8)
+  const load=[["베놈 A",10,1],["베놈 B",11,0],["베놈 C",10,2],["베놈 D",11,0]];
+  $("#loads").innerHTML=load.map(([n,cnt,late],i)=>`
+    <div class="loadrow"><span style="color:var(--ink)">${n}</span>
+      <div class="loadrail" title="${n} — 거래처 ${cnt}곳, 재진단 지연 ${late}">
+        <i style="width:${(cnt-late)/11*100}%;background:${OWNERS[i][1]};opacity:.75"></i>
+        ${late?`<i style="width:${late/11*100}%;background:var(--destructive)"></i>`:""}
+      </div>
+      <span class="num" style="font-size:11.5px;color:${late?"var(--destructive)":"var(--ink-faint)"}">${cnt}곳${late?` · 지연 ${late}`:""}</span></div>`).join("");
+})();
+
+/* ═════ 뷰 전환 (D4 재키잉) ═════ */
+function rekey(host){
+  host.querySelectorAll(".card").forEach((c,i)=>{
+    c.classList.remove("stage"); void c.offsetWidth;
+    c.style.animation="none"; void c.offsetWidth; c.style.animation="";
+    c.classList.add("stage"); c.style.animationDelay=(i*80)+"ms";
+  });
+}
+function showView(k){
+  $("#view-op").hidden=k!=="op"; $("#view-mg").hidden=k!=="mg"; $("#view-detail").hidden=k!=="detail";
+  $("#vw-op").setAttribute("aria-pressed",k==="op"); $("#vw-mg").setAttribute("aria-pressed",k==="mg");
+  if(k!=="detail")$("#crumb").textContent=k==="op"?"거래처 목록":"전체 현황 (관리자)";
+  rekey($(k==="op"?"#view-op":k==="mg"?"#view-mg":"#view-detail"));
+}
+$("#vw-op").onclick=()=>showView("op");
+$("#vw-mg").onclick=()=>showView("mg");
+
+/* ═════ 거래처 상세 (B7 enteredFrom + 탭 6종) ═════ */
+const TABS=[
+ ["diag","진단"],["seo","SEO"],["geo","GEO"],["aeo","AEO 관측"],["issues","이슈"],["report","리포트"]];
+const CYCLE=[
+ ["진단","08-22 완료","done"],["관측","08-24 완료","done"],["4a 추출","문서 9건","done"],["4b 분석","격차 3건","done"],
+ ["4c 제안","3건 채택 대기","now"],["실행","대기 0건",""],["재관측","09-07 예약","next"],["재진단","09-10 예약","next"]];
+function openDetail(idx,from){
+  showView("detail");
+  $("#crumb").innerHTML=`<button id="backbtn">← ${from}</button> <span style="margin:0 4px">›</span> ${MINE[idx][0]}`;
+  $("#backbtn").onclick=()=>showView("op");
+  $("#cycle").innerHTML=CYCLE.map((c,i)=>
+    `<div class="cnode ${c[2]==="now"?"now":c[2]==="next"?"next":""}"><b>${c[0]}</b><small>${c[1]}</small></div>${i<CYCLE.length-1?'<span class="carrow">→</span>':""}`).join("");
+  $("#dtabs").innerHTML=TABS.map(([k,l],i)=>`<button role="tab" data-t="${k}" aria-selected="${i===0}">${l}</button>`).join("");
+  $("#dtabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    $("#dtabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
+    renderTab(b.dataset.t);
+  });
+  renderTab("diag");
+}
+function spark(vals,max,tone){
+  const w=120,h=32,p=4;
+  const x=i=>p+i*(w-2*p)/(vals.length-1), y=v=>h-p-(v/max)*(h-2*p);
+  const P=vals.map((v,i)=>[x(i),y(v)]);
+  return `<svg width="${w}" height="${h}" aria-hidden="true"><path d="${P.map((pt,i)=>`${i?"L":"M"}${pt[0].toFixed(1)},${pt[1].toFixed(1)}`).join(" ")}" fill="none" stroke="${tone}" stroke-width="1.8" stroke-linecap="round"/><circle cx="${P.at(-1)[0]}" cy="${P.at(-1)[1]}" r="2.6" fill="${tone}"/></svg>`;
+}
+const PANES={
+ diag:()=>`<div class="minigrid">
+   <div class="mini"><h4>최근 진단 · 08-22 · 명세 1.10.0</h4>
+     <p style="margin:0"><b class="gr" style="font-size:26px;color:var(--destructive)">F</b> <span class="num gs">32.6 /100</span> · 깎인 점수 <b class="num" style="color:var(--destructive)">−67.4</b> · 직전 대비 <b class="num" style="color:var(--mint)">▲1.1</b></p>
+     <p style="font-size:11.5px;color:var(--ink-faint);margin:8px 0 0">배점 49 + 미배점 10 항목 · 감점 21 · 판정 못 함 2 · 신뢰도 73.25%</p></div>
+   <div class="mini"><h4>파이프라인 위치</h4>
+     <p style="margin:0;font-size:12.5px;color:var(--ink-dim)">0 등록 → 1 수집 → <b style="color:var(--mint)">2 채점 ✓</b> → 3 질문 → 4 관측 ✓ → <b style="color:var(--ember)">4c 제안 (지금)</b> → 5 실행 → 6 보고</p>
+     <p style="font-size:11.5px;color:var(--ink-faint);margin:8px 0 0">숫자는 진단 실행에서만 나온다 — 이 화면의 어떤 값도 수기 입력이 아니다.</p></div></div>`,
+ seo:()=>`<div class="minigrid">
+   <div class="mini"><h4>SEO — 등급·추이 (4회차)</h4>
+     <div style="display:flex;gap:16px;align-items:center"><b class="gr" style="font-size:30px;color:var(--destructive)">F</b>
+       <div><span class="num" style="font-size:13px">32.6 /100</span><br><span class="gs">목표 A(90)까지 <span class="num">57.4</span> 남음 · 이 속도면 E(50) 2027-06</span></div>
+       ${spark([28.6,30.0,31.5,32.6],50,"var(--signal)")}</div></div>
+   <div class="mini"><h4>가장 크게 깎인 곳</h4>
+     <p style="margin:0;font-size:12.5px;color:var(--ink-dim)">경쟁력 −25.9 · 해석 불가 −22.5 · 대표 URL −19.6</p>
+     <p style="font-size:11.5px;color:var(--ink-faint);margin:8px 0 0">상세는 SEO 탭 전체 화면(2단계 시뮬레이션 문법)으로 — 채점표·워터폴·반사실.</p></div></div>`,
+ geo:()=>`<div class="minigrid">
+   <div class="mini"><h4>GEO — 5영역 · 배점 합 100</h4>
+     <div style="display:flex;gap:16px;align-items:center"><b class="gr" style="font-size:30px;color:var(--ember)">C</b><span class="num" style="font-size:13px">71.5 /100</span></div>
+     <p style="font-size:11.5px;color:var(--ink-faint);margin:8px 0 0">최저 영역: 구조화 데이터 45% · 답변 가능성 65% — 4b 분석의 격차 항목과 같은 결.</p></div>
+   <div class="mini"><h4>다음 구간 접점</h4>
+     <p style="margin:0;font-size:12.5px;color:var(--ink-dim)">GEO 격차 + AEO 인용 문서 → «우리 문서엔 무엇이 없나»(4b) → 제안은 그 근거에서만(규칙 6).</p></div></div>`,
+ aeo:()=>`<div class="minigrid">
+   <div class="mini"><h4>AEO — 인용 점유 (판정 104회)</h4>
+     <div class="sovmini" style="width:100%;height:16px;margin-bottom:6px"><i style="width:22.1%;background:var(--mint)"></i><i style="width:40.4%;background:var(--ember)"></i><i style="width:37.5%;background:var(--track)"></i></div>
+     <p style="margin:0;font-size:12px;color:var(--ink-dim)">자사 <b class="num" style="color:var(--mint)">22.1%</b> · 경쟁 <b class="num" style="color:var(--ember)">40.4%</b> · 격차 <b class="num" style="color:var(--destructive)">−18.3%p</b></p></div>
+   <div class="mini"><h4>추이 — 자사 vs 최다 경쟁(4회차)</h4>
+     <div style="display:flex;gap:14px;align-items:center">${spark([9,14,17,23],50,"var(--mint)")}${spark([31,29,27,26],50,"var(--ember)")}</div>
+     <p style="font-size:11.5px;color:var(--ink-faint);margin:6px 0 0">자사 9→23% ↑ · 미소진 31→26% ↓ — 상세는 AEO 탭 전체 화면(3단계 문법)으로.</p></div></div>`,
+ issues:()=>`<div class="mini"><h4>작업 목록 — 점수판이 아니라 작업 목록 · 사람이 닫지 않는다</h4>
+   ${[["열림","HTTPS 인증서 체인 끊김 — 재발급·재배포","v-open","재진단이 닫음"],
+      ["열림","canonical 8장이 옛 도메인을 가리킴","v-open","재진단이 닫음"],
+      ["대기","«울쎄라 유지 기간» 직답 FAQ 신설 — 4c 제안","v-wait","채택 → 실행 큐"],
+      ["대기","«울쎄라 vs 슈링크» 비교 문서 — 4c 제안","v-wait","채택 → 실행 큐"],
+      ["닫힘","제목 태그 14장 중복 — 08-22 재진단 통과","v-fixed","재진단이 닫았음"]]
+     .map(r=>`<div class="issue"><span class="vbadge ${r[2]}">${r[0]}</span><span style="color:var(--ink)">${r[1]}</span><span class="gs">${r[3]}</span></div>`).join("")}</div>`,
+ report:()=>`<div class="minigrid">
+   <div class="mini"><h4>발행본 — B8 발행 불변</h4>
+     <p style="margin:0;font-size:12.5px;color:var(--ink-dim)">2026-08 월간 리포트 · 명세 1.10.0 고정 · 수기 입력 <b class="num">0</b></p>
+     <pre class="hash num">sha256 3f8a1c…9d42 · 콘솔/공유 단일 컴포넌트(variant)</pre>
+     <p style="font-size:11.5px;color:var(--ink-faint);margin:8px 0 0">발행 후 재생성해도 같은 입력이면 같은 해시 — 리포트는 화면의 사본이지 별도 문서가 아니다.</p></div>
+   <div class="mini"><h4>다음 발행</h4>
+     <p style="margin:0;font-size:12.5px;color:var(--ink-dim)">09-10 재진단 통과 후 자동 초안 — 등급 변화(F→?)와 순환 1바퀴 요약 포함.</p></div></div>`
+};
+function renderTab(k){
+  const pane=$("#dpane");
+  pane.innerHTML=PANES[k]();
+  pane.querySelectorAll(".mini").forEach((m,i)=>{m.classList.add("stage");m.style.animationDelay=(i*80)+"ms";});
+}
+</script>
