@@ -1,0 +1,357 @@
+<title>ANSEO 파이프라인 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08);
+  --lane1:rgba(91,157,255,.045); --lane2:rgba(233,177,62,.05); --lane3:rgba(47,211,156,.05);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09);
+    --lane1:rgba(43,102,217,.05); --lane2:rgba(168,111,16,.06); --lane3:rgba(13,157,112,.06);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09);
+  --lane1:rgba(43,102,217,.05); --lane2:rgba(168,111,16,.06); --lane3:rgba(13,157,112,.06);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1120px; margin:0 auto; padding:34px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:22px; font-weight:700; letter-spacing:-.02em; margin:6px 0 4px; text-wrap:balance;}
+h2{font-size:16.5px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+.sub{color:var(--ink-dim); max-width:66ch;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:78ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-top:22px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10.5px; letter-spacing:.05em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:8px 12px; font-size:12px; color:var(--ink-dim); margin-top:18px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+/* 파이프라인 맵 */
+#map svg{max-width:100%; height:auto; display:block;}
+.node{cursor:pointer;}
+.node rect{fill:var(--card2); stroke:var(--border); stroke-width:1; transition:opacity .22s, stroke .22s;}
+.node.new rect{stroke:var(--ember); stroke-dasharray:5 4;}
+.node.sel rect{stroke:var(--signal); stroke-width:1.6;}
+.node.lit rect{stroke:var(--signal); stroke-width:1.6; fill:var(--signal-soft);}
+.map-dim .node:not(.lit){opacity:.28;}
+.map-dim .edge{opacity:.18;}
+.edge{transition:opacity .22s;}
+.newtag{font-size:9px; letter-spacing:.08em; fill:var(--ember);}
+
+/* 상세 패널 */
+#detail{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; border-top:1px solid var(--border); padding-top:14px; margin-top:6px;}
+#detail h3{font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; margin:0 0 6px;}
+#detail ul{margin:0; padding:0; list-style:none; font-size:12.5px; color:var(--ink-dim);}
+#detail li{padding:2px 0;}
+.ownerchip{display:inline-block; font-size:11px; border-radius:5px; padding:2px 8px; margin-top:4px;}
+
+/* 러너 */
+.runbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.btn{border:1px solid color-mix(in oklab,var(--signal) 55%,transparent); background:transparent; color:var(--signal); font:inherit; font-size:13px; border-radius:8px; padding:7px 16px; cursor:pointer; transition:background .15s;}
+.btn:hover{background:var(--signal-soft);}
+.btn[disabled]{opacity:.45; cursor:default;}
+.btn.ghost{border-color:var(--border); color:var(--ink-faint);}
+#runlog{margin-top:14px; display:flex; flex-direction:column; gap:0; border-top:1px solid var(--border);}
+.logrow{display:grid; grid-template-columns:64px 1fr auto; gap:12px; padding:9px 2px; border-bottom:1px solid var(--border); align-items:baseline; animation:rise .4s cubic-bezier(.22,1,.36,1) backwards;}
+.logrow .st{font-size:11px; color:var(--ink-faint);}
+.logrow .msg{font-size:13px; color:var(--ink-dim);}
+.logrow .msg b{color:var(--ink); font-weight:500;}
+.chk{font-size:11px; white-space:nowrap;}
+.chk.ok{color:var(--mint);} .chk.rule{color:var(--ember);} .chk.auto{color:var(--unknown);}
+
+/* 라인 카드 */
+.lines{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-top:16px;}
+.line{border:1px solid var(--border); border-radius:11px; padding:14px 16px; background:var(--card2);}
+.line .chips{display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin-top:10px;}
+.chip{font-size:11.5px; border:1px solid var(--border); border-radius:6px; padding:3px 8px; color:var(--ink-dim); white-space:nowrap;}
+.chip.new{border-color:var(--ember); border-style:dashed; color:var(--ember);}
+.chip.gate{border-color:color-mix(in oklab,var(--signal) 50%,transparent); color:var(--signal);}
+.arr{color:var(--ink-faint); font-size:11px;}
+.gnote{margin-top:10px; font-size:11.5px; color:var(--ink-faint); line-height:1.6;}
+.gnote b{color:var(--signal); font-weight:500;}
+
+/* 역할 매트릭스 */
+table.roles{border-collapse:collapse; width:100%; min-width:640px; font-size:12.5px;}
+table.roles th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:7px 10px; border-bottom:1px solid var(--border);}
+table.roles td{padding:7px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+table.roles td.c{text-align:center;}
+.r-own{color:var(--mint);} .r-gate{color:var(--ember);} .r-view{color:var(--ink-faint);} .r-auto{color:var(--signal);}
+
+.invar{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:8px 26px; font-size:12.5px; color:var(--ink-dim); margin-top:12px;}
+.invar li{padding:3px 0; list-style:none;}
+.invar .newr{color:var(--ember);}
+footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; font-size:12px; color:var(--ink-faint); line-height:1.7;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important;}}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">ANSEO · 이식 1단계</p>
+    <h1>파이프라인 시뮬레이션 — 세 라인이 하나의 순환이 되는가</h1>
+    <p class="sub">기존 7단계 파이프라인(등록→보고)에 신설 3단계(콘텐츠 추출·분석·제안)를 4와 5 사이에 끼워 넣고, 담당 체계(최고 관리자 1~3명 · 콘텐츠 담당 1인 10곳)를 레인으로 얹었다. 아래에서 단계를 눌러 정의를 확인하고, 한 거래처를 실제로 통과시켜 불변 규칙이 깨지지 않는지 본다.</p>
+    <div class="badge"><b>명세</b><span>이식 자산 명세 v1 · 단계 1 투입분(A1~A5·A7·A9 / B1·B2·B4·B6·B7 / C1~C3 / D1·D2·D8)</span><span>· 값은 표본 — 검증 대상은 구성과 규칙</span></div>
+  </header>
+
+  <!-- 파이프라인 맵 -->
+  <section class="card stage" style="animation-delay:.12s">
+    <div class="card-head">
+      <div><p class="eyebrow">전체 파이프라인 · 11단계 + 순환 2</p><h2>값이 어떤 순서로 만들어지고, 누구 손을 거치나</h2></div>
+      <span class="srcchip">기반: site-map.ts PIPELINE + 확장 흐름(사장님 오더)</span>
+    </div>
+    <div class="overflow"><div id="map"></div></div>
+    <div id="detail" aria-live="polite"></div>
+    <p class="foot">점선 테두리가 <b style="color:var(--ember)">신설 3단계</b>다. 각 단계는 앞 단계의 산출물만 먹는다 — 제안(4c)은 분석(4b) 없이, 분석은 추출(4a) 없이, 추출은 관측(4) 없이 존재할 수 없다. 위로 도는 두 점선이 순환이다: 실행→재진단(이슈 자동 닫힘), 콘텐츠 발행→재관측(추이에 발행 마커).</p>
+  </section>
+
+  <!-- 러너 -->
+  <section class="card stage" style="animation-delay:.20s">
+    <div class="card-head">
+      <div><p class="eyebrow">통과 시험</p><h2>거래처 하나를 처음부터 끝까지 통과시켜 본다</h2></div>
+      <span class="srcchip">표본: 그랜드아름다운의원 · 검증: 불변 규칙 8조</span>
+    </div>
+    <div class="runbar">
+      <button class="btn" id="run">▶ 한 회차 돌리기</button>
+      <button class="btn ghost" id="reset">처음으로</button>
+      <span id="runstate" class="num" style="font-size:12px;color:var(--ink-faint)"></span>
+    </div>
+    <div id="runlog"></div>
+    <p class="foot">오른쪽 표시는 그 단계에서 지켜진 규칙이다. <span class="chk ok">✓ 검증</span>은 합·분모가 실제로 계산돼 맞았다는 뜻이고, <span class="chk rule">규칙</span>은 설계가 강제하는 제약, <span class="chk auto">자동</span>은 사람 손이 닿지 않는 단계라는 뜻이다.</p>
+  </section>
+
+  <!-- 라인 3장 -->
+  <section class="card stage" style="animation-delay:.28s">
+    <div class="card-head">
+      <div><p class="eyebrow">라인 구성</p><h2>세 라인은 같은 순환의 다른 구간을 맡는다</h2></div>
+    </div>
+    <div class="lines">
+      <div class="line">
+        <p class="eyebrow" style="color:var(--signal)">SEO 라인 — 검색엔진이 읽을 수 있나</p>
+        <div class="chips"><span class="chip">수집 40장</span><span class="arr">→</span><span class="chip">6영역 채점 /128</span><span class="arr">→</span><span class="chip">이슈</span><span class="arr">→</span><span class="chip">실행 큐</span><span class="arr">→</span><span class="chip gate">재진단 게이트</span></div>
+        <p class="gnote"><b>게이트</b> — 접근(1단계)이 막힌 주소의 뒤 단계 점수는 «낮다»가 아니라 «못 쟀다». 이슈는 재진단 통과로만 닫힌다.</p>
+      </div>
+      <div class="line">
+        <p class="eyebrow" style="color:var(--mint)">GEO 라인 — AI가 읽고 검증할 수 있나</p>
+        <div class="chips"><span class="chip gate">SEO와 같은 크롤</span><span class="arr">→</span><span class="chip">5영역 채점 /100</span><span class="arr">→</span><span class="chip">이슈</span><span class="arr">→</span><span class="chip">실행 큐</span><span class="arr">→</span><span class="chip gate">재진단 게이트</span></div>
+        <p class="gnote"><b>게이트</b> — 수집을 두 번 하지 않는다(같은 크롤 공유). 선언·구조·접근을 태그 단위로 재며 SEO와 합산하지 않는다.</p>
+      </div>
+      <div class="line">
+        <p class="eyebrow" style="color:var(--ember)">AEO 라인 — AI 답변에 우리가 나오나 · 무엇으로 나오게 할 것인가</p>
+        <div class="chips"><span class="chip">키워드</span><span class="arr">→</span><span class="chip gate">질문 발행</span><span class="arr">→</span><span class="chip">7엔진×2조건 관측</span><span class="arr">→</span><span class="chip gate">식별·검수</span><span class="arr">→</span><span class="chip">언급률 확정</span><span class="arr">→</span><span class="chip new">추출</span><span class="arr">→</span><span class="chip new">분석</span><span class="arr">→</span><span class="chip new">제안</span><span class="arr">→</span><span class="chip">발행</span><span class="arr">→</span><span class="chip gate">재관측</span></div>
+        <p class="gnote"><b>게이트 셋</b> — ① 발행한 질문 집합만 측정된다(저장만 된 것은 제외) ② 식별 안 된 언급은 «낮음»이 아니라 «셀 수 없음» ③ 제안은 관측이 인용한 문서 근거에서만 나온다. 신설 구간이 이 라인의 차별점: <b>다음에 어떤 콘텐츠로 작업할지까지</b> 보여 준다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 역할 매트릭스 -->
+  <section class="card stage" style="animation-delay:.36s">
+    <div class="card-head">
+      <div><p class="eyebrow">담당 체계</p><h2>누가 책임지고, 누가 승인하고, 무엇이 자동인가</h2></div>
+      <span class="srcchip">최고 관리자 1~3명 · 콘텐츠 담당 1인=10곳</span>
+    </div>
+    <div class="overflow"><table class="roles" id="roles"></table></div>
+    <p class="foot">범례 — <span class="r-own">● 책임</span>(그 단계의 결과를 소유) · <span class="r-gate">◆ 게이트</span>(사람 승인·검수가 있어야 다음으로) · <span class="r-auto">⚙ 자동</span>(기계 실행, 사람은 열람) · <span class="r-view">○ 열람</span>. 관리자는 재는 쪽(진단·관측·발행)을, 콘텐츠 담당은 만드는 쪽(분석·제안·조치)을 소유한다. 담당자 화면의 분모는 조직 전체가 아니라 «내 10곳»이다.</p>
+  </section>
+
+  <!-- 불변 규칙 -->
+  <section class="card stage" style="animation-delay:.44s">
+    <div class="card-head"><div><p class="eyebrow">전 구간 규칙</p><h2>어느 단계에서도 깨면 안 되는 것 — 기존 5 + 신설 3</h2></div></div>
+    <ul class="invar">
+      <li>1 · SEO·GEO·AEO·키워드 수요는 별도 지표다. 하나의 총점으로 합치지 않는다.</li>
+      <li>2 · 못 잰 값은 0이 아니라 «진단 못 함»으로 남고 coverage·confidence에 반영된다.</li>
+      <li>3 · 모든 숫자에는 명세 버전·수집 시각·실행자·분모가 붙는다.</li>
+      <li>4 · 발행본은 고치지 않는다 — 다시 내려면 새 판을 찍는다.</li>
+      <li>5 · 이슈는 사람이 닫지 않는다 — 재진단이 통과하면 닫힌다.</li>
+      <li class="newr">6 · 제안은 관측 근거에서만 나온다 — 인용 문서 없는 제안은 만들지 않는다. (신설)</li>
+      <li class="newr">7 · 콘텐츠에도 같은 상태 머신 — 제안은 사람이 완료 처리하지 않고, 발행 후 재관측이 판정한다. (신설)</li>
+      <li class="newr">8 · 발행 시점은 추이에 마커로 남는다 — 질문 변경과 같은 «추이 단절» 규율을 따른다. (신설)</li>
+    </ul>
+  </section>
+
+  <footer class="stage" style="animation-delay:.5s">
+    <p>다음 단계 — 2. 이 파이프라인의 2(채점) 구간을 SEO·GEO 화면으로, 3. 4~4c(관측·콘텐츠) 구간을 AEO 화면으로 펼친다. ANSEO가 계산하는 점수는 기술·구조 준비도이며 검색 순위를 예측하거나 보장하지 않는다. · 표본 데이터 시뮬레이션</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const easeOut=t=>1-Math.pow(1-t,3);
+
+/* ── 단계 정의 (A5 구조 + 확장) ── */
+const OWNER={m:"기계",a:"최고 관리자",c:"콘텐츠 담당"};
+const OWNER_COLOR={m:"var(--signal)",a:"var(--ember)",c:"var(--mint)"};
+const STAGES=[
+ {id:"s0",no:"0",label:"등록",owner:"a",q:"무엇을 재나",input:"거래처·도메인·업종·브랜드 표기",work:["도메인 소유·사설 IP 검증","같은 도메인 수집 상한(450장/시) 공유 경고","브랜드 표기 = AEO 분모 확정"],out:"customers · projects",inv:"등록은 분모 확정 — 바꾸면 회차 비교 단절"},
+ {id:"s1",no:"1",label:"수집",owner:"m",q:"읽을 수 있나",input:"측정 대상 URL",work:["robots·사이트맵 확인","SSRF 차단 후 수집","못 읽은 주소는 «진단 못 함»으로 기록"],out:"수집 스냅샷 · coverage · confidence",inv:"규칙 2 — 실패≠0"},
+ {id:"s2",no:"2",label:"채점",owner:"m",q:"몇 점인가",input:"스냅샷 + 명세 판",work:["SEO 6영역·GEO 5영역 판정(4종)","근거 조각·수정 절차 생성","100점 환산(서버 한 곳)"],out:"진단 실행 · 판정 · 이슈",inv:"규칙 1·3 — 합산 금지, 판번호 필수"},
+ {id:"s3",no:"3",label:"키워드·질문",owner:"a",q:"무엇을 물을 것인가",input:"거래처 맞춤 키워드",work:["네이버 검색량 조회","질문 후보 추출","발행 확정(저장만=측정 제외)"],out:"발행 질문 집합",inv:"발행 게이트 — 관리자 확정"},
+ {id:"s4",no:"4",label:"AI 관측",owner:"m",q:"우리를 부르나",input:"질문 × 7엔진 × 검색 켬/끔",work:["7개 서비스 질의·원문 보관","언급·경쟁사·인용 URL 추출","식별 관문 → 검수 대기 분리"],out:"관측 회차 · 칸별 결과 · 인용 URL",inv:"못 받은 칸은 분모 제외"},
+ {id:"s4a",no:"4a",label:"콘텐츠 추출",owner:"m",isNew:true,q:"AI는 무엇을 인용했나",input:"관측 회차의 인용 URL",work:["인용 문서 수집(자사/타사 분리)","미등록 도메인 → 등록 후보 환류","문서 단위 메타 확보"],out:"인용 문서 목록",inv:"신설 6 — 근거는 관측 인용만"},
+ {id:"s4b",no:"4b",label:"콘텐츠 분석",owner:"c",isNew:true,q:"우리 문서엔 무엇이 없나",input:"자사 문서 vs 인용 문서",work:["GEO 항목 문법(판정 4종)으로 격차 판정","질문별 커버리지 대조","격차 근거 조각 첨부"],out:"격차 목록",inv:"판정 못 함 규율 유지"},
+ {id:"s4c",no:"4c",label:"콘텐츠 제안",owner:"c",isNew:true,q:"다음에 무엇을 만들까",input:"격차 + 예상 상승폭",work:["상승폭÷품 정렬 제안 큐","담당·기한 배정(내 10곳)","발행 시 추이에 마커"],out:"제안 큐 · 발행물",inv:"신설 7·8 — 재관측이 판정"},
+ {id:"s5",no:"5",label:"실행",owner:"c",q:"무엇부터 고치나",input:"이슈+제안 · 예상 상승폭",work:["상승폭÷품 실행 큐","조치 → 재진단 대기","사람은 닫지 못함"],out:"실행 큐 · 이슈 상태",inv:"규칙 5 — 자동 닫힘"},
+ {id:"s6",no:"6",label:"보고",owner:"a",q:"설명할 수 있나",input:"진단 실행 + 관측 회차",work:["발행본 생성(값·판 고정)","공유 토큰 발급","수기 입력 0"],out:"리포트 버전 · 공유 링크",inv:"규칙 4 — 발행본 불변"},
+];
+
+/* ── 맵 SVG ── */
+(function(){
+  const N=STAGES.length, GAP=118, X0=96, W=X0+GAP*N+8, NW=92, NH=46;
+  const laneY={m:64,a:142,c:220}, H=352;
+  const x=i=>X0+i*GAP;
+  const edges=[["s0","s1","분모"],["s1","s2","스냅샷"],["s2","s3","점수·이슈"],["s3","s4","질문"],["s4","s4a","인용 URL"],["s4a","s4b","문서"],["s4b","s4c","격차"],["s4c","s5","제안 큐"],["s5","s6","조치 결과"]];
+  const idx=Object.fromEntries(STAGES.map((s,i)=>[s.id,i]));
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ANSEO 파이프라인 11단계. 등록·수집·채점·키워드·관측을 지나 신설된 콘텐츠 추출·분석·제안을 거쳐 실행·보고로 이어지고, 실행에서 채점으로 재진단이, 제안 발행에서 관측으로 재관측이 되돌아간다.">`;
+  svg+=`<defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--ink-faint)"/></marker>
+  <marker id="ahd" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="var(--ember)"/></marker></defs>`;
+  // 레인
+  const lanes=[["m","기계 · 자동","--lane1",laneY.m],["a","최고 관리자 1~3","--lane2",laneY.a],["c","콘텐츠 담당 1인·10곳","--lane3",laneY.c]];
+  lanes.forEach(([k,label,v,y])=>{
+    svg+=`<rect x="8" y="${y-31}" width="${W-16}" height="62" rx="9" fill="var(${v})"/>
+    <text x="16" y="${y-38}" font-size="10.5" letter-spacing=".08em" fill="${OWNER_COLOR[k]}">${label.toUpperCase?label:label}</text>`;
+  });
+  // 순환 점선 2개 (노드 아래에 깔리면 안 보임 → 위쪽 별도 레인)
+  const rr=(a,b,y,label)=>{
+    const xa=x(idx[a])+NW/2, xb=x(idx[b])+NW/2, ya=laneY[STAGES[idx[a]].owner]+NH/2, yb=laneY[STAGES[idx[b]].owner]+NH/2;
+    return `<g class="edge"><path d="M${xa},${ya} C${xa},${y} ${xb},${y} ${xb},${yb}" fill="none" stroke="var(--ember)" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#ahd)"/>
+    <text x="${(xa+xb)/2}" y="${y-6}" text-anchor="middle" font-size="10.5" fill="var(--ember)">${label}</text></g>`;
+  };
+  svg+=rr("s5","s2",316,"재진단 — 통과하면 이슈 자동 닫힘");
+  svg+=rr("s4c","s4",286,"발행 후 재관측 — 추이에 발행 마커");
+  // 에지
+  edges.forEach(([a,b,label])=>{
+    const ia=idx[a], ib=idx[b];
+    const ya=laneY[STAGES[ia].owner], yb=laneY[STAGES[ib].owner];
+    const xa=x(ia)+NW, xb=x(ib);
+    svg+=`<g class="edge"><path d="M${xa},${ya} C${xa+26},${ya} ${xb-26},${yb} ${xb-2},${yb}" fill="none" stroke="var(--ink-faint)" stroke-opacity=".55" stroke-width="1.1" marker-end="url(#ah)"/>
+    <text x="${(xa+xb)/2}" y="${(ya+yb)/2-7}" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">${label}</text></g>`;
+  });
+  // 노드
+  STAGES.forEach((s,i)=>{
+    const y=laneY[s.owner];
+    svg+=`<g class="node${s.isNew?" new":""}" id="n-${s.id}" data-id="${s.id}" tabindex="0" role="button" aria-label="${s.no} ${s.label} — ${s.q}">
+      <rect x="${x(i)}" y="${y-NH/2}" width="${NW}" height="${NH}" rx="9"/>
+      <text x="${x(i)+10}" y="${y-6}" font-size="10.5" class="num" fill="${s.isNew?"var(--ember)":"var(--ink-faint)"}" font-family="JetBrains Mono">${s.no}</text>
+      ${s.isNew?`<text x="${x(i)+NW-8}" y="${y-6}" text-anchor="end" class="newtag">신설</text>`:""}
+      <text x="${x(i)+10}" y="${y+12}" font-size="12.5" font-weight="600" fill="var(--ink)">${s.label}</text>
+    </g>`;
+  });
+  svg+="</svg>";
+  $("#map").innerHTML=svg;
+  const detail=$("#detail");
+  function select(id){
+    const s=STAGES.find(v=>v.id===id);
+    document.querySelectorAll(".node").forEach(n=>n.classList.toggle("sel",n.dataset.id===id));
+    detail.innerHTML=`
+      <div><h3>단계</h3><p style="margin:0"><b class="num">${s.no}</b> <b>${s.label}</b> — ${s.q}</p>
+        <span class="ownerchip" style="color:${OWNER_COLOR[s.owner]};border:1px solid color-mix(in oklab,${OWNER_COLOR[s.owner]} 45%,transparent)">${OWNER[s.owner]}${s.owner==="c"?" · 내 10곳 분모":""}</span></div>
+      <div><h3>들어오는 것</h3><ul><li>${s.input}</li></ul></div>
+      <div><h3>하는 일</h3><ul>${s.work.map(w=>`<li>· ${w}</li>`).join("")}</ul></div>
+      <div><h3>남는 것 / 지키는 규칙</h3><ul><li>${s.out}</li><li style="color:var(--ember)">${s.inv}</li></ul></div>`;
+  }
+  document.querySelectorAll(".node").forEach(n=>{
+    n.addEventListener("click",()=>select(n.dataset.id));
+    n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(n.dataset.id);}});
+  });
+  select("s4a");
+})();
+
+/* ── 러너 ── */
+const RUN=[
+ {id:"s0",msg:s=>`등록 — 도메인 <b>grand4.co.kr</b> · 브랜드 표기 <b class="num">3</b>개 = AEO 분모 확정`,chk:["rule","분모 확정"]},
+ {id:"s1",n:[["수집",40],["측정",39]],msg:s=>`수집 <b class="num">${s[0]}</b>장 → 측정 <b class="num">${s[1]}</b>장 · 못 읽음 1 = «진단 못 함»`,chk:["ok","39+1=40 · 실패≠0"]},
+ {id:"s2",msg:()=>`채점(명세 1.10.0) — SEO <b class="num">32.6</b>/100 · GEO <b class="num">71.5</b>/100 · 판정 못 함 3(분모 제외) · 이슈 <b class="num">8</b>건 생성`,chk:["ok","합산 안 함 · 판번호 부착"]},
+ {id:"s3",msg:()=>`키워드 «춘천 피부과» 월 <b class="num">2,410</b> → 질문 <b class="num">3</b>개 발행 (저장만 된 집합은 측정 제외)`,chk:["rule","발행 게이트"]},
+ {id:"s4",n:[["칸",42],["잰 칸",32],["언급",15]],msg:s=>`관측 — 칸 <b class="num">${s[0]}</b> 중 잰 칸 <b class="num">${s[1]}</b>(못 잼 10 분모 제외) · 언급 <b class="num">${s[2]}</b> · 식별 UNKNOWN 4 → 검수`,chk:["ok","30 = 22 + 8 보존"]},
+ {id:"s4a",n:[["인용 문서",12]],msg:s=>`추출 — 인용 문서 <b class="num">${s[0]}</b>건: 자사 4 · 타사 8 (미등록 도메인 2 → 등록 후보 환류)`,chk:["auto","근거 = 관측 인용만"]},
+ {id:"s4b",n:[["격차",5]],msg:s=>`분석 — 격차 <b class="num">${s[0]}</b>건: FAQ 답변 단위 없음 3 · 갱신일 미표기 2 (GEO 문법 판정 · 판정 못 함 1 별도)`,chk:["ok","5 판정 + 1 못 잼 분리"]},
+ {id:"s4c",n:[["제안",2]],msg:s=>`제안 — <b class="num">${s[0]}</b>건 큐 등재(예상 +5.0 · +1.2, 상승폭÷품 정렬) → 담당 배정(내 10곳)`,chk:["rule","완료 처리 없음 — 재관측이 판정"]},
+ {id:"s5",n:[["조치",3]],msg:s=>`실행 — 조치 <b class="num">${s[0]}</b>건 → 재진단 대기. 재진단 통과분만 자동 닫힘`,chk:["rule","사람이 닫지 못함"]},
+ {id:"s6",msg:()=>`보고 — 발행본 <b>v1</b> 생성 · sha256 고정 · 수기 입력 <b class="num">0</b>칸`,chk:["ok","발행본 불변"]},
+ {id:"s4",loop:true,msg:()=>`순환 — 발행 마커가 추이에 찍히고 다음 회차 재관측 예약 · 재진단은 채점(2)으로 되돌아간다`,chk:["rule","추이 단절 규율"]},
+];
+let running=false, timer=0;
+function countUp(el,target,dur){
+  if(reduced){el.textContent=target.toLocaleString();return;}
+  const t0=performance.now();
+  (function tick(now){const t=Math.min(1,(now-t0)/dur);
+    el.textContent=Math.round(target*easeOut(t)).toLocaleString();
+    if(t<1)requestAnimationFrame(tick);})(t0);
+}
+function resetRun(){
+  clearTimeout(timer); running=false;
+  $("#runlog").innerHTML=""; $("#runstate").textContent="";
+  $("#map").parentElement.classList.remove("map-dim");
+  document.querySelectorAll(".node").forEach(n=>n.classList.remove("lit"));
+  $("#run").disabled=false;
+}
+function runAll(){
+  if(running)return; resetRun(); running=true; $("#run").disabled=true;
+  $("#map").parentElement.classList.add("map-dim");
+  const log=$("#runlog");
+  let i=0;
+  const stepMs=reduced?10:820;
+  (function step(){
+    if(i>=RUN.length){
+      $("#runstate").textContent="회차 완료 — 규칙 위반 0";
+      document.querySelectorAll(".node").forEach(n=>n.classList.remove("lit"));
+      $("#map").parentElement.classList.remove("map-dim");
+      running=false; $("#run").disabled=false; return;
+    }
+    const r=RUN[i]; const st=STAGES.find(s=>s.id===r.id);
+    document.querySelectorAll(".node").forEach(n=>n.classList.toggle("lit",n.dataset.id===r.id));
+    $("#runstate").textContent=`단계 ${st.no} · ${st.label}${r.loop?" (순환)":""}`;
+    const row=document.createElement("div"); row.className="logrow";
+    const vals=(r.n||[]).map(()=>0);
+    row.innerHTML=`<span class="st num">${r.loop?"↺":st.no+" · "+st.label}</span><span class="msg">${r.msg(vals.map(()=>0)) }</span><span class="chk ${r.chk[0]}">${r.chk[0]==="ok"?"✓ ":""}${r.chk[1]}</span>`;
+    log.appendChild(row);
+    // 숫자 카운트업: msg를 목표값으로 재렌더 후 b.num 카운트
+    if(r.n){
+      row.querySelector(".msg").innerHTML=r.msg(r.n.map(v=>v[1]));
+      row.querySelectorAll(".msg b.num").forEach((b,k)=>{
+        const target=parseFloat((r.n[k]||[,parseFloat(b.textContent.replace(/,/g,""))])[1]??b.textContent);
+        if(Number.isFinite(target)&&Number.isInteger(target))countUp(b,target,520);
+      });
+    }
+    row.scrollIntoView({block:"nearest",behavior:reduced?"auto":"smooth"});
+    i++; timer=setTimeout(step,stepMs);
+  })();
+}
+$("#run").onclick=runAll; $("#reset").onclick=resetRun;
+
+/* ── 역할 매트릭스 ── */
+(function(){
+  const R={ // [기계, 관리자, 담당자]
+    s0:["","◆ 게이트","○"],s1:["⚙ 자동","○",""],s2:["⚙ 자동","● 책임","○"],
+    s3:["","● 책임 · ◆ 확정",""],s4:["⚙ 자동","● 책임 · ◆ 검수",""],
+    s4a:["⚙ 자동","○","○"],s4b:["","○","● 책임"],s4c:["","○","● 책임"],
+    s5:["","○","● 책임(조치) — 닫힘은 기계"],s6:["","● 책임 · ◆ 발행","○"],
+  };
+  const cls=v=>v.startsWith("●")?"r-own":v.startsWith("◆")?"r-gate":v.startsWith("⚙")?"r-auto":"r-view";
+  $("#roles").innerHTML=`<tr><th>단계</th><th>기계</th><th>최고 관리자 (1~3명 · 전 거래처)</th><th>콘텐츠 담당 (1인 · 내 10곳)</th></tr>`+
+    STAGES.map(s=>{const r=R[s.id];return `<tr><td><span class="num" style="color:${s.isNew?"var(--ember)":"var(--ink-faint)"}">${s.no}</span> ${s.label}${s.isNew?' <span style="font-size:10px;color:var(--ember)">신설</span>':""}</td>`+
+      r.map(v=>`<td class="c ${v?cls(v):""}">${v||"—"}</td>`).join("")+`</tr>`;}).join("");
+})();
+</script>
