@@ -1,0 +1,653 @@
+<title>ANSEO AEO 화면 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3; --violet:#9d7bff;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:82ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);}
+
+.crumb{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-top:14px;}
+.tabs button{border:0; background:none; color:var(--ink-faint); font:inherit; font-size:13.5px; padding:8px 14px; cursor:pointer; border-bottom:2px solid transparent; translate:0 1px;}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--signal); font-weight:500;}
+.tabs .off{opacity:.45; cursor:default;}
+.segtoggle{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+.segtoggle button{border:0; background:transparent; color:var(--ink-dim); font:inherit; font-size:12px; padding:5px 12px; cursor:pointer;}
+.segtoggle button[aria-pressed="true"]{background:var(--signal-soft); color:var(--signal); font-weight:500;}
+
+/* KPI 칩 */
+.kpis{display:flex; gap:8px; flex-wrap:wrap;}
+.kpi{border:1px solid var(--border); background:var(--card2); border-radius:8px; padding:6px 12px;}
+.kpi dt{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint);}
+.kpi dd{margin:2px 0 0; font-size:14px;}
+
+/* 퍼널 (C7) */
+.fun-rest{opacity:.66; transition:opacity .22s;}
+.fun-lit{opacity:.95 !important; transition:opacity .22s;}
+.fun-dim{opacity:.12 !important; transition:opacity .22s;}
+.rf-band{transform-box:fill-box; transform-origin:center; animation:rfband .42s cubic-bezier(.22,.65,.25,1) backwards;}
+@keyframes rfband{from{transform:scaleX(.04);}}
+.rf-wing{transform-box:fill-box; animation:rfwing .38s cubic-bezier(.22,.65,.25,1) backwards;}
+@keyframes rfwing{from{transform:scaleX(.04);}}
+.fadein{animation:fadein .4s ease-out backwards;}
+@keyframes fadein{from{opacity:0;}}
+.drawin{stroke-dasharray:100; stroke-dashoffset:100; animation:drawseg .72s cubic-bezier(.3,.7,.3,1) forwards;}
+@keyframes drawseg{to{stroke-dashoffset:0;}}
+
+/* 레일 (C8) */
+.rrow{display:grid; grid-template-columns:96px 1fr 118px; gap:12px; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+.rrow:last-child{border-bottom:0;}
+.rail{position:relative; height:22px; display:flex; border-radius:5px; overflow:hidden;}
+.rseg{position:relative; height:100%; box-shadow:inset -1px 0 0 var(--card); display:flex; align-items:center; justify-content:center;}
+.rseg .rlbl{font-size:10.5px; color:#fff; mix-blend-mode:normal; white-space:nowrap;}
+.rseg.mat{background:none !important; outline:1.5px dashed var(--unknown); outline-offset:-2px;}
+.rrow.dimmed .rail{opacity:.35;} .rrow.lit3 .rail{outline:1.5px solid var(--ink); border-radius:5px;}
+
+/* 여정 칩 (C12) */
+.jseq{display:inline-flex; gap:4px; align-items:center;}
+.jchip{font-size:10px; border:1px solid var(--border); border-radius:99px; padding:1px 7px; color:var(--ink-faint);}
+.jchip.on{border-color:color-mix(in oklab,var(--violet) 60%,transparent); color:var(--violet); background:color-mix(in oklab,var(--violet) 12%,transparent); transition:all .5s;}
+.jarrow{color:var(--ink-faint); font-size:9px;}
+.chips{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+.fchip{border:1px solid var(--border); background:none; color:var(--ink-dim); font:inherit; font-size:12px; border-radius:99px; padding:4px 11px; cursor:pointer;}
+.fchip[aria-pressed="true"]{border-color:color-mix(in oklab,var(--signal) 55%,transparent); color:var(--signal); background:var(--signal-soft);}
+
+/* 관측 테이블 */
+table.q{border-collapse:collapse; width:100%; min-width:760px; font-size:13px;}
+table.q th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.q td{padding:8px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+tr.qrow.hot3 td{background:var(--card2);}
+tr.qrow.dim4 td{opacity:.35;}
+.vbadge{font-size:10.5px; letter-spacing:.05em; border:1px solid; border-radius:4px; padding:1px 6px; text-align:center; white-space:nowrap;}
+.v-ours{color:var(--mint); border-color:color-mix(in oklab,var(--mint) 50%,transparent);}
+.v-comp{color:var(--ember); border-color:color-mix(in oklab,var(--ember) 50%,transparent);}
+.v-none{color:var(--ink-faint); border-color:var(--border);}
+.v-mat{color:var(--unknown); border-color:var(--unknown); border-style:dashed;}
+.v-hold{color:var(--destructive); border-color:color-mix(in oklab,var(--destructive) 50%,transparent); border-style:dashed;}
+
+/* 식별 관문 (A6) + 검수 (B5) */
+.gate{display:grid; grid-template-columns:minmax(280px,1fr) minmax(320px,1.25fr); gap:22px;}
+@media(max-width:900px){.gate{grid-template-columns:1fr;}}
+.idcard{border:1px solid var(--border); border-radius:10px; background:var(--card2); padding:13px 15px; font-size:12.5px;}
+.idcard dl{display:grid; grid-template-columns:auto 1fr; gap:5px 14px; margin:8px 0 0;}
+.idcard dt{color:var(--ink-faint); font-size:11px;}
+.idcard dd{margin:0; color:var(--ink-dim);}
+.wchip{font-size:10px; border:1px solid var(--border); border-radius:4px; padding:0 5px; color:var(--ink-faint); margin-left:6px;}
+.rvitem{border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:var(--card);}
+.rvitem blockquote{margin:8px 0; padding:8px 12px; background:var(--codebg); border-left:3px solid var(--unknown); border-radius:0 7px 7px 0; font-size:12.5px; color:var(--ink-dim);}
+.rvitem mark{background:color-mix(in oklab,var(--violet) 22%,transparent); color:var(--ink); border-radius:3px; padding:0 2px;}
+.rvbtns{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+.rvbtns button{border:1px solid var(--border); background:none; color:var(--ink-dim); font:inherit; font-size:12px; border-radius:7px; padding:5px 12px; cursor:pointer;}
+.rvbtns button:hover{background:var(--card2);}
+.rvbtns .yes{border-color:color-mix(in oklab,var(--mint) 50%,transparent); color:var(--mint);}
+.rvbtns .no{border-color:color-mix(in oklab,var(--destructive) 50%,transparent); color:var(--destructive);}
+.decided{animation:rise .42s cubic-bezier(.22,.65,.25,1);}
+
+/* 재관측 이력 */
+.histgrid{display:grid; grid-template-columns:1.45fr 1fr; gap:20px; align-items:start;}
+@media(max-width:900px){.histgrid{grid-template-columns:1fr;}}
+.histchart{position:relative;} .histchart svg{display:block;}
+.htip{position:absolute; pointer-events:none; background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:6px 10px 7px; font-size:11px; line-height:1.5; color:var(--ink-dim); box-shadow:0 8px 22px rgba(0,0,0,.3); white-space:nowrap; z-index:2; translate:-50% calc(-100% - 12px);}
+.htip .hg{font-size:18px; font-weight:700; margin-right:4px;}
+.histlegend{display:flex; gap:6px 16px; flex-wrap:wrap; font-size:11px; color:var(--ink-faint); margin-bottom:8px;}
+.histlegend i{display:inline-block; width:14px; height:3px; border-radius:99px; translate:0 -2.5px; margin-right:5px;}
+.etarow{font-size:11px; color:var(--ink-dim); margin-top:7px; line-height:1.6;}
+table.score{border-collapse:collapse; width:100%; min-width:300px; font-size:12.5px;}
+table.score th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.score td{padding:6.5px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+tr.hrow.hot3 td{background:var(--card2);}
+.hgr{font-size:16px; font-weight:700; letter-spacing:-.02em;}
+.hsc{font-size:11px; color:var(--ink-faint);}
+.hdl{font-size:10.5px;}
+
+/* 4a·4b·4c */
+.trip{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0;}
+@media(max-width:880px){.trip{grid-template-columns:1fr;}}
+.trip>div{padding:0 18px; border-left:1px dashed var(--border);}
+.trip>div:first-child{border-left:0; padding-left:0;}
+@media(max-width:880px){.trip>div{border-left:0; padding:14px 0; border-top:1px dashed var(--border);} .trip>div:first-child{border-top:0;}}
+.stept{display:flex; gap:8px; align-items:baseline; margin-bottom:8px;}
+.stept b{font-size:15px; color:var(--violet);}
+.xlist{margin:0; padding:0; list-style:none; font-size:12.5px; color:var(--ink-dim);}
+.xlist li{padding:6px 0; border-bottom:1px solid var(--border); line-height:1.55;}
+.xlist li:last-child{border-bottom:0;}
+.evi{display:block; font-size:11px; color:var(--ink-faint); margin-top:2px;}
+.sharebar{display:flex; height:10px; border-radius:99px; overflow:hidden; margin:6px 0 2px; outline:1px solid var(--border);}
+.pipe-link{display:flex; gap:10px; align-items:center; border:1px dashed color-mix(in oklab,var(--ember) 55%,transparent); background:var(--ember-soft); border-radius:9px; padding:10px 13px; margin-top:14px; font-size:12.5px; color:var(--ink-dim);}
+.pipe-link b{color:var(--ember);}
+
+/* 키워드 (NXT 이관) */
+.kwgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin-top:12px;}
+.kwcard{border:1px solid var(--border); border-radius:10px; background:var(--card2); padding:12px 14px;}
+.kwcard h3{margin:0; font-size:14px; font-weight:700;}
+.kwrow{display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-dim); padding:3px 0;}
+.kwrow .num{color:var(--ink);}
+.kwform{display:flex; gap:8px; flex-wrap:wrap;}
+.kwform input{flex:1; min-width:200px; background:var(--card2); border:1px solid var(--border); border-radius:8px; color:var(--ink); font:inherit; font-size:13px; padding:7px 12px;}
+.kwform button{border:1px solid color-mix(in oklab,var(--signal) 55%,transparent); background:var(--signal-soft); color:var(--signal); font:inherit; font-size:12.5px; border-radius:8px; padding:7px 14px; cursor:pointer;}
+footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; font-size:12px; color:var(--ink-faint); line-height:1.7;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important;} .drawin{stroke-dashoffset:0!important;}}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">ANSEO · 이식 3단계 · 거래처 상세</p>
+    <div class="crumb"><h1>그랜드아름다운의원</h1><span style="font-size:12px;color:var(--ink-faint)">병원·의원 · grand4.co.kr · 열린 이슈 <span class="num">26</span>건</span></div>
+    <div class="tabs" role="tablist">
+      <button class="off" tabindex="-1">진단</button><button class="off" tabindex="-1">SEO</button><button class="off" tabindex="-1">GEO</button>
+      <button role="tab" aria-selected="true">AEO 관측</button>
+      <button class="off" tabindex="-1">이슈</button><button class="off" tabindex="-1">리포트</button>
+    </div>
+    <div class="badge"><b>표본</b><span>파이프라인 4(관측)→4a(추출)→4b(분석)→4c(제안) 구간의 화면 · AEO는 «점수가 아니라 관측» — SEO·GEO 점수와 합산하지 않는다</span></div>
+  </header>
+
+  <!-- ① 관측 요약 + 버터플라이 퍼널 -->
+  <section class="card stage" style="animation-delay:.08s">
+    <div class="card-head">
+      <div><p class="eyebrow">관측 회차 2026-08-24 · 질문셋 v3</p><h2>질문이 어디까지 흘렀고, 몇 건이 우리를 인용했나</h2></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span style="display:flex;gap:8px;align-items:baseline"><span id="aeograde" style="font-size:26px;font-weight:700;color:var(--destructive)">F</span><span class="num" style="font-size:12px;color:var(--ink-faint)"><span id="aeonum">0.0</span> /100 인용 점수</span></span>
+        <div class="segtoggle" role="group" aria-label="퍼널 범위">
+          <button data-f="all" aria-pressed="true">전체 엔진</button><button data-f="global" aria-pressed="false">글로벌 4종</button><button data-f="naver" aria-pressed="false">네이버</button>
+        </div>
+        <span class="srcchip">C7 버터플라이 · D4 재키잉 · E1 lit/dim · E9 로빙</span>
+      </div>
+    </div>
+    <dl class="kpis" style="margin-bottom:12px">
+      <div class="kpi"><dt>질문 풀</dt><dd class="num" id="kpool">120</dd></div>
+      <div class="kpi"><dt>인용 질문</dt><dd class="num"><span id="kq">19</span> <span style="color:var(--ink-faint);font-size:11px">/ 판정 88</span></dd></div>
+      <div class="kpi"><dt>인용 관측쌍</dt><dd class="num"><span id="kpair" style="color:var(--mint)">23</span> <span style="color:var(--ink-faint);font-size:11px">/ 96회</span></dd></div>
+      <div class="kpi"><dt>성숙 중</dt><dd class="num" style="color:var(--unknown)">12</dd></div>
+      <div class="kpi"><dt>식별 보류</dt><dd class="num" id="khold" style="color:var(--destructive)">2</dd></div>
+    </dl>
+    <div id="funnel" tabindex="0" role="img" aria-label="관측 퍼널 — 방향키로 단계 이동"></div>
+    <table class="sr"><caption>관측 퍼널 수치</caption><tbody id="funnelsr"></tbody></table>
+    <p class="foot">막대 폭은 전 범위 공통 눈금(질문 1건 = 같은 픽셀)입니다 — 범위를 바꾸면 그림 자체가 작아지는 것이 정보입니다(제2의 기하 금지). 왼쪽 날개가 이탈(이유 병기), 오른쪽 날개가 <b style="color:var(--unknown)">성숙 중</b>(재관측 대기 — 실패가 아니라 «아직 안 여문» 상태)입니다. 범위 전환은 연속 변형이 아니라 <b style="color:var(--ink-dim)">한 번의 재등장</b>(one-shot 재키잉)으로 그립니다 — 다른 그림이기 때문입니다. 단계에 손을 올리거나 방향키로 짚으면 그 단계의 흐름만 켜집니다.</p>
+  </section>
+
+  <!-- ② 엔진별 고정 레일 -->
+  <section class="card stage" style="animation-delay:.16s">
+    <div class="card-head">
+      <div><p class="eyebrow">엔진별 관측 — 관측쌍(질문×엔진) 단위 96회</p><h2>어느 답변 엔진이 우리를 인용하나</h2></div>
+      <span class="srcchip">C8 고정 레일 · E7 라벨 자기방어 · E5 툴팁</span>
+    </div>
+    <div id="rails"></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink-faint);margin-top:10px">
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--mint)"></i> 자사 인용</span>
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--ember)"></i> 경쟁 인용</span>
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--track);outline:1px solid var(--border)"></i> 무인용</span>
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;outline:1.5px dashed var(--unknown);outline-offset:-1px"></i> 성숙 중 — 판정 분모 제외</span>
+    </div>
+    <p class="foot">레일 길이가 그 엔진에 물은 횟수(분모)입니다 — 길이가 다른 것이 곧 표본 크기의 차이입니다. 칸 경계는 레일 길이를 보존하는 헤어라인이고, 좁은 칸의 라벨은 스스로 숨습니다(값은 툴팁에). 성숙 중 칸은 실패도 무인용도 아니므로 인용률 분모에서 뺍니다.</p>
+  </section>
+
+  <!-- ③ 질문 관측 목록 + 여정 칩 -->
+  <section class="card stage" style="animation-delay:.24s">
+    <div class="card-head">
+      <div><p class="eyebrow">질문 단위 관측 — 표본 8건 / 전체 120건</p><h2 id="qcount">이번 회차에 물은 질문들</h2></div>
+      <span class="srcchip">C12 여정 칩 · E1 연동 · B5 판정 구분</span>
+    </div>
+    <div class="chips" id="qfilter" role="group" aria-label="판정 필터"></div>
+    <div class="chips" id="jfilter" role="group" aria-label="여정 단계 — 올리면 해당 질문이 켜진다"></div>
+    <div class="overflow"><table class="q"><thead><tr><th>질문</th><th>여정</th><th>엔진</th><th>판정</th><th>인용 문서</th></tr></thead><tbody id="qrows"></tbody></table></div>
+    <p class="foot">여정 칩(정보 탐색 → 비교 검토 → 결정 직전)은 질문의 의도 단계입니다 — 어느 단계에서 우리가 밀리는지가 4b 분석의 입력이 됩니다. «성숙 중»은 재관측 대기(분모 제외), «식별 보류»는 우리인지 확정 못 한 인용(아래 식별 관문에서 사람이 닫음)입니다 — 둘 다 인용과 합산하지 않습니다.</p>
+  </section>
+
+  <!-- ④ 식별 관문 + 검수 3판정 -->
+  <section class="card stage" style="animation-delay:.32s">
+    <div class="card-head">
+      <div><p class="eyebrow">식별 관문 — 이 인용이 정말 우리인가</p><h2>도메인만 결정적이다 · 나머지는 사람이 닫는다</h2></div>
+      <span class="srcchip">A6 식별 레코드 · B5 검수 3판정</span>
+    </div>
+    <div class="gate">
+      <div class="idcard">
+        <p class="eyebrow" style="margin:0 0 2px">브랜드 식별 레코드</p>
+        <b style="font-size:14px">그랜드아름다운의원</b>
+        <dl>
+          <dt>도메인</dt><dd class="num">grand4.co.kr <span class="wchip" style="color:var(--mint);border-color:color-mix(in oklab,var(--mint) 45%,transparent)">결정적 · w1.0</span></dd>
+          <dt>지역</dt><dd>서울 강남 <span class="wchip">w0.5</span></dd>
+          <dt>전화</dt><dd class="num">02-5**-**** <span class="wchip">w0.5</span></dd>
+          <dt>식별 어구</dt><dd>«그랜드아름다운» · «GRAND» <span class="wchip">w0.3</span></dd>
+          <dt>별칭</dt><dd>그랜드아름다운피부과 외 1</dd>
+          <dt>충돌 위험</dt><dd style="color:var(--ember)">유사 상호 2곳 — 부산 «아름다운의원» · 인천 «그랜드의원»</dd>
+        </dl>
+        <p style="font-size:11px;color:var(--ink-faint);margin:10px 0 0">도메인 링크가 있으면 자동 확정. 브랜드 언급만 있으면 지역·어구 가중 합산으로 추정하고, 확신 미달이면 <b style="color:var(--ink-dim)">보류 큐</b>로 보낸다 — 판정 전 인용은 «판정 못 함»이며 인용 수에 넣지 않는다.</p>
+      </div>
+      <div id="rvqueue"></div>
+    </div>
+    <p class="foot">검수는 3판정입니다 — <b style="color:var(--mint)">이 고객 맞음</b> / <b style="color:var(--destructive)">다른 업체</b> / 보류 유지. 판정하면 위 인용 수와 질문 목록이 그 자리에서 따라 움직입니다(현재값→새값 글라이드, 리셋 없음). 검수가 이슈를 닫는 것이 아니라 수치를 확정할 뿐입니다.</p>
+  </section>
+
+  <!-- ⑤ 재관측 추이 -->
+  <section class="card stage" style="animation-delay:.40s">
+    <div class="card-head">
+      <div><p class="eyebrow">재관측 이력</p><h2>날짜별 인용 점수 흐름 — 콘텐츠가 나가면 관측이 움직이나</h2></div>
+      <span class="srcchip">C6 확장 · C14 목표선 · B10 판 규율</span>
+    </div>
+    <div class="histgrid">
+      <div>
+        <div class="histlegend" id="histlegend"></div>
+        <div class="histchart" id="histchart"></div>
+      </div>
+      <div class="overflow"><table class="score" id="histtable" aria-label="재관측 회차별 인용 점수">
+        <thead><tr><th>관측일</th><th>질문셋</th><th>점수</th><th style="text-align:left">목표 A(90)까지</th></tr></thead><tbody></tbody>
+      </table></div>
+    </div>
+    <p class="foot">SEO 진단 이력과 같은 문법입니다 — 실제 날짜 간격, 등급 구간 배경, 곡선 연결, ◆ 조치(콘텐츠 발행) 마커, 실측 기울기 기반 도달 예상(보장 아님). 질문셋 판이 바뀌면 직전 대비만 «—»로 둡니다. 점선 테두리 점은 성숙 중이 남은 회차입니다.</p>
+  </section>
+
+  <!-- ⑥ 4a 추출 → 4b 분석 → 4c 제안 -->
+  <section class="card stage" style="animation-delay:.48s">
+    <div class="card-head">
+      <div><p class="eyebrow">순환의 심장 — 신설 구간</p><h2>인용을 가져간 문서에서, 다음 작업이 나온다</h2></div>
+      <span class="srcchip">4a·4b·4c · 신설 규칙 6 «제안은 근거에서만»</span>
+    </div>
+    <div class="trip">
+      <div>
+        <div class="stept"><b>4a</b><span style="font-weight:700">콘텐츠 추출</span><span style="font-size:11px;color:var(--ink-faint)">인용 상위 문서</span></div>
+        <div class="sharebar" title="인용 점유 — 자사 23 · 경쟁 상위 3개 문서 21 · 그 외 경쟁 20">
+          <i style="width:36%;background:var(--mint)" title="자사 23회"></i><i style="width:14%;background:var(--ember)" title="미소진블로그 9회"></i><i style="width:11%;background:color-mix(in oklab,var(--ember) 70%,transparent)" title="헬스컬럼 7회"></i><i style="width:8%;background:color-mix(in oklab,var(--ember) 45%,transparent)" title="유어스킨 FAQ 5회"></i><i style="width:31%;background:var(--track)" title="그 외 경쟁 20회"></i>
+        </div>
+        <ul class="xlist">
+          <li>미소진피부과 블로그 «울쎄라 총정리» <span class="num" style="color:var(--ember)">9회</span><span class="evi">ChatGPT 5 · Perplexity 4 — 비교 여정에서 독점적</span></li>
+          <li>헬스 매체 칼럼 «리프팅 시술 비교» <span class="num" style="color:var(--ember)">7회</span><span class="evi">Gemini 4 · ChatGPT 3</span></li>
+          <li>유어스킨의원 FAQ <span class="num" style="color:var(--ember)">5회</span><span class="evi">Perplexity 3 · Claude 2 — 질문 직답 구조</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="stept"><b>4b</b><span style="font-weight:700">콘텐츠 분석</span><span style="font-size:11px;color:var(--ink-faint)">그 문서에 있고, 우리에 없는 것</span></div>
+        <ul class="xlist">
+          <li>질문에 그대로 붙는 <b style="color:var(--ink)">직답 첫 문단</b><span class="evi">인용 상위 9개 문서 중 7개 보유 · 우리 0개 — GEO 진단의 «답변 단위 없음 21장»과 같은 결</span></li>
+          <li>시술 <b style="color:var(--ink)">주기·경과 표</b><span class="evi">9개 중 6개 보유 · 우리 없음</span></li>
+          <li><b style="color:var(--ink)">갱신일 표기</b><span class="evi">9개 중 8개 보유 — GEO 감점(27장)과 동일 원인</span></li>
+          <li>우리가 이미 가진 것 — 의료진·시설 정보<span class="evi">인용 문서 대비 우위, 유지</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="stept"><b>4c</b><span style="font-weight:700">콘텐츠 제안</span><span style="font-size:11px;color:var(--ink-faint)">다음 작업 — 근거 필수</span></div>
+        <ul class="xlist">
+          <li><b style="color:var(--ink)">«울쎄라 유지 기간» 직답 FAQ 신설</b><span class="evi">근거: 미인용 질문 6건이 이 주제 · 인용 상위 2개 문서 모두 직답 블록 보유 — 영향 질문 6건</span></li>
+          <li><b style="color:var(--ink)">«울쎄라 vs 슈링크» 비교 문서</b><span class="evi">근거: 비교 여정 질문의 41%가 경쟁 인용 — 영향 질문 11건</span></li>
+          <li><b style="color:var(--ink)">리프팅 페이지에 갱신일·경과 표 추가</b><span class="evi">근거: 4b 격차 2·3 — 기존 문서 보강이라 신규 발행보다 빠름</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pipe-link"><span style="font-size:16px">5</span><span><b>실행 구간으로 넘어가는 접점</b> — 제안을 채택하면 5(실행)의 작업 큐에 실리고, 발행 후 재관측(순환 2)이 위 추이에 ◆로 찍힙니다. 제안은 관측 근거에서만 나오고(신설 규칙 6), 이 카드는 이슈를 닫지 않습니다.</span></div>
+  </section>
+
+  <!-- ⑦ 키워드·질문 등록 (NXT 이관) -->
+  <section class="card stage" style="animation-delay:.56s">
+    <div class="card-head">
+      <div><p class="eyebrow">질문 풀의 입구</p><h2>키워드를 등록하면 질문이 파생된다</h2></div>
+      <span class="srcchip">NXT 이관 — 키워드 입력 + 월간 검색량</span>
+    </div>
+    <form class="kwform" id="kwform">
+      <input id="kwinput" type="text" placeholder="키워드 입력 — 예: 스킨부스터" aria-label="키워드 입력">
+      <button type="submit">등록하고 질문 파생</button>
+    </form>
+    <div class="kwgrid" id="kwgrid"></div>
+    <p class="foot">월간 검색량은 수집된 실측만 표기하고, 조회 전에는 0이 아니라 «수집 대기»로 둡니다. 파생 질문은 여정 3단계로 나뉘어 질문 풀에 들어가며, 다음 관측 회차부터 퍼널의 분모가 됩니다.</p>
+  </section>
+
+  <footer class="stage" style="animation-delay:.64s">
+    <p>이식 검증 요약 — 버터플라이 퍼널(C7 단일 눈금·이유 날개·sr 표), 범위 전환 one-shot 재키잉(D4), lit/dim 경로 추적(E1)·로빙 커서(E9), 고정 레일+라벨 자기방어(C8·E7), 여정 칩 점등(C12), 식별 관문(A6)·검수 3판정(B5) 인터랙션, 재관측 이력(목표선·조치 마커·판 규율), 4a→4b→4c 근거 사슬까지 AEO 화면 문법에 결합됨. AEO 인용 점수는 관측의 환산 표기이며 검색·인용을 보장하지 않고 SEO·GEO 점수와 합산하지 않습니다. · 표본 데이터 시뮬레이션</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const easeOut=t=>1-Math.pow(1-t,3);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const GRADES=[["A+",95],["A",90],["B+",85],["B",80],["C+",75],["C",70],["D+",65],["D",60],["E+",55],["E",50],["F",0]];
+const gradeOf=v=>GRADES.find(g=>v>=g[1])[0];
+const gradeColor=v=>v>=90?"var(--mint)":v>=75?"var(--signal)":v>=50?"var(--ember)":"var(--destructive)";
+function countUp(el,to,dur=1400,dec=1){
+  if(reduced){el.textContent=to.toFixed(dec);return;}
+  const t0=performance.now();
+  (function tick(now){const t=Math.min(1,(now-t0)/dur);el.textContent=(to*easeOut(t)).toFixed(dec);
+    if(t<1)requestAnimationFrame(tick);})(t0);
+}
+function glide(el,from,to,dec=0){
+  if(reduced){el.textContent=to.toFixed(dec);return;}
+  const t0=performance.now();
+  (function tick(now){const t=Math.min(1,(now-t0)/520);el.textContent=lerp(from,to,easeOut(t)).toFixed(dec);
+    if(t<1)requestAnimationFrame(tick);})(t0);
+}
+
+/* ═════ 관측 점수 헤더 ═════ */
+const AEO_SCORE=26.1;
+$("#aeograde").textContent=gradeOf(AEO_SCORE);
+$("#aeograde").style.color=gradeColor(AEO_SCORE);
+countUp($("#aeonum"),AEO_SCORE);
+
+/* ═════ 버터플라이 퍼널 (C7·D4·E1·E9) ═════ */
+(function(){
+  const STAGES=["질문 풀","관측 실행","응답 수신","판정 완료","자사 인용"];
+  const WINGS=[
+    {side:"l",label:c=>`검수 미통과 ${c}`},
+    {side:"l",label:c=>`엔진 오류·타임아웃 ${c}`},
+    {side:"r",label:c=>`성숙 중 · 재관측 대기 ${c}`},
+    {side:"l",label:(c,k)=>k==="all"?`미인용 ${c} — 경쟁만 38 · 무인용 31`:`미인용 ${c}`}];
+  const DATA={all:[120,112,100,88,19],global:[96,91,84,76,16],naver:[24,21,16,12,3]};
+  const U=2.6, W=740, CX=W/2, BH=24, GH=56;
+  const host=$("#funnel");
+  function render(key){
+    const V=DATA[key];
+    const H=14+STAGES.length*BH+(STAGES.length-1)*GH+18;
+    const y=i=>14+i*(BH+GH);
+    let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true">`;
+    // 리본(단계 사이 본류)
+    for(let i=0;i<V.length-1;i++){
+      const w0=V[i]*U/2, w1=V[i+1]*U/2;
+      s+=`<polygon data-t="${i}" class="fun-rest fadein" style="animation-delay:${i*70+150}ms" points="${CX-w0},${y(i)+BH} ${CX+w0},${y(i)+BH} ${CX+w1},${y(i+1)} ${CX-w1},${y(i+1)}" fill="color-mix(in oklab, var(--signal) 13%, transparent)"/>`;
+    }
+    // 날개(이탈·대기)
+    for(let i=0;i<WINGS.length;i++){
+      const c=V[i]-V[i+1]; if(c<=0)continue;
+      const w=c*U, midY=y(i)+BH+(GH-12)/2, edge=V[i+1]*U/2;
+      const isL=WINGS[i].side==="l";
+      const x0=isL?CX-edge-18-w:CX+edge+18;
+      s+=`<g data-w="${i}" class="fun-rest">
+        <line class="fadein" style="animation-delay:${i*70+260}ms" x1="${isL?CX-edge:CX+edge}" x2="${isL?x0+w:x0}" y1="${midY+6}" y2="${midY+6}" stroke="var(--border)"/>
+        <rect class="rf-wing" style="transform-origin:${isL?x0+w:x0}px ${midY+6}px;animation-delay:${i*70+220}ms" x="${x0}" y="${midY}" width="${Math.max(2,w)}" height="12" rx="3" fill="${WINGS[i].side==="r"?"none":"color-mix(in oklab, var(--destructive) 55%, transparent)"}" ${WINGS[i].side==="r"?'stroke="var(--unknown)" stroke-dasharray="3 3"':""}/>
+        <text class="fadein num" style="animation-delay:${i*70+330}ms" x="${x0+w/2}" y="${midY-5}" text-anchor="middle" font-size="10" fill="${WINGS[i].side==="r"?"var(--unknown)":"var(--ink-faint)"}">${WINGS[i].label(c,key)}</text></g>`;
+    }
+    // 본 단계 막대 + 라벨(내부→외부 리더, E7)
+    V.forEach((v,i)=>{
+      const w=v*U, tone=i===V.length-1?"var(--mint)":"var(--signal)";
+      s+=`<g data-s="${i}" class="fun-rest" id="fstage${i}">
+        <rect class="rf-band" style="animation-delay:${i*70}ms" x="${CX-w/2}" y="${y(i)}" width="${w}" height="${BH}" rx="5" fill="${tone}" fill-opacity="${i===0?.9:.78}"/>`;
+      const label=`${STAGES[i]} ${v}`;
+      if(w>=140) s+=`<text x="${CX}" y="${y(i)+16}" text-anchor="middle" font-size="11.5" fill="#fff" style="paint-order:stroke" stroke="rgba(0,0,0,.35)" stroke-width="2">${label}</text>`;
+      else s+=`<line x1="${CX+w/2}" x2="${CX+w/2+16}" y1="${y(i)+BH/2}" y2="${y(i)+BH/2}" stroke="var(--border)"/><text x="${CX+w/2+21}" y="${y(i)+16}" font-size="11.5" fill="var(--ink-dim)">${label}</text>`;
+      s+=`</g>`;
+    });
+    s+="</svg>";
+    host.innerHTML=s;
+    $("#funnelsr").innerHTML=STAGES.map((l,i)=>`<tr><th>${l}</th><td>${V[i]}건</td></tr>`).join("");
+    wire();
+  }
+  let active=-1;
+  function wire(){
+    const stages=[...host.querySelectorAll("[data-s]")], ribbons=[...host.querySelectorAll("[data-t]")], wings=[...host.querySelectorAll("[data-w]")];
+    function hot(si){
+      active=si;
+      const set=(el,on)=>{el.classList.toggle("fun-lit",on===1);el.classList.toggle("fun-dim",on===0);
+        if(on===-1){el.classList.remove("fun-lit","fun-dim");}};
+      if(si<0){[...stages,...ribbons,...wings].forEach(el=>set(el,-1));host.removeAttribute("aria-activedescendant");return;}
+      stages.forEach((el,i)=>set(el,i===si?1:0));
+      ribbons.forEach((el,i)=>set(el,(i===si||i===si-1)?1:0));
+      wings.forEach(el=>set(el,(+el.dataset.w===si||+el.dataset.w===si-1)?1:0));
+      host.setAttribute("aria-activedescendant","fstage"+si);
+    }
+    stages.forEach(el=>{el.addEventListener("pointerenter",()=>hot(+el.dataset.s));});
+    host.addEventListener("pointerleave",()=>hot(-1));
+    host.onkeydown=e=>{
+      if(e.key==="ArrowDown"||e.key==="ArrowRight"){e.preventDefault();hot(Math.min(4,active<0?0:active+1));}
+      if(e.key==="ArrowUp"||e.key==="ArrowLeft"){e.preventDefault();hot(Math.max(0,active<0?0:active-1));}
+      if(e.key==="Escape")hot(-1);
+    };
+  }
+  render("all");
+  document.querySelectorAll(".segtoggle [data-f]").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(".segtoggle [data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render(b.dataset.f); // one-shot 재키잉 — 새 그림으로 정확히 1회 재등장
+  });
+})();
+
+/* ═════ 엔진별 고정 레일 (C8·E7) ═════ */
+(function(){
+  const ENG=[["ChatGPT",24,8,9,2],["Perplexity",24,7,8,1],["Gemini",24,4,7,3],["Claude",16,3,4,2],["네이버 Cue",8,1,2,1]];
+  const MAX=Math.max(...ENG.map(e=>e[1]));
+  $("#rails").innerHTML=ENG.map(([n,asked,ours,comp,mat],ei)=>{
+    const none=asked-ours-comp-mat, denom=asked-mat, rate=denom?ours/denom*100:0;
+    const seg=(v,cls,color,lbl)=>v?`<div class="rseg ${cls}" style="width:${v/asked*100}%;background:${color}" ><span class="rlbl num">${lbl}</span></div>`:"";
+    return `<div class="rrow" data-e="${ei}" title="${n} — 물음 ${asked} · 자사 ${ours} · 경쟁 ${comp} · 무인용 ${none} · 성숙 중 ${mat} · 자사율 ${rate.toFixed(0)}%(분모 ${denom})">
+      <span style="color:var(--ink)">${n}</span>
+      <div class="rail" style="width:${asked/MAX*100}%">
+        ${seg(ours,"","var(--mint)",ours)}${seg(comp,"","var(--ember)",comp)}${seg(none,"","var(--track)",none)}${seg(mat,"mat","none","")}
+      </div>
+      <span class="num" style="font-size:12px;color:${rate>=30?"var(--mint)":rate>=15?"var(--ember)":"var(--destructive)"}">자사 ${ours}/${denom} · ${rate.toFixed(0)}%</span>
+    </div>`;
+  }).join("");
+  requestAnimationFrame(()=>{ // E7: 실측폭 78px 미만 라벨 숨김
+    document.querySelectorAll("#rails .rseg").forEach(sg=>{
+      const l=sg.querySelector(".rlbl"); if(l&&sg.offsetWidth<78)l.hidden=true;
+    });
+  });
+})();
+
+/* ═════ 질문 목록 + 여정 칩 (C12·E1) ═════ */
+(function(){
+  const J=["정보 탐색","비교 검토","결정 직전"];
+  const Q=[
+   ["울쎄라 리프팅 유지 기간이 궁금해요",1,"ChatGPT","ours","grand4.co.kr/lifting"],
+   ["강남 피부과 어디가 좋나요",2,"Perplexity","comp","미소진피부과 블로그"],
+   ["레이저 토닝 후 관리는 어떻게 하나요",0,"Gemini","ours","grand4.co.kr/faq"],
+   ["보톡스는 얼마 주기로 맞나요",0,"ChatGPT","none","—"],
+   ["울쎄라랑 슈링크 차이가 뭔가요",1,"Claude","comp","헬스 매체 칼럼"],
+   ["여드름 흉터 치료 비용은 어느 정도인가요",1,"네이버 Cue","mat","— 재관측 대기"],
+   ["피부과 시술 부작용은 어떤 게 있나요",0,"Perplexity","ours","grand4.co.kr/guide"],
+   ["강남역 근처 야간 진료 피부과 있나요",2,"ChatGPT","hold","«그랜드아름다운의원» 언급 — 식별 보류"]];
+  const VL={ours:["자사 인용","v-ours"],comp:["경쟁 인용","v-comp"],none:["무인용","v-none"],mat:["성숙 중","v-mat"],hold:["식별 보류","v-hold"]};
+  const host=$("#qrows");
+  function jseq(stage){return `<span class="jseq">${J.map((l,i)=>`<span class="jchip ${i===stage?"on":""}">${l.slice(0,2)}</span>${i<2?'<span class="jarrow">→</span>':""}`).join("")}</span>`;}
+  function render(f){
+    host.innerHTML=Q.filter(q=>f==="all"||q[3]===f).map((q,i)=>`
+      <tr class="qrow" data-j="${q[1]}"><td style="color:var(--ink)">${q[0]}</td><td title="${J[q[1]]}">${jseq(q[1])}</td>
+      <td>${q[2]}</td><td><span class="vbadge ${VL[q[3]][1]}" data-vb="${q[3]}">${VL[q[3]][0]}</span></td>
+      <td style="font-size:12px">${q[4]}</td></tr>`).join("");
+  }
+  const counts={all:Q.length}; Q.forEach(q=>counts[q[3]]=(counts[q[3]]||0)+1);
+  $("#qfilter").innerHTML=[["all","전체"],["ours","자사 인용"],["comp","경쟁 인용"],["none","무인용"],["mat","성숙 중"],["hold","식별 보류"]]
+    .map(([k,l])=>`<button class="fchip" data-f="${k}" aria-pressed="${k==="all"}">${l} <span class="num">${counts[k]||0}</span></button>`).join("");
+  $("#qfilter").querySelectorAll(".fchip").forEach(b=>b.onclick=()=>{
+    $("#qfilter").querySelectorAll(".fchip").forEach(x=>x.setAttribute("aria-pressed",x===b)); render(b.dataset.f);
+  });
+  $("#jfilter").innerHTML=J.map((l,i)=>`<button class="fchip" data-j="${i}" style="border-radius:7px">${l} <span class="num">${Q.filter(q=>q[1]===i).length}</span></button>`).join("");
+  $("#jfilter").querySelectorAll(".fchip").forEach(b=>{
+    const light=on=>host.querySelectorAll(".qrow").forEach(tr=>{
+      tr.classList.toggle("hot3",on&&tr.dataset.j===b.dataset.j);
+      tr.classList.toggle("dim4",on&&tr.dataset.j!==b.dataset.j);
+    });
+    b.addEventListener("pointerenter",()=>light(true));
+    b.addEventListener("pointerleave",()=>light(false));
+  });
+  render("all");
+})();
+
+/* ═════ 식별 관문 검수 큐 (A6·B5) ═════ */
+(function(){
+  const ITEMS=[
+   {q:"강남역 근처 야간 진료 피부과 있나요",eng:"ChatGPT",
+    snip:`…야간 진료를 운영하는 곳으로는 강남의 <mark>그랜드아름다운의원</mark> 등이 있습니다…`,
+    basis:"브랜드 언급 ○ · 도메인 링크 × · 지역 «강남» 일치 → 가중 0.8, 확정 기준 1.0 미달",
+    guess:"자사 추정 — 확신 미달"},
+   {q:"리프팅 잘하는 피부과 후기",eng:"Perplexity",
+    snip:`…부산 서면의 <mark>아름다운의원</mark>에서 시술받은 후기가…`,
+    basis:"유사 상호 · 지역 «부산» 불일치 → 충돌 목록의 타 업체와 일치",
+    guess:"타 업체 추정"}];
+  const host=$("#rvqueue");
+  host.innerHTML=ITEMS.map((it,i)=>`
+    <div class="rvitem" data-i="${i}">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--ink)">${it.q} <span style="font-size:11px;color:var(--ink-faint)">· ${it.eng}</span></span>
+        <span class="vbadge v-hold" data-st>보류 — 판정 못 함</span>
+      </div>
+      <blockquote>${it.snip}</blockquote>
+      <p style="font-size:11.5px;color:var(--ink-faint);margin:0">${it.basis} — 자동 판정: ${it.guess}</p>
+      <div class="rvbtns">
+        <button class="yes" data-v="yes">이 고객 맞음</button>
+        <button class="no" data-v="no">다른 업체</button>
+        <button data-v="hold">보류 유지</button>
+      </div>
+    </div>`).join("");
+  let holds=2, pairs=23, qs=19;
+  host.querySelectorAll(".rvitem").forEach(item=>{
+    item.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
+      const v=btn.dataset.v, st=item.querySelector("[data-st]");
+      item.classList.add("decided");
+      item.querySelectorAll("button").forEach(b=>b.disabled=true,b=>b.style.opacity=.4);
+      item.querySelector(".rvbtns").style.opacity=.45;
+      if(v==="yes"){st.textContent="자사 인용 확정";st.className="vbadge v-ours";
+        glide($("#kpair"),pairs,++pairs);glide($("#kq"),qs,++qs);glide($("#khold"),holds,--holds);}
+      else if(v==="no"){st.textContent="타 업체 — 제외";st.className="vbadge v-none";
+        glide($("#khold"),holds,--holds);}
+      else {st.textContent="보류 유지 — 다음 검수로";}
+    });
+  });
+})();
+
+/* ═════ 재관측 이력 (SEO 이력 문법 재사용) ═════ */
+(function(){
+  const RUNS=[
+   {d:"2026-07-11",s:21.4,set:"v3",u:5},
+   {d:"2026-08-01",s:24.0,set:"v3",u:3},
+   {d:"2026-08-24",s:26.1,set:"v3",u:12}];
+  const EVENTS=[{d:"2026-08-12",t:"콘텐츠 발행 — 리프팅 FAQ 3건"}];
+  const TGT=[{v:50,l:"취약 탈출 E · 50",c:"var(--ember)"},{v:90,l:"관리 목표 A · 90",c:"var(--mint)"}];
+  const W=640,H=238,PL=34,PR=14,PT=22,PB=28, DAY=864e5, HORIZON=42;
+  const T0=Date.parse(RUNS[0].d), TL=Date.parse(RUNS.at(-1).d), T1=TL+HORIZON*DAY;
+  const X=t=>PL+((typeof t==="string"?Date.parse(t):t)-T0)/(T1-T0)*(W-PL-PR);
+  const Y=v=>PT+(1-v/100)*(H-PT-PB);
+  const last=RUNS.at(-1);
+  const slope=(last.s-RUNS[0].s)/((TL-T0)/DAY);
+  const eta=v=>slope>0?new Date(TL+(v-last.s)/slope*DAY):null;
+  const ym=dt=>dt?dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0"):"—";
+  const projV=last.s+slope*HORIZON, projD=new Date(TL+HORIZON*DAY);
+  const delta=i=>i>0&&RUNS[i].set===RUNS[i-1].set?RUNS[i].s-RUNS[i-1].s:null;
+  const dtxt=v=>v===null?"—":(v>=0?"▲"+v.toFixed(1):"▼"+Math.abs(v).toFixed(1));
+  const dcol=v=>v===null?"var(--unknown)":v>=0?"var(--mint)":"var(--destructive)";
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="재관측 날짜별 인용 점수 흐름">`;
+  [[90,100,"var(--mint)"],[75,90,"var(--signal)"],[50,75,"var(--ember)"],[0,50,"var(--destructive)"]]
+    .forEach(([lo,hi,c])=>{s+=`<rect x="${PL}" y="${Y(hi)}" width="${W-PL-PR}" height="${Y(lo)-Y(hi)}" fill="color-mix(in oklab, ${c} 4.5%, transparent)"/>`;});
+  [[0,1],[75,0],[100,0]].forEach(([v,solid])=>{s+=`<line x1="${PL}" x2="${W-PR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" ${solid?"":'stroke-dasharray="3 5"'}/>`;});
+  [0,50,75,90,100].forEach(v=>{s+=`<text x="${PL-6}" y="${Y(v)+3.5}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" class="num">${v}</text>`;});
+  TGT.forEach(t=>{s+=`<line x1="${PL}" x2="${W-PR}" y1="${Y(t.v)}" y2="${Y(t.v)}" stroke="${t.c}" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="7 4"/><text x="${W-PR}" y="${Y(t.v)-4}" text-anchor="end" font-size="9.5" fill="${t.c}">${t.l}</text>`;});
+  RUNS.forEach(r=>{s+=`<text x="${X(r.d)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="num">${r.d.slice(5)}</text>`;});
+  s+=`<text x="${W-2}" y="${H-8}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" opacity=".75" class="num">${projD.toISOString().slice(5,10)} 예상</text>`;
+  EVENTS.forEach((e,i)=>{const x=X(e.d), y=H-PB-9;
+    s+=`<g class="fadein" style="animation-delay:${520+i*120}ms"><line x1="${x}" x2="${x}" y1="${y+4}" y2="${H-PB}" stroke="var(--ember)" stroke-opacity=".35"/>
+      <path d="M${x} ${y-4.5} L${x+4.5} ${y} L${x} ${y+4.5} L${x-4.5} ${y} Z" fill="var(--ember)"><title>${e.d} · ${e.t}</title></path></g>`;});
+  const P=RUNS.map(r=>[X(r.d),Y(r.s)]);
+  let d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+  for(let i=0;i<P.length-1;i++){
+    const p0=P[i-1]||P[i], p1=P[i], p2=P[i+1], p3=P[i+2]||p2;
+    d+=`C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  s+=`<path d="${d}" pathLength="100" class="drawin" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if(slope>0){
+    s+=`<line class="fadein" style="animation-delay:760ms" x1="${X(TL)}" x2="${X(T1)}" y1="${Y(last.s)}" y2="${Y(projV)}" stroke="var(--violet)" stroke-opacity=".55" stroke-dasharray="3 4"/>
+      <circle class="fadein" style="animation-delay:760ms" cx="${X(T1)}" cy="${Y(projV)}" r="3.2" fill="none" stroke="var(--violet)" stroke-opacity=".7"/>
+      <text class="fadein num" style="animation-delay:760ms" x="${X(T1)-6}" y="${Y(projV)-8}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)">≈${projV.toFixed(1)} 예상</text>`;
+  }
+  RUNS.forEach((r,i)=>{
+    const isLast=i===RUNS.length-1, c=gradeColor(r.s);
+    s+=`<g class="hpt fadein" style="animation-delay:${240+i*90}ms" data-i="${i}" data-d="${r.d}">
+      ${r.u?`<circle cx="${X(r.d)}" cy="${Y(r.s)}" r="7.5" fill="none" stroke="var(--unknown)" stroke-dasharray="2.5 2.5"/>`:""}
+      <circle class="core" cx="${X(r.d)}" cy="${Y(r.s)}" r="${isLast?4.6:3.4}" fill="${c}" ${isLast?`stroke="var(--card)" stroke-width="1.5"`:""}/>
+      <circle cx="${X(r.d)}" cy="${Y(r.s)}" r="13" fill="transparent"/></g>`;
+    if(isLast)s+=`<text x="${X(r.d)}" y="${Y(r.s)-13}" text-anchor="middle" font-size="13" font-weight="700" fill="${c}">${gradeOf(r.s)} <tspan class="num" font-size="9.5" font-weight="400" fill="var(--ink-faint)">${r.s.toFixed(1)}</tspan></text>`;
+  });
+  s+="</svg>";
+  const chart=$("#histchart"); chart.innerHTML=s+`<div class="htip" id="htip" hidden></div>`;
+  chart.insertAdjacentHTML("afterend",
+    `<div class="etarow">이 속도면 — <b style="color:var(--ember)">E(50)</b> <span class="num">${ym(eta(50))}</span> · <b style="color:var(--mint)">A(90)</b> <span class="num">${ym(eta(90))}</span><span style="color:var(--ink-faint)"> · 실측 기울기(+${(slope*7).toFixed(2)}/주) 기준 관측값 — 보장이 아니며, 앞당기는 길은 4c 제안의 콘텐츠 작업입니다</span></div>`);
+  $("#histlegend").innerHTML=
+    `<span><i style="background:var(--violet)"></i>AEO 인용 점수 — 현재 <b style="color:${gradeColor(last.s)};font-weight:700">${gradeOf(last.s)}</b> <span class="num">${last.s.toFixed(1)}</span></span>`
+    +`<span><i style="width:8px;height:8px;background:var(--ember);border-radius:2px;transform:rotate(45deg)"></i>콘텐츠 발행</span>`
+    +`<span><i style="width:8px;height:8px;border-radius:99px;background:none;border:1.5px dashed var(--unknown)"></i>성숙 중 남은 회차</span>`;
+  $("#histtable tbody").innerHTML=RUNS.map((r,i)=>({r,i})).reverse().map(({r,i})=>{
+    const dv=delta(i);
+    return `<tr class="hrow" data-d="${r.d}"><td class="num" style="color:var(--ink)">${r.d}</td><td class="num" style="font-size:11px;color:var(--ink-faint)">${r.set}</td>
+      <td><b class="hgr" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b> <span class="num hsc">${r.s.toFixed(1)}</span> <span class="num hdl" style="color:${dcol(dv)}">${i===0?"":dtxt(dv)}</span></td>
+      <td class="num" style="color:var(--ink-dim)">${(90-r.s).toFixed(1)} <span style="font-size:10px;color:var(--ink-faint)">남음</span></td></tr>`;
+  }).join("");
+  const tip=$("#htip");
+  function hot(dd,pt){
+    document.querySelectorAll("#histtable .hrow").forEach(tr=>tr.classList.toggle("hot3",tr.dataset.d===dd));
+    chart.querySelectorAll(".hpt").forEach(g=>{
+      const base=+g.dataset.i===RUNS.length-1?4.6:3.4;
+      g.querySelector(".core").setAttribute("r",g.dataset.d===dd?5.6:base);
+    });
+    if(pt){
+      const i=+pt.dataset.i, r=RUNS[i], dv=delta(i);
+      tip.innerHTML=`<b class="hg" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b><span class="num">${r.s.toFixed(1)} /100</span><br><span class="num">${r.d}</span> · 질문셋 <span class="num">${r.set}</span> · 목표 A까지 <span class="num">${(90-r.s).toFixed(1)}</span><br><span class="num" style="color:${dcol(dv)}">${i===0?"첫 관측":dv===null?"질문셋이 달라 비교 안 함":"직전 대비 "+dtxt(dv)}</span>${r.u?` · <span style="color:var(--unknown)">성숙 중 ${r.u}건</span>`:""}`;
+      tip.style.left=(X(r.d)/W*100)+"%"; tip.style.top=(Y(r.s)/H*100)+"%"; tip.hidden=false;
+    } else tip.hidden=true;
+  }
+  chart.addEventListener("pointerover",e=>{const g=e.target.closest(".hpt"); if(g)hot(g.dataset.d,g);});
+  chart.addEventListener("pointerleave",()=>hot(null,null));
+  $("#histtable").addEventListener("pointerover",e=>{const tr=e.target.closest(".hrow"); if(tr)hot(tr.dataset.d,null);});
+  $("#histtable").addEventListener("pointerleave",()=>hot(null,null));
+})();
+
+/* ═════ 키워드 등록 (NXT 이관) ═════ */
+(function(){
+  const KW=[
+   ["울쎄라",27100,8400,18,[5,9,4]],
+   ["리프팅 시술",22000,6600,14,[6,6,2]],
+   ["피부과 강남",49500,12100,9,[2,3,4]]];
+  const J=["정보","비교","결정"];
+  const host=$("#kwgrid");
+  const card=(k,nv,gg,qn,dist,pendingVol)=>`
+    <div class="kwcard stage">
+      <h3>${k}</h3>
+      <div class="kwrow"><span>월간 검색량 · 네이버</span><span class="num">${pendingVol?'<span style="color:var(--unknown)">수집 대기</span>':nv.toLocaleString()}</span></div>
+      <div class="kwrow"><span>월간 검색량 · 구글</span><span class="num">${pendingVol?'<span style="color:var(--unknown)">수집 대기</span>':gg.toLocaleString()}</span></div>
+      <div class="kwrow"><span>파생 질문</span><span class="num">${qn?qn+"건":'<span style="color:var(--unknown)">수집 후 파생</span>'}</span></div>
+      ${qn?`<div class="sharebar" style="height:7px" title="여정 분포 — 정보 ${dist[0]} · 비교 ${dist[1]} · 결정 ${dist[2]}">
+        <i style="width:${dist[0]/qn*100}%;background:var(--signal)"></i><i style="width:${dist[1]/qn*100}%;background:var(--violet)"></i><i style="width:${dist[2]/qn*100}%;background:var(--mint)"></i></div>
+      <div class="kwrow" style="font-size:10px;color:var(--ink-faint)"><span>${J.map((l,i)=>l+" "+dist[i]).join(" · ")}</span></div>`:""}
+    </div>`;
+  host.innerHTML=KW.map(k=>card(k[0],k[1],k[2],k[3],k[4],false)).join("");
+  $("#kwform").onsubmit=e=>{
+    e.preventDefault();
+    const v=$("#kwinput").value.trim(); if(!v)return;
+    host.insertAdjacentHTML("afterbegin",card(v,0,0,0,null,true));
+    $("#kwinput").value="";
+  };
+})();
+</script>
