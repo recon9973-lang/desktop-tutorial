@@ -251,7 +251,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
           <div class="histchart" id="histchart"></div>
         </div>
         <div class="overflow"><table class="score histtable" id="histtable" aria-label="진단 회차별 점수">
-          <thead><tr><th>진단일</th><th>명세</th><th>점수</th><th class="r" style="text-align:left">목표 C+(75)까지</th></tr></thead><tbody></tbody>
+          <thead><tr><th>진단일</th><th>명세</th><th>점수</th><th class="r" style="text-align:left">목표 A(90)까지</th></tr></thead><tbody></tbody>
         </table></div>
       </div>
       <p class="foot">가로축은 실제 날짜 간격입니다 — 5~6월 사이 <b style="color:var(--ink-dim)">재진단 공백 50일</b>이 그대로 보입니다. 선은 곡선으로 전 회차를 이어 흐름을 보여 주되, 명세 판이 바뀐 회차는 상단에 표시하고 그 경계를 건넌 <b style="color:var(--ink-dim)">직전 대비 수치만 «—»</b>로 둡니다 — 그 변화는 «개선»이 아니라 «기준 변경»일 수 있기 때문입니다. 점선 테두리가 있는 점은 판정 못 함이 남은 회차이며, 점이나 오른쪽 표의 날짜에 손을 올리면 그 날짜의 등급·점수·직전 대비를 그 자리에서 읽을 수 있습니다.</p>
@@ -276,7 +276,8 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
       </div>
       <div class="chips" id="fchips" role="group" aria-label="판정 필터"></div>
       <div id="checks"></div>
-      <p class="foot">항목을 펼치면 «판정 근거 → 실제로 본 응답·코드 조각 → 수정 절차»가 함께 열립니다. 코드의 색은 장식이 아니라 지시입니다 — <span style="color:var(--signal)">파랑=태그</span> · <span style="color:var(--mint)">민트=값</span> · <span style="color:var(--destructive)">빨강=실패 지점</span> · <span style="color:var(--ember)">주황=주석</span>. «판정 못 함»은 감점 0이지만 통과도 아닙니다 — 수집을 복구한 뒤 재진단해야 확정됩니다.</p>
+      <div id="infochecks" style="margin-top:4px"></div>
+      <p class="foot">항목을 펼치면 «판정 근거 → 실제로 본 응답·코드 조각 → 수정 절차»가 함께 열립니다. 코드의 색은 장식이 아니라 지시입니다 — <span style="color:var(--signal)">파랑=태그</span> · <span style="color:var(--mint)">민트=값</span> · <span style="color:var(--destructive)">빨강=실패 지점</span> · <span style="color:var(--ember)">주황=주석</span>. «판정 못 함»은 감점 0이지만 통과도 아닙니다 — 수집을 복구한 뒤 재진단해야 확정됩니다. 실물 ANSEO의 SEO 진단은 <b style="color:var(--ink-dim)">배점 49 + 미배점 10 = 59개 항목</b>이며, 이 표본은 대표 항목만 실었습니다 — 이식 때 전 항목이 같은 문법(필터 칩·근거 접기·미배점 구획)에 실립니다.</p>
     </section>
 
     <section class="card stage" style="animation-delay:.40s">
@@ -556,7 +557,20 @@ function buildFilter(hostId,checksHost,checks,countEl,label){
   });
   renderChecks(checksHost,checks,"all");
 }
-buildFilter("#fchips",$("#checks"),SEO_CHECKS,$("#checkcount"),"항목 12개");
+buildFilter("#fchips",$("#checks"),SEO_CHECKS,$("#checkcount"),"배점 항목 — 표본 12 · 실물 49");
+
+/* 미배점 항목 — 감점 없이 관측만 (실물 10개 · 표본 4개) */
+const SEO_INFO=[
+ ["Google Search Console 이 연결되어 있는가","seo.console.gsc_linked","연결됨"],
+ ["네이버 서치어드바이저가 연결되어 있는가","seo.console.naver_linked","미연결 — 연결 권장"],
+ ["사이트맵이 검색엔진에 제출되어 있는가","seo.sitemap.submitted","제출 확인 안 됨"],
+ ["IndexNow 색인 API가 구성되어 있는가","seo.index.indexnow","미구성"],
+];
+$("#infochecks").innerHTML=`<details class="check">
+ <summary><span class="vbadge v-na">미배점</span><span><span class="t">미배점 항목 — 감점 없이 관측만 한다</span><span class="meta">실물 10개 · 표본 4개 — 점수에 넣지 않지만 진단마다 함께 기록되어 운영 근거가 된다</span></span><span class="pt num" style="color:var(--ink-faint)">0.00<small>배점 없음</small></span></summary>
+ <div class="checkbody" style="grid-template-columns:1fr">
+  <div>${SEO_INFO.map(([t,k,st])=>`<p style="margin:0;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--ink)">${t}</span> <span class="num" style="font-size:11px;color:var(--ink-faint)">${k}</span> — <span style="color:var(--ink-dim)">${st}</span></p>`).join("")}</div>
+ </div></details>`;
 
 /* ═════ what-if 워터폴 (C9·D5·B9) ═════ */
 (function(){
@@ -660,7 +674,7 @@ donut("#gdonut","#gdlegend",[
   const EVENTS=[
    {d:"2026-06-27",t:"조치 배포 — 대표 URL(canonical) 정리 1차"},
    {d:"2026-07-18",t:"조치 배포 — 본문 텍스트 추출 개선(SSR) 1차"}];
-  const TGT=[{v:50,l:"취약 탈출 E · 50",c:"var(--ember)"},{v:75,l:"관리 목표 C+ · 75",c:"var(--signal)"}];
+  const TGT=[{v:50,l:"취약 탈출 E · 50",c:"var(--ember)"},{v:90,l:"관리 목표 A · 90",c:"var(--mint)"}];
   const W=640,H=238,PL=34,PR=14,PT=22,PB=28, DAY=864e5, HORIZON=56;
   const T0=Date.parse(RUNS[0].d), TL=Date.parse(RUNS.at(-1).d), T1=TL+HORIZON*DAY;
   const X=t=>PL+((typeof t==="string"?Date.parse(t):t)-T0)/(T1-T0)*(W-PL-PR);
@@ -723,7 +737,7 @@ donut("#gdonut","#gdlegend",[
   s+="</svg>";
   const chart=$("#histchart"); chart.innerHTML=s+`<div class="htip" id="htip" hidden></div>`;
   chart.insertAdjacentHTML("afterend",
-    `<div class="etarow">이 속도면 — <b style="color:var(--ember)">E(50)</b> <span class="num">${ym(eta(50))}</span> · <b style="color:var(--signal)">C+(75)</b> <span class="num">${ym(eta(75))}</span><span style="color:var(--ink-faint)"> · 현재 판 실측 기울기(+${(slope*7).toFixed(2)}/주) 기준의 관측값 — 보장이 아니며, 앞당기는 길은 아래 반사실 카드의 조치입니다</span></div>`);
+    `<div class="etarow">이 속도면 — <b style="color:var(--ember)">E(50)</b> <span class="num">${ym(eta(50))}</span> · <b style="color:var(--mint)">A(90)</b> <span class="num">${ym(eta(90))}</span><span style="color:var(--ink-faint)"> · 현재 판 실측 기울기(+${(slope*7).toFixed(2)}/주) 기준의 관측값 — 보장이 아니며, 앞당기는 길은 아래 반사실 카드의 조치입니다</span></div>`);
 
   $("#histlegend").innerHTML=
     `<span><i style="background:var(--signal)"></i>SEO — 현재 <b style="color:${gradeColor(last.s)};font-weight:700">${gradeOf(last.s)}</b> <span class="num">${last.s.toFixed(1)}</span></span>`
@@ -735,7 +749,7 @@ donut("#gdonut","#gdlegend",[
     const dv=delta(i);
     return `<tr class="hrow" data-d="${r.d}"><td class="num" style="color:var(--ink)">${r.d}</td><td class="num" style="font-size:11px;color:var(--ink-faint)">${r.spec}</td>
       <td><b class="hgr" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b> <span class="num hsc">${r.s.toFixed(1)}</span> <span class="num hdl" style="color:${dcol(dv)}" title="${i>0&&dv===null?"판이 달라 직전 회차와 비교하지 않습니다":"직전 진단 대비"}">${i===0?"":dtxt(dv)}</span></td>
-      <td class="num" style="color:var(--ink-dim)">${(75-r.s).toFixed(1)} <span style="font-size:10px;color:var(--ink-faint)">남음</span></td></tr>`;
+      <td class="num" style="color:var(--ink-dim)">${(90-r.s).toFixed(1)} <span style="font-size:10px;color:var(--ink-faint)">남음</span></td></tr>`;
   }).join("");
 
   // 점 ↔ 표 양방향 연동 + 그 자리 판독
@@ -748,7 +762,7 @@ donut("#gdonut","#gdlegend",[
     });
     if(pt){
       const i=+pt.dataset.i, r=RUNS[i], dv=delta(i);
-      tip.innerHTML=`<b class="hg" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b><span class="num">${r.s.toFixed(1)} /100</span><br><span class="num">${r.d}</span> · 명세 <span class="num">${r.spec}</span> · 목표 C+까지 <span class="num">${(75-r.s).toFixed(1)}</span><br><span class="num" style="color:${dcol(dv)}">${i===0?"첫 진단":dv===null?"직전과 판이 달라 비교 안 함":"직전 대비 "+dtxt(dv)}</span>${r.u?` · <span style="color:var(--unknown)">판정 못 함 ${r.u}건</span>`:""}`;
+      tip.innerHTML=`<b class="hg" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b><span class="num">${r.s.toFixed(1)} /100</span><br><span class="num">${r.d}</span> · 명세 <span class="num">${r.spec}</span> · 목표 A까지 <span class="num">${(90-r.s).toFixed(1)}</span><br><span class="num" style="color:${dcol(dv)}">${i===0?"첫 진단":dv===null?"직전과 판이 달라 비교 안 함":"직전 대비 "+dtxt(dv)}</span>${r.u?` · <span style="color:var(--unknown)">판정 못 함 ${r.u}건</span>`:""}`;
       tip.style.left=(X(r.d)/W*100)+"%"; tip.style.top=(Y(r.s)/H*100)+"%"; tip.hidden=false;
     } else tip.hidden=true;
   }
