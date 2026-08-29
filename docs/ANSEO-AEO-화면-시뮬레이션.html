@@ -387,11 +387,11 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
   <!-- 4a 심화 — 질문 흐름 생키 -->
   <section class="card stage" style="animation-delay:.52s">
     <div class="card-head">
-      <div><p class="eyebrow">4a 심화 — 질문 마인드맵</p><h2>기본 질문 5개에서 인용 출처까지, 흐름으로 보기</h2></div>
+      <div><p class="eyebrow">4a 심화 — 질문 마인드맵</p><h2>기본 질문 5 → AI 엔진 7종(개별) → 인용 출처</h2></div>
       <span class="srcchip">D6 생키 · E1 경로 추적 · E2 이동 점선</span>
     </div>
     <div id="sankey"></div>
-    <p class="foot">질문·엔진군·출처 어디에 손을 올려도 그 경로 전체가 켜지고 점선이 흐르는 방향으로 움직입니다. 질문 수가 보존량이라 어느 열에서 세어도 합이 관측쌍 116과 같습니다.</p>
+    <p class="foot">가운데 열이 엔진 7종 개별 항목입니다 — 위 5개가 글로벌(ChatGPT·Gemini·Claude·Grok·Perplexity), 아래 2개가 검색 결합(네이버 AI브리핑·구글 AI오버뷰). 질문·엔진·출처 어디에 손을 올려도 그 마디를 지나는 흐름만 켜지고 점선이 흐르는 방향으로 움직입니다. 어느 열에서 세어도 합이 관측쌍 116으로 같고, 엔진별 자사·경쟁 분해는 히어로 레일과 같은 소스입니다.</p>
   </section>
 
   <!-- ⑥ 4a 추출 → 4b 분석 → 4c 제안 -->
@@ -442,6 +442,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
       <span class="srcchip">4c 제안 · 근거 없는 추천 금지(규칙 6)</span>
     </div>
     <div class="recogrid" id="recogrid"></div>
+    <div class="pipe-link"><span style="font-size:16px">5</span><span><b>채택 후 실행 체인(다음 작업 구간)</b> — 초안 생성 → <b>의료광고법 검수</b>(치료 효과 보장·전후사진·최상급 표현 배제) → 담당자 승인 → 발행 → 재관측 판정. 콘텐츠의 실제 생성과 법령 검수는 5(실행) 구간의 운영 워크플로우라서 이 화면 시뮬레이션에는 접점만 실었습니다 — 실물 이식 뒤 구현.</span></div>
     <p class="foot">추천은 세 근거의 교집합에서만 나옵니다 — <b style="color:var(--ink-dim)">비인용 질문</b>(무엇을 못 잡고 있나) × <b style="color:var(--ink-dim)">경쟁 인용 문서의 구조 요인</b>(왜 걔네가 잡나) × <b style="color:var(--ink-dim)">자사 비인용 문서 사유</b>(우리의 어디가 비었나). 채택하면 5(실행) 작업 큐에 실리고, 발행 후 재관측이 효과를 판정합니다 — 이 카드가 이슈를 닫지 않습니다.</p>
   </section>
 
@@ -921,38 +922,51 @@ countUp($("#aeonum"),AEO_SCORE);
   tbl.addEventListener("pointerleave",()=>{tbl.querySelectorAll("tr[data-r]").forEach(tr=>tr.classList.remove("dimx"));tbl.querySelectorAll(".mcell").forEach(x=>x.classList.remove("hotx"));});
 })();
 
-/* ═════ 4a 심화 — 질문 흐름 생키 (D6·E1·E2) ═════ */
+/* ═════ 4a 심화 — 질문 흐름 생키: 엔진 7종 개별 항목 (D6·E1·E2) ═════ */
 (function(){
-  const W=980,H=340,COLW=[236,150,170];
+  const W=980,H=352,COLW=[226,140,170];
   const L=[["울쎄라 유지 기간",28],["울쎄라 vs 슈링크",24],["리프팅 비용",24],["시술 후 관리",20],["강남 피부과 추천",20]];
-  const M=[["글로벌 5종",84],["검색 결합 2종",32]];
+  const M=[["ChatGPT",20],["Gemini",20],["Claude",12],["Grok",12],["Perplexity",20],["네이버 AI브리핑",12],["구글 AI오버뷰",20]];
   const Rt=[["자사 grand4.co.kr",23],["경쟁 문서",42],["무인용",39],["성숙 중",12]];
-  const FLOW_LM=[[20,8],[18,6],[16,8],[16,4],[14,6]];
-  const FLOW_MR=[[18,30,28,8],[5,12,11,4]];
+  // 5질문 × 7엔진 (행합=질문 관측쌍, 열합=엔진 분모 — 총 116)
+  const FLOW_LM=[
+   [5,5,3,3,5,3,4],
+   [4,4,3,2,4,2,5],
+   [4,4,2,3,4,3,4],
+   [4,4,2,2,4,1,3],
+   [3,3,2,2,3,3,4]];
+  // 엔진별 [자사, 경쟁, 무인용, 성숙] — 히어로 레일과 같은 소스
+  const FLOW_MR=[[6,8,4,2],[4,7,6,3],[2,4,5,1],[1,3,6,2],[6,8,5,1],[1,4,5,2],[3,8,8,1]];
   const CR={"자사 grand4.co.kr":"var(--mint)","경쟁 문서":"var(--ember)","무인용":"var(--unknown)","성숙 중":"var(--unknown)"};
   const XC=[16,W/2-COLW[1]/2,W-COLW[2]-16];
-  const scale=200/116;
-  function col(items,x,gap){let y=44,out=[];items.forEach(([l,v])=>{const h=Math.max(10,v*scale);out.push({l,v,x,y,h});y+=h+gap;});return out;}
-  const CL=col(L,XC[0],14), CM=col(M,XC[1],26), CRr=col(Rt,XC[2],16);
-  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="기본 질문 5개에서 인용 출처까지의 관측 흐름">`;
+  const scale=1.5;
+  function col(items,x,y0,gaps){let y=y0,out=[];items.forEach(([l,v],i)=>{const h=Math.max(12,v*scale);out.push({l,v,x,y,h});y+=h+(gaps[i]??gaps.at(-1));});return out;}
+  const CL=col(L,XC[0],52,[16]);
+  const CM=col(M,XC[1],56,[9,9,9,9,24,9,0]); // 글로벌 5 ↔ 검색 결합 2 사이 큰 간격
+  const CRr=col(Rt,XC[2],62,[16]);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="기본 질문 5개에서 엔진 7종을 거쳐 인용 출처까지">`;
   const paths=[];
-  const ribbon=(a,ya,bx,yb,h,color,groups,cw)=>{
+  const ribbon=(a,ya,bx,yb,h,color,groups,cw,op)=>{
     const x1=a.x+cw, x2=bx, mx=(x1+x2)/2;
     paths.push({d:`M${x1} ${ya} C${mx} ${ya} ${mx} ${yb} ${x2} ${yb} v${h} C${mx} ${yb+h} ${mx} ${ya+h} ${x1} ${ya+h} Z`,
-      mid:`M${x1} ${ya+h/2} C${mx} ${ya+h/2} ${mx} ${yb+h/2} ${x2} ${yb+h/2}`, color, groups});
+      mid:`M${x1} ${ya+h/2} C${mx} ${ya+h/2} ${mx} ${yb+h/2} ${x2} ${yb+h/2}`, color, groups, op});
   };
   let offL=CL.map(n=>n.y), offM=CM.map(n=>n.y);
-  FLOW_LM.forEach((row,i)=>row.forEach((v,j)=>{const h=v*scale;
-    ribbon(CL[i],offL[i],CM[j].x,offM[j],h,"var(--signal)",["L"+i,"M"+j],COLW[0]); offL[i]+=h; offM[j]+=h;}));
+  FLOW_LM.forEach((row,i)=>row.forEach((v,j)=>{if(!v)return;const h=v*scale;
+    ribbon(CL[i],offL[i],CM[j].x,offM[j],h,"var(--signal)",["L"+i,"M"+j],COLW[0],.22); offL[i]+=h; offM[j]+=h;}));
   let offM2=CM.map(n=>n.y), offR=CRr.map(n=>n.y);
   FLOW_MR.forEach((row,i)=>row.forEach((v,j)=>{if(!v)return;const h=v*scale;
-    ribbon(CM[i],offM2[i],CRr[j].x,offR[j],h,CR[CRr[j].l],["M"+i,"R"+j],COLW[1]); offM2[i]+=h; offR[j]+=h;}));
-  paths.forEach((p,k)=>{s+=`<path data-k="${k}" class="fun-rest" d="${p.d}" fill="${p.color}" fill-opacity=".3"/>`;});
+    ribbon(CM[i],offM2[i],CRr[j].x,offR[j],h,CR[CRr[j].l],["M"+i,"R"+j],COLW[1],.3); offM2[i]+=h; offR[j]+=h;}));
+  paths.forEach((p,k)=>{s+=`<path data-k="${k}" class="fun-rest" d="${p.d}" fill="${p.color}" fill-opacity="${p.op}"/>`;});
   paths.forEach((p,k)=>{s+=`<path data-fl="${k}" class="flowline" d="${p.mid}" stroke="${p.color}"/>`;});
   [[CL,0,"L"],[CM,1,"M"],[CRr,2,"R"]].forEach(([cn,ci,tag])=>cn.forEach((n,ni)=>{
     s+=`<g data-node="${tag+ni}" style="cursor:default"><rect x="${n.x}" y="${n.y}" width="${COLW[ci]}" height="${n.h}" rx="5" fill="${ci===2?CR[n.l]:ci===0?"var(--violet)":"var(--signal)"}" fill-opacity="${ci===0?.75:.82}"/>
-      <text x="${n.x+8}" y="${n.y+Math.max(13,n.h/2+4)}" font-size="11" fill="#fff" style="paint-order:stroke;pointer-events:none" stroke="rgba(0,0,0,.4)" stroke-width="2">${n.l} <tspan class="num" font-size="9.5">${n.v}</tspan></text></g>`;}));
-  ["기본 질문 5","AI 엔진군(7종)","인용 출처"].forEach((t,i)=>{s+=`<text x="${XC[i]+COLW[i]/2}" y="26" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" letter-spacing=".08em">${t}</text>`;});
+      <text x="${n.x+8}" y="${n.y+Math.max(12,n.h/2+3.5)}" font-size="10.5" fill="#fff" style="paint-order:stroke;pointer-events:none" stroke="rgba(0,0,0,.4)" stroke-width="2">${n.l} <tspan class="num" font-size="9.5">${n.v}</tspan></text></g>`;}));
+  // 열 제목 + 엔진 그룹 라벨
+  ["기본 질문 5","AI 엔진 7종 (개별)","인용 출처"].forEach((t,i)=>{s+=`<text x="${XC[i]+COLW[i]/2}" y="24" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" letter-spacing=".08em">${t}</text>`;});
+  s+=`<text x="${CM[0].x}" y="${CM[0].y-6}" font-size="9.5" fill="var(--ink-faint)">글로벌 5종</text>`;
+  s+=`<line x1="${CM[0].x}" x2="${CM[0].x+COLW[1]}" y1="${CM[5].y-13}" y2="${CM[5].y-13}" stroke="var(--border)"/>`;
+  s+=`<text x="${CM[5].x}" y="${CM[5].y-6}" font-size="9.5" fill="var(--ink-faint)">검색 결합 2종</text>`;
   s+="</svg>";
   $("#sankey").innerHTML=`<div class="overflow">${s}</div>`;
   const svg=$("#sankey svg");
@@ -966,9 +980,6 @@ countUp($("#aeonum"),AEO_SCORE);
     g.addEventListener("pointerenter",()=>{
       const id=g.dataset.node, hit=new Set();
       paths.forEach((p,k)=>{if(p.groups.includes(id))hit.add(k);});
-      if(id.startsWith("L")){
-        paths.forEach((p,k)=>{if(p.groups[0].startsWith("M")&&[...hit].some(h=>paths[h].groups[1]===p.groups[0]))hit.add(k);});
-      }
       lit(hit);
     });
   });
