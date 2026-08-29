@@ -865,6 +865,86 @@
 
 **버릴 것**: 생키 자체를 지금 ANSEO 지표에 쓰는 것(3축 합산 금지 원칙과 충돌 — 돈처럼 «보존되는 흐름»이 아닌 점수에 생키는 부적합). 단, 위 3번처럼 **관측 데이터의 흐름**(질문→엔진→인용)에는 보존량 구조가 성립하므로 유효.
 
+---
+
+# 제8부 — Lovable 인포그래픽 전수 카탈로그 (대시보드 3종 + ANSEO 합산)
+
+> 워크스페이스의 나머지 리믹스 2종 소스를 추출해 판독했다 — **Sales Attribution(«Meridian Attribution»)** `6a7cf747…`, **RevOps(«Crestline Cloud»)** `cb49243c…`. 둘 다 차트 라이브러리 없이 수제 SVG(Attribution의 표 재정렬만 framer-motion). 이로써 Lovable에서 확보된 인포그래픽 소스는 4벌: ANSEO(18종, §4) + CFO 원형(제7부) + 아래 2종.
+
+## 22. Sales Attribution — «데이터를 보간하는» 대시보드
+
+**전환 아키텍처가 핵심 발명이다.** 히어로 인터랙션(First touch/Linear/Last touch 3모델 토글)에서 차트를 애니메이션하지 않고 **데이터를 애니메이션한다**:
+- `useTransitionSnapshot(key, 720ms)` — 모델이 바뀌면 rAF로 t 0→1(ease-in-out cubic). **전환 도중 또 바꾸면 처음이 아니라 현재 지점에서 새 전환 시작.**
+- `interpolateChannels(from, to, t)` — 두 모델의 **전 지표(share·revenue·roas·conversions·cpa·12주 trend 배열까지)를 lerp한 가상 데이터**를 만들어 모든 패널에 공급. 패널들은 정적 렌더만 한다 → 레일·워터폴·산점·표가 **같은 t로 한 호흡에** 재배치된다. `safeLerp`는 NaN(«—» 셀)을 t=0.5에서 스냅.
+- 데이터 불변식이 카피로 명시: 총 매출은 모델 불변 — 레일 각주 «**The bar is always the same length. Changing the model only moves the cuts.**»
+
+**패널 전수**:
+
+| 패널 | 인코딩 | 애니메이션·디테일 |
+|---|---|---|
+| ① Revenue Rail (히어로) | 고정 길이 100% 스택 바, 채널=색 고정 | 세그먼트의 정렬 슬롯(index·누적 start)을 A·B 레이아웃 간 lerp — 잘림이 미끄러져 이동. 라벨은 실측폭 ≥78px일 때만(잘리면 통째 숨김). 세그먼트 경계는 **inset box-shadow 헤어라인**(바 외곽 길이를 수학적으로 보존). hover 디밍 0.3/200ms + 툴팁에 **다른 두 모델에서의 share 병기**. role=list, reduced-motion이면 t=1 고정 |
+| ② 기여 워터폴 «Where the credit lands» | 채널 막대가 좌→우로 누적, Total 기둥으로 수렴 | 막대 x·시작 높이 lerp로 **순위 재편이 미끄러짐**. **«no credit» 빈 슬롯**: 크레딧 0이면 1px 조각 대신 점선 테두리 슬롯 — 주석 «an empty slot reads as a finding, a one-pixel bar reads as a broken render». Total 기둥 채움은 **채널색 그라디언트(기여 순)** — «합»임을 색으로. 계단 연결 점선, 머니 틱은 총액 분할이 아니라 $500K 라운드 스텝, 최소 막대 6px+전체 열 투명 히트 영역 |
+| ③ Spend vs Return 산점 | x=지출, y=ROAS, 버블 반경=√예산 | **모델별 응답 곡선**: 현재 지출까지 실선, 외삽 구간 점선(32 샘플). 4× 타깃 수평 점선. y 도메인이 보간 데이터를 따라 함께 easing(«세 모델 최악값으로 얼려두면 기본 화면 위가 빈다»는 주석). 라벨 헤일로(paintOrder stroke), 버블 화면 내 클램프. **무지출 채널은 조용히 버리지 않고 «No media spend» 각주 행으로 유지** |
+| ④ 전환 여정 «The journeys behind the credit» | 채널 칩+화살표 행, 여정은 모델 불변 | 선택 모델에서 **크레딧 받는 스텝만 칩이 점등**(색·테두리·12% 배경, transition-all 500ms). ShareBar는 first/last에선 단색, linear에선 **경로 색 분할 그라디언트**. 아이브로우 «Journeys are the same in every model» |
+| ⑤ 채널 상세 표 | 정렬 가능 표+스파크라인 | **framer-motion `layout`으로 행 재정렬 720ms [0.65,0,0.35,1]** — 모델 전환 시 행이 미끄러져 자리 교환. 스파크라인은 **전 채널 공통 도메인**(«작은 채널의 평평한 선이 자기만의 자동 스케일 이야기가 아니라 '작음'으로 읽히게»). NaN 셀은 정렬에서 항상 바닥 |
+
+## 23. RevOps — 버터플라이 퍼널과 «정직한 기하» 프리미티브
+
+**히어로: FunnelShape.tsx — 거울형 퍼널-생키(«butterfly»).** 머리 주석이 규약 문서 수준:
+- 중앙 트렁크가 생존 코호트를 위→아래로 운반, 매 단계에서 **dropped는 왼쪽, pending은 오른쪽 리본**으로 유출되고 트렁크는 정확히 그만큼 좁아진다 — «트렁크의 좁아짐이 주장이 아니라 **원인으로** 그려진다».
+- **단일 units-per-record 스케일**: 트렁크 폭 = intake÷최초×420, 리본 두께 = frac×420. **리본은 트렁크 접점에서 가장 두껍고**(그 두께가 인코딩 값) 바깥으로 좁아지며 페이드 — «외측 테이퍼는 스타일일 뿐, 아무것도 나르지 않는다».
+- **라벨 배치 엔진**: 밴드 라벨이 실측 폭+양쪽 패딩에 들어가면 내부 → 안 되면 shortLabel(예: "SQO") 시도 → 그래도 안 되면 외부 레일+점선 리더. «충돌을 살아남으라고 텍스트에 외곽선을 주는 일은 없다.» 폭 추정은 의도적 과대평가(«넘치는 라벨이 일찍 나간 라벨보다 나쁘다»).
+- **이유 스트랜드**: 유실 리본이 사유별 가닥으로 중첩(같은 구간 점유라 교차 불가 by construction). 레일에는 최상위 사유 1줄만, 상위 3개+«other reasons (N)» **명시적 잔여 풀링** — «Nothing is silently dropped». 전체 분해는 hover 툴팁.
+- 사이드 인플로우(퍼널 위를 거치지 않은 유입)도 같은 스케일의 리본으로 트렁크에 합류. 터미널 캡 «leaves the funnel here».
+- 경로 추적: hover 시 그 단계 리본 `--ribbon-lit`(0.95), 나머지 `--ribbon-dim`(0.12/다크 0.09) — 불투명도가 라이트·다크 **별도 튜닝된 토큰**. 트렁크·리본 위 이동 점선 `rf-current` 4.2s — «**reveal cue, not live-feed cue**».
+- 접근성: role=group+상세 aria-label, 단계 블록은 role=button+키보드, **sr-only 등가 테이블** 동봉. 모바일은 같은 frac 값으로 세로 칩 렌더(«**no second geometry**» — 제2의 기하를 만들지 않음).
+
+**모션 시스템(rf-*)** — «One-shot staging only. No loops, no ambient motion.»:
+
+| 유틸 | 동작 | 시간 |
+|---|---|---|
+| rf-rise | 카드 등장(6px 상승+페이드) | 420ms cubic-bezier(0.22,0.65,0.25,1) |
+| rf-open | 드릴다운 펼침 | 240ms |
+| rf-split / rf-grow-y | 바 자람(scaleX/scaleY 0→1) | 520ms |
+| rf-draw | 선 드로잉(dashoffset 1200→0) | 720ms |
+| rf-band / rf-wing | 퍼널 밴드·리본 scaleX 0.04→1, **transform-box: fill-box**(SVG 도형이 자기 중심으로 스케일) | 420/380ms, wing 스태거 i×70+150+wi×40ms |
+| rf-current | 이동 점선 | 4.2s linear 무한(유일한 루프, reduced-motion 시 정지) |
+
+핵심 규율: count↔ARR 모드 전환 시 **animKey 재키잉으로 애니메이션을 «정확히 한 번» 재생** — 연속 트랜지션이 아니라 재등장. Attribution의 «데이터 보간」과 정반대 전략으로, 두 프로젝트가 값 변경 모션의 두 학파를 보여준다.
+
+**Chart.tsx 프리미티브** (라이브러리 0): LineChart — **성숙 전(maturing) 구간을 점선+빈 마커**로 갈라 그리고 `MaturingBand` 음영에 «still maturing» 라벨 / BarChart·StackedBarChart(rf-grow-y) / ScatterChart — **중앙값 사분면 힌트선**+코너 문구, **면적 스케일 반경**(«ARR 2배가 점 4배로 읽히지 않게» √) / WeeklyMetricChart — 주석 «**ONE METRIC, ONE CHART**», 타깃 점선, 우축 오버레이 1개까지, **`defined:false`면 선을 끊음**(그 주에 분모가 없음) / `niceMax` 라운드 틱 / 시리즈 색 5종은 «카드·침강면 위 ≥3:1(그래픽 객체 AA)»을 주석으로 문서화.
+
+## 24. 확보 유형 총목록 — ANSEO 18종(§4) 외 신규 15종
+
+| # | 유형 | 출처·파일 | 핵심 인코딩 | 애니메이션 | ANSEO 이식 적합성 |
+|---|---|---|---|---|---|
+| 19 | 생키 머니플로우 | CFO·SankeyFlow | 보존 흐름 분기/합류 | rAF 모프 1150/760ms·경로 추적·이동 점선 6s 정지 | △ 점수엔 부적합, 관측 흐름(질문→엔진→인용)엔 ○ |
+| 20 | 팬 차트(불확실성 밴드) | CFO·CashFanChart | P10-90/P25-75 밴드 | clip-path 좌→우 1.5s | ○ 추이 예측 붙일 때 |
+| 21 | 드래그 what-if 핸들 | CFO·HiringDrag | 슬라이더→실시간 재계산 | 핸들 확대+글로우 | ◎ «고치면 +N» 시뮬레이터 |
+| 22 | 분산 워터폴(예산→실적) | CFO·VarianceWaterfall | 앵커+델타, 방향 있는 자람 | scaleY 520ms·i×130ms 스태거 3층 | ◎ 회차 간 점수 변화 분해 |
+| 23 | 카운트업 티커+3D 플립 | CFO·KpiStrip/motion.ts | 숫자 램프, 뒷면=정의 | 1400ms+글라이드 520ms·rotateY 520ms | ◎ KPI 카드 전반 |
+| 24 | 고정 길이 스택 레일 | Attr·revenue-rail | 분모 불변 + 잘림 이동 | 슬롯 lerp 720ms | ◎ «잰 칸 불변» AEO 구성비에 최적 |
+| 25 | 기여 워터폴+no credit 슬롯 | Attr·waterfall-panel | 누적 기여→합 기둥(그라디언트) | 순위 재편 lerp | ◎ 빈 슬롯 문법은 «산정 불가» 표기로 |
+| 26 | 버블+응답 곡선 산점 | Attr·scatter-panel | 실선(실측)/점선(외삽) | 도메인 easing·디밍 | ○ 키워드 지출·효율 화면 |
+| 27 | 여정 칩 시퀀스 | Attr·paths-panel | 칩+화살표, 조건부 점등 | 점등 500ms | ◎ AEO 인용 경로·콘텐츠 추출 화면 |
+| 28 | 레이아웃 재정렬 표 | Attr·channel-table | 정렬·모델 전환 시 행 슬라이드 | framer-motion layout 720ms | ○ 거래처 현황판 정렬에 |
+| 29 | **데이터 보간 전환**(패턴) | Attr·use-transition-snapshot+interp | 차트가 아니라 데이터를 lerp | 720ms 공유 t | ◎◎ 명세 전환·필터·재채점의 표준 전략 후보 |
+| 30 | 버터플라이 퍼널(거울 생키) | RevOps·FunnelShape | 트렁크+좌우 유출 리본, 단일 스케일 | rf-band/wing 스태거·추적 디밍 | ◎◎ 관측 disposition(언급/미언급/못 잼)·이슈 상태 흐름에 정확 대응 |
+| 31 | 성숙 구간 라인(maturing) | RevOps·LineChart | 확정=실선, 미성숙=점선+빈 마커+밴드 | rf-draw 720ms | ◎ «아직 안 여문 회차» 표기 |
+| 32 | 중앙값 사분면 산점 | RevOps·ScatterChart | 중앙값 십자+코너 힌트, 면적 반경 | rf-rise | ○ S1 사분면의 통계적 대안 |
+| 33 | 단일지표 주간 차트+오버레이 | RevOps·WeeklyMetricChart | 바+타깃선+우축 비율(끊김 허용) | rf-grow-y·rf-draw | ◎ 주간 관측 리듬 화면 |
+
+*(±: 24·25·30은 기존 §4의 스택 바·깔때기·퍼널을 대체·상위호환하는 유형)*
+
+## 25. 이식 우선순위 (제8부 결론)
+
+1. **데이터 보간 전환 패턴(#29)** — ANSEO의 «재채점», «채점 명세 판 전환», 필터 변경에 그대로: 모든 카드가 한 호흡으로 다시 접히는 감각을 코드 ~60줄로. 두 학파 중 ANSEO에는 이쪽이 맞다(RevOps의 재키잉 one-shot은 모드 전환처럼 «다른 그림»이 될 때만).
+2. **버터플라이 퍼널(#30)** — AEO 관측의 disposition(언급됨/언급 안 됨/**판정 못 함**=pending 날개)과 이슈 생애(닫힘/재진단 대기/열림), 검수 큐 흐름이 이 기하와 1:1이다. 이유 스트랜드+잔여 풀링(«other reasons (N)»)은 «Nothing is silently dropped» — ANSEO 제1원칙의 시각화 완성형.
+3. **고정 길이 레일(#24)** — «분모는 변하지 않는다»는 메시지를 형태 자체로 말하는 유일한 차트. AEO 잰 칸 구성비에.
+4. **no-credit 빈 슬롯(#25)·maturing 구간(#31)·defined:false 선 끊기** — ANSEO 빈 값 3종(0/—/판정 못 함) 문법의 차트 어휘 확장판.
+5. **what-if 핸들(#21)+분산 워터폴(#22)** — «이 이슈를 고치면 점수가 얼마나 오르나» 반사실 UI 세트.
+6. 보조 규율: 라벨 배치 엔진(내부→축약→레일+리더), 공통 스파크라인 도메인, 면적 스케일 버블, 시리즈 색 ≥3:1 문서화, 그리고 «모든 모션은 one-shot, 루프는 reveal cue 하나뿐» 원칙.
+
 ## 접근 확인 로그
 
 - 새 세션에서도 lovable.app 차단 (2026-08-29 11:31 UTC · curl 프록시 CONNECT 403 + WebFetch EGRESS_BLOCKED)
