@@ -91,7 +91,7 @@ tr.hot3 td{background:var(--card2);}
 .convert{display:grid; grid-template-columns:180px 1fr; gap:22px; align-items:center;}
 @media(max-width:720px){.convert{grid-template-columns:1fr;}}
 .gwrap{position:relative; width:170px; height:104px; margin:0 auto;}
-.gwrap .gv{position:absolute; inset:auto 0 0; text-align:center; font-size:27px; font-weight:600;}
+.gwrap .gv{position:absolute; inset:auto 0 -4px; text-align:center; line-height:1.05;}
 .gwrap .gv small{font-size:11px; color:var(--ink-faint); font-weight:400;}
 .stackrow{display:flex; height:34px; border-radius:8px; overflow:hidden; border:1px solid var(--border);}
 .stackrow>div{position:relative; min-width:2px;}
@@ -201,7 +201,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
               <path d="M14 86 A72 72 0 0 1 156 86" fill="none" stroke="var(--track)" stroke-width="12" stroke-linecap="round"/>
               <path id="gfill" d="M14 86 A72 72 0 0 1 156 86" fill="none" stroke="var(--signal)" stroke-width="12" stroke-linecap="round"/>
             </svg>
-            <p class="gv num"><span id="gnum">32.6</span><small> /100</small></p>
+            <p class="gv"><span id="ggrade" style="font-size:31px;font-weight:700;letter-spacing:-.02em">F</span><br><span class="num" style="font-size:12px;color:var(--ink-faint)"><span id="gnum">32.6</span> /100</span></p>
           </div>
           <dl class="rescells" aria-label="재채점 결과">
   <div class="cell"><dt>받은 / 배점</dt><dd class="num"><span id="graw">41.7</span> / <span id="gweight">128</span></dd></div>
@@ -255,7 +255,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
         <div>
           <div class="overflow"><div id="wf" style="min-width:430px"></div></div>
           <div class="projected">
-            <div><p class="eyebrow">예상 환산</p><p class="pv num"><span id="proj">32.6</span><small style="font-size:12px;color:var(--ink-faint)"> /100</small></p></div>
+            <div><p class="eyebrow">예상 환산</p><p class="pv"><span id="projgrade" style="font-weight:700;color:var(--destructive)">F</span> <span class="num" style="font-size:16px;color:var(--ink-dim)"><span id="proj">32.6</span> /100</span></p></div>
             <p class="bandnote" id="bandnote"></p>
           </div>
         </div>
@@ -277,11 +277,11 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
         </div>
       </section>
       <section class="card stage" style="animation-delay:.46s">
-        <div class="card-head"><div><p class="eyebrow">진단 범위 · 점수 구간</p><h2>사이트의 몇 %를 봤고, 어디에 서 있나</h2></div></div>
+        <div class="card-head"><div><p class="eyebrow">진단 범위 · 점수 구간</p><h2>사이트의 몇 %를 봤고, 어느 등급에 서 있나</h2></div></div>
         <div style="display:flex; gap:24px; flex-wrap:wrap;">
           <div><div class="waffle" id="waffle" aria-label="커버리지 74%"></div>
             <p style="font-size:11px;color:var(--ink-faint);margin-top:8px">측정 <span class="num">39</span>장 / 수집 <span class="num">40</span>장 · 신뢰도 <span class="num">73.25%</span></p></div>
-          <div class="bands" style="flex:1;min-width:170px" id="bands"></div>
+          <div class="bands" style="flex:1;min-width:200px;columns:2;column-gap:18px" id="bands"></div>
         </div>
         <p class="foot">회색 칸은 0%가 아니라 «진단 못 함»입니다. 전체를 재지 못하면 페이지 간 비교 검사는 «통과»가 아니라 «판정 못 함»으로 남습니다.</p>
       </section>
@@ -293,7 +293,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
     <section class="card gstage">
       <div class="card-head">
         <div><p class="eyebrow">GEO 채점 · 5영역 · 배점 합계 100</p><h2>답변 엔진이 읽어야 할 선언 중 무엇이 빠졌나</h2></div>
-        <span class="srcchip">C14 목표선 바(90%)</span>
+        <span style="display:flex;gap:8px;align-items:center"><span id="geograde" style="font-size:22px;font-weight:700;color:var(--ember)">C</span><span class="num" style="font-size:12px;color:var(--ink-faint)">71.5 /100</span><span class="srcchip">C14 목표선 바(90%)</span></span>
       </div>
       <div id="geobullets"></div>
       <p class="foot">세로 눈금이 배점의 90% 목표선입니다. GEO는 콘텐츠 «표현»이 아니라 선언·구조·접근을 태그 단위로 잰 결과이며, SEO 준비도와 합산하지 않습니다 — 배점 합계가 100이라 환산값과 원점수가 같습니다.</p>
@@ -345,6 +345,9 @@ const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const easeOut=t=>1-Math.pow(1-t,3);
 const easeInOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 const lerp=(a,b,t)=>a+(b-a)*t;
+const GRADES=[["A+",95],["A",90],["B+",85],["B",80],["C+",75],["C",70],["D+",65],["D",60],["E+",55],["E",50],["F",0]];
+const gradeOf=v=>GRADES.find(g=>v>=g[1])[0];
+const gradeColor=v=>v>=90?"var(--mint)":v>=75?"var(--signal)":v>=50?"var(--ember)":"var(--destructive)";
 
 /* ═════ 데이터 ═════ */
 const AREA_COLORS=["var(--mint)","var(--ember)","var(--destructive)","var(--signal)","var(--unknown)","#9d7bff"];
@@ -405,6 +408,8 @@ function renderSEO(spec,t){
   // 게이지
   gfill.style.strokeDashoffset=GLEN*(1-norm/100);
   $("#gnum").textContent=norm.toFixed(1); $("#graw").textContent=E.toFixed(1); $("#gweight").textContent=Math.round(W);
+  const gg=$("#ggrade"); gg.textContent=gradeOf(norm); gg.style.color=gradeColor(norm);
+  gfill.style.stroke=gradeColor(norm);
   const isA=Math.abs(W-128)<2;
   $("#gdelta").textContent=isA?"▲ 5.04":"—";
   $("#gdelta").style.color=isA?"var(--mint)":"var(--unknown)";
@@ -535,7 +540,9 @@ buildFilter("#fchips",$("#checks"),SEO_CHECKS,$("#checkcount"),"항목 12개");
     const sel=[...$("#wq").querySelectorAll("input:checked")].map(i=>ITEMS[i.dataset.i]);
     const total=sel.reduce((a,b)=>a+b.g,0), proj=BASE+total;
     glide($("#proj"),proj);
-    $("#bandnote").textContent=proj>=75?"양호(75~89) 구간 진입":proj>=50?"주의(50~74) 구간 진입 — 취약을 벗어난다":proj>=45?`주의 구간까지 ${(50-proj).toFixed(1)}점`:"";
+    const pg=$("#projgrade"); pg.textContent=gradeOf(proj); pg.style.color=gradeColor(proj);
+    const g0=gradeOf(32.6), g1=gradeOf(proj);
+    $("#bandnote").textContent=(g1!==g0?`등급 ${g0} → ${g1} · `:"")+(proj>=75?"양호 구간 진입":proj>=50?"주의 구간 진입 — 취약을 벗어난다":proj>=45?`E 등급까지 ${(50-proj).toFixed(1)}점`:"");
     const Wv=560,H=228,PADL=44,PADB=32,PADT=24;
     const max=Math.max(56,proj+5), y=v=>PADT+(H-PADT-PADB)*(1-v/max);
     const cols=sel.length+3, slot=(Wv-PADL-12)/cols, bw=Math.min(44,slot*.62), X=i=>PADL+i*slot+(slot-bw)/2;
@@ -608,8 +615,11 @@ donut("#gdonut","#gdlegend",[
 
 /* ═════ 와플·구간 ═════ */
 $("#waffle").innerHTML=Array.from({length:100},(_,i)=>`<i class="${i<74?"on":""}"></i>`).join("");
-$("#bands").innerHTML=[["준비 완료","90~100"],["양호","75~89"],["주의","50~74"],["취약 ·현재","25~49"],["차단","0~24"]]
- .map(([l,r])=>`<div class="${l.includes("현재")?"cur":""}"><span>${l}</span><span class="num">${r}</span></div>`).join("");
+$("#bands").innerHTML=GRADES.map(([g,lo],i)=>{
+  const hi=i===0?100:GRADES[i-1][1]-1;
+  const cur=g==="F";
+  return `<div class="${cur?"cur":""}" style="break-inside:avoid"><span style="font-weight:${cur?700:400}">${g}${cur?" ·현재":""}</span><span class="num">${lo}~${hi}</span></div>`;
+}).join("");
 
 /* ═════ GEO ═════ */
 const GEO_AREAS=[
