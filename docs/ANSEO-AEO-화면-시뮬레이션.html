@@ -189,6 +189,24 @@ table.mx td:first-child{color:var(--ink); font-size:12.5px; white-space:nowrap; 
 .mcell.mat{outline:1.5px dashed var(--unknown); outline-offset:-2px; color:var(--unknown); background:none !important;}
 .mcell.none{background:var(--track) !important; color:var(--ink-faint);}
 tr.dimx .mcell{opacity:.25;} .mcell.hotx{outline:2px solid var(--ink); outline-offset:-2px;}
+/* 자사 콘텐츠 인벤토리 */
+table.inv{border-collapse:collapse; width:100%; min-width:760px; font-size:12.5px;}
+table.inv th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.inv td{padding:7.5px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+tr.invrow.uncited td:first-child{border-left:3px solid var(--destructive); padding-left:7px;}
+tr.invrow.cited td:first-child{border-left:3px solid var(--mint); padding-left:7px;}
+/* 추천 콘텐츠 */
+.recogrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px;}
+.reco{border:1px solid var(--border); border-radius:11px; background:var(--card2); padding:14px 16px; display:flex; flex-direction:column; gap:8px;}
+.reco .type{align-self:flex-start; font-size:10px; letter-spacing:.05em; border:1px solid; border-radius:4px; padding:1px 7px;}
+.reco .type.new{color:var(--violet); border-color:color-mix(in oklab,var(--violet) 50%,transparent);}
+.reco .type.fix{color:var(--signal); border-color:color-mix(in oklab,var(--signal) 50%,transparent);}
+.reco h4{margin:0; font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.45;}
+.reco ul{margin:0; padding:0; list-style:none; font-size:11.5px; color:var(--ink-faint); line-height:1.6;}
+.reco ul li::before{content:"— "; color:var(--ink-faint);}
+.reco .impact{font-size:11.5px; color:var(--ink-dim);}
+.reco .adopt{margin-top:auto; align-self:flex-start; border:1px solid color-mix(in oklab,var(--mint) 55%,transparent); background:var(--mint-soft); color:var(--mint); font:inherit; font-size:12px; border-radius:7px; padding:5px 13px; cursor:pointer;}
+.reco .adopt:disabled{opacity:.55; cursor:default;}
 /* 생키 흐름선 */
 .flowline{fill:none; stroke-width:2; stroke-dasharray:3 26; opacity:0; pointer-events:none;}
 .flowline.on{opacity:.9; animation:dashmove 4.2s linear infinite;}
@@ -276,11 +294,23 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
   <!-- ②b 인용 출처 리더보드 + 콘텐츠 검토 -->
   <section class="card stage" style="animation-delay:.26s">
     <div class="card-head">
-      <div><p class="eyebrow">인용 출처 — 인용 65회의 임자</p><h2>인용을 가져가는 문서 순위와, 그 문서를 뜯어본 기록</h2></div>
+      <div><p class="eyebrow">인용 출처 — 자사·타사, 인용 65회의 임자</p><h2>인용을 가져가는 문서 순위와, 그 인용 콘텐츠를 뜯어본 기록</h2></div>
       <span class="srcchip">C6 막대+분모 · 인용 콘텐츠 검토(4b 입력)</span>
     </div>
     <div id="srclb"></div>
     <p class="foot">1위가 자사인 것은 도메인 전체 합산이라서입니다 — 문서 단위로는 경쟁 문서가 앞섭니다. 행을 펼치면 <b style="color:var(--ink-dim)">인용 콘텐츠 검토</b>가 열립니다: 실제 인용 문장과 «무엇이 인용을 얻게 했나»의 구조 요인. 검토 완료된 요인만 4b 분석의 격차 항목이 됩니다 — 검토 없이 제안으로 건너뛰지 않습니다.</p>
+  </section>
+
+
+  <!-- ②c 자사 콘텐츠 인벤토리 — 인용되는 것과 안 되는 것 -->
+  <section class="card stage" style="animation-delay:.23s">
+    <div class="card-head">
+      <div><p class="eyebrow">자사 콘텐츠 대장 — 8개 문서</p><h2>우리 콘텐츠 중 무엇이 인용되고, 무엇이 한 번도 인용되지 않았나</h2></div>
+      <span class="srcchip">비인용 사유 = 4b 분석 입력</span>
+    </div>
+    <div class="chips" id="invfilter" role="group" aria-label="인용 상태 필터"></div>
+    <div class="overflow"><table class="inv"><thead><tr><th>자사 문서</th><th>주제</th><th>인용</th><th>최근 인용</th><th>인용 요인 / 비인용 사유</th></tr></thead><tbody id="invrows"></tbody></table></div>
+    <p class="foot">왼쪽 테두리가 민트면 인용 실적이 있는 문서, 빨강이면 <b style="color:var(--destructive)">비인용 문서</b>입니다. 비인용 사유는 인용 상위 문서와의 구조 비교(4b)에서 나온 관측이지 추측이 아니며, 이 사유가 그대로 아래 추천 콘텐츠의 근거가 됩니다. 인용 3개 문서의 합(12+6+5=23회)이 위 인용 관측쌍 총계와 같습니다 — 한 소스.</p>
   </section>
 
   <!-- ③ 질문 관측 목록 + 여정 칩 -->
@@ -404,8 +434,19 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
     <div class="pipe-link"><span style="font-size:16px">5</span><span><b>실행 구간으로 넘어가는 접점</b> — 제안을 채택하면 5(실행)의 작업 큐에 실리고, 발행 후 재관측(순환 2)이 위 추이에 ◆로 찍힙니다. 제안은 관측 근거에서만 나오고(신설 규칙 6), 이 카드는 이슈를 닫지 않습니다.</span></div>
   </section>
 
+
+  <!-- 4c 확장 — 추천 콘텐츠 -->
+  <section class="card stage" style="animation-delay:.60s">
+    <div class="card-head">
+      <div><p class="eyebrow">추천 콘텐츠 — 다음에 무엇을 쓰나</p><h2 id="recocount">추천 4건 · 채택 0</h2></div>
+      <span class="srcchip">4c 제안 · 근거 없는 추천 금지(규칙 6)</span>
+    </div>
+    <div class="recogrid" id="recogrid"></div>
+    <p class="foot">추천은 세 근거의 교집합에서만 나옵니다 — <b style="color:var(--ink-dim)">비인용 질문</b>(무엇을 못 잡고 있나) × <b style="color:var(--ink-dim)">경쟁 인용 문서의 구조 요인</b>(왜 걔네가 잡나) × <b style="color:var(--ink-dim)">자사 비인용 문서 사유</b>(우리의 어디가 비었나). 채택하면 5(실행) 작업 큐에 실리고, 발행 후 재관측이 효과를 판정합니다 — 이 카드가 이슈를 닫지 않습니다.</p>
+  </section>
+
   <!-- ⑦ 키워드·질문 등록 (NXT 이관) -->
-  <section class="card stage" style="animation-delay:.64s">
+  <section class="card stage" style="animation-delay:.66s">
     <div class="card-head">
       <div><p class="eyebrow">질문 풀의 입구</p><h2>키워드를 등록하면 질문이 파생된다</h2></div>
       <span class="srcchip">NXT 이관 — 키워드 입력 + 월간 검색량</span>
@@ -932,6 +973,64 @@ countUp($("#aeonum"),AEO_SCORE);
     });
   });
   svg.addEventListener("pointerleave",()=>lit(new Set()));
+})();
+
+/* ═════ 자사 콘텐츠 인벤토리 ═════ */
+(function(){
+  const DOCS=[
+   {u:"/lifting",t:"울쎄라 리프팅 안내",topic:"효과·경과",c:12,last:"08-24",note:"경과 단계 소제목 구조가 인용 단위로 쓰임 — 유지·확대",eng:"ChatGPT 6 · Perplexity 4 · 오버뷰 2"},
+   {u:"/faq",t:"시술 후 관리 FAQ",topic:"관리",c:6,last:"08-24",note:"질문-직답 쌍 구조 — 항목 추가 여지",eng:"Gemini 3 · Claude 2 · Grok 1"},
+   {u:"/guide",t:"피부 시술 부작용 가이드",topic:"부작용",c:5,last:"08-08",note:"작성·감수 주체 명시가 신뢰 요인",eng:"오버뷰 3 · Perplexity 2"},
+   {u:"/price",t:"시술 비용 안내",topic:"비용·가격",c:0,last:"—",note:"가격이 이미지로만 존재 — 엔진이 읽을 텍스트·표 없음, 갱신일 없음"},
+   {u:"/shrink",t:"슈링크 안내",topic:"시술 비교",c:0,last:"—",note:"비교 관점 부재 — «vs» 질문 판을 경쟁 비교 문서가 독식"},
+   {u:"/event",t:"이달의 이벤트",topic:"프로모션",c:0,last:"—",note:"질문 대응 목적의 문서가 아님(홍보성) — 인용 대상에서 제외 판단"},
+   {u:"/doctors",t:"의료진 소개",topic:"신뢰",c:0,last:"—",note:"질문 직답 블록 없음 — 단독 인용은 어려우나 신뢰 요소로 유지"},
+   {u:"/acne",t:"여드름 치료 안내",topic:"비용·치료",c:0,last:"—",note:"해당 질문이 성숙 중 — 재관측 후 판정(비인용 확정 아님)"}];
+  const host=$("#invrows");
+  function render(f){
+    host.innerHTML=DOCS.filter(d=>f==="all"||(f==="cited"?d.c>0:d.c===0)).map(d=>`
+     <tr class="invrow ${d.c>0?"cited":"uncited"}">
+       <td style="color:var(--ink)"><span class="num" style="font-size:11.5px;color:var(--signal)">${d.u}</span><br>${d.t}</td>
+       <td>${d.topic}</td>
+       <td class="num" style="color:${d.c>0?"var(--mint)":"var(--destructive)"}">${d.c>0?d.c+"회":"0회"}</td>
+       <td class="num" style="color:var(--ink-faint)">${d.last}</td>
+       <td style="font-size:12px">${d.note}${d.eng?` <span style="display:block;font-size:10.5px;color:var(--ink-faint)">${d.eng}</span>`:""}</td></tr>`).join("");
+  }
+  const counts={all:DOCS.length,cited:DOCS.filter(d=>d.c>0).length,uncited:DOCS.filter(d=>d.c===0).length};
+  $("#invfilter").innerHTML=[["all","전체"],["cited","인용됨"],["uncited","비인용"]]
+    .map(([k,l])=>`<button class="fchip" data-f="${k}" aria-pressed="${k==="all"}">${l} <span class="num">${counts[k]}</span></button>`).join("");
+  $("#invfilter").querySelectorAll(".fchip").forEach(b=>b.onclick=()=>{
+    $("#invfilter").querySelectorAll(".fchip").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render(b.dataset.f);
+  });
+  render("all");
+})();
+
+/* ═════ 추천 콘텐츠 (4c 확장) ═════ */
+(function(){
+  const RECOS=[
+   {type:"new",tl:"«울쎄라 유지 기간» 한 문단 직답 FAQ 신설",impact:6,
+    basis:["비인용 질문 6건이 이 주제 (질문 목록·관측)","인용 상위 2개 경쟁 문서 모두 첫 문단 직답 보유 (4b)","/faq에 해당 항목 없음 (자사 대장)"]},
+   {type:"fix",tl:"/shrink에 «울쎄라 vs 슈링크» 비교 표 추가",impact:11,
+    basis:["비교 여정 질문의 41%를 경쟁이 인용 (추이·매트릭스)","경쟁 비교 문서의 요인 = 비교 표+갱신일 (4b)","/shrink 비인용 사유 = 비교 관점 부재 (자사 대장)"]},
+   {type:"fix",tl:"/price 가격을 이미지에서 표·텍스트로, 갱신일 표기",impact:4,
+    basis:["비용·가격 판이 전 엔진 무인용 (매트릭스)","경쟁 인용 문서 요인 = 샷 수·비용 표 (4b)","/price 비인용 사유 = 읽을 텍스트 없음 (자사 대장)"]},
+   {type:"fix",tl:"/lifting에 갱신일·시술 경과 표 추가",impact:3,
+    basis:["인용 1위 자사 문서의 수성 — 경쟁 9개 중 8개가 갱신일 보유 (4b)","GEO 감점(갱신일 미표기 27장)과 같은 원인"]}];
+  let adopted=0;
+  const host=$("#recogrid");
+  host.innerHTML=RECOS.map((r,i)=>`
+   <div class="reco">
+     <span class="type ${r.type}">${r.type==="new"?"신규 발행":"기존 문서 보강"}</span>
+     <h4>${r.tl}</h4>
+     <ul>${r.basis.map(b=>`<li>${b}</li>`).join("")}</ul>
+     <span class="impact">예상 영향 — 질문 <b class="num" style="color:var(--mint)">${r.impact}건</b></span>
+     <button class="adopt" data-i="${i}">채택 → 실행 큐</button>
+   </div>`).join("");
+  host.querySelectorAll(".adopt").forEach(btn=>btn.onclick=()=>{
+    btn.disabled=true; btn.textContent="실행 큐 등록됨 ✓"; adopted++;
+    $("#recocount").textContent=`추천 4건 · 채택 ${adopted}`;
+  });
 })();
 
 /* ═════ 키워드 등록 (NXT 이관) ═════ */
