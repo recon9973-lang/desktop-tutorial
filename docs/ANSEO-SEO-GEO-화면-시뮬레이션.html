@@ -87,6 +87,22 @@ tr.hot3 td{background:var(--card2);}
 .dumbtrack .p1,.dumbtrack .p2{position:absolute; top:1px; width:10px; height:10px; border-radius:99px; translate:-50% 0; box-shadow:0 0 0 2px var(--card);}
 .dumbtrack .p1{background:var(--signal);} .dumbtrack .p2{background:var(--ember);}
 
+/* 진단 이력 */
+.histgrid{display:grid; grid-template-columns:1.45fr 1fr; gap:20px; align-items:start;}
+@media(max-width:900px){.histgrid{grid-template-columns:1fr;}}
+.histchart{position:relative;}
+.histchart svg{display:block;}
+.htip{position:absolute; pointer-events:none; background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:6px 10px 7px; font-size:11px; line-height:1.5; color:var(--ink-dim); box-shadow:0 8px 22px rgba(0,0,0,.3); white-space:nowrap; z-index:2; translate:-50% calc(-100% - 12px);}
+.htip .hg{font-size:18px; font-weight:700; letter-spacing:-.02em; margin-right:4px;}
+.histlegend{display:flex; gap:6px 16px; flex-wrap:wrap; font-size:11px; color:var(--ink-faint); margin-bottom:8px;}
+.histlegend i{display:inline-block; width:14px; height:3px; border-radius:99px; translate:0 -2.5px; margin-right:5px;}
+table.histtable{min-width:320px; font-size:12.5px;}
+table.histtable td{padding:6.5px 10px;}
+tr.hrow.hot3 td{background:var(--card2);}
+.hgr{font-size:16px; font-weight:700; letter-spacing:-.02em;}
+.hsc{font-size:11px; color:var(--ink-faint);}
+.hdl{font-size:10.5px;}
+
 /* 환산 카드 */
 .convert{display:grid; grid-template-columns:180px 1fr; gap:22px; align-items:center;}
 @media(max-width:720px){.convert{grid-template-columns:1fr;}}
@@ -225,6 +241,23 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
 
     <section class="card stage" style="animation-delay:.16s">
       <div class="card-head">
+        <div><p class="eyebrow">진단 이력</p><h2>날짜별 점수 흐름 — 언제 쟀고, 얼마였나</h2></div>
+        <span class="srcchip">C6 확장 · B10 판 경계 · E3 연동</span>
+      </div>
+      <div class="histgrid">
+        <div>
+          <div class="histlegend" id="histlegend"></div>
+          <div class="histchart" id="histchart"></div>
+        </div>
+        <div class="overflow"><table class="score histtable" id="histtable" aria-label="진단 회차별 점수">
+          <thead><tr><th>진단일</th><th>명세</th><th>SEO</th><th>GEO</th></tr></thead><tbody></tbody>
+        </table></div>
+      </div>
+      <p class="foot">가로축은 실제 날짜 간격입니다 — 5~6월 사이 <b style="color:var(--ink-dim)">재진단 공백 50일</b>이 그대로 보입니다. 선은 <b style="color:var(--ink-dim)">같은 명세 판 안에서만</b> 잇고, 판이 바뀐 경계(세로 점선)는 건너 비교하지 않습니다 — 그 변화는 «개선»이 아니라 «기준 변경»일 수 있기 때문입니다. 점선 테두리가 있는 점은 판정 못 함이 남은 회차이며, 점이나 오른쪽 표의 날짜에 손을 올리면 그 날짜의 등급·점수·직전 대비를 그 자리에서 읽을 수 있습니다.</p>
+    </section>
+
+    <section class="card stage" style="animation-delay:.24s">
+      <div class="card-head">
         <div><p class="eyebrow">SEO 채점 · 6영역</p><h2>어느 영역에서 점수를 받았고, 어디서 깎였나</h2></div>
         <span class="srcchip">C6 채점표 + Sparkline(천장=배점)</span>
       </div>
@@ -235,7 +268,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
       <p class="foot">옅은 칸=배점 크기(공통 눈금), 진한 칸=깎인 점수 — 색은 «남은 여지»입니다(상한 포화=빨강 · 절반 이상=주황 · 그 아래=파랑). 추이선의 점선 천장이 배점이라, 선이 천장에서 얼마나 먼지가 곧 남은 점수입니다.</p>
     </section>
 
-    <section class="card stage" style="animation-delay:.24s">
+    <section class="card stage" style="animation-delay:.32s">
       <div class="card-head">
         <div><p class="eyebrow">진단 항목 · 세부내용 · 수정 내용</p><h2 id="checkcount">항목 12개</h2></div>
         <span class="srcchip">C5 근거 접기 + 토크나이저 색칠</span>
@@ -245,7 +278,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
       <p class="foot">항목을 펼치면 «판정 근거 → 실제로 본 응답·코드 조각 → 수정 절차»가 함께 열립니다. 코드의 색은 장식이 아니라 지시입니다 — <span style="color:var(--signal)">파랑=태그</span> · <span style="color:var(--mint)">민트=값</span> · <span style="color:var(--destructive)">빨강=실패 지점</span> · <span style="color:var(--ember)">주황=주석</span>. «판정 못 함»은 감점 0이지만 통과도 아닙니다 — 수집을 복구한 뒤 재진단해야 확정됩니다.</p>
     </section>
 
-    <section class="card stage" style="animation-delay:.32s">
+    <section class="card stage" style="animation-delay:.40s">
       <div class="card-head">
         <div><p class="eyebrow">반사실</p><h2>감점 항목을 고치면 어디까지 가나</h2></div>
         <span class="srcchip">C9 워터폴(3층 시차) + B9 재계산</span>
@@ -264,7 +297,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
     </section>
 
     <div class="duo">
-      <section class="card stage" style="animation-delay:.40s">
+      <section class="card stage" style="animation-delay:.48s">
         <div class="card-head"><div><p class="eyebrow">깎인 점수 구성</p><h2>총 손실이 어디서 나왔나</h2><p style="font-size:11px;color:var(--ink-faint);margin:3px 0 0">명세 1.10.0 기준 — 판이 다르면 손실 구성을 나란히 놓지 않는다</p></div><span class="srcchip">C14 도넛 + E3 연동</span></div>
         <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
           <div style="position:relative;width:150px;height:150px;flex:none">
@@ -276,7 +309,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
           <div class="legend" id="dlegend" style="flex:1;min-width:180px"></div>
         </div>
       </section>
-      <section class="card stage" style="animation-delay:.46s">
+      <section class="card stage" style="animation-delay:.54s">
         <div class="card-head"><div><p class="eyebrow">진단 범위 · 점수 구간</p><h2>사이트의 몇 %를 봤고, 어느 등급에 서 있나</h2></div></div>
         <div style="display:flex; gap:24px; flex-wrap:wrap;">
           <div><div class="waffle" id="waffle" aria-label="커버리지 74%"></div>
@@ -333,7 +366,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
     </div>
   </div>
 
-  <footer class="stage" style="animation-delay:.5s">
+  <footer class="stage" style="animation-delay:.6s">
     <p>이식 검증 요약 — 판 전환은 보간(D3), 탭 전환은 재등장(D4 재키잉), 워터폴은 방향 있는 3층 시차(D5), 근거 코드는 토크나이저 자동 색칠(C5), 판 비교 금지 경고(B10)까지 SEO·GEO 화면 문법에 결합됨. ANSEO가 계산하는 점수는 기술·구조 준비도이며 검색 순위를 예측하거나 보장하지 않습니다. · 표본 데이터 시뮬레이션</p>
   </footer>
 </div>
@@ -411,9 +444,9 @@ function renderSEO(spec,t){
   const gg=$("#ggrade"); gg.textContent=gradeOf(norm); gg.style.color=gradeColor(norm);
   gfill.style.stroke=gradeColor(norm);
   const isA=Math.abs(W-128)<2;
-  $("#gdelta").textContent=isA?"▲ 5.04":"—";
+  $("#gdelta").textContent=isA?"▲ 1.1":"—";
   $("#gdelta").style.color=isA?"var(--mint)":"var(--unknown)";
-  $("#gdelta").title=isA?"직전 회차 대비":"판이 달라 직전 회차와 비교하지 않습니다";
+  $("#gdelta").title=isA?"직전 회차(07-25 · 31.5) 대비 — 진단 이력 카드와 같은 소스":"판이 달라 직전 회차와 비교하지 않습니다";
   $("#gspec").textContent=isA?"1.10.0":"1.11.0(가정)";
   // 스택
   $("#stack").innerHTML=rows.map((r,i)=>{
@@ -611,6 +644,97 @@ donut("#gdonut","#gdlegend",[
     host.addEventListener("pointerover",e=>{const d=areaOf(e); if(d)setHot(d.area||d.label);});
     host.addEventListener("pointerleave",()=>setHot(null));
   });
+})();
+
+/* ═════ 진단 이력 — 날짜별 점수 흐름 (C6 확장·B10·E3) ═════ */
+(function(){
+  const SERIES={
+   seo:{label:"SEO",line:"var(--signal)",runs:[
+     {d:"2026-03-27",s:22.9,spec:"1.9.2",u:1},
+     {d:"2026-04-10",s:24.1,spec:"1.9.2",u:0},
+     {d:"2026-04-24",s:21.7,spec:"1.9.2",u:1},
+     {d:"2026-06-13",s:28.6,spec:"1.10.0",u:3},
+     {d:"2026-07-04",s:30.0,spec:"1.10.0",u:2},
+     {d:"2026-07-25",s:31.5,spec:"1.10.0",u:2},
+     {d:"2026-08-22",s:32.6,spec:"1.10.0",u:2}]},
+   geo:{label:"GEO",line:"#9d7bff",runs:[
+     {d:"2026-06-13",s:64.2,spec:"1.10.0",u:1},
+     {d:"2026-07-04",s:66.8,spec:"1.10.0",u:1},
+     {d:"2026-07-25",s:69.0,spec:"1.10.0",u:1},
+     {d:"2026-08-22",s:71.5,spec:"1.10.0",u:1}]}};
+  const runsAll=SERIES.seo.runs;
+  const W=640,H=238,PL=34,PR=12,PT=22,PB=28;
+  const T0=Date.parse(runsAll[0].d), T1=Date.parse(runsAll.at(-1).d);
+  const X=d=>PL+(Date.parse(d)-T0)/(T1-T0)*(W-PL-PR);
+  const Y=v=>PT+(1-v/100)*(H-PT-PB);
+  const delta=(runs,i)=>i>0&&runs[i].spec===runs[i-1].spec?runs[i].s-runs[i-1].s:null;
+  const dtxt=v=>v===null?"—":(v>=0?"▲"+v.toFixed(1):"▼"+Math.abs(v).toFixed(1));
+  const dcol=v=>v===null?"var(--unknown)":v>=0?"var(--mint)":"var(--destructive)";
+
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="진단 날짜별 SEO·GEO 100점 환산 점수 흐름">`;
+  // 등급 구간 배경(등급 색 = 구간 색)
+  [[90,100,"var(--mint)"],[75,90,"var(--signal)"],[50,75,"var(--ember)"],[0,50,"var(--destructive)"]]
+    .forEach(([lo,hi,c])=>{s+=`<rect x="${PL}" y="${Y(hi)}" width="${W-PL-PR}" height="${Y(lo)-Y(hi)}" fill="color-mix(in oklab, ${c} 4.5%, transparent)"/>`;});
+  [[0,1],[50,0],[75,0],[90,0],[100,0]].forEach(([v,solid])=>{
+    s+=`<line x1="${PL}" x2="${W-PR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" ${solid?"":'stroke-dasharray="3 5"'}/><text x="${PL-6}" y="${Y(v)+3.5}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" class="num">${v}</text>`;});
+  runsAll.forEach(r=>{s+=`<text x="${X(r.d)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="num">${r.d.slice(5)}</text>`;});
+  // 판 경계 — 선을 잇지 않고 세로 점선으로 끊는다
+  for(let i=1;i<runsAll.length;i++) if(runsAll[i].spec!==runsAll[i-1].spec){
+    const xb=(X(runsAll[i-1].d)+X(runsAll[i].d))/2;
+    s+=`<line x1="${xb}" x2="${xb}" y1="${PT-4}" y2="${H-PB}" stroke="var(--ember)" stroke-opacity=".55" stroke-dasharray="4 4"/><text x="${xb}" y="${PT-9}" text-anchor="middle" font-size="9.5" fill="var(--ember)">명세 ${runsAll[i-1].spec} → ${runsAll[i].spec} · 잇지 않음</text>`;
+  }
+  let dly=0;
+  Object.entries(SERIES).forEach(([key,se])=>{
+    let seg=[];
+    const flush=()=>{ if(seg.length>1){
+      const d=seg.map((r,i)=>`${i?"L":"M"}${X(r.d).toFixed(1)},${Y(r.s).toFixed(1)}`).join(" ");
+      s+=`<path d="${d}" pathLength="100" class="drawin" style="animation-delay:${dly}ms" fill="none" stroke="${se.line}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`; dly+=260;} seg=[]; };
+    se.runs.forEach((r,i)=>{ if(i&&r.spec!==se.runs[i-1].spec)flush(); seg.push(r); }); flush();
+    se.runs.forEach((r,i)=>{
+      const last=i===se.runs.length-1, c=gradeColor(r.s);
+      s+=`<g class="hpt fadein" style="animation-delay:${240+i*90}ms" data-series="${key}" data-i="${i}" data-d="${r.d}">
+        ${r.u?`<circle cx="${X(r.d)}" cy="${Y(r.s)}" r="7.5" fill="none" stroke="var(--unknown)" stroke-dasharray="2.5 2.5"/>`:""}
+        <circle class="core" cx="${X(r.d)}" cy="${Y(r.s)}" r="${last?4.6:3.4}" fill="${c}" ${last?`stroke="var(--card)" stroke-width="1.5"`:""}/>
+        <circle cx="${X(r.d)}" cy="${Y(r.s)}" r="13" fill="transparent"/></g>`;
+      if(last)s+=`<text x="${X(r.d)+4}" y="${Y(r.s)-13}" text-anchor="end" font-size="13" font-weight="700" fill="${c}">${gradeOf(r.s)} <tspan class="num" font-size="9.5" font-weight="400" fill="var(--ink-faint)">${r.s.toFixed(1)}</tspan></text>`;
+    });
+  });
+  s+="</svg>";
+  const chart=$("#histchart"); chart.innerHTML=s+`<div class="htip" id="htip" hidden></div>`;
+
+  $("#histlegend").innerHTML=Object.values(SERIES).map(se=>{const c=se.runs.at(-1);
+    return `<span><i style="background:${se.line}"></i>${se.label} — 현재 <b style="color:${gradeColor(c.s)};font-weight:700">${gradeOf(c.s)}</b> <span class="num">${c.s.toFixed(1)}</span></span>`;}).join("")
+    +`<span><i style="width:8px;height:8px;border-radius:99px;background:none;border:1.5px dashed var(--unknown)"></i>판정 못 함 남은 회차</span>`;
+
+  // 날짜별 점수 표 — 최신이 위
+  $("#histtable tbody").innerHTML=runsAll.map(r=>r.d).reverse().map(d=>{
+    const cells=["seo","geo"].map(k=>{
+      const runs=SERIES[k].runs, i=runs.findIndex(r=>r.d===d);
+      if(i<0)return `<td style="color:var(--unknown);font-size:11.5px">— 측정 전</td>`;
+      const r=runs[i], dv=delta(runs,i);
+      return `<td><b class="hgr" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b> <span class="num hsc">${r.s.toFixed(1)}</span> <span class="num hdl" style="color:${dcol(dv)}" title="${i>0&&dv===null?"판이 달라 직전 회차와 비교하지 않습니다":"직전 진단 대비"}">${i===0?"":dtxt(dv)}</span></td>`;
+    }).join("");
+    return `<tr class="hrow" data-d="${d}"><td class="num" style="color:var(--ink)">${d}</td><td class="num" style="font-size:11px;color:var(--ink-faint)">${runsAll.find(r=>r.d===d).spec}</td>${cells}</tr>`;
+  }).join("");
+
+  // 점 ↔ 표 양방향 연동 + 그 자리 판독
+  const tip=$("#htip");
+  function hot(d,pt){
+    document.querySelectorAll("#histtable .hrow").forEach(tr=>tr.classList.toggle("hot3",tr.dataset.d===d));
+    chart.querySelectorAll(".hpt").forEach(g=>{
+      const base=+g.dataset.i===SERIES[g.dataset.series].runs.length-1?4.6:3.4;
+      g.querySelector(".core").setAttribute("r",g.dataset.d===d?5.6:base);
+    });
+    if(pt){
+      const k=pt.dataset.series, runs=SERIES[k].runs, i=+pt.dataset.i, r=runs[i], dv=delta(runs,i);
+      tip.innerHTML=`<b class="hg" style="color:${gradeColor(r.s)}">${gradeOf(r.s)}</b><span class="num">${r.s.toFixed(1)} /100</span><br>${SERIES[k].label} · <span class="num">${r.d}</span> · 명세 <span class="num">${r.spec}</span><br><span class="num" style="color:${dcol(dv)}">${i===0?"첫 진단":dv===null?"직전과 판이 달라 비교 안 함":"직전 대비 "+dtxt(dv)}</span>${r.u?` · <span style="color:var(--unknown)">판정 못 함 ${r.u}건</span>`:""}`;
+      tip.style.left=(X(r.d)/W*100)+"%"; tip.style.top=(Y(r.s)/H*100)+"%"; tip.hidden=false;
+    } else tip.hidden=true;
+  }
+  chart.addEventListener("pointerover",e=>{const g=e.target.closest(".hpt"); if(g)hot(g.dataset.d,g);});
+  chart.addEventListener("pointerleave",()=>hot(null,null));
+  $("#histtable").addEventListener("pointerover",e=>{const tr=e.target.closest(".hrow"); if(tr)hot(tr.dataset.d,null);});
+  $("#histtable").addEventListener("pointerleave",()=>hot(null,null));
 })();
 
 /* ═════ 와플·구간 ═════ */
