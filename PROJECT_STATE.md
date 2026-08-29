@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-08-29 체크포인트 s11 — 4단계 통합 시뮬 + 5단계 실물 이식 완료(S1~S7·명세 발행)
 - 2026-08-29 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-08-29 체크포인트 s10 — SEO·GEO 마감 + AEO 화면(3단계) 확정 배치
 - 2026-08-29 chore: PROJECT_STATE 자동 갱신 [skip ci]
@@ -14,7 +15,6 @@
 - 2026-08-24 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-08-24 chore(chatbot): LLM-as-Judge 품질 채점 리포트
 - 2026-08-23 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-08-24 docs: ANSEO 개편 — GPTO 역설계 · 제안서 · 세션 기록 · 배포 런북 (#229)
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 3ea2b46 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 5acf5b2 기준. 값·비밀은 포함하지 않음.*
