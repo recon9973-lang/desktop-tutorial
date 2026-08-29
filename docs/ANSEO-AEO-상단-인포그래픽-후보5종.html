@@ -1,0 +1,330 @@
+<title>AEO 상단 인포그래픽 후보 5종</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3; --violet:#9d7bff;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13); --ember-soft:rgba(233,177,62,.14);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10); --ember-soft:rgba(168,111,16,.12);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10); --ember-soft:rgba(168,111,16,.12);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+.sub{color:var(--ink-dim); max-width:70ch; font-size:13px;}
+.foot{margin-top:12px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:82ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.numchip{font-size:15px; font-weight:700; color:var(--violet); border:1.5px solid color-mix(in oklab,var(--violet) 45%,transparent); border-radius:8px; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; flex:none;}
+.src{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;}
+.src span{font-size:10px; letter-spacing:.03em; border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.src .in{color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent);}
+.src .out{color:var(--ember); border:1px solid color-mix(in oklab,var(--ember) 45%,transparent);}
+.verdict{margin-top:12px; border-top:1px dashed var(--border); padding-top:10px; font-size:12.5px; color:var(--ink-dim); max-width:88ch;}
+.verdict b.pick{color:var(--mint);} .verdict b.hold{color:var(--unknown);}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+.overflow{overflow-x:auto;}
+.segtoggle{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+.segtoggle button{border:0; background:transparent; color:var(--ink-dim); font:inherit; font-size:12px; padding:5px 12px; cursor:pointer;}
+.segtoggle button[aria-pressed="true"]{background:var(--signal-soft); color:var(--signal); font-weight:500;}
+
+/* ① SOV 레일 */
+.sov-big{display:flex; height:38px; border-radius:9px; overflow:hidden; outline:1px solid var(--border);}
+.sov-big>div{position:relative; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; box-shadow:inset -1px 0 0 var(--card); transition:width .1s linear;}
+.sov-cap{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--ink-faint); margin-top:6px;}
+.erow{display:grid; grid-template-columns:110px 1fr 76px; gap:12px; align-items:center; padding:5.5px 0; font-size:12px; border-bottom:1px solid var(--border);}
+.erow:last-child{border-bottom:0;}
+.erail{display:flex; height:14px; border-radius:4px; overflow:hidden;}
+.erail>i{box-shadow:inset -1px 0 0 var(--card); transition:width .1s linear;}
+
+/* ② 매트릭스 */
+table.mx{border-collapse:collapse; min-width:700px; font-size:12px; width:100%;}
+table.mx th{font-size:10px; letter-spacing:.05em; color:var(--ink-faint); font-weight:500; padding:6px 4px; text-align:center;}
+table.mx th:first-child{text-align:left; padding-left:2px;}
+table.mx td{padding:3px;}
+table.mx td:first-child{color:var(--ink); font-size:12.5px; white-space:nowrap; padding-right:10px;}
+.cell{height:30px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; animation:fadein .4s ease-out backwards; cursor:default;}
+.cell.mat{outline:1.5px dashed var(--unknown); outline-offset:-2px; color:var(--unknown); background:none !important;}
+.cell.none{background:var(--track) !important; color:var(--ink-faint);}
+tr.dimx .cell{opacity:.25;} .cell.hotx{outline:2px solid var(--ink); outline-offset:-2px;}
+@keyframes fadein{from{opacity:0;}}
+
+/* ③ 생키 */
+.fun-rest{opacity:.62; transition:opacity .22s;}
+.fun-lit{opacity:.95 !important;} .fun-dim{opacity:.12 !important;}
+
+/* ④ 리더보드 */
+.lb{display:grid; grid-template-columns:26px 200px 1fr auto; gap:10px 12px; align-items:center; font-size:12.5px;}
+.lb>*{padding:4.5px 0; border-bottom:1px solid var(--border);}
+.lbbar{height:13px; border-radius:99px; background:var(--track); position:relative;}
+.lbbar i{position:absolute; inset:1.5px auto 1.5px 0; border-radius:99px; display:block;}
+.echip{font-size:9.5px; border:1px solid var(--border); border-radius:4px; padding:0 5px; color:var(--ink-faint); margin-left:4px;}
+
+/* ⑤ 타일 */
+.tiles{display:grid; grid-template-columns:repeat(auto-fill,minmax(136px,1fr)); gap:10px;}
+.tile{border:1px solid var(--border); border-radius:10px; background:var(--card2); padding:11px 13px;}
+.tile h4{margin:0 0 4px; font-size:12px; font-weight:500; color:var(--ink-dim); white-space:nowrap;}
+.tile .rate{font-size:22px; font-weight:700; letter-spacing:-.02em;}
+.tile .den{font-size:10.5px; color:var(--ink-faint);}
+.tile .d{font-size:10.5px; margin-top:2px;}
+footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; font-size:12px; color:var(--ink-faint); line-height:1.7;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important;}}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">ANSEO · 이식 3단계 보강 · 상단 인포그래픽 후보</p>
+    <h1>AEO 상단, 무엇으로 여나 — 후보 5종</h1>
+    <p class="sub">기준: 확정 흐름 «키워드 → 질문 생성 → AI 7종별 답변 → 인용 판정»과 주요 지표(인용률 · 인용 출처 · 자사 vs 경쟁 · 인용 콘텐츠 검토)를 상단 한 그림이 얼마나 답하는가. 각 후보에 내부 자산 근거(파랑)와 외부 도구 관행 근거(주황)를 달았다. 데이터는 표본.</p>
+  </header>
+
+  <!-- ① SOV 대결 레일 -->
+  <section class="card stage" style="animation-delay:.06s">
+    <div class="card-head">
+      <div style="display:flex;gap:12px"><span class="numchip">1</span><div>
+        <h2>인용 점유 대결 레일 — 자사 vs 경쟁 vs 무인용</h2>
+        <div class="src"><span class="in">내부 C8 고정 레일</span><span class="in">내부 D3 데이터 보간 720ms</span><span class="in">E5 툴팁</span><span class="out">외부 Share of AI Voice — Peec·Semrush·Otterly 표준</span></div>
+      </div></div>
+      <div class="segtoggle"><button id="sovA" aria-pressed="true">이번 회차 08-24</button><button id="sovB" aria-pressed="false">직전 회차 08-01</button></div>
+    </div>
+    <div class="sov-big" id="sovbig"></div>
+    <div class="sov-cap"><span>판정 완료 관측쌍 <b class="num" id="sovden">104</b>회 기준 (성숙 중 제외)</span><span>자사 점유 <b class="num" id="sovmine" style="color:var(--mint)">22.1%</b> · 경쟁과 격차 <b class="num" id="sovgap" style="color:var(--destructive)">−18.3%p</b></span></div>
+    <div style="margin-top:12px" id="sovrows"></div>
+    <p class="verdict"><b class="pick">추천 — 상단 히어로.</b> «우리가 얼마나 인용되나»와 «자사 vs 경쟁»을 첫 그림 하나로 답하고, 회차 전환이 보간(720ms)이라 지난주와의 이동이 눈으로 보인다. 엔진 7행이 그대로 목차 역할을 해서 아래 상세로 자연스럽게 이어진다.</p>
+  </section>
+
+  <!-- ② 주제×엔진 매트릭스 -->
+  <section class="card stage" style="animation-delay:.12s">
+    <div class="card-head">
+      <div style="display:flex;gap:12px"><span class="numchip">2</span><div>
+        <h2>질문 주제 × AI 7종 매트릭스 — 어느 판에서 이기고 지나</h2>
+        <div class="src"><span class="in">내부 — 실물 ANSEO «엔진×채널 표» 문법(s08)</span><span class="in">E1 연동</span><span class="out">외부 프롬프트 매트릭스 — Peec·Profound «어디서 이기고 지는 질문인가» 뷰</span></div>
+      </div></div>
+    </div>
+    <div class="overflow"><table class="mx" id="mx"></table></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink-faint);margin-top:8px">
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--mint)"></i> 자사 우세</span>
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--ember)"></i> 경쟁 우세</span>
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--track);outline:1px solid var(--border)"></i> 무인용</span>
+      <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;outline:1.5px dashed var(--unknown);outline-offset:-1px"></i> 성숙 중</span>
+    </div>
+    <p class="verdict"><b class="pick">추천 — 히어로 바로 아래 짝.</b> «키워드 기반 질문 → AI별 답변»이라는 확정 흐름을 그대로 격자에 옮긴 그림. 주황 열(경쟁 우세)이 4b 분석의 입력, 빈 행이 4c 제안의 입력이 된다. 셀 수 = 주제×7이라 스캔 비용이 낮다.</p>
+  </section>
+
+  <!-- ③ 관측 생키 -->
+  <section class="card stage" style="animation-delay:.18s">
+    <div class="card-head">
+      <div style="display:flex;gap:12px"><span class="numchip">3</span><div>
+        <h2>관측 생키 — 키워드에서 인용 출처까지 흐름</h2>
+        <div class="src"><span class="in">내부 D6 생키 rAF 모프 + E1 경로 추적 + E2 이동 점선 (명세: «관측 흐름엔 ○» 승인)</span><span class="out">외부 citation flow — Profound 인용 경로 분해</span></div>
+      </div></div>
+    </div>
+    <div id="sankey"></div>
+    <p class="verdict"><b class="hold">보류 — 상단엔 과하고, 4a 심화 화면감.</b> 질문 수가 보존량이라 생키가 성립하는 유일한 자리이고 경로 추적 애니메이션도 이식돼 있으나, 열 3×엔진 7이면 리본이 많아 첫 화면의 «한눈에»가 무너진다. 인용 출처를 파고드는 4a(추출) 상세 화면의 히어로로 쓰는 것을 제안.</p>
+  </section>
+
+  <!-- ④ 인용 출처 리더보드 -->
+  <section class="card stage" style="animation-delay:.24s">
+    <div class="card-head">
+      <div style="display:flex;gap:12px"><span class="numchip">4</span><div>
+        <h2>인용 출처 리더보드 — 인용을 가져가는 문서 순위</h2>
+        <div class="src"><span class="in">내부 C6 수평 막대+분모 병기 (RadialBars 기각 대체)</span><span class="out">외부 Top Cited Sources — Profound·Otterly 표준 뷰</span></div>
+      </div></div>
+    </div>
+    <div class="lb" id="lb"></div>
+    <p class="verdict"><b class="pick">채택 — 본문 카드로.</b> 지표 «인용 출처»와 «인용 콘텐츠 검토»를 정확히 담는 그림이라 화면에 반드시 있어야 하지만, 상단보다는 4a(추출) 카드의 승격판이 제자리. 행마다 검토 상태를 달아 «어떤 콘텐츠가 인용되는지 검토»까지 잇는다. AEO 화면 본문에 이미 반영.</p>
+  </section>
+
+  <!-- ⑤ 엔진 타일 -->
+  <section class="card stage" style="animation-delay:.30s">
+    <div class="card-head">
+      <div style="display:flex;gap:12px"><span class="numchip">5</span><div>
+        <h2>AI 7종 타일 — 엔진별 인용률 스몰 멀티플</h2>
+        <div class="src"><span class="in">내부 KpiStrip 카운트업(D1)+스파크(공통 눈금)</span><span class="out">외부 platform-by-platform visibility — Otterly·Semrush 엔진 타일</span></div>
+      </div></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <p class="verdict"><b class="hold">보류 — ①과 중복.</b> 엔진이 7종으로 늘어 타일이 한 줄을 넘기고, 답하는 질문(«엔진별 얼마나»)이 ①의 7행과 같다. ①을 쓰면 타일은 불필요, ①을 안 쓸 때의 대안 1순위.</p>
+  </section>
+
+  <footer class="stage" style="animation-delay:.4s">
+    <p><b style="color:var(--ink-dim)">종합 제안</b> — 상단 히어로 = <b style="color:var(--mint)">① 인용 점유 대결 레일</b>, 그 바로 아래 = <b style="color:var(--mint)">② 주제×엔진 매트릭스</b>. ①이 «얼마나·누구에게 뺏기나», ②가 «어느 질문 판에서»를 답해 확정 지표 4종 중 인용률·자사vs경쟁을 상단이 소화한다. ④ 리더보드는 본문에서 인용 출처·콘텐츠 검토를 담당(이미 반영), ③ 생키는 4a 심화 화면 히어로 후보, ⑤ 타일은 대안 보관. 버터플라이 퍼널은 상단에서 내려와 «수집 품질(운영)» 카드로 축소 이동을 제안. · 표본 데이터</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const easeInOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ENGINES=["ChatGPT","Gemini","Claude","Grok","Perplexity","네이버 AI브리핑","구글 AI오버뷰"];
+
+/* ① SOV 레일 — 회차 전환 = 데이터 보간 */
+(function(){
+  // [asked, ours, comp, maturing] per engine
+  const R={
+   A:[[20,6,8,2],[20,4,7,3],[12,2,4,1],[12,1,3,2],[20,6,8,1],[12,1,4,2],[20,3,8,1]],
+   B:[[20,5,8,3],[20,3,8,3],[12,2,5,1],[12,1,3,3],[20,5,9,1],[12,1,4,3],[20,2,9,2]]};
+  function agg(rows){
+    const s=rows.reduce((a,r)=>[a[0]+r[0],a[1]+r[1],a[2]+r[2],a[3]+r[3]],[0,0,0,0]);
+    return {den:s[0]-s[3], ours:s[1], comp:s[2], none:s[0]-s[3]-s[1]-s[2], rows};
+  }
+  function draw(d,t){
+    const mine=d.ours/d.den*100, comp=d.comp/d.den*100, none=d.none/d.den*100;
+    $("#sovbig").innerHTML=
+      `<div style="width:${mine}%;background:var(--mint)" title="자사 인용 ${d.ours.toFixed(0)}회">${mine>9?`자사 ${mine.toFixed(1)}%`:""}</div>`+
+      `<div style="width:${comp}%;background:var(--ember)" title="경쟁 인용 ${d.comp.toFixed(0)}회">${comp>9?`경쟁 ${comp.toFixed(1)}%`:""}</div>`+
+      `<div style="width:${none}%;background:var(--track);color:var(--ink-faint)" title="무인용 ${d.none.toFixed(0)}회">${none>9?`무인용 ${none.toFixed(1)}%`:""}</div>`;
+    $("#sovden").textContent=Math.round(d.den);
+    $("#sovmine").textContent=mine.toFixed(1)+"%";
+    $("#sovgap").textContent=(mine-comp>=0?"+":"−")+Math.abs(mine-comp).toFixed(1)+"%p";
+    $("#sovrows").innerHTML=d.rows.map((r,i)=>{
+      const den=r[0]-r[3], o=r[1]/den*100, c=r[2]/den*100, n=100-o-c;
+      return `<div class="erow" title="${ENGINES[i]} — 자사 ${r[1].toFixed(0)} · 경쟁 ${r[2].toFixed(0)} · 무인용 ${(den-r[1]-r[2]).toFixed(0)} / 판정 ${den.toFixed(0)} (성숙 ${r[3].toFixed(0)} 제외)">
+        <span style="color:var(--ink)">${ENGINES[i]}</span>
+        <div class="erail"><i style="width:${o}%;background:var(--mint)"></i><i style="width:${c}%;background:var(--ember)"></i><i style="width:${n}%;background:var(--track)"></i></div>
+        <span class="num" style="text-align:right;color:${o>=25?"var(--mint)":o>=12?"var(--ember)":"var(--destructive)"}">${o.toFixed(0)}%</span></div>`;
+    }).join("");
+  }
+  let cur=agg(R.A); draw(cur,1);
+  function go(key){
+    const to=agg(R[key]); const from=cur;
+    if(reduced){cur=to;draw(to,1);return;}
+    const t0=performance.now();
+    (function tick(now){
+      const raw=Math.min(1,(now-t0)/720), t=easeInOut(raw);
+      const mix={den:lerp(from.den,to.den,t),ours:lerp(from.ours,to.ours,t),comp:lerp(from.comp,to.comp,t),none:lerp(from.none,to.none,t),
+        rows:to.rows.map((r,i)=>r.map((v,k)=>lerp(from.rows[i][k],v,t)))};
+      draw(mix,t);
+      if(raw<1)requestAnimationFrame(tick); else cur=to;
+    })(t0);
+  }
+  $("#sovA").onclick=()=>{$("#sovA").setAttribute("aria-pressed",true);$("#sovB").setAttribute("aria-pressed",false);go("A");};
+  $("#sovB").onclick=()=>{$("#sovB").setAttribute("aria-pressed",true);$("#sovA").setAttribute("aria-pressed",false);go("B");};
+})();
+
+/* ② 주제×엔진 매트릭스 */
+(function(){
+  const TOPICS=[["울쎄라·리프팅 효과",6],["시술 비교(vs 슈링크 등)",5],["비용·가격",4],["시술 후 관리",3],["지역 탐색(강남 등)",2]];
+  // 상태: o=자사 c=경쟁 n=무 m=성숙
+  const CELLS=[
+   ["o","c","n","n","o","m","c"],
+   ["c","c","n","m","c","n","c"],
+   ["n","c","m","n","o","c","n"],
+   ["o","n","n","n","o","m","n"],
+   ["c","c","n","n","c","c","c"]];
+  const BG={o:"var(--mint)",c:"var(--ember)"};
+  const LBL={o:"자사",c:"경쟁",n:"—",m:"…"};
+  let html=`<tr><th>질문 주제 (질문 수)</th>${ENGINES.map(e=>`<th>${e.replace(" AI브리핑","<br>AI브리핑").replace(" AI오버뷰","<br>AI오버뷰")}</th>`).join("")}</tr>`;
+  html+=TOPICS.map(([t,qn],r)=>`<tr data-r="${r}"><td>${t} <span class="num" style="color:var(--ink-faint);font-size:11px">${qn}</span></td>${
+    CELLS[r].map((s,c)=>`<td><div class="cell ${s==="m"?"mat":s==="n"?"none":""}" data-c="${c}" style="background:${BG[s]||"none"};animation-delay:${(r*7+c)*22}ms" title="${TOPICS[r][0]} × ${ENGINES[c]} — ${s==="o"?"자사 우세":s==="c"?"경쟁 우세":s==="n"?"무인용":"성숙 중"}">${LBL[s]}</div></td>`).join("")}</tr>`).join("");
+  $("#mx").innerHTML=html;
+  const tbl=$("#mx");
+  tbl.addEventListener("pointerover",e=>{
+    const cell=e.target.closest(".cell"); if(!cell)return;
+    const r=cell.closest("tr").dataset.r, c=cell.dataset.c;
+    tbl.querySelectorAll("tr[data-r]").forEach(tr=>tr.classList.toggle("dimx",tr.dataset.r!==r));
+    tbl.querySelectorAll(".cell").forEach(x=>x.classList.toggle("hotx",x===cell||(x.dataset.c===c&&x.closest("tr").dataset.r===r)));
+  });
+  tbl.addEventListener("pointerleave",()=>{tbl.querySelectorAll("tr[data-r]").forEach(tr=>tr.classList.remove("dimx"));tbl.querySelectorAll(".cell").forEach(x=>x.classList.remove("hotx"));});
+})();
+
+/* ③ 관측 생키 — 키워드 그룹 → 엔진군 → 인용 출처 */
+(function(){
+  const W=980,H=300,COLW=170;
+  const L=[["울쎄라",44],["리프팅 비교",38],["지역·비용",38]];             // 질문 수
+  const M=[["글로벌 5종",84],["검색 결합 2종",36]];                        // 관측 배분
+  const Rt=[["자사 grand4.co.kr",23],["경쟁 문서",42],["무인용",39],["성숙 중",16]];
+  const FLOW_LM=[[32,12],[26,12],[26,12]];                                 // L→M
+  const FLOW_MR=[[17,30,25,12],[6,12,14,4]];                               // M→R
+  const CR={"자사 grand4.co.kr":"var(--mint)","경쟁 문서":"var(--ember)","무인용":"var(--unknown)","성숙 중":"var(--unknown)"};
+  const X=[20,W/2-COLW/2,W-COLW-20];
+  const scale=180/120;
+  function col(items,x,tone){
+    let y=40, out=[];
+    items.forEach(([l,v],i)=>{const h=v*scale; out.push({l,v,x,y,h}); y+=h+18;});
+    return out;
+  }
+  const CL=col(L,X[0]), CM=col(M,X[1]), CRr=col(Rt,X[2]);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="키워드에서 인용 출처까지의 관측 흐름">`;
+  const ribbon=(a,ya,b,yb,h,color,id)=>{
+    const x1=a.x+COLW, x2=b.x, mx=(x1+x2)/2;
+    return `<path data-f="${id}" class="fun-rest" d="M${x1} ${ya} C${mx} ${ya} ${mx} ${yb} ${x2} ${yb} v${h} C${mx} ${yb+h} ${mx} ${ya+h} ${x1} ${ya+h} Z" fill="${color}" fill-opacity=".3"/>`;
+  };
+  let offL=CL.map(n=>n.y), offM=CM.map(n=>n.y);
+  FLOW_LM.forEach((row,i)=>row.forEach((v,j)=>{
+    const h=v*scale;
+    s+=ribbon(CL[i],offL[i],CM[j],offM[j],h,"var(--signal)",`L${i}M${j}`);
+    offL[i]+=h; offM[j]+=h;
+  }));
+  let offM2=CM.map(n=>n.y), offR=CRr.map(n=>n.y);
+  FLOW_MR.forEach((row,i)=>row.forEach((v,j)=>{
+    if(!v)return; const h=v*scale;
+    s+=ribbon(CM[i],offM2[i],CRr[j],offR[j],h,CR[CRr[j].l],`M${i}R${j}`);
+    offM2[i]+=h; offR[j]+=h;
+  }));
+  [CL,CM,CRr].forEach((cn,ci)=>cn.forEach(n=>{
+    s+=`<rect x="${n.x}" y="${n.y}" width="${COLW}" height="${n.h}" rx="5" fill="${ci===2?CR[n.l]:"var(--signal)"}" fill-opacity="${ci===2?.85:.8}"/>
+      <text x="${n.x+8}" y="${n.y+Math.max(14,n.h/2+4)}" font-size="11.5" fill="#fff" style="paint-order:stroke" stroke="rgba(0,0,0,.4)" stroke-width="2">${n.l} <tspan class="num" font-size="10">${n.v}</tspan></text>`;
+  }));
+  ["키워드 그룹","AI 엔진군","인용 출처"].forEach((t,i)=>{s+=`<text x="${X[i]+COLW/2}" y="24" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" letter-spacing=".08em">${t}</text>`;});
+  s+="</svg>";
+  $("#sankey").innerHTML=`<div class="overflow">${s}</div>`;
+  const paths=[...document.querySelectorAll('#sankey path')];
+  paths.forEach(p=>{
+    p.addEventListener("pointerenter",()=>{paths.forEach(x=>{x.classList.toggle("fun-lit",x===p);x.classList.toggle("fun-dim",x!==p);});});
+    p.addEventListener("pointerleave",()=>paths.forEach(x=>x.classList.remove("fun-lit","fun-dim")));
+  });
+})();
+
+/* ④ 인용 출처 리더보드 */
+(function(){
+  const S=[
+   ["grand4.co.kr — 자사",23,"var(--mint)",["ChatGPT 6","Perplexity 6"],"검토 완료 12 · 대기 11"],
+   ["미소진피부과 블로그",9,"var(--ember)",["ChatGPT 5","Perplexity 4"],"검토 완료"],
+   ["네이버 지식백과",8,"var(--ember)",["AI브리핑 4","Gemini 2"],"검토 대기"],
+   ["헬스 매체 칼럼",7,"var(--ember)",["Gemini 4","ChatGPT 3"],"검토 완료"],
+   ["강남언니 시술 정보",6,"var(--ember)",["AI오버뷰 4","Grok 2"],"검토 대기"],
+   ["유어스킨의원 FAQ",5,"var(--ember)",["Perplexity 3","Claude 2"],"검토 완료"]];
+  const MAX=Math.max(...S.map(s=>s[1]));
+  $("#lb").innerHTML=S.map((r,i)=>`
+    <span class="num" style="color:${i===0?"var(--mint)":"var(--ink-faint)"};font-weight:${i===0?700:400}">${i+1}</span>
+    <span style="color:var(--ink)">${r[0]}${r[3].map(e=>`<span class="echip">${e}</span>`).join("")}</span>
+    <div class="lbbar"><i style="width:${r[1]/MAX*100}%;background:${r[2]}"></i></div>
+    <span class="num" style="font-size:12px"><b>${r[1]}</b>회 <span style="font-size:10.5px;color:var(--ink-faint)">· ${r[4]}</span></span>`).join("");
+})();
+
+/* ⑤ 엔진 타일 */
+(function(){
+  const T=[[6,18,"▲2"],[4,17,"▲1"],[2,11,"—"],[1,10,"▲1"],[6,19,"▲1"],[1,10,"—"],[3,19,"▲1"]];
+  $("#tiles").innerHTML=T.map((t,i)=>{
+    const rate=t[0]/t[1]*100;
+    return `<div class="tile"><h4>${ENGINES[i]}</h4>
+      <span class="rate num" style="color:${rate>=25?"var(--mint)":rate>=12?"var(--ember)":"var(--destructive)"}">${rate.toFixed(0)}%</span>
+      <div class="den num">자사 ${t[0]} / 판정 ${t[1]}</div>
+      <div class="d num" style="color:${t[2].startsWith("▲")?"var(--mint)":"var(--ink-faint)"}">${t[2]} 직전 대비</div></div>`;
+  }).join("");
+})();
+</script>
