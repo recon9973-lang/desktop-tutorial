@@ -88,6 +88,20 @@ tr.dimx .cell{opacity:.25;} .cell.hotx{outline:2px solid var(--ink); outline-off
 .tile .rate{font-size:22px; font-weight:700; letter-spacing:-.02em;}
 .tile .den{font-size:10.5px; color:var(--ink-faint);}
 .tile .d{font-size:10.5px; margin-top:2px;}
+.mongrid{display:grid; grid-template-columns:290px 1fr; gap:20px; align-items:start;}
+@media(max-width:900px){.mongrid{grid-template-columns:1fr;}}
+.qlist{display:flex; flex-direction:column; gap:4px;}
+.qlist button{display:flex; justify-content:space-between; gap:10px; align-items:baseline; border:1px solid var(--border); background:none; color:var(--ink-dim); font:inherit; font-size:12.5px; text-align:left; border-radius:8px; padding:8px 11px; cursor:pointer;}
+.qlist button:hover{background:var(--card2);}
+.qlist button[aria-selected="true"]{border-color:color-mix(in oklab,var(--signal) 55%,transparent); background:var(--signal-soft); color:var(--ink);}
+.qlist .delta{white-space:nowrap; font-size:11.5px;}
+.histlegend{display:flex; gap:6px 14px; flex-wrap:wrap; font-size:11px; color:var(--ink-faint); margin-bottom:8px;}
+.histlegend i{display:inline-block; width:14px; height:3px; border-radius:99px; translate:0 -2.5px; margin-right:5px;}
+.monchart{position:relative;} .monchart svg{display:block;}
+.montip{position:absolute; pointer-events:none; background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:7px 11px; font-size:11px; line-height:1.6; color:var(--ink-dim); box-shadow:0 8px 22px rgba(0,0,0,.3); white-space:nowrap; z-index:2;}
+.flowline{fill:none; stroke-width:2; stroke-dasharray:3 26; opacity:0; pointer-events:none;}
+.flowline.on{opacity:.9; animation:dashmove 4.2s linear infinite;}
+@keyframes dashmove{to{stroke-dashoffset:-290;}}
 footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; font-size:12px; color:var(--ink-faint); line-height:1.7;}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important;}}
 </style>
@@ -132,16 +146,16 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
     <p class="verdict"><b class="pick">추천 — 히어로 바로 아래 짝.</b> «키워드 기반 질문 → AI별 답변»이라는 확정 흐름을 그대로 격자에 옮긴 그림. 주황 열(경쟁 우세)이 4b 분석의 입력, 빈 행이 4c 제안의 입력이 된다. 셀 수 = 주제×7이라 스캔 비용이 낮다.</p>
   </section>
 
-  <!-- ③ 관측 생키 -->
+  <!-- ③ 질문 흐름 생키 -->
   <section class="card stage" style="animation-delay:.18s">
     <div class="card-head">
       <div style="display:flex;gap:12px"><span class="numchip">3</span><div>
-        <h2>관측 생키 — 키워드에서 인용 출처까지 흐름</h2>
-        <div class="src"><span class="in">내부 D6 생키 rAF 모프 + E1 경로 추적 + E2 이동 점선 (명세: «관측 흐름엔 ○» 승인)</span><span class="out">외부 citation flow — Profound 인용 경로 분해</span></div>
+        <h2>질문 흐름 생키 — 기본 질문 5개에서 인용 출처까지</h2>
+        <div class="src"><span class="in">내부 D6 생키 + E1 경로 추적 + E2 이동 점선(흐름 애니메이션)</span><span class="out">외부 citation flow — Profound 인용 경로 분해</span></div>
       </div></div>
     </div>
     <div id="sankey"></div>
-    <p class="verdict"><b class="hold">보류 — 상단엔 과하고, 4a 심화 화면감.</b> 질문 수가 보존량이라 생키가 성립하는 유일한 자리이고 경로 추적 애니메이션도 이식돼 있으나, 열 3×엔진 7이면 리본이 많아 첫 화면의 «한눈에»가 무너진다. 인용 출처를 파고드는 4a(추출) 상세 화면의 히어로로 쓰는 것을 제안.</p>
+    <p class="verdict"><b class="pick">채택 — 4a(추출) 심화 카드.</b> 첫 열이 <b style="color:var(--ink)">기본 질문 5개</b>라 질문 마인드맵처럼 읽힌다. 질문·엔진군·출처 어디에 손을 올려도 그 경로 전체가 켜지고 <b style="color:var(--ink)">점선이 흐르는 애니메이션</b>으로 방향이 보인다. 질문 수가 보존량이라 수치도 정직하다(합 116 = 관측쌍 전체).</p>
   </section>
 
   <!-- ④ 인용 출처 리더보드 -->
@@ -156,20 +170,27 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
     <p class="verdict"><b class="pick">채택 — 본문 카드로.</b> 지표 «인용 출처»와 «인용 콘텐츠 검토»를 정확히 담는 그림이라 화면에 반드시 있어야 하지만, 상단보다는 4a(추출) 카드의 승격판이 제자리. 행마다 검토 상태를 달아 «어떤 콘텐츠가 인용되는지 검토»까지 잇는다. AEO 화면 본문에 이미 반영.</p>
   </section>
 
-  <!-- ⑤ 엔진 타일 -->
+  <!-- ⑤ 질문×브랜드 모니터링 추이 -->
   <section class="card stage" style="animation-delay:.30s">
     <div class="card-head">
       <div style="display:flex;gap:12px"><span class="numchip">5</span><div>
-        <h2>AI 7종 타일 — 엔진별 인용률 스몰 멀티플</h2>
-        <div class="src"><span class="in">내부 KpiStrip 카운트업(D1)+스파크(공통 눈금)</span><span class="out">외부 platform-by-platform visibility — Otterly·Semrush 엔진 타일</span></div>
+        <h2>질문×브랜드 모니터링 추이 — 자사·경쟁 언급률의 날짜별 흐름</h2>
+        <div class="src"><span class="in">내부 C6 확장(진단 이력 문법) + D3 질문 전환 보간 + E5 툴팁</span><span class="out">외부 모니터링 추이 뷰 — 참고 영상(질문 리스트+브랜드 라인) 관행</span></div>
       </div></div>
     </div>
-    <div class="tiles" id="tiles"></div>
-    <p class="verdict"><b class="hold">보류 — ①과 중복.</b> 엔진이 7종으로 늘어 타일이 한 줄을 넘기고, 답하는 질문(«엔진별 얼마나»)이 ①의 7행과 같다. ①을 쓰면 타일은 불필요, ①을 안 쓸 때의 대안 1순위.</p>
+    <div class="mongrid">
+      <div class="qlist" id="qlist" role="listbox" aria-label="질문 선택"></div>
+      <div>
+        <div class="histlegend" id="monlegend"></div>
+        <div class="monchart" id="monchart"></div>
+        <p style="font-size:11px;color:var(--ink-faint);margin:6px 0 0">그래프에 손을 올리면 그 관측일의 브랜드별 언급률·인용 엔진이 열립니다. 질문을 고르면 720ms 보간으로 그 질문의 궤적으로 다시 접힙니다.</p>
+      </div>
+    </div>
+    <p class="verdict"><b class="pick">채택 — 히어로 바로 아래 «누적 비교» 카드.</b> 단일 회차가 아니라 <b style="color:var(--ink)">누적된 관측</b>으로 자사와 경쟁을 한 축에서 비교한다. 왼쪽 질문마다 자사 언급률의 처음→현재가 붙어 있어(참고 영상의 6%→25% 문법) 어느 질문에서 오르고 있는지 목록만으로도 읽힌다. ①이 «지금 점유 스냅숏», 이 카드가 «시간 흐름» — 서로 중복되지 않는다.</p>
   </section>
 
   <footer class="stage" style="animation-delay:.4s">
-    <p><b style="color:var(--ink-dim)">종합 제안</b> — 상단 히어로 = <b style="color:var(--mint)">① 인용 점유 대결 레일</b>, 그 바로 아래 = <b style="color:var(--mint)">② 주제×엔진 매트릭스</b>. ①이 «얼마나·누구에게 뺏기나», ②가 «어느 질문 판에서»를 답해 확정 지표 4종 중 인용률·자사vs경쟁을 상단이 소화한다. ④ 리더보드는 본문에서 인용 출처·콘텐츠 검토를 담당(이미 반영), ③ 생키는 4a 심화 화면 히어로 후보, ⑤ 타일은 대안 보관. 버터플라이 퍼널은 상단에서 내려와 «수집 품질(운영)» 카드로 축소 이동을 제안. · 표본 데이터</p>
+    <p><b style="color:var(--ink-dim)">종합 제안(확정 반영)</b> — 상단 = <b style="color:var(--mint)">① 인용 점유 대결 레일</b>(지금 점유 스냅숏) → <b style="color:var(--mint)">⑤ 질문×브랜드 모니터링 추이</b>(누적·비교) → <b style="color:var(--mint)">② 주제×엔진 매트릭스</b>(어느 판에서). 본문 = ④ 인용 출처 리더보드(출처·콘텐츠 검토). 심화 = ③ 질문 흐름 생키(4a 앞, 흐름 애니메이션). 다섯 그림이 각각 점유·시간·판·출처·경로를 나눠 맡아 중복이 없다. 버터플라이 퍼널은 «수집 품질(운영)» 카드로 강등 이동. · 표본 데이터</p>
   </footer>
 </div>
 
@@ -251,52 +272,58 @@ const ENGINES=["ChatGPT","Gemini","Claude","Grok","Perplexity","네이버 AI브�
   tbl.addEventListener("pointerleave",()=>{tbl.querySelectorAll("tr[data-r]").forEach(tr=>tr.classList.remove("dimx"));tbl.querySelectorAll(".cell").forEach(x=>x.classList.remove("hotx"));});
 })();
 
-/* ③ 관측 생키 — 키워드 그룹 → 엔진군 → 인용 출처 */
+/* ③ 질문 흐름 생키 — 질문 5 → 엔진군 → 출처, hover 흐름 애니메이션 */
 (function(){
-  const W=980,H=300,COLW=170;
-  const L=[["울쎄라",44],["리프팅 비교",38],["지역·비용",38]];             // 질문 수
-  const M=[["글로벌 5종",84],["검색 결합 2종",36]];                        // 관측 배분
-  const Rt=[["자사 grand4.co.kr",23],["경쟁 문서",42],["무인용",39],["성숙 중",16]];
-  const FLOW_LM=[[32,12],[26,12],[26,12]];                                 // L→M
-  const FLOW_MR=[[17,30,25,12],[6,12,14,4]];                               // M→R
+  const W=980,H=340,COLW=[236,150,170];
+  const L=[["울쎄라 유지 기간",28],["울쎄라 vs 슈링크",24],["리프팅 비용",24],["시술 후 관리",20],["강남 피부과 추천",20]];
+  const M=[["글로벌 5종",84],["검색 결합 2종",32]];
+  const Rt=[["자사 grand4.co.kr",23],["경쟁 문서",42],["무인용",39],["성숙 중",12]];
+  const FLOW_LM=[[20,8],[18,6],[16,8],[16,4],[14,6]];
+  const FLOW_MR=[[18,30,28,8],[5,12,11,4]];
   const CR={"자사 grand4.co.kr":"var(--mint)","경쟁 문서":"var(--ember)","무인용":"var(--unknown)","성숙 중":"var(--unknown)"};
-  const X=[20,W/2-COLW/2,W-COLW-20];
-  const scale=180/120;
-  function col(items,x,tone){
-    let y=40, out=[];
-    items.forEach(([l,v],i)=>{const h=v*scale; out.push({l,v,x,y,h}); y+=h+18;});
-    return out;
-  }
-  const CL=col(L,X[0]), CM=col(M,X[1]), CRr=col(Rt,X[2]);
-  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="키워드에서 인용 출처까지의 관측 흐름">`;
-  const ribbon=(a,ya,b,yb,h,color,id)=>{
-    const x1=a.x+COLW, x2=b.x, mx=(x1+x2)/2;
-    return `<path data-f="${id}" class="fun-rest" d="M${x1} ${ya} C${mx} ${ya} ${mx} ${yb} ${x2} ${yb} v${h} C${mx} ${yb+h} ${mx} ${ya+h} ${x1} ${ya+h} Z" fill="${color}" fill-opacity=".3"/>`;
+  const X=[16,W/2-COLW[1]/2,W-COLW[2]-16];
+  const scale=200/116;
+  function col(items,x,gap){let y=44,out=[];items.forEach(([l,v])=>{const h=Math.max(10,v*scale);out.push({l,v,x,y,h});y+=h+gap;});return out;}
+  const CL=col(L,X[0],14), CM=col(M,X[1],26), CRr=col(Rt,X[2],16);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="기본 질문 5개에서 인용 출처까지의 관측 흐름">`;
+  const paths=[];
+  const ribbon=(a,ya,bx,yb,h,color,groups,cw)=>{
+    const x1=a.x+cw, x2=bx, mx=(x1+x2)/2;
+    paths.push({d:`M${x1} ${ya} C${mx} ${ya} ${mx} ${yb} ${x2} ${yb} v${h} C${mx} ${yb+h} ${mx} ${ya+h} ${x1} ${ya+h} Z`,
+      mid:`M${x1} ${ya+h/2} C${mx} ${ya+h/2} ${mx} ${yb+h/2} ${x2} ${yb+h/2}`, color, groups});
   };
   let offL=CL.map(n=>n.y), offM=CM.map(n=>n.y);
-  FLOW_LM.forEach((row,i)=>row.forEach((v,j)=>{
-    const h=v*scale;
-    s+=ribbon(CL[i],offL[i],CM[j],offM[j],h,"var(--signal)",`L${i}M${j}`);
-    offL[i]+=h; offM[j]+=h;
-  }));
+  FLOW_LM.forEach((row,i)=>row.forEach((v,j)=>{const h=v*scale;
+    ribbon(CL[i],offL[i],CM[j].x,offM[j],h,"var(--signal)",["L"+i,"M"+j],COLW[0]); offL[i]+=h; offM[j]+=h;}));
   let offM2=CM.map(n=>n.y), offR=CRr.map(n=>n.y);
-  FLOW_MR.forEach((row,i)=>row.forEach((v,j)=>{
-    if(!v)return; const h=v*scale;
-    s+=ribbon(CM[i],offM2[i],CRr[j],offR[j],h,CR[CRr[j].l],`M${i}R${j}`);
-    offM2[i]+=h; offR[j]+=h;
-  }));
-  [CL,CM,CRr].forEach((cn,ci)=>cn.forEach(n=>{
-    s+=`<rect x="${n.x}" y="${n.y}" width="${COLW}" height="${n.h}" rx="5" fill="${ci===2?CR[n.l]:"var(--signal)"}" fill-opacity="${ci===2?.85:.8}"/>
-      <text x="${n.x+8}" y="${n.y+Math.max(14,n.h/2+4)}" font-size="11.5" fill="#fff" style="paint-order:stroke" stroke="rgba(0,0,0,.4)" stroke-width="2">${n.l} <tspan class="num" font-size="10">${n.v}</tspan></text>`;
-  }));
-  ["키워드 그룹","AI 엔진군","인용 출처"].forEach((t,i)=>{s+=`<text x="${X[i]+COLW/2}" y="24" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" letter-spacing=".08em">${t}</text>`;});
+  FLOW_MR.forEach((row,i)=>row.forEach((v,j)=>{if(!v)return;const h=v*scale;
+    ribbon(CM[i],offM2[i],CRr[j].x,offR[j],h,CR[CRr[j].l],["M"+i,"R"+j],COLW[1]); offM2[i]+=h; offR[j]+=h;}));
+  paths.forEach((p,k)=>{s+=`<path data-k="${k}" class="fun-rest" d="${p.d}" fill="${p.color}" fill-opacity=".3"/>`;});
+  paths.forEach((p,k)=>{s+=`<path data-fl="${k}" class="flowline" d="${p.mid}" stroke="${p.color}"/>`;});
+  [[CL,0,"L"],[CM,1,"M"],[CRr,2,"R"]].forEach(([cn,ci,tag])=>cn.forEach((n,ni)=>{
+    s+=`<g data-node="${tag+ni}" style="cursor:default"><rect x="${n.x}" y="${n.y}" width="${COLW[ci]}" height="${n.h}" rx="5" fill="${ci===2?CR[n.l]:ci===0?"var(--violet)":"var(--signal)"}" fill-opacity="${ci===0?.75:.82}"/>
+      <text x="${n.x+8}" y="${n.y+Math.max(13,n.h/2+4)}" font-size="11" fill="#fff" style="paint-order:stroke;pointer-events:none" stroke="rgba(0,0,0,.4)" stroke-width="2">${n.l} <tspan class="num" font-size="9.5">${n.v}</tspan></text></g>`;}));
+  ["기본 질문 5","AI 엔진군(7종)","인용 출처"].forEach((t,i)=>{s+=`<text x="${X[i]+COLW[i]/2}" y="26" text-anchor="middle" font-size="10.5" fill="var(--ink-faint)" letter-spacing=".08em">${t}</text>`;});
   s+="</svg>";
   $("#sankey").innerHTML=`<div class="overflow">${s}</div>`;
-  const paths=[...document.querySelectorAll('#sankey path')];
-  paths.forEach(p=>{
-    p.addEventListener("pointerenter",()=>{paths.forEach(x=>{x.classList.toggle("fun-lit",x===p);x.classList.toggle("fun-dim",x!==p);});});
-    p.addEventListener("pointerleave",()=>paths.forEach(x=>x.classList.remove("fun-lit","fun-dim")));
+  const svg=$("#sankey svg");
+  const ribbons=[...svg.querySelectorAll("[data-k]")], flows=[...svg.querySelectorAll("[data-fl]")];
+  function lit(idxs){
+    ribbons.forEach((r,k)=>{r.classList.toggle("fun-lit",idxs.has(k));r.classList.toggle("fun-dim",idxs.size>0&&!idxs.has(k));});
+    flows.forEach((f,k)=>f.classList.toggle("on",idxs.has(k)));
+  }
+  ribbons.forEach((r,k)=>{r.addEventListener("pointerenter",()=>lit(new Set([k])));});
+  svg.querySelectorAll("[data-node]").forEach(g=>{
+    g.addEventListener("pointerenter",()=>{
+      const id=g.dataset.node, hit=new Set();
+      paths.forEach((p,k)=>{if(p.groups.includes(id))hit.add(k);});
+      if(id.startsWith("L")){ // 질문 → 하류 전체 경로
+        paths.forEach((p,k)=>{if(p.groups[0].startsWith("M")&&[...hit].some(h=>paths[h].groups[1]===p.groups[0]))hit.add(k);});
+      }
+      lit(hit);
+    });
   });
+  svg.addEventListener("pointerleave",()=>lit(new Set()));
 })();
 
 /* ④ 인용 출처 리더보드 */
@@ -316,15 +343,86 @@ const ENGINES=["ChatGPT","Gemini","Claude","Grok","Perplexity","네이버 AI브�
     <span class="num" style="font-size:12px"><b>${r[1]}</b>회 <span style="font-size:10.5px;color:var(--ink-faint)">· ${r[4]}</span></span>`).join("");
 })();
 
-/* ⑤ 엔진 타일 */
+/* ⑤ 질문×브랜드 모니터링 추이 */
 (function(){
-  const T=[[6,18,"▲2"],[4,17,"▲1"],[2,11,"—"],[1,10,"▲1"],[6,19,"▲1"],[1,10,"—"],[3,19,"▲1"]];
-  $("#tiles").innerHTML=T.map((t,i)=>{
-    const rate=t[0]/t[1]*100;
-    return `<div class="tile"><h4>${ENGINES[i]}</h4>
-      <span class="rate num" style="color:${rate>=25?"var(--mint)":rate>=12?"var(--ember)":"var(--destructive)"}">${rate.toFixed(0)}%</span>
-      <div class="den num">자사 ${t[0]} / 판정 ${t[1]}</div>
-      <div class="d num" style="color:${t[2].startsWith("▲")?"var(--mint)":"var(--ink-faint)"}">${t[2]} 직전 대비</div></div>`;
+  const BRANDS=[
+   {n:"그랜드아름다운 — 자사",c:"var(--mint)",w:2.5},
+   {n:"미소진피부과",c:"var(--ember)",w:1.6},
+   {n:"헬스 매체 칼럼",c:"var(--signal)",w:1.6},
+   {n:"유어스킨의원",c:"var(--violet)",w:1.6},
+   {n:"강남언니",c:"var(--unknown)",w:1.6}];
+  const DATES=["07-11","07-25","08-08","08-24"];
+  const QS={
+   avg:{l:"전체 5질문 평균",rows:[[9,14,17,23],[31,29,27,26],[20,17,20,17],[14,14,17,14],[11,14,11,14]]},
+   q1:{l:"울쎄라 유지 기간",rows:[[0,14,29,43],[43,43,29,29],[14,14,14,14],[14,0,14,0],[0,14,0,14]]},
+   q2:{l:"울쎄라 vs 슈링크",rows:[[0,0,14,14],[43,43,43,43],[29,29,29,14],[14,14,14,14],[14,14,0,14]]},
+   q3:{l:"리프팅 비용",rows:[[14,14,14,29],[29,29,29,29],[14,14,29,29],[14,29,14,14],[29,14,14,14]]},
+   q4:{l:"시술 후 관리",rows:[[29,29,29,29],[14,14,14,14],[14,0,14,14],[14,14,29,14],[0,14,14,14]]},
+   q5:{l:"강남 피부과 추천",rows:[[0,14,0,0],[29,14,14,14],[29,29,14,14],[14,14,14,14],[14,14,29,14]]}};
+  const OURENG=["—","ChatGPT","ChatGPT · Perplexity","ChatGPT · Grok · Perplexity"];
+  const W=640,H=250,PL=34,PR=14,PT=18,PB=26;
+  const X=i=>PL+i*(W-PL-PR)/(DATES.length-1);
+  const Y=v=>PT+(1-v/50)*(H-PT-PB);
+  const chart=$("#monchart");
+  let cur=QS.avg.rows.map(r=>r.slice());
+  function smooth(P){let d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+    for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;
+      d+=`C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;}
+    return d;}
+  function render(rows){
+    let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="브랜드별 언급률 추이">`;
+    [0,25,50].forEach(v=>{s+=`<line x1="${PL}" x2="${W-PR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" ${v?'stroke-dasharray="3 5"':""}/><text x="${PL-6}" y="${Y(v)+3.5}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" class="num">${v}</text>`;});
+    DATES.forEach((d,i)=>{s+=`<text x="${X(i)}" y="${H-7}" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)" class="num">${d}</text>`;});
+    s+=`<line id="mguide" y1="${PT}" y2="${H-PB}" stroke="var(--ink)" stroke-opacity=".25" stroke-dasharray="3 3" visibility="hidden"/>`;
+    rows.forEach((r,bi)=>{
+      const P=r.map((v,i)=>[X(i),Y(v)]);
+      s+=`<path d="${smooth(P)}" fill="none" stroke="${BRANDS[bi].c}" stroke-width="${BRANDS[bi].w}" stroke-linecap="round" ${bi?'stroke-opacity=".8"':""}/>`;
+      P.forEach((pt,i)=>{s+=`<circle data-b="${bi}" data-i="${i}" cx="${pt[0]}" cy="${pt[1]}" r="${bi?2.4:3.2}" fill="${BRANDS[bi].c}"/>`;});
+    });
+    s+="</svg>";
+    chart.innerHTML=s+`<div class="montip" id="montip" hidden></div>`;
+    wire(rows);
+  }
+  function wire(rows){
+    const svg=chart.querySelector("svg"), tip=$("#montip"), guide=()=>chart.querySelector("#mguide");
+    svg.addEventListener("pointermove",e=>{
+      const rect=svg.getBoundingClientRect();
+      const fx=(e.clientX-rect.left)/rect.width*W;
+      let bi=0,bd=1e9; DATES.forEach((_,i)=>{const d=Math.abs(X(i)-fx); if(d<bd){bd=d;bi=i;}});
+      const g=guide(); g.setAttribute("x1",X(bi)); g.setAttribute("x2",X(bi)); g.setAttribute("visibility","visible");
+      const order=rows.map((r,k)=>[k,r[bi]]).sort((a,b)=>b[1]-a[1]);
+      tip.innerHTML=`<b class="num" style="color:var(--ink)">${DATES[bi]}</b><br>`+order.map(([k,v])=>
+        `<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:${BRANDS[k].c};margin-right:5px"></span>${BRANDS[k].n.replace(" — 자사","")} <b class="num" style="color:${k===0?"var(--mint)":"var(--ink)"}">${v.toFixed(0)}%</b>${k===0&&curKey==="avg"&&v>0?` <span style="color:var(--ink-faint);font-size:10px">${OURENG[bi]}</span>`:""}`).join("<br>");
+      const left=X(bi)/W*100;
+      tip.style.left=Math.min(72,Math.max(12,left))+"%"; tip.style.top="8%";
+      tip.style.translate=left>60?"-100% 0":"0 0"; tip.hidden=false;
+    });
+    svg.addEventListener("pointerleave",()=>{$("#montip").hidden=true; const g=guide(); if(g)g.setAttribute("visibility","hidden");});
+  }
+  let curKey="avg", raf=0;
+  function go(key){
+    curKey=key;
+    const to=QS[key].rows, from=cur.map(r=>r.slice());
+    if(reduced){cur=to.map(r=>r.slice());render(cur);return;}
+    cancelAnimationFrame(raf); const t0=performance.now();
+    (function tick(now){
+      const raw=Math.min(1,(now-t0)/720), t=easeInOut(raw);
+      cur=to.map((r,bi)=>r.map((v,i)=>lerp(from[bi][i],v,t)));
+      render(cur);
+      if(raw<1)raf=requestAnimationFrame(tick);
+    })(t0);
+  }
+  $("#monlegend").innerHTML=BRANDS.map(b=>`<span><i style="background:${b.c}"></i>${b.n}</span>`).join("");
+  $("#qlist").innerHTML=Object.entries(QS).map(([k,q])=>{
+    const first=q.rows[0][0], last=q.rows[0].at(-1);
+    const up=last>first, same=last===first;
+    return `<button role="option" data-q="${k}" aria-selected="${k==="avg"}">
+      <span>${q.l}</span><span class="delta num" style="color:${same?"var(--ink-faint)":up?"var(--mint)":"var(--destructive)"}">${first}% → ${last}%</span></button>`;
   }).join("");
+  $("#qlist").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    $("#qlist").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b));
+    go(b.dataset.q);
+  });
+  render(cur);
 })();
 </script>
