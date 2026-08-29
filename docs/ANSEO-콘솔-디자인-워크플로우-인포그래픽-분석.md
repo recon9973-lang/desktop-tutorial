@@ -798,6 +798,73 @@
 19. 채점 판 비교 금지 규칙(배점 이동 시 총점 병렬 비교 차단) + 판 체크섬.
 20. 공유 링크 규격 — 토큰 1건 1리포트, noindex, 90일 만료, 실패 화면에도 읽는 법.
 
+---
+
+# 제7부 — 원형(CFO Command Center) 히어로 인포그래픽 3종 추출·분석
+
+> 이 프로젝트는 «Finance Dashboard» 템플릿의 리믹스다. ANSEO 재구현(8/27) 때 CFO 화면 코드는 삭제됐지만 **첫 커밋 `b0cb2b8`(Remix pages snapshot)에 원형이 그대로 남아 있어** 소스를 추출했다. 대상: ① 생키 머니플로우(SankeyFlow) ② 13주 현금 팬 차트(CashFanChart) ③ 예산 대비 워터폴(VarianceWaterfall) + 보조로 KPI 티커 스트립(KpiStrip)과 모션 라이브러리(motion.ts). 현 ANSEO 테마(oklch 토큰·num/eyebrow 유틸·rise/sweep·flow 키프레임)는 전부 이 원형에서 물려받은 것이다.
+
+## 16. 모션 라이브러리 — `src/lib/motion.ts` (3개 훅이 전체 모션의 뼈대)
+
+| 훅 | 역할 | 수치 |
+|---|---|---|
+| `useCountUp(target, duration, delay)` | 마운트 시 0→목표 카운트업. rAF 기반이라 «페이지 로드 시퀀스와 박자가 맞는다». **최초 정착 후 목표가 바뀌면 처음부터가 아니라 현재값→새 값으로 520ms 글라이드** — 시나리오 토글 때 숫자가 리셋되지 않고 미끄러진다 | 기본 1400ms · ease-out cubic(하우스 커브 «the house curve») |
+| `useStage(delay)` | delay 경과 후 true — **단일 페이지 로드 시퀀스를 조립하는 원시 부품**. 컴포넌트마다 delay를 층층이 줘서 «흩어진 효과가 아니라 한 번의 오케스트레이션»을 만든다 | setTimeout 1개 |
+| `useMeasure()` | ResizeObserver로 요소 폭 실측 → 모든 SVG 차트가 고정 viewBox가 아니라 **실폭 렌더** | — |
+
+## 17. 히어로 ① — SankeyFlow (머니플로우 생키)
+
+**데이터→기하**: `sankey-layout.ts`가 d3-sankey로 좌표만 계산하고 **순수 스냅샷(Snapshot)으로 직렬화** — 노드·리본을 key 맵으로 갖는 불변 프레임. 수익 4갈래→Total Revenue→COGS/Gross Profit→비용 6갈래→Operating Income. **적자면 그래프 방향이 바뀐다**: «손실은 어딘가에서 메워져야 한다 — 준비금에서 들어오는 것으로 그린다(Funded from Cash Reserves), 그래야 다이어그램이 수지 균형을 이룬다». 라벨 숫자는 레이아웃 값이 아니라 별도 `display` 필드 — «기하와 무관하게 재무적으로 맞는 숫자를 인쇄».
+
+**모프 애니메이션 (rAF 수제 트위닝)**:
+- 첫 등장: `collapse(target)` — 모든 리본 폭 0, 노드는 중심선 한 점으로 접힌 시작 프레임 → 목표 레이아웃까지 **1150ms**. 이후 월/시나리오 토글(stateKey 변경) 시엔 현재 프레임→새 레이아웃 **760ms**. 이징은 easeInOut cubic. 매 프레임 `interpolate(from,to,t)`로 노드·리본 좌표 전부를 lerp — CSS가 아니라 **프레임 보간**이라 리본 폭·경로가 동시에 자연스럽게 재배치된다.
+- **이동 점선(travelling dash)**: 리본 중심선에 `strokeDasharray "3 26"` + `flow` 키프레임. 주석이 정책을 밝힌다 — «**등장 신호이지 실시간 신호가 아니다**: 모프가 진행되는 동안 흐르고, 정착 후 **6초 뒤 멈춘다(park)**. 호버로 추적 중인 경로만 계속 흐른다.» 흐름 속도도 상태별: 강조 경로 1.6s/기본 4.2s, `animationPlayState`로 정지.
+- **경로 추적(hover/포커스)**: 리본에 올리면 `tracePath`가 그 링크의 **상류 끝~하류 끝 전체 경로**를 집합으로 계산, 해당 리본 `--ribbon-lit`(0.8~0.88), 나머지 `--ribbon-dim`(0.07~0.09)으로 디밍 — opacity 220ms 트랜지션. 노드 호버는 그 노드를 지나는 모든 경로를 켠다. 툴팁: 출발→도착, 금액, **총매출 대비 %**.
+- 히트 영역: 리본 폭을 최소 9px로 부풀린 투명 path — 가는 리본도 잡기 쉽게.
+
+**접근성 — 이 컴포넌트의 백미**: 다이어그램 전체가 **탭 스톱 1개 + 로빙 커서**(`role="application"` + `aria-activedescendant`). 화살표 키가 DOM 순서가 아니라 **흐름을 따라간다** — ←/→는 상류/하류(노드→나가는 리본→다음 노드), ↑/↓는 같은 위치의 형제(같은 깊이 노드, 같은 출발 리본), Esc로 이탈. 커서 이동 시 가로 스크롤을 자동 추적(scrollTo smooth). 리본·노드마다 aria-label에 금액·비중 문장. sr-only 사용법 안내 + 전체 요약 문장(ariaSummary) 자동 생성.
+
+**반응형**: 700px 미만이면 축소가 아니라 **가로 스크롤러로 전환** — «좌→우 흐름이 생키의 전부라서, 라벨을 세로로 쌓아 흐름을 목록으로 부수느니 패닝으로 읽기를 보존한다». 라벨은 컴팩트 모드에서 축약 사전(shortLabel)으로 치환, 어떤 리본 위에서도 읽히도록 **텍스트 헤일로**(stroke=surface, paintOrder:stroke).
+
+## 18. 히어로 ② — CashFanChart (13주 현금 팬 차트 + 드래그 what-if)
+
+**인코딩**: d3-shape `curveMonotoneX`로 3겹 — P10~P90 외곽 밴드(`--band-outer`), P25~P75 내곽 밴드(`--band-inner`), 중앙 기준선(`--signal` 1.75px). 불확실성이 미래로 갈수록 밴드가 벌어지는 전형적 팬 차트. 데이터가 모자라면 차트 대신 점선 박스 문구(«Not enough cash activity…») — 빈 값 정직성 원칙의 원형.
+
+**등장 애니메이션**: 밴드+선을 감싼 `<g>`에 **`clip-path: inset(0 100% 0 0)` → `inset(0 0 0 0)`, 1.5s cubic-bezier(0.22,1,0.36,1) 0.15s 지연** — 차트가 왼쪽에서 오른쪽으로 «그려지며» 나타난다. 페이지 로드 게이트(`active`)와 연동.
+
+**호버**: 포인터 x를 `x.invert`로 주차(週次)에 스냅 → 세로 점선+중앙선 위 링 마커+툴팁(주차·기준값·P10–P90 구간). 축 라벨도 호버 주차만 전경색으로.
+
+**드래그 what-if (HiringDrag)**: 채용 지출 슬라이더(0~+$900K/mo, 1만 단위 스냅). 커스텀 트랙: `setPointerCapture`+윈도우 pointermove로 드래그, 드래그 중 핸들 **scale 1.15 + 22% 시그널 색 글로우**(box-shadow 0 0 0 7px color-mix). 키보드 완비: ←/→ ±2만, Home/End, `role="slider"`+aria-valuetext. 값이 바뀌면 `buildForecast`가 즉시 재계산 → 밴드·**런웨이 소진 날짜**(18개월 미만이면 ember 경고색)가 실시간 갱신. 런웨이 기준일은 고정 날짜가 아니라 «데이터의 마지막 마감 회차로부터 전진» — 데이터 교체에도 맞게.
+
+## 19. 히어로 ③ — VarianceWaterfall (예산→실적 워터폴)
+
+**인코딩**: `buildSteps`가 예산 OI(앵커)→항목별 유불리 델타(누적 커서)→실적 OI(앵커)로 스텝 생성. 색: 앵커=signal-soft, 유리=mint, 불리=ember. **모든 막대가 공통 y 스케일 하나** — «One common scale for every bar»(막대별 과장 방지). 0선은 실선, 나머지 그리드는 점선.
+
+**순차 등장 애니메이션**: 막대마다 `scaleY(0)→scaleY(1)` **520ms cubic-bezier(0.22,1,0.36,1) + i×130ms 스태거**, transform-origin이 **증가 막대는 바닥, 감소 막대는 꼭대기**(자라는 방향이 값의 방향과 일치). 연결 점선은 140+i×130ms, 수치 라벨은 240+i×130ms, 축 라벨은 200+i×130ms에 페이드 — 한 스텝 안에서도 막대→연결선→숫자 순으로 시차.
+
+**선택 인터랙션**: 막대 클릭=코멘터리 패널 토글(aria-pressed), 선택 시 나머지 막대 opacity 0.28 디밍+선택 링. 막대 아래 점 마커로 **코멘터리 출처 구분**(작성됨=외곽선 점 / AI 생성=채운 점) — aria-label에도 «Authored/AI-generated commentary available» 명시. 포커스 링은 DOM 순서 의존을 피해 상태 기반으로 그린다(생키 노드 링과 같은 방식).
+
+## 20. 보조 — KpiStrip (카운트업 티커 + 3D 플립 카드)
+
+- 수치는 `useCountUp(value, 1500, 220+index×110)` — 카드마다 110ms 시차로 차례로 차오르고, 카드 자체는 `stage` 유틸에 `animationDelay 140+index×90ms` — **등장(rise)과 카운트업이 이중 스태거**.
+- **플립 모델(FLIP MODEL 주석)**: 카드 뒷면에 지표 정의. 뒤집는 트리거 3개를 독립 관리 — hover는 **마우스 포인터일 때만**(`pointerType==="mouse"` — 터치 탭이 카드를 뒤집힌 채로 남기지 않게), 포커스는 **`:focus-visible`일 때만**(탭 클릭이 플립을 걸어 잠그지 않게), 탭/클릭은 pinned 토글(터치 경로). «카운트업은 이 상태보다 위에 살아서 **플립해도 티커가 재시작되지 않는다**.» 회전: rotateY 180°, 520ms, 하우스 커브, perspective 900px, backface-visibility로 양면.
+- 값 없음은 0이 아니라 `NOT_AVAILABLE` 문자 — ANSEO의 «—» 규칙의 원형이 여기 있다.
+
+## 21. 원형→ANSEO 계승 관계와 이식 판단
+
+**이미 계승된 것**: oklch 토큰 팔레트·num/eyebrow/metric 유틸·rise/sweep/flow 키프레임·shadow/hairline·reduced-motion 스위치·«값 없음≠0» 표기(NOT_AVAILABLE→NOT_MEASURED)·chart-tip 계열 툴팁.
+
+**원형에만 있고 ANSEO가 아직 안 쓰는 것 — 이식 가치 순**:
+1. **`useCountUp`/`useStage`(motion.ts)** — ANSEO의 `stage` CSS 유틸이 미배선인 이유가 이 훅 세트를 안 가져와서다. 대시보드 KPI·재채점 결과 수치에 «최초 카운트업+이후 글라이드» 패턴을 붙이면 «다시 접히는» 감각이 완성된다. 비용 낮고 효과 큼.
+2. **워터폴의 방향 있는 스태거**(scaleY+origin 분기+i×130ms, 막대→연결선→숫자 3층 시차) — ANSEO 실행 큐·손실 구성에 그대로 이식 가능한 등장 문법.
+3. **생키의 경로 추적 디밍 모델**(lit/dim/rest 3단 opacity 토큰 — 토큰은 이미 styles.css에 살아 있다: `--ribbon-rest/lit/dim`) — 향후 «콘텐츠 추출» 화면에서 질문→엔진→인용 문서 흐름을 생키로 그릴 때 통째로 재사용.
+4. **키보드 로빙 커서**(흐름을 따라가는 화살표 탐색 + aria-activedescendant) — 복잡 다이어그램 접근성의 모범 답안.
+5. **팬 차트의 clip-path 좌→우 드로잉**(1.5s) + **드래그 what-if 핸들**(pointer capture·스냅·실시간 재계산·glow) — «상승폭 시뮬레이션(이 이슈를 고치면 점수가 얼마나 오르나)» 같은 반사실 UI에 어울리는 부품.
+6. **KPI 플립의 입력 수단별 트리거 분리**(mouse hover/focus-visible/tap pin 독립) — 툴팁 의존을 지적했던 §8.3-3의 정답 패턴이 원형에 이미 있다.
+7. 이동 점선의 «등장 신호, 6초 후 정지» 정책 — 장식 모션을 정보 신호와 구분하는 규율.
+
+**버릴 것**: 생키 자체를 지금 ANSEO 지표에 쓰는 것(3축 합산 금지 원칙과 충돌 — 돈처럼 «보존되는 흐름»이 아닌 점수에 생키는 부적합). 단, 위 3번처럼 **관측 데이터의 흐름**(질문→엔진→인용)에는 보존량 구조가 성립하므로 유효.
+
 ## 접근 확인 로그
 
 - 새 세션에서도 lovable.app 차단 (2026-08-29 11:31 UTC · curl 프록시 CONNECT 403 + WebFetch EGRESS_BLOCKED)
