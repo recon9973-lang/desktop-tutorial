@@ -1,0 +1,139 @@
+<title>ANSEO 설정 묶음 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:14.5px; font-weight:700; letter-spacing:-.015em; margin:0 0 10px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{font-size:11.5px; line-height:1.6; color:var(--ink-faint); margin-top:10px;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px;}
+@media(max-width:860px){.grid{grid-template-columns:1fr;}}
+.panel{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+.panel .route{font-size:10px; color:var(--ink-faint); letter-spacing:.03em; float:right;}
+.row{display:flex; justify-content:space-between; gap:10px; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--ink-dim); flex-wrap:wrap;}
+.row:last-of-type{border-bottom:0;}
+.row b{color:var(--ink); font-weight:500;}
+.st{font-size:10.5px; border-radius:4px; padding:1px 7px; white-space:nowrap;}
+.st.on{background:var(--mint-soft); color:var(--mint);}
+.st.off{background:var(--track); color:var(--unknown);}
+.st.warn{background:var(--ember-soft); color:var(--ember);}
+.st.pub{background:var(--signal-soft); color:var(--signal);}
+.meter{height:8px; border-radius:4px; background:var(--track); overflow:hidden; margin-top:8px;}
+.meter i{display:block; height:100%; width:41%; background:var(--signal); opacity:.85;}
+.keynote{font-size:11.5px; color:var(--ink-faint); border-left:2px solid var(--mint); padding:2px 0 2px 10px; margin-top:10px; line-height:1.6;}
+.creed{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-top:18px;}
+.creed ul{margin:8px 0 0; padding-left:0; list-style:none; display:grid; gap:7px; font-size:12.5px; color:var(--ink-dim);}
+.creed li::before{content:"— "; color:var(--signal);}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 8 — 설정 묶음 (대조표 #8)</p>
+    <h1>설정 — 여섯 화면 한 벌</h1>
+    <p class="sub">사용량·비용 / 채점 기준 버전 / 외부 연결 열쇠 / 팀원 / 내 계정 / 변경 이력.
+    사장님 확정(08-23)대로 설정은 결과 화면과 섞이지 않고 <b>맨 아래 「설정」 한 자리</b>에 모이며,
+    여섯 화면이 아래 공통 문법 하나를 쓴다.</p>
+  </header>
+
+  <div class="grid stage">
+    <div class="panel">
+      <span class="route num">/console/usage</span><h2>사용량·비용</h2>
+      <div class="row"><span>이번 달 관측 호출</span><b class="num">1,238건</b></div>
+      <div class="row"><span>추정 비용</span><b class="num">₩41,200 / 상한 ₩100,000</b></div>
+      <div class="meter" role="img" aria-label="상한의 41% 사용"><i></i></div>
+      <p class="foot">비용은 실측 집계다 — 추정치가 실측과 같은 자리에 서지 않는다.</p>
+    </div>
+
+    <div class="panel">
+      <span class="route num">/console/scoring-versions</span><h2>채점 기준 버전</h2>
+      <div class="row"><span><b>SEO 1.12.0</b> · 등급 11단</span><span class="st pub">시행 중 · 08-29 22:00</span></div>
+      <div class="row"><span>GEO 1.6.0 · 등급 11단</span><span class="st pub">시행 중</span></div>
+      <div class="row"><span>SEO 1.11.0</span><span class="st off">지난 판 — 그 판의 발행본은 그대로</span></div>
+      <p class="foot">발행본은 불변 — 고치려면 새 판. 판이 다르면 점수를 이어 비교하지 않는다.</p>
+    </div>
+
+    <div class="panel">
+      <span class="route num">/console/credentials</span><h2>외부 연결 열쇠</h2>
+      <div class="row"><span>네이버 검색광고</span><span class="st on">연결됨 · 08-30 05:40 확인</span></div>
+      <div class="row"><span>네이버 데이터랩</span><span class="st on">연결됨</span></div>
+      <div class="row"><span>Google Search Console</span><span class="st warn">만료 임박 · 9일</span></div>
+      <div class="row"><span>답변 엔진 열쇠 1종</span><span class="st off">미설정 — 정상 상태</span></div>
+      <p class="keynote">열쇠 <b>값은 어디에도 안 보인다</b> — 상태만. 미설정은 오류가 아니라 정상 상태이고,
+      그때의 올바른 출력은 지어낸 숫자가 아니라 UNKNOWN이다.</p>
+    </div>
+
+    <div class="panel">
+      <span class="route num">/console/team</span><h2>팀원 관리</h2>
+      <div class="row"><span><b>김OO</b> · 콘텐츠 담당</span><span class="num" style="font-size:11px">거래처 3곳</span></div>
+      <div class="row"><span><b>박OO</b> · 콘텐츠 담당</span><span class="num" style="font-size:11px">거래처 3곳</span></div>
+      <div class="row"><span><b>이OO</b> · 관리자</span><span class="num" style="font-size:11px">전체</span></div>
+      <div class="row"><span>초대 대기</span><span class="st off">1건 · 만료 08-31</span></div>
+      <p class="foot">권한이 없는 화면은 흐려지는 게 아니라 이유가 적힌다 — «부를 수 없는 기능은 없는 기능».</p>
+    </div>
+
+    <div class="panel">
+      <span class="route num">/console/account</span><h2>내 계정</h2>
+      <div class="row"><span>이메일</span><b class="num">kim@venom.kr</b></div>
+      <div class="row"><span>비밀번호</span><span class="st off">변경한 지 41일</span></div>
+      <div class="row"><span>로그인 세션</span><b class="num">2대 (이 기기 · 사무실 PC)</b></div>
+      <p class="foot">비밀번호 변경은 이 화면에서만 — 시험·검수 흐름 어디에도 비밀번호 입력 칸이 없다.</p>
+    </div>
+
+    <div class="panel">
+      <span class="route num">/console/changelog</span><h2>변경 이력</h2>
+      <div class="row"><span class="num"><b>v0.3.386</b></span><span style="font-size:11.5px">등급 열한 칸 발행 — SEO 1.12.0 · GEO 1.6.0</span></div>
+      <div class="row"><span class="num">v0.3.385</span><span style="font-size:11.5px">등급 명세 초안 + 거래처 지도 중앙값 십자</span></div>
+      <div class="row"><span class="num">v0.3.384</span><span style="font-size:11.5px">기회 표에서 실행으로 — 원고 검수 입구</span></div>
+      <p class="foot">사용자 눈에 보이는 변경만 판이 된다 — 커밋 해시는 사람이 못 가르므로 판 번호로 말한다.</p>
+    </div>
+  </div>
+
+  <div class="creed stage" style="animation-delay:.08s">
+    <h2 style="margin-bottom:2px">여섯 화면의 공통 문법</h2>
+    <ul>
+      <li>설정은 결과 화면과 섞이지 않는다 — 결과 쪽에는 한 줄 요약만, 조작은 여기 한 자리에.</li>
+      <li>비밀값은 존재·상태로만 말한다. 값은 화면·로그·문서 어디에도 안 나온다.</li>
+      <li>«미설정»은 정상 상태다 — 빨간 오류로 칠하지 않고, 그때의 측정값은 UNKNOWN으로 남긴다.</li>
+      <li>발행된 것(명세 판·리포트)은 불변 — 목록은 «시행 중 / 지난 판»으로 말하고 고치기 버튼이 없다.</li>
+    </ul>
+  </div>
+
+  <p class="badge stage" style="animation-delay:.14s"><b>표본</b> 수치·이름은 테스트용 표본이다
+  <b>규율</b> 설정 한 자리(사장님 확정 08-23) · 비밀값 노출 금지 · 미설정=정상 · 발행 불변 · 의료광고법 준수</p>
+</div>
