@@ -1,0 +1,223 @@
+<title>ANSEO 거래처 목록 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+.toolbar input{font:inherit; font-size:12.5px; color:var(--ink); background:var(--card2); border:1px solid var(--border); border-radius:7px; padding:6px 11px; width:220px;}
+.chips{display:flex; gap:6px; flex-wrap:wrap;}
+.chip{font-size:11.5px; color:var(--ink-dim); border:1px solid var(--border); border-radius:999px; padding:3px 10px; background:none; cursor:pointer;}
+.chip.on{color:var(--signal); border-color:color-mix(in oklab,var(--signal) 50%,transparent); background:var(--signal-soft);}
+.chip .n{color:var(--ink-faint); font-size:10.5px; margin-left:4px;}
+
+/* 축소판 등급 문법 — 작은 자리의 정본 */
+.g{display:inline-flex; align-items:baseline; gap:5px; border:1px solid var(--border); border-radius:6px; padding:2px 8px; background:var(--card2); white-space:nowrap;}
+.g b{font-size:14px; font-weight:700; letter-spacing:-.01em;}
+.g .num{font-size:10.5px; color:var(--ink-faint);}
+.g.cPass{border-color:color-mix(in oklab,var(--mint) 45%,transparent); background:var(--mint-soft);} .g.cPass b{color:var(--mint);}
+.g.cWarn{border-color:color-mix(in oklab,var(--ember) 45%,transparent); background:var(--ember-soft);} .g.cWarn b{color:var(--ember);}
+.g.cFail{border-color:color-mix(in oklab,var(--destructive) 45%,transparent); background:var(--destructive-soft);} .g.cFail b{color:var(--destructive);}
+.g.cNone{border-style:dashed;} .g.cNone b{color:var(--unknown); font-size:12px;}
+
+table.roster{border-collapse:collapse; width:100%; min-width:880px; font-size:12.5px;}
+table.roster th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.roster td{padding:10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+table.roster tr:hover td{background:var(--card2); cursor:pointer;}
+.corp{color:var(--ink); font-weight:500;}
+.corp small{display:block; font-size:10.5px; color:var(--ink-faint); font-weight:400;}
+.issuecnt{display:inline-flex; gap:4px; align-items:center;}
+.issuecnt i{display:inline-block; min-width:18px; text-align:center; font-style:normal; font-size:10.5px; border-radius:4px; padding:1px 4px;}
+.issuecnt .i1{background:var(--destructive-soft); color:var(--destructive);}
+.issuecnt .i2{background:var(--ember-soft); color:var(--ember);}
+.issuecnt .i3{background:var(--signal-soft); color:var(--signal);}
+.issuecnt .i0{background:var(--track); color:var(--ink-faint);}
+svg.spark{display:block;}
+.nextscan{font-size:11px; color:var(--ink-faint);}
+.nextscan b{color:var(--ink-dim); font-weight:500;}
+
+.gramm{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; margin-top:6px;}
+.gramm .cell{border:1px solid var(--border); border-radius:9px; padding:10px 13px; background:var(--card2); font-size:12px; color:var(--ink-dim); line-height:1.65;}
+.gramm .cell b{color:var(--ink); font-weight:500;}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 3 — 거래처 목록 (대조표 #3)</p>
+    <h1>거래처 — 현황판형 목록</h1>
+    <p class="sub">담당자가 아침에 여는 첫 화면. 한 줄에서 <b>판정(등급)·흐름(스파크)·할 일(이슈)</b>이
+    같이 읽히고, 행을 누르면 거래처 상세 6탭으로 들어간다. 실물 목록의 검색·상태 칩 골격은 그대로 두고
+    점수 숫자 단독 표시를 축소판 등급 문법으로 바꾼다(감사 #7 처방).</p>
+  </header>
+
+  <div class="card stage">
+    <div class="card-head">
+      <h2>거래처 8곳 — 문제 급한 순</h2><span class="srcchip">실물 /console/customers 재구성</span>
+    </div>
+    <div class="toolbar">
+      <input type="search" aria-label="거래처 찾기" placeholder="이름·도메인으로 찾기">
+      <nav class="chips" aria-label="목록 좁히기">
+        <button class="chip on" type="button">전체 <span class="n num">8</span></button>
+        <button class="chip" type="button">심각 이슈 있음 <span class="n num">2</span></button>
+        <button class="chip" type="button">재진단 대기 <span class="n num">3</span></button>
+        <button class="chip" type="button">관리 목표 도달 <span class="n num">1</span></button>
+        <button class="chip" type="button">진단 전 <span class="n num">1</span></button>
+      </nav>
+    </div>
+
+    <div class="overflow" style="margin-top:12px">
+    <table class="roster">
+      <thead><tr><th>거래처</th><th>SEO</th><th>AEO 준비도</th><th>흐름 (SEO·최근 6회)</th><th>열린 이슈</th><th>담당</th><th>다음 진단</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="corp">리앤의원<small class="num">leean-clinic.kr · 피부과</small></td>
+          <td><span class="g cFail"><b>E+</b><span class="num">57.0</span></span></td>
+          <td><span class="g cFail"><b>F</b><span class="num">44.1</span></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="49.2에서 57.0으로">
+            <line x1="0" y1="13" x2="120" y2="13" stroke="var(--grid)" stroke-dasharray="3 3"/>
+            <path d="M4,22 C24,21 40,19 60,17 S100,9 116,7" fill="none" stroke="var(--destructive)" stroke-width="1.6"/>
+            <circle cx="116" cy="7" r="2.4" fill="var(--destructive)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i1">2</i><i class="i2">1</i><i class="i3">2</i></span></td>
+          <td>김OO</td><td class="nextscan"><b>오늘 밤</b> · 주 2회</td>
+        </tr>
+        <tr>
+          <td class="corp">미소진의원<small class="num">misojin.co.kr · 피부과</small></td>
+          <td><span class="g"><b>B</b><span class="num">84.2</span></span></td>
+          <td><span class="g cWarn"><b>C</b><span class="num">71.5</span></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="72.1에서 84.2로">
+            <line x1="0" y1="6" x2="120" y2="6" stroke="var(--grid)" stroke-dasharray="3 3"/>
+            <path d="M4,20 C24,18 44,15 64,12 S104,7 116,6" fill="none" stroke="var(--signal)" stroke-width="1.6"/>
+            <circle cx="116" cy="6" r="2.4" fill="var(--signal)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i1">1</i><i class="i2">2</i><i class="i3">2</i></span></td>
+          <td>김OO</td><td class="nextscan"><b>08-31 새벽</b> · 재진단 3장</td>
+        </tr>
+        <tr>
+          <td class="corp">서준피부과<small class="num">seojun-derma.com · 피부과</small></td>
+          <td><span class="g cWarn"><b>D+</b><span class="num">66.9</span></span></td>
+          <td><span class="g cWarn"><b>D</b><span class="num">61.2</span></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="횡보">
+            <line x1="0" y1="12" x2="120" y2="12" stroke="var(--grid)" stroke-dasharray="3 3"/>
+            <path d="M4,13 C24,12 44,14 64,13 S104,12 116,12" fill="none" stroke="var(--ember)" stroke-width="1.6"/>
+            <circle cx="116" cy="12" r="2.4" fill="var(--ember)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i2">1</i></span></td>
+          <td>박OO</td><td class="nextscan"><b>09-02</b> · 주 1회</td>
+        </tr>
+        <tr>
+          <td class="corp">한결정형외과<small class="num">hangyeol-os.kr · 정형외과</small></td>
+          <td><span class="g cPass"><b>A</b><span class="num">91.4</span></span></td>
+          <td><span class="g"><b>B+</b><span class="num">86.0</span></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="관리 목표 위 유지">
+            <line x1="0" y1="8" x2="120" y2="8" stroke="var(--mint)" stroke-dasharray="3 3" opacity=".5"/>
+            <path d="M4,10 C24,9 44,8 64,7 S104,6 116,6" fill="none" stroke="var(--mint)" stroke-width="1.6"/>
+            <circle cx="116" cy="6" r="2.4" fill="var(--mint)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i0">0</i></span></td>
+          <td>박OO</td><td class="nextscan"><b>09-05</b> · 유지 관찰</td>
+        </tr>
+        <tr>
+          <td class="corp">더맑은한의원<small class="num">themalgun.kr · 한의원</small></td>
+          <td><span class="g"><b>C+</b><span class="num">76.8</span></span></td>
+          <td><span class="g cNone"><b>측정 전</b></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="판이 달라 끊김">
+            <line x1="0" y1="12" x2="120" y2="12" stroke="var(--grid)" stroke-dasharray="3 3"/>
+            <path d="M4,18 C20,17 34,15 48,14" fill="none" stroke="var(--signal)" stroke-width="1.6"/>
+            <path d="M48,14 C64,13 76,12 88,11" fill="none" stroke="var(--signal)" stroke-width="1.2" stroke-dasharray="4 4" opacity=".55"/>
+            <path d="M88,11 C100,10 108,10 116,9" fill="none" stroke="var(--signal)" stroke-width="1.6"/>
+            <circle cx="116" cy="9" r="2.4" fill="var(--signal)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i2">2</i><i class="i3">1</i></span></td>
+          <td>이OO</td><td class="nextscan"><b>09-01</b> · 주 1회</td>
+        </tr>
+        <tr>
+          <td class="corp">라움성형외과<small class="num">raum-ps.com · 성형외과</small></td>
+          <td><span class="g"><b>B+</b><span class="num">87.3</span></span></td>
+          <td><span class="g"><b>C+</b><span class="num">75.1</span></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="상승">
+            <line x1="0" y1="7" x2="120" y2="7" stroke="var(--grid)" stroke-dasharray="3 3"/>
+            <path d="M4,19 C28,17 52,13 76,10 S106,8 116,7" fill="none" stroke="var(--signal)" stroke-width="1.6"/>
+            <circle cx="116" cy="7" r="2.4" fill="var(--signal)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i3">3</i></span></td>
+          <td>이OO</td><td class="nextscan"><b>09-03</b> · 주 1회</td>
+        </tr>
+        <tr>
+          <td class="corp">봄빛산부인과<small class="num">bombit-obgy.kr · 산부인과</small></td>
+          <td><span class="g cFail"><b>E</b><span class="num">52.3</span></span></td>
+          <td><span class="g cFail"><b>E+</b><span class="num">55.8</span></span></td>
+          <td><svg class="spark num" width="120" height="26" viewBox="0 0 120 26" role="img" aria-label="하락 후 반등">
+            <line x1="0" y1="14" x2="120" y2="14" stroke="var(--grid)" stroke-dasharray="3 3"/>
+            <path d="M4,12 C24,14 44,20 64,19 S104,15 116,14" fill="none" stroke="var(--destructive)" stroke-width="1.6"/>
+            <circle cx="116" cy="14" r="2.4" fill="var(--destructive)"/></svg></td>
+          <td><span class="issuecnt num"><i class="i1">1</i><i class="i2">3</i></span></td>
+          <td>김OO</td><td class="nextscan"><b>08-31</b> · 주 2회</td>
+        </tr>
+        <tr>
+          <td class="corp">첫눈안과<small class="num">firstsnow-eye.com · 안과</small></td>
+          <td><span class="g cNone"><b>진단 전</b></span></td>
+          <td><span class="g cNone"><b>진단 전</b></span></td>
+          <td><span class="num" style="font-size:11px; color:var(--ink-faint)">— (기록 없음 · 0이 아니다)</span></td>
+          <td><span class="issuecnt num"><i class="i0">—</i></span></td>
+          <td>박OO</td><td class="nextscan"><b>등록 08-30</b> · 첫 진단 예약</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="foot">정렬 기본값은 이름순이 아니라 <b>문제 급한 순</b>(심각 이슈→등급 낮음→재진단 임박).
+    스파크의 점선 구간은 명세 판이 바뀐 다리(참고용) — 실선과 섞어 읽지 않는다. 진단 전·측정 전은
+    0이 아니라 빈 자리로 남긴다.</p>
+  </div>
+
+  <div class="card stage" style="animation-delay:.08s">
+    <div class="card-head"><h2>축소판 등급 문법 — 작은 자리의 정본 (이 화면이 정의한다)</h2></div>
+    <div class="gramm">
+      <div class="cell"><span class="g cPass"><b>A</b><span class="num">91.4</span></span><br><b>등급이 먼저, 점수는 보조.</b> 3rem 규칙을 못 쓰는 목록·칩·게이지가 공용으로 쓴다.</div>
+      <div class="cell"><span class="g cWarn"><b>C</b><span class="num">71.5</span></span><br><b>톤 4단 + 낱말·숫자 병용.</b> 90+ 통과 / 75~89 기본 / 60~74 주의 / 60 미만 실패.</div>
+      <div class="cell"><span class="g cNone"><b>진단 전</b></span><br><b>못 잰 값은 등급이 아니다.</b> 회색 F가 아니라 점선 «진단 전»·«측정 전»으로.</div>
+      <div class="cell"><span class="issuecnt num"><i class="i1">1</i><i class="i2">2</i><i class="i3">2</i></span><br><b>이슈 배지는 이슈 축 색.</b> 등급 톤과 다른 축 — 한 행 안에서도 섞지 않는다.</div>
+    </div>
+  </div>
+
+  <p class="badge stage" style="animation-delay:.14s"><b>표본</b> 수치·업체명은 테스트용 표본이다
+  <b>규율</b> 축소판 문법(등급 칩 우선+톤) · 판 다르면 점선 다리 · 못 잰 값 — · 이슈 축 분리 ·
+  기본 정렬=문제 급한 순 · 의료광고법 준수</p>
+</div>
