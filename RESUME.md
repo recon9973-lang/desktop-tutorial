@@ -1,101 +1,67 @@
-# RESUME — 다음 세션 이어가기 (2026-08-23 · s08 배포 대기)
+# RESUME — 다음 세션 이어가기 (2026-08-30 · s09 화면 이식 2차)
 
 > 새 세션은 이 파일을 **가장 먼저** 읽는다. 이번 세션 상세는
-> `docs/session-logs/2026-08-23-s08.md`, 현황은 `PROJECT_STATE.md`.
+> `docs/session-logs/2026-08-30-s09.md`, 현황은 `PROJECT_STATE.md`.
 
-## 🚀 지금 할 일은 **배포** — 런북이 따로 있다
-
-> ### 👉 [`docs/ANSEO-배포-인계.md`](docs/ANSEO-배포-인계.md)
->
-> 무엇이 나가나 · `make deploy` 절차 · `gh` 없는 방의 한계 · 어긋났을 때 ·
-> 샌드박스 재구성. **배포 이야기는 그 문서 하나만 읽으면 된다.**
+## 지금 상태 — 한눈에
 
 ```
-veo-platform  claude/anseo-ui-v3   41b17a9   판 0.3.303 · 0.3.304   2커밋
-main                               b5e35b6   판 0.3.302             ← 아직 안 나감
+veo-platform  main               cd2fe35  판 0.3.390  ← 운영 도달 실측(08-30 19:21 KST)
+              anseo-console-port 9fd47e8  판 0.3.391  ← 이 방이 배포 진행(CI→main→실측)
+desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
 
-**나갈 그 커밋에서 preflight 전체 초록**(ci-local 6,572 · 웹 1,843 · build · smoke ·
-계약 판 일치). **이 방에서는 배포를 끝까지 못 한다** — `gh` 가 없고 운영 API curl 이
-403 이다. `gh` 있는 방에서 `make deploy`.
+- **라벨 41곳 정리(0.3.390)까지 커밋된 작업은 전부 라이브다.** 운영 서버·워커·웹
+  삼중 실측 완료. 남은 미배포물은 «새 화면 시뮬 10종»뿐이고, 그건 코드가 아니라
+  설계도라서 **실물 코드로 옮겨야(이식 2차) 화면에 보인다.**
+- **배포는 이 방이 직접 한다**(사장님 2026-08-30 «여기방에서» + «모든 권한 승인» —
+  2026-08-23 «ANSEO 방 몫» 지시를 대체). 경로: preflight → `deploy-candidate` 커밋 반영
+  → GitHub MCP `actions_list`로 CI 초록 → main fast-forward → 바깥 샌드박스 curl로
+  운영 실측(`gh`는 이 방에서 토큰 무효, 운영 curl은 프록시 403 — 우회가 정본).
 
-## ✅ ANSEO 개편(요구 9건)은 이미 나갔다 — 다시 배포하지 말 것
+## 🚀 바로 이어갈 작업 — 화면 이식 2차 (②부터)
 
-2026-08-23, main `b5e35b6` · 판 0.3.302 · CI run 32635627880 초록.
-GPTO 스크린샷 13장에서 나온 요구 9건 + 화면 전수 + 그림 문법 + 툴팁이 전부 라이브다.
-
-## 이번 세션에 한 것 (s08)
-
-```
-0.3.303  발행 리포트 등급 색에 「표기 규칙 판」 — 새 판은 밝기 단, 지난 판은 옛 색
-         (화면·인쇄본 둘 다) · 현황판 추이 썸네일에 회차 풍선
-0.3.304  사장님이 화면에서 짚으신 넷 — 인용 세부 링크가 자기 자신으로 가던 것 ·
-         채널 막대가 배경색이라 안 보이던 것(1.21:1) · 엔진×채널 표 디자인 ·
-         엔진 상태·정기 진단을 맨 아래 「설정」 한 자리로 + 결과 쪽 한 줄 요약
-```
-
-무효였던 `e947748`(판 0.3.294)은 새 작업을 main 위에 올리면서 정리됐다.
-
-## 저장소 둘
+시뮬 10종을 실물 코드로. **화면별 슬라이스 = 한 판**, 매 판 web verify 초록 후 배포.
+목록은 `docs/ANSEO-화면-대조표.md` §2, 처방 원문은 각 시뮬 HTML.
 
 ```
-veo-platform      구현. 0.3.303·0.3.304 는 아직 main 밖(배포 대기)
-desktop-tutorial  문서. 가지 claude/anseo-screenshot-analysis-9qkxno
+① 리포트 세트   v0.3.391 로 감사 #1·#3 반영(등급 주인공·칩 톤) — 잔여: 목록 등급 칩 열·발행본 목표선
+② 이슈 대장     ③ 거래처 현황판형 목록   ④ 답변 검수   ⑤ 키워드
+⑥ 브랜드 식별   ⑦ 원고 검수   ⑧ 설정 묶음(6화면 톤 시트)   ⑨ 공개면   ⑩ 거래처 폼
+제외: /console/geo(AEO — 다른 방 재구성 소관)
 ```
 
-`veo-platform` 이 세션에 안 붙어 있으면 `add_repo` 로 붙이고 클론한다.
+v0.3.391 배포가 «진행 중»으로 끝났다면: `git ls-remote origin main`이 `9fd47e8`인지,
+운영 셋이 `0.3.391`인지부터 실측하고 WORKLIST-HISTORY에 결과를 적는다.
 
-## 배포 뒤에 남은 것 — 사장님 오더 대기
+## 사장님 확정 (되묻지 말 것)
 
-앞 인계에서 「남았다」고 적었던 둘(발행본 등급 색 · 툴팁)은 **이번에 끝났다.**
-새 오더가 없으면 이월 셋뿐이다.
-
-**툴팁을 더 안 넓힌 것은 판단이다** — 전수로 다시 보니 산점도·막대점·깎인 배점·
-기울기·구성비는 값이 이미 글자로 나와 있었다. 이미 화면에 있는 값을 손을 올려야
-다시 보여 주는 것은 정보가 아니라 장식이다.
-
-## 사장님 확정 (2026-08-23) — 되묻지 말 것
-
-```
-메뉴 구조   지금 탭 구조 유지. SEO·GEO·AEO 는 거래처 상세의 탭이고
-            최상위 메뉴로 안 올린다
-툴팁        붙인다 · 추이 그래프부터
-자사 색     지금 강조색 유지. 참고 화면(GPTO)은 흰색이지만 밝은 판에서 묻힌다
-```
-
-## 대기/차단 (사용자 액션)
-
-- **veo-platform 0.3.303~0.3.304 배포** — 준비 끝. `gh` 있는 방에서 `make deploy`.
-- 이월: #36 GSC env 입력 · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
+- 등급 11단(A+95~F0-49) · **등급 크게 점수 작게** · 톤 4단(90+/75~89기본/60~74/<60) ·
+  목표선 취약탈출50·관리목표90 · 그래프는 **곡선·실선**(08-29) · 판 다르면 비교 금지 ·
+  못 잰 값 — · 발행 불변 · 의료광고법 준수.
+- «토큰 사용량»은 사장님 어휘(08-25) — 교체 금지.
+- 라벨 원칙: **사장님이 물어봐야 하는 라벨 = 나쁜 라벨.**
+- 세부 감사·깨끗 계열 목록: `docs/ANSEO-톤앤매너-전수감사.md`.
 
 ## 주의·제약 (반드시)
 
-- **말**: 사장님께 나가는 글은 「커밋」과 「배포」 **두 단어만** 쓴다. 「민다·푸시」
-  계열 금지 — `two-words-only.test.ts` 가 문서를 막지만 **대화는 못 막는다.**
-  s07 에서 대화와 문서 열 곳에서 어겼다.
-- **판 번호**: 고르기 전에 `git fetch`. 다른 방이 같은 저장소에 배포한다(s07 에서
-  이미 나간 0.3.294 를 골랐다). §2 머리말도 그때마다 낡아 있으니 함께 실측한다.
-- **브랜치**: veo-platform 은 `claude/anseo-ui-v3`, desktop-tutorial 은
-  `claude/anseo-screenshot-analysis-9qkxno`. 다른 가지에 올리지 않는다.
-- **비밀키 값·모델 ID**를 커밋/PR/코드/문서/채팅에 넣지 않는다.
-  커밋 트레일러 준수(Co-Authored-By / Claude-Session).
-- **실측 원칙**: 실측 > 추론 > 통계 날조 금지. 못 잰 값은 `0` 이 아니라 `—`(ADR 0002).
-- **관문을 무력화하지 않는다.** 기준선을 고칠 땐 **왜 바뀌었는지 그 자리에 적는다.**
-- **계약을 다시 뽑는다.** 서버 창구를 더하면
-  `apps/api/scripts/export_openapi.py` → `pnpm --filter @veo/api-client generate`.
-- **그려 보고 확인한다.** 시험은 글자를 세지 배치를 안 잰다.
-- **이 방의 한계**: `gh` 없음 · 운영 API curl 403. 그래서 preflight ⑤ 의
-  「오늘 CI 0건 · 상한 2회 남음」은 **측정값이 아니다.** 배포는 `gh` 있는 방에서.
+- 사장님께 나가는 글은 「커밋」과 「배포」 두 단어만(민다·푸시 금지).
+- 판 번호 고르기 전 `git ls-remote`(프록시가 fetch 참조 캐싱 — ls-remote가 정본).
+- 관문 무력화 금지 · 계약 재생성(`export_openapi.py` → api-client generate) ·
+  비밀키 값·모델 ID를 커밋/PR/코드/문서에 넣지 않는다 · 커밋 트레일러 준수.
+- WORKLIST §2는 나간 판을 내리고 실측 문장으로(1,200줄 한도), HISTORY는
+  «## 날짜별 기록» 바로 뒤 prepend.
+- veo-platform 가지 `claude/anseo-console-port`, desktop-tutorial 은 이 가지 유지.
 
-## 개발 환경
+## 개발 환경 (이 방 재구성)
 
-`docs/ANSEO-배포-인계.md` §6 (PostgreSQL·venv·환경변수·`pip install -e apps/worker`).
-DB 가 꺼져 있으면 `ci-local`·`test-db` 가 한꺼번에 `connection refused` 로 죽는다 —
-코드 결함이 아니다.
+- PostgreSQL 16: `sudo -u postgres initdb -D /var/lib/postgresql/veo-test` →
+  `pg_ctl -o '-p 5432 -k /var/run/postgresql'` → `createdb veo_test`,
+  `VEO_TEST_DATABASE_URL='postgresql+psycopg://postgres@/veo_test?host=/var/run/postgresql&port=5432'`.
+- `.venv/bin/pip install -e apps/worker`, PATH=/opt/node22/bin,
+  PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers.
+- ci-local의 mypy 스텁 7건은 환경 문제(수정 전 트리 동일) — 정본 관문은 GitHub CI.
 
-## 참고
+## 대기/차단 (사용자 액션)
 
-- 세션 상세 `docs/session-logs/2026-08-23-s05.md` · `-s06.md` · `-s07.md`
-- 배포 런북 `docs/ANSEO-배포-인계.md` (다음 배포 때도 이것부터)
-- GPTO 역설계 `docs/GPTO-벤치마크-ANSEO-적용리포트.md` · 제안서 `docs/ANSEO-개편-비교제안서.md`
-- veo-platform 대장 `docs/WORKLIST.md` §2 · `WORKLIST-HISTORY.md`
+- 이월: #36 GSC env 입력 · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
