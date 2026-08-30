@@ -1,0 +1,234 @@
+<title>ANSEO 이슈 작업 대장 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-top:16px;}
+.tabs button{border:0; background:none; color:var(--ink-faint); font:inherit; font-size:13.5px; padding:8px 14px; cursor:pointer; border-bottom:2px solid transparent; translate:0 1px;}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--signal); font-weight:500;}
+.tabs button:hover{color:var(--ink-dim);}
+.pane[hidden]{display:none;}
+
+.sev{display:inline-block; font-size:10.5px; border-radius:4px; padding:1px 7px; letter-spacing:.03em; white-space:nowrap;}
+.sev.s1{background:var(--destructive-soft); color:var(--destructive);}
+.sev.s2{background:var(--ember-soft); color:var(--ember);}
+.sev.s3{background:var(--signal-soft); color:var(--signal);}
+
+/* 심각도 스택 바 */
+.stack{display:flex; height:14px; border-radius:7px; overflow:hidden; margin-top:10px; min-width:300px;}
+.stack i{display:block; height:100%;}
+.stacklegend{display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:12px; color:var(--ink-dim);}
+.stacklegend .dot{display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:5px; translate:0 -1px;}
+
+/* 대장 표 */
+table.ledger{border-collapse:collapse; width:100%; min-width:760px; font-size:12.5px;}
+table.ledger th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.ledger td{padding:9px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:top;}
+table.ledger tr:hover td{background:var(--card2);}
+.claimed{font-size:10.5px; color:var(--ember); border:1px solid color-mix(in oklab,var(--ember) 40%,transparent); border-radius:4px; padding:1px 6px; white-space:nowrap;}
+.noclosebtn{margin-top:12px; font-size:11.5px; color:var(--ink-faint); border-left:2px solid var(--mint); padding:2px 0 2px 10px; line-height:1.65;}
+.closedrow td{color:var(--ink-faint);}
+.closedhow{font-size:10.5px; border-radius:4px; padding:1px 6px; white-space:nowrap;}
+.closedhow.byScan{background:var(--mint-soft); color:var(--mint);}
+.closedhow.byDecision{background:var(--track); color:var(--ink-dim);}
+
+/* 상세 — 상태 사슬 */
+.lifeline{display:flex; align-items:center; gap:0; margin-top:12px; flex-wrap:wrap;}
+.lifestep{display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:8px; padding:7px 12px; background:var(--card2); font-size:12px; color:var(--ink-dim);}
+.lifestep.on{border-color:color-mix(in oklab,var(--signal) 45%,transparent); background:var(--signal-soft); color:var(--ink);}
+.lifestep.done{border-color:color-mix(in oklab,var(--mint) 40%,transparent);}
+.lifestep .n{font-size:10px; color:var(--ink-faint); letter-spacing:.05em;}
+.lifearrow{color:var(--ink-faint); padding:0 8px; font-size:12px;}
+.evi{background:var(--codebg); border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:12px; line-height:1.7; margin-top:10px; overflow-x:auto;}
+.evi code{font-family:"JetBrains Mono",monospace; font-size:11.5px; color:var(--ink-dim);}
+.detailgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+@media(max-width:760px){.detailgrid{grid-template-columns:1fr;}}
+.subcard{border:1px solid var(--border); border-radius:10px; padding:13px 15px; background:var(--card2);}
+.subcard h3{margin-bottom:6px;}
+.subcard p, .subcard li{font-size:12.5px; color:var(--ink-dim); line-height:1.65;}
+.subcard ul{margin:6px 0 0; padding-left:18px;}
+.timeline{list-style:none; margin:10px 0 0; padding:0;}
+.timeline li{position:relative; padding:0 0 14px 22px; font-size:12.5px; color:var(--ink-dim); line-height:1.6;}
+.timeline li::before{content:""; position:absolute; left:5px; top:6px; width:7px; height:7px; border-radius:50%; background:var(--ink-faint);}
+.timeline li::after{content:""; position:absolute; left:8px; top:16px; bottom:-2px; width:1px; background:var(--border);}
+.timeline li:last-child::after{display:none;}
+.timeline li.good::before{background:var(--mint);}
+.timeline li.warn::before{background:var(--ember);}
+.timeline .num{color:var(--ink-faint); font-size:11px;}
+.chainlink{margin-top:12px; font-size:12px; color:var(--ink-dim); border:1px dashed var(--border); border-radius:8px; padding:8px 12px; line-height:1.65;}
+.chainlink b{color:var(--signal); font-weight:500;}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 2 — 이슈 (대조표 #2)</p>
+    <h1>이슈 — 작업 대장 · 이슈 상세</h1>
+    <p class="sub">ANSEO 4원칙의 심장. <b>점수판이 아니라 작업 목록</b>이고, 이슈는 진단이 만들며,
+    <b>사람이 닫지 않는다 — 재진단이 닫는다.</b> 검사·근거·닫히는 조건이 항상 함께 남는다.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="이슈 두 화면">
+    <button role="tab" id="tabA" aria-selected="true" aria-controls="paneA">A · 작업 대장</button>
+    <button role="tab" id="tabB" aria-selected="false" aria-controls="paneB">B · 이슈 상세</button>
+  </div>
+
+  <!-- ── A. 작업 대장 ──────────────────────────────────────────── -->
+  <section class="pane" id="paneA" role="tabpanel" aria-labelledby="tabA">
+    <div class="card stage">
+      <div class="card-head">
+        <h2>열린 이슈 7건 — 심각도순</h2><span class="srcchip">실물 /console/issues 재구성</span>
+      </div>
+      <div class="overflow">
+        <div class="stack" role="img" aria-label="심각 2 · 중요 3 · 경미 2">
+          <i style="width:28.6%; background:var(--destructive)"></i>
+          <i style="width:42.8%; background:var(--ember)"></i>
+          <i style="width:28.6%; background:var(--signal)"></i>
+        </div>
+      </div>
+      <div class="stacklegend num">
+        <span><i class="dot" style="background:var(--destructive)"></i>심각 2</span>
+        <span><i class="dot" style="background:var(--ember)"></i>중요 3</span>
+        <span><i class="dot" style="background:var(--signal)"></i>경미 2</span>
+        <span style="color:var(--ember)">이 중 2건은 수정 <b>보고만</b> 됨 — 재진단 미확인</span>
+      </div>
+
+      <div class="overflow" style="margin-top:12px">
+      <table class="ledger">
+        <thead><tr><th>심각도</th><th>지적</th><th>거래처</th><th>발견</th><th>상태</th><th>닫히는 조건</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sev s1">심각</span></td><td>대표 시술 페이지 3장 <code class="num">noindex</code> <span class="num" style="font-size:10.5px">seo.indexability</span></td><td>미소진의원</td><td class="num">08-29 · 7회차</td><td><span class="claimed">수정 보고 · 미검증</span></td><td>재진단이 해제를 관측하면</td></tr>
+          <tr><td><span class="sev s1">심각</span></td><td>모바일에서 예약 버튼이 화면 밖 <span class="num" style="font-size:10.5px">seo.mobile_cta</span></td><td>리앤의원</td><td class="num">08-28 · 4회차</td><td>열림</td><td>재진단 통과</td></tr>
+          <tr><td><span class="sev s2">중요</span></td><td>의료진 프로필 구조화 데이터 없음 <span class="num" style="font-size:10.5px">geo.schema_physician</span></td><td>미소진의원</td><td class="num">08-29 · 7회차</td><td>열림</td><td>재진단이 Physician 스키마를 관측하면</td></tr>
+          <tr><td><span class="sev s2">중요</span></td><td>FAQ가 이미지로만 존재 — AI가 읽지 못함</td><td>서준피부과</td><td class="num">08-27 · 2회차</td><td><span class="claimed">수정 보고 · 미검증</span></td><td>재진단이 글자 FAQ를 관측하면</td></tr>
+          <tr><td><span class="sev s2">중요</span></td><td>인용 0회 주제 «리프팅 통증» — 자사 문서 없음</td><td>미소진의원</td><td class="num">08-29 · AEO 3회차</td><td>열림 · <b style="color:var(--signal)">원고 검수로 →</b></td><td>재관측이 인용을 관측하면</td></tr>
+          <tr><td><span class="sev s3">경미</span></td><td>이미지 대체 텍스트 12/41장 비어 있음</td><td>미소진의원</td><td class="num">08-29 · 7회차</td><td>열림</td><td>재진단 통과</td></tr>
+          <tr><td><span class="sev s3">경미</span></td><td>사이트맵 갱신일이 90일 경과</td><td>리앤의원</td><td class="num">08-28 · 4회차</td><td>열림</td><td>재진단 통과</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="noclosebtn"><b>이 화면에 「닫기」 버튼이 없는 것은 설계다.</b> 수정을 보고할 수는 있으나(위 주황 배지),
+      닫는 것은 재진단의 관측뿐이다. 이슈를 손으로 만드는 창구도 없다 — 이슈는 진단이 만든다.</p>
+    </div>
+
+    <div class="card stage" style="animation-delay:.08s">
+      <div class="card-head"><h2>닫힌 항목 5건</h2></div>
+      <div class="overflow">
+      <table class="ledger">
+        <thead><tr><th>어떻게 닫혔나</th><th>지적</th><th>거래처</th><th>닫힘</th></tr></thead>
+        <tbody>
+          <tr class="closedrow"><td><span class="closedhow byScan">재진단으로 해결 확인</span></td><td>제목 태그 중복 14장</td><td>미소진의원</td><td class="num">08-29 · 7회차가 관측</td></tr>
+          <tr class="closedrow"><td><span class="closedhow byScan">재진단으로 해결 확인</span></td><td>https 혼합 콘텐츠 3건</td><td>리앤의원</td><td class="num">08-28 · 4회차가 관측</td></tr>
+          <tr class="closedrow"><td><span class="closedhow byDecision">조치하지 않음 (결정)</span></td><td>블로그 구주소 리다이렉트 — 폐기 예정 도메인</td><td>서준피부과</td><td class="num">08-27 · 사유 기록됨</td></tr>
+          <tr class="closedrow"><td><span class="closedhow byScan">재진단으로 해결 확인</span></td><td>파비콘 없음</td><td>서준피부과</td><td class="num">08-25 · 2회차가 관측</td></tr>
+          <tr class="closedrow"><td><span class="closedhow byScan">재진단으로 해결 확인</span></td><td>메타 설명 누락 21장</td><td>미소진의원</td><td class="num">08-14 · 6회차가 관측</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="foot">「재진단으로 해결 확인」은 <b>진단</b>이고, 「조치하지 않음」은 <b>결정</b>이다 — 둘을 같은 낱말로 부르지 않는다.
+      결정으로 닫을 때는 사유가 필수이며 기록에 남는다.</p>
+    </div>
+  </section>
+
+  <!-- ── B. 이슈 상세 ──────────────────────────────────────────── -->
+  <section class="pane" id="paneB" role="tabpanel" aria-labelledby="tabB" hidden>
+    <div class="card stage">
+      <div class="card-head">
+        <h2><span class="sev s1">심각</span> 대표 시술 페이지 3장 noindex — 미소진의원</h2>
+        <span class="srcchip">실물 /console/issues/[id] 재구성</span>
+      </div>
+
+      <div class="lifeline num" aria-label="이슈 상태 사슬">
+        <div class="lifestep done"><span class="n">1</span> 진단이 발견 <span style="font-size:10px">08-29 7회차</span></div>
+        <span class="lifearrow">→</span>
+        <div class="lifestep done"><span class="n">2</span> 수정 보고 <span style="font-size:10px">08-30 담당 김OO</span></div>
+        <span class="lifearrow">→</span>
+        <div class="lifestep on"><span class="n">3</span> 재진단 대기 — <b>여기서만 닫힌다</b></div>
+      </div>
+
+      <h3 style="margin-top:16px">근거 — 진단이 본 것 그대로</h3>
+      <div class="evi num"><code>GET /silifting → 200<br>&lt;meta name="robots" content="noindex, follow"&gt;   ← 08-29 21:47 관측<br>같은 지문: /lifting-thread · /lifting-ulthera</code></div>
+
+      <div class="detailgrid">
+        <div class="subcard">
+          <h3>걸린 URL 3장</h3>
+          <ul class="num"><li>/silifting</li><li>/lifting-thread</li><li>/lifting-ulthera</li></ul>
+        </div>
+        <div class="subcard">
+          <h3>고치는 법 · 재진단 범위</h3>
+          <p>템플릿의 robots 메타에서 <code class="num">noindex</code> 제거. 재진단 범위: <b>이 3장만 다시 진단</b> —
+          사이트 전체를 다시 돌리지 않는다.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:16px">재진단 — 이 지적을 닫는 유일한 길</h3>
+      <ul class="timeline">
+        <li class="warn"><span class="num">08-30 09:12</span> — 수정 보고 접수. <b>이슈는 아직 열려 있다</b> (보고는 관측이 아니다)</li>
+        <li><span class="num">대기</span> — 다음 재진단(예약: 08-31 새벽)이 3장을 다시 관측한다. 해제가 보이면 그때 닫힌다</li>
+      </ul>
+      <p class="chainlink">이 지적이 콘텐츠 부재형이면 여기서 <b>원고 검수 →</b> 입구가 열린다(의료광고법 검수 통과 후 발행).
+      발행된 조치는 진단 이력에 <b>◆</b>로 남아 점수 흐름과 나란히 읽힌다.</p>
+    </div>
+  </section>
+
+  <p class="badge stage" style="animation-delay:.14s"><b>표본</b> 수치·업체명은 테스트용 표본이다
+  <b>규율</b> 이슈는 진단이 만든다 · 사람이 닫지 않는다(재진단 관측 또는 사유 있는 결정) ·
+  심각도 색은 이슈 축(점수 등급과 분리) · 근거는 실측 지문 그대로 · 의료광고법 준수</p>
+</div>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('[role="tab"]');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(one){
+        var on = one === tab;
+        one.setAttribute('aria-selected', String(on));
+        document.getElementById(one.getAttribute('aria-controls')).hidden = !on;
+      });
+    });
+  });
+})();
+</script>
