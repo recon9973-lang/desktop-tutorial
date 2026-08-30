@@ -1,0 +1,145 @@
+<title>ANSEO 브랜드 식별 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.gatecase{border:1px solid color-mix(in oklab,var(--ember) 40%,transparent); background:var(--ember-soft); border-radius:10px; padding:12px 15px; font-size:12.5px; color:var(--ink-dim); line-height:1.7;}
+.gatecase b{color:var(--ink);}
+.found{display:grid; gap:10px; margin-top:12px;}
+.frow{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; border:1px solid var(--border); border-radius:9px; padding:10px 13px; background:var(--card2);}
+.frow .who{font-size:13px; color:var(--ink); font-weight:500;}
+.frow .who small{display:block; font-size:11px; color:var(--ink-faint); font-weight:400; margin-top:2px;}
+.frow .go{font-size:12px; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:7px; padding:5px 12px; background:var(--signal-soft); cursor:pointer; font:inherit;}
+.idform{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:12px;}
+.idform label{display:block; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px;}
+.idform input{font:inherit; font-size:12.5px; color:var(--ink); background:var(--card2); border:1px solid var(--border); border-radius:7px; padding:7px 11px; width:100%; box-sizing:border-box;}
+.idform .pre{border-color:color-mix(in oklab,var(--signal) 40%,transparent);}
+.idhint{font-size:11.5px; color:var(--ink-faint); margin-top:9px; line-height:1.65;}
+
+.ownrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:12.5px; color:var(--ink-dim);}
+.owntag{border:1px solid color-mix(in oklab,var(--mint) 40%,transparent); background:var(--mint-soft); color:var(--mint); border-radius:999px; padding:3px 11px; font-size:11.5px;}
+.aliastag{border:1px solid var(--border); border-radius:999px; padding:3px 11px; font-size:11.5px; color:var(--ink-dim);}
+
+table.comp{border-collapse:collapse; width:100%; min-width:640px; font-size:12.5px;}
+table.comp th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.comp td{padding:9px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+table.comp tr:hover td{background:var(--card2);}
+.refused{color:var(--ember); font-weight:500;}
+.sovnote{font-size:12px; color:var(--ink-dim); border:1px dashed var(--border); border-radius:8px; padding:8px 12px; margin-top:12px; line-height:1.65;}
+.sovnote b{color:var(--signal); font-weight:500;}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 6 — 브랜드 식별 (대조표 #6)</p>
+    <h1>브랜드 식별 — 신원 관문 · 비교 목록</h1>
+    <p class="sub">AEO 숫자의 품질은 여기서 정해진다. AI 답변 속 「미소진」이 <b>우리 미소진의원인지,
+    부산의 동명 타업체인지</b>를 가르는 것이 신원 4요소이고, 식별이 틀리면 인용 점유 전체가 틀린다.</p>
+  </header>
+
+  <div class="card stage">
+    <div class="card-head"><h2>발견 — 아직 신원이 없는 상호 2건</h2><span class="srcchip">실물 /console/competitors 재구성</span></div>
+    <p class="gatecase"><b>왜 사람이 채우나</b> — AEO 발견 카드에서 넘어오는 것은 글자(상호)뿐이다.
+    자동으로 채우면 동명 타업체가 조용히 우리 경쟁으로 등록되고, 그 순간부터 점유율이 거짓이 된다.
+    상호는 시작값일 뿐, <b>신원은 사람이 채운다.</b></p>
+    <div class="found">
+      <div class="frow">
+        <span class="who">리앤의원<small>Perplexity 답변 3건에서 발견 · 최근 08-30</small></span>
+        <button class="go" type="button">신원 채워 등록 →</button>
+      </div>
+      <div class="frow">
+        <span class="who">글로우피부과<small>네이버 AI브리핑 1건에서 발견 · 최근 08-29</small></span>
+        <button class="go" type="button">신원 채워 등록 →</button>
+      </div>
+    </div>
+
+    <h3 style="margin-top:16px">신원 4요소 — 리앤의원 등록</h3>
+    <div class="idform">
+      <div><label for="f1">상호 (발견값 — 시작값일 뿐)</label><input id="f1" class="pre" value="리앤의원"></div>
+      <div><label for="f2">홈페이지</label><input id="f2" placeholder="leean-clinic.kr"></div>
+      <div><label for="f3">주소 (거래처 등록분에서 미리 채움)</label><input id="f3" class="pre" value="서울 강남구 …"></div>
+      <div><label for="f4">별칭 (검수 기각 사유가 알려준 표기들)</label><input id="f4" placeholder="리앤 클리닉, LEEAN"></div>
+    </div>
+    <p class="idhint">주소는 거래처 등록 때 받은 값을 미리 넣는다 — 같은 값을 두 번 치게 하지 않는다.
+    별칭은 답변 검수의 기각 사유(「동명 타업체를 자사로 읽음」)가 쌓일수록 보강된다.</p>
+  </div>
+
+  <div class="card stage" style="animation-delay:.07s">
+    <div class="card-head"><h2>자사 브랜드 선언</h2></div>
+    <div class="ownrow">
+      <span class="owntag">자사 · 미소진의원</span>
+      <span class="aliastag num">misojin.co.kr</span>
+      <span class="aliastag">미소진</span>
+      <span class="aliastag">MISOJIN</span>
+      <span class="aliastag">미소진 피부과</span>
+    </div>
+    <p class="foot">자사 판정도 같은 관문을 지난다 — 자사 별칭이 빈약하면 우리 인용이 «무인용»으로
+    새고, <b>점유율이 조용히 틀어진다.</b> 등록 안 된 경쟁도 마찬가지로 무인용 쪽에 쌓인다.</p>
+  </div>
+
+  <div class="card stage" style="animation-delay:.14s">
+    <div class="card-head"><h2>지난 비교 — 거부를 접지 않는다</h2></div>
+    <div class="overflow">
+    <table class="comp">
+      <thead><tr><th>날짜</th><th>비교</th><th>거부</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td class="num">2026-08-29</td><td>비교 4곳</td><td><span class="refused">거부 1곳</span></td><td>페이지 수 6배 차이 — 나란히 놓으면 거짓이라 숫자를 만들지 않음</td></tr>
+        <tr><td class="num">2026-08-14</td><td>비교 4곳</td><td class="num">0</td><td>—</td></tr>
+        <tr><td class="num">2026-07-30</td><td>비교 3곳</td><td><span class="refused">거부 2곳</span></td><td>명세 판 불일치 1 · 진단 실패 1</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="foot">거부는 실패가 아니라 <b>이 제품이 파는 것</b>이다 — 조건이 다른 측정을 나란히 놓지
+    않았다는 사실이 신뢰의 근거다(ADR 0010). 그래서 목록에서부터 거부 수를 접지 않고 적는다.</p>
+    <p class="sovnote">비교 상세의 <b>AI 인용 점유(SOV) 표</b> — 인용·언급·질문 승률 3지표, 분모 병기,
+    「데이터 없음」 규율 — 는 <b>실물에 이식 완료</b>(v0.3.381)라 이 시뮬이 다시 그리지 않는다.</p>
+  </div>
+
+  <p class="badge stage" style="animation-delay:.2s"><b>표본</b> 수치·업체명은 테스트용 표본이다
+  <b>규율</b> 신원은 사람이 채운다(상호는 시작값) · 미식별=무인용으로 계상(틀어짐 경고) ·
+  거부를 접지 않는다(ADR 0010) · 이식 완료분(SOV 표) 재제작 금지 · 의료광고법 준수</p>
+</div>
