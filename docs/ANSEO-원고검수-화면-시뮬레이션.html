@@ -1,0 +1,138 @@
+<title>ANSEO 원고 검수 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.chainfrom{font-size:12px; color:var(--ink-dim); border:1px dashed var(--border); border-radius:8px; padding:8px 12px; line-height:1.65;}
+.chainfrom b{color:var(--signal); font-weight:500;}
+.scopewarn{font-size:11.5px; color:var(--ink-faint); border-left:2px solid var(--ember); padding:2px 0 2px 10px; margin-top:12px; line-height:1.65;}
+
+.docpane{display:grid; grid-template-columns:3fr 2fr; gap:14px; margin-top:4px;}
+@media(max-width:860px){.docpane{grid-template-columns:1fr;}}
+.manuscript{background:var(--codebg); border:1px solid var(--border); border-radius:10px; padding:14px 17px; font-size:13px; line-height:1.9; color:var(--ink-dim);}
+.manuscript mark{border-radius:3px; padding:0 3px; background:none;}
+mark.m1{background:var(--destructive-soft); color:var(--destructive); border-bottom:1.5px solid var(--destructive);}
+mark.m2{background:var(--ember-soft); color:var(--ember); border-bottom:1.5px solid var(--ember);}
+.findings{display:grid; gap:10px; align-content:start;}
+.finding{border:1px solid var(--border); border-radius:9px; padding:11px 14px; background:var(--card2); font-size:12px; color:var(--ink-dim); line-height:1.6;}
+.finding .kind{font-size:10.5px; border-radius:4px; padding:1px 7px; margin-right:6px;}
+.finding.f1 .kind{background:var(--destructive-soft); color:var(--destructive);}
+.finding.f2 .kind{background:var(--ember-soft); color:var(--ember);}
+.finding .law{display:block; font-size:10.5px; color:var(--ink-faint); margin-top:5px;}
+.finding .alt{display:block; margin-top:6px; color:var(--ink);}
+.finding .alt::before{content:"대안 › "; color:var(--mint); font-size:11px;}
+
+.decide{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:4px;}
+.dbtn{font:inherit; font-size:12.5px; border-radius:7px; padding:7px 14px; cursor:pointer; border:1px solid var(--border); background:var(--card2); color:var(--ink-dim);}
+.dbtn.ok{border-color:color-mix(in oklab,var(--mint) 45%,transparent); color:var(--mint); background:var(--mint-soft);}
+.dbtn.fix{border-color:color-mix(in oklab,var(--ember) 45%,transparent); color:var(--ember); background:var(--ember-soft);}
+.dbtn.no{border-color:color-mix(in oklab,var(--destructive) 45%,transparent); color:var(--destructive); background:var(--destructive-soft);}
+.dhint{font-size:11.5px; color:var(--ink-faint); margin-top:9px; line-height:1.65;}
+.afterchain{display:flex; align-items:center; gap:0; flex-wrap:wrap; margin-top:12px;}
+.anode{border:1px solid var(--border); border-radius:8px; padding:7px 12px; background:var(--card2); font-size:11.5px; color:var(--ink-dim);}
+.anode.on{border-color:color-mix(in oklab,var(--mint) 40%,transparent); color:var(--ink);}
+.aarrow{color:var(--ink-faint); padding:0 8px; font-size:12px;}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 7 — 원고 검수 (대조표 #7)</p>
+    <h1>원고 검수 — 의료광고법 검토</h1>
+    <p class="sub">실행 체인의 종점. 기회·이슈에서 «원고 검수 →»로 넘어온 원고가 여기서 의료법 제56조
+    금지 유형을 <b>근거 조항과 함께</b> 검토받는다. <b>위반 판정기가 아니다</b> — 해당할 수 있는 자리를
+    표시하는 검토 도구이고, 게재 결론은 사람이 내린다.</p>
+  </header>
+
+  <div class="card stage">
+    <div class="card-head"><h2>검수 대상 — 어디서 온 원고인가</h2><span class="srcchip">실물 /console/medical 재구성</span></div>
+    <p class="chainfrom num">미소진의원 · <b>이슈 «인용 0회 주제 리프팅 통증»</b> → 추천 콘텐츠 초안
+    «실리프팅 통증, 어느 정도인가요» → <b>이 검수</b> → 통과 시 발행(진단 이력에 ◆) → 재관측이 인용을 관측하면 이슈 닫힘</p>
+    <p class="scopewarn">의료광고법(의료법 제56조) 검수 — <b>병원·의원 업종 전용</b>. 다른 업종 원고에는
+    이 기준이 적용되지 않는다.</p>
+
+    <div class="docpane" style="margin-top:14px">
+      <div class="manuscript" aria-label="원고 — 검토 후보 표시">
+        실리프팅 후 통증은 개인차가 있지만 보통 2~3일 내 가라앉는 것으로 알려져 있습니다.
+        저희 미소진의원은 <mark class="m1">100% 통증 없는</mark> 시술을 약속드리며,
+        <mark class="m2">강남에서 가장 뛰어난</mark> 의료진이
+        <mark class="m1">전후 사진</mark>과 함께 결과를 보여드립니다.
+        시술 전 상담에서 통증 관리 방법(국소 마취·쿨링)을 자세히 안내해 드립니다.
+      </div>
+      <div class="findings">
+        <div class="finding f1"><span class="kind">치료효과 보장</span>«100% 통증 없는»
+          <span class="law">의료법 제56조 제2항 제7호 — 치료효과를 보장하는 표현</span>
+          <span class="alt">«통증은 개인차가 있으며, 국소 마취·쿨링으로 관리합니다»</span></div>
+        <div class="finding f2"><span class="kind">최상급 표현</span>«강남에서 가장 뛰어난»
+          <span class="law">의료법 제56조 제2항 — 객관적 근거 없는 비교·최상급</span>
+          <span class="alt">«시술 경험이 많은 의료진이» (건수는 실측 가능할 때만)</span></div>
+        <div class="finding f1"><span class="kind">전후사진</span>«전후 사진과 함께»
+          <span class="law">의료법 제56조 제2항 제3호 — 치료 전후 비교 노출</span>
+          <span class="alt">사진 삭제. 시술 과정·관리 절차 설명으로 대체</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card stage" style="animation-delay:.08s">
+    <div class="card-head"><h2>사람의 결론 — 게재 판정</h2></div>
+    <div class="decide">
+      <button class="dbtn ok" type="button">게재 가능</button>
+      <button class="dbtn fix" type="button">수정 후 재검수</button>
+      <button class="dbtn no" type="button">게재 불가 (사유 필수)</button>
+    </div>
+    <p class="dhint">위 표시는 <b>후보</b>다 — 자동 표시가 사람 결론을 대신하지 않고, 결론이 표시를 지우지도
+    않는다(둘 다 기록). 지금 원고는 심각 표시 2건이라 «수정 후 재검수»가 자연스러운 길이다.</p>
+    <div class="afterchain num">
+      <div class="anode on">검수 통과</div><span class="aarrow">→</span>
+      <div class="anode">발행 — 진단 이력에 ◆로 남음</div><span class="aarrow">→</span>
+      <div class="anode">재관측 — AI 답변에 인용이 보이면</div><span class="aarrow">→</span>
+      <div class="anode">이슈 닫힘 (사람이 아니라 관측이)</div>
+    </div>
+  </div>
+
+  <p class="badge stage" style="animation-delay:.14s"><b>표본</b> 원고·업체명은 테스트용 표본이다
+  <b>규율</b> 판정기가 아니라 검토 후보 표시(근거 조항 병기) · 병원·의원 전용 · 결론은 사람이(둘 다 기록) ·
+  발행 ◆→재관측→이슈 닫힘 사슬 · 전후사진·효과 보장·최상급 배제</p>
+</div>
