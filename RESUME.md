@@ -6,12 +6,19 @@
 ## 지금 상태 — 한눈에
 
 ```
-veo-platform  main               b5b3b64  판 0.3.402  ← 반영됨(실측은 로그 확인)
-              deploy-candidate   20e470a  판 0.3.403  ← CI 돌던 중(발행본 목표선)
-              anseo-console-port 20e470a  (= deploy-candidate)
-운영 삼중 실측 마감: 0.3.391~0.3.401 (서버·워커·웹)
+veo-platform  main               d9978b3  판 0.3.404  ← 반영·삼중 실측 마감
+              deploy-candidate   d490b3e  판 0.3.407  ← CI 기동 실패(지출 한도)
+              anseo-console-port 192c6ad  판 0.3.408  ← 로컬 커밋 완료(전 관문 초록)
+운영 삼중 실측 마감: 0.3.391~0.3.404 (서버·워커·웹)
 desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
+
+> ⛔ **배포 블로커(2026-08-31 01:55 KST 실측)**: GitHub Actions 러너가 안 뜬다 —
+> 런 299 는 검사 7개 초록인데 집계 잡만 기동 실패(재시도 동일), 런 300(0.3.407)은
+> 8개 전부 기동 실패, githubstatus 는 전 시스템 정상. = **계정 Actions 지출 한도
+> 소진**(과거 2026-08-21 동일 사례, preflight ⑤가 이걸 문서화함). 사장님이 GitHub
+> Billing 에서 한도를 올려야 풀린다(보고 완료). 풀리면: 런 300 rerun_failed_jobs →
+> 초록이면 0.3.408 을 deploy-candidate 로 → CI → main ff(405~408 동반) → 삼중 실측.
 
 - **정본 = Lovable 시안(ANSEO 콘솔 v1.1.0)**, 커넥터 mcp__Lovable__* 로 접근
   (프로젝트 `c99930c9-cf5b-4586-855c-f9a913d79f15`, ref `216233be…`).
@@ -26,8 +33,10 @@ desktop-tutorial                 이 가지(claude/image-design-workflow-analysi
 
 ## 🚀 바로 이어갈 작업
 
-1. **0.3.402 삼중 실측 마감**(반영 직후 세션이 끊겼으면 재실측) →
-   **0.3.403 CI 확인 → main 반영 → 삼중 실측** → WORKLIST §2·HISTORY 마감.
+1. **배포 블로커 해제 확인**(위 ⛔ — 사장님 GitHub 한도) → 런 300 재실행 초록 →
+   0.3.408 후보 푸시 → CI → main ff → 삼중 실측 → WORKLIST §2·HISTORY 마감.
+   판 내용: 0.3.405 이슈 매트릭스 · 0.3.406 90% 눈금 · 0.3.407 거래처별 발행본
+   도넛 · 0.3.408 진단→발행 깔때기(API 신설 /api/reports/funnel + 시험 5건).
 2. 다음 판 후보(순서 제안): ① S1 커버리지 와플 — «측정 N장/수집 N장·신뢰도» 서버
    집계 신설 필요 ② 실행 큐 gain(상승폭)·품 산정 설계 판 ③ S4~ SEO/GEO 탭 전수
    대조 ④ 등급 11단 어휘 전환(명세 bands 개정 — 발행 불변 주의).
