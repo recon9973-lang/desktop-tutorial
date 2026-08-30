@@ -1,0 +1,155 @@
+<title>ANSEO 거래처 등록·프로젝트 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.steps{display:flex; gap:0; align-items:center; margin:0 0 14px; padding:0; list-style:none; flex-wrap:wrap;}
+.steps li{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-dim); border:1px solid var(--border); border-radius:8px; padding:7px 13px; background:var(--card2);}
+.steps li.on{border-color:color-mix(in oklab,var(--signal) 45%,transparent); background:var(--signal-soft); color:var(--ink);}
+.steps li.done{border-color:color-mix(in oklab,var(--mint) 40%,transparent);}
+.steps .sep{border:0; background:none; color:var(--ink-faint); padding:0 9px;}
+.form{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media(max-width:760px){.form{grid-template-columns:1fr;}}
+.form label{display:block; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px;}
+.form input,.form select{font:inherit; font-size:13px; color:var(--ink); background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; width:100%; box-sizing:border-box;}
+.form .full{grid-column:1 / -1;}
+.hintline{font-size:11.5px; color:var(--ink-faint); margin-top:4px; line-height:1.6;}
+.savebtn{font:inherit; font-size:13px; font-weight:500; border-radius:8px; padding:9px 16px; cursor:pointer; border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); color:var(--signal); background:var(--signal-soft); margin-top:12px;}
+.whytwo{font-size:11.5px; color:var(--ink-faint); border-left:2px solid var(--signal); padding:2px 0 2px 10px; margin-top:12px; line-height:1.7;}
+.lawchip{font-size:10.5px; color:var(--mint); border:1px solid color-mix(in oklab,var(--mint) 40%,transparent); border-radius:4px; padding:1px 7px; margin-left:6px; vertical-align:2px;}
+.justmade{background:var(--codebg); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12px; color:var(--ink-dim); margin-bottom:12px;}
+.justmade b{color:var(--ink);}
+
+.editgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:4px;}
+@media(max-width:820px){.editgrid{grid-template-columns:1fr;}}
+.subcard{border:1px solid var(--border); border-radius:10px; padding:13px 15px; background:var(--card2); font-size:12.5px; color:var(--ink-dim); line-height:1.65;}
+.subcard h3{margin-bottom:8px;}
+.notthere{border-left:2px solid var(--ember); padding-left:10px; font-size:11.5px; color:var(--ink-faint); margin-top:10px; line-height:1.65;}
+.danger{border-color:color-mix(in oklab,var(--destructive) 35%,transparent);}
+.danger .dbtn{font:inherit; font-size:12px; border-radius:7px; padding:6px 12px; cursor:pointer; border:1px solid color-mix(in oklab,var(--destructive) 45%,transparent); color:var(--destructive); background:var(--destructive-soft); margin-top:8px;}
+
+table.prj{border-collapse:collapse; width:100%; min-width:720px; font-size:12.5px;}
+table.prj th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.prj td{padding:9px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+.pready{font-size:10.5px; border-radius:4px; padding:1px 7px; white-space:nowrap;}
+.pready.ok{background:var(--mint-soft); color:var(--mint);}
+.pready.wait{background:var(--track); color:var(--ink-faint);}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 10 — 거래처 등록·수정·프로젝트 (대조표 #3 부속 · 27화면 마감)</p>
+    <h1>거래처 등록 — 두 단계 · 수정 · 프로젝트</h1>
+    <p class="sub">27화면 전수 대조에서 남아 있던 마지막 세 화면. <b>진단은 업체가 아니라 프로젝트(측정 URL)에
+    달린다</b> — 등록의 결과물은 업체 카드가 아니라 잴 수 있는 프로젝트다.</p>
+  </header>
+
+  <!-- 등록 -->
+  <div class="card stage">
+    <div class="card-head"><h2>업체 등록 — 두 단계</h2><span class="srcchip">실물 /console/customers/new 재구성</span></div>
+    <ol class="steps" aria-label="등록 단계">
+      <li class="done">1 · 업체와 측정 URL <span class="num" style="font-size:10px">저장됨</span></li>
+      <li class="sep">→</li>
+      <li class="on">2 · 브랜드 신원 잇기</li>
+    </ol>
+    <div class="justmade num">방금 만든 것 — <b>첫눈안과</b> · firstsnow-eye.com · <span style="color:var(--ink-faint)">이 단계의 칸은 전부 이 업체(id: cus_8f2…)에 붙는다</span></div>
+    <div class="form">
+      <div><label for="r1">대표 상호</label><input id="r1" value="첫눈안과"></div>
+      <div><label for="r2">업종</label><select id="r2"><option>병원·의원</option><option>기타</option></select>
+        <p class="hintline">병원·의원이면 원고 검수(의료법 56조)가 적용된다<span class="lawchip">검수 대상</span></p></div>
+      <div class="full"><label for="r3">브랜드 별칭 — AI 답변 속 표기들</label><input id="r3" placeholder="첫눈, 첫눈 안과, FIRSTSNOW"></div>
+      <div class="full"><label for="r4">주소 — 동명 타업체를 가르는 기준</label><input id="r4" placeholder="서울 서초구 …"></div>
+    </div>
+    <button class="savebtn" type="button">신원 저장하고 첫 진단 예약 →</button>
+    <p class="whytwo"><b>왜 두 단계인가 — 없앨 수 없다.</b> 한 번에 다 받다가 중간에 실패하면 업체는 만들어졌는데
+    화면은 처음으로 돌아가고, 다시 저장하면 같은 이름이 둘이 된다. 1단계가 저장되면 <b>id로 잇는다</b> —
+    이름으로 되찾으면 같은 상호가 둘일 때 남의 업체에 브랜드를 저장하게 된다.</p>
+  </div>
+
+  <!-- 수정 -->
+  <div class="card stage" style="animation-delay:.07s">
+    <div class="card-head"><h2>업체 수정</h2><span class="srcchip">실물 /console/customers/[id]/edit 재구성</span></div>
+    <div class="editgrid">
+      <div class="subcard">
+        <h3>바꿀 수 있는 것</h3>
+        상호·별칭·주소·업종·담당자. 저장하면 <b style="color:var(--ink)">다음 관측부터</b> 새 신원으로 판정된다 —
+        지난 관측의 판정은 그때 신원 그대로 남는다(발행 불변과 같은 결).
+        <p class="notthere"><b>정기 진단 켬/끔은 여기 없다.</b> 진단 조작은 결과 화면 아래 「설정」 한 자리
+        (사장님 확정 08-23) — 같은 조작이 두 곳에 있으면 어느 쪽이 진짜인지부터 흐려진다.</p>
+      </div>
+      <div class="subcard danger">
+        <h3>위험 구역</h3>
+        거래처 보관(계약 종료). 삭제가 아니라 <b style="color:var(--ink)">보관</b>이다 — 진단 이력·발행 리포트는
+        기록이므로 사라지지 않고, 새 진단만 멈춘다.
+        <button class="dbtn" type="button">보관하기 (사유 필수)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 프로젝트 -->
+  <div class="card stage" style="animation-delay:.14s">
+    <div class="card-head"><h2>프로젝트 — 진단이 달리는 자리</h2><span class="srcchip">실물 /console/customers/projects 재구성</span></div>
+    <div class="overflow">
+    <table class="prj">
+      <thead><tr><th>프로젝트(측정 URL)</th><th>업체</th><th>잴 준비</th><th>명세 판</th><th>최근 진단</th><th>주기</th></tr></thead>
+      <tbody>
+        <tr><td class="num">misojin.co.kr</td><td>미소진의원</td><td><span class="pready ok">준비됨</span></td><td class="num">SEO 1.12.0 · GEO 1.6.0</td><td class="num">08-29 · 7회차</td><td>주 2회</td></tr>
+        <tr><td class="num">blog.misojin.co.kr</td><td>미소진의원</td><td><span class="pready ok">준비됨</span></td><td class="num">SEO 1.12.0</td><td class="num">08-29 · 3회차</td><td>주 1회</td></tr>
+        <tr><td class="num">leean-clinic.kr</td><td>리앤의원</td><td><span class="pready ok">준비됨</span></td><td class="num">SEO 1.12.0 · GEO 1.6.0</td><td class="num">08-28 · 4회차</td><td>주 2회</td></tr>
+        <tr><td class="num">firstsnow-eye.com</td><td>첫눈안과</td><td><span class="pready wait">첫 진단 대기</span></td><td class="num">— (첫 진단이 정한다)</td><td class="num">—</td><td>예약됨</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="foot">업체 화면에서 주소를 등록하면 프로젝트가 <b>함께 만들어진다</b> — 따로 만드는 창구가 없다.
+    어느 프로젝트가 잴 준비가 되었는지는 업체 카드가 아니라 이 화면이 말한다. 한 업체에 여러 URL(본원·블로그)이
+    각자의 프로젝트로 달리고, 점수·이력·리포트는 전부 프로젝트 단위다.</p>
+  </div>
+
+  <p class="badge stage" style="animation-delay:.2s"><b>표본</b> 수치·업체명은 테스트용 표본이다
+  <b>규율</b> 등록 2단계(id로 잇기·중복 생성 방지) · 진단은 프로젝트에 · 진단 조작은 설정 한 자리 ·
+  삭제 아닌 보관(기록 불변) · 못 잰 값 — · 의료광고법 준수</p>
+</div>
