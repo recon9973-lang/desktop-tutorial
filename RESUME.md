@@ -6,8 +6,8 @@
 ## 지금 상태 — 한눈에
 
 ```
-veo-platform  main               9fd47e8  판 0.3.391  ← 운영 도달 실측(08-30 20:15 KST)
-              anseo-console-port 1bbff54  판 0.3.392~394  ← 묶음 배포 진행(후보 가지 반영)
+veo-platform  main               3b693f2  판 0.3.394  ← 운영 도달 실측(08-30 21:05 KST)
+              anseo-console-port ab5cdf0  main + 대장 마감 docs 1커밋(다음 판에 동승)
 desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
 
@@ -25,16 +25,16 @@ desktop-tutorial                 이 가지(claude/image-design-workflow-analysi
 목록은 `docs/ANSEO-화면-대조표.md` §2, 처방 원문은 각 시뮬 HTML.
 
 ```
-나감      ① 리포트 세트 v0.3.391(등급 주인공·칩 톤 — 운영 실측 완료)
-배포 중   ② 이슈 진행 단계 띠 v0.3.392 · ③ 거래처 목록 축소판 등급+GradeChip v0.3.393 ·
-          ④ 대시보드 레일 등급 v0.3.394  (deploy-candidate 1bbff54)
+나감      ① 리포트 세트 v0.3.391 · ② 이슈 진행 단계 띠 v0.3.392 ·
+          ③ 거래처 목록 축소판 등급+GradeChip v0.3.393 · ④ 대시보드 레일 등급 v0.3.394
+          — 전부 운영 3자리 실측 완료(21:05 KST)
 남음      ⑤ 답변 검수 · ⑥ 키워드 · ⑦ 브랜드 식별 · ⑧ 원고 검수 · ⑨ 설정 묶음(6화면 톤 시트) ·
           ⑩ 공개면 · ⑪ 거래처 폼 + 리포트 세트 잔여(목록 등급 칩 열·발행본 목표선)
 제외      /console/geo(AEO — 다른 방 재구성 소관) · 감사 #6 눈금 게이지(평균이라 등급 불성립 — 판단 종결)
 ```
 
-②③④ 배포가 «진행 중»으로 끝났다면: `git ls-remote origin main`이 `1bbff54`인지,
-운영 셋이 `0.3.394`인지부터 실측하고 WORKLIST-HISTORY·§2에 결과를 적는다.
+배운 것: 로컬 mypy는 스텁 설치 후에야 관문 노릇을 한다(types-PyYAML·types-jsonschema·
+playwright 설치됨 — 417 파일 no issues). CI가 잡은 SpecNotFoundError 재수출 문제 참조.
 참고: 서버 밴드 이름은 명세의 것(준비 완료·양호·취약…) — A+~F 11단으로 바꾸려면
 채점 명세 bands 개정이 별도 판으로 필요(발행 불변 주의).
 
