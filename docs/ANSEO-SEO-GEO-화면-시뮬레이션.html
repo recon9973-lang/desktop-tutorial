@@ -282,7 +282,7 @@ footer{margin-top:30px; border-top:1px solid var(--border); padding-top:16px; fo
 
     <section class="card stage" style="animation-delay:.40s">
       <div class="card-head">
-        <div><p class="eyebrow">반사실</p><h2>감점 항목을 고치면 어디까지 가나</h2></div>
+        <div><p class="eyebrow">미리 계산</p><h2>감점 항목을 고치면 어디까지 가나</h2></div>
         <span class="srcchip">C9 워터폴(3층 시차) + B9 재계산</span>
       </div>
       <div class="grid2">
@@ -737,7 +737,7 @@ donut("#gdonut","#gdlegend",[
   s+="</svg>";
   const chart=$("#histchart"); chart.innerHTML=s+`<div class="htip" id="htip" hidden></div>`;
   chart.insertAdjacentHTML("afterend",
-    `<div class="etarow">이 속도면 — <b style="color:var(--ember)">E(50)</b> <span class="num">${ym(eta(50))}</span> · <b style="color:var(--mint)">A(90)</b> <span class="num">${ym(eta(90))}</span><span style="color:var(--ink-faint)"> · 현재 판 실측 기울기(+${(slope*7).toFixed(2)}/주) 기준의 관측값 — 보장이 아니며, 앞당기는 길은 아래 반사실 카드의 조치입니다</span></div>`);
+    `<div class="etarow">이 속도면 — <b style="color:var(--ember)">E(50)</b> <span class="num">${ym(eta(50))}</span> · <b style="color:var(--mint)">A(90)</b> <span class="num">${ym(eta(90))}</span><span style="color:var(--ink-faint)"> · 현재 판 실측 기울기(+${(slope*7).toFixed(2)}/주) 기준의 관측값 — 보장이 아니며, 앞당기는 길은 아래 «고치면 어디까지 가나» 카드의 조치입니다</span></div>`);
 
   $("#histlegend").innerHTML=
     `<span><i style="background:var(--signal)"></i>SEO — 현재 <b style="color:${gradeColor(last.s)};font-weight:700">${gradeOf(last.s)}</b> <span class="num">${last.s.toFixed(1)}</span></span>`
