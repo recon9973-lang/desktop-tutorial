@@ -1,0 +1,118 @@
+<title>ANSEO 공개면 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:15px; font-weight:700; letter-spacing:-.015em; margin:0 0 10px;}
+.sub{color:var(--ink-dim); max-width:66ch; font-size:13px;}
+.foot{font-size:11.5px; line-height:1.65; color:var(--ink-faint); margin-top:10px;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+
+.trio{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:18px;}
+@media(max-width:960px){.trio{grid-template-columns:1fr;}}
+.screen{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column;}
+.screen .route{font-size:10px; color:var(--ink-faint); letter-spacing:.03em; align-self:flex-end;}
+.logo{font-size:19px; font-weight:700; letter-spacing:.02em; color:var(--mint);}
+.tagline{font-size:11px; color:var(--ink-faint); margin-top:2px;}
+.loginform{margin-top:14px; display:grid; gap:9px;}
+.loginform label{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint);}
+.loginform input{font:inherit; font-size:13px; color:var(--ink); background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:9px 12px; width:100%; box-sizing:border-box;}
+.loginform button{font:inherit; font-size:13px; font-weight:500; border-radius:8px; padding:9px 14px; cursor:pointer; border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); color:var(--signal); background:var(--signal-soft); margin-top:4px;}
+.formerr{font-size:11.5px; color:var(--destructive); background:var(--destructive-soft); border:1px solid color-mix(in oklab,var(--destructive) 40%,transparent); border-radius:7px; padding:6px 10px;}
+.brandfoot{font-size:10.5px; color:var(--ink-faint); margin-top:auto; padding-top:16px; line-height:1.7; border-top:1px solid var(--border);}
+.expired{border:1px solid color-mix(in oklab,var(--ember) 40%,transparent); background:var(--ember-soft); border-radius:8px; padding:9px 12px; font-size:12px; color:var(--ink-dim); line-height:1.65; margin-top:12px;}
+.botlist{margin:10px 0 0; padding:0; list-style:none; display:grid; gap:8px; font-size:12.5px; color:var(--ink-dim); line-height:1.6;}
+.botlist li::before{content:"— "; color:var(--mint);}
+.ua{background:var(--codebg); border:1px solid var(--border); border-radius:7px; padding:7px 10px; font-size:11px; margin-top:10px; overflow-x:auto; white-space:nowrap; color:var(--ink-dim);}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 9 — 공개면 (대조표 #9)</p>
+    <h1>공개면 — 로그인 · 초대 · VEOBot</h1>
+    <p class="sub">로그인 밖의 세 얼굴. 콘솔 주소는 전부 로그인으로 돌아오므로(실측) 로그인이 곧 첫인상이고,
+    초대와 크롤러 안내가 신뢰의 나머지 절반이다. 공유 리포트 공개면은 1호(리포트)의 C 화면이 정본.</p>
+  </header>
+
+  <div class="trio stage">
+    <div class="screen">
+      <span class="route num">/login (= /)</span>
+      <p class="logo">ANSEO</p>
+      <p class="tagline">AI Loop Marketing — 검색과 AI 답변이 읽을 수 있는 사이트로</p>
+      <div class="loginform">
+        <div><label for="l1">이메일</label><input id="l1" type="email" placeholder="name@company.kr"></div>
+        <div><label for="l2">비밀번호</label><input id="l2" type="password" placeholder="••••••••"></div>
+        <p class="formerr">이메일 또는 비밀번호가 맞지 않습니다 — 5회 남음. 어느 쪽이 틀렸는지는 알려주지 않습니다.</p>
+        <button type="button">로그인</button>
+      </div>
+      <p class="brandfoot">개발 VENOM · 연구 및 방법론 VEO-LAB · <span class="num">v0.3.386</span><br>
+      ANSEO가 계산하는 점수는 기술·구조 준비도이며 검색 순위를 예측하거나 보장하지 않습니다.</p>
+    </div>
+
+    <div class="screen">
+      <span class="route num">/invite/[token]</span>
+      <p class="logo" style="font-size:15px; color:var(--ink)">비밀번호 설정</p>
+      <p class="tagline">이OO 관리자가 콘텐츠 담당으로 초대했습니다</p>
+      <div class="loginform">
+        <div><label for="i1">새 비밀번호</label><input id="i1" type="password" placeholder="12자 이상"></div>
+        <div><label for="i2">한 번 더</label><input id="i2" type="password"></div>
+        <button type="button">설정하고 시작하기</button>
+      </div>
+      <div class="expired"><b>만료된 초대라면</b> — «이 초대는 만료되었습니다. 초대한 분에게 다시 요청하십시오.»
+      한 줄로 끝낸다. 토큰은 서버가 발급한 진짜만 통하고, 만료 화면이 무엇도 유추하게 하지 않는다.</div>
+      <p class="brandfoot">초대는 72시간 뒤 만료 · 링크는 1회용</p>
+    </div>
+
+    <div class="screen">
+      <span class="route num">/bot</span>
+      <p class="logo" style="font-size:15px; color:var(--ink)">VEOBot은 무엇을 하는 봇입니까</p>
+      <p class="tagline">사이트 관리자를 위한 크롤러 신원 공개</p>
+      <ul class="botlist">
+        <li>고객사가 <b style="color:var(--ink)">직접 의뢰한 도메인만</b> 진단 목적으로 읽습니다.</li>
+        <li><span class="num">robots.txt</span>를 존중합니다 — 막으면 읽지 않고, 그 항목은 점수에서 «측정 불가»로 남습니다(감점 아님).</li>
+        <li>수집 주기와 마지막 방문 시각은 진단 리포트에 그대로 공개됩니다.</li>
+        <li>차단·문의: <span class="num">bot@seokorea.org</span></li>
+      </ul>
+      <div class="ua num">User-Agent: VEOBot/1.0 (+https://veo.seokorea.org/bot)</div>
+      <p class="brandfoot">읽을 수 없게 막힌 것을 벌점으로 바꾸지 않는 것 — 그것이 이 봇의 규율입니다.</p>
+    </div>
+  </div>
+
+  <p class="badge stage" style="animation-delay:.1s"><b>표본</b> 문구·이름은 테스트용 표본이다
+  <b>규율</b> 로그인 오류는 어느 쪽이 틀렸는지 안 알려줌 · 초대 토큰은 진짜만·만료는 한 줄 ·
+  크롤러 신원 공개·robots 존중·막힌 것=측정 불가(감점 아님) · 순위 보장 문구 금지</p>
+</div>
