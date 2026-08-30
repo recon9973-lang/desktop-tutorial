@@ -6,8 +6,8 @@
 ## 지금 상태 — 한눈에
 
 ```
-veo-platform  main               6a16b80  판 0.3.396  ← 운영 도달 실측(08-30 22:55 KST)
-              anseo-console-port 6ee8f14  main + 대장 마감 docs 1커밋(다음 판에 동승)
+veo-platform  main               e177068  판 0.3.397  ← 운영 도달 실측(08-31 00:45 KST)
+              anseo-console-port d3a7d17  main + 대장 마감 docs 1커밋(다음 판에 동승)
 desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
 
