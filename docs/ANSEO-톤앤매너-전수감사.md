@@ -70,3 +70,47 @@
 - 같은 기준(«사장님이 물어봐야 하는 라벨 = 나쁜 라벨»)으로 이 방 시뮬은 2026-08-30
   전수 정리 완료: 질문셋→질문 집합 · 신원 관문→신원 등록 · 브랜드 신원 잇기→브랜드 정보 ·
   실행 체인→실행 흐름 · 공개면→공개 화면. 실물에 같은 계열 어휘가 있으면 함께 맞출 것.
+
+## 7. 실물 라벨 전수 감사 (2026-08-30 · v0.3.389 실측) — 교체 후보 41건
+
+> 기준: «사장님이 물어봐야 하는 라벨 = 나쁜 라벨». 승인 어휘(판·진단·재진단·관측·명세·발행·
+> 검수·질문 집합 등)는 제외. 아래는 사용자 눈에 실제로 보이는 문자열만 — 주석·테스트·
+> changelog 내 어휘는 전수 확인 결과 노출 0건(§7-라 참조).
+
+### 7-가. 최우선 5건
+
+1. `(public)/tools/checker/PublicChecker.tsx:414` **«· 관문»** 배지 — 공개 체커+공유 링크 노출.
+   → «· 막히면 0점» 또는 «· 통과 필수»
+2. `reports/[reportId]/[version]/ReportBody.tsx:437` **TAG/CONTENT/LINK/CONFIG** 원시 영문 enum이
+   경영진 뷰까지 배지로 노출(한국어 매핑 부재) → 태그/본문/링크/설정
+3. `dashboard/page.tsx:864` **«AEO 깨어남 — 거래처별 단계»** → «AEO 진행 단계 — 거래처별» (§6 확정 건)
+4. `customers/[customerId]/MedicalFactsCard.tsx` **«C1» 규칙 코드 3곳(75·274·461) + «엔티티» 3곳(85·102·392)**
+   → C1 삭제·«근거 없어 제외» / 엔티티→대상, 속성→항목 (CounterfactualCard.tsx:762 «엔티티»도 동일)
+5. **«해시/체크섬» 8곳** — ReportBody 120·871·874, reports/[id]/page 72, reports/page 146,
+   ScanReport 536·547, issues/[id]/page 131·161 → `CapturesSection.tsx:100`이 이미 쓰는 **«내용 지문»**으로 일괄 통일
+
+### 7-나. 콘솔 화면 (매일 노출)
+
+- «작업 큐» → «할 일 목록»: WorkQueue.tsx:138(h2)·ReportBody 465·468·742·759
+- «관문» 잔여: WorkQueue.tsx:148 «(관문)» 괄호 삭제(ScanReport 336은 이미 괄호 없음) ·
+  PagesSection.tsx:297«확인 못 한 차단 항목»·305 «· 통과 필수» ·
+  customers/[id]/page.tsx:1624 «⚠ 관문 실측» → «⚠ 막힌 곳» ·
+  scoring-versions/page.tsx 86·166·169·204 «관문» → «차단 검사»로 통일
+- `lib/aeo-stage.ts:16` «집합 없음» → «질문 없음» (승인 어휘 «질문 집합»과 정합)
+- keywords/page.tsx 342·353 «ERP» → «베놈 업무시스템»
+- customers/projects/page.tsx:73 slug 원문 노출 → 숨기거나 라벨 부여
+- HiraImport.tsx:302 «매핑에 없는 열» → «우리가 모르는 항목»
+- CapturesSection.tsx 102·103 «보낸/받은 헤더» → «보낸 요청 정보 / 사이트가 보낸 응답 정보»
+- ManualRunForm.tsx:265·CounterfactualCard.tsx:96 «잰 토큰» → «잰 사용량»
+- PublicChecker.tsx 526 «SERP» 배지 삭제 · 540 «OG» → «공유 카드»
+
+### 7-다. 설정 화면 (노출 낮음 — 후순위)
+
+- usage: «토큰 사용량»(TokenUsageSection 59·67·91, usage/page 228·232·294·314) → «AI 처리량»·«보낸/받은 글자량»
+- credentials/page.tsx 72·120 «환경변수» → «서버 설정(개발팀 문의)»
+
+### 7-라. 깨끗함 증명 (전수 0건 계열 — 재수색 불요)
+
+사슬·파이프라인·레일·드릴·스냅샷·카나리·훅·워커·버킷·플래그·스택·질문셋(화면은 전부
+«질문 집합»)·WORKLIST/ADR 번호·fallback/cron/endpoint/webhook/payload·캐시/폴백/파싱/스키마 —
+JSX 텍스트·라벨·aria·툴팁 노출 0건(주석·테스트·changelog에만 존재).
