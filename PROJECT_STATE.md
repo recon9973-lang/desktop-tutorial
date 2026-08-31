@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-08-31 checkpoint(200건): 화면구성 격차표 v2 — «최대한 반영» 재판정 + 판 순서 0.3.422~
 - 2026-08-31 checkpoint: 사장님 결정 3건 확정 반영 — 0.3.421 마감, 백로그 전량 소화
 - 2026-08-31 checkpoint(190건): 0.3.419·0.3.420 마감 기록, RESUME 갱신 — 결정 대기 3건만 잔여
 - 2026-08-31 checkpoint(180건): s10 로그 — 서버 신설 4건 스프린트·0.3.418 마감, RESUME 갱신
@@ -14,7 +15,6 @@
 - 2026-08-30 chore: 체크포인트 120건 — PROJECT_STATE 재생성·세션 로그 표식
 - 2026-08-30 docs: s10 로그 추가 — 배포 봉쇄 실측·봉쇄 중 407/408 제작·조사 확정 2건
 - 2026-08-30 docs: RESUME 갱신 — 0.3.405~0.3.408 상태와 Actions 지출 한도 블로커 기록
-- 2026-08-30 docs: s10 체크포인트 — Lovable 정본 이식 1~6판(0.3.398~0.3.403) 기록·RESUME 갱신
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 9680315 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 6e70929 기준. 값·비밀은 포함하지 않음.*

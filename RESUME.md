@@ -6,10 +6,10 @@
 ## 지금 상태 — 한눈에
 
 ```
-veo-platform  main               ed7dccf  판 0.3.421  ← 운영 도달(삼중 실측 17:34 KST)
-              deploy-candidate   8602fe9  docs 도장 커밋(421 실측) ← CI 대기, 초록이면 main ff
-              anseo-console-port 8602fe9  (= deploy-candidate)
-운영 삼중 실측 마감: 0.3.391~0.3.421 (서버·워커·웹 — 오늘 13판: 409~421)
+veo-platform  main               061d90e  판 0.3.426  ← 반영(전파 실측 남음 — 425·426)
+              deploy-candidate   e733318  판 0.3.428  ← CI 대기(런 323), 초록이면 main ff
+              anseo-console-port e733318  (= deploy-candidate)
+운영 삼중 실측 마감: 0.3.391~0.3.424 (서버·워커·웹 — 오늘 16판: 409~424)
 desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
 
@@ -29,15 +29,13 @@ desktop-tutorial                 이 가지(claude/image-design-workflow-analysi
 
 ## 🚀 바로 이어갈 작업
 
-1. **(활성 오더) 화면 구성 «최대한 반영» 이식 — `docs/ANSEO-화면구성-격차표-v2.md`
-   의 판 순서대로.** 사장님 오더(«새 화면 구성을 최대한 많이 반영, 다시 비교 분석
-   해서 적용») → 격차표 v2 작성 완료(V1~V12 · 기각 8건 사유 명기). 판 배정:
-   0.3.422 실행 큐 승격 → 423 대시보드 상반부 재배치 → 424 손실 도넛 →
-   425 진단 실행 카드+한계 자백 카드 → 426 이슈 판정 띠 → 427 환산 구성 스택 →
-   428 모션 → 429~ eyebrow·전역 도넛·상태 구성. 매 판 상시 오더 사이클(verify→
-   deploy-candidate→CI→main ff→삼중 실측→도장).
-2. 8602fe9(docs 도장)는 main 반영 확인 완료 — 운영 0.3.421 · 미배포 없음.
-   이월(다른 방): #36 GSC env · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
+1. **격차표 v2(V1~V12) 전량 소화 — 판 7개(0.3.422~0.3.428) 구현 완료.**
+   422 마감[19:24 실측] · 423~424 마감[19:35경 실측] · **425~426 main 반영(전파
+   실측 남음)** · **427~428 CI 대기(e733318) → 초록이면 main ff → 삼중 실측**.
+   재개 시: CI 확인 → main ff → 6분 → 삼중 실측 → WORKLIST 도장(다음 커밋에 나름).
+2. 후속 후보(격차표 v2 §3): 전역 이슈 판정 띠(서버 동봉 필요) · 도넛↔범례 양방향
+   hover · eyebrow 나머지 화면 확대. 이월(다른 방): #36 GSC env · #37 erp-v1 ·
+   #40 misojin v3.
 3. 새 세션 배움(s10 로그 16:50·17:35 절): API 판 로컬 정산에 tests/ 루트 관문
    포함 · vitest 4 는 --reporter=basic 불가 · 판 N+1 커밋이 판 N 도장을 나른다 ·
    새 구역은 박스 대장 선등재(1차 verify 가 잡음).
@@ -73,5 +71,5 @@ desktop-tutorial                 이 가지(claude/image-design-workflow-analysi
 
 ## 대기/차단 (사용자 액션)
 
-- S3 KPI 펼침 vs ?접기 — 사장님 확인 필요(위 3).
+- (해소) S3 KPI = «?접기» 확정(08-31) — 재론 금지.
 - 이월(다른 방): #36 GSC env · #37 erp-v1 PR 허락 · #40 misojin v3 Drive 업로드.
