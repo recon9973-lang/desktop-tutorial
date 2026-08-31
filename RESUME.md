@@ -6,10 +6,10 @@
 ## 지금 상태 — 한눈에
 
 ```
-veo-platform  main               ef53c54  판 0.3.418  ← 운영 도달(삼중 실측 15:49 KST)
-              deploy-candidate   e87dc2b  docs 정산 커밋(도장+설계 메모) ← CI 대기, 초록이면 main ff
-              anseo-console-port e87dc2b  (= deploy-candidate)
-운영 삼중 실측 마감: 0.3.391~0.3.418 (서버·워커·웹 — 오늘 10판: 409~418)
+veo-platform  main               1ada230  판 0.3.420  ← 운영 도달(삼중 실측 16:47 KST)
+              deploy-candidate   6dbdfa7  docs 도장 커밋(419·420 실측) ← CI 대기, 초록이면 main ff
+              anseo-console-port 6dbdfa7  (= deploy-candidate)
+운영 삼중 실측 마감: 0.3.391~0.3.420 (서버·워커·웹 — 오늘 12판: 409~420)
 desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
 
@@ -29,16 +29,19 @@ desktop-tutorial                 이 가지(claude/image-design-workflow-analysi
 
 ## 🚀 바로 이어갈 작업
 
-1. **(즉시) docs 정산 커밋 e87dc2b 의 CI 초록 확인 → main ff.** docs-only 라
-   판 번호 무변경 — 전파 실측 불필요(운영은 0.3.418 그대로).
-2. **서버 신설 4건 정리 현황**: S4②(영역 추이)·S7/S9(판정 띠)·S1⑩(부분 수집
-   이유) 전부 배포 완료. S4①(재채점)은 방어 판(0.3.418)까지 — **단추 판은 사장님
-   표시 방식 답변 전 착수 금지**(`docs/plans/2026-08-31-rescore-console.md`).
-3. 다음 판 후보: ① 전역 이슈 화면 상승폭 열(처방 1 —
-   `docs/plans/2026-08-31-queue-gain-effort.md`, 사장님 진행 승인 대기)
-   ② S4~ SEO/GEO 탭 잔여 대조 ③ 배정(담당·기한) 기능 판.
-4. **사장님 답변 대기 2건**: ①S3 KPI 4장 펼침 vs 확정 «요약은 ?표시로 접기» 충돌
-   ②재채점 결과 표시 방식(참고 카드 ① 제안) — 멋대로 안 정함.
+1. **(즉시) docs 도장 커밋 6dbdfa7 의 CI 초록 확인 → main ff.** docs-only 라
+   판 번호 무변경 — 전파 실측 불필요(운영은 0.3.420 그대로).
+2. **시안 실행 큐 네 열 종결**: 상승폭(0.3.419 — gain_for_checks·산정 불가 null)·
+   담당 실명(0.3.420 — assignee_names_of) 실물 완료. 품(명세 저작 필요)·기한
+   (원천 없음)만 남음 — 결정 대기. 서버 신설 4건(S4②·S7/S9·S1⑩·S4① 방어)도
+   전부 배포 완료.
+3. **사장님 결정 없이 진행 가능한 백로그 소진.** 다음 판은 아래 답변 대기 3건에
+   걸려 있다 — 답 전까지 멋대로 진행 금지:
+   ① 재채점 결과 표시 방식(참고 카드 ① 제안 — plans/2026-08-31-rescore-console.md)
+   ② 실행 큐 «품» 저작 여부(제안: 품 없이 감 — plans/2026-08-31-queue-gain-effort.md)
+   ③ S3 KPI 4장 펼침 vs 확정 «요약은 ?표시로 접기» 충돌.
+4. 새 세션 배움 3건(s10 로그 16:50 절): API 판 로컬 정산에 tests/ 루트 관문 포함 ·
+   vitest 4 는 --reporter=basic 불가 · 판 N+1 커밋이 판 N 도장을 나른다.
 
 ## 사장님 확정 (되묻지 말 것)
 
