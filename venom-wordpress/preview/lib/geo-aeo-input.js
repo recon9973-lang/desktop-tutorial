@@ -8,7 +8,11 @@
 //         형태로 변환한다. 이렇게 하면 검증된 측정 로직을 건드리지 않고 N거래처로 확장.
 //   폴백: 신규 소스가 비면 기존 ai-expose-input.json 을 그대로 사용(무중단 이관).
 //   buildBusinesses 는 순수 함수 → 오프라인 단위 테스트 대상.
+//   citeDomains: 인용(cited) 판정용 자사 출처 키. websiteUrl + citationDomains 를
+//                lib/geo-citation 이 "호스트+경로"로 정규화해 붙인다(폴백 입력도 동일 처리).
 // ─────────────────────────────────────────────────────────────────────────
+
+const geoCite = require('./geo-citation');
 
 // clients(active) + prompt-sets → businesses[]  (질문 없는 거래처는 제외)
 function buildBusinesses(clients, sets) {
@@ -23,7 +27,7 @@ function buildBusinesses(clients, sets) {
         : [];
       const cores = Array.isArray(c.coreKeywords) && c.coreKeywords.length ? c.coreKeywords : [c.name];
       const competitors = Array.isArray(c.competitors) ? c.competitors : [];
-      return { key: c.id, name: c.name, cores, competitors, questions };
+      return { key: c.id, name: c.name, cores, competitors, questions, citeDomains: geoCite.siteDomains(c) };
     })
     .filter((b) => b.questions.length > 0);
 }
@@ -42,7 +46,12 @@ function loadInput(fs, opts) {
   let businesses = buildBusinesses(clients, sets);
   let source = 'geo';
   if (!businesses.length && fallbackPath) {
-    try { businesses = JSON.parse(fs.readFileSync(fallbackPath, 'utf8')).businesses || []; source = 'fallback'; } catch { businesses = []; }
+    try {
+      // 폴백 입력에도 citeDomains 를 채워 워크플로가 소스와 무관하게 같은 판정을 쓰게 한다.
+      businesses = (JSON.parse(fs.readFileSync(fallbackPath, 'utf8')).businesses || [])
+        .map((b) => Object.assign({}, b, { citeDomains: geoCite.siteDomains(b) }));
+      source = 'fallback';
+    } catch { businesses = []; }
   }
   return { businesses, source };
 }

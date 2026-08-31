@@ -180,8 +180,8 @@
     geo = geo||{};
     if(geo.status==='done'){
       var senti = {positive:'긍정',neutral:'중립',negative:'부정'}[geo.sentiment]||'·';
-      var body = scoreRow('AI 인용률', Math.round((geo.citationRate||0)*100), 100, 'ai검색에서 이 병원이 언급된 비율')
-        + '<div class="metric"><span>언급 / 질의</span><span class="v tnum">'+ (geo.mentionedCount||0) +' / '+ (geo.asked||0) +'</span></div>'
+      var body = scoreRow('AI 인용률', geo.citationRate==null?null:Math.round(geo.citationRate*100), 100, 'ai검색에서 이 병원이 언급된 비율')
+        + '<div class="metric"><span>언급 / 질의</span><span class="v tnum">'+ (geo.asked?((geo.mentionedCount||0)+' / '+geo.asked):'—') +'</span></div>'
         + '<div class="metric"><span>답변 내 점유율(SoV)</span><span class="v">'+pct(geo.shareOfVoice)+'</span></div>'
         + '<div class="metric"><span>언급 톤</span><span class="v">'+senti+'</span></div>'
         + '<div class="metric"><span>엔진</span><span class="v">'+esc((geo.engines||[]).join(', '))+'</span></div>'
@@ -329,13 +329,15 @@
   // ── 조각 헬퍼 ──
   function card(title, st, body){ return '<div class="card"><h3>'+title+st+'</h3>'+body+'</div>'; }
   function stTag(cls,label){ return '<span class="st '+cls+'">'+esc(label)+'</span>'; }
-  function stByScore(n){ if(n==null)return stTag('na','·'); return n>=80?stTag('ok',n+'/100'):n>=60?stTag('warn',n+'/100'):stTag('crit',n+'/100'); }
-  function gradeTag(g){ var c={A:'ok',B:'ok',C:'warn',D:'crit',F:'crit'}[g]||'na'; return stTag(c,'등급 '+(g||'·')); }
+  function stByScore(n){ if(n==null)return stTag('na','—'); return n>=80?stTag('ok',n+'/100'):n>=60?stTag('warn',n+'/100'):stTag('crit',n+'/100'); }
+  function gradeTag(g){ var c={A:'ok',B:'ok',C:'warn',D:'crit',F:'crit'}[g]||'na'; return stTag(c,'등급 '+(g||'—')); }
   function scoreRow(label,val,max,hint){
-    var pctv = max?Math.round((val||0)/max*100):0;
+    // 못 잰 값(null)은 0으로 대체하지 않는다 — '—'로 표기하고 막대도 그리지 않는다.
+    var has = val!=null;
+    var pctv = (has&&max)?Math.round(val/max*100):0;
     var cls = pctv>=80?'g':pctv>=60?'w':'c';
-    return '<div class="metric"><span>'+esc(label)+(hint?' <span style="color:var(--muted);font-size:11.5px">'+esc(hint)+'</span>':'')+'</span><span class="v tnum">'+(val==null?'·':val)+(max===100?'':'')+'</span></div>'
-      + '<div class="bar '+cls+'"><i style="width:'+pctv+'%"></i></div>';
+    return '<div class="metric"><span>'+esc(label)+(hint?' <span style="color:var(--muted);font-size:11.5px">'+esc(hint)+'</span>':'')+'</span><span class="v tnum">'+(has?val:'—')+'</span></div>'
+      + (has?('<div class="bar '+cls+'"><i style="width:'+pctv+'%"></i></div>'):'');
   }
   function subBar(label,val){
     if(val==null) return '';
@@ -345,8 +347,8 @@
   }
   function gradeClass(g){ return {A:'A',B:'B',C:'C',D:'D',F:'F'}[g]||''; }
   function statusKo(s){ return ({'no-homepage':'공식 홈페이지를 찾지 못했습니다','unavailable':'측정 도구 미설정','unconfigured':'API 미설정','error':'처리 오류','fetch-failed':'페이지 수집 실패'})[s]||('상태: '+(s||'·')); }
-  function pct(v){ return v==null?'·':Math.round(v*100)+'%'; }
-  function fmt(n){ return n==null?'·':Number(n).toLocaleString('ko-KR'); }
+  function pct(v){ return v==null?'—':Math.round(v*100)+'%'; }
+  function fmt(n){ return n==null?'—':Number(n).toLocaleString('ko-KR'); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function msg(title,sub){ return '<div class="center"><h2>'+esc(title)+'</h2><p>'+sub+'</p></div>'; }
 })();
