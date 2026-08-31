@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-24T00:02:16.209Z",
+  "updated": "2026-08-31T00:04:54.219Z",
   "model": {
     "answer": "claude-opus-4-8",
     "judge": "claude-haiku-4-5"
@@ -17,9 +17,9 @@
   },
   "overall": {
     "passRate": 100,
-    "avgGrounding": 4.75,
-    "avgCorrectness": 4.75,
-    "avgCitation": 4.75,
+    "avgGrounding": 4.79,
+    "avgCorrectness": 4.79,
+    "avgCitation": 4.83,
     "hallucinationRate": 0
   },
   "weakestGroups": [
@@ -48,13 +48,13 @@
       "avgCorrectness": 4.5
     },
     {
-      "group": "의료법 제56조",
+      "group": "사전심의 예외(정보성)",
       "n": 2,
       "passRate": 100,
-      "avgCorrectness": 4.5
+      "avgCorrectness": 5
     },
     {
-      "group": "사전심의 예외(정보성)",
+      "group": "심의대상 매체",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
@@ -82,12 +82,6 @@
     },
     {
       "group": "할인·유인",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 4.5
-    },
-    {
-      "group": "의료법 제56조",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
@@ -143,6 +137,12 @@
     {
       "group": "표시광고법",
       "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 5
+    },
+    {
+      "group": "의료법 제56조",
+      "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
     },
