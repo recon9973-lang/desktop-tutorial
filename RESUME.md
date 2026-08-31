@@ -6,10 +6,10 @@
 ## 지금 상태 — 한눈에
 
 ```
-veo-platform  main               1ada230  판 0.3.420  ← 운영 도달(삼중 실측 16:47 KST)
-              deploy-candidate   6dbdfa7  docs 도장 커밋(419·420 실측) ← CI 대기, 초록이면 main ff
-              anseo-console-port 6dbdfa7  (= deploy-candidate)
-운영 삼중 실측 마감: 0.3.391~0.3.420 (서버·워커·웹 — 오늘 12판: 409~420)
+veo-platform  main               ed7dccf  판 0.3.421  ← 운영 도달(삼중 실측 17:34 KST)
+              deploy-candidate   8602fe9  docs 도장 커밋(421 실측) ← CI 대기, 초록이면 main ff
+              anseo-console-port 8602fe9  (= deploy-candidate)
+운영 삼중 실측 마감: 0.3.391~0.3.421 (서버·워커·웹 — 오늘 13판: 409~421)
 desktop-tutorial                 이 가지(claude/image-design-workflow-analysis-efuea7)
 ```
 
@@ -29,19 +29,15 @@ desktop-tutorial                 이 가지(claude/image-design-workflow-analysi
 
 ## 🚀 바로 이어갈 작업
 
-1. **(즉시) docs 도장 커밋 6dbdfa7 의 CI 초록 확인 → main ff.** docs-only 라
-   판 번호 무변경 — 전파 실측 불필요(운영은 0.3.420 그대로).
-2. **시안 실행 큐 네 열 종결**: 상승폭(0.3.419 — gain_for_checks·산정 불가 null)·
-   담당 실명(0.3.420 — assignee_names_of) 실물 완료. 품(명세 저작 필요)·기한
-   (원천 없음)만 남음 — 결정 대기. 서버 신설 4건(S4②·S7/S9·S1⑩·S4① 방어)도
-   전부 배포 완료.
-3. **사장님 결정 없이 진행 가능한 백로그 소진.** 다음 판은 아래 답변 대기 3건에
-   걸려 있다 — 답 전까지 멋대로 진행 금지:
-   ① 재채점 결과 표시 방식(참고 카드 ① 제안 — plans/2026-08-31-rescore-console.md)
-   ② 실행 큐 «품» 저작 여부(제안: 품 없이 감 — plans/2026-08-31-queue-gain-effort.md)
-   ③ S3 KPI 4장 펼침 vs 확정 «요약은 ?표시로 접기» 충돌.
-4. 새 세션 배움 3건(s10 로그 16:50 절): API 판 로컬 정산에 tests/ 루트 관문 포함 ·
-   vitest 4 는 --reporter=basic 불가 · 판 N+1 커밋이 판 N 도장을 나른다.
+1. **(즉시) docs 도장 커밋 8602fe9 의 CI 초록 확인 → main ff.** docs-only 라
+   판 번호 무변경 — 전파 실측 불필요(운영은 0.3.421 그대로).
+2. **백로그 전량 소화 상태.** 시안 이식·서버 신설·사장님 대기 3건(참고 카드=
+   0.3.421 / 품 없이 / 접기 유지 — 뒤 둘은 변경 없음) 전부 종결. 설계 메모 2건에
+   결정 도장 완료. 남은 것은 이월(다른 방: #36 GSC env · #37 erp-v1 PR 허락 ·
+   #40 misojin v3 Drive 업로드)과 **새 오더**뿐.
+3. 새 세션 배움(s10 로그 16:50·17:35 절): API 판 로컬 정산에 tests/ 루트 관문
+   포함 · vitest 4 는 --reporter=basic 불가 · 판 N+1 커밋이 판 N 도장을 나른다 ·
+   새 구역은 박스 대장 선등재(1차 verify 가 잡음).
 
 ## 사장님 확정 (되묻지 말 것)
 
