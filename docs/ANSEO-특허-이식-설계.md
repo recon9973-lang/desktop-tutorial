@@ -357,5 +357,6 @@ WORKLIST §2 + HISTORY 등재).
 
 - `docs/ANSEO-콘텐츠탭-설계.md` — 탭 신설안(이 문서의 상위) · §7 특허 배치 3안
 - `docs/ANSEO-콘텐츠-화면-시뮬레이션.html` — ④ 관문 · ⑤ 미리 재보기가 이 문서의 1·2판 결과물
+- **배포 절차: `docs/ANSEO-배포-인계-특허이식-넉판.md`** — 판 번호 충돌(0.3.456~459 겹침) 물리기·main 합치기·마이그레이션·실측
 - `docs/ANSEO-이식-자산-명세.md` (가지 `claude/image-design-workflow-analysis-efuea7`) — A1 판정 4종 · A2 관측 칸 · A3 이슈 생애 · A4 처분 분해 · A7 측정 원칙 · B8 발행 불변 · B10 판 비교 금지
 - `docs/GPTO-벤치마크-ANSEO-적용리포트.md` — 웹검색 ON/OFF 2모드 · 엔진 편차 실측
