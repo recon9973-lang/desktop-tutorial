@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-01T01:48:21.724Z",
-  "run_id": "30678648328",
+  "generated_at": "2026-09-01T02:29:38.524Z",
+  "run_id": "33462634524",
   "engines": [
     "perplexity",
     "openai",
@@ -26,46 +26,46 @@
       ],
       "grid": {
         "0": {
-          "perplexity": "none",
-          "openai": "none",
-          "gemini": "none",
-          "claude": "none"
-        },
-        "1": {
-          "perplexity": "none",
+          "perplexity": "error",
           "openai": "none",
           "claude": "none",
           "gemini": "none"
+        },
+        "1": {
+          "openai": "none",
+          "perplexity": "none",
+          "gemini": "none",
+          "claude": "none"
         },
         "2": {
           "openai": "none",
           "perplexity": "none",
-          "claude": "none",
-          "gemini": "none"
+          "gemini": "none",
+          "claude": "none"
         },
         "3": {
           "perplexity": "mentioned",
-          "openai": "mentioned",
           "gemini": "none",
+          "openai": "none",
           "claude": "mentioned"
         },
         "4": {
-          "perplexity": "mentioned",
           "openai": "mentioned",
-          "claude": "mentioned",
-          "gemini": "mentioned"
+          "perplexity": "mentioned",
+          "gemini": "mentioned",
+          "claude": "mentioned"
         }
       },
       "summary": {
-        "total_cells": 20,
-        "exposed": 7,
-        "disc_cells": 16,
-        "disc_exposed": 3,
-        "errors": 0,
-        "tot_pct": 35,
-        "disc_pct": 19,
+        "total_cells": 19,
+        "exposed": 6,
+        "disc_cells": 15,
+        "disc_exposed": 2,
+        "errors": 1,
+        "tot_pct": 32,
+        "disc_pct": 13,
         "sov_pct": 100,
-        "sov_self": 7,
+        "sov_self": 6,
         "sov_comp": 0,
         "sov_breakdown": {}
       }
@@ -82,26 +82,26 @@
       ],
       "grid": {
         "0": {
-          "perplexity": "none",
           "openai": "none",
+          "perplexity": "none",
           "gemini": "none",
           "claude": "none"
         },
         "1": {
-          "perplexity": "none",
           "openai": "none",
-          "claude": "none",
-          "gemini": "none"
+          "perplexity": "none",
+          "gemini": "none",
+          "claude": "none"
         },
         "2": {
           "perplexity": "none",
-          "claude": "none",
           "openai": "none",
+          "claude": "none",
           "gemini": "none"
         },
         "3": {
-          "perplexity": "none",
           "openai": "none",
+          "perplexity": "none",
           "claude": "none",
           "gemini": "none"
         },
@@ -109,19 +109,19 @@
           "openai": "mentioned",
           "perplexity": "mentioned",
           "claude": "mentioned",
-          "gemini": "mentioned"
+          "gemini": "none"
         }
       },
       "summary": {
         "total_cells": 20,
-        "exposed": 4,
+        "exposed": 3,
         "disc_cells": 16,
         "disc_exposed": 0,
         "errors": 0,
-        "tot_pct": 20,
+        "tot_pct": 15,
         "disc_pct": 0,
         "sov_pct": 100,
-        "sov_self": 4,
+        "sov_self": 3,
         "sov_comp": 0,
         "sov_breakdown": {}
       }
