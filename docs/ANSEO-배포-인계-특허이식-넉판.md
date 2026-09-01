@@ -155,6 +155,10 @@ grep __version__ apps/api/src/veo/__init__.py   # 0.3.463 이어야 한다
 > **가지를 못 옮기면**(`Your local changes … would be overwritten`) 십중팔구
 > `docs/DEPLOY-ORDER-LOG.md` 다. 배포가 시작될 때 오더 한 줄을 거기 적기 때문이고,
 > 실패한 배포의 그 줄은 **버리는 것이 맞다**: `git checkout -- docs/DEPLOY-ORDER-LOG.md`.
+>
+> **붙여 넣을 명령에 `#` 주석을 섞지 않는다.** 맥 zsh 는 대화형에서 `#` 를 주석으로
+> 읽지 않는 설정이 흔해 `command not found: #` 로 떨어진다 — 실제로 이 자리에서
+> `git log --oneline -1 # 25d00feb` 가 통째로 실패했다. 확인값은 명령 **바깥**에 적는다.
 
 ### 5.2 배포
 
