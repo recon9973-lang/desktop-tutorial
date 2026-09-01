@@ -170,6 +170,22 @@ pre.code del{color:var(--ink-faint); text-decoration:line-through;}
 .kpi dt{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); margin:0;}
 .kpi dd{margin:3px 0 0; font-size:14px;}
 
+/* 환경 2×2 */
+.envgrid{display:grid; grid-template-columns:96px 1fr 1fr; gap:8px; align-items:stretch;}
+@media(max-width:720px){.envgrid{grid-template-columns:1fr;}}
+.envh{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); display:flex; align-items:flex-end; padding-bottom:4px;}
+.envrl{font-size:11.5px; color:var(--ink-dim); display:flex; align-items:center; line-height:1.4;}
+.envq{border:1px solid var(--border); border-radius:10px; background:var(--card2); padding:11px 13px;}
+.envq.here{border-color:color-mix(in oklab,var(--signal) 60%,transparent); background:var(--signal-soft);}
+.envq b{display:block; font-size:12.5px; color:var(--ink); margin-bottom:3px;}
+.envq span{font-size:11.5px; color:var(--ink-faint); line-height:1.55;}
+.envq .now{display:inline-block; font-size:9.5px; letter-spacing:.05em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:3px; padding:0 5px; margin-bottom:5px;}
+.envtri{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;}
+.envtri>div{border:1px solid var(--border); border-radius:9px; background:var(--card2); padding:9px 12px;}
+.envtri dt{font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin:0;}
+.envtri dd{margin:3px 0 0; font-size:12px; color:var(--ink-dim); line-height:1.5;}
+.envtri .mv{font-size:15px; font-weight:700; letter-spacing:-.02em;}
+
 /* 핸드오프 */
 .hand{display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start;}
 @media(max-width:820px){.hand{grid-template-columns:1fr;}}
@@ -322,6 +338,31 @@ pre.code del{color:var(--ink-faint); text-decoration:line-through;}
     <p class="foot">원문 사본을 떠서 <b style="color:var(--ink-dim)">블록 하나만</b> 바꾼 판을 만들고, 원문 판과 바꾼 판에 같은 뜻의 질문을 같은 조건으로 여러 번 물어 <b style="color:var(--ink-dim)">차이만</b> 남깁니다. 한 번에 하나만 바꾸는 이유는 두 개를 같이 바꾸면 어느 쪽이 움직였는지 못 가리기 때문입니다. 가는 선은 <b style="color:var(--ink-dim)">폭</b>(같은 실험을 반복했을 때 값이 놓이던 범위)이고, 선이 0을 물면 «움직였다고 말하지 않습니다». 못 잰 블록은 0이 아니라 <b style="color:var(--ink-dim)">—</b>로 둡니다. 이 값은 사본으로 잰 예상이며 <b style="color:var(--ink-dim)">보장이 아닙니다</b> — 실제 판정은 올린 뒤 재관측입니다.</p>
   </section>
 
+  <!-- ⑤ 다음 — 환경 대조 -->
+  <section class="card stage" style="animation-delay:.33s">
+    <div class="card-head">
+      <div><p class="eyebrow">⑤ 다음 — 올린 뒤 효과가 안 났을 때</p><h2>콘텐츠가 부족한 건가, 우리 글에 못 닿는 건가</h2></div>
+      <span class="srcchip">특허 «후속 검증» 구간 · 3판</span>
+    </div>
+    <dl class="envtri">
+      <div><dt>사본만 보고 물었을 때</dt><dd><span class="mv num" style="color:var(--mint)">+14.2%p</span> 올랐다<br><span style="font-size:11px;color:var(--ink-faint)">문서를 그대로 넣고 물음 — 콘텐츠 자체의 힘</span></dd></div>
+      <div><dt>검색 없이 물었을 때</dt><dd><span class="mv num" style="color:var(--ink-faint)">—</span> 안 잼<br><span style="font-size:11px;color:var(--ink-faint)">모델이 학습으로 아는 몫 — 콘텐츠로 못 바꿉니다</span></dd></div>
+      <div><dt>실제 검색으로 물었을 때</dt><dd><span class="mv num" style="color:var(--ember)">+1.1%p</span> 거의 그대로<br><span style="font-size:11px;color:var(--ink-faint)">발행 14일 뒤 재관측 — 최종 결과</span></dd></div>
+    </dl>
+    <div class="envgrid">
+      <span class="envh"></span><span class="envh">실제 검색에서 올랐다</span><span class="envh">실제 검색에서 그대로</span>
+
+      <span class="envrl">사본에서<br>올랐다</span>
+      <div class="envq"><b>성공</b><span>그대로 갑니다. 같은 짜임새를 다른 문서에도 폅니다.</span></div>
+      <div class="envq here"><span class="now">지금 여기</span><b>콘텐츠는 맞다 — 못 닿는 것이다</b><span>글은 제대로 고쳤는데 엔진이 그 글에 닿지 못합니다. robots 의 AI 크롤러 차단 · 자바스크립트 없이 안 읽힘 · 색인 지연을 봅니다 → <b style="color:var(--signal);font-weight:400">GEO 진단의 해당 항목으로</b></span></div>
+
+      <span class="envrl">사본에서도<br>그대로</span>
+      <div class="envq"><b>우리 문서 때문이 아니다</b><span>경쟁 문서가 빠졌거나 엔진 판이 바뀐 것입니다. 편집안 공으로 세지 않습니다.</span></div>
+      <div class="envq"><b>콘텐츠가 부족하다</b><span>편집안을 다시 짭니다. ②의 짜임새 대조로 돌아갑니다.</span></div>
+    </div>
+    <p class="foot">경쟁 도구는 <b style="color:var(--ink-dim)">맨 오른쪽 칸 하나</b>만 재기 때문에 «효과 없음»에서 멈춥니다. 사본에서 잰 값과 나란히 놓으면 <b style="color:var(--ink-dim)">원인이 갈립니다</b> — 글을 더 고칠 일인지, 글은 됐고 길을 뚫을 일인지. 「검색 없이 물었을 때」는 아직 안 재는 칸이라 0이 아니라 «—»로 둡니다. 사본을 넣어 물을 수 있는 엔진은 ChatGPT·Gemini·Claude 셋이고, 네이버 AI브리핑·구글 AI오버뷰는 넣을 길이 없어 <b style="color:var(--ink-dim)">실제 검색 칸만</b> 잽니다.</p>
+  </section>
+
   <!-- ⑥ 핸드오프 -->
   <section class="card stage" style="animation-delay:.36s">
     <div class="card-head">
@@ -335,14 +376,14 @@ pre.code del{color:var(--ink-faint); text-decoration:line-through;}
           <li><input type="checkbox" id="c2"><label for="c2">의료진이 의료 사실을 확인했다<small>시술 주기·회복 기간·부작용 — 사람이 봅니다</small></label></li>
           <li><input type="checkbox" id="c3"><label for="c3">의료광고법 검수를 통과했다<small>치료 효과 보장·전후사진·최상급 표현이 없는지</small></label></li>
           <li><input type="checkbox" id="c4"><label for="c4">우리 사이트에 올렸다<small>ANSEO 는 올리지 않습니다 — 담당자가 직접</small></label></li>
-          <li><input type="checkbox" id="c5"><label for="c5">올린 주소를 여기 적어 재관측을 걸었다<small>걸어야 «효과가 있었나»를 나중에 답할 수 있습니다</small></label></li>
+          <li><input type="checkbox" id="c5"><label for="c5">올린 주소를 여기 적어 재관측을 걸었다<small>걸어야 위 환경 대조의 «실제 검색으로 물었을 때» 칸이 채워집니다</small></label></li>
         </ul>
         <div class="nope"><b>ANSEO 가 하지 않는 것</b> — 원고를 대신 올리지 않고, 병원 계정에 접속하지 않으며, 검수를 대신 통과시키지 않습니다. 이 탭이 만드는 것은 <b style="color:var(--ink-dim)">근거가 붙은 초안</b>까지입니다.</div>
       </div>
       <div class="acts">
         <button class="primary" type="button">편집안 내려받기<small>원고(.md) + 근거표(.csv)</small></button>
         <button type="button">블록만 복사<small>편집기에 그대로 붙일 수 있는 형태</small></button>
-        <button type="button">담당자에게 넘기기<small>이슈로 만들어 담당자 배정</small></button>
+        <button type="button">담당자에게 넘기기<small>기존 콘텐츠 이슈에 붙여 배정 — 새 이슈를 만들지 않습니다</small></button>
         <button type="button">올린 뒤 재관측 걸기<small>발행일 + 14일 뒤 같은 질문 재관측</small></button>
         <p style="font-size:11px;color:var(--ink-faint);margin:2px 0 0;line-height:1.6">버튼은 시뮬레이션이라 동작하지 않습니다. 실물에서는 앞의 둘이 파일·클립보드, 뒤의 둘이 이슈 탭·관측 예약으로 이어집니다.</p>
       </div>
