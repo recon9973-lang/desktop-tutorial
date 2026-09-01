@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-01 docs: 화면 대조 3차 — 거래처 GEO 탭 실측 (격차 G4)
+- 2026-09-01 docs: 화면 대조 3차 — G1 취소 (이 방의 오판)
+- 2026-09-01 docs: 화면 대조 3차 — 리포트·검수 실측 (격차 3건)
+- 2026-08-31 docs: s11 세션 로그 + RESUME — 「디자인 그대로」 이식과 이 방이 저지른 잘못들
 - 2026-08-31 docs: s10 로그에 다음 판 후보 기록 (키워드·사용량 커버리지·서버 확장)
 - 2026-08-31 docs: 체크포인트 — 통이식 물결 s10 기록(437~441) + RESUME·PROJECT_STATE 갱신
 - 2026-08-31 docs: s10 통이식 물결(437~440) 기록 + RESUME 최신화
 - 2026-08-31 docs: 전면 채택·톤앤매너 2차 물결 기록(0.3.429~436) + RESUME 갱신
-- 2026-08-31 docs: 시안 전면 채택 결정 기록 — 격차표 v2 §4 + 세션 로그 + 시안 아티팩트 2종 링크
-- 2026-08-31 docs: 격차표 v2 전량 소화 기록 — 판 7개(0.3.422~428) 결과 도장 + RESUME 갱신
-- 2026-08-31 checkpoint(200건): 화면구성 격차표 v2 — «최대한 반영» 재판정 + 판 순서 0.3.422~
-- 2026-08-31 checkpoint: 사장님 결정 3건 확정 반영 — 0.3.421 마감, 백로그 전량 소화
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 15af25c 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 800d5b0 기준. 값·비밀은 포함하지 않음.*
