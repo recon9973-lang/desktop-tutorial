@@ -132,15 +132,42 @@ cd apps/web && pnpm verify             # typecheck·lint·test·build·smoke
 
 ## 5. 배포
 
+### 5.1 먼저 — **나갈 나무에 서 있나**
+
+[실측 2026-09-01] 이 자리에서 한 번 헛돌았다. 맥의 저장소는 `veo-platform` 이 아니라
+**`~/Desktop/desktop-tutorial/veo`** 이고, 거기 로컬은 다른 가지(`work/…`)의 0.3.455 였다.
+그대로 `make deploy` 를 돌려 CI 까지 통과했고, **main 밀기에서 non-fast-forward 로 거부**됐다
+— 관문이 막아 준 것이지 통과한 것이 아니다.
+
 ```bash
-cd veo-platform
-git log --oneline -1                 # 합치기까지 끝난 커밋인지 확인
-VEO_DEPLOY_ORDER="<사장님 배포 오더 원문>" make deploy
+cd ~/Desktop/desktop-tutorial/veo          # veo-platform 아님
+
+git fetch origin
+git switch claude/seo-geo-aeo-content-report-omspqb
+
+git log --oneline -1                       # 25d00feb 여야 한다
+grep __version__ apps/api/src/veo/__init__.py   # 0.3.463 이어야 한다
 ```
 
-**`VEO_DEPLOY_ORDER` 가 없으면 시작되지 않는다.** 요약도 짐작도 안 되고, 사장님의 실제
-문장을 그대로 넣어야 한다 — 「고쳐줘」·「진행해」 같은 코드 수정 오더는 배포 오더가
-아니다. 넣은 문장은 `docs/DEPLOY-ORDER-LOG.md` 에 남는다.
+두 줄이 다르면 **거기서 멈춘다.** 「미배포 N 커밋 · main 0.3.4xx → 0.3.4yy」 의 뒤 숫자가
+곧 지금 나무의 판이다 — 그것이 0.3.463 이 아니면 다른 것을 내보내는 것이다.
+
+> **가지를 못 옮기면**(`Your local changes … would be overwritten`) 십중팔구
+> `docs/DEPLOY-ORDER-LOG.md` 다. 배포가 시작될 때 오더 한 줄을 거기 적기 때문이고,
+> 실패한 배포의 그 줄은 **버리는 것이 맞다**: `git checkout -- docs/DEPLOY-ORDER-LOG.md`.
+
+### 5.2 배포
+
+```bash
+VEO_DEPLOY_ORDER="여기에 사장님이 실제로 쓰신 문장" make deploy
+```
+
+**꺾쇠는 자리 표시다 — 그대로 붙여 넣으면 안 된다.** `<사장님 배포 오더 원문>` 이 그대로
+로그에 적히면 이 관문이 있는 이유가 사라진다(실제로 한 번 그렇게 적혔다). 요약도 짐작도
+아닌, 사장님이 쓰신 그 문장이어야 한다.
+
+**`VEO_DEPLOY_ORDER` 가 없으면 시작되지 않는다.** 「고쳐줘」·「진행해」 같은 코드 수정
+오더는 배포 오더가 아니다. 넣은 문장은 `docs/DEPLOY-ORDER-LOG.md` 에 남는다.
 
 `make deploy` 가 하는 일:
 
