@@ -160,5 +160,15 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(diag): AI 노출 실측 스냅샷·추이 갱신 (run ${GITHUB_RUN_ID})"
-          git push origin HEAD:main
-        continue-on-error: true
+          # 측정이 도는 1~2분 사이 main이 앞서 나가면 push가 rejected 되고,
+          # 그대로 두면 실측 결과가 조용히 버려진다. rebase 후 재시도한다.
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then echo "pushed (attempt $i)"; exit 0; fi
+            echo "push rejected — origin/main 재베이스 후 재시도 ($i/5)"
+            git fetch origin main
+            # 스냅샷은 최신 main 위에 다시 얹는다(충돌 시 이번 실측값 채택 — 더 최신 측정)
+            git rebase origin/main || { git checkout --ours "$F" "$H" 2>/dev/null || true; git add "$F" "$H"; GIT_EDITOR=true git rebase --continue || git rebase --abort; }
+            sleep $((i * 3))
+          done
+          echo "::error::스냅샷 push 5회 실패 — 실측 결과가 저장되지 않았습니다(run ${GITHUB_RUN_ID} 로그의 RESULTS_JSON 참조)"
+          exit 1
