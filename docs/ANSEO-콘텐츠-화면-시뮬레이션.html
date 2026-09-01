@@ -1,0 +1,625 @@
+<title>ANSEO 콘텐츠 탭 신설안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3; --violet:#9a7bf0;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13); --violet-soft:rgba(154,123,240,.14);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+  --fill-mine:#2fd39c; --fill-theirs:#e9b13e; --on-fill:#0b0e14;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10); --violet-soft:rgba(111,75,216,.11);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+    --fill-mine:#16795a; --fill-theirs:#7a4f08; --on-fill:#ffffff;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595; --violet:#6f4bd8;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10); --violet-soft:rgba(111,75,216,.11);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  --fill-mine:#16795a; --fill-theirs:#7a4f08; --on-fill:#ffffff;
+}
+body{background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; margin:0;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{margin:0; font-size:13.5px; font-weight:700;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:80ch;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important;}}
+
+/* 거래처 헤더 + 탭 */
+.crumb{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-top:14px; overflow-x:auto;}
+.tabs button{border:0; background:none; color:var(--ink-faint); font:inherit; font-size:13.5px; padding:8px 14px; cursor:pointer; border-bottom:2px solid transparent; translate:0 1px; white-space:nowrap;}
+.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--signal); font-weight:500;}
+.tabs .off{opacity:.45; cursor:default;}
+.tabs .isnew{position:relative; padding-right:40px;}
+.tabs .isnew::after{content:"신설"; position:absolute; top:9px; right:6px; font-size:8.5px; letter-spacing:.04em; color:var(--mint); border:1px solid color-mix(in oklab,var(--mint) 45%,transparent); border-radius:3px; padding:0 3px; line-height:1.5;}
+
+.segtoggle{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+.segtoggle button{border:0; background:transparent; color:var(--ink-dim); font:inherit; font-size:12px; padding:5px 12px; cursor:pointer;}
+.segtoggle button[aria-pressed="true"]{background:var(--signal-soft); color:var(--signal); font-weight:500;}
+
+/* 격차 인박스 */
+table.gap{border-collapse:collapse; width:100%; min-width:720px; font-size:12.5px;}
+table.gap th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.gap th.r, table.gap td.r{text-align:right;}
+table.gap td{padding:8px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:middle;}
+tr.grow{cursor:pointer;}
+tr.grow:hover td{background:var(--card2);}
+tr.grow[aria-selected="true"] td{background:var(--signal-soft);}
+tr.grow[aria-selected="true"] td:first-child{box-shadow:inset 3px 0 0 var(--signal);}
+tr.grow.held td:first-child{box-shadow:inset 3px 0 0 var(--mint);}
+.pos{font-size:14px; font-weight:700;}
+.gapchip{font-size:10.5px; letter-spacing:.04em; border:1px solid; border-radius:4px; padding:1px 6px; white-space:nowrap;}
+.g-lose{color:var(--destructive); border-color:color-mix(in oklab,var(--destructive) 50%,transparent);}
+.g-close{color:var(--ember); border-color:color-mix(in oklab,var(--ember) 50%,transparent);}
+.g-hold{color:var(--mint); border-color:color-mix(in oklab,var(--mint) 50%,transparent);}
+.g-none{color:var(--unknown); border-color:var(--unknown); border-style:dashed;}
+
+/* 엔진 격자 */
+table.mx{border-collapse:collapse; min-width:760px; font-size:12px; width:100%;}
+table.mx th{font-size:10px; letter-spacing:.04em; color:var(--ink-faint); font-weight:500; padding:6px 3px; text-align:center;}
+table.mx th:first-child{text-align:left; padding-left:2px; min-width:210px;}
+table.mx td{padding:3px;}
+table.mx td:first-child{color:var(--ink); font-size:12.5px; padding-right:10px;}
+.mcell{height:32px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:10.5px; cursor:pointer; border:0; font-family:inherit; width:100%; color:var(--on-fill);}
+.mcell.mine{background:var(--fill-mine);}
+.mcell.theirs{background:var(--fill-theirs);}
+.mcell.none{background:var(--track); color:var(--ink-faint);}
+.mcell.mat{outline:1.5px dashed var(--unknown); outline-offset:-2px; color:var(--unknown); background:none;}
+.mcell.pick{outline:2px solid var(--ink); outline-offset:-2px;}
+.mxlegend{display:flex; gap:6px 16px; flex-wrap:wrap; font-size:11px; color:var(--ink-faint); margin-bottom:9px;}
+.mxlegend i{display:inline-block; width:10px; height:10px; border-radius:2px; translate:0 1px; margin-right:5px;}
+
+/* 해부 (4a·4b) */
+.anat{display:grid; grid-template-columns:1fr 1fr; gap:0;}
+@media(max-width:880px){.anat{grid-template-columns:1fr;}}
+.anat>div{padding:0 18px; border-left:1px dashed var(--border);}
+.anat>div:first-child{border-left:0; padding-left:0;}
+@media(max-width:880px){.anat>div{border-left:0; padding:14px 0; border-top:1px dashed var(--border);} .anat>div:first-child{border-top:0;}}
+.stept{display:flex; gap:8px; align-items:baseline; margin-bottom:9px;}
+.stept b{font-size:15px; color:var(--violet);}
+.xlist{margin:0; padding:0; list-style:none; font-size:12.5px; color:var(--ink-dim);}
+.xlist li{padding:7px 0; border-bottom:1px solid var(--border); line-height:1.55;}
+.xlist li:last-child{border-bottom:0;}
+.evi{display:block; font-size:11px; color:var(--ink-faint); margin-top:2px;}
+.quote{border-left:2px solid color-mix(in oklab,var(--ember) 60%,transparent); background:var(--codebg); border-radius:0 7px 7px 0; padding:8px 12px; margin:8px 0 0; font-size:12px; color:var(--ink-dim); line-height:1.6;}
+.quote cite{display:block; font-style:normal; font-size:10.5px; color:var(--ink-faint); margin-top:5px;}
+.facts{display:grid; grid-template-columns:1fr auto auto; gap:2px 10px; font-size:12.5px; align-items:center; margin-top:2px;}
+.facts .fh{font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); padding-bottom:5px; border-bottom:1px solid var(--border); text-align:center;}
+.facts .fh:first-child{text-align:left;}
+.facts .fname{padding:7px 0; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+.facts .fv{padding:7px 0; border-bottom:1px solid var(--border); text-align:center; font-size:12px; min-width:56px;}
+.yes{color:var(--mint);} .no{color:var(--destructive);} .na{color:var(--ink-faint);}
+.neutral{color:var(--ink-dim);}
+.rule{display:flex; gap:10px; align-items:flex-start; border:1px dashed color-mix(in oklab,var(--destructive) 50%,transparent); background:var(--destructive-soft); border-radius:9px; padding:10px 13px; margin-top:14px; font-size:12.5px; color:var(--ink-dim);}
+.rule b{color:var(--destructive);}
+
+/* 편집안 */
+.blk{border:1px solid var(--border); border-radius:11px; background:var(--card2); padding:0; margin-top:10px; overflow:hidden;}
+.blk.dropped{opacity:.62;}
+.blkhead{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; padding:11px 14px; cursor:pointer; list-style:none;}
+.blkhead::-webkit-details-marker{display:none;}
+.op{font-size:10.5px; letter-spacing:.04em; border:1px solid; border-radius:4px; padding:1px 7px; white-space:nowrap;}
+.op-add{color:var(--mint); border-color:color-mix(in oklab,var(--mint) 50%,transparent);}
+.op-fix{color:var(--signal); border-color:color-mix(in oklab,var(--signal) 50%,transparent);}
+.op-out{color:var(--destructive); border-color:color-mix(in oklab,var(--destructive) 50%,transparent);}
+.blkgain{font-size:12px; white-space:nowrap;}
+.blkbody{padding:2px 14px 14px; border-top:1px solid var(--border);}
+.ba{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;}
+@media(max-width:760px){.ba{grid-template-columns:1fr;}}
+.ba h4{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; margin:0 0 6px;}
+pre.code{background:var(--codebg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:11.5px; line-height:1.65; overflow-x:auto; margin:0; white-space:pre-wrap; font-family:"IBM Plex Sans KR",sans-serif; color:var(--ink-dim);}
+pre.code.after{border-color:color-mix(in oklab,var(--mint) 40%,transparent);}
+pre.code ins{background:var(--mint-soft); color:var(--ink); text-decoration:none; border-radius:3px; padding:0 2px;}
+pre.code del{color:var(--ink-faint); text-decoration:line-through;}
+.basis{margin:12px 0 0; padding:0 0 0 2px; list-style:none; font-size:11.5px; color:var(--ink-faint);}
+.basis li{padding:2px 0 2px 14px; position:relative;}
+.basis li::before{content:"·"; position:absolute; left:4px; color:var(--signal);}
+
+/* 관문 */
+.gategrid{display:grid; grid-template-columns:1fr; gap:8px;}
+.gate{display:grid; grid-template-columns:1fr repeat(4,64px) 96px; gap:8px; align-items:center; border:1px solid var(--border); border-radius:9px; padding:9px 12px; background:var(--card2); font-size:12.5px;}
+@media(max-width:820px){.gate{grid-template-columns:1fr; gap:4px;} .gate .gh{display:none;}}
+.gatehead{display:grid; grid-template-columns:1fr repeat(4,64px) 96px; gap:8px; padding:0 12px 6px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); text-align:center;}
+.gatehead span:first-child{text-align:left;}
+@media(max-width:820px){.gatehead{display:none;}}
+.gate .v{text-align:center; font-size:11.5px;}
+@media(max-width:820px){.gate .v{text-align:left;} .gate .v::before{content:attr(data-l) " — "; color:var(--ink-faint);}}
+.gate.out{border-color:color-mix(in oklab,var(--destructive) 45%,transparent); background:var(--destructive-soft);}
+.verdict{font-size:11px; text-align:center;}
+@media(max-width:820px){.verdict{text-align:left;}}
+
+/* 미리 재보기 */
+.cfrow{display:grid; grid-template-columns:1.4fr 1fr auto; gap:14px; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+@media(max-width:760px){.cfrow{grid-template-columns:1fr; gap:5px;}}
+.cfrow:last-child{border-bottom:0;}
+.cftrack{position:relative; height:22px;}
+.cftrack .zero{position:absolute; top:0; bottom:0; width:1px; background:var(--border);}
+.cftrack .ci{position:absolute; top:9px; height:4px; border-radius:99px; background:color-mix(in oklab,var(--signal) 32%,transparent); transition:left .5s cubic-bezier(.3,.7,.3,1), width .5s cubic-bezier(.3,.7,.3,1);}
+.cftrack .pt{position:absolute; top:5.5px; width:11px; height:11px; border-radius:99px; background:var(--signal); translate:-50% 0; box-shadow:0 0 0 2px var(--card); transition:left .5s cubic-bezier(.3,.7,.3,1);}
+.cftrack.out .ci{background:color-mix(in oklab,var(--destructive) 30%,transparent);} .cftrack.out .pt{background:var(--destructive);}
+.cftrack.unknown{display:flex; align-items:center; color:var(--ink-faint); font-size:11.5px;}
+.cfval{font-size:12.5px; white-space:nowrap; text-align:right;}
+.cfval small{display:block; font-size:10.5px; color:var(--ink-faint);}
+.kpi{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:8px; margin-top:12px;}
+.kpi>div{border:1px solid var(--border); border-radius:9px; background:var(--card2); padding:8px 11px;}
+.kpi dt{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); margin:0;}
+.kpi dd{margin:3px 0 0; font-size:14px;}
+
+/* 핸드오프 */
+.hand{display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start;}
+@media(max-width:820px){.hand{grid-template-columns:1fr;}}
+.chk{margin:0; padding:0; list-style:none; font-size:12.5px;}
+.chk li{display:flex; gap:9px; align-items:flex-start; padding:7px 0; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+.chk li:last-child{border-bottom:0;}
+.chk input{margin:3px 0 0; accent-color:var(--signal);}
+.chk small{display:block; font-size:11px; color:var(--ink-faint);}
+.acts{display:flex; flex-direction:column; gap:8px;}
+.acts button{border:1px solid var(--border); background:var(--card2); color:var(--ink-dim); font:inherit; font-size:12.5px; border-radius:8px; padding:9px 13px; cursor:pointer; text-align:left;}
+.acts button:hover{background:var(--card);}
+.acts button.primary{border-color:color-mix(in oklab,var(--signal) 55%,transparent); background:var(--signal-soft); color:var(--signal);}
+.acts small{display:block; font-size:10.5px; color:var(--ink-faint); margin-top:2px;}
+.nope{border:1px dashed color-mix(in oklab,var(--ember) 55%,transparent); background:var(--ember-soft); border-radius:9px; padding:10px 13px; font-size:12.5px; color:var(--ink-dim); margin-top:12px;}
+.nope b{color:var(--ember);}
+
+/* 배치 3안 */
+.opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;}
+.opt{border:1px solid var(--border); border-radius:11px; background:var(--card2); padding:14px 16px;}
+.opt.pick{border-color:color-mix(in oklab,var(--mint) 55%,transparent); background:var(--mint-soft);}
+.opt .tag{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint);}
+.opt ul{margin:9px 0 0; padding:0 0 0 2px; list-style:none; font-size:12px; color:var(--ink-dim);}
+.opt li{padding:3px 0 3px 15px; position:relative; line-height:1.55;}
+.opt li.p::before{content:"＋"; position:absolute; left:0; color:var(--mint); font-size:10px; top:5px;}
+.opt li.m::before{content:"−"; position:absolute; left:2px; color:var(--destructive); font-size:12px; top:2px;}
+.verdictbar{margin-top:14px; border:1px dashed color-mix(in oklab,var(--mint) 50%,transparent); background:var(--mint-soft); border-radius:9px; padding:11px 14px; font-size:12.5px; color:var(--ink-dim);}
+.verdictbar b{color:var(--mint);}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">ANSEO · 거래처 상세 · 탭 신설안</p>
+    <div class="crumb"><h1>그랜드아름다운의원</h1><span style="font-size:12px;color:var(--ink-faint)">병원·의원 · grand4.co.kr · 열린 이슈 <span class="num">26</span>건</span></div>
+    <div class="tabs" role="tablist">
+      <button class="off" tabindex="-1">진단</button>
+      <button class="off" tabindex="-1">SEO</button>
+      <button class="off" tabindex="-1">GEO</button>
+      <button class="off" tabindex="-1">AEO</button>
+      <button class="isnew" role="tab" aria-selected="true">콘텐츠</button>
+      <button class="off" tabindex="-1">이슈</button>
+      <button class="off" tabindex="-1">리포트</button>
+    </div>
+    <div class="badge"><b>표본</b><span>화면 시뮬레이션 · 수치는 <b style="border:0;color:var(--ink-dim)">표본</b>이며 실측이 아닙니다 · 탭 5번 자리에 <b style="border:0;color:var(--ink-dim)">콘텐츠</b> 신설 — 앞의 SEO·GEO·AEO 가 「어디서 밀렸나」를 재고, 이 탭이 「그래서 무엇을 고치나」를 만듭니다</span></div>
+  </header>
+
+  <!-- ① 격차 인박스 -->
+  <section class="card stage" style="animation-delay:.06s">
+    <div class="card-head">
+      <div><p class="eyebrow">① 들어오는 자리 — 밀린 곳만 모입니다</p><h2>어디서 밀렸나 — 검색 순위와 AI 답변, 두 축</h2></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="segtoggle" role="group" aria-label="격차 축">
+          <button id="ax-rank" aria-pressed="true">검색 순위</button>
+          <button id="ax-ai" aria-pressed="false">AI 답변</button>
+        </div>
+        <span class="srcchip">SEO 순위 · AEO 관측에서 자동 유입</span>
+      </div>
+    </div>
+
+    <div id="pane-rank">
+      <div class="overflow"><table class="gap">
+        <thead><tr>
+          <th>키워드</th><th class="r">월 검색량</th><th class="r">우리</th><th class="r">1위</th><th>1위를 가져간 문서</th><th>판정</th>
+        </tr></thead>
+        <tbody id="rankrows"></tbody>
+      </table></div>
+      <p class="foot">순위는 <b style="color:var(--ink-dim)">우리가 있는데 뒤에 있는 것</b>과 <b style="color:var(--ink-dim)">아예 없는 것</b>을 나눠 적습니다. 30위 밖은 숫자를 지어내지 않고 «미진입»으로 둡니다. 「지킴」 행은 우리가 1위인 자리 — 할 일이 아니라 <b style="color:var(--ink-dim)">뺏기면 안 되는 자리</b>로 남겨 둡니다.</p>
+    </div>
+
+    <div id="pane-ai" hidden>
+      <div class="mxlegend">
+        <span><i style="background:var(--fill-mine)"></i> 우리 인용</span>
+        <span><i style="background:var(--fill-theirs)"></i> 경쟁 인용 · 우리 없음</span>
+        <span><i style="background:var(--track);outline:1px solid var(--border)"></i> 아무도 인용 없음</span>
+        <span><i style="outline:1.5px dashed var(--unknown)"></i> 성숙 중 — 분모 제외</span>
+      </div>
+      <div class="overflow"><table class="mx">
+        <thead><tr id="mxhead"></tr></thead>
+        <tbody id="mxrows"></tbody>
+      </table></div>
+      <p class="foot">칸 하나 = <b style="color:var(--ink-dim)">질문 × 엔진</b>의 한 관측입니다. 주황 칸이 이 탭의 일감 — «그 엔진에서 경쟁은 인용됐고 우리는 안 됐다»입니다. 칸을 누르면 아래 ②·③이 그 칸의 근거로 다시 접힙니다. 회색(무인용)은 아직 아무 문서도 못 잡은 자리라 <b style="color:var(--ink-dim)">신규 발행</b> 후보이고, 점선(성숙 중)은 판정 전이라 분모에서 뺍니다.</p>
+    </div>
+  </section>
+
+  <!-- ② 경쟁 문서 해부 -->
+  <section class="card stage" style="animation-delay:.12s">
+    <div class="card-head">
+      <div><p class="eyebrow">② 뜯어보기 — 4a 추출 · 4b 분석</p><h2 id="anat-title">경쟁 문서에 있고 우리에게 없는 것</h2></div>
+      <span class="srcchip" id="anat-src">선택: —</span>
+    </div>
+    <div class="anat">
+      <div>
+        <div class="stept"><b>4a</b><span style="font-weight:700">가져간 문서</span><span style="font-size:11px;color:var(--ink-faint)">인용·순위를 실제로 먹은 쪽</span></div>
+        <ul class="xlist" id="anat-docs"></ul>
+        <blockquote class="quote" id="anat-quote"></blockquote>
+      </div>
+      <div>
+        <div class="stept"><b>4b</b><span style="font-weight:700">구조 대조</span><span style="font-size:11px;color:var(--ink-faint)">문장이 아니라 «짜임새»를 봅니다</span></div>
+        <div class="facts" id="anat-facts"></div>
+      </div>
+    </div>
+    <div class="rule"><span style="font-size:15px">⚠</span><span><b>베끼지 않습니다.</b> 가져오는 것은 <b style="color:var(--ink-dim)">짜임새</b>(직답 문단이 있다·비교 표가 있다·갱신일이 있다)뿐이고, 경쟁 문서의 <b style="color:var(--ink-dim)">문장·표·이미지는 복제하지 않습니다</b>. 인용문은 «왜 저 문서가 먹었나»를 보이려고 출처와 함께 <b style="color:var(--ink-dim)">인용 표기로만</b> 싣고, ③의 편집안 본문에는 옮기지 않습니다. 우리 원고는 우리 의료진의 사실로 다시 씁니다.</span></div>
+  </section>
+
+  <!-- ③ 편집안 -->
+  <section class="card stage" style="animation-delay:.18s">
+    <div class="card-head">
+      <div><p class="eyebrow">③ 우리 글로 고쳐 쓰기 — 4c 제안</p><h2 id="edit-title">편집안 — 어느 문서의 어디를 어떻게</h2></div>
+      <span class="srcchip">근거 없는 제안 금지 · 블록마다 근거 필수</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:12.5px;color:var(--ink-dim)">
+      <span style="color:var(--ink-faint)">고칠 문서</span>
+      <b id="edit-target" style="color:var(--ink)">—</b>
+      <span id="edit-kind" class="gapchip g-close">—</span>
+    </div>
+    <div id="editblocks"></div>
+    <p class="foot">「추가」는 없던 블록을 새로 넣는 것, 「수정」은 있는 문장을 바꾸는 것, <b style="color:var(--destructive)">「제외」</b>는 <b style="color:var(--ink-dim)">만들었다가 아래 ④ 관문에서 떨어진 것</b>입니다. 떨어진 것도 지우지 않고 사유와 함께 남깁니다 — 담당자가 «왜 이건 안 넣었나»를 뒤에서 물을 수 있어야 하기 때문입니다.</p>
+  </section>
+
+  <!-- ④ 관문 -->
+  <section class="card stage" style="animation-delay:.24s">
+    <div class="card-head">
+      <div><p class="eyebrow">④ 올리면 안 되는 것 걸러내기</p><h2>네 가지를 따로 봅니다 — 하나라도 걸리면 효과와 무관하게 뺍니다</h2></div>
+      <span class="srcchip">특허 «안전성 제약» 구간</span>
+    </div>
+    <div class="gatehead"><span>편집 블록</span><span>사실 맞나</span><span>기한 지났나</span><span>광고법</span><span>진료 되나</span><span>판정</span></div>
+    <div class="gategrid" id="gates"></div>
+    <p class="foot">네 판정은 <b style="color:var(--ink-dim)">효과 예측과 따로</b> 매깁니다. 효과가 아무리 크게 나와도 넷 중 하나가 걸리면 뺍니다 — 순서를 반대로 하면 «효과가 크니 이번만»이 생기기 때문입니다. 「진료 되나」는 그 글이 약속하는 시술을 <b style="color:var(--ink-dim)">지금 이 병원에서 실제로 예약해 받을 수 있는가</b>입니다(의료진 근무·예약 가능 시간). 받을 수 없으면 노출이 늘어도 환자에게는 헛걸음이라 뺍니다.</p>
+  </section>
+
+  <!-- ⑤ 미리 재보기 -->
+  <section class="card stage" style="animation-delay:.30s">
+    <div class="card-head">
+      <div><p class="eyebrow">⑤ 올리기 전에 미리 재보기</p><h2>사본을 하나만 고쳐서 물어봅니다 — 어느 블록이 얼마나 움직였나</h2></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="segtoggle" role="group" aria-label="볼 지표">
+          <button class="mt" data-m="cite" aria-pressed="true">인용 획득률</button>
+          <button class="mt" data-m="mention" aria-pressed="false">언급률</button>
+          <button class="mt" data-m="rank" aria-pressed="false">추천 위치</button>
+        </div>
+        <span class="srcchip">특허 «반사실 기여도» 구간</span>
+      </div>
+    </div>
+    <div id="cfrows"></div>
+    <dl class="kpi">
+      <div><dt>사본 변형본</dt><dd class="num">5<span style="font-size:11px;color:var(--ink-faint)"> / 블록당 1개</span></dd></div>
+      <div><dt>물어본 횟수</dt><dd class="num">12<span style="font-size:11px;color:var(--ink-faint)"> 회 × 엔진 3</span></dd></div>
+      <div><dt>같은 뜻 질문</dt><dd class="num">8<span style="font-size:11px;color:var(--ink-faint)"> 개</span></dd></div>
+      <div><dt>아직 못 잰 것</dt><dd class="num" style="color:var(--ink-faint)">1<span style="font-size:11px"> 블록</span></dd></div>
+    </dl>
+    <p class="foot">원문 사본을 떠서 <b style="color:var(--ink-dim)">블록 하나만</b> 바꾼 판을 만들고, 원문 판과 바꾼 판에 같은 뜻의 질문을 같은 조건으로 여러 번 물어 <b style="color:var(--ink-dim)">차이만</b> 남깁니다. 한 번에 하나만 바꾸는 이유는 두 개를 같이 바꾸면 어느 쪽이 움직였는지 못 가리기 때문입니다. 가는 선은 <b style="color:var(--ink-dim)">폭</b>(같은 실험을 반복했을 때 값이 놓이던 범위)이고, 선이 0을 물면 «움직였다고 말하지 않습니다». 못 잰 블록은 0이 아니라 <b style="color:var(--ink-dim)">—</b>로 둡니다. 이 값은 사본으로 잰 예상이며 <b style="color:var(--ink-dim)">보장이 아닙니다</b> — 실제 판정은 올린 뒤 재관측입니다.</p>
+  </section>
+
+  <!-- ⑥ 핸드오프 -->
+  <section class="card stage" style="animation-delay:.36s">
+    <div class="card-head">
+      <div><p class="eyebrow">⑥ 넘기는 자리</p><h2>검수와 업로드는 담당자가 직접 합니다</h2></div>
+      <span class="srcchip">자동 발행 없음</span>
+    </div>
+    <div class="hand">
+      <div>
+        <ul class="chk">
+          <li><input type="checkbox" id="c1"><label for="c1">편집안 3블록을 원고에 반영했다<small>내려받은 초안은 «원고»지 «발행본»이 아닙니다</small></label></li>
+          <li><input type="checkbox" id="c2"><label for="c2">의료진이 의료 사실을 확인했다<small>시술 주기·회복 기간·부작용 — 사람이 봅니다</small></label></li>
+          <li><input type="checkbox" id="c3"><label for="c3">의료광고법 검수를 통과했다<small>치료 효과 보장·전후사진·최상급 표현이 없는지</small></label></li>
+          <li><input type="checkbox" id="c4"><label for="c4">우리 사이트에 올렸다<small>ANSEO 는 올리지 않습니다 — 담당자가 직접</small></label></li>
+          <li><input type="checkbox" id="c5"><label for="c5">올린 주소를 여기 적어 재관측을 걸었다<small>걸어야 «효과가 있었나»를 나중에 답할 수 있습니다</small></label></li>
+        </ul>
+        <div class="nope"><b>ANSEO 가 하지 않는 것</b> — 원고를 대신 올리지 않고, 병원 계정에 접속하지 않으며, 검수를 대신 통과시키지 않습니다. 이 탭이 만드는 것은 <b style="color:var(--ink-dim)">근거가 붙은 초안</b>까지입니다.</div>
+      </div>
+      <div class="acts">
+        <button class="primary" type="button">편집안 내려받기<small>원고(.md) + 근거표(.csv)</small></button>
+        <button type="button">블록만 복사<small>편집기에 그대로 붙일 수 있는 형태</small></button>
+        <button type="button">담당자에게 넘기기<small>이슈로 만들어 담당자 배정</small></button>
+        <button type="button">올린 뒤 재관측 걸기<small>발행일 + 14일 뒤 같은 질문 재관측</small></button>
+        <p style="font-size:11px;color:var(--ink-faint);margin:2px 0 0;line-height:1.6">버튼은 시뮬레이션이라 동작하지 않습니다. 실물에서는 앞의 둘이 파일·클립보드, 뒤의 둘이 이슈 탭·관측 예약으로 이어집니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑦ 특허 배치 -->
+  <section class="card stage" style="animation-delay:.42s">
+    <div class="card-head">
+      <div><p class="eyebrow">⑦ 검토 — 특허 흐름을 어디에 두나</p><h2>탭을 하나 더 만들 것인가, 이 탭 안에 넣을 것인가</h2></div>
+      <span class="srcchip">3안 비교</span>
+    </div>
+    <div class="opts">
+      <div class="opt">
+        <span class="tag">A안</span><h3>「특허」 탭 신설 — 8탭</h3>
+        <ul>
+          <li class="p">특허 구성이 화면에 그대로 보여 대외 설명이 쉽다</li>
+          <li class="m">상단 탭은 <b style="color:var(--ink-dim)">담당자가 하는 일</b>의 줄인데, 「특허」는 일이 아니라 방법이라 언제 눌러야 할지 알 수 없다</li>
+          <li class="m">입력(우리 원고·의료 사실)도 출력(편집안)도 콘텐츠 탭 것이라 한 작업이 두 탭을 왕복한다</li>
+          <li class="m">떨어진 후보를 콘텐츠 탭에서 못 본다 — 관문이 남의 탭에 있기 때문</li>
+        </ul>
+      </div>
+      <div class="opt pick">
+        <span class="tag" style="color:var(--mint)">B안 · 권고</span><h3>콘텐츠 탭 안 계층으로</h3>
+        <ul>
+          <li class="p">특허 4구성이 이 탭의 ③→④→⑤→⑥에 <b style="color:var(--ink-dim)">이미 한 줄로 놓인다</b> — 사본 만들기·물어보기·기여도·관문</li>
+          <li class="p">관문이 편집안 옆에 있어 «왜 뺐나»가 같은 화면에서 답해진다</li>
+          <li class="p">탭 수를 안 늘린다 — 7탭이 상단바 한 줄의 실질 한계</li>
+          <li class="m">실험 이력·재현 로그를 카드 하나에 다 못 담는다 → C안으로 보완</li>
+        </ul>
+      </div>
+      <div class="opt">
+        <span class="tag">C안 · 보완</span><h3>B안 + 실험 원장은 하위 화면</h3>
+        <ul>
+          <li class="p">⑤ 카드에서 «어떻게 쟀는지 보기» → 실험 원장(회차·조건·재현)으로. <b style="color:var(--ink-dim)">탭이 아니라 하위 화면</b></li>
+          <li class="p">리포트 탭 발행본에 «측정 방법» 부록으로 같은 내용을 실어 대외 설명을 해결</li>
+          <li class="m">화면 2개(원장·부록)를 새로 만들어야 한다</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdictbar"><b>권고: B안 + C안 보완.</b> 특허의 값어치는 «탭이 하나 더 있다»가 아니라 <b style="color:var(--ink-dim)">편집안마다 근거와 배제 사유가 붙는다</b>는 데서 나옵니다. 그 값어치는 편집안 옆에 있을 때만 담당자에게 전달됩니다. 대외 설명용 가시성은 탭이 아니라 <b style="color:var(--ink-dim)">리포트 발행본의 「측정 방법」 부록</b>과 <b style="color:var(--ink-dim)">실험 원장 화면</b>으로 확보합니다.</div>
+  </section>
+
+  <p class="foot" style="margin-top:22px">시뮬레이션 · 수치는 표본이며 실측이 아닙니다. 화면의 말은 실물 톤앤매너 규율을 따릅니다 — 색으로만 말하지 않고 글자를 병용, 백분율은 분자·분모 병기, 못 잰 값은 0이 아니라 «—», 판이 다르면 나란히 놓지 않습니다.</p>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const ENGINES=["ChatGPT","Gemini","Claude","Grok","Perplexity","AI브리핑","AI오버뷰"];
+
+/* ── 격차 데이터 ── */
+const RANK=[
+ {id:"g1",kw:"울쎄라 유지기간",vol:"1,900",ours:2,top:1,doc:"미소진피부과 블로그 «울쎄라 총정리»",v:"close"},
+ {id:"g2",kw:"울쎄라 슈링크 차이",vol:"2,400",ours:7,top:1,doc:"유어스킨의원 «리프팅 비교»",v:"lose"},
+ {id:"g3",kw:"울쎄라 비용",vol:"3,100",ours:null,top:1,doc:"헬스매체 칼럼 «리프팅 시술 비교»",v:"none"},
+ {id:"g4",kw:"리프팅 부작용",vol:"880",ours:4,top:1,doc:"네이버 지식백과 «리프팅 시술»",v:"lose"},
+ {id:"g5",kw:"울쎄라 회복기간",vol:"590",ours:1,top:1,doc:"자사 /lifting 페이지",v:"hold"},
+];
+/* 0 무인용 · 1 우리 · 2 경쟁 · 3 성숙중 */
+const MX=[
+ {id:"g1",q:"울쎄라 효과 얼마나 가나요",cells:[2,1,2,0,2,1,2]},
+ {id:"g2",q:"울쎄라랑 슈링크 뭐가 달라요",cells:[2,2,2,2,2,0,2]},
+ {id:"g3",q:"울쎄라 비용 얼마나 드나요",cells:[2,0,0,2,2,2,0]},
+ {id:"g4",q:"리프팅 부작용 있나요",cells:[2,1,0,3,2,1,0]},
+ {id:"g5",q:"울쎄라 회복 얼마나 걸려요",cells:[1,1,3,0,1,1,2]},
+];
+
+const DETAIL={
+ g1:{axis:"검색 순위 2위 · ChatGPT·Claude·Perplexity 경쟁 인용",
+  target:"/lifting/ulthera (자사 리프팅 안내)", kind:"기존 문서 보강", kindClass:"g-close",
+  docs:[["미소진피부과 블로그 «울쎄라 총정리»","ChatGPT 5 · Perplexity 4 — 유지기간 질문을 거의 독점"],
+        ["네이버 지식백과 «리프팅 시술»","AI브리핑 4 · Gemini 2"],
+        ["헬스매체 칼럼 «리프팅 시술 비교»","Claude 3 · Gemini 1"]],
+  quote:["“울쎄라 효과는 개인차가 있으나 통상 시술 후 <b style='color:var(--ink)'>3개월경 콜라겐 재생이 정점</b>에 이르며, 유지 기간은 <b style='color:var(--ink)'>6~12개월</b>로 보고됩니다.”",
+         "미소진피부과 블로그 · 첫 문단 — ChatGPT·Perplexity 가 이 문장을 그대로 인용. 인용 표기용이며 편집안에 옮기지 않습니다."],
+  facts:[["질문에 바로 답하는 첫 문단",1,0],["시술 주기·경과 표",1,0],["갱신일 표기",1,0],["작성·감수자 표기",0,1],["가격·샷수 표",0,0],["의료진·시설 정보",0,1]],
+  blocks:[
+   {op:"add",t:"첫 문단을 «질문에 바로 답하는 문장»으로",gain:"+14.2%p",
+    before:"울쎄라 리프팅\n\n그랜드아름다운의원은 최신 울쎄라 장비를 도입하여 고객님께 만족스러운 시술을 제공하고 있습니다. 편안한 분위기에서…",
+    after:"울쎄라 리프팅 — 효과는 얼마나 유지되나\n\n<ins>울쎄라 시술 후 콜라겐 재생은 대개 2~3개월에 걸쳐 진행되며, 유지 기간은 개인차가 있으나 일반적으로 6~12개월로 봅니다.</ins> 그랜드아름다운의원에서는 시술 전 상담에서 피부 상태에 따른 예상 경과를 안내드립니다.",
+    basis:["ChatGPT·Claude·Perplexity 3개 엔진에서 우리만 무인용 (①의 g1 행)","인용을 가져간 문서 3개 중 3개가 첫 문단 직답 보유 · 우리 문서 없음 (②의 4b)","GEO 진단의 감점 «답변 단위 없음 21장»과 같은 원인"]},
+   {op:"add",t:"시술 주기·경과 표 추가",gain:"+6.8%p",
+    before:"(해당 블록 없음)",
+    after:"<ins>| 시점 | 피부에서 일어나는 일 |\n| 시술 직후 | 약간의 붉은기 · 당일 일상 복귀 |\n| 2~4주 | 리프팅 느낌이 서서히 |\n| 2~3개월 | 콜라겐 재생 정점 |\n| 6~12개월 | 개인차에 따라 유지 |</ins>",
+    basis:["인용 상위 3개 문서 중 3개 보유 · 우리 없음 (②의 4b)","«회복 얼마나» 계열 질문 4건이 이 표를 물음 (질문 관측)"]},
+   {op:"fix",t:"갱신일·감수자 줄 넣기",gain:"+3.1%p",
+    before:"(표기 없음)",
+    after:"<ins>최종 갱신 2026-09-01 · 감수 그랜드아름다운의원 피부과 전문의 ○○○</ins>",
+    basis:["인용 상위 3개 중 3개가 갱신일 보유 (②의 4b)","GEO 감점 «갱신일 미표기 27장»과 같은 원인 — 한 번 고치면 두 곳이 붙음"]},
+   {op:"add",t:"«울쎄라 vs 슈링크» 비교 표 추가",gain:"— (아직 못 잼)",
+    before:"(해당 블록 없음)",
+    after:"<ins>| | 울쎄라 | 슈링크 |\n| 작용 깊이 | … | … |\n| 시술 시간 | … | … |\n| 유지 기간 | … | … |</ins>\n(내용은 의료진 확인 후 채웁니다)",
+    basis:["g2(울쎄라 슈링크 차이) 격차와 같은 문서에서 처리 가능","사본 실험을 아직 안 돌린 블록 — 효과 칸을 «—»로 둡니다"]},
+   {op:"out",t:"«지역 최고 수준의 리프팅 장비» 문구 넣기",gain:"+11.5%p → 제외",
+    before:"(제안된 후보)",
+    after:"<del>지역 최고 수준의 리프팅 장비로 가장 확실한 효과를 약속드립니다</del>\n④ 관문에서 제외 — 최상급 표현 + 효과 보장",
+    basis:["효과 예측은 세 번째로 컸으나 광고법 판정에서 걸림","효과 크기와 무관하게 제외합니다 — 순서를 반대로 하면 예외가 생깁니다"]}],
+  gates:[
+   ["첫 문단 직답",1,1,1,1,"통과"],
+   ["시술 주기·경과 표",1,1,1,1,"통과"],
+   ["갱신일·감수자",1,1,1,1,"통과"],
+   ["울쎄라 vs 슈링크 비교표",2,1,1,1,"보류 — 의료진 확인 전"],
+   ["«지역 최고 수준» 문구",1,1,0,1,"제외 — 최상급·효과 보장"]],
+  cf:{cite:[["첫 문단 직답",14.2,8.1,20.3],["시술 주기·경과 표",6.8,2.9,10.7],["갱신일·감수자",3.1,0.4,5.8],["울쎄라 vs 슈링크 비교표",null,null,null],["«지역 최고 수준» 문구",11.5,5.2,17.8,true]],
+      mention:[["첫 문단 직답",9.6,4.8,14.4],["시술 주기·경과 표",4.1,1.2,7.0],["갱신일·감수자",1.4,-0.6,3.4],["울쎄라 vs 슈링크 비교표",null,null,null],["«지역 최고 수준» 문구",7.9,3.1,12.7,true]],
+      rank:[["첫 문단 직답",1.8,0.9,2.7],["시술 주기·경과 표",0.7,0.1,1.3],["갱신일·감수자",0.2,-0.3,0.7],["울쎄라 vs 슈링크 비교표",null,null,null],["«지역 최고 수준» 문구",1.3,0.4,2.2,true]]}},
+
+ g2:{axis:"검색 순위 7위 · 7개 엔진 전부 경쟁 인용",
+  target:"신규 문서 — /lifting/ulthera-vs-shrink", kind:"신규 발행", kindClass:"g-lose",
+  docs:[["유어스킨의원 «리프팅 비교»","ChatGPT 4 · Gemini 3 · Grok 2 — 비교 여정을 독식"],
+        ["미소진피부과 블로그 «울쎄라 총정리»","Claude 2 · Perplexity 2 — 비교 문단 보유"],
+        ["헬스매체 칼럼 «리프팅 시술 비교»","AI오버뷰 3 · Gemini 1"]],
+  quote:["“<b style='color:var(--ink)'>울쎄라는 SMAS층, 슈링크는 진피층</b>을 주 타깃으로 하며, 통증·시술 시간·유지 기간에서 차이가 있습니다. 아래 표에서 비교했습니다.”",
+         "유어스킨의원 비교 문서 · 도입부 — 7개 엔진 중 5개가 이 문서를 인용. 인용 표기용."],
+  facts:[["질문에 바로 답하는 첫 문단",1,0],["나란히 놓은 비교 표",1,0],["갱신일 표기",1,0],["작성·감수자 표기",1,1],["가격·샷수 표",1,0],["의료진·시설 정보",0,1]],
+  blocks:[
+   {op:"add",t:"비교 문서를 새로 발행",gain:"+18.9%p",
+    before:"(우리에게 해당 문서 없음 — 리프팅 안내에 한 문장만)",
+    after:"<ins>울쎄라와 슈링크, 무엇이 다른가\n\n두 시술은 열에너지로 콜라겐 재생을 유도한다는 점은 같지만 작용하는 피부 층이 다릅니다. 아래 표에서 작용 깊이·시술 시간·유지 기간·통증 정도를 나란히 정리했습니다.</ins>",
+    basis:["비교 여정 질문 11건 중 11건이 경쟁 인용 · 우리 0건 (①의 AI 격자 g2 행)","인용 상위 3개 문서 전부 비교 표 보유 (②의 4b)","자사 대장의 비인용 사유 = «비교 관점 부재»"]},
+   {op:"add",t:"비교 표 — 4개 축",gain:"+7.4%p",
+    before:"(해당 블록 없음)",
+    after:"<ins>| | 울쎄라 | 슈링크 |\n| 작용 층 | SMAS | 진피 |\n| 1회 시술 시간 | … | … |\n| 유지 기간 | … | … |\n| 통증 | … | … |</ins>\n(수치는 의료진 확인 후)",
+    basis:["인용 문서 3개 중 3개 보유 (②의 4b)","표가 있는 문서만 AI오버뷰에 인용됨 (엔진별 관측)"]},
+   {op:"fix",t:"기존 /lifting 에서 새 문서로 안쪽 링크",gain:"+2.6%p",
+    before:"(연결 없음)",
+    after:"<ins>리프팅 안내 본문 → «울쎄라와 슈링크 비교» 링크 추가</ins>",
+    basis:["SEO 진단의 «고아 문서» 감점과 같은 원인","새 문서가 색인되는 속도를 앞당김"]},
+   {op:"out",t:"경쟁 문서의 비교 표를 그대로 옮기기",gain:"제외",
+    before:"(후보로 올라온 것)",
+    after:"<del>유어스킨의원 표를 그대로 전재</del>\n규칙 위반 — 짜임새만 가져오고 값은 우리 의료진 확인분으로 채웁니다",
+    basis:["②의 복제 금지 규칙","저작권 · 그리고 우리 장비·프로토콜과 값이 다를 수 있음"]}],
+  gates:[
+   ["비교 문서 신규 발행",1,1,1,1,"통과"],
+   ["비교 표 4개 축",2,1,1,1,"보류 — 값 확인 전"],
+   ["안쪽 링크",1,1,1,1,"통과"],
+   ["경쟁 표 전재",0,1,1,1,"제외 — 복제 금지"]],
+  cf:{cite:[["비교 문서 신규 발행",18.9,11.2,26.6],["비교 표 4개 축",7.4,3.1,11.7],["안쪽 링크",2.6,-0.2,5.4],["경쟁 표 전재",null,null,null,true]],
+      mention:[["비교 문서 신규 발행",12.7,7.0,18.4],["비교 표 4개 축",4.9,1.8,8.0],["안쪽 링크",1.1,-1.0,3.2],["경쟁 표 전재",null,null,null,true]],
+      rank:[["비교 문서 신규 발행",3.4,1.9,4.9],["비교 표 4개 축",1.1,0.3,1.9],["안쪽 링크",0.5,-0.1,1.1],["경쟁 표 전재",null,null,null,true]]}},
+
+ g3:{axis:"검색 미진입(30위 밖) · ChatGPT·Grok·Perplexity·AI브리핑 경쟁 인용",
+  target:"신규 문서 — /lifting/price", kind:"신규 발행", kindClass:"g-lose",
+  docs:[["헬스매체 칼럼 «리프팅 시술 비교»","Gemini 4 · ChatGPT 3 — 비용 문단 보유"],
+        ["미소진피부과 블로그 «울쎄라 총정리»","Perplexity 3 · AI브리핑 2 — 샷수별 표"],
+        ["커뮤니티 후기 글묶음","Grok 2 — 값이 오래돼 정확도 낮음"]],
+  quote:["“울쎄라는 <b style='color:var(--ink)'>샷수 단위로 비용이 책정</b>되며, 300샷·600샷 등 시술 범위에 따라 달라집니다.”",
+         "헬스매체 칼럼 — 값 자체가 아니라 «샷수 단위로 매긴다»는 구조가 인용됨. 인용 표기용."],
+  facts:[["질문에 바로 답하는 첫 문단",1,0],["가격·샷수 표",1,0],["갱신일 표기",1,0],["비용에 무엇이 포함되는지",1,0],["작성·감수자 표기",0,1],["의료진·시설 정보",0,1]],
+  blocks:[
+   {op:"add",t:"«비용이 어떻게 매겨지나» 안내 문서",gain:"+9.7%p",
+    before:"(우리 사이트에 비용 관련 읽을 텍스트 없음 — 이미지 1장뿐)",
+    after:"<ins>울쎄라 비용은 어떻게 정해지나\n\n울쎄라는 시술 범위(샷수)와 부위에 따라 비용이 달라집니다. 상담에서 피부 상태와 목표에 맞는 범위를 정한 뒤 안내드립니다.</ins>",
+    basis:["비용 질문이 전 엔진 무인용 · 경쟁 4개 엔진 인용 (①의 AI 격자 g3 행)","자사 대장의 비인용 사유 = «읽을 텍스트 없음 — 이미지뿐»","인용 상위 3개 문서 전부 비용 구조 문단 보유 (②의 4b)"]},
+   {op:"add",t:"이미지 안의 글자를 텍스트로 다시 쓰기",gain:"+5.3%p",
+    before:"(가격 안내가 이미지 1장 — 크롤러가 못 읽음)",
+    after:"<ins>이미지와 같은 내용을 본문 텍스트로 병기</ins>",
+    basis:["SEO·GEO 진단의 «자바스크립트 없이 본문 읽힘» 항목과 같은 결","AI 엔진은 이미지 속 글자를 인용 근거로 쓰지 않음 (관측)"]},
+   {op:"out",t:"구체 금액 표 게재",gain:"+8.8%p → 제외",
+    before:"(후보로 올라온 것)",
+    after:"<del>울쎄라 300샷 ○○만원 / 600샷 ○○만원</del>\n④ 관문에서 제외 — 비급여 진료비는 병원 고지 절차를 따로 거칩니다",
+    basis:["효과는 두 번째로 컸으나 게재 절차 요건 미충족","절차를 밟아 고지하면 그때 다시 후보로 올라옵니다"]}],
+  gates:[
+   ["비용 구조 안내 문서",1,1,1,1,"통과"],
+   ["이미지 → 텍스트 병기",1,1,1,1,"통과"],
+   ["구체 금액 표",1,0,2,1,"제외 — 고지 절차 미이행"]],
+  cf:{cite:[["비용 구조 안내 문서",9.7,4.4,15.0],["이미지 → 텍스트 병기",5.3,1.9,8.7],["구체 금액 표",8.8,3.6,14.0,true]],
+      mention:[["비용 구조 안내 문서",6.2,2.1,10.3],["이미지 → 텍스트 병기",3.8,1.1,6.5],["구체 금액 표",5.9,2.0,9.8,true]],
+      rank:[["비용 구조 안내 문서",2.1,0.8,3.4],["이미지 → 텍스트 병기",1.4,0.5,2.3],["구체 금액 표",1.9,0.6,3.2,true]]}},
+};
+DETAIL.g4=DETAIL.g1; DETAIL.g5=DETAIL.g1;
+
+let CUR="g1", METRIC="cite";
+
+/* ── ① 순위 표 ── */
+const VLABEL={close:["따라잡기","g-close"],lose:["밀림","g-lose"],none:["미진입","g-none"],hold:["지킴","g-hold"]};
+$("#rankrows").innerHTML=RANK.map(r=>{
+  const [lab,cls]=VLABEL[r.v];
+  const ours=r.ours?`<span class="pos num" style="color:${r.ours===1?"var(--mint)":r.ours<=3?"var(--ember)":"var(--destructive)"}">${r.ours}</span><span style="font-size:11px;color:var(--ink-faint)">위</span>`
+                   :`<span style="color:var(--ink-faint)">—</span>`;
+  return `<tr class="grow${r.v==="hold"?" held":""}" data-id="${r.id}" aria-selected="${r.id===CUR}">
+    <td style="color:var(--ink)">${r.kw}</td>
+    <td class="r num">${r.vol}</td>
+    <td class="r">${ours}</td>
+    <td class="r"><span class="pos num" style="color:${r.v==="hold"?"var(--mint)":"var(--ink-dim)"}">1</span><span style="font-size:11px;color:var(--ink-faint)">위</span></td>
+    <td>${r.doc}</td>
+    <td><span class="gapchip ${cls}">${lab}</span></td></tr>`;
+}).join("");
+
+/* ── ① AI 격자 ── */
+$("#mxhead").innerHTML=`<th>질문</th>`+ENGINES.map(e=>`<th>${e}</th>`).join("");
+const CLS=["none","mine","theirs","mat"], CTXT=["없음","우리","경쟁","성숙"];
+$("#mxrows").innerHTML=MX.map(r=>`<tr data-id="${r.id}"><td>${r.q}</td>`+
+  r.cells.map((c,i)=>`<td><button class="mcell ${CLS[c]}" data-id="${r.id}" title="${ENGINES[i]} — ${CTXT[c]}">${CTXT[c]}</button></td>`).join("")+`</tr>`).join("");
+
+/* ── ②③④⑤ 다시 그리기 ── */
+function render(){
+  const d=DETAIL[CUR], r=RANK.find(x=>x.id===CUR);
+  $("#anat-src").textContent="선택: "+r.kw;
+  $("#anat-title").textContent=`«${r.kw}» — 경쟁 문서에 있고 우리에게 없는 것`;
+  $("#anat-docs").innerHTML=d.docs.map(([t,e])=>`<li>${t}<span class="evi">${e}</span></li>`).join("");
+  $("#anat-quote").innerHTML=`${d.quote[0]}<cite>${d.quote[1]}</cite>`;
+  $("#anat-facts").innerHTML=`<span class="fh">짜임새</span><span class="fh">경쟁</span><span class="fh">우리</span>`+
+    d.facts.map(([n,a,b])=>`<span class="fname">${n}</span>`+
+      `<span class="fv ${a?"neutral":"na"}">${a?"있음":"없음"}</span>`+
+      `<span class="fv ${b?"yes":"no"}">${b?"있음":"없음"}</span>`).join("");
+
+  $("#edit-target").textContent=d.target;
+  $("#edit-kind").textContent=d.kind; $("#edit-kind").className="gapchip "+d.kindClass;
+  $("#edit-title").textContent=`편집안 ${d.blocks.filter(b=>b.op!=="out").length}건 · 제외 ${d.blocks.filter(b=>b.op==="out").length}건`;
+  const OPL={add:["추가","op-add"],fix:["수정","op-fix"],out:["제외","op-out"]};
+  $("#editblocks").innerHTML=d.blocks.map((b,i)=>{
+    const [ol,oc]=OPL[b.op];
+    const gc=b.op==="out"?"var(--destructive)":b.gain.startsWith("—")?"var(--ink-faint)":"var(--mint)";
+    return `<details class="blk${b.op==="out"?" dropped":""}"${i===0?" open":""}>
+      <summary class="blkhead"><span class="op ${oc}">${ol}</span>
+        <span style="color:var(--ink)">${b.t}</span>
+        <span class="blkgain num" style="color:${gc}">${b.gain}</span></summary>
+      <div class="blkbody"><div class="ba">
+        <div><h4>지금</h4><pre class="code">${b.before}</pre></div>
+        <div><h4>편집안</h4><pre class="code after">${b.after}</pre></div>
+      </div><ul class="basis">${b.basis.map(x=>`<li>${x}</li>`).join("")}</ul></div></details>`;
+  }).join("");
+
+  const GV=[["맞음","yes"],["아님","no"],["확인 전","na"]];
+  const GL=["사실 맞나","기한 지났나","광고법","진료 되나"];
+  $("#gates").innerHTML=d.gates.map(g=>{
+    const out=g[5].startsWith("제외");
+    const vals=g.slice(1,5).map((v,i)=>{
+      const map=i===1?[["안 지남","yes"],["지남","no"],["확인 전","na"]]
+              :i===2?[["문제 없음","yes"],["걸림","no"],["확인 전","na"]]
+              :i===3?[["가능","yes"],["불가","no"],["확인 전","na"]]:GV;
+      const [t,c]=map[v];
+      return `<span class="v ${c}" data-l="${GL[i]}">${t}</span>`;
+    }).join("");
+    const vc=out?"var(--destructive)":g[5].startsWith("보류")?"var(--ember)":"var(--mint)";
+    return `<div class="gate${out?" out":""}"><span style="color:var(--ink)">${g[0]}</span>${vals}<span class="verdict" style="color:${vc}">${g[5]}</span></div>`;
+  }).join("");
+
+  drawCF();
+}
+
+function drawCF(){
+  const rows=DETAIL[CUR].cf[METRIC];
+  const unit=METRIC==="rank"?"칸":"%p";
+  const vals=rows.filter(r=>r[1]!==null).flatMap(r=>[r[2],r[3]]);
+  const lo=Math.min(0,...vals), hi=Math.max(...vals,0.1), span=(hi-lo)||1;
+  const x=v=>((v-lo)/span)*100;
+  $("#cfrows").innerHTML=rows.map(([n,p,a,b,out])=>{
+    if(p===null) return `<div class="cfrow"><span style="color:${out?"var(--ink-faint)":"var(--ink)"}">${n}</span>
+      <span class="cftrack unknown">아직 안 재봤습니다</span><span class="cfval" style="color:var(--ink-faint)">—<small>0이 아니라 «못 잼»</small></span></div>`;
+    const touches0 = a<=0 && b>=0;
+    return `<div class="cfrow"><span style="color:${out?"var(--ink-faint)":"var(--ink)"}">${n}${out?` <span class="op op-out" style="font-size:9.5px">제외됨</span>`:""}</span>
+      <span class="cftrack${out?" out":""}"><i class="zero" style="left:${x(0)}%"></i>
+        <i class="ci" style="left:${x(a)}%; width:${x(b)-x(a)}%"></i>
+        <i class="pt" style="left:${x(p)}%"></i></span>
+      <span class="cfval num" style="color:${out?"var(--destructive)":touches0?"var(--ink-faint)":"var(--signal)"}">+${p.toFixed(1)}${unit}
+        <small>폭 ${a.toFixed(1)} ~ ${b.toFixed(1)}${touches0?" · 0을 뭅니다":""}</small></span></div>`;
+  }).join("");
+}
+
+/* ── 상호작용 ── */
+function pick(id){
+  CUR=id;
+  $$("#rankrows tr").forEach(t=>t.setAttribute("aria-selected",t.dataset.id===id));
+  $$(".mcell").forEach(c=>c.classList.toggle("pick",c.dataset.id===id&&c.classList.contains("theirs")));
+  render();
+  ["#anat-docs","#anat-facts","#editblocks","#gates","#cfrows"].forEach((s,i)=>{
+    const el=$(s); el.style.animation="none"; void el.offsetWidth;
+    el.style.animation="rise .5s cubic-bezier(.22,1,.36,1) backwards"; el.style.animationDelay=(i*40)+"ms";
+  });
+}
+$("#rankrows").addEventListener("click",e=>{const t=e.target.closest("tr");if(t)pick(t.dataset.id);});
+$("#mxrows").addEventListener("click",e=>{const b=e.target.closest(".mcell");if(b)pick(b.dataset.id);});
+$("#ax-rank").onclick=()=>{$("#ax-rank").setAttribute("aria-pressed","true");$("#ax-ai").setAttribute("aria-pressed","false");$("#pane-rank").hidden=false;$("#pane-ai").hidden=true;};
+$("#ax-ai").onclick=()=>{$("#ax-ai").setAttribute("aria-pressed","true");$("#ax-rank").setAttribute("aria-pressed","false");$("#pane-ai").hidden=false;$("#pane-rank").hidden=true;};
+$$(".mt").forEach(b=>b.onclick=()=>{$$(".mt").forEach(o=>o.setAttribute("aria-pressed",o===b));METRIC=b.dataset.m;drawCF();});
+
+pick("g1");
+</script>
