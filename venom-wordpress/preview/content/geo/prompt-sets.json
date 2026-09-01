@@ -5,10 +5,10 @@
       "clientId": "pain",
       "cadence": "weekly",
       "questions": [
-        { "id": "pain-q0", "text": "포항 정형외과 잘하는 곳 추천해줘", "type": "discovery" },
-        { "id": "pain-q1", "text": "포항 도수치료 잘하는 병원 어디가 좋아?", "type": "discovery" },
-        { "id": "pain-q2", "text": "포항 무릎통증 치료 병원 추천해줘", "type": "discovery" },
-        { "id": "pain-q3", "text": "포항 죽도동 허리디스크 잘 보는 병원 알려줘", "type": "discovery" },
+        { "id": "pain-q0", "text": "포항 죽도동 교통사고 후유증 도수치료 받을 만한 병원 알려줘", "type": "discovery" },
+        { "id": "pain-q1", "text": "포항에서 목디스크로 팔이 저린데 어디서 치료받아야 해?", "type": "discovery" },
+        { "id": "pain-q2", "text": "포항 도수치료 자동차보험 되는 병원 추천해줘", "type": "discovery" },
+        { "id": "pain-q3", "text": "포항 북구 허리통증 주사치료 잘하는 곳 어디야?", "type": "discovery" },
         { "id": "pain-q4", "text": "시원마취통증의학과의원 어때? 믿을 만한 곳이야?", "type": "brand" }
       ]
     },
@@ -17,10 +17,10 @@
       "clientId": "skin",
       "cadence": "weekly",
       "questions": [
-        { "id": "skin-q0", "text": "포항 피부과 잘하는 곳 추천해줘", "type": "discovery" },
-        { "id": "skin-q1", "text": "포항 피부관리 어디가 좋아?", "type": "discovery" },
-        { "id": "skin-q2", "text": "포항 여드름 치료 잘하는 병원 알려줘", "type": "discovery" },
-        { "id": "skin-q3", "text": "포항 죽도동 스킨케어 추천해줘", "type": "discovery" },
+        { "id": "skin-q0", "text": "포항 죽도동 근처 여드름 흉터 치료 잘하는 피부과 알려줘", "type": "discovery" },
+        { "id": "skin-q1", "text": "포항에서 기미 색소 레이저 잘하는 피부과 어디가 좋아?", "type": "discovery" },
+        { "id": "skin-q2", "text": "포항 성인 여드름이 오래됐는데 피부과 어디로 가야 할까?", "type": "discovery" },
+        { "id": "skin-q3", "text": "포항 북구 지루성 두피염 치료 병원 추천해줘", "type": "discovery" },
         { "id": "skin-q4", "text": "시원스킨클리닉 어때? 믿을 만한 곳이야?", "type": "brand" }
       ]
     }

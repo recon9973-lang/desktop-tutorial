@@ -1177,7 +1177,8 @@ function _aeTrendHTML(hist,key){
   if(!hist||!hist.length)return '';
   var pts=hist.map(function(h){
     var b=(h.businesses||[]).filter(function(x){return x.key===key;})[0];
-    return b?{ym:String(h.generated_at||'').slice(0,7),tot:b.tot_pct||0,disc:b.disc_pct||0}:null;
+    // 못 잰 달(null)은 0%로 그리면 '급락'처럼 보인다 → 점 자체를 제외
+    return (b&&b.tot_pct!=null)?{ym:String(h.generated_at||'').slice(0,7),tot:b.tot_pct,disc:b.disc_pct==null?0:b.disc_pct}:null;
   }).filter(Boolean);
   if(!pts.length)return '';
   var max=10; pts.forEach(function(p){max=Math.max(max,p.tot,p.disc);});
@@ -1226,8 +1227,8 @@ function initAiExpose(){
       return '<div class="card" style="margin-bottom:16px">'
         +'<div class="card-head"><div class="card-title">'+String(b.name).replace(/</g,'&lt;')+'</div></div>'
         +'<div class="stat-grid" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">'
-        +'<div class="stat-card"><div class="stat-label">전체 노출률</div><div class="stat-val" style="color:#5b21b6">'+(s.tot_pct||0)+'%</div><div class="stat-change">'+(s.exposed||0)+'/'+(s.total_cells||0)+'회 노출</div></div>'
-        +'<div class="stat-card"><div class="stat-label">발견형 질문 노출률 <span style="font-size:9px;color:var(--mute)">(신환)</span></div><div class="stat-val" style="color:#b42318">'+(s.disc_pct||0)+'%</div><div class="stat-change">'+(s.disc_exposed||0)+'/'+(s.disc_cells||0)+'회</div></div>'
+        +'<div class="stat-card"><div class="stat-label">전체 노출률</div><div class="stat-val" style="color:#5b21b6">'+(s.tot_pct==null?'—':s.tot_pct+'%')+'</div><div class="stat-change">'+(s.exposed||0)+'/'+(s.total_cells||0)+'회 노출</div></div>'
+        +'<div class="stat-card"><div class="stat-label">발견형 질문 노출률 <span style="font-size:9px;color:var(--mute)">(신환)</span></div><div class="stat-val" style="color:#b42318">'+(s.disc_pct==null?'—':s.disc_pct+'%')+'</div><div class="stat-change">'+(s.disc_exposed||0)+'/'+(s.disc_cells||0)+'회</div></div>'
         +'</div>'
         +_aeTrendHTML(hist,b.key)
         +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><tr><th style="padding:7px 8px;border:1px solid var(--border);background:#111827;color:#fff;font-size:11px;text-align:left">환자 질문</th>'+head+'</tr>'+rows+'</table></div>'
