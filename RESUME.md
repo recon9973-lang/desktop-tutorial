@@ -1,3 +1,48 @@
+# RESUME — 다음 세션 이어가기 (2026-09-02 · s14 「화면 반응형 17곳 · v0.3.486 미배포」)
+
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-02-s14.md`,
+> 결함표 `docs/ANSEO-반응형-대조표.md`, 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+
+## 지금 상태 (s14 마감)
+
+```
+veo-platform  main                                   35aa51a  0.3.485 (ANSEO 방 · 미배포)
+              claude/anseo-screen-layout-optimization-ucs22y   +1 커밋 = 0.3.486 (이 방 · 미배포)
+desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표·축소본·이 문서
+```
+
+- **배포 대기 둘**: 0.3.485(거래처 경계 둘째 벽) · 0.3.486(화면 반응형 17곳). 나갈 때 대기 표를 통째로
+  보여 드리고 한 번 여쭙는다 — 사장님 방침(2026-09-01). **이 방은 배포하지 않았다.**
+- 검사 전부 초록(tsc·eslint·vitest 2,158·build·smoke 24화면). 마지막 실측 가로 넘침 0.
+
+## 바로 이어갈 작업
+
+1. 사장님이 캡처를 보시고 추가 지적하면 해당 화면만 `scratchpad/shoot-rwd.mjs`(세션 scratchpad 소멸 —
+   s14 로그의 방법대로 다시 쓴다) 로 찍어 고친다. 덮개는 `fx-data.json`(합본) 방식.
+2. 배포 오더가 오면: veo-platform 가지 `claude/anseo-screen-layout-optimization-ucs22y` 를 main 에
+   얹어 `make deploy`(ANSEO 방 절차) — 0.3.485 와 함께 한 묶음.
+3. 2차 후보(오더 없으면 대기): 산점도 이름표 밀어내기 · 거래처 표 모바일 카드형 · 누적 답변 띠 접기.
+
+## 도구·실측 메모 (재탐색 금지)
+
+- 캡처: 빌드물(`apps/web/.next`) 필요 → `pnpm install --frozen-lockfile && pnpm build`(약 4분).
+  `SHOOT_FIXTURE`(덮개)·`SHOOT_VIEWPORTS=pc,tablet,mobile`·`SHOOT_PORT`. 87장 전수 ≈ 40분.
+- Playwright `/opt/node22/lib/node_modules/playwright`, chromium `/opt/pw-browsers`. PIL 은 `pip install pillow`.
+- 대시보드 덮개 창구: `/api/customers`·`/api/customers/board`·`/api/observations/weekly`(engine_modes)·
+  `/api/observations/engines`·`/api/customers/seo-trend`. 값은 캡처·계약 예시에서만.
+- 대시보드 관문: `dashboard-layout.test.ts §1-1` 이 headGrid stretch 를 요구(왼쪽 카드 빈 자리는 고치지 않음).
+
+## 주의·제약 (반드시)
+
+- 커밋 트레일러: `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` + `Claude-Session:`(그 방 URL).
+  모델 ID 를 커밋/PR/코드/문서에 넣지 않는다. 비밀키 금지.
+- 사장님께는 「커밋」「배포」 두 낱말만. 못 잰 값은 —. `[실측]` 은 명령과 출력이 있을 때만.
+- /console/geo AEO 독립 화면·의료 규정은 다른 방 소관(이 판은 CSS 만 건드렸다).
+
+---
+
+## 이전 RESUME (s13 · 2026-08-30) — 참고용
+
 # RESUME — 다음 세션 이어가기 (2026-08-30 · s13 체크포인트)
 
 > 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세는 `docs/session-logs/2026-08-30-s13.md`(직전)·`-s12.md`,
