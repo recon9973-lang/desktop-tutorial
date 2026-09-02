@@ -13,7 +13,7 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표·축�
 
 - 사장님 오더(09-03) «485 486이랑 같이 배포해. 다른방에 있는것도 같이» → **나갔다.** 0.3.485·0.3.486·0.3.487 은
   ANSEO 방이, 0.3.488(이 방 화면 반응형 17곳)은 이 방이 내보냈다. 삼중 실측 04:03 KST 셋 다 0.3.488.
-  배포 도장 커밋은 veo-platform 후보 가지 → CI → main 경로로 올렸다(세션 로그 참조).
+  배포 도장 커밋 `c03246ac`(docs: 0.3.487~0.3.488 배포 도장)는 후보 가지 → CI 초록 → main 으로 올라갔다. **main = c03246ac**(코드는 34136f4d 0.3.488 그대로, 문서만 추가).
 - veo-platform 원격 가지 `claude/anseo-screen-layout-optimization-ucs22y` 는 옛 0.3.486 tip(5e79bdb5)에 멈춰 있다
   (강제 푸시가 막혀 갱신 못 함) — 정본은 main. 기록 가지 `claude/anseo-screen-rwd-0.3.487`.
 - 검사 전부 초록(tsc·eslint·vitest 2,158·build·smoke 24화면). 마지막 실측 가로 넘침 0.
