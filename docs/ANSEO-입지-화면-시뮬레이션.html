@@ -67,6 +67,15 @@ h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
 .strip .eng{display:inline-flex; align-items:center; gap:5px;}
 .strip .dot{width:7px; height:7px; border-radius:50%; background:var(--mint); display:inline-block;}
 .strip .dot.off{background:var(--unknown);}
+.strip .eng{position:relative; padding:2px 6px; border-radius:6px;}
+.strip .eng .dot.ok{background:var(--mint); box-shadow:0 0 0 3px var(--mint-soft);}
+.strip .eng .dot.warn{background:var(--ember); box-shadow:0 0 0 3px var(--ember-soft);}
+.strip .eng .dot.down{background:var(--destructive); box-shadow:0 0 0 3px var(--destructive-soft);}
+.strip .eng .stt{font-size:10px; margin-left:2px;}
+.strip .eng .stt.ok{color:var(--mint);} .strip .eng .stt.warn{color:var(--ember);} .strip .eng .stt.down{color:var(--destructive);}
+.strip .eng.warn{background:var(--ember-soft);} .strip .eng.down{background:var(--destructive-soft);}
+.strip .lg{margin-left:auto; display:inline-flex; gap:10px; font-size:10.5px; color:var(--ink-faint);}
+.strip .lg i{width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:4px;}
 .custhead{padding:16px 18px 0; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-end;}
 .custhead h2{font-size:18px;}
 .custhead .meta{font-size:12px; color:var(--ink-faint);}
@@ -172,17 +181,21 @@ details.pop p{margin:6px 0 0; line-height:1.65; max-width:70ch;}
     <p class="eyebrow">모자란 화면 제작 · 11 — 거래처 상세 「입지」 탭 (기획안 v1 §5 · 벤치마크 반영)</p>
     <h1>입지 — 주소 하나로 경쟁·교통·인구를 다섯 고리에서 잰다</h1>
     <p class="sub">거래처 상세의 <b>7번째 탭</b>. 첫 그림은 동심원 지도 + 고리 요약 표 하나이고, 반경 칩을 고르면
-    아래 세 구역이 그 고리로 바뀐다. 입지 점수·등급은 없다 — 밀도 지표 한 줄만. 경쟁 수치는 <b>심평원 병원정보(2026.6) 좌표 79,764곳
+    <b>지도가 그 반경에 맞춰 확대·축소</b>되고 아래 세 구역이 그 고리로 바뀐다. 상단 AI 스트립에는 엔진별 연결 상태를 <b>신호등</b>(연결·오류·끊김)으로 붙였다 — 전 화면 공통 골격. 입지 점수·등급은 없다 — 밀도 지표 한 줄만. 경쟁 수치는 <b>심평원 병원정보(2026.6) 좌표 79,764곳
     실측</b>이고, 교통·인구는 미러 적재 전이라 <span class="est">🟡 예시</span>로 표시했다.</p>
   </header>
 
   <div class="shell stage">
     <div class="topbar"><span class="logo">ANSEO</span><nav><b>거래처</b><span>원고 검수</span></nav><span class="sess num">세션 · 담당자 김민지</span></div>
     <div class="strip"><span class="tot">AI 7종 누적 답변 <span class="num">1,284</span>회</span>
-      <span class="eng"><i class="dot"></i>GPT <span class="num">312</span></span><span class="eng"><i class="dot"></i>GEM <span class="num">241</span></span>
-      <span class="eng"><i class="dot"></i>CLA <span class="num">198</span></span><span class="eng"><i class="dot"></i>PER <span class="num">205</span></span>
-      <span class="eng"><i class="dot"></i>GRK <span class="num">96</span></span><span class="eng"><i class="dot"></i>NAV <span class="num">140</span></span>
-      <span class="eng"><i class="dot off"></i>OVW <span class="num">92</span></span><span style="margin-left:auto">집계 시작 2026-06-01 · 접기</span></div>
+      <span class="eng" title="연결 · 마지막 응답 2분 전"><i class="dot ok"></i>GPT <span class="num">312</span></span>
+      <span class="eng" title="연결 · 마지막 응답 4분 전"><i class="dot ok"></i>GEM <span class="num">241</span></span>
+      <span class="eng" title="연결 · 마지막 응답 1분 전"><i class="dot ok"></i>CLA <span class="num">198</span></span>
+      <span class="eng warn" title="오류 · 429 한도 초과 · 12분째 · 재시도 중"><i class="dot warn"></i>PER <span class="num">205</span><span class="stt warn">오류 429</span></span>
+      <span class="eng" title="연결 · 마지막 응답 6분 전"><i class="dot ok"></i>GRK <span class="num">96</span></span>
+      <span class="eng" title="연결 · 마지막 응답 3분 전"><i class="dot ok"></i>NAV <span class="num">140</span></span>
+      <span class="eng down" title="연결 끊김 · 키 만료(401) · 어제 22:00부터 · 설정 → 외부 연결 열쇠"><i class="dot down"></i>OVW <span class="num">92</span><span class="stt down">끊김</span></span>
+      <span class="lg"><span><i style="background:var(--mint)"></i>연결</span><span><i style="background:var(--ember)"></i>오류</span><span><i style="background:var(--destructive)"></i>끊김</span><span>· 집계 시작 2026-06-01</span></span></div>
     <div class="custhead"><div><h2>첫눈피부과 <span class="meas">병원·의원</span></h2><div class="meta">서울 강남구 · 좌표 확정 <span class="num">37.4976, 127.0287</span> · 행정동 역삼1동 · 지오코딩 카카오 <span class="num">2026-09-01</span></div></div>
       <div class="meta">기준일 <span class="num">2026-09</span> · 심평원 <span class="num">2026-08</span> · 행안부 <span class="num">2026-08</span> · 산정법 판 <span class="num">loc-1.0</span></div></div>
     <div class="tabs"><a href="#">진단</a><a href="#">SEO</a><a href="#">GEO</a><a href="#">AEO</a><a href="#" class="on new">입지</a><a href="#">이슈</a><a href="#">리포트</a></div>
@@ -198,7 +211,7 @@ details.pop p{margin:6px 0 0; line-height:1.65; max-width:70ch;}
             <button class="chip" disabled title="P3 — 등시선 API 확보 후">도보 10분</button><button class="chip" disabled title="P3">도보 15분</button>
           </div>
           <div class="legend"><span><i style="background:var(--mint)"></i>같은 과(피부과)</span><span><i style="background:var(--c1)"></i>의원</span><span><i style="background:var(--c2)"></i>치과</span><span><i style="background:var(--c3)"></i>한의원</span><span><i style="background:var(--c4)"></i>병원·기타</span><span><i class="sq" style="background:var(--signal)"></i>역 <span class="est">예시</span></span></div>
-          <div class="mapfoot">실물은 카카오맵 타일 위에 그린다. 시뮬은 타일 없이 <b>실측 좌표를 등거리 투영</b>(1km = 위도 1/111°, 경도는 cos 37.5° 보정)해 축척을 지켰다. 3km 밖 점은 8곳 중 1곳만 찍었다(밀도 과장 방지). 상권 툴의 1.5km 상한과 달리 병원급 진료권·역명 키워드 사다리를 위해 10km까지 본다.</div>
+          <div class="mapfoot">실물은 카카오맵 타일 위에 그린다. <b>반경을 고르면 지도 자체가 그 반경에 맞춰 확대·축소</b>된다(선택 고리 = 지도 가장자리, 바깥 고리는 사라지고 안쪽 고리만 남는다). 시뮬은 타일 없이 <b>실측 좌표를 등거리 투영</b>(1km = 위도 1/111°, 경도는 cos 37.5° 보정)해 축척을 지켰고 왼쪽 아래 축척 막대가 같이 바뀐다. 3km 밖 점은 8곳 중 1곳만 찍었다(밀도 과장 방지). 상권 툴의 1.5km 상한과 달리 병원급 진료권·역명 키워드 사다리를 위해 10km까지 본다.</div>
         </div>
         <div>
           <div class="overflow"><table class="ring" id="ringtbl">
@@ -312,18 +325,21 @@ const COLORS = {"의원":"var(--c1)","치과의원":"var(--c2)","한의원":"var
 const typeColor = t => t==="의원"?"var(--c1)":t==="치과의원"?"var(--c2)":t==="한의원"?"var(--c3)":"var(--c4)";
 
 let cur = "1";
-const KM_PX = 420/2/10.6; // 10km → 반지름 198px
+let KM_PX = 198; // 선택 반경이 반지름 198px을 채우도록 매번 다시 잰다
+function kmpx(){ return 198/parseFloat(cur); }
 function drawMap(){
-  const s = document.getElementById("mapsvg"); const c=210; const cosL=Math.cos(37.4976*Math.PI/180);
+  const s = document.getElementById("mapsvg"); const c=210; const cosL=Math.cos(37.4976*Math.PI/180); KM_PX=kmpx(); const curKm=parseFloat(cur);
   let h = `<rect x="0" y="0" width="420" height="420" fill="var(--bg)" rx="8"/>`;
-  [10,5,3,1,0.5].forEach(r=>{ const on = String(r)===cur; h+=`<circle cx="${c}" cy="${c}" r="${(r*KM_PX).toFixed(1)}" fill="${on?'var(--mint-soft)':'none'}" stroke="${on?'var(--mint)':'var(--grid)'}" stroke-width="${on?1.5:1}"/>`;
+  [10,5,3,1,0.5].forEach(r=>{ if(r>curKm) return; const on = String(r)===cur; h+=`<circle cx="${c}" cy="${c}" r="${(r*KM_PX).toFixed(1)}" fill="${on?'var(--mint-soft)':'none'}" stroke="${on?'var(--mint)':'var(--grid)'}" stroke-width="${on?1.5:1}"/>`;
     h+=`<text x="${(c+r*KM_PX-3).toFixed(1)}" y="${c-4}" font-size="9" text-anchor="end" fill="${on?'var(--mint)':'var(--ink-faint)'}" font-family="JetBrains Mono,monospace">${r<1?'500m':r+'km'}</text>`; });
-  PTS.forEach(p=>{ const x=c+p[1]*cosL*111*KM_PX, y=c-p[0]*111*KM_PX; if(x<2||x>418||y<2||y>418)return; const same=false; h+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p[3]<=3?1.4:1.1}" fill="${typeColor(p[2])}" opacity=".75"/>`; });
+  // 안쪽 고리는 표본이 성기므로(3km 밖 1/8, 안쪽 1/2) 확대할수록 점을 조금 키운다
+  const pr = curKm>=10?1.1:curKm>=5?1.4:curKm>=3?1.8:curKm>=1?2.6:3.2;
+  PTS.forEach(p=>{ if(p[3]>curKm*1.05) return; const x=c+p[1]*cosL*111*KM_PX, y=c-p[0]*111*KM_PX; if(x<2||x>418||y<2||y>418)return; h+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pr}" fill="${typeColor(p[2])}" opacity=".8"/>`; });
   // 같은 과 강조(1km 내 피부과 예시 위치는 NEAR 거리 기반 각도 배치 — 실좌표는 P0에서)
-  NEAR.forEach((n,i)=>{ const d=n[2]/1000*KM_PX, a=(i*137.5)*Math.PI/180; h+=`<circle cx="${(c+d*Math.cos(a)).toFixed(1)}" cy="${(c+d*Math.sin(a)).toFixed(1)}" r="2.6" fill="var(--mint)" stroke="var(--bg)" stroke-width="1"/>`; });
-  STATIONS.forEach((st,i)=>{ const d=st[2]*KM_PX, a=(20+i*61)*Math.PI/180; const x=c+d*Math.cos(a), y=c+d*Math.sin(a); h+=`<rect x="${(x-3.5).toFixed(1)}" y="${(y-3.5).toFixed(1)}" width="7" height="7" fill="var(--signal)" stroke="var(--bg)" stroke-width="1"/><text x="${(x+6).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="8.5" fill="var(--ink-dim)">${st[0]}</text>`; });
+  NEAR.forEach((n,i)=>{ if(n[2]/1000>curKm) return; const d=n[2]/1000*KM_PX, a=(i*137.5)*Math.PI/180; h+=`<circle cx="${(c+d*Math.cos(a)).toFixed(1)}" cy="${(c+d*Math.sin(a)).toFixed(1)}" r="2.6" fill="var(--mint)" stroke="var(--bg)" stroke-width="1"/>`; });
+  STATIONS.forEach((st,i)=>{ if(st[2]>curKm) return; const d=st[2]*KM_PX, a=(20+i*61)*Math.PI/180; const x=c+d*Math.cos(a), y=c+d*Math.sin(a); h+=`<rect x="${(x-3.5).toFixed(1)}" y="${(y-3.5).toFixed(1)}" width="7" height="7" fill="var(--signal)" stroke="var(--bg)" stroke-width="1"/><text x="${(x+6).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="8.5" fill="var(--ink-dim)">${st[0]}</text>`; });
   h+=`<circle cx="${c}" cy="${c}" r="5" fill="var(--mint)" stroke="var(--bg)" stroke-width="2"/><circle cx="${c}" cy="${c}" r="9" fill="none" stroke="var(--mint)" stroke-width="1.5"/>`;
-  h+=`<text x="8" y="412" font-size="9" fill="var(--ink-faint)" font-family="JetBrains Mono,monospace">축척 실제 · 1km = ${(KM_PX).toFixed(0)}px · N↑</text>`;
+  const sb = curKm>=3?1:curKm>=1?0.25:0.1; h+=`<line x1="12" y1="404" x2="${(12+sb*KM_PX).toFixed(1)}" y2="404" stroke="var(--ink-dim)" stroke-width="2"/><text x="12" y="398" font-size="9" fill="var(--ink-faint)" font-family="JetBrains Mono,monospace">${sb>=1?sb+'km':sb*1000+'m'} · 선택 반경이 지도를 채운다 · N↑</text>`;
   s.innerHTML=h;
 }
 function drawTable(){
