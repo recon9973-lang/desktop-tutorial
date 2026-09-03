@@ -139,7 +139,7 @@ table.src tr.fail td{background:color-mix(in oklab,var(--destructive) 7%,transpa
   <header class="stage">
     <p class="eyebrow">모자란 화면 제작 · 12 — 설정 「데이터 원천」 (설정 묶음 8호에 한 화면 추가 · 기획안 §5.8)</p>
     <h1>데이터 원천 — 내가 보는 숫자가 어디서, 언제 온 것인지</h1>
-    <p class="sub">입지 탭이 그리는 모든 값의 <b>출처·기준일·적재일·갱신 방식</b>을 한 자리에. API면 「지금 갱신」, 파일이면 「파일 올리기」,
+    <p class="sub">상권 탭이 그리는 모든 값의 <b>출처·기준일·적재일·갱신 방식</b>을 한 자리에. API면 「지금 갱신」, 파일이면 「파일 올리기」,
     키가 없으면 「키 등록」 — 행마다 동사 하나. 기한이 지나면 <b>색+글자</b>로 알리고 대시보드 «할 일»에 한 줄 올린다.
     «미설정»은 정상 상태라 빨갛게 칠하지 않는다(설정 묶음 원칙).</p>
   </header>
@@ -160,7 +160,7 @@ table.src tr.fail td{background:color-mix(in oklab,var(--destructive) 7%,transpa
         <a href="#">사용량·비용</a><a href="#">채점 기준 버전</a><a href="#">외부 연결 열쇠</a><a href="#" class="on">데이터 원천<span class="nw">새 화면</span></a><a href="#">팀원 관리</a><a href="#">내 계정</a><a href="#">변경 이력</a></aside>
       <div class="pane">
         <h2>데이터 원천 <span class="rolechip">최고 관리자 전용</span></h2>
-        <p class="sub">최고 관리자(owner)만 이 메뉴를 본다 — 담당자·관리자 화면에는 메뉴 자체가 없고, 주소로 열면 아래 «권한 없음» 상자만 보인다. 열쇠와 같은 등급. 입지(경쟁·교통·인구·지오코딩)에 쓰는 원천 <span class="num">11</span>개. 기준일은 원자료가 말하는 시점, 적재일은 우리가 넣은 시각. 갱신하면 새 판이 되고 이후 스냅샷만 바뀐다 — 지난 스냅샷은 그대로.</p>
+        <p class="sub">최고 관리자(owner)만 이 메뉴를 본다 — 담당자·관리자 화면에는 메뉴 자체가 없고, 주소로 열면 아래 «권한 없음» 상자만 보인다. 열쇠와 같은 등급. 상권(경쟁·교통·인구·지오코딩)에 쓰는 원천 <span class="num">11</span>개. 기준일은 원자료가 말하는 시점, 적재일은 우리가 넣은 시각. 갱신하면 새 판이 되고 이후 스냅샷만 바뀐다 — 지난 스냅샷은 그대로.</p>
         <div class="sum">
           <div class="mini"><div class="k">최신</div><div class="v num" style="color:var(--mint)">6</div><div class="d">주기 안</div></div>
           <div class="mini"><div class="k">기한 지남</div><div class="v num" style="color:var(--ember)">2</div><div class="d">심평원 병원정보 · 심평원 진료통계 → 대시보드 할 일</div></div>
@@ -211,18 +211,18 @@ table.src tr.fail td{background:color-mix(in oklab,var(--destructive) 7%,transpa
               <div><span class="t num">2026-06-30 22:00</span><span style="color:var(--destructive)">TAGO 노선 · API · 실패(401) → 키 만료 · «미설정»으로 강등</span></div>
             </div>
             <ul class="rules">
-              <li><b>한 곳 정본.</b> 거래처 입지 탭 머리의 «기준일 · 심평원 2026-06 · 행안부 2026-08»은 이 표의 값을 그대로 읽는다.</li>
+              <li><b>한 곳 정본.</b> 거래처 상권 탭 머리의 «기준일 · 심평원 2026-06 · 행안부 2026-08»은 이 표의 값을 그대로 읽는다.</li>
               <li><b>부분 실패 문법 공유.</b> 원천 하나가 실패하면 그 축만 «못 읽음», 나머지는 그린다. 여기 이력에 실패 사유가 남는다.</li>
               <li><b>API가 아닌 것만 손이 간다.</b> 파일 수동 5개(심평원 2·행안부·국토부 2)가 사람 몫이고, 나머지는 워커가 주기대로 돈다.</li>
             </ul>
           </div>
         </div>
-        <div class="locked"><b>담당자·관리자에게 보이는 것 — 권한 없음</b>이 화면은 최고 관리자만 볼 수 있습니다. 데이터 기준일은 각 거래처 입지 탭 머리에서 확인하세요.<br><span style="font-size:11px;color:var(--ink-faint)">메뉴에서 「데이터 원천」 자체가 빠진다 · 갱신 요청은 최고 관리자에게 · 감사 이력에 접근 시도 기록</span></div>
+        <div class="locked"><b>담당자·관리자에게 보이는 것 — 권한 없음</b>이 화면은 최고 관리자만 볼 수 있습니다. 데이터 기준일은 각 거래처 상권 탭 머리에서 확인하세요.<br><span style="font-size:11px;color:var(--ink-faint)">메뉴에서 「데이터 원천」 자체가 빠진다 · 갱신 요청은 최고 관리자에게 · 감사 이력에 접근 시도 기록</span></div>
       </div>
     </div>
     <div class="footer"><span>개발 VENOM · 방법론 VEO-LAB</span><span>앱 v0.3.39x</span><span>점수는 준비도, 순위 보장 아님</span></div>
   </div>
 
   <div class="badge"><b>확정 규격</b><span>최고 관리자 전용(열쇠와 같은 등급)</span><span>행 버튼 = 동사 하나</span><span>«미설정»은 정상</span><span>색+글자 병용</span><span>판 규율 — 갱신은 새 판, 지난 스냅샷 불변</span><span>열쇠는 「외부 연결 열쇠」 한 자리</span></div>
-  <p class="whytwo"><b>왜 설정에 두나.</b> 결과 화면(입지 탭)에는 기준일 한 줄만 두고, 무엇을 언제 어떻게 갱신하는지는 여기 한 자리에서 조작한다 — 설정 묶음 8호의 «설정은 결과와 섞이지 않는다» 원칙. 사장님 오더(09-03): «내가 보는 데이터가 어떤 자료가 언제 어디서 나온 자료인지, 날짜가 지났으면 보고 업데이트(API가 아닐 경우) 할 수 있게».</p>
+  <p class="whytwo"><b>왜 설정에 두나.</b> 결과 화면(상권 탭)에는 기준일 한 줄만 두고, 무엇을 언제 어떻게 갱신하는지는 여기 한 자리에서 조작한다 — 설정 묶음 8호의 «설정은 결과와 섞이지 않는다» 원칙. 사장님 오더(09-03): «내가 보는 데이터가 어떤 자료가 언제 어디서 나온 자료인지, 날짜가 지났으면 보고 업데이트(API가 아닐 경우) 할 수 있게».</p>
 </div>

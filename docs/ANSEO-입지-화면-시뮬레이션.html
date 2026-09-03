@@ -1,4 +1,4 @@
-<title>ANSEO 입지 탭 시뮬레이션</title>
+<title>ANSEO 상권 탭 시뮬레이션</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
@@ -178,10 +178,10 @@ details.pop p{margin:6px 0 0; line-height:1.65; max-width:70ch;}
 
 <div class="wrap">
   <header class="stage">
-    <p class="eyebrow">모자란 화면 제작 · 11 — 거래처 상세 「입지」 탭 (기획안 v1 §5 · 벤치마크 반영)</p>
-    <h1>입지 — 주소 하나로 경쟁·교통·인구를 다섯 고리에서 잰다</h1>
+    <p class="eyebrow">모자란 화면 제작 · 11 — 거래처 상세 「상권」 탭 (기획안 v1 §5 · 벤치마크 반영 · 2026-09-03 「입지」→「상권」 확정)</p>
+    <h1>상권 — 주소 하나로 경쟁·교통·인구를 다섯 고리에서 잰다</h1>
     <p class="sub">거래처 상세의 <b>7번째 탭</b>. 첫 그림은 동심원 지도 + 고리 요약 표 하나이고, 반경 칩을 고르면
-    <b>지도가 그 반경에 맞춰 확대·축소</b>되고 아래 세 구역이 그 고리로 바뀐다. 상단 AI 스트립에는 엔진별 연결 상태를 <b>신호등</b>(연결·오류·끊김)으로 붙였다 — 전 화면 공통 골격. 입지 점수·등급은 없다 — 밀도 지표 한 줄만. 경쟁 수치는 <b>심평원 병원정보(2026.6) 좌표 79,764곳
+    <b>지도가 그 반경에 맞춰 확대·축소</b>되고 아래 세 구역이 그 고리로 바뀐다. 상단 AI 스트립에는 엔진별 연결 상태를 <b>신호등</b>(연결·오류·끊김)으로 붙였다 — 전 화면 공통 골격. 상권 점수·등급은 없다 — 밀도 지표 한 줄만. 경쟁 수치는 <b>심평원 병원정보(2026.6) 좌표 79,764곳
     실측</b>이고, 교통·인구는 미러 적재 전이라 <span class="est">🟡 예시</span>로 표시했다.</p>
   </header>
 
@@ -198,7 +198,7 @@ details.pop p{margin:6px 0 0; line-height:1.65; max-width:70ch;}
       <span class="lg"><span><i style="background:var(--mint)"></i>연결</span><span><i style="background:var(--ember)"></i>오류</span><span><i style="background:var(--destructive)"></i>끊김</span><span>· 집계 시작 2026-06-01</span></span></div>
     <div class="custhead"><div><h2>첫눈피부과 <span class="meas">병원·의원</span></h2><div class="meta">서울 강남구 · 좌표 확정 <span class="num">37.4976, 127.0287</span> · 행정동 역삼1동 · 지오코딩 카카오 <span class="num">2026-09-01</span></div></div>
       <div class="meta">기준일 <span class="num">2026-09</span> · 심평원 <span class="num">2026-08</span> · 행안부 <span class="num">2026-08</span> · 산정법 판 <span class="num">loc-1.0</span></div></div>
-    <div class="tabs"><a href="#">진단</a><a href="#">SEO</a><a href="#">GEO</a><a href="#">AEO</a><a href="#" class="on new">입지</a><a href="#">이슈</a><a href="#">리포트</a></div>
+    <div class="tabs"><a href="#">진단</a><a href="#">SEO</a><a href="#">GEO</a><a href="#">AEO</a><a href="#" class="on new">상권</a><a href="#">이슈</a><a href="#">리포트</a></div>
 
     <div class="pane">
       <!-- 히어로 -->
@@ -283,14 +283,14 @@ details.pop p{margin:6px 0 0; line-height:1.65; max-width:70ch;}
           <div class="thumb now"><b>2026-09 <span class="num" style="font-weight:400">loc-1.0</span></b>1km 같은 과 <span class="num">29</span> <span class="num" style="color:var(--mint)">+1</span> · 전체 <span class="num">906</span> <span class="num" style="color:var(--mint)">+4</span><div class="d">이번 판 · 월 1회 워커</div></div>
         </div>
         <div class="btnrow"><button class="btn mint" type="button">이 결과로 리포트 만들기</button><button class="btn ghost" type="button">지금 재기</button><button class="btn ghost" type="button" disabled title="P3">비교 모드 — 거래처 2곳 · 고리 2개</button><button class="btn ghost" type="button">지역 키워드 초안 만들기 →</button></div>
-        <p class="foot">「리포트 만들기」는 §입지(고리 표·피라미드·경쟁 개수·교통)를 지도 캡처와 함께 발행본에 굳힌다(불변·익명화 기본). 「키워드 초안」은 역삼역·강남역·역삼동 × 피부과 조합을 키워드 화면 초안으로 보낸다. AEO 질문 프리필(M4)의 regionLadder 재료도 여기서 나간다.</p>
+        <p class="foot">「리포트 만들기」는 §상권(고리 표·피라미드·경쟁 개수·교통)을 지도 캡처와 함께 발행본에 굳힌다(불변·익명화 기본). 「키워드 초안」은 역삼역·강남역·역삼동 × 피부과 조합을 키워드 화면 초안으로 보낸다. AEO 질문 프리필(M4)의 regionLadder 재료도 여기서 나간다.</p>
       </div>
 
       <!-- 빈 상태 -->
       <div class="sec" style="margin-top:18px">
         <div class="card-head"><h3>빈 상태 · 부분 실패 문법</h3><span class="srcchip">실물 점선 상자 문법</span></div>
         <div class="empties">
-          <div class="empty"><b>좌표 없음</b>주소를 확인하면 입지를 잴 수 있습니다<br><button class="btn" type="button">주소 확인</button></div>
+          <div class="empty"><b>좌표 없음</b>주소를 확인하면 상권을 잴 수 있습니다<br><button class="btn" type="button">주소 확인</button></div>
           <div class="empty"><b>수집 전</b>아직 측정 데이터가 없습니다<br><button class="btn" type="button">지금 재기</button></div>
           <div class="empty" style="border-color:color-mix(in oklab,var(--ember) 45%,transparent)"><b style="color:var(--ember)">못 읽음 · 심평원 응답 없음</b>경쟁 구역만 비우고 교통·인구는 그린다<br><span style="font-size:11px;color:var(--ink-faint)">스냅샷에 실패 기록 · 다음 워커가 재시도</span></div>
         </div>
@@ -300,7 +300,7 @@ details.pop p{margin:6px 0 0; line-height:1.65; max-width:70ch;}
   </div>
 
   <div class="badge"><b>확정 규격</b><span>합산 점수 없음</span><span>못 잰 값 «—»</span><span>판 다르면 비교 금지</span><span>색+글자 병용</span><span>축 제목·단위·눈금 상시</span><span>의료광고법 · 공개면 익명화</span><span>경쟁 매출·환자 추정 표시 금지</span></div>
-  <p class="whytwo"><b>왜 탭인가.</b> 입지는 진단·SEO·GEO·AEO와 다른 축(공간)이고, 그 결과가 키워드·질문·경쟁사·리포트로 흘러가는 <b>입구</b>다. 진단 탭 안 구역으로 두면 «점수 밖 정보»로 읽혀 묻힌다. 실물 반영은 <span class="num">lib/navigation.ts</span> CUSTOMER_TABS 1행 추가.</p>
+  <p class="whytwo"><b>왜 탭인가.</b> 상권은 진단·SEO·GEO·AEO와 다른 축(공간)이고, 그 결과가 키워드·질문·경쟁사·리포트로 흘러가는 <b>입구</b>다. 진단 탭 안 구역으로 두면 «점수 밖 정보»로 읽혀 묻힌다. 실물 반영은 <span class="num">lib/navigation.ts</span> CUSTOMER_TABS 1행 추가(라벨 「상권」, 라우트 키 `location` 유지 — 공유 링크·리포트 물림 안전).</p>
   <p class="whytwo" style="border-color:var(--ember)"><b>시뮬 데이터 출처.</b> 경쟁 좌표·개수는 베놈 ERP <span class="num">hospital-points.json.gz</span>(심평원 2026.6, 79,764곳)에서 이 자리 기준으로 직접 계산한 실측이다. 교통·인구·이력·AI 스트립은 화면 문법을 보이기 위한 예시값이며 정합성 대상이 아니다. 거래처명은 가상이다.</p>
 </div>
 <div class="hoverbox" id="hover"></div>
