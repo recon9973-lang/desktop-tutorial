@@ -1,0 +1,211 @@
+<title>ANSEO 데이터 원천 설정 시뮬레이션</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+  --c1:#4a86e6; --c2:#1a9f73; --c3:#bd8b24; --c4:#9f5fe0; /* 종별 4색 · dataviz 검증기 통과(다크 면 #12161f) */
+  --male:#4a86e6; --female:#bd8b24;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+    --c1:#2f6fd6; --c2:#0f8a63; --c3:#9a6f12; --c4:#8a4fd0; --male:#2f6fd6; --female:#9a6f12;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  --c1:#2f6fd6; --c2:#0f8a63; --c3:#9a6f12; --c4:#8a4fd0; --male:#2f6fd6; --female:#9a6f12;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1120px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:70ch; font-size:13px;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:86ch;}
+.est{font-size:10px; color:var(--ember); border:1px solid color-mix(in oklab,var(--ember) 45%,transparent); border-radius:4px; padding:0 5px; margin-left:4px; vertical-align:1px; white-space:nowrap;}
+.meas{font-size:10px; color:var(--mint); border:1px solid color-mix(in oklab,var(--mint) 45%,transparent); border-radius:4px; padding:0 5px; margin-left:4px; vertical-align:1px; white-space:nowrap;}
+.dash{color:var(--ink-faint);}
+
+/* ── 실물 골격 ── */
+.shell{border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-top:18px; background:var(--bg);}
+.topbar{display:flex; align-items:center; gap:18px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--card); font-size:12.5px;}
+.logo{font-weight:700; letter-spacing:.14em; color:var(--mint); font-size:13px;}
+.topbar nav{display:flex; gap:14px; color:var(--ink-dim);}
+.sess{margin-left:auto; font-size:11px; color:var(--ink-faint); border:1px solid var(--border); border-radius:6px; padding:2px 8px;}
+.strip{display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; padding:7px 18px; border-bottom:1px solid var(--border); font-size:11.5px; color:var(--ink-dim); background:var(--card2);}
+.strip .tot{color:var(--ink); font-weight:500;}
+.strip .dot{width:7px; height:7px; border-radius:50%; background:var(--mint); display:inline-block; margin-right:4px;}
+.layout{display:grid; grid-template-columns:200px 1fr; min-height:520px;}
+@media(max-width:820px){.layout{grid-template-columns:1fr;}}
+.setnav{border-right:1px solid var(--border); padding:14px 0; background:var(--card);}
+.setnav .h{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); padding:0 18px 8px;}
+.setnav a{display:block; font-size:12.5px; color:var(--ink-dim); padding:7px 18px; text-decoration:none; border-left:2px solid transparent;}
+.setnav a.on{color:var(--ink); border-left-color:var(--mint); background:var(--mint-soft); font-weight:500;}
+.setnav a .nw{font-size:9px; color:var(--mint); letter-spacing:.06em; margin-left:6px;}
+.pane{padding:18px;}
+.pane h2{font-size:17px;}
+.pane .sub{margin:2px 0 12px;}
+.sum{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:12px 0 16px;}
+@media(max-width:700px){.sum{grid-template-columns:1fr 1fr;}}
+.mini{border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:var(--card2);}
+.mini .k{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint);}
+.mini .v{font-size:20px; font-weight:600; margin-top:2px;}
+.mini .d{font-size:11px; color:var(--ink-faint); margin-top:2px; line-height:1.5;}
+.filters{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;}
+.chip{font:inherit; font-size:12px; border-radius:999px; padding:4px 12px; cursor:pointer; border:1px solid var(--border); background:var(--card); color:var(--ink-dim);}
+.chip.on{border-color:color-mix(in oklab,var(--mint) 55%,transparent); background:var(--mint-soft); color:var(--ink); font-weight:500;}
+table.src{border-collapse:collapse; width:100%; font-size:12.5px; min-width:900px;}
+table.src th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:left; padding:6px 10px 8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+table.src td{padding:9px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); vertical-align:top;}
+table.src td.name{color:var(--ink); font-weight:500; min-width:180px;}
+table.src td.name small{display:block; color:var(--ink-faint); font-weight:400; font-size:11px; margin-top:1px;}
+table.src td a{color:var(--signal); text-decoration:none; font-size:11.5px;}
+table.src tr.over td{background:color-mix(in oklab,var(--ember) 7%,transparent);}
+table.src tr.fail td{background:color-mix(in oklab,var(--destructive) 7%,transparent);}
+.st{display:inline-flex; align-items:center; gap:5px; font-size:11px; border-radius:4px; padding:1px 7px; white-space:nowrap; border:1px solid;}
+.st.ok{color:var(--mint); border-color:color-mix(in oklab,var(--mint) 45%,transparent); background:var(--mint-soft);}
+.st.over{color:var(--ember); border-color:color-mix(in oklab,var(--ember) 45%,transparent); background:var(--ember-soft);}
+.st.fail{color:var(--destructive); border-color:color-mix(in oklab,var(--destructive) 45%,transparent); background:var(--destructive-soft);}
+.st.na{color:var(--unknown); border-color:color-mix(in oklab,var(--unknown) 45%,transparent); background:var(--track);}
+.st i{width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block;}
+.how{font-size:11px; border-radius:4px; padding:1px 6px; border:1px solid var(--border); color:var(--ink-dim); white-space:nowrap;}
+.how.api{color:var(--signal); border-color:color-mix(in oklab,var(--signal) 40%,transparent);}
+.btn{font:inherit; font-size:12px; font-weight:500; border-radius:7px; padding:5px 11px; cursor:pointer; border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); color:var(--signal); background:var(--signal-soft); white-space:nowrap;}
+.btn.mint{border-color:color-mix(in oklab,var(--mint) 45%,transparent); color:var(--mint); background:var(--mint-soft);}
+.btn.ghost{border-color:var(--border); color:var(--ink-dim); background:transparent;}
+.btn.ember{border-color:color-mix(in oklab,var(--ember) 45%,transparent); color:var(--ember); background:var(--ember-soft);}
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px;}
+@media(max-width:860px){.grid{grid-template-columns:1fr;}}
+.sec{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
+.steps{display:flex; gap:0; align-items:center; margin:0 0 12px; padding:0; list-style:none; flex-wrap:wrap;}
+.steps li{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-dim); border:1px solid var(--border); border-radius:8px; padding:6px 12px; background:var(--card2);}
+.steps li.on{border-color:color-mix(in oklab,var(--signal) 45%,transparent); background:var(--signal-soft); color:var(--ink);}
+.steps li.done{border-color:color-mix(in oklab,var(--mint) 40%,transparent);}
+.steps .sep{border:0; background:none; color:var(--ink-faint); padding:0 8px;}
+.drop{border:1px dashed var(--border); border-radius:10px; padding:16px; text-align:center; color:var(--ink-dim); font-size:12.5px; background:var(--card2);}
+.drop b{display:block; color:var(--ink); margin-bottom:3px;}
+.check{list-style:none; padding:0; margin:10px 0 0; font-size:12.5px;}
+.check li{display:flex; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); color:var(--ink-dim);}
+.check li:last-child{border-bottom:0;}
+.check .k{min-width:140px; color:var(--ink-faint); font-size:11.5px;}
+.check .ok{color:var(--mint);} .check .warn{color:var(--ember);}
+.log{font-size:12px; color:var(--ink-dim);}
+.log div{display:grid; grid-template-columns:118px 1fr; gap:10px; padding:6px 0; border-bottom:1px solid var(--border);}
+.log div:last-child{border-bottom:0;}
+.log .t{color:var(--ink-faint);}
+.footer{display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; padding:10px 18px; border-top:1px solid var(--border); font-size:11px; color:var(--ink-faint); background:var(--card);}
+.rules{list-style:none; padding:0; margin:12px 0 0; font-size:12px; color:var(--ink-dim);}
+.rules li{padding:5px 0 5px 12px; border-left:2px solid var(--signal); margin-bottom:6px; line-height:1.6;}
+</style>
+
+<div class="wrap">
+  <header class="stage">
+    <p class="eyebrow">모자란 화면 제작 · 12 — 설정 「데이터 원천」 (설정 묶음 8호에 한 화면 추가 · 기획안 §5.8)</p>
+    <h1>데이터 원천 — 내가 보는 숫자가 어디서, 언제 온 것인지</h1>
+    <p class="sub">입지 탭이 그리는 모든 값의 <b>출처·기준일·적재일·갱신 방식</b>을 한 자리에. API면 「지금 갱신」, 파일이면 「파일 올리기」,
+    키가 없으면 「키 등록」 — 행마다 동사 하나. 기한이 지나면 <b>색+글자</b>로 알리고 대시보드 «할 일»에 한 줄 올린다.
+    «미설정»은 정상 상태라 빨갛게 칠하지 않는다(설정 묶음 원칙).</p>
+  </header>
+
+  <div class="shell stage">
+    <div class="topbar"><span class="logo">ANSEO</span><nav><span>거래처</span><span>원고 검수</span></nav><span class="sess num">세션 · 관리자 박서준</span></div>
+    <div class="strip"><span class="tot">AI 7종 누적 답변 <span class="num">1,284</span>회</span><span><i class="dot"></i>GPT <span class="num">312</span></span><span><i class="dot"></i>GEM <span class="num">241</span></span><span><i class="dot"></i>CLA <span class="num">198</span></span><span><i class="dot"></i>PER <span class="num">205</span></span><span><i class="dot"></i>GRK <span class="num">96</span></span><span><i class="dot"></i>NAV <span class="num">140</span></span><span><i class="dot" style="background:var(--unknown)"></i>OVW <span class="num">92</span></span></div>
+    <div class="layout">
+      <aside class="setnav"><div class="h">설정</div>
+        <a href="#">사용량·비용</a><a href="#">채점 기준 버전</a><a href="#">외부 연결 열쇠</a><a href="#" class="on">데이터 원천<span class="nw">새 화면</span></a><a href="#">팀원 관리</a><a href="#">내 계정</a><a href="#">변경 이력</a></aside>
+      <div class="pane">
+        <h2>데이터 원천</h2>
+        <p class="sub">입지(경쟁·교통·인구·지오코딩)에 쓰는 원천 <span class="num">11</span>개. 기준일은 원자료가 말하는 시점, 적재일은 우리가 넣은 시각. 갱신하면 새 판이 되고 이후 스냅샷만 바뀐다 — 지난 스냅샷은 그대로.</p>
+        <div class="sum">
+          <div class="mini"><div class="k">최신</div><div class="v num" style="color:var(--mint)">6</div><div class="d">주기 안</div></div>
+          <div class="mini"><div class="k">기한 지남</div><div class="v num" style="color:var(--ember)">2</div><div class="d">심평원 병원정보 · 심평원 진료통계 → 대시보드 할 일</div></div>
+          <div class="mini"><div class="k">키 없음 · 미설정</div><div class="v num" style="color:var(--unknown)">3</div><div class="d">정상 상태 — 그 축은 «—»</div></div>
+          <div class="mini"><div class="k">다음 갱신 예정</div><div class="v num" style="font-size:15px">2026-10-01</div><div class="d">행안부 인구(월간, 워커)</div></div>
+        </div>
+        <div class="filters" role="tablist"><button class="chip on" role="tab" aria-selected="true">전체 11</button><button class="chip" role="tab">경쟁 3</button><button class="chip" role="tab">교통 3</button><button class="chip" role="tab">인구 3</button><button class="chip" role="tab">지오코딩·보조 2</button><button class="chip" role="tab" style="margin-left:auto">기한 지남만</button></div>
+        <div class="overflow"><table class="src">
+          <thead><tr><th>데이터 · 쓰이는 곳</th><th>출처</th><th>기준일</th><th>적재일</th><th>갱신</th><th>상태</th><th></th></tr></thead>
+          <tbody>
+            <tr class="over"><td class="name">심평원 병원정보 (좌표 전수)<small>경쟁 · 반경 안 기관 수·종별·최근접 · 79,764행</small></td><td>심평원 병원정보서비스 · 공공데이터포털<br><a href="#">원문 열기 ↗</a></td><td class="num">2026-06</td><td class="num">2026-07-02</td><td><span class="how">파일 수동</span> 월 1회</td><td><span class="st over"><i></i>기한 지남 · 62일</span></td><td><button class="btn ember" type="button">파일 올리기</button></td></tr>
+            <tr><td class="name">심평원 병원정보 API (반경 조회)<small>경쟁 · 미러 대조 ±5% 검증 · 실시간</small></td><td>공공데이터포털 OpenAPI<br><a href="#">문서 ↗</a></td><td class="num">실시간</td><td class="num">호출 2026-09-03</td><td><span class="how api">API 자동</span> 호출 시</td><td><span class="st ok"><i></i>키 있음</span></td><td><button class="btn ghost" type="button">지금 대조</button></td></tr>
+            <tr><td class="name">소진공 상가(상권)정보 API<small>경쟁 보조 · 비급여 상호 보강</small></td><td>소상공인시장진흥공단 · 공공데이터포털</td><td class="num dash">—</td><td class="num dash">—</td><td><span class="how api">API</span> 키 필요</td><td><span class="st na"><i></i>미설정</span></td><td><button class="btn ghost" type="button">키 등록</button></td></tr>
+            <tr><td class="name">국토부 전국 버스정류장 위치정보<small>교통 · 정류장 수 · 213,842행</small></td><td>국토교통부 · 공공데이터포털<br><a href="#">원문 열기 ↗</a></td><td class="num">2025-12</td><td class="num">2026-01-15</td><td><span class="how">파일 수동</span> 연 1회</td><td><span class="st ok"><i></i>최신 · 234일 남음</span></td><td><button class="btn ghost" type="button">파일 올리기</button></td></tr>
+            <tr><td class="name">국토부 전국 지하철역 정보<small>교통 · 역·노선·거리 · 1,096행 · 좌표 결측 12행 → 지오코딩 대체</small></td><td>국토교통부 · 공공데이터포털<br><a href="#">원문 열기 ↗</a></td><td class="num">2025-12</td><td class="num">2026-01-15</td><td><span class="how">파일 수동</span> 연 1회</td><td><span class="st ok"><i></i>최신</span></td><td><button class="btn ghost" type="button">파일 올리기</button></td></tr>
+            <tr><td class="name">TAGO 버스정류소 노선 API<small>교통 · 정류장별 경유 노선 수(1km까지)</small></td><td>국토교통부 TAGO</td><td class="num dash">—</td><td class="num dash">—</td><td><span class="how api">API</span> 키 필요</td><td><span class="st na"><i></i>미설정</span></td><td><button class="btn ghost" type="button">키 등록</button></td></tr>
+            <tr><td class="name">행안부 주민등록 인구 (행정동×5세×성별)<small>인구 · 피라미드·성비·타깃 비중 · 3,618동</small></td><td>행정안전부 jumin.mois.go.kr<br><a href="#">원문 열기 ↗</a></td><td class="num">2026-08-31</td><td class="num">2026-09-02</td><td><span class="how">파일 수동</span> 월 1회</td><td><span class="st ok"><i></i>최신 · 29일 남음</span></td><td><button class="btn ghost" type="button">파일 올리기</button></td></tr>
+            <tr><td class="name">SGIS 행정동 경계<small>인구 · 원∩동 면적 가중 · 3,618 다각형</small></td><td>통계청 SGIS OpenAPI</td><td class="num">2025</td><td class="num">2026-02-10</td><td><span class="how api">API 자동</span> 연 1회</td><td><span class="st ok"><i></i>최신</span></td><td><button class="btn ghost" type="button">지금 갱신</button></td></tr>
+            <tr><td class="name">SGIS 인구 격자<small>인구 · P3 정밀도 보강</small></td><td>통계청 SGIS</td><td class="num dash">—</td><td class="num dash">—</td><td><span class="how api">API</span> 연 1회</td><td><span class="st na"><i></i>미적재 · P3</span></td><td><button class="btn ghost" type="button" disabled>—</button></td></tr>
+            <tr class="over"><td class="name">심평원 진료통계 (시군구·과별 수진율)<small>추계 환자 수(🟡) · 참고 카드</small></td><td>심평원 보건의료빅데이터<br><a href="#">원문 열기 ↗</a></td><td class="num">2024</td><td class="num">2025-08-10</td><td><span class="how">파일 수동</span> 연 1회</td><td><span class="st over"><i></i>기한 지남 · 24일</span></td><td><button class="btn ember" type="button">파일 올리기</button></td></tr>
+            <tr><td class="name">카카오 로컬 지오코딩<small>지오코딩 · 주소→좌표·행정동 · 결과 24h 캐시(약관)</small></td><td>카카오 디벨로퍼스</td><td class="num">실시간</td><td class="num">호출 2026-09-03</td><td><span class="how api">API 자동</span> 저장 시</td><td><span class="st ok"><i></i>키 있음 · 오늘 1,203/300,000</span></td><td><button class="btn ghost" type="button">열쇠 보기</button></td></tr>
+          </tbody></table></div>
+        <p class="foot">키 등록·열쇠 보기는 「외부 연결 열쇠」 화면으로 간다 — 열쇠는 한 자리에만 둔다. 기한 판단 = 적재일 + 주기 &lt; 오늘. 상용 API(카카오) 결과는 개수 산정에 쓰지 않고 24h만 캐시한다.</p>
+
+        <div class="grid">
+          <div class="sec">
+            <h3>파일 올리기 — 심평원 병원정보 (기한 지남 62일)</h3>
+            <ol class="steps"><li class="done">1 · 올리기 <span class="num" style="font-size:10px">hospBasisList_202608.xlsx · 18.2MB</span></li><li class="sep">→</li><li class="on">2 · 검증</li><li class="sep">→</li><li>3 · 적재</li></ol>
+            <ul class="check">
+              <li><span class="k">형식·시트</span><span class="ok">✓ xlsx · 시트 hospBasisList · 헤더 42열 일치</span></li>
+              <li><span class="k">인코딩</span><span class="ok">✓ UTF-8 (csv면 cp949 자동 감지)</span></li>
+              <li><span class="k">행 수</span><span class="ok">✓ <span class="num">80,113</span>행 (지난 판 79,772 · <span class="num">+341</span>)</span></li>
+              <li><span class="k">좌표 결측</span><span class="warn">△ <span class="num">9</span>행 좌표 없음 → 반경 계산에서 제외, 목록에는 남김</span></li>
+              <li><span class="k">기준일</span><span class="ok">✓ 파일 기준 2026-08 (지난 판 2026-06 → 새 판 hira=2026-08)</span></li>
+              <li><span class="k">광주 코딩</span><span class="ok">✓ «전남 광주○구» → 광주광역시 정규화 적용</span></li>
+            </ul>
+            <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap"><button class="btn mint" type="button">적재 — 새 판 hira=2026-08</button><button class="btn ghost" type="button">취소</button><span style="font-size:11px;color:var(--ink-faint)">적재 후 다음 스냅샷부터 새 판. 지난 스냅샷·발행본은 그대로.</span></div>
+            <div class="drop" style="margin-top:12px"><b>다른 파일을 올리려면 여기에 끌어다 놓기</b>xlsx · csv(cp949/utf-8) · 200MB까지 · 어디서 받는지: 행 «출처 → 원문 열기»</div>
+          </div>
+          <div class="sec">
+            <h3>갱신 이력 — 원천 단위 판 기록</h3>
+            <div class="log">
+              <div><span class="t num">2026-09-02 09:14</span><span>행안부 인구 · 파일 · 2026-08-31 판 적재 · 3,618동 · 박서준</span></div>
+              <div><span class="t num">2026-09-01 22:00</span><span>SGIS 경계 · API · 변경 없음(연 1회 점검) · 워커</span></div>
+              <div><span class="t num">2026-08-03 09:40</span><span>행안부 인구 · 파일 · 2026-07-31 판 적재 · 박서준</span></div>
+              <div><span class="t num">2026-08-01 22:00</span><span style="color:var(--ember)">심평원 병원정보 · 기한 지남 알림 · 대시보드 할 일 등록</span></div>
+              <div><span class="t num">2026-07-02 10:05</span><span>심평원 병원정보 · 파일 · 2026-06 판 적재 · 79,772행 · 좌표 결측 8</span></div>
+              <div><span class="t num">2026-06-30 22:00</span><span style="color:var(--destructive)">TAGO 노선 · API · 실패(401) → 키 만료 · «미설정»으로 강등</span></div>
+            </div>
+            <ul class="rules">
+              <li><b>한 곳 정본.</b> 거래처 입지 탭 머리의 «기준일 · 심평원 2026-06 · 행안부 2026-08»은 이 표의 값을 그대로 읽는다.</li>
+              <li><b>부분 실패 문법 공유.</b> 원천 하나가 실패하면 그 축만 «못 읽음», 나머지는 그린다. 여기 이력에 실패 사유가 남는다.</li>
+              <li><b>API가 아닌 것만 손이 간다.</b> 파일 수동 5개(심평원 2·행안부·국토부 2)가 사람 몫이고, 나머지는 워커가 주기대로 돈다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>개발 VENOM · 방법론 VEO-LAB</span><span>앱 v0.3.39x</span><span>점수는 준비도, 순위 보장 아님</span></div>
+  </div>
+
+  <div class="badge"><b>확정 규격</b><span>행 버튼 = 동사 하나</span><span>«미설정»은 정상</span><span>색+글자 병용</span><span>판 규율 — 갱신은 새 판, 지난 스냅샷 불변</span><span>열쇠는 「외부 연결 열쇠」 한 자리</span></div>
+  <p class="whytwo"><b>왜 설정에 두나.</b> 결과 화면(입지 탭)에는 기준일 한 줄만 두고, 무엇을 언제 어떻게 갱신하는지는 여기 한 자리에서 조작한다 — 설정 묶음 8호의 «설정은 결과와 섞이지 않는다» 원칙. 사장님 오더(09-03): «내가 보는 데이터가 어떤 자료가 언제 어디서 나온 자료인지, 날짜가 지났으면 보고 업데이트(API가 아닐 경우) 할 수 있게».</p>
+</div>
