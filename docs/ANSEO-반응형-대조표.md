@@ -209,3 +209,23 @@ PublishLedger · StandingCard · mine/page)을 잡았다 — `styles.tableFlow` 
 `veo.seokorea.org/login` 발 판 = «앱 버전 v0.3.495». ANSEO 방 0.3.489~0.3.493 과 한 묶음으로 도달.
 도장 커밋 `640866b8`(대장 §2 미배포 없음 · 대기 표 비움 · HISTORY 일곱 절 · 오더 로그).
 
+### 7-5. 누름 영역 마무리 (2026-09-03 · v0.3.496 · 미배포)
+
+0.3.494~0.3.495 를 내보내며 「배포 동행이 먼저」로 미뤄 둔 잔여분. 전 화면 촬영이 잡아 둔 목록 그대로다.
+
+| 자리 | 전 (실측) | 후 |
+| --- | --- | --- |
+| 빈 화면 길 안내 「대시보드로 가기」(`EmptyState.action`) | 19px | 27px — 가짜 요소 `inset: -4px -2px` |
+| 이슈 목록 제목 링크 (`issues .issueTitle`) | 23px | 29px — `inset: -3px 0` |
+| 「JourneyMap 열기」 (`keywords .mindmapLink`) | 15px | 25px — `inset: -5px -2px` |
+| `/bot` 문의 메일 링크 (공용 `page.module.css .linkCardText a`) | 16px | 24px — `inset: -4px -2px` |
+| 사용량 예산 고르기 라디오 | 13px 로 잡혔으나 **오탐** | 큰 `<label>` 이 감싸 카드 전체가 눌린다 — 장치가 이름표를 함께 보게 고침 |
+
+보이는 크기·글자 크기는 모두 그대로다. **안 고친 것**: `/console/geo` 「키워드 조사」 본문 링크 15px —
+그 화면 CSS(`geo.module.css .rateNote`)는 AEO 방 소관이라 손대지 않았다(같은 수법 한 줄이면 된다).
+
+**검사** — typecheck 0 · lint(기존 경고 1) · test 249 파일 2,178 · build · smoke.
+[실측 2026-09-03 · `pnpm rwd` · 390·834px] 404·이슈·키워드·/bot·사용량·대시보드·거래처 14장:
+넘침 0 · 겹침 0 · 잘림 0 · 탈출 0 · **누름 0** · pageerror 0.
+
+veo-platform 가지 `claude/anseo-screen-touch-0.3.496` 커밋 `6126c240`(원격 푸시). **미배포 — 배포 오더 대기.**

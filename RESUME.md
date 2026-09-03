@@ -1,4 +1,4 @@
-# RESUME — 다음 세션 이어가기 (2026-09-03 23:30 KST · s17 「0.3.489~0.3.495 배포 완료」)
+# RESUME — 다음 세션 이어가기 (2026-09-04 00:0x KST · s17 「0.3.489~0.3.495 배포 완료 · 0.3.496 커밋」)
 
 > 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s17.md`(직전)·`-s16.md`·`-s15.md`,
 > 결함표 `docs/ANSEO-반응형-대조표.md`(§6 2차 · §7 관문 · §7-4 예외 줄임·물림·배포 도장), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
@@ -8,6 +8,7 @@
 ```
 veo-platform  코드 판           b6ad8242  0.3.495 운영 도달 [실측 2026-09-03 23:21 KST 서버·워커·웹 셋 다]
               main                640866b8  배포 도장 커밋(문서만, 판 번호 변화 없음) — CI run 33766629128 초록 → main 14:33 UTC
+              claude/anseo-screen-touch-0.3.496  6126c240  누름 영역 마무리 (원격 푸시 · **미배포**)
 desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-4 · s17 로그 · 이 문서
 ```
 
@@ -19,11 +20,12 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-4
 
 ## 바로 이어갈 작업
 
-1. **이 회차는 완전히 닫혔다** — 배포·삼중 실측·도장까지 끝(도장 커밋 `640866b8` main 도달 14:33 UTC).
-   남은 후속 작업 없음.
+1. **0.3.489~0.3.495 회차는 닫혔다**(도장 커밋 `640866b8` main 14:33 UTC).
+   그 뒤 **0.3.496**(누름 영역 마무리)을 커밋해 두었다 — 가지 `claude/anseo-screen-touch-0.3.496`,
+   커밋 `6126c240`, 검사 초록, **미배포**. 배포 오더가 오면 후보 가지 → CI → main → 삼중 실측 → 도장.
+   (다른 방이 먼저 0.3.496 을 쓰면 규칙대로 물러나 번호를 올린다.)
 2. 오더 없으면 대기. 다음 후보:
-   - 남은 누름 표시 17곳/폭 — 빈 상태 「대시보드로 가기」 19px · 이슈 제목 링크 23px · 「키워드 조사」·
-     「JourneyMap 열기」 15px · 사용량 체크 13px · `/bot` 메일 링크 16px.
+   - `/console/geo` 「키워드 조사」 본문 링크 15px — **AEO 방 몫**으로 남겨 뒀다(같은 수법 한 줄).
    - 거래처 표 모바일 카드형 · 「AI 별 누적 답변」 띠 모바일 접기 · 산점도 이름표 2차원 밀어내기.
    - 남은 접는 폭 BASELINE 11 파일(1240·760·700·860·600·48rem·min-width 둘 · geo 방 파일은 그 방 몫).
 3. 사장님 화면 지적 시: `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright
