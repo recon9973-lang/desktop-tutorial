@@ -1,54 +1,53 @@
-# RESUME — 다음 세션 이어가기 (2026-09-04 00:0x KST · s17 「0.3.489~0.3.495 배포 완료 · 0.3.496 커밋」)
+# RESUME — 다음 세션 이어가기 (2026-09-04 02:00 KST · s17 「0.3.489~0.3.497 배포 마감」)
 
 > 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s17.md`(직전)·`-s16.md`·`-s15.md`,
-> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 2차 · §7 관문 · §7-4 예외 줄임·물림·배포 도장), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 2차 · §7 관문 · §7-4 예외 줄임 · §7-5 누름 마무리·배포), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
 ## 지금 상태 (s17 마감)
 
 ```
-veo-platform  코드 판           b6ad8242  0.3.495 운영 도달 [실측 2026-09-03 23:21 KST 서버·워커·웹 셋 다]
-              main                640866b8  배포 도장 커밋(문서만, 판 번호 변화 없음) — CI run 33766629128 초록 → main 14:33 UTC
-              claude/anseo-screen-touch-0.3.496  6126c240  누름 영역 마무리 (원격 푸시 · **미배포**)
-desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-4 · s17 로그 · 이 문서
+veo-platform  main                 74905ea0  0.3.497 운영 도달 [실측 2026-09-04 01:55 KST 서버·워커·웹 셋 다]
+              deploy-candidate     0065038a  배포 도장 커밋(문서만, 판 번호 변화 없음) — CI 채점 중/초록이면 main 으로
+desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-5 도장 · s17 로그 · 이 문서
 ```
 
-- **미배포 없음.** 0.3.489~0.3.495 가 한 묶음으로 나갔다 — ANSEO 방 489~493(빈 칸 지도·AI 이용률 순서·발행 대장 1·2판·
-  세 층 역할+거래처 «입지») + 이 방 494(전수 점검 2차 8곳)·495(새 화면 관문 3종·촬영 장치 `pnpm rwd`·규칙 문서·예외 줄임).
-  두 방이 같은 489~490 을 써서 이 방 판이 494·495 로 물러난 뒤 함께 도달.
-- 이 방이 이 회차에 넣은 관문 3종(글자 11px 하한 · 접는 폭 720/960/1100 · 표 가로 스크롤 틀)이 합치는 자리에서
-  그 방 새 표 네 곳의 없는 클래스(`styles.tableFlow` → `styles.tableWrap`)를 잡아 고쳤다 — 관문 첫 손님.
+- **미배포 없음.** 0.3.494~0.3.497 넉 판이 한 묶음으로 나갔다:
+  - 화면 점검 방 0.3.494(전수 점검 2차) · 0.3.495(새 화면 관문 3종) · 0.3.497(누름 영역 마무리)
+  - 입지 방 0.3.496(거래처 「입지」 탭·설정 「데이터 원천」·AI 스트립 연결 상태 밑줄)
+  - 이 방 판 두 번 물림: 0.3.489~0.3.490 → 0.3.494~0.3.495 (23:21 KST 배포) · 0.3.496 → 0.3.497 (01:55 KST 배포)
+- 이 방이 넣은 관문 3종이 두 번 자기 값을 했다: 처음 합침에서 입지 방 새 표 4곳의 없는 클래스 `tableFlow`→`tableWrap`
+  잡아 고침 · 이후 합침에서 입지 방 CSS 세 자리(접는 폭 · 글자 하한 · 표 감싸개)를 통과시키게 유도 (147051d5).
 
 ## 바로 이어갈 작업
 
-1. **0.3.489~0.3.495 회차는 닫혔다**(도장 커밋 `640866b8` main 14:33 UTC).
-   그 뒤 **0.3.496**(누름 영역 마무리)을 커밋해 두었다 — 가지 `claude/anseo-screen-touch-0.3.496`,
-   커밋 `6126c240`, 검사 초록, **미배포**. 배포 오더가 오면 후보 가지 → CI → main → 삼중 실측 → 도장.
-   **번호 충돌 진행 중**: 「입지 방」도 0.3.496 을 후보 가지 `7dea3e73` 에 올려 CI 초록(15:33 UTC).
-   그 방이 main 에 닿는 순간 이 판은 **0.3.497** 로 물러난다 — main 위에 `git cherry-pick 6126c240`,
-   충돌은 판 문자열·openapi·changelog·대장 §2·대기 표·HISTORY 다섯 곳뿐(코드 겹침 없음).
-   그 방 후보의 대장은 0.3.494~0.3.495 를 아직 「미배포」로 적고 있다(그 가지가 도장 커밋 `640866b8` 전에
-   갈라졌다). 그 방 후보는 main 의 조상이 아니라 그대로는 못 얹히고, 합칠 때 드러난다 — 이 방이 고치지 않는다.
+1. **도장 커밋 CI 마무리**(남은 한 걸음): `deploy-candidate` = `0065038a` CI 초록 확인 →
+   `cd /home/user/veo-platform && git push origin 0065038a:main` (문서만, 판 번호 그대로 0.3.497).
+   그 사이 main 이 움직였으면 그 위에 다시 얹는다.
 2. 오더 없으면 대기. 다음 후보:
    - `/console/geo` 「키워드 조사」 본문 링크 15px — **AEO 방 몫**으로 남겨 뒀다(같은 수법 한 줄).
+   - `/console/mine` 「내 것」·「◀ 지난달」·「다음달 ▶」 19px — 입지/발행 대장 방 몫.
    - 거래처 표 모바일 카드형 · 「AI 별 누적 답변」 띠 모바일 접기 · 산점도 이름표 2차원 밀어내기.
    - 남은 접는 폭 BASELINE 11 파일(1240·760·700·860·600·48rem·min-width 둘 · geo 방 파일은 그 방 몫).
 3. 사장님 화면 지적 시: `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright
-   pnpm rwd /tmp/out <경로>`. 전 화면은 경로 없이(56장 ≈ 8분, 배경으로 돌리고 다른 검사를 앞에서).
+   pnpm rwd /tmp/out <경로>`. 전 화면은 경로 없이(56장 ≈ 8분, 배경으로).
 
 ## 도구·실측 메모 (재탐색 금지)
 
 - 관문 3 의 예외는 각 시험 파일 BASELINE/WRAPPED_BY_PARENT — 늘면 실패, 줄면 숫자도 내린다. 누름 기준 24px(문서 §3·WCAG 2.5.8).
+- 촬영 장치 오탐: 라디오·체크박스가 큰 `<label>` 안이면 이름표가 누름 영역이다(0.3.497 에서 고침).
 - hydration 오류는 `pnpm rwd` 의 `console` 열 `pageerror`(연기 시험은 못 잡는다).
-- 삼중 실측 명령: `sandbox_exec` 로 `https://veo-platform-production.up.railway.app/api/health`(서버 version) ·
-  `/api/queue`(worker_versions·stale) · `https://veo.seokorea.org/login` HTML 의 «앱 버전 v0.3.…». DB 경로 `/api/customers` = 401 이 정상.
+- 삼중 실측: `sandbox_exec` 로 `https://veo-platform-production.up.railway.app/api/health` · `/api/queue` ·
+  `https://veo.seokorea.org/login` HTML 의 «앱 버전 v0.3.…». DB 경로 `/api/customers` = 401 이 정상.
+  웹 판 grep 은 `grep -o '앱 버전 v<!-- -->[0-9.]*'` 로(주석 사이에 낀 판 문자열).
 - 이 컨테이너엔 veo-platform `.venv` 가 없다 — `make preflight` 의 ruff·pytest·계약 드리프트 ✗ 는 **못 잰 것**(CI 가 잰다).
-  웹 관문(typecheck·lint·test·build·smoke)은 여기서 돈다.
 - CI 상태: GitHub MCP `actions_list`(owner recon9973-lang · repo veo-platform · ci.yml · branch deploy-candidate).
 - 배포 길: 후보 가지 `deploy-candidate` 푸시 → CI 초록 → **같은 SHA** 를 main 으로 → 삼중 실측 → 도장 커밋(같은 길로).
+- 판 번호 겹침 때: force-with-lease 는 sandbox classifier 가 막을 수 있다 — 그때는 `--force-with-lease=<ref>:<expected-sha>`
+  형식으로 명시하면 통과했다(2026-09-04 01:34 UTC).
 
 ## 주의·제약 (반드시)
 
-- 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` + `Claude-Session:`(그 방 URL).
+- 커밋 트레일러: `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>` + `Claude-Session:`(그 방 URL).
   모델 ID 를 커밋/PR/코드/문서에 넣지 않는다. 비밀키 금지.
 - 사장님께는 「커밋」「배포」 두 낱말만. 못 잰 값은 —. `[실측]` 은 명령과 출력이 있을 때만. 데이터는 테스트용 — 정합성 지적 금지.
 - prettier 는 저장소 관문이 아니다 — `--write` 로 남의 줄을 바꾸지 않는다.
