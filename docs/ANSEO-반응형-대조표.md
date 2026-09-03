@@ -203,5 +203,9 @@ PublishLedger · StandingCard · mine/page)을 잡았다 — `styles.tableFlow` 
 있었다(다른 모듈의 같은 이름을 옮겨 적은 무늬). 공용 `styles.tableWrap` 으로 한 낱말씩 바로잡았다. 관문이 없었으면
 그대로 나갔을 표다.
 
-**배포(동행).** 후보 가지 `b6ad8242` 푸시 13:05 UTC → CI → main → 삼중 실측 → 아래 도장.
+**배포(동행) — 나갔다.** 후보 가지 `b6ad8242` → CI run 33759050241 초록(13:13 UTC) → main `b6ad8242`(13:20 UTC) →
+**[실측 2026-09-03 23:21 KST] 서버·워커·웹 셋 다 `0.3.495`** (바깥 샌드박스 curl · 워커 1대·뒤처진 워커 0 · DB 경로 401 정상).
+잰 곳 셋: `…up.railway.app/api/health` = `production 0.3.495` · `/api/queue` = `workers 1 · ['0.3.495'] · stale 0` ·
+`veo.seokorea.org/login` 발 판 = «앱 버전 v0.3.495». ANSEO 방 0.3.489~0.3.493 과 한 묶음으로 도달.
+도장 커밋 `640866b8`(대장 §2 미배포 없음 · 대기 표 비움 · HISTORY 일곱 절 · 오더 로그).
 
