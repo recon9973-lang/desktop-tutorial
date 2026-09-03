@@ -1,38 +1,41 @@
-# RESUME — 다음 세션 이어가기 (2026-09-03 · s16 「새 화면도 같은 규칙으로 · v0.3.490 준비」)
+# RESUME — 다음 세션 이어가기 (2026-09-03 · s17 「남은 작업 마감 · 판 번호 물림 · 동행 배포 0.3.494~0.3.495」)
 
-> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s16.md`(직전)·`-s15.md`,
-> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 = 2차 결함 8곳 · §7 = 새 화면 관문), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s17.md`(직전)·`-s16.md`,
+> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 = 2차 · §7 = 관문 · §7-4 = 예외 줄임·물림·동행 배포), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
-## 지금 상태 (s16 마감)
+## 지금 상태 (s17)
 
 ```
-veo-platform  main                              c03246ac (0.3.488 운영 도달 [실측 2026-09-03 04:03 KST])
-              claude/anseo-screen-rwd-0.3.489       ffd2a411  2차 결함 8곳 (미배포)
-              claude/anseo-screen-guards-0.3.490    a90626f7  ← 위 가지 위 2커밋: 관문 3·pnpm rwd·규칙 문서 (원격 푸시 · 미배포)
-desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §6·§7 · s15·s16 로그 · 이 문서
+veo-platform  main                               181f02a3 (ANSEO 방 0.3.489~0.3.493 도달 · 13:0x UTC)
+              deploy-candidate                   b6ad8242  ← 이 방 0.3.494(2차)+0.3.495(관문·예외 줄임) — CI 채점 중(13:05 UTC 푸시)
+              claude/anseo-screen-guards-0.3.495  b6ad8242  (원격) — 그 방 판 위에 얹은 정본 가지
+              claude/anseo-screen-guards-0.3.490  42e02881  (원격) — 물리기 전 가지. 참고용, 더 안 쓴다
+desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-4 · s17 로그 · 이 문서
 ```
 
-- 사장님 오더(09-03) «새로 추가되는 것도 바뀐 화면 구성에 맞게 추가될 수 있도록 조치되는지 확인» → 확인(절반만 자동)
-  → «이어서 진행» → **끝났다.** 관문 3종(글자 11px · 접는 폭 720/960/1100 · 표 스크롤 틀, BASELINE 방식) +
-  촬영·측정 장치 `apps/web/test/rwd/`(`pnpm rwd`) + `docs/design/2026-09-03-SCREEN-RULES.md` = **v0.3.490**.
-- 검사 초록(typecheck · lint 기존 경고 1 · test 247 파일 2,171). `pnpm rwd` 저장소에서 실행 확인.
-- **미배포 0.3.489~0.3.490** — 배포 오더가 오면 아래 절차.
+- 오더(09-03) «남은 작업 이어서 · 배포 준비 · 다른 방 배포 시작되면 같이 배포» → 남은 작업(접는 폭 640·900→720·960
+  열세 곳 · 화살표 11px · 누름 영역 열 곳 · 장치 기준 24px) 끝. ANSEO 방이 0.3.489~0.3.493 을 먼저 올려 이 방 두 판이
+  0.3.494·0.3.495 로 물렸고, 관문이 그 방 새 표 4곳의 없는 클래스(`tableFlow`→`tableWrap`)를 잡아 고쳤다.
+- **배포 진행 중**: 후보 가지 CI → 초록이면 `git push origin b6ad8242:main` → 삼중 실측(바깥 샌드박스 curl
+  `/api/health`·`/api/queue`·웹 번들) → 대장 도장 커밋(§2 「미배포 없음」·대기 표 비움·HISTORY 도장) → 후보 가지·main.
 
 ## 바로 이어갈 작업
 
-1. **배포 오더가 오면**: 가지 `claude/anseo-screen-guards-0.3.490`(0.3.489 포함)을 main 에 얹는다. 다른 방이 먼저
-   main 에 닿아 0.3.489/0.3.490 을 썼으면 규칙대로 물러나 번호를 올린다(s14 로그 방법: main 에서 새 가지·파일
-   checkout·판 문서만 다시 적음). 후보 가지 → CI → main → 삼중 실측(바깥 샌드박스 curl) → 도장 커밋.
-2. 사장님 추가 지적 시: `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright
-   pnpm rwd /tmp/out <경로>` 로 그 화면만 찍어 고친다(글꼴 폴더 없으면 대체 글꼴 — 겹침·잘림 값은 참고로만).
-3. 오더 없으면 대기. 다음 후보: 손대는 파일부터 BASELINE 줄이기(640·900 → 720·960) · 거래처 표 모바일 카드형 ·
-   「AI 별 누적 답변」 띠 모바일 접기.
+1. **배포 마감이 안 끝났으면**: CI run(가지 deploy-candidate, sha b6ad8242) 결론 확인 → main 푸시 → 삼중 실측 → 도장 커밋.
+   빨간불이면 로그를 보고 고쳐 같은 가지에 커밋·후보 재푸시. 그 사이 다른 방이 main 에 먼저 닿으면 다시 물린다.
+2. 다음 후보(오더 시): 남은 누름 표시 17곳/폭(빈 상태 「대시보드로 가기」·이슈 제목·「키워드 조사」·「JourneyMap 열기」·
+   사용량 체크·/bot 메일) · 거래처 표 모바일 카드형 · 「AI 별 누적 답변」 띠 접기.
+3. 사장님 추가 지적 시: `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright
+   pnpm rwd /tmp/out <경로>` 로 그 화면만 찍어 고친다. 전 화면은 경로 없이(56장 ≈ 8분, 배경으로).
 
 ## 도구·실측 메모 (재탐색 금지)
 
 - 관문 3 의 예외 목록은 각 시험 파일 BASELINE/WRAPPED_BY_PARENT — 늘면 실패, 줄면 숫자도 내린다.
-- hydration 오류는 `pnpm rwd` 의 `console` 열 `pageerror` 로 잡힌다(연기 시험은 못 잡는다).
-- 대시보드 덮개 창구·관문(`dashboard-layout.test.ts §1-1`)은 s14 메모 그대로.
+- hydration 오류는 `pnpm rwd` 의 `console` 열 `pageerror` 로 잡힌다(연기 시험은 못 잡는다). 장치 누름 기준 24px.
+- 이 컨테이너엔 veo-platform `.venv` 가 없다 — `make preflight` 의 ruff·pytest·계약 드리프트 ✗ 는 못 잰 것(CI 가 잰다).
+  웹 관문(typecheck·lint·test·build·smoke)은 여기서 돈다.
+- CI 상태는 GitHub MCP `actions_list`(owner recon9973-lang, repo veo-platform, ci.yml, branch deploy-candidate).
+- 운영 실측 우회: Higgsfield MCP `sandbox_exec` 바깥 샌드박스 curl (이 방 프록시가 운영 403).
 
 ## 주의·제약 (반드시)
 
@@ -41,6 +44,7 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §6·
 - 사장님께는 「커밋」「배포」 두 낱말만. 못 잰 값은 —. `[실측]` 은 명령과 출력이 있을 때만.
 - prettier 는 저장소 관문이 아니다 — `--write` 로 남의 줄을 바꾸지 않는다.
 - /console/geo AEO 독립 화면·의료 규정은 다른 방 소관(관문 BASELINE 에 그 방 파일 숫자가 있다 — 그 방이 줄이면 숫자도 같이).
+- 판 번호 규칙: 먼저 main 에 닿은 쪽을 두고 뒤엣것이 물러난다.
 
 ---
 
