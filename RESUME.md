@@ -6,8 +6,8 @@
 ## 지금 상태 (s17 마감)
 
 ```
-veo-platform  main                b6ad8242  0.3.495 운영 도달 [실측 2026-09-03 23:21 KST 서버·워커·웹 셋 다]
-              deploy-candidate    640866b8  배포 도장 커밋(문서만) — CI 채점 중 → 초록이면 main 으로
+veo-platform  코드 판           b6ad8242  0.3.495 운영 도달 [실측 2026-09-03 23:21 KST 서버·워커·웹 셋 다]
+              main                640866b8  배포 도장 커밋(문서만, 판 번호 변화 없음) — CI run 33766629128 초록 → main 14:33 UTC
 desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-4 · s17 로그 · 이 문서
 ```
 
@@ -19,9 +19,8 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-4
 
 ## 바로 이어갈 작업
 
-1. **도장 커밋 마무리**(남은 한 걸음): `deploy-candidate` = `640866b8` CI 초록 확인 →
-   `cd /home/user/veo-platform && git push origin 640866b8:main`. 문서만 바뀌므로 판 번호 변화 없음.
-   (main 이 그 사이 움직였으면 `git fetch` 후 그 위에 다시 얹는다.)
+1. **이 회차는 완전히 닫혔다** — 배포·삼중 실측·도장까지 끝(도장 커밋 `640866b8` main 도달 14:33 UTC).
+   남은 후속 작업 없음.
 2. 오더 없으면 대기. 다음 후보:
    - 남은 누름 표시 17곳/폭 — 빈 상태 「대시보드로 가기」 19px · 이슈 제목 링크 23px · 「키워드 조사」·
      「JourneyMap 열기」 15px · 사용량 체크 13px · `/bot` 메일 링크 16px.
