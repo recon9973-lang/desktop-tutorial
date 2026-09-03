@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-03 docs: 도장 커밋 0065038a main 도달 기록 — 0.3.494~0.3.497 회차 완전 마감
+- 2026-09-03 docs: 0.3.494~0.3.497 배포 마감 도장 — 대조표 §7-5·s17 로그·RESUME·PROJECT_STATE
 - 2026-09-03 docs: 판 번호 충돌 기록 — 입지 방도 0.3.496, 이 판은 그 방이 main 에 닿으면 0.3.497 로
 - 2026-09-03 docs: 누름 영역 마무리 v0.3.496 — 대조표 §7-5 · s17 로그 · RESUME · PROJECT_STATE
 - 2026-09-03 docs: 도장 커밋 640866b8 main 도달 기록 — 0.3.489~0.3.495 회차 마감
 - 2026-09-03 docs: 0.3.489~0.3.495 배포 도장 · s17 체크포인트 — 대조표 §7-4 실측·세션 로그·RESUME·PROJECT_STATE
 - 2026-09-03 docs: s17 — 남은 작업 마감(예외 줄임·누름 영역)·판 번호 물림 0.3.494~0.3.495·동행 배포 진행 — 대조표 §7-4·s17 로그·RESUME
 - 2026-09-03 docs: 새 화면 관문 3종·촬영 장치·규칙 문서 — 대조표 §7·s16 로그·RESUME (veo-platform v0.3.490 준비)
-- 2026-09-03 docs: 화면 전수조사 2차 — 결함 8곳 대조표 §6·전후 축소본·s15 로그·RESUME (veo-platform v0.3.489 준비)
-- 2026-09-02 docs: 배포 도장 커밋 c03246ac main 도달 기록
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 b385b84 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 1825272 기준. 값·비밀은 포함하지 않음.*
