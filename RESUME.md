@@ -1,39 +1,37 @@
-# RESUME — 다음 세션 이어가기 (2026-09-03 · s15 「화면 전수조사 2차 · v0.3.489 준비」)
+# RESUME — 다음 세션 이어가기 (2026-09-03 · s16 「새 화면도 같은 규칙으로 · v0.3.490 준비」)
 
-> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s15.md`(직전)·`2026-09-02-s14.md`,
-> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 = 2차), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s16.md`(직전)·`-s15.md`,
+> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 = 2차 결함 8곳 · §7 = 새 화면 관문), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
-## 지금 상태 (s15 마감)
+## 지금 상태 (s16 마감)
 
 ```
-veo-platform  main                          c03246ac (0.3.488 코드 34136f4d · 운영 도달 [실측 2026-09-03 04:03 KST])
-              claude/anseo-screen-rwd-0.3.489   ← 이 방 2차 판 v0.3.489 (main 위 1커밋 · 원격 푸시됨 · 미배포)
-desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §6·축소본 09~16·s15 로그·이 문서
+veo-platform  main                              c03246ac (0.3.488 운영 도달 [실측 2026-09-03 04:03 KST])
+              claude/anseo-screen-rwd-0.3.489       ffd2a411  2차 결함 8곳 (미배포)
+              claude/anseo-screen-guards-0.3.490    a90626f7  ← 위 가지 위 2커밋: 관문 3·pnpm rwd·규칙 문서 (원격 푸시 · 미배포)
+desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §6·§7 · s15·s16 로그 · 이 문서
 ```
 
-- 사장님 오더(09-03) «pc 테블릿 모바일 버전 자체 시뮬레이션으로 오류 및 디자인 개선 사항 폰트 위치 등 매끄럽게
-  적용됐는지 전수조사» → **끝났다.** 0.3.488 빌드로 29화면 × 3폭 87장(운영 글꼴) 자동 측정 8종 + 눈 검토.
-  결함 8곳 고쳐 **v0.3.489** 로 커밋(가지 `claude/anseo-screen-rwd-0.3.489`). 표는 대조표 §6.
-  가장 큰 것: `/console/customers` React #418(표 AEO 칸 `<td>` 안의 `<td>`) — 세 폭 전부, 개발 서버에선 안 보였다.
-- 검사 전부 초록(pnpm -r typecheck·lint·test web 2,162·ui 343 · build · smoke 24화면). 재촬영 24장 pageerror 0.
-- **미배포 v0.3.489** — 배포 오더가 오면 아래 절차.
+- 사장님 오더(09-03) «새로 추가되는 것도 바뀐 화면 구성에 맞게 추가될 수 있도록 조치되는지 확인» → 확인(절반만 자동)
+  → «이어서 진행» → **끝났다.** 관문 3종(글자 11px · 접는 폭 720/960/1100 · 표 스크롤 틀, BASELINE 방식) +
+  촬영·측정 장치 `apps/web/test/rwd/`(`pnpm rwd`) + `docs/design/2026-09-03-SCREEN-RULES.md` = **v0.3.490**.
+- 검사 초록(typecheck · lint 기존 경고 1 · test 247 파일 2,171). `pnpm rwd` 저장소에서 실행 확인.
+- **미배포 0.3.489~0.3.490** — 배포 오더가 오면 아래 절차.
 
 ## 바로 이어갈 작업
 
-1. **배포 오더가 오면**: 가지 `claude/anseo-screen-rwd-0.3.489` 를 main 에 얹는다(다른 방이 먼저 main 에 닿아
-   0.3.489 를 썼으면 규칙대로 물러나 0.3.490 으로 다시 얹음 — s14 로그의 방법: main 에서 새 가지·파일 checkout·
-   판 문서만 다시 적음). 그다음 후보 가지 → CI → main → 삼중 실측(바깥 샌드박스 curl) → 도장 커밋.
-2. 사장님이 캡처를 보시고 추가 지적하면 그 화면만 `audit-rwd.mjs`(scratchpad 소멸 — s15 로그대로 다시 쓴다)로 찍어 고친다.
-3. 다음 후보(오더 없으면 대기): 연기 시험에 브라우저 관문(pageerror = hydration 오류) 추가 · 거래처 표 모바일 카드형 ·
+1. **배포 오더가 오면**: 가지 `claude/anseo-screen-guards-0.3.490`(0.3.489 포함)을 main 에 얹는다. 다른 방이 먼저
+   main 에 닿아 0.3.489/0.3.490 을 썼으면 규칙대로 물러나 번호를 올린다(s14 로그 방법: main 에서 새 가지·파일
+   checkout·판 문서만 다시 적음). 후보 가지 → CI → main → 삼중 실측(바깥 샌드박스 curl) → 도장 커밋.
+2. 사장님 추가 지적 시: `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright
+   pnpm rwd /tmp/out <경로>` 로 그 화면만 찍어 고친다(글꼴 폴더 없으면 대체 글꼴 — 겹침·잘림 값은 참고로만).
+3. 오더 없으면 대기. 다음 후보: 손대는 파일부터 BASELINE 줄이기(640·900 → 720·960) · 거래처 표 모바일 카드형 ·
    「AI 별 누적 답변」 띠 모바일 접기.
 
 ## 도구·실측 메모 (재탐색 금지)
 
-- 캡처: `pnpm install --frozen-lockfile && pnpm build`(apps/web) 뒤 `SHOOT_FIXTURE=fx-data.json SHOOT_PORT=46xx
-  node audit-rwd.mjs <출력> [경로…]`. 구글 서체는 `fonts/`(css2.css + woff2 16개)로 `context.route` 되돌림.
-  Playwright `/opt/node22/lib/node_modules/playwright`, chromium `/opt/pw-browsers`, PIL 있음.
-- hydration 오류 찾기: 외부 스크립트(`/_next/static/**.js`)를 막고 연 DOM 과 정상 로드 DOM 을 태그·글자만 남겨
-  difflib — 개발 서버 콘솔·React 오류 번호로는 못 찾는다(s15 로그 `hydration-diff3.mjs`).
+- 관문 3 의 예외 목록은 각 시험 파일 BASELINE/WRAPPED_BY_PARENT — 늘면 실패, 줄면 숫자도 내린다.
+- hydration 오류는 `pnpm rwd` 의 `console` 열 `pageerror` 로 잡힌다(연기 시험은 못 잡는다).
 - 대시보드 덮개 창구·관문(`dashboard-layout.test.ts §1-1`)은 s14 메모 그대로.
 
 ## 주의·제약 (반드시)
@@ -41,8 +39,8 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §6·
 - 커밋 트레일러: `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` + `Claude-Session:`(그 방 URL).
   모델 ID 를 커밋/PR/코드/문서에 넣지 않는다. 비밀키 금지.
 - 사장님께는 「커밋」「배포」 두 낱말만. 못 잰 값은 —. `[실측]` 은 명령과 출력이 있을 때만.
-- prettier 는 저장소 관문이 아니다(기존 파일도 안 맞음) — `--write` 로 남의 줄을 바꾸지 않는다.
-- /console/geo AEO 독립 화면·의료 규정은 다른 방 소관.
+- prettier 는 저장소 관문이 아니다 — `--write` 로 남의 줄을 바꾸지 않는다.
+- /console/geo AEO 독립 화면·의료 규정은 다른 방 소관(관문 BASELINE 에 그 방 파일 숫자가 있다 — 그 방이 줄이면 숫자도 같이).
 
 ---
 

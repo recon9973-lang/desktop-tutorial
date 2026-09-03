@@ -140,3 +140,38 @@ pnpm -r lint        통과(경고 1 — 기존 layout.tsx 서체 링크)
 pnpm -r test        web 244 파일 2,162 통과(산점도 2건·스파크라인 id 2건 추가) · ui 343 통과
 next build          통과 · pnpm smoke 24화면 통과 · 커밋 `ffd2a411`(원격 푸시)
 ```
+
+## 7. 새 화면도 같은 규칙으로 (2026-09-03 · v0.3.490)
+
+> 사장님 오더: «새로 추가되는 것도 바뀐 화면 구성에 맞게 추가될 수 있도록 조치되는지 확인».
+
+### 7-1. 확인 결과 — 절반만 자동이었다
+
+| 저절로 따라오는 것 | 따라오지 않던 것(관문 없음) |
+| --- | --- |
+| 콘솔 껍데기(상단 메뉴·테마, 좁은 폭 3단) | 접는 폭 기준 — 파일마다 640·720·860·900·960·1100px·rem 제각각 |
+| 공용 쪽 틀 `styles/page.module.css`(제목·설명·표 스크롤 틀·640px 접기) | 표·카드 — 화면마다 자기 CSS, 표 20곳 중 3곳은 좁은 폭 규칙 0 |
+| 공용 부품(도움말 ?·등급 칩·길잡이·추이 그림 3종) 안에 든 고침 | 글자 11px 하한 — 코드에 11px 미만 선언 30곳 안팎(안 뜬 상태라 촬영에 안 걸림) |
+| 연기 시험 화면 목록 = 빌드 산출에서 자동(HTML 만) | 누름 영역 24px · hydration 오류(#18 종류) · 새 화면 규칙 문서 |
+| 저장소 전체 훑기 관문 7종(클래스·토큰·대비·그림 높이·설명 60자·창구↔화면·상자) | |
+
+### 7-2. 조치 (veo-platform 가지 `claude/anseo-screen-guards-0.3.490` · 커밋 `e8a05eeb` + `a90626f7`)
+
+| # | 조치 | 어떻게 |
+| --- | --- | --- |
+| 1 | 관문 `text-is-at-least-11px` | `apps/web/src` + `packages/ui/src` CSS 의 `font-size` 를 px 환산, 11px 미만은 파일별 BASELINE 개수 그대로(늘면 실패·줄면 숫자를 내린다). 아이브로우 0.65rem 은 정본이라 BASELINE |
+| 2 | 관문 `breakpoints-are-shared` | `@media` 폭은 **720 · 960 · 1100px** 세 단. 그 밖(640·900·rem)은 BASELINE — 손대는 파일부터 옮긴다 |
+| 3 | 관문 `tables-fold-on-narrow-screens` | `<table>` 그리는 파일마다 `overflow-x: auto` 틀(공용 `tableWrap` 포함) 필수. 이슈·채점판 표는 [실측 390px 넘침 0] 이유와 함께 예외 |
+| 4 | 촬영·측정 장치 `pnpm rwd` | s15 scratchpad 장치를 `apps/web/test/rwd/`(audit-rwd.mjs + fixture.json)로. 경로·Playwright 탐색·글꼴 되돌림 저장소 기준. `::before` 로 넓힌 누름 영역을 센다(후속 커밋). CI 밖 — 판 내기 전 손으로 |
+| 5 | 문서 `docs/design/2026-09-03-SCREEN-RULES.md` | 새 화면 한 쪽 규칙(틀·폭 3단·글자·누름·표·hydration·촬영·관문 목록) |
+
+### 7-3. 검사
+
+```
+pnpm typecheck 통과 · pnpm lint 통과(기존 경고 1) · pnpm test 247 파일 2,171 통과(관문 3 파일 9건 추가)
+pnpm rwd 실행 확인: 모바일 /console/customers·/console/dashboard, 태블릿 /console/customers —
+  넘침 0 · 겹침 0 · 잘림 0 · pageerror 0. 남는 표시는 아이브로우 10.4px(정본)·메뉴 화살표 9px·
+  표 안 이름 링크 높이 15px(2차에서 둔 것)·구글 서체 요청 실패(샌드박스, 글꼴 폴더 없이 돌림)
+```
+
+미배포 0.3.489~0.3.490 — 배포 오더 대기.
