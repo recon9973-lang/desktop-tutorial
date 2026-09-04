@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-04 s16: v0.3.499 배포 마감 (「데이터 원천」 파일 올리기 · 카카오 열쇠 자리 · 사장님 지적 세 건 해결)
+- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-04 docs(resume): 카카오 열쇠는 콘솔 「외부 연결 열쇠」로만 (Vercel 안 만짐)
 - 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-04 docs(checkpoint · s15): 여섯 축 자료 조사 · 교통 축 실적재 · 배포 0.3.498 · 자동 인계
 - 2026-09-03 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-03 docs(checkpoint · s14): 입지 방 · 0.3.494 → 0.3.496 배포 · 자동 인계
 - 2026-09-01 chore(diag): AI 노출 실측 스냅샷·추이 갱신 (run 33474929844)
-- 2026-09-01 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-01 fix(ci): AI 노출 스냅샷 push 경합으로 실측 결과가 버려지던 문제 (#231)
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 1370c7f 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 9ca3b8e 기준. 값·비밀은 포함하지 않음.*
