@@ -27,14 +27,17 @@
 **나가면 사장님이 콘솔에서 두 파일 넣어 운영에 값이 뜸.**
 
 ### ⑵ 카카오맵 JS 지도 타일 (사장님 키 대기 · TODO #15)
+**Vercel 안 만짐 · 콘솔 「외부 연결 열쇠」로만** (사장님이 지금까지 Google · Naver · SerpAPI · OpenAI 넣어 온 그 자리와 같음. NEXT_PUBLIC 접두사 빼기).
+
 사장님이 하실 것:
 1. developers.kakao.com 앱 등록 (이름 「ANSEO 입지 지도」 등)
-2. **JavaScript 키** 발급
-3. **도메인 제한 걸기** — `https://veo.seokorea.org` · `https://veo-web.vercel.app` · `http://localhost:3000`
-4. Vercel 대시보드 → veo-web → Environment Variables → `NEXT_PUBLIC_KAKAO_MAP_APP_KEY` 로 값 붙여넣기 · Redeploy
-5. 저에게 「등록 완료」 라고만 알려주심 (값은 안 넘김)
+2. **JavaScript 키** 발급 · **도메인 제한 걸기** — `https://veo.seokorea.org` · `http://localhost:3000`
+3. **콘솔이 kakao_map 유형을 받게 하는 판이 나간 뒤**, 콘솔 → 관리자 → 외부 연결 열쇠 → kakao_map 에 값 붙여넣기 (한 번, Vercel 안 만짐)
 
-이 방이 할 것: 지도 컴포넌트 · 카카오 SDK 로딩·초기화 · 기존 SVG 원(반경 고리) 위에 겹치기 · 시험
+이 방이 다음 판에 만들 것:
+- 콘솔 「외부 연결 열쇠」에 kakao_map 유형 추가 (기존 provider 옆에 한 줄 더)
+- 서버 창구 `GET /providers/kakao-map/config` — 로그인한 사람에게만 앱 키 반환 (브라우저 번들에 박히지 않음)
+- 「입지」 탭 지도 컴포넌트 — 로그인 세션으로 서버에서 값 받아 SDK 로드 · 기존 SVG 반경 원과 겹치기 · 시험
 
 ### ⑶ 인구 축 (사장님 파일 대기 · TODO #12)
 사장님이 하실 것: **jumin.mois.go.kr → 연령별 인구현황 → 행정기관별(읍면동까지) → 남녀·연령 · 최신 월(2026-08) CSV** 다운로드. 사장님이 지난번 넘긴 파일(`8dfed5b4_...csv`)은 시·도 총계만 있어 반경 셈에 못 씀.
@@ -87,5 +90,5 @@
 ## 사장님이 지금 · 앞으로 하실 것 (기억을 위해)
 
 1. **인구 CSV 재다운로드** (jumin.mois.go.kr · 행정동 단위 · 최신월) — 이 방에 넘기심
-2. **카카오 개발자 앱 등록 · JS 키 발급 · 도메인 제한 · Vercel 등록** — 값은 사장님이 직접, 저에게 「등록 완료」 만
+2. **카카오 개발자 앱 등록 · JS 키 발급 · 도메인 제한** (Vercel 안 만짐 · 다음 판 나가면 콘솔 「외부 연결 열쇠」에 사장님이 직접, 저에게 「등록 완료」 만)
 3. (선택) 카카오 REST API 키 — 지오코딩용, 심평원에 없는 업체 지원할 때만
