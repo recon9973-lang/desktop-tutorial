@@ -1,113 +1,82 @@
-# RESUME — 다음 세션 이어가기 (2026-09-04 · s16 마감)
+# RESUME — 다음 세션 이어가기 (2026-09-04 · s17 마감)
 
-> 새 세션은 이 파일을 **먼저** 읽는다. 이 세션 상세는
-> `docs/session-logs/2026-09-04-s16.md` · s15 는 `2026-09-03-s15.md` · s14 는 `-s14.md`.
-> 현황은 `PROJECT_STATE.md`, 지도는 `핵심두뇌_MASTER.md`.
-> **팀 인물표는 `docs/team/에이전트-역할.md`** (일곱 인물 · 하린).
+> 새 세션은 이 파일을 **먼저** 읽는다. 이 세션 상세는 `docs/session-logs/2026-09-04-s17.md`.
+> 근거 문서: `docs/plans/anseo-location-marketing-axes.md` (여섯 갈래 통합) + `anseo-location-decisions-s17.md` (세 결정·다음 3판 실행 순서).
 
-## 지금 상태 (s16 마감)
+## 지금 상태 (s17 마감)
 
-- **운영 판 = 0.3.497** (s15 마감 시점 그대로 · 이 세션은 배포 없음)
-- **veo-platform 이 방 미배포 판** = `claude/rename-location-tab-to-marketarea` `974b000` (거래처 탭 「입지→상권」, s15 에서 밀어 놓음, 다른 방/사장님 승인 배포 대기)
-- **다른 방 §7 P2 진행 중** (교통·인구 실적재 · s15 이후 사장님이 다른 방에 오더)
-  - 근거: `docs/plans/anseo-github-data-inventory.md` §2 마지막 줄 + 문서 끝 «사장님이 고르실 것» 1번
-  - 이 방은 뛰지 않음 (규율 준수)
-- **이 방 §7 P3 준비 완료** (`claude/hospital-location-analysis-plan-6kbmqo` 문서만):
-  - `docs/plans/anseo-location-p3-plan.md` — 정본 도면 (카카오맵·추계 환자 수·비교 모드 세 항목)
-  - `docs/ANSEO-상권-P3-시뮬레이션.html` — 시뮬 13호 (5화면·정상·폴백·3단·비교 두 종)
-  - **사장님 결정 세 개 확정 (2026-09-04 · s16 마감 직전)**:
-    ⑴ 지도 = **카카오맵 웹 SDK** (열쇠는 SUPER_ADMIN 페이지 관리)
-    ⑵ 산식 = **診療圏 국내 이식판 표준식** (분해형은 v2)
-    ⑶ 수진율 = **JSON 하드코딩 상수 표 v1** (HIRA 근거·산정식·업데이트일 파일 머리말에)
+- **운영 판 = 0.3.500** ([실측 2026-09-04 · 바깥 샌드박스 curl] 서버·워커·웹 셋 다 · 워커 1대·뒤처진 워커 0)
+- **v0.3.500 로 나간 것**: 20MB 파일 올리기 화면 폭발 고침 (Next.js 서버 액션 body 1MB→50MB) · 상단 네비 접이식 메뉴 사라짐 고침 (계정 메뉴와 같은 병)
+- **veo-platform**: `claude/anseo-location-tab` `b2629cd` (도장) · main = `1a9fa9e`
+- **desktop-tutorial** 이 방: `claude/hospital-location-analysis-plan-6kbmqo` (s17 조사·결정·로그) · main (체크포인트)
 
-## 바로 이어갈 작업
+## 세 결정 확정 (재논의 없음 · `anseo-location-decisions-s17.md`)
 
-**새 오더 없으면 대기.** 사장님이 다음을 지시하거나 배포 상황이 바뀌면 시작:
+⑴ **점수화 안 함 · 診療圏 스칼라만** (등급/별점/순위 X · 「합성값」 배지 필수 · 광역유입 진료과는 「참고치」 노란 배지)
+⑵ **「개원 후보지 리포트」 SKU 만들되 v0.4 마일스톤** (1건 100만원 초안 · v0.3.500대는 SaaS 기능만)
+⑶ **인테리어·장비 데이터 자동화 안 함** (사업모델 상충 · 견적서 PDF 업로드 창구만 · LLM 파싱 코퍼스 축적)
 
-### 1. 다른 방 §7 P2 배포 감시 (매 세션 시작 시)
+## 사장님이 지금 하실 것 (v0.3.500 나가서 자리 열림)
 
-- `cd /home/user/veo-platform && git fetch origin && git log --oneline origin/main -5` 로 확인
-- 다음 판 도장(0.3.498? 그 뒤?) 이 뜨고 `sources.py` `_PLANNED` 자리에 로더가 실제로 심어졌는지 확인
-- 배포 확인되면 아래 2번으로
+1. **콘솔 → 관리자 → 데이터 원천 → 「전국 버스정류장」 → 「파일 올리기」** → 파일 A `984836b2-...20251031.csv` (20MB) · 인코딩 **CP949** → 올리기 → 「LOADED · 227,053행」 뜨면 「입지」 탭에 값이 뜸
+   - 오류 카드 뜨면 저에게 알려 주세요 (원인 다시 파악)
+2. (선택) **공공데이터포털 API 두 개** 발급만 미리 (건축물대장 · 전국주차장정보) — 다음 판(v0.3.501) 나가면 자리 열림
+3. (선택) **행안부 인구 CSV** (jumin.mois.go.kr · 읍면동 단위 · 최신월) — v0.3.501 나가기 전 넘겨 주시면 됨
 
-### 2. §7 P3 도면대로 코드 얹기 (P2 배포 후)
+## 바로 이어갈 작업 (이 방 · 도현이가 뜁니다)
 
-`docs/plans/anseo-location-p3-plan.md` §6 순서대로:
+### 1. 사장님 파일 A 업로드 성공 확인
 
-1. 새 가지 (예: `claude/anseo-location-p3`) 로 갈아탐
-2. `sources.py` 에 `hira_disease_stats` · `kakao_map_js` 두 행 추가
-3. `core/settings.py` 에 `VEO_KAKAO_MAP_JS_KEY` 추가
-4. `schemas.py` 에 `PatientEstimatePayload` · `LocationComparePayload` 추가
-5. `service.py` 에 `_patient_estimate_of` · `compare_location` 순수 함수
-6. `router.py` 에 `/compare` 엔드포인트 + `patient_estimate`·`map_provider` 응답 추가
-7. 웹: `RingMapKakao.tsx` · `LocationCompareTab.tsx` 신규 · `LocationTab.tsx` 조건 분기
-8. 시험 4벌 (`test_patient_estimate.py` · `test_compare.py` · `LocationTab.test.tsx` · `LocationCompareTab.test.tsx`)
-9. `pnpm rwd` 화면 관문 (720·960·1100px · 11px 하한 · 표 감싸개) 통과
-10. 커밋 · 판 안 정함 · 다른 방/사장님 도장 대기
+- 사장님이 「LOADED · 227,053행」 확인하시면 「입지」 탭 값 뜨는 것 실측 (강남역 500m 안 버스정류장 70 등)
 
-### 3. 사장님 열쇠·파일 (P3 코드 얹은 뒤)
+### 2. v0.3.501 코드 얹기 (다음 판 · 인구 축 + 진료과별 3표)
 
-- **카카오 JS 열쇠** — 사장님이 카카오 개발자 사이트에서 발급 · 도메인 화이트리스트 등록 · SUPER_ADMIN 이 「데이터 원천」 페이지에서 저장
-- **진료과별 수진율 상수 표** — 결정 ⑶ 확정 · 사장님이 심평원 통계지표에서 뽑은 값을 우리에게 넘겨주면 `apps/api/data/hira_disease/v1/prevalence.json` 로 심음 (CSV 아닌 JSON 하드코딩 · 결정 ⑶). 파일 머리말에 근거·산정식·업데이트일 못박음.
-- 인구·경계는 다른 방 P2 가 심어놓음
+- 새 가지 (예: `claude/anseo-location-v0501`)
+- 인구 축: `mois_population` 로더 · 행정동×성×연령 · 「반경 안 인구 카드」로 「—」 자리 채움
+- 진료과별 3표: `dim_department_patient_mix` (HIRA 국민관심질병통계) · `dim_utilization_rate` (HIRA + NHIS) · `fact_chs_indicator` (질병청 CHS 시군구 258)
+- 진료과 셀렉터 UI: 피부·정형·소아·산부·이비·비뇨 (⑤ 갈래 산식 6개)
+- 시험 4벌 · 화면 관문 · 규모 1000~1500줄
+- **선행**: 사장님 인구 CSV 넘겨주시면 시작
 
-### 4. WORKLIST.md 「입지» 표기 (l.724·731·737·974) — 다른 방 소관 · 이 방 안 만짐
+### 3. v0.3.502 (그 다음 · 診療圏 스칼라 + 비교 모드 + 유출률 배지)
 
-## 대기·차단 · 다른 방 소관 (이 방에서 하지 말 것)
+- `docs/plans/anseo-location-decisions-s17.md` §다음-3판-실행-순서 참조
 
-- **§7 P2 (교통·인구 실적재)** — 다른 방이 사장님 오더 받아 진행 중. `sources.py::_PLANNED` · `LocationTab.tsx` «—» 셀 · `datasources/page.tsx` 「올리기 단추」 자리 전부 다른 방 손
-- **배포 규율 재확인**: 이 방은 시뮬·기획·기능 판만 만들고 판 번호는 다른 방/사장님이 결정
-- **판 번호 발급 순서**를 사장님이 바꾸실지는 미결 (s14 이월)
+## 안 만질 것 · 대기
 
-## 팀 인물 (부르는 요령)
+- 인테리어·장비 데이터 자동화 (결정 ⑶ · 사장님이 사업모델 정하기 전까지 X)
+- 점수화·A/B/C 등급 (결정 ⑴)
+- 매물 스크레이핑 (다윈중개 판례) · 플레이스 리뷰 스크레이핑 (잡코리아 판례) · 경쟁 병원 광고 크리에이티브 저장 (의료법 57조)
 
-- «도현아» → `claude` (만능)
-- «서연 씨» → `general-purpose` (오래 파는 조사)
-- «준서» → `Explore` (정찰)
-- «지훈 형» → `Plan` (도면)
-- «하늘 씨» → `claude-code-guide` (Claude Code·SDK·API 문서)
-- «민재» → `statusline-setup` (상태줄)
-- **«하린 씨»** → 도현이 디자인 스킬·MCP 부를 때의 페르소나 (신규 2026-09-03)
+## 도구·실측 메모
 
-자세한 것은 `docs/team/에이전트-역할.md`.
-
-## 도구·실측 메모 (재탐색 금지)
-
-- **운영 실측 우회**: 이 방 프록시가 운영 주소 403 → Higgsfield MCP `sandbox_exec` 로 우회
-- **veo-platform 클론**: `git clone --depth 1 https://github.com/recon9973-lang/veo-platform /home/user/veo-platform` (약 1분) · 컨테이너 리셋 시 재실행
-- **로컬 PostgreSQL**: `pg_ctlcluster 16 main start` · 접속 `root` · `pg_hba.conf` 임자는 `postgres:postgres`
-- **로컬 시험 DB**: `veo_test` (postgres · trust)
-- **`gh` CLI**: `apt install gh` · 컨테이너 리셋 시 재설치
-- **배포 명령**: `make deploy` 자동모드 분류기에 막힘 → 사장님 명시 승인 필요
-- **화면 관문**(v0.3.495 이후 화면 점검 방이 심음):
-  - 접는 폭 세 단 (720·960·1100px) — `breakpoints-are-shared.test.ts`
-  - 글자 하한 11px — `text-is-at-least-11px.test.ts`
-  - 표 감싸개 (overflow-x:auto) · `.tsx` CSS import 는 홑따옴표만 — `tables-fold-on-narrow-screens.test.ts`
-- **화면 촬영**: `pnpm rwd`
+- **운영 실측 우회**: 이 방 프록시 403 → Higgsfield MCP `sandbox_exec` curl 로
+- **파일 로컬 시험**: `python -c "from scripts.load_transport_stops import load; load(source_key='molit_bus_stops', file_path=Path('...'), encoding='cp949', reference_date=...)"` · 파일 문제/서버 문제 판별
+- **Next.js 서버 액션 body 상한**: 기본 1MB · `experimental.serverActions.bodySizeLimit` (v0.3.500 에서 50MB 확장)
+- **로컬 PostgreSQL**: `pg_ctlcluster 16 main start` · 접속 `root` · `pg_hba.conf` 임자 `postgres:postgres` 유지
+- **로컬 시험 DB**: `veo_test` · `VEO_TEST_DATABASE_URL="postgresql+psycopg://root@localhost:5432/veo_test"`
+- **worklist.test.ts flake**: 배포 대기 표에 이미 나간 판 남으면 실패 · 도장 시 반드시 표에서 지움
+- **MasterKey 시험**: `MasterKey.from_base64(MASTER_KEY_V1_B64, version=1)` (생성자 아님)
+- **veo-platform 클론**: `git clone --depth 1 https://github.com/recon9973-lang/veo-platform /home/user/veo-platform`
 
 ## 주의·제약 (반드시)
 
-- 이 방 브랜치:
-  - desktop-tutorial 정본 = `claude/hospital-location-analysis-plan-6kbmqo` (기획·시뮬·팀·P3 도면)
-  - desktop-tutorial 세션 지침 = `claude/verify-archive-execution-b7co8e` (세션 시작 지정, 이 방 문서 작업은 정본 가지)
-  - veo-platform s15 = `claude/rename-location-tab-to-marketarea` (상권 라벨 · 배포 대기)
-  - **P3 코드는 새 가지 `claude/anseo-location-p3` 팔 것 (P2 배포 뒤)**
+- **채팅에 API 열쇠·비밀키 붙여넣기 금지** — 콘솔에서만
+- 이 방 브랜치: desktop-tutorial `claude/hospital-location-analysis-plan-6kbmqo` (문서·기획) · veo-platform `claude/anseo-location-tab` (배포 가지)
 - 커밋 트레일러:
   ```
   Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01NjxFzhnyGVhqJgfVKBLcYo
+  Claude-Session: https://claude.ai/code/session_013Fy4opA3k1FC6gQobSVKWf
   ```
-  모델 ID·비밀키는 코드·파일·PR 에 넣지 말 것
-- 사장님께는 「커밋」·「배포」 두 낱말만 (테스트 데이터라 정합성 지적 금지)
-- 못 잰 값 = «—» (0 아님) · 합산 점수 없음 · 색+글자 병용 · 판 다르면 비교 금지 · 의료광고법 준수
-- 판 부딪히면 **나중 것이 물러난다**
+- 사장님께는 「커밋」·「배포」 두 낱말만
+- 못 잰 값 = «—» · 합산 점수 없음 (결정 ⑴) · 판 다르면 비교 금지 · 의료광고법 준수
+- 판 부딪히면 나중 것이 물러남
 
 ## 참고
 
-- 세션 상세 `docs/session-logs/2026-09-04-s16.md` (이번) · `-s15.md` · `-s14.md`
-- 기획안 원본 `docs/plans/anseo-location-analysis-plan.md`
-- **P3 정본 도면 `docs/plans/anseo-location-p3-plan.md` (s16 신규)**
-- 다른 방 공개 자료 조사 `docs/plans/anseo-github-data-inventory.md`
-- 시뮬 세 편: 11호 상권(파일명 유지) · 12호 데이터 원천 · **13호 상권 P3 (s16 신규)**
-- 팀 인물표 `docs/team/에이전트-역할.md`
-- 배포 규율 원문 `veo-platform/scripts/deploy.sh` 머리말
+- 이 세션 로그 `docs/session-logs/2026-09-04-s17.md`
+- 직전 `-s16.md`
+- 여섯 축 조사 `docs/plans/anseo-location-marketing-axes.md` (커밋 077839d)
+- 세 결정 확정 `docs/plans/anseo-location-decisions-s17.md` (커밋 ce3c945)
+- 기획안 `docs/plans/anseo-location-analysis-plan.md`
+- 배포 규율 `veo-platform/scripts/deploy.sh` 머리말
