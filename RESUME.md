@@ -1,15 +1,20 @@
-# RESUME — 다음 세션 이어가기 (2026-09-04 18:57 KST · s16 마감)
+# RESUME — 다음 세션 이어가기 (2026-09-04 · s17 마감 · 오류방)
 
 > 새 세션은 이 파일을 **먼저** 읽는다. 이 세션 상세는
-> `docs/session-logs/2026-09-04-s16.md` · 직전은 `-s15.md`.
+> `docs/session-logs/2026-09-04-s17.md` (오류방 · SerpAPI 오분류 잡음).
+> 직전: `-s16.md` (입지 방 · v0.3.499 배포) · `-s15.md` (입지 방 · v0.3.498).
 > 현황은 `PROJECT_STATE.md`, 지도는 `핵심두뇌_MASTER.md`.
 
-## 지금 상태 (s16 마감)
+## 지금 상태 (s17 마감)
 
-- **운영 판 = 0.3.499** ([실측 2026-09-04 18:57 KST · 바깥 샌드박스 curl] 서버·워커·웹 셋 다, 워커 1대·뒤처진 워커 0. 웹 판은 `veo.seokorea.org/login` 페이지에 박힘)
-- **v0.3.499 로 나간 것**: ⑴ 「데이터 원천」 파일 올리기 UI (SUPER_ADMIN) · ⑵ 카카오 지도 열쇠 자리 (콘솔 「외부 연결 열쇠」에 kakao_map 유형 + 서버 창구) · ⑶ 계정 메뉴 아래로 못 내려가던 문제 · ⑷ 「공용 열쇠 사용 중」 뱃지 옆 안내 어긋남 · ⑸ 카카오가 크리덴셜 표에 없던 문제
-- veo-platform 우리 가지 `claude/anseo-location-tab` = **83c3b17** (도장 · 원격 최신 · main = 420dbc7)
-- desktop-tutorial 이 방 가지 `claude/hospital-location-analysis-plan-6kbmqo` = **e627b92** (s15 이후 변경 없음)
+- **운영 판 = 0.3.499** ([실측 2026-09-04 · 바깥 샌드박스 curl] 서버·워커·웹 셋 다)
+- **s17 (오류방)** 이 나간 자리: `veo-platform` 관측 시스템의 SerpAPI 시간당 상한 오분류 수정
+  - 커밋 `b40b666` (PR #2 · squash-merge) → 다른 방(입지)의 v0.3.499 판(`420dbc7`)에 자동으로 실려 배포
+  - 파일: `apps/api/src/veo/observations/providers/naver_briefing.py` 반증 힌트 목록 + `_says_out_of_searches()` 수정 + 회귀 시험 2판
+  - 툴팁 실측 확인 완료 (사장님)
+- **s16 (입지 방)** 이 나간 자리 (v0.3.499): ⑴ 「데이터 원천」 파일 올리기 UI (SUPER_ADMIN) · ⑵ 카카오 지도 열쇠 자리 (콘솔 「외부 연결 열쇠」에 kakao_map 유형 + 서버 창구) · ⑶ 계정 메뉴 아래로 못 내려가던 문제 · ⑷ 「공용 열쇠 사용 중」 뱃지 옆 안내 어긋남 · ⑸ 카카오가 크리덴셜 표에 없던 문제
+- veo-platform 브랜치 상태: 입지 방 `claude/anseo-location-tab` = **83c3b17** (도장 · 원격 최신) · 오류방 `claude/serpapi-hourly-limit-misclassification` (병합·삭제 대상) · main = **420dbc7**
+- desktop-tutorial 브랜치: 입지 방 `claude/hospital-location-analysis-plan-6kbmqo` = **e627b92** · 오류방 `claude/error-details-analysis-q6nlxf` (이 세션은 main 체크포인트만)
 
 ## 바로 이어갈 작업
 
@@ -37,6 +42,19 @@
 
 - **「입지」 이름 겹침 정리** (TODO #9) — 이 방 탭 vs ANSEO 방 진단 탭 카드. 사장님 판단
 - 판 번호 발급 순서 (다른 방들과 부딪히면 나중이 물러남)
+
+### ⑸ s17 (오류방) 이 남기는 관찰 항목
+
+- **옛 실패 21·33 자연 감소 관찰** — 롤링 7일 창이 밀어내면 옛 QUOTA_EXCEEDED(실제로는 시간당 상한이던 것)가 창 밖으로 빠져 숫자 감소해야 함. 며칠 뒤 화면 새로고침해도 안 줄면 다른 원인 (SerpAPI Retry-After 미제공 여부, 재시도 실패율 등) 조사
+
+### s17 (오류방) SerpAPI 판정 로직 메모
+
+- `_says_out_of_searches()` (`apps/api/src/veo/observations/providers/naver_briefing.py:271`):
+  1. 반증 힌트 `_NOT_MONTHLY_QUOTA_HINTS = ("per hour", "hourly", "concurrent", "rate limit")` 를 먼저 봄
+  2. 하나라도 있으면 `False` (몫 소진 아님, `PROVIDER_RATE_LIMITED` 로 감 → 3회 재시도 도는 자리)
+  3. 없으면 긍정 힌트 (`run out of searches`, `ran out of searches`, `exceeded your searches`) 로 판정
+- 두 SerpAPI 어댑터 (`naver_briefing.py`, `google_ai_overview.py`) 가 같은 함수 공유 → 한 자리 수정 = 둘 다 낫음
+- `RetryPolicy` (`apps/api/src/veo/providers/naver/errors.py:325-360`) 가 이미 exponential backoff + Retry-After 헤더 우선. **자체 상한 하드코딩 안 걸음** (등급 상향 시 걸림돌)
 
 ## 대기/차단 · 다른 방 소관 (이 방에서 하지 말 것)
 
@@ -70,8 +88,10 @@
 
 ## 참고
 
-- 이 세션 로그 `docs/session-logs/2026-09-04-s16.md`
-- 직전 `docs/session-logs/2026-09-04-s15.md`
+- 이 세션 로그 (오류방·s17) `docs/session-logs/2026-09-04-s17.md`
+- 입지 방 s16 로그 `docs/session-logs/2026-09-04-s16.md`
+- 입지 방 s15 로그 `docs/session-logs/2026-09-04-s15.md`
 - 여섯 축 자료 조사 `docs/plans/anseo-github-data-inventory.md` (e627b92)
 - 기획안 `docs/plans/anseo-location-analysis-plan.md`
+- veo-platform SerpAPI fix PR: [#2](https://github.com/recon9973-lang/veo-platform/pull/2) (병합) · [#3](https://github.com/recon9973-lang/veo-platform/pull/3) (판 충돌로 닫음)
 - 배포 규율 원문: `veo-platform/scripts/deploy.sh` 머리말
