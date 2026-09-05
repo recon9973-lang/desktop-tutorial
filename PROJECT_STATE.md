@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-05 s19: v0.3.504 ERP 방식 이식 · 교통 실적재 마감 · 사장님 화면 확인
 - 2026-09-05 s18: 파일 넣기 하루종일 판 다섯 물림 · ERP 힌트로 방향 확정 (v0.3.504 준비)
 - 2026-09-04 s17: 병원마케팅 축 조사 · v0.3.500 실측 고침 배포 · 세 결정 확정
 - 2026-09-04 docs(s17): 확정 결정 세 개 + 다음 3판(v0.3.500·501·502) 실행 순서
@@ -14,7 +15,6 @@
 - 2026-09-04 docs(s16): §7 P3 결정 세 개 확정 도장 · 사장님 2026-09-04
 - 2026-09-04 docs(s16): §7 P3 준비 · 카카오맵·추계 환자 수·비교 모드 도면 + 시뮬 13호
 - 2026-09-03 docs(s15): 상권 확정 반영 · 하린 붙임 · 팀 문서 신규
-- 2026-09-03 docs(plans): GitHub · 공개 자료 여섯 축 조사 — 우리 프로젝트 어디에 쓸지
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 6f1c2fe 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 abe3531 기준. 값·비밀은 포함하지 않음.*
