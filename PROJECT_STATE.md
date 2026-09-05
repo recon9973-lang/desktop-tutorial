@@ -3,18 +3,18 @@
 > 🤖 자동 생성 파일. 직접 수정 금지 — `node scripts/gen-project-state.mjs`(또는 CI)가 push마다 갱신.
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
-- **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
+- **저장소**: desktop-tutorial  ·  **현재 브랜치**: claude/anseo-performance-diagnosis-ui-r3h1gi  ·  **기본 브랜치**: claude/anseo-performance-diagnosis-ui-r3h1gi
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-05 feat(venom): 진단 로딩을 골든 링 오버레이로 통일 — SEO·GEO(인디고) / AEO(마젠타)
+- 2026-09-05 perf(venom): 첫 화면 렌더블록 제거 · 이미지 -1.62MB · 무료검진 오케스트레이터 병렬화
+- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-04 docs(checkpoint · s17 · 오류방): SerpAPI 시간당 상한 오분류 잡음 · v0.3.499 반영
 - 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-04 s16: v0.3.499 배포 마감 (「데이터 원천」 파일 올리기 · 카카오 열쇠 자리 · 사장님 지적 세 건 해결)
 - 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-04 docs(resume): 카카오 열쇠는 콘솔 「외부 연결 열쇠」로만 (Vercel 안 만짐)
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 docs(checkpoint · s15): 여섯 축 자료 조사 · 교통 축 실적재 · 배포 0.3.498 · 자동 인계
-- 2026-09-03 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (19)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -81,4 +81,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 5c6bb52 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 b0116cd 기준. 값·비밀은 포함하지 않음.*

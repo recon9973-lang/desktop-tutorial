@@ -1,97 +1,34 @@
-# RESUME — 다음 세션 이어가기 (2026-09-04 · s17 마감 · 오류방)
+# RESUME — 다음 세션 이어가기 (2026-09-06 01:40 KST · s18 마감 · ANSEO 속도·로딩 방)
 
-> 새 세션은 이 파일을 **먼저** 읽는다. 이 세션 상세는
-> `docs/session-logs/2026-09-04-s17.md` (오류방 · SerpAPI 오분류 잡음).
-> 직전: `-s16.md` (입지 방 · v0.3.499 배포) · `-s15.md` (입지 방 · v0.3.498).
-> 현황은 `PROJECT_STATE.md`, 지도는 `핵심두뇌_MASTER.md`.
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-05-s18.md`.
+> 직전 다른 방: s17 오류방 · s16/s15 입지 방(`-s17.md`, `-s16.md`). 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
-## 지금 상태 (s17 마감)
-
-- **운영 판 = 0.3.499** ([실측 2026-09-04 · 바깥 샌드박스 curl] 서버·워커·웹 셋 다)
-- **s17 (오류방)** 이 나간 자리: `veo-platform` 관측 시스템의 SerpAPI 시간당 상한 오분류 수정
-  - 커밋 `b40b666` (PR #2 · squash-merge) → 다른 방(입지)의 v0.3.499 판(`420dbc7`)에 자동으로 실려 배포
-  - 파일: `apps/api/src/veo/observations/providers/naver_briefing.py` 반증 힌트 목록 + `_says_out_of_searches()` 수정 + 회귀 시험 2판
-  - 툴팁 실측 확인 완료 (사장님)
-- **s16 (입지 방)** 이 나간 자리 (v0.3.499): ⑴ 「데이터 원천」 파일 올리기 UI (SUPER_ADMIN) · ⑵ 카카오 지도 열쇠 자리 (콘솔 「외부 연결 열쇠」에 kakao_map 유형 + 서버 창구) · ⑶ 계정 메뉴 아래로 못 내려가던 문제 · ⑷ 「공용 열쇠 사용 중」 뱃지 옆 안내 어긋남 · ⑸ 카카오가 크리덴셜 표에 없던 문제
-- veo-platform 브랜치 상태: 입지 방 `claude/anseo-location-tab` = **83c3b17** (도장 · 원격 최신) · 오류방 `claude/serpapi-hourly-limit-misclassification` (병합·삭제 대상) · main = **420dbc7**
-- desktop-tutorial 브랜치: 입지 방 `claude/hospital-location-analysis-plan-6kbmqo` = **e627b92** · 오류방 `claude/error-details-analysis-q6nlxf` (이 세션은 main 체크포인트만)
+## 지금까지 (핵심만)
+- 브랜치 **`claude/anseo-performance-diagnosis-ui-r3h1gi`** = main(`07eab90`) + 2커밋, origin 푸시됨, **PR·병합·배포 안 됨**
+  - `2fd3e87` perf: 렌더블록 제거(glossary 572KB) · 이미지 −1.62MB · `runFullDiag` 병렬화(7.5s→3.0s 모킹)
+  - `b0116cd` feat: 진단 로딩 → 골든 링 오버레이(`assets/ring-loader.{js,css}` + `assets/ring/`), SEO·GEO 인디고 / AEO 마젠타
+- 시안 아티팩트(사장님 확인용): 골든 링 v5 https://claude.ai/code/artifact/4738619a-54de-4edc-936b-6992b2b953c1 · 로딩 5안+히어로 3안 https://claude.ai/code/artifact/a5d1dfd6-62ae-4d96-8894-40b61e00fdd1
+- 사장님 규율: **"서브 에이전트 가동해서"** — 조사·구현·검증 전부 서브에이전트 병렬, 나는 통합·커밋만. 직접 손대다 지적받음(오더 9)
 
 ## 바로 이어갈 작업
+1. **사장님 배포 판단 대기** — 이 브랜치 2커밋을 실서비스에 낼지. 오더 문장 받으면 CLAUDE.md 파이프라인(PR → squash-merge → main 자동 배포 venom-new-site.vercel.app)으로. 배포 전 실브라우저(Chrome)에서 `/#diagnose` SEO·GEO·AEO 3도구 링 확인
+2. 사장님이 v5 시안에 수정 주면: 템플릿 `scratchpad/ring-template.html`은 컨테이너와 함께 사라졌을 수 있음 → 실코드 `assets/ring-loader.{js,css}`가 곧 원본. 시안 재현 필요 시 그 파일에서 데모 페이지 재구성
+3. 조사 리포트 커밋 여부 — 속도 Top 10·로딩 UI 현황·시안 기획 3건은 레포에 없음. 남길 거면 `docs/plans/anseo-speed-and-loading-plan.md`로 (요지는 session-log s18 「미실행 속도 처방」)
+4. 남은 속도 처방(우선순위): index.html 라우팅 분할 → glossary JS/JSON 이중 정리 → `growthops.js` PSI 병렬 → Vercel 함수 통합(14→≤12) → SW SWR
+5. 히어로 3안 결정 대기(권고 H2 에디토리얼). 골든 링 영상을 히어로에도 쓸지 미정
 
-### ⑴ 사장님 콘솔 작업 대기 (판이 나갔으니 사장님이 하실 차례)
+## 대기/차단
+- 배포 오더 문장(`VEO_DEPLOY_ORDER`) — 없으면 배포 금지
+- 기존 버그(미수정): 첫 진단 PSI 완료 전 「다시 진단하기」 시 옛 PSI 콜백이 새 `_orch` 오염 → run-id 격리
+- 아티팩트 코멘트 자동 감지 불가(이 세션 403) — 사장님이 채팅으로 알려줘야 함
 
-**사장님이 이번 판 뒤 하실 것**:
-1. 카카오 developers.kakao.com → 앱 등록 → **JavaScript 키** 발급 → **도메인 제한** (`veo.seokorea.org` · `localhost:3000`)
-2. 콘솔 → 관리자 → 외부 연결 열쇠 → **카카오 지도** → 앱 키 붙여넣기 (채팅 붙여넣기 금지)
-3. 콘솔 → 관리자 → 데이터 원천 → 「파일 올리기」로 두 파일 넣기 (s15 때 넘겨주신 것과 같음): 버스정류장 CSV cp949 20MB · 지하철역 xlsx
-
-⑴·⑵ 다 끝나면 사장님이 이 방에 «등록 완료» 만 알려 주심.
-
-### ⑵ 카카오맵 JS 지도 컴포넌트 (사장님이 열쇠 넣으신 뒤 다음 판 · TODO #15)
-
-- 「입지」 탭에 지도 컴포넌트 붙이기 — 로그인 세션으로 `GET /providers/kakao-map/config` 부름 → 앱 키 받아 카카오 SDK 로드 → 기존 SVG 반경 원 위에 겹치기
-- 필요 파일: `apps/web/src/app/(console)/console/customers/[customerId]/location/` 아래 `MapView.tsx` 신설 (client component) · SDK 는 `<Script strategy="afterInteractive">`
-- 시험: SDK 로드 실패 시 fallback (지금 SVG 반경만) · 열쇠 없을 때 안내
-
-### ⑶ 인구 축 붙이기 (사장님 파일 대기 · TODO #12)
-
-- 사장님이 jumin.mois.go.kr → 연령별 인구현황 → 행정기관별(읍면동까지) → 최신월(2026-08) CSV 넘겨주셔야 함
-- 이 방이 할 것: 인구 원천 스키마·로더·경계 조인·화면 (교통 축과 같은 뼈대). 경계는 vuski/admdongkor GitHub 미러 (CC BY 4.0) 사용
-
-### ⑷ 대기 · 사장님 판단 필요
-
-- **「입지」 이름 겹침 정리** (TODO #9) — 이 방 탭 vs ANSEO 방 진단 탭 카드. 사장님 판단
-- 판 번호 발급 순서 (다른 방들과 부딪히면 나중이 물러남)
-
-### ⑸ s17 (오류방) 이 남기는 관찰 항목
-
-- **옛 실패 21·33 자연 감소 관찰** — 롤링 7일 창이 밀어내면 옛 QUOTA_EXCEEDED(실제로는 시간당 상한이던 것)가 창 밖으로 빠져 숫자 감소해야 함. 며칠 뒤 화면 새로고침해도 안 줄면 다른 원인 (SerpAPI Retry-After 미제공 여부, 재시도 실패율 등) 조사
-
-### s17 (오류방) SerpAPI 판정 로직 메모
-
-- `_says_out_of_searches()` (`apps/api/src/veo/observations/providers/naver_briefing.py:271`):
-  1. 반증 힌트 `_NOT_MONTHLY_QUOTA_HINTS = ("per hour", "hourly", "concurrent", "rate limit")` 를 먼저 봄
-  2. 하나라도 있으면 `False` (몫 소진 아님, `PROVIDER_RATE_LIMITED` 로 감 → 3회 재시도 도는 자리)
-  3. 없으면 긍정 힌트 (`run out of searches`, `ran out of searches`, `exceeded your searches`) 로 판정
-- 두 SerpAPI 어댑터 (`naver_briefing.py`, `google_ai_overview.py`) 가 같은 함수 공유 → 한 자리 수정 = 둘 다 낫음
-- `RetryPolicy` (`apps/api/src/veo/providers/naver/errors.py:325-360`) 가 이미 exponential backoff + Retry-After 헤더 우선. **자체 상한 하드코딩 안 걸음** (등급 상향 시 걸림돌)
-
-## 대기/차단 · 다른 방 소관 (이 방에서 하지 말 것)
-
-- 배포는 이 방이 직접 (규율대로, 사장님 배포 오더 문장이 있어야 `VEO_DEPLOY_ORDER` 로 전달)
-- ANSEO 방·화면 점검 방·shareboard 방과 판 번호 부딪히면 **나중에 미는 쪽이 물러난다** (오늘 s16 이 그 경우 · 다른 방 SerpAPI 오분류 수정 #2 가 먼저 main 에 도달, rebase 로 물러남)
-- 다른 방이 이 방 가지를 자기 것에 합쳐 밀 수 있음
-
-## 도구·실측 메모 (재탐색 금지)
-
-- **운영 실측 우회**: 이 방 프록시가 운영 주소 403 → **Higgsfield MCP `sandbox_exec`**(바깥 샌드박스) curl 로
-  `https://veo-platform-production.up.railway.app/api/health`·`/api/queue`·`https://veo.seokorea.org/login`(웹 판은 로그인 페이지 소스에 박힘)
-- **`VEO_DEPLOY_ORDER` 필수**: `bash scripts/deploy.sh` 만 실행하면 «인용할 문장이 정말 없다면, 지금은 배포하면 안 되는 상황입니다» 로 거절. `VEO_DEPLOY_ORDER="사장님 문장" bash scripts/deploy.sh` 로
-- **rebase + force-with-lease**: main 이 다른 방에 밀리면 rebase 필수. force-with-lease 는 자동 정책 자동승인 안 되므로 사장님께 승인 요청 (AskUserQuestion) 후 `--force-with-lease=<branch>:<expected-sha>` 로 명시적으로
-- **로컬 PostgreSQL**: `pg_ctlcluster 16 main start`. 접속은 `root` 계정 (암호 없음, host trust). `pg_hba.conf` 임자 postgres:postgres 유지
-- **로컬 시험 DB**: `veo_test` 자동 생성. `VEO_TEST_DATABASE_URL="postgresql+psycopg://root@localhost:5432/veo_test"` 로 pytest 돌림
-- **`MasterKey` 생성**: `MasterKey.from_base64(MASTER_KEY_V1_B64, version=1)` (초기 시험에서 `MasterKey(version=1, secret=...)` 로 잘못 쓰다 실패)
-- **openpyxl 필요**: apps/api 의존성에 등재됨 (xlsx 로더용)
-
-## 주의·제약 (반드시)
-
-- **채팅에 API 열쇠·비밀키 붙여넣기 금지** — 사장님께도 그렇게 안내함. 콘솔 「외부 연결 열쇠」로 사장님이 직접
-- 이 방 브랜치: desktop-tutorial `claude/hospital-location-analysis-plan-6kbmqo` · veo-platform `claude/anseo-location-tab`. 체크포인트만 desktop-tutorial main
-- 커밋 트레일러:
-  ```
-  Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_013Fy4opA3k1FC6gQobSVKWf
-  ```
-  모델 ID 는 트레일러에만, 코드·PR 에 넣지 말 것
-- 사장님께는 「커밋」·「배포」 두 낱말만 (테스트 데이터라 정합성 지적 금지)
-- 못 잰 값 = «—» (0 아님) · 합산 점수 없음 · 색+글자 병용 · 판 다르면 비교 금지 · 의료광고법 준수
+## 주의·제약
+- 링 영상은 **WebM 우선 + mp4 폴백 + 포스터 `img.still` 상시**(H.264 미지원 Chromium에서 검은 원 재발 방지). 아티팩트 data URI도 동일
+- `runAeo`는 Perplexity 1곳 → 문구에 "4곳" 금지. 4곳은 `runAiMatrix`만
+- 커밋 트레일러: `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` + `Claude-Session: https://claude.ai/code/session_01S6ziCnWzVB8CMhzMbmzupF`. 모델 ID는 트레일러에만
+- 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수
+- 이 브랜치 외로 푸시 금지. 체크포인트 문서는 main에도 커밋(CLAUDE.md 규칙)
 
 ## 참고
-
-- 이 세션 로그 (오류방·s17) `docs/session-logs/2026-09-04-s17.md`
-- 입지 방 s16 로그 `docs/session-logs/2026-09-04-s16.md`
-- 입지 방 s15 로그 `docs/session-logs/2026-09-04-s15.md`
-- 여섯 축 자료 조사 `docs/plans/anseo-github-data-inventory.md` (e627b92)
-- 기획안 `docs/plans/anseo-location-analysis-plan.md`
-- veo-platform SerpAPI fix PR: [#2](https://github.com/recon9973-lang/veo-platform/pull/2) (병합) · [#3](https://github.com/recon9973-lang/veo-platform/pull/3) (판 충돌로 닫음)
-- 배포 규율 원문: `veo-platform/scripts/deploy.sh` 머리말
+- 검증 재현: `python3 -m http.server`로 `venom-wordpress/preview` 띄우고 Playwright(`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`)로 `/api/**` 모킹 → `runSEO()`/`runAeo()`/`runAiMatrix()` 호출, `.rl-overlay` 등장·`video.videoWidth>0`·완료 후 제거 확인
+- ffmpeg 없음 → `pip install imageio-ffmpeg` 후 `python3 -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())"`
