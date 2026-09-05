@@ -1153,9 +1153,10 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
       </div>
       <div style="text-align:center;margin-top:24px"><a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-lg">💬 Which step is your clinic on? Get a free diagnosis</a></div>
     </div>
-    <script src="/seo/seo-engine.js?v=1.6.0"></script>
-    <script src="/assets/infographics.js?v=1.1.0"></script>
-    <script src="/assets/glossary.js?v=1.1.0"></script>
+    <!-- 렌더블록 제거: 이 페이지 인라인 스크립트는 SEOEngine·VInfo를 파싱 중 참조하지 않으므로 defer.
+         glossary.js는 en 페이지에 #glossary-root/Glossary 호출이 없어(정적 details 목록 사용) 로드하지 않음. -->
+    <script src="/seo/seo-engine.js?v=1.6.0" defer></script>
+    <script src="/assets/infographics.js?v=1.1.0" defer></script>
     <script>
       function rmToggle(i){
         var steps=document.querySelectorAll('.rm-step'); if(!steps[i])return;
@@ -3828,7 +3829,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
         </div>
         <div>
           <div style="position:relative;border-radius:var(--r16);overflow:hidden;margin-bottom:20px;min-height:320px">
-            <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/venom-wordpress/preview/images/office.jpeg" alt="VENOM office" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center">
+            <img src="/images/office.webp" alt="VENOM office" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center">
             <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(83,58,253,.82) 0%,rgba(28,30,84,.88) 100%)"></div>
             <div style="position:relative;z-index:1;padding:40px;color:#fff">
               <h3 style="font-size:20px;font-weight:300;margin:0 0 28px;opacity:.8">VENOM in numbers</h3>
@@ -3895,7 +3896,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
         <!-- CEO Lee Jae-hoon -->
         <div style="background:#fff;padding:48px 40px">
           <div style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin-bottom:28px;background:var(--soft)">
-            <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/venom-wordpress/preview/images/Lee%20jae-hoon_profile.jpeg" alt="CEO Lee Jae-hoon" style="width:100%;height:100%;object-fit:cover;object-position:top center">
+            <img src="/images/Lee%20jae-hoon_profile.webp" alt="CEO Lee Jae-hoon" loading="lazy" decoding="async" width="100" height="100" style="width:100%;height:100%;object-fit:cover;object-position:top center">
           </div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--p);margin-bottom:6px">CEO</div>
           <h3 style="font-size:22px;font-weight:600;color:var(--bd);margin:0 0 4px">Lee Jae-hoon</h3>
@@ -3913,7 +3914,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
         <!-- Sales Director Seo Min-goo -->
         <div style="background:#fff;padding:48px 40px">
           <div style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin-bottom:28px;background:var(--soft)">
-            <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/venom-wordpress/preview/images/Seo%20min-goo_profile.png" alt="Sales Director Seo Min-goo" style="width:100%;height:100%;object-fit:cover;object-position:top">
+            <img src="/images/Seo%20min-goo_profile.webp" alt="Sales Director Seo Min-goo" loading="lazy" decoding="async" width="100" height="100" style="width:100%;height:100%;object-fit:cover;object-position:top">
           </div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--p);margin-bottom:6px">SALES DIRECTOR</div>
           <h3 style="font-size:22px;font-weight:600;color:var(--bd);margin:0 0 4px">Seo Min-goo</h3>
@@ -3931,7 +3932,7 @@ h1,h2,h3,h4{ letter-spacing:-0.015em !important; }
         <!-- Executive Director Kim Bo-hyeong -->
         <div style="background:#fff;padding:48px 40px">
           <div style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin-bottom:28px;background:var(--soft)">
-            <img src="https://raw.githubusercontent.com/recon9973-lang/desktop-tutorial/main/venom-wordpress/preview/images/Kim%20bo-hyeong_profile.jpeg" alt="Executive Director Kim Bo-hyeong" style="width:100%;height:100%;object-fit:cover;object-position:top">
+            <img src="/images/Kim%20bo-hyeong_profile.webp" alt="Executive Director Kim Bo-hyeong" loading="lazy" decoding="async" width="100" height="100" style="width:100%;height:100%;object-fit:cover;object-position:top">
           </div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--p);margin-bottom:6px">EXECUTIVE DIRECTOR</div>
           <h3 style="font-size:22px;font-weight:600;color:var(--bd);margin:0 0 4px">Kim Bo-hyeong</h3>
