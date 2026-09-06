@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 docs(RESUME): 0.3.517 = 로딩 애니메이션만 (사장님 재확인) — 배포 가지 claude/anseo-ring-release · 속도 가지는 재발급 대기
+- 2026-09-06 docs(RESUME): 0.3.517 배포 준비 완료 반영 — perf-day1 1f5c8576 · 배포는 오더 문장 대기
+- 2026-09-06 docs(s20): 조사 원문 보존 커밋 해시 실제 값으로 정정
+- 2026-09-06 docs(checkpoint · s20 · ANSEO 방): main 합류 · 링 판 물러남 · 속도 2주차 다섯 합류 — RESUME 갱신
+- 2026-09-06 docs(plans): ANSEO 속도 전수조사 Top 10 원문 보존 — s19 scratchpad 에서 저장소로
+- 2026-09-06 docs(checkpoint · s19 · ANSEO 방): 잘못된 제품(venom) 정정 · veo-platform 착수 — 속도 1일차 셋 + 골든 링 이식 브랜치 푸시
 - 2026-09-06 docs(RESUME): s18 배포 마감 반영 — PR #233 main 5fa0f63 · 운영 실측 완료
 - 2026-09-06 perf+feat(venom): 첫 화면 렌더블록 제거 · 무료검진 병렬화 · 진단 로딩 골든 링 오버레이 (#233)
-- 2026-09-06 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-06 ci: 범용 외부 파일 받기 워크플로 (fetch-file) — CDN egress 우회 (#232)
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 docs(checkpoint · s17 · 오류방): SerpAPI 시간당 상한 오분류 잡음 · v0.3.499 반영
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 s16: v0.3.499 배포 마감 (「데이터 원천」 파일 올리기 · 카카오 열쇠 자리 · 사장님 지적 세 건 해결)
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 6c618e7 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 68129f4 기준. 값·비밀은 포함하지 않음.*
