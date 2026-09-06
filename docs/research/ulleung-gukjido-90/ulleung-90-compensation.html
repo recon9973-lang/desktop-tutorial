@@ -112,10 +112,9 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
 <header>
   <span class="eyebrow">국가지원지방도 90호선 · 도동항 기준 판독</span>
   <h1>도동항 양측<br>토지 편입 예상 구역</h1>
-  <p class="lede">기준점은 <b>도동항</b>입니다. 여기서 <b>남측이 사동 방면</b>, <b>북측이 저동 방면</b>이고,
-     두 방면 모두 국지도 90호선(울릉순환로) 선상에 있습니다. 다만 <b>90호선 본선은 도동항을 지나지 않습니다</b> —
-     본선은 도동 시가지 위쪽을 통과하고, 도동항은 도동길로 약 <b>0.8 km</b> 떨어진 지선 끝입니다.
-     이 한 가지가 양측 편입 구역의 위치를 결정합니다.</p>
+  <p class="lede">기준점은 <b>도동항</b>입니다. 여기서 <b>남측이 사동 방면</b>, <b>북측이 저동 방면</b>이며 <b>두 방면 모두 도동항에서 출발합니다</b>.
+     두 축은 같은 <b>도동길 지선</b>을 타고 국지도 90호선 본선에 붙습니다. 본선 자체는 도동 시가지 위쪽을 지나가고
+     도동항은 약 <b>0.8 km</b> 떨어진 지선 끝이라, <b>도동항 접면과 그 지선이 양측 공통의 편입 구간</b>이 됩니다.</p>
   <div class="chips">
     <div class="chip" style="--bar:var(--g-hi)">
       <span class="k">남측 · 사동 방면 (신설)</span>
@@ -128,9 +127,9 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
       <span class="s">지형도면 고시 2025-11-17 · 시공 중</span>
     </div>
     <div class="chip" style="--bar:var(--muted)">
-      <span class="k">도동항 ↔ 90호선 본선</span>
-      <span class="v">약 0.8 km 지선</span>
-      <span class="s">도동길 · 시가지 협곡 통과</span>
+      <span class="k">양측 공통 구간</span>
+      <span class="v">도동길 지선 약 0.8 km</span>
+      <span class="s">남·북 두 축이 함께 지나감</span>
     </div>
   </div>
 </header>
@@ -146,7 +145,8 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
       </div>
       <div class="toggles">
         <label class="tg"><input type="checkbox" id="t-road" checked> 90호선 본선</label>
-        <label class="tg"><input type="checkbox" id="t-corr" checked> 남측 추정 축선</label>
+        <label class="tg"><input type="checkbox" id="t-corr" checked> 남측 축선</label>
+        <label class="tg"><input type="checkbox" id="t-naxis" checked> 북측 축선</label>
         <label class="tg"><input type="checkbox" id="t-ring" checked> 도동항 거리링</label>
         <label class="tg"><input type="checkbox" id="t-poi" checked> 지점 이름</label>
       </div>
@@ -165,7 +165,8 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
     <table>
       <thead><tr><th>도동항 기준</th><th>거리</th><th>판독</th></tr></thead>
       <tbody>
-        <tr><td>90호선 본선 접속점(도동길 분기, 개략)</td><td class="n">약 0.8 km</td><td>도동항은 본선이 아니라 <b>지선 끝</b>. 신설도로가 도동항에 직결되려면 시가지 협곡을 통과해야 함</td></tr>
+        <tr><td>90호선 본선 접속점(도동길 분기, 개략)</td><td class="n">약 0.8 km</td><td>도동항은 본선이 아니라 <b>지선 끝</b>. 남·북 두 축이 <b>이 지선을 공유</b>한다</td></tr>
+        <tr><td>북 · 도동항 → 저동항 실경로(지선+본선)</td><td class="n">2.74 km</td><td>남측 확정 2.70 km와 거의 같다 — <b>도동항을 중심으로 좌우 대칭</b> 구조</td></tr>
         <tr><td>북 · 저동항</td><td class="n">1.84 km</td><td>직선 전 구간이 <b>육지</b>(행남 곶 밑동 관통). 기존 순환로 경유는 약 2.8 km</td></tr>
         <tr><td>남 · 사동항 2단계</td><td class="n">2.88 km</td><td>직선 중 <b>1.7 km가 해상</b> — 남측 해안이 만처럼 안으로 굽어 있음</td></tr>
         <tr><td>남 · 사동항</td><td class="n">3.47 km</td><td>확정 연장 2.7 km보다 길다 — 두 항구 직결은 성립 불가</td></tr>
@@ -199,7 +200,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
       <p>위성사진상 도동항 남서쪽은 독도일출전망대가 얹힌 급애가 바다로 바로 떨어지고, 사동까지 해안에 도로가 없습니다.</p>
       <ul>
         <li>중간부는 <b>터널·교량</b> — 지표 토지 매수가 아니라 지하 <b>구분지상권</b> 설정 보상</li>
-        <li>사유지·건물 보상은 <b>도동항 배후 접속부(S1)</b>와 <b>사동측 접속부(S5)</b>에 집중</li>
+        <li>사유지·건물 보상은 <b>도동항 접면(H1)</b>과 <b>사동측 접속부(S5)</b>에 집중</li>
         <li>도동항 배후는 부두까지 건물이 붙어 있어 <b>지장물 단가가 가장 비싼 구역</b></li>
         <li>해상 통과분이 생기면 토지보상이 아니라 <b>공유수면 점·사용 + 어업권 보상</b></li>
       </ul>
@@ -208,6 +209,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
       <h3>북측 · 저동 방면 — 이미 확정돼 있다</h3>
       <p>울릉군 「도동~저동간 관광지 연계순환도로 개설공사」가 이 축입니다. 국지도 사업이 아니라 지역개발사업입니다.</p>
       <ul>
+        <li>이 축도 <b>도동항에서 출발</b>합니다 — 도동길 지선 → 90호선 본선 → 울릉고 → 저동항, 전체 <b>2.74 km</b></li>
         <li>사업 위치 <b>도동리 393-1 ~ 339-1 일원</b> — 종점이 저동리가 아니라 <b>도동리</b></li>
         <li>지번·좌표를 대조하면 <b>울릉고등학교(도동리 350)~울릉한마음회관(408) 사이</b>, 즉 순환로 236~286 구간</li>
         <li>보상계획 공고 2025-09-11~25 → 경상북도보 제6984호 <b>지형도면 고시 2025-11-17</b></li>
@@ -246,7 +248,34 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
 </section>
 
 <section>
-  <h2><span class="num">05</span>지번 ↔ 좌표 대조 — 지적도 대신 쓴 것</h2>
+  <h2><span class="num">05</span>위성·지적도 위에 직접 얹기</h2>
+  <p class="sub">이 페이지는 외부 지도 타일을 불러올 수 없어(아티팩트 보안정책·네트워크 모두 차단) 벡터로만 그렸습니다.
+     대신 같은 구역을 <b>KML·GeoJSON</b>으로 내보냈으니, 실제 위성사진과 지적도 위에 그대로 겹쳐 보실 수 있습니다.</p>
+  <div class="cols">
+    <div class="card">
+      <h3>KML — 위성사진 위에</h3>
+      <ul>
+        <li><b>Google Earth</b>(웹·프로) → 프로젝트 → 가져오기 → <code>ulleung-90-zones.kml</code></li>
+        <li>구역·축선·지번점이 등급별 색으로 뜨고, 클릭하면 판정 근거가 그대로 나옵니다</li>
+        <li>지면 고정(clampToGround) — 절벽 지형에서도 정확히 붙습니다</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>GeoJSON — 지적도 위에</h3>
+      <ul>
+        <li><b>V-World</b> 지도 → 내 파일 올리기 → 연속지적도 레이어 → 구역과 필지 중첩</li>
+        <li><b>QGIS</b> → 벡터 레이어 추가 + V-World·국토정보플랫폼 배경지도</li>
+        <li><b>geojson.io</b> — 브라우저에서 바로 열어 위성 배경 위 확인</li>
+        <li>좌표계 <b>WGS84(EPSG:4326)</b>, 속성에 등급·근거·확인수준 포함</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note"><b>담긴 것.</b> 구역 12개(원·띠 폴리곤), 축선 4개(남측·북측·90호선 본선·도동항 지선),
+    도동리 지번 확인점 17개, 도동항 기준점. <b>모든 폴리곤은 개략 범위이며 필지 경계가 아닙니다.</b></div>
+</section>
+
+<section>
+  <h2><span class="num">06</span>지번 ↔ 좌표 대조 — 지적도 대신 쓴 것</h2>
   <p class="sub">지적도를 볼 수 있는 정부 사이트(V-World, 국가공간정보포털, 토지이음, 일사편리, 국토정보플랫폼, 공공데이터포털)는
      이 세션의 네트워크 정책에서 <b>전부 차단</b>돼 접속 자체가 되지 않았습니다. 대신 네이버 지역검색이 반환하는
      <b>등록 지번과 좌표 쌍</b>을 모아 고시 범위를 실측으로 좁혔습니다.</p>
@@ -278,7 +307,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
 </section>
 
 <section>
-  <h2><span class="num">06</span>사실 확인 수준</h2>
+  <h2><span class="num">07</span>사실 확인 수준</h2>
   <p class="sub">이 세션은 외부 사이트 직접 열람이 네트워크 정책으로 차단돼 있었습니다. 아래는 검색 색인에 노출된 원문 문구로 확인한 것이며 관보·공보 원문을 대조하지는 못했습니다.</p>
   <div class="tablewrap">
     <table>
@@ -300,7 +329,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:
 </section>
 
 <section>
-  <h2><span class="num">07</span>한계와 다음 단계</h2>
+  <h2><span class="num">08</span>한계와 다음 단계</h2>
   <div class="cols">
     <div class="card">
       <h3>이 지도가 말하지 않는 것</h3>
@@ -340,6 +369,10 @@ const DODONG=[130.90881,37.48141];
 const MAIN90=[[130.89357,37.47500],[130.89815,37.48425],[130.89952,37.48587],[130.90160,37.48690],
   [130.90229,37.48772],[130.90462,37.49056],[130.90775,37.49308],[130.90971,37.49287],
   [130.90971,37.49482],[130.90978,37.49615],[130.90971,37.49683],[130.91263,37.49766]];
+const NORTH=[[130.90881,37.48141],[130.90789,37.48303],[130.90602,37.48426],[130.90368,37.48500],
+  [130.90275,37.48610],[130.90160,37.48690],[130.90229,37.48772],[130.90462,37.49056],
+  [130.90680,37.49330],[130.90775,37.49308],[130.90971,37.49287],[130.90971,37.49482],
+  [130.90978,37.49615],[130.90971,37.49683],[130.91263,37.49766]];
 const SPUR=[[130.90881,37.48141],[130.90789,37.48303],[130.90602,37.48426],[130.90473,37.48451],
   [130.90368,37.48500],[130.90275,37.48610],[130.90160,37.48690]];
 
@@ -375,70 +408,69 @@ const POI=[
 ];
 
 const ZONES=[
- {id:"S1",g:"hi",seg:"S",t:"도동항 배후·부두 접면",c:[130.90750,37.48240],r:170,
+ {id:"H1",g:"hi",seg:"H",t:"도동항 부두·배후 접면 (양측 공통 시·종점)",c:[130.9075,37.4824],r:170,
   loc:"도동리 · 도동항 서측 부두, 도동길·도동2길 하단",
   type:"토지 매수 + 건물·영업 지장물 (단가 최고)",
-  why:"위성사진상 부두 끝까지 건물이 붙어 있습니다(활어회센타·소공원·해경 도동출장소·주차장·펜션·상가). 신설도로를 도동항에 직결하든 지선을 개량하든 이 접면을 건드리면 지장물 보상이 폭증합니다.",
+  why:"남측(사동)·북측(저동) 두 축이 모두 도동항에서 출발합니다. 위성사진상 부두 끝까지 건물이 붙어 있어(활어회센타·소공원·해경 도동출장소·주차장·펜션·상가) 어느 방향이든 이 접면을 건드리면 지장물 보상이 가장 크게 발생합니다.",
   ev:"추정 — 위성 판독 + 노선 미공표"},
- {id:"S2",g:"mid",seg:"S",t:"도동항 동측 터미널 진입부",c:[130.91000,37.48225],r:135,
+ {id:"H2",g:"mid",seg:"H",t:"도동길 지선 · 시가지 협곡 통과부 (양측 공통)",band:"SPUR",r:95,
+  loc:"도동리 · 도동항 ~ 90호선 본선 접속점, 약 0.8 km",
+  type:"지선 개량 시 도로변 건물 직접 편입",
+  why:"도동항에서 남·북 어느 쪽으로 가든 이 지선을 지나 90호선 본선에 붙습니다. 폭 100 m 남짓 골짜기에 군청·경찰서·읍사무소·상가·주택이 빽빽해, 이 지선을 넓히는 방식이면 보상비가 폭증합니다. 신설 본선은 이 구간을 피할 개연성이 큽니다.",
+  ev:"추정 — 위성·지형 판독"},
+ {id:"S2",g:"mid",seg:"S",t:"도동항 동측 터미널 진입부",c:[130.91,37.48225],r:135,
   loc:"도동리 · 울릉(도동항)여객선터미널 진입도로, 절개 사면",
   type:"토지 매수(절개지) · 항만시설 관계기관 협의",
-  why:"신 여객선터미널이 동측 절개지에 놓여 있고 진입도로가 해안을 따라 붙어 있습니다. 여객 동선을 신설도로에 붙인다면 이 쪽이 유리하나, 배후가 급애라 확장 여지가 작습니다.",
+  why:"신 여객선터미널이 동측 절개지에 놓이고 진입도로가 해안을 따라 붙어 있습니다. 여객 동선을 신설도로에 직결한다면 이쪽이 유리하나 배후가 급애라 확장 여지가 작습니다.",
   ev:"추정 — 위성 판독"},
- {id:"S3",g:"mid",seg:"S",t:"남서 급애 갱구부(추정)",c:[130.90410,37.47870],r:230,
+ {id:"S3",g:"mid",seg:"S",t:"남서 급애 갱구부(추정)",c:[130.9041,37.4787],r:230,
   loc:"도동리 · 독도일출전망대 아래 급애 사면",
   type:"토지 매수(갱구·사면) · 국유림이면 관리전환",
   why:"도동항에서 사동 방면으로 나가려면 곧바로 이 절벽을 뚫어야 합니다. 터널 시점부의 갱구 절취와 사면 정리 범위가 지표 편입분입니다.",
   ev:"추정 — 지형·위성 판독"},
- {id:"S4",g:"none",seg:"S",band:1,t:"해안 절벽 터널 통과부(추정)",r:260,
+ {id:"S4",g:"none",seg:"S",t:"해안 절벽 터널 통과부(추정)",band:"SOUTH",r:260,
   loc:"도동리 ~ 사동리 해안 능선 하부",
   type:"지표 매수 없음 · 지하 구분지상권 설정 보상",
-  why:"도동~사동 해안은 도로가 전혀 없는 급애입니다. 확정 2.7 km 중 대부분이 이 구간의 터널일 수밖에 없고, 터널 아래 토지는 매수 대상이 아닙니다.",
+  why:"도동~사동 해안은 도로가 전혀 없는 급애입니다. 확정 2.7 km 중 대부분이 이 구간 터널일 수밖에 없고, 터널 아래 토지는 매수 대상이 아닙니다.",
   ev:"추정 — 최소선형 계산 + 위성 판독"},
- {id:"S5",g:"hi",seg:"S",t:"사동측 접속·종점부",c:[130.88340,37.47130],r:330,
+ {id:"S5",g:"hi",seg:"S",t:"사동측 접속·종점부",c:[130.8834,37.4713],r:330,
   loc:"사동리 · 울릉순환로 650~700번대 상부",
   type:"토지 매수 + 건물·영업 지장물",
   why:"도동항에서 육상 최소선형을 따라 2.7 km가 닿는 지점입니다. 순환로변에 펜션·주택·농지가 이어져 사유지 편입 개연성이 높습니다.",
   ev:"추정 — 확정 연장 2.7 km 역산"},
- {id:"S6",g:"hi",seg:"S",t:"90호선 본선 남측 분기부(대안)",c:[130.89880,37.48500],r:250,
+ {id:"S6",g:"hi",seg:"S",t:"90호선 본선 남측 분기부(대안)",c:[130.8988,37.485],r:250,
   loc:"도동리 · 울릉순환로 396~415(보건의료원~119안전센터) 일원",
   type:"토지 매수 + 건물·영업 지장물",
-  why:"신설도로를 도동항이 아니라 90호선 본선에서 직접 분기시키는 대안입니다. 이 경우 도동항 접면(S1)은 편입을 피하고 보상은 이쪽으로 옮겨갑니다. 두 안 중 어느 쪽인지가 남측 보상 위치를 가릅니다.",
+  why:"신설도로를 도동항이 아니라 90호선 본선에서 직접 분기시키는 대안입니다. 이 경우 도동항 접면(H1)은 편입을 피하고 보상이 이쪽으로 옮겨갑니다. 두 안 중 어느 쪽인지가 남측 보상 위치를 가릅니다.",
   ev:"추정 — 본선 접속 대안"},
-
- {id:"D0",g:"ref",seg:"D",t:"도동 시가지 협곡(편입 회피 추정)",c:[130.90560,37.48420],r:260,
-  loc:"도동리 · 도동항 배후 폭 100 m 남짓의 골짜기",
-  type:"—",
-  why:"망향봉과 행남봉 사이 좁은 계곡에 군청·경찰서·읍사무소·상가·주택이 빽빽합니다. 지상 관통 시 건물 편입이 대량 발생하므로 이번 사업이 ‘우회도로 신설’로 설계된 구조적 이유로 읽힙니다.",
-  ev:"추정 — 지형·취락 구조"},
-
- {id:"N1",g:"mid",seg:"N",t:"북측 기점부 · 순환로 352~286",c:[130.90350,37.48920],r:280,
+ {id:"N1",g:"mid",seg:"N",t:"북측 기점부 · 순환로 352~286",c:[130.9035,37.4892],r:280,
   loc:"도동리 · 수협주유소~한마음회관 구간",
   type:"토지 매수 + 도로변 지장물",
-  why:"도동항에서 저동으로 향하는 90호선 본선의 시작 구간입니다. 주유소·회관·공공시설이 도로변에 붙어 있어 확폭·선형개량 시 직접 편입됩니다.",
+  why:"도동항에서 지선을 타고 올라와 저동으로 향하는 90호선 본선의 첫 구간입니다. 주유소·회관·공공시설이 도로변에 붙어 있어 확폭·선형개량 시 직접 편입됩니다.",
   ev:"추정 — 좌표·도로명번호 대조"},
  {id:"N2",g:"none",seg:"N",t:"울릉소방서 신축 예정지",c:[130.90369,37.48841],r:130,
   loc:"도동리 414-8 · 2027년 예정",
   type:"공공시설 부지 — 확보 완료 추정",
   why:"위성사진에 정지된 부지가 확인됩니다. 이미 확보된 공공용지로 보이며 도로사업의 신규 편입 대상은 아닐 개연성이 큽니다.",
   ev:"위성 판독 + POI 등록"},
- {id:"N3",g:"fix",seg:"N",t:"도동리 339-1~393-1 · 고시 구역",c:[130.90680,37.49330],r:280,
+ {id:"N3",g:"fix",seg:"N",t:"도동리 339-1~393-1 · 고시 구역",c:[130.9068,37.4933],r:280,
   loc:"도동리 · 울릉고등학교 서편 봉래길·봉래3길 일원",
   type:"토지·지장물 보상 — 절차 완료 단계",
-  why:"울릉군 「도동~저동간 관광지 연계순환도로 개설공사」의 고시된 사업 위치입니다. 고시 범위 339-1~393-1 안에 드는 실제 지번의 등록 좌표 — 도동리 373-8(한빛펜션)과 383-10(해호랑펜션) — 이 모두 이 원 안에 들어옵니다. 둘 다 울릉고등학교 맞은편이며, 저동리 이장이 매입을 요구한 「울릉고 맞은편 사유지 2필지」와 같은 일대입니다.",
+  why:"울릉군 「도동~저동간 관광지 연계순환도로 개설공사」의 고시된 사업 위치입니다. 고시 범위 339-1~393-1 안에 드는 실제 지번의 등록 좌표 — 도동리 350(울릉고)·373-8(한빛펜션)·383-10(해호랑펜션) — 이 모두 이 원 안에 들어옵니다. 저동리 이장이 매입을 요구한 「울릉고 맞은편 사유지 2필지」와 같은 일대입니다.",
   ev:"공보 문구 + 지번·좌표 실측 대조"},
- {id:"N4",g:"lo",seg:"N",t:"저동 진입부 · 순환로 158~179",c:[130.90980,37.49600],r:220,
+ {id:"N4",g:"lo",seg:"N",t:"저동 진입부 · 순환로 158~179",c:[130.9098,37.496],r:220,
   loc:"저동리 · 저동항 배후 도로변",
   type:"확폭 시 도로변 건물 직접 편입",
   why:"저동은 항구 배후 도로를 따라 주거지가 길게 늘어선 구조여서 도로를 넓히면 건물이 곧바로 편입됩니다. 현 군 사업 구역(도동리)에는 포함되지 않습니다.",
   ev:"참고 — 현 사업구간 아님"},
- {id:"N5",g:"ref",seg:"N",t:"행남 곶(보전녹지·급애, 회피 추정)",c:[130.91550,37.48620],r:470,
+ {id:"N5",g:"ref",seg:"N",t:"행남 곶(보전녹지·급애, 회피 추정)",c:[130.9155,37.4862],r:470,
   loc:"도동리 · 도동등대~행남등대 일원",
   type:"—",
   why:"도동항과 저동항을 직선으로 이으면 이 곶의 밑동을 지납니다(직선 1.84 km 전 구간 육지). 다만 지적편집도상 보전녹지지역이고 해안은 급애·산책로여서 노선이 피해 갈 개연성이 큽니다.",
   ev:"추정 — 지적편집도·위성 판독"}
 ];
 
+const LINES={SPUR:SPUR,SOUTH:ALIGN,NORTH:NORTH,MAIN90:MAIN90};
 const GC={hi:"--g-hi",mid:"--g-mid",lo:"--g-lo",none:"--g-none",fix:"--g-fix",ref:"--g-ref"};
 const GL={hi:"높음",mid:"중간",lo:"낮음~중간",none:"지표 보상 없음",fix:"고시 완료",ref:"회피 추정"};
 const VIEWS={hub:[130.8955,37.4755,130.9205,37.4995], S:[130.8790,37.4640,130.9135,37.4880],
@@ -502,16 +534,21 @@ function draw(){
     s+=`<path d="${linePath(SPUR)}" fill="none" stroke="${ink2}" stroke-width="1.8" stroke-dasharray="2 3" opacity=".7"/>`;
   }
   ZONES.forEach(z=>{const col=cssv(GC[z.g]),on=selected===z.id;
-    const d=z.band?bandPath(ALIGN,z.r):circlePath(z.c,z.r);
+    const d=z.band?bandPath(LINES[z.band],z.r):circlePath(z.c,z.r);
     s+=`<path class="zone" data-id="${z.id}" d="${d}" fill="${z.g==='none'?'url(#hatch)':col}"
       fill-opacity="${z.g==='none'?1:(on?.38:.2)}" stroke="${col}" stroke-width="${on?2.6:1.5}"
       stroke-dasharray="${z.g==='fix'?'':'6 4'}" style="cursor:pointer"><title>${esc(z.id+' '+z.t)}</title></path>`});
+  if(opt('t-naxis')){
+    s+=`<path d="${linePath(NORTH)}" fill="none" stroke="${cssv('--g-fix')}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>`;
+    const qn=P(130.91263,37.49766);
+    s+=`<text x="${(qn[0]+9).toFixed(1)}" y="${(qn[1]+16).toFixed(1)}" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="${cssv('--g-fix')}" stroke="${surf}" stroke-width="3" paint-order="stroke">북측 2.74 km</text>`;
+  }
   if(opt('t-corr')){
     s+=`<path d="${linePath(ALIGN)}" fill="none" stroke="${cssv('--g-hi')}" stroke-width="2.6" stroke-dasharray="10 6" stroke-linecap="round"/>`;
     const e=ALIGN[ALIGN.length-1],p=P(e[0],e[1]);
     s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4.5" fill="${cssv('--g-hi')}" stroke="${surf}" stroke-width="1.6"/>`;
     s+=`<text x="${(p[0]-8).toFixed(1)}" y="${(p[1]+14).toFixed(1)}" text-anchor="end" font-family="IBM Plex Mono, monospace"
-      font-size="10.5" fill="${cssv('--g-hi')}" stroke="${surf}" stroke-width="3" paint-order="stroke">2.7 km</text>`;
+      font-size="10.5" fill="${cssv('--g-hi')}" stroke="${surf}" stroke-width="3" paint-order="stroke">남측 2.70 km</text>`;
   }
   const drawPoi=p=>{const q=P(p.lon,p.lat);if(q[0]<-40||q[0]>W+40||q[1]<-30||q[1]>H+30)return;
     const hub=p.k==='hub',port=p.k==='port'||p.k==='air',lot=p.k==='lot';
@@ -574,7 +611,8 @@ document.getElementById('legend').innerHTML=
  [['hi','보상 개연성 높음'],['mid','중간'],['lo','낮음~중간'],['none','지표 보상 없음(터널·확보완료)'],
   ['fix','고시로 확정된 구역'],['ref','편입 회피 추정']]
  .map(([g,l])=>`<span class="lg"><span class="sw" style="background:var(${GC[g]});opacity:.45;border:1.5px solid var(${GC[g]})"></span>${l}</span>`).join('')
- +`<span class="lg"><span class="sw" style="background:none;border-top:2px dashed var(--g-hi);height:0"></span>남측 추정 축선(2.7km)</span>`
+ +`<span class="lg"><span class="sw" style="background:none;border-top:2px dashed var(--g-hi);height:0"></span>남측 축 · 도동항→사동 2.70km(추정)</span>`
+ +`<span class="lg"><span class="sw" style="background:none;border-top:3px solid var(--g-fix);height:0"></span>북측 축 · 도동항→저동 2.74km</span>`
  +`<span class="lg"><span class="sw" style="background:none;border-top:3px solid var(--ink-2);opacity:.6;height:0"></span>국지도 90호선 본선</span>`
  +`<span class="lg"><span class="sw" style="background:none;border-top:2px dotted var(--ink-2);opacity:.7;height:0"></span>도동항 지선(도동길)</span>`
  +`<span class="lg"><span class="sw" style="background:var(--g-fix);border-radius:50%;width:9px;height:9px"></span>지번 확인 지점</span>`;
@@ -594,7 +632,7 @@ document.getElementById('tl').innerHTML=TL.map(x=>`<li data-state="${x.st}">
  <span class="when">${x.w}</span><span class="what">${x.t}</span><span class="who">${x.who}</span></li>`).join('');
 
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>fitView(b.dataset.view)));
-['t-road','t-corr','t-ring','t-poi'].forEach(id=>document.getElementById(id).addEventListener('change',draw));
+['t-road','t-corr','t-naxis','t-ring','t-poi'].forEach(id=>document.getElementById(id).addEventListener('change',draw));
 let drag=null;
 svg.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,lon:view.lon,lat:view.lat};
   svg.setPointerCapture(e.pointerId);svg.classList.add('drag')});
