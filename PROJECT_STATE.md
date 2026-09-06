@@ -7,16 +7,16 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/mois_dong_age5_202608.csv.gz
+- 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/mois_dong_population_age_202608.json.gz
+- 2026-09-06 ci: 범용 외부 파일 받기 워크플로 (fetch-file) — CDN egress 우회
+- 2026-09-05 docs(session): s19 마감 · v0.3.504 ERP 방식 이식·배포 마감 · RESUME 갱신
 - 2026-09-05 s19: v0.3.504 ERP 방식 이식 · 교통 실적재 마감 · 사장님 화면 확인
 - 2026-09-05 s18: 파일 넣기 하루종일 판 다섯 물림 · ERP 힌트로 방향 확정 (v0.3.504 준비)
 - 2026-09-04 s17: 병원마케팅 축 조사 · v0.3.500 실측 고침 배포 · 세 결정 확정
 - 2026-09-04 docs(s17): 확정 결정 세 개 + 다음 3판(v0.3.500·501·502) 실행 순서
-- 2026-09-04 docs(s17): 병원마케팅 입지 분석 여섯 새 축 통합 조사 (서브에이전트 6개 병렬)
-- 2026-09-04 docs(s16): §7 P3 결정 세 개 확정 도장 · 사장님 2026-09-04
-- 2026-09-04 docs(s16): §7 P3 준비 · 카카오맵·추계 환자 수·비교 모드 도면 + 시뮬 13호
-- 2026-09-03 docs(s15): 상권 확정 반영 · 하린 붙임 · 팀 문서 신규
 
-## 워크플로 (19)
+## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
 - `api-check.yml` · 수동
 - `apply-clinic-schema.yml` · 수동
@@ -28,6 +28,7 @@
 - `convert-webp.yml` · 수동
 - `deploy-clinic-functions.yml` · 수동
 - `fetch-blog-ai.yml` · 수동
+- `fetch-file.yml` · 수동
 - `geo-metrics-collect.yml` · '0 22 * * *' · 수동
 - `geo-task-recur.yml` · '0 22 * * 0' · 수동
 - `geo-weekly-report.yml` · '0 8 * * 5' · 수동
@@ -81,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 abe3531 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 23d074f 기준. 값·비밀은 포함하지 않음.*
