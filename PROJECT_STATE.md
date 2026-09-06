@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/floating_pop_1km_2024.json.gz
+- 2026-09-06 docs(plans): 유동인구 원본 조사 — 전국 단위로 다시 씀 (조사원 셋 + Zenodo 1km 24h 실측)
+- 2026-09-06 docs(plans): 유동인구·인구이동 원본 조사 — 서울 생활인구 열쇠 없이 실측 통과 · 판 셋 추천
+- 2026-09-06 docs(resume): 0.3.513 반경 안 인구 배포 실측 반영 · 다음 후보 갱신
+- 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/admdongkor_dong_points_20260701.json.gz
+- 2026-09-06 docs(resume): s20 마감 · v0.3.512 연령 피라미드 배포 실측 · 다음 세션 이어갈 작업
+- 2026-09-06 docs(session): s20 로그 · 인구 세 판 + 교통 세부 + 연령 원본 조달 · PROJECT_STATE 갱신
 - 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/mois_dong_age5_202608.csv.gz
-- 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/mois_dong_population_age_202608.json.gz
-- 2026-09-06 ci: 범용 외부 파일 받기 워크플로 (fetch-file) — CDN egress 우회
-- 2026-09-05 docs(session): s19 마감 · v0.3.504 ERP 방식 이식·배포 마감 · RESUME 갱신
-- 2026-09-05 s19: v0.3.504 ERP 방식 이식 · 교통 실적재 마감 · 사장님 화면 확인
-- 2026-09-05 s18: 파일 넣기 하루종일 판 다섯 물림 · ERP 힌트로 방향 확정 (v0.3.504 준비)
-- 2026-09-04 s17: 병원마케팅 축 조사 · v0.3.500 실측 고침 배포 · 세 결정 확정
-- 2026-09-04 docs(s17): 확정 결정 세 개 + 다음 3판(v0.3.500·501·502) 실행 순서
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 23d074f 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 73e8a09 기준. 값·비밀은 포함하지 않음.*
