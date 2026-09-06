@@ -1,0 +1,68 @@
+name: Fetch external file
+
+# 외부 URL 의 파일 하나를 저장소로 내려받아 커밋한다 (범용).
+# 작업 컨테이너는 외부 CDN egress 가 막혀 있어(조직 프록시 정책) 이 워크플로가 대신 받는다.
+# fetch-blog-ai.yml 과 같은 원리 · 이미지 변환 없이 바이트 그대로.
+#
+# 첫 사용(2026-09-06): 행안부 주민등록 연령별 인구(행정동·5세 단위·2026-08) 를 샌드박스에서
+# 컬럼형 gzip JSON 으로 변환해 CDN 에 올린 것을 받는다 → veo-platform 인구 피라미드 원천.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Download URL'
+        required: true
+      out:
+        description: 'Repository-relative output path'
+        required: true
+      md5:
+        description: 'Expected md5 (optional · mismatch fails)'
+        required: false
+        default: ''
+      branch:
+        description: 'Branch to commit to'
+        required: false
+        default: 'claude/hospital-location-analysis-plan-6kbmqo'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-file
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Download + verify
+        env:
+          URL: ${{ github.event.inputs.url }}
+          OUT: ${{ github.event.inputs.out }}
+          MD5: ${{ github.event.inputs.md5 }}
+        run: |
+          mkdir -p "$(dirname "$OUT")"
+          curl -fsSL --retry 3 -o "$OUT" "$URL"
+          got=$(md5sum "$OUT" | cut -d' ' -f1)
+          echo "size=$(stat -c%s "$OUT") md5=$got"
+          if [ -n "$MD5" ] && [ "$MD5" != "$got" ]; then echo "md5 mismatch (want $MD5)"; exit 1; fi
+
+      - name: Commit + push
+        env:
+          OUT: ${{ github.event.inputs.out }}
+          BR: ${{ github.event.inputs.branch }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            echo "No change."
+          else
+            git commit -m "chore(data): 외부 파일 자체 저장 (fetch-file) — $OUT"
+            git push origin "HEAD:$BR"
+          fi
