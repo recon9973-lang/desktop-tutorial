@@ -1,19 +1,20 @@
-# RESUME — 다음 세션 이어가기 (2026-09-06 s20 마감 · ANSEO 방)
+# RESUME — 다음 세션 이어가기 (2026-09-06 s20 · ANSEO 방 · 0.3.517 배포 준비 완료)
 
 > 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-06-s20.md`(직전 `-s19.md`).
 > **ANSEO = `recon9973-lang/veo-platform`**(veo.seokorea.org 콘솔). desktop-tutorial 안의 venom 무료진단은 ANSEO가 **아니다**.
 
 ## 지금까지 (핵심만)
-- veo-platform 원격 main = `225bf4b7`(v0.3.515 · 입지 방 · 미배포). 0.3.514 는 판 2 가 가져가 **나갔다**.
-- 브랜치 2개 **푸시됨 · PR 없음 · 배포 안 됨 · 둘 다 main 합류 완료 · 둘 다 판 미발급**:
-  - `claude/anseo-perf-day1` (head `90fa32f4`+대장 커밋) — 1일차 셋(#1 gzip · #2 레이아웃 병렬 · #8 load_only) + **2주차 다섯**(#4 httpx 수명 · #6 readAllPages 병렬 · #7 next/font · GEO 폼 dynamic · #9 customers/overview). 전체 pytest·vitest·check-contracts 통과
-  - `claude/anseo-diagnosis-ring-loader` (`1e7a3567`) — 골든 링 로딩. 수동 0.3.514 는 물러나 판 파일 셋 main 값. changelog 항목 원문 `b0d57fc9`
-- 속도 Top 10 원문: `docs/plans/anseo-veo-speed-audit-2026-09-06.md`(이 저장소). 남은 것: #3 Redis+워커 · #5 DB 풀(사장님) · #10 router.refresh 32곳 · `lib/projects.ts` 3회 조인
+- veo-platform 원격 main = `6cc82db6`(v0.3.516 · 입지 방 · 미배포). 0.3.510~0.3.515 는 나갔다.
+- **배포 준비 완료 · 배포 안 함**: `claude/anseo-perf-day1` head **`1f5c8576`** = main 합류 + 링 가지 합류 + **v0.3.517 발급**(골든 링 로딩 + 속도 여덟). 푸시됨 · PR 없음.
+  - 안에 든 것: 1일차 셋(#1 gzip · #2 레이아웃 병렬 · #8 load_only) + 2주차 다섯(#4 httpx 수명 · #6 readAllPages 병렬 · #7 next/font · GEO 폼 dynamic · #9 customers/overview) + 골든 링(`RingLoader` · ScanForm · JobWatch)
+  - 검증: bump-version(check-contracts) · 대장 관문 16 · tsc 0 · pytest release/api/contract/customers 232 · 앞서 전체 pytest 6,939/6,925 · vitest 2,217
+- `claude/anseo-diagnosis-ring-loader`(`1e7a3567`)는 perf-day1 에 합류됐으므로 더 손대지 않는다
+- 속도 Top 10 원문: `docs/plans/anseo-veo-speed-audit-2026-09-06.md`. 남은 것: #3 Redis+워커 · #5 DB 풀(사장님) · #10 router.refresh 32곳 · `lib/projects.ts` 3회 조인
 - venom(desktop-tutorial): PR #233 main `5fa0f63` 배포됨. 사장님 검토 후 되돌릴 항목 지시 예정
 
 ## 바로 이어갈 작업
-1. **사장님 결정 대기**(s20 로그 「판단 필요」 5건): AEO 엔진별 막대 · 스크린샷 출처 · venom 되돌릴 항목 · #3/#5 · fetcher.py 제외 수용 · 서체 라틴 폴백
-2. **배포 오더 문장 받으면**: perf-day1 에 ring-loader 를 merge(파일 안 겹침 · 대장 두 파일만 손 해소) → `make bump-version TO=0.3.5xx`(main 최신 판 +1 · 다른 방 확인) + `changelog.ts` 에 링 항목(`b0d57fc9` 원문) + 속도 항목 + WORKLIST 대기 표 「판 미발급」 교체 → `make check-contracts` → `VEO_DEPLOY_ORDER="문장" bash scripts/deploy.sh`. 다른 방이 main 을 밀었으면 merge, force-with-lease 는 사장님 승인
+1. **배포 오더 문장 받으면** (`/home/user/veo-perf`): `git fetch origin main` → main 이 또 움직였으면 merge(대장 충돌은 양쪽 살림 · 판이 겹치면 `make bump-version TO=<main+1>` 하고 changelog 맨 위 항목 version·대장 머리말/표 갱신) → `make preflight` → `VEO_DEPLOY_ORDER="문장" bash scripts/deploy.sh` → 이중 실측(서버·워커 `version`) → 대장 도장 커밋. force-with-lease 는 사장님 승인
+2. 사장님 결정 대기(s20 로그 「판단 필요」): AEO 엔진별 막대 · 스크린샷 출처 · venom 되돌릴 항목 · #3/#5 · fetcher.py 제외 수용 · 서체 라틴 폴백
 3. 배포 뒤: 다음 웹 판에서 `fetchCompaniesLegacy`+`readCompanyBoards` 제거 · 운영 전후 실측으로 «—» 채우기
 4. venom 되돌리기: 지시 오면 desktop-tutorial 에서 해당 커밋 revert PR
 
