@@ -1,16 +1,17 @@
-# RESUME — 다음 세션 이어가기 (2026-09-06 15:30 KST · s20 + 0.3.515)
+# RESUME — 다음 세션 이어가기 (2026-09-06 17:38 KST · s20 + 0.3.516)
 
 > 새 세션은 이 파일을 **먼저** 읽는다. 이 세션 상세는 `docs/session-logs/2026-09-06-s20.md`.
 
 ## 지금 상태
 
-- **운영 판 = 0.3.515** (2026-09-06 15:30 KST 이중 실측 · 서버·워커 둘 다)
+- **운영 판 = 0.3.516** (2026-09-06 17:38 KST 이중 실측 · 서버·워커 둘 다)
 - 이 세션이 내보낸 판 여섯: **0.3.506** 인구 원천 · **0.3.507** 인구 인포그래픽 · **0.3.509** 교통
   정류장 세부 · **0.3.512** 인구 연령 피라미드 · **0.3.513** 반경 안 인구(행정동 경계 표본점) ·
-  **0.3.515** 반경 안 시간대별 유동인구(**전국 1km 격자** 116,850 · 평일/주말 24시간 · Zenodo CC BY 4.0)
+  **0.3.515** 반경 안 시간대별 유동인구(**전국 1km 격자** 116,850 · 평일/주말 24시간 · Zenodo CC BY 4.0) ·
+  **0.3.516** 유동인구 연도 흐름(2022→2023→2024 낮 평균 막대 · 전년 대비 % · `trend` 열 · 새 표 없음)
 - 「입지」 탭 세 축 전부 실측값: 경쟁(심평원) · 교통(개수 + 이용량) · 인구(성별·증감 + 연령 피라미드 +
   반경 안 인구 + 시간대별 유동인구 곡선)
-- veo-platform 우리 가지 `claude/anseo-location-v0501` = main `225bf4b` + 도장 커밋
+- veo-platform 우리 가지 `claude/anseo-location-v0501` = main `6cc82db` + 도장 커밋
 - desktop-tutorial 이 방 가지 `claude/hospital-location-analysis-plan-6kbmqo`
 
 ## 사장님이 하실 것 · **한 번만**
@@ -25,9 +26,7 @@ KPI 셋: 평일 낮 최고 · 밤 최저 · 낮/밤 배율). 설정 「데이터
    사장님 활용신청 1회 + 공공데이터포털 열쇠 → 콘솔 「외부 연결 열쇠」. 조사 보고서
    `docs/plans/anseo-floating-population-sources.md` 3순위 항목에 주소·필드.
 2. **관광객 유입 축** — 관광공사 방문자 API 15101972 (시군구 · 현지인/외지인/외국인 · 월). 열쇠 1회.
-3. **유동인구 2022·2023년 추가** — 같은 `build_floating_pop_data.py` 경로 (연도만 바꿈 · 샌드박스 690초).
-   지금은 2024년 하나. 연도 비교(증감) 를 원하시면.
-4. **카카오맵 타일** (task #15 · 사장님 열쇠 뒤) · **「입지」 이름 겹침 정리** (#9) · **웹 UI CSP 진단** (#19).
+3. **카카오맵 타일** (task #15 · 사장님 열쇠 뒤) · **「입지」 이름 겹침 정리** (#9) · **웹 UI CSP 진단** (#19).
 
 ## 대기/차단
 
@@ -58,10 +57,13 @@ KPI 셋: 평일 낮 최고 · 밤 최저 · 낮/밤 배율). 설정 「데이터
   긴 일은 `nohup … &` + 로그 · `background:true` 로 `sleep 840` 을 띄워 15분 임대 연장.
   파일 이 방으로: `media_upload` → desktop-tutorial **`fetch-file` 워크플로**(`actions_run_trigger` ·
   method `run_workflow` · ref main · 입력 url·out·md5·branch) → `git pull`.
-- **원본 위치**: desktop-tutorial `data/mois/` (연령 CSV · 표본점 · `floating_pop_1km_2024.json.gz`) ·
+- **원본 위치**: desktop-tutorial `data/mois/` (연령 CSV · 표본점 · `floating_pop_1km_2024.json.gz` ·
+  `floating_trend_2022/2023.json.gz` 낮·밤 요약) ·
   veo `apps/api/data/{population,transport,floating}/` (+ `meta.json`).
 - **유동인구 격자 셈법**: 반경 안(최소 800m) 1km 격자 중심점 평균 밀도 x 반경 면적. 로컬 실측 강남역 1km
   평일 13시 229,455 · 04시 83,939 (배율 2.7) · 창원 마산합포구청 1km 12시 62,464 (배율 1.2).
+  연도 흐름은 `trend` 열({"2022": [평일 낮, 평일 밤, 주말 낮, 주말 밤] …}) · 새 해 추가는 샌드박스
+  `trend_summary()` 논리(스크립트 머리말) → `--merge-trend` → 같은 파일 · 강남역 전년 대비 +0.8%.
 - **로컬 PostgreSQL**: `pg_ctlcluster 16 main start` · DB `veo_test` (root · 5432) · 적재 시험은
   `VEO_DATABASE_URL=…veo_test` 로 alembic upgrade → `bootstrap_*_from_disk()`.
 - **운영 실측**: `/api/health` · `/api/queue` (바깥 샌드박스 curl).
