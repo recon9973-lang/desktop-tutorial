@@ -3,18 +3,18 @@
 > 🤖 자동 생성 파일. 직접 수정 금지 — `node scripts/gen-project-state.mjs`(또는 CI)가 push마다 갱신.
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
-- **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
+- **저장소**: desktop-tutorial  ·  **현재 브랜치**: claude/ulleung-bypass-road-analysis-bh7zu4  ·  **기본 브랜치**: claude/ulleung-bypass-road-analysis-bh7zu4
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-09-06 perf+feat(venom): 첫 화면 렌더블록 제거 · 무료검진 병렬화 · 진단 로딩 골든 링 오버레이 (#233)
-- 2026-09-06 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-06 ci: 범용 외부 파일 받기 워크플로 (fetch-file) — CDN egress 우회 (#232)
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 docs(checkpoint · s17 · 오류방): SerpAPI 시간당 상한 오분류 잡음 · v0.3.499 반영
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 s16: v0.3.499 배포 마감 (「데이터 원천」 파일 올리기 · 카카오 열쇠 자리 · 사장님 지적 세 건 해결)
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-06 docs(ulleung-90): 13차 개정 · 12차 단면 오류 정정, 확폭은 갱구 부지에서 흡수
+- 2026-09-06 docs(ulleung-90): 12차 개정 · 죽도관광 앞 5.0 m 확인, 확폭 확정과 방향 분기
+- 2026-09-06 docs(ulleung-90): 11차 개정 · 도로 폭과 편입의 관계 도해
+- 2026-09-06 docs(ulleung-90): 10차 개정 · 보상 편입 범위 지도화, A갱구 통행 분배
+- 2026-09-06 docs(ulleung-90): 9차 개정 · 사업 목적 재정의로 고가 통과형 폐기
+- 2026-09-06 docs(ulleung-90): 로드뷰 반영 8차 개정 · A/B 터널 구성안
+- 2026-09-06 feat: 갱구부 필지별 토지 수용 가능성 등급 + 6차 최적화 오답 정정
+- 2026-09-06 feat: 도동항 양방향 터널 구조 확정 + 갱구·진출입로 최소비용 최적화
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 5fa0f63 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 fc55219 기준. 값·비밀은 포함하지 않음.*
