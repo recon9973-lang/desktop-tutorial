@@ -15,6 +15,11 @@
 
 ## 개정 이력
 
+- **2026-09-06 5차 개정** — **제공된 네이버 위성지도 원본에 구역을 직접 오버레이**. 스크린샷을 좌표 정합(Web Mercator 어파인,
+  POI 실좌표 최소제곱)한 뒤 구역·축선·지번점을 그려 넣었다. 결과물 4장은 [`maps/`](./maps) 에 있고,
+  정합 파라미터는 [`data/georef.json`](./data/georef.json), 렌더러는 `overlay.py` · `mark.py`.
+  정합 오차: 도동항 50m 도면 약 3.4 m, 100~300m 도면 약 17 m.
+
 - **2026-09-06 4차 개정** — 제공된 지적편집도(50 m 축척) 판독 반영. **남측 축은 보전녹지가 아니라 「자연환경보전지역」**
   (국토계획법상 최강 보전 용도지역, 지목 산1임·산2임·57임·59임 등)으로 정정. 북측 고시범위 339-1~393-1의
   실제 분포(제1종일반주거 339~345 → 울릉고 350 → 자연녹지 373~393)를 확인. 도동항 일대 지번(항만시설 84·85잡·89·94잡·4잡·5잡·38,
@@ -233,6 +238,11 @@ A구간에서도 편입 범위 설계가 최대 변수다.
 - [`data/ulleung_coast_gadm.json`](./data/ulleung_coast_gadm.json) — 울릉군 해안선 (GADM, 본섬 1,279점) — 육상/해상 판정용
 - [`data/anchors.json`](./data/anchors.json) — 지점 좌표 및 기존 울릉순환로 도로명번호 체인
 - [`data/lots_dodongri.json`](./data/lots_dodongri.json) — 도동리 지번↔좌표 대조 (지적도 대체)
+- [`maps/06_overview_marked.jpg`](./maps) — 전체 위성 + 양측 구역·축선
+- [`maps/03_dodong_marked.jpg`](./maps) — 도동항 접면 + 지번 주기
+- [`maps/04_jeodong_marked.jpg`](./maps) — 북측 저동 방면 + 고시구역 지번점
+- [`maps/05_sadong_marked.jpg`](./maps) — 남측 사동 방면 터널 축선
+- [`data/georef.json`](./data/georef.json) — 스크린샷 좌표 정합 파라미터
 - [`data/ulleung-90-zones.kml`](./data/ulleung-90-zones.kml) — **Google Earth용 오버레이** (구역 12·축선 4·지번점 17)
 - [`data/ulleung-90-zones.geojson`](./data/ulleung-90-zones.geojson) — **V-World·QGIS·geojson.io용 오버레이** (WGS84)
 - [`data/zones.json`](./data/zones.json) — 구역 정의 원본(등급·근거·확인수준)
