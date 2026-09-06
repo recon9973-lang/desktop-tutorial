@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 docs: 0.3.523 도장 — 실측 02:28 KST · RESUME 다음 세션 첫 일(재개방 캡처로 형식 확정)
 - 2026-09-06 docs: s20 체크포인트(160건) — 인구 이동 0건 경로 진단 · 0.3.523 배포 중 · RESUME 다음 세션 첫 일
 - 2026-09-06 docs: 0.3.522 도장 — 인구 이동 첫 실호출 실패 관측 · 까닭 표시 판 실측 01:54 KST · RESUME 갱신
 - 2026-09-06 docs: 0.3.521 도장 — 문구 정정 판 실측 23:42 KST · RESUME 운영 판 갱신
@@ -14,7 +15,6 @@
 - 2026-09-06 docs: s20 체크포인트 — 0.3.519 인구 이동 도장 · RESUME(사장님 손 1회: 15108093 활용신청 · 첫 실호출 확정)
 - 2026-09-06 docs: s20 체크포인트(140건) — 인구 이동 열쇠 없는 길 막힘 확인 · #19 Failed to fetch 진단 닫음 · RESUME 갱신
 - 2026-09-06 docs: s20 체크포인트 갱신 — 0.3.516 유동인구 연도 흐름 도장 · RESUME 갱신
-- 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/floating_trend_2023.json.gz
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 b09a549 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 1774de3 기준. 값·비밀은 포함하지 않음.*
