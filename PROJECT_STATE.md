@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 docs: 공공데이터포털 인증키 자리 정정(Railway 변수) · 0.3.520 문구 정정 판 기록 — RESUME·세션 로그
+- 2026-09-06 docs: s20 체크포인트 — 0.3.519 인구 이동 도장 · RESUME(사장님 손 1회: 15108093 활용신청 · 첫 실호출 확정)
 - 2026-09-06 docs: s20 체크포인트(140건) — 인구 이동 열쇠 없는 길 막힘 확인 · #19 Failed to fetch 진단 닫음 · RESUME 갱신
 - 2026-09-06 docs: s20 체크포인트 갱신 — 0.3.516 유동인구 연도 흐름 도장 · RESUME 갱신
 - 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/floating_trend_2023.json.gz
 - 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/floating_trend_2022.json.gz
 - 2026-09-06 docs: s20 체크포인트 갱신 — 0.3.515 전국 유동인구 도장 · RESUME 다음 판(인구 이동 API)
 - 2026-09-06 chore(data): 외부 파일 자체 저장 (fetch-file) — data/mois/floating_pop_1km_2024.json.gz
-- 2026-09-06 docs(plans): 유동인구 원본 조사 — 전국 단위로 다시 씀 (조사원 셋 + Zenodo 1km 24h 실측)
-- 2026-09-06 docs(plans): 유동인구·인구이동 원본 조사 — 서울 생활인구 열쇠 없이 실측 통과 · 판 셋 추천
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 94146cf 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 d3e8f9f 기준. 값·비밀은 포함하지 않음.*
