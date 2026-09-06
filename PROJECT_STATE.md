@@ -7,16 +7,16 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 style(ring-loader): AEO 링 색을 골드 원본으로 — 사장님 결정
+- 2026-09-06 tune(ring-loader): 스크림 .86 → .78 — 뒤 화면이 조금 더 비치게 (SEO·AEO 공통 단일 변수)
+- 2026-09-06 fix(ring-loader): 배경 블랙 블러 — 링의 검은 원 경계 제거
+- 2026-09-05 docs(checkpoint · s18 · ANSEO 속도·로딩 방): 렌더블록 제거·병렬화·골든 링 로딩 이식 인계
 - 2026-09-05 feat(venom): 진단 로딩을 골든 링 오버레이로 통일 — SEO·GEO(인디고) / AEO(마젠타)
 - 2026-09-05 perf(venom): 첫 화면 렌더블록 제거 · 이미지 -1.62MB · 무료검진 오케스트레이터 병렬화
 - 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-04 docs(checkpoint · s17 · 오류방): SerpAPI 시간당 상한 오분류 잡음 · v0.3.499 반영
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 s16: v0.3.499 배포 마감 (「데이터 원천」 파일 올리기 · 카카오 열쇠 자리 · 사장님 지적 세 건 해결)
-- 2026-09-04 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-04 docs(resume): 카카오 열쇠는 콘솔 「외부 연결 열쇠」로만 (Vercel 안 만짐)
 
-## 워크플로 (19)
+## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
 - `api-check.yml` · 수동
 - `apply-clinic-schema.yml` · 수동
@@ -28,6 +28,7 @@
 - `convert-webp.yml` · 수동
 - `deploy-clinic-functions.yml` · 수동
 - `fetch-blog-ai.yml` · 수동
+- `fetch-file.yml` · 수동
 - `geo-metrics-collect.yml` · '0 22 * * *' · 수동
 - `geo-task-recur.yml` · '0 22 * * 0' · 수동
 - `geo-weekly-report.yml` · '0 8 * * 5' · 수동
@@ -81,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 b0116cd 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 ca85dd5 기준. 값·비밀은 포함하지 않음.*
