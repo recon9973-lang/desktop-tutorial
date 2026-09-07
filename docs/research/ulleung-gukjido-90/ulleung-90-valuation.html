@@ -1,0 +1,698 @@
+<title>도동리 744㎡ 보상 산정</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EDF0F0; --surface:#FAFBFA; --surface-2:#E4E9E9; --surface-3:#F2F5F4;
+  --ink:#111B1D; --ink-2:#39474A; --muted:#69767A; --faint:#8C9A9D;
+  --line:#C6D0D0; --line-soft:#DCE3E2;
+  --tide:#14505E; --tide-soft:#D6E5E8;
+  --scoria:#96361F; --scoria-soft:#F0DED8;
+  --amber:#7E6212; --amber-soft:#EFE7CE;
+  --moss:#2A5A46;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --serif:"Gowun Batang","Nanum Myeongjo",Georgia,serif;
+  --sh:0 1px 2px rgba(17,27,29,.05), 0 10px 26px -18px rgba(17,27,29,.35);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E1416; --surface:#161E20; --surface-2:#1D2628; --surface-3:#131B1D;
+  --ink:#E8EDEC; --ink-2:#BDC8C7; --muted:#8F9C9E; --faint:#74817F;
+  --line:#2E3A3B; --line-soft:#232D2F;
+  --tide:#5CB4C2; --tide-soft:#14343A;
+  --scoria:#E08468; --scoria-soft:#37201A;
+  --amber:#D3B25E; --amber-soft:#2F2915;
+  --moss:#6BB392;
+  --sh:0 1px 2px rgba(0,0,0,.5), 0 12px 30px -20px rgba(0,0,0,.9);
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1416; --surface:#161E20; --surface-2:#1D2628; --surface-3:#131B1D;
+  --ink:#E8EDEC; --ink-2:#BDC8C7; --muted:#8F9C9E; --faint:#74817F;
+  --line:#2E3A3B; --line-soft:#232D2F;
+  --tide:#5CB4C2; --tide-soft:#14343A;
+  --scoria:#E08468; --scoria-soft:#37201A;
+  --amber:#D3B25E; --amber-soft:#2F2915;
+  --moss:#6BB392;
+  --sh:0 1px 2px rgba(0,0,0,.5), 0 12px 30px -20px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.68;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:38px 20px 100px;display:flex;flex-direction:column;gap:34px}
+h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
+p{margin:0}
+a{color:var(--tide)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+header{display:flex;flex-direction:column;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:24px}
+h1{font-family:var(--serif);font-size:clamp(27px,4.2vw,40px);line-height:1.2;letter-spacing:-.01em}
+.sub{color:var(--ink-2);max-width:66ch}
+.lots{display:flex;flex-wrap:wrap;gap:8px}
+.lot{font-family:var(--mono);font-size:12.5px;padding:4px 10px;border:1px solid var(--line);
+  border-radius:2px;background:var(--surface);color:var(--ink-2)}
+.lot b{color:var(--ink);font-weight:600}
+
+/* verdict */
+.verdict{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0;
+  border:1px solid var(--line);background:var(--surface);box-shadow:var(--sh)}
+.verdict>div{padding:24px 26px}
+.verdict .main{border-right:1px solid var(--line-soft)}
+.big{font-family:var(--serif);font-size:clamp(38px,7vw,62px);line-height:1;color:var(--scoria);
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.big small{font-size:.42em;font-family:var(--sans);font-weight:600;letter-spacing:0;margin-left:.25em}
+.main .cap{color:var(--ink-2);margin-top:12px;font-size:14px}
+.aside-rows{display:flex;flex-direction:column;gap:14px}
+.arow{display:flex;flex-direction:column;gap:2px}
+.arow .k{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.arow .v{font-family:var(--serif);font-size:23px;font-variant-numeric:tabular-nums}
+.arow.risk .v{color:var(--amber)}
+
+/* generic section */
+section{display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--serif);font-size:23px;display:flex;align-items:baseline;gap:12px}
+h2 .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--tide);
+  text-transform:uppercase;font-weight:500}
+h3{font-size:15.5px;letter-spacing:-.005em}
+.lede{color:var(--ink-2);max-width:72ch}
+
+/* formula chain */
+.chain{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:820px){.chain{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.chain{grid-template-columns:1fr}}
+.term{appearance:none;text-align:left;font:inherit;cursor:pointer;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line);
+  padding:13px 13px 15px;display:flex;flex-direction:column;gap:5px;transition:border-color .15s,background .15s}
+.term:hover{background:var(--surface-3);border-top-color:var(--tide)}
+.term[aria-selected="true"]{border-top-color:var(--tide);background:var(--tide-soft);border-color:var(--tide)}
+.term .ix{font-family:var(--mono);font-size:11px;color:var(--tide);letter-spacing:.1em;font-weight:600}
+.term .nm{font-size:13.5px;font-weight:600;line-height:1.35}
+.term .vl{font-family:var(--mono);font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.term:focus-visible{outline:2px solid var(--tide);outline-offset:2px}
+.termbody{border:1px solid var(--line);border-top:none;background:var(--surface-3);padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px}
+.termbody .hd{font-weight:600}
+.termbody .law{font-family:var(--mono);font-size:12px;color:var(--tide);letter-spacing:.01em}
+.termbody p{color:var(--ink-2);max-width:80ch}
+.quote{border-left:2px solid var(--tide);padding:2px 0 2px 14px;color:var(--ink-2);font-size:14px}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:0;
+  border:1px solid var(--line);background:var(--surface);box-shadow:var(--sh)}
+@media (max-width:800px){.calc{grid-template-columns:1fr}}
+.controls{padding:20px;display:flex;flex-direction:column;gap:16px;border-right:1px solid var(--line-soft)}
+@media (max-width:800px){.controls{border-right:none;border-bottom:1px solid var(--line-soft)}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px}
+.field label b{color:var(--ink);font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+select{font:inherit;font-size:13.5px;padding:8px 9px;background:var(--surface-3);color:var(--ink);
+  border:1px solid var(--line);border-radius:2px;width:100%}
+input[type=range]{width:100%;accent-color:var(--tide);height:20px}
+.readout{padding:22px 24px;display:flex;flex-direction:column;gap:16px}
+.rline{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px}
+.unit{font-family:var(--serif);font-size:30px;font-variant-numeric:tabular-nums}
+.total{font-family:var(--serif);font-size:44px;line-height:1;color:var(--scoria);font-variant-numeric:tabular-nums}
+.rlabel{font-size:12px;color:var(--muted)}
+.band{position:relative;height:44px;border-top:1px solid var(--line-soft);padding-top:14px}
+.bandbar{position:relative;height:8px;background:var(--surface-2);border-radius:1px}
+.bandfill{position:absolute;top:0;bottom:0;background:var(--tide-soft);border-left:1px solid var(--tide);
+  border-right:1px solid var(--tide)}
+.bandmark{position:absolute;top:-5px;width:2px;height:18px;background:var(--scoria)}
+.bandticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;
+  color:var(--faint);margin-top:6px}
+.note{font-size:12.5px;color:var(--muted)}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:top}
+thead th{background:var(--surface-2);font-size:11.5px;letter-spacing:.06em;color:var(--ink-2);
+  text-transform:uppercase;font-weight:600;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hl td{background:var(--tide-soft)}
+tr.hl td:first-child{font-weight:600}
+tr.dim td{color:var(--muted)}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:2px;
+  letter-spacing:.05em;vertical-align:1px}
+.pill.ok{background:var(--tide-soft);color:var(--tide)}
+.pill.warn{background:var(--amber-soft);color:var(--amber)}
+.pill.no{background:var(--scoria-soft);color:var(--scoria)}
+
+/* two-col compare */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.pane{border:1px solid var(--line);background:var(--surface);padding:17px 19px;display:flex;
+  flex-direction:column;gap:9px}
+.pane.up{border-left:3px solid var(--tide)}
+.pane.down{border-left:3px solid var(--amber)}
+.pane h3{font-size:14px}
+.pane ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:7px;color:var(--ink-2);font-size:13.5px}
+
+/* chart */
+.chartbox{border:1px solid var(--line);background:var(--surface);padding:18px 18px 12px}
+.chartbox svg{display:block;width:100%;height:auto}
+.chartbox .grid{stroke:var(--line-soft);stroke-width:1}
+.chartbox .ax{font-family:var(--mono);font-size:11px;fill:var(--faint)}
+.chartbox .xl{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.chartbox .area{fill:var(--tide-soft);stroke:none}
+.chartbox .line{fill:none;stroke:var(--tide);stroke-width:2.2;stroke-linejoin:round}
+.chartbox .dot{fill:var(--tide);stroke:var(--surface);stroke-width:1.5}
+.chartbox .dot.peak{fill:var(--scoria)}
+.chartbox .dot.last{fill:var(--amber)}
+.chartbox .val{font-family:var(--mono);font-size:12px;font-weight:600;fill:var(--scoria)}
+.chartbox .val.last{fill:var(--amber)}
+.chartbox .cap{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+.chartbox .cap.sans{font-family:var(--sans);font-size:11px}
+
+/* callout */
+.callout{border:1px solid var(--tide);background:var(--tide-soft);padding:17px 19px;
+  display:flex;flex-direction:column;gap:8px}
+.callout .hd{font-weight:700;color:var(--tide)}
+.callout.warn{border-color:var(--amber);background:var(--amber-soft)}
+.callout.warn .hd{color:var(--amber)}
+.callout p{color:var(--ink-2)}
+
+/* checklist */
+.todo{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);background:var(--surface)}
+.titem{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:13px 16px;
+  border-bottom:1px solid var(--line-soft)}
+.titem:last-child{border-bottom:none}
+.titem .rk{font-family:var(--mono);font-size:12px;color:var(--faint);padding-top:2px}
+.titem .bd{display:flex;flex-direction:column;gap:3px}
+.titem .t{font-weight:600;font-size:14px}
+.titem .d{font-size:13px;color:var(--ink-2)}
+.titem.top{background:var(--scoria-soft)}
+.titem.top .rk{color:var(--scoria)}
+
+footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:12.5px;
+  display:flex;flex-direction:column;gap:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">국지도 90호선 사동~도동 · 터널 A갱구 편입 대비 · 16차 개정 2026-09-07</span>
+  <h1>도동리 744㎡, 얼마를 받아야 하는가</h1>
+  <p class="sub">공항 개항·관광수요·도동항 입지가 보상액의 어느 항으로 들어가는지를 토지보상법령 원문으로 확정하고,
+    그 결과를 금액으로 환산한 문서입니다. 숫자를 바꾸려면 아래 계산기의 가정을 직접 움직여 보십시오.</p>
+  <div class="lots">
+    <span class="lot"><b>도동리 41-2</b> 172㎡</span>
+    <span class="lot"><b>도동리 42-1</b> 208㎡ · A갱구 33m · 1등급</span>
+    <span class="lot"><b>도동리 42-3</b> 364㎡ · A갱구 43m · 2등급</span>
+    <span class="lot">합계 <b>744㎡</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="main">
+    <span class="eyebrow">협의 기준 · 2030 가격시점</span>
+    <div class="big">35 – 43<small>억원</small></div>
+    <p class="cap">744㎡ 전부, <b>지목 「대」·일반상업지역</b> 전제. 중심값 39억.
+      잔여지·지장물·영업보상은 <b>포함되지 않은</b> 토지 본체 값입니다.</p>
+  </div>
+  <div class="aside-rows">
+    <div class="arow">
+      <span class="k">재결·소송까지 갔을 때 (실적 +52.0%)</span>
+      <span class="v">53 – 65억</span>
+    </div>
+    <div class="arow risk">
+      <span class="k">전제가 「자연녹지·대」로 밝혀지면</span>
+      <span class="v">2.0억</span>
+    </div>
+    <div class="arow">
+      <span class="k">이 격차를 확정하는 서류</span>
+      <span class="v" style="font-size:17px;font-family:var(--sans);font-weight:600">부동산종합증명서 1장</span>
+    </div>
+  </div>
+</div>
+
+<section>
+  <h2><span class="tag">산식</span>다섯 칸 — 무엇이 어디로 들어가는가</h2>
+  <p class="lede">감정평가에 관한 규칙 제14조②가 순서를 못박습니다. 사장님이 물은 세 요소는
+    이 다섯 칸 중 <b>어디에 담기느냐</b>로 금액이 갈립니다. 칸을 눌러 보십시오.</p>
+  <div class="chain" role="tablist" aria-label="보상액 산식의 다섯 항">
+    <button class="term" role="tab" data-t="0" aria-selected="true">
+      <span class="ix">① 비교표준지</span><span class="nm">표준지공시지가</span><span class="vl">3,153,000 원/㎡</span></button>
+    <button class="term" role="tab" data-t="1" aria-selected="false">
+      <span class="ix">② 시점수정</span><span class="nm">지가변동률</span><span class="vl">K 1.16 – 1.22</span></button>
+    <button class="term" role="tab" data-t="2" aria-selected="false">
+      <span class="ix">③ 지역요인</span><span class="nm">인근지역 비교</span><span class="vl">1.00</span></button>
+    <button class="term" role="tab" data-t="3" aria-selected="false">
+      <span class="ix">④ 개별요인</span><span class="nm">도동항 입지</span><span class="vl">0.90 – 1.05</span></button>
+    <button class="term" role="tab" data-t="4" aria-selected="false">
+      <span class="ix">⑤ 그 밖의 요인</span><span class="nm">거래·보상사례 보정</span><span class="vl">1.30 – 1.49</span></button>
+  </div>
+  <div class="termbody" id="tb" role="tabpanel"></div>
+</section>
+
+<section>
+  <h2><span class="tag">구조적 이점</span>도로사업이라서 개발이익이 깎이지 않는다</h2>
+  <p class="lede">개발이익을 깎는 장치는 두 개입니다. <b>둘 다 법문에서 「도로·철도 또는 하천 관련 사업」을 명시적으로 제외</b>합니다.
+    게다가 두 장치는 공통으로 사업면적 20만㎡ 이상을 요구하는데, 연장 2.7km 도로는 여기에도 미달합니다 — 이중으로 차단됩니다.</p>
+  <div class="cmp">
+    <div class="pane down">
+      <h3>비(非)도로사업이었다면</h3>
+      <ul>
+        <li><b>지가변동률 치환</b> — 울릉군 것 대신 공항과 무관한 인근 시·군의 지가변동률을 적용당할 수 있음 <span class="pill warn">영 §37②</span></li>
+        <li><b>공시지가 소급</b> — 사업 공고 이전 연도의 공시지가로 되돌려질 수 있음 <span class="pill warn">법 §70⑤</span></li>
+      </ul>
+    </div>
+    <div class="pane up">
+      <h3>도로사업인 이 사건</h3>
+      <ul>
+        <li><b>울릉군 지가변동률을 그대로 적용</b> — 영 §37③이 도로사업을 정의에서 제외 <span class="pill ok">발동 불가</span></li>
+        <li><b>도로구역 결정고시일 직전의 최신 공시지가</b> — 영 §38의2①이 도로사업을 제외 <span class="pill ok">발동 불가</span></li>
+        <li>동일 문언이 감정평가 실무기준 [810-5.6.4.1③]·[810-5.6.3②]에도 있음</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">
+    <span class="hd">남는 배제는 하나뿐입니다</span>
+    <p>법 §67②와 실무기준 [810-5.6.6②]는 법률·고시 차원이라 살아 있습니다. 즉 <b>90호선 그 자체로 오른 몫</b>은 빠집니다.
+      그러나 예타 통과가 2026-08-27이라 그 몫은 짧고 얇습니다.
+      <b>울릉공항發 상승은 「다른 사업」의 개발이익</b>이므로 이 배제에 걸리지 않습니다 — 대법원 2013두21182 · 91누7774.</p>
+  </div>
+  <div class="callout">
+    <span class="hd">그래서 고시가 늦을수록 유리합니다</span>
+    <p>도로법 §82②는 <b>도로구역 결정고시를 사업인정고시로 의제</b>합니다. 법 §70④에 따라 적용 공시지가는 그 고시일 직전의 것이 됩니다.
+      울릉의 확인 구간에서 표준지공시지가 상승률(3.3–3.8%)이 지가변동률(2.5–4.1%)과 같거나 그보다 높으므로,
+      늦게 고시돼 최신 공시지가가 기준이 될수록 불리하지 않습니다. 소급 장치가 없기 때문입니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">계산기</span>가정을 움직여 보십시오</h2>
+  <p class="lede">전제(지목·용도지역)를 바꾸면 기준 공시지가가 통째로 바뀝니다. 최상과 최악의 차이가 <b>20배가 넘습니다.</b></p>
+  <div class="calc">
+    <div class="controls">
+      <div class="field">
+        <label for="base">전제 — 지목 · 용도지역 (비교표준지)</label>
+        <select id="base">
+          <option value="3153000" selected>일반상업 · 「대」 — 도동리 41-3 표준지</option>
+          <option value="1155000">일반상업 하위 — 도동리 336-2 표준지</option>
+          <option value="989400">일반상업 하위 — 도동리 154-5 표준지</option>
+          <option value="693658">사동리 864 협의취득 실적 (2024)</option>
+          <option value="166600">자연녹지 · 「대」 — 도동리 449-1 표준지</option>
+          <option value="5500">보전녹지 · 임야 — 도동리 표준지 상단</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="k">② 시점수정 · 공시지가 갱신 <b id="kv">1.18</b></label>
+        <input type="range" id="k" min="1.00" max="1.40" step="0.01" value="1.18">
+      </div>
+      <div class="field">
+        <label for="ind">④ 개별요인 — 도동항 입지 <b id="indv">1.00</b></label>
+        <input type="range" id="ind" min="0.70" max="1.20" step="0.01" value="1.00">
+      </div>
+      <div class="field">
+        <label for="oth">⑤ 그 밖의 요인 보정 <b id="othv">1.40</b></label>
+        <input type="range" id="oth" min="1.00" max="2.30" step="0.01" value="1.40">
+      </div>
+      <p class="note">③ 지역요인은 동일 도동리 인근지역이라 1.00 고정. 법원이 실제 채택한 ⑤의 범위는 1.11 – 2.30입니다.</p>
+    </div>
+    <div class="readout">
+      <div class="rline">
+        <div>
+          <div class="rlabel">보상 단가</div>
+          <div class="unit num" id="oUnit">5,208,756<span style="font-size:.5em"> 원/㎡</span></div>
+        </div>
+        <div>
+          <div class="rlabel">744㎡ 총액 · 협의 기준</div>
+          <div class="total num" id="oTotal">38.8억</div>
+        </div>
+        <div>
+          <div class="rlabel">재결·소송 증액 시 (+52.0%)</div>
+          <div class="unit num" id="oLit">59.0억</div>
+        </div>
+      </div>
+      <div class="band">
+        <div class="bandbar">
+          <div class="bandfill" id="bFill"></div>
+          <div class="bandmark" id="bMark"></div>
+        </div>
+        <div class="bandticks"><span>0억</span><span>15억</span><span>30억</span><span>45억</span><span>60억</span></div>
+      </div>
+      <p class="note" id="oNote"></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">실측</span>울릉 가격 사다리 — 전부 원문 확인</h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>사례</th><th class="n">원/㎡</th><th>성격</th></tr></thead>
+      <tbody>
+        <tr class="dim"><td>도동리 보전녹지 임야</td><td class="n">1,040 – 5,500</td><td>표준지공시지가 2025</td></tr>
+        <tr class="dim"><td>도동리 자연녹지 「대」 449-1</td><td class="n">166,600</td><td>표준지공시지가 2025</td></tr>
+        <tr class="dim"><td>북면 현포리 739㎡ · 1.4억 (2025-05)</td><td class="n">189,445</td><td>사인간 실거래</td></tr>
+        <tr><td>사동리 864 · 7,064㎡ · 49억 (2024)</td><td class="n">693,658</td><td>한국공항공사 협의취득 — 공항 직원사택</td></tr>
+        <tr><td>도동리 일반상업 하위 154-5 / 336-2</td><td class="n">989,400 / 1,155,000</td><td>표준지공시지가 2025</td></tr>
+        <tr class="hl"><td>도동리 41-3 · 일반상업 「대」 · 도동2길 10</td><td class="n">3,153,000</td><td><b>비교표준지</b> · 표준지공시지가 2025</td></tr>
+        <tr class="dim"><td>도동 주차장 부지 500평 60~70억 (제보)</td><td class="n">3,630,000 – 4,235,000</td><td><span class="pill no">미검증</span> 공개 자료로 확인되지 않음 — 산정에서 내림</td></tr>
+        <tr class="hl"><td>도동리 185-3 · 일반상업 「대」 · 179㎡ · 8억 1,173만 (2022-08-21)</td><td class="n">4,534,804</td><td><b>실거래</b> — 동시점 표준지 대비 <b>1.488배</b></td></tr>
+        <tr class="dim"><td>사동리 공항 인근 호가 평당 5,000만</td><td class="n">15,120,000</td><td><span class="pill no">도동 아님</span> 중개업소 호가 — 산정에 쓰지 않음</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="hd">⑤ 그 밖의 요인 보정의 실측 근거</span>
+    <p>185-3의 실거래 4,534,804원 ÷ 동시점(2022-01-01) 41-3 표준지공시지가 환산치 3,047,678원 = <b>1.488배</b>.
+      <b>도동리 일반상업 「대」의 시가는 공시지가의 약 1.49배</b>라는 것이 현지 실거래로 실증됩니다.
+      다만 185-3과 41-3의 개별요인 격차가 분리되지 않았으므로 순 보정치는 그보다 작습니다 — 1.30~1.49로 잡았습니다.</p>
+    <p><b>실무 제약 하나.</b> 실무기준 [610-1.5.2.5③4호]는 거래사례를 <b>도시지역 3년 이내</b>로 제한합니다.
+      185-3(2022-08)은 이를 넘으므로, 단서를 걸어 쓰거나 <b>가격시점에 가까운 새 사례를 확보</b>해야 합니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">정정</span>15차의 수치 근거 두 개를 바로잡습니다</h2>
+  <div class="cmp">
+    <div class="pane down">
+      <h3>① 지표 오분류 — 3배 과대 보정이 날 뻔했습니다</h3>
+      <ul>
+        <li>15차가 <b>지가변동률</b>이라 쓴 「2020 +14.49% / 2021 +11.66% / 2022 +13.54%」는
+          실은 <b>표준지공시지가 변동률</b>이었습니다.</li>
+        <li>같은 해 국토부 지가변동률은 <b>2022년 4.07%, 2023년 2.55%</b>입니다.</li>
+        <li>시점수정에 쓰는 지표는 후자입니다 — 영 §37① · 규칙 §14②2.</li>
+      </ul>
+    </div>
+    <div class="pane down">
+      <h3>② 주차장 제보는 확인되지 않았습니다</h3>
+      <ul>
+        <li>「도동 주차장 500평 60~70억」을 <b>공개 예산서·투자사업조서·재정공시 어디에서도</b> 찾지 못했습니다.</li>
+        <li>확인된 도동 주차장 사업비는 <b>8억 · 8억 · 20~24억</b>대입니다.</li>
+        <li>반증된 것도 아니므로 폐기하지 않고 <b>미검증 참고치로 강등</b>, 산정의 주 근거에서 내렸습니다.</li>
+        <li>후보 부지는 특정했습니다 — <b>옛 칸나이트 부지 도동리 196-1</b>(단, 일대가 <b>준주거</b>),
+          <b>구 학생체육관 터 1,700㎡</b>(도동4길 8).</li>
+      </ul>
+    </div>
+  </div>
+  <p class="lede">그럼에도 <b>채택 구간은 34~39억에서 35~43억으로 올라갔습니다.</b>
+    185-3 실거래가 지번·용도지역·거래일까지 확정되면서, 제보보다 <b>더 높고 더 단단한</b> 앵커가 생겼기 때문입니다.</p>
+</section>
+
+<section>
+  <h2><span class="tag">지가</span>세 지표를 분리해서 봅니다</h2>
+  <p class="lede">시점수정에 쓰는 것은 ⓐ뿐입니다. 2024년부터 울릉군이 국토부 보도자료의 「전국 평균 상회 시군구」
+    예시 명단에서 빠지면서 ⓐ가 끊깁니다 — 최우선으로 메워야 할 빈칸입니다.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>연도</th><th class="n">ⓐ 지가변동률 <span class="pill ok">시점수정용</span></th>
+        <th class="n">ⓑ 표준지공시지가</th><th class="n">ⓒ 개별공시지가</th></tr></thead>
+      <tbody>
+        <tr><td>2019</td><td class="n">6.07%</td><td class="n">13.58%</td><td class="n">13.53%</td></tr>
+        <tr><td>2020</td><td class="n">— 2Q 1.27 · 3Q 1.50</td><td class="n">14.49% <span class="pill ok">전국 1위</span></td><td class="n">16.93%</td></tr>
+        <tr><td>2021</td><td class="n">—</td><td class="n">11.66%</td><td class="n">12.79%</td></tr>
+        <tr><td>2022</td><td class="n">4.07%</td><td class="n">13.54%</td><td class="n">12.86%</td></tr>
+        <tr><td>2023</td><td class="n">2.55%</td><td class="n">−3.73%</td><td class="n">−2.92%</td></tr>
+        <tr><td>2024</td><td class="n">—</td><td class="n">3.77%</td><td class="n">5.00%</td></tr>
+        <tr><td>2025</td><td class="n">—</td><td class="n">3.56%</td><td class="n">4.92%</td></tr>
+        <tr class="hl"><td>2026</td><td class="n">—</td><td class="n">3.33%</td><td class="n">4.94%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">ⓑ·ⓒ는 2023년 마이너스를 찍고 2024년부터 재상승, <b>4년 연속 경북 1위</b>입니다.
+    ⓐ는 6.07%(2019) → 2.55%(2023)로 둔화. 공시가격 현실화가 시장 변동보다 빠르게 진행돼 왔다는 뜻이며,
+    이것이 「고시가 늦을수록 유리하다」의 산술적 근거입니다.</p>
+  <div class="callout">
+    <span class="hd">공항發 개발이익이 실재한다는 것을 정부 문서가 스스로 적어 뒀습니다</span>
+    <p class="quote">"경북 울릉군 1.50 — <b>울릉공항 개발 기대감</b>에 따라 영향지역인 사동항 인근 상업·주거용지에 대한 토지수요가 높아졌다"
+      <span style="color:var(--muted)"> — 국토교통부 2020년 3분기 지가변동률 보도자료</span></p>
+    <p class="quote">"울릉군은 <b>일주도로 완전개통 및 울릉공항 사업 확정, 관광인프라 구축</b>" <span style="color:var(--muted)"> — 경상북도 2020년 개별공시지가 보도자료</span></p>
+    <p class="quote">"울릉군은 <b>관광인프라 구축, 독도에 대한 국민적 관심 증대 및 여객선의 복수 노선 확충</b> 등이 상승 요인으로 작용"
+      <span style="color:var(--muted)"> — 경상북도 개별공시지가 보도자료, 2024·2025·2026 3년 연속 동일 문구</span></p>
+    <p>시행자가 이 상승분을 깎으려면 <b>자기 부처의 보도자료와 싸워야 합니다.</b></p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">전제 점검</span>「관광수요 증가」는 실적이 아니라 전망입니다</h2>
+  <p class="lede">전제를 실적으로 확인했더니 반대 방향이 나왔습니다. 그대로 적습니다 —
+    울릉 입도객은 <b>2022년 46.1만 정점 이후 3년 연속 감소</b>, 2026년은 전년 대비 <b>△18%</b>입니다.</p>
+  <div class="chartbox">
+    <svg id="tourism" viewBox="0 0 720 258" role="img"
+      aria-label="울릉도 입도 관광객 연도별 추이. 2019년 38.7만, 2020년 17.6만, 2021년 27.2만, 2022년 46.1만으로 정점, 이후 2023년 40.8만, 2024년 38.5만, 2025년 34.7만으로 3년 연속 감소."></svg>
+  </div>
+  <div class="cmp">
+    <div class="pane down">
+      <h3>그런데도 보상액이 내려가지 않는 이유 셋</h3>
+      <ul>
+        <li><b>보상 산식에 「관광객 수」라는 변수가 없습니다.</b> 들어가는 것은 공시지가와 지가변동률입니다.</li>
+        <li>관광객이 줄던 <b>2024·2025·2026년에도 울릉군 표준지공시지가는 경북 1위</b>였습니다.
+          시장이 보는 것은 실적이 아니라 <b>공항</b>입니다.</li>
+        <li>감소의 원인이 <b>뱃길</b>입니다 — 후포 노선 2025-08 종료, 강릉 노선 2025-10 중단, 현재 포항·묵호 2개만 생존.
+          공항이 열리면 그 원인이 제거됩니다.</li>
+      </ul>
+    </div>
+    <div class="pane down">
+      <h3>K의 하방 리스크 — 여객수요가 아직 흔들립니다</h3>
+      <ul>
+        <li>국토부 당초 <b>2050년 107.8만명</b></li>
+        <li>감사원 재산정 <b>55만명 (△49%)</b> — 선박→항공 수단전환율 81% 과다 설정 지적</li>
+        <li>정부 재조사 <b>90만명 이상</b> (2026-07, 감사원 최종판단 대기)</li>
+        <li>개항 목표도 <b>2028년(행정)</b> vs <b>2029년 초(현실 전망)</b>로 갈립니다. 공정률 81%, 총사업비 9,059억.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">개별요인</span>도동항의 위상은 양방향으로 움직입니다</h2>
+  <p class="lede">개별요인은 <b>대상토지 쪽만 가격시점 기준</b>입니다(실무기준 610-1.5.2.4.2).
+    즉 개항 후 달라진 도동항의 위상이 그대로 반영됩니다. 양쪽 근거를 다 싣습니다.</p>
+  <div class="cmp">
+    <div class="pane down">
+      <h3>▼ 항만 위계는 상대적 후퇴</h3>
+      <ul>
+        <li>「추락하는 '울릉도의 관문' 도동항 — 육지 연결하는 여객선조차 없어」 · 영남일보 2021-10-30.
+          "지역 경기의 중심이 <b>저동과 사동으로</b> 옮겨가고 있다"</li>
+        <li>대형 카페리·크루즈는 <b>사동항</b>, 어항은 <b>저동항</b>, <b>공항도 사동리</b>에 입지</li>
+        <li>울릉(사동)항 3단계 크루즈 부두·마리나 추진 — 관광항만 기능이 사동에 집중</li>
+        <li>저동항 어촌복합관광단지 + 속초 여객선 유치</li>
+      </ul>
+    </div>
+    <div class="pane up">
+      <h3>▲ 거점 기능과 접근조건은 강화</h3>
+      <ul>
+        <li><b>울릉군청 소재지</b> · 행정·상권 중심. "울릉 경제의 심장부인 도동항"</li>
+        <li><b>2024-01 도동항 여객부두 접안시설 연장 완료</b> — 대형여객선 안전 접안 해결, 방파제 118.4m 보강</li>
+        <li><b>울릉(도동)항 남방파제 80m 연장 — 450억, 공정률 41%</b></li>
+        <li><b>도동항 배후지 매립이 「제4차 전국항만기본계획 수정계획(2026~2030)」에 반영</b> (2026-07 고시)</li>
+        <li>도동리 4성급 호텔 「울릉도드림」 추진 · 명품 미항 조성 · 포항–도동 쾌속선 재취항(2025-08)</li>
+        <li><b>90호선 자체가 공항(사동리)–도동 직결 도로</b> — 개항 후 도동리의 접근조건이 개선됩니다</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn">
+    <span class="hd">⚠ 노선 종점이 「도동」인지 「저동」인지부터 확정해야 합니다</span>
+    <p>경북도 보도자료와 대부분 매체는 「<b>사동~도동</b>」이지만, 영남일보 2026-09-01 기획기사는 제목·본문 모두
+      「<b>사동~저동</b> 2.7km」로 씁니다. 종점이 저동이면 <b>도동리 편입 전제 자체가 무너집니다.</b>
+      실시설계 노선도로 확인하십시오 — 이 문서 전체보다 우선합니다.</p>
+  </div>
+  <div class="callout">
+    <span class="hd">사업비가 58.7% 증액됐습니다 — 예산 부족 논리에 맞설 근거</span>
+    <p>"울릉군은 당초 <b>1,032억원</b> 규모로 신청했지만 예타 과정 등을 거쳐 사업비 배정액은 <b>1,638억원</b>"
+      — 영남일보 2026-09-01. 총사업비 제약을 이유로 한 보상액 압박에 그대로 맞설 수 있습니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">잔여지</span>최대 지렛대는 여전히 41-2의 22㎡입니다</h2>
+  <p class="lede">건축법 시행령 제80조 분할제한 면적 — 주거 60 / <b>상업 150</b> / 공업 150 / 녹지 200 / 그 밖 60㎡.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>지번</th><th class="n">면적</th><th class="n">150㎡ 초과분</th><th>의미</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td>41-2</td><td class="n">172㎡</td><td class="n">22㎡</td>
+          <td><b>22㎡만 편입돼도</b> 잔여지가 150㎡ 미만 — 시행령 §39①1호 요건에 직결</td></tr>
+        <tr><td>42-1</td><td class="n">208㎡</td><td class="n">58㎡</td><td>A갱구 33m · 1등급 — 갱문·개착부, 회피 불가</td></tr>
+        <tr><td>42-3</td><td class="n">364㎡</td><td class="n">214㎡</td><td>A갱구 43m · 2등급 — 야드 규모로 갈림</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="hd">갱구부 잔여지 매수의 실제 선례가 있습니다</span>
+    <p><b>국민권익위 제1소위(2021)</b> — 강촌터널 종점부 <b>갱구부 바로 위쪽</b> 임야 1,653㎡ 사안에서
+      <b>잔여지 450㎡ 매수 의견표명</b>.
+      <b>대법원 2002두4679</b> — 잔여지 248㎡·폭 3m 사안에서 수용청구 요건 충족, 잔여지수용청구권은 <b>형성권</b>.
+      <b>대법원 2012두24092</b> — 재결신청 시 <b>잔여지 수용청구와 가격감소 보상청구를 반드시 병기</b>해야 합니다(미병기 시 각하).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">절차</span>놓치면 되돌릴 수 없는 기한</h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>항목</th><th class="n">기한</th><th>근거</th></tr></thead>
+      <tbody>
+        <tr><td>보상계획 열람</td><td class="n">14일 이상</td><td>법 §15②</td></tr>
+        <tr class="hl"><td><b>감정평가사 추천</b> — 소유자 몫 1인</td><td class="n">열람기간 만료일부터 30일 이내</td><td>영 §28②</td></tr>
+        <tr><td>추천 요건</td><td class="n">토지면적 1/2 이상 + 소유자 총수 과반수 동의</td><td>영 §28④</td></tr>
+        <tr><td>재평가</td><td class="n">최고 &gt; 최저 × 110%</td><td>규칙 §17②2</td></tr>
+        <tr><td>보상액 결정</td><td class="n">각 평가액의 산술평균</td><td>규칙 §16⑥</td></tr>
+        <tr><td>잔여지 수용청구</td><td class="n">사업완료일까지</td><td>법 §74①</td></tr>
+        <tr><td>잔여지 가격감소 보상</td><td class="n">사업완료일부터 1년 내</td><td>법 §73②</td></tr>
+        <tr><td>이의신청 / 행정소송</td><td class="n">30일 / 90일·60일</td><td>법 §83③ · §85①</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">도로법 §82②는 도로관리청이 <b>도로공사 시행기간 내내 재결을 신청</b>할 수 있게 해 법 §23①·§28①의 1년 제한을 배제합니다.
+    시행자 쪽에 시간이 넉넉하다는 뜻이니, <b>기한 관리는 소유자 쪽이 더 조여야 합니다.</b></p>
+</section>
+
+<section>
+  <h2><span class="tag">다음</span>지금 확보해야 할 것</h2>
+  <div class="todo">
+    <div class="titem top"><span class="rk">01</span><span class="bd">
+      <span class="t">실시설계 노선도 — 종점이 도동인가 저동인가</span>
+      <span class="d">저동이면 이 문서의 전제가 무너집니다. 다른 무엇보다 먼저입니다.</span></span></div>
+    <div class="titem top"><span class="rk">02</span><span class="bd">
+      <span class="t">3필지의 부동산종합증명서 — 지목 · 용도지역 · 개별공시지가</span>
+      <span class="d">「대」·일반상업이면 35~43억, 자연녹지면 2억. 이 한 장이 20배를 가릅니다. 컨테이너에서 kras·realtyprice·rt.molit이 전부 차단이라 직접 발급해 주셔야 합니다.</span></span></div>
+    <div class="titem"><span class="rk">03</span><span class="bd">
+      <span class="t">울릉군 지가변동률 2024 · 2025 · 2026</span>
+      <span class="d">시점수정의 본 지표. 한국부동산원 R-ONE 「지가변동률 → 시군구/용도지역별 → 경상북도 울릉군」 또는 울릉군청 토지정보과 청구.</span></span></div>
+    <div class="titem"><span class="rk">04</span><span class="bd">
+      <span class="t">울릉군의회 「공유재산 관리계획안」 정보공개청구</span>
+      <span class="d">주차장 부지 매입 건의 지번 · 지목 · 면적 · 취득예정가격이 한 장에 있습니다. 옛 칸나이트 부지(도동리 196-1 일원) 조성사업 부지매입 감정평가서도 함께.</span></span></div>
+    <div class="titem"><span class="rk">05</span><span class="bd">
+      <span class="t">도동리 일반상업 「최근 3년 이내」 실거래</span>
+      <span class="d">실무기준 [610-1.5.2.5③4호]의 도시지역 3년 요건 충족용. 185-3(2022-08)만으로는 단서를 걸어야 합니다.</span></span></div>
+    <div class="titem"><span class="rk">06</span><span class="bd">
+      <span class="t">도동항 배후지 매립 규모 · 사업비</span>
+      <span class="d">제4차 전국항만기본계획 수정계획 울릉항 편. 매립지가 갱구 예정지와 겹치면 편입 범위 자체가 달라집니다.</span></span></div>
+  </div>
+</section>
+
+<footer>
+  <p>산식 근거 — 토지보상법 §67② · §70①②④⑤ · §73 · §74, 시행령 §37②③ · §38의2 · §39①, 시행규칙 §22 · §23,
+    감정평가에 관한 규칙 §14②, 감정평가 실무기준 [610-1.5.2.4]·[610-1.5.2.5]·[810-5.6.3]·[810-5.6.4.1]·[810-5.6.6],
+    도로법 §25 · §82②, 건축법 시행령 §80. 법령 원문은 legalize-kr 미러로 대조했습니다.</p>
+  <p>판례 — 헌재 89헌마107 · 2009헌바245, 대법원 93누2131 · 90누1076 · 92누11084 · 91누7774 · 2013두21182 ·
+    2002두4679 · 2012두24092, 서울고법 2011누21234. 판례 코퍼스 124,909건 전수 grep 결과
+    <b>울릉군 토지보상 판례는 존재하지 않습니다</b> — 선례가 없는 동시에, 첫 선례를 만들 여지가 있습니다.</p>
+  <p>이 문서는 감정평가서가 아닙니다. 확정된 지목·용도지역·노선이 없는 상태의 <b>추정</b>이며,
+    확인하지 못한 값은 본문에 「미확보」로 적었습니다. 지어낸 수치는 없습니다.</p>
+</footer>
+
+</div>
+
+<script>
+const AREA = 744;
+const TERMS = [
+  {hd:"① 비교표준지 공시지가 — 공항 개항 기대감이 여기에 이미 담긴다",
+   law:"법 §70① · §70④ · 도로법 §82② · 시행규칙 §22③ · 감정평가규칙 §14②1",
+   body:[
+    "적용 공시지가는 <b>도로구역 결정고시일 직전의 것</b>입니다. 도로법 §82②가 도로구역 결정고시를 사업인정고시로 의제하고, 법 §70④가 「사업인정고시일 전의 시점을 공시기준일로 하는 공시지가 중 고시일과 가장 가까운 것」을 쓰라고 하기 때문입니다.",
+    "따라서 <b>2028~2029년 공항이 개항해 공시지가가 오르면, 그 오른 공시지가가 그대로 보상 기준</b>이 됩니다. 소급 장치는 도로사업에 적용되지 않습니다.",
+    "비교표준지는 용도지역·이용상황·주위환경이 같거나 유사하고 지리적으로 가까울 것(시행규칙 §22③). 도동리 41-3(일반상업·「대」·도동2길 10, 3,153,000원/㎡)을 골랐습니다.",
+    "<b>결정 변수는 지목입니다.</b> 대법원 90누1076 — 공부상 지목이 「대」이면 「대」 표준지를 선정해야 하고, 현실이용이 「전」이라도 「전」 표준지를 선정한 이의재결은 위법입니다. 나지여도 지목이 「대」면 41-3급 평가가 정당합니다."]},
+  {hd:"② 시점수정 — 개항 후 관광수요 증가가 들어가는 자리",
+   law:"법 §70① · 시행령 §37①②③ · 감정평가규칙 §14②2 · 실무기준 [810-5.6.4.1]",
+   body:[
+    "국토교통부가 조사·발표하는 <b>비교표준지가 있는 시·군·구의 용도지역별 지가변동률</b>을 적용합니다(영 §37①).",
+    "영 §37②는 해당 공익사업으로 지가가 변동된 경우 <b>인근 시·군의 지가변동률로 치환</b>하도록 하지만, §37③이 그 경우를 <b>「도로·철도 또는 하천 관련 사업을 제외한 사업」</b>으로 한정합니다. 90호선은 도로사업이므로 <b>치환은 발동하지 않습니다.</b> 사업면적 20만㎡ 요건에도 미달합니다.",
+    "즉 <b>울릉군 지가변동률을 깎지 않고 그대로 씁니다.</b> 개항 이후 관광수요가 실제로 늘어 지가가 오르면 그만큼 보상액이 오릅니다.",
+    "지가변동률에 다 담기지 않는 자연적 상승분은 ⑤로 넘어갑니다 — 대법원 92누11084."]},
+  {hd:"③ 지역요인 — 1.00으로 둡니다",
+   law:"감정평가규칙 §14②3 · 실무기준 [610-1.5.2.4.1]",
+   body:[
+    "비교표준지가 있는 지역과 대상토지가 있는 지역의 <b>표준적 획지의 최유효이용을 판정·비교</b>해 격차율을 냅니다. 양쪽 모두 <b>가격시점 기준</b>입니다.",
+    "41-3과 41-2·42-1·42-3은 <b>같은 도동리 인근지역</b>이므로 지역요인은 1.00입니다. 도동항 입지의 유불리는 지역요인이 아니라 ④ 개별요인에서 다툽니다."]},
+  {hd:"④ 개별요인 — 도동항 입지가 들어가는 자리",
+   law:"감정평가규칙 §14②4 · 실무기준 [610-1.5.2.4.2] · 법 §70② · 대법원 90누1076",
+   body:[
+    "실무기준 [610-1.5.2.4.2]: 비교표준지의 개별요인은 <b>공시기준일</b>을, 대상토지의 개별요인은 <b>기준시점(가격시점)</b>을 기준으로 합니다. <b>대상토지 쪽만 가격시점 기준</b>이라는 점이 핵심입니다 — 개항 후 달라진 도동항의 위상이 그대로 반영됩니다.",
+    "<b>유리한 쪽:</b> 41-3은 도동2길 10(이면)이고, 42-1·42-3은 <b>도동항 부두 전면·도동길 접면</b>입니다. 가로조건(접면도로 폭·계통)·접근조건(여객터미널·부두)·환경조건(상권 중심성)에서 대상지가 우세할 여지가 있습니다.",
+    "<b>불리한 쪽:</b> 갱구 편입 예정지는 현재 <b>부두 배후 나지</b>입니다. 이용상황 열세를 이유로 깎으려 할 수 있습니다.",
+    "<b>방어선:</b> 법 §70②는 「가격시점에서의 현실적인 이용상황과 <b>일반적인 이용방법에 의한 객관적 상황</b>을 고려」하라고 합니다. 여기에 대법원 90누1076을 붙이면 나지라는 사정만으로 깎을 수 없습니다.",
+    "→ <b>0.90 ~ 1.05</b>로 잡았습니다."]},
+  {hd:"⑤ 그 밖의 요인 보정 — 도동 실거래가 들어가는 자리",
+   law:"감정평가규칙 §14②5 · 실무기준 [610-1.5.2.5] · [810-5.6.6]",
+   body:[
+    "시점수정·지역요인·개별요인 비교 외에 가치에 영향을 미치는 사항을 <b>인근지역의 정상적인 거래사례나 보상사례</b>로 보정합니다.",
+    "실증: <b>도동리 185-3 실거래 4,534,804원/㎡(2022-08-21) ÷ 동시점 41-3 표준지공시지가 환산치 3,047,678원 = 1.488배.</b> 도동리 일반상업 「대」의 시가가 공시지가의 약 1.49배라는 뜻입니다.",
+    "법원이 실제 채택한 보정률: <b>1.11</b>(97누13375) · <b>1.20</b>(2005누14990, 2003구합23820) · <b>1.75 · 2.01</b>(2009구합37869) · <b>2.30</b>(96누16001).",
+    "<b>제약 둘.</b> ⓐ [610-1.5.2.5③4호] — 거래사례는 <b>도시지역 3년 이내</b>(특별한 사유 시 초과 가능, 근거 기재). ⓑ [810-5.6.6④] — 보상사례 중 <b>해당 공익사업에 관한 것은 제외</b>. 주차장 매입은 다른 사업이므로 <b>참작 가능</b>합니다.",
+    "→ 개별요인 미분리분을 차감해 <b>1.30 ~ 1.49</b>로 잡았습니다."]}
+];
+
+const tb = document.getElementById('tb');
+const terms = [...document.querySelectorAll('.term')];
+function showTerm(i){
+  terms.forEach(t => t.setAttribute('aria-selected', t.dataset.t === String(i)));
+  const T = TERMS[i];
+  tb.innerHTML = '<div class="hd">' + T.hd + '</div><div class="law">' + T.law + '</div>'
+    + T.body.map(b => '<p>' + b + '</p>').join('');
+}
+terms.forEach(t => t.addEventListener('click', () => showTerm(+t.dataset.t)));
+showTerm(0);
+
+const el = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('ko-KR', {maximumFractionDigits:0});
+function calc(){
+  const base = +el('base').value, k = +el('k').value, ind = +el('ind').value, oth = +el('oth').value;
+  el('kv').textContent = k.toFixed(2);
+  el('indv').textContent = ind.toFixed(2);
+  el('othv').textContent = oth.toFixed(2);
+  const unit = base * k * ind * oth;
+  const total = unit * AREA / 1e8;
+  el('oUnit').innerHTML = fmt(unit) + '<span style="font-size:.5em"> 원/㎡</span>';
+  el('oTotal').textContent = total.toFixed(1) + '억';
+  el('oLit').textContent = (total * 1.52).toFixed(1) + '억';
+  const SC = 60; // 스케일 상한 60억
+  const pct = v => Math.max(0, Math.min(100, v / SC * 100));
+  el('bFill').style.left = pct(35) + '%';
+  el('bFill').style.width = (pct(43) - pct(35)) + '%';
+  el('bMark').style.left = 'calc(' + pct(total) + '% - 1px)';
+  const inBand = total >= 35 && total <= 43;
+  el('oNote').innerHTML = inBand
+    ? '채택 구간 <b>35 – 43억</b> 안입니다. 음영이 채택 구간, 붉은 선이 현재 값입니다.'
+    : (total < 35
+      ? '채택 구간(35 – 43억) <b>아래</b>입니다. 전제나 보정치가 보수적으로 잡혀 있습니다.'
+      : '채택 구간(35 – 43억) <b>위</b>입니다. 이 조합을 관철하려면 근거를 더 쌓아야 합니다.');
+}
+['base','k','ind','oth'].forEach(id => el(id).addEventListener('input', calc));
+calc();
+
+// 관광객 추이 차트
+(function(){
+  const data = [
+    {y:2019, v:386501}, {y:2020, v:176151}, {y:2021, v:271901}, {y:2022, v:461375},
+    {y:2023, v:408204}, {y:2024, v:384599}, {y:2025, v:347086}
+  ];
+  const W = 720, H = 258, ml = 56, mr = 16, mt = 30, mb = 34;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  const max = 500000;
+  const x = i => ml + (iw / (data.length - 1)) * i;
+  const y = v => mt + ih - (v / max) * ih;
+  let g = '';
+  [0, 100000, 200000, 300000, 400000, 500000].forEach(t => {
+    g += '<line class="grid" x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(t) + '" y2="' + y(t) + '"/>'
+      + '<text class="ax" x="' + (ml - 9) + '" y="' + (y(t) + 4) + '" text-anchor="end">'
+      + (t / 10000) + '만</text>';
+  });
+  const pts = data.map((d, i) => x(i) + ',' + y(d.v)).join(' ');
+  g += '<polygon class="area" points="' + ml + ',' + (mt + ih) + ' ' + pts + ' '
+    + x(data.length - 1) + ',' + (mt + ih) + '"/>';
+  g += '<polyline class="line" points="' + pts + '"/>';
+  data.forEach((d, i) => {
+    const peak = d.y === 2022, last = d.y === 2025;
+    const cls = 'dot' + (peak ? ' peak' : last ? ' last' : '');
+    g += '<circle class="' + cls + '" cx="' + x(i) + '" cy="' + y(d.v) + '" r="'
+      + (peak || last ? 5 : 3.2) + '"/>';
+    if (peak || last) {
+      g += '<text class="val' + (last ? ' last' : '') + '" x="' + x(i) + '" y="' + (y(d.v) - 13)
+        + '" text-anchor="' + (peak ? 'middle' : 'end') + '">' + (d.v / 10000).toFixed(1) + '만 '
+        + (peak ? '· 정점' : '· 3년 연속 감소') + '</text>';
+    }
+    g += '<text class="xl" x="' + x(i) + '" y="' + (H - 12) + '" text-anchor="middle">' + d.y + '</text>';
+  });
+  g += '<text class="cap sans" x="' + (W - mr) + '" y="14" text-anchor="end">'
+    + '2026년 7/9 기준 144,878명 · 전년 동기 대비 △18%</text>';
+  document.getElementById('tourism').innerHTML = g;
+})();
+</script>

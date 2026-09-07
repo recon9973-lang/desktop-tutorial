@@ -2,7 +2,9 @@
 
 조사일 **2026-09-06 ~ 09-07**. 대상: 울릉군 울릉읍 **사동~도동**, **도동~저동** 두 구간.
 **최신 개정은 16차** — 사장님 소유 도동리 41-2·42-1·42-3(합계 744㎡)의 **보상 규모 산정**이 주제다.
-결과물 지도(자체 완결 HTML): [`ulleung-90-compensation.html`](./ulleung-90-compensation.html)
+결과물 — **보상 산정**: [`ulleung-90-valuation.html`](./ulleung-90-valuation.html)
+([발행본](https://claude.ai/code/artifact/7d984aec-1098-4c42-ac92-ae560b44f4ea) · 산식 다섯 칸 설명 + 가정 조절 계산기) ·
+**노선 판독도**: [`ulleung-90-compensation.html`](./ulleung-90-compensation.html)(7차 시점)
 
 > **현재 결론 — 보상 예상 35 ~ 43억** (744㎡ 전부 · 지목 「대」·일반상업 전제 · 2030 가격시점 · 협의 기준).
 > 재결·소송 증액 시 **53 ~ 65억**. 잔여지·지장물·영업보상 별도.
