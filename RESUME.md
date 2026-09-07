@@ -10,20 +10,30 @@
   (=00:00 UTC)** 경계에서 한국의 하루가 열쇠 둘로 갈렸다. 사장님 캡처의 00:0x·09:0x 두 줄이 그것.
   + 진단 이력 **실행자 칸에 「자동」** 표기(근거는 스케줄 멱등키 하나뿐 — 없으면 「기록 없음」 그대로).
 - **어디에**: 저장소 `recon9973-lang/veo-platform`(이 저장소 아님) ·
-  가지 `claude/auto-diagnosis-schedule-check-vhmz2j` · 커밋 **`690682ff`** · 판 **0.3.540** · **미배포**
+  가지 `claude/auto-diagnosis-schedule-check-vhmz2j` · 커밋 **`0a46ee5c`**(2건) · 판 **0.3.540** · **미배포**
   (앞 커밋 `702cc84c` 는 채점 자리에서 **CI 잡 7개 전부 초록**이었다 — 그 뒤 다른 방이 0.3.539 를 main 에
   넣어 `origin/main`=`7ae4f40b` 위로 다시 리베이스했다. 충돌 다섯: 판 둘(`__init__.py`·`openapi.json`,
   0.3.540 유지) · `changelog.ts` · `WORKLIST.md`(머리말 `0.3.537~0.3.540` + 대기 표에 0.3.540 줄) ·
   `WORKLIST-HISTORY.md`. **판은 다시 안 물렸다** — 0.3.540 > 0.3.539.)
-- **검증**: preflight 전체 초록(ci-local 7,178 · pnpm -r test 2,255 · build · smoke · 계약).
-  새 시험 8건. 마이그레이션 없음. 잰 값 무변경.
+- **그 뒤 반쪽을 더 찾아 같은 판에 얹었다**(커밋 `0a46ee5c`) — 한 번의 진단은 같은 크롤로
+  SEO·GEO **두 실행**을 저장하는데(`geo/companion.py`) 동반 GEO 저장만 작업 식별자를 안 받아,
+  정기 진단이 돌면 **SEO 탭은 「자동」·GEO 탭은 「실행자 기록 없음」**. 사람이 부른 진단은
+  이름이 적히니 자동에서만 드러나는 어긋남이었다. `run_console_scan` → 동반 채점 → 저장으로
+  `job_id` 를 잇고 관문 둘(부르는 자리가 넘기는가 · GEO 절반이 「자동」으로 읽히는가).
+  같은 종류를 더 찾으려 하루 열쇠 만드는 자리를 전부 봤다 — 둘뿐이고 관측 쪽은 멀쩡하다.
+- **검증**: `690682ff` 에서 **preflight 전체 초록**(ci-local 7,179 · pnpm -r test 2,259 ·
+  test-db · typecheck · lint · build · smoke · 계약 · 대소문자 · 충돌 표시 0).
+  그 위 `0a46ee5c` 는 **부분 검증만** — ruff 0 · mypy 0(456) · `tests/seo/test_geo_companion.py`
+  + `test_scan_history.py` 49건 · 대장 관문 16건 · check-contracts. **배포 전 preflight 를
+  다시 돌려야 한다**(규칙: 나갈 그 커밋에서). 새 시험 10건. 마이그레이션 없음. 잰 값 무변경.
 - **판 번호를 앞질러 잡았다** — 오늘 6회 부딪혀서(0.3.531~0.3.536, ANSEO·입지 방) 0.3.540 을
   확보하고 537~539 를 비웠다. 이제 main 이 움직여도 판을 다시 안 물려도 된다.
 
 ## 바로 이어갈 작업
 
-1. **배포 마무리** — 사장님이 아래 3단계를 실행하셔야 한다. 이 방은 `make deploy` 가
-   권한 관문에 막혀 대신 못 한다(손으로 흉내 내면 그 관문을 우회하는 것).
+1. **배포 — 사장님 지시 «배포는 모아서 하고»** 로 **보류 중**이다. 가지는 초록 상태로 대기.
+   낼 때는 아래 3단계이고, **main 이 또 움직였으면 §2 처럼 리베이스부터** 한다.
+   이 방은 `make deploy` 가 권한 관문에 막혀 대신 못 한다(손으로 흉내 내면 그 관문을 우회하는 것).
    ```
    cd $(mktemp -d) && git init -q
    git fetch https://github.com/recon9973-lang/veo-platform.git claude/auto-diagnosis-schedule-check-vhmz2j
