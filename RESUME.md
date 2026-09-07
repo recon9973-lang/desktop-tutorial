@@ -1,17 +1,20 @@
-# RESUME — 다음 세션 이어가기 (2026-09-06 s20 마감 · ANSEO 방 · **0.3.520 배포 완료**)
+# RESUME — 다음 세션 이어가기 (2026-09-07 s21 · ANSEO 방 · **0.3.530 배포 대기 중** — 다른 방 0.3.529가 먼저)
 
-> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-06-s20.md`(직전 `-s19.md`).
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-07-s21.md`(직전 `-s20.md`, `-s19.md`).
 > **ANSEO = `recon9973-lang/veo-platform`**(veo.seokorea.org 콘솔). desktop-tutorial 안의 venom 무료진단은 ANSEO가 **아니다**.
 
 ## 지금까지 (핵심만)
+- **[s21] 속도 웹 3판 완료·배포 대기**: veo 브랜치 `claude/anseo-perf-web2` = 판 커밋 `375b59dd`(v0.3.529로 발급했으나 **다른 방이 같은 번호 0.3.529를 `deploy-candidate` f24b0de2로 먼저 밀어 CI 중** → 내가 물러남, **0.3.530 재발급 필요**). 내용: 정기 진단 체크박스 2곳 refresh 제거(요청 9→1·12→1) · projects 왕복 3→1 · 404 폴백 제거 · PinButton 그대로. preflight 전부 통과. 사장님 오더 «별표는 살리고 배포해».
+- 배포 재개 절차는 s21 로그 「배포 재개 절차」 4단계 그대로.
 - **0.3.520 나갔다** [실측 2026-09-06 23:07 KST 바깥 샌드박스 curl] 서버·워커 `0.3.520` · 웹 링 에셋 200. 내용 = 골든 링 로딩(SEO·AEO) + 속도 전수조사 여덟. veo-platform main = 도장 커밋(`d54fd06c` 위 docs). 사장님 오더 «속도개선과 로딩 애니매이션 둘 다 배포».
 - 링 단독 판 가지 `claude/anseo-ring-release`(0.3.517 · 안 나감)는 **폐기 대상** — 내용이 0.3.520 에 포함됨. 원격에 남아 있으니 지워도 된다.
 - `claude/anseo-perf-day1` = main 과 같음(도장까지). 더 쌓을 것 없음.
 - 사장님 톤 지적(SEO 링 블루톤·AI스러움) → 「두 진단 성격이 다르니 컬러가 달라도 됨」으로 정리. 내가 콘솔 톤·덮개까지 건드리자고 해 **범위 초과 지적** 받음 — 오더 밖 제안 금지.
-- 속도 Top 10 원문: `docs/plans/anseo-veo-speed-audit-2026-09-06.md`. 남은 것: #3 Redis+워커 · #5 DB 풀(사장님) · #10 router.refresh 32곳 · `lib/projects.ts` 3회 조인 · 404 폴백(`fetchCompaniesLegacy`) 제거는 다음 웹 판.
+- 속도 Top 10: #10·projects·404 폴백은 s21에서 끝남(0.3.530 판). 남은 것 **#3 Redis+워커 · #5 DB 풀(사장님 결정)** 뿐.
 - venom(desktop-tutorial): PR #233 main `5fa0f63` 배포됨. 사장님 검토 후 되돌릴 항목 지시 예정
 
 ## 바로 이어갈 작업
+0. **0.3.530 배포 마무리** — s21 로그 절차 1~4 (origin/main에 f24b0de2 포함됐는지 먼저 확인 → 리베이스 → bump 0.3.530 → 후보 푸시(lease) → CI success → main → 실측 → 도장)
 1. **운영 링 화면 실물 확인** — 사장님이 veo.seokorea.org 로그인 후 SEO 진단·AEO 관측 한 번씩. 나는 로그인 자격이 없어 못 본다. 문제 보고 오면 `RingLoader.tsx`·`ring-loader.module.css` 에서 고침.
 2. **운영 전후 실측으로 속도 «—» 채우기** — 8월 값(진단 탭 2,974 ms · AEO 4,756 ms)과 같은 자리를 바깥 샌드박스 curl 로 재서 대장에 적기(요청 시).
 3. 사장님 결정 대기(s20 로그 「판단 필요」): AEO 엔진별 막대 · 「SEO 점수 분석 중…」 스크린샷 출처 · venom 되돌릴 항목 · #3/#5 · fetcher.py 제외 · 서체 라틴 폴백
@@ -29,5 +32,5 @@
 - 사장님께 「커밋」·「배포」 두 낱말만 · 못 잰 값 «—» · 지어낸 수치 금지
 
 ## 참고
-- veo 클론 `/home/user/veo-platform`(ring 가지 원본) · worktree `/home/user/veo-perf`(**지금 `claude/anseo-ring-release` 체크아웃** · `.venv`·node_modules 여기). 콘솔 실물 캡처 방법: `scratchpad/serve.mjs`(가짜 API + next start 4599 · `SHOOT_FIXTURE`) + `shoot2.mjs`(Playwright 전역 설치 · `/api/scan`·`/api/observation` 가로채기) — 컨테이너 바뀌면 s20 로그 참고해 다시 씀. 새 컨테이너면 `add_repo` 후 재클론
+- veo 클론 `/home/user/veo-platform`(main) · worktree `/home/user/veo-perf`(**지금 `claude/anseo-perf-web2` 체크아웃** · `.venv`·node_modules 여기). 콘솔 실물 캡처 방법: `scratchpad/serve.mjs`(가짜 API + next start 4599 · `SHOOT_FIXTURE`) + `shoot2.mjs`(Playwright 전역 설치 · `/api/scan`·`/api/observation` 가로채기) — 컨테이너 바뀌면 s20 로그 참고해 다시 씀. 새 컨테이너면 `add_repo` 후 재클론
 - 운영 실측은 컨테이너 프록시가 막음 → Higgsfield `sandbox_exec` curl
