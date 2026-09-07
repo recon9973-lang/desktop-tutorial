@@ -67,6 +67,7 @@ h1{font-family:var(--serif);font-size:clamp(27px,4.2vw,40px);line-height:1.2;let
 .arow .k{font-size:12px;color:var(--muted);letter-spacing:.02em}
 .arow .v{font-family:var(--serif);font-size:23px;font-variant-numeric:tabular-nums}
 .arow.risk .v{color:var(--amber)}
+.arow.up .v{color:var(--moss)}
 
 /* generic section */
 section{display:flex;flex-direction:column;gap:16px}
@@ -193,10 +194,11 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 <div class="wrap">
 
 <header>
-  <span class="eyebrow">국지도 90호선 사동~도동 · 터널 A갱구 편입 대비 · 16차 개정 2026-09-07</span>
+  <span class="eyebrow">국지도 90호선 사동~도동 · 터널 A갱구 편입 대비 · 17차 개정 2026-09-07</span>
   <h1>도동리 744㎡, 얼마를 받아야 하는가</h1>
-  <p class="sub">공항 개항·관광수요·도동항 입지가 보상액의 어느 항으로 들어가는지를 토지보상법령 원문으로 확정하고,
-    그 결과를 금액으로 환산한 문서입니다. 숫자를 바꾸려면 아래 계산기의 가정을 직접 움직여 보십시오.</p>
+  <p class="sub">보상액은 「공시지가 기준」에서 출발하지만 <b>「그 밖의 요인 보정」에서 실거래로 끌어올려집니다.</b>
+    17차에서 <b>개별공시지가로 개별요인을 실측(0.293)</b>하면서 16차의 35~43억을 철회하고 <b>10~17억</b>으로 내렸습니다.
+    숫자를 바꾸려면 아래 계산기의 가정을 직접 움직여 보십시오.</p>
   <div class="lots">
     <span class="lot"><b>도동리 41-2</b> 172㎡</span>
     <span class="lot"><b>도동리 42-1</b> 208㎡ · A갱구 33m · 1등급</span>
@@ -208,22 +210,27 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 <div class="verdict">
   <div class="main">
     <span class="eyebrow">협의 기준 · 2030 가격시점</span>
-    <div class="big">35 – 43<small>억원</small></div>
-    <p class="cap">744㎡ 전부, <b>지목 「대」·일반상업지역</b> 전제. 중심값 39억.
-      잔여지·지장물·영업보상은 <b>포함되지 않은</b> 토지 본체 값입니다.</p>
+    <div class="big">10 – 17<small>억원</small></div>
+    <p class="cap">744㎡ 전부, <b>지목 「대」·일반상업지역</b> 전제. 중심값 13억.
+      지장물·영업·주거보상은 <b>포함되지 않은</b> 토지 본체 값입니다.
+      <b>16차의 35~43억은 철회했습니다</b> — 개별요인 실측 때문입니다.</p>
   </div>
   <div class="aside-rows">
     <div class="arow">
-      <span class="k">재결·소송까지 갔을 때 (실적 +52.0%)</span>
-      <span class="v">53 – 65억</span>
+      <span class="k">지장물·영업·주거까지 합한 <b>전체 총액</b></span>
+      <span class="v">11 – 20억</span>
+    </div>
+    <div class="arow">
+      <span class="k">재결·소송까지 갔을 때 (토지 +52.0%)</span>
+      <span class="v">16 – 30억</span>
+    </div>
+    <div class="arow up">
+      <span class="k">주차장 선례(363~424만원/㎡)가 확인되면</span>
+      <span class="v">31 – 38억</span>
     </div>
     <div class="arow risk">
       <span class="k">전제가 「자연녹지·대」로 밝혀지면</span>
       <span class="v">2.0억</span>
-    </div>
-    <div class="arow">
-      <span class="k">이 격차를 확정하는 서류</span>
-      <span class="v" style="font-size:17px;font-family:var(--sans);font-weight:600">부동산종합증명서 1장</span>
     </div>
   </div>
 </div>
@@ -240,7 +247,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
     <button class="term" role="tab" data-t="2" aria-selected="false">
       <span class="ix">③ 지역요인</span><span class="nm">인근지역 비교</span><span class="vl">1.00</span></button>
     <button class="term" role="tab" data-t="3" aria-selected="false">
-      <span class="ix">④ 개별요인</span><span class="nm">도동항 입지</span><span class="vl">0.90 – 1.05</span></button>
+      <span class="ix">④ 개별요인</span><span class="nm">비준표 실측 0.293</span><span class="vl">0.29 – 0.40</span></button>
     <button class="term" role="tab" data-t="4" aria-selected="false">
       <span class="ix">⑤ 그 밖의 요인</span><span class="nm">거래·보상사례 보정</span><span class="vl">1.30 – 1.49</span></button>
   </div>
@@ -283,8 +290,157 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 </section>
 
 <section>
+  <h2><span class="tag">17차 정정</span>개별요인을 실측하니 금액이 3분의 1이 됐습니다</h2>
+  <p class="lede">사장님 지적 — <b>“공시지가 기준이 아니라 실거래 기준이고 감정평가가 중요해 보이는데”</b> — 이 맞습니다.
+    조문의 출발점은 표준지공시지가지만(법 §70① · 규칙 §22①), <b>거기서 끝나지 않습니다.</b>
+    대법원 <b>93누2131</b>이 공시지가 기준 방식을 합헌이라 한 이유가 정확히 <b>“⑤에서 시가로 보정되므로”</b>였습니다.
+    <b>「공시지가 기준」은 형식이고 「실거래 기준」이 실질이며, 그 실질을 정하는 것이 감정평가입니다.</b></p>
+
+  <div class="cmp">
+    <div class="pane down">
+      <h3>실측 — 개별요인 0.293</h3>
+      <ul>
+        <li>3필지(744㎡) 개별공시지가 <b>가중평균 922,792원/㎡</b></li>
+        <li>비교표준지 41-3(일반상업·「대」·도동2길 10) <b>3,153,000원/㎡</b></li>
+        <li><b>922,792 ÷ 3,153,000 = 0.293</b> — 울릉군이 토지가격비준표로 매긴 개별요인 격차</li>
+        <li>41-3은 <b>여객터미널 정면</b>, 사장님 필지는 도동길 46-8로 <b>한 블록 안쪽</b>입니다.
+          가로·접근·환경조건이 모두 열세로 잡힙니다 — 납득 가능한 격차입니다.</li>
+        <li><b>16차의 0.90~1.05는 자료 없이 가정한 값이었습니다. 3.2배 과대였습니다.</b></li>
+      </ul>
+    </div>
+    <div class="pane up">
+      <h3>법적 취급 — 기준은 아니고 참작자료</h3>
+      <ul>
+        <li>대법원 <b>2006두11507</b>: 「토지가격비준표는 개별토지가격을 산정하기 위한 자료로 제공되는 것으로,
+          토지수용에 따른 <b>보상액 산정의 기준이 되는 것은 아니고 단지 참작자료에 불과</b>할 뿐」</li>
+        <li>「개별공시지가는 … <b>개발이익까지 포함</b>된 것이어서 토지수용 보상액 산정의 기준이 되지 아니한다」</li>
+        <li>헌재 <b>2009헌바245</b>: 개별공시지가가 아니라 <b>표준지공시지가</b> 기준이라야 정당보상</li>
+        <li><b>그래서 기준으로는 쓰지 않았습니다.</b> 판례가 허용한 <b>「참작」의 자리 — ④ 개별요인</b>에만 넣었습니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tw" style="margin-top:14px">
+    <table>
+      <thead><tr><th>조합</th><th class="n">단가 (원/㎡)</th><th class="n">744㎡ 총액</th></tr></thead>
+      <tbody>
+        <tr><td>하한 — K 1.16 · 개별 0.29 · 기타 1.30</td><td class="n">1,378,870</td><td class="n">10.3억</td></tr>
+        <tr><td>보수 — K 1.16 · 개별 0.293 · 기타 1.40</td><td class="n">1,500,299</td><td class="n">11.2억</td></tr>
+        <tr class="hl"><td>중위 — K 1.18 · 개별 0.33 · 기타 1.40</td><td class="n">1,718,889</td><td class="n">12.8억</td></tr>
+        <tr><td>적극 — K 1.22 · 개별 0.36 · 기타 1.49</td><td class="n">2,063,349</td><td class="n">15.4억</td></tr>
+        <tr><td>상한 — K 1.22 · 개별 0.40 · 기타 1.49</td><td class="n">2,292,609</td><td class="n">17.1억</td></tr>
+        <tr class="dim"><td>교차검증 — 일반상업 <b>하위</b> 표준지 직접 적용 (154-5 / 336-2, 개별요인 1.00)</td>
+          <td class="n">1,492,015 – 2,099,559</td><td class="n">11.1 – 15.6억</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">두 경로가 <b>서로 다른 표준지에서 출발해 같은 답에 도달합니다.</b>
+    사장님 필지의 개별공시지가 922,792원/㎡는 도동리 일반상업 <b>하위</b> 표준지(989,400 / 1,155,000) 바로 그 구간입니다 —
+    16차가 「하방 시나리오」로 분류했던 것이 <b>실은 본류였습니다.</b></p>
+
+  <h3 style="margin-top:26px;font-size:16px">시장 검증 — 카카오맵 도동 실거래 38건</h3>
+  <p class="lede">사장님이 보내 주신 실거래 지도(<b>「총액」 모드</b>)를 판독했습니다. 시장이 35~43억을 부정합니다.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>항목</th><th class="n">값</th><th>읽는 법</th></tr></thead>
+      <tbody>
+        <tr><td>표시 건수</td><td class="n">38건</td><td>토지·건물·집합건물 혼재</td></tr>
+        <tr><td>최고가</td><td class="n">37.0억 (2019.11)</td><td>이상치 — 제외하고 봅니다</td></tr>
+        <tr class="hl"><td>2019년 이후 최고</td><td class="n">12.3억 (2023.09)</td>
+          <td><b>도동 최근 5년 천장이 12억대입니다</b></td></tr>
+        <tr><td>상위 5건</td><td class="n">37.0 / 12.3 / 10.6 / 10.0 / 8.0억</td><td>10억 이상은 4건뿐</td></tr>
+        <tr><td>중앙값</td><td class="n">0.86억</td><td>1억 이상 18건 · 5억 이상 7건</td></tr>
+        <tr class="hl"><td>2024.10 이사부관광호텔</td><td class="n">8.0억</td>
+          <td><b>가장 가까운 비교 대상</b> — 도동 소재 숙박시설 통거래</td></tr>
+        <tr class="dim"><td>면적 병기 2건</td><td class="n">3,150,685 / 3,148,148 원/㎡</td>
+          <td>2.30억÷73㎡ · 2.55억÷81㎡. <b>집합건물 전유면적 기준으로 추정</b>돼 토지 단가와 직접 비교 불가</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">744㎡ + 여관 2동인 사장님 자산은 이사부관광호텔(8.0억)보다 크므로 <b>10억대 후반</b>이 시장 정합적입니다.
+    새 채택 구간 10–17억이 정확히 여기에 앉습니다. <b>다만 이 38건은 「총액」이라 면적·지목·용도지역이 섞여 있어
+    금액 규모의 상한 감각을 잡는 데만 썼고, 산식에는 넣지 않았습니다.</b>
+    <b>「단가」 모드 + 「토지」 필터 화면</b>을 한 장 더 주시면 도동리 일반상업 <b>나지</b>의 진짜 ㎡당 단가가 나오고,
+    그것이 ⑤ 보정치(1.30–1.49)를 한 점으로 좁힙니다.</p>
+
+  <div class="callout warn" style="margin-top:20px">
+    <span class="hd">상방은 죽지 않았습니다 — 주차장 선례</span>
+    <p>도동 주차장 부지 500평(≈1,653㎡) <b>60~70억</b> 매입 제보가 사실이면 <b>㎡당 363만~424만원</b>입니다.
+      그 부지의 개별공시지가가 사장님 필지와 같은 수준(≈92만원/㎡)이었다면 <b>실현 배율 3.93~4.59배</b>이고,
+      같은 배율을 적용하면 <b>744㎡ = 30.2 ~ 35.3억</b>이 됩니다.
+      <b>채택 구간과 3배 차이가 나고, 그 3배 전부가 「주차장 부지 지번과 그 공시지가」 한 줄에 달려 있습니다.</b>
+      16차에서 주 근거에서 내렸지만 폐기한 것이 아니라 <b>검증 대기로 옮긴 것</b>입니다.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag">총액</span>토지 밖의 보상 — 지장물 · 영업 · 주거</h2>
+  <p class="lede">규칙 §22②가 <b>“건축물등이 없는 상태를 상정하여 토지를 평가한다”</b>고 하므로,
+    여관은 토지값에 들어가지 않고 <b>법 §75로 따로 받습니다.</b> 아래는 조문 원문을 대조해 쌓은 것입니다.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>항목</th><th>조문</th><th class="n">협의</th><th>쟁점</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><b>토지 744㎡</b></td><td>법 §70① · 규칙 §22①</td><td class="n">10.3 – 17.1억</td>
+          <td>지목·용도지역 · 개별요인 · ⑤ 보정치</td></tr>
+        <tr><td>건축물 73.5㎡ (여관 2동)</td><td>규칙 §33② 원가법</td><td class="n">0.10 – 0.30억</td>
+          <td>1979년·1991년 건축으로 <b>내용연수 경과</b> — 최종잔가율만 남습니다. «재조달원가 단가 미확보»</td></tr>
+        <tr><td>영업손실</td><td>규칙 §46 · §47</td><td class="n">0.30 – 2.00억</td>
+          <td><b>「3년 손익 1억」이 3년 합계냐 연 1억이냐</b>가 4배를 가릅니다</td></tr>
+        <tr><td>주거 관련 (이주정착금·주거이전비·이사비)</td><td>규칙 §53② · §54① · §55②</td><td class="n">0 – 0.30억</td>
+          <td>대장상 용도가 <b>「여관」</b> — 「주거용 건축물」 인정 여부</td></tr>
+        <tr class="hl"><td><b>합계</b></td><td>—</td><td class="n"><b>11 – 20억</b></td>
+          <td>재결·소송 증액 시 <b>16 – 30억</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cmp" style="margin-top:16px">
+    <div class="pane up">
+      <h3>영업보상 — 폐업 주장의 근거가 이례적으로 강합니다</h3>
+      <ul>
+        <li>규칙 §46②1호: 「<b>배후지</b>의 특수성으로 … <b>시·군·구 또는 인접 시·군·구</b>의 다른 장소에
+          이전하여서는 당해 영업을 할 수 없는 경우」</li>
+        <li><b>울릉군은 섬입니다. 인접 시·군·구가 없습니다.</b> 도동항 여관의 배후지는 <b>여객선 이용객</b>이고
+          그 배후지는 도동항에만 존재합니다 — <b>문언에 정면으로 들어맞습니다.</b></li>
+        <li>§46③ 후단 최저한도: <span class="pill ok">연간 영업이익 = 보통인부 임금단가 × 25일 × 12월</span>
+          2026 상반기 172,068원 → <b>51,620,400원/년</b></li>
+        <li>3년 합계 1억이면 연 3,333만원 → <b>미달이므로 5,162만원으로 봅니다</b> → 폐업 2년분 <b>1.03억</b></li>
+        <li>연 1억이면 → 폐업 2년분 <b>2.00억</b></li>
+        <li>§46④ — 폐업보상 수령 후 <b>2년 내</b> 같은 시·군·구에서 동일 영업을 하면 <b>환수</b>됩니다</li>
+      </ul>
+    </div>
+    <div class="pane down">
+      <h3>주거 세 항목 — 「주거용 건축물」 한 요건에 매달려 있습니다</h3>
+      <ul>
+        <li>이주정착금(§53②): 평가액 30% · <b>하한 1,200만 / 상한 2,400만원</b></li>
+        <li>주거이전비 소유자분(§54①): 도시근로자가구 월평균 가계지출비 <b>2개월분</b></li>
+        <li>이사비(§55② 별표4): 실제 이사 시</li>
+        <li><b>그런데 §54① 단서는 반대 방향을 가리킵니다</b> — 단서가 배제하는 것은
+          「소유자가 해당 건축물에 <b>실제 거주하고 있지 아니한</b>」 경우인데, 사장님은 <b>거주 중</b>입니다.
+          현황주의로 주거 부분을 다툴 여지가 있습니다.</li>
+        <li>41-17 대부 용도가 <b>「주택부지」</b>로 기재된 점이 유리한 방증입니다.</li>
+        <li><b>할 일:</b> 제1호(27㎡)·제2호(46.5㎡) 중 <b>어느 쪽을 주거로 쓰는지</b> 특정해 두십시오.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:16px">
+    <span class="hd">41-17 대부지 141㎡ — 토지보상은 없습니다</span>
+    <p>규칙 <b>§28①</b> 후단: <b>“이 경우 점유는 권리로 보지 아니한다.”</b>
+      대부는 소유권 외의 권리이지만 <b>토지 보상금은 소유자(국가 또는 울릉군)에게 갑니다.</b>
+      사장님에게 남는 것은 ① 41-17 <b>지상 시설물</b>이 있다면 그 물건보상(법 §75),
+      ② <b>대부계약 해지에 따른 손실보상</b>(국유재산법 §47 준용 또는 공유재산법 시행령 §36),
+      ③ 잔여 대부기간(2027-07-16까지) 대부료 정산입니다.
+      <b>41-17이 국유인지 울릉군 공유인지가 아직 미확인</b>이라 근거 조문이 갈립니다.</p>
+  </div>
+</section>
+
+<section>
   <h2><span class="tag">계산기</span>가정을 움직여 보십시오</h2>
-  <p class="lede">전제(지목·용도지역)를 바꾸면 기준 공시지가가 통째로 바뀝니다. 최상과 최악의 차이가 <b>20배가 넘습니다.</b></p>
+  <p class="lede">17차에서 <b>④ 개별요인의 눈금을 갈아 끼웠습니다.</b> 16차는 0.70–1.20에서 1.00을 썼는데,
+    개별공시지가로 실측한 값은 <b>0.293</b>이었습니다. 눈금을 0.25–0.60으로 바꾸고 기본값을 0.33으로 놓았습니다.
+    전제(지목·용도지역)를 바꾸면 기준 공시지가가 통째로 바뀝니다 — 최상과 최악의 차이는 여전히 <b>20배가 넘습니다.</b></p>
   <div class="calc">
     <div class="controls">
       <div class="field">
@@ -303,28 +459,29 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
         <input type="range" id="k" min="1.00" max="1.40" step="0.01" value="1.18">
       </div>
       <div class="field">
-        <label for="ind">④ 개별요인 — 도동항 입지 <b id="indv">1.00</b></label>
-        <input type="range" id="ind" min="0.70" max="1.20" step="0.01" value="1.00">
+        <label for="ind">④ 개별요인 — 비준표 실측 0.293 <b id="indv">0.33</b></label>
+        <input type="range" id="ind" min="0.25" max="0.60" step="0.005" value="0.33">
       </div>
       <div class="field">
         <label for="oth">⑤ 그 밖의 요인 보정 <b id="othv">1.40</b></label>
         <input type="range" id="oth" min="1.00" max="2.30" step="0.01" value="1.40">
       </div>
-      <p class="note">③ 지역요인은 동일 도동리 인근지역이라 1.00 고정. 법원이 실제 채택한 ⑤의 범위는 1.11 – 2.30입니다.</p>
+      <p class="note">③ 지역요인은 동일 도동리 인근지역이라 1.00 고정. 법원이 실제 채택한 ⑤의 범위는 1.11 – 2.30입니다.
+        ④를 1.00 근처로 올리려면 <b>비준표 0.293을 뒤집을 개별요인 비교표</b>가 있어야 합니다 — 근거 없이 올리지 마십시오.</p>
     </div>
     <div class="readout">
       <div class="rline">
         <div>
           <div class="rlabel">보상 단가</div>
-          <div class="unit num" id="oUnit">5,208,756<span style="font-size:.5em"> 원/㎡</span></div>
+          <div class="unit num" id="oUnit">1,718,889<span style="font-size:.5em"> 원/㎡</span></div>
         </div>
         <div>
           <div class="rlabel">744㎡ 총액 · 협의 기준</div>
-          <div class="total num" id="oTotal">38.8억</div>
+          <div class="total num" id="oTotal">12.8억</div>
         </div>
         <div>
           <div class="rlabel">재결·소송 증액 시 (+52.0%)</div>
-          <div class="unit num" id="oLit">59.0억</div>
+          <div class="unit num" id="oLit">19.4억</div>
         </div>
       </div>
       <div class="band">
@@ -332,7 +489,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
           <div class="bandfill" id="bFill"></div>
           <div class="bandmark" id="bMark"></div>
         </div>
-        <div class="bandticks"><span>0억</span><span>15억</span><span>30억</span><span>45억</span><span>60억</span></div>
+        <div class="bandticks"><span>0억</span><span>10억</span><span>20억</span><span>30억</span><span>40억</span></div>
       </div>
       <p class="note" id="oNote"></p>
     </div>
@@ -390,8 +547,10 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
       </ul>
     </div>
   </div>
-  <p class="lede">그럼에도 <b>채택 구간은 34~39억에서 35~43억으로 올라갔습니다.</b>
-    185-3 실거래가 지번·용도지역·거래일까지 확정되면서, 제보보다 <b>더 높고 더 단단한</b> 앵커가 생겼기 때문입니다.</p>
+  <p class="lede">16차는 이 두 정정에도 <b>채택 구간을 34~39억에서 35~43억으로 올렸습니다</b> —
+    185-3 실거래가 지번·용도지역·거래일까지 확정되며 더 단단한 앵커가 생겼기 때문입니다.
+    <b>그 35~43억을 17차에서 다시 철회했습니다.</b> 앵커(①·⑤)는 그대로지만
+    <b>④ 개별요인이 실측(0.293)으로 바뀌었기 때문입니다.</b> 위 「17차 정정」 절을 보십시오.</p>
 </section>
 
 <section>
@@ -550,29 +709,34 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
       <span class="t">실시설계 노선도 — 종점이 도동인가 저동인가</span>
       <span class="d">저동이면 이 문서의 전제가 무너집니다. 다른 무엇보다 먼저입니다.</span></span></div>
     <div class="titem top"><span class="rk">02</span><span class="bd">
-      <span class="t">3필지의 부동산종합증명서 — 지목 · 용도지역 · 개별공시지가</span>
-      <span class="d">「대」·일반상업이면 35~43억, 자연녹지면 2억. 이 한 장이 20배를 가릅니다. 컨테이너에서 kras·realtyprice·rt.molit이 전부 차단이라 직접 발급해 주셔야 합니다.</span></span></div>
-    <div class="titem"><span class="rk">03</span><span class="bd">
-      <span class="t">울릉군 지가변동률 2024 · 2025 · 2026</span>
-      <span class="d">시점수정의 본 지표. 한국부동산원 R-ONE 「지가변동률 → 시군구/용도지역별 → 경상북도 울릉군」 또는 울릉군청 토지정보과 청구.</span></span></div>
+      <span class="t">울릉군의회 「공유재산 관리계획안」 — 주차장 부지 지번 · 취득예정가격</span>
+      <span class="d">10~17억이냐 30~35억이냐, <b>3배</b>를 가르는 한 줄입니다. 지번 · 지목 · 면적 · 취득예정가격이 한 장에 있습니다. 정보공개청구가 가장 빠릅니다. 옛 칸나이트 부지(도동리 196-1 일원) 부지매입 감정평가서도 함께.</span></span></div>
+    <div class="titem top"><span class="rk">03</span><span class="bd">
+      <span class="t">「영업손익 3년 1억」이 3년 합계인가 연 1억인가</span>
+      <span class="d">영업보상 <b>0.3억 ↔ 2.0억</b>. 부가가치세 신고서 또는 소득세 신고서 3개년이면 즉시 확정됩니다.</span></span></div>
     <div class="titem"><span class="rk">04</span><span class="bd">
-      <span class="t">울릉군의회 「공유재산 관리계획안」 정보공개청구</span>
-      <span class="d">주차장 부지 매입 건의 지번 · 지목 · 면적 · 취득예정가격이 한 장에 있습니다. 옛 칸나이트 부지(도동리 196-1 일원) 조성사업 부지매입 감정평가서도 함께.</span></span></div>
+      <span class="t">3필지의 부동산종합증명서 — 지목 · 용도지역</span>
+      <span class="d">개별공시지가는 확보했습니다. 남은 것은 지목과 용도지역입니다 — 「대」·일반상업이 아니면 전부 다시 계산합니다. 컨테이너에서 kras·realtyprice·rt.molit이 전부 차단이라 직접 발급해 주셔야 합니다.</span></span></div>
     <div class="titem"><span class="rk">05</span><span class="bd">
-      <span class="t">도동리 일반상업 「최근 3년 이내」 실거래</span>
-      <span class="d">실무기준 [610-1.5.2.5③4호]의 도시지역 3년 요건 충족용. 185-3(2022-08)만으로는 단서를 걸어야 합니다.</span></span></div>
+      <span class="t">카카오맵 「단가」 모드 + 「토지」 필터 화면</span>
+      <span class="d">도동리 일반상업 <b>나지</b> 실거래의 ㎡당 단가. ⑤ 그 밖의 요인 보정(1.30–1.49)을 한 점으로 좁힙니다. 화면만 바꿔 캡처해 주시면 됩니다. 실무기준 [610-1.5.2.5③4호]의 도시지역 3년 요건도 함께 충족됩니다.</span></span></div>
     <div class="titem"><span class="rk">06</span><span class="bd">
-      <span class="t">도동항 배후지 매립 규모 · 사업비</span>
-      <span class="d">제4차 전국항만기본계획 수정계획 울릉항 편. 매립지가 갱구 예정지와 겹치면 편입 범위 자체가 달라집니다.</span></span></div>
+      <span class="t">41-17이 국유인가 울릉군 공유인가 · 건축물 2동 중 주거 사용 부분</span>
+      <span class="d">앞은 대부계약 해지 손실보상의 근거 조문을 가르고, 뒤는 이주정착금·주거이전비 1,200만~2,700만원이 걸립니다.</span></span></div>
+    <div class="titem"><span class="rk">07</span><span class="bd">
+      <span class="t">울릉군 지가변동률 2024 · 2025 · 2026</span>
+      <span class="d">시점수정(K)의 본 지표. 한국부동산원 R-ONE 「지가변동률 → 시군구/용도지역별 → 경상북도 울릉군」 또는 울릉군청 토지정보과 청구.</span></span></div>
   </div>
 </section>
 
 <footer>
-  <p>산식 근거 — 토지보상법 §67② · §70①②④⑤ · §73 · §74, 시행령 §37②③ · §38의2 · §39①, 시행규칙 §22 · §23,
+  <p>산식 근거 — 토지보상법 §67② · §70①②④⑤ · §73 · §74 · §75 · §77, 시행령 §37①②③ · §38의2 · §39 · §40⑤ · §41,
+    시행규칙 §22 · §23 · §28① · §33 · §45~§47 · §53② · §54① · §55② · §58,
     감정평가에 관한 규칙 §14②, 감정평가 실무기준 [610-1.5.2.4]·[610-1.5.2.5]·[810-5.6.3]·[810-5.6.4.1]·[810-5.6.6],
-    도로법 §25 · §82②, 건축법 시행령 §80. 법령 원문은 legalize-kr 미러로 대조했습니다.</p>
+    도로법 §25 · §82②, 건축법 시행령 §80. 시행령은 <b>대통령령 제36327호(2026.5.12. 시행) 원문</b>으로,
+    시행규칙·법률은 legalize-kr 미러로 대조했습니다.</p>
   <p>판례 — 헌재 89헌마107 · 2009헌바245, 대법원 93누2131 · 90누1076 · 92누11084 · 91누7774 · 2013두21182 ·
-    2002두4679 · 2012두24092, 서울고법 2011누21234. 판례 코퍼스 124,909건 전수 grep 결과
+    <b>2006두11507</b> · 2002두4679 · 2012두24092, 서울고법 2011누21234. 판례 코퍼스 124,909건 전수 grep 결과
     <b>울릉군 토지보상 판례는 존재하지 않습니다</b> — 선례가 없는 동시에, 첫 선례를 만들 여지가 있습니다.</p>
   <p>이 문서는 감정평가서가 아닙니다. 확정된 지목·용도지역·노선이 없는 상태의 <b>추정</b>이며,
     확인하지 못한 값은 본문에 「미확보」로 적었습니다. 지어낸 수치는 없습니다.</p>
@@ -602,14 +766,16 @@ const TERMS = [
    body:[
     "비교표준지가 있는 지역과 대상토지가 있는 지역의 <b>표준적 획지의 최유효이용을 판정·비교</b>해 격차율을 냅니다. 양쪽 모두 <b>가격시점 기준</b>입니다.",
     "41-3과 41-2·42-1·42-3은 <b>같은 도동리 인근지역</b>이므로 지역요인은 1.00입니다. 도동항 입지의 유불리는 지역요인이 아니라 ④ 개별요인에서 다툽니다."]},
-  {hd:"④ 개별요인 — 도동항 입지가 들어가는 자리",
+  {hd:"④ 개별요인 — 17차에서 실측값(0.293)으로 갈아 끼운 칸",
    law:"감정평가규칙 §14②4 · 실무기준 [610-1.5.2.4.2] · 법 §70② · 대법원 90누1076",
    body:[
     "실무기준 [610-1.5.2.4.2]: 비교표준지의 개별요인은 <b>공시기준일</b>을, 대상토지의 개별요인은 <b>기준시점(가격시점)</b>을 기준으로 합니다. <b>대상토지 쪽만 가격시점 기준</b>이라는 점이 핵심입니다 — 개항 후 달라진 도동항의 위상이 그대로 반영됩니다.",
     "<b>유리한 쪽:</b> 41-3은 도동2길 10(이면)이고, 42-1·42-3은 <b>도동항 부두 전면·도동길 접면</b>입니다. 가로조건(접면도로 폭·계통)·접근조건(여객터미널·부두)·환경조건(상권 중심성)에서 대상지가 우세할 여지가 있습니다.",
     "<b>불리한 쪽:</b> 갱구 편입 예정지는 현재 <b>부두 배후 나지</b>입니다. 이용상황 열세를 이유로 깎으려 할 수 있습니다.",
     "<b>방어선:</b> 법 §70②는 「가격시점에서의 현실적인 이용상황과 <b>일반적인 이용방법에 의한 객관적 상황</b>을 고려」하라고 합니다. 여기에 대법원 90누1076을 붙이면 나지라는 사정만으로 깎을 수 없습니다.",
-    "→ <b>0.90 ~ 1.05</b>로 잡았습니다."]},
+    "<b>그런데 17차에서 실측값이 들어왔습니다.</b> 사장님 3필지 개별공시지가 가중평균 <b>922,792원/㎡</b> ÷ 비교표준지 41-3 <b>3,153,000원/㎡</b> = <b>0.293</b>. 이것이 울릉군이 토지가격비준표로 매긴 개별요인 격차입니다.",
+    "개별공시지가를 <b>보상액의 기준</b>으로 쓰면 위법입니다 — 대법원 2006두11507: 「토지가격비준표는 … 보상액 산정의 기준이 되는 것은 아니고 단지 <b>참작자료에 불과</b>할 뿐」. 하지만 판례가 말한 그 <b>참작</b>의 자리가 바로 ④입니다.",
+    "→ 16차의 <b>0.90 ~ 1.05를 철회</b>하고 <b>0.29 ~ 0.40</b>으로 대체했습니다. 하한이 실측값이고, 상한은 감정평가사가 6조건 비교표로 다시 잡을 때의 상향 여지(+37%)입니다. <b>이 한 칸 때문에 채택 구간이 35~43억에서 10~17억으로 내려갔습니다.</b>"]},
   {hd:"⑤ 그 밖의 요인 보정 — 도동 실거래가 들어가는 자리",
    law:"감정평가규칙 §14②5 · 실무기준 [610-1.5.2.5] · [810-5.6.6]",
    body:[
@@ -643,17 +809,17 @@ function calc(){
   el('oUnit').innerHTML = fmt(unit) + '<span style="font-size:.5em"> 원/㎡</span>';
   el('oTotal').textContent = total.toFixed(1) + '억';
   el('oLit').textContent = (total * 1.52).toFixed(1) + '억';
-  const SC = 60; // 스케일 상한 60억
+  const SC = 40; // 스케일 상한 40억
+  const LO = 10.3, HI = 17.1;
   const pct = v => Math.max(0, Math.min(100, v / SC * 100));
-  el('bFill').style.left = pct(35) + '%';
-  el('bFill').style.width = (pct(43) - pct(35)) + '%';
+  el('bFill').style.left = pct(LO) + '%';
+  el('bFill').style.width = (pct(HI) - pct(LO)) + '%';
   el('bMark').style.left = 'calc(' + pct(total) + '% - 1px)';
-  const inBand = total >= 35 && total <= 43;
-  el('oNote').innerHTML = inBand
-    ? '채택 구간 <b>35 – 43억</b> 안입니다. 음영이 채택 구간, 붉은 선이 현재 값입니다.'
-    : (total < 35
-      ? '채택 구간(35 – 43억) <b>아래</b>입니다. 전제나 보정치가 보수적으로 잡혀 있습니다.'
-      : '채택 구간(35 – 43억) <b>위</b>입니다. 이 조합을 관철하려면 근거를 더 쌓아야 합니다.');
+  el('oNote').innerHTML = (total >= LO && total <= HI)
+    ? '채택 구간 <b>10 – 17억</b> 안입니다. 음영이 채택 구간, 붉은 선이 현재 값입니다. (토지분만 · 협의 기준)'
+    : (total < LO
+      ? '채택 구간(10 – 17억) <b>아래</b>입니다. 전제나 보정치가 보수적으로 잡혀 있습니다.'
+      : '채택 구간(10 – 17억) <b>위</b>입니다. 30~35억대에 도달하려면 <b>도동 주차장 부지 선례</b>가 확인돼야 합니다 — 지금은 미검증입니다.');
 }
 ['base','k','ind','oth'].forEach(id => el(id).addEventListener('input', calc));
 calc();
