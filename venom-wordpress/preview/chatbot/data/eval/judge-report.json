@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-31T00:04:54.219Z",
+  "updated": "2026-09-07T00:02:04.162Z",
   "model": {
     "answer": "claude-opus-4-8",
     "judge": "claude-haiku-4-5"
@@ -17,9 +17,9 @@
   },
   "overall": {
     "passRate": 100,
-    "avgGrounding": 4.79,
-    "avgCorrectness": 4.79,
-    "avgCitation": 4.83,
+    "avgGrounding": 4.71,
+    "avgCorrectness": 4.71,
+    "avgCitation": 4.71,
     "hallucinationRate": 0
   },
   "weakestGroups": [
@@ -36,10 +36,16 @@
       "avgCorrectness": 4
     },
     {
-      "group": "의료법 제3조",
-      "n": 1,
+      "group": "심의대상 매체",
+      "n": 2,
       "passRate": 100,
-      "avgCorrectness": 4
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "과장·최상급",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
     },
     {
       "group": "할인·유인",
@@ -48,16 +54,10 @@
       "avgCorrectness": 4.5
     },
     {
-      "group": "사전심의 예외(정보성)",
+      "group": "의료법 제56조",
       "n": 2,
       "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "심의대상 매체",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
+      "avgCorrectness": 4.5
     }
   ],
   "failures": [],
@@ -75,13 +75,25 @@
       "avgCorrectness": 4
     },
     {
-      "group": "의료법 제3조",
-      "n": 1,
+      "group": "심의대상 매체",
+      "n": 2,
       "passRate": 100,
-      "avgCorrectness": 4
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "과장·최상급",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
     },
     {
       "group": "할인·유인",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
+    },
+    {
+      "group": "의료법 제56조",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4.5
@@ -93,19 +105,7 @@
       "avgCorrectness": 5
     },
     {
-      "group": "심의대상 매체",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
       "group": "심의필·유효기간",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "과장·최상급",
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
@@ -141,13 +141,13 @@
       "avgCorrectness": 5
     },
     {
-      "group": "의료법 제56조",
-      "n": 2,
+      "group": "의료법 제57조",
+      "n": 1,
       "passRate": 100,
       "avgCorrectness": 5
     },
     {
-      "group": "의료법 제57조",
+      "group": "의료법 제3조",
       "n": 1,
       "passRate": 100,
       "avgCorrectness": 5
