@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-06 docs(ulleung-90): 14차 개정 · 특정 필지 41-2/42-1/42-3 편입 등급 판정
+- 2026-09-06 docs(checkpoint · s19): 울릉 90호선 도동항 토지보상 판독 세션 인계
 - 2026-09-06 docs(ulleung-90): 13차 개정 · 12차 단면 오류 정정, 확폭은 갱구 부지에서 흡수
 - 2026-09-06 docs(ulleung-90): 12차 개정 · 죽도관광 앞 5.0 m 확인, 확폭 확정과 방향 분기
 - 2026-09-06 docs(ulleung-90): 11차 개정 · 도로 폭과 편입의 관계 도해
 - 2026-09-06 docs(ulleung-90): 10차 개정 · 보상 편입 범위 지도화, A갱구 통행 분배
 - 2026-09-06 docs(ulleung-90): 9차 개정 · 사업 목적 재정의로 고가 통과형 폐기
 - 2026-09-06 docs(ulleung-90): 로드뷰 반영 8차 개정 · A/B 터널 구성안
-- 2026-09-06 feat: 갱구부 필지별 토지 수용 가능성 등급 + 6차 최적화 오답 정정
-- 2026-09-06 feat: 도동항 양방향 터널 구조 확정 + 갱구·진출입로 최소비용 최적화
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 fc55219 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 e92a436 기준. 값·비밀은 포함하지 않음.*
