@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-07 docs(s20): 0.3.538·0.3.539 배포 마감 — 이중 실측 22:48 KST
 - 2026-09-07 docs(s20): 판 두 번째 물림 — 0.3.538·0.3.539 로 맞춤
 - 2026-09-07 docs(s20): 판 물림 0.3.536→0.3.537·0.3.538 · 상권 2km 판 추가
 - 2026-09-07 docs(s20): v0.3.536 — 「탭 두 번 열기」 없앰 (받는 중이면 화면이 스스로)
@@ -14,7 +15,6 @@
 - 2026-09-07 docs(s20): 0.3.534 배포 마감 — 「입지」 상권 축 · RESUME 갱신
 - 2026-09-07 docs(s20): 0.3.532 배포 마감 — 경쟁 표 「겹친 과목」 칸 · 요양병원 질문 종결 · RESUME 갱신
 - 2026-09-07 checkpoint(s20): 0.3.529 배포 마감 · 인구 이동 축 완성 · RESUME/세션 로그/PROJECT_STATE 갱신 (180건)
-- 2026-09-07 docs(s20): 세션 로그 22 · RESUME 1번 항목 — 인구 이동 첫 실호출 확정 · 0.3.528
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 13cb30d 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 ca204ff 기준. 값·비밀은 포함하지 않음.*
