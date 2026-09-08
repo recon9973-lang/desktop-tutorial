@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-08 docs(s19): make deploy 가 돌았고 마지막에 거절됐다 — 경위와 내 잘못 (§2-6)
+- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-08 docs(resume): 남아 있던 0.3.540 을 0.3.541 로 바로잡고 판 번호 결론을 고쳐 적는다
 - 2026-09-07 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-07 docs(s19): 다른 방 뒤에 붙은 기록 · 판 0.3.541 로 물림 (§2-5)
 - 2026-09-07 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-07 docs(resume): 판 0.3.541 로 물림 · 나갈 커밋에서 preflight 초록 · 순번 왔음
-- 2026-09-07 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-07 docs(resume): 배포 대기 방식을 바꾼다 — 다른 방이 움직이면 붙는다
 - 2026-09-07 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (20)
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 ce2fa43 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 ec7fc50 기준. 값·비밀은 포함하지 않음.*
