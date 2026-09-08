@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-09 docs(s20): 진단 비용 보고서 · s20 세션 기록 (#234)
+- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-08 docs(s19): 구조 제안 2번까지 냈다 (v0.3.554) · 내가 네 번 틀린 기록
 - 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-08 docs(s19): 제안 1번을 만들어 냈다 — 판 번호를 나갈 때 정한다 (v0.3.551)
 - 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-08 docs(s19): 도장까지 끝 — v0.3.544 가 돌고 v0.3.546 으로 대장을 맞췄다
-- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-08 docs(s19): v0.3.544 가 main 에 들어갔다 — 실측 도장만 남았다
 - 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (20)
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 3e214aa 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 ffb90e2 기준. 값·비밀은 포함하지 않음.*
