@@ -1,77 +1,83 @@
-# RESUME — 다음 세션 이어가기 (2026-09-09 03:1x KST · s20 마감 · 진단 비용/30분 방)
+# RESUME — 다음 세션 이어가기 (2026-09-07 21:0x KST · s19 마감 · 자동 진단 방)
 
-> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-08-s20.md`.
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-07-s19.md`.
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
 ## 지금까지 (핵심만)
 
-- **끝난 일 둘. 둘 다 main 에 들어갔다.**
-  - **판 0.3.550** — 이슈를 닫는 진단이 30분에 안 막힌다. 실무자 피드백
-    *"수정후에 바로 확인이 어렵다"* 의 진범은 관문이 아니라 **이슈 해결 확인이
-    사이트 진단으로 돌던 것**(`issues/reverify.py`)이었다. 그 진단을 **페이지 진단**
-    (`page_check=True`)으로 갈랐다 — 30분에서 빠지고, 사이트 이력·추이·대표 점수·
-    하락 경보·이슈 표에 안 섞인다. 정기 진단은 반대로 **누적**으로 남는 것을 관문이
-    지킨다(`page_check=False`). 화면 낱말 「재진단」·「재검사 요청」 → **「진단」·「진단 요청」**.
-    시험 4건. main `a17bc29`.
-  - **판 0.3.553** — **도는 판을 러너가 잰다**. 배포 [5/5]「실제로 도는지」가 이 방에서
-    안 돈다(운영 주소 egress 403 · `curl` 도 `WebFetch` 도 같다). 워크플로
-    **「도는 판 확인」**(`.github/workflows/rollout-check.yml`)이 `/api/health`·`/api/queue`
-    를 러너에서 두드린다. 관문이 아니라 **자**다. main `758933d`.
-- **비용 물음의 답**: 진단 하나에 **외부로 나가는 돈 0원**(규칙 기반 + PageSpeed·CrUX·GSC 무료).
-  LLM·SerpAPI 는 진단 경로에 없다(`observations/` 쪽만). 실제로 드는 것은 남의 서버 부하
-  (약 205요청) · 우리 서버 시간(약 180초) · DB(101 kB/실행). 30분은 **돈이 아니라**
-  남의 서버 속도와 「잘린 진단」을 막는 장치다. 보고서:
-  `docs/2026-09-08-SEO-GEO-진단-비용과-30분.md`(이 저장소).
-- **저장소·가지**: 코드는 `recon9973-lang/veo-platform`(이 저장소 아님) ·
-  가지 `claude/seo-geo-diagnosis-cost-time-c2bjxc`.
+**끝났다.** 사장님 첫 물음 «왜 항상 진단이 오전 9시 오전 12시 2번 진행이 되는지» 에서
+시작해 **넷을 냈다.** 전부 main 에 있다.
+
+```
+v0.3.544  고침 넷 — 하루 두 번 돌던 정기 진단 · 실행자 「자동」 ·
+                    GEO 탭에서도 「자동」 · 서버 여러 대에서 청소 안 끊김
+v0.3.546  대장 도장 — 이미 나간 넷이 대기 목록에 남아 있던 것
+v0.3.551  판 번호를 나갈 때 정한다        (구조 제안 1번)
+v0.3.554  채점 자리를 방마다 나눈다        (구조 제안 2번)
+          + 로그 한 줄이 진단을 죽이지 못하게
+```
+
+- **v0.3.544 는 실서비스 확인 끝** — [실측 2026-09-08 17:28 KST] 서버·워커 둘 다 `0.3.544` ·
+  뒤처진 0. **0.3.540 이 반만 나가 있던 것(워커 ✗)도 이때 풀렸다.** v0.3.546 은 캡처의
+  웹 `0.3.549` 로 확인됐다.
+- **v0.3.551(1번)** — 배포가 채점 자리에 올리기 **직전**에 `main 판 + 1` 로 스스로 물리고,
+  사람이 쓴 글 셋까지 `scripts/claim_version.py` 가 옮긴다. 오늘 이후 **판 번호에 손댄 적이
+  없다** — 물릴 것 없을 때와 물릴 때를 실전에서 다 봤다.
+  **왜 「채점보다 앞」인가**: 뒤에 두면 CI 가 채점한 커밋과 나가는 커밋이 달라진다(오류 135).
+- **v0.3.554(2번)** — 자리가 `deploy-candidate-<가지 이름>`. **`/` 가 아니라 `-` 다**: git 은
+  같은 이름을 가지이면서 폴더로 못 쓰므로 옛 이름을 남겨 두면 `/` 를 못 쓴다(실제로 거절받고
+  알았다). 지금 원격에 **두 자리가 나란히 서 있다** — 옛 이름(다른 방)과 이 방 자리.
+- **이 방은 실서비스로 못 나간다**(프록시가 CONNECT 에서 403). `make deploy` 의 [5/5] 가 늘
+  오류 22 로 끝난다 — **배포 실패가 아니라 확인을 못 한 것**이다.
+- **오늘 배운 것**: 판 충돌 열두 번 · 남의 채점 자리를 한 번 덮음 · **내가 네 번 틀림**
+  (파일 관례 · 남의 관문과 이름 부딪힘 · **git 이 못 받는 이름 설계** · 문서 줄 길이).
+  상세는 세션 로그 §2-6·§2-7·§3-2·§3-4·§3-5.
+  **PostgreSQL 이 다섯 번 죽었다** — `service postgresql start` 로 되살린다.
 
 ## 바로 이어갈 작업
 
-1. **끝났다 — 0.3.553 은 나갔고 돈다.** [실측 2026-09-09 03:09 KST · 러너 실행 34261310214]
-   서버 `0.3.553` · 워커 `0.3.553` 1대 · **뒤처진 0**. 대기 표는 비었다(veo-platform `84e519f`).
-   **다음 판을 낼 때 그대로 쓸 절차**(이 방은 운영 주소로 못 나간다):
+1. **v0.3.554 실측**(가벼움) — 이 방은 못 잰다.
    ```
-   mcp__github__actions_run_trigger  method=run_workflow
-     owner=recon9973-lang repo=veo-platform
-     workflow_id=rollout-check.yml ref=main
-   → gh run list --workflow rollout-check.yml --limit 1        (실행 번호)
-   → gh api repos/.../actions/runs/<run>/jobs --jq '.jobs[0].id'
-   → mcp__github__get_job_logs (return_content=true)
+   https://veo-platform-production.up.railway.app/api/health   → 0.3.554 인가
    ```
-   **`gh workflow run` 은 403**(이 방 열쇠에 `actions:write` 없음) · 러너 로그 내려받기도 403 이라
-   `gh run view --log` 대신 **MCP `get_job_logs`**. 그리고 **배포 직후 2분에는 옛 판이 잡힌다** —
-   6분쯤 두고 다시 재라.
-2. **미배포 커밋 하나** — 워크플로 주석에 「방에서는 MCP 로 부른다(gh 는 403)」를 적은
-   문서 커밋이 가지에 있다. 판을 안 올렸으니 다음 판에 같이 나간다.
-3. (선택) **워크플로를 더 낫게** — 지금은 한 번 재고 끝이라 배포 직후엔 옛 판이 잡힌다.
-   `deploy.sh` [5/5] 처럼 **바라는 판이 나올 때까지 러너가 기다리게** 하면 배포마다
-   도장이 자동으로 찍힌다(`on: push: branches: [main]` + 폴링). 별도 판 몫.
+   확인되면 대장 §2 머리말·대기 표에서 **0.3.554 줄만** 지운다(다른 방 줄은 그대로).
+   v0.3.551 도 아직 못 쟀는데, 0.3.554 가 확인되면 함께 풀린다.
+2. **남은 구조 제안 하나** — 세션 로그 **§3-3**. 1번·2번은 냈고, 남은 것은
+   **지금 누가 도는지 한 곳에 적기**. 그리고 오늘 새로 드러난 것 하나:
+   **PR 로 main 에 바로 들어가는 길**이 열려 있어 채점 자리를 안 거친 코드가 main 을
+   깨뜨렸다(§3-5 덤). 그것도 같이 올릴 거리다.
+3. **키워드 추이 기간** — **다른 방이 v0.3.552 로 가져갔다**(판 26). 이 방 몫이 아니다.
 
 ## 대기/차단
 
-- **CI 예산** — preflight ⑤ 가 「오늘 CI 11건 · 상한 2회를 다 썼다」고 알렸다(2026-09-08).
-  더 밀려면 사장님 판단. 오늘 한 번은 오더 둘을 근거로 넘겨서 진행했고 보고에 명시했다.
-- **이 방은 운영 주소로 못 나간다**(egress 403). 실측은 **러너로** 한다(위 1번).
-- **방 공조** — 클라우드 방끼리 직접 말을 못 한다(사장님이 전달자). 판 번호는 **main 에
-  먼저 닿는 쪽**이 갖는다. 이제 배포가 나가기 직전 스스로 정한다(`claim_version.py`).
+- **`make deploy` 권한** — `.claude/settings.json` 에 아래를 넣고 **방을 새로 시작**해야 듣는다.
+  에이전트가 제 권한을 넓히는 건 관문이 막으므로 **사장님이 직접** 넣으셔야 한다.
+  ```json
+  "permissions": { "allow": [
+    "Bash(make deploy)", "Bash(make deploy:*)",
+    "Bash(make preflight)", "Bash(make preflight:*)",
+    "Bash(export VEO_DEPLOY_ORDER=*)"
+  ] },
+  ```
+- **방 공조** — 클라우드 방끼리 직접 호출이 안 된다(`ListAgents` 에 안 잡히고 세션 ID 로도 거절).
+  사장님이 전달자. **앞질러 잡는 것은 안 통한다는 것이 오늘 두 번 확인됐다**(0.3.540 을
+  ANSEO 방이 먼저 가져갔다) — 번호는 main 에 먼저 닿는 쪽이 갖는다. 알릴 것은
+  「이 방이 0.3.541 로 대기 중」 하나이고, 물러나는 값은 싸다(판 물림 + 문서 넷).
 
 ## 주의·제약
 
-- 가지 `claude/seo-geo-diagnosis-cost-time-c2bjxc` 외로 푸시 금지. 체크포인트 문서도 이 가지에.
-- 배포는 **`make deploy` 만**. `VEO_DEPLOY_ORDER` 에 사장님 원문 인용
-  («고쳐줘»·«진행해» 는 배포 오더가 아니다).
-- `deploy-candidate` 는 덮어쓰는 채점 자리(`--force` 정상). **main 은 절대 force 금지** —
-  거절되면 리베이스한다(이번에 한 번 겪었다).
-- 대장·변경이력에 「민다·푸시」 금지 — 사장님께는 **「커밋」·「배포」** 두 낱말만.
-- 못 잰 값은 «—», 0 으로 적지 않는다. 지어낸 수치 금지. 의료광고법 준수.
+- 이 가지 외로 푸시 금지. 체크포인트 문서는 desktop-tutorial main 에 커밋(CLAUDE.md 규칙).
+- 배포는 **`make deploy` 만**. 오더 없이 밀지 않는다. `VEO_DEPLOY_ORDER` 에 사장님 원문 인용.
+- `deploy-candidate` 는 덮어쓰는 채점 자리라 **`--force` 가 정상**. main 은 절대 force 금지.
+- 대장·변경이력에 **「민다·푸시」 금지**(`two-words-only` 관문) — 「커밋」·「배포」 두 낱말만.
+- 대기 표와 §2 머리말의 **미배포 범위가 일치**해야 한다(`worklist.test.ts`). 오늘 여기서 한 번 걸렸다.
 - 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
-  `Claude-Session: https://claude.ai/code/session_01KRx7YSnr5qHXgSYS4LcAHa`. 모델 ID 는 트레일러에만.
+  `Claude-Session: https://claude.ai/code/session_01SmorTxHEe4BY34eFSpBBnX`. 모델 ID 는 트레일러에만.
+- 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
 
 ## 참고
 
-- veo-platform 환경: `PYTHON=/usr/bin/python3.12 make setup` · `pnpm install` ·
-  로컬 PostgreSQL(`service postgresql start`, role `root`/비번 `veo`, DB `veo_test`).
-- preflight/배포 실행:
-  `PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" \
-   VEO_DEPLOY_ORDER="<사장님 원문>" VEO_ROLLOUT_TIMEOUT_SECONDS=60 make deploy`
-  ([5/5] 는 어차피 이 방에서 막히니 60초로 줄이고, 대신 러너로 잰다.)
+- veo-platform 환경 세우기: `PYTHON=/usr/bin/python3.12 make setup` · `pnpm install` ·
+  로컬 PostgreSQL(`service postgresql start`, role `root`/비번 `veo`, DB `veo_test`, `alembic upgrade head`) ·
+  `gh` 는 릴리스 tarball 로 설치(`/usr/local/bin/gh`).
+- preflight 실행: `PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" make preflight`
