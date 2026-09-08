@@ -27,20 +27,20 @@
 
 ## 바로 이어갈 작업
 
-1. **0.3.553 실측 도장 마무리** — 배포 직후(03:03 KST)엔 서버·워커가 아직 `0.3.552`
-   였다(Railway 가 굽는 중 · 정상). **0.3.553 으로 바뀌었는지 다시 재라.**
+1. **끝났다 — 0.3.553 은 나갔고 돈다.** [실측 2026-09-09 03:09 KST · 러너 실행 34261310214]
+   서버 `0.3.553` · 워커 `0.3.553` 1대 · **뒤처진 0**. 대기 표는 비었다(veo-platform `84e519f`).
+   **다음 판을 낼 때 그대로 쓸 절차**(이 방은 운영 주소로 못 나간다):
    ```
    mcp__github__actions_run_trigger  method=run_workflow
      owner=recon9973-lang repo=veo-platform
      workflow_id=rollout-check.yml ref=main
-   → gh run list --workflow rollout-check.yml --limit 1   (실행 번호)
+   → gh run list --workflow rollout-check.yml --limit 1        (실행 번호)
    → gh api repos/.../actions/runs/<run>/jobs --jq '.jobs[0].id'
-   → mcp__github__get_job_logs  (return_content=true)
+   → mcp__github__get_job_logs (return_content=true)
    ```
-   **`gh workflow run` 은 403** 이다(이 방 열쇠에 `actions:write` 없음). **MCP 로 부른다.**
-   러너 로그 다운로드도 403 이라 `gh run view --log` 대신 **MCP `get_job_logs`** 를 쓴다.
-   잰 값이 0.3.553 이면 대장 §2 머리말·대기 표에서 **0.3.553 줄을 빼고** 이력 제목에 도장.
-   안 바뀌어 있으면 그것이 **Railway 굽기 실패 신호**다 — 사장님께 그대로 보고.
+   **`gh workflow run` 은 403**(이 방 열쇠에 `actions:write` 없음) · 러너 로그 내려받기도 403 이라
+   `gh run view --log` 대신 **MCP `get_job_logs`**. 그리고 **배포 직후 2분에는 옛 판이 잡힌다** —
+   6분쯤 두고 다시 재라.
 2. **미배포 커밋 하나** — 워크플로 주석에 「방에서는 MCP 로 부른다(gh 는 403)」를 적은
    문서 커밋이 가지에 있다. 판을 안 올렸으니 다음 판에 같이 나간다.
 3. (선택) **워크플로를 더 낫게** — 지금은 한 번 재고 끝이라 배포 직후엔 옛 판이 잡힌다.
