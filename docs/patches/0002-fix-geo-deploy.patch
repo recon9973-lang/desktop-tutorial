@@ -1,7 +1,7 @@
 From 58a8e5d1f6c004ed4e3b4a2f7c87f39c2111551c Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Wed, 9 Sep 2026 06:04:24 +0000
-Subject: [PATCH 2/2] =?UTF-8?q?fix(geo,deploy):=20=EA=B8=B0=EA=B0=84=20?=
+Subject: [PATCH 2/3] =?UTF-8?q?fix(geo,deploy):=20=EA=B8=B0=EA=B0=84=20?=
  =?UTF-8?q?=ED=83=AD=EC=9D=B4=20=EC=B1=84=EB=84=90=20=EC=B9=B4=EB=93=9C?=
  =?UTF-8?q?=EB=8F=84=20=EB=8D=B0=EB=A0=A4=EA=B0=84=EB=8B=A4=20=C2=B7=20?=
  =?UTF-8?q?=ED=8C=90=20=EB=AC=BC=EB=A6=BC=EC=9D=B4=20=EB=82=A8=EC=9D=98=20?=
