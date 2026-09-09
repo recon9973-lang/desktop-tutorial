@@ -3,17 +3,17 @@
 > 🤖 자동 생성 파일. 직접 수정 금지 — `node scripts/gen-project-state.mjs`(또는 CI)가 push마다 갱신.
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
-- **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
+- **저장소**: desktop-tutorial  ·  **현재 브랜치**: claude/aeo-grand-beautiful-clinic-diagnosis-1tnsbt  ·  **기본 브랜치**: claude/aeo-grand-beautiful-clinic-diagnosis-1tnsbt
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-09 docs(handoff): veo-platform 배포를 ANSEO 방에 이관한다
+- 2026-09-09 chore(patches): veo-platform 고침 셋째 판을 더한다 — 몇 곳에 물었나 · 임대형 홈페이지
+- 2026-09-09 chore(patches): veo-platform 고침 둘째 판을 더한다 — 기간 탭·판 물림
+- 2026-09-09 chore(patches): veo-platform GEO 채널표 고침을 패치로 남긴다
+- 2026-09-09 docs(aeo): 그랜드아름다운의원 AEO 진단 조사 — 미분류 85%·엔진 1/7·자사 0.96%
+- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-08 docs(s19): 구조 제안 셋을 다 냈다 (v0.3.555) · 인계 마감
-- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-09 docs(s20): 진단 비용 보고서 · s20 세션 기록 (#234)
-- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-08 docs(s19): 구조 제안 2번까지 냈다 (v0.3.554) · 내가 네 번 틀린 기록
-- 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-08 docs(s19): 제안 1번을 만들어 냈다 — 판 번호를 나갈 때 정한다 (v0.3.551)
 - 2026-09-08 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (20)
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 e608cd3 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 76610c3 기준. 값·비밀은 포함하지 않음.*
