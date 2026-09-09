@@ -7,9 +7,12 @@
 
 ```bash
 git -C <veo-platform 클론> checkout -b <가지 이름>
-git -C <veo-platform 클론> am < docs/patches/<파일>.patch
+git -C <veo-platform 클론> am docs/patches/000*.patch
 ```
 
 | 패치 | 대상 | 무엇 |
 | --- | --- | --- |
-| `2026-09-09-veo-platform-geo-채널표-고침.patch` | `recon9973-lang/veo-platform` | 「어느 AI 가 어느 채널을 보나」 — 미분류를 맨 뒤로 · 미분류 몫이 경쟁사 등록에 안 사라지게 · 분모를 교차표 제 셈으로 (관문 5건) |
+| `0001-fix-geo.patch` | `recon9973-lang/veo-platform` | 「어느 AI 가 어느 채널을 보나」 — 미분류를 맨 뒤로 · 미분류 몫이 경쟁사 등록에 안 사라지게 · 분모를 교차표 제 셈으로 (관문 5건) |
+| `0002-fix-geo-deploy.patch` | `recon9973-lang/veo-platform` | 기간 탭이 채널 카드도 데려간다 · `claim_version.py` 가 대장 머리말에서 남의 판 번호·지난 기록을 안 건드린다 (관문 2건) |
+
+**순서대로 적용한다.** 가지 하나에 두 판을 이어 얹은 것이다.
