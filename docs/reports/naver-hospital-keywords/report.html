@@ -160,6 +160,30 @@ td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
 .dbl-tag{position:absolute;top:-4px;font-family:"IBM Plex Mono",monospace;font-size:11px;
   color:var(--ink-2);transform:translateX(-50%);white-space:nowrap}
 
+/* trend explorer */
+.ctrl{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;margin-bottom:20px;
+  padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.ctrl-grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ctrl-lab{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.ctrl button{font-family:inherit;font-size:13.5px;font-weight:500;padding:4px 11px;
+  border-radius:2px;border:1px solid var(--rule-strong);background:var(--surface);
+  color:var(--ink-2);cursor:pointer;line-height:1.5}
+.ctrl button:hover{border-color:var(--accent);color:var(--ink)}
+.ctrl button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);
+  color:var(--ground);font-weight:600}
+.ctrl button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#trend-chart svg{display:block;width:100%;height:auto;min-width:660px}
+#trend-chart{overflow-x:auto}
+.series-legend{display:flex;flex-wrap:wrap;gap:7px 20px;margin-top:15px;padding-top:14px;
+  border-top:1px solid var(--rule);font-size:13.5px}
+.series-legend span{display:flex;align-items:center;gap:7px;color:var(--ink-2)}
+.series-legend b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-weight:500;color:var(--ink)}
+.tip-row{display:flex;justify-content:space-between;gap:14px}
+.tip-row i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.tip-h{border-bottom:1px solid rgba(128,128,128,.45);margin-bottom:5px;padding-bottom:4px}
+
 /* tooltip */
 #tip{position:fixed;z-index:99;pointer-events:none;background:var(--ink);color:var(--ground);
   padding:7px 10px;border-radius:3px;font-size:12.5px;line-height:1.5;
@@ -244,6 +268,40 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
 
 <section>
   <div class="col">
+    <div class="eyebrow">키워드 단위 추이</div>
+    <h2>36개월 월별 궤적</h2>
+    <p class="lede">앞의 그림 1이 진료과 합계였다면, 여기서는 <b>키워드 하나하나</b>의 월별 지수를 그린다.
+      「진료과 기준」은 한 진료과를 7개 도시가 어떻게 나눠 갖는지, 「지역 기준」은 한 도시 안에서
+      7개 진료과가 어떻게 움직이는지 보여준다. 선 위에 마우스를 올리면 그 달의 7개 값이 한 번에 나온다.</p>
+  </div>
+  <figure>
+    <div class="panel">
+      <div class="ctrl" id="trend-ctrl">
+        <div class="ctrl-grp"><span class="ctrl-lab">기준</span><span id="tc-mode"></span></div>
+        <div class="ctrl-grp"><span class="ctrl-lab" id="tc-pick-lab">진료과</span><span id="tc-pick"></span></div>
+        <div class="ctrl-grp"><span class="ctrl-lab">세로 눈금</span><span id="tc-scale"></span></div>
+      </div>
+      <div id="trend-chart"></div>
+      <div id="trend-legend" class="series-legend"></div>
+    </div>
+    <figcaption><span class="fig-title">그림 2 · 키워드별 36개월 월별 지수</span>
+      가로축은 2023년 9월부터 2026년 8월까지 36개월, 세로축은 상대지수(서울피부과 36개월 평균 = 100).
+      점선 두 개는 연차 경계(Y2·Y3 시작)다. 세로 눈금을 <b>「전체 고정」</b>으로 두면 어떤 선택에서도
+      같은 자로 재므로 키워드 간 절대 크기를 비교할 수 있고, <b>「선택 기준」</b>은 작은 키워드의
+      모양을 보기 위해 눈금을 늘린다.</figcaption>
+  </figure>
+  <div class="col">
+    <p>진료과 기준 <b>피부과</b>를 보면 대전이 2025년 초부터 다른 도시와 완전히 갈라져 위로 올라가고,
+      서울은 유일하게 아래로 내려간다. <b>내과</b>를 보면 7개 선이 모두 같은 방향으로 눌리는 게 보이는데,
+      이것이 「구조적 축소」라고 부른 근거다. 지역 기준 <b>서울</b>에서는 안과·정형외과 두 선만
+      압도적으로 높고 나머지 다섯이 바닥에 깔린 편중 구조가 한눈에 드러난다.</p>
+    <div class="note">선이 한 달만 뾰족하게 솟은 구간은 대체로 특정 병원의 이벤트·보도·커뮤니티 유입이다.
+      추세로 읽지 말고 <a href="#reliability">그림 8의 변동성 표</a>와 함께 확인해야 한다.</div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
     <div class="eyebrow">지역 × 진료과</div>
     <h2>49칸 수요지도</h2>
     <p class="lede">왼쪽은 규모(3년 평균 지수), 오른쪽은 3년 변화율. 같은 칸을 두 장으로 겹쳐 보면
@@ -251,12 +309,12 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel scroll"><div id="hm-avg"></div></div>
-    <figcaption><span class="fig-title">그림 2 · 수요 규모 (3년 평균 지수, 서울피부과=100)</span>
+    <figcaption><span class="fig-title">그림 3 · 수요 규모 (3년 평균 지수, 서울피부과=100)</span>
       진한 칸일수록 검색 수요가 크다. 최대는 대전피부과(233.8), 최소는 인천내과(11.6)로 20배 격차.</figcaption>
   </figure>
   <figure>
     <div class="panel scroll"><div id="hm-g31"></div></div>
-    <figcaption><span class="fig-title">그림 3 · 3년 변화율 (1년차 → 3년차, %)</span>
+    <figcaption><span class="fig-title">그림 4 · 3년 변화율 (1년차 → 3년차, %)</span>
       파랑은 성장, 빨강은 감소. 가로줄이 통째로 빨간 <b>내과</b>가 유일하게 7개 도시 전부 마이너스다.</figcaption>
   </figure>
   <div class="col">
@@ -274,7 +332,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel"><div id="region-bars"></div></div>
-    <figcaption><span class="fig-title">그림 4 · 도시별 7개 진료과 합산 지수와 3년 변화율</span>
+    <figcaption><span class="fig-title">그림 5 · 도시별 7개 진료과 합산 지수와 3년 변화율</span>
       막대는 3년 평균 규모, 오른쪽 배지는 1년차 대비 3년차 변화율.</figcaption>
   </figure>
   <div class="col">
@@ -296,7 +354,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel"><div id="dumbbell"></div></div>
-    <figcaption><span class="fig-title">그림 5 · 광역시명 키워드 vs 상권명 키워드 (3년 평균 지수)</span>
+    <figcaption><span class="fig-title">그림 6 · 광역시명 키워드 vs 상권명 키워드 (3년 평균 지수)</span>
       각 줄의 왼쪽 점이 광역시명, 오른쪽 점이 같은 도시의 대표 상권명. 점 사이 거리가 놓치고 있는 수요다.</figcaption>
   </figure>
   <div class="col">
@@ -319,7 +377,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel scroll"><div id="hm-season"></div></div>
-    <figcaption><span class="fig-title">그림 6 · 진료과 × 월 계절지수 (연평균 = 100)</span>
+    <figcaption><span class="fig-title">그림 7 · 진료과 × 월 계절지수 (연평균 = 100)</span>
       7대 도시 평균. 파랑이 성수기, 빨강이 비수기.</figcaption>
   </figure>
   <div class="col">
@@ -332,7 +390,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
 </section>
 
-<section>
+<section id="reliability">
   <div class="col">
     <div class="eyebrow">데이터 신뢰도</div>
     <h2>이 표에서 믿으면 안 되는 칸</h2>
@@ -341,7 +399,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel scroll"><table id="tbl-volatile"></table></div>
-    <figcaption><span class="fig-title">그림 7 · 변동성 상위 키워드</span>
+    <figcaption><span class="fig-title">그림 8 · 변동성 상위 키워드</span>
       스파이크 = 36개월 최댓값 ÷ 중앙값. 5배는 어느 한 달이 평소의 5배였다는 뜻이다.</figcaption>
   </figure>
   <div class="col">
@@ -416,7 +474,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
     <summary>4. 한계</summary>
     <p>① 절대 검색량이 아니다. ② PC+모바일 합산, 성별·연령 전체 값이라 세그먼트별 차이를 볼 수 없다.
       ③ 「광주」처럼 동명 지역이 있는 키워드는 검색량이 섞인다. ④ 지역명 키워드는 표본이 작아
-      단발 이슈에 크게 흔들린다(그림 7). ⑤ 데이터랩은 일정 기준 미만의 검색량을 0으로 처리하므로
+      단발 이슈에 크게 흔들린다(그림 8). ⑤ 데이터랩은 일정 기준 미만의 검색량을 0으로 처리하므로
       아주 작은 키워드는 과소 집계될 수 있다. ⑥ 이 보고서는 검색 <b>수요</b>만 다루며,
       경쟁 강도·입찰가·전환율은 포함하지 않는다.</p>
   </details>
@@ -5163,6 +5221,127 @@ DEPTS.map(d => ({ d, avg: deptStat[d].avg })).sort((a,b) => b.avg - a.avg).forEa
   svg.addEventListener('mouseleave', hideTip);
   smBox.appendChild(el);
 });
+
+/* ---- 2. keyword trend explorer ---- */
+const TQ = {
+  mode: 'dept',          // 'dept' = one department across 7 cities | 'region' = one city across 7 departments
+  dept: '피부과', region: '서울',
+  scale: 'sel',          // 'sel' = fit selection | 'all' = fixed across every keyword
+};
+const CORE = DEPTS.flatMap(d => METROS.map(r => K[r + d])).filter(Boolean);
+const GLOBAL_MAX = Math.max(...CORE.flatMap(c => c.series));
+
+function trendPick() {
+  return TQ.mode === 'dept'
+    ? METROS.map((r, i) => ({ name: r + TQ.dept, short: r, v: K[r + TQ.dept].series, c: `var(${SERIES[i]})` }))
+    : DEPTS.map((d, i) => ({ name: TQ.region + d, short: d, v: K[TQ.region + d].series, c: `var(${SERIES[i]})` }));
+}
+// 1 / 2 / 2.5 / 5 / 10 × 10^k — so the top tick always lands on a round number
+const niceStep = x => { const e = Math.pow(10, Math.floor(Math.log10(x))), f = x / e;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * e; };
+const mLabel = s => { const [y, m] = s.split('-'); return `’${y.slice(2)}.${+m}`; };
+
+function drawTrend() {
+  const host = document.getElementById('trend-chart');
+  const rows = trendPick();
+  const raw = TQ.scale === 'all' ? GLOBAL_MAX : Math.max(...rows.flatMap(r => r.v));
+  const step = niceStep(raw / 4);
+  const yMax = Math.ceil(raw * 1.01 / step) * step;
+  const W = 1120, H = 430, ML = 52, MR = 112, MT = 18, MB = 40;
+  const px = i => ML + (i / 35) * (W - ML - MR);
+  const py = v => MT + (1 - v / yMax) * (H - MT - MB);
+  const ticks = []; for (let t = 0; t <= yMax + 1e-9; t += step) ticks.push(+t.toFixed(2));
+
+  const grid = ticks.map(t => `<line x1="${ML}" y1="${py(t).toFixed(1)}" x2="${W - MR}" y2="${py(t).toFixed(1)}"
+      style="stroke:var(--rule)" stroke-width="1"/>
+    <text x="${ML - 10}" y="${(py(t) + 4).toFixed(1)}" text-anchor="end"
+      style="fill:var(--ink-3);font-size:11px;font-family:'IBM Plex Mono',monospace">${t}</text>`).join('');
+
+  const xt = [];
+  for (let i = 0; i < 36; i += 3)
+    xt.push(`<text x="${px(i).toFixed(1)}" y="${H - MB + 20}" text-anchor="middle"
+      style="fill:var(--ink-3);font-size:10.5px;font-family:'IBM Plex Mono',monospace">${mLabel(MONTHS[i])}</text>`);
+  const bounds = [12, 24].map(i => `<line x1="${px(i).toFixed(1)}" y1="${MT}" x2="${px(i).toFixed(1)}" y2="${H - MB}"
+      style="stroke:var(--rule-strong)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="${px(i) + 6}" y="${MT + 11}" style="fill:var(--ink-3);font-size:10px;
+      font-family:'IBM Plex Mono',monospace">${i === 12 ? 'Y2' : 'Y3'}</text>`).join('');
+
+  const paths = rows.map(r => `<path d="${r.v.map((val, i) =>
+      `${i ? 'L' : 'M'}${px(i).toFixed(1)},${py(val).toFixed(1)}`).join('')}"
+      fill="none" style="stroke:${r.c}" stroke-width="2" stroke-linejoin="round"
+      stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('');
+
+  // direct end labels, pushed apart so they never overlap
+  const ends = rows.map(r => ({ ...r, y: py(r.v[35]), last: r.v[35] })).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++)
+    if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+  const overflow = ends[ends.length - 1].y - (H - MB);
+  if (overflow > 0) ends.forEach(e => { e.y -= overflow; });
+  const endLabels = ends.map(e => `<line x1="${W - MR}" y1="${py(e.last).toFixed(1)}"
+      x2="${W - MR + 9}" y2="${e.y.toFixed(1)}" style="stroke:${e.c}" stroke-width="1" opacity=".55"/>
+    <circle cx="${W - MR}" cy="${py(e.last).toFixed(1)}" r="3.2" style="fill:${e.c};stroke:var(--surface)" stroke-width="2"/>
+    <text x="${W - MR + 13}" y="${(e.y + 4).toFixed(1)}" style="fill:var(--ink-2);font-size:11.5px;
+      font-family:'IBM Plex Sans KR',sans-serif">${e.short}
+      <tspan style="fill:var(--ink-3);font-family:'IBM Plex Mono',monospace">${f1(e.last)}</tspan></text>`).join('');
+
+  const cross = `<g id="tq-cross" style="display:none">
+      <line id="tq-line" y1="${MT}" y2="${H - MB}" style="stroke:var(--ink-3)" stroke-width="1"/>
+      ${rows.map((r, i) => `<circle class="tq-dot" data-i="${i}" r="4"
+        style="fill:${r.c};stroke:var(--surface)" stroke-width="2"/>`).join('')}
+    </g>`;
+
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img"
+      aria-label="${TQ.mode === 'dept' ? TQ.dept + ' 7개 도시' : TQ.region + ' 7개 진료과'} 36개월 월별 지수 추이">
+      ${grid}${bounds}${paths}${endLabels}${xt}${cross}
+      <rect id="tq-hit" x="${ML}" y="${MT}" width="${W - ML - MR}" height="${H - MT - MB}" fill="transparent"/>
+    </svg>`;
+
+  document.getElementById('trend-legend').innerHTML = rows.map(r =>
+    `<span><i class="swatch" style="background:${r.c}"></i>${r.name} <b>${f1(mean(r.v))}</b></span>`).join('');
+
+  const svg = host.querySelector('svg');
+  const g = svg.querySelector('#tq-cross'), ln = svg.querySelector('#tq-line');
+  const dots = [...svg.querySelectorAll('.tq-dot')];
+  svg.querySelector('#tq-hit').addEventListener('mousemove', e => {
+    const b = svg.getBoundingClientRect();
+    const xr = (e.clientX - b.left) / b.width * W;
+    const i = Math.max(0, Math.min(35, Math.round((xr - ML) / (W - ML - MR) * 35)));
+    g.style.display = '';
+    ln.setAttribute('x1', px(i)); ln.setAttribute('x2', px(i));
+    dots.forEach((d, k) => { d.setAttribute('cx', px(i)); d.setAttribute('cy', py(rows[k].v[i])); });
+    const list = rows.map(r => ({ n: r.short, val: r.v[i], c: r.c })).sort((a, b) => b.val - a.val);
+    showTip(e, `<div class="tip-h">${MONTHS[i]}</div>` + list.map(r =>
+      `<div class="tip-row"><span><i style="background:${r.c}"></i>${r.n}</span><span>${f1(r.val)}</span></div>`).join(''));
+  });
+  svg.querySelector('#tq-hit').addEventListener('mouseleave', () => { g.style.display = 'none'; hideTip(); });
+}
+const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+
+function chipRow(host, items, isOn, onPick) {
+  host.innerHTML = '';
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = it.label;
+    b.setAttribute('aria-pressed', String(isOn(it.value)));
+    b.addEventListener('click', () => { onPick(it.value); renderTrendUI(); });
+    host.appendChild(b);
+  });
+}
+function renderTrendUI() {
+  chipRow(document.getElementById('tc-mode'),
+    [{ label: '진료과', value: 'dept' }, { label: '지역', value: 'region' }],
+    v => TQ.mode === v, v => { TQ.mode = v; });
+  document.getElementById('tc-pick-lab').textContent = TQ.mode === 'dept' ? '진료과 선택' : '지역 선택';
+  chipRow(document.getElementById('tc-pick'),
+    (TQ.mode === 'dept' ? DEPTS : METROS).map(x => ({ label: x, value: x })),
+    v => (TQ.mode === 'dept' ? TQ.dept : TQ.region) === v,
+    v => { if (TQ.mode === 'dept') TQ.dept = v; else TQ.region = v; });
+  chipRow(document.getElementById('tc-scale'),
+    [{ label: '선택 기준', value: 'sel' }, { label: '전체 고정', value: 'all' }],
+    v => TQ.scale === v, v => { TQ.scale = v; });
+  drawTrend();
+}
+renderTrendUI();
 
 /* ---- heatmap builder ---- */
 function heatmap(host, { rows, cols, get, fmt, scale, label }) {
