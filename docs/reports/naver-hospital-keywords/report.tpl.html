@@ -1,0 +1,667 @@
+<title>지역 진료과 키워드 수요지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --ground:#f7f8f6; --surface:#ffffff; --surface-2:#eef1ed; --sunken:#e9ede9;
+  --ink:#151a18; --ink-2:#414a47; --ink-3:#6d7a75;
+  --rule:#dfe4df; --rule-strong:#c3ccc6;
+  --accent:#0f5f52; --accent-soft:#e0efe9;
+  --pos:#184f95; --neg:#a8332f;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7;
+  --seq-0:#eef4fc; --seq-1:#cde2fb; --seq-2:#9ec5f4; --seq-3:#6da7ec; --seq-4:#3987e5; --seq-5:#256abf; --seq-6:#184f95;
+  --div-n3:#a8332f; --div-n2:#d3706c; --div-n1:#eec3c1; --div-0:#f0efec; --div-p1:#c6dcf6; --div-p2:#6da7ec; --div-p3:#256abf;
+  --shadow:0 1px 2px rgba(20,30,26,.05),0 8px 24px -16px rgba(20,30,26,.25);
+}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){
+  color-scheme:dark;
+  --ground:#121513; --surface:#1a1e1c; --surface-2:#232825; --sunken:#171b19;
+  --ink:#eef2ef; --ink-2:#b9c2be; --ink-3:#8b958f;
+  --rule:#2c322e; --rule-strong:#3d443f;
+  --accent:#5cc0a8; --accent-soft:#17332c;
+  --pos:#6da7ec; --neg:#e88b87;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9;
+  --seq-0:#182028; --seq-1:#0d366b; --seq-2:#104281; --seq-3:#184f95; --seq-4:#256abf; --seq-5:#3987e5; --seq-6:#6da7ec;
+  --div-n3:#e88b87; --div-n2:#b9524e; --div-n1:#5c3230; --div-0:#383835; --div-p1:#2c4a70; --div-p2:#2a78d6; --div-p3:#6da7ec;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -16px rgba(0,0,0,.7);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#121513; --surface:#1a1e1c; --surface-2:#232825; --sunken:#171b19;
+  --ink:#eef2ef; --ink-2:#b9c2be; --ink-3:#8b958f;
+  --rule:#2c322e; --rule-strong:#3d443f;
+  --accent:#5cc0a8; --accent-soft:#17332c;
+  --pos:#6da7ec; --neg:#e88b87;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9;
+  --seq-0:#182028; --seq-1:#0d366b; --seq-2:#104281; --seq-3:#184f95; --seq-4:#256abf; --seq-5:#3987e5; --seq-6:#6da7ec;
+  --div-n3:#e88b87; --div-n2:#b9524e; --div-n1:#5c3230; --div-0:#383835; --div-p1:#2c4a70; --div-p2:#2a78d6; --div-p3:#6da7ec;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:16px;line-height:1.72;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px 96px}
+.col{max-width:720px}
+h1,h2,h3{font-family:"Gowun Batang",Batang,serif;font-weight:700;text-wrap:balance;line-height:1.3;margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;font-weight:500}
+
+/* header */
+header{padding:64px 0 40px;border-bottom:1px solid var(--rule)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);font-weight:500}
+h1{font-size:clamp(34px,5.2vw,54px);margin:14px 0 0;letter-spacing:-.01em}
+.standfirst{max-width:640px;margin:20px 0 0;font-size:17.5px;color:var(--ink-2)}
+.meta{display:flex;flex-wrap:wrap;gap:0;margin-top:32px;border:1px solid var(--rule);
+  border-radius:3px;background:var(--surface);overflow:hidden}
+.meta div{flex:1 1 190px;padding:14px 18px;border-right:1px solid var(--rule)}
+.meta div:last-child{border-right:0}
+.meta dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);margin:0}
+.meta dd{margin:5px 0 0;font-size:14px;font-weight:500;line-height:1.5}
+
+/* sections */
+section{padding-top:60px}
+h2{font-size:clamp(24px,3vw,32px);margin-top:10px}
+h3{font-size:19px;margin:38px 0 10px}
+p{margin:16px 0}
+.lede{font-size:17px;color:var(--ink-2)}
+a{color:var(--accent)}
+
+/* callouts */
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);
+  padding:18px 22px;border-radius:0 3px 3px 0;margin:24px 0;font-size:15px}
+.note strong{font-weight:600}
+.warn{border-left:3px solid var(--s2);background:color-mix(in srgb,var(--s2) 9%,var(--surface));
+  padding:18px 22px;border-radius:0 3px 3px 0;margin:24px 0;font-size:15px}
+
+/* findings */
+.finds{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.finds li{background:var(--surface);padding:20px 22px;display:grid;
+  grid-template-columns:112px 1fr;gap:20px;align-items:baseline}
+.finds b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:23px;font-weight:500;color:var(--accent);letter-spacing:-.02em}
+.finds span{font-size:15px;color:var(--ink-2)}
+.finds span em{font-style:normal;color:var(--ink);font-weight:600}
+@media(max-width:560px){.finds li{grid-template-columns:1fr;gap:4px}}
+
+/* figures */
+figure{margin:34px 0 0}
+figcaption{font-size:13px;color:var(--ink-3);margin-top:12px;line-height:1.6}
+.fig-title{font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;display:block}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:24px;box-shadow:var(--shadow)}
+.scroll{overflow-x:auto}
+
+/* small multiples */
+.sm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:10px}
+.sm{background:var(--surface);padding:16px 16px 10px;border:1px solid var(--rule);
+  border-radius:3px;box-shadow:var(--shadow)}
+.sm-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:2px}
+.sm-name{font-weight:600;font-size:15px;display:flex;align-items:center;gap:7px}
+.swatch{width:10px;height:10px;border-radius:2px;flex:none}
+.sm-val{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:500;color:var(--ink-2)}
+.chip{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:500;
+  padding:2px 6px;border-radius:2px;letter-spacing:.01em}
+.chip.up{color:var(--pos);background:color-mix(in srgb,var(--pos) 13%,transparent)}
+.chip.dn{color:var(--neg);background:color-mix(in srgb,var(--neg) 13%,transparent)}
+.chip.flat{color:var(--ink-3);background:var(--surface-2)}
+.sm svg{display:block;width:100%;height:auto;margin-top:6px}
+.sm-foot{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3);
+  display:flex;justify-content:space-between;margin-top:2px}
+
+/* tables */
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  border-bottom:1px solid var(--rule-strong);position:sticky;top:0;background:var(--surface)}
+tbody tr:hover{background:var(--sunken)}
+td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.up{color:var(--pos)} .dn{color:var(--neg)}
+
+/* heatmap */
+.hm{border-collapse:separate;border-spacing:2px;font-size:13px}
+.hm th{border:0;padding:5px 8px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500;position:static;background:none}
+.hm td{border:0;padding:0}
+.hm .cell{border-radius:2px;padding:9px 6px;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:500;min-width:62px;cursor:default}
+.hm tbody th{text-align:left;font-family:"IBM Plex Sans KR",sans-serif;font-size:14px;
+  font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;padding-right:12px}
+.legend{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:var(--ink-3);flex-wrap:wrap}
+.legend .ramp{display:flex;gap:2px}
+.legend .ramp i{width:26px;height:11px;border-radius:2px;display:block}
+
+/* bars */
+.bars{display:grid;gap:2px}
+.bar-row{display:grid;grid-template-columns:56px 1fr 96px;gap:12px;align-items:center;
+  padding:5px 0;font-size:14px}
+.bar-row .lab{font-weight:600}
+.bar-track{background:var(--sunken);border-radius:2px;height:22px;position:relative}
+.bar-fill{height:100%;border-radius:2px}
+.bar-val{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:13px}
+
+/* dumbbell */
+.dbl{display:grid;gap:14px;margin-top:8px}
+.dbl-row{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:center;font-size:14px}
+.dbl-track{position:relative;height:34px}
+.dbl-line{position:absolute;top:16px;height:2px;background:var(--rule-strong)}
+.dbl-dot{position:absolute;top:10px;width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--surface);margin-left:-7px}
+.dbl-tag{position:absolute;top:-4px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-2);transform:translateX(-50%);white-space:nowrap}
+
+/* tooltip */
+#tip{position:fixed;z-index:99;pointer-events:none;background:var(--ink);color:var(--ground);
+  padding:7px 10px;border-radius:3px;font-size:12.5px;line-height:1.5;
+  font-family:"IBM Plex Mono",monospace;white-space:nowrap;opacity:0;transition:opacity .1s;
+  box-shadow:0 6px 20px -8px rgba(0,0,0,.5)}
+#tip.on{opacity:1}
+
+details{border-top:1px solid var(--rule);padding:16px 0}
+summary{cursor:pointer;font-weight:600;font-size:15px}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+details[open] summary{margin-bottom:14px}
+footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-3)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">네이버 데이터랩 검색어트렌드 · 36개월 실측</div>
+  <h1>지역 진료과 키워드 수요지도</h1>
+  <p class="standfirst">「대구피부과」「부산치과」처럼 <b>지역명+진료과</b>로 검색하는 사람이
+    3년 동안 어떻게 움직였는가. 7대 특·광역시 × 7개 진료과 49개 조합과 보조도시·상권 키워드
+    13개를 하나의 공통 지수로 환산해 비교했다.</p>
+  <div class="meta">
+    <div><dt>데이터 출처</dt><dd>네이버 데이터랩 검색어트렌드 API</dd></div>
+    <div><dt>대상 기간</dt><dd>2023년 9월 → 2026년 8월 (36개월)</dd></div>
+    <div><dt>수집일</dt><dd>2026년 9월 9일</dd></div>
+    <div><dt>키워드 수</dt><dd>62개 (요청 17회 · 앵커 공유)</dd></div>
+  </div>
+</header>
+
+<section class="col" id="method-warning">
+  <div class="warn">
+    <strong>먼저 읽어야 할 한 줄 — 이 숫자는 「월간 검색량(회)」이 아니다.</strong><br>
+    네이버 데이터랩은 절대 검색 횟수를 공개하지 않고 <b>상대 비율</b>만 준다. 따라서 이 보고서의 모든
+    수치는 <b>「서울피부과」의 36개월 평균을 100으로 둔 상대지수</b>다. 지수 200이면 서울피부과의
+    약 2배가 검색됐다는 뜻이고, 「월 몇 회」로 환산할 수는 없다. 절대 조회수가 필요하면
+    <b>네이버 검색광고 키워드도구</b>(월간검색수 PC/모바일)를 따로 붙여야 한다.
+    <a href="#method">환산 방법 전체 보기 ↓</a>
+  </div>
+  <p class="lede">데이터랩은 한 번의 요청 안에서만 값이 서로 비교된다(요청마다 최댓값이 100으로 재조정됨).
+    그래서 <b>17번의 요청 전부에 「서울피부과」를 앵커로 함께 넣고</b>, 각 요청의 앵커 평균으로 나눠
+    요청 간 배율을 소거했다. 62개 키워드가 하나의 자로 잰 값이 된 이유다.</p>
+</section>
+
+<section class="col">
+  <div class="eyebrow">핵심 발견</div>
+  <h2>다섯 문장 요약</h2>
+  <ul class="finds">
+    <li><b>962</b><span><em>피부과가 압도적 1위.</em> 7대 도시 합산 지수 962로 2위 치과(628)의 1.5배다.
+      3년간 <em>+14.9%</em> 성장까지 겹쳤다.</span></li>
+    <li><b>+21%</b><span><em>성장률 1위는 성형외과.</em> 규모는 5위(402)지만 3년 증가율은 가장 높다.
+      부산 <em>+82%</em>, 대전 <em>+39%</em>, 대구 <em>+37%</em>가 끌었다.</span></li>
+    <li><b>−25%</b><span><em>한의원·내과는 구조적 축소.</em> 한의원 −24.5%, 내과 −24.2%로 7개 과 중
+      유일하게 <em>모든 도시에서</em> 같은 방향으로 무너졌다.</span></li>
+    <li><b>−16%</b><span><em>서울은 1위지만 유일하게 크게 빠졌다.</em> 지방 광역시가 대부분 +6~+17%인 반면
+      서울 −16.2%, 인천 −26.6%. 수도권 지역명 키워드가 힘을 잃고 있다.</span></li>
+    <li><b>2.1배</b><span><em>돈은 「상권명」에 있다.</em> 강남피부과(215)는 서울피부과(100)의 2.1배,
+      서면피부과(219)는 부산피부과(108)의 2.0배. 광역시명만 잡으면 수요의 절반을 놓친다.</span></li>
+  </ul>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">진료과별 추이</div>
+    <h2>7개 진료과, 36개월</h2>
+    <p class="lede">각 패널은 7대 도시 합산 지수의 월별 궤적이다. 세로 눈금은 7개 패널이 공유하므로
+      패널 높이가 곧 수요 규모다. 오른쪽 배지는 1년차(’23.9~’24.8) 대비 3년차(’25.9~’26.8) 변화율.</p>
+  </div>
+  <figure>
+    <div id="sm-depts" class="sm-grid"></div>
+    <figcaption><span class="fig-title">그림 1 · 진료과별 검색 수요 궤적 (7대 도시 합산)</span>
+      서울·부산·대구·인천·광주·대전·울산 7개 도시의 「지역명+진료과」 지수를 더한 값.
+      선 위에 마우스를 올리면 해당 월 값이 보인다. 회색 점선은 각 패널의 3년 평균이고, 세로 눈금은 7개 패널이 0부터 같은 최댓값까지 공유한다.</figcaption>
+  </figure>
+  <div class="col">
+    <p>피부과는 규모와 성장을 동시에 가진 유일한 과다. 반대로 <b>치과는 규모 2위(628)지만 −9.4%</b>로
+      완만히 줄고 있고, <b>내과·한의원은 규모도 작고 하락폭도 가장 크다</b>. 안과는 서울(214.5)·광주(132.1)
+      두 도시가 합계의 60%를 차지하는 극단적 편중 구조라, 합산 추이(−5.8%)는 사실상 그 두 도시의 추이다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">지역 × 진료과</div>
+    <h2>49칸 수요지도</h2>
+    <p class="lede">왼쪽은 규모(3년 평균 지수), 오른쪽은 3년 변화율. 같은 칸을 두 장으로 겹쳐 보면
+      「큰데 줄어드는 시장」과 「작지만 커지는 시장」이 갈린다.</p>
+  </div>
+  <figure>
+    <div class="panel scroll"><div id="hm-avg"></div></div>
+    <figcaption><span class="fig-title">그림 2 · 수요 규모 (3년 평균 지수, 서울피부과=100)</span>
+      진한 칸일수록 검색 수요가 크다. 최대는 대전피부과(233.8), 최소는 인천내과(11.6)로 20배 격차.</figcaption>
+  </figure>
+  <figure>
+    <div class="panel scroll"><div id="hm-g31"></div></div>
+    <figcaption><span class="fig-title">그림 3 · 3년 변화율 (1년차 → 3년차, %)</span>
+      파랑은 성장, 빨강은 감소. 가로줄이 통째로 빨간 <b>내과</b>가 유일하게 7개 도시 전부 마이너스다.</figcaption>
+  </figure>
+  <div class="col">
+    <p>읽는 법 하나. <b>대전 피부과(233.8, +29.6%)</b>는 이 표에서 가장 크고 동시에 크게 자라는 칸이다.
+      광역시 인구 순위(5위)를 크게 앞지르는 값이라, 대전 피부과 시장은 검색 기준으로 서울 다음가는 격전지로
+      봐야 한다. 반대로 <b>서울 정형외과(176.8, −11.6%)</b>와 <b>서울 안과(214.5, −15.0%)</b>는
+      여전히 가장 큰 칸이지만 방향이 아래다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">지역 총량</div>
+    <h2>서울이 빠지고 지방이 오른다</h2>
+  </div>
+  <figure>
+    <div class="panel"><div id="region-bars"></div></div>
+    <figcaption><span class="fig-title">그림 4 · 도시별 7개 진료과 합산 지수와 3년 변화율</span>
+      막대는 3년 평균 규모, 오른쪽 배지는 1년차 대비 3년차 변화율.</figcaption>
+  </figure>
+  <div class="col">
+    <p>서울은 여전히 1위(713.5)지만 −16.2%다. 인천은 −26.6%로 낙폭이 가장 크다. 반면
+      대전 +16.6%, 부산 +11.8%, 광주 +8.4%, 대구 +6.2%로 <b>비수도권 광역시는 모두 플러스</b>다.
+      3년 전이라면 「서울·수도권부터」가 기본값이었지만, 지금 지역명 검색의 성장은 지방에 있다.</p>
+    <div class="note">서울 총량의 55%는 안과(214.5)와 정형외과(176.8) 두 과가 만든다. 즉 서울의 하락은
+      전 과목 균등 하락이 아니라 <b>이 두 과의 하락</b>이 대부분이다. 서울에서 피부과·성형외과를 보는
+      광고주라면 −16.2%라는 총량 숫자를 그대로 적용하면 안 된다.</div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">상권 단위 검증</div>
+    <h2>「서울피부과」를 사는 사람은 없다</h2>
+    <p class="lede">광역시명 키워드가 줄어드는 게 <b>수요 자체의 감소</b>인지, 아니면 「강남」「서면」 같은
+      <b>상권명으로 옮겨간 것</b>인지 확인하려고 4개 상권 키워드를 같은 자로 재봤다.</p>
+  </div>
+  <figure>
+    <div class="panel"><div id="dumbbell"></div></div>
+    <figcaption><span class="fig-title">그림 5 · 광역시명 키워드 vs 상권명 키워드 (3년 평균 지수)</span>
+      각 줄의 왼쪽 점이 광역시명, 오른쪽 점이 같은 도시의 대표 상권명. 점 사이 거리가 놓치고 있는 수요다.</figcaption>
+  </figure>
+  <div class="col">
+    <p>결론은 둘로 갈린다. <b>규모는 상권명이 압도적이다</b> — 강남피부과 215.2 대 서울피부과 100.0,
+      서면피부과 219.4 대 부산피부과 108.1. 광역시명 키워드만 보고 시장 크기를 재면 절반 이하로 과소평가한다.</p>
+    <p>다만 <b>「상권으로 이동해서 서울이 줄어든 것」은 아니다.</b> 강남피부과도 같은 기간 −18.6%로
+      서울피부과(−18.2%)와 거의 똑같이 빠졌다. 부평치과도 −25.3%로 인천치과(−10.9%)보다 더 빠졌다.
+      수도권에서는 지역명 검색 자체가 줄고 있다고 봐야 하며, 그 자리를 무엇이 대체했는지는
+      이 데이터만으로는 답할 수 없다.</p>
+    <p>예외는 강남치과(+44.4%)인데, 2025년 4~8월에 지수 58→100으로 튄 단발성 급등이 대부분을 만든 값이라
+      추세로 읽으면 안 된다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">계절성</div>
+    <h2>언제 예산을 태울 것인가</h2>
+    <p class="lede">월별 3년 평균을 각 진료과의 연평균 100 기준으로 환산했다. 100보다 크면 성수기다.</p>
+  </div>
+  <figure>
+    <div class="panel scroll"><div id="hm-season"></div></div>
+    <figcaption><span class="fig-title">그림 6 · 진료과 × 월 계절지수 (연평균 = 100)</span>
+      7대 도시 평균. 파랑이 성수기, 빨강이 비수기.</figcaption>
+  </figure>
+  <div class="col">
+    <p>세 가지 패턴이 분명하다. <b>미용 계열(피부과·성형외과)</b>은 2~4월과 7~8월이 이중 피크이고
+      <b>11월이 바닥</b>(피부과 74)이다. <b>치과·정형외과</b>는 3월 단일 피크(치과 123)로,
+      신학기·연초 검진 수요와 맞물린다. <b>내과</b>만 정반대로 <b>12~1월(118·120)이 성수기,
+      6~7월(84·85)이 비수기</b>인 겨울형 곡선을 그린다.</p>
+    <div class="note">실무 함의: 피부과·성형외과 광고주에게 11월은 CPC가 싸고 수요가 없는 달이다.
+      같은 예산이면 1월 말~3월로 당기는 편이 낫고, 내과 광고주는 그 반대다.</div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">데이터 신뢰도</div>
+    <h2>이 표에서 믿으면 안 되는 칸</h2>
+    <p class="lede">지역명 키워드는 검색량 자체가 작아, 특정 병원의 이벤트·언론보도·커뮤니티 글 하나로
+      월 지수가 몇 배씩 튄다. 변동계수(CV)와 스파이크 배율이 높은 키워드는 평균값을 그대로 쓰면 안 된다.</p>
+  </div>
+  <figure>
+    <div class="panel scroll"><table id="tbl-volatile"></table></div>
+    <figcaption><span class="fig-title">그림 7 · 변동성 상위 키워드</span>
+      스파이크 = 36개월 최댓값 ÷ 중앙값. 5배는 어느 한 달이 평소의 5배였다는 뜻이다.</figcaption>
+  </figure>
+  <div class="col">
+    <div class="warn"><strong>확인이 필요한 두 가지.</strong>
+      ① <b>「광주」는 광주광역시와 경기 광주시가 섞인다.</b> 광주안과(132.1)가 인구가 두 배인 대구안과(66.5)의
+      2배로 나오는 건 이 혼입이나 특정 브랜드 검색이 섞였을 가능성이 있어, 광주 수치는 별도 검증 후 쓰는 걸 권한다.
+      ② <b>천안치과·청주치과</b>는 CV가 70~80%로, 2025년 7~8월 단발 급등이 3년 평균을 끌어올렸다.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">실행 제안</div>
+    <h2>이 데이터로 할 수 있는 것</h2>
+    <ol class="lede">
+      <li><b>신규 수주 우선순위</b> — 규모와 성장이 동시에 양수인 칸: 대전 피부과, 울산 피부과,
+        광주 피부과, 부산 피부과, 대구 성형외과, 부산 성형외과. 여섯 칸이 이 표의 「성장 시장」이다.</li>
+      <li><b>방어가 필요한 계정</b> — 내과·한의원 광고주는 7개 도시 전부에서 수요가 줄고 있다.
+        지역명 키워드 의존도를 낮추고 질환명·증상 키워드로 축을 옮기는 제안이 필요하다.</li>
+      <li><b>키워드 세트 재설계</b> — 광역시명 하나만 잡은 계정은 상권명(강남·서면·부평 등)을 반드시 추가한다.
+        같은 도시에서 2배 규모의 수요가 상권명 쪽에 있다.</li>
+      <li><b>미디어 플랜 캘린더</b> — 미용 계열은 1월 말~4월, 7~8월 집중 / 11월 축소.
+        치과·정형외과는 3월 단일 피크. 내과는 12~1월.</li>
+      <li><b>다음 단계</b> — 절대 검색량과 입찰가가 필요하면 네이버 검색광고 키워드도구를 붙여
+        이 상대지수에 실제 「월간검색수 × 예상 CPC」를 곱해 시장 규모(원)로 환산한다.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">전체 데이터</div>
+    <h2>키워드 원표</h2>
+  </div>
+  <figure>
+    <div class="panel scroll"><table id="tbl-all"></table></div>
+    <figcaption>Y1 = 2023.09–2024.08 · Y2 = 2024.09–2025.08 · Y3 = 2025.09–2026.08 각 구간 평균 지수.
+      CV = 36개월 변동계수. 열 제목을 누르면 정렬된다.</figcaption>
+  </figure>
+</section>
+
+<section class="col" id="method">
+  <div class="eyebrow">방법</div>
+  <h2>어떻게 계산했나</h2>
+  <details open>
+    <summary>1. 요청 간 스케일을 맞춘 방법</summary>
+    <p>데이터랩 API는 한 요청에 키워드 그룹 5개까지 받고, 그 요청 안의 최댓값을 100으로 두고
+      나머지를 비율로 준다. 요청이 다르면 배율(c)이 달라 서로 비교할 수 없다. 즉
+      <span class="mono">응답값 = c × 실제검색량</span>이다.</p>
+    <p>그래서 17번의 요청 <b>전부</b>에 앵커 키워드 「서울피부과」를 한 자리 고정으로 넣고, 각 요청의
+      응답을 <b>그 요청의 앵커 36개월 평균</b>으로 나눴다. c가 분자·분모에서 소거되면서
+      <span class="mono">지수 = 실제검색량 ÷ 서울피부과 평균검색량 × 100</span>이 남는다.
+      앵커의 자기 추이는 보존되므로, 수준 비교와 시계열 비교를 동시에 할 수 있다.</p>
+  </details>
+  <details>
+    <summary>2. 대상 키워드</summary>
+    <p><b>진료과 7종</b> 치과 · 한의원 · 피부과 · 정형외과 · 안과 · 내과 · 성형외과<br>
+      <b>도시 7종</b> 서울 · 부산 · 대구 · 인천 · 광주 · 대전 · 울산 (49개 조합 전수)<br>
+      <b>보조 도시</b> 수원 · 창원 · 천안 · 청주 · 제주 (피부과·치과·내과 일부)<br>
+      <b>상권 검증</b> 강남피부과 · 강남치과 · 서면피부과 · 부평치과<br>
+      데이터랩은 검색어의 공백을 무시하므로 「대구피부과」는 「대구 피부과」를 포함한다.</p>
+  </details>
+  <details>
+    <summary>3. 구간·지표 정의</summary>
+    <p>36개월을 12개월씩 3구간으로 잘랐다. Y1 = 2023.09–2024.08, Y2 = 2024.09–2025.08,
+      Y3 = 2025.09–2026.08. <b>3년 변화율 = Y3 ÷ Y1 − 1</b>. 합산 지표(진료과·지역 총량)의 변화율은
+      개별 변화율의 평균이 아니라 <b>합계끼리 나눈 값</b>이라 큰 키워드에 가중된다.
+      계절지수는 같은 달 3개년 평균을 그 키워드의 36개월 평균으로 나눈 값(×100)이다.</p>
+  </details>
+  <details>
+    <summary>4. 한계</summary>
+    <p>① 절대 검색량이 아니다. ② PC+모바일 합산, 성별·연령 전체 값이라 세그먼트별 차이를 볼 수 없다.
+      ③ 「광주」처럼 동명 지역이 있는 키워드는 검색량이 섞인다. ④ 지역명 키워드는 표본이 작아
+      단발 이슈에 크게 흔들린다(그림 7). ⑤ 데이터랩은 일정 기준 미만의 검색량을 0으로 처리하므로
+      아주 작은 키워드는 과소 집계될 수 있다. ⑥ 이 보고서는 검색 <b>수요</b>만 다루며,
+      경쟁 강도·입찰가·전환율은 포함하지 않는다.</p>
+  </details>
+</section>
+
+<footer>
+  원자료 <span class="mono">docs/reports/naver-hospital-keywords/raw-datalab.csv</span> ·
+  변환 스크립트 <span class="mono">analyze.mjs</span> ·
+  산출물 <span class="mono">index-series.json</span><br>
+  네이버 데이터랩 검색어트렌드 2026-09-09 조회. 의료광고법에 따라 치료 효과·최상급 표현은 쓰지 않았으며,
+  이 문서는 검색 수요 통계만 다룬다.
+</footer>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="dataset">__DATA__</script>
+<script>
+(() => {
+const D = JSON.parse(document.getElementById('dataset').textContent);
+const K = D.keywords, MONTHS = D.meta.months;
+const DEPTS = ['치과','한의원','피부과','정형외과','안과','내과','성형외과'];
+const METROS = ['서울','부산','대구','인천','광주','대전','울산'];
+const SERIES = ['--s1','--s2','--s3','--s4','--s5','--s6','--s7'];
+const SEQ = ['--seq-0','--seq-1','--seq-2','--seq-3','--seq-4','--seq-5','--seq-6'];
+const DIV = ['--div-n3','--div-n2','--div-n1','--div-0','--div-p1','--div-p2','--div-p3'];
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f1 = n => n.toFixed(1);
+const pct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+
+/* ---- tooltip ---- */
+const tip = document.getElementById('tip');
+function showTip(e, html){ tip.innerHTML = html; tip.classList.add('on');
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY - r.height - 12;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y < 8) y = e.clientY + 18;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+function hideTip(){ tip.classList.remove('on'); }
+addEventListener('scroll', hideTip, {passive:true});
+
+/* ---- department totals as monthly series ---- */
+const deptSeries = {}, deptStat = {};
+for (const d of DEPTS) {
+  const rows = METROS.map(r => K[r+d]).filter(Boolean);
+  deptSeries[d] = MONTHS.map((_, i) => rows.reduce((a, c) => a + c.series[i], 0));
+  const t = D.deptTotals.find(x => x.dept === d);
+  deptStat[d] = t;
+}
+const smMax = Math.max(...Object.values(deptSeries).flat()) * 1.06;
+
+/* ---- 1. small multiples ---- */
+const smBox = document.getElementById('sm-depts');
+DEPTS.map(d => ({ d, avg: deptStat[d].avg })).sort((a,b) => b.avg - a.avg).forEach((o, rank) => {
+  const d = o.d, v = deptSeries[d], st = deptStat[d];
+  const col = cssv(SERIES[DEPTS.indexOf(d)]);
+  const W = 260, H = 96, PT = 8, PB = 4;
+  const x = i => (i / (v.length - 1)) * W;
+  const y = val => PT + (1 - val / smMax) * (H - PT - PB);
+  const line = v.map((val, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(val).toFixed(1)}`).join('');
+  const area = `${line}L${W},${H - PB}L0,${H - PB}Z`;
+  const mean = v.reduce((a,b)=>a+b,0) / v.length;
+  const cls = st.g31 > 3 ? 'up' : st.g31 < -3 ? 'dn' : 'flat';
+  const el = document.createElement('div');
+  el.className = 'sm';
+  el.innerHTML =
+    `<div class="sm-head"><span class="sm-name"><i class="swatch" style="background:${col}"></i>${d}</span>
+       <span class="chip ${cls}">${pct(st.g31)}</span></div>
+     <div class="sm-val">3년 평균 지수 ${f1(st.avg)}</div>
+     <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img"
+          aria-label="${d} 월별 지수 추이, 3년 변화 ${pct(st.g31)}">
+       <line x1="0" y1="${y(mean).toFixed(1)}" x2="${W}" y2="${y(mean).toFixed(1)}"
+             stroke="${cssv('--rule-strong')}" stroke-width="1" stroke-dasharray="3 3"/>
+       <path d="${area}" fill="${col}" opacity=".12"/>
+       <path d="${line}" fill="none" stroke="${col}" stroke-width="2"
+             stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+       <circle cx="${W}" cy="${y(v[v.length-1]).toFixed(1)}" r="3.2" fill="${col}"
+               stroke="${cssv('--surface')}" stroke-width="2"/>
+       <rect class="hit" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
+     </svg>
+     <div class="sm-foot"><span>’23.9</span><span>’26.8</span></div>`;
+  const svg = el.querySelector('svg');
+  svg.addEventListener('mousemove', e => {
+    const r = svg.getBoundingClientRect();
+    const i = Math.max(0, Math.min(35, Math.round((e.clientX - r.left) / r.width * 35)));
+    showTip(e, `${d} · ${MONTHS[i]}<br>지수 ${f1(v[i])}`);
+  });
+  svg.addEventListener('mouseleave', hideTip);
+  smBox.appendChild(el);
+});
+
+/* ---- heatmap builder ---- */
+function heatmap(host, { rows, cols, get, fmt, scale, label }) {
+  const t = document.createElement('table');
+  t.className = 'hm';
+  t.innerHTML = `<thead><tr><th></th>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
+  const tb = document.createElement('tbody');
+  for (const r of rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<th scope="row">${r}</th>`;
+    for (const c of cols) {
+      const v = get(r, c);
+      const td = document.createElement('td');
+      const s = scale(v);
+      td.innerHTML = `<div class="cell" style="background:${s.bg};color:${s.fg}">${v === null ? '—' : fmt(v)}</div>`;
+      if (v !== null) {
+        const cell = td.firstChild;
+        cell.addEventListener('mousemove', e => showTip(e, label(r, c, v)));
+        cell.addEventListener('mouseleave', hideTip);
+      }
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+  t.appendChild(tb);
+  host.appendChild(t);
+}
+function seqScale(max) {
+  return v => {
+    if (v === null) return { bg: 'transparent', fg: cssv('--ink-3') };
+    const k = Math.min(6, Math.floor((v / max) ** 0.62 * 6.999));
+    return { bg: cssv(SEQ[k]), fg: k >= 4 ? '#ffffff' : cssv('--ink') };
+  };
+}
+function divScale(step) {
+  return v => {
+    if (v === null) return { bg: 'transparent', fg: cssv('--ink-3') };
+    let k = 3 + Math.sign(v) * Math.min(3, Math.round(Math.abs(v) / step));
+    return { bg: cssv(DIV[k]), fg: Math.abs(k - 3) >= 2 ? '#ffffff' : cssv('--ink') };
+  };
+}
+function rampLegend(host, keys, lo, hi) {
+  const el = document.createElement('div');
+  el.className = 'legend';
+  el.innerHTML = `<span>${lo}</span><span class="ramp">${keys.map(k => `<i style="background:${cssv(k)}"></i>`).join('')}</span><span>${hi}</span>`;
+  host.appendChild(el);
+}
+
+const maxAvg = Math.max(...DEPTS.flatMap(d => METROS.map(r => D.matrix.avg[d][r] ?? 0)));
+const hmA = document.getElementById('hm-avg');
+heatmap(hmA, { rows: DEPTS, cols: METROS,
+  get: (d, r) => D.matrix.avg[d][r], fmt: f1, scale: seqScale(maxAvg),
+  label: (d, r, v) => `${r}${d}<br>3년 평균 지수 ${f1(v)}` });
+rampLegend(hmA, SEQ, '지수 0', `${Math.round(maxAvg)}`);
+
+const hmG = document.getElementById('hm-g31');
+heatmap(hmG, { rows: DEPTS, cols: METROS,
+  get: (d, r) => D.matrix.g31[d][r], fmt: v => pct(v), scale: divScale(15),
+  label: (d, r, v) => `${r}${d}<br>Y1 ${f1(K[r+d].y1)} → Y3 ${f1(K[r+d].y3)}<br>변화 ${pct(v)}` });
+rampLegend(hmG, DIV, '−38% 이하', '+38% 이상');
+
+/* ---- season heatmap ---- */
+const seasonRow = d => {
+  const cs = METROS.map(r => K[r+d]).filter(Boolean);
+  return Array.from({ length: 12 }, (_, i) => cs.reduce((a, c) => a + c.seasonal[i], 0) / cs.length);
+};
+const seasonData = Object.fromEntries(DEPTS.map(d => [d, seasonRow(d)]));
+const hmS = document.getElementById('hm-season');
+const seasonScale = divScale(8);
+heatmap(hmS, { rows: DEPTS, cols: Array.from({ length: 12 }, (_, i) => (i + 1) + '월'),
+  get: (d, c) => seasonData[d][parseInt(c) - 1],
+  fmt: v => Math.round(v), scale: v => seasonScale(v === null ? null : v - 100),
+  label: (d, c, v) => `${d} · ${c}<br>계절지수 ${Math.round(v)} (연평균 100)` });
+{ const flat = Object.values(seasonData).flat();
+  rampLegend(hmS, DIV, `비수기 ${Math.round(Math.min(...flat))}`, `성수기 ${Math.round(Math.max(...flat))}`); }
+
+/* ---- region bars ---- */
+const rb = document.getElementById('region-bars');
+const rbox = document.createElement('div');
+rbox.className = 'bars';
+const maxR = Math.max(...D.regionTotals.map(r => r.avg));
+D.regionTotals.forEach((r, i) => {
+  const cls = r.g31 > 3 ? 'up' : r.g31 < -3 ? 'dn' : 'flat';
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  row.innerHTML = `<span class="lab">${r.region}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${(r.avg / maxR * 100).toFixed(1)}%;
+      background:${cssv('--accent')};opacity:${(1 - i * 0.085).toFixed(2)}"></div></div>
+    <span class="bar-val"><span class="num">${f1(r.avg)}</span> <span class="chip ${cls}">${pct(r.g31)}</span></span>`;
+  const t = row.querySelector('.bar-track');
+  t.addEventListener('mousemove', e => showTip(e, `${r.region} · 7개 진료과 합산<br>Y1 ${f1(r.y1)} → Y3 ${f1(r.y3)}`));
+  t.addEventListener('mouseleave', hideTip);
+  rbox.appendChild(row);
+});
+rb.appendChild(rbox);
+
+/* ---- dumbbell: metro vs district ---- */
+const PAIRS = [
+  ['서울피부과','강남피부과'], ['부산피부과','서면피부과'],
+  ['서울치과','강남치과'],   ['인천치과','부평치과'],
+];
+const db = document.getElementById('dumbbell');
+const dbox = document.createElement('div');
+dbox.className = 'dbl';
+const dbMax = Math.max(...PAIRS.flat().map(k => K[k].avg)) * 1.1;
+PAIRS.forEach(([a, b]) => {
+  const va = K[a].avg, vb = K[b].avg;
+  const pa = va / dbMax * 100, pb = vb / dbMax * 100;
+  const row = document.createElement('div');
+  row.className = 'dbl-row';
+  row.innerHTML = `<span><b>${a.replace(/(피부과|치과)$/, '')}</b> ${a.match(/(피부과|치과)$/)[0]}</span>
+    <div class="dbl-track">
+      <div class="dbl-line" style="left:${Math.min(pa,pb)}%;width:${Math.abs(pb-pa)}%"></div>
+      <div class="dbl-dot" style="left:${pa}%;background:${cssv('--ink-3')}"></div>
+      <div class="dbl-dot" style="left:${pb}%;background:${cssv('--accent')}"></div>
+      <span class="dbl-tag" style="left:${pa}%">${a} ${f1(va)}</span>
+      <span class="dbl-tag" style="left:${pb}%;top:20px;color:${cssv('--accent')}">${b} ${f1(vb)}</span>
+    </div>`;
+  dbox.appendChild(row);
+});
+db.appendChild(dbox);
+
+/* ---- tables ---- */
+function buildTable(el, rows, cols, sortKey) {
+  let dir = -1, key = sortKey;
+  const render = () => {
+    const sorted = [...rows].sort((a, b) =>
+      typeof a[key] === 'string' ? a[key].localeCompare(b[key]) * -dir : (a[key] - b[key]) * dir);
+    el.innerHTML =
+      `<thead><tr>${cols.map(c => `<th data-k="${c.k}" style="cursor:pointer">${c.t}</th>`).join('')}</tr></thead>
+       <tbody>${sorted.map(r => `<tr>${cols.map(c =>
+         `<td class="${c.k === 'name' ? '' : 'n'} ${c.cls ? c.cls(r[c.k]) : ''}">${c.f ? c.f(r[c.k]) : r[c.k]}</td>`
+       ).join('')}</tr>`).join('')}</tbody>`;
+    el.querySelectorAll('th').forEach(th => th.addEventListener('click', () => {
+      const k = th.dataset.k; dir = (k === key) ? -dir : -1; key = k; render();
+    }));
+  };
+  render();
+}
+const growCls = v => v > 3 ? 'up' : v < -3 ? 'dn' : '';
+const allRows = Object.entries(K).map(([name, v]) => ({
+  name, avg: +v.avg.toFixed(1), y1: +v.y1.toFixed(1), y2: +v.y2.toFixed(1), y3: +v.y3.toFixed(1),
+  g31: +v.g31.toFixed(1), cv: +v.cv.toFixed(0), peak: v.peakMonth, spike: +v.spike.toFixed(1),
+}));
+buildTable(document.getElementById('tbl-all'), allRows, [
+  { k:'name', t:'키워드' }, { k:'avg', t:'3년 평균', f:f1 },
+  { k:'y1', t:'Y1', f:f1 }, { k:'y2', t:'Y2', f:f1 }, { k:'y3', t:'Y3', f:f1 },
+  { k:'g31', t:'Y3/Y1', f:pct, cls:growCls }, { k:'cv', t:'CV', f:v=>v+'%' },
+  { k:'peak', t:'피크월', f:v=>v+'월' },
+], 'avg');
+
+buildTable(document.getElementById('tbl-volatile'),
+  [...allRows].sort((a,b) => b.spike - a.spike).slice(0, 8), [
+  { k:'name', t:'키워드' }, { k:'avg', t:'3년 평균', f:f1 },
+  { k:'cv', t:'변동계수', f:v=>v+'%' }, { k:'spike', t:'스파이크', f:v=>v+'×' },
+  { k:'g31', t:'Y3/Y1', f:pct, cls:growCls },
+], 'spike');
+})();
+</script>
