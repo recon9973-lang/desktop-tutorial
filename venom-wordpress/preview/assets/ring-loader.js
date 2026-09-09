@@ -33,13 +33,15 @@
       var v = document.createElement('video');
       v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
       v.preload = 'auto'; v.setAttribute('aria-hidden', 'true');
-      // 왕복(핑퐁) 소스 — 원본 361프레임을 정방향+역방향으로 이어 720프레임 30.000초 순환으로 만들고,
-      // 그 순환을 180프레임 돌려 되감기 지점이 링이 가장 빠르게 도는 구간에 오도록 맞췄다.
-      // ① 이웃한 두 프레임은 되감기 지점까지 포함해 전부 원본에서 한 칸 차이 — 위치 점프가 없다.
-      // ② 남는 것은 코덱 재구성 오차뿐인데, 빠른 구간에 두면 그 구간의 정상 이동량에 묻힌다.
-      // ③ 덤으로 로더가 뜨자마자 링이 움직인다(원본은 앞 1.7초가 거의 정지라 멈춘 것처럼 보였다).
-      // 원본 15초 소스로 되돌리려면 -pp 를 뺀 ring-sq.webm / ring-sq.mp4 로 바꾸면 된다.
-      v.innerHTML = '<source src="' + ASSET + 'ring-sq-pp.webm" type="video/webm"><source src="' + ASSET + 'ring-sq-pp.mp4" type="video/mp4">';
+      // 등속 순환 소스 — 원본은 15초짜리 「한 번 재생용」 인트로 렌더라 앞 1.7초·뒤 0.3초가
+      // 거의 정지해 있었다(한 바퀴의 13%). 그래서 링이 서다가 톡 튀고 다시 출발했다.
+      // 프레임을 「이동량이 일정하도록」 다시 골라(361 → 164프레임 6.834초) 등속으로 만들었다.
+      //   ① 멈추는 칸이 없다 — 164칸 전부 움직인다(가장 느린 칸도 가장 빠른 칸의 0.39배).
+      //   ② 되감기 한 칸이 정상 한 칸의 1.4배까지 내려왔다(원본은 그 자리 정상 한 칸의 11배).
+      //   ③ 정지 구간을 걷어내 파일이 오히려 작아졌다(webm 800KB → 461KB).
+      // 고른 프레임은 전부 원본 프레임 그대로다(프레임 해시 164개 대조 · 보간·색공간 왕복 없음).
+      // 원본 15초 소스로 되돌리려면 -loop 를 뺀 ring-sq.webm / ring-sq.mp4 로 바꾸면 된다.
+      v.innerHTML = '<source src="' + ASSET + 'ring-sq-loop.webm" type="video/webm"><source src="' + ASSET + 'ring-sq-loop.mp4" type="video/mp4">';
       var ok = function(){ if (v.videoWidth > 0) { v.classList.add('playing'); disc.classList.add('live'); } };
       v.addEventListener('playing', ok); v.addEventListener('loadeddata', ok);
       disc.appendChild(v);
