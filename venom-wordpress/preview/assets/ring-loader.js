@@ -33,7 +33,13 @@
       var v = document.createElement('video');
       v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
       v.preload = 'auto'; v.setAttribute('aria-hidden', 'true');
-      v.innerHTML = '<source src="' + ASSET + 'ring-sq.webm" type="video/webm"><source src="' + ASSET + 'ring-sq.mp4" type="video/mp4">';
+      // 왕복(핑퐁) 소스 — 원본 361프레임을 정방향+역방향으로 이어 720프레임 30.000초 순환으로 만들고,
+      // 그 순환을 180프레임 돌려 되감기 지점이 링이 가장 빠르게 도는 구간에 오도록 맞췄다.
+      // ① 이웃한 두 프레임은 되감기 지점까지 포함해 전부 원본에서 한 칸 차이 — 위치 점프가 없다.
+      // ② 남는 것은 코덱 재구성 오차뿐인데, 빠른 구간에 두면 그 구간의 정상 이동량에 묻힌다.
+      // ③ 덤으로 로더가 뜨자마자 링이 움직인다(원본은 앞 1.7초가 거의 정지라 멈춘 것처럼 보였다).
+      // 원본 15초 소스로 되돌리려면 -pp 를 뺀 ring-sq.webm / ring-sq.mp4 로 바꾸면 된다.
+      v.innerHTML = '<source src="' + ASSET + 'ring-sq-pp.webm" type="video/webm"><source src="' + ASSET + 'ring-sq-pp.mp4" type="video/mp4">';
       var ok = function(){ if (v.videoWidth > 0) { v.classList.add('playing'); disc.classList.add('live'); } };
       v.addEventListener('playing', ok); v.addEventListener('loadeddata', ok);
       disc.appendChild(v);
