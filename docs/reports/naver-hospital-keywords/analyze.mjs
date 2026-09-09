@@ -93,6 +93,54 @@ for (const d of DEPTS) {
 }
 out.matrix = matrix;
 
+// 키워드 분류 — 지역명+진료과 / 상권명+진료과 / 진료과 단독 / 시술·질환 / 의료 무관 대조군
+const GENERIC = ['피부과','치과','한의원','내과','정형외과','안과','성형외과','병원'];
+const PROC    = ['임플란트','라식','도수치료','여드름치료'];
+const CTRL    = ['날씨','지하철','환율','로또'];
+const DISTRICT= ['강남피부과','강남치과','서면피부과','부평치과'];
+const group = k => GENERIC.includes(k) ? 'generic' : PROC.includes(k) ? 'proc'
+  : CTRL.includes(k) ? 'control' : DISTRICT.includes(k) ? 'district'
+  : METROS.some(m => k.startsWith(m)) ? 'metro' : 'city';
+for (const k of Object.keys(out.keywords)) out.keywords[k].group = group(k);
+
+// 진료과별 대표 키워드 TOP3 (7대 도시 안에서 — 도시 수가 같아 진료과끼리 공정 비교)
+out.top3 = DEPTS.map(d => ({ dept: d,
+  rows: METROS.map(r => ({ keyword: r + d, region: r, ...out.keywords[r + d] }))
+    .sort((a, b) => b.avg - a.avg).slice(0, 3)
+    .map((x, i) => ({ rank: i + 1, keyword: x.keyword, region: x.region,
+      avg: +x.avg.toFixed(1), y1: +x.y1.toFixed(1), y2: +x.y2.toFixed(1), y3: +x.y3.toFixed(1),
+      g31: +x.g31.toFixed(1), cv: +x.cv.toFixed(0), peakMonth: x.peakMonth })),
+  // 7대 도시 밖(중소도시·상권)에서 그 진료과 3위 컷을 넘는 키워드
+  outside: Object.entries(out.keywords)
+    .filter(([k, v]) => k.endsWith(d) && (v.group === 'city' || v.group === 'district'))
+    .map(([k, v]) => ({ keyword: k, avg: +v.avg.toFixed(1), g31: +v.g31.toFixed(1) }))
+    .filter(x => x.avg > METROS.map(r => out.keywords[r + d].avg).sort((a, b) => b - a)[2])
+    .sort((a, b) => b.avg - a.avg),
+}));
+
+// 「수요 자체가 줄었나」 — 그룹별 합산 Y1 → Y3
+const bucket = (keys) => { const cs = keys.map(k => out.keywords[k]).filter(Boolean);
+  const sum = f => cs.reduce((a, c) => a + f(c), 0);
+  return { n: cs.length, y1: +sum(c => c.y1).toFixed(1), y2: +sum(c => c.y2).toFixed(1),
+    y3: +sum(c => c.y3).toFixed(1), g31: +((sum(c => c.y3) / sum(c => c.y1) - 1) * 100).toFixed(1) }; };
+out.buckets = {
+  '지역명+진료과 49개 합산': bucket(DEPTS.flatMap(d => METROS.map(r => r + d))),
+  '진료과 단독 7개 합산':    bucket(['피부과','치과','한의원','내과','정형외과','안과','성형외과']),
+  '「병원」 단독':            bucket(['병원']),
+  '시술·질환 4개 합산':      bucket(PROC),
+  '대조군(의료 무관) 4개':   bucket(CTRL),
+};
+out.controlEach = CTRL.map(k => ({ keyword: k, avg: +out.keywords[k].avg.toFixed(1),
+  y1: +out.keywords[k].y1.toFixed(2), y2: +out.keywords[k].y2.toFixed(2),
+  y3: +out.keywords[k].y3.toFixed(2), g31: +out.keywords[k].g31.toFixed(1) }));
+out.genericEach = GENERIC.map(k => ({ keyword: k, avg: +out.keywords[k].avg.toFixed(1),
+  y1: +out.keywords[k].y1.toFixed(1), y2: +out.keywords[k].y2.toFixed(1),
+  y3: +out.keywords[k].y3.toFixed(1), g31: +out.keywords[k].g31.toFixed(1) }));
+out.procEach = PROC.map(k => ({ keyword: k, avg: +out.keywords[k].avg.toFixed(1),
+  y1: +out.keywords[k].y1.toFixed(1), y2: +out.keywords[k].y2.toFixed(1),
+  y3: +out.keywords[k].y3.toFixed(1), g31: +out.keywords[k].g31.toFixed(1),
+  cv: +out.keywords[k].cv.toFixed(0), spike: +out.keywords[k].spike.toFixed(1) }));
+
 // 진료과 합계(7대 도시 합산 지수)와 성장률
 out.deptTotals = DEPTS.map((d) => {
   const cells = METROS.map((r) => cell(r, d)).filter(Boolean);
@@ -136,6 +184,27 @@ const core = DEPTS.flatMap((d) => METROS.map((r) => ({ k: r + d, ...out.keywords
 const byG = [...core].sort((a, b) => b.g31 - a.g31);
 for (const r of byG.slice(0, 10)) console.log(`  ▲ ${r.k.padEnd(16)}${fmt(r.g31.toFixed(1) + '%')}  (평균 ${r.avg.toFixed(1)})`);
 for (const r of byG.slice(-10).reverse()) console.log(`  ▼ ${r.k.padEnd(16)}${fmt(r.g31.toFixed(1) + '%')}  (평균 ${r.avg.toFixed(1)})`);
+
+console.log(`\n■ 「수요가 줄었나」 그룹별 합산 (Y1 → Y3)`);
+console.log('  그룹                            Y1      Y2      Y3    Y3/Y1');
+for (const [k, v] of Object.entries(out.buckets))
+  console.log(`  ${k.padEnd(26)}${fmt(v.y1, 8)}${fmt(v.y2, 8)}${fmt(v.y3, 8)}${fmt(v.g31 + '%', 9)}`);
+console.log(`\n■ 대조군 개별 (의료와 무관)`);
+for (const c of out.controlEach)
+  console.log(`  ${c.keyword.padEnd(8)}Y1 ${fmt(c.y1, 8)} → Y3 ${fmt(c.y3, 8)}  ${fmt(c.g31 + '%', 9)}`);
+console.log(`\n■ 진료과 단독(전국) 키워드`);
+for (const c of out.genericEach)
+  console.log(`  ${c.keyword.padEnd(8)}평균 ${fmt(c.avg, 7)}  Y1 ${fmt(c.y1, 7)} → Y3 ${fmt(c.y3, 7)}  ${fmt(c.g31 + '%', 9)}`);
+console.log(`\n■ 시술·질환 키워드`);
+for (const c of out.procEach)
+  console.log(`  ${c.keyword.padEnd(10)}평균 ${fmt(c.avg, 7)}  Y1 ${fmt(c.y1, 7)} → Y3 ${fmt(c.y3, 7)}  ${fmt(c.g31 + '%', 9)}  스파이크 ${c.spike}x`);
+console.log(`\n■ 진료과별 TOP3 (7대 도시)`);
+for (const t of out.top3) {
+  console.log(`  ${t.dept}`);
+  for (const r of t.rows)
+    console.log(`    ${r.rank}. ${r.keyword.padEnd(12)}평균 ${fmt(r.avg, 7)}  Y1 ${fmt(r.y1, 7)} Y2 ${fmt(r.y2, 7)} Y3 ${fmt(r.y3, 7)}  ${fmt(r.g31 + '%', 8)}`);
+  if (t.outside.length) console.log(`       (7대 도시 밖 상위: ${t.outside.map(o => `${o.keyword} ${o.avg}`).join(', ')})`);
+}
 
 console.log(`\n■ 진료과별 계절지수 (7대도시 평균, 연평균=100)`);
 console.log('  진료과    ' + Array.from({ length: 12 }, (_, i) => fmt(i + 1 + '월', 6)).join(''));

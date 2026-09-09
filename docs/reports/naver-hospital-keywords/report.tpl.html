@@ -160,6 +160,28 @@ td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
 .dbl-tag{position:absolute;top:-4px;font-family:"IBM Plex Mono",monospace;font-size:11px;
   color:var(--ink-2);transform:translateX(-50%);white-space:nowrap}
 
+/* diverging bars */
+.dv{display:grid;gap:1px}
+.dv-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);padding:18px 0 7px;
+  border-bottom:1px solid var(--rule);margin-bottom:5px}
+.dv-head:first-child{padding-top:0}
+.dv-row{display:grid;grid-template-columns:132px 1fr 74px;gap:12px;align-items:center;
+  padding:3px 0;font-size:14px}
+.dv-row .lab{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv-track{position:relative;height:20px;background:var(--sunken);border-radius:2px}
+.dv-zero{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--rule-strong)}
+.dv-fill{position:absolute;top:0;height:100%;border-radius:2px}
+.dv-val{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:500}
+.grp-head td{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);text-align:left;font-weight:500}
+tr.sub td{color:var(--ink-3);font-size:13px}
+td.dept-cell{font-weight:600;vertical-align:top;padding-top:12px}
+tr.dept-first td{border-top:1px solid var(--rule-strong)}
+thead th{vertical-align:bottom;line-height:1.35}
+
 /* trend explorer */
 .ctrl{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;margin-bottom:20px;
   padding-bottom:16px;border-bottom:1px solid var(--rule)}
@@ -243,7 +265,65 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
       서울 −16.2%, 인천 −26.6%. 수도권 지역명 키워드가 힘을 잃고 있다.</span></li>
     <li><b>2.1배</b><span><em>돈은 「상권명」에 있다.</em> 강남피부과(215)는 서울피부과(100)의 2.1배,
       서면피부과(219)는 부산피부과(108)의 2.0배. 광역시명만 잡으면 수요의 절반을 놓친다.</span></li>
+    <li><b>−43%</b><span><em>고가 선택시술 검색은 확실히 줄었다.</em> 라식 −42.6%, 임플란트 −34.9%.
+      반면 의료와 무관한 대조군은 일률적으로 줄지 않았다(로또 <em>+124%</em>, 환율 <em>+78%</em>).
+      네이버 검색이 죽은 게 아니라 <em>의료 카테고리에서 실제로 빠진 것</em>이다.</span></li>
   </ul>
+</section>
+
+<section id="demand">
+  <div class="col">
+    <div class="eyebrow">가장 먼저 답할 질문</div>
+    <h2>환자 검색 수요가 실제로 줄었나</h2>
+    <p class="lede">「병원 매출이 전반적으로 줄었는데, 환자 검색량도 같이 줄고 있는가」에 답하려면
+      지역명 키워드만으로는 부족하다. 성격이 다른 네 묶음을 같은 자로 재봤다 —
+      <b>지역명+진료과</b>(병원 탐색), <b>진료과 단독</b>(전국 관심도), <b>시술·질환</b>(치료 의향),
+      그리고 <b>의료와 무관한 대조군</b>. 대조군이 필요한 이유는 하나다. 네이버 검색 트래픽 자체가
+      줄고 있다면 <b>모든 키워드가 같이 내려가</b> 의료 수요 감소처럼 보이기 때문이다.</p>
+  </div>
+  <figure>
+    <div class="panel"><div id="demand-bars"></div></div>
+    <figcaption><span class="fig-title">그림 1 · 3년 변화율 (1년차 ’23.9–’24.8 → 3년차 ’25.9–’26.8)</span>
+      가운데 0선 기준으로 왼쪽이 감소, 오른쪽이 증가. 맨 아래 <b>대조군</b>은 의료와 아무 관련이 없는
+      생활 키워드로, 측정 자체의 편향을 잡아내기 위한 기준선이다.</figcaption>
+  </figure>
+  <div class="col">
+    <h3>대조군이 말해주는 것</h3>
+    <p>대조군은 <b>일률적으로 내려가지 않았다.</b> 로또 +123.8%, 환율 +77.5%로 오히려 크게 올랐다.
+      즉 네이버 검색 지수가 전체적으로 가라앉는 하향 편향은 없고, 의료 키워드의 하락은
+      <b>측정 아티팩트가 아니라 실제 신호</b>다.</p>
+    <p>다만 대조군 안에서도 갈린다. <b>지하철 −26.4%, 날씨 −5.7%</b>는 내려갔는데, 이 둘은
+      「검색창」이 아니라 지도앱·날씨앱으로 옮겨간 대표적인 조회형 수요다.
+      <b>「병원」 단독 검색이 −27.1%로 지하철과 거의 같은 폭</b>이라는 점은 그래서 중요하다 —
+      병원 「찾기」 행위가 네이버 검색에서 지도·플레이스로 이동했을 가능성을 시사한다.</p>
+    <h3>그래서 결론은 셋으로 갈린다</h3>
+    <ol class="lede">
+      <li><b>시장 전체가 줄었다는 증거는 시술 키워드에 있다.</b> 라식 −42.6%, 임플란트 −34.9%,
+        여드름치료 −25.5%. 이 키워드들은 지도앱으로 대체되지 않는다(임플란트를 지도에서 찾지는 않는다).
+        <b>고가 선택시술의 치료 의향 자체가 3년간 3~4할 빠졌다</b>고 읽는 편이 자연스럽다.</li>
+      <li><b>진료과 단독 관심도는 완만히 준다.</b> 7개 진료과 합산 −13.9%. 피부과(−8.5%)가 가장 덜 빠지고
+        내과(−20.9%)·성형외과(−20.7%)가 가장 많이 빠졌다.</li>
+      <li><b>그런데 지역명+진료과 총량은 거의 그대로다(−0.3%).</b> 49개 키워드를 다 더하면 3년 전과 같다.
+        줄어든 게 아니라 <b>자리가 바뀌었다</b> — 내과·한의원에서 피부과·성형외과로, 수도권에서 지방으로.</li>
+    </ol>
+    <div class="note"><strong>매출 감소를 설명할 때 쓸 수 있는 문장.</strong>
+      「지역 병원 탐색 수요 자체는 3년 전과 같은 크기다(−0.3%). 줄어든 것은 ① 고가 선택시술의 치료 의향
+      (라식·임플란트 3~4할)과 ② 네이버 검색창을 거치는 비율(병원 −27%)이다. 따라서 특정 병원의 유입 감소는
+      시장 전체 축소보다 <b>점유율 이동과 채널 이동</b>으로 설명되는 부분이 크다.」</div>
+    <div class="warn"><strong>이 결론의 한계.</strong>
+      ① 검색은 수요의 대리지표일 뿐 실제 내원·매출이 아니다. ② 데이터랩 지수가 네이버 전체 트래픽 변화를
+      보정하는지는 공식 문서로 확인하지 못했고(문서 접근 불가), 위 대조군은 그 확인을 대신한 <b>간접 검증</b>이다.
+      ③ AI 검색·유튜브·인스타그램·지도앱으로 옮겨간 몫은 이 데이터로 측정할 수 없다.
+      ④ 시술 키워드는 4개뿐이라 진료과 전체를 대표하지 않는다. 특히 도수치료(−0.9%)는 실손보험 제도
+      이슈로 2026년 6월에 지수가 100까지 튄 예외적 계열이다.</div>
+  </div>
+  <figure>
+    <div class="panel scroll"><table id="tbl-demand"></table></div>
+    <figcaption><span class="fig-title">그림 2 · 묶음별 연차 지수</span>
+      각 연차는 12개월 평균. 지역명+진료과는 49개 합산, 진료과 단독·시술·대조군은 개별 키워드다.
+      단위는 이 보고서 공통 상대지수(서울피부과 36개월 평균 = 100)라 묶음끼리 절대 크기는 비교하지 말고
+      <b>같은 행의 연차별 변화</b>만 볼 것.</figcaption>
+  </figure>
 </section>
 
 <section>
@@ -255,7 +335,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div id="sm-depts" class="sm-grid"></div>
-    <figcaption><span class="fig-title">그림 1 · 진료과별 검색 수요 궤적 (7대 도시 합산)</span>
+    <figcaption><span class="fig-title">그림 3 · 진료과별 검색 수요 궤적 (7대 도시 합산)</span>
       서울·부산·대구·인천·광주·대전·울산 7개 도시의 「지역명+진료과」 지수를 더한 값.
       선 위에 마우스를 올리면 해당 월 값이 보인다. 회색 점선은 각 패널의 3년 평균이고, 세로 눈금은 7개 패널이 0부터 같은 최댓값까지 공유한다.</figcaption>
   </figure>
@@ -270,7 +350,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   <div class="col">
     <div class="eyebrow">키워드 단위 추이</div>
     <h2>36개월 월별 궤적</h2>
-    <p class="lede">앞의 그림 1이 진료과 합계였다면, 여기서는 <b>키워드 하나하나</b>의 월별 지수를 그린다.
+    <p class="lede">앞의 그림 3이 진료과 합계였다면, 여기서는 <b>키워드 하나하나</b>의 월별 지수를 그린다.
       「진료과 기준」은 한 진료과를 7개 도시가 어떻게 나눠 갖는지, 「지역 기준」은 한 도시 안에서
       7개 진료과가 어떻게 움직이는지 보여준다. 선 위에 마우스를 올리면 그 달의 7개 값이 한 번에 나온다.</p>
   </div>
@@ -284,7 +364,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
       <div id="trend-chart"></div>
       <div id="trend-legend" class="series-legend"></div>
     </div>
-    <figcaption><span class="fig-title">그림 2 · 키워드별 36개월 월별 지수</span>
+    <figcaption><span class="fig-title">그림 4 · 키워드별 36개월 월별 지수</span>
       가로축은 2023년 9월부터 2026년 8월까지 36개월, 세로축은 상대지수(서울피부과 36개월 평균 = 100).
       점선 두 개는 연차 경계(Y2·Y3 시작)다. 세로 눈금을 <b>「전체 고정」</b>으로 두면 어떤 선택에서도
       같은 자로 재므로 키워드 간 절대 크기를 비교할 수 있고, <b>「선택 기준」</b>은 작은 키워드의
@@ -296,7 +376,31 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
       이것이 「구조적 축소」라고 부른 근거다. 지역 기준 <b>서울</b>에서는 안과·정형외과 두 선만
       압도적으로 높고 나머지 다섯이 바닥에 깔린 편중 구조가 한눈에 드러난다.</p>
     <div class="note">선이 한 달만 뾰족하게 솟은 구간은 대체로 특정 병원의 이벤트·보도·커뮤니티 유입이다.
-      추세로 읽지 말고 <a href="#reliability">그림 8의 변동성 표</a>와 함께 확인해야 한다.</div>
+      추세로 읽지 말고 <a href="#reliability">그림 11의 변동성 표</a>와 함께 확인해야 한다.</div>
+  </div>
+</section>
+
+<section>
+  <div class="col">
+    <div class="eyebrow">대표 키워드</div>
+    <h2>진료과별 상위 3개</h2>
+    <p class="lede">7대 특·광역시 안에서 각 진료과의 검색 수요가 가장 큰 세 도시다.
+      도시 후보 수가 7개로 같아 진료과끼리 공정하게 비교된다.
+      연차는 12개월씩 끊었다 — <b>1년차 ’23.9–’24.8 / 2년차 ’24.9–’25.8 / 3년차 ’25.9–’26.8</b>.</p>
+  </div>
+  <figure>
+    <div class="panel scroll"><table id="tbl-top3"></table></div>
+    <figcaption><span class="fig-title">그림 5 · 진료과별 대표 키워드 TOP 3</span>
+      회색 줄은 7대 도시 <b>밖</b>(중소도시·상권)에서 그 진료과의 3위 값을 넘긴 키워드다.
+      수집 범위가 진료과마다 달라 순위에 직접 넣지 않고 참고로만 붙였다.</figcaption>
+  </figure>
+  <div class="col">
+    <p>표를 가로로 읽으면 진료과의 성격이 드러난다. <b>피부과·성형외과</b>는 상위 3개가 모두
+      비수도권이고 셋 다 증가한다. <b>내과·한의원</b>은 상위 3개가 모두 감소이며, 1위인
+      인천한의원조차 −52.9%다. <b>안과·정형외과</b>는 서울이 압도적 1위지만 그 서울이 빠지는 구조다.</p>
+    <p>치과와 피부과는 7대 도시 밖에 더 큰 키워드가 있다. 치과는 <b>수원치과(155.8)·강남치과(154.5)·
+      청주치과(149.1)</b>가 1위 대구치과(122.2)보다 크고, 피부과는 <b>서면피부과(219.4)·강남피부과(215.2)</b>가
+      1위 대전피부과(233.8) 바로 아래에 붙는다. 광역시 단위로만 키워드를 짜면 이 물량을 통째로 놓친다.</p>
   </div>
 </section>
 
@@ -309,12 +413,12 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel scroll"><div id="hm-avg"></div></div>
-    <figcaption><span class="fig-title">그림 3 · 수요 규모 (3년 평균 지수, 서울피부과=100)</span>
+    <figcaption><span class="fig-title">그림 6 · 수요 규모 (3년 평균 지수, 서울피부과=100)</span>
       진한 칸일수록 검색 수요가 크다. 최대는 대전피부과(233.8), 최소는 인천내과(11.6)로 20배 격차.</figcaption>
   </figure>
   <figure>
     <div class="panel scroll"><div id="hm-g31"></div></div>
-    <figcaption><span class="fig-title">그림 4 · 3년 변화율 (1년차 → 3년차, %)</span>
+    <figcaption><span class="fig-title">그림 7 · 3년 변화율 (1년차 → 3년차, %)</span>
       파랑은 성장, 빨강은 감소. 가로줄이 통째로 빨간 <b>내과</b>가 유일하게 7개 도시 전부 마이너스다.</figcaption>
   </figure>
   <div class="col">
@@ -332,7 +436,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel"><div id="region-bars"></div></div>
-    <figcaption><span class="fig-title">그림 5 · 도시별 7개 진료과 합산 지수와 3년 변화율</span>
+    <figcaption><span class="fig-title">그림 8 · 도시별 7개 진료과 합산 지수와 3년 변화율</span>
       막대는 3년 평균 규모, 오른쪽 배지는 1년차 대비 3년차 변화율.</figcaption>
   </figure>
   <div class="col">
@@ -354,7 +458,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel"><div id="dumbbell"></div></div>
-    <figcaption><span class="fig-title">그림 6 · 광역시명 키워드 vs 상권명 키워드 (3년 평균 지수)</span>
+    <figcaption><span class="fig-title">그림 9 · 광역시명 키워드 vs 상권명 키워드 (3년 평균 지수)</span>
       각 줄의 왼쪽 점이 광역시명, 오른쪽 점이 같은 도시의 대표 상권명. 점 사이 거리가 놓치고 있는 수요다.</figcaption>
   </figure>
   <div class="col">
@@ -377,7 +481,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel scroll"><div id="hm-season"></div></div>
-    <figcaption><span class="fig-title">그림 7 · 진료과 × 월 계절지수 (연평균 = 100)</span>
+    <figcaption><span class="fig-title">그림 10 · 진료과 × 월 계절지수 (연평균 = 100)</span>
       7대 도시 평균. 파랑이 성수기, 빨강이 비수기.</figcaption>
   </figure>
   <div class="col">
@@ -399,7 +503,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
   </div>
   <figure>
     <div class="panel scroll"><table id="tbl-volatile"></table></div>
-    <figcaption><span class="fig-title">그림 8 · 변동성 상위 키워드</span>
+    <figcaption><span class="fig-title">그림 11 · 변동성 상위 키워드</span>
       스파이크 = 36개월 최댓값 ÷ 중앙값. 5배는 어느 한 달이 평소의 5배였다는 뜻이다.</figcaption>
   </figure>
   <div class="col">
@@ -474,7 +578,7 @@ footer{margin-top:72px;padding-top:26px;border-top:1px solid var(--rule);
     <summary>4. 한계</summary>
     <p>① 절대 검색량이 아니다. ② PC+모바일 합산, 성별·연령 전체 값이라 세그먼트별 차이를 볼 수 없다.
       ③ 「광주」처럼 동명 지역이 있는 키워드는 검색량이 섞인다. ④ 지역명 키워드는 표본이 작아
-      단발 이슈에 크게 흔들린다(그림 8). ⑤ 데이터랩은 일정 기준 미만의 검색량을 0으로 처리하므로
+      단발 이슈에 크게 흔들린다(그림 11). ⑤ 데이터랩은 일정 기준 미만의 검색량을 0으로 처리하므로
       아주 작은 키워드는 과소 집계될 수 있다. ⑥ 이 보고서는 검색 <b>수요</b>만 다루며,
       경쟁 강도·입찰가·전환율은 포함하지 않는다.</p>
   </details>
@@ -807,6 +911,67 @@ PAIRS.forEach(([a, b]) => {
 });
 db.appendChild(dbox);
 
+const growCls = v => v > 3 ? 'up' : v < -3 ? 'dn' : '';
+/* ---- demand answer: diverging bars + grouped table ---- */
+const DEMAND = [
+  { head: '지역명 + 진료과 (병원 탐색)', rows: [
+      { ...D.buckets['지역명+진료과 49개 합산'], n: '49개 키워드 합산', strong: true } ] },
+  { head: '진료과 단독 (전국 관심도)', rows: D.genericEach.map(g => ({ n: g.keyword, ...g })) },
+  { head: '시술 · 질환 (치료 의향)', rows: D.procEach.map(g => ({ n: g.keyword, ...g })) },
+  { head: '대조군 — 의료와 무관', rows: D.controlEach.map(g => ({ n: g.keyword, ...g, ctrl: true })) },
+];
+{
+  const host = document.getElementById('demand-bars');
+  const all = DEMAND.flatMap(g => g.rows.map(r => r.g31));
+  const span = Math.max(Math.abs(Math.min(...all)), Math.max(...all));
+  const box = document.createElement('div'); box.className = 'dv';
+  for (const g of DEMAND) {
+    const h = document.createElement('div'); h.className = 'dv-head';
+    h.innerHTML = `<span>${g.head}</span>${g === DEMAND[0] ? '<span>Y3 / Y1</span>' : ''}`;
+    box.appendChild(h);
+    for (const r of g.rows) {
+      const w = Math.abs(r.g31) / span * 50, neg = r.g31 < 0;
+      const col = r.ctrl ? 'var(--ink-3)' : neg ? 'var(--neg)' : 'var(--pos)';
+      const row = document.createElement('div'); row.className = 'dv-row';
+      row.innerHTML = `<span class="lab"${r.strong ? ' style="font-weight:600"' : ''}>${r.n}</span>
+        <div class="dv-track"><div class="dv-zero" style="left:50%"></div>
+          <div class="dv-fill" style="${neg ? 'right:50%' : 'left:50%'};width:${w.toFixed(2)}%;
+            background:${col};opacity:${r.ctrl ? .55 : .9}"></div></div>
+        <span class="dv-val" style="color:${r.ctrl ? 'var(--ink-3)' : neg ? 'var(--neg)' : 'var(--pos)'}">${pct(r.g31)}</span>`;
+      const t = row.querySelector('.dv-track');
+      t.addEventListener('mousemove', e => showTip(e,
+        `${r.n}<br>1년차 ${f1(r.y1)} → 2년차 ${f1(r.y2)} → 3년차 ${f1(r.y3)}<br>변화 ${pct(r.g31)}`));
+      t.addEventListener('mouseleave', hideTip);
+      box.appendChild(row);
+    }
+  }
+  host.appendChild(box);
+
+  document.getElementById('tbl-demand').innerHTML =
+    `<thead><tr><th>키워드 / 묶음</th>
+      <th>1년차<br>2023.09–2024.08</th><th>2년차<br>2024.09–2025.08</th>
+      <th>3년차<br>2025.09–2026.08</th><th>3년 변화</th></tr></thead><tbody>` +
+    DEMAND.map(g => `<tr class="grp-head"><td colspan="5">${g.head}</td></tr>` +
+      g.rows.map(r => `<tr${r.ctrl ? ' class="sub"' : ''}><td>${r.n}</td>
+        <td class="n">${f1(r.y1)}</td><td class="n">${f1(r.y2)}</td><td class="n">${f1(r.y3)}</td>
+        <td class="n ${r.ctrl ? '' : growCls(r.g31)}">${pct(r.g31)}</td></tr>`).join('')).join('') + '</tbody>';
+}
+
+/* ---- per-department top 3 ---- */
+document.getElementById('tbl-top3').innerHTML =
+  `<thead><tr><th>진료과</th><th>순위</th><th>키워드</th>
+    <th>1년차<br>2023.09–2024.08</th><th>2년차<br>2024.09–2025.08</th>
+    <th>3년차<br>2025.09–2026.08</th><th>3년 평균</th><th>3년 변화</th><th>피크월</th></tr></thead><tbody>` +
+  D.top3.map(g => g.rows.map((r, i) => `<tr class="${i === 0 ? 'dept-first' : ''}">
+      ${i === 0 ? `<td class="dept-cell" rowspan="${g.rows.length + (g.outside.length ? 1 : 0)}">${g.dept}</td>` : ''}
+      <td class="n">${r.rank}</td><td>${r.keyword}</td>
+      <td class="n">${f1(r.y1)}</td><td class="n">${f1(r.y2)}</td><td class="n">${f1(r.y3)}</td>
+      <td class="n">${f1(r.avg)}</td><td class="n ${growCls(r.g31)}">${pct(r.g31)}</td>
+      <td class="n">${r.peakMonth}월</td></tr>`).join('') +
+    (g.outside.length ? `<tr class="sub"><td colspan="8">7대 도시 밖 · 참고 —
+      ${g.outside.map(o => `${o.keyword} ${f1(o.avg)} (${pct(o.g31)})`).join(' · ')}</td></tr>` : '')
+  ).join('') + '</tbody>';
+
 /* ---- tables ---- */
 function buildTable(el, rows, cols, sortKey) {
   let dir = -1, key = sortKey;
@@ -824,7 +989,6 @@ function buildTable(el, rows, cols, sortKey) {
   };
   render();
 }
-const growCls = v => v > 3 ? 'up' : v < -3 ? 'dn' : '';
 const allRows = Object.entries(K).map(([name, v]) => ({
   name, avg: +v.avg.toFixed(1), y1: +v.y1.toFixed(1), y2: +v.y2.toFixed(1), y3: +v.y3.toFixed(1),
   g31: +v.g31.toFixed(1), cv: +v.cv.toFixed(0), peak: v.peakMonth, spike: +v.spike.toFixed(1),
