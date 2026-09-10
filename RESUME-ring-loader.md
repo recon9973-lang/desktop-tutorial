@@ -38,6 +38,18 @@
 가지 `claude/loading-animation-delay-zero-onncrv` 는 main 보다 앞선 커밋 0건.
 ```
 
+**실서비스에도 올라갔다** [실측 2026-09-10 · GitHub 배포 기록]. egress 는 막혀 있어
+사이트를 직접 못 열지만, Vercel 이 GitHub 에 남기는 기록으로는 확인된다.
+
+```
+「Production – venom-new-site」
+  1499c5d4 (링 커밋)      success   2026-09-09T18:39:57Z   ← 합친 지 32초 뒤
+  1436dcfb (오늘 main 끝)  success   2026-09-10T14:58:56Z
+링 커밋은 1436dcfb 의 조상 — 지금 도는 빌드에 새 링이 들어 있다.
+```
+
+이건 **「빌드가 성공했다」까지**다. 화면에 어떻게 보이는지는 아래가 남았다.
+
 ## 바로 이어갈 작업
 
 1. **사장님 몫 — 아이폰에서 한 번.** 이 방의 Chromium 이 H.264 를 못 풀어
@@ -59,6 +71,10 @@
   `transform`·`mask` 새로 얹기 금지. 쌓임 맥락이 하나만 생겨도
   `mix-blend-mode: screen` 이 깨지고 **검은 원반**이 돌아온다.
   이번 변경은 CSS 를 **한 글자도** 안 고쳤다.
+- **망은 막혔지만 GitHub API 는 열려 있다.** `venomad.com`·`venom-new-site.vercel.app`·
+  `pagespeed.web.dev` 는 게이트웨이가 CONNECT 에 403 을 준다(`selective:false`).
+  그런데 `api.github.com` 은 200 이고 `GH_TOKEN` 도 환경에 있다 — **배포가 나갔는지는
+  사이트를 안 열고도 `/repos/{owner}/{repo}/deployments` 로 잴 수 있다.**
 - **영상 검사에는 Range 를 받는 서버가 필요하다.** 파이썬 `http.server` 는 Range 가
   없어 Chromium 이 **탐색을 조용히 거부**한다(프레임 차이가 전부 0 으로 나온다).
   Node 로 Range 되는 정적 서버를 따로 띄워야 한다.
