@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-10 docs: 인계에 0.3.562 와 관문 셋을 채운다
+- 2026-09-10 docs: 이 방 인계를 지금 상태로 — 코드는 나갔고 남은 것은 규칙판 4와 사장님 몫
+- 2026-09-10 Merge origin/main — 다른 방 인계는 그대로 두고 이 방 것은 제 이름으로
 - 2026-09-10 docs: 이 방 인계를 제 이름으로 — 다른 방 것을 안 덮게
 - 2026-09-10 docs: 이관은 없던 일이 됐다 — 이관서에 결말을 붙이고 낡은 패치를 지운다
 - 2026-09-09 docs(s21): AEO 조사 → 고침 여섯 → 0.3.558 배포 · 인계
-- 2026-09-09 docs(handoff): veo-platform 배포를 ANSEO 방에 이관한다
-- 2026-09-09 chore(patches): veo-platform 고침 셋째 판을 더한다 — 몇 곳에 물었나 · 임대형 홈페이지
-- 2026-09-09 chore(patches): veo-platform 고침 둘째 판을 더한다 — 기간 탭·판 물림
-- 2026-09-09 chore(patches): veo-platform GEO 채널표 고침을 패치로 남긴다
-- 2026-09-09 docs(aeo): 그랜드아름다운의원 AEO 진단 조사 — 미분류 85%·엔진 1/7·자사 0.96%
+- 2026-09-09 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-10 로딩 링을 등속으로 바꿔 서지 않게 한다 (#235)
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 018dbfb 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 8c1ef65 기준. 값·비밀은 포함하지 않음.*
