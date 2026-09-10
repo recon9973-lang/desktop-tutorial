@@ -158,9 +158,16 @@ out.regionTotals = METROS.map((r) => {
   const cells = DEPTS.map((d) => cell(r, d)).filter(Boolean);
   const sum = (f) => cells.reduce((a, c) => a + f(c), 0);
   return { region: r, n: cells.length, avg: +sum((c) => c.avg).toFixed(1),
-    y1: +sum((c) => c.y1).toFixed(1), y3: +sum((c) => c.y3).toFixed(1),
+    y1: +sum((c) => c.y1).toFixed(1), y2: +sum((c) => c.y2).toFixed(1), y3: +sum((c) => c.y3).toFixed(1),
     g31: +((sum((c) => c.y3) / sum((c) => c.y1) - 1) * 100).toFixed(1) };
 }).sort((a, b) => b.avg - a.avg);
+
+// 진료과별 계절지수 (7대 도시 각각의 계절지수를 단순평균) — 엑셀 캐시값과 보고서가 같은 값을 쓰도록
+out.deptSeasonal = DEPTS.map((d) => {
+  const cs = METROS.map((r) => out.keywords[r + d]).filter(Boolean);
+  return { dept: d, seasonal: Array.from({ length: 12 }, (_, i) =>
+    +(cs.reduce((a, c) => a + c.seasonal[i], 0) / cs.length).toFixed(2)) };
+});
 
 writeFileSync(join(DIR, 'index-series.json'), JSON.stringify(out, null, 1));
 

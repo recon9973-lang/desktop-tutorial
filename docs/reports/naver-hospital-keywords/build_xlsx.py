@@ -23,7 +23,8 @@ order += [k for k in K if K[k]['group'] == 'proc']
 order += [k for k in K if K[k]['group'] == 'control']
 order += [k for k in K if K[k]['group'] == 'extra']
 assert len(order) == len(K) and len(set(order)) == len(K), (len(order), len(K))
-ROW = {k: i + 2 for i, k in enumerate(order)}          # 월별지수 · 키워드지표 · 계절_월별 공통 행번호
+ROW = {k: i + 2 for i, k in enumerate(order)}
+LAST = len(order) + 1   # 키워드지표 마지막 데이터 행          # 월별지수 · 키워드지표 · 계절_월별 공통 행번호
 
 ARIAL   = 'Arial'
 HFILL   = PatternFill('solid', fgColor='E9EDE9')
@@ -32,6 +33,10 @@ THIN    = Side(style='thin', color='D5DAD5')
 BORDER  = Border(bottom=THIN)
 IDX_FMT = '0.0'
 PCT_FMT = '0.0%;[Red]-0.0%;-'
+DT = {t['dept']: t for t in D['deptTotals']}
+RT = {t['region']: t for t in D['regionTotals']}
+DS = {x['dept']: x['seasonal'] for x in D['deptSeasonal']}
+CORE_AVG = sum(t['avg'] for t in D['deptTotals'])          # 49개 키워드 3년평균 합
 wb = Workbook()
 
 def style_header(ws, row=1, upto=None):
@@ -41,8 +46,12 @@ def style_header(ws, row=1, upto=None):
         c.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
         c.border = BORDER
 
-def put(ws, r, c, v, fmt=None, bold=False, size=10, align=None, color=None):
+CACHE = {}          # {시트명: {셀주소: 계산값}} — 저장 후 xlsx XML에 <v>로 주입한다
+
+def put(ws, r, c, v, fmt=None, bold=False, size=10, align=None, color=None, cached=None):
     cell = ws.cell(row=r, column=c, value=v)
+    if cached is not None and isinstance(v, str) and v.startswith('='):
+        CACHE.setdefault(ws.title, {})[cell.coordinate] = cached
     cell.font = Font(name=ARIAL, bold=bold, size=size, color=color)
     if fmt: cell.number_format = fmt
     if align: cell.alignment = Alignment(horizontal=align)
@@ -142,7 +151,8 @@ for k in order:
     for m in range(1, 13):
         i0 = (m - 9) % 12                                    # 배열 0번 = 2023-09
         refs = ','.join(f'월별지수!{MC[i0 + off]}{r}' for off in (0, 12, 24))
-        put(ws, r, 1 + m, f'=IFERROR(AVERAGE({refs})/키워드지표!$C{r}*100,"")', '0')
+        put(ws, r, 1 + m, f'=IFERROR(AVERAGE({refs})/키워드지표!$C{r}*100,"")', '0',
+            cached=K[k]['seasonal'][m - 1])
 style_header(ws)
 widths(ws, {'A': 17})
 for m in range(1, 13): ws.column_dimensions[CL(1 + m)].width = 7
@@ -158,14 +168,17 @@ for k in order:
     g = K[k]['group']
     put(ws, r, 1, k, size=10)
     put(ws, r, 2, GROUP_KO[g], size=10)
-    put(ws, r, 3, f'=AVERAGE(월별지수!{ALL.format(r=r)})', IDX_FMT)
-    put(ws, r, 4, f'=AVERAGE(월별지수!{Y1.format(r=r)})', IDX_FMT)
-    put(ws, r, 5, f'=AVERAGE(월별지수!{Y2.format(r=r)})', IDX_FMT)
-    put(ws, r, 6, f'=AVERAGE(월별지수!{Y3.format(r=r)})', IDX_FMT)
-    put(ws, r, 7, f'=IFERROR(F{r}/D{r}-1,"")', PCT_FMT)
-    put(ws, r, 8, f'=IFERROR(STDEVP(월별지수!{ALL.format(r=r)})/C{r},"")', '0.0%')
-    put(ws, r, 9, f'=IFERROR(MAX(월별지수!{ALL.format(r=r)})/MEDIAN(월별지수!{ALL.format(r=r)}),"")', '0.0"x"')
-    put(ws, r, 10, f'=INDEX(계절_월별!$B$1:$M$1,MATCH(MAX(계절_월별!B{r}:M{r}),계절_월별!B{r}:M{r},0))', '0"월"')
+    v = K[k]
+    put(ws, r, 3, f'=AVERAGE(월별지수!{ALL.format(r=r)})', IDX_FMT, cached=v['avg'])
+    put(ws, r, 4, f'=AVERAGE(월별지수!{Y1.format(r=r)})', IDX_FMT, cached=v['y1'])
+    put(ws, r, 5, f'=AVERAGE(월별지수!{Y2.format(r=r)})', IDX_FMT, cached=v['y2'])
+    put(ws, r, 6, f'=AVERAGE(월별지수!{Y3.format(r=r)})', IDX_FMT, cached=v['y3'])
+    put(ws, r, 7, f'=IFERROR(F{r}/D{r}-1,"")', PCT_FMT, cached=v['g31'] / 100)
+    put(ws, r, 8, f'=IFERROR(STDEVP(월별지수!{ALL.format(r=r)})/C{r},"")', '0.0%', cached=v['cv'] / 100)
+    put(ws, r, 9, f'=IFERROR(MAX(월별지수!{ALL.format(r=r)})/MEDIAN(월별지수!{ALL.format(r=r)}),"")', '0.0"x"',
+        cached=v['spike'])
+    put(ws, r, 10, f'=INDEX(계절_월별!$B$1:$M$1,MATCH(MAX(계절_월별!B{r}:M{r}),계절_월별!B{r}:M{r},0))', '0"월"',
+        cached=v['peakMonth'])
     # 지역/진료과 열은 요약 시트의 SUMIFS 키다. 'metro' 조합에만 채워 합산 누수를 막는다.
     put(ws, r, 11, k[:2] if g == 'metro' else '', size=10)
     put(ws, r, 12, k[2:] if g == 'metro' else '', size=10)
@@ -176,11 +189,13 @@ ws.freeze_panes = 'C2'
 ws.auto_filter.ref = f'A1:L{1 + len(order)}'
 
 MET = '키워드지표'
+# 전체 열(A:A) 참조는 LibreOffice가 100만 행을 훑어 재계산이 끝나지 않는다. 데이터 범위로 못박는다.
+def rng(col):  return f'{MET}!${col}$2:${col}${LAST}'
 def mi(col, key):   # 키워드지표에서 값 끌어오기
-    return f'=IFERROR(INDEX({MET}!${col}:${col},MATCH({key},{MET}!$A:$A,0)),"")'
+    return f'=IFERROR(INDEX({rng(col)},MATCH({key},{rng("A")},0)),"")'
 
 # ─────────────────────────── 5. 요약_진료과 / 요약_지역
-def summary_sheet(name, label, items, match_col):
+def summary_sheet(name, label, items, match_col, tot):
     ws = wb.create_sheet(name)
     for c, h in enumerate([label, '3년 평균', '1년차\n2023.09–2024.08', '2년차\n2024.09–2025.08',
                            '3년차\n2025.09–2026.08', '3년 변화'], 1):
@@ -188,16 +203,16 @@ def summary_sheet(name, label, items, match_col):
     for i, it in enumerate(items):
         r = i + 2
         put(ws, r, 1, it, bold=True, size=10)
-        for c, src in ((2, 'C'), (3, 'D'), (4, 'E'), (5, 'F')):
-            put(ws, r, c, f'=SUMIFS({MET}!${src}:${src},{MET}!${match_col}:${match_col},$A{r},'
-                          f'{MET}!$B:$B,"지역명+진료과")', IDX_FMT)
-        put(ws, r, 6, f'=IFERROR(E{r}/C{r}-1,"")', PCT_FMT)
+        for c, src, key in ((2, 'C', 'avg'), (3, 'D', 'y1'), (4, 'E', 'y2'), (5, 'F', 'y3')):
+            put(ws, r, c, f'=SUMIFS({rng(src)},{rng(match_col)},$A{r},'
+                          f'{rng("B")},"지역명+진료과")', IDX_FMT, cached=tot[it][key])
+        put(ws, r, 6, f'=IFERROR(E{r}/C{r}-1,"")', PCT_FMT, cached=tot[it]['g31'] / 100)
     style_header(ws)
     widths(ws, {'A': 12, 'B': 11, 'C': 15, 'D': 15, 'E': 15, 'F': 11})
     put(ws, len(items) + 3, 1, '7대 특·광역시 × 7개 진료과 49개 키워드만 합산한 값이다. 중소도시·상권·진료과단독 키워드는 제외.', size=9)
     return ws
-summary_sheet('요약_진료과', '진료과', DEPTS, 'L')
-summary_sheet('요약_지역', '지역', METROS, 'K')
+summary_sheet('요약_진료과', '진료과', DEPTS, 'L', DT)
+summary_sheet('요약_지역', '지역', METROS, 'K', RT)
 
 # ─────────────────────────── 6. 수요검증
 ws = wb.create_sheet('수요검증')
@@ -218,13 +233,17 @@ for grp, name, key in rows:
     if grp != prev: ws.cell(row=r, column=1).fill = GFILL
     prev = grp
     put(ws, r, 2, name, size=10, bold=(key is None))
+    bk = D['buckets']['지역명+진료과 49개 합산']
+    vals = ({'y1': bk['y1'], 'y2': bk['y2'], 'y3': bk['y3'], 'avg': CORE_AVG, 'g31': bk['g31']}
+            if key is None else K[key])
     if key is None:
-        for c, src in ((3, 'D'), (4, 'E'), (5, 'F'), (6, 'C')):
-            put(ws, r, c, f'=SUMIFS({MET}!${src}:${src},{MET}!$B:$B,"지역명+진료과")', IDX_FMT, bold=True)
+        for c, src, kk in ((3, 'D', 'y1'), (4, 'E', 'y2'), (5, 'F', 'y3'), (6, 'C', 'avg')):
+            put(ws, r, c, f'=SUMIFS({rng(src)},{rng("B")},"지역명+진료과")', IDX_FMT, bold=True,
+                cached=vals[kk])
     else:
-        for c, src in ((3, 'D'), (4, 'E'), (5, 'F'), (6, 'C')):
-            put(ws, r, c, mi(src, f'$B{r}'), IDX_FMT)
-    put(ws, r, 7, f'=IFERROR(E{r}/C{r}-1,"")', PCT_FMT, bold=(key is None))
+        for c, src, kk in ((3, 'D', 'y1'), (4, 'E', 'y2'), (5, 'F', 'y3'), (6, 'C', 'avg')):
+            put(ws, r, c, mi(src, f'$B{r}'), IDX_FMT, cached=vals[kk])
+    put(ws, r, 7, f'=IFERROR(E{r}/C{r}-1,"")', PCT_FMT, bold=(key is None), cached=vals['g31'] / 100)
     r += 1
 style_header(ws, hr)
 widths(ws, {'A': 24, 'B': 16, 'C': 15, 'D': 15, 'E': 15, 'F': 11, 'G': 11})
@@ -256,9 +275,10 @@ for g in D['top3']:
         if i == 0: ws.cell(row=r, column=1).fill = GFILL
         put(ws, r, 2, t['rank'], align='center')
         put(ws, r, 3, t['keyword'], size=10)
-        for c, src in ((4, 'D'), (5, 'E'), (6, 'F'), (7, 'C')): put(ws, r, c, mi(src, f'$C{r}'), IDX_FMT)
-        put(ws, r, 8, f'=IFERROR(F{r}/D{r}-1,"")', PCT_FMT)
-        put(ws, r, 9, mi('J', f'$C{r}'), '0"월"')
+        for c, src, kk in ((4, 'D', 'y1'), (5, 'E', 'y2'), (6, 'F', 'y3'), (7, 'C', 'avg')):
+            put(ws, r, c, mi(src, f'$C{r}'), IDX_FMT, cached=t[kk])
+        put(ws, r, 8, f'=IFERROR(F{r}/D{r}-1,"")', PCT_FMT, cached=t['g31'] / 100)
+        put(ws, r, 9, mi('J', f'$C{r}'), '0"월"', cached=t['peakMonth'])
         r += 1
     if g['outside']:
         put(ws, r, 3, '7대 도시 밖 참고 — ' + ' · '.join(
@@ -281,13 +301,14 @@ def block(top, title, src_col, fmt, as_pct):
         for j, m in enumerate(METROS):
             key = f'{CL(2 + j)}${top + 1}&$A{rr}'
             if as_pct:
-                f3 = f'INDEX({MET}!$F:$F,MATCH({key},{MET}!$A:$A,0))'
-                f1 = f'INDEX({MET}!$D:$D,MATCH({key},{MET}!$A:$A,0))'
-                put(ws, rr, 2 + j, f'=IFERROR({f3}/{f1}-1,"")', fmt)
+                f3 = f'INDEX({rng("F")},MATCH({key},{rng("A")},0))'
+                f1 = f'INDEX({rng("D")},MATCH({key},{rng("A")},0))'
+                put(ws, rr, 2 + j, f'=IFERROR({f3}/{f1}-1,"")', fmt,
+                    cached=D['matrix']['g31'][d][m] / 100)
             else:
-                put(ws, rr, 2 + j, mi(src_col, key), fmt)
+                put(ws, rr, 2 + j, mi(src_col, key), fmt, cached=D['matrix']['avg'][d][m])
         if not as_pct:
-            put(ws, rr, 9, f'=SUM(B{rr}:H{rr})', IDX_FMT, bold=True)
+            put(ws, rr, 9, f'=SUM(B{rr}:H{rr})', IDX_FMT, bold=True, cached=DT[d]['avg'])
     style_header(ws, top + 1, 9)
 block(1, '① 수요 규모 — 3년 평균 지수 (서울피부과 36개월 평균 = 100)', 'C', IDX_FMT, False)
 block(12, '② 3년 변화율 — 3년차 ÷ 1년차 − 1', None, PCT_FMT, True)
@@ -304,11 +325,14 @@ for i, d in enumerate(DEPTS):
     r = 4 + i
     start = ROW[METROS[0] + d]
     put(ws, r, 1, d, bold=True, size=10)
+    sea = DS[d]
     for m in range(1, 13):
         c = CL(1 + m)
-        put(ws, r, 1 + m, f'=AVERAGE(계절_월별!{c}{start}:{c}{start + 6})', '0')
-    put(ws, r, 14, f'=INDEX($B$3:$M$3,MATCH(MAX(B{r}:M{r}),B{r}:M{r},0))')
-    put(ws, r, 15, f'=INDEX($B$3:$M$3,MATCH(MIN(B{r}:M{r}),B{r}:M{r},0))')
+        put(ws, r, 1 + m, f'=AVERAGE(계절_월별!{c}{start}:{c}{start + 6})', '0', cached=sea[m - 1])
+    put(ws, r, 14, f'=INDEX($B$3:$M$3,MATCH(MAX(B{r}:M{r}),B{r}:M{r},0))',
+        cached=f'{sea.index(max(sea)) + 1}월')
+    put(ws, r, 15, f'=INDEX($B$3:$M$3,MATCH(MIN(B{r}:M{r}),B{r}:M{r},0))',
+        cached=f'{sea.index(min(sea)) + 1}월')
 style_header(ws, 3, 15)
 widths(ws, {'A': 12, **{CL(1 + m): 7 for m in range(1, 13)}, 'N': 9, 'O': 9})
 put(ws, 12, 1, '100보다 크면 성수기. 각 도시의 계절지수를 먼저 구하고 7개 도시를 단순평균한 값이다(계절_월별 시트).', size=9)
@@ -332,5 +356,65 @@ ws.freeze_panes = 'D2'
 put(ws, r + 1, 1, '데이터랩 API 원응답(정규화 전). 요청마다 최댓값이 100이 되도록 재조정돼 있어 요청이 다르면 서로 비교할 수 없다.', size=9)
 put(ws, r + 2, 1, '각 요청의 앵커 「서울피부과」 36개월 평균으로 나눈 결과가 「월별지수」 시트다.', size=9)
 
-wb.save('네이버_지역진료과_키워드분석_2026-09.xlsx')
-print('saved · sheets:', wb.sheetnames)
+OUT = '네이버_지역진료과_키워드분석_2026-09.xlsx'
+wb.save(OUT)
+
+# ─────────────────────────── 계산값 주입
+# openpyxl은 수식만 쓰고 캐시값을 비워 둔다. 이 환경의 LibreOffice는 파일을 열지 못해
+# recalc를 돌릴 수 없으므로, 시트 XML의 <f> 뒤에 <v>를 직접 넣어 값이 바로 보이게 한다.
+# 동시에 workbook.xml에 fullCalcOnLoad를 켜 실제 엑셀에서 열면 다시 계산되도록 한다.
+import re, shutil, zipfile
+from xml.sax.saxutils import escape
+
+def inject(path, cache):
+    zin = zipfile.ZipFile(path)
+    names = zin.namelist()
+    book = zin.read('xl/workbook.xml').decode('utf-8')
+    rels = zin.read('xl/_rels/workbook.xml.rels').decode('utf-8')
+    # 속성 순서에 의존하지 않도록 XML 파서로 관계를 읽는다
+    import xml.etree.ElementTree as ET
+    R = '{http://schemas.openxmlformats.org/package/2006/relationships}'
+    S = '{http://schemas.openxmlformats.org/spreadsheetml/2006/main}'
+    RID = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'
+    rid2tgt = {e.get('Id'): e.get('Target') for e in ET.fromstring(rels).findall(f'{R}Relationship')}
+    sheet2xml = {}
+    for e in ET.fromstring(book).find(f'{S}sheets'):
+        tgt = rid2tgt[e.get(RID)].lstrip('/')
+        sheet2xml[e.get('name')] = tgt if tgt.startswith('xl/') else 'xl/' + tgt
+    assert set(cache) <= set(sheet2xml), set(cache) - set(sheet2xml)
+
+    patched, hit, miss = {}, 0, 0
+    for sheet, cells in cache.items():
+        xml = zin.read(sheet2xml[sheet]).decode('utf-8')
+        def sub(mo):
+            nonlocal hit, miss
+            attrs, formula = mo.group(1), mo.group(2)
+            ref = re.search(r'r="([A-Z]+[0-9]+)"', attrs).group(1)
+            if ref not in cells:
+                miss += 1
+                return mo.group(0)
+            v = cells[ref]; hit += 1
+            if isinstance(v, str):
+                attrs = attrs if ' t="' in attrs else attrs + ' t="str"'
+                return f'<c{attrs}><f>{formula}</f><v>{escape(v)}</v></c>'
+            return f'<c{attrs}><f>{formula}</f><v>{v:.10g}</v></c>'
+        # openpyxl은 <c ...><f>수식</f><v /></c> 형태로 쓴다 (빈 <v /> 자리표시자 포함)
+        patched[sheet2xml[sheet]] = re.sub(
+            r'<c([^>]*)><f>(.*?)</f>(?:<v\s*/>|<v></v>)?</c>', sub, xml).encode('utf-8')
+
+    if 'fullCalcOnLoad' not in book:
+        book = (book.replace('<calcPr', '<calcPr fullCalcOnLoad="1" ', 1) if '<calcPr' in book
+                else book.replace('</workbook>', '<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>'))
+        patched['xl/workbook.xml'] = book.encode('utf-8')
+
+    tmp = path + '.tmp'
+    with zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for n in names:
+            zout.writestr(n, patched.get(n, zin.read(n)))
+    zin.close(); shutil.move(tmp, path)
+    return hit, miss
+
+hit, miss = inject(OUT, CACHE)
+print(f'saved · sheets: {len(wb.sheetnames)} · 수식 캐시값 주입 {hit}건, 미주입 {miss}건')
+assert miss == 0, f'{miss}개 수식에 계산값이 없다'
+
