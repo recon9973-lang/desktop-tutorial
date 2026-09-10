@@ -98,9 +98,12 @@ const GENERIC = ['피부과','치과','한의원','내과','정형외과','안�
 const PROC    = ['임플란트','라식','도수치료','여드름치료'];
 const CTRL    = ['날씨','지하철','환율','로또'];
 const DISTRICT= ['강남피부과','강남치과','서면피부과','부평치과'];
+// 'metro'는 7대 도시 × 보고서가 다루는 7개 진료과 조합만. 초기에 수집했다가 범위에서 빠진
+// 산부인과·이비인후과·비뇨기과는 'extra'로 따로 둔다 — 합산에 섞이면 지역 총량이 부풀려진다.
 const group = k => GENERIC.includes(k) ? 'generic' : PROC.includes(k) ? 'proc'
   : CTRL.includes(k) ? 'control' : DISTRICT.includes(k) ? 'district'
-  : METROS.some(m => k.startsWith(m)) ? 'metro' : 'city';
+  : METROS.some(m => k.startsWith(m)) ? (DEPTS.includes(k.slice(2)) ? 'metro' : 'extra')
+  : DEPTS.some(d => k.endsWith(d)) ? 'city' : 'extra';
 for (const k of Object.keys(out.keywords)) out.keywords[k].group = group(k);
 
 // 진료과별 대표 키워드 TOP3 (7대 도시 안에서 — 도시 수가 같아 진료과끼리 공정 비교)
