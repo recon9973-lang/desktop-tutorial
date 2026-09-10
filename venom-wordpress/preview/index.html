@@ -5482,19 +5482,43 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
      glossary.js(572KB)는 태그를 두지 않고 #glossary-root 접근·사전 라우트 진입 시 동적 로드(파일 하단 vnLoadGlossary). -->
 <script src="/seo/seo-engine.js?v=2.2.0" defer></script>
 <script src="/assets/infographics.js?v=1.1.0" defer></script>
-<script defer src="/assets/ring-loader.js?v=1.4.0"></script>
+<script defer src="/assets/ring-loader.js?v=1.5.0"></script>
 <script>
-// 링 영상을 미리 받아 둔다 — 진단 폼을 처음 만지는 순간(주소 입력·진료과 선택) 딱 한 번.
-// 폼을 안 만지는 방문자는 받지 않는다(모바일 데이터를 아낀다).
-// 안 하면 「무료 정밀 진단 시작」을 누른 뒤 링이 정지 사진으로 210ms 서 있다
-// (실측 2026-09-10 · 크로뮴 · 캐시 없음 · 4G · 평상시 한 칸의 4배).
+// 링 영상을 미리 받아 둔다 — 진단 페이지가 켜지는 순간 딱 한 번.
+//
+// 안 하면: 단추를 누른 뒤에야 받기 시작해, 올 때까지 정지 사진(ring-sq.jpg)이 떠 있다.
+//   [실측 2026-09-10 · 크로뮴 · 캐시 없음 · 4G]  링이 돌기까지 210ms · 평상시 한 칸의 4배
+//
+// 왜 「페이지가 켜질 때」인가 — 앞서 두 번 틀리고 재보고 알았다.
+//   ① 「폼을 만질 때」는 늦다. 폼을 안 만지고 단추만 누르면 100ms 앞설 뿐이다.
+//   ② 「화면에 보일 때」(IntersectionObserver)는 아예 안 터진다. 링이 뜨는 입구 넷이
+//      전부 #pg-diagnose 안에 있는데 그 페이지가 display:none 이라(151행 .page{display:none})
+//      크기가 0x0 이다. 스크롤해도 「보였다」가 뜰 수 없다.
+//   → 페이지를 켜는 것은 .active 클래스다. 그것만 지켜보면 입구 넷이 한꺼번에 덮인다.
+//
+// 로더가 뜨기를 기다리는 것도 필요하다. 이 스크립트는 문서를 읽는 중에 돌고
+// ring-loader.js 는 defer 라 더 늦다. 안 기다리면 RingLoader 가 없는 채 지나가고 끝난다.
+//
+// 값: 진단 페이지로 들어온 분만 받는다. 다른 페이지만 보고 나가면 안 받는다.
 (function(){
-  var f=document.getElementById('diag-form'); if(!f) return;
-  var once=function(){
-    f.removeEventListener('focusin',once); f.removeEventListener('pointerdown',once);
-    if(window.RingLoader && RingLoader.warm) RingLoader.warm();
-  };
-  f.addEventListener('focusin',once); f.addEventListener('pointerdown',once);
+  var pg=document.getElementById('pg-diagnose');
+  if(!pg) return;
+  var done=false, mo=null, tries=0;
+  function fire(){
+    if(done) return;
+    if(!(window.RingLoader && RingLoader.warm)){   // 로더가 아직 안 떴다 — done 을 세우지 않는다
+      if(++tries>80) return;                       // 10초까지만
+      setTimeout(fire,125); return;
+    }
+    done=true;
+    if(mo) mo.disconnect();
+    RingLoader.warm();
+  }
+  if(pg.classList.contains('active')) fire();       // 진단 주소로 바로 들어온 경우
+  else if(window.MutationObserver){
+    mo=new MutationObserver(function(){ if(pg.classList.contains('active')) fire(); });
+    mo.observe(pg,{attributes:true,attributeFilter:['class']});
+  }
 })();
 </script>
 <script>
