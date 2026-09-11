@@ -1,106 +1,79 @@
-# RESUME — 다음 세션 이어가기 (2026-09-09 16:0x KST · s21 마감 · 진단 오진 방)
+# RESUME — 다음 세션 이어가기 (2026-09-11 · s22 마감 · GEO 진단기 전수조사)
 
-> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-09-s21.md`.
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-11-s22.md`.
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> **작업 대상은 `veo-platform`** 이다(`add_repo` 로 붙인다, owner `recon9973-lang`).
 
 ## 지금까지 (핵심만)
 
-사장님이 캡처 한 장을 주셨다 — 「HTTP 상태 코드가 정상(2xx)인가 · **실패 · BLOCKER** ·
-`http://www.venomad.com/`」. *"다른 AI 는 정상이라는데 진짜가 뭔지 검토."*
-
-**사이트는 멀쩡했다.** 네이버 77건·구글 모두 `https://www.venomad.com/` 로 색인돼 있고,
-진단서 자신도 103개 중 102개가 정상이라고 적었다. **진짜 결함은 진단기 쪽 셋**이었고,
-전부 고쳐 `veo-platform` 가지 `claude/diagnostic-abnormal-review-hbskaa` 에 커밋 5건이
-올라가 있다. **`make preflight` 초록 — 「준비됨」.**
+사장님이 진단 캡처를 주며 *"문제의 url에 #이 들어간 실제 주소가 없는데, 확인해줘"* 하셨다.
+**사장님이 옳았다** — `…/#organization` 은 주소가 아니라 JSON-LD 의 이름표다. 그 지적을
+따라가 **진단기 결함 셋**을 찾아 고치고 세 판을 냈다. 전부 CI 초록인 커밋만 main 에 올렸다.
 
 ```
-e05dea5  인증서 만료일을 한국 경유 수집에서도 잰다
-cc7e3ac  진입 주소를 평문에서 https 로 올린다 — 강하의 거울상
-d64b573  2xx 인 못 읽은 응답을 「2xx 가 아니다」로 적지 않는다   ← 이번 오진의 원인
-b8624aa  막히는 사이트의 보고서를 끝에서 끝까지 잰다 (시험)
-7b85336  https 승격 문턱을 조인다 — 제목·설명이 둘 다 있을 때만 (사장님 오더)
+726df143  참조를 구조로 읽는다(고아 오판) + 조치 카드 10자리 + 관문 근거 눈금(명세 1.7.0)
+85e51424  조치 문안 26개를 「어디를·어떻게」로 다시 씀
+fa625d62  대장·오류 대장 기록 (판 번호 못 물린 사실 포함)
 ```
 
-핵심은 셋째다. `_status_ok` 가 `site.unreadable` 을 **상태 무관하게** 실패로 더해,
-200 으로 답한 762바이트 차단 페이지를 「2xx 가 아닌 상태 코드」로 적었다. 그래서 **같은
-관측이 한 화면에 두 번, 서로 반대로** 나갔다 — 수집 고지는 「사이트의 결함이 아니라 우리
-수집의 상태입니다」, 이슈는 「BLOCKER · 검색 유입이 사라집니다」.
-
-대장 `docs/WORKLIST.md` 대기 표에 **판 28**(번호 없음 — 나갈 때 정한다)로 올렸고,
-오류 대장 `docs/CORRECTIONS.md` **192** 에 내가 세 번 틀린 것을 적었다.
-
-## 배포 — **나갔다** (사장님 승인 2026-09-09 «배포 승인»)
-
-이 방이 `make deploy` 를 돌린 것이 아니다. **다른 방(`work/shareboard-tune`)이 이 가지를
-자기 판에 합쳐 함께 내보냈다.** 이 방은 나중에 그 사실을 확인만 했다.
-
-```
-[실측 2026-09-09 · gh]
-  내 커밋 5건        전부 origin/main 의 조상   (merge-base --is-ancestor 로 5/5)
-  main 끝 커밋       9d29ad5793b6…  판 0.3.557
-  채점받은 커밋      9d29ad5793b6…  CI success · 15:29 KST
-                     → 채점한 커밋과 나간 커밋이 같다(오류 135 가 막으려던 그 자리)
-```
-
-**`make deploy` 를 다시 돌릴 일이 없다** — 가지가 main 보다 앞선 커밋이 **0건**이다.
+[실측 · 픽스처 16건] 조치 카드 없음 11→0 · 조치 45자 미만 23→0 · 사업 영향 18→0 ·
+재확인 22→0. 재발 방지 CI 관문 4개를 세웠다.
 
 ## 바로 이어갈 작업
 
-1. **도는 판 실측** — 배포는 나갔는데 **Railway·Vercel 이 실제로 0.3.557 을 서비스하는지는
-   이 방에서 못 쟀다**(워크플로 띄우기가 403 · `actions:write` 없음). 재는 길 둘 —
-   ```
-   워크플로 「도는 판 확인」(workflow_dispatch) 를 사장님이 실행
-   또는 콘솔 화면 하단의 판 표시를 눈으로 확인
-   ```
-2. **venomad 재진단 한 번** — 0.3.557 이 도는 것이 확인되면 진단을 다시 돌려 두 줄을 본다.
-   ```
-   status_ok                     실패·BLOCKER  →  통과
-   certificate_not_expiring      진단 못 함    →  「만료까지 N일 남았습니다」
-   수집 고지                      그대로(정확함)
-   ```
-3. **대장 대기 표 정리** — 위 둘이 확인되면 `docs/WORKLIST.md` 배포 대기 목록에서
-   **이 방 줄만** 지운다(「진단 이상값 정리」). **다른 방 줄은 건드리지 않는다.**
-   지금 대기 표는 다른 방이 다섯 묶음을 0.3.557 한 판으로 정리해 둔 상태다.
+1. **변경이력이 66판 뒤처졌다** — `apps/web/src/lib/changelog.ts` 맨 위가 `0.3.497` 인데
+   운영은 `0.3.563+`. 여러 방의 판이 밀린 것이라 **사장님 판단이 필요**하다. 채우려면
+   `docs/WORKLIST-HISTORY.md` 와 대장 미배포 머리말을 대조해 초안을 잡는다.
+2. **venomad 재진단** — 새 판이 도는 것을 확인한 뒤 `www.venomad.com` 을 한 번 돌려,
+   「구조화 데이터의 @id가 엔터티 간에 연결되는가」가 통과로 바뀌는지 본다.
+   통과면 오진이었던 것, 아니면 실제로 안 엮인 것이고 **이제는 조치 카드가 함께 뜬다.**
+3. **판 번호 정리** — 이번 셋은 `claim_version` 없이 나가 다른 방의 `0.3.563` 안에 얹혔다.
+   다음 판을 물릴 때 이 사실을 알고 세야 한다(대장 미배포 머리말에 적어 뒀다).
 
 ## 대기/차단
 
-- **`gh` 는 방마다 다시 깔아야 한다** — `apt-get install -y gh`(우분투 universe, 2.45.0).
-  릴리스 tarball 은 못 받는다: `cli/cli` 가 이 방의 GitHub 범위 밖이라 API 가 거절한다.
-  `GH_TOKEN` 은 이미 환경에 있고 붙어 있는 저장소에는 잘 닿는다.
-- **이 방의 `gh` 로 못 하는 것 둘** — GraphQL(`gh workflow run`)과
-  workflow_dispatch(`actions:write`)가 **403** 이다. REST 조회는 된다.
-- **사장님 몫 — 사이트 설정.** `http://www.venomad.com/` 80포트가 **403** 이다.
-  **301 to https** 로 바꾸셔야 명함·인쇄물·옛 링크 유입과 그 신뢰도가 살아난다.
-  `www` 없는 주소도 함께 점검(PSI 가 아예 처리를 못 했다). 코드로 못 고친다.
-- **CI 를 필수 검사로**(s19 부터 남은 것) — `Settings → Branches → main →
-  Require status checks → CI`. 이게 없어 빨간불 PR 이 main 에 들어온 적이 있다.
+- **이 방에서 `make deploy` 가 막힌다**(자동 승인기). 우회 절차는 이것뿐이다 —
+  ① 후보 가지에 올려 CI 채점 → ② 초록이면 사장님이 한 줄로 main 에 올린다.
+  ```
+  git push -f origin HEAD:deploy-candidate-<가지이름을 -로 눕힌 것>
+  # CI 초록 뒤
+  cd $(mktemp -d) && git init -q && git fetch -q <repo> <후보가지> && \
+    git push <repo> FETCH_HEAD:refs/heads/main && echo PUSHED
+  ```
+  **`claim_version` 이 빠지는 경로라 판 번호·변경이력이 안 물린다**(오류 대장 201).
+- **`gh` 는 방마다 다시 깔아야 한다** — `apt-get install -y gh`. REST 는 되고
+  **GraphQL·workflow_dispatch 는 403**. CI 로그 내려받기도 egress 차단이라 **못 읽는다** —
+  실패 원인은 커밋을 받아 **직접 재현**해서 찾는다(이번에 그렇게 찾았다).
+- **veo-platform 개발 환경**(컨테이너는 매번 초기화):
+  ```
+  /usr/bin/python3.12 -m venv .venv && .venv/bin/pip install -e "apps/api[dev]" -e apps/worker
+  pnpm install --frozen-lockfile
+  service postgresql start          # 자주 혼자 내려간다. 실패하면 먼저 이것부터 본다
+  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
+  printf 'localhost:5432:*:root:veo\n' > ~/.pgpass && chmod 600 ~/.pgpass
+  PGPASSWORD=veo make db-test-create
+  PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" make ci-local
+  ```
+- **실서비스를 못 잰다** — `venomad.com`·Railway·GitHub Actions 로그 전부 egress 차단.
 
 ## 주의·제약
 
-- **veo-platform 개발 환경 세우기**(컨테이너는 매번 초기화된다):
-  ```
-  PYTHON=/usr/bin/python3.12 make setup
-  pnpm install --frozen-lockfile
-  service postgresql start
-  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
-  PGPASSWORD=veo make db-test-create
-  PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" make test-db
-  ```
-  [실측 2026-09-09] 이 방에서 전부 돌았다 — `ci-local` 7,276 · DB 1,242 · 웹 2,534.
-- **이 방은 실서비스를 못 잰다** — `venomad.com`·Railway·`pagespeed.web.dev`·`archive.org`
-  전부 egress 403. `www.googleapis.com` 계열만 열려 있다(PSI 공용 몫은 하루 한도 소진).
-- **못 재는 자리에서는 가설을 가설이라고만 말한다.** 이번에 세 번 단언하고 세 번 갈렸고
-  **발견자가 세 번 다 사장님**이었다(오류 대장 192).
-- 이 가지 외로 푸시 금지. 배포는 **`make deploy` 만**, 오더 없이 밀지 않는다.
-- 대장·변경이력에 「민다·푸시」 금지(`two-words-only` 관문) — 「커밋」·「배포」 두 낱말만.
+- **CI 결과를 종료값으로 읽지 않는다.** 배경 실행 알림의 `exit 0` 은 껍데기의 값이다.
+  출력 파일에서 `N passed`/`Error` 줄을 직접 뽑아 근거로 쓴다(오류 대장 195).
+- **보고서의 숫자는 표를 만든 그 실행에서 함께 뽑는다**(오류 대장 196).
+- **막힌 명령을 손으로 대신할 때는 그 명령의 본문을 먼저 읽는다** — 내가 대신하지 못하는
+  단계를 적어 두고, 「끝났다」고 보고하기 전에 남은 일로 올린다(오류 대장 201).
+- 대장(`docs/WORKLIST.md`)은 **여러 방이 같이 쓴다.** 다른 방 줄은 건드리지 않는다.
+  충돌이 나면 대장은 main 것을 따르고 내 줄만 다시 올린다. 「민다·푸시」 금지 낱말.
+- 예시 코드에 **지어낸 사실 금지** — 금액·기간·주소·전화는 `[ ]` 로 비운다(관문이 잡는다).
 - 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
-  `Claude-Session: https://claude.ai/code/session_01RkCSy2RcrHt6i2FyRmDyYs`.
-  모델 ID 는 트레일러에만.
-- 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
+  `Claude-Session: …`. **모델 ID 는 트레일러에만.**
+- 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값은 «—», 지어낸 수치 금지, 의료광고법 준수.
+- **사장님 작업 방식** — 짧게, 실행할 것 하나만. 설명이 길면 되묻게 된다.
+  터미널에 붙여넣을 것은 **줄바꿈 없는 한 줄**로 준다(`\` 가 끼면 zsh 가 멈춘다).
 
 ## 참고
 
-- veo-platform 은 `add_repo` 로 붙인다(owner `recon9973-lang`) → `/home/user/veo-platform`.
-- 대장은 `docs/WORKLIST.md`(615줄 규격 · 1,200줄 상한). 날짜별 기록은 `WORKLIST-HISTORY.md`
-  이고 **평소에 열지 않는다.**
-- 판 번호는 **나갈 때** `claim_version.py` 가 물린다. 미리 잡지 않는다.
+- 전수조사 보고서: https://claude.ai/code/artifact/3d881174-925a-45d6-9e70-02c37e0d6d6c
+  (조치 문안 작업 **전** 상태다. 갱신 필요.)
+- 사장님 맥에 `~/veo-platform` **없다.** 임시 폴더로 받아 쓰는 방식으로 드린다.
