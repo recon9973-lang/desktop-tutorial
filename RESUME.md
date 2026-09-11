@@ -45,6 +45,8 @@ v0.3.561  gh 없는 방에서도 배포가 끝까지 간다(REST 흉내) · 판 
 - 대기 표와 §2 머리말의 미배포 범위가 일치해야 한다(`worklist.test.ts`).
 - 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
   `Claude-Session: https://claude.ai/code/session_01M2Z4aZUvu9XDna8jx9EH3A`. 모델 ID 는 트레일러에만.
+- **쉬운 말로 쓴다**(사장님 지시 2026-09-11 «앞으로 쉬운말 써») — 「카드」·「패널」 같은
+  화면 용어 금지. 봐 달라고 할 때는 **어느 탭 · 어디쯤 · 뭐라고 적혀 있는지** 셋을 적는다.
 - 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
 - **이 방은 실서비스로 못 나간다**(프록시 CONNECT 403) — 잔여·판 실측은 화면이나
   `rollout-check.yml` 로 잰다.
