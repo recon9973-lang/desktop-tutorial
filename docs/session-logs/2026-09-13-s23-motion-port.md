@@ -55,3 +55,25 @@
 - **veo-platform 배포 전 환경 세우기**: `PYTHON=/usr/bin/python3.12 make setup` · `pnpm install --frozen-lockfile` · `service postgresql start` · `su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""` · `PGPASSWORD=veo make db-test-create`. **postgres 는 세션 중에 죽는다** — 점검이 빨간불이면 먼저 `pg_isready`.
 - `make deploy` 는 `VEO_DEPLOY_ORDER="사장님 원문"` 없이는 안 나간다.
 - 방이 여럿이라 **main 이 작업 중에 움직인다.** 배포 직전 `git fetch` 로 확인하고, 밀기 전이면 멈추고 합친다.
+
+## 세션 끝에 확인한 것 — 시안에 다음 판이 와 있다 (2026-09-14 02:0x KST)
+
+배포가 나간 그 밤(23:05~23:30 KST)에 사장님이 Lovable 시안에 **다음 방향**을 주셨고,
+시안은 커밋 넷으로 답한 뒤 「전부 완료」라고 보고했다. **실서비스에는 아직 한 줄도 안
+들어갔다.**
+
+```
+오더 원문   색상 체계: 기존 색상 그대로 · 글꼴: 현대적 한국어형 ·
+            화면 구조: 실행 우선 대시보드 · 디자인 방향: Modular analytical grid ·
+            모든 페이지 검토해야돼
+시안 커밋   대시보드 그리드 재구성 · 대시보드 모듈화·메뉴 · 계획 문서 · 전체 화면 폭 정정
+새 문서     roadmap.md(4항목 체크) · anseo-전체-페이지-디자인-정비-계획-2026-09-13.md ·
+            anseo-운영-현황-기반-디자인-재점검-실행-계획-2026-09-13.md
+```
+
+이번 세션의 모션 판과 **겹치지 않는다** — 그쪽은 움직임, 이번 시안은 배치·구조다.
+맞닿는 자리 셋: 623px 가로 넘침(모션 판은 상권 화면 하나만 고쳤다) · 「진단 못 함」을
+항상 글자로(실서비스는 이미 `—` 규칙) · 로딩 애니메이션 시작·끝 멈춤(링 로더 건 ·
+모션 판이 안 건드린 곳).
+
+다음 방이 할 일과 주의는 `RESUME-motion-port.md` 「바로 이어갈 작업」에 적었다.
