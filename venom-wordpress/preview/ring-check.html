@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>링 점검</title>
+<link rel="stylesheet" href="/assets/ring-loader.css?v=1.1.0">
+<style>
+  body{margin:0;background:#0c0c0e;color:#e8e8ea;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
+       word-break:keep-all;overflow-wrap:anywhere}
+  .wrap{max-width:560px;margin:0 auto;padding:20px 16px 48px}
+  h1{font-size:19px;margin:0 0 4px}
+  .sub{color:#9b9ba1;font-size:13px;margin:0 0 20px}
+  #stage{position:relative;height:320px;border:1px solid #2a2a30;border-radius:14px;overflow:hidden;margin-bottom:16px}
+  #stage .filler{padding:14px}
+  .filler div{padding:7px 0;border-bottom:1px solid #1e1e24;color:#6f6f77;font-size:13px}
+  button{width:100%;padding:14px;font-size:16px;font-weight:600;border:0;border-radius:12px;
+         background:#0075de;color:#fff;margin-bottom:16px}
+  button[disabled]{opacity:.5}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid #23232a;vertical-align:top}
+  th{color:#9b9ba1;font-weight:500;width:44%}
+  td{font-variant-numeric:tabular-nums}
+  .bad{color:#ff8b7a;font-weight:700}
+  .ok{color:#7ad19a}
+  #out{display:none}
+  .copy{background:#23232a;margin-top:16px}
+  .note{color:#77777f;font-size:12.5px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>링 로딩 점검</h1>
+  <p class="sub">아래 단추를 누르면 <b>실제 링</b>을 25초 동안 돌리면서 어디서 몇 ms 멈추는지 잽니다.
+     끝나면 표가 나옵니다. 그 표를 그대로 보내 주시면 됩니다.</p>
+
+  <div id="stage"><div class="filler" id="filler"></div></div>
+  <button id="go">25초 동안 재기</button>
+
+  <div id="out">
+    <table id="tbl"></table>
+    <button class="copy" id="copy">표를 글자로 복사</button>
+  </div>
+  <p class="note">이 페이지는 검색에 안 걸리고, 사이트 어디에서도 연결돼 있지 않습니다.</p>
+</div>
+
+<script defer src="/assets/ring-loader.js?v=1.5.0"></script>
+<script>
+(function(){
+  var filler=document.getElementById('filler');
+  var rows='';
+  for(var i=0;i<14;i++) rows+='<div>진단 항목 '+(i+1)+' — 홈페이지 구조와 메타 정보를 확인합니다</div>';
+  filler.innerHTML=rows;
+
+  function q(v){ return v==null?'—':v; }
+
+  document.getElementById('go').addEventListener('click', function(){
+    var btn=this; btn.disabled=true; btn.textContent='재는 중… 25초';
+    var el=document.getElementById('stage');
+
+    if(!window.RingLoader){ alert('링 로더를 못 불렀습니다'); btn.disabled=false; return; }
+
+    var reduced=false;
+    try{ reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+
+    var tMount=performance.now();
+    RingLoader.mount(el,{flow:'seo',caption:'재는 중…'});
+    var v=el.querySelector('video');
+
+    var frames=[], raf=[], stop=false, firstFrame=null;
+    (function tick(t){ raf.push(t); if(!stop) requestAnimationFrame(tick); })(performance.now());
+
+    if(v && v.requestVideoFrameCallback){
+      var onFrame=function(now,meta){
+        if(firstFrame===null) firstFrame=meta.presentationTime-tMount;
+        frames.push({t:meta.presentationTime,m:meta.mediaTime});
+        if(!stop) v.requestVideoFrameCallback(onFrame);
+      };
+      v.requestVideoFrameCallback(onFrame);
+    }
+
+    setTimeout(function(){
+      var tDone=performance.now();
+      RingLoader.done(el,'<div class="filler">'+rows+'</div>');
+      setTimeout(function(){ stop=true; report(tDone); }, 2000);
+    }, 25000);
+
+    function worst(list,from,to){
+      var w=0,at=0;
+      for(var i=1;i<list.length;i++){
+        if(list[i-1]<from||list[i]>to) continue;
+        var g=list[i]-list[i-1];
+        if(g>w){ w=g; at=list[i-1]; }
+      }
+      return {ms:Math.round(w),at:Math.round(at-from)};
+    }
+
+    function report(tDone){
+      var ft=frames.map(function(f){return f.t;});
+      var gaps=[],wraps=[];
+      for(var i=1;i<frames.length;i++){
+        var g=frames[i].t-frames[i-1].t;
+        gaps.push(g);
+        if(frames[i].m<frames[i-1].m) wraps.push({g:g,at:frames[i-1].m});
+      }
+      var sorted=gaps.slice().sort(function(a,b){return a-b;});
+      var med=sorted.length?sorted[Math.floor(sorted.length/2)]:0;
+      var worstFrame={ms:0,at:0,m:0};
+      for(var j=1;j<frames.length;j++){
+        var gg=frames[j].t-frames[j-1].t;
+        if(gg>worstFrame.ms) worstFrame={ms:Math.round(gg),at:Math.round(frames[j-1].t-tMount),m:+frames[j-1].m.toFixed(2)};
+      }
+      var wrapWorst=0; wraps.forEach(function(w){ if(w.g>wrapWorst) wrapWorst=w.g; });
+
+      var startJank=worst(raf,tMount,tMount+2000);
+      var endJank=worst(raf,tDone,tDone+2000);
+
+      var src = v ? (v.currentSrc||'').split('/').pop() : '—';
+      var played = v ? (v.classList.contains('playing')||frames.length>0) : false;
+
+      var rowsOut=[
+        ['재생한 파일', src],
+        ['영상이 실제로 돌았나', played?'<span class=ok>돌았다</span>':'<span class=bad>안 돌았다 — 정지 사진만</span>'],
+        ['모션 최소화 설정', reduced?'<span class=bad>켜져 있음 — 영상을 아예 안 튼다</span>':'꺼져 있음'],
+        ['첫 프레임까지', firstFrame===null?'<span class=bad>—</span>':Math.round(firstFrame)+' ms'],
+        ['내놓은 프레임 수', frames.length],
+        ['보통 한 칸', med?med.toFixed(1)+' ms':'—'],
+        ['가장 오래 멈춘 칸', worstFrame.ms?(worstFrame.ms+' ms (시작 '+worstFrame.at+'ms 뒤 · 영상 '+worstFrame.m+'초 자리)'):'—'],
+        ['되감기 중 가장 긴 칸', wrapWorst?Math.round(wrapWorst)+' ms':'—'],
+        ['뜰 때 화면 멈춤', startJank.ms+' ms'],
+        ['사라질 때 화면 멈춤', endJank.ms+' ms'],
+        ['화면', innerWidth+'×'+innerHeight+' · DPR '+(devicePixelRatio||1)],
+        ['브라우저', navigator.userAgent]
+      ];
+      var html='';
+      rowsOut.forEach(function(r){ html+='<tr><th>'+r[0]+'</th><td>'+q(r[1])+'</td></tr>'; });
+      document.getElementById('tbl').innerHTML=html;
+      document.getElementById('out').style.display='block';
+      btn.textContent='다시 재기'; btn.disabled=false;
+
+      document.getElementById('copy').addEventListener('click',function(){
+        var txt=rowsOut.map(function(r){ return r[0]+': '+String(r[1]).replace(/<[^>]*>/g,''); }).join('\n');
+        try{ navigator.clipboard.writeText(txt); this.textContent='복사했습니다'; }
+        catch(e){ prompt('아래를 복사해 주세요', txt); }
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>
