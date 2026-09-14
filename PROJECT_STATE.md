@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-14 검수 보고서 — 이력 연결 한 쪽은 끝났고, 다른 쪽은 더 앞에서 막혀 있다
+- 2026-09-14 검수 보고서 — 주소 대조는 끝났고, 조치 문구 한 줄은 문구가 아니었다
+- 2026-09-14 검수 보고서 — 권고 하나가 틀렸다는 것을 적는다
+- 2026-09-14 인계에 ① 끝났음을 적는다 — 워커도 0.3.575
 - 2026-09-14 체크포인트 s23 — 검수 방 인계 (오더 20건 도달)
 - 2026-09-13 검수 보고서에 1.8.0 발행을 반영한다
 - 2026-09-13 검수 보고서를 지금 상태에 맞춘다 — 고친 것과 내가 틀린 것
 - 2026-09-13 진단 96항목을 수집·진단·제안 세 축으로 검수한다
-- 2026-09-11 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-11 셰이더로 그린 링을 파일로 남긴다 — 아직 켜지 않는다 (#244)
-- 2026-09-10 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-11 링이 처음 뜰 때 서 있던 것을 없앤다 — 진단 페이지를 열 때 미리 받는다 (#243)
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 5d8136d 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 9746a1f 기준. 값·비밀은 포함하지 않음.*
