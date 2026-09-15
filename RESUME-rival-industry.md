@@ -1,68 +1,82 @@
-# RESUME (경쟁사·업종 방) — 2026-09-11
+# RESUME (경쟁사·업종 방) — 2026-09-15
 
 > **이 파일은 「경쟁사·업종 방」 것이다.** 루트 `RESUME.md`(진단 오진 방) ·
 > `RESUME-aeo-grand.md`(자동 진단 방) · `RESUME-ring-loader.md`(링 로더 방)을 **덮지 않는다.**
-> 상세는 `docs/session-logs/2026-09-11-s23.md`. 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> 상세는 `docs/session-logs/2026-09-15-s24.md`(이번) · `2026-09-11-s23.md`(앞선).
+> 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
 ## 지금까지 (핵심만)
 
-사장님 물음 — *"여긴 병원이 아니라 마케팅인데, 왜 병원이 경쟁사로 나오지?"*
+사장님 물음에서 시작했다 — *"여긴 병원이 아니라 마케팅인데, 왜 병원이 경쟁사로 나오지?"*
 
-AEO 콘솔 「우리가 빠진 답변엔 누가 나오나」가 **업종을 안 넘겨** `names_in` 이 MEDICAL 로
-떨어졌다. 병원 꼬리로만 이름을 뽑으니 마케팅 거래처 화면에 병원 다섯·「센터」 셋이 서고
-경쟁 대행사는 0곳이었다. **자료가 그런 게 아니라 체가 병원 모양이었다.**
-
-**고침은 `veo-platform` 가지 `claude/rival-names-by-industry` 에 있다 — 커밋 셋, 미배포.**
+**판 둘이 나왔다.**
 
 ```
-5b4f09e  업종을 넘긴다(run_rivals·auto_register) + 마케팅·광고 업종 신설(꼬리 12)
-4f6ca7a  다음 판을 대장 §4-B 에 적는다 (자료화 + 유추)
-176d6d0  비교 대상에서 빼는 단추 (끌 자리가 화면에 없었다)
-
-관문   ci-local 7,423 통과 · 웹 292파일 2,550 통과 · tsc 0 · next build 성공
+0.3.566  나갔다 (ANSEO 방이 냈다)
+         빠진 답변의 이름을 업종 따라 뽑는다 + 마케팅·광고 업종 + 비교 대상 빼는 단추
+0.3.583  **안 나갔다 — ANSEO 방에 넘겼다** (사장님 지시 2026-09-15 «ANSEO 방에 넘겨»)
+         업종을 코드에서 자료로 + 기타면 홈페이지에서 읽는다
+         가지 claude/industry-as-data · 끝 커밋 3f287874
 ```
 
 ## 바로 이어갈 작업
 
-1. **다음 판 — 업종을 코드에서 자료로 빼고, 기타면 홈페이지에서 읽는다.**
-   대장 `docs/WORKLIST.md` **§4-B** 에 순서·경계가 적혀 있다. 사장님 확정 사항:
+1. **0.3.583 이 나갔는지 확인한다.**
    ```
-   자료화   IndustryProfile 을 YAML 로 · 화면 목록은 서버가 내려준다(GET /industries)
-   유추     기타·빈 값이면 brands/discovery.py 가 읽는 홈페이지(schema.org @type·
-            제목·본문)로 고른다. 화면이 「추정」이라 말하고 근거를 낸다. 못 읽으면 «—»
-   드롭다운  업종을 빼지 않는다 — 유추가 틀렸을 때 고칠 자리
-   경계     MEDICAL 은 특별 취급이 남는다(/console/medical 게이트·심평원 카드)
+   git -C /home/user/veo-platform fetch origin main
+   git merge-base --is-ancestor 3f287874 origin/main && echo 나갔다 || echo 아직
    ```
-2. **배포 상태 확인** — 대기 표 두 줄(0.3.564 다른 방 + 이 건)이 나갔는지.
-   나갔으면 사장님께 ① 업종을 마케팅·광고로 ② 재진단 ③ 병원 다섯 빼기 를 안내한다.
+   아직이면 ANSEO 방에 이 문장을 그대로 준다 —
+   ```
+   veo-platform 가지 claude/industry-as-data 를 make deploy 로 내라.
+   끝 커밋 3f287874 · 판 0.3.583 (이미 물려 있다).
+   VEO_DEPLOY_ORDER 에 사장님 문장을 그대로 넣어야 밀린다.
+   ```
+   나갔으면 **대장 대기 표에서 내 줄만 지운다**(다른 방 줄은 안 건드린다).
+
+2. **나간 뒤 사장님 몫 넷을 안내한다** — 1~4 는 이미 0.3.566 으로 나가 있어 지금도 된다.
+   ```
+   ① 거래처 「베놈」 업종을 📣 마케팅·광고 로 바꾸고 저장
+   ② AEO 진단을 한 판 새로 돌린다 (저장된 옛 판은 옛 셈법 그대로다)
+   ③ 「우리가 빠진 답변엔 누가 나오나」에서 병원이 사라졌는지 본다
+   ④ /console/competitors 에서 자동 등록된 병원 다섯 곳을 「비교 대상에서 빼기」로 끈다
+   ```
 
 ## 대기/차단
 
-- **배포는 ANSEO 방 몫**(사장님 지시 2026-09-09). 만드는 방은 **검사까지만** 하고 가지를
-  넘긴다 — 이 방에서 `make deploy` 를 돌리지 않는다. 승인은 **모아서 한 번에**(2026-09-01).
-- **사장님 몫** — 거래처 「베놈」 업종을 📣 마케팅·광고 로 바꿔야 고침이 효력을 낸다.
-  지금 값은 「기타」다(2026-09-11 사장님 화면).
-- **이 방은 운영을 못 잰다** — 운영 DB·운영 주소 egress 403. 실제 답변 본문 대조,
-  도는 판 확인 전부 «—».
-- **veo-platform 은 `add_repo` 로 붙인다**(owner `recon9973-lang`) → `/home/user/veo-platform`.
-  환경: `PYTHON=/usr/bin/python3.12 make setup` · `pnpm install --frozen-lockfile` ·
-  `service postgresql start` · `su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""` ·
-  `PGPASSWORD=veo PGUSER=root make ci-local`.
+- **이 방은 `make deploy` 를 끝까지 못 끈다** [실측 2026-09-15 · 두 번]. 관문 재실행
+  도중 프로세스가 잘린다(`setsid` 로 떼어도 같았다). **배포는 ANSEO 방 몫**이고,
+  그것이 대장의 원래 규칙이기도 하다(사장님 지시 2026-09-09).
+- **판 번호는 방 사이에서 부딪힌다** — 이번이 다섯 번째였고 내 것이 물러났다
+  (0.3.582 → 0.3.583). 물러날 때 고칠 자리 다섯: `apps/api/src/veo/__init__.py` ·
+  `changelog.ts` · `WORKLIST.md` 대기 표 · `WORKLIST.md` §2 미배포 줄 ·
+  `WORKLIST-HISTORY.md`. 그 뒤 openapi 재생성 + api-client 재생성.
+- **이 방은 운영을 못 잰다** — 운영 주소·운영 DB egress 403. 확인은 사장님 화면이 원천.
 
 ## 주의·제약
 
-- **못 재는 자리에서는 가설을 가설이라고만 말한다.** 이번에 「대구병원」이 잘린 말이라는
-  가설을 정규식으로 직접 돌려 **실측으로 바꿨다**. 그 전까지는 가설로만 말했다.
-- **MEDICAL 쪽 「대구병원마케팅 → 대구병원」 잘림은 안 고쳤다**(대장 §4-A). 이미 잘린
-  뒤라 끝으로 못 거르고, 뒤 글자를 보는 규칙은 병원 거래처 **전부**의 이름 뽑기를 바꾼다.
-- 대장 규칙: 무엇을 끝내면 그 자리에서 `docs/WORKLIST.md` 를 고친다(`tests/ledger/` 가 막는다).
-  줄 상한 1,300(지금 1,255). 새 일감은 대기 표에 **판 번호 없이**(`—`) 쌓는다.
+- **관문을 먼저 믿는다.** 이번에 관문이 일곱 번 세웠고 **일곱 번 다 맞았다**(배포 이미지에
+  자료 미탑재 · mypy 열 곳 · 옛 자리를 세던 시험 · 60자 문장 · 배포 오더 문장 ·
+  변경이력 · 대장 갱신). 「내 쪽이 맞는데 관문이 깐깐하다」고 생각되면 대개 내가 틀렸다.
+- **사장님 몫을 적을 때는 지금 할 수 있는 것만 위에 둔다**(오류 대장 203). 못 하는 것은
+  「나간 뒤」를 그 줄 안에 붙인다. 화면 안내는 그 화면에 그것이 있다는 것을 실측했을 때만.
+- veo-platform 환경 세우기(컨테이너는 매번 초기화):
+  ```
+  PYTHON=/usr/bin/python3.12 make setup · pnpm install --frozen-lockfile
+  service postgresql start
+  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
+  PGPASSWORD=veo PGUSER=root make ci-local     ← 이 환경변수 없으면 DB 시험이 전부 깨진다
+  ```
 - 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
   `Claude-Session: https://claude.ai/code/session_01NDFshUT74yv9JzuQyXmQSk`. 모델 ID 는 트레일러에만.
-- 이 저장소(desktop-tutorial)의 가지는 `claude/stoic-fermi-i01mg7` 다. 다른 가지로 밀지 않는다.
+- 이 저장소(desktop-tutorial)의 가지는 `claude/stoic-fermi-i01mg7`. 다른 가지로 밀지 않는다.
 
-## 참고
+## 참고 — 이번 판이 만진 자리
 
-- 콘솔 코드 자리: `apps/api/src/veo/observations/rivals.py` · `mention_roster.py` ·
-  `industries/registry.py` · `competitors/auto_register.py` ·
-  `apps/web/src/lib/industries.ts` · `.../console/competitors/BrandForm.tsx`
+```
+자료        packages/shared-types/industries.json        ← 새 업종은 여기 한 칸이 전부다
+서버        industries/registry.py · schema.py · inference.py
+이름 뽑기    observations/mention_roster.py (꼬리·일반명사를 자료에서 읽는다)
+화면        lib/industries.ts · competitors/SiteIdentityPicker.tsx
+이미지      infra/docker/{api,worker}.Dockerfile — 싣고(COPY) 가리킨다(ENV)
+```
