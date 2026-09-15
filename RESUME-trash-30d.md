@@ -1,75 +1,78 @@
-# RESUME (삭제·휴지통 방) — 2026-09-14
+# RESUME (삭제·휴지통 방) — 2026-09-15 마감
 
 > 이 저장소에는 인계가 여럿이다. **이것은 「삭제·휴지통 방」 것이다.**
 > 상세는 `docs/session-logs/2026-09-14-s23-trash-30d.md`.
 > **구현은 `veo-platform` 에 있다** — 이 저장소에는 ANSEO 문서만 있다.
 
-## 지금까지 (핵심만)
+## 끝난 것 — **기능은 나갔다**
 
-사장님이 「등록된 업체 삭제 단추 + 30일 휴지통」을 오더하셨고, 이어서 「등록되지 않은
-업체(테스트한 업체)도」, 그리고 사양을 확정해 주셨다 —
-**«삭제-휴지통 이동-휴지통 내에 의무 보관 30일-30일 후 자동삭제-30일 전 원할시 바로 삭제 가능»**.
-
-전부 만들어 `veo-platform` 가지 **`claude/customer-trash-30d`** 에 커밋 둘이 올라가 있다.
+사장님 확정 «삭제-휴지통 이동-휴지통 내에 의무 보관 30일-30일 후 자동삭제-30일 전 원할시
+바로 삭제 가능» + «등록되지 않은 업체(테스트한 업체)도 삭제할 수 있도록» 를 전부 만들어
+**판 0.3.579 로 나갔다.**
 
 ```
-966ca38  지운 업체를 30일 담아 두는 자리를 만든다 — 재 본 자리도 지울 수 있게
-724ce55  30일은 못 지우는 기간이 아니라 저절로 없어지는 때다 — 자동삭제를 넣고 잠금을 푼다
+[실측 2026-09-14 · git]  966ca38 · 724ce55 둘 다 origin/main 의 조상
+                          main `a9a155a9` · 판 0.3.579 · CI 초록
 ```
 
-둘째가 첫째의 **오독을 정정한 것**이다. 처음에 「의무 보관 30일」을 최소 보관 기간으로
-읽어 30일 전 영구삭제를 409 로 막아 놨는데, 사장님 뜻은 **자동삭제 시점**이었다.
+화면에서 보이는 것 — 거래처 목록 줄마다 「삭제」 · 제목 옆 「테스트 자리」·「휴지통」 ·
+`/console/customers/trash` · `/console/customers/tests`.
 
-## 바로 이어갈 작업
+## 남은 것 하나 — **도장(문서)만. 다음 배포에 딸려 보낸다**
 
-1. **배포** — 이것 하나만 남았다. 사장님이 «배포해» 하셨으나 **하네스가 막았다**(아래).
-   ```bash
-   cd veo-platform
-   git checkout claude/customer-trash-30d
-   git pull origin claude/customer-trash-30d      # 724ce55 인지 확인
-   make deploy
-   ```
-   `make deploy` 가 preflight → 후보 가지 채점 → **초록불일 때만** main 으로 민다.
-   판 번호(0.3.577)는 나갈 때 `claim_version` 이 스스로 물린다 — 미리 잡지 않는다.
-2. **나간 뒤 확인** — 콘솔 `/console/customers` 에서 줄마다 「삭제」, 제목 옆에 「테스트
-   자리」·「휴지통」이 보이는지. 휴지통에서 「그냥 두면 N일 뒤 자동삭제」가 붙는지.
-3. **대장 정리** — 나가면 `docs/WORKLIST.md` 배포 대기 목록에서 **이 방 줄만** 지운다
-   (「업체 삭제 단추 · 휴지통 · 30일 자동삭제」). 다른 방 줄은 건드리지 않는다.
+사장님 결정 2026-09-15: *"그만두고 다음 방에 맡겨"*.
 
-## 대기/차단
+가지 **`claude/customer-trash-30d`**(`b6a93a38`)에 「0.3.579 나갔다」를 대장에 적는
+도장 커밋이 있다. **코드 변화 0 · 문서만.** [4/5] 에서 **세 번 거절**됐다 — 채점(약 20분)
+도는 사이에 main 이 매번 앞섰다(오늘 여러 방이 동시에 나가고 있다).
 
-- **배포 명령이 이 방에서 막힌다.** `make deploy` 가 하네스 auto mode 분류기에 「Production
-  Deploy」로 걸려 거절된다. 사장님이 직접 돌리시거나, `.claude/settings.json` 에 Bash 권한
-  규칙을 더하셔야 한다. **우회하지 않았다.**
-- **배포 대기 목록에 여섯 줄이 있고 이 방 것은 하나다.** 나머지 다섯은 다른 방
-  (`claude/same-page-same-verdict` 등)이 만든 것으로 이 방이 읽지도 검사하지도 않았다.
-  함께 내보내려면 그 가지들을 합치고 검증하는 일이 따로 필요하다.
-- **STATE.md 와 WORKLIST.md 가 어긋나 있다** — STATE 는 미배포 「없다」였는데 WORKLIST
-  배포 대기에는 0.3.576 다섯 줄이 있었다. 이 방은 재지 않았으므로 **어긋남만 적어 두었다.**
-  나갈 때는 대기 표를 원천으로 본다.
+**다음에 배포하는 방이 이 가지를 합치면 함께 간다.** `claim_version` 이 그때 번호를 다시
+물린다. 이 방이 다시 `make deploy` 를 돌 이유는 없다 — 같은 경주를 또 도는 것뿐이다.
+
+급하지 않은 이유: 대장이 지금 틀리게 말하는 것은 「0.3.579 가 아직 대기」 한 줄뿐이고,
+그 내용은 이미 `docs/WORKLIST-HISTORY.md` 에 「나갔다」로 적혀 있다.
+
+## 사장님 몫 — **[5/5] 를 이 방이 못 쟀다**
+
+이 방은 운영 주소에 못 닿는다(egress 403). 「도달하지 못했다」가 아니라 **도달했는지
+모른다**. 실제로 0.3.579 가 도는지 재는 길 둘 —
+
+```
+curl -s https://veo-platform-production.up.railway.app/api/queue
+또는 콘솔 /console/customers 에서 줄마다 「삭제」가 보이는지 눈으로
+```
+
+Railway 콘솔이면 `veo-platform`·`veo-worker` **둘 다** 0.3.579 여야 한다 — 진단을 실제로
+돌리는 것은 워커라, 워커만 옛 판이면 화면에만 있고 진단에는 안 먹는다.
+
+## 이 판에서 배운 것 (다음 사람이 같은 데서 안 막히게)
+
+- **비운 대기 표는 그다음 배포를 막는다.** `claim_version` 은 대기 표에 줄(판 번호 또는
+  `—`)이 있어야 번호를 물린다. 도장 커밋이 표를 비우자 배포가 [1/4] 에서 섰다.
+  도장 자신도 나가는 변경이니 **제 줄을 `—` 로 쌓아야** 한다.
+- **[1/4] 는 절반만 고치고 설 수 있다.** `bump_version.sh` 가 판 파일을 올린 뒤
+  `claim_version` 이 대장에서 멈추면 판 파일만 앞선다. 되돌리고 다시 돌리면 된다.
+- **알렘빅 head 가 갈라지는 자리.** 같은 날 두 방이 마이그레이션을 만들면 둘 다 같은
+  부모를 가리켜 head 가 둘이 된다. 먼저 main 에 닿은 쪽 뒤로 잇는다(파일 이름의 시각도
+  함께 옮긴다 — 이름 순서와 잇는 순서가 어긋나면 헷갈린다).
+- **`VEO_DEPLOY_ORDER` 가 없으면 배포가 시작도 안 된다.** 사장님 원문을 그대로 인용한다.
+- **이 컨테이너의 PostgreSQL 이 잘 내려간다.** 시험이 통째로 빨간불이면
+  `pg_isready -h localhost -p 5432` 부터 본다 — 코드가 아니라 DB 가 죽은 것일 수 있다.
+  `service postgresql start`. [실측] 한 세션에 두 번 났다.
 
 ## 주의·제약
 
 - **가지**: veo-platform 은 `claude/customer-trash-30d`, desktop-tutorial 은
   `claude/zealous-cannon-16h04s`. 그 밖으로 푸시 금지.
-- **배포는 `make deploy` 만.** 오더 없이 밀지 않는다. 하루 2회 상한.
-- **이 컨테이너의 PostgreSQL 이 잘 내려간다.** preflight/시험이 통째로 빨간불이면
-  `pg_isready -h localhost -p 5432` 부터 본다 — 코드가 아니라 DB 가 죽은 것일 수 있다.
-  `service postgresql start` 로 살린다. [실측 2026-09-14] 한 세션에 두 번 났다.
-- veo-platform 개발 환경(컨테이너는 매번 초기화):
-  ```
-  PYTHON=/usr/bin/python3.12 make setup && pnpm install --frozen-lockfile
-  service postgresql start
-  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
-  PGPASSWORD=veo make db-test-create
-  ```
+- **배포는 `make deploy` 만.** 오더 없이 밀지 않는다.
+- **남의 방 줄을 지우지 않는다.** 지워야 할 때는 `merge-base --is-ancestor` 로 **재고**
+  지운다 — 판단이 아니라 잰 것이어야 한다.
 - 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
-  `Claude-Session: <이 세션 URL>`. **모델 ID 는 트레일러에만** — 커밋·PR·코드 본문에 넣지 않는다.
+  `Claude-Session: <이 세션 URL>`. 모델 ID 는 트레일러에만.
 - 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
 
 ## 참고
 
-- veo-platform 은 `add_repo`(owner `recon9973-lang`) 로 붙인다 → `/home/user/veo-platform`.
-- 그 저장소의 대장은 `docs/WORKLIST.md`(§1 확정 · §2 현황 · §4 남은 것), 지금 상태는
-  `docs/STATE.md` 한 장. 날짜별 기록 `WORKLIST-HISTORY.md` 는 **평소에 안 연다.**
-- 이 저장소 현황은 `PROJECT_STATE.md`, 지도는 `핵심두뇌_MASTER.md`.
+- veo-platform 은 `add_repo`(owner `recon9973-lang`) → `/home/user/veo-platform`.
+- 그 저장소 대장 `docs/WORKLIST.md` · 지금 상태 `docs/STATE.md` 한 장.
+- 이 저장소 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
