@@ -1,9 +1,9 @@
-# RESUME (검수 방 · ANSEO 96항목) — 2026-09-14 s25 마감
+# RESUME (검수 방 · ANSEO 96항목) — 2026-09-15 s26 마감
 
 > **이 저장소에 인계가 여럿이다 — 이 방 것은 이 파일이다.**
 > 루트 `RESUME.md`(진단 오진 방) · `RESUME-aeo-grand.md` · `RESUME-ring-loader.md` ·
 > `RESUME-motion-port.md` 는 **다른 방** 것이다.
-> 상세는 `docs/session-logs/2026-09-14-s25-anseo-review.md`. 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> 상세는 `docs/session-logs/2026-09-15-s26-anseo-review.md`(그 앞은 `…-s25-…`). 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
 ## 지금까지 (핵심만)
 
@@ -18,23 +18,55 @@
 100.000 → 100.000 · noindex 95.062 → **0.000**) · **SEO 1.13.0**(제목 중복 이중 감점.
 겹침 53.96 → 64.06) · **제목 길이를 폭으로**(`veo/common/text_width.py` 하나로).
 
-s25 는 **묵은 것을 치웠다.**
+s25 는 묵은 것을 치웠다(s23·s24 기록을 main 에 담고 · 열린 PR 6건을 다 닫고 ·
+`effective_at` 이 스위치가 아니라는 것을 찾았다).
 
-- s23·s24 기록을 main 에 담았다 — PR #246 → desktop-tutorial main `17aa37e`
-- **열린 PR 6건을 다 닫았다** — 이제 열린 PR **0건** (가지는 하나도 안 지웠다)
-- **`effective_at` 이 스위치가 아니라는 것을 찾았다** (아래 ①)
+**s26 이 한 것 둘.**
 
-## 지금 상태 — 미커밋 0 · 미배포 0
+- **연동 없이 소유권을 잰다** (사장님 «서치콘솔은 연결하지 않고 별도로 진단»).
+  소유 확인 태그는 콘솔이 아니라 사이트의 `<head>` 에 있고 우리는 그 HTML 을 이미
+  가져온다 — `gsc_verified`·`naver_swa_registered` 가 「영원히 진단 못 함」에서
+  벗어났다. 네이버는 공개 API 가 없어 **이것이 유일한 길**이다. 태그가 없으면
+  **실패가 아니라 진단 못 함**이다(확인 방법이 넷인데 우리가 보는 것은 하나).
+  [실측] 태그 유무로 종합 89.24 → 89.24 · 시험 10.
+- **판 물리기가 이미 나간 기록에 새 번호를 달던 것** — 아래 ⓐ. 기록을 되돌려 채우고
+  관문을 세웠다.
+
+## 지금 상태 — 미커밋 0 · **미배포 3커밋(대기 표 2건)**
 
 ```
-[실측 2026-09-14 · git]
-desktop-tutorial   미커밋 0 · 미배포 0     main 75fc154
-veo-platform       미커밋 0 · 미배포 0     main 1a801344 = 0.3.577
-가지: desktop-tutorial claude/friendly-mendel-mlvpsa (= origin/main)
-      veo-platform     claude/same-page-same-verdict (= origin/main)
+[실측 2026-09-15 · git]
+desktop-tutorial   미커밋 0 · main 보다 1커밋 앞    가지 22a4d78 (main a1e7aeb)
+veo-platform       미커밋 0 · main 보다 3커밋 앞    가지 7eb7aea2 (main 1a801344 = 0.3.577)
+가지: desktop-tutorial claude/friendly-mendel-mlvpsa
+      veo-platform     claude/same-page-same-verdict
 ```
 
-**`make deploy` 를 다시 돌릴 일이 없다.**
+**배포 오더는 아직 없다.** 대기 표 두 줄(연동 없이 소유권 재기 · 판 물리기 관문)을
+보여 드리고 여쭙는 것이 다음이다 — 초록불이어도 주문 없이 밀지 않는다.
+
+## ⓐ s26 이 찾은 것 — 나간 판 넷이 변경이력에 없었다
+
+[실측 2026-09-15 · git] 변경이력 **맨 위 항목 하나가 네 번 이름을 갈았다**.
+
+```
+f7293bd0   0.3.573 으로 적힘 · 그 내용이 그 번호로 나갔다
+a8589c42 → 0.3.574     81ee22a5 → 0.3.575
+9c35d958 → 0.3.576     1a801344 → 0.3.577
+```
+
+`claim_version` 은 「변경이력 맨 위 항목은 아직 안 나간 것」을 전제로 자리를 고른다.
+**배포하는 방이 자기 항목을 안 쓰면 그 전제가 깨진다** — 이미 나간 항목이 새 번호를
+받는다. 0.3.574~0.3.577 네 판은 무엇이 나갔는지 적힌 곳이 없었고, 사장님이 읽는
+변경이력은 0.3.577 이라는 이름으로 **09-13 에 나간 일**을 적고 있었다.
+
+되돌려 채웠다 — 09-13 항목은 0.3.573 으로, 이 방이 낸 **0.3.575·576·577** 세 판의
+항목을 적었고, 날짜별 기록에 `2026-09-14` 절을 넣었다. **0.3.574 는 비워 두었다**
+(이 방 것이 아니다 — 남의 방 몫을 그 방 말투로 지어 적지 않는다).
+
+관문: `origin/main` 의 맨 위 기록과 **같으면** 번호를 옮기지 않고 선다. main 을 못
+읽으면 「못 쟀습니다」를 적고 지나간다. 시험 4 · 반증 확인(고치기 전 저장소에서 실제로
+걸렸다).
 
 ## 바로 이어갈 작업
 
@@ -53,16 +85,33 @@ veo-platform       미커밋 0 · 미배포 0     main 1a801344 = 0.3.577
    곁길 둘 — 콘솔 `/console/scoring-versions`(「지금 적용 중인 명세」) · `GET /api/scoring/specs`.
    둘은 「명세가 있다」까지만 말한다. **점수가 움직이는지**는 리포트로 봐야 한다.
 
-2. **조치 문구 — 명세·계약 개정으로 올린다.** 「연결하면 잴 수 있다」가 네이버처럼
-   **열쇠를 받아도 못 재는** 자리에도 나간다. 문구가 명세의 `availability` 별로 정해지고
-   값이 셋뿐(`CUSTOMER_GRANTED`·`PAID_PROVIDER`·`REFERENCE_ONLY`)이라 그 자리를 가리킬
-   이름이 없다. `ProviderState.NOT_AVAILABLE` 이 알고 있지만 `CheckOutcome` 이 안 싣는다.
-   **새 `availability` 값**이거나 **`CheckOutcome` 에 한 칸** — 어느 쪽이든 판을 올린다.
+2. **조치 문구 — 사장님 결정을 기다린다(둘 중 하나).** 태그가 없는 네이버 자리에서
+   화면이 이렇게 나간다 — 앞 문장이 **있지도 않은 열쇠**를 찾아 나서게 한다.
 
-3. **서치콘솔을 진단에 배선** — `previous_indexed` 는 그 뒤의 일이다.
-   `search_console_payload`·`search_console_for` 가 **자기 모듈 밖에서 불리지 않는다.**
-   그래서 `seo.outcome.index_coverage_healthy` 는 지난 수치가 없어서가 아니라 **조회 자체를
-   못 해서** 진단 못 함이다. 「이으면 된다」로 적어 두면 다음 사람이 헛일을 한다.
+   ```
+   사이트 소유자가 권한을 연결해야 측정됩니다. … (공개 API 가 없어 자격증명을
+   받아도 이 값은 조회할 수 없습니다)
+   ```
+
+   문구가 명세의 `availability` 별로 정해지고 값이 셋뿐(`CUSTOMER_GRANTED`·
+   `PAID_PROVIDER`·`REFERENCE_ONLY`)이라 그 자리를 가리킬 이름이 없다. [실측 2026-09-15]
+   `CheckOutcome` 은 `extra="forbid"` 에 칸이 다 차 있어 **그냥 실어 보낼 자리도 없다.**
+
+   ```
+   ⓐ 명세에 새 `availability` 값 (권함)  SEO 1.14.0 발행 · 계약·생성 클라이언트 무변경
+   ⓑ `CheckOutcome` 에 한 칸            계약 개정 → openapi·생성 클라이언트·웹 타입까지
+   ```
+
+   **ⓐ 를 권한다** — 「열쇠를 받아도 못 잰다」는 그 검사의 성질이고 한 관측의 성질이
+   아니다. 어느 쪽이든 판을 올리는 일이라 오더를 받고 한다.
+
+3. ~~**서치콘솔을 진단에 배선**~~ — **배선하지 않는다**(사장님 2026-09-15). 연동 없이 잴
+   수 있던 둘은 태그로 열었고, 나머지 넷은 **페이지에서 잴 길이 없다**:
+   `sitemap_submitted`(제출·처리는 콘솔만 안다 — robots.txt 의 `Sitemap:` 줄은 이미
+   `seo.sitemap.discoverable` 이 세므로 여기서 또 읽으면 한 사실을 두 번 세는 것) ·
+   `impressions_available`·`data_freshness`(성과 자료) · `indexnow_configured`(키 파일
+   이름을 모른다). `index_coverage_healthy` 는 **진단 못 함으로 남는 것이 정확하다** —
+   색인된 페이지 수는 검색엔진만 아는 값이다.
 
 ## 대기/차단 — 사장님 몫
 
@@ -103,7 +152,8 @@ veo-platform       미커밋 0 · 미배포 0     main 1a801344 = 0.3.577
   ```
   관문은 `VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" \
   PGPASSWORD=veo bash scripts/preflight.sh`.
-  [실측 2026-09-14 · s24] 전부 돌았다 — ci-local 7,600 · 웹 2,578.
+  [실측 2026-09-15 · s26] **여섯 단계 전부 초록 — 「준비됨」** (ci-local **7,614** · 웹 2,578 ·
+  오늘 CI 상한 2회 중 1회 남음). 배포 오더만 없다.
 - **`make test-api` 와 `make ci-local` 은 범위가 다르다.** 커밋 전에 좁은 쪽만 돌리면
   배포 관문에서 걸린다. `ci-local` 을 직접 돌릴 땐 DB 주소를 줘야 한다(안 주면 오류 1,240건).
 - **판 목록은 `available_specs()` 로 본다.** `ls | tail` 은 사전순이라 `1.10.0` 이 `1.9.2`
