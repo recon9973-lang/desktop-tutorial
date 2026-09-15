@@ -1,0 +1,231 @@
+<!-- ═══════════════════════════════════════════════════════════════════
+     ANSEO 상권 탭 — 뼈대 (다 · 네 묶음 배치)
+     2026-09-15 · anseo-market-layout.css 와 한 벌이다.
+     이 파일은 돌아가는 화면이 아니라 옮겨 심을 뼈대다.
+     각 카드 주석의 「지금」은 현재 화면에서 그 카드가 있던 자리다.
+
+     줄 짜임 — 전부 12칸에 딱 맞는다
+       12 / 12 / 7+5 / 12 / 6+6 / 8+4 / 6+6 / 8+4 / 12
+     빈 자리 0 · 같은 값 두 번 0
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="mk-grid">
+
+  <!-- 머리 + 반경 칩 ─────────────────────────────────────────── -->
+  <div class="mk-c12" style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+    <div>
+      <h2>입지 — 반경 안의 경쟁</h2>
+      <p class="where"><!-- 중심 · 좌표 · 심평원 기준월 --></p>
+    </div>
+    <div class="mk-radii" role="group" aria-label="반경 고르기" style="margin-left:auto">
+      <button type="button" data-r="500">500m</button>
+      <button type="button" data-r="1000" aria-pressed="true">1km</button>
+      <button type="button" data-r="3000">3km</button>
+      <button type="button" data-r="5000">5km</button>
+      <button type="button" data-r="10000">10km</button>
+    </div>
+  </div>
+
+  <!-- KPI 다섯 칸 (S) · 반경 칩이 바꾸는 값 ───────────────────── -->
+  <div class="mk-kpis">
+    <div class="mk-kpi">
+      <div class="k"><i style="background:var(--mk-same)"></i>같은 과</div>
+      <div class="v">54<em>곳</em></div>
+      <div class="d">반경 1km 안 · 전체의 46%</div>
+    </div>
+    <div class="mk-kpi">
+      <div class="k"><i style="background:var(--mk-other)"></i>전체 병의원</div>
+      <div class="v">118<em>곳</em></div>
+      <div class="d">반경 1km 안 · 그 외 64곳</div>
+    </div>
+    <div class="mk-kpi">
+      <div class="k"><i style="background:var(--mk-pop)"></i>인구</div>
+      <div class="v">60,716<em>명</em></div>
+      <div class="d">반경 1km 안 · 65세 이상 29%</div>
+    </div>
+    <!-- 못 받은 값은 «—» 로 둔다. 0 으로 채우면 「없다」로 읽힌다 -->
+    <div class="mk-kpi mk-kpi--na">
+      <div class="k"><i style="background:#3b4649"></i>신규 개원</div>
+      <div class="v">—</div>
+      <div class="d">아직 못 받았습니다</div>
+    </div>
+    <div class="mk-kpi">
+      <div class="k"><i style="background:var(--mk-flow)"></i>방문자</div>
+      <div class="v">59,779<em>명/월</em></div>
+      <div class="d">서구 전체 · 최근월 59,447명</div>
+    </div>
+  </div>
+
+  <!-- ══ 묶음 1 · 입지·경쟁 ══════════════════════════════════ -->
+  <div class="mk-group"><h3>입지·경쟁</h3><span class="mk-rule"></span></div>
+
+  <!-- 가 · 지도 (7칸 · L) — 마커는 anseo-market-markers.js -->
+  <div class="mk-c7">
+    <div class="mk-card mk-card--l">
+      <div class="mk-hd"><h4>반경 안 병의원 분포</h4><span class="mk-unit">카카오맵 · 심평원 2026-06</span></div>
+      <div class="mk-bd mk-bd--flush">
+        <div class="mk-map">
+          <div id="kakaoMap" style="width:100%;height:100%"></div>
+          <div class="mk-mapnote">
+            점 표시 상한 240
+            <span class="flag" hidden>3km 이상은 군집 표기 필요</span>
+          </div>
+          <!-- legendHTML(counts) 가 채운다 -->
+          <div class="mk-legend" id="mapLegend"></div>
+        </div>
+      </div>
+      <div class="mk-ft">● 채운 점+링 = 같은 과 · ○ 속빈 점 = 그 외 병의원 · ▲ = 우리 병원</div>
+    </div>
+  </div>
+
+  <!-- 나 · 반경별 경쟁 (5칸 · L)
+       지금: 좌측 「경쟁 — 1km」 막대 카드가 이 표와 같은 값을 두 번 그렸다.
+       막대를 표 안 인라인 막대로 흡수하고 그 카드를 지운다. -->
+  <div class="mk-c5">
+    <div class="mk-card mk-card--l">
+      <div class="mk-hd"><h4>반경별 경쟁</h4><span class="mk-unit">곳 · 막대는 10km 대비</span></div>
+      <div class="mk-bd mk-bd--fill" style="gap:14px">
+        <div style="border:1px solid var(--mk-line);border-radius:6px;overflow:hidden;flex:none">
+          <table class="mk-table">
+            <colgroup><col style="width:74px"><col style="width:66px"><col style="width:74px"><col></colgroup>
+            <thead><tr><th>반경</th><th class="n">같은 과</th><th class="n">전체</th><th>분포</th></tr></thead>
+            <tbody>
+              <!-- 고른 반경 행에 tr.mk-hot -->
+              <tr class="mk-hot"><td>1km</td><td class="n">54</td><td class="n">118</td>
+                <td><span class="mk-ibar-wrap">
+                  <span class="mk-ibar mk-ibar--same"  style="width:1.45%"></span>
+                  <span class="mk-ibar mk-ibar--other" style="width:3.16%"></span>
+                </span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="flex:1 1 auto;display:flex;flex-direction:column;gap:9px;min-height:0">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:12px;font-weight:600">같은 과 비중</span>
+            <span class="mk-unit" style="margin-left:auto">같은 과 ÷ 전체</span>
+          </div>
+          <div class="mk-bars" id="shareBars"><!-- 반경 다섯 줄 --></div>
+        </div>
+      </div>
+      <div class="mk-ft">반경이 커져도 같은 과 비중은 38~46% 안에서만 움직입니다</div>
+    </div>
+  </div>
+
+  <!-- 나 · 경쟁 목록 (12칸 · M) — 한 곳 = 한 줄
+       지금: 가로 1칸(≈272px)이라 한 곳이 3~4줄로 밀렸다.
+       열 최소 폭 합이 ≈900px 이라 1칸으로는 어떤 조합도 안 들어간다. -->
+  <div class="mk-c12">
+    <div class="mk-card mk-card--m">
+      <div class="mk-hd">
+        <h4>경쟁 병의원 — 반경 1km</h4>
+        <span class="mk-unit">전체 118곳 중 같은 과 54곳 · 가까운 순</span>
+      </div>
+      <div class="mk-bd mk-bd--flush">
+        <table class="mk-table">
+          <colgroup>
+            <col style="width:46px"><col style="width:280px"><col style="width:92px">
+            <col style="width:112px"><col style="width:340px"><col>
+          </colgroup>
+          <thead><tr>
+            <th class="n">#</th><th>병원명</th><th>구분</th><th>경쟁</th>
+            <th>표방 진료과목</th><th>거리 — 0에서 1km</th>
+          </tr></thead>
+          <tbody>
+            <!-- 한 줄 본보기. 잘린 글자는 title 툴팁으로 전문을 준다 -->
+            <tr>
+              <td class="n" style="color:var(--mk-ink-3)">1</td>
+              <td title="{{병원명}}">{{병원명}}</td>
+              <td style="color:var(--mk-ink-2)">{{구분}}</td>
+              <td><span class="mk-tag mk-tag--same"><i></i>같은 과</span></td>
+              <td class="mk-subj" title="{{과목 전문}}">
+                <span>내과</span><span>신경과</span><span>비뇨의학과</span><span class="more">+1</span>
+              </td>
+              <td>
+                <span style="display:grid;grid-template-columns:1fr 54px;align-items:center;gap:9px">
+                  <span class="mk-barrow" style="display:block;height:8px;border-radius:3px;background:var(--mk-inset);overflow:hidden">
+                    <span style="display:block;height:100%;width:8.8%;border-radius:3px;background:var(--mk-same)"></span>
+                  </span>
+                  <span class="n" style="font-family:var(--mk-mono);text-align:right">88 m</span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mk-ft">심평원 병원정보서비스 2026-06 · 표방 진료과목 기준</div>
+    </div>
+  </div>
+
+  <!-- ══ 묶음 2 · 사는 사람 ══════════════════════════════════
+       두 인구 카드를 나란히 두고 3구간 띠의 축을 같게 맞춘다.
+       그래야 시군구 고령 30.1% ↔ 반경 1km 29% 가 눈으로 대조된다. -->
+  <div class="mk-group"><h3>사는 사람</h3><span class="mk-rule"></span></div>
+
+  <div class="mk-c6"><div class="mk-card mk-card--l">
+    <div class="mk-hd"><h4>인구 — 대구광역시 서구</h4><span class="mk-unit">2026-06-30 · 명</span></div>
+    <div class="mk-bd mk-bd--fill">
+      <!-- 총계 · 성비 · 3구간 띠 · 5세 단위 피라미드 -->
+    </div>
+    <div class="mk-ft">행정안전부 주민등록 인구통계</div>
+  </div></div>
+
+  <div class="mk-c6"><div class="mk-card mk-card--l">
+    <div class="mk-hd"><h4>인구 — 반경 1km</h4><span class="mk-unit">2026-07 · 명</span></div>
+    <div class="mk-bd mk-bd--fill">
+      <!-- 왼쪽 카드와 같은 차례·같은 축 -->
+    </div>
+    <div class="mk-ft">SGIS 통계지리정보</div>
+  </div></div>
+
+  <div class="mk-c8"><div class="mk-card mk-card--m">
+    <div class="mk-hd"><h4>인구 이동 — 최근 12개월</h4><span class="mk-unit">대구광역시 서구 · 명</span></div>
+    <div class="mk-bd mk-bd--fill"><!-- 전입·전출·순이동 + 월별 막대 12 --></div>
+    <div class="mk-ft">시군구 단위 — 반경 1km 값은 «—»</div>
+  </div></div>
+
+  <div class="mk-c4"><div class="mk-card mk-card--m">
+    <div class="mk-hd"><h4>반경 안 행정동</h4><span class="mk-unit">겹침 · 인구</span></div>
+    <div class="mk-bd mk-bd--flush"><!-- mk-table --></div>
+    <div class="mk-ft">겹침 = 반경 원과 행정동이 겹치는 넓이 비율</div>
+  </div></div>
+
+  <!-- ══ 묶음 3 · 오가는 사람 ════════════════════════════════ -->
+  <div class="mk-group"><h3>오가는 사람</h3><span class="mk-rule"></span></div>
+
+  <div class="mk-c6"><div class="mk-card mk-card--m">
+    <div class="mk-hd"><h4>유동인구 — 반경 1km</h4><span class="mk-unit">SGIS 생활인구 · 명</span></div>
+    <div class="mk-bd mk-bd--fill"><!-- 최고·주말 낮·일평균 + 24시간 곡선 --></div>
+    <div class="mk-ft">세 값은 같은 단위(명)라 한 축에 놓는다</div>
+  </div></div>
+
+  <div class="mk-c6"><div class="mk-card mk-card--m">
+    <div class="mk-hd"><h4>교통 — 역세권</h4><span class="mk-unit">반경 1km · 월 이용량</span></div>
+    <div class="mk-bd"><!-- 정류장·역 수 + 승·하차·환승 + 정류장 표 --></div>
+    <div class="mk-ft">승차 ≫ 하차 — 아침에 빠져나가는 동네입니다</div>
+  </div></div>
+
+  <div class="mk-c8"><div class="mk-card mk-card--m">
+    <div class="mk-hd"><h4>방문자 — 최근 12개월</h4><span class="mk-unit">대구광역시 서구 · 명/월</span></div>
+    <div class="mk-bd mk-bd--flush">
+      <!-- 집계 중인 달은 빗금 + 「집계 중」. 완성월과 같은 막대로 그리면
+           마지막 달(다른 달의 27%)이 폭락으로 읽힌다. -->
+    </div>
+    <div class="mk-ft">집계 중인 달은 빗금으로 갈라 둡니다</div>
+  </div></div>
+
+  <div class="mk-c4"><div class="mk-card mk-card--m">
+    <div class="mk-hd"><h4>상권 — 반경 1km 상가</h4><span class="mk-unit">—</span></div>
+    <div class="mk-bd mk-bd--fill">
+      <div class="mk-empty">
+        <div class="ttl">아직 못 받았습니다</div>
+        <div class="sub">DataError · 잠시 뒤 다시 받습니다</div>
+        <button type="button">다시 받기</button>
+      </div>
+    </div>
+    <div class="mk-ft">못 받은 값은 «—» 로 두고 0 으로 채우지 않습니다</div>
+  </div></div>
+
+  <!-- 출처 ────────────────────────────────────────────────── -->
+  <div class="mk-sources">출처 · 건강보험심사평가원 「전국 병의원 및 약국 현황」(공공데이터포털) 외</div>
+
+</div>

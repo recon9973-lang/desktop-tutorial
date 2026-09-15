@@ -1,0 +1,264 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ANSEO 상권 탭 — 레이아웃 규격
+   2026-09-15 · 시안 docs/시안/2026-09-15-ANSEO-상권-정렬-시안.html 의 구현본
+   가 · 지도에서 같은 과를 가른다
+   나 · 경쟁 목록을 가로 3칸으로 넓히고 글자 밀림을 막는다
+   다 · 세 줄 쌓기를 12칸 그리드로 세운다
+
+   ┌ 연결 지점 ────────────────────────────────────────────────────┐
+   │ 아래 :root 블록의 값만 ANSEO packages/ui/tokens.css 의 변수명   │
+   │ 으로 바꿔 끼우면 된다. 그 아래로는 손댈 것이 없다.               │
+   └───────────────────────────────────────────────────────────────┘
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{
+  /* 면 — tokens.css 실측값 */
+  --mk-board:#0d1417;              /* 보드   */
+  --mk-panel:#182226;              /* 카드 면 */
+  --mk-inset:#111a1e;              /* 파인 면 (표 트랙·자리표시) */
+  --mk-raise:#1e292e;              /* 뜬 면 (행 hover) */
+  --mk-line:rgba(255,255,255,.085);
+  --mk-line-2:rgba(255,255,255,.16);
+
+  /* 글자 */
+  --mk-ink:#e7eef0;
+  --mk-ink-2:#98a8ae;
+  --mk-ink-3:#6a7b81;
+
+  /* 뜻이 있는 색 — 지도·막대·표 배지가 전부 이 셋만 쓴다 */
+  --mk-accent:#00ed64;             /* 우리 병원 · 고른 반경 (채움 전용) */
+  --mk-same:#c98500;               /* 같은 과   */
+  --mk-other:#3987e5;              /* 그 외 병의원 */
+  --mk-flow:#9085e9;               /* 유동·방문자 */
+  --mk-pop:#199e70;                /* 거주 인구 */
+
+  /* 자 — 카드 높이는 전부 이 배수다 */
+  --mk-row:176px;
+  --mk-gap:14px;
+
+  --mk-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+/* 이 뼈대 안은 테두리·여백을 폭·높이에 포함해 센다.
+   호스트가 border-box 를 안 깔아도 카드 높이가 S·M·L 에서 어긋나지 않는다. */
+.mk-grid,.mk-grid *{box-sizing:border-box}
+/* hidden 이 부품의 인라인 표시보다 세야 한다 — 없으면 숨긴 띠가 그대로 보인다 */
+.mk-grid [hidden]{display:none!important}
+
+/* ── 다 · 12칸 그리드 ─────────────────────────────────────────────
+   카드 폭은 4·5·6·7·8·12칸만 쓴다. 그 외 폭을 쓰기 시작하면
+   줄마다 끝나는 자리가 어긋나고 다시 들쑥날쑥해진다. */
+.mk-grid{
+  display:grid; grid-template-columns:repeat(12,1fr);
+  gap:var(--mk-gap); align-items:stretch;
+}
+.mk-c4{grid-column:span 4}
+.mk-c5{grid-column:span 5}
+.mk-c6{grid-column:span 6}
+.mk-c7{grid-column:span 7}
+.mk-c8{grid-column:span 8}
+.mk-c12{grid-column:1 / -1}   /* span 12 이 아니다 — 1칸으로 접혀도 암묵 칸을 안 만든다 */
+.mk-c4,.mk-c5,.mk-c6,.mk-c7,.mk-c8,.mk-c12{min-width:0}
+
+/* ── 다 · 카드 — 높이는 셋, 골격은 하나 ───────────────────────────
+   머리 44 / 본문 유동 / 각주 26. 본문만 늘어나고, 넘치면
+   카드 안에서만 스크롤한다(바깥 화면은 밀리지 않는다). */
+.mk-card{
+  min-width:0;
+  background:var(--mk-panel); border:1px solid var(--mk-line); border-radius:8px;
+  display:grid; grid-template-rows:auto minmax(0,1fr) auto; overflow:hidden;
+}
+.mk-card--s{height:var(--mk-row)}                                  /* 176 */
+.mk-card--m{height:calc(var(--mk-row)*2 + var(--mk-gap))}          /* 366 */
+.mk-card--l{height:calc(var(--mk-row)*3 + var(--mk-gap)*2)}        /* 556 */
+
+.mk-hd{
+  display:flex; align-items:baseline; gap:9px;
+  padding:12px 14px 9px; border-bottom:1px solid var(--mk-line); min-height:44px;
+}
+.mk-hd h4{margin:0; font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--mk-ink)}
+.mk-hd .mk-unit{
+  margin-left:auto; font-family:var(--mk-mono); font-size:10.5px;
+  color:var(--mk-ink-3); white-space:nowrap;
+}
+.mk-bd{padding:12px 14px; min-width:0; min-height:0; overflow:auto; display:grid; align-content:start; gap:10px}
+.mk-bd--flush{padding:0}                       /* 표·지도가 카드 끝까지 닿을 때 */
+.mk-bd--fill{display:flex; flex-direction:column; gap:10px}   /* 자리표시가 남은 높이를 먹을 때 */
+.mk-bd--fill > .mk-slot,
+.mk-bd--fill > .mk-empty{flex:1 1 auto}
+.mk-ft{
+  padding:6px 14px 8px; border-top:1px solid var(--mk-line); min-height:26px;
+  font-family:var(--mk-mono); font-size:10px; color:var(--mk-ink-3);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* ── 다 · 묶음 머리 — 네 줄로 가른다 ──────────────────────────── */
+.mk-group{
+  grid-column:1 / -1; display:flex; align-items:center; gap:12px;
+  margin-top:8px; padding-top:4px;
+}
+.mk-group h3{margin:0; font-size:12px; font-weight:600; letter-spacing:.06em; color:var(--mk-ink-2)}
+.mk-group .mk-rule{flex:1; height:1px; background:var(--mk-line)}
+
+/* ── 다 · KPI 다섯 칸 (S) ────────────────────────────────────── */
+.mk-kpis{grid-column:1 / -1; display:grid; grid-template-columns:repeat(5,1fr); gap:var(--mk-gap)}
+.mk-kpi{
+  height:var(--mk-row); padding:12px 14px; border-radius:8px;
+  background:var(--mk-panel); border:1px solid var(--mk-line);
+  display:grid; align-content:space-between; gap:4px;
+}
+.mk-kpi .k{font-size:11px; color:var(--mk-ink-3); display:flex; align-items:center; gap:6px}
+.mk-kpi .k i{width:8px; height:8px; border-radius:50%; flex:none}
+.mk-kpi .v{
+  font-family:var(--mk-mono); font-size:29px; font-weight:600;
+  letter-spacing:-.03em; line-height:1; font-variant-numeric:tabular-nums;
+}
+.mk-kpi .v em{font-style:normal; font-size:13px; font-weight:400; color:var(--mk-ink-3); margin-left:3px}
+.mk-kpi .d{font-size:11px; color:var(--mk-ink-3); line-height:1.45}
+.mk-kpi--na .v{color:var(--mk-ink-3)}   /* 못 받은 값은 «—» · 0 으로 채우지 않는다 */
+
+/* ── 나 · 표 — 글자 밀림을 막는 규칙이 전부 여기 있다 ────────────
+   table-layout:fixed + col 폭 고정 + nowrap + ellipsis 넷이 한 벌이다.
+   하나라도 빠지면 긴 병원명이 다시 줄을 먹는다. */
+.mk-table{
+  width:100%; border-collapse:collapse; table-layout:fixed;
+  font-size:12px; color:inherit;   /* color:inherit — 닥타입 없는 문서의 표 쿼크 방지 */
+}
+.mk-table th,
+.mk-table td{
+  height:34px; padding:0 10px; text-align:left;
+  border-bottom:1px solid var(--mk-line);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.mk-table thead th{
+  position:sticky; top:0; z-index:1; background:var(--mk-panel);
+  height:30px; font-family:var(--mk-mono); font-size:10px; font-weight:500;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--mk-ink-3);
+  border-bottom:1px solid var(--mk-line-2);
+}
+.mk-table td.n,
+.mk-table th.n{text-align:right; font-family:var(--mk-mono); font-variant-numeric:tabular-nums}
+.mk-table tbody tr:hover td{background:var(--mk-raise)}
+.mk-table tbody tr:last-child td{border-bottom:0}
+.mk-table tr.mk-hot td{background:rgba(0,237,100,.07)}
+.mk-table tr.mk-hot td:first-child{box-shadow:inset 2px 0 0 var(--mk-accent)}
+
+/* 열 최소 폭 — 이 아래로 내려가면 밀린다 (실측)
+     병원명 270 · 구분 92 · 경쟁 112 · 표방과목 340 · 거리 유동
+   전폭(12칸·1440) 에서만 전부 들어간다. */
+
+/* 과목 칩 — 셋까지 보이고 나머지는 +N, 전문은 title 툴팁 */
+.mk-subj{display:inline-flex; gap:4px; align-items:center; min-width:0}
+.mk-subj span{
+  padding:1px 6px; border-radius:4px; font-size:10.5px; white-space:nowrap;
+  background:var(--mk-inset); border:1px solid var(--mk-line); color:var(--mk-ink-2);
+}
+.mk-subj .more{background:transparent; border-color:transparent; color:var(--mk-ink-3); padding-left:2px}
+
+/* ── 가 · 같은 과를 가르는 표시 — 색 + 모양 한 벌 ────────────────
+   색만으로 가르지 않는다. 색을 못 가리는 눈에도 모양이 남는다.
+   [검증] dataviz 검증기 · 다크 면 #182226
+          같은 과 #c98500 ↔ 그 외 #3987e5
+          적록색약 ΔE 27.4 · 정상시력 ΔE 30.7 · 전 항목 통과 */
+.mk-tag{
+  display:inline-flex; align-items:center; gap:5px; padding:1px 7px 1px 5px;
+  border:1px solid transparent; border-radius:99px;
+  font-family:var(--mk-mono); font-size:10px; line-height:1.7;
+}
+.mk-tag i{width:7px; height:7px; border-radius:50%; flex:none}
+.mk-tag--same{background:rgba(201,133,0,.15); border-color:rgba(201,133,0,.4); color:#e0a64a}
+.mk-tag--same i{background:var(--mk-same); box-shadow:0 0 0 1.5px var(--mk-panel),0 0 0 3px rgba(201,133,0,.55)}
+.mk-tag--other{background:rgba(57,135,229,.13); border-color:rgba(57,135,229,.34); color:#7fb2ee}
+.mk-tag--other i{width:8px; height:8px; background:transparent; border:1.5px solid var(--mk-other)}
+
+/* ── 가 · 지도 범례 — 지도 위에 항상 떠 있다 ───────────────────── */
+.mk-map{position:relative; width:100%; height:100%; background:var(--mk-inset)}
+.mk-map > svg{display:block; width:100%; height:100%}
+.mk-legend{position:absolute; left:12px; bottom:12px; display:flex; gap:6px; flex-wrap:wrap}
+.mk-legend .lg{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 10px 5px 8px;
+  background:rgba(13,20,23,.86); border:1px solid var(--mk-line-2); border-radius:99px;
+  font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink);
+  backdrop-filter:blur(3px);
+}
+.mk-legend .lg .sw{width:12px; height:12px; flex:none; display:block}
+.mk-mapnote{
+  position:absolute; right:12px; top:12px; max-width:270px; text-align:right;
+  font-family:var(--mk-mono); font-size:10px; color:var(--mk-ink-3); line-height:1.5;
+}
+/* 3km 이상은 점이 1,000개를 넘는다 — 군집 표기가 붙기 전까지 이 띠를 띄운다 */
+.mk-mapnote .flag{
+  display:inline-block; margin-top:5px; padding:3px 8px; border-radius:99px;
+  background:rgba(201,133,0,.16); border:1px solid rgba(201,133,0,.45); color:#e0a64a;
+}
+
+/* ── 반경 칩 ────────────────────────────────────────────────── */
+.mk-radii{display:flex; gap:5px}
+.mk-radii button{
+  padding:7px 13px; border-radius:99px; cursor:pointer;
+  font:500 11.5px/1 var(--mk-mono); color:var(--mk-ink-2);
+  background:var(--mk-inset); border:1px solid var(--mk-line);
+}
+.mk-radii button:hover{border-color:var(--mk-line-2); color:var(--mk-ink)}
+.mk-radii button[aria-pressed="true"]{
+  background:var(--mk-accent); border-color:var(--mk-accent); color:#04150b; font-weight:600;
+}
+.mk-radii button:focus-visible{outline:2px solid var(--mk-accent); outline-offset:2px}
+
+/* ── 막대 — 표 안 인라인 · 카드 안 가로 ────────────────────────── */
+.mk-ibar-wrap{display:grid; gap:3px; padding:6px 0}
+.mk-ibar{display:block; height:7px; border-radius:2px 4px 4px 2px; min-width:2px}
+.mk-ibar--same{background:var(--mk-same)}
+.mk-ibar--other{background:var(--mk-other)}
+
+.mk-bars{display:grid; gap:9px}
+.mk-barrow{display:grid; grid-template-columns:96px 1fr 84px; align-items:center; gap:10px;
+  font-size:11px; color:var(--mk-ink-2)}
+.mk-barrow .tr{display:block; height:12px; border-radius:3px; background:var(--mk-inset); overflow:hidden}
+.mk-barrow .fl{display:block; height:100%; border-radius:3px 4px 4px 3px}
+.mk-barrow .n{text-align:right; font-family:var(--mk-mono); font-variant-numeric:tabular-nums; color:var(--mk-ink)}
+
+/* ── 못 받은 칸 · 자리 표시 ────────────────────────────────────── */
+.mk-empty{
+  display:grid; place-content:center; justify-items:center; gap:9px; text-align:center;
+  height:100%; padding:14px; border:1px dashed var(--mk-line-2); border-radius:6px;
+}
+.mk-empty .ttl{font-size:12.5px; color:var(--mk-ink-2)}
+.mk-empty .sub{font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink-3)}
+.mk-empty button{
+  padding:7px 14px; border-radius:99px; cursor:pointer;
+  font:500 11px/1 var(--mk-mono); color:var(--mk-ink);
+  background:var(--mk-raise); border:1px solid var(--mk-line-2);
+}
+.mk-empty button:focus-visible{outline:2px solid var(--mk-accent); outline-offset:2px}
+
+.mk-slot{
+  display:grid; place-content:center; justify-items:center; gap:5px; text-align:center;
+  min-height:56px; padding:14px; border:1px dashed var(--mk-line-2); border-radius:6px;
+  background:repeating-linear-gradient(135deg,transparent 0 7px,rgba(255,255,255,.025) 7px 14px);
+}
+.mk-slot .t{font-size:11.5px; color:var(--mk-ink-2)}
+.mk-slot .s{font-family:var(--mk-mono); font-size:10px; color:var(--mk-ink-3)}
+
+/* ── 출처 줄 ────────────────────────────────────────────────── */
+.mk-sources{
+  grid-column:1 / -1; margin-top:6px; padding-top:12px; border-top:1px solid var(--mk-line);
+  font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink-3); line-height:1.8;
+}
+
+
+/* ── 좁은 화면 — 12 → 6 → 1 로만 접는다 ────────────────────────────
+   반드시 파일 맨 끝에 둔다. 위에 두면 뒤에 오는 부품 규칙이 덮는다.
+   카드 높이는 .mk-card--m 쪽이 더 세므로 같은 세기로 풀어 준다. */
+@media (max-width:1180px){
+  .mk-c4,.mk-c5,.mk-c7,.mk-c8{grid-column:span 6}
+  .mk-card.mk-card--s,
+  .mk-card.mk-card--m,
+  .mk-card.mk-card--l{height:auto; min-height:var(--mk-row)}
+}
+@media (max-width:760px){
+  .mk-grid{grid-template-columns:1fr}
+  .mk-c4,.mk-c5,.mk-c6,.mk-c7,.mk-c8{grid-column:span 1}
+  .mk-kpis{grid-template-columns:repeat(2,1fr)}
+  .mk-kpi{height:auto; min-height:calc(var(--mk-row) * .78)}
+}

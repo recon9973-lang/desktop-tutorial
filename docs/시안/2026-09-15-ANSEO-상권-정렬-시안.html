@@ -1049,17 +1049,84 @@ table.t tr.hot td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
   </div>
 </section>
 
+<!-- ═══════════ 적용 파일 ═══════════ -->
+<section class="block">
+  <div class="block-head">
+    <p class="eyebrow">적용 · 만들어 둔 것</p>
+    <h2>가 · 나 · 다 — 붙이면 되는 상태</h2>
+    <p class="note">
+      셋을 순서대로 다 구현했습니다. 아래 셋은 <b>돌려서 확인까지 마친 파일</b>이고,
+      `veo-platform` 상권 화면에 그대로 넣으면 됩니다. 클래스는 전부 <span class="num">mk-</span> 로
+      시작해 지금 있는 스타일과 부딪히지 않습니다.
+    </p>
+  </div>
+
+  <div class="tablewrap">
+    <table class="spec">
+      <thead><tr><th style="width:290px">파일</th><th style="width:70px">맡은 것</th><th>무엇</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="mono">anseo-market-layout.css</td>
+          <td>나 · 다</td>
+          <td>12칸 그리드 · 카드 높이 S/M/L · 카드 골격 · <b>표 밀림을 막는 네 규칙</b> · 반경 칩 · 배지 · 자리 표시 · 좁은 화면 12→6→1. <b>맨 위 <span class="num">:root</span> 블록만</b> tokens.css 변수명으로 갈아 끼우면 끝입니다</td>
+        </tr>
+        <tr>
+          <td class="mono">anseo-market-markers.js</td>
+          <td>가</td>
+          <td>같은 과 / 그 외 / 우리 세 마커를 <span class="num">data:</span> 그림으로 돌려줍니다 — 카카오맵 <span class="num">MarkerImage</span> 에 그대로 들어갑니다. 범례·점 상한·군집 판정, 그리고 <b>같은 과 판정을 한 곳에서만</b> 하게 묶은 함수</td>
+        </tr>
+        <tr>
+          <td class="mono">anseo-market-markup.html</td>
+          <td>다</td>
+          <td>네 묶음 배치의 뼈대. 줄 짜임 <span class="num">12 / 12 / 7+5 / 12 / 6+6 / 8+4 / 6+6 / 8+4 / 12</span> — 전부 12칸에 딱 맞습니다. 카드마다 「지금 어디에 있던 것」을 주석으로 달아 뒀습니다</td>
+        </tr>
+        <tr>
+          <td class="mono">적용-체크리스트.md</td>
+          <td>—</td>
+          <td>가→나→다 순서, 받는 조건, 확인하는 법 여섯 줄</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note" style="margin-top:4px">
+    <span class="verdict">돌려서 확인함</span>
+    뼈대에 css 를 입혀 실제로 그려 재 봤습니다 — 아래는 지어낸 값이 아니라 브라우저가 돌려준 값입니다.
+  </p>
+
+  <div class="tablewrap">
+    <table class="spec">
+      <thead><tr><th style="width:150px">잰 것</th><th style="width:230px">나온 값</th><th>판정</th></tr></thead>
+      <tbody>
+        <tr><td>카드 높이</td><td class="mono">366 · 556 두 값뿐</td><td>규격(M 366 / L 556)과 정확히 같습니다</td></tr>
+        <tr><td>줄 안에서 높이 어긋남</td><td class="mono">0줄</td><td>같은 줄 카드가 전부 같은 높이로 끝납니다</td></tr>
+        <tr><td>가로 밀림</td><td class="mono">1500 · 1100 · 700 · 400 에서 전부 0</td><td>긴 표가 바깥 화면을 밀지 않습니다</td></tr>
+        <tr><td>칸 접힘</td><td class="mono">1500 → 12칸 · 1100 → 6+6 · 700 → 1칸</td><td>12 → 6 → 1 로만 접힙니다</td></tr>
+        <tr><td>표 글자</td><td class="mono">nowrap · 한 줄</td><td>병원명이 두 줄로 안 넘어갑니다</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    재면서 잡은 것 넷 — 카드가 테두리 <span class="num">2px</span> 만큼 규격을 넘던 것,
+    좁은 화면 규칙을 파일 앞에 둬서 뒤 규칙에 덮이던 것,
+    전폭 칸을 <span class="num">span 12</span> 로 둬 1칸으로 접힐 때 빈 칸 11개를 만들던 것,
+    숨긴 띠가 <span class="num">hidden</span> 을 무시하고 보이던 것. 전부 고쳐서 위 수치가 나왔습니다.
+  </p>
+</section>
+
 <section class="block">
   <div class="block-head">
     <p class="eyebrow">밝혀둘 것</p>
     <h2>이 시안이 재지 못한 것</h2>
   </div>
   <p class="note">
-    상권 화면의 구현은 <b>veo-platform</b> 저장소에 있고, 이번 방은 그 저장소에 닿지 못했습니다
-    (<span class="num">desktop-tutorial</span> 한 곳만 열려 있습니다). 그래서 이 시안은
-    <b>사장님이 보내주신 화면과 저장소에 남아 있는 토큰 기록</b>만으로 세웠습니다.
-    실제 파일 이름·컴포넌트 구조는 대조하지 못했으니, 붙이기 전에 저장소를 열어
-    현재 코드와 한 번 맞춰 봐야 합니다.
+    상권 화면의 구현은 <b>veo-platform</b> 저장소에 있는데, <b>이번 방은 그 저장소에 닿지 못했습니다</b>
+    — <span class="num">desktop-tutorial</span> 한 곳만 열려 있고, 저장소를 붙이는 길이 이 방에서는
+    막혀 있습니다. 그래서 위 파일들을 <b>그 저장소에 직접 넣지는 못했습니다.</b>
+    파일 자체는 돌려서 확인까지 마친 상태이니, <b>veo-platform 이 열린 방에서 넣으면</b> 그대로 됩니다.
+    실제 컴포넌트 이름·데이터 모양은 대조하지 못했으므로, 넣을 때 카드 하나를 먼저 바꿔 보고
+    나머지를 잇는 것이 안전합니다.
   </p>
   <p class="note">
     수치 중 <b>지어낸 것은 없습니다.</b> 읽히지 않은 병원명·정류장명·행정동명은 가림(○○)으로 두었고,
