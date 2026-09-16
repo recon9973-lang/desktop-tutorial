@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-16 docs(s25): 조각 주소 여섯도 자료가 찬 채로 쟀다 — 껍데기로 재는 화면이 없어졌다
 - 2026-09-15 docs(s24): 남은 넷도 전부 재는 자리였다 — 콘솔 좁은 폭 넘침 0
 - 2026-09-15 docs(s23): AEO 1,330px 도 내 자료였다 — 넘침 8 → 4
 - 2026-09-15 docs(s23): 채움의 값 범위를 계약에 맞췄다 — 가짜 빨강이 사라졌다
@@ -14,7 +15,6 @@
 - 2026-09-15 docs(s23): 넘침을 끝까지 갈랐다 — 진짜 후보는 competitors 하나
 - 2026-09-15 docs(s23): 1px 숨김 글자가 쪽을 밀고 있었다 — 오른끝으로 범인을 찾지 마라
 - 2026-09-15 docs(s23): 넘침 16건을 원인별로 가르고, 도구의 거짓 양성을 고쳤다
-- 2026-09-15 docs(s23): 거래처 목록까지 채우니 넘침 16건 — 가르는 일은 다음 차례
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 2f4ce3b 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 7a6ab5d 기준. 값·비밀은 포함하지 않음.*
