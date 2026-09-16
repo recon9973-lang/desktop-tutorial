@@ -1,109 +1,73 @@
-> **다른 방 인계도 있다** — 모션/디자인 이식은 `RESUME-motion-port.md`(2026-09-14 갱신 ·
-> 0.3.574 배포 완료 · Lovable 시안에 배치·구조 개편 판이 새로 와 있음).
+# RESUME — 다음 세션 이어가기 (2026-09-16 22:4x KST · s27 마감 · AEO 워드클라우드 방)
 
-# RESUME — 다음 세션 이어가기 (2026-09-09 16:0x KST · s21 마감 · 진단 오진 방)
-
-> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-09-s21.md`.
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-16-s27-aeo-wordcloud.md`.
+> **상권·AEO 의 확정값과 함정은 `RESUME-market-layout.md` 맨 끝 「AEO」 절에 다 있다 — 같이 읽어라.**
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
 ## 지금까지 (핵심만)
 
-사장님이 캡처 한 장을 주셨다 — 「HTTP 상태 코드가 정상(2xx)인가 · **실패 · BLOCKER** ·
-`http://www.venomad.com/`」. *"다른 AI 는 정상이라는데 진짜가 뭔지 검토."*
+사장님이 AEO 언급현황 화면을 두고 셋을 지적하셨다 — **가** 워드클라우드로(가독성),
+**나** 아래 설명이 「구차해 보인다」, **다** 그래프 줄 오른쪽이 빈다(**「이렇게 하지 말라니깐」**).
 
-**사이트는 멀쩡했다.** 네이버 77건·구글 모두 `https://www.venomad.com/` 로 색인돼 있고,
-진단서 자신도 103개 중 102개가 정상이라고 적었다. **진짜 결함은 진단기 쪽 셋**이었고,
-전부 고쳐 `veo-platform` 가지 `claude/diagnostic-abnormal-review-hbskaa` 에 커밋 5건이
-올라가 있다. **`make preflight` 초록 — 「준비됨」.**
+시안과 드롭인은 이 방에서 만들어 커밋했다. 넣는 일은 **딸림 방**이 한다 —
+이 방은 `veo-platform` 을 못 본다.
 
 ```
-e05dea5  인증서 만료일을 한국 경유 수집에서도 잰다
-cc7e3ac  진입 주소를 평문에서 https 로 올린다 — 강하의 거울상
-d64b573  2xx 인 못 읽은 응답을 「2xx 가 아니다」로 적지 않는다   ← 이번 오진의 원인
-b8624aa  막히는 사이트의 보고서를 끝에서 끝까지 잰다 (시험)
-7b85336  https 승격 문턱을 조인다 — 제목·설명이 둘 다 있을 때만 (사장님 오더)
+시안    docs/시안/2026-09-16-ANSEO-AEO-언급현황-시안.html
+드롭인  docs/시안/적용/anseo-wordcloud.js  (+ anseo-market-layout.css 끝 블록)
+딸림 방 session_01QLkftufNw7ecRsE1D5rFWz · 가지 claude/anseo-aeo-mentions-wordcloud
+커밋    1cc4a15 · bba85fa · 903f36c   (가지 claude/wonderful-tesla-saq9av)
 ```
 
-핵심은 셋째다. `_status_ok` 가 `site.unreadable` 을 **상태 무관하게** 실패로 더해,
-200 으로 답한 762바이트 차단 페이지를 「2xx 가 아닌 상태 코드」로 적었다. 그래서 **같은
-관측이 한 화면에 두 번, 서로 반대로** 나갔다 — 수집 고지는 「사이트의 결함이 아니라 우리
-수집의 상태입니다」, 이슈는 「BLOCKER · 검색 유입이 사라집니다」.
-
-대장 `docs/WORKLIST.md` 대기 표에 **판 28**(번호 없음 — 나갈 때 정한다)로 올렸고,
-오류 대장 `docs/CORRECTIONS.md` **192** 에 내가 세 번 틀린 것을 적었다.
-
-## 배포 — **나갔다** (사장님 승인 2026-09-09 «배포 승인»)
-
-이 방이 `make deploy` 를 돌린 것이 아니다. **다른 방(`work/shareboard-tune`)이 이 가지를
-자기 판에 합쳐 함께 내보냈다.** 이 방은 나중에 그 사실을 확인만 했다.
-
-```
-[실측 2026-09-09 · gh]
-  내 커밋 5건        전부 origin/main 의 조상   (merge-base --is-ancestor 로 5/5)
-  main 끝 커밋       9d29ad5793b6…  판 0.3.557
-  채점받은 커밋      9d29ad5793b6…  CI success · 15:29 KST
-                     → 채점한 커밋과 나간 커밋이 같다(오류 135 가 막으려던 그 자리)
-```
-
-**`make deploy` 를 다시 돌릴 일이 없다** — 가지가 main 보다 앞선 커밋이 **0건**이다.
+**상권 정렬은 이미 나갔다 — 판 0.3.588.**
 
 ## 바로 이어갈 작업
 
-1. **도는 판 실측** — 배포는 나갔는데 **Railway·Vercel 이 실제로 0.3.557 을 서비스하는지는
-   이 방에서 못 쟀다**(워크플로 띄우기가 403 · `actions:write` 없음). 재는 길 둘 —
+1. **배포 결과 확인** — 사장님 오더 「그 방에서 배포해」를 13:0x 에 그대로 옮겼고,
+   13:21 에 **관문 ②/③ 통과 · 관문 ③ 도는 중**까지 갔다. 판 번호는 아직 «—».
    ```
-   워크플로 「도는 판 확인」(workflow_dispatch) 를 사장님이 실행
-   또는 콘솔 화면 하단의 판 표시를 눈으로 확인
+   get_session  session_01QLkftufNw7ecRsE1D5rFWz
    ```
-2. **venomad 재진단 한 번** — 0.3.557 이 도는 것이 확인되면 진단을 다시 돌려 두 줄을 본다.
-   ```
-   status_ok                     실패·BLOCKER  →  통과
-   certificate_not_expiring      진단 못 함    →  「만료까지 N일 남았습니다」
-   수집 고지                      그대로(정확함)
-   ```
-3. **대장 대기 표 정리** — 위 둘이 확인되면 `docs/WORKLIST.md` 배포 대기 목록에서
-   **이 방 줄만** 지운다(「진단 이상값 정리」). **다른 방 줄은 건드리지 않는다.**
-   지금 대기 표는 다른 방이 다섯 묶음을 0.3.557 한 판으로 정리해 둔 상태다.
+   그 방은 **IDLE 이라 스스로 못 깨어난다.** 안 움직였으면 트리거를 새로 만들어 찔러라:
+   > 관문 ③ 이 끝났는지 지금 확인하고 마저 돌려라. 한 줄로 답:
+   > `배포=<성공|실패> 판=<0.3.xxx|«—»> CI=<초록|빨강> | 나=<완|미> 다=<8+4|미> 빈칸=<0|N>`
+   > 막혀 있으면 무엇이 막는지 한 줄로.
+2. **판 번호가 나오면** `RESUME-market-layout.md` 의 AEO 줄에 적고 커밋한다.
+3. **「나」·「다」 확인** — 그 방이 「가」만 검증하고 끝났다고 적었다. 안 됐으면 한 판 더 필요하다.
 
 ## 대기/차단
 
-- **`gh` 는 방마다 다시 깔아야 한다** — `apt-get install -y gh`(우분투 universe, 2.45.0).
-  릴리스 tarball 은 못 받는다: `cli/cli` 가 이 방의 GitHub 범위 밖이라 API 가 거절한다.
-  `GH_TOKEN` 은 이미 환경에 있고 붙어 있는 저장소에는 잘 닿는다.
-- **이 방의 `gh` 로 못 하는 것 둘** — GraphQL(`gh workflow run`)과
-  workflow_dispatch(`actions:write`)가 **403** 이다. REST 조회는 된다.
-- **사장님 몫 — 사이트 설정.** `http://www.venomad.com/` 80포트가 **403** 이다.
-  **301 to https** 로 바꾸셔야 명함·인쇄물·옛 링크 유입과 그 신뢰도가 살아난다.
-  `www` 없는 주소도 함께 점검(PSI 가 아예 처리를 못 했다). 코드로 못 고친다.
-- **CI 를 필수 검사로**(s19 부터 남은 것) — `Settings → Branches → main →
-  Require status checks → CI`. 이게 없어 빨간불 PR 이 main 에 들어온 적이 있다.
+- **보고 관이 좁다 (이 세션의 핵심 발견).** 딸림 방에서 오는 것은 `get_session` 의
+  **요약 두 줄뿐**이고 그 두 줄은 **기계가 짓는다** — 그 방이 못 쓴다. 표로 채워 달라고
+  두 번, 압축 한 줄로 적으라고 한 번 요청했고 **세 번 다 막혔다.**
+  → **커밋 SHA·「나」·「다」는 이 관으로 못 받는다. 사장님이 그 방을 직접 여셔야 한다.**
+  같은 것을 네 번째로 캐묻지 마라.
+- **veo-platform 은 이 방에서 안 열린다** — `add_repo` 거절 · GitHub 조회 거절 ·
+  자격 증명 없음. 푸는 길: 그 저장소가 이미 붙은 방을 쓰거나 새 세션에서 붙인다.
+- **따로 판단하실 것 둘** (`RESUME-market-layout.md` 「덤」 절):
+  방문자 마지막 달 「집계 중」 갈라 표시 · 3km 이상 군집 표기.
 
 ## 주의·제약
 
-- **veo-platform 개발 환경 세우기**(컨테이너는 매번 초기화된다):
+- 이 가지(`claude/wonderful-tesla-saq9av`) 외로 커밋 금지. 오더 없이 배포하지 않는다.
+- **딸림 방에 일을 줄 때는 판단 규칙을 먼저 줘라** — 안 주면 한 시간에 세 번 멈춰 묻는다.
   ```
-  PYTHON=/usr/bin/python3.12 make setup
-  pnpm install --frozen-lockfile
-  service postgresql start
-  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
-  PGPASSWORD=veo make db-test-create
-  PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" make test-db
+  시안이 기준이다. 시안과 기존 부품이 어긋나면 시안이 이긴다.
+  갈리면 ㉠시안 → ㉡사장님 문장에 가까운 쪽 → ㉢덜 어수선한 쪽. 적어두고 계속 간다.
+  멈춰도 되는 것은 하나 — 데이터의 진실이 걸린 것.
   ```
-  [실측 2026-09-09] 이 방에서 전부 돌았다 — `ci-local` 7,276 · DB 1,242 · 웹 2,534.
-- **이 방은 실서비스를 못 잰다** — `venomad.com`·Railway·`pagespeed.web.dev`·`archive.org`
-  전부 egress 403. `www.googleapis.com` 계열만 열려 있다(PSI 공용 몫은 하루 한도 소진).
-- **못 재는 자리에서는 가설을 가설이라고만 말한다.** 이번에 세 번 단언하고 세 번 갈렸고
-  **발견자가 세 번 다 사장님**이었다(오류 대장 192).
-- 이 가지 외로 푸시 금지. 배포는 **`make deploy` 만**, 오더 없이 밀지 않는다.
-- 대장·변경이력에 「민다·푸시」 금지(`two-words-only` 관문) — 「커밋」·「배포」 두 낱말만.
-- 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
-  `Claude-Session: https://claude.ai/code/session_01RkCSy2RcrHt6i2FyRmDyYs`.
-  모델 ID 는 트레일러에만.
+  **기존 부품 이름도 같이 넘겨라.** 이번에 `BubbleCloud` 를 몰라서 고리가 생겼다.
+- 확정값(다시 묻지 말 것): 갈래 셋 **우리 브랜드 / 경쟁사 / 그 외 업체** ·
+  어두운 판 `#00ed64 · #c98500 · #3987e5` · 밝은 판 `#0b8ea6 · #9a6300 · #2166ba`
+  (우리가 **청록**이다, 초록 아님) · 굵기 700/600/400 둘째 채널 ·
+  배치 8칸 L(556) · 아래 줄 8+4 · 오른쪽 366+14+176=556.
+  **네 번째 갈래가 생기면 색을 다시 재야 한다** — 위는 3갈래 기준.
 - 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
+- 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
+  `Claude-Session: https://claude.ai/code/session_019GFS49BHW7CQaVJ375yFBz`.
+  모델 ID 는 트레일러에만 — 커밋·PR·코드 본문에 넣지 않는다.
 
 ## 참고
 
-- veo-platform 은 `add_repo` 로 붙인다(owner `recon9973-lang`) → `/home/user/veo-platform`.
-- 대장은 `docs/WORKLIST.md`(615줄 규격 · 1,200줄 상한). 날짜별 기록은 `WORKLIST-HISTORY.md`
-  이고 **평소에 열지 않는다.**
-- 판 번호는 **나갈 때** `claim_version.py` 가 물린다. 미리 잡지 않는다.
+- 인계가 여럿이다. **이 방 것은 `RESUME.md`(이 파일) + `RESUME-market-layout.md`** 둘이다.
+- 판 번호는 **나갈 때** 물린다. 미리 잡지 않는다.
