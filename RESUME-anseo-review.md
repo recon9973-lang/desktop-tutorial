@@ -214,6 +214,21 @@ a8589c42 → 0.3.574     81ee22a5 → 0.3.575
 - **배포는 채점 8분 동안 다른 방과 경주한다** — [실측 2026-09-15] `[4/5]` 거절 **두 번**.
   창이 겹치면 늘 나중 것이 물러난다. 그래서 **다른 방 채점이 빈 것을 보고** 들어간다:
   `gh run list` 에 `deploy-candidate-*` 가 `in_progress` 면 기다린다(20초 간격 폴링).
+  기다리는 스크립트 — **컨테이너에만 있었으므로 여기에 남긴다**(방을 지우면 사라진다):
+  ```bash
+  #!/bin/bash
+  # 다른 방 채점이 끝나기를 기다린다 — 내 채점 창(8분)이 저쪽 창과 겹치면 [4/5] 에서 진다.
+  for i in $(seq 1 60); do
+      running="$(gh run list --limit 10 --json headBranch,status --jq \
+          '[.[] | select(.status != "completed")
+                | select(.headBranch | startswith("deploy-candidate"))
+                | select(.headBranch != "deploy-candidate-<내 가지>")] | length' 2>/dev/null)"
+      [ "$running" = "0" ] && { echo "비었다 — 지금이 창이다"; exit 0; }
+      echo "  대기 $((i * 20))초 · 도는 방 $running"; sleep 20
+  done
+  echo "10분 기다려도 안 비었다 — 사람이 정할 일이다"; exit 1
+  ```
+
 - **선 배포는 판을 반쪽 물려 놓고 죽는다.** [실측 2026-09-15] `[1/4]` 이 `bump-version` 으로
   판 셋(`__init__.py`·`openapi.json`·`changelog.ts`)을 올리고 대장에서 섰다. `git add -A` 로
   쓸어담으면 **반쪽 판이 커밋된다** — s24 에 겪고 여기 적어 뒀는데 **또 밟았다.**
