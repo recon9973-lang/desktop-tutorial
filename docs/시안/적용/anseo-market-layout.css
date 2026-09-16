@@ -262,3 +262,65 @@
   .mk-kpis{grid-template-columns:repeat(2,1fr)}
   .mk-kpi{height:auto; min-height:calc(var(--mk-row) * .78)}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   AEO 언급현황 — 워드클라우드 · 2026-09-16 추가
+   같은 규격 위에 얹는다. 위 블록은 손대지 않았다.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 본문이 카드 높이를 다 쓰게 하는 두 규칙 — 아래가 비는 것을 막는다 */
+.mk-bd--fillrow{align-content:stretch}
+.mk-bars--fill{height:100%; align-content:space-between}
+
+/* 갈래 색 — 크기(언급 수) 와 굵기가 색을 보조한다
+   [검증] 우리 #00ed64 ↔ 경쟁사 #c98500 · 적록 ΔE 15.0 · 정상 28.8 (다크 면 #182226) */
+:root{
+  --mk-us:#00ed64;      /* 우리 브랜드 */
+  --mk-rival:#c98500;   /* 경쟁사 */
+  --mk-term:#8a9aa0;    /* 일반어 — 뒤로 물린다 */
+}
+
+.mk-cloud{position:relative; width:100%; height:100%; overflow:hidden}
+.mk-cloud .w{
+  position:absolute; white-space:nowrap; line-height:1; cursor:default;
+  transform:translate(-50%,-50%); transition:opacity .12s;
+}
+.mk-cloud .w.us   {color:var(--mk-us);    font-weight:700}
+.mk-cloud .w.rival{color:var(--mk-rival); font-weight:600}
+.mk-cloud .w.term {color:var(--mk-term);  font-weight:400}
+.mk-cloud.dim .w{opacity:.28}
+.mk-cloud.dim .w.on{opacity:1}
+
+.mk-cloudlg{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.mk-cloudlg .lg{
+  display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 8px;
+  border:1px solid var(--mk-line); border-radius:99px; background:var(--mk-inset);
+  font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink-2); cursor:pointer;
+}
+.mk-cloudlg .lg i{width:9px; height:9px; border-radius:2px; flex:none}
+.mk-cloudlg .lg[aria-pressed="true"]{border-color:var(--mk-line-2); color:var(--mk-ink); background:var(--mk-raise)}
+.mk-cloudlg .lg:focus-visible{outline:2px solid var(--mk-accent); outline-offset:2px}
+.mk-cloudlg .sw{
+  margin-left:auto; background:none; border:0; padding:0; cursor:pointer;
+  font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink-3); text-decoration:underline;
+}
+
+.mk-tip{
+  position:absolute; pointer-events:none; z-index:5; padding:6px 10px; border-radius:6px;
+  background:rgba(13,20,23,.94); border:1px solid var(--mk-line-2);
+  font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink);
+  white-space:nowrap; transform:translate(-50%,-140%);
+}
+
+/* 한 줄 설명 — 네 문단을 대신한다 */
+.mk-oneline{
+  grid-column:1 / -1; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:11px 14px; background:var(--mk-panel); border:1px solid var(--mk-line);
+  border-radius:8px; font-size:12.5px; color:var(--mk-ink-2);
+}
+.mk-oneline b{color:var(--mk-ink); font-weight:600}
+.mk-oneline .q{
+  margin-left:auto; flex:none; width:18px; height:18px; border-radius:99px;
+  border:1px solid var(--mk-line); display:grid; place-items:center; cursor:help;
+  font-family:var(--mk-mono); font-size:10.5px; color:var(--mk-ink-3);
+}

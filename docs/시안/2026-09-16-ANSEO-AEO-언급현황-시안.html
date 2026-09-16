@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>AEO 언급현황 정리 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#f6f6f3; --paper-2:#fff; --paper-3:#eeefea;
+  --doc-ink:#15191b; --doc-ink-2:#4e585c; --doc-ink-3:#626c70;
+  --doc-line:#dddfd8; --doc-line-2:#c8ccc3;
+  --doc-mark:#0c6b3c; --doc-mark-soft:#e2f0e7;
+  --doc-warn:#8a4b12; --doc-warn-soft:#f6ead9;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121415; --paper-2:#191d1f; --paper-3:#202628;
+  --doc-ink:#eceeec; --doc-ink-2:#a8b2b5; --doc-ink-3:#7c888c;
+  --doc-line:#2b3234; --doc-line-2:#3b4446;
+  --doc-mark:#5fd699; --doc-mark-soft:#163023;
+  --doc-warn:#e0a463; --doc-warn-soft:#2f2517;
+}}
+:root[data-theme="dark"]{
+  --paper:#121415; --paper-2:#191d1f; --paper-3:#202628;
+  --doc-ink:#eceeec; --doc-ink-2:#a8b2b5; --doc-ink-3:#7c888c;
+  --doc-line:#2b3234; --doc-line-2:#3b4446;
+  --doc-mark:#5fd699; --doc-mark-soft:#163023;
+  --doc-warn:#e0a463; --doc-warn-soft:#2f2517;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--doc-ink);font-family:var(--sans);
+  font-size:15px;line-height:1.66;-webkit-font-smoothing:antialiased}
+.page{max-width:1520px;margin:0 auto;padding-block:0 64px;padding-left:20px;padding-right:20px}
+header.doc > *, section.block > .block-head, section.block > .asks,
+section.block > .note, section.block > .tablewrap{max-width:1100px}
+
+h1,h2,h3,h4{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.02em}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.12;font-weight:700;letter-spacing:-.035em}
+h2{font-size:clamp(20px,2.6vw,25px);line-height:1.24}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--doc-ink-3)}
+.lede{font-size:17px;line-height:1.62;color:var(--doc-ink-2);max-width:62ch}
+.note{font-size:13px;line-height:1.6;color:var(--doc-ink-3);max-width:70ch}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header.doc{border-bottom:1px solid var(--doc-line);padding-block:44px 30px;display:grid;gap:18px}
+.doc-meta{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;
+  font-family:var(--mono);font-size:11.5px;color:var(--doc-ink-3)}
+.doc-meta .dot{width:5px;height:5px;border-radius:50%;background:var(--doc-line-2)}
+section.block{padding-block:44px;border-bottom:1px solid var(--doc-line);display:grid;gap:22px}
+section.block:last-of-type{border-bottom:0}
+.block-head{display:grid;gap:9px}
+
+.asks{display:grid;border:1px solid var(--doc-line);border-radius:3px;overflow:hidden;background:var(--paper-2)}
+.ask{display:grid;grid-template-columns:34px 1fr 1fr;border-bottom:1px solid var(--doc-line)}
+.ask:last-child{border-bottom:0}
+.ask .k{font-family:var(--mono);font-size:12px;color:var(--doc-ink-3);padding:16px 0 16px 14px}
+.ask .said{padding:16px 18px 16px 10px;border-right:1px solid var(--doc-line);font-size:14.5px}
+.ask .fix{padding:16px;font-size:14.5px;color:var(--doc-ink-2);background:var(--paper-3)}
+.ask .fix b{color:var(--doc-ink);font-weight:600}
+@media (max-width:760px){.ask{grid-template-columns:28px 1fr}
+  .ask .said{border-right:0;padding-right:14px;padding-bottom:6px}
+  .ask .fix{grid-column:2/-1;padding-top:10px}}
+
+table.spec{width:100%;border-collapse:collapse;font-size:14px;color:inherit}
+table.spec th,table.spec td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--doc-line);vertical-align:top}
+table.spec th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--doc-ink-3);font-weight:500;border-bottom:1px solid var(--doc-line-2)}
+table.spec td.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.spec tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--doc-line);border-radius:3px;background:var(--paper-2)}
+.verdict{display:inline-flex;align-items:center;gap:7px;padding:3px 10px;border-radius:99px;
+  font-family:var(--mono);font-size:11px;background:var(--doc-mark-soft);color:var(--doc-mark)}
+.verdict.warn{background:var(--doc-warn-soft);color:var(--doc-warn)}
+
+.screenframe{border:1px solid var(--doc-line);border-radius:4px;background:var(--paper-3);overflow:hidden}
+.screenbar{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid var(--doc-line);
+  font-family:var(--mono);font-size:11px;color:var(--doc-ink-3)}
+.screenbar .lamp{width:8px;height:8px;border-radius:50%;background:var(--doc-line-2)}
+.screenbar .grow{margin-left:auto}
+.screenscroll{overflow-x:auto;background:#0d1417}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.vs{grid-template-columns:1fr}}
+.vs .side{display:grid;gap:10px}
+.vs .lab{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;color:var(--doc-ink-3)}
+.vs .lab b{font-weight:600;color:var(--doc-ink);letter-spacing:0}
+</style>
+<style>
+/* ═══ 콘솔 화면 토큰 — 상권 시안과 같은 규격 (anseo-market-layout.css) ═══ */
+.screen{
+  --board:#0d1417; --panel:#182226; --inset:#111a1e; --raise:#1e292e;
+  --line:rgba(255,255,255,.085); --line-2:rgba(255,255,255,.16);
+  --ink:#e7eef0; --ink-2:#98a8ae; --ink-3:#6a7b81;
+  --accent:#00ed64;
+  --us:#00ed64;      /* 우리 브랜드 */
+  --rival:#c98500;   /* 경쟁사 */
+  --term:#8a9aa0;    /* 일반어 — 뒤로 물린다 */
+  --row:176px; --gap:14px;
+  width:1440px; padding:22px; background:var(--board); color:var(--ink);
+  font-family:var(--sans); font-size:13px; line-height:1.5;
+}
+.screen,.screen *{box-sizing:border-box}
+.screen [hidden]{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gap);align-items:stretch}
+.c3{grid-column:span 3;min-width:0} .c4{grid-column:span 4;min-width:0}
+.c5{grid-column:span 5;min-width:0} .c6{grid-column:span 6;min-width:0}
+.c7{grid-column:span 7;min-width:0} .c8{grid-column:span 8;min-width:0}
+.c9{grid-column:span 9;min-width:0} .c12{grid-column:1/-1}
+
+.card{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}
+.card.s{height:var(--row)}
+.card.m{height:calc(var(--row)*2 + var(--gap))}
+.card.l{height:calc(var(--row)*3 + var(--gap)*2)}
+.card > .hd{display:flex;align-items:baseline;gap:9px;padding:12px 14px 9px;
+  border-bottom:1px solid var(--line);min-height:44px}
+.card > .hd h4{font-size:13px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.card > .hd .unit{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);white-space:nowrap}
+.card > .bd{padding:12px 14px;min-width:0;min-height:0;overflow:auto;display:grid;align-content:start;gap:10px}
+.card > .bd.flush{padding:0; display:block; height:100%}
+.card > .bd.stretch{align-content:stretch}   /* 본문이 카드 높이를 다 쓴다 */
+.bars.fill{height:100%; align-content:space-between}  /* 줄 수가 적어도 아래가 안 빈다 */   /* grid + align-content:start 면 높이가 0 이 된다 — 꽉 채우는 칸은 block */
+.card > .ft{padding:6px 14px 8px;border-top:1px solid var(--line);min-height:26px;
+  font-family:var(--mono);font-size:10px;color:var(--ink-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── 워드클라우드 ───────────────────────────────────────────── */
+.cloud{position:relative;width:100%;height:100%;overflow:hidden}
+.cloud .w{
+  position:absolute;white-space:nowrap;cursor:default;line-height:1;
+  transform:translate(-50%,-50%);transition:opacity .12s;
+}
+.cloud .w.us{color:var(--us);font-weight:700}
+.cloud .w.rival{color:var(--rival);font-weight:600}
+.cloud .w.term{color:var(--term);font-weight:400}
+.cloud .w:hover{opacity:1}
+.cloud.dim .w{opacity:.28}
+.cloud.dim .w.on{opacity:1}
+.cloudlg{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cloudlg .lg{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;
+  border:1px solid var(--line);border-radius:99px;background:var(--inset);
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);cursor:pointer}
+.cloudlg .lg i{width:9px;height:9px;border-radius:2px;flex:none}
+.cloudlg .lg[aria-pressed="true"]{border-color:var(--line-2);color:var(--ink);background:var(--raise)}
+.cloudlg .lg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cloudlg .sw{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  background:none;border:0;cursor:pointer;text-decoration:underline;padding:0}
+
+.tip{position:absolute;pointer-events:none;z-index:5;padding:6px 10px;border-radius:6px;
+  background:rgba(13,20,23,.94);border:1px solid var(--line-2);
+  font-family:var(--mono);font-size:10.5px;color:var(--ink);white-space:nowrap;
+  transform:translate(-50%,-140%)}
+
+/* ── 표 ─────────────────────────────────────────────────────── */
+table.t{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;color:inherit}
+table.t th,table.t td{height:32px;padding:0 10px;text-align:left;border-bottom:1px solid var(--line);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.t thead th{position:sticky;top:0;z-index:1;background:var(--panel);height:28px;
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line-2)}
+table.t td.n,table.t th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.t tbody tr:hover td{background:var(--raise)}
+table.t tbody tr:last-child td{border-bottom:0}
+.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:-1px}
+
+/* ── 막대 ───────────────────────────────────────────────────── */
+.bars{display:grid;gap:8px}
+.barrow{display:grid;grid-template-columns:84px 1fr 52px;align-items:center;gap:10px;font-size:11px;color:var(--ink-2)}
+.barrow .tr{display:block;height:11px;border-radius:3px;background:var(--inset);overflow:hidden}
+.barrow .fl{display:block;height:100%;border-radius:3px 4px 4px 3px}
+.barrow .n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+
+/* ── 한 줄 설명 (구차한 것을 대신한다) ──────────────────────── */
+.oneline{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  font-size:12.5px;color:var(--ink-2)}
+.oneline b{color:var(--ink);font-weight:600}
+.oneline .q{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+  border:1px solid var(--line);border-radius:99px;width:18px;height:18px;
+  display:grid;place-items:center;cursor:help;flex:none}
+
+/* ── 구차한 설명 재현 (지금 상태) ───────────────────────────── */
+.wordy{padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  font-size:12px;color:var(--ink-3);line-height:1.75}
+.wordy p{margin:0 0 7px}
+.wordy p:last-child{margin:0}
+
+/* ── 빈 자리 표시 (지금 상태 재현용) ────────────────────────── */
+.dead{border:1px dashed rgba(201,133,0,.5);border-radius:8px;
+  background:repeating-linear-gradient(135deg,#161f23 0 7px,#1a2428 7px 14px);
+  display:grid;place-items:center;font-family:var(--mono);font-size:11px;color:#dfa958}
+.grouphd{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin-top:6px;padding-top:4px}
+.grouphd h3{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ink-2)}
+.grouphd .rule{flex:1;height:1px;background:var(--line)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="doc">
+  <p class="eyebrow">ANSEO 콘솔 · AEO 언급현황</p>
+  <h1>글자를 그림으로, 빈칸을 없앤다</h1>
+  <p class="lede">
+    짚으신 셋만 고쳤습니다. 규격은 상권 탭에서 쓴 그것을 그대로 씁니다 —
+    12칸 그리드 · 카드 높이 S·M·L · <b>빈 자리 0</b>.
+  </p>
+  <div class="doc-meta">
+    <span>2026-09-16</span><span class="dot"></span>
+    <span>기준 폭 1440</span><span class="dot"></span>
+    <span>규격 · docs/시안/적용/anseo-market-layout.css</span>
+  </div>
+</header>
+
+<section class="block">
+  <div class="asks">
+    <div class="ask">
+      <div class="k">가</div>
+      <div class="said">AEO 언급현황은 이미지(워드클라우드)가 가독성이 더 좋겠다.</div>
+      <div class="fix"><b>워드클라우드로 바꿨습니다.</b> 크기 = 언급 수, 색 = 우리/경쟁사/일반어.
+        색만으로 안 갈리게 <b>굵기</b>도 같이 갈랐고, 범례를 누르면 그 갈래만 남습니다.
+        정확한 수는 <b>표 보기</b>로 넘어갑니다.</div>
+    </div>
+    <div class="ask">
+      <div class="k">나</div>
+      <div class="said">아래 설명이 너무 구차해 보인다.</div>
+      <div class="fix">네 문단을 <b>한 줄</b>로 줄였습니다. 나머지는 <b>물음표 하나</b> 뒤로
+        넣었습니다 — 필요한 사람만 엽니다.</div>
+    </div>
+    <div class="ask">
+      <div class="k">다</div>
+      <div class="said">그 아래 그래프 자리, 나머지 25곳 나오는 곳 오른쪽이 비어 있다. 사이즈를 조정하든 구조를 맞추라.</div>
+      <div class="fix">그 줄을 <b>8칸 + 4칸</b>으로 채웠습니다. 「나머지 25곳」이 오른쪽 4칸을
+        제대로 쓰는 카드가 됩니다. <b>빈 자리 0.</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 정리안 — 실제로 그린 화면 ═══ -->
+<section class="block">
+  <div class="block-head">
+    <p class="eyebrow">정리안</p>
+    <h2>AEO 언급현황 — 한 화면</h2>
+  </div>
+
+  <div class="screenframe">
+    <div class="screenbar">
+      <span class="lamp"></span><span>ANSEO · AEO · 언급현황</span>
+      <span class="grow">실제 폭 1440 · 범례를 눌러 보십시오</span>
+    </div>
+    <div class="screenscroll">
+      <div class="screen">
+        <div class="grid">
+
+          <div class="c8">
+            <div class="card l">
+              <div class="hd"><h4>언급현황</h4><span class="unit">크기 = 언급 수 · 최근 30일</span></div>
+              <div class="bd flush"><div class="cloud" id="cloud"></div></div>
+              <div class="ft" style="white-space:normal">
+                <div class="cloudlg" id="cloudlg"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 오른쪽 4칸을 두 카드로 쪼개 왼쪽 L 높이에 맞춘다 — 366 + 14 + 176 = 556 -->
+          <div class="c4" style="display:grid;gap:var(--gap);align-content:start">
+            <div class="card m">
+              <div class="hd"><h4>엔진별 언급</h4><span class="unit">회</span></div>
+              <div class="bd stretch">
+                <div class="bars fill" id="engines"></div>
+              </div>
+              <div class="ft">색점 + 이름 병기 — 색을 못 가려도 읽힙니다</div>
+            </div>
+
+            <div class="card s">
+              <div class="hd"><h4>언급 ↔ 인용</h4><span class="unit">우리 브랜드 · 회</span></div>
+              <div class="bd stretch">
+                <div class="bars fill">
+                  <div class="barrow"><span>언급</span>
+                    <span class="tr"><span class="fl" style="width:100%;background:#00ed64"></span></span>
+                    <span class="n">128</span></div>
+                  <div class="barrow"><span>인용</span>
+                    <span class="tr"><span class="fl" style="width:32.8%;background:#0f8f4c"></span></span>
+                    <span class="n">42</span></div>
+                </div>
+              </div>
+              <div class="ft">이름이 나온 것 128 · 출처 링크까지 붙은 것 42 — 다른 지표입니다</div>
+            </div>
+          </div>
+
+          <!-- 나 · 구차한 설명을 대신하는 한 줄 -->
+          <div class="oneline">
+            <span><b>최근 30일</b> AI 답변에서 우리 브랜드가 <b>128회</b>,
+              경쟁사가 <b>412회</b> 나왔습니다 — 전체의 <b>23.7%</b>.</span>
+            <span class="q" title="언급 = AI 답변 본문에 이름이 나온 것. 인용(출처 링크)과는 다릅니다.
+질문 40개 × 엔진 7개 × 3회 반복 기준. 못 받은 엔진은 분모에서 뺍니다.">?</span>
+          </div>
+
+          <!-- 다 · 8 + 4 로 줄을 채운다 -->
+          <div class="c8">
+            <div class="card m">
+              <div class="hd"><h4>언급 추이</h4><span class="unit">최근 12주 · 회</span></div>
+              <div class="bd flush">
+                <svg id="trend" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet"
+                     style="display:block;width:100%;height:100%" role="img"
+                     aria-label="최근 12주 우리 브랜드와 경쟁사 언급 수 추이"></svg>
+              </div>
+              <div class="ft">두 줄 다 같은 축입니다 — 축을 둘로 나누지 않습니다</div>
+            </div>
+          </div>
+
+          <div class="c4">
+            <div class="card m">
+              <div class="hd"><h4>그 외 25곳</h4><span class="unit">언급 1~9회</span></div>
+              <div class="bd flush">
+                <table class="t">
+                  <colgroup><col><col style="width:54px"></colgroup>
+                  <thead><tr><th>이름</th><th class="n">언급</th></tr></thead>
+                  <tbody id="rest"></tbody>
+                </table>
+              </div>
+              <div class="ft">구름에 안 들어간 꼬리 — 여기 다 있습니다</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <span class="verdict">색각 검증 통과</span>
+    우리 <span class="num">#00ed64</span> ↔ 경쟁사 <span class="num">#c98500</span> —
+    적록색약 ΔE <span class="num">15.0</span>, 정상시력 ΔE <span class="num">28.8</span>.
+    일반어는 죽인 회색이라 뒤로 물러납니다. 병원명·수치는 <b>보기용 예시</b>입니다.
+  </p>
+</section>
+
+<!-- ═══ 나 · 설명 전후 ═══ -->
+<section class="block">
+  <div class="block-head">
+    <p class="eyebrow">시안 나</p>
+    <h2>설명 — 네 문단에서 한 줄로</h2>
+  </div>
+  <div class="vs">
+    <div class="side">
+      <p class="lab"><b>지금</b> · 읽히지 않고 변명처럼 보인다</p>
+      <div class="screenframe"><div class="screenscroll"><div class="screen" style="width:auto;padding:16px">
+        <div class="wordy">
+          <p>본 언급현황은 AI 엔진이 생성한 답변 내에서 브랜드명이 등장한 횟수를 집계한 참고
+            지표이며, 실제 검색 노출이나 유입을 보장하지 않습니다.</p>
+          <p>엔진별로 응답이 매번 달라질 수 있어 동일 질문을 3회 반복 수행한 결과의 평균을
+            사용하였으며, 응답을 받지 못한 엔진의 경우 해당 회차는 집계에서 제외되었습니다.</p>
+          <p>또한 언급과 인용은 서로 다른 개념으로, 본 지표는 답변 본문에 이름이 노출된 경우만을
+            의미하며 출처 링크로 제시된 경우는 포함하지 않습니다.</p>
+          <p>본 수치는 (주)베놈의 자체 산식에 따른 참고 지표로서 의료서비스의 질이나 환자
+            만족도를 의미하지 않으며…</p>
+        </div>
+      </div></div></div>
+      <p class="note">세로 <span class="num">12</span>줄 · 정작 궁금한 숫자는 한 개도 없습니다.</p>
+    </div>
+    <div class="side">
+      <p class="lab"><b>개선</b> · 숫자가 앞에, 단서는 물음표 뒤로</p>
+      <div class="screenframe"><div class="screenscroll"><div class="screen" style="width:auto;padding:16px">
+        <div class="grid">
+          <div class="oneline">
+            <span><b>최근 30일</b> AI 답변에서 우리 브랜드가 <b>128회</b>,
+              경쟁사가 <b>412회</b> 나왔습니다 — 전체의 <b>23.7%</b>.</span>
+            <span class="q" title="언급 = AI 답변 본문에 이름이 나온 것. 인용(출처 링크)과는 다릅니다.
+질문 40개 × 엔진 7개 × 3회 반복 기준. 못 받은 엔진은 분모에서 뺍니다.">?</span>
+          </div>
+        </div>
+      </div></div></div>
+      <p class="note">세로 <span class="num">1</span>줄. 고지·산식·제외 규칙은 <b>물음표</b> 안에
+        그대로 살아 있습니다 — 지운 것이 아니라 <b>접은 것</b>입니다.</p>
+    </div>
+  </div>
+  <div class="tablewrap">
+    <table class="spec">
+      <thead><tr><th style="width:190px">문구 규칙</th><th>어떻게</th></tr></thead>
+      <tbody>
+        <tr><td>맨 앞은 숫자</td><td>기간 · 우리 · 경쟁사 · 비율 — 이 넷이면 한 줄이 끝납니다</td></tr>
+        <tr><td>고지는 접는다</td><td>법적 고지·산식·제외 규칙은 <span class="num">?</span> 팝오버 하나로. <b>지우지 않습니다</b></td></tr>
+        <tr><td>변명체 금지</td><td>「보장하지 않습니다」를 앞에 두지 않습니다 — 뒤에 둡니다</td></tr>
+        <tr><td>못 받은 값</td><td><span class="num">«—»</span>. <b>0 으로 채우지 않습니다</b> — 0 은 「없다」로 읽힙니다</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 다 · 줄 구조 ═══ -->
+<section class="block">
+  <div class="block-head">
+    <p class="eyebrow">시안 다</p>
+    <h2>아래 줄 — 오른쪽 빈칸을 없앤다</h2>
+  </div>
+  <div class="vs">
+    <div class="side">
+      <p class="lab"><b>지금</b> · 오른쪽이 비어 있다</p>
+      <div class="screenframe"><div class="screenscroll"><div class="screen" style="width:auto;padding:16px">
+        <div class="grid">
+          <div class="c6"><div class="card m"><div class="hd"><h4>언급 추이</h4></div>
+            <div class="bd"><p style="font-size:11px;color:var(--ink-3)">그래프</p></div>
+            <div class="ft">&nbsp;</div></div></div>
+          <div class="c3"><div class="card m"><div class="hd"><h4>그 외 25곳</h4></div>
+            <div class="bd"><p style="font-size:11px;color:var(--ink-3)">좁아서 이름이 잘립니다</p></div>
+            <div class="ft">&nbsp;</div></div></div>
+          <div class="c3"><div class="dead" style="height:calc(var(--row)*2 + var(--gap))">빈 자리</div></div>
+        </div>
+      </div></div></div>
+    </div>
+    <div class="side">
+      <p class="lab"><b>개선</b> · 8칸 + 4칸으로 줄을 채운다</p>
+      <div class="screenframe"><div class="screenscroll"><div class="screen" style="width:auto;padding:16px">
+        <div class="grid">
+          <div class="c8"><div class="card m"><div class="hd"><h4>언급 추이</h4>
+            <span class="unit">최근 12주</span></div>
+            <div class="bd"><p style="font-size:11px;color:var(--ink-3)">넓어진 만큼 12주가 다 들어갑니다</p></div>
+            <div class="ft">&nbsp;</div></div></div>
+          <div class="c4"><div class="card m"><div class="hd"><h4>그 외 25곳</h4>
+            <span class="unit">언급 1~9회</span></div>
+            <div class="bd"><p style="font-size:11px;color:var(--ink-3)">이름이 안 잘립니다</p></div>
+            <div class="ft">&nbsp;</div></div></div>
+        </div>
+      </div></div></div>
+    </div>
+  </div>
+  <div class="tablewrap">
+    <table class="spec">
+      <thead><tr><th style="width:150px">규격</th><th style="width:210px">값</th><th>규칙</th></tr></thead>
+      <tbody>
+        <tr><td>줄 짜임</td><td class="mono">8 + 4 / 12 / 8 + 4</td><td>합이 <b>항상 12</b>. 남는 칸이 생기면 그 줄은 틀린 줄입니다</td></tr>
+        <tr><td>카드 폭</td><td class="mono">4 · 6 · 8 · 12칸</td><td>그 외 폭은 쓰지 않습니다 — <span class="num">6+3+3</span> 같은 조합이 빈칸을 만듭니다</td></tr>
+        <tr><td>카드 높이</td><td class="mono">S 176 · M 366 · L 556</td><td>한 줄 안에서는 <b>같은 높이</b>만</td></tr>
+        <tr><td>전폭 칸</td><td class="mono">grid-column: 1 / -1</td><td><span class="num">span 12</span> 로 두면 1칸으로 접힐 때 빈 칸 11개가 생깁니다</td></tr>
+        <tr><td>좁은 화면</td><td class="mono">≤1180 → 6칸 · ≤760 → 1칸</td><td>12 → 6 → 1 로만 접힙니다</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">
+    이 규격은 새로 만든 것이 아니라 <b>상권 탭에 넣은 그 파일</b>입니다 —
+    <span class="num">docs/시안/적용/anseo-market-layout.css</span>.
+    AEO 화면도 같은 파일을 쓰면 줄마다 끝이 맞습니다.
+  </p>
+</section>
+
+</div><!-- /page -->
+
+<script>
+(function(){
+  "use strict";
+  /* 보기용 예시 — 병원명은 가림(○○), 수치는 예시다. 실제 값은 화면 데이터가 채운다. */
+  var WORDS = [
+    {t:"대구○○병원", n:128, k:"us"},
+    {t:"○○정형외과의원", n:96, k:"rival"}, {t:"○○○재활의학과의원", n:74, k:"rival"},
+    {t:"○○○○병원", n:61, k:"rival"}, {t:"○○통증의학과", n:48, k:"rival"},
+    {t:"○○○의원", n:37, k:"rival"}, {t:"○○연합의원", n:29, k:"rival"},
+    {t:"○○바른의원", n:22, k:"rival"}, {t:"○○튼튼의원", n:18, k:"rival"},
+    {t:"○○제일의원", n:14, k:"rival"},
+    {t:"도수치료", n:88, k:"term"}, {t:"물리치료", n:71, k:"term"},
+    {t:"재활치료", n:64, k:"term"}, {t:"야간진료", n:52, k:"term"},
+    {t:"주차", n:49, k:"term"}, {t:"건강검진", n:45, k:"term"},
+    {t:"디스크", n:41, k:"term"}, {t:"예약", n:38, k:"term"},
+    {t:"비급여", n:34, k:"term"}, {t:"실손보험", n:31, k:"term"},
+    {t:"대기시간", n:28, k:"term"}, {t:"주말진료", n:26, k:"term"},
+    {t:"접근성", n:24, k:"term"}, {t:"통증", n:22, k:"term"},
+    {t:"초진", n:19, k:"term"}, {t:"친절", n:17, k:"term"},
+    {t:"지하철", n:15, k:"term"}, {t:"정형외과", n:13, k:"term"},
+    {t:"내과", n:12, k:"term"}, {t:"체외충격파", n:11, k:"term"}
+  ];
+  var KIND = {
+    us:    {c:"#00ed64", label:"우리 브랜드"},
+    rival: {c:"#c98500", label:"경쟁사"},
+    term:  {c:"#8a9aa0", label:"일반어"}
+  };
+  var ENGINES = [
+    {t:"ChatGPT",   s:"GPT", n:41,   c:"#199e70"},
+    {t:"Gemini",    s:"GEM", n:33,   c:"#3987e5"},
+    {t:"Claude",    s:"CLA", n:26,   c:"#d95926"},
+    {t:"Perplexity",s:"PER", n:18,   c:"#9085e9"},
+    {t:"Grok",      s:"GRK", n:10,   c:"#d55181"},
+    {t:"네이버",     s:"NAV", n:null, c:"#008300"},
+    {t:"AI 오버뷰",  s:"OVW", n:null, c:"#c98500"}
+  ];
+  var REST = [
+    ["○○사랑의원",9],["○○365의원",8],["○○우리의원",8],["○○하나의원",7],["○○현대의원",7],
+    ["○○수의원",6],["○○연세의원",6],["○○성모의원",5],["○○한빛의원",5],["○○미래의원",5],
+    ["○○누리의원",4],["○○참사랑의원",4],["○○솔의원",4],["○○보람의원",3],["○○햇살의원",3],
+    ["○○온의원",3],["○○정다운의원",2],["○○always의원",2],["○○바로의원",2],["○○새봄의원",2],
+    ["○○늘봄의원",1],["○○푸른의원",1],["○○맑은의원",1],["○○드림의원",1],["○○한결의원",1]
+  ];
+  var TREND = {
+    us:    [6,8,7,9,11,10,13,12,15,14,16,17],
+    rival: [28,31,29,34,33,36,35,38,37,40,39,42]
+  };
+
+  var fmt = function(n){ return Number(n).toLocaleString("ko-KR"); };
+  var esc = function(s){ return String(s).replace(/[&<>"]/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
+
+  /* ═══ 워드클라우드 ═══ */
+  var WEIGHT = {us:700, rival:600, term:400};
+  var box = document.getElementById("cloud");
+  var tip = null;
+
+  /* 화면에 먼저 숨겨 그린 뒤 실제 크기를 잰다 — 캔버스로 재면 CSS 와 어긋난다 */
+  function draw(){
+    if(!box) return;
+    var W = box.clientWidth, H = box.clientHeight;
+    if(!W || !H) return;
+    var ns = WORDS.map(function(w){ return w.n; });
+    var lo = Math.min.apply(null, ns), hi = Math.max.apply(null, ns);
+    var k = Math.min(1, W / 900), MIN = 12 * k + 2, MAX = 44 * k;
+    var size = function(n){
+      var r = (Math.sqrt(n) - Math.sqrt(lo)) / (Math.sqrt(hi) - Math.sqrt(lo) || 1);
+      return Math.round(MIN + r * (MAX - MIN));
+    };
+    var sorted = WORDS.slice().sort(function(a,b){ return b.n - a.n; });
+
+    box.innerHTML = sorted.map(function(w){
+      return '<span class="w ' + w.k + '" data-k="' + w.k + '" data-n="' + w.n + '"' +
+        ' style="visibility:hidden;left:0;top:0;font-size:' + size(w.n) + 'px"' +
+        ' title="' + esc(w.t) + ' · ' + fmt(w.n) + '회">' + esc(w.t) + '</span>';
+    }).join("");
+
+    var els = box.querySelectorAll(".w"), placed = [], cx = W / 2, cy = H / 2;
+    var wide = (W / H) > 1.7;
+    for(var i = 0; i < els.length; i++){
+      var el = els[i];
+      var tw = el.offsetWidth + 10, th = el.offsetHeight + 8;   /* 실측 + 숨 쉴 틈 */
+      var put = null;
+      for(var t = 0; t < 3200; t += 1){
+        var ang = t * 0.2, rad = 3.0 * ang * (wide ? 1.35 : 1);
+        var x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad * 0.62;
+        if(x - tw/2 < 4 || y - th/2 < 2 || x + tw/2 > W - 4 || y + th/2 > H - 2) continue;
+        var hit = false;
+        for(var j = 0; j < placed.length; j++){
+          var q = placed[j];
+          if(x - tw/2 < q.x2 && x + tw/2 > q.x1 && y - th/2 < q.y2 && y + th/2 > q.y1){ hit = true; break; }
+        }
+        if(!hit){
+          placed.push({x1:x - tw/2, y1:y - th/2, x2:x + tw/2, y2:y + th/2});
+          put = {x:x, y:y};
+          break;
+        }
+      }
+      if(put){
+        el.style.left = put.x.toFixed(1) + "px";
+        el.style.top  = put.y.toFixed(1) + "px";
+        el.style.visibility = "visible";
+      } else {
+        el.remove();   /* 자리가 없으면 넣지 않는다 — 겹쳐 두지 않는다 */
+      }
+    }
+  }
+
+  box && box.addEventListener("mouseover", function(e){
+    var el = e.target.closest(".w"); if(!el) return;
+    if(!tip){ tip = document.createElement("div"); tip.className = "tip"; box.appendChild(tip); }
+    tip.textContent = el.textContent + " · " + fmt(el.dataset.n) + "회 · " + KIND[el.dataset.k].label;
+    tip.style.left = el.style.left; tip.style.top = el.style.top; tip.hidden = false;
+  });
+  box && box.addEventListener("mouseleave", function(){ if(tip) tip.hidden = true; });
+
+  /* 범례 — 누르면 그 갈래만 남는다 */
+  var lg = document.getElementById("cloudlg");
+  if(lg){
+    var tot = {us:0, rival:0, term:0};
+    WORDS.forEach(function(w){ tot[w.k] += w.n; });
+    lg.innerHTML = Object.keys(KIND).map(function(k){
+      return '<button type="button" class="lg" data-k="' + k + '" aria-pressed="false">' +
+        '<i style="background:' + KIND[k].c + '"></i>' + KIND[k].label +
+        ' <b style="color:var(--ink)">' + fmt(tot[k]) + '</b></button>';
+    }).join("") + '<button type="button" class="sw" id="swap">표 보기</button>';
+
+    lg.addEventListener("click", function(e){
+      var b = e.target.closest(".lg"); if(!b) return;
+      var on = b.getAttribute("aria-pressed") === "true";
+      lg.querySelectorAll(".lg").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      if(on){ box.classList.remove("dim"); return; }
+      b.setAttribute("aria-pressed","true");
+      box.classList.add("dim");
+      box.querySelectorAll(".w").forEach(function(x){
+        x.classList.toggle("on", x.dataset.k === b.dataset.k);
+      });
+    });
+
+    var swap = lg.querySelector("#swap"), asTable = false;
+    swap && swap.addEventListener("click", function(){
+      asTable = !asTable;
+      swap.textContent = asTable ? "구름 보기" : "표 보기";
+      if(!asTable){ box.className = "cloud"; draw(); return; }
+      box.className = "cloud";
+      box.classList.remove("dim");
+      var rows = WORDS.slice().sort(function(a,b){ return b.n - a.n; }).map(function(w,i){
+        return '<tr><td class="n" style="color:var(--ink-3)">' + (i+1) + '</td>' +
+          '<td title="' + esc(w.t) + '"><span class="dot" style="background:' + KIND[w.k].c + '"></span>' +
+          esc(w.t) + '</td>' +
+          '<td style="color:var(--ink-2)">' + KIND[w.k].label + '</td>' +
+          '<td class="n">' + fmt(w.n) + '</td></tr>';
+      }).join("");
+      box.innerHTML = '<div style="position:absolute;inset:0;overflow:auto">' +
+        '<table class="t"><colgroup><col style="width:44px"><col><col style="width:96px">' +
+        '<col style="width:64px"></colgroup>' +
+        '<thead><tr><th class="n">#</th><th>말</th><th>갈래</th><th class="n">언급</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table></div>';
+    });
+  }
+
+  /* ═══ 엔진별 막대 ═══ */
+  (function(){
+    var el = document.getElementById("engines"); if(!el) return;
+    var max = Math.max.apply(null, ENGINES.map(function(e){ return e.n || 0; }));
+    el.innerHTML = ENGINES.map(function(e){
+      var got = e.n !== null;
+      return '<div class="barrow">' +
+        '<span><span class="dot" style="background:' + e.c + '"></span>' + esc(e.t) + '</span>' +
+        '<span class="tr">' + (got
+          ? '<span class="fl" style="width:' + (e.n/max*100).toFixed(1) + '%;background:' + e.c + '"></span>'
+          : '') + '</span>' +
+        '<span class="n"' + (got ? '' : ' style="color:var(--ink-3)"') + '>' +
+          (got ? fmt(e.n) : "—") + '</span></div>';
+    }).join("");
+  })();
+
+  /* ═══ 그 외 25곳 ═══ */
+  (function(){
+    var tb = document.getElementById("rest"); if(!tb) return;
+    tb.innerHTML = REST.map(function(r){
+      return '<tr><td title="' + esc(r[0]) + '">' +
+        '<span class="dot" style="background:#c98500"></span>' + esc(r[0]) + '</td>' +
+        '<td class="n">' + r[1] + '</td></tr>';
+    }).join("");
+  })();
+
+  /* ═══ 추이 — 한 축에 두 줄 ═══ */
+  (function(){
+    var svg = document.getElementById("trend"); if(!svg) return;
+    var W = 900, H = 260, L = 46, R = 92, T = 20, B = 34;
+    var pw = W - L - R, ph = H - T - B;
+    var max = 50, n = TREND.us.length, out = [];
+    [0, 25, 50].forEach(function(g){
+      var y = T + ph - g/max*ph;
+      out.push('<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="rgba(255,255,255,.07)"/>');
+      out.push('<text x="'+(L-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="#6a7b81">'+g+'</text>');
+    });
+    var X = function(i){ return L + (n === 1 ? 0 : i * pw / (n - 1)); };
+    var Y = function(v){ return T + ph - v/max*ph; };
+    [["rival","#c98500","경쟁사"],["us","#00ed64","우리"]].forEach(function(s){
+      var d = TREND[s[0]].map(function(v,i){ return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); }).join(" ");
+      out.push('<path d="'+d+'" fill="none" stroke="'+s[1]+'" stroke-width="2" stroke-linejoin="round"/>');
+      var last = n - 1;
+      out.push('<circle cx="'+X(last).toFixed(1)+'" cy="'+Y(TREND[s[0]][last]).toFixed(1)+'" r="4" fill="'+s[1]+'" stroke="#182226" stroke-width="2"/>');
+      /* 직접 라벨 — 범례 상자를 따로 두지 않는다 */
+      out.push('<text x="'+(X(last)+10)+'" y="'+(Y(TREND[s[0]][last])+4).toFixed(1)+'" font-family="var(--mono)" font-size="11" fill="'+s[1]+'">'+s[2]+' '+TREND[s[0]][last]+'</text>');
+    });
+    [0, 5, 11].forEach(function(i){
+      out.push('<text x="'+X(i).toFixed(1)+'" y="'+(H-12)+'" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="#6a7b81">'+(i+1)+'주</text>');
+    });
+    out.push('<text x="'+L+'" y="'+(T-5)+'" font-family="var(--mono)" font-size="9.5" fill="#6a7b81">회</text>');
+    svg.innerHTML = out.join("");
+  })();
+
+  /* 그리기 — 폭이 바뀌면 다시 앉힌다 */
+  var timer;
+  function redraw(){ clearTimeout(timer); timer = setTimeout(draw, 120); }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", draw);
+  else draw();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  window.addEventListener("resize", redraw);
+})();
+</script>
+</body>
+</html>
