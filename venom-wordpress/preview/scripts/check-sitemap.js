@@ -15,7 +15,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { buildXml } = require('../lib/sitemap-builder.js');
+const { buildXml, STATIC_POST_SLUGS } = require('../lib/sitemap-builder.js');
 
 const ROOT = path.join(__dirname, '..');
 const CANON = 'https://venom-new-site.vercel.app';
@@ -48,8 +48,10 @@ function main() {
   const hosts = [...new Set((sitemap.match(/https:\/\/[a-z0-9.-]+/g) || []))];
 
   // 1) 콘텐츠 표류
-  if (blogInMap !== live) {
-    problems.push(`콘텐츠 표류: 라이브 글 ${live}건 ≠ sitemap /blog/ ${blogInMap}건`);
+  // sitemap 의 /blog/ 는 자동포스트(blog-posts.json) + 정적 지역 글이다.
+  const expectedBlog = live + STATIC_POST_SLUGS.length;
+  if (blogInMap !== expectedBlog) {
+    problems.push(`콘텐츠 표류: 기대 ${expectedBlog}건(라이브 ${live} + 정적 ${STATIC_POST_SLUGS.length}) ≠ sitemap /blog/ ${blogInMap}건`);
   }
   // 2) 도메인 일관성
   const badHosts = hosts.filter(h => h !== CANON);
@@ -64,7 +66,7 @@ function main() {
   }
 
   if (!problems.length) {
-    console.log(`✅ sitemap OK — 라이브 글 ${live}건 = sitemap /blog/ ${blogInMap}건, 도메인 ${CANON} 일치`);
+    console.log(`✅ sitemap OK — 라이브 ${live}건 + 정적 ${STATIC_POST_SLUGS.length}건 = sitemap /blog/ ${blogInMap}건, 도메인 ${CANON} 일치`);
     process.exit(0);
   }
 

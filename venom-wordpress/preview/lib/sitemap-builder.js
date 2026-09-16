@@ -15,7 +15,7 @@ const SITE_PATHS = [
   '/about', '/blog', '/contact', '/seo-dictionary', '/diagnose', '/privacy', '/terms',
   '/dental', '/dermatology', '/orthopedics', '/oriental-medicine', '/plastic-surgery',
   '/internal-medicine', '/ophthalmology', '/medical-ad-review', '/medical-device',
-  '/naver-ads', '/google-ads', '/channel-management', '/pr',
+  '/naver-ads', '/google-ads', '/channel-management', '/pr', '/local',
   '/online-marketing/naver', '/online-marketing/sns', '/online-marketing/youtube',
   '/dental/implant', '/dental/navigation-implant', '/dental/orthodontics', '/dental/clear-aligner',
   '/dental/cosmetic', '/dental/laminate', '/dental/conservative', '/dental/root-canal',
@@ -34,10 +34,28 @@ const SITE_PATHS = [
   '/ophthalmology/glaucoma', '/ophthalmology/dry-eye',
 ];
 
+// 정적 지역마케팅 글(index.html 의 blogPosts 리터럴). blog-posts.json 에 없으므로 여기서 따로 싣는다.
+// 슬러그를 바꾸면 index.html 의 local_* 항목 slug 와 반드시 함께 고칠 것.
+const STATIC_POST_SLUGS = [
+  '인천-병원마케팅-지역별-seo-플레이스-전략',
+  '부산-병원마케팅-해운대-서면-동래-상권-전략',
+  '대구-병원마케팅-수성구-중구-달서구-seo-가이드',
+  '대전-병원마케팅-유성구-서구-세종-광역-전략',
+  '광주-병원마케팅-상무지구-수완지구-전남-seo',
+  '울산-병원마케팅-산업도시-직장인-타깃-seo',
+];
+
+// 베놈 체크업 — 공개 무료 진단 도구(정적 페이지). SPA 라우트가 아니라 실제 디렉터리다.
+const TOOL_PATHS = [
+  '/clinic/', '/clinic/location/', '/clinic/self-check/', '/clinic/dashboard/', '/clinic/landing/',
+];
+
 const STATIC_URLS = [
   { loc: `${BASE_URL}/`,    priority: '1.0', changefreq: 'weekly', hreflang: true },
   { loc: `${BASE_URL}/en/`, priority: '0.9', changefreq: 'weekly', hreflang: true },
   ...SITE_PATHS.map(p => ({ loc: `${BASE_URL}${p}`, priority: p.split('/').length > 2 ? '0.7' : '0.8', changefreq: 'monthly' })),
+  ...TOOL_PATHS.map(p => ({ loc: `${BASE_URL}${p}`, priority: '0.7', changefreq: 'monthly' })),
+  ...STATIC_POST_SLUGS.map(sl => ({ loc: `${BASE_URL}/blog/${encodeURIComponent(sl)}`, priority: '0.7', changefreq: 'monthly' })),
 ];
 
 function toXmlDate(iso) {
@@ -144,4 +162,4 @@ function getFileSha(filePath, token) {
   });
 }
 
-module.exports = { updateSitemap, buildXml };
+module.exports = { updateSitemap, buildXml, STATIC_POST_SLUGS };

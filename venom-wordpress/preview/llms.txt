@@ -55,6 +55,23 @@ GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통
 - 병원 온라인마케팅 통합: /online-marketing
 - SEO 내장형 병원 홈페이지 제작: /website
 
+## 지역·상권별 마케팅 (페이지)
+
+- 지역·상권 허브(6대 도시 상권 전략): /local
+- 도시별 전략: 인천 · 부산 · 대구 · 대전 · 광주 · 울산
+- 상권 단위 검색 패턴, 반경 경쟁 밀도, 인구 구조·환자 동선을 반영한 로컬 SEO·플레이스 전략을 다룹니다.
+
+## 무료 진단 도구 (베놈 체크업)
+
+병원·소상공인이 직접 쓰는 무료 자가진단 도구입니다. 회원가입 없이 이용할 수 있습니다.
+
+- 체크업 전체 안내: /clinic/
+- 입지·상권 진단(후보지별 경쟁 밀도·반경 인구/수요·상권 활동 지표 비교): /clinic/location/
+- 리스크·비용·동선 진단(의료법 위험, 광고비 효율, 환자 유입 동선): /clinic/self-check/
+- 노출 종합검진(대시보드): /clinic/dashboard/
+- 원클릭 검진: /clinic/landing/
+- AI·검색 종합 자가진단(13개 항목): /diagnose
+
 ## 블로그 콘텐츠 주제
 
 병원마케팅 베놈 블로그는 의료기관을 위한 마케팅 인사이트를 다룹니다.
@@ -74,6 +91,8 @@ GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통
 ## 주요 링크
 
 - 홈페이지: https://venom-new-site.vercel.app/
+- 마케팅 상담·문의: https://venom-new-site.vercel.app/contact
+- 지역·상권 허브: https://venom-new-site.vercel.app/local
 - 카카오 상담: https://pf.kakao.com/_jxjxdcxj/chat
 - 인스타그램: https://www.instagram.com/venom_markepick
 - Sitemap: https://venom-new-site.vercel.app/sitemap.xml
