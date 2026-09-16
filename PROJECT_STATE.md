@@ -3,18 +3,18 @@
 > 🤖 자동 생성 파일. 직접 수정 금지 — `node scripts/gen-project-state.mjs`(또는 CI)가 push마다 갱신.
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
-- **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
+- **저장소**: desktop-tutorial  ·  **현재 브랜치**: claude/awesome-brahmagupta-7mlfxl  ·  **기본 브랜치**: claude/awesome-brahmagupta-7mlfxl
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-09-16 삭제·휴지통 방 기록을 남긴다 — 방을 지우기 전에 (#252)
-- 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-16 로딩 화면에서 정지 사진을 뺀다 (#251)
-- 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-16 fix(nav,seo): 태블릿 헤더 겹침을 걷어내고 지역 글 6편에 제 주소를 준다 (#250)
-- 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-16 feat(nav): 상단에 상권분석 탭을 세우고 체크업 6종을 본진에 잇는다 (#249)
-- 2026-09-14 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-16 인계를 다음 사람이 읽기 좋게 정리한다 — 나간 것과 이어갈 것을 가른다
+- 2026-09-16 0.3.594 나갔다 — 도는 판까지 재서 적는다
+- 2026-09-16 개체 지도(제안서 4번)를 만들었다 — 기록·인계 갱신
+- 2026-09-16 인계 점검 — 도는 판이 확인됐고, 대기 한 줄이 남았다
+- 2026-09-15 checkpoint — s26 키워드 구름 방 인계 (0.3.583 · 0.3.587 배포 완료)
+- 2026-09-15 3번도 만들었다고 제안서에 적는다
+- 2026-09-15 인계에 판단을 적는다 — 기록 고침은 다음 배포에
+- 2026-09-15 세션을 인계한다 — 키워드 구름 방 s26
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 5457207 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 1e03bb3 기준. 값·비밀은 포함하지 않음.*
