@@ -49,7 +49,15 @@
     //   ③ 정지 구간을 걷어내 파일이 오히려 작아졌다(webm 800KB → 461KB).
     // 고른 프레임은 전부 원본 프레임 그대로다(프레임 해시 164개 대조 · 보간·색공간 왕복 없음).
     // 원본 15초 소스로 되돌리려면 -loop 를 뺀 ring-sq.webm / ring-sq.mp4 로 바꾸면 된다.
-    v.innerHTML = '<source src="' + ASSET + 'ring-sq-loop.webm" type="video/webm"><source src="' + ASSET + 'ring-sq-loop.mp4" type="video/mp4">';
+    // **mp4 를 먼저 적는다.** 브라우저는 틀 수 있는 첫 source 를 고른다.
+    // 예전엔 webm(VP9)이 먼저였는데, iOS 17 부터 사파리가 VP9 을 「틀 수는 있다」고 답한다 —
+    // 그런데 아이폰에 VP9 하드웨어 디코더는 없어서 640×640 을 **CPU 로** 푼다. 그러면 배터리와
+    // 다른 일에 밀려 주기적으로 칸을 거른다. mp4 는 H.264 High 3.1 이라 모든 아이폰이 칩으로
+    // 푼다. 크롬·안드로이드도 H.264 는 칩으로 푼다.
+    // **그림은 한 픽셀도 안 바뀐다** — 같은 164칸을 담은 같은 영상이고, 둘 다 등속 41.7ms 다
+    // (webm·mp4 둘 다 확인). 값은 내려받기 471KB → 601KB, 130KB 더.
+    // 되돌리기: 아래 두 source 순서를 도로 바꾸면 된다.
+    v.innerHTML = '<source src="' + ASSET + 'ring-sq-loop.mp4" type="video/mp4"><source src="' + ASSET + 'ring-sq-loop.webm" type="video/webm">';
     // 표시 전환은 「진짜 그림이 있을 때」만. 듣는 자리는 만들 때 한 번만 건다(재사용해도 안 쌓인다).
     var mark = function(){
       if (!(v.videoWidth > 0)) return;
@@ -75,16 +83,82 @@
     pool.push(v);
   }
 
+  /* ── 멈춤 감시 ───────────────────────────────────────────────────────────
+     사장님이 세 번 «시작 1초 · 끝 1초 멈춤» 을 말씀하셨는데 크로뮴에서는 재현이 안 된다
+     (시작 2ms · 되감기 1.63배 · webm/mp4 둘 다 등속 164칸 41.7ms · 블러 전환 33ms).
+     남은 자리는 전부 이 방이 못 재는 곳이다 — 아이폰 저전력 모드(영상 자동재생을 막는다),
+     사파리 VP9 소프트웨어 디코딩, 순환 이음매.
+
+     그래서 **원인을 가리지 않는다.** 링이 실제로 멈췄는지만 본다: 재생 머리가 안 나아가면
+     멈춘 것이다. 멈추면 영상을 접고 셰이더로 넘긴다 — 셰이더는 시간을 넣으면 그 순간을
+     계산해 내므로 **멈출 수 있는 지점 자체가 없다**(내려받기도 디코더도 없다).
+
+     **다만 아무 때나 갈아타지 않는다.** 셰이더는 나란히 놓으면 확실히 못하다 — 실 가닥이
+     줄고(단면 봉우리 8.8 → 0.7) 같은 틴트 아래에서 더 흐리다. 잠깐 멈칫할 때마다 갈아타면
+     **한 번 멈칫한 대가로 남은 내내 못한 링**을 보게 된다. 그건 손해다.
+
+     그래서 조건을 하나로 좁혔다 — **영상이 한 프레임도 못 낸 경우.** 아이폰 저전력 모드가
+     자동재생을 막는 자리가 여기다. 그때 대안은 「멈춘 링」이 아니라 정지 사진 한 장이
+     14초에 한 바퀴 뻣뻣하게 도는 것이고, 거기서는 셰이더가 분명히 낫다.
+     한 번이라도 제대로 돌기 시작했으면 중간에 멈칫해도 **그대로 둔다.**
+     되돌리기: 이 블록과 mount() 안의 watchStall(st) 한 줄을 지우면 끝이다. */
+  var SHADER_SRC = '/assets/ring-shader.js';
+  var NEVER_MS = 1600;  // 이만큼 지나도 첫 프레임이 없으면 「못 트는 것」이다(늦는 것이 아니라).
+
+  function loadShader(cb){
+    if (global_RingShader()) return cb();
+    var s = document.createElement('script');
+    s.src = SHADER_SRC; s.async = true;
+    s.onload = function(){ cb(); };
+    s.onerror = function(){ /* 못 받으면 그냥 둔다 — 지금보다 나빠지지 않는다 */ };
+    document.head.appendChild(s);
+  }
+  function global_RingShader(){ return window.RingShader && window.RingShader.make; }
+
+  function toShader(st){
+    loadShader(function(){
+      if (!global_RingShader() || !st.overlay || !st.overlay.isConnected) return;
+      var disc = st.overlay.querySelector('.rl-disc');
+      if (!disc || disc.querySelector('canvas')) return;
+      var c = document.createElement('canvas');
+      c.setAttribute('aria-hidden', 'true');
+      disc.appendChild(c);
+      var r = window.RingShader.make(c, {});
+      if (!r) { disc.removeChild(c); return; }
+      r.start();
+      st.shader = r;
+      c.classList.add('playing');
+      disc.classList.add('live');
+      // 영상은 접는다 — 멈춘 그림이 셰이더 위에 겹쳐 밝기를 더하면 안 된다.
+      if (st.video) { try { st.video.pause(); } catch (e) {} st.video.classList.remove('playing'); }
+    });
+  }
+
+  function watchStall(st){
+    if (REDUCED || !st.video) return;
+    var v = st.video, waited = 0;
+    st.stall = setInterval(function(){
+      if (!st.overlay || !st.overlay.isConnected || st.shader) { clearInterval(st.stall); st.stall = null; return; }
+      // 한 프레임이라도 나왔으면 영상은 「틀 수 있는 것」이다 — 감시를 접고 그대로 둔다.
+      if (v.currentTime > 0 || v.classList.contains('playing')) { clearInterval(st.stall); st.stall = null; return; }
+      if (document.hidden) { waited = 0; return; }   // 탭이 뒤로 가 있으면 안 트는 게 맞다
+      waited += 200;
+      if (waited >= NEVER_MS) { clearInterval(st.stall); st.stall = null; toShader(st); }
+    }, 200);
+  }
+
   function buildOverlay(st){
     var ov = document.createElement('div'); ov.className = 'rl-overlay';
     ov.setAttribute('role', 'status'); ov.setAttribute('aria-live', 'polite');
     var disc = document.createElement('div'); disc.className = 'rl-disc';
-    disc.innerHTML = '<img class="still" src="' + ASSET + 'ring-sq.jpg" alt="" aria-hidden="true">';
+    // 정지 사진(포스터)을 깔지 않는다 — 사장님 오더. 영상이 뜨기 전 잠깐이라도 「멈춘 링」을
+    // 보이느니 아무것도 안 보이는 편이 낫다. 진단 페이지를 열 때 영상을 미리 받아 두므로
+    // 그 잠깐은 19ms 다(실측·4G·캐시 없음). 못 뜨면 1.6초 뒤 셰이더가 대신 돈다.
     var scrim = document.createElement('div'); scrim.className = 'rl-scrim'; scrim.setAttribute('aria-hidden', 'true');
     if (!REDUCED) {
       var v = takeVideo();
       disc.appendChild(v);
-      // 못에서 꺼낸 것은 이미 받아 둔 상태다 — 정지 사진을 거치지 않고 바로 영상으로 넘긴다.
+      // 못에서 꺼낸 것은 이미 받아 둔 상태다 — 곧바로 보이게 넘긴다.
       v.__rlMark();
       st.video = v;
     }
@@ -99,7 +173,9 @@
   function clearTimers(st){
     if (st.timer) clearInterval(st.timer);
     if (st.leaveTimer) clearTimeout(st.leaveTimer);
-    st.timer = st.leaveTimer = null;
+    if (st.stall) clearInterval(st.stall);
+    if (st.shader) { try { st.shader.stop(); } catch (e) {} st.shader = null; }
+    st.timer = st.leaveTimer = st.stall = null;
   }
   function teardownNow(host){
     var st = host._rl; if (!st) return;
@@ -136,6 +212,7 @@
       st.secEl.textContent = String(Math.floor((Date.now() - st.t0) / 1000));
     }, 250);
     if (st.video) { try { var p = st.video.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} }
+    watchStall(st);   // 링이 실제로 멈추면 셰이더로 넘긴다(위 머리말)
     return host;
   }
 
