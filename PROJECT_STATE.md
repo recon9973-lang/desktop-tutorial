@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-08 docs(RESUME): /api/queue 원인 확정 — 캐시 미스마다 8초, 브로커 왕복 2회의 구조적 하한
+- 2026-09-08 docs(RESUME): 🚨 운영 /api/queue 먹통 실측 기록 · 배포 정책 단독 허용으로 되돌림
+- 2026-09-07 docs(RESUME): 배포 정책 — 단독 배포 금지, 다른 방 deploy-candidate 에 얹어서만 (사장님 오더)
+- 2026-09-07 docs(RESUME): 가지 원격 정리 완료 표시 — anseo-perf-web2·anseo-ring-release 삭제 확인 · 프록시 삭제 403 제약 기록
+- 2026-09-07 docs(RESUME · s22): 0.3.530 나감·도장 완료 반영 — 미배포 없음
+- 2026-09-07 docs(checkpoint · s21 · ANSEO 방): 속도 웹 3판 완료 · 0.3.530 배포 대기(다른 방 0.3.529 선행) 인계
 - 2026-09-06 docs(checkpoint · s20 마감 · ANSEO 방): 0.3.520 배포 완료 — 골든 링 로딩 + 속도 여덟 · RESUME 갱신
 - 2026-09-06 docs(RESUME): 0.3.517 = 로딩 애니메이션만 (사장님 재확인) — 배포 가지 claude/anseo-ring-release · 속도 가지는 재발급 대기
-- 2026-09-06 docs(RESUME): 0.3.517 배포 준비 완료 반영 — perf-day1 1f5c8576 · 배포는 오더 문장 대기
-- 2026-09-06 docs(s20): 조사 원문 보존 커밋 해시 실제 값으로 정정
-- 2026-09-06 docs(checkpoint · s20 · ANSEO 방): main 합류 · 링 판 물러남 · 속도 2주차 다섯 합류 — RESUME 갱신
-- 2026-09-06 docs(plans): ANSEO 속도 전수조사 Top 10 원문 보존 — s19 scratchpad 에서 저장소로
-- 2026-09-06 docs(checkpoint · s19 · ANSEO 방): 잘못된 제품(venom) 정정 · veo-platform 착수 — 속도 1일차 셋 + 골든 링 이식 브랜치 푸시
-- 2026-09-06 docs(RESUME): s18 배포 마감 반영 — PR #233 main 5fa0f63 · 운영 실측 완료
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 de60537 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 8aa9f0e 기준. 값·비밀은 포함하지 않음.*

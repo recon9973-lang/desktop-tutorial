@@ -1,104 +1,48 @@
-# RESUME — 다음 세션 이어가기 (2026-09-08 s24 · ANSEO 방 · ✅ `/api/queue` **원인 확정·먹통 해소** · 운영 0.3.549 · 단독 배포 허용)
+# RESUME — 다음 세션 이어가기 (2026-09-16 · s25 · ANSEO 방 · `/api/queue` 8초 고침 **완료·미배포** · main 0.3.594 합침 완료)
 
-> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-07-s21.md`(직전 `-s20.md`, `-s19.md`).
-> **ANSEO = `recon9973-lang/veo-platform`**(veo.seokorea.org 콘솔). desktop-tutorial 안의 venom 무료진단은 ANSEO가 **아니다**.
-
-## ✅ [2026-09-08 s24] `/api/queue` 원인 **확정** — 먹통은 풀렸고, 남은 건 「캐시 미스마다 8초」
-
-### 실측 (바깥 샌드박스 curl · 30초 캐시를 매번 넘겨 3회)
-| | |
-|---|---|
-| `/api/queue` 미스 1·2·3 | **7.96 / 8.08 / 8.10초** — 편차 0.14초 |
-| `/api/queue` 캐시 적중 | **0.280초** |
-| `/api/health` · `/api/providers` | 0.296 · 0.294초 |
-| 본문 | `configured:true` · `workers:1` · `worker_versions:["0.3.549"]` · `stale_workers:0` |
-
-### 확정된 것
-1. **콜드 스타트가 아니다.** 세 미스가 전부 8.0초, 편차 0.14초 → **캐시 미스마다 무는 구조적 비용**. 접속 재수립이라면 편차가 이보다 크다.
-2. **브로커 왕복 하나가 유일한 원인.** DB·서버는 무관 — 브로커 안 타는 창구는 0.29초, 인증 필요한 창구도 401을 0.30초에 준다.
-3. **워커는 정상.** 1대 · 0.3.549 · stale 0. 속도조사 **#3(Redis+워커 분리)은 이미 되어 있다** — `infra/railway/worker.json:5-8` 별도 서비스. 내 옛 정보(「API 프로세스 안 스레드」) 정정.
-4. **#5(DB 풀)는 이번 건과 무관.**
-
-### 왜 8초인가 (코드 근거)
-- 핸들러가 브로커에 **왕복 2회**: `control.ping(timeout=2.0)` (`apps/api/src/veo/jobs/reachability.py:246`) + `control.broadcast("veo_version", timeout=2.0)` (`:258-262`).
-- 둘 다 `destination` 을 안 줘서 kombu 수거 루프의 `limit=None` → `count()` 무한 루프가 되고, **워커가 즉답해도 `socket.timeout` 이 날 때까지 상한을 통째로 기다린다**(kombu `pidbox.py:343-344`, `:396-400`). → **구조적 하한 4.0초.**
-- 캐시 30초(`reachability.py:90`), 자체 상한 20초(`:86`). 0.3.540 판엔 **상한이 없었다** → 그때 45~50초 무응답이 설명된다(지금 판에선 재현 불가).
-
-### 실제 피해 (사용자 눈에 보이는 것)
-- 콘솔 **「변경 이력」 화면**이 이 창구를 **3초에서 끊는다**(`apps/web/src/lib/runtime-versions.ts:89`, 화면 `console/changelog/page.tsx:29`). 8초 걸리므로 **항상 «진단 못 함»** 을 본다.
-- `scripts/deploy.sh:303` 배포 확인 폴링(20초 간격)이 **매 회차 8초**를 문다.
-- 곁다리 결함: 8초 창 안에 두 번째 요청이 오면 즉시 «못 물어봄» 을 받고 **그 값이 30초 캐시에 박힌다**(`reachability.py:190-191` → `:222-228` → `:232-235`). 브로커가 멀쩡한데도.
-
-### 처방 (전부 무비용 · 코드만)
-- **ㄴ 배경 예열** — 25초마다 스스로 재서 캐시를 채움(FastAPI lifespan). 요청 경로가 **항상 0.28초**가 되고 「변경 이력」 화면이 살아난다. 위험 낮음. **다만 브로커에 상시 왕복이 새로 생기므로 사장님 주문 필요.**
-- **ㄷ 캐시 오염 방지** — 「남이 재는 중」과 「제때 못 받음」을 구분해, 바빠서 못 잰 경우 직전 캐시를 내준다. 위험 낮음.
-- **ㄱ 상한 줄이기** — 4.0초 하한 자체를 줄임. **위험 중 · 실측 선행 필수**(워커 실제 응답 시간을 아무도 안 잼 → «—»). 느낌으로 낮추면 워커 수를 낮게 세는 오류(오류 59·60 계열)가 된다. `limit=1` 은 **쓰면 안 됨**(워커 수 세기가 이 창구의 존재 이유).
-- 돈 드는 조치 **없음**. 워커 증설·Redis 승급 불필요.
-
-### 아직 못 잰 것
-워커가 `ping`·`veo_version` 에 실제로 몇 ms 에 답하는지(ㄱ 의 전제값) · 8.0초의 「4.0초 하한 vs 나머지」 정확한 분할(서버 로그·계측 없음) · 운영 이미지의 celery/kombu 정확한 판(잠금 파일 없음)
-
-## 🗄 [지난 기록] 2026-09-08 낮 먹통 — 위에서 해소됨
-
-[실측 2026-09-08 16:03~16:07 KST · 바깥 샌드박스 curl · **4회 전부 실패**]
-
-| 창구 | 결과 |
-|---|---|
-| `/api/health` | **200 · 0.28초** · 판 `0.3.540` · environment production |
-| `/api/queue` | **http 000 · 20·25·45초 상한 전부 초과 · 0바이트** |
-| 웹 `veo.seokorea.org/login` | 판 `0.3.540` |
-| `/api/version`·`/openapi.json` | 404 (원래 없는 창구 · 정상) |
-
-- **0.3.540 코드 자체는 나가 있다** (서버·웹 둘 다 0.3.540). 못 하는 것은 **워커 판 확인** — 그 값을 주는 창구가 `/api/queue` 뿐이라 **도장을 못 찍는다.**
-- **0.3.540 탓이 아닐 가능성이 높다**: main 의 0.3.540 커밋들(판 9~13)은 전부 `test(web)`·`feat(ui)` = 화면·시험만, 서버 무변경.
-- **어제(0.3.539) 잴 때는 `/api/queue` 가 정상 응답**했다(`["0.3.539"]`). 그 사이에 생긴 상태다.
-- **짚이는 곳(속도 전수조사 Top 10 과 일치)**: #3 진단 작업이 API 프로세스 안 배경 스레드에서 돎(단일 프로세스) · #5 DB 풀 10 vs 스레드풀 40 → 큰 크롤이 도는 동안 DB 연결이 말라 `jobs` 를 읽는 `/api/queue` 만 매달릴 수 있다. `/api/health` 는 얕아서 안 걸림.
-- **다음 세션이 할 것**: ① `/api/queue` 재측정(회복됐나) ② Railway 로그·DB 연결 수 확인 ③ 안 풀리면 #5(스레드풀을 DB 풀에 맞춰 낮추기 — 돈 안 듦)·#3(워커 분리) 를 사장님께 다시 올린다.
-
-## ⚠️ 배포 정책 — **[2026-09-08 사장님 오더 «이 방 자체로 배포해» 로 되돌림 — 단독 배포 허용]**
-_(직전 2026-09-07 오더 «배포 대기하고 다른 방이 배포하면 같이 배포에 참여해» 는 폐기. 아래 합류 절차는 참고용으로만 남긴다.)_
-
-~~**이 방은 단독으로 배포하지 않는다.**~~ → **이 방이 스스로 배포한다**(2026-09-08). 아래는 나중에 다시 합류 방식으로 돌아갈 때를 위한 절차 보관.
-
-- **왜 그렇게 되나**: main 에 푸시하는 순간 Railway·Vercel 이 자동으로 굽는다 = main 푸시 = 배포. 그래서 「내 것만 main 에 밀기」가 곧 단독 배포다.
-- **끼어드는 신호는 `deploy-candidate` 가지**다. 다른 방이 배포를 시작하면 그 가지가 먼저 생긴다(main 보다 앞선다). 그때가 합류 시점.
-- **절차**:
-  1. 내 작업은 **내 가지에 완성해 두고 대기**(CI 초록까지). main 에 밀지 않는다.
-  2. `deploy-candidate` 가 생기면 → 내 가지를 그 위로 rebase → 판 번호를 그 방 것보다 뒤로 발급 → **같은 `deploy-candidate` 에 얹어 푸시** → CI 가 합친 나무를 한 번에 채점 → 둘이 함께 main 으로.
-  3. 실측·도장은 그 방과 겹치지 않게. 이미 그 방이 했으면 내 판 줄만 대장에 더한다.
-- **예외**: 사장님이 직접 배포 오더 문장을 주시면 그때는 단독으로 내도 된다(그 문장이 곧 허가).
-- 판 번호 충돌은 늘 그렇듯 **나중에 미는 쪽이 물러난다**.
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-16-s25.md`(직전 `-s21.md`, `-s20.md`, `-s19.md`).
+> **ANSEO = `recon9973-lang/veo-platform`**(veo.seokorea.org 콘솔). desktop-tutorial 안의 venom 무료진단은 ANSEO 가 **아니다**.
 
 ## 지금까지 (핵심만)
-- **[s23 실측 2026-09-07] 운영 = `0.3.539`** (진단 서버 `/api/health` · 워커 `/api/queue` · 웹 로그인 화면 셋 다). main 도 `7ae4f40b` = 0.3.539 로 **main 과 운영이 같다**. `deploy-candidate` 가지는 지금 없음(직전 배포 뒤 정리됨). **내 것(ANSEO 속도·링) 은 0.3.530 까지 전부 나갔고 대기 중인 내 작업 없음** — 그래서 지금은 얹을 것도, 기다릴 것도 없다. 정책은 다음 작업부터 발동.
-- 참고(다른 방 소관, 손대지 말 것): 대장 §2 머리말은 아직 「미배포 0.3.537~0.3.539」 라고 적혀 있으나 **실측상 셋 다 운영에 올라가 있다** — 그 방들이 실측·도장을 아직 안 적은 것으로 보인다. 내가 고치지 않는다.
-- **[s22] 0.3.530 나갔다·도장 끝** [실측 2026-09-07 14:01 KST 바깥 샌드박스 curl] 서버 `/api/health` 0.3.530 · 워커 `/api/queue` ["0.3.530"] · 웹 로그인 판 0.3.530 · gzip. 다른 방 0.3.529(입지 방)도 이 배포에 실려 함께 나감. veo-platform main = 도장 커밋 `9724621e`(b0bbd793 release 위 docs 2파일 · 대장 1,195줄 · 관문 10/10). `claude/anseo-perf-web2` = main 과 같음. **미배포 없음.** 내용: 정기 진단 체크박스 2곳 refresh 제거(요청 9→1·12→1) · projects 왕복 3→1 · 404 폴백 제거 · PinButton 그대로. preflight 전부 통과. 사장님 오더 «별표는 살리고 배포해».
-- 배포 재개 절차는 s21 로그 「배포 재개 절차」 4단계 그대로.
-- **0.3.520 나갔다** [실측 2026-09-06 23:07 KST 바깥 샌드박스 curl] 서버·워커 `0.3.520` · 웹 링 에셋 200. 내용 = 골든 링 로딩(SEO·AEO) + 속도 전수조사 여덟. veo-platform main = 도장 커밋(`d54fd06c` 위 docs). 사장님 오더 «속도개선과 로딩 애니매이션 둘 다 배포».
-- ~~링 단독 판 가지 `claude/anseo-ring-release`~~ · ~~`claude/anseo-perf-web2`~~ — **[2026-09-07 정리 완료]** 사장님이 로컬에서 원격 삭제(확인함). 지우기 전 대조: 링 코드·에셋이 main 에 내용 차이 0, 남은 커밋은 안 나간 0.3.517 판 발급 + merge 뿐이었음.
-- `claude/anseo-perf-day1` = main 과 같음(도장까지). 더 쌓을 것 없음.
-- 사장님 톤 지적(SEO 링 블루톤·AI스러움) → 「두 진단 성격이 다르니 컬러가 달라도 됨」으로 정리. 내가 콘솔 톤·덮개까지 건드리자고 해 **범위 초과 지적** 받음 — 오더 밖 제안 금지.
-- 속도 Top 10: #10·projects·404 폴백은 s21에서 끝남(0.3.530 판). 남은 것 **#3 Redis+워커 · #5 DB 풀(사장님 결정)** 뿐.
-- venom(desktop-tutorial): PR #233 main `5fa0f63` 배포됨. 사장님 검토 후 되돌릴 항목 지시 예정
+
+- **`/api/queue` 8초 문제는 원인 확정 + 수정 완료.** 가지 `claude/anseo-queue-warmup`(veo-platform) 에 커밋 넷:
+  `cbe326c2`(ㄷ 캐시 오염 방지) · `4e1c1660`(ㄴ 배경 예열 25초) · `db69a4b4`(대장) · `8a2244e3`(main 0.3.594 합침).
+  **푸시 안 함 · 판 번호 미발급 · 배포 안 함.**
+- **원인**: 브로커 왕복 2회(`control.ping` + `veo_version` 방송)가 `destination` 없이 돌아, kombu 수거 루프가 답을 다 받고도 상한(2.0초)이 찰 때까지 기다린다 → **구조적 하한 4.0초**, 실측 **7.96·8.08·8.10초**(캐시 적중 0.280초). 콘솔 「변경 이력」이 이 창구를 3초에서 끊어 **항상 «진단 못 함»** 이었다.
+- **실측 효과**(가짜 8초 브로커 · 70초 창 · 5초마다): 최대 대기 **8.004 → 0.000초** · 3초 초과 2건 → **0건**.
+- **여드레 공백** — 2026-09-08 「고쳐」 뒤 배포 오더를 기다리며 서 있었고 main 이 0.3.55x → **0.3.594**(367커밋) 나아갔다. 2026-09-16 예약 점검이 깨워 재합침.
+- **내 변경은 아직 쓸모 있다** — main 0.3.594 에 `queue_warmup`·`_Probe`·예열이 **없다**. **나갈 것 1건.**
+- venom(desktop-tutorial): PR #233 main `5fa0f63` 배포됨. 사장님 검토 후 되돌릴 항목 지시 예정(여전히 미지시).
 
 ## 바로 이어갈 작업
-0. ~~0.3.530 배포 마무리~~ · ~~가지 원격 정리~~ — **둘 다 끝**(s22 도장 `9724621e` · 2026-09-07 가지 2개 삭제 확인). **주의: 이 컨테이너 프록시는 가지 삭제(push --delete)를 403 으로 막는다** — 커밋 푸시는 되는데 삭제만 안 됨. GitHub MCP 에도 삭제 도구 없음. 사장님 로컬에서 `cd $(mktemp -d) && git init -q && git push <저장소 URL> --delete <가지들>` 로 하시거나 웹 Branches 화면에서.
-1. **운영 링 화면 실물 확인** — 사장님이 veo.seokorea.org 로그인 후 SEO 진단·AEO 관측 한 번씩. 나는 로그인 자격이 없어 못 본다. 문제 보고 오면 `RingLoader.tsx`·`ring-loader.module.css` 에서 고침.
-2. **운영 전후 실측으로 속도 «—» 채우기** — 8월 값(진단 탭 2,974 ms · AEO 4,756 ms)과 같은 자리를 바깥 샌드박스 curl 로 재서 대장에 적기(요청 시).
-3. 사장님 결정 대기(s20 로그 「판단 필요」): AEO 엔진별 막대 · 「SEO 점수 분석 중…」 스크린샷 출처 · venom 되돌릴 항목 · #3/#5 · fetcher.py 제외 · 서체 라틴 폴백
-4. venom 되돌리기: 지시 오면 desktop-tutorial 에서 해당 커밋 revert PR
+
+1. **합침 뒤 재검사 결과 확인** — 서브에이전트가 `/home/user/veo-perf` 에서 의존성 재설치 + 전체 검사(ruff · mypy · `make ci-local` · `make test-db` · 웹 typecheck/lint/build/test · 대장 관문) 중. **합침 전 기준으로는 전부 초록**(ci-local 7,223 passed · test-db 1,241 · 웹 2,866 · 관문 10 + 새 관문 16). 빨간 게 나오면 고치고, 내 작업과 무관한 main 쪽 실패면 적어만 둔다.
+2. **배포 — 사장님 오더 문장이 있어야 한다.** 오더 오면: 판 번호 발급(`claim_version`) → 후보 가지 CI 를 GitHub 도구(`actions_list`/`actions_get`)로 `success` 확인 → `git push origin <sha>:refs/heads/main` → 운영 실측 도장.
+3. **배포 담당 이관 확인** — veo-platform `docs/WORKLIST.md` 에 **「배포 담당은 ANSEO 방이다」(사장님 지시 2026-09-09 «ANSEO방에 배포이관»)** 와 **「대기 표를 통째로 보여드리고 한 번에 승인받는다」**(2026-09-01) 가 적혀 있다. 사실이면 **이 방이 다른 방들 대기 건까지 모아 올리는 자리**다. 확인해서 사장님께 보고.
+4. **운영 링 화면 실물 확인** — 사장님이 veo.seokorea.org 로그인 후 SEO 진단·AEO 관측 한 번씩. 나는 로그인 자격이 없다. 문제 보고 오면 `RingLoader.tsx`·`ring-loader.module.css` 에서 고침.
+5. 운영 전후 실측으로 속도 «—» 채우기 — 8월 값(진단 탭 2,974 ms · AEO 4,756 ms) 자리를 바깥 샌드박스 curl 로 재서 대장에 적기(요청 시).
+6. venom 되돌리기: 지시 오면 desktop-tutorial 에서 해당 커밋 revert PR.
 
 ## 대기/차단
-- 배포는 오더 문장 없이 금지(`scripts/deploy.sh` 가 거절) · 이 컨테이너엔 `gh` 가 없어 스크립트가 CI 대기(3단계)에서 exit 127 → 후보 가지 CI 를 GitHub 도구(`actions_list`/`actions_get`)로 `success` 확인 후 `git push origin <sha>:refs/heads/main` · 운영 실측은 Higgsfield `sandbox_exec` curl(컨테이너 프록시 403)
-- 로컬 PG: `pg_ctlcluster 16 main start` · preflight/make 는 `VEO_TEST_DATABASE_URL="postgresql+psycopg://root:root@localhost:5432/veo_test" PGPASSWORD=root PGUSER=root` 주입 필수(기본값엔 비밀번호 없음)
-- `pkill -f` 에 자기 명령줄이 걸려 셸이 죽는다(exit 144) → `fuser -k <port>/tcp` 또는 별도 호출
+
+- **배포는 사장님 오더 문장 없이 금지** (`scripts/deploy.sh` 가 `VEO_DEPLOY_ORDER` 없으면 거절).
+- 이 컨테이너엔 `gh` 가 없어 `deploy.sh` 가 CI 대기(3단계)에서 exit 127 → 후보 가지 CI 를 GitHub MCP 도구로 확인 후 `git push origin <sha>:refs/heads/main`.
+- **가지 삭제(`push --delete`)를 프록시가 403 으로 막는다** — 커밋 푸시는 됨. 사장님 로컬에서 `cd $(mktemp -d) && git init -q && git push <저장소 URL> --delete <가지들>`.
+- 운영 실측은 컨테이너 프록시가 막음 → Higgsfield `sandbox_exec` curl.
+- 로컬 PG: `pg_ctlcluster 16 main start` · preflight/make 는 `VEO_TEST_DATABASE_URL="postgresql+psycopg://root:root@localhost:5432/veo_test" PGPASSWORD=root PGUSER=root` 주입 필수.
+- `pkill -f` 에 자기 명령줄이 걸려 셸이 죽는다(exit 144) → `fuser -k <port>/tcp`.
+- 명령 실행 60초 천장 → 긴 것은 `nohup ... > 로그 &` + 로그 폴링.
 
 ## 주의·제약
-- **서브에이전트로 작업**(사장님 첫 마디). 나는 통합·검토·커밋·푸시만. 에이전트가 백그라운드 시험을 기다리며 멈추면 SendMessage 로 재개
-- 다른 worktree 에서 API 시험: `PYTHONPATH=$PWD/src` 필수(공용 venv editable 이 veo-perf 를 가리킴). 웹은 node_modules 심링크 · Turbopack 불가 → `next build --webpack`
-- 서버가 모르는 단계를 화면이 말하지 않는다(오류 62) · 커밋 트레일러 `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` / `Claude-Session: https://claude.ai/code/session_01S6ziCnWzVB8CMhzMbmzupF` · 모델 ID 코드·PR 금지
-- 사장님께 「커밋」·「배포」 두 낱말만 · 못 잰 값 «—» · 지어낸 수치 금지
+
+- **서브에이전트로 작업**(사장님 첫 마디). 나는 통합·검토·커밋·푸시만.
+- **uvicorn `--workers` 를 늘리면 예열 설계가 깨진다** — 캐시·예열이 프로세스마다 따로 돈다. 주석·대장·커밋에 적었으나 **관문으로는 못 막았다.**
+- **ㄱ(핑 상한 2.0초 줄이기)은 안 건드렸다** — 워커 실제 응답 시간을 아무도 안 쟀다. 느낌으로 낮추면 워커 수를 적게 세는 오류가 난다. `limit=1` 은 쓰면 안 됨.
+- 다른 worktree 에서 API 시험: `PYTHONPATH=$PWD/src` 필수. 웹은 Turbopack 불가 → `next build --webpack`.
+- 서버가 모르는 단계를 화면이 말하지 않는다(오류 62) · 못 잰 값 «—» · 지어낸 수치 금지 · 사장님께는 「커밋」·「배포」 두 낱말만.
+- 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` / `Claude-Session: https://claude.ai/code/session_01S6ziCnWzVB8CMhzMbmzupF` · **모델 ID 를 코드·커밋·PR 에 넣지 않는다.**
 
 ## 참고
-- veo 클론 `/home/user/veo-platform`(main) · worktree `/home/user/veo-perf`(**지금 `claude/anseo-perf-web2` 체크아웃** · `.venv`·node_modules 여기). 콘솔 실물 캡처 방법: `scratchpad/serve.mjs`(가짜 API + next start 4599 · `SHOOT_FIXTURE`) + `shoot2.mjs`(Playwright 전역 설치 · `/api/scan`·`/api/observation` 가로채기) — 컨테이너 바뀌면 s20 로그 참고해 다시 씀. 새 컨테이너면 `add_repo` 후 재클론
-- 운영 실측은 컨테이너 프록시가 막음 → Higgsfield `sandbox_exec` curl
+
+- veo 클론 `/home/user/veo-platform`(main) · worktree `/home/user/veo-perf`(**`claude/anseo-queue-warmup` 체크아웃** · `.venv`·node_modules 여기). 새 컨테이너면 `add_repo` 후 재클론.
+- 현황은 `PROJECT_STATE.md`, 무엇이 어디 있는지는 `핵심두뇌_MASTER.md`.
