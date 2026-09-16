@@ -15,7 +15,7 @@ const SITE_PATHS = [
   '/about', '/blog', '/contact', '/seo-dictionary', '/diagnose', '/privacy', '/terms',
   '/dental', '/dermatology', '/orthopedics', '/oriental-medicine', '/plastic-surgery',
   '/internal-medicine', '/ophthalmology', '/medical-ad-review', '/medical-device',
-  '/naver-ads', '/google-ads', '/channel-management', '/pr',
+  '/naver-ads', '/google-ads', '/channel-management', '/pr', '/local',
   '/online-marketing/naver', '/online-marketing/sns', '/online-marketing/youtube',
   '/dental/implant', '/dental/navigation-implant', '/dental/orthodontics', '/dental/clear-aligner',
   '/dental/cosmetic', '/dental/laminate', '/dental/conservative', '/dental/root-canal',
@@ -34,10 +34,16 @@ const SITE_PATHS = [
   '/ophthalmology/glaucoma', '/ophthalmology/dry-eye',
 ];
 
+// 베놈 체크업 — 공개 무료 진단 도구(정적 페이지). SPA 라우트가 아니라 실제 디렉터리다.
+const TOOL_PATHS = [
+  '/clinic/', '/clinic/location/', '/clinic/self-check/', '/clinic/dashboard/', '/clinic/landing/',
+];
+
 const STATIC_URLS = [
   { loc: `${BASE_URL}/`,    priority: '1.0', changefreq: 'weekly', hreflang: true },
   { loc: `${BASE_URL}/en/`, priority: '0.9', changefreq: 'weekly', hreflang: true },
   ...SITE_PATHS.map(p => ({ loc: `${BASE_URL}${p}`, priority: p.split('/').length > 2 ? '0.7' : '0.8', changefreq: 'monthly' })),
+  ...TOOL_PATHS.map(p => ({ loc: `${BASE_URL}${p}`, priority: '0.7', changefreq: 'monthly' })),
 ];
 
 function toXmlDate(iso) {
