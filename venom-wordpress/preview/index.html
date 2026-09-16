@@ -5688,6 +5688,87 @@ nav a{font-size:15px!important;font-weight:500!important;letter-spacing:-0.01em!
 <script src="/assets/infographics.js?v=1.1.0" defer></script>
 <script defer src="/assets/ring-loader.js?v=1.7.0"></script>
 <script>
+// 링 멈춤 기록기 — 주소 끝에 ?ringlog=1 을 붙였을 때만 돈다. 평소 방문자에겐 아무 일도 없다.
+// 왜 필요한가: 작업 환경에서는 사장님 화면의 멈춤을 재현할 수 없다. 세 번 가설을 세워 세 번 틀렸다.
+// 그래서 증상이 나는 그 브라우저에서 직접 기록한다. 사장님은 「지금 멈췄다」만 눌러 주시면 된다.
+(function(){
+  if (!/[?&]ringlog=1/.test(location.search)) return;
+  var S=[], MARK=[], TASK=[], CAP=[], t0=performance.now(), lastCap='', N=0;
+
+  try{ new PerformanceObserver(function(l){
+    for (var i=0,e=l.getEntries();i<e.length;i++) if(e[i].duration>=60)
+      TASK.push([Math.round(e[i].startTime-t0), Math.round(e[i].duration)]);
+  }).observe({entryTypes:['longtask']}); }catch(e){}
+
+  function tick(now){
+    var v=document.querySelector('.rl-disc video'), c=document.querySelector('.rl-cap');
+    var cap=c?c.textContent.trim():'';
+    if(cap && cap!==lastCap){ CAP.push([Math.round(now-t0), cap]); lastCap=cap; }
+    if(v){
+      var q=null; try{ q=v.getVideoPlaybackQuality(); }catch(e){}
+      // [시각, 영상시계, 누락프레임, 총프레임, 멈춤여부]
+      S.push([Math.round(now-t0), +(v.currentTime||0).toFixed(3),
+              q?q.droppedVideoFrames:-1, q?q.totalVideoFrames:-1, v.paused?1:0]);
+      if(S.length>5000) S.shift();
+    }
+    N++; requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  function el(t,css,txt){ var e=document.createElement(t); e.style.cssText=css; if(txt)e.textContent=txt; return e; }
+  var box=el('div','position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483000;background:#11151c;'
+    +'color:#e6eaf0;border:1px solid #2a3340;border-radius:10px;padding:10px 12px;'
+    +'font:12px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;'
+    +'box-shadow:0 8px 28px rgba(0,0,0,.5)');
+  var row=el('div','display:flex;gap:8px;align-items:center;flex-wrap:wrap');
+  var big=el('button','flex:1 1 160px;padding:13px;font:600 15px/1 inherit;border:0;border-radius:8px;'
+    +'background:#c2454a;color:#fff','지금 멈췄다');
+  var cp =el('button','padding:13px 14px;font:600 13px/1 inherit;border:1px solid #2a3340;border-radius:8px;'
+    +'background:#1a212b;color:#e6eaf0','기록 복사');
+  var st =el('div','color:#8792a1;margin-top:7px','기록 중… 멈추는 순간 왼쪽 단추를 눌러 주십시오.');
+  big.onclick=function(){ MARK.push(Math.round(performance.now()-t0));
+    st.textContent='표시 '+MARK.length+'개 · 진단이 끝나면 「기록 복사」를 누르고 대화에 붙여 주십시오.'; };
+
+  function report(){
+    var v=document.querySelector('.rl-disc video');
+    var L=['[링 기록]','시각='+new Date().toISOString(),
+      'UA='+navigator.userAgent,
+      '화면='+innerWidth+'x'+innerHeight+' 배율='+(devicePixelRatio||1),
+      '영상파일='+(v?(v.currentSrc||'').split("/").pop():'(없음)'),
+      '영상길이='+(v&&v.duration?v.duration.toFixed(3):'?'),
+      '기록시간='+Math.round((performance.now()-t0)/1000)+'초 · 표본='+S.length+' · 화면갱신='+N,
+      '멈췄다표시='+(MARK.join(', ')||'없음')];
+    var last=S[S.length-1];
+    if(last) L.push('누락프레임='+last[2]+' / '+last[3]);
+    L.push('단계변화: '+CAP.map(function(x){return x[0]+'ms '+x[1];}).join(' | '));
+    L.push('긴작업(60ms+): '+(TASK.map(function(x){return x[0]+'ms:'+x[1]+'ms';}).join(', ')||'없음'));
+    // 화면갱신이 크게 벌어진 자리
+    var gaps=[]; for(var i=1;i<S.length;i++){ var d=S[i][0]-S[i-1][0];
+      if(d>=120) gaps.push(S[i-1][0]+'ms 에서 '+d+'ms 끊김(영상시계 '+S[i-1][1]+'→'+S[i][1]+')'); }
+    L.push('화면갱신 끊김(120ms+): '+(gaps.join(' / ')||'없음'));
+    // 표시 전후 2초 원자료
+    MARK.forEach(function(m,k){
+      var w=S.filter(function(r){return r[0]>=m-2000 && r[0]<=m+1000;});
+      var thin=w.filter(function(_,i){return i%3===0;});
+      L.push('--- 표시'+(k+1)+' ('+m+'ms) 전후 [시각,영상시계,누락,총,멈춤] ---');
+      L.push(thin.map(function(r){return r.join(',');}).join(' '));
+    });
+    return L.join('\n');
+  }
+  cp.onclick=function(){
+    var t=report();
+    var ok=function(){ st.textContent='복사했습니다. 대화창에 붙여 넣어 주십시오.'; };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok,function(){fb(t);});
+    else fb(t);
+    function fb(x){ var a=el('textarea','position:fixed;left:0;top:0;width:100%;height:60vh;z-index:2147483001');
+      a.value=x; document.body.appendChild(a); a.select();
+      st.textContent='자동 복사가 막혀 있습니다 — 위 글상자를 전체 선택해 복사해 주십시오.'; }
+  };
+  row.appendChild(big); row.appendChild(cp); box.appendChild(row); box.appendChild(st);
+  (document.body||document.documentElement).appendChild(box);
+})();
+</script>
+<script>
 // 링 영상을 미리 받아 둔다 — 진단 페이지가 켜지는 순간 딱 한 번.
 //
 // 안 하면: 단추를 누른 뒤에야 받기 시작해, 그동안 링이 아예 안 보인다(정지 사진은 없앴다).
