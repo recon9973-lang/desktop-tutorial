@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-16 로딩 화면에서 정지 사진을 뺀다 (#251)
+- 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-16 fix(nav,seo): 태블릿 헤더 겹침을 걷어내고 지역 글 6편에 제 주소를 준다 (#250)
 - 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-16 feat(nav): 상단에 상권분석 탭을 세우고 체크업 6종을 본진에 잇는다 (#249)
 - 2026-09-14 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-14 링이 못 뜰 때를 스스로 건지고, 아이폰이 칩으로 푸는 영상을 고르게 한다 (#248)
-- 2026-09-14 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-14 체크포인트 s25 — 검수 방 인계 (묵은 것을 치웠다) (#247)
 - 2026-09-14 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (20)
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 af0d7e6 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 d0ee2cb 기준. 값·비밀은 포함하지 않음.*
