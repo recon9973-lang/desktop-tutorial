@@ -151,12 +151,14 @@
     var ov = document.createElement('div'); ov.className = 'rl-overlay';
     ov.setAttribute('role', 'status'); ov.setAttribute('aria-live', 'polite');
     var disc = document.createElement('div'); disc.className = 'rl-disc';
-    disc.innerHTML = '<img class="still" src="' + ASSET + 'ring-sq.jpg" alt="" aria-hidden="true">';
+    // 정지 사진(포스터)을 깔지 않는다 — 사장님 오더. 영상이 뜨기 전 잠깐이라도 「멈춘 링」을
+    // 보이느니 아무것도 안 보이는 편이 낫다. 진단 페이지를 열 때 영상을 미리 받아 두므로
+    // 그 잠깐은 19ms 다(실측·4G·캐시 없음). 못 뜨면 1.6초 뒤 셰이더가 대신 돈다.
     var scrim = document.createElement('div'); scrim.className = 'rl-scrim'; scrim.setAttribute('aria-hidden', 'true');
     if (!REDUCED) {
       var v = takeVideo();
       disc.appendChild(v);
-      // 못에서 꺼낸 것은 이미 받아 둔 상태다 — 정지 사진을 거치지 않고 바로 영상으로 넘긴다.
+      // 못에서 꺼낸 것은 이미 받아 둔 상태다 — 곧바로 보이게 넘긴다.
       v.__rlMark();
       st.video = v;
     }
