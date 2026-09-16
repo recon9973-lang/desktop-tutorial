@@ -192,6 +192,22 @@ body{padding-top:0}
   border-radius:var(--r4);font-size:14px;font-weight:300;color:var(--ink2);
   text-decoration:none;transition:.15s;letter-spacing:0}
 .main-nav>li>a:hover{color:var(--p);background:var(--soft)}
+/* 좁은 데스크톱: 탭이 헤더 우측 버튼과 겹치지 않도록 간격·글자를 조인다 */
+@media(min-width:769px) and (max-width:1399px){
+  .main-nav{gap:0}
+  .main-nav>li>a{padding:7px 7px;font-size:13px}
+  .nav-new{font-size:9px;padding:1px 4px;margin:0 1px}
+  .site-header .header-center{gap:6px}
+  .header-actions{gap:6px}
+  .header-actions .btn{padding:8px 13px;font-size:12.5px}
+  .lang-toggle{padding:5px 9px}
+}
+@media(min-width:769px) and (max-width:1151px){
+  .main-nav>li>a{padding:7px 5px;font-size:12.5px}
+  .site-header .header-center{gap:4px}
+  .header-actions .btn{padding:8px 11px;font-size:12px}
+  .lang-toggle{padding:5px 8px;font-size:11px}
+}
 .darr{width:13px;height:13px;stroke:currentColor;stroke-width:1.8;fill:none;transition:transform .2s}
 .nav-new{display:inline-block;font-size:10px;font-weight:700;color:#0ea5e9;background:#e0f2fe;border-radius:4px;padding:1px 5px;margin:0 2px;letter-spacing:.03em;vertical-align:middle}
 .dropdown{display:none;position:absolute;top:100%;left:0;
@@ -775,14 +791,39 @@ summary::-webkit-details-marker{display:none}
             <a href="javascript:void(0)" onclick="goSvc('svc-guide')">채널 선택 가이드</a>
           </div>
         </li>
+        <li>
+          <a href="/local" onclick="sp('local');return false">상권분석 <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <div class="dropdown">
+            <a href="/local" onclick="sp('local');return false">지역·상권 마케팅 개요</a>
+            <div class="grp">도시별 전략</div>
+            <a href="#blog-post/local_incheon" onclick="openBlogPost('local_incheon');return false">인천 병원마케팅</a>
+            <a href="#blog-post/local_busan" onclick="openBlogPost('local_busan');return false">부산 병원마케팅</a>
+            <a href="#blog-post/local_daegu" onclick="openBlogPost('local_daegu');return false">대구 병원마케팅</a>
+            <a href="#blog-post/local_daejeon" onclick="openBlogPost('local_daejeon');return false">대전 병원마케팅</a>
+            <a href="#blog-post/local_gwangju" onclick="openBlogPost('local_gwangju');return false">광주 병원마케팅</a>
+            <a href="#blog-post/local_ulsan" onclick="openBlogPost('local_ulsan');return false">울산 병원마케팅</a>
+            <div class="grp">진단 도구</div>
+            <a href="/clinic/location/">입지·상권 진단 →</a>
+          </div>
+        </li>
         <li><a href="/blog" onclick="sp('blog');return false">블로그</a></li>
         <li><a href="/website" onclick="sp('hospital');return false">SEO 홈페이지</a></li>
-        <li><a href="/diagnose" onclick="sp('diagnose');return false">무료진단 <span class="nav-new">FREE</span></a></li>
+        <li>
+          <a href="/diagnose" onclick="sp('diagnose');return false">무료진단 <span class="nav-new">FREE</span> <svg class="darr" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></a>
+          <div class="dropdown">
+            <a href="/diagnose" onclick="sp('diagnose');return false">AI·검색 종합 진단</a>
+            <div class="grp">베놈 체크업 (무료)</div>
+            <a href="/clinic/">체크업 6종 전체 →</a>
+            <a href="/clinic/location/">입지·상권 진단</a>
+            <a href="/clinic/self-check/">리스크·비용·동선 진단</a>
+            <a href="/clinic/dashboard/">노출 종합검진</a>
+          </div>
+        </li>
       </ul></nav>
     </div>
     <div class="header-actions">
       <button id="lang-toggle" class="lang-toggle" onclick="location.href='/en/'" aria-label="Switch to English" title="View in English">EN</button>
-      <a href="https://pf.kakao.com/_jxjxdcxj/chat" target="_blank" rel="noopener" class="btn btn-p btn-sm">💬 상담신청</a>
+      <a href="/contact" onclick="sp('contact');return false" class="btn btn-p btn-sm">문의하기</a>
       <button class="mob-menu-btn" id="mobMenuBtn" onclick="toggleMobMenu()" aria-label="메뉴 열기">
         <span></span><span></span><span></span>
       </button>
@@ -845,13 +886,46 @@ summary::-webkit-details-marker{display:none}
       </div>
     </div>
     <div class="mob-nav-group">
+      <div class="mob-nav-row">
+        <a href="/local" class="mob-nav-item mob-nav-main" onclick="return mobParent(this)">상권분석</a>
+        <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="상권분석 하위 메뉴 열기">
+          <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <div class="mob-sub">
+        <a href="/local" onclick="sp('local');closeMobMenu();return false" class="mob-sub-ov">지역·상권 마케팅 개요 →</a>
+        <a href="#blog-post/local_incheon" onclick="openBlogPost('local_incheon');closeMobMenu();return false">인천 병원마케팅</a>
+        <a href="#blog-post/local_busan" onclick="openBlogPost('local_busan');closeMobMenu();return false">부산 병원마케팅</a>
+        <a href="#blog-post/local_daegu" onclick="openBlogPost('local_daegu');closeMobMenu();return false">대구 병원마케팅</a>
+        <a href="#blog-post/local_daejeon" onclick="openBlogPost('local_daejeon');closeMobMenu();return false">대전 병원마케팅</a>
+        <a href="#blog-post/local_gwangju" onclick="openBlogPost('local_gwangju');closeMobMenu();return false">광주 병원마케팅</a>
+        <a href="#blog-post/local_ulsan" onclick="openBlogPost('local_ulsan');closeMobMenu();return false">울산 병원마케팅</a>
+        <a href="/clinic/location/">입지·상권 진단 →</a>
+      </div>
+    </div>
+    <div class="mob-nav-group">
       <a href="/blog" onclick="sp('blog');closeMobMenu();return false" class="mob-nav-item">블로그</a>
     </div>
     <div class="mob-nav-group">
       <a href="/website" onclick="sp('hospital');closeMobMenu();return false" class="mob-nav-item">SEO 홈페이지</a>
     </div>
     <div class="mob-nav-group">
-      <a href="/diagnose" onclick="sp('diagnose');closeMobMenu();return false" class="mob-nav-item">무료진단 <span class="nav-new">FREE</span></a>
+      <div class="mob-nav-row">
+        <a href="/diagnose" class="mob-nav-item mob-nav-main" onclick="return mobParent(this)">무료진단 <span class="nav-new">FREE</span></a>
+        <button class="mob-sub-toggle mob-has-sub" onclick="toggleMobSub(this)" aria-label="무료진단 하위 메뉴 열기">
+          <svg class="mob-darr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <div class="mob-sub">
+        <a href="/diagnose" onclick="sp('diagnose');closeMobMenu();return false" class="mob-sub-ov">AI·검색 종합 진단 →</a>
+        <a href="/clinic/">베놈 체크업 6종 전체</a>
+        <a href="/clinic/location/">입지·상권 진단</a>
+        <a href="/clinic/self-check/">리스크·비용·동선 진단</a>
+        <a href="/clinic/dashboard/">노출 종합검진</a>
+      </div>
+    </div>
+    <div class="mob-nav-group">
+      <a href="/contact" onclick="sp('contact');closeMobMenu();return false" class="mob-nav-item">문의하기</a>
     </div>
   </nav>
   <div class="mob-menu-footer">
@@ -3228,6 +3302,128 @@ summary::-webkit-details-marker{display:none}
   </section>
 </div>
 
+<!-- PAGE: 지역·상권 허브 -->
+<div id="pg-local" class="page">
+  <style>
+  #pg-local .lhd{position:relative;overflow:hidden;padding:76px 0 64px;
+    background:linear-gradient(135deg,#15214a 0%,#1f2a63 55%,#0e1430 100%)}
+  #pg-local .lhd-inner{position:relative;text-align:center}
+  #pg-local .lhd .section-badge{background:rgba(255,255,255,.16);color:#fff}
+  #pg-local .lhd :is(h1,h2){font-size:42px;font-weight:800;letter-spacing:-.03em;color:#fff;margin:14px 0 12px;line-height:1.18}
+  #pg-local .lhd p{color:rgba(255,255,255,.76);font-size:16px;max-width:660px;margin:0 auto}
+  #pg-local .lwhy{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 56px}
+  #pg-local .lwhy div{background:var(--soft);border:1px solid var(--border);border-radius:var(--r12);padding:22px 20px}
+  #pg-local .lwhy strong{display:block;font-size:15.5px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-.01em}
+  #pg-local .lwhy p{font-size:13.5px;color:var(--ink2);line-height:1.6;margin:0}
+  #pg-local .lc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  #pg-local .lc-card{display:block;text-decoration:none;color:inherit;border:1px solid var(--border);
+    border-radius:var(--r12);overflow:hidden;background:#fff;transition:.18s}
+  #pg-local .lc-card:hover{transform:translateY(-3px);box-shadow:var(--s2);border-color:var(--p)}
+  #pg-local .lc-top{padding:20px 20px 18px;color:#fff}
+  #pg-local .lc-city{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em}
+  #pg-local .lc-area{display:block;font-size:12px;opacity:.85;margin-top:5px}
+  #pg-local .lc-body{padding:18px 20px 20px}
+  #pg-local .lc-body h3{font-size:15px;font-weight:700;color:var(--ink);line-height:1.45;margin:0 0 8px;letter-spacing:-.01em;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #pg-local .lc-body p{font-size:13px;color:var(--ink2);line-height:1.6;margin:0 0 12px;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  #pg-local .lc-go{font-size:13px;font-weight:700;color:var(--p)}
+  #pg-local .ltool{margin-top:56px;border:1px solid var(--border);border-radius:var(--r12);
+    background:var(--soft);padding:34px 32px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+  #pg-local .ltool h3{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin:0 0 10px}
+  #pg-local .ltool p{font-size:14.5px;color:var(--ink2);line-height:1.65;margin:0;max-width:620px}
+  #pg-local .ltool-btns{display:flex;flex-direction:column;gap:10px;white-space:nowrap}
+  @media(max-width:900px){
+    #pg-local .lwhy,#pg-local .lc-grid{grid-template-columns:1fr}
+    #pg-local .ltool{grid-template-columns:1fr}
+    #pg-local .lhd :is(h1,h2){font-size:30px}
+  }
+  </style>
+  <section class="lhd">
+    <div class="container lhd-inner">
+      <div class="section-badge">Local &amp; Trade Area</div>
+      <h2>지역·상권별 병원마케팅</h2>
+      <p>같은 진료과목이라도 상권이 다르면 검색어도, 경쟁 구도도, 환자 동선도 달라집니다. 6대 도시 상권별 전략과 입지·상권 진단을 한곳에 모았습니다.</p>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <div class="lwhy">
+        <div><strong>지역별 검색 패턴</strong><p>같은 진료과목도 지역에 따라 실제로 검색되는 키워드 조합이 달라집니다. 상권 단위로 키워드를 다시 잡습니다.</p></div>
+        <div><strong>경쟁 밀도</strong><p>반경 내 동일 진료과 병원 수에 따라 노출 난이도가 달라집니다. 밀도에 맞춰 채널 비중을 조정합니다.</p></div>
+        <div><strong>인구 구조·동선</strong><p>연령대·직장·주거 구성에 따라 내원 동기와 방문 시간대가 다릅니다. 콘텐츠와 운영 시간 안내에 반영합니다.</p></div>
+      </div>
+      <div class="section-head" style="margin-bottom:22px">
+        <h3 style="font-size:24px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin:0 0 6px">도시별 상권 전략</h3>
+        <p style="color:var(--mute);font-size:14px;margin:0">인천 · 부산 · 대구 · 대전 · 광주 · 울산</p>
+      </div>
+      <div class="lc-grid">
+        <a class="lc-card" href="#blog-post/local_incheon" onclick="openBlogPost('local_incheon');return false">
+          <div class="lc-top" style="background:linear-gradient(135deg,#0ea5e9,#0284c7)"><span class="lc-city">인천</span><span class="lc-area">연수·부평·남동·미추홀</span></div>
+          <div class="lc-body">
+            <h3>인천 병원마케팅 완전 가이드 — 신환 300% 늘리는 법</h3>
+            <p>인천 구별(연수·부평·남동·미추홀) 검색 패턴 분석과 지역 맞춤 SEO·플레이스 전략을 공개합니다.</p>
+            <span class="lc-go">전략 보기 →</span>
+          </div>
+        </a>
+        <a class="lc-card" href="#blog-post/local_busan" onclick="openBlogPost('local_busan');return false">
+          <div class="lc-top" style="background:linear-gradient(135deg,#6366f1,#4338ca)"><span class="lc-city">부산</span><span class="lc-area">해운대·서면·동래</span></div>
+          <div class="lc-body">
+            <h3>부산 병원마케팅 — 해운대·서면·동래 지역별 신환 유입 전략</h3>
+            <p>해운대 프리미엄, 서면 2030, 동래 고령층 — 부산 상권별로 다른 마케팅 전략을 정리했습니다.</p>
+            <span class="lc-go">전략 보기 →</span>
+          </div>
+        </a>
+        <a class="lc-card" href="#blog-post/local_daegu" onclick="openBlogPost('local_daegu');return false">
+          <div class="lc-top" style="background:linear-gradient(135deg,#533afd,#3b1fd1)"><span class="lc-city">대구</span><span class="lc-area">수성구·중구·달서구</span></div>
+          <div class="lc-body">
+            <h3>대구 병원마케팅 — 수성구·중구·달서구 SEO 완전 가이드</h3>
+            <p>대구 지역별 키워드 공략과 GEO 선점 효과. 베놈이 대구 본사 에이전시로서 전하는 현지 인사이트.</p>
+            <span class="lc-go">전략 보기 →</span>
+          </div>
+        </a>
+        <a class="lc-card" href="#blog-post/local_daejeon" onclick="openBlogPost('local_daejeon');return false">
+          <div class="lc-top" style="background:linear-gradient(135deg,#0891b2,#0e7490)"><span class="lc-city">대전</span><span class="lc-area">유성구·서구·세종</span></div>
+          <div class="lc-body">
+            <h3>대전 병원마케팅 — 유성구·서구·세종 광역 타깃 전략</h3>
+            <p>연구단지·둔산동 상권 분석과 세종·청주까지 커버하는 충청권 광역 병원 마케팅 전략.</p>
+            <span class="lc-go">전략 보기 →</span>
+          </div>
+        </a>
+        <a class="lc-card" href="#blog-post/local_gwangju" onclick="openBlogPost('local_gwangju');return false">
+          <div class="lc-top" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><span class="lc-city">광주</span><span class="lc-area">상무지구·수완지구·전남</span></div>
+          <div class="lc-body">
+            <h3>광주 병원마케팅 — 상무지구·수완지구·전남 광역 SEO 전략</h3>
+            <p>광주 상권별 전략과 전남 전체를 타깃하는 광역 SEO 접근법을 공개합니다.</p>
+            <span class="lc-go">전략 보기 →</span>
+          </div>
+        </a>
+        <a class="lc-card" href="#blog-post/local_ulsan" onclick="openBlogPost('local_ulsan');return false">
+          <div class="lc-top" style="background:linear-gradient(135deg,#10b981,#059669)"><span class="lc-city">울산</span><span class="lc-area">남구·중구·산업단지</span></div>
+          <div class="lc-body">
+            <h3>울산 병원마케팅 — 산업도시 직장인 타깃 병원 SEO 전략</h3>
+            <p>현대·한화 직장인 밀집 울산의 병원 마케팅 특수성과 산재·근골격계 특화 전략.</p>
+            <span class="lc-go">전략 보기 →</span>
+          </div>
+        </a>
+      </div>
+      <div class="ltool">
+        <div>
+          <h3>우리 지역 상권, 직접 확인해 보세요</h3>
+          <p>「베놈 체크업」의 입지·상권 진단은 후보지별 같은 업종 경쟁 밀도, 반경 인구·수요 점수, 상권 활동 지표를 비교해 보여주는 무료 도구입니다. 개원·이전·분원 검토 시 참고 자료로 활용하실 수 있습니다.</p>
+        </div>
+        <div class="ltool-btns">
+          <a href="/clinic/location/" class="btn btn-p">📍 입지·상권 진단 시작</a>
+          <a href="/clinic/" class="btn" style="border:1.5px solid var(--border);color:var(--ink2)">베놈 체크업 6종 전체</a>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:44px">
+        <a href="/blog" onclick="sp('blog');filterBlog('지역마케팅');return false" class="btn" style="border:1.5px solid var(--p);color:var(--p)">지역마케팅 글 전체 보기 →</a>
+      </div>
+    </div>
+  </section>
+</div>
+
 <!-- PAGE: 블로그 -->
 <div id="pg-blog" class="page">
   <style>
@@ -4292,6 +4488,7 @@ summary::-webkit-details-marker{display:none}
           <a href="/dental" onclick="ld('dental');return false">치과 마케팅</a><a href="/dermatology" onclick="ld('skin');return false">피부과 마케팅</a>
           <a href="/orthopedics" onclick="ld('ortho');return false">정형외과 마케팅</a><a href="/oriental-medicine" onclick="ld('oriental');return false">한의원 마케팅</a>
           <a href="/plastic-surgery" onclick="ld('plastic');return false">성형외과 마케팅</a>
+          <a href="/local" onclick="sp('local');return false">지역·상권 분석</a>
         </div>
         <div class="footer-col">
           <div class="fcol-t">AI 마케팅</div>
@@ -4303,6 +4500,8 @@ summary::-webkit-details-marker{display:none}
           <a href="/about" onclick="sp('about');return false">회사 소개</a>
           <a href="/seo-dictionary" onclick="sp('seo-dict');return false">베놈 용어사전</a>
           <a href="/blog" onclick="sp('blog');return false">마케팅 블로그</a>
+          <a href="/diagnose" onclick="sp('diagnose');return false">무료 진단</a>
+          <a href="/clinic/">베놈 체크업(무료 도구)</a>
           <a href="/contact" onclick="sp('contact');return false">상담신청</a>
         </div>
       </div>
@@ -7479,7 +7678,7 @@ function secretAdminClick(){
 })();
 
 // ── BreadcrumbList Schema 동적 업데이트 ──
-var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅',diagnose:'무료 진단',privacy:'개인정보처리방침',terms:'이용약관'};
+var pageLabels={home:'홈',ai:'AI마케팅',geo:'GEO최적화',aeo:'AEO최적화',seo:'SEO최적화',hosp_mkt:'병원마케팅',services:'온라인마케팅',hospital:'병원홈페이지',blog:'블로그',contact:'문의상담',detail:'진료과목 마케팅',diagnose:'무료 진단',local:'상권분석',privacy:'개인정보처리방침',terms:'이용약관'};
 var catLabels={dental:'치과마케팅',implant:'임플란트마케팅',ortho_dental:'교정마케팅',skin:'피부과마케팅',ortho:'정형외과마케팅',oriental:'한의원마케팅',plastic:'성형외과마케팅',naegwa:'내과마케팅',angwa:'안과마케팅',shimui:'의료광고심의',medical_device:'의료기기마케팅'};
 var BASE_URL='https://venom-new-site.vercel.app/';
 // ── 페이지별 실제 URL + SEO 메타 (해시 SPA → 크롤 가능한 개별 페이지) ──
@@ -7497,6 +7696,7 @@ var PAGE_ROUTES={
   blog:      {path:'/blog',               title:'병원 마케팅 인사이트 — 블로그 | 베놈', desc:'GEO·AEO·SEO부터 진료과목별 마케팅 전략까지, 병원 마케팅 실전 인사이트를 매주 업데이트합니다.'},
   contact:   {path:'/contact',            title:'마케팅 상담신청 | 병원마케팅 베놈', desc:'우리 병원 맞춤 마케팅 전략을 무료로 상담받으세요. 24시간 내 연락, 100% 맞춤 진단.'},
   'seo-dict':{path:'/seo-dictionary',     title:'베놈 용어사전 — SEO·AI·마케팅 | 베놈', desc:'병원 마케팅에 필요한 SEO·AI·마케팅 핵심 용어를 3개 사전으로 나눠 쉽게 정리한 베놈 용어사전.'},
+  local:     {path:'/local',              title:'지역·상권별 병원마케팅 — 6대 도시 상권 전략 | 베놈', desc:'인천·부산·대구·대전·광주·울산 도시별 상권 특성에 맞춘 병원 마케팅 전략. 지역 검색 패턴·경쟁 밀도·인구 구조를 반영한 로컬 SEO와 입지·상권 진단 안내.'},
   diagnose:  {path:'/diagnose',           title:'우리 병원 AI·검색 종합 진단(무료) | 베놈', desc:'13개 항목으로 우리 병원의 AI·검색 노출 상태를 무료로 자가진단하세요. SEO·GEO 점수 즉시 확인.'},
   privacy:   {path:'/privacy',            title:'개인정보처리방침 | 병원마케팅 베놈', desc:'주식회사 베놈의 개인정보 수집·이용·보관·파기 및 정보주체 권리에 관한 처리방침.'},
   terms:     {path:'/terms',              title:'이용약관 | 병원마케팅 베놈', desc:'병원마케팅 베놈 웹사이트 서비스 이용약관.'}
