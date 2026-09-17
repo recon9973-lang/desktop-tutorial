@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-17 docs(s20): 체크포인트 — 재진단 텀 제거 · 겹친 판 번호 합침 · 배포까지
 - 2026-09-17 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-17 링 진단기를 걷어낸다 — 엉뚱한 사이트에 달았다 (#262)
 - 2026-09-17 chore: PROJECT_STATE 자동 갱신 [skip ci]
@@ -14,7 +15,6 @@
 - 2026-09-17 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-17 어느 주소가 어느 저장소인지 맨 앞에 박는다 (#260)
 - 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-17 진단기가 스스로 판단해 화면에 적게 한다 (#259)
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 c02947e 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 101b07c 기준. 값·비밀은 포함하지 않음.*
