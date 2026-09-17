@@ -55,6 +55,41 @@ GEO(Generative Engine Optimization), AEO(Answer Engine Optimization), SEO를 통
 - 병원 온라인마케팅 통합: /online-marketing
 - SEO 내장형 병원 홈페이지 제작: /website
 
+## 검색광고 상품별 (페이지)
+
+- 네이버 검색광고 통합: /naver-ads
+- 파워링크(사이트검색광고 · CPC): /naver-ads/powerlink
+- 파워컨텐츠(정보성 키워드 콘텐츠 광고): /naver-ads/power-contents
+- 브랜드검색광고(브랜드 키워드 정액제): /naver-ads/brand-search
+- 플레이스검색광고(지역·지도 기반): /naver-ads/place-ads
+- 구글 검색광고: /google-ads
+
+## SNS·앱 광고 (페이지)
+
+- 인스타그램·SNS 마케팅: /online-marketing/sns
+- 페이스북·인스타그램 광고(메타): /online-marketing/facebook
+- 당근 지역광고(생활권 기반): /online-marketing/daangn
+- 유튜브 마케팅: /online-marketing/youtube
+
+## 브랜드마케팅 (페이지)
+
+- 브랜드기획(포지셔닝·아이덴티티): /brand/planning
+- 콘텐츠마케팅(주제 클러스터·E-E-A-T): /brand/content-marketing
+- 브랜드블로그(네이버·자사 블로그): /brand/blog
+- 영상콘텐츠(유튜브·쇼츠): /brand/video
+
+## SEO 세부 영역 (페이지)
+
+- 테크니컬 SEO(크롤링·색인·구조화 데이터): /seo/technical
+- 콘텐츠 SEO(검색 의도·주제 클러스터): /seo/content
+- 링크빌딩 SEO(내부 링크·자연 인용): /seo/link-building
+
+## 실무 도구·참고 자료 (페이지)
+
+- 분석 도구와 공신력 있는 참고 자료, 채널 연동 프로세스 맵: /resources
+- 검색 수요 수치는 고정 값으로 싣지 않습니다. 네이버 검색광고 키워드 도구·데이터랩·
+  Google Search Console 등에서 시점·지역별로 직접 측정하는 것을 원칙으로 합니다.
+
 ## 지역·상권별 마케팅 (페이지)
 
 - 지역·상권 허브(6대 도시 상권 전략): /local
