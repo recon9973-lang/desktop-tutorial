@@ -1,109 +1,74 @@
-> **다른 방 인계도 있다** — 모션/디자인 이식은 `RESUME-motion-port.md`(2026-09-14 갱신 ·
-> 0.3.574 배포 완료 · Lovable 시안에 배치·구조 개편 판이 새로 와 있음).
+# RESUME — 다음 세션 이어가기 (2026-09-17 03:5x KST · s20 마감 · 재진단 텀 방)
 
-# RESUME — 다음 세션 이어가기 (2026-09-09 16:0x KST · s21 마감 · 진단 오진 방)
-
-> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-09-s21.md`.
+> 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-17-s20.md`.
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
 ## 지금까지 (핵심만)
 
-사장님이 캡처 한 장을 주셨다 — 「HTTP 상태 코드가 정상(2xx)인가 · **실패 · BLOCKER** ·
-`http://www.venomad.com/`」. *"다른 AI 는 정상이라는데 진짜가 뭔지 검토."*
+**끝났다.** 사장님 첫 물음 «SEO 진단 30분 텀에서 요금 부담이 없다면 재진단에 텀 없애줘»
+에서 시작해 둘을 냈다. **둘 다 main 에 있다.**
 
-**사이트는 멀쩡했다.** 네이버 77건·구글 모두 `https://www.venomad.com/` 로 색인돼 있고,
-진단서 자신도 103개 중 102개가 정상이라고 적었다. **진짜 결함은 진단기 쪽 셋**이었고,
-전부 고쳐 `veo-platform` 가지 `claude/diagnostic-abnormal-review-hbskaa` 에 커밋 5건이
-올라가 있다. **`make preflight` 초록 — 「준비됨」.**
-
-```
-e05dea5  인증서 만료일을 한국 경유 수집에서도 잰다
-cc7e3ac  진입 주소를 평문에서 https 로 올린다 — 강하의 거울상
-d64b573  2xx 인 못 읽은 응답을 「2xx 가 아니다」로 적지 않는다   ← 이번 오진의 원인
-b8624aa  막히는 사이트의 보고서를 끝에서 끝까지 잰다 (시험)
-7b85336  https 승격 문턱을 조인다 — 제목·설명이 둘 다 있을 때만 (사장님 오더)
-```
-
-핵심은 셋째다. `_status_ok` 가 `site.unreadable` 을 **상태 무관하게** 실패로 더해,
-200 으로 답한 762바이트 차단 페이지를 「2xx 가 아닌 상태 코드」로 적었다. 그래서 **같은
-관측이 한 화면에 두 번, 서로 반대로** 나갔다 — 수집 고지는 「사이트의 결함이 아니라 우리
-수집의 상태입니다」, 이슈는 「BLOCKER · 검색 유입이 사라집니다」.
-
-대장 `docs/WORKLIST.md` 대기 표에 **판 28**(번호 없음 — 나갈 때 정한다)로 올렸고,
-오류 대장 `docs/CORRECTIONS.md` **192** 에 내가 세 번 틀린 것을 적었다.
-
-## 배포 — **나갔다** (사장님 승인 2026-09-09 «배포 승인»)
-
-이 방이 `make deploy` 를 돌린 것이 아니다. **다른 방(`work/shareboard-tune`)이 이 가지를
-자기 판에 합쳐 함께 내보냈다.** 이 방은 나중에 그 사실을 확인만 했다.
-
-```
-[실측 2026-09-09 · gh]
-  내 커밋 5건        전부 origin/main 의 조상   (merge-base --is-ancestor 로 5/5)
-  main 끝 커밋       9d29ad5793b6…  판 0.3.557
-  채점받은 커밋      9d29ad5793b6…  CI success · 15:29 KST
-                     → 채점한 커밋과 나간 커밋이 같다(오류 135 가 막으려던 그 자리)
-```
-
-**`make deploy` 를 다시 돌릴 일이 없다** — 가지가 main 보다 앞선 커밋이 **0건**이다.
+- **v0.3.556 — 재진단에 텀이 없다** (`93628efd`). 텀은 요금이 아니라 **호스트 예산**
+  때문이었다 — 한 판이 최대 211회(200장 + 사이트맵 10 + robots 1)인데 예산이 450/시간
+  이라 두 판이 한계였고, 세 판째는 막히는 게 아니라 **도중에 잘려** 「재진단했더니 점수가
+  내려간 것」이 됐다. 이제 시간이 아니라 **판을 센다**(예산 ÷ 한 판 = 9판/시간). 예산은
+  450 → 2,000. **순간 부하는 안 변한다** — `HostPacer` 가 연결당 1초 × 동시 2 = 초당
+  최대 2회를 따로 지킨다(의뢰서 §5.2).
+- **v0.3.598 — 겹친 판 번호를 합친다 + 안 그려지던 조각 제거** (`6806d955`).
+  겹친 판 여섯 쌍. **번호는 새로 안 매겼다** — 어느 항목이 어느 판으로 나갔는지는 배포
+  기록에만 있고, 짐작해 적으면 오류 190 과 같은 모양이다. 대신 한 항목으로 합쳤다.
+- **오류 대장 190** — 콘솔 크롤이 **판마다 리미터를 새로 만들고** 있었다. 「동일 호스트
+  시간당 요청」이 한 시간의 총량이 아니라 한 판 안에서의 상한으로만 돌았고, `/bot` 안내
+  페이지의 공개 약속을 **지키는 자리가 없었다.** 조립을 `console_crawler()` 한 곳으로 모음.
+- **이 방은 실서비스로 못 나간다**(egress). `make deploy` 의 [5/5] 도달 확인이 늘 실패한다
+  — **배포 실패가 아니라 확인을 못 한 것**이다. 워크플로 「도는 판 확인」을 러너에서 돌려
+  바깥에서 잰다.
+- **배포는 다섯 번 걸어 한 번 닿았다.** CI 는 걸 때마다 초록이었고 막힌 자리는 늘 마지막
+  한 걸음 — preflight 12분 + CI 8분 = 20분 창 사이에 다른 방이 먼저 닿는다. 판이 이 일
+  하나에 **네 번** 물렸다(554→556 · 595→596 · 596→597 · 597→598).
 
 ## 바로 이어갈 작업
 
-1. **도는 판 실측** — 배포는 나갔는데 **Railway·Vercel 이 실제로 0.3.557 을 서비스하는지는
-   이 방에서 못 쟀다**(워크플로 띄우기가 403 · `actions:write` 없음). 재는 길 둘 —
+1. **도는 판 실측** (가벼움 · TODO #1). 이 방이 마지막으로 잰 것은
+   [실측 2026-09-17 03:04 KST · 러너 35132077886] **0.3.598** — 서버·워커·웹 셋 다 ·
+   뒤처진 0. 그 뒤 main 은 **0.3.603** 까지 갔는데 도는지 **못 쟀다.**
    ```
-   워크플로 「도는 판 확인」(workflow_dispatch) 를 사장님이 실행
-   또는 콘솔 화면 하단의 판 표시를 눈으로 확인
+   워크플로 「도는 판 확인」(.github/workflows/rollout-check.yml) · workflow_dispatch · ref=main
    ```
-2. **venomad 재진단 한 번** — 0.3.557 이 도는 것이 확인되면 진단을 다시 돌려 두 줄을 본다.
-   ```
-   status_ok                     실패·BLOCKER  →  통과
-   certificate_not_expiring      진단 못 함    →  「만료까지 N일 남았습니다」
-   수집 고지                      그대로(정확함)
-   ```
-3. **대장 대기 표 정리** — 위 둘이 확인되면 `docs/WORKLIST.md` 배포 대기 목록에서
-   **이 방 줄만** 지운다(「진단 이상값 정리」). **다른 방 줄은 건드리지 않는다.**
-   지금 대기 표는 다른 방이 다섯 묶음을 0.3.557 한 판으로 정리해 둔 상태다.
+   잰 뒤 `docs/WORKLIST.md` §2 머리말의 실측 줄을 그 값으로 고치고, 나간 판이 확인되면
+   대기 표에서 그 줄을 뺀다(감사 A-07·B-07).
+2. **미배포 없음** — 이 방 가지는 main 과 같다. 남은 작업 변경이 없다.
 
 ## 대기/차단
 
-- **`gh` 는 방마다 다시 깔아야 한다** — `apt-get install -y gh`(우분투 universe, 2.45.0).
-  릴리스 tarball 은 못 받는다: `cli/cli` 가 이 방의 GitHub 범위 밖이라 API 가 거절한다.
-  `GH_TOKEN` 은 이미 환경에 있고 붙어 있는 저장소에는 잘 닿는다.
-- **이 방의 `gh` 로 못 하는 것 둘** — GraphQL(`gh workflow run`)과
-  workflow_dispatch(`actions:write`)가 **403** 이다. REST 조회는 된다.
-- **사장님 몫 — 사이트 설정.** `http://www.venomad.com/` 80포트가 **403** 이다.
-  **301 to https** 로 바꾸셔야 명함·인쇄물·옛 링크 유입과 그 신뢰도가 살아난다.
-  `www` 없는 주소도 함께 점검(PSI 가 아예 처리를 못 했다). 코드로 못 고친다.
-- **CI 를 필수 검사로**(s19 부터 남은 것) — `Settings → Branches → main →
-  Require status checks → CI`. 이게 없어 빨간불 PR 이 main 에 들어온 적이 있다.
+- **판 경쟁** — 방이 여럿이라 20분 창 사이에 main 이 계속 움직인다. 배포가 [4/5] 에서
+  거절되면 그 까닭이고, 도구가 스스로 «리베이스하고 다시 내면 됩니다» 라고 적어 두었다.
+  **접을 때는 접는다** — 이번에 문서 변경 하나는 다른 방이 같은 일을 먼저 해서 접었다.
+- **`make deploy` 는 이 방에서 된다** — 이번 세션에 다섯 번 걸어 한 번 닿았다.
 
 ## 주의·제약
 
-- **veo-platform 개발 환경 세우기**(컨테이너는 매번 초기화된다):
-  ```
-  PYTHON=/usr/bin/python3.12 make setup
-  pnpm install --frozen-lockfile
-  service postgresql start
-  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
-  PGPASSWORD=veo make db-test-create
-  PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" make test-db
-  ```
-  [실측 2026-09-09] 이 방에서 전부 돌았다 — `ci-local` 7,276 · DB 1,242 · 웹 2,534.
-- **이 방은 실서비스를 못 잰다** — `venomad.com`·Railway·`pagespeed.web.dev`·`archive.org`
-  전부 egress 403. `www.googleapis.com` 계열만 열려 있다(PSI 공용 몫은 하루 한도 소진).
-- **못 재는 자리에서는 가설을 가설이라고만 말한다.** 이번에 세 번 단언하고 세 번 갈렸고
-  **발견자가 세 번 다 사장님**이었다(오류 대장 192).
-- 이 가지 외로 푸시 금지. 배포는 **`make deploy` 만**, 오더 없이 밀지 않는다.
-- 대장·변경이력에 「민다·푸시」 금지(`two-words-only` 관문) — 「커밋」·「배포」 두 낱말만.
+- 이 가지(`claude/seo-diagnosis-interval-removal-othn8e`) 외로 푸시 금지. main 직접 커밋 금지.
+- 배포는 **`make deploy` 만**. 오더 없이 밀지 않는다.
+- **문서만 바꾸는 판에도 변경이력 항목을 쓴다** — 안 쓰면 `claim_version.py` 가 main 의
+  이미 나간 기록에 새 번호를 달고, 그 자리를 관문이 [1/4] 에서 세운다.
+- **저장소의 산문을 근거로 쓸 때 `[실측]` 표시가 있는지 먼저 본다**(오류 190 의 처방).
+  없으면 그것은 남이 추론한 것이고, 인용하는 순간 내 주장이 된다.
 - 커밋 트레일러: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>` +
-  `Claude-Session: https://claude.ai/code/session_01RkCSy2RcrHt6i2FyRmDyYs`.
-  모델 ID 는 트레일러에만.
+  `Claude-Session: https://claude.ai/code/session_016xfzF9WQrak6JdFWyWtLTi`. 모델 ID 는 트레일러에만.
 - 사장님께는 「커밋」·「배포」 두 낱말만. 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
 
-## 참고
+## 참고 — 이 방 환경 세우기
 
-- veo-platform 은 `add_repo` 로 붙인다(owner `recon9973-lang`) → `/home/user/veo-platform`.
-- 대장은 `docs/WORKLIST.md`(615줄 규격 · 1,200줄 상한). 날짜별 기록은 `WORKLIST-HISTORY.md`
-  이고 **평소에 열지 않는다.**
-- 판 번호는 **나갈 때** `claim_version.py` 가 물린다. 미리 잡지 않는다.
+```
+git clone --depth 1 https://github.com/recon9973-lang/veo-platform /home/user/veo-platform
+.venv/bin/pip install -e "apps/api[dev]"      (또는 PYTHON=/usr/bin/python3.12 make setup)
+pnpm install
+service postgresql start                       role root / 비번 veo / DB veo_test
+  alembic 은 VEO_DATABASE_URL 도 함께 줘야 붙는다
+시험: PGPASSWORD=veo VEO_TEST_DATABASE_URL="postgresql+psycopg://root:veo@localhost:5432/veo_test" \
+        ../../.venv/bin/python -m pytest tests -q        (apps/api 에서)
+웹:   npx vitest run · npx tsc --noEmit · npx next build  (apps/web 에서)
+배포: VEO_DEPLOY_ORDER="<사장님 원문>" PGPASSWORD=veo VEO_TEST_DATABASE_URL=... \
+        PY=/home/user/veo-platform/.venv/bin/python make deploy
+```
