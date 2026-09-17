@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-09-16 인계 — 크롤 한도는 했다 (문구를 고쳤고 점수는 안 건드렸다)
-- 2026-09-16 크롤 한도 — 사장님 결정을 먼저 적는다 (부분 기록 + 못 잰 것은 «—»)
+- 2026-09-16 인계 — 크롤 한도가 0.3.596 으로 나갔다 (러너로 확인)
 - 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-17 검수 방(ANSEO) 기록을 남긴다 — 방을 지우기 전에 (#254)
+- 2026-09-17 상권 분석 방 기록을 남긴다 — 방을 지우기 전에 (#258)
+- 2026-09-16 상권 분석 방 기록을 남긴다 — 방을 지우기 전에
 - 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-17 키워드 구름 방 기록을 남긴다 — 방을 지우기 전에 (#253)
+- 2026-09-17 멈추는 그 화면에서 스스로 기록하게 한다 (?ringlog=1) (#257)
 - 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-16 삭제·휴지통 방 기록을 남긴다 — 방을 지우기 전에 (#252)
+- 2026-09-16 docs: 말하기 규칙 — 쉬운 말로 쓴다 (모든 방에 적용)
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 4efe3afc 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 29df7bfc 기준. 값·비밀은 포함하지 않음.*
