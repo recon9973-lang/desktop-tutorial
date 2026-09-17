@@ -241,6 +241,24 @@ body{padding-top:0}
 .dropdown-mega.mega-svc3 .mega-cols{grid-template-columns:repeat(3,1fr)}
 @media(max-width:1200px){.dropdown-mega.mega-svc3{width:min(520px,92vw)}}
 #geo-what,#geo-process,#geo-effect,#aeo-what,#aeo-process,#aeo-effect,#seo-what,#seo-process,#seo-effect{scroll-margin-top:84px}
+.org-wrap{margin-top:36px;text-align:center}
+.org-top{display:inline-block;background:var(--p);color:#fff;font-size:15px;font-weight:700;padding:11px 26px;border-radius:var(--rpill)}
+.org-line{width:1px;height:26px;background:var(--border);margin:0 auto}
+.org-row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:620px;margin:0 auto}
+.org-row1{max-width:302px;margin:0 auto}
+.org-p{background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:18px 16px;box-shadow:var(--s1)}
+.org-role{font-size:11px;font-weight:700;color:var(--p);letter-spacing:.05em}
+.org-name{font-size:19px;font-weight:700;color:var(--ink);margin:4px 0 2px;letter-spacing:-.02em}
+.org-title{font-size:13px;font-weight:600;color:var(--ink2)}
+.org-note{font-size:12.5px;color:var(--mute);line-height:1.6;margin-top:7px}
+.org-areas-t{font-size:12px;font-weight:700;color:var(--mute);letter-spacing:.06em;margin-bottom:12px}
+.org-areas{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;text-align:left}
+.org-a{display:block;background:#fff;border:1px solid var(--border);border-radius:var(--r12);padding:15px 16px;text-decoration:none;transition:.18s}
+.org-a:hover{border-color:var(--p);transform:translateY(-2px);box-shadow:var(--s2)}
+.org-ic{font-size:18px;display:block;margin-bottom:6px}
+.org-a b{display:block;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.org-a small{display:block;font-size:12px;color:var(--ink2);line-height:1.6;margin-top:4px}
+@media(max-width:600px){.org-row2{grid-template-columns:1fr}.org-row1{max-width:none}}
 .ai3-nav{display:flex;gap:8px;flex-wrap:wrap;border:1px solid var(--border);border-radius:var(--rpill);padding:6px;width:max-content;max-width:100%;background:#fff}
 .ai3-nav a{font-size:13px;font-weight:600;color:var(--ink2);text-decoration:none;padding:7px 14px;border-radius:var(--rpill);transition:.15s}
 .ai3-nav a:hover{background:var(--soft);color:var(--p)}
@@ -3414,6 +3432,33 @@ summary::-webkit-details-marker{display:none}
             <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">SEO 특화</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">FAQ 중심</span></div>
           </div>
         </div>
+        <div onclick="openSample('/samples/homepage-full.html','VENOM 홈페이지 샘플 — 풀버전')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#0f172a 0%,#334155 100%);display:flex;align-items:center;justify-content:center;font-size:40px">🖥️</div>
+          <div style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">풀버전 · 전체 콘텐츠</div>
+            <h3 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">홈페이지 전체 구성 보기</h3>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">첫 화면부터 진료안내·의료진·오시는 길까지, 실제 납품 규격의 페이지 전체를 한 번에 볼 수 있는 샘플입니다.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">전체 구성</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">고급형 규격</span></div>
+          </div>
+        </div>
+        <div onclick="openSample('/samples/landing-baikal.html','VENOM 랜딩 샘플 — 캠페인형')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#7c3aed 0%,#4338ca 100%);display:flex;align-items:center;justify-content:center;font-size:40px">🎯</div>
+          <div style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">캠페인형 · 단일 페이지</div>
+            <h3 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">캠페인 랜딩 스타일</h3>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">특정 시술·이벤트 하나에 집중해 상담 신청까지 한 화면에서 끝내는 단일 페이지 구성입니다.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">단일 페이지</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">상담 전환형</span></div>
+          </div>
+        </div>
+        <div onclick="openSample('/samples/infographics-gallery.html','VENOM 인포그래픽 갤러리 — 16종')" style="background:#fff;border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);box-shadow:var(--s1);cursor:pointer;transition:.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(83,58,253,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='var(--s1)'">
+          <div style="height:140px;background:linear-gradient(135deg,#0ea5e9 0%,#0369a1 100%);display:flex;align-items:center;justify-content:center;font-size:40px">📊</div>
+          <div style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:var(--p);letter-spacing:.05em;margin-bottom:6px">인포그래픽 · 16종</div>
+            <h3 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px">설명 그래픽 모음</h3>
+            <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:12px">진료 과정·비교표처럼 글로 길어지는 설명을 그림으로 정리한 예시 16종입니다.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">인포그래픽</span><span style="font-size:11px;background:var(--soft);color:var(--ink2);padding:2px 8px;border-radius:var(--rpill)">설명 자료</span></div>
+          </div>
+        </div>
       </div>
       <div style="background:rgba(83,58,253,.06);border:1px solid rgba(83,58,253,.2);border-radius:var(--r12);padding:24px;margin-top:24px">
         <h3 style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:12px">💡 베놈이 제작하는 병원 홈페이지의 필수 요소</h3>
@@ -4361,6 +4406,52 @@ summary::-webkit-details-marker{display:none}
   </section>
 
   <!-- 회사 정보 + 실적 -->
+  <!-- 조직도 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head"><div class="section-badge">Organization</div><h2>조직 안내</h2><p>대표 두 사람과 영업 총괄, 그리고 실제로 맡고 있는 일곱 가지 일입니다. 각 항목을 누르면 해당 안내로 이동합니다.</p></div>
+      <div class="org-wrap">
+        <div class="org-top">주식회사 베놈</div>
+        <div class="org-line"></div>
+        <div class="org-row2">
+          <div class="org-p">
+            <div class="org-role">공동대표</div>
+            <div class="org-name">김보형</div>
+            <div class="org-title">총괄 전략 기획</div>
+            <div class="org-note">브랜드 전략과 마케팅 흐름을 총괄합니다.</div>
+          </div>
+          <div class="org-p">
+            <div class="org-role">공동대표</div>
+            <div class="org-name">이재훈</div>
+            <div class="org-title">미디어 전략</div>
+            <div class="org-note">언론·PR과 브랜딩을 이끕니다.</div>
+          </div>
+        </div>
+        <div class="org-line"></div>
+        <div class="org-row1">
+          <div class="org-p">
+            <div class="org-role">영업이사</div>
+            <div class="org-name">서민구</div>
+            <div class="org-title">영업 총괄</div>
+            <div class="org-note">병원 현장을 알고 전략을 세워 실행합니다.</div>
+          </div>
+        </div>
+        <div class="org-line"></div>
+        <div class="org-areas-t">담당 영역</div>
+        <div class="org-areas">
+          <a class="org-a" href="/hospital-marketing" onclick="sp('hosp_mkt');return false"><span class="org-ic">🏥</span><b>진료과목별 마케팅</b><small>치과·피부과·정형외과·한의원·성형외과·내과·안과와 의료광고심의·의료기기</small></a>
+          <a class="org-a" href="/ai" onclick="sp('ai');return false"><span class="org-ic">🤖</span><b>AI 검색 최적화</b><small>GEO·AEO·SEO 삼중 최적화</small></a>
+          <a class="org-a" href="/naver-ads" onclick="ld('naver_ads');return false"><span class="org-ic">🔍</span><b>검색광고 운영</b><small>파워링크·파워컨텐츠·브랜드검색·플레이스검색·구글 검색광고</small></a>
+          <a class="org-a" href="/online-marketing/sns" onclick="ld('online_sns');return false"><span class="org-ic">📱</span><b>SNS·영상</b><small>인스타그램·유튜브·메타·당근</small></a>
+          <a class="org-a" href="/pr" onclick="ld('media_pr');return false"><span class="org-ic">📰</span><b>콘텐츠·언론홍보</b><small>브랜드블로그·콘텐츠마케팅·보도자료</small></a>
+          <a class="org-a" href="/website" onclick="sp('hospital');return false"><span class="org-ic">🖥️</span><b>홈페이지 제작</b><small>SEO가 들어간 병원 홈페이지</small></a>
+          <a class="org-a" href="/local" onclick="sp('local');return false"><span class="org-ic">📍</span><b>지역·상권 분석</b><small>도시별 상권 전략과 입지·상권 진단</small></a>
+        </div>
+      </div>
+      <p style="font-size:12.5px;color:var(--mute);margin-top:18px;text-align:center">담당 영역은 현재 제공 중인 서비스를 기준으로 정리했습니다. 인원수는 따로 밝히지 않습니다.</p>
+    </div>
+  </section>
+
   <section class="section">
     <div class="container">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;margin-bottom:80px">
@@ -9707,8 +9798,10 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
 <style>
   .mbot{position:fixed;left:0;right:0;bottom:0;z-index:8000;display:none;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--border);box-shadow:0 -6px 24px rgba(13,37,61,.08);padding:6px 4px calc(6px + env(safe-area-inset-bottom));transform:translateY(0);transition:transform .28s cubic-bezier(.22,.65,.3,1)}
   .mbot.hide{transform:translateY(110%)}
-  .mbot-inner{display:grid;grid-template-columns:repeat(5,1fr);max-width:560px;margin:0 auto}
-  .mbot button{background:none;border:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;color:#64748b;font-size:10.5px;font-weight:700;letter-spacing:-.02em}
+  .mbot-inner{display:grid;grid-template-columns:repeat(6,1fr);max-width:600px;margin:0 auto}
+  .mbot button{background:none;border:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 1px;color:#64748b;font-size:10.5px;font-weight:700;letter-spacing:-.02em}
+  .mbot button span{white-space:nowrap}
+  @media(max-width:379px){.mbot button{font-size:9.5px}.mbot button svg{width:20px;height:20px}}
   .mbot button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .mbot button.on{color:var(--p)}
   .mbot button.mbot-cta{color:#fff}
@@ -9729,6 +9822,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
     <button type="button" class="mbot-cta" data-mb="diag" onclick="mbotGo(this,function(){sp('diagnose')})"><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></i><span>무료진단</span></button>
     <button type="button" data-mb="ai" onclick="mbotGo(this,function(){sp('ai')})"><svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4c2.5.5 4 2.5 4 5a5 5 0 0 1-3 4.6V17a4 4 0 0 1-4 4h-2a4 4 0 0 1-4-4v-1.4A5 5 0 0 1 4 11c0-2.5 1.5-4.5 4-5a4 4 0 0 1 4-4Z"/><path d="M9 11h.01M15 11h.01"/></svg><span>AI마케팅</span></button>
     <button type="button" data-mb="blog" onclick="mbotGo(this,function(){sp('blog')})"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>블로그</span></button>
+    <button type="button" data-mb="site" onclick="mbotGo(this,function(){sp('hospital')})"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="15" rx="2"/><path d="M3 9h18"/><path d="M7 6.5h.01M10 6.5h.01"/></svg><span>홈페이지</span></button>
   </div>
 </nav>
 <script>
@@ -9805,6 +9899,11 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMobMe
     box-shadow:0 10px 26px -8px rgba(15,42,67,.55);font-size:26px;z-index:9998;display:flex;
     align-items:center;justify-content:center;transition:transform .15s}
   #vcb-bubble:hover{transform:scale(1.06)}
+  /* 휴대폰: 맨 아래 메뉴가 뜨는 구간에서는 도우미 단추를 그 위로 올린다.
+     아래 메뉴의 오른쪽 칸을 덮고 있었다(기존 결함 · 칸을 여섯으로 늘리며 함께 고침) */
+  @media(max-width:768px){
+    #vcb-bubble{bottom:calc(84px + env(safe-area-inset-bottom));right:16px;width:52px;height:52px}
+  }
   #vcb-bubble .vcb-badge{position:absolute;top:-3px;right:-3px;background:#e53935;color:#fff;
     font-size:10px;font-weight:700;border-radius:20px;padding:1px 5px}
   #btt{bottom:92px!important}
