@@ -12,9 +12,10 @@
 ```
 0.3.566  나갔다   빠진 답변의 이름을 업종 따라 뽑는다 + 마케팅·광고 업종 + 비교 대상 빼는 단추
 0.3.585  나갔다   업종을 코드에서 자료로 + 기타면 홈페이지에서 읽는다(추정·근거)
-0.3.595  나갔다   「대구병원마케팅」에서 「대구병원」이 잘리던 것 (실측 2026-09-17 · main 3efbde84)
+0.3.595  나갔다   「대구병원마케팅」에서 「대구병원」이 잘리던 것 (실측 2026-09-17)
+0.3.599  main     그 사이 네 판이 더 나갔다 — 합쳐서 뒤진 커밋 0건으로 맞췄다
   —      **넘겼다**  ① 도는 판이 어디 있는지 화면이 말한다  ② 기다림에 끝을 둔다
-                  가지 claude/job-says-where-it-is · 머리 0d5b3a67 · 관문 전부 초록
+                  가지 claude/job-says-where-it-is · 머리 21ba0f20 · 관문 전부 초록
 ```
 
 ## 바로 이어갈 작업
@@ -22,17 +23,17 @@
 1. **넘긴 가지가 나갔는지 확인한다.**
    ```
    git -C /home/user/veo-platform fetch origin main
-   git -C /home/user/veo-platform merge-base --is-ancestor 0d5b3a67 origin/main \
+   git -C /home/user/veo-platform merge-base --is-ancestor 21ba0f20 origin/main \
      && echo 나갔다 || echo 아직
    ```
    아직이면 ANSEO 방에 이 문장을 그대로 준다 —
    ```
    veo-platform 가지 claude/job-says-where-it-is 를 make deploy 로 내라.
-   머리 0d5b3a67 · main(3efbde84 · 0.3.595) 위 · 뒤진 커밋 0건.
+   머리 21ba0f20 · main(e3ad489e · 0.3.599)을 합쳤다 · 뒤진 커밋 0건.
    판 둘: ① 돌기 시작한 작업이 선언한 첫 단계를 적고, 화면이 「차례를 기다리는
    중입니다」(아무도 안 집어감)와 「아직 시작하지 못했습니다」(집혔는데 안 돎)를 가른다
    ② 기다리는 잡이 까닭을 적고, 내보내기가 연속 다섯 번 실패하면 그 잡을 끝으로 보낸다.
-   관문은 나갈 그 커밋에서 전부 초록(ci-local 7,711 · test-db 1,332 · 웹 313파일 2,681).
+   관문은 합친 그 커밋에서 전부 초록(ci-local 7,739 · test-db 1,336 · 웹 315파일 2,684).
    판 번호는 안 물려 있다 — 나갈 때 정한다.
    VEO_DEPLOY_ORDER 에 사장님 문장을 그대로 넣어야 밀린다.
    ```
