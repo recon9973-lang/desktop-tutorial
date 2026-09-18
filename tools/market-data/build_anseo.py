@@ -9,9 +9,16 @@
   apps/api/data/population/admdongkor_dong_points.json.gz    행정동 면적
 
 만드는 것 (data/market/)
-  market_sggu.csv     시군구 한 줄 = 인구·면적·병의원 수·종별·밀집도
-  market_subject.csv  시군구 × 진료과목
+  market_sggu.csv     시군구 한 줄 = 인구·면적·병의원 수·종별·밀집도·미용 겸업
+  market_subject.csv  시군구 × 진료과목 (전문 / 겸업 / 합계로 나눠 센다)
   market_dong.csv     행정동 인구·연령·면적
+
+«전문»과 «겸업»을 왜 나누나 [실측 2026-09-18]
+  피부과를 내건 의원 16,981곳 가운데 피부과 전문의가 있는 곳은 1,599곳뿐이다.
+  나머지 15,382곳은 내과·가정의학과·소아청소년과 원장이 피부·미용을 겸하는 곳이다.
+  전국 의원 37,800곳의 **40%(15,208곳)** 가 피부과 또는 성형외과를 내걸고 있고,
+  그 비율은 지역마다 광주 광산구 58% ↔ 대구 수성구 22% 로 벌어진다.
+  «표시기관수» 하나로만 보면 이 판이 통째로 안 보인다. 그래서 셋으로 나눠 센다.
 
 출처: 건강보험심사평가원 「전국 병의원 및 약국 현황」(공공누리 제1유형·출처표시) ·
       행정안전부 「주민등록 인구통계」 · 통계청 SGIS 행정동 경계.
@@ -199,6 +206,43 @@ def main() -> int:
             return dict(out)
         return None
 
+    # ── 시군구 × 진료과목 ──
+    subj = read_csv_gz(HIRA_DIR / "subjects.csv.gz")
+    cnt = collections.defaultdict(lambda: {"기관": 0, "전문기관": 0, "전문의": 0})
+    subj_of = collections.defaultdict(dict)   # 기관 → {과목: 그 과 전문의 수}
+    for r in subj:
+        k = region_of.get(r["암호화요양기호"])
+        nm = r["진료과목코드명"].strip()
+        try:
+            n_sp = int(r["과목별 전문의수"] or 0)
+        except ValueError:
+            n_sp = 0
+        subj_of[r["암호화요양기호"]][nm] = n_sp
+        if not k:
+            continue
+        c = cnt[(k, nm)]
+        c["기관"] += 1
+        c["전문의"] += n_sp
+        if n_sp > 0:          # 그 과 전문의가 실제로 있는 곳
+            c["전문기관"] += 1
+
+    # ── 의원의 미용(피부·성형) 겸업 ──
+    beauty = collections.defaultdict(lambda: {"의원": 0, "겸업": 0, "일반의": 0})
+    for r in basis:
+        if r["종별코드명"].strip() != "의원":
+            continue
+        k = canon.get(hira_region(r), hira_region(r))
+        b = beauty[k]
+        b["의원"] += 1
+        m = subj_of.get(r["암호화요양기호"], {})
+        if ("피부과" in m or "성형외과" in m) and not m.get("피부과") and not m.get("성형외과"):
+            b["겸업"] += 1
+            try:
+                if int(r["의과전문의 인원수"] or 0) == 0:
+                    b["일반의"] += 1
+            except ValueError:
+                pass
+
     kinds = sorted({k for h in sggu_h.values() for k in h["종별"]})
     rows = []
     for k in sorted(sggu_h):
@@ -216,32 +260,26 @@ def main() -> int:
                "km2당_병의원": round(n / p["면적"], 1) if p and p["면적"] else DASH,
                "65세이상_비율%": round(p["65+"] / pop_n * 100, 1) if pop_n and p["65+"] else DASH,
                "20~39_비율%": round(p["20~39"] / pop_n * 100, 1) if pop_n and p["20~39"] else DASH,
-               "여성20~49": p["여20~49"] if p and p["여20~49"] else DASH}
+               "여성20~49": p["여20~49"] if p and p["여20~49"] else DASH,
+               "의원수": beauty[k]["의원"],
+               "미용겸업_의원수": beauty[k]["겸업"],
+               "미용겸업_비율%": round(beauty[k]["겸업"] / beauty[k]["의원"] * 100, 1)
+                                 if beauty[k]["의원"] else DASH,
+               "겸업중_일반의원장": beauty[k]["일반의"]}
         for kk in kinds:
             row[f"종별_{kk}"] = h["종별"].get(kk, 0)
         rows.append(row)
     with (OUT / "market_sggu.csv").open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
 
-    # ── 시군구 × 진료과목 ──
-    subj = read_csv_gz(HIRA_DIR / "subjects.csv.gz")
-    cnt = collections.defaultdict(lambda: {"기관": 0, "전문의": 0})
-    for r in subj:
-        k = region_of.get(r["암호화요양기호"])
-        if not k:
-            continue
-        c = cnt[(k, r["진료과목코드명"].strip())]
-        c["기관"] += 1
-        try:
-            c["전문의"] += int(r["과목별 전문의수"] or 0)
-        except ValueError:
-            pass
     srows = []
     for (k, nm), c in sorted(cnt.items()):
         p = pop_of(k)
         pop_n = p["인구"] if p else 0
         srows.append({"시도": k[0], "시군구": k[1], "진료과목": nm,
-                      "표시기관수": c["기관"], "과목전문의수": c["전문의"],
+                      "표시기관수": c["기관"], "전문기관수": c["전문기관"],
+                      "겸업기관수": c["기관"] - c["전문기관"],
+                      "과목전문의수": c["전문의"],
                       "인구": pop_n or DASH,
                       "인구1만명당": round(c["기관"] / pop_n * 10000, 2) if pop_n else DASH,
                       "1개소당_인구": round(pop_n / c["기관"]) if pop_n else DASH})

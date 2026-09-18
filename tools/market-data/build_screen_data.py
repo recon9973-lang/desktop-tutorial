@@ -25,6 +25,8 @@ def main() -> int:
             num(r["인구1만명당_병의원"]), num(r["면적_km2"]), num(r["km2당_병의원"]),
             num(r["65세이상_비율%"]), num(r["20~39_비율%"]), num(r["여성20~49"]),
             int(r["의사수"]), [int(r[f"종별_{k}"]) for k in kinds],
+            int(r["의원수"]), int(r["미용겸업_의원수"]),
+            num(r["미용겸업_비율%"]), int(r["겸업중_일반의원장"]),
         ])
 
     names, nidx = [], {}
@@ -36,29 +38,34 @@ def main() -> int:
         ri = index.get((r["시도"], r["시군구"]))
         if ri is None:
             continue
-        per[ri].append([nidx[nm], int(r["표시기관수"]), int(r["과목전문의수"])])
+        per[ri].append([nidx[nm], int(r["표시기관수"]), int(r["전문기관수"]),
+                        int(r["과목전문의수"])])
 
     nat_pop = sum(x[2] or 0 for x in regions)
     nat_n = sum(x[3] for x in regions)
-    nat_subj = [0] * len(names)
+    nat_subj = [0] * len(names)      # 내건 곳
+    nat_spec = [0] * len(names)      # 전문의 있는 곳
     for rows in per.values():
-        for si, c, _ in rows:
-            nat_subj[si] += c
+        for si, c, sc, _ in rows:
+            nat_subj[si] += c; nat_spec[si] += sc
 
     payload = {
         "기준": {"병의원": "심평원 2026-06", "인구": "행안부 2026-06-30",
                  "나이": "행안부 2026-08-31", "면적": "SGIS 2026-07-01"},
         "열": ["시도", "시군구", "인구", "병의원", "인구1만명당", "면적km2", "km2당",
-               "65세이상%", "20~39%", "여성20~49", "의사수", "종별"],
+               "65세이상%", "20~39%", "여성20~49", "의사수", "종별",
+               "의원수", "미용겸업", "미용겸업%", "겸업중일반의"],
         "종별이름": kinds,
         "전국": {"인구": nat_pop, "병의원": nat_n,
-                 "인구1만명당": round(nat_n / nat_pop * 10000, 2)},
+                 "인구1만명당": round(nat_n / nat_pop * 10000, 2),
+                 "의원": sum(x[12] for x in regions),
+                 "미용겸업": sum(x[13] for x in regions)},
         "지역": regions,
     }
     (OUT / "regions.json").write_text(json.dumps(payload, ensure_ascii=False,
                                                  separators=(",", ":")), encoding="utf-8")
     (OUT / "subjects.json").write_text(json.dumps(
-        {"이름": names, "전국표시기관수": nat_subj,
+        {"이름": names, "전국표시기관수": nat_subj, "전국전문기관수": nat_spec,
          "전국인구": nat_pop,
          "지역별": {str(k): v for k, v in sorted(per.items())}},
         ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
