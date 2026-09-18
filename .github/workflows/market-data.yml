@@ -1,0 +1,98 @@
+name: Market data collect
+
+# 지역별 병의원 상권 원자료를 러너에서 받아 저장소에 커밋한다.
+# 작업 컨테이너는 apis.data.go.kr·openapi.naver.com·dapi.kakao.com 이 모두 403 이라
+# (조직 프록시 정책) 이 워크플로가 대신 받는다. fetch-file.yml 과 같은 원리.
+#
+# 필요한 저장소 시크릿:
+#   DATA_GO_KR_SERVICE_KEY                 (심평원 · 필수)
+#   NAVER_CLIENT_ID / NAVER_CLIENT_SECRET  (네이버 지역검색 · 선택)
+#   KAKAO_REST_API_KEY                     (카카오 로컬 · 선택 · 없으면 건너뜀)
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both'
+        required: true
+        default: 'probe'
+      max_calls:
+        description: '이번 실행 최대 호출 수(이어받기 가능)'
+        required: false
+        default: '8000'
+      terms:
+        description: '지도 검색어(쉼표) · 비우면 기본 16개 과목'
+        required: false
+        default: ''
+      branch:
+        description: '커밋할 브랜치'
+        required: false
+        default: 'claude/intelligent-ride-u5oztv'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 원자료 되살리기(gz → csv)
+        run: |
+          if [ -f data/market/raw/hira_master.csv.gz ]; then
+            gunzip -kf data/market/raw/hira_master.csv.gz
+          fi
+
+      - name: 수집
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          STAGE: ${{ github.event.inputs.stage }}
+          MAXC: ${{ github.event.inputs.max_calls }}
+          TERMS: ${{ github.event.inputs.terms }}
+        run: |
+          set -e
+          case "$STAGE" in
+            map-naver) python3 tools/market-data/map_collect.py --source naver --limit "$MAXC" --terms "$TERMS" ;;
+            map-kakao) python3 tools/market-data/map_collect.py --source kakao --limit "$MAXC" --terms "$TERMS" ;;
+            map-both)  python3 tools/market-data/map_collect.py --source both  --limit "$MAXC" --terms "$TERMS" ;;
+            *)         python3 tools/market-data/hira_collect.py --stage "$STAGE" --max-calls "$MAXC" ;;
+          esac
+
+      - name: 큰 파일은 눌러서 담는다
+        run: |
+          if [ -f data/market/raw/hira_master.csv ]; then
+            gzip -9f data/market/raw/hira_master.csv
+          fi
+          ls -la data/market/raw/ || true
+
+      - name: 커밋 · 푸시
+        env:
+          BR: ${{ github.event.inputs.branch }}
+          STAGE: ${{ github.event.inputs.stage }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/market/raw
+          if git diff --cached --quiet; then
+            echo "바뀐 것이 없다"; exit 0
+          fi
+          git commit -m "data: 상권 원자료 수집 ($STAGE)"
+          for i in 1 2 3 4; do
+            git push origin "HEAD:$BR" && break || sleep $((2**i))
+          done
