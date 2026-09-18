@@ -4,16 +4,16 @@
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
 - **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
-- **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 11개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
+- **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 12개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
-- 2026-09-18 docs: 재진단 텀 방을 닫는다 — 전부 나갔다
+- 2026-09-18 docs: ANSEO 보안 점검 방 세션 기록을 main 으로 (사장님 지시)
 - 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-18 docs: 방을 닫기 전 마지막 실측을 기록에 남긴다 (#269)
+- 2026-09-18 docs: 키워드 간략표 방 인계 — 닫힘 (0.3.608 로 나갔다)
 - 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-18 나머지 여섯 방에도 가지 표시를 단다 — 짐작이 아니라 재서 (#268)
+- 2026-09-18 모션 방 인계를 main 에 올린다 — 방이 닫히기 전에 기록을 남긴다 (#271)
 - 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-18 인계를 방마다 가른다 — 고르는 열쇠를 이름에서 가지로 (#267)
+- 2026-09-18 docs(보안): ANSEO 보안 점검 보고서를 main 으로 (사장님 지시)
 - 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (21)
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 351a06f 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 c35642e 기준. 값·비밀은 포함하지 않음.*
