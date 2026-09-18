@@ -30,24 +30,37 @@
 - 시험 기대값도 새 이름으로 고침(건너뛰거나 지우지 않았다)
 - `docs/CORRECTIONS.md` **222** · 변경이력·대장·날짜별 기록에 이번 판
 
+## 배포 — **나갔다** (2026-09-18 · 판 0.3.606)
+
+```
+[실측 2026-09-18 · git]
+  origin/main 끝     929747bb  판 0.3.606
+  링 커밋            18f276cb  ✓ main 의 조상
+  기록 커밋          929747bb  ✓ main 의 조상
+  main 의 RingLoader  <source ring-sq-loop.webm> · <source ring-sq-loop.mp4>
+  main 의 영상       ring-sq-loop.webm · ring-sq-loop.mp4 둘 다 있다
+```
+
+**세 번 냈다.** 두 번은 채점 20분 사이에 다른 방이 main 을 앞질러 마지막 한 걸음에서
+거절됐고(판 0.3.604 · 0.3.605), 그때마다 물러나 다시 적었다. 링 고친 내용은 안 바뀌었다.
+
+**마지막 확인 단계는 「못 쟀다」로 남았다** — 배포 뒤 「밀린 코드가 실제로 도는지」를 보는
+자리인데, 이 방은 Railway 에 못 닿는다(`/api/health` 응답 코드 `000`). 「안 돈다」가 아니라
+**재지 못한 것**이다. 재는 길:
+```
+curl -s https://veo-platform-production.up.railway.app/api/queue
+```
+
 ## 바로 이어갈 작업
 
-1. **배포가 끝났는지 먼저 확인한다.** 세 번째 배포(판 0.3.606)가 돌고 있었다.
-   ```
-   cd /home/user/veo-platform && git fetch origin main
-   git show origin/main:apps/api/src/veo/__init__.py | grep __version__
-   git log --oneline -1 origin/main
-   ```
-   내 커밋(「링이 도는 중에 서던 것을 없앤다」)이 `origin/main` 의 조상이면 **나갔다**.
-2. **안 나갔으면 다시 낸다** — 나무를 새 main 위에 얹고 판을 한 칸 올려 다시 적는다.
-   ```
-   PGPASSWORD=veo VEO_DEPLOY_ORDER="배포해" make deploy
-   ```
-   되감으면 **변경이력·대장 머리말·대기 표·날짜별 기록 넷을 같이 다시 적어야 한다** —
-   안 그러면 관문이 「이미 나간 기록에 새 번호를 단다」로 선다.
-3. **나갔으면 사장님께** — `veo.seokorea.org` 에서 진단을 걸어 놓고 링이 15초쯤에
-   서는지 봐 달라고 청한다. 그 답이 오기 전에는 「고쳤다」고 하지 않는다.
-4. `docs/STATE.md` 의 미배포 줄(`claude/ring-evenspeed`)을 나간 뒤에 정리한다.
+1. **사장님께 여쭌다** — `veo.seokorea.org` 에서 진단을 걸어 놓고 **링이 15초쯤에 서는지**.
+   그 답이 오기 전에는 「고쳤다」고 하지 않는다(이 방이 그 말을 먼저 해서 한 번 혼났다).
+2. **대장 대기 표를 정리한다** — 0.3.606 은 나갔으므로 `docs/WORKLIST.md` 의 미배포 머리말과
+   대기 표에서 **이 방 줄만** 뺀다(머리말은 「미배포 **없음**」). 다른 방 줄은 건드리지 않는다.
+   문서만 바뀌므로 다음 배포에 얹혀 나가면 된다.
+3. `veo-platform` 의 `docs/STATE.md` 미배포 줄(`claude/ring-evenspeed`)도 같이 지운다.
+4. 사장님이 「아직 선다」고 하시면 — 다음에 볼 자리는 **영상이 아니라 그리는 쪽**이다.
+   같은 저장소에 `RingLoader` 를 캔버스·세이더로 다시 그린 시안이 있다(원본 영상 없이 돈다).
 
 ## 대기/차단
 
