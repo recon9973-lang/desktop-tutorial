@@ -68,7 +68,8 @@ grepEnv.split("\n").forEach((l) => { const m = l.match(/process\.env\.([A-Z0-9_]
 
 // ── 알려진 이슈/이어갈 작업 (있으면 포함) ──
 // 인계는 방마다 따로다(`RESUME-<방>.md`). 지금 가지에 맞는 것이 있으면 그것을 가리킨다.
-const resumeFiles = sh(`ls RESUME.md RESUME-*.md 2>/dev/null`).split("\n").filter(Boolean);
+// 폴더를 직접 읽는다 — `ls RESUME.md …` 는 그 이름이 없으면 통째로 실패해 「없음」이 된다.
+const resumeFiles = fs.readdirSync(ROOT).filter((f) => /^RESUME(-.+)?\.md$/.test(f)).sort();
 const mine = resumeFiles.find((f) => {
   try { return fs.readFileSync(f, "utf8").split("\n").slice(0, 20).join("\n").includes(`<!-- 가지: ${branch} -->`); }
   catch { return false; }

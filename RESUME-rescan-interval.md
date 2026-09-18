@@ -2,6 +2,10 @@
 
 <!-- 가지: claude/seo-diagnosis-interval-removal-othn8e -->
 
+> **이 파일이 재진단 텀 방 것이다.** 옛 이름 `RESUME.md` 에서 이리로 옮겨 왔다
+> [2026-09-18]. 내용은 그대로다 — 이름만 바뀌었다. 훅은 이름이 아니라 위 「가지」
+> 표시로 고르므로, 이 방은 전과 똑같이 이 파일을 받는다.
+
 > 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-17-s20.md`.
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 

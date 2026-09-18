@@ -15,7 +15,8 @@
 # 훅은 지금 가지와 같은 표시를 단 파일 **하나만** 편다. 그래서 이름이 무엇이든
 # 제 방 것이 실린다 — `RESUME.md` 라는 이름에 값이 없어지고 다툴 까닭도 없어진다.
 #
-# 표시가 없거나 짝이 없으면 **전처럼** 목록을 보이고 `RESUME.md` 본문만 편다.
+# 표시가 없거나 짝이 없으면 목록을 보인다. 본문은 하나만 편다 — 옛 이름 `RESUME.md` 가
+# 남아 있으면 그것을, 없고 인계가 하나뿐이면 그 하나를.
 # 물러서는 길을 남겨 둔 것이라 표시를 아직 안 단 방도 굶지 않는다.
 set -eu
 dir="${CLAUDE_PROJECT_DIR:-.}"
@@ -61,6 +62,12 @@ if [ "$count" -gt 1 ]; then
   echo "다음 세션부터 훅이 그 파일만 펴 준다(목록을 훑을 일이 없어진다)."
   echo
 fi
-if [ -f "$dir/RESUME.md" ]; then cat "$dir/RESUME.md"; fi
+# 본문은 **하나만** 편다. 옛 이름 `RESUME.md` 가 아직 있으면 그것을, 없고 인계가
+# **하나뿐**이면 그 하나를 편다 — 방이 하나뿐인 저장소(설치본을 막 깐 곳)가 굶지 않게.
+if [ -f "$dir/RESUME.md" ]; then
+  cat "$dir/RESUME.md"
+elif [ "$count" -eq 1 ]; then
+  for f in $files; do cat "$f"; done
+fi
 echo "===== RESUME 끝 · 위 '바로 이어갈 작업'부터 재개하세요 ====="
 exit 0
