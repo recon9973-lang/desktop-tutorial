@@ -1,5 +1,7 @@
 # RESUME (키워드 간략표 방) — **닫힘. 나갔다** (0.3.608 · 2026-09-18 확인)
 
+<!-- 가지: claude/loving-planck-wasyyo -->
+
 > 상세는 `docs/session-logs/2026-09-18-keyword-brief.md`.
 > **코드는 이 저장소에 없다** — `veo-platform` 이다(`add_repo` 로 붙인다, owner `recon9973-lang`).
 
