@@ -1,5 +1,7 @@
 # RESUME — 오류 상세 방 (2026-09-17 17:2x KST · s27 마감)
 
+<!-- 가지: claude/error-details-analysis-q6nlxf -->
+
 > **이 파일이 오류 상세 방 것**이다. 루트 `RESUME.md` 는 다른 방(재진단 텀 방) 것이니 안 건드린다.
 > 이 세션 상세: `docs/session-logs/2026-09-17-s27-error-details.md`
 > 현황 `PROJECT_STATE.md` · 지도 `핵심두뇌_MASTER.md`

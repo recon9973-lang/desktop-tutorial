@@ -1,5 +1,7 @@
 # RESUME — 모션 방 (2026-09-14 · s23 이어서)
 
+<!-- 가지: claude/tender-bell-wtempg -->
+
 > 이 저장소에는 인계가 여럿이다. **이 파일은 모션 방 것이다.** 상세는
 > `docs/session-logs/2026-09-13-s23-motion-port.md`. 다른 방 RESUME 은 건드리지 않는다.
 

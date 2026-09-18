@@ -1,5 +1,7 @@
 # RESUME (자동 진단 방 · AEO) — 2026-09-10 갱신
 
+<!-- 가지: claude/aeo-grand-beautiful-clinic-diagnosis-1tnsbt -->
+
 > **이 파일은 「자동 진단 방」 것이다.** 루트의 `RESUME.md` 는 **다른 방(진단 오진 방)**
 > 것이니 덮지 않는다. 상세는 `docs/session-logs/2026-09-09-s21-aeo-grand.md`.
 
