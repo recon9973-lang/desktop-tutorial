@@ -1,19 +1,80 @@
-# RESUME (링 로더 방) — 2026-09-10
+# RESUME (링 로더 방) — **2026-09-18 갱신 · ANSEO 쪽이 본체다**
 
-> ## 🚨 이 방이 고친 링은 **베놈 마케팅 사이트**(venom-new-site.vercel.app) 것이다
+> ## 🚨 사장님이 보시는 링은 **ANSEO(`veo.seokorea.org`)** 것이다 — 저장소는 `veo-platform`
 >
-> **ANSEO(veo.seokorea.org)가 아니다.** 2026-09-17 에 이것 때문에 한 세션을 통째로 날렸다 —
-> 사장님이 「진단 돌려보니 링이 멈춘다」고 하신 것은 **ANSEO** 였는데, 나는 이 저장소의 링을
-> 고치고 배포하기를 반복했다. 내가 원인을 네 번 잘못 짚은 것도 **다른 물건을 재고 있었기**
-> 때문이다. ANSEO 의 링은 `veo-platform` 저장소에 있고 여기엔 없다.
->
-> 아래 내용은 전부 **베놈 사이트 링**에 대한 것이다.
+> 이 저장소(`desktop-tutorial`)의 링은 **베놈 마케팅 사이트**(venom-new-site.vercel.app) 것이다.
+> **다른 물건이다.** 2026-09-17 에 이것 때문에 한 세션을 통째로 날렸다 — 사장님이
+> 「진단 돌려보니 링이 멈춘다」고 하신 것은 ANSEO 였는데 나는 여기 링을 고치고 배포하기를
+> 반복했다. 원인을 네 번 잘못 짚은 것도 전부 **다른 물건을 재고 있었기** 때문이다.
+> ANSEO 를 만지려면 `add_repo` 로 `veo-platform`(owner `recon9973-lang`)을 붙인다.
 
+## 2026-09-18 — ANSEO 의 링, 원인과 고침
 
-> **이 파일은 「링 로더 방」 것이다.** 루트 `RESUME.md` 는 **진단 오진 방**,
-> `RESUME-aeo-grand.md` 는 **자동 진단 방** 것이니 **덮지 않는다.**
-> 상세는 `docs/session-logs/2026-09-10-s22-ring-loader.md`.
-> 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+사장님: *"14~16sec에서 멈췄다가 다시 시작함"*.
+
+**원인은 코드가 아니라 영상 파일이었고, ANSEO 의 영상은 여기 원본과 바이트까지 같았다**
+(SHA-256 대조). 「한 번 재생용」 도입부 렌더라 앞 1.62초·뒤 0.33초가 거의 정지해 있다.
+
+```
+[실측]                         원본            등속본
+  한 바퀴                  361칸 15.042초   164칸 6.833초
+  눈에 멈춘 칸                47칸(1.96초)      0칸
+  되감기 한 칸              보통의 11배       1.42배
+  webm                         800KB          461KB
+```
+
+고친 자리 — `veo-platform` 가지 **`claude/ring-evenspeed`**
+- `apps/web/src/components/ring-loader/RingLoader.tsx` — 등속 순환본을 건다(webm → mp4)
+- `apps/web/public/ring/ring-sq-loop.{webm,mp4}` 새로 넣음. **원본은 안 지웠다** —
+  되돌리려면 두 `source` 에서 `-loop` 를 뺀다
+- 시험 기대값도 새 이름으로 고침(건너뛰거나 지우지 않았다)
+- `docs/CORRECTIONS.md` **222** · 변경이력·대장·날짜별 기록에 이번 판
+
+## 바로 이어갈 작업
+
+1. **배포가 끝났는지 먼저 확인한다.** 세 번째 배포(판 0.3.606)가 돌고 있었다.
+   ```
+   cd /home/user/veo-platform && git fetch origin main
+   git show origin/main:apps/api/src/veo/__init__.py | grep __version__
+   git log --oneline -1 origin/main
+   ```
+   내 커밋(「링이 도는 중에 서던 것을 없앤다」)이 `origin/main` 의 조상이면 **나갔다**.
+2. **안 나갔으면 다시 낸다** — 나무를 새 main 위에 얹고 판을 한 칸 올려 다시 적는다.
+   ```
+   PGPASSWORD=veo VEO_DEPLOY_ORDER="배포해" make deploy
+   ```
+   되감으면 **변경이력·대장 머리말·대기 표·날짜별 기록 넷을 같이 다시 적어야 한다** —
+   안 그러면 관문이 「이미 나간 기록에 새 번호를 단다」로 선다.
+3. **나갔으면 사장님께** — `veo.seokorea.org` 에서 진단을 걸어 놓고 링이 15초쯤에
+   서는지 봐 달라고 청한다. 그 답이 오기 전에는 「고쳤다」고 하지 않는다.
+4. `docs/STATE.md` 의 미배포 줄(`claude/ring-evenspeed`)을 나간 뒤에 정리한다.
+
+## 대기/차단
+
+- **배포는 경쟁이다.** 점검 10분 + 채점 20분 동안 다른 방이 main 을 앞지르면 마지막
+  한 걸음에서 거절된다 — 2026-09-18 에 **두 번** 그랬다(0.3.604 · 0.3.605). 물러나서
+  다시 적는 것이 규칙이다.
+- **veo-platform 개발 환경은 방마다 다시 세운다**(컨테이너가 매번 초기화된다):
+  ```
+  PYTHON=/usr/bin/python3.12 make setup
+  pnpm install --frozen-lockfile
+  service postgresql start
+  su postgres -c "psql -c \"CREATE ROLE root LOGIN SUPERUSER PASSWORD 'veo'\""
+  PGPASSWORD=veo make db-test-create
+  ```
+- 이 방은 실서비스를 못 잰다(egress 차단). **못 재는 자리는 「못 잼」이라고 적는다.**
+
+## 주의·제약
+
+- 가지: `veo-platform` 은 `claude/ring-evenspeed`, `desktop-tutorial` 은
+  `claude/loading-animation-delay-zero-onncrv`. **다른 가지로 올리지 않는다.**
+- 배포는 **`make deploy` 만**. `VEO_DEPLOY_ORDER` 에 사장님 문장을 그대로 인용한다.
+- 사장님께는 쉬운 말로. 「커밋」·「배포」 두 낱말만, 못 잰 값은 «—», 지어낸 수치 금지.
+- 커밋·PR·코드에 모델 ID 를 넣지 않는다(트레일러는 예외).
+
+---
+
+# (아래는 2026-09-10 · **베놈 마케팅 사이트** 링 기록이다)
 
 ## 지금까지 (핵심만)
 
