@@ -1,34 +1,29 @@
-# RESUME — 다음 세션 이어가기 (2026-09-04 02:00 KST · s17 「0.3.489~0.3.497 배포 마감」)
+# RESUME — 다음 세션 이어가기 (2026-09-18 22:55 KST · s18 「0.3.609 관문·촬영 재확인 — 초록」)
 
-> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s17.md`(직전)·`-s16.md`·`-s15.md`,
-> 결함표 `docs/ANSEO-반응형-대조표.md`(§6 2차 · §7 관문 · §7-4 예외 줄임 · §7-5 누름 마무리·배포), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
+> 새 세션은 이 파일을 **가장 먼저** 읽는다. 세션 상세 `docs/session-logs/2026-09-03-s17.md`(직전 회차 마감) ·
+> 결함표 `docs/ANSEO-반응형-대조표.md`(§7-6 = 0.3.609 재확인), 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 
-## 지금 상태 (s17 마감)
+## 지금 상태 (s18 = 재확인)
 
 ```
-veo-platform  코드 판              74905ea0  0.3.497 운영 도달 [실측 2026-09-04 01:55 KST 서버·워커·웹 셋 다]
-              main                 0065038a  배포 도장 커밋(문서만, 판 번호 그대로 0.3.497) — CI run 33781695498 초록 → main 17:08 UTC
-desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-5 도장 · s17 로그 · 이 문서
+veo-platform  main               7ac61136  판 0.3.609 (다른 방 진행분) — [실측 2026-09-18 22:42 KST 서버·워커·웹 셋 다]
+desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-6 재확인 · 이 문서
 ```
 
-- **미배포 없음.** 0.3.494~0.3.497 넉 판이 한 묶음으로 나갔다:
-  - 화면 점검 방 0.3.494(전수 점검 2차) · 0.3.495(새 화면 관문 3종) · 0.3.497(누름 영역 마무리)
-  - 입지 방 0.3.496(거래처 「입지」 탭·설정 「데이터 원천」·AI 스트립 연결 상태 밑줄)
-  - 이 방 판 두 번 물림: 0.3.489~0.3.490 → 0.3.494~0.3.495 (23:21 KST 배포) · 0.3.496 → 0.3.497 (01:55 KST 배포)
-- 이 방이 넣은 관문 3종이 두 번 자기 값을 했다: 처음 합침에서 입지 방 새 표 4곳의 없는 클래스 `tableFlow`→`tableWrap`
-  잡아 고침 · 이후 합침에서 입지 방 CSS 세 자리(접는 폭 · 글자 하한 · 표 감싸개)를 통과시키게 유도 (147051d5).
+- **이 방 판 없음 · 미배포 없음(이 방 몫).** 09-04 마감(0.3.494~0.3.497) 뒤 두 주 사이 다른 방들이 0.3.498~0.3.609
+  총 112 판을 진행. main 대장 §2 는 「미배포 0.3.608~0.3.609」로 적혀 있지만 그 방들이 도장을 못 찍은 것뿐 — 실측은 이미 도달, 이 방 소관 아님.
+- 이 방이 심은 **관문 3종·촬영 장치·규칙 문서가 여전히 자기 값을 한다**: 관문 초록(6 파일 25건),
+  BASELINE 예외가 시간이 지나며 줄어 옴(login 2→0 · geo 2→1 · seo 5→4). 촬영 64장 결함 0.
 
 ## 바로 이어갈 작업
 
-1. **이 회차는 완전히 닫혔다** — 0.3.494~0.3.497 넉 판 배포·삼중 실측·도장까지 끝
-   (도장 커밋 `0065038a` main 17:08 UTC 도달). 남은 후속 작업 없음.
-2. 오더 없으면 대기. 다음 후보:
-   - `/console/geo` 「키워드 조사」 본문 링크 15px — **AEO 방 몫**으로 남겨 뒀다(같은 수법 한 줄).
-   - `/console/mine` 「내 것」·「◀ 지난달」·「다음달 ▶」 19px — 입지/발행 대장 방 몫.
-   - 거래처 표 모바일 카드형 · 「AI 별 누적 답변」 띠 모바일 접기 · 산점도 이름표 2차원 밀어내기.
-   - 남은 접는 폭 BASELINE 11 파일(1240·760·700·860·600·48rem·min-width 둘 · geo 방 파일은 그 방 몫).
-3. 사장님 화면 지적 시: `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright
-   pnpm rwd /tmp/out <경로>`. 전 화면은 경로 없이(56장 ≈ 8분, 배경으로).
+1. **오더 없으면 대기.** 이 방 회차는 완전히 닫혔고 관문·촬영도 초록이다.
+2. 남는 다른 방 몫 세 자리 — 오더 있을 때만 이 방이 손대는 「같은 수법 한 줄」:
+   - `/console/geo` 「키워드 조사」 본문 링크 16px (AEO 방)
+   - `/console/mine` 「내 것」 20px · 「◀ 지난달」·「다음달 ▶」 20px (입지/발행 대장 방)
+3. 사장님 화면 지적 시:
+   `cd apps/web && pnpm build && PLAYWRIGHT_MODULE=/opt/node22/lib/node_modules/playwright pnpm rwd /tmp/out <경로>` ·
+   전 화면은 경로 없이(64장 ≈ 8~10분, 배경으로).
 
 ## 도구·실측 메모 (재탐색 금지)
 
@@ -36,13 +31,10 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-5
 - 촬영 장치 오탐: 라디오·체크박스가 큰 `<label>` 안이면 이름표가 누름 영역이다(0.3.497 에서 고침).
 - hydration 오류는 `pnpm rwd` 의 `console` 열 `pageerror`(연기 시험은 못 잡는다).
 - 삼중 실측: `sandbox_exec` 로 `https://veo-platform-production.up.railway.app/api/health` · `/api/queue` ·
-  `https://veo.seokorea.org/login` HTML 의 «앱 버전 v0.3.…». DB 경로 `/api/customers` = 401 이 정상.
-  웹 판 grep 은 `grep -o '앱 버전 v<!-- -->[0-9.]*'` 로(주석 사이에 낀 판 문자열).
-- 이 컨테이너엔 veo-platform `.venv` 가 없다 — `make preflight` 의 ruff·pytest·계약 드리프트 ✗ 는 **못 잰 것**(CI 가 잰다).
+  `https://veo.seokorea.org/login` HTML — 웹 판 grep 은 `grep -o '앱 버전 v<!-- -->[0-9.]*'` 로. DB 경로 `/api/customers` = 401 이 정상.
 - CI 상태: GitHub MCP `actions_list`(owner recon9973-lang · repo veo-platform · ci.yml · branch deploy-candidate).
 - 배포 길: 후보 가지 `deploy-candidate` 푸시 → CI 초록 → **같은 SHA** 를 main 으로 → 삼중 실측 → 도장 커밋(같은 길로).
-- 판 번호 겹침 때: force-with-lease 는 sandbox classifier 가 막을 수 있다 — 그때는 `--force-with-lease=<ref>:<expected-sha>`
-  형식으로 명시하면 통과했다(2026-09-04 01:34 UTC).
+- 판 번호 겹침 때: `git push --force-with-lease=<ref>:<expected-sha>` 형식으로 명시하면 sandbox classifier 를 통과.
 
 ## 주의·제약 (반드시)
 
@@ -50,7 +42,7 @@ desktop-tutorial claude/anseo-screen-layout-optimization-ucs22y  대조표 §7-5
   모델 ID 를 커밋/PR/코드/문서에 넣지 않는다. 비밀키 금지.
 - 사장님께는 「커밋」「배포」 두 낱말만. 못 잰 값은 —. `[실측]` 은 명령과 출력이 있을 때만. 데이터는 테스트용 — 정합성 지적 금지.
 - prettier 는 저장소 관문이 아니다 — `--write` 로 남의 줄을 바꾸지 않는다.
-- /console/geo AEO 독립 화면·의료 규정은 다른 방 소관(관문 BASELINE 에 그 방 파일 숫자가 있다).
+- /console/geo AEO 독립 화면·의료 규정은 다른 방 소관.
 - 판 번호 규칙: **먼저 main 에 닿은 쪽을 두고 뒤엣것이 물러난다.**
 
 ---
