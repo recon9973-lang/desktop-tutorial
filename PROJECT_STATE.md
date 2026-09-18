@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
+- 2026-09-18 체크포인트 s27 — 세션 기록 · 인계 · 현황
 - 2026-09-18 인계에 도는 판을 적는다 — 0.3.605 (러너 실측)
 - 2026-09-17 인계 — 막힌 거래처 확인은 마지막 한 칸만 남았다 (공개 창구는 안 켠다)
 - 2026-09-16 인계 — 크롤 한도가 0.3.596 으로 나갔다 (러너로 확인)
@@ -14,7 +15,6 @@
 - 2026-09-17 상권 분석 방 기록을 남긴다 — 방을 지우기 전에 (#258)
 - 2026-09-16 상권 분석 방 기록을 남긴다 — 방을 지우기 전에
 - 2026-09-16 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-17 멈추는 그 화면에서 스스로 기록하게 한다 (?ringlog=1) (#257)
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 570a2592 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 f0b0dc8e 기준. 값·비밀은 포함하지 않음.*
