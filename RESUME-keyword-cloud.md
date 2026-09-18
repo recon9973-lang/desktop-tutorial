@@ -1,5 +1,8 @@
 # RESUME (키워드 구름 방) — 2026-09-16 갱신 (0.3.594 까지 나감)
 
+<!-- 가지: claude/awesome-brahmagupta-7mlfxl -->
+<!-- 방 닫힘 · 이 가지는 origin 에서 지워졌다 [실측 2026-09-18] — 표시는 누가 쓰던 것인지 남기는 뜻이다 -->
+
 > **이 저장소에 인계가 여럿이다 — 이 방 것은 이 파일이다.**
 > 루트 `RESUME.md`(진단 오진 방) · `RESUME-aeo-grand.md` · `RESUME-anseo-review.md` ·
 > `RESUME-ring-loader.md` · `RESUME-motion-port.md` 는 **다른 방** 것이다. 건드리지 않는다.
