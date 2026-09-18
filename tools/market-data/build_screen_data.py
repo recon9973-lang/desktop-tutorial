@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""표 셋을 화면(웹)이 바로 읽을 수 있는 작은 묶음으로 만든다.
+
+행을 그대로 싣지 않고 «열 이름은 한 번, 값은 배열» 로 눌러 담는다 — 같은 내용이
+10분의 1 크기가 된다. 나가는 곳: data/market/screen/{regions,subjects}.json
+"""
+import csv, json, pathlib, collections
+
+OUT = pathlib.Path("data/market/screen")
+SRC = pathlib.Path("data/market")
+num = lambda v: None if v in ("—", "", None) else float(v)
+
+
+def main() -> int:
+    OUT.mkdir(parents=True, exist_ok=True)
+    sg = list(csv.DictReader((SRC / "market_sggu.csv").open(encoding="utf-8")))
+    sj = list(csv.DictReader((SRC / "market_subject.csv").open(encoding="utf-8")))
+    kinds = [c[3:] for c in sg[0] if c.startswith("종별_")]
+
+    regions, index = [], {}
+    for i, r in enumerate(sg):
+        index[(r["시도"], r["시군구"])] = i
+        regions.append([
+            r["시도"], r["시군구"], num(r["인구"]), int(r["병의원_계"]),
+            num(r["인구1만명당_병의원"]), num(r["면적_km2"]), num(r["km2당_병의원"]),
+            num(r["65세이상_비율%"]), num(r["20~39_비율%"]), num(r["여성20~49"]),
+            int(r["의사수"]), [int(r[f"종별_{k}"]) for k in kinds],
+        ])
+
+    names, nidx = [], {}
+    per = collections.defaultdict(list)
+    for r in sj:
+        nm = r["진료과목"]
+        if nm not in nidx:
+            nidx[nm] = len(names); names.append(nm)
+        ri = index.get((r["시도"], r["시군구"]))
+        if ri is None:
+            continue
+        per[ri].append([nidx[nm], int(r["표시기관수"]), int(r["과목전문의수"])])
+
+    nat_pop = sum(x[2] or 0 for x in regions)
+    nat_n = sum(x[3] for x in regions)
+    nat_subj = [0] * len(names)
+    for rows in per.values():
+        for si, c, _ in rows:
+            nat_subj[si] += c
+
+    payload = {
+        "기준": {"병의원": "심평원 2026-06", "인구": "행안부 2026-06-30",
+                 "나이": "행안부 2026-08-31", "면적": "SGIS 2026-07-01"},
+        "열": ["시도", "시군구", "인구", "병의원", "인구1만명당", "면적km2", "km2당",
+               "65세이상%", "20~39%", "여성20~49", "의사수", "종별"],
+        "종별이름": kinds,
+        "전국": {"인구": nat_pop, "병의원": nat_n,
+                 "인구1만명당": round(nat_n / nat_pop * 10000, 2)},
+        "지역": regions,
+    }
+    (OUT / "regions.json").write_text(json.dumps(payload, ensure_ascii=False,
+                                                 separators=(",", ":")), encoding="utf-8")
+    (OUT / "subjects.json").write_text(json.dumps(
+        {"이름": names, "전국표시기관수": nat_subj,
+         "전국인구": nat_pop,
+         "지역별": {str(k): v for k, v in sorted(per.items())}},
+        ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    for p in (OUT / "regions.json", OUT / "subjects.json"):
+        print(f"{p} {p.stat().st_size / 1024:.0f}KB")
+    print(f"지역 {len(regions)} · 과목 {len(names)} · 종별 {len(kinds)}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
