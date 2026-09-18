@@ -37,6 +37,9 @@ GEO/AEO/SEO 3단 구성 · 조직 안내 · 사이트맵 204 → 230 URL.
 [실측 2026-09-18] B·C 판     사이트맵 230 URL · /local · /resources ·
                              /naver-ads/powerlink · /brand/planning · /seo/technical ·
                              /online-marketing/daangn · /clinic/location/ 전부 실려 있다
+[실측 2026-09-18] 마지막 확인  index.html 을 받아 A·B·C 표식 15개를 대조 — 15/15 떠 있다.
+                             상단 탭 일곱: 병원마케팅 · AI마케팅 · 온라인마케팅 ·
+                             상권분석 · 블로그 · SEO 홈페이지 · 무료진단
 ```
 
 ## 다음 방 몫
