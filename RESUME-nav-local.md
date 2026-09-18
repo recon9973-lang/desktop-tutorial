@@ -1,5 +1,7 @@
 # RESUME (상권 네비 방) — **닫힘. 전부 나갔다** (2026-09-18 확인)
 
+<!-- 가지: claude/charming-cerf-s4n1ca -->
+
 > 상세는 `docs/session-logs/2026-09-16-nav-local.md`.
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 > **이 방에서 이어갈 작업은 없다.** 설계 사이트맵 대비 미구현분도 없다.

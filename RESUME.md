@@ -1,5 +1,7 @@
 # RESUME — 다음 세션 이어가기 (2026-09-17 03:5x KST · s20 마감 · 재진단 텀 방)
 
+<!-- 가지: claude/seo-diagnosis-interval-removal-othn8e -->
+
 > 새 세션은 이 파일을 **먼저** 읽는다. 상세는 `docs/session-logs/2026-09-17-s20.md`.
 > 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
 

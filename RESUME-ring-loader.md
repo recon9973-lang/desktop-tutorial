@@ -1,5 +1,7 @@
 # RESUME (링 로더 방) — 2026-09-10
 
+<!-- 가지: claude/loading-animation-delay-zero-onncrv -->
+
 > ## 🚨 이 방이 고친 링은 **베놈 마케팅 사이트**(venom-new-site.vercel.app) 것이다
 >
 > **ANSEO(veo.seokorea.org)가 아니다.** 2026-09-17 에 이것 때문에 한 세션을 통째로 날렸다 —
