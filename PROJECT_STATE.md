@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 이 방 것 → `RESUME-gap-color.md` (가지 표시로 짝지음) · 전체 14개
 
 ## 최근 커밋 (8)
+- 2026-09-19 체크포인트: 경고색 방 — 대기 표 정리까지 나갔다 (0.3.620)
+- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-19 docs(자동 진단 방): 검사 안 거친 커밋을 보이게 하는 관문 (v0.3.620 배포 중)
+- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-19 docs(자동 진단 방): 0.3.618 로 들어갔다 — 접은 까닭과 0.3.614 도장
 - 2026-09-19 체크포인트: 경고색 방 — 둘 다 나갔다 (0.3.612 · 0.3.617)
 - 2026-09-19 Merge remote-tracking branch 'origin/main' into claude/compassionate-newton-kyz1sm
 - 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-19 feat: 카카오 훑기를 판으로 나눠 동시에 돌린다 (#276)
-- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-19 chore(medi_law): 개인 보험 서류 2건 삭제 — 신한라이프 가입 동의서
-- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-19 fix: 러너가 밀어 넣을 때 거절되면 얹고 다시 민다 (#275)
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 b9480e8 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 43fbf55 기준. 값·비밀은 포함하지 않음.*
