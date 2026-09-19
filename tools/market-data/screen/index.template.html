@@ -1,0 +1,482 @@
+<title>병의원 상권 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@200;300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ── 베놈 디자인 토큰 (venom-wordpress/preview/index.html 과 같은 값) ── */
+:root{
+  --p:#533afd; --pd:#4434d4; --pp:#2e2b8c; --psub:#b9b9f9; --pfaint:#eceaff;
+  --bd:#1c1e54; --ink:#0d253d; --ink2:#273951; --mute:#64748d;
+  --canvas:#ffffff; --soft:#f6f9fc; --border:#e3e8ee; --ruby:#ea2261;
+  --c1:#533afd; --c2:#ea2261; --c3:#0d9488; --c4:#d97706; --c5:#0284c7;
+  --over:#ea2261; --under:#533afd;
+  --shadow:0 1px 2px rgba(13,37,61,.05),0 8px 24px rgba(13,37,61,.06);
+  --r8:8px; --r12:12px; --rpill:9999px;
+  --sans:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --p:#8b7cff; --pd:#a396ff; --pp:#6f5df0; --psub:#3b3a78; --pfaint:#1d2145;
+  --bd:#0d1030; --ink:#e9edfa; --ink2:#c3cbe4; --mute:#94a1c2;
+  --canvas:#141833; --soft:#1a1f42; --border:#2a3060; --ruby:#ff5d8f;
+  --c1:#7c6cf5; --c2:#ef3b76; --c3:#0f9e90; --c4:#b8800f; --c5:#2b8fd0;
+  --over:#ff5d8f; --under:#8b7cff;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --p:#8b7cff; --pd:#a396ff; --pp:#6f5df0; --psub:#3b3a78; --pfaint:#1d2145;
+  --bd:#0d1030; --ink:#e9edfa; --ink2:#c3cbe4; --mute:#94a1c2;
+  --canvas:#141833; --soft:#1a1f42; --border:#2a3060; --ruby:#ff5d8f;
+  --c1:#7c6cf5; --c2:#ef3b76; --c3:#0f9e90; --c4:#b8800f; --c5:#2b8fd0;
+  --over:#ff5d8f; --under:#8b7cff;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);
+  font-weight:400;line-height:1.6;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased;
+  font-size:15px}
+h1,h2,h3{margin:0;font-weight:300;letter-spacing:-0.03em;text-wrap:balance}
+button,select,input{font-family:inherit;font-size:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ── 머리 ── */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bd);
+  color:#fff;border-bottom:1px solid rgba(255,255,255,.08)}
+.top-in{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;
+  align-items:baseline;gap:8px 20px}
+.brand{font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--psub)}
+.top h1{font-size:19px;color:#fff;flex:1 1 auto;min-width:180px}
+.top-stats{display:flex;gap:18px;flex-wrap:wrap}
+.top-stat{font-size:12px;color:rgba(255,255,255,.62)}
+.top-stat b{display:block;font-size:17px;font-weight:300;color:#fff;letter-spacing:-.04em}
+
+/* ── 틀 ── */
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px 56px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;padding-block:18px;
+  position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:15;
+  background:var(--canvas);border-bottom:1px solid var(--border);margin-bottom:18px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:11px;color:var(--mute);letter-spacing:.04em;font-weight:500}
+select,input[type=search]{padding:8px 11px;border:1px solid var(--border);
+  border-radius:var(--r8);background:var(--canvas);min-width:120px;max-width:280px;
+  transition:.15s}
+select:focus-visible,input:focus-visible,.row:focus-visible,.seg button:focus-visible{
+  outline:2px solid var(--p);outline-offset:2px}
+.seg{display:flex;border:1px solid var(--border);border-radius:var(--rpill);overflow:hidden}
+.seg button{background:none;border:0;padding:8px 13px;cursor:pointer;color:var(--mute);
+  font-size:13px;white-space:nowrap;transition:.15s}
+.seg button[aria-pressed=true]{background:var(--p);color:#fff}
+.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:26px;align-items:start}
+@media(max-width:980px){.grid{grid-template-columns:1fr}
+  .controls{position:static}}
+
+/* ── 순위 ── */
+.panel-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin-bottom:4px}
+.panel-hd h2{font-size:17px}
+.hint{font-size:12px;color:var(--mute)}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--border);
+  max-height:70vh;overflow-y:auto}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;
+  padding:9px 8px;border-bottom:1px solid var(--border);background:none;border-left:0;
+  border-right:0;border-top:0;text-align:left;cursor:pointer;width:100%;transition:.12s}
+.row:hover{background:var(--soft)}
+.row[aria-current=true]{background:var(--pfaint)}
+.row-name{font-size:14px;font-weight:500;display:flex;gap:7px;align-items:baseline;min-width:0}
+.row-name span{color:var(--mute);font-size:11.5px;font-weight:400;flex:0 0 auto}
+.row-val{font-size:15px;font-weight:500;text-align:right;letter-spacing:-.02em}
+.row-sub{font-size:11.5px;color:var(--mute);grid-column:1/-1;display:flex;gap:10px}
+.bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--soft);overflow:hidden;
+  margin-top:3px}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--p)}
+
+/* ── 상세 ── */
+.detail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 132px)}
+@media(max-width:980px){.detail{position:static}}
+.card{background:var(--canvas);border:1px solid var(--border);border-radius:var(--r12);
+  padding:20px;box-shadow:var(--shadow)}
+.d-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:2px}
+.d-head h2{font-size:24px}
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);
+  font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:var(--r8);overflow:hidden;margin:16px 0}
+@media(max-width:520px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--canvas);padding:13px 10px;text-align:center}
+.tile b{display:block;font-size:26px;font-weight:200;color:var(--p);letter-spacing:-.05em;
+  line-height:1.1}
+.tile b small{font-size:13px;font-weight:300}
+.tile span{display:block;font-size:11px;color:var(--mute);margin-top:4px}
+.meters{display:flex;flex-direction:column;gap:9px;margin:14px 0 4px}
+.meter{display:grid;grid-template-columns:86px 1fr auto;gap:10px;align-items:center;
+  font-size:12.5px}
+.meter .track{height:6px;background:var(--soft);border-radius:3px;overflow:hidden}
+.meter .track i{display:block;height:100%;background:var(--p);border-radius:3px}
+.meter b{font-weight:500;letter-spacing:-.02em}
+.meter .mute{color:var(--mute)}
+.mix{border:1px solid var(--border);border-radius:var(--r8);padding:14px;background:var(--soft)}
+.mix-num{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.mix-num>b{font-size:34px;font-weight:200;color:var(--over);letter-spacing:-.05em;line-height:1}
+.mix-num>b small{font-size:15px;font-weight:300}
+.mix-num span{font-size:12.5px;color:var(--ink2);flex:1 1 150px;min-width:0}
+.mix-num span b{font-size:inherit;font-weight:600;color:var(--over)}
+.mix-bar{height:7px;border-radius:4px;background:var(--canvas);border:1px solid var(--border);
+  overflow:hidden;margin:11px 0 9px}
+.mix-bar i{display:block;height:100%;background:var(--over)}
+.mix .note{margin:0}
+h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--mute);margin:22px 0 9px}
+.stack{display:flex;height:22px;border-radius:5px;overflow:hidden;gap:2px;background:var(--border)}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:9px;font-size:12px}
+.legend span{display:flex;align-items:center;gap:6px;color:var(--ink2)}
+.legend i{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:right;font-weight:500;font-size:11px;color:var(--mute);padding:0 0 6px;
+  letter-spacing:.03em;border-bottom:1px solid var(--border)}
+.tbl th:first-child{text-align:left}
+.tbl td{padding:7px 0;border-bottom:1px solid var(--border);text-align:right}
+.tbl td:first-child{text-align:left;font-weight:500}
+.idxcell{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.idxbar{position:relative;width:78px;height:8px;background:var(--soft);border-radius:2px;
+  flex:0 0 auto}
+.idxbar em{position:absolute;top:0;height:100%;border-radius:2px}
+.idxbar::after{content:"";position:absolute;left:50%;top:-2px;width:1px;height:12px;
+  background:var(--border)}
+.wide{overflow-x:auto}
+.tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--border);background:none;border-radius:var(--rpill);
+  padding:5px 12px;font-size:12.5px;cursor:pointer;color:var(--mute);transition:.15s}
+.tabs button[aria-pressed=true]{border-color:var(--p);color:var(--p);background:var(--pfaint)}
+.note{font-size:12.5px;color:var(--mute);line-height:1.65}
+.foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--border);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.foot h3{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--mute);margin-bottom:7px}
+.dash{color:var(--mute)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div style="flex:1 1 auto;min-width:200px">
+      <div class="brand">VENOM · 병원마케팅</div>
+      <h1>지역별 병의원 상권</h1>
+    </div>
+    <div class="top-stats num" id="topStats"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field"><label for="fSido">시·도</label>
+      <select id="fSido"></select></div>
+    <div class="field"><label for="fSubject">진료과목</label>
+      <select id="fSubject"></select></div>
+    <div class="field"><label>무엇을 셀까</label>
+      <div class="seg" id="fBasis">
+        <button type="button" data-basis="all" aria-pressed="true">내건 곳 전부</button>
+        <button type="button" data-basis="spec" aria-pressed="false">전문의 있는 곳</button>
+        <button type="button" data-basis="nonspec" aria-pressed="false">전문의 없이</button>
+      </div></div>
+    <div class="field"><label for="fPop">인구 규모</label>
+      <select id="fPop">
+        <option value="0">전체</option>
+        <option value="100000">10만 명 이상</option>
+        <option value="200000">20만 명 이상</option>
+        <option value="300000">30만 명 이상</option>
+      </select></div>
+    <div class="field"><label for="fQ">지역 찾기</label>
+      <input id="fQ" type="search" placeholder="예: 강남" autocomplete="off"></div>
+    <div class="field"><label>정렬</label>
+      <div class="seg" id="fSort">
+        <button type="button" data-sort="dense" aria-pressed="true">빽빽한 순</button>
+        <button type="button" data-sort="loose" aria-pressed="false">헐거운 순</button>
+        <button type="button" data-sort="pop" aria-pressed="false">인구 순</button>
+      </div></div>
+  </div>
+
+  <div class="grid">
+    <section>
+      <div class="panel-hd">
+        <h2 id="listTitle">시군구 순위</h2>
+        <span class="hint" id="listHint"></span>
+      </div>
+      <p class="hint" id="listLead" style="margin:0 0 8px"></p>
+      <div class="rows" id="rows"></div>
+    </section>
+
+    <section class="detail">
+      <div class="card" id="detail"></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <div>
+      <h3>어디서 온 숫자인가</h3>
+      <p class="note">병의원·진료과목 — 건강보험심사평가원 「전국 병의원 및 약국 현황」 2026년 6월분
+      (공공누리 제1유형·출처표시).<br>인구·남녀 — 행정안전부 주민등록 인구통계 2026-06-30.<br>
+      나이대 — 같은 곳 2026-08-31.<br>면적 — 통계청 SGIS 행정동 경계 2026-07-01.<br>
+      검색 수요 — 네이버 데이터랩 2025-09~2026-08.</p>
+    </div>
+    <div>
+      <h3>왜 셋으로 나눠 세나</h3>
+      <p class="note">「피부과」를 내건 곳은 전국 <b>17,826곳</b>이지만 피부과 전문의가 있는 곳은
+      <b>1,735곳</b>뿐이다. 나머지 <b>16,091곳</b>은 전문의 없이 내건 곳 —
+      동네 내과·가정의학과·소아청소년과 원장이 피부·미용을 겸하는 자리다.
+      전국 의원 <b>37,800곳의 40%</b>가 피부과 또는 성형외과를 내걸었고, 그 비율은
+      광주 광산구 58% ↔ 대구 수성구 22% 로 지역마다 크게 벌어진다.
+      <b>내건 곳 전부</b>가 실제로 부딪칠 상대이고, <b>전문의 있는 곳</b>이 간판 경쟁자다.
+      위 「무엇을 셀까」로 바꿔 가며 본다.</p>
+    </div>
+    <div>
+      <h3>아직 못 잰 것</h3>
+      <p class="note"><span class="dash">—</span> 는 <b>못 잰 값</b>이다. 지어내지 않았다.<br>
+      세종은 행안부 행정동 인구 자료에 없어 인구가 «—» 다(병의원 469곳은 실측).<br>
+      한 달에 몇 번 검색되는지(실제 검색량)와 지도에서 몇 곳이 잡히는지는
+      열쇠가 있어야 잰다.</p>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="dataRegions">__REGIONS__</script>
+<script type="application/json" id="dataSubjects">__SUBJECTS__</script>
+<script type="application/json" id="dataDemand">__DEMAND__</script>
+<script>
+(function(){
+"use strict";
+const J = id => JSON.parse(document.getElementById(id).textContent);
+const R = J('dataRegions'), S = J('dataSubjects'), D = J('dataDemand');
+const DASH = '—';
+const KINDS = R['종별이름'];
+// 종별 15가지를 사람들이 실제로 쓰는 다섯 묶음으로 모은다.
+const BUCKETS = [
+  ['의원',   ['의원'],                    'var(--c1)'],
+  ['치과',   ['치과의원','치과병원'],      'var(--c2)'],
+  ['한방',   ['한의원','한방병원'],        'var(--c3)'],
+  ['병원급', ['병원','종합병원','상급종합','요양병원','정신병원'], 'var(--c4)'],
+  ['조산원', ['조산원'],                  'var(--c5)'],
+];
+// 보건소·보건지소·보건진료소·보건의료원은 장사하는 병의원이 아니라 따로 센다.
+const PUBLIC_KINDS = ['보건소','보건지소','보건진료소','보건의료원'];
+const regions = R['지역'].map((a,i)=>({
+  i, sido:a[0], sggu:a[1], pop:a[2], n:a[3], per:a[4], area:a[5], perKm:a[6],
+  old:a[7], young:a[8], w2049:a[9], dr:a[10], kinds:a[11],
+  clinics:a[12], mix:a[13], mixp:a[14], gen:a[15],
+  label:a[0]+' '+a[1]
+}));
+const natPer = R['전국']['인구1만명당'];
+const fmt = n => n==null ? DASH : n.toLocaleString('ko-KR');
+const fmt1 = n => n==null ? DASH : n.toFixed(1);
+const man = n => n==null ? DASH : (n/10000).toFixed(n>=1000000?0:1);
+
+// 전국 과목별 1만명당 — 지역 지수의 기준선. 셈법 셋을 따로 갖는다.
+const BASIS = {
+  all:     {label:'내건 곳 전부',      pick:(c,sc)=>c,      nat:i=>S['전국표시기관수'][i]},
+  spec:    {label:'전문의 있는 곳',    pick:(c,sc)=>sc,     nat:i=>S['전국전문기관수'][i]},
+  nonspec: {label:'전문의 없이 내건 곳',pick:(c,sc)=>c-sc,   nat:i=>S['전국표시기관수'][i]-S['전국전문기관수'][i]},
+};
+const natPerOf = (i,b) => BASIS[b].nat(i) / S['전국인구'] * 10000;
+const subjOf = ri => (S['지역별'][ri]||[]);
+
+document.getElementById('topStats').innerHTML = [
+  ['인구', man(R['전국']['인구'])+'만 명'],
+  ['병의원', fmt(R['전국']['병의원'])+'곳'],
+  ['인구 1만 명당', natPer.toFixed(1)+'곳'],
+  ['시군구', regions.length+'곳'],
+].map(([l,v])=>`<div class="top-stat"><b>${v}</b>${l}</div>`).join('');
+
+// ── 고르는 칸 채우기 ──
+const sidos = [...new Set(regions.map(r=>r.sido))].sort((a,b)=>a.localeCompare(b,'ko'));
+const elSido = document.getElementById('fSido');
+elSido.innerHTML = '<option value="">전국</option>' +
+  sidos.map(s=>`<option value="${s}">${s}</option>`).join('');
+const subjOrder = S['이름'].map((n,i)=>[n,i,S['전국표시기관수'][i]])
+  .sort((a,b)=>b[2]-a[2]);
+document.getElementById('fSubject').innerHTML =
+  '<option value="-1">병의원 전체</option>' +
+  subjOrder.map(([n,i,c])=>`<option value="${i}">${n} (${c.toLocaleString('ko-KR')} / 전문 ${
+     S['전국전문기관수'][i].toLocaleString('ko-KR')})</option>`).join('');
+
+const state = {sido:'', subj:-1, basis:'all', minPop:0, q:'', sort:'dense', pick:null};
+
+function metricOf(r){
+  // 고른 과목이 있으면 그 과목 기준, 없으면 병의원 전체 기준.
+  if(state.subj < 0) return {n:r.n, per:r.per, base:natPer};
+  const hit = subjOf(r.i).find(x=>x[0]===state.subj);
+  const n = hit ? BASIS[state.basis].pick(hit[1], hit[2]) : 0;
+  return {n, per: r.pop ? n/r.pop*10000 : null, base: natPerOf(state.subj, state.basis),
+          spec: hit?hit[3]:0};
+}
+
+function current(){
+  let list = regions.filter(r =>
+    (!state.sido || r.sido===state.sido) &&
+    (!state.minPop || (r.pop||0) >= state.minPop) &&
+    (!state.q || r.label.replace(/\s/g,'').includes(state.q.replace(/\s/g,''))));
+  const key = r => metricOf(r).per;
+  if(state.sort==='pop') list.sort((a,b)=>(b.pop||0)-(a.pop||0));
+  else{
+    const dir = state.sort==='dense' ? 1 : -1;
+    list.sort((a,b)=>{
+      const x=key(a), y=key(b);
+      if(x==null) return 1; if(y==null) return -1;
+      return dir*(y-x);
+    });
+  }
+  return list;
+}
+
+function renderList(){
+  const list = current();
+  const subjName = state.subj<0 ? '병의원' : S['이름'][state.subj];
+  document.getElementById('listTitle').textContent =
+    (state.sido||'전국') + ' · ' + subjName
+    + (state.subj<0 ? '' : ' · ' + BASIS[state.basis].label);
+  document.getElementById('listHint').textContent = list.length + '곳';
+  document.getElementById('listLead').textContent = state.subj<0
+    ? '막대는 인구 1만 명당 병의원 수. 전국 평균 '+natPer.toFixed(1)+'곳.'
+    : '막대는 인구 1만 명당 「'+subjName+'」 '+BASIS[state.basis].label+'. 전국 평균 '
+      + natPerOf(state.subj, state.basis).toFixed(2)+'곳.';
+  if(!list.some(r=>r.i===state.pick)) state.pick = list.length ? list[0].i : null;
+  const max = Math.max(...list.map(r=>metricOf(r).per||0), 0.0001);
+  const el = document.getElementById('rows');
+  el.innerHTML = list.map(r=>{
+    const m = metricOf(r);
+    const w = m.per==null ? 0 : Math.max(1.5, m.per/max*100);
+    const idx = (m.per==null||!m.base) ? null : m.per/m.base*100;
+    const over = idx!=null && idx>=100;
+    return `<button class="row" type="button" data-i="${r.i}"
+        aria-current="${state.pick===r.i}">
+      <span class="row-name">${r.sggu}<span>${r.sido}</span></span>
+      <span class="row-val num">${m.per==null?DASH:m.per.toFixed(state.subj<0?1:2)}</span>
+      <span class="row-sub num">
+        <span>인구 ${r.pop?man(r.pop)+'만':DASH}</span>
+        <span>${state.subj<0?'병의원':'기관'} ${fmt(m.n)}곳</span>
+        <span style="color:${idx==null?'var(--mute)':(over?'var(--over)':'var(--under)')}">
+          전국대비 ${idx==null?DASH:Math.round(idx)}</span>
+      </span>
+      <span class="bar"><i style="width:${w}%;background:${over?'var(--over)':'var(--p)'}"></i></span>
+    </button>`;
+  }).join('') || '<p class="note" style="padding:16px">찾는 지역이 없습니다.</p>';
+  el.querySelectorAll('.row').forEach(b=>b.addEventListener('click',()=>{
+    state.pick = +b.dataset.i; renderList(); renderDetail();
+  }));
+  renderDetail();
+}
+
+function renderDetail(){
+  const r = regions.find(x=>x.i===state.pick);
+  const el = document.getElementById('detail');
+  if(!r){ el.innerHTML='<p class="note">왼쪽에서 지역을 하나 고르세요.</p>'; return; }
+  const idx = r.per==null ? null : r.per/natPer*100;
+
+  const tiles = [
+    ['인구', r.pop==null?DASH:man(r.pop), r.pop==null?'':'만 명'],
+    ['병의원', fmt(r.n), '곳'],
+    ['인구 1만 명당', r.per==null?DASH:r.per.toFixed(1), '곳'],
+    ['1개소당 인구', r.pop&&r.n?fmt(Math.round(r.pop/r.n)):DASH, '명'],
+  ].map(([l,v,u])=>`<div class="tile"><b class="num">${v}${u?`<small> ${u}</small>`:''}</b>
+      <span>${l}</span></div>`).join('');
+
+  const meters = [
+    ['65세 이상', r.old, r.old==null?DASH:r.old+'%', r.old],
+    ['20~39세', r.young, r.young==null?DASH:r.young+'%', r.young],
+    ['여성 20~49세', r.w2049&&r.pop?r.w2049/r.pop*100:null,
+      r.w2049==null?DASH:fmt(r.w2049)+'명', r.w2049&&r.pop?r.w2049/r.pop*100:null],
+    ['1㎢당 병의원', r.perKm, r.perKm==null?DASH:r.perKm.toFixed(r.perKm<1?2:1)+'곳',
+      r.perKm==null?null:Math.min(100, r.perKm/40*100)],
+  ].map(([l,,txt,pct])=>`<div class="meter"><span class="mute">${l}</span>
+      <span class="track"><i style="width:${pct==null?0:Math.max(1,Math.min(100,pct))}%"></i></span>
+      <b class="num">${txt}</b></div>`).join('');
+
+  const buckets = BUCKETS.map(([name,keys,color])=>({
+    name, color, v: keys.reduce((s,k)=>s + (r.kinds[KINDS.indexOf(k)]||0), 0)
+  })).filter(b=>b.v>0);
+  const bt = buckets.reduce((s,b)=>s+b.v,0) || 1;
+  const stack = buckets.map(b=>`<i style="width:${b.v/bt*100}%;background:${b.color}"
+      title="${b.name} ${b.v.toLocaleString('ko-KR')}곳"></i>`).join('');
+  const legend = buckets.map(b=>`<span><i style="background:${b.color}"></i>${b.name}
+      <b class="num">${b.v.toLocaleString('ko-KR')}</b></span>`).join('');
+  const pubN = PUBLIC_KINDS.reduce((s,k)=>s + (r.kinds[KINDS.indexOf(k)]||0), 0);
+
+  const rowsSub = subjOf(r.i).map(([si,c,sc,sp])=>{
+    const v = BASIS[state.basis].pick(c, sc);
+    const per = r.pop ? v/r.pop*10000 : null;
+    const ix = per==null ? null : per/natPerOf(si, state.basis)*100;
+    return {name:S['이름'][si], c, sc, non:c-sc, sp, per, ix, si, v};
+  }).sort((a,b)=>b.v-a.v || b.c-a.c).slice(0,14);
+  const tbody = rowsSub.map(x=>{
+    const over = x.ix!=null && x.ix>=100;
+    const w = x.ix==null ? 0 : Math.min(50, Math.abs(x.ix-100)/100*50);
+    const dm = D[x.name];
+    return `<tr><td>${x.name}${dm?` <span class="mute" style="font-weight:400;font-size:11px">검색 ${dm}</span>`:''}</td>
+      <td class="num">${fmt(x.c)}</td>
+      <td class="num" style="color:var(--under)">${fmt(x.sc)}</td>
+      <td class="num" style="color:var(--over)">${fmt(x.non)}</td>
+      <td class="num">${x.per==null?DASH:x.per.toFixed(2)}</td>
+      <td><span class="idxcell"><span class="idxbar"><em style="${
+        over?`left:50%;width:${w}%;background:var(--over)`:`right:50%;width:${w}%;background:var(--under)`
+      }"></em></span><b class="num" style="color:${x.ix==null?'var(--mute)':(over?'var(--over)':'var(--under)')}">${
+        x.ix==null?DASH:Math.round(x.ix)}</b></span></td></tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="d-head"><span class="eyebrow">${r.sido}</span><h2>${r.sggu}</h2></div>
+    <p class="note">전국 평균을 100으로 보면 이 지역의 병의원 밀집도는
+      <b style="color:${idx==null?'var(--mute)':(idx>=100?'var(--over)':'var(--under)')}">${
+        idx==null?DASH:Math.round(idx)}</b>.
+      면적 ${r.area==null?DASH:r.area.toFixed(1)}㎢ · 의사 ${fmt(r.dr)}명.</p>
+    ${tiles ? `<div class="tiles">${tiles}</div>` : ''}
+    <div class="meters">${meters}</div>
+    <h3 class="sub">병원 종류</h3>
+    <div class="stack">${stack}</div>
+    <div class="legend num">${legend}</div>
+    ${pubN ? `<p class="note" style="margin-top:7px">보건소·보건지소·보건진료소는
+      위 숫자에서 빼고 따로 <b class="num">${pubN.toLocaleString('ko-KR')}곳</b>이 있다.</p>` : ''}
+    <h3 class="sub">이 지역 의원이 실제로 파는 것</h3>
+    <div class="mix">
+      <div class="mix-num"><b class="num">${r.clinics?r.mixp.toFixed(0):DASH}<small>%</small></b>
+        <span>의원 ${fmt(r.clinics)}곳 중 <b class="num">${fmt(r.mix)}곳</b>이
+          피부과·성형외과를 내걸었다</span></div>
+      <div class="mix-bar"><i style="width:${r.clinics?Math.min(100,r.mixp):0}%"></i></div>
+      <p class="note">전국 평균은 <b class="num">${(R['전국']['미용겸업']/R['전국']['의원']*100).toFixed(0)}%</b>
+        (의원 ${fmt(R['전국']['의원'])}곳 중 ${fmt(R['전국']['미용겸업'])}곳).
+        여기서 세는 것은 <b>그 과 전문의가 한 명도 없이</b> 피부·성형을 내건 의원이다 —
+        동네 내과·가정의학과·소아청소년과가 미용을 겸하는 자리다.
+        ${r.gen?`그중 <b class="num">${fmt(r.gen)}곳</b>은 의과전문의가 아예 없는 일반의 의원이다.`:''}</p>
+    </div>
+    <h3 class="sub">많이 내건 진료과목 14</h3>
+    <div class="wide"><table class="tbl">
+      <thead><tr><th>진료과목</th><th>내건 곳</th><th>전문의 있는 곳</th>
+        <th>전문의 없이</th><th>1만명당</th><th>전국대비</th></tr></thead>
+      <tbody>${tbody || '<tr><td colspan="6" class="mute">자료 없음</td></tr>'}</tbody>
+    </table></div>
+    <p class="note" style="margin-top:10px">「전국대비」는 전국 평균을 100으로 놓은 값이다.
+      100보다 크면 전국보다 <b style="color:var(--over)">빽빽</b>하고,
+      작으면 <b style="color:var(--under)">헐겁다</b>.
+      「검색 nn」은 전국 검색 수요(피부과=100)다.</p>`;
+}
+
+// ── 조작 ──
+elSido.addEventListener('change', e=>{state.sido=e.target.value; state.pick=null; renderList();});
+document.getElementById('fSubject').addEventListener('change', e=>{
+  state.subj=+e.target.value; renderList(); renderDetail();});
+document.getElementById('fPop').addEventListener('change', e=>{
+  state.minPop=+e.target.value; state.pick=null; renderList();});
+let t; document.getElementById('fQ').addEventListener('input', e=>{
+  clearTimeout(t); t=setTimeout(()=>{state.q=e.target.value.trim(); state.pick=null; renderList();},150);});
+document.getElementById('fBasis').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.basis=b.dataset.basis;
+  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+  renderList();});
+document.getElementById('fSort').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  state.sort=b.dataset.sort;
+  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+  renderList();});
+
+renderList();
+})();
+</script>
