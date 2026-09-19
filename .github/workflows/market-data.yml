@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-places'
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places'
         required: true
         default: 'probe'
       max_calls:
@@ -24,6 +24,14 @@ on:
         description: '지도 검색어(쉼표) · kakao-probe 일 때는 네모 x1,y1,x2,y2'
         required: false
         default: ''
+      subject:
+        description: 'kakao-word 일 때 훑을 낱말(예: 한의원)'
+        required: false
+        default: ''
+      part:
+        description: '판 이름 — 판마다 제 파일에 쓴다(kakao_<판>.jsonl)'
+        required: false
+        default: ''
       branch:
         description: '커밋할 브랜치'
         required: false
@@ -32,8 +40,9 @@ on:
 permissions:
   contents: write
 
+# 판마다 다른 이름을 주어 «동시에» 돌린다. 각 판이 제 파일에 쓰므로 서로 밟지 않는다.
 concurrency:
-  group: market-data
+  group: market-data-${{ github.event.inputs.stage }}-${{ github.event.inputs.part }}
   cancel-in-progress: false
 
 jobs:
@@ -65,11 +74,16 @@ jobs:
           STAGE: ${{ github.event.inputs.stage }}
           MAXC: ${{ github.event.inputs.max_calls }}
           TERMS: ${{ github.event.inputs.terms }}
+          PART: ${{ github.event.inputs.part }}
+          SUBJ: ${{ github.event.inputs.subject }}
         run: |
           set -e
           case "$STAGE" in
             portal-file) python3 tools/market-data/portal_file.py ;;
-            kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" ;;
+            kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" \
+                           ${PART:+--out "kakao_$PART.jsonl"} ;;
+            kakao-word)  python3 tools/market-data/kakao_places.py --probe "$TERMS" \
+                           --query "$SUBJ" ${PART:+--out "kakao_$PART.jsonl"} ;;
             kakao-places) python3 tools/market-data/kakao_places.py ;;
             map-naver) python3 tools/market-data/map_collect.py --source naver --limit "$MAXC" --terms "$TERMS" ;;
             map-kakao) python3 tools/market-data/map_collect.py --source kakao --limit "$MAXC" --terms "$TERMS" ;;
