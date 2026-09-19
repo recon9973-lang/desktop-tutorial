@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file'
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-places'
         required: true
         default: 'probe'
       max_calls:
@@ -21,7 +21,7 @@ on:
         required: false
         default: '8000'
       terms:
-        description: '지도 검색어(쉼표) · 비우면 기본 16개 과목'
+        description: '지도 검색어(쉼표) · kakao-probe 일 때는 네모 x1,y1,x2,y2'
         required: false
         default: ''
       branch:
@@ -69,6 +69,8 @@ jobs:
           set -e
           case "$STAGE" in
             portal-file) python3 tools/market-data/portal_file.py ;;
+            kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" ;;
+            kakao-places) python3 tools/market-data/kakao_places.py ;;
             map-naver) python3 tools/market-data/map_collect.py --source naver --limit "$MAXC" --terms "$TERMS" ;;
             map-kakao) python3 tools/market-data/map_collect.py --source kakao --limit "$MAXC" --terms "$TERMS" ;;
             map-both)  python3 tools/market-data/map_collect.py --source both  --limit "$MAXC" --terms "$TERMS" ;;
