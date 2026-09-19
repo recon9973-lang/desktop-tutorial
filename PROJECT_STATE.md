@@ -4,17 +4,17 @@
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
 - **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
-- **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
+- **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 13개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
-- 2026-09-18 data: 지역별 병의원 상권 원자료 수집기 + 인구표 (#265)
+- 2026-09-19 chore(medi_law): 개인 보험 서류 2건 삭제 — 신한라이프 가입 동의서
+- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-19 fix: 러너가 밀어 넣을 때 거절되면 얹고 다시 민다 (#275)
+- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-19 feat: 카카오 지도 병원 훑기 단계 추가 + 상권 자료·화면 (#274)
+- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
+- 2026-09-19 docs(자동 진단 방): 인계에서 「요금제」를 빼고 틀린 항목을 고친다
 - 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-18 docs: 도는 판 실측 0.3.604 · 안 실린 커밋 하나를 인계에 적는다
-- 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-18 docs: 상권 네비 방 기록을 B·C 등급까지 반영해 갱신한다 (#264)
-- 2026-09-18 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-17 체크포인트 s27 (오류 상세 방) — 재 본 자리 탭·승격(0.3.602) · 배포 상한 해제(0.3.604)
-- 2026-09-17 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 9bae986 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 8eea373 기준. 값·비밀은 포함하지 않음.*

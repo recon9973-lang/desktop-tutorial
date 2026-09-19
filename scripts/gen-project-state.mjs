@@ -67,7 +67,18 @@ const grepEnv = sh(`grep -rhoE "process\\.env\\.[A-Z0-9_]+" --include=*.js --inc
 grepEnv.split("\n").forEach((l) => { const m = l.match(/process\.env\.([A-Z0-9_]+)/); if (m) envNames.add(m[1]); });
 
 // ── 알려진 이슈/이어갈 작업 (있으면 포함) ──
-const resume = exists("RESUME.md") ? "있음 → `RESUME.md` 참조" : "없음";
+// 인계는 방마다 따로다(`RESUME-<방>.md`). 지금 가지에 맞는 것이 있으면 그것을 가리킨다.
+// 폴더를 직접 읽는다 — `ls RESUME.md …` 는 그 이름이 없으면 통째로 실패해 「없음」이 된다.
+const resumeFiles = fs.readdirSync(ROOT).filter((f) => /^RESUME(-.+)?\.md$/.test(f)).sort();
+const mine = resumeFiles.find((f) => {
+  try { return fs.readFileSync(f, "utf8").split("\n").slice(0, 20).join("\n").includes(`<!-- 가지: ${branch} -->`); }
+  catch { return false; }
+});
+const resume = mine
+  ? `이 방 것 → \`${mine}\` (가지 표시로 짝지음) · 전체 ${resumeFiles.length}개`
+  : resumeFiles.length
+    ? `이 가지(\`${branch}\`)에 짝이 없다 — 인계 ${resumeFiles.length}개 중 제 것을 찾아 «<!-- 가지: ${branch} -->» 를 한 줄 달아라`
+    : "없음";
 
 // ── 출력 ──
 const cap = (arr, n) => arr.length > n ? arr.slice(0, n).concat([`…(+${arr.length - n})`]) : arr;
