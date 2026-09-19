@@ -250,6 +250,8 @@ def main() -> int:
         p = pop_of(k)
         n, pop_n = h["의료기관"], (p["인구"] if p else 0)
         row = {"시도": k[0], "시군구": k[1],
+               "시군구_정식": matched[k][1] if k in matched else
+                              (merged[k][0][1].split()[0] if k in merged else k[1]),
                "시군구_묶음": rollup(matched[k][1]) if k in matched else k[1],
                "인구": pop_n or DASH,
                "남": p["남"] if p else DASH, "여": p["여"] if p else DASH,
