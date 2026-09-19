@@ -18,7 +18,8 @@ import argparse, json, os, pathlib, time, urllib.parse, urllib.request
 
 OUT = pathlib.Path("data/market/raw")
 KEY = os.environ.get("KAKAO_REST_API_KEY", "").strip()
-API = "https://dapi.kakao.com/v2/local/search/category.json"
+API_CAT = "https://dapi.kakao.com/v2/local/search/category.json"
+API_KEY_ = "https://dapi.kakao.com/v2/local/search/keyword.json"
 PAGE_MAX, SIZE = 3, 15          # 카카오가 한 네모에 주는 최대 = 45곳
 KOREA = (124.5, 32.9, 132.1, 38.7)   # 좌하 x,y · 우상 x,y
 calls = 0
@@ -26,7 +27,8 @@ calls = 0
 
 def get(params: dict, tries: int = 4):
     global calls
-    url = API + "?" + urllib.parse.urlencode(params)
+    base = API_KEY_ if "query" in params else API_CAT
+    url = base + "?" + urllib.parse.urlencode(params)
     for i in range(tries):
         try:
             calls += 1
@@ -50,9 +52,21 @@ def rect(b) -> str:
     return f"{b[0]:.6f},{b[1]:.6f},{b[2]:.6f},{b[3]:.6f}"
 
 
+QUERY = ""   # 비우면 병원 분류(HP8)로 훑고, 채우면 그 낱말로 훑는다(한의원 등).
+
+
+def _params(box, size, page):
+    p = {"rect": rect(box), "size": size, "page": page}
+    if QUERY:
+        p["query"] = QUERY
+    else:
+        p["category_group_code"] = "HP8"
+    return p
+
+
 def sweep(box, out, seen, depth=0, max_depth=14, log=None):
     """네모 하나를 훑는다. 45곳을 넘으면 넷으로 쪼갠다."""
-    d = get({"category_group_code": "HP8", "rect": rect(box), "size": 1, "page": 1})
+    d = get(_params(box, 1, 1))
     if "_error" in d:
         (log or print)(f"  실패 {rect(box)} {d['_error']}")
         return
@@ -66,7 +80,7 @@ def sweep(box, out, seen, depth=0, max_depth=14, log=None):
             sweep(q, out, seen, depth + 1, max_depth, log)
         return
     for page in range(1, PAGE_MAX + 1):
-        d = get({"category_group_code": "HP8", "rect": rect(box), "size": SIZE, "page": page})
+        d = get(_params(box, SIZE, page))
         if "_error" in d:
             break
         for it in d.get("documents", []):
@@ -89,11 +103,16 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--probe", default="", help="시험할 네모 «x1,y1,x2,y2» (비우면 전국)")
     ap.add_argument("--max-depth", type=int, default=14)
+    ap.add_argument("--query", default="", help="낱말로 훑기(한의원 등). 비우면 병원 분류로 훑는다")
+    ap.add_argument("--out", default="", help="나갈 파일 이름(비우면 자동)")
     a = ap.parse_args()
     if not KEY:
         print("KAKAO_REST_API_KEY 없음 — 중단(지어내지 않는다)"); return 2
     OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / ("kakao_probe.jsonl" if a.probe else "kakao_places.jsonl")
+    global QUERY
+    QUERY = a.query.strip()
+    path = OUT / (a.out or (f"kakao_{QUERY}.jsonl" if QUERY else
+                            ("kakao_probe.jsonl" if a.probe else "kakao_places.jsonl")))
     seen = set()
     if path.exists():
         for line in path.open(encoding="utf-8"):
