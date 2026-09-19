@@ -96,6 +96,12 @@ jobs:
             echo "바뀐 것이 없다"; exit 0
           fi
           git commit -m "data: 상권 원자료 수집 ($STAGE)"
+          # 훑는 동안 사람이 같은 가지에 커밋하면 밀어 넣기가 거절된다(한 번 당했다).
+          # 거절되면 가지 끝을 받아 그 위에 얹고 다시 민다 — 받아 온 자료를 잃지 않는다.
           for i in 1 2 3 4; do
-            git push origin "HEAD:$BR" && break || sleep $((2**i))
+            if git push origin "HEAD:$BR"; then exit 0; fi
+            git fetch origin "$BR" && git rebase "origin/$BR" || git rebase --abort
+            sleep $((2**i))
           done
+          echo "::error::밀어 넣기 실패 — 받아 온 자료가 러너에만 있다"
+          exit 1
