@@ -1,4 +1,4 @@
-# RESUME — 입지 피라미드·상권 칸 방 (2026-09-20 22:00 KST)
+# RESUME — 입지 피라미드·상권 칸 방 (2026-09-20 22:15 KST · **인계 끝 · 이 방 할 일 없음**)
 
 <!-- 가지: claude/wonderful-pascal-my56sw -->
 
@@ -13,12 +13,13 @@
 - 이 방에서 `make deploy` 두 번: ① 시험 DB 꺼져 실패 ② 점검·CI 초록인데 [4/5] 에서 main 이 움직여 거절. 그 뒤 main 에 **배포 방 관문**(`scripts/deploy_room_gate.sh` · `git config veo.deploy-room=anseo` 아니면 거부)이 들어와 이 방은 이제 `make deploy` 를 못 돌린다.
 
 ## 바로 이어갈 작업
-1. 사장님 답을 본다 — (가) ANSEO 방에 「인계」(기본 · 대기 표에 가지 적힌 줄 있음) / (나) 사장님이 이 방을 배포 방으로 정하시면 그때만 `git config veo.deploy-room anseo` 넣고 `VEO_DEPLOY_ORDER="<원문>" VEO_TEST_DATABASE_URL=postgresql+psycopg://root:root@localhost:5432/veo_test make deploy`.
+0. **사장님 답 = «인계»(22:1x).** 인계문 `docs/HANDOFF-2026-09-20-store-bars.md`(veo-platform · 가지 머리 `1a77704c`) 를 남겼다. ANSEO 방이 합쳐 낸다. 이 방은 새 지시가 올 때까지 할 일이 없다 — 새 지시면 먼저 main 이 상권 칸 고침(`e669f24a`)을 품었는지 본다.
+1. (참고 · 끝난 갈래) 사장님 답을 본다 — (가) ANSEO 방에 「인계」(기본 · 대기 표에 가지 적힌 줄 있음) / (나) 사장님이 이 방을 배포 방으로 정하시면 그때만 `git config veo.deploy-room anseo` 넣고 `VEO_DEPLOY_ORDER="<원문>" VEO_TEST_DATABASE_URL=postgresql+psycopg://root:root@localhost:5432/veo_test make deploy`.
 2. 배포 전 `git fetch origin main && git merge origin/main` — main 이 움직였으면 판이 또 밀린다(변경이력 맨 위 내 항목의 번호·`__init__`·`openapi`·대기 표·HISTORY 제목을 main+1 로).
 3. 배포 뒤 사장님 화면 확인 부탁: 「입지」 탭 → 「상권」 칸 업종 막대 줄 간격 같은가 · 「사는 사람」 두 피라미드 높이 같은가.
 
 ## 대기/차단
-- **사장님 결정**: 이 방이 배포하나, ANSEO 방에 넘기나(관문이 이 방을 막는다).
+- ~~사장님 결정~~ → «인계»로 정해짐. ANSEO 방이 낼 때까지 미배포.
 - 원격 가지에 낡은 판 물림 커밋 `de377bce` 이력이 남아 있다(코드는 0.3.635 로 나감). 강제 밀기는 허가 장치가 막음 · 해 없음.
 
 ## 주의·제약
