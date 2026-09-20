@@ -16,3 +16,12 @@
 - 판 물림은 배포 전에 `__init__.py`·`openapi.json`·`changelog.ts` 셋을 같은 값으로 미리 맞춰야 점검 vitest 관문(changelog 유일성)이 산다.
 - 로컬 Postgres 16 이 세션 중 한 번 죽었다(`pg_ctlcluster 16 main start` 로 복구 · 역할 root/root · DB veo_test).
 - ANSEO 방이 21:5x 에 `scripts/deploy_room_gate.sh`(git config `veo.deploy-room=anseo` 아니면 거부)를 넣었다. 우회 금지가 관문 문구에 있다.
+
+## 이어진 지시 (23:xx)
+| # | 지시 | 결과 |
+|---|---|---|
+| 7 | 인계 | 인계문 `HANDOFF-2026-09-20-store-bars.md` · STATE ① |
+| 8 | 인계를 보내라 그 방으로 / 못 보내면 어떻게 | 방끼리 직접 못 부름(ANSEO 방은 사장님 컴퓨터 세션). 대기 줄·인계문이 **작업 가지에만** 있어 그 방이 못 봤음을 발견 |
+| 9 | ANSEO 가 찾을 수 있게만 조치 | 문서만 PR #17 로 main 에(대기 줄 · STATE ① · 인계문) → ANSEO 방이 22:42 에 0.3.639 로 냄 |
+| 10 | 그대로야 안 바뀌었어 | 사장님 화면 확대 → 상권 칸·피라미드 둘 다 바뀐 상태. 남은 건 왼쪽 피라미드 표 아래 빈 자리(오른쪽 설명 줄 탓) |
+| 11 | 남은 작업 확인 → 1번 문서 고쳐 · 2·3번 오케이 | 대장·STATE 「0.3.639 나감」 PR #20 로 main 에. 빈 자리·낡은 이력은 그대로 |

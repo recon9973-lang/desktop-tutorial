@@ -1,4 +1,4 @@
-# RESUME — 입지 피라미드·상권 칸 방 (2026-09-20 23:20 KST · **둘 다 나감 · 이 방 할 일 없음**)
+# RESUME — 입지 피라미드·상권 칸 방 (2026-09-20 23:40 KST · **전부 끝 · 닫힘. 다 나갔다**)
 
 <!-- 가지: claude/wonderful-pascal-my56sw -->
 
@@ -13,7 +13,7 @@
 - 이 방에서 `make deploy` 두 번: ① 시험 DB 꺼져 실패 ② 점검·CI 초록인데 [4/5] 에서 main 이 움직여 거절. 그 뒤 main 에 **배포 방 관문**(`scripts/deploy_room_gate.sh` · `git config veo.deploy-room=anseo` 아니면 거부)이 들어와 이 방은 이제 `make deploy` 를 못 돌린다.
 
 ## 바로 이어갈 작업
-0. **끝.** 상권 칸 고침이 0.3.639 로 main 에 닿았다(22:42). 새 지시가 올 때까지 할 일 없음. (기록) 사장님 답 = «인계»(22:1x). 인계문 `docs/HANDOFF-2026-09-20-store-bars.md`(veo-platform · 가지 머리 `1a77704c`) 를 남겼다. ANSEO 방이 합쳐 낸다. 이 방은 새 지시가 올 때까지 할 일이 없다 — 새 지시면 먼저 main 이 상권 칸 고침(`e669f24a`)을 품었는지 본다.
+0. **전부 끝.** 상권 칸 고침 0.3.639 나감(22:42 · 사장님 화면으로 확인 23:1x). 대장·STATE 「0.3.639 나감」도 main 에 올림(PR #20 · 사장님 «1번 문서 니가 고쳐»). 왼쪽 피라미드 표 아래 빈 자리 · 원격 가지 낡은 이력은 사장님 «오케이»(그대로). 새 지시가 올 때까지 할 일 없음. (기록) 사장님 답 = «인계»(22:1x). 인계문 `docs/HANDOFF-2026-09-20-store-bars.md`(veo-platform · 가지 머리 `1a77704c`) 를 남겼다. ANSEO 방이 합쳐 낸다. 이 방은 새 지시가 올 때까지 할 일이 없다 — 새 지시면 먼저 main 이 상권 칸 고침(`e669f24a`)을 품었는지 본다.
 1. (참고 · 끝난 갈래) 사장님 답을 본다 — (가) ANSEO 방에 「인계」(기본 · 대기 표에 가지 적힌 줄 있음) / (나) 사장님이 이 방을 배포 방으로 정하시면 그때만 `git config veo.deploy-room anseo` 넣고 `VEO_DEPLOY_ORDER="<원문>" VEO_TEST_DATABASE_URL=postgresql+psycopg://root:root@localhost:5432/veo_test make deploy`.
 2. 배포 전 `git fetch origin main && git merge origin/main` — main 이 움직였으면 판이 또 밀린다(변경이력 맨 위 내 항목의 번호·`__init__`·`openapi`·대기 표·HISTORY 제목을 main+1 로).
 3. 배포 뒤 사장님 화면 확인 부탁: 「입지」 탭 → 「상권」 칸 업종 막대 줄 간격 같은가 · 「사는 사람」 두 피라미드 높이 같은가.
