@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 이 방 것 → `RESUME-same-subject.md` (가지 표시로 짝지음) · 전체 14개
 
 ## 최근 커밋 (8)
+- 2026-09-19 docs(checkpoint): 같은 과 방 — 세션 기록 · 인계본 · PROJECT_STATE
 - 2026-09-19 docs(anseo): 상권 탭 이름이 「입지」로 남아 있던 줄 고침
 - 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-19 docs(자동 진단 방): 0.3.618 로 들어갔다 — 접은 까닭과 0.3.614 도장
@@ -14,7 +15,6 @@
 - 2026-09-19 feat: 카카오 훑기를 판으로 나눠 동시에 돌린다 (#276)
 - 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-19 chore(medi_law): 개인 보험 서류 2건 삭제 — 신한라이프 가입 동의서
-- 2026-09-19 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 e65f9e9 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 8efa11d 기준. 값·비밀은 포함하지 않음.*
