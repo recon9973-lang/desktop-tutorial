@@ -7,7 +7,7 @@
 서버·웹을 고쳐 커밋했다. 배포는 ANSEO 방 몫이라 인계 대기.**
 
 ## 어디에 무엇이 있나
-- 코드: `veo-platform` 가지 **`claude/noindex-accept-in-issues`** · 판 **0.3.647**(잠정 · `claim_version` 넷째 상태)
+- 코드: `veo-platform` 가지 **`claude/noindex-accept-in-issues`** · 커밋 `011f4a73`(origin 에 올림) · 판 **0.3.647**(잠정 · `claim_version` 넷째 상태)
 - 인계 문서: `veo-platform/docs/HANDOFF-2026-09-22-noindex-issues-to-anseo.md` · 대장 §2 대기 표 0.3.647 줄 · 날짜별 기록 맨 위
 - 이 저장소: `docs/session-logs/2026-09-22-noindex-issues.md`(점검 기록) ·
   noindex 인정 방 것 둘(`RESUME-noindex-accept.md` · `docs/2026-09-21-noindex-인정-연구보고.md`)을 그 방 가지에서
@@ -30,7 +30,7 @@
   마지막 회차의 걸린 주소 전부 · 다시 진단 끝나면 상태 표 간선을 밟아 그 회차로 판정 — **판정은 서버가**) · 영향 URL·검사 관측 줄에
   「일부러 뺀 것으로 지정됨(감점 없음)」 · `NoindexExclusions` `onRescanned` · `NOINDEX_CHECK_IDS` 한 곳.
 - 관문 [실측 2026-09-22 · 이 방]: API pytest 96 건(관련) + 대장 관문 · 웹 `tsc` 0 · `eslint` 0 · 대장·판·화면 글 길이 관문 통과 ·
-  전체 vitest·`next build` 건수는 인계 문서 §3-1.
+  전체 vitest 339 파일·2,882 건 · `next build` 통과 · API 전체 6,690 건(DB 시험 1,432 건너뜀) 통과.
 
 ## 남은 것
 - **ANSEO 방** — 인계 받아 `make deploy`(받는 법은 인계 문서 §1). 그 사이 main 이 0.3.647 에 닿았으면 세 자리 번호를 옮긴다.
