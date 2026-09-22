@@ -4,17 +4,17 @@
 > **새 세션은 이 파일부터 읽어 재탐색 토큰을 아낀다.**
 
 - **저장소**: desktop-tutorial  ·  **현재 브랜치**: main  ·  **기본 브랜치**: main
-- **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 14개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
+- **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 16개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
+- 2026-09-22 noindex 이슈 방 — ANSEO noindex 조치 점검 기록·인계본 (+ 인정 방 연구보고서·인계본 main 반영) (#279)
+- 2026-09-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-22 docs: SEO·GEO·AEO 통합 강의자료(2026-09) 추가 (#278)
 - 2026-09-21 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-21 chore(chatbot): LLM-as-Judge 품질 채점 리포트
 - 2026-09-20 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-20 Merge pull request #277 from recon9973-lang/claude/confident-archimedes-f2eegb
 - 2026-09-20 Merge remote-tracking branch 'origin/main' into claude/confident-archimedes-f2eegb
-- 2026-09-20 네이버 길이 열렸다 — 인계본을 「대조」에서 「붙이기」로 넘긴다
-- 2026-09-20 체크포인트 — 지도 순위 방 오더 31건 · Apify 를 아홉 번 재다
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 4f5a4e5 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 de83097 기준. 값·비밀은 포함하지 않음.*
