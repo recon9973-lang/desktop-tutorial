@@ -1,0 +1,39 @@
+<!-- 가지: claude/beautiful-heisenberg-szdc5b -->
+# RESUME (noindex 이슈 방) — 2026-09-22 · 오더 3건 · **ANSEO 방에 인계 대기**
+
+## 한 줄
+사장님 «ANSEO noindex 처리 조치 사항 점검» → «noindex 는 예전처럼 표시하고 별도로 체크하면 정상으로 …
+이슈 탭에 아직 noindex 가 있어. 나머지 점검 항목도 처리해» → **원인 둘을 찾아 ANSEO(`veo-platform`)에
+서버·웹을 고쳐 커밋했다. 배포는 ANSEO 방 몫이라 인계 대기.**
+
+## 어디에 무엇이 있나
+- 코드: `veo-platform` 가지 **`claude/noindex-accept-in-issues`** · 판 **0.3.647**(잠정 · `claim_version` 넷째 상태)
+- 인계 문서: `veo-platform/docs/HANDOFF-2026-09-22-noindex-issues-to-anseo.md` · 대장 §2 대기 표 0.3.647 줄 · 날짜별 기록 맨 위
+- 이 저장소: `docs/session-logs/2026-09-22-noindex-issues.md`(점검 기록) ·
+  noindex 인정 방 것 둘(`RESUME-noindex-accept.md` · `docs/2026-09-21-noindex-인정-연구보고.md`)을 그 방 가지에서
+  가져와 main 에 실었다(인계 문서가 가리키는데 main 에 없었다 — 남의 인계본은 안 고쳤다, 옮기기만).
+
+## 점검에서 나온 것 (코드로 확인 · 실제 화면은 이 방이 못 봄 — 운영 주소 egress 403)
+1. 인정 기능은 0.3.646 으로 **배포돼 있었다**(2026-09-22 14:22 KST 러너 실측 · veo-platform `docs/STATE.md`). 결과 화면에만.
+2. **이슈 탭에 noindex 가 남은 까닭 둘** — ① 이슈 목록·상세에 지정 자리가 없다 ② **지정 → 재진단을 해도 이슈는 안 닫힌다**:
+   이슈를 닫는 길은 「표적 진단 확인」뿐인데(`issues/lifecycle.py`), 인정된 주소가 다음 진단의 `evaluated_urls` 에서 빠져
+   `derive_outcome` 이 「재지 않았다 → 판정 불가」로 끝난다(`issues/verification.py:184`). GEO 는 주소별 해당 없음 → 판정 불가.
+   **인정을 해도 이슈는 영영 열려 있었다.**
+3. 노트 — 사이트 전체 진단의 `_upsert_issues`(`seo/history.py`)는 이번 회차에 걸린 지적만 갱신하고 사라진 지적은 안 건드린다.
+   이것은 설계(「이슈는 진단이 닫는다 = 표적 진단」)라 바꾸지 않았다. 대신 이슈 화면이 그 길을 대신 밟게 했다.
+
+## 한 것 (veo-platform · 서버 4 · 웹 5 · 점수·계약·명세 무변화)
+- 서버: `crawl_indexability._meta_indexable` — 인정 페이지를 `evaluated`(무게 0)·관측값(`intentional_noindex: true`)에 남기고 감점 목록에서만 뺀다
+  · `access_eligibility._indexable_outcome` 해당 없음에 같은 표시 · `issues/verification.py` 표시 있는 해당 없음만 **해결**(표시 없으면 예전대로 판정 불가 ·
+  지정 안 한 FAIL 섞이면 여전히 문제) · `issues/service._measurements_for` 가 `observed_value` 에서 읽음 · 열쇠 이름은 `seo/noindex.py` 한 곳.
+- 웹: `IssueCard` noindex 줄에 「→ 일부러 뺀 페이지로 지정하기」(전체 이슈·거래처 이슈 탭) · 이슈 상세 `IssueNoindexAccept`(주소마다 체크 상자 ·
+  마지막 회차의 걸린 주소 전부 · 다시 진단 끝나면 상태 표 간선을 밟아 그 회차로 판정 — **판정은 서버가**) · 영향 URL·검사 관측 줄에
+  「일부러 뺀 것으로 지정됨(감점 없음)」 · `NoindexExclusions` `onRescanned` · `NOINDEX_CHECK_IDS` 한 곳.
+- 관문 [실측 2026-09-22 · 이 방]: API pytest 96 건(관련) + 대장 관문 · 웹 `tsc` 0 · `eslint` 0 · 대장·판·화면 글 길이 관문 통과 ·
+  전체 vitest·`next build` 건수는 인계 문서 §3-1.
+
+## 남은 것
+- **ANSEO 방** — 인계 받아 `make deploy`(받는 법은 인계 문서 §1). 그 사이 main 이 0.3.647 에 닿았으면 세 자리 번호를 옮긴다.
+- **사장님** — 배포 뒤 인계 문서 §4 다섯 가지를 화면에서 확인. 끝에서 끝(지정 → 재진단 → 이슈 닫힘)은 운영에서만 확인된다.
+- **옛 남은 것 하나(검수 방 s24~)** — GEO 1.9.0 관문이 실제 거래처 화면에서 0.000 을 찍는지 아직 아무도 못 봤다. 막힌 거래처 진단 한 번.
+- 이 방은 `make deploy` 를 돌리지 않는다. 「미는·푸시」 낱말 금지(veo-platform STATE.md).
