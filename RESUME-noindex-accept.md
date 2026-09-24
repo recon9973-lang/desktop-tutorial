@@ -20,8 +20,8 @@ ANSEO(`veo-platform`)에 만들어 인계 → ③ «ANSEO 방으로 인계해서
 ## 2026-09-24 · 오더 ④⑤
 - ④ «화면 니가 확인해» → 운영은 러너 「도는 판 확인」으로 **0.3.653**(웹·서버·워커) 실측. 화면은 `veo-platform/apps/web/test/smoke/shoot.mjs`
   (가짜 진단 서버 + noindex 4개 표본)로 main 코드를 띄워 찍음 — 넷 다 살아 있음. 찍는 법: `SHOOT_FIXTURE`·`PLAYWRIGHT_MODULE`(playwright 1.56.1 · 브라우저 `/opt/pw-browsers`).
-- ⑤ «풀기를 해제 되돌리기로 바꿔» → **가지 `claude/fervent-fermat-ahf55p-wording`** · 커밋 `6b239e7f` · 잠정 판 **0.3.654** · 인계
-  `veo-platform/docs/HANDOFF-2026-09-24-noindex-wording-to-anseo.md` · 대장 §2 0.3.654 줄. **배포는 ANSEO 방 몫 — 인계 대기.**
+- ⑤ «풀기를 해제 되돌리기로 바꿔» → **가지 `claude/fervent-fermat-ahf55p-wording`** · 커밋 `30d25c3c`(main 0.3.654 합침) · 잠정 판 **0.3.655** · 인계
+  `veo-platform/docs/HANDOFF-2026-09-24-noindex-wording-to-anseo.md` · 대장 §2 0.3.655 줄. **배포는 ANSEO 방 몫 — 인계 대기.** 사장님 «ANSEO 방으로 인계해서 배포해»(09-24 두 번째) — 방끼리 부르는 길이 없어 사장님이 ANSEO 방에 「인계 왔어」 한 줄을 전하셔야 나간다.
 
 ## 이 저장소
 - 보고서 `docs/2026-09-21-noindex-인정-연구보고.md` 와 이 인계본은 noindex 이슈 방의 #279 로 main 에
