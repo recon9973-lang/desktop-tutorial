@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 이 방 것 → `RESUME-same-subject.md` (가지 표시로 짝지음) · 전체 14개
 
 ## 최근 커밋 (8)
+- 2026-09-23 docs(same-subject): 0.3.650 은 0.3.652 로 나갔다 — 인계할 것 없음
 - 2026-09-22 docs(same-subject): 남은 것 — 셋은 「안 한다」로 정해졌고 하나를 만들었다 (0.3.650)
 - 2026-09-22 docs(same-subject): 이 일감은 닫혔다 — 넘길 것이 없다 · 경쟁 목록 43→21→15
 - 2026-09-21 docs(same-subject): 체크포인트 — 0.3.641 나감 · 0.3.643 인계 · 남은 것은 코드 바깥
@@ -14,7 +15,6 @@
 - 2026-09-20 docs(same-subject): 사장님 화면이 잡은 결함 — 만들어 놓고 연결을 안 했다 (0.3.640)
 - 2026-09-20 docs(same-subject): 0.3.639 배포 인계 — 세션 기록 · 방 인계본 갱신
 - 2026-09-19 docs(checkpoint): 같은 과 방 — 세션 기록 · 인계본 · PROJECT_STATE
-- 2026-09-19 docs(anseo): 상권 탭 이름이 「입지」로 남아 있던 줄 고침
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 c4dda0e 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 b55fb74 기준. 값·비밀은 포함하지 않음.*
