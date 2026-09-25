@@ -1,17 +1,20 @@
 <!-- 가지: claude/image-design-workflow-analysis-efuea7 -->
-# RESUME (ANSEO 콘솔 이식 방) — 2026-09-24 확인 · **낸 것은 전부 나갔다**
+# RESUME (ANSEO 콘솔 이식 방) — 2026-09-25 · **배포 대기 1건**(ANSEO 방에 인계함)
 
 ## 한 줄
 
-정본(Lovable) 화면을 ANSEO 콘솔로 이식하던 방. 그 일은 끝났고, 뒤이어 **배포 기계의
-판 번호 문제**를 잡아 처방 넷을 냈다. [실측 2026-09-24 01:11 KST] **이 방이 넣은 것이
-전부 main(0.3.652)에 살아 있고 실제로 돌고 있다.** 이 방에 **밀린 일감은 없다.**
+정본(Lovable) 화면을 ANSEO 콘솔로 이식하던 방. 그 일은 끝났고, 배포 기계의 판 번호
+문제를 잡아 처방 넷을 냈다(전부 나갔고 실물에서 돈다 — [실측 2026-09-24]).
+마지막으로 **공유 링크 화면을 대조해 결함 하나를 찾아 고쳤다** — 그 판 하나가
+**ANSEO 방에 인계된 채 배포 대기**다.
 
 ## 어디에 무엇이 있나
 
 ```
-veo-platform      가지 claude/anseo-console-port → **지워졌다**(내용은 main 에 들어갔다)
-desktop-tutorial  가지 claude/image-design-workflow-analysis-efuea7  ← 이 방 문서가 여기 있다
+veo-platform      claude/shared-report-table-wraps  ← **배포 대기** (커밋 650d403)
+                  claude/anseo-console-port → 지워졌다(내용은 main 에 들어갔다)
+desktop-tutorial  claude/image-design-workflow-analysis-efuea7
+                  이 방 문서는 main 에도 실려 있다
 ```
 
 ## ⚠️ 먼저 알 것 — 배포가 ANSEO 방으로 잠겼다 (2026-09-20)
@@ -54,10 +57,16 @@ desktop-tutorial  가지 claude/image-design-workflow-analysis-efuea7  ← 이 �
 
 ## 바로 이어갈 작업
 
-사장님 오더가 없으면 **강제로 이어갈 일은 없다.** 남은 것:
+1. **배포 대기 1건 — ANSEO 방이 낼 차례다.** 이 방은 할 일이 없다.
+   - 가지 `claude/shared-report-table-wraps` · 인계문
+     `veo-platform/docs/HANDOFF-2026-09-25-shared-report-table-to-anseo.md`
+   - 나간 뒤 **눈으로 볼 자리**: 발행본 화면 → 공유 링크 → 그 주소(`/shared/reports/{토큰}`)
+     맨 아래 「별지」의 **「근거 목록」 표에 칸이 여섯 개**면 된 것이다.
+   - ⚠️ **판 번호에 갈림길이 있다** — 인계문 §3. [실측 2026-09-25] main 이 0.3.655 로
+     갔는데 그 가지가 적어 둔 번호와 같다. **합치지 않고 그대로 내면** `[1/4]` 이
+     0.3.656 으로 물려 문제가 없다. main 을 먼저 합치면 변경이력 중복 관문에 걸린다.
 
-1. **후속 정리** — 캡처 계정 `capture@anseo.local` 삭제 · 조직 이름이 실제로 「LOOPEO」인지 운영 확인
-2. **공유 링크 화면**(`/results/<token>` · `SharedReport.tsx`) 대조 — 대조 3차에서 유일하게 안 훑은 화면
+2. **후속 정리** — 캡처 계정 `capture@anseo.local` 삭제 · 조직 이름이 실제로 「LOOPEO」인지 운영 확인
 
 ## 판 번호 — 이 방이 하루에 열 번 부딪히고 배운 것
 
@@ -94,6 +103,9 @@ curl -fsS https://veo.seokorea.org/login | grep -oE '0\.3\.[0-9]+' | sort -u | h
 
 ## 이 방이 저지른 것 — 반복 금지
 
+0. **부품 하나만 보고 판정할 뻔했다**(2026-09-25). 공유 화면이 체커 부품을 쓰는 것만
+   보고 「정본과 구조가 어긋났다」고 볼 뻔했는데, 값을 끝까지 따라가니 **정본이 대응하는
+   것은 다른 주소**였다. **없는 격차를 보고**할 뻔했다.
 1. `make ci-local` 을 건너뛰고 배포에 들어갔다 — `pnpm verify` 와 **다른 명령**이다.
 2. 점검이 도는 중에 나무를 건드렸다 — 파일 하나로 「커밋 안 된 변경」이 되어 배포가 섰다.
 3. `cmd > log; echo $?` 로 성공을 보고했다 — 그 종료코드는 **`echo` 것**이다.
