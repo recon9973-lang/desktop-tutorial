@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 이 방 것 → `RESUME-anseo-console-port.md` (가지 표시로 짝지음) · 전체 17개
 
 ## 최근 커밋 (8)
+- 2026-09-24 docs: 인계본 — 문서가 main 에 실린 것을 반영
+- 2026-09-24 chore: PROJECT_STATE 다시 뽑는다 (합류 뒤)
 - 2026-09-24 Merge remote-tracking branch 'origin/claude/image-design-workflow-analysis-efuea7' into claude/image-design-workflow-analysis-efuea7
 - 2026-09-24 docs: 이 방 인계본을 만든다 (ANSEO 콘솔 이식 방)
 - 2026-09-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-22 noindex 이슈 방 — ANSEO noindex 조치 점검 기록·인계본 (+ 인정 방 연구보고서·인계본 main 반영) (#279)
 - 2026-09-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-22 docs: SEO·GEO·AEO 통합 강의자료(2026-09) 추가 (#278)
-- 2026-09-21 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-21 chore(chatbot): LLM-as-Judge 품질 채점 리포트
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 e1a03e78 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 998ca663 기준. 값·비밀은 포함하지 않음.*
