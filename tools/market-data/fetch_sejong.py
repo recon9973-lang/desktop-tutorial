@@ -82,42 +82,48 @@ def try_portal(key: str) -> None:
 def try_url(base: str, key: str) -> bool:
     """사장님이 주신 요청주소로 받는다.
 
-    포털의 「요청주소」는 보통 **서비스까지만** 적혀 있고 실제 호출은 그 아래
-    오퍼레이션까지 붙여야 한다(`.../admmPpltnHhStus/getAdmmPpltnHhStus`).
-    그래서 주소를 그대로도, 오퍼레이션을 붙여서도 두드려 본다.
+    [실측 2026-09-26] `https://apis.data.go.kr/1741000/admmPpltnHhStus` 는 아홉 번 모두
+    **시간 초과**였다(오류 응답이 아니라 무응답). 같은 호스트의 다른 경로는 400 을 즉시
+    돌려주므로 호스트가 죽은 것은 아니다. 그래서 잘못 짚은 자리를 넓게, **빠르게**
+    훑는다 — 한 번에 10초만 기다리고 다음으로 넘어간다.
     """
     k = key if "%" in key else urllib.parse.quote(key, safe="")
-    base = base.split("?")[0].strip().rstrip("/")
-    seg = base.split("/")[-1]
-    cands = [base, f"{base}/get{seg[0].upper()}{seg[1:]}", f"{base}/{seg}"]
+    raw = base.split("?")[0].strip().rstrip("/")
+    host_path = re.sub(r"^https?://", "", raw)
+    seg = host_path.split("/")[-1]
+    paths = [host_path, f"{host_path}/get{seg[0].upper()}{seg[1:]}", f"{host_path}/{seg}"]
     shapes = [
         {"pageNo": "1", "numOfRows": "10", "type": "json"},
+        {"pageNo": "1", "numOfRows": "10", "_type": "json"},
         {"pageNo": "1", "numOfRows": "10", "type": "json", "srchFrYm": "202606",
          "srchToYm": "202606", "regSeCd": "1", "lv": "1"},
-        {"page": "1", "perPage": "10", "returnType": "JSON"},
     ]
-    best = None
-    for url_base in cands:
-        for sh in shapes:
-            url = f"{url_base}?serviceKey={k}&" + urllib.parse.urlencode(sh)
-            st, body = get(url, timeout=40)
-            txt = body.decode("utf-8", "replace")
-            flat = " ".join(txt.split())[:320]
-            print(f"[{st}] {url_base.split('/1741000/')[-1]:<44} {list(sh)[0]}… → {flat}")
-            bad = any(w in txt.upper() for w in
-                      ("NO_OPENAPI_SERVICE", "SERVICE_ACCESS_DENIED", "SERVICE_KEY_IS_NOT_REGISTERED",
-                       "APPLICATION_ERROR", "UNKNOWN_ERROR", "HTTP_ERROR"))
-            if st == 200 and not bad and len(txt) > 150:
-                OUT.mkdir(parents=True, exist_ok=True)
-                (OUT / "sejong_population_raw.json").write_text(txt, encoding="utf-8")
-                print(f"→ 받았다. {OUT/'sejong_population_raw.json'} 에 그대로 남겼다")
-                print(f"→ 쓴 주소: {url_base} · 쓴 값: {urllib.parse.urlencode(sh)}")
-                return True
-            if st == 200 and best is None:
-                best = (url_base, sh, flat)
-    if best:
-        print(f"\n가장 가까웠던 것: {best[0]} · {urllib.parse.urlencode(best[1])}")
-        print(f"  응답: {best[2]}")
+    hits = []
+    for scheme in ("https", "http"):
+        for pth in paths:
+            for sh in shapes:
+                url = f"{scheme}://{pth}?serviceKey={k}&" + urllib.parse.urlencode(sh)
+                st, body = get(url, timeout=10)
+                txt = body.decode("utf-8", "replace")
+                flat = " ".join(txt.split())[:260]
+                tag = pth.split("/1741000/")[-1]
+                print(f"[{st:>3}] {scheme:<5} {tag:<42} {'+'.join(list(sh)[:3]):<28} {flat}")
+                bad = any(w in txt.upper() for w in
+                          ("NO_OPENAPI_SERVICE", "SERVICE_ACCESS_DENIED", "NOT_REGISTERED",
+                           "APPLICATION_ERROR", "UNKNOWN_ERROR", "HTTP_ERROR", "TIMED OUT"))
+                if st == 200 and not bad and len(txt) > 150:
+                    OUT.mkdir(parents=True, exist_ok=True)
+                    (OUT / "sejong_population_raw.json").write_text(txt, encoding="utf-8")
+                    print(f"→ 받았다: {scheme}://{pth} · {urllib.parse.urlencode(sh)}")
+                    return True
+                if st and st != 0:
+                    hits.append((st, scheme, pth, urllib.parse.urlencode(sh), flat))
+    if hits:
+        print("\n대답은 한 것들(무응답 아님):")
+        for h in hits[:6]:
+            print(f"  [{h[0]}] {h[1]}://{h[2]} · {h[3]}\n      {h[4]}")
+    else:
+        print("\n전부 무응답이다 — 주소나 길 자체가 닿지 않는다")
     return False
 
 
