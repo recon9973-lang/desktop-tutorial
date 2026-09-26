@@ -186,6 +186,8 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
         <option value="200000">20만 명 이상</option>
         <option value="300000">30만 명 이상</option>
       </select></div>
+    <div class="field"><label for="fTrade">동네 성격으로 고르기</label>
+      <select id="fTrade"></select></div>
     <div class="field"><label for="fQ">지역 찾기</label>
       <input id="fQ" type="search" placeholder="예: 강남" autocomplete="off"></div>
     <div class="field"><label>정렬</label>
@@ -347,9 +349,23 @@ document.getElementById('fSubject').innerHTML =
   subjOrder.map(([n,i,c])=>`<option value="${i}">${n} (${c.toLocaleString('ko-KR')} / 전문 ${
      S['전국전문기관수'][i].toLocaleString('ko-KR')})</option>`).join('');
 
-const state = {sido:'', subj:-1, basis:'all', minPop:0, q:'', sort:'dense', pick:null};
+document.getElementById('fTrade').innerHTML =
+  '<option value="">(병의원 기준으로 본다)</option>' +
+  (MCLS.length ? TRADE_PICK.map(([nm,,why])=>
+     `<option value="${nm}">${nm} 많은 순 — ${why}</option>`).join('') : '');
+
+const state = {sido:'', subj:-1, basis:'all', minPop:0, q:'', sort:'dense',
+               trade:'', pick:null};
 
 function metricOf(r){
+  // 동네 성격을 골랐으면 그 업종 기준으로 잰다(가게 수 · 1만 명당).
+  if(state.trade){
+    const hit = TRADE_PICK.find(x=>x[0]===state.trade);
+    const v = hit ? mSum(r.mcls, hit[1]) : null;
+    const nv = hit ? mSum(NATM, hit[1]) : null;
+    return {n:v, per:(v!=null && r.pop) ? v/r.pop*10000 : null,
+            base:(nv && NATTRADEPOP) ? nv/NATTRADEPOP*10000 : null, trade:true};
+  }
   // 고른 과목이 있으면 그 과목 기준, 없으면 병의원 전체 기준.
   if(state.subj < 0) return {n:r.n, per:r.per, base:natPer};
   const hit = subjOf(r.i).find(x=>x[0]===state.subj);
@@ -378,15 +394,21 @@ function current(){
 
 function renderList(){
   const list = current();
-  const subjName = state.subj<0 ? '병의원' : S['이름'][state.subj];
+  const subjName = state.trade ? state.trade
+    : (state.subj<0 ? '병의원' : S['이름'][state.subj]);
   document.getElementById('listTitle').textContent =
     (state.sido||'전국') + ' · ' + subjName
-    + (state.subj<0 ? '' : ' · ' + BASIS[state.basis].label);
+    + (state.trade || state.subj<0 ? '' : ' · ' + BASIS[state.basis].label);
   document.getElementById('listHint').textContent = list.length + '곳';
-  document.getElementById('listLead').textContent = state.subj<0
-    ? '막대는 인구 1만 명당 병의원 수. 전국 평균 '+natPer.toFixed(1)+'곳.'
-    : '막대는 인구 1만 명당 「'+subjName+'」 '+BASIS[state.basis].label+'. 전국 평균 '
-      + natPerOf(state.subj, state.basis).toFixed(2)+'곳.';
+  const natTrade = state.trade
+    ? (list.length ? metricOf(list[0]).base : null) : null;
+  document.getElementById('listLead').textContent = state.trade
+    ? '막대는 인구 1만 명당 「'+state.trade+'」 가게 수. 전국 평균 '
+      + (natTrade==null?DASH:natTrade.toFixed(1))+'곳. 병원 자료가 아니라 «동네» 자료다.'
+    : (state.subj<0
+      ? '막대는 인구 1만 명당 병의원 수. 전국 평균 '+natPer.toFixed(1)+'곳.'
+      : '막대는 인구 1만 명당 「'+subjName+'」 '+BASIS[state.basis].label+'. 전국 평균 '
+        + natPerOf(state.subj, state.basis).toFixed(2)+'곳.');
   if(!list.some(r=>r.i===state.pick)) state.pick = list.length ? list[0].i : null;
   const max = Math.max(...list.map(r=>metricOf(r).per||0), 0.0001);
   const el = document.getElementById('rows');
@@ -398,10 +420,11 @@ function renderList(){
     return `<button class="row" type="button" data-i="${r.i}"
         aria-current="${state.pick===r.i}">
       <span class="row-name">${r.sggu}<span>${r.sido}</span></span>
-      <span class="row-val num">${m.per==null?DASH:m.per.toFixed(state.subj<0?1:2)}</span>
+      <span class="row-val num">${m.per==null?DASH
+        :m.per.toFixed(state.trade||state.subj<0?1:2)}</span>
       <span class="row-sub num">
         <span>인구 ${r.pop?man(r.pop)+'만':DASH}</span>
-        <span>${state.subj<0?'병의원':'기관'} ${fmt(m.n)}곳</span>
+        <span>${state.trade?'가게':(state.subj<0?'병의원':'기관')} ${fmt(m.n)}곳</span>
         <span style="color:${idx==null?'var(--mute)':(over?'var(--over)':'var(--under)')}">
           전국대비 ${idx==null?DASH:Math.round(idx)}</span>
       </span>
@@ -587,6 +610,8 @@ document.getElementById('fSubject').addEventListener('change', e=>{
   state.subj=+e.target.value; renderList(); renderDetail();});
 document.getElementById('fPop').addEventListener('change', e=>{
   state.minPop=+e.target.value; state.pick=null; renderList();});
+document.getElementById('fTrade').addEventListener('change', e=>{
+  state.trade=e.target.value; state.pick=null; renderList(); renderDetail();});
 let t; document.getElementById('fQ').addEventListener('input', e=>{
   clearTimeout(t); t=setTimeout(()=>{state.q=e.target.value.trim(); state.pick=null; renderList();},150);});
 document.getElementById('fBasis').addEventListener('click', e=>{
