@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 있음 → `RESUME.md` 참조
 
 ## 최근 커밋 (8)
-- 2026-09-16 인계 갱신 — AEO 는 딸림 방에 있고 보고 관이 막혔다
-- 2026-09-16 인계 갱신 — 상권 정렬이 0.3.588 로 나갔다
-- 2026-09-16 AEO 언급현황 — 글자를 그림으로 바꾸고 빈칸을 없앤다
-- 2026-09-15 체크포인트 s26 — 상권 정렬은 들어갔고 배포는 사장님 손에 있다
-- 2026-09-15 인계 갱신 — 배포가 도는 중이다 (판 번호 아직 «—»)
-- 2026-09-15 인계 갱신 — 상권 정렬이 veo-platform 에 들어갔다, 배포만 남았다
-- 2026-09-15 인계 — 상권 레이아웃 방 (넣는 것 하나만 남았다)
-- 2026-09-15 상권 화면 정렬을 붙일 수 있는 파일로 만든다 — 가·나·다
+- 2026-09-18 진단 항목 방의 결정을 캐서 셋을 정해 내려보냈다
+- 2026-09-18 지도 갱신 — 어제 내려보낸 일곱 중 넷이 판으로 나갔다
+- 2026-09-17 속도 개선이 판 0.3.599 로 나갔다 — 서 있던 일곱이 다 풀렸다
+- 2026-09-16 서 있던 방 일곱을 전부 풀고 지도를 닫는다
+- 2026-09-16 오류 상세 내용은 A안으로 — 사장님 확정
+- 2026-09-16 AEO 가·나·다는 셋 다 들어갔다 — 원본을 직접 읽어 확인
+- 2026-09-16 남은 오더를 한 장으로 — 이 방이 지워져도 남게
+- 2026-09-16 인계 갱신 — AEO 가 판 0.3.593 으로 나갔다
 
 ## 워크플로 (20)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -82,4 +82,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 903f36c 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 94d5376 기준. 값·비밀은 포함하지 않음.*
