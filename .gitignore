@@ -14,3 +14,7 @@ venom-wordpress/preview/chatbot/data/eval/questions-full.jsonl
 
 # IG 카드 렌더 임시 산출물
 persona-nami/ig/*.html
+
+# 파이썬이 만드는 찌꺼기 — 한 번 딸려 들어갔다
+__pycache__/
+*.py[cod]
