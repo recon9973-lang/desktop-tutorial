@@ -116,15 +116,30 @@ PARENT_CODE = {("경기", "화성시"): ["41590"]}
 def regions() -> list[dict]:
     """252곳(표와 같은 자리) × 그 자리를 가리키는 시군구 코드들.
 
-    행정동 표준코드 앞 다섯 자리 = 시군구 코드. ANSEO 행안부 자료에서 가져온다.
+    행정동 표준코드 앞 다섯 자리 = 시군구 코드. 한 번 만들어 `sggu_codes.csv` 에
+    담아 두고 그 뒤로는 그것을 읽는다(러너에는 ANSEO 사본이 없다).
     이름은 표(`market_sggu.csv`)와 **같은 꼴**로 돌린다 — 「고양시덕양구」→「고양덕양구」,
     화성 4개 구는 표에 한 줄(「화성시」)이므로 한 자리로 묶는다.
     세종은 행안부 동별 자료에 없어 코드를 못 만든다 — 상가자료에서 찾아낸 코드를 쓴다.
     """
+    # 러너에는 ANSEO 사본이 없다(한 판 그래서 접었다). 그래서 **만들어 둔 코드표를
+    # 저장소에 담아** 그것을 먼저 읽는다 — 없을 때만 ANSEO 에서 새로 만든다.
+    ready = OUT / "sggu_codes.csv"
+    if ready.exists():
+        got: dict[tuple[str, str], dict[str, list[str]]] = {}
+        with ready.open(encoding="utf-8-sig") as f:
+            for r in csv.DictReader(f):
+                k = (r["시도"], r["시군구"])
+                g = got.setdefault(k, {"주": [], "대체": []})
+                g[r["갈래"]].append(r["시군구코드"])
+        return [{"시도": k[0], "시군구": k[1], "코드": sorted(v["주"]),
+                 "대체코드": sorted(v["대체"])} for k, v in sorted(got.items())]
+
     import gzip
     pop = pathlib.Path("/home/user/veo-platform/apps/api/data/population/"
                        "mois_dong_population.json.gz")
     if not pop.exists():
+        print("코드표도 ANSEO 사본도 없다 — `sggu_codes.csv` 를 먼저 만든다")
         return []
     d = json.load(gzip.open(pop, "rt", encoding="utf-8"))
     short = {"서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구",
