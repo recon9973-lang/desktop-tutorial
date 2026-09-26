@@ -50,17 +50,22 @@ def load_done(path: pathlib.Path) -> set:
 
 
 def regions() -> list[str]:
-    """심평원 마스터에서 실제 존재하는 시도+시군구 조합을 가져온다."""
+    """상권표의 시군구를 «지도에서 찾히는 이름»으로 돌려준다.
+
+    심평원 표기(「고양덕양구」)로는 지도가 못 찾는다. 행안부 정식 표기
+    (「고양시 덕양구」)를 쓴 `시군구_정식` 칸을 쓴다.
+    """
     import csv
-    p = OUT / "hira_master.csv"
+    p = pathlib.Path("data/market/market_sggu.csv")
     if not p.exists():
         return []
-    seen = []
+    out = []
     with p.open(encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            if r["sidoCdNm"] and r["sgguCdNm"]:
-                seen.append(f"{r['sidoCdNm']} {r['sgguCdNm']}")
-    return sorted(set(seen))
+            nm = (r.get("시군구_정식") or r["시군구"]).strip()
+            if nm:
+                out.append(f"{r['시도']} {nm}")
+    return sorted(set(out))
 
 
 def run_naver(regs, terms, limit):
@@ -129,7 +134,8 @@ def main() -> int:
     terms = [t.strip() for t in a.terms.split(",") if t.strip()] or TERMS
     regs = [r.strip() for r in a.regions.split(",") if r.strip()] or regions()
     if not regs:
-        print("지역 목록이 없다 — 먼저 hira_collect.py --stage master 를 돌려라"); return 2
+        print("지역 목록이 없다 — 먼저 build_anseo.py 로 data/market/market_sggu.csv 를 만들어라")
+        return 2
     print(f"지역 {len(regs)} × 검색어 {len(terms)} = {len(regs)*len(terms):,}쌍")
     if a.source in ("naver", "both"):
         run_naver(regs, terms, a.limit)
