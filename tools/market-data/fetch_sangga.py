@@ -40,6 +40,51 @@ def call(op: str, params: dict, timeout: int = 15):
     return get(url, timeout)
 
 
+def codes_mode() -> int:
+    """업종 코드표를 **자료에서** 찾아낸다 — 외워 쓰지 않는다.
+
+    [실측 2026-09-26] 통하는 조합: storeListInDong + divId(signguCd/ctprvnCd/adongCd) + key.
+    큰 시군구 몇 곳의 첫 장을 크게 받아 나오는 대·중분류를 모은다.
+    세종 시군구코드도 여기서 알아낸다(행안부 동별 자료에 세종이 없어 코드를 못 만든다).
+    """
+    lcls, mcls, sejong = {}, {}, {}
+    for key, div in (("11680", "signguCd"), ("41135", "signguCd"),
+                     ("48170", "signguCd"), ("36", "ctprvnCd")):
+        for page in (1, 2):
+            st, body = call("storeListInDong",
+                            {"divId": div, "key": key, "numOfRows": "1000",
+                             "pageNo": str(page), "type": "json"}, timeout=60)
+            if st != 200:
+                print(f"  {div}={key} 쪽 {page} → http {st}"); break
+            try:
+                j = json.loads(body.decode("utf-8", "replace"))
+            except Exception:      # 잘린 응답이면 낱말로 긁는다
+                txt = body.decode("utf-8", "replace")
+                import re as _re
+                for a, b in _re.findall(r'"indsLclsCd" : "([^"]+)"[^}]*?"indsLclsNm" : "([^"]+)"', txt):
+                    lcls[a] = b
+                continue
+            for it in (j.get("body") or {}).get("items") or []:
+                if it.get("indsLclsCd"):
+                    lcls[it["indsLclsCd"]] = it.get("indsLclsNm", "")
+                if it.get("indsMclsCd"):
+                    mcls[it["indsMclsCd"]] = it.get("indsMclsNm", "")
+                if it.get("ctprvnCd") == "36" and it.get("signguCd"):
+                    sejong[it["signguCd"]] = it.get("signguNm", "")
+        print(f"  {div}={key} 까지 — 대분류 {len(lcls)} · 중분류 {len(mcls)}")
+    RAW.mkdir(parents=True, exist_ok=True)
+    out = {"대분류": lcls, "중분류": mcls, "세종_시군구코드": sejong,
+           "찾은 날": "2026-09-26", "출처": "소상공인시장진흥공단 상가(상권)정보 · 기준월 202606"}
+    (RAW / "sangga_codes.json").write_text(json.dumps(out, ensure_ascii=False, indent=1),
+                                           encoding="utf-8")
+    print(f"\n대분류 {len(lcls)}개: " + ", ".join(f"{k} {v}" for k, v in sorted(lcls.items())))
+    print(f"보건의료 중분류: " + ", ".join(f"{k} {v}" for k, v in sorted(mcls.items())
+                                         if k.startswith("Q")))
+    print(f"세종 시군구코드: {sejong}")
+    print(f"호출 {calls}회 → {RAW/'sangga_codes.json'}")
+    return 0
+
+
 def sggu_codes() -> list[tuple[str, str, str]]:
     """행정동 표준코드 앞 다섯 자리 = 시군구 코드. ANSEO 경계 자료에서 가져온다."""
     import gzip
@@ -143,7 +188,7 @@ def collect(op: str, div: str, lcls: list[str], limit: int) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="probe", choices=["probe", "collect"])
+    ap.add_argument("--mode", default="probe", choices=["probe", "codes", "collect"])
     ap.add_argument("--op", default="storeListInArea")
     ap.add_argument("--div", default="signguCd")
     ap.add_argument("--lcls", default="", help="업종 대분류 코드 쉼표. 비우면 전체 한 번")
@@ -153,6 +198,8 @@ def main() -> int:
         print("DATA_GO_KR_SERVICE_KEY 없음 — 중단"); return 2
     if a.mode == "probe":
         return probe()
+    if a.mode == "codes":
+        return codes_mode()
     lcls = [x.strip() for x in a.lcls.split(",") if x.strip()] or [""]
     return collect(a.op, a.div, lcls, a.limit)
 
