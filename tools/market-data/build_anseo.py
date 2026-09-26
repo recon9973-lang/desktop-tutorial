@@ -292,7 +292,20 @@ def main() -> int:
         w = csv.DictWriter(f, fieldnames=list(dong_rows[0].keys()))
         w.writeheader(); w.writerows(dong_rows)
 
+    # 인천 중구·동구를 되찾기 위한 기준점 — 지도 주소는 2026-07 개편 이름(제물포구·영종구)을
+    # 쓰는데 심평원은 옛 이름이라 그대로는 못 가른다. 심평원 기관의 좌표를 기준점으로 남겨,
+    # 지도에서 받은 곳을 «가장 가까운 심평원 기관»의 구로 돌린다.
+    # [검증 2026-09-26] 이름까지 같아 확실한 213곳 전부가 이 방법과 같은 구로 떨어졌다(100%).
+    pts = [{"x": float(r["좌표(X)"]), "y": float(r["좌표(Y)"]), "구": r["시군구코드명"][2:]}
+           for r in basis
+           if r["시도코드명"] == "인천" and r["시군구코드명"] in ("인천중구", "인천동구")
+           and r["종별코드명"] in CLINIC_KINDS and r["좌표(X)"]]
+    (OUT / "incheon_old_points.json").write_text(
+        json.dumps({"설명": "인천 옛 중구·동구 기준점(심평원 2026-06 병의원 좌표)",
+                    "점": pts}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
     print(f"시군구 {len(rows)}행 · 시군구×과목 {len(srows)}행 · 행정동 {len(dong_rows)}행")
+    print(f"인천 옛 구 기준점 {len(pts)}개")
     print(f"인구와 못 맞춘 시군구 {len(unmatched)}: {unmatched}")
     print(f"전국 병의원 {sum(r['병의원_계'] for r in rows):,} (보건기관 포함 {len(basis):,})")
     print(f"진료과목 종류 {len({nm for (_, nm) in cnt}):,}")
