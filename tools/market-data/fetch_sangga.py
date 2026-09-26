@@ -126,67 +126,16 @@ def regions() -> list[dict]:
     # 저장소에 담아** 그것을 먼저 읽는다 — 없을 때만 ANSEO 에서 새로 만든다.
     ready = OUT / "sggu_codes.csv"
     if ready.exists():
-        got: dict[tuple[str, str], dict[str, list[str]]] = {}
+        got: dict[tuple[str, str], list[tuple[str, str]]] = {}
         with ready.open(encoding="utf-8-sig") as f:
             for r in csv.DictReader(f):
-                k = (r["시도"], r["시군구"])
-                g = got.setdefault(k, {"주": [], "대체": []})
-                g[r["갈래"]].append(r["시군구코드"])
-        return [{"시도": k[0], "시군구": k[1], "코드": sorted(v["주"]),
-                 "대체코드": sorted(v["대체"])} for k, v in sorted(got.items())]
+                got.setdefault((r["시도"], r["시군구"]), []).append(
+                    (r["코드"], r["무엇"]))
+        return [{"시도": k[0], "시군구": k[1], "코드": sorted(set(v))}
+                for k, v in sorted(got.items())]
 
-    import gzip
-    pop = pathlib.Path("/home/user/veo-platform/apps/api/data/population/"
-                       "mois_dong_population.json.gz")
-    if not pop.exists():
-        print("코드표도 ANSEO 사본도 없다 — `sggu_codes.csv` 를 먼저 만든다")
-        return []
-    d = json.load(gzip.open(pop, "rt", encoding="utf-8"))
-    short = {"서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구",
-             "인천광역시": "인천", "광주광역시": "광주", "대전광역시": "대전",
-             "울산광역시": "울산", "세종특별자치시": "세종", "경기도": "경기",
-             "강원특별자치도": "강원", "충청북도": "충북", "충청남도": "충남",
-             "전북특별자치도": "전북", "전라남도": "전남", "경상북도": "경북",
-             "경상남도": "경남", "제주특별자치도": "제주"}
-    # 표의 자리 이름을 기준으로 삼는다 — 새 이름을 만들지 않는다.
-    table = []
-    tp = OUT / "market_sggu.csv"
-    if tp.exists():
-        with tp.open(encoding="utf-8-sig") as f:
-            table = [(r["시도"], r["시군구"]) for r in csv.DictReader(f)]
-    tset = set(table)
-
-    def fit(sido: str, sggu: str) -> tuple[str, str]:
-        g = sggu.replace(" ", "")
-        m = re.match(r"^(.+?)시(.+구)$", g)     # 고양시덕양구 → 고양덕양구
-        if m:
-            g = m.group(1) + m.group(2)
-        if (sido, g) in tset or not tset:
-            return (sido, g)
-        # 표에 구가 없고 시 한 줄만 있으면 시로 묶는다(화성 4개 구 → 화성시)
-        for s2, g2 in tset:
-            if s2 == sido and g2.endswith("시") and g.startswith(g2[:-1]):
-                return (s2, g2)
-        return (sido, g)
-
-    bykey: dict[tuple[str, str], list[str]] = {}
-    seen: set[str] = set()
-    for code, sido, sggu in zip(d["dong_code"], d["sido_name"], d["sigungu_name"]):
-        c = code[:5]
-        if c in seen:
-            continue
-        seen.add(c)
-        bykey.setdefault(fit(short.get(sido, sido), sggu), []).append(c)
-
-    sj = RAW / "sangga_codes.json"          # 세종 — 상가자료에서 찾아낸 코드
-    if sj.exists():
-        for c in (json.loads(sj.read_text(encoding="utf-8"))
-                  .get("세종_시군구코드") or {}):
-            bykey.setdefault(("세종", "세종시"), []).append(c)
-
-    return [{"시도": k[0], "시군구": k[1], "코드": sorted(v),
-             "대체코드": PARENT_CODE.get(k, [])}
-            for k, v in sorted(bykey.items())]
+    print("코드표가 없다 — `python3 tools/market-data/make_sggu_codes.py` 를 먼저 돌린다")
+    return []
 
 
 def count(op: str, div: str, code: str, field: str = "", val: str = "") -> tuple:
@@ -261,6 +210,10 @@ def collect(op: str, div: str, limit: int, do_mcls: bool) -> int:
         for line in path.open(encoding="utf-8"):
             try:
                 d = json.loads(line)
+                # 답을 못 받은 줄(시간 초과)은 «끝난 것» 으로 치지 않는다 —
+                # [실측] 한 판에서 27번이 답 없이 지나갔다. 다음 판이 다시 묻게 둔다.
+                if d.get("점포수") is None and d.get("resultCode") != "03":
+                    continue
                 done.add((d["코드"], d["갈래"], d["업종코드"]))
             except Exception:  # noqa: BLE001
                 pass
@@ -300,16 +253,17 @@ def collect(op: str, div: str, limit: int, do_mcls: bool) -> int:
     n = 0
     with path.open("a", encoding="utf-8") as f:
         for reg in regs:
-            for code in reg["코드"] + reg["대체코드"]:
+            for code, what in reg["코드"]:
                 for kind, ic, inm, field, val in jobs:
                     if (code, kind, ic) in done:
                         continue
                     if n >= limit:
                         print("한도 도달 — 다음 판에서 이어받는다"); return 0
-                    st, total, rc = count(op, div, code, field, val)
+                    st, total, rc = count(op, what, code, field, val)
                     n += 1
                     f.write(json.dumps({"시도": reg["시도"], "시군구": reg["시군구"],
-                                        "코드": code, "갈래": kind, "업종코드": ic,
+                                        "코드": code, "무엇": what,
+                                        "갈래": kind, "업종코드": ic,
                                         "업종": inm, "점포수": total, "http": st,
                                         "resultCode": rc}, ensure_ascii=False) + "\n")
                     time.sleep(0.03)
