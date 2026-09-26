@@ -108,6 +108,31 @@ def main() -> int:
     pts = load_json_gz(POP_DIR / "admdongkor_dong_points.json.gz")
     area_by_dong = dict(zip(pts["dong_code"], pts["area_km2"]))
 
+    # 자료마다 행정구역 시점이 다르다. 인구(2026-06-30)는 옛 이름·옛 코드이고,
+    # 나이대(2026-08-31)와 경계는 2026-07 개편 뒤 이름·코드다
+    # (「전남광주통합특별시」·인천 제물포구/영종구/검단구/서해구).
+    # 그래서 코드로만 맞추면 **전남 전체·광주 5구·인천 3구의 나이대와 면적이 통째로 빈다**
+    # (252곳 중 30곳). 코드로 못 찾으면 **이름으로** 한 번 더 찾는다.
+    def name_index(sidos, sggus, dongs, vals):
+        """(시도, 시군구, 동) 과 (시도, 동) 두 벌. 한 자리에 둘 이상 걸리면 버린다 —
+        「신사동」처럼 같은 시도 안에 같은 이름이 둘인 데가 55곳 있다."""
+        a, b = collections.defaultdict(list), collections.defaultdict(list)
+        for sd, sg, dg, v in zip(sidos, sggus, dongs, vals):
+            r = SIDO_SHORT.get(sd, sd)
+            if sd == "전남광주통합특별시":
+                r = "광주" if sg in GWANGJU_GU else "전남"
+            a[(r, sg, dg)].append(v); b[(r, dg)].append(v)
+        return ({k: v[0] for k, v in a.items() if len(v) == 1},
+                {k: v[0] for k, v in b.items() if len(v) == 1})
+
+    age_nameA, age_nameB = name_index(age["sido_name"], age["sigungu_name"],
+                                      age["dong_name"], range(len(age["dong_code"])))
+    _sp = [n.split(" ") for n in pts["dong_name"]]     # 「시도 시군구 동」 한 줄로 온다
+    pts_nameA, pts_nameB = name_index([x[0] for x in _sp],
+                                      [x[1] if len(x) > 2 else "" for x in _sp],
+                                      [x[-1] for x in _sp], pts["area_km2"])
+    fills = collections.Counter()
+
     dong_rows, sggu_pop = [], collections.defaultdict(
         lambda: {"인구": 0, "남": 0, "여": 0, "면적": 0.0, "동수": 0,
                  "0~9": 0, "10~19": 0, "20~39": 0, "40~59": 0, "65+": 0, "여20~49": 0})
@@ -120,7 +145,12 @@ def main() -> int:
         sggu = pop["sigungu_name"][i]
         k = (sido, sggu)
         key_of.setdefault(k, k)
+        dong = pop["dong_name"][i]
         a = area_by_dong.get(code)
+        if a is None:                       # 코드로 못 찾으면 이름으로
+            a = pts_nameA.get((sido, sggu, dong), pts_nameB.get((sido, dong)))
+            if a is not None:
+                fills["면적"] += 1
         d = {"시도": sido, "시군구": sggu, "행정동": pop["dong_name"][i], "행정동코드": code,
              "인구": pop["total"][i], "남": pop["male"][i], "여": pop["female"][i],
              "최근증감": pop["delta"][i], "면적_km2": a if a is not None else DASH}
@@ -129,6 +159,10 @@ def main() -> int:
         if a:
             s["면적"] += a
         j = age_by_dong.get(code)
+        if j is None:                       # 코드로 못 찾으면 이름으로
+            j = age_nameA.get((sido, sggu, dong), age_nameB.get((sido, dong)))
+            if j is not None:
+                fills["나이대"] += 1
         if j is not None:
             m, w = age["male"][j], age["female"][j]
             for g, rng in G.items():
@@ -141,6 +175,10 @@ def main() -> int:
                 d[f"인구_{g}"] = DASH
             d["인구_여20~49"] = DASH
         dong_rows.append(d)
+
+    if fills:
+        print("[행정구역 개편] 코드가 달라 빈 자리를 이름으로 메웠다 — "
+              + " · ".join(f"{k} {v}개 동" for k, v in sorted(fills.items())))
 
     # ── 세종 메우기 ──
     # 행안부 행정동 자료에 세종이 통째로 빠져 있다. 사장님이 행안부 화면에서 읽어 주신

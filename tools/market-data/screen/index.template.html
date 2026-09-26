@@ -279,8 +279,39 @@ const regions = R['지역'].map((a,i)=>({
   i, sido:a[0], sggu:a[1], pop:a[2], n:a[3], per:a[4], area:a[5], perKm:a[6],
   old:a[7], young:a[8], w2049:a[9], dr:a[10], kinds:a[11],
   clinics:a[12], mix:a[13], mixp:a[14], gen:a[15], mapN:a[16], mapCat:a[17],
+  stores:a[18], lcls:a[19], mcls:a[20],
   label:a[0]+' '+a[1]
 }));
+// ── 업종별 상권(소상공인 상가정보) ──
+const LCLS = R['업종이름'] || [], MCLS = R['중업종이름'] || [];
+const NATM = (R['전국']['중업종']) || [], NATSTORE = R['전국']['점포'] || null;
+// 업종 대분류 10가지를 사람이 한눈에 읽는 일곱 묶음으로 모은다.
+const TRADE = [
+  ['음식',      ['음식'],                             'var(--c1)'],
+  ['소매',      ['소매'],                             'var(--c2)'],
+  ['생활·미용', ['수리·개인'],                         'var(--c3)'],
+  ['교육',      ['교육'],                             'var(--c4)'],
+  ['사무·전문', ['과학·기술','시설관리·임대','부동산'],  'var(--c5)'],
+  ['보건의료',  ['보건의료'],                         'var(--ruby)'],
+  ['그 밖',     ['예술·스포츠','숙박'],                 'var(--mute)'],
+];
+// 「이 동네에 우리 환자가 사는가」를 대신 말해 주는 업종. 1만 명당으로 재고
+// 전국 평균을 100 으로 놓는다.
+const TRADE_PICK = [
+  ['미용실·피부관리', ['이용·미용','욕탕·신체관리'], '피부·성형 수요'],
+  ['학원',            ['일반교육','기타교육'],       '아이 있는 집'],
+  ['카페',            ['카페'],                     '낮에 도는 사람'],
+  ['헬스·필라테스',   ['스포츠'],                   '다이어트·비만'],
+  ['약국·화장품',     ['의약·화장품'],               '처방·미용 동선'],
+  ['사무실',          ['경영컨설팅'],               '직장인 낮 인구'],
+];
+const mSum = (arr, names) => {
+  if(!arr) return null;
+  let s = 0;
+  for(const n of names){ const i = MCLS.indexOf(n); if(i < 0) return null;
+    if(arr[i] == null) return null; s += arr[i]; }
+  return s;
+};
 const natPer = R['전국']['인구1만명당'];
 const fmt = n => n==null ? DASH : n.toLocaleString('ko-KR');
 const fmt1 = n => n==null ? DASH : n.toFixed(1);
@@ -439,6 +470,62 @@ function renderDetail(){
         x.ix==null?DASH:Math.round(x.ix)}</b></span></td></tr>`;
   }).join('');
 
+  // ── 이 동네는 어떤 동네인가 (업종별 상권) ──
+  const tradeBlock = (()=>{
+    if(!r.lcls || r.stores == null) return '';
+    const bs = TRADE.map(([nm, keys, col])=>({nm, col,
+      v: keys.reduce((s,k)=>{ const i = LCLS.indexOf(k);
+        return s + (i < 0 ? 0 : (r.lcls[i] || 0)); }, 0)})).filter(b=>b.v > 0);
+    const t = bs.reduce((s,b)=>s+b.v, 0) || 1;
+    const bar = bs.map(b=>`<i style="width:${b.v/t*100}%;background:${b.col}"
+        title="${b.nm} ${b.v.toLocaleString('ko-KR')}곳"></i>`).join('');
+    const leg = bs.map(b=>`<span><i style="background:${b.col}"></i>${b.nm}
+        <b class="num">${Math.round(b.v/t*100)}%</b></span>`).join('');
+    const rows = TRADE_PICK.map(([nm, keys, why])=>{
+      const v = mSum(r.mcls, keys), nv = mSum(NATM, keys);
+      const per = (v != null && r.pop) ? v/r.pop*10000 : null;
+      const natp = (nv && R['전국']['인구']) ? nv/R['전국']['인구']*10000 : null;
+      const ix = (per != null && natp) ? per/natp*100 : null;
+      const over = ix != null && ix >= 100;
+      const w = ix == null ? 0 : Math.min(50, Math.abs(ix-100)/100*50);
+      return `<tr><td>${nm} <span class="mute"
+          style="font-weight:400;font-size:11px">${why}</span></td>
+        <td class="num">${fmt(v)}</td>
+        <td class="num">${per == null ? DASH : per.toFixed(1)}</td>
+        <td><span class="idxcell"><span class="idxbar"><em style="${
+          over ? `left:50%;width:${w}%;background:var(--over)`
+               : `right:50%;width:${w}%;background:var(--under)`
+        }"></em></span><b class="num" style="color:${ix == null ? 'var(--mute)'
+          : (over ? 'var(--over)' : 'var(--under)')}">${
+          ix == null ? DASH : Math.round(ix)}</b></span></td></tr>`;
+    }).join('');
+    const sgN = mSum(r.mcls, ['의원']);
+    const perStore = r.pop ? (r.stores/r.pop*10000) : null;
+    const natStore = (NATSTORE && R['전국']['인구'])
+      ? NATSTORE/R['전국']['인구']*10000 : null;
+    return `
+    <h3 class="sub">이 동네는 어떤 동네인가</h3>
+    <div class="mix" style="background:var(--canvas)">
+      <div class="mix-num"><b class="num">${fmt(r.stores)}<small> 곳</small></b>
+        <span>이 지역 가게·사무실 전부. 인구 1만 명당
+          <b class="num">${perStore == null ? DASH : perStore.toFixed(0)}곳</b>
+          (전국 ${natStore == null ? DASH : natStore.toFixed(0)}곳)</span></div>
+      <div class="stack" style="margin-top:8px">${bar}</div>
+      <div class="legend num">${leg}</div>
+      <p class="note">업종이 무엇으로 차 있는지가 «누가 이 동네에 오는지»를 말해 준다.
+        먹자골목·학원가·오피스는 같은 인구라도 오는 사람이 다르다.</p>
+    </div>
+    <div class="wide" style="margin-top:10px"><table class="tbl">
+      <thead><tr><th>업종</th><th>가게 수</th><th>1만명당</th><th>전국대비</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <p class="note" style="margin-top:8px">${sgN == null ? '' : `상가자료에 의원으로 올라온 곳은
+      <b class="num">${fmt(sgN)}곳</b>, 심평원에 등록된 의원은
+      <b class="num">${fmt(r.kinds[KINDS.indexOf('의원')] || 0)}곳</b>이다.
+      상가자료는 «간판 달고 장사하는 자리» 만 잡으므로 둘은 원래 다르다. `}자료는
+      소상공인시장진흥공단 상가(상권)정보 2026년 6월 기준이다.</p>`;
+  })();
+
   el.innerHTML = `
     <div class="d-head"><span class="eyebrow">${r.sido}</span><h2>${r.sggu}</h2></div>
     <p class="note">전국 평균을 100으로 보면 이 지역의 병의원 밀집도는
@@ -466,6 +553,7 @@ function renderDetail(){
         (검진센터·부속의원, 문 닫고도 남아 있는 자리)이 섞이기 때문이다.
         ${r.mapN==null?'이 지역은 아직 못 쟀다(인천 중구·동구는 행정구역이 합쳐져 가를 수 없다).':''}</p>
     </div>
+    ${tradeBlock}
     <h3 class="sub">이 지역 의원이 실제로 파는 것</h3>
     <div class="mix">
       <div class="mix-num"><b class="num">${r.clinics?r.mixp.toFixed(0):DASH}<small>%</small></b>
