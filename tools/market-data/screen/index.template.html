@@ -230,6 +230,14 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
       위 「무엇을 셀까」로 바꿔 가며 본다.</p>
     </div>
     <div>
+      <h3>지도 층은 무엇인가</h3>
+      <p class="note">카카오 지도를 전국 통째로 훑어 병원 <b>72,949곳</b>을 받았다.
+      지도 분류는 한 곳에 <b>하나만</b> 붙어서 「환자가 이 병원을 무엇으로 보는가」가 된다.
+      심평원의 「무엇을 할 수 있나」와는 다른 층이다.
+      강남구를 예로 들면 지도에서 피부과로 보이는 곳이 585곳인데 피부과 전문의가 있는 곳은
+      204곳이다 — 그 차이가 곧 사장님이 말씀하신 「의원인데 피부과를 하는 곳」이다.</p>
+    </div>
+    <div>
       <h3>아직 못 잰 것</h3>
       <p class="note"><span class="dash">—</span> 는 <b>못 잰 값</b>이다. 지어내지 않았다.<br>
       세종은 행안부 행정동 인구 자료에 없어 인구가 «—» 다(병의원 469곳은 실측).<br>
@@ -249,6 +257,14 @@ const J = id => JSON.parse(document.getElementById(id).textContent);
 const R = J('dataRegions'), S = J('dataSubjects'), D = J('dataDemand');
 const DASH = '—';
 const KINDS = R['종별이름'];
+const MAPCATS = R['지도분류이름'] || [];
+// 카카오가 쓰는 이름과 심평원 과목 이름이 한 자리만 다른 곳이 있다.
+const MAPALIAS = {'비뇨의학과':'비뇨기과'};
+function mapCountOf(r, name){
+  if(!r.mapCat) return null;
+  const i = MAPCATS.indexOf(MAPALIAS[name] || name);
+  return i < 0 ? null : r.mapCat[i];
+}
 // 종별 15가지를 사람들이 실제로 쓰는 다섯 묶음으로 모은다.
 const BUCKETS = [
   ['의원',   ['의원'],                    'var(--c1)'],
@@ -262,7 +278,7 @@ const PUBLIC_KINDS = ['보건소','보건지소','보건진료소','보건의료
 const regions = R['지역'].map((a,i)=>({
   i, sido:a[0], sggu:a[1], pop:a[2], n:a[3], per:a[4], area:a[5], perKm:a[6],
   old:a[7], young:a[8], w2049:a[9], dr:a[10], kinds:a[11],
-  clinics:a[12], mix:a[13], mixp:a[14], gen:a[15],
+  clinics:a[12], mix:a[13], mixp:a[14], gen:a[15], mapN:a[16], mapCat:a[17],
   label:a[0]+' '+a[1]
 }));
 const natPer = R['전국']['인구1만명당'];
@@ -404,7 +420,8 @@ function renderDetail(){
     const v = BASIS[state.basis].pick(c, sc);
     const per = r.pop ? v/r.pop*10000 : null;
     const ix = per==null ? null : per/natPerOf(si, state.basis)*100;
-    return {name:S['이름'][si], c, sc, non:c-sc, sp, per, ix, si, v};
+    return {name:S['이름'][si], c, sc, non:c-sc, sp, per, ix, si, v,
+            map:mapCountOf(r, S['이름'][si])};
   }).sort((a,b)=>b.v-a.v || b.c-a.c).slice(0,14);
   const tbody = rowsSub.map(x=>{
     const over = x.ix!=null && x.ix>=100;
@@ -414,6 +431,7 @@ function renderDetail(){
       <td class="num">${fmt(x.c)}</td>
       <td class="num" style="color:var(--under)">${fmt(x.sc)}</td>
       <td class="num" style="color:var(--over)">${fmt(x.non)}</td>
+      <td class="num" style="color:var(--c3)">${x.map==null?DASH:fmt(x.map)}</td>
       <td class="num">${x.per==null?DASH:x.per.toFixed(2)}</td>
       <td><span class="idxcell"><span class="idxbar"><em style="${
         over?`left:50%;width:${w}%;background:var(--over)`:`right:50%;width:${w}%;background:var(--under)`
@@ -434,6 +452,20 @@ function renderDetail(){
     <div class="legend num">${legend}</div>
     ${pubN ? `<p class="note" style="margin-top:7px">보건소·보건지소·보건진료소는
       위 숫자에서 빼고 따로 <b class="num">${pubN.toLocaleString('ko-KR')}곳</b>이 있다.</p>` : ''}
+    <h3 class="sub">지도에 올라와 있나</h3>
+    <div class="mix" style="background:var(--canvas)">
+      <div class="mix-num"><b class="num" style="color:var(--c3)">${
+        r.mapN==null?DASH:Math.round(r.mapN/r.n*100)}<small>%</small></b>
+        <span>심평원 등록 ${fmt(r.n)}곳 대비, 카카오 지도에서 잡히는 곳
+          <b style="color:var(--c3)">${r.mapN==null?DASH:fmt(r.mapN)}곳</b></span></div>
+      <div class="mix-bar"><i style="width:${r.mapN==null?0:Math.min(100,r.mapN/r.n*100)}%;
+        background:var(--c3)"></i></div>
+      <p class="note">전국은 <b class="num">96%</b>다(심평원 76,322곳 대비 지도 72,949곳).
+        낮으면 <b>지도에 이름을 안 올린 병원이 그만큼 있다</b>는 뜻이고, 그것은 가장 기본적인
+        마케팅이 비어 있다는 표시다. <b>100%를 넘기도 한다</b> — 지도에는 심평원에 없는 것
+        (검진센터·부속의원, 문 닫고도 남아 있는 자리)이 섞이기 때문이다.
+        ${r.mapN==null?'이 지역은 아직 못 쟀다(인천 중구·동구는 행정구역이 합쳐져 가를 수 없다).':''}</p>
+    </div>
     <h3 class="sub">이 지역 의원이 실제로 파는 것</h3>
     <div class="mix">
       <div class="mix-num"><b class="num">${r.clinics?r.mixp.toFixed(0):DASH}<small>%</small></b>
@@ -449,8 +481,8 @@ function renderDetail(){
     <h3 class="sub">많이 내건 진료과목 14</h3>
     <div class="wide"><table class="tbl">
       <thead><tr><th>진료과목</th><th>내건 곳</th><th>전문의 있는 곳</th>
-        <th>전문의 없이</th><th>1만명당</th><th>전국대비</th></tr></thead>
-      <tbody>${tbody || '<tr><td colspan="6" class="mute">자료 없음</td></tr>'}</tbody>
+        <th>전문의 없이</th><th>지도에 보임</th><th>1만명당</th><th>전국대비</th></tr></thead>
+      <tbody>${tbody || '<tr><td colspan="7" class="mute">자료 없음</td></tr>'}</tbody>
     </table></div>
     <p class="note" style="margin-top:10px">「전국대비」는 전국 평균을 100으로 놓은 값이다.
       100보다 크면 전국보다 <b style="color:var(--over)">빽빽</b>하고,
