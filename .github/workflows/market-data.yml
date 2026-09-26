@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places'
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places | sejong'
         required: true
         default: 'probe'
       max_calls:
@@ -68,6 +68,9 @@ jobs:
       - name: 수집
         env:
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          SGIS_CONSUMER_KEY: ${{ secrets.SGIS_CONSUMER_KEY }}
+          SGIS_CONSUMER_SECRET: ${{ secrets.SGIS_CONSUMER_SECRET }}
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
           KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
@@ -80,6 +83,7 @@ jobs:
           set -e
           case "$STAGE" in
             portal-file) python3 tools/market-data/portal_file.py ;;
+            sejong)      python3 tools/market-data/fetch_sejong.py ;;
             kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" \
                            ${PART:+--out "kakao_$PART.jsonl"} ;;
             kakao-word)  python3 tools/market-data/kakao_places.py --probe "$TERMS" \
