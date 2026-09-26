@@ -142,6 +142,22 @@ def main() -> int:
             d["인구_여20~49"] = DASH
         dong_rows.append(d)
 
+    # ── 세종 메우기 ──
+    # 행안부 행정동 자료에 세종이 통째로 빠져 있다. 사장님이 행안부 화면에서 읽어 주신
+    # 값을 따로 둔 파일에서 가져와 채운다(출처·기준월은 그 파일에 적혀 있다).
+    # 면적은 SGIS 경계 자료에 세종이 있어 거기서 센다. 나이대는 어디에도 없어 «—» 로 둔다.
+    sj = pathlib.Path("data/market/sejong_population.json")
+    if sj.exists():
+        d = json.loads(sj.read_text(encoding="utf-8"))
+        k = (d["시도"], d["시군구"])
+        if not sggu_pop[k]["인구"]:
+            sejong_area = sum(a for c, nm, a in zip(pts["dong_code"], pts["dong_name"],
+                                                    pts["area_km2"]) if nm.startswith("세종"))
+            sggu_pop[k].update({"인구": d["총인구"], "남": d["남"], "여": d["여"],
+                                "면적": round(sejong_area, 1), "동수": 24})
+            print(f"[세종] 행안부 {d['기준월']} 값을 넣었다 — 인구 {d['총인구']:,} · "
+                  f"면적 {sejong_area:.1f}km² (나이대는 자료가 없어 «—»)")
+
     # ── 심평원 ──
     basis = read_csv_gz(HIRA_DIR / "basis.csv.gz")
     raw_keys = {hira_region(r) for r in basis}
@@ -176,7 +192,7 @@ def main() -> int:
 
     # 인구 이름 ↔ 심평원 이름 맞추기
     var2pop = {}
-    for k in sggu_pop:
+    for k in list(sggu_pop):
         for v in pop_variants(k[1]):
             var2pop[(k[0], v)] = k
     roll2pop = collections.defaultdict(list)
