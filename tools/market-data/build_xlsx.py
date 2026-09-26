@@ -22,6 +22,8 @@ SHEETS = [
     ("시군구", "market_sggu.csv", "시군구 한 줄 — 인구·면적·병의원·종별·밀집도·나이대·미용 겸업"),
     ("지역x진료과목", "market_subject.csv", "시군구 × 진료과목 — 내건 곳 / 전문의 있는 곳 / 전문의 없이"),
     ("지도분류", "market_kakao.csv", "카카오 지도가 그 병원을 무엇으로 분류했나"),
+    ("업종별상권", "market_sangga.csv",
+     "시군구 한 줄 — 업종별 가게 수와 «이 동네는 어떤 동네인가»"),
     ("행정동", "market_dong.csv", "행정동 한 줄 — 인구·남녀·나이대·면적"),
     ("검색수요", "naver_datalab_subjects.csv", "과목·시술별 검색 수요(피부과=100)"),
     ("사장님시트", "population_sggu.csv", "처음 주신 인구 시트를 옮긴 것"),
@@ -67,7 +69,7 @@ def main() -> int:
         path = SRC / fname
         if not path.exists():
             continue
-        rows = list(csv.reader(path.open(encoding="utf-8")))
+        rows = list(csv.reader(path.open(encoding="utf-8-sig")))
         ws = wb.create_sheet(name)
         header = rows[0]
         ws.append(header)
@@ -142,6 +144,7 @@ def main() -> int:
         ("인구·남녀 — 행정안전부 주민등록 인구통계 2026-06-30 · 나이대 2026-08-31", False),
         ("면적 — 통계청 SGIS 행정동 경계 2026-07-01", False),
         ("지도 분류 — 카카오 로컬 2026-09-19 (전국 훑기)", False),
+        ("업종별 상권 — 소상공인시장진흥공단 상가(상권)정보 2026년 6월 기준", False),
         ("검색 수요 — 네이버 데이터랩 2025-09 ~ 2026-08", False),
         ("", False),
         ("표를 읽을 때 꼭 알아야 할 것", True),
@@ -150,7 +153,11 @@ def main() -> int:
         ("    마케팅에서는 「그 검색어로 부딪칠 병원 수」라 이 숫자가 오히려 쓸모 있고,", False),
         ("    「진짜 그 과 병원」을 보려면 「전문의 있는 곳」 칸을 봅니다.", False),
         ("② 「지도분류」는 한 병원에 하나만 붙습니다 — 환자가 그 병원을 무엇으로 보는가입니다.", False),
-        ("③ «—» 는 못 잰 값입니다. 지어내지 않았습니다. 지금 남은 것은 세종 인구 하나뿐입니다.", False),
+        ("③ 「업종별상권」은 그 동네에 어떤 가게가 몇 곳 있는지입니다. 같은 인구라도", False),
+        ("    학원가·먹자골목·오피스는 오는 사람이 다릅니다. 「전국대비」가 100보다 크면", False),
+        ("    전국 평균보다 그 업종이 많다는 뜻입니다.", False),
+        ("④ «—» 는 못 잰 값입니다. 지어내지 않았습니다. 지금 남은 것은 세종 나이대뿐입니다", False),
+        ("    (행정안전부 나이대 자료에 세종이 통째로 빠져 있습니다).", False),
         ("", False),
         ("눌러 보며 찾는 화면", True),
         ("https://claude.ai/artifact/9nJf5n2wD54uuTF3hwywJL", False),

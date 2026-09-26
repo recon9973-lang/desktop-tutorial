@@ -20,6 +20,14 @@ def main() -> int:
           csv.DictReader(kk_path.open(encoding="utf-8"))} if kk_path.exists() else {}
     kk_cols = [c[3:] for c in (next(iter(kk.values())).keys() if kk else []) 
                if c.startswith("지도_") and c != "지도_병원계"]
+    # 업종별 상권(소상공인 상가정보) — 없으면 그 자리는 그냥 빈다.
+    sa_path = SRC / "market_sangga.csv"
+    sa = {(r["시도"], r["시군구"]): r for r in
+          csv.DictReader(sa_path.open(encoding="utf-8-sig"))} if sa_path.exists() else {}
+    sa_l = [c[3:] for c in (next(iter(sa.values())).keys() if sa else [])
+            if c.startswith("업종_")]
+    sa_m = [c[2:] for c in (next(iter(sa.values())).keys() if sa else [])
+            if c.startswith("중_")]
     kinds = [c[3:] for c in sg[0] if c.startswith("종별_")]
 
     regions, index = [], {}
@@ -34,6 +42,9 @@ def main() -> int:
             num(r["미용겸업_비율%"]), int(r["겸업중_일반의원장"]),
             int(k["지도_병원계"]) if (k := kk.get((r["시도"], r["시군구"]))) else None,
             [int(k[f"지도_{c}"]) for c in kk_cols] if k else None,
+            num(a["점포_계"]) if (a := sa.get((r["시도"], r["시군구"]))) else None,
+            [num(a[f"업종_{c}"]) for c in sa_l] if a else None,
+            [num(a[f"중_{c}"]) for c in sa_m] if a else None,
         ])
 
     names, nidx = [], {}
@@ -61,13 +72,25 @@ def main() -> int:
                  "나이": "행안부 2026-08-31", "면적": "SGIS 2026-07-01"},
         "열": ["시도", "시군구", "인구", "병의원", "인구1만명당", "면적km2", "km2당",
                "65세이상%", "20~39%", "여성20~49", "의사수", "종별",
-               "의원수", "미용겸업", "미용겸업%", "겸업중일반의", "지도계", "지도분류"],
+               "의원수", "미용겸업", "미용겸업%", "겸업중일반의", "지도계", "지도분류",
+               "점포계", "업종", "중업종"],
         "지도분류이름": kk_cols,
+        "업종이름": sa_l,
+        "중업종이름": sa_m,
         "종별이름": kinds,
         "전국": {"인구": nat_pop, "병의원": nat_n,
                  "인구1만명당": round(nat_n / nat_pop * 10000, 2),
                  "의원": sum(x[12] for x in regions),
-                 "미용겸업": sum(x[13] for x in regions)},
+                 "미용겸업": sum(x[13] for x in regions),
+                 "점포": sum(x[18] or 0 for x in regions) or None,
+                 # 업종 지수(전국=100)의 기준 인구는 «업종 값이 있는 자리의 인구» 다.
+                 # 값이 없는 자리 인구까지 넣으면 전국 평균이 낮아져 지수가 다 부풀어 오른다.
+                 "업종기준인구": sum(x[2] or 0 for x in regions if x[18] is not None),
+                 # 업종별 전국 합 — 지역 지수(전국=100)의 기준선.
+                 "업종": [sum((x[19] or [0] * len(sa_l))[i] or 0 for x in regions)
+                          for i in range(len(sa_l))],
+                 "중업종": [sum((x[20] or [0] * len(sa_m))[i] or 0 for x in regions)
+                            for i in range(len(sa_m))]},
         "지역": regions,
     }
     (OUT / "regions.json").write_text(json.dumps(payload, ensure_ascii=False,
@@ -79,7 +102,8 @@ def main() -> int:
         ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for p in (OUT / "regions.json", OUT / "subjects.json"):
         print(f"{p} {p.stat().st_size / 1024:.0f}KB")
-    print(f"지역 {len(regions)} · 과목 {len(names)} · 종별 {len(kinds)}")
+    print(f"지역 {len(regions)} · 과목 {len(names)} · 종별 {len(kinds)} · "
+          f"업종 대분류 {len(sa_l)} · 중분류 {len(sa_m)}")
     return 0
 
 

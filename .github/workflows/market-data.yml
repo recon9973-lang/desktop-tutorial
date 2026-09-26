@@ -88,7 +88,7 @@ jobs:
             sangga-probe)   python3 tools/market-data/fetch_sangga.py --mode probe ;;
             sangga-codes)   python3 tools/market-data/fetch_sangga.py --mode codes ;;
             sangga)         python3 tools/market-data/fetch_sangga.py --mode collect \
-                              --lcls "$SUBJ" --limit "$MAXC" ;;
+                              --limit "$MAXC" ;;
             kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" \
                            ${PART:+--out "kakao_$PART.jsonl"} ;;
             kakao-word)  python3 tools/market-data/kakao_places.py --probe "$TERMS" \

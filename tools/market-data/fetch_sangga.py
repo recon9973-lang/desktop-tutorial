@@ -11,7 +11,7 @@
 `--mode probe` 로 이 API가 무엇을 받는지 먼저 알아내고, 알아낸 대로 `--mode collect` 한다.
 주소·값 이름을 외워 쓰지 않는다 — 답하는 것을 찾는다.
 """
-import argparse, csv, json, os, pathlib, sys, time, urllib.parse, urllib.request
+import argparse, csv, json, os, pathlib, re, sys, time, urllib.parse, urllib.request
 
 BASE = "https://apis.data.go.kr/B553077/api/open/sdsc2"
 OUT = pathlib.Path("data/market")
@@ -88,17 +88,68 @@ def codes_mode() -> int:
     return 0
 
 
-def sggu_codes() -> list[tuple[str, str, str]]:
-    """행정동 표준코드 앞 다섯 자리 = 시군구 코드. ANSEO 경계 자료에서 가져온다."""
-    import gzip
-    p = pathlib.Path("/home/user/veo-platform/apps/api/data/population/mois_dong_population.json.gz")
-    if not p.exists():
-        return []
-    d = json.load(gzip.open(p, "rt", encoding="utf-8"))
-    seen = {}
-    for code, sido, sggu in zip(d["dong_code"], d["sido_name"], d["sigungu_name"]):
-        seen.setdefault(code[:5], (sido, sggu))
-    return [(c, v[0], v[1]) for c, v in sorted(seen.items())]
+# ── 업종 중분류 가운데 «병원 상권에 쓸모 있는 것»만 고른다 ─────────────────────
+# 74가지를 다 세면 252×74=18,648 번이라 한 판에 안 끝난다. 환자 수요를 대신
+# 말해 주는 것만 고른다(왜 골랐는지 옆에 적는다 — 다음 사람이 지우거나 더할 수 있게).
+MCLS_PICK = [
+    ("S207", "이용·미용"),        # 미용 수요 — 피부과·성형외과 상권의 핵
+    ("S208", "욕탕·신체관리"),    # 에스테틱·마사지 — 비수술 미용과 겹친다
+    ("G215", "의약·화장품 소매"),  # 약국·화장품 — 처방·미용 동선
+    ("P105", "일반 교육"),        # 학원가 — 아이 있는 집이 사는 동네
+    ("P106", "기타 교육"),        # 같은 뜻으로 함께 본다
+    ("Q101", "병원"),             # 상가로 등록된 병원
+    ("Q102", "의원"),             # 상가로 등록된 의원
+    ("Q104", "기타 보건"),        # 한의원·치과 등이 섞여 들어온다
+    ("R103", "스포츠 서비스"),    # 헬스·필라테스 — 다이어트·비만 수요
+    ("I211", "주점"),             # 유흥 상권 — 밤에 사람이 도는 곳
+    ("I212", "비알코올"),         # 카페 — 낮 유동인구
+    ("L102", "부동산 서비스"),     # 임대가 도는 곳 = 상권이 바뀌는 곳
+    ("M107", "본사·경영 컨설팅"),  # 오피스 상권 — 직장인 낮 인구
+    ("G209", "섬유·의복·신발 소매"),  # 패션 상권 — 젊은 여성 동선
+]
+
+# 2026년에 생긴 구는 202606 상가자료가 아직 모를 수 있다. 구 코드가 모두 0으로
+# 오면 시 코드로 한 번 더 물어본다(화성시는 2026년에 4개 구가 생겼다).
+PARENT_CODE = {("경기", "화성시"): ["41590"]}
+
+
+def regions() -> list[dict]:
+    """252곳(표와 같은 자리) × 그 자리를 가리키는 시군구 코드들.
+
+    행정동 표준코드 앞 다섯 자리 = 시군구 코드. 한 번 만들어 `sggu_codes.csv` 에
+    담아 두고 그 뒤로는 그것을 읽는다(러너에는 ANSEO 사본이 없다).
+    이름은 표(`market_sggu.csv`)와 **같은 꼴**로 돌린다 — 「고양시덕양구」→「고양덕양구」,
+    화성 4개 구는 표에 한 줄(「화성시」)이므로 한 자리로 묶는다.
+    세종은 행안부 동별 자료에 없어 코드를 못 만든다 — 상가자료에서 찾아낸 코드를 쓴다.
+    """
+    # 러너에는 ANSEO 사본이 없다(한 판 그래서 접었다). 그래서 **만들어 둔 코드표를
+    # 저장소에 담아** 그것을 먼저 읽는다 — 없을 때만 ANSEO 에서 새로 만든다.
+    ready = OUT / "sggu_codes.csv"
+    if ready.exists():
+        got: dict[tuple[str, str], list[tuple[str, str]]] = {}
+        with ready.open(encoding="utf-8-sig") as f:
+            for r in csv.DictReader(f):
+                got.setdefault((r["시도"], r["시군구"]), []).append(
+                    (r["코드"], r["무엇"]))
+        return [{"시도": k[0], "시군구": k[1], "코드": sorted(set(v))}
+                for k, v in sorted(got.items())]
+
+    print("코드표가 없다 — `python3 tools/market-data/make_sggu_codes.py` 를 먼저 돌린다")
+    return []
+
+
+def count(op: str, div: str, code: str, field: str = "", val: str = "") -> tuple:
+    """그 자리·그 업종의 «전체 건수»만 센다(numOfRows=1 로 totalCount 만 본다)."""
+    p = {"divId": div, "key": code, "numOfRows": "1", "pageNo": "1", "type": "json"}
+    if field:
+        p[field] = val
+    st, body = call(op, p, timeout=25, cap=None)
+    try:
+        j = json.loads(body.decode("utf-8", "replace"))
+        b = j.get("body") or {}
+        return st, b.get("totalCount"), (j.get("header") or {}).get("resultCode")
+    except Exception:  # noqa: BLE001
+        return st, None, None
 
 
 def probe() -> int:
@@ -146,56 +197,89 @@ def probe() -> int:
     return 0
 
 
-def collect(op: str, div: str, lcls: list[str], limit: int) -> int:
-    """시군구 × 업종 대분류의 «전체 건수»만 센다(numOfRows=1 로 totalCount 만 본다)."""
+def collect(op: str, div: str, limit: int, do_mcls: bool) -> int:
+    """252곳 × (전체 · 업종 대분류 10 · 골라 둔 중분류)의 점포 수를 센다.
+
+    한 판이 끊겨도 이어받는다 — 이미 센 (코드, 갈래, 업종) 은 건너뛴다.
+    **대분류를 먼저 다 센 뒤** 중분류로 넘어간다(중간에 끊기면 굵은 것부터 남게).
+    """
     path = RAW / "sangga_counts.jsonl"
     RAW.mkdir(parents=True, exist_ok=True)
     done = set()
     if path.exists():
         for line in path.open(encoding="utf-8"):
             try:
-                d = json.loads(line); done.add((d["시군구코드"], d["업종대분류"]))
+                d = json.loads(line)
+                # 답을 못 받은 줄(시간 초과)은 «끝난 것» 으로 치지 않는다 —
+                # [실측] 한 판에서 27번이 답 없이 지나갔다. 다음 판이 다시 묻게 둔다.
+                if d.get("점포수") is None and d.get("resultCode") != "03":
+                    continue
+                done.add((d["코드"], d["갈래"], d["업종코드"]))
             except Exception:  # noqa: BLE001
                 pass
-    regions = sggu_codes()
-    if not regions:
+    regs = regions()
+    if not regs:
         print("시군구 코드를 못 만들었다 — ANSEO 자료가 없다"); return 2
-    print(f"시군구 {len(regions)} × 업종 {len(lcls)} = {len(regions)*len(lcls):,}쌍 (이미 {len(done):,})")
+
+    codes = json.loads((RAW / "sangga_codes.json").read_text(encoding="utf-8"))
+    lcls = sorted(codes["대분류"].items())
+    print(f"자리 {len(regs)}곳 · 업종 대분류 {len(lcls)}가지 · "
+          f"중분류 {len(MCLS_PICK) if do_mcls else 0}가지 (이미 센 것 {len(done):,})")
+
+    # ── 중분류로 걸러지는지 먼저 확인한다 — 두드려 보지 않은 값을 쓰지 않는다 ──
+    mcls_ok = False
+    if do_mcls:
+        # 한 번 안 되면 세 번까지 다시 묻는다 — 한 번 삐끗해서 중분류를 통째로
+        # 건너뛰면 다음 판을 또 돌려야 한다.
+        for t in range(3):
+            _, whole, _ = count(op, div, "11680")
+            _, big, _ = count(op, div, "11680", "indsLclsCd", "S2")
+            _, mid, _ = count(op, div, "11680", "indsMclsCd", "S207")
+            print(f"  [확인 {t+1}] 강남구 전체 {whole} · 대분류 S2 {big} · 중분류 S207 {mid}")
+            try:
+                mcls_ok = (0 < int(mid) <= int(big) < int(whole))
+            except Exception:  # noqa: BLE001
+                mcls_ok = False
+            if mcls_ok or whole is not None:
+                break
+            time.sleep(2 ** t)
+        print(f"  [확인] 중분류로 걸러진다: {'그렇다' if mcls_ok else '아니다 — 건너뛴다'}")
+
+    jobs = [("전체", "", "", "", "")]
+    jobs += [("대", c, n, "indsLclsCd", c) for c, n in lcls]
+    if mcls_ok:
+        jobs += [("중", c, n, "indsMclsCd", c) for c, n in MCLS_PICK]
+
     n = 0
     with path.open("a", encoding="utf-8") as f:
-        for code, sido, sggu in regions:
-            for lc in lcls:
-                if (code, lc) in done:
-                    continue
-                if n >= limit:
-                    print("한도 도달 — 다음 실행에서 이어받는다"); return 0
-                p = {"divId": div, "key": code, "numOfRows": "1", "pageNo": "1", "type": "json"}
-                if lc:
-                    p["indsLclsCd"] = lc
-                st, body = call(op, p, timeout=20, cap=None)
-                n += 1
-                total = None
-                try:
-                    j = json.loads(body.decode("utf-8", "replace"))
-                    total = (j.get("body") or {}).get("totalCount")
-                except Exception:  # noqa: BLE001
-                    pass
-                f.write(json.dumps({"시군구코드": code, "시도": sido, "시군구": sggu,
-                                    "업종대분류": lc, "점포수": total, "http": st},
-                                   ensure_ascii=False) + "\n")
-                time.sleep(0.05)
-            f.flush()
-            print(f"  {sido} {sggu} 완료 (누적 {n})")
+        for reg in regs:
+            for code, what in reg["코드"]:
+                for kind, ic, inm, field, val in jobs:
+                    if (code, kind, ic) in done:
+                        continue
+                    if n >= limit:
+                        print("한도 도달 — 다음 판에서 이어받는다"); return 0
+                    st, total, rc = count(op, what, code, field, val)
+                    n += 1
+                    f.write(json.dumps({"시도": reg["시도"], "시군구": reg["시군구"],
+                                        "코드": code, "무엇": what,
+                                        "갈래": kind, "업종코드": ic,
+                                        "업종": inm, "점포수": total, "http": st,
+                                        "resultCode": rc}, ensure_ascii=False) + "\n")
+                    time.sleep(0.03)
+                f.flush()
+            print(f"  {reg['시도']} {reg['시군구']} 완료 (누적 {n})")
+    print(f"호출 {calls}회 → {path}")
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="probe", choices=["probe", "codes", "collect"])
-    ap.add_argument("--op", default="storeListInArea")
+    ap.add_argument("--op", default="storeListInDong")
     ap.add_argument("--div", default="signguCd")
-    ap.add_argument("--lcls", default="", help="업종 대분류 코드 쉼표. 비우면 전체 한 번")
-    ap.add_argument("--limit", type=int, default=6000)
+    ap.add_argument("--no-mcls", action="store_true", help="업종 중분류는 건너뛴다")
+    ap.add_argument("--limit", type=int, default=8000)
     a = ap.parse_args()
     if not KEY:
         print("DATA_GO_KR_SERVICE_KEY 없음 — 중단"); return 2
@@ -203,8 +287,7 @@ def main() -> int:
         return probe()
     if a.mode == "codes":
         return codes_mode()
-    lcls = [x.strip() for x in a.lcls.split(",") if x.strip()] or [""]
-    return collect(a.op, a.div, lcls, a.limit)
+    return collect(a.op, a.div, a.limit, not a.no_mcls)
 
 
 if __name__ == "__main__":

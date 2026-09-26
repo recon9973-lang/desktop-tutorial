@@ -186,6 +186,8 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
         <option value="200000">20만 명 이상</option>
         <option value="300000">30만 명 이상</option>
       </select></div>
+    <div class="field"><label for="fTrade">동네 성격으로 고르기</label>
+      <select id="fTrade"></select></div>
     <div class="field"><label for="fQ">지역 찾기</label>
       <input id="fQ" type="search" placeholder="예: 강남" autocomplete="off"></div>
     <div class="field"><label>정렬</label>
@@ -231,7 +233,7 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
     </div>
     <div>
       <h3>지도 층은 무엇인가</h3>
-      <p class="note">카카오 지도를 전국 통째로 훑어 병원 <b>72,949곳</b>을 받았다.
+      <p class="note">카카오 지도를 전국 통째로 훑어 병원 <b id="natMap">—</b>을 받았다.
       지도 분류는 한 곳에 <b>하나만</b> 붙어서 「환자가 이 병원을 무엇으로 보는가」가 된다.
       심평원의 「무엇을 할 수 있나」와는 다른 층이다.
       강남구를 예로 들면 지도에서 피부과로 보이는 곳이 585곳인데 피부과 전문의가 있는 곳은
@@ -240,9 +242,9 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
     <div>
       <h3>아직 못 잰 것</h3>
       <p class="note"><span class="dash">—</span> 는 <b>못 잰 값</b>이다. 지어내지 않았다.<br>
-      세종은 행안부 행정동 인구 자료에 없어 인구가 «—» 다(병의원 469곳은 실측).<br>
-      한 달에 몇 번 검색되는지(실제 검색량)와 지도에서 몇 곳이 잡히는지는
-      열쇠가 있어야 잰다.</p>
+      지금 남은 것은 <b>세종의 나이대</b> 하나다 — 행안부 나이대 자료에 세종이 통째로
+      빠져 있다(인구·남녀·면적·병의원은 다 있다).<br>
+      한 달에 몇 번 검색되는지(실제 검색량)는 열쇠가 있어야 잰다.</p>
     </div>
   </div>
 </div>
@@ -279,9 +281,46 @@ const regions = R['지역'].map((a,i)=>({
   i, sido:a[0], sggu:a[1], pop:a[2], n:a[3], per:a[4], area:a[5], perKm:a[6],
   old:a[7], young:a[8], w2049:a[9], dr:a[10], kinds:a[11],
   clinics:a[12], mix:a[13], mixp:a[14], gen:a[15], mapN:a[16], mapCat:a[17],
+  stores:a[18], lcls:a[19], mcls:a[20],
   label:a[0]+' '+a[1]
 }));
+// ── 업종별 상권(소상공인 상가정보) ──
+const LCLS = R['업종이름'] || [], MCLS = R['중업종이름'] || [];
+const NATM = (R['전국']['중업종']) || [], NATSTORE = R['전국']['점포'] || null;
+// 업종 지수의 기준 인구 — 업종 값이 있는 자리의 인구만 센다.
+const NATTRADEPOP = R['전국']['업종기준인구'] || R['전국']['인구'];
+// 업종 대분류 10가지를 사람이 한눈에 읽는 일곱 묶음으로 모은다.
+const TRADE = [
+  ['음식',      ['음식'],                             'var(--c1)'],
+  ['소매',      ['소매'],                             'var(--c2)'],
+  ['생활·미용', ['수리·개인'],                         'var(--c3)'],
+  ['교육',      ['교육'],                             'var(--c4)'],
+  ['사무·전문', ['과학·기술','시설관리·임대','부동산'],  'var(--c5)'],
+  ['보건의료',  ['보건의료'],                         'var(--ruby)'],
+  ['그 밖',     ['예술·스포츠','숙박'],                 'var(--mute)'],
+];
+// 「이 동네에 우리 환자가 사는가」를 대신 말해 주는 업종. 1만 명당으로 재고
+// 전국 평균을 100 으로 놓는다.
+const TRADE_PICK = [
+  ['미용실·피부관리', ['이용·미용','욕탕·신체관리'], '피부·성형 수요'],
+  ['학원',            ['일반교육','기타교육'],       '아이 있는 집'],
+  ['카페',            ['카페'],                     '낮에 도는 사람'],
+  ['헬스·필라테스',   ['스포츠'],                   '다이어트·비만'],
+  ['약국·화장품',     ['의약·화장품'],               '처방·미용 동선'],
+  ['사무실',          ['경영컨설팅'],               '직장인 낮 인구'],
+];
+const mSum = (arr, names) => {
+  if(!arr) return null;
+  let s = 0;
+  for(const n of names){ const i = MCLS.indexOf(n); if(i < 0) return null;
+    if(arr[i] == null) return null; s += arr[i]; }
+  return s;
+};
 const natPer = R['전국']['인구1만명당'];
+// 지도 합계는 자료에서 센다 — 화면에 외워 적어 두면 자료가 바뀔 때 어긋난다
+// (한 번 어긋나 있었다: 적어 둔 72,949 ↔ 실제 73,188).
+const natMapN = regions.reduce((s,r)=>s + (r.mapN||0), 0);
+const natMapPct = Math.round(natMapN / R['전국']['병의원'] * 100);
 const fmt = n => n==null ? DASH : n.toLocaleString('ko-KR');
 const fmt1 = n => n==null ? DASH : n.toFixed(1);
 const man = n => n==null ? DASH : (n/10000).toFixed(n>=1000000?0:1);
@@ -295,6 +334,7 @@ const BASIS = {
 const natPerOf = (i,b) => BASIS[b].nat(i) / S['전국인구'] * 10000;
 const subjOf = ri => (S['지역별'][ri]||[]);
 
+document.getElementById('natMap').textContent = natMapN.toLocaleString('ko-KR') + '곳';
 document.getElementById('topStats').innerHTML = [
   ['인구', man(R['전국']['인구'])+'만 명'],
   ['병의원', fmt(R['전국']['병의원'])+'곳'],
@@ -314,9 +354,23 @@ document.getElementById('fSubject').innerHTML =
   subjOrder.map(([n,i,c])=>`<option value="${i}">${n} (${c.toLocaleString('ko-KR')} / 전문 ${
      S['전국전문기관수'][i].toLocaleString('ko-KR')})</option>`).join('');
 
-const state = {sido:'', subj:-1, basis:'all', minPop:0, q:'', sort:'dense', pick:null};
+document.getElementById('fTrade').innerHTML =
+  '<option value="">(병의원 기준으로 본다)</option>' +
+  (MCLS.length ? TRADE_PICK.map(([nm,,why])=>
+     `<option value="${nm}">${nm} 많은 순 — ${why}</option>`).join('') : '');
+
+const state = {sido:'', subj:-1, basis:'all', minPop:0, q:'', sort:'dense',
+               trade:'', pick:null};
 
 function metricOf(r){
+  // 동네 성격을 골랐으면 그 업종 기준으로 잰다(가게 수 · 1만 명당).
+  if(state.trade){
+    const hit = TRADE_PICK.find(x=>x[0]===state.trade);
+    const v = hit ? mSum(r.mcls, hit[1]) : null;
+    const nv = hit ? mSum(NATM, hit[1]) : null;
+    return {n:v, per:(v!=null && r.pop) ? v/r.pop*10000 : null,
+            base:(nv && NATTRADEPOP) ? nv/NATTRADEPOP*10000 : null, trade:true};
+  }
   // 고른 과목이 있으면 그 과목 기준, 없으면 병의원 전체 기준.
   if(state.subj < 0) return {n:r.n, per:r.per, base:natPer};
   const hit = subjOf(r.i).find(x=>x[0]===state.subj);
@@ -345,15 +399,21 @@ function current(){
 
 function renderList(){
   const list = current();
-  const subjName = state.subj<0 ? '병의원' : S['이름'][state.subj];
+  const subjName = state.trade ? state.trade
+    : (state.subj<0 ? '병의원' : S['이름'][state.subj]);
   document.getElementById('listTitle').textContent =
     (state.sido||'전국') + ' · ' + subjName
-    + (state.subj<0 ? '' : ' · ' + BASIS[state.basis].label);
+    + (state.trade || state.subj<0 ? '' : ' · ' + BASIS[state.basis].label);
   document.getElementById('listHint').textContent = list.length + '곳';
-  document.getElementById('listLead').textContent = state.subj<0
-    ? '막대는 인구 1만 명당 병의원 수. 전국 평균 '+natPer.toFixed(1)+'곳.'
-    : '막대는 인구 1만 명당 「'+subjName+'」 '+BASIS[state.basis].label+'. 전국 평균 '
-      + natPerOf(state.subj, state.basis).toFixed(2)+'곳.';
+  const natTrade = state.trade
+    ? (list.length ? metricOf(list[0]).base : null) : null;
+  document.getElementById('listLead').textContent = state.trade
+    ? '막대는 인구 1만 명당 「'+state.trade+'」 가게 수. 전국 평균 '
+      + (natTrade==null?DASH:natTrade.toFixed(1))+'곳. 병원 자료가 아니라 «동네» 자료다.'
+    : (state.subj<0
+      ? '막대는 인구 1만 명당 병의원 수. 전국 평균 '+natPer.toFixed(1)+'곳.'
+      : '막대는 인구 1만 명당 「'+subjName+'」 '+BASIS[state.basis].label+'. 전국 평균 '
+        + natPerOf(state.subj, state.basis).toFixed(2)+'곳.');
   if(!list.some(r=>r.i===state.pick)) state.pick = list.length ? list[0].i : null;
   const max = Math.max(...list.map(r=>metricOf(r).per||0), 0.0001);
   const el = document.getElementById('rows');
@@ -365,10 +425,11 @@ function renderList(){
     return `<button class="row" type="button" data-i="${r.i}"
         aria-current="${state.pick===r.i}">
       <span class="row-name">${r.sggu}<span>${r.sido}</span></span>
-      <span class="row-val num">${m.per==null?DASH:m.per.toFixed(state.subj<0?1:2)}</span>
+      <span class="row-val num">${m.per==null?DASH
+        :m.per.toFixed(state.trade||state.subj<0?1:2)}</span>
       <span class="row-sub num">
         <span>인구 ${r.pop?man(r.pop)+'만':DASH}</span>
-        <span>${state.subj<0?'병의원':'기관'} ${fmt(m.n)}곳</span>
+        <span>${state.trade?'가게':(state.subj<0?'병의원':'기관')} ${fmt(m.n)}곳</span>
         <span style="color:${idx==null?'var(--mute)':(over?'var(--over)':'var(--under)')}">
           전국대비 ${idx==null?DASH:Math.round(idx)}</span>
       </span>
@@ -439,6 +500,63 @@ function renderDetail(){
         x.ix==null?DASH:Math.round(x.ix)}</b></span></td></tr>`;
   }).join('');
 
+  // ── 이 동네는 어떤 동네인가 (업종별 상권) ──
+  const tradeBlock = (()=>{
+    if(!r.lcls || r.stores == null) return '';
+    const bs = TRADE.map(([nm, keys, col])=>({nm, col,
+      v: keys.reduce((s,k)=>{ const i = LCLS.indexOf(k);
+        return s + (i < 0 ? 0 : (r.lcls[i] || 0)); }, 0)})).filter(b=>b.v > 0);
+    const t = bs.reduce((s,b)=>s+b.v, 0) || 1;
+    const bar = bs.map(b=>`<i style="width:${b.v/t*100}%;background:${b.col}"
+        title="${b.nm} ${b.v.toLocaleString('ko-KR')}곳"></i>`).join('');
+    const leg = bs.map(b=>`<span><i style="background:${b.col}"></i>${b.nm}
+        <b class="num">${Math.round(b.v/t*100)}%</b></span>`).join('');
+    const rows = TRADE_PICK.map(([nm, keys, why])=>{
+      const v = mSum(r.mcls, keys), nv = mSum(NATM, keys);
+      const per = (v != null && r.pop) ? v/r.pop*10000 : null;
+      const natp = (nv && NATTRADEPOP) ? nv/NATTRADEPOP*10000 : null;
+      const ix = (per != null && natp) ? per/natp*100 : null;
+      const over = ix != null && ix >= 100;
+      const w = ix == null ? 0 : Math.min(50, Math.abs(ix-100)/100*50);
+      return `<tr><td>${nm} <span class="mute"
+          style="font-weight:400;font-size:11px">${why}</span></td>
+        <td class="num">${fmt(v)}</td>
+        <td class="num">${per == null ? DASH : per.toFixed(1)}</td>
+        <td><span class="idxcell"><span class="idxbar"><em style="${
+          over ? `left:50%;width:${w}%;background:var(--over)`
+               : `right:50%;width:${w}%;background:var(--under)`
+        }"></em></span><b class="num" style="color:${ix == null ? 'var(--mute)'
+          : (over ? 'var(--over)' : 'var(--under)')}">${
+          ix == null ? DASH : Math.round(ix)}</b></span></td></tr>`;
+    }).join('');
+    const sgN = mSum(r.mcls, ['의원']);
+    const perStore = r.pop ? (r.stores/r.pop*10000) : null;
+    const natStore = (NATSTORE && NATTRADEPOP)
+      ? NATSTORE/NATTRADEPOP*10000 : null;
+    return `
+    <h3 class="sub">이 동네는 어떤 동네인가</h3>
+    <div class="mix" style="background:var(--canvas)">
+      <div class="mix-num"><b class="num">${fmt(r.stores)}<small> 곳</small></b>
+        <span>이 지역 가게·사무실 전부. 인구 1만 명당
+          <b class="num">${perStore == null ? DASH : perStore.toFixed(0)}곳</b>
+          (전국 ${natStore == null ? DASH : natStore.toFixed(0)}곳)</span></div>
+      <div class="stack" style="margin-top:8px">${bar}</div>
+      <div class="legend num">${leg}</div>
+      <p class="note">업종이 무엇으로 차 있는지가 «누가 이 동네에 오는지»를 말해 준다.
+        먹자골목·학원가·오피스는 같은 인구라도 오는 사람이 다르다.</p>
+    </div>
+    <div class="wide" style="margin-top:10px"><table class="tbl">
+      <thead><tr><th>업종</th><th>가게 수</th><th>1만명당</th><th>전국대비</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <p class="note" style="margin-top:8px">${sgN == null ? '' : `상가자료에 의원으로 올라온 곳은
+      <b class="num">${fmt(sgN)}곳</b>, 심평원에 등록된 의원은
+      <b class="num">${fmt(r.kinds[KINDS.indexOf('의원')] || 0)}곳</b>이다.
+      상가자료는 «간판 달고 장사하는 자리»를, 심평원은 «허가받은 기관»을 세므로
+      둘은 원래 다르다 — 큰 상가가 많은 도심에서는 상가 쪽이 더 많이 잡힌다. `}자료는
+      소상공인시장진흥공단 상가(상권)정보 2026년 6월 기준이다.</p>`;
+  })();
+
   el.innerHTML = `
     <div class="d-head"><span class="eyebrow">${r.sido}</span><h2>${r.sggu}</h2></div>
     <p class="note">전국 평균을 100으로 보면 이 지역의 병의원 밀집도는
@@ -460,12 +578,13 @@ function renderDetail(){
           <b style="color:var(--c3)">${r.mapN==null?DASH:fmt(r.mapN)}곳</b></span></div>
       <div class="mix-bar"><i style="width:${r.mapN==null?0:Math.min(100,r.mapN/r.n*100)}%;
         background:var(--c3)"></i></div>
-      <p class="note">전국은 <b class="num">96%</b>다(심평원 76,322곳 대비 지도 72,949곳).
+      <p class="note">전국은 <b class="num">${natMapPct}%</b>다(심평원 ${fmt(R['전국']['병의원'])}곳 대비 지도 ${fmt(natMapN)}곳).
         낮으면 <b>지도에 이름을 안 올린 병원이 그만큼 있다</b>는 뜻이고, 그것은 가장 기본적인
         마케팅이 비어 있다는 표시다. <b>100%를 넘기도 한다</b> — 지도에는 심평원에 없는 것
         (검진센터·부속의원, 문 닫고도 남아 있는 자리)이 섞이기 때문이다.
         ${r.mapN==null?'이 지역은 아직 못 쟀다(인천 중구·동구는 행정구역이 합쳐져 가를 수 없다).':''}</p>
     </div>
+    ${tradeBlock}
     <h3 class="sub">이 지역 의원이 실제로 파는 것</h3>
     <div class="mix">
       <div class="mix-num"><b class="num">${r.clinics?r.mixp.toFixed(0):DASH}<small>%</small></b>
@@ -496,6 +615,8 @@ document.getElementById('fSubject').addEventListener('change', e=>{
   state.subj=+e.target.value; renderList(); renderDetail();});
 document.getElementById('fPop').addEventListener('change', e=>{
   state.minPop=+e.target.value; state.pick=null; renderList();});
+document.getElementById('fTrade').addEventListener('change', e=>{
+  state.trade=e.target.value; state.pick=null; renderList(); renderDetail();});
 let t; document.getElementById('fQ').addEventListener('input', e=>{
   clearTimeout(t); t=setTimeout(()=>{state.q=e.target.value.trim(); state.pick=null; renderList();},150);});
 document.getElementById('fBasis').addEventListener('click', e=>{
