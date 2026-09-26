@@ -20,7 +20,7 @@ if [ "$((n % 20))" -eq 0 ]; then
 🔔 [세션 자동 체크포인트 · ${n}건] 질문/오더가 20건 배수에 도달했습니다.
 지금 사용자 답변을 마친 뒤 **checkpoint 스킬**을 실행하세요:
 ① 세션 작업 20건을 docs/session-logs/ 에 문서화 → ② TODO 갱신 →
-③ RESUME.md(다음 세션 이어갈 프롬프트) 생성 → ④ PROJECT_STATE 갱신 →
+③ 이 방 인계본 RESUME-<방>.md(가지 표시 포함) 생성·갱신 → ④ PROJECT_STATE 갱신 →
 ⑤ desktop-tutorial main에 커밋·푸시 → ⑥ 사용자에게 "/clear 입력"을 명시적으로 안내.
 (토큰 누적 완화를 위한 자동 인계 시스템)
 EOF

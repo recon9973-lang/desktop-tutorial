@@ -7,6 +7,29 @@
 
 ---
 
+## 🚨 먼저 — 어느 주소가 어느 저장소인가
+
+**서로 다른 두 물건이다. 섞으면 엉뚱한 것을 고친다.**
+
+| 사장님이 보시는 주소 | 무엇 | 저장소 | 이 컨테이너에 |
+|---|---|---|---|
+| **veo.seokorea.org** | **ANSEO** — 진단 콘솔. 요즘 작업은 대부분 여기다 | **`veo-platform`** | `add_repo` 로 붙여야 한다 |
+| venom-new-site.vercel.app | 베놈 마케팅 사이트 | `desktop-tutorial` (이 저장소) | 이미 있다 |
+| erp.seokorea.org | 마케팅대행 ERP | `marketing-agency-erp` | 붙여야 한다 |
+| seokorea.org | GROUND 매거진 | `marketing-agency-erp` | 붙여야 한다 |
+
+- `veo.seokorea.org` 는 **웹만** 서비스한다. `/api/*` 를 부르면 404 HTML 이 온다 —
+  진단 서버 창구는 Railway 쪽이고 주소가 다르다.
+- ANSEO 는 판 번호가 `0.3.x` 이고 `make deploy` 로 나간다. 이 저장소는 판 번호가 없고
+  main 에 들어가면 Vercel 이 자동으로 내보낸다. **배포 방법부터 다르다.**
+
+> **왜 이 칸이 생겼나** — 2026-09-17. 사장님이 「진단 돌려보니 링이 멈춘다」고 하셔서
+> 내가 이 저장소의 링을 한 세션 내내 고치고 배포했다. 사장님이 보고 계신 것은
+> **ANSEO** 였고, 내가 고친 것은 **베놈 사이트** 였다. 고칠수록 그대로였던 이유가 그것이다.
+> 「같은 저장소에 있어서 헷갈리나 본데 분리해야겠다」 — 사장님. 그래서 맨 앞에 박는다.
+
+---
+
 ## 🔎 빠른 찾기 (제일 많이 헷갈리는 것)
 | 찾는 것 | 위치 |
 |---|---|
@@ -24,6 +47,7 @@
 ## 📦 저장소 (GitHub `recon9973-lang`)
 | 저장소 | 용도 | 공개 | 배포 |
 |---|---|---|---|
+| **veo-platform** | **ANSEO 진단 콘솔** — 요즘 작업 대부분 | Private | → veo.seokorea.org + Railway (`make deploy`) |
 | **desktop-tutorial** | 베놈 마케팅 사이트 + SEO 진단기 + 203문서 + 클리닉 진단 | Public | → venom-new-site.vercel.app (main 자동) |
 | **marketing-agency-erp** | 마케팅대행 ERP(Next.js) — 거래처·계약·업무·정산·이미지/마케팅 스튜디오 | Public ⚠️ | → Vercel (erp-v1 자동) |
 | Design-resources-repository | 디자인 리소스 | Public | — |

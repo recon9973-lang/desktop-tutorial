@@ -1,0 +1,503 @@
+<title>ANSEO 상권 §7 P3 시뮬 · 카카오맵 · 추계 환자 수 · 비교 모드</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0b0e14; --card:#12161f; --card2:#161b26; --border:rgba(255,255,255,.09);
+  --ink:#e8ecf4; --ink-dim:#aab3c5; --ink-faint:#77819a;
+  --signal:#5b9dff; --mint:#2fd39c; --ember:#e9b13e; --destructive:#ff5d7d; --unknown:#8b93a3;
+  --signal-soft:rgba(91,157,255,.14); --mint-soft:rgba(47,211,156,.13);
+  --ember-soft:rgba(233,177,62,.14); --destructive-soft:rgba(255,93,125,.13);
+  --unknown-soft:rgba(139,147,163,.14);
+  --track:rgba(255,255,255,.07); --grid:rgba(255,255,255,.08); --codebg:rgba(255,255,255,.045);
+  --c1:#4a86e6; --c2:#1a9f73; --c3:#bd8b24; --c4:#9f5fe0;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+    --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+    --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+    --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+    --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+    --unknown-soft:rgba(124,133,149,.14);
+    --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+    --c1:#2f6fd6; --c2:#0f8a63; --c3:#9a6f12; --c4:#8a4fd0;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --card:#ffffff; --card2:#f8fafd; --border:#e2e7f0;
+  --ink:#1b2330; --ink-dim:#45506a; --ink-faint:#7a849b;
+  --signal:#2b66d9; --mint:#0d9d70; --ember:#a86f10; --destructive:#d1385c; --unknown:#7c8595;
+  --signal-soft:rgba(43,102,217,.10); --mint-soft:rgba(13,157,112,.10);
+  --ember-soft:rgba(168,111,16,.12); --destructive-soft:rgba(209,56,92,.10);
+  --unknown-soft:rgba(124,133,149,.14);
+  --track:rgba(20,30,50,.08); --grid:rgba(20,30,50,.09); --codebg:rgba(20,30,50,.05);
+  --c1:#2f6fd6; --c2:#0f8a63; --c3:#9a6f12; --c4:#8a4fd0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans KR",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1120px; margin:0 auto; padding:30px 20px 80px;}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:500;}
+h1{font-size:20px; font-weight:700; letter-spacing:-.02em; margin:6px 0 3px;}
+h2{font-size:16px; font-weight:700; letter-spacing:-.015em; margin:3px 0 0; text-wrap:balance;}
+h3{font-size:13.5px; font-weight:700; margin:0 0 8px;}
+.sub{color:var(--ink-dim); max-width:70ch; font-size:13px;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-top:18px;}
+.card-head{display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px;}
+.srcchip{font-size:10px; letter-spacing:.04em; color:var(--signal); border:1px solid color-mix(in oklab,var(--signal) 45%,transparent); border-radius:5px; padding:2px 7px; white-space:nowrap;}
+.badge{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; border:1px dashed var(--border); background:var(--card); border-radius:9px; padding:7px 12px; font-size:12px; color:var(--ink-dim); margin-top:14px;}
+.badge b{color:var(--signal); font-weight:500; font-size:10.5px; letter-spacing:.08em; border:1px solid color-mix(in oklab,var(--signal) 40%,transparent); border-radius:4px; padding:1px 6px;}
+.overflow{overflow-x:auto;}
+.stage{animation:rise .62s cubic-bezier(.22,1,.36,1) backwards;}
+@keyframes rise{from{opacity:0; transform:translateY(13px);}}
+@media (prefers-reduced-motion: reduce){ .stage{animation:none;} }
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px;}
+.foot{margin-top:13px; font-size:12px; line-height:1.65; color:var(--ink-faint); max-width:86ch;}
+.dash{color:var(--ink-faint);}
+
+/* ── 실물 골격 (시뮬 11호와 통일) ── */
+.shell{border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-top:18px; background:var(--bg);}
+.topbar{display:flex; align-items:center; gap:18px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--card); font-size:12.5px;}
+.logo{font-weight:700; letter-spacing:.14em; color:var(--mint); font-size:13px;}
+.topbar nav{display:flex; gap:14px; color:var(--ink-dim);}
+.topbar nav b{color:var(--ink); font-weight:500;}
+.sess{margin-left:auto; font-size:11px; color:var(--ink-faint); border:1px solid var(--border); border-radius:6px; padding:2px 8px;}
+.custhead{padding:16px 18px 0; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-end;}
+.custhead h2{font-size:18px;}
+.custhead .meta{font-size:12px; color:var(--ink-faint);}
+.tabs{display:flex; gap:2px; padding:10px 18px 0; border-bottom:1px solid var(--border); overflow-x:auto;}
+.tabs a{font-size:12.5px; color:var(--ink-dim); padding:8px 12px; border-bottom:2px solid transparent; text-decoration:none; white-space:nowrap;}
+.tabs a.on{color:var(--ink); border-bottom-color:var(--mint); font-weight:500;}
+.pane{padding:18px;}
+
+.hero{display:grid; grid-template-columns:minmax(300px,440px) 1fr; gap:18px; align-items:start;}
+@media(max-width:960px){.hero{grid-template-columns:1fr;}}
+
+/* 카카오 지도 자리 · 라이트 고정 (SDK 다크 미지원) */
+.kmap{background:#eaf1f8; border:1px solid var(--border); border-radius:10px; padding:0; position:relative; height:340px; overflow:hidden; color:#25324a;}
+.kmap .kmap-inner{position:absolute; inset:0; background:
+  linear-gradient(180deg,#d9e5f0 0%, #dee8f0 100%);
+  background-size:cover;
+}
+.kmap .roads{position:absolute; inset:0; opacity:.55;}
+.kmap .badge-mode{position:absolute; top:8px; left:8px; font-size:10.5px; padding:3px 8px; border-radius:5px; background:rgba(255,255,255,.85); color:#25324a; border:1px solid #c6d3e2;}
+.kmap .badge-mode.fallback{background:rgba(250,235,190,.94); color:#7a5a10;}
+.kmap .badge-scale{position:absolute; bottom:8px; left:10px; font-size:10.5px; padding:2px 6px; background:rgba(255,255,255,.85); border:1px solid #c6d3e2; border-radius:4px; color:#25324a;}
+.kmap svg.rings{position:absolute; inset:0; pointer-events:none;}
+.kmap .kctrl{position:absolute; top:8px; right:8px; display:flex; flex-direction:column; gap:3px;}
+.kmap .kctrl button{font:inherit; width:26px; height:26px; border-radius:5px; border:1px solid #c6d3e2; background:#fff; color:#25324a; cursor:default;}
+
+.mapnote{font-size:11px; color:var(--ink-faint); margin-top:6px; line-height:1.6;}
+
+/* 반경 표 (시뮬 11 재활용) */
+table.ring{border-collapse:collapse; width:100%; font-size:12.5px;}
+table.ring th{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-weight:500; text-align:right; padding:6px 10px 8px; border-bottom:1px solid var(--border);}
+table.ring th:first-child, table.ring td:first-child{text-align:left;}
+table.ring td{padding:8px 10px; border-bottom:1px solid var(--border); color:var(--ink-dim); text-align:right;}
+table.ring tr.on td{background:var(--mint-soft); color:var(--ink);}
+table.ring tr.on td:first-child{color:var(--mint); font-weight:600;}
+
+/* 추계 환자 수 카드 · 3단 상태 */
+.estcard{border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-top:14px; background:var(--card);}
+.estcard.ok{border-left:3px solid var(--mint);}
+.estcard.warn{border-left:3px solid var(--ember); background:linear-gradient(90deg, var(--ember-soft) 0%, var(--card) 40%);}
+.estcard.gray{border-left:3px solid var(--unknown); background:var(--unknown-soft);}
+.estcard .est-head{display:flex; justify-content:space-between; gap:12px; align-items:baseline; flex-wrap:wrap;}
+.estcard h3{margin:0;}
+.est-state{font-size:10.5px; letter-spacing:.06em; padding:2px 8px; border-radius:5px;}
+.est-state.ok{background:var(--mint-soft); color:var(--mint); border:1px solid color-mix(in oklab,var(--mint) 45%,transparent);}
+.est-state.warn{background:var(--ember-soft); color:var(--ember); border:1px solid color-mix(in oklab,var(--ember) 45%,transparent);}
+.est-state.gray{background:var(--unknown-soft); color:var(--unknown); border:1px solid color-mix(in oklab,var(--unknown) 40%,transparent);}
+.est-value{font-size:28px; font-weight:700; margin-top:8px; letter-spacing:-.02em;}
+.est-value.dash{color:var(--ink-faint); font-weight:400; font-size:22px;}
+.est-value small{font-size:12px; color:var(--ink-dim); margin-left:6px; font-weight:400;}
+.est-detail{margin-top:6px; font-size:12px; color:var(--ink-dim); line-height:1.7;}
+.est-reason{margin-top:8px; font-size:12px; color:var(--ink-dim); line-height:1.6;}
+.est-reason ul{margin:4px 0 0; padding-left:20px;}
+.est-warn{margin-top:10px; font-size:11px; color:var(--destructive); border-top:1px dashed color-mix(in oklab,var(--destructive) 40%,transparent); padding-top:8px;}
+.est-formula{margin-top:10px; font-size:11.5px; color:var(--ink-faint); background:var(--codebg); border-radius:6px; padding:8px 10px; font-family:"JetBrains Mono",monospace;}
+
+/* 비교 모드 2단 */
+.cmp{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:14px;}
+@media(max-width:1100px){.cmp{grid-template-columns:1fr;}}
+.cmp .col{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px;}
+.cmp .col-head{position:sticky; top:0; background:var(--card); padding:6px 0 10px; margin:-14px -16px 8px; padding:12px 16px 10px; border-bottom:1px solid var(--border); font-size:12px; color:var(--ink-dim);}
+.cmp .col-head b{color:var(--ink); font-weight:600; font-size:13px;}
+.cmp .chips-share{display:flex; justify-content:center; gap:6px; margin:8px 0 4px;}
+.chip{font:inherit; font-size:12px; border-radius:999px; padding:4px 12px; border:1px solid var(--border); background:var(--card); color:var(--ink-dim);}
+.chip.on{border-color:color-mix(in oklab,var(--mint) 55%,transparent); background:var(--mint-soft); color:var(--ink); font-weight:500;}
+.cmp .refusal{grid-column:1/-1; background:var(--destructive-soft); border:1px solid color-mix(in oklab,var(--destructive) 50%,transparent); border-radius:8px; padding:10px 14px; font-size:12.5px; color:var(--ink); display:flex; gap:10px; align-items:flex-start;}
+.cmp .refusal b{color:var(--destructive); font-weight:600;}
+.cmp .refusal ul{margin:4px 0 0; padding-left:20px; color:var(--ink-dim);}
+
+/* 접힘 판 (좁을 때 지도 밑으로) */
+.pill{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; color:var(--ink-faint); background:var(--card2); border:1px solid var(--border); border-radius:4px; padding:1px 6px;}
+
+.regs{background:var(--card2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-top:12px; font-size:11.5px; color:var(--ink-dim); line-height:1.7;}
+.regs b{color:var(--ink);}
+</style>
+
+<div class="wrap stage">
+  <div class="eyebrow">ANSEO · 상권 §7 P3 시뮬 · 판 안 정함</div>
+  <h1>카카오맵 타일 · 추계 환자 수 카드 · 비교 모드</h1>
+  <p class="sub">다른 방(§7 P2 · 교통·인구 실적재)이 배포된 뒤 이 판이 얹힙니다. 세 화면 · 다섯 상태 · 폴백 두 개 · 비교 규율 하나.</p>
+
+  <div class="badge">
+    <b>13호 시뮬</b>
+    <span>도면 <a href="plans/anseo-location-p3-plan.md" style="color:var(--signal);">plans/anseo-location-p3-plan.md</a></span>
+    <span>선행 다른 방 §7 P2 배포 · 지도 열쇠 = 카카오 JavaScript 열쇠</span>
+    <span>규범 = 판 다르면 비교 금지 · 못 잰 값 «—» · 색+글자 병용 · 의료광고법</span>
+  </div>
+
+  <!-- ══════════════════ 화면 1 · 카카오맵 뜨는 상권 탭 ══════════════════ -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">화면 ① · 열쇠 붙은 정상 상태</div>
+        <h2>상권 탭 — 카카오 지도 타일 얹힘</h2>
+      </div>
+      <span class="srcchip">LocationTab.tsx + RingMapKakao.tsx</span>
+    </div>
+
+    <div class="shell">
+      <div class="topbar">
+        <span class="logo">ANSEO</span>
+        <nav><span>거래처</span> · <b>강남미래의원</b></nav>
+        <span class="sess">sajangnim@venomad</span>
+      </div>
+      <div class="custhead">
+        <div>
+          <h2>강남미래의원</h2>
+          <div class="meta">서울 강남구 역삼동 · 내과·가정의학과 · 심평원 2026-06</div>
+        </div>
+        <span class="pill">라우트 <span class="num">/location</span></span>
+      </div>
+      <div class="tabs">
+        <a>진단</a><a>경쟁</a><a>스캔</a><a>고쳐준다</a><a>배포</a>
+        <a class="on">상권</a><a>연락</a><a>메모</a><a>제안·계약</a>
+      </div>
+      <div class="pane">
+        <div class="hero">
+          <div>
+            <div class="kmap">
+              <div class="kmap-inner"></div>
+              <svg class="roads" viewBox="0 0 400 340" preserveAspectRatio="none">
+                <path d="M0 180 L400 200" stroke="#b8c6d8" stroke-width="14" fill="none" opacity=".65"/>
+                <path d="M200 0 L210 340" stroke="#b8c6d8" stroke-width="10" fill="none" opacity=".55"/>
+                <path d="M0 90 L400 110" stroke="#c8d3e0" stroke-width="6" fill="none" opacity=".5"/>
+                <path d="M60 340 L80 0" stroke="#c8d3e0" stroke-width="4" fill="none" opacity=".4"/>
+              </svg>
+              <svg class="rings" viewBox="0 0 400 340">
+                <g transform="translate(205,180)">
+                  <!-- 반경 5개, 500·1000·3000·5000·10000m을 축소 -->
+                  <circle r="18" fill="none" stroke="#2b66d9" stroke-width="1.4" opacity=".85"/>
+                  <circle r="36" fill="#2b66d9" fill-opacity=".05" stroke="#2b66d9" stroke-width="1.5" opacity=".9"/>
+                  <circle r="72" fill="none" stroke="#2b66d9" stroke-width="1.2" opacity=".55" stroke-dasharray="3 3"/>
+                  <circle r="110" fill="none" stroke="#2b66d9" stroke-width="1" opacity=".4" stroke-dasharray="3 4"/>
+                  <circle r="150" fill="none" stroke="#2b66d9" stroke-width=".9" opacity=".3" stroke-dasharray="2 5"/>
+                  <!-- 같은 과·다른 과 점 -->
+                  <circle cx="-14" cy="-24" r="4" fill="#0d9d70"/>
+                  <circle cx="42" cy="-8" r="4" fill="#0d9d70"/>
+                  <circle cx="-30" cy="18" r="4" fill="#0d9d70"/>
+                  <circle cx="60" cy="36" r="3" fill="#7c8595"/>
+                  <circle cx="-52" cy="-2" r="3" fill="#7c8595"/>
+                  <circle cx="88" cy="-30" r="3" fill="#7c8595"/>
+                  <!-- 중심 -->
+                  <circle r="5" fill="#d1385c" stroke="#fff" stroke-width="1.5"/>
+                </g>
+              </svg>
+              <span class="badge-mode">카카오 지도 · JS SDK</span>
+              <div class="kctrl"><button aria-label="확대">+</button><button aria-label="축소">−</button></div>
+              <span class="badge-scale">1 km</span>
+            </div>
+            <div class="chips-share" style="justify-content:flex-start; margin-top:10px;">
+              <button class="chip">500 m</button>
+              <button class="chip on">1 km</button>
+              <button class="chip">3 km</button>
+              <button class="chip">5 km</button>
+              <button class="chip">10 km</button>
+            </div>
+            <div class="mapnote">
+              지도는 항상 라이트 — 카카오 SDK 는 다크 미지원. 우리 UI 는 사장님 테마 따름.
+              <br>열쇠 없으면 SVG 등거리로 되돌아갑니다 (다음 화면).
+            </div>
+          </div>
+
+          <div>
+            <div class="overflow">
+              <table class="ring">
+                <thead>
+                  <tr>
+                    <th>반경</th><th>같은 과</th><th>다른 과</th><th>역</th><th>정류장</th><th>인구</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>500 m</td><td class="num">2</td><td class="num">4</td><td class="num">1</td><td class="num">8</td><td class="num">6,240</td></tr>
+                  <tr class="on"><td>1 km</td><td class="num">6</td><td class="num">11</td><td class="num">2</td><td class="num">21</td><td class="num">18,900</td></tr>
+                  <tr><td>3 km</td><td class="num">28</td><td class="num">62</td><td class="num">5</td><td class="num">84</td><td class="num">148,300</td></tr>
+                  <tr><td>5 km</td><td class="num">58</td><td class="num">146</td><td class="num">9</td><td class="num">168</td><td class="num">328,700</td></tr>
+                  <tr><td>10 km</td><td class="num">198</td><td class="num">462</td><td class="num">22</td><td class="num">406</td><td class="num">1,142,300</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 추계 환자 수 카드 · 정상 -->
+            <div class="estcard ok">
+              <div class="est-head">
+                <h3>추계 환자 수 — 반경 1 km · 내과 기준</h3>
+                <span class="est-state ok">● 추계 재는 중</span>
+              </div>
+              <div class="est-value num">42<small>명 / 일 (경쟁 조정 후)</small></div>
+              <div class="est-detail">
+                반경 인구 <span class="num">18,900</span> × 유병률 <span class="num">3.1 %</span> × 수진율 <span class="num">1.34</span> ÷ (같은 과 <span class="num">6</span> + 자기 <span class="num">1</span>)
+              </div>
+              <details class="est-formula">
+                <summary style="cursor:default;">산식 펼치기</summary>
+                Σ(연령×성별 칸) 반경 인구 × 진료과 유병률 × 수진율<br>
+                경쟁 조정치 = 추계 환자 수 ÷ (반경 안 같은 과 기관 수 + 1)
+              </details>
+              <div class="est-warn">⚠ 내부 산정 · 광고 문구로 옮기지 마십시오 (의료광고법)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="regs">
+          <b>원천</b> · 심평원 2026-06 (기관·좌표) · 행안부 2026-08 (행정동 인구, 다른 방 §7 P2) · 심평원 통계지표 2025 (유병률·수진율, 이 판 신규 <span class="num">hira_disease_stats</span>) · 카카오 지도 JS SDK
+        </div>
+      </div>
+    </div>
+
+    <p class="foot">
+      가운데 지도는 카카오 SDK 가 그린 것 — 반경 링 다섯 개는 <span class="num">kakao.maps.Circle</span> 로 얹었습니다. 라이트 고정은 SDK 자체 규칙이지 우리 규칙이 아닙니다. 대안(네이버) 은 열쇠만 바꾸면 같은 자리에 붙습니다.
+    </p>
+  </div>
+
+  <!-- ══════════════════ 화면 2 · 지도 폴백 (열쇠 없거나 SDK 안 뜸) ══════════════════ -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">화면 ② · 폴백 · 열쇠 없음</div>
+        <h2>지도 자리에 SVG 등거리 · 안내 한 줄</h2>
+      </div>
+      <span class="srcchip">RingMap.tsx (지금 있는 그것)</span>
+    </div>
+
+    <div class="shell">
+      <div class="pane">
+        <div class="hero">
+          <div>
+            <div class="kmap" style="background:#f2f4f8; height:340px;">
+              <div class="kmap-inner" style="background:#f2f4f8;"></div>
+              <svg class="rings" viewBox="0 0 400 340">
+                <g transform="translate(205,180)" stroke-dasharray="2 3">
+                  <circle r="18" fill="none" stroke="#7c8595" stroke-width="1.2"/>
+                  <circle r="36" fill="none" stroke="#7c8595" stroke-width="1"/>
+                  <circle r="72" fill="none" stroke="#7c8595" stroke-width=".9"/>
+                  <circle r="110" fill="none" stroke="#7c8595" stroke-width=".8"/>
+                  <circle r="150" fill="none" stroke="#7c8595" stroke-width=".7"/>
+                  <circle r="5" fill="#d1385c" stroke="#fff" stroke-width="1.5" stroke-dasharray="none"/>
+                </g>
+              </svg>
+              <span class="badge-mode fallback">폴백 · SVG 등거리</span>
+              <span class="badge-scale">1 km · 등거리 투영</span>
+            </div>
+            <div class="mapnote" style="color:var(--ember);">
+              ⚠ 지도가 안 열려 등거리 SVG 로 그렸습니다. 원인 = 카카오 JS 열쇠 없음. <br>
+              최고 관리자만 「데이터 원천 → <span class="num">kakao_map_js</span>」 에서 등록.
+            </div>
+          </div>
+          <div>
+            <div class="overflow">
+              <table class="ring">
+                <thead><tr><th>반경</th><th>같은 과</th><th>다른 과</th><th>역</th><th>정류장</th><th>인구</th></tr></thead>
+                <tbody>
+                  <tr class="on"><td>1 km</td><td class="num">6</td><td class="num">11</td><td class="num">2</td><td class="num">21</td><td class="num">18,900</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="foot">지도 없어도 나머지는 그대로 돈다 — 반경 표·이웃·추계 다 나옵니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 화면 3 · 추계 환자 수 카드 · 3단 상태 ══════════════════ -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">화면 ③ · 추계 카드 3단</div>
+        <h2>정상 · 근사(산식 부적합) · 못 잼 — 색+글자 병용</h2>
+      </div>
+      <span class="srcchip">PatientEstimatePayload</span>
+    </div>
+
+    <!-- 정상 -->
+    <div class="estcard ok">
+      <div class="est-head">
+        <h3>추계 환자 수 — 반경 1 km · 내과 기준</h3>
+        <span class="est-state ok">● 추계 재는 중</span>
+      </div>
+      <div class="est-value num">42<small>명 / 일 (경쟁 조정 후)</small></div>
+      <div class="est-detail">
+        반경 인구 <span class="num">18,900</span> × 유병률 <span class="num">3.1 %</span> × 수진율 <span class="num">1.34</span> ÷ (같은 과 <span class="num">6</span> + 자기 <span class="num">1</span>)
+      </div>
+      <div class="est-warn">⚠ 내부 산정 · 광고 문구로 옮기지 마십시오 (의료광고법)</div>
+    </div>
+
+    <!-- 근사 · 산식 부적합 (광역 유입 진료과 · 성형) -->
+    <div class="estcard warn">
+      <div class="est-head">
+        <h3>추계 환자 수 — 반경 1 km · 성형외과 기준</h3>
+        <span class="est-state warn">◐ 산식 부적합 · 참고만</span>
+      </div>
+      <div class="est-value num">0.7<small>명 / 일 · 산식대로는 &lt;1</small></div>
+      <div class="est-detail">
+        성형외과는 광역 유입 진료과 — 診療圏 산식이 실제 수요를 크게 낮춰 잡습니다. 반경 안 값은 참고만.
+      </div>
+      <div class="est-reason">
+        지역 잠재만 재는 이 산식이 맞지 않는 진료과: <b>성형·안과 특수·산부인과 특수·치과 임플란트 광역 브랜드</b>.
+      </div>
+      <div class="est-warn">⚠ 내부 산정 · 광고 문구로 옮기지 마십시오 (의료광고법)</div>
+    </div>
+
+    <!-- 못 잼 · 회색 -->
+    <div class="estcard gray">
+      <div class="est-head">
+        <h3>추계 환자 수 — 반경 1 km · 가정의학과 기준</h3>
+        <span class="est-state gray">○ 못 잼 · «—»</span>
+      </div>
+      <div class="est-value dash num">—</div>
+      <div class="est-reason">
+        아래 자료가 없어 재지 않았습니다:
+        <ul>
+          <li><b>행정안전부 인구</b> (반경 안 인구) — 「데이터 원천 → <span class="num">mois_population</span>」 에서 적재 필요. <span class="pill">P2 다른 방 소관</span></li>
+          <li><b>SGIS 경계</b> (원과 행정동 겹치는 면적) — 「데이터 원천 → <span class="num">sgis_boundary</span>」 열쇠 등록 필요. <span class="pill">P2 다른 방 소관</span></li>
+        </ul>
+      </div>
+      <p class="foot" style="margin-top:8px;">
+        회색은 색만으로 뜻을 만들지 않도록 「«—»」 글자와 함께 씁니다. 사장님 뷰 규범.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 화면 4 · 비교 모드 · 같은 판 (comparable=True) ══════════════════ -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">화면 ④ · 비교 · 나란히 가능</div>
+        <h2>두 거래처 · 같은 심평원 기준월 · 같은 인구 판</h2>
+      </div>
+      <span class="srcchip">LocationCompareTab.tsx</span>
+    </div>
+
+    <div class="shell">
+      <div class="topbar">
+        <span class="logo">ANSEO</span>
+        <nav><span>거래처</span> · <b>강남미래의원</b> vs 서초웰빙의원</nav>
+        <span class="sess">?compare=… &radius=1000</span>
+      </div>
+      <div class="pane">
+        <div class="chips-share">
+          <button class="chip">500 m</button>
+          <button class="chip on">1 km · 공유</button>
+          <button class="chip">3 km</button>
+          <button class="chip">5 km</button>
+          <button class="chip">10 km</button>
+        </div>
+        <div class="cmp">
+          <div class="col">
+            <div class="col-head"><b>강남미래의원</b> · 서울 강남구 역삼동 · 심평원 <span class="num">2026-06</span> · 반경 <span class="num">1 km</span></div>
+            <div class="est-detail">중심 기관 첫 과목 = <b>내과</b></div>
+            <div class="estcard ok" style="margin-top:8px;">
+              <div class="est-head">
+                <h3>추계 환자 수</h3>
+                <span class="est-state ok">● 재는 중</span>
+              </div>
+              <div class="est-value num">42<small>명 / 일</small></div>
+              <div class="est-detail">인구 <span class="num">18,900</span> · 같은 과 <span class="num">6</span></div>
+            </div>
+            <div class="regs" style="margin-top:12px;">역 <span class="num">2</span> · 정류장 <span class="num">21</span> · 다른 과 <span class="num">11</span></div>
+          </div>
+          <div class="col">
+            <div class="col-head"><b>서초웰빙의원</b> · 서울 서초구 서초동 · 심평원 <span class="num">2026-06</span> · 반경 <span class="num">1 km</span></div>
+            <div class="est-detail">중심 기관 첫 과목 = <b>내과</b></div>
+            <div class="estcard ok" style="margin-top:8px;">
+              <div class="est-head">
+                <h3>추계 환자 수</h3>
+                <span class="est-state ok">● 재는 중</span>
+              </div>
+              <div class="est-value num">31<small>명 / 일</small></div>
+              <div class="est-detail">인구 <span class="num">14,200</span> · 같은 과 <span class="num">7</span></div>
+            </div>
+            <div class="regs" style="margin-top:12px;">역 <span class="num">1</span> · 정류장 <span class="num">17</span> · 다른 과 <span class="num">9</span></div>
+          </div>
+        </div>
+        <p class="foot">
+          두 컬럼이 같은 반경 칩 하나를 공유합니다 — 나란히 볼 뜻을 지키려면 반경이 같아야 합니다. 세 곳 이상 고르면 「비교」 단추 비활성 + 「두 곳까지 나란히 봅니다」.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 화면 5 · 비교 모드 · 판 다름 (comparable=False) ══════════════════ -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">화면 ⑤ · 비교 · 판 다름 · 그리지 않음</div>
+        <h2>기준월 어긋남 → 비교 거부 · 사유 띠만</h2>
+      </div>
+      <span class="srcchip">blocking_differences</span>
+    </div>
+
+    <div class="shell">
+      <div class="pane">
+        <div class="chips-share">
+          <button class="chip on">1 km · 공유</button>
+        </div>
+        <div class="cmp">
+          <div class="refusal">
+            <span style="font-size:18px; color:var(--destructive);">◆</span>
+            <div>
+              <b>판이 달라 비교하지 않았습니다.</b>
+              <ul>
+                <li>심평원 기준월 다름: 왼쪽 <span class="num">2026-06</span> ↔ 오른쪽 <span class="num">2026-03</span></li>
+                <li>인구 판 다름: 왼쪽 <span class="num">2026-08</span> ↔ 오른쪽 <span class="num">2026-05</span></li>
+              </ul>
+              같은 판으로 재적재 후 다시 비교하십시오. 판 다르면 그럴듯한 거짓이 됩니다 (ADR 0010).
+            </div>
+          </div>
+          <div class="col" style="opacity:.55;">
+            <div class="col-head"><b>강남미래의원</b> · 심평원 <span class="num">2026-06</span></div>
+            <div class="est-value dash num">—</div>
+            <div class="est-detail">비교 거부됨.</div>
+          </div>
+          <div class="col" style="opacity:.55;">
+            <div class="col-head"><b>서초웰빙의원</b> · 심평원 <span class="num">2026-03</span></div>
+            <div class="est-value dash num">—</div>
+            <div class="est-detail">비교 거부됨.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 규범 · 발행 ══════════════════ -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">규범 · 4대</div>
+        <h2>이 판이 지키는 것</h2>
+      </div>
+    </div>
+    <ul style="margin:0; padding-left:20px; color:var(--ink-dim); line-height:1.9;">
+      <li><b>판 다르면 비교 금지</b> — 화면 ⑤ 처럼 사유 띠만 세우고 컬럼은 그리지 않는다.</li>
+      <li><b>못 잰 값 «—»</b> — 화면 ③ 회색 카드. 0 을 그리지 않는다 (ADR 0002).</li>
+      <li><b>의료광고법</b> — 추계 값은 사장님 뷰 내부 산정치. 카드 밑줄에 「광고 문구로 옮기지 마십시오」 못박음.</li>
+      <li><b>색+글자 병용</b> — 초록 ●·노랑 ◐·회색 ○ 도형과 「재는 중 / 부적합 / 못 잼」 글자가 함께 선다.</li>
+    </ul>
+    <div class="regs">
+      <b>발행</b> · 2026-09-04 s16 · 도현·서연·지훈·하린 · 판 안 정함 (다른 방 §7 P2 배포 뒤 이어감)
+    </div>
+  </div>
+</div>

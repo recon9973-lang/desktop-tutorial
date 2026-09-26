@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-14T00:02:12.541Z",
+  "updated": "2026-09-21T00:02:32.002Z",
   "model": {
     "answer": "claude-opus-4-8",
     "judge": "claude-haiku-4-5"
@@ -17,9 +17,9 @@
   },
   "overall": {
     "passRate": 100,
-    "avgGrounding": 4.88,
-    "avgCorrectness": 4.88,
-    "avgCitation": 4.88,
+    "avgGrounding": 4.79,
+    "avgCorrectness": 4.79,
+    "avgCitation": 4.79,
     "hallucinationRate": 0
   },
   "weakestGroups": [
@@ -28,6 +28,18 @@
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4
+    },
+    {
+      "group": "의료법 제3조",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "할인·유인",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
     },
     {
       "group": "의료법 제56조",
@@ -46,18 +58,6 @@
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 5
-    },
-    {
-      "group": "심의필·유효기간",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "과장·최상급",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
     }
   ],
   "failures": [],
@@ -67,6 +67,18 @@
       "n": 2,
       "passRate": 100,
       "avgCorrectness": 4
+    },
+    {
+      "group": "의료법 제3조",
+      "n": 1,
+      "passRate": 100,
+      "avgCorrectness": 4
+    },
+    {
+      "group": "할인·유인",
+      "n": 2,
+      "passRate": 100,
+      "avgCorrectness": 4.5
     },
     {
       "group": "의료법 제56조",
@@ -105,12 +117,6 @@
       "avgCorrectness": 5
     },
     {
-      "group": "할인·유인",
-      "n": 2,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
       "group": "방송광고 금지",
       "n": 1,
       "passRate": 100,
@@ -142,12 +148,6 @@
     },
     {
       "group": "의료법 제57조",
-      "n": 1,
-      "passRate": 100,
-      "avgCorrectness": 5
-    },
-    {
-      "group": "의료법 제3조",
       "n": 1,
       "passRate": 100,
       "avgCorrectness": 5

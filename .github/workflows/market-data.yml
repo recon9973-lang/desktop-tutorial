@@ -1,0 +1,121 @@
+name: Market data collect
+
+# 지역별 병의원 상권 원자료를 러너에서 받아 저장소에 커밋한다.
+# 작업 컨테이너는 apis.data.go.kr·openapi.naver.com·dapi.kakao.com 이 모두 403 이라
+# (조직 프록시 정책) 이 워크플로가 대신 받는다. fetch-file.yml 과 같은 원리.
+#
+# 필요한 저장소 시크릿:
+#   DATA_GO_KR_SERVICE_KEY                 (심평원 · 필수)
+#   NAVER_CLIENT_ID / NAVER_CLIENT_SECRET  (네이버 지역검색 · 선택)
+#   KAKAO_REST_API_KEY                     (카카오 로컬 · 선택 · 없으면 건너뜀)
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places'
+        required: true
+        default: 'probe'
+      max_calls:
+        description: '이번 실행 최대 호출 수(이어받기 가능)'
+        required: false
+        default: '8000'
+      terms:
+        description: '지도 검색어(쉼표) · kakao-probe 일 때는 네모 x1,y1,x2,y2'
+        required: false
+        default: ''
+      subject:
+        description: 'kakao-word 일 때 훑을 낱말(예: 한의원)'
+        required: false
+        default: ''
+      part:
+        description: '판 이름 — 판마다 제 파일에 쓴다(kakao_<판>.jsonl)'
+        required: false
+        default: ''
+      branch:
+        description: '커밋할 브랜치'
+        required: false
+        default: 'claude/intelligent-ride-u5oztv'
+
+permissions:
+  contents: write
+
+# 판마다 다른 이름을 주어 «동시에» 돌린다. 각 판이 제 파일에 쓰므로 서로 밟지 않는다.
+concurrency:
+  group: market-data-${{ github.event.inputs.stage }}-${{ github.event.inputs.part }}
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 원자료 되살리기(gz → csv)
+        run: |
+          if [ -f data/market/raw/hira_master.csv.gz ]; then
+            gunzip -kf data/market/raw/hira_master.csv.gz
+          fi
+
+      - name: 수집
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          STAGE: ${{ github.event.inputs.stage }}
+          MAXC: ${{ github.event.inputs.max_calls }}
+          TERMS: ${{ github.event.inputs.terms }}
+          PART: ${{ github.event.inputs.part }}
+          SUBJ: ${{ github.event.inputs.subject }}
+        run: |
+          set -e
+          case "$STAGE" in
+            portal-file) python3 tools/market-data/portal_file.py ;;
+            kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" \
+                           ${PART:+--out "kakao_$PART.jsonl"} ;;
+            kakao-word)  python3 tools/market-data/kakao_places.py --probe "$TERMS" \
+                           --query "$SUBJ" ${PART:+--out "kakao_$PART.jsonl"} ;;
+            kakao-places) python3 tools/market-data/kakao_places.py ;;
+            map-naver) python3 tools/market-data/map_collect.py --source naver --limit "$MAXC" --terms "$TERMS" ;;
+            map-kakao) python3 tools/market-data/map_collect.py --source kakao --limit "$MAXC" --terms "$TERMS" ;;
+            map-both)  python3 tools/market-data/map_collect.py --source both  --limit "$MAXC" --terms "$TERMS" ;;
+            *)         python3 tools/market-data/hira_collect.py --stage "$STAGE" --max-calls "$MAXC" ;;
+          esac
+
+      - name: 큰 파일은 눌러서 담는다
+        run: |
+          if [ -f data/market/raw/hira_master.csv ]; then
+            gzip -9f data/market/raw/hira_master.csv
+          fi
+          ls -la data/market/raw/ || true
+
+      - name: 커밋 · 푸시
+        env:
+          BR: ${{ github.event.inputs.branch }}
+          STAGE: ${{ github.event.inputs.stage }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/market/raw
+          if git diff --cached --quiet; then
+            echo "바뀐 것이 없다"; exit 0
+          fi
+          git commit -m "data: 상권 원자료 수집 ($STAGE)"
+          # 훑는 동안 사람이 같은 가지에 커밋하면 밀어 넣기가 거절된다(한 번 당했다).
+          # 거절되면 가지 끝을 받아 그 위에 얹고 다시 민다 — 받아 온 자료를 잃지 않는다.
+          for i in 1 2 3 4; do
+            if git push origin "HEAD:$BR"; then exit 0; fi
+            git fetch origin "$BR" && git rebase "origin/$BR" || git rebase --abort
+            sleep $((2**i))
+          done
+          echo "::error::밀어 넣기 실패 — 받아 온 자료가 러너에만 있다"
+          exit 1

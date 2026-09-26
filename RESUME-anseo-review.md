@@ -1,5 +1,7 @@
 # RESUME (검수 방 · ANSEO 96항목) — 2026-09-15 s26 마감
 
+<!-- 가지: claude/friendly-mendel-mlvpsa -->
+
 > **이 저장소에 인계가 여럿이다 — 이 방 것은 이 파일이다.**
 > 루트 `RESUME.md`(진단 오진 방) · `RESUME-aeo-grand.md` · `RESUME-ring-loader.md` ·
 > `RESUME-motion-port.md` 는 **다른 방** 것이다.
