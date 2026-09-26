@@ -40,6 +40,8 @@ def main() -> int:
         except Exception:  # noqa: BLE001
             bad += 1; continue
         v = d.get("점포수")
+        if v is None and d.get("resultCode") == "03":
+            v = 0          # rc=03 은 «그 업종이 한 곳도 없다» 다. 못 잰 것이 아니다.
         box[(d["시도"], d["시군구"])][d["코드"]][(d["갈래"], d["업종코드"])] = (
             int(v) if isinstance(v, (int, str)) and str(v).isdigit() else None)
 
@@ -55,18 +57,22 @@ def main() -> int:
         hira[k] = {"의원": int(r["종별_의원"] or 0), "병의원": int(r["병의원_계"] or 0)}
 
     def pick(codes: dict) -> dict:
-        """한 자리에 코드가 여럿이면 합친다. 다 0/빈값이면 대체 코드 쪽을 쓴다
-        (2026년에 생긴 구를 202606 자료가 모르는 경우 — 화성)."""
+        """한 자리에 코드가 여럿이다 — 옛 코드와 개편 뒤 코드를 함께 물었기 때문이다.
+        **답이 온 코드만** 골라 합친다(옛 코드는 «자료 없음» 으로 온다).
+        인천 중구·동구는 행정동 코드가 여럿이라 실제로 더해진다.
+        한 코드라도 답을 못 받았으면 그 칸은 «—» 로 둔다 — 모자란 합을 싣지 않는다."""
         live = {c: v for c, v in codes.items()
                 if (v.get(("전체", "")) or 0) > 0}
-        use = live or codes
+        if not live:
+            return {}
         agg: dict = {}
-        for v in use.values():
-            for key, n in v.items():
-                if n is None:
-                    agg.setdefault(key, None)
+        for v in live.values():
+            for key in {k for d in live.values() for k in d}:
+                n = v.get(key, None)
+                if n is None or agg.get(key, 0) is None:
+                    agg[key] = None
                 else:
-                    agg[key] = (agg.get(key) or 0) + n
+                    agg[key] = agg.get(key, 0) + n
         return agg
 
     hdr = (["시도", "시군구", "인구", "점포_계", "인구1만명당_점포"]
@@ -74,7 +80,7 @@ def main() -> int:
            + [f"비율%_{n}" for n, _, _ in LCLS]
            + [f"중_{n}" for n, _, _ in MCLS]
            + ["미용업소_1만명당", "학원_1만명당", "카페_1만명당", "헬스_1만명당",
-              "오피스_1만명당", "상가등록_의원", "심평원_의원", "상가등록률_의원%"])
+              "오피스_1만명당", "상가_의원", "심평원_의원"])
     out, filled = [], 0
     for k in order:
         agg = pick(box.get(k, {}))
@@ -104,11 +110,11 @@ def main() -> int:
         row["카페_1만명당"] = per("카페")
         row["헬스_1만명당"] = per("스포츠")
         row["오피스_1만명당"] = per("경영컨설팅")
-        sg = agg.get(("중", "Q102"))
-        hw = hira[k]["의원"]
-        row["상가등록_의원"] = sg if sg is not None else DASH
-        row["심평원_의원"] = hw
-        row["상가등록률_의원%"] = round(sg / hw * 100, 1) if sg is not None and hw else DASH
+        # 두 숫자를 나란히 둔다. 나눈 값은 싣지 않는다 — 상가자료는 «간판 달고 장사하는
+        # 자리»를, 심평원은 «허가받은 기관»을 세므로 서울에서는 상가 쪽이 더 많고
+        # 시골에서는 적다. 나눠 놓으면 「등록률」로 잘못 읽힌다.
+        row["상가_의원"] = sg if (sg := agg.get(("중", "Q102"))) is not None else DASH
+        row["심평원_의원"] = hira[k]["의원"]
         out.append(row)
 
     with (OUT / "market_sangga.csv").open("w", newline="", encoding="utf-8-sig") as f:

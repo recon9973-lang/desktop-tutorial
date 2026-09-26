@@ -83,6 +83,9 @@ def main() -> int:
                  "의원": sum(x[12] for x in regions),
                  "미용겸업": sum(x[13] for x in regions),
                  "점포": sum(x[18] or 0 for x in regions) or None,
+                 # 업종 지수(전국=100)의 기준 인구는 «업종 값이 있는 자리의 인구» 다.
+                 # 값이 없는 자리 인구까지 넣으면 전국 평균이 낮아져 지수가 다 부풀어 오른다.
+                 "업종기준인구": sum(x[2] or 0 for x in regions if x[18] is not None),
                  # 업종별 전국 합 — 지역 지수(전국=100)의 기준선.
                  "업종": [sum((x[19] or [0] * len(sa_l))[i] or 0 for x in regions)
                           for i in range(len(sa_l))],

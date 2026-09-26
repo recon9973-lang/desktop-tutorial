@@ -285,6 +285,8 @@ const regions = R['지역'].map((a,i)=>({
 // ── 업종별 상권(소상공인 상가정보) ──
 const LCLS = R['업종이름'] || [], MCLS = R['중업종이름'] || [];
 const NATM = (R['전국']['중업종']) || [], NATSTORE = R['전국']['점포'] || null;
+// 업종 지수의 기준 인구 — 업종 값이 있는 자리의 인구만 센다.
+const NATTRADEPOP = R['전국']['업종기준인구'] || R['전국']['인구'];
 // 업종 대분류 10가지를 사람이 한눈에 읽는 일곱 묶음으로 모은다.
 const TRADE = [
   ['음식',      ['음식'],                             'var(--c1)'],
@@ -484,7 +486,7 @@ function renderDetail(){
     const rows = TRADE_PICK.map(([nm, keys, why])=>{
       const v = mSum(r.mcls, keys), nv = mSum(NATM, keys);
       const per = (v != null && r.pop) ? v/r.pop*10000 : null;
-      const natp = (nv && R['전국']['인구']) ? nv/R['전국']['인구']*10000 : null;
+      const natp = (nv && NATTRADEPOP) ? nv/NATTRADEPOP*10000 : null;
       const ix = (per != null && natp) ? per/natp*100 : null;
       const over = ix != null && ix >= 100;
       const w = ix == null ? 0 : Math.min(50, Math.abs(ix-100)/100*50);
@@ -501,8 +503,8 @@ function renderDetail(){
     }).join('');
     const sgN = mSum(r.mcls, ['의원']);
     const perStore = r.pop ? (r.stores/r.pop*10000) : null;
-    const natStore = (NATSTORE && R['전국']['인구'])
-      ? NATSTORE/R['전국']['인구']*10000 : null;
+    const natStore = (NATSTORE && NATTRADEPOP)
+      ? NATSTORE/NATTRADEPOP*10000 : null;
     return `
     <h3 class="sub">이 동네는 어떤 동네인가</h3>
     <div class="mix" style="background:var(--canvas)">
@@ -522,7 +524,8 @@ function renderDetail(){
     <p class="note" style="margin-top:8px">${sgN == null ? '' : `상가자료에 의원으로 올라온 곳은
       <b class="num">${fmt(sgN)}곳</b>, 심평원에 등록된 의원은
       <b class="num">${fmt(r.kinds[KINDS.indexOf('의원')] || 0)}곳</b>이다.
-      상가자료는 «간판 달고 장사하는 자리» 만 잡으므로 둘은 원래 다르다. `}자료는
+      상가자료는 «간판 달고 장사하는 자리»를, 심평원은 «허가받은 기관»을 세므로
+      둘은 원래 다르다 — 큰 상가가 많은 도심에서는 상가 쪽이 더 많이 잡힌다. `}자료는
       소상공인시장진흥공단 상가(상권)정보 2026년 6월 기준이다.</p>`;
   })();
 
