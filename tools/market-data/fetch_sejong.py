@@ -79,12 +79,41 @@ def try_portal(key: str) -> None:
         print(f"[포털] {st} {base.split('/')[-1]:<40} {head}")
 
 
+def try_url(base: str, key: str) -> bool:
+    """사장님이 주신 요청주소로 바로 받는다 — 주소를 외워 맞히는 것보다 확실하다."""
+    k = key if "%" in key else urllib.parse.quote(key, safe="")
+    base = base.split("?")[0].strip()
+    for params in (
+        {"pageNo": "1", "numOfRows": "100", "type": "json", "srchFrYm": "202606",
+         "srchToYm": "202606", "lv": "1", "regSeCd": "1"},
+        {"pageNo": "1", "numOfRows": "100", "type": "json"},
+        {"page": "1", "perPage": "100", "returnType": "JSON"},
+    ):
+        url = f"{base}?serviceKey={k}&" + urllib.parse.urlencode(params)
+        st, body = get(url, timeout=40)
+        txt = body.decode("utf-8", "replace")
+        print(f"[요청주소] {st} · {urllib.parse.urlencode(params)[:60]}")
+        print("   " + txt[:400].replace("\n", " "))
+        if st == 200 and "ERROR" not in txt.upper() and len(txt) > 200:
+            OUT.mkdir(parents=True, exist_ok=True)
+            (OUT / "sejong_population_raw.json").write_text(txt, encoding="utf-8")
+            print(f"[요청주소] 받았다 → {OUT/'sejong_population_raw.json'}")
+            return True
+    return False
+
+
 def main() -> int:
     have = show_keys()
     if have["SGIS_CONSUMER_KEY"] and have["SGIS_CONSUMER_SECRET"]:
         if try_sgis(os.environ["SGIS_CONSUMER_KEY"], os.environ["SGIS_CONSUMER_SECRET"]):
             return 0
     key = (os.environ.get("DATA_GO_KR_SERVICE_KEY") or os.environ.get("DATA_GO_KR_KEY") or "").strip()
+    url = (os.environ.get("SEJONG_URL") or "").strip()
+    if key and url:
+        if try_url(url, key):
+            return 0
+        print("[요청주소] 그 주소로는 못 받았다 — 위 응답을 보고 다시 맞춘다")
+        return 0
     if key:
         try_portal(key)
     else:

@@ -79,6 +79,7 @@ jobs:
           TERMS: ${{ github.event.inputs.terms }}
           PART: ${{ github.event.inputs.part }}
           SUBJ: ${{ github.event.inputs.subject }}
+          SEJONG_URL: ${{ github.event.inputs.terms }}
         run: |
           set -e
           case "$STAGE" in
