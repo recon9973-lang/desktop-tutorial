@@ -7,6 +7,7 @@
 - **이어갈 작업(RESUME)**: 이 방 것 → `RESUME-market-data.md` (가지 표시로 짝지음) · 전체 19개
 
 ## 최근 커밋 (8)
+- 2026-09-26 docs: 인계본·세션 기록을 업종별 상권까지로 다시 쓴다
 - 2026-09-26 feat: 업종별 상권 252곳 전부 — 화면·엑셀까지 마무리
 - 2026-09-26 data: 상권 원자료 수집 (sangga)
 - 2026-09-26 data: 상권 원자료 수집 (sangga)
@@ -14,7 +15,6 @@
 - 2026-09-26 fix: 옛 코드로는 30곳이 «자료 없음» 이었다 — 개편 뒤 코드를 함께 담는다
 - 2026-09-26 data: 상권 원자료 수집 (sangga)
 - 2026-09-26 fix: 전남·광주·인천의 나이대·면적이 통째로 비어 있었다 — 이름으로 메운다
-- 2026-09-26 fix: 시군구 코드표를 저장소에 담는다 — 러너에 ANSEO 사본이 없다
 
 ## 워크플로 (21)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 fd4f8c4 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 beadf0a 기준. 값·비밀은 포함하지 않음.*
