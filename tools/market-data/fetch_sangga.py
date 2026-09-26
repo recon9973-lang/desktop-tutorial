@@ -22,22 +22,25 @@ OPS = ["storeListInArea", "storeListInDong", "storeListInUpjong", "storeListInRa
 calls = 0
 
 
-def get(url: str, timeout: int = 15):
+def get(url: str, timeout: int = 15, cap: int | None = 4000):
+    """cap 은 «맛보기만 볼 때» 쓴다. 코드표·수집은 통째로 읽어야 한다 —
+    [실측] 4,000바이트에서 자르는 바람에 업종 대분류가 6개만 잡히고 중분류는 0개였다."""
     global calls
     calls += 1
     try:
         with urllib.request.urlopen(url, timeout=timeout) as r:
-            return r.status, r.read()[:4000]
+            body = r.read()
+            return r.status, (body[:cap] if cap else body)
     except urllib.error.HTTPError as e:
         return e.code, e.read()[:1200]
     except Exception as e:  # noqa: BLE001
         return 0, str(e).encode()
 
 
-def call(op: str, params: dict, timeout: int = 15):
+def call(op: str, params: dict, timeout: int = 15, cap: int | None = 4000):
     k = KEY if "%" in KEY else urllib.parse.quote(KEY, safe="")
     url = f"{BASE}/{op}?serviceKey={k}&" + urllib.parse.urlencode(params)
-    return get(url, timeout)
+    return get(url, timeout, cap)
 
 
 def codes_mode() -> int:
@@ -53,7 +56,7 @@ def codes_mode() -> int:
         for page in (1, 2):
             st, body = call("storeListInDong",
                             {"divId": div, "key": key, "numOfRows": "1000",
-                             "pageNo": str(page), "type": "json"}, timeout=60)
+                             "pageNo": str(page), "type": "json"}, timeout=90, cap=None)
             if st != 200:
                 print(f"  {div}={key} 쪽 {page} → http {st}"); break
             try:
@@ -169,7 +172,7 @@ def collect(op: str, div: str, lcls: list[str], limit: int) -> int:
                 p = {"divId": div, "key": code, "numOfRows": "1", "pageNo": "1", "type": "json"}
                 if lc:
                     p["indsLclsCd"] = lc
-                st, body = call(op, p, timeout=20)
+                st, body = call(op, p, timeout=20, cap=None)
                 n += 1
                 total = None
                 try:
