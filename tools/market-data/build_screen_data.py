@@ -15,6 +15,11 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     sg = list(csv.DictReader((SRC / "market_sggu.csv").open(encoding="utf-8")))
     sj = list(csv.DictReader((SRC / "market_subject.csv").open(encoding="utf-8")))
+    kk_path = SRC / "market_kakao.csv"
+    kk = {(r["시도"], r["시군구"]): r for r in
+          csv.DictReader(kk_path.open(encoding="utf-8"))} if kk_path.exists() else {}
+    kk_cols = [c[3:] for c in (next(iter(kk.values())).keys() if kk else []) 
+               if c.startswith("지도_") and c != "지도_병원계"]
     kinds = [c[3:] for c in sg[0] if c.startswith("종별_")]
 
     regions, index = [], {}
@@ -27,6 +32,8 @@ def main() -> int:
             int(r["의사수"]), [int(r[f"종별_{k}"]) for k in kinds],
             int(r["의원수"]), int(r["미용겸업_의원수"]),
             num(r["미용겸업_비율%"]), int(r["겸업중_일반의원장"]),
+            int(k["지도_병원계"]) if (k := kk.get((r["시도"], r["시군구"]))) else None,
+            [int(k[f"지도_{c}"]) for c in kk_cols] if k else None,
         ])
 
     names, nidx = [], {}
@@ -54,7 +61,8 @@ def main() -> int:
                  "나이": "행안부 2026-08-31", "면적": "SGIS 2026-07-01"},
         "열": ["시도", "시군구", "인구", "병의원", "인구1만명당", "면적km2", "km2당",
                "65세이상%", "20~39%", "여성20~49", "의사수", "종별",
-               "의원수", "미용겸업", "미용겸업%", "겸업중일반의"],
+               "의원수", "미용겸업", "미용겸업%", "겸업중일반의", "지도계", "지도분류"],
+        "지도분류이름": kk_cols,
         "종별이름": kinds,
         "전국": {"인구": nat_pop, "병의원": nat_n,
                  "인구1만명당": round(nat_n / nat_pop * 10000, 2),

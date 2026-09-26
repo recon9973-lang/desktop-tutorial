@@ -20,10 +20,10 @@ SIDO_SHORT = {"서울특별시": "서울", "부산광역시": "부산", "대구�
               "충청남도": "충남", "전북특별자치도": "전북", "전라북도": "전북",
               "전라남도": "전남", "경상북도": "경북", "경상남도": "경남",
               "제주특별자치도": "제주", "전남광주통합특별시": "전남"}
-# 프랜차이즈 이름이 분류 자리에 오는 곳이 있다 — 과목으로 되돌린다.
-BRAND = {"CNP차앤박피부과": "피부과", "이지함피부과": "피부과", "CU클린업 피부과": "피부과",
-         "성장클리닉": "소아청소년과"}
 SKIP = {"동물병원"}   # 사람 병원이 아니다
+# 한의원은 카카오 병원 분류(HP8)에 없어 낱말로 따로 훑었다. 낱말 훑기는 분류를 가리지
+# 않으므로 주차장·ATM·빌딩 같은 것이 섞여 온다 — 병원 분류에 있는 것과 한방만 남긴다.
+EXTRA = {"한의원"}
 # 2026-07 행정구역 개편으로 지도 주소가 새 이름을 쓴다. 심평원은 아직 옛 이름이다.
 # 검단구+서해구 = 옛 서구 전체라 되돌릴 수 있다. 제물포구·영종구는 옛 중구·동구가
 # 섞여 있어 **가를 수 없다** — 그 둘은 지도 값을 «—» 로 둔다(지어내지 않는다).
@@ -32,6 +32,9 @@ CANNOT_SPLIT = {("인천", "제물포구"), ("인천", "영종구")}
 
 
 SHORT = set(SIDO_SHORT.values())
+# 광주광역시는 지도 주소에서 「전남광주통합특별시 북구」처럼 온다(2026-07 통합).
+# 심평원은 아직 광주를 따로 센다 — 구 이름으로 갈라 맞춘다.
+GWANGJU_GU = {"동구", "서구", "남구", "북구", "광산구"}
 
 
 def region_of(addr: str) -> tuple[str, str] | None:
@@ -47,6 +50,8 @@ def region_of(addr: str) -> tuple[str, str] | None:
     # 「경기도 고양시 덕양구 …」처럼 시 아래 구가 있는 자리
     if len(t) >= 3 and t[1].endswith("시") and t[2].endswith("구"):
         return (sido, f"{t[1]} {t[2]}")
+    if t[0] == "전남광주통합특별시" and t[1] in GWANGJU_GU:
+        return ("광주", t[1])
     return (sido, t[1])
 
 
@@ -60,6 +65,30 @@ def main() -> int:
     for r in rows:   # 화성시처럼 심평원이 통으로 가진 자리는 구 이름도 받아 준다
         key_of.setdefault((r["시도"], r["시군구"]), (r["시도"], r["시군구"]))
 
+    # 병원 분류로 훑은 판들에 실제로 나온 분류만 «진짜»로 친다.
+    base = set()
+    for f in files:
+        if "hanuiwon" in f.name:
+            continue
+        for line in f.open(encoding="utf-8"):
+            try:
+                leaf = (json.loads(line).get("cat") or "").split(">")[-1].strip()
+            except Exception:  # noqa: BLE001
+                continue
+            if leaf:
+                base.add(leaf)
+    base |= EXTRA
+    base -= SKIP
+
+    def norm(leaf: str) -> str | None:
+        """프랜차이즈 이름이 분류 자리에 온 것을 과목으로 되돌린다(하늘마음한의원 → 한의원)."""
+        if leaf in base:
+            return leaf
+        for b in sorted(base, key=len, reverse=True):
+            if len(b) >= 3 and leaf.endswith(b):
+                return b
+        return None
+
     cnt = collections.defaultdict(collections.Counter)
     seen, total, unmatched, skipped = set(), 0, collections.Counter(), collections.Counter()
     for line in (l for f in files for l in f.open(encoding="utf-8")):
@@ -70,9 +99,8 @@ def main() -> int:
         if p["id"] in seen:
             continue
         seen.add(p["id"])
-        leaf = (p.get("cat") or "").split(">")[-1].strip()
-        leaf = BRAND.get(leaf, leaf)
-        if not leaf or leaf in SKIP:
+        leaf = norm((p.get("cat") or "").split(">")[-1].strip())
+        if not leaf:
             continue
         reg = region_of(p.get("addr") or "")
         if not reg:
