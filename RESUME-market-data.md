@@ -1,8 +1,8 @@
 <!-- 가지: claude/intelligent-ride-u5oztv -->
-# RESUME (상권 자료 방) — **닫힘. 전부 나갔다** (2026-09-26 확인)
+# RESUME (상권 자료 방) — 2026-09-26 갱신 · **세종 인구 하나만 남았다**
 
-> 상세는 이 파일 하나로 충분하다. 현황 `PROJECT_STATE.md`, 지도 `핵심두뇌_MASTER.md`.
-> **이 방에서 이어갈 작업은 없다.**
+> 상세는 이 파일과 `docs/session-logs/2026-09-26-market-data.md`. 현황 `PROJECT_STATE.md`.
+> **이어갈 작업은 하나뿐이다 — 세종 인구. 열쇠가 오면 5분이면 끝난다.**
 
 ## 한 줄
 
@@ -15,11 +15,12 @@
 ```
 data/market/market_sggu.csv      시군구 252 — 인구·면적·병의원·종별·밀집도·나이대·미용겸업
 data/market/market_subject.csv   시군구×진료과목 10,704 — 내건 곳 / 전문의 있는 곳 / 전문의 없이
-data/market/market_kakao.csv     시군구 250 — 카카오 지도 분류 34가지
+data/market/market_kakao.csv     시군구 252 — 카카오 지도 분류 34가지(전국 73,188곳)
 data/market/market_dong.csv      행정동 3,594 — 인구·남녀·나이대·면적
 data/market/naver_datalab_subjects.csv  과목 20 — 검색 수요(피부과=100)
 data/market/population_sggu.csv  사장님 시트를 옮긴 것
 data/market/screen/index.html    한 파일짜리 화면(자료를 안에 넣어 둬 네트워크 없이 열린다)
+data/market/병의원_상권자료.xlsx  위를 한 권으로 묶은 것(표지 「읽는 법」 포함 · 867KB)
 tools/market-data/               만드는 도구 아홉
 .github/workflows/market-data.yml  러너가 대신 받아 오는 판
 ```
@@ -57,7 +58,9 @@ tools/market-data/               만드는 도구 아홉
 - **「부산진구」를 부산+진구로 떼면 안 된다.** 그 자체가 구 이름이다.
 - **심평원에 「화성시」와 「화성○○구」가 함께 있다** — 그대로 두면 화성 99.9만이 두 번 세어진다.
   시 이름이 구 이름들의 머리이면 한 덩어리로 묶는다. 고친 뒤 시도별 인구 합이 행안부 원본과 일치한다.
-- **인천 제물포구·영종구는 옛 중구·동구가 섞여 있어 가를 수 없다.** 226곳을 빼고 «—» 로 뒀다.
+- **인천 제물포구·영종구는 옛 중구·동구가 섞여 있다** — 이름으로는 못 가른다. **좌표로 가른다**:
+  심평원 기관 231곳을 기준점으로 두고 가장 가까운 기준점의 구로 돌린다.
+  [검증 2026-09-26] 이름까지 같아 확실한 213곳 **전부**가 이 방법과 같은 구로 떨어졌다(100%).
 - **네이버 지역검색 API 의 total 은 5 로 캡된다** — 밀집도를 세는 데 못 쓴다.
 - **카카오는 검색어에 지역 이름을 넣으면 안 맞는다**(「강원 고성군 피부과」 0건). 좌표 네모로 주되,
   네모는 옆 동네가 섞이므로 **받은 곳마다 도로명주소로 다시 가른다.**
@@ -70,10 +73,18 @@ tools/market-data/               만드는 도구 아홉
 
 | 못 잰 것 | 어떻게 |
 | --- | --- |
-| 세종 인구 | 행안부 행정동 자료에 세종이 없다. 따로 받아 더한다 |
-| 인천 중구·동구 지도 값 | 행정구역이 합쳐져 가를 수 없다. 옛 경계를 구해야 한다 |
+| **세종 인구** ← 이것 하나만 남았다 | 열쇠 `DATA_GO_KR_SERVICE_KEY` 를 저장소 열쇠 보관함에 넣고 `market-data.yml` 을 `sejong` 단계로 띄운다. 받아 오는 도구 `tools/market-data/fetch_sejong.py` 는 이미 있다. 신청할 자료는 **행정안전부_행정동별(통반단위) 주민등록 인구 및 세대현황**(포털 15108065) |
 | 한 달에 몇 번 검색되는지(절대 검색량) | 네이버 검색광고 열쇠 3종(`NAVER_AD_*`)을 저장소 시크릿에 |
 | 읍면동 단위 병의원 수 | 병원 좌표와 행정동 경계를 겹쳐 센다(좌표는 이미 있다) |
+
+## 열쇠 상태 [실측 2026-09-26 · 러너]
+
+```
+있음  KAKAO_REST_API_KEY
+없음  DATA_GO_KR_SERVICE_KEY · DATA_GO_KR_KEY · SGIS_CONSUMER_KEY/SECRET · NAVER_CLIENT_ID
+```
+포털 화면(`www.data.go.kr`)은 이 컨테이너에서도 러너에서도 막혀 있다(000).
+**「활용신청」은 에이전트가 대신 못 누른다** — 사장님 브라우저에서만 된다.
 
 ## 자료 갱신하는 법
 
@@ -84,6 +95,7 @@ python3 tools/market-data/build_kakao.py        # 훑어 둔 지도 자료 → �
 python3 tools/market-data/build_screen_data.py  # 화면용으로 누르기
 python3 tools/market-data/build_screen.py       # 한 파일짜리 화면
 python3 tools/market-data/make_readme.py        # 대문 다시 쓰기
+python3 tools/market-data/build_xlsx.py         # 엑셀 한 권
 ```
 지도를 새로 훑으려면 `market-data.yml` 을 `kakao-probe`(네모) · `kakao-word`(낱말)로 띄운다.
 판마다 `part` 이름을 다르게 주면 **동시에** 돈다.
@@ -94,3 +106,6 @@ python3 tools/market-data/make_readme.py        # 대문 다시 쓰기
   모델 ID 는 트레일러에만.
 - 사장님께는 **쉬운 말**로. 「커밋」·「배포」 두 낱말만, 못 잰 값 «—», 지어낸 수치 금지, 의료광고법 준수.
 - 심평원 자료를 쓴 화면·문서에는 **출처를 표시한다**(공공누리 제1유형).
+- **이 환경에서는 리브레오피스가 안 돈다** — 엑셀 계산식을 확인할 방법이 없다(252줄로 줄여도
+  3분 안에 못 연다). 그래서 표지에 계산식 대신 «세어 적은 값»을 싣고 파이썬으로 따로 한 번 더 셌다.
+- **화면 링크는 사장님만 열린다** — 팀에 돌리려면 화면 오른쪽 위 공유에서 열어야 한다.
