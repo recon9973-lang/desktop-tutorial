@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 19개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
+- 2026-09-26 fix: 응답을 4,000바이트에서 자르고 있었다 (#296)
+- 2026-09-26 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-26 feat: 상가정보 업종 코드표를 자료에서 찾아낸다 (#295)
 - 2026-09-26 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-26 fix: 상가정보 두드린 결과를 「시도한 것 전부」 남긴다 (#294)
 - 2026-09-26 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-26 feat: 소상공인 상가정보 붙이기 + 저장 범위 고침 (#293)
-- 2026-09-26 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-26 feat: 세종 인구를 채운다 — 시군구 252곳에 빈칸이 없다 (#292)
 - 2026-09-26 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (21)
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 51de56f 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 261df56 기준. 값·비밀은 포함하지 않음.*
