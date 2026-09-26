@@ -233,7 +233,7 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
     </div>
     <div>
       <h3>지도 층은 무엇인가</h3>
-      <p class="note">카카오 지도를 전국 통째로 훑어 병원 <b>72,949곳</b>을 받았다.
+      <p class="note">카카오 지도를 전국 통째로 훑어 병원 <b id="natMap">—</b>을 받았다.
       지도 분류는 한 곳에 <b>하나만</b> 붙어서 「환자가 이 병원을 무엇으로 보는가」가 된다.
       심평원의 「무엇을 할 수 있나」와는 다른 층이다.
       강남구를 예로 들면 지도에서 피부과로 보이는 곳이 585곳인데 피부과 전문의가 있는 곳은
@@ -242,9 +242,9 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
     <div>
       <h3>아직 못 잰 것</h3>
       <p class="note"><span class="dash">—</span> 는 <b>못 잰 값</b>이다. 지어내지 않았다.<br>
-      세종은 행안부 행정동 인구 자료에 없어 인구가 «—» 다(병의원 469곳은 실측).<br>
-      한 달에 몇 번 검색되는지(실제 검색량)와 지도에서 몇 곳이 잡히는지는
-      열쇠가 있어야 잰다.</p>
+      지금 남은 것은 <b>세종의 나이대</b> 하나다 — 행안부 나이대 자료에 세종이 통째로
+      빠져 있다(인구·남녀·면적·병의원은 다 있다).<br>
+      한 달에 몇 번 검색되는지(실제 검색량)는 열쇠가 있어야 잰다.</p>
     </div>
   </div>
 </div>
@@ -317,6 +317,10 @@ const mSum = (arr, names) => {
   return s;
 };
 const natPer = R['전국']['인구1만명당'];
+// 지도 합계는 자료에서 센다 — 화면에 외워 적어 두면 자료가 바뀔 때 어긋난다
+// (한 번 어긋나 있었다: 적어 둔 72,949 ↔ 실제 73,188).
+const natMapN = regions.reduce((s,r)=>s + (r.mapN||0), 0);
+const natMapPct = Math.round(natMapN / R['전국']['병의원'] * 100);
 const fmt = n => n==null ? DASH : n.toLocaleString('ko-KR');
 const fmt1 = n => n==null ? DASH : n.toFixed(1);
 const man = n => n==null ? DASH : (n/10000).toFixed(n>=1000000?0:1);
@@ -330,6 +334,7 @@ const BASIS = {
 const natPerOf = (i,b) => BASIS[b].nat(i) / S['전국인구'] * 10000;
 const subjOf = ri => (S['지역별'][ri]||[]);
 
+document.getElementById('natMap').textContent = natMapN.toLocaleString('ko-KR') + '곳';
 document.getElementById('topStats').innerHTML = [
   ['인구', man(R['전국']['인구'])+'만 명'],
   ['병의원', fmt(R['전국']['병의원'])+'곳'],
@@ -573,7 +578,7 @@ function renderDetail(){
           <b style="color:var(--c3)">${r.mapN==null?DASH:fmt(r.mapN)}곳</b></span></div>
       <div class="mix-bar"><i style="width:${r.mapN==null?0:Math.min(100,r.mapN/r.n*100)}%;
         background:var(--c3)"></i></div>
-      <p class="note">전국은 <b class="num">96%</b>다(심평원 76,322곳 대비 지도 72,949곳).
+      <p class="note">전국은 <b class="num">${natMapPct}%</b>다(심평원 ${fmt(R['전국']['병의원'])}곳 대비 지도 ${fmt(natMapN)}곳).
         낮으면 <b>지도에 이름을 안 올린 병원이 그만큼 있다</b>는 뜻이고, 그것은 가장 기본적인
         마케팅이 비어 있다는 표시다. <b>100%를 넘기도 한다</b> — 지도에는 심평원에 없는 것
         (검진센터·부속의원, 문 닫고도 남아 있는 자리)이 섞이기 때문이다.
