@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places | sejong'
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places | sejong | sangga-probe | sangga'
         required: true
         default: 'probe'
       max_calls:
@@ -85,6 +85,9 @@ jobs:
           case "$STAGE" in
             portal-file) python3 tools/market-data/portal_file.py ;;
             sejong)      python3 tools/market-data/fetch_sejong.py ;;
+            sangga-probe)   python3 tools/market-data/fetch_sangga.py --mode probe ;;
+            sangga)         python3 tools/market-data/fetch_sangga.py --mode collect \
+                              --lcls "$SUBJ" --limit "$MAXC" ;;
             kakao-probe) python3 tools/market-data/kakao_places.py --probe "$TERMS" \
                            ${PART:+--out "kakao_$PART.jsonl"} ;;
             kakao-word)  python3 tools/market-data/kakao_places.py --probe "$TERMS" \
@@ -110,7 +113,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/market/raw
+          git add -A data/market
           if git diff --cached --quiet; then
             echo "바뀐 것이 없다"; exit 0
           fi
