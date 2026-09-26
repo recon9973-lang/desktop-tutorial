@@ -31,7 +31,11 @@ WORD_SWEPT = {"hanuiwon", "jeonnam-check"}
 # 검단구+서해구 = 옛 서구 전체라 되돌릴 수 있다. 제물포구·영종구는 옛 중구·동구가
 # 섞여 있어 **가를 수 없다** — 그 둘은 지도 값을 «—» 로 둔다(지어내지 않는다).
 RENAME = {("인천", "검단구"): "서구", ("인천", "서해구"): "서구"}
-CANNOT_SPLIT = {("인천", "제물포구"), ("인천", "영종구")}
+# 제물포구·영종구는 옛 중구·동구가 섞여 있어 이름만으로는 못 가른다. 그래서 좌표로 가른다 —
+# 심평원 기관 231곳을 기준점으로 두고 «가장 가까운 기준점»의 구로 돌린다.
+# [검증 2026-09-26] 이름까지 같아 확실한 213곳 전부가 이 방법과 같은 구로 떨어졌다(100%).
+SPLIT_BY_POINT = {("인천", "제물포구"), ("인천", "영종구")}
+POINTS = pathlib.Path("data/market/incheon_old_points.json")
 
 
 SHORT = set(SIDO_SHORT.values())
@@ -56,6 +60,13 @@ def region_of(addr: str) -> tuple[str, str] | None:
     if t[0] == "전남광주통합특별시" and t[1] in GWANGJU_GU:
         return ("광주", t[1])
     return (sido, t[1])
+
+
+def load_points() -> list[tuple[float, float, str]]:
+    if not POINTS.exists():
+        return []
+    d = json.loads(POINTS.read_text(encoding="utf-8"))
+    return [(p["x"], p["y"], p["구"]) for p in d["점"]]
 
 
 def main() -> int:
@@ -92,6 +103,20 @@ def main() -> int:
                 return b
         return None
 
+    pts = load_points()
+    split_n = collections.Counter()
+
+    def by_point(p) -> str | None:
+        """좌표로 옛 구를 되찾는다 — 가장 가까운 심평원 기관의 구."""
+        if not pts:
+            return None
+        try:
+            x, y = float(p["x"]), float(p["y"])
+        except (TypeError, ValueError, KeyError):
+            return None
+        # 위도 1도 ≈ 111km, 이 위도에서 경도 1도 ≈ 88.8km
+        return min(pts, key=lambda h: ((x - h[0]) * 88.8) ** 2 + ((y - h[1]) * 111.0) ** 2)[2]
+
     cnt = collections.defaultdict(collections.Counter)
     seen, total, unmatched, skipped = set(), 0, collections.Counter(), collections.Counter()
     for line in (l for f in files for l in f.open(encoding="utf-8")):
@@ -108,8 +133,11 @@ def main() -> int:
         reg = region_of(p.get("addr") or "")
         if not reg:
             continue
-        if reg in CANNOT_SPLIT:
-            skipped[reg] += 1; continue
+        if reg in SPLIT_BY_POINT:
+            gu = by_point(p)
+            if not gu:
+                skipped[reg] += 1; continue
+            reg = ("인천", gu); split_n[gu] += 1
         if reg in RENAME:
             reg = (reg[0], RENAME[reg])
         k = key_of.get(reg)
@@ -129,9 +157,10 @@ def main() -> int:
             w.writerow([sido, sggu, sum(v.values())] + [v.get(c, 0) for c in leaves])
     print(f"판 {len(files)}개 · 지도에 오른 병원 {total:,}곳 · 시군구 {len(cnt)} · "
           f"분류 {len(leaves)} → {OUT}")
+    if split_n:
+        print(f"좌표로 옛 구를 되찾은 곳 {sum(split_n.values()):,} (인천 제물포구·영종구): {dict(split_n)}")
     if skipped:
-        print(f"가를 수 없어 뺀 곳 {sum(skipped.values()):,} "
-              f"(인천 제물포구·영종구 = 옛 중구·동구가 섞여 있다): {dict(skipped)}")
+        print(f"그래도 못 가른 곳 {sum(skipped.values()):,}: {dict(skipped)}")
     if unmatched:
         print(f"주소를 못 맞춘 곳 {sum(unmatched.values()):,}: {dict(unmatched.most_common(6))}")
     return 0
