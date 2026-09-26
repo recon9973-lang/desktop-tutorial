@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 17개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
+- 2026-09-26 RESUME-noindex-issues: 닫힘 — 전부 나갔다 (#281)
+- 2026-09-25 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-25 docs: ANSEO 콘솔 이식 방 — 인계본 갱신 + 세션 기록 (2026-09-25)
 - 2026-09-24 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-24 docs: ANSEO 콘솔 이식 방 문서를 main 에 싣는다 (인계본 · 판번호 · 배포 절차 · 세션 기록)
 - 2026-09-24 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-24 RESUME-noindex-issues: 배포 확인 (0.3.648 에 실려 나감 · 운영 0.3.653) (#280)
-- 2026-09-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-22 noindex 이슈 방 — ANSEO noindex 조치 점검 기록·인계본 (+ 인정 방 연구보고서·인계본 main 반영) (#279)
 - 2026-09-22 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (21)
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 afa0165 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 9fb40d7 기준. 값·비밀은 포함하지 않음.*
