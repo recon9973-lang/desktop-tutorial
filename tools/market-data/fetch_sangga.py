@@ -54,25 +54,47 @@ def sggu_codes() -> list[tuple[str, str, str]]:
 
 
 def probe() -> int:
+    """무엇을 받는지 알아낸다. **시도한 것 전부**를 한 파일에 적어 둔다 —
+    앞 판에서는 마지막 성공만 덮어써져 «어느 값이 통했는지»를 알 수 없었다."""
     print(f"열쇠 {'있음' if KEY else '없음'}")
     if not KEY:
         return 2
     shapes = [
-        {"divId": "signguCd", "key": "11680", "numOfRows": "3", "pageNo": "1", "type": "json"},
-        {"divId": "ctprvnCd", "key": "11", "numOfRows": "3", "pageNo": "1", "type": "json"},
-        {"divId": "adongCd", "key": "1168064000", "numOfRows": "3", "pageNo": "1", "type": "json"},
-        {"numOfRows": "3", "pageNo": "1", "type": "json"},
+        ("시군구", {"divId": "signguCd", "key": "11680"}),
+        ("시도", {"divId": "ctprvnCd", "key": "11"}),
+        ("행정동", {"divId": "adongCd", "key": "11680640"}),
+        ("시군구+업종", {"divId": "signguCd", "key": "11680", "indsLclsCd": "Q1"}),
+        ("값없음", {}),
     ]
+    tried = []
     for op in OPS:
-        for sh in shapes:
-            st, body = call(op, sh)
+        for name, sh in shapes:
+            p = dict(sh, numOfRows="1", pageNo="1", type="json")
+            st, body = call(op, p)
             txt = body.decode("utf-8", "replace")
-            flat = " ".join(txt.split())[:300]
-            print(f"[{st:>3}] {op:<22} {'+'.join(list(sh)[:2]):<22} {flat}")
-            if st == 200 and '"resultCode"' in txt and '"00"' in txt:
-                RAW.mkdir(parents=True, exist_ok=True)
-                (RAW / f"sangga_probe_{op}.json").write_text(txt, encoding="utf-8")
-    print(f"호출 {calls}회")
+            rc = tot = None
+            for kk, tgt in (("resultCode", "rc"), ("totalCount", "tot")):
+                i = txt.find(f'"{kk}"')
+                if i >= 0:
+                    seg = txt[i:i + 60].split(":", 1)[-1].strip().strip(',').strip()
+                    v = seg.split(",")[0].strip().strip('"').strip()
+                    if tgt == "rc":
+                        rc = v
+                    else:
+                        tot = v
+            row = {"op": op, "값": name, "http": st, "resultCode": rc, "totalCount": tot,
+                   "맛보기": " ".join(txt.split())[:160]}
+            tried.append(row)
+            print(f"[{st:>3}] {op:<22} {name:<12} rc={str(rc):<6} total={str(tot):<10} "
+                  f"{row['맛보기'][:90]}")
+    RAW.mkdir(parents=True, exist_ok=True)
+    (RAW / "sangga_probe.json").write_text(
+        json.dumps({"시도한 것": tried}, ensure_ascii=False, indent=1), encoding="utf-8")
+    ok = [t for t in tried if t["resultCode"] == "00"]
+    print(f"\n통한 조합 {len(ok)}개:")
+    for t in ok:
+        print(f"  {t['op']} · {t['값']} · 전체 {t['totalCount']}")
+    print(f"호출 {calls}회 → {RAW/'sangga_probe.json'}")
     return 0
 
 
