@@ -9,7 +9,7 @@
 
 나가는 곳: data/market/market_kakao.csv
 """
-import csv, json, pathlib, collections
+import csv, re, json, pathlib, collections
 
 RAW = pathlib.Path("data/market/raw")
 OUT = pathlib.Path("data/market/market_kakao.csv")
@@ -75,9 +75,22 @@ def main() -> int:
         print(f"훑은 자료가 없다: {RAW}/kakao_*.jsonl"); return 2
     rows = list(csv.DictReader(open("data/market/market_sggu.csv", encoding="utf-8")))
     # 행안부 정식 이름 → 심평원 표기(표의 열쇠)
-    key_of = {(r["시도"], r["시군구_정식"]): (r["시도"], r["시군구"]) for r in rows}
-    for r in rows:   # 화성시처럼 심평원이 통으로 가진 자리는 구 이름도 받아 준다
-        key_of.setdefault((r["시도"], r["시군구"]), (r["시도"], r["시군구"]))
+    # 주소에서 뽑은 이름을 표의 자리로 돌린다.
+    # **다른 표의 칸에 기대지 않는다** — 「시군구_정식」 칸이 자료 출처를 바꾸면서
+    # 「성남시 분당구」에서 「성남분당구」로 바뀌자 지도 표가 252곳 → 217곳으로
+    # 깨진 적이 있다(2026-09-27). 이름 꼴을 여기서 직접 맞춘다.
+    def fold(g: str) -> str:
+        g = re.sub(r"[ ·]", "", g or "")
+        m = re.match(r"^(.+?)시(.+구)$", g)          # 성남시분당구 → 성남분당구
+        return (m.group(1) + m.group(2)) if m else g
+
+    key_of = {}
+    for r in rows:
+        k = (r["시도"], r["시군구"])
+        for nm in {r["시군구"], r.get("시군구_정식") or "", fold(r["시군구"])}:
+            if nm:
+                key_of.setdefault((r["시도"], nm), k)
+                key_of.setdefault((r["시도"], fold(nm)), k)
 
     # 병원 분류로 훑은 판들에 실제로 나온 분류만 «진짜»로 친다.
     base = set()
@@ -140,7 +153,7 @@ def main() -> int:
             reg = ("인천", gu); split_n[gu] += 1
         if reg in RENAME:
             reg = (reg[0], RENAME[reg])
-        k = key_of.get(reg)
+        k = key_of.get(reg) or key_of.get((reg[0], fold(reg[1])))
         if not k:
             k = key_of.get((reg[0], reg[1].split()[0]))   # 「고양시 덕양구」→「고양시」
         if not k:

@@ -14,6 +14,12 @@ def main() -> int:
     kk = list(csv.DictReader(kk_p.open(encoding="utf-8-sig"))) if kk_p.exists() else []
     sa = list(csv.DictReader(sa_p.open(encoding="utf-8-sig"))) if sa_p.exists() else []
     stores = sum(int(r["점포_계"]) for r in sa if r["점포_계"] != "—")
+    pp = OUT / "population_dong.csv"
+    base = "—"
+    if pp.exists():
+        with pp.open(encoding="utf-8-sig") as f:
+            first = next(csv.DictReader(f), {})
+        base = first.get("기준연월", "—")
     blanks = {c: sum(1 for r in sg if r[c] == "—") for c in sg[0]}
     still = [c for c, v in blanks.items() if v]
     pop = sum(num(r["인구"]) or 0 for r in sg)
@@ -40,8 +46,7 @@ def main() -> int:
 | 무엇 | 기준 시점 | 출처 |
 | --- | --- | --- |
 | 병의원 {n:,}곳 · 진료과목 {len(sj):,}쌍 | 2026년 6월 | 건강보험심사평가원 「전국 병의원 및 약국 현황」(공공누리 제1유형 · 출처표시) |
-| 인구 · 남녀 | 2026-06-30 | 행정안전부 「주민등록 인구통계 · 행정동」 |
-| 나이대 인구 | 2026-08-31 | 같은 곳(5세 단위 21칸) |
+| 인구 · 남녀 · 나이대 | {base} | 행정안전부 「지역별(행정동) 성별 연령별 주민등록 인구수」 — **공공데이터포털 API 로 달마다 받는다**(한 살 단위) |
 | 행정동 면적 | 2026-07-01 | 통계청 SGIS 행정동 경계 |
 | 과목별 검색 수요 | 2025-09~2026-08 | 네이버 데이터랩 검색어 트렌드 |
 | 지도 분류 | 2026-09-19 | 카카오 로컬(전국 훑기) |
