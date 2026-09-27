@@ -1,0 +1,133 @@
+{
+ "시도한 것": [
+  {
+   "무엇": "호스트 apis.data.go.kr",
+   "주소": "https://apis.data.go.kr",
+   "http": 400,
+   "걸린초": 0.8,
+   "맛보기": "{ \"OpenAPI_ServiceResponse\": { \"cmmMsgHeader\": { \"errMsg\": \"NO_OPENAPI_SERVICE_ERROR\", \"returnAuthMsg\": \"해당 오픈API 서비스가 없거나 폐기됨\", \"returnReasonCode\":",
+   "메모": ""
+  },
+  {
+   "무엇": "호스트 api.odcloud.kr",
+   "주소": "https://api.odcloud.kr",
+   "http": 404,
+   "걸린초": 0.9,
+   "맛보기": "not found service",
+   "메모": ""
+  },
+  {
+   "무엇": "호스트 www.data.go.kr",
+   "주소": "https://www.data.go.kr",
+   "http": 200,
+   "걸린초": 1.4,
+   "맛보기": "<!DOCTYPE html> <html lang=\"ko\"> <head> <meta charset=\"UTF-8\"> <!-- 로봇 차단 --> <meta name=\"robots\" content=\"noindex, nofollow\"> <meta name=\"googlebot\" content=\"noinde",
+   "메모": ""
+  },
+  {
+   "무엇": "호스트 kosis.kr",
+   "주소": "https://kosis.kr",
+   "http": 200,
+   "걸린초": 4.0,
+   "맛보기": "<!-- SSO 적용 START --> <!-- SSO 적용 END --> <!DOCTYPE HTML> <html lang=\"ko\"> <head> <meta charset=\"utf-8\"> <meta http-equiv=\"X-UA-Compatible\" content=",
+   "메모": ""
+  },
+  {
+   "무엇": "호스트 sgisapi.kostat.go.kr",
+   "주소": "https://sgisapi.kostat.go.kr",
+   "http": 200,
+   "걸린초": 2.0,
+   "맛보기": "sgisapi.kostat.go.kr",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15097972/v1",
+   "주소": "https://api.odcloud.kr/api/15097972/v1?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 1.0,
+   "맛보기": "not found service",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15097972/v1/uddi:",
+   "주소": "https://api.odcloud.kr/api/15097972/v1/uddi:?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 0.6,
+   "맛보기": "{\"code\":-3,\"msg\":\"등록되지 않은 서비스 입니다.\"}",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15108065/v1",
+   "주소": "https://api.odcloud.kr/api/15108065/v1?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 0.7,
+   "맛보기": "not found service",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15108065/v1/uddi:",
+   "주소": "https://api.odcloud.kr/api/15108065/v1/uddi:?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 0.7,
+   "맛보기": "{\"code\":-3,\"msg\":\"등록되지 않은 서비스 입니다.\"}",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15107303/v1",
+   "주소": "https://api.odcloud.kr/api/15107303/v1?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 1.1,
+   "맛보기": "not found service",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15107303/v1/uddi:",
+   "주소": "https://api.odcloud.kr/api/15107303/v1/uddi:?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 0.8,
+   "맛보기": "{\"code\":-3,\"msg\":\"등록되지 않은 서비스 입니다.\"}",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15059351/v1",
+   "주소": "https://api.odcloud.kr/api/15059351/v1?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 0.5,
+   "맛보기": "not found service",
+   "메모": ""
+  },
+  {
+   "무엇": "odcloud 15059351/v1/uddi:",
+   "주소": "https://api.odcloud.kr/api/15059351/v1/uddi:?page=1&perPage=5&serviceKey=<열쇠>",
+   "http": 404,
+   "걸린초": 0.5,
+   "맛보기": "{\"code\":-3,\"msg\":\"등록되지 않은 서비스 입니다.\"}",
+   "메모": ""
+  },
+  {
+   "무엇": "기관 getAdmmPpltnHhStus",
+   "주소": "https://apis.data.go.kr/1741000/admmPpltnHhStus/getAdmmPpltnHhStus?serviceKey=<열쇠>&type=json&pageNo=1&numOfRows=5&pIndex=1&pSize=5",
+   "http": 400,
+   "걸린초": 0.9,
+   "맛보기": "{ \"OpenAPI_ServiceResponse\": { \"cmmMsgHeader\": { \"errMsg\": \"NO_OPENAPI_SERVICE_ERROR\", \"returnAuthMsg\": \"해당 오픈API 서비스가 없거나 폐기됨\", \"returnReasonCode\": \"12\" } } }",
+   "메모": ""
+  },
+  {
+   "무엇": "기관 getAdmmSexdstnAgrdePpltnStus",
+   "주소": "https://apis.data.go.kr/1741000/admmSexdstnAgrdePpltnStus/getAdmmSexdstnAgrdePpltnStus?serviceKey=<열쇠>&type=json&pageNo=1&numOfRows=5&pIndex=1&pSize=5",
+   "http": 400,
+   "걸린초": 0.7,
+   "맛보기": "{ \"OpenAPI_ServiceResponse\": { \"cmmMsgHeader\": { \"errMsg\": \"NO_OPENAPI_SERVICE_ERROR\", \"returnAuthMsg\": \"해당 오픈API 서비스가 없거나 폐기됨\", \"returnReasonCode\": \"12\" } } }",
+   "메모": ""
+  },
+  {
+   "무엇": "기관 getStanReginCdList",
+   "주소": "https://apis.data.go.kr/1741000/StanReginCd/getStanReginCdList?serviceKey=<열쇠>&type=json&pageNo=1&numOfRows=5&pIndex=1&pSize=5",
+   "http": 403,
+   "걸린초": 0.9,
+   "맛보기": "{ \"OpenAPI_ServiceResponse\": { \"cmmMsgHeader\": { \"errMsg\": \"SERVICE_KEY_IS_NOT_REGISTERED_ERROR\", \"returnAuthMsg\": \"등록되지 않은 서비스키\", \"returnReasonCode\": \"30\" } } }",
+   "메모": ""
+  }
+ ],
+ "두드린 날": "2026-09-27"
+}
