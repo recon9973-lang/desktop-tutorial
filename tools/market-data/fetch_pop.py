@@ -157,12 +157,16 @@ def find() -> int:
     return 0
 
 
-def call_odcloud(pk: str, uddi: str, page: int = 1, per: int = 5, extra: dict = None):
+def call_odcloud(pk: str, uddi: str, page: int = 1, per: int = 5,
+                 extra: dict = None, cap: int | None = 2500):
+    """cap 은 «맛보기만 볼 때» 쓴다. 받아 담을 때는 반드시 통째로 읽는다 —
+    [실측 2026-09-27] 2,500바이트에서 자르는 바람에 200 으로 잘 온 답을
+    «망가진 글» 로 읽고 한 판이 접혔다. 상가정보 때도 같은 실수를 했다(4,000바이트)."""
     q = {"page": page, "perPage": per, "serviceKey": KEY}
     q.update(extra or {})
     url = (f"https://api.odcloud.kr/api/{pk}/v1/{uddi}?"
            + urllib.parse.urlencode(q, quote_via=urllib.parse.quote))
-    return url, *get(url, timeout=40, cap=2500)
+    return url, *get(url, timeout=90, cap=cap)
 
 
 def try_them() -> int:
@@ -216,7 +220,7 @@ def collect(limit: int) -> int:
     page = done // per + 1
     print(f"이미 받은 줄 {done:,} → {page}쪽부터 (한 쪽 {per}줄)")
 
-    url, st, body, sec = call_odcloud(POP_PK, POP_UDDI, page=1, per=1)
+    url, st, body, sec = call_odcloud(POP_PK, POP_UDDI, page=1, per=1, cap=None)
     if st != 200:
         txt = body.decode("utf-8", "replace")
         print(f"못 받는다 [{st}] {txt[:200]}")
@@ -240,7 +244,8 @@ def collect(limit: int) -> int:
         while done < (total or 0):
             if n >= limit:
                 print("한도 도달 — 다음 판에서 이어받는다"); break
-            url, st, body, sec = call_odcloud(POP_PK, POP_UDDI, page=page, per=per)
+            url, st, body, sec = call_odcloud(POP_PK, POP_UDDI, page=page, per=per,
+                                              cap=None)
             n += 1
             if st != 200:
                 print(f"[{st}] {page}쪽에서 멈췄다 — {body[:160]}"); break
