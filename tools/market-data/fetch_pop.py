@@ -157,12 +157,56 @@ def find() -> int:
     return 0
 
 
+def call_odcloud(pk: str, uddi: str, page: int = 1, per: int = 5, extra: dict = None):
+    q = {"page": page, "perPage": per, "serviceKey": KEY}
+    q.update(extra or {})
+    url = (f"https://api.odcloud.kr/api/{pk}/v1/{uddi}?"
+           + urllib.parse.urlencode(q, quote_via=urllib.parse.quote))
+    return url, *get(url, timeout=40, cap=2500)
+
+
+def try_them() -> int:
+    """찾아 둔 주소로 실제로 불러 본다. 무엇이 «주소가 틀림»이고 무엇이
+    «활용신청이 안 됨»인지 갈라 적는다 — 고칠 사람이 다르기 때문이다."""
+    src = RAW / "pop_endpoints.json"
+    if not src.exists():
+        print("찾아 둔 주소가 없다 — `--mode find` 를 먼저 돌린다"); return 2
+    found = json.loads(src.read_text(encoding="utf-8"))["찾은 것"]
+    out = []
+    for pk, g in found.items():
+        for uddi in g["uddi"]:
+            url, st, body, sec = call_odcloud(pk, uddi)
+            txt = body.decode("utf-8", "replace")
+            flat = " ".join(txt.split())
+            판정 = ("받아진다" if st == 200 else
+                  "활용신청이 안 됐다" if "등록되지" in flat or "NOT_REGISTERED" in flat
+                  else "주소가 틀렸다" if "없습니다" in flat or "not found" in flat.lower()
+                  else f"http {st}")
+            out.append({"자료번호": pk, "이름": g["이름"], "uddi": uddi,
+                        "http": st, "판정": 판정, "맛보기": flat[:400]})
+            print(f"[{st:>3}] {pk} {g['이름'][:28]:<28} {판정:<16} {flat[:110]}")
+    (RAW / "pop_try.json").write_text(
+        json.dumps({"불러 본 것": out, "불러 본 날": time.strftime("%Y-%m-%d")},
+                   ensure_ascii=False, indent=1), encoding="utf-8")
+    ok = [o for o in out if o["http"] == 200]
+    need = [o for o in out if o["판정"] == "활용신청이 안 됐다"]
+    print(f"\n받아지는 자료 {len(ok)}개 · 활용신청이 필요한 자료 {len(need)}개")
+    for o in need:
+        print(f"   신청할 것: https://www.data.go.kr/data/{o['자료번호']}/  ({o['이름']})")
+    print(f"→ {RAW/'pop_try.json'}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="probe", choices=["probe", "find"])
+    ap.add_argument("--mode", default="probe", choices=["probe", "find", "try"])
     a = ap.parse_args()
     if a.mode == "find":
         return find()               # 이 길은 열쇠가 없어도 된다
+    if a.mode == "try":
+        if not KEY:
+            print("DATA_GO_KR_SERVICE_KEY 없음 — 중단"); return 2
+        return try_them()
     if not KEY:
         print("DATA_GO_KR_SERVICE_KEY 없음 — 중단"); return 2
     return probe()
