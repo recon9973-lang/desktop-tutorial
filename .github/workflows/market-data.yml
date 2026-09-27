@@ -10,6 +10,10 @@ name: Market data collect
 #   KAKAO_REST_API_KEY                     (카카오 로컬 · 선택 · 없으면 건너뜀)
 
 on:
+  # 인구는 행안부가 달마다 새로 낸다. 달마다 한 번 받아 둔다 —
+  # 손으로 올리면 잊히지만 시각표는 안 잊는다(사장님 지시 2026-09-27).
+  schedule:
+    - cron: '17 18 5 * *'      # 매달 6일 03:17 (한국) · 새 달 자료가 올라온 뒤
   workflow_dispatch:
     inputs:
       stage:
@@ -52,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ github.event.inputs.branch || github.ref_name }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -74,8 +78,8 @@ jobs:
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
           KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
-          STAGE: ${{ github.event.inputs.stage }}
-          MAXC: ${{ github.event.inputs.max_calls }}
+          STAGE: ${{ github.event.inputs.stage || 'pop' }}
+          MAXC: ${{ github.event.inputs.max_calls || '200' }}
           TERMS: ${{ github.event.inputs.terms }}
           PART: ${{ github.event.inputs.part }}
           SUBJ: ${{ github.event.inputs.subject }}
@@ -105,17 +109,26 @@ jobs:
             *)         python3 tools/market-data/hira_collect.py --stage "$STAGE" --max-calls "$MAXC" ;;
           esac
 
+      - name: 인구를 받았으면 표까지 짠다
+        if: ${{ env.STAGE == 'pop' }}
+        env:
+          STAGE: ${{ github.event.inputs.stage || 'pop' }}
+        run: python3 tools/market-data/build_pop.py || true
+
       - name: 큰 파일은 눌러서 담는다
         run: |
           if [ -f data/market/raw/hira_master.csv ]; then
             gzip -9f data/market/raw/hira_master.csv
           fi
+          if [ -f data/market/raw/pop_rows.jsonl ]; then
+            gzip -9f data/market/raw/pop_rows.jsonl      # 16MB → 2MB 남짓
+          fi
           ls -la data/market/raw/ || true
 
       - name: 커밋 · 푸시
         env:
-          BR: ${{ github.event.inputs.branch }}
-          STAGE: ${{ github.event.inputs.stage }}
+          BR: ${{ github.event.inputs.branch || github.ref_name }}
+          STAGE: ${{ github.event.inputs.stage || 'pop' }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

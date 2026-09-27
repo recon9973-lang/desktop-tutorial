@@ -222,7 +222,13 @@ def main() -> int:
             # 행정동 표는 「수원시 장안구」, 경계 쪽은 「수원장안구」 — 같은 꼴로 만든다.
             # [실측] 이걸 안 맞춰서 「정자1동」처럼 겹치는 이름 29줄이 비어 있었다.
             want = sggu_key(r["시군구"])
-            narrowed = [i for i in cands if sggu_key(region_of(names[i])[1]) == want]
+            def same(g: str) -> bool:
+                g = sggu_key(g)
+                # 표는 「화성시」 한 줄인데 경계는 「화성동탄구」처럼 구로 갈려 있다.
+                # 시 이름이 구 이름의 머리이면 같은 자리로 본다
+                # ([실측] 이걸 안 해서 화성 반월동 39곳이 비어 있었다).
+                return g == want or (want.endswith("시") and g.startswith(want[:-1]))
+            narrowed = [i for i in cands if same(region_of(names[i])[1])]
             cands = narrowed or cands
         row = dict(r)
         if len(cands) == 1:

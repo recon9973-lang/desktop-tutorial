@@ -103,111 +103,88 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
 
     # ── 인구 ──
-    pop = load_json_gz(POP_DIR / "mois_dong_population.json.gz")
-    age = load_json_gz(POP_DIR / "mois_dong_population_age.json.gz")
+    # **API 로 받은 표가 있으면 그것을 쓴다.** 인구는 달마다 바뀌어서 파일에 기대면
+    # 낡는다(사장님 지시 2026-09-27). ANSEO 사본은 그 표가 없을 때만 쓰는 예비다.
     pts = load_json_gz(POP_DIR / "admdongkor_dong_points.json.gz")
-    area_by_dong = dict(zip(pts["dong_code"], pts["area_km2"]))
-
-    # 자료마다 행정구역 시점이 다르다. 인구(2026-06-30)는 옛 이름·옛 코드이고,
-    # 나이대(2026-08-31)와 경계는 2026-07 개편 뒤 이름·코드다
-    # (「전남광주통합특별시」·인천 제물포구/영종구/검단구/서해구).
-    # 그래서 코드로만 맞추면 **전남 전체·광주 5구·인천 3구의 나이대와 면적이 통째로 빈다**
-    # (252곳 중 30곳). 코드로 못 찾으면 **이름으로** 한 번 더 찾는다.
-    def name_index(sidos, sggus, dongs, vals):
-        """(시도, 시군구, 동) 과 (시도, 동) 두 벌. 한 자리에 둘 이상 걸리면 버린다 —
-        「신사동」처럼 같은 시도 안에 같은 이름이 둘인 데가 55곳 있다."""
-        a, b = collections.defaultdict(list), collections.defaultdict(list)
-        for sd, sg, dg, v in zip(sidos, sggus, dongs, vals):
-            r = SIDO_SHORT.get(sd, sd)
-            if sd == "전남광주통합특별시":
-                r = "광주" if sg in GWANGJU_GU else "전남"
-            a[(r, sg, dg)].append(v); b[(r, dg)].append(v)
-        return ({k: v[0] for k, v in a.items() if len(v) == 1},
-                {k: v[0] for k, v in b.items() if len(v) == 1})
-
-    age_nameA, age_nameB = name_index(age["sido_name"], age["sigungu_name"],
-                                      age["dong_name"], range(len(age["dong_code"])))
-    _sp = [n.split(" ") for n in pts["dong_name"]]     # 「시도 시군구 동」 한 줄로 온다
-    pts_nameA, pts_nameB = name_index([x[0] for x in _sp],
-                                      [x[1] if len(x) > 2 else "" for x in _sp],
-                                      [x[-1] for x in _sp], pts["area_km2"])
-    fills = collections.Counter()
+    api_pop = pathlib.Path("data/market/population_dong.csv")
 
     dong_rows, sggu_pop = [], collections.defaultdict(
         lambda: {"인구": 0, "남": 0, "여": 0, "면적": 0.0, "동수": 0,
                  "0~9": 0, "10~19": 0, "20~39": 0, "40~59": 0, "65+": 0, "여20~49": 0})
-    age_by_dong = {c: i for i, c in enumerate(age["dong_code"])}
     G = {"0~9": range(0, 2), "10~19": range(2, 4), "20~39": range(4, 8),
          "40~59": range(8, 12), "65+": range(13, 21)}
-    key_of = {}
-    for i, code in enumerate(pop["dong_code"]):
-        sido = SIDO_SHORT.get(pop["sido_name"][i], pop["sido_name"][i])
-        sggu = pop["sigungu_name"][i]
-        k = (sido, sggu)
-        key_of.setdefault(k, k)
-        dong = pop["dong_name"][i]
-        a = area_by_dong.get(code)
-        if a is None:                       # 코드로 못 찾으면 이름으로
-            a = pts_nameA.get((sido, sggu, dong), pts_nameB.get((sido, dong)))
-            if a is not None:
-                fills["면적"] += 1
-        d = {"시도": sido, "시군구": sggu, "행정동": pop["dong_name"][i], "행정동코드": code,
-             "인구": pop["total"][i], "남": pop["male"][i], "여": pop["female"][i],
-             "최근증감": pop["delta"][i], "면적_km2": a if a is not None else DASH}
-        s = sggu_pop[k]
-        s["인구"] += d["인구"]; s["남"] += d["남"]; s["여"] += d["여"]; s["동수"] += 1
-        if a:
-            s["면적"] += a
-        j = age_by_dong.get(code)
-        if j is None:                       # 코드로 못 찾으면 이름으로
-            j = age_nameA.get((sido, sggu, dong), age_nameB.get((sido, dong)))
-            if j is not None:
-                fills["나이대"] += 1
-        if j is not None:
-            m, w = age["male"][j], age["female"][j]
-            for g, rng in G.items():
-                v = sum(m[b] + w[b] for b in rng)
-                d[f"인구_{g}"] = v; s[g] += v
-            v = sum(w[b] for b in range(4, 10))
-            d["인구_여20~49"] = v; s["여20~49"] += v
-        else:
+
+    # 면적은 경계 자료에서 온다. 경계는 2026-07 개편 뒤 이름이라 코드로 못 맞추면
+    # **이름으로** 한 번 더 찾는다(「고양시덕양구 주교동」 꼴로 한 줄에 들어 있다).
+    area_by_dong = dict(zip(pts["dong_code"], pts["area_km2"]))
+    area_by_name = {}
+    for nm, a in zip(pts["dong_name"], pts["area_km2"]):
+        parts = nm.split(" ")
+        sido = SIDO_SHORT.get(parts[0], parts[0])
+        if parts[0] == "전남광주통합특별시":
+            sido = "광주" if (len(parts) > 2 and parts[1] in GWANGJU_GU) else "전남"
+        area_by_name.setdefault((sido, parts[-1].replace(" ", "")), a)
+
+    if api_pop.exists():
+        with api_pop.open(encoding="utf-8-sig") as f:
+            rows = list(csv.DictReader(f))
+        base = rows[0].get("기준연월", "") if rows else ""
+        n_area = 0
+        for r in rows:
+            code = str(r["행정동코드"])
+            a = area_by_dong.get(code) or area_by_name.get(
+                (r["시도"], r["행정동"].replace(" ", "")))
+            if a:
+                n_area += 1
+            k = (r["시도"], r["시군구"])
+            d = {"시도": k[0], "시군구": k[1], "행정동": r["행정동"], "행정동코드": code,
+                 "인구": int(r["인구"]), "남": int(r["남"]), "여": int(r["여"]),
+                 "최근증감": DASH, "면적_km2": a if a is not None else DASH}
             for g in G:
-                d[f"인구_{g}"] = DASH
-            d["인구_여20~49"] = DASH
-        dong_rows.append(d)
-
-    if fills:
-        print("[행정구역 개편] 코드가 달라 빈 자리를 이름으로 메웠다 — "
-              + " · ".join(f"{k} {v}개 동" for k, v in sorted(fills.items())))
-
-    # ── 세종 메우기 ──
-    # 행안부 행정동 자료에 세종이 통째로 빠져 있다. 사장님이 행안부 화면에서 읽어 주신
-    # 값을 따로 둔 파일에서 가져와 채운다(출처·기준월은 그 파일에 적혀 있다).
-    # 면적은 SGIS 경계 자료에 세종이 있어 거기서 센다. 나이대는 어디에도 없어 «—» 로 둔다.
-    sj = pathlib.Path("data/market/sejong_population.json")
-    if sj.exists():
-        d = json.loads(sj.read_text(encoding="utf-8"))
-        k = (d["시도"], d["시군구"])
-        if not sggu_pop[k]["인구"]:
-            sejong_area = sum(a for c, nm, a in zip(pts["dong_code"], pts["dong_name"],
-                                                    pts["area_km2"]) if nm.startswith("세종"))
-            sggu_pop[k].update({"인구": d["총인구"], "남": d["남"], "여": d["여"],
-                                "면적": round(sejong_area, 1), "동수": 24})
-            print(f"[세종] 행안부 {d['기준월']} 값을 넣었다 — 인구 {d['총인구']:,} · "
-                  f"면적 {sejong_area:.1f}km² (나이대는 자료가 없어 «—»)")
-            # 행정동 표에도 세종 24개 동을 세운다 — 인구는 동마다 갈린 자료가 없어
-            # «—» 지만, 이름·면적이 있어야 **동 단위 병의원 수**를 넣을 자리가 생긴다
-            # ([실측] 이 줄이 없어 세종 병의원 451곳이 동 표에서 통째로 빠져 있었다).
-            for c, nm, a in zip(pts["dong_code"], pts["dong_name"], pts["area_km2"]):
-                if not nm.startswith("세종"):
-                    continue
-                dong_rows.append({"시도": "세종", "시군구": "세종시",
-                                  "행정동": nm.split(" ")[-1], "행정동코드": c,
-                                  "인구": DASH, "남": DASH, "여": DASH,
-                                  "최근증감": DASH, "면적_km2": a,
-                                  **{f"인구_{g}": DASH for g in G}, "인구_여20~49": DASH})
-            print(f"[세종] 행정동 {sum(1 for nm in pts['dong_name'] if nm.startswith('세종'))}개를 "
-                  f"동 표에 세웠다(인구는 «—», 면적·이름만)")
+                d[f"인구_{g}"] = int(r[f"인구_{g}"])
+            d["인구_여20~49"] = int(r["인구_여20~49"])
+            sp = sggu_pop[k]
+            sp["인구"] += d["인구"]; sp["남"] += d["남"]; sp["여"] += d["여"]
+            sp["동수"] += 1
+            if a:
+                sp["면적"] += a
+            for g in G:
+                sp[g] += d[f"인구_{g}"]
+            sp["여20~49"] += d["인구_여20~49"]
+            dong_rows.append(d)
+        print(f"[인구] API 표를 썼다 — {len(rows):,}개 동 · {base} 기준 · "
+              f"면적을 찾은 동 {n_area:,}")
+    else:
+        print("[인구] API 표가 없어 ANSEO 사본을 쓴다 — "
+              "`pop` 을 돌려 `population_dong.csv` 를 만들면 달마다 새로 받는다")
+        pop = load_json_gz(POP_DIR / "mois_dong_population.json.gz")
+        age = load_json_gz(POP_DIR / "mois_dong_population_age.json.gz")
+        age_by_dong = {c: i for i, c in enumerate(age["dong_code"])}
+        for i, code in enumerate(pop["dong_code"]):
+            sido = SIDO_SHORT.get(pop["sido_name"][i], pop["sido_name"][i])
+            sggu, dong = pop["sigungu_name"][i], pop["dong_name"][i]
+            a = area_by_dong.get(code) or area_by_name.get((sido, dong.replace(" ", "")))
+            d = {"시도": sido, "시군구": sggu, "행정동": dong, "행정동코드": code,
+                 "인구": pop["total"][i], "남": pop["male"][i], "여": pop["female"][i],
+                 "최근증감": pop["delta"][i], "면적_km2": a if a is not None else DASH}
+            sp = sggu_pop[(sido, sggu)]
+            sp["인구"] += d["인구"]; sp["남"] += d["남"]; sp["여"] += d["여"]
+            sp["동수"] += 1
+            if a:
+                sp["면적"] += a
+            j2 = age_by_dong.get(code)
+            if j2 is not None:
+                m, w = age["male"][j2], age["female"][j2]
+                for g, rng in G.items():
+                    v = sum(m[b] + w[b] for b in rng)
+                    d[f"인구_{g}"] = v; sp[g] += v
+                v = sum(w[b] for b in range(4, 10))
+                d["인구_여20~49"] = v; sp["여20~49"] += v
+            else:
+                for g in G:
+                    d[f"인구_{g}"] = DASH
+                d["인구_여20~49"] = DASH
+            dong_rows.append(d)
 
     # ── 심평원 ──
     basis = read_csv_gz(HIRA_DIR / "basis.csv.gz")
