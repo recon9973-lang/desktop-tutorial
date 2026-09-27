@@ -197,16 +197,78 @@ def try_them() -> int:
     return 0
 
 
+# 인구를 받아 올 자료. [실측 2026-09-27] 이 주소는 «열쇠가 신청 안 됐다»(-4)로 답했다 —
+# 주소 자체는 맞다는 뜻이다(다른 자료들은 «서비스가 없다»(-3)로 답했다).
+POP_PK = "15097972"
+POP_UDDI = "uddi:5beebd9e-8733-44f8-817f-9cfa03548b7a"
+
+
+def collect(limit: int) -> int:
+    """행정동 × 성별 × 연령 인구를 통째로 받아 `raw/pop_rows.jsonl` 에 쌓는다.
+
+    **칸 이름을 외워 쓰지 않는다** — 첫 장을 받아 «무슨 칸이 오는지» 적어 두고,
+    표로 짜는 일(`build_pop.py`)은 그것을 보고 한다. 끊기면 이어받는다.
+    """
+    path = RAW / "pop_rows.jsonl"
+    RAW.mkdir(parents=True, exist_ok=True)
+    done = sum(1 for _ in path.open(encoding="utf-8")) if path.exists() else 0
+    per = 1000
+    page = done // per + 1
+    print(f"이미 받은 줄 {done:,} → {page}쪽부터 (한 쪽 {per}줄)")
+
+    url, st, body, sec = call_odcloud(POP_PK, POP_UDDI, page=1, per=1)
+    if st != 200:
+        txt = body.decode("utf-8", "replace")
+        print(f"못 받는다 [{st}] {txt[:200]}")
+        print(f"→ 활용신청: https://www.data.go.kr/data/{POP_PK}/fileData.do "
+              f"(오른쪽 위 「활용신청」 · 사장님 브라우저에서만 된다)")
+        return 2
+    first = json.loads(body.decode("utf-8", "replace"))
+    total = first.get("totalCount")
+    cols = sorted((first.get("data") or [{}])[0].keys())
+    print(f"전체 {total:,}줄 · 칸 {len(cols)}개")
+    print("칸 이름: " + ", ".join(cols))
+    (RAW / "pop_columns.json").write_text(
+        json.dumps({"칸": cols, "전체줄수": total, "자료번호": POP_PK,
+                    "받은 날": time.strftime("%Y-%m-%d"),
+                    "출처": "행정안전부 지역별(행정동) 성별 연령별 주민등록 인구수 "
+                          "· 공공데이터포털"}, ensure_ascii=False, indent=1),
+        encoding="utf-8")
+
+    n = 0
+    with path.open("a", encoding="utf-8") as f:
+        while done < (total or 0):
+            if n >= limit:
+                print("한도 도달 — 다음 판에서 이어받는다"); break
+            url, st, body, sec = call_odcloud(POP_PK, POP_UDDI, page=page, per=per)
+            n += 1
+            if st != 200:
+                print(f"[{st}] {page}쪽에서 멈췄다 — {body[:160]}"); break
+            rows = json.loads(body.decode("utf-8", "replace")).get("data") or []
+            if not rows:
+                print(f"{page}쪽이 비었다 — 끝"); break
+            for r in rows:
+                f.write(json.dumps(r, ensure_ascii=False) + "\n")
+            done += len(rows); page += 1
+            print(f"  {page-1}쪽 {len(rows)}줄 (누적 {done:,}/{total:,})")
+            f.flush()
+            time.sleep(0.1)
+    print(f"호출 {calls}회 → {path} ({done:,}줄)")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="probe", choices=["probe", "find", "try"])
+    ap.add_argument("--mode", default="probe",
+                    choices=["probe", "find", "try", "collect"])
+    ap.add_argument("--limit", type=int, default=200, help="이번 판에 받을 쪽 수")
     a = ap.parse_args()
     if a.mode == "find":
         return find()               # 이 길은 열쇠가 없어도 된다
-    if a.mode == "try":
+    if a.mode in ("try", "collect"):
         if not KEY:
             print("DATA_GO_KR_SERVICE_KEY 없음 — 중단"); return 2
-        return try_them()
+        return try_them() if a.mode == "try" else collect(a.limit)
     if not KEY:
         print("DATA_GO_KR_SERVICE_KEY 없음 — 중단"); return 2
     return probe()
