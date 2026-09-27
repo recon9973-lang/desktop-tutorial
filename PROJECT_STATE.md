@@ -7,13 +7,13 @@
 - **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 20개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
+- 2026-09-28 인구를 파일이 아니라 API 로 쓴다 — 세종이 채워지고 달마다 저절로 새로 받는다 (#303)
+- 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 체크포인트 — 세션 기록·이 방 인계본·현황 갱신 (#302)
 - 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 인구를 파일이 아니라 API 로 받는다 — 주소를 찾아내고 받는 장치까지 (#301)
 - 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 점수 추이 방 — 그래프 회차·일간·주간·월간 작업 기록·인계본 (20건 체크포인트) (#300)
-- 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-27 인계본·세션 기록을 읍면동 단위까지로 다시 쓴다 (#299)
 - 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
 ## 워크플로 (21)
@@ -32,7 +32,7 @@
 - `geo-metrics-collect.yml` · '0 22 * * *' · 수동
 - `geo-task-recur.yml` · '0 22 * * 0' · 수동
 - `geo-weekly-report.yml` · '0 8 * * 5' · 수동
-- `market-data.yml` · 수동
+- `market-data.yml` · '17 18 5 * *' · 수동
 - `project-state.yml` · 수동
 - `publish-ig.yml` · '0 12 * * *' · 수동
 - `refresh-ig-token.yml` · '0 3 1 * *' · 수동
@@ -83,4 +83,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+36)`
 
 ---
-*생성: 커밋 5371134 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 d0ded79 기준. 값·비밀은 포함하지 않음.*
