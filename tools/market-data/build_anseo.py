@@ -195,6 +195,19 @@ def main() -> int:
                                 "면적": round(sejong_area, 1), "동수": 24})
             print(f"[세종] 행안부 {d['기준월']} 값을 넣었다 — 인구 {d['총인구']:,} · "
                   f"면적 {sejong_area:.1f}km² (나이대는 자료가 없어 «—»)")
+            # 행정동 표에도 세종 24개 동을 세운다 — 인구는 동마다 갈린 자료가 없어
+            # «—» 지만, 이름·면적이 있어야 **동 단위 병의원 수**를 넣을 자리가 생긴다
+            # ([실측] 이 줄이 없어 세종 병의원 451곳이 동 표에서 통째로 빠져 있었다).
+            for c, nm, a in zip(pts["dong_code"], pts["dong_name"], pts["area_km2"]):
+                if not nm.startswith("세종"):
+                    continue
+                dong_rows.append({"시도": "세종", "시군구": "세종시",
+                                  "행정동": nm.split(" ")[-1], "행정동코드": c,
+                                  "인구": DASH, "남": DASH, "여": DASH,
+                                  "최근증감": DASH, "면적_km2": a,
+                                  **{f"인구_{g}": DASH for g in G}, "인구_여20~49": DASH})
+            print(f"[세종] 행정동 {sum(1 for nm in pts['dong_name'] if nm.startswith('세종'))}개를 "
+                  f"동 표에 세웠다(인구는 «—», 면적·이름만)")
 
     # ── 심평원 ──
     basis = read_csv_gz(HIRA_DIR / "basis.csv.gz")

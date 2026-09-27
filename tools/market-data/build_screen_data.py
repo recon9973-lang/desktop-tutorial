@@ -28,6 +28,8 @@ def main() -> int:
             if c.startswith("업종_")]
     sa_m = [c[2:] for c in (next(iter(sa.values())).keys() if sa else [])
             if c.startswith("중_")]
+    # 읍면동 — 「이 구 안에서 어디에 몰려 있나」. 병의원 수를 센 동만 싣는다.
+    dg = list(csv.DictReader((SRC / "market_dong.csv").open(encoding="utf-8-sig")))
     kinds = [c[3:] for c in sg[0] if c.startswith("종별_")]
 
     regions, index = [], {}
@@ -46,6 +48,30 @@ def main() -> int:
             [num(a[f"업종_{c}"]) for c in sa_l] if a else None,
             [num(a[f"중_{c}"]) for c in sa_m] if a else None,
         ])
+
+    # 행정동 표의 시군구 이름을 시군구 표 꼴로 — 「수원시 장안구」 → 「수원장안구」,
+    # 화성처럼 시군구 표에 구가 없으면 시로 묶는다.
+    import re as _re
+    def _roll(sido, g):
+        g = _re.sub(r"[ ·]", "", g)
+        m = _re.match(r"^(.+?)시(.+구)$", g)
+        if not m:
+            return g
+        if (sido, m.group(1) + m.group(2)) in index:
+            return m.group(1) + m.group(2)
+        return m.group(1) + "시" if (sido, m.group(1) + "시") in index else m.group(1) + m.group(2)
+
+    dongs = collections.defaultdict(list)
+    for r in dg:
+        if r.get("병의원_계") in (None, "", "—"):
+            continue
+        ri = index.get((r["시도"], _roll(r["시도"], r["시군구"])))
+        if ri is None:
+            continue
+        dongs[ri].append([r["행정동"], int(r["병의원_계"]),
+                          None if r["인구"] in ("—", "") else int(float(r["인구"]))])
+    for v in dongs.values():
+        v.sort(key=lambda x: -x[1])
 
     names, nidx = [], {}
     per = collections.defaultdict(list)
@@ -95,15 +121,20 @@ def main() -> int:
     }
     (OUT / "regions.json").write_text(json.dumps(payload, ensure_ascii=False,
                                                  separators=(",", ":")), encoding="utf-8")
+    (OUT / "dongs.json").write_text(json.dumps(
+        {"열": ["행정동", "병의원", "인구"],
+         "지역별": {str(k): v for k, v in sorted(dongs.items())}},
+        ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (OUT / "subjects.json").write_text(json.dumps(
         {"이름": names, "전국표시기관수": nat_subj, "전국전문기관수": nat_spec,
          "전국인구": nat_pop,
          "지역별": {str(k): v for k, v in sorted(per.items())}},
         ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    for p in (OUT / "regions.json", OUT / "subjects.json"):
+    for p in (OUT / "regions.json", OUT / "subjects.json", OUT / "dongs.json"):
         print(f"{p} {p.stat().st_size / 1024:.0f}KB")
     print(f"지역 {len(regions)} · 과목 {len(names)} · 종별 {len(kinds)} · "
-          f"업종 대분류 {len(sa_l)} · 중분류 {len(sa_m)}")
+          f"업종 대분류 {len(sa_l)} · 중분류 {len(sa_m)} · "
+          f"행정동 {sum(len(v) for v in dongs.values()):,}")
     return 0
 
 

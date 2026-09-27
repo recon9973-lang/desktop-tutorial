@@ -28,6 +28,7 @@ def main() -> int:
     for mark, payload in (
         ("__REGIONS__", (SCREEN / "regions.json").read_text(encoding="utf-8")),
         ("__SUBJECTS__", (SCREEN / "subjects.json").read_text(encoding="utf-8")),
+        ("__DONGS__", (SCREEN / "dongs.json").read_text(encoding="utf-8")),
         ("__DEMAND__", json.dumps(demand, ensure_ascii=False, separators=(",", ":"))),
     ):
         html = html.replace(mark, payload)
