@@ -144,6 +144,9 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
 .idxbar::after{content:"";position:absolute;left:50%;top:-2px;width:1px;height:12px;
   background:var(--border)}
 .wide{overflow-x:auto}
+.dbar{display:block;height:4px;border-radius:2px;background:var(--soft);margin-top:4px;
+  max-width:190px}
+.dbar i{display:block;height:100%;border-radius:2px;background:var(--p)}
 .tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--border);background:none;border-radius:var(--rpill);
   padding:5px 12px;font-size:12.5px;cursor:pointer;color:var(--mute);transition:.15s}
@@ -251,12 +254,14 @@ h3.sub{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:upperc
 
 <script type="application/json" id="dataRegions">__REGIONS__</script>
 <script type="application/json" id="dataSubjects">__SUBJECTS__</script>
+<script type="application/json" id="dataDongs">__DONGS__</script>
 <script type="application/json" id="dataDemand">__DEMAND__</script>
 <script>
 (function(){
 "use strict";
 const J = id => JSON.parse(document.getElementById(id).textContent);
 const R = J('dataRegions'), S = J('dataSubjects'), D = J('dataDemand');
+const DG = J('dataDongs')['지역별'] || {};
 const DASH = '—';
 const KINDS = R['종별이름'];
 const MAPCATS = R['지도분류이름'] || [];
@@ -500,6 +505,35 @@ function renderDetail(){
         x.ix==null?DASH:Math.round(x.ix)}</b></span></td></tr>`;
   }).join('');
 
+  // ── 이 구 안에서 어디에 몰려 있나 (읍면동) ──
+  const dongBlock = (()=>{
+    const list = DG[r.i] || [];
+    if(!list.length) return '';
+    const top = list.slice(0, 8);
+    const max = top[0][1] || 1;
+    // 막대는 칸을 따로 두지 않고 동 이름 아래에 깐다 — 칸을 하나 더 두면 표가
+    // 넘쳐서 옆으로 밀린다(한 번 그렇게 잘려 나갔다).
+    const rows = top.map(([nm, n, pop])=>{
+      const per = pop ? n/pop*10000 : null;
+      return `<tr><td>${nm}
+          <span class="dbar"><i style="width:${Math.max(3, n/max*100)}%"></i></span></td>
+        <td class="num">${fmt(n)}</td>
+        <td class="num">${pop==null?DASH:man(pop)}</td>
+        <td class="num">${per==null?DASH:per.toFixed(1)}</td></tr>`;
+    }).join('');
+    const rest = list.length - top.length;
+    return `
+    <h3 class="sub">이 구 안에서 어디에 몰려 있나</h3>
+    <div class="wide"><table class="tbl">
+      <thead><tr><th>읍면동</th><th>병의원</th><th>인구(만)</th><th>1만명당</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <p class="note" style="margin-top:8px">${list.length}개 동 가운데 많은 순 ${top.length}곳
+      ${rest>0?`(나머지 ${rest}곳은 엑셀 「행정동」 장에)`:''}.
+      <b>구는 심평원이 적어 둔 대로라 틀릴 수 없지만, 동은 병원 좌표로 어림한 값이다</b> —
+      동 경계에서 140m 안팎은 어긋날 수 있다. 인구가 «—» 인 곳은 세종이다(동별 인구 자료가 없다).</p>`;
+  })();
+
   // ── 이 동네는 어떤 동네인가 (업종별 상권) ──
   const tradeBlock = (()=>{
     if(!r.lcls || r.stores == null) return '';
@@ -597,6 +631,7 @@ function renderDetail(){
         동네 내과·가정의학과·소아청소년과가 미용을 겸하는 자리다.
         ${r.gen?`그중 <b class="num">${fmt(r.gen)}곳</b>은 의과전문의가 아예 없는 일반의 의원이다.`:''}</p>
     </div>
+    ${dongBlock}
     <h3 class="sub">많이 내건 진료과목 14</h3>
     <div class="wide"><table class="tbl">
       <thead><tr><th>진료과목</th><th>내건 곳</th><th>전문의 있는 곳</th>
