@@ -7,16 +7,16 @@
 - **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 21개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
+- 2026-09-28 영상 → 소리 없이 자막 얹고 이음새 없이 반복되는 WebP (도구 영상 모드 + 워크플로) (#305)
+- 2026-09-28 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 사진 한 장으로 움직이는 GIF·WebP·동영상 + 자막 도구 (AI 추천 연동) (#304)
 - 2026-09-28 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 chore(chatbot): LLM-as-Judge 품질 채점 리포트
 - 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 인구를 파일이 아니라 API 로 쓴다 — 세종이 채워지고 달마다 저절로 새로 받는다 (#303)
 - 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-28 체크포인트 — 세션 기록·이 방 인계본·현황 갱신 (#302)
-- 2026-09-27 chore: PROJECT_STATE 자동 갱신 [skip ci]
 
-## 워크플로 (21)
+## 워크플로 (22)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
 - `api-check.yml` · 수동
 - `apply-clinic-schema.yml` · 수동
@@ -38,6 +38,7 @@
 - `refresh-ig-token.yml` · '0 3 1 * *' · 수동
 - `render-blog-cards.yml` · '20 * * * *' · 수동
 - `set-clinic-role.yml` · 수동
+- `video-to-webp.yml` · 수동
 
 ## Vercel crons
 - `/api/cron-seo-monitor` · 0 18 * * *
@@ -83,4 +84,4 @@
 `ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+37)`
 
 ---
-*생성: 커밋 3d0cb97 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 21c914e 기준. 값·비밀은 포함하지 않음.*
