@@ -274,6 +274,9 @@
     "api/cron-eval.js": {
       "maxDuration": 300,
       "includeFiles": "chatbot/data/**"
+    },
+    "api/photo-motion-ai.js": {
+      "maxDuration": 30
     }
   },
   "crons": [

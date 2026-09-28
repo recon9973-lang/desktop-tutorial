@@ -85,6 +85,7 @@
 | 자동 블로그 글생성 | `api/generate-post.js`, `api/cron-daily-posts.js` | **유료(토큰)** |
 | 클리닉 진단(medirank) | `clinic/pipeline/`, `clinic/self-check/` | 무료 |
 | 용어사전(SEO·AI·마케팅·개발) | `assets/glossary.js` (SEO 216·AI 163·마케팅 34·개발 44) · 원본 CSV 백업 `content/glossary/` · 페이지 `index.html#pg-seo-dict` | 무료 |
+| **사진 한 장 → 움직이는 GIF·WebP·동영상(+자막)** | `tools/photo-motion.html`(브라우저 안에서 전부 처리) + AI 추천 `api/photo-motion-ai.js` · 설명 `tools/README-photo-motion.md` | 만들기 무료 · AI 추천만 **유료(토큰)** |
 | 관리자 화면 | `admin.html` / 클리닉 `clinic/admin/` | — |
 
 ### ERP (`marketing-agency-erp/src/`)
