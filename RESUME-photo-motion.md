@@ -41,4 +41,8 @@
 ## 오더 4 (2026-09-28) — «MiniMax 로, 소리 없이, 자막 처리, GIF 처럼 연속 재생, 웹최적화 파일»
 - 도구(`tools/photo-motion.html`)에 **영상 올리기** 추가: MP4 → 소리 제거 → 끝↔처음 겹쳐 섞기(이음새 없는 반복) → 자막 차례로 → WebP/GIF/MP4. 헤드리스 크롬으로 확인(23장 WebP).
 - **워크플로 `video-to-webp.yml` + `tools/video-to-webp.py`**: 영상 주소 → ffmpeg 로 같은 일을 서버에서 → `images/motion/<이름>.webp` 커밋. (작업 컨테이너는 외부 통신이 막혀 이 길로 실제 파일을 만든다.)
-- 오더 3 의 MiniMax 인터뷰 영상(`cea09dff…`)을 이 워크플로로 `images/motion/doctor-interview.webp` 로 만든다 — 결과는 아래 «확인» 에.
+- **확인(실측)**: 워크플로 2번째 실행 성공(1번째는 그 사이 main 이 움직여 push 거부 → `git pull --rebase` 추가). 결과
+  `images/motion/doctor-interview.webp` **839KB · 480×360 · 89장 · 7.4초** (+ `doctor-interview.gif` 4.7MB).
+  처음·중간·끝 장을 열어 봤다: 같은 의사(얼굴·가운·배경 유지), 입이 말하듯 움직임, 자막 3줄(Pretendard) 차례로 표시. 사이트 주소
+  https://venom-new-site.vercel.app/images/motion/doctor-interview.webp
+- 앞으로 같은 일: ① 클로드에게 사진+대사 → MiniMax 로 영상(20 크레딧) ② `video-to-webp.yml` Run workflow(주소·이름·자막) 또는 도구에 MP4 올리기.
