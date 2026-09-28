@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>사진 한 장으로 움직이는 GIF·WebP 만들기 · 병원마케팅 베놈</title>
+  <meta name="description" content="사진 한 장을 올리면 움직이는 GIF·애니메이션 WebP·짧은 동영상을 만들고 자막까지 넣습니다. AI가 자막과 움직임을 추천합니다. 설치 없이 브라우저에서 바로 동작하는 병원마케팅 베놈 무료 도구.">
+  <meta name="robots" content="index,follow">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #faf8f4; --panel: #fff; --text: #16233b; --muted: #5f6a7d; --line: #ece6dc;
+      --accent: #e8703a; --accent-dark: #c85c2c; --ok: #1f8a4c; --danger: #b42318;
+      --shadow: 0 18px 50px rgba(28,39,57,.12);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+      font-family: Pretendard, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif; }
+    header { width:min(1180px, calc(100% - 32px)); margin:0 auto; padding:28px 0 8px; }
+    header h1 { font-size:26px; margin:0 0 6px; letter-spacing:-.01em; }
+    header p { margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
+    header a { color:var(--accent-dark); }
+    main { width:min(1180px, calc(100% - 32px)); margin:0 auto; padding:16px 0 60px;
+      display:grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); gap:22px; align-items:start; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+    .stage { background:var(--panel); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:16px; position:sticky; top:12px; }
+    @media (max-width: 900px) { .stage { position:static; } }
+    .canvas-wrap { position:relative; background:#111; border-radius:12px; overflow:hidden; display:flex; justify-content:center; align-items:center; min-height:260px; }
+    canvas#preview { max-width:100%; max-height:62vh; display:block; cursor:crosshair; }
+    .canvas-wrap .empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#ddd; font-size:15px; gap:8px; padding:20px; text-align:center; }
+    .canvas-wrap .empty strong { font-size:18px; }
+    .focus-dot { position:absolute; width:22px; height:22px; border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,.6); transform:translate(-50%,-50%); pointer-events:none; display:none; }
+    .scrub { display:flex; gap:10px; align-items:center; margin-top:12px; }
+    .scrub input[type=range] { flex:1; }
+    .scrub .time { font-variant-numeric: tabular-nums; color:var(--muted); font-size:13px; min-width:64px; text-align:right; }
+    .hint { color:var(--muted); font-size:13px; margin:8px 0 0; line-height:1.55; }
+
+    .panel { display:flex; flex-direction:column; gap:14px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+    .card h2 { font-size:16px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+    .card h2 .n { display:inline-flex; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; align-items:center; justify-content:center; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px; }
+    .row.three { grid-template-columns: 1fr 1fr 1fr; }
+    label { display:block; font-size:13px; color:var(--muted); margin-bottom:4px; }
+    select, input[type=text], input[type=password], input[type=number], textarea {
+      width:100%; font: inherit; font-size:14px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text); }
+    textarea { min-height:78px; resize:vertical; line-height:1.5; }
+    input[type=range] { width:100%; }
+    input[type=color] { width:100%; height:36px; border:1px solid var(--line); border-radius:8px; background:#fff; padding:2px; }
+    .check { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--text); margin:6px 0; }
+    .check input { width:16px; height:16px; }
+    .btn { font: inherit; font-size:14px; font-weight:600; padding:10px 14px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--text); cursor:pointer; }
+    .btn:hover { border-color:#cfc7b8; }
+    .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .btn.primary:hover { background:var(--accent-dark); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:8px; }
+    .drop { border:2px dashed #d9d0c2; border-radius:12px; padding:18px; text-align:center; color:var(--muted); font-size:14px; cursor:pointer; background:#fffdf9; }
+    .drop.over { border-color:var(--accent); background:#fff4ec; }
+    .drop strong { color:var(--text); }
+    .presets { display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px; }
+    .presets button { font: inherit; font-size:13px; padding:8px 6px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; line-height:1.3; }
+    .presets button.on { border-color:var(--accent); background:#fff1e8; color:var(--accent-dark); font-weight:700; }
+    .chips { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .chips button { font: inherit; font-size:14px; text-align:left; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; line-height:1.45; }
+    .chips button:hover { border-color:var(--accent); }
+    .status { font-size:13px; color:var(--muted); margin-top:8px; line-height:1.5; white-space:pre-line; }
+    .status.err { color:var(--danger); }
+    .status.ok { color:var(--ok); }
+    .progress { height:8px; background:#f0ebe2; border-radius:4px; overflow:hidden; margin-top:8px; display:none; }
+    .progress i { display:block; height:100%; width:0; background:var(--accent); transition:width .15s; }
+    details { margin-top:8px; }
+    summary { cursor:pointer; font-size:13px; color:var(--muted); }
+    .outputs { display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    .out { border:1px solid var(--line); border-radius:10px; padding:10px; background:#fffdf9; }
+    .out .meta { font-size:13px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+    .out img, .out video { display:block; max-width:100%; max-height:240px; margin-top:8px; border-radius:8px; background:#111; }
+    .out a.btn { display:inline-block; text-decoration:none; padding:6px 10px; font-size:13px; }
+    .small { font-size:12px; color:var(--muted); line-height:1.5; }
+    footer { width:min(1180px, calc(100% - 32px)); margin:0 auto 40px; color:var(--muted); font-size:12px; line-height:1.6; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>사진 한 장으로 움직이는 GIF · WebP 만들기</h1>
+  <p>사진을 올리고 → 움직임을 고르고 → 자막을 적으면 끝. 설치 없이 이 화면 안에서 만들어집니다(사진은 컴퓨터 밖으로 나가지 않습니다. AI 추천을 누를 때만 작은 사진 한 장을 보냅니다).
+    다른 도구: <a href="webp.html">이미지 WebP 변환기</a></p>
+</header>
+
+<main>
+  <section class="stage">
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="preview" width="720" height="720"></canvas>
+      <div class="focus-dot" id="focusDot"></div>
+      <div class="empty" id="empty"><strong>아직 사진이 없습니다</strong><span>오른쪽 「1. 사진 올리기」에서 사진을 고르면 여기에 미리보기가 나옵니다.</span></div>
+    </div>
+    <div class="scrub">
+      <button class="btn" id="playBtn" type="button">⏸ 멈춤</button>
+      <input type="range" id="scrubber" min="0" max="1000" value="0">
+      <span class="time" id="timeLabel">0.0 / 3.0초</span>
+    </div>
+    <p class="hint">미리보기 위를 <b>누르면</b> 그 자리가 「주인공 위치」가 됩니다(확대·이동이 그쪽으로 향합니다). 흰 동그라미가 그 자리입니다.</p>
+  </section>
+
+  <aside class="panel">
+    <div class="card">
+      <h2><span class="n">1</span> 사진 올리기</h2>
+      <div class="drop" id="drop"><strong>여기를 누르거나 사진을 끌어다 놓으세요</strong><br>JPG · PNG · WebP · HEIC(일부 브라우저)</div>
+      <input type="file" id="file" accept="image/*" hidden>
+      <div class="status" id="fileStatus"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">2</span> 움직임 고르기</h2>
+      <div class="presets" id="presets"></div>
+      <div class="row">
+        <div><label>움직임 세기 <span id="intLabel">보통</span></label><input type="range" id="intensity" min="4" max="40" value="18"></div>
+        <div><label>길이(초) <span id="durLabel">3.0</span></label><input type="range" id="duration" min="10" max="80" value="30"></div>
+      </div>
+      <div class="row three">
+        <div><label>비율</label><select id="ratio"><option value="orig">원본 그대로</option><option value="1:1" selected>1:1 (정사각)</option><option value="4:5">4:5 (인스타)</option><option value="9:16">9:16 (세로)</option><option value="16:9">16:9 (가로)</option><option value="3:4">3:4</option></select></div>
+        <div><label>가로 크기</label><select id="width"><option value="480">480 (가벼움)</option><option value="720" selected>720 (권장)</option><option value="1080">1080 (선명)</option></select></div>
+        <div><label>초당 장수</label><select id="fps"><option value="8">8</option><option value="10">10</option><option value="12" selected>12 (권장)</option><option value="15">15</option><option value="20">20</option></select></div>
+      </div>
+      <label class="check"><input type="checkbox" id="pingpong"> 갔다가 되돌아오기(끝과 처음이 이어져 반복이 부드러움)</label>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">3</span> 자막 넣기</h2>
+      <textarea id="text" placeholder="자막을 적으세요. 줄을 바꾸면 여러 줄이 됩니다.&#10;예) 첫 방문도 편안하게&#10;예약은 카카오톡으로"></textarea>
+      <div class="row three" style="margin-top:8px">
+        <div><label>여러 줄일 때</label><select id="subMode"><option value="all">한꺼번에 보이기</option><option value="seq">한 줄씩 차례로</option></select></div>
+        <div><label>자리</label><select id="subPos"><option value="bottom" selected>아래</option><option value="middle">가운데</option><option value="top">위</option></select></div>
+        <div><label>나타나는 방식</label><select id="subAnim"><option value="fade">서서히</option><option value="rise">아래서 떠오르기</option><option value="type">한 글자씩</option><option value="none">그냥 보이기</option></select></div>
+      </div>
+      <div class="row three">
+        <div><label>글자 크기 <span id="sizeLabel">6.5</span></label><input type="range" id="subSize" min="3" max="12" step="0.5" value="6.5"></div>
+        <div><label>글자색</label><input type="color" id="subColor" value="#ffffff"></div>
+        <div><label>글자 뒤 바탕</label><select id="subBg"><option value="rgba(0,0,0,0.55)" selected>반투명 검정</option><option value="rgba(232,112,58,0.9)">베놈 주황</option><option value="rgba(255,255,255,0.85)">반투명 흰색</option><option value="none">없음</option></select></div>
+      </div>
+      <label class="check"><input type="checkbox" id="subStroke" checked> 글자 테두리(어떤 배경에서도 잘 보이게)</label>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">4</span> AI 도우미 <span class="small">(자막 문구 · 움직임 · 주인공 위치 추천)</span></h2>
+      <div class="row">
+        <div><label>이 사진의 쓰임새</label><input type="text" id="aiPurpose" placeholder="예) 임플란트 상담 안내, 병원 소개, 진료실 소개"></div>
+        <div><label>말투</label><select id="aiTone"><option value="calm">차분하고 신뢰감 있게</option><option value="bright">밝고 친근하게</option><option value="short">짧고 강하게</option></select></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="aiBtn" type="button" disabled>AI에게 추천받기</button>
+        <button class="btn" id="aiApplyMotion" type="button" style="display:none">추천 움직임·위치 적용</button>
+      </div>
+      <div class="status" id="aiStatus"></div>
+      <div class="chips" id="aiChips"></div>
+      <details>
+        <summary>AI 연결 설정(선택) — 보통은 건드릴 필요 없음</summary>
+        <p class="small">기본은 베놈 서버(<code>/api/photo-motion-ai</code>)를 거칩니다. 이 파일을 컴퓨터에서 직접 열어 쓰거나 서버 키가 없을 때만 아래에 본인 키를 넣으세요. 키는 이 브라우저에만 저장됩니다.</p>
+        <div class="row">
+          <div><label>어느 회사 AI</label><select id="aiProvider"><option value="anthropic">Anthropic (Claude)</option><option value="openai">OpenAI</option></select></div>
+          <div><label>내 키</label><input type="password" id="aiKey" placeholder="sk-..." autocomplete="off"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">5</span> 파일로 만들기</h2>
+      <div class="btn-row">
+        <button class="btn primary" id="mkWebp" type="button" disabled>움직이는 WebP (가장 가벼움)</button>
+        <button class="btn" id="mkGif" type="button" disabled>GIF</button>
+        <button class="btn" id="mkVideo" type="button" disabled>동영상 (MP4/WebM)</button>
+        <button class="btn" id="mkAll" type="button" disabled>세 가지 한꺼번에</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div><label>WebP 화질 <span id="qLabel">80</span></label><input type="range" id="webpQ" min="50" max="95" value="80"></div>
+        <div><label class="check" style="margin-top:18px"><input type="checkbox" id="dither" checked> GIF 색 부드럽게(용량 조금 늘어남)</label></div>
+      </div>
+      <div class="progress" id="progress"><i id="progressBar"></i></div>
+      <div class="status" id="mkStatus"></div>
+      <div class="outputs" id="outputs"></div>
+      <p class="small">WebP는 GIF보다 보통 3~6배 작고 색이 깨지지 않습니다(카카오톡·인스타·홈페이지 모두 가능). GIF는 어디서나 열리지만 무겁습니다. 동영상은 인스타 릴스·유튜브 쇼츠용입니다.</p>
+    </div>
+  </aside>
+</main>
+<footer>병원마케팅 베놈 · 이 도구는 사진을 서버에 올리지 않고 브라우저 안에서 처리합니다. 「AI에게 추천받기」를 누를 때만 줄인 사진 한 장이 AI 회사로 전달됩니다. 의료광고는 「의료법 제56조」를 지켜 주세요(효과 보장·전후 사진·최상급 표현 금지).</footer>
+
+<script>
+(() => {
+'use strict';
+// ================================================================
+// 상태
+// ================================================================
+const $ = (id) => document.getElementById(id);
+const S = {
+  img: null, iw: 0, ih: 0, fileName: 'photo',
+  preset: 'kenburns', intensity: 0.18, duration: 3, fps: 12, ratio: '1:1', width: 720, pingpong: false,
+  focus: { x: 0.5, y: 0.5 },
+  text: '', subMode: 'all', subPos: 'bottom', subAnim: 'fade', subSize: 6.5, subColor: '#ffffff', subBg: 'rgba(0,0,0,0.55)', subStroke: true,
+  webpQ: 0.8, dither: true,
+};
+const PRESETS = [
+  ['kenburns', '천천히 다가가기', '살짝 이동하며 확대(가장 무난)'],
+  ['zoomin', '확대', '주인공 쪽으로 커짐'],
+  ['zoomout', '멀어지기', '확대된 상태에서 전체가 보임'],
+  ['panlr', '왼→오 이동', '옆으로 훑기'],
+  ['panrl', '오→왼 이동', '옆으로 훑기'],
+  ['panud', '위→아래 이동', '세로로 훑기'],
+  ['breathe', '숨쉬듯 커졌다 작아지기', '반복이 매끄러움'],
+  ['sway', '살랑살랑 기울기', '반복이 매끄러움'],
+  ['handheld', '손으로 든 듯 흔들림', '반복이 매끄러움'],
+];
+const LOOP_PRESETS = new Set(['breathe', 'sway', 'handheld']);
+const FONT = 'Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+
+// ================================================================
+// 크기 계산
+// ================================================================
+function outSize() {
+  const W = S.width;
+  let rw = S.iw || 1, rh = S.ih || 1;
+  if (S.ratio !== 'orig') { const [a, b] = S.ratio.split(':').map(Number); rw = a; rh = b; }
+  let H = Math.round(W * rh / rw);
+  if (H % 2) H += 1;
+  return { W, H };
+}
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeInOut = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const TAU = Math.PI * 2;
+
+// ================================================================
+// 카메라(움직임) — t∈[0,1) → { zoom, fx, fy, rot }  (fx,fy = 바라보는 점, 0~1)
+// ================================================================
+function camera(t) {
+  let tt = t;
+  if (S.pingpong && !LOOP_PRESETS.has(S.preset)) tt = t < .5 ? t * 2 : 2 - t * 2;
+  const e = easeInOut(tt);
+  const k = S.intensity;
+  const f = S.focus, c = { x: .5, y: .5 };
+  const mirror = { x: clamp(1 - f.x, 0, 1), y: clamp(1 - f.y, 0, 1) };
+  switch (S.preset) {
+    case 'zoomin': return { zoom: 1 + k * e, fx: lerp(c.x, f.x, e), fy: lerp(c.y, f.y, e), rot: 0 };
+    case 'zoomout': return { zoom: 1 + k * (1 - e), fx: lerp(f.x, c.x, e), fy: lerp(f.y, c.y, e), rot: 0 };
+    case 'kenburns': return { zoom: 1 + k * .55 + k * .45 * e, fx: lerp(mirror.x, f.x, e), fy: lerp(mirror.y, f.y, e), rot: 0 };
+    case 'panlr': return { zoom: 1 + k, fx: e, fy: f.y, rot: 0 };
+    case 'panrl': return { zoom: 1 + k, fx: 1 - e, fy: f.y, rot: 0 };
+    case 'panud': return { zoom: 1 + k, fx: f.x, fy: e, rot: 0 };
+    case 'breathe': { const w = .5 - .5 * Math.cos(TAU * t); return { zoom: 1 + k * .6 * w, fx: lerp(c.x, f.x, w), fy: lerp(c.y, f.y, w), rot: 0 }; }
+    case 'sway': return { zoom: 1 + Math.max(k, .12), fx: f.x, fy: f.y, rot: (k * 9) * Math.PI / 180 * Math.sin(TAU * t) };
+    case 'handheld': {
+      const a = k * .06;
+      const dx = a * (Math.sin(TAU * t) * .6 + Math.sin(TAU * 2 * t + 1.3) * .3 + Math.sin(TAU * 3 * t + 2.1) * .1);
+      const dy = a * (Math.cos(TAU * t + .7) * .5 + Math.sin(TAU * 2 * t + 2.9) * .35 + Math.cos(TAU * 3 * t) * .15);
+      const rot = (k * 4) * Math.PI / 180 * (Math.sin(TAU * t + .4) * .7 + Math.sin(TAU * 2 * t + 1.9) * .3);
+      return { zoom: 1 + Math.max(k, .1), fx: f.x + dx, fy: f.y + dy, rot };
+    }
+    default: return { zoom: 1, fx: .5, fy: .5, rot: 0 };
+  }
+}
+
+// ================================================================
+// 한 장 그리기
+// ================================================================
+function renderFrame(ctx, W, H, t) {
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  if (!S.img) return;
+  const cam = camera(t);
+  const s0 = Math.max(W / S.iw, H / S.ih);
+  const s = s0 * cam.zoom;
+  const hw = W / (2 * s), hh = H / (2 * s);
+  const m = cam.rot ? (W + H) / (2 * s) * Math.sin(Math.abs(cam.rot)) : 0; // 회전 시 모서리 여유
+  let lx = clamp(cam.fx * S.iw, hw + m, S.iw - hw - m);
+  let ly = clamp(cam.fy * S.ih, hh + m, S.ih - hh - m);
+  if (hw + m > S.iw / 2) lx = S.iw / 2;
+  if (hh + m > S.ih / 2) ly = S.ih / 2;
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  if (cam.rot) ctx.rotate(cam.rot);
+  ctx.scale(s, s);
+  ctx.translate(-lx, -ly);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(S.img, 0, 0);
+  ctx.restore();
+  drawSubtitle(ctx, W, H, t);
+}
+
+function wrapText(ctx, text, maxW) {
+  const out = [];
+  for (const raw of text.split('\n')) {
+    const words = raw.split(' ');
+    let line = '';
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width <= maxW || !line) {
+        if (ctx.measureText(test).width > maxW && !line) {
+          // 띄어쓰기 없는 긴 글자열은 글자 단위로 자른다
+          let cur = '';
+          for (const ch of w) { if (ctx.measureText(cur + ch).width > maxW && cur) { out.push(cur); cur = ch; } else cur += ch; }
+          line = cur;
+        } else line = test;
+      } else { out.push(line); line = w; }
+    }
+    out.push(line);
+  }
+  return out;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+function drawSubtitle(ctx, W, H, t) {
+  const lines = S.text.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!lines.length) return;
+  let show = lines, local = t;
+  if (S.subMode === 'seq') {
+    const n = lines.length; const i = Math.min(n - 1, Math.floor(t * n));
+    show = [lines[i]]; local = t * n - i;
+  }
+  const fontPx = Math.max(12, Math.round(W * S.subSize / 100));
+  ctx.font = `700 ${fontPx}px ${FONT}`;
+  const wrapped = wrapText(ctx, show.join('\n'), W * .86);
+  const lh = fontPx * 1.4, blockH = wrapped.length * lh, pad = fontPx * .7;
+  let y0 = S.subPos === 'bottom' ? H - pad * 1.3 - blockH : S.subPos === 'top' ? pad * 1.3 : (H - blockH) / 2;
+
+  let alpha = 1, dy = 0, typedLimit = Infinity;
+  const inT = clamp(local / .18, 0, 1);
+  const outT = S.subMode === 'seq' ? clamp((1 - local) / .12, 0, 1) : 1;
+  if (S.subAnim === 'fade') alpha = Math.min(inT, outT);
+  else if (S.subAnim === 'rise') { alpha = Math.min(inT, outT); dy = (1 - easeInOut(inT)) * fontPx * .8; }
+  else if (S.subAnim === 'type') { const total = wrapped.join('').length; typedLimit = Math.floor(total * clamp(local / .6, 0, 1)); alpha = outT; }
+  else if (S.subMode === 'seq') alpha = outT;
+  if (alpha <= 0) return;
+
+  ctx.save();
+  ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let typed = 0;
+  wrapped.forEach((line, i) => {
+    let txt = line;
+    if (typedLimit !== Infinity) { const room = Math.max(0, typedLimit - typed); txt = line.slice(0, room); typed += line.length; }
+    if (!txt) return;
+    const y = y0 + lh * i + lh / 2 + dy;
+    const tw = ctx.measureText(txt).width;
+    if (S.subBg !== 'none') {
+      ctx.fillStyle = S.subBg;
+      roundRect(ctx, W / 2 - tw / 2 - pad * .6, y - lh / 2, tw + pad * 1.2, lh, fontPx * .3); ctx.fill();
+    }
+    if (S.subStroke) { ctx.lineJoin = 'round'; ctx.lineWidth = fontPx * .14; ctx.strokeStyle = 'rgba(0,0,0,.65)'; ctx.strokeText(txt, W / 2, y); }
+    ctx.fillStyle = S.subColor; ctx.fillText(txt, W / 2, y);
+  });
+  ctx.restore();
+}
+
+// ================================================================
+// 미리보기 재생
+// ================================================================
+const preview = $('preview'), pctx = preview.getContext('2d');
+let playing = true, t0 = performance.now(), curT = 0;
+function syncCanvasSize() { const { W, H } = outSize(); if (preview.width !== W || preview.height !== H) { preview.width = W; preview.height = H; } }
+function drawPreview(t) { syncCanvasSize(); renderFrame(pctx, preview.width, preview.height, t); placeFocusDot(); }
+function tick(now) {
+  if (S.img && playing) {
+    curT = ((now - t0) / 1000 / S.duration) % 1;
+    drawPreview(curT);
+    $('scrubber').value = Math.round(curT * 1000);
+    $('timeLabel').textContent = `${(curT * S.duration).toFixed(1)} / ${S.duration.toFixed(1)}초`;
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+$('playBtn').addEventListener('click', () => { playing = !playing; if (playing) t0 = performance.now() - curT * S.duration * 1000; $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 재생'; });
+$('scrubber').addEventListener('input', (e) => { playing = false; $('playBtn').textContent = '▶ 재생'; curT = e.target.value / 1000; drawPreview(curT); $('timeLabel').textContent = `${(curT * S.duration).toFixed(1)} / ${S.duration.toFixed(1)}초`; });
+
+function placeFocusDot() {
+  const dot = $('focusDot'); if (!S.img) { dot.style.display = 'none'; return; }
+  const r = preview.getBoundingClientRect(), wr = $('canvasWrap').getBoundingClientRect();
+  // 주인공 위치는 '사진' 좌표(0~1)이지만, 화면에는 t=0 장면의 위치로 근사해 표시한다
+  const { W, H } = outSize(); const cam = camera(curT);
+  const s0 = Math.max(W / S.iw, H / S.ih), s = s0 * cam.zoom;
+  const hw = W / (2 * s), hh = H / (2 * s);
+  let lx = clamp(cam.fx * S.iw, hw, S.iw - hw), ly = clamp(cam.fy * S.ih, hh, S.ih - hh);
+  if (hw > S.iw / 2) lx = S.iw / 2; if (hh > S.ih / 2) ly = S.ih / 2;
+  const px = (S.focus.x * S.iw - lx) * s + W / 2, py = (S.focus.y * S.ih - ly) * s + H / 2;
+  const sx = r.width / W, sy = r.height / H;
+  const vis = px >= 0 && px <= W && py >= 0 && py <= H && !cam.rot;
+  dot.style.display = vis ? 'block' : 'none';
+  dot.style.left = (r.left - wr.left + px * sx) + 'px'; dot.style.top = (r.top - wr.top + py * sy) + 'px';
+}
+preview.addEventListener('click', (e) => {
+  if (!S.img) return;
+  const r = preview.getBoundingClientRect(); const { W, H } = outSize();
+  const cx = (e.clientX - r.left) / r.width * W, cy = (e.clientY - r.top) / r.height * H;
+  const cam = camera(curT); const s0 = Math.max(W / S.iw, H / S.ih), s = s0 * cam.zoom;
+  const hw = W / (2 * s), hh = H / (2 * s);
+  let lx = clamp(cam.fx * S.iw, hw, S.iw - hw), ly = clamp(cam.fy * S.ih, hh, S.ih - hh);
+  if (hw > S.iw / 2) lx = S.iw / 2; if (hh > S.ih / 2) ly = S.ih / 2;
+  S.focus = { x: clamp((lx + (cx - W / 2) / s) / S.iw, 0, 1), y: clamp((ly + (cy - H / 2) / s) / S.ih, 0, 1) };
+  drawPreview(curT);
+});
+
+// ================================================================
+// 입력 연결
+// ================================================================
+const presetsEl = $('presets');
+PRESETS.forEach(([id, name, desc]) => {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.id = id; b.innerHTML = `${name}<br><span class="small">${desc}</span>`;
+  b.addEventListener('click', () => setPreset(id)); presetsEl.appendChild(b);
+});
+function setPreset(id) { S.preset = id; [...presetsEl.children].forEach(b => b.classList.toggle('on', b.dataset.id === id)); }
+setPreset(S.preset);
+const intWords = (v) => v < .1 ? '약하게' : v < .22 ? '보통' : v < .32 ? '세게' : '아주 세게';
+$('intensity').addEventListener('input', e => { S.intensity = e.target.value / 100; $('intLabel').textContent = intWords(S.intensity); });
+$('duration').addEventListener('input', e => { S.duration = e.target.value / 10; $('durLabel').textContent = S.duration.toFixed(1); });
+$('ratio').addEventListener('change', e => { S.ratio = e.target.value; });
+$('width').addEventListener('change', e => { S.width = +e.target.value; });
+$('fps').addEventListener('change', e => { S.fps = +e.target.value; });
+$('pingpong').addEventListener('change', e => { S.pingpong = e.target.checked; });
+$('text').addEventListener('input', e => { S.text = e.target.value; });
+$('subMode').addEventListener('change', e => { S.subMode = e.target.value; });
+$('subPos').addEventListener('change', e => { S.subPos = e.target.value; });
+$('subAnim').addEventListener('change', e => { S.subAnim = e.target.value; });
+$('subSize').addEventListener('input', e => { S.subSize = +e.target.value; $('sizeLabel').textContent = S.subSize; });
+$('subColor').addEventListener('input', e => { S.subColor = e.target.value; });
+$('subBg').addEventListener('change', e => { S.subBg = e.target.value; });
+$('subStroke').addEventListener('change', e => { S.subStroke = e.target.checked; });
+$('webpQ').addEventListener('input', e => { S.webpQ = e.target.value / 100; $('qLabel').textContent = e.target.value; });
+$('dither').addEventListener('change', e => { S.dither = e.target.checked; });
+
+// 사진 올리기
+const drop = $('drop'), fileIn = $('file');
+drop.addEventListener('click', () => fileIn.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fileIn.addEventListener('change', () => { if (fileIn.files[0]) loadFile(fileIn.files[0]); });
+document.addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])][0]; if (f && f.type.startsWith('image/')) loadFile(f); });
+
+async function loadFile(file) {
+  setStatus('fileStatus', '사진을 읽는 중…');
+  try {
+    let bmp;
+    try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (e) { bmp = await createImageBitmap(file); }
+    // 너무 큰 사진은 긴 변 2400px로 줄여 둔다(속도·메모리)
+    const maxSide = 2400; const sc = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas'); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    S.img = c; S.iw = c.width; S.ih = c.height; S.fileName = (file.name || 'photo').replace(/\.[^.]+$/, '');
+    S.focus = { x: .5, y: .5 };
+    $('empty').style.display = 'none';
+    ['aiBtn', 'mkWebp', 'mkGif', 'mkVideo', 'mkAll'].forEach(id => $(id).disabled = false);
+    setStatus('fileStatus', `${file.name} · ${bmp.width}×${bmp.height}`, 'ok');
+    playing = true; t0 = performance.now(); $('playBtn').textContent = '⏸ 멈춤';
+    drawPreview(0);
+  } catch (e) {
+    setStatus('fileStatus', '이 파일은 열 수 없습니다. JPG·PNG·WebP로 다시 시도해 주세요. (' + e.message + ')', 'err');
+  }
+}
+function setStatus(id, msg, cls) { const el = $(id); el.textContent = msg; el.className = 'status' + (cls ? ' ' + cls : ''); }
+
+// ================================================================
+// 파일 만들기 — 공통
+// ================================================================
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+async function ensureFont() { try { await document.fonts.load(`700 40px Pretendard`); } catch (e) { /* 폰트 없으면 대체 글꼴 */ } }
+function frameCount() { return Math.max(2, Math.round(S.duration * S.fps)); }
+function progress(p, msg) { const box = $('progress'); box.style.display = 'block'; $('progressBar').style.width = Math.round(p * 100) + '%'; if (msg) setStatus('mkStatus', msg); }
+function fmtBytes(n) { return n > 1048576 ? (n / 1048576).toFixed(2) + ' MB' : Math.round(n / 1024) + ' KB'; }
+function addOutput(kind, blob, ext, extra) {
+  const url = URL.createObjectURL(blob); const name = `${S.fileName}-motion.${ext}`;
+  const box = document.createElement('div'); box.className = 'out';
+  const meta = document.createElement('div'); meta.className = 'meta';
+  meta.innerHTML = `<span><b>${kind}</b> · ${fmtBytes(blob.size)}${extra ? ' · ' + extra : ''}</span>`;
+  const a = document.createElement('a'); a.className = 'btn primary'; a.href = url; a.download = name; a.textContent = '내려받기 ' + name; meta.appendChild(a);
+  box.appendChild(meta);
+  if (ext === 'gif' || ext === 'webp') { const im = document.createElement('img'); im.src = url; im.alt = kind; box.appendChild(im); }
+  else { const v = document.createElement('video'); v.src = url; v.controls = true; v.loop = true; v.muted = true; v.playsInline = true; box.appendChild(v); }
+  $('outputs').prepend(box);
+  return url;
+}
+let busy = false;
+async function runExport(fn) {
+  if (busy || !S.img) return; busy = true;
+  const wasPlaying = playing; playing = false;
+  ['mkWebp', 'mkGif', 'mkVideo', 'mkAll'].forEach(id => $(id).disabled = true);
+  try { await ensureFont(); await fn(); }
+  catch (e) { console.error(e); setStatus('mkStatus', '만들다가 문제가 생겼습니다: ' + e.message, 'err'); }
+  finally {
+    busy = false; ['mkWebp', 'mkGif', 'mkVideo', 'mkAll'].forEach(id => $(id).disabled = false);
+    $('progress').style.display = 'none'; playing = wasPlaying; t0 = performance.now() - curT * S.duration * 1000;
+  }
+}
+function makeCanvas() { const { W, H } = outSize(); const c = document.createElement('canvas'); c.width = W; c.height = H; return { c, ctx: c.getContext('2d', { willReadFrequently: true }), W, H }; }
+
+// ================================================================
+// 움직이는 WebP — 브라우저가 한 장씩 WebP로 만든 것을 ANIM/ANMF 상자에 담는다(외부 라이브러리 없음)
+// ================================================================
+function canEncodeWebP() { try { const c = document.createElement('canvas'); c.width = c.height = 1; return c.toDataURL('image/webp').startsWith('data:image/webp'); } catch (e) { return false; } }
+function riffChunks(u8) {
+  const chunks = []; let p = 12;
+  while (p + 8 <= u8.length) {
+    const tag = String.fromCharCode(u8[p], u8[p + 1], u8[p + 2], u8[p + 3]);
+    const size = (u8[p + 4] | u8[p + 5] << 8 | u8[p + 6] << 16 | u8[p + 7] << 24) >>> 0;
+    chunks.push({ tag, data: u8.subarray(p + 8, p + 8 + size) });
+    p += 8 + size + (size & 1);
+  }
+  return chunks;
+}
+function u24(v) { return [v & 255, (v >> 8) & 255, (v >> 16) & 255]; }
+function chunkBytes(tag, data) {
+  const size = data.length; const out = new Uint8Array(8 + size + (size & 1));
+  out[0] = tag.charCodeAt(0); out[1] = tag.charCodeAt(1); out[2] = tag.charCodeAt(2); out[3] = tag.charCodeAt(3);
+  out[4] = size & 255; out[5] = (size >> 8) & 255; out[6] = (size >> 16) & 255; out[7] = (size >> 24) & 255;
+  out.set(data, 8); return out;
+}
+function buildAnimatedWebP(frames, W, H) {
+  // frames: [{ chunks:[...riffChunks], ms }]
+  let hasAlpha = false; const anmfs = [];
+  for (const f of frames) {
+    const parts = []; let alph = null, bs = null;
+    for (const ch of f.chunks) { if (ch.tag === 'ALPH') alph = ch; else if (ch.tag === 'VP8 ' || ch.tag === 'VP8L') bs = ch; }
+    if (!bs) throw new Error('브라우저가 만든 WebP 조각을 읽지 못했습니다');
+    if (alph) hasAlpha = true;
+    if (bs.tag === 'VP8L' && bs.data.length > 4 && (bs.data[4] & 0x10)) hasAlpha = true;
+    const head = new Uint8Array([...u24(0), ...u24(0), ...u24(W - 1), ...u24(H - 1), ...u24(f.ms), 0x02]); // 0x02 = 덮어쓰기(섞지 않음), 지우지 않음
+    parts.push(head); if (alph) parts.push(chunkBytes('ALPH', alph.data)); parts.push(chunkBytes(bs.tag, bs.data));
+    const len = parts.reduce((a, b) => a + b.length, 0); const payload = new Uint8Array(len); let o = 0; for (const p of parts) { payload.set(p, o); o += p.length; }
+    anmfs.push(chunkBytes('ANMF', payload));
+  }
+  const vp8x = chunkBytes('VP8X', new Uint8Array([0x02 | (hasAlpha ? 0x10 : 0), 0, 0, 0, ...u24(W - 1), ...u24(H - 1)]));
+  const anim = chunkBytes('ANIM', new Uint8Array([0, 0, 0, 0, 0, 0])); // 배경 투명·무한 반복
+  const body = [vp8x, anim, ...anmfs]; const bodyLen = body.reduce((a, b) => a + b.length, 0);
+  const out = new Uint8Array(12 + bodyLen);
+  out.set([0x52, 0x49, 0x46, 0x46], 0); const rs = 4 + bodyLen; out[4] = rs & 255; out[5] = (rs >> 8) & 255; out[6] = (rs >> 16) & 255; out[7] = (rs >> 24) & 255;
+  out.set([0x57, 0x45, 0x42, 0x50], 8);
+  let o = 12; for (const b of body) { out.set(b, o); o += b.length; }
+  return out;
+}
+async function exportWebP() {
+  if (!canEncodeWebP()) { setStatus('mkStatus', '이 브라우저는 WebP를 만들지 못합니다. 크롬·엣지·삼성인터넷에서 열어 주세요. (GIF·동영상은 됩니다)', 'err'); return; }
+  const { c, ctx, W, H } = makeCanvas(); const N = frameCount(); const ms = Math.round(1000 / S.fps); const frames = [];
+  for (let i = 0; i < N; i++) {
+    renderFrame(ctx, W, H, i / N);
+    const blob = await new Promise(r => c.toBlob(r, 'image/webp', S.webpQ));
+    frames.push({ chunks: riffChunks(new Uint8Array(await blob.arrayBuffer())), ms });
+    progress((i + 1) / N, `움직이는 WebP 만드는 중… ${i + 1}/${N}장`);
+  }
+  const bytes = buildAnimatedWebP(frames, W, H);
+  const blob = new Blob([bytes], { type: 'image/webp' });
+  addOutput('움직이는 WebP', blob, 'webp', `${W}×${H} · ${N}장 · ${S.duration}초`);
+  setStatus('mkStatus', `움직이는 WebP 완성 (${fmtBytes(blob.size)})`, 'ok');
+}
+
+// ================================================================
+// GIF — 색 256개 뽑기(중앙 분할) + 오차 확산 + LZW (외부 라이브러리 없음)
+// ================================================================
+function medianCut(samples, maxColors) {
+  // samples: Uint8Array RGB 나열
+  const n = samples.length / 3; const idx = new Uint32Array(n); for (let i = 0; i < n; i++) idx[i] = i;
+  const boxes = [{ lo: 0, hi: n }];
+  const range = (b) => { let mn = [255, 255, 255], mx = [0, 0, 0]; for (let i = b.lo; i < b.hi; i++) { const p = idx[i] * 3; for (let c = 0; c < 3; c++) { const v = samples[p + c]; if (v < mn[c]) mn[c] = v; if (v > mx[c]) mx[c] = v; } } return mx.map((v, c) => v - mn[c]); };
+  while (boxes.length < maxColors) {
+    let bi = -1, best = -1;
+    boxes.forEach((b, i) => { if (b.hi - b.lo < 2) return; const r = range(b); const m = Math.max(...r); if (m > best) { best = m; bi = i; } });
+    if (bi < 0 || best === 0) break;
+    const b = boxes[bi]; const r = range(b); const ch = r.indexOf(Math.max(...r));
+    const sub = Array.from(idx.subarray(b.lo, b.hi)); sub.sort((a, c) => samples[a * 3 + ch] - samples[c * 3 + ch]);
+    idx.set(sub, b.lo); const mid = (b.lo + b.hi) >> 1;
+    boxes.splice(bi, 1, { lo: b.lo, hi: mid }, { lo: mid, hi: b.hi });
+  }
+  const pal = new Uint8Array(256 * 3);
+  boxes.forEach((b, i) => { let r = 0, g = 0, bl = 0; const cnt = b.hi - b.lo; for (let k = b.lo; k < b.hi; k++) { const p = idx[k] * 3; r += samples[p]; g += samples[p + 1]; bl += samples[p + 2]; } pal[i * 3] = Math.round(r / cnt); pal[i * 3 + 1] = Math.round(g / cnt); pal[i * 3 + 2] = Math.round(bl / cnt); });
+  return { pal, count: boxes.length };
+}
+function makeMapper(pal, count) {
+  const cache = new Int16Array(32768).fill(-1);
+  return (r, g, b) => {
+    const key = (r >> 3) << 10 | (g >> 3) << 5 | (b >> 3);
+    let v = cache[key]; if (v >= 0) return v;
+    let best = 0, bd = 1e9;
+    for (let i = 0; i < count; i++) { const dr = pal[i * 3] - r, dg = pal[i * 3 + 1] - g, db = pal[i * 3 + 2] - b; const d = dr * dr * 2 + dg * dg * 3 + db * db; if (d < bd) { bd = d; best = i; } }
+    cache[key] = best; return best;
+  };
+}
+function toIndexed(data, W, H, pal, mapper, dither) {
+  const out = new Uint8Array(W * H);
+  if (!dither) { for (let i = 0, p = 0; i < W * H; i++, p += 4) out[i] = mapper(data[p], data[p + 1], data[p + 2]); return out; }
+  const buf = new Float32Array(W * H * 3); for (let i = 0, p = 0; i < W * H; i++, p += 4) { buf[i * 3] = data[p]; buf[i * 3 + 1] = data[p + 1]; buf[i * 3 + 2] = data[p + 2]; }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x, p = i * 3;
+    const r = clamp(Math.round(buf[p]), 0, 255), g = clamp(Math.round(buf[p + 1]), 0, 255), b = clamp(Math.round(buf[p + 2]), 0, 255);
+    const ci = mapper(r, g, b); out[i] = ci;
+    const er = r - pal[ci * 3], eg = g - pal[ci * 3 + 1], eb = b - pal[ci * 3 + 2];
+    const add = (xx, yy, f) => { if (xx < 0 || xx >= W || yy >= H) return; const q = (yy * W + xx) * 3; buf[q] += er * f; buf[q + 1] += eg * f; buf[q + 2] += eb * f; };
+    add(x + 1, y, 7 / 16); add(x - 1, y + 1, 3 / 16); add(x, y + 1, 5 / 16); add(x + 1, y + 1, 1 / 16);
+  }
+  return out;
+}
+function lzwEncode(pixels, minCodeSize) {
+  const out = []; const clear = 1 << minCodeSize, eoi = clear + 1;
+  let codeSize = minCodeSize + 1, next = eoi + 1, table = new Map();
+  let cur = 0, bits = 0;
+  const emit = (code) => { cur |= code << bits; bits += codeSize; while (bits >= 8) { out.push(cur & 255); cur >>>= 8; bits -= 8; } };
+  emit(clear);
+  let prefix = pixels[0];
+  for (let i = 1; i < pixels.length; i++) {
+    const k = pixels[i]; const key = (prefix << 8) | k; const e = table.get(key);
+    if (e !== undefined) { prefix = e; continue; }
+    emit(prefix);
+    if (next === 4096) { emit(clear); next = eoi + 1; codeSize = minCodeSize + 1; table = new Map(); }
+    else { if (next >= (1 << codeSize)) codeSize++; table.set(key, next++); }
+    prefix = k;
+  }
+  emit(prefix); emit(eoi); if (bits > 0) out.push(cur & 255);
+  return out;
+}
+function buildGif(W, H, pal, frames, delayCs) {
+  const b = [];
+  const push = (...v) => b.push(...v); const u16 = (v) => push(v & 255, (v >> 8) & 255);
+  push(0x47, 0x49, 0x46, 0x38, 0x39, 0x61); u16(W); u16(H); push(0xF7, 0, 0);
+  for (let i = 0; i < 768; i++) push(pal[i]);
+  push(0x21, 0xFF, 0x0B); for (const ch of 'NETSCAPE2.0') push(ch.charCodeAt(0)); push(3, 1, 0, 0, 0);
+  for (const fr of frames) {
+    push(0x21, 0xF9, 4, 0x04); u16(delayCs); push(0, 0);
+    push(0x2C); u16(0); u16(0); u16(W); u16(H); push(0);
+    push(8); const lz = lzwEncode(fr, 8);
+    for (let p = 0; p < lz.length; p += 255) { const n = Math.min(255, lz.length - p); push(n); for (let k = 0; k < n; k++) push(lz[p + k]); }
+    push(0);
+  }
+  push(0x3B);
+  return new Uint8Array(b);
+}
+async function exportGif() {
+  const { c, ctx, W, H } = makeCanvas(); const N = frameCount();
+  const delayCs = Math.max(2, Math.round(100 / S.fps));
+  // 1) 색 뽑기: 몇 장을 골고루 샘플
+  const sampleFrames = [0, .25, .5, .75].map(t => { renderFrame(ctx, W, H, t); return ctx.getImageData(0, 0, W, H).data; });
+  const target = 60000; const stride = Math.max(1, Math.floor(sampleFrames.length * W * H / target));
+  const samp = []; sampleFrames.forEach(d => { for (let i = 0; i < W * H; i += stride) { const p = i * 4; samp.push(d[p], d[p + 1], d[p + 2]); } });
+  progress(.05, 'GIF 색 고르는 중…'); await sleep(0);
+  const { pal, count } = medianCut(new Uint8Array(samp), 256); const mapper = makeMapper(pal, count);
+  // 2) 장마다 색 번호로 바꾸기
+  const frames = [];
+  for (let i = 0; i < N; i++) {
+    renderFrame(ctx, W, H, i / N); const d = ctx.getImageData(0, 0, W, H).data;
+    frames.push(toIndexed(d, W, H, pal, mapper, S.dither));
+    progress(.05 + .9 * (i + 1) / N, `GIF 만드는 중… ${i + 1}/${N}장`); await sleep(0);
+  }
+  const bytes = buildGif(W, H, pal, frames, delayCs);
+  const blob = new Blob([bytes], { type: 'image/gif' });
+  addOutput('GIF', blob, 'gif', `${W}×${H} · ${N}장 · ${S.duration}초`);
+  setStatus('mkStatus', `GIF 완성 (${fmtBytes(blob.size)})${blob.size > 5 * 1048576 ? ' — 무겁습니다. 가로 크기·길이·초당 장수를 줄여 보세요.' : ''}`, 'ok');
+}
+
+// ================================================================
+// 동영상 — 브라우저의 녹화 기능(MediaRecorder) 사용
+// ================================================================
+async function exportVideo() {
+  if (typeof MediaRecorder === 'undefined') { setStatus('mkStatus', '이 브라우저는 동영상 만들기를 지원하지 않습니다.', 'err'); return; }
+  const mimes = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  const mime = mimes.find(m => MediaRecorder.isTypeSupported(m));
+  if (!mime) { setStatus('mkStatus', '이 브라우저에서 쓸 수 있는 동영상 형식이 없습니다.', 'err'); return; }
+  const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+  const { c, ctx, W, H } = makeCanvas();
+  const fps = 24, N = Math.round(S.duration * fps);
+  const stream = c.captureStream(0); const track = stream.getVideoTracks()[0];
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: Math.round(W * H * 0.12 * fps) });
+  const chunks = []; rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const done = new Promise(r => rec.onstop = r);
+  renderFrame(ctx, W, H, 0); rec.start(200); track.requestFrame && track.requestFrame();
+  const t0v = performance.now();
+  for (let i = 0; i < N; i++) {
+    renderFrame(ctx, W, H, i / N); track.requestFrame && track.requestFrame();
+    progress((i + 1) / N, `동영상 녹화 중… ${i + 1}/${N}장 (실제 길이만큼 걸립니다)`);
+    const due = t0v + (i + 1) * 1000 / fps; const wait = due - performance.now(); if (wait > 0) await sleep(wait);
+  }
+  await sleep(120); rec.stop(); await done;
+  const blob = new Blob(chunks, { type: mime });
+  addOutput('동영상 (' + ext.toUpperCase() + ')', blob, ext, `${W}×${H} · ${S.duration}초`);
+  setStatus('mkStatus', `동영상 완성 (${fmtBytes(blob.size)})`, 'ok');
+}
+
+$('mkWebp').addEventListener('click', () => runExport(exportWebP));
+$('mkGif').addEventListener('click', () => runExport(exportGif));
+$('mkVideo').addEventListener('click', () => runExport(exportVideo));
+$('mkAll').addEventListener('click', () => runExport(async () => { await exportWebP(); await exportGif(); await exportVideo(); setStatus('mkStatus', '세 가지 모두 완성. 위에서 내려받으세요.', 'ok'); }));
+
+// ================================================================
+// AI 도우미 — 자막 문구 3개 · 움직임 · 주인공 위치 추천
+// ================================================================
+const AI_ENDPOINT = 'https://venom-new-site.vercel.app/api/photo-motion-ai';
+const PRESET_IDS = PRESETS.map(p => p[0]);
+try { $('aiKey').value = localStorage.getItem('pm_ai_key') || ''; $('aiProvider').value = localStorage.getItem('pm_ai_provider') || 'anthropic'; } catch (e) { /* 저장소 못 쓰면 무시 */ }
+$('aiKey').addEventListener('change', e => { try { localStorage.setItem('pm_ai_key', e.target.value.trim()); } catch (x) {} });
+$('aiProvider').addEventListener('change', e => { try { localStorage.setItem('pm_ai_provider', e.target.value); } catch (x) {} });
+
+function smallJpeg() {
+  const max = 640; const sc = Math.min(1, max / Math.max(S.iw, S.ih));
+  const c = document.createElement('canvas'); c.width = Math.round(S.iw * sc); c.height = Math.round(S.ih * sc);
+  c.getContext('2d').drawImage(S.img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', .82);
+}
+function aiPrompt(purpose, tone) {
+  const toneWord = { calm: '차분하고 신뢰감 있는', bright: '밝고 친근한', short: '짧고 강한' }[tone] || '차분한';
+  return `너는 한국 병원·의원 홍보물의 자막을 쓰는 카피라이터다. 첨부한 사진 한 장으로 짧게 움직이는 GIF를 만들고 그 위에 자막을 얹는다.
+쓰임새: ${purpose || '(적지 않음 — 사진을 보고 판단)'}
+말투: ${toneWord} 말투. 한국어. 각 자막은 18자 이내, 줄바꿈이 필요하면 \\n 으로 표시(최대 2줄).
+지켜야 할 법: 의료광고(의료법 제56조). 효과·완치 보장, 전후 비교, "최고·유일·1등" 같은 최상급, 환자 후기 인용, 가격 할인 유도 문구는 쓰지 않는다. 사진 속 사람의 외모를 평가하지 않는다.
+사진에서 가장 눈길이 가는 주인공(사람 얼굴·손·장비·간판 등)의 위치를 사진 전체 기준 0~1 좌표(x=왼쪽0·오른쪽1, y=위0·아래1)로 찍는다.
+움직임은 다음 중 하나로 고른다: ${PRESET_IDS.join(', ')} (kenburns=살짝 이동하며 확대, zoomin=확대, zoomout=멀어지기, panlr/panrl=가로 훑기, panud=세로 훑기, breathe=숨쉬듯 반복, sway=살랑 기울기, handheld=손떨림).
+반드시 아래 JSON 하나만 출력한다(설명·코드 울타리 없이):
+{"captions":["...","...","..."],"preset":"kenburns","focus":{"x":0.5,"y":0.4},"reason":"한 문장"}`;
+}
+function parseAiJson(text) {
+  const m = String(text).match(/\{[\s\S]*\}/); if (!m) throw new Error('AI 답을 읽지 못했습니다');
+  const j = JSON.parse(m[0]);
+  const captions = (j.captions || []).map(s => String(s).replace(/\\n/g, '\n').trim()).filter(Boolean).slice(0, 3);
+  const preset = PRESET_IDS.includes(j.preset) ? j.preset : 'kenburns';
+  const fx = Number(j.focus && j.focus.x), fy = Number(j.focus && j.focus.y);
+  const focus = { x: isFinite(fx) ? clamp(fx, 0, 1) : .5, y: isFinite(fy) ? clamp(fy, 0, 1) : .5 };
+  return { captions, preset, focus, reason: String(j.reason || '') };
+}
+async function callDirect(provider, key, dataUrl, prompt) {
+  if (provider === 'openai') {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+      body: JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 400, messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: dataUrl, detail: 'low' } }, { type: 'text', text: prompt }] }] }) });
+    const j = await r.json(); if (!r.ok) throw new Error(j.error?.message || ('OpenAI ' + r.status));
+    return j.choices?.[0]?.message?.content || '';
+  }
+  const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-opus-5', max_tokens: 600, output_config: { effort: 'low' },
+      messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: dataUrl.split(',')[1] } }, { type: 'text', text: prompt }] }] }) });
+  const j = await r.json(); if (!r.ok) throw new Error(j.error?.message || ('Anthropic ' + r.status));
+  if (j.stop_reason === 'refusal') throw new Error('AI가 이 요청에는 답하지 않았습니다');
+  return (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+}
+async function callServer(dataUrl, purpose, tone) {
+  const endpoints = [ '/api/photo-motion-ai' ];
+  if (!location.origin.includes('venom-new-site')) endpoints.push(AI_ENDPOINT);
+  let lastErr = null;
+  for (const url of endpoints) {
+    try {
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl, purpose, tone }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || ('서버 ' + r.status));
+      return j;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('서버에 닿지 못했습니다');
+}
+let aiResult = null;
+$('aiBtn').addEventListener('click', async () => {
+  if (!S.img) return;
+  const purpose = $('aiPurpose').value.trim(), tone = $('aiTone').value;
+  const key = $('aiKey').value.trim(), provider = $('aiProvider').value;
+  $('aiBtn').disabled = true; $('aiChips').innerHTML = ''; $('aiApplyMotion').style.display = 'none';
+  setStatus('aiStatus', 'AI가 사진을 보고 생각하는 중… (10초 안팎)');
+  try {
+    const dataUrl = smallJpeg();
+    let res;
+    if (key) res = parseAiJson(await callDirect(provider, key, dataUrl, aiPrompt(purpose, tone)));
+    else { const j = await callServer(dataUrl, purpose, tone); res = j.captions ? { captions: j.captions, preset: PRESET_IDS.includes(j.preset) ? j.preset : 'kenburns', focus: j.focus || { x: .5, y: .5 }, reason: j.reason || '' } : parseAiJson(j.raw || ''); }
+    aiResult = res;
+    if (!res.captions.length) throw new Error('추천 문구가 비어 있습니다. 쓰임새를 적고 다시 눌러 보세요.');
+    setStatus('aiStatus', `추천 문구 ${res.captions.length}개 — 누르면 자막에 들어갑니다.${res.reason ? '\n' + res.reason : ''}`, 'ok');
+    res.captions.forEach(cap => { const b = document.createElement('button'); b.type = 'button'; b.textContent = cap.replace(/\n/g, ' / '); b.addEventListener('click', () => { S.text = cap; $('text').value = cap; }); $('aiChips').appendChild(b); });
+    const pname = (PRESETS.find(p => p[0] === res.preset) || PRESETS[0])[1];
+    $('aiApplyMotion').textContent = `추천 움직임 적용: ${pname} · 주인공 위치 (${res.focus.x.toFixed(2)}, ${res.focus.y.toFixed(2)})`;
+    $('aiApplyMotion').style.display = 'inline-block';
+  } catch (e) {
+    const hint = key ? '' : '\n서버 연결이 안 되면 아래 「AI 연결 설정」에 본인 키를 넣고 다시 눌러 보세요.';
+    setStatus('aiStatus', 'AI 추천을 받지 못했습니다: ' + e.message + hint, 'err');
+  } finally { $('aiBtn').disabled = false; }
+});
+$('aiApplyMotion').addEventListener('click', () => { if (!aiResult) return; setPreset(aiResult.preset); S.focus = { ...aiResult.focus }; drawPreview(curT); });
+
+// 첫 화면
+drawPreview(0);
+})();
+</script>
+</body>
+</html>
