@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>사진 한 장으로 움직이는 GIF·WebP 만들기 · 병원마케팅 베놈</title>
+  <title>사진·짧은 영상으로 움직이는 GIF·WebP 만들기 · 병원마케팅 베놈</title>
   <meta name="description" content="사진 한 장을 올리면 움직이는 GIF·애니메이션 WebP·짧은 동영상을 만들고 자막까지 넣습니다. AI가 자막과 움직임을 추천합니다. 설치 없이 브라우저에서 바로 동작하는 병원마케팅 베놈 무료 도구.">
   <meta name="robots" content="index,follow">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -60,7 +60,7 @@
     .drop { border:2px dashed #d9d0c2; border-radius:12px; padding:18px; text-align:center; color:var(--muted); font-size:14px; cursor:pointer; background:#fffdf9; }
     .drop.over { border-color:var(--accent); background:#fff4ec; }
     .drop strong { color:var(--text); }
-    .presets { display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px; }
+    .presets { display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:10px; }
     .presets button { font: inherit; font-size:13px; padding:8px 6px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; line-height:1.3; }
     .presets button.on { border-color:var(--accent); background:#fff1e8; color:var(--accent-dark); font-weight:700; }
     .chips { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
@@ -84,8 +84,8 @@
 </head>
 <body>
 <header>
-  <h1>사진 한 장으로 움직이는 GIF · WebP 만들기</h1>
-  <p>사진을 올리고 → 움직임을 고르고 → 자막을 적으면 끝. 설치 없이 이 화면 안에서 만들어집니다(사진은 컴퓨터 밖으로 나가지 않습니다. AI 추천을 누를 때만 작은 사진 한 장을 보냅니다).
+  <h1>사진 한 장 · 짧은 영상으로 움직이는 GIF · WebP 만들기</h1>
+  <p>사진(또는 AI 로 뽑은 짧은 영상)을 올리고 → 움직임을 고르고 → 자막을 적으면 끝. 영상은 소리를 빼고 끝과 처음을 겹쳐 GIF 처럼 끝없이 돕니다. 설치 없이 이 화면 안에서 만들어집니다(사진은 컴퓨터 밖으로 나가지 않습니다. AI 추천을 누를 때만 작은 사진 한 장을 보냅니다).
     다른 도구: <a href="webp.html">이미지 WebP 변환기</a></p>
 </header>
 
@@ -106,9 +106,15 @@
 
   <aside class="panel">
     <div class="card">
-      <h2><span class="n">1</span> 사진 올리기</h2>
-      <div class="drop" id="drop"><strong>여기를 누르거나 사진을 끌어다 놓으세요</strong><br>JPG · PNG · WebP · HEIC(일부 브라우저)</div>
-      <input type="file" id="file" accept="image/*" hidden>
+      <h2><span class="n">1</span> 사진 또는 영상 올리기</h2>
+      <div class="drop" id="drop"><strong>여기를 누르거나 사진·영상을 끌어다 놓으세요</strong><br>사진: JPG · PNG · WebP &nbsp;/&nbsp; 영상: MP4 · WebM (15초까지)</div>
+      <input type="file" id="file" accept="image/*,video/*" hidden>
+      <div id="videoOpts" style="display:none;margin-top:10px">
+        <label class="check"><input type="checkbox" id="loopBlend" checked> 끝과 처음을 겹쳐 섞어 이음새 없이 반복(GIF 처럼)</label>
+        <div class="row"><div><label>겹치는 길이(초) <span id="blendLabel">0.6</span></label><input type="range" id="blendSec" min="2" max="15" value="6"></div>
+        <div><label>소리</label><div class="small" style="padding-top:8px">영상의 소리는 넣지 않습니다(자막으로 처리).</div></div></div>
+      </div>
+      <p class="small" style="margin:10px 0 0">AI 로 「말하는 영상」이 필요하면 클로드에게 사진과 대사를 주세요(MiniMax, 8초에 20 크레딧 ≈ 1달러). 나온 MP4 를 여기에 올리면 자막·반복 WebP 가 됩니다.</p>
       <div class="status" id="fileStatus"></div>
     </div>
 
@@ -195,12 +201,14 @@
 const $ = (id) => document.getElementById(id);
 const S = {
   img: null, iw: 0, ih: 0, fileName: 'photo',
+  mode: 'photo', video: null, vDur: 0, loopBlend: true, blendSec: .6, frameB: null, blend: 0,
   preset: 'kenburns', intensity: 0.18, duration: 3, fps: 12, ratio: '1:1', width: 720, pingpong: false,
   focus: { x: 0.5, y: 0.5 },
   text: '', subMode: 'all', subPos: 'bottom', subAnim: 'fade', subSize: 6.5, subColor: '#ffffff', subBg: 'rgba(0,0,0,0.55)', subStroke: true,
   webpQ: 0.8, dither: true,
 };
 const PRESETS = [
+  ['static', '카메라 고정', '영상일 때 기본'],
   ['kenburns', '천천히 다가가기', '살짝 이동하며 확대(가장 무난)'],
   ['zoomin', '확대', '주인공 쪽으로 커짐'],
   ['zoomout', '멀어지기', '확대된 상태에서 전체가 보임'],
@@ -256,6 +264,7 @@ function camera(t) {
       const rot = (k * 4) * Math.PI / 180 * (Math.sin(TAU * t + .4) * .7 + Math.sin(TAU * 2 * t + 1.9) * .3);
       return { zoom: 1 + Math.max(k, .1), fx: f.x + dx, fy: f.y + dy, rot };
     }
+    case 'static': return { zoom: 1, fx: f.x, fy: f.y, rot: 0 };
     default: return { zoom: 1, fx: .5, fy: .5, rot: 0 };
   }
 }
@@ -282,6 +291,7 @@ function renderFrame(ctx, W, H, t) {
   ctx.translate(-lx, -ly);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(S.img, 0, 0);
+  if (S.blend > 0 && S.frameB) { ctx.globalAlpha = S.blend; ctx.drawImage(S.frameB, 0, 0); ctx.globalAlpha = 1; }
   ctx.restore();
   drawSubtitle(ctx, W, H, t);
 }
@@ -363,7 +373,14 @@ let playing = true, t0 = performance.now(), curT = 0;
 function syncCanvasSize() { const { W, H } = outSize(); if (preview.width !== W || preview.height !== H) { preview.width = W; preview.height = H; } }
 function drawPreview(t) { syncCanvasSize(); renderFrame(pctx, preview.width, preview.height, t); placeFocusDot(); }
 function tick(now) {
-  if (S.img && playing) {
+  if (S.mode === 'video' && S.video && playing) {
+    const v = S.video; if (v.paused) v.play().catch(() => {});
+    S.img.getContext('2d').drawImage(v, 0, 0); S.blend = 0;
+    const X = blendX(); curT = clamp((v.currentTime - X) / S.duration, 0, .999);
+    drawPreview(curT);
+    $('scrubber').value = Math.round(curT * 1000);
+    $('timeLabel').textContent = `${(curT * S.duration).toFixed(1)} / ${S.duration.toFixed(1)}초`;
+  } else if (S.img && playing) {
     curT = ((now - t0) / 1000 / S.duration) % 1;
     drawPreview(curT);
     $('scrubber').value = Math.round(curT * 1000);
@@ -372,8 +389,8 @@ function tick(now) {
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
-$('playBtn').addEventListener('click', () => { playing = !playing; if (playing) t0 = performance.now() - curT * S.duration * 1000; $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 재생'; });
-$('scrubber').addEventListener('input', (e) => { playing = false; $('playBtn').textContent = '▶ 재생'; curT = e.target.value / 1000; drawPreview(curT); $('timeLabel').textContent = `${(curT * S.duration).toFixed(1)} / ${S.duration.toFixed(1)}초`; });
+$('playBtn').addEventListener('click', () => { playing = !playing; if (playing) t0 = performance.now() - curT * S.duration * 1000; else if (S.video) S.video.pause(); $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 재생'; });
+$('scrubber').addEventListener('input', async (e) => { playing = false; if (S.video) S.video.pause(); $('playBtn').textContent = '▶ 재생'; curT = e.target.value / 1000; await prepareFrame(curT); drawPreview(curT); $('timeLabel').textContent = `${(curT * S.duration).toFixed(1)} / ${S.duration.toFixed(1)}초`; });
 
 function placeFocusDot() {
   const dot = $('focusDot'); if (!S.img) { dot.style.display = 'none'; return; }
@@ -439,8 +456,46 @@ drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('
 fileIn.addEventListener('change', () => { if (fileIn.files[0]) loadFile(fileIn.files[0]); });
 document.addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])][0]; if (f && f.type.startsWith('image/')) loadFile(f); });
 
+function blendX() { return (S.mode === 'video' && S.loopBlend) ? Math.min(S.blendSec, S.vDur / 4) : 0; }
+function applyVideoLength() { if (S.mode !== 'video') return; S.duration = Math.max(.5, S.vDur - blendX()); $('durLabel').textContent = S.duration.toFixed(1); }
+$('loopBlend').addEventListener('change', e => { S.loopBlend = e.target.checked; applyVideoLength(); });
+$('blendSec').addEventListener('input', e => { S.blendSec = e.target.value / 10; $('blendLabel').textContent = S.blendSec.toFixed(1); applyVideoLength(); });
+function seekTo(v, t) { t = clamp(t, 0, Math.max(0, v.duration - .02)); if (Math.abs(v.currentTime - t) < .002) return Promise.resolve(); return new Promise(r => { const done = () => { v.removeEventListener('seeked', done); r(); }; v.addEventListener('seeked', done); v.currentTime = t; }); }
+// 영상 모드: t(0~1) 장면을 S.img(현재 장면)·S.frameB(겹칠 장면)에 준비한다
+async function prepareFrame(t) {
+  if (S.mode !== 'video' || !S.video) return;
+  const v = S.video, X = blendX(), L = S.duration, tt = t * L;
+  await seekTo(v, X + tt); S.img.getContext('2d').drawImage(v, 0, 0);
+  if (X > 0 && tt > L - X) { const a = (tt - (L - X)) / X; await seekTo(v, tt - (L - X)); S.frameB.getContext('2d').drawImage(v, 0, 0); S.blend = clamp(a, 0, 1); }
+  else S.blend = 0;
+}
+async function loadVideo(file) {
+  setStatus('fileStatus', '영상을 읽는 중…');
+  if (S.video) { S.video.pause(); URL.revokeObjectURL(S.video.src); }
+  const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.loop = true; v.preload = 'auto';
+  v.src = URL.createObjectURL(file);
+  await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = () => rej(new Error('영상을 열 수 없습니다')); });
+  if (!v.videoWidth) throw new Error('영상 크기를 읽지 못했습니다');
+  if (v.duration > 15.5) throw new Error('영상이 너무 깁니다(15초까지). 잘라서 올려 주세요.');
+  S.video = v; S.vDur = v.duration; S.iw = v.videoWidth; S.ih = v.videoHeight; S.mode = 'video';
+  const mk = () => { const c = document.createElement('canvas'); c.width = S.iw; c.height = S.ih; return c; };
+  S.img = mk(); S.frameB = mk(); S.blend = 0;
+  await seekTo(v, 0); S.img.getContext('2d').drawImage(v, 0, 0);
+  S.fileName = (file.name || 'video').replace(/\.[^.]+$/, ''); S.focus = { x: .5, y: .5 };
+  $('subMode').value = 'seq'; S.subMode = 'seq';
+  $('videoOpts').style.display = 'block'; $('duration').disabled = true; applyVideoLength();
+  setPreset('static'); $('ratio').value = 'orig'; S.ratio = 'orig';
+  $('empty').style.display = 'none';
+  ['aiBtn', 'mkWebp', 'mkGif', 'mkVideo', 'mkAll'].forEach(id => $(id).disabled = false);
+  setStatus('fileStatus', `${file.name} · ${S.iw}×${S.ih} · ${S.vDur.toFixed(1)}초 (소리는 뺍니다)`, 'ok');
+  playing = true; $('playBtn').textContent = '⏸ 멈춤'; v.play().catch(() => {});
+}
 async function loadFile(file) {
+  if (file.type.startsWith('video/')) { try { await loadVideo(file); } catch (e) { setStatus('fileStatus', e.message, 'err'); } return; }
   setStatus('fileStatus', '사진을 읽는 중…');
+  if (S.video) { S.video.pause(); S.video = null; }
+  S.mode = 'photo'; S.frameB = null; S.blend = 0; $('videoOpts').style.display = 'none'; $('duration').disabled = false; S.duration = $('duration').value / 10; $('durLabel').textContent = S.duration.toFixed(1);
+  if (S.preset === 'static') setPreset('kenburns');
   try {
     let bmp;
     try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
@@ -485,7 +540,7 @@ function addOutput(kind, blob, ext, extra) {
 let busy = false;
 async function runExport(fn) {
   if (busy || !S.img) return; busy = true;
-  const wasPlaying = playing; playing = false;
+  const wasPlaying = playing; playing = false; if (S.video) S.video.pause();
   ['mkWebp', 'mkGif', 'mkVideo', 'mkAll'].forEach(id => $(id).disabled = true);
   try { await ensureFont(); await fn(); }
   catch (e) { console.error(e); setStatus('mkStatus', '만들다가 문제가 생겼습니다: ' + e.message, 'err'); }
@@ -544,7 +599,7 @@ async function exportWebP() {
   if (!canEncodeWebP()) { setStatus('mkStatus', '이 브라우저는 WebP를 만들지 못합니다. 크롬·엣지·삼성인터넷에서 열어 주세요. (GIF·동영상은 됩니다)', 'err'); return; }
   const { c, ctx, W, H } = makeCanvas(); const N = frameCount(); const ms = Math.round(1000 / S.fps); const frames = [];
   for (let i = 0; i < N; i++) {
-    renderFrame(ctx, W, H, i / N);
+    await prepareFrame(i / N); renderFrame(ctx, W, H, i / N);
     const blob = await new Promise(r => c.toBlob(r, 'image/webp', S.webpQ));
     frames.push({ chunks: riffChunks(new Uint8Array(await blob.arrayBuffer())), ms });
     progress((i + 1) / N, `움직이는 WebP 만드는 중… ${i + 1}/${N}장`);
@@ -638,7 +693,7 @@ async function exportGif() {
   const { c, ctx, W, H } = makeCanvas(); const N = frameCount();
   const delayCs = Math.max(2, Math.round(100 / S.fps));
   // 1) 색 뽑기: 몇 장을 골고루 샘플
-  const sampleFrames = [0, .25, .5, .75].map(t => { renderFrame(ctx, W, H, t); return ctx.getImageData(0, 0, W, H).data; });
+  const sampleFrames = []; for (const t of [0, .25, .5, .75]) { await prepareFrame(t); renderFrame(ctx, W, H, t); sampleFrames.push(ctx.getImageData(0, 0, W, H).data); }
   const target = 60000; const stride = Math.max(1, Math.floor(sampleFrames.length * W * H / target));
   const samp = []; sampleFrames.forEach(d => { for (let i = 0; i < W * H; i += stride) { const p = i * 4; samp.push(d[p], d[p + 1], d[p + 2]); } });
   progress(.05, 'GIF 색 고르는 중…'); await sleep(0);
@@ -646,7 +701,7 @@ async function exportGif() {
   // 2) 장마다 색 번호로 바꾸기
   const frames = [];
   for (let i = 0; i < N; i++) {
-    renderFrame(ctx, W, H, i / N); const d = ctx.getImageData(0, 0, W, H).data;
+    await prepareFrame(i / N); renderFrame(ctx, W, H, i / N); const d = ctx.getImageData(0, 0, W, H).data;
     frames.push(toIndexed(d, W, H, pal, mapper, S.dither));
     progress(.05 + .9 * (i + 1) / N, `GIF 만드는 중… ${i + 1}/${N}장`); await sleep(0);
   }
@@ -671,10 +726,10 @@ async function exportVideo() {
   const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: Math.round(W * H * 0.12 * fps) });
   const chunks = []; rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
   const done = new Promise(r => rec.onstop = r);
-  renderFrame(ctx, W, H, 0); rec.start(200); track.requestFrame && track.requestFrame();
+  await prepareFrame(0); renderFrame(ctx, W, H, 0); rec.start(200); track.requestFrame && track.requestFrame();
   const t0v = performance.now();
   for (let i = 0; i < N; i++) {
-    renderFrame(ctx, W, H, i / N); track.requestFrame && track.requestFrame();
+    await prepareFrame(i / N); renderFrame(ctx, W, H, i / N); track.requestFrame && track.requestFrame();
     progress((i + 1) / N, `동영상 녹화 중… ${i + 1}/${N}장 (실제 길이만큼 걸립니다)`);
     const due = t0v + (i + 1) * 1000 / fps; const wait = due - performance.now(); if (wait > 0) await sleep(wait);
   }

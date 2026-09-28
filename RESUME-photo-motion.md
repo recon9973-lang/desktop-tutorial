@@ -1,5 +1,5 @@
 <!-- 가지: claude/serene-dijkstra-7x6zte -->
-# RESUME (사진 움직이기 방) — 2026-09-28 · 오더 3건
+# RESUME (사진 움직이기 방) — 2026-09-28 · 오더 4건
 
 > 사장님 오더: «사진 한 장으로 움직이는 gif(웹최적화 · webP처럼)를 만들고 자막까지 넣는 프로그램. AI 연동으로 가볍게.»
 > 설명서: `venom-wordpress/preview/tools/README-photo-motion.md` · 지도: `핵심두뇌_MASTER.md`(핵심 기능 표).
@@ -37,3 +37,8 @@
 | MiniMax H3 Max (768p) | 20 | 없음(입만 움직임) | 약 1분 | https://d8j0ntlcm91z4.cloudfront.net/user_3DspgcBLnUBmBJ3UNK1kVIJDh1A/hf_20260928_143039_cea09dff-d0e8-44fa-932d-3520ca858a87.mp4 |
 - Seedance 2.5 는 같은 조건에 56 크레딧이라 안 돌렸다. 지금까지 총 75.5 크레딧 사용(≈ 3.7달러), 잔액 924.5.
 - 결과 파일은 내가 못 봤다(외부 통신 403). 얼굴 유지·입 모양·목소리는 사장님이 확인.
+
+## 오더 4 (2026-09-28) — «MiniMax 로, 소리 없이, 자막 처리, GIF 처럼 연속 재생, 웹최적화 파일»
+- 도구(`tools/photo-motion.html`)에 **영상 올리기** 추가: MP4 → 소리 제거 → 끝↔처음 겹쳐 섞기(이음새 없는 반복) → 자막 차례로 → WebP/GIF/MP4. 헤드리스 크롬으로 확인(23장 WebP).
+- **워크플로 `video-to-webp.yml` + `tools/video-to-webp.py`**: 영상 주소 → ffmpeg 로 같은 일을 서버에서 → `images/motion/<이름>.webp` 커밋. (작업 컨테이너는 외부 통신이 막혀 이 길로 실제 파일을 만든다.)
+- 오더 3 의 MiniMax 인터뷰 영상(`cea09dff…`)을 이 워크플로로 `images/motion/doctor-interview.webp` 로 만든다 — 결과는 아래 «확인» 에.
