@@ -1,0 +1,87 @@
+[
+  {
+    "sidoCd": "110000",
+    "sidoCdNm": "서울",
+    "count": 19922
+  },
+  {
+    "sidoCd": "210000",
+    "sidoCdNm": "부산",
+    "count": 5604
+  },
+  {
+    "sidoCd": "220000",
+    "sidoCdNm": "인천",
+    "count": 3912
+  },
+  {
+    "sidoCd": "230000",
+    "sidoCdNm": "대구",
+    "count": 4232
+  },
+  {
+    "sidoCd": "240000",
+    "sidoCdNm": "광주",
+    "count": 3
+  },
+  {
+    "sidoCd": "250000",
+    "sidoCdNm": "대전",
+    "count": 2371
+  },
+  {
+    "sidoCd": "260000",
+    "sidoCdNm": "울산",
+    "count": 1434
+  },
+  {
+    "sidoCd": "310000",
+    "sidoCdNm": "경기",
+    "count": 18242
+  },
+  {
+    "sidoCd": "320000",
+    "sidoCdNm": "강원",
+    "count": 1993
+  },
+  {
+    "sidoCd": "330000",
+    "sidoCdNm": "충북",
+    "count": 2214
+  },
+  {
+    "sidoCd": "340000",
+    "sidoCdNm": "충남",
+    "count": 2893
+  },
+  {
+    "sidoCd": "350000",
+    "sidoCdNm": "전북",
+    "count": 2913
+  },
+  {
+    "sidoCd": "360000",
+    "sidoCdNm": "전남광주",
+    "count": 4952
+  },
+  {
+    "sidoCd": "370000",
+    "sidoCdNm": "경북",
+    "count": 3409
+  },
+  {
+    "sidoCd": "380000",
+    "sidoCdNm": "경남",
+    "count": 4261
+  },
+  {
+    "sidoCd": "390000",
+    "sidoCdNm": "제주",
+    "count": 1049
+  },
+  {
+    "sidoCd": "410000",
+    "sidoCdNm": "세종시",
+    "count": 470
+  }
+]
