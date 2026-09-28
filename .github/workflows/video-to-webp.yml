@@ -86,6 +86,10 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "motion: ${{ github.event.inputs.name }} — 자막 얹은 반복 WebP (video-to-webp)"
-            git push origin main
+            git commit -m "motion: ${{ github.event.inputs.name }} — 자막 얹은 반복 WebP (video-to-webp) [skip ci]"
+            # 그 사이 main 이 움직였을 수 있다(PROJECT_STATE 자동 커밋 등) → 받아서 얹은 뒤 올린다. 세 번까지.
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push origin main && break
+              echo "push retry $i"; sleep 5
+            done
           fi
