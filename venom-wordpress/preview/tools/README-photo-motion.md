@@ -32,8 +32,14 @@
 ## AI 로 「말하는 영상」 → 자막 · 반복 WebP (2026-09-28 추가)
 사장님 결정: **MiniMax 로 뽑고, 소리는 빼고, 자막으로 처리하고, GIF 처럼 끝없이 도는 웹최적화 파일(움직이는 WebP)** 로 만든다.
 
-1. **영상 뽑기** — 서버에 Higgsfield 키가 없어 클로드 세션(Higgsfield MCP)이 대신 뽑는다. 사진 + 대사를 주면
-   `minimax_h3_max` 로 카메라 고정·8초(20 크레딧 ≈ 1달러) 영상 주소를 받는다. 1,000 크레딧 = 49달러.
+1. **영상 뽑기** — 두 길.
+   - **화면에서 바로(2026-09-29 추가)**: 사진을 올리면 「이 사진으로 AI 말하는 영상 만들기」 상자가 나온다(서버에 키가 있을 때만). 대사·길이(6/10초)를 적고 누르면
+     `api/photo-motion-video.js` 가 영상 AI 를 불러 1~3분 뒤 영상이 자동으로 올라오고 대사가 자막에 들어간다.
+     **서버 키(Vercel 환경변수)가 필요하다** — `HIGGSFIELD_API_KEY` = `키ID:키비밀` (https://cloud.higgsfield.ai 에서 발급 · **사용량 과금, 사이트 구독 크레딧과 별도**)
+     또는 `MINIMAX_API_KEY` (https://platform.minimax.io). 둘 다 있으면 Higgsfield 우선. 값은 코드에 절대 넣지 않는다.
+     쓰는 모델: Higgsfield 경로 `/minimax/hailuo-2.3/standard/image-to-video`(`HIGGSFIELD_VIDEO_PATH` 로 변경 가능) / MiniMax `MiniMax-Hailuo-2.3`.
+     ⚠ 실제 API 호출은 작업 컨테이너가 외부 통신을 막아 **흉내 낸 서버로만** 검사했다. 키를 넣고 처음 누를 때 API 가 항목 이름을 거부하면 화면에 그 오류가 그대로 뜬다 → 다음 세션에서 그 문구대로 고친다.
+   - **클로드에게 시키기**: 사진 + 대사를 주면 클로드 세션(Higgsfield MCP)이 `minimax_h3_max` 로 카메라 고정·8초(20 크레딧 ≈ 1달러) 영상 주소를 준다. 1,000 크레딧 = 49달러.
 2. **자막·반복 WebP 만들기** — 두 길 중 하나:
    - **화면에서**: 이 도구에 MP4 를 올린다(15초까지). 소리는 자동으로 빠지고, 「끝과 처음을 겹쳐 섞기」(기본 0.6초)로 이음새 없이 반복된다. 자막은 여러 줄이면 「한 줄씩 차례로」가 기본. 움직이는 WebP / GIF / MP4 로 내려받는다.
    - **GitHub 워크플로로**: `.github/workflows/video-to-webp.yml` 을 「Run workflow」 → 영상 주소·파일이름·자막(줄은 ` | ` 로 나눔)·가로·초당 장수·겹침 초 → `images/motion/<이름>.webp` 로 커밋되어

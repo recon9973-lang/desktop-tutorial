@@ -116,6 +116,7 @@
 
 ## 🔐 비밀키(secrets)는 어디에 (값은 여기 없음)
 - **Vercel** 각 프로젝트 → Settings → Environment Variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `GEMINI_API_KEY`, `NAVER_*`, ERP의 `DATABASE_URL`·`AUTH_SECRET`·`EMAIL_SERVER` 등)
+- **Vercel(베놈 사이트) 영상 AI**: `HIGGSFIELD_API_KEY`(`키ID:키비밀`, cloud.higgsfield.ai · 사용량 과금) 또는 `MINIMAX_API_KEY` → `api/photo-motion-video.js` 가 씀. 없으면 화면의 「AI 영상 만들기」 상자가 안 보인다.
 - **GitHub Actions** secrets (워크플로용)
 - **로컬** `.env.local` (git 제외)
 - ⚠️ 비밀키 값은 **코드/이 문서에 절대 넣지 않음**.
