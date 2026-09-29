@@ -7,14 +7,14 @@
 - **이어갈 작업(RESUME)**: 이 가지(`main`)에 짝이 없다 — 인계 21개 중 제 것을 찾아 «<!-- 가지: main -->» 를 한 줄 달아라
 
 ## 최근 커밋 (8)
+- 2026-09-29 웹사이트에서 바로 AI 말하는 영상 만들기 (서버 함수 + 화면 단추) (#308)
+- 2026-09-28 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 인계본: 의사 인터뷰 반복 WebP 실측 결과 (#307)
 - 2026-09-28 motion: doctor-interview — 자막 얹은 반복 WebP (video-to-webp) [skip ci]
 - 2026-09-28 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 video-to-webp 워크플로: 올리기 전에 최신 main 받아 오기 (#306)
 - 2026-09-28 chore: PROJECT_STATE 자동 갱신 [skip ci]
 - 2026-09-28 영상 → 소리 없이 자막 얹고 이음새 없이 반복되는 WebP (도구 영상 모드 + 워크플로) (#305)
-- 2026-09-28 chore: PROJECT_STATE 자동 갱신 [skip ci]
-- 2026-09-28 사진 한 장으로 움직이는 GIF·WebP·동영상 + 자막 도구 (AI 추천 연동) (#304)
 
 ## 워크플로 (22)
 - `ai-expose-check.yml` · '0 0 1 * *' · 수동
@@ -44,7 +44,7 @@
 - `/api/cron-seo-monitor` · 0 18 * * *
 - `/api/cron-eval` · 0 0 * * 1
 
-## API 엔드포인트 (33)
+## API 엔드포인트 (34)
 - `venom-wordpress/preview/api/analytics.js`
 - `venom-wordpress/preview/api/chatbot.js`
 - `venom-wordpress/preview/api/contact.js`
@@ -60,6 +60,7 @@
 - `venom-wordpress/preview/api/insights.js`
 - `venom-wordpress/preview/api/keyword-discover.js`
 - `venom-wordpress/preview/api/photo-motion-ai.js`
+- `venom-wordpress/preview/api/photo-motion-video.js`
 - `venom-wordpress/preview/api/posting-settings.js`
 - `venom-wordpress/preview/api/publish-post.js`
 - `venom-wordpress/preview/api/seo-proxy.js`
@@ -74,14 +75,13 @@
 - `your-supplement/apps/web/app/api/products/route.js`
 - `your-supplement/apps/web/app/api/recommend/route.js`
 - `your-supplement/apps/web/app/api/safety/route.js`
-- `your-supplement/server/api/kakao.js`
-- `…(+3)`
+- `…(+4)`
 
 ## package 스크립트
 `convert-webp` · `build`  ·  deps 1개
 
-## 환경변수 표면 (이름만, 값 아님 · 77)
-`ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `KV_REST_API_URL` · `LAW_OC` · `…(+37)`
+## 환경변수 표면 (이름만, 값 아님 · 81)
+`ADMIN_SECRET` · `AIRTABLE_API_KEY` · `AIRTABLE_LEAD_BASE` · `AIRTABLE_LEAD_TABLE` · `AIRTABLE_TOKEN` · `ALIMTALK_API_KEY` · `ALIMTALK_API_URL` · `ANTHROPIC_API_KEY` · `ANTHROPIC_JUDGE_MODEL` · `ANTHROPIC_MODEL` · `BLOG_IMAGE_MODE` · `BUILD_TS` · `CARD_FORCE` · `CHROME_BIN` · `CLOVA_OCR_INVOKE_URL` · `CLOVA_OCR_SECRET` · `CRON_SECRET` · `DATA_GO_KR_KEY` · `GEMINI_MODEL` · `GITHUB_BRANCH` · `GITHUB_OWNER` · `GITHUB_REPO` · `GITHUB_SHA` · `GITHUB_TOKEN` · `GOOGLE_PAGESPEED_KEY` · `GOOGLE_PSI_KEY` · `GOOGLE_VISION_API_KEY` · `GROWTHOPS_MONITOR_URLS` · `GSC_CLIENT_EMAIL` · `GSC_PRIVATE_KEY` · `GSC_SERVICE_ACCOUNT_JSON` · `GSC_SITE_URL` · `HIGGSFIELD_API_KEY` · `HIGGSFIELD_VIDEO_PATH` · `IG_ID` · `KAKAO_API_KEY` · `KAKAO_SENDER_KEY` · `KAKAO_TEMPLATE_RECOMMENDATION` · `KAKAO_TEMPLATE_REMINDER` · `KV_REST_API_TOKEN` · `…(+41)`
 
 ---
-*생성: 커밋 6215504 기준. 값·비밀은 포함하지 않음.*
+*생성: 커밋 311d45b 기준. 값·비밀은 포함하지 않음.*
