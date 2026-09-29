@@ -1,10 +1,12 @@
 <!-- 가지: claude/serene-dijkstra-7x6zte -->
-# RESUME (사진 움직이기 방) — 2026-09-28 · 오더 4건
+# RESUME (사진 움직이기 방) — 2026-09-28 · 오더 5건
 
 > 사장님 오더: «사진 한 장으로 움직이는 gif(웹최적화 · webP처럼)를 만들고 자막까지 넣는 프로그램. AI 연동으로 가볍게.»
 > 설명서: `venom-wordpress/preview/tools/README-photo-motion.md` · 지도: `핵심두뇌_MASTER.md`(핵심 기능 표).
 
 ## ▶ 바로 이어갈 작업
+0. **(오더 5) 사장님이 Vercel 에 `HIGGSFIELD_API_KEY`(키ID:키비밀, cloud.higgsfield.ai 발급) 를 넣으셨는지 여쭙고**, 넣으셨으면 화면에서 「AI 영상 만들기」를 한 번 눌러 본다.
+   API 가 요청 항목(`image_url`/`duration` 등)을 거부하면 화면 오류 문구 그대로 `api/photo-motion-video.js` 의 `hfSubmit` 을 고친다(요청 몸통은 공개 문서 요약으로 만든 것이라 실측 전).
 1. 배포된 화면 https://venom-new-site.vercel.app/tools/photo-motion.html 에서 사진 하나 올려 **「AI에게 추천받기」** 를 한 번 눌러 본다.
    - 작업 컨테이너는 외부 통신이 막혀(403) 실제 AI 답은 못 받아 봤다. 서버 키(Vercel `ANTHROPIC_API_KEY`/`OPENAI_API_KEY`)가 있으면 바로 된다.
    - 안 되면 화면 「AI 연결 설정」에 키를 넣어도 된다.
@@ -46,3 +48,9 @@
   처음·중간·끝 장을 열어 봤다: 같은 의사(얼굴·가운·배경 유지), 입이 말하듯 움직임, 자막 3줄(Pretendard) 차례로 표시. 사이트 주소
   https://venom-new-site.vercel.app/images/motion/doctor-interview.webp
 - 앞으로 같은 일: ① 클로드에게 사진+대사 → MiniMax 로 영상(20 크레딧) ② `video-to-webp.yml` Run workflow(주소·이름·자막) 또는 도구에 MP4 올리기.
+
+## 오더 5 (2026-09-29) — «웹사이트에서 바로 AI 말하는 영상 작동하게»
+- `api/photo-motion-video.js`: 사진(base64)+대사+길이 → 영상 AI 호출(Higgsfield `api.higgsfield.ai` 우선, 없으면 MiniMax `api.minimax.io`) → 번호 → 상태 조회 → 영상 주소. `?proxy=` 로 영상 파일 중계(CORS 대비). 시간당 12번 제한. `vercel.json` 60초.
+- 화면: 사진 올리면 「이 사진으로 AI 말하는 영상 만들기」 상자(서버 키 있을 때만 보임) → 5초마다 상태 확인 → 영상 자동 적재 + 대사→자막.
+- 검사: 서버 흉내(mock)로 화면 끝까지 통과(WebP 925KB). **실제 API 는 미실측**(키 없음·외부 통신 차단). 요청 몸통 근거: Higgsfield SDK README(`Authorization: Key ID:SECRET`, `/requests/{id}/status` → `video.url`) + 검색 요약(경로 `/minimax/hailuo-2.3/standard/image-to-video`).
+- 사장님이 할 일: cloud.higgsfield.ai 에서 API 키 발급(사용량 과금, 구독 크레딧과 별도) → Vercel → 프로젝트 → Settings → Environment Variables 에 `HIGGSFIELD_API_KEY` = `키ID:키비밀` → Redeploy.

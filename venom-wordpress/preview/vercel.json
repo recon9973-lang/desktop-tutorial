@@ -277,6 +277,9 @@
     },
     "api/photo-motion-ai.js": {
       "maxDuration": 30
+    },
+    "api/photo-motion-video.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
