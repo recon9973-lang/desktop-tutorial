@@ -64,6 +64,45 @@ def load_json_gz(p: pathlib.Path) -> dict:
 KEEP_WHOLE = {"부산진구"}
 
 
+# 심평원 **API** 는 2026-07 개편 뒤 이름을 쓴다(파일은 개편 전이다).
+# 인천 옛 중구·동구는 제물포구·영종구에 섞여 1:1 로 안 갈려서 **좌표로** 되찾는다.
+INCHEON_NEW = {"서해구": "서구", "검단구": "서구"}
+_incheon_pts: list | None = None
+
+
+def hira_region_api(r: dict) -> tuple[str, str]:
+    """심평원 **API** 한 줄(sidoCdNm/sgguCdNm/XPos/YPos) → 표의 자리.
+
+    파일 쪽 셈(`hira_region`)을 그대로 쓰고 개편분만 앞에서 되돌린다.
+    **자리 셈을 두 벌로 만들지 않는다** — 한 번 그렇게 했다가 「부산진구」가
+    부산+진구로, 「광주시」가 「시」로 갈라졌다(2026-09-29).
+    """
+    global _incheon_pts
+    sido, sggu = r["sidoCdNm"].strip(), r["sgguCdNm"].strip()
+    if sido in ("전남광주", "광주"):          # 개편 뒤 통합 시도 이름
+        g = sggu[2:] if sggu.startswith("광주") and sggu[2:] in GWANGJU_GU else sggu
+        return ("광주", g) if g in GWANGJU_GU else ("전남", g)
+    if sido == "인천":
+        g = sggu[2:] if sggu.startswith("인천") and len(sggu) > 2 else sggu
+        if g in INCHEON_NEW:
+            return "인천", INCHEON_NEW[g]
+        if g in ("제물포구", "영종구"):
+            if _incheon_pts is None:
+                f = pathlib.Path("data/market/incheon_old_points.json")
+                _incheon_pts = [(p["x"], p["y"], p["구"]) for p in
+                                json.loads(f.read_text(encoding="utf-8"))["점"]] \
+                    if f.exists() else []
+            try:
+                x, y = float(r["XPos"]), float(r["YPos"])
+            except (TypeError, ValueError, KeyError):
+                return "인천", g
+            if _incheon_pts:
+                return "인천", min(_incheon_pts, key=lambda h:
+                                  ((x - h[0]) * 88.8) ** 2 + ((y - h[1]) * 111.0) ** 2)[2]
+            return "인천", g
+    return hira_region({"시도코드명": sido, "시군구코드명": sggu})
+
+
 def hira_region(r: dict) -> tuple[str, str]:
     """심평원 한 줄에서 (시도, 시군구) 를 원본 그대로가 아니라 «맞는 자리»로 돌려준다."""
     sido, sggu = r["시도코드명"].strip(), r["시군구코드명"].strip()
