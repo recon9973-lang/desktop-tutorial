@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       stage:
-        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places | sejong | sangga-probe | sangga-codes | sangga | pop-probe | pop-find | pop-try | pop'
+        description: 'probe | sido | master | subject | sggu-subject | map-naver | map-kakao | map-both | portal-file | kakao-probe | kakao-word | kakao-places | sejong | sangga-probe | sangga-codes | sangga | pop-probe | pop-find | pop-try | pop | hira-shape'
         required: true
         default: 'probe'
       max_calls:
@@ -89,6 +89,7 @@ jobs:
           case "$STAGE" in
             portal-file) python3 tools/market-data/portal_file.py ;;
             sejong)      python3 tools/market-data/fetch_sejong.py ;;
+            hira-shape)     python3 tools/market-data/hira_shape_probe.py ;;
             pop-probe)      python3 tools/market-data/fetch_pop.py --mode probe ;;
             pop-find)       python3 tools/market-data/fetch_pop.py --mode find ;;
             pop-try)        python3 tools/market-data/fetch_pop.py --mode try ;;
