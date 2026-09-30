@@ -1,0 +1,95 @@
+name: Video to looping WebP (subtitled)
+
+# AI 로 뽑은 짧은 영상(외부 CDN 주소)을 내려받아 → 소리 제거 → 자막 얹기 → 끝과 처음을 겹쳐 이음새 없는 반복
+# → 움직이는 WebP(GIF 대체·웹최적화)로 만들어 저장소에 커밋한다.
+# 작업 컨테이너는 외부 통신이 막혀 있어 이 워크플로가 대신 한다. (tools/photo-motion.html 의 서버판)
+#
+# 결과: venom-wordpress/preview/images/motion/<name>.webp  → https://venom-new-site.vercel.app/images/motion/<name>.webp
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '영상 주소(https, mp4)'
+        required: true
+      name:
+        description: '파일 이름(영문·숫자·하이픈). images/motion/<name>.webp 로 저장'
+        required: true
+      subtitles:
+        description: '자막. 줄은 " | " 로 나눈다(순서대로 시간 배분). 한 줄 안 줄바꿈은 "\n"'
+        required: false
+        default: ''
+      width:
+        description: '가로 픽셀'
+        required: false
+        default: '480'
+      fps:
+        description: '초당 장수'
+        required: false
+        default: '12'
+      blend:
+        description: '끝↔처음 겹쳐 섞는 길이(초). 0 이면 그냥 반복'
+        required: false
+        default: '0.6'
+      quality:
+        description: 'WebP 화질(50~95)'
+        required: false
+        default: '80'
+      also_gif:
+        description: 'GIF 도 함께 만들기'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: video-to-webp
+  cancel-in-progress: false
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install ffmpeg + font
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg unzip fonts-nanum
+          set +e
+          curl -fsSL --retry 3 -o /tmp/p.zip https://github.com/orioncactus/pretendard/releases/download/v1.3.9/Pretendard-1.3.9.zip \
+            && unzip -q -o /tmp/p.zip -d /tmp/pret
+          FONT=$(find /tmp/pret -name 'Pretendard-Bold.otf' | head -1)
+          [ -z "$FONT" ] && FONT=/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf
+          echo "FONT=$FONT" >> "$GITHUB_ENV"
+          echo "font: $FONT"
+
+      - name: Convert
+        env:
+          IN_URL: ${{ github.event.inputs.url }}
+          IN_NAME: ${{ github.event.inputs.name }}
+          IN_SUBS: ${{ github.event.inputs.subtitles }}
+          IN_W: ${{ github.event.inputs.width }}
+          IN_FPS: ${{ github.event.inputs.fps }}
+          IN_BLEND: ${{ github.event.inputs.blend }}
+          IN_Q: ${{ github.event.inputs.quality }}
+          IN_GIF: ${{ github.event.inputs.also_gif }}
+        run: python3 tools/video-to-webp.py
+
+      - name: Commit + push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add venom-wordpress/preview/images/motion/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "motion: ${{ github.event.inputs.name }} — 자막 얹은 반복 WebP (video-to-webp) [skip ci]"
+            # 그 사이 main 이 움직였을 수 있다(PROJECT_STATE 자동 커밋 등) → 받아서 얹은 뒤 올린다. 세 번까지.
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push origin main && break
+              echo "push retry $i"; sleep 5
+            done
+          fi

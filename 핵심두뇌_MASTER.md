@@ -85,6 +85,7 @@
 | 자동 블로그 글생성 | `api/generate-post.js`, `api/cron-daily-posts.js` | **유료(토큰)** |
 | 클리닉 진단(medirank) | `clinic/pipeline/`, `clinic/self-check/` | 무료 |
 | 용어사전(SEO·AI·마케팅·개발) | `assets/glossary.js` (SEO 216·AI 163·마케팅 34·개발 44) · 원본 CSV 백업 `content/glossary/` · 페이지 `index.html#pg-seo-dict` | 무료 |
+| **사진 한 장 → 움직이는 GIF·WebP·동영상(+자막)** | `tools/photo-motion.html`(브라우저 안에서 전부 처리) + AI 추천 `api/photo-motion-ai.js` · 설명 `tools/README-photo-motion.md` | 만들기 무료 · AI 추천만 **유료(토큰)** |
 | 관리자 화면 | `admin.html` / 클리닉 `clinic/admin/` | — |
 
 ### ERP (`marketing-agency-erp/src/`)
@@ -115,6 +116,7 @@
 
 ## 🔐 비밀키(secrets)는 어디에 (값은 여기 없음)
 - **Vercel** 각 프로젝트 → Settings → Environment Variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `GEMINI_API_KEY`, `NAVER_*`, ERP의 `DATABASE_URL`·`AUTH_SECRET`·`EMAIL_SERVER` 등)
+- **Vercel(베놈 사이트) 영상 AI**: `HIGGSFIELD_API_KEY`(`키ID:키비밀`, cloud.higgsfield.ai · 사용량 과금) 또는 `MINIMAX_API_KEY` → `api/photo-motion-video.js` 가 씀. 없으면 화면의 「AI 영상 만들기」 상자가 안 보인다.
 - **GitHub Actions** secrets (워크플로용)
 - **로컬** `.env.local` (git 제외)
 - ⚠️ 비밀키 값은 **코드/이 문서에 절대 넣지 않음**.
