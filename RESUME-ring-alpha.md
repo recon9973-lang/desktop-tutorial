@@ -1,4 +1,4 @@
-# RESUME (진단 링 투명 파일 방) — 2026-09-29 · **ANSEO 방에 인계 대기**
+# RESUME (진단 링 투명 파일 방) — **닫힘. 전부 나갔다** (0.3.668 · 2026-09-30 13:55 KST 확인)
 
 <!-- 가지: claude/affectionate-pasteur-3r1867 -->
 
@@ -18,8 +18,8 @@ veo-platform 가지  claude/ring-alpha-file   (origin/main f614a10b · 0.3.665 �
 검사 [실측 09-29]  vitest 342/2,934 통과 · tsc 0 · eslint 0 · next build 성공
 ```
 
-## 남은 것
+## 나갔다
 
-- **배포는 ANSEO 방 몫**(사장님 09-20 · 관문 `deploy_room_gate.sh`). 이 방은 `make deploy` 를 돌리지 않았다.
-  사장님이 ANSEO 방에 「인계」 한 마디 하시면 그 방이 가지를 합쳐 낸다.
-- 배포 뒤 사장님 브라우저에서 진단 한 번 — 네모가 사라졌는지 그 자리에서 난다.
+[실측 2026-09-30 13:55 KST · origin/main] ANSEO 방이 가지 `claude/ring-alpha-file` 을 합쳐 **0.3.668** 로 냈다
+(합침 1f58c7e1 · 판 a49a0ba6 · 도장 66250db0 · 대장 머리말 「0.3.668 까지 나갔다 · 서버·워커·웹」 · 대기 표 줄 ✅).
+이 방 몫은 끝. 남은 것은 사장님이 진단 한 번 돌려 네모가 사라졌는지 보시는 것뿐.
