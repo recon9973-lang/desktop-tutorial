@@ -26,8 +26,13 @@ def one(params: dict, timeout: int):
         tot = el.findtext(".//totalCount")
         code = el.findtext(".//resultCode")
         return round(time.time() - t0, 1), (tot if tot is not None else f"rc={code}")
+    except urllib.error.HTTPError as e:
+        # [내가 빠뜨린 것] 거절 «이유» 를 안 적어 뒀다 — 「한도 초과」인지 「열쇠」인지
+        # 그 한 줄이면 바로 아는데 종류만 적고 버렸다(2026-10-01).
+        body = e.read()[:400].decode("utf-8", "replace")
+        return round(time.time() - t0, 1), f"http {e.code} · {' '.join(body.split())[:260]}"
     except Exception as e:                                   # noqa: BLE001
-        return round(time.time() - t0, 1), f"못 받음({type(e).__name__})"
+        return round(time.time() - t0, 1), f"못 받음({type(e).__name__}: {str(e)[:120]})"
 
 
 def main() -> int:
