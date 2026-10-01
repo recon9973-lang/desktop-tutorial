@@ -228,6 +228,8 @@ def stage_sggu_subject(sido_list: list[dict], codes: list[dict], max_calls: int)
     print(f"[sggu-subject] 시군구 {len(pairs)} × 과목 {len(codes)} = {len(pairs)*len(codes):,}쌍 "
           f"(이미 받은 {len(done):,})")
     start = calls
+    miss = 0                      # 잇따라 못 받은 횟수
+    GIVE_UP = 25
     with path.open("a", encoding="utf-8") as f:
         for sidoCd, sidoNm, sgguCd, sgguNm in pairs:
             for c in codes:
@@ -237,8 +239,17 @@ def stage_sggu_subject(sido_list: list[dict], codes: list[dict], max_calls: int)
                     print("[sggu-subject] 호출 한도 도달 — 다음 실행에서 이어받는다"); return
                 try:
                     n = count({"sidoCd": sidoCd, "sgguCd": sgguCd, "dgsbjtCd": c["dgsbjtCd"]})
+                    miss = 0
                 except RuntimeError as e:
-                    print(f"  실패 {sidoNm} {sgguNm} {c['dgsbjtCd']}: {e}"); continue
+                    miss += 1
+                    print(f"  실패 {sidoNm} {sgguNm} {c['dgsbjtCd']}: {e}")
+                    # [실측 2026-09-30] 심평원이 안 받아 주는데도 계속 두드리다가
+                    # **5시간 51분에 188번**만 받고 판이 잘렸다. 받은 것도 커밋 못 했다.
+                    # 잇따라 막히면 **접고 나간다** — 받은 데까지는 커밋되고 다음 판이 이어받는다.
+                    if miss >= GIVE_UP:
+                        print(f"[sggu-subject] 잇따라 {GIVE_UP}번 못 받았다 — 여기서 접는다. "
+                              f"받은 데까지 남기고 다음 판이 이어받는다"); return
+                    continue
                 f.write(json.dumps({"sidoCd": sidoCd, "sidoCdNm": sidoNm,
                                     "sgguCd": sgguCd, "sgguCdNm": sgguNm,
                                     "dgsbjtCd": c["dgsbjtCd"],
