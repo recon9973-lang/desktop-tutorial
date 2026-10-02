@@ -32,15 +32,40 @@ def main() -> int:
                 return (s2, g2)
         return k
 
-    # 과목 코드 ↔ 이름. API 가 이름을 안 주므로 지금 표의 이름을 쓴다(코드는 그대로다).
+    # 과목 코드 ↔ 이름.
+    # [내가 틀린 자리 2026-10-02] API 가 이름을 안 줘서 코드표만 보고 맞추려다
+    # 이름이 통째로 비어 «표가 전부 0» 으로 보였다. 자료가 아니라 내 대조가 틀린 것이었다.
+    # 코드↔이름은 심평원 파일에 그대로 있다(코드는 안 바뀐다) — 거기서 가져온다.
     names = {}
     cp = RAW / "hira_subject_codes.json"
     if cp.exists():
         for c in json.loads(cp.read_text(encoding="utf-8")):
             if c.get("dgsbjtCdNm"):
                 names[c["dgsbjtCd"]] = c["dgsbjtCdNm"]
+    if not names:
+        import gzip
+        fp = pathlib.Path("/home/user/veo-platform/apps/api/data/hira/2026-06/subjects.csv.gz")
+        if fp.exists():
+            lines = [l for l in gzip.open(fp, "rt", encoding="utf-8-sig")
+                     if not l.startswith("#")]
+            for r in csv.DictReader(lines):
+                names.setdefault(r["진료과목코드"].strip(), r["진료과목코드명"].strip())
+            print(f"[이름] 심평원 파일에서 과목 이름 {len(names)}개를 가져왔다")
 
-    B, seen_reg = collections.Counter(), set()
+    # 한 자리가 **코드 둘**로 갈려 있을 수 있다.
+    # [실측 2026-10-02] 광주는 심평원 안에 「광주」와 「전남광주」 두 시도코드가 함께
+    # 있다. 훑기가 앞의 것(2곳짜리)만 지나간 참이라 API 가 0 을 돌려줬는데,
+    # 그걸 «API 가 틀렸다» 로 읽으면 안 된다. **그 자리의 코드를 다 받은 자리만** 견준다.
+    want_pairs = collections.defaultdict(set)
+    import gzip
+    mp = RAW / "hira_master.csv.gz"
+    if mp.exists():
+        for r in csv.DictReader(gzip.open(mp, "rt", encoding="utf-8")):
+            if r["sidoCd"] and r["sgguCd"]:
+                k = fit(hira_region_api(r))
+                want_pairs[k].add((r["sidoCd"], r["sgguCd"]))
+
+    B, got_pairs = collections.Counter(), collections.defaultdict(set)
     for line in src.open(encoding="utf-8"):
         try:
             d = json.loads(line)
@@ -51,7 +76,13 @@ def main() -> int:
         if d.get("dgsbjtCdNm"):
             names.setdefault(d["dgsbjtCd"], d["dgsbjtCdNm"])
         B[(k[0], k[1], d["dgsbjtCd"])] += d["count"]
-        seen_reg.add(k)
+        got_pairs[k].add((d["sidoCd"], d["sgguCd"]))
+
+    seen_reg = {k for k in got_pairs
+                if not want_pairs or want_pairs.get(k, set()) <= got_pairs[k]}
+    half = len(got_pairs) - len(seen_reg)
+    if half:
+        print(f"[견주지 않음] 그 자리의 코드를 아직 다 못 받은 곳 {half}곳")
 
     A = {}
     name2cd = {v: k for k, v in names.items()}
