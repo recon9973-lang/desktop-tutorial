@@ -86,5 +86,27 @@
         "total_cells": 17
       }
     ]
+  },
+  {
+    "generated_at": "2026-11-01T03:01:22.790Z",
+    "run_id": "41267387612",
+    "businesses": [
+      {
+        "key": "pain",
+        "name": "시원마취통증의학과의원",
+        "tot_pct": 26,
+        "disc_pct": 7,
+        "exposed": 5,
+        "total_cells": 19
+      },
+      {
+        "key": "skin",
+        "name": "시원스킨클리닉",
+        "tot_pct": 19,
+        "disc_pct": 0,
+        "exposed": 3,
+        "total_cells": 16
+      }
+    ]
   }
 ]

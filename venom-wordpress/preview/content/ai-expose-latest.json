@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-01T02:57:13.885Z",
-  "run_id": "36808148638",
+  "generated_at": "2026-11-01T03:01:22.790Z",
+  "run_id": "41267387612",
   "engines": [
     "perplexity",
     "openai",
@@ -26,25 +26,25 @@
       ],
       "grid": {
         "0": {
-          "perplexity": "mentioned",
-          "gemini": "none",
-          "openai": "none",
-          "claude": "none"
-        },
-        "1": {
           "perplexity": "error",
           "openai": "none",
-          "gemini": "mentioned",
+          "claude": "none",
+          "gemini": "none"
+        },
+        "1": {
+          "perplexity": "none",
+          "openai": "none",
+          "gemini": "none",
           "claude": "none"
         },
         "2": {
           "perplexity": "none",
           "openai": "none",
-          "gemini": "none",
-          "claude": "none"
+          "claude": "none",
+          "gemini": "none"
         },
         "3": {
-          "perplexity": "none",
+          "perplexity": "mentioned",
           "openai": "none",
           "gemini": "none",
           "claude": "none"
@@ -52,20 +52,20 @@
         "4": {
           "perplexity": "cited",
           "openai": "mentioned",
-          "gemini": "mentioned",
-          "claude": "mentioned"
+          "claude": "cited",
+          "gemini": "mentioned"
         }
       },
       "summary": {
         "total_cells": 19,
-        "exposed": 6,
+        "exposed": 5,
         "disc_cells": 15,
-        "disc_exposed": 2,
+        "disc_exposed": 1,
         "errors": 1,
-        "tot_pct": 32,
-        "disc_pct": 13,
+        "tot_pct": 26,
+        "disc_pct": 7,
         "sov_pct": 100,
-        "sov_self": 6,
+        "sov_self": 5,
         "sov_comp": 0,
         "sov_breakdown": {}
       }
@@ -84,14 +84,14 @@
         "0": {
           "perplexity": "none",
           "openai": "none",
-          "gemini": "none",
-          "claude": "none"
+          "claude": "none",
+          "gemini": "error"
         },
         "1": {
           "perplexity": "none",
           "openai": "none",
-          "claude": "none",
-          "gemini": "none"
+          "gemini": "none",
+          "claude": "none"
         },
         "2": {
           "perplexity": "none",
@@ -106,19 +106,19 @@
           "gemini": "error"
         },
         "4": {
-          "perplexity": "mentioned",
           "openai": "mentioned",
+          "perplexity": "mentioned",
           "claude": "mentioned",
           "gemini": "error"
         }
       },
       "summary": {
-        "total_cells": 17,
+        "total_cells": 16,
         "exposed": 3,
-        "disc_cells": 14,
+        "disc_cells": 13,
         "disc_exposed": 0,
-        "errors": 3,
-        "tot_pct": 18,
+        "errors": 4,
+        "tot_pct": 19,
         "disc_pct": 0,
         "sov_pct": 100,
         "sov_self": 3,
